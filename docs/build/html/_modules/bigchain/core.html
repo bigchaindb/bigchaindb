@@ -1,0 +1,637 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>bigchain.core &mdash; Bigchain 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Bigchain 0.0.1 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for bigchain.core</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">rethinkdb</span> <span class="kn">as</span> <span class="nn">r</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">rapidjson</span>
+
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="kn">import</span> <span class="nn">bigchain</span>
+<span class="kn">from</span> <span class="nn">bigchain.crypto</span> <span class="kn">import</span> <span class="n">hash_data</span><span class="p">,</span> <span class="n">PublicKey</span><span class="p">,</span> <span class="n">PrivateKey</span><span class="p">,</span> <span class="n">generate_key_pair</span>
+
+
+<div class="viewcode-block" id="Bigchain"><a class="viewcode-back" href="../../reference.html#bigchain.Bigchain">[docs]</a><span class="k">class</span> <span class="nc">Bigchain</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Bigchain API</span>
+
+<span class="sd">    Create, read, sign, write transactions to the database</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Bigchain.__init__"><a class="viewcode-back" href="../../reference.html#bigchain.Bigchain.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">dbname</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">public_key</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">private_key</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">keyring</span><span class="o">=</span><span class="p">[]):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize the Bigchain instance</span>
+
+<span class="sd">        There are three ways in which the Bigchain instance can get its parameters.</span>
+<span class="sd">        The order by which the parameters are chosen are:</span>
+
+<span class="sd">            1. Setting them by passing them to the `__init__` method itself.</span>
+<span class="sd">            2. Setting them as environment variables</span>
+<span class="sd">            3. Reading them from the `config.json` file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            host (str): hostname where the rethinkdb is running.</span>
+<span class="sd">            port (int): port in which rethinkb is running (usually 28015).</span>
+<span class="sd">            dbname (str): the name of the database to connect to (usually bigchain).</span>
+<span class="sd">            public_key (str): the base58 encoded public key for the ECDSA secp256k1 curve.</span>
+<span class="sd">            private_key (str): the base58 encoded private key for the ECDSA secp256k1 curve.</span>
+<span class="sd">            keyring (list[str]): list of base58 encoded public keys of the federation nodes.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="n">host</span> <span class="ow">or</span> <span class="n">bigchain</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;database&#39;</span><span class="p">][</span><span class="s1">&#39;host&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">port</span> <span class="ow">or</span> <span class="n">bigchain</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;database&#39;</span><span class="p">][</span><span class="s1">&#39;port&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dbname</span> <span class="o">=</span> <span class="n">dbname</span> <span class="ow">or</span> <span class="n">bigchain</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;database&#39;</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">me</span> <span class="o">=</span> <span class="n">public_key</span> <span class="ow">or</span> <span class="n">bigchain</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;keypair&#39;</span><span class="p">][</span><span class="s1">&#39;public&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">me_private</span> <span class="o">=</span> <span class="n">private_key</span> <span class="ow">or</span> <span class="n">bigchain</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;keypair&#39;</span><span class="p">][</span><span class="s1">&#39;private&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">federation_nodes</span> <span class="o">=</span> <span class="n">keyring</span> <span class="ow">or</span> <span class="n">bigchain</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;keyring&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reconnect</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">reconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">r</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dbname</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Bigchain.create_transaction"><a class="viewcode-back" href="../../reference.html#bigchain.Bigchain.create_transaction">[docs]</a>    <span class="k">def</span> <span class="nf">create_transaction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">current_owner</span><span class="p">,</span> <span class="n">new_owner</span><span class="p">,</span> <span class="n">tx_input</span><span class="p">,</span> <span class="n">operation</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a new transaction</span>
+
+<span class="sd">        A transaction in the bigchain is a transfer of a digital asset between two entities represented</span>
+<span class="sd">        by public keys.</span>
+
+<span class="sd">        Currently the bigchain supports two types of operations:</span>
+
+<span class="sd">            `CREATE` - Only federation nodes are allowed to use this operation. In a create operation</span>
+<span class="sd">            a federation node creates a digital asset in the bigchain and assigns that asset to a public</span>
+<span class="sd">            key. The owner of the private key can then decided to transfer this digital asset by using the</span>
+<span class="sd">            `transaction id` of the transaction as an input in a `TRANSFER` transaction.</span>
+
+<span class="sd">            `TRANSFER` - A transfer operation allows for a transfer of the digital assets between entities.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            current_owner (str): base58 encoded public key of the current owner of the asset.</span>
+<span class="sd">            new_owner (str): base58 encoded public key of the new owner of the digital asset.</span>
+<span class="sd">            tx_input (str): id of the transaction to use as input.</span>
+<span class="sd">            operation (str): Either `CREATE` or `TRANSFER` operation.</span>
+<span class="sd">            payload (Optional[dict]): dictionary with information about asset</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: unsigned transaction</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="n">payload</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="n">hash_payload</span> <span class="o">=</span> <span class="n">hash_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">payload</span><span class="p">))</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s1">&#39;hash&#39;</span><span class="p">:</span> <span class="n">hash_payload</span><span class="p">,</span>
+                    <span class="s1">&#39;payload&#39;</span><span class="p">:</span> <span class="n">payload</span>
+                <span class="p">}</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;data parameter needs to be a dictionary&#39;</span><span class="p">)</span>
+
+        <span class="n">tx</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;current_owner&#39;</span><span class="p">:</span> <span class="n">current_owner</span><span class="p">,</span>
+            <span class="s1">&#39;new_owner&#39;</span><span class="p">:</span> <span class="n">new_owner</span><span class="p">,</span>
+            <span class="s1">&#39;input&#39;</span><span class="p">:</span> <span class="n">tx_input</span><span class="p">,</span>
+            <span class="s1">&#39;operation&#39;</span><span class="p">:</span> <span class="n">operation</span><span class="p">,</span>
+            <span class="s1">&#39;timestamp&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">timestamp</span><span class="p">(),</span>
+            <span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="n">data</span>
+        <span class="p">}</span>
+
+        <span class="c1"># serialize and convert to bytes</span>
+        <span class="n">tx_serialized</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">tx</span><span class="p">)</span>
+        <span class="n">tx_hash</span> <span class="o">=</span> <span class="n">hash_data</span><span class="p">(</span><span class="n">tx_serialized</span><span class="p">)</span>
+
+        <span class="c1"># create the transaction</span>
+        <span class="n">transaction</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">tx_hash</span><span class="p">,</span>
+            <span class="s1">&#39;transaction&#39;</span><span class="p">:</span> <span class="n">tx</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">transaction</span></div>
+
+<div class="viewcode-block" id="Bigchain.sign_transaction"><a class="viewcode-back" href="../../reference.html#bigchain.Bigchain.sign_transaction">[docs]</a>    <span class="k">def</span> <span class="nf">sign_transaction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transaction</span><span class="p">,</span> <span class="n">private_key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sign a transaction</span>
+
+<span class="sd">        A transaction signed with the `current_owner` corresponding private key.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            transaction (dict): transaction to sign.</span>
+<span class="sd">            private_key (str): base58 encoded private key to create a signature of the transaction.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: transaction with the `signature` field included.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">private_key</span> <span class="o">=</span> <span class="n">PrivateKey</span><span class="p">(</span><span class="n">private_key</span><span class="p">)</span>
+        <span class="n">signature</span> <span class="o">=</span> <span class="n">private_key</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">transaction</span><span class="p">))</span>
+        <span class="n">signed_transaction</span> <span class="o">=</span> <span class="n">transaction</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">signed_transaction</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;signature&#39;</span><span class="p">:</span> <span class="n">signature</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">signed_transaction</span></div>
+
+<div class="viewcode-block" id="Bigchain.verify_signature"><a class="viewcode-back" href="../../reference.html#bigchain.Bigchain.verify_signature">[docs]</a>    <span class="k">def</span> <span class="nf">verify_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signed_transaction</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Verify the signature of a transaction</span>
+
+<span class="sd">        A valid transaction should have been signed `current_owner` corresponding private key.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            signed_transaction (dict): a transaction with the `signature` included.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if the signature is correct, False otherwise.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">signed_transaction</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="c1"># if assignee field in the transaction, remove it</span>
+        <span class="k">if</span> <span class="s1">&#39;assignee&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;assignee&#39;</span><span class="p">)</span>
+
+        <span class="n">signature</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;signature&#39;</span><span class="p">)</span>
+        <span class="n">public_key_base58</span> <span class="o">=</span> <span class="n">signed_transaction</span><span class="p">[</span><span class="s1">&#39;transaction&#39;</span><span class="p">][</span><span class="s1">&#39;current_owner&#39;</span><span class="p">]</span>
+        <span class="n">public_key</span> <span class="o">=</span> <span class="n">PublicKey</span><span class="p">(</span><span class="n">public_key_base58</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">public_key</span><span class="o">.</span><span class="n">verify</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">signature</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Bigchain.write_transaction"><a class="viewcode-back" href="../../reference.html#bigchain.Bigchain.write_transaction">[docs]</a>    <span class="k">def</span> <span class="nf">write_transaction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signed_transaction</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Write the transaction to bigchain.</span>
+
+<span class="sd">        When first writing a transaction to the bigchain the transaction will be kept in a backlog until</span>
+<span class="sd">        it has been validated by the nodes of the federation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            singed_transaction (dict): transaction with the `signature` included.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: database response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># we will assign this transaction to `one` node. This way we make sure that there are no duplicate</span>
+        <span class="c1"># transactions on the bigchain</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">federation_nodes</span><span class="p">:</span>
+            <span class="n">assignee</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">federation_nodes</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># I am the only node</span>
+            <span class="n">assignee</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">me</span>
+
+        <span class="c1"># update the transaction</span>
+        <span class="n">signed_transaction</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;assignee&#39;</span><span class="p">:</span> <span class="n">assignee</span><span class="p">})</span>
+
+        <span class="c1"># write to the backlog</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s1">&#39;backlog&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">signed_transaction</span><span class="p">,</span> <span class="n">durability</span><span class="o">=</span><span class="s1">&#39;soft&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span></div>
+
+<div class="viewcode-block" id="Bigchain.get_transaction"><a class="viewcode-back" href="../../reference.html#bigchain.Bigchain.get_transaction">[docs]</a>    <span class="k">def</span> <span class="nf">get_transaction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">txid</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Retrieve a transaction with `txid` from bigchain.</span>
+
+<span class="sd">        Queries the bigchain for a transaction that was already included in a block.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            txid (str): transaction id of the transaction to query</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dict with the transaction details if the transaction was found.</span>
+
+<span class="sd">            If no transaction with that `txid` was found it returns `None`</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s1">&#39;bigchain&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">concat_map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">doc</span><span class="p">:</span> <span class="n">doc</span><span class="p">[</span><span class="s1">&#39;block&#39;</span><span class="p">][</span><span class="s1">&#39;transactions&#39;</span><span class="p">])</span>\
+            <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">transaction</span><span class="p">:</span> <span class="n">transaction</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">txid</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="p">)</span>
+
+        <span class="c1"># transaction ids should be unique</span>
+        <span class="n">transactions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">transactions</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">transactions</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Transaction ids should be unique. There is a problem with the chain&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">transactions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span></div>
+
+<div class="viewcode-block" id="Bigchain.get_tx_by_payload_hash"><a class="viewcode-back" href="../../reference.html#bigchain.Bigchain.get_tx_by_payload_hash">[docs]</a>    <span class="k">def</span> <span class="nf">get_tx_by_payload_hash</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">payload_hash</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Retrieves transactions related to a digital asset.</span>
+
+<span class="sd">        When creating a transaction one of the optional arguments is the `payload`. The payload is a generic</span>
+<span class="sd">        dict that contains information about the digital asset.</span>
+
+<span class="sd">        To make it easy to query the bigchain for that digital asset we create a sha3-256 hash of the</span>
+<span class="sd">        serialized payload and store it with the transaction. This makes it easy for developers to keep track</span>
+<span class="sd">        of their digital assets in bigchain.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            payload_hash (str): sha3-256 hash of the serialized payload.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A list of transactions containing that payload. If no transaction exists with that payload it</span>
+<span class="sd">            returns `None`</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s1">&#39;bigchain&#39;</span><span class="p">)</span>\
+            <span class="o">.</span><span class="n">get_all</span><span class="p">(</span><span class="n">payload_hash</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="s1">&#39;payload_hash&#39;</span><span class="p">)</span>\
+            <span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="p">)</span>
+
+        <span class="n">transactions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">cursor</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">transactions</span></div>
+
+<div class="viewcode-block" id="Bigchain.get_spent"><a class="viewcode-back" href="../../reference.html#bigchain.Bigchain.get_spent">[docs]</a>    <span class="k">def</span> <span class="nf">get_spent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">txid</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check if a `txid` was already used as an input.</span>
+
+<span class="sd">        A transaction can be used as an input for another transaction. Bigchain needs to make sure that a</span>
+<span class="sd">        given `txid` is only used once.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            txid (str): transaction id.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The transaction that used the `txid` as an input if it exists else it returns `None`</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># checks if an input was already spent</span>
+        <span class="c1"># checks if the bigchain has any transaction with input `transaction_id`</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s1">&#39;bigchain&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">concat_map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">doc</span><span class="p">:</span> <span class="n">doc</span><span class="p">[</span><span class="s1">&#39;block&#39;</span><span class="p">][</span><span class="s1">&#39;transactions&#39;</span><span class="p">])</span>\
+            <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">transaction</span><span class="p">:</span> <span class="n">transaction</span><span class="p">[</span><span class="s1">&#39;transaction&#39;</span><span class="p">][</span><span class="s1">&#39;input&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">txid</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="p">)</span>
+
+        <span class="c1"># a transaction_id should have been spent at most one time</span>
+        <span class="n">transactions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">transactions</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">transactions</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;`{}` was spent more then once. There is a problem with the chain&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">txid</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">transactions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span></div>
+
+<div class="viewcode-block" id="Bigchain.get_owned_ids"><a class="viewcode-back" href="../../reference.html#bigchain.Bigchain.get_owned_ids">[docs]</a>    <span class="k">def</span> <span class="nf">get_owned_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">owner</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Retrieve a list of `txids` that can we used has inputs.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            owner (str): base58 encoded public key.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: list of `txids` currently owned by `owner`</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s1">&#39;bigchain&#39;</span><span class="p">)</span>\
+                    <span class="o">.</span><span class="n">concat_map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">doc</span><span class="p">:</span> <span class="n">doc</span><span class="p">[</span><span class="s1">&#39;block&#39;</span><span class="p">][</span><span class="s1">&#39;transactions&#39;</span><span class="p">])</span>\
+                    <span class="o">.</span><span class="n">filter</span><span class="p">({</span><span class="s1">&#39;transaction&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;new_owner&#39;</span><span class="p">:</span> <span class="n">owner</span><span class="p">}})</span>\
+                    <span class="o">.</span><span class="n">pluck</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">)[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>\
+                    <span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="p">)</span>
+        <span class="n">owned</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># remove all inputs already spent</span>
+        <span class="k">for</span> <span class="n">tx_input</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_spent</span><span class="p">(</span><span class="n">tx_input</span><span class="p">):</span>
+                <span class="n">owned</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tx_input</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">owned</span></div>
+
+<div class="viewcode-block" id="Bigchain.validate_transaction"><a class="viewcode-back" href="../../reference.html#bigchain.Bigchain.validate_transaction">[docs]</a>    <span class="k">def</span> <span class="nf">validate_transaction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transaction</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Validate a transaction.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            transaction (dict): transaction to validate.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The transaction if the transaction is valid else it raises and exception</span>
+<span class="sd">            describing the reason why the transaction is invalid.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># If the operation is CREATE the transaction should have no inputs and should be signed by a</span>
+        <span class="c1"># federation node</span>
+        <span class="k">if</span> <span class="n">transaction</span><span class="p">[</span><span class="s1">&#39;transaction&#39;</span><span class="p">][</span><span class="s1">&#39;operation&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;CREATE&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">transaction</span><span class="p">[</span><span class="s1">&#39;transaction&#39;</span><span class="p">][</span><span class="s1">&#39;input&#39;</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;A CREATE operation has no inputs.&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">transaction</span><span class="p">[</span><span class="s1">&#39;transaction&#39;</span><span class="p">][</span><span class="s1">&#39;current_owner&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">federation_nodes</span> <span class="o">+</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">me</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Only federation nodes can use the operation `CREATE`&#39;</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># check if the input exists, is owned by the current_owner</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">transaction</span><span class="p">[</span><span class="s1">&#39;transaction&#39;</span><span class="p">][</span><span class="s1">&#39;input&#39;</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Only `CREATE` transactions can have null inputs&#39;</span><span class="p">)</span>
+
+            <span class="n">tx_input</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_transaction</span><span class="p">(</span><span class="n">transaction</span><span class="p">[</span><span class="s1">&#39;transaction&#39;</span><span class="p">][</span><span class="s1">&#39;input&#39;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">tx_input</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;input `{}` does not exist in the bigchain&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">transaction</span><span class="p">[</span><span class="s1">&#39;transaction&#39;</span><span class="p">][</span><span class="s1">&#39;input&#39;</span><span class="p">]))</span>
+
+            <span class="k">if</span> <span class="n">tx_input</span><span class="p">[</span><span class="s1">&#39;transaction&#39;</span><span class="p">][</span><span class="s1">&#39;new_owner&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">transaction</span><span class="p">[</span><span class="s1">&#39;transaction&#39;</span><span class="p">][</span><span class="s1">&#39;current_owner&#39;</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;current_owner `{}` does not own the input `{}`&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">transaction</span><span class="p">[</span><span class="s1">&#39;transaction&#39;</span><span class="p">][</span><span class="s1">&#39;current_owner&#39;</span><span class="p">],</span> <span class="n">transaction</span><span class="p">[</span><span class="s1">&#39;transaction&#39;</span><span class="p">][</span><span class="s1">&#39;input&#39;</span><span class="p">]))</span>
+
+            <span class="c1"># check if the input was already spent</span>
+            <span class="n">spent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_spent</span><span class="p">(</span><span class="n">tx_input</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">spent</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;input `{}` was already spent&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">transaction</span><span class="p">[</span><span class="s1">&#39;transaction&#39;</span><span class="p">][</span><span class="s1">&#39;input&#39;</span><span class="p">]))</span>
+
+        <span class="c1"># Check hash of the transaction</span>
+        <span class="n">calculated_hash</span> <span class="o">=</span> <span class="n">hash_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">transaction</span><span class="p">[</span><span class="s1">&#39;transaction&#39;</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="n">calculated_hash</span> <span class="o">!=</span> <span class="n">transaction</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Wrong transaction hash&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Check signature</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">verify_signature</span><span class="p">(</span><span class="n">transaction</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Wrong transaction signature&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">transaction</span></div>
+
+<div class="viewcode-block" id="Bigchain.is_valid_transaction"><a class="viewcode-back" href="../../reference.html#bigchain.Bigchain.is_valid_transaction">[docs]</a>    <span class="k">def</span> <span class="nf">is_valid_transaction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transaction</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check whether a transacion is valid or invalid.</span>
+
+<span class="sd">        Similar to `validate_transaction` but does not raise an exception if the transaction is valid.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            transaction (dict): transaction to check.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: `True` if the transaction is valid, `False` otherwise</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">validate_transaction</span><span class="p">(</span><span class="n">transaction</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">transaction</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span></div>
+
+<div class="viewcode-block" id="Bigchain.create_block"><a class="viewcode-back" href="../../reference.html#bigchain.Bigchain.create_block">[docs]</a>    <span class="k">def</span> <span class="nf">create_block</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validated_transactions</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates a block given a list of `validated_transactions`.</span>
+
+<span class="sd">        Note that this method does not validate the transactions. Transactions should be validated before</span>
+<span class="sd">        calling create_block.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            validated_transactions (list): list of validated transactions.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: created block.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Create the new block</span>
+        <span class="n">block</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;timestamp&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">timestamp</span><span class="p">(),</span>
+            <span class="s1">&#39;transactions&#39;</span><span class="p">:</span> <span class="n">validated_transactions</span><span class="p">,</span>
+            <span class="s1">&#39;node_pubkey&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">me</span><span class="p">,</span>
+            <span class="s1">&#39;voters&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">federation_nodes</span>
+        <span class="p">}</span>
+
+        <span class="c1"># Calculate the hash of the new block</span>
+        <span class="n">block_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">block</span><span class="p">)</span>
+        <span class="n">block_hash</span> <span class="o">=</span> <span class="n">hash_data</span><span class="p">(</span><span class="n">block_data</span><span class="p">)</span>
+        <span class="n">block_signature</span> <span class="o">=</span> <span class="n">PrivateKey</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">me_private</span><span class="p">)</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">block_data</span><span class="p">)</span>
+
+        <span class="n">block</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">block_hash</span><span class="p">,</span>
+            <span class="s1">&#39;block&#39;</span><span class="p">:</span> <span class="n">block</span><span class="p">,</span>
+            <span class="s1">&#39;signature&#39;</span><span class="p">:</span> <span class="n">block_signature</span><span class="p">,</span>
+            <span class="s1">&#39;votes&#39;</span><span class="p">:</span> <span class="p">[]</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">block</span></div>
+
+    <span class="c1"># TODO: check that the votings structure is correctly constructed</span>
+<div class="viewcode-block" id="Bigchain.validate_block"><a class="viewcode-back" href="../../reference.html#bigchain.Bigchain.validate_block">[docs]</a>    <span class="k">def</span> <span class="nf">validate_block</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">block</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Validate a block.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            block (dict): block to validate.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The block if the block is valid else it raises and exception</span>
+<span class="sd">            describing the reason why the block is invalid.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># 1. Check if current hash is correct</span>
+        <span class="n">calculated_hash</span> <span class="o">=</span> <span class="n">hash_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">block</span><span class="p">[</span><span class="s1">&#39;block&#39;</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="n">calculated_hash</span> <span class="o">!=</span> <span class="n">block</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Wrong block hash&#39;</span><span class="p">)</span>
+
+        <span class="c1"># 2. Validate all transactions in the block</span>
+        <span class="k">for</span> <span class="n">transaction</span> <span class="ow">in</span> <span class="n">block</span><span class="p">[</span><span class="s1">&#39;block&#39;</span><span class="p">][</span><span class="s1">&#39;transactions&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_valid_transaction</span><span class="p">(</span><span class="n">transaction</span><span class="p">):</span>
+                <span class="c1"># this will raise the exception</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">validate_transaction</span><span class="p">(</span><span class="n">transaction</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">block</span></div>
+
+<div class="viewcode-block" id="Bigchain.is_valid_block"><a class="viewcode-back" href="../../reference.html#bigchain.Bigchain.is_valid_block">[docs]</a>    <span class="k">def</span> <span class="nf">is_valid_block</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">block</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check whether a block is valid or invalid.</span>
+
+<span class="sd">        Similar to `validate_block` but does not raise an exception if the block is invalid.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            block (dict): block to check.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: `True` if the block is valid, `False` otherwise.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">validate_block</span><span class="p">(</span><span class="n">block</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">block</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span></div>
+
+<div class="viewcode-block" id="Bigchain.write_block"><a class="viewcode-back" href="../../reference.html#bigchain.Bigchain.write_block">[docs]</a>    <span class="k">def</span> <span class="nf">write_block</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">block</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Write a block to bigchain.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            block (dict): block to write to bigchain.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">block_serialized</span> <span class="o">=</span> <span class="n">rapidjson</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">block</span><span class="p">)</span>
+        <span class="n">r</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s1">&#39;bigchain&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">(</span><span class="n">block_serialized</span><span class="p">),</span> <span class="n">durability</span><span class="o">=</span><span class="s1">&#39;soft&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="p">,</span> <span class="n">noreply</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span></div>
+
+    <span class="c1"># TODO: Decide if we need this method</span>
+    <span class="k">def</span> <span class="nf">transaction_exists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transaction_id</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s1">&#39;bigchain&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get_all</span><span class="p">(</span><span class="n">transaction_id</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="s1">&#39;transaction_id&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">True</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">items</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="bp">False</span>
+
+<div class="viewcode-block" id="Bigchain.create_genesis_block"><a class="viewcode-back" href="../../reference.html#bigchain.Bigchain.create_genesis_block">[docs]</a>    <span class="k">def</span> <span class="nf">create_genesis_block</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create the genesis block</span>
+
+<span class="sd">        Block created when bigchain is first initialized.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># 1. create one transaction</span>
+        <span class="c1"># 2. create the block with one transaction</span>
+        <span class="c1"># 3. write the block to the bigchain</span>
+
+        <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;Hello World from the Bigchain&#39;</span><span class="p">}</span>
+        <span class="n">transaction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_transaction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">me</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">me</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;GENESIS&#39;</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">payload</span><span class="p">)</span>
+        <span class="n">transaction_signed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sign_transaction</span><span class="p">(</span><span class="n">transaction</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">me_private</span><span class="p">)</span>
+
+        <span class="c1"># create the block</span>
+        <span class="n">block</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_block</span><span class="p">([</span><span class="n">transaction_signed</span><span class="p">])</span>
+        <span class="c1"># add block number before writing</span>
+        <span class="n">block</span><span class="p">[</span><span class="s1">&#39;block_number&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_block</span><span class="p">(</span><span class="n">block</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">block</span></div>
+
+<div class="viewcode-block" id="Bigchain.vote"><a class="viewcode-back" href="../../reference.html#bigchain.Bigchain.vote">[docs]</a>    <span class="k">def</span> <span class="nf">vote</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">block</span><span class="p">,</span> <span class="n">previous_block_id</span><span class="p">,</span> <span class="n">decision</span><span class="p">,</span> <span class="n">invalid_reason</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Cast your vote on the block given the previous_block_hash and the decision (valid/invalid)</span>
+<span class="sd">        return the block to the updated in the database.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            block (dict): Block to vote.</span>
+<span class="sd">            previous_block_id (str): The id of the previous block.</span>
+<span class="sd">            decision (bool): Whether the block is valid or invalid.</span>
+<span class="sd">            invalid_reason (Optional[str]): Reason the block is invalid</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">vote</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;voting_for_block&#39;</span><span class="p">:</span> <span class="n">block</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;previous_block&#39;</span><span class="p">:</span> <span class="n">previous_block_id</span><span class="p">,</span>
+            <span class="s1">&#39;is_block_valid&#39;</span><span class="p">:</span> <span class="n">decision</span><span class="p">,</span>
+            <span class="s1">&#39;invalid_reason&#39;</span><span class="p">:</span> <span class="n">invalid_reason</span><span class="p">,</span>
+            <span class="s1">&#39;timestamp&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">timestamp</span><span class="p">()</span>
+        <span class="p">}</span>
+
+        <span class="n">vote_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">vote</span><span class="p">)</span>
+        <span class="n">signature</span> <span class="o">=</span> <span class="n">PrivateKey</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">me_private</span><span class="p">)</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">vote_data</span><span class="p">)</span>
+
+        <span class="n">vote_signed</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;node_pubkey&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">me</span><span class="p">,</span>
+            <span class="s1">&#39;signature&#39;</span><span class="p">:</span> <span class="n">signature</span><span class="p">,</span>
+            <span class="s1">&#39;vote&#39;</span><span class="p">:</span> <span class="n">vote</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">vote_signed</span></div>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Bigchain.serialize"><a class="viewcode-back" href="../../reference.html#bigchain.Bigchain.serialize">[docs]</a>    <span class="k">def</span> <span class="nf">serialize</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Static method used to serialize a dict into a JSON formatted string.</span>
+
+<span class="sd">        This method enforces rules like the separator and order of keys. This ensures that all dicts</span>
+<span class="sd">        are serialized in the same way.</span>
+
+<span class="sd">        This is specially important for hashing data. We need to make sure that everyone serializes their data</span>
+<span class="sd">        in the same way so that we do not have hash mismatches for the same structure due to serialization</span>
+<span class="sd">        differences.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (dict): dict to serialize</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: JSON formatted string</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">skipkeys</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">ensure_ascii</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                          <span class="n">separators</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="s1">&#39;:&#39;</span><span class="p">),</span> <span class="n">sort_keys</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span></div>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Bigchain.deserialize"><a class="viewcode-back" href="../../reference.html#bigchain.Bigchain.deserialize">[docs]</a>    <span class="k">def</span> <span class="nf">deserialize</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Static method used to deserialize a JSON formatted string into a dict.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (str): JSON formatted string.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: dict resulting from the serialization of a JSON formatted string.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span></div>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Bigchain.timestamp"><a class="viewcode-back" href="../../reference.html#bigchain.Bigchain.timestamp">[docs]</a>    <span class="k">def</span> <span class="nf">timestamp</span><span class="p">():</span>
+        <span class="sd">&quot;&quot;&quot;Static method to calculate a UTC timestamp with microsecond precision.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: UTC timestamp.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span>
+        <span class="k">return</span> <span class="s2">&quot;{0:.6f}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">mktime</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">timetuple</span><span class="p">())</span> <span class="o">+</span> <span class="n">dt</span><span class="o">.</span><span class="n">microsecond</span> <span class="o">/</span> <span class="mf">1e6</span><span class="p">)</span></div>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Bigchain.generate_keys"><a class="viewcode-back" href="../../reference.html#bigchain.Bigchain.generate_keys">[docs]</a>    <span class="k">def</span> <span class="nf">generate_keys</span><span class="p">():</span>
+        <span class="sd">&quot;&quot;&quot;Generates a key pair.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: `(private_key, public_key)`. ECDSA key pair using the secp256k1 curve encoded</span>
+<span class="sd">            in base58.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># generates and returns the keys serialized in hex</span>
+        <span class="k">return</span> <span class="n">generate_key_pair</span><span class="p">()</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, ascribe GmbH.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

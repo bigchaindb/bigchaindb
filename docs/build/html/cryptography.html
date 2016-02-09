@@ -1,0 +1,139 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>9. Cryptography &mdash; Bigchain 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Bigchain 0.0.1 documentation" href="index.html" />
+    <link rel="next" title="10. The Transaction, Block and Vote Models" href="models.html" />
+    <link rel="prev" title="8. The Bigchain Class" href="the-bigchain-class.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="cryptography">
+<span id="cryptography"></span><h1>9. Cryptography<a class="headerlink" href="#cryptography" title="Permalink to this headline">¶</a></h1>
+<p>The section documents the cryptographic algorithms and Python implementations that we use.</p>
+<p>The implementations that we have chosen for now are just for fast prototyping. Some of them are pure Python implementations which may be slow. As future work, we should look at other alternatives.</p>
+<div class="section" id="hashes">
+<span id="hashes"></span><h2>9.1. Hashes<a class="headerlink" href="#hashes" title="Permalink to this headline">¶</a></h2>
+<p>For hashing we are using the sha3-256 algorithm and <a class="reference external" href="https://bitbucket.org/tiran/pykeccak">pysha3</a> as the Python implementation. We store the hex encoded hash in the database. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">hashlib</span>
+<span class="c1"># monkey patch hashlib with sha3 functions</span>
+<span class="kn">import</span> <span class="nn">sha3</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="s2">&quot;message&quot;</span>
+<span class="n">tx_hash</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha3_256</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="keys">
+<span id="keys"></span><h2>9.2. Keys<a class="headerlink" href="#keys" title="Permalink to this headline">¶</a></h2>
+<p>For signing and veryfing signatures we are using the ECDSA with 192bit key lengths and
+<a class="reference external" href="https://github.com/warner/python-ecdsa">python-ecdsa</a> as the python implementation.</p>
+<p>The public-key or verification key are converted to string and hex encoded before storing them to the blockchain. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">binascii</span>
+<span class="kn">from</span> <span class="nn">ecdsa</span> <span class="kn">import</span> <span class="n">SigningKey</span>
+
+<span class="c1"># generate signing key in hex encoded form</span>
+<span class="n">sk</span> <span class="o">=</span> <span class="n">SigningKey</span><span class="o">.</span><span class="n">generate</span><span class="p">()</span>
+<span class="n">sk_hex</span> <span class="o">=</span> <span class="n">binascii</span><span class="o">.</span><span class="n">hexlify</span><span class="p">(</span><span class="n">sk</span><span class="o">.</span><span class="n">to_string</span><span class="p">())</span>
+
+<span class="c1"># get signing key from hex</span>
+<span class="n">sk</span> <span class="o">=</span> <span class="n">SigningKey</span><span class="o">.</span><span class="n">from_string</span><span class="p">(</span><span class="n">binascii</span><span class="o">.</span><span class="n">unhexlify</span><span class="p">(</span><span class="n">sk_hex</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">9. Cryptography</a><ul>
+<li><a class="reference internal" href="#hashes">9.1. Hashes</a></li>
+<li><a class="reference internal" href="#keys">9.2. Keys</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="the-bigchain-class.html" title="previous chapter">8. The Bigchain Class</a></li>
+      <li>Next: <a href="models.html" title="next chapter">10. The Transaction, Block and Vote Models</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/cryptography.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, ascribe GmbH.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      
+      |
+      <a href="_sources/cryptography.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

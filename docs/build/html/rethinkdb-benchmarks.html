@@ -1,0 +1,304 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>13. RethinkDB Benchmarks &mdash; Bigchain 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Bigchain 0.0.1 documentation" href="index.html" />
+    <link rel="prev" title="12. Transaction Validation" href="transaction-validation.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="rethinkdb-benchmarks">
+<span id="rethinkdb-benchmarks"></span><h1>13. RethinkDB Benchmarks<a class="headerlink" href="#rethinkdb-benchmarks" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="goal">
+<span id="goal"></span><h2>13.1. Goal<a class="headerlink" href="#goal" title="Permalink to this headline">¶</a></h2>
+<p>The goal was to test RethinkDB scalability properties, to understand its limits, and to see if we could reach a speed of 1M transactions per second.</p>
+</div>
+<div class="section" id="terminology">
+<span id="terminology"></span><h2>13.2. Terminology<a class="headerlink" href="#terminology" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="settings">
+<span id="settings"></span><h3>13.2.1. Settings<a class="headerlink" href="#settings" title="Permalink to this headline">¶</a></h3>
+<p>To test the writing performance of rethinkdb we have a process that inserts a
+block in the database in an infinite loop</p>
+<p>The block is a valid block with small transactions (transactions without any
+payload). The entire block has around 900KB</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+    <span class="n">r</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table</span><span class="p">)</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">(</span><span class="n">BLOCK_SERIALIZED</span><span class="p">),</span> <span class="n">durability</span><span class="o">=</span><span class="s1">&#39;soft&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In <code class="docutils literal"><span class="pre">hard</span></code> durability mode, writes are committed to disk before acknowledgments
+are sent; in <code class="docutils literal"><span class="pre">soft</span></code> mode, writes are acknowledged immediately after being stored
+in memory.</p>
+<p>This means that the insert will block until rethinkdb acknowledges that the data
+was cached. In each server we can start multiple process.</p>
+</div>
+<div class="section" id="write-units">
+<span id="write-units"></span><h3>13.2.2. Write units<a class="headerlink" href="#write-units" title="Permalink to this headline">¶</a></h3>
+<p>Lets define <code class="docutils literal"><span class="pre">1</span> <span class="pre">write</span> <span class="pre">unit</span></code> as being 1 process. For example in a 32 node cluster
+with each node running 2 processes we would have <code class="docutils literal"><span class="pre">64</span> <span class="pre">writes</span></code>. This will make it
+easier to compare different tests.</p>
+</div>
+<div class="section" id="sharding">
+<span id="sharding"></span><h3>13.2.3. Sharding<a class="headerlink" href="#sharding" title="Permalink to this headline">¶</a></h3>
+<p>Sharding in distributed datastores means partitioning a table so that the data
+can be evenly distributed between all nodes in the cluster. In rethinkdb and
+most distributed datastores there is a maximum limit of 32 shards per table.</p>
+<p>In rethinkdb a <code class="docutils literal"><span class="pre">shard</span></code> is also called a <code class="docutils literal"><span class="pre">primary</span> <span class="pre">replica</span></code>, since by default the
+replication factor is 1. Increasing the replication factor produces <code class="docutils literal"><span class="pre">secondary</span> <span class="pre">replicas</span></code> that are used for data redundancy (if a node holding a primary replica
+goes down another node holding a secondary replica of the same data can step up
+and become the primary replica)</p>
+<p>For these tests we are using 32 core ec2 instances with SSD storage and 10Gbps
+network connections (<code class="docutils literal"><span class="pre">c3.8xlarge</span></code>). For the tests we used either 32 or 64 node
+clusters all running on the same aws region.</p>
+<p>These tests show rethinkdb performance and what we can expect from the database.
+This does not show the performance of the bigchain</p>
+</div>
+</div>
+<div class="section" id="tests">
+<span id="tests"></span><h2>13.3. Tests<a class="headerlink" href="#tests" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="test-1">
+<span id="test-1"></span><h3>13.3.1. Test 1<a class="headerlink" href="#test-1" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><strong>number of nodes</strong>: 32</li>
+<li><strong>number of processes</strong>: 2 processes per node</li>
+<li><strong>write units</strong>: 32 x 2 = 64 writes</li>
+<li><strong>output</strong>: stable 1K writes per second</li>
+</ul>
+<p>This was the most successful test. We are able to reach a stable output of 1K
+blocks per second. The load on the machines is stable and the IO is at an
+average of 50-60 %.</p>
+<p>Other tests have shown that increasing the number write units per machine can
+lead to a stable performance up to 1.5K writes per second but the load on the
+nodes would increase until the node would eventually fail. This means that we
+are able to handle bursts for a short amount of time (10-20 min).</p>
+<p>This test can be used has a baseline for the future in where 64 writes equal 1K
+transactions per second. Or that each write unit produces an output of
+<code class="docutils literal"><span class="pre">1000/64</span></code> writes per second, approximately 16 writes per second.</p>
+</div>
+<div class="section" id="test-2">
+<span id="test-2"></span><h3>13.3.2. Test 2<a class="headerlink" href="#test-2" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><strong>number of nodes</strong>: 32</li>
+<li><strong>number of processes</strong>:<ul>
+<li>16 nodes running 2 processes</li>
+<li>16 nodes running 3 processes</li>
+</ul>
+</li>
+<li><strong>write units</strong>: 16 x 3 + 16 x 2 = 80 writes</li>
+<li><strong>expected output</strong>: 1250 writes per second</li>
+<li><strong>output</strong>: stable 1.2K writes per second</li>
+</ul>
+<p>Increasing a bit the number of write units shows an increase in output close to
+the expected value but in this case the IO around 90 % close to the limit that
+the machine can handle.</p>
+</div>
+<div class="section" id="test-3">
+<span id="test-3"></span><h3>13.3.3. Test 3<a class="headerlink" href="#test-3" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><strong>number of nodes</strong>: 32</li>
+<li><strong>number of processes</strong>:<ul>
+<li>16 nodes running 2 processes</li>
+<li>16 nodes running 4 processes</li>
+</ul>
+</li>
+<li><strong>write units</strong>: 16 x 4 + 16 x 2 = 96 writes</li>
+<li><strong>expected output</strong>: 1500 writes per second</li>
+<li><strong>output</strong>: stable 1.4K writes per second</li>
+</ul>
+<p>These test produces results similar to previous one. The reason why we don&#8217;t
+reach the expected output may be because rethinkdb needs time to cache results
+and at some point increasing the number of write units will not result in an
+higher output. Another problem is that as the rethinkdb cache fills (because the
+rethinkdb is not able to flush the data to disk fast enough due to IO
+limitations) the performance will decrease because the processes will take more
+time inserting blocks.</p>
+</div>
+<div class="section" id="test-4">
+<span id="test-4"></span><h3>13.3.4. Test 4<a class="headerlink" href="#test-4" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><strong>number of nodes</strong>: 64</li>
+<li><strong>number of processes</strong>: 1 process per node</li>
+<li><strong>write units</strong>: 64 x 1 = 64 writes</li>
+<li><strong>expected output</strong>: 1000 writes per second</li>
+<li><strong>output</strong>: stable 1K writes per second</li>
+</ul>
+<p>In this case we are increasing the number of nodes in the cluster by 2x. This
+won&#8217;t have an impact in the write performance because the maximum amount of
+shards per table in rethinkdb is 32 (rethinkdb will probably increase this limit
+in the future). What this provides is more CPU power (and storage for replicas,
+more about replication in the next section). We just halved the amount write
+units per node maintaining the same output. The IO in the nodes holding the
+primary replica is the same has test 1.</p>
+</div>
+<div class="section" id="test-5">
+<span id="test-5"></span><h3>13.3.5. Test 5<a class="headerlink" href="#test-5" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><strong>number of nodes</strong>: 64</li>
+<li><strong>number of processes</strong>: 2 process per node</li>
+<li><strong>write units</strong>: 64 x 2 = 128 writes</li>
+<li><strong>expected output</strong>: 2000 writes per second</li>
+<li><strong>output</strong>: unstable 2K (peak) writes per second</li>
+</ul>
+<p>In this case we are doubling the amount of write units. We are able to reach the
+expected output but the output performance is unstable due to the fact that we
+reached the IO limit on the machines.</p>
+</div>
+<div class="section" id="test-6">
+<span id="test-6"></span><h3>13.3.6. Test 6<a class="headerlink" href="#test-6" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><strong>number of nodes</strong>: 64</li>
+<li><strong>number of processes</strong>:<ul>
+<li>32 nodes running 1 processes</li>
+<li>32 nodes running 2 processes</li>
+</ul>
+</li>
+<li><strong>write units</strong>: 32 x 2 + 32 x 1 = 96 writes</li>
+<li><strong>expected output</strong>: 1500 writes per second</li>
+<li><strong>output</strong>: stable 1.5K writes per second</li>
+</ul>
+<p>This test is similar to Test 3. The only difference is that now the write units
+are distributed between 64 nodes meaning that each node is writing to its local
+cache and we don&#8217;t overload the cache of the nodes like we did with Test 3. This
+is another advantage of adding more nodes beyond 32.</p>
+</div>
+</div>
+<div class="section" id="testing-replication">
+<span id="testing-replication"></span><h2>13.4. Testing replication<a class="headerlink" href="#testing-replication" title="Permalink to this headline">¶</a></h2>
+<p>Replication is used for data redundancy. In rethinkdb we are able to specify the
+number of shards and replicas per table. Data in secondary replicas is no
+directly used, its just a mirror of a primary replica and used in case the node
+holding the primary replica fails.</p>
+<p>Rethinkdb does a good job trying to distribute data evenly between nodes. We ran
+some tests to check this.</p>
+<p>Note that by increasing the number of replicas we also increase the number of
+writes in the cluster. For a replication factor of 2 we double the amount of
+writes on the cluster, with a replication factor of 3 we triple the amount of
+writes and so on.</p>
+<p>With 64 nodes and since we can only have 32 shards we have 32 nodes holding
+shards (primary replicas)</p>
+<p>With a replication factor of 2 we will have 64 replicas (32 primary replicas and
+32 secondary replicas). Since we already have 32 nodes holding the 32
+shards/primary replicas rethinkdb uses the other 32 nodes to hold the secondary
+replicas. So in a 64 node cluster with 32 shards and a replication factor of 2,
+32 nodes will be holding the primary replicas and the other 32 nodes will be holding
+the secondary replicas.</p>
+<p>With this setup if we run Test 4 now that we have a replication factor of 2 we
+will have twice the amount of writes but a nice result is that the IO in the
+nodes holding the primary replicas does not increase when compared to Test 4
+because all of the excess writing is now being done the 32 nodes holding the
+secondary replicas.</p>
+<p>Another fact about replication. If I have a 64 node cluster and create a table
+with 32 shards, 32 nodes will be holding primary replicas and the other nodes do
+not hold any data. If I create another table with 32 shards rethinkdb will
+create the shards in the nodes that where not holding any data, evenly
+distributing the data.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">13. RethinkDB Benchmarks</a><ul>
+<li><a class="reference internal" href="#goal">13.1. Goal</a></li>
+<li><a class="reference internal" href="#terminology">13.2. Terminology</a><ul>
+<li><a class="reference internal" href="#settings">13.2.1. Settings</a></li>
+<li><a class="reference internal" href="#write-units">13.2.2. Write units</a></li>
+<li><a class="reference internal" href="#sharding">13.2.3. Sharding</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tests">13.3. Tests</a><ul>
+<li><a class="reference internal" href="#test-1">13.3.1. Test 1</a></li>
+<li><a class="reference internal" href="#test-2">13.3.2. Test 2</a></li>
+<li><a class="reference internal" href="#test-3">13.3.3. Test 3</a></li>
+<li><a class="reference internal" href="#test-4">13.3.4. Test 4</a></li>
+<li><a class="reference internal" href="#test-5">13.3.5. Test 5</a></li>
+<li><a class="reference internal" href="#test-6">13.3.6. Test 6</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#testing-replication">13.4. Testing replication</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="transaction-validation.html" title="previous chapter">12. Transaction Validation</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/rethinkdb-benchmarks.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, ascribe GmbH.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      
+      |
+      <a href="_sources/rethinkdb-benchmarks.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

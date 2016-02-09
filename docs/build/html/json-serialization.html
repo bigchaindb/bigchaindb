@@ -1,0 +1,147 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>11. JSON Serialization &mdash; Bigchain 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Bigchain 0.0.1 documentation" href="index.html" />
+    <link rel="next" title="12. Transaction Validation" href="transaction-validation.html" />
+    <link rel="prev" title="10. The Transaction, Block and Vote Models" href="models.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="json-serialization">
+<span id="json-serialization"></span><h1>11. JSON Serialization<a class="headerlink" href="#json-serialization" title="Permalink to this headline">¶</a></h1>
+<p>We needed to clearly define how to serialize a JSON object to calculate the hash.</p>
+<p>The serialization should produce the same byte output independently of the architecture running the software. If there are diferences in the serialization, hash validations will fail although the transaction is correct.</p>
+<p>For example, consider the following two methods of serializing <code class="docutils literal"><span class="pre">{'a':</span> <span class="pre">1}</span></code>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c1"># Use a serializer provided by RethinkDB</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">expr</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span><span class="o">.</span><span class="n">to_json</span><span class="p">()</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">connection</span><span class="p">)</span>
+<span class="s1">u&#39;{&quot;a&quot;:1}&#39;</span>
+
+<span class="c1"># Use the serializer in Python&#39;s json module</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+<span class="s1">&#39;{&quot;a&quot;: 1}&#39;</span>
+
+<span class="n">a</span> <span class="o">==</span> <span class="n">b</span>
+<span class="bp">False</span>
+</pre></div>
+</div>
+<p>The results are not the same. We want a serialization and deserialization so that the following is always true:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">deserialize</span><span class="p">(</span><span class="n">serialize</span><span class="p">(</span><span class="n">data</span><span class="p">))</span> <span class="o">==</span> <span class="n">data</span>
+<span class="bp">True</span>
+</pre></div>
+</div>
+<p>After looking at this further, we decided that the python json module is still the best bet because it complies with the RFC. We can specify the encoding, separators used and enforce it to order by the keys to make sure that we obtain maximum interopelability.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">json</span>
+
+<span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">skipkeys</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">ensure_ascii</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+           <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span> <span class="n">separators</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="s1">&#39;:&#39;</span><span class="p">),</span>
+           <span class="n">sort_keys</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">skipkeys</span></code>: With skipkeys <code class="docutils literal"><span class="pre">False</span></code> if the provided keys are not a string the serialization will fail. This way we enforce all keys to be strings</li>
+<li><code class="docutils literal"><span class="pre">ensure_ascii</span></code>: The RFC recommends <code class="docutils literal"><span class="pre">utf-8</span></code> for maximum interoperability. By setting ensure_ascii to <code class="docutils literal"><span class="pre">False</span></code> we allow unicode characters and force the encoding to <code class="docutils literal"><span class="pre">utf-8</span></code>.</li>
+<li><code class="docutils literal"><span class="pre">separators</span></code>: We need to define a standard separator to use in the serialization. We did not do this different implementations could use different separators for serialization resulting in a still valid transaction but with a different hash e. g. an extra whitespace introduced in the serialization would not still create a valid json object but the hash would be different.</li>
+</ul>
+<p>Every time we need to perform some operation on the data like calculating the hash or signing/verifying the transaction, we need to use the previous criteria to serialize the data and then use the <code class="docutils literal"><span class="pre">byte</span></code> representation of the serialized data (if we treat the data as bytes we eliminate possible encoding errors e.g. unicode characters). For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c1"># calculate the hash of a transaction</span>
+<span class="c1"># the transaction is a dictionary</span>
+<span class="n">tx_serialized</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">serialize</span><span class="p">(</span><span class="n">tx</span><span class="p">))</span>
+<span class="n">tx_hash</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha3_256</span><span class="p">(</span><span class="n">tx_serialized</span><span class="p">)</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+
+<span class="c1"># signing a transaction</span>
+<span class="n">tx_serialized</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">serialize</span><span class="p">(</span><span class="n">tx</span><span class="p">))</span>
+<span class="n">signature</span> <span class="o">=</span> <span class="n">sk</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">tx_serialized</span><span class="p">)</span>
+
+<span class="c1"># verify signature</span>
+<span class="n">tx_serialized</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">serialize</span><span class="p">(</span><span class="n">tx</span><span class="p">))</span>
+<span class="n">vk</span><span class="o">.</span><span class="n">verify</span><span class="p">(</span><span class="n">signature</span><span class="p">,</span> <span class="n">tx_serialized</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="models.html" title="previous chapter">10. The Transaction, Block and Vote Models</a></li>
+      <li>Next: <a href="transaction-validation.html" title="next chapter">12. Transaction Validation</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/json-serialization.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, ascribe GmbH.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      
+      |
+      <a href="_sources/json-serialization.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
