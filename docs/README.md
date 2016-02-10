@@ -1,4 +1,4 @@
-Coming soon: Read the nicely-formatted long-form documentation on ReadTheDocs.
+[Documentation on ReadTheDocs](http://bigchaindb.readthedocs.org/)
 
 # The BigchainDB Documentation Strategy
 
