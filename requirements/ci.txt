@@ -1,0 +1,9 @@
+-r common.txt
+
+pytest==2.8.2
+pytest-cov
+coverage
+codecov
+pep8
+pyflakes
+pylint

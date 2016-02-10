@@ -1,0 +1,14 @@
+sudo: required
+language: python
+python: 3.5
+
+services:
+  - docker
+
+before_install:
+  - pip install codecov
+  - docker-compose build
+
+script: docker-compose run --rm bigchain py.test -v --cov=bigchaindb
+
+after_success: codecov
