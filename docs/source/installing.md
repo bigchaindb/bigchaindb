@@ -60,5 +60,5 @@ Install from the source
 $ python setup.py install
 ```
 
-##### Installing with Docker?
+##### Installing with Docker
 Coming soon...
