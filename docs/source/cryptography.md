@@ -19,7 +19,7 @@ tx_hash = hashlib.sha3_256(data).hexdigest()
 
 ## Keys
 
-For signing and veryfing signatures we are using the ECDSA with 192bit key lengths and 
+For signing and verifying signatures we are using the ECDSA with 192bit key lengths and 
 [python-ecdsa](https://github.com/warner/python-ecdsa) as the python implementation.
 
 The public-key or verification key are converted to string and hex encoded before storing them to the blockchain. For example:

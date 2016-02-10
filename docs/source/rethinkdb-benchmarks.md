@@ -8,7 +8,7 @@ The goal was to test RethinkDB scalability properties, to understand its limits,
 
 ### Settings
 
-To test the writing performance of rethinkdb we have a process that inserts a
+To test the writing performance of RethinkDB we have a process that inserts a
 block in the database in an infinite loop
 
 The block is a valid block with small transactions (transactions without any
@@ -23,7 +23,7 @@ In `hard` durability mode, writes are committed to disk before acknowledgments
 are sent; in `soft` mode, writes are acknowledged immediately after being stored
 in memory.
 
-This means that the insert will block until rethinkdb acknowledges that the data
+This means that the insert will block until RethinkDB acknowledges that the data
 was cached. In each server we can start multiple process.
 
 ### Write units
@@ -35,10 +35,10 @@ easier to compare different tests.
 ### Sharding
 
 Sharding in distributed datastores means partitioning a table so that the data
-can be evenly distributed between all nodes in the cluster. In rethinkdb and
+can be evenly distributed between all nodes in the cluster. In RethinkDB and
 most distributed datastores there is a maximum limit of 32 shards per table.
 
-In rethinkdb a `shard` is also called a `primary replica`, since by default the
+In RethinkDB a `shard` is also called a `primary replica`, since by default the
 replication factor is 1. Increasing the replication factor produces `secondary
 replicas` that are used for data redundancy (if a node holding a primary replica
 goes down another node holding a secondary replica of the same data can step up
@@ -48,7 +48,7 @@ For these tests we are using 32 core ec2 instances with SSD storage and 10Gbps
 network connections (`c3.8xlarge`). For the tests we used either 32 or 64 node
 clusters all running on the same aws region.
 
-These tests show rethinkdb performance and what we can expect from the database.
+These tests show RethinkDB performance and what we can expect from the database.
 This does not show the performance of the bigchain
 
 ## Tests
@@ -100,10 +100,10 @@ the machine can handle.
 - **output**: stable 1.4K writes per second
 
 These test produces results similar to previous one. The reason why we don't
-reach the expected output may be because rethinkdb needs time to cache results
+reach the expected output may be because RethinkDB needs time to cache results
 and at some point increasing the number of write units will not result in an
-higher output. Another problem is that as the rethinkdb cache fills (because the
-rethinkdb is not able to flush the data to disk fast enough due to IO
+higher output. Another problem is that as the RethinkDB cache fills (because the
+RethinkDB is not able to flush the data to disk fast enough due to IO
 limitations) the performance will decrease because the processes will take more
 time inserting blocks.
 
@@ -118,7 +118,7 @@ time inserting blocks.
 
 In this case we are increasing the number of nodes in the cluster by 2x. This
 won't have an impact in the write performance because the maximum amount of
-shards per table in rethinkdb is 32 (rethinkdb will probably increase this limit
+shards per table in RethinkDB is 32 (RethinkDB will probably increase this limit
 in the future). What this provides is more CPU power (and storage for replicas,
 more about replication in the next section). We just halved the amount write
 units per node maintaining the same output. The IO in the nodes holding the
@@ -158,7 +158,7 @@ is another advantage of adding more nodes beyond 32.
 
 ## Testing replication
 
-Replication is used for data redundancy. In rethinkdb we are able to specify the
+Replication is used for data redundancy. In RethinkDB we are able to specify the
 number of shards and replicas per table. Data in secondary replicas is no
 directly used, its just a mirror of a primary replica and used in case the node
 holding the primary replica fails.
@@ -177,7 +177,7 @@ shards (primary replicas)
 
 With a replication factor of 2 we will have 64 replicas (32 primary replicas and
 32 secondary replicas). Since we already have 32 nodes holding the 32
-shards/primary replicas rethinkdb uses the other 32 nodes to hold the secondary
+shards/primary replicas RethinkDB uses the other 32 nodes to hold the secondary
 replicas. So in a 64 node cluster with 32 shards and a replication factor of 2,
 32 nodes will be holding the primary replicas and the other 32 nodes will be holding
 the secondary replicas.
@@ -190,6 +190,6 @@ secondary replicas.
 
 Another fact about replication. If I have a 64 node cluster and create a table
 with 32 shards, 32 nodes will be holding primary replicas and the other nodes do
-not hold any data. If I create another table with 32 shards rethinkdb will
+not hold any data. If I create another table with 32 shards RethinkDB will
 create the shards in the nodes that where not holding any data, evenly
 distributing the data.
