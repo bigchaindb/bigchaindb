@@ -18,7 +18,6 @@ Table of Contents
    contributing
    faq
    release-notes
-   software-architecture
    cryptography
    models
    json-serialization
