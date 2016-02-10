@@ -7,7 +7,6 @@ BigchainDB Documentation
 Table of Contents
 -----------------
 
-Note to reviewers of this documentation: For now, *all* documentation files (.rst and .md) are  at the same level in the Table of Contents heirarchy. Later, we can organize them into a more sensible heirarchy.
 
 .. toctree::
    :maxdepth: 5
@@ -20,12 +19,10 @@ Note to reviewers of this documentation: For now, *all* documentation files (.rs
    faq
    release-notes
    software-architecture
-   the-bigchain-class
    cryptography
    models
    json-serialization
-   transaction-validation
-   rethinkdb-benchmarks
+   developer-interface
 
 
 Indices and Tables

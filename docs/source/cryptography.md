@@ -17,21 +17,11 @@ data = "message"
 tx_hash = hashlib.sha3_256(data).hexdigest()
 ```
 
-## Keys
+## Signature algorithm and keys
 
-For signing and veryfing signatures we are using the ECDSA with 192bit key lengths and 
-[python-ecdsa](https://github.com/warner/python-ecdsa) as the python implementation.
+The signature algorithm used by BigchainDB is ECDSA with the secp256k1 curve
+using the python [cryptography](https://cryptography.io/en/latest/) module.
 
-The public-key or verification key are converted to string and hex encoded before storing them to the blockchain. For example:
-
-```python
-import binascii
-from ecdsa import SigningKey
-
-# generate signing key in hex encoded form
-sk = SigningKey.generate()
-sk_hex = binascii.hexlify(sk.to_string())
-
-# get signing key from hex
-sk = SigningKey.from_string(binascii.unhexlify(sk_hex))
-```
+The private key is the base58 encoded hexadecimal representation of private number.
+The public key is the base58 encoded hexadecimal representation of the
+compressed public numbers.

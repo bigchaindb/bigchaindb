@@ -4,7 +4,7 @@ Transactions, blocks and votes are represented using JSON documents with the fol
 
 ## The Transaction Model
 
-```
+```json
 {
     "id": "<sha3 hash>",
     "transaction": {
@@ -12,7 +12,7 @@ Transactions, blocks and votes are represented using JSON documents with the fol
         "new_owner": "<pub-key>",
         "input": "<sha3 hash>",
         "operation": "<string>",
-        "timestamp": "<rethinkdb timestamp>",
+        "timestamp": "<timestamp>",
         "data": {
             "hash": "<sha3 hash>",
             ...
@@ -35,7 +35,7 @@ This can be changed in the future to allow multiple inputs per transaction.
 - `operation`: String representation of the operation being performed (REGISTER, TRANSFER, ...) this will define how
 the transactions should be validated
 - `timestamp`: Time of creation of the transaction in UTC
-- `data`: Json object describing the asset (digital content). It contains at least the field `hash` which is a 
+- `data`: JSON object describing the asset (digital content). It contains at least the field `hash` which is a 
 sha3 hash of the digital content.
 - `signature`: ECDSA signature of the transaction with the `current_owner` private key
 
@@ -59,7 +59,7 @@ Still to be defined when new blocks are created (after x number of transactions,
 or both).
 A block contains a group of transactions and includes the hash of the hash of the previous block to build the chain.
 
-- `id`: sha3 hash of the current block. This is also a rethinkdb primary key, this way we make sure that all blocks are unique.
+- `id`: sha3 hash of the current block. This is also a RethinkDB primary key, this way we make sure that all blocks are unique.
 - `block`: The actual block
     - `timestamp`: timestamp when the block was created
     - `transactions`: the list of transactions included in the block
@@ -85,7 +85,7 @@ This is the structure that each node will append to the block `votes` list.
         "previous_block": "<id of the block previous to this one>",
         "is_block_valid": "<true|false>",
         "invalid_reason": "<None|DOUBLE_SPEND|TRANSACTIONS_HASH_MISMATCH|NODES_PUBKEYS_MISMATCH",
-        "timestamp": "<rethinkdb timestamp of the voting action>"
+        "timestamp": "<timestamp of the voting action>"
     },
     "signature": "<ECDSA signature of vote block>"
 }
