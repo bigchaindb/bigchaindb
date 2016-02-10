@@ -18,7 +18,7 @@ tests_require = [
 
 setup(
     name='BigchainDB',
-    version='0.0.0',
+    version='0.1.0',
     description='BigchainDB: A Scalable Blockchain Database',
     long_description=__doc__,
     url='https://github.com/BigchainDB/bigchaindb/',
