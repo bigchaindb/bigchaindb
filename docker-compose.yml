@@ -1,0 +1,23 @@
+rethinkdb:
+  image: rethinkdb
+  ports:
+    - "9999:8080"
+    - "28015"
+  volumes_from:
+    - rethinkdb-data
+
+rethinkdb-data:
+  image: rethinkdb
+  volumes:
+    - /data
+  command: "true"
+
+bigchain:
+  build: .
+  volumes:
+    - ./:/usr/src/app/
+  links:
+    - rethinkdb
+  environment:
+    BIGCHAIN_DATABASE_HOST: rethinkdb
+  command: bigchain start
