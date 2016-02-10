@@ -7,7 +7,7 @@ BigchainDB Documentation
 Table of Contents
 -----------------
 
-Note to reviewers of this documentation: For now, *all* documentation files (.rst and .md) are  at the same level in the Table of Contents heirarchy. Later, we can organize them into a more sensible heirarchy.
+Note to reviewers of this documentation: For now, *all* documentation files (.rst and .md) are  at the same level in the Table of Contents hierarchy. Later, we can organize them into a more sensible hierarchy.
 
 .. toctree::
    :maxdepth: 5
