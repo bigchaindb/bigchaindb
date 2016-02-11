@@ -12,7 +12,7 @@ rethinkdb-data:
     - /data
   command: "true"
 
-bigchain:
+bigchaindb:
   build: .
   volumes:
     - ./:/usr/src/app/
@@ -20,4 +20,4 @@ bigchain:
     - rethinkdb
   environment:
     BIGCHAIN_DATABASE_HOST: rethinkdb
-  command: bigchain start
+  command: bigchaindb start
