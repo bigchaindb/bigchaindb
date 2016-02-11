@@ -1,15 +1,14 @@
-sudo: false
+sudo: required
 language: python
 python: 3.5
 
-env:
-  - TOX_ENV=py34
-  - TOX_ENV=py35
+services:
+  - docker
 
-install:
-  - pip install tox
+before_install:
+  - pip install codecov
+  - docker-compose build
 
-script: tox -e $TOX_ENV
+script: docker-compose run --rm bigchain py.test -v --cov=bigchaindb
 
-after_success:
-  - codecov
+after_success: codecov
