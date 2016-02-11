@@ -9,6 +9,6 @@ before_install:
   - pip install codecov
   - docker-compose build
 
-script: docker-compose run --rm bigchain py.test -v --cov=bigchaindb
+script: docker-compose run --rm bigchaindb py.test -v --cov=bigchaindb
 
 after_success: codecov
