@@ -20,7 +20,10 @@ import collections
 import bigchaindb
 
 logger = logging.getLogger(__name__)
-CONFIG_DEFAULT_PATH = os.path.join(os.path.expanduser('~'), '.bigchaindb')
+CONFIG_DEFAULT_PATH = os.environ.setdefault(
+    'BIGCHAINDB_CONFIG_PATH',
+    os.path.join(os.path.expanduser('~'), '.bigchaindb'),
+)
 
 
 # Thanks Alex <3

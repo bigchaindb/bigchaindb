@@ -1,0 +1,9 @@
+.cache/
+.coverage
+.eggs/
+.git/
+.gitignore
+.ropeproject/
+.travis.yml
+BigchainDB.egg-info/
+dist/
