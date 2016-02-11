@@ -37,7 +37,6 @@ setup(
         'rethinkdb==2.2.0.post1',
         'pysha3==0.3',
         'pytz==2015.7',
-        'tornado==4.3',
         'cryptography==1.2.1',
         'statsd==3.2.1',
         'python-rapidjson==0.0.6',
