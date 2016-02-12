@@ -15,13 +15,13 @@ Table of Contents
    installing
    getting-started
    admin
-   contributing
-   faq
-   release-notes
    cryptography
    models
    json-serialization
    developer-interface
+   contributing
+   faq
+   release-notes
 
 
 Indices and Tables
