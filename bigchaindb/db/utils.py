@@ -22,7 +22,7 @@ def init():
     dbname = bigchaindb.config['database']['name']
 
     if r.db_list().contains(dbname).run(conn):
-        raise exceptions.DatabaseAlreadyExistsException('Database `{}` already exists'.format(dbname))
+        raise exceptions.DatabaseAlreadyExists('Database `{}` already exists'.format(dbname))
 
     logger.info('Create:')
     logger.info(' - database `%s`', dbname)

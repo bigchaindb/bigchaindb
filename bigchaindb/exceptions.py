@@ -19,6 +19,6 @@ class InvalidHash(Exception):
 class InvalidSignature(Exception):
     """Raised if there was an error checking the signature for a particular operation"""
 
-class DatabaseAlreadyExistsException(Exception):
+class DatabaseAlreadyExists(Exception):
     """Raised when trying to create the database but the db is already there"""
 
