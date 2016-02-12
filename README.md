@@ -1,6 +1,7 @@
 # BigchainDB
 
 [![Build Status](https://travis-ci.org/bigchaindb/bigchaindb.svg?branch=develop)](https://travis-ci.org/bigchaindb/bigchaindb)
+[![codecov.io](https://codecov.io/github/bigchaindb/bigchaindb/coverage.svg?branch=develop)](https://codecov.io/github/bigchaindb/bigchaindb?branch=develop)
 
 ## Documentation
 
