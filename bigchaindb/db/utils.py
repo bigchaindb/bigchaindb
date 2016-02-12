@@ -1,7 +1,9 @@
 """Utils to initialize and drop the database."""
 
 import logging
+
 import rethinkdb as r
+
 import bigchaindb
 from bigchaindb import exceptions
 
