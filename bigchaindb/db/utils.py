@@ -1,16 +1,12 @@
 """Utils to initialize and drop the database."""
 
 import logging
-
 import rethinkdb as r
-
 import bigchaindb
+from bigchaindb import exceptions
 
 
 logger = logging.getLogger(__name__)
-
-class DatabaseAlreadyExistsException(Exception):
-    pass
 
 def get_conn():
     '''Get the connection to the database.'''
@@ -24,7 +20,7 @@ def init():
     dbname = bigchaindb.config['database']['name']
 
     if r.db_list().contains(dbname).run(conn):
-        raise DatabaseAlreadyExistsException('Database `{}` already exists'.format(dbname))
+        raise exceptions.DatabaseAlreadyExistsException('Database `{}` already exists'.format(dbname))
 
     logger.info('Create:')
     logger.info(' - database `%s`', dbname)
