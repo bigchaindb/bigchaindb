@@ -25,8 +25,6 @@ def setup_database(request):
         r.db_create('bigchain_test').run()
     except r.ReqlOpFailedError as e:
         if e.message == 'Database `bigchain_test` already exists.':
-            print(e.message)
-            print('Deleting `bigchain_test` database.')
             r.db_drop('bigchain_test').run()
             r.db_create('bigchain_test').run()
         else:
@@ -52,7 +50,12 @@ def setup_database(request):
     def fin():
         print('Deleting `bigchain_test` database')
         get_conn().repl()
-        r.db_drop('bigchain_test').run()
+        try:
+            r.db_drop('bigchain_test').run()
+        except r.ReqlOpFailedError as e:
+            if e.message != 'Database `bigchain_test` does not exist.':
+                raise
+
         print('Finished deleting `bigchain_test`')
 
     request.addfinalizer(fin)
@@ -62,8 +65,12 @@ def setup_database(request):
 def cleanup_tables(request):
     def fin():
         get_conn().repl()
-        r.db('bigchain_test').table('bigchain').delete().run()
-        r.db('bigchain_test').table('backlog').delete().run()
+        try:
+            r.db('bigchain_test').table('bigchain').delete().run()
+            r.db('bigchain_test').table('backlog').delete().run()
+        except r.ReqlOpFailedError as e:
+            if e.message != 'Database `bigchain_test` does not exist.':
+                raise
 
     request.addfinalizer(fin)
 

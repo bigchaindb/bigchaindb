@@ -22,3 +22,6 @@ class InvalidSignature(Exception):
 class DatabaseAlreadyExists(Exception):
     """Raised when trying to create the database but the db is already there"""
 
+class DatabaseDoesNotExist(Exception):
+    """Raised when trying to delete the database but the db is not there"""
+
