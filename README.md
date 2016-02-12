@@ -1,6 +1,9 @@
 # BigchainDB
 
-[![Build Status](https://travis-ci.org/bigchaindb/bigchaindb.svg?branch=develop)](https://travis-ci.org/bigchaindb/bigchaindb)
+[![PyPI](https://img.shields.io/pypi/v/bigchaindb.svg)](https://pypi.python.org/pypi/BigchainDB)
+[![Travis branch](https://img.shields.io/travis/bigchaindb/bigchaindb/develop.svg)](https://travis-ci.org/bigchaindb/bigchaindb)
+[![Codecov branch](https://img.shields.io/codecov/c/github/codecov/bigchaindb/develop.svg)](https://codecov.io/github/bigchaindb/bigchaindb?branch=develop)
+[![Documentation Status](https://readthedocs.org/projects/bigchaindb/badge/?version=develop)](http://bigchaindb.readthedocs.org/en/develop/?badge=develop)
 
 ## Documentation
 

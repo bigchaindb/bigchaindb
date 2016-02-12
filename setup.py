@@ -6,6 +6,16 @@ For full docs visit https://bigchaindb.readthedocs.org
 """
 from setuptools import setup
 
+tests_require = [
+    'pytest',
+    'coverage',
+    'pep8',
+    'pyflakes',
+    'pylint',
+    'pytest',
+    'pytest-cov',
+]
+
 setup(
     name='BigchainDB',
     version='0.0.0',
@@ -45,5 +55,6 @@ setup(
         'bitcoin==1.1.42',
     ],
     setup_requires=['pytest-runner'],
-    tests_require=['pytest'],
+    tests_require=tests_require,
+    extras_require={'test': tests_require},
 )
