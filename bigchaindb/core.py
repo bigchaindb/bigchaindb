@@ -7,6 +7,7 @@ import rapidjson
 from datetime import datetime
 
 import bigchaindb
+import bigchaindb.config_utils
 from bigchaindb import exceptions
 from bigchaindb.crypto import hash_data, PublicKey, PrivateKey, generate_key_pair
 
