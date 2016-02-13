@@ -15,6 +15,7 @@ from bigchaindb.crypto import hash_data, PublicKey, PrivateKey, generate_key_pai
 class GenesisBlockAlreadyExistsError(Exception):
     pass
 
+
 class KeypairNotFoundException(Exception):
     pass
 
