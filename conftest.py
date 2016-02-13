@@ -8,8 +8,6 @@ Tasks:
 
 import pytest
 
-import bigchaindb
-
 
 config = {
     'database': {
