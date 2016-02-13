@@ -17,6 +17,13 @@ from ..conftest import config, USER_PRIVATE_KEY, USER_PUBLIC_KEY
 
 NOOP = None
 
+
+@pytest.fixture(autouse=True)
+def restore_config(request, node_config):
+    import bigchaindb.config_utils
+    bigchaindb.config_utils.dict_config(node_config)
+
+
 @pytest.fixture(scope='module', autouse=True)
 def setup_database(request):
     print('Initializing test db')
