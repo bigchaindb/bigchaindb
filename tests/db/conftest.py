@@ -12,8 +12,6 @@ import rethinkdb as r
 from bigchaindb import Bigchain
 from bigchaindb.db import get_conn
 
-from ..conftest import config, USER_PRIVATE_KEY, USER_PUBLIC_KEY
-
 
 NOOP = None
 
