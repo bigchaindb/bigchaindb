@@ -9,7 +9,6 @@ Tasks:
 import pytest
 
 import bigchaindb
-import bigchaindb.config_utils
 
 
 config = {
@@ -27,23 +26,22 @@ USER_PRIVATE_KEY = 'GmRZxQdQv7tooMijXytQkexKuFN6mJocciJarAmMwTX2'
 USER_PUBLIC_KEY = 'r3cEu8GNoz8rYpNJ61k7GqfR8VEvdUbtyHce8u1kaYwh'
 
 
-@pytest.fixture(scope='function', autouse=True)
-def restore_config(request):
-    bigchaindb.config_utils.dict_config(config)
+@pytest.fixture
+def restore_config(request, node_config):
+    import bigchaindb.config_utils
+    bigchaindb.config_utils.dict_config(node_config)
 
 
-# FIXME: make this fixtures work :)
-# @pytest.fixture
-# def config():
-#     return config
-#
-#
-# @pytest.fixture
-# def user_private_key():
-#     return USER_PRIVATE_KEY
-#
-#
-# @pytest.fixture
-# def user_public_key():
-#     return USER_PUBLIC_KEY
-#
+@pytest.fixture
+def node_config():
+    return config
+
+
+@pytest.fixture
+def user_private_key():
+    return USER_PRIVATE_KEY
+
+
+@pytest.fixture
+def user_public_key():
+    return USER_PUBLIC_KEY
