@@ -13,10 +13,9 @@ from bigchaindb.voter import Voter
 from bigchaindb.block import Block
 
 import bigchaindb.config_utils
-from ..conftest import USER_PUBLIC_KEY
 
 
-def create_inputs(amount=1, b=None):
+def create_inputs(user_public_key, amount=1, b=None):
     # 1. create the genesis block
     b = b or Bigchain()
     try:
@@ -27,7 +26,7 @@ def create_inputs(amount=1, b=None):
     # 2. create block with transactions for `USER` to spend
     transactions = []
     for i in range(amount):
-        tx = b.create_transaction(b.me, USER_PUBLIC_KEY, None, 'CREATE')
+        tx = b.create_transaction(b.me, user_public_key, None, 'CREATE')
         tx_signed = b.sign_transaction(tx, b.me_private)
         transactions.append(tx_signed)
         b.write_transaction(tx_signed)
@@ -35,6 +34,11 @@ def create_inputs(amount=1, b=None):
     block = b.create_block(transactions)
     b.write_block(block, durability='hard')
     return block
+
+
+@pytest.fixture
+def inputs(user_public_key):
+    return create_inputs(user_public_key)
 
 
 @pytest.mark.skipif(reason='Some tests throw a ResourceWarning that might result in some weird '
@@ -86,8 +90,8 @@ class TestBigchainApi(object):
         tx = b.create_transaction('a', 'b', 'c', 'd')
         assert b.deserialize(b.serialize(tx)) == tx
 
+    @pytest.mark.usefixtures('inputs')
     def test_write_transaction(self, b, user_public_key, user_private_key):
-        create_inputs()
         input_tx = b.get_owned_ids(user_public_key).pop()
         tx = b.create_transaction(user_public_key, 'b', input_tx, 'd')
         tx_signed = b.sign_transaction(tx, user_private_key)
@@ -100,8 +104,8 @@ class TestBigchainApi(object):
         assert response['replaced'] == 0
         assert response['inserted'] == 1
 
+    @pytest.mark.usefixtures('inputs')
     def test_read_transaction(self, b, user_public_key, user_private_key):
-        create_inputs()
         input_tx = b.get_owned_ids(user_public_key).pop()
         tx = b.create_transaction(user_public_key, 'b', input_tx, 'd')
         tx_signed = b.sign_transaction(tx, user_private_key)
@@ -114,8 +118,8 @@ class TestBigchainApi(object):
         response = b.get_transaction(tx_signed["id"])
         assert b.serialize(tx_signed) == b.serialize(response)
 
+    @pytest.mark.usefixtures('inputs')
     def test_assign_transaction_one_node(self, b, user_public_key, user_private_key):
-        create_inputs()
         input_tx = b.get_owned_ids(user_public_key).pop()
         tx = b.create_transaction(user_public_key, 'b', input_tx, 'd')
         tx_signed = b.sign_transaction(tx, user_private_key)
@@ -131,7 +135,7 @@ class TestBigchainApi(object):
         # create 5 federation nodes
         for _ in range(5):
             b.federation_nodes.append(b.generate_keys()[1])
-        create_inputs(20, b=b)
+        create_inputs(user_public_key, amount=20, b=b)
 
         # test assignee for several transactions
         for _ in range(20):
@@ -146,8 +150,8 @@ class TestBigchainApi(object):
             # check if the assignee is the federation_nodes
             assert response['assignee'] in b.federation_nodes
 
+    @pytest.mark.usefixtures('inputs')
     def test_genesis_block(self, b):
-        create_inputs()
         response = list(r.table('bigchain')
                         .filter(r.row['block_number'] == 0)
                         .run(b.conn))[0]
@@ -280,8 +284,8 @@ class TestTransactionValidation(object):
         assert excinfo.value.args[0] == 'input `c` does not exist in the bigchain'
         assert b.is_valid_transaction(tx) == False
 
+    @pytest.mark.usefixtures('inputs')
     def test_non_create_valid_input_wrong_owner(self, b, user_public_key):
-        create_inputs()
         valid_input = b.get_owned_ids(user_public_key).pop()
         tx = b.create_transaction('a', 'b', valid_input, 'c')
         with pytest.raises(exceptions.TransactionOwnerError) as excinfo:
@@ -290,8 +294,8 @@ class TestTransactionValidation(object):
         assert excinfo.value.args[0] == 'current_owner `a` does not own the input `{}`'.format(valid_input)
         assert b.is_valid_transaction(tx) == False
 
+    @pytest.mark.usefixtures('inputs')
     def test_non_create_double_spend(self, b, user_public_key, user_private_key):
-        create_inputs()
         input_valid = b.get_owned_ids(user_public_key).pop()
         tx_valid = b.create_transaction(user_public_key, 'b', input_valid, 'd')
         tx_valid_signed = b.sign_transaction(tx_valid, user_private_key)
@@ -309,8 +313,8 @@ class TestTransactionValidation(object):
         assert excinfo.value.args[0] == 'input `{}` was already spent'.format(input_valid)
         assert b.is_valid_transaction(tx_double_spend) == False
 
+    @pytest.mark.usefixtures('inputs')
     def test_wrong_transaction_hash(self, b, user_public_key):
-        create_inputs()
         input_valid = b.get_owned_ids(user_public_key).pop()
         tx_valid = b.create_transaction(user_public_key, 'b', input_valid, 'd')
 
@@ -320,8 +324,8 @@ class TestTransactionValidation(object):
             b.validate_transaction(tx_valid)
         assert b.is_valid_transaction(tx_valid) == False
 
+    @pytest.mark.usefixtures('inputs')
     def test_wrong_signature(self, b, user_public_key):
-        create_inputs()
         input_valid = b.get_owned_ids(user_public_key).pop()
         tx_valid = b.create_transaction(user_public_key, 'b', input_valid, 'd')
 
@@ -338,8 +342,8 @@ class TestTransactionValidation(object):
         assert tx_signed == b.validate_transaction(tx_signed)
         assert tx_signed == b.is_valid_transaction(tx_signed)
 
+    @pytest.mark.usefixtures('inputs')
     def test_valid_non_create_transaction(self, b, user_public_key, user_private_key):
-        create_inputs()
         input_valid = b.get_owned_ids(user_public_key).pop()
         tx_valid = b.create_transaction(user_public_key, 'b', input_valid, 'd')
 
@@ -359,9 +363,9 @@ class TestBlockValidation(object):
             b.validate_block(block)
 
     @pytest.mark.skipif(reason='Separated tx validation from block creation.')
+    @pytest.mark.usefixtures('inputs')
     def test_invalid_transactions_in_block(self, b, user_public_key, ):
         # invalid transaction
-        create_inputs()
         valid_input = b.get_owned_ids(user_public_key).pop()
         tx_invalid = b.create_transaction('a', 'b', valid_input, 'c')
 
@@ -400,8 +404,8 @@ class TestBlockValidation(object):
         with pytest.raises(exceptions.InvalidHash):
             b.validate_block(block)
 
+    @pytest.mark.usefixtures('inputs')
     def test_valid_block(self, b, user_public_key, user_private_key):
-        create_inputs()
         # create valid transaction
         input_valid = b.get_owned_ids(user_public_key).pop()
         tx_valid = b.create_transaction(user_public_key, 'b', input_valid, 'd')
