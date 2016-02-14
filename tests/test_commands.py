@@ -53,3 +53,9 @@ def test_bigchain_show_config(capsys, mock_file_config):
     pprint(config)
     expected_outout_config, _ = capsys.readouterr()
     assert output_config == expected_outout_config
+
+
+def test_bigchain_run_init_when_db_exists(mock_file_config, mock_db_init_with_existing_db):
+    from bigchaindb.commands.bigchain import run_init
+    args = Namespace(config=None)
+    run_init(args)

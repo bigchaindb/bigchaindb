@@ -64,7 +64,14 @@ def run_configure(args, skip_if_exists=False):
 def run_init(args):
     """Initialize the database"""
     bigchaindb.config_utils.file_config(args.config)
-    db.init()
+    # TODO Provide mechanism to:
+    # 1. prompt the user to inquire whether they wish to drop the db
+    # 2. force the init, (e.g., via -f flag)
+    try:
+        db.init()
+    except DatabaseAlreadyExists:
+        print('The database already exists.')
+        print('If you wish to re-initialize it, first drop it.')
 
 
 def run_drop(args):
