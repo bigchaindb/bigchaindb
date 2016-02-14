@@ -17,6 +17,12 @@ def mock_file_config(monkeypatch):
 
 
 @pytest.fixture
+def mock_write_config(monkeypatch):
+    from bigchaindb import config_utils
+    monkeypatch.setattr(config_utils, 'write_config', lambda *args: None)
+
+
+@pytest.fixture
 def mock_db_init_with_existing_db(monkeypatch):
     from bigchaindb import db
     from bigchaindb.exceptions import DatabaseAlreadyExists
@@ -41,6 +47,21 @@ def mock_rethink_db_drop(monkeypatch):
                 return
         return MockDropped()
     monkeypatch.setattr('rethinkdb.db_drop', mockreturn)
+
+
+@pytest.fixture
+def mock_generate_key_pair(monkeypatch):
+    from bigchaindb import crypto
+    monkeypatch.setattr(crypto, 'generate_key_pair', lambda: ('privkey', 'pubkey'))
+
+
+@pytest.fixture
+def mock_bigchaindb_backup_config(monkeypatch):
+    config = {
+        'keypair': {},
+        'database': {'host': 'host', 'port': 12345, 'name': 'adbname'},
+    }
+    monkeypatch.setattr('bigchaindb._config', config)
 
 
 def test_bigchain_run_start(mock_run_configure, mock_file_config,
@@ -82,4 +103,19 @@ def test_run_configure_when_config_exists_and_skipping(monkeypatch):
     monkeypatch.setattr('os.path.exists', lambda path: True)
     args = Namespace(config='foo', yes=True)
     return_value = run_configure(args, skip_if_exists=True)
+    assert return_value is None
+
+
+# TODO Beware if you are putting breakpoints in there, and using the '-s'
+# switch with pytest. It will just hang. Seems related to the monkeypatching of
+# input.
+def test_run_configure_when_config_does_not_exist(monkeypatch,
+                                                  mock_write_config,
+                                                  mock_generate_key_pair,
+                                                  mock_bigchaindb_backup_config):
+    from bigchaindb.commands.bigchain import run_configure
+    monkeypatch.setattr('os.path.exists', lambda path: False)
+    monkeypatch.setattr('builtins.input', lambda question: '\n')
+    args = Namespace(config='foo', yes=True)
+    return_value = run_configure(args)
     assert return_value is None
