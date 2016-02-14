@@ -33,6 +33,16 @@ def mock_processes_start(monkeypatch):
     monkeypatch.setattr(Processes, 'start', lambda *args: None)
 
 
+@pytest.fixture
+def mock_rethink_db_drop(monkeypatch):
+    def mockreturn(dbname):
+        class MockDropped(object):
+            def run(self, conn):
+                return
+        return MockDropped()
+    monkeypatch.setattr('rethinkdb.db_drop', mockreturn)
+
+
 def test_bigchain_run_start(mock_run_configure, mock_file_config,
                             mock_processes_start, mock_db_init_with_existing_db):
     from bigchaindb.commands.bigchain import run_start
@@ -59,3 +69,9 @@ def test_bigchain_run_init_when_db_exists(mock_file_config, mock_db_init_with_ex
     from bigchaindb.commands.bigchain import run_init
     args = Namespace(config=None)
     run_init(args)
+
+
+def test_drop_existing_db(mock_file_config, mock_rethink_db_drop):
+    from bigchaindb.commands.bigchain import run_drop
+    args = Namespace(config=None, yes=True)
+    run_drop(args)
