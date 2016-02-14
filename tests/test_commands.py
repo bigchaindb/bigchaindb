@@ -75,3 +75,11 @@ def test_drop_existing_db(mock_file_config, mock_rethink_db_drop):
     from bigchaindb.commands.bigchain import run_drop
     args = Namespace(config=None, yes=True)
     run_drop(args)
+
+
+def test_run_configure_when_config_exists_and_skipping(monkeypatch):
+    from bigchaindb.commands.bigchain import run_configure
+    monkeypatch.setattr('os.path.exists', lambda path: True)
+    args = Namespace(config='foo', yes=True)
+    return_value = run_configure(args, skip_if_exists=True)
+    assert return_value is None
