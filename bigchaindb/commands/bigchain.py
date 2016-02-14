@@ -78,9 +78,9 @@ def run_start(args):
         db.init()
     except DatabaseAlreadyExists:
         pass
-    p = Processes()
+    processes = Processes()
     logger.info('Start bigchaindb main process')
-    p.start()
+    processes.start()
 
 
 def main():
