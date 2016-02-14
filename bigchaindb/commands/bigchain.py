@@ -8,6 +8,7 @@ import argparse
 import bigchaindb
 import bigchaindb.config_utils
 from bigchaindb import db
+from bigchaindb.exceptions import DatabaseAlreadyExists
 from bigchaindb.commands.utils import base_parser, start
 from bigchaindb.processes import Processes
 from bigchaindb.crypto import generate_key_pair
@@ -75,7 +76,7 @@ def run_start(args):
     bigchaindb.config_utils.file_config(args.config)
     try:
         db.init()
-    except db.DatabaseAlreadyExistsException:
+    except DatabaseAlreadyExists:
         pass
     p = Processes()
     logger.info('Start bigchaindb main process')
