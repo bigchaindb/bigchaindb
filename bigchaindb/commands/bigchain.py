@@ -36,13 +36,12 @@ def run_configure(args, skip_if_exists=False):
         skip_if_exists (bool): skip the function if a conf file already exists
     """
     config_path = args.config or bigchaindb.config_utils.CONFIG_DEFAULT_PATH
-    proceed = args.yes
     config_file_exists = os.path.exists(config_path)
 
     if config_file_exists and skip_if_exists:
         return
 
-    if config_file_exists and not proceed:
+    if config_file_exists and not args.yes:
         want = input('Config file `{}` exists, do you want to override it? '
                      '(cannot be undone) [y/n]: '.format(config_path))
         if not want:
