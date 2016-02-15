@@ -22,17 +22,34 @@ BigchainDB has some OS-level dependencies. In particular, you need to install th
 On Ubuntu 14.04, we found that the following was enough (YMMV):
 ```shell
 $ sudo apt-get update
-$ sudo apt-get install libffi-dev g++ libssl-dev
+$ sudo apt-get install libffi-dev g++ libssl-dev python3-dev
 ```
 
 With OS-level dependencies installed, you can install BigchainDB with `pip` or from source.
 
 ### How to Install BigchainDB with `pip`
 
-BigchainDB is distributed as a Python package on PyPI. Installing is simple using `pip`:
+BigchainDB is distributed as a Python package on PyPI so you can install it using `pip`. First, make sure you have a version of `pip` installed for Python 3.4+:
+```shell
+$ pip -V
+```
+
+If it says the associated Python version is Python 3.4+, then you can do:
 ```shell
 $ pip install bigchaindb
 ```
+
+If it says that `pip` isn't installed, or it says `pip` is associated with a Python version less then 3.4, then you must install a `pip` version associated with Python 3.4+. See [the `pip` installation instructions](https://pip.pypa.io/en/stable/installing/).
+
+On Ubuntu 14.04, we found that this works:
+```shell
+$ sudo apt-get python3-pip
+$ sudo pip3 install bigchaindb
+```
+
+(It might not be necessary to use `sudo` in the last command above, but we found that it _was_ necessary for Ubuntu 14.04 on an Amazon Web Services (AWS) instance.)
+
+In general, once you have a version of `pip` associated with Python 3.4+, then you can install BigchainDB using `pip install bigchaindb` or `pipVER install bigchaindb` where `pipVER` is replaced by whatever you must use to call a version of `pip` associated with Python 3.4+ (e.g. `pip3`).
 
 ### How to Install BigchainDB from Source
 
