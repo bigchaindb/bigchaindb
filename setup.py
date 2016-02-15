@@ -16,6 +16,11 @@ tests_require = [
     'pytest-cov',
 ]
 
+dev_require = [
+    'ipdb',
+    'ipython',
+]
+
 setup(
     name='BigchainDB',
     version='0.1.2',
@@ -56,5 +61,8 @@ setup(
     ],
     setup_requires=['pytest-runner'],
     tests_require=tests_require,
-    extras_require={'test': tests_require},
+    extras_require={
+        'test': tests_require,
+        'dev':  dev_require + tests_require,
+    },
 )

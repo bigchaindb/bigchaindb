@@ -15,9 +15,16 @@ rethinkdb-data:
 bigchaindb:
   build: .
   volumes:
-    - ./:/usr/src/app/
+    - ./bigchaindb:/usr/src/app/bigchaindb
+    - ./tests:/usr/src/app/tests
+    - ./docs:/usr/src/app/docs
+    - ./setup.py:/usr/src/app/setup.py
+    - ./setup.cfg:/usr/src/app/setup.cfg
+    - ./pytest.ini:/usr/src/app/pytest.ini
+    - ~/.bigchaindb_docker:/root/.bigchaindb_docker
   links:
     - rethinkdb
   environment:
     BIGCHAIN_DATABASE_HOST: rethinkdb
+    BIGCHAINDB_CONFIG_PATH: /root/.bigchaindb_docker/config
   command: bigchaindb start
