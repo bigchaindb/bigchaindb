@@ -12,10 +12,15 @@ import rethinkdb as r
 from bigchaindb import Bigchain
 from bigchaindb.db import get_conn
 
-from ..conftest import config, USER_PRIVATE_KEY, USER_PUBLIC_KEY
-
 
 NOOP = None
+
+
+@pytest.fixture(autouse=True)
+def restore_config(request, node_config):
+    from bigchaindb import config_utils
+    config_utils.dict_config(node_config)
+
 
 @pytest.fixture(scope='module', autouse=True)
 def setup_database(request):

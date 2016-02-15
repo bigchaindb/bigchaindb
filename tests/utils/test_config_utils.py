@@ -3,7 +3,6 @@ import copy
 import pytest
 
 import bigchaindb
-from bigchaindb import config_utils
 
 
 ORIGINAL_CONFIG = copy.deepcopy(bigchaindb.config)
@@ -15,6 +14,7 @@ def clean_config():
 
 
 def test_bigchain_instance_is_initialized_when_conf_provided():
+    from bigchaindb import config_utils
     assert 'CONFIGURED' not in bigchaindb.config
 
     config_utils.dict_config({'keypair': {'public': 'a', 'private': 'b'}})
@@ -27,6 +27,7 @@ def test_bigchain_instance_is_initialized_when_conf_provided():
 
 
 def test_bigchain_instance_raises_when_not_configured(monkeypatch):
+    from bigchaindb import config_utils
     assert 'CONFIGURED' not in bigchaindb.config
 
     # We need to disable ``bigchaindb.config_utils.autoconfigure`` to avoid reading
@@ -35,4 +36,3 @@ def test_bigchain_instance_raises_when_not_configured(monkeypatch):
 
     with pytest.raises(bigchaindb.core.KeypairNotFoundException):
         bigchaindb.Bigchain()
-

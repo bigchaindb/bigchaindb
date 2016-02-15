@@ -7,8 +7,6 @@ from bigchaindb import Bigchain
 from bigchaindb.voter import Voter, BlockStream
 from bigchaindb.crypto import PublicKey
 
-from .conftest import USER_PUBLIC_KEY
-
 
 class TestBigchainVoter(object):
 
@@ -50,13 +48,13 @@ class TestBigchainVoter(object):
         assert PublicKey(b.me).verify(b.serialize(vote['vote']), vote['signature']) == True
 
 
-    def test_invalid_block_voting(self, b):
+    def test_invalid_block_voting(self, b, user_public_key):
         # create queue and voter
         q_new_block = mp.Queue()
         voter = Voter(q_new_block)
 
         # create transaction
-        transaction = b.create_transaction(b.me, USER_PUBLIC_KEY, None, 'CREATE')
+        transaction = b.create_transaction(b.me, user_public_key, None, 'CREATE')
         transaction_signed = b.sign_transaction(transaction, b.me_private)
 
         genesis = b.create_genesis_block()
