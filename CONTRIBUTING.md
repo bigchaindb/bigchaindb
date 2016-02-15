@@ -33,7 +33,7 @@ In your web browser, go to [the BigchainDB repository on GitHub](https://github.
 ### Step 2 - Clone Your Fork
 
 (This only has to be done once.) In your local terminal, use Git to clone _your_ `bigchaindb` repository to your local computer. Also add the original GitHub bigchaindb/bigchaindb repository as a remote named `upstream` (a convention):
-```bash
+```text
 git clone git@github.com:your-github-username/bigchaindb.git
 cd bigchaindb
 git add upstream git@github.com:BigchainDB/bigchaindb.git
@@ -42,7 +42,7 @@ git add upstream git@github.com:BigchainDB/bigchaindb.git
 ### Step 3 - Fetch and Merge the Latest from `upstream/develop`
 
 Switch to the `develop` branch locally, fetch all `upstream` branches, and merge the just-fetched `upstream/develop` branch with the local `develop` branch:
-```bash
+```text
 git checkout develop
 git fetch upstream
 git merge upstream/develop
@@ -55,14 +55,14 @@ If your new branch is to **fix a bug** identified in a specific GitHub Issue wit
 If your new branch is to **add a feature** requested in a specific GitHub Issue with number `ISSNO`, then name your new branch `feat/ISSNO/short-description-here`. For example, `feat/135/blue-background-on-mondays`.
 
 Otherwise, please give your new branch a short, descriptive, all-lowercase name.
-```bash
+```text
 git checkout -b new-branch-name
 ```
 
 ### Step 5 - Make Edits, git add, git commit
 
 With your new branch checked out locally, make changes or additions to the code or documentation, git add them, and git commit them.
-```bash
+```text
 git add new-or-changed-file
 git commit -m "Short description of new or changed things"
 ```
@@ -70,14 +70,14 @@ git commit -m "Short description of new or changed things"
 Remember to write tests for new code. If you don't, our code (test) coverage will go down, and we won't be able to accept your code. (We have some hard checks that run on all new pull requests and code coverage is one of them.)
 
 Please run all existing tests to make sure you didn't break something. Do:
-```bash
+```text
 py.test -v
 ```
 
 Remember to write or modify documentation to reflect your additions or changes.
 
 You will want to merge changes from upstream (i.e. the original repository) into your new branch from time to time, using something like:
-```bash
+```text
 git fetch upstream
 git merge upstream/develop
 ```
@@ -85,7 +85,7 @@ git merge upstream/develop
 ### Step 6 - Push Your New Branch to origin
 
 Make sure you've commited all the additions or changes you want to include in your pull request. Then push your new branch to origin (i.e. _your_ remote bigchaindb repository).
-```bash
+```text
 git push origin new-branch-name
 ```
 
