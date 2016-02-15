@@ -43,9 +43,9 @@ $ sudo easy_install3 pip
 
 Once you have a version of `pip` associated with Python 3.4+, then you can install BigchainDB using:
 ```text
-pip install bigchaindb
+sudo pip install bigchaindb
 ```
-(or maybe `pip3 install bigchaindb` or `pip3.4 bigchaindb`.)
+(or maybe `sudo pip3 install bigchaindb` or `sudo pip3.4 install bigchaindb`. The `sudo` may not be necessary.)
 
 ### How to Install BigchainDB from Source
 
