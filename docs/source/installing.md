@@ -1,64 +1,62 @@
 # Installing BigchainDB
 
-BigchainDB works on top of [rethinkDB](http://rethinkdb.com/) server. In order to use
-BigchainDB we first need to install rethinkDB server.
+We're developing BigchainDB on Ubuntu 14.04, but it should work on any OS that runs RethinkDB Server and Python 3.4+. (BigchainDB is built on top of RethinkDB Server.)
 
-##### Installing and running rethinkDB server on Ubuntu >= 12.04
+## Install and Run RethinkDB Server
 
-Rethinkdb provides binaries for all major distros. For ubuntu we only need to
-add the [RethinkDB repository](http://download.rethinkdb.com/apt/) to our list
-of repositories and install via `apt-get`
+The RethinkDB documentation has instructions for how to install RethinkDB Server on a variety of operating systems. Do that (using their instructions for your OS): [Install RethinkDB Server](http://rethinkdb.com/docs/install/).
 
-```shell
-source /etc/lsb-release && echo "deb http://download.rethinkdb.com/apt
-$DISTRIB_CODENAME main" | sudo tee /etc/apt/sources.list.d/rethinkdb.list
-wget -qO- https://download.rethinkdb.com/apt/pubkey.gpg | sudo apt-key add -
-sudo apt-get update
-sudo apt-get install rethinkdb
-```
-
-For more information, rethinkDB provides [detailed
-instructions](http://rethinkdb.com/docs/install/) on how to install in a variety
-of systems.
-
-RethinkDB does not require any special configuration. To start rethinkdb server
-just run this command on the terminal.
-
+RethinkDB Server doesn't require any special configuration. You can run it by opening a Terminal and entering:
 ```shell
 $ rethinkdb
 ```
 
-##### Installing and running BigchainDB
-BigchainDB is distributed as a python package. Installing is simple using `pip`
+## Install Python 3.4+
 
+If you don't already have it, then you should [install Python 3.4+](https://www.python.org/downloads/) (maybe in a virtual environment, so it doesn't conflict with other Python projects you're working on).
+
+## Install BigchainDB
+
+BigchainDB has some OS-level dependencies. In particular, you need to install the OS-level dependencies for the Python **cryptography** package. Instructions for installing those dependencies on your OS can be found in the [cryptography package documentation](https://cryptography.io/en/latest/installation/).
+
+On Ubuntu 14.04, we found that the following was enough (YMMV):
+```shell
+$ sudo apt-get update
+$ sudo apt-get install libffi-dev g++ libssl-dev
+```
+
+With OS-level dependencies installed, you can install BigchainDB with `pip` or from source.
+
+### How to Install BigchainDB with `pip`
+
+BigchainDB is distributed as a Python package on PyPI. Installing is simple using `pip`:
 ```shell
 $ pip install bigchaindb
 ```
 
-After installing BigchainDB we can run it with:
+### How to Install BigchainDB from Source
 
+BigchainDB is in its early stages and being actively developed on its [GitHub repository](https://github.com/bigchaindb/bigchaindb). Contributions are highly appreciated.
+
+Clone the public repository:
 ```shell
-$ bigchaindb start
+$ git clone git@github.com:bigchaindb/bigchaindb.git
 ```
 
-During the first run BigchainDB takes care of configuring a single node
-environment.
-
-##### Installing from source
-
-BigchainDB is in its early stages and being actively developed on its [GitHub
-repository](https://github.com/BigchainDB/bigchaindb). Contributions are highly
-appreciated.
-
-Clone the public repository
-```shell
-$ git clone git@github.com:BigchainDB/bigchaindb.git
-```
-
-Install from the source
+Install from the source:
 ```shell
 $ python setup.py install
 ```
 
-##### Installing with Docker
+### How to Install BigchainDB Using Docker
+
 Coming soon...
+
+## Run BigchainDB
+
+After installing BigchainDB, run it with:
+```shell
+$ bigchaindb start
+```
+
+During its first run, BigchainDB takes care of configuring a single node environment.

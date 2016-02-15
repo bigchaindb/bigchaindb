@@ -6,9 +6,19 @@ For full docs visit https://bigchaindb.readthedocs.org
 """
 from setuptools import setup
 
+tests_require = [
+    'pytest',
+    'coverage',
+    'pep8',
+    'pyflakes',
+    'pylint',
+    'pytest',
+    'pytest-cov',
+]
+
 setup(
     name='BigchainDB',
-    version='0.0.0',
+    version='0.1.1',
     description='BigchainDB: A Scalable Blockchain Database',
     long_description=__doc__,
     url='https://github.com/BigchainDB/bigchaindb/',
@@ -37,7 +47,6 @@ setup(
         'rethinkdb==2.2.0.post1',
         'pysha3==0.3',
         'pytz==2015.7',
-        'tornado==4.3',
         'cryptography==1.2.1',
         'statsd==3.2.1',
         'python-rapidjson==0.0.6',
@@ -46,5 +55,6 @@ setup(
         'bitcoin==1.1.42',
     ],
     setup_requires=['pytest-runner'],
-    tests_require=['pytest'],
+    tests_require=tests_require,
+    extras_require={'test': tests_require},
 )

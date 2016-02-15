@@ -5,12 +5,11 @@ import logging
 import rethinkdb as r
 
 import bigchaindb
+from bigchaindb import exceptions
 
 
 logger = logging.getLogger(__name__)
 
-class DatabaseAlreadyExistsException(Exception):
-    pass
 
 def get_conn():
     '''Get the connection to the database.'''
@@ -24,15 +23,11 @@ def init():
     dbname = bigchaindb.config['database']['name']
 
     if r.db_list().contains(dbname).run(conn):
-        raise DatabaseAlreadyExistsException('Database `{}` already exists'.format(dbname))
+        raise exceptions.DatabaseAlreadyExists('Database `{}` already exists'.format(dbname))
 
     logger.info('Create:')
     logger.info(' - database `%s`', dbname)
-    try:
-        r.db_create(dbname).run(conn)
-    except r.ReqlOpFailedError as e:
-        logger.info(e.message)
-        return
+    r.db_create(dbname).run(conn)
 
     logger.info(' - tables')
     # create the tables
@@ -83,7 +78,7 @@ def drop(assume_yes=False):
             logger.info('Drop database `%s`', dbname)
             r.db_drop(dbname).run(conn)
             logger.info('Done.')
-        except r.ReqlOpFailedError as e:
-            logger.info(e.message)
+        except r.ReqlOpFailedError:
+            raise exceptions.DatabaseDoesNotExist('Database `{}` does not exist'.format(dbname))
     else:
         logger.info('Drop aborted')

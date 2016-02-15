@@ -1,6 +1,9 @@
 # BigchainDB
 
-[![Build Status](https://travis-ci.org/bigchaindb/bigchaindb.svg?branch=develop)](https://travis-ci.org/bigchaindb/bigchaindb)
+[![PyPI](https://img.shields.io/pypi/v/bigchaindb.svg)](https://pypi.python.org/pypi/BigchainDB)
+[![Travis branch](https://img.shields.io/travis/bigchaindb/bigchaindb/develop.svg)](https://travis-ci.org/bigchaindb/bigchaindb)
+[![Codecov branch](https://img.shields.io/codecov/c/github/bigchaindb/bigchaindb/develop.svg)](https://codecov.io/github/bigchaindb/bigchaindb?branch=develop)
+[![Documentation Status](https://readthedocs.org/projects/bigchaindb/badge/?version=develop)](http://bigchaindb.readthedocs.org/en/develop/?badge=develop)
 
 ## Documentation
 
@@ -8,8 +11,9 @@ Documentation is available at https://bigchaindb.readthedocs.org/
 
 ## Getting started
 
-#### Install RethinkDB on Ubuntu
+### Install RethinkDB
 
+#### On Ubuntu
 ```sh
 # install rethinkdb https://rethinkdb.com/docs/install/ubuntu/
 $ source /etc/lsb-release && echo "deb http://download.rethinkdb.com/apt $DISTRIB_CODENAME main" | sudo tee /etc/apt/sources.list.d/rethinkdb.list
@@ -21,12 +25,15 @@ $ sudo apt-get install rethinkdb
 $ rethinkdb
 ```
 
-#### Install BigchainDB
+#### On other platforms
+To install RethinkDB on other platform, please refer to [the official documentation](https://rethinkdb.com/docs/install/).
+
+### Install BigchainDB
 ```sh
 $ pip install bigchaindb
 ```
 
-#### Running BigchainDB
+### Running BigchainDB
 Currently BigchainDB only supports Python 3.4+
 
 
