@@ -20,11 +20,10 @@ Familiarize yourself with how we do coding and documentation in the BigchainDB p
 
 * our Python Style Guide (coming soon)
 * [our documentation strategy](./docs/README.md) (including code documentation)
-* our Documentation Style Guide (coming soon)
-* the Gitflow Git workflow (also called git-flow):
-    * [DataSift's introduction](https://datasift.github.io/gitflow/IntroducingGitFlow.html)
-    * [Atlassian's tutorial](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow)
-    * [the original blog post](http://nvie.com/posts/a-successful-git-branching-model/)
+* the GitHub Flow (workflow)
+    * [GitHub Guide: Understanding the GitHub Flow](https://guides.github.com/introduction/flow/)
+    * [Scott Chacon's blog post about GitHub Flow](http://scottchacon.com/2011/08/31/github-flow.html)
+    * Note that we call the main branch `develop` rather than `master`
 * [semantic versioning](http://semver.org/)
 
 ### Step 1 - Fork bigchaindb on GitHub
@@ -34,7 +33,7 @@ In your web browser, go to [the BigchainDB repository on GitHub](https://github.
 ### Step 2 - Clone Your Fork
 
 (This only has to be done once.) In your local terminal, use Git to clone _your_ `bigchaindb` repository to your local computer. Also add the original GitHub bigchaindb/bigchaindb repository as a remote named `upstream` (a convention):
-```bash
+```shell
 git clone git@github.com:your-github-username/bigchaindb.git
 cd bigchaindb
 git add upstream git@github.com:BigchainDB/bigchaindb.git
@@ -43,7 +42,7 @@ git add upstream git@github.com:BigchainDB/bigchaindb.git
 ### Step 3 - Fetch and Merge the Latest from `upstream/develop`
 
 Switch to the `develop` branch locally, fetch all `upstream` branches, and merge the just-fetched `upstream/develop` branch with the local `develop` branch:
-```bash
+```shell
 git checkout develop
 git fetch upstream
 git merge upstream/develop
@@ -56,26 +55,29 @@ If your new branch is to **fix a bug** identified in a specific GitHub Issue wit
 If your new branch is to **add a feature** requested in a specific GitHub Issue with number `ISSNO`, then name your new branch `feat/ISSNO/short-description-here`. For example, `feat/135/blue-background-on-mondays`.
 
 Otherwise, please give your new branch a short, descriptive, all-lowercase name.
-```bash
+```shell
 git checkout -b new-branch-name
 ```
 
 ### Step 5 - Make Edits, git add, git commit
 
 With your new branch checked out locally, make changes or additions to the code or documentation, git add them, and git commit them.
-```bash
+```shell
 git add new-or-changed-file
 git commit -m "Short description of new or changed things"
 ```
 
 Remember to write tests for new code. If you don't, our code (test) coverage will go down, and we won't be able to accept your code. (We have some hard checks that run on all new pull requests and code coverage is one of them.)
 
-Please run all existing tests to make sure you didn't break something.
+Please run all existing tests to make sure you didn't break something. Do:
+```shell
+py.test -v
+```
 
 Remember to write or modify documentation to reflect your additions or changes.
 
 You will want to merge changes from upstream (i.e. the original repository) into your new branch from time to time, using something like:
-```bash
+```shell
 git fetch upstream
 git merge upstream/develop
 ```
@@ -83,7 +85,7 @@ git merge upstream/develop
 ### Step 6 - Push Your New Branch to origin
 
 Make sure you've commited all the additions or changes you want to include in your pull request. Then push your new branch to origin (i.e. _your_ remote bigchaindb repository).
-```bash
+```shell
 git push origin new-branch-name
 ```
 
@@ -91,7 +93,7 @@ git push origin new-branch-name
 
 Go to the GitHub website and to _your_ remote bigchaindb repository (i.e. something like https://github.com/your-user-name/bigchaindb). 
 
-See [GitHub's documentation on how to initiate and send a pull request](https://help.github.com/articles/using-pull-requests/). Note that the destination repository should be `BigchainDB/bigchaindb` and the destination branch will typically be `develop` (because we use the Gitflow workflow).
+See [GitHub's documentation on how to initiate and send a pull request](https://help.github.com/articles/using-pull-requests/). Note that the destination repository should be `BigchainDB/bigchaindb` and the destination branch will be `develop` (usually, and if it's not, then we can change that if necessary).
 
 If this is the first time you've submitted a pull request to BigchainDB, then you must read and accept the Contributor License Agreement (CLA) before we can merge your contributions. That can be found at [https://www.bigchaindb.com/cla](https://www.bigchaindb.com/cla).
 
@@ -104,6 +106,7 @@ Someone will then merge your branch or suggest changes. If we suggsest changes, 
 * [BigchainDB Community links](https://www.bigchaindb.com/community) (e.g. mailing list, Slack)
 * [General GitHub Documentation](https://help.github.com/)
 * [Code of Conduct](./CODE_OF_CONDUCT.md)
+* [BigchainDB Licenses](./LICENSES.md)
 * [Contributor License Agreement](https://www.bigchaindb.com/cla)
 
 (Note: GitHub automatically links to CONTRIBUTING.md when a contributor creates an Issue or opens a Pull Request.)
