@@ -44,7 +44,7 @@ setup(
         ],
     },
     install_requires=[
-        'rethinkdb==2.2.0.post1',
+        'rethinkdb==2.2.0-1',
         'pysha3==0.3',
         'pytz==2015.7',
         'cryptography==1.2.1',
