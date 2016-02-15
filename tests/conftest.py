@@ -26,8 +26,8 @@ USER_PUBLIC_KEY = 'r3cEu8GNoz8rYpNJ61k7GqfR8VEvdUbtyHce8u1kaYwh'
 
 @pytest.fixture
 def restore_config(request, node_config):
-    import bigchaindb.config_utils
-    bigchaindb.config_utils.dict_config(node_config)
+    from bigchaindb import config_utils
+    config_utils.dict_config(node_config)
 
 
 @pytest.fixture
