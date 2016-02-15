@@ -12,8 +12,6 @@ from bigchaindb.crypto import hash_data, PrivateKey, PublicKey, generate_key_pai
 from bigchaindb.voter import Voter
 from bigchaindb.block import Block
 
-import bigchaindb.config_utils
-
 
 def create_inputs(user_public_key, amount=1, b=None):
     # 1. create the genesis block
