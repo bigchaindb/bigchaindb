@@ -8,6 +8,7 @@ import argparse
 import bigchaindb
 import bigchaindb.config_utils
 from bigchaindb import db
+from bigchaindb.exceptions import DatabaseAlreadyExists
 from bigchaindb.commands.utils import base_parser, start
 from bigchaindb.processes import Processes
 from bigchaindb.crypto import generate_key_pair
@@ -21,6 +22,9 @@ def run_show_config(args):
     """Show the current configuration"""
     from pprint import pprint
 
+    # TODO Proposal: remove the "hidden" configuration. Only show config. If
+    # the system needs to be configured, then display information on how to
+    # configure the system.
     bigchaindb.config_utils.file_config(args.config)
     pprint(bigchaindb.config)
 
@@ -32,13 +36,12 @@ def run_configure(args, skip_if_exists=False):
         skip_if_exists (bool): skip the function if a conf file already exists
     """
     config_path = args.config or bigchaindb.config_utils.CONFIG_DEFAULT_PATH
-    proceed = args.yes
     config_file_exists = os.path.exists(config_path)
 
     if config_file_exists and skip_if_exists:
         return
 
-    if config_file_exists and not proceed:
+    if config_file_exists and not args.yes:
         want = input('Config file `{}` exists, do you want to override it? '
                      '(cannot be undone) [y/n]: '.format(config_path))
         if not want:
@@ -60,7 +63,14 @@ def run_configure(args, skip_if_exists=False):
 def run_init(args):
     """Initialize the database"""
     bigchaindb.config_utils.file_config(args.config)
-    db.init()
+    # TODO Provide mechanism to:
+    # 1. prompt the user to inquire whether they wish to drop the db
+    # 2. force the init, (e.g., via -f flag)
+    try:
+        db.init()
+    except DatabaseAlreadyExists:
+        print('The database already exists.')
+        print('If you wish to re-initialize it, first drop it.')
 
 
 def run_drop(args):
@@ -75,11 +85,11 @@ def run_start(args):
     bigchaindb.config_utils.file_config(args.config)
     try:
         db.init()
-    except db.DatabaseAlreadyExistsException:
+    except DatabaseAlreadyExists:
         pass
-    p = Processes()
+    processes = Processes()
     logger.info('Start bigchaindb main process')
-    p.start()
+    processes.start()
 
 
 def main():
