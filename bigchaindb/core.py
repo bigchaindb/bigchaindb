@@ -10,7 +10,9 @@ import bigchaindb
 import bigchaindb.config_utils
 from bigchaindb import exceptions
 from bigchaindb.crypto import hash_data, PublicKey, PrivateKey, generate_key_pair
+from bigchaindb.monitor import Monitor
 
+c = Monitor()
 
 class GenesisBlockAlreadyExistsError(Exception):
     pass
@@ -67,6 +69,7 @@ class Bigchain(object):
     def reconnect(self):
         return r.connect(host=self.host, port=self.port, db=self.dbname)
 
+    @c.timer('create_transaction', rate=0.01)
     def create_transaction(self, current_owner, new_owner, tx_input, operation, payload=None):
         """Create a new transaction
 
@@ -176,6 +179,7 @@ class Bigchain(object):
         public_key = PublicKey(public_key_base58)
         return public_key.verify(self.serialize(data), signature)
 
+    @c.timer('write_transaction', rate=0.01)
     def write_transaction(self, signed_transaction):
         """Write the transaction to bigchain.
 
@@ -312,6 +316,7 @@ class Bigchain(object):
 
         return owned
 
+    @c.timer('validate_transaction', rate=0.01)
     def validate_transaction(self, transaction):
         """Validate a transaction.
 
@@ -389,6 +394,7 @@ class Bigchain(object):
                 exceptions.InvalidHash, exceptions.InvalidSignature):
             return False
 
+    @c.timer('create_block')
     def create_block(self, validated_transactions):
         """Creates a block given a list of `validated_transactions`.
 
@@ -424,6 +430,7 @@ class Bigchain(object):
 
         return block
 
+    @c.timer('validate_block')
     # TODO: check that the votings structure is correctly constructed
     def validate_block(self, block):
         """Validate a block.
