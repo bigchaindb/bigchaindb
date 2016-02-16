@@ -7,7 +7,7 @@ import rapidjson
 from datetime import datetime
 
 import bigchaindb
-import bigchaindb.config_utils
+from bigchaindb import config_utils
 from bigchaindb import exceptions
 from bigchaindb.crypto import hash_data, PublicKey, PrivateKey, generate_key_pair
 from bigchaindb.monitor import Monitor
@@ -16,6 +16,7 @@ c = Monitor()
 
 class GenesisBlockAlreadyExistsError(Exception):
     pass
+
 
 class KeypairNotFoundException(Exception):
     pass
@@ -47,7 +48,7 @@ class Bigchain(object):
             keyring (list[str]): list of base58 encoded public keys of the federation nodes.
 
         """
-        bigchaindb.config_utils.autoconfigure()
+        config_utils.autoconfigure()
         self.host = host or bigchaindb.config['database']['host']
         self.port = port or bigchaindb.config['database']['port']
         self.dbname = dbname or bigchaindb.config['database']['name']
