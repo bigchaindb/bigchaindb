@@ -23,7 +23,7 @@ dev_require = [
 
 setup(
     name='BigchainDB',
-    version='0.1.2',
+    version='0.1.3',
     description='BigchainDB: A Scalable Blockchain Database',
     long_description=__doc__,
     url='https://github.com/BigchainDB/bigchaindb/',
@@ -49,7 +49,7 @@ setup(
         ],
     },
     install_requires=[
-        'rethinkdb==2.2.0.post1',
+        'rethinkdb==2.2.0.post4',
         'pysha3==0.3',
         'pytz==2015.7',
         'cryptography==1.2.1',
