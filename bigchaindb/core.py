@@ -395,7 +395,6 @@ class Bigchain(object):
                 exceptions.InvalidHash, exceptions.InvalidSignature):
             return False
 
-    @c.timer('create_block')
     def create_block(self, validated_transactions):
         """Creates a block given a list of `validated_transactions`.
 
@@ -476,6 +475,7 @@ class Bigchain(object):
         except Exception:
             return False
 
+    @c.timer('write_block')
     def write_block(self, block, durability='soft'):
         """Write a block to bigchain.
 
