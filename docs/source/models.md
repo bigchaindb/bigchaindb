@@ -14,8 +14,8 @@ Transactions, blocks and votes are represented using JSON documents with the fol
         "operation": "<string>",
         "timestamp": "<timestamp>",
         "data": {
-            "hash": "<sha3 hash>",
-            ...
+            "hash": "<sha3 hash 0>",
+            "payload": {},
         }
     },
     "signature": "<ECDSA signature of the transaction>"
