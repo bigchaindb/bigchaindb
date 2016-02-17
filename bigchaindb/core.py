@@ -12,7 +12,7 @@ from bigchaindb import exceptions
 from bigchaindb.crypto import hash_data, PublicKey, PrivateKey, generate_key_pair
 from bigchaindb.monitor import Monitor
 
-c = Monitor()
+c = Monitor(host='statsd_1')
 
 class GenesisBlockAlreadyExistsError(Exception):
     pass
@@ -317,7 +317,7 @@ class Bigchain(object):
 
         return owned
 
-    @c.timer('validate_transaction', rate=0.01)
+    @c.timer('validate_transaction')#, rate=0.01)
     def validate_transaction(self, transaction):
         """Validate a transaction.
 

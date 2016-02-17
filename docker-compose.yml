@@ -50,7 +50,7 @@ grafana:
 
 statsd:
   image: rhsimplex/docker-telegraf-statsd
-  expose:
-    - "8125/udp"
+  ports:
+    - "8125:8125/udp"
   links:
     - influxdb:localhost
