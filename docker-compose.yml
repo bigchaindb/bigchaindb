@@ -1,7 +1,7 @@
 rethinkdb:
   image: rethinkdb
   ports:
-    - "9999:8080"
+    - "58080:8080"
     - "28015"
   volumes_from:
     - rethinkdb-data
