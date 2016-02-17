@@ -1,6 +1,6 @@
-# Installing BigchainDB
+# Installing BigchainDB Server
 
-We're developing BigchainDB on Ubuntu 14.04, but it should work on any OS that runs RethinkDB Server and Python 3.4+. (BigchainDB is built on top of RethinkDB Server.)
+We're developing BigchainDB Server ("BigchainDB") on Ubuntu 14.04, but it should work on any OS that runs RethinkDB Server and Python 3.4+. (BigchainDB is built on top of RethinkDB Server.)
 
 ## Install and Run RethinkDB Server
 
@@ -34,7 +34,7 @@ BigchainDB is distributed as a Python package on PyPI so you can install it usin
 $ pip -V
 ```
 
-If it says that `pip` isn't installed, or it says `pip` is associated with a Python version less then 3.4, then you must install a `pip` version associated with Python 3.4+. See [the `pip` installation instructions](https://pip.pypa.io/en/stable/installing/). On Ubuntu 14.04, we found that this works:
+If it says that `pip` isn't installed, or it says `pip` is associated with a Python version less than 3.4, then you must install a `pip` version associated with Python 3.4+. See [the `pip` installation instructions](https://pip.pypa.io/en/stable/installing/). On Ubuntu 14.04, we found that this works:
 ```text
 $ sudo apt-get install python3-setuptools
 $ sudo easy_install3 pip
@@ -61,13 +61,22 @@ Install from the source:
 $ python setup.py install
 ```
 
+### How to Install BigchainDB on a VM with Vagrant
+
+One of our community members ([@Mec-Is](https://github.com/Mec-iS)) wrote [a page about how to install BigchainDB on a VM with Vagrant](https://gist.github.com/Mec-iS/b84758397f1b21f21700).
+
 ### How to Install BigchainDB Using Docker
 
 Coming soon...
 
 ## Run BigchainDB
 
-After installing BigchainDB, run it with:
+Once you've installed BigchainDB, you can run it. First make sure you have RethinkDB running:
+```text
+$ rethinkdb
+```
+
+Then open a different terminal and run:
 ```text
 $ bigchaindb start
 ```

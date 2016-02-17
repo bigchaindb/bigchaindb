@@ -12,8 +12,10 @@ Table of Contents
    :maxdepth: 5
    :numbered:
 
+   introduction
    installing
    getting-started
+   bigchaindb-cli
    admin
    cryptography
    models
