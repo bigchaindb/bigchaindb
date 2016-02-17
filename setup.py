@@ -21,6 +21,12 @@ dev_require = [
     'ipython',
 ]
 
+docs_require = [
+    'recommonmark>=0.4.0',
+    'Sphinx>=1.3.5',
+    'sphinxcontrib-napoleon>=0.4.4',
+]
+
 setup(
     name='BigchainDB',
     version='0.1.3',
@@ -63,6 +69,7 @@ setup(
     tests_require=tests_require,
     extras_require={
         'test': tests_require,
-        'dev':  dev_require + tests_require,
+        'dev':  dev_require + tests_require + docs_require,
+        'docs':  docs_require,
     },
 )
