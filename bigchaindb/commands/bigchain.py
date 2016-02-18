@@ -4,6 +4,7 @@
 import os
 import logging
 import argparse
+import copy
 
 import bigchaindb
 import bigchaindb.config_utils
@@ -48,13 +49,15 @@ def run_configure(args, skip_if_exists=False):
             return
 
     # Patch the default configuration with the new values
-    conf = bigchaindb._config
+    conf = copy.deepcopy(bigchaindb._config)
+
     print('Generating keypair')
     conf['keypair']['private'], conf['keypair']['public'] = generate_key_pair()
 
-    for key in ('host', 'port', 'name'):
-        val = conf['database'][key]
-        conf['database'][key] = input('Database {}? (default `{}`): '.format(key, val)) or val
+    if not args.yes:
+        for key in ('host', 'port', 'name'):
+            val = conf['database'][key]
+            conf['database'][key] = input('Database {}? (default `{}`): '.format(key, val)) or val
 
     bigchaindb.config_utils.write_config(conf, config_path)
     print('Ready to go!')

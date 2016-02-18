@@ -1,5 +1,6 @@
 from argparse import Namespace
 from pprint import pprint
+import copy
 
 import pytest
 
@@ -69,6 +70,30 @@ def test_bigchain_run_start(mock_run_configure, mock_file_config,
     from bigchaindb.commands.bigchain import run_start
     args = Namespace(config=None, yes=True)
     run_start(args)
+
+
+def test_bigchain_run_start_assume_yes_create_default_config(monkeypatch, mock_processes_start,
+                                                             mock_generate_key_pair, mock_db_init_with_existing_db):
+    import bigchaindb
+    from bigchaindb.commands.bigchain import run_start
+    from bigchaindb import config_utils
+
+    value = {}
+    expected_config = copy.deepcopy(bigchaindb._config)
+    expected_config['keypair']['public'] = 'pubkey'
+    expected_config['keypair']['private'] = 'privkey'
+
+    def mock_write_config(newconfig, filename=None):
+        value['return'] = newconfig
+
+    monkeypatch.setattr(config_utils, 'write_config', mock_write_config)
+    monkeypatch.setattr(config_utils, 'file_config', lambda x: config_utils.dict_config(value['return']))
+    monkeypatch.setattr('os.path.exists', lambda path: False)
+
+    args = Namespace(config=None, yes=True)
+    run_start(args)
+
+    assert value['return'] == expected_config
 
 
 # TODO Please beware, that if debugging, the "-s" switch for pytest will
