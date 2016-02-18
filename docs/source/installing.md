@@ -65,9 +65,6 @@ $ python setup.py install
 
 One of our community members ([@Mec-Is](https://github.com/Mec-iS)) wrote [a page about how to install BigchainDB on a VM with Vagrant](https://gist.github.com/Mec-iS/b84758397f1b21f21700).
 
-### How to Install BigchainDB Using Docker
-
-Coming soon...
 
 ## Run BigchainDB
 
@@ -82,3 +79,65 @@ $ bigchaindb start
 ```
 
 During its first run, BigchainDB takes care of configuring a single node environment.
+
+
+## Run BigchainDB with Docker
+
+**NOT for Production Use**
+
+For those who like using Docker and wish to experiment with BigchainDB in
+non-production environments, we currently maintain a `Dockerfile` that can be
+used to build an image for `bigchaindb`, along with a `docker-compose.yml` file
+to manage a "standalone node", consisting mainly of two containers: one for
+rethinkdb, and another for `bigchaindb`.
+
+Assuming you have `docker` and `docker-compose` installed, you would proceed as
+follows.
+
+In a terminal shell:
+
+```bash
+$ git clone git@github.com:bigchaindb/bigchaindb.git
+```
+
+Build the docker image
+
+```bash
+$ docker-compose build
+```
+
+then, a one-time configuration step, to create the config file, which will be
+stored on your host machine under ` ~/.bigchaindb_docker/config`
+
+```bash
+$ docker-compose run --rm bigchaindb bigchaindb configure
+```
+
+you can load test transactions via
+
+```bash
+$ docker-compose run --rm bigchaindb bigchaindb-benchmark load
+```
+
+you should then be able to start `bigchaindb`, via
+
+```bash
+$ docker-compose run --rm bigchaindb bigchaindb start
+```
+
+or
+
+```bash
+$ docker-compose up
+```
+
+You should be able to view the rethinkdb dashboard at
+
+```
+http://docker_host:58080/
+```
+
+where `docker_host` is the ip or hostname of the machine running the docker
+engine. If you are developing on linux this most likely will be `localhost`,
+whereas if you are running docker-machine (e.g.: on Mac OS X) this will be the
+ip of the docher machine (`docker-machine ip machine_name`).
