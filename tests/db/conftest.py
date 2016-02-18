@@ -13,9 +13,6 @@ from bigchaindb import Bigchain
 from bigchaindb.db import get_conn
 
 
-NOOP = None
-
-
 @pytest.fixture(autouse=True)
 def restore_config(request, node_config):
     from bigchaindb import config_utils
@@ -23,58 +20,60 @@ def restore_config(request, node_config):
 
 
 @pytest.fixture(scope='module', autouse=True)
-def setup_database(request):
+def setup_database(request, node_config):
     print('Initializing test db')
+    db_name = node_config['database']['name']
     get_conn().repl()
     try:
-        r.db_create('bigchain_test').run()
+        r.db_create(db_name).run()
     except r.ReqlOpFailedError as e:
-        if e.message == 'Database `bigchain_test` already exists.':
-            r.db_drop('bigchain_test').run()
-            r.db_create('bigchain_test').run()
+        if e.message == 'Database `{}` already exists.'.format(db_name):
+            r.db_drop(db_name).run()
+            r.db_create(db_name).run()
         else:
             raise
 
     print('Finished initializing test db')
 
     # setup tables
-    r.db('bigchain_test').table_create('bigchain').run()
-    r.db('bigchain_test').table_create('backlog').run()
+    r.db(db_name).table_create('bigchain').run()
+    r.db(db_name).table_create('backlog').run()
     # create the secondary indexes
     # to order blocks by timestamp
-    r.db('bigchain_test').table('bigchain').index_create('block_timestamp', r.row['block']['timestamp']).run()
+    r.db(db_name).table('bigchain').index_create('block_timestamp', r.row['block']['timestamp']).run()
     # to order blocks by block number
-    r.db('bigchain_test').table('bigchain').index_create('block_number', r.row['block']['block_number']).run()
+    r.db(db_name).table('bigchain').index_create('block_number', r.row['block']['block_number']).run()
     # to order transactions by timestamp
-    r.db('bigchain_test').table('backlog').index_create('transaction_timestamp', r.row['transaction']['timestamp']).run()
+    r.db(db_name).table('backlog').index_create('transaction_timestamp', r.row['transaction']['timestamp']).run()
     # compound index to read transactions from the backlog per assignee
-    r.db('bigchain_test').table('backlog')\
+    r.db(db_name).table('backlog')\
         .index_create('assignee__transaction_timestamp', [r.row['assignee'], r.row['transaction']['timestamp']])\
         .run()
 
     def fin():
-        print('Deleting `bigchain_test` database')
+        print('Deleting `{}` database'.format(db_name))
         get_conn().repl()
         try:
-            r.db_drop('bigchain_test').run()
+            r.db_drop(db_name).run()
         except r.ReqlOpFailedError as e:
-            if e.message != 'Database `bigchain_test` does not exist.':
+            if e.message != 'Database `{}` does not exist.'.format(db_name):
                 raise
 
-        print('Finished deleting `bigchain_test`')
+        print('Finished deleting `{}`'.format(db_name))
 
     request.addfinalizer(fin)
 
 
 @pytest.fixture(scope='function', autouse=True)
-def cleanup_tables(request):
+def cleanup_tables(request, node_config):
+    db_name = node_config['database']['name']
     def fin():
         get_conn().repl()
         try:
-            r.db('bigchain_test').table('bigchain').delete().run()
-            r.db('bigchain_test').table('backlog').delete().run()
+            r.db(db_name).table('bigchain').delete().run()
+            r.db(db_name).table('backlog').delete().run()
         except r.ReqlOpFailedError as e:
-            if e.message != 'Database `bigchain_test` does not exist.':
+            if e.message != 'Database `{}` does not exist.'.format(db_name):
                 raise
 
     request.addfinalizer(fin)
