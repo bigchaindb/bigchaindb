@@ -12,6 +12,8 @@ from bigchaindb import exceptions
 from bigchaindb.crypto import hash_data, PublicKey, PrivateKey, generate_key_pair
 from bigchaindb.monitor import Monitor
 
+# obviously the hostname should come from an environment variable or setting
+
 c = Monitor(host='statsd_1')
 
 class GenesisBlockAlreadyExistsError(Exception):
