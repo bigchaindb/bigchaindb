@@ -14,6 +14,7 @@ tests_require = [
     'pylint',
     'pytest',
     'pytest-cov',
+    'pytest-xdist',
 ]
 
 dev_require = [
