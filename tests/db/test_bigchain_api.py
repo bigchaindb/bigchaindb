@@ -214,7 +214,7 @@ class TestBigchainApi(object):
 
         assert new_block['block']['voters'] == [b.me]
         assert new_block['block']['node_pubkey'] == b.me
-        assert PublicKey(b.me).verify(b.serialize(new_block['block']), new_block['signature']) == True
+        assert PublicKey(b.me).verify(b.serialize(new_block['block']), new_block['signature']) is True
         assert new_block['id'] == block_hash
         assert new_block['votes'] == []
 
@@ -256,7 +256,7 @@ class TestTransactionValidation(object):
             b.validate_transaction(tx)
 
         assert excinfo.value.args[0] == 'A CREATE operation has no inputs'
-        assert b.is_valid_transaction(tx) == False
+        assert b.is_valid_transaction(tx) is False
 
     def test_create_operation_not_federation_node(self, b):
         tx = b.create_transaction('a', 'b', None, 'CREATE')
@@ -264,7 +264,7 @@ class TestTransactionValidation(object):
             b.validate_transaction(tx)
 
         assert excinfo.value.args[0] == 'Only federation nodes can use the operation `CREATE`'
-        assert b.is_valid_transaction(tx) == False
+        assert b.is_valid_transaction(tx) is False
 
     def test_non_create_operation_no_inputs(self, b):
         tx = b.create_transaction('a', 'b', None, 'd')
@@ -272,7 +272,7 @@ class TestTransactionValidation(object):
             b.validate_transaction(tx)
 
         assert excinfo.value.args[0] == 'Only `CREATE` transactions can have null inputs'
-        assert b.is_valid_transaction(tx) == False
+        assert b.is_valid_transaction(tx) is False
 
     def test_non_create_input_not_found(self, b):
         tx = b.create_transaction('a', 'b', 'c', 'd')
@@ -280,7 +280,7 @@ class TestTransactionValidation(object):
             b.validate_transaction(tx)
 
         assert excinfo.value.args[0] == 'input `c` does not exist in the bigchain'
-        assert b.is_valid_transaction(tx) == False
+        assert b.is_valid_transaction(tx) is False
 
     @pytest.mark.usefixtures('inputs')
     def test_non_create_valid_input_wrong_owner(self, b, user_public_key):
@@ -290,7 +290,7 @@ class TestTransactionValidation(object):
             b.validate_transaction(tx)
 
         assert excinfo.value.args[0] == 'current_owner `a` does not own the input `{}`'.format(valid_input)
-        assert b.is_valid_transaction(tx) == False
+        assert b.is_valid_transaction(tx) is False
 
     @pytest.mark.usefixtures('inputs')
     def test_non_create_double_spend(self, b, user_public_key, user_private_key):
@@ -309,7 +309,7 @@ class TestTransactionValidation(object):
             b.validate_transaction(tx_double_spend)
 
         assert excinfo.value.args[0] == 'input `{}` was already spent'.format(input_valid)
-        assert b.is_valid_transaction(tx_double_spend) == False
+        assert b.is_valid_transaction(tx_double_spend) is False
 
     @pytest.mark.usefixtures('inputs')
     def test_wrong_transaction_hash(self, b, user_public_key):
@@ -320,7 +320,7 @@ class TestTransactionValidation(object):
         tx_valid.update({'id': 'abcd'})
         with pytest.raises(exceptions.InvalidHash):
             b.validate_transaction(tx_valid)
-        assert b.is_valid_transaction(tx_valid) == False
+        assert b.is_valid_transaction(tx_valid) is False
 
     @pytest.mark.usefixtures('inputs')
     def test_wrong_signature(self, b, user_public_key):
@@ -332,7 +332,7 @@ class TestTransactionValidation(object):
         tx_invalid_signed = b.sign_transaction(tx_valid, wrong_private_key)
         with pytest.raises(exceptions.InvalidSignature):
             b.validate_transaction(tx_invalid_signed)
-        assert b.is_valid_transaction(tx_invalid_signed) == False
+        assert b.is_valid_transaction(tx_invalid_signed) is False
 
     def test_valid_create_transaction(self, b, user_public_key):
         tx = b.create_transaction(b.me, user_public_key, None, 'CREATE')
@@ -445,7 +445,7 @@ class TestBigchainCrypto(object):
         message = 'Hello World!'
         public_key = PublicKey(self.PUBLIC_VALUE_COMPRESSED_B58)
         private_key = PrivateKey(self.PRIVATE_VALUE_B58)
-        assert public_key.verify(message, private_key.sign(message)) == True
+        assert public_key.verify(message, private_key.sign(message)) is True
 
     def test_generate_key_pair(self):
         private_value_base58, public_value_compressed_base58 = generate_key_pair()
@@ -488,10 +488,10 @@ class TestBigchainVoter(object):
 
         assert vote['vote']['voting_for_block'] == block['id']
         assert vote['vote']['previous_block'] == genesis['id']
-        assert vote['vote']['is_block_valid'] == True
-        assert vote['vote']['invalid_reason'] == None
+        assert vote['vote']['is_block_valid'] is True
+        assert vote['vote']['invalid_reason'] is None
         assert vote['node_pubkey'] == b.me
-        assert PublicKey(b.me).verify(b.serialize(vote['vote']), vote['signature']) == True
+        assert PublicKey(b.me).verify(b.serialize(vote['vote']), vote['signature']) is True
 
     def test_invalid_block_voting(self, b, user_public_key):
         # create queue and voter
@@ -507,7 +507,7 @@ class TestBigchainVoter(object):
         block = b.create_block([transaction_signed])
         # change transaction id to make it invalid
         block['block']['transactions'][0]['id'] = 'abc'
-        assert b.is_valid_block(block) == False
+        assert b.is_valid_block(block) is False
         b.write_block(block, durability='hard')
 
         # insert into queue
@@ -530,10 +530,10 @@ class TestBigchainVoter(object):
 
         assert vote['vote']['voting_for_block'] == block['id']
         assert vote['vote']['previous_block'] == genesis['id']
-        assert vote['vote']['is_block_valid'] == False
-        assert vote['vote']['invalid_reason'] == None
+        assert vote['vote']['is_block_valid'] is False
+        assert vote['vote']['invalid_reason'] is None
         assert vote['node_pubkey'] == b.me
-        assert PublicKey(b.me).verify(b.serialize(vote['vote']), vote['signature']) == True
+        assert PublicKey(b.me).verify(b.serialize(vote['vote']), vote['signature']) is True
 
     def test_vote_creation_valid(self, b):
         # create valid block
@@ -544,10 +544,10 @@ class TestBigchainVoter(object):
         # assert vote is correct
         assert vote['vote']['voting_for_block'] == block['id']
         assert vote['vote']['previous_block'] == 'abc'
-        assert vote['vote']['is_block_valid'] == True
-        assert vote['vote']['invalid_reason'] == None
+        assert vote['vote']['is_block_valid'] is True
+        assert vote['vote']['invalid_reason'] is None
         assert vote['node_pubkey'] == b.me
-        assert PublicKey(b.me).verify(b.serialize(vote['vote']), vote['signature']) == True
+        assert PublicKey(b.me).verify(b.serialize(vote['vote']), vote['signature']) is True
 
     def test_vote_creation_invalid(self, b):
         # create valid block
@@ -558,10 +558,10 @@ class TestBigchainVoter(object):
         # assert vote is correct
         assert vote['vote']['voting_for_block'] == block['id']
         assert vote['vote']['previous_block'] == 'abc'
-        assert vote['vote']['is_block_valid'] == False
-        assert vote['vote']['invalid_reason'] == None
+        assert vote['vote']['is_block_valid'] is False
+        assert vote['vote']['invalid_reason'] is None
         assert vote['node_pubkey'] == b.me
-        assert PublicKey(b.me).verify(b.serialize(vote['vote']), vote['signature']) == True
+        assert PublicKey(b.me).verify(b.serialize(vote['vote']), vote['signature']) is True
 
 
 class TestBigchainBlock(object):
