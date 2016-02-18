@@ -83,9 +83,13 @@ During its first run, BigchainDB takes care of configuring a single node environ
 
 ## Run BigchainDB with Docker
 
-We currently maintain a `Dockerfile` that can be used to build an image for `bigchaindb`,
-along with a `docker-compose.yml` file to manage a "standalone node", consisting
-mainly of two containers: one for rethinkdb, and another for `bigchaindb`.
+**NOT for Production Use**
+
+For those who like using Docker and wish to experiment with BigchainDB in
+non-production environments, we currently maintain a `Dockerfile` that can be
+used to build an image for `bigchaindb`, along with a `docker-compose.yml` file
+to manage a "standalone node", consisting mainly of two containers: one for
+rethinkdb, and another for `bigchaindb`.
 
 Assuming you have `docker` and `docker-compose` installed, you would proceed as
 follows.
