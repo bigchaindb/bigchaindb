@@ -1,0 +1,92 @@
+rethinkdb-1:
+  image: rethinkdb
+  ports:
+    - "9999:8080"
+    - "28015:28015"
+    - "29015:29015"
+  volumes_from:
+    - rethinkdb-data-1
+
+rethinkdb-data-1:
+  image: rethinkdb
+  volumes:
+    - /data
+  command: "true"
+
+bigchaindb-1:
+  build: .
+  volumes:
+    - ./bigchaindb:/usr/src/app/bigchaindb
+    - ./tests:/usr/src/app/tests
+    - ./docs:/usr/src/app/docs
+    - ./setup.py:/usr/src/app/setup.py
+    - ./setup.cfg:/usr/src/app/setup.cfg
+    - ./pytest.ini:/usr/src/app/pytest.ini
+    - ~/.bigchaindb_docker:/root/.bigchaindb_docker
+  links:
+    - rethinkdb-1:rethinkdb
+    - statsd:localhost
+  environment:
+    BIGCHAIN_DATABASE_HOST: rethinkdb
+    BIGCHAINDB_CONFIG_PATH: /root/.bigchaindb_docker/config
+  command: bigchaindb start
+
+rethinkdb-2:
+  image: rethinkdb
+  ports:
+    - "9998:8080"
+    - "28015:28015"
+    - "29015:29015"
+  links:
+    - rethinkdb-1:localhost
+  volumes_from:
+    - rethinkdb-data-2
+
+rethinkdb-data-2:
+  image: rethinkdb
+  volumes:
+    - /data
+  command: "true"
+
+bigchaindb-2:
+  build: .
+  volumes:
+    - ./bigchaindb:/usr/src/app/bigchaindb
+    - ./tests:/usr/src/app/tests
+    - ./docs:/usr/src/app/docs
+    - ./setup.py:/usr/src/app/setup.py
+    - ./setup.cfg:/usr/src/app/setup.cfg
+    - ./pytest.ini:/usr/src/app/pytest.ini
+    - ~/.bigchaindb_docker:/root/.bigchaindb_docker
+  links:
+    - rethinkdb-2:rethinkdb
+    - statsd:localhost
+  environment:
+    BIGCHAIN_DATABASE_HOST: rethinkdb
+    BIGCHAINDB_CONFIG_PATH: /root/.bigchaindb_docker/config
+  command: bigchaindb start
+
+influxdb:
+  image: tutum/influxdb
+  ports:
+    - "8083:8083"
+    - "8086:8086"
+  expose:
+    - "8090"
+    - "8099"
+  environment:
+    PRE_CREATE_DB: "telegraf"
+
+grafana:
+  build: ~/grafana-bigchaindb-docker
+  ports:
+    - "3000:3000"
+  links:
+    - influxdb:localhost
+
+statsd:
+  image: rhsimplex/docker-telegraf-statsd
+  ports:
+    - "8125:8125/udp"
+  links:
+    - influxdb:localhost
