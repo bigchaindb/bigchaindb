@@ -14,8 +14,12 @@ Transactions, blocks and votes are represented using JSON documents with the fol
         "operation": "<string>",
         "timestamp": "<timestamp>",
         "data": {
-            "hash": "<sha3 hash>",
-            ...
+            "hash": "<SHA3-256 hash hexdigest of payload>",
+            "payload": {
+                "title": "The Winds of Plast",
+                "creator": "Johnathan Plunkett",
+                "IPFS_key": "QmfQ5QAjvg4GtA3wg3adpnDJug8ktA1BxurVqBD8rtgVjP"
+            }
         }
     },
     "signature": "<ECDSA signature of the transaction>"

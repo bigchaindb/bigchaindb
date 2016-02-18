@@ -42,10 +42,10 @@ class TestBigchainVoter(object):
 
         assert vote['vote']['voting_for_block'] == block['id']
         assert vote['vote']['previous_block'] == genesis['id']
-        assert vote['vote']['is_block_valid'] == True
-        assert vote['vote']['invalid_reason'] == None
+        assert vote['vote']['is_block_valid'] is True
+        assert vote['vote']['invalid_reason'] is None
         assert vote['node_pubkey'] == b.me
-        assert PublicKey(b.me).verify(b.serialize(vote['vote']), vote['signature']) == True
+        assert PublicKey(b.me).verify(b.serialize(vote['vote']), vote['signature']) is True
 
 
     def test_invalid_block_voting(self, b, user_public_key):
@@ -83,10 +83,10 @@ class TestBigchainVoter(object):
 
         assert vote['vote']['voting_for_block'] == block['id']
         assert vote['vote']['previous_block'] == genesis['id']
-        assert vote['vote']['is_block_valid'] == False
-        assert vote['vote']['invalid_reason'] == None
+        assert vote['vote']['is_block_valid'] is False
+        assert vote['vote']['invalid_reason'] is None
         assert vote['node_pubkey'] == b.me
-        assert PublicKey(b.me).verify(b.serialize(vote['vote']), vote['signature']) == True
+        assert PublicKey(b.me).verify(b.serialize(vote['vote']), vote['signature']) is True
 
     def test_vote_creation_valid(self, b):
         # create valid block
@@ -97,10 +97,10 @@ class TestBigchainVoter(object):
         # assert vote is correct
         assert vote['vote']['voting_for_block'] == block['id']
         assert vote['vote']['previous_block'] == 'abc'
-        assert vote['vote']['is_block_valid'] == True
-        assert vote['vote']['invalid_reason'] == None
+        assert vote['vote']['is_block_valid'] is True
+        assert vote['vote']['invalid_reason'] is None
         assert vote['node_pubkey'] == b.me
-        assert PublicKey(b.me).verify(b.serialize(vote['vote']), vote['signature']) == True
+        assert PublicKey(b.me).verify(b.serialize(vote['vote']), vote['signature']) is True
 
     def test_vote_creation_invalid(self, b):
         # create valid block
@@ -111,10 +111,10 @@ class TestBigchainVoter(object):
         # assert vote is correct
         assert vote['vote']['voting_for_block'] == block['id']
         assert vote['vote']['previous_block'] == 'abc'
-        assert vote['vote']['is_block_valid'] == False
-        assert vote['vote']['invalid_reason'] == None
+        assert vote['vote']['is_block_valid'] is False
+        assert vote['vote']['invalid_reason'] is None
         assert vote['node_pubkey'] == b.me
-        assert PublicKey(b.me).verify(b.serialize(vote['vote']), vote['signature']) == True
+        assert PublicKey(b.me).verify(b.serialize(vote['vote']), vote['signature']) is True
 
     def test_voter_considers_unvoted_blocks_when_single_node(self, b):
         # simulate a voter going donw in a single node environment
