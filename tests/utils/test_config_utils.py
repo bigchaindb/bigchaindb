@@ -19,7 +19,7 @@ def test_bigchain_instance_is_initialized_when_conf_provided():
 
     config_utils.dict_config({'keypair': {'public': 'a', 'private': 'b'}})
 
-    assert bigchaindb.config['CONFIGURED'] == True
+    assert bigchaindb.config['CONFIGURED'] is True
     b = bigchaindb.Bigchain()
 
     assert b.me
