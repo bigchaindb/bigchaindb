@@ -12,7 +12,7 @@ from bigchaindb import db
 from bigchaindb.exceptions import DatabaseAlreadyExists
 from bigchaindb.commands.utils import base_parser, start
 from bigchaindb.processes import Processes
-from bigchaindb.crypto import generate_key_pair
+from bigchaindb import crypto
 
 
 logging.basicConfig(level=logging.INFO)
@@ -52,7 +52,7 @@ def run_configure(args, skip_if_exists=False):
     conf = copy.deepcopy(bigchaindb._config)
 
     print('Generating keypair')
-    conf['keypair']['private'], conf['keypair']['public'] = generate_key_pair()
+    conf['keypair']['private'], conf['keypair']['public'] = crypto.generate_key_pair()
 
     if not args.yes:
         for key in ('host', 'port', 'name'):

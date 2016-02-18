@@ -52,8 +52,7 @@ def mock_rethink_db_drop(monkeypatch):
 
 @pytest.fixture
 def mock_generate_key_pair(monkeypatch):
-    from bigchaindb import crypto
-    monkeypatch.setattr(crypto, 'generate_key_pair', lambda: ('privkey', 'pubkey'))
+    monkeypatch.setattr('bigchaindb.crypto.generate_key_pair', lambda: ('privkey', 'pubkey'))
 
 
 @pytest.fixture
