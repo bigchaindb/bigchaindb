@@ -2,8 +2,8 @@ rethinkdb-1:
   image: rethinkdb
   ports:
     - "9999:8080"
-    - "28015:28015"
-    - "29015:29015"
+    - "28015"
+    - "29015"
   volumes_from:
     - rethinkdb-data-1
 
@@ -35,8 +35,8 @@ rethinkdb-2:
   image: rethinkdb
   ports:
     - "9998:8080"
-    - "28015:28015"
-    - "29015:29015"
+    - "28015"
+    - "29015"
   links:
     - rethinkdb-1:localhost
   volumes_from:
