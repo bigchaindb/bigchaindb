@@ -6,12 +6,16 @@ Tasks:
 2. delete test database after running the tests
 """
 
+import os
+
 import pytest
 
 
+DB_NAME = 'bigchain_test_{}'.format(os.getpid())
+
 config = {
     'database': {
-        'name': 'bigchain_test'
+        'name': DB_NAME
     },
     'keypair': {
         'private': '3i2FDXp87N9ExXSvWxqBAw9EgzoxxGTQNKbtxmWBpTyL',
@@ -30,7 +34,7 @@ def restore_config(request, node_config):
     config_utils.dict_config(node_config)
 
 
-@pytest.fixture
+@pytest.fixture(scope='module')
 def node_config():
     return config
 
