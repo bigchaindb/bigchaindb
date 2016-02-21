@@ -11,8 +11,8 @@ from .conftest import setup_database as _setup_database
 # Since we are testing database initialization and database drop,
 # we need to use the `setup_database` fixture on a function level
 @pytest.fixture(scope='function', autouse=True)
-def setup_database(request):
-    _setup_database(request)
+def setup_database(request, node_config):
+    _setup_database(request, node_config)
 
 
 def test_init_creates_db_tables_and_indexes():
