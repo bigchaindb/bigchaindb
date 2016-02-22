@@ -272,20 +272,25 @@ class Bigchain(object):
             The transaction that used the `txid` as an input if it exists else it returns `None`
 
         """
-
         # checks if an input was already spent
         # checks if the bigchain has any transaction with input `transaction_id`
-        response = r.table('bigchain').concat_map(lambda doc: doc['block']['transactions'])\
+        response = r.table('bigchain').group('block_number')\
+            .concat_map(lambda doc: doc['block']['transactions'])\
             .filter(lambda transaction: transaction['transaction']['input'] == txid).run(self.conn)
 
+        # the query returns a dictionary in which keys are block numbers and values are list of transactions
+        # with that using that input inside the block. For it to be correct:
+            # - There should be at most one block with transactions using that input
+            # - There should be at most one transaction with that input
+
         # a transaction_id should have been spent at most one time
-        transactions = list(response)
-        if transactions:
-            if len(transactions) != 1:
+        if response:
+            if len(response) > 1 or len(*response.values()) > 1:
                 raise Exception('`{}` was spent more then once. There is a problem with the chain'.format(
                     txid))
             else:
-                return transactions[0]
+                response = list(response.items())
+                return (response[0][0], response[0][1][0])
         else:
             return None
 
@@ -466,7 +471,8 @@ class Bigchain(object):
         try:
             self.validate_block(block)
             return True
-        except Exception:
+        except Exception as e:
+            print(e)
             return False
 
     def write_block(self, block, durability='soft'):

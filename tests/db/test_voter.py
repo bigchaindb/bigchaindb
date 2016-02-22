@@ -47,6 +47,122 @@ class TestBigchainVoter(object):
         assert vote['node_pubkey'] == b.me
         assert PublicKey(b.me).verify(b.serialize(vote['vote']), vote['signature']) is True
 
+    def test_valid_block_voting_with_create_transaction(self, b):
+        q_new_block = mp.Queue()
+
+        genesis = b.create_genesis_block()
+
+        # create a `CREATE` transaction
+        test_user_priv, test_user_pub = b.generate_keys()
+        tx = b.create_transaction(b.me, test_user_pub, None, 'CREATE')
+        tx_signed = b.sign_transaction(tx, b.me_private)
+        assert b.is_valid_transaction(tx_signed)
+
+        # create valid block
+        block = b.create_block([tx_signed])
+        # assert block is valid
+        assert b.is_valid_block(block)
+        b.write_block(block, durability='hard')
+
+        # create queue and voter
+        voter = Voter(q_new_block)
+
+        # vote
+        voter.start()
+        # wait for vote to be written
+        time.sleep(1)
+        voter.kill()
+
+        # retrive block from bigchain
+        blocks = list(r.table('bigchain')
+                       .order_by(r.asc((r.row['block']['timestamp'])))
+                       .run(b.conn))
+
+
+        # validate vote
+        assert len(blocks[1]['votes']) == 1
+        vote = blocks[1]['votes'][0]
+
+        assert vote['vote']['voting_for_block'] == block['id']
+        assert vote['vote']['previous_block'] == genesis['id']
+        assert vote['vote']['is_block_valid'] is True
+        assert vote['vote']['invalid_reason'] is None
+        assert vote['node_pubkey'] == b.me
+        assert PublicKey(b.me).verify(b.serialize(vote['vote']), vote['signature']) is True
+
+    def test_valid_block_voting_with_transfer_transactions(self, b):
+        q_new_block = mp.Queue()
+
+        genesis = b.create_genesis_block()
+
+        # create a `CREATE` transaction
+        test_user_priv, test_user_pub = b.generate_keys()
+        tx = b.create_transaction(b.me, test_user_pub, None, 'CREATE')
+        tx_signed = b.sign_transaction(tx, b.me_private)
+        assert b.is_valid_transaction(tx_signed)
+
+        # create valid block
+        block = b.create_block([tx_signed])
+        # assert block is valid
+        assert b.is_valid_block(block)
+        b.write_block(block, durability='hard')
+
+        # create queue and voter
+        voter = Voter(q_new_block)
+
+        # vote
+        voter.start()
+        # wait for vote to be written
+        time.sleep(1)
+        voter.kill()
+
+        # retrive block from bigchain
+        blocks = list(r.table('bigchain')
+                       .order_by(r.asc((r.row['block']['timestamp'])))
+                       .run(b.conn))
+
+
+        # validate vote
+        assert len(blocks[1]['votes']) == 1
+
+        
+        # create a `TRANSFER` transaction
+        test_user2_priv, test_user2_pub = b.generate_keys()
+        tx2 = b.create_transaction(test_user_pub, test_user2_pub, tx['id'], 'TRANSFER')
+        tx2_signed = b.sign_transaction(tx2, test_user_priv)
+        assert b.is_valid_transaction(tx2_signed)
+
+        # create valid block
+        block = b.create_block([tx2_signed])
+        # assert block is valid
+        assert b.is_valid_block(block)
+        b.write_block(block, durability='hard')
+
+        # create queue and voter
+        voter = Voter(q_new_block)
+
+        # vote
+        voter.start()
+        # wait for vote to be written
+        time.sleep(1)
+        voter.kill()
+
+        # retrive block from bigchain
+        blocks = list(r.table('bigchain')
+                       .order_by(r.asc((r.row['block']['timestamp'])))
+                       .run(b.conn))
+
+
+        # validate vote
+        assert len(blocks[2]['votes']) == 1
+
+        vote = blocks[2]['votes'][0]
+
+        assert vote['vote']['voting_for_block'] == block['id']
+        assert vote['vote']['is_block_valid'] is True
+        assert vote['vote']['invalid_reason'] is None
+        assert vote['node_pubkey'] == b.me
+        assert PublicKey(b.me).verify(b.serialize(vote['vote']), vote['signature']) is True
 
     def test_invalid_block_voting(self, b, user_public_key):
         # create queue and voter
