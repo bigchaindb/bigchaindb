@@ -30,7 +30,7 @@ docs_require = [
 
 setup(
     name='BigchainDB',
-    version='0.1.3',
+    version='0.1.4',
     description='BigchainDB: A Scalable Blockchain Database',
     long_description=__doc__,
     url='https://github.com/BigchainDB/bigchaindb/',
@@ -41,10 +41,17 @@ setup(
 
     classifiers=[
         'Development Status :: 3 - Alpha',
+        'Intended Audience :: Developers',
+        'Topic :: Database',
+        'Topic :: Database :: Database Engines/Servers',
+        'Topic :: Software Development',
+        'Natural Language :: English',
         'License :: OSI Approved :: GNU Affero General Public License v3',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Operating System :: MacOS :: MacOS X',
+        'Operating System :: POSIX :: Linux',
     ],
 
     packages=['bigchaindb', 'bigchaindb.commands', 'bigchaindb.db'],
