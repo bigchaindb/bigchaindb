@@ -47,6 +47,8 @@ sudo pip install bigchaindb
 ```
 (or maybe `sudo pip3 install bigchaindb` or `sudo pip3.4 install bigchaindb`. The `sudo` may not be necessary.)
 
+Note: You can use `pip` to upgrade bigchaindb to the latest version using `sudo pip install --upgrade bigchaindb`
+
 ### How to Install BigchainDB from Source
 
 BigchainDB is in its early stages and being actively developed on its [GitHub repository](https://github.com/bigchaindb/bigchaindb). Contributions are highly appreciated.
