@@ -56,6 +56,10 @@ def run_configure(args, skip_if_exists=False):
         val = conf['database'][key]
         conf['database'][key] = input('Database {}? (default `{}`): '.format(key, val)) or val
 
+    for key in ('host', 'port', 'rate'):
+        val = conf['statsd'][key]
+        conf['statsd'][key] = input('Statsd {}? (default `{}`): '.format(key, val)) or val
+
     bigchaindb.config_utils.write_config(conf, config_path)
     print('Ready to go!')
 

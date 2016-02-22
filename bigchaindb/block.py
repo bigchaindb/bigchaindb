@@ -4,6 +4,7 @@ import queue
 
 import rethinkdb as r
 
+import bigchaindb
 from bigchaindb import Bigchain
 from bigchaindb.monitor import Monitor
 
@@ -13,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 # obviously the hostname should come from an environment variable or setting
 # http://i.imgur.com/qciaOed.jpg
-c = Monitor(host='statsd_1')
+c = Monitor()
 
 
 class Block(object):
@@ -38,7 +39,7 @@ class Block(object):
         b = Bigchain()
 
         while True:
-            c.gauge('tx_queue_gauge', self.q_tx_to_validate.qsize(), rate=0.01)
+            c.gauge('tx_queue_gauge', self.q_tx_to_validate.qsize(), rate=bigchaindb.config['statsd']['rate'])
             tx = self.q_new_transaction.get()
 
             # poison pill

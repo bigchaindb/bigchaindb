@@ -12,9 +12,8 @@ from bigchaindb import exceptions
 from bigchaindb.crypto import hash_data, PublicKey, PrivateKey, generate_key_pair
 from bigchaindb.monitor import Monitor
 
-# obviously the hostname should come from an environment variable or setting
+c = Monitor()
 
-c = Monitor(host='statsd_1')
 
 class GenesisBlockAlreadyExistsError(Exception):
     pass
@@ -72,7 +71,7 @@ class Bigchain(object):
     def reconnect(self):
         return r.connect(host=self.host, port=self.port, db=self.dbname)
 
-    @c.timer('create_transaction', rate=0.01)
+    @c.timer('create_transaction', rate=bigchaindb.config['statsd']['rate'])
     def create_transaction(self, current_owner, new_owner, tx_input, operation, payload=None):
         """Create a new transaction
 
@@ -182,7 +181,7 @@ class Bigchain(object):
         public_key = PublicKey(public_key_base58)
         return public_key.verify(self.serialize(data), signature)
 
-    @c.timer('write_transaction', rate=0.01)
+    @c.timer('write_transaction', rate=bigchaindb.config['statsd']['rate'])
     def write_transaction(self, signed_transaction):
         """Write the transaction to bigchain.
 
@@ -319,7 +318,7 @@ class Bigchain(object):
 
         return owned
 
-    @c.timer('validate_transaction')#, rate=0.01)
+    @c.timer('validate_transaction', rate=bigchaindb.config['statsd']['rate'])
     def validate_transaction(self, transaction):
         """Validate a transaction.
 
