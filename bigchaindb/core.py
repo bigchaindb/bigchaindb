@@ -1,22 +1,17 @@
 import rethinkdb as r
-import time
 import random
 import json
 import rapidjson
 
-from datetime import datetime
 
 import bigchaindb
+from bigchaindb import util
 from bigchaindb import config_utils
 from bigchaindb import exceptions
 from bigchaindb.crypto import hash_data, PublicKey, PrivateKey, generate_key_pair
 
 
 class GenesisBlockAlreadyExistsError(Exception):
-    pass
-
-
-class KeypairNotFoundException(Exception):
     pass
 
 
@@ -55,7 +50,7 @@ class Bigchain(object):
         self.federation_nodes = keyring or bigchaindb.config['keyring']
 
         if not self.me or not self.me_private:
-            raise KeypairNotFoundException()
+            raise exceptions.KeypairNotFoundException()
 
         self._conn = None
 
@@ -100,7 +95,7 @@ class Bigchain(object):
         data = None
         if payload is not None:
             if isinstance(payload, dict):
-                hash_payload = hash_data(self.serialize(payload))
+                hash_payload = hash_data(util.serialize(payload))
                 data = {
                     'hash': hash_payload,
                     'payload': payload
@@ -108,7 +103,7 @@ class Bigchain(object):
             else:
                 raise TypeError('`payload` must be an dict instance')
 
-        hash_payload = hash_data(self.serialize(payload))
+        hash_payload = hash_data(util.serialize(payload))
         data = {
             'hash': hash_payload,
             'payload': payload
@@ -119,12 +114,12 @@ class Bigchain(object):
             'new_owner': new_owner,
             'input': tx_input,
             'operation': operation,
-            'timestamp': self.timestamp(),
+            'timestamp': util.timestamp(),
             'data': data
         }
 
         # serialize and convert to bytes
-        tx_serialized = self.serialize(tx)
+        tx_serialized = util.serialize(tx)
         tx_hash = hash_data(tx_serialized)
 
         # create the transaction
@@ -149,7 +144,7 @@ class Bigchain(object):
 
         """
         private_key = PrivateKey(private_key)
-        signature = private_key.sign(self.serialize(transaction))
+        signature = private_key.sign(util.serialize(transaction))
         signed_transaction = transaction.copy()
         signed_transaction.update({'signature': signature})
         return signed_transaction
@@ -175,7 +170,7 @@ class Bigchain(object):
         signature = data.pop('signature')
         public_key_base58 = signed_transaction['transaction']['current_owner']
         public_key = PublicKey(public_key_base58)
-        return public_key.verify(self.serialize(data), signature)
+        return public_key.verify(util.serialize(data), signature)
 
     def write_transaction(self, signed_transaction):
         """Write the transaction to bigchain.
@@ -360,7 +355,7 @@ class Bigchain(object):
                     transaction['transaction']['input']))
 
         # Check hash of the transaction
-        calculated_hash = hash_data(self.serialize(transaction['transaction']))
+        calculated_hash = hash_data(util.serialize(transaction['transaction']))
         if calculated_hash != transaction['id']:
             raise exceptions.InvalidHash()
 
@@ -405,14 +400,14 @@ class Bigchain(object):
         """
         # Create the new block
         block = {
-            'timestamp': self.timestamp(),
+            'timestamp': util.timestamp(),
             'transactions': validated_transactions,
             'node_pubkey': self.me,
             'voters': self.federation_nodes + [self.me]
         }
 
         # Calculate the hash of the new block
-        block_data = self.serialize(block)
+        block_data = util.serialize(block)
         block_hash = hash_data(block_data)
         block_signature = PrivateKey(self.me_private).sign(block_data)
 
@@ -439,7 +434,7 @@ class Bigchain(object):
         """
 
         # 1. Check if current hash is correct
-        calculated_hash = hash_data(self.serialize(block['block']))
+        calculated_hash = hash_data(util.serialize(block['block']))
         if calculated_hash != block['id']:
             raise exceptions.InvalidHash()
 
@@ -531,10 +526,10 @@ class Bigchain(object):
             'previous_block': previous_block_id,
             'is_block_valid': decision,
             'invalid_reason': invalid_reason,
-            'timestamp': self.timestamp()
+            'timestamp': util.timestamp()
         }
 
-        vote_data = self.serialize(vote)
+        vote_data = util.serialize(vote)
         signature = PrivateKey(self.me_private).sign(vote_data)
 
         vote_signed = {
@@ -597,26 +592,6 @@ class Bigchain(object):
 
         return unvoted
 
-    @staticmethod
-    def serialize(data):
-        """Static method used to serialize a dict into a JSON formatted string.
-
-        This method enforces rules like the separator and order of keys. This ensures that all dicts
-        are serialized in the same way.
-
-        This is specially important for hashing data. We need to make sure that everyone serializes their data
-        in the same way so that we do not have hash mismatches for the same structure due to serialization
-        differences.
-
-        Args:
-            data (dict): dict to serialize
-
-        Returns:
-            str: JSON formatted string
-
-        """
-        return json.dumps(data, skipkeys=False, ensure_ascii=False,
-                          separators=(',', ':'), sort_keys=True)
 
     @staticmethod
     def deserialize(data):
@@ -630,17 +605,6 @@ class Bigchain(object):
 
         """
         return json.loads(data, encoding="utf-8")
-
-    @staticmethod
-    def timestamp():
-        """Static method to calculate a UTC timestamp with microsecond precision.
-
-        Returns:
-            str: UTC timestamp.
-
-        """
-        dt = datetime.utcnow()
-        return "{0:.6f}".format(time.mktime(dt.timetuple()) + dt.microsecond / 1e6)
 
     @staticmethod
     def generate_keys():
