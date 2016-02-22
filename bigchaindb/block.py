@@ -12,8 +12,6 @@ from bigchaindb.monitor import Monitor
 
 logger = logging.getLogger(__name__)
 
-# obviously the hostname should come from an environment variable or setting
-# http://i.imgur.com/qciaOed.jpg
 c = Monitor()
 
 
