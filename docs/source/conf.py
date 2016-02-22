@@ -168,7 +168,8 @@ html_sidebars = {
     '**': ['sidebar-title-template.html',
            'globaltoc.html',
            'sidebar-links-template.html',
-           'searchbox.html'],
+           'searchbox.html',
+           'license-template.html'],
 }
 
 # Additional templates that should be rendered to pages, maps page names to
