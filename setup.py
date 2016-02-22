@@ -30,7 +30,7 @@ docs_require = [
 
 setup(
     name='BigchainDB',
-    version='0.1.3',
+    version='0.1.4',
     description='BigchainDB: A Scalable Blockchain Database',
     long_description=__doc__,
     url='https://github.com/BigchainDB/bigchaindb/',
