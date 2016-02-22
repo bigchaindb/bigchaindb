@@ -4,11 +4,11 @@ There are many ways you can contribute to the BigchainDB project, some very easy
 
 ## Easy Ways to Contribute
 
-The BigchainDB community has a Google Group and a Slack chat. Our [Community page](https://www.bigchaindb.com/community) has more information about those.
+The BigchainDB community has a Google Group and a Gitter chatroom. Our [Community page](https://www.bigchaindb.com/community) has more information about those.
 
-You can also follow us on Twitter [@BigchainDB](https://twitter.com/BigchainDB).
+You can also follow us on Twitter [@BigchainDB](https://twitter.com/BigchainDB) or read [our blog on Medium](https://medium.com/the-bigchaindb-blog).
 
-If you want to file a bug report, suggest a feature, or ask a code-related question, please go to the `BigchainDB/bigchaindb` repository on GitHub and [create a new Issue](https://github.com/bigchaindb/bigchaindb/issues/new). (You will need a [GitHub account](https://github.com/signup/free) (free).) Please describe the issue clearly, including steps to reproduce when it is a bug.
+If you want to file a bug report, suggest a feature, or ask a code-related question, please go to the `bigchaindb/bigchaindb` repository on GitHub and [create a new Issue](https://github.com/bigchaindb/bigchaindb/issues/new). (You will need a [GitHub account](https://github.com/signup/free) (free).) Please describe the issue clearly, including steps to reproduce when it is a bug.
 
 ## How to Contribute Code or Documentation
 
@@ -26,6 +26,8 @@ Familiarize yourself with how we do coding and documentation in the BigchainDB p
     * Note that we call the main branch `develop` rather than `master`
 * [semantic versioning](http://semver.org/)
 
+Note: We have a slight variation on the GitHub Flow: we call the default branch `develop` rather than `master`.
+
 ### Step 1 - Fork bigchaindb on GitHub
 
 In your web browser, go to [the BigchainDB repository on GitHub](https://github.com/bigchaindb/bigchaindb) and click the `Fork` button in the top right corner. This creates a new Git repository named `bigchaindb` in _your_ GitHub account.
@@ -36,7 +38,7 @@ In your web browser, go to [the BigchainDB repository on GitHub](https://github.
 ```text
 git clone git@github.com:your-github-username/bigchaindb.git
 cd bigchaindb
-git add upstream git@github.com:BigchainDB/bigchaindb.git
+git add upstream git@github.com:bigchaindb/bigchaindb.git
 ```
 
 ### Step 3 - Fetch and Merge the Latest from `upstream/develop`
@@ -93,7 +95,7 @@ git push origin new-branch-name
 
 Go to the GitHub website and to _your_ remote bigchaindb repository (i.e. something like https://github.com/your-user-name/bigchaindb). 
 
-See [GitHub's documentation on how to initiate and send a pull request](https://help.github.com/articles/using-pull-requests/). Note that the destination repository should be `BigchainDB/bigchaindb` and the destination branch will be `develop` (usually, and if it's not, then we can change that if necessary).
+See [GitHub's documentation on how to initiate and send a pull request](https://help.github.com/articles/using-pull-requests/). Note that the destination repository should be `bigchaindb/bigchaindb` and the destination branch will be `develop` (usually, and if it's not, then we can change that if necessary).
 
 If this is the first time you've submitted a pull request to BigchainDB, then you must read and accept the Contributor License Agreement (CLA) before we can merge your contributions. That can be found at [https://www.bigchaindb.com/cla](https://www.bigchaindb.com/cla).
 
@@ -103,7 +105,7 @@ Someone will then merge your branch or suggest changes. If we suggsest changes, 
 
 ## Quick Links
 
-* [BigchainDB Community links](https://www.bigchaindb.com/community) (e.g. mailing list, Slack)
+* [BigchainDB Community links](https://www.bigchaindb.com/community)
 * [General GitHub Documentation](https://help.github.com/)
 * [Code of Conduct](./CODE_OF_CONDUCT.md)
 * [BigchainDB Licenses](./LICENSES.md)
