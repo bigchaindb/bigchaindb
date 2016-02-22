@@ -24,6 +24,7 @@ Table of Contents
    contributing
    faq
    release-notes
+   glossary
 
 
 Indices and Tables
