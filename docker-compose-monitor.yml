@@ -10,7 +10,7 @@ influxdb:
     PRE_CREATE_DB: "telegraf"
 
 grafana:
-  build: ~/grafana-bigchaindb-docker
+  build: rhsimplex/grafana-bigchaindb-docker
   ports:
     - "3000:3000"
   links:
