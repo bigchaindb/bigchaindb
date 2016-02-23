@@ -466,8 +466,7 @@ class Bigchain(object):
         try:
             self.validate_block(block)
             return True
-        except Exception as e:
-            print(e)
+        except Exception:
             return False
 
     def write_block(self, block, durability='soft'):
