@@ -11,6 +11,7 @@ influxdb:
 
 grafana:
   image: rhsimplex/grafana-bigchaindb-docker
+  tty: true
   ports:
     - "3000:3000"
   links:
