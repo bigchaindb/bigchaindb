@@ -76,6 +76,7 @@ class Bigchain(object):
 
         Refer to the documentation of ``bigchaindb.util.sign_tx``
         """
+
         return util.sign_tx(transaction, private_key)
 
     def verify_signature(self, signed_transaction):
@@ -88,8 +89,8 @@ class Bigchain(object):
 
         Returns:
             bool: True if the signature is correct, False otherwise.
-
         """
+
         data = signed_transaction.copy()
 
         # if assignee field in the transaction, remove it
@@ -143,8 +144,8 @@ class Bigchain(object):
             A dict with the transaction details if the transaction was found.
 
             If no transaction with that `txid` was found it returns `None`
-
         """
+
         response = r.table('bigchain').concat_map(lambda doc: doc['block']['transactions'])\
             .filter(lambda transaction: transaction['id'] == txid).run(self.conn)
 
@@ -174,8 +175,8 @@ class Bigchain(object):
         Returns:
             A list of transactions containing that payload. If no transaction exists with that payload it
             returns `None`
-
         """
+
         cursor = r.table('bigchain')\
             .get_all(payload_hash, index='payload_hash')\
             .run(self.conn)
@@ -194,7 +195,6 @@ class Bigchain(object):
 
         Returns:
             The transaction that used the `txid` as an input if it exists else it returns `None`
-
         """
 
         # checks if an input was already spent
@@ -221,8 +221,8 @@ class Bigchain(object):
 
         Returns:
             list: list of `txids` currently owned by `owner`
-
         """
+
         response = r.table('bigchain')\
                     .concat_map(lambda doc: doc['block']['transactions'])\
                     .filter({'transaction': {'new_owner': owner}})\
@@ -255,6 +255,7 @@ class Bigchain(object):
             InvalidHash: if the hash of the transaction is wrong
             InvalidSignature: if the signature of the transaction is wrong
         """
+
         # If the operation is CREATE the transaction should have no inputs and should be signed by a
         # federation node
         if transaction['transaction']['operation'] == 'CREATE':
@@ -304,8 +305,8 @@ class Bigchain(object):
 
         Returns:
             bool: `True` if the transaction is valid, `False` otherwise
-
         """
+
         try:
             self.validate_transaction(transaction)
             return transaction
@@ -325,8 +326,8 @@ class Bigchain(object):
 
         Returns:
             dict: created block.
-
         """
+
         # Create the new block
         block = {
             'timestamp': util.timestamp(),
@@ -359,7 +360,6 @@ class Bigchain(object):
         Returns:
             The block if the block is valid else it raises and exception
             describing the reason why the block is invalid.
-
         """
 
         # 1. Check if current hash is correct
@@ -385,8 +385,8 @@ class Bigchain(object):
 
         Returns:
             bool: `True` if the block is valid, `False` otherwise.
-
         """
+
         try:
             self.validate_block(block)
             return True
@@ -398,8 +398,8 @@ class Bigchain(object):
 
         Args:
             block (dict): block to write to bigchain.
-
         """
+
         block_serialized = rapidjson.dumps(block)
         r.table('bigchain').insert(r.json(block_serialized), durability=durability).run(self.conn)
 
@@ -448,8 +448,8 @@ class Bigchain(object):
             previous_block_id (str): The id of the previous block.
             decision (bool): Whether the block is valid or invalid.
             invalid_reason (Optional[str]): Reason the block is invalid
-
         """
+
         vote = {
             'voting_for_block': block['id'],
             'previous_block': previous_block_id,
@@ -470,9 +470,8 @@ class Bigchain(object):
         return vote_signed
 
     def write_vote(self, block, vote, block_number):
-        """
-        Write the vote to the database
-        """
+        """Write the vote to the database."""
+
         update = {'votes': r.row['votes'].append(vote)}
 
         # We need to *not* override the existing block_number, if any
@@ -486,9 +485,8 @@ class Bigchain(object):
          .run(self.conn)
 
     def get_last_voted_block(self):
-        """
-        Returns the last block that this node voted on
-        """
+        """Returns the last block that this node voted on."""
+
         # query bigchain for all blocks this node is a voter but didn't voted on
         last_voted = r.table('bigchain')\
             .filter(r.row['block']['voters'].contains(self.me))\
@@ -507,9 +505,7 @@ class Bigchain(object):
         return last_voted[0]
 
     def get_unvoted_blocks(self):
-        """
-        Return all the blocks that has not been voted by this node.
-        """
+        """Return all the blocks that has not been voted by this node."""
 
         unvoted = r.table('bigchain')\
             .filter(lambda doc: doc['votes'].contains(lambda vote: vote['node_pubkey'] == self.me).not_())\
@@ -531,8 +527,8 @@ class Bigchain(object):
 
         Returns:
             dict: dict resulting from the serialization of a JSON formatted string.
-
         """
+
         return json.loads(data, encoding="utf-8")
 
     @staticmethod
@@ -542,7 +538,7 @@ class Bigchain(object):
         Returns:
             tuple: `(private_key, public_key)`. ECDSA key pair using the secp256k1 curve encoded
             in base58.
-
         """
+
         # generates and returns the keys serialized in hex
         return generate_key_pair()
