@@ -21,16 +21,16 @@ class KeypairNotFoundException(Exception):
 
 
 class Bigchain(object):
-    """Bigchain API
+    """BigchainDB API
 
     Create, read, sign, write transactions to the database
     """
 
     def __init__(self, host=None, port=None, dbname=None,
                  public_key=None, private_key=None, keyring=[]):
-        """Initialize the Bigchain instance
+        """Initialize the BigchainDB instance
 
-        There are three ways in which the Bigchain instance can get its parameters.
+        There are three ways in which the BigchainDB instance can get its parameters.
         The order by which the parameters are chosen are:
 
             1. Setting them by passing them to the `__init__` method itself.
@@ -40,7 +40,7 @@ class Bigchain(object):
         Args:
             host (str): hostname where the rethinkdb is running.
             port (int): port in which rethinkb is running (usually 28015).
-            dbname (str): the name of the database to connect to (usually bigchain).
+            dbname (str): the name of the database to connect to (usually BigchainDB).
             public_key (str): the base58 encoded public key for the ECDSA secp256k1 curve.
             private_key (str): the base58 encoded private key for the ECDSA secp256k1 curve.
             keyring (list[str]): list of base58 encoded public keys of the federation nodes.
@@ -71,13 +71,13 @@ class Bigchain(object):
     def create_transaction(self, current_owner, new_owner, tx_input, operation, payload=None):
         """Create a new transaction
 
-        A transaction in the bigchain is a transfer of a digital asset between two entities represented
+        A transaction in BigchainDB is a transfer of a digital asset between two entities represented
         by public keys.
 
-        Currently the bigchain supports two types of operations:
+        Currently BigchainDB supports two types of operations:
 
             `CREATE` - Only federation nodes are allowed to use this operation. In a create operation
-            a federation node creates a digital asset in the bigchain and assigns that asset to a public
+            a federation node creates a digital asset in BigchainDB and assigns that asset to a public
             key. The owner of the private key can then decided to transfer this digital asset by using the
             `transaction id` of the transaction as an input in a `TRANSFER` transaction.
 
@@ -178,9 +178,9 @@ class Bigchain(object):
         return public_key.verify(self.serialize(data), signature)
 
     def write_transaction(self, signed_transaction):
-        """Write the transaction to bigchain.
+        """Write the transaction to BigchainDB.
 
-        When first writing a transaction to the bigchain the transaction will be kept in a backlog until
+        When first writing a transaction to the BigchainDB the transaction will be kept in a backlog until
         it has been validated by the nodes of the federation.
 
         Args:
@@ -190,8 +190,8 @@ class Bigchain(object):
             dict: database response
         """
 
-        # we will assign this transaction to `one` node. This way we make sure that there are no duplicate
-        # transactions on the bigchain
+        # We will assign this transaction to `one` node. This way we make sure that there are no duplicate
+        # transactions on the BigchainDB instance
 
         if self.federation_nodes:
             assignee = random.choice(self.federation_nodes)
@@ -199,18 +199,18 @@ class Bigchain(object):
             # I am the only node
             assignee = self.me
 
-        # update the transaction
+        # Update the transaction
         signed_transaction.update({'assignee': assignee})
 
-        # write to the backlog
+        # Write to the backlog
         response = r.table('backlog').insert(signed_transaction, durability='soft').run(self.conn)
         return response
 
     # TODO: the same `txid` can be in two different blocks
     def get_transaction(self, txid):
-        """Retrieve a transaction with `txid` from bigchain.
+        """Retrieve a transaction with `txid` from BigchainDB.
 
-        Queries the bigchain for a transaction that was already included in a block.
+        Queries BigchainDB for a transaction that was already included in a block.
 
         Args:
             txid (str): transaction id of the transaction to query
@@ -240,9 +240,9 @@ class Bigchain(object):
         When creating a transaction one of the optional arguments is the `payload`. The payload is a generic
         dict that contains information about the digital asset.
 
-        To make it easy to query the bigchain for that digital asset we create a sha3-256 hash of the
+        To make it easy to query BigchainDB for that digital asset we create a sha3-256 hash of the
         serialized payload and store it with the transaction. This makes it easy for developers to keep track
-        of their digital assets in bigchain.
+        of their digital assets in BigchainDB.
 
         Args:
             payload_hash (str): sha3-256 hash of the serialized payload.
@@ -262,7 +262,7 @@ class Bigchain(object):
     def get_spent(self, txid):
         """Check if a `txid` was already used as an input.
 
-        A transaction can be used as an input for another transaction. Bigchain needs to make sure that a
+        A transaction can be used as an input for another transaction. BigchainDB needs to make sure that a
         given `txid` is only used once.
 
         Args:
@@ -274,7 +274,7 @@ class Bigchain(object):
         """
 
         # checks if an input was already spent
-        # checks if the bigchain has any transaction with input `transaction_id`
+        # checks if the BigchainDB has any transaction with input `transaction_id`
         response = r.table('bigchain').concat_map(lambda doc: doc['block']['transactions'])\
             .filter(lambda transaction: transaction['transaction']['input'] == txid).run(self.conn)
 
@@ -346,7 +346,7 @@ class Bigchain(object):
 
             tx_input = self.get_transaction(transaction['transaction']['input'])
             if not tx_input:
-                raise exceptions.TransactionDoesNotExist('input `{}` does not exist in the bigchain'.format(
+                raise exceptions.TransactionDoesNotExist('input `{}` does not exist in BigchainDB'.format(
                     transaction['transaction']['input']))
 
             if tx_input['transaction']['new_owner'] != transaction['transaction']['current_owner']:
@@ -470,10 +470,10 @@ class Bigchain(object):
             return False
 
     def write_block(self, block, durability='soft'):
-        """Write a block to bigchain.
+        """Write a block to BigchainDB.
 
         Args:
-            block (dict): block to write to bigchain.
+            block (dict): block to write to BigchainDB.
 
         """
         block_serialized = rapidjson.dumps(block)
@@ -487,14 +487,14 @@ class Bigchain(object):
     def create_genesis_block(self):
         """Create the genesis block
 
-        Block created when bigchain is first initialized. This method is not atomic, there might be concurrency
+        Block created when BigchainDB is first initialized. This method is not atomic, there might be concurrency
         problems if multiple instances try to write the genesis block when the BigchainDB Federation is started,
         but it's a highly unlikely scenario.
         """
 
         # 1. create one transaction
         # 2. create the block with one transaction
-        # 3. write the block to the bigchain
+        # 3. write the block to the BigchainDB
 
 
         blocks_count = r.table('bigchain').count().run(self.conn)
@@ -503,7 +503,7 @@ class Bigchain(object):
             raise GenesisBlockAlreadyExistsError('Cannot create the Genesis block')
 
 
-        payload = {'message': 'Hello World from the Bigchain'}
+        payload = {'message': 'Hello World from BigchainDB'}
         transaction = self.create_transaction(self.me, self.me, None, 'GENESIS', payload=payload)
         transaction_signed = self.sign_transaction(transaction, self.me_private)
 
@@ -565,7 +565,7 @@ class Bigchain(object):
         """
         Returns the last block that this node voted on
         """
-        # query bigchain for all blocks this node is a voter but didn't voted on
+        # query BigchainDB for all blocks this node is a voter but didn't voted on
         last_voted = r.table('bigchain')\
             .filter(r.row['block']['voters'].contains(self.me))\
             .filter(lambda doc: doc['votes'].contains(lambda vote: vote['node_pubkey'] == self.me))\
