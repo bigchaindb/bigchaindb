@@ -37,7 +37,6 @@ class Block(object):
         b = Bigchain()
 
         while True:
-            c.gauge('tx_queue_gauge', self.q_tx_to_validate.qsize(), rate=bigchaindb.config['statsd']['rate'])
             tx = self.q_new_transaction.get()
 
             # poison pill
@@ -58,6 +57,7 @@ class Block(object):
         b = Bigchain()
 
         while True:
+            c.gauge('tx_queue_gauge', self.q_tx_to_validate.qsize(), rate=bigchaindb.config['statsd']['rate'])
             tx = self.q_tx_to_validate.get()
 
             # poison pill
