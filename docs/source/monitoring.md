@@ -9,7 +9,7 @@ $ docker-compose -f docker-compose-monitor.yml build
 $ docker-compose -f docker-compose-monitor.yml up
 ```
 
-and point a browser tab to `http://localhost:3000/dashboard/script/bigchaindb_dashboard.js`.  Login and password are `admin` by default.  If BigchainDB is running and processing transactions, you should see analytics—if not, start BigchainDB as above, and refresh the page after a few seconds.
+and point a browser tab to `http://localhost:3000/dashboard/script/bigchaindb_dashboard.js`.  Login and password are `admin` by default.  If BigchainDB is running and processing transactions, you should see analytics—if not, [start BigchainDB](installing.html#run-bigchaindb) and refresh the page after a few seconds.
 
 If you're not interested in monitoring, don't worry: BigchainDB will function just fine without any monitoring setup.
 
