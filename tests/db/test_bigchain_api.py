@@ -8,7 +8,8 @@ import rethinkdb as r
 import bigchaindb
 from bigchaindb import util
 from bigchaindb import exceptions
-from bigchaindb.crypto import hash_data, PrivateKey, PublicKey, generate_key_pair
+from bigchaindb.crypto import PrivateKey, PublicKey, generate_key_pair
+from bigchaindb.util import hash_data
 from bigchaindb.voter import Voter
 from bigchaindb.block import Block
 

@@ -8,7 +8,7 @@ import bigchaindb
 from bigchaindb import util
 from bigchaindb import config_utils
 from bigchaindb import exceptions
-from bigchaindb.crypto import hash_data, PublicKey, PrivateKey, generate_key_pair
+from bigchaindb import crypto
 
 
 class GenesisBlockAlreadyExistsError(Exception):
@@ -80,15 +80,9 @@ class Bigchain(object):
         return util.sign_tx(transaction, private_key)
 
     def verify_signature(self, signed_transaction):
-        """Verify the signature of a transaction
+        """Verify the signature of a transaction.
 
-        A valid transaction should have been signed `current_owner` corresponding private key.
-
-        Args:
-            signed_transaction (dict): a transaction with the `signature` included.
-
-        Returns:
-            bool: True if the signature is correct, False otherwise.
+        Refer to the documentation of ``bigchaindb.crypto.verify_signature``
         """
 
         data = signed_transaction.copy()
@@ -99,7 +93,7 @@ class Bigchain(object):
 
         signature = data.pop('signature')
         public_key_base58 = signed_transaction['transaction']['current_owner']
-        public_key = PublicKey(public_key_base58)
+        public_key = crypto.PublicKey(public_key_base58)
         return public_key.verify(util.serialize(data), signature)
 
     def write_transaction(self, signed_transaction):
@@ -284,15 +278,7 @@ class Bigchain(object):
                 raise exceptions.DoubleSpend('input `{}` was already spent'.format(
                     transaction['transaction']['input']))
 
-        # Check hash of the transaction
-        calculated_hash = hash_data(util.serialize(transaction['transaction']))
-        if calculated_hash != transaction['id']:
-            raise exceptions.InvalidHash()
-
-        # Check signature
-        if not self.verify_signature(transaction):
-            raise exceptions.InvalidSignature()
-
+        util.check_hash_and_signature(transaction)
         return transaction
 
     def is_valid_transaction(self, transaction):
@@ -338,8 +324,8 @@ class Bigchain(object):
 
         # Calculate the hash of the new block
         block_data = util.serialize(block)
-        block_hash = hash_data(block_data)
-        block_signature = PrivateKey(self.me_private).sign(block_data)
+        block_hash = util.hash_data(block_data)
+        block_signature = crypto.PrivateKey(self.me_private).sign(block_data)
 
         block = {
             'id': block_hash,
@@ -363,7 +349,7 @@ class Bigchain(object):
         """
 
         # 1. Check if current hash is correct
-        calculated_hash = hash_data(util.serialize(block['block']))
+        calculated_hash = util.hash_data(util.serialize(block['block']))
         if calculated_hash != block['id']:
             raise exceptions.InvalidHash()
 
@@ -459,7 +445,7 @@ class Bigchain(object):
         }
 
         vote_data = util.serialize(vote)
-        signature = PrivateKey(self.me_private).sign(vote_data)
+        signature = crypto.PrivateKey(self.me_private).sign(vote_data)
 
         vote_signed = {
             'node_pubkey': self.me,
@@ -541,4 +527,4 @@ class Bigchain(object):
         """
 
         # generates and returns the keys serialized in hex
-        return generate_key_pair()
+        return crypto.generate_key_pair()

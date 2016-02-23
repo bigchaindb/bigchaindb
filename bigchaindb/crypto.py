@@ -1,7 +1,5 @@
 # Separate all crypto code so that we can easily test several implementations
 
-import hashlib
-import sha3
 import binascii
 import base58
 import bitcoin
@@ -146,6 +144,3 @@ def generate_key_pair():
 
     return (private_value_base58, public_value_compressed_base58)
 
-
-def hash_data(data):
-    return hashlib.sha3_256(data.encode()).hexdigest()

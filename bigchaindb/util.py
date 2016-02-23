@@ -1,9 +1,12 @@
-import multiprocessing as mp
+import sha3
+
 import json
 import time
+import multiprocessing as mp
 from datetime import datetime
 
-from bigchaindb.crypto import hash_data, PrivateKey
+from bigchaindb import exceptions
+from bigchaindb.crypto import PrivateKey, PublicKey
 
 
 class ProcessGroup(object):
@@ -147,4 +150,48 @@ def sign_tx(transaction, private_key):
     signed_transaction = transaction.copy()
     signed_transaction.update({'signature': signature})
     return signed_transaction
+
+
+def create_and_sign_tx(private_key, current_owner, new_owner, tx_input, operation='TRANSFER', payload=None):
+    tx = create_tx(current_owner, new_owner, tx_input, operation, payload)
+    return sign_tx(private_key, tx)
+
+
+def hash_data(data):
+    return sha3.sha3_256(data.encode()).hexdigest()
+
+
+def check_hash_and_signature(transaction):
+    # Check hash of the transaction
+    calculated_hash = hash_data(serialize(transaction['transaction']))
+    if calculated_hash != transaction['id']:
+        raise exceptions.InvalidHash()
+
+    # Check signature
+    if not verify_signature(transaction):
+        raise exceptions.InvalidSignature()
+
+
+def verify_signature(signed_transaction):
+    """Verify the signature of a transaction
+
+    A valid transaction should have been signed `current_owner` corresponding private key.
+
+    Args:
+        signed_transaction (dict): a transaction with the `signature` included.
+
+    Returns:
+        bool: True if the signature is correct, False otherwise.
+    """
+
+    data = signed_transaction.copy()
+
+    # if assignee field in the transaction, remove it
+    if 'assignee' in data:
+        data.pop('assignee')
+
+    signature = data.pop('signature')
+    public_key_base58 = signed_transaction['transaction']['current_owner']
+    public_key = PublicKey(public_key_base58)
+    return public_key.verify(serialize(data), signature)
 
