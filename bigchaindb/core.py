@@ -272,7 +272,6 @@ class Bigchain(object):
             The transaction that used the `txid` as an input if it exists else it returns `None`
 
         """
-
         # checks if an input was already spent
         # checks if the bigchain has any transaction with input `transaction_id`
         response = r.table('bigchain').concat_map(lambda doc: doc['block']['transactions'])\
@@ -353,11 +352,12 @@ class Bigchain(object):
                 raise exceptions.TransactionOwnerError('current_owner `{}` does not own the input `{}`'.format(
                     transaction['transaction']['current_owner'], transaction['transaction']['input']))
 
-            # check if the input was already spent
+            # check if the input was already spent by a transaction other then this one.
             spent = self.get_spent(tx_input['id'])
             if spent:
-                raise exceptions.DoubleSpend('input `{}` was already spent'.format(
-                    transaction['transaction']['input']))
+                if spent['id'] != transaction['id']:
+                    raise exceptions.DoubleSpend('input `{}` was already spent'.format(
+                        transaction['transaction']['input']))
 
         # Check hash of the transaction
         calculated_hash = hash_data(self.serialize(transaction['transaction']))
@@ -496,12 +496,10 @@ class Bigchain(object):
         # 2. create the block with one transaction
         # 3. write the block to the bigchain
 
-
         blocks_count = r.table('bigchain').count().run(self.conn)
 
         if blocks_count:
             raise GenesisBlockAlreadyExistsError('Cannot create the Genesis block')
-
 
         payload = {'message': 'Hello World from the Bigchain'}
         transaction = self.create_transaction(self.me, self.me, None, 'GENESIS', payload=payload)
