@@ -47,6 +47,8 @@ sudo pip install bigchaindb
 ```
 (or maybe `sudo pip3 install bigchaindb` or `sudo pip3.4 install bigchaindb`. The `sudo` may not be necessary.)
 
+Note: You can use `pip` to upgrade bigchaindb to the latest version using `sudo pip install --upgrade bigchaindb`
+
 ### How to Install BigchainDB from Source
 
 BigchainDB is in its early stages and being actively developed on its [GitHub repository](https://github.com/bigchaindb/bigchaindb). Contributions are highly appreciated.
@@ -86,58 +88,51 @@ During its first run, BigchainDB takes care of configuring a single node environ
 **NOT for Production Use**
 
 For those who like using Docker and wish to experiment with BigchainDB in
-non-production environments, we currently maintain a `Dockerfile` that can be
+non-production environments, we currently maintain a `dockerfile` that can be
 used to build an image for `bigchaindb`, along with a `docker-compose.yml` file
 to manage a "standalone node", consisting mainly of two containers: one for
-rethinkdb, and another for `bigchaindb`.
+RethinkDB, and another for `bigchaindb`.
 
 Assuming you have `docker` and `docker-compose` installed, you would proceed as
 follows.
 
 In a terminal shell:
-
-```bash
+```text
 $ git clone git@github.com:bigchaindb/bigchaindb.git
 ```
 
-Build the docker image
-
-```bash
+Build the Docker image:
+```text
 $ docker-compose build
 ```
 
-then, a one-time configuration step, to create the config file, which will be
-stored on your host machine under ` ~/.bigchaindb_docker/config`
-
-```bash
+then do a one-time configuration step to create the config file; it will be
+stored on your host machine under ` ~/.bigchaindb_docker/config`:
+```text
 $ docker-compose run --rm bigchaindb bigchaindb configure
 ```
 
-you can load test transactions via
-
-```bash
+You can load test transactions via:
+```text
 $ docker-compose run --rm bigchaindb bigchaindb-benchmark load
 ```
 
-you should then be able to start `bigchaindb`, via
-
-```bash
+You should then be able to start `bigchaindb`, via:
+```text
 $ docker-compose run --rm bigchaindb bigchaindb start
 ```
 
 or
-
-```bash
+```text
 $ docker-compose up
 ```
 
-You should be able to view the rethinkdb dashboard at
-
-```
+You should be able to view the RethinkDB dashboard at:
+```text
 http://docker_host:58080/
 ```
 
-where `docker_host` is the ip or hostname of the machine running the docker
-engine. If you are developing on linux this most likely will be `localhost`,
+where `docker_host` is the IP or hostname of the machine running the Docker
+engine. If you are developing on Linux, this most likely will be `localhost`,
 whereas if you are running docker-machine (e.g.: on Mac OS X) this will be the
-ip of the docher machine (`docker-machine ip machine_name`).
+IP of the Docker machine (`docker-machine ip machine_name`).
