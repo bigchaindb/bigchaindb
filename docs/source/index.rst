@@ -21,6 +21,7 @@ Table of Contents
    models
    json-serialization
    developer-interface
+   monitoring
    contributing
    faq
    release-notes
