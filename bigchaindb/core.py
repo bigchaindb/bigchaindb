@@ -501,7 +501,7 @@ class Bigchain(object):
         if blocks_count:
             raise GenesisBlockAlreadyExistsError('Cannot create the Genesis block')
 
-        payload = {'message': 'Hello World from the Bigchain'}
+        payload = {'message': 'Hello World from the BigchainDB'}
         transaction = self.create_transaction(self.me, self.me, None, 'GENESIS', payload=payload)
         transaction_signed = self.sign_transaction(transaction, self.me_private)
 
