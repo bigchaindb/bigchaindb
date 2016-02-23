@@ -269,30 +269,18 @@ class Bigchain(object):
             txid (str): transaction id.
 
         Returns:
-            A tuple with the block id and the transactions that used the `txid` as an input if
-            it exists else it returns `None`
+            The transaction that used the `txid` as an input if it exists else it returns `None`
 
         """
         # checks if an input was already spent
         # checks if the bigchain has any transaction with input `transaction_id`
-        response = r.table('bigchain').group('id')\
-            .concat_map(lambda doc: doc['block']['transactions'])\
+        response = r.table('bigchain').concat_map(lambda doc: doc['block']['transactions'])\
             .filter(lambda transaction: transaction['transaction']['input'] == txid).run(self.conn)
 
-        # the query returns a dictionary in which keys are block numbers and values are list of transactions
-        # with that using that input inside the block. For it to be correct:
-            # - There should be at most one block with transactions using that input
-            # - There should be at most one transaction with that input
-
-        # flatten to dictionary into a list of [(block['id'], tx), ...]
-        transactions = []
-        for k, v in response.items():
-            for tx in v:
-                transactions.append((k, tx))
-
         # a transaction_id should have been spent at most one time
+        transactions = list(response)
         if transactions:
-            if len(transactions) > 1:
+            if len(transactions) != 1:
                 raise Exception('`{}` was spent more then once. There is a problem with the chain'.format(
                     txid))
             else:
@@ -364,11 +352,12 @@ class Bigchain(object):
                 raise exceptions.TransactionOwnerError('current_owner `{}` does not own the input `{}`'.format(
                     transaction['transaction']['current_owner'], transaction['transaction']['input']))
 
-            # check if the input was already spent
+            # check if the input was already spent by a transaction other then this one.
             spent = self.get_spent(tx_input['id'])
             if spent:
-                raise exceptions.DoubleSpend('input `{}` was already spent'.format(
-                    transaction['transaction']['input']))
+                if spent['id'] != transaction['id']:
+                    raise exceptions.DoubleSpend('input `{}` was already spent'.format(
+                        transaction['transaction']['input']))
 
         # Check hash of the transaction
         calculated_hash = hash_data(self.serialize(transaction['transaction']))
@@ -508,12 +497,10 @@ class Bigchain(object):
         # 2. create the block with one transaction
         # 3. write the block to the bigchain
 
-
         blocks_count = r.table('bigchain').count().run(self.conn)
 
         if blocks_count:
             raise GenesisBlockAlreadyExistsError('Cannot create the Genesis block')
-
 
         payload = {'message': 'Hello World from the Bigchain'}
         transaction = self.create_transaction(self.me, self.me, None, 'GENESIS', payload=payload)

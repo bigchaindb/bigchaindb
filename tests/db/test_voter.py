@@ -3,7 +3,6 @@ import time
 import rethinkdb as r
 import multiprocessing as mp
 
-from bigchaindb import Bigchain
 from bigchaindb.voter import Voter, BlockStream
 from bigchaindb.crypto import PublicKey
 
@@ -34,7 +33,6 @@ class TestBigchainVoter(object):
         blocks = list(r.table('bigchain')
                        .order_by(r.asc((r.row['block']['timestamp'])))
                        .run(b.conn))
-
 
         # validate vote
         assert len(blocks[1]['votes']) == 1
@@ -78,7 +76,6 @@ class TestBigchainVoter(object):
                        .order_by(r.asc((r.row['block']['timestamp'])))
                        .run(b.conn))
 
-
         # validate vote
         assert len(blocks[1]['votes']) == 1
         vote = blocks[1]['votes'][0]
@@ -93,7 +90,7 @@ class TestBigchainVoter(object):
     def test_valid_block_voting_with_transfer_transactions(self, b):
         q_new_block = mp.Queue()
 
-        genesis = b.create_genesis_block()
+        b.create_genesis_block()
 
         # create a `CREATE` transaction
         test_user_priv, test_user_pub = b.generate_keys()
@@ -121,11 +118,9 @@ class TestBigchainVoter(object):
                        .order_by(r.asc((r.row['block']['timestamp'])))
                        .run(b.conn))
 
-
         # validate vote
         assert len(blocks[1]['votes']) == 1
 
-        
         # create a `TRANSFER` transaction
         test_user2_priv, test_user2_pub = b.generate_keys()
         tx2 = b.create_transaction(test_user_pub, test_user2_pub, tx['id'], 'TRANSFER')
@@ -151,7 +146,6 @@ class TestBigchainVoter(object):
         blocks = list(r.table('bigchain')
                        .order_by(r.asc((r.row['block']['timestamp'])))
                        .run(b.conn))
-
 
         # validate vote
         assert len(blocks[2]['votes']) == 1
@@ -181,7 +175,6 @@ class TestBigchainVoter(object):
         block['block']['transactions'][0]['id'] = 'abc'
         assert not b.is_valid_block(block)
         b.write_block(block, durability='hard')
-
 
         # vote
         voter.start()
@@ -283,7 +276,6 @@ class TestBigchainVoter(object):
         time.sleep(1)
         voter.kill()
 
-
         # retrive blocks from bigchain
         blocks = list(r.table('bigchain')
                        .order_by(r.asc((r.row['block']['timestamp'])))
@@ -301,7 +293,6 @@ class TestBigchainVoter(object):
     @pytest.mark.skipif(reason='Updating the block_number must be atomic')
     def test_updating_block_number_must_be_atomic(self):
         pass
-
 
 
 class TestBlockStream(object):
@@ -334,7 +325,6 @@ class TestBlockStream(object):
         # and check if we get exactly these two blocks
         assert bs.get() == block_1
         assert bs.get() == block_2
-
 
     def test_if_old_blocks_get_should_return_old_block_first(self, b):
         # create two blocks
