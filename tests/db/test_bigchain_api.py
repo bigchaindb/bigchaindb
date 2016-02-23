@@ -8,36 +8,10 @@ import rethinkdb as r
 import bigchaindb
 from bigchaindb import util
 from bigchaindb import exceptions
-from bigchaindb import Bigchain
 from bigchaindb.crypto import hash_data, PrivateKey, PublicKey, generate_key_pair
 from bigchaindb.voter import Voter
 from bigchaindb.block import Block
 
-
-def create_inputs(user_public_key, amount=1, b=None):
-    # 1. create the genesis block
-    b = b or Bigchain()
-    try:
-        b.create_genesis_block()
-    except bigchaindb.core.GenesisBlockAlreadyExistsError:
-        pass
-
-    # 2. create block with transactions for `USER` to spend
-    transactions = []
-    for i in range(amount):
-        tx = b.create_transaction(b.me, user_public_key, None, 'CREATE')
-        tx_signed = b.sign_transaction(tx, b.me_private)
-        transactions.append(tx_signed)
-        b.write_transaction(tx_signed)
-
-    block = b.create_block(transactions)
-    b.write_block(block, durability='hard')
-    return block
-
-
-@pytest.fixture
-def inputs(user_public_key):
-    return create_inputs(user_public_key)
 
 
 @pytest.mark.skipif(reason='Some tests throw a ResourceWarning that might result in some weird '
@@ -130,11 +104,11 @@ class TestBigchainApi(object):
         # check if the assignee is the current node
         assert response['assignee'] == b.me
 
+    @pytest.mark.usefixtures('inputs')
     def test_assign_transaction_multiple_nodes(self, b, user_public_key, user_private_key):
         # create 5 federation nodes
         for _ in range(5):
             b.federation_nodes.append(b.generate_keys()[1])
-        create_inputs(user_public_key, amount=20, b=b)
 
         # test assignee for several transactions
         for _ in range(20):
