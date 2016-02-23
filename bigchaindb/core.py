@@ -269,12 +269,13 @@ class Bigchain(object):
             txid (str): transaction id.
 
         Returns:
-            The transaction that used the `txid` as an input if it exists else it returns `None`
+            A tuple with the block id and the transactions that used the `txid` as an input if
+            it exists else it returns `None`
 
         """
         # checks if an input was already spent
         # checks if the bigchain has any transaction with input `transaction_id`
-        response = r.table('bigchain').group('block_number')\
+        response = r.table('bigchain').group('id')\
             .concat_map(lambda doc: doc['block']['transactions'])\
             .filter(lambda transaction: transaction['transaction']['input'] == txid).run(self.conn)
 
@@ -283,14 +284,19 @@ class Bigchain(object):
             # - There should be at most one block with transactions using that input
             # - There should be at most one transaction with that input
 
+        # flatten to dictionary into a list of [(block['id'], tx), ...]
+        transactions = []
+        for k, v in response.items():
+            for tx in v:
+                transactions.append((k, tx))
+
         # a transaction_id should have been spent at most one time
-        if response:
-            if len(response) > 1 or len(*response.values()) > 1:
+        if transactions:
+            if len(transactions) > 1:
                 raise Exception('`{}` was spent more then once. There is a problem with the chain'.format(
                     txid))
             else:
-                response = list(response.items())
-                return (response[0][0], response[0][1][0])
+                return transactions[0]
         else:
             return None
 
