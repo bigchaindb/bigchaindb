@@ -79,8 +79,12 @@ Then open a different terminal and run:
 ```text
 $ bigchaindb start
 ```
-
 During its first run, BigchainDB takes care of configuring a single node environment.
+
+On another terminal create some test transactions
+```text
+$ bigchaindb-benchmark load
+```
 
 
 ## Run BigchainDB with Docker
