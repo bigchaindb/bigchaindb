@@ -21,10 +21,10 @@ class Monitor(statsd.StatsClient):
             kwargs = {}
 
         # set prefix, parameters from configuration file
-        if not kwargs.get('prefix'):
+        if 'prefix' not in kwargs:
             kwargs['prefix'] = '{hostname}.'.format(hostname=node())
-        if not kwargs.get('host'):
+        if 'host' not in kwargs:
             kwargs['host'] = bigchaindb.config['statsd']['host']
-        if not kwargs.get('port'):
+        if 'port' not in kwargs:
             kwargs['port'] = bigchaindb.config['statsd']['port']
         super().__init__(*args, **kwargs)
