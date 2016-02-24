@@ -12,7 +12,7 @@ from bigchaindb import exceptions
 from bigchaindb.crypto import hash_data, PublicKey, PrivateKey, generate_key_pair
 from bigchaindb.monitor import Monitor
 
-c = Monitor()
+monitor = Monitor()
 
 
 class GenesisBlockAlreadyExistsError(Exception):
@@ -71,7 +71,7 @@ class Bigchain(object):
     def reconnect(self):
         return r.connect(host=self.host, port=self.port, db=self.dbname)
 
-    @c.timer('create_transaction', rate=bigchaindb.config['statsd']['rate'])
+    @monitor.timer('create_transaction', rate=bigchaindb.config['statsd']['rate'])
     def create_transaction(self, current_owner, new_owner, tx_input, operation, payload=None):
         """Create a new transaction
 
@@ -181,7 +181,7 @@ class Bigchain(object):
         public_key = PublicKey(public_key_base58)
         return public_key.verify(self.serialize(data), signature)
 
-    @c.timer('write_transaction', rate=bigchaindb.config['statsd']['rate'])
+    @monitor.timer('write_transaction', rate=bigchaindb.config['statsd']['rate'])
     def write_transaction(self, signed_transaction):
         """Write the transaction to bigchain.
 
@@ -318,7 +318,7 @@ class Bigchain(object):
 
         return owned
 
-    @c.timer('validate_transaction', rate=bigchaindb.config['statsd']['rate'])
+    @monitor.timer('validate_transaction', rate=bigchaindb.config['statsd']['rate'])
     def validate_transaction(self, transaction):
         """Validate a transaction.
 
@@ -431,7 +431,7 @@ class Bigchain(object):
 
         return block
 
-    @c.timer('validate_block')
+    @monitor.timer('validate_block')
     # TODO: check that the votings structure is correctly constructed
     def validate_block(self, block):
         """Validate a block.
@@ -476,7 +476,7 @@ class Bigchain(object):
         except Exception:
             return False
 
-    @c.timer('write_block')
+    @monitor.timer('write_block')
     def write_block(self, block, durability='soft'):
         """Write a block to bigchain.
 
