@@ -1,7 +1,6 @@
 import os
 import copy
 
-from bigchaindb.core import Bigchain  # noqa
 
 
 def e(key, default=None, conv=None):
@@ -35,10 +34,17 @@ config = {
         'private': e('BIGCHAIN_KEYPAIR_PRIVATE')
     },
     'keyring': [
-    ]
+    ],
+    'statsd': {
+        'host': e('BIGCHAIN_STATSD_HOST', default='localhost'),
+        'port': e('BIGCHAIN_STATSD_PORT', default=8125),
+        'rate': e('BIGCHAIN_STATSD_SAMPLERATE', default=0.01)
+    }
 }
 
 # We need to maintain a backup copy of the original config dict in case
 # the user wants to reconfigure the node. Check ``bigchaindb.config_utils``
 # for more info.
 _config = copy.deepcopy(config)
+from bigchaindb.core import Bigchain  # noqa
+

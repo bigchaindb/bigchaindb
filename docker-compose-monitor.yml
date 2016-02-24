@@ -1,0 +1,25 @@
+influxdb:
+  image: tutum/influxdb
+  ports:
+    - "8083:8083"
+    - "8086:8086"
+  expose:
+    - "8090"
+    - "8099"
+  environment:
+    PRE_CREATE_DB: "telegraf"
+
+grafana:
+  image: rhsimplex/grafana-bigchaindb-docker
+  tty: true
+  ports:
+    - "3000:3000"
+  links:
+    - influxdb:localhost
+
+statsd:
+  image: rhsimplex/docker-telegraf-statsd
+  ports:
+    - "8125:8125/udp"
+  links:
+    - influxdb:localhost
