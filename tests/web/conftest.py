@@ -18,11 +18,6 @@ def cleanup_tables(request, node_config):
 
 
 @pytest.fixture
-def b():
-    return conftest.b()
-
-
-@pytest.fixture
 def app(request, node_config):
     # XXX: For whatever reason this fixture runs before `restore_config`,
     #      so we need to manually call it.

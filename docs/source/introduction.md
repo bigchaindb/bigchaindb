@@ -9,3 +9,5 @@ BigchainDB is a scalable blockchain database. You can read about its motivations
 Right now, BigchainDB is fairly new, so there are no live, operational BigchainDB clusters. There are no BigchainDB drivers. Those things are coming.
 
 What does exist is our in-development BigchainDB server software. Therefore all the documentation is about that, for now.
+
+If you're curious about what's coming in our roadmap, see [the ROADMAP.md file](https://github.com/bigchaindb/bigchaindb/blob/develop/ROADMAP.md) and [the list of open issues](https://github.com/bigchaindb/bigchaindb/issues). If you want to request a feature or file a bug report, see [the CONTRIBUTING.md file](https://github.com/bigchaindb/bigchaindb/blob/develop/CONTRIBUTING.md).

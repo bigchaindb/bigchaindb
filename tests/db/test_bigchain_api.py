@@ -21,6 +21,7 @@ from bigchaindb.block import Block
 def test_remove_unclosed_sockets():
     pass
 
+
 class TestBigchainApi(object):
 
     def test_create_transaction(self, b):
@@ -33,7 +34,6 @@ class TestBigchainApi(object):
     def test_create_transaction_with_unsupported_payload_raises(self, b):
         with pytest.raises(TypeError):
             b.create_transaction('a', 'b', 'c', 'd', payload=[])
-
 
     def test_transaction_hash(self, b):
         payload = {'cats': 'are awesome'}
@@ -142,8 +142,8 @@ class TestBigchainApi(object):
             b.create_genesis_block()
 
         genesis_blocks = list(r.table('bigchain')
-                        .filter(r.row['block_number'] == 0)
-                        .run(b.conn))
+                              .filter(r.row['block_number'] == 0)
+                              .run(b.conn))
 
         assert len(genesis_blocks) == 1
 
@@ -325,6 +325,24 @@ class TestTransactionValidation(object):
         assert tx_valid_signed == b.validate_transaction(tx_valid_signed)
         assert tx_valid_signed == b.is_valid_transaction(tx_valid_signed)
 
+    @pytest.mark.usefixtures('inputs')
+    def test_valid_non_create_transaction_after_block_creation(self, b, user_public_key, user_private_key):
+        input_valid = b.get_owned_ids(user_public_key).pop()
+        tx_valid = b.create_transaction(user_public_key, 'b', input_valid, 'd')
+
+        tx_valid_signed = b.sign_transaction(tx_valid, user_private_key)
+        assert tx_valid_signed == b.validate_transaction(tx_valid_signed)
+        assert tx_valid_signed == b.is_valid_transaction(tx_valid_signed)
+
+        # create block
+        block = b.create_block([tx_valid_signed])
+        assert b.is_valid_block(block)
+        b.write_block(block, durability='hard')
+
+        # check that the transaction is still valid after being written to the bigchain
+        assert tx_valid_signed == b.validate_transaction(tx_valid_signed)
+        assert tx_valid_signed == b.is_valid_transaction(tx_valid_signed)
+
 
 class TestBlockValidation(object):
 
@@ -333,7 +351,7 @@ class TestBlockValidation(object):
 
         # change block hash
         block.update({'id': 'abc'})
-        with pytest.raises(exceptions.InvalidHash) as excinfo:
+        with pytest.raises(exceptions.InvalidHash):
             b.validate_block(block)
 
     @pytest.mark.skipif(reason='Separated tx validation from block creation.')
@@ -344,7 +362,6 @@ class TestBlockValidation(object):
         tx_invalid = b.create_transaction('a', 'b', valid_input, 'c')
 
         block = b.create_block([tx_invalid])
-        assert invalid_transactions == [tx_invalid]
 
         # create a block with invalid transactions
         block = {
@@ -495,7 +512,6 @@ class TestBigchainVoter(object):
         # wait for the vote to be written
         time.sleep(1)
         voter.kill()
-
 
         # retrive block from bigchain
         bigchain_block = r.table('bigchain').get(block['id']).run(b.conn)
@@ -741,4 +757,3 @@ class TestBigchainBlock(object):
 
     def test_duplicated_transactions(self):
         pytest.skip('We may have duplicates in the initial_results and changefeed')
-

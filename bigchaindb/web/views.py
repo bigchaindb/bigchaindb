@@ -19,7 +19,7 @@ def create_transaction():
     val = {}
     tx = request.get_json(force=True)
 
-    if tx['operation'] == 'CREATE':
+    if tx['transaction']['operation'] == 'CREATE':
         tx = util.transform_create(tx)
         tx = util.sign_tx(tx, b.me_private)
 
