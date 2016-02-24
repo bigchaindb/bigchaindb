@@ -96,7 +96,7 @@ class Bigchain(object):
         public_key = crypto.PublicKey(public_key_base58)
         return public_key.verify(util.serialize(data), signature)
 
-    def write_transaction(self, signed_transaction):
+    def write_transaction(self, signed_transaction, durability='soft'):
         """Write the transaction to bigchain.
 
         When first writing a transaction to the bigchain the transaction will be kept in a backlog until
@@ -122,7 +122,7 @@ class Bigchain(object):
         signed_transaction.update({'assignee': assignee})
 
         # write to the backlog
-        response = r.table('backlog').insert(signed_transaction, durability='soft').run(self.conn)
+        response = r.table('backlog').insert(signed_transaction, durability=durability).run(self.conn)
         return response
 
     # TODO: the same `txid` can be in two different blocks

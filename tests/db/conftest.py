@@ -81,10 +81,6 @@ def cleanup_tables(request, node_config):
 
 
 @pytest.fixture
-def b():
-    return Bigchain()
-
-@pytest.fixture
 def inputs(user_public_key, amount=1, b=None):
     # 1. create the genesis block
     b = b or Bigchain()

@@ -5,6 +5,7 @@ import time
 import multiprocessing as mp
 from datetime import datetime
 
+import bigchaindb
 from bigchaindb import exceptions
 from bigchaindb.crypto import PrivateKey, PublicKey
 
@@ -154,7 +155,7 @@ def sign_tx(transaction, private_key):
 
 def create_and_sign_tx(private_key, current_owner, new_owner, tx_input, operation='TRANSFER', payload=None):
     tx = create_tx(current_owner, new_owner, tx_input, operation, payload)
-    return sign_tx(private_key, tx)
+    return sign_tx(tx, private_key)
 
 
 def hash_data(data):
@@ -194,4 +195,18 @@ def verify_signature(signed_transaction):
     public_key_base58 = signed_transaction['transaction']['current_owner']
     public_key = PublicKey(public_key_base58)
     return public_key.verify(serialize(data), signature)
+
+
+def transform_create(tx):
+    """Change the owner and signature for a ``CREATE`` transaction created by a node"""
+
+    # XXX: the next instruction opens a new connection to the DB, consider using a singleton or a global
+    #      if you need a Bigchain instance.
+    b = bigchaindb.Bigchain()
+    transaction = tx['transaction']
+    payload = None
+    if transaction['data'] and 'payload' in transaction['data']:
+        payload = transaction['data']['payload']
+    new_tx = create_tx(b.me, transaction['current_owner'], None, 'CREATE', payload=payload)
+    return new_tx
 

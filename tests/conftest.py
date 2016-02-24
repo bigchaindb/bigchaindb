@@ -47,3 +47,10 @@ def user_private_key():
 @pytest.fixture
 def user_public_key():
     return USER_PUBLIC_KEY
+
+
+@pytest.fixture
+def b():
+    from bigchaindb import Bigchain
+    return Bigchain()
+
