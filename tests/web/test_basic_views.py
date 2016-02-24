@@ -20,8 +20,6 @@ def test_post_create_transaction_endpoint(b, client):
     tx = util.create_and_sign_tx(keypair[0], keypair[1], keypair[1], None, 'CREATE')
 
     res = client.post('/tx/', data=json.dumps(tx))
-    from pprint import pprint as pp
-    pp(res.body)
     assert res.json['transaction']['current_owner'] == b.me
     assert res.json['transaction']['new_owner'] == keypair[1]
 
