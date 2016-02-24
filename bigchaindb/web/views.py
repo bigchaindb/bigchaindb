@@ -17,6 +17,9 @@ def get_transaction(tx_id):
 @basic_views.route('/tx/', methods=['POST'])
 def create_transaction():
     val = {}
+
+    # `force` will try to format the body of the POST request even if the `content-type` header is not
+    # set to `application/json`
     tx = request.get_json(force=True)
 
     if tx['transaction']['operation'] == 'CREATE':
