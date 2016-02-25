@@ -52,7 +52,7 @@ x = 'name: %s; score: %d' % (name, n)
 x = 'name: {}; score: {}'.format(name, n)
 ```
 
-we use the `format()` version. It's newer and doesn't require you to remember a bunch of arcane markup.
+we use the `format()` version. The [official Python documentation says](https://docs.python.org/2/library/stdtypes.html#str.format), "This method of string formatting is the new standard in Python 3, and should be preferred to the % formatting described in String Formatting Operations in new code."
 
 
 ## Writing (Python) Tests
@@ -60,6 +60,8 @@ we use the `format()` version. It's newer and doesn't require you to remember a 
 We write tests for our Python code using the [pytest](http://pytest.org/latest/) framework.
 
 All tests go in the `bigchaindb/tests` directory or one of its subdirectories. You can use the tests already in there as templates or examples.
+
+### Standard Ways to Run All Tests
 
 To run all the tests, first make sure you have RethinkDB running:
 ```text
@@ -75,5 +77,26 @@ If that doesn't work (e.g. maybe you are running in a conda virtual environment)
 ```text
 $ python -m pytest -v
 ```
+
+You can also run all tests via `setup.py`, using:
+```text
+$  python setup.py test
+```
+
+### Using `docker-compose` to Run the Tests
+
+You can use `docker-compose` to run the tests. (You don't have to start RethinkDB first: `docker-compose` does that on its own, when it reads the `docker-compose.yml` file.)
+
+First, build the images (~once), using:
+```text
+$ docker-compose build
+```
+
+then run the tests using:
+```text
+$ docker-compose run --rm bigchaindb py.test -v
+```
+
+### Automated Testing of All Pull Requests
 
 We use [Travis CI](https://travis-ci.com/), so that whenever someone creates a new BigchainDB pull request on GitHub, Travis CI gets the new code and does _a bunch of stuff_. You can find out what we tell Travis CI to do in [the `.travis.yml` file](.travis.yml): it tells Travis CI how to install BigchainDB, how to run all the tests, and what to do "after success" (e.g. run `codecov`). (We use [Codecov](https://codecov.io/) to get a rough estimate of our test coverage.)
