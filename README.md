@@ -1,4 +1,4 @@
-# BigchainDB
+# BigchainDB - Interledger fork
 
 [![Join the chat at https://gitter.im/bigchaindb/bigchaindb](https://badges.gitter.im/bigchaindb/bigchaindb.svg)](https://gitter.im/bigchaindb/bigchaindb?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![PyPI](https://img.shields.io/pypi/v/bigchaindb.svg)](https://pypi.python.org/pypi/BigchainDB)
@@ -6,11 +6,26 @@
 [![Codecov branch](https://img.shields.io/codecov/c/github/bigchaindb/bigchaindb/develop.svg)](https://codecov.io/github/bigchaindb/bigchaindb?branch=develop)
 [![Documentation Status](https://readthedocs.org/projects/bigchaindb/badge/?version=develop)](http://bigchaindb.readthedocs.org/en/develop/?badge=develop)
 
+This fork provides basic functionality for supporting the interledger protocol, see http://interledger.org/
+
+The edits are found under interledger/core.py and interledger/tests/test_connector.py
+To run the interledger test, [install bigchaindb](#gettingstarted)
+```
+```
+
+- [x] multisig
+- [x] escrow
+- [x] connectors
+- [ ] signed receipts
+- [ ] receipt propagation and listeners
+- [ ] proper asset conversion
+- [ ] multi-(big)chain(db) instantiation + network path optimization
+
 ## Documentation
 
 Documentation is available at https://bigchaindb.readthedocs.org/
 
-## Getting started
+## <a name="gettingstarted"></a> Getting started
 
 ### Install RethinkDB
 
