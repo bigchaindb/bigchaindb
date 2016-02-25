@@ -11,6 +11,10 @@ This fork provides basic functionality for supporting the interledger protocol, 
 The edits are found under interledger/core.py and interledger/tests/test_connector.py
 To run the interledger test, [install bigchaindb](#gettingstarted)
 ```
+$0> rethinkdb &
+$1> bigchaindb -c interledger/tests/bigchain.json start
+$2> bigchaindb -c interledger/tests/megachain.json start
+$3> python3 interledger/tests/test_connector.py 
 ```
 
 - [x] multisig
@@ -19,13 +23,15 @@ To run the interledger test, [install bigchaindb](#gettingstarted)
 - [ ] signed receipts
 - [ ] receipt propagation and listeners
 - [ ] proper asset conversion
+- [ ] RESTful API wrapper
 - [ ] multi-(big)chain(db) instantiation + network path optimization
+
 
 ## Documentation
 
 Documentation is available at https://bigchaindb.readthedocs.org/
 
-## <a name="gettingstarted"></a> Getting started
+## <a name="gettingstarted"></a>Getting started
 
 ### Install RethinkDB
 
