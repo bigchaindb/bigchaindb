@@ -6,6 +6,7 @@ import rethinkdb as r
 from bigchaindb import Bigchain
 from bigchaindb.voter import Voter
 from bigchaindb.block import Block
+from bigchaindb.web import server
 
 
 logger = logging.getLogger(__name__)
@@ -80,3 +81,9 @@ class Processes(object):
 
         logger.info('starting voter')
         p_voter.start()
+
+        # start the web api
+        webapi = server.create_app()
+        p_webapi = mp.Process(name='webapi', target=webapi.run, kwargs={'host': '0.0.0.0'})
+        p_webapi.start()
+

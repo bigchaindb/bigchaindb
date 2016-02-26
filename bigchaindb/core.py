@@ -43,8 +43,8 @@ class Bigchain(object):
             public_key (str): the base58 encoded public key for the ECDSA secp256k1 curve.
             private_key (str): the base58 encoded private key for the ECDSA secp256k1 curve.
             keyring (list[str]): list of base58 encoded public keys of the federation nodes.
-
         """
+
         config_utils.autoconfigure()
         self.host = host or bigchaindb.config['database']['host']
         self.port = port or bigchaindb.config['database']['port']
