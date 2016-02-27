@@ -18,8 +18,8 @@ To contribute code or documentation, you need a [GitHub account](https://github.
 
 Familiarize yourself with how we do coding and documentation in the BigchainDB project, including:
 
-* our Python Style Guide (coming soon)
-* [our documentation strategy](./docs/README.md) (including code documentation)
+* [our Python Style Guide](PYTHON_STYLE_GUIDE.md) (includes how we write tests)
+* [our documentation strategy](./docs/README.md) (including in-code documentation)
 * the GitHub Flow (workflow)
     * [GitHub Guide: Understanding the GitHub Flow](https://guides.github.com/introduction/flow/)
     * [Scott Chacon's blog post about GitHub Flow](http://scottchacon.com/2011/08/31/github-flow.html)
@@ -63,26 +63,28 @@ git checkout -b new-branch-name
 
 ### Step 5 - Make Edits, git add, git commit
 
-With your new branch checked out locally, make changes or additions to the code or documentation, git add them, and git commit them.
+With your new branch checked out locally, make changes or additions to the code or documentation. Remember to:
+
+* follow [our Python Style Guide](PYTHON_STYLE_GUIDE.md).
+* write and run tests for any new or changed code. There's a section in [our Python Style Guide](PYTHON_STYLE_GUIDE.md) about writing and running tests.
+* add or update documentation as necessary. Follow [our documentation strategy](./docs/README.md).
+
+As you go, git add and git commit your changes or additions, e.g.
 ```text
-git add new-or-changed-file
+git add new-or-changed-file-1
+git add new-or-changed-file-2
 git commit -m "Short description of new or changed things"
 ```
-
-Remember to write tests for new code. If you don't, our code (test) coverage will go down, and we won't be able to accept your code. (We have some hard checks that run on all new pull requests and code coverage is one of them.)
-
-Please run all existing tests to make sure you didn't break something. Do:
-```text
-py.test -v
-```
-
-Remember to write or modify documentation to reflect your additions or changes.
 
 You will want to merge changes from upstream (i.e. the original repository) into your new branch from time to time, using something like:
 ```text
 git fetch upstream
 git merge upstream/develop
 ```
+
+Once you're done commiting a set of new things and you're ready to submit them for inclusion, please be sure to run all the tests (as per the instructions at the end of our [Python Style Guide](PYTHON_STYLE_GUIDE.md)).
+
+(When you submit your pull request [following the instructions below], we run all the tests automatically, so we will see if some are failing. If you don't know why some tests are failing, you can still submit your pull request, but be sure to note the failing tests and to ask for help with resolving them.)
 
 ### Step 6 - Push Your New Branch to origin
 
