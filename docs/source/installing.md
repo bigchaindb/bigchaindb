@@ -91,7 +91,7 @@ For those who like using Docker and wish to experiment with BigchainDB in
 non-production environments, we currently maintain a `dockerfile` that can be
 used to build an image for `bigchaindb`, along with a `docker-compose.yml` file
 to manage a "standalone node", consisting mainly of two containers: one for
-RethinkDB, and another for `bigchaindb`.
+RethinkDB, and another for BigchainDB.
 
 Assuming you have `docker` and `docker-compose` installed, you would proceed as
 follows.
@@ -112,27 +112,21 @@ stored on your host machine under ` ~/.bigchaindb_docker/config`:
 $ docker-compose run --rm bigchaindb bigchaindb configure
 ```
 
-You can load test transactions via:
+You can then start it up (in the background, as a daemon) using:
+```text
+$ docker-compose up -d
+```
+
+then you can load test transactions via:
 ```text
 $ docker-compose run --rm bigchaindb bigchaindb-benchmark load
 ```
 
-You should then be able to start `bigchaindb`, via:
-```text
-$ docker-compose run --rm bigchaindb bigchaindb start
-```
+If you're on Linux, you can probably view the RethinkDB dashboard at:
 
-or
-```text
-$ docker-compose up
-```
+[http://localhost:58080/](http://localhost:58080/)
 
-You should be able to view the RethinkDB dashboard at:
-```text
-http://docker_host:58080/
-```
-
-where `docker_host` is the IP or hostname of the machine running the Docker
-engine. If you are developing on Linux, this most likely will be `localhost`,
-whereas if you are running docker-machine (e.g.: on Mac OS X) this will be the
+If that doesn't work, then replace `localhost` 
+with the IP or hostname of the machine running the Docker engine. 
+If you are running docker-machine (e.g.: on Mac OS X) this will be the
 IP of the Docker machine (`docker-machine ip machine_name`).
