@@ -5,7 +5,7 @@ import pytest
 import bigchaindb
 
 
-ORIGINAL_CONFIG = copy.deepcopy(bigchaindb.config)
+ORIGINAL_CONFIG = copy.deepcopy(bigchaindb._config)
 
 
 @pytest.fixture(scope='function', autouse=True)
