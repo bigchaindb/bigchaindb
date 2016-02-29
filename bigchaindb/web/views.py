@@ -8,13 +8,13 @@ basic_views = Blueprint('basic_views', __name__)
 b = Bigchain()
 
 
-@basic_views.route('/tx/<tx_id>')
+@basic_views.route('/transactions/<tx_id>')
 def get_transaction(tx_id):
     tx = b.get_transaction(tx_id)
     return flask.jsonify(**tx)
 
 
-@basic_views.route('/tx/', methods=['POST'])
+@basic_views.route('/transactions/', methods=['POST'])
 def create_transaction():
     val = {}
 

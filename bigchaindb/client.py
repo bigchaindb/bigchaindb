@@ -67,7 +67,7 @@ class Client:
             The transaction pushed to the Federation.
         """
 
-        res = requests.post(self.api_endpoint + '/tx/', json=tx)
+        res = requests.post(self.api_endpoint + '/transactions/', json=tx)
         return res.json()
 
     def create(self, payload=None):

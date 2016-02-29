@@ -6,7 +6,7 @@ from bigchaindb.web import views
 def create_app(debug=False):
     app = Flask(__name__)
     app.debug = debug
-    app.register_blueprint(views.basic_views)
+    app.register_blueprint(views.basic_views, url_prefix='/api/v1')
     return app
 
 
