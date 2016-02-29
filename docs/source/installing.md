@@ -2,6 +2,12 @@
 
 We're developing BigchainDB Server ("BigchainDB") on Ubuntu 14.04, but it should work on any OS that runs RethinkDB Server and Python 3.4+. (BigchainDB is built on top of RethinkDB Server.)
 
+BigchainDB Server is intended to be run on each server in a large distributed cluster of servers; it's not very useful running by itself on a single computer. That's _why_ we're developing it on Ubuntu 14.04: it's one of the more common server operating systems.
+
+Mac OS X users may get the best results [running BigchainDB with Docker](https://bigchaindb.readthedocs.org/en/develop/installing.html#run-bigchaindb-with-docker).
+
+Windows users may get the best results [running BigchainDB in a VM with Vagrant](https://bigchaindb.readthedocs.org/en/develop/installing.html#how-to-install-bigchaindb-on-a-vm-with-vagrant).
+
 ## Install and Run RethinkDB Server
 
 The RethinkDB documentation has instructions for how to install RethinkDB Server on a variety of operating systems. Do that (using their instructions for your OS): [Install RethinkDB Server](http://rethinkdb.com/docs/install/).
