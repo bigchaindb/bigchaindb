@@ -2,6 +2,14 @@
 
 We're developing BigchainDB Server ("BigchainDB") on Ubuntu 14.04, but it should work on any OS that runs RethinkDB Server and Python 3.4+. (BigchainDB is built on top of RethinkDB Server.)
 
+BigchainDB Server is intended to be run on each server in a large distributed cluster of servers; it's not very useful running by itself on a single computer. That's _why_ we're developing it on Ubuntu 14.04: it's one of the more common server operating systems.
+
+Mac OS X users may get the best results [running BigchainDB Server with Docker](https://bigchaindb.readthedocs.org/en/develop/installing.html#run-bigchaindb-with-docker).
+
+Windows users may get the best results [running BigchainDB Server in a VM with Vagrant](https://bigchaindb.readthedocs.org/en/develop/installing.html#how-to-install-bigchaindb-on-a-vm-with-vagrant).
+
+(Right now, there are no BigchainDB clients/drivers. Those will be able to run on a much larger array of operating systems. They're coming soon.)
+
 ## Install and Run RethinkDB Server
 
 The RethinkDB documentation has instructions for how to install RethinkDB Server on a variety of operating systems. Do that (using their instructions for your OS): [Install RethinkDB Server](http://rethinkdb.com/docs/install/).
@@ -91,7 +99,7 @@ For those who like using Docker and wish to experiment with BigchainDB in
 non-production environments, we currently maintain a `dockerfile` that can be
 used to build an image for `bigchaindb`, along with a `docker-compose.yml` file
 to manage a "standalone node", consisting mainly of two containers: one for
-RethinkDB, and another for `bigchaindb`.
+RethinkDB, and another for BigchainDB.
 
 Assuming you have `docker` and `docker-compose` installed, you would proceed as
 follows.
@@ -112,27 +120,21 @@ stored on your host machine under ` ~/.bigchaindb_docker/config`:
 $ docker-compose run --rm bigchaindb bigchaindb configure
 ```
 
-You can load test transactions via:
+You can then start it up (in the background, as a daemon) using:
+```text
+$ docker-compose up -d
+```
+
+then you can load test transactions via:
 ```text
 $ docker-compose run --rm bigchaindb bigchaindb-benchmark load
 ```
 
-You should then be able to start `bigchaindb`, via:
-```text
-$ docker-compose run --rm bigchaindb bigchaindb start
-```
+If you're on Linux, you can probably view the RethinkDB dashboard at:
 
-or
-```text
-$ docker-compose up
-```
+[http://localhost:58080/](http://localhost:58080/)
 
-You should be able to view the RethinkDB dashboard at:
-```text
-http://docker_host:58080/
-```
-
-where `docker_host` is the IP or hostname of the machine running the Docker
-engine. If you are developing on Linux, this most likely will be `localhost`,
-whereas if you are running docker-machine (e.g.: on Mac OS X) this will be the
+If that doesn't work, then replace `localhost` 
+with the IP or hostname of the machine running the Docker engine. 
+If you are running docker-machine (e.g.: on Mac OS X) this will be the
 IP of the Docker machine (`docker-machine ip machine_name`).
