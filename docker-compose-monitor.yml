@@ -10,7 +10,7 @@ influxdb:
     PRE_CREATE_DB: "telegraf"
 
 grafana:
-  image: rhsimplex/grafana-bigchaindb-docker
+  image: bigchaindb/grafana-bigchaindb-docker
   tty: true
   ports:
     - "3000:3000"
@@ -18,7 +18,7 @@ grafana:
     - influxdb:localhost
 
 statsd:
-  image: rhsimplex/docker-telegraf-statsd
+  image: bigchaindb/docker-telegraf-statsd
   ports:
     - "8125:8125/udp"
   links:
