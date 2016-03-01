@@ -16,6 +16,7 @@ Table of Contents
    installing
    getting-started
    bigchaindb-cli
+   api
    admin
    cryptography
    models
