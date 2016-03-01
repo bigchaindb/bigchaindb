@@ -109,5 +109,5 @@ def temp_client():
     """
 
     private_key, public_key = crypto.generate_key_pair()
-    return Client(private_key=private_key, public_key=public_key, api_endpoint='http://localhost:5000')
+    return Client(private_key=private_key, public_key=public_key, api_endpoint='http://localhost:5000/api/v1')
 
