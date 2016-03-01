@@ -35,9 +35,11 @@ $ sudo apt-get install libffi-dev g++ libssl-dev python3-dev
 
 On Fedora 23, we found that the following was enough (tested in February 2015):
 ```text
-$ yum update
-$ yum install libffi-devel gcc-c++ redhat-rpm-config python3-devel openssl-devel
+$ sudo dnf update
+$ sudo dnf install libffi-devel gcc-c++ redhat-rpm-config python3-devel openssl-devel
 ```
+
+(If you're using a version of Fedora before version 22, you may have to use `yum` instead of `dnf`.)
 
 With OS-level dependencies installed, you can install BigchainDB with `pip` or from source.
 
