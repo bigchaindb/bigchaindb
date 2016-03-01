@@ -54,13 +54,21 @@ setup(
         'Operating System :: POSIX :: Linux',
     ],
 
-    packages=['bigchaindb', 'bigchaindb.commands', 'bigchaindb.db'],
+    packages=[
+        'bigchaindb',
+        'bigchaindb.commands',
+        'bigchaindb.db',
+        'bigchaindb.consensus'
+    ],
 
     entry_points={
         'console_scripts': [
             'bigchaindb=bigchaindb.commands.bigchain:main',
             'bigchaindb-benchmark=bigchaindb.commands.bigchain_benchmark:main'
         ],
+        'bigchaindb.plugins': [
+            'base=bigchaindb.consensus.base:ConsensusRules'
+        ]
     },
     install_requires=[
         'rethinkdb==2.2.0.post4',

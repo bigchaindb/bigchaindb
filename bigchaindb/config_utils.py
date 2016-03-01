@@ -17,6 +17,8 @@ import json
 import logging
 import collections
 
+from pkg_resources import iter_entry_points
+
 import bigchaindb
 
 logger = logging.getLogger(__name__)
@@ -100,3 +102,21 @@ def autoconfigure():
     except FileNotFoundError:
         logger.warning('Cannot find your config file. Run `bigchaindb configure` to create one')
 
+
+def get_plugins(plugin_names):
+    if not plugin_names:
+        plugin_names = bigchaindb.config.get('consensus_plugins', [])
+
+    plugins = []
+
+    # It's important to maintain plugin ordering as stated in the config file.
+    # e.g. Expensive validation tasks should happen after cheap ones.
+    #
+    # TODO: We might want to add some sort of priority system, but for now we
+    #       simply assume everything in a given plugin is designed to run at the
+    #       same time.
+    for name in plugin_names:
+        for entry_point in iter_entry_points('bigchaindb.plugins', name):
+            plugins.append(entry_point.load())
+
+    return plugins

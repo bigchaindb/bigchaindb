@@ -30,7 +30,8 @@ class Bigchain(object):
     """
 
     def __init__(self, host=None, port=None, dbname=None,
-                 public_key=None, private_key=None, keyring=[]):
+                 public_key=None, private_key=None, keyring=[],
+                 consensus_plugins=['base']):
         """Initialize the Bigchain instance
 
         There are three ways in which the Bigchain instance can get its parameters.
@@ -56,6 +57,7 @@ class Bigchain(object):
         self.me = public_key or bigchaindb.config['keypair']['public']
         self.me_private = private_key or bigchaindb.config['keypair']['private']
         self.federation_nodes = keyring or bigchaindb.config['keyring']
+        self.consensus_plugins = config_utils.get_plugins(consensus_plugins)
 
         if not self.me or not self.me_private:
             raise KeypairNotFoundException()
