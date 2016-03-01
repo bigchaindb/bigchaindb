@@ -327,56 +327,15 @@ class Bigchain(object):
             transaction (dict): transaction to validate.
 
         Returns:
-            The transaction if the transaction is valid else it raises and exception
-            describing the reason why the transaction is invalid.
-
-        Raises:
-            OperationError: if the transaction operation is not supported
-            TransactionDoesNotExist: if the input of the transaction is not found
-            TransactionOwnerError: if the new transaction is using an input it doesn't own
-            DoubleSpend: if the transaction is a double spend
-            InvalidHash: if the hash of the transaction is wrong
-            InvalidSignature: if the signature of the transaction is wrong
+            The transaction if the transaction is valid else it raises an
+            exception describing the reason why the transaction is invalid.
         """
-        # If the operation is CREATE the transaction should have no inputs and should be signed by a
-        # federation node
-        if transaction['transaction']['operation'] == 'CREATE':
-            if transaction['transaction']['input']:
-                raise ValueError('A CREATE operation has no inputs')
-            if transaction['transaction']['current_owner'] not in self.federation_nodes + [self.me]:
-                raise exceptions.OperationError('Only federation nodes can use the operation `CREATE`')
 
-        else:
-            # check if the input exists, is owned by the current_owner
-            if not transaction['transaction']['input']:
-                raise ValueError('Only `CREATE` transactions can have null inputs')
-
-            tx_input = self.get_transaction(transaction['transaction']['input'])
-            if not tx_input:
-                raise exceptions.TransactionDoesNotExist('input `{}` does not exist in the bigchain'.format(
-                    transaction['transaction']['input']))
-
-            if tx_input['transaction']['new_owner'] != transaction['transaction']['current_owner']:
-                raise exceptions.TransactionOwnerError('current_owner `{}` does not own the input `{}`'.format(
-                    transaction['transaction']['current_owner'], transaction['transaction']['input']))
-
-            # check if the input was already spent by a transaction other then this one.
-            spent = self.get_spent(tx_input['id'])
-            if spent:
-                if spent['id'] != transaction['id']:
-                    raise exceptions.DoubleSpend('input `{}` was already spent'.format(
-                        transaction['transaction']['input']))
-
-        # Check hash of the transaction
-        calculated_hash = hash_data(self.serialize(transaction['transaction']))
-        if calculated_hash != transaction['id']:
-            raise exceptions.InvalidHash()
-
-        # Check signature
-        if not self.verify_signature(transaction):
-            raise exceptions.InvalidSignature()
+        for plugin in self.consensus_plugins:
+            transaction = plugin.validate_transaction(self, transaction)
 
         return transaction
+
 
     def is_valid_transaction(self, transaction):
         """Check whether a transacion is valid or invalid.
@@ -447,12 +406,13 @@ class Bigchain(object):
 
         """
 
-        # 1. Check if current hash is correct
-        calculated_hash = hash_data(self.serialize(block['block']))
-        if calculated_hash != block['id']:
-            raise exceptions.InvalidHash()
+        # First run all of the plugin block validation logic
+        for plugin in self.consensus_plugins:
+            transaction = plugin.validate_block(self, block)
 
-        # 2. Validate all transactions in the block
+
+        # Finally: Tentative assumption that every blockchain will want to
+        # validate all transactions in each block
         for transaction in block['block']['transactions']:
             if not self.is_valid_transaction(transaction):
                 # this will raise the exception
