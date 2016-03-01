@@ -27,10 +27,16 @@ If you don't already have it, then you should [install Python 3.4+](https://www.
 
 BigchainDB has some OS-level dependencies. In particular, you need to install the OS-level dependencies for the Python **cryptography** package. Instructions for installing those dependencies on your OS can be found in the [cryptography package documentation](https://cryptography.io/en/latest/installation/).
 
-On Ubuntu 14.04, we found that the following was enough (YMMV):
+On Ubuntu 14.04, we found that the following was enough:
 ```text
 $ sudo apt-get update
 $ sudo apt-get install libffi-dev g++ libssl-dev python3-dev
+```
+
+On Fedora 23, we found that the following was enough (tested in February 2015):
+```text
+$ yum update
+$ yum install libffi-devel gcc-c++ redhat-rpm-config python3-devel openssl-devel
 ```
 
 With OS-level dependencies installed, you can install BigchainDB with `pip` or from source.
