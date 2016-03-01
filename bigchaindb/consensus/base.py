@@ -1,7 +1,8 @@
 import bigchaindb.exceptions as exceptions
 from bigchaindb.crypto import hash_data
+from bigchaindb.consensus import AbstractConsensusRules
 
-class ConsensusRules(object):
+class ConsensusRules(AbstractConsensusRules):
     """Base consensus rules for Bigchain.
 
     This class can be copied to write your own consensus rules!
