@@ -1,3 +1,0 @@
-Sphinx==1.3.5
-sphinxcontrib-napoleon==0.4.4
-recommonmark
