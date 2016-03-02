@@ -45,7 +45,7 @@ def run_configure(args, skip_if_exists=False):
     if config_file_exists and not args.yes:
         want = input('Config file `{}` exists, do you want to override it? '
                      '(cannot be undone) [y/n]: '.format(config_path))
-        if not want:
+        if want != 'y':
             return
 
     # Patch the default configuration with the new values
@@ -58,6 +58,10 @@ def run_configure(args, skip_if_exists=False):
         for key in ('host', 'port', 'name'):
             val = conf['database'][key]
             conf['database'][key] = input('Database {}? (default `{}`): '.format(key, val)) or val
+
+        for key in ('host', 'port', 'rate'):
+            val = conf['statsd'][key]
+            conf['statsd'][key] = input('Statsd {}? (default `{}`): '.format(key, val)) or val
 
     bigchaindb.config_utils.write_config(conf, config_path)
     print('Ready to go!')

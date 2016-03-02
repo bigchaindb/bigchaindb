@@ -10,6 +10,9 @@ import bigchaindb
 from bigchaindb import config_utils
 from bigchaindb import exceptions
 from bigchaindb.crypto import hash_data, PublicKey, PrivateKey, generate_key_pair
+from bigchaindb.monitor import Monitor
+
+monitor = Monitor()
 
 
 class GenesisBlockAlreadyExistsError(Exception):
@@ -68,6 +71,7 @@ class Bigchain(object):
     def reconnect(self):
         return r.connect(host=self.host, port=self.port, db=self.dbname)
 
+    @monitor.timer('create_transaction', rate=bigchaindb.config['statsd']['rate'])
     def create_transaction(self, current_owners, new_owners, tx_input, operation, payload=None):
         """Create a new transaction
 
@@ -144,6 +148,7 @@ class Bigchain(object):
             transaction (dict): transaction to sign.
             private_key (str): base58 encoded private key to create a signature of the transaction.
             public_key (str): (optional) base58 encoded public key to identify each signature of a multisig transaction.
+
         Returns:
             dict: transaction with the `signature` field included.
 
@@ -203,6 +208,7 @@ class Bigchain(object):
                 return False
         return True
 
+    @monitor.timer('write_transaction', rate=bigchaindb.config['statsd']['rate'])
     def write_transaction(self, signed_transaction):
         """Write the transaction to bigchain.
 
@@ -298,7 +304,6 @@ class Bigchain(object):
             The transaction that used the `txid` as an input if it exists else it returns `None`
 
         """
-
         # checks if an input was already spent
         # checks if the bigchain has any transaction with input `transaction_id`
         response = r.table('bigchain').concat_map(lambda doc: doc['block']['transactions'])\
@@ -340,6 +345,7 @@ class Bigchain(object):
 
         return owned
 
+    @monitor.timer('validate_transaction', rate=bigchaindb.config['statsd']['rate'])
     def validate_transaction(self, transaction):
         """Validate a transaction.
 
@@ -380,11 +386,12 @@ class Bigchain(object):
                 raise exceptions.TransactionOwnerError('current_owner `{}` does not own the input `{}`'.format(
                     transaction['transaction']['current_owners'], transaction['transaction']['input']))
 
-            # check if the input was already spent
+            # check if the input was already spent by a transaction other then this one.
             spent = self.get_spent(tx_input['id'])
             if spent:
-                raise exceptions.DoubleSpend('input `{}` was already spent'.format(
-                    transaction['transaction']['input']))
+                if spent['id'] != transaction['id']:
+                    raise exceptions.DoubleSpend('input `{}` was already spent'.format(
+                        transaction['transaction']['input']))
 
         # Check hash of the transaction
         calculated_hash = hash_data(self.serialize(transaction['transaction']))
@@ -452,6 +459,7 @@ class Bigchain(object):
 
         return block
 
+    @monitor.timer('validate_block')
     # TODO: check that the votings structure is correctly constructed
     def validate_block(self, block):
         """Validate a block.
@@ -496,6 +504,7 @@ class Bigchain(object):
         except Exception:
             return False
 
+    @monitor.timer('write_block')
     def write_block(self, block, durability='soft'):
         """Write a block to bigchain.
 
@@ -528,7 +537,7 @@ class Bigchain(object):
         if blocks_count:
             raise GenesisBlockAlreadyExistsError('Cannot create the Genesis block')
 
-        payload = {'message': 'Hello World from the Bigchain'}
+        payload = {'message': 'Hello World from the BigchainDB'}
         transaction = self.create_transaction(self.me, self.me, None, 'GENESIS', payload=payload)
         transaction_signed = self.sign_transaction(transaction, self.me_private)
 
