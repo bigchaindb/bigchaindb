@@ -52,7 +52,7 @@ class TestBigchainApi(object):
         tx = b.create_transaction('a', 'b', 'c', 'd')
 
         assert sorted(tx) == sorted(['id', 'transaction'])
-        assert sorted(tx['transaction']) == sorted(['current_owner', 'new_owner', 'input', 'operation',
+        assert sorted(tx['transaction']) == sorted(['current_owners', 'new_owners', 'input', 'operation',
                                                     'timestamp', 'data'])
 
     def test_create_transaction_with_unsupported_payload_raises(self, b):
