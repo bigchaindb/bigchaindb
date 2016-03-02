@@ -81,7 +81,7 @@ class TestBigchainApi(object):
         tx = b.create_transaction(vk, 'b', 'c', 'd')
         tx_signed = b.sign_transaction(tx, sk)
 
-        assert 'signature' in tx_signed
+        assert 'signatures' in tx_signed
         assert b.verify_signature(tx_signed)
 
     def test_serializer(self, b):
@@ -289,7 +289,7 @@ class TestTransactionValidation(object):
         with pytest.raises(exceptions.TransactionOwnerError) as excinfo:
             b.validate_transaction(tx)
 
-        assert excinfo.value.args[0] == 'current_owner `a` does not own the input `{}`'.format(valid_input)
+        assert excinfo.value.args[0] == 'current_owner `[\'a\']` does not own the input `{}`'.format(valid_input)
         assert b.is_valid_transaction(tx) is False
 
     @pytest.mark.usefixtures('inputs')
