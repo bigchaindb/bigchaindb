@@ -26,6 +26,7 @@ docs_require = [
     'recommonmark>=0.4.0',
     'Sphinx>=1.3.5',
     'sphinxcontrib-napoleon>=0.4.4',
+    'sphinx-rtd-theme>=0.1.9',
 ]
 
 setup(
