@@ -15,9 +15,9 @@ The edits are found under interledger/core.py and interledger/tests/test_connect
 To run the interledger test, [install bigchaindb](#gettingstarted)
 ```
 $0> rethinkdb &
-$1> bigchaindb -c interledger/tests/bigchain.json start
-$2> bigchaindb -c interledger/tests/megachain.json start
-$3> python3 interledger/tests/test_connector.py 
+$1> bigchaindb -c examples/interledger/tests/bigchain.json start
+$2> bigchaindb -c examples/interledger/tests/megachain.json start
+$3> python3 examples/interledger/tests/test_connector.py 
 ```
 
 - [x] multisig

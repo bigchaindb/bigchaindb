@@ -2,10 +2,11 @@ import json
 from time import sleep
 
 from bigchaindb import Bigchain
-from interledger.core import User, Connector
+from examples.accounts import User
+from examples.interledger.connector import Connector
 
-config_bigchain = json.load(open('interledger/tests/bigchain.json', 'r'))
-config_megachain = json.load(open('interledger/tests/megachain.json', 'r'))
+config_bigchain = json.load(open('bigchain.json', 'r'))
+config_megachain = json.load(open('megachain.json', 'r'))
 
 bigchain = Bigchain(dbname=config_bigchain['database']['name'],
                     public_key=config_bigchain['keypair']['public'],
