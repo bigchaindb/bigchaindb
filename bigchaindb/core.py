@@ -72,7 +72,7 @@ class Bigchain(object):
         return r.connect(host=self.host, port=self.port, db=self.dbname)
 
     @monitor.timer('create_transaction', rate=bigchaindb.config['statsd']['rate'])
-    def create_transaction(self, current_owner, new_owner, tx_input, operation, payload=None):
+    def create_transaction(self, current_owners, new_owners, tx_input, operation, payload=None):
         """Create a new transaction
 
         A transaction in the bigchain is a transfer of a digital asset between two entities represented
@@ -88,8 +88,8 @@ class Bigchain(object):
             `TRANSFER` - A transfer operation allows for a transfer of the digital assets between entities.
 
         Args:
-            current_owner (str): base58 encoded public key of the current owner of the asset.
-            new_owner (str): base58 encoded public key of the new owner of the digital asset.
+            current_owners (list): base58 encoded public keys of all current owners of the asset.
+            new_owners (list): base58 encoded public keys of all new owners of the digital asset.
             tx_input (str): id of the transaction to use as input.
             operation (str): Either `CREATE` or `TRANSFER` operation.
             payload (Optional[dict]): dictionary with information about asset.
@@ -119,8 +119,8 @@ class Bigchain(object):
         }
 
         tx = {
-            'current_owner': current_owner,
-            'new_owner': new_owner,
+            'current_owners': current_owners if isinstance(current_owners, list) else [current_owners],
+            'new_owners': new_owners if isinstance(new_owners, list) else [new_owners],
             'input': tx_input,
             'operation': operation,
             'timestamp': self.timestamp(),
@@ -139,7 +139,7 @@ class Bigchain(object):
 
         return transaction
 
-    def sign_transaction(self, transaction, private_key):
+    def sign_transaction(self, transaction, private_key, public_key=None):
         """Sign a transaction
 
         A transaction signed with the `current_owner` corresponding private key.
@@ -147,15 +147,29 @@ class Bigchain(object):
         Args:
             transaction (dict): transaction to sign.
             private_key (str): base58 encoded private key to create a signature of the transaction.
+            public_key (str): (optional) base58 encoded public key to identify each signature of a multisig transaction.
 
         Returns:
             dict: transaction with the `signature` field included.
 
         """
         private_key = PrivateKey(private_key)
-        signature = private_key.sign(self.serialize(transaction))
+        if len(transaction['transaction']['current_owners']) == 1:
+            signatures_updated = private_key.sign(self.serialize(transaction))
+        else:
+            # multisig, sign for each input and store {pub_key: signature_for_priv_key}
+            if public_key is None:
+                raise ValueError('public_key must be provided for signing multisig transactions')
+            transaction_without_signatures = transaction.copy()
+            signatures = transaction_without_signatures.pop('signatures') \
+                if 'signatures' in transaction_without_signatures else []
+            signatures_updated = signatures.copy()
+            signatures_updated = [s for s in signatures_updated if not s['public_key'] == public_key]
+            signatures_updated.append({'public_key': public_key,
+                                       'signature': private_key.sign(self.serialize(transaction_without_signatures))})
+
         signed_transaction = transaction.copy()
-        signed_transaction.update({'signature': signature})
+        signed_transaction.update({'signatures': signatures_updated})
         return signed_transaction
 
     def verify_signature(self, signed_transaction):
@@ -175,11 +189,26 @@ class Bigchain(object):
         # if assignee field in the transaction, remove it
         if 'assignee' in data:
             data.pop('assignee')
+        if 'signatures' not in data:
+            return False
 
-        signature = data.pop('signature')
-        public_key_base58 = signed_transaction['transaction']['current_owner']
-        public_key = PublicKey(public_key_base58)
-        return public_key.verify(self.serialize(data), signature)
+        signatures = data.pop('signatures')
+        for public_key_base58 in signed_transaction['transaction']['current_owners']:
+            public_key = PublicKey(public_key_base58)
+
+            if isinstance(signatures, list):
+                try:
+                    signature = [s['signature'] for s in signatures if s['public_key'] == public_key_base58]
+                except KeyError:
+                    return False
+                if not len(signature) == 1:
+                    return False
+                signature = signature[0]
+            else:
+                signature = signatures
+            if not public_key.verify(self.serialize(data), signature):
+                return False
+        return True
 
     @monitor.timer('write_transaction', rate=bigchaindb.config['statsd']['rate'])
     def write_transaction(self, signed_transaction):
@@ -189,7 +218,7 @@ class Bigchain(object):
         it has been validated by the nodes of the federation.
 
         Args:
-            singed_transaction (dict): transaction with the `signature` included.
+            signed_transaction (dict): transaction with the `signature` included.
 
         Returns:
             dict: database response
@@ -303,9 +332,10 @@ class Bigchain(object):
             list: list of `txids` currently owned by `owner`
 
         """
+        # TODO: fix for multisig. new_owners is a list!
         response = r.table('bigchain')\
                     .concat_map(lambda doc: doc['block']['transactions'])\
-                    .filter({'transaction': {'new_owner': owner}})\
+                    .filter({'transaction': {'new_owners': owner if isinstance(owner, list) else [owner]}})\
                     .pluck('id')['id']\
                     .run(self.conn)
         owned = []
@@ -341,7 +371,7 @@ class Bigchain(object):
         if transaction['transaction']['operation'] == 'CREATE':
             if transaction['transaction']['input']:
                 raise ValueError('A CREATE operation has no inputs')
-            if transaction['transaction']['current_owner'] not in self.federation_nodes + [self.me]:
+            if not(set(transaction['transaction']['current_owners']) <= set(self.federation_nodes + [self.me])):
                 raise exceptions.OperationError('Only federation nodes can use the operation `CREATE`')
 
         else:
@@ -354,9 +384,9 @@ class Bigchain(object):
                 raise exceptions.TransactionDoesNotExist('input `{}` does not exist in the bigchain'.format(
                     transaction['transaction']['input']))
 
-            if tx_input['transaction']['new_owner'] != transaction['transaction']['current_owner']:
+            if tx_input['transaction']['new_owners'] != transaction['transaction']['current_owners']:
                 raise exceptions.TransactionOwnerError('current_owner `{}` does not own the input `{}`'.format(
-                    transaction['transaction']['current_owner'], transaction['transaction']['input']))
+                    transaction['transaction']['current_owners'], transaction['transaction']['input']))
 
             # check if the input was already spent by a transaction other then this one.
             spent = self.get_spent(tx_input['id'])

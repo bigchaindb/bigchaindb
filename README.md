@@ -1,14 +1,38 @@
-# BigchainDB
+# BigchainDB - Integration Examples
 
 A scalable blockchain database. [The whitepaper](https://www.bigchaindb.com/whitepaper/) explains what that means.
 
 [![Join the chat at https://gitter.im/bigchaindb/bigchaindb](https://badges.gitter.im/bigchaindb/bigchaindb.svg)](https://gitter.im/bigchaindb/bigchaindb?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![PyPI](https://img.shields.io/pypi/v/bigchaindb.svg)](https://pypi.python.org/pypi/BigchainDB)
-[![Travis branch](https://img.shields.io/travis/bigchaindb/bigchaindb/develop.svg)](https://travis-ci.org/bigchaindb/bigchaindb)
-[![Codecov branch](https://img.shields.io/codecov/c/github/bigchaindb/bigchaindb/develop.svg)](https://codecov.io/github/bigchaindb/bigchaindb?branch=develop)
-[![Documentation Status](https://readthedocs.org/projects/bigchaindb/badge/?version=develop)](http://bigchaindb.readthedocs.org/en/develop/?badge=develop)
+[![Travis branch](https://img.shields.io/travis/diminator/bigchaindb/develop.svg)](https://travis-ci.org/diminator/bigchaindb)
+[![Codecov branch](https://img.shields.io/codecov/c/github/diminator/bigchaindb/develop.svg)](https://codecov.io/github/diminator/bigchaindb?branch=develop)
 
-## Quick Start
+## Interledger
+
+This fork provides basic functionality for supporting the interledger protocol, see http://interledger.org/
+
+The edits are found under interledger/core.py and interledger/tests/test_connector.py
+To run the interledger test, [install bigchaindb](#gettingstarted)
+```
+$0> rethinkdb &
+
+$1> bigchaindb -c examples/interledger/bigchain.json start
+$2> bigchaindb -c examples/interledger/megachain.json start
+
+$3> cd examples/interledger
+$3> python3 run_cross_ledger_payment_simple.py
+```
+
+- [x] multisig
+- [x] escrow
+- [x] connectors
+- [ ] signed receipts
+- [ ] receipt propagation and listeners
+- [ ] proper asset conversion
+- [ ] RESTful API wrapper
+- [ ] multi-(big)chain(db) instantiation + network path optimization
+
+
+## <a name="gettingstarted"></a>Quick Start
 
 ### [Install & Run BigchainDB](http://bigchaindb.readthedocs.org/en/develop/installing.html)
 ### [Run BigchainDB with Docker](http://bigchaindb.readthedocs.org/en/develop/installing.html#run-bigchaindb-with-docker)
