@@ -34,3 +34,4 @@ A scalable blockchain database. [The whitepaper](https://www.bigchaindb.com/whit
 * [Licenses](LICENSES.md) - open source & open content
 * [Imprint](https://www.bigchaindb.com/imprint/)
 * [Contact Us](https://www.bigchaindb.com/contact/)
+
