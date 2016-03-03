@@ -7,13 +7,14 @@ Tasks:
 """
 
 import os
+import copy
 
 import pytest
 
 
 DB_NAME = 'bigchain_test_{}'.format(os.getpid())
 
-config = {
+CONFIG = {
     'database': {
         'name': DB_NAME
     },
@@ -36,7 +37,7 @@ def restore_config(request, node_config):
 
 @pytest.fixture(scope='module')
 def node_config():
-    return config
+    return copy.deepcopy(CONFIG)
 
 
 @pytest.fixture
@@ -50,7 +51,8 @@ def user_public_key():
 
 
 @pytest.fixture
-def b():
+def b(request, node_config):
+    restore_config(request, node_config)
     from bigchaindb import Bigchain
     return Bigchain()
 
