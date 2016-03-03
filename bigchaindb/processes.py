@@ -84,6 +84,6 @@ class Processes(object):
 
         # start the web api
         webapi = server.create_app()
-        p_webapi = mp.Process(name='webapi', target=webapi.run, kwargs={'host': '0.0.0.0'})
+        p_webapi = mp.Process(name='webapi', target=webapi.run, kwargs={'host': 'localhost'})
         p_webapi.start()
 
