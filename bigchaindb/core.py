@@ -189,6 +189,8 @@ class Bigchain(object):
         # if assignee field in the transaction, remove it
         if 'assignee' in data:
             data.pop('assignee')
+        if 'signatures' not in data:
+            return False
 
         signatures = data.pop('signatures')
         for public_key_base58 in signed_transaction['transaction']['current_owners']:
