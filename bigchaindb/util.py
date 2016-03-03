@@ -1,4 +1,3 @@
-import sha3
 
 import json
 import time
@@ -7,7 +6,7 @@ from datetime import datetime
 
 import bigchaindb
 from bigchaindb import exceptions
-from bigchaindb.crypto import PrivateKey, PublicKey
+from bigchaindb.crypto import PrivateKey, PublicKey, hash_data
 
 
 class ProcessGroup(object):
@@ -156,10 +155,6 @@ def sign_tx(transaction, private_key):
 def create_and_sign_tx(private_key, current_owner, new_owner, tx_input, operation='TRANSFER', payload=None):
     tx = create_tx(current_owner, new_owner, tx_input, operation, payload)
     return sign_tx(tx, private_key)
-
-
-def hash_data(data):
-    return sha3.sha3_256(data.encode()).hexdigest()
 
 
 def check_hash_and_signature(transaction):

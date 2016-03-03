@@ -331,7 +331,7 @@ class Bigchain(object):
 
         # Calculate the hash of the new block
         block_data = util.serialize(block)
-        block_hash = util.hash_data(block_data)
+        block_hash = crypto.hash_data(block_data)
         block_signature = crypto.PrivateKey(self.me_private).sign(block_data)
 
         block = {
@@ -357,7 +357,7 @@ class Bigchain(object):
         """
 
         # 1. Check if current hash is correct
-        calculated_hash = util.hash_data(util.serialize(block['block']))
+        calculated_hash = crypto.hash_data(util.serialize(block['block']))
         if calculated_hash != block['id']:
             raise exceptions.InvalidHash()
 

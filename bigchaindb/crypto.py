@@ -2,6 +2,8 @@
 
 import binascii
 import base58
+
+import sha3
 import bitcoin
 
 from cryptography.hazmat.backends import default_backend
@@ -143,4 +145,11 @@ def generate_key_pair():
     public_value_compressed_base58 = PublicKey.encode(public_value_x, public_value_y)
 
     return (private_value_base58, public_value_compressed_base58)
+
+
+def hash_data(data):
+    """Hash the provided data using SHA3-256"""
+
+    return sha3.sha3_256(data.encode()).hexdigest()
+
 
