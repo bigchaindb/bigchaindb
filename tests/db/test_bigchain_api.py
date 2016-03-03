@@ -52,7 +52,7 @@ class TestBigchainApi(object):
         # assert tx_hash == tx_calculated_hash
 
     def test_transaction_signature(self, b):
-        sk, vk = b.generate_keys()
+        sk, vk = generate_key_pair()
         tx = b.create_transaction(vk, 'b', 'c', 'd')
         tx_signed = b.sign_transaction(tx, sk)
 
@@ -61,7 +61,7 @@ class TestBigchainApi(object):
 
     def test_serializer(self, b):
         tx = b.create_transaction('a', 'b', 'c', 'd')
-        assert b.deserialize(util.serialize(tx)) == tx
+        assert util.deserialize(util.serialize(tx)) == tx
 
     @pytest.mark.usefixtures('inputs')
     def test_write_transaction(self, b, user_public_key, user_private_key):
@@ -108,7 +108,7 @@ class TestBigchainApi(object):
     def test_assign_transaction_multiple_nodes(self, b, user_public_key, user_private_key):
         # create 5 federation nodes
         for _ in range(5):
-            b.federation_nodes.append(b.generate_keys()[1])
+            b.federation_nodes.append(generate_key_pair()[1])
 
         # test assignee for several transactions
         for _ in range(20):

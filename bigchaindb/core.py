@@ -510,28 +510,3 @@ class Bigchain(object):
 
         return unvoted
 
-
-    @staticmethod
-    def deserialize(data):
-        """Static method used to deserialize a JSON formatted string into a dict.
-
-        Args:
-            data (str): JSON formatted string.
-
-        Returns:
-            dict: dict resulting from the serialization of a JSON formatted string.
-        """
-
-        return json.loads(data, encoding="utf-8")
-
-    @staticmethod
-    def generate_keys():
-        """Generates a key pair.
-
-        Returns:
-            tuple: `(private_key, public_key)`. ECDSA key pair using the secp256k1 curve encoded
-            in base58.
-        """
-
-        # generates and returns the keys serialized in hex
-        return crypto.generate_key_pair()

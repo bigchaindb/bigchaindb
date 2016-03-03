@@ -3,11 +3,10 @@ import time
 import rethinkdb as r
 import multiprocessing as mp
 
-from bigchaindb import Bigchain
 from bigchaindb import util
 
 from bigchaindb.voter import Voter, BlockStream
-from bigchaindb.crypto import PublicKey
+from bigchaindb.crypto import PublicKey, generate_key_pair
 
 
 class TestBigchainVoter(object):
@@ -54,7 +53,7 @@ class TestBigchainVoter(object):
         genesis = b.create_genesis_block()
 
         # create a `CREATE` transaction
-        test_user_priv, test_user_pub = b.generate_keys()
+        test_user_priv, test_user_pub = generate_key_pair()
         tx = b.create_transaction(b.me, test_user_pub, None, 'CREATE')
         tx_signed = b.sign_transaction(tx, b.me_private)
         assert b.is_valid_transaction(tx_signed)
@@ -96,7 +95,7 @@ class TestBigchainVoter(object):
         b.create_genesis_block()
 
         # create a `CREATE` transaction
-        test_user_priv, test_user_pub = b.generate_keys()
+        test_user_priv, test_user_pub = generate_key_pair()
         tx = b.create_transaction(b.me, test_user_pub, None, 'CREATE')
         tx_signed = b.sign_transaction(tx, b.me_private)
         assert b.is_valid_transaction(tx_signed)
@@ -125,7 +124,7 @@ class TestBigchainVoter(object):
         assert len(blocks[1]['votes']) == 1
 
         # create a `TRANSFER` transaction
-        test_user2_priv, test_user2_pub = b.generate_keys()
+        test_user2_priv, test_user2_pub = generate_key_pair()
         tx2 = b.create_transaction(test_user_pub, test_user2_pub, tx['id'], 'TRANSFER')
         tx2_signed = b.sign_transaction(tx2, test_user_priv)
         assert b.is_valid_transaction(tx2_signed)
@@ -302,7 +301,7 @@ class TestBlockStream(object):
 
     def test_if_federation_size_is_greater_than_one_ignore_past_blocks(self, b):
         for _ in range(5):
-            b.federation_nodes.append(b.generate_keys()[1])
+            b.federation_nodes.append(generate_key_pair()[1])
         new_blocks = mp.Queue()
         bs = BlockStream(new_blocks)
         block_1 = b.create_block([])

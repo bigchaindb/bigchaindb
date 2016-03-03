@@ -32,7 +32,7 @@ class ProcessGroup(object):
 
 
 def serialize(data):
-    """Function used to serialize a dict into a JSON formatted string.
+    """Serialize a dict into a JSON formatted string.
 
     This function enforces rules like the separator and order of keys. This ensures that all dicts
     are serialized in the same way.
@@ -52,8 +52,21 @@ def serialize(data):
                       separators=(',', ':'), sort_keys=True)
 
 
+def deserialize(data):
+    """Deserialize a JSON formatted string into a dict.
+
+    Args:
+        data (str): JSON formatted string.
+
+    Returns:
+        dict: dict resulting from the serialization of a JSON formatted string.
+    """
+
+    return json.loads(data, encoding="utf-8")
+
+
 def timestamp():
-    """Function to calculate a UTC timestamp with microsecond precision.
+    """Calculate a UTC timestamp with microsecond precision.
 
     Returns:
         str: UTC timestamp.
