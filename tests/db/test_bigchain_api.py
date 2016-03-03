@@ -365,7 +365,7 @@ class TestBlockValidation(object):
 
         # create a block with invalid transactions
         block = {
-            'timestamp': b.timestamp(),
+            'timestamp': util.timestamp(),
             'transactions': [tx_invalid],
             'node_pubkey': b.me,
             'voters': b.federation_nodes
