@@ -10,8 +10,8 @@ ORIGINAL_CONFIG = copy.deepcopy(bigchaindb._config)
 
 
 @pytest.fixture(scope='function', autouse=True)
-def clean_config():
-    bigchaindb.config = copy.deepcopy(ORIGINAL_CONFIG)
+def clean_config(monkeypatch):
+    monkeypatch.setattr('bigchaindb.config', copy.deepcopy(ORIGINAL_CONFIG))
 
 
 def test_bigchain_instance_is_initialized_when_conf_provided():

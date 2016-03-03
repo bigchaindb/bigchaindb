@@ -12,7 +12,6 @@ TX_ENDPOINT = '/api/v1/transactions/'
 def test_get_transaction_endpoint(b, client, user_public_key):
     input_tx = b.get_owned_ids(user_public_key).pop()
     tx = b.get_transaction(input_tx)
-
     res = client.get(TX_ENDPOINT + input_tx)
     assert tx == res.json
 

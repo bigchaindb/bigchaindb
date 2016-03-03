@@ -5,14 +5,22 @@ For more information please refer to the documentation in Apiary:
 """
 
 import flask
-from flask import request, Blueprint
+from flask import current_app, request, Blueprint
 
 from bigchaindb import util
-from bigchaindb import Bigchain
 
 
 basic_views = Blueprint('basic_views', __name__)
-b = Bigchain()
+
+
+@basic_views.record
+def get_bigchain(state):
+    bigchain = state.app.config.get('bigchain')
+
+    if bigchain is None:
+        raise Exception('This blueprint expects you to provide '
+                        'database access through `bigchain`')
+
 
 
 @basic_views.route('/transactions/<tx_id>')
@@ -26,7 +34,9 @@ def get_transaction(tx_id):
         A JSON string containing the data about the transaction.
     """
 
-    tx = b.get_transaction(tx_id)
+    bigchain = current_app.config['bigchain']
+
+    tx = bigchain.get_transaction(tx_id)
     return flask.jsonify(**tx)
 
 
@@ -37,6 +47,7 @@ def create_transaction():
     Return:
         A JSON string containing the data about the transaction.
     """
+    bigchain = current_app.config['bigchain']
 
     val = {}
 
@@ -46,12 +57,12 @@ def create_transaction():
 
     if tx['transaction']['operation'] == 'CREATE':
         tx = util.transform_create(tx)
-        tx = util.sign_tx(tx, b.me_private)
+        tx = util.sign_tx(tx, bigchain.me_private)
 
     if not util.verify_signature(tx):
         val['error'] = 'Invalid transaction signature'
 
-    val = b.write_transaction(tx)
+    val = bigchain.write_transaction(tx)
 
     return flask.jsonify(**tx)
 

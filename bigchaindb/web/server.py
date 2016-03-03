@@ -2,6 +2,7 @@
 
 from flask import Flask
 
+from bigchaindb import Bigchain
 from bigchaindb.web import views
 
 
@@ -14,6 +15,7 @@ def create_app(debug=False):
 
     app = Flask(__name__)
     app.debug = debug
+    app.config['bigchain'] = Bigchain()
     app.register_blueprint(views.basic_views, url_prefix='/api/v1')
     return app
 
