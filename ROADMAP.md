@@ -2,6 +2,7 @@
 
 ## BigchainDB Protocols
 * Validation of other nodes
+* Fault tolerance
 * Permissions framework
 * Protocol audits including security audits
 
