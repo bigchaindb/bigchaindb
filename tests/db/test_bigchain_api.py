@@ -6,37 +6,12 @@ import pytest
 import rethinkdb as r
 
 import bigchaindb
+from bigchaindb import util
 from bigchaindb import exceptions
-from bigchaindb import Bigchain
-from bigchaindb.crypto import hash_data, PrivateKey, PublicKey, generate_key_pair
+from bigchaindb.crypto import PrivateKey, PublicKey, generate_key_pair, hash_data
 from bigchaindb.voter import Voter
 from bigchaindb.block import Block
 
-
-def create_inputs(user_public_key, amount=1, b=None):
-    # 1. create the genesis block
-    b = b or Bigchain()
-    try:
-        b.create_genesis_block()
-    except bigchaindb.core.GenesisBlockAlreadyExistsError:
-        pass
-
-    # 2. create block with transactions for `USER` to spend
-    transactions = []
-    for i in range(amount):
-        tx = b.create_transaction(b.me, user_public_key, None, 'CREATE')
-        tx_signed = b.sign_transaction(tx, b.me_private)
-        transactions.append(tx_signed)
-        b.write_transaction(tx_signed)
-
-    block = b.create_block(transactions)
-    b.write_block(block, durability='hard')
-    return block
-
-
-@pytest.fixture
-def inputs(user_public_key):
-    return create_inputs(user_public_key)
 
 
 @pytest.mark.skipif(reason='Some tests throw a ResourceWarning that might result in some weird '
@@ -69,7 +44,7 @@ class TestBigchainApi(object):
             'operation': 'd',
             'timestamp': tx['transaction']['timestamp'],
             'data': {
-                'hash': hash_data(b.serialize(payload)),
+                'hash': hash_data(util.serialize(payload)),
                 'payload': payload
             }
         }
@@ -77,7 +52,7 @@ class TestBigchainApi(object):
         # assert tx_hash == tx_calculated_hash
 
     def test_transaction_signature(self, b):
-        sk, vk = b.generate_keys()
+        sk, vk = generate_key_pair()
         tx = b.create_transaction(vk, 'b', 'c', 'd')
         tx_signed = b.sign_transaction(tx, sk)
 
@@ -86,7 +61,7 @@ class TestBigchainApi(object):
 
     def test_serializer(self, b):
         tx = b.create_transaction('a', 'b', 'c', 'd')
-        assert b.deserialize(b.serialize(tx)) == tx
+        assert util.deserialize(util.serialize(tx)) == tx
 
     @pytest.mark.usefixtures('inputs')
     def test_write_transaction(self, b, user_public_key, user_private_key):
@@ -114,7 +89,7 @@ class TestBigchainApi(object):
         b.write_block(block, durability='hard')
 
         response = b.get_transaction(tx_signed["id"])
-        assert b.serialize(tx_signed) == b.serialize(response)
+        assert util.serialize(tx_signed) == util.serialize(response)
 
     @pytest.mark.usefixtures('inputs')
     def test_assign_transaction_one_node(self, b, user_public_key, user_private_key):
@@ -129,11 +104,11 @@ class TestBigchainApi(object):
         # check if the assignee is the current node
         assert response['assignee'] == b.me
 
+    @pytest.mark.usefixtures('inputs')
     def test_assign_transaction_multiple_nodes(self, b, user_public_key, user_private_key):
         # create 5 federation nodes
         for _ in range(5):
-            b.federation_nodes.append(b.generate_keys()[1])
-        create_inputs(user_public_key, amount=20, b=b)
+            b.federation_nodes.append(generate_key_pair()[1])
 
         # test assignee for several transactions
         for _ in range(20):
@@ -210,11 +185,11 @@ class TestBigchainApi(object):
 
     def test_create_new_block(self, b):
         new_block = b.create_block([])
-        block_hash = hash_data(b.serialize(new_block['block']))
+        block_hash = hash_data(util.serialize(new_block['block']))
 
         assert new_block['block']['voters'] == [b.me]
         assert new_block['block']['node_pubkey'] == b.me
-        assert PublicKey(b.me).verify(b.serialize(new_block['block']), new_block['signature']) is True
+        assert PublicKey(b.me).verify(util.serialize(new_block['block']), new_block['signature']) is True
         assert new_block['id'] == block_hash
         assert new_block['votes'] == []
 
@@ -389,13 +364,13 @@ class TestBlockValidation(object):
 
         # create a block with invalid transactions
         block = {
-            'timestamp': b.timestamp(),
+            'timestamp': util.timestamp(),
             'transactions': [tx_invalid],
             'node_pubkey': b.me,
             'voters': b.federation_nodes
         }
 
-        block_data = b.serialize(block)
+        block_data = util.serialize(block)
         block_hash = hash_data(block_data)
         block_signature = PrivateKey(b.me_private).sign(block_data)
 
@@ -508,7 +483,7 @@ class TestBigchainVoter(object):
         assert vote['vote']['is_block_valid'] is True
         assert vote['vote']['invalid_reason'] is None
         assert vote['node_pubkey'] == b.me
-        assert PublicKey(b.me).verify(b.serialize(vote['vote']), vote['signature']) is True
+        assert PublicKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
 
     def test_invalid_block_voting(self, b, user_public_key):
         # create queue and voter
@@ -549,7 +524,7 @@ class TestBigchainVoter(object):
         assert vote['vote']['is_block_valid'] is False
         assert vote['vote']['invalid_reason'] is None
         assert vote['node_pubkey'] == b.me
-        assert PublicKey(b.me).verify(b.serialize(vote['vote']), vote['signature']) is True
+        assert PublicKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
 
     def test_vote_creation_valid(self, b):
         # create valid block
@@ -563,7 +538,7 @@ class TestBigchainVoter(object):
         assert vote['vote']['is_block_valid'] is True
         assert vote['vote']['invalid_reason'] is None
         assert vote['node_pubkey'] == b.me
-        assert PublicKey(b.me).verify(b.serialize(vote['vote']), vote['signature']) is True
+        assert PublicKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
 
     def test_vote_creation_invalid(self, b):
         # create valid block
@@ -577,7 +552,7 @@ class TestBigchainVoter(object):
         assert vote['vote']['is_block_valid'] is False
         assert vote['vote']['invalid_reason'] is None
         assert vote['node_pubkey'] == b.me
-        assert PublicKey(b.me).verify(b.serialize(vote['vote']), vote['signature']) is True
+        assert PublicKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
 
 
 class TestBigchainBlock(object):

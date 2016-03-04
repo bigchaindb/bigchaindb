@@ -1,9 +1,9 @@
 # Separate all crypto code so that we can easily test several implementations
 
-import hashlib
-import sha3
 import binascii
 import base58
+
+import sha3
 import bitcoin
 
 from cryptography.hazmat.backends import default_backend
@@ -148,4 +148,8 @@ def generate_key_pair():
 
 
 def hash_data(data):
-    return hashlib.sha3_256(data.encode()).hexdigest()
+    """Hash the provided data using SHA3-256"""
+
+    return sha3.sha3_256(data.encode()).hexdigest()
+
+

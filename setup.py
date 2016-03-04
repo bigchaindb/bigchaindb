@@ -15,6 +15,7 @@ tests_require = [
     'pytest',
     'pytest-cov',
     'pytest-xdist',
+    'pytest-flask',
 ]
 
 dev_require = [
@@ -73,6 +74,8 @@ setup(
         'logstats==0.2.1',
         'base58==0.2.2',
         'bitcoin==1.1.42',
+        'flask==0.10.1',
+        'requests==2.9',
     ],
     setup_requires=['pytest-runner'],
     tests_require=tests_require,
