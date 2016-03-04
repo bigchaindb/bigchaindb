@@ -41,23 +41,37 @@ class Client:
         if not self.public_key or not self.private_key:
             raise exceptions.KeypairNotFoundException()
 
-    def make_tx(self, new_owner, tx_input, operation='TRANSFER', payload=None):
-        """Make a new transaction
+    def create(self, payload=None):
+        """Issue a transaction to create an asset.
 
-        Refer to the documentation of ``bigchaindb.util.create_tx``
+        Args:
+            payload (dict): the payload for the transaction.
+
+        Return:
+            The transaction pushed to the Federation.
         """
 
-        return util.create_tx(self.public_key, new_owner, tx_input, operation, payload)
+        tx = util.create_tx(self.public_key, self.public_key, None, operation='CREATE', payload=payload)
+        signed_tx = util.sign_tx(tx, self.private_key)
+        return self._push(signed_tx)
 
-    def sign_tx(self, tx):
-        """Sign a transaction
+    def transfer(self, new_owner, tx_input, payload=None):
+        """Issue a transaction to transfer an asset.
 
-        Refer to the documentation of ``bigchaindb.util.sign_tx``
+        Args:
+            new_owner (str): the public key of the new owner
+            tx_input (str): the id of the transaction to use as input
+            payload (dict, optional): the payload for the transaction.
+
+        Return:
+            The transaction pushed to the Federation.
         """
 
-        return util.sign_tx(tx, self.private_key)
+        tx = util.create_tx(self.public_key, new_owner, tx_input, operation='TRANSFER', payload=payload)
+        signed_tx = util.sign_tx(tx, self.private_key)
+        return self._push(signed_tx)
 
-    def push_tx(self, tx):
+    def _push(self, tx):
         """Submit a transaction to the Federation.
 
         Args:
@@ -69,36 +83,6 @@ class Client:
 
         res = requests.post(self.api_endpoint + '/transactions/', json=tx)
         return res.json()
-
-    def create(self, payload=None):
-        """Create a transaction.
-
-        Args:
-            payload (dict): the payload for the transaction.
-
-        Return:
-            The transaction pushed to the Federation.
-        """
-
-        tx = self.make_tx(self.public_key, None, operation='CREATE', payload=payload)
-        signed_tx = self.sign_tx(tx)
-        return self.push_tx(signed_tx)
-
-    def transfer(self, new_owner, tx_input, payload=None):
-        """Transfer a transaction.
-
-        Args:
-            new_owner (str): the public key of the new owner
-            tx_input (str): the id of the transaction to use as input
-            payload (dict, optional): the payload for the transaction.
-
-        Return:
-            The transaction pushed to the Federation.
-        """
-
-        tx = self.make_tx(new_owner, tx_input, payload=payload)
-        signed_tx = self.sign_tx(tx)
-        return self.push_tx(signed_tx)
 
 
 def temp_client():

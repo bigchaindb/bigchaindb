@@ -29,42 +29,7 @@ def test_temp_client_returns_a_temp_client():
     assert client.private_key
 
 
-def test_client_can_make_transactions(client):
-    tx = client.make_tx('a', 123)
-
-    assert tx['transaction']['current_owner'] == client.public_key
-    assert tx['transaction']['new_owner'] == 'a'
-    assert tx['transaction']['input'] == 123
-
-
-def test_client_can_sign_transactions(client):
-    from bigchaindb import util
-
-    tx = client.make_tx('a', 123)
-    signed_tx = client.sign_tx(tx)
-
-    assert signed_tx['transaction']['current_owner'] == client.public_key
-    assert signed_tx['transaction']['new_owner'] == 'a'
-    assert signed_tx['transaction']['input'] == 123
-
-    assert util.verify_signature(signed_tx)
-
-
-def test_client_can_push_transactions(mock_requests_post, client):
-    from bigchaindb import util
-
-    tx = client.make_tx('a', 123)
-    signed_tx = client.sign_tx(tx)
-    ret_tx = client.push_tx(signed_tx)
-
-    assert ret_tx['transaction']['current_owner'] == client.public_key
-    assert ret_tx['transaction']['new_owner'] == 'a'
-    assert ret_tx['transaction']['input'] == 123
-
-    assert util.verify_signature(ret_tx)
-
-
-def test_client_can_create_transactions_using_shortcut_method(mock_requests_post, client):
+def test_client_can_create_assets(mock_requests_post, client):
     from bigchaindb import util
 
     tx = client.create()
@@ -81,7 +46,7 @@ def test_client_can_create_transactions_using_shortcut_method(mock_requests_post
     assert util.verify_signature(tx)
 
 
-def test_client_can_transfer_transactions_using_shortcut_method(mock_requests_post, client):
+def test_client_can_transfer_assets(mock_requests_post, client):
     from bigchaindb import util
 
     tx = client.transfer('a', 123)
