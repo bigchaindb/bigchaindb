@@ -25,3 +25,7 @@ class DatabaseAlreadyExists(Exception):
 class DatabaseDoesNotExist(Exception):
     """Raised when trying to delete the database but the db is not there"""
 
+class KeypairNotFoundException(Exception):
+    """Raised if operation cannot proceed because the keypair was not given"""
+
+

@@ -4,6 +4,7 @@ import pytest
 import rethinkdb as r
 
 import bigchaindb
+from bigchaindb import util
 from bigchaindb.db import utils
 from .conftest import setup_database as _setup_database
 

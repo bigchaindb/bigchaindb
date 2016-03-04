@@ -1,25 +1,21 @@
 import rethinkdb as r
-import time
 import random
 import json
 import rapidjson
 
-from datetime import datetime
 
 import bigchaindb
+from bigchaindb import util
 from bigchaindb import config_utils
 from bigchaindb import exceptions
-from bigchaindb.crypto import hash_data, PublicKey, PrivateKey, generate_key_pair
+from bigchaindb import crypto
 from bigchaindb.monitor import Monitor
+
 
 monitor = Monitor()
 
 
 class GenesisBlockAlreadyExistsError(Exception):
-    pass
-
-
-class KeypairNotFoundException(Exception):
     pass
 
 
@@ -47,8 +43,8 @@ class Bigchain(object):
             public_key (str): the base58 encoded public key for the ECDSA secp256k1 curve.
             private_key (str): the base58 encoded private key for the ECDSA secp256k1 curve.
             keyring (list[str]): list of base58 encoded public keys of the federation nodes.
-
         """
+
         config_utils.autoconfigure()
         self.host = host or bigchaindb.config['database']['host']
         self.port = port or bigchaindb.config['database']['port']
@@ -58,7 +54,7 @@ class Bigchain(object):
         self.federation_nodes = keyring or bigchaindb.config['keyring']
 
         if not self.me or not self.me_private:
-            raise KeypairNotFoundException()
+            raise exceptions.KeypairNotFoundException()
 
         self._conn = None
 
@@ -75,101 +71,25 @@ class Bigchain(object):
     def create_transaction(self, current_owner, new_owner, tx_input, operation, payload=None):
         """Create a new transaction
 
-        A transaction in the bigchain is a transfer of a digital asset between two entities represented
-        by public keys.
-
-        Currently the bigchain supports two types of operations:
-
-            `CREATE` - Only federation nodes are allowed to use this operation. In a create operation
-            a federation node creates a digital asset in the bigchain and assigns that asset to a public
-            key. The owner of the private key can then decided to transfer this digital asset by using the
-            `transaction id` of the transaction as an input in a `TRANSFER` transaction.
-
-            `TRANSFER` - A transfer operation allows for a transfer of the digital assets between entities.
-
-        Args:
-            current_owner (str): base58 encoded public key of the current owner of the asset.
-            new_owner (str): base58 encoded public key of the new owner of the digital asset.
-            tx_input (str): id of the transaction to use as input.
-            operation (str): Either `CREATE` or `TRANSFER` operation.
-            payload (Optional[dict]): dictionary with information about asset.
-
-        Returns:
-            dict: unsigned transaction.
-
-
-        Raises:
-            TypeError: if the optional ``payload`` argument is not a ``dict``.
+        Refer to the documentation of ``bigchaindb.util.create_tx``
         """
-        data = None
-        if payload is not None:
-            if isinstance(payload, dict):
-                hash_payload = hash_data(self.serialize(payload))
-                data = {
-                    'hash': hash_payload,
-                    'payload': payload
-                }
-            else:
-                raise TypeError('`payload` must be an dict instance')
 
-        hash_payload = hash_data(self.serialize(payload))
-        data = {
-            'hash': hash_payload,
-            'payload': payload
-        }
-
-        tx = {
-            'current_owner': current_owner,
-            'new_owner': new_owner,
-            'input': tx_input,
-            'operation': operation,
-            'timestamp': self.timestamp(),
-            'data': data
-        }
-
-        # serialize and convert to bytes
-        tx_serialized = self.serialize(tx)
-        tx_hash = hash_data(tx_serialized)
-
-        # create the transaction
-        transaction = {
-            'id': tx_hash,
-            'transaction': tx
-        }
-
-        return transaction
+        return util.create_tx(current_owner, new_owner, tx_input, operation, payload)
 
     def sign_transaction(self, transaction, private_key):
         """Sign a transaction
 
-        A transaction signed with the `current_owner` corresponding private key.
-
-        Args:
-            transaction (dict): transaction to sign.
-            private_key (str): base58 encoded private key to create a signature of the transaction.
-
-        Returns:
-            dict: transaction with the `signature` field included.
-
+        Refer to the documentation of ``bigchaindb.util.sign_tx``
         """
-        private_key = PrivateKey(private_key)
-        signature = private_key.sign(self.serialize(transaction))
-        signed_transaction = transaction.copy()
-        signed_transaction.update({'signature': signature})
-        return signed_transaction
+
+        return util.sign_tx(transaction, private_key)
 
     def verify_signature(self, signed_transaction):
-        """Verify the signature of a transaction
+        """Verify the signature of a transaction.
 
-        A valid transaction should have been signed `current_owner` corresponding private key.
-
-        Args:
-            signed_transaction (dict): a transaction with the `signature` included.
-
-        Returns:
-            bool: True if the signature is correct, False otherwise.
-
+        Refer to the documentation of ``bigchaindb.crypto.verify_signature``
         """
+
         data = signed_transaction.copy()
 
         # if assignee field in the transaction, remove it
@@ -178,11 +98,11 @@ class Bigchain(object):
 
         signature = data.pop('signature')
         public_key_base58 = signed_transaction['transaction']['current_owner']
-        public_key = PublicKey(public_key_base58)
-        return public_key.verify(self.serialize(data), signature)
+        public_key = crypto.PublicKey(public_key_base58)
+        return public_key.verify(util.serialize(data), signature)
 
     @monitor.timer('write_transaction', rate=bigchaindb.config['statsd']['rate'])
-    def write_transaction(self, signed_transaction):
+    def write_transaction(self, signed_transaction, durability='soft'):
         """Write the transaction to bigchain.
 
         When first writing a transaction to the bigchain the transaction will be kept in a backlog until
@@ -208,7 +128,7 @@ class Bigchain(object):
         signed_transaction.update({'assignee': assignee})
 
         # write to the backlog
-        response = r.table('backlog').insert(signed_transaction, durability='soft').run(self.conn)
+        response = r.table('backlog').insert(signed_transaction, durability=durability).run(self.conn)
         return response
 
     # TODO: the same `txid` can be in two different blocks
@@ -224,8 +144,8 @@ class Bigchain(object):
             A dict with the transaction details if the transaction was found.
 
             If no transaction with that `txid` was found it returns `None`
-
         """
+
         response = r.table('bigchain').concat_map(lambda doc: doc['block']['transactions'])\
             .filter(lambda transaction: transaction['id'] == txid).run(self.conn)
 
@@ -255,8 +175,8 @@ class Bigchain(object):
         Returns:
             A list of transactions containing that payload. If no transaction exists with that payload it
             returns `None`
-
         """
+
         cursor = r.table('bigchain')\
             .get_all(payload_hash, index='payload_hash')\
             .run(self.conn)
@@ -275,7 +195,6 @@ class Bigchain(object):
 
         Returns:
             The transaction that used the `txid` as an input if it exists else it returns `None`
-
         """
         # checks if an input was already spent
         # checks if the bigchain has any transaction with input `transaction_id`
@@ -301,8 +220,8 @@ class Bigchain(object):
 
         Returns:
             list: list of `txids` currently owned by `owner`
-
         """
+
         response = r.table('bigchain')\
                     .concat_map(lambda doc: doc['block']['transactions'])\
                     .filter({'transaction': {'new_owner': owner}})\
@@ -336,6 +255,7 @@ class Bigchain(object):
             InvalidHash: if the hash of the transaction is wrong
             InvalidSignature: if the signature of the transaction is wrong
         """
+
         # If the operation is CREATE the transaction should have no inputs and should be signed by a
         # federation node
         if transaction['transaction']['operation'] == 'CREATE':
@@ -365,15 +285,7 @@ class Bigchain(object):
                     raise exceptions.DoubleSpend('input `{}` was already spent'.format(
                         transaction['transaction']['input']))
 
-        # Check hash of the transaction
-        calculated_hash = hash_data(self.serialize(transaction['transaction']))
-        if calculated_hash != transaction['id']:
-            raise exceptions.InvalidHash()
-
-        # Check signature
-        if not self.verify_signature(transaction):
-            raise exceptions.InvalidSignature()
-
+        util.check_hash_and_signature(transaction)
         return transaction
 
     def is_valid_transaction(self, transaction):
@@ -386,8 +298,8 @@ class Bigchain(object):
 
         Returns:
             bool: `True` if the transaction is valid, `False` otherwise
-
         """
+
         try:
             self.validate_transaction(transaction)
             return transaction
@@ -407,20 +319,20 @@ class Bigchain(object):
 
         Returns:
             dict: created block.
-
         """
+
         # Create the new block
         block = {
-            'timestamp': self.timestamp(),
+            'timestamp': util.timestamp(),
             'transactions': validated_transactions,
             'node_pubkey': self.me,
             'voters': self.federation_nodes + [self.me]
         }
 
         # Calculate the hash of the new block
-        block_data = self.serialize(block)
-        block_hash = hash_data(block_data)
-        block_signature = PrivateKey(self.me_private).sign(block_data)
+        block_data = util.serialize(block)
+        block_hash = crypto.hash_data(block_data)
+        block_signature = crypto.PrivateKey(self.me_private).sign(block_data)
 
         block = {
             'id': block_hash,
@@ -442,11 +354,10 @@ class Bigchain(object):
         Returns:
             The block if the block is valid else it raises and exception
             describing the reason why the block is invalid.
-
         """
 
         # 1. Check if current hash is correct
-        calculated_hash = hash_data(self.serialize(block['block']))
+        calculated_hash = crypto.hash_data(util.serialize(block['block']))
         if calculated_hash != block['id']:
             raise exceptions.InvalidHash()
 
@@ -468,8 +379,8 @@ class Bigchain(object):
 
         Returns:
             bool: `True` if the block is valid, `False` otherwise.
-
         """
+
         try:
             self.validate_block(block)
             return True
@@ -482,8 +393,8 @@ class Bigchain(object):
 
         Args:
             block (dict): block to write to bigchain.
-
         """
+
         block_serialized = rapidjson.dumps(block)
         r.table('bigchain').insert(r.json(block_serialized), durability=durability).run(self.conn)
 
@@ -530,18 +441,18 @@ class Bigchain(object):
             previous_block_id (str): The id of the previous block.
             decision (bool): Whether the block is valid or invalid.
             invalid_reason (Optional[str]): Reason the block is invalid
-
         """
+
         vote = {
             'voting_for_block': block['id'],
             'previous_block': previous_block_id,
             'is_block_valid': decision,
             'invalid_reason': invalid_reason,
-            'timestamp': self.timestamp()
+            'timestamp': util.timestamp()
         }
 
-        vote_data = self.serialize(vote)
-        signature = PrivateKey(self.me_private).sign(vote_data)
+        vote_data = util.serialize(vote)
+        signature = crypto.PrivateKey(self.me_private).sign(vote_data)
 
         vote_signed = {
             'node_pubkey': self.me,
@@ -552,9 +463,8 @@ class Bigchain(object):
         return vote_signed
 
     def write_vote(self, block, vote, block_number):
-        """
-        Write the vote to the database
-        """
+        """Write the vote to the database."""
+
         update = {'votes': r.row['votes'].append(vote)}
 
         # We need to *not* override the existing block_number, if any
@@ -568,9 +478,8 @@ class Bigchain(object):
          .run(self.conn)
 
     def get_last_voted_block(self):
-        """
-        Returns the last block that this node voted on
-        """
+        """Returns the last block that this node voted on."""
+
         # query bigchain for all blocks this node is a voter but didn't voted on
         last_voted = r.table('bigchain')\
             .filter(r.row['block']['voters'].contains(self.me))\
@@ -589,9 +498,7 @@ class Bigchain(object):
         return last_voted[0]
 
     def get_unvoted_blocks(self):
-        """
-        Return all the blocks that has not been voted by this node.
-        """
+        """Return all the blocks that has not been voted by this node."""
 
         unvoted = r.table('bigchain')\
             .filter(lambda doc: doc['votes'].contains(lambda vote: vote['node_pubkey'] == self.me).not_())\
@@ -603,59 +510,3 @@ class Bigchain(object):
 
         return unvoted
 
-    @staticmethod
-    def serialize(data):
-        """Static method used to serialize a dict into a JSON formatted string.
-
-        This method enforces rules like the separator and order of keys. This ensures that all dicts
-        are serialized in the same way.
-
-        This is specially important for hashing data. We need to make sure that everyone serializes their data
-        in the same way so that we do not have hash mismatches for the same structure due to serialization
-        differences.
-
-        Args:
-            data (dict): dict to serialize
-
-        Returns:
-            str: JSON formatted string
-
-        """
-        return json.dumps(data, skipkeys=False, ensure_ascii=False,
-                          separators=(',', ':'), sort_keys=True)
-
-    @staticmethod
-    def deserialize(data):
-        """Static method used to deserialize a JSON formatted string into a dict.
-
-        Args:
-            data (str): JSON formatted string.
-
-        Returns:
-            dict: dict resulting from the serialization of a JSON formatted string.
-
-        """
-        return json.loads(data, encoding="utf-8")
-
-    @staticmethod
-    def timestamp():
-        """Static method to calculate a UTC timestamp with microsecond precision.
-
-        Returns:
-            str: UTC timestamp.
-
-        """
-        dt = datetime.utcnow()
-        return "{0:.6f}".format(time.mktime(dt.timetuple()) + dt.microsecond / 1e6)
-
-    @staticmethod
-    def generate_keys():
-        """Generates a key pair.
-
-        Returns:
-            tuple: `(private_key, public_key)`. ECDSA key pair using the secp256k1 curve encoded
-            in base58.
-
-        """
-        # generates and returns the keys serialized in hex
-        return generate_key_pair()
