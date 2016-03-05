@@ -40,9 +40,10 @@ config = {
         'port': e('BIGCHAIN_STATSD_PORT', default=8125),
         'rate': e('BIGCHAIN_STATSD_SAMPLERATE', default=0.01)
     },
+    'api_endpoint': 'http://localhost:8008/api/v1',
     'consensus_plugins': [
         'base'
-    ],
+    ]
 }
 
 # We need to maintain a backup copy of the original config dict in case
@@ -50,4 +51,3 @@ config = {
 # for more info.
 _config = copy.deepcopy(config)
 from bigchaindb.core import Bigchain  # noqa
-

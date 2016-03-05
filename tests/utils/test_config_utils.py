@@ -3,14 +3,15 @@ import copy
 import pytest
 
 import bigchaindb
+from bigchaindb import exceptions
 
 
 ORIGINAL_CONFIG = copy.deepcopy(bigchaindb._config)
 
 
 @pytest.fixture(scope='function', autouse=True)
-def clean_config():
-    bigchaindb.config = copy.deepcopy(ORIGINAL_CONFIG)
+def clean_config(monkeypatch):
+    monkeypatch.setattr('bigchaindb.config', copy.deepcopy(ORIGINAL_CONFIG))
 
 
 def test_bigchain_instance_is_initialized_when_conf_provided():
@@ -34,5 +35,5 @@ def test_bigchain_instance_raises_when_not_configured(monkeypatch):
     # from existing configurations
     monkeypatch.setattr(config_utils, 'autoconfigure', lambda: 0)
 
-    with pytest.raises(bigchaindb.core.KeypairNotFoundException):
+    with pytest.raises(exceptions.KeypairNotFoundException):
         bigchaindb.Bigchain()

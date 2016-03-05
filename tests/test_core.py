@@ -1,10 +1,8 @@
-import copy
 import pytest
 
 
 @pytest.fixture
-def config(request):
-    import bigchaindb
+def config(request, monkeypatch):
     config = {
         'database': {
             'host': 'host',
@@ -18,13 +16,10 @@ def config(request):
         'keyring': [],
         'CONFIGURED': True,
     }
-    bigchaindb.config.update(config)
 
-    def fin():
-        bigchaindb.config = bigchaindb._config
-        bigchaindb._config = copy.deepcopy(bigchaindb._config)
-    request.addfinalizer(fin)
-    return bigchaindb.config
+    monkeypatch.setattr('bigchaindb.config', config)
+
+    return config
 
 
 def test_bigchain_class_default_initialization(config):

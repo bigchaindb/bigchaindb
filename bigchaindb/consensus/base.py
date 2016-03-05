@@ -1,4 +1,5 @@
 import bigchaindb.exceptions as exceptions
+from bigchaindb import util
 from bigchaindb.crypto import hash_data
 from bigchaindb.consensus import AbstractConsensusRules
 
@@ -72,7 +73,7 @@ class ConsensusRules(AbstractConsensusRules):
                         transaction['transaction']['input']))
 
         # Check hash of the transaction
-        calculated_hash = hash_data(bigchain.serialize(
+        calculated_hash = hash_data(util.serialize(
             transaction['transaction']))
         if calculated_hash != transaction['id']:
             raise exceptions.InvalidHash()
@@ -101,7 +102,7 @@ class ConsensusRules(AbstractConsensusRules):
         """
 
         # Check if current hash is correct
-        calculated_hash = hash_data(bigchain.serialize(block['block']))
+        calculated_hash = hash_data(util.serialize(block['block']))
         if calculated_hash != block['id']:
             raise exceptions.InvalidHash()
 

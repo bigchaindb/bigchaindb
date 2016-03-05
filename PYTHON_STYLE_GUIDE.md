@@ -20,7 +20,7 @@ PEP8 says some things about docstrings, but not what to put in them or how to st
 
 PEP8 has some [maximum line length guidelines](https://www.python.org/dev/peps/pep-0008/#id17), starting with "Limit all lines to a maximum of 79 characters" but "for flowing long blocks of text with fewer structural restrictions (docstrings or comments), the line length should be limited to 72 characters."
 
-We discussed this at length, and it seems that the consensus is: try to keep line lengths less than 79/72 characters, unless you have a special situation where longer lines would improve readability. (The basic reason is that 79/72 works for everyone, and BigchainDB is an open source project.)
+We discussed this at length, and it seems that the consensus is: _try_ to keep line lengths less than 79/72 characters, unless you have a special situation where longer lines would improve readability. (The basic reason is that 79/72 works for everyone, and BigchainDB is an open source project.) As a hard limit, keep all lines less than 119 characters (which is the width of GitHub code review).
 
 ### Single or Double Quotes?
 
