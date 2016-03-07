@@ -20,11 +20,11 @@ committed: TBD
 
 ### Added
 - `CHANGELOG.md` (this file)
-- Multisig support: [Pull Request #107](https://github.com/bigchaindb/bigchaindb/pull/107).
-- API/Wire protocol (RESTful HTTP API): [Pull Request #102](https://github.com/bigchaindb/bigchaindb/pull/102).
-- Python driver/SDK/API: [Pull Request #102](https://github.com/bigchaindb/bigchaindb/pull/102).
+- Multisig support: [Pull Request #107](https://github.com/bigchaindb/bigchaindb/pull/107)
+- API/Wire protocol (RESTful HTTP API): [Pull Request #102](https://github.com/bigchaindb/bigchaindb/pull/102)
+- Python driver/SDK/API: [Pull Request #102](https://github.com/bigchaindb/bigchaindb/pull/102)
 - Python Style Guide: [Pull Request #89](https://github.com/bigchaindb/bigchaindb/pull/89)
-- Monitoring & dashboard tools: [Pull Request #72](https://github.com/bigchaindb/bigchaindb/pull/72).
+- Monitoring & dashboard tools: [Pull Request #72](https://github.com/bigchaindb/bigchaindb/pull/72)
 
 ### Changed
 - Rewrote [`README.md`](https://github.com/bigchaindb/bigchaindb/blob/develop/README.md) into four sets of links: Pull Requests [#80](https://github.com/bigchaindb/bigchaindb/pull/80) and [#115](https://github.com/bigchaindb/bigchaindb/pull/115)
@@ -40,7 +40,7 @@ Tag name: v0.1.4
 committed: Feb 22, 2016, 11:51 AM GMT+1
 
 ### Added
-- Add classifiers
+- Added to `classifiers` to setup.py
 
 ### Changed
 - Allow running pytest tests in parallel (using [xdist](http://pytest.org/latest/xdist.html)): [Pull Request #65](https://github.com/bigchaindb/bigchaindb/pull/65)
@@ -62,7 +62,10 @@ Tag name: v0.1.2
 committed Feb 15, 2016, 2:23 PM GMT+1
 
 ### Added
+- Various tests
 
+### Fixed
+- Fix exception when running `start`: [Pull Request #32](https://github.com/bigchaindb/bigchaindb/pull/32) resolved [Issue #35]
 
 ## [0.1.1] - 2016-02-15
 Tag name: v0.1.1 
@@ -75,6 +78,9 @@ committed Feb 15, 2016, 10:48 AM GMT+1
 ### Removed
 - `tox.ini` [Pull Request #18](https://github.com/bigchaindb/bigchaindb/pull/18)
 - `requirements.txt` in the root directory, and the entire `requirements/` directory: [Pull Request #14](https://github.com/bigchaindb/bigchaindb/pull/14)
+
+### Fixed
+- Hotfix for AttributeError, fixed [Issue #27](https://github.com/bigchaindb/bigchaindb/issues/27)
 
 
 ## [0.1.0] - 2016-02-10
