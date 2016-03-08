@@ -14,7 +14,7 @@ Table of Contents
 
    introduction
    installing-server
-   getting-started
+   python-server-api-examples
    bigchaindb-cli
    python-api-tutorial
    admin

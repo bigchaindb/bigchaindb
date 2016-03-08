@@ -1,8 +1,12 @@
-# Getting Started (Tutorial)
+# The Python Server API by Example
 
-This section gives an example of using BigchainDB. We create a digital asset, sign it, write it to a BigchainDB instance, read it, transfer it to a different user, and then attempt to transfer it to another user, resulting in a double-spend error.
+This section gives an example of using the Python Server API to interact _directly_ with a BigchainDB node running BigchainDB Server. That is, in this example, the Python code and BigchainDB Server run on the same machine.
 
-## Getting Going
+(One can also interact with a BigchainDB node via other APIs, including the HTTP Client-Server API.) 
+
+We create a digital asset, sign it, write it to a BigchainDB Server instance, read it, transfer it to a different user, and then attempt to transfer it to another user, resulting in a double-spend error.
+
+## Getting Started
 
 First, make sure you have RethinkDB and BigchainDB _installed and running_, i.e. you [installed them](installing-server.html) and you ran:
 ```text
