@@ -23,6 +23,7 @@ Table of Contents
    json-serialization
    developer-interface
    monitoring
+   licenses
    contributing
    faq
    release-notes
