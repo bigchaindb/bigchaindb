@@ -16,7 +16,8 @@ Table of Contents
    installing-server
    python-server-api-examples
    bigchaindb-cli
-   python-api-tutorial
+   http-client-server-api
+   python-driver-api-examples
    admin
    cryptography
    models
