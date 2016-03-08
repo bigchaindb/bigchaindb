@@ -8,6 +8,7 @@
 
 ## Implementation/Code
 * Node validation framework (inspect and agree or not with what the other nodes are doing)
+* Open public testing cluster (for people to try out a BigchainDB cluster and to test client software)
 * Federation management tools
 * More tools for benchmarking a cluster
 * Descriptions and results of more benchmarking tests
