@@ -13,7 +13,7 @@ Table of Contents
    :numbered:
 
    introduction
-   installing
+   installing-server
    getting-started
    bigchaindb-cli
    python-api-tutorial
