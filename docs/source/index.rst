@@ -26,7 +26,6 @@ Table of Contents
    monitoring
    licenses
    contributing
-   faq
    release-notes
    glossary
 
