@@ -4,7 +4,7 @@ This section gives an example of using BigchainDB. We create a digital asset, si
 
 ## Getting Going
 
-First, make sure you have RethinkDB and BigchainDB _installed and running_, i.e. you [installed them](installing.html) and you ran:
+First, make sure you have RethinkDB and BigchainDB _installed and running_, i.e. you [installed them](installing-server.html) and you ran:
 ```text
 $ rethinkdb
 $ bigchaindb start

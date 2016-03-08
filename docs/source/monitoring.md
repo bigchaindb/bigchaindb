@@ -20,7 +20,7 @@ then point a browser tab to:
 
 [http://localhost:3000/dashboard/script/bigchaindb_dashboard.js](http://localhost:3000/dashboard/script/bigchaindb_dashboard.js)
 
-The login and password are `admin` by default. If BigchainDB is running and processing transactions, you should see analytics—if not, [start BigchainDB](installing.html#run-bigchaindb) and load some test transactions:
+The login and password are `admin` by default. If BigchainDB is running and processing transactions, you should see analytics—if not, [start BigchainDB](installing-server.html#run-bigchaindb) and load some test transactions:
 ```text
 $ bigchaindb-benchmark load
 ```

@@ -9,7 +9,7 @@ This section covers everything which might concern a BigchainDB server/cluster a
 
 ## Deploying a local cluster
 One of the advantages of RethinkDB as the storage backend is the easy installation. Developers like to have everything locally, so let's install a local storage backend cluster from scratch.
-Here is an example to run a cluster assuming rethinkdb is already [installed](installing.html#installing-and-running-rethinkdb-server-on-ubuntu-12-04) in
+Here is an example to run a cluster assuming rethinkdb is already [installed](installing-server.html#installing-and-running-rethinkdb-server-on-ubuntu-12-04) in
 your system:
 
     # preparing two additional nodes

@@ -10,8 +10,8 @@ A scalable blockchain database. [The whitepaper](https://www.bigchaindb.com/whit
 
 ## Quick Start
 
-### [Install & Run BigchainDB](http://bigchaindb.readthedocs.org/en/develop/installing.html)
-### [Run BigchainDB with Docker](http://bigchaindb.readthedocs.org/en/develop/installing.html#run-bigchaindb-with-docker)
+### [Install and Run BigchainDB Server](http://bigchaindb.readthedocs.org/en/develop/installing-server.html)
+### [Run BigchainDB with Docker](http://bigchaindb.readthedocs.org/en/develop/installing-server.html#run-bigchaindb-with-docker)
 ### [Getting Started (Tutorial)](http://bigchaindb.readthedocs.org/en/develop/getting-started.html)
 
 ## Links for Everyone
