@@ -84,6 +84,8 @@ git merge upstream/develop
 
 Once you're done commiting a set of new things and you're ready to submit them for inclusion, please be sure to run all the tests (as per the instructions at the end of our [Python Style Guide](PYTHON_STYLE_GUIDE.md)).
 
+If your addition or change is substantial, then please add a line or two to the [CHANGELOG.md file](https://github.com/bigchaindb/bigchaindb/blob/develop/CHANGELOG.md), following the guidelines given at the top of that file.
+
 (When you submit your pull request [following the instructions below], we run all the tests automatically, so we will see if some are failing. If you don't know why some tests are failing, you can still submit your pull request, but be sure to note the failing tests and to ask for help with resolving them.)
 
 ### Step 6 - Push Your New Branch to origin
