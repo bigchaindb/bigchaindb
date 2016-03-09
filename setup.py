@@ -59,8 +59,7 @@ setup(
     packages=[
         'bigchaindb',
         'bigchaindb.commands',
-        'bigchaindb.db',
-        'bigchaindb.consensus'
+        'bigchaindb.db'
     ],
 
     entry_points={
