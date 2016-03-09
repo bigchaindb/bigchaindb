@@ -1,17 +1,21 @@
+from abc import ABCMeta, abstractmethod
+
 import bigchaindb.exceptions as exceptions
 from bigchaindb import util
-from bigchaindb.crypto import hash_data
+from bigchaindb.crypto import hash_data, PublicKey
 
-# TODO: no real reason to use abc yet, but later we can enforce inheritance from
-#       this class when loading plugins if that's desirable.
-# from abc import ABCMeta
 
-class AbstractConsensusRules:
+class AbstractConsensusRules(metaclass=ABCMeta):
+    """Abstract base class for Bigchain plugins which implement consensus logic.
 
-    # TODO: rather than having plugin-authors inherit and override,
-    #       it'd be cleaner to make a `transactionrule` decorator and etc
-    @classmethod
-    def validate_transaction(cls, bigchain, transaction):
+    A consensus plugin must expose a class inheriting from this one via an
+    entry_point.
+
+    All methods listed below must be implemented.
+    """
+
+    @abstractmethod
+    def validate_transaction(bigchain, transaction):
         """Validate a transaction.
 
         Args:
@@ -26,10 +30,10 @@ class AbstractConsensusRules:
             Descriptive exceptions indicating the reason the transaction failed.
             See the `exceptions` module for bigchain-native error classes.
         """
-        return transaction
+        raise NotImplementedError
 
-    @classmethod
-    def validate_block(cls, bigchain, block):
+    @abstractmethod
+    def validate_block(bigchain, block):
         """Validate a block.
 
         Args:

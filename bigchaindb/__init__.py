@@ -41,9 +41,7 @@ config = {
         'rate': e('BIGCHAIN_STATSD_SAMPLERATE', default=0.01)
     },
     'api_endpoint': 'http://localhost:8008/api/v1',
-    'consensus_plugins': [
-        'base'
-    ]
+    'consensus_plugin': e('BIGCHAIN_CONSENSUS_PLUGIN', default='default')
 }
 
 # We need to maintain a backup copy of the original config dict in case
