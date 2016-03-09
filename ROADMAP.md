@@ -27,11 +27,3 @@
 ## Other/Future
 * Byzantine fault tolerance
 * Better support for smart contract frameworks
-
-## Done/Past (i.e. was in the Roadmap)
-* Packaging for PyPI (setup.py etc.) - [the latest version release can be found on PyPI](https://pypi.python.org/pypi/BigchainDB)
-* Dockerization
-* Monitoring/dashboard - initial vesion added in [Pull Request #72](https://github.com/bigchaindb/bigchaindb/pull/72)
-* API/Wire protocol (RESTful HTTP API) - initial version added in [Pull Request #102](https://github.com/bigchaindb/bigchaindb/pull/102)
-* Python driver/SDK - initial version added in [Pull Request #102](https://github.com/bigchaindb/bigchaindb/pull/102)
-* Multisig support - initial version added in [Pull Request #107](https://github.com/bigchaindb/bigchaindb/pull/107)
