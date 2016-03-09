@@ -16,12 +16,14 @@ Table of Contents
    installing
    getting-started
    bigchaindb-cli
+   python-api-tutorial
    admin
    cryptography
    models
    json-serialization
    developer-interface
    monitoring
+   licenses
    contributing
    faq
    release-notes
