@@ -72,106 +72,17 @@ class Bigchain(object):
         """Create a new transaction
 
         Refer to the documentation of ``bigchaindb.util.create_tx``
-        A transaction in the bigchain is a transfer of a digital asset between two entities represented
-        by public keys.
-
-        Currently the bigchain supports two types of operations:
-
-            `CREATE` - Only federation nodes are allowed to use this operation. In a create operation
-            a federation node creates a digital asset in the bigchain and assigns that asset to a public
-            key. The owner of the private key can then decided to transfer this digital asset by using the
-            `transaction id` of the transaction as an input in a `TRANSFER` transaction.
-
-            `TRANSFER` - A transfer operation allows for a transfer of the digital assets between entities.
-
-        Args:
-            current_owners (list): base58 encoded public keys of all current owners of the asset.
-            new_owners (list): base58 encoded public keys of all new owners of the digital asset.
-            tx_input (str): id of the transaction to use as input.
-            operation (str): Either `CREATE` or `TRANSFER` operation.
-            payload (Optional[dict]): dictionary with information about asset.
-
-        Returns:
-            dict: unsigned transaction.
-
-
-        Raises:
-            TypeError: if the optional ``payload`` argument is not a ``dict``.
         """
-        data = None
-        if payload is not None:
-            if isinstance(payload, dict):
-                hash_payload = hash_data(self.serialize(payload))
-                data = {
-                    'hash': hash_payload,
-                    'payload': payload
-                }
-            else:
-                raise TypeError('`payload` must be an dict instance')
 
-        hash_payload = hash_data(self.serialize(payload))
-        data = {
-            'hash': hash_payload,
-            'payload': payload
-        }
-
-        tx = {
-            'current_owners': current_owners if isinstance(current_owners, list) else [current_owners],
-            'new_owners': new_owners if isinstance(new_owners, list) else [new_owners],
-            'input': tx_input,
-            'operation': operation,
-            'timestamp': self.timestamp(),
-            'data': data
-        }
-
-        # serialize and convert to bytes
-        tx_serialized = self.serialize(tx)
-        tx_hash = hash_data(tx_serialized)
-
-        # create the transaction
-        transaction = {
-            'id': tx_hash,
-            'transaction': tx
-        }
-
-        return transaction
-        return util.create_tx(current_owner, new_owner, tx_input, operation, payload)
+        return util.create_tx(current_owners, new_owners, tx_input, operation, payload)
 
     def sign_transaction(self, transaction, private_key, public_key=None):
         """Sign a transaction
 
         Refer to the documentation of ``bigchaindb.util.sign_tx``
-        A transaction signed with the `current_owner` corresponding private key.
-
-        Args:
-            transaction (dict): transaction to sign.
-            private_key (str): base58 encoded private key to create a signature of the transaction.
-            public_key (str): (optional) base58 encoded public key to identify each signature of a multisig transaction.
-
-        Returns:
-            dict: transaction with the `signature` field included.
-
         """
 
-        # return util.sign_tx(transaction, private_key)
-        private_key = PrivateKey(private_key)
-        if len(transaction['transaction']['current_owners']) == 1:
-            signatures_updated = private_key.sign(self.serialize(transaction))
-        else:
-            # multisig, sign for each input and store {pub_key: signature_for_priv_key}
-            if public_key is None:
-                raise ValueError('public_key must be provided for signing multisig transactions')
-            transaction_without_signatures = transaction.copy()
-            signatures = transaction_without_signatures.pop('signatures') \
-                if 'signatures' in transaction_without_signatures else []
-            signatures_updated = signatures.copy()
-            signatures_updated = [s for s in signatures_updated if not s['public_key'] == public_key]
-            signatures_updated.append({'public_key': public_key,
-                                       'signature': private_key.sign(self.serialize(transaction_without_signatures))})
-
-        signed_transaction = transaction.copy()
-        signed_transaction.update({'signatures': signatures_updated})
-        return signed_transaction
+        return util.sign_tx(transaction, private_key, public_key)
 
     def verify_signature(self, signed_transaction):
         """Verify the signature of a transaction.
@@ -179,29 +90,7 @@ class Bigchain(object):
         Refer to the documentation of ``bigchaindb.crypto.verify_signature``
         """
 
-        data = signed_transaction.copy()
-
-        # if assignee field in the transaction, remove it
-        if 'assignee' in data:
-            data.pop('assignee')
-
-        signatures = data.pop('signatures')
-        for public_key_base58 in signed_transaction['transaction']['current_owners']:
-            public_key = PublicKey(public_key_base58)
-
-            if isinstance(signatures, list):
-                try:
-                    signature = [s['signature'] for s in signatures if s['public_key'] == public_key_base58]
-                except KeyError:
-                    return False
-                if not len(signature) == 1:
-                    return False
-                signature = signature[0]
-            else:
-                signature = signatures
-            if not public_key.verify(self.serialize(data), signature):
-                return False
-        return True
+        return util.verify_signature(signed_transaction)
 
     @monitor.timer('write_transaction', rate=bigchaindb.config['statsd']['rate'])
     def write_transaction(self, signed_transaction, durability='soft'):

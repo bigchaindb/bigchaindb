@@ -50,8 +50,8 @@ class TestBigchainApi(object):
         payload = {'cats': 'are awesome'}
         tx = b.create_transaction('a', 'b', 'c', 'd', payload)
         tx_calculated = {
-            'current_owner': 'a',
-            'new_owner': 'b',
+            'current_owners': ['a'],
+            'new_owners': ['b'],
             'input': 'c',
             'operation': 'd',
             'timestamp': tx['transaction']['timestamp'],
@@ -67,7 +67,8 @@ class TestBigchainApi(object):
         sk, vk = generate_key_pair()
         tx = b.create_transaction(vk, 'b', 'c', 'd')
 
-        assert b.verify_signature(tx) is False
+        with pytest.raises(KeyError) as excinfo:
+            b.verify_signature(tx)
         tx_signed = b.sign_transaction(tx, sk)
 
         assert 'signatures' in tx_signed
@@ -77,13 +78,18 @@ class TestBigchainApi(object):
         num_current_owners = 42
         sk, vk = [], []
         for _ in range(num_current_owners):
-            sk_, vk_ = b.generate_keys()
+            sk_, vk_ = generate_key_pair()
             sk.append(sk_)
             vk.append(vk_)
         tx = b.create_transaction(vk, 'b', 'c', 'd')
         tx_signed = tx
+
+        with pytest.raises(KeyError) as excinfo:
+            b.verify_signature(tx_signed)
+
         for i in range(num_current_owners):
-            assert b.verify_signature(tx_signed) is False
+            if i > 0:
+                assert b.verify_signature(tx_signed) is False
             tx_signed = b.sign_transaction(tx_signed, sk[i], vk[i])
 
         assert 'signatures' in tx_signed

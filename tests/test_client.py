@@ -39,8 +39,8 @@ def test_client_can_create_assets(mock_requests_post, client):
     #      `current_owner` will be overwritten with the public key of the node in the federation
     #      that will create the real transaction. `signature` will be overwritten with the new signature.
     #      Note that this scenario is ignored by this test.
-    assert tx['transaction']['current_owner'] == client.public_key
-    assert tx['transaction']['new_owner'] == client.public_key
+    assert tx['transaction']['current_owners'] == [client.public_key]
+    assert tx['transaction']['new_owners'] == [client.public_key]
     assert tx['transaction']['input'] == None
 
     assert util.verify_signature(tx)
@@ -51,8 +51,8 @@ def test_client_can_transfer_assets(mock_requests_post, client):
 
     tx = client.transfer('a', 123)
 
-    assert tx['transaction']['current_owner'] == client.public_key
-    assert tx['transaction']['new_owner'] == 'a'
+    assert tx['transaction']['current_owners'] == [client.public_key]
+    assert tx['transaction']['new_owners'] == ['a']
     assert tx['transaction']['input'] == 123
 
     assert util.verify_signature(tx)
