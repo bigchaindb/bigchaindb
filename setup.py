@@ -67,8 +67,8 @@ setup(
             'bigchaindb=bigchaindb.commands.bigchain:main',
             'bigchaindb-benchmark=bigchaindb.commands.bigchain_benchmark:main'
         ],
-        'bigchaindb.plugins': [
-            'base=bigchaindb.consensus.base:ConsensusRules'
+        'bigchaindb.consensus': [
+            'default=bigchaindb.consensus:BaseConsensusRules'
         ]
     },
     install_requires=[

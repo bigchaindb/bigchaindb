@@ -20,6 +20,7 @@ import collections
 from pkg_resources import iter_entry_points, ResolutionError
 
 import bigchaindb
+from bigchaindb.consensus import AbstractConsensusRules
 
 logger = logging.getLogger(__name__)
 CONFIG_DEFAULT_PATH = os.environ.setdefault(

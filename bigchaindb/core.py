@@ -27,7 +27,7 @@ class Bigchain(object):
 
     def __init__(self, host=None, port=None, dbname=None,
                  public_key=None, private_key=None, keyring=[],
-                 consensus_plugins=['base']):
+                 consensus_plugin=None):
         """Initialize the Bigchain instance
 
         There are three ways in which the Bigchain instance can get its parameters.
@@ -53,7 +53,7 @@ class Bigchain(object):
         self.me = public_key or bigchaindb.config['keypair']['public']
         self.me_private = private_key or bigchaindb.config['keypair']['private']
         self.federation_nodes = keyring or bigchaindb.config['keyring']
-        self.consensus_plugins = config_utils.get_plugins(consensus_plugins)
+        self.consensus = config_utils.load_consensus_plugin(consensus_plugin)
 
         if not self.me or not self.me_private:
             raise exceptions.KeypairNotFoundException()
@@ -70,38 +70,40 @@ class Bigchain(object):
         return r.connect(host=self.host, port=self.port, db=self.dbname)
 
     @monitor.timer('create_transaction', rate=bigchaindb.config['statsd']['rate'])
-    def create_transaction(self, current_owner, new_owner, tx_input, operation, payload=None):
+    def create_transaction(self, *args, **kwargs):
         """Create a new transaction
 
-        Refer to the documentation of ``bigchaindb.util.create_tx``
+        Refer to the documentation of your consensus plugin.
+
+        Returns:
+            dict: newly constructed transaction.
         """
 
-        return util.create_tx(current_owner, new_owner, tx_input, operation, payload)
+        return self.consensus.create_transaction(*args, **kwargs)
 
-    def sign_transaction(self, transaction, private_key):
+    def sign_transaction(self, transaction, *args, **kwargs):
         """Sign a transaction
 
-        Refer to the documentation of ``bigchaindb.util.sign_tx``
+        Refer to the documentation of your consensus plugin.
+
+        Returns:
+            dict: transaction with any signatures applied.
         """
 
-        return util.sign_tx(transaction, private_key)
+        return self.consensus.sign_transaction(transaction, *args, **kwargs)
 
-    def verify_signature(self, signed_transaction):
-        """Verify the signature of a transaction.
+    def verify_signature(self, signed_transaction, *args, **kwargs):
+        """Verify the signature(s) of a transaction.
 
-        Refer to the documentation of ``bigchaindb.crypto.verify_signature``
+        Refer to the documentation of your consensus plugin.
+
+        Returns:
+            bool: True if the transaction's required signature data is present
+                and correct, False otherwise.
         """
 
-        data = signed_transaction.copy()
-
-        # if assignee field in the transaction, remove it
-        if 'assignee' in data:
-            data.pop('assignee')
-
-        signature = data.pop('signature')
-        public_key_base58 = signed_transaction['transaction']['current_owner']
-        public_key = crypto.PublicKey(public_key_base58)
-        return public_key.verify(util.serialize(data), signature)
+        return self.consensus.verify_signature(
+            signed_transaction, *args, **kwargs)
 
     @monitor.timer('write_transaction', rate=bigchaindb.config['statsd']['rate'])
     def write_transaction(self, signed_transaction, durability='soft'):
@@ -111,7 +113,7 @@ class Bigchain(object):
         it has been validated by the nodes of the federation.
 
         Args:
-            singed_transaction (dict): transaction with the `signature` included.
+            signed_transaction (dict): transaction with the `signature` included.
 
         Returns:
             dict: database response
@@ -250,11 +252,7 @@ class Bigchain(object):
             exception describing the reason why the transaction is invalid.
         """
 
-        for plugin in self.consensus_plugins:
-            transaction = plugin.validate_transaction(self, transaction)
-
-        return transaction
-
+        return self.consensus.validate_transaction(self, transaction)
 
     def is_valid_transaction(self, transaction):
         """Check whether a transacion is valid or invalid.
@@ -324,10 +322,8 @@ class Bigchain(object):
             describing the reason why the block is invalid.
         """
 
-        # First run all of the plugin block validation logic
-        for plugin in self.consensus_plugins:
-            transaction = plugin.validate_block(self, block)
-
+        # First: Run the plugin block validation logic
+        self.consensus.validate_block(self, block)
 
         # Finally: Tentative assumption that every blockchain will want to
         # validate all transactions in each block
@@ -372,6 +368,8 @@ class Bigchain(object):
         response = r.table('bigchain').get_all(transaction_id, index='transaction_id').run(self.conn)
         return True if len(response.items) > 0 else False
 
+    # TODO: Unless we prescribe the signature of create_transaction, this will
+    #       also need to be moved into the plugin API.
     def create_genesis_block(self):
         """Create the genesis block
 
