@@ -57,9 +57,10 @@ def create_transaction():
 
     if tx['transaction']['operation'] == 'CREATE':
         tx = util.transform_create(tx)
-        tx = util.sign_tx(tx, bigchain.me_private)
+        tx = bigchain.consensus.sign_transaction(
+            tx, private_key=bigchain.me_private)
 
-    if not util.verify_signature(tx):
+    if not bigchain.consensus.verify_signature(tx):
         val['error'] = 'Invalid transaction signature'
 
     val = bigchain.write_transaction(tx)
