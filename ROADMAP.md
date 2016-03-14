@@ -1,5 +1,10 @@
 # BigchainDB Roadmap
 
+See also:
+
+* [Milestones](https://github.com/bigchaindb/bigchaindb/milestones) (i.e. issues to be closed before various releases)
+* [Open issues](https://github.com/bigchaindb/bigchaindb/issues) and [open pull requests](https://github.com/bigchaindb/bigchaindb/pulls)
+
 ## BigchainDB Protocols
 * Validation of other nodes
 * Fault tolerance
