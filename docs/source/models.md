@@ -12,7 +12,7 @@ Transactions, blocks and votes are represented using JSON documents with the fol
         "new_owner": "<pub-key>",
         "input": "<sha3 hash>",
         "operation": "<string>",
-        "timestamp": "<timestamp>",
+        "timestamp": "<timestamp from client>",
         "data": {
             "hash": "<SHA3-256 hash hexdigest of payload>",
             "payload": {
@@ -34,7 +34,7 @@ A transaction is an operation between the `current_owner` and the `new_owner` ov
 - `input`: id (sha3 hash) of the transaction in which the content was transfered to the user (similar to input in the blockchain). Right now we will assume that there is only one input per transaction to simplify the prototype. This can be changed in the future to allow multiple inputs per transaction.
 - `operation`: String representation of the operation being performed (REGISTER, TRANSFER, ...) this will define how
 the transactions should be validated
-- `timestamp`: Time of creation of the transaction in UTC
+- `timestamp`: Time of creation of the transaction in UTC. It's provided by the client.
 - `data`: JSON object describing the asset (digital content). It contains at least the field `hash` which is a 
 sha3 hash of the digital content.
 - `signature`: Signature of the transaction with the `current_owner` private key
@@ -45,7 +45,7 @@ sha3 hash of the digital content.
 {
     "id": "<sha3 hash of the serialized block contents>",
     "block": {
-        "timestamp": "<RethinkDB timestamp>",
+        "timestamp": "<block-creation timestamp>",
         "transactions": ["<list of transactions>"],
         "node_pubkey": "<public key of the node creating the block>",
         "voters": ["<list of federation nodes public keys>"]
@@ -62,7 +62,7 @@ A block contains a group of transactions and includes the hash of the hash of th
 
 - `id`: sha3 hash of the contents of `block` (i.e. the timestamp, list of transactions, node_pubkey, and voters). This is also a RethinkDB primary key; that's how we ensure that all blocks are unique.
 - `block`: The actual block
-    - `timestamp`: timestamp when the block was created
+    - `timestamp`: timestamp when the block was created. It's provided by the node that created the block.
     - `transactions`: the list of transactions included in the block
     - `node_pubkey`: the public key of the node that create the block
     - `voters`: list public keys of the federation nodes. Since the size of the 
