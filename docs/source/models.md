@@ -28,7 +28,7 @@ Transactions, blocks and votes are represented using JSON documents with the fol
 
 A transaction is an operation between the `current_owner` and the `new_owner` over the digital content described by `hash`. For example if could be a transfer of ownership of the digital content `hash`
 
-- `id`: sha3 hash of the transaction. Also the RethinkDB primary key. By using the hash of the transaction as the primary key, we eliminate the problem of duplicated transactions, if for some reason two nodes decide to create the same transaction
+- `id`: sha3 hash of the transaction. The `id` is also the DB primary key.
 - `current_owner`: Public key of the current owner of the digital content with hash `hash`
 - `new_owner`: Public key of the new owner of the digital content with hash `hash`
 - `input`: id (sha3 hash) of the transaction in which the content was transfered to the user (similar to input in the blockchain). Right now we will assume that there is only one input per transaction to simplify the prototype. This can be changed in the future to allow multiple inputs per transaction.
