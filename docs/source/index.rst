@@ -13,10 +13,11 @@ Table of Contents
    :numbered:
 
    introduction
-   installing
-   getting-started
+   installing-server
+   python-server-api-examples
    bigchaindb-cli
-   python-api-tutorial
+   http-client-server-api
+   python-driver-api-examples
    admin
    cryptography
    models
@@ -25,7 +26,6 @@ Table of Contents
    monitoring
    licenses
    contributing
-   faq
    release-notes
    glossary
 

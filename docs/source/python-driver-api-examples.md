@@ -1,14 +1,8 @@
-# Getting started with the HTTP API
+# The Python Driver API by Example
 
-The preferred way to communicate with a Node in the BigchainDB Federation is via HTTP requests.
-Each Node exposes a simple HTTP API that provides, right now, two endpoints, one to get information about a specific
-transaction id, one to push transactions to the BigchainDB network.
+The Python driver API is used by app developers to develop client apps which can communicate with one or more BigchainDB clusters. Under the hood, the Python driver API communicates with the BigchainDB cluster using the BigchainDB HTTP client-server API.
 
-The endpoints are documented in [Apiary](http://docs.bigchaindb.apiary.io/).
-
-
-## Usage example using the Python client
-
+Here's an example of how to use the Python driver API. First, launch an interactive Python session, then:
 ```python
 In [1]: from bigchaindb.client import temp_client
 In [2]: c1 = temp_client()
@@ -39,15 +33,3 @@ Out[7]:
  'operation': 'TRANSFER',
  'timestamp': '1456763549.446138'}}
 ```
-
-
-# Roadmap
-
-The development of the API is still at the beginning and you can follow it on
-[GitHub](https://github.com/bigchaindb/bigchaindb/issues?q=is%3Aissue+is%3Aopen+label%3Arest-api)
-
-There are several key features still missing like:
- - validating the structure of the transaction
- - returns the correct error codes if something goes wrong
- - add an endpoint to query unspents for a given public key
-

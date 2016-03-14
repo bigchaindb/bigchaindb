@@ -2,12 +2,9 @@
 
 BigchainDB is a scalable blockchain database. You can read about its motivations, goals and high-level architecture in the [BigchainDB whitepaper](https://www.bigchaindb.com/whitepaper/). This document, the _BigchainDB Documentation_, is intended primarily for three groups of people:
 
-1. Developers of BigchainDB server software and related software (e.g. BigchainDB drivers/SDKs).
+1. Developers of BigchainDB server software.
 2. People deploying and managing BigchainDB clusters.
-3. App developers who are developing client apps to talk to one or more live, operational BigchainDB clusters. They would use one of the BigchainDB drivers/SDKs.
+3. Developers of BigchainDB driver software (SDKs used to develop client software).
+4. App developers who are developing client apps to talk to one or more live, operational BigchainDB clusters. They would use one of the BigchainDB drivers.
 
-Right now, BigchainDB is fairly new, so there are no live, operational BigchainDB clusters. There are no BigchainDB drivers. Those things are coming.
-
-What does exist is our in-development BigchainDB server software. Therefore all the documentation is about that, for now.
-
-If you're curious about what's coming in our roadmap, see [the ROADMAP.md file](https://github.com/bigchaindb/bigchaindb/blob/develop/ROADMAP.md) and [the list of open issues](https://github.com/bigchaindb/bigchaindb/issues). If you want to request a feature or file a bug report, see [the CONTRIBUTING.md file](https://github.com/bigchaindb/bigchaindb/blob/develop/CONTRIBUTING.md).
+If you're curious about what's coming in our roadmap, see [the ROADMAP.md file](https://github.com/bigchaindb/bigchaindb/blob/develop/ROADMAP.md) and [the list of open issues](https://github.com/bigchaindb/bigchaindb/issues). If you want to request a feature, file a bug report, or make a pull request, see [the CONTRIBUTING.md file](https://github.com/bigchaindb/bigchaindb/blob/develop/CONTRIBUTING.md).
