@@ -6,7 +6,37 @@ from bigchaindb import util
 
 
 TX_ENDPOINT = '/api/v1/transactions/'
+VALIDATE_ENDPOINT = '/api/v1/transactions/validate/'
 
+
+@pytest.fixture
+def valid_create_transaction(user_public_key):
+    return util.create_tx(
+        current_owner=None,
+        new_owner=user_public_key,
+        tx_input=None,
+        operation='CREATE',
+        payload={
+            'IPFS_key': 'QmfQ5QAjvg4GtA3wg3adpnDJug8ktA1BxurVqBD8rtgVjP',
+            'creator': 'Johnathan Plunkett',
+            'title': 'The Winds of Plast'})
+
+
+@pytest.fixture
+def valid_transfer_transaction(user_public_key, user_private_key):
+    # Requires an tx_input param to create a *valid* transfer tx
+    def make_tx(tx_input):
+        return util.create_and_sign_tx(
+            private_key=user_private_key,
+            current_owner=user_public_key,
+            new_owner=user_public_key,
+            tx_input=tx_input, #Fill_me_in
+            operation='TRANSFER',
+            payload={
+                'IPFS_key': 'QmfQ5QAjvg4GtA3wg3adpnDJug8ktA1BxurVqBD8rtgVjP',
+                'creator': 'Johnathan Plunkett',
+                'title': 'The Winds of Plast 2: The Plastening'})
+    return make_tx
 
 @pytest.mark.usefixtures('inputs')
 def test_get_transaction_endpoint(b, client, user_public_key):
@@ -40,3 +70,34 @@ def test_post_transfer_transaction_endpoint(b, client):
     assert res.json['transaction']['current_owner'] == from_keypair[1]
     assert res.json['transaction']['new_owner'] == to_keypair[1]
 
+
+@pytest.mark.usefixtures('inputs')
+def test_post_validate_transaction_endpoint(b, client, user_public_key,
+                                            valid_create_transaction,
+                                            valid_transfer_transaction):
+    # Validate valid CREATE tx
+    res = client.post(VALIDATE_ENDPOINT,
+                      data=json.dumps(valid_create_transaction))
+    assert res.json['valid'] == True
+    assert res.json['error'] == ''
+
+    # Validate invalid CREATE tx
+    valid_create_transaction.update({'signature': 'junk'})
+    res = client.post(VALIDATE_ENDPOINT,
+                      data=json.dumps(valid_create_transaction))
+    assert res.json['valid'] == False
+    assert res.json['error'] == \
+        "OperationError('Only federation nodes can use the operation `CREATE`',)"
+
+    # Validate valid TRANSFER tx
+    res = client.post(VALIDATE_ENDPOINT, data=json.dumps(
+        valid_transfer_transaction(b.get_owned_ids(user_public_key).pop())))
+    assert res.json['valid'] == True
+    assert res.json['error'] == ''
+
+    # Validate invalid TRANSFER tx
+    res = client.post(VALIDATE_ENDPOINT, data=json.dumps(
+        valid_transfer_transaction(None)))
+    assert res.json['valid'] == False
+    assert res.json['error'] == \
+        "ValueError('Only `CREATE` transactions can have null inputs',)"
