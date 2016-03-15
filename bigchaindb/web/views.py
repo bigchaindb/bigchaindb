@@ -82,14 +82,21 @@ def validate_transaction():
 
     tx = request.get_json(force=True)
 
-    if tx['transaction']['operation'] == 'CREATE':
+    # Always validate TRANSFER signatures; but only validate CREATE signatures
+    # if present.
+    validate_sig = True
+
+    # If a CREATE doesn't have the signature populated, then we treat it as
+    # an input to the `create` function and transform it.
+    if tx['transaction']['operation'] == 'CREATE' and 'signature' not in tx:
+        validate_sig = False
         tx = util.transform_create(tx)
 
     try:
         bigchain.validate_transaction(tx)
     except exceptions.InvalidSignature as e:
         # We skipped signing CREATEs with the node's private key, so expect this
-        if tx['transaction']['operation'] != 'CREATE':
+        if validate_sig:
             return flask.jsonify({'valid': False, 'error': repr(e)})
     except Exception as e:
         return flask.jsonify({'valid': False, 'error': repr(e)})
