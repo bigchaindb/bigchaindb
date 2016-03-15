@@ -37,6 +37,7 @@ def get_transaction(tx_id):
     bigchain = current_app.config['bigchain']
 
     tx = bigchain.get_transaction(tx_id)
+    if not tx: flask.abort(404)
     return flask.jsonify(**tx)
 
 
@@ -51,8 +52,8 @@ def create_transaction():
 
     val = {}
 
-    # `force` will try to format the body of the POST request even if the `content-type` header is not
-    # set to `application/json`
+    # `force` will try to format the body of the POST request even if the
+    # `content-type` header is not set to `application/json`
     tx = request.get_json(force=True)
 
     if tx['transaction']['operation'] == 'CREATE':
