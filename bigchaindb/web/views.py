@@ -7,7 +7,7 @@ For more information please refer to the documentation in Apiary:
 import flask
 from flask import current_app, request, Blueprint
 
-from bigchaindb import util
+from bigchaindb import util, exceptions
 
 
 basic_views = Blueprint('basic_views', __name__)
@@ -68,3 +68,30 @@ def create_transaction():
 
     return flask.jsonify(**tx)
 
+@basic_views.route('/transactions/validate/', methods=['POST'])
+def validate_transaction():
+    """API endpoint to validate transactions without pushing them to the
+    Federation. No federation node signature is required for `CREATE`
+    transactions.
+
+    Return:
+        A JSON object with the `valid` field populated with a boolean value
+        and the `error` field populated with an error message or an empty str
+    """
+    bigchain = current_app.config['bigchain']
+
+    tx = request.get_json(force=True)
+
+    if tx['transaction']['operation'] == 'CREATE':
+        tx = util.transform_create(tx)
+
+    try:
+        bigchain.validate_transaction(tx)
+    except exceptions.InvalidSignature as e:
+        # We skipped signing CREATEs with the node's private key, so expect this
+        if tx['transaction']['operation'] != 'CREATE':
+            return flask.jsonify({'valid': False, 'error': repr(e)})
+    except Exception as e:
+        return flask.jsonify({'valid': False, 'error': repr(e)})
+
+    return flask.jsonify({'valid': True, 'error': ''})
