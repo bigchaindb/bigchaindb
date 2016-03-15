@@ -117,7 +117,7 @@ def load_consensus_plugin(name=None):
     if not name:
         name = bigchaindb.config.get('consensus_plugin', 'default')
 
-    # TODO: This will return the first plugin with group `bigchaindb.plugins`
+    # TODO: This will return the first plugin with group `bigchaindb.consensus`
     #       and name `name` in the active WorkingSet.
     #       We should probably support Requirements specs in the config, e.g.
     #       consensus_plugin: 'my-plugin-package==0.0.1;default'
@@ -128,7 +128,7 @@ def load_consensus_plugin(name=None):
     # No matching entry_point found
     if not plugin:
         raise ResolutionError(
-            'No plugin found in group `bigchaindb.plugins` with name `{}`'.
+            'No plugin found in group `bigchaindb.consensus` with name `{}`'.
             format(name))
 
     # Is this strictness desireable?
