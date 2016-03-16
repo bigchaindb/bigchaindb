@@ -215,3 +215,10 @@ class Block(object):
         p_blocks.start()
         p_write.start()
         p_delete.start()
+
+        # join processes
+        p_filter.join()
+        p_validate.join()
+        p_blocks.join()
+        p_write.join()
+        p_delete.join()
