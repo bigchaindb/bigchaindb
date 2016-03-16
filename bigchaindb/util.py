@@ -1,12 +1,11 @@
-
 import json
-import time
 import multiprocessing as mp
+import time
 from datetime import datetime
 
 import bigchaindb
 from bigchaindb import exceptions
-from bigchaindb.crypto import PrivateKey, PublicKey, hash_data
+from bigchaindb.crypto.core import PrivateKey, PublicKey, hash_data
 
 
 class ProcessGroup(object):
@@ -129,6 +128,9 @@ def create_tx(current_owner, new_owner, tx_input, operation, payload=None):
         'input': tx_input,
         'operation': operation,
         'timestamp': timestamp(),
+        'execution_condition': {
+
+        },
         'data': data
     }
 

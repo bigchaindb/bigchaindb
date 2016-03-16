@@ -1,19 +1,17 @@
 """Command line interface for the `bigchain` command."""
 
-
-import os
-import logging
 import argparse
 import copy
+import logging
+import os
 
 import bigchaindb
 import bigchaindb.config_utils
 from bigchaindb import db
-from bigchaindb.exceptions import DatabaseAlreadyExists
 from bigchaindb.commands.utils import base_parser, start
+from bigchaindb.crypto import core
+from bigchaindb.exceptions import DatabaseAlreadyExists
 from bigchaindb.processes import Processes
-from bigchaindb import crypto
-
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -52,7 +50,7 @@ def run_configure(args, skip_if_exists=False):
     conf = copy.deepcopy(bigchaindb._config)
 
     print('Generating keypair')
-    conf['keypair']['private'], conf['keypair']['public'] = crypto.generate_key_pair()
+    conf['keypair']['private'], conf['keypair']['public'] = core.generate_key_pair()
 
     if not args.yes:
         for key in ('host', 'port', 'name'):

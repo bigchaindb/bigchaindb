@@ -1,16 +1,14 @@
-import rethinkdb as r
 import random
-import json
 import rapidjson
 
+import rethinkdb as r
 
 import bigchaindb
-from bigchaindb import util
 from bigchaindb import config_utils
 from bigchaindb import exceptions
-from bigchaindb import crypto
+from bigchaindb import util
+from bigchaindb.crypto import core
 from bigchaindb.monitor import Monitor
-
 
 monitor = Monitor()
 
@@ -98,7 +96,7 @@ class Bigchain(object):
 
         signature = data.pop('signature')
         public_key_base58 = signed_transaction['transaction']['current_owner']
-        public_key = crypto.PublicKey(public_key_base58)
+        public_key = core.PublicKey(public_key_base58)
         return public_key.verify(util.serialize(data), signature)
 
     @monitor.timer('write_transaction', rate=bigchaindb.config['statsd']['rate'])
@@ -331,8 +329,8 @@ class Bigchain(object):
 
         # Calculate the hash of the new block
         block_data = util.serialize(block)
-        block_hash = crypto.hash_data(block_data)
-        block_signature = crypto.PrivateKey(self.me_private).sign(block_data)
+        block_hash = core.hash_data(block_data)
+        block_signature = core.PrivateKey(self.me_private).sign(block_data)
 
         block = {
             'id': block_hash,
@@ -357,7 +355,7 @@ class Bigchain(object):
         """
 
         # 1. Check if current hash is correct
-        calculated_hash = crypto.hash_data(util.serialize(block['block']))
+        calculated_hash = core.hash_data(util.serialize(block['block']))
         if calculated_hash != block['id']:
             raise exceptions.InvalidHash()
 
@@ -452,7 +450,7 @@ class Bigchain(object):
         }
 
         vote_data = util.serialize(vote)
-        signature = crypto.PrivateKey(self.me_private).sign(vote_data)
+        signature = core.PrivateKey(self.me_private).sign(vote_data)
 
         vote_signed = {
             'node_pubkey': self.me,
