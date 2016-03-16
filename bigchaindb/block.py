@@ -9,7 +9,6 @@ from bigchaindb import Bigchain
 from bigchaindb.monitor import Monitor
 
 
-
 logger = logging.getLogger(__name__)
 
 monitor = Monitor()
@@ -27,6 +26,7 @@ class Block(object):
         self.q_tx_validated = mp.Queue()
         self.q_tx_delete = mp.Queue()
         self.q_block = mp.Queue()
+        self.initialized = mp.Event()
 
     def filter_by_assignee(self):
         """
@@ -190,6 +190,10 @@ class Block(object):
 
         logger.info('starting block module...')
         self.q_new_transaction = self._q_new_transaction
+
+        # signal initialization complete
+        self.initialized.set()
+
         self._start()
         logger.info('exiting block module...')
 
@@ -211,10 +215,3 @@ class Block(object):
         p_blocks.start()
         p_write.start()
         p_delete.start()
-
-        # join processes
-        p_filter.join()
-        p_validate.join()
-        p_blocks.join()
-        p_write.join()
-        p_delete.join()

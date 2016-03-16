@@ -62,6 +62,7 @@ class Voter(object):
         self.q_voted_block = mp.Queue()
         self.v_previous_block_id = mp.Value(ctypes.c_char_p)
         self.v_previous_block_number = mp.Value(ctypes.c_uint64)
+        self.initialized = mp.Event()
 
     def feed_blocks(self):
         """
@@ -88,6 +89,9 @@ class Voter(object):
         b = Bigchain()
 
         logger.info('voter waiting for new blocks')
+        # signal initialization complete
+        self.initialized.set()
+
         while True:
             new_block = self.q_blocks_to_validate.get()
 
