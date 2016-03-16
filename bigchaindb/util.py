@@ -128,9 +128,6 @@ def create_tx(current_owner, new_owner, tx_input, operation, payload=None):
         'input': tx_input,
         'operation': operation,
         'timestamp': timestamp(),
-        'execution_condition': {
-
-        },
         'data': data
     }
 
