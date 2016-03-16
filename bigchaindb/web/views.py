@@ -48,6 +48,7 @@ def create_transaction():
     Return:
         A JSON string containing the data about the transaction.
     """
+
     bigchain = current_app.config['bigchain']
 
     val = {}
@@ -78,6 +79,7 @@ def validate_transaction():
         A JSON object with the `valid` field populated with a boolean value
         and the `error` field populated with an error message or an empty str
     """
+
     bigchain = current_app.config['bigchain']
 
     tx = request.get_json(force=True)
@@ -97,8 +99,8 @@ def validate_transaction():
     except exceptions.InvalidSignature as e:
         # We skipped signing CREATEs with the node's private key, so expect this
         if validate_sig:
-            return flask.jsonify({'valid': False, 'error': repr(e)})
+            return flask.jsonify(valid=False, error=repr(e))
     except Exception as e:
-        return flask.jsonify({'valid': False, 'error': repr(e)})
+        return flask.jsonify(valid=False, error=repr(e))
 
-    return flask.jsonify({'valid': True, 'error': ''})
+    return flask.jsonify(valid=True, error='')
