@@ -9,7 +9,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec
 
-from bigchaindb.crypto.core import PrivateKey, PublicKey
+from bigchaindb.crypto.asymmetric import PrivateKey, PublicKey
 
 
 class ECDSAPrivateKey(PrivateKey):

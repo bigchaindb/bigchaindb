@@ -9,7 +9,7 @@ import bigchaindb
 from bigchaindb import exceptions
 from bigchaindb import util
 from bigchaindb.block import Block
-from bigchaindb.crypto.core import PrivateKey, PublicKey, generate_key_pair, hash_data
+from bigchaindb.crypto.asymmetric import PrivateKey, PublicKey, generate_key_pair, hash_data
 from bigchaindb.voter import Voter
 
 

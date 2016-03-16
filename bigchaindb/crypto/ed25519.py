@@ -5,7 +5,7 @@ import base64
 import base58
 import ed25519
 
-from bigchaindb.crypto.core import PrivateKey, PublicKey
+from bigchaindb.crypto.asymmetric import PrivateKey, PublicKey
 
 
 class ED25519PrivateKey(PrivateKey):

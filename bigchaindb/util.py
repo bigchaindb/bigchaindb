@@ -5,7 +5,7 @@ from datetime import datetime
 
 import bigchaindb
 from bigchaindb import exceptions
-from bigchaindb.crypto.core import PrivateKey, PublicKey, hash_data
+from bigchaindb.crypto.asymmetric import PrivateKey, PublicKey, hash_data
 
 
 class ProcessGroup(object):

@@ -9,7 +9,7 @@ import bigchaindb
 import bigchaindb.config_utils
 from bigchaindb import db
 from bigchaindb.commands.utils import base_parser, start
-from bigchaindb.crypto import core
+from bigchaindb.crypto import asymmetric
 from bigchaindb.exceptions import DatabaseAlreadyExists
 from bigchaindb.processes import Processes
 
@@ -50,7 +50,7 @@ def run_configure(args, skip_if_exists=False):
     conf = copy.deepcopy(bigchaindb._config)
 
     print('Generating keypair')
-    conf['keypair']['private'], conf['keypair']['public'] = core.generate_key_pair()
+    conf['keypair']['private'], conf['keypair']['public'] = asymmetric.generate_key_pair()
 
     if not args.yes:
         for key in ('host', 'port', 'name'):

@@ -5,7 +5,7 @@ import pytest
 import rethinkdb as r
 
 from bigchaindb import util
-from bigchaindb.crypto.core import PublicKey, generate_key_pair
+from bigchaindb.crypto.asymmetric import PublicKey, generate_key_pair
 from bigchaindb.voter import Voter, BlockStream
 
 
