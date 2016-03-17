@@ -4,7 +4,7 @@ BigchainDB: A Scalable Blockchain Database
 For full docs visit https://bigchaindb.readthedocs.org
 
 """
-from setuptools import setup
+from setuptools import setup, find_packages
 
 tests_require = [
     'pytest',
@@ -56,7 +56,7 @@ setup(
         'Operating System :: POSIX :: Linux',
     ],
 
-    packages=['bigchaindb', 'bigchaindb.commands', 'bigchaindb.db'],
+    packages=find_packages(),
 
     entry_points={
         'console_scripts': [
