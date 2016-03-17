@@ -56,7 +56,7 @@ setup(
         'Operating System :: POSIX :: Linux',
     ],
 
-    packages=['bigchaindb', 'bigchaindb.commands', 'bigchaindb.db', 'bigchaindb.web'],
+    packages=['bigchaindb', 'bigchaindb.commands', 'bigchaindb.db'],
 
     entry_points={
         'console_scripts': [
