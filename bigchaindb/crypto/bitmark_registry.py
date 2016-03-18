@@ -51,8 +51,10 @@ class BitmaskRegistry:
             })
 
 
+from bigchaindb.crypto.fulfillments.sha256 import Sha256Fulfillment
 from bigchaindb.crypto.fulfillments.threshold_sha256 import ThresholdSha256Fulfillment
 from bigchaindb.crypto.fulfillments.ed25519_sha256 import Ed25519Sha256Fulfillment
 
+BitmaskRegistry.register_type(Sha256Fulfillment)
 BitmaskRegistry.register_type(ThresholdSha256Fulfillment)
 BitmaskRegistry.register_type(Ed25519Sha256Fulfillment)

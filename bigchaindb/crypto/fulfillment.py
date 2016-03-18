@@ -5,7 +5,7 @@ from abc import ABCMeta, abstractmethod
 from six import string_types
 
 from bigchaindb.crypto.condition import Condition
-from bigchaindb.crypto.iostream import Writer, base64_remove_padding, Reader, base64_add_padding
+from bigchaindb.crypto.iostream import Writer, base64_remove_padding, Reader, base64_add_padding, Predictor
 
 FULFILLMENT_REGEX = r'^cf:1:[1-9a-f][0-9a-f]{0,2}:[a-zA-Z0-9_-]+$'
 
@@ -179,9 +179,7 @@ class Fulfillment(metaclass=ABCMeta):
         Return:
             {Number} Maximum fulfillment length
         """
-        # TODO: Predictor
-        # predictor = Predictor()
-        predictor = None
+        predictor = Predictor()
         self.write_payload(predictor)
         return predictor.size
 

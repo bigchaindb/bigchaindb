@@ -164,6 +164,17 @@ class Ed25519Sha256Fulfillment(BaseSha256Fulfillment):
 
         This writes the fulfillment payload to a Writer.
 
+        COMMON_HEADER =
+            VARBYTES PUBLIC_KEY
+            VARBYTES MESSAGE_ID
+            VARBYTES FIXED_PREFIX
+            VARUINT DYNAMIC_MESSAGE_LENGTH
+
+        FULFILLMENT_PAYLOAD =
+            COMMON_HEADER
+            VARBYTES DYNAMIC_MESSAGE
+            VARBYTES SIGNATURE
+
         Args:
             writer (Writer): Subject for writing the fulfillment payload.
         """
@@ -177,6 +188,16 @@ class Ed25519Sha256Fulfillment(BaseSha256Fulfillment):
         Generate the contents of the condition hash.
 
         Writes the contents of the condition hash to a Hasher. Used internally by `condition`.
+
+        COMMON_HEADER =
+            VARBYTES PUBLIC_KEY
+            VARBYTES MESSAGE_ID
+            VARBYTES FIXED_PREFIX
+            VARUINT DYNAMIC_MESSAGE_LENGTH
+
+        HASH = SHA256(
+            COMMON_HEADER
+        )
 
         Args:
             hasher (Hasher): Destination where the hash payload will be written.

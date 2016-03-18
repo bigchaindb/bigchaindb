@@ -8,6 +8,7 @@ from bigchaindb.crypto.condition import Condition
 from bigchaindb.crypto.ed25519 import ED25519PrivateKey, ED25519PublicKey
 from bigchaindb.crypto.fulfillment import Fulfillment
 from bigchaindb.crypto.fulfillments.ed25519_sha256 import Ed25519Sha256Fulfillment
+from bigchaindb.crypto.fulfillments.sha256 import Sha256Fulfillment
 from bigchaindb.crypto.fulfillments.threshold_sha256 import ThresholdSha256Fulfillment
 
 
@@ -18,6 +19,38 @@ class TestBigchainILPSha256Condition:
         example_condition = self.CONDITION_SHA256_ILP
         condition = Condition.from_uri(example_condition)
         assert condition.serialize_uri() == self.CONDITION_SHA256_ILP
+
+
+class TestBigchainILPSha256Fulfillment:
+    CONDITION_SHA256_ILP = 'cc:1:1:47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU:1'
+    FULFILLMENT_SHA256_ILP = 'cf:1:1:AA'
+
+    def test_deserialize_and_validate_fulfillment(self):
+        fulfillment = Fulfillment.from_uri(self.FULFILLMENT_SHA256_ILP)
+        assert fulfillment.serialize_uri() == self.FULFILLMENT_SHA256_ILP
+        assert fulfillment.condition.serialize_uri() == self.CONDITION_SHA256_ILP
+        assert fulfillment.validate()
+
+    def test_deserialize_condition_and_validate_fulfillment(self):
+        condition = Condition.from_uri(self.CONDITION_SHA256_ILP)
+        fulfillment = Sha256Fulfillment()
+        fulfillment.preimage = ''
+        assert fulfillment.serialize_uri() == self.FULFILLMENT_SHA256_ILP
+        assert fulfillment.condition.serialize_uri() == condition.serialize_uri()
+        assert fulfillment.validate()
+
+    def test_condition_from_fulfillment(self):
+        fulfillment = Sha256Fulfillment()
+        with pytest.raises(ValueError):
+            fulfillment.condition
+
+        fulfillment.preimage = 'Hello World!'
+        condition = fulfillment.condition
+
+        verify_fulfillment = Sha256Fulfillment()
+        verify_fulfillment.preimage = 'Hello World!'
+        assert verify_fulfillment.condition.serialize_uri() == condition.serialize_uri()
+        assert verify_fulfillment.validate()
 
 
 class TestBigchainILPEd25519Sha256Fulfillment:
@@ -133,12 +166,14 @@ class TestBigchainILPThresholdSha256Fulfillment:
         'mUhQNmD2Cvk7e3EFOo-arA2TKYTP-474Z4okhbYmKij6XxObIbRsDScjXILAJ6mV5hP7Xyqkg5fcSsZbfRYypzlsAM'
     HASH_ED25519_HEX_ILP = b'a9020d5b6ba6e7d0b80c1f494955c7d6282a026698186aabca59475200a97cf5'
 
-    CONDITION_THRESHOLD_ED25519_ILP_2 = 'cc:1:c:IZgoTeE1Weg6tfGMLWGe2JmS-waBN-CUrlbhtI9GBcQ:230'
+    CONDITION_SHA256_ILP = 'cc:1:1:47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU:1'
+    FULFILLMENT_SHA256_ILP = 'cf:1:1:AA'
+
+    CONDITION_THRESHOLD_ED25519_ILP_2 = 'cc:1:d:fDM51fekeLlbeF9yj9W1KT76jtqa7u0vMlJAbM4EyiE:230'
     FULFILLMENT_THRESHOLD_ED25519_ILP_2 = \
-        'cf:1:4:AgIBCCDsFyuTrV5WO_STLHDhJFA0w1Rn7y79TWTr-BloNGfivwxIZWxsbyB3b3JsZCEgFSBDb25kaXRpb25zIGFyZSBoZXJlIUBDW' \
-        '6ped9T2wiZUVLyoz-epNFyiTDqyBqNheurnrk7UZ2KyQdrdmbbXX1zOIMw__O3h9Z2U6buK05AMfNYUnacCAQgg7Bcrk61eVjv0kyxw4SRQN' \
-        'MNUZ-8u_U1k6_gZaDRn4r8MSGVsbG8gd29ybGQhIBUgQ29uZGl0aW9ucyBhcmUgaGVyZSFAQ1uqXnfU9sImVFS8qM_nqTRcokw6sgajYXrq5' \
-        '65O1GdiskHa3Zm2119cziDMP_zt4fWdlOm7itOQDHzWFJ2nAgEBCCD9bNOse8We_gj4fRwApZnpDeDdjQO7dpbTWcixoCyKj3Q'
+        'cf:1:4:AgIBAQABCCDsFyuTrV5WO_STLHDhJFA0w1Rn7y79TWTr-BloNGfivwxIZWxsbyB3b3JsZCEgFSBDb25kaXRpb25zIGFyZSBoZXJlI' \
+        'UBDW6ped9T2wiZUVLyoz-epNFyiTDqyBqNheurnrk7UZ2KyQdrdmbbXX1zOIMw__O3h9Z2U6buK05AMfNYUnacCAQEIIP1s06x7xZ7-CPh9H' \
+        'AClmekN4N2NA7t2ltNZyLGgLIqPdA'
 
     def create_fulfillment_ed25519sha256(self):
         sk = ED25519PrivateKey(self.PRIVATE_B58_ILP)
@@ -153,8 +188,9 @@ class TestBigchainILPThresholdSha256Fulfillment:
         return fulfillment
 
     def test_serialize_condition_and_validate_fulfillment(self):
-        ilp_fulfillment = Fulfillment.from_uri(self.FULFILLMENT_ED25519_ILP)
-        ilp_fulfillment_2 = Fulfillment.from_uri(self.FULFILLMENT_ED25519_ILP_2)
+        ilp_fulfillment = Fulfillment.from_uri(self.FULFILLMENT_ED25519_ILP_2)
+        ilp_fulfillment_2 = Fulfillment.from_uri(self.FULFILLMENT_ED25519_ILP)
+        ilp_fulfillment_3 = Fulfillment.from_uri(self.FULFILLMENT_SHA256_ILP)
 
         assert ilp_fulfillment.validate() == True
         assert ilp_fulfillment_2.validate() == True
@@ -163,9 +199,9 @@ class TestBigchainILPThresholdSha256Fulfillment:
 
         # Create a threshold condition
         fulfillment = ThresholdSha256Fulfillment()
+        fulfillment.add_subfulfillment(ilp_fulfillment)
         fulfillment.add_subfulfillment(ilp_fulfillment_2)
-        fulfillment.add_subfulfillment(ilp_fulfillment)
-        fulfillment.add_subfulfillment(ilp_fulfillment)
+        fulfillment.add_subfulfillment(ilp_fulfillment_3)
         fulfillment.threshold = THRESHOLD  # defaults to subconditions.length
 
         assert fulfillment.condition.serialize_uri() == self.CONDITION_THRESHOLD_ED25519_ILP_2
@@ -185,6 +221,10 @@ class TestBigchainILPThresholdSha256Fulfillment:
         assert len(fulfillment.get_all_subconditions()) == NUM_FULFILLMENTS
         assert fulfillment.serialize_uri() == self.FULFILLMENT_THRESHOLD_ED25519_ILP_2
         assert fulfillment.validate()
+        assert isinstance(fulfillment.subfulfillments[0], Sha256Fulfillment)
+        assert isinstance(fulfillment.subfulfillments[1], Ed25519Sha256Fulfillment)
+        assert fulfillment.subfulfillments[0].condition.serialize_uri() == self.CONDITION_SHA256_ILP
+        assert fulfillment.subfulfillments[1].condition.serialize_uri() == self.CONDITION_ED25519_ILP
 
     def test_serialize_deserialize_fulfillment(self):
         ilp_fulfillment = Fulfillment.from_uri(self.FULFILLMENT_ED25519_ILP)
