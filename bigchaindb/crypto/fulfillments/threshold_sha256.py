@@ -52,7 +52,8 @@ class ThresholdSha256Fulfillment(BaseSha256Fulfillment):
 
         This method returns the subconditions plus all subfulfillments, converted to conditions.
 
-        @return {Condition[]} Set of subconditions
+        Returns:
+            [Condition]: Set of subconditions
         """
         return self.subconditions + [f.condition for f in self.subfulfillments]
 
@@ -84,7 +85,8 @@ class ThresholdSha256Fulfillment(BaseSha256Fulfillment):
         validate this fulfillment. Therefore, we need to calculate the bitwise OR
         of this condition's TYPE_BIT and all subcondition's and subfulfillment's bitmasks.
 
-        @return {Number} Complete bitmask for this fulfillment.
+        Returns:
+             int: Complete bitmask for this fulfillment.
         """
         bitmask = self._bitmask
 
@@ -140,7 +142,8 @@ class ThresholdSha256Fulfillment(BaseSha256Fulfillment):
         however, it does not need to provide the exact worst-case fulfillment
         length, only an upper bound for it.
 
-        @return {Number} Maximum length of the fulfillment payload
+        Return:
+             int Maximum length of the fulfillment payload
 
         """
         # TODO: Currently wrong
@@ -243,7 +246,8 @@ class ThresholdSha256Fulfillment(BaseSha256Fulfillment):
         This will validate the subfulfillments and verify that there are enough
         subfulfillments to meet the threshold.
 
-        @return {Boolean} Whether this fulfillment is valid.
+        Returns:
+             boolean: Whether this fulfillment is valid.
         """
         validations = [f.validate() for f in self.subfulfillments]
         return len([v for v in validations]) >= self.threshold

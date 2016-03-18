@@ -9,10 +9,10 @@ from six import string_types
 MSB = 0x80
 REST = 0x7F
 MSBALL = ~REST
-INT = 2**31
+INT = 2 ** 31
 
 # https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_SAFE_INTEGER
-MAX_SAFE_INTEGER = 2**53-1
+MAX_SAFE_INTEGER = 2 ** 53 - 1
 
 
 class UnsignedLEB128:
@@ -27,6 +27,7 @@ class UnsignedLEB128:
     see http://grokbase.com/t/python/python-list/112e5jpc16/encoding
 
     """
+
     @staticmethod
     def encode(obj):
         out = []
@@ -51,7 +52,6 @@ class UnsignedLEB128:
 
 
 class Writer:
-
     def __init__(self):
         self.components = []
 
@@ -96,17 +96,13 @@ class Writer:
 
 class Hasher(Writer):
 
-    def __init__(self):
-        self.hash = None
-        super().__init__()
-
     def __init__(self, algorithm):
         if algorithm == 'sha256':
             self.hash = hashlib.sha256()
         else:
             raise NotImplementedError
-        super(Writer, self).__init__()
-    
+        super().__init__()
+
     def write(self, in_bytes):
         """
         Adds bytes to the hash input.
@@ -151,7 +147,6 @@ class Hasher(Writer):
 
 
 class Predictor:
-
     def __init__(self):
         self.size = 0
 
@@ -166,7 +161,7 @@ class Predictor:
         Args:
             val (int): Integer to be encoded
         """
-        
+
         if val == 0:
             self.size += 1
         elif val < 0:
@@ -200,7 +195,6 @@ class Predictor:
 
 
 class Reader:
-
     def __init__(self, buffer):
         self.buffer = buffer
         self.cursor = 0
@@ -294,18 +288,18 @@ class Reader:
         """
         shift = 0
         result = 0
-        
+
         while True:
             in_byte = self.read_uint8()
-            
+
             result += (in_byte & REST) << shift if shift < 28 else (in_byte & REST) * (2 ** shift)
-            
+
             shift += 7
-            
+
             # Don't allow numbers greater than Number.MAX_SAFE_INTEGER
             if shift > 45:
                 raise ValueError('Too large variable integer')
-            
+
             if not (in_byte & MSB):
                 break
 
@@ -320,7 +314,7 @@ class Reader:
         self.bookmark()
         value = self.read_var_uint()
         self.restore()
-    
+
         return value
 
     def skip_var_uint(self):
@@ -339,7 +333,7 @@ class Reader:
         Return: {Buffer} Contents of the VARBYTES.
         """
         return self.read(self.read_var_uint())
-  
+
     def peek_var_bytes(self):
         """
         Read a VARBYTES, but do not advance cursor position.
@@ -372,12 +366,12 @@ class Reader:
             Contents of bytes read.
         """
         self.ensure_available(num_bytes)
-    
+
         value = self.buffer[self.cursor:self.cursor + num_bytes]
         self.cursor += num_bytes
-    
+
         return value
-    
+
     def peek(self, num_bytes):
         """
         Read bytes, but do not advance cursor.
@@ -403,7 +397,7 @@ class Reader:
              num_bytes (int): Number of bytes to advance the cursor by.
         """
         self.ensure_available(num_bytes)
-    
+
         self.cursor += num_bytes
 
 

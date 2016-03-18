@@ -50,11 +50,11 @@ class Condition(metaclass=ABCMeta):
     @staticmethod
     def from_binary(reader):
         """
-        * Create a Condition object from a binary blob.
-        *
-        * This method will parse a stream of binary data and construct a
-        * corresponding Condition object.
-        *
+        Create a Condition object from a binary blob.
+
+        This method will parse a stream of binary data and construct a
+        corresponding Condition object.
+
         Args:
             reader (Reader): Binary stream implementing the Reader interface
         Returns:
@@ -207,14 +207,13 @@ class Condition(metaclass=ABCMeta):
         writer.write_var_uint(self.max_fulfillment_length)
         return b''.join(writer.components)
 
-
     def parse_binary(self, reader):
         """
-        * Parse any condition in binary format.
-        *
-        * Will populate the condition object with data from the provided binary
-        * stream.
-        *
+        Parse any condition in binary format.
+
+        Will populate the condition object with data from the provided binary
+        stream.
+
         Args:
              reader (Reader): Binary stream containing the condition.
         """

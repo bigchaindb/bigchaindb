@@ -1,6 +1,6 @@
 import binascii
 
-from math import floor, ceil
+from math import ceil
 
 import pytest
 
@@ -125,6 +125,7 @@ class TestBigchainILPEd25519Sha256Fulfillment:
     def test_deserialize_fulfillment(self):
         fulfillment = Fulfillment.from_uri(self.FULFILLMENT_ED25519_ILP)
 
+        assert isinstance(fulfillment, Ed25519Sha256Fulfillment)
         assert fulfillment.serialize_uri() == self.FULFILLMENT_ED25519_ILP
         assert fulfillment.condition.serialize_uri() == self.CONDITION_ED25519_ILP
         assert binascii.hexlify(fulfillment.condition.hash) == self.HASH_ED25519_HEX_ILP
@@ -145,6 +146,7 @@ class TestBigchainILPEd25519Sha256Fulfillment:
         assert fulfillment.validate()
 
         deserialized_fulfillment = Fulfillment.from_uri(fulfillment.serialize_uri())
+        assert isinstance(deserialized_fulfillment, Ed25519Sha256Fulfillment)
         assert deserialized_fulfillment.serialize_uri() == fulfillment.serialize_uri()
         assert deserialized_fulfillment.condition.serialize_uri() == fulfillment.condition.serialize_uri()
         assert deserialized_fulfillment.public_key.public_key.to_bytes() == fulfillment.public_key.public_key.to_bytes()
@@ -195,14 +197,14 @@ class TestBigchainILPThresholdSha256Fulfillment:
         assert ilp_fulfillment.validate() == True
         assert ilp_fulfillment_2.validate() == True
 
-        THRESHOLD = 2
+        threshold = 2
 
         # Create a threshold condition
         fulfillment = ThresholdSha256Fulfillment()
         fulfillment.add_subfulfillment(ilp_fulfillment)
         fulfillment.add_subfulfillment(ilp_fulfillment_2)
         fulfillment.add_subfulfillment(ilp_fulfillment_3)
-        fulfillment.threshold = THRESHOLD  # defaults to subconditions.length
+        fulfillment.threshold = threshold  # defaults to subconditions.length
 
         assert fulfillment.condition.serialize_uri() == self.CONDITION_THRESHOLD_ED25519_ILP_2
         # Note: If there are more than enough fulfilled subconditions, shorter
@@ -212,13 +214,14 @@ class TestBigchainILPThresholdSha256Fulfillment:
         assert fulfillment.validate()
 
     def test_deserialize_fulfillment(self):
-        NUM_FULFILLMENTS = 3
-        THRESHOLD = 2
+        num_fulfillments = 3
+        threshold = 2
 
         fulfillment = Fulfillment.from_uri(self.FULFILLMENT_THRESHOLD_ED25519_ILP_2)
-        assert fulfillment.threshold == THRESHOLD
-        assert len(fulfillment.subfulfillments) == THRESHOLD
-        assert len(fulfillment.get_all_subconditions()) == NUM_FULFILLMENTS
+        assert isinstance(fulfillment, ThresholdSha256Fulfillment)
+        assert fulfillment.threshold == threshold
+        assert len(fulfillment.subfulfillments) == threshold
+        assert len(fulfillment.get_all_subconditions()) == num_fulfillments
         assert fulfillment.serialize_uri() == self.FULFILLMENT_THRESHOLD_ED25519_ILP_2
         assert fulfillment.validate()
         assert isinstance(fulfillment.subfulfillments[0], Sha256Fulfillment)
@@ -228,35 +231,36 @@ class TestBigchainILPThresholdSha256Fulfillment:
 
     def test_serialize_deserialize_fulfillment(self):
         ilp_fulfillment = Fulfillment.from_uri(self.FULFILLMENT_ED25519_ILP)
-        NUM_FULFILLMENTS = 100
-        THRESHOLD = ceil(NUM_FULFILLMENTS * 2 / 3)
+        num_fulfillments = 100
+        threshold = ceil(num_fulfillments * 2 / 3)
 
         # Create a threshold condition
         fulfillment = ThresholdSha256Fulfillment()
-        for i in range(NUM_FULFILLMENTS):
+        for i in range(num_fulfillments):
             fulfillment.add_subfulfillment(ilp_fulfillment)
-        fulfillment.threshold = THRESHOLD
+        fulfillment.threshold = threshold
 
         fulfillment_uri = fulfillment.serialize_uri()
 
         assert fulfillment.validate()
         deserialized_fulfillment = Fulfillment.from_uri(fulfillment_uri)
 
-        assert deserialized_fulfillment.threshold == THRESHOLD
-        assert len(deserialized_fulfillment.subfulfillments) == THRESHOLD
-        assert len(deserialized_fulfillment.get_all_subconditions()) == NUM_FULFILLMENTS
+        assert isinstance(deserialized_fulfillment, ThresholdSha256Fulfillment)
+        assert deserialized_fulfillment.threshold == threshold
+        assert len(deserialized_fulfillment.subfulfillments) == threshold
+        assert len(deserialized_fulfillment.get_all_subconditions()) == num_fulfillments
         assert deserialized_fulfillment.serialize_uri() == fulfillment_uri
         assert deserialized_fulfillment.validate()
 
     def test_fulfillment_didnt_reach_threshold(self):
         ilp_fulfillment = Fulfillment.from_uri(self.FULFILLMENT_ED25519_ILP)
-        THRESHOLD = 10
+        threshold = 10
 
         # Create a threshold condition
         fulfillment = ThresholdSha256Fulfillment()
-        fulfillment.threshold = THRESHOLD
+        fulfillment.threshold = threshold
 
-        for i in range(THRESHOLD - 1):
+        for i in range(threshold - 1):
             fulfillment.add_subfulfillment(ilp_fulfillment)
 
         with pytest.raises(ValueError):
@@ -271,8 +275,9 @@ class TestBigchainILPThresholdSha256Fulfillment:
 
         deserialized_fulfillment = Fulfillment.from_uri(fulfillment_uri)
 
-        assert deserialized_fulfillment.threshold == THRESHOLD
-        assert len(deserialized_fulfillment.subfulfillments) == THRESHOLD
-        assert len(deserialized_fulfillment.get_all_subconditions()) == THRESHOLD
+        assert isinstance(deserialized_fulfillment, ThresholdSha256Fulfillment)
+        assert deserialized_fulfillment.threshold == threshold
+        assert len(deserialized_fulfillment.subfulfillments) == threshold
+        assert len(deserialized_fulfillment.get_all_subconditions()) == threshold
         assert deserialized_fulfillment.serialize_uri() == fulfillment_uri
         assert deserialized_fulfillment.validate()
