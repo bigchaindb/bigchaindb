@@ -20,11 +20,13 @@ class ED25519PrivateKey(PrivateKey):
         private_base64 = self.decode(key)
         self.private_key = self._private_key_from_private_base64(private_base64)
 
-    def sign(self, data):
+    def sign(self, data, encoding="base64"):
         """
         Sign data with private key
         """
-        return self.private_key.sign(data.encode('utf-8'), encoding="base64")
+        if not isinstance(data, bytes):
+            data = data.encode('utf-8')
+        return self.private_key.sign(data, encoding=encoding)
 
     @staticmethod
     def encode(private_base64):
