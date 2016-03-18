@@ -1,4 +1,4 @@
-from bigchaindb.crypto.iostream import MAX_SAFE_INTEGER
+from bigchaindb.crypto.buffer import MAX_SAFE_INTEGER
 
 
 class BitmaskRegistry:

@@ -5,10 +5,10 @@ import base64
 import base58
 import ed25519
 
-from bigchaindb.crypto.asymmetric import PrivateKey, PublicKey
+from bigchaindb.crypto.asymmetric import SigningKey, VerifyingKey
 
 
-class ED25519PrivateKey(PrivateKey):
+class Ed25519SigningKey(ed25519.SigningKey, SigningKey):
     """
     PrivateKey instance
     """
@@ -16,22 +16,31 @@ class ED25519PrivateKey(PrivateKey):
     def __init__(self, key):
         """
         Instantiate the private key with the private_value encoded in base58
+
+        Args:
+            key (base58): base58 encoded private key
         """
         private_base64 = self.decode(key)
-        self.private_key = self._private_key_from_private_base64(private_base64)
+        super().__init__(private_base64, encoding='base64')
 
     def sign(self, data, encoding="base64"):
         """
         Sign data with private key
+
+        Args:
+            data (str, bytes): data to sign
+            encoding (str): base64, hex
         """
         if not isinstance(data, bytes):
             data = data.encode('utf-8')
-        return self.private_key.sign(data, encoding=encoding)
+        return super().sign(data, encoding=encoding)
 
     @staticmethod
     def encode(private_base64):
         """
         Encode the base64 number private_base64 to base58
+        Args:
+            private_base64:
         """
         return base58.b58encode(base64.b64decode(private_base64))
 
@@ -39,31 +48,27 @@ class ED25519PrivateKey(PrivateKey):
     def decode(key):
         """
         Decode the base58 private_value to base64
+
+        Args:
+            key:
         """
         return base64.b64encode(base58.b58decode(key))
 
-    @staticmethod
-    def _private_key_from_private_base64(private_base64):
-        """
-        Return an instance of a ED25519 SignigKey from a base64 key
-        """
-        return ed25519.SigningKey(private_base64, encoding='base64')
 
-
-class ED25519PublicKey(PublicKey):
+class Ed25519VerifyingKey(ed25519.VerifyingKey, VerifyingKey):
 
     def __init__(self, key):
         """
         Instantiate the public key with the compressed public value encoded in base58
         """
         public_base64 = self.decode(key)
-        self.public_key = self._public_key_from_public_base64(public_base64)
+        super().__init__(public_base64, encoding='base64')
 
     def verify(self, data, signature, encoding='base64'):
         try:
             if encoding:
                 data = data.encode('utf-8')
-            self.public_key.verify(signature, data, encoding=encoding)
+            super().verify(signature, data, encoding=encoding)
         except ed25519.BadSignatureError:
             return False
 
@@ -73,21 +78,21 @@ class ED25519PublicKey(PublicKey):
     def encode(public_base64):
         """
         Encode the public key represented by base64 to base58
+
+        Args:
+            public_base64
         """
-        return ED25519PrivateKey.encode(public_base64)
+        return Ed25519SigningKey.encode(public_base64)
 
     @staticmethod
-    def decode(public_value_compressed_base58):
+    def decode(public_base58):
         """
         Decode the base58 public_value to base64
-        """
-        return ED25519PrivateKey.decode(public_value_compressed_base58)
 
-    def _public_key_from_public_base64(self, public_base64):
+        Args:
+            public_base58
         """
-        Return an instance of ED25519 VerifyingKey from a base64
-        """
-        return ed25519.VerifyingKey(public_base64, encoding='base64')
+        return Ed25519SigningKey.decode(public_base58)
 
 
 def ed25519_generate_key_pair():

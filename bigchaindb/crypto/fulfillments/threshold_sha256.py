@@ -1,7 +1,7 @@
 from bigchaindb.crypto.condition import Condition
 from bigchaindb.crypto.fulfillment import Fulfillment
 from bigchaindb.crypto.fulfillments.base_sha256 import BaseSha256Fulfillment
-from bigchaindb.crypto.iostream import Predictor, Reader, Writer
+from bigchaindb.crypto.buffer import Predictor, Reader, Writer
 
 
 class ThresholdSha256Fulfillment(BaseSha256Fulfillment):

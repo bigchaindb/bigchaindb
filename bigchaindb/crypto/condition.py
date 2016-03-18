@@ -4,7 +4,7 @@ from abc import ABCMeta
 
 from six import string_types
 
-from bigchaindb.crypto.iostream import base64_add_padding, base64_remove_padding, Writer, Reader
+from bigchaindb.crypto.buffer import base64_add_padding, base64_remove_padding, Writer, Reader
 
 CONDITION_REGEX = r'^cc:1:[1-9a-f][0-9a-f]{0,2}:[a-zA-Z0-9_-]{43}:[1-9][0-9]{0,50}$'
 
@@ -123,9 +123,6 @@ class Condition(metaclass=ABCMeta):
         Args:
             value (Buffer): Hash as binary.
         """
-        # TODO: value must be Buffer
-        # if not isinstance(value, Buffer):
-        #   raise ValueError
         self._hash = value
 
     @property

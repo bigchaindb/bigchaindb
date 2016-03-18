@@ -4,7 +4,7 @@ from abc import ABCMeta, abstractmethod
 import sha3
 
 
-class PrivateKey(metaclass=ABCMeta):
+class SigningKey(metaclass=ABCMeta):
     """
     PrivateKey instance
     """
@@ -13,6 +13,9 @@ class PrivateKey(metaclass=ABCMeta):
     def sign(self, data):
         """
         Sign data with private key
+
+        Args:
+            data:
         """
         raise NotImplementedError
 
@@ -20,20 +23,26 @@ class PrivateKey(metaclass=ABCMeta):
     @abstractmethod
     def encode(private_value):
         """
-        Encode the decimal number private_value to base58
+        Encode the internal private_value to base58
+
+        Args:
+            private_value:
         """
         raise NotImplementedError
 
     @staticmethod
     @abstractmethod
-    def decode(key):
+    def decode(private_base58):
         """
-        Decode the base58 private_value to decimale
+        Decode the base58 private value to internal value
+
+        Args:
+            private_base58 (base58):
         """
         raise NotImplementedError
 
 
-class PublicKey(metaclass=ABCMeta):
+class VerifyingKey(metaclass=ABCMeta):
 
     @abstractmethod
     def verify(self, data, signature):
@@ -41,17 +50,23 @@ class PublicKey(metaclass=ABCMeta):
 
     @staticmethod
     @abstractmethod
-    def encode(public_value_x, public_value_y):
+    def encode(public_value):
         """
-        Encode the public key represented by the decimal values x and y to base58
+        Encode the public key to base58 represented by the internal values
+
+        Args:
+            public_value
         """
         raise NotImplementedError
 
     @staticmethod
     @abstractmethod
-    def decode(public_value_compressed_base58):
+    def decode(public_base58):
         """
-        Decode the base58 public_value to the decimal x and y values
+        Decode the base58 public_value to internal value
+
+        Args:
+            public_base58 (base58):
         """
         raise NotImplementedError
 
@@ -62,8 +77,8 @@ def hash_data(data):
     return sha3.sha3_256(data.encode()).hexdigest()
 
 
-from bigchaindb.crypto.ecdsa import ECDSAPrivateKey, ECDSAPublicKey, ecdsa_generate_key_pair
+from bigchaindb.crypto.ecdsa import EcdsaSigningKey, EcdsaVerifyingKey, ecdsa_generate_key_pair
 
-PrivateKey = ECDSAPrivateKey
-PublicKey = ECDSAPublicKey
+SigningKey = EcdsaSigningKey
+VerifyingKey = EcdsaVerifyingKey
 generate_key_pair = ecdsa_generate_key_pair

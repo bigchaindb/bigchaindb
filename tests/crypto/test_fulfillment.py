@@ -5,7 +5,7 @@ from math import ceil
 import pytest
 
 from bigchaindb.crypto.condition import Condition
-from bigchaindb.crypto.ed25519 import ED25519PrivateKey, ED25519PublicKey
+from bigchaindb.crypto.ed25519 import Ed25519SigningKey, Ed25519VerifyingKey
 from bigchaindb.crypto.fulfillment import Fulfillment
 from bigchaindb.crypto.fulfillments.ed25519_sha256 import Ed25519Sha256Fulfillment
 from bigchaindb.crypto.fulfillments.sha256 import Sha256Fulfillment
@@ -56,11 +56,11 @@ class TestBigchainILPSha256Fulfillment:
 class TestBigchainILPEd25519Sha256Fulfillment:
     PUBLIC_HEX_ILP = b'ec172b93ad5e563bf4932c70e1245034c35467ef2efd4d64ebf819683467e2bf'
     PUBLIC_B64_ILP = b'7Bcrk61eVjv0kyxw4SRQNMNUZ+8u/U1k6/gZaDRn4r8'
-    PUBLIC_B58_ILP = 'Gtbi6WQDB6wUePiZm8aYs5XZ5pUqx9jMMLvRVHPESTjU'
+    PUBLIC_B58_ILP = b'Gtbi6WQDB6wUePiZm8aYs5XZ5pUqx9jMMLvRVHPESTjU'
 
     PRIVATE_HEX_ILP = b'833fe62409237b9d62ec77587520911e9a759cec1d19755b7da901b96dca3d42'
     PRIVATE_B64_ILP = b'gz/mJAkje51i7HdYdSCRHpp1nOwdGXVbfakBuW3KPUI'
-    PRIVATE_B58_ILP = '9qLvREC54mhKYivr88VpckyVWdAFmifJpGjbvV5AiTRs'
+    PRIVATE_B58_ILP = b'9qLvREC54mhKYivr88VpckyVWdAFmifJpGjbvV5AiTRs'
 
     CONDITION_ED25519_ILP = 'cc:1:8:qQINW2um59C4DB9JSVXH1igqAmaYGGqryllHUgCpfPU:113'
     FULFILLMENT_ED25519_ILP = \
@@ -69,17 +69,17 @@ class TestBigchainILPEd25519Sha256Fulfillment:
     HASH_ED25519_HEX_ILP = b'a9020d5b6ba6e7d0b80c1f494955c7d6282a026698186aabca59475200a97cf5'
 
     def test_ilp_keys(self):
-        sk = ED25519PrivateKey(self.PRIVATE_B58_ILP)
-        assert sk.private_key.to_ascii(encoding='base64') == self.PRIVATE_B64_ILP
-        assert binascii.hexlify(sk.private_key.to_bytes()[:32]) == self.PRIVATE_HEX_ILP
+        sk = Ed25519SigningKey(self.PRIVATE_B58_ILP)
+        assert sk.to_ascii(encoding='base64') == self.PRIVATE_B64_ILP
+        assert binascii.hexlify(sk.to_bytes()[:32]) == self.PRIVATE_HEX_ILP
 
-        vk = ED25519PublicKey(self.PUBLIC_B58_ILP)
-        assert vk.public_key.to_ascii(encoding='base64') == self.PUBLIC_B64_ILP
-        assert binascii.hexlify(vk.public_key.to_bytes()) == self.PUBLIC_HEX_ILP
+        vk = Ed25519VerifyingKey(self.PUBLIC_B58_ILP)
+        assert vk.to_ascii(encoding='base64') == self.PUBLIC_B64_ILP
+        assert binascii.hexlify(vk.to_bytes()) == self.PUBLIC_HEX_ILP
 
     def test_serialize_condition_and_validate_fulfillment(self):
-        sk = ED25519PrivateKey(self.PRIVATE_B58_ILP)
-        vk = ED25519PublicKey(self.PUBLIC_B58_ILP)
+        sk = Ed25519SigningKey(self.PRIVATE_B58_ILP)
+        vk = Ed25519VerifyingKey(self.PUBLIC_B58_ILP)
 
         fulfillment = Ed25519Sha256Fulfillment()
         fulfillment.public_key = vk
@@ -107,7 +107,7 @@ class TestBigchainILPEd25519Sha256Fulfillment:
         assert binascii.hexlify(deserialized_condition.hash) == self.HASH_ED25519_HEX_ILP
 
     def test_serialize_deserialize_condition(self):
-        vk = ED25519PublicKey(self.PUBLIC_B58_ILP)
+        vk = Ed25519VerifyingKey(self.PUBLIC_B58_ILP)
 
         fulfillment = Ed25519Sha256Fulfillment()
         fulfillment.public_key = vk
@@ -129,12 +129,12 @@ class TestBigchainILPEd25519Sha256Fulfillment:
         assert fulfillment.serialize_uri() == self.FULFILLMENT_ED25519_ILP
         assert fulfillment.condition.serialize_uri() == self.CONDITION_ED25519_ILP
         assert binascii.hexlify(fulfillment.condition.hash) == self.HASH_ED25519_HEX_ILP
-        assert fulfillment.public_key.public_key.to_ascii(encoding='hex') == self.PUBLIC_HEX_ILP
+        assert fulfillment.public_key.to_ascii(encoding='hex') == self.PUBLIC_HEX_ILP
         assert fulfillment.validate()
 
     def test_serialize_deserialize_fulfillment(self):
-        sk = ED25519PrivateKey(self.PRIVATE_B58_ILP)
-        vk = ED25519PublicKey(self.PUBLIC_B58_ILP)
+        sk = Ed25519SigningKey(self.PRIVATE_B58_ILP)
+        vk = Ed25519VerifyingKey(self.PUBLIC_B58_ILP)
 
         fulfillment = Ed25519Sha256Fulfillment()
         fulfillment.public_key = vk
@@ -149,7 +149,7 @@ class TestBigchainILPEd25519Sha256Fulfillment:
         assert isinstance(deserialized_fulfillment, Ed25519Sha256Fulfillment)
         assert deserialized_fulfillment.serialize_uri() == fulfillment.serialize_uri()
         assert deserialized_fulfillment.condition.serialize_uri() == fulfillment.condition.serialize_uri()
-        assert deserialized_fulfillment.public_key.public_key.to_bytes() == fulfillment.public_key.public_key.to_bytes()
+        assert deserialized_fulfillment.public_key.to_bytes() == fulfillment.public_key.to_bytes()
         assert deserialized_fulfillment.validate()
 
 
@@ -178,8 +178,8 @@ class TestBigchainILPThresholdSha256Fulfillment:
         'AClmekN4N2NA7t2ltNZyLGgLIqPdA'
 
     def create_fulfillment_ed25519sha256(self):
-        sk = ED25519PrivateKey(self.PRIVATE_B58_ILP)
-        vk = ED25519PublicKey(self.PUBLIC_B58_ILP)
+        sk = Ed25519SigningKey(self.PRIVATE_B58_ILP)
+        vk = Ed25519VerifyingKey(self.PUBLIC_B58_ILP)
 
         fulfillment = Ed25519Sha256Fulfillment()
         fulfillment.public_key = vk

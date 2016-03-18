@@ -1,8 +1,8 @@
 import base58
 
-from bigchaindb.crypto.ed25519 import ED25519PublicKey
+from bigchaindb.crypto.ed25519 import Ed25519VerifyingKey
 from bigchaindb.crypto.fulfillments.base_sha256 import BaseSha256Fulfillment
-from bigchaindb.crypto.iostream import Predictor
+from bigchaindb.crypto.buffer import Predictor
 
 
 class Ed25519Sha256Fulfillment(BaseSha256Fulfillment):
@@ -70,10 +70,7 @@ class Ed25519Sha256Fulfillment(BaseSha256Fulfillment):
         Args:
             value (Buffer): publicKey Public Ed25519 publicKey
         """
-        # TODO: Buffer
-        # if not isinstance(value, Buffer):
-        #     raise ValueError("public key must be a Buffer")
-        if not isinstance(value, ED25519PublicKey):
+        if not isinstance(value, Ed25519VerifyingKey):
             raise TypeError
         self._public_key = value
 
@@ -93,9 +90,6 @@ class Ed25519Sha256Fulfillment(BaseSha256Fulfillment):
         Args:
             value (Buffer): Binary form of dynamic message.
         """
-        # TODO: Buffer
-        # if not isinstance(value, Buffer):
-        #     raise ValueError("message must be a Buffer")
         if not isinstance(value, bytes):
             value = value.encode()
         self._message = value
@@ -115,9 +109,6 @@ class Ed25519Sha256Fulfillment(BaseSha256Fulfillment):
         Args:
             value (Buffer): 64-byte signature.
         """
-        # TODO: Buffer
-        # if not isinstance(value, Buffer):
-        #     raise ValueError("signature must be a Buffer")
         self._signature = value
 
     def write_common_header(self, writer):
@@ -135,7 +126,7 @@ class Ed25519Sha256Fulfillment(BaseSha256Fulfillment):
         if not self.public_key:
             raise ValueError
 
-        writer.write_var_bytes(bytearray(self.public_key.public_key.to_bytes()))
+        writer.write_var_bytes(bytearray(self.public_key.to_bytes()))
         writer.write_var_bytes(self.message_prefix)
         writer.write_var_uint(self.max_dynamic_message_length)
         return writer
@@ -150,7 +141,7 @@ class Ed25519Sha256Fulfillment(BaseSha256Fulfillment):
             reader (Reader): Source to read the fulfillment payload from.
         """
         self.public_key = \
-            ED25519PublicKey(
+            Ed25519VerifyingKey(
                 base58.b58encode(
                     reader.read_var_bytes()))
         self.message_prefix = reader.read_var_bytes()
@@ -229,7 +220,7 @@ class Ed25519Sha256Fulfillment(BaseSha256Fulfillment):
         predictor.skip(self.max_dynamic_message_length)
 
         # Signature
-        predictor.write_var_bytes(self.public_key.public_key.to_bytes())
+        predictor.write_var_bytes(self.public_key.to_bytes())
 
         return predictor.size
 
@@ -243,11 +234,10 @@ class Ed25519Sha256Fulfillment(BaseSha256Fulfillment):
         Args:
             private_key (string) Ed25519 private key
         """
-        # TODO: Buffer
         sk = private_key
-        vk = ED25519PublicKey(
+        vk = Ed25519VerifyingKey(
             base58.b58encode(
-                sk.private_key.get_verifying_key().to_bytes()))
+                sk.get_verifying_key().to_bytes()))
 
         self.public_key = vk
 

@@ -1,7 +1,7 @@
 import base64
 
-from bigchaindb.crypto.ecdsa import ECDSAPrivateKey, ECDSAPublicKey, ecdsa_generate_key_pair
-from bigchaindb.crypto.ed25519 import ED25519PrivateKey, ED25519PublicKey, ed25519_generate_key_pair
+from bigchaindb.crypto.ecdsa import EcdsaSigningKey, EcdsaVerifyingKey, ecdsa_generate_key_pair
+from bigchaindb.crypto.ed25519 import Ed25519SigningKey, Ed25519VerifyingKey, ed25519_generate_key_pair
 
 
 class TestBigchainCryptoED25519(object):
@@ -18,67 +18,67 @@ class TestBigchainCryptoED25519(object):
     SIG_B64_ILP = 'sd0RahwuJJgeNfg8HvWHtYf4uqNgCOqIbseERacqs8G0kXNQQnhfV6gWAnMb+0RIlY3e0mqbrQiUwbRYJvRBAw=='
 
     def test_private_key_encode(self):
-        private_value_base58 = ED25519PrivateKey.encode(self.PRIVATE_B64)
+        private_value_base58 = Ed25519SigningKey.encode(self.PRIVATE_B64)
         assert private_value_base58 == self.PRIVATE_B58
 
     def test_private_key_init(self):
-        sk = ED25519PrivateKey(self.PRIVATE_B58)
-        assert sk.private_key.to_ascii(encoding='base64') == self.PRIVATE_B64[:-1]
-        assert sk.private_key.to_bytes() == self.PRIVATE_BYTES
+        sk = Ed25519SigningKey(self.PRIVATE_B58)
+        assert sk.to_ascii(encoding='base64') == self.PRIVATE_B64[:-1]
+        assert sk.to_bytes() == self.PRIVATE_BYTES
 
     def test_private_key_decode(self):
-        private_value = ED25519PrivateKey.decode(self.PRIVATE_B58)
+        private_value = Ed25519SigningKey.decode(self.PRIVATE_B58)
         assert private_value == self.PRIVATE_B64
 
     def test_public_key_encode(self):
-        public_value_base58 = ED25519PublicKey.encode(self.PUBLIC_B64)
+        public_value_base58 = Ed25519VerifyingKey.encode(self.PUBLIC_B64)
         assert public_value_base58 == self.PUBLIC_B58
 
     def test_public_key_init(self):
-        vk = ED25519PublicKey(self.PUBLIC_B58)
-        assert vk.public_key.to_ascii(encoding='base64') == self.PUBLIC_B64[:-1]
-        assert vk.public_key.to_bytes() == self.PUBLIC_BYTES
+        vk = Ed25519VerifyingKey(self.PUBLIC_B58)
+        assert vk.to_ascii(encoding='base64') == self.PUBLIC_B64[:-1]
+        assert vk.to_bytes() == self.PUBLIC_BYTES
 
     def test_public_key_decode(self):
-        public_value = ED25519PublicKey.decode(self.PUBLIC_B58)
+        public_value = Ed25519VerifyingKey.decode(self.PUBLIC_B58)
         assert public_value == self.PUBLIC_B64
 
     def test_sign_verify(self):
         message = 'Hello World!'
-        sk = ED25519PrivateKey(self.PRIVATE_B58)
-        vk = ED25519PublicKey(self.PUBLIC_B58)
+        sk = Ed25519SigningKey(self.PRIVATE_B58)
+        vk = Ed25519VerifyingKey(self.PUBLIC_B58)
         assert vk.verify(message, sk.sign(message)) is True
         assert vk.verify(message, sk.sign(message + 'dummy')) is False
         assert vk.verify(message + 'dummy', sk.sign(message)) is False
-        vk = ED25519PublicKey(ED25519PublicKey.encode(self.PUBLIC_B64_ILP))
+        vk = Ed25519VerifyingKey(Ed25519VerifyingKey.encode(self.PUBLIC_B64_ILP))
         assert vk.verify(message, sk.sign(message)) is False
 
     def test_valid_condition_valid_signature_ilp(self):
-        vk = ED25519PublicKey(ED25519PublicKey.encode(self.PUBLIC_B64_ILP))
+        vk = Ed25519VerifyingKey(Ed25519VerifyingKey.encode(self.PUBLIC_B64_ILP))
         msg = self.MSG_SHA512_ILP
         sig = self.SIG_B64_ILP
         assert vk.verify(base64.b64decode(msg), base64.b64decode(sig), encoding=None) is True
 
     def test_valid_condition_invalid_signature_ilp(self):
-        vk = ED25519PublicKey(ED25519PublicKey.encode(self.PUBLIC_B64_ILP))
+        vk = Ed25519VerifyingKey(Ed25519VerifyingKey.encode(self.PUBLIC_B64_ILP))
         msg = self.MSG_SHA512_ILP
         sig = self.MSG_SHA512_ILP
         assert vk.verify(base64.b64decode(msg), base64.b64decode(sig), encoding=None) is False
 
     def test_generate_key_pair(self):
         sk, vk = ed25519_generate_key_pair()
-        assert ED25519PrivateKey.encode(ED25519PrivateKey.decode(sk)) == sk
-        assert ED25519PublicKey.encode(ED25519PublicKey.decode(vk)) == vk
+        assert Ed25519SigningKey.encode(Ed25519SigningKey.decode(sk)) == sk
+        assert Ed25519VerifyingKey.encode(Ed25519VerifyingKey.decode(vk)) == vk
 
     def test_generate_sign_verify(self):
         sk, vk = ed25519_generate_key_pair()
-        sk = ED25519PrivateKey(sk)
-        vk = ED25519PublicKey(vk)
+        sk = Ed25519SigningKey(sk)
+        vk = Ed25519VerifyingKey(vk)
         message = 'Hello World!'
         assert vk.verify(message, sk.sign(message)) is True
         assert vk.verify(message, sk.sign(message + 'dummy')) is False
         assert vk.verify(message + 'dummy', sk.sign(message)) is False
-        vk = ED25519PublicKey(ED25519PublicKey.encode(self.PUBLIC_B64_ILP))
+        vk = Ed25519VerifyingKey(Ed25519VerifyingKey.encode(self.PUBLIC_B64_ILP))
         assert vk.verify(message, sk.sign(message)) is False
 
 
@@ -91,31 +91,31 @@ class TestBigchainCryptoECDSA(object):
     PUBLIC_VALUE_COMPRESSED_B58 = 'ifEi3UuTDT4CqUUKiS5omgeDodhu2aRFHVp6LoahbEVe'
 
     def test_private_key_encode(self):
-        private_value_base58 = ECDSAPrivateKey.encode(self.PRIVATE_VALUE)
+        private_value_base58 = EcdsaSigningKey.encode(self.PRIVATE_VALUE)
         assert private_value_base58 == self.PRIVATE_VALUE_B58
 
     def test_private_key_decode(self):
-        private_value = ECDSAPrivateKey.decode(self.PRIVATE_VALUE_B58)
+        private_value = EcdsaSigningKey.decode(self.PRIVATE_VALUE_B58)
         assert private_value == self.PRIVATE_VALUE
 
     def test_public_key_encode(self):
-        public_value_compressed_base58 = ECDSAPublicKey.encode(self.PUBLIC_VALUE_X, self.PUBLIC_VALUE_Y)
+        public_value_compressed_base58 = EcdsaVerifyingKey.encode(self.PUBLIC_VALUE_X, self.PUBLIC_VALUE_Y)
         assert public_value_compressed_base58 == self.PUBLIC_VALUE_COMPRESSED_B58
 
     def test_public_key_decode(self):
-        public_value_x, public_value_y = ECDSAPublicKey.decode(self.PUBLIC_VALUE_COMPRESSED_B58)
+        public_value_x, public_value_y = EcdsaVerifyingKey.decode(self.PUBLIC_VALUE_COMPRESSED_B58)
         assert public_value_x == self.PUBLIC_VALUE_X
         assert public_value_y == self.PUBLIC_VALUE_Y
 
     def test_sign_verify(self):
         message = 'Hello World!'
-        public_key = ECDSAPublicKey(self.PUBLIC_VALUE_COMPRESSED_B58)
-        private_key = ECDSAPrivateKey(self.PRIVATE_VALUE_B58)
+        public_key = EcdsaVerifyingKey(self.PUBLIC_VALUE_COMPRESSED_B58)
+        private_key = EcdsaSigningKey(self.PRIVATE_VALUE_B58)
         assert public_key.verify(message, private_key.sign(message)) is True
 
     def test_generate_key_pair(self):
         private_value_base58, public_value_compressed_base58 = ecdsa_generate_key_pair()
-        assert ECDSAPrivateKey.encode(
-            ECDSAPrivateKey.decode(private_value_base58)) == private_value_base58
-        assert ECDSAPublicKey.encode(
-            *ECDSAPublicKey.decode(public_value_compressed_base58)) == public_value_compressed_base58
+        assert EcdsaSigningKey.encode(
+            EcdsaSigningKey.decode(private_value_base58)) == private_value_base58
+        assert EcdsaVerifyingKey.encode(
+            *EcdsaVerifyingKey.decode(public_value_compressed_base58)) == public_value_compressed_base58

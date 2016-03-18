@@ -96,7 +96,7 @@ class Bigchain(object):
 
         signature = data.pop('signature')
         public_key_base58 = signed_transaction['transaction']['current_owner']
-        public_key = asymmetric.PublicKey(public_key_base58)
+        public_key = asymmetric.VerifyingKey(public_key_base58)
         return public_key.verify(util.serialize(data), signature)
 
     @monitor.timer('write_transaction', rate=bigchaindb.config['statsd']['rate'])
@@ -330,7 +330,7 @@ class Bigchain(object):
         # Calculate the hash of the new block
         block_data = util.serialize(block)
         block_hash = asymmetric.hash_data(block_data)
-        block_signature = asymmetric.PrivateKey(self.me_private).sign(block_data)
+        block_signature = asymmetric.SigningKey(self.me_private).sign(block_data)
 
         block = {
             'id': block_hash,
@@ -450,7 +450,7 @@ class Bigchain(object):
         }
 
         vote_data = util.serialize(vote)
-        signature = asymmetric.PrivateKey(self.me_private).sign(vote_data)
+        signature = asymmetric.SigningKey(self.me_private).sign(vote_data)
 
         vote_signed = {
             'node_pubkey': self.me,

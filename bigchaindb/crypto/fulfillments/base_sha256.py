@@ -1,7 +1,7 @@
 from abc import abstractmethod
 
 from bigchaindb.crypto.fulfillment import Fulfillment
-from bigchaindb.crypto.iostream import Hasher
+from bigchaindb.crypto.buffer import Hasher
 
 
 class BaseSha256Fulfillment(Fulfillment):
