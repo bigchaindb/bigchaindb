@@ -68,21 +68,21 @@ class Bigchain(object):
         return r.connect(host=self.host, port=self.port, db=self.dbname)
 
     @monitor.timer('create_transaction', rate=bigchaindb.config['statsd']['rate'])
-    def create_transaction(self, current_owner, new_owner, tx_input, operation, payload=None):
+    def create_transaction(self, current_owners, new_owners, tx_input, operation, payload=None):
         """Create a new transaction
 
         Refer to the documentation of ``bigchaindb.util.create_tx``
         """
 
-        return util.create_tx(current_owner, new_owner, tx_input, operation, payload)
+        return util.create_tx(current_owners, new_owners, tx_input, operation, payload)
 
-    def sign_transaction(self, transaction, private_key):
+    def sign_transaction(self, transaction, private_key, public_key=None):
         """Sign a transaction
 
         Refer to the documentation of ``bigchaindb.util.sign_tx``
         """
 
-        return util.sign_tx(transaction, private_key)
+        return util.sign_tx(transaction, private_key, public_key)
 
     def verify_signature(self, signed_transaction):
         """Verify the signature of a transaction.
@@ -90,16 +90,7 @@ class Bigchain(object):
         Refer to the documentation of ``bigchaindb.crypto.verify_signature``
         """
 
-        data = signed_transaction.copy()
-
-        # if assignee field in the transaction, remove it
-        if 'assignee' in data:
-            data.pop('assignee')
-
-        signature = data.pop('signature')
-        public_key_base58 = signed_transaction['transaction']['current_owner']
-        public_key = crypto.PublicKey(public_key_base58)
-        return public_key.verify(util.serialize(data), signature)
+        return util.verify_signature(signed_transaction)
 
     @monitor.timer('write_transaction', rate=bigchaindb.config['statsd']['rate'])
     def write_transaction(self, signed_transaction, durability='soft'):
@@ -109,7 +100,7 @@ class Bigchain(object):
         it has been validated by the nodes of the federation.
 
         Args:
-            singed_transaction (dict): transaction with the `signature` included.
+            signed_transaction (dict): transaction with the `signature` included.
 
         Returns:
             dict: database response
@@ -222,9 +213,10 @@ class Bigchain(object):
             list: list of `txids` currently owned by `owner`
         """
 
+        # TODO: fix for multisig. new_owners is a list!
         response = r.table('bigchain')\
                     .concat_map(lambda doc: doc['block']['transactions'])\
-                    .filter({'transaction': {'new_owner': owner}})\
+                    .filter({'transaction': {'new_owners': owner if isinstance(owner, list) else [owner]}})\
                     .pluck('id')['id']\
                     .run(self.conn)
         owned = []
@@ -261,7 +253,7 @@ class Bigchain(object):
         if transaction['transaction']['operation'] == 'CREATE':
             if transaction['transaction']['input']:
                 raise ValueError('A CREATE operation has no inputs')
-            if transaction['transaction']['current_owner'] not in self.federation_nodes + [self.me]:
+            if not(set(transaction['transaction']['current_owners']) <= set(self.federation_nodes + [self.me])):
                 raise exceptions.OperationError('Only federation nodes can use the operation `CREATE`')
 
         else:
@@ -274,9 +266,9 @@ class Bigchain(object):
                 raise exceptions.TransactionDoesNotExist('input `{}` does not exist in the bigchain'.format(
                     transaction['transaction']['input']))
 
-            if tx_input['transaction']['new_owner'] != transaction['transaction']['current_owner']:
+            if tx_input['transaction']['new_owners'] != transaction['transaction']['current_owners']:
                 raise exceptions.TransactionOwnerError('current_owner `{}` does not own the input `{}`'.format(
-                    transaction['transaction']['current_owner'], transaction['transaction']['input']))
+                    transaction['transaction']['current_owners'], transaction['transaction']['input']))
 
             # check if the input was already spent by a transaction other then this one.
             spent = self.get_spent(tx_input['id'])

@@ -27,19 +27,31 @@ class TestBigchainApi(object):
         tx = b.create_transaction('a', 'b', 'c', 'd')
 
         assert sorted(tx) == sorted(['id', 'transaction'])
-        assert sorted(tx['transaction']) == sorted(['current_owner', 'new_owner', 'input', 'operation',
+        assert sorted(tx['transaction']) == sorted(['current_owners', 'new_owners', 'input', 'operation',
                                                     'timestamp', 'data'])
 
     def test_create_transaction_with_unsupported_payload_raises(self, b):
         with pytest.raises(TypeError):
             b.create_transaction('a', 'b', 'c', 'd', payload=[])
 
+    def test_create_transaction_with_multiple_owners(self, b):
+        num_current_owners = 42
+        num_new_owners = 73
+        tx = b.create_transaction(['a']*num_current_owners, ['b']*num_new_owners, 'd', 'e')
+
+        assert sorted(tx) == sorted(['id', 'transaction'])
+        assert sorted(tx['transaction']) == sorted(['current_owners', 'new_owners', 'input', 'operation',
+                                                    'timestamp', 'data'])
+
+        assert len(tx['transaction']['current_owners']) == num_current_owners
+        assert len(tx['transaction']['new_owners']) == num_new_owners
+
     def test_transaction_hash(self, b):
         payload = {'cats': 'are awesome'}
         tx = b.create_transaction('a', 'b', 'c', 'd', payload)
         tx_calculated = {
-            'current_owner': 'a',
-            'new_owner': 'b',
+            'current_owners': ['a'],
+            'new_owners': ['b'],
             'input': 'c',
             'operation': 'd',
             'timestamp': tx['transaction']['timestamp'],
@@ -54,9 +66,36 @@ class TestBigchainApi(object):
     def test_transaction_signature(self, b):
         sk, vk = generate_key_pair()
         tx = b.create_transaction(vk, 'b', 'c', 'd')
+
+        with pytest.raises(KeyError) as excinfo:
+            b.verify_signature(tx)
         tx_signed = b.sign_transaction(tx, sk)
 
-        assert 'signature' in tx_signed
+        assert 'signatures' in tx_signed
+        assert b.verify_signature(tx_signed)
+
+    def test_transaction_signature_multiple_owners(self, b):
+        num_current_owners = 42
+        sk, vk = [], []
+        for _ in range(num_current_owners):
+            sk_, vk_ = generate_key_pair()
+            sk.append(sk_)
+            vk.append(vk_)
+        tx = b.create_transaction(vk, 'b', 'c', 'd')
+        tx_signed = tx
+
+        with pytest.raises(KeyError) as excinfo:
+            b.verify_signature(tx_signed)
+
+        for i in range(num_current_owners):
+            if i > 0:
+                assert b.verify_signature(tx_signed) is False
+            tx_signed = b.sign_transaction(tx_signed, sk[i], vk[i])
+
+        assert 'signatures' in tx_signed
+        assert 'public_key' in tx_signed['signatures'][0]
+        assert 'signature' in tx_signed['signatures'][0]
+        assert len(tx_signed['signatures']) == num_current_owners
         assert b.verify_signature(tx_signed)
 
     def test_serializer(self, b):
@@ -264,7 +303,7 @@ class TestTransactionValidation(object):
         with pytest.raises(exceptions.TransactionOwnerError) as excinfo:
             b.validate_transaction(tx)
 
-        assert excinfo.value.args[0] == 'current_owner `a` does not own the input `{}`'.format(valid_input)
+        assert excinfo.value.args[0] == 'current_owner `[\'a\']` does not own the input `{}`'.format(valid_input)
         assert b.is_valid_transaction(tx) is False
 
     @pytest.mark.usefixtures('inputs')
