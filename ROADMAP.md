@@ -68,8 +68,8 @@ Note: Below, #345 refers to Issue #345 in the BigchainDB repository on GitHub. #
 * Drivers/SDKs for more client-side languages (e.g. JavaScript, Ruby, Java)
 
 
-## Public Testnet and Public BigchainDB
-* Deploy a 3-node public testnet in a data center, open to all external users, refreshing daily
+## Public Sandbox Testnet and Public BigchainDB
+* Deploy a 3-node Public Sandbox Testnet in a data center, open to all external users, refreshing daily
 * Deploy Public BigchaindB Testnet with more than 3 nodes and with nodes more globally-distributed
 * Public BigchainDB governance/voting system
 * Transaction (or usage) accounting
