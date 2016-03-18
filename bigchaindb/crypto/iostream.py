@@ -96,7 +96,9 @@ class Writer:
 
 class Hasher(Writer):
 
-    hash = None
+    def __init__(self):
+        self.hash = None
+        super().__init__()
 
     def __init__(self, algorithm):
         if algorithm == 'sha256':
@@ -149,7 +151,9 @@ class Hasher(Writer):
 
 
 class Predictor:
-    size = 0
+
+    def __init__(self):
+        self.size = 0
 
     def write_var_uint(self, val):
         """

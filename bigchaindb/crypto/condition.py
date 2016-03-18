@@ -4,7 +4,7 @@ from abc import ABCMeta
 
 from six import string_types
 
-from bigchaindb.crypto.iostream import base64_add_padding, base64_remove_padding
+from bigchaindb.crypto.iostream import base64_add_padding, base64_remove_padding, Writer, Reader
 
 CONDITION_REGEX = r'^cc:1:[1-9a-f][0-9a-f]{0,2}:[a-zA-Z0-9_-]{43}:[1-9][0-9]{0,50}$'
 
@@ -44,6 +44,27 @@ class Condition(metaclass=ABCMeta):
         condition.bitmask = int(pieces[2])
         condition.hash = base64.urlsafe_b64decode(base64_add_padding(pieces[3]))
         condition.max_fulfillment_length = int(pieces[4])
+
+        return condition
+
+    @staticmethod
+    def from_binary(reader):
+        """
+        * Create a Condition object from a binary blob.
+        *
+        * This method will parse a stream of binary data and construct a
+        * corresponding Condition object.
+        *
+        Args:
+            reader (Reader): Binary stream implementing the Reader interface
+        Returns:
+            Condition: Resulting object
+        """
+        reader = Reader.from_source(reader)
+
+        # Instantiate condition
+        condition = Condition()
+        condition.parse_binary(reader)
 
         return condition
 
@@ -152,12 +173,53 @@ class Condition(metaclass=ABCMeta):
         Turns the condition into a URI containing only URL-safe characters. This
         format is convenient for passing around conditions in URLs, JSON and other text-based formats.
 
+        "cc:" BASE10(VERSION) ":" BASE16(TYPE_BITMASK) ":" BASE64URL(HASH) ":" BASE10(MAX_FULFILLMENT_LENGTH)
+
         Returns:
             string: Condition as a URI
         """
 
-        return 'cc:1:{}:{}:{}'.format(self.bitmask,
-                                      base64_remove_padding(
-                                          base64.urlsafe_b64encode(self.hash)
-                                      ).decode('utf-8'),
-                                      self.max_fulfillment_length)
+        return 'cc:1:{:x}:{}:{}'.format(self.bitmask,
+                                        base64_remove_padding(
+                                            base64.urlsafe_b64encode(self.hash)
+                                        ).decode('utf-8'),
+                                        self.max_fulfillment_length)
+
+    def serialize_binary(self):
+        """
+        Serialize condition to a buffer.
+
+        Encodes the condition as a string of bytes. This is used internally for
+        encoding subconditions, but can also be used to passing around conditions
+        in a binary protocol for instance.
+
+        CONDITION =
+            VARUINT TYPE_BITMASK
+            VARBYTES HASH
+            VARUINT MAX_FULFILLMENT_LENGTH
+
+        Return:
+            Serialized condition
+        """
+        writer = Writer()
+        writer.write_var_uint(self.bitmask)
+        writer.write_var_bytes(self.hash)
+        writer.write_var_uint(self.max_fulfillment_length)
+        return b''.join(writer.components)
+
+
+    def parse_binary(self, reader):
+        """
+        * Parse any condition in binary format.
+        *
+        * Will populate the condition object with data from the provided binary
+        * stream.
+        *
+        Args:
+             reader (Reader): Binary stream containing the condition.
+        """
+        self.bitmask = reader.read_var_uint()
+
+        # TODO: Ensure bitmask is supported?
+        self.hash = reader.read_var_bytes()
+        self.max_fulfillment_length = reader.read_var_uint()

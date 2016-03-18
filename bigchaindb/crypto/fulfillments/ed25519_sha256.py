@@ -8,11 +8,13 @@ from bigchaindb.crypto.iostream import Predictor
 class Ed25519Sha256Fulfillment(BaseSha256Fulfillment):
 
     _bitmask = 0x08
-    _message_prefix = None
-    _max_dynamic_message_length = None
-    _public_key = None
-    _message = None
-    _signature = None
+
+    def __init__(self):
+        self._message_prefix = None
+        self._max_dynamic_message_length = None
+        self._public_key = None
+        self._message = None
+        self._signature = None
 
     @property
     def message_prefix(self):
@@ -155,7 +157,6 @@ class Ed25519Sha256Fulfillment(BaseSha256Fulfillment):
         self.max_dynamic_message_length = reader.read_var_uint()
         self.message = reader.read_var_bytes()
         self.signature = reader.read_var_bytes()
-        print(self.signature)
 
     def write_payload(self, writer):
         """

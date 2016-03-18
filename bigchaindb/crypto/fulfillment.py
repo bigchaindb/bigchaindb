@@ -54,6 +54,30 @@ class Fulfillment(metaclass=ABCMeta):
 
         return fulfillment
 
+    @staticmethod
+    def from_binary(reader):
+        """
+        Create a Fulfillment object from a binary blob.
+
+        This method will parse a stream of binary data and construct a
+        corresponding Fulfillment object.
+
+        Args:
+            reader (Reader): Binary stream implementing the Reader interface
+        Returns:
+            Fulfillment: Resulting object
+        """
+        reader = Reader.from_source(reader)
+
+        from bigchaindb.crypto.bitmark_registry import BitmaskRegistry
+
+        cls = BitmaskRegistry.get_class_from_typebit(reader.read_var_uint())
+
+        fulfillment = cls()
+        fulfillment.parse_payload(reader)
+
+        return fulfillment
+
     @property
     def bitmask(self):
         """
@@ -99,15 +123,37 @@ class Fulfillment(metaclass=ABCMeta):
         format is convenient for passing around fulfillments in URLs, JSON and
         other text-based formats.
 
+        "cf:" BASE10(VERSION) ":" BASE16(TYPE_BIT) ":" BASE64URL(FULFILLMENT_PAYLOAD)
+
         Return:
              string: Fulfillment as a URI
         """
-        return 'cf:1:{}:{}'.format(self.bitmask,
-                                   base64_remove_padding(
-                                       base64.urlsafe_b64encode(
-                                           b''.join(self.serialize_payload().components)
-                                       )
-                                   ).decode('utf-8'))
+        return 'cf:1:{:x}:{}'.format(self._bitmask,
+                                     base64_remove_padding(
+                                         base64.urlsafe_b64encode(
+                                             b''.join(self.serialize_payload().components)
+                                         )
+                                     ).decode('utf-8'))
+
+    def serialize_binary(self):
+        """
+        Serialize fulfillment to a buffer.
+
+        Encodes the fulfillment as a string of bytes. This is used internally for
+        encoding subfulfillments, but can also be used to passing around
+        fulfillments in a binary protocol for instance.
+
+        FULFILLMENT =
+            VARUINT TYPE_BIT
+            FULFILLMENT_PAYLOAD
+
+        Return:
+            Serialized fulfillment
+        """
+        writer = Writer()
+        writer.write_var_uint(self.bitmask)
+        self.write_payload(writer)
+        return b''.join(writer.components)
 
     def serialize_payload(self):
         """
