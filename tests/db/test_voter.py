@@ -1,12 +1,12 @@
-import pytest
-import time
-import rethinkdb as r
 import multiprocessing as mp
+import time
+
+import pytest
+import rethinkdb as r
 
 from bigchaindb import util
-
+from bigchaindb.crypto.asymmetric import PublicKey, generate_key_pair
 from bigchaindb.voter import Voter, BlockStream
-from bigchaindb.crypto import PublicKey, generate_key_pair
 
 
 class TestBigchainVoter(object):

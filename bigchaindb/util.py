@@ -1,12 +1,11 @@
-
 import json
-import time
 import multiprocessing as mp
+import time
 from datetime import datetime
 
 import bigchaindb
 from bigchaindb import exceptions
-from bigchaindb.crypto import PrivateKey, PublicKey, hash_data
+from bigchaindb.crypto.asymmetric import PrivateKey, PublicKey, hash_data
 
 
 class ProcessGroup(object):

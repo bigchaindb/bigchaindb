@@ -1,8 +1,9 @@
 import json
 
 import pytest
-from bigchaindb import crypto
+
 from bigchaindb import util
+from bigchaindb.crypto import asymmetric
 
 
 TX_ENDPOINT = '/api/v1/transactions/'
@@ -17,7 +18,7 @@ def test_get_transaction_endpoint(b, client, user_public_key):
 
 
 def test_post_create_transaction_endpoint(b, client):
-    keypair = crypto.generate_key_pair()
+    keypair = asymmetric.generate_key_pair()
 
     tx = util.create_and_sign_tx(keypair[0], keypair[1], keypair[1], None, 'CREATE')
 
@@ -27,8 +28,8 @@ def test_post_create_transaction_endpoint(b, client):
 
 
 def test_post_transfer_transaction_endpoint(b, client):
-    from_keypair = crypto.generate_key_pair()
-    to_keypair = crypto.generate_key_pair()
+    from_keypair = asymmetric.generate_key_pair()
+    to_keypair = asymmetric.generate_key_pair()
 
     tx = util.create_and_sign_tx(from_keypair[0], from_keypair[1], from_keypair[1], None, 'CREATE')
     res = client.post(TX_ENDPOINT, data=json.dumps(tx))
