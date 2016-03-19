@@ -34,6 +34,12 @@ class EcdsaSigningKey(SigningKey):
         signature = signer.finalize()
         return binascii.hexlify(signature).decode('utf-8')
 
+    def get_verifying_key(self):
+        raise NotImplementedError
+
+    def to_ascii(self, prefix='', encoding='base58'):
+        raise NotImplementedError
+
     @staticmethod
     def encode(private_value):
         """
@@ -98,6 +104,9 @@ class EcdsaVerifyingKey(VerifyingKey):
             return False
 
         return True
+
+    def to_ascii(self, prefix='', encoding='base58'):
+        raise NotImplementedError
 
     @staticmethod
     def encode(public_value_x, public_value_y):

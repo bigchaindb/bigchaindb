@@ -23,6 +23,10 @@ class SigningKey(metaclass=ABCMeta):
     def get_verifying_key(self):
         raise NotImplementedError
 
+    @abstractmethod
+    def to_ascii(self, prefix, encoding):
+        raise NotImplementedError
+
     @staticmethod
     @abstractmethod
     def encode(private_value):
@@ -50,6 +54,10 @@ class VerifyingKey(metaclass=ABCMeta):
 
     @abstractmethod
     def verify(self, data, signature):
+        raise NotImplementedError
+
+    @abstractmethod
+    def to_ascii(self, prefix, encoding):
         raise NotImplementedError
 
     @staticmethod
