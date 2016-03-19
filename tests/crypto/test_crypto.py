@@ -53,6 +53,20 @@ class TestBigchainCryptoED25519(object):
         vk = Ed25519VerifyingKey(Ed25519VerifyingKey.encode(self.PUBLIC_B64_ILP))
         assert vk.verify(message, sk.sign(message)) is False
 
+    def test_to_ascii(self):
+        sk = Ed25519SigningKey(self.PRIVATE_B58)
+        assert sk.to_ascii(encoding='base58') == self.PRIVATE_B58
+        assert sk.to_ascii(encoding='base64') == self.PRIVATE_B64.rstrip(b'=')
+        vk = Ed25519VerifyingKey(self.PUBLIC_B58)
+        assert vk.to_ascii(encoding='base58') == self.PUBLIC_B58
+        assert vk.to_ascii(encoding='base64') == self.PUBLIC_B64.rstrip(b'=')
+
+    def test_get_verifying_key(self):
+        sk = Ed25519SigningKey(self.PRIVATE_B58)
+        vk = Ed25519VerifyingKey(self.PUBLIC_B58)
+        vk_from_sk = sk.get_verifying_key()
+        assert vk.to_bytes() == vk_from_sk.to_bytes()
+
     def test_valid_condition_valid_signature_ilp(self):
         vk = Ed25519VerifyingKey(Ed25519VerifyingKey.encode(self.PUBLIC_B64_ILP))
         msg = self.MSG_SHA512_ILP

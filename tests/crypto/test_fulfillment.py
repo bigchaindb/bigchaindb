@@ -14,11 +14,20 @@ from bigchaindb.crypto.fulfillments.threshold_sha256 import ThresholdSha256Fulfi
 
 class TestBigchainILPSha256Condition:
     CONDITION_SHA256_ILP = 'cc:1:1:47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU:1'
+    CONDITION_SHA256_HASH = b'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
 
     def test_deserialize_condition(self):
         example_condition = self.CONDITION_SHA256_ILP
         condition = Condition.from_uri(example_condition)
+        print(binascii.hexlify(condition.hash))
         assert condition.serialize_uri() == self.CONDITION_SHA256_ILP
+
+    def test_create_condition(self):
+        sha256condition = Condition()
+        sha256condition.bitmask = Sha256Fulfillment._bitmask
+        sha256condition.hash = binascii.unhexlify(self.CONDITION_SHA256_HASH)
+        sha256condition.max_fulfillment_length = 1
+        assert sha256condition.serialize_uri() == self.CONDITION_SHA256_ILP
 
 
 class TestBigchainILPSha256Fulfillment:
@@ -38,6 +47,8 @@ class TestBigchainILPSha256Fulfillment:
         assert fulfillment.serialize_uri() == self.FULFILLMENT_SHA256_ILP
         assert fulfillment.condition.serialize_uri() == condition.serialize_uri()
         assert fulfillment.validate()
+        assert fulfillment.validate() \
+            and fulfillment.condition.serialize_uri() == condition.serialize_uri()
 
     def test_condition_from_fulfillment(self):
         fulfillment = Sha256Fulfillment()

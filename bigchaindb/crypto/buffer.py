@@ -432,4 +432,4 @@ def base64_remove_padding(data):
     """
     if isinstance(data, string_types):
         data = data.encode('utf-8')
-    return data.replace(b'=', b'')
+    return data.rstrip(b'=')

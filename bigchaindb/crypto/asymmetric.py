@@ -19,6 +19,10 @@ class SigningKey(metaclass=ABCMeta):
         """
         raise NotImplementedError
 
+    @abstractmethod
+    def get_verifying_key(self):
+        raise NotImplementedError
+
     @staticmethod
     @abstractmethod
     def encode(private_value):

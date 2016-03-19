@@ -23,6 +23,16 @@ class Ed25519SigningKey(ed25519.SigningKey, SigningKey):
         private_base64 = self.decode(key)
         super().__init__(private_base64, encoding='base64')
 
+    def get_verifying_key(self):
+        vk = super().get_verifying_key()
+        return Ed25519VerifyingKey(base58.b58encode(vk.to_bytes()))
+
+    def to_ascii(self, prefix="", encoding='base58'):
+        if encoding == 'base58':
+            return base58.b58encode(self.to_seed()).encode('ascii').decode('ascii').rstrip("=")
+        else:
+            return super().to_ascii(prefix=prefix, encoding=encoding)
+
     def sign(self, data, encoding="base64"):
         """
         Sign data with private key
@@ -73,6 +83,12 @@ class Ed25519VerifyingKey(ed25519.VerifyingKey, VerifyingKey):
             return False
 
         return True
+
+    def to_ascii(self, prefix="", encoding='base58'):
+        if encoding == 'base58':
+            return base58.b58encode(self.vk_s).encode('ascii').decode('ascii').rstrip("=")
+        else:
+            return super().to_ascii(prefix=prefix, encoding=encoding)
 
     @staticmethod
     def encode(public_base64):
