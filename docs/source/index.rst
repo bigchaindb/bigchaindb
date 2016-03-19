@@ -24,6 +24,7 @@ Table of Contents
    models
    json-serialization
    developer-interface
+   consensus
    monitoring
    licenses
    contributing
