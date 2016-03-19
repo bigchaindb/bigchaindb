@@ -41,7 +41,7 @@ class AbstractConsensusRules(metaclass=ABCMeta):
             block (dict): block to validate.
 
         Returns:
-            The block if the block is valid else it raises and exception
+            The block if the block is valid else it raises an exception
             describing the reason why the block is invalid.
 
         Raises:
@@ -177,7 +177,7 @@ class BaseConsensusRules(AbstractConsensusRules):
             block (dict): block to validate.
 
         Returns:
-            The block if the block is valid else it raises and exception
+            The block if the block is valid else it raises an exception
             describing the reason why the block is invalid.
 
         Raises:
