@@ -17,7 +17,10 @@ import json
 import logging
 import collections
 
+from pkg_resources import iter_entry_points, ResolutionError
+
 import bigchaindb
+from bigchaindb.consensus import AbstractConsensusRules
 
 logger = logging.getLogger(__name__)
 CONFIG_DEFAULT_PATH = os.environ.setdefault(
@@ -100,3 +103,38 @@ def autoconfigure():
     except FileNotFoundError:
         logger.warning('Cannot find your config file. Run `bigchaindb configure` to create one')
 
+
+def load_consensus_plugin(name=None):
+    """Find and load the chosen consensus plugin.
+
+    Args:
+        name (string): the name of the entry_point, as advertised in the
+            setup.py of the providing package.
+
+    Returns:
+        an uninstantiated subclass of ``bigchaindb.consensus.AbstractConsensusRules``
+    """
+    if not name:
+        name = bigchaindb.config.get('consensus_plugin', 'default')
+
+    # TODO: This will return the first plugin with group `bigchaindb.consensus`
+    #       and name `name` in the active WorkingSet.
+    #       We should probably support Requirements specs in the config, e.g.
+    #       consensus_plugin: 'my-plugin-package==0.0.1;default'
+    plugin = None
+    for entry_point in iter_entry_points('bigchaindb.consensus', name):
+        plugin = entry_point.load()
+
+    # No matching entry_point found
+    if not plugin:
+        raise ResolutionError(
+            'No plugin found in group `bigchaindb.consensus` with name `{}`'.
+            format(name))
+
+    # Is this strictness desireable?
+    # It will probably reduce developer headaches in the wild.
+    if not issubclass(plugin, (AbstractConsensusRules)):
+        raise TypeError("object of type '{}' does not implement `bigchaindb."
+                        "consensus.AbstractConsensusRules`".format(type(plugin)))
+
+    return plugin
