@@ -15,7 +15,8 @@ class Client:
     In the future, a Client might connect to >1 hosts.
     """
 
-    def __init__(self, public_key=None, private_key=None, api_endpoint=None):
+    def __init__(self, public_key=None, private_key=None, api_endpoint=None,
+                 consensus_plugin=None):
         """Initialize the Client instance
 
         There are three ways in which the Client instance can get its parameters.
@@ -28,8 +29,11 @@ class Client:
         Args:
             public_key (str): the base58 encoded public key for the ECDSA secp256k1 curve.
             private_key (str): the base58 encoded private key for the ECDSA secp256k1 curve.
-            host (str): hostname where the rethinkdb is running.
-            port (int): port in which rethinkb is running (usually 28015).
+            api_endpoint (str): a URL where rethinkdb is running.
+                format: scheme://hostname:port
+            consensus_plugin (str): the registered name of your installed
+                consensus plugin. The `core` plugin is built into BigchainDB;
+                others must be installed via pip.
         """
 
         config_utils.autoconfigure()
@@ -37,6 +41,7 @@ class Client:
         self.public_key = public_key or bigchaindb.config['keypair']['public']
         self.private_key = private_key or bigchaindb.config['keypair']['private']
         self.api_endpoint = api_endpoint or bigchaindb.config['api_endpoint']
+        self.consensus = config_utils.load_consensus_plugin(consensus_plugin)
 
         if not self.public_key or not self.private_key:
             raise exceptions.KeypairNotFoundException()
@@ -51,8 +56,15 @@ class Client:
             The transaction pushed to the Federation.
         """
 
-        tx = util.create_tx(self.public_key, self.public_key, None, operation='CREATE', payload=payload)
-        signed_tx = util.sign_tx(tx, self.private_key)
+        tx = self.consensus.create_transaction(
+            current_owner=self.public_key,
+            new_owner=self.public_key,
+            tx_input=None,
+            operation='CREATE',
+            payload=payload)
+
+        signed_tx = self.consensus.sign_transaction(
+            tx, private_key=self.private_key)
         return self._push(signed_tx)
 
     def transfer(self, new_owner, tx_input, payload=None):
@@ -67,8 +79,15 @@ class Client:
             The transaction pushed to the Federation.
         """
 
-        tx = util.create_tx(self.public_key, new_owner, tx_input, operation='TRANSFER', payload=payload)
-        signed_tx = util.sign_tx(tx, self.private_key)
+        tx = self.consensus.create_transaction(
+            current_owner=self.public_key,
+            new_owner=new_owner,
+            tx_input=tx_input,
+            operation='TRANSFER',
+            payload=payload)
+
+        signed_tx = self.consensus.sign_transaction(
+            tx, private_key=self.private_key)
         return self._push(signed_tx)
 
     def _push(self, tx):
