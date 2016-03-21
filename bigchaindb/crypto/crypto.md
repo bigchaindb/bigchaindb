@@ -316,7 +316,10 @@ print(ed25519_fulfillment.validate())
 # prints True
 
 print(ed25519_fulfillment.serialize_uri())
-# prints 'cf:1:8:IOwXK5OtXlY79JMscOEkUDTDVGfvLv1NZOv4GWg0Z-K_DEhlbGxvIHdvcmxkISAVIENvbmRpdGlvbnMgYXJlIGhlcmUhQENbql531PbCJlRUvKjP56k0XKJMOrIGo2F66ueuTtRnYrJB2t2ZttdfXM4gzD_87eH1nZTpu4rTkAx81hSdpwI'
+# prints 
+#  'cf:1:8:IOwXK5OtXlY79JMscOEkUDTDVGfvLv1NZOv4GWg0Z-K_DEhlbGxvIHdvcmxkI
+#   SAVIENvbmRpdGlvbnMgYXJlIGhlcmUhQENbql531PbCJlRUvKjP56k0XKJMOrIGo2F66u
+#   euTtRnYrJB2t2ZttdfXM4gzD_87eH1nZTpu4rTkAx81hSdpwI'
 print (ed25519_fulfillment.condition.serialize_uri())
 
 # Parse a fulfillment URI
@@ -377,32 +380,50 @@ sha256_fulfillment = Sha256Fulfillment.from_uri('cf:1:1:AA')
 ed25519_fulfillment = Ed25519Sha256Fulfillment.from_uri('cf:1:8:IOwXK5OtXlY79JMscOEkUDTDVGfvLv1NZOv4GWg0Z-K_DEhlbGxvIHdvcmxkISAVIENvbmRpdGlvbnMgYXJlIGhlcmUhQENbql531PbCJlRUvKjP56k0XKJMOrIGo2F66ueuTtRnYrJB2t2ZttdfXM4gzD_87eH1nZTpu4rTkAx81hSdpwI')
 
 # Create a threshold condition
-theshold_fulfillment = ThresholdSha256Fulfillment()
-theshold_fulfillment.add_subfulfillment(sha256_fulfillment)
-theshold_fulfillment.add_subfulfillment(ed25519_fulfillment)
-theshold_fulfillment.threshold = 1
-print(theshold_fulfillment.condition.serialize_uri())
+threshold_fulfillment = ThresholdSha256Fulfillment()
+threshold_fulfillment.add_subfulfillment(sha256_fulfillment)
+threshold_fulfillment.add_subfulfillment(ed25519_fulfillment)
+threshold_fulfillment.threshold = 1  # OR gate 
+print(threshold_fulfillment.condition.serialize_uri())
 # prints 'cc:1:d:9DdkQtOl2m9yjqZzCg6ck5b2zM3tAPLlJMaHsKkszIA:114'
 
 # Compile a threshold fulfillment
-theshold_fulfillment_uri = theshold_fulfillment.serialize_uri()
+threshold_fulfillment_uri = threshold_fulfillment.serialize_uri()
 # Note: If there are more than enough fulfilled subconditions, shorter
 # fulfillments will be chosen over longer ones.
-print(theshold_fulfillment_uri)
+print(threshold_fulfillment_uri)
 # prints 'cf:1:4:AQEBAQABAQggqQINW2um59C4DB9JSVXH1igqAmaYGGqryllHUgCpfPVx'
 
 # Validate fulfillment
-print(theshold_fulfillment.validate())
+print(threshold_fulfillment.validate())
 # prints True
 
 # Parse the fulfillment
-reparsed_fulfillment = ThresholdSha256Fulfillment.from_uri(theshold_fulfillment_uri)
+reparsed_fulfillment = \
+    ThresholdSha256Fulfillment.from_uri(threshold_fulfillment_uri)
 print(reparsed_fulfillment.validate())
 # prints True
 
-# Increase threshold
-theshold_fulfillment.threshold = 3
-print(theshold_fulfillment.validate())
+# Increase threshold to a 3-port AND gate
+threshold_fulfillment.threshold = 3
+print(threshold_fulfillment.validate())
 # prints False
 
+# Create a nested threshold condition
+# VALID = SHA and DSA and (DSA or DSA) 
+nested_fulfillment = ThresholdSha256Fulfillment()
+nested_fulfillment.add_subfulfillment(ed25519_fulfillment)
+nested_fulfillment.add_subfulfillment(ed25519_fulfillment)
+nested_fulfillment.threshold = 1  # OR gate 
+
+threshold_fulfillment.add_subfulfillment(nested_fulfillment)
+print(threshold_fulfillment.serialize_uri())
+# prints 
+#  'cf:1:4:AwMBAQABCCDsFyuTrV5WO_STLHDhJFA0w1Rn7y79TWTr-BloNGfivwxIZWxsby
+#   B3b3JsZCEgFSBDb25kaXRpb25zIGFyZSBoZXJlIUBDW6ped9T2wiZUVLyoz-epNFyiTDq
+#   yBqNheurnrk7UZ2KyQdrdmbbXX1zOIMw__O3h9Z2U6buK05AMfNYUnacCAQQBAQEIIOwX
+#   K5OtXlY79JMscOEkUDTDVGfvLv1NZOv4GWg0Z-K_DEhlbGxvIHdvcmxkISAVIENvbmRpd
+#   GlvbnMgYXJlIGhlcmUhQENbql531PbCJlRUvKjP56k0XKJMOrIGo2F66ueuTtRnYrJB2t
+#   2ZttdfXM4gzD_87eH1nZTpu4rTkAx81hSdpwIBAQggqQINW2um59C4DB9JSVXH1igqAma
+#   YGGqryllHUgCpfPVxAA'
 ```
