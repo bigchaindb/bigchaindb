@@ -14,6 +14,7 @@ Table of Contents
 
    introduction
    installing-server
+   running-unit-tests
    python-server-api-examples
    bigchaindb-cli
    http-client-server-api

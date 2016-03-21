@@ -63,6 +63,9 @@ setup(
             'bigchaindb=bigchaindb.commands.bigchain:main',
             'bigchaindb-benchmark=bigchaindb.commands.bigchain_benchmark:main'
         ],
+        'bigchaindb.consensus': [
+            'default=bigchaindb.consensus:BaseConsensusRules'
+        ]
     },
     install_requires=[
         'rethinkdb==2.2.0.post4',
