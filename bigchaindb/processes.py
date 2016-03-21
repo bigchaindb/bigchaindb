@@ -62,8 +62,15 @@ class Processes(object):
                 pass
 
     def start(self):
+        logger.info('Initializing BigchainDB...')
+
         # instantiate block and voter
         block = Block(self.q_new_transaction)
+
+        # start the web api
+        webapi = server.create_app()
+        p_webapi = mp.Process(name='webapi', target=webapi.run, kwargs={'host': 'localhost'})
+        p_webapi.start()
 
         # initialize the processes
         p_map_bigchain = mp.Process(name='bigchain_mapper', target=self.map_bigchain)
@@ -82,8 +89,8 @@ class Processes(object):
         logger.info('starting voter')
         p_voter.start()
 
-        # start the web api
-        webapi = server.create_app()
-        p_webapi = mp.Process(name='webapi', target=webapi.run, kwargs={'host': 'localhost'})
-        p_webapi.start()
-
+        # start message
+        block.initialized.wait()
+        p_voter.initialized.wait()
+        logger.info('Initialization complete. BigchainDB ready and waiting for events.')
+        logger.info('You can send events through the API documented at http://docs.bigchaindb.apiary.io/')

@@ -18,4 +18,3 @@ def create_app(debug=False):
     app.config['bigchain'] = Bigchain()
     app.register_blueprint(views.basic_views, url_prefix='/api/v1')
     return app
-
