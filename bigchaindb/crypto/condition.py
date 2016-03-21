@@ -2,6 +2,7 @@ import base64
 import re
 from abc import ABCMeta
 
+import binascii
 from six import string_types
 
 from bigchaindb.crypto.buffer import base64_add_padding, base64_remove_padding, Writer, Reader
@@ -41,7 +42,7 @@ class Condition(metaclass=ABCMeta):
             raise ValueError('Invalid condition format')
 
         condition = Condition()
-        condition.bitmask = int(pieces[2])
+        condition.bitmask = int(pieces[2], 16)
         condition.hash = base64.urlsafe_b64decode(base64_add_padding(pieces[3]))
         condition.max_fulfillment_length = int(pieces[4])
 

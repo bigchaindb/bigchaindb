@@ -17,15 +17,25 @@ class SigningKey(metaclass=ABCMeta):
         Args:
             data:
         """
-        raise NotImplementedError
 
     @abstractmethod
     def get_verifying_key(self):
-        raise NotImplementedError
+        """
+        Get the associated verifying key
+
+        Returns:
+            A VerifyingKey object
+        """
 
     @abstractmethod
     def to_ascii(self, prefix, encoding):
-        raise NotImplementedError
+        """
+        Encode the external value
+
+        Args:
+            prefix:
+            encoding:
+        """
 
     @staticmethod
     @abstractmethod
@@ -36,7 +46,6 @@ class SigningKey(metaclass=ABCMeta):
         Args:
             private_value:
         """
-        raise NotImplementedError
 
     @staticmethod
     @abstractmethod
@@ -54,11 +63,26 @@ class VerifyingKey(metaclass=ABCMeta):
 
     @abstractmethod
     def verify(self, data, signature):
-        raise NotImplementedError
+        """
+        Check the if the signature matches the data and this verifyingkey
+
+        Args:
+            data:
+            signature:
+
+        Returns:
+            boolean:
+        """
 
     @abstractmethod
     def to_ascii(self, prefix, encoding):
-        raise NotImplementedError
+        """
+        Encode the external value
+
+        Args:
+            prefix:
+            encoding:
+        """
 
     @staticmethod
     @abstractmethod
@@ -69,7 +93,6 @@ class VerifyingKey(metaclass=ABCMeta):
         Args:
             public_value
         """
-        raise NotImplementedError
 
     @staticmethod
     @abstractmethod
@@ -80,7 +103,6 @@ class VerifyingKey(metaclass=ABCMeta):
         Args:
             public_base58 (base58):
         """
-        raise NotImplementedError
 
 
 def hash_data(data):
