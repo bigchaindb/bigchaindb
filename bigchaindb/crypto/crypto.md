@@ -1,7 +1,7 @@
 # Crypto Conditions
 
 This spec is from the [**Interledger Protocol (ILP)**]
-(https://github.com/interledger/five-bells-condition/tree/feature/binary-merkle-v2)
+(https://interledger.org/five-bells-condition/spec.html)
 
 ## Motivation
 
@@ -248,7 +248,7 @@ print(sha256fulfillment.validate() and \
 
 RSA-SHA-256 is assigned the type bit 2<sup>1</sup> = 0x02.
 
-**Warning:** not (yet) implemented in BigchainDB, for info see the [**ILP specification**](https://github.com/interledger/five-bells-condition/blob/feature/binary-merkle-v2/docs/spec.md)
+**Warning:** not (yet) implemented in BigchainDB, for info see the [**ILP specification**](https://interledger.org/five-bells-condition/spec.html)
 
 
 ## ED25519-SHA-256
@@ -284,7 +284,7 @@ The `MESSAGE_ID` represents an identifier for the message. All messages in a cry
 
 The message to be signed is the concatenation of the `FIXED_PREFIX` and `DYNAMIC_MESSAGE`.
 
-The `MESSAGE_ID`, `FIXED_PREFIX`, `DYNAMIC_MESSAGE_LENGTH` and `DYNAMIC_MESSAGE` fields have the same meaning as in the [**RSA-SHA-256 condition type**](https://github.com/interledger/five-bells-condition/blob/feature/binary-merkle-v2/docs/spec.md).
+The `MESSAGE_ID`, `FIXED_PREFIX`, `DYNAMIC_MESSAGE_LENGTH` and `DYNAMIC_MESSAGE` fields have the same meaning as in the [**RSA-SHA-256 condition type**](https://interledger.org/five-bells-condition/spec.html).
 
 ### Usage
 
@@ -297,7 +297,7 @@ sk = Ed25519SigningKey(b'9qLvREC54mhKYivr88VpckyVWdAFmifJpGjbvV5AiTRs')
 vk = sk.get_verifying_key()
 
 # Create an ED25519-SHA256 condition
-ed25519_fulfillment = Ed25519Sha256Fulfillment()
+ed25519_fulfill`nt = Ed25519Sha256Fulfillment()
 ed25519_fulfillment.public_key = vk
 ed25519_fulfillment.message_prefix = 'Hello world!'
 ed25519_fulfillment.max_dynamic_message_length = 32  # defaults to 0

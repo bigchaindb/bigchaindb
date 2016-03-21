@@ -1,4 +1,4 @@
-from bigchaindb.crypto.buffer import MAX_SAFE_INTEGER
+from bigchaindb.crypto.buffer import MAX_SAFE_INTEGER_JS
 
 
 class BitmaskRegistry:
@@ -18,7 +18,7 @@ class BitmaskRegistry:
             Class implementing the given fulfillment type.
         """
         # Determine type of condition
-        if bitmask > MAX_SAFE_INTEGER:
+        if bitmask > MAX_SAFE_INTEGER_JS:
             raise ValueError('Bitmask {} is not supported'.format(bitmask))
 
         for registered_type in BitmaskRegistry.registered_types:

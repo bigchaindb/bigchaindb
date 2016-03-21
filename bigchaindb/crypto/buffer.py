@@ -12,7 +12,9 @@ MSBALL = ~REST
 INT = 2 ** 31
 
 # https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_SAFE_INTEGER
-MAX_SAFE_INTEGER = 2 ** 53 - 1
+# we don't use sys.maxint (= 2 ** 63 - 1) as this spec is inline with the ILP JavaScript reference implementation
+# see https://interledger.org/
+MAX_SAFE_INTEGER_JS = 2 ** 53 - 1
 
 
 class UnsignedLEB128:
@@ -24,7 +26,7 @@ class UnsignedLEB128:
     seven least significant bits of the number represented.
 
     see: https://en.wikipedia.org/wiki/LEB128 (ULEB128)
-    see http://grokbase.com/t/python/python-list/112e5jpc16/encoding
+    see: http://grokbase.com/t/python/python-list/112e5jpc16/encoding
 
     """
 
@@ -166,7 +168,7 @@ class Predictor:
             self.size += 1
         elif val < 0:
             raise ValueError('Variable length integer cannot be negative')
-        elif val > MAX_SAFE_INTEGER:
+        elif val > MAX_SAFE_INTEGER_JS:
             raise ValueError('Variable length integer too large')
         else:
             # Calculate number of bits divided by seven

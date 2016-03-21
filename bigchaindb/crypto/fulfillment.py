@@ -71,7 +71,8 @@ class Fulfillment(metaclass=ABCMeta):
 
         from bigchaindb.crypto.bitmark_registry import BitmaskRegistry
 
-        cls = BitmaskRegistry.get_class_from_typebit(reader.read_var_uint())
+        cls_type = reader.read_var_uint()
+        cls = BitmaskRegistry.get_class_from_typebit(cls_type)
 
         fulfillment = cls()
         fulfillment.parse_payload(reader)
@@ -151,7 +152,7 @@ class Fulfillment(metaclass=ABCMeta):
             Serialized fulfillment
         """
         writer = Writer()
-        writer.write_var_uint(self.bitmask)
+        writer.write_var_uint(self._bitmask)
         self.write_payload(writer)
         return b''.join(writer.components)
 
