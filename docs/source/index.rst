@@ -14,15 +14,17 @@ Table of Contents
 
    introduction
    installing-server
+   running-unit-tests
    python-server-api-examples
    bigchaindb-cli
    http-client-server-api
    python-driver-api-examples
-   admin
+   local-rethinkdb-cluster
    cryptography
    models
    json-serialization
    developer-interface
+   consensus
    monitoring
    licenses
    contributing

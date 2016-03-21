@@ -15,6 +15,7 @@ def config(request, monkeypatch):
         },
         'keyring': [],
         'CONFIGURED': True,
+        'consensus_plugin': 'default'
     }
 
     monkeypatch.setattr('bigchaindb.config', config)
@@ -24,6 +25,7 @@ def config(request, monkeypatch):
 
 def test_bigchain_class_default_initialization(config):
     from bigchaindb.core import Bigchain
+    from bigchaindb.consensus import BaseConsensusRules
     bigchain = Bigchain()
     assert bigchain.host == config['database']['host']
     assert bigchain.port == config['database']['port']
@@ -31,11 +33,13 @@ def test_bigchain_class_default_initialization(config):
     assert bigchain.me == config['keypair']['public']
     assert bigchain.me_private == config['keypair']['private']
     assert bigchain.federation_nodes == config['keyring']
+    assert bigchain.consensus == BaseConsensusRules
     assert bigchain._conn is None
 
 
 def test_bigchain_class_initialization_with_parameters(config):
     from bigchaindb.core import Bigchain
+    from bigchaindb.consensus import BaseConsensusRules
     init_kwargs = {
         'host': 'some_node',
         'port': '12345',
@@ -43,6 +47,7 @@ def test_bigchain_class_initialization_with_parameters(config):
         'public_key': 'white',
         'private_key': 'black',
         'keyring': ['key_one', 'key_two'],
+        'consensus_plugin': 'default'
     }
     bigchain = Bigchain(**init_kwargs)
     assert bigchain.host == init_kwargs['host']
@@ -51,4 +56,5 @@ def test_bigchain_class_initialization_with_parameters(config):
     assert bigchain.me == init_kwargs['public_key']
     assert bigchain.me_private == init_kwargs['private_key']
     assert bigchain.federation_nodes == init_kwargs['keyring']
+    assert bigchain.consensus == BaseConsensusRules
     assert bigchain._conn is None

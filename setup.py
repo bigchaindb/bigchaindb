@@ -4,7 +4,7 @@ BigchainDB: A Scalable Blockchain Database
 For full docs visit https://bigchaindb.readthedocs.org
 
 """
-from setuptools import setup
+from setuptools import setup, find_packages
 
 tests_require = [
     'pytest',
@@ -56,13 +56,16 @@ setup(
         'Operating System :: POSIX :: Linux',
     ],
 
-    packages=['bigchaindb', 'bigchaindb.commands', 'bigchaindb.db', 'bigchaindb.web'],
+    packages=find_packages(exclude=['tests*']),
 
     entry_points={
         'console_scripts': [
             'bigchaindb=bigchaindb.commands.bigchain:main',
             'bigchaindb-benchmark=bigchaindb.commands.bigchain_benchmark:main'
         ],
+        'bigchaindb.consensus': [
+            'default=bigchaindb.consensus:BaseConsensusRules'
+        ]
     },
     install_requires=[
         'rethinkdb==2.2.0.post4',
