@@ -19,7 +19,6 @@ class TestBigchainILPSha256Condition:
     def test_deserialize_condition(self):
         example_condition = self.CONDITION_SHA256_ILP
         condition = Condition.from_uri(example_condition)
-        print(binascii.hexlify(condition.hash))
         assert condition.serialize_uri() == self.CONDITION_SHA256_ILP
 
     def test_create_condition(self):
@@ -326,3 +325,32 @@ class TestBigchainILPThresholdSha256Fulfillment:
         assert len(deserialized_fulfillment.get_all_subconditions()) == 2
         assert deserialized_fulfillment.serialize_uri() == fulfillment_uri
         assert deserialized_fulfillment.validate()
+
+    def test_fulfillment_nested(self):
+        ilp_fulfillment_sha = Fulfillment.from_uri(self.FULFILLMENT_SHA256_ILP)
+        ilp_fulfillment_ed1 = Fulfillment.from_uri(self.FULFILLMENT_ED25519_ILP_2)
+
+        # 2-of-2 (AND with 2 inputs)
+        fulfillment = ThresholdSha256Fulfillment()
+        fulfillment.threshold = 2
+        fulfillment.add_subfulfillment(ilp_fulfillment_sha)
+
+        max_depth = 10
+
+        def add_nested_fulfillment(parent, current_depth=0):
+            current_depth += 1
+            child = ThresholdSha256Fulfillment()
+            child.threshold = 1
+            if current_depth < max_depth:
+                add_nested_fulfillment(child, current_depth)
+            else:
+                child.add_subfulfillment(ilp_fulfillment_ed1)
+            parent.add_subfulfillment(child)
+            return parent
+
+        fulfillment = add_nested_fulfillment(fulfillment)
+
+        assert fulfillment.validate() is True
+        assert len(fulfillment.subfulfillments) == 2
+        assert isinstance(fulfillment.subfulfillments[1], ThresholdSha256Fulfillment)
+        assert isinstance(fulfillment.subfulfillments[1].subfulfillments[0], ThresholdSha256Fulfillment)
