@@ -76,7 +76,7 @@ def timestamp():
     return "{0:.6f}".format(time.mktime(dt.timetuple()) + dt.microsecond / 1e6)
 
 
-def create_tx(current_owner, new_owner, tx_input, operation, payload=None):
+def create_tx(current_owner, new_owner, inputs, operation, payload=None):
     """Create a new transaction
 
     A transaction in the bigchain is a transfer of a digital asset between two entities represented
@@ -94,7 +94,7 @@ def create_tx(current_owner, new_owner, tx_input, operation, payload=None):
     Args:
         current_owner (str): base58 encoded public key of the current owner of the asset.
         new_owner (str): base58 encoded public key of the new owner of the digital asset.
-        tx_input (str): id of the transaction to use as input.
+        inputs (list): id of the transaction to use as input.
         operation (str): Either `CREATE` or `TRANSFER` operation.
         payload (Optional[dict]): dictionary with information about asset.
 
@@ -106,6 +106,7 @@ def create_tx(current_owner, new_owner, tx_input, operation, payload=None):
         TypeError: if the optional ``payload`` argument is not a ``dict``.
     """
 
+    # handle payload
     data = None
     if payload is not None:
         if isinstance(payload, dict):
@@ -123,10 +124,13 @@ def create_tx(current_owner, new_owner, tx_input, operation, payload=None):
         'payload': payload
     }
 
+    if inputs == []:
+        inputs = None
+
     tx = {
         'current_owner': current_owner,
         'new_owner': new_owner,
-        'input': tx_input,
+        'inputs': inputs,
         'operation': operation,
         'timestamp': timestamp(),
         'data': data
