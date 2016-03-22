@@ -25,8 +25,7 @@ def e(key, default=None, conv=None):
 
 config = {
     'server': {
-        'bind': ':'.join([e('BIGCHAIN_SERVER_BINDHOST', default='0.0.0.0'),
-                          e('BIGCHAIN_SERVER_BINDPORT', default='5000')])
+        'bind': e('BIGCHAIN_SERVER_BIND', default='0.0.0.0:5000'),
     },
     'database': {
         'host': e('BIGCHAIN_DATABASE_HOST', default='localhost'),
