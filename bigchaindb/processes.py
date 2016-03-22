@@ -1,8 +1,10 @@
+import copy
 import logging
 import multiprocessing as mp
 
 import rethinkdb as r
 
+import bigchaindb
 from bigchaindb import Bigchain
 from bigchaindb.voter import Voter
 from bigchaindb.block import Block
@@ -68,8 +70,8 @@ class Processes(object):
         block = Block(self.q_new_transaction)
 
         # start the web api
-        webapi = server.create_app()
-        p_webapi = mp.Process(name='webapi', target=webapi.run, kwargs={'host': 'localhost'})
+        app_server = server.create_server(bigchaindb.config['server'])
+        p_webapi = mp.Process(name='webapi', target=app_server.run)
         p_webapi.start()
 
         # initialize the processes

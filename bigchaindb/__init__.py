@@ -24,6 +24,10 @@ def e(key, default=None, conv=None):
 
 
 config = {
+    'server': {
+        'bind': ':'.join([e('BIGCHAIN_SERVER_BINDHOST', default='0.0.0.0'),
+                          e('BIGCHAIN_SERVER_BINDPORT', default='5000')])
+    },
     'database': {
         'host': e('BIGCHAIN_DATABASE_HOST', default='localhost'),
         'port': e('BIGCHAIN_DATABASE_PORT', default=28015),
@@ -49,3 +53,4 @@ config = {
 # for more info.
 _config = copy.deepcopy(config)
 from bigchaindb.core import Bigchain  # noqa
+
