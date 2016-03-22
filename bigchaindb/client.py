@@ -1,10 +1,10 @@
 import requests
 
 import bigchaindb
-from bigchaindb import util
 from bigchaindb import config_utils
 from bigchaindb import exceptions
-from bigchaindb import crypto
+from bigchaindb import util
+from bigchaindb.crypto import asymmetric
 
 
 class Client:
@@ -111,6 +111,6 @@ def temp_client():
         A client initialized with a keypair generated on the fly.
     """
 
-    private_key, public_key = crypto.generate_key_pair()
+    private_key, public_key = asymmetric.generate_key_pair()
     return Client(private_key=private_key, public_key=public_key, api_endpoint='http://localhost:5000/api/v1')
 

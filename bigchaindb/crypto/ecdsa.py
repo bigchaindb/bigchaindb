@@ -1,18 +1,18 @@
 # Separate all crypto code so that we can easily test several implementations
 
 import binascii
+
 import base58
-
-import sha3
 import bitcoin
-
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives.asymmetric import ec
-from cryptography.hazmat.primitives import hashes
 from cryptography.exceptions import InvalidSignature
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import ec
+
+from bigchaindb.crypto.asymmetric import SigningKey, VerifyingKey
 
 
-class PrivateKey(object):
+class EcdsaSigningKey(SigningKey):
     """
     PrivateKey instance
     """
@@ -34,6 +34,11 @@ class PrivateKey(object):
         signature = signer.finalize()
         return binascii.hexlify(signature).decode('utf-8')
 
+    def get_verifying_key(self):
+        raise NotImplementedError
+
+    def to_ascii(self, prefix='', encoding='base58'):
+        raise NotImplementedError
 
     @staticmethod
     def encode(private_value):
@@ -65,7 +70,7 @@ class PrivateKey(object):
         Return an instance of cryptography PrivateNumbers from the decimal private_value
         """
         public_value_x, public_value_y = self._private_value_to_public_values(private_value)
-        public_numbers = PublicKey._public_values_to_cryptography_public_numbers(public_value_x, public_value_y)
+        public_numbers = EcdsaVerifyingKey._public_values_to_cryptography_public_numbers(public_value_x, public_value_y)
         private_numbers = ec.EllipticCurvePrivateNumbers(private_value, public_numbers)
         return private_numbers
 
@@ -77,15 +82,18 @@ class PrivateKey(object):
         return private_numbers.private_key(default_backend())
 
 
-class PublicKey(object):
+class EcdsaVerifyingKey(VerifyingKey):
 
     def __init__(self, key):
         """
         Instantiate the public key with the compressed public value encoded in base58
+
+        Args:
+            key
         """
         public_value_x, public_value_y = self.decode(key)
         public_numbers = self._public_values_to_cryptography_public_numbers(public_value_x, public_value_y)
-        self.public_key = self._criptography_public_key_from_public_numbers(public_numbers)
+        self.public_key = self._cryptography_public_key_from_public_numbers(public_numbers)
 
     def verify(self, data, signature):
         verifier = self.public_key.verifier(binascii.unhexlify(signature), ec.ECDSA(hashes.SHA256()))
@@ -97,10 +105,17 @@ class PublicKey(object):
 
         return True
 
+    def to_ascii(self, prefix='', encoding='base58'):
+        raise NotImplementedError
+
     @staticmethod
     def encode(public_value_x, public_value_y):
         """
         Encode the public key represented by the decimal values x and y to base58
+
+        Args:
+            public_value_x:
+            public_value_y:
         """
         public_value_compressed_hex = bitcoin.encode_pubkey([public_value_x, public_value_y], 'hex_compressed')
         public_value_compressed_base58 = base58.b58encode(bytes.fromhex(public_value_compressed_hex))
@@ -110,6 +125,9 @@ class PublicKey(object):
     def decode(public_value_compressed_base58):
         """
         Decode the base58 public_value to the decimal x and y values
+
+        Args:
+            public_value_compressed_base58:
         """
         public_value_compressed_hex = binascii.hexlify(base58.b58decode(public_value_compressed_base58))
         public_value_x, public_value_y = bitcoin.decode_pubkey(public_value_compressed_hex.decode())
@@ -123,33 +141,28 @@ class PublicKey(object):
         public_numbers = ec.EllipticCurvePublicNumbers(public_value_x, public_value_y, ec.SECP256K1())
         return public_numbers
 
-    def _criptography_public_key_from_public_numbers(self, public_numbers):
+    def _cryptography_public_key_from_public_numbers(self, public_numbers):
         """
         Return an instance of cryptography PublicKey from a cryptography instance of PublicNumbers
+
+        Args:
+            public_numbers
         """
         return public_numbers.public_key(default_backend())
 
 
-def generate_key_pair():
+def ecdsa_generate_key_pair():
     """
     Generate a new key pair and return the pair encoded in base58
     """
     # Private key
     private_key = ec.generate_private_key(ec.SECP256K1, default_backend())
     private_value = private_key.private_numbers().private_value
-    private_value_base58 = PrivateKey.encode(private_value)
+    private_value_base58 = EcdsaSigningKey.encode(private_value)
 
     # Public key
     public_key = private_key.public_key()
     public_value_x, public_value_y = public_key.public_numbers().x, public_key.public_numbers().y
-    public_value_compressed_base58 = PublicKey.encode(public_value_x, public_value_y)
+    public_value_compressed_base58 = EcdsaVerifyingKey.encode(public_value_x, public_value_y)
 
     return (private_value_base58, public_value_compressed_base58)
-
-
-def hash_data(data):
-    """Hash the provided data using SHA3-256"""
-
-    return sha3.sha3_256(data.encode()).hexdigest()
-
-

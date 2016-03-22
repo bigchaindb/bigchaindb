@@ -5,12 +5,11 @@ import rapidjson
 
 
 import bigchaindb
-from bigchaindb import util
 from bigchaindb import config_utils
 from bigchaindb import exceptions
-from bigchaindb import crypto
+from bigchaindb import util
+from bigchaindb.crypto import asymmetric
 from bigchaindb.monitor import Monitor
-
 
 monitor = Monitor()
 
@@ -297,8 +296,8 @@ class Bigchain(object):
 
         # Calculate the hash of the new block
         block_data = util.serialize(block)
-        block_hash = crypto.hash_data(block_data)
-        block_signature = crypto.PrivateKey(self.me_private).sign(block_data)
+        block_hash = asymmetric.hash_data(block_data)
+        block_signature = asymmetric.SigningKey(self.me_private).sign(block_data)
 
         block = {
             'id': block_hash,
@@ -419,7 +418,7 @@ class Bigchain(object):
         }
 
         vote_data = util.serialize(vote)
-        signature = crypto.PrivateKey(self.me_private).sign(vote_data)
+        signature = asymmetric.SigningKey(self.me_private).sign(vote_data)
 
         vote_signed = {
             'node_pubkey': self.me,

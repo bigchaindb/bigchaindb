@@ -1,12 +1,12 @@
-import pytest
-import time
-import rethinkdb as r
 import multiprocessing as mp
+import time
+
+import pytest
+import rethinkdb as r
 
 from bigchaindb import util
-
+from bigchaindb.crypto.asymmetric import VerifyingKey, generate_key_pair
 from bigchaindb.voter import Voter, BlockStream
-from bigchaindb.crypto import PublicKey, generate_key_pair
 
 
 class TestBigchainVoter(object):
@@ -45,7 +45,7 @@ class TestBigchainVoter(object):
         assert vote['vote']['is_block_valid'] is True
         assert vote['vote']['invalid_reason'] is None
         assert vote['node_pubkey'] == b.me
-        assert PublicKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
+        assert VerifyingKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
 
     def test_valid_block_voting_with_create_transaction(self, b):
         q_new_block = mp.Queue()
@@ -87,7 +87,7 @@ class TestBigchainVoter(object):
         assert vote['vote']['is_block_valid'] is True
         assert vote['vote']['invalid_reason'] is None
         assert vote['node_pubkey'] == b.me
-        assert PublicKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
+        assert VerifyingKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
 
     def test_valid_block_voting_with_transfer_transactions(self, b):
         q_new_block = mp.Queue()
@@ -158,7 +158,7 @@ class TestBigchainVoter(object):
         assert vote['vote']['is_block_valid'] is True
         assert vote['vote']['invalid_reason'] is None
         assert vote['node_pubkey'] == b.me
-        assert PublicKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
+        assert VerifyingKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
 
     def test_invalid_block_voting(self, b, user_public_key):
         # create queue and voter
@@ -197,7 +197,7 @@ class TestBigchainVoter(object):
         assert vote['vote']['is_block_valid'] is False
         assert vote['vote']['invalid_reason'] is None
         assert vote['node_pubkey'] == b.me
-        assert PublicKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
+        assert VerifyingKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
 
     def test_vote_creation_valid(self, b):
         # create valid block
@@ -211,7 +211,7 @@ class TestBigchainVoter(object):
         assert vote['vote']['is_block_valid'] is True
         assert vote['vote']['invalid_reason'] is None
         assert vote['node_pubkey'] == b.me
-        assert PublicKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
+        assert VerifyingKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
 
     def test_vote_creation_invalid(self, b):
         # create valid block
@@ -225,7 +225,7 @@ class TestBigchainVoter(object):
         assert vote['vote']['is_block_valid'] is False
         assert vote['vote']['invalid_reason'] is None
         assert vote['node_pubkey'] == b.me
-        assert PublicKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
+        assert VerifyingKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
 
     def test_voter_considers_unvoted_blocks_when_single_node(self, b):
         # simulate a voter going donw in a single node environment

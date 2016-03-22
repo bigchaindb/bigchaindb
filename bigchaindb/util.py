@@ -1,12 +1,11 @@
-
 import json
-import time
 import multiprocessing as mp
+import time
 from datetime import datetime
 
 import bigchaindb
 from bigchaindb import exceptions
-from bigchaindb.crypto import PrivateKey, PublicKey, hash_data
+from bigchaindb.crypto.asymmetric import SigningKey, VerifyingKey, hash_data
 
 
 class ProcessGroup(object):
@@ -158,7 +157,7 @@ def sign_tx(transaction, private_key):
         dict: transaction with the `signature` field included.
 
     """
-    private_key = PrivateKey(private_key)
+    private_key = SigningKey(private_key)
     signature = private_key.sign(serialize(transaction))
     signed_transaction = transaction.copy()
     signed_transaction.update({'signature': signature})
@@ -201,7 +200,7 @@ def verify_signature(signed_transaction):
 
     signature = data.pop('signature')
     public_key_base58 = signed_transaction['transaction']['current_owner']
-    public_key = PublicKey(public_key_base58)
+    public_key = VerifyingKey(public_key_base58)
     return public_key.verify(serialize(data), signature)
 
 
