@@ -199,7 +199,9 @@ def verify_signature(signed_transaction):
     if 'assignee' in data:
         data.pop('assignee')
 
-    signature = data.pop('signature')
+    signature = data.pop('signature', None)
+    if not signature: return False
+
     public_key_base58 = signed_transaction['transaction']['current_owner']
     public_key = PublicKey(public_key_base58)
     return public_key.verify(serialize(data), signature)

@@ -90,6 +90,24 @@ class Client:
             tx, private_key=self.private_key)
         return self._push(signed_tx)
 
+    def validate(self, tx):
+        """Validate a transaction object.
+
+        If tx is a `CREATE` transaction, this method will return (True, '') even
+        without the federation signature as long as the transaction is otherwise
+        valid.
+
+        Args:
+            tx (dict): the transaction object to be validated
+
+        Return:
+            (bool, str): (True, '') if the tx is valid, else (False, errormsg)
+        """
+
+        res = requests.post(self.api_endpoint + '/transactions/validate/',
+                            json=tx)
+        return (res.json()['valid'], res.json()['error'])
+
     def _push(self, tx):
         """Submit a transaction to the Federation.
 

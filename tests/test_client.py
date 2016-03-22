@@ -57,3 +57,11 @@ def test_client_can_transfer_assets(mock_requests_post, client):
 
     assert util.verify_signature(tx)
 
+
+def test_client_can_validate_transaction(mock_requests_post, client):
+    from bigchaindb import util
+
+    assert client.validate({'valid': True,
+                            'error': ''}) == (True, '')
+    assert client.validate({'valid': False,
+                            'error': 'Some Error'}) == (False, 'Some Error')
