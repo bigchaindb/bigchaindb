@@ -23,8 +23,10 @@ NODES=$2
 AWS=`which aws`
 FAB=`which fab`
 DEPLOYDIR=`pwd`
-BIGCHAINDIR=`dirname $DEPLOYDIR`
-export BIGCHAINDIR
+# It seems BIGCHAINDIR was never used, but I wasn't sure
+# so I just commented-out the following two lines. -Troy
+#BIGCHAINDIR=`dirname $DEPLOYDIR`
+#export BIGCHAINDIR
 
 # check if awscli is installed
 if [ ! -f "$AWS" ]
