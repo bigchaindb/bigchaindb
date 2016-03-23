@@ -105,7 +105,7 @@ def install_bigchaindb():
 # startup all nodes of bigchaindb in cluster
 @task
 @parallel
-def start_bigchain_nodes():
+def start_bigchaindb_nodes():
     sudo('screen -d -m bigchaindb -y start &', pty = False)
 
 

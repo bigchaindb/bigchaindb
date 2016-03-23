@@ -92,7 +92,7 @@ fab install_bigchaindb
 HORST=`tail -1 conf/bigchaindb.conf|cut -d: -f1|cut -d= -f2`
 fab -H $HORST -f fab_prepare_chain.py init_bigchaindb
 # initiate sharding
-fab start_bigchain_nodes
+fab start_bigchaindb_nodes
 
 # now cleanup!
 rm add2known_hosts.sh add2dbconf
