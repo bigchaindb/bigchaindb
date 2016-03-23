@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 
 import bigchaindb.exceptions as exceptions
 from bigchaindb import util
-from bigchaindb.crypto import hash_data, PublicKey
+from bigchaindb.crypto import hash_data
 
 
 class AbstractConsensusRules(metaclass=ABCMeta):
