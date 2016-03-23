@@ -42,7 +42,7 @@ for _ in range(nodes):  # 0, 1, ..., (nodes-1) = nodes items
             instance_type='m3.2xlarge',
             #instance_type='c3.8xlarge',
             #instance_type='c4.8xlarge',
-            security_groups=['bigchain'])
+            security_groups=['bigchaindb'])
 
     for instance in reservation.instances:
         time.sleep(5)
