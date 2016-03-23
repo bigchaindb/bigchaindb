@@ -87,7 +87,7 @@ def install_rethinkdb():
         # change fs to user
         sudo('chown -R rethinkdb:rethinkdb /data')
         # copy config file to target system
-        put('bigchain/bigchaindb.conf',
+        put('conf/bigchaindb.conf',
             '/etc/rethinkdb/instances.d/instance1.conf', mode=0600, use_sudo=True)
         # initialize data-dir
         sudo('rm -rf /data/*')

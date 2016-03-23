@@ -73,8 +73,8 @@ chmod +x add2known_hosts.sh
 ./add2known_hosts.sh
 
 # resetting the rethinkdb initfile and adding the nodes to join...
-cp bigchain/bigchaindb.conf.template bigchain/bigchaindb.conf
-cat add2dbconf >> bigchain/bigchaindb.conf
+cp conf/bigchaindb.conf.template conf/bigchaindb.conf
+cat add2dbconf >> conf/bigchaindb.conf
 
 # rollout base packages for installation of storage and bigchain
 fab install_base_software
@@ -86,7 +86,7 @@ fab install_rethinkdb
 fab install_bigchain
 
 # generate genesisblock
-HORST=`tail -1 bigchain/bigchaindb.conf|cut -d: -f1|cut -d= -f2`
+HORST=`tail -1 conf/bigchaindb.conf|cut -d: -f1|cut -d= -f2`
 fab -H $HORST -f fab_prepare_chain.py init_bigchaindb
 # initiate sharding
 fab start_bigchain_nodes
