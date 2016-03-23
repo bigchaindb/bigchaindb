@@ -95,10 +95,10 @@ def install_rethinkdb():
         sudo('/etc/init.d/rethinkdb restart')
 
 
-# bigchain deployment
+# bigchaindb deployment
 @task
 @parallel
-def install_bigchain():
+def install_bigchaindb():
     sudo('python3 -m pip install bigchaindb')
 
 

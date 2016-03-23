@@ -78,14 +78,15 @@ chmod +x add2known_hosts.sh
 cp conf/bigchaindb.conf.template conf/bigchaindb.conf
 cat add2dbconf >> conf/bigchaindb.conf
 
-# rollout base packages for installation of storage and bigchain
+# rollout base packages (dependencies) needed before
+# storage backend (rethinkdb) and bigchaindb can be rolled out
 fab install_base_software
 
-# rollout storagebackend (rethinkdb)
+# rollout storage backend (rethinkdb)
 fab install_rethinkdb
 
-# rollout bigchain-reporitory
-fab install_bigchain
+# rollout bigchaindb
+fab install_bigchaindb
 
 # generate genesisblock
 HORST=`tail -1 conf/bigchaindb.conf|cut -d: -f1|cut -d= -f2`
