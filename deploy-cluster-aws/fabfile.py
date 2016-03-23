@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-""" Preparing, installing and configuring
-    bigchain and the storage backend
+"""A fabfile with functionality to prepare, install, and configure
+bigchaindb, including its storage backend.
 """
 
 from __future__ import with_statement
