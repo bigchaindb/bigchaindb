@@ -2,7 +2,6 @@ import os
 import copy
 
 
-
 def e(key, default=None, conv=None):
     '''Get the environment variable `key`, fallback to `default`
     if nothing is found.

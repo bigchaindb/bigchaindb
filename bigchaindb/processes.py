@@ -1,4 +1,3 @@
-import copy
 import logging
 import multiprocessing as mp
 
@@ -12,6 +11,18 @@ from bigchaindb.web import server
 
 
 logger = logging.getLogger(__name__)
+
+BANNER = """
+****************************************************************************
+*                                                                          *
+*   Initialization complete. BigchainDB is ready and waiting for events.   *
+*   You can send events through the API documented at:                     *
+*    - http://docs.bigchaindb.apiary.io/                                   *
+*                                                                          *
+*   Listening to client connections on: {:<15}                    *
+*                                                                          *
+****************************************************************************
+"""
 
 
 class Processes(object):
@@ -94,5 +105,4 @@ class Processes(object):
         # start message
         block.initialized.wait()
         p_voter.initialized.wait()
-        logger.info('Initialization complete. BigchainDB ready and waiting for events.')
-        logger.info('You can send events through the API documented at http://docs.bigchaindb.apiary.io/')
+        logger.info(BANNER.format(bigchaindb.config['server']['bind']))
