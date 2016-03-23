@@ -67,3 +67,7 @@ target/
 
 # Private key files from AWS
 *.pem
+
+# Some files created when deploying a cluster on AWS
+deploy-cluster-aws/conf/bigchaindb.conf
+deploy-cluster-aws/hostlist.py
