@@ -21,7 +21,7 @@ from fabric.decorators import roles
 from fabtools import *
 
 env.user = 'ubuntu'
-env.key_filename = 'pem/bigchain.pem'
+env.key_filename = 'pem/bigchaindb.pem'
 
 @task
 def init_bigchaindb():

@@ -37,7 +37,7 @@ env.roledefs = {
     }
 env.roles = ["role1"]
 env.user = 'ubuntu'
-env.key_filename = 'pem/bigchain.pem'
+env.key_filename = 'pem/bigchaindb.pem'
 
 
 ################################################################################

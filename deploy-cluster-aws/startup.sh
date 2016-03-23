@@ -43,13 +43,13 @@ if [ ! -f "$FAB" ]
 fi
 
 # checking pem-file and changing access rights
-if [ ! -f "pem/bigchain.pem" ]
+if [ ! -f "pem/bigchaindb.pem" ]
     then
         echo "Valid key is missing!!!"
         exit 1
 fi
-# 0400 for pem/bigchain.pem
-chmod 0400 pem/bigchain.pem
+# 0400 for pem/bigchaindb.pem
+chmod 0400 pem/bigchaindb.pem
 
 # starting and tagging instances
 python3 run_and_tag.py --tag $TAG --nodes $NODES
