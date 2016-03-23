@@ -65,3 +65,5 @@ target/
 # pyenv
 .python-version
 
+# Private key files from AWS
+*.pem
