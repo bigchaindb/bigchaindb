@@ -37,7 +37,7 @@ for _ in range(nodes):  # 0, 1, ..., (nodes-1) = nodes items
     reservation = conn.run_instances(
             'ami-accff2b1',                    # ubuntu-image
             #'ami-596b7235',                    # ubuntu w/ iops storage
-            key_name='bigchain',
+            key_name='bigchaindb',
             # IMPORTANT!!!! - here you change the machine type for the cluster
             instance_type='m3.2xlarge',
             #instance_type='c3.8xlarge',
