@@ -52,7 +52,7 @@ fi
 chmod 0400 pem/bigchaindb.pem
 
 # starting and tagging instances
-python3 run_and_tag.py --tag $TAG --nodes $NODES
+python run_and_tag.py --tag $TAG --nodes $NODES
 # let's wait a minute to get the nodes ready and in status initializing
 #sleep 60
 
