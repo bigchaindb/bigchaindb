@@ -1,5 +1,8 @@
 #! /bin/bash
 
+# The set -e option instructs bash to immediately exit if any command has a non-zero exit status
+set -e
+
 function printErr()
     {
         echo "usage: ./startup.sh <tag> <number_of_nodes_in_cluster>"
@@ -51,18 +54,13 @@ fi
 # 0400 for pem/bigchaindb.pem
 chmod 0400 pem/bigchaindb.pem
 
-# starting and tagging instances
+echo "Starting and tagging instances on EC2"
 python run_and_tag.py --tag $TAG --nodes $NODES
 # let's wait a minute to get the nodes ready and in status initializing
 #sleep 60
 
-# checking if instances are up and running (every 5 secs.)
-RET=1
-until [ ${RET} -eq 0 ]; do
-    python3 get_instance_status.py --tag $TAG
-    RET=$?
-    sleep 5
-done
+# Wait until all those instances are running
+python wait_until_all_running.py --tag $TAG
 
 # in case of elastic ips...
 python3 get_elastic_ips.py --tag $TAG
