@@ -25,7 +25,7 @@ else:
     exit(1)
 
 if args.nodes:
-    nodes = int(args.nodes)
+    num_nodes = int(args.nodes)
 else:
     print('usage: python run_and_tag.py --tag <tag> --nodes <number of nodes in cluster>')
     print('reason: nodes missing!!!')
@@ -38,7 +38,9 @@ ec2 = boto3.resource(service_name='ec2',
                      aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
 
 
-for _ in range(nodes):  # = [0, 1, ..., (nodes-1)]
+print('Starting and tagging instances on Amazon EC2...')
+
+for _ in range(num_nodes):
     # Request the launch of one instance at a time
     # (so list_of_instances should contain only one item)
     list_of_instances = ec2.create_instances(

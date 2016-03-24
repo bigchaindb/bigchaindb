@@ -54,10 +54,9 @@ fi
 # 0400 for pem/bigchaindb.pem
 chmod 0400 pem/bigchaindb.pem
 
-echo "Starting and tagging instances on EC2"
+# Start the specified number of nodes
+# and tag them with the specified tag
 python run_and_tag.py --tag $TAG --nodes $NODES
-# let's wait a minute to get the nodes ready and in status initializing
-#sleep 60
 
 # Wait until all those instances are running
 python wait_until_all_running.py --tag $TAG
