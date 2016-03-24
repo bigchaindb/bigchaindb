@@ -5,9 +5,10 @@
 
 #### Prerequesites
  - Valid AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY is needed, both are exported as variables to the shell
- - awscli,
- - boto
- - fabric w/ fabtools
+ - awscli - DO WE EVEN USE THIS?
+ - boto - DEPENDENCY BEING REMOVED
+ - boto3 (Python 2 or 3)
+ - fabric w/ fabtools (Python 2 only)
 
 #### Cluster Installation
  - Got to the DEPLOY-directory and run './startup.sh' with two parameters (tag and number of nodes)...that's it!
