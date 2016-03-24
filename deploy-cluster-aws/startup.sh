@@ -45,7 +45,7 @@ fi
 # checking pem-file and changing access rights
 if [ ! -f "pem/bigchaindb.pem" ]
     then
-        echo "Valid key is missing!!!"
+        echo "File pem/bigchaindb.pem (AWS private key) is missing"
         exit 1
 fi
 # 0400 for pem/bigchaindb.pem
