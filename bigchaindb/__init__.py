@@ -1,47 +1,24 @@
-import os
 import copy
-
-
-
-def e(key, default=None, conv=None):
-    '''Get the environment variable `key`, fallback to `default`
-    if nothing is found.
-
-    Keyword arguments:
-    key -- the key to look for in the environment
-    default -- the default value if nothing is found (default: None)
-    conv -- a callable used to convert the value (default: use the type of the
-            default value)
-    '''
-
-    val = os.environ.get(key, default)
-
-    if conv or default is not None:
-        conv = conv or type(default)
-        return conv(val)
-
-    return val
 
 
 config = {
     'database': {
-        'host': e('BIGCHAIN_DATABASE_HOST', default='localhost'),
-        'port': e('BIGCHAIN_DATABASE_PORT', default=28015),
-        'name': e('BIGCHAIN_DATABASE_NAME', default='bigchain')
+        'host': 'localhost',
+        'port': 28015,
+        'name': 'bigchain',
     },
     'keypair': {
-        'public': e('BIGCHAIN_KEYPAIR_PUBLIC'),
-        'private': e('BIGCHAIN_KEYPAIR_PRIVATE')
+        'public': None,
+        'private': None,
     },
-    'keyring': [
-    ],
+    'keyring': [],
     'statsd': {
-        'host': e('BIGCHAIN_STATSD_HOST', default='localhost'),
-        'port': e('BIGCHAIN_STATSD_PORT', default=8125),
-        'rate': e('BIGCHAIN_STATSD_SAMPLERATE', default=0.01)
+        'host': 'localhost',
+        'port': 8125,
+        'rate': 0.01,
     },
     'api_endpoint': 'http://localhost:8008/api/v1',
-    'consensus_plugin': e('BIGCHAIN_CONSENSUS_PLUGIN', default='default')
+    'consensus_plugin': 'default',
 }
 
 # We need to maintain a backup copy of the original config dict in case

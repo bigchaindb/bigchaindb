@@ -72,6 +72,7 @@ def test_bigchain_run_start(mock_run_configure, mock_file_config,
     run_start(args)
 
 
+@pytest.mark.skipif(reason="BigchainDB doesn't support the automatic creation of a config file anymore")
 def test_bigchain_run_start_assume_yes_create_default_config(monkeypatch, mock_processes_start,
                                                              mock_generate_key_pair, mock_db_init_with_existing_db):
     import bigchaindb

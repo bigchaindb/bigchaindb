@@ -88,7 +88,7 @@ def run_drop(args):
 
 def run_start(args):
     """Start the processes to run the node"""
-    run_configure(args, skip_if_exists=True)
+    # run_configure(args, skip_if_exists=True)
     bigchaindb.config_utils.file_config(args.config)
     try:
         db.init()
