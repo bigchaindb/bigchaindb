@@ -87,8 +87,12 @@ fab install_rethinkdb
 fab install_bigchaindb
 
 # generate genesisblock
+# HORST is the last public_dns_name listed in conf/bigchaindb.conf
+# For example:
+# ec2-52-58-86-145.eu-central-1.compute.amazonaws.com
 HORST=`tail -1 conf/bigchaindb.conf|cut -d: -f1|cut -d= -f2`
 fab -H $HORST -f fab_prepare_chain.py init_bigchaindb
+
 # initiate sharding
 fab start_bigchaindb_nodes
 
