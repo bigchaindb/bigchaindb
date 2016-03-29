@@ -1,7 +1,8 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 # create Elastic IPs and assign them to instances if needed
+
+from __future__ import unicode_literals
 import json
 import os
 import boto.ec2
