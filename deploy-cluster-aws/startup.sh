@@ -23,22 +23,15 @@ fi
 
 TAG=$1
 NODES=$2
-AWS=`which aws`
 FAB=`which fab`
-DEPLOYDIR=`pwd`
+
 # It seems BIGCHAINDIR was never used, but I wasn't sure
-# so I just commented-out the following two lines. -Troy
+# so I just commented-out the following lines. -Troy
+#DEPLOYDIR=`pwd`
 #BIGCHAINDIR=`dirname $DEPLOYDIR`
 #export BIGCHAINDIR
 
-# check if awscli is installed
-if [ ! -f "$AWS" ]
-    then
-        echo "awscli is not installed!!!"
-        exit 1
-fi
-
-# checck if python-fabric is installed
+# check if python-fabric is installed
 if [ ! -f "$FAB" ]
     then
         echo "python-fabric is not installed!!!"
