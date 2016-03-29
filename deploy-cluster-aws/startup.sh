@@ -62,9 +62,8 @@ python run_and_tag.py --tag $TAG --nodes $NODES
 python wait_until_all_running.py --tag $TAG
 
 # in case of elastic ips...
-python3 get_elastic_ips.py --tag $TAG
+python get_elastic_ips.py --tag $TAG
 
-# everything prepared. now wait until instances up and running!
 # generate hostlist.py and add_keys.sh
 python3 create_hostlist.py --tag $TAG > hostlist.py
 # make add_keys executable and execute
