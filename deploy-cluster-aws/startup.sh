@@ -31,30 +31,32 @@ FAB=`which fab`
 #BIGCHAINDIR=`dirname $DEPLOYDIR`
 #export BIGCHAINDIR
 
-# check if python-fabric is installed
+# Check if python-fabric is installed
 if [ ! -f "$FAB" ]
     then
-        echo "python-fabric is not installed!!!"
+        echo "python-fabric is not installed"
         exit 1
 fi
 
-# checking pem-file and changing access rights
+# Check for AWS private key file  pem-file and changing access rights
 if [ ! -f "pem/bigchaindb.pem" ]
     then
         echo "File pem/bigchaindb.pem (AWS private key) is missing"
         exit 1
 fi
-# 0400 for pem/bigchaindb.pem
+
+# Change the file permissions on pem/bigchaindb.pem
+# so that the owner can read it, but that's all
 chmod 0400 pem/bigchaindb.pem
 
-# Start the specified number of nodes
+# Start the specified number of nodes on Amazon EC2
 # and tag them with the specified tag
 python run_and_tag.py --tag $TAG --nodes $NODES
 
 # Wait until all those instances are running
 python wait_until_all_running.py --tag $TAG
 
-# in case of elastic ips...
+# Allocate elastic IP addresses and assign them to the instances
 python get_elastic_ips.py --tag $TAG
 
 # Create three files:
@@ -79,7 +81,7 @@ fab install_rethinkdb
 # rollout bigchaindb
 fab install_bigchaindb
 
-# generate genesisblock
+# generate genesis block
 # HORST is the last public_dns_name listed in conf/bigchaindb.conf
 # For example:
 # ec2-52-58-86-145.eu-central-1.compute.amazonaws.com
@@ -89,7 +91,7 @@ fab -H $HORST -f fab_prepare_chain.py init_bigchaindb
 # initiate sharding
 fab start_bigchaindb_nodes
 
-# now cleanup!
+# cleanup
 rm add2known_hosts.sh add2dbconf
 
-# DONE!
+# DONE
