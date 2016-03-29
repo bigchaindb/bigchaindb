@@ -10,16 +10,12 @@ AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
 AWS_REGION = os.environ['AWS_REGION']
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--tag", help="tag instances in aws")
+parser.add_argument("--tag",
+                    help="tag instances in aws",
+                    required=True)
 args = parser.parse_args()
 
-if args.tag:
-    tag = args.tag
-else:
-    # reading credentials from config for remote connection
-    print('usage: python create_hostlist.py --tag <tag>')
-    print('reason: tag missing!!!')
-    exit(1)
+tag = args.tag
 
 # Connect to Amazon EC2
 ec2 = boto3.resource(service_name='ec2',
