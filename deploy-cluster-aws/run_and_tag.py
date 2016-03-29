@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+"""Launch the specified number of instances on Amazon EC2
+and tag them with the specified tag.
+"""
 
 from __future__ import unicode_literals
 import boto3
@@ -12,25 +15,16 @@ AWS_REGION = os.environ['AWS_REGION']
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--tag",
-                    help="tag to add to all launched instances on AWS")
+                    help="tag to add to all launched instances on AWS",
+                    required=True)
 parser.add_argument("--nodes",
-                    help="number of nodes in the cluster")
+                    help="number of nodes in the cluster",
+                    required=True,
+                    type=int)
 args = parser.parse_args()
 
-if args.tag:
-    tag = args.tag
-else:
-    # reading credentials from config for remote connection
-    print('usage: python run_and_tag.py --tag <tag> --nodes <number of nodes in cluster>')
-    print('reason: tag missing!!!')
-    exit(1)
-
-if args.nodes:
-    num_nodes = int(args.nodes)
-else:
-    print('usage: python run_and_tag.py --tag <tag> --nodes <number of nodes in cluster>')
-    print('reason: nodes missing!!!')
-    exit(1)
+tag = args.tag
+num_nodes = int(args.nodes)
 
 # Connect to Amazon EC2
 ec2 = boto3.resource(service_name='ec2',
@@ -39,7 +33,8 @@ ec2 = boto3.resource(service_name='ec2',
                      aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
 
 
-print('Starting and tagging instances on Amazon EC2...')
+print('Starting {} instances on Amazon EC2 and tagging them with {}...'.
+      format(num_nodes, tag))
 
 for _ in range(num_nodes):
     # Request the launch of one instance at a time
