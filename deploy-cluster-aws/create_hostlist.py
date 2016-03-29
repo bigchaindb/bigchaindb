@@ -1,68 +1,71 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import unicode_literals
-import json
+# from __future__ import unicode_literals
 import argparse
-import boto.ec2
+import boto3
 import os
 
-AWS_ACCESS_KEY_ID = os.environ["AWS_ACCESS_KEY_ID"]
-AWS_SECRET_ACCESS_KEY = os.environ["AWS_SECRET_ACCESS_KEY"]
+AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
+AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
+AWS_REGION = os.environ['AWS_REGION']
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--tag", help="tag instances in aws")
 args = parser.parse_args()
 
-conn = boto.ec2.connect_to_region("eu-central-1",
-            aws_access_key_id=AWS_ACCESS_KEY_ID,
-            aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
-
-PUBLIC_LIST = []
-PRIVATE_LIST = []
-INSTANCE_IDS = []
-
 if args.tag:
     tag = args.tag
 else:
     # reading credentials from config for remote connection
-    print('usage: python3 create_hostlist.py --tag <tag>')
+    print('usage: python create_hostlist.py --tag <tag>')
     print('reason: tag missing!!!')
     exit(1)
 
+# Connect to Amazon EC2
+ec2 = boto3.resource(service_name='ec2',
+                     region_name=AWS_REGION,
+                     aws_access_key_id=AWS_ACCESS_KEY_ID,
+                     aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
 
-def prepare_list(tag):
-    reservations = conn.get_all_instances(filters={"tag:Name" : tag})
-    instances = [i for r in reservations for i in r.instances]
-    for i in instances:
-        inst = i.__dict__
-        publdns = inst.get('public_dns_name')
-        privdns = inst.get('private_dns_name')
-        inst_id = inst.get('id')
-        PUBLIC_LIST.append(publdns)
-        PRIVATE_LIST.append(privdns)
-        INSTANCE_IDS.append(inst_id)
-    return PUBLIC_LIST, PRIVATE_LIST, INSTANCE_IDS
+# Get a list of all instances with the specified tag.
+# (Technically, instances_with_tag is an ec2.instancesCollection.)
+instances_with_tag = ec2.instances.filter(
+    Filters=[{'Name': 'tag:Name', 'Values': [tag]}]
+    )
 
+publist = []
+for instance in instances_with_tag:
+    public_dns_name = getattr(instance, 'public_dns_name', None)
+    if public_dns_name is not None:
+        publist.append(public_dns_name)
 
-# get lists from amazon
-publist, privlist, instlist = prepare_list(tag)
+# Create shellscript add2known_hosts.sh for adding remote keys to known_hosts
+with open('add2known_hosts.sh', 'w') as f:
+    f.write('#! /bin/bash\n')
+    for public_dns_name in publist:
+        f.write('ssh-keyscan ' + public_dns_name + ' >> ~/.ssh/known_hosts\n')
 
-# create shellscript for adding remote keys to known_hosts
-localFile = open('add2known_hosts.sh', 'w')
-localFile.write('#! /bin/bash\n')
-for entry in range(0,len(publist)):
-    localFile.write('ssh-keyscan ' + publist[entry] + ' >> ~/.ssh/known_hosts\n')
-localFile.close()
+# Create a file named add2dbconf, overwriting one if it already exists
+with open('add2dbconf', 'w') as f:
+    f.write('## The host:port of a node that RethinkDB will connect to\n')
+    for public_dns_name in publist:
+        f.write('join=' + public_dns_name + ':29015\n')
 
-# hostliste und id-liste aus json erzeugen
-hosts = publist
-localFile = open('add2dbconf', 'w')
-before = 'join='
-after = ':29015'
-localFile.write('## The host:port of a node that rethinkdb will connect to\n')
-for entry in range(0,int(len(hosts)/2)):
-    localFile.write(before + hosts[entry] + after + '\n')
+# Note: The original code by Andreas wrote a file with lines of the form
+#       join=public_dns_name_0:29015
+#       join=public_dns_name_1:29015
+#       but it stopped about halfway through the list of public_dns_names
+#       (publist). In principle, it's only strictly necessary to
+#       have one join= line.
+#       Maybe Andreas thought that more is better, but all is too much?
+#       Below is Andreas' original code. -Troy
+# localFile = open('add2dbconf', 'w')
+# before = 'join='
+# after = ':29015'
+# localFile.write('## The host:port of a node that rethinkdb will connect to\n')
+# for entry in range(0,int(len(publist)/2)):
+#     localFile.write(before + publist[entry] + after + '\n')
 
-
-# printout hostlist
-print ("hosts_dev = ", publist)
+# Create a file named hostlist.py, overwriting one if it already exists
+with open('hostlist.py', 'w') as f:
+    f.write('hosts_dev = {}'.format(publist))

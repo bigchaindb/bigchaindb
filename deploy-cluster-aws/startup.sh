@@ -64,13 +64,15 @@ python wait_until_all_running.py --tag $TAG
 # in case of elastic ips...
 python get_elastic_ips.py --tag $TAG
 
-# generate hostlist.py and add_keys.sh
-python3 create_hostlist.py --tag $TAG > hostlist.py
-# make add_keys executable and execute
+# Create three files:
+# add2known_hosts.sh, add2dbconf and hostlist.py
+python create_hostlist.py --tag $TAG
+
+# Make add2known_hosts.sh executable and execute it
 chmod +x add2known_hosts.sh
 ./add2known_hosts.sh
 
-# resetting the rethinkdb initfile and adding the nodes to join...
+# Reset the RethinkDB configuration file and add the nodes to join
 cp conf/bigchaindb.conf.template conf/bigchaindb.conf
 cat add2dbconf >> conf/bigchaindb.conf
 
