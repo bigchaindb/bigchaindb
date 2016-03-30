@@ -49,19 +49,17 @@ fi
 # so that the owner can read it, but that's all
 chmod 0400 pem/bigchaindb.pem
 
-# Start the specified number of nodes on Amazon EC2
-# and tag them with the specified tag
-python run_and_tag.py --tag $TAG --nodes $NODES
-
-# Wait until all those instances are running
-python wait_until_all_running.py --tag $TAG
-
-# Allocate elastic IP addresses and assign them to the instances
-python get_elastic_ips.py --tag $TAG
-
-# Create three files:
-# add2known_hosts.sh, add2dbconf and hostlist.py
-python create_hostlist.py --tag $TAG
+# The following Python script does these things:
+# 1. Launches the specified number of nodes (instances) on Amazon EC2,
+# 2. tags them with the specified tag,
+# 3. waits until those instances exist and are running,
+# 4. for each instance, allocates an elastic IP address
+#    and associates it with that instance, and
+# 5. creates three files:
+#    * add2known_hosts.sh
+#    * add2dbconf
+#    * hostlist.py
+python launch_ec2_nodes.py --tag $TAG --nodes $NODES 
 
 # Make add2known_hosts.sh executable and execute it
 chmod +x add2known_hosts.sh
