@@ -36,10 +36,10 @@ env.roledefs = {
     }
 env.roles = ["role1"]
 env.user = 'ubuntu'
-env.key_filename = 'pem/bigchaindb.pem'
+env.key_filename = ['pem/bigchaindb.pem', ]
 
 
-################################################################################
+######################################################################
 
 # base softwarestack rollout
 @task
@@ -105,14 +105,14 @@ def install_bigchaindb():
 @task
 @parallel
 def start_bigchaindb_nodes():
-    sudo('screen -d -m bigchaindb -y start &', pty = False)
+    sudo('screen -d -m bigchaindb -y start &', pty=False)
 
 
 @task
 def install_newrelic():
     with settings(warn_only=True):
         sudo('echo deb http://apt.newrelic.com/debian/ newrelic non-free >> /etc/apt/sources.list')
-        #sudo('apt-key adv --keyserver hkp://subkeys.pgp.net --recv-keys 548C16BF')
+        # sudo('apt-key adv --keyserver hkp://subkeys.pgp.net --recv-keys 548C16BF')
         sudo('apt-get update')
         sudo('apt-get -y --force-yes install newrelic-sysmond')
         sudo('nrsysmond-config --set license_key=c88af00c813983f8ee12e9b455aa13fde1cddaa8')
