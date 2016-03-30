@@ -4,7 +4,7 @@
 bigchaindb, including its storage backend.
 """
 
-from __future__ import with_statement
+from __future__ import with_statement, unicode_literals
 
 import requests
 from time import *
@@ -36,7 +36,7 @@ env.roledefs = {
     }
 env.roles = ["role1"]
 env.user = 'ubuntu'
-env.key_filename = ['pem/bigchaindb.pem', ]
+env.key_filename = 'pem/bigchaindb.pem'
 
 
 ######################################################################
