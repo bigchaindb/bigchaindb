@@ -3,7 +3,7 @@
 """ Generating genesis block
 """
 
-from __future__ import with_statement, unicode_literals
+from __future__ import with_statement
 
 from fabric import colors as c
 from fabric.api import *

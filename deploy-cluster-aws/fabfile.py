@@ -4,7 +4,7 @@
 bigchaindb, including its storage backend.
 """
 
-from __future__ import with_statement, unicode_literals
+from __future__ import with_statement
 
 import requests
 from time import *
