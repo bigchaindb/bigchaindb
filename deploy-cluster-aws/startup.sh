@@ -54,20 +54,19 @@ chmod 0400 pem/bigchaindb.pem
 # 2. tags them with the specified tag,
 # 3. waits until those instances exist and are running,
 # 4. for each instance, allocates an elastic IP address
-#    and associates it with that instance, and
-# 5. creates three files:
-#    * add2known_hosts.sh
-#    * add2dbconf
-#    * hostlist.py
+#    and associates it with that instance,
+# 5. writes the shellscript add2known_hosts.sh
+# 6. (over)writes a file named hostlist.py
+#    containing a list of all public DNS names.
 python launch_ec2_nodes.py --tag $TAG --nodes $NODES 
 
-# Make add2known_hosts.sh executable and execute it
+# Make add2known_hosts.sh executable then execute it.
+# This adds remote keys to ~/.ssh/known_hosts
 chmod +x add2known_hosts.sh
 ./add2known_hosts.sh
 
-# Reset the RethinkDB configuration file and add the nodes to join
-cp conf/bigchaindb.conf.template conf/bigchaindb.conf
-cat add2dbconf >> conf/bigchaindb.conf
+# (Re)create the RethinkDB configuration file conf/bigchaindb.conf
+python create_bigchaindb_conf.py
 
 # rollout base packages (dependencies) needed before
 # storage backend (rethinkdb) and bigchaindb can be rolled out
@@ -90,6 +89,6 @@ fab -H $HORST -f fab_prepare_chain.py init_bigchaindb
 fab start_bigchaindb_nodes
 
 # cleanup
-rm add2known_hosts.sh add2dbconf
+rm add2known_hosts.sh
 
 # DONE

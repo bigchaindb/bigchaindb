@@ -4,11 +4,10 @@
 2. tags them with the specified tag,
 3. waits until those instances exist and are running,
 4. for each instance, allocates an elastic IP address
-   and associates it with that instance, and
-5. creates three files:
-   * add2known_hosts.sh
-   * add2dbconf
-   * hostlist.py
+   and associates it with that instance,
+5. writes the shellscript add2known_hosts.sh
+6. (over)writes a file named hostlist.py
+   containing a list of all public DNS names.
 """
 
 from __future__ import unicode_literals
@@ -147,45 +146,30 @@ for i, instance in enumerate(instances_with_tag):
     print('was associated with the instance with id {}'.
           format(instance.instance_id))
 
+# Get a list of the pubic DNS names of the instances_with_tag
+hosts_dev = []
+for instance in instances_with_tag:
+    public_dns_name = getattr(instance, 'public_dns_name', None)
+    if public_dns_name is not None:
+        hosts_dev.append(public_dns_name)
+
+# Write a shellscript to add remote keys to ~/.ssh/known_hosts
+print('Preparing shellscript to add remote keys to known_hosts')
+with open('add2known_hosts.sh', 'w') as f:
+    f.write('#!/bin/bash\n')
+    for public_dns_name in hosts_dev:
+        f.write('ssh-keyscan ' + public_dns_name + ' >> ~/.ssh/known_hosts\n')
+
+# Create a file named hostlist.py containing hosts_dev.
+# If a hostlist.py already exists, it will be overwritten.
+print('Writing hostlist.py')
+with open('hostlist.py', 'w') as f:
+    f.write('# -*- coding: utf-8 -*-\n')
+    f.write('from __future__ import unicode_literals\n')
+    f.write('hosts_dev = {}\n'.format(hosts_dev))
+
+# Wait
 wait_time = 45
 print('Waiting {} seconds to make sure all instances are ready...'.
       format(wait_time))
 time.sleep(wait_time)
-
-# Get a list of the pubic DNS names of the instances_with_tag
-publist = []
-for instance in instances_with_tag:
-    public_dns_name = getattr(instance, 'public_dns_name', None)
-    if public_dns_name is not None:
-        publist.append(public_dns_name)
-
-# Create shellscript add2known_hosts.sh for adding remote keys to known_hosts
-with open('add2known_hosts.sh', 'w') as f:
-    f.write('#! /bin/bash\n')
-    for public_dns_name in publist:
-        f.write('ssh-keyscan ' + public_dns_name + ' >> ~/.ssh/known_hosts\n')
-
-# Create a file named add2dbconf, overwriting one if it already exists
-with open('add2dbconf', 'w') as f:
-    f.write('## The host:port of a node that RethinkDB will connect to\n')
-    for public_dns_name in publist:
-        f.write('join=' + public_dns_name + ':29015\n')
-
-# Note: The original code by Andreas wrote a file with lines of the form
-#       join=public_dns_name_0:29015
-#       join=public_dns_name_1:29015
-#       but it stopped about halfway through the list of public_dns_names
-#       (publist). In principle, it's only strictly necessary to
-#       have one join= line.
-#       Maybe Andreas thought that more is better, but all is too much?
-#       Below is Andreas' original code. -Troy
-# localFile = open('add2dbconf', 'w')
-# before = 'join='
-# after = ':29015'
-# localFile.write('## The host:port of a node that rethinkdb will connect to\n')
-# for entry in range(0,int(len(publist)/2)):
-#     localFile.write(before + publist[entry] + after + '\n')
-
-# Create a file named hostlist.py, overwriting one if it already exists
-with open('hostlist.py', 'w') as f:
-    f.write('hosts_dev = {}'.format(publist))
