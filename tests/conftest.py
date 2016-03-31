@@ -33,14 +33,14 @@ CONFIG_ED25519 = {
         'name': DB_NAME
     },
     'keypair': {
-        'private': '3wssdnSNsZYLvvQwuag5QNQnSfc5N38KV1ZeAoeHQQVe59N7vReJwXWANf5nncGxW63UzR4qHHv6DJhyLs9arJng',
-        'public': '4spEuJCR6UNkS9Qyz6QwseU3ENRaypkcVgGKDeqfg8Ha'
+        'private': '31Lb1ZGKTyHnmVK3LUMrAUrPNfd4sE2YyBt3UA4A25aA',
+        'public': '4XYfCbabAWVUCbjTmRTFEu2sc3dFEdkse4r6X498B1s8'
     }
 }
 
 # Test user. inputs will be created for this user. Cryptography Keys
-USER_PRIVATE_KEY_ED25519 = '3RZ3Kn8JbzyNwqzDwhU4dkZFFcwVkfgjhKiiqybfabxFAaANZqPemEudxTYMKfkbrHADTGCkvR7uQHSjihsXLbcM'
-USER_PUBLIC_KEY_ED25519 = '2XJT5M6D3fYhvDbgcHmGMUcrGeZ9MtCWGqQZZVXghjv9'
+USER_PRIVATE_KEY_ED25519 = '8eJ8q9ZQpReWyQT5aFCiwtZ5wDZC4eDnCen88p3tQ6ie'
+USER_PUBLIC_KEY_ED25519 = 'JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE'
 
 
 @pytest.fixture
