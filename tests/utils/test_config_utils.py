@@ -106,28 +106,30 @@ def test_env_config(monkeypatch):
 
 
 def test_autoconfigure_read_both_from_file_and_env(monkeypatch):
-    monkeypatch.setattr('bigchaindb.config_utils.file_config', lambda: {})
-    monkeypatch.setattr('os.environ', {'BIGCHAINDB_DATABASE_HOST': 'test-host',
-                                       'BIGCHAINDB_DATABASE_PORT': '4242'})
+    file_config = {
+        'database': {'host': 'test-host'}
+    }
+    monkeypatch.setattr('bigchaindb.config_utils.file_config', lambda *args, **kwargs: file_config)
+    monkeypatch.setattr('os.environ', {'BIGCHAINDB_DATABASE_NAME': 'test-dbname',
+                                       'BIGCHAINDB_DATABASE_PORT': '4242',
+                                       'BIGCHAINDB_KEYRING': 'pubkey_0:pubkey_1:pubkey_2'})
 
     import bigchaindb
     from bigchaindb import config_utils
     config_utils.autoconfigure()
 
-    assert bigchaindb.config['database']['host'] == 'test-host'
-    assert bigchaindb.config['database']['port'] == 4242
     assert bigchaindb.config == {
         'CONFIGURED': True,
         'database': {
             'host': 'test-host',
             'port': 4242,
-            'name': 'bigchain',
+            'name': 'test-dbname',
         },
         'keypair': {
             'public': None,
             'private': None,
         },
-        'keyring': [],
+        'keyring': ['pubkey_0', 'pubkey_1', 'pubkey_2'],
         'statsd': {
             'host': 'localhost',
             'port': 8125,

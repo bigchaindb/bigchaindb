@@ -14,7 +14,7 @@ def mock_run_configure(monkeypatch):
 @pytest.fixture
 def mock_file_config(monkeypatch):
     from bigchaindb import config_utils
-    monkeypatch.setattr(config_utils, 'file_config', lambda *args: None)
+    monkeypatch.setattr(config_utils, 'file_config', lambda *args, **kwargs: {})
 
 
 @pytest.fixture

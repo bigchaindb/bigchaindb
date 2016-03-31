@@ -26,7 +26,7 @@ def run_show_config(args):
     # TODO Proposal: remove the "hidden" configuration. Only show config. If
     # the system needs to be configured, then display information on how to
     # configure the system.
-    bigchaindb.config_utils.file_config(args.config)
+    bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
     pprint(bigchaindb.config)
 
 

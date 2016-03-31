@@ -29,7 +29,6 @@ For more information check the help with `bigchaindb -h`.
 # Precedence in reading configuration values
 
 Note that there is a precedence in reading configuration values:
- - (**not yet**) command line;
  - local config file;
  - environment vars;
  - default config file (contained in ``bigchaindb.__init__``).
@@ -46,28 +45,36 @@ This means that if the default configuration contains an entry that is:
 while your local file `local.json` contains:
 ```
 {...
-    "database": {"host": "whatever"}
+    "database": {"host": "ec2-xx-xx-xxx-xxx.eu-central-1.compute.amazonaws.com"}
 ...}
 ```
 
 and you run this command:
 ```
-$ BIGCHAINDB_DATABASE_HOST=foobar BIGCHAINDB_DATABASE_PORT=42000 bigchaindb -c local.json show-config
+$ BIGCHAINDB_DATABASE_HOST=anotherhost.com \
+  BIGCHAINDB_DATABASE_PORT=4242 \
+  BIGCHAINDB_KEYRING=pubkey0:pubkey1 \
+  bigchaindb -c local.json show-config
 ```
 
 you will get:
 ```
+Cannot find config file `/home/vrde/.bigchaindb`.
 INFO:bigchaindb.config_utils:Configuration loaded from `local.json`
 {'CONFIGURED': True,
  'api_endpoint': 'http://localhost:8008/api/v1',
  'consensus_plugin': 'default',
- 'database': {'host': 'localhost', 'name': 'bigchain', 'port': 28015},
- 'keypair': {'private': 'Hbqvh...',
-             'public': '2Bi5NU...'},
- 'keyring': [],
+ 'database': {'host': 'ec2-xx-xx-xxx-xxx.eu-central-1.compute.amazonaws.com',
+              'name': 'bigchain',
+              'port': 4242},
+ 'keypair': {'private': None, 'public': None},
+ 'keyring': ['pubkey0', 'pubkey1'],
  'statsd': {'host': 'localhost', 'port': 8125, 'rate': 0.01}}
-
 ```
+
+Note that the type of `keyring` is a list. If you want to pass a list as an
+environ variable you need to use colon (`:`) as separator.
+
 
 # List of env variables
 
@@ -77,6 +84,7 @@ INFO:bigchaindb.config_utils:Configuration loaded from `local.json`
 - BIGCHAINDB_DATABASE_NAME
 - BIGCHAINDB_KEYPAIR_PUBLIC
 - BIGCHAINDB_KEYPAIR_PRIVATE
+- BIGCHAINDB_KEYRING
 - BIGCHAINDB_STATSD_HOST
 - BIGCHAINDB_STATSD_PORT
 - BIGCHAINDB_STATSD_RATE

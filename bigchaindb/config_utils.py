@@ -155,19 +155,37 @@ def update_types(config):
 
     reference = bigchaindb.config
 
+    def _coerce(current, value):
+        # Coerce a value to the `current` type.
+        try:
+            # First we try to apply current to the value, since it
+            # might be a function
+            return current(value)
+        except TypeError:
+            # Then we check if current is a list AND if the value
+            # is a string.
+            if isinstance(current, list) and isinstance(value, str):
+                # If so, we use the colon as the separator
+                return value.split(':')
+
+            try:
+                # If we are here, we should try to apply the type
+                # of `current` to the value
+                return type(current)(value)
+            except TypeError:
+                # Worst case scenario we return the value itself.
+                return value
+
     def _update_type(value, path):
-        ref = reference
+        current = reference
 
         for elem in path:
-            ref = ref[elem]
-
-        try:
-            return ref(value)
-        except TypeError:
             try:
-                return type(ref)(value)
-            except TypeError:
+                current = current[elem]
+            except KeyError:
                 return value
+
+        return _coerce(current, value)
 
     return map_leafs(_update_type, config)
 
@@ -207,6 +225,7 @@ def autoconfigure(filename=None, config=None, force=False):
     been initialized."""
 
     if not force and bigchaindb.config.get('CONFIGURED'):
+        logger.info('System already configured, skipping autoconfiguration')
         return
 
     newconfig = env_config(bigchaindb.config)
@@ -215,9 +234,10 @@ def autoconfigure(filename=None, config=None, force=False):
         newconfig = update(newconfig, config)
 
     try:
-        newconfig = update(newconfig, file_config())
-    except FileNotFoundError:
-        logger.warning('Cannot find your config file.')
+        # import pdb; pdb.set_trace()
+        newconfig = update(newconfig, file_config(filename=filename))
+    except FileNotFoundError as e:
+        logger.warning('Cannot find config file `%s`.' % e.filename)
 
     dict_config(newconfig)
     return newconfig
