@@ -8,43 +8,8 @@ Note that there is a precedence in reading configuration values:
  - local config file;
  - environment vars;
  - default config file (contained in ``bigchaindb.__init__``).
-
-This means that if the default configuration contains an entry that is:
-
-```
-{...
-    "database": {"host": "localhost",
-                 "port": 28015}
-...}
-```
-
-while your local file `local.json` contains:
-```
-{...
-    "database": {"host": "whatever"}
-...}
-```
-
-and you run this command:
-```
-$ BIGCHAINDB_DATABASE_HOST=foobar BIGCHAINDB_DATABASE_PORT=42000 bigchaindb -c local.json show-config
-```
-
-You will get:
-```
-INFO:bigchaindb.config_utils:Configuration loaded from `local.json`
-{'CONFIGURED': True,
- 'api_endpoint': 'http://localhost:8008/api/v1',
- 'consensus_plugin': 'default',
- 'database': {'host': 'localhost', 'name': 'bigchain', 'port': 28015},
- 'keypair': {'private': 'Hbqvh...',
-             'public': '2Bi5NU...'},
- 'keyring': [],
- 'statsd': {'host': 'localhost', 'port': 8125, 'rate': 0.01}}
-
-```
-
 """
+
 
 import os
 import copy
