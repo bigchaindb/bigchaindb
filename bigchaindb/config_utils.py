@@ -5,7 +5,6 @@ By calling `file_config`, the global configuration (stored in
 configuration file.
 
 Note that there is a precedence in reading configuration values:
- - (**not yet**) command line;
  - local config file;
  - environment vars;
  - default config file (contained in ``bigchaindb.__init__``).
