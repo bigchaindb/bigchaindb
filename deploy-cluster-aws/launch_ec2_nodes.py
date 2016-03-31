@@ -15,7 +15,32 @@ from __future__ import unicode_literals
 import os
 import time
 import argparse
+import botocore
 import boto3
+
+
+def get_naeips(client0):
+    """Get a list of non-associated elastic IP addresses (NAEIPs) on EC2.
+
+    Args:
+        client0: A client created from an EC2 resource.
+                 e.g. client0 = ec2.meta.client
+                 See http://boto3.readthedocs.org/en/latest/guide/clients.html
+
+    Returns:
+        A list of NAEIPs in the EC2 account associated with the client.
+        To interpret the contents, see http://tinyurl.com/hrnuy74
+    """
+    # response is a dict with 2 keys: Addresses and ResponseMetadata
+    # See http://tinyurl.com/hrnuy74
+    response = client0.describe_addresses()
+    allocated_eips = response['Addresses']
+    non_associated_eips = []
+    for eip in allocated_eips:
+        if 'InstanceId' not in eip:
+            non_associated_eips.append(eip)
+    return non_associated_eips
+
 
 AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
 AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
@@ -34,11 +59,53 @@ args = parser.parse_args()
 tag = args.tag
 num_nodes = int(args.nodes)
 
-# Connect to Amazon EC2
+# Get an AWS EC2 "resource"
+# See http://boto3.readthedocs.org/en/latest/guide/resources.html
 ec2 = boto3.resource(service_name='ec2',
                      region_name=AWS_REGION,
                      aws_access_key_id=AWS_ACCESS_KEY_ID,
                      aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
+
+# Create a client from the EC2 resource
+# See http://boto3.readthedocs.org/en/latest/guide/clients.html
+client = ec2.meta.client
+
+# Before launching any instances, make sure they have sufficient
+# allocated-but-unassociated EC2-Classic elastic IP addresses
+print('Checking if you have enough allocated-but-unassociated ' +
+      'EC2-Classic elastic IP addresses...')
+
+non_associated_eips = get_naeips(client)
+
+print('You have {} allocated elactic IPs which are '
+      'not already associated with instances'.
+      format(len(non_associated_eips)))
+
+# Note that the allocated addresses may include
+# EC2-Classic and EC2-VPC elastic IP addresses.
+# For now, I will assume that doesn't matter.
+# -Troy
+
+if num_nodes > len(non_associated_eips):
+    num_eips_to_allocate = num_nodes - len(non_associated_eips)
+    print('You want to launch {} instances'.
+          format(num_nodes))
+    print('so {} more elastic IPs must be allocated'.
+          format(num_eips_to_allocate))
+    for _ in range(num_eips_to_allocate):
+        try:
+            # Allocate an elastic IP address
+            # response is a dict. See http://tinyurl.com/z2n7u9k
+            response = client.allocate_address(DryRun=False, Domain='standard')
+        except botocore.exceptions.ClientError:
+            print('Something went wrong when allocating an '
+                  'EC2-Classic elastic IP address on EC2. '
+                  'Maybe you are already at the maximum number allowed '
+                  'by your AWS account? More details:')
+            raise
+        except:
+            print('Unexpected error:')
+            raise
 
 print('Commencing launch of {} instances on Amazon EC2...'.
       format(num_nodes))
@@ -79,17 +146,19 @@ print('Waiting until all those instances are running...')
 for instance in instances_with_tag:
     instance.wait_until_running()
 
-print('Allocating elastic IP addresses and assigning them to the instances...')
+print('Associating allocated-but-unassociated elastic IPs ' +
+      'with the instances...')
 
-for instance in instances_with_tag:
-    # Create a client from the ec2 resource
-    # See http://boto3.readthedocs.org/en/latest/guide/clients.html
-    client = ec2.meta.client
+# Get a list of elastic IPs which are allocated but
+# not associated with any instances.
+# There should be enough because we checked earlier and
+# allocated more if necessary.
+non_associated_eips_2 = get_naeips(client)
 
-    # Acquire an Elastic IP address
-    # response is a dict. See http://tinyurl.com/z2n7u9k
-    response = client.allocate_address(DryRun=False, Domain='standard')
-    public_ip = response['PublicIp']
+for i, instance in enumerate(instances_with_tag):
+    print('Grabbing an allocated but non-associated elastic IP...')
+    eip = non_associated_eips_2[i]
+    public_ip = eip['PublicIp']
     print('The public IP address {}'.format(public_ip))
 
     # Associate that Elastic IP address with an instance
