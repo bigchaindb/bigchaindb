@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 """This script:
-1. Launches the specified number of nodes (instances) on Amazon EC2,
+0. allocates more elastic IP addresses if necessary,
+1. launches the specified number of nodes (instances) on Amazon EC2,
 2. tags them with the specified tag,
 3. waits until those instances exist and are running,
-4. for each instance, allocates an elastic IP address
-   and associates it with that instance,
+4. for each instance, it associates an elastic IP address
+   with that instance,
 5. writes the shellscript add2known_hosts.sh
 6. (over)writes a file named hostlist.py
    containing a list of all public DNS names.
@@ -47,20 +48,15 @@ ec2 = boto3.resource(service_name='ec2',
 client = ec2.meta.client
 
 # Before launching any instances, make sure they have sufficient
-# allocated-but-unassociated EC2-Classic elastic IP addresses
+# allocated-but-unassociated EC2 elastic IP addresses
 print('Checking if you have enough allocated-but-unassociated ' +
-      'EC2-Classic elastic IP addresses...')
+      'EC2 elastic IP addresses...')
 
 non_associated_eips = get_naeips(client)
 
 print('You have {} allocated elactic IPs which are '
       'not already associated with instances'.
       format(len(non_associated_eips)))
-
-# Note that the allocated addresses may include
-# EC2-Classic and EC2-VPC elastic IP addresses.
-# For now, I will assume that doesn't matter.
-# -Troy
 
 if num_nodes > len(non_associated_eips):
     num_eips_to_allocate = num_nodes - len(non_associated_eips)
@@ -75,7 +71,7 @@ if num_nodes > len(non_associated_eips):
             response = client.allocate_address(DryRun=False, Domain='standard')
         except botocore.exceptions.ClientError:
             print('Something went wrong when allocating an '
-                  'EC2-Classic elastic IP address on EC2. '
+                  'EC2 elastic IP address on EC2. '
                   'Maybe you are already at the maximum number allowed '
                   'by your AWS account? More details:')
             raise

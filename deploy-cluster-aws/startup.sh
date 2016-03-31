@@ -50,11 +50,12 @@ fi
 chmod 0400 pem/bigchaindb.pem
 
 # The following Python script does these things:
-# 1. Launches the specified number of nodes (instances) on Amazon EC2,
+# 0. allocates more elastic IP addresses if necessary,
+# 1. launches the specified number of nodes (instances) on Amazon EC2,
 # 2. tags them with the specified tag,
 # 3. waits until those instances exist and are running,
-# 4. for each instance, allocates an elastic IP address
-#    and associates it with that instance,
+# 4. for each instance, it associates an elastic IP address
+#    with that instance,
 # 5. writes the shellscript add2known_hosts.sh
 # 6. (over)writes a file named hostlist.py
 #    containing a list of all public DNS names.
