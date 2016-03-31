@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-"""(Re)create the RethinkDB configuration file conf/bigchaindb.conf.
-Start with conf/bigchaindb.conf.template
+"""(Re)create the RethinkDB configuration file conf/rethinkdb.conf.
+Start with conf/rethinkdb.conf.template
 then append additional configuration settings (lines).
 """
 
@@ -13,14 +13,14 @@ from hostlist import hosts_dev
 # cwd = current working directory
 old_cwd = os.getcwd()
 os.chdir('conf')
-if os.path.isfile('bigchaindb.conf'):
-    os.remove('bigchaindb.conf')
+if os.path.isfile('rethinkdb.conf'):
+    os.remove('rethinkdb.conf')
 
-# Create the initial bigchaindb.conf using bigchaindb.conf.template
-shutil.copy2('bigchaindb.conf.template', 'bigchaindb.conf')
+# Create the initial rethinkdb.conf using rethinkdb.conf.template
+shutil.copy2('rethinkdb.conf.template', 'rethinkdb.conf')
 
-# Append additional lines to bigchaindb.conf
-with open('bigchaindb.conf', 'a') as f:
+# Append additional lines to rethinkdb.conf
+with open('rethinkdb.conf', 'a') as f:
     f.write('## The host:port of a node that RethinkDB will connect to\n')
     for public_dns_name in hosts_dev:
         f.write('join=' + public_dns_name + ':29015\n')

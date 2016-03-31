@@ -65,8 +65,8 @@ python launch_ec2_nodes.py --tag $TAG --nodes $NODES
 chmod +x add2known_hosts.sh
 ./add2known_hosts.sh
 
-# (Re)create the RethinkDB configuration file conf/bigchaindb.conf
-python create_bigchaindb_conf.py
+# (Re)create the RethinkDB configuration file conf/rethinkdb.conf
+python create_rethinkdb_conf.py
 
 # rollout base packages (dependencies) needed before
 # storage backend (rethinkdb) and bigchaindb can be rolled out
@@ -79,10 +79,10 @@ fab install_rethinkdb
 fab install_bigchaindb
 
 # generate genesis block
-# HORST is the last public_dns_name listed in conf/bigchaindb.conf
+# HORST is the last public_dns_name listed in conf/rethinkdb.conf
 # For example:
 # ec2-52-58-86-145.eu-central-1.compute.amazonaws.com
-HORST=`tail -1 conf/bigchaindb.conf|cut -d: -f1|cut -d= -f2`
+HORST=`tail -1 conf/rethinkdb.conf|cut -d: -f1|cut -d= -f2`
 fab -H $HORST -f fab_prepare_chain.py init_bigchaindb
 
 # initiate sharding
