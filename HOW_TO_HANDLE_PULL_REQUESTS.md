@@ -8,9 +8,7 @@ If the pull request is from someone who is _not_ an employee of ascribe, then:
 
 * Have they agreed to the Individual Contributor Agreement in the past? (Troy, Greg, and others have a list.) If yes, then you can merge the PR and ignore the rest of this document.
 * Do they belong to a company or organization which agreed to the Entity Contributor Agreement in the past, and will they be contributing on behalf of that company or organization? (Troy, Greg, and others have a list.) If yes, then you can merge the PR and ignore the rest of this document.
-* Otherwise, do the following:
-
-1. Go to the pull request in question and post a comment using this template:
+* Otherwise, go to the pull request in question and post a comment using this template:
 
 Hi @nameofuser
 
