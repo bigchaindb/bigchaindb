@@ -16,10 +16,7 @@ The instructions that follow have been tested on Ubuntu 14.04, but may also work
 
 Our Python scripts for deploying to AWS use Python 2, so maybe create a Python 2 virtual environment and activate it. Then install the following Python packages (in that virtual environment):
 ```text
-pip install fabric
-pip install fabtools
-pip install requests
-pip install boto3
+pip install fabric fabtools requests boto3
 ```
 
 What did you just install?
