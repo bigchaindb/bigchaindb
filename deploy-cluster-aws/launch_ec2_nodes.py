@@ -53,6 +53,23 @@ ec2 = boto3.resource(service_name='ec2')
 # See http://boto3.readthedocs.org/en/latest/guide/clients.html
 client = ec2.meta.client
 
+# Ensure they don't already have some instances with the specified tag
+# Get a list of all instances with the specified tag.
+# (Technically, instances_with_tag is an ec2.instancesCollection.)
+filters = [{'Name': 'tag:Name', 'Values': [tag]}]
+instances_with_tag = ec2.instances.filter(Filters=filters)
+# len() doesn't work on instances_with_tag. This does:
+num_ins = 0
+for instance in instances_with_tag:
+    num_ins += 1
+if num_ins != 0:
+    print('You already have {} instances with the tag {} on EC2.'.
+          format(num_ins, tag))
+    print('You should either pick a different tag or '
+          'terminate all those instances and '
+          'wait until they vanish from your EC2 Console.')
+    sys.exit(1)
+
 # Before launching any instances, make sure they have sufficient
 # allocated-but-unassociated EC2 elastic IP addresses
 print('Checking if you have enough allocated-but-unassociated ' +
