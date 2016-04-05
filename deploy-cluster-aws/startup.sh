@@ -23,22 +23,8 @@ fi
 
 TAG=$1
 NODES=$2
-FAB=`which fab`
 
-# It seems BIGCHAINDIR was never used, but I wasn't sure
-# so I just commented-out the following lines. -Troy
-#DEPLOYDIR=`pwd`
-#BIGCHAINDIR=`dirname $DEPLOYDIR`
-#export BIGCHAINDIR
-
-# Check if python-fabric is installed
-if [ ! -f "$FAB" ]
-    then
-        echo "python-fabric is not installed"
-        exit 1
-fi
-
-# Check for AWS private key file  pem-file and changing access rights
+# Check for AWS private key file (.pem file)
 if [ ! -f "pem/bigchaindb.pem" ]
     then
         echo "File pem/bigchaindb.pem (AWS private key) is missing"
