@@ -40,8 +40,10 @@ At a high level, a "digital asset" is something which can be represented digital
 In BigchainDB, only the federation nodes are allowed to create digital assets, by doing a special kind of transaction: a `CREATE` transaction.
 
 ```python
+from bigchaindb import crypto
+
 # create a test user
-testuser1_priv, testuser1_pub = b.generate_keys()
+testuser1_priv, testuser1_pub = crypto.generate_key_pair()
 
 # define a digital asset data payload
 digital_asset_payload = {'msg': 'Hello BigchainDB!'}
