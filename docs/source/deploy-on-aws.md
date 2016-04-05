@@ -107,7 +107,20 @@ cd deploy-cluster-aws
 10. generates the genesis block,
 11. starts BigchainDB on all instances.
 
-It should take a few minutes for the deployment to finish. Once it's finished, you can login to your AWS EC2 Console (on the web) to see the instances just launched.
+It should take a few minutes for the deployment to finish. If you run into problems, see the section on Known Deployment Issues below.
+
+The EC2 Console has a section where you can see all the instances you have running on EC2. You can `ssh` into a running instance using a command like:
+```text
+ssh -i pem/bigchaindb.pem ubuntu@ec2-52-29-197-211.eu-central-1.compute.amazonaws.com
+```
+
+except you'd replace the `ec2-52-29-197-211.eu-central-1.compute.amazonaws.com` with the public DNS name of the instance you want to `ssh` into. You can get that from the EC2 Console: just click on an instance and look in its details pane at the bottom of the screen. Some commands you might try:
+```text
+ip addr show
+sudo service rethinkdb status
+bigchaindb --help
+bigchaindb show-config
+```
 
 There are fees associated with running instances on EC2, so if you're not using them, you should terminate them. You can do that from the AWS EC2 Console.
 
