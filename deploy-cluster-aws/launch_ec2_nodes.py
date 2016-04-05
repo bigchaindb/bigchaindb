@@ -12,6 +12,7 @@
 """
 
 from __future__ import unicode_literals
+import sys
 import time
 import argparse
 import botocore
@@ -20,6 +21,17 @@ from awscommon import (
     get_naeips,
 )
 
+# First, ensure they're using Python 2.5-2.7
+pyver = sys.version_info
+major = pyver[0]
+minor = pyver[1]
+print('You are in an environment where "python" is Python {}.{}'.
+      format(major, minor))
+if not ((major == 2) and (minor >= 5) and (minor <= 7)):
+    print('but Fabric only works with Python 2.5-2.7')
+    sys.exit(1)
+
+# Parse the command-line arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("--tag",
                     help="tag to add to all launched instances on AWS",
@@ -48,7 +60,7 @@ print('Checking if you have enough allocated-but-unassociated ' +
 
 non_associated_eips = get_naeips(client)
 
-print('You have {} allocated elactic IPs which are '
+print('You have {} allocated elastic IPs which are '
       'not already associated with instances'.
       format(len(non_associated_eips)))
 
