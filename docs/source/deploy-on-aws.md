@@ -113,7 +113,7 @@ There are fees associated with running instances on EC2, so if you're not using 
 
 The same is true of your allocated elastic IP addresses. There's a small fee to keep them allocated if they're not associated with a running instance. You can release them from the AWS EC2 Console.
 
-## Known Issues
+## Known Deployment Issues
 
 ### NetworkError
 
@@ -130,6 +130,10 @@ mv ~/.ssh/known_hosts ~/.ssh/old_known_hosts
 ```
 
 Then terminate your instances and try deploying again with a different tag.
+
+### Failure of sudo apt-get update
+
+The first thing that's done on all the instances, once they're running, is basically [`sudo apt-get update`](http://askubuntu.com/questions/222348/what-does-sudo-apt-get-update-do). Sometimes that fails. If so, just terminate your instances and try deploying again with a different tag. (These problems seem to be time-bounded, so maybe wait a couple of hours before retrying.)
 
 ### Failure when Installing Base Software
 
