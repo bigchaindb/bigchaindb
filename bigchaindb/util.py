@@ -76,7 +76,7 @@ def timestamp():
     return "{0:.6f}".format(time.mktime(dt.timetuple()) + dt.microsecond / 1e6)
 
 
-def create_tx(current_owner, new_owner, inputs, operation, payload=None):
+def create_tx(current_owners, new_owners, inputs, operation, payload=None):
     """Create a new transaction
 
     A transaction in the bigchain is a transfer of a digital asset between two entities represented
@@ -104,6 +104,42 @@ def create_tx(current_owner, new_owner, inputs, operation, payload=None):
 
     Raises:
         TypeError: if the optional ``payload`` argument is not a ``dict``.
+
+    Reference:
+        {
+            "id": "<sha3 hash>",
+            "version": "transaction version number",
+            "transaction": {
+                "fulfillments": [
+                        {
+                            "current_owners": ["list of <pub-keys>"],
+                            "input": {
+                                "txid": "<sha3 hash>",
+                                "cid": "condition index"
+                            },
+                            "fulfillment": "fulfillement of condition cid",
+                            "fid": "fulfillment index"
+                        }
+                    ],
+                "conditions": [
+                        {
+                            "new_owners": ["list of <pub-keys>"],
+                            "condition": "condition to be met",
+                            "cid": "condition index (1-to-1 mapping with fid)"
+                        }
+                    ],
+                "operation": "<string>",
+                "timestamp": "<timestamp from client>",
+                "data": {
+                    "hash": "<SHA3-256 hash hexdigest of payload>",
+                    "payload": {
+                        "title": "The Winds of Plast",
+                        "creator": "Johnathan Plunkett",
+                        "IPFS_key": "QmfQ5QAjvg4GtA3wg3adpnDJug8ktA1BxurVqBD8rtgVjP"
+                    }
+                }
+            },
+        }  
     """
 
     # handle payload
@@ -124,13 +160,38 @@ def create_tx(current_owner, new_owner, inputs, operation, payload=None):
         'payload': payload
     }
 
-    if inputs == []:
-        inputs = None
+    # handle inputs
+    fulfillments = []
+    # transfer
+    if inputs:
+        for fid, inp in enumerate(inputs):
+            fulfillments.append({
+                'current_owners': current_owners,
+                'input': inp,
+                'fulfillment': None,
+                'fid': fid
+            })
+    # create
+    else:
+        fulfillments.append({
+            'current_owners': current_owners,
+            'input': None,
+            'fulfillment': None,
+            'fid': 0
+        })
+
+    # handle outputs
+    conditions = []
+    for fulfillment in fulfillments:
+        conditions.append({
+            'new_owners': new_owners,
+            'condition': None,
+            'cid': fulfillment['fid']
+        })
 
     tx = {
-        'current_owner': current_owner,
-        'new_owner': new_owner,
-        'inputs': inputs,
+        'fulfillments': fulfillments,
+        'conditions': conditions,
         'operation': operation,
         'timestamp': timestamp(),
         'data': data
@@ -143,12 +204,14 @@ def create_tx(current_owner, new_owner, inputs, operation, payload=None):
     # create the transaction
     transaction = {
         'id': tx_hash,
+        'version': 1,
         'transaction': tx
     }
 
     return transaction
 
 
+#TODO: Change sign_tx to populate the fulfillments
 def sign_tx(transaction, private_key):
     """Sign a transaction
 
@@ -159,14 +222,43 @@ def sign_tx(transaction, private_key):
         private_key (str): base58 encoded private key to create a signature of the transaction.
 
     Returns:
-        dict: transaction with the `signature` field included.
+        dict: transaction with the `fulfillment` fields populated.
 
     """
+    b = bigchaindb.Bigchain()
     private_key = PrivateKey(private_key)
-    signature = private_key.sign(serialize(transaction))
-    signed_transaction = transaction.copy()
-    signed_transaction.update({'signature': signature})
-    return signed_transaction
+
+    common_data = {
+        'operation': transaction['transaction']['operation'],
+        'timestamp': transaction['transaction']['timestamp'],
+        'data': transaction['transaction']['data'],
+        'version': transaction['version'],
+        'id': transaction['id']
+    }
+
+    for fulfillment in transaction['transaction']['fulfillments']:
+        fulfillment_message = common_data.copy()
+        if transaction['transaction']['operation'] == 'CREATE':
+            fulfillment_message.update({
+                'input': None,
+                'condition': None
+            })
+        else:
+            # get previous condition
+            previous_tx = b.get_transaction(fulfillment['input']['txid'])
+            conditions = sorted(previous_tx['transaction']['conditions'], key=lambda d: d['cid'])
+        
+            # update the fulfillment message
+            fulfillment_message.update({
+                'input': fulfillment['input'],
+                'condition': conditions[fulfillment['cid']]
+            })
+
+        # sign the fulfillment message
+        fulfillment_message_signature = private_key.sign(serialize(fulfillment_message))
+        fulfillment.update({'fulfillment': fulfillment_message_signature})
+
+    return transaction
 
 
 def create_and_sign_tx(private_key, current_owner, new_owner, tx_input, operation='TRANSFER', payload=None):
