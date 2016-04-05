@@ -41,10 +41,14 @@ env.key_filename = 'pem/bigchaindb.pem'
 
 ######################################################################
 
-# base softwarestack rollout
+# base software rollout
 @task
 @parallel
 def install_base_software():
+    # new from Troy April 5, 2016. Why? See http://tinyurl.com/lccfrsj
+    sudo('rm -rf /var/lib/apt/lists/*')
+    sudo('apt-get -y clean')
+    # from before:
     sudo('apt-get -y update')
     sudo('dpkg --configure -a')
     sudo('apt-get -y -f install')
