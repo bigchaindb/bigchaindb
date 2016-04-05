@@ -20,6 +20,7 @@ Table of Contents
    http-client-server-api
    python-driver-api-examples
    local-rethinkdb-cluster
+   deploy-on-aws
    cryptography
    models
    json-serialization

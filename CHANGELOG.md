@@ -19,6 +19,7 @@ Tag name: TBD
 committed: TBD
 
 ### Added
+- AWS deployment scripts: [Issue #151](https://github.com/bigchaindb/bigchaindb/issues/151)
 - `CHANGELOG.md` (this file)
 - Multisig support: [Pull Request #107](https://github.com/bigchaindb/bigchaindb/pull/107)
 - API/Wire protocol (RESTful HTTP API): [Pull Request #102](https://github.com/bigchaindb/bigchaindb/pull/102)
