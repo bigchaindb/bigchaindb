@@ -1,0 +1,32 @@
+codecov:
+  branch: develop    # the branch to show by default
+
+  # The help text for bot says:
+  # "the username that will consume any oauth requests
+  # must have previously logged into Codecov"
+  # In GitHub - BigchainDB organization settings - Third-party access,
+  # it says, for Codecov: "approval requested by r-marques"
+  bot: r-marques
+
+coverage:
+  precision: 2
+  round: down
+  range: "70...100"
+
+  status:
+    project:
+      target: auto
+      if_no_uploads: error
+
+    patch:
+      target: "80%"
+      if_no_uploads: error
+
+  ignore:          # files and folders that will be removed during processing
+    - "deploy-cluster-aws/*"
+    - "docs/*"
+    - "tests/*"
+
+comment:
+  layout: "header, diff, changes, sunburst, suggestions"
+  behavior: default
