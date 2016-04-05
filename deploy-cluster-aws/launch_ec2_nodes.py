@@ -17,9 +17,6 @@ import argparse
 import botocore
 import boto3
 from awscommon import (
-    AWS_ACCESS_KEY_ID,
-    AWS_SECRET_ACCESS_KEY,
-    AWS_REGION,
     get_naeips,
 )
 
@@ -38,10 +35,7 @@ num_nodes = int(args.nodes)
 
 # Get an AWS EC2 "resource"
 # See http://boto3.readthedocs.org/en/latest/guide/resources.html
-ec2 = boto3.resource(service_name='ec2',
-                     region_name=AWS_REGION,
-                     aws_access_key_id=AWS_ACCESS_KEY_ID,
-                     aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
+ec2 = boto3.resource(service_name='ec2')
 
 # Create a client from the EC2 resource
 # See http://boto3.readthedocs.org/en/latest/guide/clients.html

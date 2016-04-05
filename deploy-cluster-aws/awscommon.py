@@ -3,15 +3,13 @@
 """
 
 from __future__ import unicode_literals
-import os
 
 
 # Global constants
-AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
-AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
-AWS_REGION = os.environ['AWS_REGION']
+# None yet
 
 
+# Functions
 def get_naeips(client0):
     """Get a list of (allocated) non-associated elastic IP addresses
        (NAEIPs) on EC2.

@@ -14,9 +14,11 @@ That's true, but there are some reasons why one might want a centrally-controlle
 
 The instructions that follow have been tested on Ubuntu 14.04, but may also work on similar distros or operating systems.
 
-Our Python scripts for deploying to AWS use Python 2, so maybe create a Python 2 virtual environment and activate it. Then install the following Python packages (in that virtual environment):
+**Note: Our Python scripts for deploying to AWS use Python 2 because Fabric doesn't work with Python 3.**
+
+Maybe create a Python 2 virtual environment and activate it. Then install the following Python packages (in that virtual environment):
 ```text
-pip install fabric fabtools requests boto3
+pip install fabric fabtools requests boto3 awscli
 ```
 
 What did you just install?
@@ -25,8 +27,7 @@ What did you just install?
 * [fabtools](https://github.com/ronnix/fabtools) are "tools for writing awesome Fabric files"
 * [requests](http://docs.python-requests.org/en/master/) is a Python package/library for sending HTTP requests
 * "[Boto](https://boto3.readthedocs.org/en/latest/) is the Amazon Web Services (AWS) SDK for Python, which allows Python developers to write software that makes use of Amazon services like S3 and EC2." (`boto3` is the name of the latest Boto package.)
-
-Note: You _don't_ need to install `awscli` (AWS Command-Line Interface tools) but you can if you like.
+* [The aws-cli package](https://pypi.python.org/pypi/awscli), which is an AWS Command Line Interface (CLI).
 
 ## AWS Setup
 
@@ -36,21 +37,27 @@ Before you can deploy a BigchainDB cluster on AWS, you must have an AWS account.
 
 The next thing you'll need is an AWS access key. If you don't have one, you can create one using the [instructions in the AWS documentation](http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSGettingStartedGuide/AWSCredentials.html). You should get an access key ID (e.g. AKIAIOSFODNN7EXAMPLE) and a secret access key (e.g. wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY).
 
-Our AWS deployment scripts read the AWS access key information from environment variables. One way to set the appropriate environment variables is to edit your `~/.bashrc` file (or similar) by adding the lines:
+You should also pick a default AWS region name (e.g. `eu-central-1`). That's where your cluster will run. The AWS documentation has [a list of them](http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region).
+
+Once you've got your AWS access key, and you've picked a default AWS region name, go to a terminal session and enter:
 ```text
-export AWS_ACCESS_KEY_ID=[[insert AWS access key here, with no brackets]]
-export AWS_SECRET_ACCESS_KEY=[[insert AWS secret access key here, with no brackets]]
-export AWS_REGION=eu-central-1
+aws configure
 ```
 
-You can change the `AWS_REGION` to a different one if you like. (It's where the cluster will be deployed.) The AWS documentation has [a list of them](http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region).
-
-You can force your terminal to re-read `~/.bashrc` by using
+and answer the four questions. For example:
 ```text
-source ~/.bashrc
+AWS Access Key ID [None]: AKIAIOSFODNN7EXAMPLE
+AWS Secret Access Key [None]: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+Default region name [None]: eu-central-1
+Default output format [None]: [Press Enter]
 ```
 
-or by opening a new terminal session.
+This writes two files: 
+
+* `~/.aws/credentials`
+* `~/.aws/config`
+
+AWS tools and packages look for those files.
 
 ### Get Enough Amazon Elastic IP Addresses
 
