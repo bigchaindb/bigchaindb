@@ -203,7 +203,7 @@ class Bigchain(object):
         # checks if an input was already spent
         # checks if the bigchain has any transaction with input `transaction_id`
         response = r.table('bigchain').concat_map(lambda doc: doc['block']['transactions'])\
-            .filter(lambda transaction: transaction['transaction']['input'] == txid).run(self.conn)
+            .filter(lambda transaction: transaction['transaction']['inputs'].contains(txid)).run(self.conn)
 
         # a transaction_id should have been spent at most one time
         transactions = list(response)

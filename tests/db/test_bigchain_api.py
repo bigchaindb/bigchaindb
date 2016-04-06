@@ -717,3 +717,16 @@ class TestBigchainBlock(object):
 
     def test_duplicated_transactions(self):
         pytest.skip('We may have duplicates in the initial_results and changefeed')
+
+
+class TestMultipleInputs(object):
+
+    def test_transfer_transaction_multiple(self, b):
+        pass
+
+    def test_transfer_single_input_from_multi_input(self, b):
+        pass
+
+    def test_get_spent(self, b):
+        pass
+

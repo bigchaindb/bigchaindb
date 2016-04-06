@@ -119,7 +119,7 @@ class BaseConsensusRules(AbstractConsensusRules):
         # If the operation is CREATE the transaction should have no inputs and
         # should be signed by a federation node
         if transaction['transaction']['operation'] == 'CREATE':
-            if transaction['transaction']['input']:
+            if transaction['transaction']['inputs']:
                 raise ValueError('A CREATE operation has no inputs')
             if transaction['transaction']['current_owner'] not in (
                     bigchain.federation_nodes + [bigchain.me]):
@@ -128,32 +128,32 @@ class BaseConsensusRules(AbstractConsensusRules):
 
         else:
             # check if the input exists, is owned by the current_owner
-            if not transaction['transaction']['input']:
+            if not transaction['transaction']['inputs']:
                 raise ValueError(
                     'Only `CREATE` transactions can have null inputs')
 
-            tx_input = bigchain.get_transaction(
-                transaction['transaction']['input'])
+            # check inputs
+            for inp in transaction['transaction']['inputs']:
+                tx_input = bigchain.get_transaction(inp)
 
-            if not tx_input:
-                raise exceptions.TransactionDoesNotExist(
-                    'input `{}` does not exist in the bigchain'.format(
-                        transaction['transaction']['input']))
+                if not tx_input:
+                    raise exceptions.TransactionDoesNotExist(
+                        'input `{}` does not exist in the bigchain'.format(
+                            transaction['transaction']['input']))
 
-            if (tx_input['transaction']['new_owner'] !=
-                transaction['transaction']['current_owner']):
-                raise exceptions.TransactionOwnerError(
-                    'current_owner `{}` does not own the input `{}`'.format(
-                        transaction['transaction']['current_owner'],
-                        transaction['transaction']['input']))
+                if (tx_input['transaction']['new_owner'] !=
+                    transaction['transaction']['current_owner']):
+                    raise exceptions.TransactionOwnerError(
+                        'current_owner `{}` does not own the input `{}`'.format(
+                            transaction['transaction']['current_owner'],
+                            transaction['transaction']['input']))
 
-            # check if the input was already spent by a transaction other than
-            # this one.
-            spent = bigchain.get_spent(tx_input['id'])
-            if spent and spent['id'] != transaction['id']:
-                raise exceptions.DoubleSpend(
-                    'input `{}` was already spent'.format(
-                        transaction['transaction']['input']))
+                # check if the input was already spent by a transaction other than
+                # this one.
+                spent = bigchain.get_spent(tx_input['id'])
+                if spent and spent['id'] != transaction['id']:
+                    raise exceptions.DoubleSpend(
+                        'input `{}` was already spent'.format(inp))
 
         # Check hash of the transaction
         calculated_hash = crypto.hash_data(util.serialize(
