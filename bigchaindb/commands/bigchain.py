@@ -27,9 +27,11 @@ def run_show_config(args):
     # the system needs to be configured, then display information on how to
     # configure the system.
     bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
-    private_key = bigchaindb.config['keypair']['private']
-    bigchaindb.config['keypair']['private'] = 'x' * 45 if private_key else None
-    pprint(bigchaindb.config)
+    config = copy.deepcopy(bigchaindb.config)
+    del config['CONFIGURED']
+    private_key = config['keypair']['private']
+    config['keypair']['private'] = 'x' * 45 if private_key else None
+    pprint(config)
 
 
 def run_configure(args, skip_if_exists=False):
