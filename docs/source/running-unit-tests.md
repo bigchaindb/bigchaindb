@@ -26,7 +26,7 @@ You can also run all unit tests via `setup.py`, using:
 $  python setup.py test
 ```
 
-### Using `docker-compose` to Run the Tests
+### Using docker-compose to Run the Tests
 
 You can also use `docker-compose` to run the unit tests. (You don't have to start RethinkDB first: `docker-compose` does that on its own, when it reads the `docker-compose.yml` file.)
 

@@ -44,7 +44,7 @@ $ sudo dnf install libffi-devel gcc-c++ redhat-rpm-config python3-devel openssl-
 
 With OS-level dependencies installed, you can install BigchainDB Server with `pip` or from source.
 
-### How to Install BigchainDB with `pip`
+### How to Install BigchainDB with pip
 
 BigchainDB (i.e. both the Server and the officially-supported drivers) is distributed as a Python package on PyPI so you can install it using `pip`. First, make sure you have a version of `pip` installed for Python 3.4+:
 ```text
