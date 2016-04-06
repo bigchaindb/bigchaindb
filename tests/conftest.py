@@ -25,8 +25,8 @@ CONFIG_ECDSA = {
 }
 
 # Test user. inputs will be created for this user. Cryptography Keys
-USER_PRIVATE_KEY_ECDSA = 'GmRZxQdQv7tooMijXytQkexKuFN6mJocciJarAmMwTX2'
-USER_PUBLIC_KEY_ECDSA = 'r3cEu8GNoz8rYpNJ61k7GqfR8VEvdUbtyHce8u1kaYwh'
+USER_SIGNING_KEY_ECDSA = 'GmRZxQdQv7tooMijXytQkexKuFN6mJocciJarAmMwTX2'
+USER_VERIFYING_KEY_ECDSA = 'r3cEu8GNoz8rYpNJ61k7GqfR8VEvdUbtyHce8u1kaYwh'
 
 CONFIG_ED25519 = {
     'database': {
@@ -39,8 +39,8 @@ CONFIG_ED25519 = {
 }
 
 # Test user. inputs will be created for this user. Cryptography Keys
-USER_PRIVATE_KEY_ED25519 = '8eJ8q9ZQpReWyQT5aFCiwtZ5wDZC4eDnCen88p3tQ6ie'
-USER_PUBLIC_KEY_ED25519 = 'JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE'
+USER_SIGNING_KEY_ED25519 = '8eJ8q9ZQpReWyQT5aFCiwtZ5wDZC4eDnCen88p3tQ6ie'
+USER_VERIFYING_KEY_ED25519 = 'JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE'
 
 
 @pytest.fixture
@@ -55,13 +55,13 @@ def node_config():
 
 
 @pytest.fixture
-def user_private_key():
-    return USER_PRIVATE_KEY_ED25519
+def user_sk():
+    return USER_SIGNING_KEY_ED25519
 
 
 @pytest.fixture
-def user_public_key():
-    return USER_PUBLIC_KEY_ED25519
+def user_vk():
+    return USER_VERIFYING_KEY_ED25519
 
 
 @pytest.fixture

@@ -23,8 +23,8 @@ def test_remove_unclosed_sockets():
 
 class TestBigchainApi(object):
 
-    def test_create_transaction(self, b):
-        tx = b.create_transaction('a', 'b', 'c', 'd')
+    def test_create_transaction(self, b, user_sk):
+        tx = b.create_transaction(b.me, user_sk, None, 'CREATE')
 
         assert sorted(tx) == sorted(['id', 'transaction'])
         assert sorted(tx['transaction']) == sorted(['current_owner', 'new_owner', 'input', 'operation',
@@ -64,10 +64,10 @@ class TestBigchainApi(object):
         assert util.deserialize(util.serialize(tx)) == tx
 
     @pytest.mark.usefixtures('inputs')
-    def test_write_transaction(self, b, user_public_key, user_private_key):
-        input_tx = b.get_owned_ids(user_public_key).pop()
-        tx = b.create_transaction(user_public_key, 'b', input_tx, 'd')
-        tx_signed = b.sign_transaction(tx, user_private_key)
+    def test_write_transaction(self, b, user_vk, user_sk):
+        input_tx = b.get_owned_ids(user_vk).pop()
+        tx = b.create_transaction(user_vk, 'b', input_tx, 'd')
+        tx_signed = b.sign_transaction(tx, user_sk)
         response = b.write_transaction(tx_signed)
 
         assert response['skipped'] == 0
@@ -78,10 +78,10 @@ class TestBigchainApi(object):
         assert response['inserted'] == 1
 
     @pytest.mark.usefixtures('inputs')
-    def test_read_transaction(self, b, user_public_key, user_private_key):
-        input_tx = b.get_owned_ids(user_public_key).pop()
-        tx = b.create_transaction(user_public_key, 'b', input_tx, 'd')
-        tx_signed = b.sign_transaction(tx, user_private_key)
+    def test_read_transaction(self, b, user_vk, user_sk):
+        input_tx = b.get_owned_ids(user_vk).pop()
+        tx = b.create_transaction(user_vk, 'b', input_tx, 'd')
+        tx_signed = b.sign_transaction(tx, user_sk)
         b.write_transaction(tx_signed)
 
         # create block and write it to the bighcain before retrieving the transaction
@@ -92,10 +92,10 @@ class TestBigchainApi(object):
         assert util.serialize(tx_signed) == util.serialize(response)
 
     @pytest.mark.usefixtures('inputs')
-    def test_assign_transaction_one_node(self, b, user_public_key, user_private_key):
-        input_tx = b.get_owned_ids(user_public_key).pop()
-        tx = b.create_transaction(user_public_key, 'b', input_tx, 'd')
-        tx_signed = b.sign_transaction(tx, user_private_key)
+    def test_assign_transaction_one_node(self, b, user_vk, user_sk):
+        input_tx = b.get_owned_ids(user_vk).pop()
+        tx = b.create_transaction(user_vk, 'b', input_tx, 'd')
+        tx_signed = b.sign_transaction(tx, user_sk)
         b.write_transaction(tx_signed)
 
         # retrieve the transaction
@@ -105,16 +105,16 @@ class TestBigchainApi(object):
         assert response['assignee'] == b.me
 
     @pytest.mark.usefixtures('inputs')
-    def test_assign_transaction_multiple_nodes(self, b, user_public_key, user_private_key):
+    def test_assign_transaction_multiple_nodes(self, b, user_vk, user_sk):
         # create 5 federation nodes
         for _ in range(5):
             b.federation_nodes.append(crypto.generate_key_pair()[1])
 
         # test assignee for several transactions
         for _ in range(20):
-            input_tx = b.get_owned_ids(user_public_key).pop()
-            tx = b.create_transaction(user_public_key, 'b', input_tx, 'd')
-            tx_signed = b.sign_transaction(tx, user_private_key)
+            input_tx = b.get_owned_ids(user_vk).pop()
+            tx = b.create_transaction(user_vk, 'b', input_tx, 'd')
+            tx_signed = b.sign_transaction(tx, user_sk)
             b.write_transaction(tx_signed)
 
             # retrieve the transaction
@@ -258,8 +258,8 @@ class TestTransactionValidation(object):
         assert b.is_valid_transaction(tx) is False
 
     @pytest.mark.usefixtures('inputs')
-    def test_non_create_valid_input_wrong_owner(self, b, user_public_key):
-        valid_input = b.get_owned_ids(user_public_key).pop()
+    def test_non_create_valid_input_wrong_owner(self, b, user_vk):
+        valid_input = b.get_owned_ids(user_vk).pop()
         tx = b.create_transaction('a', 'b', valid_input, 'c')
         with pytest.raises(exceptions.TransactionOwnerError) as excinfo:
             b.validate_transaction(tx)
@@ -268,10 +268,10 @@ class TestTransactionValidation(object):
         assert b.is_valid_transaction(tx) is False
 
     @pytest.mark.usefixtures('inputs')
-    def test_non_create_double_spend(self, b, user_public_key, user_private_key):
-        input_valid = b.get_owned_ids(user_public_key).pop()
-        tx_valid = b.create_transaction(user_public_key, 'b', input_valid, 'd')
-        tx_valid_signed = b.sign_transaction(tx_valid, user_private_key)
+    def test_non_create_double_spend(self, b, user_vk, user_sk):
+        input_valid = b.get_owned_ids(user_vk).pop()
+        tx_valid = b.create_transaction(user_vk, 'b', input_valid, 'd')
+        tx_valid_signed = b.sign_transaction(tx_valid, user_sk)
         b.write_transaction(tx_valid_signed)
 
         # create and write block to bigchain
@@ -279,7 +279,7 @@ class TestTransactionValidation(object):
         b.write_block(block, durability='hard')
 
         # create another transaction with the same input
-        tx_double_spend = b.create_transaction(user_public_key, 'd', input_valid, 'd')
+        tx_double_spend = b.create_transaction(user_vk, 'd', input_valid, 'd')
         with pytest.raises(exceptions.DoubleSpend) as excinfo:
             b.validate_transaction(tx_double_spend)
 
@@ -287,9 +287,9 @@ class TestTransactionValidation(object):
         assert b.is_valid_transaction(tx_double_spend) is False
 
     @pytest.mark.usefixtures('inputs')
-    def test_wrong_transaction_hash(self, b, user_public_key):
-        input_valid = b.get_owned_ids(user_public_key).pop()
-        tx_valid = b.create_transaction(user_public_key, 'b', input_valid, 'd')
+    def test_wrong_transaction_hash(self, b, user_vk):
+        input_valid = b.get_owned_ids(user_vk).pop()
+        tx_valid = b.create_transaction(user_vk, 'b', input_valid, 'd')
 
         # change the transaction hash
         tx_valid.update({'id': 'abcd'})
@@ -298,9 +298,9 @@ class TestTransactionValidation(object):
         assert b.is_valid_transaction(tx_valid) is False
 
     @pytest.mark.usefixtures('inputs')
-    def test_wrong_signature(self, b, user_public_key):
-        input_valid = b.get_owned_ids(user_public_key).pop()
-        tx_valid = b.create_transaction(user_public_key, 'b', input_valid, 'd')
+    def test_wrong_signature(self, b, user_vk):
+        input_valid = b.get_owned_ids(user_vk).pop()
+        tx_valid = b.create_transaction(user_vk, 'b', input_valid, 'd')
 
         wrong_private_key = '4fyvJe1aw2qHZ4UNRYftXK7JU7zy9bCqoU5ps6Ne3xrY'
 
@@ -309,27 +309,27 @@ class TestTransactionValidation(object):
             b.validate_transaction(tx_invalid_signed)
         assert b.is_valid_transaction(tx_invalid_signed) is False
 
-    def test_valid_create_transaction(self, b, user_public_key):
-        tx = b.create_transaction(b.me, user_public_key, None, 'CREATE')
+    def test_valid_create_transaction(self, b, user_vk):
+        tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
         tx_signed = b.sign_transaction(tx, b.me_private)
         assert tx_signed == b.validate_transaction(tx_signed)
         assert tx_signed == b.is_valid_transaction(tx_signed)
 
     @pytest.mark.usefixtures('inputs')
-    def test_valid_non_create_transaction(self, b, user_public_key, user_private_key):
-        input_valid = b.get_owned_ids(user_public_key).pop()
-        tx_valid = b.create_transaction(user_public_key, 'b', input_valid, 'd')
+    def test_valid_non_create_transaction(self, b, user_vk, user_sk):
+        input_valid = b.get_owned_ids(user_vk).pop()
+        tx_valid = b.create_transaction(user_vk, 'b', input_valid, 'd')
 
-        tx_valid_signed = b.sign_transaction(tx_valid, user_private_key)
+        tx_valid_signed = b.sign_transaction(tx_valid, user_sk)
         assert tx_valid_signed == b.validate_transaction(tx_valid_signed)
         assert tx_valid_signed == b.is_valid_transaction(tx_valid_signed)
 
     @pytest.mark.usefixtures('inputs')
-    def test_valid_non_create_transaction_after_block_creation(self, b, user_public_key, user_private_key):
-        input_valid = b.get_owned_ids(user_public_key).pop()
-        tx_valid = b.create_transaction(user_public_key, 'b', input_valid, 'd')
+    def test_valid_non_create_transaction_after_block_creation(self, b, user_vk, user_sk):
+        input_valid = b.get_owned_ids(user_vk).pop()
+        tx_valid = b.create_transaction(user_vk, 'b', input_valid, 'd')
 
-        tx_valid_signed = b.sign_transaction(tx_valid, user_private_key)
+        tx_valid_signed = b.sign_transaction(tx_valid, user_sk)
         assert tx_valid_signed == b.validate_transaction(tx_valid_signed)
         assert tx_valid_signed == b.is_valid_transaction(tx_valid_signed)
 
@@ -355,9 +355,9 @@ class TestBlockValidation(object):
 
     @pytest.mark.skipif(reason='Separated tx validation from block creation.')
     @pytest.mark.usefixtures('inputs')
-    def test_invalid_transactions_in_block(self, b, user_public_key, ):
+    def test_invalid_transactions_in_block(self, b, user_vk, ):
         # invalid transaction
-        valid_input = b.get_owned_ids(user_public_key).pop()
+        valid_input = b.get_owned_ids(user_vk).pop()
         tx_invalid = b.create_transaction('a', 'b', valid_input, 'c')
 
         block = b.create_block([tx_invalid])
@@ -395,11 +395,11 @@ class TestBlockValidation(object):
             b.validate_block(block)
 
     @pytest.mark.usefixtures('inputs')
-    def test_valid_block(self, b, user_public_key, user_private_key):
+    def test_valid_block(self, b, user_vk, user_sk):
         # create valid transaction
-        input_valid = b.get_owned_ids(user_public_key).pop()
-        tx_valid = b.create_transaction(user_public_key, 'b', input_valid, 'd')
-        tx_valid_signed = b.sign_transaction(tx_valid, user_private_key)
+        input_valid = b.get_owned_ids(user_vk).pop()
+        tx_valid = b.create_transaction(user_vk, 'b', input_valid, 'd')
+        tx_valid_signed = b.sign_transaction(tx_valid, user_sk)
 
         # create valid block
         block = b.create_block([tx_valid_signed])
@@ -446,13 +446,13 @@ class TestBigchainVoter(object):
         assert vote['node_pubkey'] == b.me
         assert crypto.VerifyingKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
 
-    def test_invalid_block_voting(self, b, user_public_key):
+    def test_invalid_block_voting(self, b, user_vk):
         # create queue and voter
         q_new_block = mp.Queue()
         voter = Voter(q_new_block)
 
         # create transaction
-        transaction = b.create_transaction(b.me, user_public_key, None, 'CREATE')
+        transaction = b.create_transaction(b.me, user_vk, None, 'CREATE')
         transaction_signed = b.sign_transaction(transaction, b.me_private)
 
         genesis = b.create_genesis_block()
@@ -518,12 +518,12 @@ class TestBigchainVoter(object):
 
 class TestBigchainBlock(object):
 
-    def test_by_assignee(self, b, user_public_key):
+    def test_by_assignee(self, b, user_vk):
         # create transactions and randomly assigne them
         transactions = mp.Queue()
         count_assigned_to_me = 0
         for i in range(100):
-            tx = b.create_transaction(b.me, user_public_key, None, 'CREATE')
+            tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
             assignee = random.choice([b.me, 'aaa', 'bbb', 'ccc'])
             if assignee == b.me:
                 count_assigned_to_me += 1
@@ -542,13 +542,13 @@ class TestBigchainBlock(object):
         # the queue minus 'stop'
         assert block.q_tx_to_validate.qsize() - 1 == count_assigned_to_me
 
-    def test_validate_transactions(self, b, user_public_key):
+    def test_validate_transactions(self, b, user_vk):
         # create transactions and randomly invalidate some of them by changing the hash
         transactions = mp.Queue()
         count_valid = 0
         for i in range(100):
             valid = random.choice([True, False])
-            tx = b.create_transaction(b.me, user_public_key, None, 'CREATE')
+            tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
             tx = b.sign_transaction(tx, b.me_private)
             if not valid:
                 tx['id'] = 'a' * 64
@@ -567,11 +567,11 @@ class TestBigchainBlock(object):
         assert block.q_tx_validated.qsize() - 1 == count_valid
         assert block.q_tx_delete.qsize() - 1 == 100
 
-    def test_create_block(self, b, user_public_key):
+    def test_create_block(self, b, user_vk):
         # create transactions
         transactions = mp.Queue()
         for i in range(100):
-            tx = b.create_transaction(b.me, user_public_key, None, 'CREATE')
+            tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
             tx = b.sign_transaction(tx, b.me_private)
             transactions.put(tx)
         transactions.put('stop')
@@ -585,12 +585,12 @@ class TestBigchainBlock(object):
         # check if the number of valid transactions
         assert block.q_block.qsize() - 1 == 1
 
-    def test_write_block(self, b, user_public_key):
+    def test_write_block(self, b, user_vk):
         # create transactions
         transactions = []
         blocks = mp.Queue()
         for i in range(100):
-            tx = b.create_transaction(b.me, user_public_key, None, 'CREATE')
+            tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
             tx = b.sign_transaction(tx, b.me_private)
             transactions.append(tx)
 
@@ -615,14 +615,14 @@ class TestBigchainBlock(object):
         # check if the number of blocks in bigchain increased
         assert r.table('bigchain').count() == 2
 
-    def test_delete_transactions(self, b, user_public_key):
+    def test_delete_transactions(self, b, user_vk):
         # make sure that there are no transactions in the backlog
         r.table('backlog').delete().run(b.conn)
 
         # create and write transactions to the backlog
         transactions = mp.Queue()
         for i in range(100):
-            tx = b.create_transaction(b.me, user_public_key, None, 'CREATE')
+            tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
             tx = b.sign_transaction(tx, b.me_private)
             b.write_transaction(tx)
             transactions.put(tx['id'])
@@ -643,13 +643,13 @@ class TestBigchainBlock(object):
         # check if all transactions were deleted from the backlog
         assert r.table('backlog').count() == 0
 
-    def test_bootstrap(self, b, user_public_key):
+    def test_bootstrap(self, b, user_vk):
         # make sure that there are no transactions in the backlog
         r.table('backlog').delete().run(b.conn)
 
         # create and write transactions to the backlog
         for i in range(100):
-            tx = b.create_transaction(b.me, user_public_key, None, 'CREATE')
+            tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
             tx = b.sign_transaction(tx, b.me_private)
             b.write_transaction(tx)
 
@@ -662,7 +662,7 @@ class TestBigchainBlock(object):
         # we should have gotten a queue with 100 results
         assert initial_results.qsize() - 1 == 100
 
-    def test_start(self, b, user_public_key):
+    def test_start(self, b, user_vk):
         # start with 100 transactions in the backlog and 100 in the changefeed
 
         # make sure that there are no transactions in the backlog
@@ -670,14 +670,14 @@ class TestBigchainBlock(object):
 
         # create and write transactions to the backlog
         for i in range(100):
-            tx = b.create_transaction(b.me, user_public_key, None, 'CREATE')
+            tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
             tx = b.sign_transaction(tx, b.me_private)
             b.write_transaction(tx)
 
         # create 100 more transactions to emulate the changefeed
         new_transactions = mp.Queue()
         for i in range(100):
-            tx = b.create_transaction(b.me, user_public_key, None, 'CREATE')
+            tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
             tx = b.sign_transaction(tx, b.me_private)
             b.write_transaction(tx)
             new_transactions.put(tx)

@@ -160,13 +160,13 @@ class TestBigchainVoter(object):
         assert vote['node_pubkey'] == b.me
         assert crypto.VerifyingKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
 
-    def test_invalid_block_voting(self, b, user_public_key):
+    def test_invalid_block_voting(self, b, user_vk):
         # create queue and voter
         q_new_block = mp.Queue()
         voter = Voter(q_new_block)
 
         # create transaction
-        transaction = b.create_transaction(b.me, user_public_key, None, 'CREATE')
+        transaction = b.create_transaction(b.me, user_vk, None, 'CREATE')
         transaction_signed = b.sign_transaction(transaction, b.me_private)
 
         genesis = b.create_genesis_block()

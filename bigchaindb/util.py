@@ -4,6 +4,8 @@ import time
 import multiprocessing as mp
 from datetime import datetime
 
+from cryptoconditions import Ed25519Fulfillment, ThresholdSha256Fulfillment
+
 import bigchaindb
 from bigchaindb import exceptions
 from bigchaindb import crypto
@@ -157,13 +159,17 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
 
     # handle inputs
     fulfillments = []
+    current_owners = current_owners if isinstance(current_owners, list) else [current_owners]
     # transfer
     if inputs:
         for fid, inp in enumerate(inputs):
+            fulfillment = ThresholdSha256Fulfillment(threshold=len(current_owners))
+            for current_owner in current_owners:
+                fulfillment.add_subfulfillment(Ed25519Fulfillment(public_key=current_owner))
             fulfillments.append({
                 'current_owners': current_owners,
                 'input': inp,
-                'fulfillment': None,
+                'fulfillment': fulfillment.serialize_json(),
                 'fid': fid
             })
     # create

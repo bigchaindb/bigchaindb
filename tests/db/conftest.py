@@ -81,7 +81,7 @@ def cleanup_tables(request, node_config):
 
 
 @pytest.fixture
-def inputs(user_public_key, amount=1, b=None):
+def inputs(user_vk, amount=1, b=None):
     # 1. create the genesis block
     b = b or Bigchain()
     try:
@@ -92,7 +92,7 @@ def inputs(user_public_key, amount=1, b=None):
     # 2. create block with transactions for `USER` to spend
     transactions = []
     for i in range(amount):
-        tx = b.create_transaction(b.me, user_public_key, None, 'CREATE')
+        tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
         tx_signed = b.sign_transaction(tx, b.me_private)
         transactions.append(tx_signed)
         b.write_transaction(tx_signed)
