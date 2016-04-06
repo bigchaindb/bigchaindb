@@ -1,6 +1,5 @@
 import rethinkdb as r
 import random
-import json
 import rapidjson
 
 
