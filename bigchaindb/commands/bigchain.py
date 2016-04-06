@@ -70,7 +70,7 @@ def run_configure(args, skip_if_exists=False):
 
 def run_init(args):
     """Initialize the database"""
-    bigchaindb.config_utils.file_config(args.config)
+    bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
     # TODO Provide mechanism to:
     # 1. prompt the user to inquire whether they wish to drop the db
     # 2. force the init, (e.g., via -f flag)
@@ -83,14 +83,14 @@ def run_init(args):
 
 def run_drop(args):
     """Drop the database"""
-    bigchaindb.config_utils.file_config(args.config)
+    bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
     db.drop(assume_yes=args.yes)
 
 
 def run_start(args):
     """Start the processes to run the node"""
     # run_configure(args, skip_if_exists=True)
-    bigchaindb.config_utils.file_config(args.config)
+    bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
     try:
         db.init()
     except DatabaseAlreadyExists:
