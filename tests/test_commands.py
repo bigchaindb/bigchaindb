@@ -107,6 +107,8 @@ def test_bigchain_show_config(capsys, mock_file_config):
     _, _ = capsys.readouterr()
     run_show_config(args)
     output_config, _ = capsys.readouterr()
+    config['keypair']['private'] = 'x' * 45
+    del config['CONFIGURED']
     pprint(config)
     expected_outout_config, _ = capsys.readouterr()
     assert output_config == expected_outout_config
