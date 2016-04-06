@@ -246,7 +246,7 @@ def sign_tx(transaction, private_key):
             # update the fulfillment message
             fulfillment_message.update({
                 'input': fulfillment['input'],
-                'condition': conditions[fulfillment['cid']]
+                'condition': conditions[fulfillment['fid']]
             })
 
         # sign the fulfillment message
@@ -307,7 +307,7 @@ def verify_signature(signed_transaction):
             # get previous condition
             previous_tx = b.get_transaction(fulfillment['input']['txid'])
             conditions = sorted(previous_tx['transaction']['conditions'], key=lambda d: d['cid'])
-            fulfillment_message['condition'] = conditions[fulfillment['cid']]
+            fulfillment_message['condition'] = conditions[fulfillment['fid']]
 
         # verify the signature (for now lets assume there is only one owner)
         public_key = PublicKey(fulfillment['current_owners'][0])
