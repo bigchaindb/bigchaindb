@@ -1,3 +1,4 @@
+import copy
 from abc import ABCMeta, abstractmethod
 
 import bigchaindb.exceptions as exceptions
@@ -119,9 +120,11 @@ class BaseConsensusRules(AbstractConsensusRules):
         # If the operation is CREATE the transaction should have no inputs and
         # should be signed by a federation node
         if transaction['transaction']['operation'] == 'CREATE':
-            if transaction['transaction']['inputs']:
+            # TODO: for now lets assume a CREATE transaction only has one fulfillment
+            if transaction['transaction']['fulfillments'][0]['input']:
                 raise ValueError('A CREATE operation has no inputs')
-            if transaction['transaction']['current_owner'] not in (
+            # TODO: fow now lets assume a CREATE transaction only has one current_owner
+            if transaction['transaction']['fulfillments'][0]['current_owners'][0] not in (
                     bigchain.federation_nodes + [bigchain.me]):
                 raise exceptions.OperationError(
                     'Only federation nodes can use the operation `CREATE`')
@@ -156,6 +159,11 @@ class BaseConsensusRules(AbstractConsensusRules):
                         'input `{}` was already spent'.format(inp))
 
         # Check hash of the transaction
+        # remove the fulfillment messages (signatures)
+        transaction_data = copy.deepcopy(transaction)
+        for fulfillment in transaction_data['transaction']['fulfillments']:
+            fulfillment['fulfillment'] = None
+
         calculated_hash = crypto.hash_data(util.serialize(
             transaction['transaction']))
         if calculated_hash != transaction['id']:

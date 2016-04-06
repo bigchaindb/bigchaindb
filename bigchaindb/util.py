@@ -239,7 +239,7 @@ def sign_tx(transaction, private_key):
 
     for fulfillment in transaction['transaction']['fulfillments']:
         fulfillment_message = common_data.copy()
-        if transaction['transaction']['operation'] == 'CREATE':
+        if transaction['transaction']['operation'] in ['CREATE', 'GENESIS']:
             fulfillment_message.update({
                 'input': None,
                 'condition': None
@@ -279,6 +279,7 @@ def check_hash_and_signature(transaction):
 
 
 def verify_signature(signed_transaction):
+    # TODO: The name should change. This will be the validation of the fulfillments
     """Verify the signature of a transaction
 
     A valid transaction should have been signed `current_owner` corresponding private key.
@@ -290,16 +291,38 @@ def verify_signature(signed_transaction):
         bool: True if the signature is correct, False otherwise.
     """
 
-    data = signed_transaction.copy()
+    b = bigchaindb.Bigchain()
 
-    # if assignee field in the transaction, remove it
-    if 'assignee' in data:
-        data.pop('assignee')
+    common_data = {
+        'operation': signed_transaction['transaction']['operation'],
+        'timestamp': signed_transaction['transaction']['timestamp'],
+        'data': signed_transaction['transaction']['data'],
+        'version': signed_transaction['version'],
+        'id': signed_transaction['id']
+    }
 
-    signature = data.pop('signature')
-    public_key_base58 = signed_transaction['transaction']['current_owner']
-    public_key = crypto.VerifyingKey(public_key_base58)
-    return public_key.verify(serialize(data), signature)
+    for fulfillment in signed_transaction['transaction']['fulfillments']:
+        fulfillment_message = common_data.copy()
+        fulfillment_message.update({
+            'input': fulfillment['input'],
+            'condition': None,
+        })
+
+        # if not a `CREATE` transaction
+        if fulfillment['input']:
+            # get previous condition
+            previous_tx = b.get_transaction(fulfillment['input']['txid'])
+            conditions = sorted(previous_tx['transaction']['conditions'], key=lambda d: d['cid'])
+            fulfillment_message['condition'] = conditions[fulfillment['cid']]
+
+        # verify the signature (for now lets assume there is only one owner)
+        vk = crypto.VerifyingKey(fulfillment['current_owners'][0])
+
+        is_valid = vk.verify(serialize(fulfillment_message), fulfillment['fulfillment'])
+        if not is_valid:
+            return False
+
+    return True
 
 
 def transform_create(tx):
