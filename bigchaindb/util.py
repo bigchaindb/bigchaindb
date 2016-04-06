@@ -233,7 +233,7 @@ def sign_tx(transaction, private_key):
 
     for fulfillment in transaction['transaction']['fulfillments']:
         fulfillment_message = common_data.copy()
-        if transaction['transaction']['operation'] == 'CREATE':
+        if transaction['transaction']['operation'] in ['CREATE', 'GENESIS']:
             fulfillment_message.update({
                 'input': None,
                 'condition': None
