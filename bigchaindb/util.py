@@ -76,6 +76,7 @@ def timestamp():
     return "{0:.6f}".format(time.mktime(dt.timetuple()) + dt.microsecond / 1e6)
 
 
+# TODO: Consider remove the operation (if there are no inputs CREATE else TRANSFER)
 def create_tx(current_owners, new_owners, inputs, operation, payload=None):
     """Create a new transaction
 
@@ -92,8 +93,8 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
         `TRANSFER` - A transfer operation allows for a transfer of the digital assets between entities.
 
     Args:
-        current_owner (str): base58 encoded public key of the current owner of the asset.
-        new_owner (str): base58 encoded public key of the new owner of the digital asset.
+        current_owners (list): base58 encoded public key of the current owners of the asset.
+        new_owners (list): base58 encoded public key of the new owners of the digital asset.
         inputs (list): id of the transaction to use as input.
         operation (str): Either `CREATE` or `TRANSFER` operation.
         payload (Optional[dict]): dictionary with information about asset.
@@ -153,12 +154,6 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
             }
         else:
             raise TypeError('`payload` must be an dict instance')
-
-    hash_payload = hash_data(serialize(payload))
-    data = {
-        'hash': hash_payload,
-        'payload': payload
-    }
 
     # handle inputs
     fulfillments = []
