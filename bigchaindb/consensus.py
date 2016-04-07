@@ -131,32 +131,26 @@ class BaseConsensusRules(AbstractConsensusRules):
 
         else:
             # check if the input exists, is owned by the current_owner
-            if not transaction['transaction']['inputs']:
+            if not transaction['transaction']['fulfillments']:
                 raise ValueError(
-                    'Only `CREATE` transactions can have null inputs')
+                    'Transaction contains no fulfillments')
 
             # check inputs
-            for inp in transaction['transaction']['inputs']:
-                tx_input = bigchain.get_transaction(inp)
+            for fulfillment in transaction['transaction']['fulfillments']:
+                tx_input = bigchain.get_transaction(fulfillment['input']['txid'])
 
                 if not tx_input:
                     raise exceptions.TransactionDoesNotExist(
                         'input `{}` does not exist in the bigchain'.format(
-                            transaction['transaction']['input']))
-
-                if (tx_input['transaction']['new_owner'] !=
-                    transaction['transaction']['current_owner']):
-                    raise exceptions.TransactionOwnerError(
-                        'current_owner `{}` does not own the input `{}`'.format(
-                            transaction['transaction']['current_owner'],
-                            transaction['transaction']['input']))
+                            fulfillment['input']['txid']))
 
                 # check if the input was already spent by a transaction other than
                 # this one.
-                spent = bigchain.get_spent(tx_input['id'])
+                spent = bigchain.get_spent(fulfillment['input'])
+                print(spent)
                 if spent and spent['id'] != transaction['id']:
                     raise exceptions.DoubleSpend(
-                        'input `{}` was already spent'.format(inp))
+                        'input `{}` was already spent'.format(fulfillment['input']))
 
         # Check hash of the transaction
         # remove the fulfillment messages (signatures)
