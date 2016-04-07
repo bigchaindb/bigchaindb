@@ -113,11 +113,9 @@ def env_config(config):
     return map_leafs(load_from_env, config)
 
 
-def update_types(config):
+def update_types(config, reference, list_sep=':'):
     """Return a new configuration where all the values types
     are aligned with the ones in the default configuration"""
-
-    reference = bigchaindb.config
 
     def _coerce(current, value):
         # Coerce a value to the `current` type.
@@ -130,7 +128,7 @@ def update_types(config):
             # is a string.
             if isinstance(current, list) and isinstance(value, str):
                 # If so, we use the colon as the separator
-                return value.split(':')
+                return value.split(list_sep)
 
             try:
                 # If we are here, we should try to apply the type
@@ -165,7 +163,7 @@ def dict_config(config):
         update made to ``bigchaindb.config`` will be lost.
     """
     bigchaindb.config = copy.deepcopy(bigchaindb._config)
-    update(bigchaindb.config, update_types(config))
+    update(bigchaindb.config, update_types(config, bigchaindb.config))
     bigchaindb.config['CONFIGURED'] = True
 
 

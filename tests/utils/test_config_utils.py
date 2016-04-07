@@ -93,6 +93,27 @@ def test_map_leafs_iterator():
     }
 
 
+def test_update_types():
+    from bigchaindb import config_utils
+
+    raw = {
+        'a_string': 'test',
+        'an_int': '42',
+        'a_float': '3.14',
+        'a_list': 'a:b:c',
+    }
+
+    reference = {
+        'a_string': 'test',
+        'an_int': 42,
+        'a_float': 3.14,
+        'a_list': ['a', 'b', 'c'],
+    }
+
+    result = config_utils.update_types(raw, reference)
+    assert result == reference
+
+
 def test_env_config(monkeypatch):
     monkeypatch.setattr('os.environ', {'BIGCHAINDB_DATABASE_HOST': 'test-host',
                                        'BIGCHAINDB_DATABASE_PORT': 'test-port'})
@@ -143,3 +164,4 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch):
         'api_endpoint': 'http://localhost:9984/api/v1',
         'consensus_plugin': 'default',
     }
+
