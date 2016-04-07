@@ -79,7 +79,7 @@ setup(
         'bitcoin==1.1.42',
         'flask==0.10.1',
         'requests==2.9',
-        'gunicorn',
+        'gunicorn~=19.0',
     ],
     setup_requires=['pytest-runner'],
     tests_require=tests_require,
