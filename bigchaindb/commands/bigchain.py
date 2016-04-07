@@ -5,6 +5,7 @@ import os
 import logging
 import argparse
 import copy
+import json
 
 import bigchaindb
 import bigchaindb.config_utils
@@ -21,8 +22,6 @@ logger = logging.getLogger(__name__)
 
 def run_show_config(args):
     """Show the current configuration"""
-    from pprint import pprint
-
     # TODO Proposal: remove the "hidden" configuration. Only show config. If
     # the system needs to be configured, then display information on how to
     # configure the system.
@@ -31,7 +30,7 @@ def run_show_config(args):
     del config['CONFIGURED']
     private_key = config['keypair']['private']
     config['keypair']['private'] = 'x' * 45 if private_key else None
-    pprint(config)
+    print(json.dumps(config, indent=4, sort_keys=True))
 
 
 def run_configure(args, skip_if_exists=False):

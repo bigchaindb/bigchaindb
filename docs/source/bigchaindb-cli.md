@@ -35,18 +35,25 @@ Note that there is a precedence in reading configuration values:
 
 This means that if the default configuration contains an entry that is:
 
-```
-{...
-    "database": {"host": "localhost",
-                 "port": 28015}
-...}
+```json
+{
+
+    "database": {
+        "host": "localhost",
+        "port": 28015
+    }
+
+}
 ```
 
 while your local file `local.json` contains:
-```
-{...
-    "database": {"host": "ec2-xx-xx-xxx-xxx.eu-central-1.compute.amazonaws.com"}
-...}
+```json
+{
+    "database": {
+        "host": "ec2-xx-xx-xxx-xxx.eu-central-1.compute.amazonaws.com"
+    }
+}
+
 ```
 
 and you run this command:
@@ -58,18 +65,34 @@ $ BIGCHAINDB_DATABASE_HOST=anotherhost.com \
 ```
 
 you will get:
-```
-Cannot find config file `/home/vrde/.bigchaindb`.
-INFO:bigchaindb.config_utils:Configuration loaded from `local.json`
-{'CONFIGURED': True,
- 'api_endpoint': 'http://localhost:8008/api/v1',
- 'consensus_plugin': 'default',
- 'database': {'host': 'ec2-xx-xx-xxx-xxx.eu-central-1.compute.amazonaws.com',
-              'name': 'bigchain',
-              'port': 4242},
- 'keypair': {'private': None, 'public': None},
- 'keyring': ['pubkey0', 'pubkey1'],
- 'statsd': {'host': 'localhost', 'port': 8125, 'rate': 0.01}}
+```json
+{
+    "api_endpoint": "http://localhost:8008/api/v1",
+    "consensus_plugin": "default",
+    "database": {
+        "host": "ec2-xx-xx-xxx-xxx.eu-central-1.compute.amazonaws.com",
+        "name": "bigchain",
+        "port": 4242
+    },
+    "keypair": {
+        "private": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "public": "nJq6EmdUkvFjQRB5hFvDmvZtv1deb3W3RgmiAq6dyygC"
+    },
+    "keyring": [
+        "pubkey0",
+        "pubkey1"
+    ],
+    "server": {
+        "bind": "0.0.0.0:9984",
+        "threads": null,
+        "workers": null
+    },
+    "statsd": {
+        "host": "localhost",
+        "port": 8125,
+        "rate": 0.01
+    }
+}
 ```
 
 Note that the type of `keyring` is a list. If you want to pass a list as an
