@@ -1,9 +1,17 @@
 import copy
 
+# from functools import reduce
+# PORT_NUMBER = reduce(lambda x, y: x * y, map(ord, 'BigchainDB')) % 2**16
+# basically, the port number is 9984
+
 
 config = {
     'server': {
-        'bind': '0.0.0.0:5000',
+        # Note: this section supports all the Gunicorn settings:
+        #       - http://docs.gunicorn.org/en/stable/settings.html
+        'bind': '0.0.0.0:9984',
+        'workers': None, # if none, the value will be cpu_count * 2 + 1
+        'threads': None, # if none, the value will be cpu_count * 2 + 1
     },
     'database': {
         'host': 'localhost',
@@ -20,7 +28,7 @@ config = {
         'port': 8125,
         'rate': 0.01,
     },
-    'api_endpoint': 'http://localhost:8008/api/v1',
+    'api_endpoint': 'http://localhost:9984/api/v1',
     'consensus_plugin': 'default',
 }
 

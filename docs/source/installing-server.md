@@ -94,10 +94,16 @@ $ rethinkdb
 
 Then open a different terminal and run:
 ```text
-$ bigchaindb start
+$ bigchaindb init
 ```
 
-During its first run, BigchainDB Server takes care of configuring a single node environment.
+During its first run, the command takes care of configuring a single node environment.
+
+
+After configuring the node, you can start it with:
+```text
+$ bigchaindb start
+```
 
 
 ## Run BigchainDB with Docker
