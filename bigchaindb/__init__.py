@@ -3,7 +3,7 @@ import copy
 
 
 def e(key, default=None, conv=None):
-    '''Get the environment variable `key`, fallback to `default`
+    """Get the environment variable `key`, fallback to `default`
     if nothing is found.
 
     Keyword arguments:
@@ -11,7 +11,7 @@ def e(key, default=None, conv=None):
     default -- the default value if nothing is found (default: None)
     conv -- a callable used to convert the value (default: use the type of the
             default value)
-    '''
+    """
 
     val = os.environ.get(key, default)
 
