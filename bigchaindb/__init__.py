@@ -2,6 +2,9 @@ import copy
 
 
 config = {
+    'server': {
+        'bind': '0.0.0.0:5000',
+    },
     'database': {
         'host': 'localhost',
         'port': 28015,
@@ -26,3 +29,4 @@ config = {
 # for more info.
 _config = copy.deepcopy(config)
 from bigchaindb.core import Bigchain  # noqa
+
