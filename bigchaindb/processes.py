@@ -3,6 +3,7 @@ import multiprocessing as mp
 
 import rethinkdb as r
 
+import bigchaindb
 from bigchaindb import Bigchain
 from bigchaindb.voter import Voter
 from bigchaindb.block import Block
@@ -10,6 +11,18 @@ from bigchaindb.web import server
 
 
 logger = logging.getLogger(__name__)
+
+BANNER = """
+****************************************************************************
+*                                                                          *
+*   Initialization complete. BigchainDB is ready and waiting for events.   *
+*   You can send events through the API documented at:                     *
+*    - http://docs.bigchaindb.apiary.io/                                   *
+*                                                                          *
+*   Listening to client connections on: {:<15}                    *
+*                                                                          *
+****************************************************************************
+"""
 
 
 class Processes(object):
@@ -68,8 +81,8 @@ class Processes(object):
         block = Block(self.q_new_transaction)
 
         # start the web api
-        webapi = server.create_app()
-        p_webapi = mp.Process(name='webapi', target=webapi.run, kwargs={'host': 'localhost'})
+        app_server = server.create_server(bigchaindb.config['server'])
+        p_webapi = mp.Process(name='webapi', target=app_server.run)
         p_webapi.start()
 
         # initialize the processes
@@ -92,5 +105,4 @@ class Processes(object):
         # start message
         block.initialized.wait()
         p_voter.initialized.wait()
-        logger.info('Initialization complete. BigchainDB ready and waiting for events.')
-        logger.info('You can send events through the API documented at http://docs.bigchaindb.apiary.io/')
+        logger.info(BANNER.format(bigchaindb.config['server']['bind']))
