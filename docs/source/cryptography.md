@@ -19,8 +19,8 @@ tx_hash = hashlib.sha3_256(data).hexdigest()
 
 ## Signature algorithm and keys
 
-The signature algorithm used by BigchainDB is ECDSA with the secp256k1 curve
-using the python [cryptography](https://cryptography.io/en/latest/) module.
+The signature algorithm used by BigchainDB is [ED25519](https://tools.ietf.org/html/draft-irtf-cfrg-eddsa-04)
+using the python [ed25519](https://github.com/warner/python-ed25519) module, overloaded by the [cryptoconditions library](https://github.com/bigchaindb/cryptoconditions).
 
 The private key is the base58 encoded hexadecimal representation of private number.
 The public key is the base58 encoded hexadecimal representation of the
