@@ -143,6 +143,14 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
         }  
     """
 
+    # validate arguments (owners and inputs should be lists)
+    if not isinstance(current_owners, list):
+        current_owners = [current_owners]
+    if not isinstance(new_owners, list):
+        new_owners = [new_owners]
+    if not isinstance(inputs, list):
+        inputs = [inputs]
+
     # handle payload
     data = None
     if payload is not None:
@@ -329,6 +337,6 @@ def transform_create(tx):
     payload = None
     if transaction['data'] and 'payload' in transaction['data']:
         payload = transaction['data']['payload']
-    new_tx = create_tx(b.me, transaction['current_owner'], None, 'CREATE', payload=payload)
+    new_tx = create_tx(b.me, transaction['fulfillments'][0]['current_owners'], None, 'CREATE', payload=payload)
     return new_tx
 

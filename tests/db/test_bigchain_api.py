@@ -26,8 +26,8 @@ class TestBigchainApi(object):
     def test_create_transaction(self, b):
         tx = b.create_transaction('a', 'b', 'c', 'd')
 
-        assert sorted(tx) == sorted(['id', 'transaction'])
-        assert sorted(tx['transaction']) == sorted(['current_owner', 'new_owner', 'input', 'operation',
+        assert sorted(tx) == sorted(['id', 'transaction', 'version'])
+        assert sorted(tx['transaction']) == sorted(['conditions', 'fulfillments', 'operation',
                                                     'timestamp', 'data'])
 
     def test_create_transaction_with_unsupported_payload_raises(self, b):
@@ -51,6 +51,8 @@ class TestBigchainApi(object):
         assert tx['transaction']['data'] == tx_calculated['data']
         # assert tx_hash == tx_calculated_hash
 
+    # TODO: Make sure that this is covered when merged with dimi's code
+    @pytest.mark.skipif(reason='We no longer check signatures, only fulfillments of conditions')
     def test_transaction_signature(self, b):
         sk, vk = generate_key_pair()
         tx = b.create_transaction(vk, 'b', 'c', 'd')
