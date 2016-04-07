@@ -3,14 +3,12 @@ import random
 import json
 import rapidjson
 
-
 import bigchaindb
 from bigchaindb import util
 from bigchaindb import config_utils
 from bigchaindb import exceptions
 from bigchaindb import crypto
 from bigchaindb.monitor import Monitor
-
 
 monitor = Monitor()
 
@@ -150,7 +148,7 @@ class Bigchain(object):
             If no transaction with that `txid` was found it returns `None`
         """
 
-        response = r.table('bigchain').concat_map(lambda doc: doc['block']['transactions'])\
+        response = r.table('bigchain').concat_map(lambda doc: doc['block']['transactions']) \
             .filter(lambda transaction: transaction['id'] == txid).run(self.conn)
 
         # transaction ids should be unique
@@ -181,8 +179,8 @@ class Bigchain(object):
             returns `None`
         """
 
-        cursor = r.table('bigchain')\
-            .get_all(payload_hash, index='payload_hash')\
+        cursor = r.table('bigchain') \
+            .get_all(payload_hash, index='payload_hash') \
             .run(self.conn)
 
         transactions = list(cursor)
@@ -202,7 +200,7 @@ class Bigchain(object):
         """
         # checks if an input was already spent
         # checks if the bigchain has any transaction with input `transaction_id`
-        response = r.table('bigchain').concat_map(lambda doc: doc['block']['transactions'])\
+        response = r.table('bigchain').concat_map(lambda doc: doc['block']['transactions']) \
             .filter(lambda transaction: transaction['transaction']['inputs'].contains(txid)).run(self.conn)
 
         # a transaction_id should have been spent at most one time
@@ -226,11 +224,14 @@ class Bigchain(object):
             list: list of `txids` currently owned by `owner`
         """
 
-        response = r.table('bigchain')\
-                    .concat_map(lambda doc: doc['block']['transactions'])\
-                    .filter({'transaction': {'new_owner': owner}})\
-                    .pluck('id')['id']\
-                    .run(self.conn)
+        response = r.table('bigchain') \
+            .concat_map(lambda doc: doc['block']['transactions']) \
+            .filter(lambda tx: tx['transaction']['conditions']
+                    .contains(lambda c: c['new_owners']
+                              .contains(owner))) \
+            .pluck('id')['id'] \
+            .run(self.conn)
+
         owned = []
 
         # remove all inputs already spent
@@ -439,37 +440,37 @@ class Bigchain(object):
         if 'block_number' not in block:
             update['block_number'] = block_number
 
-        r.table('bigchain')\
-         .get(vote['vote']['voting_for_block'])\
-         .update(update)\
-         .run(self.conn)
+        r.table('bigchain') \
+            .get(vote['vote']['voting_for_block']) \
+            .update(update) \
+            .run(self.conn)
 
     def get_last_voted_block(self):
         """Returns the last block that this node voted on."""
 
         # query bigchain for all blocks this node is a voter but didn't voted on
-        last_voted = r.table('bigchain')\
-            .filter(r.row['block']['voters'].contains(self.me))\
-            .filter(lambda doc: doc['votes'].contains(lambda vote: vote['node_pubkey'] == self.me))\
-            .order_by(r.desc('block_number'))\
-            .limit(1)\
+        last_voted = r.table('bigchain') \
+            .filter(r.row['block']['voters'].contains(self.me)) \
+            .filter(lambda doc: doc['votes'].contains(lambda vote: vote['node_pubkey'] == self.me)) \
+            .order_by(r.desc('block_number')) \
+            .limit(1) \
             .run(self.conn)
 
         # return last vote if last vote exists else return Genesis block
         last_voted = list(last_voted)
         if not last_voted:
             return list(r.table('bigchain')
-                         .filter(r.row['block_number'] == 0)
-                         .run(self.conn))[0]
+                        .filter(r.row['block_number'] == 0)
+                        .run(self.conn))[0]
 
         return last_voted[0]
 
     def get_unvoted_blocks(self):
         """Return all the blocks that has not been voted by this node."""
 
-        unvoted = r.table('bigchain')\
-            .filter(lambda doc: doc['votes'].contains(lambda vote: vote['node_pubkey'] == self.me).not_())\
-            .order_by(r.asc((r.row['block']['timestamp'])))\
+        unvoted = r.table('bigchain') \
+            .filter(lambda doc: doc['votes'].contains(lambda vote: vote['node_pubkey'] == self.me).not_()) \
+            .order_by(r.asc((r.row['block']['timestamp']))) \
             .run(self.conn)
 
         if unvoted and unvoted[0].get('block_number') == 0:

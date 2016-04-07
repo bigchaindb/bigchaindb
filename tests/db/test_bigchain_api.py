@@ -23,16 +23,23 @@ def test_remove_unclosed_sockets():
 
 class TestBigchainApi(object):
 
-    def test_create_transaction(self, b, user_sk):
+    def test_create_transaction_create(self, b, user_sk):
         tx = b.create_transaction(b.me, user_sk, None, 'CREATE')
 
-        assert sorted(tx) == sorted(['id', 'transaction'])
-        assert sorted(tx['transaction']) == sorted(['current_owner', 'new_owner', 'input', 'operation',
-                                                    'timestamp', 'data'])
+        assert sorted(tx) == sorted(['id', 'transaction', 'version'])
+        assert sorted(tx['transaction']) == sorted(['conditions', 'data', 'fulfillments', 'operation', 'timestamp'])
 
     def test_create_transaction_with_unsupported_payload_raises(self, b):
         with pytest.raises(TypeError):
             b.create_transaction('a', 'b', 'c', 'd', payload=[])
+
+    @pytest.mark.usefixtures('inputs')
+    def test_create_transaction_transfer(self, b, user_vk, user_sk):
+        input_tx = b.get_owned_ids(user_vk).pop()
+        tx = b.create_transaction(b.me, user_sk, input_tx, 'TRANSFER')
+
+        assert sorted(tx) == sorted(['id', 'transaction', 'version'])
+        assert sorted(tx['transaction']) == sorted(['conditions', 'data', 'fulfillments', 'operation', 'timestamp'])
 
     def test_transaction_hash(self, b):
         payload = {'cats': 'are awesome'}

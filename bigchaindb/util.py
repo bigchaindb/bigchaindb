@@ -144,6 +144,9 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
             },
         }
     """
+    current_owners = current_owners if isinstance(current_owners, list) else [current_owners]
+    new_owners = new_owners if isinstance(new_owners, list) else [new_owners]
+    inputs = inputs if isinstance(inputs, list) else [inputs]
 
     # handle payload
     data = None
@@ -159,17 +162,14 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
 
     # handle inputs
     fulfillments = []
-    current_owners = current_owners if isinstance(current_owners, list) else [current_owners]
+
     # transfer
     if inputs:
         for fid, inp in enumerate(inputs):
-            fulfillment = ThresholdSha256Fulfillment(threshold=len(current_owners))
-            for current_owner in current_owners:
-                fulfillment.add_subfulfillment(Ed25519Fulfillment(public_key=current_owner))
             fulfillments.append({
                 'current_owners': current_owners,
                 'input': inp,
-                'fulfillment': fulfillment.serialize_json(),
+                'fulfillment': None,
                 'fid': fid
             })
     # create
@@ -184,9 +184,18 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
     # handle outputs
     conditions = []
     for fulfillment in fulfillments:
+        if len(new_owners) > 1:
+            for new_owner in new_owners:
+                condition = ThresholdSha256Fulfillment(threshold=len(new_owners))
+                condition.add_subfulfillment(Ed25519Fulfillment(public_key=new_owner))
+        elif len(new_owners) == 1:
+            condition = Ed25519Fulfillment(public_key=new_owners[0])
         conditions.append({
             'new_owners': new_owners,
-            'condition': None,
+            'condition': {
+                'details': json.loads(condition.serialize_json()),
+                'uri': condition.condition.serialize_uri()
+            },
             'cid': fulfillment['fid']
         })
 
@@ -220,7 +229,7 @@ def sign_tx(transaction, private_key):
 
     Args:
         transaction (dict): transaction to sign.
-        private_key (str): base58 encoded private key to create a signature of the transaction.
+        private_key (base58 str): base58 encoded private key to create a signature of the transaction.
 
     Returns:
         dict: transaction with the `fulfillment` fields populated.
