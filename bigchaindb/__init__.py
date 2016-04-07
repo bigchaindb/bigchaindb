@@ -2,7 +2,6 @@ import os
 import copy
 
 
-
 def e(key, default=None, conv=None):
     '''Get the environment variable `key`, fallback to `default`
     if nothing is found.
@@ -24,6 +23,9 @@ def e(key, default=None, conv=None):
 
 
 config = {
+    'server': {
+        'bind': e('BIGCHAIN_SERVER_BIND', default='0.0.0.0:5000'),
+    },
     'database': {
         'host': e('BIGCHAIN_DATABASE_HOST', default='localhost'),
         'port': e('BIGCHAIN_DATABASE_PORT', default=28015),
@@ -49,3 +51,4 @@ config = {
 # for more info.
 _config = copy.deepcopy(config)
 from bigchaindb.core import Bigchain  # noqa
+
