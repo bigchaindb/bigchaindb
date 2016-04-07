@@ -14,21 +14,7 @@ import pytest
 
 DB_NAME = 'bigchain_test_{}'.format(os.getpid())
 
-CONFIG_ECDSA = {
-    'database': {
-        'name': DB_NAME
-    },
-    'keypair': {
-        'private': '3i2FDXp87N9ExXSvWxqBAw9EgzoxxGTQNKbtxmWBpTyL',
-        'public': '29Tw3ozmSRtN8XNofvsu5RdoQRk9gAonfpkFvRZDmhTPo'
-    }
-}
-
-# Test user. inputs will be created for this user. Cryptography Keys
-USER_SIGNING_KEY_ECDSA = 'GmRZxQdQv7tooMijXytQkexKuFN6mJocciJarAmMwTX2'
-USER_VERIFYING_KEY_ECDSA = 'r3cEu8GNoz8rYpNJ61k7GqfR8VEvdUbtyHce8u1kaYwh'
-
-CONFIG_ED25519 = {
+CONFIG = {
     'database': {
         'name': DB_NAME
     },
@@ -39,8 +25,8 @@ CONFIG_ED25519 = {
 }
 
 # Test user. inputs will be created for this user. Cryptography Keys
-USER_SIGNING_KEY_ED25519 = '8eJ8q9ZQpReWyQT5aFCiwtZ5wDZC4eDnCen88p3tQ6ie'
-USER_VERIFYING_KEY_ED25519 = 'JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE'
+USER_SIGNING_KEY = '8eJ8q9ZQpReWyQT5aFCiwtZ5wDZC4eDnCen88p3tQ6ie'
+USER_VERIFYING_KEY = 'JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE'
 
 
 @pytest.fixture
@@ -51,17 +37,17 @@ def restore_config(request, node_config):
 
 @pytest.fixture(scope='module')
 def node_config():
-    return copy.deepcopy(CONFIG_ED25519)
+    return copy.deepcopy(CONFIG)
 
 
 @pytest.fixture
 def user_sk():
-    return USER_SIGNING_KEY_ED25519
+    return USER_SIGNING_KEY
 
 
 @pytest.fixture
 def user_vk():
-    return USER_VERIFYING_KEY_ED25519
+    return USER_VERIFYING_KEY
 
 
 @pytest.fixture
