@@ -59,7 +59,7 @@ def run_configure(args, skip_if_exists=False):
             val = conf['server'][key]
             conf['server'][key] = input('API Server {}? (default `{}`): '.format(key, val)) or val
 
-        for key in ('host', 'port', 'name'):
+        for key in ('host', 'port', 'name', 'user', 'password'):
             val = conf['database'][key]
             conf['database'][key] = input('Database {}? (default `{}`): '.format(key, val)) or val
 
