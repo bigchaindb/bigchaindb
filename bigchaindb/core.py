@@ -40,8 +40,8 @@ class Bigchain(object):
             host (str): hostname where the rethinkdb is running.
             port (int): port in which rethinkb is running (usually 28015).
             dbname (str): the name of the database to connect to (usually bigchain).
-            public_key (str): the base58 encoded public key for the ECDSA secp256k1 curve.
-            private_key (str): the base58 encoded private key for the ECDSA secp256k1 curve.
+            public_key (str): the base58 encoded public key for the ED25519 curve.
+            private_key (str): the base58 encoded private key for the ED25519 curve.
             keyring (list[str]): list of base58 encoded public keys of the federation nodes.
         """
 
@@ -297,7 +297,7 @@ class Bigchain(object):
         # Calculate the hash of the new block
         block_data = util.serialize(block)
         block_hash = crypto.hash_data(block_data)
-        block_signature = crypto.PrivateKey(self.me_private).sign(block_data)
+        block_signature = crypto.SigningKey(self.me_private).sign(block_data).decode()
 
         block = {
             'id': block_hash,
@@ -418,7 +418,7 @@ class Bigchain(object):
         }
 
         vote_data = util.serialize(vote)
-        signature = crypto.PrivateKey(self.me_private).sign(vote_data)
+        signature = crypto.SigningKey(self.me_private).sign(vote_data).decode()
 
         vote_signed = {
             'node_pubkey': self.me,
