@@ -206,7 +206,7 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
     return transaction
 
 
-#TODO: Change sign_tx to populate the fulfillments
+# TODO: Change sign_tx to populate the fulfillments
 def sign_tx(transaction, private_key):
     """Sign a transaction
 
