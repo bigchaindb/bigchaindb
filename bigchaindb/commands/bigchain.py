@@ -58,7 +58,7 @@ def run_configure(args, skip_if_exists=False):
     conf['keypair']['private'], conf['keypair']['public'] = crypto.generate_key_pair()
 
     if not args.yes:
-        for key in ('host', 'port'):
+        for key in ('bind', ):
             val = conf['server'][key]
             conf['server'][key] = input('API Server {}? (default `{}`): '.format(key, val)) or val
 
