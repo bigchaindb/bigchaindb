@@ -1,3 +1,4 @@
+import json
 from argparse import Namespace
 from pprint import pprint
 import copy
@@ -109,9 +110,7 @@ def test_bigchain_show_config(capsys, mock_file_config):
     output_config, _ = capsys.readouterr()
     config['keypair']['private'] = 'x' * 45
     del config['CONFIGURED']
-    pprint(config)
-    expected_outout_config, _ = capsys.readouterr()
-    assert output_config == expected_outout_config
+    assert output_config.strip() == json.dumps(config, indent=4, sort_keys=True)
 
 
 def test_bigchain_run_init_when_db_exists(mock_file_config, mock_db_init_with_existing_db):

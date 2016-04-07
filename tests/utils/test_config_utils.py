@@ -120,6 +120,11 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch):
 
     assert bigchaindb.config == {
         'CONFIGURED': True,
+        'server': {
+            'bind': '0.0.0.0:9984',
+            'workers': None,
+            'threads': None,
+        },
         'database': {
             'host': 'test-host',
             'port': 4242,
@@ -135,6 +140,6 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch):
             'port': 8125,
             'rate': 0.01,
         },
-        'api_endpoint': 'http://localhost:8008/api/v1',
+        'api_endpoint': 'http://localhost:9984/api/v1',
         'consensus_plugin': 'default',
     }
