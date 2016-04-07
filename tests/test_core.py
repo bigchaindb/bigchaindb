@@ -8,6 +8,8 @@ def config(request, monkeypatch):
             'host': 'host',
             'port': 28015,
             'name': 'bigchain',
+            'user': 'admin',
+            'password': '',
         },
         'keypair': {
             'public': 'pubkey',
@@ -44,6 +46,8 @@ def test_bigchain_class_initialization_with_parameters(config):
         'host': 'some_node',
         'port': '12345',
         'dbname': 'atom',
+        'user': 'some_user',
+        'password': 'some_password',
         'public_key': 'white',
         'private_key': 'black',
         'keyring': ['key_one', 'key_two'],
@@ -53,6 +57,8 @@ def test_bigchain_class_initialization_with_parameters(config):
     assert bigchain.host == init_kwargs['host']
     assert bigchain.port == init_kwargs['port']
     assert bigchain.dbname == init_kwargs['dbname']
+    assert bigchain.user == init_kwargs['user']
+    assert bigchain.password == init_kwargs['password']
     assert bigchain.me == init_kwargs['public_key']
     assert bigchain.me_private == init_kwargs['private_key']
     assert bigchain.federation_nodes == init_kwargs['keyring']

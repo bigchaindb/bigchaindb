@@ -29,7 +29,9 @@ config = {
     'database': {
         'host': e('BIGCHAIN_DATABASE_HOST', default='localhost'),
         'port': e('BIGCHAIN_DATABASE_PORT', default=28015),
-        'name': e('BIGCHAIN_DATABASE_NAME', default='bigchain')
+        'name': e('BIGCHAIN_DATABASE_NAME', default='bigchain'),
+	'user': e('BIGCHAIN_DATABASE_USER', default='admin'),
+	'password': e('BIGCHAIN_DATABASE_PASSWORD', default=''),
     },
     'keypair': {
         'public': e('BIGCHAIN_KEYPAIR_PUBLIC'),

@@ -13,10 +13,10 @@ logger = logging.getLogger(__name__)
 
 def get_conn():
     '''Get the connection to the database.'''
-
     return r.connect(bigchaindb.config['database']['host'],
-                     bigchaindb.config['database']['port'])
-
+                     bigchaindb.config['database']['port'],
+                     bigchaindb.config['database']['user'],
+                     bigchaindb.config['database']['password'])
 
 def init():
     conn = get_conn()

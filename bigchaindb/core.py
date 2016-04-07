@@ -25,7 +25,7 @@ class Bigchain(object):
     Create, read, sign, write transactions to the database
     """
 
-    def __init__(self, host=None, port=None, dbname=None,
+    def __init__(self, host=None, port=None, dbname=None, user=None, password=None,
                  public_key=None, private_key=None, keyring=[],
                  consensus_plugin=None):
         """Initialize the Bigchain instance
@@ -41,6 +41,8 @@ class Bigchain(object):
             host (str): hostname where the rethinkdb is running.
             port (int): port in which rethinkb is running (usually 28015).
             dbname (str): the name of the database to connect to (usually bigchain).
+            user (str): the name ob the database user (usually admin).
+            password (str): password of the database user (usually '')
             public_key (str): the base58 encoded public key for the ED25519 curve.
             private_key (str): the base58 encoded private key for the ED25519 curve.
             keyring (list[str]): list of base58 encoded public keys of the federation nodes.
@@ -50,6 +52,8 @@ class Bigchain(object):
         self.host = host or bigchaindb.config['database']['host']
         self.port = port or bigchaindb.config['database']['port']
         self.dbname = dbname or bigchaindb.config['database']['name']
+        self.user = user or bigchaindb.config['database']['user']
+        self.password = password or bigchaindb.config['database']['password']
         self.me = public_key or bigchaindb.config['keypair']['public']
         self.me_private = private_key or bigchaindb.config['keypair']['private']
         self.federation_nodes = keyring or bigchaindb.config['keyring']
@@ -67,7 +71,7 @@ class Bigchain(object):
         return self._conn
 
     def reconnect(self):
-        return r.connect(host=self.host, port=self.port, db=self.dbname)
+        return r.connect(host=self.host, port=self.port, db=self.dbname, user=self.user, password=self.password)
 
     @monitor.timer('create_transaction', rate=bigchaindb.config['statsd']['rate'])
     def create_transaction(self, *args, **kwargs):
