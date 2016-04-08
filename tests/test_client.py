@@ -57,9 +57,9 @@ def test_client_can_create_assets(mock_requests_post, client):
 def test_client_can_transfer_assets(mock_requests_post, mock_bigchaindb_sign, client):
     from bigchaindb import util
 
-    tx = client.transfer('a', 123)
+    tx = client.transfer(client.public_key, 123)
 
     assert tx['transaction']['fulfillments'][0]['current_owners'][0] == client.public_key
-    assert tx['transaction']['conditions'][0]['new_owners'][0] == 'a'
+    assert tx['transaction']['conditions'][0]['new_owners'][0] == client.public_key
     assert tx['transaction']['fulfillments'][0]['input'] == 123
 

@@ -13,7 +13,6 @@ from bigchaindb.voter import Voter
 from bigchaindb.block import Block
 
 
-
 @pytest.mark.skipif(reason='Some tests throw a ResourceWarning that might result in some weird '
                            'exceptions while running the tests. The problem seems to *not* '
                            'interfere with the correctness of the tests. ')
@@ -22,7 +21,6 @@ def test_remove_unclosed_sockets():
 
 
 class TestBigchainApi(object):
-
     def test_create_transaction_create(self, b, user_sk):
         tx = b.create_transaction(b.me, user_sk, None, 'CREATE')
 
@@ -48,41 +46,40 @@ class TestBigchainApi(object):
         assert b.verify_signature(tx) == False
         assert b.verify_signature(tx_signed) == True
 
-    def test_transaction_hash(self, b):
+    def test_transaction_hash(self, b, user_vk):
         payload = {'cats': 'are awesome'}
-        tx = b.create_transaction('a', 'b', 'c', 'd', payload)
+        tx = b.create_transaction(user_vk, user_vk, None, 'CREATE', payload)
         tx_calculated = {
-            'current_owner': 'a',
-            'new_owner': 'b',
-            'input': 'c',
-            'operation': 'd',
-            'timestamp': tx['transaction']['timestamp'],
-            'data': {
-                'hash': crypto.hash_data(util.serialize(payload)),
-                'payload': payload
-            }
+            'conditions': [{'cid': 0,
+                            'condition': tx['transaction']['conditions'][0]['condition'],
+                            'new_owners': [user_vk]}],
+            'data': {'hash': crypto.hash_data(util.serialize(payload)),
+                     'payload': payload},
+            'fulfillments': [{'current_owners': [user_vk],
+                              'fid': 0,
+                              'fulfillment': None,
+                              'input': None}],
+            'operation': 'CREATE',
+            'timestamp': tx['transaction']['timestamp']
         }
         assert tx['transaction']['data'] == tx_calculated['data']
         # assert tx_hash == tx_calculated_hash
 
-    # TODO: Make sure that this is covered when merged with dimi's code
-    @pytest.mark.skipif(reason='We no longer check signatures, only fulfillments of conditions')
-    def test_transaction_signature(self, b):
-        sk, vk = crypto.generate_key_pair()
-        tx = b.create_transaction(vk, 'b', 'c', 'd')
-        tx_signed = b.sign_transaction(tx, sk)
+    def test_transaction_signature(self, b, user_sk, user_vk):
+        tx = b.create_transaction(user_vk, user_vk, None, 'CREATE')
+        tx_signed = b.sign_transaction(tx, user_sk)
 
-        assert 'signature' in tx_signed
+        assert tx_signed['transaction']['fulfillments'][0]['fulfillment'] is not None
         assert b.verify_signature(tx_signed)
 
-    def test_serializer(self, b):
-        tx = b.create_transaction('a', 'b', 'c', 'd')
+    def test_serializer(self, b, user_vk):
+        tx = b.create_transaction(user_vk, user_vk, None, 'CREATE')
         assert util.deserialize(util.serialize(tx)) == tx
 
     @pytest.mark.usefixtures('inputs')
     def test_write_transaction(self, b, user_vk, user_sk):
         input_tx = b.get_owned_ids(user_vk).pop()
-        tx = b.create_transaction(user_vk, 'b', input_tx, 'd')
+        tx = b.create_transaction(user_vk, user_vk, {'txid': input_tx, 'cid': 0}, 'TRANSFER')
         tx_signed = b.sign_transaction(tx, user_sk)
         response = b.write_transaction(tx_signed)
 
@@ -96,7 +93,7 @@ class TestBigchainApi(object):
     @pytest.mark.usefixtures('inputs')
     def test_read_transaction(self, b, user_vk, user_sk):
         input_tx = b.get_owned_ids(user_vk).pop()
-        tx = b.create_transaction(user_vk, 'b', input_tx, 'd')
+        tx = b.create_transaction(user_vk, user_vk, {'txid': input_tx, 'cid': 0}, 'TRANSFER')
         tx_signed = b.sign_transaction(tx, user_sk)
         b.write_transaction(tx_signed)
 
@@ -110,7 +107,7 @@ class TestBigchainApi(object):
     @pytest.mark.usefixtures('inputs')
     def test_assign_transaction_one_node(self, b, user_vk, user_sk):
         input_tx = b.get_owned_ids(user_vk).pop()
-        tx = b.create_transaction(user_vk, 'b', input_tx, 'd')
+        tx = b.create_transaction(user_vk, user_vk, {'txid': input_tx, 'cid': 0}, 'TRANSFER')
         tx_signed = b.sign_transaction(tx, user_sk)
         b.write_transaction(tx_signed)
 
@@ -129,7 +126,7 @@ class TestBigchainApi(object):
         # test assignee for several transactions
         for _ in range(20):
             input_tx = b.get_owned_ids(user_vk).pop()
-            tx = b.create_transaction(user_vk, 'b', input_tx, 'd')
+            tx = b.create_transaction(user_vk, user_vk, {'txid': input_tx, 'cid': 0}, 'TRANSFER')
             tx_signed = b.sign_transaction(tx, user_sk)
             b.write_transaction(tx_signed)
 
@@ -148,7 +145,7 @@ class TestBigchainApi(object):
         assert response['block_number'] == 0
         assert len(response['block']['transactions']) == 1
         assert response['block']['transactions'][0]['transaction']['operation'] == 'GENESIS'
-        assert response['block']['transactions'][0]['transaction']['input'] is None
+        assert response['block']['transactions'][0]['transaction']['fulfillments'][0]['input'] is None
 
     def test_create_genesis_block_fails_if_table_not_empty(self, b):
         b.create_genesis_block()
@@ -212,8 +209,8 @@ class TestBigchainApi(object):
     def test_get_last_voted_block_returns_genesis_if_no_votes_has_been_casted(self, b):
         b.create_genesis_block()
         genesis = list(r.table('bigchain')
-                        .filter(r.row['block_number'] == 0)
-                        .run(b.conn))[0]
+                       .filter(r.row['block_number'] == 0)
+                       .run(b.conn))[0]
         assert b.get_last_voted_block() == genesis
 
     def test_get_last_voted_block_returns_the_correct_block(self, b):
@@ -240,33 +237,34 @@ class TestBigchainApi(object):
 
 
 class TestTransactionValidation(object):
-
-    def test_create_operation_with_inputs(self, b):
-        tx = b.create_transaction('a', 'b', 'c', 'CREATE')
+    @pytest.mark.usefixtures('inputs')
+    def test_create_operation_with_inputs(self, b, user_vk):
+        input_tx = b.get_owned_ids(user_vk).pop()
+        tx = b.create_transaction(b.me, user_vk, {'txid': input_tx, 'cid': 0}, 'CREATE')
         with pytest.raises(ValueError) as excinfo:
             b.validate_transaction(tx)
 
         assert excinfo.value.args[0] == 'A CREATE operation has no inputs'
         assert b.is_valid_transaction(tx) is False
 
-    def test_create_operation_not_federation_node(self, b):
-        tx = b.create_transaction('a', 'b', None, 'CREATE')
+    def test_create_operation_not_federation_node(self, b, user_vk):
+        tx = b.create_transaction(user_vk, user_vk, None, 'CREATE')
         with pytest.raises(exceptions.OperationError) as excinfo:
             b.validate_transaction(tx)
 
         assert excinfo.value.args[0] == 'Only federation nodes can use the operation `CREATE`'
         assert b.is_valid_transaction(tx) is False
 
-    def test_non_create_operation_no_inputs(self, b):
-        tx = b.create_transaction('a', 'b', None, 'd')
+    def test_non_create_operation_no_inputs(self, b, user_vk):
+        tx = b.create_transaction(user_vk, user_vk, None, 'TRANSFER')
         with pytest.raises(ValueError) as excinfo:
             b.validate_transaction(tx)
 
         assert excinfo.value.args[0] == 'Only `CREATE` transactions can have null inputs'
         assert b.is_valid_transaction(tx) is False
 
-    def test_non_create_input_not_found(self, b):
-        tx = b.create_transaction('a', 'b', 'c', 'd')
+    def test_non_create_input_not_found(self, b, user_vk):
+        tx = b.create_transaction(user_vk, user_vk, {'txid': 'c', 'cid': 0}, 'TRANSFER')
         with pytest.raises(exceptions.TransactionDoesNotExist) as excinfo:
             b.validate_transaction(tx)
 
@@ -276,7 +274,8 @@ class TestTransactionValidation(object):
     @pytest.mark.usefixtures('inputs')
     def test_non_create_valid_input_wrong_owner(self, b, user_vk):
         valid_input = b.get_owned_ids(user_vk).pop()
-        tx = b.create_transaction('a', 'b', valid_input, 'c')
+        sk, vk = crypto.generate_key_pair()
+        tx = b.create_transaction(vk, user_vk, {'txid': valid_input, 'cid': 0}, 'TRANSFER')
         with pytest.raises(exceptions.TransactionOwnerError) as excinfo:
             b.validate_transaction(tx)
 
@@ -360,7 +359,6 @@ class TestTransactionValidation(object):
 
 
 class TestBlockValidation(object):
-
     def test_wrong_block_hash(self, b):
         block = b.create_block([])
 
@@ -425,7 +423,6 @@ class TestBlockValidation(object):
 
 
 class TestBigchainVoter(object):
-
     def test_valid_block_voting(self, b):
         # create queue and voter
         q_new_block = mp.Queue()
@@ -533,7 +530,6 @@ class TestBigchainVoter(object):
 
 
 class TestBigchainBlock(object):
-
     def test_by_assignee(self, b, user_vk):
         # create transactions and randomly assigne them
         transactions = mp.Queue()
@@ -736,7 +732,6 @@ class TestBigchainBlock(object):
 
 
 class TestMultipleInputs(object):
-
     def test_transfer_transaction_multiple(self, b):
         pass
 
@@ -745,4 +740,3 @@ class TestMultipleInputs(object):
 
     def test_get_spent(self, b):
         pass
-

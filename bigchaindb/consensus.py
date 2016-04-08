@@ -132,11 +132,12 @@ class BaseConsensusRules(AbstractConsensusRules):
         else:
             # check if the input exists, is owned by the current_owner
             if not transaction['transaction']['fulfillments']:
-                raise ValueError(
-                    'Transaction contains no fulfillments')
+                raise ValueError('Transaction contains no fulfillments')
 
             # check inputs
             for fulfillment in transaction['transaction']['fulfillments']:
+                if not fulfillment['input']:
+                    raise ValueError('Only `CREATE` transactions can have null inputs')
                 tx_input = bigchain.get_transaction(fulfillment['input']['txid'])
 
                 if not tx_input:
