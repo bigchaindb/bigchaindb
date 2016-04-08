@@ -6,7 +6,7 @@ def test_transform_create(b, user_sk, user_vk):
     tx = util.transform_create(tx)
     tx = util.sign_tx(tx, b.me_private)
 
-    assert tx['transaction']['current_owner'] == b.me
-    assert tx['transaction']['new_owner'] == user_vk
+    assert tx['transaction']['fulfillments'][0]['current_owners'][0] == b.me
+    assert tx['transaction']['conditions'][0]['new_owners'][0] == user_vk
     assert util.verify_signature(tx)
 

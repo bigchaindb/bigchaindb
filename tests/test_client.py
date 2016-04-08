@@ -21,6 +21,14 @@ def mock_requests_post(monkeypatch):
 
     monkeypatch.setattr('requests.post', mockreturn)
 
+@pytest.fixture
+def mock_bigchaindb_sign(monkeypatch):
+    def mockreturn(transaction, private_key):
+        return transaction
+
+    monkeypatch.setattr('bigchaindb.util.sign_tx', mockreturn)
+
+
 
 def test_temp_client_returns_a_temp_client():
     from bigchaindb.client import temp_client
@@ -39,21 +47,19 @@ def test_client_can_create_assets(mock_requests_post, client):
     #      `current_owner` will be overwritten with the public key of the node in the federation
     #      that will create the real transaction. `signature` will be overwritten with the new signature.
     #      Note that this scenario is ignored by this test.
-    assert tx['transaction']['current_owner'] == client.public_key
-    assert tx['transaction']['new_owner'] == client.public_key
-    assert tx['transaction']['input'] == None
+    assert tx['transaction']['fulfillments'][0]['current_owners'][0] == client.public_key
+    assert tx['transaction']['conditions'][0]['new_owners'][0] == client.public_key
+    assert tx['transaction']['fulfillments'][0]['input'] is None
 
     assert util.verify_signature(tx)
 
 
-def test_client_can_transfer_assets(mock_requests_post, client):
+def test_client_can_transfer_assets(mock_requests_post, mock_bigchaindb_sign, client):
     from bigchaindb import util
 
     tx = client.transfer('a', 123)
 
-    assert tx['transaction']['current_owner'] == client.public_key
-    assert tx['transaction']['new_owner'] == 'a'
-    assert tx['transaction']['input'] == 123
-
-    assert util.verify_signature(tx)
+    assert tx['transaction']['fulfillments'][0]['current_owners'][0] == client.public_key
+    assert tx['transaction']['conditions'][0]['new_owners'][0] == 'a'
+    assert tx['transaction']['fulfillments'][0]['input'] == 123
 

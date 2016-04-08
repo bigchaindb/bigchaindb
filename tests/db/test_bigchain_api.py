@@ -65,6 +65,8 @@ class TestBigchainApi(object):
         assert tx['transaction']['data'] == tx_calculated['data']
         # assert tx_hash == tx_calculated_hash
 
+    # TODO: Make sure that this is covered when merged with dimi's code
+    @pytest.mark.skipif(reason='We no longer check signatures, only fulfillments of conditions')
     def test_transaction_signature(self, b):
         sk, vk = crypto.generate_key_pair()
         tx = b.create_transaction(vk, 'b', 'c', 'd')
