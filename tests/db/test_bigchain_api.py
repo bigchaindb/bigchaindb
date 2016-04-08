@@ -36,6 +36,8 @@ class TestBigchainApi(object):
     @pytest.mark.usefixtures('inputs')
     def test_create_transaction_transfer(self, b, user_vk, user_sk):
         input_tx = b.get_owned_ids(user_vk).pop()
+        assert b.verify_signature(b.get_transaction(input_tx)) == True
+
         tx = b.create_transaction(b.me, user_sk, {'txid': input_tx, 'cid': 0}, 'TRANSFER')
 
         assert sorted(tx) == sorted(['id', 'transaction', 'version'])
@@ -43,7 +45,8 @@ class TestBigchainApi(object):
 
         tx_signed = b.sign_transaction(tx, user_sk)
 
-        b.verify_signature(tx)
+        assert b.verify_signature(tx) == False
+        assert b.verify_signature(tx_signed) == True
 
     def test_transaction_hash(self, b):
         payload = {'cats': 'are awesome'}

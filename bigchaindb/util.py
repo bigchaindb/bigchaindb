@@ -1,4 +1,4 @@
-
+import copy
 import json
 import time
 import multiprocessing as mp
@@ -238,24 +238,24 @@ def sign_tx(transaction, sk):
     """
     b = bigchaindb.Bigchain()
     sk = crypto.SigningKey(sk)
-
+    tx = copy.deepcopy(transaction)
     common_data = {
-        'operation': transaction['transaction']['operation'],
-        'timestamp': transaction['transaction']['timestamp'],
-        'data': transaction['transaction']['data'],
-        'version': transaction['version'],
-        'id': transaction['id']
+        'operation': tx['transaction']['operation'],
+        'timestamp': tx['transaction']['timestamp'],
+        'data': tx['transaction']['data'],
+        'version': tx['version'],
+        'id': tx['id']
     }
 
-    for fulfillment in transaction['transaction']['fulfillments']:
+    for fulfillment in tx['transaction']['fulfillments']:
         fulfillment_message = common_data.copy()
-        if transaction['transaction']['operation'] in ['CREATE', 'GENESIS']:
+        if tx['transaction']['operation'] in ['CREATE', 'GENESIS']:
             fulfillment_message.update({
                 'input': None,
                 'condition': None
             })
             # sign the fulfillment message
-            signed_fulfillment = sk.sign(serialize(fulfillment_message))
+            parsed_fulfillment = Ed25519Fulfillment(public_key=sk.get_verifying_key())
         else:
             # get previous condition
             previous_tx = b.get_transaction(fulfillment['input']['txid'])
@@ -267,11 +267,11 @@ def sign_tx(transaction, sk):
                 'condition': conditions[fulfillment['fid']]
             })
             parsed_fulfillment = Fulfillment.from_json(fulfillment_message['condition']['condition']['details'])
-            parsed_fulfillment.sign(serialize(fulfillment_message), sk)
-            signed_fulfillment = parsed_fulfillment.serialize_uri()
+        parsed_fulfillment.sign(serialize(fulfillment_message), sk)
+        signed_fulfillment = parsed_fulfillment.serialize_uri()
         fulfillment.update({'fulfillment': signed_fulfillment})
 
-    return transaction
+    return tx
 
 
 def create_and_sign_tx(private_key, current_owner, new_owner, tx_input, operation='TRANSFER', payload=None):
@@ -326,12 +326,18 @@ def verify_signature(signed_transaction):
             previous_tx = b.get_transaction(fulfillment['input']['txid'])
             conditions = sorted(previous_tx['transaction']['conditions'], key=lambda d: d['cid'])
             fulfillment_message['condition'] = conditions[fulfillment['fid']]
-            # verify the fulfillment (for now lets assume there is only one owner)
-            is_valid = Fulfillment.from_uri(fulfillment['fulfillment']).validate(serialize(fulfillment_message))
-        else:
-            # verify the signature (for now lets assume there is only one owner)
-            vk = crypto.VerifyingKey(fulfillment['current_owners'][0])
-            is_valid = vk.verify(serialize(fulfillment_message), fulfillment['fulfillment'])
+
+        # verify the fulfillment (for now lets assume there is only one owner)
+        try:
+            parsed_fulfillment = Fulfillment.from_uri(fulfillment['fulfillment'])
+        except Exception:
+            return False
+        is_valid = parsed_fulfillment.validate(serialize(fulfillment_message))
+
+        # if not a `CREATE` transaction
+        if fulfillment['input']:
+            is_valid &= parsed_fulfillment.condition.serialize_uri() == \
+                fulfillment_message['condition']['condition']['uri']
         if not is_valid:
             return False
 
