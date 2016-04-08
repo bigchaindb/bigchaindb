@@ -51,13 +51,6 @@ def map_leafs(func, mapping):
     return _inner(copy.deepcopy(mapping))
 
 
-def get_casted_value(original, to_convert):
-    try:
-        return original(to_convert)
-    except TypeError:
-        return type(original)(to_convert)
-
-
 # Thanks Alex <3
 # http://stackoverflow.com/a/3233356/597097
 def update(d, u):
