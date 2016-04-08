@@ -34,9 +34,9 @@ class TestBigchainApi(object):
     @pytest.mark.usefixtures('inputs')
     def test_create_transaction_transfer(self, b, user_vk, user_sk):
         input_tx = b.get_owned_ids(user_vk).pop()
-        assert b.verify_signature(b.get_transaction(input_tx)) == True
+        assert b.verify_signature(b.get_transaction(input_tx['txid'])) == True
 
-        tx = b.create_transaction(b.me, user_sk, {'txid': input_tx, 'cid': 0}, 'TRANSFER')
+        tx = b.create_transaction(b.me, user_sk, input_tx, 'TRANSFER')
 
         assert sorted(tx) == sorted(['id', 'transaction', 'version'])
         assert sorted(tx['transaction']) == sorted(['conditions', 'data', 'fulfillments', 'operation', 'timestamp'])
@@ -79,7 +79,7 @@ class TestBigchainApi(object):
     @pytest.mark.usefixtures('inputs')
     def test_write_transaction(self, b, user_vk, user_sk):
         input_tx = b.get_owned_ids(user_vk).pop()
-        tx = b.create_transaction(user_vk, user_vk, {'txid': input_tx, 'cid': 0}, 'TRANSFER')
+        tx = b.create_transaction(user_vk, user_vk, input_tx, 'TRANSFER')
         tx_signed = b.sign_transaction(tx, user_sk)
         response = b.write_transaction(tx_signed)
 
@@ -93,7 +93,7 @@ class TestBigchainApi(object):
     @pytest.mark.usefixtures('inputs')
     def test_read_transaction(self, b, user_vk, user_sk):
         input_tx = b.get_owned_ids(user_vk).pop()
-        tx = b.create_transaction(user_vk, user_vk, {'txid': input_tx, 'cid': 0}, 'TRANSFER')
+        tx = b.create_transaction(user_vk, user_vk, input_tx, 'TRANSFER')
         tx_signed = b.sign_transaction(tx, user_sk)
         b.write_transaction(tx_signed)
 
@@ -107,7 +107,7 @@ class TestBigchainApi(object):
     @pytest.mark.usefixtures('inputs')
     def test_assign_transaction_one_node(self, b, user_vk, user_sk):
         input_tx = b.get_owned_ids(user_vk).pop()
-        tx = b.create_transaction(user_vk, user_vk, {'txid': input_tx, 'cid': 0}, 'TRANSFER')
+        tx = b.create_transaction(user_vk, user_vk, input_tx, 'TRANSFER')
         tx_signed = b.sign_transaction(tx, user_sk)
         b.write_transaction(tx_signed)
 
@@ -126,7 +126,7 @@ class TestBigchainApi(object):
         # test assignee for several transactions
         for _ in range(20):
             input_tx = b.get_owned_ids(user_vk).pop()
-            tx = b.create_transaction(user_vk, user_vk, {'txid': input_tx, 'cid': 0}, 'TRANSFER')
+            tx = b.create_transaction(user_vk, user_vk, input_tx, 'TRANSFER')
             tx_signed = b.sign_transaction(tx, user_sk)
             b.write_transaction(tx_signed)
 
@@ -240,7 +240,7 @@ class TestTransactionValidation(object):
     @pytest.mark.usefixtures('inputs')
     def test_create_operation_with_inputs(self, b, user_vk):
         input_tx = b.get_owned_ids(user_vk).pop()
-        tx = b.create_transaction(b.me, user_vk, {'txid': input_tx, 'cid': 0}, 'CREATE')
+        tx = b.create_transaction(b.me, user_vk, input_tx, 'CREATE')
         with pytest.raises(ValueError) as excinfo:
             b.validate_transaction(tx)
 
@@ -275,7 +275,7 @@ class TestTransactionValidation(object):
     def test_non_create_valid_input_wrong_owner(self, b, user_vk):
         input_valid = b.get_owned_ids(user_vk).pop()
         sk, vk = crypto.generate_key_pair()
-        tx = b.create_transaction(vk, user_vk, {'txid': input_valid, 'cid': 0}, 'TRANSFER')
+        tx = b.create_transaction(vk, user_vk, input_valid, 'TRANSFER')
         with pytest.raises(exceptions.InvalidSignature) as excinfo:
             b.validate_transaction(tx)
 
@@ -285,7 +285,7 @@ class TestTransactionValidation(object):
     @pytest.mark.usefixtures('inputs')
     def test_non_create_double_spend(self, b, user_vk, user_sk):
         input_valid = b.get_owned_ids(user_vk).pop()
-        tx_valid = b.create_transaction(user_vk, user_vk, {'txid': input_valid, 'cid': 0}, 'TRANSFER')
+        tx_valid = b.create_transaction(user_vk, user_vk, input_valid, 'TRANSFER')
         tx_valid_signed = b.sign_transaction(tx_valid, user_sk)
         b.write_transaction(tx_valid_signed)
 
@@ -294,17 +294,17 @@ class TestTransactionValidation(object):
         b.write_block(block, durability='hard')
 
         # create another transaction with the same input
-        tx_double_spend = b.create_transaction(user_vk, user_vk, {'txid': input_valid, 'cid': 0}, 'TRANSFER')
+        tx_double_spend = b.create_transaction(user_vk, user_vk, input_valid, 'TRANSFER')
         with pytest.raises(exceptions.DoubleSpend) as excinfo:
             b.validate_transaction(tx_double_spend)
 
-        assert excinfo.value.args[0] == 'input `{}` was already spent'.format({'txid': input_valid, 'cid': 0})
+        assert excinfo.value.args[0] == 'input `{}` was already spent'.format(input_valid)
         assert b.is_valid_transaction(tx_double_spend) is False
 
     @pytest.mark.usefixtures('inputs')
     def test_wrong_transaction_hash(self, b, user_vk):
         input_valid = b.get_owned_ids(user_vk).pop()
-        tx_valid = b.create_transaction(user_vk, user_vk, {'txid': input_valid, 'cid': 0}, 'TRANSFER')
+        tx_valid = b.create_transaction(user_vk, user_vk, input_valid, 'TRANSFER')
 
         # change the transaction hash
         tx_valid.update({'id': 'abcd'})
@@ -315,7 +315,7 @@ class TestTransactionValidation(object):
     @pytest.mark.usefixtures('inputs')
     def test_wrong_signature(self, b, user_vk):
         input_valid = b.get_owned_ids(user_vk).pop()
-        tx_valid = b.create_transaction(user_vk, user_vk, {'txid': input_valid, 'cid': 0}, 'TRANSFER')
+        tx_valid = b.create_transaction(user_vk, user_vk, input_valid, 'TRANSFER')
 
         wrong_private_key = '4fyvJe1aw2qHZ4UNRYftXK7JU7zy9bCqoU5ps6Ne3xrY'
 
@@ -333,7 +333,7 @@ class TestTransactionValidation(object):
     @pytest.mark.usefixtures('inputs')
     def test_valid_non_create_transaction(self, b, user_vk, user_sk):
         input_valid = b.get_owned_ids(user_vk).pop()
-        tx_valid = b.create_transaction(user_vk, user_vk, {'txid': input_valid, 'cid': 0}, 'TRANSFER')
+        tx_valid = b.create_transaction(user_vk, user_vk, input_valid, 'TRANSFER')
 
         tx_valid_signed = b.sign_transaction(tx_valid, user_sk)
         assert tx_valid_signed == b.validate_transaction(tx_valid_signed)
@@ -342,7 +342,7 @@ class TestTransactionValidation(object):
     @pytest.mark.usefixtures('inputs')
     def test_valid_non_create_transaction_after_block_creation(self, b, user_vk, user_sk):
         input_valid = b.get_owned_ids(user_vk).pop()
-        tx_valid = b.create_transaction(user_vk, user_vk, {'txid': input_valid, 'cid': 0}, 'TRANSFER')
+        tx_valid = b.create_transaction(user_vk, user_vk, input_valid, 'TRANSFER')
 
         tx_valid_signed = b.sign_transaction(tx_valid, user_sk)
         assert tx_valid_signed == b.validate_transaction(tx_valid_signed)
@@ -412,7 +412,7 @@ class TestBlockValidation(object):
     def test_valid_block(self, b, user_vk, user_sk):
         # create valid transaction
         input_valid = b.get_owned_ids(user_vk).pop()
-        tx_valid = b.create_transaction(user_vk, user_vk, {'txid': input_valid, 'cid': 0}, 'TRANSFER')
+        tx_valid = b.create_transaction(user_vk, user_vk, input_valid, 'TRANSFER')
         tx_valid_signed = b.sign_transaction(tx_valid, user_sk)
 
         # create valid block
