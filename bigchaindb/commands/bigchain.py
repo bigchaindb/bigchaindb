@@ -10,7 +10,7 @@ import json
 import bigchaindb
 import bigchaindb.config_utils
 from bigchaindb import db
-from bigchaindb.exceptions import DatabaseAlreadyExists
+from bigchaindb.exceptions import DatabaseAlreadyExists, KeypairNotFoundException
 from bigchaindb.commands.utils import base_parser, start
 from bigchaindb.processes import Processes
 from bigchaindb import crypto
@@ -101,6 +101,10 @@ def run_start(args):
         db.init()
     except DatabaseAlreadyExists:
         pass
+    except KeypairNotFoundException:
+        print('Cannot start BigchainDB, no keypair found. Did you run `bigchaindb configure`?')
+        exit(1)
+
     processes = Processes()
     logger.info('Start bigchaindb main process')
     processes.start()

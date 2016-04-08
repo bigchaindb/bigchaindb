@@ -110,25 +110,7 @@ If we try to run the node, the command will fail:
 ```
 $ bigchaindb start
 WARNING:bigchaindb.config_utils:Cannot find config file `/home/vrde/.bigchaindb`.
-INFO:bigchaindb.db.utils:Create:
-INFO:bigchaindb.db.utils: - database `bigchain`
-INFO:bigchaindb.db.utils: - tables
-INFO:bigchaindb.db.utils: - indexes
-INFO:bigchaindb.db.utils: - genesis block
-Traceback (most recent call last):
-  File "/home/vrde/.local/share/virtualenvs/bigchain/bin/bigchaindb", line 9, in <module>
-    load_entry_point('BigchainDB', 'console_scripts', 'bigchaindb')()
-  File "/home/vrde/ascribe/repos/bigchaindb/bigchaindb/commands/bigchain.py", line 137, in main
-    start(parser, globals())
-  File "/home/vrde/ascribe/repos/bigchaindb/bigchaindb/commands/utils.py", line 41, in start
-    func(args)
-  File "/home/vrde/ascribe/repos/bigchaindb/bigchaindb/commands/bigchain.py", line 101, in run_start
-    db.init()
-  File "/home/vrde/ascribe/repos/bigchaindb/bigchaindb/db/utils.py", line 62, in init
-    b = bigchaindb.Bigchain()
-  File "/home/vrde/ascribe/repos/bigchaindb/bigchaindb/core.py", line 58, in __init__
-    raise exceptions.KeypairNotFoundException()
-bigchaindb.exceptions.KeypairNotFoundException
+Cannot start BigchainDB, no keypair found. Did you run `bigchaindb configure`?
 ```
 
 This is failing as expected: a BigchainDB node needs at least a key pair to work.
