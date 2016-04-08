@@ -30,6 +30,6 @@ def app(request, node_config):
 
 
 @pytest.fixture
-def inputs(user_public_key):
-    conftest.inputs(user_public_key)
+def inputs(user_vk):
+    conftest.inputs(user_vk)
 

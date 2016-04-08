@@ -3,7 +3,7 @@ from abc import ABCMeta, abstractmethod
 
 import bigchaindb.exceptions as exceptions
 from bigchaindb import util
-from bigchaindb.crypto import hash_data, PublicKey
+from bigchaindb import crypto
 
 
 class AbstractConsensusRules(metaclass=ABCMeta):
@@ -132,11 +132,12 @@ class BaseConsensusRules(AbstractConsensusRules):
         else:
             # check if the input exists, is owned by the current_owner
             if not transaction['transaction']['fulfillments']:
-                raise ValueError(
-                    'Transaction contains no fulfillments')
+                raise ValueError('Transaction contains no fulfillments')
 
             # check inputs
             for fulfillment in transaction['transaction']['fulfillments']:
+                if not fulfillment['input']:
+                    raise ValueError('Only `CREATE` transactions can have null inputs')
                 tx_input = bigchain.get_transaction(fulfillment['input']['txid'])
 
                 if not tx_input:
@@ -158,8 +159,8 @@ class BaseConsensusRules(AbstractConsensusRules):
         for fulfillment in transaction_data['transaction']['fulfillments']:
             fulfillment['fulfillment'] = None
 
-        calculated_hash = hash_data(util.serialize(
-            transaction_data['transaction']))
+        calculated_hash = crypto.hash_data(util.serialize(
+            transaction['transaction']))
         if calculated_hash != transaction['id']:
             raise exceptions.InvalidHash()
 
@@ -187,7 +188,7 @@ class BaseConsensusRules(AbstractConsensusRules):
         """
 
         # Check if current hash is correct
-        calculated_hash = hash_data(util.serialize(block['block']))
+        calculated_hash = crypto.hash_data(util.serialize(block['block']))
         if calculated_hash != block['id']:
             raise exceptions.InvalidHash()
 

@@ -27,8 +27,8 @@ class Client:
             3. Reading them from the `config.json` file.
 
         Args:
-            public_key (str): the base58 encoded public key for the ECDSA secp256k1 curve.
-            private_key (str): the base58 encoded private key for the ECDSA secp256k1 curve.
+            public_key (str): the base58 encoded public key for the ED25519 curve.
+            private_key (str): the base58 encoded private key for the ED25519 curve.
             api_endpoint (str): a URL where rethinkdb is running.
                 format: scheme://hostname:port
             consensus_plugin (str): the registered name of your installed

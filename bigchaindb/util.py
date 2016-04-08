@@ -1,12 +1,15 @@
-
+import copy
 import json
 import time
 import multiprocessing as mp
 from datetime import datetime
 
+from cryptoconditions import Ed25519Fulfillment, ThresholdSha256Fulfillment
+from cryptoconditions.fulfillment import Fulfillment
+
 import bigchaindb
 from bigchaindb import exceptions
-from bigchaindb.crypto import PrivateKey, PublicKey, hash_data
+from bigchaindb import crypto
 
 
 class ProcessGroup(object):
@@ -140,8 +143,11 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
                     }
                 }
             },
-        }  
+        }
     """
+    current_owners = current_owners if isinstance(current_owners, list) else [current_owners]
+    new_owners = new_owners if isinstance(new_owners, list) else [new_owners]
+    inputs = inputs if isinstance(inputs, list) else [inputs]
 
     # validate arguments (owners and inputs should be lists)
     if not isinstance(current_owners, list):
@@ -155,7 +161,7 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
     data = None
     if payload is not None:
         if isinstance(payload, dict):
-            hash_payload = hash_data(serialize(payload))
+            hash_payload = crypto.hash_data(serialize(payload))
             data = {
                 'hash': hash_payload,
                 'payload': payload
@@ -165,6 +171,7 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
 
     # handle inputs
     fulfillments = []
+
     # transfer
     if inputs:
         for fid, inp in enumerate(inputs):
@@ -186,9 +193,18 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
     # handle outputs
     conditions = []
     for fulfillment in fulfillments:
+        if len(new_owners) > 1:
+            for new_owner in new_owners:
+                condition = ThresholdSha256Fulfillment(threshold=len(new_owners))
+                condition.add_subfulfillment(Ed25519Fulfillment(public_key=new_owner))
+        elif len(new_owners) == 1:
+            condition = Ed25519Fulfillment(public_key=new_owners[0])
         conditions.append({
             'new_owners': new_owners,
-            'condition': None,
+            'condition': {
+                'details': json.loads(condition.serialize_json()),
+                'uri': condition.condition.serialize_uri()
+            },
             'cid': fulfillment['fid']
         })
 
@@ -202,7 +218,7 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
 
     # serialize and convert to bytes
     tx_serialized = serialize(tx)
-    tx_hash = hash_data(tx_serialized)
+    tx_hash = crypto.hash_data(tx_serialized)
 
     # create the transaction
     transaction = {
@@ -215,53 +231,55 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
 
 
 # TODO: Change sign_tx to populate the fulfillments
-def sign_tx(transaction, private_key):
+def sign_tx(transaction, sk):
     """Sign a transaction
 
     A transaction signed with the `current_owner` corresponding private key.
 
     Args:
         transaction (dict): transaction to sign.
-        private_key (str): base58 encoded private key to create a signature of the transaction.
+        sk (base58 str): base58 encoded private key to create a signature of the transaction.
 
     Returns:
         dict: transaction with the `fulfillment` fields populated.
 
     """
     b = bigchaindb.Bigchain()
-    private_key = PrivateKey(private_key)
-
+    sk = crypto.SigningKey(sk)
+    tx = copy.deepcopy(transaction)
     common_data = {
-        'operation': transaction['transaction']['operation'],
-        'timestamp': transaction['transaction']['timestamp'],
-        'data': transaction['transaction']['data'],
-        'version': transaction['version'],
-        'id': transaction['id']
+        'operation': tx['transaction']['operation'],
+        'timestamp': tx['transaction']['timestamp'],
+        'data': tx['transaction']['data'],
+        'version': tx['version'],
+        'id': tx['id']
     }
 
-    for fulfillment in transaction['transaction']['fulfillments']:
+    for fulfillment in tx['transaction']['fulfillments']:
         fulfillment_message = common_data.copy()
-        if transaction['transaction']['operation'] in ['CREATE', 'GENESIS']:
+        if tx['transaction']['operation'] in ['CREATE', 'GENESIS']:
             fulfillment_message.update({
                 'input': None,
                 'condition': None
             })
+            # sign the fulfillment message
+            parsed_fulfillment = Ed25519Fulfillment(public_key=sk.get_verifying_key())
         else:
             # get previous condition
             previous_tx = b.get_transaction(fulfillment['input']['txid'])
             conditions = sorted(previous_tx['transaction']['conditions'], key=lambda d: d['cid'])
-        
+
             # update the fulfillment message
             fulfillment_message.update({
                 'input': fulfillment['input'],
                 'condition': conditions[fulfillment['fid']]
             })
+            parsed_fulfillment = Fulfillment.from_json(fulfillment_message['condition']['condition']['details'])
+        parsed_fulfillment.sign(serialize(fulfillment_message), sk)
+        signed_fulfillment = parsed_fulfillment.serialize_uri()
+        fulfillment.update({'fulfillment': signed_fulfillment})
 
-        # sign the fulfillment message
-        fulfillment_message_signature = private_key.sign(serialize(fulfillment_message))
-        fulfillment.update({'fulfillment': fulfillment_message_signature})
-
-    return transaction
+    return tx
 
 
 def create_and_sign_tx(private_key, current_owner, new_owner, tx_input, operation='TRANSFER', payload=None):
@@ -271,7 +289,7 @@ def create_and_sign_tx(private_key, current_owner, new_owner, tx_input, operatio
 
 def check_hash_and_signature(transaction):
     # Check hash of the transaction
-    calculated_hash = hash_data(serialize(transaction['transaction']))
+    calculated_hash = crypto.hash_data(serialize(transaction['transaction']))
     if calculated_hash != transaction['id']:
         raise exceptions.InvalidHash()
 
@@ -317,10 +335,17 @@ def verify_signature(signed_transaction):
             conditions = sorted(previous_tx['transaction']['conditions'], key=lambda d: d['cid'])
             fulfillment_message['condition'] = conditions[fulfillment['fid']]
 
-        # verify the signature (for now lets assume there is only one owner)
-        public_key = PublicKey(fulfillment['current_owners'][0])
+        # verify the fulfillment (for now lets assume there is only one owner)
+        try:
+            parsed_fulfillment = Fulfillment.from_uri(fulfillment['fulfillment'])
+        except Exception:
+            return False
+        is_valid = parsed_fulfillment.validate(serialize(fulfillment_message))
 
-        is_valid = public_key.verify(serialize(fulfillment_message), fulfillment['fulfillment'])
+        # if not a `CREATE` transaction
+        if fulfillment['input']:
+            is_valid &= parsed_fulfillment.condition.serialize_uri() == \
+                fulfillment_message['condition']['condition']['uri']
         if not is_valid:
             return False
 
