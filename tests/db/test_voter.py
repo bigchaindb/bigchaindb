@@ -125,7 +125,7 @@ class TestBigchainVoter(object):
 
         # create a `TRANSFER` transaction
         test_user2_priv, test_user2_pub = crypto.generate_key_pair()
-        tx2 = b.create_transaction(test_user_pub, test_user2_pub, tx['id'], 'TRANSFER')
+        tx2 = b.create_transaction(test_user_pub, test_user2_pub, {'txid': tx['id'], 'cid': 0}, 'TRANSFER')
         tx2_signed = b.sign_transaction(tx2, test_user_priv)
         assert b.is_valid_transaction(tx2_signed)
 
