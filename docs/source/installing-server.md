@@ -128,7 +128,21 @@ then do a one-time configuration step to create the config file; it will be
 stored on your host machine under ` ~/.bigchaindb_docker/config`:
 ```text
 $ docker-compose run --rm bigchaindb bigchaindb configure
+Starting bigchaindb_rethinkdb-data_1
+Generating keypair
+API Server bind? (default `0.0.0.0:9984`): 
+Database host? (default `localhost`): rethinkdb
+Database port? (default `28015`): 
+Database name? (default `bigchain`): 
+Statsd host? (default `localhost`): statsd
+Statsd port? (default `8125`): 
+Statsd rate? (default `0.01`): 
+Ready to go!
 ```
+
+As shown above, make sure that you set the database and statsd hosts to their
+corresponding service names (`rethinkdb`, `statsd`), defined in`docker-compose.yml`
+and `docker-compose-monitor.yml`.
 
 You can then start it up (in the background, as a daemon) using:
 ```text
