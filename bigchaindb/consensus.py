@@ -123,7 +123,7 @@ class BaseConsensusRules(AbstractConsensusRules):
             # TODO: for now lets assume a CREATE transaction only has one fulfillment
             if transaction['transaction']['fulfillments'][0]['input']:
                 raise ValueError('A CREATE operation has no inputs')
-            # TODO: fow now lets assume a CREATE transaction only has one current_owner
+            # TODO: for now lets assume a CREATE transaction only has one current_owner
             if transaction['transaction']['fulfillments'][0]['current_owners'][0] not in (
                     bigchain.federation_nodes + [bigchain.me]):
                 raise exceptions.OperationError(
@@ -144,7 +144,7 @@ class BaseConsensusRules(AbstractConsensusRules):
                     raise exceptions.TransactionDoesNotExist(
                         'input `{}` does not exist in the bigchain'.format(
                             fulfillment['input']['txid']))
-
+                # TODO: check if current owners own tx_input (maybe checked by InvalidSignature)
                 # check if the input was already spent by a transaction other than
                 # this one.
                 spent = bigchain.get_spent(fulfillment['input'])
@@ -159,8 +159,7 @@ class BaseConsensusRules(AbstractConsensusRules):
         for fulfillment in transaction_data['transaction']['fulfillments']:
             fulfillment['fulfillment'] = None
 
-        calculated_hash = crypto.hash_data(util.serialize(
-            transaction['transaction']))
+        calculated_hash = crypto.hash_data(util.serialize(transaction_data['transaction']))
         if calculated_hash != transaction['id']:
             raise exceptions.InvalidHash()
 

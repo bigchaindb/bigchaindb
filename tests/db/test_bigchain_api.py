@@ -273,19 +273,19 @@ class TestTransactionValidation(object):
 
     @pytest.mark.usefixtures('inputs')
     def test_non_create_valid_input_wrong_owner(self, b, user_vk):
-        valid_input = b.get_owned_ids(user_vk).pop()
+        input_valid = b.get_owned_ids(user_vk).pop()
         sk, vk = crypto.generate_key_pair()
-        tx = b.create_transaction(vk, user_vk, {'txid': valid_input, 'cid': 0}, 'TRANSFER')
-        with pytest.raises(exceptions.TransactionOwnerError) as excinfo:
+        tx = b.create_transaction(vk, user_vk, {'txid': input_valid, 'cid': 0}, 'TRANSFER')
+        with pytest.raises(exceptions.InvalidSignature) as excinfo:
             b.validate_transaction(tx)
 
-        assert excinfo.value.args[0] == 'current_owner `a` does not own the input `{}`'.format(valid_input)
+        # assert excinfo.value.args[0] == 'current_owner `a` does not own the input `{}`'.format(valid_input)
         assert b.is_valid_transaction(tx) is False
 
     @pytest.mark.usefixtures('inputs')
     def test_non_create_double_spend(self, b, user_vk, user_sk):
         input_valid = b.get_owned_ids(user_vk).pop()
-        tx_valid = b.create_transaction(user_vk, 'b', input_valid, 'd')
+        tx_valid = b.create_transaction(user_vk, user_vk, {'txid': input_valid, 'cid': 0}, 'TRANSFER')
         tx_valid_signed = b.sign_transaction(tx_valid, user_sk)
         b.write_transaction(tx_valid_signed)
 
@@ -294,17 +294,17 @@ class TestTransactionValidation(object):
         b.write_block(block, durability='hard')
 
         # create another transaction with the same input
-        tx_double_spend = b.create_transaction(user_vk, 'd', input_valid, 'd')
+        tx_double_spend = b.create_transaction(user_vk, user_vk, {'txid': input_valid, 'cid': 0}, 'TRANSFER')
         with pytest.raises(exceptions.DoubleSpend) as excinfo:
             b.validate_transaction(tx_double_spend)
 
-        assert excinfo.value.args[0] == 'input `{}` was already spent'.format(input_valid)
+        assert excinfo.value.args[0] == 'input `{}` was already spent'.format({'txid': input_valid, 'cid': 0})
         assert b.is_valid_transaction(tx_double_spend) is False
 
     @pytest.mark.usefixtures('inputs')
     def test_wrong_transaction_hash(self, b, user_vk):
         input_valid = b.get_owned_ids(user_vk).pop()
-        tx_valid = b.create_transaction(user_vk, 'b', input_valid, 'd')
+        tx_valid = b.create_transaction(user_vk, user_vk, {'txid': input_valid, 'cid': 0}, 'TRANSFER')
 
         # change the transaction hash
         tx_valid.update({'id': 'abcd'})
@@ -315,7 +315,7 @@ class TestTransactionValidation(object):
     @pytest.mark.usefixtures('inputs')
     def test_wrong_signature(self, b, user_vk):
         input_valid = b.get_owned_ids(user_vk).pop()
-        tx_valid = b.create_transaction(user_vk, 'b', input_valid, 'd')
+        tx_valid = b.create_transaction(user_vk, user_vk, {'txid': input_valid, 'cid': 0}, 'TRANSFER')
 
         wrong_private_key = '4fyvJe1aw2qHZ4UNRYftXK7JU7zy9bCqoU5ps6Ne3xrY'
 
@@ -333,7 +333,7 @@ class TestTransactionValidation(object):
     @pytest.mark.usefixtures('inputs')
     def test_valid_non_create_transaction(self, b, user_vk, user_sk):
         input_valid = b.get_owned_ids(user_vk).pop()
-        tx_valid = b.create_transaction(user_vk, 'b', input_valid, 'd')
+        tx_valid = b.create_transaction(user_vk, user_vk, {'txid': input_valid, 'cid': 0}, 'TRANSFER')
 
         tx_valid_signed = b.sign_transaction(tx_valid, user_sk)
         assert tx_valid_signed == b.validate_transaction(tx_valid_signed)
@@ -342,7 +342,7 @@ class TestTransactionValidation(object):
     @pytest.mark.usefixtures('inputs')
     def test_valid_non_create_transaction_after_block_creation(self, b, user_vk, user_sk):
         input_valid = b.get_owned_ids(user_vk).pop()
-        tx_valid = b.create_transaction(user_vk, 'b', input_valid, 'd')
+        tx_valid = b.create_transaction(user_vk, user_vk, {'txid': input_valid, 'cid': 0}, 'TRANSFER')
 
         tx_valid_signed = b.sign_transaction(tx_valid, user_sk)
         assert tx_valid_signed == b.validate_transaction(tx_valid_signed)
@@ -412,7 +412,7 @@ class TestBlockValidation(object):
     def test_valid_block(self, b, user_vk, user_sk):
         # create valid transaction
         input_valid = b.get_owned_ids(user_vk).pop()
-        tx_valid = b.create_transaction(user_vk, 'b', input_valid, 'd')
+        tx_valid = b.create_transaction(user_vk, user_vk, {'txid': input_valid, 'cid': 0}, 'TRANSFER')
         tx_valid_signed = b.sign_transaction(tx_valid, user_sk)
 
         # create valid block
