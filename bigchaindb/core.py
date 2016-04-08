@@ -228,17 +228,22 @@ class Bigchain(object):
             list: list of `txids` currently owned by `owner`
         """
 
-        response = r.table('bigchain')\
-                    .concat_map(lambda doc: doc['block']['transactions'])\
-                    .filter({'transaction': {'new_owner': owner}})\
-                    .pluck('id')['id']\
-                    .run(self.conn)
+        response = r.table('bigchain') \
+            .concat_map(lambda doc: doc['block']['transactions']) \
+            .filter(lambda tx: tx['transaction']['conditions']
+                    .contains(lambda c: c['new_owners']
+                              .contains(owner))) \
+            .run(self.conn)
         owned = []
 
-        # remove all inputs already spent
-        for tx_input in list(response):
-            if not self.get_spent(tx_input):
-                owned.append(tx_input)
+        for tx in response:
+            tx_input = {'txid': tx['id']}
+            for condition in tx['transaction']['conditions']:
+                if owner in condition['new_owners']:
+                    tx_input.update({'cid': condition['cid']})
+                    # check if input was already spent
+                    if not self.get_spent(tx_input):
+                        owned.append(tx_input)
 
         return owned
 
