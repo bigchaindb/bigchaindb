@@ -61,6 +61,6 @@ We write unit tests for our Python code using the [pytest](http://pytest.org/lat
 
 All tests go in the `bigchaindb/tests` directory or one of its subdirectories. You can use the tests already in there as templates or examples.
 
-The BigchainDB Documentation has a [section explaining how to run all unit tests](http://bigchaindb.readthedocs.org/en/develop/running-unit-tests.html).
+The BigchainDB Documentation has a [section explaining how to run all unit tests](http://bigchaindb.readthedocs.org/en/master/running-unit-tests.html).
 
 **Automated testing of pull requests.** We use [Travis CI](https://travis-ci.com/), so that whenever someone creates a new BigchainDB pull request on GitHub, Travis CI gets the new code and does _a bunch of stuff_. You can find out what we tell Travis CI to do in [the `.travis.yml` file](.travis.yml): it tells Travis CI how to install BigchainDB, how to run all the tests, and what to do "after success" (e.g. run `codecov`). (We use [Codecov](https://codecov.io/) to get a rough estimate of our test coverage.)
