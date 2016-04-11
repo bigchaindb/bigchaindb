@@ -23,10 +23,7 @@ Familiarize yourself with how we do coding and documentation in the BigchainDB p
 * the GitHub Flow (workflow)
     * [GitHub Guide: Understanding the GitHub Flow](https://guides.github.com/introduction/flow/)
     * [Scott Chacon's blog post about GitHub Flow](http://scottchacon.com/2011/08/31/github-flow.html)
-    * Note that we call the main branch `develop` rather than `master`
 * [semantic versioning](http://semver.org/)
-
-Note: We have a slight variation on the GitHub Flow: we call the default branch `develop` rather than `master`.
 
 ### Step 1 - Fork bigchaindb on GitHub
 
@@ -41,13 +38,13 @@ cd bigchaindb
 git add upstream git@github.com:bigchaindb/bigchaindb.git
 ```
 
-### Step 3 - Fetch and Merge the Latest from `upstream/develop`
+### Step 3 - Fetch and Merge the Latest from `upstream/master`
 
-Switch to the `develop` branch locally, fetch all `upstream` branches, and merge the just-fetched `upstream/develop` branch with the local `develop` branch:
+Switch to the `master` branch locally, fetch all `upstream` branches, and merge the just-fetched `upstream/master` branch with the local `master` branch:
 ```text
-git checkout develop
+git checkout master
 git fetch upstream
-git merge upstream/develop
+git merge upstream/master
 ```
 
 ### Step 4 - Create a New Branch for Each Bug/Feature
@@ -79,12 +76,12 @@ git commit -m "Short description of new or changed things"
 You will want to merge changes from upstream (i.e. the original repository) into your new branch from time to time, using something like:
 ```text
 git fetch upstream
-git merge upstream/develop
+git merge upstream/master
 ```
 
 Once you're done commiting a set of new things and you're ready to submit them for inclusion, please be sure to run all the tests (as per the instructions at the end of our [Python Style Guide](PYTHON_STYLE_GUIDE.md)).
 
-If your addition or change is substantial, then please add a line or two to the [CHANGELOG.md file](https://github.com/bigchaindb/bigchaindb/blob/develop/CHANGELOG.md), following the guidelines given at the top of that file.
+If your addition or change is substantial, then please add a line or two to the [CHANGELOG.md file](https://github.com/bigchaindb/bigchaindb/blob/master/CHANGELOG.md), following the guidelines given at the top of that file.
 
 (When you submit your pull request [following the instructions below], we run all the tests automatically, so we will see if some are failing. If you don't know why some tests are failing, you can still submit your pull request, but be sure to note the failing tests and to ask for help with resolving them.)
 
@@ -99,7 +96,7 @@ git push origin new-branch-name
 
 Go to the GitHub website and to _your_ remote bigchaindb repository (i.e. something like https://github.com/your-user-name/bigchaindb). 
 
-See [GitHub's documentation on how to initiate and send a pull request](https://help.github.com/articles/using-pull-requests/). Note that the destination repository should be `bigchaindb/bigchaindb` and the destination branch will be `develop` (usually, and if it's not, then we can change that if necessary).
+See [GitHub's documentation on how to initiate and send a pull request](https://help.github.com/articles/using-pull-requests/). Note that the destination repository should be `bigchaindb/bigchaindb` and the destination branch will be `master` (usually, and if it's not, then we can change that if necessary).
 
 If this is the first time you've submitted a pull request to BigchainDB, then you must read and accept the Contributor License Agreement (CLA) before we can merge your contributions. That can be found at [https://www.bigchaindb.com/cla](https://www.bigchaindb.com/cla).
 
