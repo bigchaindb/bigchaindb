@@ -2,6 +2,7 @@
 
 
 import os
+import sys
 import logging
 import argparse
 import copy
@@ -102,8 +103,7 @@ def run_start(args):
     except DatabaseAlreadyExists:
         pass
     except KeypairNotFoundException:
-        print('Cannot start BigchainDB, no keypair found. Did you run `bigchaindb configure`?')
-        exit(1)
+        sys.exit('Cannot start BigchainDB, no keypair found. Did you run `bigchaindb configure`?')
 
     processes = Processes()
     logger.info('Start bigchaindb main process')
