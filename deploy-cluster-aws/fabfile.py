@@ -1,47 +1,58 @@
 # -*- coding: utf-8 -*-
-
-"""A fabfile with functionality to prepare, install, and configure
-bigchaindb, including its storage backend.
+"""A Fabric fabfile with functionality to prepare, install, and configure
+BigchainDB, including its storage backend (RethinkDB).
 """
 
 from __future__ import with_statement, unicode_literals
 
-import requests
-from time import *
-import os
-from datetime import datetime, timedelta
-import json
-from pprint import pprint
-
-from fabric import colors as c
-from fabric.api import *
-from fabric.api import local, puts, settings, hide, abort, lcd, prefix
-from fabric.api import run, sudo, cd, get, local, lcd, env, hide
+from fabric.api import sudo, env
 from fabric.api import task, parallel
-from fabric.contrib import files
-from fabric.contrib.files import append, exists
-from fabric.contrib.console import confirm
-from fabric.contrib.project import rsync_project
+from fabric.contrib.files import sed
 from fabric.operations import run, put
 from fabric.context_managers import settings
-from fabric.decorators import roles
-from fabtools import *
 
-from hostlist import hosts_dev
+from hostlist import public_dns_names
 
-env.hosts = hosts_dev
-env.roledefs = {
-    "role1": hosts_dev,
-    "role2": [hosts_dev[0]],
-    }
-env.roles = ["role1"]
+# Ignore known_hosts
+# http://docs.fabfile.org/en/1.10/usage/env.html#disable-known-hosts
+env.disable_known_hosts = True
+
+# What remote servers should Fabric connect to? With what usernames?
 env.user = 'ubuntu'
+env.hosts = public_dns_names
+
+# SSH key files to try when connecting:
+# http://docs.fabfile.org/en/1.10/usage/env.html#key-filename
 env.key_filename = 'pem/bigchaindb.pem'
+
+newrelic_license_key = 'you_need_a_real_license_key'
 
 
 ######################################################################
 
-# base software rollout
+# DON'T PUT @parallel
+@task
+def set_hosts(hosts):
+    """A helper function to change env.hosts from the
+    command line.
+
+    Args:
+        hosts (str): 'one_node' or 'two_nodes'
+
+    Example:
+        fab set_hosts:one_node init_bigchaindb
+    """
+    if hosts == 'one_node':
+        env.hosts = public_dns_names[0]
+    elif hosts == 'two_nodes':
+        env.hosts = public_dns_names[0:1]
+    else:
+        raise ValueError('Invalid input to set_hosts.'
+                         ' Expected one_node or two_nodes.'
+                         ' Got {}'.format(hosts))
+
+
+# Install base software
 @task
 @parallel
 def install_base_software():
@@ -59,7 +70,7 @@ def install_base_software():
                      python3-pip ipython3 sysstat s3cmd')
 
 
-# RethinkDB
+# Install RethinkDB
 @task
 @parallel
 def install_rethinkdb():
@@ -67,7 +78,7 @@ def install_rethinkdb():
     with settings(warn_only=True):
         # preparing filesystem
         sudo("mkdir -p /data")
-        # Locally mounted storage (m3.2xlarge, aber auch c3.xxx)
+        # Locally mounted storage (m3.2xlarge, but also c3.xxx)
         try:
             sudo("umount /mnt")
             sudo("mkfs -t ext4 /dev/xvdb")
@@ -91,27 +102,48 @@ def install_rethinkdb():
         sudo('chown -R rethinkdb:rethinkdb /data')
         # copy config file to target system
         put('conf/rethinkdb.conf',
-            '/etc/rethinkdb/instances.d/instance1.conf', mode=0600, use_sudo=True)
+            '/etc/rethinkdb/instances.d/instance1.conf',
+            mode=0600,
+            use_sudo=True)
         # initialize data-dir
         sudo('rm -rf /data/*')
         # finally restart instance
         sudo('/etc/init.d/rethinkdb restart')
 
 
-# bigchaindb deployment
+# Install BigchainDB (from PyPI)
 @task
 @parallel
 def install_bigchaindb():
     sudo('python3 -m pip install bigchaindb')
 
 
-# startup all nodes of bigchaindb in cluster
+# Configure BigchainDB
 @task
 @parallel
-def start_bigchaindb_nodes():
+def configure_bigchaindb():
+    run('bigchaindb -y configure', pty=False)
+
+
+# Initialize BigchainDB
+# i.e. create the database, the tables,
+# the indexes, and the genesis block.
+# (This only needs to be run on one node.)
+# Call using:
+#     fab set_hosts:one_node init_bigchaindb
+@task
+def init_bigchaindb():
+    run('bigchaindb init', pty=False)
+
+
+# Start BigchainDB using screen
+@task
+@parallel
+def start_bigchaindb():
     sudo('screen -d -m bigchaindb -y start &', pty=False)
 
 
+# Install and run New Relic
 @task
 def install_newrelic():
     with settings(warn_only=True):
@@ -119,18 +151,18 @@ def install_newrelic():
         # sudo('apt-key adv --keyserver hkp://subkeys.pgp.net --recv-keys 548C16BF')
         sudo('apt-get update')
         sudo('apt-get -y --force-yes install newrelic-sysmond')
-        sudo('nrsysmond-config --set license_key=c88af00c813983f8ee12e9b455aa13fde1cddaa8')
+        sudo('nrsysmond-config --set license_key=' + newrelic_license_key)
         sudo('/etc/init.d/newrelic-sysmond restart')
 
 
-###############################
-# Security / FirewallStuff next
-###############################
+###########################
+# Security / Firewall Stuff
+###########################
 
 @task
 def harden_sshd():
-    """Security harden sshd."""
-
+    """Security harden sshd.
+    """
     # Disable password authentication
     sed('/etc/ssh/sshd_config',
         '#PasswordAuthentication yes',
@@ -147,7 +179,8 @@ def harden_sshd():
 def disable_root_login():
     """Disable `root` login for even more security. Access to `root` account
     is now possible by first connecting with your dedicated maintenance
-    account and then running ``sudo su -``."""
+    account and then running ``sudo su -``.
+    """
     sudo('passwd --lock root')
 
 
@@ -172,7 +205,7 @@ def set_fw():
 
 
 #########################################################
-# some helper-functions to handle bad behavior of cluster
+# Some helper-functions to handle bad behavior of cluster
 #########################################################
 
 # rebuild indexes
