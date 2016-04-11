@@ -4,16 +4,16 @@ A scalable blockchain database. [The whitepaper](https://www.bigchaindb.com/whit
 
 [![Join the chat at https://gitter.im/bigchaindb/bigchaindb](https://badges.gitter.im/bigchaindb/bigchaindb.svg)](https://gitter.im/bigchaindb/bigchaindb?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![PyPI](https://img.shields.io/pypi/v/bigchaindb.svg)](https://pypi.python.org/pypi/BigchainDB)
-[![Travis branch](https://img.shields.io/travis/bigchaindb/bigchaindb/develop.svg)](https://travis-ci.org/bigchaindb/bigchaindb)
-[![Codecov branch](https://img.shields.io/codecov/c/github/bigchaindb/bigchaindb/develop.svg)](https://codecov.io/github/bigchaindb/bigchaindb?branch=develop)
-[![Documentation Status](https://readthedocs.org/projects/bigchaindb/badge/?version=develop)](http://bigchaindb.readthedocs.org/en/develop/?badge=develop)
+[![Travis branch](https://img.shields.io/travis/bigchaindb/bigchaindb/master.svg)](https://travis-ci.org/bigchaindb/bigchaindb)
+[![Codecov branch](https://img.shields.io/codecov/c/github/bigchaindb/bigchaindb/master.svg)](https://codecov.io/github/bigchaindb/bigchaindb?branch=master)
+[![Documentation Status](https://readthedocs.org/projects/bigchaindb/badge/?version=master)](http://bigchaindb.readthedocs.org/en/master/?badge=master)
 
 ## Quick Start
 
-### [Install and Run BigchainDB Server](http://bigchaindb.readthedocs.org/en/develop/installing-server.html)
-### [Run BigchainDB with Docker](http://bigchaindb.readthedocs.org/en/develop/installing-server.html#run-bigchaindb-with-docker)
-### [The Python Server API by Example](http://bigchaindb.readthedocs.org/en/develop/python-server-api-examples.html)
-### [The Python Driver API by Example](http://bigchaindb.readthedocs.org/en/develop/python-driver-api-examples.html)
+### [Install and Run BigchainDB Server](http://bigchaindb.readthedocs.org/en/master/installing-server.html)
+### [Run BigchainDB with Docker](http://bigchaindb.readthedocs.org/en/master/installing-server.html#run-bigchaindb-with-docker)
+### [The Python Server API by Example](http://bigchaindb.readthedocs.org/en/master/python-server-api-examples.html)
+### [The Python Driver API by Example](http://bigchaindb.readthedocs.org/en/master/python-driver-api-examples.html)
 
 ## Links for Everyone
 * [BigchainDB.com](https://www.bigchaindb.com/) - the main BigchainDB website, including newsletter signup
@@ -24,7 +24,7 @@ A scalable blockchain database. [The whitepaper](https://www.bigchaindb.com/whit
 * [Google Group](https://groups.google.com/forum/#!forum/bigchaindb)
 
 ## Links for Developers
-* [Documentation](http://bigchaindb.readthedocs.org/en/develop/#) - for developers
+* [Documentation](http://bigchaindb.readthedocs.org/en/master/) - for developers
 * [CONTRIBUTING.md](CONTRIBUTING.md) - how to contribute
 * [Community guidelines](CODE_OF_CONDUCT.md)
 * [Open issues](https://github.com/bigchaindb/bigchaindb/issues)
