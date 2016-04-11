@@ -11,6 +11,8 @@ We create a digital asset, sign it, write it to a BigchainDB Server instance, re
 First, make sure you have RethinkDB and BigchainDB _installed and running_, i.e. you [installed them](installing-server.html) and you ran:
 ```text
 $ rethinkdb
+$ bigchaindb configure
+$ bigchaindb init
 $ bigchaindb start
 ```
 

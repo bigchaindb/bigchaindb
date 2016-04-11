@@ -80,6 +80,11 @@ Install from the source:
 $ python setup.py install
 ```
 
+If you want to update BigchainDB to reflect the latest local source code changes, you can use:
+```text
+$ pip install -e .
+```
+
 ### How to Install BigchainDB on a VM with Vagrant
 
 One of our community members ([@Mec-Is](https://github.com/Mec-iS)) wrote [a page about how to install BigchainDB on a VM with Vagrant](https://gist.github.com/Mec-iS/b84758397f1b21f21700).
@@ -94,13 +99,13 @@ $ rethinkdb
 
 Then open a different terminal and run:
 ```text
+$ bigchaindb -y configure
 $ bigchaindb init
 ```
 
-During its first run, the command takes care of configuring a single node environment.
+That creates a configuration file in `$HOME/.bigchaindb` (documented in [the section on configuration](configuration.html)), initializes the database, creates the tables, creates the indexes, and generates the genesis block.
 
-
-After configuring the node, you can start it with:
+You can start BigchainDB Server using:
 ```text
 $ bigchaindb start
 ```

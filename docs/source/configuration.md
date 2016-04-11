@@ -1,20 +1,21 @@
 # Configuring a BigchainDB Node
 
-The standard way to configure a BigchainDB node is to run the command `configure`:
+The BigchainDB configuration settings for a particular node are stored on that node in a configuration file at `$HOME/.bigchaindb`. That file doesn't exist by default. (It's not created when installing BigchainDB.) One could create it using a text editor, but it's easiest to use the `bigchaindb configure` command:
 
 ```text
 $ bigchaindb configure
 ```
 
-This command will generate a new keypair and will guide you through the
-configuration of the system. By default keypair and settings will be saved in the
-`$HOME/.bigchaindb` file.
+It will ask some questions and generate a new keypair (i.e. a private key and corresponding public key for the node). See below for some additional explanation of the settings and their meanings. To accept a suggested default value, press Enter or Return. If you want to accept all the default values, use the `-y` option when running the command, that is:
 
+```text
+$ bigchaindb -y configure
+```
 
-## Using a different path for the configuration
+## Using a Different Path for the Configuration File
 
-By default the configuration is stored in `$HOME/.bigchaindb`, if you want to
-specify a different path for your configuration you can use the `-c` parameter.
+By default, the configuration settings are stored in `$HOME/.bigchaindb`. If you want to
+specify a different path for your configuration file, you can use the `-c` parameter.
 This works for every subcommand under the `bigchaindb` executable.
 
 For example, if you want to **generate** a new configuration file under a
@@ -25,57 +26,126 @@ $ bigchaindb -c local.json configure
 $ bigchaindb -c test.json configure
 ```
 
-This will create two new files called `local.json` and `test.json` in your
+This will create two new files named `local.json` and `test.json` in your
 current working directory.
 
 From now on, you can refer to those configuration files using the `-c`
-parameter, for example:
+parameter; for example:
 
 ```
 $ bigchaindb -c local.json show-config
 ```
 
-Will show the configuration for `local.json`.
+will show the configuration for `local.json`.
 
-If you want to **start** BigchainDB with the `test.json` configuration, you can
-try:
+If you want to **start** BigchainDB with the `test.json` configuration file, you can use:
 
 ```
 $ bigchaindb -c test.json start
 ```
 
 
-## Using environ variables to configure the node
+## Using Environment Variables to Configure the Node
 
 Sometimes it's more convenient to use environment variables to configure the
-system, for example when using Docker or Heroku. Another use case is to have a
-*volatile*, throw away configuration you need to test something quickly. In
-those cases you can configure the system using environment variables.
+system, for example when using Docker or Heroku. In
+that case you can configure the system using environment variables.
 
-Every configuration key can be mapped to an environment variable. The
+Every configuration parameter can be mapped to an environment variable. The
 environment variables available are:
 
-- `BIGCHAINDB_DATABASE_HOST` defines the database hostname to connect to.
-- `BIGCHAINDB_DATABASE_PORT` defines the database port to connect to.
-- `BIGCHAINDB_DATABASE_NAME` defines the database name to use.
+- `BIGCHAINDB_DATABASE_HOST` defines the RethinkDB database hostname to connect to.
+- `BIGCHAINDB_DATABASE_PORT` defines the RethinkDB database port to connect to.
+- `BIGCHAINDB_DATABASE_NAME` defines the RethinkDB database name to use.
 - `BIGCHAINDB_KEYPAIR_PUBLIC` defines the public key of the BigchainDB node.
-- `BIGCHAINDB_KEYPAIR_PRIVATE` defines the private key of the BigchainDB noce.
-- `BIGCHAINDB_KEYRING` is a colon-separated list of public keys
-- `BIGCHAINDB_STATSD_HOST` defines the host of the statsd server for [monitoring](monitoring.html).
+- `BIGCHAINDB_KEYPAIR_PRIVATE` defines the private key of the BigchainDB node.
+- `BIGCHAINDB_KEYRING` is a colon-separated list of the public keys of all _other_ nodes in the cluster.
+- `BIGCHAINDB_STATSD_HOST` defines the hostname of the statsd server for [monitoring](monitoring.html).
 - `BIGCHAINDB_STATSD_PORT` defines the port of the statsd server for monitoring.
 - `BIGCHAINDB_STATSD_RATE` is a float between `0` and `1` that defines the fraction of transaction operations sampled.
-- `BIGCHAINDB_API_ENDPOINT` defines the API endpoint to use.
+- `BIGCHAINDB_API_ENDPOINT` defines the API endpoint to use (e.g. `http://localhost:9984/api/v1`).
 - `BIGCHAINDB_CONSENSUS_PLUGIN` defines the name of the [consensus plugin](consensus.html) to use.
-- `BIGCHAINDB_SERVER_BIND` defines where to bind the server socket, the format is `addr:port`.
+- `BIGCHAINDB_SERVER_BIND` defines where to bind the server socket, the format is `addr:port` (e.g. `0.0.0.0:9984`).
 - `BIGCHAINDB_SERVER_WORKERS` defines the [number of workers](http://docs.gunicorn.org/en/stable/settings.html#workers)
   to start for the server API.
 - `BIGCHAINDB_SERVER_THREADS` defines the [number of threads](http://docs.gunicorn.org/en/stable/settings.html#threads)
   to start for the server API.
 
-As an example, let's assume we **don't** have any configuration file stored in
-the default location `$HOME/.bigchaindb`.
 
-As you can see, `show-config` displays the default configuration (and a
+## Order of Precedence in Determining Configuration Values
+
+All configuration values start with their default values (defined in `bigchaindb.__init__`), but a default value can be overriden by an environment variable, and a value set by an environment variable can be overriden by a value in a local configuration file (`$HOME/.bigchaindb` or the location specified by the `-c` command-line option).
+
+In summary, there is an order of precedence in reading configuration values:
+1. local configuration file
+2. environment variables
+3. default configuration file (defined in ``bigchaindb.__init__``)
+
+This means that if the default configuration contains:
+
+```json
+{
+    "database": {
+        "host": "localhost",
+        "port": 28015
+    }
+}
+```
+
+while the local file `local.json` contains:
+```json
+{
+    "database": {
+        "host": "ec2-xx-xx-xxx-xxx.eu-central-1.compute.amazonaws.com"
+    }
+}
+
+```
+
+and you run this command:
+```
+$ BIGCHAINDB_DATABASE_HOST=anotherhost.com \
+  BIGCHAINDB_DATABASE_PORT=4242 \
+  BIGCHAINDB_KEYRING=pubkey0:pubkey1 \
+  bigchaindb -c local.json show-config
+```
+
+you will get the following values for all the configuration settings:
+```json
+{
+    "api_endpoint": "http://localhost:8008/api/v1",
+    "consensus_plugin": "default",
+    "database": {
+        "host": "ec2-xx-xx-xxx-xxx.eu-central-1.compute.amazonaws.com",
+        "name": "bigchain",
+        "port": 4242
+    },
+    "keypair": {
+        "private": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "public": "nJq6EmdUkvFjQRB5hFvDmvZtv1deb3W3RgmiAq6dyygC"
+    },
+    "keyring": [
+        "pubkey0",
+        "pubkey1"
+    ],
+    "server": {
+        "bind": "0.0.0.0:9984",
+        "threads": null,
+        "workers": null
+    },
+    "statsd": {
+        "host": "localhost",
+        "port": 8125,
+        "rate": 0.01
+    }
+}
+```
+
+
+## Another Example
+
+As another example, let's assume we **don't** have any configuration file stored in
+`$HOME/.bigchaindb`. As you can see, `show-config` displays the default configuration (and a
 warning):
 ```
 $ bigchaindb show-config
@@ -122,7 +192,7 @@ $ BIGCHAINDB_KEYPAIR_PUBLIC=26y9EuyGP44JXxqcvF8GbCJGqkiqFXddZzxVjLU3rWbHp \
   bigchaindb start
 ```
 
-We can also run `show-config` to see how the configuration looks like:
+We can also run `show-config` to see how the configuration looks:
 ```
 $ BIGCHAINDB_KEYPAIR_PUBLIC=26y9EuyGP44JXxqcvF8GbCJGqkiqFXddZzxVjLU3rWbHp \
   BIGCHAINDB_KEYPAIR_PRIVATE=9PkLfHbzXnSSNnb1sSBL73C2MydzKLs5fAHoA4Q7otrG \
@@ -154,77 +224,3 @@ WARNING:bigchaindb.config_utils:Cannot find config file `/home/vrde/.bigchaindb`
     }
 }
 ```
-
-
-# Precedence in reading configuration values
-
-Note that there is a precedence in reading configuration values:
- - local config file;
- - environment vars;
- - default config file (contained in ``bigchaindb.__init__``).
-
-This means that if the default configuration contains an entry that is:
-
-```json
-{
-
-    "database": {
-        "host": "localhost",
-        "port": 28015
-    }
-
-}
-```
-
-while your local file `local.json` contains:
-```json
-{
-    "database": {
-        "host": "ec2-xx-xx-xxx-xxx.eu-central-1.compute.amazonaws.com"
-    }
-}
-
-```
-
-and you run this command:
-```
-$ BIGCHAINDB_DATABASE_HOST=anotherhost.com \
-  BIGCHAINDB_DATABASE_PORT=4242 \
-  BIGCHAINDB_KEYRING=pubkey0:pubkey1 \
-  bigchaindb -c local.json show-config
-```
-
-you will get:
-```json
-{
-    "api_endpoint": "http://localhost:8008/api/v1",
-    "consensus_plugin": "default",
-    "database": {
-        "host": "ec2-xx-xx-xxx-xxx.eu-central-1.compute.amazonaws.com",
-        "name": "bigchain",
-        "port": 4242
-    },
-    "keypair": {
-        "private": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-        "public": "nJq6EmdUkvFjQRB5hFvDmvZtv1deb3W3RgmiAq6dyygC"
-    },
-    "keyring": [
-        "pubkey0",
-        "pubkey1"
-    ],
-    "server": {
-        "bind": "0.0.0.0:9984",
-        "threads": null,
-        "workers": null
-    },
-    "statsd": {
-        "host": "localhost",
-        "port": 8125,
-        "rate": 0.01
-    }
-}
-```
-
-Note that the type of `keyring` is a list. If you want to pass a list as an
-environ variable you need to use colon (`:`) as separator.
-
