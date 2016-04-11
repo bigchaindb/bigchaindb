@@ -54,22 +54,23 @@ those cases you can configure the system using environment variables.
 
 Every configuration key can be mapped to an environment variable. The
 environment variables available are:
-```
-- BIGCHAINDB_DATABASE_HOST
-- BIGCHAINDB_DATABASE_PORT
-- BIGCHAINDB_DATABASE_NAME
-- BIGCHAINDB_KEYPAIR_PUBLIC
-- BIGCHAINDB_KEYPAIR_PRIVATE
-- BIGCHAINDB_KEYRING
-- BIGCHAINDB_STATSD_HOST
-- BIGCHAINDB_STATSD_PORT
-- BIGCHAINDB_STATSD_RATE
-- BIGCHAINDB_API_ENDPOINT
-- BIGCHAINDB_CONSENSUS_PLUGIN
-- BIGCHAINDB_SERVER_BIND
-- BIGCHAINDB_SERVER_WORKERS
-- BIGCHAINDB_SERVER_THREADS
-```
+
+- `BIGCHAINDB_DATABASE_HOST` defines the database hostname to connect to.
+- `BIGCHAINDB_DATABASE_PORT` defines the database port to connect to.
+- `BIGCHAINDB_DATABASE_NAME` defines the database name to use.
+- `BIGCHAINDB_KEYPAIR_PUBLIC` defines the public key of the BigchainDB node.
+- `BIGCHAINDB_KEYPAIR_PRIVATE` defines the private key of the BigchainDB noce.
+- `BIGCHAINDB_KEYRING` is a colon-separated list of public keys
+- `BIGCHAINDB_STATSD_HOST` defines the host of the statsd server for [monitoring](monitoring.html).
+- `BIGCHAINDB_STATSD_PORT` defines the port of the statsd server for monitoring.
+- `BIGCHAINDB_STATSD_RATE` is a float between `0` and `1` that defines the fraction of transaction operations sampled.
+- `BIGCHAINDB_API_ENDPOINT` defines the API endpoint to use.
+- `BIGCHAINDB_CONSENSUS_PLUGIN` defines the name of the [consensus plugin](consensus.html) to use.
+- `BIGCHAINDB_SERVER_BIND` defines where to bind the server socket, the format is `addr:port`.
+- `BIGCHAINDB_SERVER_WORKERS defines the [number of workers](http://docs.gunicorn.org/en/stable/settings.html#workers)
+  to start for the server API.
+- `BIGCHAINDB_SERVER_THREADS defines the [number of threads](http://docs.gunicorn.org/en/stable/settings.html#threads)
+  to start for the server API.
 
 As an example, let's assume we **don't** have any configuration file stored in
 the default location `$HOME/.bigchaindb`.
