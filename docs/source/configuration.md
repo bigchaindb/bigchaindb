@@ -67,9 +67,9 @@ environment variables available are:
 - `BIGCHAINDB_API_ENDPOINT` defines the API endpoint to use.
 - `BIGCHAINDB_CONSENSUS_PLUGIN` defines the name of the [consensus plugin](consensus.html) to use.
 - `BIGCHAINDB_SERVER_BIND` defines where to bind the server socket, the format is `addr:port`.
-- `BIGCHAINDB_SERVER_WORKERS defines the [number of workers](http://docs.gunicorn.org/en/stable/settings.html#workers)
+- `BIGCHAINDB_SERVER_WORKERS` defines the [number of workers](http://docs.gunicorn.org/en/stable/settings.html#workers)
   to start for the server API.
-- `BIGCHAINDB_SERVER_THREADS defines the [number of threads](http://docs.gunicorn.org/en/stable/settings.html#threads)
+- `BIGCHAINDB_SERVER_THREADS` defines the [number of threads](http://docs.gunicorn.org/en/stable/settings.html#threads)
   to start for the server API.
 
 As an example, let's assume we **don't** have any configuration file stored in
