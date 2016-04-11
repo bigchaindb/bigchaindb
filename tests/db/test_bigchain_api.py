@@ -1,9 +1,14 @@
+import copy
 import multiprocessing as mp
 import random
 import time
+import json
 
 import pytest
 import rethinkdb as r
+from cryptoconditions import Ed25519Fulfillment, ThresholdSha256Fulfillment
+from cryptoconditions.condition import Condition
+from cryptoconditions.fulfillment import Fulfillment
 
 import bigchaindb
 from bigchaindb import util
@@ -254,6 +259,14 @@ class TestTransactionValidation(object):
 
         assert excinfo.value.args[0] == 'Only federation nodes can use the operation `CREATE`'
         assert b.is_valid_transaction(tx) is False
+
+        tx_signed = b.sign_transaction(tx, b.me_private)
+
+        with pytest.raises(exceptions.OperationError) as excinfo:
+            b.validate_transaction(tx_signed)
+
+        assert excinfo.value.args[0] == 'Only federation nodes can use the operation `CREATE`'
+        assert b.is_valid_transaction(tx_signed) is False
 
     def test_non_create_operation_no_inputs(self, b, user_vk):
         tx = b.create_transaction(user_vk, user_vk, None, 'TRANSFER')
@@ -740,3 +753,275 @@ class TestMultipleInputs(object):
 
     def test_get_spent(self, b):
         pass
+
+
+class TestCryptoconditions(object):
+    def test_fulfillment_transaction_create(self, b, user_vk):
+        tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
+        condition = tx['transaction']['conditions'][0]['condition']
+        condition_from_uri = Condition.from_uri(condition['uri'])
+        condition_from_json = Fulfillment.from_json(condition['details']).condition
+
+        assert condition_from_uri.serialize_uri() == condition_from_json.serialize_uri()
+        assert condition['details']['public_key'] == user_vk
+
+        tx_signed = b.sign_transaction(tx, b.me_private)
+        fulfillment = tx_signed['transaction']['fulfillments'][0]
+        fulfillment_from_uri = Fulfillment.from_uri(fulfillment['fulfillment'])
+
+        assert fulfillment['current_owners'][0] == b.me
+        assert fulfillment_from_uri.public_key.to_ascii().decode() == b.me
+        assert b.verify_signature(tx_signed) == True
+        assert b.is_valid_transaction(tx_signed) == tx_signed
+
+    @pytest.mark.usefixtures('inputs')
+    def test_fulfillment_transaction_transfer(self, b, user_vk, user_sk):
+        # create valid transaction
+        other_sk, other_vk = crypto.generate_key_pair()
+        prev_tx_id = b.get_owned_ids(user_vk).pop()
+        tx = b.create_transaction(user_vk, other_vk, prev_tx_id, 'TRANSFER')
+
+        prev_tx = b.get_transaction(prev_tx_id['txid'])
+        prev_condition = prev_tx['transaction']['conditions'][0]['condition']
+        prev_condition_from_uri = Condition.from_uri(prev_condition['uri'])
+        prev_condition_from_json = Fulfillment.from_json(prev_condition['details']).condition
+
+        assert prev_condition_from_uri.serialize_uri() == prev_condition_from_json.serialize_uri()
+        assert prev_condition['details']['public_key'] == user_vk
+
+        condition = tx['transaction']['conditions'][0]['condition']
+        condition_from_uri = Condition.from_uri(condition['uri'])
+        condition_from_json = Fulfillment.from_json(condition['details']).condition
+
+        assert condition_from_uri.serialize_uri() == condition_from_json.serialize_uri()
+        assert condition['details']['public_key'] == other_vk
+
+        tx_signed = b.sign_transaction(tx, user_sk)
+        fulfillment = tx_signed['transaction']['fulfillments'][0]
+        fulfillment_from_uri = Fulfillment.from_uri(fulfillment['fulfillment'])
+
+        assert fulfillment['current_owners'][0] == user_vk
+        assert fulfillment_from_uri.public_key.to_ascii().decode() == user_vk
+        assert fulfillment_from_uri.condition.serialize_uri() == prev_condition['uri']
+        assert b.verify_signature(tx_signed) == True
+        assert b.is_valid_transaction(tx_signed) == tx_signed
+
+    def test_override_condition_create(self, b, user_vk):
+        tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
+        fulfillment = Ed25519Fulfillment(public_key=user_vk)
+        tx['transaction']['conditions'][0]['condition'] = {
+            'details': json.loads(fulfillment.serialize_json()),
+            'uri': fulfillment.condition.serialize_uri()
+        }
+
+        tx_signed = b.sign_transaction(tx, b.me_private)
+
+        fulfillment = tx_signed['transaction']['fulfillments'][0]
+        fulfillment_from_uri = Fulfillment.from_uri(fulfillment['fulfillment'])
+
+        assert fulfillment['current_owners'][0] == b.me
+        assert fulfillment_from_uri.public_key.to_ascii().decode() == b.me
+        assert b.verify_signature(tx_signed) == True
+        assert b.is_valid_transaction(tx_signed) == tx_signed
+
+    @pytest.mark.usefixtures('inputs')
+    def test_override_condition_transfer(self, b, user_vk, user_sk):
+        # create valid transaction
+        other_sk, other_vk = crypto.generate_key_pair()
+        prev_tx_id = b.get_owned_ids(user_vk).pop()
+        tx = b.create_transaction(user_vk, other_vk, prev_tx_id, 'TRANSFER')
+
+        fulfillment = Ed25519Fulfillment(public_key=other_vk)
+        tx['transaction']['conditions'][0]['condition'] = {
+            'details': json.loads(fulfillment.serialize_json()),
+            'uri': fulfillment.condition.serialize_uri()
+        }
+
+        tx_signed = b.sign_transaction(tx, user_sk)
+        fulfillment = tx_signed['transaction']['fulfillments'][0]
+        fulfillment_from_uri = Fulfillment.from_uri(fulfillment['fulfillment'])
+
+        assert fulfillment['current_owners'][0] == user_vk
+        assert fulfillment_from_uri.public_key.to_ascii().decode() == user_vk
+        assert b.verify_signature(tx_signed) == True
+        assert b.is_valid_transaction(tx_signed) == tx_signed
+
+    def test_override_fulfillment_create(self, b, user_vk):
+        tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
+        original_fulfillment = tx['transaction']['fulfillments'][0]
+        fulfillment_message = util.get_fulfillment_message(tx, original_fulfillment)
+        fulfillment = Ed25519Fulfillment(public_key=b.me)
+        fulfillment.sign(util.serialize(fulfillment_message), crypto.SigningKey(b.me_private))
+
+        tx['transaction']['fulfillments'][0]['fulfillment'] = fulfillment.serialize_uri()
+
+        assert b.verify_signature(tx) == True
+        assert b.is_valid_transaction(tx) == tx
+
+    @pytest.mark.usefixtures('inputs')
+    def test_override_fulfillment_transfer(self,  b, user_vk, user_sk):
+        # create valid transaction
+        other_sk, other_vk = crypto.generate_key_pair()
+        prev_tx_id = b.get_owned_ids(user_vk).pop()
+        tx = b.create_transaction(user_vk, other_vk, prev_tx_id, 'TRANSFER')
+
+        original_fulfillment = tx['transaction']['fulfillments'][0]
+        fulfillment_message = util.get_fulfillment_message(tx, original_fulfillment)
+        fulfillment = Ed25519Fulfillment(public_key=user_vk)
+        fulfillment.sign(util.serialize(fulfillment_message), crypto.SigningKey(user_sk))
+
+        tx['transaction']['fulfillments'][0]['fulfillment'] = fulfillment.serialize_uri()
+
+        assert b.verify_signature(tx) == True
+        assert b.is_valid_transaction(tx) == tx
+
+    @pytest.mark.usefixtures('inputs')
+    def test_override_condition_and_fulfillment_transfer(self,  b, user_vk, user_sk):
+        other_sk, other_vk = crypto.generate_key_pair()
+        first_input_tx = b.get_owned_ids(user_vk).pop()
+        first_tx = b.create_transaction(user_vk, other_vk, first_input_tx, 'TRANSFER')
+
+        first_tx_condition = Ed25519Fulfillment(public_key=other_vk)
+        first_tx['transaction']['conditions'][0]['condition'] = {
+            'details': json.loads(first_tx_condition.serialize_json()),
+            'uri': first_tx_condition.condition.serialize_uri()
+        }
+
+        first_tx_fulfillment = first_tx['transaction']['fulfillments'][0]
+        first_tx_fulfillment_message = util.get_fulfillment_message(first_tx, first_tx_fulfillment)
+        first_tx_fulfillment = Ed25519Fulfillment(public_key=user_vk)
+        first_tx_fulfillment.sign(util.serialize(first_tx_fulfillment_message), crypto.SigningKey(user_sk))
+        first_tx['transaction']['fulfillments'][0]['fulfillment'] = first_tx_fulfillment.serialize_uri()
+
+        assert b.validate_transaction(first_tx)
+        assert b.is_valid_transaction(first_tx) == first_tx
+
+        b.write_transaction(first_tx)
+
+        # create and write block to bigchain
+        block = b.create_block([first_tx])
+        b.write_block(block, durability='hard')
+
+        next_input_tx = b.get_owned_ids(other_vk).pop()
+        # create another transaction with the same input
+        next_tx = b.create_transaction(other_vk, user_vk, next_input_tx, 'TRANSFER')
+
+        next_tx_fulfillment = next_tx['transaction']['fulfillments'][0]
+        next_tx_fulfillment_message = util.get_fulfillment_message(next_tx, next_tx_fulfillment)
+        next_tx_fulfillment = Ed25519Fulfillment(public_key=other_vk)
+        next_tx_fulfillment.sign(util.serialize(next_tx_fulfillment_message), crypto.SigningKey(other_sk))
+        next_tx['transaction']['fulfillments'][0]['fulfillment'] = next_tx_fulfillment.serialize_uri()
+
+        assert b.validate_transaction(next_tx)
+        assert b.is_valid_transaction(next_tx) == next_tx
+
+    @pytest.mark.usefixtures('inputs')
+    def test_override_condition_and_fulfillment_transfer_threshold(self, b, user_vk, user_sk):
+        other1_sk, other1_vk = crypto.generate_key_pair()
+        other2_sk, other2_vk = crypto.generate_key_pair()
+
+        first_input_tx = b.get_owned_ids(user_vk).pop()
+        first_tx = b.create_transaction(user_vk, [other1_vk, other2_vk], first_input_tx, 'TRANSFER')
+
+        first_tx_condition = ThresholdSha256Fulfillment(threshold=2)
+        first_tx_condition.add_subfulfillment(Ed25519Fulfillment(public_key=other1_vk))
+        first_tx_condition.add_subfulfillment(Ed25519Fulfillment(public_key=other2_vk))
+
+        first_tx['transaction']['conditions'][0]['condition'] = {
+            'details': json.loads(first_tx_condition.serialize_json()),
+            'uri': first_tx_condition.condition.serialize_uri()
+        }
+
+        # conditions have been updated, so hash needs updating
+        transaction_data = copy.deepcopy(first_tx)
+        for fulfillment in transaction_data['transaction']['fulfillments']:
+            fulfillment['fulfillment'] = None
+
+        calculated_hash = crypto.hash_data(util.serialize(transaction_data['transaction']))
+        first_tx['id'] = calculated_hash
+
+        first_tx_signed = b.sign_transaction(first_tx, user_sk)
+
+        assert b.validate_transaction(first_tx_signed)
+        assert b.is_valid_transaction(first_tx_signed) == first_tx_signed
+
+        b.write_transaction(first_tx_signed)
+
+        # create and write block to bigchain
+        block = b.create_block([first_tx])
+        b.write_block(block, durability='hard')
+
+        next_input_tx = b.get_owned_ids(other1_vk).pop()
+        # create another transaction with the same input
+        next_tx = b.create_transaction([other1_vk, other2_vk], user_vk, next_input_tx, 'TRANSFER')
+
+        next_tx_fulfillment = next_tx['transaction']['fulfillments'][0]
+        next_tx_fulfillment_message = util.get_fulfillment_message(next_tx, next_tx_fulfillment)
+        next_tx_fulfillment = ThresholdSha256Fulfillment(threshold=2)
+        next_tx_subfulfillment1 = Ed25519Fulfillment(public_key=other1_vk)
+        next_tx_subfulfillment1.sign(util.serialize(next_tx_fulfillment_message), crypto.SigningKey(other1_sk))
+        next_tx_fulfillment.add_subfulfillment(next_tx_subfulfillment1)
+        next_tx_subfulfillment2 = Ed25519Fulfillment(public_key=other2_vk)
+        next_tx_subfulfillment2.sign(util.serialize(next_tx_fulfillment_message), crypto.SigningKey(other2_sk))
+        next_tx_fulfillment.add_subfulfillment(next_tx_subfulfillment2)
+        next_tx['transaction']['fulfillments'][0]['fulfillment'] = next_tx_fulfillment.serialize_uri()
+
+        assert b.validate_transaction(next_tx)
+        assert b.is_valid_transaction(next_tx) == next_tx
+
+    @pytest.mark.usefixtures('inputs')
+    def test_override_condition_and_fulfillment_transfer_threshold_wrongly_signed(self, b, user_vk, user_sk):
+        other1_sk, other1_vk = crypto.generate_key_pair()
+        other2_sk, other2_vk = crypto.generate_key_pair()
+
+        first_input_tx = b.get_owned_ids(user_vk).pop()
+        first_tx = b.create_transaction(user_vk, [other1_vk, other2_vk], first_input_tx, 'TRANSFER')
+
+        first_tx_condition = ThresholdSha256Fulfillment(threshold=2)
+        first_tx_condition.add_subfulfillment(Ed25519Fulfillment(public_key=other1_vk))
+        first_tx_condition.add_subfulfillment(Ed25519Fulfillment(public_key=other2_vk))
+
+        first_tx['transaction']['conditions'][0]['condition'] = {
+            'details': json.loads(first_tx_condition.serialize_json()),
+            'uri': first_tx_condition.condition.serialize_uri()
+        }
+
+        # conditions have been updated, so hash needs updating
+        transaction_data = copy.deepcopy(first_tx)
+        for fulfillment in transaction_data['transaction']['fulfillments']:
+            fulfillment['fulfillment'] = None
+
+        calculated_hash = crypto.hash_data(util.serialize(transaction_data['transaction']))
+        first_tx['id'] = calculated_hash
+
+        first_tx_signed = b.sign_transaction(first_tx, user_sk)
+
+        assert b.validate_transaction(first_tx_signed)
+        assert b.is_valid_transaction(first_tx_signed) == first_tx_signed
+
+        b.write_transaction(first_tx_signed)
+
+        # create and write block to bigchain
+        block = b.create_block([first_tx])
+        b.write_block(block, durability='hard')
+
+        next_input_tx = b.get_owned_ids(other1_vk).pop()
+        # create another transaction with the same input
+        next_tx = b.create_transaction([other1_vk, other2_vk], user_vk, next_input_tx, 'TRANSFER')
+
+        next_tx_fulfillment = next_tx['transaction']['fulfillments'][0]
+        next_tx_fulfillment_message = util.get_fulfillment_message(next_tx, next_tx_fulfillment)
+        next_tx_fulfillment = ThresholdSha256Fulfillment(threshold=2)
+        next_tx_subfulfillment1 = Ed25519Fulfillment(public_key=other1_vk)
+        next_tx_subfulfillment1.sign(util.serialize(next_tx_fulfillment_message), crypto.SigningKey(other1_sk))
+        next_tx_fulfillment.add_subfulfillment(next_tx_subfulfillment1)
+
+        # Wrong signing happens here
+        next_tx_subfulfillment2 = Ed25519Fulfillment(public_key=other1_vk)
+        next_tx_subfulfillment2.sign(util.serialize(next_tx_fulfillment_message), crypto.SigningKey(other1_sk))
+        next_tx_fulfillment.add_subfulfillment(next_tx_subfulfillment2)
+        next_tx['transaction']['fulfillments'][0]['fulfillment'] = next_tx_fulfillment.serialize_uri()
+
+        with pytest.raises(exceptions.InvalidSignature):
+            b.validate_transaction(next_tx)
+        assert b.is_valid_transaction(next_tx) == False

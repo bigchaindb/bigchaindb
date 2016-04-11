@@ -148,7 +148,6 @@ class BaseConsensusRules(AbstractConsensusRules):
                 # check if the input was already spent by a transaction other than
                 # this one.
                 spent = bigchain.get_spent(fulfillment['input'])
-                print(spent)
                 if spent and spent['id'] != transaction['id']:
                     raise exceptions.DoubleSpend(
                         'input `{}` was already spent'.format(fulfillment['input']))
