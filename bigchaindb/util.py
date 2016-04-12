@@ -244,36 +244,15 @@ def sign_tx(transaction, sk):
         dict: transaction with the `fulfillment` fields populated.
 
     """
-    b = bigchaindb.Bigchain()
     sk = crypto.SigningKey(sk)
     tx = copy.deepcopy(transaction)
-    common_data = {
-        'operation': tx['transaction']['operation'],
-        'timestamp': tx['transaction']['timestamp'],
-        'data': tx['transaction']['data'],
-        'version': tx['version'],
-        'id': tx['id']
-    }
 
     for fulfillment in tx['transaction']['fulfillments']:
-        fulfillment_message = common_data.copy()
+        fulfillment_message = get_fulfillment_message(transaction, fulfillment)
         if tx['transaction']['operation'] in ['CREATE', 'GENESIS']:
-            fulfillment_message.update({
-                'input': None,
-                'condition': None
-            })
             # sign the fulfillment message
             parsed_fulfillment = Ed25519Fulfillment(public_key=sk.get_verifying_key())
         else:
-            # get previous condition
-            previous_tx = b.get_transaction(fulfillment['input']['txid'])
-            conditions = sorted(previous_tx['transaction']['conditions'], key=lambda d: d['cid'])
-
-            # update the fulfillment message
-            fulfillment_message.update({
-                'input': fulfillment['input'],
-                'condition': conditions[fulfillment['fid']]
-            })
             parsed_fulfillment = Fulfillment.from_json(fulfillment_message['condition']['condition']['details'])
         parsed_fulfillment.sign(serialize(fulfillment_message), sk)
         signed_fulfillment = parsed_fulfillment.serialize_uri()
@@ -311,30 +290,8 @@ def verify_signature(signed_transaction):
         bool: True if the signature is correct, False otherwise.
     """
 
-    b = bigchaindb.Bigchain()
-
-    common_data = {
-        'operation': signed_transaction['transaction']['operation'],
-        'timestamp': signed_transaction['transaction']['timestamp'],
-        'data': signed_transaction['transaction']['data'],
-        'version': signed_transaction['version'],
-        'id': signed_transaction['id']
-    }
-
     for fulfillment in signed_transaction['transaction']['fulfillments']:
-        fulfillment_message = common_data.copy()
-        fulfillment_message.update({
-            'input': fulfillment['input'],
-            'condition': None,
-        })
-
-        # if not a `CREATE` transaction
-        if fulfillment['input']:
-            # get previous condition
-            previous_tx = b.get_transaction(fulfillment['input']['txid'])
-            conditions = sorted(previous_tx['transaction']['conditions'], key=lambda d: d['cid'])
-            fulfillment_message['condition'] = conditions[fulfillment['fid']]
-
+        fulfillment_message = get_fulfillment_message(signed_transaction, fulfillment)
         # verify the fulfillment (for now lets assume there is only one owner)
         try:
             parsed_fulfillment = Fulfillment.from_uri(fulfillment['fulfillment'])
@@ -350,6 +307,32 @@ def verify_signature(signed_transaction):
             return False
 
     return True
+
+
+def get_fulfillment_message(transaction, fulfillment):
+    b = bigchaindb.Bigchain()
+
+    common_data = {
+        'operation': transaction['transaction']['operation'],
+        'timestamp': transaction['transaction']['timestamp'],
+        'data': transaction['transaction']['data'],
+        'version': transaction['version'],
+        'id': transaction['id']
+    }
+
+    fulfillment_message = common_data.copy()
+    fulfillment_message.update({
+        'input': fulfillment['input'],
+        'condition': None,
+    })
+
+    # if not a `CREATE` transaction
+    if fulfillment['input']:
+        # get previous condition
+        previous_tx = b.get_transaction(fulfillment['input']['txid'])
+        conditions = sorted(previous_tx['transaction']['conditions'], key=lambda d: d['cid'])
+        fulfillment_message['condition'] = conditions[fulfillment['fid']]
+    return fulfillment_message
 
 
 def transform_create(tx):
