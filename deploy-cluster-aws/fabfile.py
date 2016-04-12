@@ -43,9 +43,9 @@ def set_hosts(hosts):
         fab set_hosts:one_node init_bigchaindb
     """
     if hosts == 'one_node':
-        env.hosts = public_dns_names[0]
+        env.hosts = public_dns_names[:1]
     elif hosts == 'two_nodes':
-        env.hosts = public_dns_names[0:1]
+        env.hosts = public_dns_names[:2]
     else:
         raise ValueError('Invalid input to set_hosts.'
                          ' Expected one_node or two_nodes.'
