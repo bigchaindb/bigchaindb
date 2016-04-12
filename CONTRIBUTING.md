@@ -14,7 +14,7 @@ If you want to file a bug report, suggest a feature, or ask a code-related quest
 
 ### Step 0 - Decide on an Issue to Resolve, or Create One
 
-We want you to feel like your contributions (pull requests) are welcome, but if you contribute something unnecessary, unwanted, or perplexing, then your experience may be unpleasant. Your pull request may sit gathering dust as everyon scratches their head wondering what to do with it.
+We want you to feel like your contributions (pull requests) are welcome, but if you contribute something unnecessary, unwanted, or perplexing, then your experience may be unpleasant. Your pull request may sit gathering dust as everyone scratches their heads wondering what to do with it.
 
 To prevent that situation, we ask that all pull requests should resolve, address, or fix an existing issue. If there is no existing issue, then you should create one first. That way there can be commentary and discussion first, and you can have a better idea of what to expect when you create a corresponding pull request.
 
