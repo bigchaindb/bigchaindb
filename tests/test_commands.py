@@ -1,3 +1,4 @@
+import json
 from argparse import Namespace
 from pprint import pprint
 import copy
@@ -9,12 +10,6 @@ import pytest
 def mock_run_configure(monkeypatch):
     from bigchaindb.commands import bigchain
     monkeypatch.setattr(bigchain, 'run_configure', lambda *args, **kwargs: None)
-
-
-@pytest.fixture
-def mock_file_config(monkeypatch):
-    from bigchaindb import config_utils
-    monkeypatch.setattr(config_utils, 'file_config', lambda *args: None)
 
 
 @pytest.fixture
@@ -65,13 +60,13 @@ def mock_bigchaindb_backup_config(monkeypatch):
     monkeypatch.setattr('bigchaindb._config', config)
 
 
-def test_bigchain_run_start(mock_run_configure, mock_file_config,
-                            mock_processes_start, mock_db_init_with_existing_db):
+def test_bigchain_run_start(mock_run_configure, mock_processes_start, mock_db_init_with_existing_db):
     from bigchaindb.commands.bigchain import run_start
     args = Namespace(config=None, yes=True)
     run_start(args)
 
 
+@pytest.mark.skipif(reason="BigchainDB doesn't support the automatic creation of a config file anymore")
 def test_bigchain_run_start_assume_yes_create_default_config(monkeypatch, mock_processes_start,
                                                              mock_generate_key_pair, mock_db_init_with_existing_db):
     import bigchaindb
@@ -99,25 +94,24 @@ def test_bigchain_run_start_assume_yes_create_default_config(monkeypatch, mock_p
 # TODO Please beware, that if debugging, the "-s" switch for pytest will
 # interfere with capsys.
 # See related issue: https://github.com/pytest-dev/pytest/issues/128
-def test_bigchain_show_config(capsys, mock_file_config):
+def test_bigchain_show_config(capsys):
     from bigchaindb import config
     from bigchaindb.commands.bigchain import run_show_config
     args = Namespace(config=None)
     _, _ = capsys.readouterr()
     run_show_config(args)
     output_config, _ = capsys.readouterr()
-    pprint(config)
-    expected_outout_config, _ = capsys.readouterr()
-    assert output_config == expected_outout_config
+    del config['CONFIGURED']
+    assert output_config.strip() == json.dumps(config, indent=4, sort_keys=True)
 
 
-def test_bigchain_run_init_when_db_exists(mock_file_config, mock_db_init_with_existing_db):
+def test_bigchain_run_init_when_db_exists(mock_db_init_with_existing_db):
     from bigchaindb.commands.bigchain import run_init
     args = Namespace(config=None)
     run_init(args)
 
 
-def test_drop_existing_db(mock_file_config, mock_rethink_db_drop):
+def test_drop_existing_db(mock_rethink_db_drop):
     from bigchaindb.commands.bigchain import run_drop
     args = Namespace(config=None, yes=True)
     run_drop(args)

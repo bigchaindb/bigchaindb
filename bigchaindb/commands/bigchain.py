@@ -2,14 +2,16 @@
 
 
 import os
+import sys
 import logging
 import argparse
 import copy
+import json
 
 import bigchaindb
 import bigchaindb.config_utils
 from bigchaindb import db
-from bigchaindb.exceptions import DatabaseAlreadyExists
+from bigchaindb.exceptions import DatabaseAlreadyExists, KeypairNotFoundException
 from bigchaindb.commands.utils import base_parser, start
 from bigchaindb.processes import Processes
 from bigchaindb import crypto
@@ -21,13 +23,15 @@ logger = logging.getLogger(__name__)
 
 def run_show_config(args):
     """Show the current configuration"""
-    from pprint import pprint
-
     # TODO Proposal: remove the "hidden" configuration. Only show config. If
     # the system needs to be configured, then display information on how to
     # configure the system.
-    bigchaindb.config_utils.file_config(args.config)
-    pprint(bigchaindb.config)
+    bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
+    config = copy.deepcopy(bigchaindb.config)
+    del config['CONFIGURED']
+    private_key = config['keypair']['private']
+    config['keypair']['private'] = 'x' * 45 if private_key else None
+    print(json.dumps(config, indent=4, sort_keys=True))
 
 
 def run_configure(args, skip_if_exists=False):
@@ -55,7 +59,7 @@ def run_configure(args, skip_if_exists=False):
     conf['keypair']['private'], conf['keypair']['public'] = crypto.generate_key_pair()
 
     if not args.yes:
-        for key in ('host', 'port'):
+        for key in ('bind', ):
             val = conf['server'][key]
             conf['server'][key] = input('API Server {}? (default `{}`): '.format(key, val)) or val
 
@@ -73,7 +77,7 @@ def run_configure(args, skip_if_exists=False):
 
 def run_init(args):
     """Initialize the database"""
-    bigchaindb.config_utils.file_config(args.config)
+    bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
     # TODO Provide mechanism to:
     # 1. prompt the user to inquire whether they wish to drop the db
     # 2. force the init, (e.g., via -f flag)
@@ -86,18 +90,21 @@ def run_init(args):
 
 def run_drop(args):
     """Drop the database"""
-    bigchaindb.config_utils.file_config(args.config)
+    bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
     db.drop(assume_yes=args.yes)
 
 
 def run_start(args):
     """Start the processes to run the node"""
-    run_configure(args, skip_if_exists=True)
-    bigchaindb.config_utils.file_config(args.config)
+    # run_configure(args, skip_if_exists=True)
+    bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
     try:
         db.init()
     except DatabaseAlreadyExists:
         pass
+    except KeypairNotFoundException:
+        sys.exit('Cannot start BigchainDB, no keypair found. Did you run `bigchaindb configure`?')
+
     processes = Processes()
     logger.info('Start bigchaindb main process')
     processes.start()

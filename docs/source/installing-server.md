@@ -80,6 +80,11 @@ Install from the source:
 $ python setup.py install
 ```
 
+If you want to update BigchainDB to reflect the latest local source code changes, you can use:
+```text
+$ pip install -e .
+```
+
 ### How to Install BigchainDB on a VM with Vagrant
 
 One of our community members ([@Mec-Is](https://github.com/Mec-iS)) wrote [a page about how to install BigchainDB on a VM with Vagrant](https://gist.github.com/Mec-iS/b84758397f1b21f21700).
@@ -94,10 +99,16 @@ $ rethinkdb
 
 Then open a different terminal and run:
 ```text
-$ bigchaindb start
+$ bigchaindb -y configure
+$ bigchaindb init
 ```
 
-During its first run, BigchainDB Server takes care of configuring a single node environment.
+That creates a configuration file in `$HOME/.bigchaindb` (documented in [the section on configuration](configuration.html)), initializes the database, creates the tables, creates the indexes, and generates the genesis block.
+
+You can start BigchainDB Server using:
+```text
+$ bigchaindb start
+```
 
 
 ## Run BigchainDB with Docker
@@ -122,7 +133,21 @@ then do a one-time configuration step to create the config file; it will be
 stored on your host machine under ` ~/.bigchaindb_docker/config`:
 ```text
 $ docker-compose run --rm bigchaindb bigchaindb configure
+Starting bigchaindb_rethinkdb-data_1
+Generating keypair
+API Server bind? (default `0.0.0.0:9984`): 
+Database host? (default `localhost`): rethinkdb
+Database port? (default `28015`): 
+Database name? (default `bigchain`): 
+Statsd host? (default `localhost`): statsd
+Statsd port? (default `8125`): 
+Statsd rate? (default `0.01`): 
+Ready to go!
 ```
+
+As shown above, make sure that you set the database and statsd hosts to their
+corresponding service names (`rethinkdb`, `statsd`), defined in`docker-compose.yml`
+and `docker-compose-monitor.yml`.
 
 You can then start it up (in the background, as a daemon) using:
 ```text
