@@ -60,9 +60,108 @@ def test_load_consensus_plugin_raises_with_invalid_subclass(monkeypatch):
     from bigchaindb import config_utils
     monkeypatch.setattr(config_utils,
                         'iter_entry_points',
-                        lambda *args: [ type('entry_point',
-                                             (object),
-                                             {'load': lambda: object}) ])
+                        lambda *args: [type('entry_point', (object), {'load': lambda: object})])
 
     with pytest.raises(TypeError):
         config_utils.load_consensus_plugin()
+
+
+def test_map_leafs_iterator():
+    from bigchaindb import config_utils
+
+    mapping = {
+        'a': {'b': {'c': 1},
+              'd': {'z': 44}},
+        'b': {'d': 2},
+        'c': 3
+    }
+
+    result = config_utils.map_leafs(lambda x, path: x * 2, mapping)
+    assert result == {
+        'a': {'b': {'c': 2},
+              'd': {'z': 88}},
+        'b': {'d': 4},
+        'c': 6
+    }
+
+    result = config_utils.map_leafs(lambda x, path: path, mapping)
+    assert result == {
+        'a': {'b': {'c': ['a', 'b', 'c']},
+              'd': {'z': ['a', 'd', 'z']}},
+        'b': {'d': ['b', 'd']},
+        'c': ['c']
+    }
+
+
+def test_update_types():
+    from bigchaindb import config_utils
+
+    raw = {
+        'a_string': 'test',
+        'an_int': '42',
+        'a_float': '3.14',
+        'a_list': 'a:b:c',
+    }
+
+    reference = {
+        'a_string': 'test',
+        'an_int': 42,
+        'a_float': 3.14,
+        'a_list': ['a', 'b', 'c'],
+    }
+
+    result = config_utils.update_types(raw, reference)
+    assert result == reference
+
+
+def test_env_config(monkeypatch):
+    monkeypatch.setattr('os.environ', {'BIGCHAINDB_DATABASE_HOST': 'test-host',
+                                       'BIGCHAINDB_DATABASE_PORT': 'test-port'})
+
+    from bigchaindb import config_utils
+
+    result = config_utils.env_config({'database': {'host': None, 'port': None}})
+    expected = {'database': {'host': 'test-host', 'port': 'test-port'}}
+
+    assert result == expected
+
+
+def test_autoconfigure_read_both_from_file_and_env(monkeypatch):
+    file_config = {
+        'database': {'host': 'test-host'}
+    }
+    monkeypatch.setattr('bigchaindb.config_utils.file_config', lambda *args, **kwargs: file_config)
+    monkeypatch.setattr('os.environ', {'BIGCHAINDB_DATABASE_NAME': 'test-dbname',
+                                       'BIGCHAINDB_DATABASE_PORT': '4242',
+                                       'BIGCHAINDB_KEYRING': 'pubkey_0:pubkey_1:pubkey_2'})
+
+    import bigchaindb
+    from bigchaindb import config_utils
+    config_utils.autoconfigure()
+
+    assert bigchaindb.config == {
+        'CONFIGURED': True,
+        'server': {
+            'bind': '0.0.0.0:9984',
+            'workers': None,
+            'threads': None,
+        },
+        'database': {
+            'host': 'test-host',
+            'port': 4242,
+            'name': 'test-dbname',
+        },
+        'keypair': {
+            'public': None,
+            'private': None,
+        },
+        'keyring': ['pubkey_0', 'pubkey_1', 'pubkey_2'],
+        'statsd': {
+            'host': 'localhost',
+            'port': 8125,
+            'rate': 0.01,
+        },
+        'api_endpoint': 'http://localhost:9984/api/v1',
+        'consensus_plugin': 'default',
+    }
+
