@@ -19,6 +19,9 @@ def get_conn():
 
 
 def init():
+    # Try to access the keypair, throws an exception if it does not exist
+    b = bigchaindb.Bigchain()
+
     conn = get_conn()
     dbname = bigchaindb.config['database']['name']
 
@@ -59,7 +62,6 @@ def init():
     r.db(dbname).table('bigchain').index_wait().run(conn)
 
     logger.info(' - genesis block')
-    b = bigchaindb.Bigchain()
     b.create_genesis_block()
     logger.info('Done, have fun!')
 
