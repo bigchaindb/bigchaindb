@@ -732,11 +732,20 @@ class TestBigchainBlock(object):
 
 
 class TestMultipleInputs(object):
-    def test_transfer_transaction_multiple(self, b):
+    def test_transfer_single_owners_single_input(self, b):
         pass
 
-    def test_transfer_single_input_from_multi_input(self, b):
+    def test_transfer_single_owners_multiple_inputs(self, b):
+        pass
+
+    def test_transfer_single_owners_single_input_from_multiple_outputs(self, b):
+        pass
+
+    def test_multiple_owners(self, b):
         pass
 
     def test_get_spent(self, b):
+        pass
+
+    def test_get_owned_ids(self, b):
         pass
