@@ -185,14 +185,13 @@ def autoconfigure(filename=None, config=None, force=False):
 
     newconfig = env_config(bigchaindb.config)
 
-    if config:
-        newconfig = update(newconfig, config)
-
     try:
-        # import pdb; pdb.set_trace()
         newconfig = update(newconfig, file_config(filename=filename))
     except FileNotFoundError as e:
         logger.warning('Cannot find config file `%s`.' % e.filename)
+
+    if config:
+        newconfig = update(newconfig, config)
 
     dict_config(newconfig)
     return newconfig
