@@ -29,7 +29,20 @@ USER_PRIVATE_KEY = '8eJ8q9ZQpReWyQT5aFCiwtZ5wDZC4eDnCen88p3tQ6ie'
 USER_PUBLIC_KEY = 'JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE'
 
 
+# We need this function to avoid loading an existing
+# conf file located in the home of the user running
+# the tests. If it's too aggressive we can change it
+# later.
+@pytest.fixture(scope='function', autouse=True)
+def ignore_local_config_file(monkeypatch):
+    def mock_file_config(filename=None):
+        raise FileNotFoundError()
+
+    monkeypatch.setattr('bigchaindb.config_utils.file_config', mock_file_config)
+
+
 @pytest.fixture
+@pytest.fixture(scope='function', autouse=True)
 def restore_config(request, node_config):
     from bigchaindb import config_utils
     config_utils.dict_config(node_config)

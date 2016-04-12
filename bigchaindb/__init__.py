@@ -1,49 +1,35 @@
-import os
 import copy
 
-
-def e(key, default=None, conv=None):
-    """Get the environment variable `key`, fallback to `default`
-    if nothing is found.
-
-    Keyword arguments:
-    key -- the key to look for in the environment
-    default -- the default value if nothing is found (default: None)
-    conv -- a callable used to convert the value (default: use the type of the
-            default value)
-    """
-
-    val = os.environ.get(key, default)
-
-    if conv or default is not None:
-        conv = conv or type(default)
-        return conv(val)
-
-    return val
+# from functools import reduce
+# PORT_NUMBER = reduce(lambda x, y: x * y, map(ord, 'BigchainDB')) % 2**16
+# basically, the port number is 9984
 
 
 config = {
     'server': {
-        'bind': e('BIGCHAIN_SERVER_BIND', default='0.0.0.0:5000'),
+        # Note: this section supports all the Gunicorn settings:
+        #       - http://docs.gunicorn.org/en/stable/settings.html
+        'bind': '0.0.0.0:9984',
+        'workers': None, # if none, the value will be cpu_count * 2 + 1
+        'threads': None, # if none, the value will be cpu_count * 2 + 1
     },
     'database': {
-        'host': e('BIGCHAIN_DATABASE_HOST', default='localhost'),
-        'port': e('BIGCHAIN_DATABASE_PORT', default=28015),
-        'name': e('BIGCHAIN_DATABASE_NAME', default='bigchain')
+        'host': 'localhost',
+        'port': 28015,
+        'name': 'bigchain',
     },
     'keypair': {
-        'public': e('BIGCHAIN_KEYPAIR_PUBLIC'),
-        'private': e('BIGCHAIN_KEYPAIR_PRIVATE')
+        'public': None,
+        'private': None,
     },
-    'keyring': [
-    ],
+    'keyring': [],
     'statsd': {
-        'host': e('BIGCHAIN_STATSD_HOST', default='localhost'),
-        'port': e('BIGCHAIN_STATSD_PORT', default=8125),
-        'rate': e('BIGCHAIN_STATSD_SAMPLERATE', default=0.01)
+        'host': 'localhost',
+        'port': 8125,
+        'rate': 0.01,
     },
-    'api_endpoint': 'http://localhost:8008/api/v1',
-    'consensus_plugin': e('BIGCHAIN_CONSENSUS_PLUGIN', default='default')
+    'api_endpoint': 'http://localhost:9984/api/v1',
+    'consensus_plugin': 'default',
 }
 
 # We need to maintain a backup copy of the original config dict in case

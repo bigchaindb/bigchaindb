@@ -76,6 +76,9 @@ def create_server(settings):
     if not settings.get('workers'):
         settings['workers'] = (multiprocessing.cpu_count() * 2) + 1
 
+    if not settings.get('threads'):
+        settings['threads'] = (multiprocessing.cpu_count() * 2) + 1
+
     debug = settings.pop('debug', False)
     app = create_app(debug)
     standalone = StandaloneApplication(app, settings)
