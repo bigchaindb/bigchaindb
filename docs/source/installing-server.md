@@ -75,7 +75,7 @@ Otherwise, clone the public repository:
 $ git clone git@github.com:bigchaindb/bigchaindb.git
 ```
 
-Install from the source:
+and then install from source:
 ```text
 $ python setup.py install
 ```
