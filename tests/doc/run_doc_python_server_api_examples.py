@@ -85,11 +85,7 @@ threshold_tx['transaction']['conditions'][0]['condition'] = {
 }
 
 # conditions have been updated, so hash needs updating
-threshold_tx_data = copy.deepcopy(threshold_tx)
-for fulfillment in threshold_tx_data['transaction']['fulfillments']:
-    fulfillment['fulfillment'] = None
-
-threshold_tx['id'] = crypto.hash_data(util.serialize(threshold_tx_data['transaction']))
+threshold_tx['id'] = util.get_hash_data(threshold_tx)
 
 # sign the transaction
 threshold_tx_signed = b.sign_transaction(threshold_tx, testuser2_priv)

@@ -226,9 +226,19 @@ Crypto-conditions are part of the Interledger protocol and the full specificatio
 Implementations of the crypto-conditions are available in [Python](https://github.com/bigchaindb/cryptoconditions) and [JavaScript](https://github.com/interledger/five-bells-condition).
 
 
-### Threshold Signatures
+### Threshold Conditions
 
-MultiSig, m-of-n signatures
+Threshold conditions introduce multi-signatures, m-of-n signatures or even more complex binary Merkle trees to BigchainDB.
+
+Setting up a generic threshold condition is a bit more elaborate than regular transaction signing but allow for flexible signing between multiple parties or groups.
+ 
+The basic workflow for creating a more complex cryptocondition is the following:
+
+1. Create a transaction template that include the public key of all (nested) parties as `new_owners`
+2. Set up the threshold condition using the [cryptocondition library](https://github.com/bigchaindb/cryptoconditions)
+3. Update the condition and hash in the transaction template
+
+We'll illustrate this by an example:
 
 ```python
 import copy
@@ -259,11 +269,7 @@ threshold_tx['transaction']['conditions'][0]['condition'] = {
 }
 
 # conditions have been updated, so hash needs updating
-threshold_tx_data = copy.deepcopy(threshold_tx)
-for fulfillment in threshold_tx_data['transaction']['fulfillments']:
-    fulfillment['fulfillment'] = None
-
-threshold_tx['id'] = crypto.hash_data(util.serialize(threshold_tx_data['transaction']))
+threshold_tx['id'] = util.get_hash_data(threshold_tx)
 
 # sign the transaction
 threshold_tx_signed = b.sign_transaction(threshold_tx, testuser2_priv)
@@ -334,6 +340,15 @@ tx_threshold_retrieved = b.get_transaction(threshold_tx_signed['id'])
 }
 
 ```
+
+The transaction can now be transfered by fulfilling the threshold condition.
+
+The fulfillement involves:
+
+1. Create a transaction template that include the public key of all (nested) parties as `current_owners`
+2. Parsing the threshold condition into a fulfillment using the [cryptocondition library](https://github.com/bigchaindb/cryptoconditions)
+3. Signing all necessary subfulfillments and updating the fulfillment field in the transaction
+
 
 ```python
 from cryptoconditions.fulfillment import Fulfillment
@@ -406,6 +421,3 @@ b.write_transaction(threshold_tx_transfer)
 }
 
 ```
-
-
-### Merkle Trees
