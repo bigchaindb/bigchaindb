@@ -29,7 +29,6 @@ def mock_bigchaindb_sign(monkeypatch):
     monkeypatch.setattr('bigchaindb.util.sign_tx', mockreturn)
 
 
-
 def test_temp_client_returns_a_temp_client():
     from bigchaindb.client import temp_client
     client = temp_client()
@@ -37,6 +36,7 @@ def test_temp_client_returns_a_temp_client():
     assert client.private_key
 
 
+@pytest.mark.usefixtures('restore_config')
 def test_client_can_create_assets(mock_requests_post, client):
     from bigchaindb import util
 
