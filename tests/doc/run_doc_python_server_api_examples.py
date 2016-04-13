@@ -113,17 +113,20 @@ subfulfillment2 = threshold_fulfillment.subconditions[1]['body']
 
 # get the fulfillment message to sign
 threshold_tx_fulfillment_message = util.get_fulfillment_message(threshold_tx_transfer,
-                                                                threshold_tx_transfer['transaction']['fulfillments'][0])
+                                                                threshold_tx_transfer['transaction']['fulfillments'][0],
+                                                                serialized=True)
 
 # sign the subconditions
-subfulfillment1.sign(util.serialize(threshold_tx_fulfillment_message), crypto.SigningKey(thresholduser1_priv))
-subfulfillment2.sign(util.serialize(threshold_tx_fulfillment_message), crypto.SigningKey(thresholduser2_priv))
+subfulfillment1.sign(threshold_tx_fulfillment_message, crypto.SigningKey(thresholduser1_priv))
+subfulfillment2.sign(threshold_tx_fulfillment_message, crypto.SigningKey(thresholduser2_priv))
+
+assert threshold_fulfillment.validate(threshold_tx_fulfillment_message) == True
 
 threshold_tx_transfer['transaction']['fulfillments'][0]['fulfillment'] = threshold_fulfillment.serialize_uri()
 
-b.verify_signature(threshold_tx_transfer)
+assert b.verify_signature(threshold_tx_transfer) == True
 
-b.validate_transaction(threshold_tx_transfer)
+assert b.validate_transaction(threshold_tx_transfer) == True
 
 b.write_transaction(threshold_tx_transfer)
 

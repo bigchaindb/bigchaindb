@@ -308,7 +308,17 @@ def verify_signature(signed_transaction):
     return True
 
 
-def get_fulfillment_message(transaction, fulfillment):
+def get_fulfillment_message(transaction, fulfillment, serialized=False):
+    """Get the fulfillment message for signing a specific fulfillment in a transaction
+
+    Args:
+        transaction (dict): a transaction
+        fulfillment (dict): a specific fulfillment (for a condition index) within the transaction
+        serialized (bool): False returns a dict, True returns a serialized string
+
+    Returns:
+        str|dict: fulfillment message
+    """
     b = bigchaindb.Bigchain()
 
     common_data = {
@@ -331,10 +341,20 @@ def get_fulfillment_message(transaction, fulfillment):
         previous_tx = b.get_transaction(fulfillment['input']['txid'])
         conditions = sorted(previous_tx['transaction']['conditions'], key=lambda d: d['cid'])
         fulfillment_message['condition'] = conditions[fulfillment['input']['cid']]
+    if serialized:
+        return serialize(fulfillment_message)
     return fulfillment_message
 
 
 def get_hash_data(transaction):
+    """ Get the hashed data that (should) correspond to the `transaction['id']`
+
+    Args:
+        transaction (dict): the transaction to be hashed
+
+    Returns:
+        str: the hash of the transaction
+    """
     tx = copy.deepcopy(transaction)
     if 'transaction' in tx:
         tx = tx['transaction']
