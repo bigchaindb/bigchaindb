@@ -745,16 +745,167 @@ class TestBigchainBlock(object):
 
 
 class TestMultipleInputs(object):
-    def test_transfer_single_owners_single_input(self, b):
+    def test_transfer_single_owners_single_input(self, b, user_sk, user_vk, inputs):
+        # create a new user
+        user2_sk, user2_vk = crypto.generate_key_pair()
+
+        # get inputs
+        owned_inputs = b.get_owned_ids(user_vk)
+        inp = owned_inputs.pop()
+
+        # create a transaction
+        tx = b.create_transaction([user_vk], [user2_sk], inp, 'TRANSFER')
+        tx_signed = b.sign_transaction(tx, user_sk)
+
+        # validate transaction
+        assert b.is_valid_transaction(tx_signed) == tx_signed
+        assert len(tx_signed['transaction']['fulfillments']) == 1
+        assert len(tx_signed['transaction']['conditions']) == 1
+
+    def test_transfer_single_owners_multiple_inputs(self, b, user_sk, user_vk):
+        # create a new user
+        user2_sk, user2_vk = crypto.generate_key_pair()
+
+        # create inputs to spend
+        transactions = []
+        for i in range(10):
+            tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
+            tx_signed = b.sign_transaction(tx, b.me_private)
+            transactions.append(tx_signed)
+            b.write_transaction(tx_signed)
+        block = b.create_block(transactions)
+        b.write_block(block, durability='hard')
+
+        # get inputs
+        owned_inputs = b.get_owned_ids(user_vk)
+        inputs = owned_inputs[:3]
+
+        # create a transaction
+        tx = b.create_transaction(user_vk, user2_vk, inputs, 'TRANSFER')
+        tx_signed = b.sign_transaction(tx, user_sk)
+
+        # validate transaction
+        assert b.is_valid_transaction(tx_signed) == tx_signed
+        assert len(tx_signed['transaction']['fulfillments']) == 3
+        assert len(tx_signed['transaction']['conditions']) == 3
+
+    def test_transfer_single_owners_single_input_from_multiple_outputs(self, b, user_sk, user_vk):
+        # create a new user
+        user2_sk, user2_vk = crypto.generate_key_pair()
+
+        # create inputs to spend
+        transactions = []
+        for i in range(10):
+            tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
+            tx_signed = b.sign_transaction(tx, b.me_private)
+            transactions.append(tx_signed)
+            b.write_transaction(tx_signed)
+        block = b.create_block(transactions)
+        b.write_block(block, durability='hard')
+
+        # get inputs
+        owned_inputs = b.get_owned_ids(user_vk)
+        inputs = owned_inputs[:3]
+
+        # create a transaction
+        tx = b.create_transaction(user_vk, user2_vk, inputs, 'TRANSFER')
+        tx_signed = b.sign_transaction(tx, user_sk)
+
+        # create block with the transaction
+        block = b.create_block([tx_signed])
+        b.write_block(block, durability='hard')
+
+        # get inputs from user2
+        owned_inputs = b.get_owned_ids(user2_vk)
+        assert len(owned_inputs) == 3
+
+        # create a transaction with a single input from a multiple output transaction
+        inp = owned_inputs.pop()
+        tx = b.create_transaction(user2_vk, user_vk, inp, 'TRANSFER')
+        tx_signed = b.sign_transaction(tx, user2_sk)
+
+        assert b.is_valid_transaction(tx_signed) == tx_signed
+        assert len(tx_signed['transaction']['fulfillments']) == 1
+        assert len(tx_signed['transaction']['conditions']) == 1
+
+    def test_single_current_owner_multiple_new_owners_single_input(self, b, user_sk, user_vk, inputs):
+        # create a new users
+        user2_sk, user2_vk = crypto.generate_key_pair()
+        user3_sk, user3_vk = crypto.generate_key_pair()
+
+        # get inputs
+        owned_inputs = b.get_owned_ids(user_vk)
+        inp = owned_inputs.pop()
+
+        # create a transaction
+        tx = b.create_transaction(user_vk, [user2_sk, user3_vk], inp, 'TRANSFER')
+        tx_signed = b.sign_transaction(tx, user_sk)
+
+        # validate transaction
+        assert b.is_valid_transaction(tx_signed) == tx_signed
+        assert len(tx_signed['transaction']['fulfillments']) == 1
+        assert len(tx_signed['transaction']['conditions']) == 1
+
+    def test_single_current_owner_multiple_new_owners_multiple_inputs(self, b, user_sk, user_vk):
+        # create a new users
+        user2_sk, user2_vk = crypto.generate_key_pair()
+        user3_sk, user3_vk = crypto.generate_key_pair()
+
+        # create inputs to spend
+        transactions = []
+        for i in range(5):
+            tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
+            tx_signed = b.sign_transaction(tx, b.me_private)
+            transactions.append(tx_signed)
+            b.write_transaction(tx_signed)
+        block = b.create_block(transactions)
+        b.write_block(block, durability='hard')
+
+        # get inputs
+        owned_inputs = b.get_owned_ids(user_vk)
+        inputs = owned_inputs[:3]
+
+        # create a transaction
+        tx = b.create_transaction(user_vk, [user2_vk, user3_vk], inputs, 'TRANSFER')
+        tx_signed = b.sign_transaction(tx, user_sk)
+
+        # validate transaction
+        assert b.is_valid_transaction(tx_signed) == tx_signed
+        assert len(tx_signed['transaction']['fulfillments']) == 3
+        assert len(tx_signed['transaction']['conditions']) == 3
+
+    @pytest.mark.skipif(reason='Skip until we fix default threshold signatures')
+    def test_multiple_current_owners_single_new_owner_single_input(self, b, user_sk, user_vk):
+        # create a new users
+        user2_sk, user2_vk = crypto.generate_key_pair()
+        user3_sk, user3_vk = crypto.generate_key_pair()
+
+        # create input to spend
+        tx = b.create_transaction(b.me, [user_vk, user2_vk], None, 'CREATE')
+        tx_signed = b.sign_transaction(tx, b.me_private)
+        block = b.create_block([tx_signed])
+        b.write_block(block, durability='hard')
+
+        # get inputs
+        owned_inputs = b.get_owned_ids(user_vk)
+        inputs = owned_inputs[:3]
+
+        # create a transaction
+        tx = b.create_transaction([user_vk, user2_vk], user3_vk, inputs, 'TRANSFER')
+        tx_signed = b.sign_transaction(tx, [user_sk, user2_sk])
+
+        # validate transaction
+        assert b.is_valid_transaction(tx_signed) == tx_signed
+        assert len(tx_signed['transaction']['fulfillments']) == 3
+        assert len(tx_signed['transaction']['conditions']) == 3
+
+    def test_multiple_current_owners_single_new_owner_multiple_inputs(self, b, user_sk, user_vk):
         pass
 
-    def test_transfer_single_owners_multiple_inputs(self, b):
+    def test_multiple_current_owners_multiple_new_owners_single_input(self, b):
         pass
 
-    def test_transfer_single_owners_single_input_from_multiple_outputs(self, b):
-        pass
-
-    def test_multiple_owners(self, b):
+    def test_multiple_current_owners_multiple_new_owners_multiple_inputs(self, b):
         pass
 
     def test_get_spent(self, b):
@@ -1034,3 +1185,9 @@ class TestCryptoconditions(object):
         with pytest.raises(exceptions.InvalidSignature):
             b.validate_transaction(next_tx)
         assert b.is_valid_transaction(next_tx) == False
+
+    def test_default_threshold_signatures_for_multiple_owners(self, b):
+        pass
+
+    def test_get_subcondition_from_vk(self):
+        pass

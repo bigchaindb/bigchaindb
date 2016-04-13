@@ -194,8 +194,8 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
     conditions = []
     for fulfillment in fulfillments:
         if len(new_owners) > 1:
+            condition = ThresholdSha256Fulfillment(threshold=len(new_owners))
             for new_owner in new_owners:
-                condition = ThresholdSha256Fulfillment(threshold=len(new_owners))
                 condition.add_subfulfillment(Ed25519Fulfillment(public_key=new_owner))
         elif len(new_owners) == 1:
             condition = Ed25519Fulfillment(public_key=new_owners[0])
@@ -231,7 +231,7 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
 
 
 # TODO: Change sign_tx to populate the fulfillments
-def sign_tx(transaction, sk):
+def sign_tx(transaction, sks):
     """Sign a transaction
 
     A transaction signed with the `current_owner` corresponding private key.
@@ -244,7 +244,20 @@ def sign_tx(transaction, sk):
         dict: transaction with the `fulfillment` fields populated.
 
     """
-    sk = crypto.SigningKey(sk)
+    # validate sk
+    if not isinstance(sks, list):
+        sks = [sks]
+
+    if len(sks) == 1:
+        sk = crypto.SigningKey(sks[0])
+    else:
+        # create a mapping between sk and vk so that we can match the private key to the current_owners
+        key_pairs = {}
+        for sk in sks:
+            signing_key = crypto.SigningKey(sk)
+            vk = signing_key.get_verifying_key().to_ascii().decode()
+            key_pairs[vk] = signing_key
+
     tx = copy.deepcopy(transaction)
 
     for fulfillment in tx['transaction']['fulfillments']:
@@ -254,7 +267,19 @@ def sign_tx(transaction, sk):
             parsed_fulfillment = Ed25519Fulfillment(public_key=sk.get_verifying_key())
         else:
             parsed_fulfillment = Fulfillment.from_json(fulfillment_message['condition']['condition']['details'])
-        parsed_fulfillment.sign(serialize(fulfillment_message), sk)
+
+        # single current owner
+        if isinstance(parsed_fulfillment, Ed25519Fulfillment):
+            parsed_fulfillment.sign(serialize(fulfillment_message), sk)
+        # multiple current owners
+        elif isinstance(parsed_fulfillment, ThresholdSha256Fulfillment):
+            # replace the fulfillments with the signed fulfillments
+            parsed_fulfillment.subconditions = []
+            for current_owner in fulfillment['current_owners']:
+                subfulfillment = get_subcondition_from_vk(fulfillment_message['condition'], current_owner)
+                subfulfillment.sign(serialize(fulfillment_message), key_pairs[current_owner])
+                parsed_fulfillment.add_subfulfillment(subfulfillment)
+
         signed_fulfillment = parsed_fulfillment.serialize_uri()
         fulfillment.update({'fulfillment': signed_fulfillment})
 
@@ -331,8 +356,15 @@ def get_fulfillment_message(transaction, fulfillment):
         # get previous condition
         previous_tx = b.get_transaction(fulfillment['input']['txid'])
         conditions = sorted(previous_tx['transaction']['conditions'], key=lambda d: d['cid'])
-        fulfillment_message['condition'] = conditions[fulfillment['fid']]
+        fulfillment_message['condition'] = conditions[fulfillment['input']['cid']]
     return fulfillment_message
+
+
+def get_subcondition_from_vk(condition, vk):
+    threshold_fulfillment = Fulfillment.from_json(condition['condition']['details'])
+    for subcondition in threshold_fulfillment.subconditions:
+        if subcondition['body'].public_key.to_ascii().decode() == vk:
+            return subcondition['body']
 
 
 def transform_create(tx):
