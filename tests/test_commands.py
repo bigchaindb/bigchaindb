@@ -94,15 +94,18 @@ def test_bigchain_run_start_assume_yes_create_default_config(monkeypatch, mock_p
 # TODO Please beware, that if debugging, the "-s" switch for pytest will
 # interfere with capsys.
 # See related issue: https://github.com/pytest-dev/pytest/issues/128
+@pytest.mark.usefixtures('restore_config')
 def test_bigchain_show_config(capsys):
     from bigchaindb import config
     from bigchaindb.commands.bigchain import run_show_config
+
     args = Namespace(config=None)
     _, _ = capsys.readouterr()
     run_show_config(args)
-    output_config, _ = capsys.readouterr()
+    output_config = json.loads(capsys.readouterr()[0])
     del config['CONFIGURED']
-    assert output_config.strip() == json.dumps(config, indent=4, sort_keys=True)
+    config['keypair']['private'] = 'x' * 45
+    assert output_config == config
 
 
 def test_bigchain_run_init_when_db_exists(mock_db_init_with_existing_db):

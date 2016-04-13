@@ -166,26 +166,31 @@ for i, instance in enumerate(instances_with_tag):
           format(instance.instance_id))
 
 # Get a list of the pubic DNS names of the instances_with_tag
-hosts_dev = []
+public_dns_names = []
 for instance in instances_with_tag:
     public_dns_name = getattr(instance, 'public_dns_name', None)
     if public_dns_name is not None:
-        hosts_dev.append(public_dns_name)
+        public_dns_names.append(public_dns_name)
 
 # Write a shellscript to add remote keys to ~/.ssh/known_hosts
 print('Preparing shellscript to add remote keys to known_hosts')
 with open('add2known_hosts.sh', 'w') as f:
     f.write('#!/bin/bash\n')
-    for public_dns_name in hosts_dev:
+    for public_dns_name in public_dns_names:
         f.write('ssh-keyscan ' + public_dns_name + ' >> ~/.ssh/known_hosts\n')
 
-# Create a file named hostlist.py containing hosts_dev.
+# Create a file named hostlist.py containing public_dns_names.
 # If a hostlist.py already exists, it will be overwritten.
 print('Writing hostlist.py')
 with open('hostlist.py', 'w') as f:
     f.write('# -*- coding: utf-8 -*-\n')
+    f.write('"""A list of the public DNS names of all the nodes in this\n')
+    f.write('BigchainDB cluster/federation.\n')
+    f.write('"""\n')
+    f.write('\n')
     f.write('from __future__ import unicode_literals\n')
-    f.write('hosts_dev = {}\n'.format(hosts_dev))
+    f.write('\n')
+    f.write('public_dns_names = {}\n'.format(public_dns_names))
 
 # Wait
 wait_time = 45
