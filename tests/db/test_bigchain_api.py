@@ -940,14 +940,8 @@ class TestCryptoconditions(object):
             'details': json.loads(first_tx_condition.serialize_json()),
             'uri': first_tx_condition.condition.serialize_uri()
         }
-
         # conditions have been updated, so hash needs updating
-        transaction_data = copy.deepcopy(first_tx)
-        for fulfillment in transaction_data['transaction']['fulfillments']:
-            fulfillment['fulfillment'] = None
-
-        calculated_hash = crypto.hash_data(util.serialize(transaction_data['transaction']))
-        first_tx['id'] = calculated_hash
+        first_tx['id'] = util.get_hash_data(first_tx)
 
         first_tx_signed = b.sign_transaction(first_tx, user_sk)
 
@@ -994,14 +988,8 @@ class TestCryptoconditions(object):
             'details': json.loads(first_tx_condition.serialize_json()),
             'uri': first_tx_condition.condition.serialize_uri()
         }
-
         # conditions have been updated, so hash needs updating
-        transaction_data = copy.deepcopy(first_tx)
-        for fulfillment in transaction_data['transaction']['fulfillments']:
-            fulfillment['fulfillment'] = None
-
-        calculated_hash = crypto.hash_data(util.serialize(transaction_data['transaction']))
-        first_tx['id'] = calculated_hash
+        first_tx['id'] = util.get_hash_data(first_tx)
 
         first_tx_signed = b.sign_transaction(first_tx, user_sk)
 

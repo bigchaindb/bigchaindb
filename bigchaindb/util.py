@@ -217,8 +217,7 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
     }
 
     # serialize and convert to bytes
-    tx_serialized = serialize(tx)
-    tx_hash = crypto.hash_data(tx_serialized)
+    tx_hash = get_hash_data(tx)
 
     # create the transaction
     transaction = {
@@ -268,7 +267,7 @@ def create_and_sign_tx(private_key, current_owner, new_owner, tx_input, operatio
 
 def check_hash_and_signature(transaction):
     # Check hash of the transaction
-    calculated_hash = crypto.hash_data(serialize(transaction['transaction']))
+    calculated_hash = get_hash_data(transaction)
     if calculated_hash != transaction['id']:
         raise exceptions.InvalidHash()
 
@@ -331,8 +330,20 @@ def get_fulfillment_message(transaction, fulfillment):
         # get previous condition
         previous_tx = b.get_transaction(fulfillment['input']['txid'])
         conditions = sorted(previous_tx['transaction']['conditions'], key=lambda d: d['cid'])
-        fulfillment_message['condition'] = conditions[fulfillment['fid']]
+        fulfillment_message['condition'] = conditions[fulfillment['input']['cid']]
     return fulfillment_message
+
+
+def get_hash_data(transaction):
+    tx = copy.deepcopy(transaction)
+    if 'transaction' in tx:
+        tx = tx['transaction']
+
+    # remove the fulfillment messages (signatures)
+    for fulfillment in tx['fulfillments']:
+        fulfillment['fulfillment'] = None
+
+    return crypto.hash_data(serialize(tx))
 
 
 def transform_create(tx):

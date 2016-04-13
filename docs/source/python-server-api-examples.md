@@ -114,11 +114,15 @@ tx_retrieved = b.get_transaction(tx_signed['id'])
 
 ```
 
-The new owner of the digital asset is now `ACJyBLfeLNpCPrGWYoPYvnQ2MAC8BFukBko4hxtW9YoH`, which is the public key of `testuser1`.
+The new owner of the digital asset is now `DTJCqP3sNkZcpoSA8bCtGwZ4ASfRLsMFXZDCmMHzCoeJ`, which is the public key of `testuser1`.
+
+Note that the current owner with public key `3LQ5dTiddXymDhNzETB1rEkp4mA7fEV1Qeiu5ghHiJm9` refers to one of the federation nodes that actually created the asset and assigned it to `testuser1`.
 
 ## Transfer the Digital Asset
 
-Now that `testuser1` has a digital asset assigned to him, he can transfer it to another user. Transfer transactions require an input. The input will be the transaction id of a digital asset that was assigned to `testuser1`, which in our case is `6539dded9479c47b3c83385ae569ecaa90bcf387240d1ee2ea3ae0f7986aeddd`.
+Now that `testuser1` has a digital asset assigned to him, he can transfer it to another user. Transfer transactions require an input. The input will be the transaction id of a digital asset that was assigned to `testuser1`, which in our case is `cdb6331f26ecec0ee7e67e4d5dcd63734e7f75bbd1ebe40699fc6d2960ae4cb2`.
+
+Since a transaction can have multiple outputs with each their own (crypto)condition, each transaction input should also refer to the condition index `cid`.
 
 ```python
 # create a second testuser
@@ -203,12 +207,28 @@ b.validate_transaction(tx_transfer_signed2)
 DoubleSpend: input `cdb6331f26ecec0ee7e67e4d5dcd63734e7f75bbd1ebe40699fc6d2960ae4cb2` was already spent
 ```
 
-## Crypto Conditions
+## Crypto-Conditions
+
+BigchainDB makes use of the crypto-conditions library to both cryptographically lock and unlock transactions.
+The locking script is refered to as a `condition` and a corresponding `fulfillment` unlocks the condition of the `input_tx`. 
+
+![BigchainDB transactions connecting fulfillments with conditions](./_static/tx_single_condition_single_fulfillment_v1.png)
+
 
 ### Introduction
 
+Crypto-conditions provide a mechanism to describe a signed message such that multiple actors in a distributed system can all verify the same signed message and agree on whether it matches the description. 
+
+This provides a useful primitive for event-based systems that are distributed on the Internet since we can describe events in a standard deterministic manner (represented by signed messages) and therefore define generic authenticated event handlers.
+
+Crypto-conditions are part of the Interledger protocol and the full specification can be found [here](https://interledger.org/five-bells-condition/spec.html).
+
+Implementations of the crypto-conditions are available in [Python](https://github.com/bigchaindb/cryptoconditions) and [JavaScript](https://github.com/interledger/five-bells-condition).
+
 
 ### Threshold Signatures
+
+MultiSig, m-of-n signatures
 
 ```python
 import copy

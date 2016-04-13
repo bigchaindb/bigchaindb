@@ -153,12 +153,7 @@ class BaseConsensusRules(AbstractConsensusRules):
                         'input `{}` was already spent'.format(fulfillment['input']))
 
         # Check hash of the transaction
-        # remove the fulfillment messages (signatures)
-        transaction_data = copy.deepcopy(transaction)
-        for fulfillment in transaction_data['transaction']['fulfillments']:
-            fulfillment['fulfillment'] = None
-
-        calculated_hash = crypto.hash_data(util.serialize(transaction_data['transaction']))
+        calculated_hash = util.get_hash_data(transaction)
         if calculated_hash != transaction['id']:
             raise exceptions.InvalidHash()
 
