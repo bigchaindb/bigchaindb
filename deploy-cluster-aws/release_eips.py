@@ -15,7 +15,6 @@ Source: http://tinyurl.com/ozhxatx
 """
 
 from __future__ import unicode_literals
-import botocore
 import boto3
 from awscommon import get_naeips
 
@@ -38,14 +37,7 @@ for i, eip in enumerate(non_associated_eips):
     print('{}: Releasing {}'.format(i, public_ip))
     domain = eip['Domain']
     print('(It has Domain = {}.)'.format(domain))
-    try:
-        if domain == 'vpc':
-            client.release_address(AllocationId=eip['AllocationId'])
-        else:
-            client.release_address(PublicIp=public_ip)
-    except botocore.exceptions.ClientError as e:
-        print('A boto error occurred:')
-        raise
-    except:
-        print('An unexpected error occurred:')
-        raise
+    if domain == 'vpc':
+        client.release_address(AllocationId=eip['AllocationId'])
+    else:
+        client.release_address(PublicIp=public_ip)
