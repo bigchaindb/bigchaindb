@@ -57,25 +57,25 @@ git fetch upstream
 git merge upstream/master
 ```
 
-### Step 5 - Install the Python module an the CLI
+### Step 5 - Install the Python module and the CLI
 
-In order to use and run the source you just cloned from your fork, you need to install BigchainDB in your computer.
+In order to use and run the source you just cloned from your fork, you need to install BigchainDB on your computer.
 The core of BigchainDB is a Python module you can install using the standard [Python packaging tools](http://python-packaging-user-guide.readthedocs.org/en/latest/).
-We highly suggest you to use `pip` and `virtualenv` to manage your local development.
+We highly suggest you use `pip` and `virtualenv` to manage your local development.
 If you need more information on how to do that, refer to the *Python Packaging User Guide* to [install `pip`](http://python-packaging-user-guide.readthedocs.org/en/latest/installing/#requirements-for-installing-packages) and to [create your first `virtualenv`](http://python-packaging-user-guide.readthedocs.org/en/latest/installing/#creating-virtual-environments).
 
-Once you have `pip` installed and (optionally) you are in a virtualenv, go to the root of the repository (i.e.: where the `setup.py` file is), and type:
+Once you have `pip` installed and (optionally) you are in a virtualenv, go to the root of the repository (i.e. where the `setup.py` file is), and type:
 ```bash
 $ pip install -e .[dev]
 ```
 
-This will install the BigchainDB Python module, the CLI, and all the dependencies useful to develop the project.
-How? Let's split the command down into it's components:
+This will install the BigchainDB Python module, the CLI, and all the dependencies useful for contributing to the development of BigchainDB.
+How? Let's split the command down into its components:
  - `pip` is the Python command to install packages
  - `install` tells pip to use the *install* action
  - `-e` installs a project in [editable mode](https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs)
  - `.` installs what's in the current directory
- - `[dev]` adds some [extra requirements](https://pythonhosted.org/setuptools/setuptools.html#declaring-extras-optional-features-with-their-own-dependencies) to the installation (if you are curious, open `setup.py` and check the `extras_require` section)
+ - `[dev]` adds some [extra requirements](https://pythonhosted.org/setuptools/setuptools.html#declaring-extras-optional-features-with-their-own-dependencies) to the installation. (If you are curious, open `setup.py` and look for `dev` in the `extras_require` section.)
 
 
 ### Step 6 - Create a New Branch for Each Bug/Feature
