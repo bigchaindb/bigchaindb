@@ -343,7 +343,7 @@ tx_threshold_retrieved = b.get_transaction(threshold_tx_signed['id'])
 
 The transaction can now be transfered by fulfilling the threshold condition.
 
-The fulfillement involves:
+The fulfillment involves:
 
 1. Create a transaction template that include the public key of all (nested) parties as `current_owners`
 2. Parsing the threshold condition into a fulfillment using the [cryptocondition library](https://github.com/bigchaindb/cryptoconditions)
