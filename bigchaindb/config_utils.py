@@ -5,11 +5,11 @@ By calling `file_config`, the global configuration (stored in
 configuration file.
 
 Note that there is a precedence in reading configuration values:
- - [not yet] command line;
  - local config file;
  - environment vars;
- - default config file (contained in `bigchain.__init__`).
+ - default config file (contained in ``bigchaindb.__init__``).
 """
+
 
 import os
 import copy
@@ -23,10 +23,32 @@ import bigchaindb
 from bigchaindb.consensus import AbstractConsensusRules
 
 logger = logging.getLogger(__name__)
+
 CONFIG_DEFAULT_PATH = os.environ.setdefault(
     'BIGCHAINDB_CONFIG_PATH',
     os.path.join(os.path.expanduser('~'), '.bigchaindb'),
 )
+
+CONFIG_PREFIX = 'BIGCHAINDB'
+CONFIG_SEP = '_'
+
+
+def map_leafs(func, mapping):
+    """Map a function to the leafs of a mapping."""
+
+    def _inner(mapping, path=None):
+        if path is None:
+            path = []
+
+        for key, val in mapping.items():
+            if isinstance(val, collections.Mapping):
+                _inner(val, path + [key])
+            else:
+                mapping[key] = func(val, path=path+[key])
+
+        return mapping
+
+    return _inner(copy.deepcopy(mapping))
 
 
 # Thanks Alex <3
@@ -43,7 +65,7 @@ def update(d, u):
 
 
 def file_config(filename=None):
-    """Read a configuration file and merge it with the default configuration.
+    """Returns the values found in a configuration file.
 
     Args:
         filename (str): the JSON file with the configuration. Defaults to ``None``.
@@ -57,13 +79,73 @@ def file_config(filename=None):
         filename = CONFIG_DEFAULT_PATH
 
     with open(filename) as f:
-        newconfig = json.load(f)
+        config = json.load(f)
 
-    dict_config(newconfig)
     logger.info('Configuration loaded from `{}`'.format(filename))
 
+    return config
 
-def dict_config(newconfig):
+
+def env_config(config):
+    """Return a new configuration with the values found in the environment.
+
+    The function recursively iterates over the config, checking if there is
+    a matching env variable. If an env variable is found, the func updates
+    the configuration with that value.
+
+    The name of the env variable is built combining a prefix (``BIGCHAINDB``)
+    with the path to the value. If the ``config`` in input is:
+    ``{'database': {'host': 'localhost'}}``
+    this function will try to read the env variable ``BIGCHAINDB_DATABASE_HOST``.
+    """
+
+    def load_from_env(value, path):
+        var_name = CONFIG_SEP.join([CONFIG_PREFIX] + list(map(lambda s: s.upper(), path)))
+        return os.environ.get(var_name, value)
+
+    return map_leafs(load_from_env, config)
+
+
+def update_types(config, reference, list_sep=':'):
+    """Return a new configuration where all the values types
+    are aligned with the ones in the default configuration"""
+
+    def _coerce(current, value):
+        # Coerce a value to the `current` type.
+        try:
+            # First we try to apply current to the value, since it
+            # might be a function
+            return current(value)
+        except TypeError:
+            # Then we check if current is a list AND if the value
+            # is a string.
+            if isinstance(current, list) and isinstance(value, str):
+                # If so, we use the colon as the separator
+                return value.split(list_sep)
+
+            try:
+                # If we are here, we should try to apply the type
+                # of `current` to the value
+                return type(current)(value)
+            except TypeError:
+                # Worst case scenario we return the value itself.
+                return value
+
+    def _update_type(value, path):
+        current = reference
+
+        for elem in path:
+            try:
+                current = current[elem]
+            except KeyError:
+                return value
+
+        return _coerce(current, value)
+
+    return map_leafs(_update_type, config)
+
+
+def dict_config(config):
     """Merge the provided configuration with the default one.
 
     Args:
@@ -74,11 +156,11 @@ def dict_config(newconfig):
         update made to ``bigchaindb.config`` will be lost.
     """
     bigchaindb.config = copy.deepcopy(bigchaindb._config)
-    update(bigchaindb.config, newconfig)
+    update(bigchaindb.config, update_types(config, bigchaindb.config))
     bigchaindb.config['CONFIGURED'] = True
 
 
-def write_config(newconfig, filename=None):
+def write_config(config, filename=None):
     """Write the provided configuration to a specific location.
 
     Args:
@@ -90,18 +172,29 @@ def write_config(newconfig, filename=None):
         filename = CONFIG_DEFAULT_PATH
 
     with open(filename, 'w') as f:
-        json.dump(newconfig, f)
+        json.dump(config, f)
 
 
-def autoconfigure():
-    """Run ``file_config`` if the module has not been initialized.
-    """
-    if bigchaindb.config.get('CONFIGURED'):
+def autoconfigure(filename=None, config=None, force=False):
+    """Run ``file_config`` and ``env_config`` if the module has not
+    been initialized."""
+
+    if not force and bigchaindb.config.get('CONFIGURED'):
+        logger.debug('System already configured, skipping autoconfiguration')
         return
+
+    newconfig = env_config(bigchaindb.config)
+
     try:
-        file_config()
-    except FileNotFoundError:
-        logger.warning('Cannot find your config file. Run `bigchaindb configure` to create one')
+        newconfig = update(newconfig, file_config(filename=filename))
+    except FileNotFoundError as e:
+        logger.warning('Cannot find config file `%s`.' % e.filename)
+
+    if config:
+        newconfig = update(newconfig, config)
+
+    dict_config(newconfig)
+    return newconfig
 
 
 def load_consensus_plugin(name=None):
