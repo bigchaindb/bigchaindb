@@ -1,5 +1,5 @@
 codecov:
-  branch: develop    # the branch to show by default
+  branch: master     # the branch to show by default
 
   # The help text for bot says:
   # "the username that will consume any oauth requests
