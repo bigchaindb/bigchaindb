@@ -7,10 +7,11 @@ import copy
 import multiprocessing
 
 from flask import Flask
+import gunicorn.app.base
 
 from bigchaindb import Bigchain
 from bigchaindb.web import views
-import gunicorn.app.base
+from bigchaindb.monitor import Monitor
 
 
 class StandaloneApplication(gunicorn.app.base.BaseApplication):
@@ -56,6 +57,7 @@ def create_app(debug=False):
     app = Flask(__name__)
     app.debug = debug
     app.config['bigchain'] = Bigchain()
+    app.config['monitor'] = Monitor()
     app.register_blueprint(views.basic_views, url_prefix='/api/v1')
     return app
 
