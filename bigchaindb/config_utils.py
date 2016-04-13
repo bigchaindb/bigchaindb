@@ -1,8 +1,8 @@
-"""Utils to configure Bigchain.
+"""Utils to configure BigchainDB.
 
 By calling `file_config`, the global configuration (stored in
-`bigchain.config`) will be updated with the values contained in the
-configuration file.
+`$HOME/.bigchaindb`) will be updated with the values contained
+in the configuration file.
 
 Note that there is a precedence in reading configuration values:
  - local config file;
