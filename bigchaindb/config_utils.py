@@ -159,16 +159,20 @@ def update_types(config, reference, list_sep=':'):
 
 
 def dict_config(config):
-    """Merge the provided configuration with the default one.
+    """Set bigchaindb.config equal to the default config dict,
+    then update that with whatever is in the provided config dict,
+    and then set bigchaindb.config['CONFIGURED'] = True
 
     Args:
-        newconfig (dict): a dictionary with the configuration to load.
+        config (dict): the config dict to read for changes
+                       to the default config
 
     Note:
-        The function merges ``newconfig`` with the **default configuration**, so any
-        update made to ``bigchaindb.config`` will be lost.
+        Any previous changes made to ``bigchaindb.config`` will be lost.
     """
+    # Deep copy the default config into bigchaindb.config
     bigchaindb.config = copy.deepcopy(bigchaindb._config)
+    # Update the default config with whatever is in the passed config
     update(bigchaindb.config, update_types(config, bigchaindb.config))
     bigchaindb.config['CONFIGURED'] = True
 
