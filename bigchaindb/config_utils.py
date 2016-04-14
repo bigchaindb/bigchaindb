@@ -54,7 +54,20 @@ def map_leafs(func, mapping):
 # Thanks Alex <3
 # http://stackoverflow.com/a/3233356/597097
 def update(d, u):
-    """Recursively update a mapping."""
+    """Recursively update a mapping (i.e. a dict, list, set, or tuple).
+
+    Conceptually, d and u are two sets trees (with nodes and edges).
+    This function goes through all the nodes of u. For each node in u,
+    if d doesn't have that node yet, then this function adds the node from u,
+    otherwise this function overwrites the node already in d with u's node.
+
+    Args:
+        d (mapping): The mapping to overwrite and add to.
+        u (mapping): The mapping to read for changes.
+
+    Returns:
+        mapping: An updated version of d (updated by u).
+    """
     for k, v in u.items():
         if isinstance(v, collections.Mapping):
             r = update(d.get(k, {}), v)
