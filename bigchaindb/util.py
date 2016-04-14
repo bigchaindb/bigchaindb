@@ -1,6 +1,9 @@
 
 import json
 import time
+import contextlib
+import threading
+import queue
 import multiprocessing as mp
 from datetime import datetime
 
@@ -29,6 +32,31 @@ class ProcessGroup(object):
                               kwargs=self.kwargs, daemon=self.daemon)
             proc.start()
             self.processes.append(proc)
+
+
+# Inspired by:
+# - http://stackoverflow.com/a/24741694/597097
+def pool(builder, limit=None):
+    lock = threading.Lock()
+    local_pool = queue.Queue()
+    size = 0
+
+    @contextlib.contextmanager
+    def pooled():
+        nonlocal size
+        if size == limit:
+            instance = local_pool.get()
+        else:
+            with lock:
+                if size == limit:
+                    instance = local_pool.get()
+                else:
+                    size += 1
+                    instance = builder()
+        yield instance
+        local_pool.put(instance)
+
+    return pooled
 
 
 def serialize(data):
