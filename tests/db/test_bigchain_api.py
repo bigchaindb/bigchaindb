@@ -41,7 +41,7 @@ class TestBigchainApi(object):
         input_tx = b.get_owned_ids(user_vk).pop()
         assert b.verify_signature(b.get_transaction(input_tx['txid'])) == True
 
-        tx = b.create_transaction(b.me, user_sk, input_tx, 'TRANSFER')
+        tx = b.create_transaction(user_vk, b.me, input_tx, 'TRANSFER')
 
         assert sorted(tx) == sorted(['id', 'transaction', 'version'])
         assert sorted(tx['transaction']) == sorted(['conditions', 'data', 'fulfillments', 'operation', 'timestamp'])
@@ -260,14 +260,6 @@ class TestTransactionValidation(object):
         assert excinfo.value.args[0] == 'Only federation nodes can use the operation `CREATE`'
         assert b.is_valid_transaction(tx) is False
 
-        tx_signed = b.sign_transaction(tx, b.me_private)
-
-        with pytest.raises(exceptions.OperationError) as excinfo:
-            b.validate_transaction(tx_signed)
-
-        assert excinfo.value.args[0] == 'Only federation nodes can use the operation `CREATE`'
-        assert b.is_valid_transaction(tx_signed) is False
-
     def test_non_create_operation_no_inputs(self, b, user_vk):
         tx = b.create_transaction(user_vk, user_vk, None, 'TRANSFER')
         with pytest.raises(ValueError) as excinfo:
@@ -326,16 +318,25 @@ class TestTransactionValidation(object):
         assert b.is_valid_transaction(tx_valid) is False
 
     @pytest.mark.usefixtures('inputs')
-    def test_wrong_signature(self, b, user_vk):
+    def test_wrong_signature(self, b, user_sk, user_vk):
         input_valid = b.get_owned_ids(user_vk).pop()
         tx_valid = b.create_transaction(user_vk, user_vk, input_valid, 'TRANSFER')
 
         wrong_private_key = '4fyvJe1aw2qHZ4UNRYftXK7JU7zy9bCqoU5ps6Ne3xrY'
 
-        tx_invalid_signed = b.sign_transaction(tx_valid, wrong_private_key)
+        with pytest.raises(exceptions.KeypairMismatchException):
+            tx_invalid_signed = b.sign_transaction(tx_valid, wrong_private_key)
+
+        # create a correctly signed transaction and change the signature
+        tx_signed = b.sign_transaction(tx_valid, user_sk)
+        fulfillment = tx_signed['transaction']['fulfillments'][0]['fulfillment']
+        changed_fulfillment = Ed25519Fulfillment().from_uri(fulfillment)
+        changed_fulfillment.signature = b'0' * 64
+        tx_signed['transaction']['fulfillments'][0]['fulfillment'] = changed_fulfillment.serialize_uri()
+
         with pytest.raises(exceptions.InvalidSignature):
-            b.validate_transaction(tx_invalid_signed)
-        assert b.is_valid_transaction(tx_invalid_signed) is False
+            b.validate_transaction(tx_signed)
+        assert b.is_valid_transaction(tx_signed) is False
 
     def test_valid_create_transaction(self, b, user_vk):
         tx = b.create_transaction(b.me, user_vk, None, 'CREATE')

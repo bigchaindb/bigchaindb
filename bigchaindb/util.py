@@ -248,36 +248,38 @@ def sign_tx(transaction, sks):
     if not isinstance(sks, list):
         sks = [sks]
 
-    if len(sks) == 1:
-        sk = crypto.SigningKey(sks[0])
-    else:
-        # create a mapping between sk and vk so that we can match the private key to the current_owners
-        key_pairs = {}
-        for sk in sks:
-            signing_key = crypto.SigningKey(sk)
-            vk = signing_key.get_verifying_key().to_ascii().decode()
-            key_pairs[vk] = signing_key
+    # create a mapping between sk and vk so that we can match the private key to the current_owners
+    key_pairs = {}
+    for sk in sks:
+        signing_key = crypto.SigningKey(sk)
+        vk = signing_key.get_verifying_key().to_ascii().decode()
+        key_pairs[vk] = signing_key
 
     tx = copy.deepcopy(transaction)
 
     for fulfillment in tx['transaction']['fulfillments']:
         fulfillment_message = get_fulfillment_message(transaction, fulfillment)
-        if tx['transaction']['operation'] in ['CREATE', 'GENESIS']:
-            # sign the fulfillment message
-            parsed_fulfillment = Ed25519Fulfillment(public_key=sk.get_verifying_key())
-        else:
-            parsed_fulfillment = Fulfillment.from_json(fulfillment_message['condition']['condition']['details'])
+        parsed_fulfillment = Fulfillment.from_json(fulfillment_message['condition']['condition']['details'])
 
         # single current owner
         if isinstance(parsed_fulfillment, Ed25519Fulfillment):
-            parsed_fulfillment.sign(serialize(fulfillment_message), sk)
+            current_owner = fulfillment['current_owners'][0]
+            try:
+                parsed_fulfillment.sign(serialize(fulfillment_message), key_pairs[current_owner])
+            except KeyError:
+                raise exceptions.KeypairMismatchException('Public key {} is not a pair to any of the private keys'
+                                                          .format(current_owner))
         # multiple current owners
         elif isinstance(parsed_fulfillment, ThresholdSha256Fulfillment):
             # replace the fulfillments with the signed fulfillments
             parsed_fulfillment.subconditions = []
             for current_owner in fulfillment['current_owners']:
                 subfulfillment = get_subcondition_from_vk(fulfillment_message['condition'], current_owner)
-                subfulfillment.sign(serialize(fulfillment_message), key_pairs[current_owner])
+                try:
+                    subfulfillment.sign(serialize(fulfillment_message), key_pairs[current_owner])
+                except KeyError:
+                    raise exceptions.KeypairMismatchException('Public key {} is not a pair to any of the private keys'
+                                                              .format(current_owner))
                 parsed_fulfillment.add_subfulfillment(subfulfillment)
 
         signed_fulfillment = parsed_fulfillment.serialize_uri()
@@ -351,12 +353,18 @@ def get_fulfillment_message(transaction, fulfillment):
         'condition': None,
     })
 
-    # if not a `CREATE` transaction
+    # if `TRANSFER` transaction
     if fulfillment['input']:
         # get previous condition
         previous_tx = b.get_transaction(fulfillment['input']['txid'])
         conditions = sorted(previous_tx['transaction']['conditions'], key=lambda d: d['cid'])
         fulfillment_message['condition'] = conditions[fulfillment['input']['cid']]
+    # if `CREATE` transaction
+    # there is no previous transaction so we need to create one on the fly
+    else:
+        current_owner = transaction['transaction']['fulfillments'][0]['current_owners'][0]
+        condition = json.loads(Ed25519Fulfillment(public_key=current_owner).serialize_json())
+        fulfillment_message['condition'] = {'condition': {'details': condition}}
     return fulfillment_message
 
 
