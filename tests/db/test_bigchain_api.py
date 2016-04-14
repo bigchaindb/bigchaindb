@@ -1445,8 +1445,56 @@ class TestCryptoconditions(object):
             b.validate_transaction(next_tx)
         assert b.is_valid_transaction(next_tx) == False
 
-    def test_default_threshold_signatures_for_multiple_owners(self, b):
-        pass
+    def test_default_threshold_conditions_for_multiple_owners(self, b, user_sk, user_vk):
+        user2_sk, user2_vk = crypto.generate_key_pair()
+
+        # create transaction with multiple new_owners
+        tx = b.create_transaction(b.me, [user_vk, user2_vk], None, 'CREATE')
+
+        assert len(tx['transaction']['conditions']) == 1
+        assert len(tx['transaction']['conditions'][0]['condition']['details']['subfulfillments']) == 2
+
+        # expected condition subfulfillments
+        expected_condition = ThresholdSha256Fulfillment(threshold=2)
+        expected_condition.add_subfulfillment(Ed25519Fulfillment(public_key=user_vk))
+        expected_condition.add_subfulfillment(Ed25519Fulfillment(public_key=user2_vk))
+        tx_expected_condition = {
+            'details': json.loads(expected_condition.serialize_json()),
+            'uri': expected_condition.condition.serialize_uri()
+        }
+
+        assert tx['transaction']['conditions'][0]['condition'] == tx_expected_condition
+
+    def test_default_threshold_fulfillments_for_multiple_owners(self, b, user_sk, user_vk):
+        user2_sk, user2_vk = crypto.generate_key_pair()
+
+        # create transaction with multiple new_owners
+        tx_create = b.create_transaction(b.me, [user_vk, user2_vk], None, 'CREATE')
+        tx_create_signed = b.sign_transaction(tx_create, b.me_private)
+        block = b.create_block([tx_create_signed])
+        b.write_block(block, durability='hard')
+
+        inputs = b.get_owned_ids(user_vk)
+
+        # create a transaction with multiple current owners
+        tx_transfer = b.create_transaction([user_vk, user2_vk], b.me, inputs, 'TRANSFER')
+        tx_transfer_signed = b.sign_transaction(tx_transfer, [user_sk, user2_sk])
+
+        # expected fulfillment
+        expected_fulfillment = Fulfillment.from_json(tx_create['transaction']['conditions'][0]['condition']['details'])
+        subfulfillment1 = expected_fulfillment.subconditions[0]['body']
+        subfulfillment2 = expected_fulfillment.subconditions[1]['body']
+
+        expected_fulfillment_message = util.get_fulfillment_message(tx_transfer,
+                                                                    tx_transfer['transaction']['fulfillments'][0])
+
+        subfulfillment1.sign(util.serialize(expected_fulfillment_message), crypto.SigningKey(user_sk))
+        subfulfillment2.sign(util.serialize(expected_fulfillment_message), crypto.SigningKey(user2_sk))
+
+        assert tx_transfer_signed['transaction']['fulfillments'][0]['fulfillment'] \
+            == expected_fulfillment.serialize_uri()
+
+        assert b.verify_signature(tx_transfer_signed) is True
 
     def test_get_subcondition_from_vk(self):
         pass
