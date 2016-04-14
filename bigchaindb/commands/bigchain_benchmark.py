@@ -7,23 +7,21 @@ import logstats
 import bigchaindb
 import bigchaindb.config_utils
 from bigchaindb.util import ProcessGroup
+from bigchaindb.client import temp_client
 from bigchaindb.commands.utils import base_parser, start
 
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-USER_PUBLIC_KEY = 'qZAN9Ngs1v4qP1T5UBYw75M5f2ej7mAJx8gBMF4BBWtZ'
-
 
 def _run_load(tx_left, stats):
     logstats.thread.start(stats)
-    b = bigchaindb.Bigchain()
+    client = temp_client()
+    # b = bigchaindb.Bigchain()
 
     while True:
-        tx = b.create_transaction(b.me, USER_PUBLIC_KEY, None, 'CREATE')
-        tx_signed = b.sign_transaction(tx, b.me_private)
-        b.write_transaction(tx_signed)
+        tx = client.create()
 
         stats['transactions'] += 1
 
