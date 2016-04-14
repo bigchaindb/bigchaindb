@@ -1072,13 +1072,105 @@ class TestMultipleInputs(object):
         assert owned_inputs_user1 == expected_owned_inputs_user1
 
     def test_get_spent_single_tx_single_output(self, b, user_sk, user_vk):
-        pass
+        # create a new users
+        user2_sk, user2_vk = crypto.generate_key_pair()
+
+        # create input to spend
+        tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
+        tx_signed = b.sign_transaction(tx, b.me_private)
+        block = b.create_block([tx_signed])
+        b.write_block(block, durability='hard')
+
+        # get input
+        owned_inputs_user1 = b.get_owned_ids(user_vk)
+
+        # check spents
+        spent_inputs_user1 = b.get_spent(owned_inputs_user1[0])
+        assert spent_inputs_user1 is None
+
+        # create a transaction and block
+        tx = b.create_transaction(user_vk, user2_vk, owned_inputs_user1, 'TRANSFER')
+        tx_signed = b.sign_transaction(tx, user_sk)
+        block = b.create_block([tx_signed])
+        b.write_block(block, durability='hard')
+
+        spent_inputs_user1 = b.get_spent(owned_inputs_user1[0])
+        assert spent_inputs_user1 == tx_signed
 
     def test_get_spent_single_tx_multiple_outputs(self, b, user_sk, user_vk):
-        pass
+        # create a new users
+        user2_sk, user2_vk = crypto.generate_key_pair()
+
+        # create inputs to spend
+        transactions = []
+        for i in range(5):
+            tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
+            tx_signed = b.sign_transaction(tx, b.me_private)
+            transactions.append(tx_signed)
+        block = b.create_block(transactions)
+        b.write_block(block, durability='hard')
+
+        # get input
+        owned_inputs_user1 = b.get_owned_ids(user_vk)
+
+        # check spents
+        for inp in owned_inputs_user1:
+            assert b.get_spent(inp) is None
+
+        # select inputs to use
+        inputs = [owned_inputs_user1.pop(), owned_inputs_user1.pop()]
+
+        # create a transaction and block
+        tx = b.create_transaction(user_vk, user2_vk, inputs, 'TRANSFER')
+        tx_signed = b.sign_transaction(tx, user_sk)
+        block = b.create_block([tx_signed])
+        b.write_block(block, durability='hard')
+
+        # check that used inputs are marked as spent
+        for inp in inputs:
+            assert b.get_spent(inp) == tx_signed
+
+        # check that the other remain marked as unspent
+        for inp in owned_inputs_user1:
+            assert b.get_spent(inp) is None
 
     def test_get_spent_multiple_owners(self, b, user_sk, user_vk):
-        pass
+        # create a new users
+        user2_sk, user2_vk = crypto.generate_key_pair()
+        user3_sk, user3_vk = crypto.generate_key_pair()
+
+        # create inputs to spend
+        transactions = []
+        for i in range(5):
+            tx = b.create_transaction(b.me, [user_vk, user2_vk], None, 'CREATE')
+            tx_signed = b.sign_transaction(tx, b.me_private)
+            transactions.append(tx_signed)
+        block = b.create_block(transactions)
+        b.write_block(block, durability='hard')
+
+        # get input
+        owned_inputs_user1 = b.get_owned_ids(user_vk)
+
+        # check spents
+        for inp in owned_inputs_user1:
+            assert b.get_spent(inp) is None
+
+        # select inputs to use
+        inputs = [owned_inputs_user1.pop()]
+
+        # create a transaction
+        tx = b.create_transaction([user_vk, user2_vk], user3_vk, inputs, 'TRANSFER')
+        tx_signed = b.sign_transaction(tx, [user_sk, user2_sk])
+        block = b.create_block([tx_signed])
+        b.write_block(block, durability='hard')
+
+        # check that used inputs are marked as spent
+        for inp in inputs:
+            assert b.get_spent(inp) == tx_signed
+
+        # check that the other remain marked as unspent
+        for inp in owned_inputs_user1:
+            assert b.get_spent(inp) is None
 
 
 class TestCryptoconditions(object):
