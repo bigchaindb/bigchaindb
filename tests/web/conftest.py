@@ -5,7 +5,7 @@ from ..db import conftest
 @pytest.fixture(autouse=True)
 def restore_config(request, node_config):
     from bigchaindb import config_utils
-    config_utils.dict_config(node_config)
+    config_utils.set_config(node_config)
 
 
 @pytest.fixture(scope='module', autouse=True)

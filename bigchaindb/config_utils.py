@@ -158,7 +158,7 @@ def update_types(config, reference, list_sep=':'):
     return map_leafs(_update_type, config)
 
 
-def dict_config(config):
+def set_config(config):
     """Set bigchaindb.config equal to the default config dict,
     then update that with whatever is in the provided config dict,
     and then set bigchaindb.config['CONFIGURED'] = True
@@ -210,8 +210,7 @@ def autoconfigure(filename=None, config=None, force=False):
     if config:
         newconfig = update(newconfig, config)
 
-    dict_config(newconfig)
-    return newconfig
+    return set_config(newconfig)
 
 
 def load_consensus_plugin(name=None):

@@ -82,7 +82,7 @@ def test_bigchain_run_start_assume_yes_create_default_config(monkeypatch, mock_p
         value['return'] = newconfig
 
     monkeypatch.setattr(config_utils, 'write_config', mock_write_config)
-    monkeypatch.setattr(config_utils, 'file_config', lambda x: config_utils.dict_config(expected_config))
+    monkeypatch.setattr(config_utils, 'file_config', lambda x: config_utils.set_config(expected_config))
     monkeypatch.setattr('os.path.exists', lambda path: False)
 
     args = Namespace(config=None, yes=True)
