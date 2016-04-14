@@ -234,13 +234,17 @@ class Bigchain(object):
         owned = []
 
         for tx in response:
-            tx_input = {'txid': tx['id']}
             for condition in tx['transaction']['conditions']:
-                if owner in condition['new_owners']:
-                    tx_input.update({'cid': condition['cid']})
-                    # check if input was already spent
-                    if not self.get_spent(tx_input):
-                        owned.append(tx_input)
+                if len(condition['new_owners']) == 1:
+                    if condition['condition']['details']['public_key'] == owner:
+                        tx_input = {'txid': tx['id'], 'cid': condition['cid']}
+                else:
+                    for subfulfillment in condition['condition']['details']['subfulfillments']:
+                        if subfulfillment['public_key'] == owner:
+                            tx_input = {'txid': tx['id'], 'cid': condition['cid']}
+                # check if input was already spent
+                if not self.get_spent(tx_input):
+                    owned.append(tx_input)
 
         return owned
 
