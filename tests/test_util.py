@@ -54,6 +54,10 @@ def test_empty_pool_is_populated_with_instances(mock_queue):
         assert instance == 'hello'
     assert len(mock_queue.items) == 4
 
+    with pool() as instance:
+        assert instance == 'hello'
+    assert len(mock_queue.items) == 4
+
 
 
 def test_pool_blocks_if_no_instances_available(mock_queue):
