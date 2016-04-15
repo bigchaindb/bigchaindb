@@ -1496,5 +1496,16 @@ class TestCryptoconditions(object):
 
         assert b.verify_signature(tx_transfer_signed) is True
 
-    def test_get_subcondition_from_vk(self):
-        pass
+    def test_get_subcondition_from_vk(self, b, user_sk, user_vk):
+        user2_sk, user2_vk = crypto.generate_key_pair()
+        user3_sk, user3_vk = crypto.generate_key_pair()
+        user4_sk, user4_vk = crypto.generate_key_pair()
+        user5_sk, user5_vk = crypto.generate_key_pair()
+        new_owners = [user_vk, user2_vk, user3_vk, user4_vk, user5_vk]
+
+        # create a transaction with multiple new_owners
+        tx = b.create_transaction(b.me, new_owners, None, 'CREATE')
+
+        for new_owner in new_owners:
+            subcondition = util.get_subcondition_from_vk(tx['transaction']['conditions'][0], new_owner)
+            assert subcondition.public_key.to_ascii().decode() == new_owner
