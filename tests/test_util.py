@@ -1,4 +1,5 @@
 import pytest
+import queue
 
 
 @pytest.fixture
@@ -7,8 +8,13 @@ def mock_queue(monkeypatch):
     class MockQueue:
         items = []
 
-        def get(self):
-            return self.items.pop()
+        def get(self, timeout=None):
+            try:
+                return self.items.pop()
+            except IndexError:
+                if timeout:
+                    raise queue.Empty()
+                raise
 
         def put(self, item):
             self.items.append(item)
@@ -34,7 +40,7 @@ def test_transform_create(b, user_private_key, user_public_key):
 def test_empty_pool_is_populated_with_instances(mock_queue):
     from bigchaindb import util
 
-    pool = util.pool(lambda: 'hello', limit=4)
+    pool = util.pool(lambda: 'hello', 4)
 
     assert len(mock_queue.items) == 0
 
@@ -59,11 +65,10 @@ def test_empty_pool_is_populated_with_instances(mock_queue):
     assert len(mock_queue.items) == 4
 
 
-
 def test_pool_blocks_if_no_instances_available(mock_queue):
     from bigchaindb import util
 
-    pool = util.pool(lambda: 'hello', limit=4)
+    pool = util.pool(lambda: 'hello', 4)
 
     assert len(mock_queue.items) == 0
 
@@ -96,4 +101,23 @@ def test_pool_blocks_if_no_instances_available(mock_queue):
 
     assert pool().__enter__() == 'hello'
     assert len(mock_queue.items) == 0
+
+
+def test_pool_raises_empty_exception_when_timeout(mock_queue):
+    from bigchaindb import util
+
+    pool = util.pool(lambda: 'hello', 1, timeout=1)
+
+    assert len(mock_queue.items) == 0
+
+    with pool() as instance:
+        assert instance == 'hello'
+    assert len(mock_queue.items) == 1
+
+    # take the only resource available
+    assert pool().__enter__() == 'hello'
+
+    with pytest.raises(queue.Empty):
+        with pool() as instance:
+            assert instance == 'hello'
 

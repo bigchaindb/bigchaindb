@@ -36,22 +36,32 @@ class ProcessGroup(object):
 
 # Inspired by:
 # - http://stackoverflow.com/a/24741694/597097
-def pool(builder, limit=None):
+def pool(builder, size, timeout=None):
+    """Create a pool that imposes a limit on the number of stored
+    instances.
+
+    Args:
+        builder: a function to build an instance.
+        size: the size of the pool.
+
+    Returns:
+        A context manager that can be used with ``with``.
+    """
     lock = threading.Lock()
     local_pool = queue.Queue()
-    size = 0
+    current_size = 0
 
     @contextlib.contextmanager
     def pooled():
-        nonlocal size
-        if size == limit:
-            instance = local_pool.get()
+        nonlocal current_size
+        if current_size == size:
+            instance = local_pool.get(timeout=timeout)
         else:
             with lock:
-                if size == limit:
-                    instance = local_pool.get()
+                if current_size == size:
+                    instance = local_pool.get(timeout=timeout)
                 else:
-                    size += 1
+                    current_size += 1
                     instance = builder()
         yield instance
         local_pool.put(instance)
