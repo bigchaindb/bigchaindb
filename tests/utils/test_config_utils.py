@@ -142,7 +142,7 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch):
     assert bigchaindb.config == {
         'CONFIGURED': True,
         'server': {
-            'bind': '0.0.0.0:9984',
+            'bind': 'localhost:9984',
             'workers': None,
             'threads': None,
         },
