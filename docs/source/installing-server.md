@@ -68,21 +68,16 @@ Note: You can use `pip` to upgrade the `bigchaindb` package to the latest versio
 
 ### How to Install BigchainDB from Source
 
-BigchainDB (i.e. both the Server and the officially-supported drivers) is in its early stages and being actively developed on its [GitHub repository](https://github.com/bigchaindb/bigchaindb). Contributions are highly appreciated. If you want to help with development, then you'll want to install BigchainDB from source. Here's how.
+If you want to install BitchainDB from source because you want to contribute code (i.e. as a BigchainDB developer), then please see the instructions in [the `CONTRIBUTING.md` file](https://github.com/bigchaindb/bigchaindb/blob/master/CONTRIBUTING.md).
 
-First, clone the public repository:
+Otherwise, clone the public repository:
 ```text
 $ git clone git@github.com:bigchaindb/bigchaindb.git
 ```
 
-Install from the source:
+and then install from source:
 ```text
 $ python setup.py install
-```
-
-If you want to update BigchainDB to reflect the latest local source code changes, you can use:
-```text
-$ pip install -e .
 ```
 
 ### How to Install BigchainDB on a VM with Vagrant
