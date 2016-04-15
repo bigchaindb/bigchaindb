@@ -25,7 +25,7 @@ def app(request, node_config):
     restore_config(request, node_config)
 
     from bigchaindb.web import server
-    app = server.create_app(debug=True)
+    app = server.create_app({'debug': True})
     return app
 
 

@@ -22,12 +22,12 @@ def record(state):
     """This function checks if the blueprint can be initialized
     with the provided state."""
 
-    bigchain = state.app.config.get('bigchain')
+    bigchain_pool = state.app.config.get('bigchain_pool')
     monitor = state.app.config.get('monitor')
 
-    if bigchain is None:
-        raise ValueError('This blueprint expects you to provide '
-                         'database access through `bigchain`.')
+    if bigchain_pool is None:
+        raise Exception('This blueprint expects you to provide '
+                        'a pool of Bigchain instances called `bigchain_pool`')
 
     if monitor is None:
         raise ValueError('This blueprint expects you to provide '
@@ -46,9 +46,11 @@ def get_transaction(tx_id):
         A JSON string containing the data about the transaction.
     """
 
-    bigchain = current_app.config['bigchain']
+    pool = current_app.config['bigchain_pool']
 
-    tx = bigchain.get_transaction(tx_id)
+    with pool() as bigchain:
+        tx = bigchain.get_transaction(tx_id)
+
     return flask.jsonify(**tx)
 
 
@@ -59,7 +61,7 @@ def create_transaction():
     Return:
         A JSON string containing the data about the transaction.
     """
-    bigchain = current_app.config['bigchain']
+    pool = current_app.config['bigchain_pool']
     monitor = current_app.config['monitor']
 
     val = {}
@@ -68,17 +70,16 @@ def create_transaction():
     # set to `application/json`
     tx = request.get_json(force=True)
 
-    if tx['transaction']['operation'] == 'CREATE':
-        tx = util.transform_create(tx)
-        tx = bigchain.consensus.sign_transaction(
-            tx, private_key=bigchain.me_private)
+    with pool() as bigchain:
+        if tx['transaction']['operation'] == 'CREATE':
+            tx = util.transform_create(tx)
+            tx = bigchain.consensus.sign_transaction(tx, private_key=bigchain.me_private)
 
-    if not bigchain.consensus.verify_signature(tx):
-        val['error'] = 'Invalid transaction signature'
+        if not bigchain.consensus.verify_signature(tx):
+            val['error'] = 'Invalid transaction signature'
 
-    with monitor.timer('write_transaction',
-                       rate=bigchaindb.config['statsd']['rate']):
-        val = bigchain.write_transaction(tx)
+        with monitor.timer('write_transaction', rate=bigchaindb.config['statsd']['rate']):
+            val = bigchain.write_transaction(tx)
 
     return flask.jsonify(**tx)
 

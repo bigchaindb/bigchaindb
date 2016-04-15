@@ -9,6 +9,7 @@ import multiprocessing
 from flask import Flask
 import gunicorn.app.base
 
+from bigchaindb import util
 from bigchaindb import Bigchain
 from bigchaindb.web import views
 from bigchaindb.monitor import Monitor
@@ -46,7 +47,7 @@ class StandaloneApplication(gunicorn.app.base.BaseApplication):
         return self.application
 
 
-def create_app(debug=False):
+def create_app(settings):
     """Return an instance of the Flask application.
 
     Args:
@@ -55,9 +56,12 @@ def create_app(debug=False):
     """
 
     app = Flask(__name__)
-    app.debug = debug
-    app.config['bigchain'] = Bigchain()
+
+    app.debug = settings.get('debug', False)
+
+    app.config['bigchain_pool'] = util.pool(Bigchain, size=settings.get('threads', 4))
     app.config['monitor'] = Monitor()
+
     app.register_blueprint(views.basic_views, url_prefix='/api/v1')
     return app
 
@@ -81,8 +85,8 @@ def create_server(settings):
     if not settings.get('threads'):
         settings['threads'] = (multiprocessing.cpu_count() * 2) + 1
 
-    debug = settings.pop('debug', False)
-    app = create_app(debug)
+    app = create_app(settings)
+    settings.pop('debug', False)
     standalone = StandaloneApplication(app, settings)
     return standalone
 
