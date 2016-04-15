@@ -217,8 +217,7 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
     }
 
     # serialize and convert to bytes
-    tx_serialized = serialize(tx)
-    tx_hash = crypto.hash_data(tx_serialized)
+    tx_hash = get_hash_data(tx)
 
     # create the transaction
     transaction = {
@@ -295,7 +294,7 @@ def create_and_sign_tx(private_key, current_owner, new_owner, tx_input, operatio
 
 def check_hash_and_signature(transaction):
     # Check hash of the transaction
-    calculated_hash = crypto.hash_data(serialize(transaction['transaction']))
+    calculated_hash = get_hash_data(transaction)
     if calculated_hash != transaction['id']:
         raise exceptions.InvalidHash()
 
@@ -336,7 +335,17 @@ def verify_signature(signed_transaction):
     return True
 
 
-def get_fulfillment_message(transaction, fulfillment):
+def get_fulfillment_message(transaction, fulfillment, serialized=False):
+    """Get the fulfillment message for signing a specific fulfillment in a transaction
+
+    Args:
+        transaction (dict): a transaction
+        fulfillment (dict): a specific fulfillment (for a condition index) within the transaction
+        serialized (bool): False returns a dict, True returns a serialized string
+
+    Returns:
+        str|dict: fulfillment message
+    """
     b = bigchaindb.Bigchain()
 
     common_data = {
@@ -365,7 +374,29 @@ def get_fulfillment_message(transaction, fulfillment):
         current_owner = transaction['transaction']['fulfillments'][0]['current_owners'][0]
         condition = json.loads(Ed25519Fulfillment(public_key=current_owner).serialize_json())
         fulfillment_message['condition'] = {'condition': {'details': condition}}
+    if serialized:
+        return serialize(fulfillment_message)
     return fulfillment_message
+
+
+def get_hash_data(transaction):
+    """ Get the hashed data that (should) correspond to the `transaction['id']`
+
+    Args:
+        transaction (dict): the transaction to be hashed
+
+    Returns:
+        str: the hash of the transaction
+    """
+    tx = copy.deepcopy(transaction)
+    if 'transaction' in tx:
+        tx = tx['transaction']
+
+    # remove the fulfillment messages (signatures)
+    for fulfillment in tx['fulfillments']:
+        fulfillment['fulfillment'] = None
+
+    return crypto.hash_data(serialize(tx))
 
 
 def get_subcondition_from_vk(condition, vk):

@@ -1268,9 +1268,9 @@ class TestCryptoconditions(object):
     def test_override_fulfillment_create(self, b, user_vk):
         tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
         original_fulfillment = tx['transaction']['fulfillments'][0]
-        fulfillment_message = util.get_fulfillment_message(tx, original_fulfillment)
+        fulfillment_message = util.get_fulfillment_message(tx, original_fulfillment, serialized=True)
         fulfillment = Ed25519Fulfillment(public_key=b.me)
-        fulfillment.sign(util.serialize(fulfillment_message), crypto.SigningKey(b.me_private))
+        fulfillment.sign(fulfillment_message, crypto.SigningKey(b.me_private))
 
         tx['transaction']['fulfillments'][0]['fulfillment'] = fulfillment.serialize_uri()
 
@@ -1285,9 +1285,9 @@ class TestCryptoconditions(object):
         tx = b.create_transaction(user_vk, other_vk, prev_tx_id, 'TRANSFER')
 
         original_fulfillment = tx['transaction']['fulfillments'][0]
-        fulfillment_message = util.get_fulfillment_message(tx, original_fulfillment)
+        fulfillment_message = util.get_fulfillment_message(tx, original_fulfillment, serialized=True)
         fulfillment = Ed25519Fulfillment(public_key=user_vk)
-        fulfillment.sign(util.serialize(fulfillment_message), crypto.SigningKey(user_sk))
+        fulfillment.sign(fulfillment_message, crypto.SigningKey(user_sk))
 
         tx['transaction']['fulfillments'][0]['fulfillment'] = fulfillment.serialize_uri()
 
@@ -1307,9 +1307,9 @@ class TestCryptoconditions(object):
         }
 
         first_tx_fulfillment = first_tx['transaction']['fulfillments'][0]
-        first_tx_fulfillment_message = util.get_fulfillment_message(first_tx, first_tx_fulfillment)
+        first_tx_fulfillment_message = util.get_fulfillment_message(first_tx, first_tx_fulfillment, serialized=True)
         first_tx_fulfillment = Ed25519Fulfillment(public_key=user_vk)
-        first_tx_fulfillment.sign(util.serialize(first_tx_fulfillment_message), crypto.SigningKey(user_sk))
+        first_tx_fulfillment.sign(first_tx_fulfillment_message, crypto.SigningKey(user_sk))
         first_tx['transaction']['fulfillments'][0]['fulfillment'] = first_tx_fulfillment.serialize_uri()
 
         assert b.validate_transaction(first_tx)
@@ -1326,9 +1326,9 @@ class TestCryptoconditions(object):
         next_tx = b.create_transaction(other_vk, user_vk, next_input_tx, 'TRANSFER')
 
         next_tx_fulfillment = next_tx['transaction']['fulfillments'][0]
-        next_tx_fulfillment_message = util.get_fulfillment_message(next_tx, next_tx_fulfillment)
+        next_tx_fulfillment_message = util.get_fulfillment_message(next_tx, next_tx_fulfillment, serialized=True)
         next_tx_fulfillment = Ed25519Fulfillment(public_key=other_vk)
-        next_tx_fulfillment.sign(util.serialize(next_tx_fulfillment_message), crypto.SigningKey(other_sk))
+        next_tx_fulfillment.sign(next_tx_fulfillment_message, crypto.SigningKey(other_sk))
         next_tx['transaction']['fulfillments'][0]['fulfillment'] = next_tx_fulfillment.serialize_uri()
 
         assert b.validate_transaction(next_tx)
@@ -1350,14 +1350,8 @@ class TestCryptoconditions(object):
             'details': json.loads(first_tx_condition.serialize_json()),
             'uri': first_tx_condition.condition.serialize_uri()
         }
-
         # conditions have been updated, so hash needs updating
-        transaction_data = copy.deepcopy(first_tx)
-        for fulfillment in transaction_data['transaction']['fulfillments']:
-            fulfillment['fulfillment'] = None
-
-        calculated_hash = crypto.hash_data(util.serialize(transaction_data['transaction']))
-        first_tx['id'] = calculated_hash
+        first_tx['id'] = util.get_hash_data(first_tx)
 
         first_tx_signed = b.sign_transaction(first_tx, user_sk)
 
@@ -1375,13 +1369,13 @@ class TestCryptoconditions(object):
         next_tx = b.create_transaction([other1_vk, other2_vk], user_vk, next_input_tx, 'TRANSFER')
 
         next_tx_fulfillment = next_tx['transaction']['fulfillments'][0]
-        next_tx_fulfillment_message = util.get_fulfillment_message(next_tx, next_tx_fulfillment)
+        next_tx_fulfillment_message = util.get_fulfillment_message(next_tx, next_tx_fulfillment, serialized=True)
         next_tx_fulfillment = ThresholdSha256Fulfillment(threshold=2)
         next_tx_subfulfillment1 = Ed25519Fulfillment(public_key=other1_vk)
-        next_tx_subfulfillment1.sign(util.serialize(next_tx_fulfillment_message), crypto.SigningKey(other1_sk))
+        next_tx_subfulfillment1.sign(next_tx_fulfillment_message, crypto.SigningKey(other1_sk))
         next_tx_fulfillment.add_subfulfillment(next_tx_subfulfillment1)
         next_tx_subfulfillment2 = Ed25519Fulfillment(public_key=other2_vk)
-        next_tx_subfulfillment2.sign(util.serialize(next_tx_fulfillment_message), crypto.SigningKey(other2_sk))
+        next_tx_subfulfillment2.sign(next_tx_fulfillment_message, crypto.SigningKey(other2_sk))
         next_tx_fulfillment.add_subfulfillment(next_tx_subfulfillment2)
         next_tx['transaction']['fulfillments'][0]['fulfillment'] = next_tx_fulfillment.serialize_uri()
 
@@ -1404,14 +1398,8 @@ class TestCryptoconditions(object):
             'details': json.loads(first_tx_condition.serialize_json()),
             'uri': first_tx_condition.condition.serialize_uri()
         }
-
         # conditions have been updated, so hash needs updating
-        transaction_data = copy.deepcopy(first_tx)
-        for fulfillment in transaction_data['transaction']['fulfillments']:
-            fulfillment['fulfillment'] = None
-
-        calculated_hash = crypto.hash_data(util.serialize(transaction_data['transaction']))
-        first_tx['id'] = calculated_hash
+        first_tx['id'] = util.get_hash_data(first_tx)
 
         first_tx_signed = b.sign_transaction(first_tx, user_sk)
 
@@ -1429,15 +1417,15 @@ class TestCryptoconditions(object):
         next_tx = b.create_transaction([other1_vk, other2_vk], user_vk, next_input_tx, 'TRANSFER')
 
         next_tx_fulfillment = next_tx['transaction']['fulfillments'][0]
-        next_tx_fulfillment_message = util.get_fulfillment_message(next_tx, next_tx_fulfillment)
+        next_tx_fulfillment_message = util.get_fulfillment_message(next_tx, next_tx_fulfillment, serialized=True)
         next_tx_fulfillment = ThresholdSha256Fulfillment(threshold=2)
         next_tx_subfulfillment1 = Ed25519Fulfillment(public_key=other1_vk)
-        next_tx_subfulfillment1.sign(util.serialize(next_tx_fulfillment_message), crypto.SigningKey(other1_sk))
+        next_tx_subfulfillment1.sign(next_tx_fulfillment_message, crypto.SigningKey(other1_sk))
         next_tx_fulfillment.add_subfulfillment(next_tx_subfulfillment1)
 
         # Wrong signing happens here
         next_tx_subfulfillment2 = Ed25519Fulfillment(public_key=other1_vk)
-        next_tx_subfulfillment2.sign(util.serialize(next_tx_fulfillment_message), crypto.SigningKey(other1_sk))
+        next_tx_subfulfillment2.sign(next_tx_fulfillment_message, crypto.SigningKey(other1_sk))
         next_tx_fulfillment.add_subfulfillment(next_tx_subfulfillment2)
         next_tx['transaction']['fulfillments'][0]['fulfillment'] = next_tx_fulfillment.serialize_uri()
 
