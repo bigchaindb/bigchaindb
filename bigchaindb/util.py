@@ -45,8 +45,10 @@ def pool(builder, size, timeout=None):
         size: the size of the pool.
 
     Returns:
-        A context manager that can be used with ``with``.
+        A context manager that can be used with the ``with``
+        statement.
     """
+
     lock = threading.Lock()
     local_pool = queue.Queue()
     current_size = 0
@@ -54,16 +56,26 @@ def pool(builder, size, timeout=None):
     @contextlib.contextmanager
     def pooled():
         nonlocal current_size
-        if current_size == size:
-            instance = local_pool.get(timeout=timeout)
-        else:
+        instance = None
+
+        # If we still have free slots, then we have room to create new
+        # instances.
+        if current_size < size:
             with lock:
-                if current_size == size:
-                    instance = local_pool.get(timeout=timeout)
-                else:
+                # We need to check again if we have slots available, since
+                # the situation might be different after acquiring the lock
+                if current_size < size:
                     current_size += 1
                     instance = builder()
+
+        # Watchout: current_size can be equal to size if the previous part of
+        # the function has been executed, that's why we need to check if the
+        # instance is None.
+        if instance is None and current_size == size:
+            instance = local_pool.get(timeout=timeout)
+
         yield instance
+
         local_pool.put(instance)
 
     return pooled
