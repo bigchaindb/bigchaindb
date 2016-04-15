@@ -8,7 +8,7 @@ import rethinkdb as r
 import bigchaindb
 from bigchaindb import util
 from bigchaindb import exceptions
-from bigchaindb.crypto import PrivateKey, PublicKey, generate_key_pair, hash_data
+from bigchaindb import crypto
 from bigchaindb.voter import Voter
 from bigchaindb.block import Block
 
@@ -44,7 +44,7 @@ class TestBigchainApi(object):
             'operation': 'd',
             'timestamp': tx['transaction']['timestamp'],
             'data': {
-                'hash': hash_data(util.serialize(payload)),
+                'hash': crypto.hash_data(util.serialize(payload)),
                 'payload': payload
             }
         }
@@ -52,7 +52,7 @@ class TestBigchainApi(object):
         # assert tx_hash == tx_calculated_hash
 
     def test_transaction_signature(self, b):
-        sk, vk = generate_key_pair()
+        sk, vk = crypto.generate_key_pair()
         tx = b.create_transaction(vk, 'b', 'c', 'd')
         tx_signed = b.sign_transaction(tx, sk)
 
@@ -108,7 +108,7 @@ class TestBigchainApi(object):
     def test_assign_transaction_multiple_nodes(self, b, user_public_key, user_private_key):
         # create 5 federation nodes
         for _ in range(5):
-            b.federation_nodes.append(generate_key_pair()[1])
+            b.federation_nodes.append(crypto.generate_key_pair()[1])
 
         # test assignee for several transactions
         for _ in range(20):
@@ -185,11 +185,11 @@ class TestBigchainApi(object):
 
     def test_create_new_block(self, b):
         new_block = b.create_block([])
-        block_hash = hash_data(util.serialize(new_block['block']))
+        block_hash = crypto.hash_data(util.serialize(new_block['block']))
 
         assert new_block['block']['voters'] == [b.me]
         assert new_block['block']['node_pubkey'] == b.me
-        assert PublicKey(b.me).verify(util.serialize(new_block['block']), new_block['signature']) is True
+        assert crypto.VerifyingKey(b.me).verify(util.serialize(new_block['block']), new_block['signature']) is True
         assert new_block['id'] == block_hash
         assert new_block['votes'] == []
 
@@ -371,8 +371,8 @@ class TestBlockValidation(object):
         }
 
         block_data = util.serialize(block)
-        block_hash = hash_data(block_data)
-        block_signature = PrivateKey(b.me_private).sign(block_data)
+        block_hash = crypto.hash_data(block_data)
+        block_signature = crypto.SigningKey(b.me_private).sign(block_data)
 
         block = {
             'id': block_hash,
@@ -406,45 +406,6 @@ class TestBlockValidation(object):
 
         assert block == b.validate_block(block)
         assert b.is_valid_block(block)
-
-
-class TestBigchainCrypto(object):
-    PRIVATE_VALUE = 64328150571824492670917070117568709277186368319388887463636481841106388379832
-    PUBLIC_VALUE_X = 48388170575736684074633245566225141536152842355597159440179742847497614196929
-    PUBLIC_VALUE_Y = 65233479152484407841598798165960909560839872511163322973341535484598825150846
-
-    PRIVATE_VALUE_B58 = 'AaAp4xBavbe6VGeQF2mWdSKNM1r6HfR2Z1tAY6aUkwdq'
-    PUBLIC_VALUE_COMPRESSED_B58 = 'ifEi3UuTDT4CqUUKiS5omgeDodhu2aRFHVp6LoahbEVe'
-
-    def test_private_key_encode(self):
-        private_value_base58 = PrivateKey.encode(self.PRIVATE_VALUE)
-        assert private_value_base58 == self.PRIVATE_VALUE_B58
-
-    def test_private_key_decode(self):
-        private_value = PrivateKey.decode(self.PRIVATE_VALUE_B58)
-        assert private_value == self.PRIVATE_VALUE
-
-    def test_public_key_encode(self):
-        public_value_compressed_base58 = PublicKey.encode(self.PUBLIC_VALUE_X, self.PUBLIC_VALUE_Y)
-        assert public_value_compressed_base58 == self.PUBLIC_VALUE_COMPRESSED_B58
-
-    def test_public_key_decode(self):
-        public_value_x, public_value_y = PublicKey.decode(self.PUBLIC_VALUE_COMPRESSED_B58)
-        assert public_value_x == self.PUBLIC_VALUE_X
-        assert public_value_y == self.PUBLIC_VALUE_Y
-
-    def test_sign_verify(self):
-        message = 'Hello World!'
-        public_key = PublicKey(self.PUBLIC_VALUE_COMPRESSED_B58)
-        private_key = PrivateKey(self.PRIVATE_VALUE_B58)
-        assert public_key.verify(message, private_key.sign(message)) is True
-
-    def test_generate_key_pair(self):
-        private_value_base58, public_value_compressed_base58 = generate_key_pair()
-        assert PrivateKey.encode(
-            PrivateKey.decode(private_value_base58)) == private_value_base58
-        assert PublicKey.encode(
-            *PublicKey.decode(public_value_compressed_base58)) == public_value_compressed_base58
 
 
 class TestBigchainVoter(object):
@@ -483,7 +444,7 @@ class TestBigchainVoter(object):
         assert vote['vote']['is_block_valid'] is True
         assert vote['vote']['invalid_reason'] is None
         assert vote['node_pubkey'] == b.me
-        assert PublicKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
+        assert crypto.VerifyingKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
 
     def test_invalid_block_voting(self, b, user_public_key):
         # create queue and voter
@@ -524,7 +485,7 @@ class TestBigchainVoter(object):
         assert vote['vote']['is_block_valid'] is False
         assert vote['vote']['invalid_reason'] is None
         assert vote['node_pubkey'] == b.me
-        assert PublicKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
+        assert crypto.VerifyingKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
 
     def test_vote_creation_valid(self, b):
         # create valid block
@@ -538,7 +499,7 @@ class TestBigchainVoter(object):
         assert vote['vote']['is_block_valid'] is True
         assert vote['vote']['invalid_reason'] is None
         assert vote['node_pubkey'] == b.me
-        assert PublicKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
+        assert crypto.VerifyingKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
 
     def test_vote_creation_invalid(self, b):
         # create valid block
@@ -552,7 +513,7 @@ class TestBigchainVoter(object):
         assert vote['vote']['is_block_valid'] is False
         assert vote['vote']['invalid_reason'] is None
         assert vote['node_pubkey'] == b.me
-        assert PublicKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
+        assert crypto.VerifyingKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
 
 
 class TestBigchainBlock(object):

@@ -12,7 +12,17 @@ If you want to file a bug report, suggest a feature, or ask a code-related quest
 
 ## How to Contribute Code or Documentation
 
-### Step 0 - Prepare and Familiarize Yourself
+### Step 0 - Decide on an Issue to Resolve, or Create One
+
+We want you to feel like your contributions (pull requests) are welcome, but if you contribute something unnecessary, unwanted, or perplexing, then your experience may be unpleasant. Your pull request may sit gathering dust as everyone scratches their heads wondering what to do with it.
+
+To prevent that situation, we ask that all pull requests should resolve, address, or fix an existing issue. If there is no existing issue, then you should create one first. That way there can be commentary and discussion first, and you can have a better idea of what to expect when you create a corresponding pull request.
+
+When you submit a pull request, please mention the issue (or issues) that it resolves, e.g. "Resolves #123".
+
+Exception: hotfixes and minor changes don't require a pre-existing issue, but please write a thorough pull request description.
+
+### Step 1 - Prepare and Familiarize Yourself
 
 To contribute code or documentation, you need a [GitHub account](https://github.com/signup/free).
 
@@ -23,16 +33,13 @@ Familiarize yourself with how we do coding and documentation in the BigchainDB p
 * the GitHub Flow (workflow)
     * [GitHub Guide: Understanding the GitHub Flow](https://guides.github.com/introduction/flow/)
     * [Scott Chacon's blog post about GitHub Flow](http://scottchacon.com/2011/08/31/github-flow.html)
-    * Note that we call the main branch `develop` rather than `master`
 * [semantic versioning](http://semver.org/)
 
-Note: We have a slight variation on the GitHub Flow: we call the default branch `develop` rather than `master`.
-
-### Step 1 - Fork bigchaindb on GitHub
+### Step 2 - Fork bigchaindb on GitHub
 
 In your web browser, go to [the BigchainDB repository on GitHub](https://github.com/bigchaindb/bigchaindb) and click the `Fork` button in the top right corner. This creates a new Git repository named `bigchaindb` in _your_ GitHub account.
 
-### Step 2 - Clone Your Fork
+### Step 3 - Clone Your Fork
 
 (This only has to be done once.) In your local terminal, use Git to clone _your_ `bigchaindb` repository to your local computer. Also add the original GitHub bigchaindb/bigchaindb repository as a remote named `upstream` (a convention):
 ```text
@@ -41,16 +48,37 @@ cd bigchaindb
 git add upstream git@github.com:bigchaindb/bigchaindb.git
 ```
 
-### Step 3 - Fetch and Merge the Latest from `upstream/develop`
+### Step 4 - Fetch and Merge the Latest from `upstream/master`
 
-Switch to the `develop` branch locally, fetch all `upstream` branches, and merge the just-fetched `upstream/develop` branch with the local `develop` branch:
+Switch to the `master` branch locally, fetch all `upstream` branches, and merge the just-fetched `upstream/master` branch with the local `master` branch:
 ```text
-git checkout develop
+git checkout master
 git fetch upstream
-git merge upstream/develop
+git merge upstream/master
 ```
 
-### Step 4 - Create a New Branch for Each Bug/Feature
+### Step 5 - Install the Python module and the CLI
+
+In order to use and run the source you just cloned from your fork, you need to install BigchainDB on your computer.
+The core of BigchainDB is a Python module you can install using the standard [Python packaging tools](http://python-packaging-user-guide.readthedocs.org/en/latest/).
+We highly suggest you use `pip` and `virtualenv` to manage your local development.
+If you need more information on how to do that, refer to the *Python Packaging User Guide* to [install `pip`](http://python-packaging-user-guide.readthedocs.org/en/latest/installing/#requirements-for-installing-packages) and to [create your first `virtualenv`](http://python-packaging-user-guide.readthedocs.org/en/latest/installing/#creating-virtual-environments).
+
+Once you have `pip` installed and (optionally) you are in a virtualenv, go to the root of the repository (i.e. where the `setup.py` file is), and type:
+```bash
+$ pip install -e .[dev]
+```
+
+This will install the BigchainDB Python module, the CLI, and all the dependencies useful for contributing to the development of BigchainDB.
+How? Let's split the command down into its components:
+ - `pip` is the Python command to install packages
+ - `install` tells pip to use the *install* action
+ - `-e` installs a project in [editable mode](https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs)
+ - `.` installs what's in the current directory
+ - `[dev]` adds some [extra requirements](https://pythonhosted.org/setuptools/setuptools.html#declaring-extras-optional-features-with-their-own-dependencies) to the installation. (If you are curious, open `setup.py` and look for `dev` in the `extras_require` section.)
+
+
+### Step 6 - Create a New Branch for Each Bug/Feature
 
 If your new branch is to **fix a bug** identified in a specific GitHub Issue with number `ISSNO`, then name your new branch `bug/ISSNO/short-description-here`. For example, `bug/67/fix-leap-year-crash`.
 
@@ -61,7 +89,7 @@ Otherwise, please give your new branch a short, descriptive, all-lowercase name.
 git checkout -b new-branch-name
 ```
 
-### Step 5 - Make Edits, git add, git commit
+### Step 7 - Make Edits, git add, git commit
 
 With your new branch checked out locally, make changes or additions to the code or documentation. Remember to:
 
@@ -79,27 +107,27 @@ git commit -m "Short description of new or changed things"
 You will want to merge changes from upstream (i.e. the original repository) into your new branch from time to time, using something like:
 ```text
 git fetch upstream
-git merge upstream/develop
+git merge upstream/master
 ```
 
 Once you're done commiting a set of new things and you're ready to submit them for inclusion, please be sure to run all the tests (as per the instructions at the end of our [Python Style Guide](PYTHON_STYLE_GUIDE.md)).
 
-If your addition or change is substantial, then please add a line or two to the [CHANGELOG.md file](https://github.com/bigchaindb/bigchaindb/blob/develop/CHANGELOG.md), following the guidelines given at the top of that file.
+If your addition or change is substantial, then please add a line or two to the [CHANGELOG.md file](https://github.com/bigchaindb/bigchaindb/blob/master/CHANGELOG.md), following the guidelines given at the top of that file.
 
 (When you submit your pull request [following the instructions below], we run all the tests automatically, so we will see if some are failing. If you don't know why some tests are failing, you can still submit your pull request, but be sure to note the failing tests and to ask for help with resolving them.)
 
-### Step 6 - Push Your New Branch to origin
+### Step 8 - Push Your New Branch to origin
 
 Make sure you've commited all the additions or changes you want to include in your pull request. Then push your new branch to origin (i.e. _your_ remote bigchaindb repository).
 ```text
 git push origin new-branch-name
 ```
 
-### Step 7 - Create a Pull Request 
+### Step 9 - Create a Pull Request 
 
 Go to the GitHub website and to _your_ remote bigchaindb repository (i.e. something like https://github.com/your-user-name/bigchaindb). 
 
-See [GitHub's documentation on how to initiate and send a pull request](https://help.github.com/articles/using-pull-requests/). Note that the destination repository should be `bigchaindb/bigchaindb` and the destination branch will be `develop` (usually, and if it's not, then we can change that if necessary).
+See [GitHub's documentation on how to initiate and send a pull request](https://help.github.com/articles/using-pull-requests/). Note that the destination repository should be `bigchaindb/bigchaindb` and the destination branch will be `master` (usually, and if it's not, then we can change that if necessary).
 
 If this is the first time you've submitted a pull request to BigchainDB, then you must read and accept the Contributor License Agreement (CLA) before we can merge your contributions. That can be found at [https://www.bigchaindb.com/cla](https://www.bigchaindb.com/cla).
 

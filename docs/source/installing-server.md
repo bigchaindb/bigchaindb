@@ -68,14 +68,14 @@ Note: You can use `pip` to upgrade the `bigchaindb` package to the latest versio
 
 ### How to Install BigchainDB from Source
 
-BigchainDB (i.e. both the Server and the officially-supported drivers) is in its early stages and being actively developed on its [GitHub repository](https://github.com/bigchaindb/bigchaindb). Contributions are highly appreciated. If you want to help with development, then you'll want to install BigchainDB from source. Here's how.
+If you want to install BitchainDB from source because you want to contribute code (i.e. as a BigchainDB developer), then please see the instructions in [the `CONTRIBUTING.md` file](https://github.com/bigchaindb/bigchaindb/blob/master/CONTRIBUTING.md).
 
-First, clone the public repository:
+Otherwise, clone the public repository:
 ```text
 $ git clone git@github.com:bigchaindb/bigchaindb.git
 ```
 
-Install from the source:
+and then install from source:
 ```text
 $ python setup.py install
 ```
@@ -94,10 +94,16 @@ $ rethinkdb
 
 Then open a different terminal and run:
 ```text
-$ bigchaindb start
+$ bigchaindb -y configure
+$ bigchaindb init
 ```
 
-During its first run, BigchainDB Server takes care of configuring a single node environment.
+That creates a configuration file in `$HOME/.bigchaindb` (documented in [the section on configuration](configuration.html)), initializes the database, creates the tables, creates the indexes, and generates the genesis block.
+
+You can start BigchainDB Server using:
+```text
+$ bigchaindb start
+```
 
 
 ## Run BigchainDB with Docker
@@ -122,7 +128,21 @@ then do a one-time configuration step to create the config file; it will be
 stored on your host machine under ` ~/.bigchaindb_docker/config`:
 ```text
 $ docker-compose run --rm bigchaindb bigchaindb configure
+Starting bigchaindb_rethinkdb-data_1
+Generating keypair
+API Server bind? (default `0.0.0.0:9984`): 
+Database host? (default `localhost`): rethinkdb
+Database port? (default `28015`): 
+Database name? (default `bigchain`): 
+Statsd host? (default `localhost`): statsd
+Statsd port? (default `8125`): 
+Statsd rate? (default `0.01`): 
+Ready to go!
 ```
+
+As shown above, make sure that you set the database and statsd hosts to their
+corresponding service names (`rethinkdb`, `statsd`), defined in`docker-compose.yml`
+and `docker-compose-monitor.yml`.
 
 You can then start it up (in the background, as a daemon) using:
 ```text

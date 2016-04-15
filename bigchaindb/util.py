@@ -9,7 +9,7 @@ from datetime import datetime
 
 import bigchaindb
 from bigchaindb import exceptions
-from bigchaindb.crypto import PrivateKey, PublicKey, hash_data
+from bigchaindb import crypto
 
 
 class ProcessGroup(object):
@@ -159,7 +159,7 @@ def create_tx(current_owner, new_owner, tx_input, operation, payload=None):
     data = None
     if payload is not None:
         if isinstance(payload, dict):
-            hash_payload = hash_data(serialize(payload))
+            hash_payload = crypto.hash_data(serialize(payload))
             data = {
                 'hash': hash_payload,
                 'payload': payload
@@ -167,7 +167,7 @@ def create_tx(current_owner, new_owner, tx_input, operation, payload=None):
         else:
             raise TypeError('`payload` must be an dict instance')
 
-    hash_payload = hash_data(serialize(payload))
+    hash_payload = crypto.hash_data(serialize(payload))
     data = {
         'hash': hash_payload,
         'payload': payload
@@ -184,7 +184,7 @@ def create_tx(current_owner, new_owner, tx_input, operation, payload=None):
 
     # serialize and convert to bytes
     tx_serialized = serialize(tx)
-    tx_hash = hash_data(tx_serialized)
+    tx_hash = crypto.hash_data(tx_serialized)
 
     # create the transaction
     transaction = {
@@ -208,10 +208,10 @@ def sign_tx(transaction, private_key):
         dict: transaction with the `signature` field included.
 
     """
-    private_key = PrivateKey(private_key)
+    private_key = crypto.SigningKey(private_key)
     signature = private_key.sign(serialize(transaction))
     signed_transaction = transaction.copy()
-    signed_transaction.update({'signature': signature})
+    signed_transaction.update({'signature': signature.decode()})
     return signed_transaction
 
 
@@ -222,7 +222,7 @@ def create_and_sign_tx(private_key, current_owner, new_owner, tx_input, operatio
 
 def check_hash_and_signature(transaction):
     # Check hash of the transaction
-    calculated_hash = hash_data(serialize(transaction['transaction']))
+    calculated_hash = crypto.hash_data(serialize(transaction['transaction']))
     if calculated_hash != transaction['id']:
         raise exceptions.InvalidHash()
 
@@ -251,7 +251,7 @@ def verify_signature(signed_transaction):
 
     signature = data.pop('signature')
     public_key_base58 = signed_transaction['transaction']['current_owner']
-    public_key = PublicKey(public_key_base58)
+    public_key = crypto.VerifyingKey(public_key_base58)
     return public_key.verify(serialize(data), signature)
 
 

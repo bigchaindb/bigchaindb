@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 
 import bigchaindb.exceptions as exceptions
 from bigchaindb import util
-from bigchaindb.crypto import hash_data, PublicKey
+from bigchaindb import crypto
 
 
 class AbstractConsensusRules(metaclass=ABCMeta):
@@ -156,7 +156,7 @@ class BaseConsensusRules(AbstractConsensusRules):
                         transaction['transaction']['input']))
 
         # Check hash of the transaction
-        calculated_hash = hash_data(util.serialize(
+        calculated_hash = crypto.hash_data(util.serialize(
             transaction['transaction']))
         if calculated_hash != transaction['id']:
             raise exceptions.InvalidHash()
@@ -185,7 +185,7 @@ class BaseConsensusRules(AbstractConsensusRules):
         """
 
         # Check if current hash is correct
-        calculated_hash = hash_data(util.serialize(block['block']))
+        calculated_hash = crypto.hash_data(util.serialize(block['block']))
         if calculated_hash != block['id']:
             raise exceptions.InvalidHash()
 
