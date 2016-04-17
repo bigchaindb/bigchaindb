@@ -28,5 +28,5 @@ coverage:
     - "tests/*"
 
 comment:
-  layout: "header, diff, changes, sunburst, suggestions"
+  layout: "header, diff, changes, sunburst, uncovered"
   behavior: default
