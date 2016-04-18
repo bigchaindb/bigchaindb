@@ -72,6 +72,13 @@ environment variables available are:
   to start for the server API.
 
 
+## Configuring the API Server
+The API Server is powered by [Gunicorn](http://gunicorn.org/), a Python WSGI HTTP Server for UNIX.
+If you need to tweak some settings for the API server you can manually edit your `.bigchaindb` config file:
+the `server` section accepts all the options specified in the
+[Gunicorn settings](http://docs.gunicorn.org/en/stable/settings.html) documentation.
+
+
 ## Order of Precedence in Determining Configuration Values
 
 All configuration values start with their default values (defined in `bigchaindb.__init__`), but a default value can be overriden by an environment variable, and a value set by an environment variable can be overriden by a value in a local configuration file (`$HOME/.bigchaindb` or the location specified by the `-c` command-line option).

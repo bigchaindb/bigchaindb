@@ -81,7 +81,6 @@ def create_server(settings):
         settings['threads'] = (multiprocessing.cpu_count() * 2) + 1
 
     app = create_app(settings)
-    settings.pop('debug', False)
     standalone = StandaloneApplication(app, settings)
     return standalone
 
