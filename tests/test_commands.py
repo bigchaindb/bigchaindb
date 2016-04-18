@@ -108,6 +108,43 @@ def test_bigchain_show_config(capsys):
     assert output_config == config
 
 
+def test_bigchain_export_my_pubkey_when_pubkey_set(capsys, monkeypatch):
+    from bigchaindb import config
+    from bigchaindb.commands.bigchain import run_export_my_pubkey
+
+    args = Namespace(config='dummy')
+    # so in run_export_my_pubkey(args) below,
+    # filename=args.config='dummy' is passed to autoconfigure().
+    # We just assume autoconfigure() works and sets
+    # config['keypair']['public'] correctly (tested elsewhere).
+    # We force-set config['keypair']['public'] using monkeypatch.
+    monkeypatch.setitem(config['keypair'], 'public', 'Charlie_Bucket')
+    _, _ = capsys.readouterr()  # has the effect of clearing capsys
+    run_export_my_pubkey(args)
+    out, err = capsys.readouterr()
+    assert out == config['keypair']['public'] + '\n'
+    assert out == 'Charlie_Bucket\n'
+    assert err == ''
+
+
+def test_bigchain_export_my_pubkey_when_pubkey_not_set(monkeypatch):
+    from bigchaindb import config
+    from bigchaindb.commands.bigchain import run_export_my_pubkey
+
+    args = Namespace(config='dummy')
+    monkeypatch.setitem(config['keypair'], 'public', None)
+    # assert that run_export_my_pubkey(args) raises SystemExit:
+    with pytest.raises(SystemExit) as exc_info:
+        run_export_my_pubkey(args)
+    # exc_info is an object of class ExceptionInfo
+    # https://pytest.org/latest/builtin.html#_pytest._code.ExceptionInfo
+    assert exc_info.type == SystemExit
+    # exc_info.value is an object of class SystemExit
+    # https://docs.python.org/3/library/exceptions.html#SystemExit
+    assert exc_info.value.code == \
+        "This node's public key wasn't set anywhere so it can't be exported"
+
+
 def test_bigchain_run_init_when_db_exists(mock_db_init_with_existing_db):
     from bigchaindb.commands.bigchain import run_init
     args = Namespace(config=None)
@@ -159,4 +196,3 @@ def test_run_configure_when_config_does_exist(monkeypatch,
     args = Namespace(config='foo', yes=None)
     run_configure(args)
     assert value == {}
-
