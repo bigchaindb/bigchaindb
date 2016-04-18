@@ -185,14 +185,14 @@ class Bigchain(object):
         transactions = list(cursor)
         return transactions
 
-    def get_spent(self, inp):
+    def get_spent(self, tx_input):
         """Check if a `txid` was already used as an input.
 
         A transaction can be used as an input for another transaction. Bigchain needs to make sure that a
         given `txid` is only used once.
 
         Args:
-            inp (dict): Input of a transaction in the form `{'txid': 'transaction id', 'cid': 'condition id'}`
+            tx_input (dict): Input of a transaction in the form `{'txid': 'transaction id', 'cid': 'condition id'}`
 
         Returns:
             The transaction that used the `txid` as an input if it exists else it returns `None`
@@ -201,7 +201,7 @@ class Bigchain(object):
         # checks if the bigchain has any transaction with input {'txid': ..., 'cid': ...}
         response = r.table('bigchain').concat_map(lambda doc: doc['block']['transactions'])\
             .filter(lambda transaction: transaction['transaction']['fulfillments']
-                    .contains(lambda fulfillment: fulfillment['input'] == inp))\
+                    .contains(lambda fulfillment: fulfillment['input'] == tx_input))\
             .run(self.conn)
 
         # a transaction_id should have been spent at most one time
@@ -209,7 +209,7 @@ class Bigchain(object):
         if transactions:
             if len(transactions) != 1:
                 raise Exception('`{}` was spent more then once. There is a problem with the chain'.format(
-                    inp['txid']))
+                    tx_input['txid']))
             else:
                 return transactions[0]
         else:
