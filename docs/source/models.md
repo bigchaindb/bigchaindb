@@ -44,6 +44,10 @@ A transaction is an operation between the `current_owner` and the `new_owner` ov
 
 ### Conditions
 
+##### Simple Signature
+
+If there is only one _new owner_ the condition will be a single signature condition.
+
 ```json
 {
     "cid": "<condition index>",
@@ -73,14 +77,62 @@ A transaction is an operation between the `current_owner` and the `new_owner` ov
     - `type_id`:
     - `uri`:
 
-- Simple signatures
-- Multisignatures
+##### Multi Signature
+
+If there are multiple _new owners_ by default we create a condition requiring a signature from each new owner in order
+to spend the digital asset.
+
+Example of a condition with two _new owners_:
+```json
+{
+    "cid": "<condition index>",
+    "condition": {
+        "details": {
+            "bitmask": 41,
+            "subfulfillments": [
+                {
+                    "bitmask": 32,
+                    "public_key": "<new owner 1 public key>",
+                    "signature": null,
+                    "type": "fulfillment",
+                    "type_id": 4,
+                    "weight": 1
+                },
+                {
+                    "bitmask": 32,
+                    "public_key": "<new owner 2 public key>",
+                    "signature": null,
+                    "type": "fulfillment",
+                    "type_id": 4,
+                    "weight": 1
+                }
+            ],
+            "threshold": 2,
+            "type": "fulfillment",
+            "type_id": 2
+        },
+        "uri": "cc:2:29:ytNK3X6-bZsbF-nCGDTuopUIMi1HCyCkyPewm6oLI3o:206"},
+        "new_owners": [
+            "<new owner 1 public key>",
+            "<new owner 2 public key>"
+        ]
+}
+```
+
+- `subfulfillments`:
+    - `weight`:
+- `threshold`:
+
 
 ### Fulfillments
 
+##### Simple Signature
+
+If there is only one _current owner_ the fulfillment will be a single signature fulfillment.
+
 ```json
 {
-    "current_owners": ["5nRNzUc2QoGaTKDPjpZV9p9qWKJaB5vowQWVEmXkEC6k"],
+    "current_owners": ["<Public Key>"],
     "fid": 0,
     "fulfillment": "cf:4:RxFzIE679tFBk8zwEgizhmTuciAylvTUwy6EL6ehddHFJOhK5F4IjwQ1xLu2oQK9iyRCZJdfWAefZVjTt3DeG5j2exqxpGliOPYseNkRAWEakqJ_UrCwgnj92dnFRAEE",
     "input": {
@@ -89,6 +141,14 @@ A transaction is an operation between the `current_owner` and the `new_owner` ov
     }
 }
 ```
+
+- `fid`: Fulfillment index. It matches a `cid` in the conditions with a new _crypto condition_ that the new owner(s)
+need to fulfill to spend this digital asset
+- `current_owners`: Public key of the current owner(s)
+- `fulfillment`:
+- `input`: Pointer to the digital asset and condition of a previous transaction
+    - `cid`: Condition index
+    - `txid`: Transaction id
 
 ## The Block Model
 
