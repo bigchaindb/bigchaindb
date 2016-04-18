@@ -27,8 +27,8 @@ class TestBigchainApi(object):
     def test_create_transaction_create(self, b, user_sk):
         tx = b.create_transaction(b.me, user_sk, None, 'CREATE')
 
-        assert sorted(tx) == sorted(['id', 'transaction', 'version'])
-        assert sorted(tx['transaction']) == sorted(['conditions', 'data', 'fulfillments', 'operation', 'timestamp'])
+        assert sorted(tx) == ['id', 'transaction', 'version']
+        assert sorted(tx['transaction']) == ['conditions', 'data', 'fulfillments', 'operation', 'timestamp']
 
     def test_create_transaction_with_unsupported_payload_raises(self, b):
         with pytest.raises(TypeError):
@@ -41,8 +41,8 @@ class TestBigchainApi(object):
 
         tx = b.create_transaction(user_vk, b.me, input_tx, 'TRANSFER')
 
-        assert sorted(tx) == sorted(['id', 'transaction', 'version'])
-        assert sorted(tx['transaction']) == sorted(['conditions', 'data', 'fulfillments', 'operation', 'timestamp'])
+        assert sorted(tx) == ['id', 'transaction', 'version']
+        assert sorted(tx['transaction']) == ['conditions', 'data', 'fulfillments', 'operation', 'timestamp']
 
         tx_signed = b.sign_transaction(tx, user_sk)
 
