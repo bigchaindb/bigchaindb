@@ -22,6 +22,7 @@ from pkg_resources import iter_entry_points, ResolutionError
 import bigchaindb
 from bigchaindb.consensus import AbstractConsensusRules
 
+# logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 CONFIG_DEFAULT_PATH = os.environ.setdefault(
@@ -78,19 +79,21 @@ def update(d, u):
 
 
 def file_config(filename=None):
-    """Returns the values found in a configuration file.
+    """Returns the config values found in a configuration file.
 
     Args:
-        filename (str): the JSON file with the configuration. Defaults to ``None``.
-            If ``None``, the HOME of the current user and the string ``.bigchaindb`` will be used.
+        filename (str): the JSON file with the configuration values.
+            If ``None``, CONFIG_DEFAULT_PATH will be used.
 
-    Note:
-        The function merges the values in ``filename`` with the **default configuration**,
-        so any update made to ``bigchaindb.config`` will be lost.
+    Returns:
+        dict: The config values in the specified config file (or the
+              file at CONFIG_DEFAULT_PATH, if filename == None)
     """
+    logger.debug('On entry into file_config(), filename = {}'.format(filename))
     if not filename:
         filename = CONFIG_DEFAULT_PATH
 
+    logger.debug('file_config() will try to open `{}`'.format(filename))
     with open(filename) as f:
         config = json.load(f)
 
@@ -210,7 +213,7 @@ def autoconfigure(filename=None, config=None, force=False):
     if config:
         newconfig = update(newconfig, config)
 
-    return set_config(newconfig)
+    set_config(newconfig)  # sets bigchaindb.config
 
 
 def load_consensus_plugin(name=None):
