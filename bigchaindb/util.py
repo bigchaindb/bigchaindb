@@ -173,10 +173,10 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
 
     # transfer
     if inputs:
-        for fid, inp in enumerate(inputs):
+        for fid, tx_input in enumerate(inputs):
             fulfillments.append({
                 'current_owners': current_owners,
-                'input': inp,
+                'input': tx_input,
                 'fulfillment': None,
                 'fid': fid
             })
