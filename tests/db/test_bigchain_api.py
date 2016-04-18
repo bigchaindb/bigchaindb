@@ -6,9 +6,7 @@ import json
 
 import pytest
 import rethinkdb as r
-from cryptoconditions import Ed25519Fulfillment, ThresholdSha256Fulfillment
-from cryptoconditions.condition import Condition
-from cryptoconditions.fulfillment import Fulfillment
+import cryptoconditions as cc
 
 import bigchaindb
 from bigchaindb import util
@@ -330,7 +328,7 @@ class TestTransactionValidation(object):
         # create a correctly signed transaction and change the signature
         tx_signed = b.sign_transaction(tx_valid, user_sk)
         fulfillment = tx_signed['transaction']['fulfillments'][0]['fulfillment']
-        changed_fulfillment = Ed25519Fulfillment().from_uri(fulfillment)
+        changed_fulfillment = cc.Ed25519Fulfillment().from_uri(fulfillment)
         changed_fulfillment.signature = b'0' * 64
         tx_signed['transaction']['fulfillments'][0]['fulfillment'] = changed_fulfillment.serialize_uri()
 
@@ -1178,15 +1176,15 @@ class TestCryptoconditions(object):
     def test_fulfillment_transaction_create(self, b, user_vk):
         tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
         condition = tx['transaction']['conditions'][0]['condition']
-        condition_from_uri = Condition.from_uri(condition['uri'])
-        condition_from_json = Fulfillment.from_json(condition['details']).condition
+        condition_from_uri = cc.Condition.from_uri(condition['uri'])
+        condition_from_json = cc.Fulfillment.from_json(condition['details']).condition
 
         assert condition_from_uri.serialize_uri() == condition_from_json.serialize_uri()
         assert condition['details']['public_key'] == user_vk
 
         tx_signed = b.sign_transaction(tx, b.me_private)
         fulfillment = tx_signed['transaction']['fulfillments'][0]
-        fulfillment_from_uri = Fulfillment.from_uri(fulfillment['fulfillment'])
+        fulfillment_from_uri = cc.Fulfillment.from_uri(fulfillment['fulfillment'])
 
         assert fulfillment['current_owners'][0] == b.me
         assert fulfillment_from_uri.public_key.to_ascii().decode() == b.me
@@ -1202,22 +1200,22 @@ class TestCryptoconditions(object):
 
         prev_tx = b.get_transaction(prev_tx_id['txid'])
         prev_condition = prev_tx['transaction']['conditions'][0]['condition']
-        prev_condition_from_uri = Condition.from_uri(prev_condition['uri'])
-        prev_condition_from_json = Fulfillment.from_json(prev_condition['details']).condition
+        prev_condition_from_uri = cc.Condition.from_uri(prev_condition['uri'])
+        prev_condition_from_json = cc.Fulfillment.from_json(prev_condition['details']).condition
 
         assert prev_condition_from_uri.serialize_uri() == prev_condition_from_json.serialize_uri()
         assert prev_condition['details']['public_key'] == user_vk
 
         condition = tx['transaction']['conditions'][0]['condition']
-        condition_from_uri = Condition.from_uri(condition['uri'])
-        condition_from_json = Fulfillment.from_json(condition['details']).condition
+        condition_from_uri = cc.Condition.from_uri(condition['uri'])
+        condition_from_json = cc.Fulfillment.from_json(condition['details']).condition
 
         assert condition_from_uri.serialize_uri() == condition_from_json.serialize_uri()
         assert condition['details']['public_key'] == other_vk
 
         tx_signed = b.sign_transaction(tx, user_sk)
         fulfillment = tx_signed['transaction']['fulfillments'][0]
-        fulfillment_from_uri = Fulfillment.from_uri(fulfillment['fulfillment'])
+        fulfillment_from_uri = cc.Fulfillment.from_uri(fulfillment['fulfillment'])
 
         assert fulfillment['current_owners'][0] == user_vk
         assert fulfillment_from_uri.public_key.to_ascii().decode() == user_vk
@@ -1227,7 +1225,7 @@ class TestCryptoconditions(object):
 
     def test_override_condition_create(self, b, user_vk):
         tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
-        fulfillment = Ed25519Fulfillment(public_key=user_vk)
+        fulfillment = cc.Ed25519Fulfillment(public_key=user_vk)
         tx['transaction']['conditions'][0]['condition'] = {
             'details': json.loads(fulfillment.serialize_json()),
             'uri': fulfillment.condition.serialize_uri()
@@ -1236,7 +1234,7 @@ class TestCryptoconditions(object):
         tx_signed = b.sign_transaction(tx, b.me_private)
 
         fulfillment = tx_signed['transaction']['fulfillments'][0]
-        fulfillment_from_uri = Fulfillment.from_uri(fulfillment['fulfillment'])
+        fulfillment_from_uri = cc.Fulfillment.from_uri(fulfillment['fulfillment'])
 
         assert fulfillment['current_owners'][0] == b.me
         assert fulfillment_from_uri.public_key.to_ascii().decode() == b.me
@@ -1250,7 +1248,7 @@ class TestCryptoconditions(object):
         prev_tx_id = b.get_owned_ids(user_vk).pop()
         tx = b.create_transaction(user_vk, other_vk, prev_tx_id, 'TRANSFER')
 
-        fulfillment = Ed25519Fulfillment(public_key=other_vk)
+        fulfillment = cc.Ed25519Fulfillment(public_key=other_vk)
         tx['transaction']['conditions'][0]['condition'] = {
             'details': json.loads(fulfillment.serialize_json()),
             'uri': fulfillment.condition.serialize_uri()
@@ -1258,7 +1256,7 @@ class TestCryptoconditions(object):
 
         tx_signed = b.sign_transaction(tx, user_sk)
         fulfillment = tx_signed['transaction']['fulfillments'][0]
-        fulfillment_from_uri = Fulfillment.from_uri(fulfillment['fulfillment'])
+        fulfillment_from_uri = cc.Fulfillment.from_uri(fulfillment['fulfillment'])
 
         assert fulfillment['current_owners'][0] == user_vk
         assert fulfillment_from_uri.public_key.to_ascii().decode() == user_vk
@@ -1269,7 +1267,7 @@ class TestCryptoconditions(object):
         tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
         original_fulfillment = tx['transaction']['fulfillments'][0]
         fulfillment_message = util.get_fulfillment_message(tx, original_fulfillment, serialized=True)
-        fulfillment = Ed25519Fulfillment(public_key=b.me)
+        fulfillment = cc.Ed25519Fulfillment(public_key=b.me)
         fulfillment.sign(fulfillment_message, crypto.SigningKey(b.me_private))
 
         tx['transaction']['fulfillments'][0]['fulfillment'] = fulfillment.serialize_uri()
@@ -1286,7 +1284,7 @@ class TestCryptoconditions(object):
 
         original_fulfillment = tx['transaction']['fulfillments'][0]
         fulfillment_message = util.get_fulfillment_message(tx, original_fulfillment, serialized=True)
-        fulfillment = Ed25519Fulfillment(public_key=user_vk)
+        fulfillment = cc.Ed25519Fulfillment(public_key=user_vk)
         fulfillment.sign(fulfillment_message, crypto.SigningKey(user_sk))
 
         tx['transaction']['fulfillments'][0]['fulfillment'] = fulfillment.serialize_uri()
@@ -1300,7 +1298,7 @@ class TestCryptoconditions(object):
         first_input_tx = b.get_owned_ids(user_vk).pop()
         first_tx = b.create_transaction(user_vk, other_vk, first_input_tx, 'TRANSFER')
 
-        first_tx_condition = Ed25519Fulfillment(public_key=other_vk)
+        first_tx_condition = cc.Ed25519Fulfillment(public_key=other_vk)
         first_tx['transaction']['conditions'][0]['condition'] = {
             'details': json.loads(first_tx_condition.serialize_json()),
             'uri': first_tx_condition.condition.serialize_uri()
@@ -1308,7 +1306,7 @@ class TestCryptoconditions(object):
 
         first_tx_fulfillment = first_tx['transaction']['fulfillments'][0]
         first_tx_fulfillment_message = util.get_fulfillment_message(first_tx, first_tx_fulfillment, serialized=True)
-        first_tx_fulfillment = Ed25519Fulfillment(public_key=user_vk)
+        first_tx_fulfillment = cc.Ed25519Fulfillment(public_key=user_vk)
         first_tx_fulfillment.sign(first_tx_fulfillment_message, crypto.SigningKey(user_sk))
         first_tx['transaction']['fulfillments'][0]['fulfillment'] = first_tx_fulfillment.serialize_uri()
 
@@ -1327,7 +1325,7 @@ class TestCryptoconditions(object):
 
         next_tx_fulfillment = next_tx['transaction']['fulfillments'][0]
         next_tx_fulfillment_message = util.get_fulfillment_message(next_tx, next_tx_fulfillment, serialized=True)
-        next_tx_fulfillment = Ed25519Fulfillment(public_key=other_vk)
+        next_tx_fulfillment = cc.Ed25519Fulfillment(public_key=other_vk)
         next_tx_fulfillment.sign(next_tx_fulfillment_message, crypto.SigningKey(other_sk))
         next_tx['transaction']['fulfillments'][0]['fulfillment'] = next_tx_fulfillment.serialize_uri()
 
@@ -1342,9 +1340,9 @@ class TestCryptoconditions(object):
         first_input_tx = b.get_owned_ids(user_vk).pop()
         first_tx = b.create_transaction(user_vk, [other1_vk, other2_vk], first_input_tx, 'TRANSFER')
 
-        first_tx_condition = ThresholdSha256Fulfillment(threshold=2)
-        first_tx_condition.add_subfulfillment(Ed25519Fulfillment(public_key=other1_vk))
-        first_tx_condition.add_subfulfillment(Ed25519Fulfillment(public_key=other2_vk))
+        first_tx_condition = cc.ThresholdSha256Fulfillment(threshold=2)
+        first_tx_condition.add_subfulfillment(cc.Ed25519Fulfillment(public_key=other1_vk))
+        first_tx_condition.add_subfulfillment(cc.Ed25519Fulfillment(public_key=other2_vk))
 
         first_tx['transaction']['conditions'][0]['condition'] = {
             'details': json.loads(first_tx_condition.serialize_json()),
@@ -1370,11 +1368,11 @@ class TestCryptoconditions(object):
 
         next_tx_fulfillment = next_tx['transaction']['fulfillments'][0]
         next_tx_fulfillment_message = util.get_fulfillment_message(next_tx, next_tx_fulfillment, serialized=True)
-        next_tx_fulfillment = ThresholdSha256Fulfillment(threshold=2)
-        next_tx_subfulfillment1 = Ed25519Fulfillment(public_key=other1_vk)
+        next_tx_fulfillment = cc.ThresholdSha256Fulfillment(threshold=2)
+        next_tx_subfulfillment1 = cc.Ed25519Fulfillment(public_key=other1_vk)
         next_tx_subfulfillment1.sign(next_tx_fulfillment_message, crypto.SigningKey(other1_sk))
         next_tx_fulfillment.add_subfulfillment(next_tx_subfulfillment1)
-        next_tx_subfulfillment2 = Ed25519Fulfillment(public_key=other2_vk)
+        next_tx_subfulfillment2 = cc.Ed25519Fulfillment(public_key=other2_vk)
         next_tx_subfulfillment2.sign(next_tx_fulfillment_message, crypto.SigningKey(other2_sk))
         next_tx_fulfillment.add_subfulfillment(next_tx_subfulfillment2)
         next_tx['transaction']['fulfillments'][0]['fulfillment'] = next_tx_fulfillment.serialize_uri()
@@ -1390,9 +1388,9 @@ class TestCryptoconditions(object):
         first_input_tx = b.get_owned_ids(user_vk).pop()
         first_tx = b.create_transaction(user_vk, [other1_vk, other2_vk], first_input_tx, 'TRANSFER')
 
-        first_tx_condition = ThresholdSha256Fulfillment(threshold=2)
-        first_tx_condition.add_subfulfillment(Ed25519Fulfillment(public_key=other1_vk))
-        first_tx_condition.add_subfulfillment(Ed25519Fulfillment(public_key=other2_vk))
+        first_tx_condition = cc.ThresholdSha256Fulfillment(threshold=2)
+        first_tx_condition.add_subfulfillment(cc.Ed25519Fulfillment(public_key=other1_vk))
+        first_tx_condition.add_subfulfillment(cc.Ed25519Fulfillment(public_key=other2_vk))
 
         first_tx['transaction']['conditions'][0]['condition'] = {
             'details': json.loads(first_tx_condition.serialize_json()),
@@ -1418,13 +1416,13 @@ class TestCryptoconditions(object):
 
         next_tx_fulfillment = next_tx['transaction']['fulfillments'][0]
         next_tx_fulfillment_message = util.get_fulfillment_message(next_tx, next_tx_fulfillment, serialized=True)
-        next_tx_fulfillment = ThresholdSha256Fulfillment(threshold=2)
-        next_tx_subfulfillment1 = Ed25519Fulfillment(public_key=other1_vk)
+        next_tx_fulfillment = cc.ThresholdSha256Fulfillment(threshold=2)
+        next_tx_subfulfillment1 = cc.Ed25519Fulfillment(public_key=other1_vk)
         next_tx_subfulfillment1.sign(next_tx_fulfillment_message, crypto.SigningKey(other1_sk))
         next_tx_fulfillment.add_subfulfillment(next_tx_subfulfillment1)
 
         # Wrong signing happens here
-        next_tx_subfulfillment2 = Ed25519Fulfillment(public_key=other1_vk)
+        next_tx_subfulfillment2 = cc.Ed25519Fulfillment(public_key=other1_vk)
         next_tx_subfulfillment2.sign(next_tx_fulfillment_message, crypto.SigningKey(other1_sk))
         next_tx_fulfillment.add_subfulfillment(next_tx_subfulfillment2)
         next_tx['transaction']['fulfillments'][0]['fulfillment'] = next_tx_fulfillment.serialize_uri()
@@ -1443,9 +1441,9 @@ class TestCryptoconditions(object):
         assert len(tx['transaction']['conditions'][0]['condition']['details']['subfulfillments']) == 2
 
         # expected condition subfulfillments
-        expected_condition = ThresholdSha256Fulfillment(threshold=2)
-        expected_condition.add_subfulfillment(Ed25519Fulfillment(public_key=user_vk))
-        expected_condition.add_subfulfillment(Ed25519Fulfillment(public_key=user2_vk))
+        expected_condition = cc.ThresholdSha256Fulfillment(threshold=2)
+        expected_condition.add_subfulfillment(cc.Ed25519Fulfillment(public_key=user_vk))
+        expected_condition.add_subfulfillment(cc.Ed25519Fulfillment(public_key=user2_vk))
         tx_expected_condition = {
             'details': json.loads(expected_condition.serialize_json()),
             'uri': expected_condition.condition.serialize_uri()
@@ -1469,7 +1467,7 @@ class TestCryptoconditions(object):
         tx_transfer_signed = b.sign_transaction(tx_transfer, [user_sk, user2_sk])
 
         # expected fulfillment
-        expected_fulfillment = Fulfillment.from_json(tx_create['transaction']['conditions'][0]['condition']['details'])
+        expected_fulfillment = cc.Fulfillment.from_json(tx_create['transaction']['conditions'][0]['condition']['details'])
         subfulfillment1 = expected_fulfillment.subconditions[0]['body']
         subfulfillment2 = expected_fulfillment.subconditions[1]['body']
 
@@ -1493,7 +1491,8 @@ class TestCryptoconditions(object):
 
         # create a transaction with multiple new_owners
         tx = b.create_transaction(b.me, new_owners, None, 'CREATE')
+        condition = cc.Fulfillment.from_json(tx['transaction']['conditions'][0]['condition']['details'])
 
         for new_owner in new_owners:
-            subcondition = util.get_subcondition_from_vk(tx['transaction']['conditions'][0], new_owner)
+            subcondition = condition.get_subcondition_from_vk(new_owner)[0]
             assert subcondition.public_key.to_ascii().decode() == new_owner

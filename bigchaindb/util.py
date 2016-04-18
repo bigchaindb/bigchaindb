@@ -4,8 +4,7 @@ import time
 import multiprocessing as mp
 from datetime import datetime
 
-from cryptoconditions import Ed25519Fulfillment, ThresholdSha256Fulfillment
-from cryptoconditions.fulfillment import Fulfillment
+import cryptoconditions as cc
 
 import bigchaindb
 from bigchaindb import exceptions
@@ -194,11 +193,11 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
     conditions = []
     for fulfillment in fulfillments:
         if len(new_owners) > 1:
-            condition = ThresholdSha256Fulfillment(threshold=len(new_owners))
+            condition = cc.ThresholdSha256Fulfillment(threshold=len(new_owners))
             for new_owner in new_owners:
-                condition.add_subfulfillment(Ed25519Fulfillment(public_key=new_owner))
+                condition.add_subfulfillment(cc.Ed25519Fulfillment(public_key=new_owner))
         elif len(new_owners) == 1:
-            condition = Ed25519Fulfillment(public_key=new_owners[0])
+            condition = cc.Ed25519Fulfillment(public_key=new_owners[0])
         conditions.append({
             'new_owners': new_owners,
             'condition': {
@@ -258,10 +257,10 @@ def sign_tx(transaction, sks):
 
     for fulfillment in tx['transaction']['fulfillments']:
         fulfillment_message = get_fulfillment_message(transaction, fulfillment)
-        parsed_fulfillment = Fulfillment.from_json(fulfillment_message['condition']['condition']['details'])
-
+        parsed_fulfillment = cc.Fulfillment.from_json(fulfillment_message['condition']['condition']['details'])
+        parsed_fulfillment_copy = copy.deepcopy(parsed_fulfillment)
         # single current owner
-        if isinstance(parsed_fulfillment, Ed25519Fulfillment):
+        if isinstance(parsed_fulfillment, cc.Ed25519Fulfillment):
             current_owner = fulfillment['current_owners'][0]
             try:
                 parsed_fulfillment.sign(serialize(fulfillment_message), key_pairs[current_owner])
@@ -269,11 +268,15 @@ def sign_tx(transaction, sks):
                 raise exceptions.KeypairMismatchException('Public key {} is not a pair to any of the private keys'
                                                           .format(current_owner))
         # multiple current owners
-        elif isinstance(parsed_fulfillment, ThresholdSha256Fulfillment):
+        elif isinstance(parsed_fulfillment, cc.ThresholdSha256Fulfillment):
             # replace the fulfillments with the signed fulfillments
             parsed_fulfillment.subconditions = []
             for current_owner in fulfillment['current_owners']:
-                subfulfillment = get_subcondition_from_vk(fulfillment_message['condition'], current_owner)
+                try:
+                    subfulfillment = parsed_fulfillment_copy.get_subcondition_from_vk(current_owner)[0]
+                except IndexError:
+                    exceptions.KeypairMismatchException('Public key {} cannot be found in the fulfillment'
+                                                        .format(current_owner))
                 try:
                     subfulfillment.sign(serialize(fulfillment_message), key_pairs[current_owner])
                 except KeyError:
@@ -320,7 +323,7 @@ def verify_signature(signed_transaction):
         fulfillment_message = get_fulfillment_message(signed_transaction, fulfillment)
         # verify the fulfillment (for now lets assume there is only one owner)
         try:
-            parsed_fulfillment = Fulfillment.from_uri(fulfillment['fulfillment'])
+            parsed_fulfillment = cc.Fulfillment.from_uri(fulfillment['fulfillment'])
         except Exception:
             return False
         is_valid = parsed_fulfillment.validate(serialize(fulfillment_message))
@@ -372,7 +375,7 @@ def get_fulfillment_message(transaction, fulfillment, serialized=False):
     # there is no previous transaction so we need to create one on the fly
     else:
         current_owner = transaction['transaction']['fulfillments'][0]['current_owners'][0]
-        condition = json.loads(Ed25519Fulfillment(public_key=current_owner).serialize_json())
+        condition = json.loads(cc.Ed25519Fulfillment(public_key=current_owner).serialize_json())
         fulfillment_message['condition'] = {'condition': {'details': condition}}
     if serialized:
         return serialize(fulfillment_message)
@@ -397,13 +400,6 @@ def get_hash_data(transaction):
         fulfillment['fulfillment'] = None
 
     return crypto.hash_data(serialize(tx))
-
-
-def get_subcondition_from_vk(condition, vk):
-    threshold_fulfillment = Fulfillment.from_json(condition['condition']['details'])
-    for subcondition in threshold_fulfillment.subconditions:
-        if subcondition['body'].public_key.to_ascii().decode() == vk:
-            return subcondition['body']
 
 
 def transform_create(tx):
