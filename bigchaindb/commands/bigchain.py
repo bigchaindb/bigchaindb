@@ -1,5 +1,7 @@
-"""Command line interface for the `bigchain` command."""
-
+"""Implementation of the `bigchaindb` command,
+which is one of the commands in the BigchainDB
+command-line interface.
+"""
 
 import os
 import sys
@@ -11,7 +13,10 @@ import json
 import bigchaindb
 import bigchaindb.config_utils
 from bigchaindb import db
-from bigchaindb.exceptions import DatabaseAlreadyExists, KeypairNotFoundException
+from bigchaindb.exceptions import (
+    DatabaseAlreadyExists,
+    KeypairNotFoundException
+)
 from bigchaindb.commands.utils import base_parser, start
 from bigchaindb.processes import Processes
 from bigchaindb import crypto
@@ -38,7 +43,8 @@ def run_configure(args, skip_if_exists=False):
     """Run a script to configure the current node.
 
     Args:
-        skip_if_exists (bool): skip the function if a conf file already exists
+        skip_if_exists (bool): skip the function if a config file already
+                               exists
     """
     config_path = args.config or bigchaindb.config_utils.CONFIG_DEFAULT_PATH
     config_file_exists = os.path.exists(config_path)
@@ -48,7 +54,7 @@ def run_configure(args, skip_if_exists=False):
 
     if config_file_exists and not args.yes:
         want = input('Config file `{}` exists, do you want to override it? '
-                     '(cannot be undone) [y/n]: '.format(config_path))
+                     '(cannot be undone) [y/N]: '.format(config_path))
         if want != 'y':
             return
 
@@ -56,23 +62,47 @@ def run_configure(args, skip_if_exists=False):
     conf = copy.deepcopy(bigchaindb._config)
 
     print('Generating keypair')
-    conf['keypair']['private'], conf['keypair']['public'] = crypto.generate_key_pair()
+    conf['keypair']['private'], conf['keypair']['public'] = \
+        crypto.generate_key_pair()
 
     if not args.yes:
         for key in ('bind', ):
             val = conf['server'][key]
-            conf['server'][key] = input('API Server {}? (default `{}`): '.format(key, val)) or val
+            conf['server'][key] = \
+                input('API Server {}? (default `{}`): '.format(key, val)) \
+                or val
 
         for key in ('host', 'port', 'name'):
             val = conf['database'][key]
-            conf['database'][key] = input('Database {}? (default `{}`): '.format(key, val)) or val
+            conf['database'][key] = \
+                input('Database {}? (default `{}`): '.format(key, val)) \
+                or val
 
         for key in ('host', 'port', 'rate'):
             val = conf['statsd'][key]
-            conf['statsd'][key] = input('Statsd {}? (default `{}`): '.format(key, val)) or val
+            conf['statsd'][key] = \
+                input('Statsd {}? (default `{}`): '.format(key, val)) \
+                or val
 
     bigchaindb.config_utils.write_config(conf, config_path)
+    print('Configuration written to {}'.format(config_path))
     print('Ready to go!')
+
+
+def run_export_my_pubkey(args):
+    """Export this node's public key to standard output
+    """
+    logger.debug('bigchaindb args = {}'.format(args))
+    bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
+    pubkey = bigchaindb.config['keypair']['public']
+    if pubkey is not None:
+        print(pubkey)
+    else:
+        sys.exit("This node's public key wasn't set anywhere "
+                 "so it can't be exported")
+        # raises SystemExit exception
+        # message is sent to stderr
+        # exits with exit code 1 (signals tha an error happened)
 
 
 def run_init(args):
@@ -103,16 +133,18 @@ def run_start(args):
     except DatabaseAlreadyExists:
         pass
     except KeypairNotFoundException:
-        sys.exit('Cannot start BigchainDB, no keypair found. Did you run `bigchaindb configure`?')
+        sys.exit("Can't start BigchainDB, no keypair found. "
+                 'Did you run `bigchaindb configure`?')
 
     processes = Processes()
-    logger.info('Start bigchaindb main process')
+    logger.info('Starting BigchainDB main process')
     processes.start()
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Control your bigchain node.',
-                                     parents=[base_parser])
+    parser = argparse.ArgumentParser(
+        description='Control your BigchainDB node.',
+        parents=[base_parser])
 
     # all the commands are contained in the subparsers object,
     # the command selected by the user will be stored in `args.command`
@@ -121,22 +153,28 @@ def main():
     subparsers = parser.add_subparsers(title='Commands',
                                        dest='command')
 
+    # parser for writing a config file
     subparsers.add_parser('configure',
-                          help='Prepare the config file and create the node keypair')
+                          help='Prepare the config file '
+                               'and create the node keypair')
 
-    # parser for database level commands
+    # parsers for showing/exporting config values
+    subparsers.add_parser('show-config',
+                          help='Show the current configuration')
+
+    subparsers.add_parser('export-my-pubkey',
+                          help="Export this node's public key")
+
+    # parser for database-level commands
     subparsers.add_parser('init',
                           help='Init the database')
 
     subparsers.add_parser('drop',
                           help='Drop the database')
 
-    # TODO how about just config, or info?
-    subparsers.add_parser('show-config',
-                          help='Show the current configuration')
-
+    # parser for starting BigchainDB
     subparsers.add_parser('start',
-                          help='Start bigchain')
+                          help='Start BigchainDB')
 
     start(parser, globals())
 
