@@ -13,10 +13,7 @@ import json
 import bigchaindb
 import bigchaindb.config_utils
 from bigchaindb import db
-from bigchaindb.exceptions import (
-    DatabaseAlreadyExists,
-    KeypairNotFoundException
-)
+from bigchaindb.exceptions import DatabaseAlreadyExists, KeypairNotFoundException
 from bigchaindb.commands.utils import base_parser, start
 from bigchaindb.processes import Processes
 from bigchaindb import crypto
@@ -43,8 +40,7 @@ def run_configure(args, skip_if_exists=False):
     """Run a script to configure the current node.
 
     Args:
-        skip_if_exists (bool): skip the function if a config file already
-                               exists
+        skip_if_exists (bool): skip the function if a config file already exists
     """
     config_path = args.config or bigchaindb.config_utils.CONFIG_DEFAULT_PATH
     config_file_exists = os.path.exists(config_path)
