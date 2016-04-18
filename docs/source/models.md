@@ -7,37 +7,88 @@ Transactions, blocks and votes are represented using JSON documents with the fol
 ```json
 {
     "id": "<sha3 hash>",
+    "version": "<transaction version number>",
     "transaction": {
-        "current_owner": "<pub-key>",
-        "new_owner": "<pub-key>",
-        "input": "<sha3 hash>",
+        "fulfillments": ["<list of <fullfillment>"],
+        "conditions": ["<list of <condition>"],
         "operation": "<string>",
         "timestamp": "<timestamp from client>",
         "data": {
             "hash": "<SHA3-256 hash hexdigest of payload>",
-            "payload": {
-                "title": "The Winds of Plast",
-                "creator": "Johnathan Plunkett",
-                "IPFS_key": "QmfQ5QAjvg4GtA3wg3adpnDJug8ktA1BxurVqBD8rtgVjP"
-            }
+            "payload": "<generic json document>"
         }
-    },
-    "signature": "<signature of the transaction>"
+    }
 }
 ```
 
 A transaction is an operation between the `current_owner` and the `new_owner` over the digital content described by `hash`. For example if could be a transfer of ownership of the digital content `hash`
 
-- `id`: sha3 hash of the transaction. The `id` is also the DB primary key.
-- `current_owner`: Public key of the current owner of the digital content with hash `hash`
-- `new_owner`: Public key of the new owner of the digital content with hash `hash`
-- `input`: id (sha3 hash) of the transaction in which the content was transfered to the user (similar to input in the blockchain). Right now we will assume that there is only one input per transaction to simplify the prototype. This can be changed in the future to allow multiple inputs per transaction.
-- `operation`: String representation of the operation being performed (REGISTER, TRANSFER, ...) this will define how
-the transactions should be validated
-- `timestamp`: Time of creation of the transaction in UTC. It's provided by the client.
-- `data`: JSON object describing the asset (digital content). It contains at least the field `hash` which is a 
-sha3 hash of the digital content.
-- `signature`: Signature of the transaction with the `current_owner` private key
+- **Transaction header**:
+    - `id`: sha3 hash of the transaction. The `id` is also the DB primary key.
+    - `version`: Version of the transaction. For future compability with changes in the transaction model.
+- **Transaction body**:
+    - `fulfillments`: List of fulfillments. Each _fulfillment_ contains a pointer to a unspent digital asset
+    and a _crypto fulfillment_ that satisfies a spending condition set on the unspent digital asset. A _fulfillment_
+    is usually a signature proving the ownership of the digital asset.
+    See [conditions and fulfillments](models.md#conditions-and-fulfillments)
+    - `conditions`: List of conditions. Each _condition_ a _crypto condition_ that needs to be fulfilled by the
+    new owner in order to spend the digital asset.
+    See [conditions and fulfillments](models.md#conditions-and-fulfillments)
+    - `operation`: String representation of the operation being performed (CREATE, TRANSFER, ...) this will define how
+    the transactions should be validated
+    - `timestamp`: Time of creation of the transaction in UTC. It's provided by the client.
+    - `data`: JSON object describing the asset (digital content). It contains at least the field `hash` which is a
+    sha3 hash of the digital content.
+
+## Conditions and Fulfillments
+
+### Conditions
+
+```json
+{
+    "cid": "<condition index>",
+    "condition": {
+        "details": {
+            "bitmask": "<explain>",
+            "public_key": "<explain>",
+            "signature": null,
+            "type": "fulfillment",
+            "type_id": "<explain>"
+        },
+        "uri": "<explain>"
+    },
+    "new_owners": ["<explain>"]
+}
+```
+
+- **Condition header**:
+    - `cid`: Condition index so that we can reference this output as an input to another transaction. It also matches
+    the input `fid`, making this the condition to fulfill in order to spend the digital asset used as input with `fid`
+    - `new_owners`: List of public keys of the new owners.
+- **Condition body**:
+    - `bitmask`:
+    - `public_key`:
+    - `signature`:
+    - `type`:
+    - `type_id`:
+    - `uri`:
+
+- Simple signatures
+- Multisignatures
+
+### Fulfillments
+
+```json
+{
+    "current_owners": ["5nRNzUc2QoGaTKDPjpZV9p9qWKJaB5vowQWVEmXkEC6k"],
+    "fid": 0,
+    "fulfillment": "cf:4:RxFzIE679tFBk8zwEgizhmTuciAylvTUwy6EL6ehddHFJOhK5F4IjwQ1xLu2oQK9iyRCZJdfWAefZVjTt3DeG5j2exqxpGliOPYseNkRAWEakqJ_UrCwgnj92dnFRAEE",
+    "input": {
+        "cid": 0,
+        "txid": "11b3e7d893cc5fdfcf1a1706809c7def290a3b10b0bef6525d10b024649c42d3"
+    }
+}
+```
 
 ## The Block Model
 
