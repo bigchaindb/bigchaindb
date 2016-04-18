@@ -14,15 +14,6 @@ This command generates a public/private keypair for the node, and writes a Bigch
 
 If you want to force-generate a new configuration file regardless of whether one already exists (i.e. skipping the yes/no prompt), then use `bigchaindb -y configure`.
 
-### bigchaindb add-to-keyring KEY
-
-This command is used to add a single public key (KEY) to the node's keyring (a list of public keys of _other_ nodes in the federation). For example, this command:
-```text
-bigchaindb add-to-keyring F9C2vsnEkiaeUTrDRnJrmtV1AJxWjud9eTvMU5LLqa1C
-```
-
-adds the public key `F9C2vsnEkiaeUTrDRnJrmtV1AJxWjud9eTvMU5LLqa1C` to the node's keyring. If you attempt to add the node's own public key, or you attempt to add a key that's already in the keyring, then no key will be added to the keyring.
-
 ### bigchaindb show-config
 
 This command shows the values of the configuration settings, which can come from a variety of sources. See [the section on configuring BigchainDB](configuration.html) for more details and examples.
