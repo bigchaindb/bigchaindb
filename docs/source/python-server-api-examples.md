@@ -68,7 +68,10 @@ After a couple of seconds, we can check if the transactions was included in the 
 ```python
 # retrieve a transaction from the bigchain
 tx_retrieved = b.get_transaction(tx_signed['id'])
+tx_retrieved
+```
 
+```json
 {
     "id":"933cd83a419d2735822a2154c84176a2f419cbd449a74b94e592ab807af23861",
     "transaction":{
@@ -136,12 +139,17 @@ testuser2_priv, testuser2_pub = crypto.generate_key_pair()
 
 # Retrieve the transaction with condition id
 tx_retrieved_id = b.get_owned_ids(testuser1_pub).pop()
+tx_retrieved_id
+```
 
+```json
 {
     "cid":0,
     "txid":"933cd83a419d2735822a2154c84176a2f419cbd449a74b94e592ab807af23861"
 }
+```
 
+```python
 # Create a transfer transaction
 tx_transfer = b.create_transaction(testuser1_pub, testuser2_pub, tx_retrieved_id, 'TRANSFER')
 
@@ -153,7 +161,10 @@ b.write_transaction(tx_transfer_signed)
 
 # Check if the transaction is already in the bigchain
 tx_transfer_retrieved = b.get_transaction(tx_transfer_signed['id'])
+tx_transfer_retrieved
+```
 
+```json
 {
     "id":"aa11365317cb89bfdae2375bae76d6b8232008f8672507080e3766ca06976dcd",
     "transaction":{
@@ -194,7 +205,6 @@ tx_transfer_retrieved = b.get_transaction(tx_transfer_signed['id'])
     },
     "version":1
 }
-
 ```
 
 ## Double Spends
@@ -212,6 +222,9 @@ tx_transfer_signed2 = b.sign_transaction(tx_transfer2, testuser1_priv)
 
 # Check if the transaction is valid
 b.validate_transaction(tx_transfer_signed2)
+```
+
+```python
 DoubleSpend: input `{'cid': 0, 'txid': '933cd83a419d2735822a2154c84176a2f419cbd449a74b94e592ab807af23861'}` was already spent
 ```
 
@@ -229,7 +242,10 @@ b.write_transaction(tx_multisig_signed)
 
 # Check if the transaction is already in the bigchain
 tx_multisig_retrieved = b.get_transaction(tx_multisig_signed['id'])
+tx_multisig_retrieved
+```
 
+```json
 {
     "id":"a9a6e5c74ea02b8885c83125f1b74a2ba8ca42236ec5e1c358aa1053ec721ccb",
     "transaction":{
@@ -309,7 +325,10 @@ b.write_transaction(tx_multisig_transfer_signed)
 
 # Check if the transaction is already in the bigchain
 tx_multisig_retrieved = b.get_transaction(tx_multisig_transfer_signed['id'])
+tx_multisig_retrieved
+```
 
+```json
 {
     "assignee":"3LQ5dTiddXymDhNzETB1rEkp4mA7fEV1Qeiu5ghHiJm9",
     "id":"e689e23f774e7c562eeb310c7c712b34fb6210bea5deb9175e48b68810029150",
@@ -384,7 +403,10 @@ b.write_transaction(tx_mimo_signed)
 
 # Check if the transaction is already in the bigchain
 tx_mimo_retrieved = b.get_transaction(tx_mimo_signed['id'])
+tx_mimo_retrieved
+```
 
+```json
 {
     "id":"8b63689691a3c2e8faba89c6efe3caa0661f862c14d88d1e63ebd65d49484de2",
     "transaction":{
@@ -550,7 +572,10 @@ b.write_transaction(threshold_tx_signed)
 
 # Check if the transaction is already in the bigchain
 tx_threshold_retrieved = b.get_transaction(threshold_tx_signed['id'])
+tx_threshold_retrieved
+```
 
+```json
 {
     "id":"0057d29ff735d91505decf5e7195ea8da675b01676165abf23ea774bbb469383",
     "transaction":{
@@ -670,10 +695,13 @@ threshold_tx_transfer['transaction']['fulfillments'][0]['fulfillment'] = thresho
 # Optional validation checks
 assert threshold_fulfillment.validate(threshold_tx_fulfillment_message) == True
 assert b.verify_signature(threshold_tx_transfer) == True
-assert b.validate_transaction(threshold_tx_transfer) == True
+assert b.validate_transaction(threshold_tx_transfer)
 
 b.write_transaction(threshold_tx_transfer)
+threshold_tx_transfer
+```
 
+```json
 {
     "assignee":"3LQ5dTiddXymDhNzETB1rEkp4mA7fEV1Qeiu5ghHiJm9",
     "id":"a45b2340c59df7422a5788b3c462dee708a18cdf09d1a10bd26be3f31af4b8d7",
