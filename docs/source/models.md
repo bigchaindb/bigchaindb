@@ -34,7 +34,7 @@ A transaction is an operation between the `current_owner` and the `new_owner` ov
     - `conditions`: List of conditions. Each _condition_ a _crypto condition_ that needs to be fulfilled by the
     new owner in order to spend the digital asset.
     See [conditions and fulfillments](models.md#conditions-and-fulfillments)
-    - `operation`: String representation of the operation being performed (CREATE, TRANSFER, ...) this will define how
+    - `operation`: String representation of the operation being performed (`CREATE`, `TRANSFER`, ...) this will define how
     the transactions should be validated
     - `timestamp`: Time of creation of the transaction in UTC. It's provided by the client.
     - `data`: JSON object describing the asset (digital content). It contains at least the field `hash` which is a
@@ -53,15 +53,15 @@ If there is only one _new owner_ the condition will be a single signature condit
     "cid": "<condition index>",
     "condition": {
         "details": {
-            "bitmask": "<explain>",
+            "bitmask": "<base16 int>",
             "public_key": "<explain>",
             "signature": null,
             "type": "fulfillment",
-            "type_id": "<explain>"
+            "type_id": "<base16 int>"
         },
-        "uri": "<explain>"
+        "uri": "<string>"
     },
-    "new_owners": ["<explain>"]
+    "new_owners": ["<list of <base58 string>>"]
 }
 ```
 
@@ -70,12 +70,10 @@ If there is only one _new owner_ the condition will be a single signature condit
     the input `fid`, making this the condition to fulfill in order to spend the digital asset used as input with `fid`
     - `new_owners`: List of public keys of the new owners.
 - **Condition body**:
-    - `bitmask`:
-    - `public_key`:
-    - `signature`:
-    - `type`:
-    - `type_id`:
-    - `uri`:
+    - `bitmask`: a set of bits representing the features required by the condition type
+    - `public_key`: the base58 representation of the _new_owner's_ verifying key.
+    - `type_id`: the fulfillment type ID (see the [ILP spec](https://interledger.org/five-bells-condition/spec.html))
+    - `uri`: binary representation of the condition using only URL-safe characters
 
 ##### Multi Signature
 
@@ -119,9 +117,9 @@ Example of a condition with two _new owners_:
 }
 ```
 
-- `subfulfillments`:
-    - `weight`:
-- `threshold`:
+- `subfulfillments`: a list of fulfillments
+    - `weight`: integer weight for each subfulfillment's contribution to the threshold
+- `threshold`: threshold to reach for the subfulfillments to reach a valid fulfillment 
 
 
 ### Fulfillments
