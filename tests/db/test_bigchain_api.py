@@ -930,7 +930,6 @@ class TestMultipleInputs(object):
         user3_sk, user3_vk = crypto.generate_key_pair()
         user4_sk, user4_vk = crypto.generate_key_pair()
 
-
         # create input to spend
         tx = b.create_transaction(b.me, [user_vk, user2_vk], None, 'CREATE')
         tx_signed = b.sign_transaction(tx, b.me_private)

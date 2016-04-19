@@ -356,13 +356,129 @@ tx_multisig_retrieved = b.get_transaction(tx_multisig_transfer_signed['id'])
 
 ## Multiple Inputs and Outputs
 
+With BigchainDB it is possible to send multiple assets to someone in a single transfer.
+
+The transaction will create a `fulfillment` - `condition` pair for each input, which can be refered to by `fid` and `cid` respectively.
 
 ![BigchainDB transactions connecting multiple fulfillments with multiple conditions](./_static/tx_multi_condition_multi_fulfillment_v1.png)
 
 ```python
-```
+# Create some assets for bulk transfer
+for i in range(3):
+    tx_mimo_asset = b.create_transaction(b.me, testuser1_pub, None, 'CREATE')
+    tx_mimo_asset_signed = b.sign_transaction(tx_mimo_asset, b.me_private)
+    b.write_transaction(tx_mimo_asset_signed)
 
-```python
+# Wait until they appear on the bigchain and get the inputs
+owned_mimo_inputs = b.get_owned_ids(testuser1_pub)
+
+# Check the number of assets
+print(len(owned_mimo_inputs))
+
+# Create a TRANSFER transaction with all the assets
+tx_mimo = b.create_transaction(testuser1_pub, testuser2_pub, owned_mimo_inputs, 'TRANSFER')
+tx_mimo_signed = b.sign_transaction(tx_mimo, testuser1_priv)
+
+# Write the transaction
+b.write_transaction(tx_mimo_signed)
+
+# Check if the transaction is already in the bigchain
+tx_mimo_retrieved = b.get_transaction(tx_mimo_signed['id'])
+
+{
+    "id":"8b63689691a3c2e8faba89c6efe3caa0661f862c14d88d1e63ebd65d49484de2",
+    "transaction":{
+        "conditions":[
+            {
+                "cid":0,
+                "condition":{
+                    "details":{
+                        "bitmask":32,
+                        "public_key":"qv8DvdNG5nZHWCP5aPSqgqxAvaPJpQj19abRvFCntor",
+                        "signature":null,
+                        "type":"fulfillment",
+                        "type_id":4
+                    },
+                    "uri":"cc:4:20:2AXg2JJ7mQ8o2Q9-hafP-XmFh3YR7I2_Sz55AubfxIc:96"
+                },
+                "new_owners":[
+                    "qv8DvdNG5nZHWCP5aPSqgqxAvaPJpQj19abRvFCntor"
+                ]
+            },
+            {
+                "cid":1,
+                "condition":{
+                    "details":{
+                        "bitmask":32,
+                        "public_key":"qv8DvdNG5nZHWCP5aPSqgqxAvaPJpQj19abRvFCntor",
+                        "signature":null,
+                        "type":"fulfillment",
+                        "type_id":4
+                    },
+                    "uri":"cc:4:20:2AXg2JJ7mQ8o2Q9-hafP-XmFh3YR7I2_Sz55AubfxIc:96"
+                },
+                "new_owners":[
+                    "qv8DvdNG5nZHWCP5aPSqgqxAvaPJpQj19abRvFCntor"
+                ]
+            },
+            {
+                "cid":2,
+                "condition":{
+                    "details":{
+                        "bitmask":32,
+                        "public_key":"qv8DvdNG5nZHWCP5aPSqgqxAvaPJpQj19abRvFCntor",
+                        "signature":null,
+                        "type":"fulfillment",
+                        "type_id":4
+                    },
+                    "uri":"cc:4:20:2AXg2JJ7mQ8o2Q9-hafP-XmFh3YR7I2_Sz55AubfxIc:96"
+                },
+                "new_owners":[
+                    "qv8DvdNG5nZHWCP5aPSqgqxAvaPJpQj19abRvFCntor"
+                ]
+            }
+        ],
+        "data":null,
+        "fulfillments":[
+            {
+                "current_owners":[
+                    "BwuhqQX8FPsmqYiRV2CSZYWWsSWgSSQQFHjqxKEuqkPs"
+                ],
+                "fid":0,
+                "fulfillment":"cf:4:sTzo4fvm8U8XrlXcgcGkNZgkfS9QHg2grgrJiX-c0LT_a83V0wbNRVbmb0eOy6tLyRw0kW1FtsN29yTcTAILX5-fyBITrPUqPzIzF85l8yIAMSjVfH-h6YNcUQBj0o4B",
+                "input":{
+                    "cid":0,
+                    "txid":"9a99f3c82aea23fb344acb1505926365e2c6b722761c4be6ab8916702c94c024"
+                }
+            },
+            {
+                "current_owners":[
+                    "BwuhqQX8FPsmqYiRV2CSZYWWsSWgSSQQFHjqxKEuqkPs"
+                ],
+                "fid":1,
+                "fulfillment":"cf:4:sTzo4fvm8U8XrlXcgcGkNZgkfS9QHg2grgrJiX-c0LSJe3B_yjgXd1JHPBJhAdywCzR_ykEezi3bPNucGHl5mgPvpsLpHWrdIvZa3arFD91AepXILaNCF0y8cxIBOyEE",
+                "input":{
+                    "cid":0,
+                    "txid":"783014b92f35da0c2526e1db6f81452c61853d29eda50d057fd043d507d03ef9"
+                }
+            },
+            {
+                "current_owners":[
+                    "BwuhqQX8FPsmqYiRV2CSZYWWsSWgSSQQFHjqxKEuqkPs"
+                ],
+                "fid":2,
+                "fulfillment":"cf:4:sTzo4fvm8U8XrlXcgcGkNZgkfS9QHg2grgrJiX-c0LReUQd-vDMseuVi03qY5Fxetv81fYpy3z1ncHIGc2bX7R69aS-yH5_deV9qaKjc1ZZFN5xXsB9WFpQkf9VQ-T8B",
+                "input":{
+                    "cid":0,
+                    "txid":"9ab6151334b06f3f3aab282597ee8a7c12b9d7a0c43f356713f7ef9663375f50"
+                }
+            }
+        ],
+        "operation":"TRANSFER",
+        "timestamp":"1461049149.568927"
+    },
+    "version":1
+}
 ```
 
 
@@ -601,6 +717,4 @@ b.write_transaction(threshold_tx_transfer)
     },
     "version":1
 }
-
-
 ```

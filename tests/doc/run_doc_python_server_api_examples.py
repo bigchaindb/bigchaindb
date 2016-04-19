@@ -1,14 +1,16 @@
-import copy
 import json
 from time import sleep
 
-from cryptoconditions import Ed25519Fulfillment, ThresholdSha256Fulfillment
-from cryptoconditions.fulfillment import Fulfillment
+import cryptoconditions as cc
 
 from bigchaindb import Bigchain, util, crypto, exceptions
 
 
 b = Bigchain()
+
+"""
+Create a Digital Asset
+"""
 
 # create a test user
 testuser1_priv, testuser1_pub = crypto.generate_key_pair()
@@ -29,6 +31,10 @@ b.write_transaction(tx_signed)
 
 sleep(10)
 
+"""
+Read the Creation Transaction from the DB
+"""
+
 tx_retrieved = b.get_transaction(tx_signed['id'])
 
 print(json.dumps(tx_retrieved, sort_keys=True, indent=4, separators=(',', ':')))
@@ -37,6 +43,11 @@ print(testuser1_pub)
 print(b.me)
 
 print(tx_retrieved['id'])
+
+"""
+Transfer the Digital Asset
+"""
+
 # create a second testuser
 testuser2_priv, testuser2_pub = crypto.generate_key_pair()
 
@@ -59,6 +70,9 @@ sleep(10)
 tx_transfer_retrieved = b.get_transaction(tx_transfer_signed['id'])
 print(json.dumps(tx_transfer_retrieved, sort_keys=True, indent=4, separators=(',', ':')))
 
+"""
+Double Spends
+"""
 
 # create another transfer transaction with the same input
 tx_transfer2 = b.create_transaction(testuser1_pub, testuser2_pub, tx_retrieved_id, 'TRANSFER')
@@ -71,6 +85,10 @@ try:
     b.validate_transaction(tx_transfer_signed2)
 except exceptions.DoubleSpend as e:
     print(e)
+
+"""
+Multiple Owners
+"""
 
 # Create a new asset and assign it to multiple owners
 tx_multisig = b.create_transaction(b.me, [testuser1_pub, testuser2_pub], None, 'CREATE')
@@ -103,6 +121,33 @@ tx_multisig_retrieved = b.get_transaction(tx_multisig_transfer_signed['id'])
 
 print(json.dumps(tx_multisig_transfer_signed, sort_keys=True, indent=4, separators=(',', ':')))
 
+"""
+Multiple Inputs and Outputs
+"""
+for i in range(3):
+    tx_mimo_asset = b.create_transaction(b.me, testuser1_pub, None, 'CREATE')
+    tx_mimo_asset_signed = b.sign_transaction(tx_mimo_asset, b.me_private)
+    b.write_transaction(tx_mimo_asset_signed)
+
+sleep(10)
+
+# get inputs
+owned_mimo_inputs = b.get_owned_ids(testuser1_pub)
+print(len(owned_mimo_inputs))
+
+# create a transaction
+tx_mimo = b.create_transaction(testuser1_pub, testuser2_pub, owned_mimo_inputs, 'TRANSFER')
+tx_mimo_signed = b.sign_transaction(tx_mimo, testuser1_priv)
+
+# write the transaction
+b.write_transaction(tx_mimo_signed)
+
+print(json.dumps(tx_mimo_signed, sort_keys=True, indent=4, separators=(',', ':')))
+
+"""
+Threshold Conditions
+"""
+
 # create some new testusers
 thresholduser1_priv, thresholduser1_pub = crypto.generate_key_pair()
 thresholduser2_priv, thresholduser2_pub = crypto.generate_key_pair()
@@ -116,10 +161,10 @@ threshold_tx = b.create_transaction(testuser2_pub, [thresholduser1_pub, threshol
                                     tx_retrieved_id, 'TRANSFER')
 
 # create a 2-out-of-3 Threshold Cryptocondition
-threshold_condition = ThresholdSha256Fulfillment(threshold=2)
-threshold_condition.add_subfulfillment(Ed25519Fulfillment(public_key=thresholduser1_pub))
-threshold_condition.add_subfulfillment(Ed25519Fulfillment(public_key=thresholduser2_pub))
-threshold_condition.add_subfulfillment(Ed25519Fulfillment(public_key=thresholduser3_pub))
+threshold_condition = cc.ThresholdSha256Fulfillment(threshold=2)
+threshold_condition.add_subfulfillment(cc.Ed25519Fulfillment(public_key=thresholduser1_pub))
+threshold_condition.add_subfulfillment(cc.Ed25519Fulfillment(public_key=thresholduser2_pub))
+threshold_condition.add_subfulfillment(cc.Ed25519Fulfillment(public_key=thresholduser3_pub))
 
 # update the condition in the newly created transaction
 threshold_tx['transaction']['conditions'][0]['condition'] = {
@@ -152,7 +197,7 @@ threshold_tx_transfer = b.create_transaction([thresholduser1_pub, thresholduser2
                                              thresholduser4_pub, tx_retrieved_id, 'TRANSFER')
 
 # parse the threshold cryptocondition
-threshold_fulfillment = Fulfillment.from_json(threshold_tx['transaction']['conditions'][0]['condition']['details'])
+threshold_fulfillment = cc.Fulfillment.from_json(threshold_tx['transaction']['conditions'][0]['condition']['details'])
 
 subfulfillment1 = threshold_fulfillment.get_subcondition_from_vk(thresholduser1_pub)[0]
 subfulfillment2 = threshold_fulfillment.get_subcondition_from_vk(thresholduser2_pub)[0]
