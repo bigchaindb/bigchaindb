@@ -15,12 +15,11 @@ basic_views = Blueprint('basic_views', __name__)
 
 @basic_views.record
 def get_bigchain(state):
-    bigchain = state.app.config.get('bigchain')
+    bigchain_pool = state.app.config.get('bigchain_pool')
 
-    if bigchain is None:
+    if bigchain_pool is None:
         raise Exception('This blueprint expects you to provide '
-                        'database access through `bigchain`')
-
+                        'a pool of Bigchain instances called `bigchain_pool`')
 
 
 @basic_views.route('/transactions/<tx_id>')
@@ -34,9 +33,11 @@ def get_transaction(tx_id):
         A JSON string containing the data about the transaction.
     """
 
-    bigchain = current_app.config['bigchain']
+    pool = current_app.config['bigchain_pool']
 
-    tx = bigchain.get_transaction(tx_id)
+    with pool() as bigchain:
+        tx = bigchain.get_transaction(tx_id)
+
     return flask.jsonify(**tx)
 
 
@@ -47,7 +48,7 @@ def create_transaction():
     Return:
         A JSON string containing the data about the transaction.
     """
-    bigchain = current_app.config['bigchain']
+    pool = current_app.config['bigchain_pool']
 
     val = {}
 
@@ -55,15 +56,15 @@ def create_transaction():
     # set to `application/json`
     tx = request.get_json(force=True)
 
-    if tx['transaction']['operation'] == 'CREATE':
-        tx = util.transform_create(tx)
-        tx = bigchain.consensus.sign_transaction(
-            tx, private_key=bigchain.me_private)
+    with pool() as bigchain:
+        if tx['transaction']['operation'] == 'CREATE':
+            tx = util.transform_create(tx)
+            tx = bigchain.consensus.sign_transaction(tx, private_key=bigchain.me_private)
 
-    if not bigchain.consensus.verify_signature(tx):
-        val['error'] = 'Invalid transaction signature'
+        if not bigchain.consensus.verify_signature(tx):
+            val['error'] = 'Invalid transaction signature'
 
-    val = bigchain.write_transaction(tx)
+        val = bigchain.write_transaction(tx)
 
     return flask.jsonify(**tx)
 

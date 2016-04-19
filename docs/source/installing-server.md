@@ -130,7 +130,7 @@ stored on your host machine under ` ~/.bigchaindb_docker/config`:
 $ docker-compose run --rm bigchaindb bigchaindb configure
 Starting bigchaindb_rethinkdb-data_1
 Generating keypair
-API Server bind? (default `0.0.0.0:9984`): 
+API Server bind? (default `localhost:9984`): 
 Database host? (default `localhost`): rethinkdb
 Database port? (default `28015`): 
 Database name? (default `bigchain`): 
