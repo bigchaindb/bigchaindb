@@ -1,4 +1,5 @@
-'''Command line interface for the `bigchain-benchmark` command.'''
+"""Command line interface for the `bigchaindb-benchmark` command."""
+
 import logging
 import argparse
 

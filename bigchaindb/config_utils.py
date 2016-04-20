@@ -1,8 +1,8 @@
-"""Utils to configure Bigchain.
+"""Utils to configure BigchainDB.
 
 By calling `file_config`, the global configuration (stored in
-`bigchain.config`) will be updated with the values contained in the
-configuration file.
+`$HOME/.bigchaindb`) will be updated with the values contained
+in the configuration file.
 
 Note that there is a precedence in reading configuration values:
  - local config file;
@@ -54,7 +54,20 @@ def map_leafs(func, mapping):
 # Thanks Alex <3
 # http://stackoverflow.com/a/3233356/597097
 def update(d, u):
-    """Recursively update a mapping."""
+    """Recursively update a mapping (i.e. a dict, list, set, or tuple).
+
+    Conceptually, d and u are two sets trees (with nodes and edges).
+    This function goes through all the nodes of u. For each node in u,
+    if d doesn't have that node yet, then this function adds the node from u,
+    otherwise this function overwrites the node already in d with u's node.
+
+    Args:
+        d (mapping): The mapping to overwrite and add to.
+        u (mapping): The mapping to read for changes.
+
+    Returns:
+        mapping: An updated version of d (updated by u).
+    """
     for k, v in u.items():
         if isinstance(v, collections.Mapping):
             r = update(d.get(k, {}), v)
@@ -65,19 +78,21 @@ def update(d, u):
 
 
 def file_config(filename=None):
-    """Returns the values found in a configuration file.
+    """Returns the config values found in a configuration file.
 
     Args:
-        filename (str): the JSON file with the configuration. Defaults to ``None``.
-            If ``None``, the HOME of the current user and the string ``.bigchaindb`` will be used.
+        filename (str): the JSON file with the configuration values.
+            If ``None``, CONFIG_DEFAULT_PATH will be used.
 
-    Note:
-        The function merges the values in ``filename`` with the **default configuration**,
-        so any update made to ``bigchaindb.config`` will be lost.
+    Returns:
+        dict: The config values in the specified config file (or the
+              file at CONFIG_DEFAULT_PATH, if filename == None)
     """
+    logger.debug('On entry into file_config(), filename = {}'.format(filename))
     if not filename:
         filename = CONFIG_DEFAULT_PATH
 
+    logger.debug('file_config() will try to open `{}`'.format(filename))
     with open(filename) as f:
         config = json.load(f)
 
@@ -145,17 +160,21 @@ def update_types(config, reference, list_sep=':'):
     return map_leafs(_update_type, config)
 
 
-def dict_config(config):
-    """Merge the provided configuration with the default one.
+def set_config(config):
+    """Set bigchaindb.config equal to the default config dict,
+    then update that with whatever is in the provided config dict,
+    and then set bigchaindb.config['CONFIGURED'] = True
 
     Args:
-        newconfig (dict): a dictionary with the configuration to load.
+        config (dict): the config dict to read for changes
+                       to the default config
 
     Note:
-        The function merges ``newconfig`` with the **default configuration**, so any
-        update made to ``bigchaindb.config`` will be lost.
+        Any previous changes made to ``bigchaindb.config`` will be lost.
     """
+    # Deep copy the default config into bigchaindb.config
     bigchaindb.config = copy.deepcopy(bigchaindb._config)
+    # Update the default config with whatever is in the passed config
     update(bigchaindb.config, update_types(config, bigchaindb.config))
     bigchaindb.config['CONFIGURED'] = True
 
@@ -193,8 +212,7 @@ def autoconfigure(filename=None, config=None, force=False):
     if config:
         newconfig = update(newconfig, config)
 
-    dict_config(newconfig)
-    return newconfig
+    set_config(newconfig)  # sets bigchaindb.config
 
 
 def load_consensus_plugin(name=None):

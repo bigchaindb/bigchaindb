@@ -18,7 +18,7 @@ def test_bigchain_instance_is_initialized_when_conf_provided():
     from bigchaindb import config_utils
     assert 'CONFIGURED' not in bigchaindb.config
 
-    config_utils.dict_config({'keypair': {'public': 'a', 'private': 'b'}})
+    config_utils.set_config({'keypair': {'public': 'a', 'private': 'b'}})
 
     assert bigchaindb.config['CONFIGURED'] is True
     b = bigchaindb.Bigchain()
@@ -142,7 +142,7 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch):
     assert bigchaindb.config == {
         'CONFIGURED': True,
         'server': {
-            'bind': '0.0.0.0:9984',
+            'bind': 'localhost:9984',
             'workers': None,
             'threads': None,
         },

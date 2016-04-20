@@ -9,7 +9,7 @@ config = {
     'server': {
         # Note: this section supports all the Gunicorn settings:
         #       - http://docs.gunicorn.org/en/stable/settings.html
-        'bind': '0.0.0.0:9984',
+        'bind': 'localhost:9984',
         'workers': None, # if none, the value will be cpu_count * 2 + 1
         'threads': None, # if none, the value will be cpu_count * 2 + 1
     },

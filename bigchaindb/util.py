@@ -43,10 +43,18 @@ def pool(builder, size, timeout=None):
     Args:
         builder: a function to build an instance.
         size: the size of the pool.
+        timeout(Optional[float]): the seconds to wait before raising
+            a ``queue.Empty`` exception if no instances are available
+            within that time.
+    Raises:
+        If ``timeout`` is defined but the request is taking longer
+        than the specified time, the context manager will raise
+        a ``queue.Empty`` exception.
 
     Returns:
         A context manager that can be used with the ``with``
         statement.
+
     """
 
     lock = threading.Lock()
@@ -71,7 +79,7 @@ def pool(builder, size, timeout=None):
         # Watchout: current_size can be equal to size if the previous part of
         # the function has been executed, that's why we need to check if the
         # instance is None.
-        if instance is None and current_size == size:
+        if instance is None:
             instance = local_pool.get(timeout=timeout)
 
         yield instance
