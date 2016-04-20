@@ -82,7 +82,7 @@ tx_retrieved
                     "details":{
                         "bitmask":32,
                         "public_key":"BwuhqQX8FPsmqYiRV2CSZYWWsSWgSSQQFHjqxKEuqkPs",
-                        "signature":null,
+                        "signature":None,
                         "type":"fulfillment",
                         "type_id":4
                     },
@@ -106,7 +106,7 @@ tx_retrieved
                 ],
                 "fid":0,
                 "fulfillment":"cf:4:Iq-BcczwraM2UpF-TDPdwK8fQ6IXkD_6uJaxBZd984yxCGX7Csx-S2FBVe8LVyW2sAtmjsOSV0oiw9-s_9qSJB0dDUl_x8YQk5yxNdQyNVWVM1mWSGQL68gMngdmFG8O",
-                "input":null
+                "input":None
             }
         ],
         "operation":"CREATE",
@@ -175,7 +175,7 @@ tx_transfer_retrieved
                     "details":{
                         "bitmask":32,
                         "public_key":"qv8DvdNG5nZHWCP5aPSqgqxAvaPJpQj19abRvFCntor",
-                        "signature":null,
+                        "signature":None,
                         "type":"fulfillment",
                         "type_id":4
                     },
@@ -186,7 +186,7 @@ tx_transfer_retrieved
                 ]
             }
         ],
-        "data":null,
+        "data":None,
         "fulfillments":[
             {
                 "current_owners":[
@@ -259,7 +259,7 @@ tx_multisig_retrieved
                             {
                                 "bitmask":32,
                                 "public_key":"BwuhqQX8FPsmqYiRV2CSZYWWsSWgSSQQFHjqxKEuqkPs",
-                                "signature":null,
+                                "signature":None,
                                 "type":"fulfillment",
                                 "type_id":4,
                                 "weight":1
@@ -267,7 +267,7 @@ tx_multisig_retrieved
                             {
                                 "bitmask":32,
                                 "public_key":"qv8DvdNG5nZHWCP5aPSqgqxAvaPJpQj19abRvFCntor",
-                                "signature":null,
+                                "signature":None,
                                 "type":"fulfillment",
                                 "type_id":4,
                                 "weight":1
@@ -285,7 +285,7 @@ tx_multisig_retrieved
                 ]
             }
         ],
-        "data":null,
+        "data":None,
         "fulfillments":[
             {
                 "current_owners":[
@@ -293,7 +293,7 @@ tx_multisig_retrieved
                 ],
                 "fid":0,
                 "fulfillment":"cf:4:Iq-BcczwraM2UpF-TDPdwK8fQ6IXkD_6uJaxBZd984z5qdHRz9Jag68dkOyZS5_YoTR_0WpwiUnBGoNgwjwEuIn5JNm7Kksi0nUnHsWssyXISkmqRnHH-30HQhKjznIH",
-                "input":null
+                "input":None
             }
         ],
         "operation":"CREATE",
@@ -340,7 +340,7 @@ tx_multisig_retrieved
                     "details":{
                         "bitmask":32,
                         "public_key":"8YN9fALMj9CkeCcmTiM2kxwurpkMzHg9RkwSLJKMasvG",
-                        "signature":null,
+                        "signature":None,
                         "type":"fulfillment",
                         "type_id":4
                     },
@@ -351,7 +351,7 @@ tx_multisig_retrieved
                 ]
             }
         ],
-        "data":null,
+        "data":None,
         "fulfillments":[
             {
                 "current_owners":[
@@ -417,7 +417,7 @@ tx_mimo_retrieved
                     "details":{
                         "bitmask":32,
                         "public_key":"qv8DvdNG5nZHWCP5aPSqgqxAvaPJpQj19abRvFCntor",
-                        "signature":null,
+                        "signature":None,
                         "type":"fulfillment",
                         "type_id":4
                     },
@@ -433,7 +433,7 @@ tx_mimo_retrieved
                     "details":{
                         "bitmask":32,
                         "public_key":"qv8DvdNG5nZHWCP5aPSqgqxAvaPJpQj19abRvFCntor",
-                        "signature":null,
+                        "signature":None,
                         "type":"fulfillment",
                         "type_id":4
                     },
@@ -449,7 +449,7 @@ tx_mimo_retrieved
                     "details":{
                         "bitmask":32,
                         "public_key":"qv8DvdNG5nZHWCP5aPSqgqxAvaPJpQj19abRvFCntor",
-                        "signature":null,
+                        "signature":None,
                         "type":"fulfillment",
                         "type_id":4
                     },
@@ -460,7 +460,7 @@ tx_mimo_retrieved
                 ]
             }
         ],
-        "data":null,
+        "data":None,
         "fulfillments":[
             {
                 "current_owners":[
@@ -589,7 +589,7 @@ tx_threshold_retrieved
                             {
                                 "bitmask":32,
                                 "public_key":"8NaGq26YMcEvj8Sc5MnqspKzFTQd1eZBAuuPDw4ERHpz",
-                                "signature":null,
+                                "signature":None,
                                 "type":"fulfillment",
                                 "type_id":4,
                                 "weight":1
@@ -597,7 +597,7 @@ tx_threshold_retrieved
                             {
                                 "bitmask":32,
                                 "public_key":"ALE9Agojob28D1fHWCxFXJwpqrYPkcsUs26YksBVj27z",
-                                "signature":null,
+                                "signature":None,
                                 "type":"fulfillment",
                                 "type_id":4,
                                 "weight":1
@@ -605,7 +605,7 @@ tx_threshold_retrieved
                             {
                                 "bitmask":32,
                                 "public_key":"Cx4jWSGci7fw6z5QyeApCijbwnMpyuhp4C1kzuFc3XrM",
-                                "signature":null,
+                                "signature":None,
                                 "type":"fulfillment",
                                 "type_id":4,
                                 "weight":1
@@ -624,7 +624,7 @@ tx_threshold_retrieved
                 ]
             }
         ],
-        "data":null,
+        "data":None,
         "fulfillments":[
             {
                 "current_owners":[
@@ -713,7 +713,7 @@ threshold_tx_transfer
                     "details":{
                         "bitmask":32,
                         "public_key":"ED2pyPfsbNRTHkdMnaFkAwCSpZWRmbaM1h8fYzgRRMmc",
-                        "signature":null,
+                        "signature":None,
                         "type":"fulfillment",
                         "type_id":4
                     },
@@ -724,7 +724,7 @@ threshold_tx_transfer
                 ]
             }
         ],
-        "data":null,
+        "data":None,
         "fulfillments":[
             {
                 "current_owners":[
