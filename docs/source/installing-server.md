@@ -95,15 +95,16 @@ $ rethinkdb
 Then open a different terminal and run:
 ```text
 $ bigchaindb -y configure
-$ bigchaindb init
 ```
 
-That creates a configuration file in `$HOME/.bigchaindb` (documented in [the section on configuration](configuration.html)), initializes the database, creates the tables, creates the indexes, and generates the genesis block.
+That creates a configuration file in `$HOME/.bigchaindb` (documented in [the section on configuration](configuration.html)). More documentation about the `bigchaindb` command is in the section on [the BigchainDB Command Line Interface (CLI)](bigchaindb-cli.html).
 
 You can start BigchainDB Server using:
 ```text
 $ bigchaindb start
 ```
+
+If it's the first time you've run `bigchaindb start`, then it creates the database (a RethinkDB database), the tables, the indexes, and the genesis block. It then starts BigchainDB. If you're run `bigchaindb start` or `bigchaindb init` before (and you haven't dropped the database), then `bigchaindb start` just starts BigchainDB.
 
 
 ## Run BigchainDB with Docker
