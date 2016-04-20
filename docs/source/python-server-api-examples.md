@@ -71,7 +71,7 @@ tx_retrieved = b.get_transaction(tx_signed['id'])
 tx_retrieved
 ```
 
-```json
+```python
 {
     "id":"933cd83a419d2735822a2154c84176a2f419cbd449a74b94e592ab807af23861",
     "transaction":{
@@ -142,7 +142,7 @@ tx_retrieved_id = b.get_owned_ids(testuser1_pub).pop()
 tx_retrieved_id
 ```
 
-```json
+```python
 {
     "cid":0,
     "txid":"933cd83a419d2735822a2154c84176a2f419cbd449a74b94e592ab807af23861"
@@ -164,7 +164,7 @@ tx_transfer_retrieved = b.get_transaction(tx_transfer_signed['id'])
 tx_transfer_retrieved
 ```
 
-```json
+```python
 {
     "id":"aa11365317cb89bfdae2375bae76d6b8232008f8672507080e3766ca06976dcd",
     "transaction":{
@@ -245,7 +245,7 @@ tx_multisig_retrieved = b.get_transaction(tx_multisig_signed['id'])
 tx_multisig_retrieved
 ```
 
-```json
+```python
 {
     "id":"a9a6e5c74ea02b8885c83125f1b74a2ba8ca42236ec5e1c358aa1053ec721ccb",
     "transaction":{
@@ -328,7 +328,7 @@ tx_multisig_retrieved = b.get_transaction(tx_multisig_transfer_signed['id'])
 tx_multisig_retrieved
 ```
 
-```json
+```python
 {
     "assignee":"3LQ5dTiddXymDhNzETB1rEkp4mA7fEV1Qeiu5ghHiJm9",
     "id":"e689e23f774e7c562eeb310c7c712b34fb6210bea5deb9175e48b68810029150",
@@ -406,7 +406,7 @@ tx_mimo_retrieved = b.get_transaction(tx_mimo_signed['id'])
 tx_mimo_retrieved
 ```
 
-```json
+```python
 {
     "id":"8b63689691a3c2e8faba89c6efe3caa0661f862c14d88d1e63ebd65d49484de2",
     "transaction":{
@@ -575,7 +575,7 @@ tx_threshold_retrieved = b.get_transaction(threshold_tx_signed['id'])
 tx_threshold_retrieved
 ```
 
-```json
+```python
 {
     "id":"0057d29ff735d91505decf5e7195ea8da675b01676165abf23ea774bbb469383",
     "transaction":{
@@ -701,7 +701,7 @@ b.write_transaction(threshold_tx_transfer)
 threshold_tx_transfer
 ```
 
-```json
+```python
 {
     "assignee":"3LQ5dTiddXymDhNzETB1rEkp4mA7fEV1Qeiu5ghHiJm9",
     "id":"a45b2340c59df7422a5788b3c462dee708a18cdf09d1a10bd26be3f31af4b8d7",
