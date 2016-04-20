@@ -141,5 +141,5 @@ def test_process_group_instantiates_and_start_processes(mock_process):
                                   for i in range(concurrency)], any_order=True)
 
     for process in pg.processes:
-        process.start.assert_called()
+        process.start.assert_called_with()
 
