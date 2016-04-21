@@ -5,6 +5,8 @@ for ``argparse.ArgumentParser``.
 import argparse
 import multiprocessing as mp
 
+from bigchaindb.version import __version__
+
 
 def start(parser, scope):
     """Utility function to execute a subcommand.
@@ -46,7 +48,7 @@ def start(parser, scope):
     func(args)
 
 
-base_parser = argparse.ArgumentParser(add_help=False)
+base_parser = argparse.ArgumentParser(add_help=False, prog='bigchaindb')
 
 base_parser.add_argument('-c', '--config',
                          help='Specify the location of the configuration file')
@@ -55,3 +57,7 @@ base_parser.add_argument('-y', '--yes', '--yes-please',
                          action='store_true',
                          help='Assume "yes" as answer to all prompts and run '
                               'non-interactively')
+
+base_parser.add_argument('-v', '--version',
+                         action='version',
+                         version='%(prog)s {}'.format(__version__))
