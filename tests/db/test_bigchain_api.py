@@ -1544,6 +1544,136 @@ class TestCryptoconditions(object):
 
         assert b.verify_signature(tx_transfer_signed) is True
 
+    def test_create_asset_with_hashlock_condition(self, b):
+        hashlock_tx = b.create_transaction(b.me, None, None, 'CREATE')
+
+        secret = b'much secret! wow!'
+        first_tx_condition = cc.PreimageSha256Fulfillment(preimage=secret)
+
+        hashlock_tx['transaction']['conditions'].append({
+            'condition': {
+                'details': json.loads(first_tx_condition.serialize_json()),
+                'uri': first_tx_condition.condition.serialize_uri()
+            },
+            'cid': 0,
+            'new_owners': None
+        })
+        # conditions have been updated, so hash needs updating
+        hashlock_tx['id'] = util.get_hash_data(hashlock_tx)
+
+        hashlock_tx_signed = b.sign_transaction(hashlock_tx, b.me_private)
+
+        assert b.validate_transaction(hashlock_tx_signed) == hashlock_tx_signed
+        assert b.is_valid_transaction(hashlock_tx_signed) == hashlock_tx_signed
+
+        b.write_transaction(hashlock_tx_signed)
+
+        # create and write block to bigchain
+        block = b.create_block([hashlock_tx_signed])
+        b.write_block(block, durability='hard')
+
+    @pytest.mark.usefixtures('inputs')
+    def test_transfer_asset_with_hashlock_condition(self, b, user_vk, user_sk):
+        first_input_tx = b.get_owned_ids(user_vk).pop()
+
+        hashlock_tx = b.create_transaction(user_vk, None, first_input_tx, 'TRANSFER')
+
+        secret = b'much secret! wow!'
+        first_tx_condition = cc.PreimageSha256Fulfillment(preimage=secret)
+
+        hashlock_tx['transaction']['conditions'].append({
+            'condition': {
+                'details': json.loads(first_tx_condition.serialize_json()),
+                'uri': first_tx_condition.condition.serialize_uri()
+            },
+            'cid': 0,
+            'new_owners': None
+        })
+        # conditions have been updated, so hash needs updating
+        hashlock_tx['id'] = util.get_hash_data(hashlock_tx)
+
+        hashlock_tx_signed = b.sign_transaction(hashlock_tx, user_sk)
+
+        assert b.validate_transaction(hashlock_tx_signed) == hashlock_tx_signed
+        assert b.is_valid_transaction(hashlock_tx_signed) == hashlock_tx_signed
+        assert len(b.get_owned_ids(user_vk)) == 1
+
+        b.write_transaction(hashlock_tx_signed)
+
+        # create and write block to bigchain
+        block = b.create_block([hashlock_tx_signed])
+        b.write_block(block, durability='hard')
+
+        assert len(b.get_owned_ids(user_vk)) == 0
+
+    def test_create_and_fulfill_asset_with_hashlock_condition(self, b, user_vk):
+        hashlock_tx = b.create_transaction(b.me, None, None, 'CREATE')
+
+        secret = b'much secret! wow!'
+        first_tx_condition = cc.PreimageSha256Fulfillment(preimage=secret)
+
+        hashlock_tx['transaction']['conditions'].append({
+            'condition': {
+                'details': json.loads(first_tx_condition.serialize_json()),
+                'uri': first_tx_condition.condition.serialize_uri()
+            },
+            'cid': 0,
+            'new_owners': None
+        })
+        # conditions have been updated, so hash needs updating
+        hashlock_tx['id'] = util.get_hash_data(hashlock_tx)
+
+        hashlock_tx_signed = b.sign_transaction(hashlock_tx, b.me_private)
+
+        assert b.validate_transaction(hashlock_tx_signed) == hashlock_tx_signed
+        assert b.is_valid_transaction(hashlock_tx_signed) == hashlock_tx_signed
+
+        b.write_transaction(hashlock_tx_signed)
+
+        # create and write block to bigchain
+        block = b.create_block([hashlock_tx_signed])
+        b.write_block(block, durability='hard')
+
+        assert len(b.get_owned_ids(b.me)) == 0
+
+        # create hashlock fulfillment tx
+        hashlock_fulfill_tx = b.create_transaction(None, user_vk, {'txid': hashlock_tx['id'], 'cid': 0}, 'TRANSFER')
+
+        hashlock_fulfill_tx_fulfillment = cc.PreimageSha256Fulfillment(preimage=b'')
+        hashlock_fulfill_tx['transaction']['fulfillments'][0]['fulfillment'] = \
+            hashlock_fulfill_tx_fulfillment.serialize_uri()
+
+        with pytest.raises(exceptions.InvalidSignature):
+            b.validate_transaction(hashlock_fulfill_tx)
+        assert b.is_valid_transaction(hashlock_fulfill_tx) == False
+
+        hashlock_fulfill_tx_fulfillment = cc.PreimageSha256Fulfillment(preimage=secret)
+        hashlock_fulfill_tx['transaction']['fulfillments'][0]['fulfillment'] = \
+            hashlock_fulfill_tx_fulfillment.serialize_uri()
+
+        assert b.validate_transaction(hashlock_fulfill_tx) == hashlock_fulfill_tx
+        assert b.is_valid_transaction(hashlock_fulfill_tx) == hashlock_fulfill_tx
+
+        b.write_transaction(hashlock_fulfill_tx)
+
+        # create and write block to bigchain
+        block = b.create_block([hashlock_fulfill_tx])
+        b.write_block(block, durability='hard')
+
+        assert len(b.get_owned_ids(b.me)) == 0
+        assert len(b.get_owned_ids(user_vk)) == 1
+
+        # try doublespending
+        user2_sk, user2_vk = crypto.generate_key_pair()
+        hashlock_doublespend_tx = b.create_transaction(None, user2_vk, {'txid': hashlock_tx['id'], 'cid': 0}, 'TRANSFER')
+
+        hashlock_doublespend_tx_fulfillment = cc.PreimageSha256Fulfillment(preimage=secret)
+        hashlock_doublespend_tx['transaction']['fulfillments'][0]['fulfillment'] = \
+            hashlock_doublespend_tx_fulfillment.serialize_uri()
+
+        with pytest.raises(exceptions.DoubleSpend):
+            b.validate_transaction(hashlock_doublespend_tx)
+
     def test_get_subcondition_from_vk(self, b, user_sk, user_vk):
         user2_sk, user2_vk = crypto.generate_key_pair()
         user3_sk, user3_vk = crypto.generate_key_pair()
