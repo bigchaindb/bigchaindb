@@ -65,9 +65,11 @@ def install_base_software():
     sudo('apt-get -y -f install')
     sudo('apt-get -y install build-essential wget bzip2 ca-certificates \
                      libglib2.0-0 libxext6 libsm6 libxrender1 libssl-dev \
-                     git gcc g++ python-dev libboost-python-dev libffi-dev \
+                     git gcc g++ python3-dev libboost-python-dev libffi-dev \
                      software-properties-common python-software-properties \
-                     python3-pip ipython3 sysstat s3cmd')
+                     python3-setuptools ipython3 sysstat s3cmd')
+    sudo('easy_install3 pip')
+    sudo('pip install -U pip wheel setuptools')
 
 
 # Install RethinkDB
@@ -111,11 +113,22 @@ def install_rethinkdb():
         sudo('/etc/init.d/rethinkdb restart')
 
 
-# Install BigchainDB (from PyPI)
+# Install BigchainDB from PyPI
 @task
 @parallel
-def install_bigchaindb():
-    sudo('python3 -m pip install bigchaindb')
+def install_bigchaindb_from_pypi():
+    sudo('pip install bigchaindb')
+
+
+# Install BigchainDB from a Git archive file
+# named bigchaindb-archive.tar.gz
+@task
+@parallel
+def install_bigchaindb_from_git_archive():
+    put('bigchaindb-archive.tar.gz')
+    run('tar xvfz bigchaindb-archive.tar.gz')
+    sudo('pip install .')
+    # sudo('python3 setup.py install')
 
 
 # Configure BigchainDB
