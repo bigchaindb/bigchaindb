@@ -1,5 +1,6 @@
-import rethinkdb as r
 import random
+
+import rethinkdb as r
 import rapidjson
 
 import bigchaindb
@@ -7,9 +8,6 @@ from bigchaindb import util
 from bigchaindb import config_utils
 from bigchaindb import exceptions
 from bigchaindb import crypto
-from bigchaindb.monitor import Monitor
-
-monitor = Monitor()
 
 
 class GenesisBlockAlreadyExistsError(Exception):
@@ -66,7 +64,6 @@ class Bigchain(object):
     def reconnect(self):
         return r.connect(host=self.host, port=self.port, db=self.dbname)
 
-    @monitor.timer('create_transaction', rate=bigchaindb.config['statsd']['rate'])
     def create_transaction(self, *args, **kwargs):
         """Create a new transaction
 
@@ -102,7 +99,6 @@ class Bigchain(object):
         return self.consensus.verify_signature(
             signed_transaction, *args, **kwargs)
 
-    @monitor.timer('write_transaction', rate=bigchaindb.config['statsd']['rate'])
     def write_transaction(self, signed_transaction, durability='soft'):
         """Write the transaction to bigchain.
 
@@ -248,7 +244,6 @@ class Bigchain(object):
 
         return owned
 
-    @monitor.timer('validate_transaction', rate=bigchaindb.config['statsd']['rate'])
     def validate_transaction(self, transaction):
         """Validate a transaction.
 
@@ -317,7 +312,6 @@ class Bigchain(object):
 
         return block
 
-    @monitor.timer('validate_block')
     # TODO: check that the votings structure is correctly constructed
     def validate_block(self, block):
         """Validate a block.
@@ -360,7 +354,6 @@ class Bigchain(object):
         except Exception:
             return False
 
-    @monitor.timer('write_block')
     def write_block(self, block, durability='soft'):
         """Write a block to bigchain.
 
