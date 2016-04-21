@@ -4,7 +4,6 @@ BigchainDB: A Scalable Blockchain Database
 For full docs visit https://bigchaindb.readthedocs.org
 
 """
-import os, sys
 from setuptools import setup, find_packages
 
 # get the version
