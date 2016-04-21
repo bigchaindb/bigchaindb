@@ -74,7 +74,7 @@ author = 'BigchainDB Contributors'
 # built documents.
 #
 # The short X.Y version.
-version = '0.1'
+version = _version['__short_version__']
 # The full version, including alpha/beta/rc tags.
 release = _version['__version__']
 
