@@ -4,7 +4,13 @@ BigchainDB: A Scalable Blockchain Database
 For full docs visit https://bigchaindb.readthedocs.org
 
 """
+import os, sys
 from setuptools import setup, find_packages
+
+# get the version
+version = {}
+with open('bigchaindb/version.py') as fp:
+    exec(fp.read(), version)
 
 tests_require = [
     'pytest',
@@ -32,7 +38,7 @@ docs_require = [
 
 setup(
     name='BigchainDB',
-    version='0.1.4',
+    version=version['__version__'],
     description='BigchainDB: A Scalable Blockchain Database',
     long_description=__doc__,
     url='https://github.com/BigchainDB/bigchaindb/',
