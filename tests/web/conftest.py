@@ -5,7 +5,7 @@ from ..db import conftest
 @pytest.fixture(autouse=True)
 def restore_config(request, node_config):
     from bigchaindb import config_utils
-    config_utils.dict_config(node_config)
+    config_utils.set_config(node_config)
 
 
 @pytest.fixture(scope='module', autouse=True)
@@ -25,7 +25,7 @@ def app(request, node_config):
     restore_config(request, node_config)
 
     from bigchaindb.web import server
-    app = server.create_app(debug=True)
+    app = server.create_app({'debug': True})
     return app
 
 

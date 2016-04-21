@@ -1,4 +1,6 @@
-"""Utility functions and basic common arguments for ``argparse.ArgumentParser``."""
+"""Utility functions and basic common arguments
+for ``argparse.ArgumentParser``.
+"""
 
 import argparse
 import multiprocessing as mp
@@ -7,7 +9,8 @@ import multiprocessing as mp
 def start(parser, scope):
     """Utility function to execute a subcommand.
 
-    The function will look up in the ``scope`` if there is a function called ``run_<parser.args.command>``
+    The function will look up in the ``scope``
+    if there is a function called ``run_<parser.args.command>``
     and will run it using ``parser.args`` as first positional argument.
 
     Args:
@@ -15,7 +18,8 @@ def start(parser, scope):
         scope (dict): map containing (eventually) the functions to be called.
 
     Raises:
-        NotImplementedError: if ``scope`` doesn't contain a function called ``run_<parser.args.command>``.
+        NotImplementedError: if ``scope`` doesn't contain a function called
+                             ``run_<parser.args.command>``.
     """
     args = parser.parse_args()
 
@@ -29,7 +33,8 @@ def start(parser, scope):
 
     # if no command has been found, raise a `NotImplementedError`
     if not func:
-        raise NotImplementedError('Command `{}` not yet implemented'.format(args.command))
+        raise NotImplementedError('Command `{}` not yet implemented'.
+                                  format(args.command))
 
     args.multiprocess = getattr(args, 'multiprocess', False)
 

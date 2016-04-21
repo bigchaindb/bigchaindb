@@ -122,9 +122,17 @@ bigchaindb --help
 bigchaindb show-config
 ```
 
-There are fees associated with running instances on EC2, so if you're not using them, you should terminate them. You can do that from the AWS EC2 Console.
+There are fees associated with running instances on EC2, so if you're not using them, you should terminate them. You can do that using the AWS EC2 Console.
 
-The same is true of your allocated elastic IP addresses. There's a small fee to keep them allocated if they're not associated with a running instance. You can release them from the AWS EC2 Console.
+The same is true of your allocated elastic IP addresses. There's a small fee to keep them allocated if they're not associated with a running instance. You can release them using the AWS EC2 Console, or by using a handy little script named `release_eips.py`. For example:
+```text
+$ python release_eips.py
+You have 2 allocated elactic IPs which are not associated with instances
+0: Releasing 52.58.110.110
+(It has Domain = vpc.)
+1: Releasing 52.58.107.211
+(It has Domain = vpc.)
+```
 
 ## Known Deployment Issues
 
