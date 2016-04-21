@@ -125,7 +125,7 @@ class TestBigchainVoter(object):
 
         # create a `TRANSFER` transaction
         test_user2_priv, test_user2_pub = crypto.generate_key_pair()
-        tx2 = b.create_transaction(test_user_pub, test_user2_pub, tx['id'], 'TRANSFER')
+        tx2 = b.create_transaction(test_user_pub, test_user2_pub, {'txid': tx['id'], 'cid': 0}, 'TRANSFER')
         tx2_signed = b.sign_transaction(tx2, test_user_priv)
         assert b.is_valid_transaction(tx2_signed)
 
@@ -160,13 +160,13 @@ class TestBigchainVoter(object):
         assert vote['node_pubkey'] == b.me
         assert crypto.VerifyingKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
 
-    def test_invalid_block_voting(self, b, user_public_key):
+    def test_invalid_block_voting(self, b, user_vk):
         # create queue and voter
         q_new_block = mp.Queue()
         voter = Voter(q_new_block)
 
         # create transaction
-        transaction = b.create_transaction(b.me, user_public_key, None, 'CREATE')
+        transaction = b.create_transaction(b.me, user_vk, None, 'CREATE')
         transaction_signed = b.sign_transaction(transaction, b.me_private)
 
         genesis = b.create_genesis_block()
