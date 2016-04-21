@@ -11,8 +11,6 @@ from bigchaindb.monitor import Monitor
 
 logger = logging.getLogger(__name__)
 
-monitor = Monitor()
-
 
 class Block(object):
 
@@ -27,6 +25,7 @@ class Block(object):
         self.q_tx_delete = mp.Queue()
         self.q_block = mp.Queue()
         self.initialized = mp.Event()
+        self.monitor = Monitor()
 
     def filter_by_assignee(self):
         """
@@ -57,7 +56,9 @@ class Block(object):
         b = Bigchain()
 
         while True:
-            monitor.gauge('tx_queue_gauge', self.q_tx_to_validate.qsize(), rate=bigchaindb.config['statsd']['rate'])
+            self.monitor.gauge('tx_queue_gauge',
+                               self.q_tx_to_validate.qsize(),
+                               rate=bigchaindb.config['statsd']['rate'])
             tx = self.q_tx_to_validate.get()
 
             # poison pill
@@ -67,7 +68,11 @@ class Block(object):
                 return
 
             self.q_tx_delete.put(tx['id'])
-            if b.is_valid_transaction(tx):
+
+            with self.monitor.timer('validate_transaction', rate=bigchaindb.config['statsd']['rate']):
+                is_valid_transaction = b.is_valid_transaction(tx)
+
+            if is_valid_transaction:
                 self.q_tx_validated.put(tx)
 
     def create_blocks(self):
@@ -122,7 +127,8 @@ class Block(object):
             if block == 'stop':
                 return
 
-            b.write_block(block)
+            with self.monitor.timer('write_block'):
+                b.write_block(block)
 
     def delete_transactions(self):
         """

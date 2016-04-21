@@ -1,3 +1,4 @@
+from unittest.mock import patch, call
 import pytest
 import queue
 
@@ -120,4 +121,25 @@ def test_pool_raises_empty_exception_when_timeout(mock_queue):
     with pytest.raises(queue.Empty):
         with pool() as instance:
             assert instance == 'hello'
+
+
+@patch('multiprocessing.Process')
+def test_process_group_instantiates_and_start_processes(mock_process):
+    from bigchaindb.util import ProcessGroup
+
+    def noop():
+        pass
+
+    concurrency = 10
+
+    pg = ProcessGroup(concurrency=concurrency, group='test_group', target=noop)
+    pg.start()
+
+    mock_process.assert_has_calls([call(group='test_group', target=noop,
+                                        name=None, args=(), kwargs={},
+                                        daemon=None)
+                                  for i in range(concurrency)], any_order=True)
+
+    for process in pg.processes:
+        process.start.assert_called_with()
 

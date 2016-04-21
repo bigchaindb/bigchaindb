@@ -1,7 +1,6 @@
 import requests
 
 import bigchaindb
-from bigchaindb import util
 from bigchaindb import config_utils
 from bigchaindb import exceptions
 from bigchaindb import crypto
@@ -112,5 +111,5 @@ def temp_client():
     """
 
     private_key, public_key = crypto.generate_key_pair()
-    return Client(private_key=private_key, public_key=public_key, api_endpoint='http://localhost:5000/api/v1')
+    return Client(private_key=private_key, public_key=public_key, api_endpoint=bigchaindb.config['api_endpoint'])
 
