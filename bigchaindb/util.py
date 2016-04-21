@@ -202,10 +202,6 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
             },
         }
     """
-    current_owners = current_owners if isinstance(current_owners, list) else [current_owners]
-    new_owners = new_owners if isinstance(new_owners, list) else [new_owners]
-    inputs = inputs if isinstance(inputs, list) else [inputs]
-
     # validate arguments (owners and inputs should be lists)
     if not isinstance(current_owners, list):
         current_owners = [current_owners]
