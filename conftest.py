@@ -25,8 +25,8 @@ CONFIG = {
 }
 
 # Test user. inputs will be created for this user. Cryptography Keys
-USER_PRIVATE_KEY = '8eJ8q9ZQpReWyQT5aFCiwtZ5wDZC4eDnCen88p3tQ6ie'
-USER_PUBLIC_KEY = 'JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE'
+USER_SIGNING_KEY = '8eJ8q9ZQpReWyQT5aFCiwtZ5wDZC4eDnCen88p3tQ6ie'
+USER_VERIFYING_KEY = 'JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE'
 
 
 # We need this function to avoid loading an existing
@@ -54,13 +54,13 @@ def node_config():
 
 
 @pytest.fixture
-def user_private_key():
-    return USER_PRIVATE_KEY
+def user_sk():
+    return USER_SIGNING_KEY
 
 
 @pytest.fixture
-def user_public_key():
-    return USER_PUBLIC_KEY
+def user_vk():
+    return USER_VERIFYING_KEY
 
 
 @pytest.fixture
