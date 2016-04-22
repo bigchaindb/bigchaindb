@@ -69,7 +69,7 @@ After a couple of seconds, we can check if the transactions was included in the 
 # retrieve a transaction from the bigchain
 tx_retrieved = b.get_transaction(tx_signed['id'])
 
-   'id': '6539dded9479c47b3c83385ae569ecaa90bcf387240d1ee2ea3ae0f7986aeddd',
+{  'id': '6539dded9479c47b3c83385ae569ecaa90bcf387240d1ee2ea3ae0f7986aeddd',
    'transaction': {   'current_owner': 'pvGtcm5dvwWMzCqagki1N6CDKYs2J1cCwTNw8CqJic3Q',
                       'data': {   'hash': '872fa6e6f46246cd44afdb2ee9cfae0e72885fb0910e2bcf9a5a2a4eadb417b8',
                                   'payload': {'msg': 'Hello BigchainDB!'}},
