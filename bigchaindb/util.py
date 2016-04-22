@@ -219,7 +219,7 @@ def sign_tx(transaction, private_key):
     private_key = crypto.SigningKey(private_key)
     signature = private_key.sign(serialize(transaction))
     signed_transaction = transaction.copy()
-    signed_transaction.update({'signature': signature.decode()})
+    signed_transaction.update({'signature': signature})
     return signed_transaction
 
 
