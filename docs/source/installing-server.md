@@ -26,7 +26,7 @@ If you don't already have it, then you should [install Python 3.4+](https://www.
 
 ## Install BigchainDB Server
 
-BigchainDB Server has some OS-level dependencies. In particular, you need to install the OS-level dependencies for the Python **cryptography** package. Instructions for installing those dependencies on your OS can be found in the [cryptography package documentation](https://cryptography.io/en/latest/installation/).
+BigchainDB Server has some OS-level dependencies.
 
 On Ubuntu 14.04, we found that the following was enough:
 ```text
