@@ -5,7 +5,7 @@ BigchainDB, including its storage backend (RethinkDB).
 
 from __future__ import with_statement, unicode_literals
 
-from fabric.api import sudo, env
+from fabric.api import sudo, env, hosts
 from fabric.api import task, parallel
 from fabric.contrib.files import sed
 from fabric.operations import run, put
@@ -29,28 +29,6 @@ newrelic_license_key = 'you_need_a_real_license_key'
 
 
 ######################################################################
-
-# DON'T PUT @parallel
-@task
-def set_hosts(hosts):
-    """A helper function to change env.hosts from the
-    command line.
-
-    Args:
-        hosts (str): 'one_node' or 'two_nodes'
-
-    Example:
-        fab set_hosts:one_node init_bigchaindb
-    """
-    if hosts == 'one_node':
-        env.hosts = public_dns_names[:1]
-    elif hosts == 'two_nodes':
-        env.hosts = public_dns_names[:2]
-    else:
-        raise ValueError('Invalid input to set_hosts.'
-                         ' Expected one_node or two_nodes.'
-                         ' Got {}'.format(hosts))
-
 
 # Install base software
 @task
@@ -141,10 +119,10 @@ def configure_bigchaindb():
 # Initialize BigchainDB
 # i.e. create the database, the tables,
 # the indexes, and the genesis block.
-# (This only needs to be run on one node.)
-# Call using:
-#     fab set_hosts:one_node init_bigchaindb
+# (The @hosts decorator is used to make this
+# task run on only one node. See http://tinyurl.com/h9qqf3t )
 @task
+@hosts(public_dns_names[0])
 def init_bigchaindb():
     run('bigchaindb init', pty=False)
 

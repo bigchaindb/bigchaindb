@@ -94,11 +94,11 @@ fab configure_bigchaindb
 # TODO: Add list of public keys to keyring of all nodes
 
 
-# Send a "bigchaindb init" command to one node
-# to initialize the BigchainDB database 
-# i.e. create the database, the tables,
-# the indexes, and the genesis block.
-fab set_hosts:one_node init_bigchaindb
+# Initialize BigchainDB (i.e. Create the RethinkDB database,
+# the tables, the indexes, and genesis glock). Note that
+# this will only be sent to one of the nodes, see the
+# definition of init_bigchaindb() in fabfile.py to see why.
+fab init_bigchaindb
 
 # Start BigchainDB on all the nodes using "screen"
 fab start_bigchaindb
