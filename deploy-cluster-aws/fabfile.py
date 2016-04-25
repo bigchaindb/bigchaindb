@@ -117,7 +117,7 @@ def install_rethinkdb():
 @task
 @parallel
 def install_bigchaindb_from_pypi():
-    sudo('pip install bigchaindb')
+    sudo('pip3 install bigchaindb')
 
 
 # Install BigchainDB from a Git archive file
@@ -127,7 +127,7 @@ def install_bigchaindb_from_pypi():
 def install_bigchaindb_from_git_archive():
     put('bigchaindb-archive.tar.gz')
     run('tar xvfz bigchaindb-archive.tar.gz')
-    sudo('pip install .')
+    sudo('pip3 install .')
     # sudo('python3 setup.py install')
 
 
