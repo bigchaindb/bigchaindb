@@ -11,6 +11,7 @@ For reference, the possible headings are:
 * **Removed** for deprecated features removed in this release.
 * **Fixed** for any bug fixes.
 * **Security** to invite users to upgrade in case of vulnerabilities.
+* **External Contributors** to list contributors outside of ascribe GmbH.
 
 
 ## [Unreleased] - YYYY-MM-DD
@@ -19,19 +20,50 @@ Tag name: TBD
 committed: TBD
 
 ### Added
-- AWS deployment scripts: [Issue #151](https://github.com/bigchaindb/bigchaindb/issues/151)
-- `CHANGELOG.md` (this file)
+- Ability to use environment variables to set (or partially set) configuration settings: [Pull Request #153](https://github.com/bigchaindb/bigchaindb/pull/153)
+- `bigchaindb --export-my-pubkey`: [Pull Request #186](https://github.com/bigchaindb/bigchaindb/pull/186)
+- `bigchaindb --version`, and one central source for the current version (`version.py`): [Pull Request #208](https://github.com/bigchaindb/bigchaindb/pull/208)
+- AWS deployment scripts: Pull Requests 
+[#160](https://github.com/bigchaindb/bigchaindb/pull/160),
+[#166](https://github.com/bigchaindb/bigchaindb/pull/166),
+[#172](https://github.com/bigchaindb/bigchaindb/pull/172),
+[#203](https://github.com/bigchaindb/bigchaindb/pull/203)
+- `codecov.yml`: [Pull Request #161](https://github.com/bigchaindb/bigchaindb/pull/161)
+- `CHANGELOG.md` (this file): [Pull Request #117](https://github.com/bigchaindb/bigchaindb/pull/117)
+- Signatures using Ed25519: Pull Requests 
+[#138](https://github.com/bigchaindb/bigchaindb/pull/138),
+[#152](https://github.com/bigchaindb/bigchaindb/pull/152)
 - Multisig support: [Pull Request #107](https://github.com/bigchaindb/bigchaindb/pull/107)
-- API/Wire protocol (RESTful HTTP API): [Pull Request #102](https://github.com/bigchaindb/bigchaindb/pull/102)
+- HTTP Server & Web API: Pull Requests 
+[#102](https://github.com/bigchaindb/bigchaindb/pull/102),
+[#150](https://github.com/bigchaindb/bigchaindb/pull/150),
+[#155](https://github.com/bigchaindb/bigchaindb/pull/155),
+[#183](https://github.com/bigchaindb/bigchaindb/pull/183)
 - Python driver/SDK/API: [Pull Request #102](https://github.com/bigchaindb/bigchaindb/pull/102)
 - Python Style Guide: [Pull Request #89](https://github.com/bigchaindb/bigchaindb/pull/89)
-- Monitoring & dashboard tools: [Pull Request #72](https://github.com/bigchaindb/bigchaindb/pull/72)
+- Monitoring & dashboard tools: Pull Requests
+[#72](https://github.com/bigchaindb/bigchaindb/pull/72),
+[#181](https://github.com/bigchaindb/bigchaindb/pull/181)
 
 ### Changed
-- Rewrote [`README.md`](https://github.com/bigchaindb/bigchaindb/blob/develop/README.md) into four sets of links: Pull Requests [#80](https://github.com/bigchaindb/bigchaindb/pull/80) and [#115](https://github.com/bigchaindb/bigchaindb/pull/115)
+- Rewrote [`README.md`](README.md) into four sets of links: Pull Requests [#80](https://github.com/bigchaindb/bigchaindb/pull/80) and [#115](https://github.com/bigchaindb/bigchaindb/pull/115)
 
 ### Fixed
 - Bug related to config overwrite: [Pull Request #97](https://github.com/bigchaindb/bigchaindb/pull/97)
+
+## External Contributors
+- [@thedoctor](https://github.com/thedoctor): Pull Requests 
+[#99](https://github.com/bigchaindb/bigchaindb/pull/99),
+[#136](https://github.com/bigchaindb/bigchaindb/pull/136)
+- [@roderik](https://github.com/roderik): [Pull Request #162](https://github.com/bigchaindb/bigchaindb/pull/162)
+
+
+## [0.1.5] - 2016-04-20
+Tag name: v0.1.5
+= commit: 9f62cddbaf44167692cfee71db707bce93e3395f
+committed: April 20, 2016, 3:31 PM GMT+2
+
+### Fixed
 - [Issue #71](https://github.com/bigchaindb/bigchaindb/issues/71) (Voter is not validating blocks correctly when checking for double spends) in [Pull Request #76](https://github.com/bigchaindb/bigchaindb/pull/76)
 
 
