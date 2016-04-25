@@ -99,7 +99,7 @@ The `pypi` on the end means that it will install the latest (stable) `bigchaindb
 ./startup.sh <tag> <number_of_nodes_in_cluster> <pypi_or_branch>
 ```
 
-The first two arguments are self-explanatory. The third argument can be `pypi` or the name of a local Git branch (e.g. `master` or `feat/3752/quote-asimov-on-tuesdays`).
+The first two arguments are self-explanatory. The third argument can be `pypi` or the name of a local Git branch (e.g. `master` or `feat/3752/quote-asimov-on-tuesdays`). If you don't include a third argument, then `pypi` will be assumed by default.
 
 Here's what the `startup.sh` script does; it:
 
