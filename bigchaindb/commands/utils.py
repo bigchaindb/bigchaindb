@@ -2,10 +2,28 @@
 for ``argparse.ArgumentParser``.
 """
 
+import os
 import argparse
 import multiprocessing as mp
+import subprocess
 
 from bigchaindb.version import __version__
+
+
+def start_rethinkdb():
+    proc = subprocess.Popen(['rethinkdb', '--bind', 'all'],
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT,
+                            universal_newlines=True)
+
+    line = ''
+
+    for line in proc.stdout:
+        if line.startswith('Server ready'):
+            return proc
+
+    exit('Error starting RethinkDB, reason is: {}'.format(line))
+    proc.kill()
 
 
 def start(parser, scope):

@@ -14,7 +14,7 @@ import bigchaindb
 import bigchaindb.config_utils
 from bigchaindb import db
 from bigchaindb.exceptions import DatabaseAlreadyExists, KeypairNotFoundException
-from bigchaindb.commands.utils import base_parser, start
+from bigchaindb.commands import utils
 from bigchaindb.processes import Processes
 from bigchaindb import crypto
 
@@ -122,8 +122,12 @@ def run_drop(args):
 
 def run_start(args):
     """Start the processes to run the node"""
-    # run_configure(args, skip_if_exists=True)
     bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
+
+    if args.start_rethinkdb:
+        proc = utils.start_rethinkdb()
+        logger.info('RethinkDB started with PID %s' % proc.pid)
+
     try:
         db.init()
     except DatabaseAlreadyExists:
@@ -140,7 +144,12 @@ def run_start(args):
 def main():
     parser = argparse.ArgumentParser(
         description='Control your BigchainDB node.',
-        parents=[base_parser])
+        parents=[utils.base_parser])
+
+    parser.add_argument('--experimental-start-rethinkdb',
+                        dest='start_rethinkdb',
+                        action='store_true',
+                        help='Run RethinkDB on start')
 
     # all the commands are contained in the subparsers object,
     # the command selected by the user will be stored in `args.command`
@@ -172,7 +181,7 @@ def main():
     subparsers.add_parser('start',
                           help='Start BigchainDB')
 
-    start(parser, globals())
+    utils.start(parser, globals())
 
 
 if __name__ == '__main__':
