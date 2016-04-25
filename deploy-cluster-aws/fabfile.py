@@ -64,8 +64,8 @@ def install_base_software():
     sudo('dpkg --configure -a')
     sudo('apt-get -y -f install')
     sudo('apt-get -y install build-essential wget bzip2 ca-certificates \
-                     libglib2.0-0 libxext6 libsm6 libxrender1 libssl-dev \
-                     git gcc g++ python3-dev libboost-python-dev libffi-dev \
+                     libglib2.0-0 libxext6 libsm6 libxrender1 \
+                     git gcc g++ python3-dev libboost-python-dev \
                      software-properties-common python-software-properties \
                      python3-setuptools ipython3 sysstat s3cmd')
     sudo('easy_install3 pip')
