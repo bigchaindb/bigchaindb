@@ -11,6 +11,7 @@ For reference, the possible headings are:
 * **Removed** for deprecated features removed in this release.
 * **Fixed** for any bug fixes.
 * **Security** to invite users to upgrade in case of vulnerabilities.
+* **External Contributors** to list contributors outside of ascribe GmbH.
 
 
 ## [Unreleased] - YYYY-MM-DD
@@ -49,6 +50,12 @@ committed: TBD
 
 ### Fixed
 - Bug related to config overwrite: [Pull Request #97](https://github.com/bigchaindb/bigchaindb/pull/97)
+
+## External Contributors
+- [@thedoctor](https://github.com/thedoctor): Pull Requests 
+[#99](https://github.com/bigchaindb/bigchaindb/pull/99),
+[#136](https://github.com/bigchaindb/bigchaindb/pull/136)
+- [@roderik](https://github.com/roderik): [Pull Request #162](https://github.com/bigchaindb/bigchaindb/pull/162)
 
 
 ## [0.1.5] - 2016-04-20
