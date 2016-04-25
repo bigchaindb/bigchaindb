@@ -37,4 +37,4 @@ config = {
 # for more info.
 _config = copy.deepcopy(config)
 from bigchaindb.core import Bigchain  # noqa
-
+from bigchaindb.version import __version__  # noqa

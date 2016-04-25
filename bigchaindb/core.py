@@ -290,7 +290,7 @@ class Bigchain(object):
         # Calculate the hash of the new block
         block_data = util.serialize(block)
         block_hash = crypto.hash_data(block_data)
-        block_signature = crypto.SigningKey(self.me_private).sign(block_data).decode()
+        block_signature = crypto.SigningKey(self.me_private).sign(block_data)
 
         block = {
             'id': block_hash,
@@ -409,7 +409,7 @@ class Bigchain(object):
         }
 
         vote_data = util.serialize(vote)
-        signature = crypto.SigningKey(self.me_private).sign(vote_data).decode()
+        signature = crypto.SigningKey(self.me_private).sign(vote_data)
 
         vote_signed = {
             'node_pubkey': self.me,
