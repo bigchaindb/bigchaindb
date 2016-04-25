@@ -1,22 +1,21 @@
 #! /bin/bash
 
-# The set -e option instructs bash to immediately exit if any command has a non-zero exit status
+# The set -e option instructs bash to immediately exit
+# if any command has a non-zero exit status
 set -e
 
 function printErr()
     {
-        echo "usage: ./startup.sh <tag> <number_of_nodes_in_cluster>"
+        echo "usage: ./startup.sh <tag> <number_of_nodes_in_cluster> <pypi_or_branch>"
         echo "No argument $1 supplied"
     }
 
-if [ -z "$1" ]
-  then
+if [ -z "$1" ]; then
     printErr "<tag>"
     exit 1
 fi
 
-if [ -z "$2" ]
-  then
+if [ -z "$2" ]; then
     printErr "<number_of_nodes_in_cluster>"
     exit 1
 fi
@@ -24,11 +23,19 @@ fi
 TAG=$1
 NODES=$2
 
+# If they don't include a third argument (<pypi_or_branch>)
+# then assume BRANCH = "pypi" by default
+if [ -z "$3" ]; then
+    echo "No third argument was specified, so BigchainDB will be installed from PyPI"
+    BRANCH="pypi"
+else
+    BRANCH=$3
+fi
+
 # Check for AWS private key file (.pem file)
-if [ ! -f "pem/bigchaindb.pem" ]
-    then
-        echo "File pem/bigchaindb.pem (AWS private key) is missing"
-        exit 1
+if [ ! -f "pem/bigchaindb.pem" ]; then
+    echo "File pem/bigchaindb.pem (AWS private key) is missing"
+    exit 1
 fi
 
 # Change the file permissions on pem/bigchaindb.pem
@@ -63,16 +70,29 @@ fab install_base_software
 fab install_rethinkdb
 
 # Rollout BigchainDB (but don't start it yet)
-fab install_bigchaindb
+if [ "$BRANCH" == "pypi" ]; then
+    fab install_bigchaindb_from_pypi
+else
+    cd ..
+    rm -f bigchaindb-archive.tar.gz
+    git archive $BRANCH --format=tar --output=bigchaindb-archive.tar
+    # TODO: the archive could exclude more files besides the .gitignore ones
+    # such as the docs. See http://tinyurl.com/zo6fxeg
+    gzip bigchaindb-archive.tar
+    mv bigchaindb-archive.tar.gz deploy-cluster-aws
+    cd deploy-cluster-aws
+    fab install_bigchaindb_from_git_archive
+    rm bigchaindb-archive.tar.gz
+fi
 
 # Configure BigchainDB on all nodes
 fab configure_bigchaindb
 
-# TODO Get public keys from all nodes
-# using e.g. bigchaindb export-pubkey
+# TODO: Get public keys from all nodes
 
-# TODO Add list of public keys to keyring of all nodes
-# using e.g. bigchaindb import-pubkey
+
+# TODO: Add list of public keys to keyring of all nodes
+
 
 # Send a "bigchaindb init" command to one node
 # to initialize the BigchainDB database 
