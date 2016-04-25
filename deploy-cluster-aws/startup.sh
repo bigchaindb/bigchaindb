@@ -20,20 +20,22 @@ if [ -z "$2" ]; then
     exit 1
 fi
 
-if [ -z "$3" ]; then
-    printErr "<pypi_or_branch>"
-    exit 1
-fi
-
 TAG=$1
 NODES=$2
-BRANCH=$3
+
+# If they don't include a third argument (<pypi_or_branch>)
+# then assume BRANCH = "pypi" by default
+if [ -z "$3" ]; then
+    echo "No third argument was specified, so BigchainDB will be installed from PyPI"
+    BRANCH="pypi"
+else
+    BRANCH=$3
+fi
 
 # Check for AWS private key file (.pem file)
-if [ ! -f "pem/bigchaindb.pem" ]
-    then
-        echo "File pem/bigchaindb.pem (AWS private key) is missing"
-        exit 1
+if [ ! -f "pem/bigchaindb.pem" ]; then
+    echo "File pem/bigchaindb.pem (AWS private key) is missing"
+    exit 1
 fi
 
 # Change the file permissions on pem/bigchaindb.pem
