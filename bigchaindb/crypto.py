@@ -13,5 +13,5 @@ def generate_key_pair():
     sk, pk = ed25519.ed25519_generate_key_pair()
     return sk.decode(), pk.decode()
 
-SigningKey = ed25519.Ed25519SigningKey
-VerifyingKey = ed25519.Ed25519VerifyingKey
+SigningKey = ed25519.SigningKey
+VerifyingKey = ed25519.VerifyingKey
