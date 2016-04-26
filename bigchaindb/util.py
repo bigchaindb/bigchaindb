@@ -311,36 +311,82 @@ def sign_tx(transaction, signing_keys):
     for fulfillment in tx['transaction']['fulfillments']:
         fulfillment_message = get_fulfillment_message(transaction, fulfillment)
         parsed_fulfillment = cc.Fulfillment.from_json(fulfillment_message['condition']['condition']['details'])
-        parsed_fulfillment_copy = copy.deepcopy(parsed_fulfillment)
+        # for the case in which the type of fulfillment is not covered by this method
+        parsed_fulfillment_signed = parsed_fulfillment
+
         # single current owner
         if isinstance(parsed_fulfillment, cc.Ed25519Fulfillment):
-            current_owner = fulfillment['current_owners'][0]
-            try:
-                parsed_fulfillment.sign(serialize(fulfillment_message), key_pairs[current_owner])
-            except KeyError:
-                raise exceptions.KeypairMismatchException('Public key {} is not a pair to any of the private keys'
-                                                          .format(current_owner))
+            parsed_fulfillment_signed = fulfill_simple_signature_fulfillment(fulfillment,
+                                                                             parsed_fulfillment,
+                                                                             fulfillment_message,
+                                                                             key_pairs)
         # multiple current owners
         elif isinstance(parsed_fulfillment, cc.ThresholdSha256Fulfillment):
-            # replace the fulfillments with the signed fulfillments
-            parsed_fulfillment.subconditions = []
-            for current_owner in fulfillment['current_owners']:
-                try:
-                    subfulfillment = parsed_fulfillment_copy.get_subcondition_from_vk(current_owner)[0]
-                except IndexError:
-                    exceptions.KeypairMismatchException('Public key {} cannot be found in the fulfillment'
-                                                        .format(current_owner))
-                try:
-                    subfulfillment.sign(serialize(fulfillment_message), key_pairs[current_owner])
-                except KeyError:
-                    raise exceptions.KeypairMismatchException('Public key {} is not a pair to any of the private keys'
-                                                              .format(current_owner))
-                parsed_fulfillment.add_subfulfillment(subfulfillment)
+            parsed_fulfillment_signed = fulfill_threshold_signature_fulfillment(fulfillment,
+                                                                                parsed_fulfillment,
+                                                                                fulfillment_message,
+                                                                                key_pairs)
 
-        signed_fulfillment = parsed_fulfillment.serialize_uri()
+        signed_fulfillment = parsed_fulfillment_signed.serialize_uri()
         fulfillment.update({'fulfillment': signed_fulfillment})
 
     return tx
+
+
+def fulfill_simple_signature_fulfillment(fulfillment, parsed_fulfillment, fulfillment_message, key_pairs):
+    """Fulfill a cryptoconditions.Ed25519Fulfillment
+
+        Args:
+            fulfillment (dict): BigchainDB fulfillment to fulfill.
+            parsed_fulfillment (object): cryptoconditions.Ed25519Fulfillment instance.
+            fulfillment_message (dict): message to sign.
+            key_pairs (dict): dictionary of (public_key, private_key) pairs.
+
+        Returns:
+            object: fulfilled cryptoconditions.Ed25519Fulfillment
+
+        """
+    current_owner = fulfillment['current_owners'][0]
+
+    try:
+        parsed_fulfillment.sign(serialize(fulfillment_message), key_pairs[current_owner])
+    except KeyError:
+        raise exceptions.KeypairMismatchException('Public key {} is not a pair to any of the private keys'
+                                                  .format(current_owner))
+
+    return parsed_fulfillment
+
+
+def fulfill_threshold_signature_fulfillment(fulfillment, parsed_fulfillment, fulfillment_message, key_pairs):
+    """Fulfill a cryptoconditions.ThresholdSha256Fulfillment
+
+            Args:
+                fulfillment (dict): BigchainDB fulfillment to fulfill.
+                parsed_fulfillment (object): cryptoconditions.ThresholdSha256Fulfillment instance.
+                fulfillment_message (dict): message to sign.
+                key_pairs (dict): dictionary of (public_key, private_key) pairs.
+
+            Returns:
+                object: fulfilled cryptoconditions.ThresholdSha256Fulfillment
+
+            """
+    parsed_fulfillment_copy = copy.deepcopy(parsed_fulfillment)
+    parsed_fulfillment.subconditions = []
+
+    for current_owner in fulfillment['current_owners']:
+        try:
+            subfulfillment = parsed_fulfillment_copy.get_subcondition_from_vk(current_owner)[0]
+        except IndexError:
+            exceptions.KeypairMismatchException('Public key {} cannot be found in the fulfillment'
+                                                .format(current_owner))
+        try:
+            subfulfillment.sign(serialize(fulfillment_message), key_pairs[current_owner])
+        except KeyError:
+            raise exceptions.KeypairMismatchException('Public key {} is not a pair to any of the private keys'
+                                                      .format(current_owner))
+        parsed_fulfillment.add_subfulfillment(subfulfillment)
+
+    return parsed_fulfillment
 
 
 def create_and_sign_tx(private_key, current_owner, new_owner, tx_input, operation='TRANSFER', payload=None):
@@ -360,7 +406,6 @@ def check_hash_and_signature(transaction):
 
 
 def verify_signature(signed_transaction):
-    # TODO: The name should change. This will be the validation of the fulfillments
     """Verify the signature of a transaction
 
     A valid transaction should have been signed `current_owner` corresponding private key.
