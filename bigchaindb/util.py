@@ -8,6 +8,7 @@ import multiprocessing as mp
 from datetime import datetime
 
 import cryptoconditions as cc
+from cryptoconditions.exceptions import ParsingError
 
 import bigchaindb
 from bigchaindb import exceptions
@@ -422,11 +423,11 @@ def verify_signature(signed_transaction):
         # verify the fulfillment (for now lets assume there is only one owner)
         try:
             parsed_fulfillment = cc.Fulfillment.from_uri(fulfillment['fulfillment'])
-        except Exception:
+        except (TypeError, ValueError, ParsingError):
             return False
         is_valid = parsed_fulfillment.validate(serialize(fulfillment_message))
 
-        # if not a `CREATE` transaction
+        # if transaction has an input (i.e. not a `CREATE` transaction)
         if fulfillment['input']:
             is_valid &= parsed_fulfillment.condition.serialize_uri() == \
                 fulfillment_message['condition']['condition']['uri']
