@@ -110,7 +110,7 @@ fi
 python clusterize_confiles.py confiles $NUM_NODES
 
 # Send one of the config files to each instance
-for (( HOST=1 ; HOST<=$NUM_NODES ; HOST++ )); do
+for (( HOST=0 ; HOST<$NUM_NODES ; HOST++ )); do
     CONFILE="bcdb_conf"$HOST
     echo "Sending "$CONFILE
     fab set_host:$HOST send_confile:$CONFILE

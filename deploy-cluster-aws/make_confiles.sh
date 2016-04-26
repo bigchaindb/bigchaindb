@@ -33,7 +33,7 @@ mkdir $CONFDIR
 
 # Use the bigchaindb configure command to create
 # $NUMFILES BigchainDB config files in $CONFDIR
-for (( i=1; i<=$NUMFILES; i++ )); do
+for (( i=0; i<$NUMFILES; i++ )); do
     CONPATH=$CONFDIR"/bcdb_conf"$i
     echo "Writing "$CONPATH
     bigchaindb -y -c $CONPATH configure

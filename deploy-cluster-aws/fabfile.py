@@ -38,14 +38,13 @@ def set_host(host_index):
     of the fab command that called it.
 
     Args:
-        host_index (int): 1, 2, 3, etc.
+        host_index (int): 0, 1, 2, 3, etc.
     Example:
         fab set_host:4 fab_task_A fab_task_B
-        will set env.hosts = [public_dns_names[3]]
+        will set env.hosts = [public_dns_names[4]]
         but only for doing fab_task_A and fab_task_B
     """
-    env.hosts = [public_dns_names[int(host_index) - 1]]
-    print('Set env.hosts = {}'.format(env.hosts))
+    env.hosts = [public_dns_names[int(host_index)]]
 
 
 # Install base software
