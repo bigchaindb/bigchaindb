@@ -282,27 +282,26 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
     return transaction
 
 
-# TODO: Change sign_tx to populate the fulfillments
-def sign_tx(transaction, sks):
+def sign_tx(transaction, signing_keys):
     """Sign a transaction
 
     A transaction signed with the `current_owner` corresponding private key.
 
     Args:
         transaction (dict): transaction to sign.
-        sk (base58 str): base58 encoded private key to create a signature of the transaction.
+        signing_keys (list): list of base58 encoded private keys to create the fulfillments of the transaction.
 
     Returns:
         dict: transaction with the `fulfillment` fields populated.
 
     """
     # validate sk
-    if not isinstance(sks, list):
-        sks = [sks]
+    if not isinstance(signing_keys, list):
+        signing_keys = [signing_keys]
 
     # create a mapping between sk and vk so that we can match the private key to the current_owners
     key_pairs = {}
-    for sk in sks:
+    for sk in signing_keys:
         signing_key = crypto.SigningKey(sk)
         vk = signing_key.get_verifying_key().to_ascii().decode()
         key_pairs[vk] = signing_key
