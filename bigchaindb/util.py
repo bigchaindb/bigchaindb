@@ -442,22 +442,23 @@ def get_fulfillment_message(transaction, fulfillment, serialized=False):
     Args:
         transaction (dict): a transaction
         fulfillment (dict): a specific fulfillment (for a condition index) within the transaction
-        serialized (bool): False returns a dict, True returns a serialized string
+        serialized (Optional[bool]): False returns a dict, True returns a serialized string
 
     Returns:
         str|dict: fulfillment message
     """
     b = bigchaindb.Bigchain()
 
-    common_data = {
+    # data to sign contains common transaction data
+    fulfillment_message = {
         'operation': transaction['transaction']['operation'],
         'timestamp': transaction['transaction']['timestamp'],
         'data': transaction['transaction']['data'],
         'version': transaction['version'],
         'id': transaction['id']
     }
-
-    fulfillment_message = common_data.copy()
+    # and the condition which needs to be retrieved from the output of a previous transaction
+    # or created on the fly it this is a `CREATE` transaction
     fulfillment_message.update({
         'input': fulfillment['input'],
         'condition': None,
