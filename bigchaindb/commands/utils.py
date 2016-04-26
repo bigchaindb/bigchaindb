@@ -2,7 +2,7 @@
 for ``argparse.ArgumentParser``.
 """
 
-import os
+import time
 import argparse
 import multiprocessing as mp
 import subprocess
@@ -20,6 +20,10 @@ def start_rethinkdb():
 
     for line in proc.stdout:
         if line.startswith('Server ready'):
+            # FIXME: seems like tables are not ready when the server is ready,
+            #        that's why we need to sleep a bit before returning.
+            #        Not the optimal solution. Happy to see the right one :)
+            time.sleep(1)
             return proc
 
     exit('Error starting RethinkDB, reason is: {}'.format(line))
