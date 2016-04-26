@@ -111,9 +111,9 @@ If it's the first time you've run `bigchaindb start`, then it creates the databa
 
 **NOT for Production Use**
 
-For those who like using Docker and wish to experiment with BigchainDB in non-production environments, we currently maintain a `dockerfile` that can be used to build an image for `bigchaindb`, along with a `docker-compose.yml` file to manage a "standalone node", consisting mainly of two containers: one for RethinkDB, and another for BigchainDB.
+For those who like using Docker and wish to experiment with BigchainDB in non-production environments, we currently maintain a `dockerfile` that can be used to build an image for `bigchaindb`.
 
-Assuming you have `docker` and `docker-compose` installed, you would proceed as follows.
+Assuming you have `docker` installed, you would proceed as follows.
 
 In a terminal shell:
 ```text
@@ -122,41 +122,41 @@ $ git clone git@github.com:bigchaindb/bigchaindb.git
 
 Build the Docker image:
 ```text
-$ docker-compose build
+$ docker build --tag local-bigchaindb .
 ```
 
-then do a one-time configuration step to create the config file; it will be
-stored on your host machine under ` ~/.bigchaindb_docker/config`:
+then do a one-time configuration step to create the config file; we will use
+the `-y` option to accept all the default values. The configuration file will
+be stored on your host machine under ` ~/bigchaindb_docker/.bigchaindb`:
 ```text
-$ docker-compose run --rm bigchaindb bigchaindb configure
-Starting bigchaindb_rethinkdb-data_1
+$ docker run --rm -v "$HOME/bigchaindb_docker:/data" -ti local-bigchaindb -y configure
 Generating keypair
-API Server bind? (default `localhost:9984`): 
-Database host? (default `localhost`): rethinkdb
-Database port? (default `28015`): 
-Database name? (default `bigchain`): 
-Statsd host? (default `localhost`): statsd
-Statsd port? (default `8125`): 
-Statsd rate? (default `0.01`): 
+Configuration written to /data/.bigchaindb
 Ready to go!
 ```
 
-As shown above, make sure that you set the database and statsd hosts to their
-corresponding service names (`rethinkdb`, `statsd`), defined in`docker-compose.yml`
-and `docker-compose-monitor.yml`.
-
 You can then start it up (in the background, as a daemon) using:
 ```text
-$ docker-compose up -d
+$ BIGCHAIN_CID=$(docker run -d -v "$HOME/bigchaindb_docker:/data" local-bigchaindb)
 ```
 
-then you can load test transactions via:
+then you can load test transactions (using the `-m` option to enable using all
+the cores in the host machine) via:
 ```text
-$ docker-compose run --rm bigchaindb bigchaindb-benchmark load
+$ docker exec -d $BIGCHAIN_CID load -m
 ```
+
+You can see BigchainDB processing your transactions running:
+```text
+$ docker logs -f $BIGCHAIN_CID
+```
+
 
 If you're on Linux, you can probably view the RethinkDB dashboard at:
 
-[http://localhost:58080/](http://localhost:58080/)
+[http://localhost:8080/](http://localhost:8080/)
 
-If that doesn't work, then replace `localhost` with the IP or hostname of the machine running the Docker engine. If you are running docker-machine (e.g.: on Mac OS X) this will be the IP of the Docker machine (`docker-machine ip machine_name`).
+If that doesn't work, then replace `localhost` with the IP or hostname of the
+machine running the Docker engine. If you are running docker-machine (e.g.: on
+Mac OS X) this will be the IP of the Docker machine (`docker-machine ip
+machine_name`).

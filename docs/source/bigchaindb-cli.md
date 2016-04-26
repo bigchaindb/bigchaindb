@@ -1,6 +1,6 @@
 # The BigchainDB Command Line Interface (CLI)
 
-There are some command-line commands for working with BigchainDB: `bigchaindb` and `bigchaindb-benchmark`. This section provides an overview of those commands.
+The command to interact with BigchainDB is `bigchaindb`. This section provides an overview of the command.
 
 ## bigchaindb
 
@@ -37,10 +37,9 @@ This command drops (erases) the RethinkDB database. You will be prompted to make
 This command starts BigchainDB. It always begins by trying a `bigchaindb init` first. See the note in the documentation for `bigchaindb init`.
 
 
-## bigchaindb-benchmark
+## bigchaindb load
 
-The `bigchaindb-benchmark` command is used to run benchmarking tests. You can learn more about it using:
+The command is used to run benchmarking tests. You can learn more about it using:
 ```text
-$ bigchaindb-benchmark -h
-$ bigchaindb-benchmark load -h
+$ bigchaindb load -h
 ```
