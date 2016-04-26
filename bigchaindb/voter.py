@@ -216,7 +216,7 @@ class Election(object):
 
             n_invalid_votes = vote_list.count(False)
 
-            if n_invalid_votes > int(n_voters/2):
+            if n_invalid_votes >= int(n_voters/2):
                 self.q_invalid_blocks.put(next_block)
 
     def requeue_transactions(self):
