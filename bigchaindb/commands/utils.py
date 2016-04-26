@@ -69,7 +69,8 @@ def start(parser, scope):
 base_parser = argparse.ArgumentParser(add_help=False, prog='bigchaindb')
 
 base_parser.add_argument('-c', '--config',
-                         help='Specify the location of the configuration file')
+                         help='Specify the location of the configuration file '
+                              '(use "-" for stdout)')
 
 base_parser.add_argument('-y', '--yes', '--yes-please',
                          action='store_true',

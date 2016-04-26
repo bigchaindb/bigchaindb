@@ -9,6 +9,7 @@ import logging
 import argparse
 import copy
 import json
+import builtins
 
 import bigchaindb
 import bigchaindb.config_utils
@@ -21,6 +22,14 @@ from bigchaindb import crypto
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+# We need this because `input` always prints on stdout, while it should print
+# to stderr. It's a very old bug, check it out here:
+# - https://bugs.python.org/issue1927
+def input(prompt):
+    print(prompt, end='', file=sys.stderr)
+    return builtins.input()
 
 
 def run_show_config(args):
@@ -43,7 +52,11 @@ def run_configure(args, skip_if_exists=False):
         skip_if_exists (bool): skip the function if a config file already exists
     """
     config_path = args.config or bigchaindb.config_utils.CONFIG_DEFAULT_PATH
-    config_file_exists = os.path.exists(config_path)
+
+    config_file_exists = False
+    # if the config path is `-` then it's stdout
+    if config_path != '-':
+        config_file_exists = os.path.exists(config_path)
 
     if config_file_exists and skip_if_exists:
         return
@@ -57,7 +70,7 @@ def run_configure(args, skip_if_exists=False):
     # Patch the default configuration with the new values
     conf = copy.deepcopy(bigchaindb._config)
 
-    print('Generating keypair')
+    print('Generating keypair', file=sys.stderr)
     conf['keypair']['private'], conf['keypair']['public'] = \
         crypto.generate_key_pair()
 
@@ -80,9 +93,12 @@ def run_configure(args, skip_if_exists=False):
                 input('Statsd {}? (default `{}`): '.format(key, val)) \
                 or val
 
-    bigchaindb.config_utils.write_config(conf, config_path)
-    print('Configuration written to {}'.format(config_path))
-    print('Ready to go!')
+    if config_path != '-':
+        bigchaindb.config_utils.write_config(conf, config_path)
+    else:
+        print(json.dumps(conf, indent=4, sort_keys=True))
+    print('Configuration written to {}'.format(config_path), file=sys.stderr)
+    print('Ready to go!', file=sys.stderr)
 
 
 def run_export_my_pubkey(args):
@@ -110,8 +126,8 @@ def run_init(args):
     try:
         db.init()
     except DatabaseAlreadyExists:
-        print('The database already exists.')
-        print('If you wish to re-initialize it, first drop it.')
+        print('The database already exists.', file=sys.stderr)
+        print('If you wish to re-initialize it, first drop it.', file=sys.stderr)
 
 
 def run_drop(args):
