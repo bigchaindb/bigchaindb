@@ -204,7 +204,7 @@ class Bigchain(object):
         transactions = list(response)
         if transactions:
             if len(transactions) != 1:
-                raise Exception('`{}` was spent more then once. There is a problem with the chain'.format(
+                raise exceptions.DoubleSpend('`{}` was spent more then once. There is a problem with the chain'.format(
                     tx_input['txid']))
             else:
                 return transactions[0]
