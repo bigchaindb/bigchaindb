@@ -420,7 +420,6 @@ def verify_signature(signed_transaction):
 
     for fulfillment in signed_transaction['transaction']['fulfillments']:
         fulfillment_message = get_fulfillment_message(signed_transaction, fulfillment)
-        # verify the fulfillment (for now lets assume there is only one owner)
         try:
             parsed_fulfillment = cc.Fulfillment.from_uri(fulfillment['fulfillment'])
         except (TypeError, ValueError, ParsingError):
