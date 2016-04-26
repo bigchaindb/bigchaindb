@@ -143,10 +143,8 @@ def configure_bigchaindb():
 def send_confile(confile):
     put('confiles/' + confile, 'tempfile')
     sudo('mv tempfile ~/.bigchaindb')
-    print('When confile = {} '.format(confile))
-    print('bigchaindb show-config output is:')
+    print('For this node, bigchaindb show-config says:')
     run('bigchaindb show-config')
-    print(' ')
 
 
 # Initialize BigchainDB
