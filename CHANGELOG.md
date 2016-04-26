@@ -15,9 +15,9 @@ For reference, the possible headings are:
 
 
 ## [0.2.0] - 2016-04-26
-Tag name: TBD
-= commit: TBD
-committed: TBD
+Tag name: v0.2.0
+= commit: 0c4a2b380aabdcf50fa2d7fb351c290aaedc3db7
+committed: April 26, 2016, 11:09 AM GMT+2
 
 ### Added
 - Ability to use environment variables to set (or partially set) configuration settings: [Pull Request #153](https://github.com/bigchaindb/bigchaindb/pull/153)
