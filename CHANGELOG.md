@@ -14,7 +14,7 @@ For reference, the possible headings are:
 * **External Contributors** to list contributors outside of ascribe GmbH.
 
 
-## [Unreleased] - YYYY-MM-DD
+## [0.2.0] - 2016-04-26
 Tag name: TBD
 = commit: TBD
 committed: TBD
@@ -50,6 +50,7 @@ committed: TBD
 
 ### Fixed
 - Bug related to config overwrite: [Pull Request #97](https://github.com/bigchaindb/bigchaindb/pull/97)
+- Bug related to running the `bigchaindb-benchmark load` on docker [Pull Request #225](https://github.com/bigchaindb/bigchaindb/pull/225)
 
 ## External Contributors
 - [@thedoctor](https://github.com/thedoctor): Pull Requests 
