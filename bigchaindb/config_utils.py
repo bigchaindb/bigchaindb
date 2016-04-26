@@ -91,7 +91,11 @@ def file_config(filename=None):
               file at CONFIG_DEFAULT_PATH, if filename == None)
     """
     logger.debug('On entry into file_config(), filename = {}'.format(filename))
-    if not filename:
+
+    if filename is False:
+        return {}
+
+    if filename is None:
         filename = CONFIG_DEFAULT_PATH
 
     logger.debug('file_config() will try to open `{}`'.format(filename))

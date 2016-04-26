@@ -186,7 +186,7 @@ def test_run_configure_when_config_does_not_exist(monkeypatch,
                                                   mock_bigchaindb_backup_config):
     from bigchaindb.commands.bigchain import run_configure
     monkeypatch.setattr('os.path.exists', lambda path: False)
-    monkeypatch.setattr('builtins.input', lambda question: '\n')
+    monkeypatch.setattr('builtins.input', lambda: '\n')
     args = Namespace(config='foo', yes=True)
     return_value = run_configure(args)
     assert return_value is None
@@ -202,7 +202,7 @@ def test_run_configure_when_config_does_exist(monkeypatch,
 
     from bigchaindb.commands.bigchain import run_configure
     monkeypatch.setattr('os.path.exists', lambda path: True)
-    monkeypatch.setattr('builtins.input', lambda question: '\n')
+    monkeypatch.setattr('builtins.input', lambda: '\n')
     monkeypatch.setattr('bigchaindb.config_utils.write_config', mock_write_config)
 
     args = Namespace(config='foo', yes=None)
