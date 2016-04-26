@@ -65,8 +65,7 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'bigchaindb=bigchaindb.commands.bigchain:main',
-            'bigchaindb-benchmark=bigchaindb.commands.bigchain_benchmark:main'
+            'bigchaindb=bigchaindb.commands.bigchain:main'
         ],
         'bigchaindb.consensus': [
             'default=bigchaindb.consensus:BaseConsensusRules'
