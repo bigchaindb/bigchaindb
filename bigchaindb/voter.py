@@ -223,17 +223,6 @@ class Election(object):
         while True:
             invalid_block = self.q_invalid_blocks.get()
             b = Bigchain()
-            # FIXME: this is unsafe and could lose transactions
-            #   Since queue items are removed immediately, there is no guarantee
-            #   all transactions will be rewritten. Imagine if node 5/5 casts a
-            #   deciding invalid vote.  This block will never show up in the
-            #   "update" changefeed again.  Suppose the below loop is writing
-            #   transactions and the worker crashes.  Those un-written transactions
-            #   will never be reviewed again.
-            #
-            #   Ideally, queue item should be removed on completion, a la celery or
-            #   SQS.  mp.JoinableQueue is also not appropriate, since it uses
-            #   a counter.
 
             for tx in invalid_block['transactions']:
                 b.write_transaction(tx)
