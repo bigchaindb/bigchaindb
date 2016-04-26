@@ -218,9 +218,6 @@ class Election(object):
 
             if n_invalid_votes > int(n_voters/2):
                 self.q_invalid_blocks.put(next_block)
-            else:
-                # no quorum reached, do nothing
-                pass
 
     def requeue_transactions(self):
         """
