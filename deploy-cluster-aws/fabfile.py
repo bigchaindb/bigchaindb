@@ -30,6 +30,24 @@ newrelic_license_key = 'you_need_a_real_license_key'
 
 ######################################################################
 
+# DON'T PUT @parallel
+@task
+def set_host(host_index):
+    """A helper task to change env.hosts from the
+    command line. It will only "stick" for the duration
+    of the fab command that called it.
+
+    Args:
+        host_index (int): 1, 2, 3, etc.
+    Example:
+        fab set_host:4 fab_task_A fab_task_B
+        will set env.hosts = [public_dns_names[3]]
+        but only for doing fab_task_A and fab_task_B
+    """
+    env.hosts = [public_dns_names[int(host_index) - 1]]
+    print('Set env.hosts = {}'.format(env.hosts))
+
+
 # Install base software
 @task
 @parallel
@@ -114,6 +132,21 @@ def install_bigchaindb_from_git_archive():
 @parallel
 def configure_bigchaindb():
     run('bigchaindb -y configure', pty=False)
+
+
+# Send the specified configuration file to
+# the remote host and save it there in
+# ~/.bigchaindb
+# Use in conjunction with set_host()
+# No @parallel
+@task
+def send_confile(confile):
+    put('confiles/' + confile, 'tempfile')
+    sudo('mv tempfile ~/.bigchaindb')
+    print('When confile = {} '.format(confile))
+    print('bigchaindb show-config output is:')
+    run('bigchaindb show-config')
+    print(' ')
 
 
 # Initialize BigchainDB
