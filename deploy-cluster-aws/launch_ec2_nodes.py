@@ -14,6 +14,7 @@
 from __future__ import unicode_literals
 import sys
 import time
+import socket
 import argparse
 import botocore
 import boto3
@@ -192,8 +193,23 @@ with open('hostlist.py', 'w') as f:
     f.write('\n')
     f.write('public_dns_names = {}\n'.format(public_dns_names))
 
-# Wait
-wait_time = 45
-print('Waiting {} seconds to make sure all instances are ready...'.
-      format(wait_time))
-time.sleep(wait_time)
+
+# For each node in the cluster, check port 22 (ssh) until it's reachable
+for public_dns_name in public_dns_names:
+    # Create an INET, STREAMing socket
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    print('Attempting to connect to {} on port 22 (ssh)...'.
+          format(public_dns_name))
+    unreachable = True
+    while unreachable:
+        try:
+            # Open a TCP connection to the remote node on port 22
+            s.connect((public_dns_name, 22))
+            print('  Port 22 is reachable!')
+            s.shutdown(socket.SHUT_WR)
+            s.close()
+            unreachable = False
+        except socket.error as e:
+            print('  Socket error: {}'.format(e))
+            print('  Trying again in 3 seconds')
+            time.sleep(3.0)
