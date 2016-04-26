@@ -171,7 +171,7 @@ class Bigchain(object):
 
         Returns:
             A list of transactions containing that payload. If no transaction exists with that payload it
-            returns `None`
+            returns an empty list `[]`
         """
 
         cursor = r.table('bigchain') \

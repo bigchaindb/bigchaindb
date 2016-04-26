@@ -135,7 +135,7 @@ API Server bind? (default `localhost:9984`):
 Database host? (default `localhost`): rethinkdb
 Database port? (default `28015`): 
 Database name? (default `bigchain`): 
-Statsd host? (default `localhost`): statsd
+Statsd host? (default `localhost`):
 Statsd port? (default `8125`): 
 Statsd rate? (default `0.01`): 
 Ready to go!
@@ -152,7 +152,7 @@ $ docker-compose up -d
 
 then you can load test transactions via:
 ```text
-$ docker-compose run --rm bigchaindb bigchaindb-benchmark load
+$ docker exec -it docker-bigchaindb bigchaindb-benchmark load -m
 ```
 
 If you're on Linux, you can probably view the RethinkDB dashboard at:

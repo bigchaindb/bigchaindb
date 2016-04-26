@@ -14,6 +14,7 @@ rethinkdb-data:
 
 bigchaindb:
   build: .
+  container_name: docker-bigchaindb
   volumes:
     - ./bigchaindb:/usr/src/app/bigchaindb
     - ./tests:/usr/src/app/tests
