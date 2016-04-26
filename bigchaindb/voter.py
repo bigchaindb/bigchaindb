@@ -208,15 +208,12 @@ class Election(object):
         """
         Checks if block has enough invalid votes to make a decision
         """
+        b = Bigchain()
+
         while True:
             next_block = self.q_block_new_vote.get()
-            n_voters = len(next_block['block']['voters'])
 
-            vote_list = [vote['vote']['is_block_valid'] for vote in next_block['votes']]
-
-            n_invalid_votes = vote_list.count(False)
-
-            if n_invalid_votes >= int(n_voters/2):
+            if b.block_voted_invalid(next_block):
                 self.q_invalid_blocks.put(next_block)
 
     def requeue_transactions(self):
