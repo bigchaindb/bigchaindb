@@ -141,7 +141,7 @@ def configure_bigchaindb():
 @task
 def send_confile(confile):
     put('confiles/' + confile, 'tempfile')
-    sudo('mv tempfile ~/.bigchaindb')
+    run('mv tempfile ~/.bigchaindb')
     print('For this node, bigchaindb show-config says:')
     run('bigchaindb show-config')
 
