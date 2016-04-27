@@ -17,7 +17,7 @@ WORKDIR /data
 
 ENV BIGCHAINDB_CONFIG_PATH /data/.bigchaindb
 ENV BIGCHAINDB_SERVER_BIND 0.0.0.0:9984
-ENV BIGCHAINDB_API_ENDPOINT http://0.0.0.0:9984/api/v1
+ENV BIGCHAINDB_API_ENDPOINT http://bigchaindb:9984/api/v1
 
 ENTRYPOINT ["bigchaindb", "--experimental-start-rethinkdb"]
 

@@ -111,7 +111,104 @@ If it's the first time you've run `bigchaindb start`, then it creates the databa
 
 **NOT for Production Use**
 
-For those who like using Docker and wish to experiment with BigchainDB in non-production environments, we currently maintain a `dockerfile` that can be used to build an image for `bigchaindb`.
+For those who like using Docker and wish to experiment with BigchainDB in
+non-production environments, we currently maintain a Docker image and a
+`dockerfile` that can be used to build an image for `bigchaindb`.
+
+### Pull and run the image from Docker Hub
+
+Assuming you have `docker` installed, you would proceed as follows.
+
+In a terminal shell, pull the latest version of the BigchainDB Docker image
+```text
+docker pull bigchaindb/bigchaindb:latest
+```
+
+then do a one-time configuration step to create the config file; we will use
+the `-y` option to accept all the default values. The configuration file will
+be stored on your host machine under ` ~/bigchaindb_docker/.bigchaindb`:
+
+```text
+$ docker run --rm -v "$HOME/bigchaindb_docker:/data" -ti \
+  bigchaindb/bigchaindb:latest configure
+Generating keypair
+Configuration written to /data/.bigchaindb
+Ready to go!
+```
+
+Let's analyze the command:
+ - `docker run` tell docker to run some image
+ - `--rm` remove the container once we are done
+ - `-v "$HOME/bigchaindb_docker:/data` map the host directory
+   `$HOME/bigchaindb_docker` to the container directory `/data`,
+   this allow us to have the data persisted on the host machine,
+   you can read more in the [official Docker
+   documentation](https://docs.docker.com/engine/userguide/containers/dockervolumes/#mount-a-host-directory-as-a-data-volume)
+ - `-t` allocate a pseudo-tty
+ - `-i` keep STDIN open even if not attached
+ - `bigchaindb/bigchaindb:latest` the image to use
+ - `configure` the sub-command to execute
+
+
+After configuring the system, you can run BigchainDB with the following
+command:
+
+```text
+$ docker run -v "$HOME/bigchaindb_docker:/data" -d \
+  --name bigchaindb
+  -p "58080:8080" -p "59984:9984" \
+  bigchaindb/bigchaindb:latest start
+```
+
+The command is slightly different from the previous one, the differences are:
+ - `--name bigchaindb` give a nice name to the container, so it's easier to
+   refer to it later
+ - `-p "58080:8080"` map the host port `58080` to the container port `8080`
+   (the RethinkDB admin interface)
+ - `-p "59984:9984"` map the host port `59984` to the container port `9984`
+   (the BigchainDB API server)
+ - `start` start the BigchainDB service
+
+Another way to publish the ports exposed by the containeris to use the `-P` (or
+`--publish-all`). This will publish all exposed ports to random ports. You can
+always run `docker ps` to check the random mapping.
+
+You can also access the RethinkDB dashboard at:
+[http://localhost:58080/](http://localhost:58080/)
+
+If that doesn't work, then replace `localhost` with the IP or hostname of the
+machine running the Docker engine. If you are running docker-machine (e.g.: on
+Mac OS X) this will be the IP of the Docker machine (`docker-machine ip
+machine_name`).
+
+#### Load test with Docker
+
+After BigchainDB is running in the docker container named `bigchaindb`, we can
+start another container and run the load test against the first one.
+
+First, make sure the container `bigchaindb` is running, you can check this by running:
+```text
+docker ps
+```
+
+You should see a container named `bigchaindb` running.
+
+Now, run a new container and link it to `bigchaindb` to run the load test.
+```text
+$ docker run --rm -v "$HOME/bigchaindb_docker:/data" -ti \
+  --link bigchaindb \
+  bigchaindb/bigchaindb:test load
+```
+
+Note that load test transactions accepts also a `-m` option to enable
+multiprocessing and make use of all the cores in the host machine.
+
+You can see BigchainDB processing your transactions running:
+```text
+$ docker logs -f bigchaindb
+```
+
+### Building your own image
 
 Assuming you have `docker` installed, you would proceed as follows.
 
@@ -125,38 +222,5 @@ Build the Docker image:
 $ docker build --tag local-bigchaindb .
 ```
 
-then do a one-time configuration step to create the config file; we will use
-the `-y` option to accept all the default values. The configuration file will
-be stored on your host machine under ` ~/bigchaindb_docker/.bigchaindb`:
-```text
-$ docker run --rm -v "$HOME/bigchaindb_docker:/data" -ti local-bigchaindb -y configure
-Generating keypair
-Configuration written to /data/.bigchaindb
-Ready to go!
-```
+Now you can use your own image to run BigchainDB containers.
 
-You can then start it up (in the background, as a daemon) using:
-```text
-$ BIGCHAIN_CID=$(docker run -d -v "$HOME/bigchaindb_docker:/data" local-bigchaindb)
-```
-
-then you can load test transactions (using the `-m` option to enable using all
-the cores in the host machine) via:
-```text
-$ docker exec -d $BIGCHAIN_CID load -m
-```
-
-You can see BigchainDB processing your transactions running:
-```text
-$ docker logs -f $BIGCHAIN_CID
-```
-
-
-If you're on Linux, you can probably view the RethinkDB dashboard at:
-
-[http://localhost:8080/](http://localhost:8080/)
-
-If that doesn't work, then replace `localhost` with the IP or hostname of the
-machine running the Docker engine. If you are running docker-machine (e.g.: on
-Mac OS X) this will be the IP of the Docker machine (`docker-machine ip
-machine_name`).
