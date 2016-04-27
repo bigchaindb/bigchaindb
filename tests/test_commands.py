@@ -218,9 +218,10 @@ def test_start_rethinkdb_returns_a_process_when_successful(mock_popen):
 
 
 @patch('subprocess.Popen')
-def test_start_rethinkdb_exists_when_cannot_start(mock_popen):
+def test_start_rethinkdb_exits_when_cannot_start(mock_popen):
+    from bigchaindb import exceptions
     from bigchaindb.commands import utils
     mock_popen.return_value = Mock(stdout=['Nopety nope'])
-    with pytest.raises(SystemExit):
+    with pytest.raises(exceptions.StartupError):
         utils.start_rethinkdb()
 
