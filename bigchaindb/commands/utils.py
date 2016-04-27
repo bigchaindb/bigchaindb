@@ -2,31 +2,58 @@
 for ``argparse.ArgumentParser``.
 """
 
-import time
 import argparse
 import multiprocessing as mp
 import subprocess
 
+import rethinkdb as r
+
+import bigchaindb
+from bigchaindb.exceptions import StartupError
+from bigchaindb import db
 from bigchaindb.version import __version__
 
 
 def start_rethinkdb():
+    """Start RethinkDB as a child process and wait for it to be
+    available.
+
+    Raises:
+        ``bigchaindb.exceptions.StartupError`` if RethinkDB cannot
+        be started.
+    """
+
     proc = subprocess.Popen(['rethinkdb', '--bind', 'all'],
                             stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT,
                             universal_newlines=True)
 
+    dbname = bigchaindb.config['database']['name']
     line = ''
 
     for line in proc.stdout:
         if line.startswith('Server ready'):
             # FIXME: seems like tables are not ready when the server is ready,
-            #        that's why we need to sleep a bit before returning.
-            #        Not the optimal solution. Happy to see the right one :)
-            time.sleep(1)
+            #        that's why we need to query RethinkDB to know the state
+            #        of the database. This code assumes the tables are ready
+            #        when the database is ready. This seems a valid assumption.
+
+            try:
+                conn = db.get_conn()
+                # Before checking if the db is ready, we need to query
+                # the server to check if it contains that db
+                if r.db_list().contains(dbname).run(conn):
+                    r.db(dbname).wait().run(conn)
+            except (r.ReqlOpFailedError, r.ReqlDriverError) as exc:
+                raise StartupError('Error waiting for the database `{}` '
+                                   'to be ready'.format(dbname)) from exc
+
             return proc
 
-    exit('Error starting RethinkDB, reason is: {}'.format(line))
+    # We are here when we exhaust the stdout of the process.
+    # The last `line` contains info about the error.
+    raise StartupError(line)
+
     proc.kill()
 
 

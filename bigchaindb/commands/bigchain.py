@@ -19,7 +19,9 @@ import bigchaindb.config_utils
 from bigchaindb.util import ProcessGroup
 from bigchaindb.client import temp_client
 from bigchaindb import db
-from bigchaindb.exceptions import DatabaseAlreadyExists, KeypairNotFoundException
+from bigchaindb.exceptions import (StartupError,
+                                   DatabaseAlreadyExists,
+                                   KeypairNotFoundException)
 from bigchaindb.commands import utils
 from bigchaindb.processes import Processes
 from bigchaindb import crypto
@@ -149,7 +151,10 @@ def run_start(args):
     bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
 
     if args.start_rethinkdb:
-        proc = utils.start_rethinkdb()
+        try:
+            proc = utils.start_rethinkdb()
+        except StartupError as e:
+            sys.exit('Error starting RethinkDB, reason is: {}'.format(e))
         logger.info('RethinkDB started with PID %s' % proc.pid)
 
     try:
