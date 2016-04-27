@@ -171,7 +171,7 @@ class Bigchain(object):
 
         Returns:
             A list of transactions containing that payload. If no transaction exists with that payload it
-            returns `None`
+            returns an empty list `[]`
         """
 
         cursor = r.table('bigchain') \
@@ -204,7 +204,7 @@ class Bigchain(object):
         transactions = list(response)
         if transactions:
             if len(transactions) != 1:
-                raise Exception('`{}` was spent more then once. There is a problem with the chain'.format(
+                raise exceptions.DoubleSpend('`{}` was spent more then once. There is a problem with the chain'.format(
                     tx_input['txid']))
             else:
                 return transactions[0]
@@ -221,6 +221,7 @@ class Bigchain(object):
             list: list of `txids` currently owned by `owner`
         """
 
+        # get all transactions in which owner is in the `new_owners` list
         response = r.table('bigchain') \
             .concat_map(lambda doc: doc['block']['transactions']) \
             .filter(lambda tx: tx['transaction']['conditions']
@@ -230,11 +231,18 @@ class Bigchain(object):
         owned = []
 
         for tx in response:
+            # a transaction can contain multiple outputs (conditions) so we need to iterate over all of them
+            # to get a list of outputs available to spend
             for condition in tx['transaction']['conditions']:
+                # for simple signature conditions there are no subfulfillments
+                # check if the owner is in the condition `new_owners`
                 if len(condition['new_owners']) == 1:
                     if condition['condition']['details']['public_key'] == owner:
                         tx_input = {'txid': tx['id'], 'cid': condition['cid']}
                 else:
+                    # for transactions with multiple `new_owners` there will be several subfulfillments nested
+                    # in the condition. We need to iterate the subfulfillments to make sure there is a
+                    # subfulfillment for `owner`
                     for subfulfillment in condition['condition']['details']['subfulfillments']:
                         if subfulfillment['public_key'] == owner:
                             tx_input = {'txid': tx['id'], 'cid': condition['cid']}

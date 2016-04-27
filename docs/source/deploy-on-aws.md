@@ -85,14 +85,23 @@ Add some rules for Inbound traffic:
 
 ## Deployment
 
-Here's an example of how one could launch a BigchainDB cluster of 4 nodes tagged `wrigley` on AWS:
+Here's an example of how one could launch a BigchainDB cluster of four nodes tagged `wrigley` on AWS:
 ```text
 cd bigchaindb
 cd deploy-cluster-aws
-./startup.sh wrigley 4
+./startup.sh wrigley 4 pypi
 ```
 
-`startup.sh` is a Bash script which calls some Python 2 and Fabric scripts. Here's what it does:
+The `pypi` on the end means that it will install the latest (stable) `bigchaindb` package from the [Python Package Index (PyPI)](https://pypi.python.org/pypi). That is, on each instance, BigchainDB is installed using `pip install bigchaindb`. 
+
+`startup.sh` is a Bash script which calls some Python and Fabric scripts. The usage is:
+```text
+./startup.sh <tag> <number_of_nodes_in_cluster> <pypi_or_branch>
+```
+
+The first two arguments are self-explanatory. The third argument can be `pypi` or the name of a local Git branch (e.g. `master` or `feat/3752/quote-asimov-on-tuesdays`). If you don't include a third argument, then `pypi` will be assumed by default.
+
+Here's what the `startup.sh` script does; it:
 
 0. allocates more elastic IP addresses if necessary,
 1. launches the specified number of nodes (instances) on Amazon EC2,
@@ -104,7 +113,7 @@ cd deploy-cluster-aws
 7. installs base (prerequisite) software on all instances,
 8. installs RethinkDB on all instances,
 9. installs BigchainDB on all instances,
-10. generates the genesis block,
+10. initializes the BigchainDB database,
 11. starts BigchainDB on all instances.
 
 It should take a few minutes for the deployment to finish. If you run into problems, see the section on Known Deployment Issues below.

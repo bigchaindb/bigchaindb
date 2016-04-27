@@ -26,18 +26,18 @@ If you don't already have it, then you should [install Python 3.4+](https://www.
 
 ## Install BigchainDB Server
 
-BigchainDB Server has some OS-level dependencies. In particular, you need to install the OS-level dependencies for the Python **cryptography** package. Instructions for installing those dependencies on your OS can be found in the [cryptography package documentation](https://cryptography.io/en/latest/installation/).
+BigchainDB Server has some OS-level dependencies.
 
 On Ubuntu 14.04, we found that the following was enough:
 ```text
 $ sudo apt-get update
-$ sudo apt-get install libffi-dev g++ libssl-dev python3-dev
+$ sudo apt-get install g++ python3-dev
 ```
 
 On Fedora 23, we found that the following was enough (tested in February 2015):
 ```text
 $ sudo dnf update
-$ sudo dnf install libffi-devel gcc-c++ redhat-rpm-config python3-devel openssl-devel
+$ sudo dnf install gcc-c++ redhat-rpm-config python3-devel
 ```
 
 (If you're using a version of Fedora before version 22, you may have to use `yum` instead of `dnf`.)
@@ -135,7 +135,7 @@ API Server bind? (default `localhost:9984`):
 Database host? (default `localhost`): rethinkdb
 Database port? (default `28015`): 
 Database name? (default `bigchain`): 
-Statsd host? (default `localhost`): statsd
+Statsd host? (default `localhost`):
 Statsd port? (default `8125`): 
 Statsd rate? (default `0.01`): 
 Ready to go!
@@ -152,7 +152,7 @@ $ docker-compose up -d
 
 then you can load test transactions via:
 ```text
-$ docker-compose run --rm bigchaindb bigchaindb-benchmark load
+$ docker exec -it docker-bigchaindb bigchaindb-benchmark load -m
 ```
 
 If you're on Linux, you can probably view the RethinkDB dashboard at:
