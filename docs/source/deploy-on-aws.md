@@ -87,28 +87,26 @@ Add some rules for Inbound traffic:
 
 ### AWS Deployment Step 1
 
-Step 1 is to create a set of BigchainDB configuration files in a directory named `confiles`. They can be the default configuration files (i.e. what gets created when you use the `bigchaindb -y configure` command). An easy way to create a set of config files is to use the `make_confiles.sh` script. For example, if you **go into a virtual environment where `bigchaindb` is installed (i.e. probably a Python 3 virtual environment)** and enter:
+Suppose _N_ is the number of nodes you want in your BigchainDB cluster. If you already have a set of _N_ BigchainDB configuration files in the `deploy-cluster-aws/confiles` directory, then you can jump to step 2. To create such a set, you can do something like:
 ```text
 # in a Python 3 virtual environment where bigchaindb is installed
 cd bigchaindb
-cd deploy_cluster_aws
+cd deploy-cluster-aws
 ./make_confiles.sh confiles 3
 ```
 
-then three (3) default BigchainDB configuration files will be created in a directory named `confiles`, namely:
+That will create three (3) _default_ BigchainDB configuration files in the `deploy-cluster-aws/confiles` directory (which will be created if it doesn't already exist). The three files will be named `bcdb_conf0`, `bcdb_conf1`, and `bcdb_conf2`.
 
-* `confiles/bcdb_conf0`
-* `confiles/bcdb_conf1`
-* `confiles/bcdb_conf2`
-
-You can look inside those files if you're curious. In step 2, they'll be modified. For example, the default keyring is an empty list. In step 2, the deployment script automatically change the keyring of each node to be a list of the public keys of all other nodes.
+You can look inside those files if you're curious. In step 2, they'll be modified. For example, the default keyring is an empty list. In step 2, the deployment script automatically changes the keyring of each node to be a list of the public keys of all other nodes. Other changes are also made.
 
 ### AWS Deployment Step 2
 
-Step 2 is to launch the nodes ("instances") on AWS, to install all the necessary software on them, to configure the software, and to run the software.
+Step 2 is to launch the nodes ("instances") on AWS, to install all the necessary software on them, configure the software, run the software, and more.
 
 Here's an example of how one could launch a BigchainDB cluster of three (3) nodes tagged `wrigley` on AWS:
 ```text
+# in a Python 2.5-2.7 virtual environment where fabric, boto3, etc. are installed
+cd bigchaindb
 cd deploy-cluster-aws
 ./startup.sh wrigley 3 pypi
 ```
