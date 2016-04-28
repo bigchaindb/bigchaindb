@@ -5,7 +5,7 @@ import multiprocessing as mp
 
 from bigchaindb import util
 
-from bigchaindb.voter import Voter, BlockStream
+from bigchaindb.voter import Voter, Election, BlockStream
 from bigchaindb import crypto
 
 
@@ -324,9 +324,40 @@ class TestBlockElection(object):
         test_block['block']['votes'] = [invalid_vote, invalid_vote, valid_vote, valid_vote]
         assert b.block_voted_invalid(test_block)
 
-    def test_tx_rewritten_after_invalid(self, b):
-        pass
+    def test_tx_rewritten_after_invalid(self, b, user_public_key):
+        q_block_new_vote = mp.Queue()
+        election = Election(q_block_new_vote)
 
+        # create blocks with transactions
+        tx1 = b.create_transaction(b.me, user_public_key, None, 'CREATE')
+        tx2 = b.create_transaction(b.me, user_public_key, None, 'CREATE')
+        test_block_1 = b.create_block([tx1])
+        test_block_2 = b.create_block([tx2])
+
+        # simulate a federation with four voters
+        test_block_1['block']['voters'] = ['a', 'b', 'c', 'd']
+        test_block_2['block']['voters'] = ['a', 'b', 'c', 'd']
+
+        # votes for block one
+        valid_vote_1 = b.vote(test_block_1, 'abc', True)
+
+        # votes for block two
+        valid_vote_2 = b.vote(test_block_2, 'abc', True)
+        invalid_vote_2 = b.vote(test_block_2, 'abc', False)
+
+        # construct valid block
+        test_block_1['block']['votes'] = [valid_vote_1, valid_vote_1, valid_vote_1, valid_vote_1]
+        q_block_new_vote.put(test_block_1)
+
+        # construct invalid block
+        test_block_2['block']['votes'] = [invalid_vote_2, invalid_vote_2, valid_vote_2, valid_vote_2]
+        q_block_new_vote.put(test_block_2)
+
+        election.start()
+        time.sleep(1)
+        election.kill()
+
+        # TEST GOES HERE??
 
 class TestBlockStream(object):
 
