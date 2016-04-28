@@ -213,6 +213,11 @@ class Election(object):
         while True:
             next_block = self.q_block_new_vote.get()
 
+            # poison pill
+            if next_block == 'stop':
+                logger.info('clean exit')
+                return
+
             if b.block_voted_invalid(next_block):
                 self.q_invalid_blocks.put(next_block)
 
@@ -226,6 +231,12 @@ class Election(object):
 
             for tx in invalid_block['transactions']:
                 b.write_transaction(tx)
+
+    def kill(self):
+        """
+        Terminate processes
+        """
+        self.q_block_new_vote.put('stop')
 
     def start(self):
         """
