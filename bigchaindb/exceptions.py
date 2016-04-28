@@ -28,4 +28,5 @@ class DatabaseDoesNotExist(Exception):
 class KeypairNotFoundException(Exception):
     """Raised if operation cannot proceed because the keypair was not given"""
 
-
+class StartupError(Exception):
+    """Raised when there is an error starting up the system"""
