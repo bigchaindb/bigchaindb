@@ -297,6 +297,37 @@ class TestBigchainVoter(object):
         pass
 
 
+class TestBlockElection(object):
+
+    def test_quorum(self, b):
+        # create a new block
+        test_block = b.create_block([])
+
+        # simulate a federation with four voters
+        test_block['block']['voters'] = ['a', 'b', 'c', 'd']
+
+        # fake "yes" votes
+        valid_vote = b.vote(test_block, 'abc', True)
+
+        # fake "no" votes
+        invalid_vote = b.vote(test_block, 'abc', False)
+
+        # test unanimously valid block
+        test_block['block']['votes'] = [valid_vote, valid_vote, valid_vote, valid_vote]
+        assert not b.block_voted_invalid(test_block)
+
+        # test block with minority invalid vote
+        test_block['block']['votes'] = [invalid_vote, valid_vote, valid_vote, valid_vote]
+        assert not b.block_voted_invalid(test_block)
+
+        # test split vote -- block_voted_invalid should return True
+        test_block['block']['votes'] = [invalid_vote, invalid_vote, valid_vote, valid_vote]
+        assert b.block_voted_invalid(test_block)
+
+    def test_tx_rewritten_after_invalid(self, b):
+        pass
+
+
 class TestBlockStream(object):
 
     def test_if_federation_size_is_greater_than_one_ignore_past_blocks(self, b):
