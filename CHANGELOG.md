@@ -14,10 +14,10 @@ For reference, the possible headings are:
 * **External Contributors** to list contributors outside of ascribe GmbH.
 
 
-## [Unreleased] - YYYY-MM-DD
-Tag name: TBD
-= commit: TBD
-committed: TBD
+## [0.2.0] - 2016-04-26
+Tag name: v0.2.0
+= commit: 0c4a2b380aabdcf50fa2d7fb351c290aaedc3db7
+committed: April 26, 2016, 11:09 AM GMT+2
 
 ### Added
 - Ability to use environment variables to set (or partially set) configuration settings: [Pull Request #153](https://github.com/bigchaindb/bigchaindb/pull/153)
@@ -50,6 +50,7 @@ committed: TBD
 
 ### Fixed
 - Bug related to config overwrite: [Pull Request #97](https://github.com/bigchaindb/bigchaindb/pull/97)
+- Bug related to running the `bigchaindb-benchmark load` on docker [Pull Request #225](https://github.com/bigchaindb/bigchaindb/pull/225)
 
 ## External Contributors
 - [@thedoctor](https://github.com/thedoctor): Pull Requests 
