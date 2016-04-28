@@ -482,10 +482,9 @@ class Bigchain(object):
         """
         n_voters = len(block['block']['voters'])
 
-        vote_list = [vote['vote']['is_block_valid'] for vote in block['votes']]
+        vote_list = [vote['vote']['is_block_valid'] for vote in block['block']['votes']]
 
         n_invalid_votes = vote_list.count(False)
-
         if n_invalid_votes >= int(n_voters/2):
             return True
         else:
