@@ -2,11 +2,11 @@ version: '2'
 services:
   influxdb:
     image: tutum/influxdb
-      ports:
-          - "8083:8083"
-          - "8086:8086"
-          - "8090"
-          - "8099"
+    ports:
+        - "8083:8083"
+        - "8086:8086"
+        - "8090"
+        - "8099"
     environment:
       PRE_CREATE_DB: "telegraf"
 
