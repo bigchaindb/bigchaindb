@@ -54,8 +54,6 @@ def start_rethinkdb():
     # The last `line` contains info about the error.
     raise StartupError(line)
 
-    proc.kill()
-
 
 def start(parser, scope):
     """Utility function to execute a subcommand.

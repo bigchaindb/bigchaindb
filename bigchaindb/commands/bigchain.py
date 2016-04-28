@@ -59,8 +59,6 @@ def run_configure(args, skip_if_exists=False):
         skip_if_exists (bool): skip the function if a config file already exists
     """
     config_path = args.config or bigchaindb.config_utils.CONFIG_DEFAULT_PATH
-    bigchaindb.config_utils.autoconfigure(filename=False, force=True)
-
 
     config_file_exists = False
     # if the config path is `-` then it's stdout
@@ -76,9 +74,13 @@ def run_configure(args, skip_if_exists=False):
         if want != 'y':
             return
 
-    # Patch the default configuration with the new values
     conf = copy.deepcopy(bigchaindb.config)
-    del conf['CONFIGURED']
+
+    # Patch the default configuration with the new values
+    conf = bigchaindb.config_utils.update(
+            conf,
+            bigchaindb.config_utils.env_config(bigchaindb.config))
+
 
     print('Generating keypair', file=sys.stderr)
     conf['keypair']['private'], conf['keypair']['public'] = \
@@ -173,7 +175,6 @@ def run_start(args):
 def _run_load(tx_left, stats):
     logstats.thread.start(stats)
     client = temp_client()
-    # b = bigchaindb.Bigchain()
 
     while True:
         tx = client.create()
