@@ -407,6 +407,37 @@ class TestBlockValidation(object):
         assert block == b.validate_block(block)
         assert b.is_valid_block(block)
 
+    def test_invalid_signature(self, b):
+        # create a valid block
+        block = b.create_block([])
+
+        # replace the block signature with an invalid one
+        block['signature'] = crypto.SigningKey(b.me_private).sign(b'wrongdata')
+
+        # check that validate_block raises an InvalidSignature exception
+        with pytest.raises(exceptions.InvalidSignature):
+            b.validate_block(block)
+
+    def test_invalid_node_pubkey(self, b):
+        # blocks can only be created by a federation node
+        # create a valid block
+        block = b.create_block([])
+
+        # create some temp keys
+        tmp_sk, tmp_vk = crypto.generate_key_pair()
+
+        # change the block node_pubkey
+        block['block']['node_pubkey'] = tmp_vk
+
+        # just to make sure lets re-hash the block and create a valid signature
+        # from a non federation node
+        block['id'] = crypto.hash_data(util.serialize(block['block']))
+        block['signature'] = crypto.SigningKey(tmp_sk).sign(util.serialize(block['block']))
+
+        # check that validate_block raises an OperationError
+        with pytest.raises(exceptions.OperationError):
+            b.validate_block(block)
+
 
 class TestBigchainVoter(object):
 
