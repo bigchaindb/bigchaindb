@@ -37,9 +37,9 @@ This command drops (erases) the RethinkDB database. You will be prompted to make
 This command starts BigchainDB. It always begins by trying a `bigchaindb init` first. See the note in the documentation for `bigchaindb init`.
 
 
-## bigchaindb load
+### bigchaindb load
 
-The command is used to run benchmarking tests. You can learn more about it using:
+This command is used to run benchmarking tests. You can learn more about it using:
 ```text
 $ bigchaindb load -h
 ```
