@@ -215,6 +215,7 @@ class Election(object):
 
             # poison pill
             if next_block == 'stop':
+                self.q_invalid_blocks.put('stop')
                 logger.info('clean exit')
                 return
 
@@ -227,6 +228,12 @@ class Election(object):
         """
         while True:
             invalid_block = self.q_invalid_blocks.get()
+
+            # poison pill
+            if invalid_block == 'stop':
+                logger.info('clean exit')
+                return
+
             b = Bigchain()
             for tx in invalid_block['block']['transactions']:
                 b.write_transaction(tx)
