@@ -218,7 +218,7 @@ class Election(object):
                 logger.info('clean exit')
                 return
 
-            if b.block_voted_invalid(next_block):
+            if b.block_election_status(next_block) == 'invalid':
                 self.q_invalid_blocks.put(next_block)
 
     def requeue_transactions(self):

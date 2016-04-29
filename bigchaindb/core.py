@@ -476,16 +476,22 @@ class Bigchain(object):
 
         return unvoted
 
-    def block_voted_invalid(self, block):
+    def block_election_status(self, block):
         """
-        Checks if block has enough invalid votes to make a decision
+        Tallies the votes on a block, and returns the status: valid, invalid, or undecided
         """
         n_voters = len(block['block']['voters'])
 
         vote_list = [vote['vote']['is_block_valid'] for vote in block['block']['votes']]
 
+        # validate votes here
+
         n_invalid_votes = vote_list.count(False)
+        n_valid_votes = vote_list.count(True)
+
         if n_invalid_votes >= int(n_voters/2):
-            return True
+            return 'invalid'
+        elif n_valid_votes > int(n_voters/2):
+            return 'valid'
         else:
-            return False
+            return 'undecided'

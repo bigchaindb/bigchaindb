@@ -314,15 +314,19 @@ class TestBlockElection(object):
 
         # test unanimously valid block
         test_block['block']['votes'] = [valid_vote, valid_vote, valid_vote, valid_vote]
-        assert not b.block_voted_invalid(test_block)
+        assert b.block_election_status(test_block) == 'valid'
 
         # test block with minority invalid vote
         test_block['block']['votes'] = [invalid_vote, valid_vote, valid_vote, valid_vote]
-        assert not b.block_voted_invalid(test_block)
+        assert b.block_election_status(test_block) == 'valid'
 
-        # test split vote -- block_voted_invalid should return True
+        # test split vote
         test_block['block']['votes'] = [invalid_vote, invalid_vote, valid_vote, valid_vote]
-        assert b.block_voted_invalid(test_block)
+        assert b.block_election_status(test_block) == 'invalid'
+
+        # test undecided
+        test_block['block']['votes'] = [valid_vote, valid_vote]
+        assert b.block_election_status(test_block) == 'undecided'
 
     def test_tx_rewritten_after_invalid(self, b, user_public_key):
         q_block_new_vote = mp.Queue()
