@@ -330,7 +330,6 @@ class TestBlockElection(object):
 
     def test_tx_rewritten_after_invalid(self, b, user_public_key):
         q_block_new_vote = mp.Queue()
-        election = Election(q_block_new_vote)
 
         # create blocks with transactions
         tx1 = b.create_transaction(b.me, user_public_key, None, 'CREATE')
@@ -357,11 +356,17 @@ class TestBlockElection(object):
         test_block_2['block']['votes'] = [invalid_vote_2, invalid_vote_2, valid_vote_2, valid_vote_2]
         q_block_new_vote.put(test_block_2)
 
+        election = Election(q_block_new_vote)
         election.start()
         time.sleep(1)
         election.kill()
 
-        # TEST GOES HERE??
+        # tx1 was in a valid block, and should not be in the backlog
+        assert r.table('backlog').get(tx1['id']).run(b.conn) is None
+
+        # tx2 was in an invalid block and SHOULD be in the backlog
+        assert r.table('backlog').get(tx2['id']).run(b.conn)['id'] == tx2['id']
+
 
 class TestBlockStream(object):
 
