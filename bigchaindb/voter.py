@@ -228,8 +228,7 @@ class Election(object):
         while True:
             invalid_block = self.q_invalid_blocks.get()
             b = Bigchain()
-
-            for tx in invalid_block['transactions']:
+            for tx in invalid_block['block']['transactions']:
                 b.write_transaction(tx)
 
     def kill(self):
