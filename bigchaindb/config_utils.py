@@ -22,6 +22,8 @@ from pkg_resources import iter_entry_points, ResolutionError
 import bigchaindb
 from bigchaindb.consensus import AbstractConsensusRules
 
+# TODO: move this to a proper configuration file for logging
+logging.getLogger('requests').setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 CONFIG_DEFAULT_PATH = os.environ.setdefault(
@@ -89,7 +91,8 @@ def file_config(filename=None):
               file at CONFIG_DEFAULT_PATH, if filename == None)
     """
     logger.debug('On entry into file_config(), filename = {}'.format(filename))
-    if not filename:
+
+    if filename is None:
         filename = CONFIG_DEFAULT_PATH
 
     logger.debug('file_config() will try to open `{}`'.format(filename))

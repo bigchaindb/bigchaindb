@@ -6,6 +6,11 @@ For full docs visit https://bigchaindb.readthedocs.org
 """
 from setuptools import setup, find_packages
 
+# get the version
+version = {}
+with open('bigchaindb/version.py') as fp:
+    exec(fp.read(), version)
+
 tests_require = [
     'pytest',
     'coverage',
@@ -32,7 +37,7 @@ docs_require = [
 
 setup(
     name='BigchainDB',
-    version='0.1.4',
+    version=version['__version__'],
     description='BigchainDB: A Scalable Blockchain Database',
     long_description=__doc__,
     url='https://github.com/BigchainDB/bigchaindb/',
@@ -60,23 +65,21 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'bigchaindb=bigchaindb.commands.bigchain:main',
-            'bigchaindb-benchmark=bigchaindb.commands.bigchain_benchmark:main'
+            'bigchaindb=bigchaindb.commands.bigchain:main'
         ],
         'bigchaindb.consensus': [
             'default=bigchaindb.consensus:BaseConsensusRules'
         ]
     },
     install_requires=[
-        'rethinkdb==2.2.0.post4',
+        'rethinkdb==2.3.0',
         'pysha3==0.3',
         'pytz==2015.7',
-        'cryptoconditions==0.1.1',
+        'cryptoconditions==0.2.2',
         'statsd==3.2.1',
         'python-rapidjson==0.0.6',
         'logstats==0.2.1',
         'base58==0.2.2',
-        'bitcoin==1.1.42',
         'flask==0.10.1',
         'requests==2.9',
         'gunicorn~=19.0',

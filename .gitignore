@@ -71,3 +71,4 @@ target/
 # Some files created when deploying a cluster on AWS
 deploy-cluster-aws/conf/rethinkdb.conf
 deploy-cluster-aws/hostlist.py
+deploy-cluster-aws/confiles/

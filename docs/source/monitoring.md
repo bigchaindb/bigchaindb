@@ -22,7 +22,7 @@ then point a browser tab to:
 
 The login and password are `admin` by default. If BigchainDB is running and processing transactions, you should see analytics—if not, [start BigchainDB](installing-server.html#run-bigchaindb) and load some test transactions:
 ```text
-$ bigchaindb-benchmark load
+$ bigchaindb load
 ```
 
 then refresh the page after a few seconds.

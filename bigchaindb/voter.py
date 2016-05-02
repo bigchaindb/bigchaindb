@@ -3,6 +3,7 @@ import multiprocessing as mp
 import ctypes
 
 from bigchaindb import Bigchain
+from bigchaindb.monitor import Monitor
 
 
 logger = logging.getLogger(__name__)
@@ -56,6 +57,9 @@ class Voter(object):
 
         Initialize with a queue where new blocks added to the bigchain will be put
         """
+
+        self.monitor = Monitor()
+
         self.q_new_block = q_new_block
         self.q_blocks_to_validate = mp.Queue()
         self.q_validated_block = mp.Queue()
@@ -102,7 +106,9 @@ class Voter(object):
 
             logger.info('new_block arrived to voter')
             block_number = self.v_previous_block_number.value + 1
-            validity = b.is_valid_block(new_block)
+
+            with self.monitor.timer('validate_block'):
+                validity = b.is_valid_block(new_block)
 
             self.q_validated_block.put((new_block,
                                         self.v_previous_block_id.value.decode(),

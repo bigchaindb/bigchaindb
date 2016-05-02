@@ -7,19 +7,32 @@ For more information please refer to the documentation in Apiary:
 import flask
 from flask import current_app, request, Blueprint
 
+import bigchaindb
 from bigchaindb import util
 
 
 basic_views = Blueprint('basic_views', __name__)
 
 
+# Unfortunately I cannot find a reference to this decorator.
+# This answer on SO is quite useful tho:
+# - http://stackoverflow.com/a/13432373/597097
 @basic_views.record
-def get_bigchain(state):
+def record(state):
+    """This function checks if the blueprint can be initialized
+    with the provided state."""
+
     bigchain_pool = state.app.config.get('bigchain_pool')
+    monitor = state.app.config.get('monitor')
 
     if bigchain_pool is None:
         raise Exception('This blueprint expects you to provide '
                         'a pool of Bigchain instances called `bigchain_pool`')
+
+    if monitor is None:
+        raise ValueError('This blueprint expects you to provide '
+                         'a monitor instance to record system '
+                         'performance.')
 
 
 @basic_views.route('/transactions/<tx_id>')
@@ -49,6 +62,7 @@ def create_transaction():
         A JSON string containing the data about the transaction.
     """
     pool = current_app.config['bigchain_pool']
+    monitor = current_app.config['monitor']
 
     val = {}
 
@@ -64,7 +78,8 @@ def create_transaction():
         if not bigchain.consensus.verify_signature(tx):
             val['error'] = 'Invalid transaction signature'
 
-        val = bigchain.write_transaction(tx)
+        with monitor.timer('write_transaction', rate=bigchaindb.config['statsd']['rate']):
+            val = bigchain.write_transaction(tx)
 
     return flask.jsonify(**tx)
 

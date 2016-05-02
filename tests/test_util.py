@@ -1,3 +1,4 @@
+from unittest.mock import patch, call
 import pytest
 import queue
 
@@ -25,15 +26,14 @@ def mock_queue(monkeypatch):
     return mockqueue
 
 
-def test_transform_create(b, user_private_key, user_public_key):
+def test_transform_create(b, user_sk, user_vk):
     from bigchaindb import util
-
-    tx = util.create_tx(user_public_key, user_public_key, None, 'CREATE')
+    tx = util.create_tx(user_vk, user_vk, None, 'CREATE')
     tx = util.transform_create(tx)
     tx = util.sign_tx(tx, b.me_private)
 
-    assert tx['transaction']['current_owner'] == b.me
-    assert tx['transaction']['new_owner'] == user_public_key
+    assert tx['transaction']['fulfillments'][0]['current_owners'][0] == b.me
+    assert tx['transaction']['conditions'][0]['new_owners'][0] == user_vk
     assert util.verify_signature(tx)
 
 
@@ -120,4 +120,25 @@ def test_pool_raises_empty_exception_when_timeout(mock_queue):
     with pytest.raises(queue.Empty):
         with pool() as instance:
             assert instance == 'hello'
+
+
+@patch('multiprocessing.Process')
+def test_process_group_instantiates_and_start_processes(mock_process):
+    from bigchaindb.util import ProcessGroup
+
+    def noop():
+        pass
+
+    concurrency = 10
+
+    pg = ProcessGroup(concurrency=concurrency, group='test_group', target=noop)
+    pg.start()
+
+    mock_process.assert_has_calls([call(group='test_group', target=noop,
+                                        name=None, args=(), kwargs={},
+                                        daemon=None)
+                                  for i in range(concurrency)], any_order=True)
+
+    for process in pg.processes:
+        process.start.assert_called_with()
 
