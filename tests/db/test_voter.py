@@ -312,9 +312,23 @@ class TestBlockElection(object):
         # fake "no" votes
         invalid_vote = b.vote(test_block, 'abc', False)
 
+        # fake "yes" votes with incorrect signatures
+        improperly_signed_valid_vote = b.vote(test_block, 'abc', True)
+        improperly_signed_valid_vote['vote']['lol'] = 'this should ruin things'
+
         # test unanimously valid block
         test_block['block']['votes'] = [valid_vote, valid_vote, valid_vote, valid_vote]
         assert b.block_election_status(test_block) == 'valid'
+
+        # test unanimously valid block with one improperly signed vote -- should still succeed
+        test_block['block']['votes'] = [valid_vote, valid_vote, valid_vote, improperly_signed_valid_vote]
+        assert b.block_election_status(test_block) == 'valid'
+
+        # test unanimously valid block with two improperly signed votes -- should fail to have quorum
+        test_block['block']['votes'] = [valid_vote, valid_vote,
+                                        improperly_signed_valid_vote,
+                                        improperly_signed_valid_vote]
+        assert b.block_election_status(test_block) == 'undecided'
 
         # test block with minority invalid vote
         test_block['block']['votes'] = [invalid_vote, valid_vote, valid_vote, valid_vote]
