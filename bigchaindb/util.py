@@ -263,6 +263,26 @@ def verify_signature(signed_transaction):
     return public_key.verify(serialize(data), signature)
 
 
+def verify_vote_signature(signed_vote):
+    """Verify the signature of a vote
+
+    A valid vote should have been signed `current_owner` corresponding private key.
+
+    Args:
+        signed_vote (dict): a vote with the `signature` included.
+
+    Returns:
+        bool: True if the signature is correct, False otherwise.
+    """
+
+    data = signed_vote.copy()
+
+    signature = data.pop('signature')
+    public_key_base58 = signed_vote['node_pubkey']
+    public_key = crypto.VerifyingKey(public_key_base58)
+    return public_key.verify(serialize(data['vote']), signature)
+
+
 def transform_create(tx):
     """Change the owner and signature for a ``CREATE`` transaction created by a node"""
 

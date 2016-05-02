@@ -482,7 +482,9 @@ class Bigchain(object):
         """
         n_voters = len(block['block']['voters'])
 
-        vote_list = [vote['vote']['is_block_valid'] for vote in block['block']['votes']]
+        vote_list = [vote['vote']['is_block_valid']
+                     for vote in block['block']['votes']
+                     if self.consensus.verify_vote_signature(vote)]
 
         # validate votes here
 
