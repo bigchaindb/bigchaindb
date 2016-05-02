@@ -1,4 +1,5 @@
 import random
+import math
 
 import rethinkdb as r
 import rapidjson
@@ -501,9 +502,9 @@ class Bigchain(object):
         n_invalid_votes = vote_list.count(False)
         n_valid_votes = vote_list.count(True)
 
-        if n_invalid_votes >= n_voters // 2:
+        if n_invalid_votes >= math.ceil(n_voters / 2):
             return 'invalid'
-        elif n_valid_votes > n_voters // 2:
+        elif n_valid_votes > math.floor(n_voters / 2):
             return 'valid'
         else:
             return 'undecided'

@@ -320,6 +320,16 @@ class TestBlockElection(object):
         test_block['block']['votes'] = [valid_vote, valid_vote, valid_vote, valid_vote]
         assert b.block_election_status(test_block) == 'valid'
 
+        # test partial quorum situations
+        test_block['block']['votes'] = [valid_vote, valid_vote]
+        assert b.block_election_status(test_block) == 'undecided'
+        #
+        test_block['block']['votes'] = [valid_vote, valid_vote, valid_vote]
+        assert b.block_election_status(test_block) == 'valid'
+        #
+        test_block['block']['votes'] = [invalid_vote, invalid_vote]
+        assert b.block_election_status(test_block) == 'invalid'
+
         # test unanimously valid block with one improperly signed vote -- should still succeed
         test_block['block']['votes'] = [valid_vote, valid_vote, valid_vote, improperly_signed_valid_vote]
         assert b.block_election_status(test_block) == 'valid'
@@ -341,6 +351,25 @@ class TestBlockElection(object):
         # test undecided
         test_block['block']['votes'] = [valid_vote, valid_vote]
         assert b.block_election_status(test_block) == 'undecided'
+
+        # test partial quorum situations for odd numbers of voters
+        test_block = b.create_block([])
+        test_block['block']['voters'] = ['a', 'b', 'c', 'd', 'e']
+        valid_vote = b.vote(test_block, 'abc', True)
+        invalid_vote = b.vote(test_block, 'abc', False)
+
+        test_block['block']['votes'] = [valid_vote, valid_vote]
+        assert b.block_election_status(test_block) == 'undecided'
+
+        test_block['block']['votes'] = [invalid_vote, invalid_vote]
+        assert b.block_election_status(test_block) == 'undecided'
+
+        test_block['block']['votes'] = [valid_vote, valid_vote, valid_vote]
+        assert b.block_election_status(test_block) == 'valid'
+
+        test_block['block']['votes'] = [invalid_vote, invalid_vote, invalid_vote]
+        assert b.block_election_status(test_block) == 'invalid'
+
 
     def test_tx_rewritten_after_invalid(self, b, user_vk):
         q_block_new_vote = mp.Queue()
