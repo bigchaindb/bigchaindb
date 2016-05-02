@@ -30,3 +30,7 @@ class KeypairNotFoundException(Exception):
 
 class KeypairMismatchException(Exception):
     """Raised if the private key(s) provided for signing don't match any of the curret owner(s)"""
+
+class StartupError(Exception):
+    """Raised when there is an error starting up the system"""
+

@@ -1,4 +1,5 @@
 import json
+from unittest.mock import Mock, patch
 from argparse import Namespace
 from pprint import pprint
 import copy
@@ -62,8 +63,20 @@ def mock_bigchaindb_backup_config(monkeypatch):
 
 def test_bigchain_run_start(mock_run_configure, mock_processes_start, mock_db_init_with_existing_db):
     from bigchaindb.commands.bigchain import run_start
-    args = Namespace(config=None, yes=True)
+    args = Namespace(start_rethinkdb=False, config=None, yes=True)
     run_start(args)
+
+
+@patch('bigchaindb.commands.utils.start_rethinkdb')
+def test_bigchain_run_start_with_rethinkdb(mock_start_rethinkdb,
+                                           mock_run_configure,
+                                           mock_processes_start,
+                                           mock_db_init_with_existing_db):
+    from bigchaindb.commands.bigchain import run_start
+    args = Namespace(start_rethinkdb=True, config=None, yes=True)
+    run_start(args)
+
+    mock_start_rethinkdb.assert_called_with()
 
 
 @pytest.mark.skipif(reason="BigchainDB doesn't support the automatic creation of a config file anymore")
@@ -173,7 +186,7 @@ def test_run_configure_when_config_does_not_exist(monkeypatch,
                                                   mock_bigchaindb_backup_config):
     from bigchaindb.commands.bigchain import run_configure
     monkeypatch.setattr('os.path.exists', lambda path: False)
-    monkeypatch.setattr('builtins.input', lambda question: '\n')
+    monkeypatch.setattr('builtins.input', lambda: '\n')
     args = Namespace(config='foo', yes=True)
     return_value = run_configure(args)
     assert return_value is None
@@ -189,9 +202,26 @@ def test_run_configure_when_config_does_exist(monkeypatch,
 
     from bigchaindb.commands.bigchain import run_configure
     monkeypatch.setattr('os.path.exists', lambda path: True)
-    monkeypatch.setattr('builtins.input', lambda question: '\n')
+    monkeypatch.setattr('builtins.input', lambda: '\n')
     monkeypatch.setattr('bigchaindb.config_utils.write_config', mock_write_config)
 
     args = Namespace(config='foo', yes=None)
     run_configure(args)
     assert value == {}
+
+
+@patch('subprocess.Popen')
+def test_start_rethinkdb_returns_a_process_when_successful(mock_popen):
+    from bigchaindb.commands import utils
+    mock_popen.return_value = Mock(stdout=['Server ready'])
+    assert utils.start_rethinkdb() is mock_popen.return_value
+
+
+@patch('subprocess.Popen')
+def test_start_rethinkdb_exits_when_cannot_start(mock_popen):
+    from bigchaindb import exceptions
+    from bigchaindb.commands import utils
+    mock_popen.return_value = Mock(stdout=['Nopety nope'])
+    with pytest.raises(exceptions.StartupError):
+        utils.start_rethinkdb()
+

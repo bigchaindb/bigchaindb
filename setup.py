@@ -65,15 +65,14 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'bigchaindb=bigchaindb.commands.bigchain:main',
-            'bigchaindb-benchmark=bigchaindb.commands.bigchain_benchmark:main'
+            'bigchaindb=bigchaindb.commands.bigchain:main'
         ],
         'bigchaindb.consensus': [
             'default=bigchaindb.consensus:BaseConsensusRules'
         ]
     },
     install_requires=[
-        'rethinkdb==2.2.0.post4',
+        'rethinkdb==2.3.0',
         'pysha3==0.3',
         'pytz==2015.7',
         'cryptoconditions==0.2.2',
