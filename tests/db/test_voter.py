@@ -342,12 +342,12 @@ class TestBlockElection(object):
         test_block['block']['votes'] = [valid_vote, valid_vote]
         assert b.block_election_status(test_block) == 'undecided'
 
-    def test_tx_rewritten_after_invalid(self, b, user_public_key):
+    def test_tx_rewritten_after_invalid(self, b, user_vk):
         q_block_new_vote = mp.Queue()
 
         # create blocks with transactions
-        tx1 = b.create_transaction(b.me, user_public_key, None, 'CREATE')
-        tx2 = b.create_transaction(b.me, user_public_key, None, 'CREATE')
+        tx1 = b.create_transaction(b.me, user_vk, None, 'CREATE')
+        tx2 = b.create_transaction(b.me, user_vk, None, 'CREATE')
         test_block_1 = b.create_block([tx1])
         test_block_2 = b.create_block([tx2])
 
