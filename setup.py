@@ -82,7 +82,7 @@ setup(
         'base58==0.2.2',
         'flask==0.10.1',
         'requests==2.9',
-        'gunicorn~=19.0',
+        'gunicorn==19.0',
     ],
     setup_requires=['pytest-runner'],
     tests_require=tests_require,
