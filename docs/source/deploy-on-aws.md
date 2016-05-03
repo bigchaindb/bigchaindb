@@ -108,19 +108,19 @@ Here's an example of how one could launch a BigchainDB cluster of three (3) node
 # in a Python 2.5-2.7 virtual environment where fabric, boto3, etc. are installed
 cd bigchaindb
 cd deploy-cluster-aws
-./startup.sh wrigley 3 pypi
+./awsdeploy_servers.sh wrigley 3 pypi
 ```
 
 The `pypi` on the end means that it will install the latest (stable) `bigchaindb` package from the [Python Package Index (PyPI)](https://pypi.python.org/pypi). That is, on each node, BigchainDB is installed using `pip install bigchaindb`. 
 
-`startup.sh` is a Bash script which calls some Python and Fabric scripts. The usage is:
+`awsdeploy_servers.sh` is a Bash script which calls some Python and Fabric scripts. The usage is:
 ```text
-./startup.sh <tag> <number_of_nodes_in_cluster> <pypi_or_branch>
+./awsdeploy_servers.sh <tag> <number_of_nodes_in_cluster> <pypi_or_branch>
 ```
 
 The first two arguments are self-explanatory. The third argument can be `pypi` or the name of a local Git branch (e.g. `master` or `feat/3752/quote-asimov-on-tuesdays`). If you don't include a third argument, then `pypi` will be assumed by default.
 
-If you're curious what the `startup.sh` script does, the source code has lots of explanatory comments, so it's quite easy to read. Here's a link to the latest version on GitHub: [`startup.sh`](https://github.com/bigchaindb/bigchaindb/blob/master/deploy-cluster-aws/startup.sh)
+If you're curious what the `awsdeploy_servers.sh` script does, the source code has lots of explanatory comments, so it's quite easy to read. Here's a link to the latest version on GitHub: [`awsdeploy_servers.sh`](https://github.com/bigchaindb/bigchaindb/blob/master/deploy-cluster-aws/awsdeploy_servers.sh)
 
 It should take a few minutes for the deployment to finish. If you run into problems, see the section on Known Deployment Issues below.
 

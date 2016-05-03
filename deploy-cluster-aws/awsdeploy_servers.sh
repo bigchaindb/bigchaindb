@@ -6,7 +6,7 @@ set -e
 
 function printErr()
     {
-        echo "usage: ./startup.sh <tag> <number_of_nodes_in_cluster> <pypi_or_branch>"
+        echo "usage: ./awsdeploy_servers.sh <tag> <number_of_nodes_in_cluster> <pypi_or_branch>"
         echo "No argument $1 supplied"
     }
 
