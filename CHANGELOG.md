@@ -29,6 +29,13 @@ committed:
 ### Fixed
 - Bug related to block validation: [Pull Request #233](https://github.com/bigchaindb/bigchaindb/pull/233)
 
+### Notes
+This release completely refactored the structure of the transactions and broke compatibility with older versions
+of BigchainDB. The refactor of the transactions was made in order to add support for multiple inputs/outputs and
+the crypto-conditions specs from the Interledger protocol.
+
+We also updated the rethinkdb python drivers so you need to upgrade to rethinkdb v2.3+
+
 
 ## [0.2.0] - 2016-04-26
 Tag name: v0.2.0
