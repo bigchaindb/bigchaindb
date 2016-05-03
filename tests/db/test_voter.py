@@ -6,7 +6,7 @@ import multiprocessing as mp
 from bigchaindb import util
 
 from bigchaindb.voter import Voter, Election, BlockStream
-from bigchaindb import crypto
+from bigchaindb import crypto, Bigchain
 
 
 class TestBigchainVoter(object):
@@ -304,70 +304,91 @@ class TestBlockElection(object):
         test_block = b.create_block([])
 
         # simulate a federation with four voters
-        test_block['block']['voters'] = ['a', 'b', 'c', 'd']
+        key_pairs = [crypto.generate_key_pair() for _ in range(4)]
+        test_federation = [Bigchain(public_key=key_pair[1], private_key=key_pair[0])
+                           for key_pair in key_pairs]
+
+        # dummy block with test federation public keys as voters
+        test_block['block']['voters'] = [key_pair[1] for key_pair in key_pairs]
 
         # fake "yes" votes
-        valid_vote = b.vote(test_block, 'abc', True)
+        valid_vote = [member.vote(test_block, 'abc', True)
+                      for member in test_federation]
 
         # fake "no" votes
-        invalid_vote = b.vote(test_block, 'abc', False)
+        invalid_vote = [member.vote(test_block, 'abc', False)
+                        for member in test_federation]
 
         # fake "yes" votes with incorrect signatures
-        improperly_signed_valid_vote = b.vote(test_block, 'abc', True)
-        improperly_signed_valid_vote['vote']['lol'] = 'this should ruin things'
+        improperly_signed_valid_vote = [member.vote(test_block, 'abc', True) for
+                                        member in test_federation]
+        [vote['vote'].update(this_should_ruin_things='lol')
+         for vote in improperly_signed_valid_vote]
 
         # test unanimously valid block
-        test_block['block']['votes'] = [valid_vote, valid_vote, valid_vote, valid_vote]
+        test_block['block']['votes'] = valid_vote
         assert b.block_election_status(test_block) == 'valid'
 
         # test partial quorum situations
-        test_block['block']['votes'] = [valid_vote, valid_vote]
+        test_block['block']['votes'] = valid_vote[:2]
         assert b.block_election_status(test_block) == 'undecided'
         #
-        test_block['block']['votes'] = [valid_vote, valid_vote, valid_vote]
+        test_block['block']['votes'] = valid_vote[:3]
         assert b.block_election_status(test_block) == 'valid'
         #
-        test_block['block']['votes'] = [invalid_vote, invalid_vote]
+        test_block['block']['votes'] = invalid_vote[:2]
         assert b.block_election_status(test_block) == 'invalid'
 
         # test unanimously valid block with one improperly signed vote -- should still succeed
-        test_block['block']['votes'] = [valid_vote, valid_vote, valid_vote, improperly_signed_valid_vote]
+        test_block['block']['votes'] = valid_vote[:3] + improperly_signed_valid_vote[:1]
         assert b.block_election_status(test_block) == 'valid'
 
         # test unanimously valid block with two improperly signed votes -- should fail to have quorum
-        test_block['block']['votes'] = [valid_vote, valid_vote,
-                                        improperly_signed_valid_vote,
-                                        improperly_signed_valid_vote]
+        test_block['block']['votes'] = valid_vote[:2] + improperly_signed_valid_vote[:2]
         assert b.block_election_status(test_block) == 'undecided'
 
         # test block with minority invalid vote
-        test_block['block']['votes'] = [invalid_vote, valid_vote, valid_vote, valid_vote]
+        test_block['block']['votes'] = invalid_vote[:1] + valid_vote[:3]
         assert b.block_election_status(test_block) == 'valid'
 
         # test split vote
-        test_block['block']['votes'] = [invalid_vote, invalid_vote, valid_vote, valid_vote]
+        test_block['block']['votes'] = invalid_vote[:2] + valid_vote[:2]
         assert b.block_election_status(test_block) == 'invalid'
 
         # test undecided
-        test_block['block']['votes'] = [valid_vote, valid_vote]
+        test_block['block']['votes'] = valid_vote[:2]
         assert b.block_election_status(test_block) == 'undecided'
 
         # test partial quorum situations for odd numbers of voters
+        # create a new block
         test_block = b.create_block([])
-        test_block['block']['voters'] = ['a', 'b', 'c', 'd', 'e']
-        valid_vote = b.vote(test_block, 'abc', True)
-        invalid_vote = b.vote(test_block, 'abc', False)
 
-        test_block['block']['votes'] = [valid_vote, valid_vote]
+        # simulate a federation with four voters
+        key_pairs = [crypto.generate_key_pair() for _ in range(5)]
+        test_federation = [Bigchain(public_key=key_pair[1], private_key=key_pair[0])
+                           for key_pair in key_pairs]
+
+        # dummy block with test federation public keys as voters
+        test_block['block']['voters'] = [key_pair[1] for key_pair in key_pairs]
+
+        # fake "yes" votes
+        valid_vote = [member.vote(test_block, 'abc', True)
+                      for member in test_federation]
+
+        # fake "no" votes
+        invalid_vote = [member.vote(test_block, 'abc', False)
+                        for member in test_federation]
+
+        test_block['block']['votes'] = valid_vote[:2]
         assert b.block_election_status(test_block) == 'undecided'
 
-        test_block['block']['votes'] = [invalid_vote, invalid_vote]
+        test_block['block']['votes'] = invalid_vote[:2]
         assert b.block_election_status(test_block) == 'undecided'
 
-        test_block['block']['votes'] = [valid_vote, valid_vote, valid_vote]
+        test_block['block']['votes'] = valid_vote[:3]
         assert b.block_election_status(test_block) == 'valid'
 
-        test_block['block']['votes'] = [invalid_vote, invalid_vote, invalid_vote]
+        test_block['block']['votes'] = invalid_vote[:3]
         assert b.block_election_status(test_block) == 'invalid'
 
     def test_tx_rewritten_after_invalid(self, b, user_vk):
@@ -380,22 +401,28 @@ class TestBlockElection(object):
         test_block_2 = b.create_block([tx2])
 
         # simulate a federation with four voters
-        test_block_1['block']['voters'] = ['a', 'b', 'c', 'd']
-        test_block_2['block']['voters'] = ['a', 'b', 'c', 'd']
+        key_pairs = [crypto.generate_key_pair() for _ in range(4)]
+        test_federation = [Bigchain(public_key=key_pair[1], private_key=key_pair[0])
+                           for key_pair in key_pairs]
+
+        # simulate a federation with four voters
+        test_block_1['block']['voters'] = [key_pair[1] for key_pair in key_pairs]
+        test_block_2['block']['voters'] = [key_pair[1] for key_pair in key_pairs]
 
         # votes for block one
-        valid_vote_1 = b.vote(test_block_1, 'abc', True)
+        vote_1 = [member.vote(test_block_1, 'abc', True)
+                      for member in test_federation]
 
         # votes for block two
-        valid_vote_2 = b.vote(test_block_2, 'abc', True)
-        invalid_vote_2 = b.vote(test_block_2, 'abc', False)
+        vote_2 = [member.vote(test_block_2, 'abc', True) for member in test_federation[:2]] + \
+                       [member.vote(test_block_2, 'abc', False) for member in test_federation[2:]]
 
         # construct valid block
-        test_block_1['block']['votes'] = [valid_vote_1, valid_vote_1, valid_vote_1, valid_vote_1]
+        test_block_1['block']['votes'] = vote_1
         q_block_new_vote.put(test_block_1)
 
         # construct invalid block
-        test_block_2['block']['votes'] = [invalid_vote_2, invalid_vote_2, valid_vote_2, valid_vote_2]
+        test_block_2['block']['votes'] = vote_2
         q_block_new_vote.put(test_block_2)
 
         election = Election(q_block_new_vote)
