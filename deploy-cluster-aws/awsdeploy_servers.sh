@@ -4,32 +4,27 @@
 # if any command has a non-zero exit status
 set -e
 
-function printErr()
-    {
-        echo "usage: ./awsdeploy_servers.sh <tag> <number_of_nodes_in_cluster> <pypi_or_branch>"
-        echo "No argument $1 supplied"
-    }
+USAGE="usage: ./awsdeploy_servers.sh <number_of_nodes_in_cluster> <pypi_or_branch>"
+
+# Auto-generate the tag to apply to all nodes in the cluster
+TAG="bcdb-"`date +%m-%d@%H:%M`
+echo "TAG = "$TAG
 
 if [ -z "$1" ]; then
-    printErr "<tag>"
+    echo $USAGE
+    echo "No first argument <number_of_nodes_in_cluster> was specified"
     exit 1
+else
+    NUM_NODES=$1
 fi
 
-if [ -z "$2" ]; then
-    printErr "<number_of_nodes_in_cluster>"
-    exit 1
-fi
-
-TAG=$1
-NUM_NODES=$2
-
-# If they don't include a third argument (<pypi_or_branch>)
+# If they don't include a second argument (<pypi_or_branch>)
 # then assume BRANCH = "pypi" by default
-if [ -z "$3" ]; then
-    echo "No third argument was specified, so BigchainDB will be installed from PyPI"
+if [ -z "$2" ]; then
+    echo "No second argument was specified, so BigchainDB will be installed from PyPI"
     BRANCH="pypi"
 else
-    BRANCH=$3
+    BRANCH=$2
 fi
 
 # Check for AWS private key file (.pem file)

@@ -103,22 +103,22 @@ You can look inside those files if you're curious. In step 2, they'll be modifie
 
 Step 2 is to launch the nodes ("instances") on AWS, to install all the necessary software on them, configure the software, run the software, and more.
 
-Here's an example of how one could launch a BigchainDB cluster of three (3) nodes tagged `wrigley` on AWS:
+Here's an example of how one could launch a BigchainDB cluster of three (3) nodes on AWS:
 ```text
 # in a Python 2.5-2.7 virtual environment where fabric, boto3, etc. are installed
 cd bigchaindb
 cd deploy-cluster-aws
-./awsdeploy_servers.sh wrigley 3 pypi
+./awsdeploy_servers.sh 3 pypi
 ```
 
 The `pypi` on the end means that it will install the latest (stable) `bigchaindb` package from the [Python Package Index (PyPI)](https://pypi.python.org/pypi). That is, on each node, BigchainDB is installed using `pip install bigchaindb`. 
 
 `awsdeploy_servers.sh` is a Bash script which calls some Python and Fabric scripts. The usage is:
 ```text
-./awsdeploy_servers.sh <tag> <number_of_nodes_in_cluster> <pypi_or_branch>
+./awsdeploy_servers.sh <number_of_nodes_in_cluster> <pypi_or_branch>
 ```
 
-The first two arguments are self-explanatory. The third argument can be `pypi` or the name of a local Git branch (e.g. `master` or `feat/3752/quote-asimov-on-tuesdays`). If you don't include a third argument, then `pypi` will be assumed by default.
+The first argument is the number of nodes to deploy. The second argument can be `pypi` or the name of a local Git branch (e.g. `master` or `feat/3752/quote-asimov-on-tuesdays`). If you don't include a second argument, then `pypi` will be assumed by default.
 
 If you're curious what the `awsdeploy_servers.sh` script does, the source code has lots of explanatory comments, so it's quite easy to read. Here's a link to the latest version on GitHub: [`awsdeploy_servers.sh`](https://github.com/bigchaindb/bigchaindb/blob/master/deploy-cluster-aws/awsdeploy_servers.sh)
 
