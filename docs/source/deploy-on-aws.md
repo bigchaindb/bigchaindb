@@ -108,19 +108,21 @@ Here's an example of how one could launch a BigchainDB cluster of three (3) node
 # in a Python 2.5-2.7 virtual environment where fabric, boto3, etc. are installed
 cd bigchaindb
 cd deploy-cluster-aws
-./awsdeploy_servers.sh 3 pypi
+./awsdeploy.sh 3
 ```
 
-The `pypi` on the end means that it will install the latest (stable) `bigchaindb` package from the [Python Package Index (PyPI)](https://pypi.python.org/pypi). That is, on each node, BigchainDB is installed using `pip install bigchaindb`. 
-
-`awsdeploy_servers.sh` is a Bash script which calls some Python and Fabric scripts. The usage is:
+`awsdeploy.sh` is a Bash script which calls some Python and Fabric scripts. The usage is:
 ```text
-./awsdeploy_servers.sh <number_of_nodes_in_cluster> <pypi_or_branch>
+./awsdeploy.sh <number_of_nodes_in_cluster> [pypi_or_branch] [servers_or_clients]
 ```
 
-The first argument is the number of nodes to deploy. The second argument can be `pypi` or the name of a local Git branch (e.g. `master` or `feat/3752/quote-asimov-on-tuesdays`). If you don't include a second argument, then `pypi` will be assumed by default.
+The first argument <number_of_nodes_in_cluster> is required. It's how many nodes you want to deploy.
 
-If you're curious what the `awsdeploy_servers.sh` script does, the source code has lots of explanatory comments, so it's quite easy to read. Here's a link to the latest version on GitHub: [`awsdeploy_servers.sh`](https://github.com/bigchaindb/bigchaindb/blob/master/deploy-cluster-aws/awsdeploy_servers.sh)
+The second argument is optional. It can be the word `pypi` or the name of a local Git branch. `pypi` means that BigchainDB will be installed from the latest `bigchaindb` package in the [Python Package Index (PyPI)](https://pypi.python.org/pypi). That is, on each node, BigchainDB will be installed using `pip install bigchaindb`. If you don't include the second argument, then the default is `pypi`.
+
+The third argument is also optional (but if you want to include it, you must also include the second argument). It must be either `servers` or `clients`, depending on what you want to deploy. If you don't include the third argument, then the default is `servers`.
+
+If you're curious what the `awsdeploy.sh` script does, the source code has lots of explanatory comments, so it's quite easy to read. Here's a link to the latest version on GitHub: [`awsdeploy.sh`](https://github.com/bigchaindb/bigchaindb/blob/master/deploy-cluster-aws/awsdeploy.sh)
 
 It should take a few minutes for the deployment to finish. If you run into problems, see the section on Known Deployment Issues below.
 

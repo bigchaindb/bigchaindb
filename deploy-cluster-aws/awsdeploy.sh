@@ -4,27 +4,36 @@
 # if any command has a non-zero exit status
 set -e
 
-USAGE="usage: ./awsdeploy_servers.sh <number_of_nodes_in_cluster> <pypi_or_branch>"
-
-# Auto-generate the tag to apply to all nodes in the cluster
-TAG="bcdb-"`date +%m-%d@%H:%M`
-echo "TAG = "$TAG
+USAGE="usage: ./awsdeploy.sh <number_of_nodes_in_cluster> <pypi_or_branch> <servers_or_clients>"
 
 if [ -z "$1" ]; then
     echo $USAGE
-    echo "No first argument <number_of_nodes_in_cluster> was specified"
+    echo "No first argument was specified"
+    echo "It should be a number like 3 or 15"
     exit 1
 else
     NUM_NODES=$1
 fi
 
-# If they don't include a second argument (<pypi_or_branch>)
-# then assume BRANCH = "pypi" by default
 if [ -z "$2" ]; then
+    echo $USAGE
     echo "No second argument was specified, so BigchainDB will be installed from PyPI"
     BRANCH="pypi"
 else
     BRANCH=$2
+fi
+
+if [ -z "$3" ]; then
+    echo $USAGE
+    echo "No third argument was specified, so servers will be deployed"
+    WHAT_TO_DEPLOY="servers"
+else
+    WHAT_TO_DEPLOY=$3
+fi
+
+if [[ ("$WHAT_TO_DEPLOY" != "servers") && ("$WHAT_TO_DEPLOY" != "clients") ]]; then
+    echo "The third argument, if included, must be servers or clients"
+    exit 1
 fi
 
 # Check for AWS private key file (.pem file)
@@ -39,6 +48,10 @@ if [ ! -d "confiles" ]; then
     echo "See make_confiles.sh to find out how to make it"
     exit 1
 fi
+
+# Auto-generate the tag to apply to all nodes in the cluster
+TAG="BDB-"$WHAT_TO_DEPLOY"-"`date +%m-%d@%H:%M`
+echo "TAG = "$TAG
 
 # Change the file permissions on pem/bigchaindb.pem
 # so that the owner can read it, but that's all
