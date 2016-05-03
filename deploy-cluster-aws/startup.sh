@@ -127,4 +127,3 @@ fab start_bigchaindb
 
 # cleanup
 rm add2known_hosts.sh
-# rm -rf temp_confs
