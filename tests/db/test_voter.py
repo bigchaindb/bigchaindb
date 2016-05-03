@@ -359,6 +359,13 @@ class TestBlockElection(object):
         test_block['block']['votes'] = valid_vote[:2]
         assert b.block_election_status(test_block) == 'undecided'
 
+        # change signatures in block, should fail
+        test_block['block']['voters'][0] = 'abc'
+        test_block['block']['voters'][1] = 'abc'
+        test_block['block']['votes'] = valid_vote
+        assert b.block_election_status(test_block) == 'invalid'
+
+    def test_quorum_odd(self, b):
         # test partial quorum situations for odd numbers of voters
         # create a new block
         test_block = b.create_block([])
