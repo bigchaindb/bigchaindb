@@ -233,4 +233,60 @@ b.write_transaction(threshold_tx_transfer)
 
 print(json.dumps(threshold_tx_transfer, sort_keys=True, indent=4, separators=(',', ':')))
 
+"""
+Hashlocked Conditions
+"""
 
+# Create a hash-locked asset without any new_owners
+hashlock_tx = b.create_transaction(b.me, None, None, 'CREATE')
+
+# Define a secret that will be hashed - fulfillments need to guess the secret
+secret = b'much secret! wow!'
+first_tx_condition = cc.PreimageSha256Fulfillment(preimage=secret)
+
+# The conditions list is empty, so we need to append a new condition
+hashlock_tx['transaction']['conditions'].append({
+    'condition': {
+        'uri': first_tx_condition.condition.serialize_uri()
+    },
+    'cid': 0,
+    'new_owners': None
+})
+
+# Conditions have been updated, so hash needs updating
+hashlock_tx['id'] = util.get_hash_data(hashlock_tx)
+
+# The asset needs to be signed by the current_owner
+hashlock_tx_signed = b.sign_transaction(hashlock_tx, b.me_private)
+
+# Some validations
+assert b.validate_transaction(hashlock_tx_signed) == hashlock_tx_signed
+assert b.is_valid_transaction(hashlock_tx_signed) == hashlock_tx_signed
+
+b.write_transaction(hashlock_tx_signed)
+print(json.dumps(hashlock_tx_signed, sort_keys=True, indent=4, separators=(',', ':')))
+
+sleep(10)
+
+hashlockuser_priv, hashlockuser_pub = crypto.generate_key_pair()
+
+# create hashlock fulfillment tx
+hashlock_fulfill_tx = b.create_transaction(None, hashlockuser_priv, {'txid': hashlock_tx['id'], 'cid': 0}, 'TRANSFER')
+
+# try a wrong secret
+hashlock_fulfill_tx_fulfillment = cc.PreimageSha256Fulfillment(preimage=b'')
+hashlock_fulfill_tx['transaction']['fulfillments'][0]['fulfillment'] = \
+    hashlock_fulfill_tx_fulfillment.serialize_uri()
+
+assert b.is_valid_transaction(hashlock_fulfill_tx) == False
+
+# provide the right secret
+hashlock_fulfill_tx_fulfillment = cc.PreimageSha256Fulfillment(preimage=secret)
+hashlock_fulfill_tx['transaction']['fulfillments'][0]['fulfillment'] = \
+    hashlock_fulfill_tx_fulfillment.serialize_uri()
+
+assert b.validate_transaction(hashlock_fulfill_tx) == hashlock_fulfill_tx
+assert b.is_valid_transaction(hashlock_fulfill_tx) == hashlock_fulfill_tx
+
+b.write_transaction(hashlock_fulfill_tx)
+print(json.dumps(hashlock_fulfill_tx, sort_keys=True, indent=4, separators=(',', ':')))

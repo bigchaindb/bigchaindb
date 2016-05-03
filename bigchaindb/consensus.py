@@ -176,7 +176,6 @@ class BaseConsensusRules(AbstractConsensusRules):
 
         return transaction
 
-    # TODO: Unsure if a bigchain parameter is really necessary here?
     @staticmethod
     def validate_block(bigchain, block):
         """Validate a block.
@@ -197,6 +196,15 @@ class BaseConsensusRules(AbstractConsensusRules):
         calculated_hash = crypto.hash_data(util.serialize(block['block']))
         if calculated_hash != block['id']:
             raise exceptions.InvalidHash()
+
+        # Check if the block was created by a federation node
+        if block['block']['node_pubkey'] not in (bigchain.federation_nodes + [bigchain.me]):
+            raise exceptions.OperationError('Only federation nodes can create blocks')
+
+        # Check if block signature is valid
+        verifying_key = crypto.VerifyingKey(block['block']['node_pubkey'])
+        if not verifying_key.verify(util.serialize(block['block']), block['signature']):
+            raise exceptions.InvalidSignature('Invalid block signature')
 
         return block
 

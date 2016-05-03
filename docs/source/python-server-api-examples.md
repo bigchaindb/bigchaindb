@@ -746,3 +746,142 @@ threshold_tx_transfer
     "version":1
 }
 ```
+
+
+### Hash-locked Conditions
+
+By creating a hash of a difficult-to-guess 256-bit random or pseudo-random integer it is possible to create a condition which the creator can trivially fulfill by publishing the random value. However, for anyone else, the condition is cryptographically hard to fulfill, because they would have to find a preimage for the given condition hash.
+
+One possible usecase might be to redeem a digital voucher when given a secret (voucher code).
+
+```python
+# Create a hash-locked asset without any new_owners
+hashlock_tx = b.create_transaction(b.me, None, None, 'CREATE')
+
+# Define a secret that will be hashed - fulfillments need to guess the secret
+secret = b'much secret! wow!'
+first_tx_condition = cc.PreimageSha256Fulfillment(preimage=secret)
+
+# The conditions list is empty, so we need to append a new condition
+hashlock_tx['transaction']['conditions'].append({
+    'condition': {
+        'uri': first_tx_condition.condition.serialize_uri()
+    },
+    'cid': 0,
+    'new_owners': None
+})
+
+# Conditions have been updated, so hash needs updating
+hashlock_tx['id'] = util.get_hash_data(hashlock_tx)
+
+# The asset needs to be signed by the current_owner
+hashlock_tx_signed = b.sign_transaction(hashlock_tx, b.me_private)
+
+# Some validations
+assert b.validate_transaction(hashlock_tx_signed) == hashlock_tx_signed
+assert b.is_valid_transaction(hashlock_tx_signed) == hashlock_tx_signed
+
+b.write_transaction(hashlock_tx_signed)
+hashlock_tx_signed
+```
+
+```python
+{
+    "assignee":"FmLm6MxCABc8TsiZKdeYaZKo5yZWMM6Vty7Q1B6EgcP2",
+    "id":"604c520244b7ff63604527baf269e0cbfb887122f503703120fd347d6b99a237",
+    "transaction":{
+        "conditions":[
+            {
+                "cid":0,
+                "condition":{
+                    "uri":"cc:0:3:nsW2IiYgk9EUtsg4uBe3pBnOgRoAEX2IIsPgjqZz47U:17"
+                },
+                "new_owners":None
+            }
+        ],
+        "data":None,
+        "fulfillments":[
+            {
+                "current_owners":[
+                    "FmLm6MxCABc8TsiZKdeYaZKo5yZWMM6Vty7Q1B6EgcP2"
+                ],
+                "fid":0,
+                "fulfillment":"cf:4:21-D-LfNhIQhvY5914ArFTUGpgPKc7EVC1ZtJqqOTHGx1p9FuRr9tRfkbdqtX2MZWh7sRVUmMnwp7I1-xZbCnCkeADf69IwDHbZvNS6aTr1CpekREsV9ZG8m_wjlZiUN",
+                "input":None
+            }
+        ],
+        "operation":"CREATE",
+        "timestamp":"1461250387.910102"
+    },
+    "version":1
+}
+```
+
+In order to redeem the asset, one needs to create a fulfillment the correct secret as a preimage:
+
+```python
+hashlockuser_priv, hashlockuser_pub = crypto.generate_key_pair()
+
+# create hashlock fulfillment tx
+hashlock_fulfill_tx = b.create_transaction(None, hashlockuser_pub, {'txid': hashlock_tx['id'], 'cid': 0}, 'TRANSFER')
+
+# provide a wrong secret
+hashlock_fulfill_tx_fulfillment = cc.PreimageSha256Fulfillment(preimage=b'')
+hashlock_fulfill_tx['transaction']['fulfillments'][0]['fulfillment'] = \
+    hashlock_fulfill_tx_fulfillment.serialize_uri()
+    
+assert b.is_valid_transaction(hashlock_fulfill_tx) == False
+
+# provide the right secret
+hashlock_fulfill_tx_fulfillment = cc.PreimageSha256Fulfillment(preimage=secret)
+hashlock_fulfill_tx['transaction']['fulfillments'][0]['fulfillment'] = \
+    hashlock_fulfill_tx_fulfillment.serialize_uri()
+
+assert b.validate_transaction(hashlock_fulfill_tx) == hashlock_fulfill_tx
+assert b.is_valid_transaction(hashlock_fulfill_tx) == hashlock_fulfill_tx
+
+b.write_transaction(hashlock_fulfill_tx)
+hashlock_fulfill_tx
+```
+
+```python
+{
+    "assignee":"FmLm6MxCABc8TsiZKdeYaZKo5yZWMM6Vty7Q1B6EgcP2",
+    "id":"fe6871bf3ca62eb61c52c5555cec2e07af51df817723f0cb76e5cf6248f449d2",
+    "transaction":{
+        "conditions":[
+            {
+                "cid":0,
+                "condition":{
+                    "details":{
+                        "bitmask":32,
+                        "public_key":"EiqCKxnBCmmNb83qyGch48tULK9RLaEt4xFA43UVCVDb",
+                        "signature":None,
+                        "type":"fulfillment",
+                        "type_id":4
+                    },
+                    "uri":"cc:4:20:y9884Md2YI_wdnGSTJGhwvFaNsKLe8sqwimqk-2JLSI:96"
+                },
+                "new_owners":[
+                    "EiqCKxnBCmmNb83qyGch48tULK9RLaEt4xFA43UVCVDb"
+                ]
+            }
+        ],
+        "data":None,
+        "fulfillments":[
+            {
+                "current_owners":[],
+                "fid":0,
+                "fulfillment":"cf:0:bXVjaCBzZWNyZXQhIHdvdyE",
+                "input":{
+                    "cid":0,
+                    "txid":"604c520244b7ff63604527baf269e0cbfb887122f503703120fd347d6b99a237"
+                }
+            }
+        ],
+        "operation":"TRANSFER",
+        "timestamp":"1461250397.944510"
+    },
+    "version":1
+}
+```
