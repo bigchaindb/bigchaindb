@@ -370,7 +370,6 @@ class TestBlockElection(object):
         test_block['block']['votes'] = [invalid_vote, invalid_vote, invalid_vote]
         assert b.block_election_status(test_block) == 'invalid'
 
-
     def test_tx_rewritten_after_invalid(self, b, user_vk):
         q_block_new_vote = mp.Queue()
 
