@@ -1,5 +1,6 @@
 from fabric.api import sudo, env
 from fabric.api import task
+from fabric.operations import put, run
 
 # Ignore known_hosts
 # http://docs.fabfile.org/en/1.10/usage/env.html#disable-known-hosts
@@ -10,7 +11,7 @@ env.key_filename = 'pem/bigchaindb.pem'
 
 
 @task
-def install_docker():
+def install_docker_engine():
     """Install docker on an ec2 ubuntu 14.04 instance
 
     Example:
@@ -35,3 +36,17 @@ def install_docker():
 
     # add ubuntu user to the docker group
     sudo('usermod -aG docker ubuntu')
+
+
+@task
+def install_docker_compose():
+    sudo('curl -L https://github.com/docker/compose/releases/download/1.7.0/docker-compose-`uname \
+         -s`-`uname -m` > /usr/local/bin/docker-compose')
+    sudo('chmod +x /usr/local/bin/docker-compose')
+
+
+@task
+def run_monitor():
+    # copy docker-compose-monitor to the ec2 instance
+    put('../docker-compose-monitor.yml')
+    run('docker-compose -f docker-compose-monitor.yml up -d')
