@@ -16,7 +16,12 @@ $ docker-compose -f docker-compose-monitor.yml build
 $ docker-compose -f docker-compose-monitor.yml up
 ```
 
-then point a browser tab to:
+It is also possible to mount a host directory as a data volume for influxdb by settings the `INFLUXDB_DATA` env.
+```text
+$ INFLUXDB_DATA=/data docker-compose -f docker-compose-monitor up
+```
+
+After starting docker-compose point a browser tab to:
 
 [http://localhost:3000/dashboard/script/bigchaindb_dashboard.js](http://localhost:3000/dashboard/script/bigchaindb_dashboard.js)
 

@@ -149,6 +149,28 @@ You have 2 allocated elactic IPs which are not associated with instances
 (It has Domain = vpc.)
 ```
 
+## BigchainDB Monitor Deployment
+
+The deployment for the monitor requires an aws ec2 instance running Ubuntu 14.04 with a system folder `/influxdb-data`.
+This folder can be a [mount point of an EBS volume](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html)
+for data persistence.
+
+With the instance setup we first need to install `docker` and `docker-compose`:
+```text
+$ fab --fabfile=fabfile-monitor.py --hosts=<ec2 host name> install_docker
+```
+
+After docker is installed run the monitor with:
+```text
+$ fab --fabfile=fabfile-monitor.py --hosts=<ec2 host name> run_monitor
+```
+
+To access the monitor follow the instructions on [Monitoring](monitoring.html) replacing `localhost` with the
+hostname of the ec2 instance running the monitor.
+
+To configure bigchaindb to start sending statistics to the monitor change statsd host in the configuration file
+(in `$HOME/.bigchaindb` by default) to the hostname of the ec2 instance running the monitor.
+
 ## Known Deployment Issues
 
 ### NetworkError

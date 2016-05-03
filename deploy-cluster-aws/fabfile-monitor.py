@@ -17,7 +17,7 @@ def install_docker_engine():
     Example:
         fab --fabfile=fabfile-monitor.py \
             --hosts=ec2-52-58-106-17.eu-central-1.compute.amazonaws.com \
-            install_docker
+            install_docker_engine
     """
 
     # install prerequisites
@@ -40,13 +40,40 @@ def install_docker_engine():
 
 @task
 def install_docker_compose():
+    """Install docker-compose on an ec2 ubuntu 14.04 instance
+
+    Example:
+        fab --fabfile=fabfile-monitor.py \
+            --hosts=ec2-52-58-106-17.eu-central-1.compute.amazonaws.com \
+            install_docker_compose
+    """
     sudo('curl -L https://github.com/docker/compose/releases/download/1.7.0/docker-compose-`uname \
          -s`-`uname -m` > /usr/local/bin/docker-compose')
     sudo('chmod +x /usr/local/bin/docker-compose')
 
 
 @task
+def install_docker():
+    """Install docker and docker-compose on an ec2 ubuntu 14.04 instance
+
+    Example:
+        fab --fabfile=fabfile-monitor.py \
+            --hosts=ec2-52-58-106-17.eu-central-1.compute.amazonaws.com \
+            install_docker
+    """
+    install_docker_engine()
+    install_docker_compose()
+
+
+@task
 def run_monitor():
+    """Run bigchaindb monitor on an ec2 ubuntu 14.04 instance
+
+    Example:
+        fab --fabfile=fabfile-monitor.py \
+            --hosts=ec2-52-58-106-17.eu-central-1.compute.amazonaws.com \
+            run_monitor
+    """
     # copy docker-compose-monitor to the ec2 instance
     put('../docker-compose-monitor.yml')
-    run('docker-compose -f docker-compose-monitor.yml up -d')
+    run('INFLUXDB_DATA=/influxdb-data docker-compose -f docker-compose-monitor.yml up -d')
