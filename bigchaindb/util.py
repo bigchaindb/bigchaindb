@@ -256,15 +256,21 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
     # handle outputs
     conditions = []
     for fulfillment in fulfillments:
-        condition = None
+
+        # threshold condition
         if len(new_owners) > 1:
             condition = cc.ThresholdSha256Fulfillment(threshold=len(new_owners))
             for new_owner in new_owners:
                 condition.add_subfulfillment(cc.Ed25519Fulfillment(public_key=new_owner))
+
+        # simple signature condition
         elif len(new_owners) == 1:
             condition = cc.Ed25519Fulfillment(public_key=new_owners[0])
 
-        # The None case appears on assigning a hashlock
+        # to be added later (hashlock conditions)
+        else:
+            condition = None
+
         if condition:
             conditions.append({
                 'new_owners': new_owners,

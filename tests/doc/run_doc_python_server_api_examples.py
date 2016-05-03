@@ -247,7 +247,6 @@ first_tx_condition = cc.PreimageSha256Fulfillment(preimage=secret)
 # The conditions list is empty, so we need to append a new condition
 hashlock_tx['transaction']['conditions'].append({
     'condition': {
-        'details': json.loads(first_tx_condition.serialize_json()),
         'uri': first_tx_condition.condition.serialize_uri()
     },
     'cid': 0,
