@@ -513,12 +513,10 @@ def verify_vote_signature(signed_vote):
         bool: True if the signature is correct, False otherwise.
     """
 
-    data = signed_vote.copy()
-
-    signature = data.pop('signature')
+    signature = signed_vote['signature']
     public_key_base58 = signed_vote['node_pubkey']
     public_key = crypto.VerifyingKey(public_key_base58)
-    return public_key.verify(serialize(data['vote']), signature)
+    return public_key.verify(serialize(signed_vote['vote']), signature)
 
 
 def transform_create(tx):
