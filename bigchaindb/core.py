@@ -495,7 +495,7 @@ class Bigchain(object):
 
         vote_list = [vote['vote']['is_block_valid']
                      for vote in block['block']['votes']
-                     if self.consensus.verify_vote_signature(vote)]
+                     if self.consensus.verify_vote_signature(block, vote)]
 
         # validate votes here
 

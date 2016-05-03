@@ -501,12 +501,13 @@ def get_hash_data(transaction):
     return crypto.hash_data(serialize(tx))
 
 
-def verify_vote_signature(signed_vote):
+def verify_vote_signature(block, signed_vote):
     """Verify the signature of a vote
 
     A valid vote should have been signed `current_owner` corresponding private key.
 
     Args:
+        block (dict): block under election
         signed_vote (dict): a vote with the `signature` included.
 
     Returns:
@@ -515,6 +516,11 @@ def verify_vote_signature(signed_vote):
 
     signature = signed_vote['signature']
     public_key_base58 = signed_vote['node_pubkey']
+
+    # immediately return False if the voter is not in the block voter list
+    if public_key_base58 not in block['block']['voters']:
+        return False
+
     public_key = crypto.VerifyingKey(public_key_base58)
     return public_key.verify(serialize(signed_vote['vote']), signature)
 

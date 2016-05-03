@@ -90,10 +90,11 @@ class AbstractConsensusRules(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def verify_vote_signature(signed_vote):
+    def verify_vote_signature(block, signed_vote):
         """Verify a cast vote.
 
         Args:
+            block (dict): block under election
             signed_vote (dict): signed vote to verify
 
         Returns:
@@ -229,10 +230,10 @@ class BaseConsensusRules(AbstractConsensusRules):
         return util.verify_signature(signed_transaction)
 
     @staticmethod
-    def verify_vote_signature(signed_vote):
+    def verify_vote_signature(block, signed_vote):
         """Verify the signature of a vote.
 
         Refer to the documentation of ``bigchaindb.util.verify_signature``
         """
 
-        return util.verify_vote_signature(signed_vote)
+        return util.verify_vote_signature(block, signed_vote)
