@@ -207,7 +207,6 @@ class Election(object):
         Initialize a queue where blocks with new votes will be held
         """
         self.q_block_new_vote = q_block_new_vote
-        self.q_blocks_with_quorum = mp.Queue()
         self.q_invalid_blocks = mp.Queue()
 
     def check_for_quorum(self):
