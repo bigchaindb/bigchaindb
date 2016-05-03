@@ -174,36 +174,38 @@ class Bigchain(object):
             returns an empty list `[]`
         """
 
-        cursor = r.table('bigchain')\
-            .get_all(payload_hash, index='payload_hash')\
+        cursor = r.table('bigchain') \
+            .get_all(payload_hash, index='payload_hash') \
             .run(self.conn)
 
         transactions = list(cursor)
         return transactions
 
-    def get_spent(self, txid):
+    def get_spent(self, tx_input):
         """Check if a `txid` was already used as an input.
 
         A transaction can be used as an input for another transaction. Bigchain needs to make sure that a
         given `txid` is only used once.
 
         Args:
-            txid (str): transaction id.
+            tx_input (dict): Input of a transaction in the form `{'txid': 'transaction id', 'cid': 'condition id'}`
 
         Returns:
             The transaction that used the `txid` as an input if it exists else it returns `None`
         """
         # checks if an input was already spent
-        # checks if the bigchain has any transaction with input `transaction_id`
+        # checks if the bigchain has any transaction with input {'txid': ..., 'cid': ...}
         response = r.table('bigchain').concat_map(lambda doc: doc['block']['transactions'])\
-            .filter(lambda transaction: transaction['transaction']['input'] == txid).run(self.conn)
+            .filter(lambda transaction: transaction['transaction']['fulfillments']
+                    .contains(lambda fulfillment: fulfillment['input'] == tx_input))\
+            .run(self.conn)
 
         # a transaction_id should have been spent at most one time
         transactions = list(response)
         if transactions:
             if len(transactions) != 1:
-                raise Exception('`{}` was spent more then once. There is a problem with the chain'.format(
-                    txid))
+                raise exceptions.DoubleSpend('`{}` was spent more then once. There is a problem with the chain'.format(
+                    tx_input['txid']))
             else:
                 return transactions[0]
         else:
@@ -219,17 +221,34 @@ class Bigchain(object):
             list: list of `txids` currently owned by `owner`
         """
 
-        response = r.table('bigchain')\
-                    .concat_map(lambda doc: doc['block']['transactions'])\
-                    .filter({'transaction': {'new_owner': owner}})\
-                    .pluck('id')['id']\
-                    .run(self.conn)
+        # get all transactions in which owner is in the `new_owners` list
+        response = r.table('bigchain') \
+            .concat_map(lambda doc: doc['block']['transactions']) \
+            .filter(lambda tx: tx['transaction']['conditions']
+                    .contains(lambda c: c['new_owners']
+                              .contains(owner))) \
+            .run(self.conn)
         owned = []
 
-        # remove all inputs already spent
-        for tx_input in list(response):
-            if not self.get_spent(tx_input):
-                owned.append(tx_input)
+        for tx in response:
+            # a transaction can contain multiple outputs (conditions) so we need to iterate over all of them
+            # to get a list of outputs available to spend
+            for condition in tx['transaction']['conditions']:
+                # for simple signature conditions there are no subfulfillments
+                # check if the owner is in the condition `new_owners`
+                if len(condition['new_owners']) == 1:
+                    if condition['condition']['details']['public_key'] == owner:
+                        tx_input = {'txid': tx['id'], 'cid': condition['cid']}
+                else:
+                    # for transactions with multiple `new_owners` there will be several subfulfillments nested
+                    # in the condition. We need to iterate the subfulfillments to make sure there is a
+                    # subfulfillment for `owner`
+                    for subfulfillment in condition['condition']['details']['subfulfillments']:
+                        if subfulfillment['public_key'] == owner:
+                            tx_input = {'txid': tx['id'], 'cid': condition['cid']}
+                # check if input was already spent
+                if not self.get_spent(tx_input):
+                    owned.append(tx_input)
 
         return owned
 
@@ -378,7 +397,7 @@ class Bigchain(object):
             raise GenesisBlockAlreadyExistsError('Cannot create the Genesis block')
 
         payload = {'message': 'Hello World from the BigchainDB'}
-        transaction = self.create_transaction(self.me, self.me, None, 'GENESIS', payload=payload)
+        transaction = self.create_transaction([self.me], [self.me], None, 'GENESIS', payload=payload)
         transaction_signed = self.sign_transaction(transaction, self.me_private)
 
         # create the block
@@ -429,37 +448,37 @@ class Bigchain(object):
         if 'block_number' not in block:
             update['block_number'] = block_number
 
-        r.table('bigchain')\
-         .get(vote['vote']['voting_for_block'])\
-         .update(update)\
-         .run(self.conn)
+        r.table('bigchain') \
+            .get(vote['vote']['voting_for_block']) \
+            .update(update) \
+            .run(self.conn)
 
     def get_last_voted_block(self):
         """Returns the last block that this node voted on."""
 
         # query bigchain for all blocks this node is a voter but didn't voted on
-        last_voted = r.table('bigchain')\
-            .filter(r.row['block']['voters'].contains(self.me))\
-            .filter(lambda doc: doc['votes'].contains(lambda vote: vote['node_pubkey'] == self.me))\
-            .order_by(r.desc('block_number'))\
-            .limit(1)\
+        last_voted = r.table('bigchain') \
+            .filter(r.row['block']['voters'].contains(self.me)) \
+            .filter(lambda doc: doc['votes'].contains(lambda vote: vote['node_pubkey'] == self.me)) \
+            .order_by(r.desc('block_number')) \
+            .limit(1) \
             .run(self.conn)
 
         # return last vote if last vote exists else return Genesis block
         last_voted = list(last_voted)
         if not last_voted:
             return list(r.table('bigchain')
-                         .filter(r.row['block_number'] == 0)
-                         .run(self.conn))[0]
+                        .filter(r.row['block_number'] == 0)
+                        .run(self.conn))[0]
 
         return last_voted[0]
 
     def get_unvoted_blocks(self):
         """Return all the blocks that has not been voted by this node."""
 
-        unvoted = r.table('bigchain')\
-            .filter(lambda doc: doc['votes'].contains(lambda vote: vote['node_pubkey'] == self.me).not_())\
-            .order_by(r.asc((r.row['block']['timestamp'])))\
+        unvoted = r.table('bigchain') \
+            .filter(lambda doc: doc['votes'].contains(lambda vote: vote['node_pubkey'] == self.me).not_()) \
+            .order_by(r.asc((r.row['block']['timestamp']))) \
             .run(self.conn)
 
         if unvoted and unvoted[0].get('block_number') == 0:

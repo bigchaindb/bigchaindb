@@ -5,7 +5,7 @@ BigchainDB, including its storage backend (RethinkDB).
 
 from __future__ import with_statement, unicode_literals
 
-from fabric.api import sudo, env
+from fabric.api import sudo, env, hosts
 from fabric.api import task, parallel
 from fabric.contrib.files import sed
 from fabric.operations import run, put
@@ -32,24 +32,19 @@ newrelic_license_key = 'you_need_a_real_license_key'
 
 # DON'T PUT @parallel
 @task
-def set_hosts(hosts):
-    """A helper function to change env.hosts from the
-    command line.
+def set_host(host_index):
+    """A helper task to change env.hosts from the
+    command line. It will only "stick" for the duration
+    of the fab command that called it.
 
     Args:
-        hosts (str): 'one_node' or 'two_nodes'
-
+        host_index (int): 0, 1, 2, 3, etc.
     Example:
-        fab set_hosts:one_node init_bigchaindb
+        fab set_host:4 fab_task_A fab_task_B
+        will set env.hosts = [public_dns_names[4]]
+        but only for doing fab_task_A and fab_task_B
     """
-    if hosts == 'one_node':
-        env.hosts = public_dns_names[:1]
-    elif hosts == 'two_nodes':
-        env.hosts = public_dns_names[:2]
-    else:
-        raise ValueError('Invalid input to set_hosts.'
-                         ' Expected one_node or two_nodes.'
-                         ' Got {}'.format(hosts))
+    env.hosts = [public_dns_names[int(host_index)]]
 
 
 # Install base software
@@ -138,13 +133,26 @@ def configure_bigchaindb():
     run('bigchaindb -y configure', pty=False)
 
 
+# Send the specified configuration file to
+# the remote host and save it there in
+# ~/.bigchaindb
+# Use in conjunction with set_host()
+# No @parallel
+@task
+def send_confile(confile):
+    put('confiles/' + confile, 'tempfile')
+    run('mv tempfile ~/.bigchaindb')
+    print('For this node, bigchaindb show-config says:')
+    run('bigchaindb show-config')
+
+
 # Initialize BigchainDB
 # i.e. create the database, the tables,
 # the indexes, and the genesis block.
-# (This only needs to be run on one node.)
-# Call using:
-#     fab set_hosts:one_node init_bigchaindb
+# (The @hosts decorator is used to make this
+# task run on only one node. See http://tinyurl.com/h9qqf3t )
 @task
+@hosts(public_dns_names[0])
 def init_bigchaindb():
     run('bigchaindb init', pty=False)
 

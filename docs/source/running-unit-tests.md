@@ -18,16 +18,3 @@ $ python setup.py test
 
 (Aside: How does the above command work? The documentation for [pytest-runner](https://pypi.python.org/pypi/pytest-runner) explains. We use [pytest](http://pytest.org/latest/) to write all unit tests.)
 
-### Using docker-compose to Run the Tests
-
-You can also use `docker-compose` to run the unit tests. (You don't have to start RethinkDB first: `docker-compose` does that on its own, when it reads the `docker-compose.yml` file.)
-
-First, build the images (~once), using:
-```text
-$ docker-compose build
-```
-
-then run the unit tests using:
-```text
-$ docker-compose run --rm bigchaindb py.test -v
-```

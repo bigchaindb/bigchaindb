@@ -83,16 +83,35 @@ Add some rules for Inbound traffic:
 **Note: These rules are extremely lax! They're meant to make testing easy.** You'll want to tighten them up if you intend to have a secure cluster. For example, Source = 0.0.0.0/0 is [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing) for "allow this traffic to come from _any_ IP address."
 
 
-## Deployment
+## AWS Deployment
 
-Here's an example of how one could launch a BigchainDB cluster of four nodes tagged `wrigley` on AWS:
+### AWS Deployment Step 1
+
+Suppose _N_ is the number of nodes you want in your BigchainDB cluster. If you already have a set of _N_ BigchainDB configuration files in the `deploy-cluster-aws/confiles` directory, then you can jump to step 2. To create such a set, you can do something like:
 ```text
+# in a Python 3 virtual environment where bigchaindb is installed
 cd bigchaindb
 cd deploy-cluster-aws
-./startup.sh wrigley 4 pypi
+./make_confiles.sh confiles 3
 ```
 
-The `pypi` on the end means that it will install the latest (stable) `bigchaindb` package from the [Python Package Index (PyPI)](https://pypi.python.org/pypi). That is, on each instance, BigchainDB is installed using `pip install bigchaindb`. 
+That will create three (3) _default_ BigchainDB configuration files in the `deploy-cluster-aws/confiles` directory (which will be created if it doesn't already exist). The three files will be named `bcdb_conf0`, `bcdb_conf1`, and `bcdb_conf2`.
+
+You can look inside those files if you're curious. In step 2, they'll be modified. For example, the default keyring is an empty list. In step 2, the deployment script automatically changes the keyring of each node to be a list of the public keys of all other nodes. Other changes are also made.
+
+### AWS Deployment Step 2
+
+Step 2 is to launch the nodes ("instances") on AWS, to install all the necessary software on them, configure the software, run the software, and more.
+
+Here's an example of how one could launch a BigchainDB cluster of three (3) nodes tagged `wrigley` on AWS:
+```text
+# in a Python 2.5-2.7 virtual environment where fabric, boto3, etc. are installed
+cd bigchaindb
+cd deploy-cluster-aws
+./startup.sh wrigley 3 pypi
+```
+
+The `pypi` on the end means that it will install the latest (stable) `bigchaindb` package from the [Python Package Index (PyPI)](https://pypi.python.org/pypi). That is, on each node, BigchainDB is installed using `pip install bigchaindb`. 
 
 `startup.sh` is a Bash script which calls some Python and Fabric scripts. The usage is:
 ```text
@@ -101,20 +120,7 @@ The `pypi` on the end means that it will install the latest (stable) `bigchaindb
 
 The first two arguments are self-explanatory. The third argument can be `pypi` or the name of a local Git branch (e.g. `master` or `feat/3752/quote-asimov-on-tuesdays`). If you don't include a third argument, then `pypi` will be assumed by default.
 
-Here's what the `startup.sh` script does; it:
-
-0. allocates more elastic IP addresses if necessary,
-1. launches the specified number of nodes (instances) on Amazon EC2,
-2. tags them with the specified tag,
-3. waits until those instances exist and are running,
-4. for each instance, it associates an elastic IP address with that instance,
-5. adds remote keys to `~/.ssh/known_hosts`,
-6. (re)creates the RethinkDB configuration file `conf/rethinkdb.conf`,
-7. installs base (prerequisite) software on all instances,
-8. installs RethinkDB on all instances,
-9. installs BigchainDB on all instances,
-10. initializes the BigchainDB database,
-11. starts BigchainDB on all instances.
+If you're curious what the `startup.sh` script does, the source code has lots of explanatory comments, so it's quite easy to read. Here's a link to the latest version on GitHub: [`startup.sh`](https://github.com/bigchaindb/bigchaindb/blob/master/deploy-cluster-aws/startup.sh)
 
 It should take a few minutes for the deployment to finish. If you run into problems, see the section on Known Deployment Issues below.
 

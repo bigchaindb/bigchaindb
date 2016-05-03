@@ -14,6 +14,29 @@ For reference, the possible headings are:
 * **External Contributors** to list contributors outside of ascribe GmbH.
 
 
+## [0.3.0] - 2016-05-03
+Tag name: v0.3.0
+= commit:
+committed:
+
+### Added
+- Crypto-conditions specs according to the Interledger protocol: [Pull Request #174](https://github.com/bigchaindb/bigchaindb/pull/174)
+- Added support for anonymous hashlocked conditions and fulfillments: [Pull Request #211](https://github.com/bigchaindb/bigchaindb/pull/211)
+
+### Changed
+- Several improvements to the aws deployment scripts: [Pull Request #227](https://github.com/bigchaindb/bigchaindb/pull/227)
+
+### Fixed
+- Bug related to block validation: [Pull Request #233](https://github.com/bigchaindb/bigchaindb/pull/233)
+
+### Notes
+This release completely refactored the structure of the transactions and broke compatibility with older versions
+of BigchainDB. The refactor of the transactions was made in order to add support for multiple inputs/outputs and
+the crypto-conditions specs from the Interledger protocol.
+
+We also updated the rethinkdb python drivers so you need to upgrade to rethinkdb v2.3+
+
+
 ## [0.2.0] - 2016-04-26
 Tag name: v0.2.0
 = commit: 0c4a2b380aabdcf50fa2d7fb351c290aaedc3db7
