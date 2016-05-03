@@ -504,6 +504,11 @@ class Bigchain(object):
         n_valid_votes = sum(vote_list)
         n_invalid_votes = len(vote_list) - n_valid_votes
 
+        # The use of ceiling and floor is to account for the case of an
+        # even number of voters where half the voters have voted 'invalid'
+        # and half 'valid'. In this case, the block should marked invalid
+        # to avoid a hung election. In the case of an odd number of voters
+        # this is not relevant, since one side must be a majority.
         if n_invalid_votes >= math.ceil(n_voters / 2):
             return 'invalid'
         elif n_valid_votes > math.floor(n_voters / 2):
