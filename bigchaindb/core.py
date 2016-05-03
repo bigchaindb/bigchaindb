@@ -1,5 +1,6 @@
 import random
 import math
+import operator
 
 import rethinkdb as r
 import rapidjson
@@ -493,14 +494,15 @@ class Bigchain(object):
         """
         n_voters = len(block['block']['voters'])
 
-        vote_list = [vote['vote']['is_block_valid']
-                     for vote in block['block']['votes']
-                     if self.consensus.verify_vote_signature(block, vote)]
+        vote_cast = [vote['vote']['is_block_valid'] for vote in block['block']['votes']]
+        vote_validity = [self.consensus.verify_vote_signature(block, vote) for vote in block['block']['votes']]
+
+        # element-wise product of stated vote and validity of vote
+        vote_list = list(map(operator.mul, vote_cast, vote_validity))
 
         # validate votes here
-
-        n_invalid_votes = vote_list.count(False)
-        n_valid_votes = vote_list.count(True)
+        n_valid_votes = sum(vote_list)
+        n_invalid_votes = len(vote_list) - n_valid_votes
 
         if n_invalid_votes >= math.ceil(n_voters / 2):
             return 'invalid'
