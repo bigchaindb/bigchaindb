@@ -324,8 +324,8 @@ tx_multisig_transfer_signed = b.sign_transaction(tx_multisig_transfer, [testuser
 b.write_transaction(tx_multisig_transfer_signed)
 
 # Check if the transaction is already in the bigchain
-tx_multisig_retrieved = b.get_transaction(tx_multisig_transfer_signed['id'])
-tx_multisig_retrieved
+tx_multisig_transfer_retrieved = b.get_transaction(tx_multisig_transfer_signed['id'])
+tx_multisig_transfer_retrieved
 ```
 
 ```python
