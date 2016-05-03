@@ -343,9 +343,9 @@ class TestBlockElection(object):
         test_block['block']['votes'] = valid_vote[:3] + improperly_signed_valid_vote[:1]
         assert b.block_election_status(test_block) == 'valid'
 
-        # test unanimously valid block with two improperly signed votes -- should fail to have quorum
+        # test unanimously valid block with two improperly signed votes -- should fail
         test_block['block']['votes'] = valid_vote[:2] + improperly_signed_valid_vote[:2]
-        assert b.block_election_status(test_block) == 'undecided'
+        assert b.block_election_status(test_block) == 'invalid'
 
         # test block with minority invalid vote
         test_block['block']['votes'] = invalid_vote[:1] + valid_vote[:3]
