@@ -9,6 +9,8 @@ services:
         - "8099"
     environment:
       PRE_CREATE_DB: "telegraf"
+    volumes:
+      - $INFLUXDB_DATA:/data
 
   grafana:
     image: bigchaindb/grafana-bigchaindb-docker
