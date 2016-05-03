@@ -203,11 +203,20 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
             },
         }
     """
-    # validate arguments (owners and inputs should be lists)
+    # validate arguments (owners and inputs should be lists or None)
+
+    # The None case appears on fulfilling a hashlock
+    if current_owners is None:
+        current_owners = []
     if not isinstance(current_owners, list):
         current_owners = [current_owners]
+
+    # The None case appears on assigning a hashlock
+    if new_owners is None:
+        new_owners = []
     if not isinstance(new_owners, list):
         new_owners = [new_owners]
+
     if not isinstance(inputs, list):
         inputs = [inputs]
 
@@ -247,20 +256,30 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
     # handle outputs
     conditions = []
     for fulfillment in fulfillments:
+
+        # threshold condition
         if len(new_owners) > 1:
             condition = cc.ThresholdSha256Fulfillment(threshold=len(new_owners))
             for new_owner in new_owners:
                 condition.add_subfulfillment(cc.Ed25519Fulfillment(public_key=new_owner))
+
+        # simple signature condition
         elif len(new_owners) == 1:
             condition = cc.Ed25519Fulfillment(public_key=new_owners[0])
-        conditions.append({
-            'new_owners': new_owners,
-            'condition': {
-                'details': json.loads(condition.serialize_json()),
-                'uri': condition.condition.serialize_uri()
-            },
-            'cid': fulfillment['fid']
-        })
+
+        # to be added later (hashlock conditions)
+        else:
+            condition = None
+
+        if condition:
+            conditions.append({
+                'new_owners': new_owners,
+                'condition': {
+                    'details': json.loads(condition.serialize_json()),
+                    'uri': condition.condition.serialize_uri()
+                },
+                'cid': fulfillment['fid']
+            })
 
     tx = {
         'fulfillments': fulfillments,
