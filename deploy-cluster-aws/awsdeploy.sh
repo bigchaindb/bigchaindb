@@ -74,15 +74,16 @@ python launch_ec2_nodes.py --tag $TAG --nodes $NUM_NODES
 chmod +x add2known_hosts.sh
 ./add2known_hosts.sh
 
-# (Re)create the RethinkDB configuration file conf/rethinkdb.conf
-python create_rethinkdb_conf.py
-
 # Rollout base packages (dependencies) needed before
 # storage backend (RethinkDB) and BigchainDB can be rolled out
 fab install_base_software
 
-# Rollout storage backend (RethinkDB) and start it
-fab install_rethinkdb
+if [ "$WHAT_TO_DEPLOY" == "servers" ]; then
+    # (Re)create the RethinkDB configuration file conf/rethinkdb.conf
+    python create_rethinkdb_conf.py
+    # Rollout storage backend (RethinkDB) and start it
+    fab install_rethinkdb
+fi
 
 # Rollout BigchainDB (but don't start it yet)
 if [ "$BRANCH" == "pypi" ]; then
@@ -102,36 +103,46 @@ fi
 
 # Configure BigchainDB on all nodes
 
-# The idea is to send a bunch of locally-created configuration
-# files out to each of the instances / nodes.
+if [ "$WHAT_TO_DEPLOY" == "servers" ]; then
+    # The idea is to send a bunch of locally-created configuration
+    # files out to each of the instances / nodes.
 
-# Assume a set of $NUM_NODES BigchaindB config files
-# already exists in the confiles directory.
-# One can create a set using a command like
-# ./make_confiles.sh confiles $NUM_NODES
-# (We can't do that here now because this virtual environment
-# is a Python 2 environment that may not even have
-# bigchaindb installed, so bigchaindb configure can't be called)
+    # Assume a set of $NUM_NODES BigchaindB config files
+    # already exists in the confiles directory.
+    # One can create a set using a command like
+    # ./make_confiles.sh confiles $NUM_NODES
+    # (We can't do that here now because this virtual environment
+    # is a Python 2 environment that may not even have
+    # bigchaindb installed, so bigchaindb configure can't be called)
 
-# Transform the config files in the confiles directory
-# to have proper keyrings, api_endpoint values, etc.
-python clusterize_confiles.py confiles $NUM_NODES
+    # Transform the config files in the confiles directory
+    # to have proper keyrings, api_endpoint values, etc.
+    python clusterize_confiles.py confiles $NUM_NODES
 
-# Send one of the config files to each instance
-for (( HOST=0 ; HOST<$NUM_NODES ; HOST++ )); do
-    CONFILE="bcdb_conf"$HOST
-    echo "Sending "$CONFILE
-    fab set_host:$HOST send_confile:$CONFILE
-done
+    # Send one of the config files to each instance
+    for (( HOST=0 ; HOST<$NUM_NODES ; HOST++ )); do
+        CONFILE="bcdb_conf"$HOST
+        echo "Sending "$CONFILE
+        fab set_host:$HOST send_confile:$CONFILE
+    done
 
-# Initialize BigchainDB (i.e. Create the RethinkDB database,
-# the tables, the indexes, and genesis glock). Note that
-# this will only be sent to one of the nodes, see the
-# definition of init_bigchaindb() in fabfile.py to see why.
-fab init_bigchaindb
+    # Initialize BigchainDB (i.e. Create the RethinkDB database,
+    # the tables, the indexes, and genesis glock). Note that
+    # this will only be sent to one of the nodes, see the
+    # definition of init_bigchaindb() in fabfile.py to see why.
+    fab init_bigchaindb
 
-# Start BigchainDB on all the nodes using "screen"
-fab start_bigchaindb
+    # Start BigchainDB on all the nodes using "screen"
+    fab start_bigchaindb
+else
+    # Deploying clients
+    # The only thing to configure on clients is the api_endpoint
+    # It should be the public DNS name of a BigchainDB server
+    fab send_client_confile:client_confile
+
+    # Start sending load from the clients to the servers
+    fab start_bigchaindb_load
+fi
 
 # cleanup
 rm add2known_hosts.sh
