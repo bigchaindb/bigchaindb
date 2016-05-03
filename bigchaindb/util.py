@@ -534,13 +534,13 @@ def verify_vote_signature(block, signed_vote):
     """
 
     signature = signed_vote['signature']
-    public_key_base58 = signed_vote['node_pubkey']
+    vk_base58 = signed_vote['node_pubkey']
 
     # immediately return False if the voter is not in the block voter list
-    if public_key_base58 not in block['block']['voters']:
+    if vk_base58 not in block['block']['voters']:
         return False
 
-    public_key = crypto.VerifyingKey(public_key_base58)
+    public_key = crypto.VerifyingKey(vk_base58)
     return public_key.verify(serialize(signed_vote['vote']), signature)
 
 
