@@ -326,43 +326,43 @@ class TestBlockElection(object):
          for vote in improperly_signed_valid_vote]
 
         # test unanimously valid block
-        test_block['block']['votes'] = valid_vote
+        test_block['votes'] = valid_vote
         assert b.block_election_status(test_block) == 'valid'
 
         # test partial quorum situations
-        test_block['block']['votes'] = valid_vote[:2]
+        test_block['votes'] = valid_vote[:2]
         assert b.block_election_status(test_block) == 'undecided'
         #
-        test_block['block']['votes'] = valid_vote[:3]
+        test_block['votes'] = valid_vote[:3]
         assert b.block_election_status(test_block) == 'valid'
         #
-        test_block['block']['votes'] = invalid_vote[:2]
+        test_block['votes'] = invalid_vote[:2]
         assert b.block_election_status(test_block) == 'invalid'
 
         # test unanimously valid block with one improperly signed vote -- should still succeed
-        test_block['block']['votes'] = valid_vote[:3] + improperly_signed_valid_vote[:1]
+        test_block['votes'] = valid_vote[:3] + improperly_signed_valid_vote[:1]
         assert b.block_election_status(test_block) == 'valid'
 
         # test unanimously valid block with two improperly signed votes -- should fail
-        test_block['block']['votes'] = valid_vote[:2] + improperly_signed_valid_vote[:2]
+        test_block['votes'] = valid_vote[:2] + improperly_signed_valid_vote[:2]
         assert b.block_election_status(test_block) == 'invalid'
 
         # test block with minority invalid vote
-        test_block['block']['votes'] = invalid_vote[:1] + valid_vote[:3]
+        test_block['votes'] = invalid_vote[:1] + valid_vote[:3]
         assert b.block_election_status(test_block) == 'valid'
 
         # test split vote
-        test_block['block']['votes'] = invalid_vote[:2] + valid_vote[:2]
+        test_block['votes'] = invalid_vote[:2] + valid_vote[:2]
         assert b.block_election_status(test_block) == 'invalid'
 
         # test undecided
-        test_block['block']['votes'] = valid_vote[:2]
+        test_block['votes'] = valid_vote[:2]
         assert b.block_election_status(test_block) == 'undecided'
 
         # change signatures in block, should fail
         test_block['block']['voters'][0] = 'abc'
         test_block['block']['voters'][1] = 'abc'
-        test_block['block']['votes'] = valid_vote
+        test_block['votes'] = valid_vote
         assert b.block_election_status(test_block) == 'invalid'
 
     def test_quorum_odd(self, b):
@@ -386,16 +386,16 @@ class TestBlockElection(object):
         invalid_vote = [member.vote(test_block, 'abc', False)
                         for member in test_federation]
 
-        test_block['block']['votes'] = valid_vote[:2]
+        test_block['votes'] = valid_vote[:2]
         assert b.block_election_status(test_block) == 'undecided'
 
-        test_block['block']['votes'] = invalid_vote[:2]
+        test_block['votes'] = invalid_vote[:2]
         assert b.block_election_status(test_block) == 'undecided'
 
-        test_block['block']['votes'] = valid_vote[:3]
+        test_block['votes'] = valid_vote[:3]
         assert b.block_election_status(test_block) == 'valid'
 
-        test_block['block']['votes'] = invalid_vote[:3]
+        test_block['votes'] = invalid_vote[:3]
         assert b.block_election_status(test_block) == 'invalid'
 
     def test_tx_rewritten_after_invalid(self, b, user_vk):
@@ -425,11 +425,11 @@ class TestBlockElection(object):
                        [member.vote(test_block_2, 'abc', False) for member in test_federation[2:]]
 
         # construct valid block
-        test_block_1['block']['votes'] = vote_1
+        test_block_1['votes'] = vote_1
         q_block_new_vote.put(test_block_1)
 
         # construct invalid block
-        test_block_2['block']['votes'] = vote_2
+        test_block_2['votes'] = vote_2
         q_block_new_vote.put(test_block_2)
 
         election = Election(q_block_new_vote)

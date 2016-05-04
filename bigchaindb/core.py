@@ -493,9 +493,8 @@ class Bigchain(object):
         Tallies the votes on a block, and returns the status: valid, invalid, or undecided
         """
         n_voters = len(block['block']['voters'])
-
-        vote_cast = [vote['vote']['is_block_valid'] for vote in block['block']['votes']]
-        vote_validity = [self.consensus.verify_vote_signature(block, vote) for vote in block['block']['votes']]
+        vote_cast = [vote['vote']['is_block_valid'] for vote in block['votes']]
+        vote_validity = [self.consensus.verify_vote_signature(block, vote) for vote in block['votes']]
 
         # element-wise product of stated vote and validity of vote
         vote_list = list(map(operator.mul, vote_cast, vote_validity))
