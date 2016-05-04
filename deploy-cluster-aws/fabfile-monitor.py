@@ -1,3 +1,11 @@
+# -*- coding: utf-8 -*-
+"""A Fabric fabfile with functionality to install Docker,
+install Docker Compose, and run a BigchainDB monitoring server
+(using the docker-compose-monitor.yml file)
+"""
+
+from __future__ import with_statement, unicode_literals
+
 from fabric.api import sudo, env
 from fabric.api import task
 from fabric.operations import put, run
@@ -12,7 +20,7 @@ env.key_filename = 'pem/bigchaindb.pem'
 
 @task
 def install_docker_engine():
-    """Install docker on an ec2 ubuntu 14.04 instance
+    """Install Docker on an EC2 Ubuntu 14.04 instance
 
     Example:
         fab --fabfile=fabfile-monitor.py \
@@ -40,7 +48,7 @@ def install_docker_engine():
 
 @task
 def install_docker_compose():
-    """Install docker-compose on an ec2 ubuntu 14.04 instance
+    """Install Docker Compose on an EC2 Ubuntu 14.04 instance
 
     Example:
         fab --fabfile=fabfile-monitor.py \
@@ -54,7 +62,7 @@ def install_docker_compose():
 
 @task
 def install_docker():
-    """Install docker and docker-compose on an ec2 ubuntu 14.04 instance
+    """Install Docker and Docker Compose on an EC2 Ubuntu 14.04 instance
 
     Example:
         fab --fabfile=fabfile-monitor.py \
@@ -67,7 +75,7 @@ def install_docker():
 
 @task
 def run_monitor():
-    """Run bigchaindb monitor on an ec2 ubuntu 14.04 instance
+    """Run BigchainDB monitor on an EC2 Ubuntu 14.04 instance
 
     Example:
         fab --fabfile=fabfile-monitor.py \
