@@ -130,7 +130,6 @@ class Bigchain(object):
         response = r.table('backlog').insert(signed_transaction, durability=durability).run(self.conn)
         return response
 
-    # TODO: the same `txid` can be in two different blocks
     def get_transaction(self, txid):
         """Retrieve a transaction with `txid` from bigchain.
 
@@ -145,16 +144,41 @@ class Bigchain(object):
             If no transaction with that `txid` was found it returns `None`
         """
 
-        response = r.table('bigchain').concat_map(lambda doc: doc['block']['transactions'])\
-            .filter(lambda transaction: transaction['id'] == txid).run(self.conn)
+        # First, get information on all blocks which contain this transaction
+        response = r.table('bigchain').get_all(txid, index='transaction_id')\
+            .pluck('votes', 'id', {'block': ['voters']}).run(self.conn)
 
-        # transaction ids should be unique
-        transactions = list(response)
-        if transactions:
-            if len(transactions) != 1:
-                raise Exception('Transaction ids should be unique. There is a problem with the chain')
-            else:
-                return transactions[0]
+        blocks = list(response)
+
+        if blocks:
+            # Determine the election status of each block
+            validity = {block['id']: self.block_election_status(block) for block in blocks}
+
+            # Disregard invalid blocks, and return if there are no valid or undecided blocks
+            validity = {_id: status for _id, status in validity.items() if status != 'invalid'}
+            if not validity:
+                return None
+
+            # If there are multiple valid blocks with this transaction, something has gone wrong
+            if list(validity.values()).count('valid') > 1:
+                raise Exception('Transaction {tx} is present in multiple valid blocks: {block_ids}'
+                                .format(tx=txid,
+                                        block_ids=str([block for block in validity if validity[block] == 'valid'])))
+
+            # If the transaction is in a valid or any undecided block, return it. Does not check
+            # if transactions in undecided blocks are consistent, but selects the valid block before
+            # undecided ones
+            for _id in validity:
+                target_block_id = _id
+                if validity[_id] == 'valid':
+                    break
+
+            # Query the transaction in the target block and return
+            response = r.table('bigchain').filter(lambda block: block['id'] == target_block_id).nth(0)\
+                .get_field('block').get_field('transactions').filter(lambda tx: tx['id'] == txid).run(self.conn)
+
+            return response[0]
+
         else:
             return None
 
