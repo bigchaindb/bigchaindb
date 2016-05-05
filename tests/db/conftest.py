@@ -54,6 +54,8 @@ def setup_database(request, node_config):
     r.db(db_name).table('bigchain').index_create('transaction_id', r.row['block']['transactions']['id'],
                                                  multi=True).run()
 
+    r.db(db_name).table('bigchain').index_wait('transaction_id')
+
     def fin():
         print('Deleting `{}` database'.format(db_name))
         get_conn().repl()
