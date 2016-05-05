@@ -252,6 +252,12 @@ class Bigchain(object):
         owned = []
 
         for tx in response:
+            # disregard transactions from invalid blocks
+            validity = self.get_blocks_status_containing_tx(tx['id'])
+            if 'valid' not in validity.values():
+                if 'undecided' not in validity.values():
+                    continue
+
             # a transaction can contain multiple outputs (conditions) so we need to iterate over all of them
             # to get a list of outputs available to spend
             for condition in tx['transaction']['conditions']:
