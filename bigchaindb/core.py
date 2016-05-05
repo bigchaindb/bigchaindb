@@ -169,52 +169,6 @@ class Bigchain(object):
         else:
             return None
 
-    def search_block_election_on_index(self, value, index):
-        """Retrieves block election information given a secondary index and value
-
-        Args:
-            value: a value to search (e.g. transaction id string, payload hash string)
-            index (str): name of a secondary index, e.g. 'transaction_id'
-
-        Returns:
-            A list of blocks with with only election information
-        """
-        # First, get information on all blocks which contain this transaction
-        response = r.table('bigchain').get_all(value, index=index)\
-            .pluck('votes', 'id', {'block': ['voters']}).run(self.conn)
-
-        return list(response)
-
-    def get_blocks_status_containing_tx(self, txid):
-        """Retrieves block ids and statuses related to a transaction
-
-        Transactions may occur in multiple blocks, but no more than one valid block.
-
-        Args:
-            txid (str): transaction id of the transaction to query
-
-        Returns:
-            A dict of blocks containing the transaction, e.g. {block_id_1: 'valid', block_id_2: 'invalid' ...}, or None
-        """
-
-        # First, get information on all blocks which contain this transaction
-        blocks = self.search_block_election_on_index(txid, 'transaction_id')
-
-        if blocks:
-            # Determine the election status of each block
-            validity = {block['id']: self.block_election_status(block) for block in blocks}
-
-            # If there are multiple valid blocks with this transaction, something has gone wrong
-            if list(validity.values()).count('valid') > 1:
-                raise Exception('Transaction {tx} is present in multiple valid blocks: {block_ids}'
-                                .format(tx=txid,
-                                        block_ids=str([block for block in validity if validity[block] == 'valid'])))
-
-            return validity
-
-        else:
-            return None
-
     def get_tx_by_payload_hash(self, payload_hash):
         """Retrieves transactions related to a digital asset.
 
@@ -233,12 +187,20 @@ class Bigchain(object):
             returns an empty list `[]`
         """
 
-        cursor = r.table('bigchain') \
-            .get_all(payload_hash, index='payload_hash') \
-            .run(self.conn)
+        # First, get information on all blocks which contain this hash
+        blocks = self.search_block_election_on_index(payload_hash, 'payload_hash')
+        if blocks:
+            validity = {block['id']: self.block_election_status(block) for block in blocks}
 
-        transactions = list(cursor)
-        return transactions
+            # disregard invalid blocks
+            validity = {_id: status for _id, status in validity.items() if status != 'invalid'}
+            cursor = r.table('bigchain').get_all(*list(validity.keys()))\
+                .get_all(payload_hash, index='payload_hash')\
+                .run(self.conn)
+
+            return list(cursor)
+        else:
+            return []
 
     def get_spent(self, tx_input):
         """Check if a `txid` was already used as an input.
@@ -310,6 +272,52 @@ class Bigchain(object):
                     owned.append(tx_input)
 
         return owned
+
+    def search_block_election_on_index(self, value, index):
+        """Retrieves block election information given a secondary index and value
+
+        Args:
+            value: a value to search (e.g. transaction id string, payload hash string)
+            index (str): name of a secondary index, e.g. 'transaction_id'
+
+        Returns:
+            A list of blocks with with only election information
+        """
+        # First, get information on all blocks which contain this transaction
+        response = r.table('bigchain').get_all(value, index=index)\
+            .pluck('votes', 'id', {'block': ['voters']}).run(self.conn)
+
+        return list(response)
+
+    def get_blocks_status_containing_tx(self, txid):
+        """Retrieves block ids and statuses related to a transaction
+
+        Transactions may occur in multiple blocks, but no more than one valid block.
+
+        Args:
+            txid (str): transaction id of the transaction to query
+
+        Returns:
+            A dict of blocks containing the transaction, e.g. {block_id_1: 'valid', block_id_2: 'invalid' ...}, or None
+        """
+
+        # First, get information on all blocks which contain this transaction
+        blocks = self.search_block_election_on_index(txid, 'transaction_id')
+
+        if blocks:
+            # Determine the election status of each block
+            validity = {block['id']: self.block_election_status(block) for block in blocks}
+
+            # If there are multiple valid blocks with this transaction, something has gone wrong
+            if list(validity.values()).count('valid') > 1:
+                raise Exception('Transaction {tx} is present in multiple valid blocks: {block_ids}'
+                                .format(tx=txid,
+                                        block_ids=str([block for block in validity if validity[block] == 'valid'])))
+
+            return validity
+
+        else:
+            return None
 
     def validate_transaction(self, transaction):
         """Validate a transaction.
