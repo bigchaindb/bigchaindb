@@ -50,6 +50,9 @@ def setup_database(request, node_config):
     r.db(db_name).table('backlog')\
         .index_create('assignee__transaction_timestamp', [r.row['assignee'], r.row['transaction']['timestamp']])\
         .run()
+    # order transactions by id
+    r.db(db_name).table('bigchain').index_create('transaction_id', r.row['block']['transactions']['id'],
+                                                 multi=True).run()
 
     def fin():
         print('Deleting `{}` database'.format(db_name))
