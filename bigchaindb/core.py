@@ -169,6 +169,22 @@ class Bigchain(object):
         else:
             return None
 
+    def search_block_election_on_index(self, value, index):
+        """Retrieves block election information given a secondary index and value
+
+        Args:
+            value: a value to search (e.g. transaction id string, payload hash string)
+            index (str): name of a secondary index, e.g. 'transaction_id'
+
+        Returns:
+            A list of blocks with with only election information
+        """
+        # First, get information on all blocks which contain this transaction
+        response = r.table('bigchain').get_all(value, index=index)\
+            .pluck('votes', 'id', {'block': ['voters']}).run(self.conn)
+
+        return list(response)
+
     def get_blocks_status_containing_tx(self, txid):
         """Retrieves block ids and statuses related to a transaction
 
@@ -182,10 +198,7 @@ class Bigchain(object):
         """
 
         # First, get information on all blocks which contain this transaction
-        response = r.table('bigchain').get_all(txid, index='transaction_id')\
-            .pluck('votes', 'id', {'block': ['voters']}).run(self.conn)
-
-        blocks = list(response)
+        blocks = self.search_block_election_on_index(txid, 'transaction_id')
 
         if blocks:
             # Determine the election status of each block
