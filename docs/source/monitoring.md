@@ -16,9 +16,17 @@ $ docker-compose -f docker-compose-monitor.yml build
 $ docker-compose -f docker-compose-monitor.yml up
 ```
 
-then point a browser tab to:
+It is also possible to mount a host directory as a data volume for InfluxDB
+by setting the `INFLUXDB_DATA` environment variable:
+```text
+$ INFLUXDB_DATA=/data docker-compose -f docker-compose-monitor.yml up
+```
+
+You can view the Grafana dashboard in your web browser at:
 
 [http://localhost:3000/dashboard/script/bigchaindb_dashboard.js](http://localhost:3000/dashboard/script/bigchaindb_dashboard.js)
+
+(You may want to replace `localhost` with another hostname in that URL, e.g. the hostname of a remote monitoring server.)
 
 The login and password are `admin` by default. If BigchainDB is running and processing transactions, you should see analytics—if not, [start BigchainDB](installing-server.html#run-bigchaindb) and load some test transactions:
 ```text
