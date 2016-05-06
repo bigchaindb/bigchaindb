@@ -160,13 +160,23 @@ cd deploy-cluster-aws
 ./awsdeploy.sh <number_of_nodes_in_cluster> [pypi_or_branch] [servers_or_clients]
 ```
 
-The first argument <number_of_nodes_in_cluster> is required. It's how many nodes you want to deploy.
+**<number_of_nodes_in_cluster>** (Required)
 
-The second argument is optional. It can be the word `pypi` or the name of a local Git branch. `pypi` means that BigchainDB will be installed from the latest `bigchaindb` package in the [Python Package Index (PyPI)](https://pypi.python.org/pypi). That is, on each node, BigchainDB will be installed using `pip install bigchaindb`. If you don't include the second argument, then the default is `pypi`.
+The number of nodes you want to deploy. Example value: 5
 
-The third argument is also optional (but if you want to include it, you must also include the second argument). It must be either `servers` or `clients`, depending on what you want to deploy. If you don't include the third argument, then the default is `servers`.
+**[pypi_or_branch]** (Optional)
 
-If you're curious what the `awsdeploy.sh` script does, the source code has lots of explanatory comments, so it's quite easy to read. Here's a link to the latest version on GitHub: [`awsdeploy.sh`](https://github.com/bigchaindb/bigchaindb/blob/master/deploy-cluster-aws/awsdeploy.sh)
+Where the nodes should get their BigchainDB source code. If it's `pypi`, then BigchainDB will be installed from the latest `bigchaindb` package in the [Python Package Index (PyPI)](https://pypi.python.org/pypi). That is, on each node, BigchainDB will be installed using `pip install bigchaindb`. You can also put the name of a local Git branch; it will be compressed and sent out to all the nodes for installation. If you don't include the second argument, then the default is `pypi`.
+
+**[servers_or_clients]** (Optional)
+
+If you want to deploy BigchainDB servers, then the third argument should be `servers`.
+If you want to deploy BigchainDB clients, then the third argument should be `clients`.
+The third argument is optional, but if you want to include it, you must also include the second argument. If you don't include the third argument, then the default is `servers`.
+
+---
+
+If you're curious what the `awsdeploy.sh` script does, [the source code](https://github.com/bigchaindb/bigchaindb/blob/master/deploy-cluster-aws/awsdeploy.sh) has lots of explanatory comments, so it's quite easy to read.
 
 It should take a few minutes for the deployment to finish. If you run into problems, see the section on Known Deployment Issues below.
 
