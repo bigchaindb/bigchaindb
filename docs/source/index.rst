@@ -12,16 +12,26 @@ Table of Contents
    :maxdepth: 5
    :numbered:
 
-   installing
-   getting-started
-   admin
-   contributing
-   faq
-   release-notes
+   introduction
+   installing-server
+   running-unit-tests
+   configuration
+   python-server-api-examples
+   bigchaindb-cli
+   http-client-server-api
+   python-driver-api-examples
+   local-rethinkdb-cluster
+   deploy-on-aws
    cryptography
    models
    json-serialization
    developer-interface
+   consensus
+   monitoring
+   licenses
+   contributing
+   release-notes
+   glossary
 
 
 Indices and Tables

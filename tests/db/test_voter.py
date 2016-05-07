@@ -3,11 +3,10 @@ import time
 import rethinkdb as r
 import multiprocessing as mp
 
-from bigchaindb import Bigchain
-from bigchaindb.voter import Voter, BlockStream
-from bigchaindb.crypto import PublicKey
+from bigchaindb import util
 
-from .conftest import USER_PUBLIC_KEY
+from bigchaindb.voter import Voter, BlockStream
+from bigchaindb import crypto
 
 
 class TestBigchainVoter(object):
@@ -37,6 +36,47 @@ class TestBigchainVoter(object):
                        .order_by(r.asc((r.row['block']['timestamp'])))
                        .run(b.conn))
 
+        # validate vote
+        assert len(blocks[1]['votes']) == 1
+        vote = blocks[1]['votes'][0]
+
+        assert vote['vote']['voting_for_block'] == block['id']
+        assert vote['vote']['previous_block'] == genesis['id']
+        assert vote['vote']['is_block_valid'] is True
+        assert vote['vote']['invalid_reason'] is None
+        assert vote['node_pubkey'] == b.me
+        assert crypto.VerifyingKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
+
+    def test_valid_block_voting_with_create_transaction(self, b):
+        q_new_block = mp.Queue()
+
+        genesis = b.create_genesis_block()
+
+        # create a `CREATE` transaction
+        test_user_priv, test_user_pub = crypto.generate_key_pair()
+        tx = b.create_transaction(b.me, test_user_pub, None, 'CREATE')
+        tx_signed = b.sign_transaction(tx, b.me_private)
+        assert b.is_valid_transaction(tx_signed)
+
+        # create valid block
+        block = b.create_block([tx_signed])
+        # assert block is valid
+        assert b.is_valid_block(block)
+        b.write_block(block, durability='hard')
+
+        # create queue and voter
+        voter = Voter(q_new_block)
+
+        # vote
+        voter.start()
+        # wait for vote to be written
+        time.sleep(1)
+        voter.kill()
+
+        # retrive block from bigchain
+        blocks = list(r.table('bigchain')
+                       .order_by(r.asc((r.row['block']['timestamp'])))
+                       .run(b.conn))
 
         # validate vote
         assert len(blocks[1]['votes']) == 1
@@ -44,19 +84,89 @@ class TestBigchainVoter(object):
 
         assert vote['vote']['voting_for_block'] == block['id']
         assert vote['vote']['previous_block'] == genesis['id']
-        assert vote['vote']['is_block_valid'] == True
-        assert vote['vote']['invalid_reason'] == None
+        assert vote['vote']['is_block_valid'] is True
+        assert vote['vote']['invalid_reason'] is None
         assert vote['node_pubkey'] == b.me
-        assert PublicKey(b.me).verify(b.serialize(vote['vote']), vote['signature']) == True
+        assert crypto.VerifyingKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
 
+    def test_valid_block_voting_with_transfer_transactions(self, b):
+        q_new_block = mp.Queue()
 
-    def test_invalid_block_voting(self, b):
+        b.create_genesis_block()
+
+        # create a `CREATE` transaction
+        test_user_priv, test_user_pub = crypto.generate_key_pair()
+        tx = b.create_transaction(b.me, test_user_pub, None, 'CREATE')
+        tx_signed = b.sign_transaction(tx, b.me_private)
+        assert b.is_valid_transaction(tx_signed)
+
+        # create valid block
+        block = b.create_block([tx_signed])
+        # assert block is valid
+        assert b.is_valid_block(block)
+        b.write_block(block, durability='hard')
+
+        # create queue and voter
+        voter = Voter(q_new_block)
+
+        # vote
+        voter.start()
+        # wait for vote to be written
+        time.sleep(1)
+        voter.kill()
+
+        # retrive block from bigchain
+        blocks = list(r.table('bigchain')
+                       .order_by(r.asc((r.row['block']['timestamp'])))
+                       .run(b.conn))
+
+        # validate vote
+        assert len(blocks[1]['votes']) == 1
+
+        # create a `TRANSFER` transaction
+        test_user2_priv, test_user2_pub = crypto.generate_key_pair()
+        tx2 = b.create_transaction(test_user_pub, test_user2_pub, tx['id'], 'TRANSFER')
+        tx2_signed = b.sign_transaction(tx2, test_user_priv)
+        assert b.is_valid_transaction(tx2_signed)
+
+        # create valid block
+        block = b.create_block([tx2_signed])
+        # assert block is valid
+        assert b.is_valid_block(block)
+        b.write_block(block, durability='hard')
+
+        # create queue and voter
+        voter = Voter(q_new_block)
+
+        # vote
+        voter.start()
+        # wait for vote to be written
+        time.sleep(1)
+        voter.kill()
+
+        # retrive block from bigchain
+        blocks = list(r.table('bigchain')
+                       .order_by(r.asc((r.row['block']['timestamp'])))
+                       .run(b.conn))
+
+        # validate vote
+        assert len(blocks[2]['votes']) == 1
+
+        vote = blocks[2]['votes'][0]
+
+        assert vote['vote']['voting_for_block'] == block['id']
+        assert vote['vote']['is_block_valid'] is True
+        assert vote['vote']['invalid_reason'] is None
+        assert vote['node_pubkey'] == b.me
+        assert crypto.VerifyingKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
+
+    def test_invalid_block_voting(self, b, user_public_key):
         # create queue and voter
         q_new_block = mp.Queue()
         voter = Voter(q_new_block)
 
         # create transaction
-        transaction = b.create_transaction(b.me, USER_PUBLIC_KEY, None, 'CREATE')
+        transaction = b.create_transaction(b.me, user_public_key, None, 'CREATE')
         transaction_signed = b.sign_transaction(transaction, b.me_private)
 
         genesis = b.create_genesis_block()
@@ -67,7 +177,6 @@ class TestBigchainVoter(object):
         block['block']['transactions'][0]['id'] = 'abc'
         assert not b.is_valid_block(block)
         b.write_block(block, durability='hard')
-
 
         # vote
         voter.start()
@@ -85,10 +194,10 @@ class TestBigchainVoter(object):
 
         assert vote['vote']['voting_for_block'] == block['id']
         assert vote['vote']['previous_block'] == genesis['id']
-        assert vote['vote']['is_block_valid'] == False
-        assert vote['vote']['invalid_reason'] == None
+        assert vote['vote']['is_block_valid'] is False
+        assert vote['vote']['invalid_reason'] is None
         assert vote['node_pubkey'] == b.me
-        assert PublicKey(b.me).verify(b.serialize(vote['vote']), vote['signature']) == True
+        assert crypto.VerifyingKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
 
     def test_vote_creation_valid(self, b):
         # create valid block
@@ -99,10 +208,10 @@ class TestBigchainVoter(object):
         # assert vote is correct
         assert vote['vote']['voting_for_block'] == block['id']
         assert vote['vote']['previous_block'] == 'abc'
-        assert vote['vote']['is_block_valid'] == True
-        assert vote['vote']['invalid_reason'] == None
+        assert vote['vote']['is_block_valid'] is True
+        assert vote['vote']['invalid_reason'] is None
         assert vote['node_pubkey'] == b.me
-        assert PublicKey(b.me).verify(b.serialize(vote['vote']), vote['signature']) == True
+        assert crypto.VerifyingKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
 
     def test_vote_creation_invalid(self, b):
         # create valid block
@@ -113,10 +222,10 @@ class TestBigchainVoter(object):
         # assert vote is correct
         assert vote['vote']['voting_for_block'] == block['id']
         assert vote['vote']['previous_block'] == 'abc'
-        assert vote['vote']['is_block_valid'] == False
-        assert vote['vote']['invalid_reason'] == None
+        assert vote['vote']['is_block_valid'] is False
+        assert vote['vote']['invalid_reason'] is None
         assert vote['node_pubkey'] == b.me
-        assert PublicKey(b.me).verify(b.serialize(vote['vote']), vote['signature']) == True
+        assert crypto.VerifyingKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
 
     def test_voter_considers_unvoted_blocks_when_single_node(self, b):
         # simulate a voter going donw in a single node environment
@@ -169,7 +278,6 @@ class TestBigchainVoter(object):
         time.sleep(1)
         voter.kill()
 
-
         # retrive blocks from bigchain
         blocks = list(r.table('bigchain')
                        .order_by(r.asc((r.row['block']['timestamp'])))
@@ -189,12 +297,11 @@ class TestBigchainVoter(object):
         pass
 
 
-
 class TestBlockStream(object):
 
     def test_if_federation_size_is_greater_than_one_ignore_past_blocks(self, b):
         for _ in range(5):
-            b.federation_nodes.append(b.generate_keys()[1])
+            b.federation_nodes.append(crypto.generate_key_pair()[1])
         new_blocks = mp.Queue()
         bs = BlockStream(new_blocks)
         block_1 = b.create_block([])
@@ -220,7 +327,6 @@ class TestBlockStream(object):
         # and check if we get exactly these two blocks
         assert bs.get() == block_1
         assert bs.get() == block_2
-
 
     def test_if_old_blocks_get_should_return_old_block_first(self, b):
         # create two blocks

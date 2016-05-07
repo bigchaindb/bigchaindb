@@ -34,7 +34,7 @@ def _run_load(tx_left, stats):
 
 
 def run_load(args):
-    bigchaindb.config_utils.file_config(args.config)
+    bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
     logger.info('Starting %s processes', args.multiprocess)
     stats = logstats.Logstats()
     logstats.thread.start(stats)
