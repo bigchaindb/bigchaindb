@@ -31,7 +31,7 @@ class Bigchain(object):
         Otherwise, the parameter value will be the value from the local
         configuration file. If it's not set in that file, then the value
         will come from an environment variable. If that environment variable
-        isn't set, then the paramter will have its default value (defined in
+        isn't set, then the parameter will have its default value (defined in
         bigchaindb.__init__).
 
         Args:
