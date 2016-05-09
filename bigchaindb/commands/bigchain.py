@@ -204,7 +204,7 @@ def run_load(args):
     workers.start()
 
 
-def run_sharding(args):
+def run_set_shards(args):
     b = bigchaindb.Bigchain()
     r.table('bigchain').reconfigure(shards=args.num_shards, replicas=1).run(b.conn)
     r.table('backlog').reconfigure(shards=args.num_shards, replicas=1).run(b.conn)
@@ -251,7 +251,7 @@ def main():
                           help='Start BigchainDB')
 
     # parser for configuring the number of shards
-    sharding_parser = subparsers.add_parser('sharding',
+    sharding_parser = subparsers.add_parser('set-shards',
                                             help='Configure number of shards')
 
     sharding_parser.add_argument('num_shards', metavar='num_shards', type=int, default=1,
