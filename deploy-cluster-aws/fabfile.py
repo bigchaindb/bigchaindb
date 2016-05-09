@@ -166,6 +166,12 @@ def init_bigchaindb():
     run('bigchaindb init', pty=False)
 
 
+@task
+@hosts(public_dns_names[0])
+def configure_sharding(num_shards):
+    run('bigchaindb sharding {}'.format(num_shards))
+
+
 # Start BigchainDB using screen
 @task
 @parallel
