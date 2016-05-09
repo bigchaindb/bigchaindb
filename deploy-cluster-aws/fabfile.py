@@ -146,6 +146,15 @@ def send_confile(confile):
     run('bigchaindb show-config')
 
 
+@task
+@parallel
+def send_client_confile(confile):
+    put(confile, 'tempfile')
+    run('mv tempfile ~/.bigchaindb')
+    print('For this node, bigchaindb show-config says:')
+    run('bigchaindb show-config')
+
+
 # Initialize BigchainDB
 # i.e. create the database, the tables,
 # the indexes, and the genesis block.
@@ -162,6 +171,12 @@ def init_bigchaindb():
 @parallel
 def start_bigchaindb():
     sudo('screen -d -m bigchaindb -y start &', pty=False)
+
+
+@task
+@parallel
+def start_bigchaindb_load():
+    sudo('screen -d -m bigchaindb load &', pty=False)
 
 
 # Install and run New Relic

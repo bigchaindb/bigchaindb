@@ -147,24 +147,36 @@ You can look inside those files if you're curious. In step 2, they'll be modifie
 
 Step 2 is to launch the nodes ("instances") on AWS, to install all the necessary software on them, configure the software, run the software, and more.
 
-Here's an example of how one could launch a BigchainDB cluster of three (3) nodes tagged `wrigley` on AWS:
+Here's an example of how one could launch a BigchainDB cluster of three (3) nodes on AWS:
 ```text
 # in a Python 2.5-2.7 virtual environment where fabric, boto3, etc. are installed
 cd bigchaindb
 cd deploy-cluster-aws
-./startup.sh wrigley 3 pypi
+./awsdeploy.sh 3
 ```
 
-The `pypi` on the end means that it will install the latest (stable) `bigchaindb` package from the [Python Package Index (PyPI)](https://pypi.python.org/pypi). That is, on each node, BigchainDB is installed using `pip install bigchaindb`. 
-
-`startup.sh` is a Bash script which calls some Python and Fabric scripts. The usage is:
+`awsdeploy.sh` is a Bash script which calls some Python and Fabric scripts. The usage is:
 ```text
-./startup.sh <tag> <number_of_nodes_in_cluster> <pypi_or_branch>
+./awsdeploy.sh <number_of_nodes_in_cluster> [pypi_or_branch] [servers_or_clients]
 ```
 
-The first two arguments are self-explanatory. The third argument can be `pypi` or the name of a local Git branch (e.g. `master` or `feat/3752/quote-asimov-on-tuesdays`). If you don't include a third argument, then `pypi` will be assumed by default.
+**<number_of_nodes_in_cluster>** (Required)
 
-If you're curious what the `startup.sh` script does, the source code has lots of explanatory comments, so it's quite easy to read. Here's a link to the latest version on GitHub: [`startup.sh`](https://github.com/bigchaindb/bigchaindb/blob/master/deploy-cluster-aws/startup.sh)
+The number of nodes you want to deploy. Example value: 5
+
+**[pypi_or_branch]** (Optional)
+
+Where the nodes should get their BigchainDB source code. If it's `pypi`, then BigchainDB will be installed from the latest `bigchaindb` package in the [Python Package Index (PyPI)](https://pypi.python.org/pypi). That is, on each node, BigchainDB will be installed using `pip install bigchaindb`. You can also put the name of a local Git branch; it will be compressed and sent out to all the nodes for installation. If you don't include the second argument, then the default is `pypi`.
+
+**[servers_or_clients]** (Optional)
+
+If you want to deploy BigchainDB servers, then the third argument should be `servers`.
+If you want to deploy BigchainDB clients, then the third argument should be `clients`.
+The third argument is optional, but if you want to include it, you must also include the second argument. If you don't include the third argument, then the default is `servers`.
+
+---
+
+If you're curious what the `awsdeploy.sh` script does, [the source code](https://github.com/bigchaindb/bigchaindb/blob/master/deploy-cluster-aws/awsdeploy.sh) has lots of explanatory comments, so it's quite easy to read.
 
 It should take a few minutes for the deployment to finish. If you run into problems, see the section on Known Deployment Issues below.
 
