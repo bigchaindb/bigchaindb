@@ -43,3 +43,10 @@ This command is used to run benchmarking tests. You can learn more about it usin
 ```text
 $ bigchaindb load -h
 ```
+
+### bigchaindb sharding
+
+This command is used to configure the number of shards in the underlying datastore, for example:
+```text
+$ bigchaindb sharding 3
+```

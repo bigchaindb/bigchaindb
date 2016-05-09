@@ -13,6 +13,7 @@ import builtins
 
 import logstats
 
+import rethinkdb as r
 
 import bigchaindb
 import bigchaindb.config_utils
@@ -203,6 +204,12 @@ def run_load(args):
     workers.start()
 
 
+def run_sharding(args):
+    b = bigchaindb.Bigchain()
+    r.table('bigchain').reconfigure(shards=args.num_shards, replicas=1).run(b.conn)
+    r.table('backlog').reconfigure(shards=args.num_shards, replicas=1).run(b.conn)
+
+
 def main():
     parser = argparse.ArgumentParser(
         description='Control your BigchainDB node.',
@@ -242,6 +249,13 @@ def main():
     # parser for starting BigchainDB
     subparsers.add_parser('start',
                           help='Start BigchainDB')
+
+    # parser for configuring the number of shards
+    sharding_parser = subparsers.add_parser('sharding',
+                                            help='Configure number of shards')
+
+    sharding_parser.add_argument('num_shards', metavar='num_shards', type=int, default=1,
+                                 help='Number of shards')
 
     load_parser = subparsers.add_parser('load',
                                         help='Write transactions to the backlog')
