@@ -131,7 +131,7 @@ if [ "$WHAT_TO_DEPLOY" == "servers" ]; then
     # this will only be sent to one of the nodes, see the
     # definition of init_bigchaindb() in fabfile.py to see why.
     fab init_bigchaindb
-    fab configure_sharding:$NUM_NODES
+    fab set_shards:$NUM_NODES
 else
     # Deploying clients
     # The only thing to configure on clients is the api_endpoint

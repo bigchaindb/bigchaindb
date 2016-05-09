@@ -227,11 +227,11 @@ def test_start_rethinkdb_exits_when_cannot_start(mock_popen):
         utils.start_rethinkdb()
 
 
-def test_configure_sharding(b):
+def test_set_shards(b):
     import rethinkdb as r
     from bigchaindb.commands.bigchain import run_set_shards
 
-    # change number of shards
+    # set the number of shards
     args = Namespace(num_shards=3)
     run_set_shards(args)
 
@@ -241,7 +241,7 @@ def test_configure_sharding(b):
                         .filter(r.row['db'] == b.dbname)
                         .run(b.conn))
 
-    # check shard configuration
+    # check that the number of shards got set to the correct value
     for table in table_config:
         if table['name'] in ['backlog', 'bigchain']:
             assert len(table['shards']) == 3
