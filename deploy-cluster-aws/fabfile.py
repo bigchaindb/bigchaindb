@@ -166,10 +166,11 @@ def init_bigchaindb():
     run('bigchaindb init', pty=False)
 
 
+# Set the number of shards (in the backlog and bigchain tables)
 @task
 @hosts(public_dns_names[0])
-def configure_sharding(num_shards):
-    run('bigchaindb sharding {}'.format(num_shards))
+def set_shards(num_shards):
+    run('bigchaindb set-shards {}'.format(num_shards))
 
 
 # Start BigchainDB using screen
