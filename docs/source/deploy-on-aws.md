@@ -153,6 +153,7 @@ Here's an example of how one could launch a BigchainDB cluster of three (3) node
 cd bigchaindb
 cd deploy-cluster-aws
 ./awsdeploy.sh 3
+fab start_bigchaindb
 ```
 
 `awsdeploy.sh` is a Bash script which calls some Python and Fabric scripts. The usage is:

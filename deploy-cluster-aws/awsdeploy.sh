@@ -131,9 +131,6 @@ if [ "$WHAT_TO_DEPLOY" == "servers" ]; then
     # this will only be sent to one of the nodes, see the
     # definition of init_bigchaindb() in fabfile.py to see why.
     fab init_bigchaindb
-
-    # Start BigchainDB on all the nodes using "screen"
-    fab start_bigchaindb
 else
     # Deploying clients
     # The only thing to configure on clients is the api_endpoint
