@@ -7,7 +7,7 @@ Measure how many blocks per second are created on the _bigchain_ with a pre fill
 
 ```bash
 fab put_benchmark_utils
-fab update_statsd_conf:<hostname of the statsd server>
+fab set_statsd_host:<hostname of the statsd server>
 fab prepare_backlog:<num txs per node> # wait for process to finish
 fab start_bigchaindb
 ```
