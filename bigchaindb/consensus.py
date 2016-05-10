@@ -157,7 +157,7 @@ class BaseConsensusRules(AbstractConsensusRules):
         if calculated_hash != transaction['id']:
             raise exceptions.InvalidHash()
 
-        # Check signature
+        # Check fulfillments
         if not util.validate_fulfillments(transaction):
             raise exceptions.InvalidSignature()
 
