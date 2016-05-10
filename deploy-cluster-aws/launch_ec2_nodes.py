@@ -18,9 +18,8 @@ import socket
 import argparse
 import botocore
 import boto3
-from awscommon import (
-    get_naeips,
-)
+from awscommon import get_naeips
+
 
 # First, ensure they're using Python 2.5-2.7
 pyver = sys.version_info
