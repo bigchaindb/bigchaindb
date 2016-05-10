@@ -6,7 +6,8 @@ Measure how many blocks per second are created on the _bigchain_ with a pre fill
 2. Copy `deploy-cluster-aws/hostlist.py` to `benchmarking-tests`
 
 ```bash
-fab prepare_test
+fab put_benchmark_utils
 fab update_statsd_conf:<hostname of the statsd server>
 fab prepare_backlog:<num txs per node> # wait for process to finish
 fab start_bigchaindb
+```

@@ -23,7 +23,7 @@ env.key_filename = 'pem/bigchaindb.pem'
 
 @task
 @parallel
-def prepare_test():
+def put_benchmark_utils():
     put('benchmark_utils.py')
 
 
