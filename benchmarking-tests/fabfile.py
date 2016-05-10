@@ -29,11 +29,25 @@ def prepare_test():
 
 @task
 @parallel
+def update_statsd_conf(statsd_host='localhost'):
+    run('python3 benchmark_utils.py update-statsd {}'.format(statsd_host))
+    print('update configuration')
+    run('bigchaindb show-config')
+
+
+@task
+@parallel
 def prepare_backlog(num_transactions=10000):
-    run('python3 benchmark_utils.py {}'.format(num_transactions))
+    run('python3 benchmark_utils.py add-backlog {}'.format(num_transactions))
 
 
 @task
 @parallel
 def start_bigchaindb():
     run('screen -d -m bigchaindb start &', pty=False)
+
+
+@task
+@parallel
+def kill_bigchaindb():
+    run('killall bigchaindb')

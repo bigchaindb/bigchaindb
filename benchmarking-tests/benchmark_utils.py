@@ -1,8 +1,13 @@
-import sys
 import multiprocessing as mp
 import uuid
+import json
+import argparse
+
+from os.path import expanduser
+
 from bigchaindb import Bigchain
 from bigchaindb.util import ProcessGroup
+from bigchaindb.commands import utils
 
 
 def create_write_transaction(tx_left):
@@ -15,12 +20,40 @@ def create_write_transaction(tx_left):
         tx_left -= 1
 
 
-def add_to_backlog(num_transactions=10000):
-    tx_left = num_transactions // mp.cpu_count()
+def run_add_backlog(args):
+    tx_left = args.num_transactions // mp.cpu_count()
     workers = ProcessGroup(target=create_write_transaction, args=(tx_left,))
     workers.start()
 
 
+def run_update_statsd(args):
+    with open(expanduser('~') + '/.bigchaindb', 'r') as f:
+        conf = json.load(f)
+
+    conf['statsd']['host'] = args.statsd_host
+    with open(expanduser('~') + '/.bigchaindb', 'w') as f:
+        json.dump(conf, f)
+
+
+def main():
+    parser = argparse.ArgumentParser(description='BigchainDB benchmarking utils')
+    subparsers = parser.add_subparsers(title='Commands', dest='command')
+
+    # add transactions to backlog
+    backlog_parser = subparsers.add_parser('add-backlog',
+                                           help='Add transactions to the backlog')
+    backlog_parser.add_argument('num_transactions', metavar='num_transactions', type=int, default=0,
+                                help='Number of transactions to add to the backlog')
+
+    # update statsd configuration
+    statsd_parser = subparsers.add_parser('update-statsd',
+                                          help='Update statsd host')
+    statsd_parser.add_argument('statsd_host', metavar='statsd_host', default='localhost',
+                               help='Hostname of the statsd server')
+
+    utils.start(parser, globals())
+
+
 if __name__ == '__main__':
-    add_to_backlog(int(sys.argv[1]))
+    main()
 
