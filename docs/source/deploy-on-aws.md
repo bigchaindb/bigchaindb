@@ -143,6 +143,18 @@ That will create three (3) _default_ BigchainDB configuration files in the `depl
 
 You can look inside those files if you're curious. In step 2, they'll be modified. For example, the default keyring is an empty list. In step 2, the deployment script automatically changes the keyring of each node to be a list of the public keys of all other nodes. Other changes are also made.
 
+**An Aside on Using a Standard Set of Keypairs**
+
+It's possible to deploy BigchainDB servers with a known set of keypairs. You can generate a set of keypairs in a file named `keypairs.py` using the `write_keypairs_file.py` script. For example:
+```text
+# in a Python 3 virtual environment where bigchaindb is installed
+cd bigchaindb
+cd deploy-cluster-aws
+python3 write_keypairs_file.py 100
+```
+
+The above command generates a file with 100 keypairs. (You can generate more keypairs than you need, so you can use the same list over and over again, for different numbers of servers.) To make the `awsdeploy.sh` script read all keys from `keypairs.py`, you must _edit_ the `awsdeploy.sh` script: change the line that says `python clusterize_confiles.py confiles $NUM_NODES` to `python clusterize_confiles.py -k confiles $NUM_NODES` (i.e. add the `-k` option).
+
 ### Step 2
 
 Step 2 is to launch the nodes ("instances") on AWS, to install all the necessary software on them, configure the software, run the software, and more.
