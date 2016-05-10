@@ -4,7 +4,7 @@ The written file is always named keypairs.py and it should be
 interpreted as a Python 2 script.
 
 Usage:
-    $ python3 write_keypairs_file.py <num_pairs>
+    $ python3 write_keypairs_file.py num_pairs
 
 Using the list in other Python scripts:
     # in a Python 2 script:
