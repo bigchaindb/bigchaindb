@@ -30,7 +30,7 @@ num_pairs = int(args.num_pairs)
 # Generate and write the keypairs to keypairs.py
 print('Writing {} keypairs to keypairs.py...'.format(num_pairs))
 with open('keypairs.py', 'w') as f:
-    f.write('"""A set of public/private keypairs for use in deploying\n')
+    f.write('"""A set of keypairs for use in deploying\n')
     f.write('BigchainDB servers with a predictable set of keys.\n')
     f.write('"""\n\n')
     f.write('keypairs_list = [')
