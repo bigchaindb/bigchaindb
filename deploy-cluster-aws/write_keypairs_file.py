@@ -1,9 +1,16 @@
 """A Python 3 script to write a file with a specified number
 of keypairs, using bigchaindb.crypto.generate_key_pair()
-The file is always named keypairs.py (and is Python 2).
+The file is always named keypairs.py and it should be interpreted
+as a Python 3 script.
 
 Usage:
-   python3 write_keypairs_file.py <num_pairs>
+    $ python3 write_keypairs_file.py <num_pairs>
+
+Using the list in other Python scripts:
+    from keypairs import keypairs_list
+    # keypairs_list is a list of (sk, pk) tuples
+    # sk = signing key (private key)
+    # pk = verifying key (public key)
 """
 
 import argparse
@@ -23,13 +30,9 @@ num_pairs = int(args.num_pairs)
 # Generate and write the keypairs to keypairs.py
 print('Writing {} keypairs to keypairs.py...'.format(num_pairs))
 with open('keypairs.py', 'w') as f:
-    f.write('# -*- coding: utf-8 -*-\n')
     f.write('"""A set of public/private keypairs for use in deploying\n')
     f.write('BigchainDB servers with a predictable set of keys.\n')
-    f.write('"""\n')
-    f.write('\n')
-    f.write('from __future__ import unicode_literals\n')
-    f.write('\n')
+    f.write('"""\n\n')
     f.write('keypairs_list = [')
     for pair_num in range(num_pairs):
         keypair = crypto.generate_key_pair()
