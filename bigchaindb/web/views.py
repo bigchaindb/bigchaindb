@@ -75,8 +75,8 @@ def create_transaction():
             tx = util.transform_create(tx)
             tx = bigchain.consensus.sign_transaction(tx, private_key=bigchain.me_private)
 
-        if not bigchain.consensus.verify_signature(tx):
-            val['error'] = 'Invalid transaction signature'
+        if not bigchain.consensus.validate_fulfillments(tx):
+            val['error'] = 'Invalid transaction fulfillments'
 
         with monitor.timer('write_transaction', rate=bigchaindb.config['statsd']['rate']):
             val = bigchain.write_transaction(tx)

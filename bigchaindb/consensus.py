@@ -77,7 +77,7 @@ class AbstractConsensusRules(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def verify_signature(signed_transaction):
+    def validate_fulfillments(signed_transaction):
         """Verify the signature of a transaction.
 
         Args:
@@ -158,7 +158,7 @@ class BaseConsensusRules(AbstractConsensusRules):
             raise exceptions.InvalidHash()
 
         # Check signature
-        if not util.verify_signature(transaction):
+        if not util.validate_fulfillments(transaction):
             raise exceptions.InvalidSignature()
 
         return transaction
@@ -216,10 +216,10 @@ class BaseConsensusRules(AbstractConsensusRules):
         return util.sign_tx(transaction, private_key)
 
     @staticmethod
-    def verify_signature(signed_transaction):
+    def validate_fulfillments(signed_transaction):
         """Verify the signature of a transaction.
 
-        Refer to the documentation of ``bigchaindb.util.verify_signature``
+        Refer to the documentation of ``bigchaindb.util.validate_fulfillments``
         """
 
-        return util.verify_signature(signed_transaction)
+        return util.validate_fulfillments(signed_transaction)

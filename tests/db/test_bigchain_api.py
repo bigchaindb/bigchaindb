@@ -37,7 +37,7 @@ class TestBigchainApi(object):
     @pytest.mark.usefixtures('inputs')
     def test_create_transaction_transfer(self, b, user_vk, user_sk):
         input_tx = b.get_owned_ids(user_vk).pop()
-        assert b.verify_signature(b.get_transaction(input_tx['txid'])) == True
+        assert b.validate_fulfillments(b.get_transaction(input_tx['txid'])) == True
 
         tx = b.create_transaction(user_vk, b.me, input_tx, 'TRANSFER')
 
@@ -46,8 +46,8 @@ class TestBigchainApi(object):
 
         tx_signed = b.sign_transaction(tx, user_sk)
 
-        assert b.verify_signature(tx) == False
-        assert b.verify_signature(tx_signed) == True
+        assert b.validate_fulfillments(tx) == False
+        assert b.validate_fulfillments(tx_signed) == True
 
     def test_transaction_hash(self, b, user_vk):
         payload = {'cats': 'are awesome'}
@@ -73,7 +73,7 @@ class TestBigchainApi(object):
         tx_signed = b.sign_transaction(tx, user_sk)
 
         assert tx_signed['transaction']['fulfillments'][0]['fulfillment'] is not None
-        assert b.verify_signature(tx_signed)
+        assert b.validate_fulfillments(tx_signed)
 
     def test_serializer(self, b, user_vk):
         tx = b.create_transaction(user_vk, user_vk, None, 'CREATE')
@@ -1218,7 +1218,7 @@ class TestCryptoconditions(object):
 
         assert fulfillment['current_owners'][0] == b.me
         assert fulfillment_from_uri.public_key.to_ascii().decode() == b.me
-        assert b.verify_signature(tx_signed) == True
+        assert b.validate_fulfillments(tx_signed) == True
         assert b.is_valid_transaction(tx_signed) == tx_signed
 
     @pytest.mark.usefixtures('inputs')
@@ -1250,7 +1250,7 @@ class TestCryptoconditions(object):
         assert fulfillment['current_owners'][0] == user_vk
         assert fulfillment_from_uri.public_key.to_ascii().decode() == user_vk
         assert fulfillment_from_uri.condition.serialize_uri() == prev_condition['uri']
-        assert b.verify_signature(tx_signed) == True
+        assert b.validate_fulfillments(tx_signed) == True
         assert b.is_valid_transaction(tx_signed) == tx_signed
 
     def test_override_condition_create(self, b, user_vk):
@@ -1268,7 +1268,7 @@ class TestCryptoconditions(object):
 
         assert fulfillment['current_owners'][0] == b.me
         assert fulfillment_from_uri.public_key.to_ascii().decode() == b.me
-        assert b.verify_signature(tx_signed) == True
+        assert b.validate_fulfillments(tx_signed) == True
         assert b.is_valid_transaction(tx_signed) == tx_signed
 
     @pytest.mark.usefixtures('inputs')
@@ -1290,7 +1290,7 @@ class TestCryptoconditions(object):
 
         assert fulfillment['current_owners'][0] == user_vk
         assert fulfillment_from_uri.public_key.to_ascii().decode() == user_vk
-        assert b.verify_signature(tx_signed) == True
+        assert b.validate_fulfillments(tx_signed) == True
         assert b.is_valid_transaction(tx_signed) == tx_signed
 
     def test_override_fulfillment_create(self, b, user_vk):
@@ -1302,7 +1302,7 @@ class TestCryptoconditions(object):
 
         tx['transaction']['fulfillments'][0]['fulfillment'] = fulfillment.serialize_uri()
 
-        assert b.verify_signature(tx) == True
+        assert b.validate_fulfillments(tx) == True
         assert b.is_valid_transaction(tx) == tx
 
     @pytest.mark.usefixtures('inputs')
@@ -1319,7 +1319,7 @@ class TestCryptoconditions(object):
 
         tx['transaction']['fulfillments'][0]['fulfillment'] = fulfillment.serialize_uri()
 
-        assert b.verify_signature(tx) == True
+        assert b.validate_fulfillments(tx) == True
         assert b.is_valid_transaction(tx) == tx
 
     @pytest.mark.usefixtures('inputs')
@@ -1573,7 +1573,7 @@ class TestCryptoconditions(object):
         assert tx_transfer_signed['transaction']['fulfillments'][0]['fulfillment'] \
             == expected_fulfillment.serialize_uri()
 
-        assert b.verify_signature(tx_transfer_signed) is True
+        assert b.validate_fulfillments(tx_transfer_signed) is True
 
     def test_create_asset_with_hashlock_condition(self, b):
         hashlock_tx = b.create_transaction(b.me, None, None, 'CREATE')
