@@ -751,7 +751,7 @@ threshold_tx_transfer
 
 A hash-lock condition on an asset is like a password condition: anyone with the secret preimage (like a password) can fulfill the hash-lock condition and transfer the asset to themselves.
 
-Under the hood, fulfilling a hash-lock condition amounts to finding a number (a "preimage") which, when hashed, results in a given value. It's easy to verify that a given preimage hashes to the given value, but it's computationally difficult to _find_ a number which hashes to the given value. The only practical way to get a valid preimage is to get it from the original creator (possibly via intermediaries).
+Under the hood, fulfilling a hash-lock condition amounts to finding a string (a "preimage") which, when hashed, results in a given value. It's easy to verify that a given preimage hashes to the given value, but it's computationally difficult to _find_ a string which hashes to the given value. The only practical way to get a valid preimage is to get it from the original creator (possibly via intermediaries).
 
 One possible use case is to distribute preimages as "digital vouchers." The first person to redeem a voucher will get the associated asset.
 
