@@ -87,12 +87,12 @@ class Bigchain(object):
         return self.consensus.sign_transaction(transaction, *args, **kwargs)
 
     def validate_fulfillments(self, signed_transaction, *args, **kwargs):
-        """Verify the fulfillment(s) of a transaction.
+        """Validate the fulfillment(s) of a transaction.
 
         Refer to the documentation of your consensus plugin.
 
         Returns:
-            bool: True if the transaction's required fulfillments is present
+            bool: True if the transaction's required fulfillments are present
                 and correct, False otherwise.
         """
 

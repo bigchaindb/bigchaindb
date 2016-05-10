@@ -15,6 +15,7 @@ class AbstractConsensusRules(metaclass=ABCMeta):
     All methods listed below must be implemented.
     """
 
+    @staticmethod
     @abstractmethod
     def validate_transaction(bigchain, transaction):
         """Validate a transaction.
@@ -31,8 +32,8 @@ class AbstractConsensusRules(metaclass=ABCMeta):
             Descriptive exceptions indicating the reason the transaction failed.
             See the `exceptions` module for bigchain-native error classes.
         """
-        raise NotImplementedError
 
+    @staticmethod
     @abstractmethod
     def validate_block(bigchain, block):
         """Validate a block.
@@ -49,8 +50,8 @@ class AbstractConsensusRules(metaclass=ABCMeta):
             Descriptive exceptions indicating the reason the block failed.
             See the `exceptions` module for bigchain-native error classes.
         """
-        raise NotImplementedError
 
+    @staticmethod
     @abstractmethod
     def create_transaction(*args, **kwargs):
         """Create a new transaction.
@@ -61,8 +62,8 @@ class AbstractConsensusRules(metaclass=ABCMeta):
         Returns:
             dict: newly constructed transaction.
         """
-        raise NotImplementedError
 
+    @staticmethod
     @abstractmethod
     def sign_transaction(transaction, *args, **kwargs):
         """Sign a transaction.
@@ -74,20 +75,19 @@ class AbstractConsensusRules(metaclass=ABCMeta):
         Returns:
             dict: transaction with any signatures applied.
         """
-        raise NotImplementedError
 
+    @staticmethod
     @abstractmethod
     def validate_fulfillments(signed_transaction):
-        """Verify the signature of a transaction.
+        """Validate the fulfillments of a transaction.
 
         Args:
             signed_transaction (dict): signed transaction to verify
 
         Returns:
-            bool: True if the transaction's required signature data is present
+            bool: True if the transaction's required fulfillments are present
                 and correct, False otherwise.
         """
-        raise NotImplementedError
 
 
 class BaseConsensusRules(AbstractConsensusRules):
@@ -217,7 +217,7 @@ class BaseConsensusRules(AbstractConsensusRules):
 
     @staticmethod
     def validate_fulfillments(signed_transaction):
-        """Verify the signature of a transaction.
+        """Validate the fulfillments of a transaction.
 
         Refer to the documentation of ``bigchaindb.util.validate_fulfillments``
         """
