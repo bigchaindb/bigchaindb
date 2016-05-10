@@ -23,14 +23,14 @@ env.key_filename = 'pem/bigchaindb.pem'
 
 @task
 @parallel
-def prepare_test():
+def put_benchmark_utils():
     put('benchmark_utils.py')
 
 
 @task
 @parallel
-def update_statsd_conf(statsd_host='localhost'):
-    run('python3 benchmark_utils.py update-statsd {}'.format(statsd_host))
+def set_statsd_host(statsd_host='localhost'):
+    run('python3 benchmark_utils.py set-statsd-host {}'.format(statsd_host))
     print('update configuration')
     run('bigchaindb show-config')
 

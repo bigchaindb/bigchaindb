@@ -14,7 +14,8 @@ def create_write_transaction(tx_left):
     b = Bigchain()
     while tx_left > 0:
         # use uuid to prevent duplicate transactions (transactions with the same hash)
-        tx = b.create_transaction(b.me, b.me, None, 'CREATE', payload={'msg': str(uuid.uuid4())})
+        tx = b.create_transaction(b.me, b.me, None, 'CREATE',
+                                  payload={'msg': str(uuid.uuid4())})
         tx_signed = b.sign_transaction(tx, b.me_private)
         b.write_transaction(tx_signed)
         tx_left -= 1
@@ -26,7 +27,7 @@ def run_add_backlog(args):
     workers.start()
 
 
-def run_update_statsd(args):
+def run_set_statsd_host(args):
     with open(expanduser('~') + '/.bigchaindb', 'r') as f:
         conf = json.load(f)
 
@@ -45,9 +46,9 @@ def main():
     backlog_parser.add_argument('num_transactions', metavar='num_transactions', type=int, default=0,
                                 help='Number of transactions to add to the backlog')
 
-    # update statsd configuration
-    statsd_parser = subparsers.add_parser('update-statsd',
-                                          help='Update statsd host')
+    # set statsd host
+    statsd_parser = subparsers.add_parser('set-statsd-host',
+                                          help='Set statsd host')
     statsd_parser.add_argument('statsd_host', metavar='statsd_host', default='localhost',
                                help='Hostname of the statsd server')
 
