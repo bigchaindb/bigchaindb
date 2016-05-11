@@ -330,7 +330,7 @@ def sign_tx(transaction, signing_keys):
 
     for fulfillment in tx['transaction']['fulfillments']:
         fulfillment_message = get_fulfillment_message(transaction, fulfillment)
-        parsed_fulfillment = cc.Fulfillment.from_json(fulfillment_message['condition']['condition']['details'])
+        parsed_fulfillment = cc.Fulfillment.from_json(fulfillment_message['input_condition']['condition']['details'])
         # for the case in which the type of fulfillment is not covered by this method
         parsed_fulfillment_signed = parsed_fulfillment
 
@@ -448,7 +448,7 @@ def validate_fulfillments(signed_transaction):
         # if transaction has an input (i.e. not a `CREATE` transaction)
         if fulfillment['input']:
             is_valid &= parsed_fulfillment.condition.serialize_uri() == \
-                fulfillment_message['condition']['condition']['uri']
+                fulfillment_message['input_condition']['condition']['uri']
         if not is_valid:
             return False
 
@@ -488,13 +488,13 @@ def get_fulfillment_message(transaction, fulfillment, serialized=False):
         # get previous condition
         previous_tx = b.get_transaction(fulfillment['input']['txid'])
         conditions = sorted(previous_tx['transaction']['conditions'], key=lambda d: d['cid'])
-        fulfillment_message['condition'] = conditions[fulfillment['input']['cid']]
+        fulfillment_message['input_condition'] = conditions[fulfillment['input']['cid']]
     # if `CREATE` transaction
     # there is no previous transaction so we need to create one on the fly
     else:
         current_owner = transaction['transaction']['fulfillments'][0]['current_owners'][0]
         condition = json.loads(cc.Ed25519Fulfillment(public_key=current_owner).serialize_json())
-        fulfillment_message['condition'] = {'condition': {'details': condition}}
+        fulfillment_message['input_condition'] = {'condition': {'details': condition}}
     if serialized:
         return serialize(fulfillment_message)
     return fulfillment_message
