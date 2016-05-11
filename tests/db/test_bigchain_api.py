@@ -1279,7 +1279,7 @@ class TestFulfillmentMessage(object):
             assert fulfillment_message['timestamp'] == tx['transaction']['timestamp']
             assert fulfillment_message['version'] == tx['version']
             assert fulfillment_message['output_condition'] == \
-                tx['transaction']['conditions'][original_fulfillment['input']['cid']]
+                tx['transaction']['conditions'][original_fulfillment['fid']]
 
 
 class TestCryptoconditions(object):

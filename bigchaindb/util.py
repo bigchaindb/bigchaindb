@@ -481,7 +481,7 @@ def get_fulfillment_message(transaction, fulfillment, serialized=False):
     fulfillment_message.update({
         'input': fulfillment['input'],
         'input_condition': None,
-        'output_condition': None
+        'output_condition': transaction['transaction']['conditions'][fulfillment['fid']]
     })
 
     # if `TRANSFER` transaction
@@ -490,14 +490,12 @@ def get_fulfillment_message(transaction, fulfillment, serialized=False):
         previous_tx = b.get_transaction(fulfillment['input']['txid'])
         conditions = sorted(previous_tx['transaction']['conditions'], key=lambda d: d['cid'])
         fulfillment_message['input_condition'] = conditions[fulfillment['input']['cid']]
-        fulfillment_message['output_condition'] = transaction['transaction']['conditions'][fulfillment['input']['cid']]
     # if `CREATE` transaction
     # there is no previous transaction so we need to create one on the fly
     else:
         current_owner = transaction['transaction']['fulfillments'][0]['current_owners'][0]
         condition = json.loads(cc.Ed25519Fulfillment(public_key=current_owner).serialize_json())
         fulfillment_message['input_condition'] = {'condition': {'details': condition}}
-    fulfillment_message['output_condition'] = transaction['transaction']['conditions'][0]
     if serialized:
         return serialize(fulfillment_message)
     return fulfillment_message
