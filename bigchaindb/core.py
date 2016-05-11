@@ -88,17 +88,17 @@ class Bigchain(object):
 
         return self.consensus.sign_transaction(transaction, *args, **kwargs)
 
-    def verify_signature(self, signed_transaction, *args, **kwargs):
-        """Verify the signature(s) of a transaction.
+    def validate_fulfillments(self, signed_transaction, *args, **kwargs):
+        """Validate the fulfillment(s) of a transaction.
 
         Refer to the documentation of your consensus plugin.
 
         Returns:
-            bool: True if the transaction's required signature data is present
+            bool: True if the transaction's required fulfillments are present
                 and correct, False otherwise.
         """
 
-        return self.consensus.verify_signature(
+        return self.consensus.validate_fulfillments(
             signed_transaction, *args, **kwargs)
 
     def write_transaction(self, signed_transaction, durability='soft'):

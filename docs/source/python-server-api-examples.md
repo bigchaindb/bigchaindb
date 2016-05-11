@@ -694,7 +694,7 @@ threshold_tx_transfer['transaction']['fulfillments'][0]['fulfillment'] = thresho
 
 # Optional validation checks
 assert threshold_fulfillment.validate(threshold_tx_fulfillment_message) == True
-assert b.verify_signature(threshold_tx_transfer) == True
+assert b.validate_fulfillments(threshold_tx_transfer) == True
 assert b.validate_transaction(threshold_tx_transfer)
 
 b.write_transaction(threshold_tx_transfer)
