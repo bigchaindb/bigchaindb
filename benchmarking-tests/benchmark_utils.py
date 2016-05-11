@@ -119,7 +119,7 @@ def main():
                                 type=int, default=0,
                                 help='Number of transactions to add to the backlog')
     backlog_parser.add_argument('-s', '--payload-size',
-                                choices=['minimal', 'small', 'medium', 'large'],
+                                choices=SIZE_OF_FILLER.keys(),
                                 default='minimal',
                                 help='Payload size')
 
