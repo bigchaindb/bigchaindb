@@ -16,6 +16,7 @@ import copy
 import json
 import logging
 import collections
+from functools import lru_cache
 
 from pkg_resources import iter_entry_points, ResolutionError
 
@@ -218,6 +219,7 @@ def autoconfigure(filename=None, config=None, force=False):
     set_config(newconfig)  # sets bigchaindb.config
 
 
+@lru_cache()
 def load_consensus_plugin(name=None):
     """Find and load the chosen consensus plugin.
 
