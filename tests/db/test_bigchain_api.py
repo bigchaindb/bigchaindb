@@ -714,8 +714,8 @@ class TestBigchainBlock(object):
         # run bootstrap
         initial_results = block.bootstrap()
 
-        # we should have gotten a queue with 100 results
-        assert initial_results.qsize() - 1 == 100
+        # we should have gotten a queue with 100 results minus the poison pills
+        assert initial_results.qsize() - mp.cpu_count() == 100
 
     def test_start(self, b, user_vk):
         # start with 100 transactions in the backlog and 100 in the changefeed
@@ -736,13 +736,17 @@ class TestBigchainBlock(object):
             tx = b.sign_transaction(tx, b.me_private)
             b.write_transaction(tx)
             new_transactions.put(tx)
-        new_transactions.put('stop')
+
+        for i in range(mp.cpu_count()):
+            new_transactions.put('stop')
 
         # create a block instance
         block = Block(new_transactions)
 
         # start the block processes
         block.start()
+
+        time.sleep(6)
 
         assert new_transactions.qsize() == 0
         assert r.table('backlog').count() == 0
@@ -755,20 +759,14 @@ class TestBigchainBlock(object):
         # create block instance
         block = Block(new_transactions)
 
-        # create block_process
-        p_block = mp.Process(target=block.start)
-
         # start block process
-        p_block.start()
+        block.start()
 
         # wait for 6 seconds to give it time for an empty queue exception to occur
         time.sleep(6)
 
-        # send the poison pill
-        new_transactions.put('stop')
-
         # join the process
-        p_block.join()
+        block.kill()
 
     def test_duplicated_transactions(self):
         pytest.skip('We may have duplicates in the initial_results and changefeed')
