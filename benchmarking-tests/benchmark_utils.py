@@ -92,9 +92,12 @@ def run_gather_metrics(args):
 
                 num_transactions_received += block_num_transactions
                 elapsed_time = time_now - initial_time
-                elapsed_time = elapsed_time if elapsed_time != 0 else 1
                 percent_complete = round((num_transactions_received / num_transactions) * 100)
-                transactions_per_second = round(num_transactions_received / elapsed_time)
+
+                if elapsed_time != 0:
+                    transactions_per_second = round(num_transactions_received / elapsed_time)
+                else:
+                    transactions_per_second = float('nan')
 
                 logger.info('\t{:<20} {:<20} {:<20} {:<20}'.format(time_now, block_num_transactions,
                                                                    transactions_per_second, percent_complete))
@@ -103,9 +106,9 @@ def run_gather_metrics(args):
                     break
     except KeyboardInterrupt:
         logger.info('Interrupted. Exiting early...')
-
-    # close files
-    csv_file.close()
+    finally:
+        # close files
+        csv_file.close()
 
 
 def main():

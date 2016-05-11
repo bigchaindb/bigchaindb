@@ -37,7 +37,7 @@ class TestBigchainApi(object):
     @pytest.mark.usefixtures('inputs')
     def test_create_transaction_transfer(self, b, user_vk, user_sk):
         input_tx = b.get_owned_ids(user_vk).pop()
-        assert b.verify_signature(b.get_transaction(input_tx['txid'])) == True
+        assert b.validate_fulfillments(b.get_transaction(input_tx['txid'])) == True
 
         tx = b.create_transaction(user_vk, b.me, input_tx, 'TRANSFER')
 
@@ -46,8 +46,8 @@ class TestBigchainApi(object):
 
         tx_signed = b.sign_transaction(tx, user_sk)
 
-        assert b.verify_signature(tx) == False
-        assert b.verify_signature(tx_signed) == True
+        assert b.validate_fulfillments(tx) == False
+        assert b.validate_fulfillments(tx_signed) == True
 
     def test_transaction_hash(self, b, user_vk):
         payload = {'cats': 'are awesome'}
@@ -73,7 +73,7 @@ class TestBigchainApi(object):
         tx_signed = b.sign_transaction(tx, user_sk)
 
         assert tx_signed['transaction']['fulfillments'][0]['fulfillment'] is not None
-        assert b.verify_signature(tx_signed)
+        assert b.validate_fulfillments(tx_signed)
 
     def test_serializer(self, b, user_vk):
         tx = b.create_transaction(user_vk, user_vk, None, 'CREATE')
@@ -714,8 +714,8 @@ class TestBigchainBlock(object):
         # run bootstrap
         initial_results = block.bootstrap()
 
-        # we should have gotten a queue with 100 results
-        assert initial_results.qsize() - 1 == 100
+        # we should have gotten a queue with 100 results minus the poison pills
+        assert initial_results.qsize() - mp.cpu_count() == 100
 
     def test_start(self, b, user_vk):
         # start with 100 transactions in the backlog and 100 in the changefeed
@@ -736,13 +736,17 @@ class TestBigchainBlock(object):
             tx = b.sign_transaction(tx, b.me_private)
             b.write_transaction(tx)
             new_transactions.put(tx)
-        new_transactions.put('stop')
+
+        for i in range(mp.cpu_count()):
+            new_transactions.put('stop')
 
         # create a block instance
         block = Block(new_transactions)
 
         # start the block processes
         block.start()
+
+        time.sleep(6)
 
         assert new_transactions.qsize() == 0
         assert r.table('backlog').count() == 0
@@ -755,20 +759,14 @@ class TestBigchainBlock(object):
         # create block instance
         block = Block(new_transactions)
 
-        # create block_process
-        p_block = mp.Process(target=block.start)
-
         # start block process
-        p_block.start()
+        block.start()
 
         # wait for 6 seconds to give it time for an empty queue exception to occur
         time.sleep(6)
 
-        # send the poison pill
-        new_transactions.put('stop')
-
         # join the process
-        p_block.join()
+        block.kill()
 
     def test_duplicated_transactions(self):
         pytest.skip('We may have duplicates in the initial_results and changefeed')
@@ -1218,7 +1216,7 @@ class TestCryptoconditions(object):
 
         assert fulfillment['current_owners'][0] == b.me
         assert fulfillment_from_uri.public_key.to_ascii().decode() == b.me
-        assert b.verify_signature(tx_signed) == True
+        assert b.validate_fulfillments(tx_signed) == True
         assert b.is_valid_transaction(tx_signed) == tx_signed
 
     @pytest.mark.usefixtures('inputs')
@@ -1250,7 +1248,7 @@ class TestCryptoconditions(object):
         assert fulfillment['current_owners'][0] == user_vk
         assert fulfillment_from_uri.public_key.to_ascii().decode() == user_vk
         assert fulfillment_from_uri.condition.serialize_uri() == prev_condition['uri']
-        assert b.verify_signature(tx_signed) == True
+        assert b.validate_fulfillments(tx_signed) == True
         assert b.is_valid_transaction(tx_signed) == tx_signed
 
     def test_override_condition_create(self, b, user_vk):
@@ -1268,7 +1266,7 @@ class TestCryptoconditions(object):
 
         assert fulfillment['current_owners'][0] == b.me
         assert fulfillment_from_uri.public_key.to_ascii().decode() == b.me
-        assert b.verify_signature(tx_signed) == True
+        assert b.validate_fulfillments(tx_signed) == True
         assert b.is_valid_transaction(tx_signed) == tx_signed
 
     @pytest.mark.usefixtures('inputs')
@@ -1290,7 +1288,7 @@ class TestCryptoconditions(object):
 
         assert fulfillment['current_owners'][0] == user_vk
         assert fulfillment_from_uri.public_key.to_ascii().decode() == user_vk
-        assert b.verify_signature(tx_signed) == True
+        assert b.validate_fulfillments(tx_signed) == True
         assert b.is_valid_transaction(tx_signed) == tx_signed
 
     def test_override_fulfillment_create(self, b, user_vk):
@@ -1302,7 +1300,7 @@ class TestCryptoconditions(object):
 
         tx['transaction']['fulfillments'][0]['fulfillment'] = fulfillment.serialize_uri()
 
-        assert b.verify_signature(tx) == True
+        assert b.validate_fulfillments(tx) == True
         assert b.is_valid_transaction(tx) == tx
 
     @pytest.mark.usefixtures('inputs')
@@ -1319,7 +1317,7 @@ class TestCryptoconditions(object):
 
         tx['transaction']['fulfillments'][0]['fulfillment'] = fulfillment.serialize_uri()
 
-        assert b.verify_signature(tx) == True
+        assert b.validate_fulfillments(tx) == True
         assert b.is_valid_transaction(tx) == tx
 
     @pytest.mark.usefixtures('inputs')
@@ -1573,7 +1571,7 @@ class TestCryptoconditions(object):
         assert tx_transfer_signed['transaction']['fulfillments'][0]['fulfillment'] \
             == expected_fulfillment.serialize_uri()
 
-        assert b.verify_signature(tx_transfer_signed) is True
+        assert b.validate_fulfillments(tx_transfer_signed) is True
 
     def test_create_asset_with_hashlock_condition(self, b):
         hashlock_tx = b.create_transaction(b.me, None, None, 'CREATE')

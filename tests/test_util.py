@@ -34,7 +34,7 @@ def test_transform_create(b, user_sk, user_vk):
 
     assert tx['transaction']['fulfillments'][0]['current_owners'][0] == b.me
     assert tx['transaction']['conditions'][0]['new_owners'][0] == user_vk
-    assert util.verify_signature(tx)
+    assert util.validate_fulfillments(tx)
 
 
 def test_empty_pool_is_populated_with_instances(mock_queue):
