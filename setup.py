@@ -35,6 +35,10 @@ docs_require = [
     'sphinx-rtd-theme>=0.1.9',
 ]
 
+benchmarks_require = [
+    'line-profiler==1.0',
+]
+
 setup(
     name='BigchainDB',
     version=version['__version__'],
@@ -88,7 +92,7 @@ setup(
     tests_require=tests_require,
     extras_require={
         'test': tests_require,
-        'dev':  dev_require + tests_require + docs_require,
+        'dev':  dev_require + tests_require + docs_require + benchmarks_require,
         'docs':  docs_require,
     },
 )
