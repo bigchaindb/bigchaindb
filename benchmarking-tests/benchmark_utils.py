@@ -2,12 +2,20 @@ import multiprocessing as mp
 import uuid
 import json
 import argparse
+import csv
+import time
+import logging
+import rethinkdb as r
 
 from os.path import expanduser
 
 from bigchaindb import Bigchain
 from bigchaindb.util import ProcessGroup
 from bigchaindb.commands import utils
+
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def create_write_transaction(tx_left):
@@ -36,6 +44,38 @@ def run_set_statsd_host(args):
         json.dump(conf, f)
 
 
+def run_gather_metrics(args):
+    # setup a rethinkdb connection
+    conn = r.connect(args.bigchaindb_host, 28015, 'bigchain')
+
+    # setup csv writer
+    csv_file = open(args.csvfile, 'w')
+    csv_writer = csv.writer(csv_file)
+
+    # query for the number of transactions on the backlog
+    num_transactions = r.table('backlog').count().run(conn)
+    logger.info('Starting gathering metrics. {} transasctions in the backlog'.format(num_transactions))
+
+    # listen to the changefeed
+    try:
+        for change in r.table('bigchain').changes().run(conn):
+            # check only for new blocks
+            if change['old_val'] is None:
+                block_num_transactions = len(change['new_val']['block']['transactions'])
+                time_now = time.time()
+                logger.info('{} {}'.format(time_now, block_num_transactions))
+                csv_writer.writerow([str(time_now), str(block_num_transactions)])
+
+                num_transactions -= block_num_transactions
+                if num_transactions == 0:
+                    break
+    except KeyboardInterrupt:
+        logger.info('Interrupted. Exiting early...')
+
+    # close files
+    csv_file.close()
+
+
 def main():
     parser = argparse.ArgumentParser(description='BigchainDB benchmarking utils')
     subparsers = parser.add_subparsers(title='Commands', dest='command')
@@ -51,6 +91,18 @@ def main():
                                           help='Set statsd host')
     statsd_parser.add_argument('statsd_host', metavar='statsd_host', default='localhost',
                                help='Hostname of the statsd server')
+
+    # metrics
+    metrics_parser = subparsers.add_parser('gather-metrics',
+                                           help='Gather metrics to a csv file')
+
+    metrics_parser.add_argument('-b', '--bigchaindb-host',
+                                required=True,
+                                help='Bigchaindb node hostname to connect to gather cluster metrics')
+
+    metrics_parser.add_argument('-c', '--csvfile',
+                                required=True,
+                                help='Filename to save the metrics')
 
     utils.start(parser, globals())
 
