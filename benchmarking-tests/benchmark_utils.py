@@ -90,9 +90,9 @@ def run_gather_metrics(args):
                     break
     except KeyboardInterrupt:
         logger.info('Interrupted. Exiting early...')
-
-    # close files
-    csv_file.close()
+    finally:
+        # close files
+        csv_file.close()
 
 
 def main():
