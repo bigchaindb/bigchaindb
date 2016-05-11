@@ -22,9 +22,9 @@ Table of Contents
    python-driver-api-examples
    local-rethinkdb-cluster
    deploy-on-aws
+   json-serialization
    cryptography
    models
-   json-serialization
    developer-interface
    consensus
    monitoring

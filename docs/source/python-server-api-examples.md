@@ -12,7 +12,6 @@ First, make sure you have RethinkDB and BigchainDB _installed and running_, i.e.
 ```text
 $ rethinkdb
 $ bigchaindb configure
-$ bigchaindb init
 $ bigchaindb start
 ```
 
@@ -44,20 +43,20 @@ In BigchainDB, only the federation nodes are allowed to create digital assets, b
 ```python
 from bigchaindb import crypto
 
-# create a test user
+# Create a test user
 testuser1_priv, testuser1_pub = crypto.generate_key_pair()
 
-# define a digital asset data payload
+# Define a digital asset data payload
 digital_asset_payload = {'msg': 'Hello BigchainDB!'}
 
-# a create transaction uses the operation `CREATE` and has no inputs
+# A create transaction uses the operation `CREATE` and has no inputs
 tx = b.create_transaction(b.me, testuser1_pub, None, 'CREATE', payload=digital_asset_payload)
 
-# all transactions need to be signed by the user creating the transaction
+# All transactions need to be signed by the user creating the transaction
 tx_signed = b.sign_transaction(tx, b.me_private)
 
-# write the transaction to the bigchain
-# the transaction will be stored in a backlog where it will be validated,
+# Write the transaction to the bigchain.
+# The transaction will be stored in a backlog where it will be validated,
 # included in a block, and written to the bigchain 
 b.write_transaction(tx_signed)
 ```
@@ -66,7 +65,7 @@ b.write_transaction(tx_signed)
 
 After a couple of seconds, we can check if the transactions was included in the bigchain:
 ```python
-# retrieve a transaction from the bigchain
+# Retrieve a transaction from the bigchain
 tx_retrieved = b.get_transaction(tx_signed['id'])
 tx_retrieved
 ```
@@ -119,16 +118,16 @@ tx_retrieved
 
 The new owner of the digital asset is now `BwuhqQX8FPsmqYiRV2CSZYWWsSWgSSQQFHjqxKEuqkPs`, which is the public key of `testuser1`.
 
-Note that the current owner with public key `3LQ5dTiddXymDhNzETB1rEkp4mA7fEV1Qeiu5ghHiJm9` refers to one of the federation nodes that actually created the asset and assigned it to `testuser1`.
+Note that the current owner (with public key `3LQ5dTiddXymDhNzETB1rEkp4mA7fEV1Qeiu5ghHiJm9`) is the federation node which created the asset and assigned it to `testuser1`.
 
 ## Transfer the Digital Asset
 
-Now that `testuser1` has a digital asset assigned to him, he can transfer it to another user. Transfer transactions require an input. The input will be the transaction id of a digital asset that was assigned to `testuser1`, which in our case is `cdb6331f26ecec0ee7e67e4d5dcd63734e7f75bbd1ebe40699fc6d2960ae4cb2`.
+Now that `testuser1` has a digital asset assigned to him, he can transfer it to another user. Transfer transactions require an input. The input will be the transaction id of a digital asset that was assigned to `testuser1`, which in our case is `933cd83a419d2735822a2154c84176a2f419cbd449a74b94e592ab807af23861`.
 
 BigchainDB makes use of the crypto-conditions library to both cryptographically lock and unlock transactions.
 The locking script is refered to as a `condition` and a corresponding `fulfillment` unlocks the condition of the `input_tx`. 
 
-Since a transaction can have multiple outputs with each their own (crypto)condition, each transaction input should also refer to the condition index `cid`.
+Since a transaction can have multiple outputs with each its own (crypto)condition, each transaction input should also refer to the condition index `cid`.
 
 ![BigchainDB transactions connecting fulfillments with conditions](./_static/tx_single_condition_single_fulfillment_v1.png)
 
@@ -230,14 +229,16 @@ DoubleSpend: input `{'cid': 0, 'txid': '933cd83a419d2735822a2154c84176a2f419cbd4
 
 ## Multiple Owners
 
-When creating a transaction to a group of people with shared ownership of the asset, one can simply provide a list of `new_owners`:
+To create a new digital asset with _multiple_ owners, one can simply provide a list of `new_owners`:
 
 ```python
 # Create a new asset and assign it to multiple owners
 tx_multisig = b.create_transaction(b.me, [testuser1_pub, testuser2_pub], None, 'CREATE')
 
-# Have the federation sign the transaction
+# Have the federation node sign the transaction
 tx_multisig_signed = b.sign_transaction(tx_multisig, b.me_private)
+
+# Write the transaction
 b.write_transaction(tx_multisig_signed)
 
 # Check if the transaction is already in the bigchain
@@ -320,7 +321,7 @@ tx_multisig_transfer = b.create_transaction([testuser1_pub, testuser2_pub], test
 # Sign with both private keys
 tx_multisig_transfer_signed = b.sign_transaction(tx_multisig_transfer, [testuser1_priv, testuser2_priv])
 
-# Write to bigchain
+# Write the transaction
 b.write_transaction(tx_multisig_transfer_signed)
 
 # Check if the transaction is already in the bigchain
@@ -330,7 +331,6 @@ tx_multisig_transfer_retrieved
 
 ```python
 {
-    "assignee":"3LQ5dTiddXymDhNzETB1rEkp4mA7fEV1Qeiu5ghHiJm9",
     "id":"e689e23f774e7c562eeb310c7c712b34fb6210bea5deb9175e48b68810029150",
     "transaction":{
         "conditions":[
@@ -394,7 +394,7 @@ owned_mimo_inputs = b.get_owned_ids(testuser1_pub)
 # Check the number of assets
 print(len(owned_mimo_inputs))
 
-# Create a TRANSFER transaction with all the assets
+# Create a signed TRANSFER transaction with all the assets
 tx_mimo = b.create_transaction(testuser1_pub, testuser2_pub, owned_mimo_inputs, 'TRANSFER')
 tx_mimo_signed = b.sign_transaction(tx_mimo, testuser1_priv)
 
@@ -703,7 +703,6 @@ threshold_tx_transfer
 
 ```python
 {
-    "assignee":"3LQ5dTiddXymDhNzETB1rEkp4mA7fEV1Qeiu5ghHiJm9",
     "id":"a45b2340c59df7422a5788b3c462dee708a18cdf09d1a10bd26be3f31af4b8d7",
     "transaction":{
         "conditions":[
@@ -750,9 +749,13 @@ threshold_tx_transfer
 
 ### Hash-locked Conditions
 
-By creating a hash of a difficult-to-guess 256-bit random or pseudo-random integer it is possible to create a condition which the creator can trivially fulfill by publishing the random value. However, for anyone else, the condition is cryptographically hard to fulfill, because they would have to find a preimage for the given condition hash.
+A hash-lock condition on an asset is like a password condition: anyone with the secret preimage (like a password) can fulfill the hash-lock condition and transfer the asset to themselves.
 
-One possible usecase might be to redeem a digital voucher when given a secret (voucher code).
+Under the hood, fulfilling a hash-lock condition amounts to finding a string (a "preimage") which, when hashed, results in a given value. It's easy to verify that a given preimage hashes to the given value, but it's computationally difficult to _find_ a string which hashes to the given value. The only practical way to get a valid preimage is to get it from the original creator (possibly via intermediaries).
+
+One possible use case is to distribute preimages as "digital vouchers." The first person to redeem a voucher will get the associated asset.
+
+A federation node can create an asset with a hash-lock condition and no `new_owners`. Anyone who can fullfill the hash-lock condition can transfer the asset to themselves.
 
 ```python
 # Create a hash-locked asset without any new_owners
@@ -771,7 +774,7 @@ hashlock_tx['transaction']['conditions'].append({
     'new_owners': None
 })
 
-# Conditions have been updated, so hash needs updating
+# Conditions have been updated, so the hash needs updating
 hashlock_tx['id'] = util.get_hash_data(hashlock_tx)
 
 # The asset needs to be signed by the current_owner
@@ -787,7 +790,6 @@ hashlock_tx_signed
 
 ```python
 {
-    "assignee":"FmLm6MxCABc8TsiZKdeYaZKo5yZWMM6Vty7Q1B6EgcP2",
     "id":"604c520244b7ff63604527baf269e0cbfb887122f503703120fd347d6b99a237",
     "transaction":{
         "conditions":[
@@ -817,22 +819,22 @@ hashlock_tx_signed
 }
 ```
 
-In order to redeem the asset, one needs to create a fulfillment the correct secret as a preimage:
+In order to redeem the asset, one needs to create a fulfillment with the correct secret:
 
 ```python
 hashlockuser_priv, hashlockuser_pub = crypto.generate_key_pair()
 
-# create hashlock fulfillment tx
+# Create hashlock fulfillment tx
 hashlock_fulfill_tx = b.create_transaction(None, hashlockuser_pub, {'txid': hashlock_tx['id'], 'cid': 0}, 'TRANSFER')
 
-# provide a wrong secret
+# Provide a wrong secret
 hashlock_fulfill_tx_fulfillment = cc.PreimageSha256Fulfillment(preimage=b'')
 hashlock_fulfill_tx['transaction']['fulfillments'][0]['fulfillment'] = \
     hashlock_fulfill_tx_fulfillment.serialize_uri()
     
 assert b.is_valid_transaction(hashlock_fulfill_tx) == False
 
-# provide the right secret
+# Provide the right secret
 hashlock_fulfill_tx_fulfillment = cc.PreimageSha256Fulfillment(preimage=secret)
 hashlock_fulfill_tx['transaction']['fulfillments'][0]['fulfillment'] = \
     hashlock_fulfill_tx_fulfillment.serialize_uri()
@@ -846,7 +848,6 @@ hashlock_fulfill_tx
 
 ```python
 {
-    "assignee":"FmLm6MxCABc8TsiZKdeYaZKo5yZWMM6Vty7Q1B6EgcP2",
     "id":"fe6871bf3ca62eb61c52c5555cec2e07af51df817723f0cb76e5cf6248f449d2",
     "transaction":{
         "conditions":[

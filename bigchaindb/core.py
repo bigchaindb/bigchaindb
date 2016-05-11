@@ -25,16 +25,18 @@ class Bigchain(object):
                  consensus_plugin=None):
         """Initialize the Bigchain instance
 
-        There are three ways in which the Bigchain instance can get its parameters.
-        The order by which the parameters are chosen are:
-
-            1. Setting them by passing them to the `__init__` method itself.
-            2. Setting them as environment variables
-            3. Reading them from the `config.json` file.
+        A Bigchain instance has several configuration parameters (e.g. host).
+        If a parameter value is passed as an argument to the Bigchain
+        __init__ method, then that is the value it will have.
+        Otherwise, the parameter value will be the value from the local
+        configuration file. If it's not set in that file, then the value
+        will come from an environment variable. If that environment variable
+        isn't set, then the parameter will have its default value (defined in
+        bigchaindb.__init__).
 
         Args:
-            host (str): hostname where the rethinkdb is running.
-            port (int): port in which rethinkb is running (usually 28015).
+            host (str): hostname where RethinkDB is running.
+            port (int): port in which RethinkDB is running (usually 28015).
             dbname (str): the name of the database to connect to (usually bigchain).
             public_key (str): the base58 encoded public key for the ED25519 curve.
             private_key (str): the base58 encoded private key for the ED25519 curve.
