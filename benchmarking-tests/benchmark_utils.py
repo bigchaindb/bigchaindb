@@ -54,7 +54,15 @@ def run_gather_metrics(args):
 
     # query for the number of transactions on the backlog
     num_transactions = r.table('backlog').count().run(conn)
+    num_transactions_received = 0
+    initial_time = None
     logger.info('Starting gathering metrics. {} transasctions in the backlog'.format(num_transactions))
+    logger.info('This process should exit automatically. '
+                'If this does not happen you can exit at any time using Ctrl-C'
+                ' saving all the metrics gathered up to this point.')
+
+    logger.info('\t{:<20} {:<20} {:<20} {:<20}'.format('timestamp', 'tx in block',
+                                                     'tx/s', '% complete'))
 
     # listen to the changefeed
     try:
@@ -63,11 +71,22 @@ def run_gather_metrics(args):
             if change['old_val'] is None:
                 block_num_transactions = len(change['new_val']['block']['transactions'])
                 time_now = time.time()
-                logger.info('{} {}'.format(time_now, block_num_transactions))
                 csv_writer.writerow([str(time_now), str(block_num_transactions)])
 
-                num_transactions -= block_num_transactions
-                if num_transactions == 0:
+                # log statistics
+                if initial_time is None:
+                    initial_time = time_now
+
+                num_transactions_received += block_num_transactions
+                elapsed_time = time_now - initial_time
+                elapsed_time = elapsed_time if elapsed_time != 0 else 1
+                percent_complete = round((num_transactions_received / num_transactions) * 100)
+                transactions_per_second = round(num_transactions_received / elapsed_time)
+
+                logger.info('\t{:<20} {:<20} {:<20} {:<20}'.format(time_now, block_num_transactions,
+                                                                   transactions_per_second, percent_complete))
+
+                if (num_transactions - num_transactions_received) == 0:
                     break
     except KeyboardInterrupt:
         logger.info('Interrupted. Exiting early...')
