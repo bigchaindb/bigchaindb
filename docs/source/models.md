@@ -31,7 +31,7 @@ A transaction is an operation between the `current_owner` and the `new_owner` ov
     and a _crypto fulfillment_ that satisfies a spending condition set on the unspent digital asset. A _fulfillment_
     is usually a signature proving the ownership of the digital asset.
     See [conditions and fulfillments](models.md#conditions-and-fulfillments)
-    - `conditions`: List of conditions. Each _condition_ a _crypto condition_ that needs to be fulfilled by the
+    - `conditions`: List of conditions. Each _condition_ is a _crypto condition_ that needs to be fulfilled by the
     new owner in order to spend the digital asset.
     See [conditions and fulfillments](models.md#conditions-and-fulfillments)
     - `operation`: String representation of the operation being performed (`CREATE`, `TRANSFER`, ...) this will define how
