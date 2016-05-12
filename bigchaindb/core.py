@@ -489,9 +489,8 @@ class Bigchain(object):
         return unvoted
 
     def block_election_status(self, block):
-        """
-        Tallies the votes on a block, and returns the status: valid, invalid, or undecided
-        """
+        """Tally the votes on a block, and return the status: valid, invalid, or undecided."""
+        
         n_voters = len(block['block']['voters'])
         vote_cast = [vote['vote']['is_block_valid'] for vote in block['votes']]
         vote_validity = [self.consensus.verify_vote_signature(block, vote) for vote in block['votes']]
