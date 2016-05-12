@@ -19,3 +19,7 @@ def speedtest_validate_transaction():
         b.validate_transaction(tx_signed)
 
     profiler.print_stats()
+
+
+if __name__ == '__main__':
+    speedtest_validate_transaction()
