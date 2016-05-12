@@ -224,9 +224,15 @@ class Bigchain(object):
         # a transaction_id should have been spent at most one time
         transactions = list(response)
         if transactions:
-            if len(transactions) != 1:
-                raise exceptions.DoubleSpend('`{}` was spent more then once. There is a problem with the chain'.format(
-                    tx_input['txid']))
+            # determine if these valid transactions appear in more than one valid block
+            num_valid_transactions = 0
+            for transaction in transactions:
+                # ignore invalid blocks
+                if self.get_transaction(transaction['id']):
+                    num_valid_transactions += 1
+                if num_valid_transactions > 1:
+                    raise exceptions.DoubleSpend('`{}` was spent more then once. There is a problem with the chain'.format(
+                        tx_input['txid']))
             else:
                 return transactions[0]
         else:
