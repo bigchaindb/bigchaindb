@@ -330,7 +330,10 @@ def sign_tx(transaction, signing_keys):
 
     for fulfillment in tx['transaction']['fulfillments']:
         fulfillment_message = get_fulfillment_message(transaction, fulfillment)
-        parsed_fulfillment = cc.Fulfillment.from_json(fulfillment_message['input_condition']['condition']['details'])
+        # TODO: avoid instantiation, pass as argument!
+        bigchain = bigchaindb.Bigchain()
+        input_condition = get_input_condition(bigchain, fulfillment)
+        parsed_fulfillment = cc.Fulfillment.from_json(input_condition['condition']['details'])
         # for the case in which the type of fulfillment is not covered by this method
         parsed_fulfillment_signed = parsed_fulfillment
 
@@ -436,19 +439,23 @@ def validate_fulfillments(signed_transaction):
     Returns:
         bool: True if the signature is correct, False otherwise.
     """
-
     for fulfillment in signed_transaction['transaction']['fulfillments']:
         fulfillment_message = get_fulfillment_message(signed_transaction, fulfillment)
         try:
             parsed_fulfillment = cc.Fulfillment.from_uri(fulfillment['fulfillment'])
         except (TypeError, ValueError, ParsingError):
             return False
+
         is_valid = parsed_fulfillment.validate(serialize(fulfillment_message))
 
         # if transaction has an input (i.e. not a `CREATE` transaction)
         if fulfillment['input']:
+            # TODO: avoid instantiation, pass as argument!
+            bigchain = bigchaindb.Bigchain()
+            input_condition = get_input_condition(bigchain, fulfillment)
             is_valid &= parsed_fulfillment.condition.serialize_uri() == \
-                fulfillment_message['input_condition']['condition']['uri']
+                input_condition['condition']['uri']
+
         if not is_valid:
             return False
 
@@ -466,8 +473,6 @@ def get_fulfillment_message(transaction, fulfillment, serialized=False):
     Returns:
         str|dict: fulfillment message
     """
-    b = bigchaindb.Bigchain()
-
     # data to sign contains common transaction data
     fulfillment_message = {
         'operation': transaction['transaction']['operation'],
@@ -479,26 +484,40 @@ def get_fulfillment_message(transaction, fulfillment, serialized=False):
     # and the condition which needs to be retrieved from the output of a previous transaction
     # or created on the fly it this is a `CREATE` transaction
     fulfillment_message.update({
-        'input': fulfillment['input'],
-        'input_condition': None,
-        'output_condition': transaction['transaction']['conditions'][fulfillment['fid']]
+        'fulfillment': copy.deepcopy(fulfillment),
+        'condition': transaction['transaction']['conditions'][fulfillment['fid']]
     })
 
-    # if `TRANSFER` transaction
-    if fulfillment['input']:
-        # get previous condition
-        previous_tx = b.get_transaction(fulfillment['input']['txid'])
-        conditions = sorted(previous_tx['transaction']['conditions'], key=lambda d: d['cid'])
-        fulfillment_message['input_condition'] = conditions[fulfillment['input']['cid']]
-    # if `CREATE` transaction
-    # there is no previous transaction so we need to create one on the fly
-    else:
-        current_owner = transaction['transaction']['fulfillments'][0]['current_owners'][0]
-        condition = json.loads(cc.Ed25519Fulfillment(public_key=current_owner).serialize_json())
-        fulfillment_message['input_condition'] = {'condition': {'details': condition}}
+    # remove any fulfillment, as a fulfillment cannot sign itself
+    fulfillment_message['fulfillment']['fulfillment'] = None
+
     if serialized:
         return serialize(fulfillment_message)
     return fulfillment_message
+
+
+def get_input_condition(bigchain, fulfillment):
+    """
+
+    Args:
+        bigchain:
+        fulfillment:
+    Returns:
+    """
+    input_tx = fulfillment['input']
+    # if `TRANSFER` transaction
+    if input_tx:
+        # get previous condition
+        previous_tx = bigchain.get_transaction(input_tx['txid'])
+        conditions = sorted(previous_tx['transaction']['conditions'], key=lambda d: d['cid'])
+        return conditions[input_tx['cid']]
+
+    # if `CREATE` transaction
+    # there is no previous transaction so we need to create one on the fly
+    else:
+        current_owner = fulfillment['current_owners'][0]
+        condition = json.loads(cc.Ed25519Fulfillment(public_key=current_owner).serialize_json())
+        return {'condition': {'details': condition}}
 
 
 def get_hash_data(transaction):

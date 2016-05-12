@@ -1208,18 +1208,18 @@ class TestFulfillmentMessage(object):
         original_fulfillment = tx['transaction']['fulfillments'][0]
         fulfillment_message = util.get_fulfillment_message(tx, original_fulfillment)
 
-        assert sorted(fulfillment_message) == ['data', 'id', 'input', 'input_condition',
-                                               'operation', 'output_condition', 'timestamp', 'version']
+        assert sorted(fulfillment_message) == \
+               ['condition', 'data', 'fulfillment', 'id', 'operation', 'timestamp', 'version']
 
         assert fulfillment_message['data']['payload'] == tx['transaction']['data']['payload']
         assert fulfillment_message['id'] == tx['id']
-        assert fulfillment_message['input'] == original_fulfillment['input']
-        assert fulfillment_message['input_condition']['condition']['details']['public_key'] == \
-            original_fulfillment['current_owners'][0]
+        assert fulfillment_message['condition'] == tx['transaction']['conditions'][0]
+        assert fulfillment_message['fulfillment']['current_owners'] == original_fulfillment['current_owners']
+        assert fulfillment_message['fulfillment']['fid'] == original_fulfillment['fid']
+        assert fulfillment_message['fulfillment']['input'] == original_fulfillment['input']
         assert fulfillment_message['operation'] == tx['transaction']['operation']
         assert fulfillment_message['timestamp'] == tx['transaction']['timestamp']
         assert fulfillment_message['version'] == tx['version']
-        assert fulfillment_message['output_condition'] == tx['transaction']['conditions'][0]
 
     @pytest.mark.usefixtures('inputs')
     def test_fulfillment_message_transfer(self, b, user_vk):
@@ -1231,17 +1231,18 @@ class TestFulfillmentMessage(object):
         original_fulfillment = tx['transaction']['fulfillments'][0]
         fulfillment_message = util.get_fulfillment_message(tx, original_fulfillment)
 
-        assert sorted(fulfillment_message) == ['data', 'id', 'input', 'input_condition',
-                                               'operation', 'output_condition', 'timestamp', 'version']
+        assert sorted(fulfillment_message) == \
+               ['condition', 'data', 'fulfillment', 'id', 'operation', 'timestamp', 'version']
 
         assert fulfillment_message['data']['payload'] == tx['transaction']['data']['payload']
         assert fulfillment_message['id'] == tx['id']
-        assert fulfillment_message['input'] == original_fulfillment['input']
-        assert fulfillment_message['input_condition']['new_owners'] == original_fulfillment['current_owners']
+        assert fulfillment_message['condition'] == tx['transaction']['conditions'][0]
+        assert fulfillment_message['fulfillment']['current_owners'] == original_fulfillment['current_owners']
+        assert fulfillment_message['fulfillment']['fid'] == original_fulfillment['fid']
+        assert fulfillment_message['fulfillment']['input'] == original_fulfillment['input']
         assert fulfillment_message['operation'] == tx['transaction']['operation']
         assert fulfillment_message['timestamp'] == tx['transaction']['timestamp']
         assert fulfillment_message['version'] == tx['version']
-        assert fulfillment_message['output_condition'] == tx['transaction']['conditions'][0]
 
     def test_fulfillment_message_multiple_current_owners_multiple_new_owners_multiple_inputs(self, b, user_vk):
         # create a new users
@@ -1268,18 +1269,96 @@ class TestFulfillmentMessage(object):
         for original_fulfillment in tx['transaction']['fulfillments']:
             fulfillment_message = util.get_fulfillment_message(tx, original_fulfillment)
 
-            assert sorted(fulfillment_message) == ['data', 'id', 'input', 'input_condition',
-                                                   'operation', 'output_condition', 'timestamp', 'version']
+            assert sorted(fulfillment_message) == \
+                   ['condition', 'data', 'fulfillment', 'id', 'operation', 'timestamp', 'version']
 
             assert fulfillment_message['data']['payload'] == tx['transaction']['data']['payload']
             assert fulfillment_message['id'] == tx['id']
-            assert fulfillment_message['input'] == original_fulfillment['input']
-            assert fulfillment_message['input_condition']['new_owners'] == original_fulfillment['current_owners']
+            assert fulfillment_message['condition'] == tx['transaction']['conditions'][original_fulfillment['fid']]
+            assert fulfillment_message['fulfillment']['current_owners'] == original_fulfillment['current_owners']
+            assert fulfillment_message['fulfillment']['fid'] == original_fulfillment['fid']
+            assert fulfillment_message['fulfillment']['input'] == original_fulfillment['input']
             assert fulfillment_message['operation'] == tx['transaction']['operation']
             assert fulfillment_message['timestamp'] == tx['transaction']['timestamp']
             assert fulfillment_message['version'] == tx['version']
-            assert fulfillment_message['output_condition'] == \
-                tx['transaction']['conditions'][original_fulfillment['fid']]
+
+
+class TestTransactionMalleability(object):
+    @pytest.mark.usefixtures('inputs')
+    def test_create_transaction_transfer(self, b, user_vk, user_sk):
+        input_tx = b.get_owned_ids(user_vk).pop()
+        assert b.validate_fulfillments(b.get_transaction(input_tx['txid'])) is True
+
+        tx = b.create_transaction(user_vk, b.me, input_tx, 'TRANSFER')
+
+        tx_signed = b.sign_transaction(tx, user_sk)
+
+        assert b.validate_fulfillments(tx_signed) is True
+        assert b.is_valid_transaction(tx_signed) == tx_signed
+
+        tx_changed = copy.deepcopy(tx_signed)
+        tx_changed['id'] = 'dsdasd'
+        assert b.validate_fulfillments(tx_changed) is False
+        assert b.is_valid_transaction(tx_changed) is False
+
+        tx_changed = copy.deepcopy(tx_signed)
+        tx_changed['version'] = '0'
+        assert b.validate_fulfillments(tx_changed) is False
+        assert b.is_valid_transaction(tx_changed) is False
+
+        tx_changed = copy.deepcopy(tx_signed)
+        tx_changed['transaction']['operation'] = 'CREATE'
+        assert b.validate_fulfillments(tx_changed) is False
+        assert b.is_valid_transaction(tx_changed) is False
+
+        tx_changed = copy.deepcopy(tx_signed)
+        tx_changed['transaction']['timestamp'] = '1463033192.123456'
+        assert b.validate_fulfillments(tx_changed) is False
+        assert b.is_valid_transaction(tx_changed) is False
+
+        tx_changed = copy.deepcopy(tx_signed)
+        tx_changed['transaction']['data'] = {
+            "hash": "872fa6e6f46246cd44afdb2ee9cfae0e72885fb0910e2bcf9a5a2a4eadb417b8",
+            "payload": {
+                "msg": "Hello BigchainDB!"
+            }
+        }
+        assert b.validate_fulfillments(tx_changed) == False
+
+        tx_changed = copy.deepcopy(tx_signed)
+        tx_changed['transaction']['fulfillments'] = [
+            {
+                "current_owners": [
+                    "AFbofwJYEB7Cx2fgrPrCJzbdDVRzRKysoGXt4DsvuTGN"
+                ],
+                "fid": 0,
+                "fulfillment": "cf:4:iXaq3UbandDj4DgBhFDcfHjkm2639RwgLmwAHUmuDFMfMEKMZ71eQw2qCMK951kBaNNJel_FCDuYnacn_MsWzYXOUJs6DGW3lYfXI_d55xuqpH2BenvRWKNp98tRRr4B",
+                "input": None
+            }
+        ]
+        assert b.validate_fulfillments(tx_changed) is False
+        assert b.is_valid_transaction(tx_changed) is False
+
+        tx_changed = copy.deepcopy(tx_signed)
+        tx_changed['transaction']['fulfillments'][0]['fid'] = 1
+        with pytest.raises(IndexError):
+            assert b.validate_fulfillments(tx_changed) is False
+        assert b.is_valid_transaction(tx_changed) is False
+
+        tx_changed = copy.deepcopy(tx_signed)
+        tx_changed['transaction']['fulfillments'][0]['current_owners'] = [
+            "AFbofwJYEB7Cx2fgrPrCJzbdDVRzRKysoGXt4DsvuTGN"]
+        assert b.validate_fulfillments(tx_changed) is False
+        assert b.is_valid_transaction(tx_changed) is False
+
+        tx_changed = copy.deepcopy(tx_signed)
+        tx_changed['transaction']['fulfillments'][0]['input'] = {
+            "cid": 0,
+            "txid": "3055348675fc6f23b75f13c55db6d112b66eee068e99d30a802883d3b1784203"
+        }
+        with pytest.raises(TypeError):
+            assert b.validate_fulfillments(tx_changed) is False
+        assert b.is_valid_transaction(tx_changed) is False
 
 
 class TestCryptoconditions(object):
