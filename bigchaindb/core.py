@@ -22,6 +22,10 @@ class Bigchain(object):
     Create, read, sign, write transactions to the database
     """
 
+    BLOCK_INVALID = 'invalid'
+    BLOCK_VALID = 'valid'
+    BLOCK_UNDECIDED = 'undecided'
+
     def __init__(self, host=None, port=None, dbname=None,
                  public_key=None, private_key=None, keyring=[],
                  consensus_plugin=None):
@@ -510,8 +514,8 @@ class Bigchain(object):
         # to avoid a tie. In the case of an odd number of voters this is not
         # relevant, since one side must be a majority.
         if n_invalid_votes >= math.ceil(n_voters / 2):
-            return 'invalid'
+            return Bigchain.BLOCK_INVALID
         elif n_valid_votes > math.floor(n_voters / 2):
-            return 'valid'
+            return Bigchain.BLOCK_VALID
         else:
-            return 'undecided'
+            return Bigchain.BLOCK_UNDECIDED
