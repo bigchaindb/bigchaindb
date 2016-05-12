@@ -55,7 +55,9 @@ If it says that `pip` isn't installed, or it says `pip` is associated with a Pyt
 ```text
 $ sudo apt-get install python3-setuptools
 $ sudo easy_install3 pip
+$ pip install --upgrade pip wheel setuptools
 ```
+
 (Note: Using `sudo apt-get python3-pip` also installs a Python 3 version of `pip` (named `pip3`) but we found it installed a very old version and there were issues with updating it.)
 
 Once you have a version of `pip` associated with Python 3.4+, then you can install BigchainDB Server (and officially-supported BigchainDB drivers) using:
