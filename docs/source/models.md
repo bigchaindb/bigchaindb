@@ -27,7 +27,7 @@ A transaction is an operation between the `current_owner` and the `new_owner` ov
     - `id`: sha3 hash of the transaction. The `id` is also the DB primary key.
     - `version`: Version of the transaction. For future compability with changes in the transaction model.
 - **Transaction body**:
-    - `fulfillments`: List of fulfillments. Each _fulfillment_ contains a pointer to a unspent digital asset
+    - `fulfillments`: List of fulfillments. Each _fulfillment_ contains a pointer to an unspent digital asset
     and a _crypto fulfillment_ that satisfies a spending condition set on the unspent digital asset. A _fulfillment_
     is usually a signature proving the ownership of the digital asset.
     See [conditions and fulfillments](models.md#conditions-and-fulfillments)
@@ -174,9 +174,9 @@ A block contains a group of transactions and includes the hash of the hash of th
     - `timestamp`: timestamp when the block was created. It's provided by the node that created the block.
     - `transactions`: the list of transactions included in the block
     - `node_pubkey`: the public key of the node that create the block
-    - `voters`: list public keys of the federation nodes. Since the size of the 
+    - `voters`: list of public keys of the federation nodes. Since the size of the 
       federation may change over time this will tell us how many nodes existed
-      in the federation when the block was created so that in a later point in
+      in the federation when the block was created so that at a later point in
       time we can check that the block received the correct number of votes.
 - `signature`: Signature of the block by the node that created the block (i.e. To create it, the node serialized the block contents and signed that with its private key)
 - `votes`: Initially an empty list. New votes are appended as they come in from the nodes.

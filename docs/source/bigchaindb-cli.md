@@ -43,3 +43,10 @@ This command is used to run benchmarking tests. You can learn more about it usin
 ```text
 $ bigchaindb load -h
 ```
+
+### bigchaindb set-shards
+
+This command is used to set the number of shards in the underlying datastore. For example, the following command will set the number of shards to four:
+```text
+$ bigchaindb set-shards 4
+```

@@ -12,10 +12,10 @@ A scalable blockchain database. [The whitepaper](https://www.bigchaindb.com/whit
 
 ## Quick Start
 
-### [Install and Run BigchainDB Server](http://bigchaindb.readthedocs.org/en/master/installing-server.html)
-### [Run BigchainDB with Docker](http://bigchaindb.readthedocs.org/en/master/installing-server.html#run-bigchaindb-with-docker)
-### [The Python Server API by Example](http://bigchaindb.readthedocs.org/en/master/python-server-api-examples.html)
-### [The Python Driver API by Example](http://bigchaindb.readthedocs.org/en/master/python-driver-api-examples.html)
+### [Install and Run BigchainDB Server](http://bigchaindb.readthedocs.io/en/latest/installing-server.html)
+### [Run BigchainDB with Docker](http://bigchaindb.readthedocs.io/en/latest/installing-server.html#run-bigchaindb-with-docker)
+### [The Python Server API by Example](http://bigchaindb.readthedocs.io/en/latest/python-server-api-examples.html)
+### [The Python Driver API by Example](http://bigchaindb.readthedocs.io/en/latest/python-driver-api-examples.html)
 
 ## Links for Everyone
 * [BigchainDB.com](https://www.bigchaindb.com/) - the main BigchainDB website, including newsletter signup
@@ -26,7 +26,7 @@ A scalable blockchain database. [The whitepaper](https://www.bigchaindb.com/whit
 * [Google Group](https://groups.google.com/forum/#!forum/bigchaindb)
 
 ## Links for Developers
-* [Documentation](http://bigchaindb.readthedocs.org/en/master/) - for developers
+* [Documentation](http://bigchaindb.readthedocs.io/en/latest/) - for developers
 * [CONTRIBUTING.md](CONTRIBUTING.md) - how to contribute
 * [Community guidelines](CODE_OF_CONDUCT.md)
 * [Open issues](https://github.com/bigchaindb/bigchaindb/issues)

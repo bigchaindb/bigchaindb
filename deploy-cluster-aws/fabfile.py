@@ -146,6 +146,15 @@ def send_confile(confile):
     run('bigchaindb show-config')
 
 
+@task
+@parallel
+def send_client_confile(confile):
+    put(confile, 'tempfile')
+    run('mv tempfile ~/.bigchaindb')
+    print('For this node, bigchaindb show-config says:')
+    run('bigchaindb show-config')
+
+
 # Initialize BigchainDB
 # i.e. create the database, the tables,
 # the indexes, and the genesis block.
@@ -157,11 +166,24 @@ def init_bigchaindb():
     run('bigchaindb init', pty=False)
 
 
+# Set the number of shards (in the backlog and bigchain tables)
+@task
+@hosts(public_dns_names[0])
+def set_shards(num_shards):
+    run('bigchaindb set-shards {}'.format(num_shards))
+
+
 # Start BigchainDB using screen
 @task
 @parallel
 def start_bigchaindb():
     sudo('screen -d -m bigchaindb -y start &', pty=False)
+
+
+@task
+@parallel
+def start_bigchaindb_load():
+    sudo('screen -d -m bigchaindb load &', pty=False)
 
 
 # Install and run New Relic

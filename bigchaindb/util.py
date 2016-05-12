@@ -358,7 +358,7 @@ def fulfill_simple_signature_fulfillment(fulfillment, parsed_fulfillment, fulfil
 
         Args:
             fulfillment (dict): BigchainDB fulfillment to fulfill.
-            parsed_fulfillment (object): cryptoconditions.Ed25519Fulfillment instance.
+            parsed_fulfillment (cryptoconditions.Ed25519Fulfillment): cryptoconditions.Ed25519Fulfillment instance.
             fulfillment_message (dict): message to sign.
             key_pairs (dict): dictionary of (public_key, private_key) pairs.
 
@@ -380,16 +380,16 @@ def fulfill_simple_signature_fulfillment(fulfillment, parsed_fulfillment, fulfil
 def fulfill_threshold_signature_fulfillment(fulfillment, parsed_fulfillment, fulfillment_message, key_pairs):
     """Fulfill a cryptoconditions.ThresholdSha256Fulfillment
 
-            Args:
-                fulfillment (dict): BigchainDB fulfillment to fulfill.
-                parsed_fulfillment (object): cryptoconditions.ThresholdSha256Fulfillment instance.
-                fulfillment_message (dict): message to sign.
-                key_pairs (dict): dictionary of (public_key, private_key) pairs.
+        Args:
+            fulfillment (dict): BigchainDB fulfillment to fulfill.
+            parsed_fulfillment (cryptoconditions.ThresholdSha256Fulfillment): cryptoconditions.ThresholdSha256Fulfillment instance.
+            fulfillment_message (dict): message to sign.
+            key_pairs (dict): dictionary of (public_key, private_key) pairs.
 
-            Returns:
-                object: fulfilled cryptoconditions.ThresholdSha256Fulfillment
+        Returns:
+            object: fulfilled cryptoconditions.ThresholdSha256Fulfillment
 
-            """
+        """
     parsed_fulfillment_copy = copy.deepcopy(parsed_fulfillment)
     parsed_fulfillment.subconditions = []
 
@@ -421,11 +421,11 @@ def check_hash_and_signature(transaction):
         raise exceptions.InvalidHash()
 
     # Check signature
-    if not verify_signature(transaction):
+    if not validate_fulfillments(transaction):
         raise exceptions.InvalidSignature()
 
 
-def verify_signature(signed_transaction):
+def validate_fulfillments(signed_transaction):
     """Verify the signature of a transaction
 
     A valid transaction should have been signed `current_owner` corresponding private key.
