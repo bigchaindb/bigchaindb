@@ -276,7 +276,7 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
                 'new_owners': new_owners,
                 'condition': {
                     'details': json.loads(condition.serialize_json()),
-                    'uri': condition.condition.serialize_uri()
+                    'uri': condition.condition_uri
                 },
                 'cid': fulfillment['fid']
             })
@@ -449,12 +449,11 @@ def validate_fulfillments(signed_transaction):
         is_valid = parsed_fulfillment.validate(serialize(fulfillment_message))
 
         # if transaction has an input (i.e. not a `CREATE` transaction)
-        if fulfillment['input']:
-            # TODO: avoid instantiation, pass as argument!
-            bigchain = bigchaindb.Bigchain()
-            input_condition = get_input_condition(bigchain, fulfillment)
-            is_valid &= parsed_fulfillment.condition.serialize_uri() == \
-                input_condition['condition']['uri']
+        # TODO: avoid instantiation, pass as argument!
+        bigchain = bigchaindb.Bigchain()
+        input_condition = get_input_condition(bigchain, fulfillment)
+        is_valid &= parsed_fulfillment.condition.serialize_uri() == \
+            input_condition['condition']['uri']
 
         if not is_valid:
             return False
@@ -516,8 +515,14 @@ def get_input_condition(bigchain, fulfillment):
     # there is no previous transaction so we need to create one on the fly
     else:
         current_owner = fulfillment['current_owners'][0]
-        condition = json.loads(cc.Ed25519Fulfillment(public_key=current_owner).serialize_json())
-        return {'condition': {'details': condition}}
+        condition = cc.Ed25519Fulfillment(public_key=current_owner)
+
+        return {
+            'condition': {
+                'details': json.loads(condition.serialize_json()),
+                'uri': condition.condition_uri
+            }
+        }
 
 
 def get_hash_data(transaction):
