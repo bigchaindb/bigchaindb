@@ -18,10 +18,15 @@ import socket
 import argparse
 import botocore
 import boto3
+
 from awscommon import get_naeips
+from deploy_conf import *
 
 
-# First, ensure they're using Python 2.5-2.7
+# Make sure NUM_NODES is an int
+assert isinstance(NUM_NODES, int)
+
+# Ensure they're using Python 2.5-2.7
 pyver = sys.version_info
 major = pyver[0]
 minor = pyver[1]
@@ -36,14 +41,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--tag",
                     help="tag to add to all launched instances on AWS",
                     required=True)
-parser.add_argument("--nodes",
-                    help="number of nodes in the cluster",
-                    required=True,
-                    type=int)
 args = parser.parse_args()
-
 tag = args.tag
-num_nodes = int(args.nodes)
 
 # Get an AWS EC2 "resource"
 # See http://boto3.readthedocs.org/en/latest/guide/resources.html
@@ -81,10 +80,10 @@ print('You have {} allocated elastic IPs which are '
       'not already associated with instances'.
       format(len(non_associated_eips)))
 
-if num_nodes > len(non_associated_eips):
-    num_eips_to_allocate = num_nodes - len(non_associated_eips)
+if NUM_NODES > len(non_associated_eips):
+    num_eips_to_allocate = NUM_NODES - len(non_associated_eips)
     print('You want to launch {} instances'.
-          format(num_nodes))
+          format(NUM_NODES))
     print('so {} more elastic IPs must be allocated'.
           format(num_eips_to_allocate))
     for _ in range(num_eips_to_allocate):
@@ -103,22 +102,19 @@ if num_nodes > len(non_associated_eips):
             raise
 
 print('Commencing launch of {} instances on Amazon EC2...'.
-      format(num_nodes))
+      format(NUM_NODES))
 
-for _ in range(num_nodes):
+for _ in range(NUM_NODES):
     # Request the launch of one instance at a time
     # (so list_of_instances should contain only one item)
     list_of_instances = ec2.create_instances(
-            ImageId='ami-accff2b1',          # ubuntu-image
-            # 'ami-596b7235',                 # ubuntu w/ iops storage
-            MinCount=1,
-            MaxCount=1,
-            KeyName='bigchaindb',
-            InstanceType='m3.2xlarge',
-            # 'c3.8xlarge',
-            # 'c4.8xlarge',
-            SecurityGroupIds=['bigchaindb']
-            )
+        ImageId=IMAGE_ID,
+        MinCount=1,
+        MaxCount=1,
+        KeyName='bigchaindb',
+        InstanceType=INSTANCE_TYPE,
+        SecurityGroupIds=['bigchaindb']
+    )
 
     # Tag the just-launched instances (should be just one)
     for instance in list_of_instances:

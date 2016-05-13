@@ -4,37 +4,19 @@
 # if any command has a non-zero exit status
 set -e
 
-USAGE="usage: ./awsdeploy.sh <number_of_nodes_in_cluster> <pypi_or_branch> <servers_or_clients>"
+# Validate the values in deploy_conf.py
+python validate_deploy_conf.py
 
-if [ -z "$1" ]; then
-    echo $USAGE
-    echo "No first argument was specified"
-    echo "It should be a number like 3 or 15"
-    exit 1
-else
-    NUM_NODES=$1
-fi
-
-if [ -z "$2" ]; then
-    echo $USAGE
-    echo "No second argument was specified, so BigchainDB will be installed from PyPI"
-    BRANCH="pypi"
-else
-    BRANCH=$2
-fi
-
-if [ -z "$3" ]; then
-    echo $USAGE
-    echo "No third argument was specified, so servers will be deployed"
-    WHAT_TO_DEPLOY="servers"
-else
-    WHAT_TO_DEPLOY=$3
-fi
-
-if [[ ("$WHAT_TO_DEPLOY" != "servers") && ("$WHAT_TO_DEPLOY" != "clients") ]]; then
-    echo "The third argument, if included, must be servers or clients"
-    exit 1
-fi
+# Read deploy_conf.py
+# to set environment variables related to AWS deployment
+echo "Reading deploy_conf.py"
+source deploy_conf.py
+echo "NUM_NODES = "$NUM_NODES
+echo "BRANCH = "$BRANCH
+echo "WHAT_TO_DEPLOY = "$WHAT_TO_DEPLOY
+echo "USE_KEYPAIRS_FILE = "$USE_KEYPAIRS_FILE
+echo "IMAGE_ID = "$IMAGE_ID
+echo "INSTANCE_TYPE = "$INSTANCE_TYPE
 
 # Check for AWS private key file (.pem file)
 if [ ! -f "pem/bigchaindb.pem" ]; then
@@ -67,7 +49,7 @@ chmod 0400 pem/bigchaindb.pem
 # 5. writes the shellscript add2known_hosts.sh
 # 6. (over)writes a file named hostlist.py
 #    containing a list of all public DNS names.
-python launch_ec2_nodes.py --tag $TAG --nodes $NUM_NODES
+python launch_ec2_nodes.py --tag $TAG
 
 # Make add2known_hosts.sh executable then execute it.
 # This adds remote keys to ~/.ssh/known_hosts
@@ -117,7 +99,12 @@ if [ "$WHAT_TO_DEPLOY" == "servers" ]; then
 
     # Transform the config files in the confiles directory
     # to have proper keyrings, api_endpoint values, etc.
-    python clusterize_confiles.py confiles $NUM_NODES
+    if [ "$USE_KEYPAIRS_FILE" == "True" ]; then
+        echo "Using keypairs in keypairs.py"
+        python clusterize_confiles.py -k confiles $NUM_NODES
+    else
+        python clusterize_confiles.py confiles $NUM_NODES
+    fi
 
     # Send one of the config files to each instance
     for (( HOST=0 ; HOST<$NUM_NODES ; HOST++ )); do

@@ -153,43 +153,33 @@ cd deploy-cluster-aws
 python3 write_keypairs_file.py 100
 ```
 
-The above command generates a file with 100 keypairs. (You can generate more keypairs than you need, so you can use the same list over and over again, for different numbers of servers.) To make the `awsdeploy.sh` script read all keys from `keypairs.py`, you must _edit_ the `awsdeploy.sh` script: change the line that says `python clusterize_confiles.py confiles $NUM_NODES` to `python clusterize_confiles.py -k confiles $NUM_NODES` (i.e. add the `-k` option).
+The above command generates a file with 100 keypairs. (You can generate more keypairs than you need, so you can use the same list over and over again, for different numbers of servers.) To make the `awsdeploy.sh` script read all keys from `keypairs.py`, just set `USE_KEYPAIRS_FILE=True` in `deploy_conf.py`.
 
 ### Step 2
 
 Step 2 is to launch the nodes ("instances") on AWS, to install all the necessary software on them, configure the software, run the software, and more.
 
-Here's an example of how one could launch a BigchainDB cluster of three (3) nodes on AWS:
+First, edit the AWS deployment configuration file, `deploy_conf.py`, in the `bigchaindb/deploy-cluster-aws` directory. It comes with comments explaining each of the configuration settings. You may want to make a copy of `deploy_conf.py` before editing it. The defaults are (or should be):
+```text
+NUM_NODES=3
+BRANCH="master"
+WHAT_TO_DEPLOY="servers"
+USE_KEYPAIRS_FILE=False
+IMAGE_ID="ami-accff2b1"
+INSTANCE_TYPE="m3.2xlarge"
+```
+
+Once you've edited `deploy_conf.py` to your liking:
 ```text
 # in a Python 2.5-2.7 virtual environment where fabric, boto3, etc. are installed
 cd bigchaindb
 cd deploy-cluster-aws
-./awsdeploy.sh 3
+./awsdeploy.sh
+# Only if you want to start BigchainDB on all the nodes:
 fab start_bigchaindb
 ```
 
-`awsdeploy.sh` is a Bash script which calls some Python and Fabric scripts. The usage is:
-```text
-./awsdeploy.sh <number_of_nodes_in_cluster> [pypi_or_branch] [servers_or_clients]
-```
-
-**<number_of_nodes_in_cluster>** (Required)
-
-The number of nodes you want to deploy. Example value: 5
-
-**[pypi_or_branch]** (Optional)
-
-Where the nodes should get their BigchainDB source code. If it's `pypi`, then BigchainDB will be installed from the latest `bigchaindb` package in the [Python Package Index (PyPI)](https://pypi.python.org/pypi). That is, on each node, BigchainDB will be installed using `pip install bigchaindb`. You can also put the name of a local Git branch; it will be compressed and sent out to all the nodes for installation. If you don't include the second argument, then the default is `pypi`.
-
-**[servers_or_clients]** (Optional)
-
-If you want to deploy BigchainDB servers, then the third argument should be `servers`.
-If you want to deploy BigchainDB clients, then the third argument should be `clients`.
-The third argument is optional, but if you want to include it, you must also include the second argument. If you don't include the third argument, then the default is `servers`.
-
----
-
-If you're curious what the `awsdeploy.sh` script does, [the source code](https://github.com/bigchaindb/bigchaindb/blob/master/deploy-cluster-aws/awsdeploy.sh) has lots of explanatory comments, so it's quite easy to read.
+`awsdeploy.sh` is a Bash script which calls some Python and Fabric scripts. If you're curious what it does, [the source code](https://github.com/bigchaindb/bigchaindb/blob/master/deploy-cluster-aws/awsdeploy.sh) has lots of explanatory comments, so it's quite easy to read.
 
 It should take a few minutes for the deployment to finish. If you run into problems, see the section on Known Deployment Issues below.
 
