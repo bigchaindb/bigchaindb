@@ -1,31 +1,34 @@
-rethinkdb:
-  image: rethinkdb
-  ports:
-    - "58080:8080"
-    - "28015"
-  volumes_from:
-    - rethinkdb-data
+version: '2'
 
-rethinkdb-data:
-  image: rethinkdb
-  volumes:
-    - /data
-  command: "true"
+services:
+  rethinkdb:
+    image: rethinkdb
+    ports:
+      - "58080:8080"
+      - "28015"
+    volumes_from:
+      - rethinkdb-data
 
-bigchaindb:
-  build: .
-  container_name: docker-bigchaindb
-  volumes:
-    - ./bigchaindb:/usr/src/app/bigchaindb
-    - ./tests:/usr/src/app/tests
-    - ./docs:/usr/src/app/docs
-    - ./setup.py:/usr/src/app/setup.py
-    - ./setup.cfg:/usr/src/app/setup.cfg
-    - ./pytest.ini:/usr/src/app/pytest.ini
-    - ~/.bigchaindb_docker:/root/.bigchaindb_docker
-  links:
-    - rethinkdb
-  environment:
-    BIGCHAIN_DATABASE_HOST: rethinkdb
-    BIGCHAINDB_CONFIG_PATH: /root/.bigchaindb_docker/config
-  command: bigchaindb start
+  rethinkdb-data:
+    image: rethinkdb
+    volumes:
+      - /data
+    command: "true"
+
+  bigchaindb:
+    build:
+      context: .
+      dockerfile: Dockerfile-dev
+    container_name: docker-bigchaindb
+    volumes:
+      - ./bigchaindb:/usr/src/app/bigchaindb
+      - ./tests:/usr/src/app/tests
+      - ./docs:/usr/src/app/docs
+      - ./setup.py:/usr/src/app/setup.py
+      - ./setup.cfg:/usr/src/app/setup.cfg
+      - ./pytest.ini:/usr/src/app/pytest.ini
+      - ~/.bigchaindb_docker:/root/.bigchaindb_docker
+    environment:
+      BIGCHAINDB_DATABASE_HOST: rethinkdb
+      BIGCHAINDB_CONFIG_PATH: /root/.bigchaindb_docker/config
+    command: bigchaindb start
