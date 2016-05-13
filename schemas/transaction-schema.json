@@ -1,0 +1,60 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "id": "http://www.bigchaindb.com/schemas/myschema.json",
+
+    "definitions": {
+        "sha3_hexdigest": {
+            "type": "string",
+            "pattern": "[0-9a-f]{64}"
+        }
+    },
+
+    "type": "object",
+
+    "properties": {
+        "id": {
+            "$ref": "#/definitions/sha3_hexdigest"
+        },
+        "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1
+        },
+        "transaction": {
+            "type": "object",
+            "properties": {
+                "fulfillments": {
+                    "type": "array"
+                },
+                "conditions": {
+                    "type": "array"
+                },
+                "operation": {
+                    "type": "string",
+                    "enum": ["CREATE", "TRANSFER"]
+                },
+                "timestamp": {
+                    "type": "string",
+                    "pattern": "\\d{10}\\.\\d{6}"
+                },
+                "data": {
+                    "anyOf": [{
+                        "type": "object",
+                        "properties": {
+                            "hash": { "$ref": "#/definitions/sha3_hexdigest" },
+                            "payload": {
+                                "type": "object"
+                            }
+                        },
+                        "required": ["hash", "payload"]
+                    }, {
+                        "type": "null"
+                    }]
+                }
+            },
+            "required": ["fulfillments", "conditions", "operation", "timestamp", "data"]
+        }
+    },
+    "required": ["id", "version", "transaction"]
+}
+
