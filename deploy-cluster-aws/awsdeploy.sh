@@ -100,7 +100,6 @@ if [ "$WHAT_TO_DEPLOY" == "servers" ]; then
     # Transform the config files in the confiles directory
     # to have proper keyrings, api_endpoint values, etc.
     if [ "$USE_KEYPAIRS_FILE" == "True" ]; then
-        echo "Using keypairs in keypairs.py"
         python clusterize_confiles.py -k confiles $NUM_NODES
     else
         python clusterize_confiles.py confiles $NUM_NODES
