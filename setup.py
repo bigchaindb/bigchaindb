@@ -87,6 +87,7 @@ setup(
         'flask==0.10.1',
         'requests==2.9',
         'gunicorn~=19.0',
+        'jsonschema~=2.5',
     ],
     setup_requires=['pytest-runner'],
     tests_require=tests_require,
