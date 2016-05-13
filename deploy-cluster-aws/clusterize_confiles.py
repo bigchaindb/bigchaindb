@@ -67,7 +67,7 @@ if use_keypairs:
 # Make a list containing all the public keys
 if use_keypairs:
     print('Using keypairs from keypairs.py')
-    pubkeys = [keypair[1] for keypair in keypairs_list]
+    pubkeys = [keypair[1] for keypair in keypairs_list[:num_files]]
 else:
     # read the pubkeys from the config files in conf_dir
     pubkeys = []
