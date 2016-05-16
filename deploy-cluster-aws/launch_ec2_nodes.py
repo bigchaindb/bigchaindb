@@ -16,15 +16,12 @@ import sys
 import time
 import socket
 import argparse
+import importlib
 import botocore
 import boto3
 
 from awscommon import get_naeips
-from deploy_conf import *
 
-
-# Make sure NUM_NODES is an int
-assert isinstance(NUM_NODES, int)
 
 # Ensure they're using Python 2.5-2.7
 pyver = sys.version_info
@@ -41,8 +38,52 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--tag",
                     help="tag to add to all launched instances on AWS",
                     required=True)
+parser.add_argument("--deploy-conf-file",
+                    help="AWS deployment configuration file",
+                    required=True)
 args = parser.parse_args()
 tag = args.tag
+deploy_conf_file = args.deploy_conf_file
+
+# Import all the variables set in the AWS deployment configuration file
+# (Remove the '.py' from the end of deploy_conf_file.)
+cf = importlib.import_module(deploy_conf_file[:-3])
+try:
+    NUM_NODES = cf.NUM_NODES
+    BRANCH = cf.BRANCH
+    WHAT_TO_DEPLOY = cf.WHAT_TO_DEPLOY
+    USE_KEYPAIRS_FILE = cf.USE_KEYPAIRS_FILE
+    IMAGE_ID = cf.IMAGE_ID
+    INSTANCE_TYPE = cf.INSTANCE_TYPE
+except AttributeError as e:
+    print('One of the AWS deployment configuration settings was '
+          'not set in the AWS deployment configuration file ' +
+          '{}'.format(deploy_conf_file))
+    print('Read this traceback to find out which one (in ALL_CAPS):')
+    raise
+
+# Validate the variables set in the AWS deployment configuration file
+try:
+    assert isinstance(NUM_NODES, int)
+    assert isinstance(BRANCH, str)
+    assert isinstance(WHAT_TO_DEPLOY, str)
+    assert isinstance(USE_KEYPAIRS_FILE, bool)
+    assert isinstance(IMAGE_ID, str)
+    assert isinstance(INSTANCE_TYPE, str)
+except AssertionError as e:
+    print('One of the AWS deployment settings has a value of the wrong type.')
+    print('Read this traceback to find out which one (in ALL_CAPS):')
+    raise
+
+if NUM_NODES > 64:
+    raise ValueError('NUM_NODES should be less than or equal to 64. '
+                     'The AWS deployment configuration file sets it to {}'.
+                     format(NUM_NODES))
+
+if WHAT_TO_DEPLOY not in ['servers', 'clients']:
+    raise ValueError('WHAT_TO_DEPLOY should be either "servers" or "clients". '
+                     'The AWS deployment configuration file sets it to {}'.
+                     format(WHAT_TO_DEPLOY))
 
 # Get an AWS EC2 "resource"
 # See http://boto3.readthedocs.org/en/latest/guide/resources.html

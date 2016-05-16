@@ -1,16 +1,19 @@
 # AWS deployment config file
 
 # To use in a Bash shell script:
-# source deploy_conf.py
-# echo $EXAMPLEVAR
+# source default_deploy_conf.py
+# # $EXAMPLEVAR now has a value
 
 # To use in a Python script:
-# from deploy_conf import *
-# # EXAMPLEVAR now has a value
+# from default_deploy_conf import *
+# or
+# import importlib
+# cf = importlib.import_module('default_deploy_conf')
+# # cf.EXAMPLEVAR now has a value
 
 # DON'T PUT SPACES AROUND THE =
 # because that would confuse Bash.
-# Values can be strings in double quotes, or integers like 23
+# Example values: "string in double quotes", 32, True, False
 
 # NUM_NODES is the number of nodes to deploy
 NUM_NODES=3

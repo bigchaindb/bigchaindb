@@ -4,13 +4,25 @@
 # if any command has a non-zero exit status
 set -e
 
-# Validate the values in deploy_conf.py
-python validate_deploy_conf.py
+# Check the (optional) command-line argument
+# (the name of the AWS deployment config file)
+if [ -z "$1" ]; then
+    # no first argument was provided
+    DEPLOY_CONF_FILE=default_deploy_conf.py
+else
+    DEPLOY_CONF_FILE=$1
+fi
 
-# Read deploy_conf.py
+# Check to make sure DEPLOY_CONF_FILE exists
+if [ ! -f $DEPLOY_CONF_FILE ]; then
+    echo "AWS deployment configuration file not found: "$DEPLOY_CONF_FILE
+    exit 1
+fi
+
+# Read DEPLOY_CONF_FILE
 # to set environment variables related to AWS deployment
-echo "Reading deploy_conf.py"
-source deploy_conf.py
+echo "Reading "$DEPLOY_CONF_FILE
+source $DEPLOY_CONF_FILE
 echo "NUM_NODES = "$NUM_NODES
 echo "BRANCH = "$BRANCH
 echo "WHAT_TO_DEPLOY = "$WHAT_TO_DEPLOY
@@ -28,6 +40,15 @@ fi
 if [ ! -d "confiles" ]; then
     echo "Directory confiles is needed but does not exist"
     echo "See make_confiles.sh to find out how to make it"
+    exit 1
+fi
+
+# Check if the number of files in confiles directory == NUM_NODES
+CONFILES_COUNT=`ls confiles | wc -l`
+if [ $CONFILES_COUNT != $NUM_NODES ]; then
+    echo "ERROR: CONFILES_COUNT = "$CONFILES_COUNT
+    echo "but NUM_NODES = "$NUM_NODES
+    echo "so there should be "$NUM_NODES" files in the confiles directory" 
     exit 1
 fi
 
@@ -49,7 +70,7 @@ chmod 0400 pem/bigchaindb.pem
 # 5. writes the shellscript add2known_hosts.sh
 # 6. (over)writes a file named hostlist.py
 #    containing a list of all public DNS names.
-python launch_ec2_nodes.py --tag $TAG
+python launch_ec2_nodes.py --deploy-conf-file $DEPLOY_CONF_FILE --tag $TAG
 
 # Make add2known_hosts.sh executable then execute it.
 # This adds remote keys to ~/.ssh/known_hosts
