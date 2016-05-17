@@ -2,8 +2,7 @@ import copy
 from abc import ABCMeta, abstractmethod
 
 import bigchaindb.exceptions as exceptions
-from bigchaindb import util
-from bigchaindb import crypto
+from bigchaindb import util, crypto, schemas
 
 
 class AbstractConsensusRules(metaclass=ABCMeta):
@@ -97,6 +96,41 @@ class BaseConsensusRules(AbstractConsensusRules):
     """
 
     @staticmethod
+    def __validate_transaction_schema(transaction):
+        schemas.validate(transaction, 'transaction')
+
+    @staticmethod
+    def __validate_transaction_create(bigchain, transaction):
+        # TODO: for now lets assume a CREATE transaction only has one fulfillment
+        if transaction['transaction']['fulfillments'][0]['input']:
+            raise ValueError('A CREATE operation has no inputs')
+        # TODO: for now lets assume a CREATE transaction only has one current_owner
+        if transaction['transaction']['fulfillments'][0]['current_owners'][0] not in (
+                bigchain.federation_nodes + [bigchain.me]):
+            raise exceptions.OperationError(
+                'Only federation nodes can use the operation `CREATE`')
+
+    @staticmethod
+    def __validate_transaction_transfer(bigchain, transaction):
+        for fulfillment in transaction['transaction']['fulfillments']:
+            if not fulfillment['input']:
+                raise ValueError('Only `CREATE` transactions can have null inputs')
+            tx_input = bigchain.get_transaction(fulfillment['input']['txid'])
+
+            if not tx_input:
+                raise exceptions.TransactionDoesNotExist(
+                    'input `{}` does not exist in the bigchain'.format(
+                        fulfillment['input']['txid']))
+            # TODO: check if current owners own tx_input (maybe checked by InvalidSignature)
+            # check if the input was already spent by a transaction other than
+            # this one.
+            spent = bigchain.get_spent(fulfillment['input'])
+            if spent and spent['id'] != transaction['id']:
+                raise exceptions.DoubleSpend(
+                    'input `{}` was already spent'.format(fulfillment['input']))
+
+
+    @staticmethod
     def validate_transaction(bigchain, transaction):
         """Validate a transaction.
 
@@ -119,38 +153,14 @@ class BaseConsensusRules(AbstractConsensusRules):
 
         # If the operation is CREATE the transaction should have no inputs and
         # should be signed by a federation node
-        if transaction['transaction']['operation'] == 'CREATE':
-            # TODO: for now lets assume a CREATE transaction only has one fulfillment
-            if transaction['transaction']['fulfillments'][0]['input']:
-                raise ValueError('A CREATE operation has no inputs')
-            # TODO: for now lets assume a CREATE transaction only has one current_owner
-            if transaction['transaction']['fulfillments'][0]['current_owners'][0] not in (
-                    bigchain.federation_nodes + [bigchain.me]):
-                raise exceptions.OperationError(
-                    'Only federation nodes can use the operation `CREATE`')
+        operation = transaction['transaction']['operation']
 
+        BaseConsensusRules.__validate_transaction_schema(transaction)
+
+        if operation == 'CREATE':
+            BaseConsensusRules.__validate_transaction_create(bigchain, transaction)
         else:
-            # check if the input exists, is owned by the current_owner
-            if not transaction['transaction']['fulfillments']:
-                raise ValueError('Transaction contains no fulfillments')
-
-            # check inputs
-            for fulfillment in transaction['transaction']['fulfillments']:
-                if not fulfillment['input']:
-                    raise ValueError('Only `CREATE` transactions can have null inputs')
-                tx_input = bigchain.get_transaction(fulfillment['input']['txid'])
-
-                if not tx_input:
-                    raise exceptions.TransactionDoesNotExist(
-                        'input `{}` does not exist in the bigchain'.format(
-                            fulfillment['input']['txid']))
-                # TODO: check if current owners own tx_input (maybe checked by InvalidSignature)
-                # check if the input was already spent by a transaction other than
-                # this one.
-                spent = bigchain.get_spent(fulfillment['input'])
-                if spent and spent['id'] != transaction['id']:
-                    raise exceptions.DoubleSpend(
-                        'input `{}` was already spent'.format(fulfillment['input']))
+            BaseConsensusRules.__validate_transaction_transfer(bigchain, transaction)
 
         # Check hash of the transaction
         calculated_hash = util.get_hash_data(transaction)
