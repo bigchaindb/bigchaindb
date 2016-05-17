@@ -446,14 +446,14 @@ def validate_fulfillments(signed_transaction):
         except (TypeError, ValueError, ParsingError):
             return False
 
+        # TODO: might already break on a False here
         is_valid = parsed_fulfillment.validate(serialize(fulfillment_message))
 
         # if transaction has an input (i.e. not a `CREATE` transaction)
         # TODO: avoid instantiation, pass as argument!
         bigchain = bigchaindb.Bigchain()
         input_condition = get_input_condition(bigchain, fulfillment)
-        is_valid &= parsed_fulfillment.condition_uri == \
-            input_condition['condition']['uri']
+        is_valid = is_valid and parsed_fulfillment.condition_uri == input_condition['condition']['uri']
 
         if not is_valid:
             return False
