@@ -46,9 +46,15 @@ if [ ! -d "confiles" ]; then
     exit 1
 fi
 
+# Check if NUM_NODES got set
+if [ -z "$NUM_NODES" ]; then
+    echo "NUM_NODES is not set in the AWS deployment configuration file "$DEPLOY_CONF_FILE
+    exit 1
+fi
+
 # Check if the number of files in confiles directory == NUM_NODES
 CONFILES_COUNT=`ls confiles | wc -l`
-if [ $CONFILES_COUNT != $NUM_NODES ]; then
+if [[ $CONFILES_COUNT != $NUM_NODES ]]; then
     echo "ERROR: CONFILES_COUNT = "$CONFILES_COUNT
     echo "but NUM_NODES = "$NUM_NODES
     echo "so there should be "$NUM_NODES" files in the confiles directory" 
