@@ -4,17 +4,20 @@
 # if any command has a non-zero exit status
 set -e
 
-# Check the (optional) command-line argument
+# Check for the first command-line argument
 # (the name of the AWS deployment config file)
 if [ -z "$1" ]; then
     # no first argument was provided
-    DEPLOY_CONF_FILE=default_deploy_conf.py
-else
-    DEPLOY_CONF_FILE=$1
+    echo "awsdeploy: missing file operand"
+    echo "Usage: awsdeploy DEPLOY_CONF_FILE"
+    echo "Deploy BigchainDB on AWS using the specified AWS deployment configuration file"
+    exit 1
 fi
 
+DEPLOY_CONF_FILE=$1
+
 # Check to make sure DEPLOY_CONF_FILE exists
-if [ ! -f $DEPLOY_CONF_FILE ]; then
+if [ ! -f "$DEPLOY_CONF_FILE" ]; then
     echo "AWS deployment configuration file not found: "$DEPLOY_CONF_FILE
     exit 1
 fi

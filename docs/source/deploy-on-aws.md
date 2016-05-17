@@ -145,7 +145,7 @@ You can look inside those files if you're curious. For example, the default keyr
 
 ### Step 2
 
-Step 2 is to make an AWS deployment configuration file, if necessary. There's a default AWS configuration file named `default_deploy_conf.py`. It has many comments explaining each setting. The default AWS deployment settings are (or should be):
+Step 2 is to make an AWS deployment configuration file, if necessary. There's an example AWS configuration file named `example_deploy_conf.py`. It has many comments explaining each setting. The settings in that file are (or should be):
 ```text
 NUM_NODES=3
 BRANCH="master"
@@ -155,7 +155,7 @@ IMAGE_ID="ami-accff2b1"
 INSTANCE_TYPE="m3.2xlarge"
 ```
 
-If you're happy with those settings, then you can skip to the next step. Otherwise, you could make a copy of `default_deploy_conf.py` (e.g. `cp default_deploy_conf.py my_deploy_conf.py`) and then edit the new file using a text editor.
+If you're happy with those settings, then you can skip to the next step. Otherwise, you could make a copy of `example_deploy_conf.py` (e.g. `cp example_deploy_conf.py my_deploy_conf.py`) and then edit the copy using a text editor.
 
 If you want your nodes to have a predictable set of pre-generated keypairs, then you should 1) set `USE_KEYPAIRS_FILE=True` in the AWS deployment configuration file, and 2) provide a `keypairs.py` file containing enough keypairs for all of your nodes. You can generate a `keypairs.py` file using the `write_keypairs_file.py` script. For example:
 ```text
@@ -181,8 +181,6 @@ fab start_bigchaindb
 ```
 
 `awsdeploy.sh` is a Bash script which calls some Python and Fabric scripts. If you're curious what it does, [the source code](https://github.com/bigchaindb/bigchaindb/blob/master/deploy-cluster-aws/awsdeploy.sh) has many explanatory comments.
-
-If you don't specify the name of your AWS deployment configuration file (e.g. `my_deploy_conf.py` above), then `default_deploy_conf.py` will be used by default.
 
 It should take a few minutes for the deployment to finish. If you run into problems, see the section on **Known Deployment Issues** below.
 

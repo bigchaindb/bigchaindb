@@ -1,14 +1,14 @@
 # AWS deployment config file
 
 # To use in a Bash shell script:
-# source default_deploy_conf.py
+# source example_deploy_conf.py
 # # $EXAMPLEVAR now has a value
 
 # To use in a Python script:
-# from default_deploy_conf import *
+# from example_deploy_conf import *
 # or
 # import importlib
-# cf = importlib.import_module('default_deploy_conf')
+# cf = importlib.import_module('example_deploy_conf')
 # # cf.EXAMPLEVAR now has a value
 
 # DON'T PUT SPACES AROUND THE =
