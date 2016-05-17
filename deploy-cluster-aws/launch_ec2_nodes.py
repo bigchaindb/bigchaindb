@@ -23,6 +23,14 @@ import boto3
 from awscommon import get_naeips
 
 
+SETTINGS = ['NUM_NODES', 'BRANCH', 'WHAT_TO_DEPLOY', 'USE_KEYPAIRS_FILE',
+            'IMAGE_ID', 'INSTANCE_TYPE']
+
+
+class SettingsTypeError(TypeError):
+    pass
+
+
 # Ensure they're using Python 2.5-2.7
 pyver = sys.version_info
 major = pyver[0]
@@ -48,32 +56,34 @@ deploy_conf_file = args.deploy_conf_file
 # Import all the variables set in the AWS deployment configuration file
 # (Remove the '.py' from the end of deploy_conf_file.)
 cf = importlib.import_module(deploy_conf_file[:-3])
-try:
-    NUM_NODES = cf.NUM_NODES
-    BRANCH = cf.BRANCH
-    WHAT_TO_DEPLOY = cf.WHAT_TO_DEPLOY
-    USE_KEYPAIRS_FILE = cf.USE_KEYPAIRS_FILE
-    IMAGE_ID = cf.IMAGE_ID
-    INSTANCE_TYPE = cf.INSTANCE_TYPE
-except AttributeError as e:
-    print('One of the AWS deployment configuration settings was '
-          'not set in the AWS deployment configuration file ' +
-          '{}'.format(deploy_conf_file))
-    print('Read this traceback to find out which one (in ALL_CAPS):')
-    raise
+
+dir_cf = dir(cf)  # = a list of the attributes of cf
+for setting in SETTINGS:
+    if setting not in dir_cf:
+        sys.exit('{} was not set '.format(setting) +
+                 'in the specified AWS deployment '
+                 'configuration file {}'.format(deploy_conf_file))
+    exec('{0} = cf.{0}'.format(setting))
 
 # Validate the variables set in the AWS deployment configuration file
-try:
-    assert isinstance(NUM_NODES, int)
-    assert isinstance(BRANCH, str)
-    assert isinstance(WHAT_TO_DEPLOY, str)
-    assert isinstance(USE_KEYPAIRS_FILE, bool)
-    assert isinstance(IMAGE_ID, str)
-    assert isinstance(INSTANCE_TYPE, str)
-except AssertionError as e:
-    print('One of the AWS deployment settings has a value of the wrong type.')
-    print('Read this traceback to find out which one (in ALL_CAPS):')
-    raise
+if not isinstance(NUM_NODES, int):
+    raise SettingsTypeError('NUM_NODES should be an int')
+
+if not isinstance(BRANCH, str):
+    raise SettingsTypeError('BRANCH should be a string')
+
+if not isinstance(WHAT_TO_DEPLOY, str):
+    raise SettingsTypeError('WHAT_TO_DEPLOY should be a string')
+
+if not isinstance(USE_KEYPAIRS_FILE, bool):
+    msg = 'USE_KEYPAIRS_FILE should a boolean (True or False)'
+    raise SettingsTypeError(msg)
+
+if not isinstance(IMAGE_ID, str):
+    raise SettingsTypeError('IMAGE_ID should be a string')
+
+if not isinstance(INSTANCE_TYPE, str):
+    raise SettingsTypeError('INSTANCE_TYPE should be a string')
 
 if NUM_NODES > 64:
     raise ValueError('NUM_NODES should be less than or equal to 64. '
