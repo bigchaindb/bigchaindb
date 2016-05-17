@@ -327,43 +327,43 @@ class TestBlockElection(object):
 
         # test unanimously valid block
         test_block['votes'] = valid_vote
-        assert b.block_election_status(test_block) == 'valid'
+        assert b.block_election_status(test_block) == Bigchain.BLOCK_VALID
 
         # test partial quorum situations
         test_block['votes'] = valid_vote[:2]
-        assert b.block_election_status(test_block) == 'undecided'
+        assert b.block_election_status(test_block) == Bigchain.BLOCK_UNDECIDED
         #
         test_block['votes'] = valid_vote[:3]
-        assert b.block_election_status(test_block) == 'valid'
+        assert b.block_election_status(test_block) == Bigchain.BLOCK_VALID
         #
         test_block['votes'] = invalid_vote[:2]
-        assert b.block_election_status(test_block) == 'invalid'
+        assert b.block_election_status(test_block) == Bigchain.BLOCK_INVALID
 
         # test unanimously valid block with one improperly signed vote -- should still succeed
         test_block['votes'] = valid_vote[:3] + improperly_signed_valid_vote[:1]
-        assert b.block_election_status(test_block) == 'valid'
+        assert b.block_election_status(test_block) == Bigchain.BLOCK_VALID
 
         # test unanimously valid block with two improperly signed votes -- should fail
         test_block['votes'] = valid_vote[:2] + improperly_signed_valid_vote[:2]
-        assert b.block_election_status(test_block) == 'invalid'
+        assert b.block_election_status(test_block) == Bigchain.BLOCK_INVALID
 
         # test block with minority invalid vote
         test_block['votes'] = invalid_vote[:1] + valid_vote[:3]
-        assert b.block_election_status(test_block) == 'valid'
+        assert b.block_election_status(test_block) == Bigchain.BLOCK_VALID
 
         # test split vote
         test_block['votes'] = invalid_vote[:2] + valid_vote[:2]
-        assert b.block_election_status(test_block) == 'invalid'
+        assert b.block_election_status(test_block) == Bigchain.BLOCK_INVALID
 
         # test undecided
         test_block['votes'] = valid_vote[:2]
-        assert b.block_election_status(test_block) == 'undecided'
+        assert b.block_election_status(test_block) == Bigchain.BLOCK_UNDECIDED
 
         # change signatures in block, should fail
         test_block['block']['voters'][0] = 'abc'
         test_block['block']['voters'][1] = 'abc'
         test_block['votes'] = valid_vote
-        assert b.block_election_status(test_block) == 'invalid'
+        assert b.block_election_status(test_block) == Bigchain.BLOCK_INVALID
 
     def test_quorum_odd(self, b):
         # test partial quorum situations for odd numbers of voters
@@ -387,16 +387,16 @@ class TestBlockElection(object):
                         for member in test_federation]
 
         test_block['votes'] = valid_vote[:2]
-        assert b.block_election_status(test_block) == 'undecided'
+        assert b.block_election_status(test_block) == Bigchain.BLOCK_UNDECIDED
 
         test_block['votes'] = invalid_vote[:2]
-        assert b.block_election_status(test_block) == 'undecided'
+        assert b.block_election_status(test_block) == Bigchain.BLOCK_UNDECIDED
 
         test_block['votes'] = valid_vote[:3]
-        assert b.block_election_status(test_block) == 'valid'
+        assert b.block_election_status(test_block) == Bigchain.BLOCK_VALID
 
         test_block['votes'] = invalid_vote[:3]
-        assert b.block_election_status(test_block) == 'invalid'
+        assert b.block_election_status(test_block) == Bigchain.BLOCK_INVALID
 
     def test_tx_rewritten_after_invalid(self, b, user_vk):
         q_block_new_vote = mp.Queue()
