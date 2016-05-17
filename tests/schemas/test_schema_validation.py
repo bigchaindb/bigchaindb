@@ -9,7 +9,7 @@ def test_load_json_schema_from_package_resources():
 def test_load_nonexistent_json_schema_from_package_resources_raises_exc():
     from bigchaindb import schemas
     with pytest.raises(FileNotFoundError):
-        assert isinstance(schemas.load('totally-not-a-schema-name'), dict)
+        schemas.load('totally-not-a-schema-name')
 
 
 def test_valid_transaction_should_pass(b, user_sk, user_vk):
