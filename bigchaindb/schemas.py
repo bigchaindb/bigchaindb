@@ -24,7 +24,7 @@ def load(name):
         ``FileNotFoundError`` if the schema cannot be found.
     """
     filename = os.path.join(SCHEMAS_ROOT, name + SCHEMAS_SUFFIX)
-    content = resource_string(Requirement('bigchaindb'), filename)
+    content = resource_string(Requirement.parse('bigchaindb'), filename)
     return json.loads(content.decode('utf8'))
 
 
