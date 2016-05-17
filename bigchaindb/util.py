@@ -452,7 +452,7 @@ def validate_fulfillments(signed_transaction):
         # TODO: avoid instantiation, pass as argument!
         bigchain = bigchaindb.Bigchain()
         input_condition = get_input_condition(bigchain, fulfillment)
-        is_valid &= parsed_fulfillment.condition.serialize_uri() == \
+        is_valid &= parsed_fulfillment.condition_uri == \
             input_condition['condition']['uri']
 
         if not is_valid:
