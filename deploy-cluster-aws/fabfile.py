@@ -124,6 +124,7 @@ def install_bigchaindb_from_git_archive():
     run('tar xvfz bigchaindb-archive.tar.gz')
     sudo('pip3 install .')
     # sudo('python3 setup.py install')
+    run('rm bigchaindb-archive.tar.gz')
 
 
 # Configure BigchainDB

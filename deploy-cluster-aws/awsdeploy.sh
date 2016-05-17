@@ -104,8 +104,6 @@ else
     cd ..
     rm -f bigchaindb-archive.tar.gz
     git archive $BRANCH --format=tar --output=bigchaindb-archive.tar
-    # TODO: the archive could exclude more files besides the .gitignore ones
-    # such as the docs. See http://tinyurl.com/zo6fxeg
     gzip bigchaindb-archive.tar
     mv bigchaindb-archive.tar.gz deploy-cluster-aws
     cd deploy-cluster-aws
