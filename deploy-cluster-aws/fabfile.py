@@ -5,8 +5,8 @@ BigchainDB, including its storage backend (RethinkDB).
 
 from __future__ import with_statement, unicode_literals
 
-import sys
-from os import getenv
+from os import environ  # a mapping (like a dict)
+from sys import exit as sys_exit
 
 from fabric.api import sudo, env, hosts
 from fabric.api import task, parallel
@@ -27,8 +27,6 @@ env.hosts = public_dns_names
 # SSH key files to try when connecting:
 # http://docs.fabfile.org/en/1.10/usage/env.html#key-filename
 env.key_filename = 'pem/bigchaindb.pem'
-
-newrelic_license_key = getenv('NEWRELIC_KEY', 'not_set')
 
 
 ######################################################################
@@ -194,8 +192,9 @@ def start_bigchaindb_load():
 @task
 @parallel
 def install_newrelic():
-    if newrelic_license_key == 'not_set':
-        sys.exit('The NEWRELIC_KEY environment variable is not set')
+    newrelic_license_key = environ.get('NEWRELIC_KEY')
+    if newrelic_license_key is None:
+        sys_exit('The NEWRELIC_KEY environment variable is not set')
     else:
         # Andreas had this "with settings(..." line, but I'm not sure why:
         # with settings(warn_only=True):
