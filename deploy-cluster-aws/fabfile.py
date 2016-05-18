@@ -5,6 +5,9 @@ BigchainDB, including its storage backend (RethinkDB).
 
 from __future__ import with_statement, unicode_literals
 
+import sys
+from os import getenv
+
 from fabric.api import sudo, env, hosts
 from fabric.api import task, parallel
 from fabric.contrib.files import sed
@@ -25,7 +28,7 @@ env.hosts = public_dns_names
 # http://docs.fabfile.org/en/1.10/usage/env.html#key-filename
 env.key_filename = 'pem/bigchaindb.pem'
 
-newrelic_license_key = 'you_need_a_real_license_key'
+newrelic_license_key = getenv('NEWRELIC_KEY', 'not_set')
 
 
 ######################################################################
@@ -189,14 +192,24 @@ def start_bigchaindb_load():
 
 # Install and run New Relic
 @task
+@parallel
 def install_newrelic():
-    with settings(warn_only=True):
-        sudo('echo deb http://apt.newrelic.com/debian/ newrelic non-free >> /etc/apt/sources.list')
-        # sudo('apt-key adv --keyserver hkp://subkeys.pgp.net --recv-keys 548C16BF')
+    if newrelic_license_key == 'not_set':
+        sys.exit('The NEWRELIC_KEY environment variable is not set')
+    else:
+        # Andreas had this "with settings(..." line, but I'm not sure why:
+        # with settings(warn_only=True):
+        # Use the installation instructions from NewRelic:
+        # http://tinyurl.com/q9kyrud
+        # ...with some modifications
+        sudo("echo 'deb http://apt.newrelic.com/debian/ newrelic non-free' >> "
+             "/etc/apt/sources.list.d/newrelic.list")
+        sudo('wget -O- https://download.newrelic.com/548C16BF.gpg | '
+             'apt-key add -')
         sudo('apt-get update')
         sudo('apt-get -y --force-yes install newrelic-sysmond')
         sudo('nrsysmond-config --set license_key=' + newrelic_license_key)
-        sudo('/etc/init.d/newrelic-sysmond restart')
+        sudo('/etc/init.d/newrelic-sysmond start')
 
 
 ###########################
