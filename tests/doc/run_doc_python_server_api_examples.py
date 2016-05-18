@@ -29,7 +29,7 @@ tx_signed = b.sign_transaction(tx, b.me_private)
 # included in a block, and written to the bigchain
 b.write_transaction(tx_signed)
 
-sleep(10)
+sleep(8)
 
 """
 Read the Creation Transaction from the DB
@@ -61,10 +61,12 @@ tx_transfer = b.create_transaction(testuser1_pub, testuser2_pub, tx_retrieved_id
 # sign the transaction
 tx_transfer_signed = b.sign_transaction(tx_transfer, testuser1_priv)
 
+
+b.validate_transaction(tx_transfer_signed)
 # write the transaction
 b.write_transaction(tx_transfer_signed)
 
-sleep(10)
+sleep(8)
 
 # check if the transaction is already in the bigchain
 tx_transfer_retrieved = b.get_transaction(tx_transfer_signed['id'])
@@ -95,10 +97,12 @@ tx_multisig = b.create_transaction(b.me, [testuser1_pub, testuser2_pub], None, '
 
 # Have the federation sign the transaction
 tx_multisig_signed = b.sign_transaction(tx_multisig, b.me_private)
+
+b.validate_transaction(tx_multisig_signed)
 b.write_transaction(tx_multisig_signed)
 
 # wait a few seconds for the asset to appear on the blockchain
-sleep(10)
+sleep(8)
 
 # retrieve the transaction
 tx_multisig_retrieved = b.get_transaction(tx_multisig_signed['id'])
@@ -111,15 +115,16 @@ tx_multisig_retrieved_id = b.get_owned_ids(testuser2_pub).pop()
 tx_multisig_transfer = b.create_transaction([testuser1_pub, testuser2_pub], testuser3_pub, tx_multisig_retrieved_id, 'TRANSFER')
 tx_multisig_transfer_signed = b.sign_transaction(tx_multisig_transfer, [testuser1_priv, testuser2_priv])
 
+b.validate_transaction(tx_multisig_transfer_signed)
 b.write_transaction(tx_multisig_transfer_signed)
 
 # wait a few seconds for the asset to appear on the blockchain
-sleep(10)
+sleep(8)
 
 # retrieve the transaction
-tx_multisig_retrieved = b.get_transaction(tx_multisig_transfer_signed['id'])
-
-print(json.dumps(tx_multisig_transfer_signed, sort_keys=True, indent=4, separators=(',', ':')))
+tx_multisig_transfer_retrieved = b.get_transaction(tx_multisig_transfer_signed['id'])
+assert tx_multisig_transfer_retrieved is not None
+print(json.dumps(tx_multisig_transfer_retrieved, sort_keys=True, indent=4, separators=(',', ':')))
 
 """
 Multiple Inputs and Outputs
@@ -127,9 +132,10 @@ Multiple Inputs and Outputs
 for i in range(3):
     tx_mimo_asset = b.create_transaction(b.me, testuser1_pub, None, 'CREATE')
     tx_mimo_asset_signed = b.sign_transaction(tx_mimo_asset, b.me_private)
+    b.validate_transaction(tx_mimo_asset_signed)
     b.write_transaction(tx_mimo_asset_signed)
 
-sleep(10)
+sleep(8)
 
 # get inputs
 owned_mimo_inputs = b.get_owned_ids(testuser1_pub)
@@ -137,9 +143,10 @@ print(len(owned_mimo_inputs))
 
 # create a transaction
 tx_mimo = b.create_transaction(testuser1_pub, testuser2_pub, owned_mimo_inputs, 'TRANSFER')
-tx_mimo_signed = b.sign_transaction(tx_mimo, testuser1_priv)
 
+tx_mimo_signed = b.sign_transaction(tx_mimo, testuser1_priv)
 # write the transaction
+b.validate_transaction(tx_mimo_signed)
 b.write_transaction(tx_mimo_signed)
 
 print(json.dumps(tx_mimo_signed, sort_keys=True, indent=4, separators=(',', ':')))
@@ -178,10 +185,11 @@ threshold_tx['id'] = util.get_hash_data(threshold_tx)
 # sign the transaction
 threshold_tx_signed = b.sign_transaction(threshold_tx, testuser2_priv)
 
+b.validate_transaction(threshold_tx_signed)
 # write the transaction
 b.write_transaction(threshold_tx_signed)
 
-sleep(10)
+sleep(8)
 
 # check if the transaction is already in the bigchain
 tx_threshold_retrieved = b.get_transaction(threshold_tx_signed['id'])
@@ -225,7 +233,7 @@ assert threshold_fulfillment.validate(threshold_tx_fulfillment_message) == True
 
 threshold_tx_transfer['transaction']['fulfillments'][0]['fulfillment'] = threshold_fulfillment.serialize_uri()
 
-assert b.verify_signature(threshold_tx_transfer) == True
+assert b.validate_fulfillments(threshold_tx_transfer) == True
 
 assert b.validate_transaction(threshold_tx_transfer) == threshold_tx_transfer
 
@@ -266,7 +274,7 @@ assert b.is_valid_transaction(hashlock_tx_signed) == hashlock_tx_signed
 b.write_transaction(hashlock_tx_signed)
 print(json.dumps(hashlock_tx_signed, sort_keys=True, indent=4, separators=(',', ':')))
 
-sleep(10)
+sleep(8)
 
 hashlockuser_priv, hashlockuser_pub = crypto.generate_key_pair()
 

@@ -72,3 +72,5 @@ target/
 deploy-cluster-aws/conf/rethinkdb.conf
 deploy-cluster-aws/hostlist.py
 deploy-cluster-aws/confiles/
+deploy-cluster-aws/client_confile
+benchmarking-tests/hostlist.py

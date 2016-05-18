@@ -30,7 +30,7 @@ validate_transaction(bigchain, transaction)
 validate_block(bigchain, block)
 create_transaction(*args, **kwargs)
 sign_transaction(transaction, *args, **kwargs)
-verify_signature(transaction)
+validate_fulfillments(transaction)
 ```
 
 Together, these functions are sufficient for most customizations. For example:

@@ -1,10 +1,11 @@
 import json
 from unittest.mock import Mock, patch
 from argparse import Namespace
-from pprint import pprint
 import copy
 
 import pytest
+
+from tests.db.conftest import setup_database
 
 
 @pytest.fixture
@@ -225,3 +226,22 @@ def test_start_rethinkdb_exits_when_cannot_start(mock_popen):
     with pytest.raises(exceptions.StartupError):
         utils.start_rethinkdb()
 
+
+def test_set_shards(b):
+    import rethinkdb as r
+    from bigchaindb.commands.bigchain import run_set_shards
+
+    # set the number of shards
+    args = Namespace(num_shards=3)
+    run_set_shards(args)
+
+    # retrieve table configuration
+    table_config = list(r.db('rethinkdb')
+                        .table('table_config')
+                        .filter(r.row['db'] == b.dbname)
+                        .run(b.conn))
+
+    # check that the number of shards got set to the correct value
+    for table in table_config:
+        if table['name'] in ['backlog', 'bigchain']:
+            assert len(table['shards']) == 3

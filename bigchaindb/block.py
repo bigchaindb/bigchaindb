@@ -7,6 +7,7 @@ import rethinkdb as r
 import bigchaindb
 from bigchaindb import Bigchain
 from bigchaindb.monitor import Monitor
+from bigchaindb.util import ProcessGroup
 
 
 logger = logging.getLogger(__name__)
@@ -180,7 +181,9 @@ class Block(object):
         # add results to the queue
         for result in initial_results:
             q_initial.put(result)
-        q_initial.put('stop')
+
+        for i in range(mp.cpu_count()):
+            q_initial.put('stop')
 
         return q_initial
 
@@ -203,17 +206,21 @@ class Block(object):
         self._start()
         logger.info('exiting block module...')
 
+    def kill(self):
+        for i in range(mp.cpu_count()):
+            self.q_new_transaction.put('stop')
+
     def _start(self):
         """
         Initialize, spawn, and start the processes
         """
 
         # initialize the processes
-        p_filter = mp.Process(name='filter_transactions', target=self.filter_by_assignee)
-        p_validate = mp.Process(name='validate_transactions', target=self.validate_transactions)
-        p_blocks = mp.Process(name='create_blocks', target=self.create_blocks)
-        p_write = mp.Process(name='write_blocks', target=self.write_blocks)
-        p_delete = mp.Process(name='delete_transactions', target=self.delete_transactions)
+        p_filter = ProcessGroup(name='filter_transactions', target=self.filter_by_assignee)
+        p_validate = ProcessGroup(name='validate_transactions', target=self.validate_transactions)
+        p_blocks = ProcessGroup(name='create_blocks', target=self.create_blocks)
+        p_write = ProcessGroup(name='write_blocks', target=self.write_blocks)
+        p_delete = ProcessGroup(name='delete_transactions', target=self.delete_transactions)
 
         # start the processes
         p_filter.start()
@@ -222,9 +229,3 @@ class Block(object):
         p_write.start()
         p_delete.start()
 
-        # join processes
-        p_filter.join()
-        p_validate.join()
-        p_blocks.join()
-        p_write.join()
-        p_delete.join()

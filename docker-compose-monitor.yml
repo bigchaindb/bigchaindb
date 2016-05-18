@@ -1,25 +1,28 @@
-influxdb:
-  image: tutum/influxdb
-  ports:
-    - "8083:8083"
-    - "8086:8086"
-  expose:
-    - "8090"
-    - "8099"
-  environment:
-    PRE_CREATE_DB: "telegraf"
+version: '2'
+services:
+  influxdb:
+    image: tutum/influxdb
+    ports:
+        - "8083:8083"
+        - "8086:8086"
+        - "8090"
+        - "8099"
+    environment:
+      PRE_CREATE_DB: "telegraf"
+    volumes:
+      - $INFLUXDB_DATA:/data
 
-grafana:
-  image: bigchaindb/grafana-bigchaindb-docker
-  tty: true
-  ports:
-    - "3000:3000"
-  links:
-    - influxdb:localhost
+  grafana:
+    image: bigchaindb/grafana-bigchaindb-docker
+    tty: true
+    ports:
+      - "3000:3000"
+    environment:
+      INFLUXDB_HOST: "influxdb"
 
-statsd:
-  image: bigchaindb/docker-telegraf-statsd
-  ports:
-    - "8125:8125/udp"
-  links:
-    - influxdb:localhost
+  statsd:
+    image: bigchaindb/docker-telegraf-statsd
+    ports:
+      - "8125:8125/udp"
+    environment:
+      INFLUXDB_HOST: "influxdb"

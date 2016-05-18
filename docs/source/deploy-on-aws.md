@@ -83,9 +83,53 @@ Add some rules for Inbound traffic:
 **Note: These rules are extremely lax! They're meant to make testing easy.** You'll want to tighten them up if you intend to have a secure cluster. For example, Source = 0.0.0.0/0 is [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing) for "allow this traffic to come from _any_ IP address."
 
 
-## AWS Deployment
+## Deploy a BigchainDB Monitor
 
-### AWS Deployment Step 1
+This step is optional.
+
+One way to monitor a BigchainDB cluster is to use the monitoring setup described in the [Monitoring](monitoring.html) section of this documentation. If you want to do that, then you may want to deploy the monitoring server first, so you can tell your BigchainDB nodes where to send their monitoring data.
+
+You can deploy a monitoring server on AWS. To do that, go to the AWS EC2 Console and launch an instance:
+
+1. Choose an AMI: select Ubuntu Server 14.04 LTS.
+2. Choose an Instance Type: a t2.micro will suffice.
+3. Configure Instance Details: you can accept the defaults, but feel free to change them.
+4. Add Storage: A "Root" volume type should already be included. You _could_ store monitoring data there (e.g. in a folder named `/influxdb-data`) but we will attach another volume and store the monitoring data there instead. Select "Add New Volume" and an EBS volume type.
+5. Tag Instance: give your instance a memorable name.
+6. Configure Security Group: choose your bigchaindb security group.
+7. Review and launch your instance.
+
+When it asks, choose an existing key pair: the one you created earlier (named `bigchaindb`).
+
+Give your instance some time to launch and become able to accept SSH connections. You can see its current status in the AWS EC2 Console (in the "Instances" section). SSH into your instance using something like:
+```text
+cd deploy-cluster-aws
+ssh -i pem/bigchaindb.pem ubuntu@ec2-52-58-157-229.eu-central-1.compute.amazonaws.com
+```
+
+where `ec2-52-58-157-229.eu-central-1.compute.amazonaws.com` should be replaced by your new instance's EC2 hostname. (To get that, go to the AWS EC2 Console, select Instances, click on your newly-launched instance, and copy its "Public DNS" name.)
+
+Next, create a file system on the attached volume, make a directory named `/influxdb-data`, and set the attached volume's mount point to be `/influxdb-data`. For detailed instructions on how to do that, see the AWS documentation for [Making an Amazon EBS Volume Available for Use](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html).
+
+Then install Docker and Docker Compose:
+```text
+# in a Python 2.5-2.7 virtual environment where fabric, boto3, etc. are installed
+fab --fabfile=fabfile-monitor.py --hosts=<EC2 hostname> install_docker
+```
+
+After Docker is installed, we can run the monitor with:
+```text
+fab --fabfile=fabfile-monitor.py --hosts=<EC2 hostname> run_monitor
+```
+
+For more information about monitoring (e.g. how to view the Grafana dashboard in your web browser), see the [Monitoring](monitoring.html) section of this documentation.
+
+To configure a BigchainDB node to send monitoring data to the monitoring server, change the statsd host in the configuration of the BigchainDB node. The section on [Configuring a BigchainDB Node](configuration.html) explains how you can do that. (For example, you can change the statsd host in `$HOME/.bigchaindb`.)
+
+
+## Deploy a BigchainDB Cluster
+
+### Step 1
 
 Suppose _N_ is the number of nodes you want in your BigchainDB cluster. If you already have a set of _N_ BigchainDB configuration files in the `deploy-cluster-aws/confiles` directory, then you can jump to step 2. To create such a set, you can do something like:
 ```text
@@ -99,28 +143,53 @@ That will create three (3) _default_ BigchainDB configuration files in the `depl
 
 You can look inside those files if you're curious. In step 2, they'll be modified. For example, the default keyring is an empty list. In step 2, the deployment script automatically changes the keyring of each node to be a list of the public keys of all other nodes. Other changes are also made.
 
-### AWS Deployment Step 2
+**An Aside on Using a Standard Set of Keypairs**
+
+It's possible to deploy BigchainDB servers with a known set of keypairs. You can generate a set of keypairs in a file named `keypairs.py` using the `write_keypairs_file.py` script. For example:
+```text
+# in a Python 3 virtual environment where bigchaindb is installed
+cd bigchaindb
+cd deploy-cluster-aws
+python3 write_keypairs_file.py 100
+```
+
+The above command generates a file with 100 keypairs. (You can generate more keypairs than you need, so you can use the same list over and over again, for different numbers of servers.) To make the `awsdeploy.sh` script read all keys from `keypairs.py`, you must _edit_ the `awsdeploy.sh` script: change the line that says `python clusterize_confiles.py confiles $NUM_NODES` to `python clusterize_confiles.py -k confiles $NUM_NODES` (i.e. add the `-k` option).
+
+### Step 2
 
 Step 2 is to launch the nodes ("instances") on AWS, to install all the necessary software on them, configure the software, run the software, and more.
 
-Here's an example of how one could launch a BigchainDB cluster of three (3) nodes tagged `wrigley` on AWS:
+Here's an example of how one could launch a BigchainDB cluster of three (3) nodes on AWS:
 ```text
 # in a Python 2.5-2.7 virtual environment where fabric, boto3, etc. are installed
 cd bigchaindb
 cd deploy-cluster-aws
-./startup.sh wrigley 3 pypi
+./awsdeploy.sh 3
+fab start_bigchaindb
 ```
 
-The `pypi` on the end means that it will install the latest (stable) `bigchaindb` package from the [Python Package Index (PyPI)](https://pypi.python.org/pypi). That is, on each node, BigchainDB is installed using `pip install bigchaindb`. 
-
-`startup.sh` is a Bash script which calls some Python and Fabric scripts. The usage is:
+`awsdeploy.sh` is a Bash script which calls some Python and Fabric scripts. The usage is:
 ```text
-./startup.sh <tag> <number_of_nodes_in_cluster> <pypi_or_branch>
+./awsdeploy.sh <number_of_nodes_in_cluster> [pypi_or_branch] [servers_or_clients]
 ```
 
-The first two arguments are self-explanatory. The third argument can be `pypi` or the name of a local Git branch (e.g. `master` or `feat/3752/quote-asimov-on-tuesdays`). If you don't include a third argument, then `pypi` will be assumed by default.
+**<number_of_nodes_in_cluster>** (Required)
 
-If you're curious what the `startup.sh` script does, the source code has lots of explanatory comments, so it's quite easy to read. Here's a link to the latest version on GitHub: [`startup.sh`](https://github.com/bigchaindb/bigchaindb/blob/master/deploy-cluster-aws/startup.sh)
+The number of nodes you want to deploy. Example value: 5
+
+**[pypi_or_branch]** (Optional)
+
+Where the nodes should get their BigchainDB source code. If it's `pypi`, then BigchainDB will be installed from the latest `bigchaindb` package in the [Python Package Index (PyPI)](https://pypi.python.org/pypi). That is, on each node, BigchainDB will be installed using `pip install bigchaindb`. You can also put the name of a local Git branch; it will be compressed and sent out to all the nodes for installation. If you don't include the second argument, then the default is `pypi`.
+
+**[servers_or_clients]** (Optional)
+
+If you want to deploy BigchainDB servers, then the third argument should be `servers`.
+If you want to deploy BigchainDB clients, then the third argument should be `clients`.
+The third argument is optional, but if you want to include it, you must also include the second argument. If you don't include the third argument, then the default is `servers`.
+
+---
+
+If you're curious what the `awsdeploy.sh` script does, [the source code](https://github.com/bigchaindb/bigchaindb/blob/master/deploy-cluster-aws/awsdeploy.sh) has lots of explanatory comments, so it's quite easy to read.
 
 It should take a few minutes for the deployment to finish. If you run into problems, see the section on Known Deployment Issues below.
 

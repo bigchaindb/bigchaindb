@@ -22,21 +22,27 @@ class Bigchain(object):
     Create, read, sign, write transactions to the database
     """
 
+    BLOCK_INVALID = 'invalid'
+    BLOCK_VALID = 'valid'
+    BLOCK_UNDECIDED = 'undecided'
+
     def __init__(self, host=None, port=None, dbname=None,
                  public_key=None, private_key=None, keyring=[],
                  consensus_plugin=None):
         """Initialize the Bigchain instance
 
-        There are three ways in which the Bigchain instance can get its parameters.
-        The order by which the parameters are chosen are:
-
-            1. Setting them by passing them to the `__init__` method itself.
-            2. Setting them as environment variables
-            3. Reading them from the `config.json` file.
+        A Bigchain instance has several configuration parameters (e.g. host).
+        If a parameter value is passed as an argument to the Bigchain
+        __init__ method, then that is the value it will have.
+        Otherwise, the parameter value will be the value from the local
+        configuration file. If it's not set in that file, then the value
+        will come from an environment variable. If that environment variable
+        isn't set, then the parameter will have its default value (defined in
+        bigchaindb.__init__).
 
         Args:
-            host (str): hostname where the rethinkdb is running.
-            port (int): port in which rethinkb is running (usually 28015).
+            host (str): hostname where RethinkDB is running.
+            port (int): port in which RethinkDB is running (usually 28015).
             dbname (str): the name of the database to connect to (usually bigchain).
             public_key (str): the base58 encoded public key for the ED25519 curve.
             private_key (str): the base58 encoded private key for the ED25519 curve.
@@ -88,17 +94,17 @@ class Bigchain(object):
 
         return self.consensus.sign_transaction(transaction, *args, **kwargs)
 
-    def verify_signature(self, signed_transaction, *args, **kwargs):
-        """Verify the signature(s) of a transaction.
+    def validate_fulfillments(self, signed_transaction, *args, **kwargs):
+        """Validate the fulfillment(s) of a transaction.
 
         Refer to the documentation of your consensus plugin.
 
         Returns:
-            bool: True if the transaction's required signature data is present
+            bool: True if the transaction's required fulfillments are present
                 and correct, False otherwise.
         """
 
-        return self.consensus.verify_signature(
+        return self.consensus.validate_fulfillments(
             signed_transaction, *args, **kwargs)
 
     def write_transaction(self, signed_transaction, durability='soft'):
@@ -566,9 +572,8 @@ class Bigchain(object):
         return unvoted
 
     def block_election_status(self, block):
-        """
-        Tallies the votes on a block, and returns the status: valid, invalid, or undecided
-        """
+        """Tally the votes on a block, and return the status: valid, invalid, or undecided."""
+        
         n_voters = len(block['block']['voters'])
         vote_cast = [vote['vote']['is_block_valid'] for vote in block['votes']]
         vote_validity = [self.consensus.verify_vote_signature(block, vote) for vote in block['votes']]
@@ -586,8 +591,8 @@ class Bigchain(object):
         # to avoid a tie. In the case of an odd number of voters this is not
         # relevant, since one side must be a majority.
         if n_invalid_votes >= math.ceil(n_voters / 2):
-            return 'invalid'
+            return Bigchain.BLOCK_INVALID
         elif n_valid_votes > math.floor(n_voters / 2):
-            return 'valid'
+            return Bigchain.BLOCK_VALID
         else:
-            return 'undecided'
+            return Bigchain.BLOCK_UNDECIDED
