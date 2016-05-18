@@ -131,7 +131,7 @@ To configure a BigchainDB node to send monitoring data to the monitoring server,
 
 ### Step 1
 
-Suppose _N_ is the number of nodes you want in your BigchainDB cluster. If you already have a set of _N_ BigchainDB configuration files in the `deploy-cluster-aws/confiles` directory, then you can jump to step 2. To create such a set, you can do something like:
+Suppose _N_ is the number of nodes you want in your BigchainDB cluster. If you already have a set of _N_ BigchainDB configuration files in the `deploy-cluster-aws/confiles` directory, then you can jump to the next step. To create such a set, you can do something like:
 ```text
 # in a Python 3 virtual environment where bigchaindb is installed
 cd bigchaindb
@@ -141,11 +141,23 @@ cd deploy-cluster-aws
 
 That will create three (3) _default_ BigchainDB configuration files in the `deploy-cluster-aws/confiles` directory (which will be created if it doesn't already exist). The three files will be named `bcdb_conf0`, `bcdb_conf1`, and `bcdb_conf2`.
 
-You can look inside those files if you're curious. In step 2, they'll be modified. For example, the default keyring is an empty list. In step 2, the deployment script automatically changes the keyring of each node to be a list of the public keys of all other nodes. Other changes are also made.
+You can look inside those files if you're curious. For example, the default keyring is an empty list. Later, the deployment script automatically changes the keyring of each node to be a list of the public keys of all other nodes. Other changes are also made. That is, the configuration files generated in this step are _not_ what will be sent to the deployed nodes; they're just a starting point.
 
-**An Aside on Using a Standard Set of Keypairs**
+### Step 2
 
-It's possible to deploy BigchainDB servers with a known set of keypairs. You can generate a set of keypairs in a file named `keypairs.py` using the `write_keypairs_file.py` script. For example:
+Step 2 is to make an AWS deployment configuration file, if necessary. There's an example AWS configuration file named `example_deploy_conf.py`. It has many comments explaining each setting. The settings in that file are (or should be):
+```text
+NUM_NODES=3
+BRANCH="master"
+WHAT_TO_DEPLOY="servers"
+USE_KEYPAIRS_FILE=False
+IMAGE_ID="ami-accff2b1"
+INSTANCE_TYPE="m3.2xlarge"
+```
+
+If you're happy with those settings, then you can skip to the next step. Otherwise, you could make a copy of `example_deploy_conf.py` (e.g. `cp example_deploy_conf.py my_deploy_conf.py`) and then edit the copy using a text editor.
+
+If you want your nodes to have a predictable set of pre-generated keypairs, then you should 1) set `USE_KEYPAIRS_FILE=True` in the AWS deployment configuration file, and 2) provide a `keypairs.py` file containing enough keypairs for all of your nodes. You can generate a `keypairs.py` file using the `write_keypairs_file.py` script. For example:
 ```text
 # in a Python 3 virtual environment where bigchaindb is installed
 cd bigchaindb
@@ -153,45 +165,24 @@ cd deploy-cluster-aws
 python3 write_keypairs_file.py 100
 ```
 
-The above command generates a file with 100 keypairs. (You can generate more keypairs than you need, so you can use the same list over and over again, for different numbers of servers.) To make the `awsdeploy.sh` script read all keys from `keypairs.py`, you must _edit_ the `awsdeploy.sh` script: change the line that says `python clusterize_confiles.py confiles $NUM_NODES` to `python clusterize_confiles.py -k confiles $NUM_NODES` (i.e. add the `-k` option).
+The above command generates a `keypairs.py` file with 100 keypairs. You can generate more keypairs than you need, so you can use the same list over and over again, for different numbers of servers. The deployment scripts will only use the first NUM_NODES keypairs.
 
-### Step 2
+### Step 3
 
-Step 2 is to launch the nodes ("instances") on AWS, to install all the necessary software on them, configure the software, run the software, and more.
+Step 3 is to launch the nodes ("instances") on AWS, to install all the necessary software on them, configure the software, run the software, and more. Here's how you'd do that:
 
-Here's an example of how one could launch a BigchainDB cluster of three (3) nodes on AWS:
 ```text
 # in a Python 2.5-2.7 virtual environment where fabric, boto3, etc. are installed
 cd bigchaindb
 cd deploy-cluster-aws
-./awsdeploy.sh 3
+./awsdeploy.sh my_deploy_conf.py
+# Only if you want to start BigchainDB on all the nodes:
 fab start_bigchaindb
 ```
 
-`awsdeploy.sh` is a Bash script which calls some Python and Fabric scripts. The usage is:
-```text
-./awsdeploy.sh <number_of_nodes_in_cluster> [pypi_or_branch] [servers_or_clients]
-```
+`awsdeploy.sh` is a Bash script which calls some Python and Fabric scripts. If you're curious what it does, [the source code](https://github.com/bigchaindb/bigchaindb/blob/master/deploy-cluster-aws/awsdeploy.sh) has many explanatory comments.
 
-**<number_of_nodes_in_cluster>** (Required)
-
-The number of nodes you want to deploy. Example value: 5
-
-**[pypi_or_branch]** (Optional)
-
-Where the nodes should get their BigchainDB source code. If it's `pypi`, then BigchainDB will be installed from the latest `bigchaindb` package in the [Python Package Index (PyPI)](https://pypi.python.org/pypi). That is, on each node, BigchainDB will be installed using `pip install bigchaindb`. You can also put the name of a local Git branch; it will be compressed and sent out to all the nodes for installation. If you don't include the second argument, then the default is `pypi`.
-
-**[servers_or_clients]** (Optional)
-
-If you want to deploy BigchainDB servers, then the third argument should be `servers`.
-If you want to deploy BigchainDB clients, then the third argument should be `clients`.
-The third argument is optional, but if you want to include it, you must also include the second argument. If you don't include the third argument, then the default is `servers`.
-
----
-
-If you're curious what the `awsdeploy.sh` script does, [the source code](https://github.com/bigchaindb/bigchaindb/blob/master/deploy-cluster-aws/awsdeploy.sh) has lots of explanatory comments, so it's quite easy to read.
-
-It should take a few minutes for the deployment to finish. If you run into problems, see the section on Known Deployment Issues below.
+It should take a few minutes for the deployment to finish. If you run into problems, see the section on **Known Deployment Issues** below.
 
 The EC2 Console has a section where you can see all the instances you have running on EC2. You can `ssh` into a running instance using a command like:
 ```text

@@ -15,18 +15,22 @@ coverage:
 
   status:
     project:
-      target: auto
-      if_no_uploads: error
+      default:
+        target: auto
+        if_no_uploads: error
 
     patch:
-      target: "80%"
-      if_no_uploads: error
+      default:
+        target: "80%"
+        if_no_uploads: error
 
   ignore:          # files and folders that will be removed during processing
     - "deploy-cluster-aws/*"
     - "docs/*"
     - "tests/*"
     - "bigchaindb/version.py"
+    - "benchmarking-tests/*"
+    - "speed-tests/*"
 
 comment:
   # @stevepeak (from codecov.io) suggested we change 'suggestions' to 'uncovered'

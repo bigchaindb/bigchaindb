@@ -4,37 +4,34 @@
 # if any command has a non-zero exit status
 set -e
 
-USAGE="usage: ./awsdeploy.sh <number_of_nodes_in_cluster> <pypi_or_branch> <servers_or_clients>"
-
+# Check for the first command-line argument
+# (the name of the AWS deployment config file)
 if [ -z "$1" ]; then
-    echo $USAGE
-    echo "No first argument was specified"
-    echo "It should be a number like 3 or 15"
-    exit 1
-else
-    NUM_NODES=$1
-fi
-
-if [ -z "$2" ]; then
-    echo $USAGE
-    echo "No second argument was specified, so BigchainDB will be installed from PyPI"
-    BRANCH="pypi"
-else
-    BRANCH=$2
-fi
-
-if [ -z "$3" ]; then
-    echo $USAGE
-    echo "No third argument was specified, so servers will be deployed"
-    WHAT_TO_DEPLOY="servers"
-else
-    WHAT_TO_DEPLOY=$3
-fi
-
-if [[ ("$WHAT_TO_DEPLOY" != "servers") && ("$WHAT_TO_DEPLOY" != "clients") ]]; then
-    echo "The third argument, if included, must be servers or clients"
+    # no first argument was provided
+    echo "awsdeploy: missing file operand"
+    echo "Usage: awsdeploy DEPLOY_CONF_FILE"
+    echo "Deploy BigchainDB on AWS using the specified AWS deployment configuration file"
     exit 1
 fi
+
+DEPLOY_CONF_FILE=$1
+
+# Check to make sure DEPLOY_CONF_FILE exists
+if [ ! -f "$DEPLOY_CONF_FILE" ]; then
+    echo "AWS deployment configuration file not found: "$DEPLOY_CONF_FILE
+    exit 1
+fi
+
+# Read DEPLOY_CONF_FILE
+# to set environment variables related to AWS deployment
+echo "Reading "$DEPLOY_CONF_FILE
+source $DEPLOY_CONF_FILE
+echo "NUM_NODES = "$NUM_NODES
+echo "BRANCH = "$BRANCH
+echo "WHAT_TO_DEPLOY = "$WHAT_TO_DEPLOY
+echo "USE_KEYPAIRS_FILE = "$USE_KEYPAIRS_FILE
+echo "IMAGE_ID = "$IMAGE_ID
+echo "INSTANCE_TYPE = "$INSTANCE_TYPE
 
 # Check for AWS private key file (.pem file)
 if [ ! -f "pem/bigchaindb.pem" ]; then
@@ -46,6 +43,21 @@ fi
 if [ ! -d "confiles" ]; then
     echo "Directory confiles is needed but does not exist"
     echo "See make_confiles.sh to find out how to make it"
+    exit 1
+fi
+
+# Check if NUM_NODES got set
+if [ -z "$NUM_NODES" ]; then
+    echo "NUM_NODES is not set in the AWS deployment configuration file "$DEPLOY_CONF_FILE
+    exit 1
+fi
+
+# Check if the number of files in confiles directory == NUM_NODES
+CONFILES_COUNT=`ls confiles | wc -l`
+if [[ $CONFILES_COUNT != $NUM_NODES ]]; then
+    echo "ERROR: CONFILES_COUNT = "$CONFILES_COUNT
+    echo "but NUM_NODES = "$NUM_NODES
+    echo "so there should be "$NUM_NODES" files in the confiles directory" 
     exit 1
 fi
 
@@ -67,7 +79,7 @@ chmod 0400 pem/bigchaindb.pem
 # 5. writes the shellscript add2known_hosts.sh
 # 6. (over)writes a file named hostlist.py
 #    containing a list of all public DNS names.
-python launch_ec2_nodes.py --tag $TAG --nodes $NUM_NODES
+python launch_ec2_nodes.py --deploy-conf-file $DEPLOY_CONF_FILE --tag $TAG
 
 # Make add2known_hosts.sh executable then execute it.
 # This adds remote keys to ~/.ssh/known_hosts
@@ -92,8 +104,6 @@ else
     cd ..
     rm -f bigchaindb-archive.tar.gz
     git archive $BRANCH --format=tar --output=bigchaindb-archive.tar
-    # TODO: the archive could exclude more files besides the .gitignore ones
-    # such as the docs. See http://tinyurl.com/zo6fxeg
     gzip bigchaindb-archive.tar
     mv bigchaindb-archive.tar.gz deploy-cluster-aws
     cd deploy-cluster-aws
@@ -117,7 +127,11 @@ if [ "$WHAT_TO_DEPLOY" == "servers" ]; then
 
     # Transform the config files in the confiles directory
     # to have proper keyrings, api_endpoint values, etc.
-    python clusterize_confiles.py confiles $NUM_NODES
+    if [ "$USE_KEYPAIRS_FILE" == "True" ]; then
+        python clusterize_confiles.py -k confiles $NUM_NODES
+    else
+        python clusterize_confiles.py confiles $NUM_NODES
+    fi
 
     # Send one of the config files to each instance
     for (( HOST=0 ; HOST<$NUM_NODES ; HOST++ )); do
