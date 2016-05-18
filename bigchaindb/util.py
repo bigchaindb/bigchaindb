@@ -1,11 +1,12 @@
 import copy
-import json
 import time
 import contextlib
 import threading
 import queue
 import multiprocessing as mp
 from datetime import datetime
+
+import rapidjson
 
 import cryptoconditions as cc
 from cryptoconditions.exceptions import ParsingError
@@ -109,8 +110,7 @@ def serialize(data):
         str: JSON formatted string
 
     """
-    return json.dumps(data, skipkeys=False, ensure_ascii=False,
-                      separators=(',', ':'), sort_keys=True)
+    return rapidjson.dumps(data, skipkeys=False, ensure_ascii=False, sort_keys=True)
 
 
 def deserialize(data):
@@ -123,7 +123,7 @@ def deserialize(data):
         dict: dict resulting from the serialization of a JSON formatted string.
     """
 
-    return json.loads(data, encoding="utf-8")
+    return rapidjson.loads(data)
 
 
 def timestamp():
@@ -275,7 +275,7 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
             conditions.append({
                 'new_owners': new_owners,
                 'condition': {
-                    'details': json.loads(condition.serialize_json()),
+                    'details': rapidjson.loads(condition.serialize_json()),
                     'uri': condition.condition.serialize_uri()
                 },
                 'cid': fulfillment['fid']
@@ -493,7 +493,7 @@ def get_fulfillment_message(transaction, fulfillment, serialized=False):
     # there is no previous transaction so we need to create one on the fly
     else:
         current_owner = transaction['transaction']['fulfillments'][0]['current_owners'][0]
-        condition = json.loads(cc.Ed25519Fulfillment(public_key=current_owner).serialize_json())
+        condition = rapidjson.loads(cc.Ed25519Fulfillment(public_key=current_owner).serialize_json())
         fulfillment_message['condition'] = {'condition': {'details': condition}}
     if serialized:
         return serialize(fulfillment_message)
