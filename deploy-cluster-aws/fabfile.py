@@ -64,7 +64,7 @@ def install_base_software():
                      software-properties-common python-software-properties \
                      python3-setuptools ipython3 sysstat s3cmd')
     sudo('easy_install3 pip')
-    sudo('pip install -U pip wheel setuptools')
+    sudo('pip install --upgrade pip wheel setuptools')
 
 
 # Install RethinkDB
@@ -124,6 +124,7 @@ def install_bigchaindb_from_git_archive():
     run('tar xvfz bigchaindb-archive.tar.gz')
     sudo('pip3 install .')
     # sudo('python3 setup.py install')
+    run('rm bigchaindb-archive.tar.gz')
 
 
 # Configure BigchainDB

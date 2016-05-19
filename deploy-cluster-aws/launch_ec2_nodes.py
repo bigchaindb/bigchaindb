@@ -16,12 +16,22 @@ import sys
 import time
 import socket
 import argparse
+import importlib
 import botocore
 import boto3
+
 from awscommon import get_naeips
 
 
-# First, ensure they're using Python 2.5-2.7
+SETTINGS = ['NUM_NODES', 'BRANCH', 'WHAT_TO_DEPLOY', 'USE_KEYPAIRS_FILE',
+            'IMAGE_ID', 'INSTANCE_TYPE']
+
+
+class SettingsTypeError(TypeError):
+    pass
+
+
+# Ensure they're using Python 2.5-2.7
 pyver = sys.version_info
 major = pyver[0]
 minor = pyver[1]
@@ -36,14 +46,54 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--tag",
                     help="tag to add to all launched instances on AWS",
                     required=True)
-parser.add_argument("--nodes",
-                    help="number of nodes in the cluster",
-                    required=True,
-                    type=int)
+parser.add_argument("--deploy-conf-file",
+                    help="AWS deployment configuration file",
+                    required=True)
 args = parser.parse_args()
-
 tag = args.tag
-num_nodes = int(args.nodes)
+deploy_conf_file = args.deploy_conf_file
+
+# Import all the variables set in the AWS deployment configuration file
+# (Remove the '.py' from the end of deploy_conf_file.)
+cf = importlib.import_module(deploy_conf_file[:-3])
+
+dir_cf = dir(cf)  # = a list of the attributes of cf
+for setting in SETTINGS:
+    if setting not in dir_cf:
+        sys.exit('{} was not set '.format(setting) +
+                 'in the specified AWS deployment '
+                 'configuration file {}'.format(deploy_conf_file))
+    exec('{0} = cf.{0}'.format(setting))
+
+# Validate the variables set in the AWS deployment configuration file
+if not isinstance(NUM_NODES, int):
+    raise SettingsTypeError('NUM_NODES should be an int')
+
+if not isinstance(BRANCH, str):
+    raise SettingsTypeError('BRANCH should be a string')
+
+if not isinstance(WHAT_TO_DEPLOY, str):
+    raise SettingsTypeError('WHAT_TO_DEPLOY should be a string')
+
+if not isinstance(USE_KEYPAIRS_FILE, bool):
+    msg = 'USE_KEYPAIRS_FILE should a boolean (True or False)'
+    raise SettingsTypeError(msg)
+
+if not isinstance(IMAGE_ID, str):
+    raise SettingsTypeError('IMAGE_ID should be a string')
+
+if not isinstance(INSTANCE_TYPE, str):
+    raise SettingsTypeError('INSTANCE_TYPE should be a string')
+
+if NUM_NODES > 64:
+    raise ValueError('NUM_NODES should be less than or equal to 64. '
+                     'The AWS deployment configuration file sets it to {}'.
+                     format(NUM_NODES))
+
+if WHAT_TO_DEPLOY not in ['servers', 'clients']:
+    raise ValueError('WHAT_TO_DEPLOY should be either "servers" or "clients". '
+                     'The AWS deployment configuration file sets it to {}'.
+                     format(WHAT_TO_DEPLOY))
 
 # Get an AWS EC2 "resource"
 # See http://boto3.readthedocs.org/en/latest/guide/resources.html
@@ -81,10 +131,10 @@ print('You have {} allocated elastic IPs which are '
       'not already associated with instances'.
       format(len(non_associated_eips)))
 
-if num_nodes > len(non_associated_eips):
-    num_eips_to_allocate = num_nodes - len(non_associated_eips)
+if NUM_NODES > len(non_associated_eips):
+    num_eips_to_allocate = NUM_NODES - len(non_associated_eips)
     print('You want to launch {} instances'.
-          format(num_nodes))
+          format(NUM_NODES))
     print('so {} more elastic IPs must be allocated'.
           format(num_eips_to_allocate))
     for _ in range(num_eips_to_allocate):
@@ -103,22 +153,19 @@ if num_nodes > len(non_associated_eips):
             raise
 
 print('Commencing launch of {} instances on Amazon EC2...'.
-      format(num_nodes))
+      format(NUM_NODES))
 
-for _ in range(num_nodes):
+for _ in range(NUM_NODES):
     # Request the launch of one instance at a time
     # (so list_of_instances should contain only one item)
     list_of_instances = ec2.create_instances(
-            ImageId='ami-accff2b1',          # ubuntu-image
-            # 'ami-596b7235',                 # ubuntu w/ iops storage
-            MinCount=1,
-            MaxCount=1,
-            KeyName='bigchaindb',
-            InstanceType='m3.2xlarge',
-            # 'c3.8xlarge',
-            # 'c4.8xlarge',
-            SecurityGroupIds=['bigchaindb']
-            )
+        ImageId=IMAGE_ID,
+        MinCount=1,
+        MaxCount=1,
+        KeyName='bigchaindb',
+        InstanceType=INSTANCE_TYPE,
+        SecurityGroupIds=['bigchaindb']
+    )
 
     # Tag the just-launched instances (should be just one)
     for instance in list_of_instances:
