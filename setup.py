@@ -6,10 +6,27 @@ For full docs visit https://bigchaindb.readthedocs.org
 """
 from setuptools import setup, find_packages
 
+
 # get the version
 version = {}
 with open('bigchaindb/version.py') as fp:
     exec(fp.read(), version)
+
+
+# check if setuptools is up to date
+def check_setuptools_features():
+    import pkg_resources
+    try:
+        list(pkg_resources.parse_requirements('foo~=1.0'))
+    except ValueError:
+        exit('Your Python distribution comes with an incompatible version '
+             'of `setuptools`. Please run:\n'
+             ' $ pip3 install --upgrade setuptools\n'
+             'and then run this command again')
+
+
+check_setuptools_features()
+
 
 tests_require = [
     'pytest',
