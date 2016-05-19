@@ -87,6 +87,7 @@ def test_drop_interactively_does_not_drop_the_database_when_user_says_no(monkeyp
 
     assert r.db_list().contains(dbname).run(conn) is True
 
+
 def test_drop_non_existent_db_raises_an_error():
     conn = utils.get_conn()
     dbname = bigchaindb.config['database']['name']

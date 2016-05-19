@@ -12,7 +12,7 @@ def test_load_nonexistent_json_schema_from_package_resources_raises_exc():
         schemas.load('totally-not-a-schema-name')
 
 
-def test_valid_transaction_should_pass(b, user_sk, user_vk):
+def test_valid_transaction_should_pass_create(b, user_sk, user_vk):
     from bigchaindb import schemas, util
 
     tx = util.create_tx(user_vk, user_vk, None, 'CREATE')

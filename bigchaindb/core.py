@@ -2,6 +2,7 @@ import random
 import math
 import operator
 
+import jsonschema
 import rethinkdb as r
 import rapidjson
 
@@ -290,7 +291,8 @@ class Bigchain(object):
             return transaction
         except (ValueError, exceptions.OperationError, exceptions.TransactionDoesNotExist,
                 exceptions.TransactionOwnerError, exceptions.DoubleSpend,
-                exceptions.InvalidHash, exceptions.InvalidSignature):
+                exceptions.InvalidHash, exceptions.InvalidSignature,
+                jsonschema.ValidationError):
             return False
 
     def create_block(self, validated_transactions):

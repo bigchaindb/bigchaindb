@@ -6,6 +6,20 @@
         "sha3_hexdigest": {
             "type": "string",
             "pattern": "[0-9a-f]{64}"
+        },
+        "base58": {
+            "type": "string",
+            "pattern": "[0-9a-zA-Z]{44}"
+        },
+        "owners_list": {
+            "anyOf": [{
+                "type": "array",
+                "items": {
+                    "$ref": "#/definitions/base58"
+                }
+            }, {
+                "type": "null"
+            }]
         }
     },
 
@@ -24,10 +38,51 @@
             "type": "object",
             "properties": {
                 "fulfillments": {
-                    "type": "array"
+                    "type": "array",
+                    "items": {
+                        "current_owners": {
+                            "$ref": "#/definitions/owners_list"
+                        },
+                        "input": {
+                            "anyOf": [{
+                                "$ref": "#/definitions/sha3_hexdigest"
+                            }, {
+                                "type": "null"
+                                }
+                            ]
+                        },
+                        "fulfillment": {
+                            "type": "string"
+                        },
+                        "fid": {
+                            "type": "integer"
+                        }
+                    }
                 },
                 "conditions": {
-                    "type": "array"
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "new_owners": {
+                                "$ref": "#/definitions/owners_list"
+                            },
+                            "condition": {
+                                "type": "object",
+                                "properties": {
+                                    "details": {
+                                        "type": "object"
+                                    },
+                                    "uri": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "cid": {
+                                "type": "integer"
+                            }
+                        }
+                    }
                 },
                 "operation": {
                     "type": "string",

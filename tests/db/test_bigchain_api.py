@@ -876,10 +876,11 @@ class TestMultipleInputs(object):
         inp = owned_inputs.pop()
 
         # create a transaction
-        tx = b.create_transaction(user_vk, [user2_sk, user3_vk], inp, 'TRANSFER')
+        tx = b.create_transaction(user_vk, [user2_vk, user3_vk], inp, 'TRANSFER')
         tx_signed = b.sign_transaction(tx, user_sk)
 
         # validate transaction
+        assert b.validate_transaction(tx_signed) == tx_signed
         assert b.is_valid_transaction(tx_signed) == tx_signed
         assert len(tx_signed['transaction']['fulfillments']) == 1
         assert len(tx_signed['transaction']['conditions']) == 1
@@ -959,6 +960,7 @@ class TestMultipleInputs(object):
         tx_signed = b.sign_transaction(tx, [user_sk, user2_sk])
 
         # validate transaction
+        assert b.validate_transaction(tx_signed) == tx_signed
         assert b.is_valid_transaction(tx_signed) == tx_signed
         assert len(tx_signed['transaction']['fulfillments']) == 3
         assert len(tx_signed['transaction']['conditions']) == 3
@@ -984,6 +986,7 @@ class TestMultipleInputs(object):
         tx_signed = b.sign_transaction(tx, [user_sk, user2_sk])
 
         # validate transaction
+        assert b.validate_transaction(tx_signed) == tx_signed
         assert b.is_valid_transaction(tx_signed) == tx_signed
         assert len(tx_signed['transaction']['fulfillments']) == 1
         assert len(tx_signed['transaction']['conditions']) == 1
