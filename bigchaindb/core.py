@@ -1,4 +1,6 @@
 import random
+import math
+import operator
 
 import rethinkdb as r
 import rapidjson
@@ -19,6 +21,10 @@ class Bigchain(object):
 
     Create, read, sign, write transactions to the database
     """
+
+    BLOCK_INVALID = 'invalid'
+    BLOCK_VALID = 'valid'
+    BLOCK_UNDECIDED = 'undecided'
 
     def __init__(self, host=None, port=None, dbname=None,
                  public_key=None, private_key=None, keyring=[],
@@ -487,3 +493,29 @@ class Bigchain(object):
             unvoted.pop(0)
 
         return unvoted
+
+    def block_election_status(self, block):
+        """Tally the votes on a block, and return the status: valid, invalid, or undecided."""
+        
+        n_voters = len(block['block']['voters'])
+        vote_cast = [vote['vote']['is_block_valid'] for vote in block['votes']]
+        vote_validity = [self.consensus.verify_vote_signature(block, vote) for vote in block['votes']]
+
+        # element-wise product of stated vote and validity of vote
+        vote_list = list(map(operator.mul, vote_cast, vote_validity))
+
+        # validate votes here
+        n_valid_votes = sum(vote_list)
+        n_invalid_votes = len(vote_list) - n_valid_votes
+
+        # The use of ceiling and floor is to account for the case of an
+        # even number of voters where half the voters have voted 'invalid'
+        # and half 'valid'. In this case, the block should be marked invalid
+        # to avoid a tie. In the case of an odd number of voters this is not
+        # relevant, since one side must be a majority.
+        if n_invalid_votes >= math.ceil(n_voters / 2):
+            return Bigchain.BLOCK_INVALID
+        elif n_valid_votes > math.floor(n_voters / 2):
+            return Bigchain.BLOCK_VALID
+        else:
+            return Bigchain.BLOCK_UNDECIDED

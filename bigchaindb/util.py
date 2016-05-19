@@ -545,6 +545,30 @@ def get_hash_data(transaction):
     return crypto.hash_data(serialize(tx))
 
 
+def verify_vote_signature(block, signed_vote):
+    """Verify the signature of a vote
+
+    A valid vote should have been signed `current_owner` corresponding private key.
+
+    Args:
+        block (dict): block under election
+        signed_vote (dict): a vote with the `signature` included.
+
+    Returns:
+        bool: True if the signature is correct, False otherwise.
+    """
+
+    signature = signed_vote['signature']
+    vk_base58 = signed_vote['node_pubkey']
+
+    # immediately return False if the voter is not in the block voter list
+    if vk_base58 not in block['block']['voters']:
+        return False
+
+    public_key = crypto.VerifyingKey(vk_base58)
+    return public_key.verify(serialize(signed_vote['vote']), signature)
+
+
 def transform_create(tx):
     """Change the owner and signature for a ``CREATE`` transaction created by a node"""
 

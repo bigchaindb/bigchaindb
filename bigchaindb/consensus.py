@@ -89,6 +89,19 @@ class AbstractConsensusRules(metaclass=ABCMeta):
                 and correct, False otherwise.
         """
 
+    @abstractmethod
+    def verify_vote_signature(block, signed_vote):
+        """Verify a cast vote.
+
+        Args:
+            block (dict): block under election
+            signed_vote (dict): signed vote to verify
+
+        Returns:
+            bool: True if the votes's required signature data is present
+                and correct, False otherwise.
+        """
+        raise NotImplementedError
 
 class BaseConsensusRules(AbstractConsensusRules):
     """Base consensus rules for Bigchain.
@@ -223,3 +236,12 @@ class BaseConsensusRules(AbstractConsensusRules):
         """
 
         return util.validate_fulfillments(signed_transaction)
+
+    @staticmethod
+    def verify_vote_signature(block, signed_vote):
+        """Verify the signature of a vote.
+
+        Refer to the documentation of ``bigchaindb.util.verify_signature``
+        """
+
+        return util.verify_vote_signature(block, signed_vote)
