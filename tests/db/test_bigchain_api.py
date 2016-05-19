@@ -1143,6 +1143,42 @@ class TestMultipleInputs(object):
         spent_inputs_user1 = b.get_spent(owned_inputs_user1[0])
         assert spent_inputs_user1 == tx_signed
 
+    def test_get_spent_single_tx_single_output_invalid_block(self, b, user_sk, user_vk):
+        # create a new users
+        user2_sk, user2_vk = crypto.generate_key_pair()
+
+        # create input to spend
+        tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
+        tx_signed = b.sign_transaction(tx, b.me_private)
+        block = b.create_block([tx_signed])
+        b.write_block(block, durability='hard')
+
+        # vote the block VALID
+        vote = b.vote(block, b.get_unvoted_blocks()[0]['id'], True)
+        b.write_vote(block, vote, 2)
+
+        # get input
+        owned_inputs_user1 = b.get_owned_ids(user_vk)
+
+        # check spents
+        spent_inputs_user1 = b.get_spent(owned_inputs_user1[0])
+        assert spent_inputs_user1 is None
+
+        # create a transaction and block
+        tx = b.create_transaction(user_vk, user2_vk, owned_inputs_user1, 'TRANSFER')
+        tx_signed = b.sign_transaction(tx, user_sk)
+        block = b.create_block([tx_signed])
+        b.write_block(block, durability='hard')
+
+        # vote the block invalid
+        vote = b.vote(block, b.get_last_voted_block()['id'], False)
+        b.write_vote(block, vote, 2)
+        response = b.get_transaction(tx_signed["id"])
+        spent_inputs_user1 = b.get_spent(owned_inputs_user1[0])
+
+        # Now there should be no spents (the block is invalid)
+        assert spent_inputs_user1 is None
+
     def test_get_spent_single_tx_multiple_outputs(self, b, user_sk, user_vk):
         # create a new users
         user2_sk, user2_vk = crypto.generate_key_pair()
