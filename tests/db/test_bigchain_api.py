@@ -108,6 +108,25 @@ class TestBigchainApi(object):
         assert util.serialize(tx_signed) == util.serialize(response)
 
     @pytest.mark.usefixtures('inputs')
+    def test_read_transaction_invalid_block(self, b, user_vk, user_sk):
+        input_tx = b.get_owned_ids(user_vk).pop()
+        tx = b.create_transaction(user_vk, user_vk, input_tx, 'TRANSFER')
+        tx_signed = b.sign_transaction(tx, user_sk)
+        b.write_transaction(tx_signed)
+
+        # create block
+        block = b.create_block([tx_signed])
+        b.write_block(block, durability='hard')
+
+        # vote the block invalid
+        vote = b.vote(block, b.get_last_voted_block()['id'], False)
+        b.write_vote(block, vote, 2)
+        response = b.get_transaction(tx_signed["id"])
+
+        # should be None, because invalid blocks are ignored
+        assert response is None
+
+    @pytest.mark.usefixtures('inputs')
     def test_assign_transaction_one_node(self, b, user_vk, user_sk):
         input_tx = b.get_owned_ids(user_vk).pop()
         tx = b.create_transaction(user_vk, user_vk, input_tx, 'TRANSFER')
