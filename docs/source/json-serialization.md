@@ -24,19 +24,20 @@ deserialize(serialize(data)) == data
 True
 ```
 
-After looking at this further, we decided that the python json module is still the best bet because it complies with the RFC. We can specify the encoding, separators used and enforce it to order by the keys to make sure that we obtain maximum interoperability.
+Since bigchaindb performs a lot of serialization we decided to use [python-rapidjson](https://github.com/kenrobbins/python-rapidjson)
+which is a python wrapper for [rapidjson](https://github.com/miloyip/rapidjson) a fast and fully RFC complient JSON parser.
 
 ```python
-import json
+import rapidjson
 
-json.dumps(data, skipkeys=False, ensure_ascii=False,
-           encoding="utf-8", separators=(',', ':'),
-           sort_keys=True)
+rapidjson.dumps(data, skipkeys=False,
+                ensure_ascii=False,
+                sort_keys=True)
 ```
 
 - `skipkeys`: With skipkeys `False` if the provided keys are not a string the serialization will fail. This way we enforce all keys to be strings
-- `ensure_ascii`: The RFC recommends `utf-8` for maximum interoperability. By setting `ensure_ascii` to `False` we allow unicode characters and force the encoding to `utf-8`.
-- `separators`: We need to define a standard separator to use in the serialization. We did not do this different implementations could use different separators for serialization resulting in a still valid transaction but with a different hash e.g. an extra whitespace introduced in the serialization would not still create a valid JSON object but the hash would be different.
+- `ensure_ascii`: The RFC recommends `utf-8` for maximum interoperability. By setting `ensure_ascii` to `False` we allow unicode characters and python-rapidjson forces the encoding to `utf-8`.
+- `sort_keys`: Sorted output by keys.
 
 Every time we need to perform some operation on the data like calculating the hash or signing/verifying the transaction, we need to use the previous criteria to serialize the data and then use the `byte` representation of the serialized data (if we treat the data as bytes we eliminate possible encoding errors e.g. unicode characters). For example:
 ```python
