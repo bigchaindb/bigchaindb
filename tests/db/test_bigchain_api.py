@@ -1052,6 +1052,43 @@ class TestMultipleInputs(object):
         assert owned_inputs_user1 == []
         assert owned_inputs_user2 == [{'cid': 0, 'txid': tx['id']}]
 
+    def test_get_owned_ids_single_tx_single_output_invalid_block(self, b, user_sk, user_vk):
+        # create a new users
+        user2_sk, user2_vk = crypto.generate_key_pair()
+
+        # create input to spend
+        tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
+        tx_signed = b.sign_transaction(tx, b.me_private)
+        block = b.create_block([tx_signed])
+        b.write_block(block, durability='hard')
+
+        # vote the block VALID
+        vote = b.vote(block, b.get_unvoted_blocks()[0]['id'], True)
+        b.write_vote(block, vote, 2)
+
+        # get input
+        owned_inputs_user1 = b.get_owned_ids(user_vk)
+        owned_inputs_user2 = b.get_owned_ids(user2_vk)
+        assert owned_inputs_user1 == [{'cid': 0, 'txid': tx['id']}]
+        assert owned_inputs_user2 == []
+
+        # create a transaction and block
+        tx_invalid = b.create_transaction(user_vk, user2_vk, owned_inputs_user1, 'TRANSFER')
+        tx_invalid_signed = b.sign_transaction(tx_invalid, user_sk)
+        block = b.create_block([tx_invalid_signed])
+        b.write_block(block, durability='hard')
+
+        # vote the block invalid
+        vote = b.vote(block, b.get_last_voted_block()['id'], False)
+        b.write_vote(block, vote, 2)
+
+        owned_inputs_user1 = b.get_owned_ids(user_vk)
+        owned_inputs_user2 = b.get_owned_ids(user2_vk)
+
+        # should be the same as before (note tx, not tx_invalid)
+        assert owned_inputs_user1 == [{'cid': 0, 'txid': tx['id']}]
+        assert owned_inputs_user2 == []
+
     def test_get_owned_ids_single_tx_multiple_outputs(self, b, user_sk, user_vk):
         # create a new users
         user2_sk, user2_vk = crypto.generate_key_pair()
