@@ -21,7 +21,7 @@ def check_setuptools_features():
     except ValueError:
         exit('Your Python distribution comes with an incompatible version '
              'of `setuptools`. Please run:\n'
-             ' $ pip install --update setuptools\n'
+             ' $ pip3 install --upgrade setuptools\n'
              'and then run this command again')
 
 
