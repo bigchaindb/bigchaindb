@@ -18,7 +18,7 @@ def check_setuptools_features():
     import pkg_resources
     try:
         list(pkg_resources.parse_requirements('foo~=1.0'))
-    except pkg_resources.RequirementParseError:
+    except ValueError:
         exit('Your Python distribution comes with an incompatible version '
              'of `setuptools`. Please run:\n'
              ' $ pip install --update setuptools\n'
