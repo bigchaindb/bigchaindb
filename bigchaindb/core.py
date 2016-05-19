@@ -227,8 +227,9 @@ class Bigchain(object):
                     .contains(lambda fulfillment: fulfillment['input'] == tx_input))\
             .run(self.conn)
 
-        # a transaction_id should have been spent at most one time
         transactions = list(response)
+
+        # a transaction_id should have been spent at most one time
         if transactions:
             # determine if these valid transactions appear in more than one valid block
             num_valid_transactions = 0
@@ -239,8 +240,12 @@ class Bigchain(object):
                 if num_valid_transactions > 1:
                     raise exceptions.DoubleSpend('`{}` was spent more then once. There is a problem with the chain'.format(
                         tx_input['txid']))
-            else:
+
+            if num_valid_transactions:
                 return transactions[0]
+            else:
+                # all queried transactions were invalid
+                return None
         else:
             return None
 
