@@ -9,7 +9,7 @@
         },
         "base58": {
             "type": "string",
-            "pattern": "[0-9a-zA-Z]{44}"
+            "pattern": "[1-9a-zA-Z^OIl]{43,44}"
         },
         "owners_list": {
             "anyOf": [{
