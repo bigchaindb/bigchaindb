@@ -1292,6 +1292,165 @@ class TestMultipleInputs(object):
             assert b.get_spent(inp) is None
 
 
+class TestFulfillmentMessage(object):
+    def test_fulfillment_message_create(self, b, user_vk):
+        tx = b.create_transaction(b.me, user_vk, None, 'CREATE', payload={'pay': 'load'})
+        original_fulfillment = tx['transaction']['fulfillments'][0]
+        fulfillment_message = util.get_fulfillment_message(tx, original_fulfillment)
+
+        assert sorted(fulfillment_message) == \
+               ['condition', 'data', 'fulfillment', 'id', 'operation', 'timestamp', 'version']
+
+        assert fulfillment_message['data']['payload'] == tx['transaction']['data']['payload']
+        assert fulfillment_message['id'] == tx['id']
+        assert fulfillment_message['condition'] == tx['transaction']['conditions'][0]
+        assert fulfillment_message['fulfillment']['current_owners'] == original_fulfillment['current_owners']
+        assert fulfillment_message['fulfillment']['fid'] == original_fulfillment['fid']
+        assert fulfillment_message['fulfillment']['input'] == original_fulfillment['input']
+        assert fulfillment_message['operation'] == tx['transaction']['operation']
+        assert fulfillment_message['timestamp'] == tx['transaction']['timestamp']
+        assert fulfillment_message['version'] == tx['version']
+
+    @pytest.mark.usefixtures('inputs')
+    def test_fulfillment_message_transfer(self, b, user_vk):
+        input_tx = b.get_owned_ids(user_vk).pop()
+        assert b.validate_fulfillments(b.get_transaction(input_tx['txid'])) == True
+
+        tx = b.create_transaction(user_vk, b.me, input_tx, 'TRANSFER', payload={'pay': 'load'})
+
+        original_fulfillment = tx['transaction']['fulfillments'][0]
+        fulfillment_message = util.get_fulfillment_message(tx, original_fulfillment)
+
+        assert sorted(fulfillment_message) == \
+               ['condition', 'data', 'fulfillment', 'id', 'operation', 'timestamp', 'version']
+
+        assert fulfillment_message['data']['payload'] == tx['transaction']['data']['payload']
+        assert fulfillment_message['id'] == tx['id']
+        assert fulfillment_message['condition'] == tx['transaction']['conditions'][0]
+        assert fulfillment_message['fulfillment']['current_owners'] == original_fulfillment['current_owners']
+        assert fulfillment_message['fulfillment']['fid'] == original_fulfillment['fid']
+        assert fulfillment_message['fulfillment']['input'] == original_fulfillment['input']
+        assert fulfillment_message['operation'] == tx['transaction']['operation']
+        assert fulfillment_message['timestamp'] == tx['transaction']['timestamp']
+        assert fulfillment_message['version'] == tx['version']
+
+    def test_fulfillment_message_multiple_current_owners_multiple_new_owners_multiple_inputs(self, b, user_vk):
+        # create a new users
+        user2_sk, user2_vk = crypto.generate_key_pair()
+        user3_sk, user3_vk = crypto.generate_key_pair()
+        user4_sk, user4_vk = crypto.generate_key_pair()
+
+        # create inputs to spend
+        transactions = []
+        for i in range(5):
+            tx = b.create_transaction(b.me, [user_vk, user2_vk], None, 'CREATE')
+            tx_signed = b.sign_transaction(tx, b.me_private)
+            transactions.append(tx_signed)
+        block = b.create_block(transactions)
+        b.write_block(block, durability='hard')
+
+        # get input
+        owned_inputs = b.get_owned_ids(user_vk)
+        inp = owned_inputs[:3]
+
+        # create a transaction
+        tx = b.create_transaction([user_vk, user2_vk], [user3_vk, user4_vk], inp, 'TRANSFER', payload={'pay': 'load'})
+
+        for original_fulfillment in tx['transaction']['fulfillments']:
+            fulfillment_message = util.get_fulfillment_message(tx, original_fulfillment)
+
+            assert sorted(fulfillment_message) == \
+                   ['condition', 'data', 'fulfillment', 'id', 'operation', 'timestamp', 'version']
+
+            assert fulfillment_message['data']['payload'] == tx['transaction']['data']['payload']
+            assert fulfillment_message['id'] == tx['id']
+            assert fulfillment_message['condition'] == tx['transaction']['conditions'][original_fulfillment['fid']]
+            assert fulfillment_message['fulfillment']['current_owners'] == original_fulfillment['current_owners']
+            assert fulfillment_message['fulfillment']['fid'] == original_fulfillment['fid']
+            assert fulfillment_message['fulfillment']['input'] == original_fulfillment['input']
+            assert fulfillment_message['operation'] == tx['transaction']['operation']
+            assert fulfillment_message['timestamp'] == tx['transaction']['timestamp']
+            assert fulfillment_message['version'] == tx['version']
+
+
+class TestTransactionMalleability(object):
+    @pytest.mark.usefixtures('inputs')
+    def test_create_transaction_transfer(self, b, user_vk, user_sk):
+        input_tx = b.get_owned_ids(user_vk).pop()
+        assert b.validate_fulfillments(b.get_transaction(input_tx['txid'])) is True
+
+        tx = b.create_transaction(user_vk, b.me, input_tx, 'TRANSFER')
+
+        tx_signed = b.sign_transaction(tx, user_sk)
+
+        assert b.validate_fulfillments(tx_signed) is True
+        assert b.is_valid_transaction(tx_signed) == tx_signed
+
+        tx_changed = copy.deepcopy(tx_signed)
+        tx_changed['id'] = 'dsdasd'
+        assert b.validate_fulfillments(tx_changed) is False
+        assert b.is_valid_transaction(tx_changed) is False
+
+        tx_changed = copy.deepcopy(tx_signed)
+        tx_changed['version'] = '0'
+        assert b.validate_fulfillments(tx_changed) is False
+        assert b.is_valid_transaction(tx_changed) is False
+
+        tx_changed = copy.deepcopy(tx_signed)
+        tx_changed['transaction']['operation'] = 'CREATE'
+        assert b.validate_fulfillments(tx_changed) is False
+        assert b.is_valid_transaction(tx_changed) is False
+
+        tx_changed = copy.deepcopy(tx_signed)
+        tx_changed['transaction']['timestamp'] = '1463033192.123456'
+        assert b.validate_fulfillments(tx_changed) is False
+        assert b.is_valid_transaction(tx_changed) is False
+
+        tx_changed = copy.deepcopy(tx_signed)
+        tx_changed['transaction']['data'] = {
+            "hash": "872fa6e6f46246cd44afdb2ee9cfae0e72885fb0910e2bcf9a5a2a4eadb417b8",
+            "payload": {
+                "msg": "Hello BigchainDB!"
+            }
+        }
+        assert b.validate_fulfillments(tx_changed) == False
+
+        tx_changed = copy.deepcopy(tx_signed)
+        tx_changed['transaction']['fulfillments'] = [
+            {
+                "current_owners": [
+                    "AFbofwJYEB7Cx2fgrPrCJzbdDVRzRKysoGXt4DsvuTGN"
+                ],
+                "fid": 0,
+                "fulfillment": "cf:4:iXaq3UbandDj4DgBhFDcfHjkm2639RwgLmwAHUmuDFMfMEKMZ71eQw2qCMK951kBaNNJel_FCDuYnacn_MsWzYXOUJs6DGW3lYfXI_d55xuqpH2BenvRWKNp98tRRr4B",
+                "input": None
+            }
+        ]
+        assert b.validate_fulfillments(tx_changed) is False
+        assert b.is_valid_transaction(tx_changed) is False
+
+        tx_changed = copy.deepcopy(tx_signed)
+        tx_changed['transaction']['fulfillments'][0]['fid'] = 1
+        with pytest.raises(IndexError):
+            assert b.validate_fulfillments(tx_changed) is False
+        assert b.is_valid_transaction(tx_changed) is False
+
+        tx_changed = copy.deepcopy(tx_signed)
+        tx_changed['transaction']['fulfillments'][0]['current_owners'] = [
+            "AFbofwJYEB7Cx2fgrPrCJzbdDVRzRKysoGXt4DsvuTGN"]
+        assert b.validate_fulfillments(tx_changed) is False
+        assert b.is_valid_transaction(tx_changed) is False
+
+        tx_changed = copy.deepcopy(tx_signed)
+        tx_changed['transaction']['fulfillments'][0]['input'] = {
+            "cid": 0,
+            "txid": "3055348675fc6f23b75f13c55db6d112b66eee068e99d30a802883d3b1784203"
+        }
+        with pytest.raises(TypeError):
+            assert b.validate_fulfillments(tx_changed) is False
+        assert b.is_valid_transaction(tx_changed) is False
+
+
 class TestCryptoconditions(object):
     def test_fulfillment_transaction_create(self, b, user_vk):
         tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
@@ -1396,7 +1555,7 @@ class TestCryptoconditions(object):
         assert b.is_valid_transaction(tx) == tx
 
     @pytest.mark.usefixtures('inputs')
-    def test_override_fulfillment_transfer(self,  b, user_vk, user_sk):
+    def test_override_fulfillment_transfer(self, b, user_vk, user_sk):
         # create valid transaction
         other_sk, other_vk = crypto.generate_key_pair()
         prev_tx_id = b.get_owned_ids(user_vk).pop()
@@ -1413,7 +1572,7 @@ class TestCryptoconditions(object):
         assert b.is_valid_transaction(tx) == tx
 
     @pytest.mark.usefixtures('inputs')
-    def test_override_condition_and_fulfillment_transfer(self,  b, user_vk, user_sk):
+    def test_override_condition_and_fulfillment_transfer(self, b, user_vk, user_sk):
         other_sk, other_vk = crypto.generate_key_pair()
         first_input_tx = b.get_owned_ids(user_vk).pop()
         first_tx = b.create_transaction(user_vk, other_vk, first_input_tx, 'TRANSFER')
@@ -1650,7 +1809,8 @@ class TestCryptoconditions(object):
         tx_transfer_signed = b.sign_transaction(tx_transfer, [user_sk, user2_sk])
 
         # expected fulfillment
-        expected_fulfillment = cc.Fulfillment.from_json(tx_create['transaction']['conditions'][0]['condition']['details'])
+        expected_fulfillment = cc.Fulfillment.from_json(
+            tx_create['transaction']['conditions'][0]['condition']['details'])
         subfulfillment1 = expected_fulfillment.subconditions[0]['body']
         subfulfillment2 = expected_fulfillment.subconditions[1]['body']
 
@@ -1661,7 +1821,7 @@ class TestCryptoconditions(object):
         subfulfillment2.sign(util.serialize(expected_fulfillment_message), crypto.SigningKey(user2_sk))
 
         assert tx_transfer_signed['transaction']['fulfillments'][0]['fulfillment'] \
-            == expected_fulfillment.serialize_uri()
+               == expected_fulfillment.serialize_uri()
 
         assert b.validate_fulfillments(tx_transfer_signed) is True
 
@@ -1786,7 +1946,8 @@ class TestCryptoconditions(object):
 
         # try doublespending
         user2_sk, user2_vk = crypto.generate_key_pair()
-        hashlock_doublespend_tx = b.create_transaction(None, user2_vk, {'txid': hashlock_tx['id'], 'cid': 0}, 'TRANSFER')
+        hashlock_doublespend_tx = b.create_transaction(None, user2_vk, {'txid': hashlock_tx['id'], 'cid': 0},
+                                                       'TRANSFER')
 
         hashlock_doublespend_tx_fulfillment = cc.PreimageSha256Fulfillment(preimage=secret)
         hashlock_doublespend_tx['transaction']['fulfillments'][0]['fulfillment'] = \
