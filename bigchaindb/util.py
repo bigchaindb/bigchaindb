@@ -276,7 +276,7 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
                 'new_owners': new_owners,
                 'condition': {
                     'details': rapidjson.loads(condition.serialize_json()),
-                    'uri': condition.condition.condition_uri
+                    'uri': condition.condition_uri
                 },
                 'cid': fulfillment['fid']
             })
