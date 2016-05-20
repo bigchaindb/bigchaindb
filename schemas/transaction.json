@@ -57,7 +57,8 @@
                         "fid": {
                             "type": "integer"
                         }
-                    }
+                    },
+                    "required": ["current_owners", "input", "fulfillment", "fid"]
                 },
                 "conditions": {
                     "type": "array",
@@ -76,12 +77,14 @@
                                     "uri": {
                                         "type": "string"
                                     }
-                                }
+                                },
+                                "required": ["uri"]
                             },
                             "cid": {
                                 "type": "integer"
                             }
-                        }
+                        },
+                        "required": ["new_owners", "condition", "cid"]
                     }
                 },
                 "operation": {
