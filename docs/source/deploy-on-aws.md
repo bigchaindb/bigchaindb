@@ -197,6 +197,26 @@ bigchaindb --help
 bigchaindb show-config
 ```
 
+You can also check out the RethinkDB web interface at port 8080 on any of the instances; just go to your web browser and visit a web address like `http://ec2-52-29-197-211.eu-central-1.compute.amazonaws.com:8080/`.
+
+## Server Monitoring with New Relic
+
+[New Relic](https://newrelic.com/) is a business that provides several monitoring services. One of those services, called Server Monitoring, can be used to monitor things like CPU usage and Network I/O on BigchainDB instances. To do that:
+
+1. Sign up for a New Relic account
+2. Get your New Relic license key
+3. Put that key in an environment variable named `NEWRELIC_KEY`. For example, you might add a line like the following to your `~/.bashrc` file (if you use Bash): `export NEWRELIC_KEY=<insert your key here>`
+4. Once you've deployed a BigchainDB cluster on AWS as above, you can install a New Relic system monitor (agent) on all the instances using:
+
+```text
+# in a Python 2.5-2.7 virtual environment where fabric, boto3, etc. are installed
+fab install_newrelic
+```
+
+Once the New Relic system monitor (agent) is installed on the instances, it will start sending server stats to New Relic on a regular basis. It may take a few minutes for data to show up in your New Relic dashboard (under New Relic Servers).
+
+## Shutting Down a Cluster
+
 There are fees associated with running instances on EC2, so if you're not using them, you should terminate them. You can do that using the AWS EC2 Console.
 
 The same is true of your allocated elastic IP addresses. There's a small fee to keep them allocated if they're not associated with a running instance. You can release them using the AWS EC2 Console, or by using a handy little script named `release_eips.py`. For example:
