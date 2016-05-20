@@ -64,7 +64,7 @@ def install_base_software():
                      software-properties-common python-software-properties \
                      python3-setuptools ipython3 sysstat s3cmd')
     sudo('easy_install3 pip')
-    sudo('pip install --upgrade pip wheel setuptools')
+    sudo('pip3 install --upgrade pip wheel setuptools')
 
 
 # Install RethinkDB
