@@ -1,8 +1,9 @@
-[![Join the chat at https://gitter.im/bigchaindb/bigchaindb](https://badges.gitter.im/bigchaindb/bigchaindb.svg)](https://gitter.im/bigchaindb/bigchaindb?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![PyPI](https://img.shields.io/pypi/status/bigchaindb.svg?maxAge=2592000)](https://pypi.python.org/pypi/BigchainDB)
 [![PyPI](https://img.shields.io/pypi/v/bigchaindb.svg)](https://pypi.python.org/pypi/BigchainDB)
 [![Travis branch](https://img.shields.io/travis/bigchaindb/bigchaindb/master.svg)](https://travis-ci.org/bigchaindb/bigchaindb)
 [![Codecov branch](https://img.shields.io/codecov/c/github/bigchaindb/bigchaindb/master.svg)](https://codecov.io/github/bigchaindb/bigchaindb?branch=master)
-[![Documentation Status](https://readthedocs.org/projects/bigchaindb/badge/?version=stable)](https://bigchaindb.readthedocs.org/en/stable/)
+[![Documentation Status](https://readthedocs.org/projects/bigchaindb/badge/?version=latest)](https://bigchaindb.readthedocs.org/en/latest/)
+[![Join the chat at https://gitter.im/bigchaindb/bigchaindb](https://badges.gitter.im/bigchaindb/bigchaindb.svg)](https://gitter.im/bigchaindb/bigchaindb?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 
 # BigchainDB
@@ -12,10 +13,10 @@ A scalable blockchain database. [The whitepaper](https://www.bigchaindb.com/whit
 
 ## Quick Start
 
-### [Install and Run BigchainDB Server](http://bigchaindb.readthedocs.org/en/master/installing-server.html)
-### [Run BigchainDB with Docker](http://bigchaindb.readthedocs.org/en/master/installing-server.html#run-bigchaindb-with-docker)
-### [The Python Server API by Example](http://bigchaindb.readthedocs.org/en/master/python-server-api-examples.html)
-### [The Python Driver API by Example](http://bigchaindb.readthedocs.org/en/master/python-driver-api-examples.html)
+### [Install and Run BigchainDB Server](http://bigchaindb.readthedocs.io/en/latest/installing-server.html)
+### [Run BigchainDB with Docker](http://bigchaindb.readthedocs.io/en/latest/installing-server.html#run-bigchaindb-with-docker)
+### [The Python Server API by Example](http://bigchaindb.readthedocs.io/en/latest/python-server-api-examples.html)
+### [The Python Driver API by Example](http://bigchaindb.readthedocs.io/en/latest/python-driver-api-examples.html)
 
 ## Links for Everyone
 * [BigchainDB.com](https://www.bigchaindb.com/) - the main BigchainDB website, including newsletter signup
@@ -26,7 +27,7 @@ A scalable blockchain database. [The whitepaper](https://www.bigchaindb.com/whit
 * [Google Group](https://groups.google.com/forum/#!forum/bigchaindb)
 
 ## Links for Developers
-* [Documentation](http://bigchaindb.readthedocs.org/en/master/) - for developers
+* [Documentation](http://bigchaindb.readthedocs.io/en/latest/) - for developers
 * [CONTRIBUTING.md](CONTRIBUTING.md) - how to contribute
 * [Community guidelines](CODE_OF_CONDUCT.md)
 * [Open issues](https://github.com/bigchaindb/bigchaindb/issues)

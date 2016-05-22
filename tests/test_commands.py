@@ -1,9 +1,11 @@
 import json
+from unittest.mock import Mock, patch
 from argparse import Namespace
-from pprint import pprint
 import copy
 
 import pytest
+
+from tests.db.conftest import setup_database
 
 
 @pytest.fixture
@@ -62,8 +64,20 @@ def mock_bigchaindb_backup_config(monkeypatch):
 
 def test_bigchain_run_start(mock_run_configure, mock_processes_start, mock_db_init_with_existing_db):
     from bigchaindb.commands.bigchain import run_start
-    args = Namespace(config=None, yes=True)
+    args = Namespace(start_rethinkdb=False, config=None, yes=True)
     run_start(args)
+
+
+@patch('bigchaindb.commands.utils.start_rethinkdb')
+def test_bigchain_run_start_with_rethinkdb(mock_start_rethinkdb,
+                                           mock_run_configure,
+                                           mock_processes_start,
+                                           mock_db_init_with_existing_db):
+    from bigchaindb.commands.bigchain import run_start
+    args = Namespace(start_rethinkdb=True, config=None, yes=True)
+    run_start(args)
+
+    mock_start_rethinkdb.assert_called_with()
 
 
 @pytest.mark.skipif(reason="BigchainDB doesn't support the automatic creation of a config file anymore")
@@ -82,7 +96,7 @@ def test_bigchain_run_start_assume_yes_create_default_config(monkeypatch, mock_p
         value['return'] = newconfig
 
     monkeypatch.setattr(config_utils, 'write_config', mock_write_config)
-    monkeypatch.setattr(config_utils, 'file_config', lambda x: config_utils.dict_config(expected_config))
+    monkeypatch.setattr(config_utils, 'file_config', lambda x: config_utils.set_config(expected_config))
     monkeypatch.setattr('os.path.exists', lambda path: False)
 
     args = Namespace(config=None, yes=True)
@@ -106,6 +120,42 @@ def test_bigchain_show_config(capsys):
     del config['CONFIGURED']
     config['keypair']['private'] = 'x' * 45
     assert output_config == config
+
+
+def test_bigchain_export_my_pubkey_when_pubkey_set(capsys, monkeypatch):
+    from bigchaindb import config
+    from bigchaindb.commands.bigchain import run_export_my_pubkey
+
+    args = Namespace(config='dummy')
+    # so in run_export_my_pubkey(args) below,
+    # filename=args.config='dummy' is passed to autoconfigure().
+    # We just assume autoconfigure() works and sets
+    # config['keypair']['public'] correctly (tested elsewhere).
+    # We force-set config['keypair']['public'] using monkeypatch.
+    monkeypatch.setitem(config['keypair'], 'public', 'Charlie_Bucket')
+    _, _ = capsys.readouterr()  # has the effect of clearing capsys
+    run_export_my_pubkey(args)
+    out, err = capsys.readouterr()
+    assert out == config['keypair']['public'] + '\n'
+    assert out == 'Charlie_Bucket\n'
+
+
+def test_bigchain_export_my_pubkey_when_pubkey_not_set(monkeypatch):
+    from bigchaindb import config
+    from bigchaindb.commands.bigchain import run_export_my_pubkey
+
+    args = Namespace(config='dummy')
+    monkeypatch.setitem(config['keypair'], 'public', None)
+    # assert that run_export_my_pubkey(args) raises SystemExit:
+    with pytest.raises(SystemExit) as exc_info:
+        run_export_my_pubkey(args)
+    # exc_info is an object of class ExceptionInfo
+    # https://pytest.org/latest/builtin.html#_pytest._code.ExceptionInfo
+    assert exc_info.type == SystemExit
+    # exc_info.value is an object of class SystemExit
+    # https://docs.python.org/3/library/exceptions.html#SystemExit
+    assert exc_info.value.code == \
+        "This node's public key wasn't set anywhere so it can't be exported"
 
 
 def test_bigchain_run_init_when_db_exists(mock_db_init_with_existing_db):
@@ -137,7 +187,7 @@ def test_run_configure_when_config_does_not_exist(monkeypatch,
                                                   mock_bigchaindb_backup_config):
     from bigchaindb.commands.bigchain import run_configure
     monkeypatch.setattr('os.path.exists', lambda path: False)
-    monkeypatch.setattr('builtins.input', lambda question: '\n')
+    monkeypatch.setattr('builtins.input', lambda: '\n')
     args = Namespace(config='foo', yes=True)
     return_value = run_configure(args)
     assert return_value is None
@@ -153,10 +203,45 @@ def test_run_configure_when_config_does_exist(monkeypatch,
 
     from bigchaindb.commands.bigchain import run_configure
     monkeypatch.setattr('os.path.exists', lambda path: True)
-    monkeypatch.setattr('builtins.input', lambda question: '\n')
+    monkeypatch.setattr('builtins.input', lambda: '\n')
     monkeypatch.setattr('bigchaindb.config_utils.write_config', mock_write_config)
 
     args = Namespace(config='foo', yes=None)
     run_configure(args)
     assert value == {}
 
+
+@patch('subprocess.Popen')
+def test_start_rethinkdb_returns_a_process_when_successful(mock_popen):
+    from bigchaindb.commands import utils
+    mock_popen.return_value = Mock(stdout=['Server ready'])
+    assert utils.start_rethinkdb() is mock_popen.return_value
+
+
+@patch('subprocess.Popen')
+def test_start_rethinkdb_exits_when_cannot_start(mock_popen):
+    from bigchaindb import exceptions
+    from bigchaindb.commands import utils
+    mock_popen.return_value = Mock(stdout=['Nopety nope'])
+    with pytest.raises(exceptions.StartupError):
+        utils.start_rethinkdb()
+
+
+def test_set_shards(b):
+    import rethinkdb as r
+    from bigchaindb.commands.bigchain import run_set_shards
+
+    # set the number of shards
+    args = Namespace(num_shards=3)
+    run_set_shards(args)
+
+    # retrieve table configuration
+    table_config = list(r.db('rethinkdb')
+                        .table('table_config')
+                        .filter(r.row['db'] == b.dbname)
+                        .run(b.conn))
+
+    # check that the number of shards got set to the correct value
+    for table in table_config:
+        if table['name'] in ['backlog', 'bigchain']:
+            assert len(table['shards']) == 3

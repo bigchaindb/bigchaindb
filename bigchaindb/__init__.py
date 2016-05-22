@@ -1,4 +1,5 @@
 import copy
+import os
 
 # from functools import reduce
 # PORT_NUMBER = reduce(lambda x, y: x * y, map(ord, 'BigchainDB')) % 2**16
@@ -9,12 +10,12 @@ config = {
     'server': {
         # Note: this section supports all the Gunicorn settings:
         #       - http://docs.gunicorn.org/en/stable/settings.html
-        'bind': '0.0.0.0:9984',
+        'bind': 'localhost:9984',
         'workers': None, # if none, the value will be cpu_count * 2 + 1
         'threads': None, # if none, the value will be cpu_count * 2 + 1
     },
     'database': {
-        'host': 'localhost',
+        'host': os.environ.get('BIGCHAINDB_DATABASE_HOST', 'localhost'),
         'port': 28015,
         'name': 'bigchain',
     },
@@ -37,4 +38,4 @@ config = {
 # for more info.
 _config = copy.deepcopy(config)
 from bigchaindb.core import Bigchain  # noqa
-
+from bigchaindb.version import __version__  # noqa

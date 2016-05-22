@@ -6,4 +6,4 @@ You can find a list of all BigchainDB releases and release notes on GitHub at:
 
 The [CHANGELOG.md file](https://github.com/bigchaindb/bigchaindb/blob/master/CHANGELOG.md) contains much the same information, but it also has notes about what to expect in the _next_ release.
 
-We also have [a roadmap document in ROADMAP.md](https://github.com/bigchaindb/bigchaindb/blob/master/ROADMAP.md).
+We also have [a roadmap document in ROADMAP.md](https://github.com/bigchaindb/org/blob/master/ROADMAP.md).

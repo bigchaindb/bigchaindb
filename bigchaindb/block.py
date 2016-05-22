@@ -7,11 +7,10 @@ import rethinkdb as r
 import bigchaindb
 from bigchaindb import Bigchain
 from bigchaindb.monitor import Monitor
+from bigchaindb.util import ProcessGroup
 
 
 logger = logging.getLogger(__name__)
-
-monitor = Monitor()
 
 
 class Block(object):
@@ -27,6 +26,7 @@ class Block(object):
         self.q_tx_delete = mp.Queue()
         self.q_block = mp.Queue()
         self.initialized = mp.Event()
+        self.monitor = Monitor()
 
     def filter_by_assignee(self):
         """
@@ -57,7 +57,9 @@ class Block(object):
         b = Bigchain()
 
         while True:
-            monitor.gauge('tx_queue_gauge', self.q_tx_to_validate.qsize(), rate=bigchaindb.config['statsd']['rate'])
+            self.monitor.gauge('tx_queue_gauge',
+                               self.q_tx_to_validate.qsize(),
+                               rate=bigchaindb.config['statsd']['rate'])
             tx = self.q_tx_to_validate.get()
 
             # poison pill
@@ -67,7 +69,11 @@ class Block(object):
                 return
 
             self.q_tx_delete.put(tx['id'])
-            if b.is_valid_transaction(tx):
+
+            with self.monitor.timer('validate_transaction', rate=bigchaindb.config['statsd']['rate']):
+                is_valid_transaction = b.is_valid_transaction(tx)
+
+            if is_valid_transaction:
                 self.q_tx_validated.put(tx)
 
     def create_blocks(self):
@@ -122,7 +128,8 @@ class Block(object):
             if block == 'stop':
                 return
 
-            b.write_block(block)
+            with self.monitor.timer('write_block'):
+                b.write_block(block)
 
     def delete_transactions(self):
         """
@@ -174,7 +181,9 @@ class Block(object):
         # add results to the queue
         for result in initial_results:
             q_initial.put(result)
-        q_initial.put('stop')
+
+        for i in range(mp.cpu_count()):
+            q_initial.put('stop')
 
         return q_initial
 
@@ -197,17 +206,21 @@ class Block(object):
         self._start()
         logger.info('exiting block module...')
 
+    def kill(self):
+        for i in range(mp.cpu_count()):
+            self.q_new_transaction.put('stop')
+
     def _start(self):
         """
         Initialize, spawn, and start the processes
         """
 
         # initialize the processes
-        p_filter = mp.Process(name='filter_transactions', target=self.filter_by_assignee)
-        p_validate = mp.Process(name='validate_transactions', target=self.validate_transactions)
-        p_blocks = mp.Process(name='create_blocks', target=self.create_blocks)
-        p_write = mp.Process(name='write_blocks', target=self.write_blocks)
-        p_delete = mp.Process(name='delete_transactions', target=self.delete_transactions)
+        p_filter = ProcessGroup(name='filter_transactions', target=self.filter_by_assignee)
+        p_validate = ProcessGroup(name='validate_transactions', target=self.validate_transactions)
+        p_blocks = ProcessGroup(name='create_blocks', target=self.create_blocks)
+        p_write = ProcessGroup(name='write_blocks', target=self.write_blocks)
+        p_delete = ProcessGroup(name='delete_transactions', target=self.delete_transactions)
 
         # start the processes
         p_filter.start()
@@ -216,9 +229,3 @@ class Block(object):
         p_write.start()
         p_delete.start()
 
-        # join processes
-        p_filter.join()
-        p_validate.join()
-        p_blocks.join()
-        p_write.join()
-        p_delete.join()

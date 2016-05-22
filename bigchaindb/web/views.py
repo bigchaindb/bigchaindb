@@ -7,20 +7,32 @@ For more information please refer to the documentation in Apiary:
 import flask
 from flask import current_app, request, Blueprint
 
+import bigchaindb
 from bigchaindb import util
 
 
 basic_views = Blueprint('basic_views', __name__)
 
 
+# Unfortunately I cannot find a reference to this decorator.
+# This answer on SO is quite useful tho:
+# - http://stackoverflow.com/a/13432373/597097
 @basic_views.record
-def get_bigchain(state):
-    bigchain = state.app.config.get('bigchain')
+def record(state):
+    """This function checks if the blueprint can be initialized
+    with the provided state."""
 
-    if bigchain is None:
+    bigchain_pool = state.app.config.get('bigchain_pool')
+    monitor = state.app.config.get('monitor')
+
+    if bigchain_pool is None:
         raise Exception('This blueprint expects you to provide '
-                        'database access through `bigchain`')
+                        'a pool of Bigchain instances called `bigchain_pool`')
 
+    if monitor is None:
+        raise ValueError('This blueprint expects you to provide '
+                         'a monitor instance to record system '
+                         'performance.')
 
 
 @basic_views.route('/transactions/<tx_id>')
@@ -34,9 +46,11 @@ def get_transaction(tx_id):
         A JSON string containing the data about the transaction.
     """
 
-    bigchain = current_app.config['bigchain']
+    pool = current_app.config['bigchain_pool']
 
-    tx = bigchain.get_transaction(tx_id)
+    with pool() as bigchain:
+        tx = bigchain.get_transaction(tx_id)
+
     return flask.jsonify(**tx)
 
 
@@ -47,7 +61,8 @@ def create_transaction():
     Return:
         A JSON string containing the data about the transaction.
     """
-    bigchain = current_app.config['bigchain']
+    pool = current_app.config['bigchain_pool']
+    monitor = current_app.config['monitor']
 
     val = {}
 
@@ -55,15 +70,16 @@ def create_transaction():
     # set to `application/json`
     tx = request.get_json(force=True)
 
-    if tx['transaction']['operation'] == 'CREATE':
-        tx = util.transform_create(tx)
-        tx = bigchain.consensus.sign_transaction(
-            tx, private_key=bigchain.me_private)
+    with pool() as bigchain:
+        if tx['transaction']['operation'] == 'CREATE':
+            tx = util.transform_create(tx)
+            tx = bigchain.consensus.sign_transaction(tx, private_key=bigchain.me_private)
 
-    if not bigchain.consensus.verify_signature(tx):
-        val['error'] = 'Invalid transaction signature'
+        if not bigchain.consensus.validate_fulfillments(tx):
+            val['error'] = 'Invalid transaction fulfillments'
 
-    val = bigchain.write_transaction(tx)
+        with monitor.timer('write_transaction', rate=bigchaindb.config['statsd']['rate']):
+            val = bigchain.write_transaction(tx)
 
     return flask.jsonify(**tx)
 

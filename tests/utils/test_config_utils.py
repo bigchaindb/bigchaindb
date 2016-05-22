@@ -18,7 +18,7 @@ def test_bigchain_instance_is_initialized_when_conf_provided():
     from bigchaindb import config_utils
     assert 'CONFIGURED' not in bigchaindb.config
 
-    config_utils.dict_config({'keypair': {'public': 'a', 'private': 'b'}})
+    config_utils.set_config({'keypair': {'public': 'a', 'private': 'b'}})
 
     assert bigchaindb.config['CONFIGURED'] is True
     b = bigchaindb.Bigchain()
@@ -58,12 +58,15 @@ def test_load_consensus_plugin_raises_with_invalid_subclass(monkeypatch):
     # Monkeypatch entry_point.load to return something other than a
     # ConsensusRules instance
     from bigchaindb import config_utils
+    import time
     monkeypatch.setattr(config_utils,
                         'iter_entry_points',
                         lambda *args: [type('entry_point', (object), {'load': lambda: object})])
 
     with pytest.raises(TypeError):
-        config_utils.load_consensus_plugin()
+        # Since the function is decorated with `lru_cache`, we need to
+        # "miss" the cache using a name that has not been used previously
+        config_utils.load_consensus_plugin(str(time.time()))
 
 
 def test_map_leafs_iterator():
@@ -142,7 +145,7 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch):
     assert bigchaindb.config == {
         'CONFIGURED': True,
         'server': {
-            'bind': '0.0.0.0:9984',
+            'bind': 'localhost:9984',
             'workers': None,
             'threads': None,
         },

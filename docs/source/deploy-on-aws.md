@@ -83,31 +83,106 @@ Add some rules for Inbound traffic:
 **Note: These rules are extremely lax! They're meant to make testing easy.** You'll want to tighten them up if you intend to have a secure cluster. For example, Source = 0.0.0.0/0 is [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing) for "allow this traffic to come from _any_ IP address."
 
 
-## Deployment
+## Deploy a BigchainDB Monitor
 
-Here's an example of how one could launch a BigchainDB cluster of 4 nodes tagged `wrigley` on AWS:
+This step is optional.
+
+One way to monitor a BigchainDB cluster is to use the monitoring setup described in the [Monitoring](monitoring.html) section of this documentation. If you want to do that, then you may want to deploy the monitoring server first, so you can tell your BigchainDB nodes where to send their monitoring data.
+
+You can deploy a monitoring server on AWS. To do that, go to the AWS EC2 Console and launch an instance:
+
+1. Choose an AMI: select Ubuntu Server 14.04 LTS.
+2. Choose an Instance Type: a t2.micro will suffice.
+3. Configure Instance Details: you can accept the defaults, but feel free to change them.
+4. Add Storage: A "Root" volume type should already be included. You _could_ store monitoring data there (e.g. in a folder named `/influxdb-data`) but we will attach another volume and store the monitoring data there instead. Select "Add New Volume" and an EBS volume type.
+5. Tag Instance: give your instance a memorable name.
+6. Configure Security Group: choose your bigchaindb security group.
+7. Review and launch your instance.
+
+When it asks, choose an existing key pair: the one you created earlier (named `bigchaindb`).
+
+Give your instance some time to launch and become able to accept SSH connections. You can see its current status in the AWS EC2 Console (in the "Instances" section). SSH into your instance using something like:
 ```text
-cd bigchaindb
 cd deploy-cluster-aws
-./startup.sh wrigley 4
+ssh -i pem/bigchaindb.pem ubuntu@ec2-52-58-157-229.eu-central-1.compute.amazonaws.com
 ```
 
-`startup.sh` is a Bash script which calls some Python 2 and Fabric scripts. Here's what it does:
+where `ec2-52-58-157-229.eu-central-1.compute.amazonaws.com` should be replaced by your new instance's EC2 hostname. (To get that, go to the AWS EC2 Console, select Instances, click on your newly-launched instance, and copy its "Public DNS" name.)
 
-0. allocates more elastic IP addresses if necessary,
-1. launches the specified number of nodes (instances) on Amazon EC2,
-2. tags them with the specified tag,
-3. waits until those instances exist and are running,
-4. for each instance, it associates an elastic IP address with that instance,
-5. adds remote keys to `~/.ssh/known_hosts`,
-6. (re)creates the RethinkDB configuration file `conf/rethinkdb.conf`,
-7. installs base (prerequisite) software on all instances,
-8. installs RethinkDB on all instances,
-9. installs BigchainDB on all instances,
-10. generates the genesis block,
-11. starts BigchainDB on all instances.
+Next, create a file system on the attached volume, make a directory named `/influxdb-data`, and set the attached volume's mount point to be `/influxdb-data`. For detailed instructions on how to do that, see the AWS documentation for [Making an Amazon EBS Volume Available for Use](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html).
 
-It should take a few minutes for the deployment to finish. If you run into problems, see the section on Known Deployment Issues below.
+Then install Docker and Docker Compose:
+```text
+# in a Python 2.5-2.7 virtual environment where fabric, boto3, etc. are installed
+fab --fabfile=fabfile-monitor.py --hosts=<EC2 hostname> install_docker
+```
+
+After Docker is installed, we can run the monitor with:
+```text
+fab --fabfile=fabfile-monitor.py --hosts=<EC2 hostname> run_monitor
+```
+
+For more information about monitoring (e.g. how to view the Grafana dashboard in your web browser), see the [Monitoring](monitoring.html) section of this documentation.
+
+To configure a BigchainDB node to send monitoring data to the monitoring server, change the statsd host in the configuration of the BigchainDB node. The section on [Configuring a BigchainDB Node](configuration.html) explains how you can do that. (For example, you can change the statsd host in `$HOME/.bigchaindb`.)
+
+
+## Deploy a BigchainDB Cluster
+
+### Step 1
+
+Suppose _N_ is the number of nodes you want in your BigchainDB cluster. If you already have a set of _N_ BigchainDB configuration files in the `deploy-cluster-aws/confiles` directory, then you can jump to the next step. To create such a set, you can do something like:
+```text
+# in a Python 3 virtual environment where bigchaindb is installed
+cd bigchaindb
+cd deploy-cluster-aws
+./make_confiles.sh confiles 3
+```
+
+That will create three (3) _default_ BigchainDB configuration files in the `deploy-cluster-aws/confiles` directory (which will be created if it doesn't already exist). The three files will be named `bcdb_conf0`, `bcdb_conf1`, and `bcdb_conf2`.
+
+You can look inside those files if you're curious. For example, the default keyring is an empty list. Later, the deployment script automatically changes the keyring of each node to be a list of the public keys of all other nodes. Other changes are also made. That is, the configuration files generated in this step are _not_ what will be sent to the deployed nodes; they're just a starting point.
+
+### Step 2
+
+Step 2 is to make an AWS deployment configuration file, if necessary. There's an example AWS configuration file named `example_deploy_conf.py`. It has many comments explaining each setting. The settings in that file are (or should be):
+```text
+NUM_NODES=3
+BRANCH="master"
+WHAT_TO_DEPLOY="servers"
+USE_KEYPAIRS_FILE=False
+IMAGE_ID="ami-accff2b1"
+INSTANCE_TYPE="m3.2xlarge"
+```
+
+If you're happy with those settings, then you can skip to the next step. Otherwise, you could make a copy of `example_deploy_conf.py` (e.g. `cp example_deploy_conf.py my_deploy_conf.py`) and then edit the copy using a text editor.
+
+If you want your nodes to have a predictable set of pre-generated keypairs, then you should 1) set `USE_KEYPAIRS_FILE=True` in the AWS deployment configuration file, and 2) provide a `keypairs.py` file containing enough keypairs for all of your nodes. You can generate a `keypairs.py` file using the `write_keypairs_file.py` script. For example:
+```text
+# in a Python 3 virtual environment where bigchaindb is installed
+cd bigchaindb
+cd deploy-cluster-aws
+python3 write_keypairs_file.py 100
+```
+
+The above command generates a `keypairs.py` file with 100 keypairs. You can generate more keypairs than you need, so you can use the same list over and over again, for different numbers of servers. The deployment scripts will only use the first NUM_NODES keypairs.
+
+### Step 3
+
+Step 3 is to launch the nodes ("instances") on AWS, to install all the necessary software on them, configure the software, run the software, and more. Here's how you'd do that:
+
+```text
+# in a Python 2.5-2.7 virtual environment where fabric, boto3, etc. are installed
+cd bigchaindb
+cd deploy-cluster-aws
+./awsdeploy.sh my_deploy_conf.py
+# Only if you want to start BigchainDB on all the nodes:
+fab start_bigchaindb
+```
+
+`awsdeploy.sh` is a Bash script which calls some Python and Fabric scripts. If you're curious what it does, [the source code](https://github.com/bigchaindb/bigchaindb/blob/master/deploy-cluster-aws/awsdeploy.sh) has many explanatory comments.
+
+It should take a few minutes for the deployment to finish. If you run into problems, see the section on **Known Deployment Issues** below.
 
 The EC2 Console has a section where you can see all the instances you have running on EC2. You can `ssh` into a running instance using a command like:
 ```text
@@ -122,9 +197,37 @@ bigchaindb --help
 bigchaindb show-config
 ```
 
-There are fees associated with running instances on EC2, so if you're not using them, you should terminate them. You can do that from the AWS EC2 Console.
+You can also check out the RethinkDB web interface at port 8080 on any of the instances; just go to your web browser and visit a web address like `http://ec2-52-29-197-211.eu-central-1.compute.amazonaws.com:8080/`.
 
-The same is true of your allocated elastic IP addresses. There's a small fee to keep them allocated if they're not associated with a running instance. You can release them from the AWS EC2 Console.
+## Server Monitoring with New Relic
+
+[New Relic](https://newrelic.com/) is a business that provides several monitoring services. One of those services, called Server Monitoring, can be used to monitor things like CPU usage and Network I/O on BigchainDB instances. To do that:
+
+1. Sign up for a New Relic account
+2. Get your New Relic license key
+3. Put that key in an environment variable named `NEWRELIC_KEY`. For example, you might add a line like the following to your `~/.bashrc` file (if you use Bash): `export NEWRELIC_KEY=<insert your key here>`
+4. Once you've deployed a BigchainDB cluster on AWS as above, you can install a New Relic system monitor (agent) on all the instances using:
+
+```text
+# in a Python 2.5-2.7 virtual environment where fabric, boto3, etc. are installed
+fab install_newrelic
+```
+
+Once the New Relic system monitor (agent) is installed on the instances, it will start sending server stats to New Relic on a regular basis. It may take a few minutes for data to show up in your New Relic dashboard (under New Relic Servers).
+
+## Shutting Down a Cluster
+
+There are fees associated with running instances on EC2, so if you're not using them, you should terminate them. You can do that using the AWS EC2 Console.
+
+The same is true of your allocated elastic IP addresses. There's a small fee to keep them allocated if they're not associated with a running instance. You can release them using the AWS EC2 Console, or by using a handy little script named `release_eips.py`. For example:
+```text
+$ python release_eips.py
+You have 2 allocated elactic IPs which are not associated with instances
+0: Releasing 52.58.110.110
+(It has Domain = vpc.)
+1: Releasing 52.58.107.211
+(It has Domain = vpc.)
+```
 
 ## Known Deployment Issues
 

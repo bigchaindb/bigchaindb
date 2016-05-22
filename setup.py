@@ -6,6 +6,28 @@ For full docs visit https://bigchaindb.readthedocs.org
 """
 from setuptools import setup, find_packages
 
+
+# get the version
+version = {}
+with open('bigchaindb/version.py') as fp:
+    exec(fp.read(), version)
+
+
+# check if setuptools is up to date
+def check_setuptools_features():
+    import pkg_resources
+    try:
+        list(pkg_resources.parse_requirements('foo~=1.0'))
+    except ValueError:
+        exit('Your Python distribution comes with an incompatible version '
+             'of `setuptools`. Please run:\n'
+             ' $ pip3 install --upgrade setuptools\n'
+             'and then run this command again')
+
+
+check_setuptools_features()
+
+
 tests_require = [
     'pytest',
     'coverage',
@@ -30,9 +52,13 @@ docs_require = [
     'sphinx-rtd-theme>=0.1.9',
 ]
 
+benchmarks_require = [
+    'line-profiler==1.0',
+]
+
 setup(
     name='BigchainDB',
-    version='0.1.4',
+    version=version['__version__'],
     description='BigchainDB: A Scalable Blockchain Database',
     long_description=__doc__,
     url='https://github.com/BigchainDB/bigchaindb/',
@@ -60,23 +86,21 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'bigchaindb=bigchaindb.commands.bigchain:main',
-            'bigchaindb-benchmark=bigchaindb.commands.bigchain_benchmark:main'
+            'bigchaindb=bigchaindb.commands.bigchain:main'
         ],
         'bigchaindb.consensus': [
             'default=bigchaindb.consensus:BaseConsensusRules'
         ]
     },
     install_requires=[
-        'rethinkdb==2.2.0.post4',
+        'rethinkdb==2.3.0',
         'pysha3==0.3',
         'pytz==2015.7',
-        'cryptoconditions==0.1.1',
+        'cryptoconditions==0.2.2',
         'statsd==3.2.1',
         'python-rapidjson==0.0.6',
         'logstats==0.2.1',
         'base58==0.2.2',
-        'bitcoin==1.1.42',
         'flask==0.10.1',
         'requests==2.9',
         'gunicorn~=19.0',
@@ -85,7 +109,7 @@ setup(
     tests_require=tests_require,
     extras_require={
         'test': tests_require,
-        'dev':  dev_require + tests_require + docs_require,
+        'dev':  dev_require + tests_require + docs_require + benchmarks_require,
         'docs':  docs_require,
     },
 )
