@@ -151,8 +151,11 @@ class Bigchain(object):
             If no transaction with that `txid` was found it returns `None`
         """
 
-        response = r.table('bigchain').concat_map(lambda doc: doc['block']['transactions'])\
-            .filter(lambda transaction: transaction['id'] == txid).run(self.conn)
+        response = r.table('bigchain')\
+                    .get_all(txid, index='transaction_id')\
+                    .concat_map(r.row['block']['transactions'])\
+                    .filter(r.row['id'].eq(txid))\
+                    .run(self.conn)
 
         # transaction ids should be unique
         transactions = list(response)

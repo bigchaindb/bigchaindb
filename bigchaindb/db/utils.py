@@ -47,7 +47,8 @@ def init():
     r.db(dbname).table('backlog').index_create('transaction_timestamp', r.row['transaction']['timestamp']).run(conn)
     # to query the bigchain for a transaction id
     r.db(dbname).table('bigchain').index_create('transaction_id',
-                                                r.row['block']['transactions']['id'], multi=True).run(conn)
+                                                r.row['block']['transactions']['id'],
+                                                multi=True).run(conn)
     # compound index to read transactions from the backlog per assignee
     r.db(dbname).table('backlog')\
         .index_create('assignee__transaction_timestamp', [r.row['assignee'], r.row['transaction']['timestamp']])\
