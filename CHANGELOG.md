@@ -25,7 +25,6 @@ committed:
 - New `Dockerfile-dev` Docker file to make it easier for developers to _develop_ BigchainDB with Docker. One can run all unit tests with Docker again. [Pull Request #313](https://github.com/bigchaindb/bigchaindb/pull/313)
 - Transactions in invalid blocks are copied to the backlog: [Pull Request #221](https://github.com/bigchaindb/bigchaindb/pull/221).
 - New `bigchaindb` command to set the number of RethinkDB shards (in both tables): [Pull Request #258](https://github.com/bigchaindb/bigchaindb/pull/258)
-- New command to gather some metrics from a cluster: [Pull Request #266](https://github.com/bigchaindb/bigchaindb/pull/266). Note: This method has some issues so we advise against using it for now.
 - Better handling of an outdated `setuptools`: [Pull Request #279](https://github.com/bigchaindb/bigchaindb/pull/279)
 
 ### Changed
