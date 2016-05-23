@@ -176,7 +176,7 @@ class Bigchain(object):
             return None
 
     def search_block_election_on_index(self, value, index):
-        """Retrieves block election information given a secondary index and value
+        """Retrieve block election information given a secondary index and value
 
         Args:
             value: a value to search (e.g. transaction id string, payload hash string)
@@ -192,7 +192,7 @@ class Bigchain(object):
         return list(response)
 
     def get_blocks_status_containing_tx(self, txid):
-        """Retrieves block ids and statuses related to a transaction
+        """Retrieve block ids and statuses related to a transaction
 
         Transactions may occur in multiple blocks, but no more than one valid block.
 
