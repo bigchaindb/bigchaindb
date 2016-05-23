@@ -12,19 +12,50 @@ For reference, the possible headings are:
 * **Fixed** for any bug fixes.
 * **Security** to invite users to upgrade in case of vulnerabilities.
 * **External Contributors** to list contributors outside of ascribe GmbH.
+* **Notes**
+
+
+## [Unreleased] - YYYY-MM-DD
+Tag name: 
+= commit: 
+committed: 
+
+### Added
+- New `Dockerfile-dev` Docker file to make it easier for developers to _develop_ BigchainDB with Docker. One can run all unit tests with Docker again. [Pull Request #313](https://github.com/bigchaindb/bigchaindb/pull/313)
+- Transactions in invalid blocks are copied to the backlog: [Pull Request #221](https://github.com/bigchaindb/bigchaindb/pull/221).
+- New `bigchaindb` command to set the number of RethinkDB shards (in both tables): [Pull Request #258](https://github.com/bigchaindb/bigchaindb/pull/258)
+- New command to gather some metrics from a cluster: [Pull Request #266](https://github.com/bigchaindb/bigchaindb/pull/266). Note: This method has some issues so we advise against using it for now.
+
+### Changed
+- The block processes now use GroupProcess: [Pull Request #267](https://github.com/bigchaindb/bigchaindb/pull/267)
+- Replaced the `json` Python package with `rapidjson` (a Python wrapper for a fast JSON parser/generator written in C++), to speed up JSON serialization and deserialization: [Pull Request #318](https://github.com/bigchaindb/bigchaindb/pull/318)
+- Overhauled `ROADMAP.md` and moved it to [the bigchaindb/org repository](https://github.com/bigchaindb/org): Pull Requests 
+[#282](https://github.com/bigchaindb/bigchaindb/pull/282),
+[#306](https://github.com/bigchaindb/bigchaindb/pull/306),
+[#308](https://github.com/bigchaindb/bigchaindb/pull/308),
+[#325](https://github.com/bigchaindb/bigchaindb/pull/325)
+- AWS deployment has better support for [New Relic Server Monitoring](https://newrelic.com/server-monitoring): [Pull Request #316](https://github.com/bigchaindb/bigchaindb/pull/316)
+- AWS deployment script now reads from a configuration file: [Pull Request #291](https://github.com/bigchaindb/bigchaindb/pull/291)
+- AWS deployment script doesn't auto-start the BigchainDB servers anymore: [Pull Request #257](https://github.com/bigchaindb/bigchaindb/pull/257) 
+
+### Fixed
+- Bug related to transaction malleability: [Pull Request #281](https://github.com/bigchaindb/bigchaindb/pull/281)
+
+### Notes
+You can now see a big-picture view of all BigchainDB repositories on [a waffle.io board](https://waffle.io/bigchaindb/org).
 
 
 ## [0.3.0] - 2016-05-03
 Tag name: v0.3.0
-= commit:
-committed:
+= commit: a97c54e82be954a1411e5bfe0f09a9c631309f1e
+committed: May 3, 2016, 11:52 AM GMT+2
 
 ### Added
 - Crypto-conditions specs according to the Interledger protocol: [Pull Request #174](https://github.com/bigchaindb/bigchaindb/pull/174)
 - Added support for anonymous hashlocked conditions and fulfillments: [Pull Request #211](https://github.com/bigchaindb/bigchaindb/pull/211)
 
 ### Changed
-- Several improvements to the aws deployment scripts: [Pull Request #227](https://github.com/bigchaindb/bigchaindb/pull/227)
+- Several improvements to the AWS deployment scripts: [Pull Request #227](https://github.com/bigchaindb/bigchaindb/pull/227)
 
 ### Fixed
 - Bug related to block validation: [Pull Request #233](https://github.com/bigchaindb/bigchaindb/pull/233)
@@ -34,7 +65,7 @@ This release completely refactored the structure of the transactions and broke c
 of BigchainDB. The refactor of the transactions was made in order to add support for multiple inputs/outputs and
 the crypto-conditions specs from the Interledger protocol.
 
-We also updated the rethinkdb python drivers so you need to upgrade to rethinkdb v2.3+
+We also updated the RethinkDB Python drivers so you need to upgrade to RethinkDB v2.3+
 
 
 ## [0.2.0] - 2016-04-26
