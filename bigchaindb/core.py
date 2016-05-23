@@ -177,24 +177,36 @@ class Bigchain(object):
 
     def get_tx_by_payload_hash(self, payload_hash):
         """Retrieves transactions related to a digital asset.
+
         When creating a transaction one of the optional arguments is the `payload`. The payload is a generic
         dict that contains information about the digital asset.
+
         To make it easy to query the bigchain for that digital asset we create a sha3-256 hash of the
         serialized payload and store it with the transaction. This makes it easy for developers to keep track
         of their digital assets in bigchain.
+
         Args:
             payload_hash (str): sha3-256 hash of the serialized payload.
+
         Returns:
             A list of transactions containing that payload. If no transaction exists with that payload it
             returns an empty list `[]`
         """
 
-        cursor = r.table('bigchain') \
-            .get_all(payload_hash, index='payload_hash') \
-            .run(self.conn)
+        # First, get information on all blocks which contain this hash
+        blocks = self.search_block_election_on_index(payload_hash, 'payload_hash')
+        if blocks:
+            validity = {block['id']: self.block_election_status(block) for block in blocks}
 
-        transactions = list(cursor)
-        return transactions
+            # disregard invalid blocks
+            validity = {_id: status for _id, status in validity.items() if status != 'invalid'}
+            cursor = r.table('bigchain').get_all(*list(validity.keys()))\
+                .get_all(payload_hash, index='payload_hash')\
+                .run(self.conn)
+
+            return list(cursor)
+        else:
+            return []
 
     def get_spent(self, tx_input):
         """Check if a `txid` was already used as an input.
