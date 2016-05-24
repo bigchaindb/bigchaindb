@@ -238,6 +238,23 @@ class Bigchain(object):
             .run(self.conn)
         owned = []
 
+        def owner_in_subfulfillments(condition_details, _owner):
+            if 'subfulfillments' in condition_details:
+                result = owner_in_subfulfillments(condition_details['subfulfillments'], _owner)
+                if result:
+                    return True
+
+            elif isinstance(condition_details, list):
+                for _subfulfillment in condition_details:
+                    result = owner_in_subfulfillments(_subfulfillment, _owner)
+                    if result:
+                        return True
+            else:
+                if 'public_key' in condition_details \
+                        and _owner == condition_details['public_key']:
+                    return True
+            return False
+
         for tx in response:
             # a transaction can contain multiple outputs (conditions) so we need to iterate over all of them
             # to get a list of outputs available to spend
@@ -251,9 +268,8 @@ class Bigchain(object):
                     # for transactions with multiple `new_owners` there will be several subfulfillments nested
                     # in the condition. We need to iterate the subfulfillments to make sure there is a
                     # subfulfillment for `owner`
-                    for subfulfillment in condition['condition']['details']['subfulfillments']:
-                        if subfulfillment['public_key'] == owner:
-                            tx_input = {'txid': tx['id'], 'cid': condition['cid']}
+                    if owner_in_subfulfillments(condition['condition']['details'], owner):
+                        tx_input = {'txid': tx['id'], 'cid': condition['cid']}
                 # check if input was already spent
                 if not self.get_spent(tx_input):
                     owned.append(tx_input)

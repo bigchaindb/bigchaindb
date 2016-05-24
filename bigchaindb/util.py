@@ -447,7 +447,8 @@ def validate_fulfillments(signed_transaction):
             return False
 
         # TODO: might already break on a False here
-        is_valid = parsed_fulfillment.validate(serialize(fulfillment_message))
+        is_valid = parsed_fulfillment.validate(message=serialize(fulfillment_message),
+                                               now=timestamp())
 
         # if transaction has an input (i.e. not a `CREATE` transaction)
         # TODO: avoid instantiation, pass as argument!
