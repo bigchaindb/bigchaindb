@@ -32,6 +32,7 @@ class Processes(object):
         self.q_new_block = mp.Queue()
         self.q_new_transaction = mp.Queue()
         self.q_block_new_vote = mp.Queue()
+        self.q_revert_delete = mp.Queue()
 
     def map_backlog(self):
         # listen to changes on the backlog and redirect the changes
@@ -69,7 +70,8 @@ class Processes(object):
 
             # delete
             elif change['new_val'] is None:
-                pass
+                # this should never happen in regular operation
+                self.q_revert_delete.put(change['old_val'])
 
             # update (new vote)
             elif change['new_val'] is not None and change['old_val'] is not None:
@@ -79,7 +81,7 @@ class Processes(object):
         logger.info('Initializing BigchainDB...')
 
         # instantiate block and voter
-        block = Block(self.q_new_transaction)
+        block = Block(self.q_new_transaction, self.q_revert_delete)
 
         # start the web api
         app_server = server.create_server(bigchaindb.config['server'])

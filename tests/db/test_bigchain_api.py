@@ -588,7 +588,7 @@ class TestBigchainBlock(object):
         transactions.put('stop')
 
         # create a block instance
-        block = Block(transactions)
+        block = Block(transactions, None)
         block.q_new_transaction = transactions
         # filter the transactions
         block.filter_by_assignee()
@@ -613,7 +613,7 @@ class TestBigchainBlock(object):
         transactions.put('stop')
 
         # create a block instance
-        block = Block(transactions)
+        block = Block(transactions, None)
         block.q_tx_to_validate = transactions
         # validate transactions
         block.validate_transactions()
@@ -632,7 +632,7 @@ class TestBigchainBlock(object):
         transactions.put('stop')
 
         # create a block instance
-        block = Block(transactions)
+        block = Block(transactions, None)
         block.q_tx_validated = transactions
         # create blocks
         block.create_blocks()
@@ -655,7 +655,7 @@ class TestBigchainBlock(object):
         blocks.put('stop')
 
         # create a block instance
-        block = Block(transactions)
+        block = Block(transactions, None)
         block.q_block = blocks
 
         # make sure that we only have the genesis block in bigchain
@@ -684,7 +684,7 @@ class TestBigchainBlock(object):
         transactions.put('stop')
 
         # create a block instance
-        block = Block(transactions)
+        block = Block(transactions, None)
         block.q_tx_delete = transactions
 
         # make sure that there are transactions on the backlog
@@ -709,7 +709,7 @@ class TestBigchainBlock(object):
             b.write_transaction(tx)
 
         # create a block instance
-        block = Block(None)
+        block = Block(None, None)
 
         # run bootstrap
         initial_results = block.bootstrap()
@@ -741,7 +741,7 @@ class TestBigchainBlock(object):
             new_transactions.put('stop')
 
         # create a block instance
-        block = Block(new_transactions)
+        block = Block(new_transactions, None)
 
         # start the block processes
         block.start()
@@ -757,7 +757,7 @@ class TestBigchainBlock(object):
         new_transactions = mp.Queue()
 
         # create block instance
-        block = Block(new_transactions)
+        block = Block(new_transactions, None)
 
         # start block process
         block.start()

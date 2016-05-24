@@ -15,11 +15,12 @@ logger = logging.getLogger(__name__)
 
 class Block(object):
 
-    def __init__(self, q_new_transaction):
+    def __init__(self, q_new_transaction, q_revert_delete):
         """
         Initialize the class with the needed
         """
         self._q_new_transaction = q_new_transaction
+        self._q_revert_delete = q_revert_delete
         self.q_new_transaction = None
         self.q_tx_to_validate = mp.Queue()
         self.q_tx_validated = mp.Queue()
@@ -111,6 +112,20 @@ class Block(object):
             if stop:
                 self.q_block.put('stop')
                 return
+
+    def revert_delete(self):
+        """
+        Undo spurious block deletes
+        """
+
+        while True:
+            deleted_block = self._q_revert_delete.get()
+
+            # poison pill
+            if deleted_block == 'stop':
+                return
+
+            self.q_block.put(deleted_block)
 
     def write_blocks(self):
         """
@@ -221,6 +236,7 @@ class Block(object):
         p_blocks = ProcessGroup(name='create_blocks', target=self.create_blocks)
         p_write = ProcessGroup(name='write_blocks', target=self.write_blocks)
         p_delete = ProcessGroup(name='delete_transactions', target=self.delete_transactions)
+        p_revert = ProcessGroup(name='revert_deletes', target=self.revert_delete)
 
         # start the processes
         p_filter.start()
@@ -228,4 +244,4 @@ class Block(object):
         p_blocks.start()
         p_write.start()
         p_delete.start()
-
+        p_revert.start()
