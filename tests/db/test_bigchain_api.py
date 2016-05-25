@@ -1080,7 +1080,7 @@ class TestMultipleInputs(object):
 
         # vote the block invalid
         vote = b.vote(block, b.get_last_voted_block()['id'], False)
-        b.write_vote(block, vote, 2)
+        b.write_vote(block, vote, 3)
 
         owned_inputs_user1 = b.get_owned_ids(user_vk)
         owned_inputs_user2 = b.get_owned_ids(user2_vk)
