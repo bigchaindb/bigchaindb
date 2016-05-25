@@ -16,6 +16,10 @@ class GenesisBlockAlreadyExistsError(Exception):
     pass
 
 
+class ImproperVoteError(Exception):
+    pass
+
+
 class Bigchain(object):
     """Bigchain API
 
@@ -339,8 +343,17 @@ class Bigchain(object):
             The block if the block is valid else it raises and exception
             describing the reason why the block is invalid.
         """
+        # First, make sure this node hasn't already voted on this block
+        if block['votes']:
+            for vote in block['votes']:
+                if vote['node_pubkey'] == self.me:
+                    if util.verify_vote_signature(block, vote):
+                        return block
+                    else:
+                        raise ImproperVoteError('Block {block_id} already has in incorrectly signed vote '
+                                                'from public key {me}').format(block_id=block['id'], me=self.me)
 
-        # First: Run the plugin block validation logic
+        # Run the plugin block validation logic
         self.consensus.validate_block(self, block)
 
         # Finally: Tentative assumption that every blockchain will want to
@@ -448,6 +461,16 @@ class Bigchain(object):
 
     def write_vote(self, block, vote, block_number):
         """Write the vote to the database."""
+
+        # First, make sure this block doesn't contain a vote from this node
+        if block['votes']:
+            for prev_vote in block['votes']:
+                if prev_vote['node_pubkey'] == self.me:
+                    if util.verify_vote_signature(block, prev_vote):
+                        return None
+                    else:
+                        raise ImproperVoteError('Block {block_id} already has in incorrectly signed vote '
+                                                'from public key {me}').format(block_id=block['id'], me=self.me)
 
         update = {'votes': r.row['votes'].append(vote)}
 
