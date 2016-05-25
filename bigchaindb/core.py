@@ -350,7 +350,7 @@ class Bigchain(object):
                     if util.verify_vote_signature(block, vote):
                         return block
                     else:
-                        raise ImproperVoteError('Block {block_id} already has in incorrectly signed vote '
+                        raise ImproperVoteError('Block {block_id} already has an incorrectly signed vote '
                                                 'from public key {me}').format(block_id=block['id'], me=self.me)
 
         # Run the plugin block validation logic
@@ -469,7 +469,7 @@ class Bigchain(object):
                     if util.verify_vote_signature(block, prev_vote):
                         return None
                     else:
-                        raise ImproperVoteError('Block {block_id} already has in incorrectly signed vote '
+                        raise ImproperVoteError('Block {block_id} already has an incorrectly signed vote '
                                                 'from public key {me}').format(block_id=block['id'], me=self.me)
 
         update = {'votes': r.row['votes'].append(vote)}
