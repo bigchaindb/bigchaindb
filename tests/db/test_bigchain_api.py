@@ -120,7 +120,7 @@ class TestBigchainApi(object):
 
         # vote the block invalid
         vote = b.vote(block, b.get_last_voted_block()['id'], False)
-        b.write_vote(block, vote, 2)
+        b.write_vote(block, vote, 3)
         response = b.get_transaction(tx_signed["id"])
 
         # should be None, because invalid blocks are ignored
