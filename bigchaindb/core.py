@@ -167,8 +167,8 @@ class Bigchain(object):
                     break
 
             # Query the transaction in the target block and return
-            response = r.table('bigchain').filter(lambda block: block['id'] == target_block_id).nth(0)\
-                .get_field('block').get_field('transactions').filter(lambda tx: tx['id'] == txid).run(self.conn)
+            response = r.table('bigchain').get(target_block_id).get_field('block')\
+                .get_field('transactions').filter(lambda tx: tx['id'] == txid).run(self.conn)
 
             return response[0]
 
