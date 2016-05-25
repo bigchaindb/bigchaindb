@@ -1884,6 +1884,7 @@ class TestCryptoconditions(object):
         first_input_tx = b.get_owned_ids(user_vk).pop()
         user2_sk, user2_vk = crypto.generate_key_pair()
 
+        # ESCROW
         escrow_tx = b.create_transaction(user_vk, [user_vk, user2_vk], first_input_tx, 'TRANSFER')
 
         time_sleep = 3
@@ -1926,12 +1927,10 @@ class TestCryptoconditions(object):
         block = b.create_block([escrow_tx_signed])
         b.write_block(block, durability='hard')
 
-        # create hashlock fulfillment tx
         # Retrieve the last transaction of thresholduser1_pub
         tx_retrieved_id = b.get_owned_ids(user2_vk).pop()
 
         # EXECUTE
-
         # Create a base template for output transaction
         escrow_tx_transfer = b.create_transaction([user_vk, user2_vk], user2_vk, tx_retrieved_id, 'TRANSFER')
 
@@ -1973,7 +1972,6 @@ class TestCryptoconditions(object):
             assert b.validate_transaction(escrow_tx_transfer) == escrow_tx_transfer
 
         # ABORT
-
         # Create a base template for output transaction
         escrow_tx_abort = b.create_transaction([user_vk, user2_vk], user_vk, tx_retrieved_id, 'TRANSFER')
 
@@ -2013,6 +2011,7 @@ class TestCryptoconditions(object):
         first_input_tx = b.get_owned_ids(user_vk).pop()
         user2_sk, user2_vk = crypto.generate_key_pair()
 
+        # ESCROW
         escrow_tx = b.create_transaction(user_vk, [user_vk, user2_vk], first_input_tx, 'TRANSFER')
 
         time_sleep = 3
@@ -2055,12 +2054,10 @@ class TestCryptoconditions(object):
         block = b.create_block([escrow_tx_signed])
         b.write_block(block, durability='hard')
 
-        # create hashlock fulfillment tx
         # Retrieve the last transaction of thresholduser1_pub
         tx_retrieved_id = b.get_owned_ids(user2_vk).pop()
 
         # EXECUTE
-
         # Create a base template for output transaction
         escrow_tx_transfer = b.create_transaction([user_vk, user2_vk], user2_vk, tx_retrieved_id, 'TRANSFER')
 
@@ -2108,7 +2105,6 @@ class TestCryptoconditions(object):
             assert b.validate_transaction(escrow_tx_transfer) == escrow_tx_transfer
 
         # ABORT
-
         # Create a base template for output transaction
         escrow_tx_abort = b.create_transaction([user_vk, user2_vk], user_vk, tx_retrieved_id, 'TRANSFER')
 
@@ -2124,13 +2120,13 @@ class TestCryptoconditions(object):
                                                                      escrow_tx_abort['transaction']['fulfillments'][0],
                                                                      serialized=True)
         escrow_fulfillment.subconditions = []
-        # fulfill execute branch
+        # do not fulfill execute branch
         fulfillment_and_execute = cc.ThresholdSha256Fulfillment(threshold=2)
         fulfillment_and_execute.add_subfulfillment(subfulfillment_user2)
         fulfillment_and_execute.add_subfulfillment(fulfillment_timeout)
         escrow_fulfillment.add_subcondition(fulfillment_and_execute.condition)
 
-        # do not fulfill abort branch
+        # fulfill abort branch
         fulfillment_and_abort = cc.ThresholdSha256Fulfillment(threshold=2)
         subfulfillment_user.sign(escrow_tx_fulfillment_message, crypto.SigningKey(user_sk))
         fulfillment_and_abort.add_subfulfillment(subfulfillment_user)

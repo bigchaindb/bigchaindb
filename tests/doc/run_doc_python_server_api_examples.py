@@ -106,6 +106,7 @@ sleep(8)
 
 # retrieve the transaction
 tx_multisig_retrieved = b.get_transaction(tx_multisig_signed['id'])
+assert tx_multisig_retrieved is not None
 
 print(json.dumps(tx_multisig_retrieved, sort_keys=True, indent=4, separators=(',', ':')))
 
@@ -115,7 +116,11 @@ tx_multisig_retrieved_id = b.get_owned_ids(testuser2_pub).pop()
 tx_multisig_transfer = b.create_transaction([testuser1_pub, testuser2_pub], testuser3_pub, tx_multisig_retrieved_id, 'TRANSFER')
 tx_multisig_transfer_signed = b.sign_transaction(tx_multisig_transfer, [testuser1_priv, testuser2_priv])
 
-b.validate_transaction(tx_multisig_transfer_signed)
+try:
+    b.validate_transaction(tx_multisig_transfer_signed)
+except exceptions.InvalidSignature:
+    import ipdb; ipdb.set_trace()
+    b.validate_transaction(tx_multisig_transfer_signed)
 b.write_transaction(tx_multisig_transfer_signed)
 
 # wait a few seconds for the asset to appear on the blockchain
@@ -150,6 +155,8 @@ b.validate_transaction(tx_mimo_signed)
 b.write_transaction(tx_mimo_signed)
 
 print(json.dumps(tx_mimo_signed, sort_keys=True, indent=4, separators=(',', ':')))
+
+sleep(8)
 
 """
 Threshold Conditions
@@ -298,3 +305,181 @@ assert b.is_valid_transaction(hashlock_fulfill_tx) == hashlock_fulfill_tx
 
 b.write_transaction(hashlock_fulfill_tx)
 print(json.dumps(hashlock_fulfill_tx, sort_keys=True, indent=4, separators=(',', ':')))
+
+
+"""
+Timeout Conditions
+"""
+# Create transaction template
+tx_timeout = b.create_transaction(b.me, None, None, 'CREATE')
+
+# Set expiry time (12 secs from now)
+time_sleep = 12
+time_expire = str(float(util.timestamp()) + time_sleep)
+
+# only valid if the server time <= time_expire
+condition_timeout = cc.TimeoutFulfillment(expire_time=time_expire)
+
+# The conditions list is empty, so we need to append a new condition
+tx_timeout['transaction']['conditions'].append({
+    'condition': {
+        'details': json.loads(condition_timeout.serialize_json()),
+        'uri': condition_timeout.condition.serialize_uri()
+    },
+    'cid': 0,
+    'new_owners': None
+})
+
+# conditions have been updated, so hash needs updating
+tx_timeout['id'] = util.get_hash_data(tx_timeout)
+
+# sign transaction
+tx_timeout_signed = b.sign_transaction(tx_timeout, b.me_private)
+
+b.write_transaction(tx_timeout_signed)
+print(json.dumps(tx_timeout, sort_keys=True, indent=4, separators=(',', ':')))
+sleep(8)
+
+# Retrieve the transaction id of tx_timeout
+tx_timeout_id = {'txid': tx_timeout['id'], 'cid': 0}
+
+# Create a template to transfer the tx_timeout
+tx_timeout_transfer = b.create_transaction(None, testuser1_pub, tx_timeout_id, 'TRANSFER')
+
+# Parse the threshold cryptocondition
+timeout_fulfillment = cc.Fulfillment.from_json(
+    tx_timeout['transaction']['conditions'][0]['condition']['details'])
+
+tx_timeout_transfer['transaction']['fulfillments'][0]['fulfillment'] = timeout_fulfillment.serialize_uri()
+
+# no need to sign transaction, like with hashlocks
+for i in range(time_sleep - 4):
+    tx_timeout_valid = b.is_valid_transaction(tx_timeout_transfer) == tx_timeout_transfer
+    seconds_to_timeout = int(float(time_expire) - float(util.timestamp()))
+    print('tx_timeout valid: {} ({}s to timeout)'.format(tx_timeout_valid, seconds_to_timeout))
+    sleep(1)
+
+"""
+Escrow Conditions
+"""
+# retrieve the last transaction of testuser2
+tx_retrieved_id = b.get_owned_ids(testuser2_pub).pop()
+
+# Create escrow template with the execute and abort address
+tx_escrow = b.create_transaction(testuser2_pub, [testuser2_pub, testuser1_pub], tx_retrieved_id, 'TRANSFER')
+
+# Set expiry time (12 secs from now)
+time_sleep = 12
+time_expire = str(float(util.timestamp()) + time_sleep)
+
+# Create escrow and timeout condition
+condition_escrow = cc.ThresholdSha256Fulfillment(threshold=1)  # OR Gate
+condition_timeout = cc.TimeoutFulfillment(expire_time=time_expire)  # only valid if now() <= time_expire
+
+# Create execute branch
+condition_execute = cc.ThresholdSha256Fulfillment(threshold=2)  # AND gate
+condition_execute.add_subfulfillment(cc.Ed25519Fulfillment(public_key=testuser1_pub))  # execute address
+condition_execute.add_subfulfillment(condition_timeout)  # federation checks on expiry
+condition_escrow.add_subfulfillment(condition_execute)
+
+# Create abort branch
+condition_abort = cc.ThresholdSha256Fulfillment(threshold=2)  # AND gate
+condition_abort.add_subfulfillment(cc.Ed25519Fulfillment(public_key=testuser2_pub))  # abort address
+condition_abort.add_subfulfillment(condition_timeout, weight=-1)  # the negative weight inverts the condition
+condition_escrow.add_subfulfillment(condition_abort)
+
+# Update the condition in the newly created transaction
+tx_escrow['transaction']['conditions'][0]['condition'] = {
+    'details': json.loads(condition_escrow.serialize_json()),
+    'uri': condition_escrow.condition.serialize_uri()
+}
+
+# conditions have been updated, so hash needs updating
+tx_escrow['id'] = util.get_hash_data(tx_escrow)
+
+# sign transaction
+tx_escrow_signed = b.sign_transaction(tx_escrow, testuser2_priv)
+
+# some checks
+assert b.validate_transaction(tx_escrow_signed) == tx_escrow_signed
+assert b.is_valid_transaction(tx_escrow_signed) == tx_escrow_signed
+
+print(json.dumps(tx_escrow_signed, sort_keys=True, indent=4, separators=(',', ':')))
+b.write_transaction(tx_escrow_signed)
+sleep(8)
+
+# Retrieve the last transaction of thresholduser1_pub
+tx_escrow_id = {'txid': tx_escrow_signed['id'], 'cid': 0}
+
+# Create a base template for output transaction
+tx_escrow_execute = b.create_transaction([testuser2_pub, testuser1_pub], testuser1_pub, tx_escrow_id, 'TRANSFER')
+
+# Parse the threshold cryptocondition
+escrow_fulfillment = cc.Fulfillment.from_json(
+    tx_escrow['transaction']['conditions'][0]['condition']['details'])
+
+subfulfillment_testuser1 = escrow_fulfillment.get_subcondition_from_vk(testuser1_pub)[0]
+subfulfillment_testuser2 = escrow_fulfillment.get_subcondition_from_vk(testuser2_pub)[0]
+subfulfillment_timeout = escrow_fulfillment.subconditions[0]['body'].subconditions[1]['body']
+
+# Get the fulfillment message to sign
+tx_escrow_execute_fulfillment_message = \
+    util.get_fulfillment_message(tx_escrow_execute,
+                                 tx_escrow_execute['transaction']['fulfillments'][0],
+                                 serialized=True)
+
+escrow_fulfillment.subconditions = []
+
+# fulfill execute branch
+fulfillment_execute = cc.ThresholdSha256Fulfillment(threshold=2)
+subfulfillment_testuser1.sign(tx_escrow_execute_fulfillment_message, crypto.SigningKey(testuser1_priv))
+fulfillment_execute.add_subfulfillment(subfulfillment_testuser1)
+fulfillment_execute.add_subfulfillment(subfulfillment_timeout)
+escrow_fulfillment.add_subfulfillment(fulfillment_execute)
+
+# do not fulfill abort branch
+condition_abort = cc.ThresholdSha256Fulfillment(threshold=2)
+condition_abort.add_subfulfillment(subfulfillment_testuser2)
+condition_abort.add_subfulfillment(subfulfillment_timeout, weight=-1)
+escrow_fulfillment.add_subcondition(condition_abort.condition)
+
+# create fulfillment and append to transaction
+tx_escrow_execute['transaction']['fulfillments'][0]['fulfillment'] = escrow_fulfillment.serialize_uri()
+
+# Time has expired, hence the abort branch can redeem
+tx_escrow_abort = b.create_transaction([testuser2_pub, testuser1_pub], testuser2_pub, tx_escrow_id, 'TRANSFER')
+
+# Parse the threshold cryptocondition
+escrow_fulfillment = cc.Fulfillment.from_json(
+    tx_escrow['transaction']['conditions'][0]['condition']['details'])
+
+subfulfillment_testuser1 = escrow_fulfillment.get_subcondition_from_vk(testuser1_pub)[0]
+subfulfillment_testuser2 = escrow_fulfillment.get_subcondition_from_vk(testuser2_pub)[0]
+subfulfillment_timeout = escrow_fulfillment.subconditions[0]['body'].subconditions[1]['body']
+
+tx_escrow_abort_fulfillment_message = \
+    util.get_fulfillment_message(tx_escrow_abort,
+                                 tx_escrow_abort['transaction']['fulfillments'][0],
+                                 serialized=True)
+escrow_fulfillment.subconditions = []
+
+# Do not fulfill execute branch
+condition_execute = cc.ThresholdSha256Fulfillment(threshold=2)
+condition_execute.add_subfulfillment(subfulfillment_testuser1)
+condition_execute.add_subfulfillment(subfulfillment_timeout)
+escrow_fulfillment.add_subcondition(condition_execute.condition)
+
+# Fulfill abort branch
+fulfillment_abort = cc.ThresholdSha256Fulfillment(threshold=2)
+subfulfillment_testuser2.sign(tx_escrow_abort_fulfillment_message, crypto.SigningKey(testuser2_priv))
+fulfillment_abort.add_subfulfillment(subfulfillment_testuser2)
+fulfillment_abort.add_subfulfillment(subfulfillment_timeout, weight=-1)
+escrow_fulfillment.add_subfulfillment(fulfillment_abort)
+
+tx_escrow_abort['transaction']['fulfillments'][0]['fulfillment'] = escrow_fulfillment.serialize_uri()
+
+for i in range(time_sleep - 4):
+    valid_execute = b.is_valid_transaction(tx_escrow_execute) == tx_escrow_execute
+    valid_abort = b.is_valid_transaction(tx_escrow_abort) == tx_escrow_abort
+    print('execute: {} - abort {}'.format(valid_execute, valid_abort))
+    sleep(1)

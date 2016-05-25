@@ -886,3 +886,203 @@ hashlock_fulfill_tx
     "version":1
 }
 ```
+
+### Timeout Conditions
+
+Timeout conditions allow assets to expire after a certain time.
+The primary use case of timeout conditions is to enable Escrow (see further).
+
+The condition can only be fulfilled before the expiry time. 
+Once expired, the asset is lost and cannot be fulfilled by anyone.
+
+__Note__: The timeout conditions are BigchainDB-specific and not (yet) supported by the ILP standard.
+
+```python
+# Create a timeout asset without any new_owners
+timeout_tx = b.create_transaction(b.me, None, None, 'CREATE')
+
+# Set expiry time - the asset needs to be transfered before expiration
+time_sleep = 12
+time_expire = str(float(util.timestamp()) + time_sleep)  # 12 secs from now
+condition_timeout = cc.TimeoutFulfillment(expire_time=time_expire)
+
+# The conditions list is empty, so we need to append a new condition
+tx_timeout['transaction']['conditions'].append({
+    'condition': {
+        'details': json.loads(condition_timeout.serialize_json()),
+        'uri': condition_timeout.condition.serialize_uri()
+    },
+    'cid': 0,
+    'new_owners': None
+})
+
+# Conditions have been updated, so the hash needs updating
+tx_timeout['id'] = util.get_hash_data(tx_timeout)
+
+# The asset needs to be signed by the current_owner
+tx_timeout_signed = b.sign_transaction(tx_timeout, b.me_private)
+
+# Some validations
+assert b.validate_transaction(tx_timeout_signed) == tx_timeout_signed
+assert b.is_valid_transaction(tx_timeout_signed) == tx_timeout_signed
+
+b.write_transaction(tx_timeout_signed)
+tx_timeout_signed
+```
+
+```python
+{
+    "id":"78145396cd368f7168fb01c97aaf1df6f85244d7b544073dfcb42397dae38f90",
+    "transaction":{
+        "conditions":[
+            {
+                "cid":0,
+                "condition":{
+                    "details":{
+                        "bitmask":9,
+                        "expire_time":"1464167910.643431",
+                        "type":"fulfillment",
+                        "type_id":99
+                    },
+                    "uri":"cc:63:9:sceU_NZc3cAjAvaR1TVmgj7am5y8hJEBoqLm-tbqGbQ:17"
+                },
+                "new_owners":null
+            }
+        ],
+        "data":null,
+        "fulfillments":[
+            {
+                "current_owners":[
+                    "FmLm6MxCABc8TsiZKdeYaZKo5yZWMM6Vty7Q1B6EgcP2"
+                ],
+                "fid":0,
+                "fulfillment":null,
+                "input":null
+            }
+        ],
+        "operation":"CREATE",
+        "timestamp":"1464167898.643353"
+    },
+    "version":1
+}
+```
+
+The following demonstrates that the transaction invalidates once the timeout occurs:
+
+```python
+# Create a timeout fulfillment tx
+tx_timeout_transfer = b.create_transaction(None, testuser1_pub, {'txid': tx_timeout['id'], 'cid': 0}, 'TRANSFER')
+
+# Parse the timeout condition and create the corresponding fulfillment
+timeout_fulfillment = cc.Fulfillment.from_json(
+    tx_timeout['transaction']['conditions'][0]['condition']['details'])
+tx_timeout_transfer['transaction']['fulfillments'][0]['fulfillment'] = timeout_fulfillment.serialize_uri()
+
+# No need to sign transaction, like with hashlocks
+
+# Small test to see the state change
+for i in range(time_sleep - 4):
+    tx_timeout_valid = b.is_valid_transaction(tx_timeout_transfer) == tx_timeout_transfer
+    seconds_to_timeout = int(float(time_expire) - float(util.timestamp()))
+    print('tx_timeout valid: {} ({}s to timeout)'.format(tx_timeout_valid, seconds_to_timeout))
+    sleep(1)
+```
+
+If you were fast enough, you should see the following output:
+
+```python
+tx_timeout valid: True (3s to timeout)
+tx_timeout valid: True (2s to timeout)
+tx_timeout valid: True (1s to timeout)
+tx_timeout valid: True (0s to timeout)
+tx_timeout valid: False (0s to timeout)
+tx_timeout valid: False (-1s to timeout)
+tx_timeout valid: False (-2s to timeout)
+tx_timeout valid: False (-3s to timeout)
+```
+
+## Escrow
+
+Escrow is a mechanism for conditional release of assets.
+
+This means that a the assets are locked up by a trusted party until an `execute` condition is presented. In order not to tie up the assets forever, the escrow foresees an `abort` condition, which is typically an expiry time.
+
+BigchainDB and cryptoconditions provides escrow out-of-the-box, without the need of a trusted party.
+
+A threshold condition is used to represent the escrow, since BigchainDB transactions cannot have a _pending_ state.
+
+![BigchainDB escrow conditions and fulfillments](./_static/tx_escrow_execute_abort.png)
+
+The logic for switching between `execute` and `abort` conditions is conceptually simple:
+
+```python
+if timeout_condition.validate(utcnow()):
+    execute_fulfillment.validate(msg) == True
+    abort_fulfillment.validate(msg) == False
+else:
+    execute_fulfillment.validate(msg) == False
+    abort_fulfillment.validate(msg) == True
+```
+
+The above switch can be implemented as follows using threshold cryptoconditions:
+
+![Cryptoconditions escrow conditions and fulfillments](./_static/cc_escrow_execute_abort.png)
+
+The small circle on the threshold conditions denotes an inversion of the fulfillment:
+
+```python
+inverted_fulfillment.validate(msg) == not fulfillment.validate(msg)
+```
+
+An inverted input to a threshold condition is simply obtained by using negative weights.
+
+__Note__: negative weights are BigchainDB-specific and not (yet) supported by the ILP standard.
+
+The following code snippet shows how to create an escrow condition
+
+```python
+# Retrieve the last transaction of testuser2_pub
+tx_retrieved_id = b.get_owned_ids(testuser2_pub).pop()
+
+# Create a base template with the execute and abort address
+tx_escrow = b.create_transaction(testuser2_pub, [testuser2_pub, testuser1_pub], tx_retrieved_id, 'TRANSFER')
+
+# Set expiry time - the execute address needs to fulfill before expiration 
+time_sleep = 12
+time_expire = str(float(util.timestamp()) + time_sleep)  # 12 secs from now
+
+# Create the escrow and timeout condition
+condition_escrow = cc.ThresholdSha256Fulfillment(threshold=1)  # OR Gate
+condition_timeout = cc.TimeoutFulfillment(expire_time=time_expire)  # only valid if now() <= time_expire
+
+# Create the execute branch
+condition_execute = cc.ThresholdSha256Fulfillment(threshold=2)  # AND gate
+condition_execute.add_subfulfillment(cc.Ed25519Fulfillment(public_key=testuser1_pub))  # execute address
+condition_execute.add_subfulfillment(condition_timeout)  # federation checks on expiry
+condition_escrow.add_subfulfillment(condition_execute)
+
+# Create the abort branch
+condition_abort = cc.ThresholdSha256Fulfillment(threshold=2)  # AND gate
+condition_abort.add_subfulfillment(cc.Ed25519Fulfillment(public_key=testuser2_pub))  # abort address
+condition_abort.add_subfulfillment(condition_timeout, weight=-1)  # the negative weight inverts the condition
+condition_escrow.add_subfulfillment(condition_abort)
+
+# Update the condition in the newly created transaction
+tx_escrow['transaction']['conditions'][0]['condition'] = {
+    'details': json.loads(condition_escrow.serialize_json()),
+    'uri': condition_escrow.condition.serialize_uri()
+}
+
+# Conditions have been updated, so the hash needs updating
+tx_escrow['id'] = util.get_hash_data(tx_escrow)
+
+# The asset needs to be signed by the current_owner
+tx_escrow_signed = b.sign_transaction(tx_escrow, testuser2_priv)
+
+# Some validations
+assert b.validate_transaction(tx_escrow_signed) == tx_escrow_signed
+assert b.is_valid_transaction(tx_escrow_signed) == tx_escrow_signed
+
+b.write_transaction(tx_escrow_signed)
+tx_escrow_signed
+```

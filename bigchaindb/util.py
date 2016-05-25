@@ -526,6 +526,37 @@ def get_input_condition(bigchain, fulfillment):
         }
 
 
+def condition_details_has_owner(condition_details, owner):
+    """
+
+    Check if the public_key of owner is in the condition details
+    as an Ed25519Fulfillment.public_key
+
+    Args:
+        condition_details (dict): dict with condition details
+        owner (str): base58 public key of owner
+
+    Returns:
+        bool: True if the public key is found in the condition details, False otherwise
+
+    """
+    if 'subfulfillments' in condition_details:
+        result = condition_details_has_owner(condition_details['subfulfillments'], owner)
+        if result:
+            return True
+
+    elif isinstance(condition_details, list):
+        for subcondition in condition_details:
+            result = condition_details_has_owner(subcondition, owner)
+            if result:
+                return True
+    else:
+        if 'public_key' in condition_details \
+                and owner == condition_details['public_key']:
+            return True
+    return False
+
+
 def get_hash_data(transaction):
     """ Get the hashed data that (should) correspond to the `transaction['id']`
 
