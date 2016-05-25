@@ -154,7 +154,8 @@ class Bigchain(object):
 
         if validity:
             # Disregard invalid blocks, and return if there are no valid or undecided blocks
-            validity = {_id: status for _id, status in validity.items() if status != 'invalid'}
+            validity = {_id: status for _id, status in validity.items()
+                                    if status != Bigchain.BLOCK_INVALID}
             if not validity:
                 return None
 
@@ -163,7 +164,7 @@ class Bigchain(object):
             # undecided ones
             for _id in validity:
                 target_block_id = _id
-                if validity[_id] == 'valid':
+                if validity[_id] == Bigchain.BLOCK_VALID:
                     break
 
             # Query the transaction in the target block and return
@@ -200,7 +201,8 @@ class Bigchain(object):
             txid (str): transaction id of the transaction to query
 
         Returns:
-            A dict of blocks containing the transaction, e.g. {block_id_1: 'valid', block_id_2: 'invalid' ...}, or None
+            A dict of blocks containing the transaction,
+            e.g. {block_id_1: 'valid', block_id_2: 'invalid' ...}, or None
         """
 
         # First, get information on all blocks which contain this transaction
@@ -211,10 +213,11 @@ class Bigchain(object):
             validity = {block['id']: self.block_election_status(block) for block in blocks}
 
             # If there are multiple valid blocks with this transaction, something has gone wrong
-            if list(validity.values()).count('valid') > 1:
+            if list(validity.values()).count(Bigchain.BLOCK_VALID) > 1:
+                block_ids = str([block for block in validity
+                                       if validity[block] == Bigchain.BLOCK_VALID])
                 raise Exception('Transaction {tx} is present in multiple valid blocks: {block_ids}'
-                                .format(tx=txid,
-                                        block_ids=str([block for block in validity if validity[block] == 'valid'])))
+                                .format(tx=txid, block_ids=block_ids))
 
             return validity
 
@@ -309,8 +312,8 @@ class Bigchain(object):
         for tx in response:
             # disregard transactions from invalid blocks
             validity = self.get_blocks_status_containing_tx(tx['id'])
-            if 'valid' not in validity.values():
-                if 'undecided' not in validity.values():
+            if Bigchain.BLOCK_VALID not in validity.values():
+                if Bigchain.BLOCK_UNDECIDED not in validity.values():
                     continue
 
             # a transaction can contain multiple outputs (conditions) so we need to iterate over all of them
@@ -570,7 +573,7 @@ class Bigchain(object):
 
     def block_election_status(self, block):
         """Tally the votes on a block, and return the status: valid, invalid, or undecided."""
-        
+
         n_voters = len(block['block']['voters'])
         vote_cast = [vote['vote']['is_block_valid'] for vote in block['votes']]
         vote_validity = [self.consensus.verify_vote_signature(block, vote) for vote in block['votes']]
