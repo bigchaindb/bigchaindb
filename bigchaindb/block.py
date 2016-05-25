@@ -224,6 +224,7 @@ class Block(object):
     def kill(self):
         for i in range(mp.cpu_count()):
             self.q_new_transaction.put('stop')
+            self._q_revert_delete.put('stop')
 
     def _start(self):
         """
