@@ -1052,7 +1052,7 @@ __Note__: negative weights are BigchainDB-specific and not (yet) supported by th
 The following code snippet shows how to create an escrow condition:
 
 ```python
-# Retrieve the last transaction of testuser2_pub
+# Retrieve the last transaction of testuser2_pub (or create a new asset)
 tx_retrieved_id = b.get_owned_ids(testuser2_pub).pop()
 
 # Create a base template with the execute and abort address
@@ -1240,7 +1240,7 @@ In the case of `testuser2`, we create the `abort` fulfillment:
 
 ```python
 # Create a base template for execute fulfillment
-tx_escrow_execute = b.create_transaction([testuser2_pub, testuser1_pub], testuser2_pub, {'txid': tx_escrow_signed['id'], 'cid': 0}, 'TRANSFER')
+tx_escrow_abort = b.create_transaction([testuser2_pub, testuser1_pub], testuser2_pub, {'txid': tx_escrow_signed['id'], 'cid': 0}, 'TRANSFER')
 
 # Parse the threshold cryptocondition
 escrow_fulfillment = cc.Fulfillment.from_json(
