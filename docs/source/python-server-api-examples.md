@@ -901,6 +901,8 @@ Once expired, the asset is lost and cannot be fulfilled by anyone.
 
 __Note__: The timeout conditions are BigchainDB-specific and not (yet) supported by the ILP standard.
 
+__Caveat__: The times between nodes in a BigchainDB federation may (and will) differ slightly. In this case, the majority of the nodes will decide.
+
 ```python
 # Create a timeout asset without any new_owners
 timeout_tx = b.create_transaction(b.me, None, None, 'CREATE')
