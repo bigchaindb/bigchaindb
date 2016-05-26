@@ -1298,3 +1298,5 @@ tx_execute valid: False - tx_abort valid True (-1s to timeout)
 tx_execute valid: False - tx_abort valid True (-2s to timeout)
 tx_execute valid: False - tx_abort valid True (-3s to timeout)
 ```
+
+Of course, when the `execute` transaction was accepted in-time by bigchaindb, then writing the `abort` transaction after expiry will yield a `Doublespend` error.
