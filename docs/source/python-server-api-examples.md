@@ -786,7 +786,6 @@ hashlock_tx_signed = b.sign_transaction(hashlock_tx, b.me_private)
 
 # Some validations
 assert b.validate_transaction(hashlock_tx_signed) == hashlock_tx_signed
-assert b.is_valid_transaction(hashlock_tx_signed) == hashlock_tx_signed
 
 b.write_transaction(hashlock_tx_signed)
 hashlock_tx_signed
@@ -844,7 +843,6 @@ hashlock_fulfill_tx['transaction']['fulfillments'][0]['fulfillment'] = \
     hashlock_fulfill_tx_fulfillment.serialize_uri()
 
 assert b.validate_transaction(hashlock_fulfill_tx) == hashlock_fulfill_tx
-assert b.is_valid_transaction(hashlock_fulfill_tx) == hashlock_fulfill_tx
 
 b.write_transaction(hashlock_fulfill_tx)
 hashlock_fulfill_tx
@@ -930,7 +928,6 @@ tx_timeout_signed = b.sign_transaction(tx_timeout, b.me_private)
 
 # Some validations
 assert b.validate_transaction(tx_timeout_signed) == tx_timeout_signed
-assert b.is_valid_transaction(tx_timeout_signed) == tx_timeout_signed
 
 b.write_transaction(tx_timeout_signed)
 tx_timeout_signed
@@ -1094,7 +1091,6 @@ tx_escrow_signed = b.sign_transaction(tx_escrow, testuser2_priv)
 
 # Some validations
 assert b.validate_transaction(tx_escrow_signed) == tx_escrow_signed
-assert b.is_valid_transaction(tx_escrow_signed) == tx_escrow_signed
 
 b.write_transaction(tx_escrow_signed)
 tx_escrow_signed
