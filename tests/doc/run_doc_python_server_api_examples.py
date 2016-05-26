@@ -481,5 +481,7 @@ tx_escrow_abort['transaction']['fulfillments'][0]['fulfillment'] = escrow_fulfil
 for i in range(time_sleep - 4):
     valid_execute = b.is_valid_transaction(tx_escrow_execute) == tx_escrow_execute
     valid_abort = b.is_valid_transaction(tx_escrow_abort) == tx_escrow_abort
-    print('execute: {} - abort {}'.format(valid_execute, valid_abort))
+
+    seconds_to_timeout = int(float(time_expire) - float(util.timestamp()))
+    print('tx_execute valid: {} - tx_abort valid {} ({}s to timeout)'.format(valid_execute, valid_abort, seconds_to_timeout))
     sleep(1)

@@ -894,7 +894,7 @@ hashlock_fulfill_tx
 ### Timeout Conditions
 
 Timeout conditions allow assets to expire after a certain time.
-The primary use case of timeout conditions is to enable Escrow (see further).
+The primary use case of timeout conditions is to enable [Escrow](#escrow).
 
 The condition can only be fulfilled before the expiry time. 
 Once expired, the asset is lost and cannot be fulfilled by anyone.
@@ -1036,17 +1036,18 @@ The above switch can be implemented as follows using threshold cryptoconditions:
   <img width="100%" height="100%" src ="./_static/cc_escrow_execute_abort.png" />
 </p>
 
-The small circle on the threshold conditions denotes an inversion of the fulfillment:
+The small circle (&#9898;) at an input of a threshold condition denotes an inversion of the fulfillment:
 
 ```python
 inverted_fulfillment.validate(msg) == not fulfillment.validate(msg)
 ```
 
-An inverted input to a threshold condition is simply obtained by using negative weights.
+An inverted input to a threshold condition is simply obtained by negative weights.
 
 __Note__: negative weights are BigchainDB-specific and not (yet) supported by the ILP standard.
 
-The following code snippet shows how to create an escrow condition
+
+The following code snippet shows how to create an escrow condition:
 
 ```python
 # Retrieve the last transaction of testuser2_pub
@@ -1093,4 +1094,207 @@ assert b.is_valid_transaction(tx_escrow_signed) == tx_escrow_signed
 
 b.write_transaction(tx_escrow_signed)
 tx_escrow_signed
+```
+
+```python
+{
+    "id":"1a281da2b9bc3d2beba92479058d440de3353427fd64045a61737bad0d0c809c",
+    "transaction":{
+        "conditions":[
+            {
+                "cid":0,
+                "condition":{
+                    "details":{
+                        "bitmask":41,
+                        "subfulfillments":[
+                            {
+                                "bitmask":41,
+                                "subfulfillments":[
+                                    {
+                                        "bitmask":32,
+                                        "public_key":"qv8DvdNG5nZHWCP5aPSqgqxAvaPJpQj19abRvFCntor",
+                                        "signature":null,
+                                        "type":"fulfillment",
+                                        "type_id":4,
+                                        "weight":1
+                                    },
+                                    {
+                                        "bitmask":9,
+                                        "expire_time":"1464242352.227917",
+                                        "type":"fulfillment",
+                                        "type_id":99,
+                                        "weight":1
+                                    }
+                                ],
+                                "threshold":2,
+                                "type":"fulfillment",
+                                "type_id":2,
+                                "weight":1
+                            },
+                            {
+                                "bitmask":41,
+                                "subfulfillments":[
+                                    {
+                                        "bitmask":32,
+                                        "public_key":"BwuhqQX8FPsmqYiRV2CSZYWWsSWgSSQQFHjqxKEuqkPs",
+                                        "signature":null,
+                                        "type":"fulfillment",
+                                        "type_id":4,
+                                        "weight":1
+                                    },
+                                    {
+                                        "bitmask":9,
+                                        "expire_time":"1464242352.227917",
+                                        "type":"fulfillment",
+                                        "type_id":99,
+                                        "weight":-1
+                                    }
+                                ],
+                                "threshold":2,
+                                "type":"fulfillment",
+                                "type_id":2,
+                                "weight":1
+                            }
+                        ],
+                        "threshold":1,
+                        "type":"fulfillment",
+                        "type_id":2
+                    },
+                    "uri":"cc:2:29:sg08ERtppQrGxot7mu7XMdNkZTc29xCbWE1r8DgxuL8:181"
+                },
+                "new_owners":[
+                    "BwuhqQX8FPsmqYiRV2CSZYWWsSWgSSQQFHjqxKEuqkPs",
+                    "qv8DvdNG5nZHWCP5aPSqgqxAvaPJpQj19abRvFCntor"
+                ]
+            }
+        ],
+        "data":null,
+        "fulfillments":[
+            {
+                "current_owners":[
+                    "qv8DvdNG5nZHWCP5aPSqgqxAvaPJpQj19abRvFCntor"
+                ],
+                "fid":0,
+                "fulfillment":"cf:4:B6VAa7KAMD1v-pyvDx9RuBLb6l2Qs3vhucgXqzU_RbuRucOp6tNY8AoNMoC-HAOZBJSnHXZsdJ7pLCZ6aDTwUHXf0zxyLaCgy1NpES3h8qcuxbfv4Nchw3BtUcVSY3AM",
+                "input":{
+                    "cid":1,
+                    "txid":"d3f5e78f6d4346466178745f1c01cbcaf1c1dce1932a16cd653051b16ee29bac"
+                }
+            }
+        ],
+        "operation":"TRANSFER",
+        "timestamp":"1464242340.227787"
+    },
+    "version":1
+}
+```
+
+At any given moment `testuser1` and `testuser2` can try to fulfill the `execute` and `abort` branch respectively.
+Whether the fulfillment will validate depends on the timeout condition.
+
+We'll illustrate this by example.
+
+In the case of `testuser1`, we create the `execute` fulfillment:
+
+```python
+# Create a base template for execute fulfillment
+tx_escrow_execute = b.create_transaction([testuser2_pub, testuser1_pub], testuser1_pub, {'txid': tx_escrow_signed['id'], 'cid': 0}, 'TRANSFER')
+
+# Parse the Escrow cryptocondition
+escrow_fulfillment = cc.Fulfillment.from_json(
+    tx_escrow['transaction']['conditions'][0]['condition']['details'])
+
+subfulfillment_testuser1 = escrow_fulfillment.get_subcondition_from_vk(testuser1_pub)[0]
+subfulfillment_testuser2 = escrow_fulfillment.get_subcondition_from_vk(testuser2_pub)[0]
+subfulfillment_timeout = escrow_fulfillment.subconditions[0]['body'].subconditions[1]['body']
+
+# Get the fulfillment message to sign
+tx_escrow_execute_fulfillment_message = \
+    util.get_fulfillment_message(tx_escrow_execute,
+                                 tx_escrow_execute['transaction']['fulfillments'][0],
+                                 serialized=True)
+
+# Clear the subconditions of the escrow fulfillment
+escrow_fulfillment.subconditions = []
+
+# Fulfill the execute branch
+fulfillment_execute = cc.ThresholdSha256Fulfillment(threshold=2)
+subfulfillment_testuser1.sign(tx_escrow_execute_fulfillment_message, crypto.SigningKey(testuser1_priv))
+fulfillment_execute.add_subfulfillment(subfulfillment_testuser1)
+fulfillment_execute.add_subfulfillment(subfulfillment_timeout)
+escrow_fulfillment.add_subfulfillment(fulfillment_execute)
+
+# Do not fulfill the abort branch
+condition_abort = cc.ThresholdSha256Fulfillment(threshold=2)
+condition_abort.add_subfulfillment(subfulfillment_testuser2)
+condition_abort.add_subfulfillment(subfulfillment_timeout, weight=-1)
+escrow_fulfillment.add_subcondition(condition_abort.condition)  # Adding only the condition here
+
+# Update the execute transaction with the fulfillment
+tx_escrow_execute['transaction']['fulfillments'][0]['fulfillment'] = escrow_fulfillment.serialize_uri()
+```
+
+In the case of `testuser2`, we create the `abort` fulfillment:
+
+```python
+# Create a base template for execute fulfillment
+tx_escrow_execute = b.create_transaction([testuser2_pub, testuser1_pub], testuser2_pub, {'txid': tx_escrow_signed['id'], 'cid': 0}, 'TRANSFER')
+
+# Parse the threshold cryptocondition
+escrow_fulfillment = cc.Fulfillment.from_json(
+    tx_escrow['transaction']['conditions'][0]['condition']['details'])
+
+subfulfillment_testuser1 = escrow_fulfillment.get_subcondition_from_vk(testuser1_pub)[0]
+subfulfillment_testuser2 = escrow_fulfillment.get_subcondition_from_vk(testuser2_pub)[0]
+subfulfillment_timeout = escrow_fulfillment.subconditions[0]['body'].subconditions[1]['body']
+
+# Get the fulfillment message to sign
+tx_escrow_abort_fulfillment_message = \
+    util.get_fulfillment_message(tx_escrow_abort,
+                                 tx_escrow_abort['transaction']['fulfillments'][0],
+                                 serialized=True)
+                                 
+# Clear the subconditions of the escrow fulfillment
+escrow_fulfillment.subconditions = []
+
+# Do not fulfill the execute branch
+condition_execute = cc.ThresholdSha256Fulfillment(threshold=2)
+condition_execute.add_subfulfillment(subfulfillment_testuser1)
+condition_execute.add_subfulfillment(subfulfillment_timeout)
+escrow_fulfillment.add_subcondition(condition_execute.condition) # Adding only the condition here
+
+# Fulfill the abort branch
+fulfillment_abort = cc.ThresholdSha256Fulfillment(threshold=2)
+subfulfillment_testuser2.sign(tx_escrow_abort_fulfillment_message, crypto.SigningKey(testuser2_priv))
+fulfillment_abort.add_subfulfillment(subfulfillment_testuser2)
+fulfillment_abort.add_subfulfillment(subfulfillment_timeout, weight=-1)
+escrow_fulfillment.add_subfulfillment(fulfillment_abort)
+
+# Update the abort transaction with the fulfillment
+tx_escrow_abort['transaction']['fulfillments'][0]['fulfillment'] = escrow_fulfillment.serialize_uri()
+```
+
+The following demonstrates that the transaction validation switches once the timeout occurs:
+
+```python
+for i in range(time_sleep - 4):
+    valid_execute = b.is_valid_transaction(tx_escrow_execute) == tx_escrow_execute
+    valid_abort = b.is_valid_transaction(tx_escrow_abort) == tx_escrow_abort
+
+    seconds_to_timeout = int(float(time_expire) - float(util.timestamp()))
+    print('tx_execute valid: {} - tx_abort valid {} ({}s to timeout)'.format(valid_execute, valid_abort, seconds_to_timeout))
+    sleep(1)
+```
+
+If you execute in a timely fashion, you should see the following:
+
+```python
+tx_execute valid: True - tx_abort valid False (3s to timeout)
+tx_execute valid: True - tx_abort valid False (2s to timeout)
+tx_execute valid: True - tx_abort valid False (1s to timeout)
+tx_execute valid: True - tx_abort valid False (0s to timeout)
+tx_execute valid: False - tx_abort valid True (0s to timeout)
+tx_execute valid: False - tx_abort valid True (-1s to timeout)
+tx_execute valid: False - tx_abort valid True (-2s to timeout)
+tx_execute valid: False - tx_abort valid True (-3s to timeout)
 ```
