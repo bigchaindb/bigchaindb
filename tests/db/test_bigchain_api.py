@@ -588,7 +588,7 @@ class TestBigchainBlock(object):
         transactions.put('stop')
 
         # create a block instance
-        block = Block(transactions, mp.Queue)
+        block = Block(transactions)
         block.q_new_transaction = transactions
         # filter the transactions
         block.filter_by_assignee()
@@ -613,7 +613,7 @@ class TestBigchainBlock(object):
         transactions.put('stop')
 
         # create a block instance
-        block = Block(transactions, mp.Queue())
+        block = Block(transactions)
         block.q_tx_to_validate = transactions
         # validate transactions
         block.validate_transactions()
@@ -632,7 +632,7 @@ class TestBigchainBlock(object):
         transactions.put('stop')
 
         # create a block instance
-        block = Block(transactions, mp.Queue())
+        block = Block(transactions)
         block.q_tx_validated = transactions
         # create blocks
         block.create_blocks()
@@ -655,7 +655,7 @@ class TestBigchainBlock(object):
         blocks.put('stop')
 
         # create a block instance
-        block = Block(transactions, mp.Queue())
+        block = Block(transactions)
         block.q_block = blocks
 
         # make sure that we only have the genesis block in bigchain
@@ -684,7 +684,7 @@ class TestBigchainBlock(object):
         transactions.put('stop')
 
         # create a block instance
-        block = Block(transactions, mp.Queue())
+        block = Block(transactions)
         block.q_tx_delete = transactions
 
         # make sure that there are transactions on the backlog
@@ -709,7 +709,7 @@ class TestBigchainBlock(object):
             b.write_transaction(tx)
 
         # create a block instance
-        block = Block(None, None)
+        block = Block(None)
 
         # run bootstrap
         initial_results = block.bootstrap()
@@ -741,7 +741,7 @@ class TestBigchainBlock(object):
             new_transactions.put('stop')
 
         # create a block instance
-        block = Block(new_transactions, mp.Queue())
+        block = Block(new_transactions)
 
         # start the block processes
         block.start()
@@ -757,7 +757,7 @@ class TestBigchainBlock(object):
         new_transactions = mp.Queue()
 
         # create block instance
-        block = Block(new_transactions, mp.Queue())
+        block = Block(new_transactions)
 
         # start block process
         block.start()
@@ -767,39 +767,6 @@ class TestBigchainBlock(object):
 
         # join the process
         block.kill()
-
-    def test_revert_delete_block(self, b):
-        b.create_genesis_block()
-
-        block_1 = b.create_block([])
-        block_2 = b.create_block([])
-        block_3 = b.create_block([])
-
-        b.write_block(block_1, durability='hard')
-        b.write_block(block_2, durability='hard')
-        b.write_block(block_3, durability='hard')
-
-        b.write_vote(block_1, b.vote(block_1, b.get_last_voted_block(), True), 1)
-        b.write_vote(block_2, b.vote(block_2, b.get_last_voted_block(), True), 2)
-        b.write_vote(block_3, b.vote(block_3, b.get_last_voted_block(), True), 3)
-
-        q_revert_delete = mp.Queue()
-
-        block = Block(mp.Queue(), q_revert_delete)
-
-        # simulate changefeed
-        r.table('bigchain').get(block_2['id']).delete().run(b.conn)
-        q_revert_delete.put(block_2)
-
-        assert r.table('bigchain').get(block_2['id']).run(b.conn) is None
-
-        block.start()
-        time.sleep(1)
-        block.kill()
-
-        reverted_block_2 = r.table('bigchain').get(block_2['id']).run(b.conn)
-
-        assert reverted_block_2 == block_2
 
     def test_duplicated_transactions(self):
         pytest.skip('We may have duplicates in the initial_results and changefeed')
