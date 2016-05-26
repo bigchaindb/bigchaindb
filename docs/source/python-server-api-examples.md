@@ -905,7 +905,7 @@ __Caveat__: The times between nodes in a BigchainDB federation may (and will) di
 
 ```python
 # Create a timeout asset without any new_owners
-timeout_tx = b.create_transaction(b.me, None, None, 'CREATE')
+tx_timeout = b.create_transaction(b.me, None, None, 'CREATE')
 
 # Set expiry time - the asset needs to be transfered before expiration
 time_sleep = 12
@@ -976,6 +976,8 @@ tx_timeout_signed
 The following demonstrates that the transaction invalidates once the timeout occurs:
 
 ```python
+from time import sleep
+
 # Create a timeout fulfillment tx
 tx_timeout_transfer = b.create_transaction(None, testuser1_pub, {'txid': tx_timeout['id'], 'cid': 0}, 'TRANSFER')
 
