@@ -9,7 +9,7 @@ Transactions, blocks and votes are represented using JSON documents with the fol
     "id": "<SHA3-256 hash hexdigest of transaction (below)>",
     "version": "<version number of the transaction model>",
     "transaction": {
-        "fulfillments": ["<list of fullfillments>"],
+        "fulfillments": ["<list of fulfillments>"],
         "conditions": ["<list of conditions>"],
         "operation": "<string>",
         "timestamp": "<timestamp from client>",
@@ -21,7 +21,7 @@ Transactions, blocks and votes are represented using JSON documents with the fol
 }
 ```
 
-Transactions are the basic things stored by BigchainDB. There are two kinds:
+Transactions are the basic records stored by BigchainDB. There are two kinds:
 
 1. A "CREATE" transaction creates a new asset. It has `"operation": "CREATE"`. The `payload` or a "CREATE" transaction describes, encodes, or links to the asset in some way.
 2. A "TRANSFER" transaction transfers one or more assets. It has `"operation": "TRANSFER"`. The `payload` of a "TRANSFER" transaction can be empty, but it can also be used for use-case-specific information (e.g. different kinds of transfers).
@@ -83,7 +83,7 @@ If there is only one _new owner_, the condition will be a single-signature condi
 
 #### Multiple New Owners
 
-If there are multiple _new owners_, we can create a condition requiring a signature from each new owner in order
+If there are multiple _new owners_, we can create a ThresholdCondition requiring a signature from each new owner in order
 to spend the asset. For example:
 
 ```json
@@ -149,7 +149,7 @@ If there is only one _current owner_, the fulfillment will be a single-signature
 - `fid`: Fulfillment index. It matches a `cid` in the conditions with a new _crypto condition_ that the new owner
   needs to fulfill to spend this asset.
 - `current_owners`: A list of public keys of the current owners; in this case it has just one public key.
-- `fulfillment`:
+- `fulfillment`: A cryptoconditions URI that encodes the cryptographic fulfillments like signatures and others, see crypto-conditions.
 - `input`: Pointer to the asset and condition of a previous transaction
     - `cid`: Condition index
     - `txid`: Transaction id
