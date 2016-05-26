@@ -21,6 +21,7 @@ Tag name:
 committed: 
 
 ### Added
+- Support for escrow (possible because of two other new things: cryptoconditions with inverters, and a timeout condition): [Pull Request #329](https://github.com/bigchaindb/bigchaindb/pull/329)
 - Caching of calls to `load_consensus_plugin()`, using [`@lru_cache`](https://docs.python.org/3/library/functools.html#functools.lru_cache). This speeds up the instantiation of `Bigchain` objects and greatly improves overall performance. [Pull Request #271](https://github.com/bigchaindb/bigchaindb/pull/271)
 - New `Dockerfile-dev` Docker file to make it easier for developers to _develop_ BigchainDB with Docker. One can run all unit tests with Docker again. [Pull Request #313](https://github.com/bigchaindb/bigchaindb/pull/313)
 - Transactions in invalid blocks are copied to the backlog: [Pull Request #221](https://github.com/bigchaindb/bigchaindb/pull/221).
