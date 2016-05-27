@@ -328,9 +328,8 @@ class Bigchain(object):
                     # for transactions with multiple `new_owners` there will be several subfulfillments nested
                     # in the condition. We need to iterate the subfulfillments to make sure there is a
                     # subfulfillment for `owner`
-                    for subfulfillment in condition['condition']['details']['subfulfillments']:
-                        if subfulfillment['public_key'] == owner:
-                            tx_input = {'txid': tx['id'], 'cid': condition['cid']}
+                    if util.condition_details_has_owner(condition['condition']['details'], owner):
+                        tx_input = {'txid': tx['id'], 'cid': condition['cid']}
                 # check if input was already spent
                 if not self.get_spent(tx_input):
                     owned.append(tx_input)
