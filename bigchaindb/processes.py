@@ -6,7 +6,7 @@ import rethinkdb as r
 import bigchaindb
 from bigchaindb import Bigchain
 from bigchaindb.voter import Voter, Election
-from bigchaindb.block import Block
+from bigchaindb.block import Block, BacklogDeleteRevert
 from bigchaindb.web import server
 
 
@@ -32,6 +32,7 @@ class Processes(object):
         self.q_new_block = mp.Queue()
         self.q_new_transaction = mp.Queue()
         self.q_block_new_vote = mp.Queue()
+        self.q_backlog_delete = mp.Queue()
 
     def map_backlog(self):
         # listen to changes on the backlog and redirect the changes
@@ -48,7 +49,7 @@ class Processes(object):
 
             # delete
             if change['new_val'] is None:
-                pass
+                self.q_backlog_delete.put(change['old_val'])
 
             # update
             if change['new_val'] is not None and change['old_val'] is not None:
@@ -92,6 +93,7 @@ class Processes(object):
         p_block = mp.Process(name='block', target=block.start)
         p_voter = Voter(self.q_new_block)
         p_election = Election(self.q_block_new_vote)
+        p_backlog_delete = BacklogDeleteRevert(self.q_backlog_delete)
 
         # start the processes
         logger.info('starting bigchain mapper')
@@ -100,6 +102,7 @@ class Processes(object):
         p_map_backlog.start()
         logger.info('starting block')
         p_block.start()
+        p_backlog_delete.start()
 
         logger.info('starting voter')
         p_voter.start()

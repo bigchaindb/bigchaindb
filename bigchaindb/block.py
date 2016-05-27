@@ -232,3 +232,89 @@ class Block(object):
         p_write.start()
         p_delete.start()
 
+
+class BacklogDeleteRevert(Block):
+
+    def __init__(self, q_backlog_delete):
+        # invalid transactions can stay deleted
+        self.q_tx_to_validate = q_backlog_delete
+        self.q_tx_validated = mp.Queue()
+        self.q_transaction_to_revert = mp.Queue()
+        self.q_tx_delete = mp.Queue()
+
+        self.monitor = Monitor()
+
+    def locate_transactions(self):
+        """
+        Determine if a deleted transaction has made it into a block
+        """
+        # create bigchain instance
+        b = Bigchain()
+
+        while True:
+            tx = self.q_tx_validated.get()
+
+            # poison pill
+            if tx == 'stop':
+                self.q_tx_delete.put('stop')
+                self.q_transaction_to_revert.put('stop')
+                return
+
+            # check if tx is in a (valid) block
+            validity = b.get_blocks_status_containing_tx(tx['id'])
+
+            if list(validity.values()).count(Bigchain.BLOCK_VALID) == 1:
+                # tx made it into a block, and can safely be deleted
+                self.q_tx_delete.put(tx['id'])
+            else:
+                # valid tx not in any block, should be re-inserted into backlog
+                self.q_transaction_to_revert.put(tx)
+
+    def revert_deletes(self):
+        """
+        Put an incorrectly deleted transaction back in the backlog
+        """
+        # create bigchain instance
+        b = Bigchain()
+
+        while True:
+            tx = self.q_transaction_to_revert.get()
+
+            # poison pill
+            if tx == 'stop':
+                return
+
+            b.write_transaction(tx)
+
+    def empty_delete_q(self):
+        """
+        Empty the delete queue
+        """
+
+        while True:
+            txid = self.q_tx_delete.get()
+
+            # poison pill
+            if txid == 'stop':
+                return
+
+    def kill(self):
+        for i in range(mp.cpu_count()):
+            self.q_tx_to_validate.put('stop')
+
+    def start(self):
+        """
+        Initialize, spawn, and start the processes
+        """
+
+        # initialize the processes
+        p_validate = ProcessGroup(name='validate_transactions', target=self.validate_transactions)
+        p_locate = ProcessGroup(name='locate_transactions', target=self.locate_transactions)
+        p_revert = ProcessGroup(name='revert_deletes', target=self.revert_deletes)
+        p_empty_delete_q = ProcessGroup(name='empty_delete_q', target=self.empty_delete_q)
+
+        # start the processes
+        p_validate.start()
+        p_locate.start()
+        p_revert.start()
+        p_empty_delete_q.start()
