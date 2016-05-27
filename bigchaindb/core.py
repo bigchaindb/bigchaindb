@@ -136,7 +136,6 @@ class Bigchain(object):
         response = r.table('backlog').insert(signed_transaction, durability=durability).run(self.conn)
         return response
 
-    # TODO: the same `txid` can be in two different blocks
     def get_transaction(self, txid):
         """Retrieve a transaction with `txid` from bigchain.
 
@@ -151,16 +150,77 @@ class Bigchain(object):
             If no transaction with that `txid` was found it returns `None`
         """
 
-        response = r.table('bigchain').concat_map(lambda doc: doc['block']['transactions'])\
-            .filter(lambda transaction: transaction['id'] == txid).run(self.conn)
+        validity = self.get_blocks_status_containing_tx(txid)
 
-        # transaction ids should be unique
-        transactions = list(response)
-        if transactions:
-            if len(transactions) != 1:
-                raise Exception('Transaction ids should be unique. There is a problem with the chain')
-            else:
-                return transactions[0]
+        if validity:
+            # Disregard invalid blocks, and return if there are no valid or undecided blocks
+            validity = {_id: status for _id, status in validity.items()
+                                    if status != Bigchain.BLOCK_INVALID}
+            if not validity:
+                return None
+
+            # If the transaction is in a valid or any undecided block, return it. Does not check
+            # if transactions in undecided blocks are consistent, but selects the valid block before
+            # undecided ones
+            for _id in validity:
+                target_block_id = _id
+                if validity[_id] == Bigchain.BLOCK_VALID:
+                    break
+
+            # Query the transaction in the target block and return
+            response = r.table('bigchain').get(target_block_id).get_field('block')\
+                .get_field('transactions').filter(lambda tx: tx['id'] == txid).run(self.conn)
+
+            return response[0]
+
+        else:
+            return None
+
+    def search_block_election_on_index(self, value, index):
+        """Retrieve block election information given a secondary index and value
+
+        Args:
+            value: a value to search (e.g. transaction id string, payload hash string)
+            index (str): name of a secondary index, e.g. 'transaction_id'
+
+        Returns:
+            A list of blocks with with only election information
+        """
+        # First, get information on all blocks which contain this transaction
+        response = r.table('bigchain').get_all(value, index=index)\
+            .pluck('votes', 'id', {'block': ['voters']}).run(self.conn)
+
+        return list(response)
+
+    def get_blocks_status_containing_tx(self, txid):
+        """Retrieve block ids and statuses related to a transaction
+
+        Transactions may occur in multiple blocks, but no more than one valid block.
+
+        Args:
+            txid (str): transaction id of the transaction to query
+
+        Returns:
+            A dict of blocks containing the transaction,
+            e.g. {block_id_1: 'valid', block_id_2: 'invalid' ...}, or None
+        """
+
+        # First, get information on all blocks which contain this transaction
+        blocks = self.search_block_election_on_index(txid, 'transaction_id')
+
+        if blocks:
+            # Determine the election status of each block
+            validity = {block['id']: self.block_election_status(block) for block in blocks}
+
+            # If there are multiple valid blocks with this transaction, something has gone wrong
+            if list(validity.values()).count(Bigchain.BLOCK_VALID) > 1:
+                block_ids = str([block for block in validity
+                                       if validity[block] == Bigchain.BLOCK_VALID])
+                raise Exception('Transaction {tx} is present in multiple valid blocks: {block_ids}'
+                                .format(tx=txid, block_ids=block_ids))
+
+            return validity
+
         else:
             return None
 
@@ -208,14 +268,25 @@ class Bigchain(object):
                     .contains(lambda fulfillment: fulfillment['input'] == tx_input))\
             .run(self.conn)
 
-        # a transaction_id should have been spent at most one time
         transactions = list(response)
+
+        # a transaction_id should have been spent at most one time
         if transactions:
-            if len(transactions) != 1:
-                raise exceptions.DoubleSpend('`{}` was spent more then once. There is a problem with the chain'.format(
-                    tx_input['txid']))
-            else:
+            # determine if these valid transactions appear in more than one valid block
+            num_valid_transactions = 0
+            for transaction in transactions:
+                # ignore invalid blocks
+                if self.get_transaction(transaction['id']):
+                    num_valid_transactions += 1
+                if num_valid_transactions > 1:
+                    raise exceptions.DoubleSpend('`{}` was spent more then once. There is a problem with the chain'.format(
+                        tx_input['txid']))
+
+            if num_valid_transactions:
                 return transactions[0]
+            else:
+                # all queried transactions were invalid
+                return None
         else:
             return None
 
@@ -239,6 +310,12 @@ class Bigchain(object):
         owned = []
 
         for tx in response:
+            # disregard transactions from invalid blocks
+            validity = self.get_blocks_status_containing_tx(tx['id'])
+            if Bigchain.BLOCK_VALID not in validity.values():
+                if Bigchain.BLOCK_UNDECIDED not in validity.values():
+                    continue
+
             # a transaction can contain multiple outputs (conditions) so we need to iterate over all of them
             # to get a list of outputs available to spend
             for condition in tx['transaction']['conditions']:
@@ -251,9 +328,8 @@ class Bigchain(object):
                     # for transactions with multiple `new_owners` there will be several subfulfillments nested
                     # in the condition. We need to iterate the subfulfillments to make sure there is a
                     # subfulfillment for `owner`
-                    for subfulfillment in condition['condition']['details']['subfulfillments']:
-                        if subfulfillment['public_key'] == owner:
-                            tx_input = {'txid': tx['id'], 'cid': condition['cid']}
+                    if util.condition_details_has_owner(condition['condition']['details'], owner):
+                        tx_input = {'txid': tx['id'], 'cid': condition['cid']}
                 # check if input was already spent
                 if not self.get_spent(tx_input):
                     owned.append(tx_input)
@@ -496,7 +572,7 @@ class Bigchain(object):
 
     def block_election_status(self, block):
         """Tally the votes on a block, and return the status: valid, invalid, or undecided."""
-        
+
         n_voters = len(block['block']['voters'])
         vote_cast = [vote['vote']['is_block_valid'] for vote in block['votes']]
         vote_validity = [self.consensus.verify_vote_signature(block, vote) for vote in block['votes']]

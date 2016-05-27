@@ -108,6 +108,25 @@ class TestBigchainApi(object):
         assert util.serialize(tx_signed) == util.serialize(response)
 
     @pytest.mark.usefixtures('inputs')
+    def test_read_transaction_invalid_block(self, b, user_vk, user_sk):
+        input_tx = b.get_owned_ids(user_vk).pop()
+        tx = b.create_transaction(user_vk, user_vk, input_tx, 'TRANSFER')
+        tx_signed = b.sign_transaction(tx, user_sk)
+        b.write_transaction(tx_signed)
+
+        # create block
+        block = b.create_block([tx_signed])
+        b.write_block(block, durability='hard')
+
+        # vote the block invalid
+        vote = b.vote(block, b.get_last_voted_block()['id'], False)
+        b.write_vote(block, vote, 3)
+        response = b.get_transaction(tx_signed["id"])
+
+        # should be None, because invalid blocks are ignored
+        assert response is None
+
+    @pytest.mark.usefixtures('inputs')
     def test_assign_transaction_one_node(self, b, user_vk, user_sk):
         input_tx = b.get_owned_ids(user_vk).pop()
         tx = b.create_transaction(user_vk, user_vk, input_tx, 'TRANSFER')
@@ -1033,6 +1052,43 @@ class TestMultipleInputs(object):
         assert owned_inputs_user1 == []
         assert owned_inputs_user2 == [{'cid': 0, 'txid': tx['id']}]
 
+    def test_get_owned_ids_single_tx_single_output_invalid_block(self, b, user_sk, user_vk):
+        # create a new users
+        user2_sk, user2_vk = crypto.generate_key_pair()
+
+        # create input to spend
+        tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
+        tx_signed = b.sign_transaction(tx, b.me_private)
+        block = b.create_block([tx_signed])
+        b.write_block(block, durability='hard')
+
+        # vote the block VALID
+        vote = b.vote(block, b.get_unvoted_blocks()[0]['id'], True)
+        b.write_vote(block, vote, 2)
+
+        # get input
+        owned_inputs_user1 = b.get_owned_ids(user_vk)
+        owned_inputs_user2 = b.get_owned_ids(user2_vk)
+        assert owned_inputs_user1 == [{'cid': 0, 'txid': tx['id']}]
+        assert owned_inputs_user2 == []
+
+        # create a transaction and block
+        tx_invalid = b.create_transaction(user_vk, user2_vk, owned_inputs_user1, 'TRANSFER')
+        tx_invalid_signed = b.sign_transaction(tx_invalid, user_sk)
+        block = b.create_block([tx_invalid_signed])
+        b.write_block(block, durability='hard')
+
+        # vote the block invalid
+        vote = b.vote(block, b.get_last_voted_block()['id'], False)
+        b.write_vote(block, vote, 3)
+
+        owned_inputs_user1 = b.get_owned_ids(user_vk)
+        owned_inputs_user2 = b.get_owned_ids(user2_vk)
+
+        # should be the same as before (note tx, not tx_invalid)
+        assert owned_inputs_user1 == [{'cid': 0, 'txid': tx['id']}]
+        assert owned_inputs_user2 == []
+
     def test_get_owned_ids_single_tx_multiple_outputs(self, b, user_sk, user_vk):
         # create a new users
         user2_sk, user2_vk = crypto.generate_key_pair()
@@ -1123,6 +1179,42 @@ class TestMultipleInputs(object):
 
         spent_inputs_user1 = b.get_spent(owned_inputs_user1[0])
         assert spent_inputs_user1 == tx_signed
+
+    def test_get_spent_single_tx_single_output_invalid_block(self, b, user_sk, user_vk):
+        # create a new users
+        user2_sk, user2_vk = crypto.generate_key_pair()
+
+        # create input to spend
+        tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
+        tx_signed = b.sign_transaction(tx, b.me_private)
+        block = b.create_block([tx_signed])
+        b.write_block(block, durability='hard')
+
+        # vote the block VALID
+        vote = b.vote(block, b.get_unvoted_blocks()[0]['id'], True)
+        b.write_vote(block, vote, 2)
+
+        # get input
+        owned_inputs_user1 = b.get_owned_ids(user_vk)
+
+        # check spents
+        spent_inputs_user1 = b.get_spent(owned_inputs_user1[0])
+        assert spent_inputs_user1 is None
+
+        # create a transaction and block
+        tx = b.create_transaction(user_vk, user2_vk, owned_inputs_user1, 'TRANSFER')
+        tx_signed = b.sign_transaction(tx, user_sk)
+        block = b.create_block([tx_signed])
+        b.write_block(block, durability='hard')
+
+        # vote the block invalid
+        vote = b.vote(block, b.get_last_voted_block()['id'], False)
+        b.write_vote(block, vote, 2)
+        response = b.get_transaction(tx_signed["id"])
+        spent_inputs_user1 = b.get_spent(owned_inputs_user1[0])
+
+        # Now there should be no spents (the block is invalid)
+        assert spent_inputs_user1 is None
 
     def test_get_spent_single_tx_multiple_outputs(self, b, user_sk, user_vk):
         # create a new users
@@ -1878,3 +1970,265 @@ class TestCryptoconditions(object):
         for new_owner in new_owners:
             subcondition = condition.get_subcondition_from_vk(new_owner)[0]
             assert subcondition.public_key.to_ascii().decode() == new_owner
+
+    @pytest.mark.usefixtures('inputs')
+    def test_transfer_asset_with_escrow_condition(self, b, user_vk, user_sk):
+        first_input_tx = b.get_owned_ids(user_vk).pop()
+        user2_sk, user2_vk = crypto.generate_key_pair()
+
+        # ESCROW
+        escrow_tx = b.create_transaction(user_vk, [user_vk, user2_vk], first_input_tx, 'TRANSFER')
+
+        time_sleep = 3
+
+        condition_escrow = cc.ThresholdSha256Fulfillment(threshold=1)
+        fulfillment_timeout = cc.TimeoutFulfillment(expire_time=str(float(util.timestamp()) + time_sleep))
+        condition_user = cc.Ed25519Fulfillment(public_key=user_vk)
+        condition_user2 = cc.Ed25519Fulfillment(public_key=user2_vk)
+
+        # execute branch
+        fulfillment_and_execute = cc.ThresholdSha256Fulfillment(threshold=2)
+        fulfillment_and_execute.add_subfulfillment(condition_user2)
+        fulfillment_and_execute.add_subfulfillment(fulfillment_timeout)
+
+        # do not fulfill abort branch
+        fulfillment_and_abort = cc.ThresholdSha256Fulfillment(threshold=2)
+        fulfillment_and_abort.add_subfulfillment(condition_user)
+        fulfillment_and_abort.add_subfulfillment(fulfillment_timeout, weight=-1)
+
+        condition_escrow.add_subfulfillment(fulfillment_and_execute)
+        condition_escrow.add_subfulfillment(fulfillment_and_abort)
+
+        # Update the condition in the newly created transaction
+        escrow_tx['transaction']['conditions'][0]['condition'] = {
+            'details': json.loads(condition_escrow.serialize_json()),
+            'uri': condition_escrow.condition.serialize_uri()
+        }
+
+        # conditions have been updated, so hash needs updating
+        escrow_tx['id'] = util.get_hash_data(escrow_tx)
+
+        escrow_tx_signed = b.sign_transaction(escrow_tx, user_sk)
+
+        assert b.validate_transaction(escrow_tx_signed) == escrow_tx_signed
+        assert b.is_valid_transaction(escrow_tx_signed) == escrow_tx_signed
+
+        b.write_transaction(escrow_tx_signed)
+
+        # create and write block to bigchain
+        block = b.create_block([escrow_tx_signed])
+        b.write_block(block, durability='hard')
+
+        # Retrieve the last transaction of thresholduser1_pub
+        tx_retrieved_id = b.get_owned_ids(user2_vk).pop()
+
+        # EXECUTE
+        # Create a base template for output transaction
+        escrow_tx_transfer = b.create_transaction([user_vk, user2_vk], user2_vk, tx_retrieved_id, 'TRANSFER')
+
+        # Parse the threshold cryptocondition
+        escrow_fulfillment = cc.Fulfillment.from_json(
+            escrow_tx['transaction']['conditions'][0]['condition']['details'])
+
+        subfulfillment_user = escrow_fulfillment.get_subcondition_from_vk(user_vk)[0]
+        subfulfillment_user2 = escrow_fulfillment.get_subcondition_from_vk(user2_vk)[0]
+
+        # Get the fulfillment message to sign
+        escrow_tx_fulfillment_message = util.get_fulfillment_message(escrow_tx_transfer,
+                                                                     escrow_tx_transfer['transaction']['fulfillments'][0],
+                                                                     serialized=True)
+        escrow_fulfillment.subconditions = []
+        # fulfill execute branch
+        fulfillment_and_execute = cc.ThresholdSha256Fulfillment(threshold=2)
+        subfulfillment_user2.sign(escrow_tx_fulfillment_message, crypto.SigningKey(user2_sk))
+        fulfillment_and_execute.add_subfulfillment(subfulfillment_user2)
+        fulfillment_and_execute.add_subfulfillment(fulfillment_timeout)
+        escrow_fulfillment.add_subfulfillment(fulfillment_and_execute)
+
+        # do not fulfill abort branch
+        fulfillment_and_abort = cc.ThresholdSha256Fulfillment(threshold=2)
+        fulfillment_and_abort.add_subfulfillment(subfulfillment_user)
+        fulfillment_and_abort.add_subfulfillment(fulfillment_timeout, weight=-1)
+        escrow_fulfillment.add_subcondition(fulfillment_and_abort.condition)
+
+        escrow_tx_transfer['transaction']['fulfillments'][0]['fulfillment'] = escrow_fulfillment.serialize_uri()
+
+        # in-time validation (execute)
+        assert b.is_valid_transaction(escrow_tx_transfer) == escrow_tx_transfer
+        assert b.validate_transaction(escrow_tx_transfer) == escrow_tx_transfer
+
+        time.sleep(time_sleep)
+
+        assert b.is_valid_transaction(escrow_tx_transfer) is False
+        with pytest.raises(exceptions.InvalidSignature):
+            assert b.validate_transaction(escrow_tx_transfer) == escrow_tx_transfer
+
+        # ABORT
+        # Create a base template for output transaction
+        escrow_tx_abort = b.create_transaction([user_vk, user2_vk], user_vk, tx_retrieved_id, 'TRANSFER')
+
+        # Parse the threshold cryptocondition
+        escrow_fulfillment = cc.Fulfillment.from_json(
+            escrow_tx['transaction']['conditions'][0]['condition']['details'])
+
+        subfulfillment_user = escrow_fulfillment.get_subcondition_from_vk(user_vk)[0]
+        subfulfillment_user2 = escrow_fulfillment.get_subcondition_from_vk(user2_vk)[0]
+
+        # Get the fulfillment message to sign
+        escrow_tx_fulfillment_message = util.get_fulfillment_message(escrow_tx_abort,
+                                                                     escrow_tx_abort['transaction']['fulfillments'][0],
+                                                                     serialized=True)
+        escrow_fulfillment.subconditions = []
+        # fulfill execute branch
+        fulfillment_and_execute = cc.ThresholdSha256Fulfillment(threshold=2)
+        fulfillment_and_execute.add_subfulfillment(subfulfillment_user2)
+        fulfillment_and_execute.add_subfulfillment(fulfillment_timeout)
+        escrow_fulfillment.add_subcondition(fulfillment_and_execute.condition)
+
+        # do not fulfill abort branch
+        fulfillment_and_abort = cc.ThresholdSha256Fulfillment(threshold=2)
+        subfulfillment_user.sign(escrow_tx_fulfillment_message, crypto.SigningKey(user_sk))
+        fulfillment_and_abort.add_subfulfillment(subfulfillment_user)
+        fulfillment_and_abort.add_subfulfillment(fulfillment_timeout, weight=-1)
+        escrow_fulfillment.add_subfulfillment(fulfillment_and_abort)
+
+        escrow_tx_abort['transaction']['fulfillments'][0]['fulfillment'] = escrow_fulfillment.serialize_uri()
+
+        # out-of-time validation (abort)
+        assert b.validate_transaction(escrow_tx_abort) == escrow_tx_abort
+        assert b.is_valid_transaction(escrow_tx_abort) == escrow_tx_abort
+
+    @pytest.mark.usefixtures('inputs')
+    def test_transfer_asset_with_escrow_condition_doublespend(self, b, user_vk, user_sk):
+        first_input_tx = b.get_owned_ids(user_vk).pop()
+        user2_sk, user2_vk = crypto.generate_key_pair()
+
+        # ESCROW
+        escrow_tx = b.create_transaction(user_vk, [user_vk, user2_vk], first_input_tx, 'TRANSFER')
+
+        time_sleep = 3
+
+        condition_escrow = cc.ThresholdSha256Fulfillment(threshold=1)
+        fulfillment_timeout = cc.TimeoutFulfillment(expire_time=str(float(util.timestamp()) + time_sleep))
+        condition_user = cc.Ed25519Fulfillment(public_key=user_vk)
+        condition_user2 = cc.Ed25519Fulfillment(public_key=user2_vk)
+
+        # execute branch
+        fulfillment_and_execute = cc.ThresholdSha256Fulfillment(threshold=2)
+        fulfillment_and_execute.add_subfulfillment(condition_user2)
+        fulfillment_and_execute.add_subfulfillment(fulfillment_timeout)
+
+        # do not fulfill abort branch
+        fulfillment_and_abort = cc.ThresholdSha256Fulfillment(threshold=2)
+        fulfillment_and_abort.add_subfulfillment(condition_user)
+        fulfillment_and_abort.add_subfulfillment(fulfillment_timeout, weight=-1)
+
+        condition_escrow.add_subfulfillment(fulfillment_and_execute)
+        condition_escrow.add_subfulfillment(fulfillment_and_abort)
+
+        # Update the condition in the newly created transaction
+        escrow_tx['transaction']['conditions'][0]['condition'] = {
+            'details': json.loads(condition_escrow.serialize_json()),
+            'uri': condition_escrow.condition.serialize_uri()
+        }
+
+        # conditions have been updated, so hash needs updating
+        escrow_tx['id'] = util.get_hash_data(escrow_tx)
+
+        escrow_tx_signed = b.sign_transaction(escrow_tx, user_sk)
+
+        assert b.validate_transaction(escrow_tx_signed) == escrow_tx_signed
+        assert b.is_valid_transaction(escrow_tx_signed) == escrow_tx_signed
+
+        b.write_transaction(escrow_tx_signed)
+
+        # create and write block to bigchain
+        block = b.create_block([escrow_tx_signed])
+        b.write_block(block, durability='hard')
+
+        # Retrieve the last transaction of thresholduser1_pub
+        tx_retrieved_id = b.get_owned_ids(user2_vk).pop()
+
+        # EXECUTE
+        # Create a base template for output transaction
+        escrow_tx_transfer = b.create_transaction([user_vk, user2_vk], user2_vk, tx_retrieved_id, 'TRANSFER')
+
+        # Parse the threshold cryptocondition
+        escrow_fulfillment = cc.Fulfillment.from_json(
+            escrow_tx['transaction']['conditions'][0]['condition']['details'])
+
+        subfulfillment_user = escrow_fulfillment.get_subcondition_from_vk(user_vk)[0]
+        subfulfillment_user2 = escrow_fulfillment.get_subcondition_from_vk(user2_vk)[0]
+
+        # Get the fulfillment message to sign
+        escrow_tx_fulfillment_message = util.get_fulfillment_message(escrow_tx_transfer,
+                                                                     escrow_tx_transfer['transaction']['fulfillments'][0],
+                                                                     serialized=True)
+        escrow_fulfillment.subconditions = []
+        # fulfill execute branch
+        fulfillment_and_execute = cc.ThresholdSha256Fulfillment(threshold=2)
+        subfulfillment_user2.sign(escrow_tx_fulfillment_message, crypto.SigningKey(user2_sk))
+        fulfillment_and_execute.add_subfulfillment(subfulfillment_user2)
+        fulfillment_and_execute.add_subfulfillment(fulfillment_timeout)
+        escrow_fulfillment.add_subfulfillment(fulfillment_and_execute)
+
+        # do not fulfill abort branch
+        fulfillment_and_abort = cc.ThresholdSha256Fulfillment(threshold=2)
+        fulfillment_and_abort.add_subfulfillment(subfulfillment_user)
+        fulfillment_and_abort.add_subfulfillment(fulfillment_timeout, weight=-1)
+        escrow_fulfillment.add_subcondition(fulfillment_and_abort.condition)
+
+        escrow_tx_transfer['transaction']['fulfillments'][0]['fulfillment'] = escrow_fulfillment.serialize_uri()
+
+        # in-time validation (execute)
+        assert b.is_valid_transaction(escrow_tx_transfer) == escrow_tx_transfer
+        assert b.validate_transaction(escrow_tx_transfer) == escrow_tx_transfer
+
+        b.write_transaction(escrow_tx_transfer)
+
+        # create and write block to bigchain
+        block = b.create_block([escrow_tx_transfer])
+        b.write_block(block, durability='hard')
+
+        time.sleep(time_sleep)
+
+        assert b.is_valid_transaction(escrow_tx_transfer) is False
+        with pytest.raises(exceptions.InvalidSignature):
+            assert b.validate_transaction(escrow_tx_transfer) == escrow_tx_transfer
+
+        # ABORT
+        # Create a base template for output transaction
+        escrow_tx_abort = b.create_transaction([user_vk, user2_vk], user_vk, tx_retrieved_id, 'TRANSFER')
+
+        # Parse the threshold cryptocondition
+        escrow_fulfillment = cc.Fulfillment.from_json(
+            escrow_tx['transaction']['conditions'][0]['condition']['details'])
+
+        subfulfillment_user = escrow_fulfillment.get_subcondition_from_vk(user_vk)[0]
+        subfulfillment_user2 = escrow_fulfillment.get_subcondition_from_vk(user2_vk)[0]
+
+        # Get the fulfillment message to sign
+        escrow_tx_fulfillment_message = util.get_fulfillment_message(escrow_tx_abort,
+                                                                     escrow_tx_abort['transaction']['fulfillments'][0],
+                                                                     serialized=True)
+        escrow_fulfillment.subconditions = []
+        # do not fulfill execute branch
+        fulfillment_and_execute = cc.ThresholdSha256Fulfillment(threshold=2)
+        fulfillment_and_execute.add_subfulfillment(subfulfillment_user2)
+        fulfillment_and_execute.add_subfulfillment(fulfillment_timeout)
+        escrow_fulfillment.add_subcondition(fulfillment_and_execute.condition)
+
+        # fulfill abort branch
+        fulfillment_and_abort = cc.ThresholdSha256Fulfillment(threshold=2)
+        subfulfillment_user.sign(escrow_tx_fulfillment_message, crypto.SigningKey(user_sk))
+        fulfillment_and_abort.add_subfulfillment(subfulfillment_user)
+        fulfillment_and_abort.add_subfulfillment(fulfillment_timeout, weight=-1)
+        escrow_fulfillment.add_subfulfillment(fulfillment_and_abort)
+
+        escrow_tx_abort['transaction']['fulfillments'][0]['fulfillment'] = escrow_fulfillment.serialize_uri()
+
+        # out-of-time validation (abort)
+        with pytest.raises(exceptions.DoubleSpend):
+            b.validate_transaction(escrow_tx_abort)
+        assert b.is_valid_transaction(escrow_tx_abort) is False
+
