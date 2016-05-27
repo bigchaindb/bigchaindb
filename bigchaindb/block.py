@@ -64,17 +64,16 @@ class Block(object):
 
             # poison pill
             if tx == 'stop':
-                self.q_tx_delete.put('stop')
                 self.q_tx_validated.put('stop')
                 return
-
-            self.q_tx_delete.put(tx['id'])
 
             with self.monitor.timer('validate_transaction', rate=bigchaindb.config['statsd']['rate']):
                 is_valid_transaction = b.is_valid_transaction(tx)
 
             if is_valid_transaction:
                 self.q_tx_validated.put(tx)
+            else:
+                self.q_tx_delete.put(tx['id'])
 
     def create_blocks(self):
         """
@@ -126,10 +125,14 @@ class Block(object):
 
             # poison pill
             if block == 'stop':
+                self.q_tx_delete.put('stop')
                 return
 
             with self.monitor.timer('write_block'):
                 b.write_block(block)
+
+            for tx in block['block']['transactions']:
+                self.q_tx_delete.put(tx['id'])
 
     def delete_transactions(self):
         """

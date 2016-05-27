@@ -639,6 +639,11 @@ class TestBigchainBlock(object):
 
         # check if the number of valid transactions
         assert block.q_tx_validated.qsize() - 1 == count_valid
+        assert block.q_tx_delete.qsize() == 100 - count_valid
+
+        block.create_blocks()
+        block.write_blocks()
+
         assert block.q_tx_delete.qsize() - 1 == 100
 
     def test_create_block(self, b, user_vk):
