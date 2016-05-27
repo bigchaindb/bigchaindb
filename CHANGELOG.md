@@ -15,10 +15,18 @@ For reference, the possible headings are:
 * **Notes**
 
 
-## [0.4.0] - 2016-05-27
+## [Unreleased] - YYYY-MM-DD
 Tag name: 
 = commit: 
 committed: 
+
+(Add new stuff here from time to time until the next version release.)
+
+
+## [0.4.0] - 2016-05-27
+Tag name: v0.4.0
+= commit: a89399c4f9fcdf82df73e0d8191af9e539d8d081
+committed: May 27, 2016, 1:42 PM GMT+2
 
 ### Added
 - Support for escrow (possible because of two other new things: cryptoconditions with inverters, and a timeout condition): [Pull Request #329](https://github.com/bigchaindb/bigchaindb/pull/329)
