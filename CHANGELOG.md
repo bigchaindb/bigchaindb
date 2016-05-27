@@ -15,7 +15,7 @@ For reference, the possible headings are:
 * **Notes**
 
 
-## [Unreleased] - YYYY-MM-DD
+## [0.4.0] - 2016-05-27
 Tag name: 
 = commit: 
 committed: 
