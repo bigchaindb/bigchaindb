@@ -743,7 +743,7 @@ class TestBigchainBlock(object):
         reverter = BacklogDeleteRevert(q_transactions)
 
         reverter.start()
-        time.sleep(1)
+        time.sleep(3)
         reverter.kill()
 
         # only valid transactions should make it back to the backlog
@@ -777,7 +777,7 @@ class TestBigchainBlock(object):
         reverter = BacklogDeleteRevert(q_transactions)
 
         reverter.start()
-        time.sleep(1)
+        time.sleep(3)
         reverter.kill()
 
         # only the 50 transactions not in a block should make it
