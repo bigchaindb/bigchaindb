@@ -263,7 +263,7 @@ class BacklogDeleteRevert(Block):
             # check if tx is in a (valid) block
             validity = b.get_blocks_status_containing_tx(tx['id'])
 
-            if list(validity.values()).count(Bigchain.BLOCK_VALID) == 1:
+            if validity and list(validity.values()).count(Bigchain.BLOCK_VALID) == 1:
                 # tx made it into a block, and can safely be deleted
                 self.q_tx_delete.put(tx['id'])
             else:
