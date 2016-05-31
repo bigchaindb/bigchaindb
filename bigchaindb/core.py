@@ -136,6 +136,7 @@ class Bigchain(object):
         signed_transaction = deepcopy(signed_transaction)
         # update the transaction
         signed_transaction.update({'assignee': assignee})
+        signed_transaction.update({'assignment_timestamp': util.timestamp()})
 
         # write to the backlog
         response = r.table('backlog').insert(signed_transaction, durability=durability).run(self.conn)
