@@ -96,7 +96,7 @@ setup(
         'rethinkdb==2.3.0',
         'pysha3==0.3',
         'pytz==2015.7',
-        'cryptoconditions==0.3.0',
+        'cryptoconditions==0.3.1',
         'statsd==3.2.1',
         'python-rapidjson==0.0.6',
         'logstats==0.2.1',
