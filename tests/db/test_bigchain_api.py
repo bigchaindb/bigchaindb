@@ -1983,6 +1983,8 @@ class TestCryptoconditions(object):
 
         condition_escrow = cc.ThresholdSha256Fulfillment(threshold=1)
         fulfillment_timeout = cc.TimeoutFulfillment(expire_time=str(float(util.timestamp()) + time_sleep))
+        fulfillment_timeout_inverted = cc.InvertedThresholdSha256Fulfillment(threshold=1)
+        fulfillment_timeout_inverted.add_subfulfillment(fulfillment_timeout)  # invert the timeout condition
         condition_user = cc.Ed25519Fulfillment(public_key=user_vk)
         condition_user2 = cc.Ed25519Fulfillment(public_key=user2_vk)
 
@@ -1994,7 +1996,7 @@ class TestCryptoconditions(object):
         # do not fulfill abort branch
         fulfillment_and_abort = cc.ThresholdSha256Fulfillment(threshold=2)
         fulfillment_and_abort.add_subfulfillment(condition_user)
-        fulfillment_and_abort.add_subfulfillment(fulfillment_timeout, weight=-1)
+        fulfillment_and_abort.add_subfulfillment(fulfillment_timeout_inverted)
 
         condition_escrow.add_subfulfillment(fulfillment_and_execute)
         condition_escrow.add_subfulfillment(fulfillment_and_abort)
@@ -2048,7 +2050,7 @@ class TestCryptoconditions(object):
         # do not fulfill abort branch
         fulfillment_and_abort = cc.ThresholdSha256Fulfillment(threshold=2)
         fulfillment_and_abort.add_subfulfillment(subfulfillment_user)
-        fulfillment_and_abort.add_subfulfillment(fulfillment_timeout, weight=-1)
+        fulfillment_and_abort.add_subfulfillment(fulfillment_timeout_inverted)
         escrow_fulfillment.add_subcondition(fulfillment_and_abort.condition)
 
         escrow_tx_transfer['transaction']['fulfillments'][0]['fulfillment'] = escrow_fulfillment.serialize_uri()
@@ -2089,7 +2091,7 @@ class TestCryptoconditions(object):
         fulfillment_and_abort = cc.ThresholdSha256Fulfillment(threshold=2)
         subfulfillment_user.sign(escrow_tx_fulfillment_message, crypto.SigningKey(user_sk))
         fulfillment_and_abort.add_subfulfillment(subfulfillment_user)
-        fulfillment_and_abort.add_subfulfillment(fulfillment_timeout, weight=-1)
+        fulfillment_and_abort.add_subfulfillment(fulfillment_timeout_inverted)
         escrow_fulfillment.add_subfulfillment(fulfillment_and_abort)
 
         escrow_tx_abort['transaction']['fulfillments'][0]['fulfillment'] = escrow_fulfillment.serialize_uri()
@@ -2110,6 +2112,8 @@ class TestCryptoconditions(object):
 
         condition_escrow = cc.ThresholdSha256Fulfillment(threshold=1)
         fulfillment_timeout = cc.TimeoutFulfillment(expire_time=str(float(util.timestamp()) + time_sleep))
+        fulfillment_timeout_inverted = cc.InvertedThresholdSha256Fulfillment(threshold=1)
+        fulfillment_timeout_inverted.add_subfulfillment(fulfillment_timeout)  # invert the timeout condition
         condition_user = cc.Ed25519Fulfillment(public_key=user_vk)
         condition_user2 = cc.Ed25519Fulfillment(public_key=user2_vk)
 
@@ -2121,7 +2125,7 @@ class TestCryptoconditions(object):
         # do not fulfill abort branch
         fulfillment_and_abort = cc.ThresholdSha256Fulfillment(threshold=2)
         fulfillment_and_abort.add_subfulfillment(condition_user)
-        fulfillment_and_abort.add_subfulfillment(fulfillment_timeout, weight=-1)
+        fulfillment_and_abort.add_subfulfillment(fulfillment_timeout_inverted)
 
         condition_escrow.add_subfulfillment(fulfillment_and_execute)
         condition_escrow.add_subfulfillment(fulfillment_and_abort)
@@ -2175,7 +2179,7 @@ class TestCryptoconditions(object):
         # do not fulfill abort branch
         fulfillment_and_abort = cc.ThresholdSha256Fulfillment(threshold=2)
         fulfillment_and_abort.add_subfulfillment(subfulfillment_user)
-        fulfillment_and_abort.add_subfulfillment(fulfillment_timeout, weight=-1)
+        fulfillment_and_abort.add_subfulfillment(fulfillment_timeout_inverted)
         escrow_fulfillment.add_subcondition(fulfillment_and_abort.condition)
 
         escrow_tx_transfer['transaction']['fulfillments'][0]['fulfillment'] = escrow_fulfillment.serialize_uri()
@@ -2222,7 +2226,7 @@ class TestCryptoconditions(object):
         fulfillment_and_abort = cc.ThresholdSha256Fulfillment(threshold=2)
         subfulfillment_user.sign(escrow_tx_fulfillment_message, crypto.SigningKey(user_sk))
         fulfillment_and_abort.add_subfulfillment(subfulfillment_user)
-        fulfillment_and_abort.add_subfulfillment(fulfillment_timeout, weight=-1)
+        fulfillment_and_abort.add_subfulfillment(fulfillment_timeout_inverted)
         escrow_fulfillment.add_subfulfillment(fulfillment_and_abort)
 
         escrow_tx_abort['transaction']['fulfillments'][0]['fulfillment'] = escrow_fulfillment.serialize_uri()
