@@ -348,7 +348,6 @@ class BlockDeleteRevert(object):
         for i in range(mp.cpu_count()):
             self.q_delete_to_revert.put('stop')
 
-
     def start(self):
         """
         Initialize, spawn, and start the processes
