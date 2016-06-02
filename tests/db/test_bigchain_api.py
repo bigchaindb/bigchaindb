@@ -13,7 +13,7 @@ from bigchaindb import util
 from bigchaindb import exceptions
 from bigchaindb import crypto
 from bigchaindb.voter import Voter
-from bigchaindb.block import Block
+from bigchaindb.block import Block, BlockDeleteRevert
 
 
 @pytest.mark.skipif(reason='Some tests throw a ResourceWarning that might result in some weird '
@@ -257,6 +257,21 @@ class TestBigchainApi(object):
         b.write_vote(block_3, b.vote(block_3, b.get_last_voted_block(), True), 3)
         assert b.get_last_voted_block()['id'] == block_3['id']
 
+    def test_no_vote_written_if_block_already_has_vote(self, b):
+        b.create_genesis_block()
+
+        block_1 = b.create_block([])
+
+        b.write_block(block_1, durability='hard')
+
+        b.write_vote(block_1, b.vote(block_1, b.get_last_voted_block(), True), 1)
+        retrieved_block_1 = r.table('bigchain').get(block_1['id']).run(b.conn)
+
+        # try to vote again on the retrieved block, should do nothing
+        b.write_vote(retrieved_block_1, b.vote(retrieved_block_1, b.get_last_voted_block(), True), 1)
+        retrieved_block_2 = r.table('bigchain').get(block_1['id']).run(b.conn)
+
+        assert retrieved_block_1 == retrieved_block_2
 
 class TestTransactionValidation(object):
     @pytest.mark.usefixtures('inputs')
@@ -786,6 +801,39 @@ class TestBigchainBlock(object):
 
         # join the process
         block.kill()
+
+    def test_revert_delete_block(self, b):
+        b.create_genesis_block()
+
+        block_1 = b.create_block([])
+        block_2 = b.create_block([])
+        block_3 = b.create_block([])
+
+        b.write_block(block_1, durability='hard')
+        b.write_block(block_2, durability='hard')
+        b.write_block(block_3, durability='hard')
+
+        b.write_vote(block_1, b.vote(block_1, b.get_last_voted_block(), True), 1)
+        b.write_vote(block_2, b.vote(block_2, b.get_last_voted_block(), True), 2)
+        b.write_vote(block_3, b.vote(block_3, b.get_last_voted_block(), True), 3)
+
+        q_revert_delete = mp.Queue()
+
+        reverter = BlockDeleteRevert(q_revert_delete)
+
+        # simulate changefeed
+        r.table('bigchain').get(block_2['id']).delete().run(b.conn)
+        q_revert_delete.put(block_2)
+
+        assert r.table('bigchain').get(block_2['id']).run(b.conn) is None
+
+        reverter.start()
+        time.sleep(1)
+        reverter.kill()
+
+        reverted_block_2 = r.table('bigchain').get(block_2['id']).run(b.conn)
+
+        assert reverted_block_2 == block_2
 
     def test_duplicated_transactions(self):
         pytest.skip('We may have duplicates in the initial_results and changefeed')

@@ -292,6 +292,31 @@ class TestBigchainVoter(object):
         assert blocks[1]['votes'][0]['vote']['voting_for_block'] == block_1['id']
         assert blocks[2]['votes'][0]['vote']['voting_for_block'] == block_2['id']
 
+    def test_voter_checks_for_previous_vote(self, b):
+        b.create_genesis_block()
+        block_1 = b.create_block([])
+        b.write_block(block_1, durability='hard')
+
+        q_new_block = mp.Queue()
+
+        voter = Voter(q_new_block)
+        voter.start()
+
+        # queue block for voting
+        q_new_block.put(block_1)
+        time.sleep(1)
+        retrieved_block = r.table('bigchain').get(block_1['id']).run(b.conn)
+
+        # queue block for voting AGAIN
+        q_new_block.put(retrieved_block)
+        time.sleep(1)
+        voter.kill()
+
+        re_retrieved_block = r.table('bigchain').get(block_1['id']).run(b.conn)
+
+        # block should be unchanged
+        assert retrieved_block == re_retrieved_block
+
     @pytest.mark.skipif(reason='Updating the block_number must be atomic')
     def test_updating_block_number_must_be_atomic(self):
         pass

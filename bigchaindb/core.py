@@ -16,6 +16,10 @@ class GenesisBlockAlreadyExistsError(Exception):
     pass
 
 
+class ImproperVoteError(Exception):
+    pass
+
+
 class Bigchain(object):
     """Bigchain API
 
@@ -415,8 +419,11 @@ class Bigchain(object):
             The block if the block is valid else it raises and exception
             describing the reason why the block is invalid.
         """
+        # First, make sure this node hasn't already voted on this block
+        if self.has_previous_vote(block):
+            return block
 
-        # First: Run the plugin block validation logic
+        # Run the plugin block validation logic
         self.consensus.validate_block(self, block)
 
         # Finally: Tentative assumption that every blockchain will want to
@@ -427,6 +434,26 @@ class Bigchain(object):
                 self.validate_transaction(transaction)
 
         return block
+
+    def has_previous_vote(self, block):
+        """Check for previous votes from this node
+
+        Args:
+            block (dict): block to check.
+
+        Returns:
+            True if this block already has a valid vote from this node, False otherwise. If
+            there is already a vote, but the vote is invalid, raises an ImproperVoteError
+        """
+        if block['votes']:
+            for vote in block['votes']:
+                if vote['node_pubkey'] == self.me:
+                    if util.verify_vote_signature(block, vote):
+                        return True
+                    else:
+                        raise ImproperVoteError('Block {block_id} already has an incorrectly signed vote '
+                                                'from public key {me}').format(block_id=block['id'], me=self.me)
+        return False
 
     def is_valid_block(self, block):
         """Check whether a block is valid or invalid.
@@ -524,6 +551,10 @@ class Bigchain(object):
 
     def write_vote(self, block, vote, block_number):
         """Write the vote to the database."""
+
+        # First, make sure this block doesn't contain a vote from this node
+        if self.has_previous_vote(block):
+            return None
 
         update = {'votes': r.row['votes'].append(vote)}
 
