@@ -2,11 +2,11 @@
 
 The section documents the cryptographic algorithms and Python implementations that we use.
 
-The implementations that we have chosen for now are just for fast prototyping. Some of them are pure Python implementations which may be slow. As future work, we should look at other alternatives.
+Before hashing or computing the signature of a JSON document, we serialize it as described in [the section on JSON serialization](json-serialization.html).
 
 ## Hashes
 
-For hashing we are using the sha3-256 algorithm and [pysha3](https://bitbucket.org/tiran/pykeccak) as the Python implementation. We store the hex encoded hash in the database. For example:
+We compute hashes using the SHA3-256 algorithm and [pysha3](https://bitbucket.org/tiran/pykeccak) as the Python implementation. We store the hex-encoded hash in the database. For example:
 
 ```python
 import hashlib

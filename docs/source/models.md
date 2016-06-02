@@ -1,12 +1,36 @@
 # The Transaction, Block and Vote Models
 
-Transactions, blocks and votes are represented using JSON documents with the following models (schemas). See [the section on cryptography](cryptography.html) for more information about how we calculate hashes and signatures.
+BigchainDB stores all its records in JSON documents.
+
+The three main kinds of records are transactions, blocks and votes. 
+_Transactions_ are used to register, issue, create or transfer things (e.g. assets). Multiple transactions are combined with some other metadata to form _blocks_. Nodes append _votes_ to blocks. This section is a reference on the details of transactions, blocks and votes.
+
+Below we often refer to cryptographic hashes, keys and signatures. The details of those are covered in [the section on cryptography](cryptography.html).
+
+## Transaction Concepts
+
+Transactions are the most basic kind of record stored by BigchainDB. There are two kinds: creation transactions and transfer transactions.
+
+A creation transaction can be used to register, issue, create or otherwise initiate the history of a single thing (or asset) in BigchainDB. For example, one might register an identity or a creative work. The things are often called "assets" but they might not be literal assets. A creation transaction also establishes the initial owner or owners of the asset. Only a federation node can create a valid creation transaction (but it's usually made based on a message from a client).
+
+A transfer transaction can transfer one or more assets to new owners.
+
+BigchainDB works with the [Interledger Protocol (ILP)](https://interledger.org/), a protocol for transferring assets between different ledgers, blockchains or payment systems.
+
+The owner(s) of an asset can specifiy conditions (ILP crypto-conditions) which others must fulfill (satisfy) in order to become the new owner(s) of the asset. For example, a crypto-condition might require a signature from the owner, or from m-of-n owners (a threshold condition, e.g. 3-of-4).
+
+When someone creates a transfer transaction with the goal of changing an asset's owners, they must fulfill the asset's current crypto-conditions (i.e. in a fulfillment), and they must provide new conditions (including the list of new owners).
+
+Every create transaction contains exactly one fulfillment-condition pair. A transfer transaction can contain multiple fulfillment-condition pairs: one per asset transferred. Every fulfillment in a transfer transaction (input) must correspond to a condition (output) in a previous transaction. The diagram below illustrates some of these concepts: transactions are represented by light grey boxes, fulfillments have a label like `f:0`, and conditions have a label like `c:0`.
+
+![Tracking the stories of three assets](./_static/stories_3_assets.png)
+
 
 ## The Transaction Model
 
 ```json
 {
-    "id": "<SHA3-256 hash hexdigest of transaction (below)>",
+    "id": "<hash of transaction, excluding signatures (see explanation)>",
     "version": "<version number of the transaction model>",
     "transaction": {
         "fulfillments": ["<list of fulfillments>"],
@@ -14,39 +38,39 @@ Transactions, blocks and votes are represented using JSON documents with the fol
         "operation": "<string>",
         "timestamp": "<timestamp from client>",
         "data": {
-            "hash": "<SHA3-256 hash hexdigest of payload>",
+            "hash": "<hash of payload>",
             "payload": "<any JSON document>"
         }
     }
 }
 ```
 
-Transactions are the basic records stored by BigchainDB. There are two kinds:
-
-1. A "CREATE" transaction creates a new asset. It has `"operation": "CREATE"`. The `payload` or a "CREATE" transaction describes, encodes, or links to the asset in some way.
-2. A "TRANSFER" transaction transfers one or more assets. It has `"operation": "TRANSFER"`. The `payload` of a "TRANSFER" transaction can be empty, but it can also be used for use-case-specific information (e.g. different kinds of transfers).
-
 Here's some explanation of the contents of a transaction:
 
-- `id`: The SHA3-256 hash hexdigest of everything inside the serialized `transaction` body (i.e. `fulfillments`, `conditions`, `operation`, `timestamp` and `data`; see below). The `id` is also the database primary key.
+- `id`: The hash of everything inside the serialized `transaction` body (i.e. `fulfillments`, `conditions`, `operation`, `timestamp` and `data`; see below), with one wrinkle: for each fulfillment in `fulfillments`, `fulfillment` is set to `null`. The `id` is also the database primary key.
 - `version`: Version number of the transaction model, so that software can support different transaction models.
 - `transaction`:
     - `fulfillments`: List of fulfillments. Each _fulfillment_ contains a pointer to an unspent asset
     and a _crypto fulfillment_ that satisfies a spending condition set on the unspent asset. A _fulfillment_
     is usually a signature proving the ownership of the asset.
     See [Conditions and Fulfillments](#conditions-and-fulfillments) below.
-    - `conditions`: List of conditions. Each _condition_ is a _crypto condition_ that needs to be fulfilled by the
+    - `conditions`: List of conditions. Each _condition_ is a _crypto-condition_ that needs to be fulfilled by the
     new owner in order to spend the asset.
     See [Conditions and Fulfillments](#conditions-and-fulfillments) below.
-    - `operation`: String representation of the operation being performed (currently either "CREATE" or "TRANSFER"). It determines how
-    the transaction should be validated.
+    - `operation`: String representation of the operation being performed (currently either "CREATE" or "TRANSFER"). It determines how the transaction should be validated.
     - `timestamp`: Time of creation of the transaction in UTC. It's provided by the client.
     - `data`:
-        - `hash`: The SHA3-256 hash hexdigest of the serialized `payload`.
-        - `payload`: Can be any JSON document. Its meaning depends on the whether the transaction 
-    is a "CREATE" or "TRANSFER" transaction; see above.
+        - `hash`: The hash of the serialized `payload`.
+        - `payload`: Can be any JSON document. It may be empty in the case of a transfer transaction.
+
+Later, when we get to the models for the block and the vote, we'll see that both include a signature (from the node which created it). You may wonder why transactions don't have signatures... The answer is that they do! They're just hidden inside the `fulfillment` string of each fulfillment. A creation transaction is signed by the node that created it. A transfer transaction is signed by whoever currently controls or owns it.
+
+What gets signed? For each fulfillment in the transaction, the "fullfillment message" that gets signed includes the `operation`, `timestamp`, `data`, `version`, `id`, corresponding `condition`, and the fulfillment itself, except with its fulfillment string set to `null`. The computed signature goes into creating the `fulfillment` string of the fulfillment.
+
 
 ## Conditions and Fulfillments
+
+An aside: In what follows, the list of `new_owners` (in a condition) is always who owned the asset at the time the transaction completed, but before the next transaction started. The list of `current_owners` (in a fulfillment) is always equal to the list of `new_owners` in that asset's previous transaction.
 
 ### Conditions
 
@@ -83,7 +107,7 @@ If there is only one _new owner_, the condition will be a single-signature condi
 
 #### Multiple New Owners
 
-If there are multiple _new owners_, we can create a ThresholdCondition requiring a signature from each new owner in order
+If there are multiple _new owners_, they can create a ThresholdCondition requiring a signature from each of them in order
 to spend the asset. For example:
 
 ```json
@@ -146,10 +170,10 @@ If there is only one _current owner_, the fulfillment will be a single-signature
 }
 ```
 
-- `fid`: Fulfillment index. It matches a `cid` in the conditions with a new _crypto condition_ that the new owner
+- `fid`: Fulfillment index. It matches a `cid` in the conditions with a new _crypto-condition_ that the new owner
   needs to fulfill to spend this asset.
 - `current_owners`: A list of public keys of the current owners; in this case it has just one public key.
-- `fulfillment`: A cryptoconditions URI that encodes the cryptographic fulfillments like signatures and others, see crypto-conditions.
+- `fulfillment`: A crypto-conditions URI that encodes the cryptographic fulfillments like signatures and others, see [crypto-conditions](https://interledger.org/five-bells-condition/spec.html).
 - `input`: Pointer to the asset and condition of a previous transaction
     - `cid`: Condition index
     - `txid`: Transaction id
@@ -158,19 +182,19 @@ If there is only one _current owner_, the fulfillment will be a single-signature
 
 ```json
 {
-    "id": "<SHA3-256 hash hexdigest of the serialized block contents>",
+    "id": "<hash of block>",
     "block": {
         "timestamp": "<block-creation timestamp>",
         "transactions": ["<list of transactions>"],
         "node_pubkey": "<public key of the node creating the block>",
         "voters": ["<list of federation nodes public keys>"]
     },
-    "signature": "<signature of the block>",
+    "signature": "<signature of block>",
     "votes": ["<list of votes>"]
 }
 ```
 
-- `id`: SHA3-256 hash hexdigest of the contents of `block` (i.e. the timestamp, list of transactions, node_pubkey, and voters). This is also a database primary key; that's how we ensure that all blocks are unique.
+- `id`: The hash of the serialized `block` (i.e. the `timestamp`, `transactions`, `node_pubkey`, and `voters`). This is also a database primary key; that's how we ensure that all blocks are unique.
 - `block`:
     - `timestamp`: Timestamp when the block was created. It's provided by the node that created the block.
     - `transactions`: A list of the transactions included in the block.
@@ -196,7 +220,7 @@ Each node must generate a vote for each block, to be appended to that block's `v
         "invalid_reason": "<None|DOUBLE_SPEND|TRANSACTIONS_HASH_MISMATCH|NODES_PUBKEYS_MISMATCH",
         "timestamp": "<timestamp of the voting action>"
     },
-    "signature": "<signature of vote block>"
+    "signature": "<signature of vote>"
 }
 ```
 
