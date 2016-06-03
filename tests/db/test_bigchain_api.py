@@ -755,7 +755,7 @@ class TestBigchainBlock(object):
             q_transactions.put(tx)
 
         # this is like a changefeed of deleted transactions
-        reverter = BacklogDeleteRevert(q_transactions)
+        reverter = BacklogDeleteRevert(q_transactions, stale_delay=0)
 
         reverter.start()
         time.sleep(5)
@@ -789,7 +789,7 @@ class TestBigchainBlock(object):
             q_transactions.put(tx)
 
         # this is like a changefeed of deleted transactions
-        reverter = BacklogDeleteRevert(q_transactions)
+        reverter = BacklogDeleteRevert(q_transactions, stale_delay=0)
 
         reverter.start()
         time.sleep(5)

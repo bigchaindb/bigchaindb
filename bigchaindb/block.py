@@ -1,6 +1,7 @@
 import logging
 import multiprocessing as mp
 import queue
+import time
 
 import rethinkdb as r
 
@@ -235,14 +236,43 @@ class Block(object):
 
 class BacklogDeleteRevert(Block):
 
-    def __init__(self, q_backlog_delete):
+    def __init__(self, q_backlog_delete, stale_delay=30):
         # invalid transactions can stay deleted
-        self.q_tx_to_validate = q_backlog_delete
+        self.q_backlog_delete = q_backlog_delete
+        self.q_holding = mp.Queue()
+        self.q_tx_to_validate = mp.Queue()
         self.q_tx_validated = mp.Queue()
         self.q_transaction_to_revert = mp.Queue()
         self.q_tx_delete = mp.Queue()
 
         self.monitor = Monitor()
+
+        self.stale_delay = stale_delay
+
+    def hold_transactions(self):
+        while True:
+            tx = self.q_backlog_delete.get()
+
+            # poison pill
+            if tx == 'stop':
+                self.q_holding.put('stop')
+                return
+
+            self.q_holding.put({'received': time.time(), 'tx': tx})
+
+    def release_transactions(self):
+        while True:
+            tx_ts = self.q_holding.get()
+
+            # poison pill
+            if tx_ts == 'stop':
+                self.q_tx_to_validate.put('stop')
+                return
+
+            if (time.time() - tx_ts['received']) > self.stale_delay:
+                self.q_tx_to_validate.put(tx_ts['tx'])
+            else:
+                self.q_holding.put(tx_ts)
 
     def locate_transactions(self):
         """
@@ -300,7 +330,7 @@ class BacklogDeleteRevert(Block):
 
     def kill(self):
         for i in range(mp.cpu_count()):
-            self.q_tx_to_validate.put('stop')
+            self.q_backlog_delete.put('stop')
 
     def start(self):
         """
@@ -308,13 +338,16 @@ class BacklogDeleteRevert(Block):
         """
 
         # initialize the processes
-
+        p_hold = ProcessGroup(name='hold_transactions', target=self.hold_transactions)
+        p_release = ProcessGroup(name='release_transactions', target=self.release_transactions)
         p_validate = ProcessGroup(name='validate_transactions', target=self.validate_transactions)
         p_locate = ProcessGroup(name='locate_transactions', target=self.locate_transactions)
         p_revert = ProcessGroup(name='revert_deletes', target=self.revert_deletes)
         p_empty_delete_q = ProcessGroup(name='empty_delete_q', target=self.empty_delete_q)
 
         # start the processes
+        p_hold.start()
+        p_release.start()
         p_validate.start()
         p_locate.start()
         p_revert.start()
