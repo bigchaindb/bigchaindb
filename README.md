@@ -21,7 +21,7 @@ A scalable blockchain database. [The whitepaper](https://www.bigchaindb.com/whit
 ## Links for Everyone
 * [BigchainDB.com](https://www.bigchaindb.com/) - the main BigchainDB website, including newsletter signup
 * [Whitepaper](https://www.bigchaindb.com/whitepaper/) - outlines the motivations, goals and core algorithms of BigchainDB
-* [Roadmap](ROADMAP.md)
+* [Roadmap](https://github.com/bigchaindb/org/blob/master/ROADMAP.md)
 * [Blog](https://medium.com/the-bigchaindb-blog)
 * [Twitter](https://twitter.com/BigchainDB)
 * [Google Group](https://groups.google.com/forum/#!forum/bigchaindb)
