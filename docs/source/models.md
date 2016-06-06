@@ -65,8 +65,7 @@ Here's some explanation of the contents of a transaction:
     and a _crypto fulfillment_ that satisfies a spending condition set on the unspent asset. A _fulfillment_
     is usually a signature proving the ownership of the asset.
     See [Conditions and Fulfillments](#conditions-and-fulfillments) below.
-    - `conditions`: List of conditions. Each _condition_ is a _crypto-condition_ that needs to be fulfilled by the
-    new owner in order to spend the asset.
+    - `conditions`: List of conditions. Each _condition_ is a _crypto-condition_ that needs to be fulfilled by a transfer transaction in order to transfer ownership to new owners.
     See [Conditions and Fulfillments](#conditions-and-fulfillments) below.
     - `operation`: String representation of the operation being performed (currently either "CREATE" or "TRANSFER"). It determines how the transaction should be validated.
     - `timestamp`: Time of creation of the transaction in UTC. It's provided by the client.
