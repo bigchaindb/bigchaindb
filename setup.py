@@ -37,6 +37,7 @@ tests_require = [
     'pytest-cov',
     'pytest-xdist',
     'pytest-flask',
+    'pytest',
 ]
 
 dev_require = [
@@ -103,6 +104,10 @@ setup(
         'flask==0.10.1',
         'requests==2.9',
         'gunicorn~=19.0',
+        'pymultihash>=0.9.0.dev2',
+    ],
+    dependency_links=[
+        'git+https://github.com/TimDaub/pymultihash.git@devel#egg=pymultihash-0.9.0.dev2',
     ],
     setup_requires=['pytest-runner'],
     tests_require=tests_require,

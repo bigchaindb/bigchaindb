@@ -351,6 +351,7 @@ def sign_tx(transaction, signing_keys):
                                                                                 key_pairs)
 
         signed_fulfillment = parsed_fulfillment_signed.serialize_uri()
+        # TODO: Avoid updating reference. Rather change in transaction directly for easier readability
         fulfillment.update({'fulfillment': signed_fulfillment})
 
     return tx
@@ -567,6 +568,8 @@ def get_hash_data(transaction):
         str: the hash of the transaction
     """
     tx = copy.deepcopy(transaction)
+    # NOTE: Checking for 'transaction' here and executing on the value of `tx` if it's
+    #       not available doesn't make sense. Instead this function should just throw.
     if 'transaction' in tx:
         tx = tx['transaction']
 
