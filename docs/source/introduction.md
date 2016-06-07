@@ -1,6 +1,8 @@
 # Introduction
 
-BigchainDB is a scalable blockchain database. You can read about its motivations, goals and high-level architecture in the [BigchainDB whitepaper](https://www.bigchaindb.com/whitepaper/).
+BigchainDB is a scalable blockchain database. That is, it's a "big data" database with some blockchain characteristics, including decentralization, immutability and native support for assets.
+
+You can read about the motivations, goals and high-level architecture in the [BigchainDB whitepaper](https://www.bigchaindb.com/whitepaper/).
 
 
 ## Who this Documentation for?
