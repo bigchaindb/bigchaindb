@@ -23,7 +23,7 @@ When someone creates a transfer transaction with the goal of changing an asset's
 
 Every create transaction contains exactly one fulfillment-condition pair. A transfer transaction can contain multiple fulfillment-condition pairs: one per asset transferred. Every fulfillment in a transfer transaction (input) must correspond to a condition (output) in a previous transaction. The diagram below illustrates some of these concepts: transactions are represented by light grey boxes, fulfillments have a label like `f:0`, and conditions have a label like `c:0`.
 
-![Tracking the stories of three assets](./_static/stories_3_assets.png)
+![Tracking the stories of three assets](../_static/stories_3_assets.png)
 
 
 ## The Transaction Model
