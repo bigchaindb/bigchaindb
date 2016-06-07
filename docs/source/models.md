@@ -11,9 +11,11 @@ Below we often refer to cryptographic hashes, keys and signatures. The details o
 
 Transactions are the most basic kind of record stored by BigchainDB. There are two kinds: creation transactions and transfer transactions.
 
-A creation transaction can be used to register, issue, create or otherwise initiate the history of a single thing (or asset) in BigchainDB. For example, one might register an identity or a creative work. The things are often called "assets" but they might not be literal assets. A creation transaction also establishes the initial owner or owners of the asset. Only a federation node can create a valid creation transaction (but it's usually made based on a message from a client).
+A _creation transaction_ can be used to register, issue, create or otherwise initiate the history of a single thing (or asset) in BigchainDB. For example, one might register an identity or a creative work. The things are often called "assets" but they might not be literal assets. A creation transaction also establishes the initial owner or owners of the asset. Only a federation node can create a valid creation transaction (but it's usually made based on a message from a client).
 
-A transfer transaction can transfer one or more assets to new owners.
+Currently, BigchainDB only supports indivisible assets. You can't split an asset apart into multiple assets, nor can you combine several assets together into one. [Issue #129](https://github.com/bigchaindb/bigchaindb/issues/129) is an enhancement proposal to support divisible assets.
+
+A _transfer transaction_ can transfer one or more assets to new owners.
 
 BigchainDB works with the [Interledger Protocol (ILP)](https://interledger.org/), a protocol for transferring assets between different ledgers, blockchains or payment systems.
 
@@ -24,6 +26,15 @@ When someone creates a transfer transaction with the goal of changing an asset's
 Every create transaction contains exactly one fulfillment-condition pair. A transfer transaction can contain multiple fulfillment-condition pairs: one per asset transferred. Every fulfillment in a transfer transaction (input) must correspond to a condition (output) in a previous transaction. The diagram below illustrates some of these concepts: transactions are represented by light grey boxes, fulfillments have a label like `f:0`, and conditions have a label like `c:0`.
 
 ![Tracking the stories of three assets](./_static/stories_3_assets.png)
+
+When a node is asked to check the validity of a transaction, it must do several things; the main things are:
+
+* schema validation,
+* double-spending checks (for transfer transactions),
+* hash validation (i.e. is the calculated transaction hash equal to its id?), and
+* validation of all fulfillments, including validation of cryptographic signatures if they’re among the conditions.
+
+The full details of transaction validation can be found in the code for `validate_transaction()` in the `BaseConsensusRules` class of [`consensus.py`](https://github.com/bigchaindb/bigchaindb/blob/master/bigchaindb/consensus.py) (unless other validation rules are being used by a federation, in which case those should be consulted instead).
 
 
 ## The Transaction Model
@@ -54,8 +65,7 @@ Here's some explanation of the contents of a transaction:
     and a _crypto fulfillment_ that satisfies a spending condition set on the unspent asset. A _fulfillment_
     is usually a signature proving the ownership of the asset.
     See [Conditions and Fulfillments](#conditions-and-fulfillments) below.
-    - `conditions`: List of conditions. Each _condition_ is a _crypto-condition_ that needs to be fulfilled by the
-    new owner in order to spend the asset.
+    - `conditions`: List of conditions. Each _condition_ is a _crypto-condition_ that needs to be fulfilled by a transfer transaction in order to transfer ownership to new owners.
     See [Conditions and Fulfillments](#conditions-and-fulfillments) below.
     - `operation`: String representation of the operation being performed (currently either "CREATE" or "TRANSFER"). It determines how the transaction should be validated.
     - `timestamp`: Time of creation of the transaction in UTC. It's provided by the client.
@@ -66,6 +76,8 @@ Here's some explanation of the contents of a transaction:
 Later, when we get to the models for the block and the vote, we'll see that both include a signature (from the node which created it). You may wonder why transactions don't have signatures... The answer is that they do! They're just hidden inside the `fulfillment` string of each fulfillment. A creation transaction is signed by the node that created it. A transfer transaction is signed by whoever currently controls or owns it.
 
 What gets signed? For each fulfillment in the transaction, the "fullfillment message" that gets signed includes the `operation`, `timestamp`, `data`, `version`, `id`, corresponding `condition`, and the fulfillment itself, except with its fulfillment string set to `null`. The computed signature goes into creating the `fulfillment` string of the fulfillment.
+
+One other note: Currently, transactions contain only the public keys of asset-owners (i.e. who own an asset or who owned an asset in the past), inside the conditions and fulfillments. A transaction does _not_ contain the public key of the client (computer) which generated and sent it to a BigchainDB node. In fact, there's no need for a client to _have_ a public/private keypair. In the future, each client may also have a keypair, and it may have to sign each sent transaction (using its private key); see [Issue #347 on GitHub](https://github.com/bigchaindb/bigchaindb/issues/347). In practice, a person might think of their keypair as being both their "ownership-keypair" and their "client-keypair," but there is a difference, just like there's a difference between Joe and Joe's computer.
 
 
 ## Conditions and Fulfillments
