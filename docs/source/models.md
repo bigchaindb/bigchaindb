@@ -13,7 +13,7 @@ Transactions are the most basic kind of record stored by BigchainDB. There are t
 
 A _creation transaction_ can be used to register, issue, create or otherwise initiate the history of a single thing (or asset) in BigchainDB. For example, one might register an identity or a creative work. The things are often called "assets" but they might not be literal assets. A creation transaction also establishes the initial owner or owners of the asset. Only a federation node can create a valid creation transaction (but it's usually made based on a message from a client).
 
-Currently, BigchainDB only supports indivisible assets. You can't split an asset apart into multiple assets, nor can you combine several assets together into one. This means BigchainDB doesn't support currency, at least not in the usual sense. [Issue #129](https://github.com/bigchaindb/bigchaindb/issues/129) is an enhancement proposal to support divisible assets.
+Currently, BigchainDB only supports indivisible assets. You can't split an asset apart into multiple assets, nor can you combine several assets together into one. [Issue #129](https://github.com/bigchaindb/bigchaindb/issues/129) is an enhancement proposal to support divisible assets.
 
 A _transfer transaction_ can transfer one or more assets to new owners.
 
@@ -21,7 +21,7 @@ BigchainDB works with the [Interledger Protocol (ILP)](https://interledger.org/)
 
 The owner(s) of an asset can specifiy conditions (ILP crypto-conditions) which others must fulfill (satisfy) in order to become the new owner(s) of the asset. For example, a crypto-condition might require a signature from the owner, or from m-of-n owners (a threshold condition, e.g. 3-of-4).
 
-When someone creates a transfer transaction with the goal of changing an asset's owners, they must fulfill the asset's current crypto-conditions (i.e. in a fulfillment), and they must provide new conditions (including the list of new owners). The client who creates a transfer transaction need not be one of the owners of the asset, nor one of the new owners. All they need to do is fulfill the current conditions on the asset (which usually means getting one or more signatures from the owners).
+When someone creates a transfer transaction with the goal of changing an asset's owners, they must fulfill the asset's current crypto-conditions (i.e. in a fulfillment), and they must provide new conditions (including the list of new owners).
 
 Every create transaction contains exactly one fulfillment-condition pair. A transfer transaction can contain multiple fulfillment-condition pairs: one per asset transferred. Every fulfillment in a transfer transaction (input) must correspond to a condition (output) in a previous transaction. The diagram below illustrates some of these concepts: transactions are represented by light grey boxes, fulfillments have a label like `f:0`, and conditions have a label like `c:0`.
 
@@ -76,6 +76,8 @@ Here's some explanation of the contents of a transaction:
 Later, when we get to the models for the block and the vote, we'll see that both include a signature (from the node which created it). You may wonder why transactions don't have signatures... The answer is that they do! They're just hidden inside the `fulfillment` string of each fulfillment. A creation transaction is signed by the node that created it. A transfer transaction is signed by whoever currently controls or owns it.
 
 What gets signed? For each fulfillment in the transaction, the "fullfillment message" that gets signed includes the `operation`, `timestamp`, `data`, `version`, `id`, corresponding `condition`, and the fulfillment itself, except with its fulfillment string set to `null`. The computed signature goes into creating the `fulfillment` string of the fulfillment.
+
+One other note: Currently, transactions contain only the public keys of asset-owners (i.e. who own an asset or who owned an asset in the past), inside the conditions and fulfillments. A transaction does _not_ contain the public key of the client (computer) which generated and sent it to a BigchainDB node. In fact, there's no need for a client to _have_ a public/private keypair. In the future, each client may also have a keypair, and it may have to sign each sent transaction (using its private key); see [Issue #347 on GitHub](https://github.com/bigchaindb/bigchaindb/issues/347). In practice, a person might think of their keypair as being both their "ownership-keypair" and their "client-keypair," but there is a difference, just like there's a difference between Joe and Joe's computer.
 
 
 ## Conditions and Fulfillments
