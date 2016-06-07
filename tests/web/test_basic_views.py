@@ -16,6 +16,13 @@ def test_get_transaction_endpoint(b, client, user_vk):
     assert tx == res.json
 
 
+def test_api_endpoint_shows_basic_info(client):
+    from bigchaindb import version
+    res = client.get('/')
+    assert res.json['software'] == 'BigchainDB'
+    assert res.json['version'] == version.__version__
+
+
 def test_post_create_transaction_endpoint(b, client):
     keypair = crypto.generate_key_pair()
 

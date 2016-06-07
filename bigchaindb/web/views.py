@@ -8,9 +8,10 @@ import flask
 from flask import current_app, request, Blueprint
 
 import bigchaindb
-from bigchaindb import util
+from bigchaindb import util, version
 
 
+info_views = Blueprint('info_views', __name__)
 basic_views = Blueprint('basic_views', __name__)
 
 
@@ -33,6 +34,16 @@ def record(state):
         raise ValueError('This blueprint expects you to provide '
                          'a monitor instance to record system '
                          'performance.')
+
+@info_views.route('/')
+def home():
+    return flask.jsonify({
+        'software': 'BigchainDB',
+        'version': version.__version__,
+        'public_key': bigchaindb.config['keypair']['public'],
+        'keyring': bigchaindb.config['keyring'],
+        'api_endpoint': bigchaindb.config['api_endpoint']
+    })
 
 
 @basic_views.route('/transactions/<tx_id>')
