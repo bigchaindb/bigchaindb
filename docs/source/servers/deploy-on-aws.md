@@ -8,7 +8,7 @@ This section explains a way to deploy a cluster of BigchainDB nodes on Amazon We
 
 You might ask why one would want to deploy a centrally-controlled BigchainDB cluster. Isn't BigchainDB supposed to be decentralized, where each node is controlled by a different person or organization?
 
-That's true, but there are some reasons why one might want a centrally-controlled cluster: 1) for testing, and 2) for initial deployment. Afterwards, the control of each node can be handed over to a different entity.
+That's true, but there are some reasons why one might want a centrally-controlled cluster: 1) for testing, and 2) for initial deployment, after which the control of each node can be handed over to a different entity.
 
 ## Python Setup
 

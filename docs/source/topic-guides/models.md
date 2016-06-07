@@ -5,7 +5,7 @@ BigchainDB stores all its records in JSON documents.
 The three main kinds of records are transactions, blocks and votes. 
 _Transactions_ are used to register, issue, create or transfer things (e.g. assets). Multiple transactions are combined with some other metadata to form _blocks_. Nodes append _votes_ to blocks. This section is a reference on the details of transactions, blocks and votes.
 
-Below we often refer to cryptographic hashes, keys and signatures. The details of those are covered in [the section on cryptography](cryptography.html).
+Below we often refer to cryptographic hashes, keys and signatures. The details of those are covered in [the section on cryptography](../appendices/cryptography.html).
 
 ## Transaction Concepts
 
