@@ -151,12 +151,12 @@ class BaseConsensusRules(AbstractConsensusRules):
             for fulfillment in transaction['transaction']['fulfillments']:
                 if not fulfillment['input']:
                     raise ValueError('Only `CREATE` transactions can have null inputs')
-                tx_input = bigchain.get_transaction(fulfillment['input']['txid'])
+                tx_input = bigchain.get_transaction(fulfillment['input']['txid']['/'])
 
                 if not tx_input:
                     raise exceptions.TransactionDoesNotExist(
                         'input `{}` does not exist in the bigchain'.format(
-                            fulfillment['input']['txid']))
+                            fulfillment['input']['txid']['/']))
                 # TODO: check if current owners own tx_input (maybe checked by InvalidSignature)
                 # check if the input was already spent by a transaction other than
                 # this one.

@@ -11,8 +11,8 @@ TX_ENDPOINT = '/api/v1/transactions/'
 @pytest.mark.usefixtures('inputs')
 def test_get_transaction_endpoint(b, client, user_vk):
     input_tx = b.get_owned_ids(user_vk).pop()
-    tx = b.get_transaction(input_tx['txid'])
-    res = client.get(TX_ENDPOINT + input_tx['txid'])
+    tx = b.get_transaction(input_tx['txid']['/'])
+    res = client.get(TX_ENDPOINT + input_tx['txid']['/'])
     assert tx == res.json
 
 
@@ -36,4 +36,3 @@ def test_post_transfer_transaction_endpoint(b, client, user_vk, user_sk):
 
     assert res.json['transaction']['fulfillments'][0]['current_owners'][0] == user_vk
     assert res.json['transaction']['conditions'][0]['new_owners'][0] == to_keypair[1]
-

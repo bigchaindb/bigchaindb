@@ -286,7 +286,7 @@ sleep(8)
 hashlockuser_priv, hashlockuser_pub = crypto.generate_key_pair()
 
 # create hashlock fulfillment tx
-hashlock_fulfill_tx = b.create_transaction(None, hashlockuser_priv, {'txid': hashlock_tx['id'], 'cid': 0}, 'TRANSFER')
+hashlock_fulfill_tx = b.create_transaction(None, hashlockuser_priv, {'txid': {'/': hashlock_tx['id']}, 'cid': 0}, 'TRANSFER')
 
 # try a wrong secret
 hashlock_fulfill_tx_fulfillment = cc.PreimageSha256Fulfillment(preimage=b'')
@@ -341,7 +341,7 @@ print(json.dumps(tx_timeout, sort_keys=True, indent=4, separators=(',', ':')))
 sleep(8)
 
 # Retrieve the transaction id of tx_timeout
-tx_timeout_id = {'txid': tx_timeout['id'], 'cid': 0}
+tx_timeout_id = {'txid': {'/': tx_timeout['id']}, 'cid': 0}
 
 # Create a template to transfer the tx_timeout
 tx_timeout_transfer = b.create_transaction(None, testuser1_pub, tx_timeout_id, 'TRANSFER')
@@ -411,7 +411,7 @@ b.write_transaction(tx_escrow_signed)
 sleep(8)
 
 # Retrieve the last transaction of thresholduser1_pub
-tx_escrow_id = {'txid': tx_escrow_signed['id'], 'cid': 0}
+tx_escrow_id = {'txid': {'/': tx_escrow_signed['id']}, 'cid': 0}
 
 # Create a base template for output transaction
 tx_escrow_execute = b.create_transaction([testuser2_pub, testuser1_pub], testuser1_pub, tx_escrow_id, 'TRANSFER')

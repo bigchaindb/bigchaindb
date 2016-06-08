@@ -176,7 +176,7 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
                         {
                             "current_owners": ["list of <pub-keys>"],
                             "input": {
-                                "txid": "<sha3 hash>",
+                                "txid": "<ipld multihash sha2-256>",
                                 "cid": "condition index"
                             },
                             "fulfillment": "fulfillement of condition cid",
@@ -509,7 +509,7 @@ def get_input_condition(bigchain, fulfillment):
     # if `TRANSFER` transaction
     if input_tx:
         # get previous condition
-        previous_tx = bigchain.get_transaction(input_tx['txid'])
+        previous_tx = bigchain.get_transaction(input_tx['txid']['/'])
         conditions = sorted(previous_tx['transaction']['conditions'], key=lambda d: d['cid'])
         return conditions[input_tx['cid']]
 

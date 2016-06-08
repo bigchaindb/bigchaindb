@@ -36,7 +36,7 @@ class TestBigchainApi(object):
     @pytest.mark.usefixtures('inputs')
     def test_create_transaction_transfer(self, b, user_vk, user_sk):
         input_tx = b.get_owned_ids(user_vk).pop()
-        assert b.validate_fulfillments(b.get_transaction(input_tx['txid'])) == True
+        assert b.validate_fulfillments(b.get_transaction(input_tx['txid']['/'])) == True
 
         tx = b.create_transaction(user_vk, b.me, input_tx, 'TRANSFER')
 
@@ -300,7 +300,7 @@ class TestTransactionValidation(object):
         assert b.is_valid_transaction(tx) is False
 
     def test_non_create_input_not_found(self, b, user_vk):
-        tx = b.create_transaction(user_vk, user_vk, {'txid': 'c', 'cid': 0}, 'TRANSFER')
+        tx = b.create_transaction(user_vk, user_vk, {'txid': {'/': 'c'}, 'cid': 0}, 'TRANSFER')
         with pytest.raises(exceptions.TransactionDoesNotExist) as excinfo:
             b.validate_transaction(tx)
 
@@ -312,7 +312,7 @@ class TestTransactionValidation(object):
         input_valid = b.get_owned_ids(user_vk).pop()
         sk, vk = crypto.generate_key_pair()
         tx = b.create_transaction(vk, user_vk, input_valid, 'TRANSFER')
-        with pytest.raises(exceptions.InvalidSignature) as excinfo:
+        with pytest.raises(exceptions.InvalidSignature):
             b.validate_transaction(tx)
 
         # assert excinfo.value.args[0] == 'current_owner `a` does not own the input `{}`'.format(valid_input)
@@ -356,6 +356,7 @@ class TestTransactionValidation(object):
         wrong_private_key = '4fyvJe1aw2qHZ4UNRYftXK7JU7zy9bCqoU5ps6Ne3xrY'
 
         with pytest.raises(exceptions.KeypairMismatchException):
+            # NOTE: Do we really need to store the tx in tx_invalid_signed?
             tx_invalid_signed = b.sign_transaction(tx_valid, wrong_private_key)
 
         # create a correctly signed transaction and change the signature
@@ -1084,7 +1085,7 @@ class TestMultipleInputs(object):
         # get input
         owned_inputs_user1 = b.get_owned_ids(user_vk)
         owned_inputs_user2 = b.get_owned_ids(user2_vk)
-        assert owned_inputs_user1 == [{'cid': 0, 'txid': tx['id']}]
+        assert owned_inputs_user1 == [{'cid': 0, 'txid': {'/': tx['id']}}]
         assert owned_inputs_user2 == []
 
         # create a transaction and block
@@ -1096,7 +1097,7 @@ class TestMultipleInputs(object):
         owned_inputs_user1 = b.get_owned_ids(user_vk)
         owned_inputs_user2 = b.get_owned_ids(user2_vk)
         assert owned_inputs_user1 == []
-        assert owned_inputs_user2 == [{'cid': 0, 'txid': tx['id']}]
+        assert owned_inputs_user2 == [{'cid': 0, 'txid': {'/': tx['id']}}]
 
     def test_get_owned_ids_single_tx_single_output_invalid_block(self, b, user_sk, user_vk):
         # create a new users
@@ -1115,7 +1116,7 @@ class TestMultipleInputs(object):
         # get input
         owned_inputs_user1 = b.get_owned_ids(user_vk)
         owned_inputs_user2 = b.get_owned_ids(user2_vk)
-        assert owned_inputs_user1 == [{'cid': 0, 'txid': tx['id']}]
+        assert owned_inputs_user1 == [{'cid': 0, 'txid': {'/': tx['id']}}]
         assert owned_inputs_user2 == []
 
         # create a transaction and block
@@ -1132,7 +1133,7 @@ class TestMultipleInputs(object):
         owned_inputs_user2 = b.get_owned_ids(user2_vk)
 
         # should be the same as before (note tx, not tx_invalid)
-        assert owned_inputs_user1 == [{'cid': 0, 'txid': tx['id']}]
+        assert owned_inputs_user1 == [{'cid': 0, 'txid': {'/': tx['id']}}]
         assert owned_inputs_user2 == []
 
     def test_get_owned_ids_single_tx_multiple_outputs(self, b, user_sk, user_vk):
@@ -1152,7 +1153,7 @@ class TestMultipleInputs(object):
         owned_inputs_user1 = b.get_owned_ids(user_vk)
         owned_inputs_user2 = b.get_owned_ids(user2_vk)
 
-        expected_owned_inputs_user1 = [{'txid': tx['id'], 'cid': 0} for tx in transactions]
+        expected_owned_inputs_user1 = [{'txid': {'/': transaction['id']}, 'cid': 0} for transaction in transactions]
         assert owned_inputs_user1 == expected_owned_inputs_user1
         assert owned_inputs_user2 == []
 
@@ -1166,7 +1167,7 @@ class TestMultipleInputs(object):
         owned_inputs_user1 = b.get_owned_ids(user_vk)
         owned_inputs_user2 = b.get_owned_ids(user2_vk)
         assert owned_inputs_user1 == expected_owned_inputs_user1
-        assert owned_inputs_user2 == [{'cid': 0, 'txid': tx['id']}, {'cid': 1, 'txid': tx['id']}]
+        assert owned_inputs_user2 == [{'cid': 0, 'txid': {'/': tx['id']}}, {'cid': 1, 'txid': {'/': tx['id']}}]
 
     def test_get_owned_ids_multiple_owners(self, b, user_sk, user_vk):
         # create a new users
@@ -1185,7 +1186,7 @@ class TestMultipleInputs(object):
         # get input
         owned_inputs_user1 = b.get_owned_ids(user_vk)
         owned_inputs_user2 = b.get_owned_ids(user2_vk)
-        expected_owned_inputs_user1 = [{'txid': tx['id'], 'cid': 0} for tx in transactions]
+        expected_owned_inputs_user1 = [{'txid': {'/': transaction['id']}, 'cid': 0} for transaction in transactions]
         assert owned_inputs_user1 == owned_inputs_user2
         assert owned_inputs_user1 == expected_owned_inputs_user1
 
@@ -1256,7 +1257,7 @@ class TestMultipleInputs(object):
         # vote the block invalid
         vote = b.vote(block, b.get_last_voted_block()['id'], False)
         b.write_vote(block, vote, 2)
-        response = b.get_transaction(tx_signed["id"])
+        b.get_transaction(tx_signed["id"])
         spent_inputs_user1 = b.get_spent(owned_inputs_user1[0])
 
         # Now there should be no spents (the block is invalid)
@@ -1360,7 +1361,7 @@ class TestFulfillmentMessage(object):
     @pytest.mark.usefixtures('inputs')
     def test_fulfillment_message_transfer(self, b, user_vk):
         input_tx = b.get_owned_ids(user_vk).pop()
-        assert b.validate_fulfillments(b.get_transaction(input_tx['txid'])) == True
+        assert b.validate_fulfillments(b.get_transaction(input_tx['txid']['/'])) == True
 
         tx = b.create_transaction(user_vk, b.me, input_tx, 'TRANSFER', payload={'pay': 'load'})
 
@@ -1423,7 +1424,7 @@ class TestTransactionMalleability(object):
     @pytest.mark.usefixtures('inputs')
     def test_create_transaction_transfer(self, b, user_vk, user_sk):
         input_tx = b.get_owned_ids(user_vk).pop()
-        assert b.validate_fulfillments(b.get_transaction(input_tx['txid'])) is True
+        assert b.validate_fulfillments(b.get_transaction(input_tx['txid']['/'])) is True
 
         tx = b.create_transaction(user_vk, b.me, input_tx, 'TRANSFER')
 
@@ -1454,7 +1455,7 @@ class TestTransactionMalleability(object):
 
         tx_changed = copy.deepcopy(tx_signed)
         tx_changed['transaction']['data'] = {
-            "hash": "872fa6e6f46246cd44afdb2ee9cfae0e72885fb0910e2bcf9a5a2a4eadb417b8",
+            "hash": "a valid transaction hash",
             "payload": {
                 "msg": "Hello BigchainDB!"
             }
@@ -1490,7 +1491,7 @@ class TestTransactionMalleability(object):
         tx_changed = copy.deepcopy(tx_signed)
         tx_changed['transaction']['fulfillments'][0]['input'] = {
             "cid": 0,
-            "txid": "3055348675fc6f23b75f13c55db6d112b66eee068e99d30a802883d3b1784203"
+            "txid": {'/': "a valid transaction hash"}
         }
         with pytest.raises(TypeError):
             assert b.validate_fulfillments(tx_changed) is False
@@ -1523,7 +1524,7 @@ class TestCryptoconditions(object):
         prev_tx_id = b.get_owned_ids(user_vk).pop()
         tx = b.create_transaction(user_vk, other_vk, prev_tx_id, 'TRANSFER')
 
-        prev_tx = b.get_transaction(prev_tx_id['txid'])
+        prev_tx = b.get_transaction(prev_tx_id['txid']['/'])
         prev_condition = prev_tx['transaction']['conditions'][0]['condition']
         prev_condition_from_uri = cc.Condition.from_uri(prev_condition['uri'])
         prev_condition_from_dict = cc.Fulfillment.from_dict(prev_condition['details']).condition
@@ -1964,7 +1965,7 @@ class TestCryptoconditions(object):
         assert len(b.get_owned_ids(b.me)) == 0
 
         # create hashlock fulfillment tx
-        hashlock_fulfill_tx = b.create_transaction(None, user_vk, {'txid': hashlock_tx['id'], 'cid': 0}, 'TRANSFER')
+        hashlock_fulfill_tx = b.create_transaction(None, user_vk, {'txid': {'/': hashlock_tx['id']}, 'cid': 0}, 'TRANSFER')
 
         hashlock_fulfill_tx_fulfillment = cc.PreimageSha256Fulfillment(preimage=b'')
         hashlock_fulfill_tx['transaction']['fulfillments'][0]['fulfillment'] = \
@@ -1992,7 +1993,7 @@ class TestCryptoconditions(object):
 
         # try doublespending
         user2_sk, user2_vk = crypto.generate_key_pair()
-        hashlock_doublespend_tx = b.create_transaction(None, user2_vk, {'txid': hashlock_tx['id'], 'cid': 0},
+        hashlock_doublespend_tx = b.create_transaction(None, user2_vk, {'txid': {'/': hashlock_tx['id']}, 'cid': 0},
                                                        'TRANSFER')
 
         hashlock_doublespend_tx_fulfillment = cc.PreimageSha256Fulfillment(preimage=secret)
