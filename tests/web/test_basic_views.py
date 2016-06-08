@@ -16,6 +16,12 @@ def test_get_transaction_endpoint(b, client, user_vk):
     assert tx == res.json
 
 
+@pytest.mark.usefixtures('inputs')
+def test_get_transaction_returns_404_if_not_found(client):
+    res = client.get(TX_ENDPOINT + '123')
+    assert res.status_code == 404
+
+
 def test_post_create_transaction_endpoint(b, client):
     keypair = crypto.generate_key_pair()
 
