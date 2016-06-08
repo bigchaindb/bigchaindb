@@ -30,9 +30,7 @@ This instantiates an object `b` of class `Bigchain`. When instantiating a `Bigch
 
 In a federation of BigchainDB nodes, each node has its own `Bigchain` instance.
 
-The `Bigchain` class is the main API for all BigchainDB interactions, right now. It does things that BigchainDB nodes do, but it also does things that BigchainDB clients do. In the future, it will be broken apart into a node/server class and a client class.
-
-The `Bigchain` class is documented in the [Developer Interface](developer-interface.html) section.
+The `Bigchain` class is the main API for all BigchainDB interactions, right now. It does things that BigchainDB nodes do, but it also does things that BigchainDB clients do. In the future, it will be refactored into different parts. The `Bigchain` class is documented [elsewhere (link)](../appendices/the-Bigchain-class.html).
 
 ## Create a Digital Asset
 

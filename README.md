@@ -13,10 +13,10 @@ A scalable blockchain database. [The whitepaper](https://www.bigchaindb.com/whit
 
 ## Quick Start
 
-### [Install and Run BigchainDB Server](http://bigchaindb.readthedocs.io/en/latest/installing-server.html)
+### [Install and Run BigchainDB Server](http://bigchaindb.readthedocs.io/en/latest/servers/installing-server.html)
 ### [Run BigchainDB with Docker](http://bigchaindb.readthedocs.io/en/latest/installing-server.html#run-bigchaindb-with-docker)
-### [The Python Server API by Example](http://bigchaindb.readthedocs.io/en/latest/python-server-api-examples.html)
-### [The Python Driver API by Example](http://bigchaindb.readthedocs.io/en/latest/python-driver-api-examples.html)
+### [The Python Server API by Example](http://bigchaindb.readthedocs.io/en/latest/servers/python-server-api-examples.html)
+### [The Python Driver API by Example](http://bigchaindb.readthedocs.io/en/latest/drivers-clients/python-driver-api-examples.html)
 
 ## Links for Everyone
 * [BigchainDB.com](https://www.bigchaindb.com/) - the main BigchainDB website, including newsletter signup
@@ -38,4 +38,3 @@ A scalable blockchain database. [The whitepaper](https://www.bigchaindb.com/whit
 * [Licenses](LICENSES.md) - open source & open content
 * [Imprint](https://www.bigchaindb.com/imprint/)
 * [Contact Us](https://www.bigchaindb.com/contact/)
-

@@ -5,7 +5,7 @@ BigchainDB stores all its records in JSON documents.
 The three main kinds of records are transactions, blocks and votes. 
 _Transactions_ are used to register, issue, create or transfer things (e.g. assets). Multiple transactions are combined with some other metadata to form _blocks_. Nodes append _votes_ to blocks. This section is a reference on the details of transactions, blocks and votes.
 
-Below we often refer to cryptographic hashes, keys and signatures. The details of those are covered in [the section on cryptography](cryptography.html).
+Below we often refer to cryptographic hashes, keys and signatures. The details of those are covered in [the section on cryptography](../appendices/cryptography.html).
 
 ## Transaction Concepts
 
@@ -25,7 +25,7 @@ When someone creates a transfer transaction with the goal of changing an asset's
 
 Every create transaction contains exactly one fulfillment-condition pair. A transfer transaction can contain multiple fulfillment-condition pairs: one per asset transferred. Every fulfillment in a transfer transaction (input) must correspond to a condition (output) in a previous transaction. The diagram below illustrates some of these concepts: transactions are represented by light grey boxes, fulfillments have a label like `f:0`, and conditions have a label like `c:0`.
 
-![Tracking the stories of three assets](./_static/stories_3_assets.png)
+![Tracking the stories of three assets](../_static/stories_3_assets.png)
 
 When a node is asked to check the validity of a transaction, it must do several things; the main things are:
 
