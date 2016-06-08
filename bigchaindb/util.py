@@ -224,7 +224,7 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
     data = None
     if payload is not None:
         if isinstance(payload, dict):
-            hash_payload = crypto.hash_data(serialize(payload))
+            hash_payload = crypto.hash_data(payload)
             data = {
                 'hash': hash_payload,
                 'payload': payload
@@ -577,7 +577,7 @@ def get_hash_data(transaction):
     for fulfillment in tx['fulfillments']:
         fulfillment['fulfillment'] = None
 
-    return crypto.hash_data(serialize(tx))
+    return crypto.hash_data(tx)
 
 
 def verify_vote_signature(block, signed_vote):

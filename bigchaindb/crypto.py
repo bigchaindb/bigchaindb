@@ -1,12 +1,13 @@
 # Separate all crypto code so that we can easily test several implementations
 
-import multihash
+from ipld import marshal, multihash
 from cryptoconditions import crypto
 
 
 def hash_data(data):
-    """Hash the provided data using multihash SHA3-256"""
-    return multihash.digest(data.encode(), 'sha3_256').encode('base58').decode('utf-8')
+    """Hash the provided data using IPLD-specific multihash SHA2-256"""
+    marshalled_data = marshal(data)
+    return multihash(marshalled_data)
 
 
 def generate_key_pair():
