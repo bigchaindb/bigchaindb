@@ -10,5 +10,6 @@ Topic guides give background and explain concepts at a high level.
    :maxdepth: 1
 
    decentralized
+   diversity
    immutable
    models

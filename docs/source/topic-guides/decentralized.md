@@ -8,6 +8,8 @@ We use the phrase "BigchainDB federation" (or just "federation") to refer to the
 
 The actual data is decentralized in that it doesn’t all get stored in one place. Each federation node stores the primary of one shard and replicas of some other shards. (A shard is a subset of the total set of documents.) Sharding and replication are handled by RethinkDB.
 
+A federation can increase its decentralization (and its resilience) by increasing its jurisdictional diversity, geographic diversity, and other kinds of diversity. This idea is expanded upon in [the section on node diversity](diversity.html).
+
 There’s no node that has a long-term special position in the federation. All nodes run the same software and perform the same duties.
 
 RethinkDB has an “admin” user which can’t be deleted and which can make big changes to the database, such as dropping a table. Right now, that’s a big security vulnerability, but we have plans to mitigate it by:
