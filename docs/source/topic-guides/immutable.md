@@ -13,3 +13,5 @@ BigchainDB achieves strong tamper-resistance in the following ways:
 5. **Full or partial backups** of the database may be recorded from time to time, possibly on magnetic tape storage, other blockchains, printouts, etc.
 6. **Strong security.** Node owners can adopt and enforce strong security policies.
 7. **Node diversity.** Diversity makes it so that no one thing (e.g. natural disaster or operating system bug) can compromise enough of the nodes. See [the section on the kinds of node diversity](diversity.html).
+
+Some of these things come "for free" as part of the BigchainDB software, and others require some extra effort from the federation and node owners.
