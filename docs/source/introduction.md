@@ -5,19 +5,9 @@ BigchainDB is a scalable blockchain database. That is, it's a "big data" databas
 You can read about the motivations, goals and high-level architecture in the [BigchainDB whitepaper](https://www.bigchaindb.com/whitepaper/).
 
 
-## Who this Documentation for?
-
-The BigchainDB Documentation is intended primarily for:
-
-1. Developers of BigchainDB server software.
-2. People deploying and managing BigchainDB clusters.
-3. Developers of BigchainDB driver software (SDKs used to develop client software).
-4. App developers who are developing client apps to talk to one or more live, operational BigchainDB clusters. They would use one of the BigchainDB drivers.
-
-
 ## Is BigchainDB Production-Ready?
 
-No, BigchainDB is not production-ready. You can use it to build a prototype or proof-of-concept (POC); many people are already doing that. Please don't use it for something mission-critical.
+No, BigchainDB is not production-ready. You can use it to build a prototype or proof-of-concept (POC); many people are already doing that.
 
 BigchainDB is currently in version 0.X. ([The Releases page on GitHub](https://github.com/bigchaindb/bigchaindb/releases) has the exact version number.) Once we believe that BigchainDB is production-ready, we'll release version 1.0.
 
