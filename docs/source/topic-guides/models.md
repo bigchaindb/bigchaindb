@@ -7,6 +7,7 @@ _Transactions_ are used to register, issue, create or transfer things (e.g. asse
 
 Below we often refer to cryptographic hashes, keys and signatures. The details of those are covered in [the section on cryptography](../appendices/cryptography.html).
 
+
 ## Transaction Concepts
 
 Transactions are the most basic kind of record stored by BigchainDB. There are two kinds: creation transactions and transfer transactions.
@@ -35,6 +36,13 @@ When a node is asked to check the validity of a transaction, it must do several 
 * validation of all fulfillments, including validation of cryptographic signatures if they’re among the conditions.
 
 The full details of transaction validation can be found in the code for `validate_transaction()` in the `BaseConsensusRules` class of [`consensus.py`](https://github.com/bigchaindb/bigchaindb/blob/master/bigchaindb/consensus.py) (unless other validation rules are being used by a federation, in which case those should be consulted instead).
+
+
+## Some Words of Caution
+
+BigchainDB is still in the early stages of development. The data models described below may change substantially before BigchainDB reaches a production-ready state (i.e. version 1.0 and higher).
+
+Also, note that timestamps come from clients and nodes. Unless you have some reason to believe that some timestamps are correct or meaningful, we advise you to ignore them (i.e. don't make any decisions based on them). (You might trust a timestamp, for example, if it came from a trusted timestamping service and it is embedded in the transaction data `payload` along with the signature from the timestamping service. You might trust node timestamps if you know all the nodes are running NTP servers.)
 
 
 ## The Transaction Model
