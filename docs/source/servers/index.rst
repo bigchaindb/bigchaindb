@@ -12,5 +12,6 @@ BigchainDB Servers (Nodes) & Clusters
    configuration
    bigchaindb-cli
    python-server-api-examples
+   federation-set-up.md
    deploy-on-aws
    monitoring
