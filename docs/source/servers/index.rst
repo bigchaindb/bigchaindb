@@ -1,12 +1,13 @@
 .. You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-BigchainDB Servers (Nodes) & Clusters
-=====================================
+BigchainDB Nodes & Clusters
+===========================
 
 .. toctree::
    :maxdepth: 1
 
+   node-cluster-federation
    installing-server
    running-unit-tests
    configuration
