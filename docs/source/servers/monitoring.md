@@ -1,6 +1,6 @@
-# Monitoring
+# Cluster Monitoring
 
-BigchainDB uses [StatsD](https://github.com/etsy/statsd) for monitoring. We require some additional infrastructure to take full advantage of its functionality:
+BigchainDB uses [StatsD](https://github.com/etsy/statsd) for cluster monitoring. We require some additional infrastructure to take full advantage of its functionality:
 
 * an agent to listen for metrics: [Telegraf](https://github.com/influxdata/telegraf),
 * a time-series database: [InfluxDB](https://influxdata.com/time-series-platform/influxdb/), and
