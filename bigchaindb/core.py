@@ -396,8 +396,9 @@ class Bigchain(object):
         }
 
         # Calculate the hash of the new block
-        block_hash = crypto.hash_data(block)
-        block_signature = crypto.SigningKey(self.me_private).sign(util.serialize(block))
+        block_data = util.serialize(block)
+        block_hash = crypto.hash_data(block_data)
+        block_signature = crypto.SigningKey(self.me_private).sign(block_data)
 
         block = {
             'id': block_hash,

@@ -193,7 +193,7 @@ class BaseConsensusRules(AbstractConsensusRules):
         """
 
         # Check if current hash is correct
-        calculated_hash = crypto.hash_data(block['block'])
+        calculated_hash = crypto.hash_data(util.serialize(block['block']))
         if calculated_hash != block['id']:
             raise exceptions.InvalidHash()
 
