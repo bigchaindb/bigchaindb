@@ -128,7 +128,7 @@ The locking script is refered to as a `condition` and a corresponding `fulfillme
 Since a transaction can have multiple outputs with each its own (crypto)condition, each transaction input should also refer to the condition index `cid`.
 
 <p align="center">
-  <img width="70%" height="70%" src ="./_static/tx_single_condition_single_fulfillment_v1.png" />
+  <img width="70%" height="70%" src ="../_static/tx_single_condition_single_fulfillment_v1.png" />
 </p>
 
 
@@ -380,7 +380,7 @@ With BigchainDB it is possible to send multiple assets to someone in a single tr
 The transaction will create a `fulfillment` - `condition` pair for each input, which can be refered to by `fid` and `cid` respectively.
 
 <p align="center">
-  <img width="70%" height="70%" src ="./_static/tx_multi_condition_multi_fulfillment_v1.png" />
+  <img width="70%" height="70%" src ="../_static/tx_multi_condition_multi_fulfillment_v1.png" />
 </p>
 
 ```python
@@ -1015,7 +1015,7 @@ BigchainDB and cryptoconditions provides escrow out-of-the-box, without the need
 A threshold condition is used to represent the escrow, since BigchainDB transactions cannot have a _pending_ state.
 
 <p align="center">
-  <img width="70%" height="70%" src ="./_static/tx_escrow_execute_abort.png" />
+  <img width="70%" height="70%" src ="../_static/tx_escrow_execute_abort.png" />
 </p>
 
 The logic for switching between `execute` and `abort` conditions is conceptually simple:
@@ -1032,7 +1032,7 @@ else:
 The above switch can be implemented as follows using threshold cryptoconditions:
 
 <p align="center">
-  <img width="100%" height="100%" src ="./_static/cc_escrow_execute_abort.png" />
+  <img width="100%" height="100%" src ="../_static/cc_escrow_execute_abort.png" />
 </p>
 
 The small circle (&#9898;) at an input of a threshold condition denotes an inversion of the fulfillment:
