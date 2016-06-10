@@ -10,6 +10,7 @@ import rapidjson
 
 import cryptoconditions as cc
 from cryptoconditions.exceptions import ParsingError
+from ipld import marshal, unmarshal
 
 import bigchaindb
 from bigchaindb import exceptions
@@ -94,9 +95,9 @@ def pool(builder, size, timeout=None):
 
 
 def serialize(data):
-    """Serialize a dict into a JSON formatted string.
+    """Serialize a dict into a JSON that is being serialized into a tagged cbor representation.
 
-    This function enforces rules like the separator and order of keys. This ensures that all dicts
+    Since this function is relying on py-ipld's marshal function, it is ensured that all dicts
     are serialized in the same way.
 
     This is specially important for hashing data. We need to make sure that everyone serializes their data
@@ -107,23 +108,23 @@ def serialize(data):
         data (dict): dict to serialize
 
     Returns:
-        str: JSON formatted string
+        binary: tagged cbor representation
 
     """
-    return rapidjson.dumps(data, skipkeys=False, ensure_ascii=False, sort_keys=True)
+    return marshal(data)
 
 
 def deserialize(data):
-    """Deserialize a JSON formatted string into a dict.
+    """Deserialize a binary tagged cbor representation of a dict into a dict.
 
     Args:
-        data (str): JSON formatted string.
+        binary: tagged cbor representation
 
     Returns:
-        dict: dict resulting from the serialization of a JSON formatted string.
+        dict: dict resulting from the serialization of a binary serialized cbor representation
     """
 
-    return rapidjson.loads(data)
+    return unmarshal(data)
 
 
 def timestamp():
