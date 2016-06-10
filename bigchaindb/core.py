@@ -20,6 +20,10 @@ class ImproperVoteError(Exception):
     pass
 
 
+class MultipleVotesError(Exception):
+    pass
+
+
 class Bigchain(object):
     """Bigchain API
 
@@ -445,15 +449,22 @@ class Bigchain(object):
             True if this block already has a valid vote from this node, False otherwise. If
             there is already a vote, but the vote is invalid, raises an ImproperVoteError
         """
-        if block['votes']:
-            for vote in block['votes']:
-                if vote['node_pubkey'] == self.me:
-                    if util.verify_vote_signature(block, vote):
-                        return True
-                    else:
-                        raise ImproperVoteError('Block {block_id} already has an incorrectly signed vote '
-                                                'from public key {me}').format(block_id=block['id'], me=self.me)
-        return False
+        votes = r.table('votes').get_all([block['id'], self.me], index='block_and_voter').run(self.conn)
+
+        votes = list(votes)
+
+        if len(votes) > 1:
+            raise MultipleVotesError('Block {block_id} has {n_votes} votes from public key {me}'
+                                     .format(block_id=block['id'], n_votes=str(len(votes)), me=self.me))
+        has_previous_vote = False
+        for vote in votes:
+            if util.verify_vote_signature(block, vote):
+                has_previous_vote = True
+            else:
+                raise ImproperVoteError('Block {block_id} already has an incorrectly signed vote '
+                                        'from public key {me}').format(block_id=block['id'], me=self.me)
+
+        return has_previous_vote
 
     def is_valid_block(self, block):
         """Check whether a block is valid or invalid.
@@ -556,44 +567,39 @@ class Bigchain(object):
         if self.has_previous_vote(block):
             return None
 
-        update = {'votes': r.row['votes'].append(vote)}
-
         # We need to *not* override the existing block_number, if any
         # FIXME: MIGHT HAVE RACE CONDITIONS WITH THE OTHER NODES IN THE FEDERATION
-        if 'block_number' not in block:
-            update['block_number'] = block_number
+        if 'block_number' not in vote:
+            vote['block_number'] = block_number  # maybe this should be in the signed part...or better yet, removed..
 
-        r.table('bigchain') \
-            .get(vote['vote']['voting_for_block']) \
-            .update(update) \
+        r.table('votes') \
+            .insert(vote) \
             .run(self.conn)
 
     def get_last_voted_block(self):
         """Returns the last block that this node voted on."""
 
-        # query bigchain for all blocks this node is a voter but didn't voted on
-        last_voted = r.table('bigchain') \
-            .filter(r.row['block']['voters'].contains(self.me)) \
-            .filter(lambda doc: doc['votes'].contains(lambda vote: vote['node_pubkey'] == self.me)) \
+        last_voted = r.table('votes') \
+            .filter(r.row['node_pubkey'] == self.me) \
             .order_by(r.desc('block_number')) \
             .limit(1) \
             .run(self.conn)
 
         # return last vote if last vote exists else return Genesis block
-        last_voted = list(last_voted)
         if not last_voted:
             return list(r.table('bigchain')
                         .filter(r.row['block_number'] == 0)
                         .run(self.conn))[0]
 
-        return last_voted[0]
+        return r.table('bigchain').get(last_voted[0]['vote']['voting_for_block']).run(self.conn)
 
     def get_unvoted_blocks(self):
         """Return all the blocks that has not been voted by this node."""
 
         unvoted = r.table('bigchain') \
-            .filter(lambda doc: doc['votes'].contains(lambda vote: vote['node_pubkey'] == self.me).not_()) \
-            .order_by(r.asc((r.row['block']['timestamp']))) \
+            .filter(lambda block: r.table('votes').get_all([block['id'], self.me], index='block_and_voter')
+                    .is_empty()) \
+            .order_by(r.desc('block_number')) \
             .run(self.conn)
 
         if unvoted and unvoted[0].get('block_number') == 0:

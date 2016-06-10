@@ -54,9 +54,8 @@ def init():
         .index_create('assignee__transaction_timestamp', [r.row['assignee'], r.row['transaction']['timestamp']])\
         .run(conn)
     # compound index to order votes by block id and node
-    r.db(dbname).table('votes').index_create('voting_for_block',
-                                             [r.row['vote']['voting_for_block'], r.row['node_pubkey']],
-                                             multi=True).run(conn)
+    r.db(dbname).table('votes').index_create('block_and_voter',
+                                             [r.row['vote']['voting_for_block'], r.row['node_pubkey']]).run(conn)
     # secondary index for payload hash
     r.db(dbname).table('bigchain')\
         .index_create('payload_hash', r.row['block']['transactions']['transaction']['data']['hash'], multi=True)\
