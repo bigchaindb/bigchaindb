@@ -8,7 +8,7 @@ BigchainDB uses [StatsD](https://github.com/etsy/statsd) for monitoring. We requ
 
 We put each of those inside its own Docker container. The whole system is illustrated below.
 
-![BigchainDB monitoring system diagram: Application metrics flow from servers running BigchainDB to Telegraf to InfluxDB to Grafana](./_static/monitoring_system_diagram.png)
+![BigchainDB monitoring system diagram: Application metrics flow from servers running BigchainDB to Telegraf to InfluxDB to Grafana](../_static/monitoring_system_diagram.png)
 
 For ease of use, we've created a Docker [_Compose file_](https://docs.docker.com/compose/compose-file/) (named `docker-compose-monitor.yml`) to define the monitoring system setup. To use it, just go to to the top `bigchaindb` directory and run:
 ```text

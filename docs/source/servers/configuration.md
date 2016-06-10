@@ -64,7 +64,7 @@ environment variables available are:
 - `BIGCHAINDB_STATSD_PORT` defines the port of the statsd server for monitoring.
 - `BIGCHAINDB_STATSD_RATE` is a float between `0` and `1` that defines the fraction of transaction operations sampled.
 - `BIGCHAINDB_API_ENDPOINT` defines the API endpoint to use (e.g. `http://localhost:9984/api/v1`).
-- `BIGCHAINDB_CONSENSUS_PLUGIN` defines the name of the [consensus plugin](consensus.html) to use.
+- `BIGCHAINDB_CONSENSUS_PLUGIN` defines the name of the [consensus plugin](../appendices/consensus.html) to use.
 - `BIGCHAINDB_SERVER_BIND` defines where to bind the server socket, the format is `addr:port` (e.g. `localhost:9984`).
 - `BIGCHAINDB_SERVER_WORKERS` defines the [number of workers](http://docs.gunicorn.org/en/stable/settings.html#workers)
   to start for the server API.

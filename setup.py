@@ -29,7 +29,6 @@ check_setuptools_features()
 
 
 tests_require = [
-    'pytest',
     'coverage',
     'pep8',
     'pyflakes',

@@ -13,15 +13,15 @@ A scalable blockchain database. [The whitepaper](https://www.bigchaindb.com/whit
 
 ## Quick Start
 
-### [Install and Run BigchainDB Server](http://bigchaindb.readthedocs.io/en/latest/installing-server.html)
+### [Install and Run BigchainDB Server](http://bigchaindb.readthedocs.io/en/latest/servers/installing-server.html)
 ### [Run BigchainDB with Docker](http://bigchaindb.readthedocs.io/en/latest/installing-server.html#run-bigchaindb-with-docker)
-### [The Python Server API by Example](http://bigchaindb.readthedocs.io/en/latest/python-server-api-examples.html)
-### [The Python Driver API by Example](http://bigchaindb.readthedocs.io/en/latest/python-driver-api-examples.html)
+### [The Python Server API by Example](http://bigchaindb.readthedocs.io/en/latest/servers/python-server-api-examples.html)
+### [The Python Driver API by Example](http://bigchaindb.readthedocs.io/en/latest/drivers-clients/python-driver-api-examples.html)
 
 ## Links for Everyone
 * [BigchainDB.com](https://www.bigchaindb.com/) - the main BigchainDB website, including newsletter signup
 * [Whitepaper](https://www.bigchaindb.com/whitepaper/) - outlines the motivations, goals and core algorithms of BigchainDB
-* [Roadmap](ROADMAP.md)
+* [Roadmap](https://github.com/bigchaindb/org/blob/master/ROADMAP.md)
 * [Blog](https://medium.com/the-bigchaindb-blog)
 * [Twitter](https://twitter.com/BigchainDB)
 * [Google Group](https://groups.google.com/forum/#!forum/bigchaindb)
@@ -38,4 +38,3 @@ A scalable blockchain database. [The whitepaper](https://www.bigchaindb.com/whit
 * [Licenses](LICENSES.md) - open source & open content
 * [Imprint](https://www.bigchaindb.com/imprint/)
 * [Contact Us](https://www.bigchaindb.com/contact/)
-
