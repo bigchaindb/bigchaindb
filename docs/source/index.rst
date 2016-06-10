@@ -12,7 +12,7 @@ Table of Contents
 
    introduction
    topic-guides/index
-   servers/index
+   nodes/index
    drivers-clients/index
    release-notes
    appendices/index
