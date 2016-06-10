@@ -119,7 +119,7 @@ tx_multisig_transfer_signed = b.sign_transaction(tx_multisig_transfer, [testuser
 try:
     b.validate_transaction(tx_multisig_transfer_signed)
 except exceptions.InvalidSignature:
-    import ipdb; ipdb.set_trace()
+    # import ipdb; ipdb.set_trace()
     b.validate_transaction(tx_multisig_transfer_signed)
 b.write_transaction(tx_multisig_transfer_signed)
 
@@ -375,6 +375,8 @@ time_expire = str(float(util.timestamp()) + time_sleep)
 # Create escrow and timeout condition
 condition_escrow = cc.ThresholdSha256Fulfillment(threshold=1)  # OR Gate
 condition_timeout = cc.TimeoutFulfillment(expire_time=time_expire)  # only valid if now() <= time_expire
+condition_timeout_inverted = cc.InvertedThresholdSha256Fulfillment(threshold=1)
+condition_timeout_inverted.add_subfulfillment(condition_timeout)
 
 # Create execute branch
 condition_execute = cc.ThresholdSha256Fulfillment(threshold=2)  # AND gate
@@ -385,7 +387,7 @@ condition_escrow.add_subfulfillment(condition_execute)
 # Create abort branch
 condition_abort = cc.ThresholdSha256Fulfillment(threshold=2)  # AND gate
 condition_abort.add_subfulfillment(cc.Ed25519Fulfillment(public_key=testuser2_pub))  # abort address
-condition_abort.add_subfulfillment(condition_timeout, weight=-1)  # the negative weight inverts the condition
+condition_abort.add_subfulfillment(condition_timeout_inverted)
 condition_escrow.add_subfulfillment(condition_abort)
 
 # Update the condition in the newly created transaction
@@ -421,6 +423,7 @@ escrow_fulfillment = cc.Fulfillment.from_json(
 subfulfillment_testuser1 = escrow_fulfillment.get_subcondition_from_vk(testuser1_pub)[0]
 subfulfillment_testuser2 = escrow_fulfillment.get_subcondition_from_vk(testuser2_pub)[0]
 subfulfillment_timeout = escrow_fulfillment.subconditions[0]['body'].subconditions[1]['body']
+subfulfillment_timeout_inverted = escrow_fulfillment.subconditions[1]['body'].subconditions[1]['body']
 
 # Get the fulfillment message to sign
 tx_escrow_execute_fulfillment_message = \
@@ -440,7 +443,7 @@ escrow_fulfillment.add_subfulfillment(fulfillment_execute)
 # do not fulfill abort branch
 condition_abort = cc.ThresholdSha256Fulfillment(threshold=2)
 condition_abort.add_subfulfillment(subfulfillment_testuser2)
-condition_abort.add_subfulfillment(subfulfillment_timeout, weight=-1)
+condition_abort.add_subfulfillment(subfulfillment_timeout_inverted)
 escrow_fulfillment.add_subcondition(condition_abort.condition)
 
 # create fulfillment and append to transaction
@@ -456,6 +459,7 @@ escrow_fulfillment = cc.Fulfillment.from_json(
 subfulfillment_testuser1 = escrow_fulfillment.get_subcondition_from_vk(testuser1_pub)[0]
 subfulfillment_testuser2 = escrow_fulfillment.get_subcondition_from_vk(testuser2_pub)[0]
 subfulfillment_timeout = escrow_fulfillment.subconditions[0]['body'].subconditions[1]['body']
+subfulfillment_timeout_inverted = escrow_fulfillment.subconditions[1]['body'].subconditions[1]['body']
 
 tx_escrow_abort_fulfillment_message = \
     util.get_fulfillment_message(tx_escrow_abort,
@@ -473,7 +477,7 @@ escrow_fulfillment.add_subcondition(condition_execute.condition)
 fulfillment_abort = cc.ThresholdSha256Fulfillment(threshold=2)
 subfulfillment_testuser2.sign(tx_escrow_abort_fulfillment_message, crypto.SigningKey(testuser2_priv))
 fulfillment_abort.add_subfulfillment(subfulfillment_testuser2)
-fulfillment_abort.add_subfulfillment(subfulfillment_timeout, weight=-1)
+fulfillment_abort.add_subfulfillment(subfulfillment_timeout_inverted)
 escrow_fulfillment.add_subfulfillment(fulfillment_abort)
 
 tx_escrow_abort['transaction']['fulfillments'][0]['fulfillment'] = escrow_fulfillment.serialize_uri()

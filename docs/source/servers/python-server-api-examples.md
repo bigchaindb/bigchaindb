@@ -1035,15 +1035,14 @@ The above switch can be implemented as follows using threshold cryptoconditions:
   <img width="100%" height="100%" src ="../_static/cc_escrow_execute_abort.png" />
 </p>
 
-The small circle (&#9898;) at an input of a threshold condition denotes an inversion of the fulfillment:
+The inverted timeout is denoted by a -1 threshold, which negates the output of the fulfillment.
 
 ```python
 inverted_fulfillment.validate(msg) == not fulfillment.validate(msg)
 ```
 
-An inverted input to a threshold condition is simply obtained by negative weights.
-
-__Note__: negative weights are BigchainDB-specific and not (yet) supported by the ILP standard.
+__Note__: inverted thresholds are BigchainDB-specific and not supported by the ILP standard.
+The main reason is that it's difficult to tell whether the fulfillment was negated, or just omitted.
 
 
 The following code snippet shows how to create an escrow condition:
@@ -1062,6 +1061,8 @@ time_expire = str(float(util.timestamp()) + time_sleep)  # 12 secs from now
 # Create the escrow and timeout condition
 condition_escrow = cc.ThresholdSha256Fulfillment(threshold=1)  # OR Gate
 condition_timeout = cc.TimeoutFulfillment(expire_time=time_expire)  # only valid if now() <= time_expire
+condition_timeout_inverted = cc.InvertedThresholdSha256Fulfillment(threshold=1)
+condition_timeout_inverted.add_subfulfillment(condition_timeout)  # invert the timeout condition
 
 # Create the execute branch
 condition_execute = cc.ThresholdSha256Fulfillment(threshold=2)  # AND gate
@@ -1072,7 +1073,7 @@ condition_escrow.add_subfulfillment(condition_execute)
 # Create the abort branch
 condition_abort = cc.ThresholdSha256Fulfillment(threshold=2)  # AND gate
 condition_abort.add_subfulfillment(cc.Ed25519Fulfillment(public_key=testuser2_pub))  # abort address
-condition_abort.add_subfulfillment(condition_timeout, weight=-1)  # the negative weight inverts the condition
+condition_abort.add_subfulfillment(condition_timeout_inverted)  
 condition_escrow.add_subfulfillment(condition_abort)
 
 # Update the condition in the newly created transaction
@@ -1142,10 +1143,19 @@ tx_escrow_signed
                                     },
                                     {
                                         "bitmask":9,
-                                        "expire_time":"1464242352.227917",
+                                        "subfulfillments":[
+                                            {
+                                                "bitmask":9,
+                                                "expire_time":"1464242352.227917",
+                                                "type":"fulfillment",
+                                                "type_id":99,
+                                                "weight":1
+                                            }
+                                        ],
+                                        "threshold":1,
                                         "type":"fulfillment",
-                                        "type_id":99,
-                                        "weight":-1
+                                        "type_id":98,
+                                        "weight":1
                                     }
                                 ],
                                 "threshold":2,
@@ -1205,6 +1215,7 @@ escrow_fulfillment = cc.Fulfillment.from_json(
 subfulfillment_testuser1 = escrow_fulfillment.get_subcondition_from_vk(testuser1_pub)[0]
 subfulfillment_testuser2 = escrow_fulfillment.get_subcondition_from_vk(testuser2_pub)[0]
 subfulfillment_timeout = escrow_fulfillment.subconditions[0]['body'].subconditions[1]['body']
+subfulfillment_timeout_inverted = escrow_fulfillment.subconditions[1]['body'].subconditions[1]['body']
 
 # Get the fulfillment message to sign
 tx_escrow_execute_fulfillment_message = \
@@ -1225,7 +1236,7 @@ escrow_fulfillment.add_subfulfillment(fulfillment_execute)
 # Do not fulfill the abort branch
 condition_abort = cc.ThresholdSha256Fulfillment(threshold=2)
 condition_abort.add_subfulfillment(subfulfillment_testuser2)
-condition_abort.add_subfulfillment(subfulfillment_timeout, weight=-1)
+condition_abort.add_subfulfillment(subfulfillment_timeout_inverted)
 escrow_fulfillment.add_subcondition(condition_abort.condition)  # Adding only the condition here
 
 # Update the execute transaction with the fulfillment
@@ -1245,6 +1256,7 @@ escrow_fulfillment = cc.Fulfillment.from_json(
 subfulfillment_testuser1 = escrow_fulfillment.get_subcondition_from_vk(testuser1_pub)[0]
 subfulfillment_testuser2 = escrow_fulfillment.get_subcondition_from_vk(testuser2_pub)[0]
 subfulfillment_timeout = escrow_fulfillment.subconditions[0]['body'].subconditions[1]['body']
+subfulfillment_timeout_inverted = escrow_fulfillment.subconditions[1]['body'].subconditions[1]['body']
 
 # Get the fulfillment message to sign
 tx_escrow_abort_fulfillment_message = \
@@ -1265,7 +1277,7 @@ escrow_fulfillment.add_subcondition(condition_execute.condition) # Adding only t
 fulfillment_abort = cc.ThresholdSha256Fulfillment(threshold=2)
 subfulfillment_testuser2.sign(tx_escrow_abort_fulfillment_message, crypto.SigningKey(testuser2_priv))
 fulfillment_abort.add_subfulfillment(subfulfillment_testuser2)
-fulfillment_abort.add_subfulfillment(subfulfillment_timeout, weight=-1)
+fulfillment_abort.add_subfulfillment(subfulfillment_timeout_inverted)
 escrow_fulfillment.add_subfulfillment(fulfillment_abort)
 
 # Update the abort transaction with the fulfillment
