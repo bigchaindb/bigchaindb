@@ -15,12 +15,28 @@ For reference, the possible headings are:
 * **Notes**
 
 
-## [Unreleased] - YYYY-MM-DD
-Tag name: 
+## [0.4.1] - 2016-06-13
+Tag name: v0.4.1
 = commit: 
 committed: 
 
-(Add new stuff here from time to time until the next version release.)
+### Added
+- Revert `bigchain` deletes: [Pull Request #330](https://github.com/bigchaindb/bigchaindb/pull/330)
+
+### Changed
+- Use inverted threshold condition instead of negative weights for escrow: [Pull Request #355](https://github.com/bigchaindb/bigchaindb/pull/355)
+
+### Fixed
+- Removed duplicate `pytest` in `setup.py`: [Pull Request #365](https://github.com/bigchaindb/bigchaindb/pull/365)
+
+### Notes
+- There were several additions and changes to the documentation: Pull Requests
+[#343](https://github.com/bigchaindb/bigchaindb/pull/343),
+[#363](https://github.com/bigchaindb/bigchaindb/pull/363),
+[#364](https://github.com/bigchaindb/bigchaindb/pull/364),
+[#366](https://github.com/bigchaindb/bigchaindb/pull/366),
+[#370](https://github.com/bigchaindb/bigchaindb/pull/370),
+[#372](https://github.com/bigchaindb/bigchaindb/pull/372)
 
 
 ## [0.4.0] - 2016-05-27
