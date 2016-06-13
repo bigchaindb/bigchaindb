@@ -36,9 +36,12 @@ class TestBigchainVoter(object):
                        .order_by(r.asc((r.row['block']['timestamp'])))
                        .run(b.conn))
 
+        # retrieve vote
+        vote = r.table('votes').get_all([block['id'], b.me], index='block_and_voter').run(b.conn)
+        vote = vote.next()
+
         # validate vote
-        assert len(blocks[1]['votes']) == 1
-        vote = blocks[1]['votes'][0]
+        assert vote is not None
 
         assert vote['vote']['voting_for_block'] == block['id']
         assert vote['vote']['previous_block'] == genesis['id']
@@ -77,10 +80,12 @@ class TestBigchainVoter(object):
         blocks = list(r.table('bigchain')
                        .order_by(r.asc((r.row['block']['timestamp'])))
                        .run(b.conn))
+        # retrieve vote
+        vote = r.table('votes').get_all([block['id'], b.me], index='block_and_voter').run(b.conn)
+        vote = vote.next()
 
         # validate vote
-        assert len(blocks[1]['votes']) == 1
-        vote = blocks[1]['votes'][0]
+        assert vote is not None
 
         assert vote['vote']['voting_for_block'] == block['id']
         assert vote['vote']['previous_block'] == genesis['id']
@@ -120,8 +125,12 @@ class TestBigchainVoter(object):
                        .order_by(r.asc((r.row['block']['timestamp'])))
                        .run(b.conn))
 
+        # retrieve vote
+        vote = r.table('votes').get_all([block['id'], b.me], index='block_and_voter').run(b.conn)
+        vote = vote.next()
+
         # validate vote
-        assert len(blocks[1]['votes']) == 1
+        assert vote is not None
 
         # create a `TRANSFER` transaction
         test_user2_priv, test_user2_pub = crypto.generate_key_pair()
@@ -149,10 +158,12 @@ class TestBigchainVoter(object):
                        .order_by(r.asc((r.row['block']['timestamp'])))
                        .run(b.conn))
 
-        # validate vote
-        assert len(blocks[2]['votes']) == 1
+        # retrieve vote
+        vote = r.table('votes').get_all([blocks[2]['id'], b.me], index='block_and_voter').run(b.conn)
+        vote = vote.next()
 
-        vote = blocks[2]['votes'][0]
+        # validate vote
+        assert vote is not None
 
         assert vote['vote']['voting_for_block'] == block['id']
         assert vote['vote']['is_block_valid'] is True
@@ -188,9 +199,12 @@ class TestBigchainVoter(object):
                        .order_by(r.asc((r.row['block']['timestamp'])))
                        .run(b.conn))
 
+        # retrieve vote
+        vote = r.table('votes').get_all([block['id'], b.me], index='block_and_voter').run(b.conn)
+        vote = vote.next()
+
         # validate vote
-        assert len(blocks[1]['votes']) == 1
-        vote = blocks[1]['votes'][0]
+        assert vote is not None
 
         assert vote['vote']['voting_for_block'] == block['id']
         assert vote['vote']['previous_block'] == genesis['id']
@@ -262,7 +276,11 @@ class TestBigchainVoter(object):
         # FIXME: remove genesis block, we don't vote on it (might change in the future)
         blocks.pop(0)
 
-        assert all(block['votes'][0]['node_pubkey'] == b.me for block in blocks)
+        # retrieve vote
+        votes = r.table('votes').run(b.conn)
+        votes = list(votes)
+
+        assert all(vote['node_pubkey'] == b.me for vote in votes)
 
     def test_voter_chains_blocks_with_the_previous_ones(self, b):
         b.create_genesis_block()
@@ -351,43 +369,52 @@ class TestBlockElection(object):
          for vote in improperly_signed_valid_vote]
 
         # test unanimously valid block
-        test_block['votes'] = valid_vote
+        r.table('votes').insert(valid_vote, durability='hard').run(b.conn)
         assert b.block_election_status(test_block) == Bigchain.BLOCK_VALID
+        r.table('votes').delete().run(b.conn)
 
         # test partial quorum situations
-        test_block['votes'] = valid_vote[:2]
+        r.table('votes').insert(valid_vote[:2], durability='hard').run(b.conn)
         assert b.block_election_status(test_block) == Bigchain.BLOCK_UNDECIDED
+        r.table('votes').delete().run(b.conn)
         #
-        test_block['votes'] = valid_vote[:3]
+        r.table('votes').insert(valid_vote[:3], durability='hard').run(b.conn)
         assert b.block_election_status(test_block) == Bigchain.BLOCK_VALID
+        r.table('votes').delete().run(b.conn)
         #
-        test_block['votes'] = invalid_vote[:2]
+        r.table('votes').insert(invalid_vote[:2], durability='hard').run(b.conn)
         assert b.block_election_status(test_block) == Bigchain.BLOCK_INVALID
+        r.table('votes').delete().run(b.conn)
 
         # test unanimously valid block with one improperly signed vote -- should still succeed
-        test_block['votes'] = valid_vote[:3] + improperly_signed_valid_vote[:1]
+        r.table('votes').insert(valid_vote[:3] + improperly_signed_valid_vote[3:], durability='hard').run(b.conn)
         assert b.block_election_status(test_block) == Bigchain.BLOCK_VALID
+        r.table('votes').delete().run(b.conn)
 
         # test unanimously valid block with two improperly signed votes -- should fail
-        test_block['votes'] = valid_vote[:2] + improperly_signed_valid_vote[:2]
+        r.table('votes').insert(valid_vote[:2] + improperly_signed_valid_vote[2:], durability='hard').run(b.conn)
         assert b.block_election_status(test_block) == Bigchain.BLOCK_INVALID
+        r.table('votes').delete().run(b.conn)
 
         # test block with minority invalid vote
-        test_block['votes'] = invalid_vote[:1] + valid_vote[:3]
+        r.table('votes').insert(invalid_vote[:1] + valid_vote[1:], durability='hard').run(b.conn)
         assert b.block_election_status(test_block) == Bigchain.BLOCK_VALID
+        r.table('votes').delete().run(b.conn)
 
         # test split vote
-        test_block['votes'] = invalid_vote[:2] + valid_vote[:2]
+        r.table('votes').insert(invalid_vote[:2] + valid_vote[2:], durability='hard').run(b.conn)
         assert b.block_election_status(test_block) == Bigchain.BLOCK_INVALID
+        r.table('votes').delete().run(b.conn)
 
         # test undecided
-        test_block['votes'] = valid_vote[:2]
+        r.table('votes').insert(valid_vote[:2], durability='hard').run(b.conn)
         assert b.block_election_status(test_block) == Bigchain.BLOCK_UNDECIDED
+        r.table('votes').delete().run(b.conn)
 
         # change signatures in block, should fail
         test_block['block']['voters'][0] = 'abc'
         test_block['block']['voters'][1] = 'abc'
-        test_block['votes'] = valid_vote
+        r.table('votes').insert(valid_vote, durability='hard').run(b.conn)
         assert b.block_election_status(test_block) == Bigchain.BLOCK_INVALID
 
     def test_quorum_odd(self, b):
@@ -411,17 +438,21 @@ class TestBlockElection(object):
         invalid_vote = [member.vote(test_block, 'abc', False)
                         for member in test_federation]
 
-        test_block['votes'] = valid_vote[:2]
+        r.table('votes').insert(valid_vote[:2], durability='hard').run(b.conn)
         assert b.block_election_status(test_block) == Bigchain.BLOCK_UNDECIDED
+        r.table('votes').delete().run(b.conn)
 
-        test_block['votes'] = invalid_vote[:2]
+        r.table('votes').insert(invalid_vote[:2], durability='hard').run(b.conn)
         assert b.block_election_status(test_block) == Bigchain.BLOCK_UNDECIDED
+        r.table('votes').delete().run(b.conn)
 
-        test_block['votes'] = valid_vote[:3]
+        r.table('votes').insert(valid_vote[:3], durability='hard').run(b.conn)
         assert b.block_election_status(test_block) == Bigchain.BLOCK_VALID
+        r.table('votes').delete().run(b.conn)
 
-        test_block['votes'] = invalid_vote[:3]
+        r.table('votes').insert(invalid_vote[:3], durability='hard').run(b.conn)
         assert b.block_election_status(test_block) == Bigchain.BLOCK_INVALID
+        r.table('votes').delete().run(b.conn)
 
     def test_tx_rewritten_after_invalid(self, b, user_vk):
         q_block_new_vote = mp.Queue()
@@ -450,11 +481,11 @@ class TestBlockElection(object):
                        [member.vote(test_block_2, 'abc', False) for member in test_federation[2:]]
 
         # construct valid block
-        test_block_1['votes'] = vote_1
+        r.table('votes').insert(vote_1, durability='hard').run(b.conn)
         q_block_new_vote.put(test_block_1)
 
         # construct invalid block
-        test_block_2['votes'] = vote_2
+        r.table('votes').insert(vote_2, durability='hard').run(b.conn)
         q_block_new_vote.put(test_block_2)
 
         election = Election(q_block_new_vote)

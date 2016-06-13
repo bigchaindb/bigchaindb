@@ -167,7 +167,7 @@ class Voter(object):
         """
 
         b = Bigchain()
-        last_voted = b.get_last_voted_block()
+        last_voted = b.get_last_voted_block(return_block_number=True)
 
         self.v_previous_block_number.value = last_voted['block_number']
         self.v_previous_block_id.value = last_voted['id'].encode()

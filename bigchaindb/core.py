@@ -577,7 +577,7 @@ class Bigchain(object):
             .insert(vote) \
             .run(self.conn)
 
-    def get_last_voted_block(self):
+    def get_last_voted_block(self, return_block_number=False):
         """Returns the last block that this node voted on."""
 
         last_voted = r.table('votes') \
@@ -592,7 +592,12 @@ class Bigchain(object):
                         .filter(r.row['block_number'] == 0)
                         .run(self.conn))[0]
 
-        return r.table('bigchain').get(last_voted[0]['vote']['voting_for_block']).run(self.conn)
+        res = r.table('bigchain').get(last_voted[0]['vote']['voting_for_block']).run(self.conn)
+
+        if return_block_number:
+            res['block_number'] = last_voted[0]['block_number']
+
+        return res
 
     def get_unvoted_blocks(self):
         """Return all the blocks that has not been voted by this node."""
