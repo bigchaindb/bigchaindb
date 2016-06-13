@@ -83,6 +83,7 @@ def cleanup_tables(request, node_config):
         try:
             r.db(db_name).table('bigchain').delete().run()
             r.db(db_name).table('backlog').delete().run()
+            r.db(db_name).table('votes').delete().run()
         except r.ReqlOpFailedError as e:
             if e.message != 'Database `{}` does not exist.'.format(db_name):
                 raise

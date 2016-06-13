@@ -525,9 +525,12 @@ class TestBigchainVoter(object):
         # retrive block from bigchain
         bigchain_block = r.table('bigchain').get(block['id']).run(b.conn)
 
+        # retrieve vote
+        vote = r.table('votes').get_all([block['id'], b.me], index='block_and_voter').run(b.conn)
+        vote = vote.next()
+
         # validate vote
-        assert len(bigchain_block['votes']) == 1
-        vote = bigchain_block['votes'][0]
+        assert vote is not None
 
         assert vote['vote']['voting_for_block'] == block['id']
         assert vote['vote']['previous_block'] == genesis['id']
@@ -566,9 +569,12 @@ class TestBigchainVoter(object):
         # retrive block from bigchain
         bigchain_block = r.table('bigchain').get(block['id']).run(b.conn)
 
+        # retrieve vote
+        vote = r.table('votes').get_all([block['id'], b.me], index='block_and_voter').run(b.conn)
+        vote = vote.next()
+
         # validate vote
-        assert len(bigchain_block['votes']) == 1
-        vote = bigchain_block['votes'][0]
+        assert vote is not None
 
         assert vote['vote']['voting_for_block'] == block['id']
         assert vote['vote']['previous_block'] == genesis['id']
