@@ -15,10 +15,18 @@ For reference, the possible headings are:
 * **Notes**
 
 
-## [0.4.1] - 2016-06-13
-Tag name: v0.4.1
+## [Unreleased] - YYYY-MM-DD
+Tag nem: 
 = commit: 
 committed: 
+
+(Add new stuff here.)
+
+
+## [0.4.1] - 2016-06-13
+Tag name: v0.4.1
+= commit: 9c4aa987bcbc294b6a5c3069e6c45a7ed77a4068
+committed: June 13, 2016, 9:52 AM GMT+2
 
 ### Added
 - Revert `bigchain` deletes: [Pull Request #330](https://github.com/bigchaindb/bigchaindb/pull/330)
