@@ -16,7 +16,7 @@ For reference, the possible headings are:
 
 
 ## [Unreleased] - YYYY-MM-DD
-Tag nem: 
+Tag name: 
 = commit: 
 committed: 
 
