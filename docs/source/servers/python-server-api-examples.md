@@ -535,7 +535,6 @@ We'll illustrate this by a threshold condition where 2 out of 3 `new_owners` nee
 
 ```python
 import copy
-import json
 
 import cryptoconditions as cc
 from bigchaindb import util, crypto
