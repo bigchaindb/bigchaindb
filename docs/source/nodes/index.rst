@@ -20,7 +20,7 @@ Confusingly, we sometimes call a federation's cluster its "federation." You can 
    :maxdepth: 1
 
    node-requirements
-   installing-server
+   setup-run-node
    running-unit-tests
    configuration
    bigchaindb-cli

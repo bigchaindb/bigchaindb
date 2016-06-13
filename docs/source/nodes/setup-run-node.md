@@ -2,9 +2,9 @@
 
 First make sure your server(s) meet [the requirements for a BigchainDB node](node-requirements.html).
 
-Mac OS X users may get the best results [running BigchainDB Server with Docker](installing-server.html#run-bigchaindb-with-docker).
+Mac OS X users may get the best results [running BigchainDB Server with Docker](setup-run-node.html#run-bigchaindb-with-docker).
 
-We currently don't test BigchainDB on Windows. If you run into problems on Windows, then you may want to try [using Vagrant](installing-server.html#how-to-install-bigchaindb-on-a-vm-with-vagrant).
+We currently don't test BigchainDB on Windows. If you run into problems on Windows, then you may want to try [using Vagrant](setup-run-node.html#how-to-install-bigchaindb-on-a-vm-with-vagrant).
 
 
 ## Install and Run RethinkDB Server
