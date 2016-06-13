@@ -275,7 +275,7 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
             conditions.append({
                 'new_owners': new_owners,
                 'condition': {
-                    'details': rapidjson.loads(condition.serialize_json()),
+                    'details': condition.to_dict(),
                     'uri': condition.condition_uri
                 },
                 'cid': fulfillment['fid']
@@ -333,7 +333,7 @@ def sign_tx(transaction, signing_keys):
         # TODO: avoid instantiation, pass as argument!
         bigchain = bigchaindb.Bigchain()
         input_condition = get_input_condition(bigchain, fulfillment)
-        parsed_fulfillment = cc.Fulfillment.from_json(input_condition['condition']['details'])
+        parsed_fulfillment = cc.Fulfillment.from_dict(input_condition['condition']['details'])
         # for the case in which the type of fulfillment is not covered by this method
         parsed_fulfillment_signed = parsed_fulfillment
 
@@ -520,7 +520,7 @@ def get_input_condition(bigchain, fulfillment):
 
         return {
             'condition': {
-                'details': rapidjson.loads(condition.serialize_json()),
+                'details': condition.to_dict(),
                 'uri': condition.condition_uri
             }
         }

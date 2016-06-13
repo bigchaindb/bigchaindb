@@ -2,7 +2,7 @@
 
 This section gives an example of using the Python Server API to interact _directly_ with a BigchainDB node running BigchainDB Server. That is, in this example, the Python code and BigchainDB Server run on the same machine.
 
-(One can also interact with a BigchainDB node via other APIs, including the HTTP Client-Server API.) 
+(One can also interact with a BigchainDB node via other APIs, including the HTTP Client-Server API.)
 
 We create a digital asset, sign it, write it to a BigchainDB Server instance, read it, transfer it to a different user, and then attempt to transfer it to another user, resulting in a double-spend error.
 
@@ -535,7 +535,6 @@ We'll illustrate this by a threshold condition where 2 out of 3 `new_owners` nee
 
 ```python
 import copy
-import json
 
 import cryptoconditions as cc
 from bigchaindb import util, crypto
@@ -559,7 +558,7 @@ threshold_condition.add_subfulfillment(cc.Ed25519Fulfillment(public_key=threshol
 
 # Update the condition in the newly created transaction
 threshold_tx['transaction']['conditions'][0]['condition'] = {
-    'details': json.loads(threshold_condition.serialize_json()),
+    'details': threshold_condition.to_dict(),
     'uri': threshold_condition.condition.serialize_uri()
 }
 
@@ -667,7 +666,7 @@ tx_retrieved_id = b.get_owned_ids(thresholduser1_pub).pop()
 threshold_tx_transfer = b.create_transaction([thresholduser1_pub, thresholduser2_pub, thresholduser3_pub], thresholduser4_pub, tx_retrieved_id, 'TRANSFER')
 
 # Parse the threshold cryptocondition
-threshold_fulfillment = cc.Fulfillment.from_json(threshold_tx['transaction']['conditions'][0]['condition']['details'])
+threshold_fulfillment = cc.Fulfillment.from_dict(threshold_tx['transaction']['conditions'][0]['condition']['details'])
 
 subfulfillment1 = threshold_fulfillment.get_subcondition_from_vk(thresholduser1_pub)[0]
 subfulfillment2 = threshold_fulfillment.get_subcondition_from_vk(thresholduser2_pub)[0]
@@ -911,7 +910,7 @@ condition_timeout = cc.TimeoutFulfillment(expire_time=time_expire)
 # The conditions list is empty, so we need to append a new condition
 tx_timeout['transaction']['conditions'].append({
     'condition': {
-        'details': json.loads(condition_timeout.serialize_json()),
+        'details': condition_timeout.to_dict(),
         'uri': condition_timeout.condition.serialize_uri()
     },
     'cid': 0,
@@ -977,7 +976,7 @@ from time import sleep
 tx_timeout_transfer = b.create_transaction(None, testuser1_pub, {'txid': tx_timeout['id'], 'cid': 0}, 'TRANSFER')
 
 # Parse the timeout condition and create the corresponding fulfillment
-timeout_fulfillment = cc.Fulfillment.from_json(
+timeout_fulfillment = cc.Fulfillment.from_dict(
     tx_timeout['transaction']['conditions'][0]['condition']['details'])
 tx_timeout_transfer['transaction']['fulfillments'][0]['fulfillment'] = timeout_fulfillment.serialize_uri()
 
@@ -1054,7 +1053,7 @@ tx_retrieved_id = b.get_owned_ids(testuser2_pub).pop()
 # Create a base template with the execute and abort address
 tx_escrow = b.create_transaction(testuser2_pub, [testuser2_pub, testuser1_pub], tx_retrieved_id, 'TRANSFER')
 
-# Set expiry time - the execute address needs to fulfill before expiration 
+# Set expiry time - the execute address needs to fulfill before expiration
 time_sleep = 12
 time_expire = str(float(util.timestamp()) + time_sleep)  # 12 secs from now
 
@@ -1073,12 +1072,12 @@ condition_escrow.add_subfulfillment(condition_execute)
 # Create the abort branch
 condition_abort = cc.ThresholdSha256Fulfillment(threshold=2)  # AND gate
 condition_abort.add_subfulfillment(cc.Ed25519Fulfillment(public_key=testuser2_pub))  # abort address
-condition_abort.add_subfulfillment(condition_timeout_inverted)  
+condition_abort.add_subfulfillment(condition_timeout_inverted)
 condition_escrow.add_subfulfillment(condition_abort)
 
 # Update the condition in the newly created transaction
 tx_escrow['transaction']['conditions'][0]['condition'] = {
-    'details': json.loads(condition_escrow.serialize_json()),
+    'details': condition_escrow.to_dict(),
     'uri': condition_escrow.condition.serialize_uri()
 }
 
@@ -1209,7 +1208,7 @@ In the case of `testuser1`, we create the `execute` fulfillment:
 tx_escrow_execute = b.create_transaction([testuser2_pub, testuser1_pub], testuser1_pub, {'txid': tx_escrow_signed['id'], 'cid': 0}, 'TRANSFER')
 
 # Parse the Escrow cryptocondition
-escrow_fulfillment = cc.Fulfillment.from_json(
+escrow_fulfillment = cc.Fulfillment.from_dict(
     tx_escrow['transaction']['conditions'][0]['condition']['details'])
 
 subfulfillment_testuser1 = escrow_fulfillment.get_subcondition_from_vk(testuser1_pub)[0]
@@ -1250,7 +1249,7 @@ In the case of `testuser2`, we create the `abort` fulfillment:
 tx_escrow_abort = b.create_transaction([testuser2_pub, testuser1_pub], testuser2_pub, {'txid': tx_escrow_signed['id'], 'cid': 0}, 'TRANSFER')
 
 # Parse the threshold cryptocondition
-escrow_fulfillment = cc.Fulfillment.from_json(
+escrow_fulfillment = cc.Fulfillment.from_dict(
     tx_escrow['transaction']['conditions'][0]['condition']['details'])
 
 subfulfillment_testuser1 = escrow_fulfillment.get_subcondition_from_vk(testuser1_pub)[0]
