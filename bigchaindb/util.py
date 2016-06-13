@@ -133,8 +133,7 @@ def timestamp():
         str: UTC timestamp.
 
     """
-    dt = datetime.utcnow()
-    return "{0:.6f}".format(time.mktime(dt.timetuple()) + dt.microsecond / 1e6)
+    return "{0:.6f}".format(time.time())
 
 
 # TODO: Consider remove the operation (if there are no inputs CREATE else TRANSFER)
