@@ -1,24 +1,57 @@
 # Set Up and Run a Node
 
-First make sure your server(s) meet [the requirements for a BigchainDB node](node-requirements.html).
+This section goes through the steps to set up a BigchainDB node (running RethinkDB Server, BigchainDB Server, etc.). There are instructions for two cases:
 
-Mac OS X users may get the best results [running BigchainDB Server with Docker](setup-run-node.html#run-bigchaindb-with-docker).
+1. Stand-Alone Node (useful for local development)
+2. Cluster Node
 
-We currently don't test BigchainDB on Windows. If you run into problems on Windows, then you may want to try [using Vagrant](setup-run-node.html#how-to-install-bigchaindb-on-a-vm-with-vagrant).
+
+## Check the Node Requirements
+
+The first step is to make sure you have a server (or equivalent) which meets [the requirements for a BigchainDB node](node-requirements.html).
 
 
-## Install and Run RethinkDB Server
+## Set Up the File System
+
+This step isn't always necessary.
+
+See `def install_rethinkdb()` in `deploy-cluster-aws/fabfile.py` for an example.
+
+TODO: This step needs more explanation.
+
+
+## Install RethinkDB Server
 
 If you don't already have RethinkDB Server installed, you must install it. The RethinkDB documentation has instructions for [how to install RethinkDB Server on a variety of operating systems](http://rethinkdb.com/docs/install/).
 
-RethinkDB Server doesn't require any special configuration. You can run it by opening a Terminal and entering:
+
+## Configure RethinkDB Server
+
+### Stand-Alone Node
+
+If you're setting up a stand-alone node (i.e. not intending for it to join a cluster), then the default RethinkDB configuration will work.
+
+### Cluster Node
+
+If you're setting up a node that will be part of a RethinkDB cluster, then you need to...
+
+TODO: (edit the default .conf file: add list of all hostnames in the federation)
+
+TODO: Steps to make the RethinkDB cluster more secure.
+
+
+## Run RethinkDB Server
+
+You can run RethinkDB by opening a Terminal and entering:
 ```text
 $ rethinkdb
 ```
 
+
 ## Install Python 3.4+
 
 If you don't already have it, then you should [install Python 3.4+](https://www.python.org/downloads/) (maybe in a virtual environment, so it doesn't conflict with other Python projects you're working on).
+
 
 ## Install BigchainDB Server
 
@@ -39,6 +72,7 @@ $ sudo dnf install gcc-c++ redhat-rpm-config python3-devel
 (If you're using a version of Fedora before version 22, you may have to use `yum` instead of `dnf`.)
 
 With OS-level dependencies installed, you can install BigchainDB Server with `pip` or from source.
+
 
 ### How to Install BigchainDB with pip
 
@@ -78,9 +112,28 @@ and then install from source:
 $ python setup.py install
 ```
 
-### How to Install BigchainDB on a VM with Vagrant
 
-One of our community members ([@Mec-Is](https://github.com/Mec-iS)) wrote [a page about how to install BigchainDB on a VM with Vagrant](https://gist.github.com/Mec-iS/b84758397f1b21f21700).
+## Configure BigchainDB Server
+
+Start by creating a default BigchainDB configuration file (named `.bigchaindb`) in your `$HOME` directory using:
+```text
+$ bigchaindb -y configure
+```
+
+There's documentation for the `bigchaindb` command is in the section on [the BigchainDB Command Line Interface (CLI)](bigchaindb-cli.html).
+
+### Stand-Alone Node
+
+The default BigchainDB configuration file will work.
+
+### Cluster Node
+
+Open `$HOME/.bigchaindb` in your text editor and:
+
+* Change the keyring (list) to include the public keys of all the other nodes in the federation. The keyring should _not_ include your node's public key.
+* TODO: Make other changes to the BigchainDB config file?
+
+For more information about the BigchainDB config file, see [Configuring a BigchainDB Node](configuration.html).
 
 
 ## Run BigchainDB Server
@@ -89,13 +142,6 @@ Once you've installed BigchainDB Server, you can run it. First make sure you hav
 ```text
 $ rethinkdb
 ```
-
-Then open a different terminal and run:
-```text
-$ bigchaindb -y configure
-```
-
-That creates a configuration file in `$HOME/.bigchaindb` (documented in [the section on configuration](configuration.html)). More documentation about the `bigchaindb` command is in the section on [the BigchainDB Command Line Interface (CLI)](bigchaindb-cli.html).
 
 You can start BigchainDB Server using:
 ```text
