@@ -133,7 +133,7 @@ def timestamp():
         str: UTC timestamp.
 
     """
-    return "{0:.6f}".format(time.time())
+    return "{:d}".format(int(round(time.time())))
 
 
 # TODO: Consider remove the operation (if there are no inputs CREATE else TRANSFER)
