@@ -1,6 +1,7 @@
 import random
 import math
 import operator
+import collections
 
 import rethinkdb as r
 import rapidjson
@@ -610,9 +611,26 @@ class Bigchain(object):
     def block_election_status(self, block):
         """Tally the votes on a block, and return the status: valid, invalid, or undecided."""
 
+        votes = r.table('votes') \
+            .between([block['id'], r.minval], [block['id'], r.maxval], index='block_and_voter') \
+            .run(self.conn)
+
+        votes = list(votes)
+
         n_voters = len(block['block']['voters'])
-        vote_cast = [vote['vote']['is_block_valid'] for vote in block['votes']]
-        vote_validity = [self.consensus.verify_vote_signature(block, vote) for vote in block['votes']]
+
+        voter_counts = collections.Counter([vote['node_pubkey'] for vote in votes])
+        for node in voter_counts:
+            if voter_counts[node] > 1:
+                raise MultipleVotesError('Block {block_id} has multiple votes ({n_votes}) from voting node {node_id}'
+                                         .format(block_id=block['id'], n_votes=str(voter_counts[node]), node_id=node))
+
+        if len(votes) > n_voters:
+            raise MultipleVotesError('Block {block_id} has {n_votes} votes cast, but only {n_voters} voters'
+                                     .format(block_id=block['id'], n_votes=str(len(votes)), n_voters=str(n_voters)))
+
+        vote_cast = [vote['vote']['is_block_valid'] for vote in votes]
+        vote_validity = [self.consensus.verify_vote_signature(block, vote) for vote in votes]
 
         # element-wise product of stated vote and validity of vote
         vote_list = list(map(operator.mul, vote_cast, vote_validity))
