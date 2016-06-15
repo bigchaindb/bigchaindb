@@ -20,6 +20,8 @@ The steps to set up a cluster node are outlined in the section titled [Set Up an
 1. Their RethinkDB hostname, e.g. `rdb.farm2.organization.org`
 2. Their BigchainDB public key, e.g. `Eky3nkbxDTMgkmiJC8i5hKyVFiAQNmPP4a2G4JdDxJCK`
 
+One node must be chosen as the "designated fist node": they must run some RethinkDB configuration commands after all nodes have started RethinkDB, but before any node has started BigchainDB. 
+
 
 ## Documentation to Come
 

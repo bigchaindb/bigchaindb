@@ -59,7 +59,7 @@ If you're setting up a stand-alone node (i.e. not intending for it to join a clu
 
 ### Cluster Node
 
-Create a RethinkDB configuration file (text file) named `instance1.conf` in the `/etc/rethinkdb/instances.d/` directory with the following contents (explained below):
+Create a RethinkDB configuration file (text file) named `instance1.conf` with the following contents (explained below):
 ```text
 directory=/data
 bind=all
@@ -76,14 +76,9 @@ join=node2_hostname:29015
 * `direct-io` tells RethinkDB to use direct I/O (explained earlier).
 * `join=hostname:29015` lines: A cluster node needs to find out the hostnames of all the other nodes somehow. You _could_ designate one node to be the one that every other node asks, and put that node's hostname in the config file, but that wouldn't be very decentralized. Instead, we include _every_ node in the list of nodes-to-ask.
 
-If you're curious about the RethinkDB config file, there's [a RethinkDB documentation page about it](https://www.rethinkdb.com/docs/config-file/).
+If you're curious about the RethinkDB config file, there's [a RethinkDB documentation page about it](https://www.rethinkdb.com/docs/config-file/). The [explanations of the RethinkDB command-line options](https://rethinkdb.com/docs/cli-options/) are another useful reference.
 
 TODO: Explain how to configure the RethinkDB cluster to be more secure.
-
-
-## Run RethinkDB Server
-
-You can run RethinkDB by opening a Terminal and entering `rethinkdb`. You could do that now or wait until just before you start BigchainDB.
 
 
 ## Install Python 3.4+
@@ -177,26 +172,47 @@ Open `$HOME/.bigchaindb` in your text editor and:
 For more information about the BigchainDB config file, see [Configuring a BigchainDB Node](configuration.html).
 
 
-## Run BigchainDB Server
+## Run RethinkDB Server
 
-Once you've installed BigchainDB Server, you can run it. First make sure you have RethinkDB running:
+If you didn't create a RethinkDB config file (e.g. because you're running a stand-alone node), then you can start RethinkDB using:
 ```text
 rethinkdb
 ```
 
-TODO: What about `/etc/init.d/rethinkdb restart`
+If you _did_ create a RethinkDB config file, then you should start RethinkDB using:
+```text
+rethinkdb --config-file path/to/instance1.conf
+```
+
+except replace the path with the actual path to `instance1.conf`.
+
+Note: It's possible to [make RethinkDB start at system startup](https://www.rethinkdb.com/docs/start-on-startup/).
 
 You can verify that RethinkDB is running by opening the RethinkDB web interface in your web browser. It should be at `http://rethinkdb-hostname:8080/`. If you're running RethinkDB on localhost, that would be [http://localhost:8080/](http://localhost:8080/).
 
-TODO: Set shards using `bigchaindb set-shards numshards`
 
-You can start BigchainDB Server using:
+## Run BigchainDB Server
+
+### Stand-Alone Node
+
+It should be enough to do:
 ```text
 bigchaindb start
 ```
 
-OR: `screen -d -m bigchaindb -y start &`
+### Cluster Node
 
+After all the cluster nodes have started RethinkDB, but before they start BigchainDB, a designated cluster node has to do some RethinkDB cluster configuration by running the following two commands:
+```text
+bigchaindb init
+bigchaindb set-shards numshards
+```
 
-If it's the first time you've run `bigchaindb start`, then it creates the database (a RethinkDB database), the tables, the indexes, and the genesis block. It then starts BigchainDB. If you're run `bigchaindb start` or `bigchaindb init` before (and you haven't dropped the database), then `bigchaindb start` just starts BigchainDB.
+where `numshards` should be set equal to the number of nodes expected to be in the cluster (i.e. once all currently-expected nodes have joined).
 
+(The `bigchain init` command creates the database within RethinkDB, the tables, the indexes, and the genesis block.)
+
+Once the designated node has run the above two commands, every node can start BigchainDB using:
+```text
+bigchaindb start
+```
