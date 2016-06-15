@@ -35,7 +35,13 @@ The appendix has [some notes on NTP daemon setup](../appendices/ntp-notes.html).
 
 If you're just setting up a stand-alone node, then you can probably skip this step.
 
+Ideally, use a file system that supports direct I/O (Input/Output), a feature whereby file reads and writes go directly from RethinkDB to the storage device, bypassing the operating system read and write caches.
+
+TODO: What file systems support direct I/O? How can you check? How do you enable it, if necessary?
+
 See `def install_rethinkdb()` in `deploy-cluster-aws/fabfile.py` for an example of configuring a file system on an AWS instance running Ubuntu.
+
+Mount the partition for RethinkDB on `/data`: we will tell RethinkDB to store its data there.
 
 TODO: This section needs more elaboration
 
@@ -53,23 +59,26 @@ If you're setting up a stand-alone node (i.e. not intending for it to join a clu
 
 ### Cluster Node
 
-If you're setting up a node that will be part of a RethinkDB cluster, then it needs to find out the hostnames of all the other nodes somehow. You _could_ designate one node to be the one that every other node asks, and put that node's hostname in the RethinkDB config file, but that wouldn't be very decentralized. Instead, we will list _every_ node in the list of nodes-to-ask:
-
-1. Download the [sample RethinkDB config file from RethinkDB](https://github.com/rethinkdb/rethinkdb/blob/next/packaging/assets/config/default.conf.sample).
-2. Edit that file to add one line for each node in the federation, like so:
+Create a RethinkDB configuration file (text file) named `instance.conf` in the `/etc/rethinkdb/instances.d/` directory with the following contents (explained below):
 ```text
+directory=/data
+bind=all
+direct-io
+# Replace node?_hostname with actual node hostnames below, e.g. rdb.examples.com
 join=node0_hostname:29015
 join=node1_hostname:29015
 join=node2_hostname:29015
-# continue until all federation node hostnames are included
+# continue until there's a join= line for each node in the federation
 ```
 
-where the hostnames must be replaced by the hostnames of the RethinkDB servers in the cluster, e.g. `jackfish.servers.organization45.net`.
+* `directory=/data` tells the RethinkDB node to store its share of the database data in `/data`.
+* `bind=all` binds RethinkDB to all local network interfaces (e.g. loopback, Ethernet, wireless, whatever is available), so it can communicate with the outside world. (The default is to bind only to local interfaces.)
+* `direct-io` tells RethinkDB to use direct I/O (explained earlier).
+* `join=hostname:29015` lines: A cluster node needs to find out the hostnames of all the other nodes somehow. You _could_ designate one node to be the one that every other node asks, and put that node's hostname in the config file, but that wouldn't be very decentralized. Instead, we include _every_ node in the list of nodes-to-ask.
 
-You may want to change other things in the RethinkDB config file as well. RethinkDB has [a documentation page with more info](https://www.rethinkdb.com/docs/config-file/).
+If you're curious about the RethinkDB config file, there's [a RethinkDB documentation page about it](https://www.rethinkdb.com/docs/config-file/).
 
-
-TODO: Steps to make the RethinkDB cluster more secure.
+TODO: Explain how to configure the RethinkDB cluster to be more secure.
 
 
 ## Run RethinkDB Server
@@ -79,12 +88,14 @@ You can run RethinkDB by opening a Terminal and entering `rethinkdb`. You could 
 
 ## Install Python 3.4+
 
-If you don't already have it, then you should [install Python 3.4+](https://www.python.org/downloads/) (maybe in a virtual environment, so it doesn't conflict with other Python projects you're working on).
+If you don't already have it, then you should [install Python 3.4+](https://www.python.org/downloads/).
+
+If you're testing or developing BigchainDB on a stand-alone node, then you should probably create a Python 3.4+ virtual environment and activate it (e.g. using virtualenv or conda). Later we will install several Python packages and you probably only want those installed in the virtual environment.
 
 
 ## Install BigchainDB Server
 
-BigchainDB Server has some OS-level dependencies.
+BigchainDB Server has some OS-level dependencies that must be installed.
 
 On Ubuntu 14.04, we found that the following was enough:
 ```text
@@ -159,8 +170,9 @@ The default BigchainDB configuration file will work.
 
 Open `$HOME/.bigchaindb` in your text editor and:
 
-* Change the keyring (list) to include the public keys of all the other nodes in the federation. The keyring should _not_ include your node's public key.
-* TODO: Make other changes to the BigchainDB config file?
+* Change `"server": {"bind": "localhost:9984", ... }` to `"server": {"bind": "0.0.0.0:9984", ... }`. This makes it so traffic can come from any IP address to port 9984 (the HTTP Client-Server API port).
+* Change `"api_endpoint": "http://localhost:9984/api/v1"` to `"api_endpoint": "http://your_api_hostname:9984/api/v1"`
+* Change `"keyring": []` to `"keyring": ["public_key_of_other_node_A", "public_key_of_other_node_B", "..."]` i.e. a list of the public keys of all the other nodes in the federation. The keyring should _not_ include your node's public key.
 
 For more information about the BigchainDB config file, see [Configuring a BigchainDB Node](configuration.html).
 
