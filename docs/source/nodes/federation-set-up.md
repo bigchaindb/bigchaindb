@@ -46,10 +46,11 @@ $ bigchaindb start
 * Backing Up & Restoring data
 * Adding a node (including resharding etc.)
 * Removing a node
+* Logging
 * Node monitoring & crash recovery
 * Node Security
     * Securing your OS
-    * Firewalls and security groups
+    * Firewalls and security groups. Remember to open port 123 for NTP.
     * (Private) key management
     * RethinkDB security
 * Cluster monitoring
