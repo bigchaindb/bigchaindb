@@ -6,6 +6,7 @@ import time
 import pytest
 import rethinkdb as r
 import cryptoconditions as cc
+import jsonschema
 
 import bigchaindb
 from bigchaindb import util
@@ -283,6 +284,15 @@ class TestTransactionValidation(object):
         assert excinfo.value.args[0] == 'A CREATE operation has no inputs'
         assert b.is_valid_transaction(tx) is False
 
+    @pytest.mark.usefixtures('inputs')
+    def test_create_operation_with_no_fulfillment_should_fail(self, b, user_vk):
+        input_valid = b.get_owned_ids(user_vk).pop()
+        tx = b.create_transaction(user_vk, user_vk, input_valid, 'TRANSFER')
+        del tx['transaction']['fulfillments']
+        with pytest.raises(jsonschema.ValidationError) as excinfo:
+            b.validate_transaction(tx)
+            assert excinfo.message == "'fulfillments' is a required property"
+
     def test_create_operation_not_federation_node(self, b, user_vk):
         tx = b.create_transaction(user_vk, user_vk, None, 'CREATE')
         with pytest.raises(exceptions.OperationError) as excinfo:
@@ -343,7 +353,7 @@ class TestTransactionValidation(object):
         tx_valid = b.create_transaction(user_vk, user_vk, input_valid, 'TRANSFER')
 
         # change the transaction hash
-        tx_valid.update({'id': 'abcd'})
+        tx_valid.update({'id': '0' * 64})
         with pytest.raises(exceptions.InvalidHash):
             b.validate_transaction(tx_valid)
         assert b.is_valid_transaction(tx_valid) is False
@@ -932,10 +942,11 @@ class TestMultipleInputs(object):
         inp = owned_inputs.pop()
 
         # create a transaction
-        tx = b.create_transaction(user_vk, [user2_sk, user3_vk], inp, 'TRANSFER')
+        tx = b.create_transaction(user_vk, [user2_vk, user3_vk], inp, 'TRANSFER')
         tx_signed = b.sign_transaction(tx, user_sk)
 
         # validate transaction
+        assert b.validate_transaction(tx_signed) == tx_signed
         assert b.is_valid_transaction(tx_signed) == tx_signed
         assert len(tx_signed['transaction']['fulfillments']) == 1
         assert len(tx_signed['transaction']['conditions']) == 1
@@ -1015,6 +1026,7 @@ class TestMultipleInputs(object):
         tx_signed = b.sign_transaction(tx, [user_sk, user2_sk])
 
         # validate transaction
+        assert b.validate_transaction(tx_signed) == tx_signed
         assert b.is_valid_transaction(tx_signed) == tx_signed
         assert len(tx_signed['transaction']['fulfillments']) == 3
         assert len(tx_signed['transaction']['conditions']) == 3
@@ -1040,6 +1052,7 @@ class TestMultipleInputs(object):
         tx_signed = b.sign_transaction(tx, [user_sk, user2_sk])
 
         # validate transaction
+        assert b.validate_transaction(tx_signed) == tx_signed
         assert b.is_valid_transaction(tx_signed) == tx_signed
         assert len(tx_signed['transaction']['fulfillments']) == 1
         assert len(tx_signed['transaction']['conditions']) == 1

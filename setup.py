@@ -81,7 +81,9 @@ setup(
         'Operating System :: POSIX :: Linux',
     ],
 
-    packages=find_packages(exclude=['tests*']),
+    packages=find_packages(exclude=['tests', 'tests.*']),
+
+    include_package_data=True,
 
     entry_points={
         'console_scripts': [
@@ -103,6 +105,7 @@ setup(
         'flask==0.10.1',
         'requests==2.9',
         'gunicorn~=19.0',
+        'jsonschema~=2.5',
     ],
     setup_requires=['pytest-runner'],
     tests_require=tests_require,
