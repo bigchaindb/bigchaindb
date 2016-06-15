@@ -38,7 +38,7 @@ Also, RethinkDB tables can have [at most 64 shards](https://rethinkdb.com/limita
 
 RethinkDB has [issues with `btrfs`](https://github.com/rethinkdb/rethinkdb/issues/2781) (B-tree file system).
 
-If you want to use RethinkDB's `--direct-io` command-line option, then you need a file system which supports that. (Many compressed or encrypted file systems do not.)
+It's best to have a file system that supports Direct I/O, because that will improve RethinkDB performance. Many compressed or encrypted file systems don't support Direct I/O.
 
 
 ## CPU Requirements
