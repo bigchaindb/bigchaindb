@@ -170,6 +170,7 @@ def run_start(args):
 
     processes = Processes()
     logger.info('Starting BigchainDB main process')
+    logger.info('BigchainDB Version {}'.format(bigchaindb.__version__))
     processes.start()
 
 
