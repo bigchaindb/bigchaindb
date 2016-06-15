@@ -9,6 +9,20 @@ from bigchaindb.voter import Voter, Election, BlockStream
 from bigchaindb import crypto, Bigchain
 
 
+# Some util functions
+def dummy_tx():
+    b = Bigchain()
+    tx = b.create_transaction(b.me, b.me, None, 'CREATE')
+    tx_signed = b.sign_transaction(tx, b.me_private)
+    return tx_signed
+
+
+def dummy_block():
+    b = Bigchain()
+    block = b.create_block([dummy_tx()])
+    return block
+
+
 class TestBigchainVoter(object):
 
     def test_valid_block_voting(self, b):
@@ -17,7 +31,9 @@ class TestBigchainVoter(object):
         genesis = b.create_genesis_block()
 
         # create valid block
-        block = b.create_block([])
+        # sleep so that `block` as a higher timestamp then genesis
+        time.sleep(1)
+        block = dummy_block()
         # assert block is valid
         assert b.is_valid_block(block)
         b.write_block(block, durability='hard')
@@ -59,6 +75,8 @@ class TestBigchainVoter(object):
         assert b.is_valid_transaction(tx_signed)
 
         # create valid block
+        # sleep so that block as a higher timestamp then genesis
+        time.sleep(1)
         block = b.create_block([tx_signed])
         # assert block is valid
         assert b.is_valid_block(block)
@@ -172,6 +190,8 @@ class TestBigchainVoter(object):
         genesis = b.create_genesis_block()
 
         # create invalid block
+        # sleep so that `block` as a higher timestamp then `genesis`
+        time.sleep(1)
         block = b.create_block([transaction_signed])
         # change transaction id to make it invalid
         block['block']['transactions'][0]['id'] = 'abc'
@@ -201,7 +221,7 @@ class TestBigchainVoter(object):
 
     def test_vote_creation_valid(self, b):
         # create valid block
-        block = b.create_block([])
+        block = dummy_block()
         # retrieve vote
         vote = b.vote(block, 'abc', True)
 
@@ -215,7 +235,7 @@ class TestBigchainVoter(object):
 
     def test_vote_creation_invalid(self, b):
         # create valid block
-        block = b.create_block([])
+        block = dummy_block()
         # retrieve vote
         vote = b.vote(block, 'abc', False)
 
@@ -233,9 +253,9 @@ class TestBigchainVoter(object):
 
         # insert blocks in the database while the voter process is not listening
         # (these blocks won't appear in the changefeed)
-        block_1 = b.create_block([])
+        block_1 = dummy_block()
         b.write_block(block_1, durability='hard')
-        block_2 = b.create_block([])
+        block_2 = dummy_block()
         b.write_block(block_2, durability='hard')
 
         # voter is back online, we simulate that by creating a queue and a Voter instance
@@ -243,7 +263,7 @@ class TestBigchainVoter(object):
         voter = Voter(q_new_block)
 
         # create a new block that will appear in the changefeed
-        block_3 = b.create_block([])
+        block_3 = dummy_block()
         b.write_block(block_3, durability='hard')
 
         # put the last block in the queue
@@ -266,9 +286,12 @@ class TestBigchainVoter(object):
 
     def test_voter_chains_blocks_with_the_previous_ones(self, b):
         b.create_genesis_block()
-        block_1 = b.create_block([])
+        # sleep so that `block_*` as a higher timestamp then `genesis`
+        time.sleep(1)
+        block_1 = dummy_block()
         b.write_block(block_1, durability='hard')
-        block_2 = b.create_block([])
+        time.sleep(1)
+        block_2 = dummy_block()
         b.write_block(block_2, durability='hard')
 
         q_new_block = mp.Queue()
@@ -294,7 +317,7 @@ class TestBigchainVoter(object):
 
     def test_voter_checks_for_previous_vote(self, b):
         b.create_genesis_block()
-        block_1 = b.create_block([])
+        block_1 = dummy_block()
         b.write_block(block_1, durability='hard')
 
         q_new_block = mp.Queue()
@@ -326,7 +349,7 @@ class TestBlockElection(object):
 
     def test_quorum(self, b):
         # create a new block
-        test_block = b.create_block([])
+        test_block = dummy_block()
 
         # simulate a federation with four voters
         key_pairs = [crypto.generate_key_pair() for _ in range(4)]
@@ -393,7 +416,7 @@ class TestBlockElection(object):
     def test_quorum_odd(self, b):
         # test partial quorum situations for odd numbers of voters
         # create a new block
-        test_block = b.create_block([])
+        test_block = dummy_block()
 
         # simulate a federation with four voters
         key_pairs = [crypto.generate_key_pair() for _ in range(5)]
@@ -476,7 +499,7 @@ class TestBlockStream(object):
             b.federation_nodes.append(crypto.generate_key_pair()[1])
         new_blocks = mp.Queue()
         bs = BlockStream(new_blocks)
-        block_1 = b.create_block([])
+        block_1 = dummy_block()
         new_blocks.put(block_1)
         assert block_1 == bs.get()
 
@@ -485,8 +508,8 @@ class TestBlockStream(object):
         bs = BlockStream(new_blocks)
 
         # create two blocks
-        block_1 = b.create_block([])
-        block_2 = b.create_block([])
+        block_1 = dummy_block()
+        block_2 = dummy_block()
 
         # write the blocks
         b.write_block(block_1, durability='hard')
@@ -502,8 +525,10 @@ class TestBlockStream(object):
 
     def test_if_old_blocks_get_should_return_old_block_first(self, b):
         # create two blocks
-        block_1 = b.create_block([])
-        block_2 = b.create_block([])
+        block_1 = dummy_block()
+        # sleep so that block_2 as an higher timestamp then block_1
+        time.sleep(1)
+        block_2 = dummy_block()
 
         # write the blocks
         b.write_block(block_1, durability='hard')
@@ -520,8 +545,8 @@ class TestBlockStream(object):
         # pp(block_2)
 
         # create two new blocks that will appear in the changefeed
-        block_3 = b.create_block([])
-        block_4 = b.create_block([])
+        block_3 = dummy_block()
+        block_4 = dummy_block()
 
         # simulate a changefeed
         new_blocks.put(block_3)

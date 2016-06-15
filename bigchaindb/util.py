@@ -4,7 +4,7 @@ import contextlib
 import threading
 import queue
 import multiprocessing as mp
-from datetime import datetime
+import uuid
 
 import rapidjson
 
@@ -127,14 +127,13 @@ def deserialize(data):
 
 
 def timestamp():
-    """Calculate a UTC timestamp with microsecond precision.
+    """Calculate a UTC timestamp with second precision.
 
     Returns:
         str: UTC timestamp.
 
     """
-    dt = datetime.utcnow()
-    return "{0:.6f}".format(time.mktime(dt.timetuple()) + dt.microsecond / 1e6)
+    return str(round(time.time()))
 
 
 # TODO: Consider remove the operation (if there are no inputs CREATE else TRANSFER)
@@ -222,15 +221,13 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
 
     # handle payload
     data = None
-    if payload is not None:
-        if isinstance(payload, dict):
-            hash_payload = crypto.hash_data(serialize(payload))
-            data = {
-                'hash': hash_payload,
-                'payload': payload
-            }
-        else:
-            raise TypeError('`payload` must be an dict instance')
+    if isinstance(payload, (dict, type(None))):
+        data = {
+            'uuid': str(uuid.uuid4()),
+            'payload': payload
+        }
+    else:
+        raise TypeError('`payload` must be an dict instance or None')
 
     # handle inputs
     fulfillments = []
