@@ -15,7 +15,7 @@ The BigchainDB core dev team uses Ubuntu 14.04 or Fedora 23.
 We don't test BigchainDB on Windows or Mac OS X, but you can try.
 
 * If you run into problems on Windows, then you may want to try using Vagrant. One of our community members ([@Mec-Is](https://github.com/Mec-iS)) wrote [a page about how to install BigchainDB on a VM with Vagrant](https://gist.github.com/Mec-iS/b84758397f1b21f21700).
-* If you have Mac OS X and want to experiment with BigchainDB, then you could do that [using Docker](setup-run-node.html#run-bigchaindb-with-docker).
+* If you have Mac OS X and want to experiment with BigchainDB, then you could do that [using Docker](run-with-docker.html).
 
 
 ## Memory Requirements
