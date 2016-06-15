@@ -151,6 +151,7 @@ def run_drop(args):
 
 def run_start(args):
     """Start the processes to run the node"""
+    logger.info('BigchainDB Version {}'.format(bigchaindb.__version__))
     bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
 
     if args.start_rethinkdb:
@@ -170,7 +171,6 @@ def run_start(args):
 
     processes = Processes()
     logger.info('Starting BigchainDB main process')
-    logger.info('BigchainDB Version {}'.format(bigchaindb.__version__))
     processes.start()
 
 
