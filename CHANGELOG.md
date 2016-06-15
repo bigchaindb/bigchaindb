@@ -15,12 +15,17 @@ For reference, the possible headings are:
 * **Notes**
 
 
-## [Unreleased] - YYYY-MM-DD
-Tag name: 
+## [0.4.2] - 2016-06-15
+Tag name: v0.4.2
 = commit: 
 committed: 
 
-(Add new stuff here.)
+### Added
+- Report the BigchainDB version number when starting BigchainDB: [Pull Request #385](https://github.com/bigchaindb/bigchaindb/pull/385)
+
+### Changed
+- Round timestamps to a precision of one second, and replace payload hash with payload UUID in transactions: [Pull Request #384](https://github.com/bigchaindb/bigchaindb/pull/384)
+- Updated cryptoconditions API usage: [Pull Request #373](https://github.com/bigchaindb/bigchaindb/pull/373) 
 
 
 ## [0.4.1] - 2016-06-13
