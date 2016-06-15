@@ -386,6 +386,10 @@ class Bigchain(object):
             dict: created block.
         """
 
+        # Prevent the creation of empty blocks
+        if len(validated_transactions) == 0:
+            raise exceptions.OperationError('Empty block creation is not allowed')
+
         # Create the new block
         block = {
             'timestamp': util.timestamp(),
