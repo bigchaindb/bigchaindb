@@ -20,11 +20,12 @@ Confusingly, we sometimes call a federation's cluster its "federation." You can 
    :maxdepth: 1
 
    node-requirements
+   federation-set-up
    setup-run-node
+   run-with-docker
    running-unit-tests
    configuration
    bigchaindb-cli
    python-server-api-examples
-   federation-set-up.md
    deploy-on-aws
    monitoring
