@@ -57,7 +57,7 @@ Also, note that timestamps come from clients and nodes. Unless you have some rea
         "operation": "<string>",
         "timestamp": "<timestamp from client>",
         "data": {
-            "hash": "<hash of payload>",
+            "uuid": "<uuid4>",
             "payload": "<any JSON document>"
         }
     }
@@ -78,7 +78,7 @@ Here's some explanation of the contents of a transaction:
     - `operation`: String representation of the operation being performed (currently either "CREATE" or "TRANSFER"). It determines how the transaction should be validated.
     - `timestamp`: Time of creation of the transaction in UTC. It's provided by the client.
     - `data`:
-        - `hash`: The hash of the serialized `payload`.
+        - `uuid`: UUID version 4 (random) converted to a string of hex digits in standard form.
         - `payload`: Can be any JSON document. It may be empty in the case of a transfer transaction.
 
 Later, when we get to the models for the block and the vote, we'll see that both include a signature (from the node which created it). You may wonder why transactions don't have signatures... The answer is that they do! They're just hidden inside the `fulfillment` string of each fulfillment. A creation transaction is signed by the node that created it. A transfer transaction is signed by whoever currently controls or owns it.

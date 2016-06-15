@@ -182,7 +182,7 @@ threshold_condition.add_subfulfillment(cc.Ed25519Fulfillment(public_key=threshol
 
 # update the condition in the newly created transaction
 threshold_tx['transaction']['conditions'][0]['condition'] = {
-    'details': json.loads(threshold_condition.serialize_json()),
+    'details': threshold_condition.to_dict(),
     'uri': threshold_condition.condition.serialize_uri()
 }
 
@@ -212,7 +212,7 @@ threshold_tx_transfer = b.create_transaction([thresholduser1_pub, thresholduser2
                                              thresholduser4_pub, tx_retrieved_id, 'TRANSFER')
 
 # parse the threshold cryptocondition
-threshold_fulfillment = cc.Fulfillment.from_json(threshold_tx['transaction']['conditions'][0]['condition']['details'])
+threshold_fulfillment = cc.Fulfillment.from_dict(threshold_tx['transaction']['conditions'][0]['condition']['details'])
 
 subfulfillment1 = threshold_fulfillment.get_subcondition_from_vk(thresholduser1_pub)[0]
 subfulfillment2 = threshold_fulfillment.get_subcondition_from_vk(thresholduser2_pub)[0]
@@ -323,7 +323,7 @@ condition_timeout = cc.TimeoutFulfillment(expire_time=time_expire)
 # The conditions list is empty, so we need to append a new condition
 tx_timeout['transaction']['conditions'].append({
     'condition': {
-        'details': json.loads(condition_timeout.serialize_json()),
+        'details': condition_timeout.to_dict(),
         'uri': condition_timeout.condition.serialize_uri()
     },
     'cid': 0,
@@ -347,7 +347,7 @@ tx_timeout_id = {'txid': tx_timeout['id'], 'cid': 0}
 tx_timeout_transfer = b.create_transaction(None, testuser1_pub, tx_timeout_id, 'TRANSFER')
 
 # Parse the threshold cryptocondition
-timeout_fulfillment = cc.Fulfillment.from_json(
+timeout_fulfillment = cc.Fulfillment.from_dict(
     tx_timeout['transaction']['conditions'][0]['condition']['details'])
 
 tx_timeout_transfer['transaction']['fulfillments'][0]['fulfillment'] = timeout_fulfillment.serialize_uri()
@@ -392,7 +392,7 @@ condition_escrow.add_subfulfillment(condition_abort)
 
 # Update the condition in the newly created transaction
 tx_escrow['transaction']['conditions'][0]['condition'] = {
-    'details': json.loads(condition_escrow.serialize_json()),
+    'details': condition_escrow.to_dict(),
     'uri': condition_escrow.condition.serialize_uri()
 }
 
@@ -417,7 +417,7 @@ tx_escrow_id = {'txid': tx_escrow_signed['id'], 'cid': 0}
 tx_escrow_execute = b.create_transaction([testuser2_pub, testuser1_pub], testuser1_pub, tx_escrow_id, 'TRANSFER')
 
 # Parse the threshold cryptocondition
-escrow_fulfillment = cc.Fulfillment.from_json(
+escrow_fulfillment = cc.Fulfillment.from_dict(
     tx_escrow['transaction']['conditions'][0]['condition']['details'])
 
 subfulfillment_testuser1 = escrow_fulfillment.get_subcondition_from_vk(testuser1_pub)[0]
@@ -453,7 +453,7 @@ tx_escrow_execute['transaction']['fulfillments'][0]['fulfillment'] = escrow_fulf
 tx_escrow_abort = b.create_transaction([testuser2_pub, testuser1_pub], testuser2_pub, tx_escrow_id, 'TRANSFER')
 
 # Parse the threshold cryptocondition
-escrow_fulfillment = cc.Fulfillment.from_json(
+escrow_fulfillment = cc.Fulfillment.from_dict(
     tx_escrow['transaction']['conditions'][0]['condition']['details'])
 
 subfulfillment_testuser1 = escrow_fulfillment.get_subcondition_from_vk(testuser1_pub)[0]

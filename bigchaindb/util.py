@@ -4,7 +4,7 @@ import contextlib
 import threading
 import queue
 import multiprocessing as mp
-from datetime import datetime
+import uuid
 
 import rapidjson
 
@@ -127,14 +127,13 @@ def deserialize(data):
 
 
 def timestamp():
-    """Calculate a UTC timestamp with microsecond precision.
+    """Calculate a UTC timestamp with second precision.
 
     Returns:
         str: UTC timestamp.
 
     """
-    dt = datetime.utcnow()
-    return "{0:.6f}".format(time.mktime(dt.timetuple()) + dt.microsecond / 1e6)
+    return str(round(time.time()))
 
 
 # TODO: Consider remove the operation (if there are no inputs CREATE else TRANSFER)
@@ -222,15 +221,13 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
 
     # handle payload
     data = None
-    if payload is not None:
-        if isinstance(payload, dict):
-            hash_payload = crypto.hash_data(serialize(payload))
-            data = {
-                'hash': hash_payload,
-                'payload': payload
-            }
-        else:
-            raise TypeError('`payload` must be an dict instance')
+    if isinstance(payload, (dict, type(None))):
+        data = {
+            'uuid': str(uuid.uuid4()),
+            'payload': payload
+        }
+    else:
+        raise TypeError('`payload` must be an dict instance or None')
 
     # handle inputs
     fulfillments = []
@@ -275,7 +272,7 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
             conditions.append({
                 'new_owners': new_owners,
                 'condition': {
-                    'details': rapidjson.loads(condition.serialize_json()),
+                    'details': condition.to_dict(),
                     'uri': condition.condition_uri
                 },
                 'cid': fulfillment['fid']
@@ -333,7 +330,7 @@ def sign_tx(transaction, signing_keys):
         # TODO: avoid instantiation, pass as argument!
         bigchain = bigchaindb.Bigchain()
         input_condition = get_input_condition(bigchain, fulfillment)
-        parsed_fulfillment = cc.Fulfillment.from_json(input_condition['condition']['details'])
+        parsed_fulfillment = cc.Fulfillment.from_dict(input_condition['condition']['details'])
         # for the case in which the type of fulfillment is not covered by this method
         parsed_fulfillment_signed = parsed_fulfillment
 
@@ -520,7 +517,7 @@ def get_input_condition(bigchain, fulfillment):
 
         return {
             'condition': {
-                'details': rapidjson.loads(condition.serialize_json()),
+                'details': condition.to_dict(),
                 'uri': condition.condition_uri
             }
         }

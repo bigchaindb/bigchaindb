@@ -2,7 +2,6 @@ import copy
 import multiprocessing as mp
 import random
 import time
-import json
 
 import pytest
 import rethinkdb as r
@@ -23,6 +22,20 @@ def test_remove_unclosed_sockets():
     pass
 
 
+# Some util functions
+def dummy_tx():
+    b = bigchaindb.Bigchain()
+    tx = b.create_transaction(b.me, b.me, None, 'CREATE')
+    tx_signed = b.sign_transaction(tx, b.me_private)
+    return tx_signed
+
+
+def dummy_block():
+    b = bigchaindb.Bigchain()
+    block = b.create_block([dummy_tx()])
+    return block
+
+
 class TestBigchainApi(object):
     def test_create_transaction_create(self, b, user_sk):
         tx = b.create_transaction(b.me, user_sk, None, 'CREATE')
@@ -33,6 +46,17 @@ class TestBigchainApi(object):
     def test_create_transaction_with_unsupported_payload_raises(self, b):
         with pytest.raises(TypeError):
             b.create_transaction('a', 'b', 'c', 'd', payload=[])
+
+    def test_create_transaction_payload_none(self, b, user_vk):
+        tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
+        assert len(tx['transaction']['data']['uuid']) == 36
+        assert tx['transaction']['data']['payload'] is None
+
+    def test_create_transaction_payload(self, b, user_vk):
+        payload = {'msg': 'Hello BigchainDB!'}
+        tx = b.create_transaction(b.me, user_vk, None, 'CREATE', payload=payload)
+        assert len(tx['transaction']['data']['uuid']) == 36
+        assert tx['transaction']['data']['payload'] == payload
 
     @pytest.mark.usefixtures('inputs')
     def test_create_transaction_transfer(self, b, user_vk, user_sk):
@@ -49,24 +73,6 @@ class TestBigchainApi(object):
         assert b.validate_fulfillments(tx) == False
         assert b.validate_fulfillments(tx_signed) == True
 
-    def test_transaction_hash(self, b, user_vk):
-        payload = {'cats': 'are awesome'}
-        tx = b.create_transaction(user_vk, user_vk, None, 'CREATE', payload)
-        tx_calculated = {
-            'conditions': [{'cid': 0,
-                            'condition': tx['transaction']['conditions'][0]['condition'],
-                            'new_owners': [user_vk]}],
-            'data': {'hash': crypto.hash_data(util.serialize(payload)),
-                     'payload': payload},
-            'fulfillments': [{'current_owners': [user_vk],
-                              'fid': 0,
-                              'fulfillment': None,
-                              'input': None}],
-            'operation': 'CREATE',
-            'timestamp': tx['transaction']['timestamp']
-        }
-        assert tx['transaction']['data'] == tx_calculated['data']
-        # assert tx_hash == tx_calculated_hash
 
     def test_transaction_signature(self, b, user_sk, user_vk):
         tx = b.create_transaction(user_vk, user_vk, None, 'CREATE')
@@ -219,7 +225,8 @@ class TestBigchainApi(object):
         assert prev_block_id == last_block['id']
 
     def test_create_new_block(self, b):
-        new_block = b.create_block([])
+        tx = dummy_tx()
+        new_block = b.create_block([tx])
         block_hash = crypto.hash_data(util.serialize(new_block['block']))
 
         assert new_block['block']['voters'] == [b.me]
@@ -227,6 +234,12 @@ class TestBigchainApi(object):
         assert crypto.VerifyingKey(b.me).verify(util.serialize(new_block['block']), new_block['signature']) is True
         assert new_block['id'] == block_hash
         assert new_block['votes'] == []
+
+    def test_create_empty_block(self, b):
+        with pytest.raises(exceptions.OperationError) as excinfo:
+            b.create_block([])
+
+        assert excinfo.value.args[0] == 'Empty block creation is not allowed'
 
     def test_get_last_voted_block_returns_genesis_if_no_votes_has_been_casted(self, b):
         b.create_genesis_block()
@@ -240,9 +253,9 @@ class TestBigchainApi(object):
 
         assert b.get_last_voted_block() == genesis
 
-        block_1 = b.create_block([])
-        block_2 = b.create_block([])
-        block_3 = b.create_block([])
+        block_1 = dummy_block()
+        block_2 = dummy_block()
+        block_3 = dummy_block()
 
         b.write_block(block_1, durability='hard')
         b.write_block(block_2, durability='hard')
@@ -260,7 +273,7 @@ class TestBigchainApi(object):
     def test_no_vote_written_if_block_already_has_vote(self, b):
         b.create_genesis_block()
 
-        block_1 = b.create_block([])
+        block_1 = dummy_block()
 
         b.write_block(block_1, durability='hard')
 
@@ -406,7 +419,7 @@ class TestTransactionValidation(object):
 
 class TestBlockValidation(object):
     def test_wrong_block_hash(self, b):
-        block = b.create_block([])
+        block = dummy_block()
 
         # change block hash
         block.update({'id': 'abc'})
@@ -447,7 +460,7 @@ class TestBlockValidation(object):
         assert excinfo.value.args[0] == 'current_owner `a` does not own the input `{}`'.format(valid_input)
 
     def test_invalid_block_id(self, b):
-        block = b.create_block([])
+        block = dummy_block()
 
         # change block hash
         block.update({'id': 'abc'})
@@ -469,7 +482,7 @@ class TestBlockValidation(object):
 
     def test_invalid_signature(self, b):
         # create a valid block
-        block = b.create_block([])
+        block = dummy_block()
 
         # replace the block signature with an invalid one
         block['signature'] = crypto.SigningKey(b.me_private).sign(b'wrongdata')
@@ -481,7 +494,7 @@ class TestBlockValidation(object):
     def test_invalid_node_pubkey(self, b):
         # blocks can only be created by a federation node
         # create a valid block
-        block = b.create_block([])
+        block = dummy_block()
 
         # create some temp keys
         tmp_sk, tmp_vk = crypto.generate_key_pair()
@@ -507,7 +520,7 @@ class TestBigchainVoter(object):
 
         genesis = b.create_genesis_block()
         # create valid block
-        block = b.create_block([])
+        block = dummy_block()
         # assert block is valid
         assert b.is_valid_block(block)
         b.write_block(block, durability='hard')
@@ -579,7 +592,7 @@ class TestBigchainVoter(object):
 
     def test_vote_creation_valid(self, b):
         # create valid block
-        block = b.create_block([])
+        block = dummy_block()
         # retrieve vote
         vote = b.vote(block, 'abc', True)
 
@@ -593,7 +606,7 @@ class TestBigchainVoter(object):
 
     def test_vote_creation_invalid(self, b):
         # create valid block
-        block = b.create_block([])
+        block = dummy_block()
         # retrieve vote
         vote = b.vote(block, 'abc', False)
 
@@ -805,9 +818,9 @@ class TestBigchainBlock(object):
     def test_revert_delete_block(self, b):
         b.create_genesis_block()
 
-        block_1 = b.create_block([])
-        block_2 = b.create_block([])
-        block_3 = b.create_block([])
+        block_1 = dummy_block()
+        block_2 = dummy_block()
+        block_3 = dummy_block()
 
         b.write_block(block_1, durability='hard')
         b.write_block(block_2, durability='hard')
@@ -1504,9 +1517,9 @@ class TestCryptoconditions(object):
         tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
         condition = tx['transaction']['conditions'][0]['condition']
         condition_from_uri = cc.Condition.from_uri(condition['uri'])
-        condition_from_json = cc.Fulfillment.from_json(condition['details']).condition
+        condition_from_dict = cc.Fulfillment.from_dict(condition['details']).condition
 
-        assert condition_from_uri.serialize_uri() == condition_from_json.serialize_uri()
+        assert condition_from_uri.serialize_uri() == condition_from_dict.serialize_uri()
         assert condition['details']['public_key'] == user_vk
 
         tx_signed = b.sign_transaction(tx, b.me_private)
@@ -1528,16 +1541,16 @@ class TestCryptoconditions(object):
         prev_tx = b.get_transaction(prev_tx_id['txid'])
         prev_condition = prev_tx['transaction']['conditions'][0]['condition']
         prev_condition_from_uri = cc.Condition.from_uri(prev_condition['uri'])
-        prev_condition_from_json = cc.Fulfillment.from_json(prev_condition['details']).condition
+        prev_condition_from_dict = cc.Fulfillment.from_dict(prev_condition['details']).condition
 
-        assert prev_condition_from_uri.serialize_uri() == prev_condition_from_json.serialize_uri()
+        assert prev_condition_from_uri.serialize_uri() == prev_condition_from_dict.serialize_uri()
         assert prev_condition['details']['public_key'] == user_vk
 
         condition = tx['transaction']['conditions'][0]['condition']
         condition_from_uri = cc.Condition.from_uri(condition['uri'])
-        condition_from_json = cc.Fulfillment.from_json(condition['details']).condition
+        condition_from_dict = cc.Fulfillment.from_dict(condition['details']).condition
 
-        assert condition_from_uri.serialize_uri() == condition_from_json.serialize_uri()
+        assert condition_from_uri.serialize_uri() == condition_from_dict.serialize_uri()
         assert condition['details']['public_key'] == other_vk
 
         tx_signed = b.sign_transaction(tx, user_sk)
@@ -1554,7 +1567,7 @@ class TestCryptoconditions(object):
         tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
         fulfillment = cc.Ed25519Fulfillment(public_key=user_vk)
         tx['transaction']['conditions'][0]['condition'] = {
-            'details': json.loads(fulfillment.serialize_json()),
+            'details': fulfillment.to_dict(),
             'uri': fulfillment.condition.serialize_uri()
         }
 
@@ -1577,7 +1590,7 @@ class TestCryptoconditions(object):
 
         fulfillment = cc.Ed25519Fulfillment(public_key=other_vk)
         tx['transaction']['conditions'][0]['condition'] = {
-            'details': json.loads(fulfillment.serialize_json()),
+            'details': fulfillment.to_dict(),
             'uri': fulfillment.condition.serialize_uri()
         }
 
@@ -1627,7 +1640,7 @@ class TestCryptoconditions(object):
 
         first_tx_condition = cc.Ed25519Fulfillment(public_key=other_vk)
         first_tx['transaction']['conditions'][0]['condition'] = {
-            'details': json.loads(first_tx_condition.serialize_json()),
+            'details': first_tx_condition.to_dict(),
             'uri': first_tx_condition.condition.serialize_uri()
         }
 
@@ -1674,7 +1687,7 @@ class TestCryptoconditions(object):
         first_tx_condition.add_subfulfillment(cc.Ed25519Fulfillment(public_key=other3_vk))
 
         first_tx['transaction']['conditions'][0]['condition'] = {
-            'details': json.loads(first_tx_condition.serialize_json()),
+            'details': first_tx_condition.to_dict(),
             'uri': first_tx_condition.condition.serialize_uri()
         }
         # conditions have been updated, so hash needs updating
@@ -1713,7 +1726,7 @@ class TestCryptoconditions(object):
         assert b.is_valid_transaction(next_tx) == next_tx
 
     @pytest.mark.usefixtures('inputs')
-    def test_override_condition_and_fulfillment_transfer_threshold_from_json(self, b, user_vk, user_sk):
+    def test_override_condition_and_fulfillment_transfer_threshold_from_dict(self, b, user_vk, user_sk):
         other1_sk, other1_vk = crypto.generate_key_pair()
         other2_sk, other2_vk = crypto.generate_key_pair()
         other3_sk, other3_vk = crypto.generate_key_pair()
@@ -1727,7 +1740,7 @@ class TestCryptoconditions(object):
         first_tx_condition.add_subfulfillment(cc.Ed25519Fulfillment(public_key=other3_vk))
 
         first_tx['transaction']['conditions'][0]['condition'] = {
-            'details': json.loads(first_tx_condition.serialize_json()),
+            'details': first_tx_condition.to_dict(),
             'uri': first_tx_condition.condition.serialize_uri()
         }
         # conditions have been updated, so hash needs updating
@@ -1752,7 +1765,7 @@ class TestCryptoconditions(object):
         next_tx_fulfillment_message = util.get_fulfillment_message(next_tx, next_tx_fulfillment, serialized=True)
 
         # parse the threshold cryptocondition
-        next_tx_fulfillment = cc.Fulfillment.from_json(first_tx['transaction']['conditions'][0]['condition']['details'])
+        next_tx_fulfillment = cc.Fulfillment.from_dict(first_tx['transaction']['conditions'][0]['condition']['details'])
 
         subfulfillment1 = next_tx_fulfillment.get_subcondition_from_vk(other1_vk)[0]
         subfulfillment2 = next_tx_fulfillment.get_subcondition_from_vk(other2_vk)[0]
@@ -1783,7 +1796,7 @@ class TestCryptoconditions(object):
         first_tx_condition.add_subfulfillment(cc.Ed25519Fulfillment(public_key=other2_vk))
 
         first_tx['transaction']['conditions'][0]['condition'] = {
-            'details': json.loads(first_tx_condition.serialize_json()),
+            'details': first_tx_condition.to_dict(),
             'uri': first_tx_condition.condition.serialize_uri()
         }
         # conditions have been updated, so hash needs updating
@@ -1835,7 +1848,7 @@ class TestCryptoconditions(object):
         expected_condition.add_subfulfillment(cc.Ed25519Fulfillment(public_key=user_vk))
         expected_condition.add_subfulfillment(cc.Ed25519Fulfillment(public_key=user2_vk))
         tx_expected_condition = {
-            'details': json.loads(expected_condition.serialize_json()),
+            'details': expected_condition.to_dict(),
             'uri': expected_condition.condition.serialize_uri()
         }
 
@@ -1857,7 +1870,7 @@ class TestCryptoconditions(object):
         tx_transfer_signed = b.sign_transaction(tx_transfer, [user_sk, user2_sk])
 
         # expected fulfillment
-        expected_fulfillment = cc.Fulfillment.from_json(
+        expected_fulfillment = cc.Fulfillment.from_dict(
             tx_create['transaction']['conditions'][0]['condition']['details'])
         subfulfillment1 = expected_fulfillment.subconditions[0]['body']
         subfulfillment2 = expected_fulfillment.subconditions[1]['body']
@@ -1881,7 +1894,7 @@ class TestCryptoconditions(object):
 
         hashlock_tx['transaction']['conditions'].append({
             'condition': {
-                'details': json.loads(first_tx_condition.serialize_json()),
+                'details': first_tx_condition.to_dict(),
                 'uri': first_tx_condition.condition.serialize_uri()
             },
             'cid': 0,
@@ -1912,7 +1925,7 @@ class TestCryptoconditions(object):
 
         hashlock_tx['transaction']['conditions'].append({
             'condition': {
-                'details': json.loads(first_tx_condition.serialize_json()),
+                'details': first_tx_condition.to_dict(),
                 'uri': first_tx_condition.condition.serialize_uri()
             },
             'cid': 0,
@@ -1943,7 +1956,7 @@ class TestCryptoconditions(object):
 
         hashlock_tx['transaction']['conditions'].append({
             'condition': {
-                'details': json.loads(first_tx_condition.serialize_json()),
+                'details': first_tx_condition.to_dict(),
                 'uri': first_tx_condition.condition.serialize_uri()
             },
             'cid': 0,
@@ -2013,7 +2026,7 @@ class TestCryptoconditions(object):
 
         # create a transaction with multiple new_owners
         tx = b.create_transaction(b.me, new_owners, None, 'CREATE')
-        condition = cc.Fulfillment.from_json(tx['transaction']['conditions'][0]['condition']['details'])
+        condition = cc.Fulfillment.from_dict(tx['transaction']['conditions'][0]['condition']['details'])
 
         for new_owner in new_owners:
             subcondition = condition.get_subcondition_from_vk(new_owner)[0]
@@ -2051,7 +2064,7 @@ class TestCryptoconditions(object):
 
         # Update the condition in the newly created transaction
         escrow_tx['transaction']['conditions'][0]['condition'] = {
-            'details': json.loads(condition_escrow.serialize_json()),
+            'details': condition_escrow.to_dict(),
             'uri': condition_escrow.condition.serialize_uri()
         }
 
@@ -2077,7 +2090,7 @@ class TestCryptoconditions(object):
         escrow_tx_transfer = b.create_transaction([user_vk, user2_vk], user2_vk, tx_retrieved_id, 'TRANSFER')
 
         # Parse the threshold cryptocondition
-        escrow_fulfillment = cc.Fulfillment.from_json(
+        escrow_fulfillment = cc.Fulfillment.from_dict(
             escrow_tx['transaction']['conditions'][0]['condition']['details'])
 
         subfulfillment_user = escrow_fulfillment.get_subcondition_from_vk(user_vk)[0]
@@ -2107,7 +2120,7 @@ class TestCryptoconditions(object):
         assert b.is_valid_transaction(escrow_tx_transfer) == escrow_tx_transfer
         assert b.validate_transaction(escrow_tx_transfer) == escrow_tx_transfer
 
-        time.sleep(time_sleep)
+        time.sleep(time_sleep + 1)
 
         assert b.is_valid_transaction(escrow_tx_transfer) is False
         with pytest.raises(exceptions.InvalidSignature):
@@ -2118,7 +2131,7 @@ class TestCryptoconditions(object):
         escrow_tx_abort = b.create_transaction([user_vk, user2_vk], user_vk, tx_retrieved_id, 'TRANSFER')
 
         # Parse the threshold cryptocondition
-        escrow_fulfillment = cc.Fulfillment.from_json(
+        escrow_fulfillment = cc.Fulfillment.from_dict(
             escrow_tx['transaction']['conditions'][0]['condition']['details'])
 
         subfulfillment_user = escrow_fulfillment.get_subcondition_from_vk(user_vk)[0]
@@ -2180,7 +2193,7 @@ class TestCryptoconditions(object):
 
         # Update the condition in the newly created transaction
         escrow_tx['transaction']['conditions'][0]['condition'] = {
-            'details': json.loads(condition_escrow.serialize_json()),
+            'details': condition_escrow.to_dict(),
             'uri': condition_escrow.condition.serialize_uri()
         }
 
@@ -2206,7 +2219,7 @@ class TestCryptoconditions(object):
         escrow_tx_transfer = b.create_transaction([user_vk, user2_vk], user2_vk, tx_retrieved_id, 'TRANSFER')
 
         # Parse the threshold cryptocondition
-        escrow_fulfillment = cc.Fulfillment.from_json(
+        escrow_fulfillment = cc.Fulfillment.from_dict(
             escrow_tx['transaction']['conditions'][0]['condition']['details'])
 
         subfulfillment_user = escrow_fulfillment.get_subcondition_from_vk(user_vk)[0]
@@ -2242,7 +2255,7 @@ class TestCryptoconditions(object):
         block = b.create_block([escrow_tx_transfer])
         b.write_block(block, durability='hard')
 
-        time.sleep(time_sleep)
+        time.sleep(time_sleep + 1)
 
         assert b.is_valid_transaction(escrow_tx_transfer) is False
         with pytest.raises(exceptions.InvalidSignature):
@@ -2253,7 +2266,7 @@ class TestCryptoconditions(object):
         escrow_tx_abort = b.create_transaction([user_vk, user2_vk], user_vk, tx_retrieved_id, 'TRANSFER')
 
         # Parse the threshold cryptocondition
-        escrow_fulfillment = cc.Fulfillment.from_json(
+        escrow_fulfillment = cc.Fulfillment.from_dict(
             escrow_tx['transaction']['conditions'][0]['condition']['details'])
 
         subfulfillment_user = escrow_fulfillment.get_subcondition_from_vk(user_vk)[0]
