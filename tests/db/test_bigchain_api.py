@@ -48,24 +48,6 @@ class TestBigchainApi(object):
         assert b.validate_fulfillments(tx) == False
         assert b.validate_fulfillments(tx_signed) == True
 
-    def test_transaction_hash(self, b, user_vk):
-        payload = {'cats': 'are awesome'}
-        tx = b.create_transaction(user_vk, user_vk, None, 'CREATE', payload)
-        tx_calculated = {
-            'conditions': [{'cid': 0,
-                            'condition': tx['transaction']['conditions'][0]['condition'],
-                            'new_owners': [user_vk]}],
-            'data': {'hash': crypto.hash_data(util.serialize(payload)),
-                     'payload': payload},
-            'fulfillments': [{'current_owners': [user_vk],
-                              'fid': 0,
-                              'fulfillment': None,
-                              'input': None}],
-            'operation': 'CREATE',
-            'timestamp': tx['transaction']['timestamp']
-        }
-        assert tx['transaction']['data'] == tx_calculated['data']
-        # assert tx_hash == tx_calculated_hash
 
     def test_transaction_signature(self, b, user_sk, user_vk):
         tx = b.create_transaction(user_vk, user_vk, None, 'CREATE')
