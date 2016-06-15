@@ -11,5 +11,6 @@ Appendices
    cryptography
    the-Bigchain-class
    consensus
+   ntp-notes
    local-rethinkdb-cluster
    licenses
