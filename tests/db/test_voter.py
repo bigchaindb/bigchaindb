@@ -526,6 +526,8 @@ class TestBlockStream(object):
     def test_if_old_blocks_get_should_return_old_block_first(self, b):
         # create two blocks
         block_1 = dummy_block()
+        # sleep so that block_2 as an higher timestamp then block_1
+        time.sleep(1)
         block_2 = dummy_block()
 
         # write the blocks
