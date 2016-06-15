@@ -13,6 +13,7 @@ Table of Contents
    introduction
    topic-guides/index
    nodes/index
+   clusters-feds/index
    drivers-clients/index
    release-notes
    appendices/index

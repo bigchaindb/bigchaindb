@@ -60,7 +60,7 @@ environment variables available are:
 - `BIGCHAINDB_KEYPAIR_PUBLIC` defines the public key of the BigchainDB node.
 - `BIGCHAINDB_KEYPAIR_PRIVATE` defines the private key of the BigchainDB node.
 - `BIGCHAINDB_KEYRING` is a colon-separated list of the public keys of all _other_ nodes in the cluster.
-- `BIGCHAINDB_STATSD_HOST` defines the hostname of the statsd server for [monitoring](monitoring.html).
+- `BIGCHAINDB_STATSD_HOST` defines the hostname of the statsd server for [monitoring](../clusters-feds/monitoring.html).
 - `BIGCHAINDB_STATSD_PORT` defines the port of the statsd server for monitoring.
 - `BIGCHAINDB_STATSD_RATE` is a float between `0` and `1` that defines the fraction of transaction operations sampled.
 - `BIGCHAINDB_API_ENDPOINT` defines the API endpoint to use (e.g. `http://localhost:9984/api/v1`).
