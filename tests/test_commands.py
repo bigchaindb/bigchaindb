@@ -243,5 +243,5 @@ def test_set_shards(b):
 
     # check that the number of shards got set to the correct value
     for table in table_config:
-        if table['name'] in ['backlog', 'bigchain']:
+        if table['name'] in ['backlog', 'bigchain', 'votes']:
             assert len(table['shards']) == 3
