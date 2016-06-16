@@ -5,7 +5,7 @@ For more information please refer to the documentation in Apiary:
 """
 
 import flask
-from flask import current_app, request, Blueprint
+from flask import abort, current_app, request, Blueprint
 
 import bigchaindb
 from bigchaindb import util
@@ -50,6 +50,9 @@ def get_transaction(tx_id):
 
     with pool() as bigchain:
         tx = bigchain.get_transaction(tx_id)
+
+    if not tx:
+        abort(404)
 
     return flask.jsonify(**tx)
 
