@@ -22,6 +22,13 @@ def test_get_transaction_returns_404_if_not_found(client):
     assert res.status_code == 404
 
 
+def test_api_endpoint_shows_basic_info(client):
+    from bigchaindb import version
+    res = client.get('/')
+    assert res.json['software'] == 'BigchainDB'
+    assert res.json['version'] == version.__version__
+
+
 def test_post_create_transaction_endpoint(b, client):
     keypair = crypto.generate_key_pair()
 
