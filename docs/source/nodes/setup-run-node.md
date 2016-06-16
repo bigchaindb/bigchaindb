@@ -2,16 +2,27 @@
 
 This section goes through the steps to set up a BigchainDB node (running RethinkDB Server, BigchainDB Server, etc.). There are instructions for two cases:
 
-1. Stand-Alone Node (useful for local development)
+1. Stand-Alone Node (useful for local testing and development)
 2. Cluster Node
 
 
-## Check the Node Requirements
+## Get a Server
 
-The first step is to make sure you have a server (or equivalent) which meets [the requirements for a BigchainDB node](node-requirements.html).
+The first step is to get a server (or equivalent) which meets [the requirements for a BigchainDB node](node-requirements.html).
 
 
-## System Clock Sync
+## Secure Your Server
+
+The steps that you must take to secure your server depend on your server OS and where your server is physically located. There are many articles and books about how to secure a server. Ask a search engine.
+
+Here we just cover special considerations when securing a BigchainDB node.
+
+TODO: Special security considerations for BigchainDB nodes.
+
+TODO: Notes about firewall setup. What ports should be open, for what kinds of traffic, accepting connections from what IP addresses, etc. For example, NTP uses port 123. Can firewall setup be done now or does it have to happen later?
+
+
+## Sync Your System Clock
 
 If you're just setting up a stand-alone node, then you can skip this step.
 
