@@ -208,6 +208,7 @@ def run_set_shards(args):
     b = bigchaindb.Bigchain()
     r.table('bigchain').reconfigure(shards=args.num_shards, replicas=1).run(b.conn)
     r.table('backlog').reconfigure(shards=args.num_shards, replicas=1).run(b.conn)
+    r.table('votes').reconfigure(shards=args.num_shards, replicas=1).run(b.conn)
 
 
 def main():
