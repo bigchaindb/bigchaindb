@@ -496,7 +496,7 @@ class TestBlockStream(object):
 
     def test_if_federation_size_is_greater_than_one_ignore_past_blocks(self, b):
         for _ in range(5):
-            b.federation_nodes.append(crypto.generate_key_pair()[1])
+            b.nodes_except_me.append(crypto.generate_key_pair()[1])
         new_blocks = mp.Queue()
         bs = BlockStream(new_blocks)
         block_1 = dummy_block()

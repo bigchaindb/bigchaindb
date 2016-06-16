@@ -30,9 +30,9 @@ class BlockStream(object):
         #       database to get the old blocks.
 
         # TODO how about a one liner, something like:
-        # self.unvoted_blocks = b.get_unvoted_blocks() if not b.federation_nodes else []
+        # self.unvoted_blocks = b.get_unvoted_blocks() if not b.nodes_except_me else []
         self.unvoted_blocks = []
-        if not b.federation_nodes:
+        if not b.nodes_except_me:
             self.unvoted_blocks = b.get_unvoted_blocks()
 
     def get(self):
