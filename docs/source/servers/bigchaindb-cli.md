@@ -50,3 +50,10 @@ This command is used to set the number of shards in the underlying datastore. Fo
 ```text
 $ bigchaindb set-shards 4
 ```
+
+### bigchaindb set-replicas
+
+This command is used to set the number of replicas (of each shard) in the underlying datastore. For example, the following command will set the number of replicas to three (i.e. it will set the replication factor to three):
+```text
+$ bigchaindb set-replicas 3
+```

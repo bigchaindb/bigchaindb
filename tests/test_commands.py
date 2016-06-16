@@ -245,3 +245,19 @@ def test_set_shards(b):
     for table in table_config:
         if table['name'] in ['backlog', 'bigchain']:
             assert len(table['shards']) == 3
+
+
+def test_set_replicas(b):
+    import rethindb as r
+    from bigchaindb.commands.bigchain import run_set_replicas
+
+    # set the number of replicas
+    args = Namespace(num_replicas=2)
+    run_set_replicas(args)
+
+    # check that the replication factor got set to 2 in all tables
+    for table in ['backlog', 'bigchain']:
+        # See https://www.rethinkdb.com/api/python/config/
+        table_config = r.table(table).config().run(b.conn)
+        num_replicas = len(table_config['shards'][0]['replicas'])
+        assert num_replicas == 2
