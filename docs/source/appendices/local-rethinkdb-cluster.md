@@ -4,7 +4,7 @@ This section explains one way to deploy a multi-node RethinkDB cluster on one ma
 
 ## Launching More RethinkDB Nodes
 
-Assuming you've already [installed RethinkDB](../servers/installing-server.html#install-and-run-rethinkdb-server) and have one RethinkDB node running, here's how you can launch two more nodes on the same machine. First, prepare two additional nodes. Note that the user who starts RethinkDB must have write access to the created directories:
+Assuming you've already [installed RethinkDB](../nodes/setup-run-node.html#install-and-run-rethinkdb-server) and have one RethinkDB node running, here's how you can launch two more nodes on the same machine. First, prepare two additional nodes. Note that the user who starts RethinkDB must have write access to the created directories:
 
     mkdir -p /path/to/node2
     mkdir -p /path/to/node3
