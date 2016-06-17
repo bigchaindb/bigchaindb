@@ -211,7 +211,10 @@ def run_set_shards(args):
         # See https://www.rethinkdb.com/api/python/config/
         table_config = r.table(table).config().run(b.conn)
         num_replicas = len(table_config['shards'][0]['replicas'])
-        r.table(table).reconfigure(shards=args.num_shards, replicas=num_replicas).run(b.conn)
+        try:
+            r.table(table).reconfigure(shards=args.num_shards, replicas=num_replicas).run(b.conn)
+        except r.ReqlOpFailedError as e:
+            logger.warn(e)
 
 
 def run_set_replicas(args):
@@ -220,7 +223,10 @@ def run_set_replicas(args):
         # See https://www.rethinkdb.com/api/python/config/
         table_config = r.table(table).config().run(b.conn)
         num_shards = len(table_config['shards'])
-        r.table(table).reconfigure(shards=num_shards, replicas=args.num_replicas).run(b.conn)
+        try:
+            r.table(table).reconfigure(shards=num_shards, replicas=args.num_replicas).run(b.conn)
+        except r.ReqlOpFailedError as e:
+            logger.warn(e)
 
 
 def main():

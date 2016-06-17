@@ -248,7 +248,7 @@ def test_set_shards(b):
 
 
 def test_set_replicas(b):
-    import rethindb as r
+    import rethinkdb as r
     from bigchaindb.commands.bigchain import run_set_replicas
 
     # set the number of replicas
