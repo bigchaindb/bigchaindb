@@ -207,8 +207,26 @@ def run_load(args):
 
 def run_set_shards(args):
     b = bigchaindb.Bigchain()
-    r.table('bigchain').reconfigure(shards=args.num_shards, replicas=1).run(b.conn)
-    r.table('backlog').reconfigure(shards=args.num_shards, replicas=1).run(b.conn)
+    for table in ['bigchain', 'backlog']:
+        # See https://www.rethinkdb.com/api/python/config/
+        table_config = r.table(table).config().run(b.conn)
+        num_replicas = len(table_config['shards'][0]['replicas'])
+        try:
+            r.table(table).reconfigure(shards=args.num_shards, replicas=num_replicas).run(b.conn)
+        except r.ReqlOpFailedError as e:
+            logger.warn(e)
+
+
+def run_set_replicas(args):
+    b = bigchaindb.Bigchain()
+    for table in ['bigchain', 'backlog']:
+        # See https://www.rethinkdb.com/api/python/config/
+        table_config = r.table(table).config().run(b.conn)
+        num_shards = len(table_config['shards'])
+        try:
+            r.table(table).reconfigure(shards=num_shards, replicas=args.num_replicas).run(b.conn)
+        except r.ReqlOpFailedError as e:
+            logger.warn(e)
 
 
 def main():
@@ -255,8 +273,17 @@ def main():
     sharding_parser = subparsers.add_parser('set-shards',
                                             help='Configure number of shards')
 
-    sharding_parser.add_argument('num_shards', metavar='num_shards', type=int, default=1,
+    sharding_parser.add_argument('num_shards', metavar='num_shards',
+                                 type=int, default=1,
                                  help='Number of shards')
+
+    # parser for configuring the number of replicas
+    replicas_parser = subparsers.add_parser('set-replicas',
+                                            help='Configure number of replicas')
+
+    replicas_parser.add_argument('num_replicas', metavar='num_replicas',
+                                 type=int, default=1,
+                                 help='Number of replicas (i.e. the replication factor)')
 
     load_parser = subparsers.add_parser('load',
                                         help='Write transactions to the backlog')
