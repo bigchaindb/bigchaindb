@@ -11,9 +11,9 @@ Table of Contents
    :maxdepth: 1
 
    introduction
-   topic-guides/index
    nodes/index
    clusters-feds/index
    drivers-clients/index
+   topic-guides/index
    release-notes
    appendices/index
