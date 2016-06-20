@@ -4,8 +4,7 @@ from argparse import Namespace
 import copy
 
 import pytest
-
-from tests.db.conftest import setup_database
+import rethinkdb
 
 
 @pytest.fixture
@@ -227,37 +226,89 @@ def test_start_rethinkdb_exits_when_cannot_start(mock_popen):
         utils.start_rethinkdb()
 
 
-def test_set_shards(b):
-    import rethinkdb as r
+@patch('rethinkdb.ast.Table.reconfigure')
+def test_set_shards(mock_reconfigure, monkeypatch, b):
     from bigchaindb.commands.bigchain import run_set_shards
 
-    # set the number of shards
+    # this will mock the call to retrieve the database config
+    # we will set it to return one replica
+    def mockreturn_one_replica(self, conn):
+        return {'shards': [{'replicas': [1]}]}
+
+    monkeypatch.setattr(rethinkdb.RqlQuery, 'run', mockreturn_one_replica)
+    args = Namespace(num_shards=3)
+    run_set_shards(args)
+    mock_reconfigure.assert_called_with(replicas=1, shards=3)
+
+    # this will mock the call to retrieve the database config
+    # we will set it to return three replica
+    def mockreturn_three_replicas(self, conn):
+        return {'shards': [{'replicas': [1, 2, 3]}]}
+
+    monkeypatch.setattr(rethinkdb.RqlQuery, 'run', mockreturn_three_replicas)
+    run_set_shards(args)
+    mock_reconfigure.assert_called_with(replicas=3, shards=3)
+
+
+@patch('logging.Logger.warn')
+def test_set_shards_raises_exception(mock_log, monkeypatch, b):
+    from bigchaindb.commands.bigchain import run_set_shards
+
+    # test that we are correctly catching the exception
+    def mock_raise(*args, **kwargs):
+        raise rethinkdb.ReqlOpFailedError('')
+
+    def mockreturn_one_replica(self, conn):
+        return {'shards': [{'replicas': [1]}]}
+
+    monkeypatch.setattr(rethinkdb.RqlQuery, 'run', mockreturn_one_replica)
+    monkeypatch.setattr(rethinkdb.ast.Table, 'reconfigure', mock_raise)
+
     args = Namespace(num_shards=3)
     run_set_shards(args)
 
-    # retrieve table configuration
-    table_config = list(r.db('rethinkdb')
-                        .table('table_config')
-                        .filter(r.row['db'] == b.dbname)
-                        .run(b.conn))
-
-    # check that the number of shards got set to the correct value
-    for table in table_config:
-        if table['name'] in ['backlog', 'bigchain']:
-            assert len(table['shards']) == 3
+    assert mock_log.called
 
 
-def test_set_replicas(b):
-    import rethinkdb as r
+@patch('rethinkdb.ast.Table.reconfigure')
+def test_set_replicas(mock_reconfigure, monkeypatch, b):
     from bigchaindb.commands.bigchain import run_set_replicas
 
-    # set the number of replicas
+    # this will mock the call to retrieve the database config
+    # we will set it to return two shards
+    def mockreturn_two_shards(self, conn):
+        return {'shards': [1, 2]}
+
+    monkeypatch.setattr(rethinkdb.RqlQuery, 'run', mockreturn_two_shards)
+    args = Namespace(num_replicas=2)
+    run_set_replicas(args)
+    mock_reconfigure.assert_called_with(replicas=2, shards=2)
+
+    # this will mock the call to retrieve the database config
+    # we will set it to return three shards
+    def mockreturn_three_shards(self, conn):
+        return {'shards': [1, 2, 3]}
+
+    monkeypatch.setattr(rethinkdb.RqlQuery, 'run', mockreturn_three_shards)
+    run_set_replicas(args)
+    mock_reconfigure.assert_called_with(replicas=2, shards=3)
+
+
+@patch('logging.Logger.warn')
+def test_set_replicas_raises_exception(mock_log, monkeypatch, b):
+    from bigchaindb.commands.bigchain import run_set_replicas
+
+    # test that we are correctly catching the exception
+    def mock_raise(*args, **kwargs):
+        raise rethinkdb.ReqlOpFailedError('')
+
+    def mockreturn_two_shards(self, conn):
+        return {'shards': [1, 2]}
+
+    monkeypatch.setattr(rethinkdb.RqlQuery, 'run', mockreturn_two_shards)
+    monkeypatch.setattr(rethinkdb.ast.Table, 'reconfigure', mock_raise)
+
     args = Namespace(num_replicas=2)
     run_set_replicas(args)
 
-    # check that the replication factor got set to 2 in all tables
-    for table in ['backlog', 'bigchain']:
-        # See https://www.rethinkdb.com/api/python/config/
-        table_config = r.table(table).config().run(b.conn)
-        num_replicas = len(table_config['shards'][0]['replicas'])
-        assert num_replicas == 2
+    assert mock_log.called
