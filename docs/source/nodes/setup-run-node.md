@@ -213,17 +213,18 @@ bigchaindb start
 
 ### Cluster Node
 
-After all the cluster nodes have started RethinkDB, but before they start BigchainDB, a designated cluster node has to do some RethinkDB cluster configuration by running the following two commands:
+After all the cluster nodes have started RethinkDB, but before they start BigchainDB, one designated cluster node must configure the RethinkDB database by running the following commands:
 ```text
 bigchaindb init
 bigchaindb set-shards numshards
+bigchaindb set-replicas numreplicas
 ```
 
-where `numshards` should be set equal to the number of nodes expected to be in the cluster (i.e. once all currently-expected nodes have joined).
+* `bigchaindb init` creates the database within RethinkDB, the tables, the indexes, and the genesis block.
+* `numshards` should be set to the number of nodes in the initial cluster.
+* `numreplicas` should be set to the database replication factor decided by the federation. It must be 3 or more for [RethinkDB failover](https://rethinkdb.com/docs/failover/) to work.
 
-(The `bigchain init` command creates the database within RethinkDB, the tables, the indexes, and the genesis block.)
-
-Once the designated node has run the above two commands, every node can start BigchainDB using:
+Once the RethinkDB database is configured, every node can start BigchainDB using:
 ```text
 bigchaindb start
 ```
