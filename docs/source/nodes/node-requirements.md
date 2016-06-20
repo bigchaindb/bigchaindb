@@ -24,8 +24,12 @@ Every OS has memory requirements; check the memory requirements of your OS.
 
 There is [documentation about RethinkDB's memory requirements](https://rethinkdb.com/docs/memory-usage/). In particular: "RethinkDB requires data structures in RAM on each server proportional to the size of the data on that server’s disk, usually around 1% of the size of the total data set." ([source](https://rethinkdb.com/limitations/))
 
+Also, "The storage engine is used in conjunction with a custom, B-Tree-aware caching engine which allows file sizes many orders of magnitude greater than the amount of available memory. RethinkDB can operate on a terabyte of data with about ten gigabytes of free RAM." ([source](https://www.rethinkdb.com/docs/architecture/))
+
 
 ## Storage Requirements
+
+The RethinkDB storage engine has a number of SSD optimizations, so you can benefit from using SSDs. ([source](https://www.rethinkdb.com/docs/architecture/))
 
 If you want a RethinkDB cluster to store an amount of data D, with a replication factor of R (on every table), and the cluster has N nodes, then each node will need to be able to store R×D/N data plus the storage required for the OS and various other software (RethinkDB, Python, etc.). The secondary indexes also require some storage.
 
@@ -36,9 +40,11 @@ Also, RethinkDB tables can have [at most 64 shards](https://rethinkdb.com/limita
 
 ## Compatible File Systems
 
-RethinkDB has [issues with `btrfs`](https://github.com/rethinkdb/rethinkdb/issues/2781) (B-tree file system).
+RethinkDB "supports most commonly used file systems." ([source](https://www.rethinkdb.com/docs/architecture/))
 
-It's best to have a file system that supports direct I/O, because that will improve RethinkDB performance. Many compressed or encrypted file systems don't support direct I/O.
+It has [issues with BTRFS](https://github.com/rethinkdb/rethinkdb/issues/2781) (B-tree file system).
+
+It's best to have a file system that supports direct I/O, because that will improve RethinkDB performance (if you tell RethinkDB to use direct I/O). Many compressed or encrypted file systems don't support direct I/O.
 
 
 ## CPU Requirements
