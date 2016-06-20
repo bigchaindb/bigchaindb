@@ -5,12 +5,13 @@ For more information please refer to the documentation in Apiary:
 """
 
 import flask
-from flask import current_app, request, Blueprint
+from flask import abort, current_app, request, Blueprint
 
 import bigchaindb
-from bigchaindb import util
+from bigchaindb import util, version
 
 
+info_views = Blueprint('info_views', __name__)
 basic_views = Blueprint('basic_views', __name__)
 
 
@@ -34,6 +35,16 @@ def record(state):
                          'a monitor instance to record system '
                          'performance.')
 
+@info_views.route('/')
+def home():
+    return flask.jsonify({
+        'software': 'BigchainDB',
+        'version': version.__version__,
+        'public_key': bigchaindb.config['keypair']['public'],
+        'keyring': bigchaindb.config['keyring'],
+        'api_endpoint': bigchaindb.config['api_endpoint']
+    })
+
 
 @basic_views.route('/transactions/<tx_id>')
 def get_transaction(tx_id):
@@ -50,6 +61,9 @@ def get_transaction(tx_id):
 
     with pool() as bigchain:
         tx = bigchain.get_transaction(tx_id)
+
+    if not tx:
+        abort(404)
 
     return flask.jsonify(**tx)
 

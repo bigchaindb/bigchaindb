@@ -1,16 +1,16 @@
 .. You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-BigchainDB Servers (Nodes) & Clusters
-=====================================
+BigchainDB Nodes
+================
 
 .. toctree::
    :maxdepth: 1
 
-   installing-server
+   node-requirements
+   setup-run-node
+   run-with-docker
    running-unit-tests
    configuration
    bigchaindb-cli
    python-server-api-examples
-   deploy-on-aws
-   monitoring
