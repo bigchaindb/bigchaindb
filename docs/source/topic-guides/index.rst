@@ -13,5 +13,6 @@ Topic guides give background and explain concepts at a high level.
    diversity
    immutable
    assets
+   smart-contracts
    models
    node-cluster-fed
