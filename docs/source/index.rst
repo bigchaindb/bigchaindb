@@ -11,6 +11,7 @@ Table of Contents
    :maxdepth: 1
 
    introduction
+   quickstart
    nodes/index
    clusters-feds/index
    drivers-clients/index
