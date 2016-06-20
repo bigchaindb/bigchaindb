@@ -90,13 +90,35 @@ One other note: Currently, transactions contain only the public keys of asset-ow
 
 ## Conditions and Fulfillments
 
-An aside: In what follows, the list of `new_owners` (in a condition) is always who owned the asset at the time the transaction completed, but before the next transaction started. The list of `current_owners` (in a fulfillment) is always equal to the list of `new_owners` in that asset's previous transaction.
+To create a transaction that transfers an asset to new owners, one must fulfill the asset’s current conditions (crypto-conditions). The most basic kinds of conditions are:
+
+* **A hashlock condition:** One can fulfill a hashlock condition by providing the correct “preimage” (similar to a password or secret phrase)
+* **A simple signature condition:** One can fulfill a simple signature condition by a providing a valid cryptographic signature (i.e. corresponding to the public key of an owner, usually)
+* **A timeout condition:** Anyone can fulfill a timeout condition before the condition’s expiry time. After the expiry time, nobody can fulfill the condition. Another way to say this is that a timeout condition’s fulfillment is valid (TRUE) before the expiry time and invalid (FALSE) after the expiry time. Note: at the time of writing, timeout conditions are BigchainDB-specific (i.e. not part of the Interledger specs).
+
+A more complex condition can be composed by using n of the above conditions as inputs to an m-of-n threshold condition (a logic gate which outputs TRUE iff m or more inputs are TRUE). If there are n inputs to a threshold condition:
+* 1-of-n is the same as a logical OR of all the inputs
+* n-of-n is the same as a logical AND of all the inputs
+
+For example, one could create a condition requiring that m (of n) owners provide signatures before their asset can be transferred to new owners.
+
+One can also put different weights on the inputs to threshold condition, along with a threshold that the weighted-sum-of-inputs must pass for the output to be TRUE. Weights could be used, for example, to express the number of shares that someone owns in an asset.
+
+The (single) output of a threshold condition can be used as one of the inputs of other threshold conditions. This means that one can combine threshold conditions to build complex logical expressions, e.g. (x OR y) AND (u OR v).
+
+Aside: In BigchainDB, the output of an m-of-n threshold condition can be inverted on the way out, so an output that would have been TRUE would get changed to FALSE (and vice versa). This enables the creation of NOT, NOR and NAND gates. At the time of writing, this “inverted threshold condition” is BigchainDB-specific (i.e. not part of the Interledger specs). It should only be used in combination with a timeout condition.
+
+When one creates a condition, one can calculate its fulfillment length (e.g. 96). The more complex the condition, the larger its fulfillment length will be. A BigchainDB federation can put an upper limit on the allowed fulfillment length, as a way of capping the complexity of conditions (and the computing time required to validate them).
+
+If someone tries to make a condition where the output of a threshold condition feeds into the input of another “earlier” threshold condition (i.e. in a closed logical circuit), then their computer will take forever to calculate the “condition URI”, at least in theory. In practice, their computer will run out of memory or their client software will timeout after a while.
+
+Aside: In what follows, the list of `new_owners` (in a condition) is always who owned the asset at the time the transaction completed, but before the next transaction started. The list of `current_owners` (in a fulfillment) is always equal to the list of `new_owners` in that asset's previous transaction.
 
 ### Conditions
 
 #### One New Owner
 
-If there is only one _new owner_, the condition will be a single-signature condition.
+If there is only one _new owner_, the condition will be a simple signature condition (i.e. only one signature is required).
 
 ```json
 {
@@ -176,7 +198,7 @@ The `weight`s and `threshold` could be adjusted. For example, if the `threshold`
 
 #### One Current Owner
 
-If there is only one _current owner_, the fulfillment will be a single-signature fulfillment.
+If there is only one _current owner_, the fulfillment will be a simple signature fulfillment (i.e. containing just one signature).
 
 ```json
 {
