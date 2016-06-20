@@ -5,6 +5,16 @@ BigchainDB is a scalable blockchain database. That is, it's a "big data" databas
 You can read about the motivations, goals and high-level architecture in the [BigchainDB whitepaper](https://www.bigchaindb.com/whitepaper/).
 
 
+## Setup Instructions for Various Cases
+
+* [Set up a stand-alone BigchainDB node for learning and experimenting: Quickstart](quickstart.html)
+* [Set up and run a federation](clusters-feds/federation-set-up.html) (i.a. an organization with a BigchainDB cluster)
+* To set up a stand-alone node so you can help contribute to the development of BigchainDB Server, see [the CONTRIBUTING.md file](https://github.com/bigchaindb/bigchaindb/blob/master/CONTRIBUTING.md)
+* [Deploy a cluster on AWS](clusters-feds/deploy-on-aws.html)
+
+(Instructions for setting up a client will be provided once there's a public testnet.)
+
+
 ## Is BigchainDB Production-Ready?
 
 No, BigchainDB is not production-ready. You can use it to build a prototype or proof-of-concept (POC); many people are already doing that.
@@ -17,3 +27,4 @@ BigchainDB is currently in version 0.X. ([The Releases page on GitHub](https://g
 ## Can I Help?
 
 Yes! BigchainDB is an open-source project; we welcome contributions of all kinds. If you want to request a feature, file a bug report, make a pull request, or help in some other way, please see [the CONTRIBUTING.md file](https://github.com/bigchaindb/bigchaindb/blob/master/CONTRIBUTING.md).
+
