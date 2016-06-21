@@ -81,11 +81,13 @@ the `server` section accepts all the options specified in the
 
 ## Order of Precedence in Determining Configuration Values
 
-All configuration values start with their default values (defined in `bigchaindb.__init__`), but a default value can be overriden by an environment variable, and a value set by an environment variable can be overriden by a value in a local configuration file (`$HOME/.bigchaindb` or the location specified by the `-c` command-line option).
+All configuration values start with their default values (defined in `bigchaindb.__init__`), but a default value
+can be overriden by a value in a local configuration file (`$HOME/.bigchaindb` or the location specified by the
+`-c` command-line option), and a value set by a local configuration file can be overriden by a value in an environment variable
 
 In summary, there is an order of precedence in reading configuration values:
-1. local configuration file
-2. environment variables
+1. environment variables
+2. local configuration file
 3. default configuration file (defined in ``bigchaindb.__init__``)
 
 This means that if the default configuration contains:
@@ -93,6 +95,7 @@ This means that if the default configuration contains:
 ```json
 {
     "database": {
+        "name": "bigchain",
         "host": "localhost",
         "port": 28015
     }
@@ -103,7 +106,8 @@ while the local file `local.json` contains:
 ```json
 {
     "database": {
-        "host": "ec2-xx-xx-xxx-xxx.eu-central-1.compute.amazonaws.com"
+        "host": "ec2-xx-xx-xxx-xxx.eu-central-1.compute.amazonaws.com",
+        "port": 5000
     }
 }
 
@@ -111,8 +115,7 @@ while the local file `local.json` contains:
 
 and you run this command:
 ```
-$ BIGCHAINDB_DATABASE_HOST=anotherhost.com \
-  BIGCHAINDB_DATABASE_PORT=4242 \
+$ BIGCHAINDB_DATABASE_PORT=4242 \
   BIGCHAINDB_KEYRING=pubkey0:pubkey1 \
   bigchaindb -c local.json show-config
 ```
