@@ -11,3 +11,10 @@ BigchainDB can store data of any kind (within reason), but it's designed to be p
 * Validated transactions are strongly tamper-resistant; see [the section about immutability / tamper-resistance](immutable.html).
 
 You can read more about the details of BigchainDB transactions in [the section on Transaction, Block and Vote Models (data models)](models.html).
+
+
+## BigchainDB Integration with Other Blockchains
+
+BigchainDB works with the [Interledger protocol](https://interledger.org/), enabling the transfer of assets between BigchainDB and other blockchains, ledgers, and payment systems.
+
+We’re actively exploring ways that BigchainDB can be used with other blockchains and platforms.

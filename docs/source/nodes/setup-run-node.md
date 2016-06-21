@@ -1,9 +1,6 @@
-# Set Up and Run a Node
+# Set Up and Run a Cluster Node
 
-This section goes through the steps to set up a BigchainDB node (running RethinkDB Server, BigchainDB Server, etc.). There are instructions for two cases:
-
-1. Stand-Alone Node (useful for local testing and development)
-2. Cluster Node
+If you want to set up a BigchainDB node that's intended to be one of the nodes in a BigchainDB cluster (i.e. where each node is operated by a different member of a federation), then this page is for you, otherwise see [elsewhere](../introduction.html).
 
 
 ## Get a Server
@@ -24,8 +21,6 @@ TODO: Notes about firewall setup. What ports should be open, for what kinds of t
 
 ## Sync Your System Clock
 
-If you're just setting up a stand-alone node, then you can skip this step.
-
 A BigchainDB node uses its system clock to generate timestamps for blocks and votes, so that clock should be kept in sync with some standard clock(s). The standard way to do that is to run an NTP daemon (Network Time Protocol daemon) on the node. (You could also use tlsdate, which uses TLS timestamps rather than NTP, but don't: it's not very accurate and it will break with TLS 1.3, which removes the timestamp.)
 
 NTP is a standard protocol. There are many NTP daemons implementing it. We don't recommend a particular one. On the contrary, we recommend that different nodes in a federation run different NTP daemons, so that a problem with one daemon won't affect all nodes. Some options are:
@@ -44,8 +39,6 @@ The appendix has [some notes on NTP daemon setup](../appendices/ntp-notes.html).
 
 ## Set Up the File System for RethinkDB
 
-If you're just setting up a stand-alone node, then you can probably skip this step.
-
 Ideally, use a file system that supports direct I/O (Input/Output), a feature whereby file reads and writes go directly from RethinkDB to the storage device, bypassing the operating system read and write caches.
 
 TODO: What file systems support direct I/O? How can you check? How do you enable it, if necessary?
@@ -63,12 +56,6 @@ If you don't already have RethinkDB Server installed, you must install it. The R
 
 
 ## Configure RethinkDB Server
-
-### Stand-Alone Node
-
-If you're setting up a stand-alone node (i.e. not intending for it to join a cluster), then the default RethinkDB configuration will work.
-
-### Cluster Node
 
 Create a RethinkDB configuration file (text file) named `instance1.conf` with the following contents (explained below):
 ```text
@@ -146,36 +133,25 @@ Note: You can use `pip` to upgrade the `bigchaindb` package to the latest versio
 
 ### How to Install BigchainDB from Source
 
-If you want to install BitchainDB from source because you want to contribute code (i.e. as a BigchainDB developer), then please see the instructions in [the `CONTRIBUTING.md` file](https://github.com/bigchaindb/bigchaindb/blob/master/CONTRIBUTING.md).
-
-Otherwise, clone the public repository:
+If you want to install BitchainDB from source because you want to use the very latest bleeding-edge code, clone the public repository:
 ```text
 git clone git@github.com:bigchaindb/bigchaindb.git
-```
-
-and then install from source:
-```text
 python setup.py install
 ```
 
 
 ## Configure BigchainDB Server
 
-Start by creating a default BigchainDB configuration file (named `.bigchaindb`) in your `$HOME` directory using:
+Start by creating a default BigchainDB config file:
 ```text
 bigchaindb -y configure
 ```
 
-There's documentation for the `bigchaindb` command is in the section on [the BigchainDB Command Line Interface (CLI)](bigchaindb-cli.html).
+(There's documentation for the `bigchaindb` command is in the section on [the BigchainDB Command Line Interface (CLI)](bigchaindb-cli.html).)
 
-### Stand-Alone Node
+Edit the created config file: 
 
-The default BigchainDB configuration file will work.
-
-### Cluster Node
-
-Open `$HOME/.bigchaindb` in your text editor and:
-
+* Open `$HOME/.bigchaindb` (the created config file) in your text editor.
 * Change `"server": {"bind": "localhost:9984", ... }` to `"server": {"bind": "0.0.0.0:9984", ... }`. This makes it so traffic can come from any IP address to port 9984 (the HTTP Client-Server API port).
 * Change `"api_endpoint": "http://localhost:9984/api/v1"` to `"api_endpoint": "http://your_api_hostname:9984/api/v1"`
 * Change `"keyring": []` to `"keyring": ["public_key_of_other_node_A", "public_key_of_other_node_B", "..."]` i.e. a list of the public keys of all the other nodes in the federation. The keyring should _not_ include your node's public key.
@@ -185,12 +161,7 @@ For more information about the BigchainDB config file, see [Configuring a Bigcha
 
 ## Run RethinkDB Server
 
-If you didn't create a RethinkDB config file (e.g. because you're running a stand-alone node), then you can start RethinkDB using:
-```text
-rethinkdb
-```
-
-If you _did_ create a RethinkDB config file, then you should start RethinkDB using:
+Start RethinkDB using:
 ```text
 rethinkdb --config-file path/to/instance1.conf
 ```
@@ -204,26 +175,20 @@ You can verify that RethinkDB is running by opening the RethinkDB web interface 
 
 ## Run BigchainDB Server
 
-### Stand-Alone Node
-
-It should be enough to do:
-```text
-bigchaindb start
-```
-
-### Cluster Node
-
-After all the cluster nodes have started RethinkDB, but before they start BigchainDB, a designated cluster node has to do some RethinkDB cluster configuration by running the following two commands:
+After all node operators have started RethinkDB, but before they start BigchainDB, one designated node operator must configure the RethinkDB database by running the following commands:
 ```text
 bigchaindb init
 bigchaindb set-shards numshards
+bigchaindb set-replicas numreplicas
 ```
 
-where `numshards` should be set equal to the number of nodes expected to be in the cluster (i.e. once all currently-expected nodes have joined).
+where:
 
-(The `bigchain init` command creates the database within RethinkDB, the tables, the indexes, and the genesis block.)
+* `bigchaindb init` creates the database within RethinkDB, the tables, the indexes, and the genesis block.
+* `numshards` should be set to the number of nodes in the initial cluster.
+* `numreplicas` should be set to the database replication factor decided by the federation. It must be 3 or more for [RethinkDB failover](https://rethinkdb.com/docs/failover/) to work.
 
-Once the designated node has run the above two commands, every node can start BigchainDB using:
+Once the RethinkDB database is configured, every node operator can start BigchainDB using:
 ```text
 bigchaindb start
 ```
