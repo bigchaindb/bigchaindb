@@ -38,11 +38,11 @@ class Bigchain(object):
         A Bigchain instance has several configuration parameters (e.g. host).
         If a parameter value is passed as an argument to the Bigchain
         __init__ method, then that is the value it will have.
-        Otherwise, the parameter value will be the value from the local
-        configuration file. If it's not set in that file, then the value
-        will come from an environment variable. If that environment variable
-        isn't set, then the parameter will have its default value (defined in
-        bigchaindb.__init__).
+        Otherwise, the parameter value will come from an environment variable.
+        If that environment variable isn't set, then the value
+        will come from the local configuration file. And if that variable
+        isn't in the local configuration file, then the parameter will have
+        its default value (defined in bigchaindb.__init__).
 
         Args:
             host (str): hostname where RethinkDB is running.
