@@ -127,11 +127,11 @@ def deserialize(data):
 
 
 def timestamp():
-    """Calculate a UTC timestamp with second precision.
+    """The Unix time, rounded to the nearest second.
+       See https://en.wikipedia.org/wiki/Unix_time
 
     Returns:
-        str: UTC timestamp.
-
+        str: the Unix time
     """
     return str(round(time.time()))
 
