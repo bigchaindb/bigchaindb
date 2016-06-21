@@ -110,7 +110,7 @@ Aside: In BigchainDB, the output of an m-of-n threshold condition can be inverte
 
 When one creates a condition, one can calculate its fulfillment length (e.g. 96). The more complex the condition, the larger its fulfillment length will be. A BigchainDB federation can put an upper limit on the allowed fulfillment length, as a way of capping the complexity of conditions (and the computing time required to validate them).
 
-If someone tries to make a condition where the output of a threshold condition feeds into the input of another “earlier” threshold condition (i.e. in a closed logical circuit), then their computer will take forever to calculate the “condition URI”, at least in theory. In practice, their computer will run out of memory or their client software will timeout after a while.
+If someone tries to make a condition where the output of a threshold condition feeds into the input of another “earlier” threshold condition (i.e. in a closed logical circuit), then their computer will take forever to calculate the (infinite) “condition URI”, at least in theory. In practice, their computer will run out of memory or their client software will timeout after a while.
 
 Aside: In what follows, the list of `new_owners` (in a condition) is always who owned the asset at the time the transaction completed, but before the next transaction started. The list of `current_owners` (in a fulfillment) is always equal to the list of `new_owners` in that asset's previous transaction.
 
