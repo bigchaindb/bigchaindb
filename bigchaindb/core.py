@@ -439,8 +439,13 @@ class Bigchain(object):
             block (dict): block to check.
 
         Returns:
-            True if this block already has a valid vote from this node, False otherwise. If
-            there is already a vote, but the vote is invalid, raises an ImproperVoteError
+            bool: :const:`True` if this block already has a
+            valid vote from this node, :const:`False` otherwise.
+
+        Raises:
+            ImproperVoteError: If there is already a vote,
+                but the vote is invalid.
+
         """
         if block['votes']:
             for vote in block['votes']:
