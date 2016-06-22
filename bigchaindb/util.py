@@ -396,8 +396,8 @@ def fulfill_threshold_signature_fulfillment(fulfillment, parsed_fulfillment, ful
         try:
             subfulfillment = parsed_fulfillment_copy.get_subcondition_from_vk(current_owner)[0]
         except IndexError:
-            exceptions.KeypairMismatchException('Public key {} cannot be found in the fulfillment'
-                                                .format(current_owner))
+            raise exceptions.KeypairMismatchException(
+                'Public key {} cannot be found in the fulfillment'.format(current_owner))
         try:
             private_key = key_pairs[current_owner]
         except KeyError:
