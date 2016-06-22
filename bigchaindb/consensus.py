@@ -98,7 +98,6 @@ class AbstractConsensusRules(metaclass=ABCMeta):
             bool: True if the votes's required signature data is present
                 and correct, False otherwise.
         """
-        raise NotImplementedError
 
 
 class BaseConsensusRules(AbstractConsensusRules):
