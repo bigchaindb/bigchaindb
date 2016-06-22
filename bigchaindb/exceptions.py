@@ -44,3 +44,7 @@ class KeypairMismatchException(Exception):
 
 class StartupError(Exception):
     """Raised when there is an error starting up the system"""
+
+
+class ImproperVoteError(Exception):
+    """Raised when an invalid vote is found"""
