@@ -9,10 +9,6 @@ import bigchaindb
 from bigchaindb import config_utils, crypto, exceptions, util
 
 
-class GenesisBlockAlreadyExistsError(Exception):
-    pass
-
-
 class Bigchain(object):
     """Bigchain API
 
@@ -507,7 +503,7 @@ class Bigchain(object):
         blocks_count = r.table('bigchain').count().run(self.conn)
 
         if blocks_count:
-            raise GenesisBlockAlreadyExistsError('Cannot create the Genesis block')
+            raise exceptions.GenesisBlockAlreadyExistsError('Cannot create the Genesis block')
 
         payload = {'message': 'Hello World from the BigchainDB'}
         transaction = self.create_transaction([self.me], [self.me], None, 'GENESIS', payload=payload)

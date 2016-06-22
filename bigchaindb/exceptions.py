@@ -48,3 +48,7 @@ class StartupError(Exception):
 
 class ImproperVoteError(Exception):
     """Raised when an invalid vote is found"""
+
+
+class GenesisBlockAlreadyExistsError(Exception):
+    """Raised when trying to create the already existing genesis block"""
