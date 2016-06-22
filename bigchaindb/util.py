@@ -220,14 +220,13 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
         inputs = [inputs]
 
     # handle payload
-    data = None
-    if isinstance(payload, (dict, type(None))):
-        data = {
-            'uuid': str(uuid.uuid4()),
-            'payload': payload
-        }
-    else:
+    if payload is not None and not isinstance(payload, dict):
         raise TypeError('`payload` must be an dict instance or None')
+
+    data = {
+        'uuid': str(uuid.uuid4()),
+        'payload': payload
+    }
 
     # handle inputs
     fulfillments = []
