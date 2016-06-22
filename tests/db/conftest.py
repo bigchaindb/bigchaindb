@@ -106,4 +106,3 @@ def inputs(user_vk, amount=1, b=None):
     block = b.create_block(transactions)
     b.write_block(block, durability='hard')
     return block
-
