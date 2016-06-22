@@ -8,9 +8,7 @@ import rethinkdb as r
 import cryptoconditions as cc
 
 import bigchaindb
-from bigchaindb import util
-from bigchaindb import exceptions
-from bigchaindb import crypto
+from bigchaindb import crypto, exceptions, util
 from bigchaindb.voter import Voter
 from bigchaindb.block import Block, BlockDeleteRevert
 
