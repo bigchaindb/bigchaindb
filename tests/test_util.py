@@ -1,6 +1,9 @@
-from unittest.mock import patch, call
-import pytest
 import queue
+from unittest.mock import patch, call
+
+import pytest
+
+from cryptoconditions import ThresholdSha256Fulfillment
 
 
 @pytest.fixture
@@ -142,3 +145,68 @@ def test_process_group_instantiates_and_start_processes(mock_process):
     for process in pg.processes:
         process.start.assert_called_with()
 
+
+def test_create_tx_with_empty_inputs():
+    from bigchaindb.util import create_tx
+    tx = create_tx(None, None, [], None)
+    assert 'id' in tx
+    assert 'transaction' in tx
+    assert 'version' in tx
+    assert 'fulfillments' in tx['transaction']
+    assert 'conditions' in tx['transaction']
+    assert 'operation' in tx['transaction']
+    assert 'timestamp' in tx['transaction']
+    assert 'data' in tx['transaction']
+    assert len(tx['transaction']['fulfillments']) == 1
+    assert tx['transaction']['fulfillments'][0] == {
+        'current_owners': [], 'input': None, 'fulfillment': None, 'fid': 0}
+
+
+def test_fulfill_threshold_signature_fulfillment_pubkey_notfound(monkeypatch):
+    from bigchaindb.exceptions import KeypairMismatchException
+    from bigchaindb.util import fulfill_threshold_signature_fulfillment
+    monkeypatch.setattr(
+        ThresholdSha256Fulfillment,
+        'get_subcondition_from_vk',
+        lambda x, y: []
+    )
+    fulfillment = {'current_owners': (None,)}
+    parsed_fulfillment = ThresholdSha256Fulfillment()
+    with pytest.raises(KeypairMismatchException):
+        fulfill_threshold_signature_fulfillment(
+            fulfillment, parsed_fulfillment, None, None)
+
+
+def test_fulfill_threshold_signature_fulfillment_wrong_privkeys(monkeypatch):
+    from bigchaindb.exceptions import KeypairMismatchException
+    from bigchaindb.util import fulfill_threshold_signature_fulfillment
+    monkeypatch.setattr(
+        ThresholdSha256Fulfillment,
+        'get_subcondition_from_vk',
+        lambda x, y: (None,)
+    )
+    fulfillment = {'current_owners': ('alice-pub-key',)}
+    parsed_fulfillment = ThresholdSha256Fulfillment()
+    with pytest.raises(KeypairMismatchException):
+        fulfill_threshold_signature_fulfillment(
+            fulfillment, parsed_fulfillment, None, {})
+
+
+def test_check_hash_and_signature_invalid_hash(monkeypatch):
+    from bigchaindb.exceptions import InvalidHash
+    from bigchaindb.util import check_hash_and_signature
+    transaction = {'id': 'txid'}
+    monkeypatch.setattr('bigchaindb.util.get_hash_data', lambda tx: 'txhash')
+    with pytest.raises(InvalidHash):
+        check_hash_and_signature(transaction)
+
+
+def test_check_hash_and_signature_invalid_signature(monkeypatch):
+    from bigchaindb.exceptions import InvalidSignature
+    from bigchaindb.util import check_hash_and_signature
+    transaction = {'id': 'txid'}
+    monkeypatch.setattr('bigchaindb.util.get_hash_data', lambda tx: 'txid')
+    monkeypatch.setattr(
+        'bigchaindb.util.validate_fulfillments', lambda tx: False)
+    with pytest.raises(InvalidSignature):
+        check_hash_and_signature(transaction)
