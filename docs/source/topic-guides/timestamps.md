@@ -2,21 +2,39 @@
 
 Each transaction, block and vote has an associated timestamp.
 
-Interpreting those timestamps is tricky. If there's one message to take away from this section, it is this: you need to look at multiple timestamps from multiple sources to get some idea of when something happened.
+Interpreting those timestamps is tricky, hence the need for this section.
 
 
 ## Timestamp Sources
 
 A transaction's timestamp is provided by the client which created and submitted the transaction to a BigchainDB node. A block's timestamp is provided by the BigchainDB node which created the block. A vote's timestamp is provided by the BigchainDB node which created the vote.
 
-When a BigchainDB client or node needs a timestamp, it calls a BigchainDB utility function named `timestamp()`. There's a detailed explanation of how that function works below, but the bottom line is that it gets the Unix time from the system clock, rounded to the nearest second.
+When a BigchainDB client or node needs a timestamp, it calls a BigchainDB utility function named `timestamp()`. There's a detailed explanation of how that function works below, but the short version is that it gets the [Unix time](https://en.wikipedia.org/wiki/Unix_time) from the system clock, rounded to the nearest second.
 
-Unix time is defined as defined as the number of seconds that have elapsed since 00:00:00 Coordinated Universal Time (UTC), Thursday, 1 January 1970 (i.e. since the Unix Epoch), _not counting leap seconds_. There are more details in [the Wikipedia article about Unix time](https://en.wikipedia.org/wiki/Unix_time).
+[Unix time](https://en.wikipedia.org/wiki/Unix_time) is defined as defined as the number of seconds that have elapsed since 00:00:00 Coordinated Universal Time (UTC), Thursday, 1 January 1970 (i.e. since the Unix Epoch), _not counting leap seconds_.
 
 
-## How to Interpret Timestamps
+## System Clock Accuracy
 
-If a client or node's system clock is wrong, then its timestamps will be wrong. That's not the end of the world, though, because you can look at many timestamps to get an idea of when something happened. For example, a transaction in a decided-valid block has many associated timestamps:
+We can't say anything about the accuracy client system clocks (i.e. used to generate the timestamps for transactions). They're still potentially useful, however, in a statistical sense. We say more about that below.
+
+We advise BigchainDB nodes to run special software (an "NTP daemon") to keep their system clock in sync with standard time servers. That sounds great, but there's a gotcha. NTP uses [UTC (Coordinated Universal Time)](https://en.wikipedia.org/wiki/Coordinated_Universal_Time) and UTC has [leap seconds](https://en.wikipedia.org/wiki/Leap_second), but Unix time ignores leap seconds.
+
+A leap second is an extra second added to the end of some days. On a leap second, the UTC time goes from 23:59:59 UTC to 23:59:60 UTC (instead of 00:00:00 UTC like usual).
+There's [a nice blog post by Red Hat](http://developers.redhat.com/blog/2015/06/01/five-different-ways-handle-leap-seconds-ntp/) about what happens when a leap second arrives via NTP:
+
+> "When a leap second is inserted to UTC, the system clock skips that second [23:59:60] as it can’t be represented and is suddenly ahead of UTC by one second. There are several ways how the clock can be corrected."
+
+> "The most common approach is to simply step the clock back by one second when the clock gets to 00:00:00 UTC. This is implemented in the Linux kernel and it is enabled by default when the clock is synchronized with NTP servers by the ntpd or chronyd daemon from the reference or chrony NTP implementations respectively."
+
+> "... There will be a backward step, but the clock will be off only for one second."
+
+We suggest that BigchainDB nodes run their NTP daemon in a mode which steps the system clock back by one second when a leap second occurs, rather than using one of the fancy "slewing" or "smearing" options. That way, there's only a small set of ambiguous timestamps (i.e. the ones associated with leap seconds).
+
+
+## Using Timestamps
+
+You can look at many timestamps to get a statistical sense of when something happened. For example, a transaction in a decided-valid block has many associated timestamps:
 
 * its own timestamp
 * the timestamps of the other transactions in the block; there could be as many as 999 of those
@@ -30,17 +48,12 @@ Those timestamps come from many sources, so you can look at all of them to get s
 
 BigchainDB _doesn't_ use timestamps to determine the order of transactions or blocks. In particular, the order of blocks is determined by RethinkDB's changefeed on the bigchain table.
 
-BigchainDB _does_ use timestamps for some things. It uses them to determine if a transaction has been waiting in the backlog for too long (i.e. because the node assigned to it hasn't handled it yet). It also uses timestamps to determine the status of timeout conditions (used by escrow).
-
-
-## Syncing with Standard Clocks
-
-A client or node can run an NTP daemon to keep its system clock in sync with standard clocks. There's more information about that in the section titled [Sync Your System Clock](../nodes/setup-run-node.html#sync-your-system-clock).
+BigchainDB does use timestamps for some things. It uses them to determine if a transaction has been waiting in the backlog for too long (i.e. because the node assigned to it hasn't handled it yet). It also uses timestamps to determine the status of timeout conditions (used by escrow).
 
 
 ## Converting Timestamps to UTC
 
-It's not always possible to convert a Unix time to a UTC time, because Unix time doesn't have leap seconds, but UTC does. That means that there are some Unix times which correspond to two different UTC times. Be suspicious of any function which claims to convert Unix time to UTC time. It's possible, but to be correct, it would have to give two answers for some Unix times. (In theory, leap seconds can be negative, but that has never happened.)
+It's not always possible to convert a Unix time to a UTC time, because Unix time doesn't have leap seconds, but UTC does. That means that there are some Unix times which correspond to two different UTC times. Be suspicious of any function which claims to convert Unix time to UTC time. It's possible, but to be correct, it would have to give two answers for some Unix times.
 
 Leap seconds are rare, so it's usually not a problem to convert a Unix time to a UTC time; just check the converter that you're using to make sure that it's got some sophistication.
 
@@ -49,7 +62,7 @@ Leap seconds are rare, so it's usually not a problem to convert a Unix time to a
 
 If you want to create a transaction payload with a trusted timestamp, you can.
 
-One way to do that would be to send a payload to a trusted timestamping service. They will send back a timestamp, a signature, and their public key. They should also explain how you can verify the signature. You can then include the original payload, the timestamp, the signature, and the service's public key in your transaction. That way, anyone can verify that the original payload was signed by the trusted timestamping service.
+One way to do that would be to send a payload to a trusted timestamping service. They will send back a timestamp, a signature, and their public key. They should also explain how you can verify the signature. You can then include the original payload, the timestamp, the signature, and the service's public key in your transaction. That way, anyone with the verification instructions can verify that the original payload was signed by the trusted timestamping service.
 
 
 ## How the timestamp() Function Works
@@ -68,4 +81,4 @@ How does `time.time()` work? If you look in the C source code, it calls `floatti
 ret = clock_gettime(CLOCK_REALTIME, &tp);
 ```
 
-(If `clock_gettime()` is not available or returns with a nonzero exit code, it falls back to `_PyTime_gettimeofday_info()`, which is a wrapper around [gettimeofday()](http://man7.org/linux/man-pages/man2/gettimeofday.2.html), an older function that was marked obsolete in POSIX.1-2008.)
+With `CLOCK_REALTIME` as the first argument, it returns the Unix time as described above.
