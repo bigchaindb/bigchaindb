@@ -6,10 +6,7 @@ import rethinkdb as r
 import rapidjson
 
 import bigchaindb
-from bigchaindb import util
-from bigchaindb import config_utils
-from bigchaindb import exceptions
-from bigchaindb import crypto
+from bigchaindb import config_utils, crypto, exceptions, util
 
 
 class GenesisBlockAlreadyExistsError(Exception):
