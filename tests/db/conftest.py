@@ -72,6 +72,7 @@ def setup_database(request, node_config):
 @pytest.fixture(scope='function', autouse=True)
 def cleanup_tables(request, node_config):
     db_name = node_config['database']['name']
+
     def fin():
         get_conn().repl()
         try:
