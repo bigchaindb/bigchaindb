@@ -40,7 +40,7 @@ A client or node can run an NTP daemon to keep its system clock in sync with sta
 
 ## Converting Timestamps to UTC
 
-It's not always possible to convert a Unix time to a UTC time, because Unix time doesn't have leap seconds, but UTC does. That means that there are some Unix times which correspond to two different UTC times, and there are other Unix times which don't correspond to any UTC time. Be suspicious of any function which claims to convert Unix time to UTC time. It's possible, but to be correct, it would have to give two answers for some Unix times, and errors for other Unix times.
+It's not always possible to convert a Unix time to a UTC time, because Unix time doesn't have leap seconds, but UTC does. That means that there are some Unix times which correspond to two different UTC times. Be suspicious of any function which claims to convert Unix time to UTC time. It's possible, but to be correct, it would have to give two answers for some Unix times. (In theory, leap seconds can be negative, but that has never happened.)
 
 Leap seconds are rare, so it's usually not a problem to convert a Unix time to a UTC time; just check the converter that you're using to make sure that it's got some sophistication.
 
