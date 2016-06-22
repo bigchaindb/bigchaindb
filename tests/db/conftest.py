@@ -9,7 +9,6 @@ Tasks:
 import pytest
 import rethinkdb as r
 
-import bigchaindb
 from bigchaindb import Bigchain
 from bigchaindb.db import get_conn
 
