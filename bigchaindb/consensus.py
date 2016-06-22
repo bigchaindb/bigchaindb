@@ -1,4 +1,3 @@
-import copy
 from abc import ABCMeta, abstractmethod
 
 import bigchaindb.exceptions as exceptions
