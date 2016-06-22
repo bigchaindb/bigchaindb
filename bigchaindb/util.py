@@ -400,10 +400,12 @@ def fulfill_threshold_signature_fulfillment(fulfillment, parsed_fulfillment, ful
             exceptions.KeypairMismatchException('Public key {} cannot be found in the fulfillment'
                                                 .format(current_owner))
         try:
-            subfulfillment.sign(serialize(fulfillment_message), key_pairs[current_owner])
+            private_key = key_pairs[current_owner]
         except KeyError:
-            raise exceptions.KeypairMismatchException('Public key {} is not a pair to any of the private keys'
-                                                      .format(current_owner))
+            raise exceptions.KeypairMismatchException(
+                'Public key {} is not a pair to any of the private keys'.format(current_owner))
+
+        subfulfillment.sign(serialize(fulfillment_message), private_key)
         parsed_fulfillment.add_subfulfillment(subfulfillment)
 
     return parsed_fulfillment
