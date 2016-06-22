@@ -58,3 +58,17 @@ def test_bigchain_class_initialization_with_parameters(config):
     assert bigchain.federation_nodes == init_kwargs['keyring']
     assert bigchain.consensus == BaseConsensusRules
     assert bigchain._conn is None
+
+
+def test_get_blocks_status_containing_tx(monkeypatch):
+    from bigchaindb.core import Bigchain
+    blocks = [
+        {'id': 1}, {'id': 2}
+    ]
+    monkeypatch.setattr(
+        Bigchain, 'search_block_election_on_index', lambda x, y, z: blocks)
+    monkeypatch.setattr(
+        Bigchain, 'block_election_status', lambda x, y: Bigchain.BLOCK_VALID)
+    bigchain = Bigchain(public_key='pubkey', private_key='privkey')
+    with pytest.raises(Exception):
+        bigchain.get_blocks_status_containing_tx('txid')
