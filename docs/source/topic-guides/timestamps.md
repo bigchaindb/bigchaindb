@@ -26,6 +26,13 @@ If a client or node's system clock is wrong, then its timestamps will be wrong. 
 Those timestamps come from many sources, so you can look at all of them to get some statistical sense of when the transaction "actually happened." The timestamp of the block should always be after the timestamp of the transaction, and the timestamp of the votes should always be after the timestamp of the block.
 
 
+## How BigchainDB Uses Timestamps
+
+BigchainDB _doesn't_ use timestamps to determine the order of transactions or blocks. In particular, the order of blocks is determined by RethinkDB's changefeed on the bigchain table.
+
+BigchainDB _does_ use timestamps for some things. It uses them to determine if a transaction has been waiting in the backlog for too long (i.e. because the node assigned to it hasn't handled it yet). It also uses timestamps to determine the status of timeout conditions (used by escrow).
+
+
 ## Syncing with Standard Clocks
 
 A client or node can run an NTP daemon to keep its system clock in sync with standard clocks. There's more information about that in the section titled [Sync Your System Clock](../nodes/setup-run-node.html#sync-your-system-clock).
