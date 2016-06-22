@@ -100,6 +100,7 @@ class AbstractConsensusRules(metaclass=ABCMeta):
         """
         raise NotImplementedError
 
+
 class BaseConsensusRules(AbstractConsensusRules):
     """Base consensus rules for Bigchain.
 
