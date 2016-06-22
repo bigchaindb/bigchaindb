@@ -445,12 +445,11 @@ class Bigchain(object):
         if block['votes']:
             for vote in block['votes']:
                 if vote['node_pubkey'] == self.me:
-                    if util.verify_vote_signature(block, vote):
-                        return True
-                    else:
+                    if not util.verify_vote_signature(block, vote):
                         raise exceptions.ImproperVoteError(
                             'Block {block_id} already has an incorrectly signed vote '
                             'from public key {me}').format(block_id=block['id'], me=self.me)
+                    return True
         return False
 
     def is_valid_block(self, block):
