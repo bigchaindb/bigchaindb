@@ -1,3 +1,7 @@
+from collections import namedtuple
+
+from rethinkdb.ast import RqlQuery
+
 import pytest
 
 
@@ -82,3 +86,12 @@ def test_has_previous_vote(monkeypatch):
     block = {'votes': ({'node_pubkey': 'pubkey'},)}
     with pytest.raises(Exception):
         bigchain.has_previous_vote(block)
+
+
+@pytest.mark.parametrize('items,exists', (((0,), True), ((), False)))
+def test_transaction_exists(monkeypatch, items, exists):
+    from bigchaindb.core import Bigchain
+    monkeypatch.setattr(
+        RqlQuery, 'run', lambda x, y: namedtuple('response', 'items')(items))
+    bigchain = Bigchain(public_key='pubkey', private_key='privkey')
+    assert bigchain.transaction_exists('txid') is exists
