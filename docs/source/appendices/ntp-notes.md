@@ -9,7 +9,7 @@ There are several NTP daemons available, including:
 * Maybe [Ntimed](http://nwtime.org/projects/ntimed/), once it's production-ready
 * [More](https://en.wikipedia.org/wiki/Ntpd#Implementations)
 
-We suggest you run your NTP daemon in a mode which steps the system clock back by one second when a leap second occurs, rather than using one of the fancy "slewing" or "smearing" options. That's the default with `ntpd` and `chronyd`. (Aside: There's [an interesting blog post by Red Hat](http://developers.redhat.com/blog/2015/06/01/five-different-ways-handle-leap-seconds-ntp/) about the various ways to handle leap seconds.)
+We suggest you run your NTP daemon in a mode which tells the kernel to step the system clock back by one second when a leap second occurs, rather than using one of the fancy "slewing" or "smearing" options. That's the default with `ntpd` and `chronyd`. (Aside: There's [an interesting blog post by Red Hat](http://developers.redhat.com/blog/2015/06/01/five-different-ways-handle-leap-seconds-ntp/) about the various ways to handle leap seconds.)
 
 It's tricky to make an NTP daemon setup secure. Always install the latest version and read the documentation about how to configure and run it securely.
 
