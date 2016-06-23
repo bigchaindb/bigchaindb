@@ -28,7 +28,7 @@ We suggest that BigchainDB nodes run their NTP daemon in a mode which tells the 
 
 The result is that some timestamps can't be converted unambigously to a single UTC timestamp, but that only happens for leap seconds, and leap seconds are rare. (Only 26 had been inserted between 1972 and the end of 2015.)
 
-**So long as you avoid the leap seconds, you can convert BigchainDB timestamps (Unix time timestamps) to UTC unambiguosly using any standard conversion tool or library function.**
+**So long as you avoid the leap seconds, you can convert BigchainDB timestamps (Unix time timestamps) to UTC unambiguously using any standard conversion tool or library function.**
 
 There's [a list of all the leap seconds on Wikipedia](https://en.wikipedia.org/wiki/Leap_second).
 
@@ -68,7 +68,7 @@ BigchainDB has a utility function named `timestamp()` which amounts to:
 timestamp() = str(round(time.time()))
 ```
 
-In other words, it calls the `time()` function in Python's `time` module, rounds that to the nearest integer, and converts the result to a string.
+In other words, it calls the `time()` function in Python's `time` module, [rounds](https://docs.python.org/3/library/functions.html#round) that to the nearest integer, and converts the result to a string.
 
 It rounds the output of `time.time()` to the nearest second because, according to [the Python documentation for `time.time()`](https://docs.python.org/3.4/library/time.html#time.time), "...not all systems provide time with a better precision than 1 second."
 
@@ -80,6 +80,10 @@ ret = clock_gettime(CLOCK_REALTIME, &tp);
 With `CLOCK_REALTIME` as the first argument, it returns the Unix time as described above.
 
 
-## Why Not Use UTC, TAI or Something Unambiguous for Timestamps?
+## Why Not Use UTC, TAI or Some Other Time that Has Unambiguous Timestamps for Leap Seconds?
 
-*nix system clocks, and the library functions to access them, use Unix time (also called POSIX time), not UTC, TAI, or something unambiguous. There are many nonstandard and uncommon ways to get an unambiguous time, but we opted to use something standard. Unix time is only problematic for leap seconds, and those are rare. All other times are represented uniquely.
+It would be nice to use UTC or TAI timestamps, but unfortunately, *nix system clocks use Unix time (POSIX time) so that's what we can _easily get_ from them, e.g. using clock_gettime().
+
+In principle, it's possible to get UTC or TAI timestamps, but it's also tricky and nonstandard. One must be careful, and in our opinion, the added complexity isn't justified.
+
+The Unix time timestamps we use are only ambiguous for leap seconds, and those are very rare. Even for those timestamps, the extra uncertainty is only one second, and that's not bad considering that we only report timestamps to a precision of one second in the first place. All other timestamps can be converted to UTC with no ambiguity.
