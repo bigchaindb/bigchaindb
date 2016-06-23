@@ -149,7 +149,7 @@ class TestBigchainApi(object):
     def test_assign_transaction_multiple_nodes(self, b, user_vk, user_sk):
         # create 5 federation nodes
         for _ in range(5):
-            b.federation_nodes.append(crypto.generate_key_pair()[1])
+            b.nodes_except_me.append(crypto.generate_key_pair()[1])
 
         # test assignee for several transactions
         for _ in range(20):
@@ -161,8 +161,8 @@ class TestBigchainApi(object):
             # retrieve the transaction
             response = r.table('backlog').get(tx_signed['id']).run(b.conn)
 
-            # check if the assignee is the federation_nodes
-            assert response['assignee'] in b.federation_nodes
+            # check if the assignee is one of the _other_ federation nodes
+            assert response['assignee'] in b.nodes_except_me
 
     @pytest.mark.usefixtures('inputs')
     def test_genesis_block(self, b):
@@ -440,7 +440,7 @@ class TestBlockValidation(object):
             'timestamp': util.timestamp(),
             'transactions': [tx_invalid],
             'node_pubkey': b.me,
-            'voters': b.federation_nodes
+            'voters': b.nodes_except_me
         }
 
         block_data = util.serialize(block)

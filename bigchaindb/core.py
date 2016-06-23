@@ -59,7 +59,7 @@ class Bigchain(object):
         self.dbname = dbname or bigchaindb.config['database']['name']
         self.me = public_key or bigchaindb.config['keypair']['public']
         self.me_private = private_key or bigchaindb.config['keypair']['private']
-        self.federation_nodes = keyring or bigchaindb.config['keyring']
+        self.nodes_except_me = keyring or bigchaindb.config['keyring']
         self.consensus = config_utils.load_consensus_plugin(consensus_plugin)
 
         if not self.me or not self.me_private:
@@ -127,8 +127,8 @@ class Bigchain(object):
         # we will assign this transaction to `one` node. This way we make sure that there are no duplicate
         # transactions on the bigchain
 
-        if self.federation_nodes:
-            assignee = random.choice(self.federation_nodes)
+        if self.nodes_except_me:
+            assignee = random.choice(self.nodes_except_me)
         else:
             # I am the only node
             assignee = self.me
@@ -395,7 +395,7 @@ class Bigchain(object):
             'timestamp': util.timestamp(),
             'transactions': validated_transactions,
             'node_pubkey': self.me,
-            'voters': self.federation_nodes + [self.me]
+            'voters': self.nodes_except_me + [self.me]
         }
 
         # Calculate the hash of the new block

@@ -138,7 +138,7 @@ class BaseConsensusRules(AbstractConsensusRules):
                 raise ValueError('A CREATE operation has no inputs')
             # TODO: for now lets assume a CREATE transaction only has one current_owner
             if transaction['transaction']['fulfillments'][0]['current_owners'][0] not in (
-                    bigchain.federation_nodes + [bigchain.me]):
+                    bigchain.nodes_except_me + [bigchain.me]):
                 raise exceptions.OperationError(
                     'Only federation nodes can use the operation `CREATE`')
 
@@ -198,7 +198,7 @@ class BaseConsensusRules(AbstractConsensusRules):
             raise exceptions.InvalidHash()
 
         # Check if the block was created by a federation node
-        if block['block']['node_pubkey'] not in (bigchain.federation_nodes + [bigchain.me]):
+        if block['block']['node_pubkey'] not in (bigchain.nodes_except_me + [bigchain.me]):
             raise exceptions.OperationError('Only federation nodes can create blocks')
 
         # Check if block signature is valid
