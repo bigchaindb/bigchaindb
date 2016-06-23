@@ -8,7 +8,7 @@ This section explains a way to deploy a cluster of BigchainDB nodes on Amazon We
 
 You might ask why one would want to deploy a centrally-controlled BigchainDB cluster. Isn't BigchainDB supposed to be decentralized, where each node is controlled by a different person or organization?
 
-That's true, but there are some reasons why one might want a centrally-controlled cluster: 1) for testing, and 2) for initial deployment. Afterwards, the control of each node can be handed over to a different entity.
+That's true, but there are some reasons why one might want a centrally-controlled cluster: 1) for testing, and 2) for initial deployment, after which the control of each node can be handed over to a different entity.
 
 ## Python Setup
 
@@ -124,7 +124,7 @@ fab --fabfile=fabfile-monitor.py --hosts=<EC2 hostname> run_monitor
 
 For more information about monitoring (e.g. how to view the Grafana dashboard in your web browser), see the [Monitoring](monitoring.html) section of this documentation.
 
-To configure a BigchainDB node to send monitoring data to the monitoring server, change the statsd host in the configuration of the BigchainDB node. The section on [Configuring a BigchainDB Node](configuration.html) explains how you can do that. (For example, you can change the statsd host in `$HOME/.bigchaindb`.)
+To configure a BigchainDB node to send monitoring data to the monitoring server, change the statsd host in the configuration of the BigchainDB node. The section on [Configuring a BigchainDB Node](../nodes/configuration.html) explains how you can do that. (For example, you can change the statsd host in `$HOME/.bigchaindb`.)
 
 
 ## Deploy a BigchainDB Cluster

@@ -58,7 +58,7 @@ def init():
                                              [r.row['vote']['voting_for_block'], r.row['node_pubkey']]).run(conn)
     # secondary index for payload hash
     r.db(dbname).table('bigchain')\
-        .index_create('payload_hash', r.row['block']['transactions']['transaction']['data']['hash'], multi=True)\
+        .index_create('payload_uuid', r.row['block']['transactions']['transaction']['data']['uuid'], multi=True)\
         .run(conn)
 
     # wait for rethinkdb to finish creating secondary indexes

@@ -35,11 +35,18 @@ Familiarize yourself with how we do coding and documentation in the BigchainDB p
     * [Scott Chacon's blog post about GitHub Flow](http://scottchacon.com/2011/08/31/github-flow.html)
 * [semantic versioning](http://semver.org/)
 
-### Step 2 - Fork bigchaindb on GitHub
+### Step 2 - Install some Dependencies
+
+* [Install RethinkDB Server](https://rethinkdb.com/docs/install/)
+* Make sure you have Python 3.4+ (maybe in a virtualenv)
+* [Install BigchaindB Server's OS-level dependencies](http://bigchaindb.readthedocs.io/en/latest/nodes/setup-run-node.html#install-bigchaindb-server)
+* [Make sure you have the latest version of pip](http://bigchaindb.readthedocs.io/en/latest/nodes/setup-run-node.html#how-to-install-bigchaindb-with-pip)
+
+### Step 3 - Fork bigchaindb on GitHub
 
 In your web browser, go to [the BigchainDB repository on GitHub](https://github.com/bigchaindb/bigchaindb) and click the `Fork` button in the top right corner. This creates a new Git repository named `bigchaindb` in _your_ GitHub account.
 
-### Step 3 - Clone Your Fork
+### Step 4 - Clone Your Fork
 
 (This only has to be done once.) In your local terminal, use Git to clone _your_ `bigchaindb` repository to your local computer. Also add the original GitHub bigchaindb/bigchaindb repository as a remote named `upstream` (a convention):
 ```text
@@ -48,7 +55,7 @@ cd bigchaindb
 git add upstream git@github.com:bigchaindb/bigchaindb.git
 ```
 
-### Step 4 - Fetch and Merge the Latest from `upstream/master`
+### Step 5 - Fetch and Merge the Latest from `upstream/master`
 
 Switch to the `master` branch locally, fetch all `upstream` branches, and merge the just-fetched `upstream/master` branch with the local `master` branch:
 ```text
@@ -57,7 +64,7 @@ git fetch upstream
 git merge upstream/master
 ```
 
-### Step 5 - Install the Python module and the CLI
+### Step 6 - Install the Python module and the CLI
 
 In order to use and run the source you just cloned from your fork, you need to install BigchainDB on your computer.
 The core of BigchainDB is a Python module you can install using the standard [Python packaging tools](http://python-packaging-user-guide.readthedocs.org/en/latest/).
@@ -65,8 +72,8 @@ We highly suggest you use `pip` and `virtualenv` to manage your local developmen
 If you need more information on how to do that, refer to the *Python Packaging User Guide* to [install `pip`](http://python-packaging-user-guide.readthedocs.org/en/latest/installing/#requirements-for-installing-packages) and to [create your first `virtualenv`](http://python-packaging-user-guide.readthedocs.org/en/latest/installing/#creating-virtual-environments).
 
 Once you have `pip` installed and (optionally) you are in a virtualenv, go to the root of the repository (i.e. where the `setup.py` file is), and type:
-```bash
-$ pip install -e .[dev]
+```text
+pip install -e .[dev]
 ```
 
 This will install the BigchainDB Python module, the CLI, and all the dependencies useful for contributing to the development of BigchainDB.
@@ -77,8 +84,10 @@ How? Let's split the command down into its components:
  - `.` installs what's in the current directory
  - `[dev]` adds some [extra requirements](https://pythonhosted.org/setuptools/setuptools.html#declaring-extras-optional-features-with-their-own-dependencies) to the installation. (If you are curious, open `setup.py` and look for `dev` in the `extras_require` section.)
 
+Aside: An alternative to `pip install -e .[dev]` is `python setup.py develop`.
 
-### Step 6 - Create a New Branch for Each Bug/Feature
+
+### Step 7 - Create a New Branch for Each Bug/Feature
 
 If your new branch is to **fix a bug** identified in a specific GitHub Issue with number `ISSNO`, then name your new branch `bug/ISSNO/short-description-here`. For example, `bug/67/fix-leap-year-crash`.
 
@@ -89,7 +98,7 @@ Otherwise, please give your new branch a short, descriptive, all-lowercase name.
 git checkout -b new-branch-name
 ```
 
-### Step 7 - Make Edits, git add, git commit
+### Step 8 - Make Edits, git add, git commit
 
 With your new branch checked out locally, make changes or additions to the code or documentation. Remember to:
 
@@ -116,14 +125,14 @@ If your addition or change is substantial, then please add a line or two to the 
 
 (When you submit your pull request [following the instructions below], we run all the tests automatically, so we will see if some are failing. If you don't know why some tests are failing, you can still submit your pull request, but be sure to note the failing tests and to ask for help with resolving them.)
 
-### Step 8 - Push Your New Branch to origin
+### Step 9 - Push Your New Branch to origin
 
 Make sure you've commited all the additions or changes you want to include in your pull request. Then push your new branch to origin (i.e. _your_ remote bigchaindb repository).
 ```text
 git push origin new-branch-name
 ```
 
-### Step 9 - Create a Pull Request 
+### Step 10 - Create a Pull Request 
 
 Go to the GitHub website and to _your_ remote bigchaindb repository (i.e. something like https://github.com/your-user-name/bigchaindb). 
 

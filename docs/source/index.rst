@@ -1,43 +1,17 @@
-.. You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 BigchainDB Documentation
 ========================
 
 Table of Contents
 -----------------
 
-
 .. toctree::
-   :maxdepth: 5
-   :numbered:
+   :maxdepth: 1
 
    introduction
-   installing-server
-   running-unit-tests
-   configuration
-   python-server-api-examples
-   bigchaindb-cli
-   http-client-server-api
-   python-driver-api-examples
-   local-rethinkdb-cluster
-   deploy-on-aws
-   json-serialization
-   cryptography
-   models
-   developer-interface
-   consensus
-   monitoring
-   licenses
-   contributing
+   quickstart
+   nodes/index
+   clusters-feds/index
+   drivers-clients/index
+   topic-guides/index
    release-notes
-   glossary
-
-
-Indices and Tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
+   appendices/index

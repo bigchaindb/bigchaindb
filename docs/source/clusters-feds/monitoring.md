@@ -1,6 +1,6 @@
-# Monitoring
+# Cluster Monitoring
 
-BigchainDB uses [StatsD](https://github.com/etsy/statsd) for monitoring. We require some additional infrastructure to take full advantage of its functionality:
+BigchainDB uses [StatsD](https://github.com/etsy/statsd) for cluster monitoring. We require some additional infrastructure to take full advantage of its functionality:
 
 * an agent to listen for metrics: [Telegraf](https://github.com/influxdata/telegraf),
 * a time-series database: [InfluxDB](https://influxdata.com/time-series-platform/influxdb/), and
@@ -8,7 +8,7 @@ BigchainDB uses [StatsD](https://github.com/etsy/statsd) for monitoring. We requ
 
 We put each of those inside its own Docker container. The whole system is illustrated below.
 
-![BigchainDB monitoring system diagram: Application metrics flow from servers running BigchainDB to Telegraf to InfluxDB to Grafana](./_static/monitoring_system_diagram.png)
+![BigchainDB monitoring system diagram: Application metrics flow from servers running BigchainDB to Telegraf to InfluxDB to Grafana](../_static/monitoring_system_diagram.png)
 
 For ease of use, we've created a Docker [_Compose file_](https://docs.docker.com/compose/compose-file/) (named `docker-compose-monitor.yml`) to define the monitoring system setup. To use it, just go to to the top `bigchaindb` directory and run:
 ```text
@@ -28,7 +28,7 @@ You can view the Grafana dashboard in your web browser at:
 
 (You may want to replace `localhost` with another hostname in that URL, e.g. the hostname of a remote monitoring server.)
 
-The login and password are `admin` by default. If BigchainDB is running and processing transactions, you should see analytics—if not, [start BigchainDB](installing-server.html#run-bigchaindb) and load some test transactions:
+The login and password are `admin` by default. If BigchainDB is running and processing transactions, you should see analytics—if not, [start BigchainDB](../nodes/setup-run-node.html#run-bigchaindb) and load some test transactions:
 ```text
 $ bigchaindb load
 ```

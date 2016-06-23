@@ -32,7 +32,7 @@ def test_bigchain_class_default_initialization(config):
     assert bigchain.dbname == config['database']['name']
     assert bigchain.me == config['keypair']['public']
     assert bigchain.me_private == config['keypair']['private']
-    assert bigchain.federation_nodes == config['keyring']
+    assert bigchain.nodes_except_me == config['keyring']
     assert bigchain.consensus == BaseConsensusRules
     assert bigchain._conn is None
 
@@ -55,6 +55,6 @@ def test_bigchain_class_initialization_with_parameters(config):
     assert bigchain.dbname == init_kwargs['dbname']
     assert bigchain.me == init_kwargs['public_key']
     assert bigchain.me_private == init_kwargs['private_key']
-    assert bigchain.federation_nodes == init_kwargs['keyring']
+    assert bigchain.nodes_except_me == init_kwargs['keyring']
     assert bigchain.consensus == BaseConsensusRules
     assert bigchain._conn is None

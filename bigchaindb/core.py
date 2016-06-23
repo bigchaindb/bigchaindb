@@ -43,11 +43,11 @@ class Bigchain(object):
         A Bigchain instance has several configuration parameters (e.g. host).
         If a parameter value is passed as an argument to the Bigchain
         __init__ method, then that is the value it will have.
-        Otherwise, the parameter value will be the value from the local
-        configuration file. If it's not set in that file, then the value
-        will come from an environment variable. If that environment variable
-        isn't set, then the parameter will have its default value (defined in
-        bigchaindb.__init__).
+        Otherwise, the parameter value will come from an environment variable.
+        If that environment variable isn't set, then the value
+        will come from the local configuration file. And if that variable
+        isn't in the local configuration file, then the parameter will have
+        its default value (defined in bigchaindb.__init__).
 
         Args:
             host (str): hostname where RethinkDB is running.
@@ -64,7 +64,7 @@ class Bigchain(object):
         self.dbname = dbname or bigchaindb.config['database']['name']
         self.me = public_key or bigchaindb.config['keypair']['public']
         self.me_private = private_key or bigchaindb.config['keypair']['private']
-        self.federation_nodes = keyring or bigchaindb.config['keyring']
+        self.nodes_except_me = keyring or bigchaindb.config['keyring']
         self.consensus = config_utils.load_consensus_plugin(consensus_plugin)
 
         if not self.me or not self.me_private:
@@ -132,8 +132,8 @@ class Bigchain(object):
         # we will assign this transaction to `one` node. This way we make sure that there are no duplicate
         # transactions on the bigchain
 
-        if self.federation_nodes:
-            assignee = random.choice(self.federation_nodes)
+        if self.nodes_except_me:
+            assignee = random.choice(self.nodes_except_me)
         else:
             # I am the only node
             assignee = self.me
@@ -391,12 +391,16 @@ class Bigchain(object):
             dict: created block.
         """
 
+        # Prevent the creation of empty blocks
+        if len(validated_transactions) == 0:
+            raise exceptions.OperationError('Empty block creation is not allowed')
+
         # Create the new block
         block = {
             'timestamp': util.timestamp(),
             'transactions': validated_transactions,
             'node_pubkey': self.me,
-            'voters': self.federation_nodes + [self.me]
+            'voters': self.nodes_except_me + [self.me]
         }
 
         # Calculate the hash of the new block

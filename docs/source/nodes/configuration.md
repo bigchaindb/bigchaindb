@@ -60,11 +60,11 @@ environment variables available are:
 - `BIGCHAINDB_KEYPAIR_PUBLIC` defines the public key of the BigchainDB node.
 - `BIGCHAINDB_KEYPAIR_PRIVATE` defines the private key of the BigchainDB node.
 - `BIGCHAINDB_KEYRING` is a colon-separated list of the public keys of all _other_ nodes in the cluster.
-- `BIGCHAINDB_STATSD_HOST` defines the hostname of the statsd server for [monitoring](monitoring.html).
+- `BIGCHAINDB_STATSD_HOST` defines the hostname of the statsd server for [monitoring](../clusters-feds/monitoring.html).
 - `BIGCHAINDB_STATSD_PORT` defines the port of the statsd server for monitoring.
 - `BIGCHAINDB_STATSD_RATE` is a float between `0` and `1` that defines the fraction of transaction operations sampled.
 - `BIGCHAINDB_API_ENDPOINT` defines the API endpoint to use (e.g. `http://localhost:9984/api/v1`).
-- `BIGCHAINDB_CONSENSUS_PLUGIN` defines the name of the [consensus plugin](consensus.html) to use.
+- `BIGCHAINDB_CONSENSUS_PLUGIN` defines the name of the [consensus plugin](../appendices/consensus.html) to use.
 - `BIGCHAINDB_SERVER_BIND` defines where to bind the server socket, the format is `addr:port` (e.g. `localhost:9984`).
 - `BIGCHAINDB_SERVER_WORKERS` defines the [number of workers](http://docs.gunicorn.org/en/stable/settings.html#workers)
   to start for the server API.
@@ -81,11 +81,13 @@ the `server` section accepts all the options specified in the
 
 ## Order of Precedence in Determining Configuration Values
 
-All configuration values start with their default values (defined in `bigchaindb.__init__`), but a default value can be overriden by an environment variable, and a value set by an environment variable can be overriden by a value in a local configuration file (`$HOME/.bigchaindb` or the location specified by the `-c` command-line option).
+All configuration values start with their default values (defined in `bigchaindb.__init__`), but a default value
+can be overriden by a value in a local configuration file (`$HOME/.bigchaindb` or the location specified by the
+`-c` command-line option), and a value set by a local configuration file can be overriden by a value in an environment variable
 
 In summary, there is an order of precedence in reading configuration values:
-1. local configuration file
-2. environment variables
+1. environment variables
+2. local configuration file
 3. default configuration file (defined in ``bigchaindb.__init__``)
 
 This means that if the default configuration contains:
@@ -93,6 +95,7 @@ This means that if the default configuration contains:
 ```json
 {
     "database": {
+        "name": "bigchain",
         "host": "localhost",
         "port": 28015
     }
@@ -103,7 +106,8 @@ while the local file `local.json` contains:
 ```json
 {
     "database": {
-        "host": "ec2-xx-xx-xxx-xxx.eu-central-1.compute.amazonaws.com"
+        "host": "ec2-xx-xx-xxx-xxx.eu-central-1.compute.amazonaws.com",
+        "port": 5000
     }
 }
 
@@ -111,8 +115,7 @@ while the local file `local.json` contains:
 
 and you run this command:
 ```
-$ BIGCHAINDB_DATABASE_HOST=anotherhost.com \
-  BIGCHAINDB_DATABASE_PORT=4242 \
+$ BIGCHAINDB_DATABASE_PORT=4242 \
   BIGCHAINDB_KEYRING=pubkey0:pubkey1 \
   bigchaindb -c local.json show-config
 ```
