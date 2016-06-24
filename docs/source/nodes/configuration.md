@@ -6,11 +6,28 @@ The value of each configuration setting is determined according to the following
 * Otherwise, if it's set in a local config file, then use that value
 * Otherwise, use the default value
 
+For convenience, here's a list of all the relevant environment variables (documented below):
+
+`BIGCHAINDB_KEYPAIR_PUBLIC`<br>
+`BIGCHAINDB_KEYPAIR_PRIVATE`<br>
+`BIGCHAINDB_KEYRING`<br>
+`BIGCHAINDB_DATABASE_HOST`<br>
+`BIGCHAINDB_DATABASE_PORT`<br>
+`BIGCHAINDB_DATABASE_NAME`<br>
+`BIGCHAINDB_SERVER_BIND`<br>
+`BIGCHAINDB_SERVER_WORKERS`<br>
+`BIGCHAINDB_SERVER_THREADS`<br>
+`BIGCHAINDB_API_ENDPOINT`<br>
+`BIGCHAINDB_CONSENSUS_PLUGIN`<br>
+`BIGCHAINDB_STATSD_HOST`<br>
+`BIGCHAINDB_STATSD_PORT`<br>
+`BIGCHAINDB_STATSD_RATE`<br>
+
 The local config file is `$HOME/.bigchaindb` by default (a file which might not even exist), but you can tell BigchainDB to use a different file by using the `-c` command-line option, e.g. `bigchaindb -c path/to/config_file.json start`.
 
 You can read the current default values in the file [bigchaindb/\_\_init\_\_.py](https://github.com/bigchaindb/bigchaindb/blob/master/bigchaindb/__init__.py). (The link is to the latest version.)
 
-Running `bigchaindb -y configure` will generate a local config file in `$HOME/.bigchaindb` with all the default values, with two exceptions. It will generate a valid private/public keypair, rather than using the default keypair (`None` and `None`).
+Running `bigchaindb -y configure` will generate a local config file in `$HOME/.bigchaindb` with all the default values, with two exceptions: It will generate a valid private/public keypair, rather than using the default keypair (`None` and `None`).
 
 
 ## keypair.public & keypair.private
