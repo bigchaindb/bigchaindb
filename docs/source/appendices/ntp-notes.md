@@ -1,13 +1,17 @@
 # Notes on NTP Daemon Setup
 
-As mentioned [elsewhere in these docs](../nodes/setup-run-node.html), there are several NTP daemons available, including:
+There are several NTP daemons available, including:
 
-* The reference NTP daemon from ntp.org; see [their support website](http://support.ntp.org/bin/view/Support/WebHome)
-* [OpenNTPD](http://www.openntpd.org/)
+* The reference NTP daemon (`ntpd`) from ntp.org; see [their support website](http://support.ntp.org/bin/view/Support/WebHome)
 * [chrony](https://chrony.tuxfamily.org/index.html)
+* [OpenNTPD](http://www.openntpd.org/)
 * Maybe [NTPsec](https://www.ntpsec.org/), once it's production-ready
 * Maybe [Ntimed](http://nwtime.org/projects/ntimed/), once it's production-ready
 * [More](https://en.wikipedia.org/wiki/Ntpd#Implementations)
+
+We suggest you run your NTP daemon in a mode which will tell your OS kernel to handle leap seconds in a particular way: the default NTP way, so that system clock adjustments are localized and not spread out across the minutes, hours, or days surrounding leap seconds (e.g. "slewing" or "smearing"). There's [a nice Red Hat Developer Blog post about the various options](http://developers.redhat.com/blog/2015/06/01/five-different-ways-handle-leap-seconds-ntp/).
+
+Use the default mode with `ntpd` and `chronyd`. For another NTP daemon, consult its documentation.
 
 It's tricky to make an NTP daemon setup secure. Always install the latest version and read the documentation about how to configure and run it securely.
 

@@ -8,6 +8,11 @@ _Transactions_ are used to register, issue, create or transfer things (e.g. asse
 Below we often refer to cryptographic hashes, keys and signatures. The details of those are covered in [the section on cryptography](../appendices/cryptography.html).
 
 
+## Some Words of Caution
+
+BigchainDB is still in the early stages of development. The data models described below may change substantially before BigchainDB reaches a production-ready state (i.e. version 1.0 and higher).
+
+
 ## Transaction Concepts
 
 Transactions are the most basic kind of record stored by BigchainDB. There are two kinds: creation transactions and transfer transactions.
@@ -36,13 +41,6 @@ When a node is asked to check the validity of a transaction, it must do several 
 * validation of all fulfillments, including validation of cryptographic signatures if they’re among the conditions.
 
 The full details of transaction validation can be found in the code for `validate_transaction()` in the `BaseConsensusRules` class of [`consensus.py`](https://github.com/bigchaindb/bigchaindb/blob/master/bigchaindb/consensus.py) (unless other validation rules are being used by a federation, in which case those should be consulted instead).
-
-
-## Some Words of Caution
-
-BigchainDB is still in the early stages of development. The data models described below may change substantially before BigchainDB reaches a production-ready state (i.e. version 1.0 and higher).
-
-Also, note that timestamps come from clients and nodes. Unless you have some reason to believe that some timestamps are correct or meaningful, we advise you to ignore them (i.e. don't make any decisions based on them). (You might trust a timestamp, for example, if it came from a trusted timestamping service and it is embedded in the transaction data `payload` along with the signature from the timestamping service. You might trust node timestamps if you know all the nodes are running NTP servers.)
 
 
 ## The Transaction Model
@@ -76,7 +74,7 @@ Here's some explanation of the contents of a transaction:
     - `conditions`: List of conditions. Each _condition_ is a _crypto-condition_ that needs to be fulfilled by a transfer transaction in order to transfer ownership to new owners.
     See [Conditions and Fulfillments](#conditions-and-fulfillments) below.
     - `operation`: String representation of the operation being performed (currently either "CREATE" or "TRANSFER"). It determines how the transaction should be validated.
-    - `timestamp`: Time of creation of the transaction in UTC. It's provided by the client.
+    - `timestamp`: The Unix time when the transaction was created. It's provided by the client. See [the section on timestamps](timestamps.html).
     - `data`:
         - `uuid`: UUID version 4 (random) converted to a string of hex digits in standard form.
         - `payload`: Can be any JSON document. It may be empty in the case of a transfer transaction.
@@ -238,7 +236,7 @@ If there is only one _current owner_, the fulfillment will be a simple signature
 
 - `id`: The hash of the serialized `block` (i.e. the `timestamp`, `transactions`, `node_pubkey`, and `voters`). This is also a database primary key; that's how we ensure that all blocks are unique.
 - `block`:
-    - `timestamp`: Timestamp when the block was created. It's provided by the node that created the block.
+    - `timestamp`: The Unix time when the block was created. It's provided by the node that created the block. See [the section on timestamps](timestamps.html).
     - `transactions`: A list of the transactions included in the block.
     - `node_pubkey`: The public key of the node that create the block.
     - `voters`: A list of public keys of federation nodes. Since the size of the 
@@ -260,7 +258,7 @@ Each node must generate a vote for each block, to be appended to that block's `v
         "previous_block": "<id of the block previous to this one>",
         "is_block_valid": "<true|false>",
         "invalid_reason": "<None|DOUBLE_SPEND|TRANSACTIONS_HASH_MISMATCH|NODES_PUBKEYS_MISMATCH",
-        "timestamp": "<timestamp of the voting action>"
+        "timestamp": "<Unix time when the vote was generated, provided by the voting node>"
     },
     "signature": "<signature of vote>"
 }
