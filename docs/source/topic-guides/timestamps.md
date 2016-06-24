@@ -11,31 +11,37 @@ When a BigchainDB client or node needs a timestamp, it calls a BigchainDB utilit
 
 We can't say anything about the accuracy of the system clock on clients. Timestamps from clients are still potentially useful, however, in a statistical sense. We say more about that below.
 
-We advise BigchainDB nodes to run special software (an "NTP daemon") to keep their system clock in sync with standard time servers.
+We advise BigchainDB nodes to run special software (an "NTP daemon") to keep their system clock in sync with standard time servers. (NTP stands for [Network Time Protocol](https://en.wikipedia.org/wiki/Network_Time_Protocol).)
 
 
 ## Converting Timestamps to UTC
 
-To convert a BigchainDB timestamp (a Unix time) to UTC, you need to know how the node providing the timestamp was maintaining its system clock (which is the source of its timestamps). In particular, you need to know how it was handling leap seconds. It turns out there are many ways to handle leap seconds. There's [a nice Red Hat Developer Blog post about the various options](http://developers.redhat.com/blog/2015/06/01/five-different-ways-handle-leap-seconds-ntp/):
+To convert a BigchainDB timestamp (a Unix time) to UTC, you need to know how the node providing the timestamp was set up. That's because different setups will report a different "Unix time" value around leap seconds! There's [a nice Red Hat Developer Blog post about the various setup options](http://developers.redhat.com/blog/2015/06/01/five-different-ways-handle-leap-seconds-ntp/). If you want more details, see [David Mills' pages about leap seconds, NTP, etc.](https://www.eecis.udel.edu/~mills/leap.html) (David Mills designed NTP.)
 
-> "When a leap second is inserted to UTC, the system clock skips that second [23:59:60] as it can’t be represented and is suddenly ahead of UTC by one second. There are several ways how the clock can be corrected."
+We advise BigchainDB nodes to run an NTP daemon [with particular settings](../appendices/ntp-notes.html), so that their timestamps are consistent.
 
-> "The most common approach is to simply step the clock back by one second when the clock gets to 00:00:00 UTC. This is implemented in the Linux kernel and it is enabled by default when the clock is synchronized with NTP servers by the ntpd or chronyd daemon from the reference or chrony NTP implementations respectively."
+If a timestamp comes from a node that's set up as we advise, it can be converted to UTC as follows:
 
-> "... There will be a backward step, but the clock will be off only for one second."
+1. Use a standard "Unix time to UTC" converter to get a UTC timestamp.
+2. Is the UTC timestamp a leap second, or the second before/after a leap second? There's [a list of all the leap seconds on Wikipedia](https://en.wikipedia.org/wiki/Leap_second).
+3. If no, then you are done.
+4. If yes, then it might not be possible to convert it to a single UTC timestamp. Even if it can't be converted to a single UTC timestamp, it _can_ be converted to a list of two possible UTC timestamps.
+Showing how to do that is beyond the scope of this documentation.
+In all likelihood, you will never have to worry about leap seconds because they are very rare.
+(There were only 26 between 1972 and the end of 2015.)
 
-We suggest that BigchainDB nodes run their NTP daemon in a mode which tells the kernel to step the system clock back by one second when a leap second occurs, rather than using one of the fancy "slewing" or "smearing" options. That way, there's only a small set of ambiguous timestamps (i.e. the ones associated with leap seconds).
 
-The result is that some timestamps can't be converted unambigously to a single UTC timestamp, but that only happens for leap seconds, and leap seconds are rare. (Only 26 had been inserted between 1972 and the end of 2015.)
-
-**So long as you avoid the leap seconds, you can convert BigchainDB timestamps (Unix time timestamps) to UTC unambiguously using any standard conversion tool or library function.**
-
-There's [a list of all the leap seconds on Wikipedia](https://en.wikipedia.org/wiki/Leap_second).
+## Calculating Elapsed Time Between Two Timestamps
 
 There's another gotcha with (Unix time) timestamps: you can't calculate the real-world elapsed time between two timestamps (correctly) by subtracting the smaller timestamp from the larger one. The result won't include any of the leap seconds that occured between the two timestamps. You could look up how many leap seconds happened between the two timestamps and add that to the result. There are many library functions for working with timestamps; those are beyond the scope of this documentation.
 
 
-## Using Timestamps
+## Avoid Doing Transactions Around Leap Seconds
+
+Because of the ambiguity and confusion that arises with Unix time around leap seconds, we advise users to avoid creating transactions around leap seconds.
+
+
+## Interpreting Sets of Timestamps
 
 You can look at many timestamps to get a statistical sense of when something happened. For example, a transaction in a decided-valid block has many associated timestamps:
 
@@ -77,13 +83,13 @@ How does `time.time()` work? If you look in the C source code, it calls `floatti
 ret = clock_gettime(CLOCK_REALTIME, &tp);
 ```
 
-With `CLOCK_REALTIME` as the first argument, it returns the Unix time as described above.
+With `CLOCK_REALTIME` as the first argument, it returns the "Unix time." ("Unix time" is in quotes because its value around leap seconds depends on how the system is set up; see above.)
 
 
 ## Why Not Use UTC, TAI or Some Other Time that Has Unambiguous Timestamps for Leap Seconds?
 
-It would be nice to use UTC or TAI timestamps, but unfortunately, *nix system clocks use Unix time (POSIX time) so that's what we can _easily get_ from them, e.g. using clock_gettime().
+It would be nice to use UTC or TAI timestamps, but unfortunately there's no commonly-available, standard way to get always-accurate UTC or TAI timestamps from the operating system on typical computers today (i.e. accurate around leap seconds).
 
-In principle, it's possible to get UTC or TAI timestamps, but it's also tricky and nonstandard. One must be careful, and in our opinion, the added complexity isn't justified.
+There _are_ commonly-available, standard ways to get the "Unix time," such as clock_gettime() function available in C. That's what we use (indirectly via Python). ("Unix time" is in quotes because its value around leap seconds depends on how the system is set up; see above.)
 
-The Unix time timestamps we use are only ambiguous for leap seconds, and those are very rare. Even for those timestamps, the extra uncertainty is only one second, and that's not bad considering that we only report timestamps to a precision of one second in the first place. All other timestamps can be converted to UTC with no ambiguity.
+The Unix-time-based timestamps we use are only ambiguous circa leap seconds, and those are very rare. Even for those timestamps, the extra uncertainty is only one second, and that's not bad considering that we only report timestamps to a precision of one second in the first place. All other timestamps can be converted to UTC with no ambiguity.
