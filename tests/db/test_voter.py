@@ -324,14 +324,14 @@ class TestBigchainVoter(object):
                        .order_by(r.asc((r.row['block']['timestamp'])))
                        .run(b.conn))
 
-        assert blocks[0]['block_number'] == 0
-        assert blocks[1]['block_number'] == 1
-        assert blocks[2]['block_number'] == 2
+        # retrieve votes
+        votes = r.table('votes')\
+            .order_by(r.asc((r.row['block_number'])))\
+            .run(b.conn)
 
-        # we don't vote on the genesis block right now
-        # assert blocks[0]['votes'][0]['vote']['voting_for_block'] == genesis['id']
-        assert blocks[1]['votes'][0]['vote']['voting_for_block'] == block_1['id']
-        assert blocks[2]['votes'][0]['vote']['voting_for_block'] == block_2['id']
+        assert blocks[0]['block_number'] == 0  # genesis block
+        assert votes[0]['block_number'] == 1 and votes[0]['vote']['voting_for_block'] == blocks[1]['id']
+        assert votes[1]['block_number'] == 2 and votes[1]['vote']['voting_for_block'] == blocks[2]['id']
 
     def test_voter_checks_for_previous_vote(self, b):
         b.create_genesis_block()
