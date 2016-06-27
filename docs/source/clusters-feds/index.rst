@@ -8,7 +8,9 @@ BigchainDB Clusters & Federations
    :maxdepth: 1
 
    node-cluster-fed
-   federation-ops
+   set-up-a-federation
+   backup
    deploy-on-aws
    monitoring
+   future-docs
    

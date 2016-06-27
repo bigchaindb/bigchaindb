@@ -1,6 +1,6 @@
-# Set Up and Run a Federation
+# Set Up a Federation
 
-This section is about how to set up and run a BigchainDB _federation_, where each node is operated by a different operator. If you want to set up and run a BigchainDB cluster on AWS (where all nodes are operated by you), then see [the section about that](deploy-on-aws.html).
+This section is about how to set up a BigchainDB _federation_, where each node is operated by a different operator. If you want to set up and run a BigchainDB cluster on AWS (where all nodes are operated by you), then see [the section about that](deploy-on-aws.html).
 
 
 ## Initial Checklist
@@ -25,19 +25,3 @@ The steps to set up a cluster node are outlined in the section titled [Set Up an
 1. Their RethinkDB hostname, e.g. `rdb.farm2.organization.org`
 2. Their BigchainDB public key, e.g. `Eky3nkbxDTMgkmiJC8i5hKyVFiAQNmPP4a2G4JdDxJCK`
 
-
-## Documentation to Come
-
-* Backing Up & Restoring data
-* Adding a node (including resharding etc.)
-* Removing a node
-* Logging
-* Node monitoring & crash recovery
-* Node Security
-    * Securing your OS
-    * Firewalls and security groups. Remember to open port 123 for NTP.
-    * (Private) key management
-    * RethinkDB security
-* Cluster monitoring
-* Internal watchdogs
-* External watchdogs
