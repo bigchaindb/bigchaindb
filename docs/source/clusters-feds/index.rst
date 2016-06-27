@@ -7,7 +7,7 @@ BigchainDB Clusters & Federations
 .. toctree::
    :maxdepth: 1
 
-   federation-set-up
+   federation-ops
    deploy-on-aws
    monitoring
    
