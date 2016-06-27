@@ -23,18 +23,9 @@ TODO: Notes about firewall setup. What ports should be open, for what kinds of t
 
 A BigchainDB node uses its system clock to generate timestamps for blocks and votes, so that clock should be kept in sync with some standard clock(s). The standard way to do that is to run an NTP daemon (Network Time Protocol daemon) on the node. (You could also use tlsdate, which uses TLS timestamps rather than NTP, but don't: it's not very accurate and it will break with TLS 1.3, which removes the timestamp.)
 
-NTP is a standard protocol. There are many NTP daemons implementing it. We don't recommend a particular one. On the contrary, we recommend that different nodes in a federation run different NTP daemons, so that a problem with one daemon won't affect all nodes. Some options are:
+NTP is a standard protocol. There are many NTP daemons implementing it. We don't recommend a particular one. On the contrary, we recommend that different nodes in a federation run different NTP daemons, so that a problem with one daemon won't affect all nodes.
 
-* The reference NTP daemon from ntp.org; see [their support website](http://support.ntp.org/bin/view/Support/WebHome)
-* [OpenNTPD](http://www.openntpd.org/)
-* [chrony](https://chrony.tuxfamily.org/index.html)
-* Maybe [NTPsec](https://www.ntpsec.org/), once it's production-ready
-* Maybe [Ntimed](http://nwtime.org/projects/ntimed/), once it's production-ready
-* [More](https://en.wikipedia.org/wiki/Ntpd#Implementations)
-
-It's tricky to make an NTP daemon setup secure. Always install the latest version and read the documentation about how to configure and run it securely.
-
-The appendix has [some notes on NTP daemon setup](../appendices/ntp-notes.html).
+Please see the [notes on NTP daemon setup in the Appendices](../appendices/ntp-notes.html).
 
 
 ## Set Up the File System for RethinkDB
