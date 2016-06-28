@@ -447,9 +447,7 @@ class Bigchain(object):
             True if this block already has a valid vote from this node, False otherwise. If
             there is already a vote, but the vote is invalid, raises an ImproperVoteError
         """
-        votes = r.table('votes').get_all([block['id'], self.me], index='block_and_voter').run(self.conn)
-
-        votes = list(votes)
+        votes = list(r.table('votes').get_all([block['id'], self.me], index='block_and_voter').run(self.conn))
 
         if len(votes) > 1:
             raise MultipleVotesError('Block {block_id} has {n_votes} votes from public key {me}'
