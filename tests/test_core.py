@@ -1,3 +1,7 @@
+from collections import namedtuple
+
+from rethinkdb.ast import RqlQuery
+
 import pytest
 
 
@@ -58,3 +62,36 @@ def test_bigchain_class_initialization_with_parameters(config):
     assert bigchain.nodes_except_me == init_kwargs['keyring']
     assert bigchain.consensus == BaseConsensusRules
     assert bigchain._conn is None
+
+
+def test_get_blocks_status_containing_tx(monkeypatch):
+    from bigchaindb.core import Bigchain
+    blocks = [
+        {'id': 1}, {'id': 2}
+    ]
+    monkeypatch.setattr(
+        Bigchain, 'search_block_election_on_index', lambda x, y, z: blocks)
+    monkeypatch.setattr(
+        Bigchain, 'block_election_status', lambda x, y: Bigchain.BLOCK_VALID)
+    bigchain = Bigchain(public_key='pubkey', private_key='privkey')
+    with pytest.raises(Exception):
+        bigchain.get_blocks_status_containing_tx('txid')
+
+
+def test_has_previous_vote(monkeypatch):
+    from bigchaindb.core import Bigchain
+    monkeypatch.setattr(
+        'bigchaindb.util.verify_vote_signature', lambda block, vote: False)
+    bigchain = Bigchain(public_key='pubkey', private_key='privkey')
+    block = {'votes': ({'node_pubkey': 'pubkey'},)}
+    with pytest.raises(Exception):
+        bigchain.has_previous_vote(block)
+
+
+@pytest.mark.parametrize('items,exists', (((0,), True), ((), False)))
+def test_transaction_exists(monkeypatch, items, exists):
+    from bigchaindb.core import Bigchain
+    monkeypatch.setattr(
+        RqlQuery, 'run', lambda x, y: namedtuple('response', 'items')(items))
+    bigchain = Bigchain(public_key='pubkey', private_key='privkey')
+    assert bigchain.transaction_exists('txid') is exists
