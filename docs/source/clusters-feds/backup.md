@@ -72,6 +72,8 @@ To get a sense of what continuous backup might look like for RethinkDB, one can 
 * "You can rebuild entire running clusters, just from your backups."
 * It enables, "fast and seamless provisioning of new dev and test environments."
 
+The MongoDB documentation has more [details about how Ops Manager Backup works](https://docs.opsmanager.mongodb.com/current/application/#backup).
+
 Considerations for BigchainDB:
 
 * We'd like the cost of backup to be low. To get a sense of the cost, MongoDB Cloud Manager backup [costed $30 / GB / year prepaid](https://www.mongodb.com/blog/post/lower-mms-backup-prices-backing-mongodb-now-easier-and-more-affordable). One thousand gigabytes backed up (i.e. about a terabyte) would cost 30 thousand US dollars per year. (That's just for the backup; there's also a cost per server per year.)
