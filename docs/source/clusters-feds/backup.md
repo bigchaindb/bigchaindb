@@ -2,7 +2,10 @@
 
 There are several ways to backup and restore the data in a BigchainDB cluster.
 
-It's worth remembering that RethinkDB already has internal replication: every document is stored on _R_ different nodes, where _R_ is the replication factor (set using `bigchaindb set-replicas R`). Those replicas can be thought of as "live backups" because if one node goes down, the cluster will continue to work and no data will be lost.
+
+## Replication is a form of Backup
+
+RethinkDB already has internal replication: every document is stored on _R_ different nodes, where _R_ is the replication factor (set using `bigchaindb set-replicas R`). Those replicas can be thought of as "live backups" because if one node goes down, the cluster will continue to work and no data will be lost.
 
 
 ## rethinkdb dump (to a File)
@@ -36,6 +39,11 @@ There's [more information about the `rethinkdb dump` command in the RethinkDB do
 * RethinkDB also has [subcommands to import/export](https://gist.github.com/coffeemug/5894257) collections of JSON or CSV files. While one could use those for backup/restore, it wouldn't be very practical.
 
 
+## Backup by Copying RethinkDB Data Files
+
+It's _possible_ to back up a BigchainDB database by creating a copy of the RethinkDB data files (on all nodes, at roughly the same time). If you're curious about what's involved, see the [MongoDB documentation about "Backup by Copying Underlying Data Files"](https://docs.mongodb.com/manual/core/backups/#backup-with-file-copies). (Yes, that's documentation for MongoDB, but the principles are the same.)
+
+
 ## Client-Side Backup
 
 In the future, it will be possible for clients to query for the blocks containing the transactions they care about, and for the votes on those blocks. They could save a local copy of those blocks and votes.
@@ -46,18 +54,28 @@ All blocks and votes are signed by federation nodes. Only federation nodes can p
 
 **Could we restore an entire BigchainDB database using client-saved blocks and votes?**
 
-Yes, but it would be difficult to know if you've recovered every block and vote. Votes link to the block they're voting on and to the previous block, so one could detect some missing blocks. It would be difficult to know if you've recovered all the votes.
-
-
-## Backup by Copying RethinkDB Data Files
-
-It's _possible_ to back up a BigchainDB database by creating a copy of your RethinkDB data files (on all nodes, at the same time), but it's impractical. If you're curious about what's involved, see the [MongoDB documentation about "Backup by Copying Underlying Data Files"](https://docs.mongodb.com/manual/core/backups/#backup-with-file-copies).
+Yes, in principle, but it would be difficult to know if you've recovered every block and vote. Votes link to the block they're voting on and to the previous block, so one could detect some missing blocks. It would be difficult to know if you've recovered all the votes.
 
 
 ## Incremental or Continuous Backup
 
-RethinkDB doesn't have a built-in incremental or continuous backup capability, something like what MongoDB has. Incremental backup was mentioned briefly in RethinkDB Issue [#89](https://github.com/rethinkdb/rethinkdb/issues/89).
+**Incremental backup** is where backup happens on a regular basis (e.g. daily), and each one only records the changes since the last backup.
 
-In principle, it's not difficult to implement incremental or continuous backup for BigchainDB, since blocks and votes never change. The tricky part is making the backup process fault-tolerant: we don't want to lose data enroute to the backup location(s).
+**Continuous backup** might mean incremental backup on a very regular basis (e.g. every ten minutes), or it might mean backup of every database operation as it happens. The latter is also called transaction logging or continuous archiving.
+
+RethinkDB doesn't have a built-in incremental or continuous backup capability. Incremental backup was mentioned briefly in RethinkDB Issue [#89](https://github.com/rethinkdb/rethinkdb/issues/89).
+
+To get a sense of what continuous backup might look like for RethinkDB, one can look at the continuous backup options available for MongoDB. MongoDB, the company, offers continuous backup with [Ops Manager](https://www.mongodb.com/products/ops-manager) (self-hosted) or [Cloud Manager](https://www.mongodb.com/cloud) (fully managed). Features include:
+
+* It "continuously maintains backups, so if your MongoDB deployment experiences a failure, the most recent backup is only moments behind..."
+* It "offers point-in-time backups of replica sets and cluster-wide snapshots of sharded clusters. You can restore to precisely the moment you need, quickly and safely."
+* "You can rebuild entire running clusters, just from your backups."
+* It enables, "fast and seamless provisioning of new dev and test environments."
+
+Considerations for BigchainDB:
+
+* We'd like the cost of backup to be low. To get a sense of the cost, MongoDB Cloud Manager backup [costed $30 / GB / year prepaid](https://www.mongodb.com/blog/post/lower-mms-backup-prices-backing-mongodb-now-easier-and-more-affordable). One thousand gigabytes backed up (i.e. about a terabyte) would cost 30 thousand US dollars per year. (That's just for the backup; there's also a cost per server per year.)
+* We'd like the backup to be decentralized, with no single point of control or single point of failure. (Note: some file systems have a single point of failure. For example, HDFS has one Namenode.)
+* We only care to back up blocks and votes, and once written, those never change. There are no updates or deletes, just new blocks and votes.
 
 This is a first draft; we'll have more to say here in the future.
