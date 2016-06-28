@@ -220,14 +220,13 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
         inputs = [inputs]
 
     # handle payload
-    data = None
-    if isinstance(payload, (dict, type(None))):
-        data = {
-            'uuid': str(uuid.uuid4()),
-            'payload': payload
-        }
-    else:
+    if payload is not None and not isinstance(payload, dict):
         raise TypeError('`payload` must be an dict instance or None')
+
+    data = {
+        'uuid': str(uuid.uuid4()),
+        'payload': payload
+    }
 
     # handle inputs
     fulfillments = []
@@ -397,13 +396,15 @@ def fulfill_threshold_signature_fulfillment(fulfillment, parsed_fulfillment, ful
         try:
             subfulfillment = parsed_fulfillment_copy.get_subcondition_from_vk(current_owner)[0]
         except IndexError:
-            exceptions.KeypairMismatchException('Public key {} cannot be found in the fulfillment'
-                                                .format(current_owner))
+            raise exceptions.KeypairMismatchException(
+                'Public key {} cannot be found in the fulfillment'.format(current_owner))
         try:
-            subfulfillment.sign(serialize(fulfillment_message), key_pairs[current_owner])
+            private_key = key_pairs[current_owner]
         except KeyError:
-            raise exceptions.KeypairMismatchException('Public key {} is not a pair to any of the private keys'
-                                                      .format(current_owner))
+            raise exceptions.KeypairMismatchException(
+                'Public key {} is not a pair to any of the private keys'.format(current_owner))
+
+        subfulfillment.sign(serialize(fulfillment_message), private_key)
         parsed_fulfillment.add_subfulfillment(subfulfillment)
 
     return parsed_fulfillment
