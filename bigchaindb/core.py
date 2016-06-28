@@ -11,17 +11,10 @@ from bigchaindb import util
 from bigchaindb import config_utils
 from bigchaindb import exceptions
 from bigchaindb import crypto
+from bigchaindb.exceptions import ImproperVoteError, MultipleVotesError
 
 
 class GenesisBlockAlreadyExistsError(Exception):
-    pass
-
-
-class ImproperVoteError(Exception):
-    pass
-
-
-class MultipleVotesError(Exception):
     pass
 
 

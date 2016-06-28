@@ -34,3 +34,9 @@ class KeypairMismatchException(Exception):
 class StartupError(Exception):
     """Raised when there is an error starting up the system"""
 
+class ImproperVoteError(Exception):
+    """Raised if a vote is not constructed correctly, or signed incorrectly"""
+
+class MultipleVotesError(Exception):
+    """Raised if a voter has voted more than once"""
+
