@@ -8,9 +8,7 @@ import rethinkdb as r
 import cryptoconditions as cc
 
 import bigchaindb
-from bigchaindb import util
-from bigchaindb import exceptions
-from bigchaindb import crypto
+from bigchaindb import crypto, exceptions, util
 from bigchaindb.voter import Voter
 from bigchaindb.block import Block, BlockDeleteRevert
 
@@ -178,7 +176,7 @@ class TestBigchainApi(object):
     def test_create_genesis_block_fails_if_table_not_empty(self, b):
         b.create_genesis_block()
 
-        with pytest.raises(bigchaindb.core.GenesisBlockAlreadyExistsError):
+        with pytest.raises(exceptions.GenesisBlockAlreadyExistsError):
             b.create_genesis_block()
 
         genesis_blocks = list(r.table('bigchain')
