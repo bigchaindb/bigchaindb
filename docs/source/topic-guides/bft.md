@@ -1,6 +1,6 @@
 # BigchainDB and Byzantine Fault Tolerance
 
-We have Byzantine fault tolerance (BFT) in our roadmap, as a switch that people can turn on. We anticipate that turning it on will cause a severe dropoff in performance (to gain a little extra security). See [Issue #293](https://github.com/bigchaindb/bigchaindb/issues/293).
+We have Byzantine fault tolerance (BFT) in our roadmap, as a switch that people can turn on. We anticipate that turning it on will cause a severe dropoff in performance (to gain some extra security). See [Issue #293](https://github.com/bigchaindb/bigchaindb/issues/293).
 
 Among the big, industry-used distributed databases in production today (e.g. DynamoDB, Bigtable, MongoDB, Cassandra, Elasticsearch), none of them are BFT. Indeed, almost all wide-area distributed systems in production are not BFT, including military, banking, healthcare, and other security-sensitive systems.
 
