@@ -9,7 +9,6 @@ Tasks:
 import pytest
 import rethinkdb as r
 
-import bigchaindb
 from bigchaindb import Bigchain
 from bigchaindb.db import get_conn
 
@@ -73,6 +72,7 @@ def setup_database(request, node_config):
 @pytest.fixture(scope='function', autouse=True)
 def cleanup_tables(request, node_config):
     db_name = node_config['database']['name']
+
     def fin():
         get_conn().repl()
         try:
@@ -87,11 +87,12 @@ def cleanup_tables(request, node_config):
 
 @pytest.fixture
 def inputs(user_vk, amount=1, b=None):
+    from bigchaindb.exceptions import GenesisBlockAlreadyExistsError
     # 1. create the genesis block
     b = b or Bigchain()
     try:
         b.create_genesis_block()
-    except bigchaindb.core.GenesisBlockAlreadyExistsError:
+    except GenesisBlockAlreadyExistsError:
         pass
 
     # 2. create block with transactions for `USER` to spend
@@ -105,4 +106,3 @@ def inputs(user_vk, amount=1, b=None):
     block = b.create_block(transactions)
     b.write_block(block, durability='hard')
     return block
-
