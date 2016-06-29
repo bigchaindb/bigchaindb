@@ -50,6 +50,7 @@ If you don't already have RethinkDB Server installed, you must install it. The R
 
 Create a RethinkDB configuration file (text file) named `instance1.conf` with the following contents (explained below):
 ```text
+server-tag=original
 directory=/data
 bind=all
 direct-io
@@ -60,7 +61,8 @@ join=node2_hostname:29015
 # continue until there's a join= line for each node in the federation
 ```
 
-* `directory=/data` tells the RethinkDB node to store its share of the database data in `/data`.
+* `server-tag=original` is an optional line, but you'll be glad you included it later if you decide to create a set of backup-only servers as described in [the section on continuous backup](../clusters-feds/backup.html#incremental-or-continuous-backup).
+* `directory=/data` tells the RethinkDB server process to store its share of the database data in `/data`.
 * `bind=all` binds RethinkDB to all local network interfaces (e.g. loopback, Ethernet, wireless, whatever is available), so it can communicate with the outside world. (The default is to bind only to local interfaces.)
 * `direct-io` tells RethinkDB to use direct I/O (explained earlier).
 * `join=hostname:29015` lines: A cluster node needs to find out the hostnames of all the other nodes somehow. You _could_ designate one node to be the one that every other node asks, and put that node's hostname in the config file, but that wouldn't be very decentralized. Instead, we include _every_ node in the list of nodes-to-ask.
