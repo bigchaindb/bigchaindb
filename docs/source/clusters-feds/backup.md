@@ -10,7 +10,7 @@ RethinkDB already has internal replication: every document is stored on _R_ diff
 
 ## Live Replication of RethinkDB Data Files
 
-All RethinkDB data is stored in a directory named `rethinkdb_data` by default (although you can change that in the RethinkDB config file). You could set up the node's file system so that directory lives on its own hard drive. Furthermore, you could make that hard drive part of a [RAID](https://en.wikipedia.org/wiki/RAID) array, so that a second hard drive would always have a copy of the original. If the original hard drive fails, then the second hard drive could take its place and the node would continue to function. Meanwhile, the original hard drive could be replaced.
+All RethinkDB data is stored in one directory. You could set up the node's file system so that directory lives on its own hard drive. Furthermore, you could make that hard drive part of a [RAID](https://en.wikipedia.org/wiki/RAID) array, so that a second hard drive would always have a copy of the original. If the original hard drive fails, then the second hard drive could take its place and the node would continue to function. Meanwhile, the original hard drive could be replaced.
 
 That's just one possible way of setting up the file system so as to provide extra reliability. It's debatable whether it's a "backup strategy," but one could argue that the second hard drive is like a backup of the original.
 
