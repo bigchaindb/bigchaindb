@@ -85,7 +85,7 @@ class Bigchain(object):
             dict: transaction with any signatures applied.
         """
 
-        return self.consensus.sign_transaction(transaction, *args, **kwargs)
+        return self.consensus.sign_transaction(transaction, *args, bigchain=self, **kwargs)
 
     def validate_fulfillments(self, signed_transaction, *args, **kwargs):
         """Validate the fulfillment(s) of a transaction.

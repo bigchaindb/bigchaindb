@@ -298,7 +298,7 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
     return transaction
 
 
-def sign_tx(transaction, signing_keys):
+def sign_tx(transaction, signing_keys, bigchain=None):
     """Sign a transaction
 
     A transaction signed with the `current_owner` corresponding private key.
@@ -306,6 +306,8 @@ def sign_tx(transaction, signing_keys):
     Args:
         transaction (dict): transaction to sign.
         signing_keys (list): list of base58 encoded private keys to create the fulfillments of the transaction.
+        bigchain (obj): bigchain instance used to get the details of the previous transaction outputs. Useful
+                        if the `Bigchain` instance was instantiated with parameters that override the config file.
 
     Returns:
         dict: transaction with the `fulfillment` fields populated.
@@ -324,10 +326,11 @@ def sign_tx(transaction, signing_keys):
 
     tx = copy.deepcopy(transaction)
 
+    bigchain = bigchain if bigchain is not None else bigchaindb.Bigchain()
+
     for fulfillment in tx['transaction']['fulfillments']:
         fulfillment_message = get_fulfillment_message(transaction, fulfillment)
         # TODO: avoid instantiation, pass as argument!
-        bigchain = bigchaindb.Bigchain()
         input_condition = get_input_condition(bigchain, fulfillment)
         parsed_fulfillment = cc.Fulfillment.from_dict(input_condition['condition']['details'])
         # for the case in which the type of fulfillment is not covered by this method

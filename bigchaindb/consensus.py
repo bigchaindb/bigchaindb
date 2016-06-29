@@ -217,13 +217,13 @@ class BaseConsensusRules(AbstractConsensusRules):
                               payload)
 
     @staticmethod
-    def sign_transaction(transaction, private_key):
+    def sign_transaction(transaction, private_key, bigchain=None):
         """Sign a transaction
 
         Refer to the documentation of ``bigchaindb.util.sign_tx``
         """
 
-        return util.sign_tx(transaction, private_key)
+        return util.sign_tx(transaction, private_key, bigchain=bigchain)
 
     @staticmethod
     def validate_fulfillments(signed_transaction):
