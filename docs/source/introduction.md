@@ -8,7 +8,7 @@ You can read about the motivations, goals and high-level architecture in the [Bi
 ## Setup Instructions for Various Cases
 
 * [Set up a stand-alone BigchainDB node for learning and experimenting: Quickstart](quickstart.html)
-* [Set up and run a federation](clusters-feds/federation-set-up.html) (i.a. an organization with a BigchainDB cluster)
+* [Set up and run a federation](clusters-feds/set-up-a-federation.html) (i.a. an organization with a BigchainDB cluster)
 * To set up a stand-alone node so you can help contribute to the development of BigchainDB Server, see [the CONTRIBUTING.md file](https://github.com/bigchaindb/bigchaindb/blob/master/CONTRIBUTING.md)
 * [Deploy a cluster on AWS](clusters-feds/deploy-on-aws.html)
 
