@@ -56,10 +56,6 @@ def init():
     r.db(dbname).table('bigchain')\
         .index_create('payload_uuid', r.row['block']['transactions']['transaction']['data']['uuid'], multi=True)\
         .run(conn)
-    # secondary index for payload hash
-    r.db(dbname).table('bigchain')\
-        .index_create('payload_hash', r.row['block']['transactions']['transaction']['data']['hash'], multi=True)\
-        .run(conn)
 
     # wait for rethinkdb to finish creating secondary indexes
     r.db(dbname).table('backlog').index_wait().run(conn)
