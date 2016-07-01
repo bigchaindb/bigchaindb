@@ -56,6 +56,19 @@ class TestBigchainApi(object):
         assert len(tx['transaction']['data']['uuid']) == 36
         assert tx['transaction']['data']['payload'] == payload
 
+    def test_get_transactions_for_payload(self, b, user_vk):
+        payload = {'msg': 'Hello BigchainDB!'}
+        tx = b.create_transaction(b.me, user_vk, None, 'CREATE', payload=payload)
+        payload_uuid = tx['transaction']['data']['uuid']
+
+        matches = b.get_tx_by_payload_uuid(payload_uuid)
+        assert len(matches) == 1
+        assert matches[0]['id'] == tx['id']
+
+    def test_get_transactions_for_payload_mismatch(self, b, user_vk):
+        matches = b.get_tx_by_payload_uuid('missing')
+        assert not matches
+
     @pytest.mark.usefixtures('inputs')
     def test_create_transaction_transfer(self, b, user_vk, user_sk):
         input_tx = b.get_owned_ids(user_vk).pop()
