@@ -234,10 +234,9 @@ class Bigchain(object):
             A list of transactions containing that payload. If no transaction exists with that payload it
             returns an empty list `[]`
         """
-
         cursor = r.table('bigchain') \
             .get_all(payload_uuid, index='payload_uuid') \
-            .concat_map(lambda block: block['block']['transactions']) \  # concat all transaction lists
+            .concat_map(lambda block: block['block']['transactions']) \ 
             .filter(lambda transaction: transaction['transaction']['data']['uuid'] == payload_uuid) \
             .run(b.conn)
 
