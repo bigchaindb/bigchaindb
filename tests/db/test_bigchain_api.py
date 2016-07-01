@@ -61,6 +61,9 @@ class TestBigchainApi(object):
         tx = b.create_transaction(b.me, user_vk, None, 'CREATE', payload=payload)
         payload_uuid = tx['transaction']['data']['uuid']
 
+        block = b.create_block([tx])
+        b.write_block(block, durability='hard')
+
         matches = b.get_tx_by_payload_uuid(payload_uuid)
         assert len(matches) == 1
         assert matches[0]['id'] == tx['id']
