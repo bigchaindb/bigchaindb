@@ -236,7 +236,7 @@ class Bigchain(object):
         """
         cursor = r.table('bigchain') \
             .get_all(payload_uuid, index='payload_uuid') \
-            .concat_map(lambda block: block['block']['transactions']) \ 
+            .concat_map(lambda block: block['block']['transactions']) \
             .filter(lambda transaction: transaction['transaction']['data']['uuid'] == payload_uuid) \
             .run(b.conn)
 
