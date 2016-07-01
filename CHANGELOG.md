@@ -27,6 +27,7 @@ committed:
 
 ### Changed
 - Changed the order in which configuration settings get their values. If a setting is set by an environment variable, then that value will be _the_ value, regardless of whether another value is set in a local config file. Also added a method to programattically update the config settings. [Pull Request #395](https://github.com/bigchaindb/bigchaindb/pull/395)
+- Changed the definition of `util.sign_tx()`. It now has a third, optional argument: a Bigchain instance. [Pull Request #410](https://github.com/bigchaindb/bigchaindb/pull/410)
 
 ### Notes
 - Several additions and changes to the documentation: Pull Requests
@@ -35,6 +36,7 @@ committed:
 [#397](https://github.com/bigchaindb/bigchaindb/pull/397),
 [#402](https://github.com/bigchaindb/bigchaindb/pull/402),
 [#403](https://github.com/bigchaindb/bigchaindb/pull/403),
+[#406](https://github.com/bigchaindb/bigchaindb/pull/406),
 [#408](https://github.com/bigchaindb/bigchaindb/pull/408)
 
 
