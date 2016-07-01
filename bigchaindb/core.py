@@ -238,7 +238,7 @@ class Bigchain(object):
             .get_all(payload_uuid, index='payload_uuid') \
             .concat_map(lambda block: block['block']['transactions']) \
             .filter(lambda transaction: transaction['transaction']['data']['uuid'] == payload_uuid) \
-            .run(b.conn)
+            .run(self.conn)
 
         transactions = list(cursor)
         return transactions
