@@ -217,26 +217,27 @@ class Bigchain(object):
         else:
             return None
 
-    def get_tx_by_payload_hash(self, payload_hash):
+    def get_tx_by_payload_uuid(self, payload_uuid):
         """Retrieves transactions related to a digital asset.
 
         When creating a transaction one of the optional arguments is the `payload`. The payload is a generic
         dict that contains information about the digital asset.
 
-        To make it easy to query the bigchain for that digital asset we create a sha3-256 hash of the
-        serialized payload and store it with the transaction. This makes it easy for developers to keep track
-        of their digital assets in bigchain.
+        To make it easy to query the bigchain for that digital asset we create a UUID for the payload and 
+        store it with the transaction. This makes it easy for developers to keep track of their digital 
+        assets in bigchain.
 
         Args:
-            payload_hash (str): sha3-256 hash of the serialized payload.
+            payload_uuid (str): the UUID for this particular payload.
 
         Returns:
             A list of transactions containing that payload. If no transaction exists with that payload it
             returns an empty list `[]`
         """
-
         cursor = r.table('bigchain') \
-            .get_all(payload_hash, index='payload_hash') \
+            .get_all(payload_uuid, index='payload_uuid') \
+            .concat_map(lambda block: block['block']['transactions']) \
+            .filter(lambda transaction: transaction['transaction']['data']['uuid'] == payload_uuid) \
             .run(self.conn)
 
         transactions = list(cursor)
