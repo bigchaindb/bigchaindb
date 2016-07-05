@@ -556,43 +556,6 @@ class TestBlockStream(object):
         assert bs.get() == block_1
         assert bs.get() == block_2
 
-    def test_if_old_blocks_get_should_return_old_block_first(self, b):
-        # create two blocks
-        block_1 = dummy_block()
-        # sleep so that block_2 as an higher timestamp then block_1
-        time.sleep(1)
-        block_2 = dummy_block()
-
-        # write the blocks
-        b.write_block(block_1, durability='hard')
-        b.write_block(block_2, durability='hard')
-
-        new_blocks = mp.Queue()
-        bs = BlockStream(new_blocks)
-
-        # assert len(list(bs.old_blocks)) == 2
-        # import pdb; pdb.set_trace()
-        # from pprint import pprint as pp
-        # pp(bs.old_blocks)
-        # pp(block_1)
-        # pp(block_2)
-
-        # create two new blocks that will appear in the changefeed
-        block_3 = dummy_block()
-        block_4 = dummy_block()
-
-        # simulate a changefeed
-        new_blocks.put(block_3)
-        new_blocks.put(block_4)
-
-        assert len(bs.unvoted_blocks) == 2
-
-        # and check if we get the old blocks first
-        assert bs.get() == block_1
-        assert bs.get() == block_2
-        assert bs.get() == block_3
-        assert bs.get() == block_4
-
     @pytest.mark.skipif(reason='We may have duplicated blocks when retrieving the BlockStream')
     def test_ignore_duplicated_blocks_when_retrieving_the_blockstream(self):
         pass
