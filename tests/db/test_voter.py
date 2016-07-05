@@ -330,8 +330,10 @@ class TestBigchainVoter(object):
             .run(b.conn)
 
         assert blocks[0]['block_number'] == 0  # genesis block
-        assert votes[0]['block_number'] == 1 and votes[0]['vote']['voting_for_block'] == blocks[1]['id']
-        assert votes[1]['block_number'] == 2 and votes[1]['vote']['voting_for_block'] == blocks[2]['id']
+        assert votes[0]['vote']['voting_for_block'] == blocks[1]['id'] or \
+               votes[0]['vote']['voting_for_block'] == blocks[2]['id']
+        assert votes[1]['vote']['voting_for_block'] == blocks[1]['id'] or \
+               votes[1]['vote']['voting_for_block'] == blocks[2]['id']
 
     def test_voter_checks_for_previous_vote(self, b):
         b.create_genesis_block()
