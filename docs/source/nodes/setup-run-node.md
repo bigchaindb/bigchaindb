@@ -28,17 +28,36 @@ NTP is a standard protocol. There are many NTP daemons implementing it. We don't
 Please see the [notes on NTP daemon setup in the Appendices](../appendices/ntp-notes.html).
 
 
-## Set Up the File System for RethinkDB
+## Set Up Storage for RethinkDB Data
 
-Ideally, use a file system that supports direct I/O (Input/Output), a feature whereby file reads and writes go directly from RethinkDB to the storage device, bypassing the operating system read and write caches.
+Below are some things to consider when setting up storage for the RethinkDB data. The appendices have a [section with concrete examples](../appendices/example-rethinkdb-storage-setups.html).
 
-TODO: What file systems support direct I/O? How can you check? How do you enable it, if necessary?
+We suggest you set up a separate storage "device" (partition, RAID array, or logical volume) to store the RethinkDB data. Here are some questions to ask:
 
-See `def install_rethinkdb()` in `deploy-cluster-aws/fabfile.py` for an example of configuring a file system on an AWS instance running Ubuntu.
+* How easy will it be to add storage in the future? Will I have to shut down my server?
+* How big can the storage get? (Remember that [RAID](https://en.wikipedia.org/wiki/RAID) can be used to make several physical drives look like one.)
+* How fast can it read & write data? How many input/output operations per second (IOPS)?
+* How does IOPS scale as more physical hard drives are added?
+* What's the latency?
+* What's the reliability? Is there replication?
+* What's in the Service Level Agreement (SLA), if applicable?
+* What's the cost?
 
-Mount the partition for RethinkDB on `/data`: we will tell RethinkDB to store its data there.
+There are many options and tradeoffs. Don't forget to look into Amazon Elastic Block Store (EBS) and Amazon Elastic File System (EFS), or their equivalents from other providers.
 
-TODO: This section needs more elaboration
+**Storage Notes Specific to RethinkDB**
+
+* The RethinkDB storage engine has a number of SSD optimizations, so you _can_ benefit from using SSDs. ([source](https://www.rethinkdb.com/docs/architecture/))
+
+* If you want a RethinkDB cluster to store an amount of data D, with a replication factor of R (on every table), and the cluster has N nodes, then each node will need to be able to store R×D/N data.
+
+* RethinkDB tables can have [at most 64 shards](https://rethinkdb.com/limitations/). For example, if you have only one table and more than 64 nodes, some nodes won't have the primary of any shard, i.e. they will have replicas only. In other words, once you pass 64 nodes, adding more nodes won't provide more storage space for new data. If the biggest single-node storage available is d, then the most you can store in a RethinkDB cluster is < 64×d: accomplished by putting one primary shard in each of 64 nodes, with all replica shards on other nodes. (This is assuming one table. If there are T tables, then the most you can store is < 64×d×T.)
+
+* When you set up storage for your RethinkDB data, you may have to select a filesystem. (Sometimes, the filesystem is already decided by the choice of storage.) We recommend using a filesystem that supports direct I/O (Input/Output). Many compressed or encrypted file systems don't support direct I/O. The ext4 filesystem supports direct I/O (but be careful: if you enable the data=journal mode, then direct I/O support will be disabled; the default is data=ordered). If your chosen filesystem supports direct I/O and you're using Linux, then you don't need to do anything to request or enable direct I/O. RethinkDB does that.
+
+<p style="background-color: lightgrey;">What is direct I/O? It allows RethinkDB to write directly to the storage device (or use its own in-memory caching mechanisms), rather than relying on the operating system's file read and write caching mechanisms. (If you're using Linux, a write-to-file normally writes to the in-memory Page Cache first; only later does that Page Cache get flushed to disk. The Page Cache is also used when reading files.)</p>
+
+* RethinkDB stores its data in a specific directory. You can tell RethinkDB _which_ directory using the RethinkDB config file, as explained below. In this documentation, we assume the directory is `/data`. If you set up a separate device (partition, RAID array, or logical volume) to store the RethinkDB data, then mount that device on `/data`.
 
 
 ## Install RethinkDB Server
@@ -50,7 +69,6 @@ If you don't already have RethinkDB Server installed, you must install it. The R
 
 Create a RethinkDB configuration file (text file) named `instance1.conf` with the following contents (explained below):
 ```text
-server-tag=original
 directory=/data
 bind=all
 direct-io
@@ -61,10 +79,9 @@ join=node2_hostname:29015
 # continue until there's a join= line for each node in the federation
 ```
 
-* `server-tag=original` is an optional line, but you'll be glad you included it later if you decide to create a set of backup-only servers as described in [the section on continuous backup](../clusters-feds/backup.html#incremental-or-continuous-backup).
-* `directory=/data` tells the RethinkDB server process to store its share of the database data in `/data`.
+* `directory=/data` tells the RethinkDB node to store its share of the database data in `/data`.
 * `bind=all` binds RethinkDB to all local network interfaces (e.g. loopback, Ethernet, wireless, whatever is available), so it can communicate with the outside world. (The default is to bind only to local interfaces.)
-* `direct-io` tells RethinkDB to use direct I/O (explained earlier).
+* `direct-io` tells RethinkDB to use direct I/O (explained earlier). Only include this line if your file system supports direct I/O.
 * `join=hostname:29015` lines: A cluster node needs to find out the hostnames of all the other nodes somehow. You _could_ designate one node to be the one that every other node asks, and put that node's hostname in the config file, but that wouldn't be very decentralized. Instead, we include _every_ node in the list of nodes-to-ask.
 
 If you're curious about the RethinkDB config file, there's [a RethinkDB documentation page about it](https://www.rethinkdb.com/docs/config-file/). The [explanations of the RethinkDB command-line options](https://rethinkdb.com/docs/cli-options/) are another useful reference.
