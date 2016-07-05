@@ -247,7 +247,6 @@ class TestBigchainApi(object):
         assert new_block['block']['node_pubkey'] == b.me
         assert crypto.VerifyingKey(b.me).verify(util.serialize(new_block['block']), new_block['signature']) is True
         assert new_block['id'] == block_hash
-        assert new_block['votes'] == []
 
     def test_create_empty_block(self, b):
         with pytest.raises(exceptions.OperationError) as excinfo:

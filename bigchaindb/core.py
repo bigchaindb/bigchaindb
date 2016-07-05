@@ -398,7 +398,6 @@ class Bigchain(object):
             'id': block_hash,
             'block': block,
             'signature': block_signature,
-            'votes': []
         }
 
         return block
