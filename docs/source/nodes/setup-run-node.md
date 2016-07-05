@@ -10,13 +10,18 @@ The first step is to get a server (or equivalent) which meets [the requirements 
 
 ## Secure Your Server
 
-The steps that you must take to secure your server depend on your server OS and where your server is physically located. There are many articles and books about how to secure a server. Ask a search engine.
+The steps that you must take to secure your server depend on your server OS and where your server is physically located. There are many articles and books about how to secure a server. Here we just cover special considerations when securing a BigchainDB node.
 
-Here we just cover special considerations when securing a BigchainDB node.
+When you set up the firewall, here is a list of the ports where inbound traffic is expected:
 
-TODO: Special security considerations for BigchainDB nodes.
+22 - The default SSH port (TCP) <br>
+123 - The default NTP port (**UDP**) <br>
+8080 - The default port for the RethinkDB web interface (TCP) <br>
+9984 - The default port for the BigchainDB client-server API (TCP) <br>
+28015 - The default port for RethinkDB client driver connections (TCP) <br>
+29015 - The default port for RethinkDB intracluster connections
 
-TODO: Notes about firewall setup. What ports should be open, for what kinds of traffic, accepting connections from what IP addresses, etc. For example, NTP uses port 123. Can firewall setup be done now or does it have to happen later?
+Aside: If you set up a [cluster-monitoring server](../clusters-feds/monitoring.html) (running Telegraf, InfluxDB & Grafana), Telegraf will listen on port 8125 for UDP packets from StatsD, and the Grafana web dashboard will use port 3000. (Those are the default ports.)
 
 
 ## Sync Your System Clock
@@ -30,7 +35,7 @@ Please see the [notes on NTP daemon setup in the Appendices](../appendices/ntp-n
 
 ## Set Up Storage for RethinkDB Data
 
-Below are some things to consider when setting up storage for the RethinkDB data. The appendices have a [section with concrete examples](../appendices/example-rethinkdb-storage-setups.html).
+Below are some things to consider when setting up storage for the RethinkDB data. The Appendices have a [section with concrete examples](../appendices/example-rethinkdb-storage-setups.html).
 
 We suggest you set up a separate storage "device" (partition, RAID array, or logical volume) to store the RethinkDB data. Here are some questions to ask:
 
@@ -86,7 +91,7 @@ join=node2_hostname:29015
 
 If you're curious about the RethinkDB config file, there's [a RethinkDB documentation page about it](https://www.rethinkdb.com/docs/config-file/). The [explanations of the RethinkDB command-line options](https://rethinkdb.com/docs/cli-options/) are another useful reference.
 
-TODO: Explain how to configure the RethinkDB cluster to be more secure.
+TODO: Explain how to configure the RethinkDB cluster to be more secure. For now, see the [RethinkDB documentation on securing your cluster](https://rethinkdb.com/docs/security/).
 
 
 ## Install Python 3.4+

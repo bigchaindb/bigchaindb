@@ -4,7 +4,7 @@
 
 Many [AWS EC2 instance types](https://aws.amazon.com/ec2/instance-types/) comes with an [instance store](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/InstanceStorage.html): temporary storage that disappears when the instance disappears. The size and setup of an instance store depends on the EC2 instance type.
 
-We have some scripts for [deploying a _test_ BigchainDB cluster on AWS](../clusters-feds/deploy-on-aws.html). Those scripts include commands to set up a partition (`/dev/xvdb`) on an [instance store](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/InstanceStorage.html) for RethinkDB data. Those commands can be found in the file `/deploy-cluster-aws/fabfile.py`, under `def install_rethinkdb()` (i.e. the Fabric function to install RethinkDB).
+We have some scripts for [deploying a _test_ BigchainDB cluster on AWS](../clusters-feds/deploy-on-aws.html). Those scripts include commands to set up a partition (`/dev/xvdb`) on an instance store for RethinkDB data. Those commands can be found in the file `/deploy-cluster-aws/fabfile.py`, under `def install_rethinkdb()` (i.e. the Fabric function to install RethinkDB).
 
 An AWS instance store is convenient, but it's intended for "buffers, caches, scratch data, and other temporary content." Moreover:
 
