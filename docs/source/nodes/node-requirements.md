@@ -18,36 +18,31 @@ We don't test BigchainDB on Windows or Mac OS X, but you can try.
 * If you have Mac OS X and want to experiment with BigchainDB, then you could do that [using Docker](run-with-docker.html).
 
 
-## Memory Requirements
+## Storage Requirements
 
-Every OS has memory requirements; check the memory requirements of your OS.
+When it comes to storage for RethinkDB, there are many things that are nice to have (e.g. SSDs, high-speed input/output [IOPS], replication, reliability, scalability, pay-for-what-you-use), but there are few _requirements_ other than:
 
-There is [documentation about RethinkDB's memory requirements](https://rethinkdb.com/docs/memory-usage/). In particular: "RethinkDB requires data structures in RAM on each server proportional to the size of the data on that server’s disk, usually around 1% of the size of the total data set." ([source](https://rethinkdb.com/limitations/))
+1. have enough storage to store all your data (and its replicas), and
+2. make sure your storage solution (hardware and interconnects) can handle your expected read & write rates.
+
+For RethinkDB's failover mechanisms to work, [every RethinkDB table must have at least three replicas](https://rethinkdb.com/docs/failover/) (i.e. a primary replica and two others). For example, if you want to store 10 GB of unique data, then you need at least 30 GB of storage. (Indexes and internal metadata are stored in RAM.)
+
+As for the read & write rates, what do you expect those to be for your situation? It's not enough for the storage system alone to handle those rates: the interconnects between the nodes must also be able to handle them.
+
+
+## Memory (RAM) Requirements
+
+In their [FAQ](https://rethinkdb.com/faq/), RethinkDB recommends that, "RethinkDB servers have at least 2GB of RAM... RethinkDB has a custom caching engine and can run on low-memory nodes with large amounts of on-disk data..." ([source](https://rethinkdb.com/faq/))
+
+In particular: "RethinkDB requires data structures in RAM on each server proportional to the size of the data on that server’s disk, usually around 1% of the size of the total data set." ([source](https://rethinkdb.com/limitations/))
 
 Also, "The storage engine is used in conjunction with a custom, B-Tree-aware caching engine which allows file sizes many orders of magnitude greater than the amount of available memory. RethinkDB can operate on a terabyte of data with about ten gigabytes of free RAM." ([source](https://www.rethinkdb.com/docs/architecture/))
 
-
-## Storage Requirements
-
-The RethinkDB storage engine has a number of SSD optimizations, so you can benefit from using SSDs. ([source](https://www.rethinkdb.com/docs/architecture/))
-
-If you want a RethinkDB cluster to store an amount of data D, with a replication factor of R (on every table), and the cluster has N nodes, then each node will need to be able to store R×D/N data plus the storage required for the OS and various other software (RethinkDB, Python, etc.). The secondary indexes also require some storage.
-
-For failover to work, [every RethinkDB table must have at least three replicas](https://rethinkdb.com/docs/failover/), i.e. R ≥ 3.
-
-Also, RethinkDB tables can have [at most 64 shards](https://rethinkdb.com/limitations/). For example, if you have only one table and more than 64 nodes, some nodes won't have the primary of any shard, i.e. they will have replicas only. In other words, once you pass 64 nodes, adding more nodes won't provide storage space for new data; it will only add more space for shard replicas. If the biggest single-node storage available is d, then the most you can store in a RethinkDB cluster is < 64×d: accomplished by putting one primary shard in each of 64 nodes, with all replica shards on other nodes. (This is assuming one table. If there are T tables, then the most you can store is < 64×d×T.)
+RethinkDB has [documentation about its memory requirements](https://rethinkdb.com/docs/memory-usage/). You can use that page to get a better estimate of how much memory you'll need.
 
 
-## Compatible File Systems
+## Filesystem Requirements
 
-RethinkDB "supports most commonly used file systems." ([source](https://www.rethinkdb.com/docs/architecture/))
+RethinkDB "supports most commonly used file systems" ([source](https://www.rethinkdb.com/docs/architecture/)) but it has [issues with BTRFS](https://github.com/rethinkdb/rethinkdb/issues/2781) (B-tree file system).
 
-It has [issues with BTRFS](https://github.com/rethinkdb/rethinkdb/issues/2781) (B-tree file system).
-
-It's best to have a file system that supports direct I/O, because that will improve RethinkDB performance (if you tell RethinkDB to use direct I/O). Many compressed or encrypted file systems don't support direct I/O.
-
-
-## CPU Requirements
-
-Most servers will have enough CPUs (or vCPUs) to run a BigchainDB node. The more you have, the higher throughput will be.
-
+It's best to use a filesystem that supports direct I/O, because that will improve RethinkDB performance (if you tell RethinkDB to use direct I/O). Many compressed or encrypted filesystems don't support direct I/O.
