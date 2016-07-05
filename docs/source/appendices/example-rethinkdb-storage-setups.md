@@ -35,4 +35,4 @@ TODO
 
 TODO
 
-Maybe RAID, ZFS, HDFS, MapR-FS, ... (over EBS volumes, i.e. a DIY Amazon EFS)
+Maybe RAID, ZFS, ... (over EBS volumes, i.e. a DIY Amazon EFS)
