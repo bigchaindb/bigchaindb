@@ -73,9 +73,11 @@ Yes, in principle, but it would be difficult to know if you've recovered every b
 
 ## Backup by Copying RethinkDB Data Files
 
-It's _possible_ to back up a BigchainDB database by creating a point-in-time copy (or "snapshot") of the RethinkDB data files (on all nodes, at roughly the same time). It's not a very practical approach to backup: the resulting set of files will be much larger (collectively) than what one would get using `rethinkdb dump`, and there are no guarantees on how consistent that data will be, especially for recently-written data.
+It's _possible_ to back up a BigchainDB database by creating a point-in-time copy of the RethinkDB data files (on all nodes, at roughly the same time). It's not a very practical approach to backup: the resulting set of files will be much larger (collectively) than what one would get using `rethinkdb dump`, and there are no guarantees on how consistent that data will be, especially for recently-written data.
 
 If you're curious about what's involved, see the [MongoDB documentation about "Backup by Copying Underlying Data Files"](https://docs.mongodb.com/manual/core/backups/#backup-with-file-copies). (Yes, that's documentation for MongoDB, but the principles are the same.)
+
+See the last subsection of this page for a better way to use this idea.
 
 
 ## Incremental or Continuous Backup
@@ -102,7 +104,7 @@ Considerations for BigchainDB:
 * We only care to back up blocks and votes, and once written, those never change. There are no updates or deletes, just new blocks and votes.
 
 
-## Combining RethinkDB Replication with File System Snapshots
+## Combining RethinkDB Replication with Storage Snapshots
 
 Although it's not advertised as such, RethinkDB's built-in replication feature is similar to continous backup, except the "backup" (i.e. the set of replica shards) is spread across all the nodes. One could take that idea a bit farther by creating a set of backup-only servers with one full backup:
 
@@ -112,8 +114,10 @@ Although it's not advertised as such, RethinkDB's built-in replication feature i
 
 The [RethinkDB documentation on sharding and replication](https://www.rethinkdb.com/docs/sharding-and-replication/) has the details of how to set server tags and do RethinkDB reconfiguration.
 
-Once you've set up a set of backup-only RethinkDB servers, you could make a point-in-time snapshot of their file systems, as a form of backup.
+Once you've set up a set of backup-only RethinkDB servers, you could make a point-in-time snapshot of their storage devices, as a form of backup.
 
 You might want to disconnect the `backup` set from the `original` set first, and then wait for reads and writes in the `backup` set to stop. That way, all the data in the `backup` set will be consistent before you take the snapshot.
 
 You will want to re-connect the `backup` set to the `original` set as soon as possible, so it's able to catch up.
+
+**NOTE:** Sometimes snapshots are _incremental_. For example, [Amazon EBS snapshots](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSSnapshots.html) are incremental, meaning "only the blocks on the device that have changed after your most recent snapshot are saved. **This minimizes the time required to create the snapshot and saves on storage costs.**" [Emphasis added]
