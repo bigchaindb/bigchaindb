@@ -19,7 +19,7 @@ When you set up the firewall, here is a list of the ports where inbound traffic 
 8080 - The default port for the RethinkDB web interface (TCP) <br>
 9984 - The default port for the BigchainDB client-server API (TCP) <br>
 28015 - The default port for RethinkDB client driver connections (TCP) <br>
-29015 - The default port for RethinkDB intracluster connections
+29015 - The default port for RethinkDB intracluster connections (TCP)
 
 Aside: If you set up a [cluster-monitoring server](../clusters-feds/monitoring.html) (running Telegraf, InfluxDB & Grafana), Telegraf will listen on port 8125 for UDP packets from StatsD, and the Grafana web dashboard will use port 3000. (Those are the default ports.)
 
