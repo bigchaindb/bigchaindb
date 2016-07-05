@@ -8,9 +8,7 @@ import rethinkdb as r
 import cryptoconditions as cc
 
 import bigchaindb
-from bigchaindb import util
-from bigchaindb import exceptions
-from bigchaindb import crypto
+from bigchaindb import crypto, exceptions, util
 from bigchaindb.voter import Voter
 from bigchaindb.block import Block, BlockDeleteRevert
 
@@ -57,6 +55,22 @@ class TestBigchainApi(object):
         tx = b.create_transaction(b.me, user_vk, None, 'CREATE', payload=payload)
         assert len(tx['transaction']['data']['uuid']) == 36
         assert tx['transaction']['data']['payload'] == payload
+
+    def test_get_transactions_for_payload(self, b, user_vk):
+        payload = {'msg': 'Hello BigchainDB!'}
+        tx = b.create_transaction(b.me, user_vk, None, 'CREATE', payload=payload)
+        payload_uuid = tx['transaction']['data']['uuid']
+
+        block = b.create_block([tx])
+        b.write_block(block, durability='hard')
+
+        matches = b.get_tx_by_payload_uuid(payload_uuid)
+        assert len(matches) == 1
+        assert matches[0]['id'] == tx['id']
+
+    def test_get_transactions_for_payload_mismatch(self, b, user_vk):
+        matches = b.get_tx_by_payload_uuid('missing')
+        assert not matches
 
     @pytest.mark.usefixtures('inputs')
     def test_create_transaction_transfer(self, b, user_vk, user_sk):
@@ -178,7 +192,7 @@ class TestBigchainApi(object):
     def test_create_genesis_block_fails_if_table_not_empty(self, b):
         b.create_genesis_block()
 
-        with pytest.raises(bigchaindb.core.GenesisBlockAlreadyExistsError):
+        with pytest.raises(exceptions.GenesisBlockAlreadyExistsError):
             b.create_genesis_block()
 
         genesis_blocks = list(r.table('bigchain')

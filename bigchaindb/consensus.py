@@ -1,9 +1,6 @@
-import copy
 from abc import ABCMeta, abstractmethod
 
-import bigchaindb.exceptions as exceptions
-from bigchaindb import util
-from bigchaindb import crypto
+from bigchaindb import crypto, exceptions, util
 
 
 class AbstractConsensusRules(metaclass=ABCMeta):
@@ -101,7 +98,7 @@ class AbstractConsensusRules(metaclass=ABCMeta):
             bool: True if the votes's required signature data is present
                 and correct, False otherwise.
         """
-        raise NotImplementedError
+
 
 class BaseConsensusRules(AbstractConsensusRules):
     """Base consensus rules for Bigchain.
@@ -220,13 +217,13 @@ class BaseConsensusRules(AbstractConsensusRules):
                               payload)
 
     @staticmethod
-    def sign_transaction(transaction, private_key):
+    def sign_transaction(transaction, private_key, bigchain=None):
         """Sign a transaction
 
         Refer to the documentation of ``bigchaindb.util.sign_tx``
         """
 
-        return util.sign_tx(transaction, private_key)
+        return util.sign_tx(transaction, private_key, bigchain=bigchain)
 
     @staticmethod
     def validate_fulfillments(signed_transaction):

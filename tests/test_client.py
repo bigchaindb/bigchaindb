@@ -23,7 +23,7 @@ def mock_requests_post(monkeypatch):
 
 @pytest.fixture
 def mock_bigchaindb_sign(monkeypatch):
-    def mockreturn(transaction, private_key):
+    def mockreturn(transaction, private_key, bigchain):
         return transaction
 
     monkeypatch.setattr('bigchaindb.util.sign_tx', mockreturn)

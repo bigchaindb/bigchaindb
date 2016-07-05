@@ -15,10 +15,35 @@ For reference, the possible headings are:
 * **Notes**
 
 
-## [0.4.2] - 2016-06-15
-Tag name: v0.4.2
+## [0.5.0] - YYYY-MM-DD
+Tag name: v0.5.0
 = commit: 
 committed: 
+
+### Added
+- New `bigchaindb set-replicas` subcommand: [Pull Request #392](https://github.com/bigchaindb/bigchaindb/pull/392)
+- Informative JSON message when one makes a request to the root endpoint of the HTTP client-server API: [Pull Request #367](https://github.com/bigchaindb/bigchaindb/pull/367)
+- Return HTTP response code 404 when a transaction is not found: [Pull Request #369](https://github.com/bigchaindb/bigchaindb/pull/369)
+
+### Changed
+- Changed the order in which configuration settings get their values. If a setting is set by an environment variable, then that value will be _the_ value, regardless of whether another value is set in a local config file. Also added a method to programattically update the config settings. [Pull Request #395](https://github.com/bigchaindb/bigchaindb/pull/395)
+- Changed the definition of `util.sign_tx()`. It now has a third, optional argument: a Bigchain instance. [Pull Request #410](https://github.com/bigchaindb/bigchaindb/pull/410)
+
+### Notes
+- Several additions and changes to the documentation: Pull Requests
+[#388](https://github.com/bigchaindb/bigchaindb/pull/388),
+[#393](https://github.com/bigchaindb/bigchaindb/pull/393),
+[#397](https://github.com/bigchaindb/bigchaindb/pull/397),
+[#402](https://github.com/bigchaindb/bigchaindb/pull/402),
+[#403](https://github.com/bigchaindb/bigchaindb/pull/403),
+[#406](https://github.com/bigchaindb/bigchaindb/pull/406),
+[#408](https://github.com/bigchaindb/bigchaindb/pull/408)
+
+
+## [0.4.2] - 2016-06-15
+Tag name: v0.4.2
+= commit: 7ce6c3980cf70437d7ce716a67f069afa8ecb79e
+committed: June 15, 2016, 1:42 PM GMT+2
 
 ### Added
 - Report the BigchainDB version number when starting BigchainDB: [Pull Request #385](https://github.com/bigchaindb/bigchaindb/pull/385)

@@ -7,15 +7,7 @@ import rethinkdb as r
 import rapidjson
 
 import bigchaindb
-from bigchaindb import util
-from bigchaindb import config_utils
-from bigchaindb import exceptions
-from bigchaindb import crypto
-from bigchaindb.exceptions import ImproperVoteError, MultipleVotesError
-
-
-class GenesisBlockAlreadyExistsError(Exception):
-    pass
+from bigchaindb import config_utils, crypto, exceptions, util
 
 
 class Bigchain(object):
@@ -94,7 +86,7 @@ class Bigchain(object):
             dict: transaction with any signatures applied.
         """
 
-        return self.consensus.sign_transaction(transaction, *args, **kwargs)
+        return self.consensus.sign_transaction(transaction, *args, bigchain=self, **kwargs)
 
     def validate_fulfillments(self, signed_transaction, *args, **kwargs):
         """Validate the fulfillment(s) of a transaction.
@@ -226,26 +218,27 @@ class Bigchain(object):
         else:
             return None
 
-    def get_tx_by_payload_hash(self, payload_hash):
+    def get_tx_by_payload_uuid(self, payload_uuid):
         """Retrieves transactions related to a digital asset.
 
         When creating a transaction one of the optional arguments is the `payload`. The payload is a generic
         dict that contains information about the digital asset.
 
-        To make it easy to query the bigchain for that digital asset we create a sha3-256 hash of the
-        serialized payload and store it with the transaction. This makes it easy for developers to keep track
-        of their digital assets in bigchain.
+        To make it easy to query the bigchain for that digital asset we create a UUID for the payload and 
+        store it with the transaction. This makes it easy for developers to keep track of their digital 
+        assets in bigchain.
 
         Args:
-            payload_hash (str): sha3-256 hash of the serialized payload.
+            payload_uuid (str): the UUID for this particular payload.
 
         Returns:
             A list of transactions containing that payload. If no transaction exists with that payload it
             returns an empty list `[]`
         """
-
         cursor = r.table('bigchain') \
-            .get_all(payload_hash, index='payload_hash') \
+            .get_all(payload_uuid, index='payload_uuid') \
+            .concat_map(lambda block: block['block']['transactions']) \
+            .filter(lambda transaction: transaction['transaction']['data']['uuid'] == payload_uuid) \
             .run(self.conn)
 
         transactions = list(cursor)
@@ -444,20 +437,25 @@ class Bigchain(object):
             block (dict): block to check.
 
         Returns:
-            True if this block already has a valid vote from this node, False otherwise. If
-            there is already a vote, but the vote is invalid, raises an ImproperVoteError
+            bool: :const:`True` if this block already has a
+            valid vote from this node, :const:`False` otherwise.
+
+        Raises:
+            ImproperVoteError: If there is already a vote,
+                but the vote is invalid.
+
         """
         votes = list(r.table('votes').get_all([block['id'], self.me], index='block_and_voter').run(self.conn))
 
         if len(votes) > 1:
-            raise MultipleVotesError('Block {block_id} has {n_votes} votes from public key {me}'
+            raise exceptions.MultipleVotesError('Block {block_id} has {n_votes} votes from public key {me}'
                                      .format(block_id=block['id'], n_votes=str(len(votes)), me=self.me))
         has_previous_vote = False
         for vote in votes:
             if util.verify_vote_signature(block, vote):
                 has_previous_vote = True
             else:
-                raise ImproperVoteError('Block {block_id} already has an incorrectly signed vote '
+                raise exceptions.ImproperVoteError('Block {block_id} already has an incorrectly signed vote '
                                         'from public key {me}').format(block_id=block['id'], me=self.me)
 
         return has_previous_vote
@@ -512,7 +510,7 @@ class Bigchain(object):
         blocks_count = r.table('bigchain').count().run(self.conn)
 
         if blocks_count:
-            raise GenesisBlockAlreadyExistsError('Cannot create the Genesis block')
+            raise exceptions.GenesisBlockAlreadyExistsError('Cannot create the Genesis block')
 
         payload = {'message': 'Hello World from the BigchainDB'}
         transaction = self.create_transaction([self.me], [self.me], None, 'GENESIS', payload=payload)
@@ -622,12 +620,12 @@ class Bigchain(object):
         voter_counts = collections.Counter([vote['node_pubkey'] for vote in votes])
         for node in voter_counts:
             if voter_counts[node] > 1:
-                raise MultipleVotesError('Block {block_id} has multiple votes ({n_votes}) from voting node {node_id}'
-                                         .format(block_id=block['id'], n_votes=str(voter_counts[node]), node_id=node))
+                raise exceptions.MultipleVotesError('Block {block_id} has multiple votes ({n_votes}) from voting node {node_id}'
+                                                    .format(block_id=block['id'], n_votes=str(voter_counts[node]), node_id=node))
 
         if len(votes) > n_voters:
-            raise MultipleVotesError('Block {block_id} has {n_votes} votes cast, but only {n_voters} voters'
-                                     .format(block_id=block['id'], n_votes=str(len(votes)), n_voters=str(n_voters)))
+            raise exceptions.MultipleVotesError('Block {block_id} has {n_votes} votes cast, but only {n_voters} voters'
+                                                .format(block_id=block['id'], n_votes=str(len(votes)), n_voters=str(n_voters)))
 
         vote_cast = [vote['vote']['is_block_valid'] for vote in votes]
         vote_validity = [self.consensus.verify_vote_signature(block, vote) for vote in votes]

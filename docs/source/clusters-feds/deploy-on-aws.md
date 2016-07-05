@@ -2,13 +2,11 @@
 
 This section explains a way to deploy a cluster of BigchainDB nodes on Amazon Web Services (AWS). We use some Bash and Python scripts to launch several instances (virtual servers) on Amazon Elastic Compute Cloud (EC2). Then we use Fabric to install RethinkDB and BigchainDB on all those instances.
 
-**NOTE: At the time of writing, these script _do_ launch a bunch of EC2 instances, and they do install RethinkDB plus BigchainDB on each instance, but don't expect to be able to use the cluster for anything useful. There are several issues related to configuration, networking, and external clients that must be sorted out first. That said, you might find it useful to try out the AWS deployment scripts, because setting up to use them, and using them, will be very similar once those issues get sorted out.**
-
 ## Why?
 
 You might ask why one would want to deploy a centrally-controlled BigchainDB cluster. Isn't BigchainDB supposed to be decentralized, where each node is controlled by a different person or organization?
 
-That's true, but there are some reasons why one might want a centrally-controlled cluster: 1) for testing, and 2) for initial deployment, after which the control of each node can be handed over to a different entity.
+Yes! These scripts are for deploying _test_ clusters, not production clusters.
 
 ## Python Setup
 
