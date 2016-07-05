@@ -12,5 +12,6 @@ Appendices
    the-Bigchain-class
    consensus
    ntp-notes
+   example-rethinkdb-storage-setups
    local-rethinkdb-cluster
    licenses
