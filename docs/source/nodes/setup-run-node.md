@@ -12,16 +12,7 @@ The first step is to get a server (or equivalent) which meets [the requirements 
 
 The steps that you must take to secure your server depend on your server OS and where your server is physically located. There are many articles and books about how to secure a server. Here we just cover special considerations when securing a BigchainDB node.
 
-When you set up the firewall, here is a list of the ports where inbound traffic is expected:
-
-22 - The default SSH port (TCP) <br>
-123 - The default NTP port (**UDP**) <br>
-8080 - The default port for the RethinkDB web interface (TCP) <br>
-9984 - The default port for the BigchainDB client-server API (TCP) <br>
-28015 - The default port for RethinkDB client driver connections (TCP) <br>
-29015 - The default port for RethinkDB intracluster connections (TCP)
-
-Aside: If you set up a [cluster-monitoring server](../clusters-feds/monitoring.html) (running Telegraf, InfluxDB & Grafana), Telegraf will listen on port 8125 for UDP packets from StatsD, and the Grafana web dashboard will use port 3000. (Those are the default ports.)
+There are some [notes on BigchainDB-specific firewall setup](../appendices/firewall-notes.html) in the Appendices.
 
 
 ## Sync Your System Clock
@@ -30,7 +21,7 @@ A BigchainDB node uses its system clock to generate timestamps for blocks and vo
 
 NTP is a standard protocol. There are many NTP daemons implementing it. We don't recommend a particular one. On the contrary, we recommend that different nodes in a federation run different NTP daemons, so that a problem with one daemon won't affect all nodes.
 
-Please see the [notes on NTP daemon setup in the Appendices](../appendices/ntp-notes.html).
+Please see the [notes on NTP daemon setup](../appendices/ntp-notes.html) in the Appendices.
 
 
 ## Set Up Storage for RethinkDB Data

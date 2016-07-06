@@ -11,6 +11,7 @@ Appendices
    cryptography
    the-Bigchain-class
    consensus
+   firewall-notes
    ntp-notes
    example-rethinkdb-storage-setups
    local-rethinkdb-cluster
