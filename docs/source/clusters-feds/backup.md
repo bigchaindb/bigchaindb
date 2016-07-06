@@ -86,7 +86,7 @@ See the last subsection of this page for a better way to use this idea.
 
 **Continuous backup** might mean incremental backup on a very regular basis (e.g. every ten minutes), or it might mean backup of every database operation as it happens. The latter is also called transaction logging or continuous archiving.
 
-RethinkDB doesn't have a built-in incremental or continuous backup capability. Incremental backup was mentioned briefly in RethinkDB Issue [#89](https://github.com/rethinkdb/rethinkdb/issues/89).
+At the time of writing, RethinkDB didn't have a built-in incremental or continuous backup capability, but the idea was raised in RethinkDB issues [#89](https://github.com/rethinkdb/rethinkdb/issues/89) and [#5890](https://github.com/rethinkdb/rethinkdb/issues/5890). On July 5, 2016, Daniel Mewes (of RethinkDB) wrote the following comment on issue #5890: "We would like to add this feature [continuous backup], but haven't started working on it yet."
 
 To get a sense of what continuous backup might look like for RethinkDB, one can look at the continuous backup options available for MongoDB. MongoDB, the company, offers continuous backup with [Ops Manager](https://www.mongodb.com/products/ops-manager) (self-hosted) or [Cloud Manager](https://www.mongodb.com/cloud) (fully managed). Features include:
 
