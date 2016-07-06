@@ -250,7 +250,7 @@ Each node must generate a vote for each block, to be appended the `votes` table.
 
 ```json
 {
-    "id": "<generated ID for the vote>",
+    "id": "<RethinkDB-generated ID for the vote>",
     "node_pubkey": "<the public key of the voting node>",
     "vote": {
         "voting_for_block": "<id of the block the node is voting for>",
