@@ -32,13 +32,19 @@ As for the read & write rates, what do you expect those to be for your situation
 
 ## Memory (RAM) Requirements
 
-In their [FAQ](https://rethinkdb.com/faq/), RethinkDB recommends that, "RethinkDB servers have at least 2GB of RAM... RethinkDB has a custom caching engine and can run on low-memory nodes with large amounts of on-disk data..." ([source](https://rethinkdb.com/faq/))
+In their [FAQ](https://rethinkdb.com/faq/), RethinkDB recommends that, "RethinkDB servers have at least 2GB of RAM..." ([source](https://rethinkdb.com/faq/))
 
-In particular: "RethinkDB requires data structures in RAM on each server proportional to the size of the data on that server’s disk, usually around 1% of the size of the total data set." ([source](https://rethinkdb.com/limitations/))
+In particular: "RethinkDB requires data structures in RAM on each server proportional to the size of the data on that server’s disk, usually around 1% of the size of the total data set." ([source](https://rethinkdb.com/limitations/)) We asked what they meant by "total data set" and [they said](https://github.com/rethinkdb/rethinkdb/issues/5902#issuecomment-230860607) it's "referring to only the data stored on the particular server."
 
-Also, "The storage engine is used in conjunction with a custom, B-Tree-aware caching engine which allows file sizes many orders of magnitude greater than the amount of available memory. RethinkDB can operate on a terabyte of data with about ten gigabytes of free RAM." ([source](https://www.rethinkdb.com/docs/architecture/))
+Also, "The storage engine is used in conjunction with a custom, B-Tree-aware caching engine which allows file sizes many orders of magnitude greater than the amount of available memory. RethinkDB can operate on a terabyte of data with about ten gigabytes of free RAM." ([source](https://www.rethinkdb.com/docs/architecture/)) (In this case, it's the _cluster_ which has a total of one terabyte of data, and it's the _cluster_ which has a total of ten gigabytes of RAM. That is, if you add up the RethinkDB RAM on all the servers, it's ten gigabytes.)
 
-RethinkDB has [documentation about its memory requirements](https://rethinkdb.com/docs/memory-usage/). You can use that page to get a better estimate of how much memory you'll need.
+In reponse to our questions about RAM requirements, @danielmewes (of RethinkDB) [wrote](https://github.com/rethinkdb/rethinkdb/issues/5902#issuecomment-230860607):
+
+> ... If you replicate the data, the amount of data per server increases accordingly, because multiple copies of the same data will be held by different servers in the cluster.
+
+> **For reasonable performance, you should probably aim at something closer to 5-10% of the data size.** [Emphasis added] The 1% is the bare minimum and doesn't include any caching. If you want to run near the minimum, you'll also need to manually lower RethinkDB's cache size through the `--cache-size` parameter to free up enough RAM for the metadata overhead...
+
+RethinkDB has [documentation about its memory requirements](https://rethinkdb.com/docs/memory-usage/). You can use that page to get a better estimate of how much memory you'll need. In particular, note that RethinkDB automatically configures the cache size limit to be about half the available memory, but it can be no lower than 100 MB. As @danielmewes noted, you can manually change the cache size limit (e.g. to free up RAM for queries, metadata, or other things).
 
 
 ## Filesystem Requirements
