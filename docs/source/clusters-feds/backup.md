@@ -110,14 +110,17 @@ Although it's not advertised as such, RethinkDB's built-in replication feature i
 
 * Give all the original BigchainDB nodes (RethinkDB nodes) the server tag `original`. This is the default if you used the RethinkDB config file suggested in the section titled [Configure RethinkDB Server](../nodes/setup-run-node.html#configure-rethinkdb-server).
 * Set up a group of servers running RethinkDB only, and give them the server tag `backup`. The `backup` servers could be geographically separated from all the `original` nodes (or not; it's up to the federation).
+* Clients shouldn't be able to read from or write to servers in the `backup` set.
 * Send a RethinkDB reconfigure command to the RethinkDB cluster to make it so that the `original` set has the same number of replicas as before (or maybe one less), and the `backup` set has one replica. Also, make sure the `primary_replica_tag='original'` so that all primary shards live on the `original` nodes.
 
 The [RethinkDB documentation on sharding and replication](https://www.rethinkdb.com/docs/sharding-and-replication/) has the details of how to set server tags and do RethinkDB reconfiguration.
 
 Once you've set up a set of backup-only RethinkDB servers, you could make a point-in-time snapshot of their storage devices, as a form of backup.
 
-You might want to disconnect the `backup` set from the `original` set first, and then wait for reads and writes in the `backup` set to stop. That way, all the data in the `backup` set will be consistent before you take the snapshot.
+You might want to disconnect the `backup` set from the `original` set first, and then wait for reads and writes in the `backup` set to stop. (The `backup` set should have only one copy of each shard, so there's no opportunity for inconsistency between shards of the `backup` set.)
 
 You will want to re-connect the `backup` set to the `original` set as soon as possible, so it's able to catch up.
+
+If something bad happens to the entire original BigchainDB cluster (including the `backup` set) and you need to restore it from a snapshot, you can, but before you make the cluster live, you should 1) delete all entries in the backlog table, 2) delete all blocks after the last voted-valid block, and 3) delete all votes on the blocks deleted in part 2.
 
 **NOTE:** Sometimes snapshots are _incremental_. For example, [Amazon EBS snapshots](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSSnapshots.html) are incremental, meaning "only the blocks on the device that have changed after your most recent snapshot are saved. **This minimizes the time required to create the snapshot and saves on storage costs.**" [Emphasis added]
