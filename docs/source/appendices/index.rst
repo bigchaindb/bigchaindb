@@ -13,5 +13,4 @@ Appendices
    consensus
    ntp-notes
    example-rethinkdb-storage-setups
-   local-rethinkdb-cluster
    licenses
