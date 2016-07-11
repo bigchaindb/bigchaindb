@@ -10,8 +10,8 @@ Appendices
    json-serialization
    cryptography
    the-Bigchain-class
+   aws-setup
    consensus
    ntp-notes
    example-rethinkdb-storage-setups
-   local-rethinkdb-cluster
    licenses
