@@ -121,6 +121,6 @@ You might want to disconnect the `backup` set from the `original` set first, and
 
 You will want to re-connect the `backup` set to the `original` set as soon as possible, so it's able to catch up.
 
-If something bad happens to the entire original BigchainDB cluster (including the `backup` set) and you need to restore it from a snapshot, you can, but before you make the cluster live, you should 1) delete all entries in the backlog table, 2) delete all blocks after the last voted-valid block, and 3) delete all votes on the blocks deleted in part 2.
+If something bad happens to the entire original BigchainDB cluster (including the `backup` set) and you need to restore it from a snapshot, you can, but before you make BigchainDB live, you should 1) delete all entries in the backlog table, 2) delete all blocks after the last voted-valid block, 3) delete all votes on the blocks deleted in part 2, and 4) rebuild the RethinkDB indexes.
 
 **NOTE:** Sometimes snapshots are _incremental_. For example, [Amazon EBS snapshots](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSSnapshots.html) are incremental, meaning "only the blocks on the device that have changed after your most recent snapshot are saved. **This minimizes the time required to create the snapshot and saves on storage costs.**" [Emphasis added]
