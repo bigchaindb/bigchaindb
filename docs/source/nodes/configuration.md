@@ -22,8 +22,11 @@ For convenience, here's a list of all the relevant environment variables (docume
 `BIGCHAINDB_STATSD_HOST`<br>
 `BIGCHAINDB_STATSD_PORT`<br>
 `BIGCHAINDB_STATSD_RATE`<br>
+`BIGCHAINDB_CONFIG_PATH`<br>
 
-The local config file is `$HOME/.bigchaindb` by default (a file which might not even exist), but you can tell BigchainDB to use a different file by using the `-c` command-line option, e.g. `bigchaindb -c path/to/config_file.json start`.
+The local config file is `$HOME/.bigchaindb` by default (a file which might not even exist), but you can tell BigchainDB to use a different file by using the `-c` command-line option, e.g. `bigchaindb -c path/to/config_file.json start`
+or using the `BIGCHAINDB_CONFIG_PATH` environment variable, e.g. `BIGHAINDB_CONFIG_PATH=.my_bigchaindb_config bigchaindb start`.
+Note that the `-c` command line option will always take precedence if both the `BIGCHAINDB_CONFIG_PATH` and the `-c` command line option are used.
 
 You can read the current default values in the file [bigchaindb/\_\_init\_\_.py](https://github.com/bigchaindb/bigchaindb/blob/master/bigchaindb/__init__.py). (The link is to the latest version.)
 
