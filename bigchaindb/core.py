@@ -455,7 +455,7 @@ class Bigchain(object):
                 has_previous_vote = True
             else:
                 raise exceptions.ImproperVoteError('Block {block_id} already has an incorrectly signed vote '
-                                        'from public key {me}').format(block_id=block['id'], me=self.me)
+                                        'from public key {me}'.format(block_id=block['id'], me=self.me))
 
         return has_previous_vote
 
