@@ -50,6 +50,8 @@ Drop (erase) the RethinkDB database. You will be prompted to make sure. If you w
 ## bigchaindb start
 
 Start BigchainDB. It always begins by trying a `bigchaindb init` first. See the note in the documentation for `bigchaindb init`.
+You can also use the `--experimental-start-rethinkdb` command line option to automatically start rethinkdb with bigchaindb if rethinkdb is not already running,
+e.g. `bigchaindb --experimental-start-rethinkdb start`. Note that this will also shutdown rethinkdb when the bigchaindb process stops.
 
 
 ## bigchaindb load
