@@ -3,20 +3,28 @@
 There are several ways to backup and restore the data in a BigchainDB cluster.
 
 
-## RethinkDB's Replication is a form of Backup
+## RethinkDB's Replication as a form of Backup
 
 RethinkDB already has internal replication: every document is stored on _R_ different nodes, where _R_ is the replication factor (set using `bigchaindb set-replicas R`). Those replicas can be thought of as "live backups" because if one node goes down, the cluster will continue to work and no data will be lost.
+
+At this point, there should be someone saying, "But replication isn't backup!"
+
+It's true. Replication alone isn't enough, because something bad might happen _inside_ the database, and that could affect the replicas. For example, what if someone logged in as a RethinkDB admin and did a "drop table"? We currently plan for each node to be protected by a next-generation firewall (or something similar) to prevent such things from getting very far. For example, see [issue #240](https://github.com/bigchaindb/bigchaindb/issues/240).
+
+Nevertheless, you should still consider having normal, "cold" backups, because bad things can still happen.
 
 
 ## Live Replication of RethinkDB Data Files
 
-All RethinkDB data is stored in one directory. You could set up the node's file system so that directory lives on its own hard drive. Furthermore, you could make that hard drive part of a [RAID](https://en.wikipedia.org/wiki/RAID) array, so that a second hard drive would always have a copy of the original. If the original hard drive fails, then the second hard drive could take its place and the node would continue to function. Meanwhile, the original hard drive could be replaced.
+Each BigchainDB node stores its subset of the RethinkDB data in one directory. You could set up the node's file system so that directory lives on its own hard drive. Furthermore, you could make that hard drive part of a [RAID](https://en.wikipedia.org/wiki/RAID) array, so that a second hard drive would always have a copy of the original. If the original hard drive fails, then the second hard drive could take its place and the node would continue to function. Meanwhile, the original hard drive could be replaced.
 
-That's just one possible way of setting up the file system so as to provide extra reliability. It's debatable whether it's a "backup strategy," but one could argue that the second hard drive is like a backup of the original.
+That's just one possible way of setting up the file system so as to provide extra reliability.
 
-Another way to get similar reliability would be to mount the RethinkDB data directory on an [Amazon EBS](https://aws.amazon.com/ebs/) volume. Each Amazon EBS volume is, "automatically replicated within its Availability Zone to protect you from component failure, offering high availability and durability.""
+Another way to get similar reliability would be to mount the RethinkDB data directory on an [Amazon EBS](https://aws.amazon.com/ebs/) volume. Each Amazon EBS volume is, "automatically replicated within its Availability Zone to protect you from component failure, offering high availability and durability."
 
-See [the section on file system setup](../nodes/setup-run-node.html#set-up-the-file-system-for-rethinkdb) for more details.
+See [the section on setting up storage for RethinkDB](../nodes/setup-run-node.html#set-up-storage-for-rethinkdb-data) for more details.
+
+As with shard replication, live file-system replication protects against many failure modes, but it doesn't protect against them all. You should still consider having normal, "cold" backups.
 
 
 ## rethinkdb dump (to a File)
@@ -39,7 +47,7 @@ There's [more information about the `rethinkdb dump` command in the RethinkDB do
 
 * If the `rethinkdb dump` subcommand fails and the last line of the Traceback says "NameError: name 'file' is not defined", then you need to update your RethinkDB Python driver; do a `pip install --upgrade rethinkdb`
 
-* It can take a very long time to backup data this way. The more data, the longer it will take.
+* It might take a long time to backup data this way. The more data, the longer it will take.
 
 * You need enough free disk space to store the backup file.
 
@@ -65,9 +73,11 @@ Yes, in principle, but it would be difficult to know if you've recovered every b
 
 ## Backup by Copying RethinkDB Data Files
 
-It's _possible_ to back up a BigchainDB database by creating a point-in-tim copy of the RethinkDB data files (on all nodes, at roughly the same time). It's not a very practical approach to backup: the resulting set of files will be much larger (collectively) than what one would get using `rethinkdb dump`, and there are no guarantees on how consistent that data will be, especially for recently-written data.
+It's _possible_ to back up a BigchainDB database by creating a point-in-time copy of the RethinkDB data files (on all nodes, at roughly the same time). It's not a very practical approach to backup: the resulting set of files will be much larger (collectively) than what one would get using `rethinkdb dump`, and there are no guarantees on how consistent that data will be, especially for recently-written data.
 
 If you're curious about what's involved, see the [MongoDB documentation about "Backup by Copying Underlying Data Files"](https://docs.mongodb.com/manual/core/backups/#backup-with-file-copies). (Yes, that's documentation for MongoDB, but the principles are the same.)
+
+See the last subsection of this page for a better way to use this idea.
 
 
 ## Incremental or Continuous Backup
@@ -76,7 +86,7 @@ If you're curious about what's involved, see the [MongoDB documentation about "B
 
 **Continuous backup** might mean incremental backup on a very regular basis (e.g. every ten minutes), or it might mean backup of every database operation as it happens. The latter is also called transaction logging or continuous archiving.
 
-RethinkDB doesn't have a built-in incremental or continuous backup capability. Incremental backup was mentioned briefly in RethinkDB Issue [#89](https://github.com/rethinkdb/rethinkdb/issues/89).
+At the time of writing, RethinkDB didn't have a built-in incremental or continuous backup capability, but the idea was raised in RethinkDB issues [#89](https://github.com/rethinkdb/rethinkdb/issues/89) and [#5890](https://github.com/rethinkdb/rethinkdb/issues/5890). On July 5, 2016, Daniel Mewes (of RethinkDB) wrote the following comment on issue #5890: "We would like to add this feature [continuous backup], but haven't started working on it yet."
 
 To get a sense of what continuous backup might look like for RethinkDB, one can look at the continuous backup options available for MongoDB. MongoDB, the company, offers continuous backup with [Ops Manager](https://www.mongodb.com/products/ops-manager) (self-hosted) or [Cloud Manager](https://www.mongodb.com/cloud) (fully managed). Features include:
 
@@ -93,12 +103,24 @@ Considerations for BigchainDB:
 * We'd like the backup to be decentralized, with no single point of control or single point of failure. (Note: some file systems have a single point of failure. For example, HDFS has one Namenode.)
 * We only care to back up blocks and votes, and once written, those never change. There are no updates or deletes, just new blocks and votes.
 
-**RethinkDB Replication as Continuous Backup**
+
+## Combining RethinkDB Replication with Storage Snapshots
 
 Although it's not advertised as such, RethinkDB's built-in replication feature is similar to continous backup, except the "backup" (i.e. the set of replica shards) is spread across all the nodes. One could take that idea a bit farther by creating a set of backup-only servers with one full backup:
 
 * Give all the original BigchainDB nodes (RethinkDB nodes) the server tag `original`. This is the default if you used the RethinkDB config file suggested in the section titled [Configure RethinkDB Server](../nodes/setup-run-node.html#configure-rethinkdb-server).
 * Set up a group of servers running RethinkDB only, and give them the server tag `backup`. The `backup` servers could be geographically separated from all the `original` nodes (or not; it's up to the federation).
+* Clients shouldn't be able to read from or write to servers in the `backup` set.
 * Send a RethinkDB reconfigure command to the RethinkDB cluster to make it so that the `original` set has the same number of replicas as before (or maybe one less), and the `backup` set has one replica. Also, make sure the `primary_replica_tag='original'` so that all primary shards live on the `original` nodes.
 
 The [RethinkDB documentation on sharding and replication](https://www.rethinkdb.com/docs/sharding-and-replication/) has the details of how to set server tags and do RethinkDB reconfiguration.
+
+Once you've set up a set of backup-only RethinkDB servers, you could make a point-in-time snapshot of their storage devices, as a form of backup.
+
+You might want to disconnect the `backup` set from the `original` set first, and then wait for reads and writes in the `backup` set to stop. (The `backup` set should have only one copy of each shard, so there's no opportunity for inconsistency between shards of the `backup` set.)
+
+You will want to re-connect the `backup` set to the `original` set as soon as possible, so it's able to catch up.
+
+If something bad happens to the entire original BigchainDB cluster (including the `backup` set) and you need to restore it from a snapshot, you can, but before you make BigchainDB live, you should 1) delete all entries in the backlog table, 2) delete all blocks after the last voted-valid block, 3) delete all votes on the blocks deleted in part 2, and 4) rebuild the RethinkDB indexes.
+
+**NOTE:** Sometimes snapshots are _incremental_. For example, [Amazon EBS snapshots](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSSnapshots.html) are incremental, meaning "only the blocks on the device that have changed after your most recent snapshot are saved. **This minimizes the time required to create the snapshot and saves on storage costs.**" [Emphasis added]
