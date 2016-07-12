@@ -12,6 +12,7 @@ Appendices
    the-Bigchain-class
    aws-setup
    consensus
+   firewall-notes
    ntp-notes
    example-rethinkdb-storage-setups
    licenses

@@ -10,13 +10,9 @@ The first step is to get a server (or equivalent) which meets [the requirements 
 
 ## Secure Your Server
 
-The steps that you must take to secure your server depend on your server OS and where your server is physically located. There are many articles and books about how to secure a server. Ask a search engine.
+The steps that you must take to secure your server depend on your server OS and where your server is physically located. There are many articles and books about how to secure a server. Here we just cover special considerations when securing a BigchainDB node.
 
-Here we just cover special considerations when securing a BigchainDB node.
-
-TODO: Special security considerations for BigchainDB nodes.
-
-TODO: Notes about firewall setup. What ports should be open, for what kinds of traffic, accepting connections from what IP addresses, etc. For example, NTP uses port 123. Can firewall setup be done now or does it have to happen later?
+There are some [notes on BigchainDB-specific firewall setup](../appendices/firewall-notes.html) in the Appendices.
 
 
 ## Sync Your System Clock
@@ -25,12 +21,12 @@ A BigchainDB node uses its system clock to generate timestamps for blocks and vo
 
 NTP is a standard protocol. There are many NTP daemons implementing it. We don't recommend a particular one. On the contrary, we recommend that different nodes in a federation run different NTP daemons, so that a problem with one daemon won't affect all nodes.
 
-Please see the [notes on NTP daemon setup in the Appendices](../appendices/ntp-notes.html).
+Please see the [notes on NTP daemon setup](../appendices/ntp-notes.html) in the Appendices.
 
 
 ## Set Up Storage for RethinkDB Data
 
-Below are some things to consider when setting up storage for the RethinkDB data. The appendices have a [section with concrete examples](../appendices/example-rethinkdb-storage-setups.html).
+Below are some things to consider when setting up storage for the RethinkDB data. The Appendices have a [section with concrete examples](../appendices/example-rethinkdb-storage-setups.html).
 
 We suggest you set up a separate storage "device" (partition, RAID array, or logical volume) to store the RethinkDB data. Here are some questions to ask:
 
@@ -86,7 +82,7 @@ join=node2_hostname:29015
 
 If you're curious about the RethinkDB config file, there's [a RethinkDB documentation page about it](https://www.rethinkdb.com/docs/config-file/). The [explanations of the RethinkDB command-line options](https://rethinkdb.com/docs/cli-options/) are another useful reference.
 
-TODO: Explain how to configure the RethinkDB cluster to be more secure.
+TODO: Explain how to configure the RethinkDB cluster to be more secure. For now, see the [RethinkDB documentation on securing your cluster](https://rethinkdb.com/docs/security/).
 
 
 ## Install Python 3.4+
