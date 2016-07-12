@@ -10,6 +10,8 @@
 
 A scalable blockchain database. [The whitepaper](https://www.bigchaindb.com/whitepaper/) explains what that means.
 
+We're hiring! [Learn more](https://github.com/bigchaindb/org/blob/master/engjob.md).
+
 
 ## Get Started
 
