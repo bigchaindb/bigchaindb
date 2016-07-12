@@ -569,7 +569,7 @@ class Bigchain(object):
             .insert(vote) \
             .run(self.conn)
 
-    def get_last_voted_block(self, return_block_number=False):
+    def get_last_voted_block(self):
         """Returns the last block that this node voted on."""
 
         last_voted = r.table('votes') \
@@ -586,7 +586,7 @@ class Bigchain(object):
 
         res = r.table('bigchain').get(last_voted[0]['vote']['voting_for_block']).run(self.conn)
 
-        if return_block_number:
+        if 'block_number' in last_voted[0]:
             res['block_number'] = last_voted[0]['block_number']
 
         return res
