@@ -33,6 +33,11 @@ Every create transaction contains exactly one fulfillment-condition pair. A tran
 
 ![Tracking the stories of three assets](../_static/stories_3_assets.png)
 
+To determine the current owner(s) of an asset, find the most recent valid transaction involving it, and then look at the list of owners in the _conditions_ (not the fulfillments).
+
+
+### Transaction Validation
+
 When a node is asked to check the validity of a transaction, it must do several things; the main things are:
 
 * schema validation,
@@ -41,6 +46,11 @@ When a node is asked to check the validity of a transaction, it must do several 
 * validation of all fulfillments, including validation of cryptographic signatures if they’re among the conditions.
 
 The full details of transaction validation can be found in the code for `validate_transaction()` in the `BaseConsensusRules` class of [`consensus.py`](https://github.com/bigchaindb/bigchaindb/blob/master/bigchaindb/consensus.py) (unless other validation rules are being used by a federation, in which case those should be consulted instead).
+
+
+### Mutable and Immutable Assets
+
+Assets can be mutable (changeable) or immutable. To change a mutable asset, you must create a valid transfer transaction with a payload specifying how it changed (or will change). The data structure (schema) of the change depends on the asset class. If you're inventing a new asset class, you can make up how to describe changes. For a mutable asset in an existing asset class, you should find out how changes are specified for that asset class. That's not something determined by BigchainDB.
 
 
 ## The Transaction Model
