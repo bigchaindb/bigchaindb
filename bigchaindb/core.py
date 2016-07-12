@@ -450,8 +450,8 @@ class Bigchain(object):
             raise exceptions.MultipleVotesError('Block {block_id} has {n_votes} votes from public key {me}'
                                      .format(block_id=block['id'], n_votes=str(len(votes)), me=self.me))
         has_previous_vote = False
-        for vote in votes:
-            if util.verify_vote_signature(block, vote):
+        if votes:
+            if util.verify_vote_signature(block, votes[0]):
                 has_previous_vote = True
             else:
                 raise exceptions.ImproperVoteError('Block {block_id} already has an incorrectly signed vote '
