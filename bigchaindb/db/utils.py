@@ -36,6 +36,7 @@ def init():
     # create the tables
     r.db(dbname).table_create('bigchain').run(conn)
     r.db(dbname).table_create('backlog').run(conn)
+    r.db(dbname).table_create('votes').run(conn)
 
     logger.info(' - indexes')
     # create the secondary indexes
@@ -52,6 +53,11 @@ def init():
     r.db(dbname).table('backlog')\
         .index_create('assignee__transaction_timestamp', [r.row['assignee'], r.row['transaction']['timestamp']])\
         .run(conn)
+
+    # compound index to order votes by block id and node
+    r.db(dbname).table('votes').index_create('block_and_voter',
+                                             [r.row['vote']['voting_for_block'], r.row['node_pubkey']]).run(conn)
+
     # secondary index for payload data by UUID
     r.db(dbname).table('bigchain')\
         .index_create('payload_uuid', r.row['block']['transactions']['transaction']['data']['uuid'], multi=True)\
@@ -60,6 +66,7 @@ def init():
     # wait for rethinkdb to finish creating secondary indexes
     r.db(dbname).table('backlog').index_wait().run(conn)
     r.db(dbname).table('bigchain').index_wait().run(conn)
+    r.db(dbname).table('votes').index_wait().run(conn)
 
     logger.info(' - genesis block')
     b.create_genesis_block()

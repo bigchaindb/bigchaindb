@@ -47,7 +47,11 @@ class StartupError(Exception):
 
 
 class ImproperVoteError(Exception):
-    """Raised when an invalid vote is found"""
+    """Raised if a vote is not constructed correctly, or signed incorrectly"""
+
+
+class MultipleVotesError(Exception):
+    """Raised if a voter has voted more than once"""
 
 
 class GenesisBlockAlreadyExistsError(Exception):

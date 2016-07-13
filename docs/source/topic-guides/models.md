@@ -3,7 +3,7 @@
 BigchainDB stores all its records in JSON documents.
 
 The three main kinds of records are transactions, blocks and votes. 
-_Transactions_ are used to register, issue, create or transfer things (e.g. assets). Multiple transactions are combined with some other metadata to form _blocks_. Nodes append _votes_ to blocks. This section is a reference on the details of transactions, blocks and votes.
+_Transactions_ are used to register, issue, create or transfer things (e.g. assets). Multiple transactions are combined with some other metadata to form _blocks_. Nodes vote on blocks. This section is a reference on the details of transactions, blocks and votes.
 
 Below we often refer to cryptographic hashes, keys and signatures. The details of those are covered in [the section on cryptography](../appendices/cryptography.html).
 
@@ -230,7 +230,6 @@ If there is only one _current owner_, the fulfillment will be a simple signature
         "voters": ["<list of federation nodes public keys>"]
     },
     "signature": "<signature of block>",
-    "votes": ["<list of votes>"]
 }
 ```
 
@@ -244,14 +243,14 @@ If there is only one _current owner_, the fulfillment will be a simple signature
       in the federation when the block was created, so that at a later point in
       time we can check that the block received the correct number of votes.
 - `signature`: Signature of the block by the node that created the block. (To create the signature, the node serializes the block contents and signs that with its private key.)
-- `votes`: Initially an empty list. New votes are appended as they come in from the nodes.
 
 ## The Vote Model
 
-Each node must generate a vote for each block, to be appended to that block's `votes` list. A vote has the following structure:
+Each node must generate a vote for each block, to be appended the `votes` table. A vote has the following structure:
 
 ```json
 {
+    "id": "<RethinkDB-generated ID for the vote>",
     "node_pubkey": "<the public key of the voting node>",
     "vote": {
         "voting_for_block": "<id of the block the node is voting for>",
@@ -260,7 +259,8 @@ Each node must generate a vote for each block, to be appended to that block's `v
         "invalid_reason": "<None|DOUBLE_SPEND|TRANSACTIONS_HASH_MISMATCH|NODES_PUBKEYS_MISMATCH",
         "timestamp": "<Unix time when the vote was generated, provided by the voting node>"
     },
-    "signature": "<signature of vote>"
+    "signature": "<signature of vote>",
+    "block_number": "<roughly sequential integer index for block ordering>"
 }
 ```
 

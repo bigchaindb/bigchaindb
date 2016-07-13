@@ -38,6 +38,8 @@ def setup_database(request, node_config):
     # setup tables
     r.db(db_name).table_create('bigchain').run()
     r.db(db_name).table_create('backlog').run()
+    r.db(db_name).table_create('votes').run()
+
     # create the secondary indexes
     # to order blocks by timestamp
     r.db(db_name).table('bigchain').index_create('block_timestamp', r.row['block']['timestamp']).run()
@@ -55,6 +57,9 @@ def setup_database(request, node_config):
     r.db(db_name).table('backlog')\
         .index_create('assignee__transaction_timestamp', [r.row['assignee'], r.row['transaction']['timestamp']])\
         .run()
+    # compound index to order votes by block id and node
+    r.db(db_name).table('votes').index_create('block_and_voter',
+                                             [r.row['vote']['voting_for_block'], r.row['node_pubkey']]).run()
     # order transactions by id
     r.db(db_name).table('bigchain').index_create('transaction_id', r.row['block']['transactions']['id'],
                                                  multi=True).run()
@@ -84,6 +89,7 @@ def cleanup_tables(request, node_config):
         try:
             r.db(db_name).table('bigchain').delete().run()
             r.db(db_name).table('backlog').delete().run()
+            r.db(db_name).table('votes').delete().run()
         except r.ReqlOpFailedError as e:
             if e.message != 'Database `{}` does not exist.'.format(db_name):
                 raise

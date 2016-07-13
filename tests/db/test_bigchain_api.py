@@ -247,7 +247,6 @@ class TestBigchainApi(object):
         assert new_block['block']['node_pubkey'] == b.me
         assert crypto.VerifyingKey(b.me).verify(util.serialize(new_block['block']), new_block['signature']) is True
         assert new_block['id'] == block_hash
-        assert new_block['votes'] == []
 
     def test_create_empty_block(self, b):
         with pytest.raises(exceptions.OperationError) as excinfo:
@@ -299,6 +298,57 @@ class TestBigchainApi(object):
         retrieved_block_2 = r.table('bigchain').get(block_1['id']).run(b.conn)
 
         assert retrieved_block_1 == retrieved_block_2
+
+    def test_more_votes_than_voters(self, b):
+        b.create_genesis_block()
+        block_1 = dummy_block()
+        b.write_block(block_1, durability='hard')
+        # insert duplicate votes
+        vote_1 = b.vote(block_1, b.get_last_voted_block(), True)
+        vote_2 = b.vote(block_1, b.get_last_voted_block(), True)
+        vote_2['node_pubkey'] = 'aaaaaaa'
+        r.table('votes').insert(vote_1).run(b.conn)
+        r.table('votes').insert(vote_2).run(b.conn)
+
+        from bigchaindb.exceptions import MultipleVotesError
+        with pytest.raises(MultipleVotesError) as excinfo:
+            b.block_election_status(block_1)
+        assert excinfo.value.args[0] == 'Block {block_id} has {n_votes} votes cast, but only {n_voters} voters'\
+            .format(block_id=block_1['id'], n_votes=str(2), n_voters=str(1))
+
+    def test_multiple_votes_single_node(self, b):
+        b.create_genesis_block()
+        block_1 = dummy_block()
+        b.write_block(block_1, durability='hard')
+        # insert duplicate votes
+        for i in range(2):
+            r.table('votes').insert(b.vote(block_1, b.get_last_voted_block(), True)).run(b.conn)
+
+        from bigchaindb.exceptions import MultipleVotesError
+        with pytest.raises(MultipleVotesError) as excinfo:
+            b.block_election_status(block_1)
+        assert excinfo.value.args[0] == 'Block {block_id} has multiple votes ({n_votes}) from voting node {node_id}'\
+            .format(block_id=block_1['id'], n_votes=str(2), node_id=b.me)
+
+        with pytest.raises(MultipleVotesError) as excinfo:
+            b.has_previous_vote(block_1)
+        assert excinfo.value.args[0] == 'Block {block_id} has {n_votes} votes from public key {me}'\
+            .format(block_id=block_1['id'], n_votes=str(2), me=b.me)
+
+    def test_improper_vote_error(selfs, b):
+        b.create_genesis_block()
+        block_1 = dummy_block()
+        b.write_block(block_1, durability='hard')
+        vote_1 = b.vote(block_1, b.get_last_voted_block(), True)
+        # mangle the signature
+        vote_1['signature'] = vote_1['signature'][2:] + vote_1['signature'][:1]
+        r.table('votes').insert(vote_1).run(b.conn)
+        from bigchaindb.exceptions import ImproperVoteError
+        with pytest.raises(ImproperVoteError) as excinfo:
+            b.has_previous_vote(block_1)
+        assert excinfo.value.args[0] == 'Block {block_id} already has an incorrectly signed ' \
+                                  'vote from public key {me}'.format(block_id=block_1['id'], me=b.me)
+
 
 class TestTransactionValidation(object):
     @pytest.mark.usefixtures('inputs')
@@ -552,9 +602,12 @@ class TestBigchainVoter(object):
         # retrive block from bigchain
         bigchain_block = r.table('bigchain').get(block['id']).run(b.conn)
 
+        # retrieve vote
+        vote = r.table('votes').get_all([block['id'], b.me], index='block_and_voter').run(b.conn)
+        vote = vote.next()
+
         # validate vote
-        assert len(bigchain_block['votes']) == 1
-        vote = bigchain_block['votes'][0]
+        assert vote is not None
 
         assert vote['vote']['voting_for_block'] == block['id']
         assert vote['vote']['previous_block'] == genesis['id']
@@ -593,9 +646,12 @@ class TestBigchainVoter(object):
         # retrive block from bigchain
         bigchain_block = r.table('bigchain').get(block['id']).run(b.conn)
 
+        # retrieve vote
+        vote = r.table('votes').get_all([block['id'], b.me], index='block_and_voter').run(b.conn)
+        vote = vote.next()
+
         # validate vote
-        assert len(bigchain_block['votes']) == 1
-        vote = bigchain_block['votes'][0]
+        assert vote is not None
 
         assert vote['vote']['voting_for_block'] == block['id']
         assert vote['vote']['previous_block'] == genesis['id']
