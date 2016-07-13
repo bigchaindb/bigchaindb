@@ -8,6 +8,7 @@ Tasks:
 
 import os
 import copy
+from functools import partial
 
 import pytest
 

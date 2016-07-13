@@ -140,7 +140,7 @@ class TestBigchainApi(object):
 
         # vote the block invalid
         vote = b.vote(block, b.get_last_voted_block()['id'], False)
-        b.write_vote(block, vote, 3)
+        b.write_vote(block, vote)
         response = b.get_transaction(tx_signed["id"])
 
         # should be None, because invalid blocks are ignored
@@ -181,10 +181,9 @@ class TestBigchainApi(object):
     @pytest.mark.usefixtures('inputs')
     def test_genesis_block(self, b):
         response = list(r.table('bigchain')
-                        .filter(r.row['block_number'] == 0)
+                        .filter(util.is_genesis_block)
                         .run(b.conn))[0]
 
-        assert response['block_number'] == 0
         assert len(response['block']['transactions']) == 1
         assert response['block']['transactions'][0]['transaction']['operation'] == 'GENESIS'
         assert response['block']['transactions'][0]['transaction']['fulfillments'][0]['input'] is None
@@ -196,7 +195,7 @@ class TestBigchainApi(object):
             b.create_genesis_block()
 
         genesis_blocks = list(r.table('bigchain')
-                              .filter(r.row['block_number'] == 0)
+                              .filter(util.is_genesis_block)
                               .run(b.conn))
 
         assert len(genesis_blocks) == 1
@@ -257,11 +256,11 @@ class TestBigchainApi(object):
     def test_get_last_voted_block_returns_genesis_if_no_votes_has_been_casted(self, b):
         b.create_genesis_block()
         genesis = list(r.table('bigchain')
-                       .filter(r.row['block_number'] == 0)
+                       .filter(util.is_genesis_block)
                        .run(b.conn))[0]
         assert b.get_last_voted_block() == genesis
 
-    def test_get_last_voted_block_returns_the_correct_block(self, b):
+    def test_get_last_voted_block_returns_the_correct_block(self, b, monkeypatch):
         genesis = b.create_genesis_block()
 
         assert b.get_last_voted_block() == genesis
@@ -274,13 +273,16 @@ class TestBigchainApi(object):
         b.write_block(block_2, durability='hard')
         b.write_block(block_3, durability='hard')
 
-        b.write_vote(block_1, b.vote(block_1, b.get_last_voted_block(), True), 1)
+        monkeypatch.setattr(util, 'timestamp', lambda: 1)
+        b.write_vote(block_1, b.vote(block_1, b.get_last_voted_block()['id'], True))
         assert b.get_last_voted_block()['id'] == block_1['id']
 
-        b.write_vote(block_2, b.vote(block_2, b.get_last_voted_block(), True), 2)
+        monkeypatch.setattr(util, 'timestamp', lambda: 2)
+        b.write_vote(block_2, b.vote(block_2, b.get_last_voted_block()['id'], True))
         assert b.get_last_voted_block()['id'] == block_2['id']
 
-        b.write_vote(block_3, b.vote(block_3, b.get_last_voted_block(), True), 3)
+        monkeypatch.setattr(util, 'timestamp', lambda: 3)
+        b.write_vote(block_3, b.vote(block_3, b.get_last_voted_block()['id'], True))
         assert b.get_last_voted_block()['id'] == block_3['id']
 
     def test_no_vote_written_if_block_already_has_vote(self, b):
@@ -290,11 +292,11 @@ class TestBigchainApi(object):
 
         b.write_block(block_1, durability='hard')
 
-        b.write_vote(block_1, b.vote(block_1, b.get_last_voted_block(), True), 1)
+        b.write_vote(block_1, b.vote(block_1, b.get_last_voted_block()['id'], True))
         retrieved_block_1 = r.table('bigchain').get(block_1['id']).run(b.conn)
 
         # try to vote again on the retrieved block, should do nothing
-        b.write_vote(retrieved_block_1, b.vote(retrieved_block_1, b.get_last_voted_block(), True), 1)
+        b.write_vote(retrieved_block_1, b.vote(retrieved_block_1, b.get_last_voted_block()['id'], True))
         retrieved_block_2 = r.table('bigchain').get(block_1['id']).run(b.conn)
 
         assert retrieved_block_1 == retrieved_block_2
@@ -304,8 +306,8 @@ class TestBigchainApi(object):
         block_1 = dummy_block()
         b.write_block(block_1, durability='hard')
         # insert duplicate votes
-        vote_1 = b.vote(block_1, b.get_last_voted_block(), True)
-        vote_2 = b.vote(block_1, b.get_last_voted_block(), True)
+        vote_1 = b.vote(block_1, b.get_last_voted_block()['id'], True)
+        vote_2 = b.vote(block_1, b.get_last_voted_block()['id'], True)
         vote_2['node_pubkey'] = 'aaaaaaa'
         r.table('votes').insert(vote_1).run(b.conn)
         r.table('votes').insert(vote_2).run(b.conn)
@@ -322,7 +324,7 @@ class TestBigchainApi(object):
         b.write_block(block_1, durability='hard')
         # insert duplicate votes
         for i in range(2):
-            r.table('votes').insert(b.vote(block_1, b.get_last_voted_block(), True)).run(b.conn)
+            r.table('votes').insert(b.vote(block_1, b.get_last_voted_block()['id'], True)).run(b.conn)
 
         from bigchaindb.exceptions import MultipleVotesError
         with pytest.raises(MultipleVotesError) as excinfo:
@@ -339,9 +341,9 @@ class TestBigchainApi(object):
         b.create_genesis_block()
         block_1 = dummy_block()
         b.write_block(block_1, durability='hard')
-        vote_1 = b.vote(block_1, b.get_last_voted_block(), True)
+        vote_1 = b.vote(block_1, b.get_last_voted_block()['id'], True)
         # mangle the signature
-        vote_1['signature'] = vote_1['signature'][2:] + vote_1['signature'][:1]
+        vote_1['signature'] = 'a' * 87
         r.table('votes').insert(vote_1).run(b.conn)
         from bigchaindb.exceptions import ImproperVoteError
         with pytest.raises(ImproperVoteError) as excinfo:
@@ -896,9 +898,9 @@ class TestBigchainBlock(object):
         b.write_block(block_2, durability='hard')
         b.write_block(block_3, durability='hard')
 
-        b.write_vote(block_1, b.vote(block_1, b.get_last_voted_block(), True), 1)
-        b.write_vote(block_2, b.vote(block_2, b.get_last_voted_block(), True), 2)
-        b.write_vote(block_3, b.vote(block_3, b.get_last_voted_block(), True), 3)
+        b.write_vote(block_1, b.vote(block_1, b.get_last_voted_block()['id'], True))
+        b.write_vote(block_2, b.vote(block_2, b.get_last_voted_block()['id'], True))
+        b.write_vote(block_3, b.vote(block_3, b.get_last_voted_block()['id'], True))
 
         q_revert_delete = mp.Queue()
 
@@ -1195,7 +1197,7 @@ class TestMultipleInputs(object):
 
         # vote the block VALID
         vote = b.vote(block, b.get_unvoted_blocks()[0]['id'], True)
-        b.write_vote(block, vote, 2)
+        b.write_vote(block, vote)
 
         # get input
         owned_inputs_user1 = b.get_owned_ids(user_vk)
@@ -1211,7 +1213,7 @@ class TestMultipleInputs(object):
 
         # vote the block invalid
         vote = b.vote(block, b.get_last_voted_block()['id'], False)
-        b.write_vote(block, vote, 3)
+        b.write_vote(block, vote)
 
         owned_inputs_user1 = b.get_owned_ids(user_vk)
         owned_inputs_user2 = b.get_owned_ids(user2_vk)
@@ -1323,7 +1325,7 @@ class TestMultipleInputs(object):
 
         # vote the block VALID
         vote = b.vote(block, b.get_unvoted_blocks()[0]['id'], True)
-        b.write_vote(block, vote, 2)
+        b.write_vote(block, vote)
 
         # get input
         owned_inputs_user1 = b.get_owned_ids(user_vk)
@@ -1340,7 +1342,7 @@ class TestMultipleInputs(object):
 
         # vote the block invalid
         vote = b.vote(block, b.get_last_voted_block()['id'], False)
-        b.write_vote(block, vote, 2)
+        b.write_vote(block, vote)
         response = b.get_transaction(tx_signed["id"])
         spent_inputs_user1 = b.get_spent(owned_inputs_user1[0])
 

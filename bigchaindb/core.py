@@ -492,6 +492,16 @@ class Bigchain(object):
         response = r.table('bigchain').get_all(transaction_id, index='transaction_id').run(self.conn)
         return True if len(response.items) > 0 else False
 
+    def prepare_genesis_block(self):
+        """Prepare a genesis block."""
+
+        payload = {'message': 'Hello World from the BigchainDB'}
+        transaction = self.create_transaction([self.me], [self.me], None, 'GENESIS', payload=payload)
+        transaction_signed = self.sign_transaction(transaction, self.me_private)
+
+        # create the block
+        return self.create_block([transaction_signed])
+
     # TODO: Unless we prescribe the signature of create_transaction, this will
     #       also need to be moved into the plugin API.
     def create_genesis_block(self):
@@ -511,14 +521,7 @@ class Bigchain(object):
         if blocks_count:
             raise exceptions.GenesisBlockAlreadyExistsError('Cannot create the Genesis block')
 
-        payload = {'message': 'Hello World from the BigchainDB'}
-        transaction = self.create_transaction([self.me], [self.me], None, 'GENESIS', payload=payload)
-        transaction_signed = self.sign_transaction(transaction, self.me_private)
-
-        # create the block
-        block = self.create_block([transaction_signed])
-        # add block number before writing
-        block['block_number'] = 0
+        block = self.prepare_genesis_block()
         self.write_block(block, durability='hard')
 
         return block
@@ -553,17 +556,12 @@ class Bigchain(object):
 
         return vote_signed
 
-    def write_vote(self, block, vote, block_number):
+    def write_vote(self, block, vote):
         """Write the vote to the database."""
 
         # First, make sure this block doesn't contain a vote from this node
         if self.has_previous_vote(block):
             return None
-
-        # We need to *not* override the existing block_number, if any
-        # FIXME: MIGHT HAVE RACE CONDITIONS WITH THE OTHER NODES IN THE FEDERATION
-        if 'block_number' not in vote:
-            vote['block_number'] = block_number  # maybe this should be in the signed part...or better yet, removed..
 
         r.table('votes') \
             .insert(vote) \
@@ -574,14 +572,14 @@ class Bigchain(object):
 
         last_voted = r.table('votes') \
             .filter(r.row['node_pubkey'] == self.me) \
-            .order_by(r.desc('block_number')) \
+            .order_by(r.desc(r.row['vote']['timestamp'])) \
             .limit(1) \
             .run(self.conn)
 
         # return last vote if last vote exists else return Genesis block
         if not last_voted:
             return list(r.table('bigchain')
-                        .filter(r.row['block_number'] == 0)
+                        .filter(util.is_genesis_block)
                         .run(self.conn))[0]
 
         res = r.table('bigchain').get(last_voted[0]['vote']['voting_for_block']).run(self.conn)
@@ -597,10 +595,10 @@ class Bigchain(object):
         unvoted = r.table('bigchain') \
             .filter(lambda block: r.table('votes').get_all([block['id'], self.me], index='block_and_voter')
                     .is_empty()) \
-            .order_by(r.desc('block_number')) \
+            .order_by(r.desc(r.row['block']['timestamp'])) \
             .run(self.conn)
 
-        if unvoted and unvoted[0].get('block_number') == 0:
+        if unvoted and util.is_genesis_block(unvoted[0]):
             unvoted.pop(0)
 
         return unvoted

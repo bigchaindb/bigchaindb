@@ -615,3 +615,18 @@ def transform_create(tx):
     new_tx = create_tx(b.me, transaction['fulfillments'][0]['current_owners'], None, 'CREATE', payload=payload)
     return new_tx
 
+
+def is_genesis_block(block):
+    """Check if the block is the genesis block.
+
+    Args:
+        block (dict): the block to check
+
+    Returns:
+        bool: True if the block is the genesis block, False otherwise.
+    """
+
+    # we cannot have empty blocks, there will always be at least one
+    # element in the list so we can safely refer to it
+    return block['block']['transactions'][0]['transaction']['operation'] == 'GENESIS'
+
