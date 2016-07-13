@@ -598,8 +598,7 @@ class Bigchain(object):
             .order_by(r.desc(r.row['block']['timestamp'])) \
             .run(self.conn)
 
-        if unvoted and util.is_genesis_block(unvoted[0]):
-            unvoted.pop(0)
+        unvoted = filter(lambda block: not util.is_genesis_block(block), unvoted)
 
         return unvoted
 
