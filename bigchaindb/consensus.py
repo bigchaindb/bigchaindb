@@ -129,7 +129,7 @@ class BaseConsensusRules(AbstractConsensusRules):
 
         # If the operation is CREATE the transaction should have no inputs and
         # should be signed by a federation node
-        if transaction['transaction']['operation'] == 'CREATE':
+        if transaction['transaction']['operation'] in ('CREATE', 'GENESIS'):
             # TODO: for now lets assume a CREATE transaction only has one fulfillment
             if transaction['transaction']['fulfillments'][0]['input']:
                 raise ValueError('A CREATE operation has no inputs')

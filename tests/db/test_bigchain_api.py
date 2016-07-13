@@ -259,7 +259,9 @@ class TestBigchainApi(object):
         genesis = list(r.table('bigchain')
                        .filter(r.row['block_number'] == 0)
                        .run(b.conn))[0]
-        assert b.get_last_voted_block() == genesis
+        gb = b.get_last_voted_block()
+        assert gb == genesis
+        assert b.validate_block(gb) == gb
 
     def test_get_last_voted_block_returns_the_correct_block(self, b):
         genesis = b.create_genesis_block()
