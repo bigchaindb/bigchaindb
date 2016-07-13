@@ -52,7 +52,7 @@ In your web browser, go to [the BigchainDB repository on GitHub](https://github.
 ```text
 git clone git@github.com:your-github-username/bigchaindb.git
 cd bigchaindb
-git add upstream git@github.com:bigchaindb/bigchaindb.git
+git remote add upstream git@github.com:bigchaindb/bigchaindb.git
 ```
 
 ### Step 5 - Fetch and Merge the Latest from `upstream/master`
@@ -142,7 +142,7 @@ If this is the first time you've submitted a pull request to BigchainDB, then yo
 
 Once you accept and submit the CLA, we'll email you with further instructions. (We will send you a long random string to put in the comments section of your pull request, along with the text, "I have read and agree to the terms of the BigchainDB Contributor License Agreement.")
 
-Someone will then merge your branch or suggest changes. If we suggsest changes, you won't have to open a new pull request, you can just push new code to the same branch (on `origin`) as you did before creating the pull request.
+Someone will then merge your branch or suggest changes. If we suggest changes, you won't have to open a new pull request, you can just push new code to the same branch (on `origin`) as you did before creating the pull request.
 
 ## Quick Links
 
