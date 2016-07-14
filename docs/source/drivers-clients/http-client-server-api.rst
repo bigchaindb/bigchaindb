@@ -21,7 +21,7 @@ The HTTP API currently exposes two endpoints, one to get information about a spe
 
    .. sourcecode:: http
 
-      GET /transactions/00f530d210c06671ab2de4330e3e2cf0d0b47b2826302ee25ceea9b2f47b097f HTTP/1.1
+      GET /transactions/96480ce68912aa39a54766ac16334a835fbf777039670352ff967bf6d65bf4f7 HTTP/1.1
       Host: example.com
       TODO: Other headers?
 
@@ -33,7 +33,23 @@ The HTTP API currently exposes two endpoints, one to get information about a spe
       Content-Type: application/json
       TODO: Other headers?
       
-      (TODO) Insert example response body here
+      {'id': '96480ce68912aa39a54766ac16334a835fbf777039670352ff967bf6d65bf4f7',
+       'transaction': {'conditions': [{'cid': 0,
+            'condition': {'details': {'bitmask': 32,
+              'public_key': 'FoWUUY6kK7QhgCsgVrV2vpDWfW43mq5ewb16Uh7FBbSF',
+              'signature': None,
+              'type': 'fulfillment',
+              'type_id': 4},
+             'uri': 'cc:4:20:2-2pA2qKr2i-GM6REdqJCLEL_CEWpy-5iQky7YgRZTA:96'},
+            'new_owners': ['FoWUUY6kK7QhgCsgVrV2vpDWfW43mq5ewb16Uh7FBbSF']}],
+          'data': {'payload': None, 'uuid': 'f14dc5a6-510e-4307-89c6-aec42af8a1ae'},
+          'fulfillments': [{'current_owners': ['Ftat68WVLsPxVFLz2Rh2Sbwrrt51uFE3UpjkxY73vGKZ'],
+            'fid': 0,
+            'fulfillment': 'cf:4:3TqMI1ZFolraqHWADT6nIvUUt4HOwqdr0_-yj5Cglbg1V5qQV2CF2Yup1l6fQH2uhLGGFo9uHhZ6HNv9lssiD0ZaG88Bg_MTkz6xg2SW2Cw_YgpM-CyESVT404g54ZsK',
+            'input': None}],
+          'operation': 'CREATE',
+          'timestamp': '1468494923'},
+       'version': 1}
 
    :statuscode 200: A transaction with that ID was found.
    :statuscode 404: A transaction with that ID was not found.
