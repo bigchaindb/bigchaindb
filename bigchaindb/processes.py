@@ -31,7 +31,7 @@ class Processes(object):
         # initialize the class
         self.q_new_block = mp.Queue()
         self.q_new_transaction = mp.Queue()
-        self.q_block_new_vote = mp.Queue()
+        self.q_new_vote = mp.Queue()
         self.q_revert_delete = mp.Queue()
 
     def map_backlog(self):
@@ -77,6 +77,27 @@ class Processes(object):
             elif change['new_val'] is not None and change['old_val'] is not None:
                 pass
 
+    def map_votes(self):
+        # listen to changes on the votes table and redirect the changes
+        # to the correct queues
+
+        # create a bigchain instance
+        b = Bigchain()
+
+        for change in r.table('votes').changes().run(b.conn):
+
+            # insert
+            if change['old_val'] is None:
+                self.q_new_vote.put(change['new_val'])
+
+            # delete
+            if change['new_val'] is None:
+                pass
+
+            # update
+            if change['new_val'] is not None and change['old_val'] is not None:
+                pass
+
     def start(self):
         logger.info('Initializing BigchainDB...')
 
@@ -95,7 +116,7 @@ class Processes(object):
         p_block = mp.Process(name='block', target=block.start)
         p_block_delete_revert = mp.Process(name='block_delete_revert', target=delete_reverter.start)
         p_voter = Voter(self.q_new_block)
-        p_election = Election(self.q_block_new_vote)
+        p_election = Election(self.q_new_vote)
 
         # start the processes
         logger.info('starting bigchain mapper')

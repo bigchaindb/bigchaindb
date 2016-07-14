@@ -478,7 +478,7 @@ class TestBlockElection(object):
         r.table('votes').delete().run(b.conn)
 
     def test_tx_rewritten_after_invalid(self, b, user_vk):
-        q_block_new_vote = mp.Queue()
+        q_new_vote = mp.Queue()
 
         # create blocks with transactions
         tx1 = b.create_transaction(b.me, user_vk, None, 'CREATE')
@@ -495,6 +495,9 @@ class TestBlockElection(object):
         test_block_1['block']['voters'] = [key_pair[1] for key_pair in key_pairs]
         test_block_2['block']['voters'] = [key_pair[1] for key_pair in key_pairs]
 
+        r.table('bigchain').insert(test_block_1).run(b.conn)
+        r.table('bigchain').insert(test_block_2).run(b.conn)
+
         # votes for block one
         vote_1 = [member.vote(test_block_1, 'abc', True)
                       for member in test_federation]
@@ -505,17 +508,18 @@ class TestBlockElection(object):
 
         # construct valid block
         r.table('votes').insert(vote_1, durability='hard').run(b.conn)
-        q_block_new_vote.put(test_block_1)
+        for vote in vote_1:
+            q_new_vote.put(vote)
 
         # construct invalid block
         r.table('votes').insert(vote_2, durability='hard').run(b.conn)
-        q_block_new_vote.put(test_block_2)
+        for vote in vote_2:
+            q_new_vote.put(vote)
 
-        election = Election(q_block_new_vote)
+        election = Election(q_new_vote)
         election.start()
         time.sleep(1)
         election.kill()
-
         # tx1 was in a valid block, and should not be in the backlog
         assert r.table('backlog').get(tx1['id']).run(b.conn) is None
 
