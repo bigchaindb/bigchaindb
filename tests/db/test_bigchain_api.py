@@ -182,11 +182,13 @@ class TestBigchainApi(object):
     def test_genesis_block(self, b):
         response = list(r.table('bigchain')
                         .filter(util.is_genesis_block)
-                        .run(b.conn))[0]
+                        .run(b.conn))
 
-        assert len(response['block']['transactions']) == 1
-        assert response['block']['transactions'][0]['transaction']['operation'] == 'GENESIS'
-        assert response['block']['transactions'][0]['transaction']['fulfillments'][0]['input'] is None
+        assert len(response) == 1
+        block = response[0]
+        assert len(block['block']['transactions']) == 1
+        assert block['block']['transactions'][0]['transaction']['operation'] == 'GENESIS'
+        assert block['block']['transactions'][0]['transaction']['fulfillments'][0]['input'] is None
 
     def test_create_genesis_block_fails_if_table_not_empty(self, b):
         b.create_genesis_block()
@@ -1988,6 +1990,7 @@ class TestCryptoconditions(object):
 
     @pytest.mark.usefixtures('inputs')
     def test_transfer_asset_with_hashlock_condition(self, b, user_vk, user_sk):
+        owned_count = len(b.get_owned_ids(user_vk))
         first_input_tx = b.get_owned_ids(user_vk).pop()
 
         hashlock_tx = b.create_transaction(user_vk, None, first_input_tx, 'TRANSFER')
@@ -2010,7 +2013,7 @@ class TestCryptoconditions(object):
 
         assert b.validate_transaction(hashlock_tx_signed) == hashlock_tx_signed
         assert b.is_valid_transaction(hashlock_tx_signed) == hashlock_tx_signed
-        assert len(b.get_owned_ids(user_vk)) == 1
+        assert len(b.get_owned_ids(user_vk)) == owned_count
 
         b.write_transaction(hashlock_tx_signed)
 
@@ -2018,7 +2021,7 @@ class TestCryptoconditions(object):
         block = b.create_block([hashlock_tx_signed])
         b.write_block(block, durability='hard')
 
-        assert len(b.get_owned_ids(user_vk)) == 0
+        assert len(b.get_owned_ids(user_vk)) == owned_count - 1
 
     def test_create_and_fulfill_asset_with_hashlock_condition(self, b, user_vk):
         hashlock_tx = b.create_transaction(b.me, None, None, 'CREATE')

@@ -598,9 +598,11 @@ class Bigchain(object):
             .order_by(r.desc(r.row['block']['timestamp'])) \
             .run(self.conn)
 
+        # FIXME: I (@vrde) don't like this solution. Filtering should be done at a
+        #        database level. Solving issue #444 can help untangling the situation
         unvoted = filter(lambda block: not util.is_genesis_block(block), unvoted)
 
-        return unvoted
+        return list(unvoted)
 
     def block_election_status(self, block):
         """Tally the votes on a block, and return the status: valid, invalid, or undecided."""

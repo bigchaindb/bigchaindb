@@ -98,7 +98,7 @@ def cleanup_tables(request, node_config):
 
 
 @pytest.fixture
-def inputs(user_vk, amount=1, b=None):
+def inputs(user_vk, amount=4, b=None, blocks=4):
     from bigchaindb.exceptions import GenesisBlockAlreadyExistsError
     # 1. create the genesis block
     b = b or Bigchain()
@@ -108,13 +108,13 @@ def inputs(user_vk, amount=1, b=None):
         pass
 
     # 2. create block with transactions for `USER` to spend
-    transactions = []
-    for i in range(amount):
-        tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
-        tx_signed = b.sign_transaction(tx, b.me_private)
-        transactions.append(tx_signed)
-        b.write_transaction(tx_signed)
+    for block in range(blocks):
+        transactions = []
+        for i in range(amount):
+            tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
+            tx_signed = b.sign_transaction(tx, b.me_private)
+            transactions.append(tx_signed)
+            b.write_transaction(tx_signed)
 
-    block = b.create_block(transactions)
-    b.write_block(block, durability='hard')
-    return block
+        block = b.create_block(transactions)
+        b.write_block(block, durability='hard')
