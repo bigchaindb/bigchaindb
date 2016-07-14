@@ -73,9 +73,9 @@ class Processes(object):
                 # this should never happen in regular operation
                 self.q_revert_delete.put(change['old_val'])
 
-            # update (new vote)
+            # update
             elif change['new_val'] is not None and change['old_val'] is not None:
-                self.q_block_new_vote.put(change['new_val'])
+                pass
 
     def start(self):
         logger.info('Initializing BigchainDB...')
