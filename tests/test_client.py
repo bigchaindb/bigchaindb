@@ -60,3 +60,15 @@ def test_client_can_transfer_assets(mock_requests_post, mock_bigchaindb_sign, cl
     assert tx['transaction']['conditions'][0]['new_owners'][0] == client.public_key
     assert tx['transaction']['fulfillments'][0]['input'] == 123
 
+
+@pytest.mark.parametrize('pubkey,privkey', (
+    (None, None), ('pubkey', None), (None, 'privkey'),
+))
+def test_init_client_with_incomplete_keypair(pubkey, privkey, monkeypatch):
+    from bigchaindb import config
+    from bigchaindb.client import Client
+    from bigchaindb.exceptions import KeypairNotFoundException
+    keypair = {'public': pubkey, 'private': privkey}
+    monkeypatch.setitem(config, 'keypair', keypair)
+    with pytest.raises(KeypairNotFoundException):
+        Client()
