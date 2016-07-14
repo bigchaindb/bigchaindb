@@ -343,7 +343,7 @@ class TestBigchainApi(object):
         b.write_block(block_1, durability='hard')
         vote_1 = b.vote(block_1, b.get_last_voted_block(), True)
         # mangle the signature
-        vote_1['signature'] = vote_1['signature'][2:] + vote_1['signature'][:1]
+        vote_1['signature'] = 'a' * 87
         r.table('votes').insert(vote_1).run(b.conn)
         from bigchaindb.exceptions import ImproperVoteError
         with pytest.raises(ImproperVoteError) as excinfo:
