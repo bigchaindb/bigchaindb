@@ -584,9 +584,6 @@ class Bigchain(object):
 
         res = r.table('bigchain').get(last_voted[0]['vote']['voting_for_block']).run(self.conn)
 
-        if 'block_number' in last_voted[0]:
-            res['block_number'] = last_voted[0]['block_number']
-
         return res
 
     def get_unvoted_blocks(self):
