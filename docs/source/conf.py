@@ -42,6 +42,7 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.viewcode',
     'sphinxcontrib.napoleon',
+    'sphinxcontrib.httpdomain',
 ]
 
 # autodoc settings
