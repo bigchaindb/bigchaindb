@@ -262,7 +262,7 @@ class TestBigchainApi(object):
                        .run(b.conn))[0]
         assert b.get_last_voted_block() == genesis
 
-    def test_get_last_voted_block_returns_the_correct_block(self, b, monkeypatch):
+    def test_get_last_voted_block_returns_the_correct_block_same_timestamp(self, b, monkeypatch):
         genesis = b.create_genesis_block()
 
         assert b.get_last_voted_block() == genesis
@@ -275,6 +275,33 @@ class TestBigchainApi(object):
         b.write_block(block_2, durability='hard')
         b.write_block(block_3, durability='hard')
 
+        # make sure all the blocks are written at the same time
+        monkeypatch.setattr(util, 'timestamp', lambda: 1)
+
+        b.write_vote(block_1, b.vote(block_1, b.get_last_voted_block()['id'], True))
+        assert b.get_last_voted_block()['id'] == block_1['id']
+
+        b.write_vote(block_2, b.vote(block_2, b.get_last_voted_block()['id'], True))
+        assert b.get_last_voted_block()['id'] == block_2['id']
+
+        b.write_vote(block_3, b.vote(block_3, b.get_last_voted_block()['id'], True))
+        assert b.get_last_voted_block()['id'] == block_3['id']
+
+
+    def test_get_last_voted_block_returns_the_correct_block_different_timestamps(self, b, monkeypatch):
+        genesis = b.create_genesis_block()
+
+        assert b.get_last_voted_block() == genesis
+
+        block_1 = dummy_block()
+        block_2 = dummy_block()
+        block_3 = dummy_block()
+
+        b.write_block(block_1, durability='hard')
+        b.write_block(block_2, durability='hard')
+        b.write_block(block_3, durability='hard')
+
+        # make sure all the blocks are written at different timestamps
         monkeypatch.setattr(util, 'timestamp', lambda: 1)
         b.write_vote(block_1, b.vote(block_1, b.get_last_voted_block()['id'], True))
         assert b.get_last_voted_block()['id'] == block_1['id']

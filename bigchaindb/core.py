@@ -570,10 +570,10 @@ class Bigchain(object):
     def get_last_voted_block(self):
         """Returns the last block that this node voted on."""
 
+
         last_voted = r.table('votes') \
             .filter(r.row['node_pubkey'] == self.me) \
             .order_by(r.desc(r.row['vote']['timestamp'])) \
-            .limit(1) \
             .run(self.conn)
 
         # return last vote if last vote exists else return Genesis block
@@ -582,7 +582,21 @@ class Bigchain(object):
                         .filter(util.is_genesis_block)
                         .run(self.conn))[0]
 
-        res = r.table('bigchain').get(last_voted[0]['vote']['voting_for_block']).run(self.conn)
+        # since the resolution of timestamp is a second,
+        # we might have more than one vote per timestamp
+        if len(last_voted) > 1:
+            mapping = {v['vote']['previous_block']: v['vote']['voting_for_block']
+                       for v in last_voted}
+            last_block_id = list(mapping.values())[0]
+            while True:
+                try:
+                    last_block_id = mapping[last_block_id]
+                except KeyError:
+                    break
+        else:
+            last_block_id = last_voted[0]['vote']['voting_for_block']
+
+        res = r.table('bigchain').get(last_block_id).run(self.conn)
 
         return res
 
