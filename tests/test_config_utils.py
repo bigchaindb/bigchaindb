@@ -220,3 +220,13 @@ def test_file_config():
         config = file_config()
     m.assert_called_once_with(CONFIG_DEFAULT_PATH)
     assert config == {}
+
+
+def test_write_config():
+    from bigchaindb.config_utils import write_config, CONFIG_DEFAULT_PATH
+    m = mock_open()
+    with patch('builtins.open', m):
+        write_config({})
+    m.assert_called_once_with(CONFIG_DEFAULT_PATH, 'w')
+    handle = m()
+    handle.write.assert_called_once_with('{}')
