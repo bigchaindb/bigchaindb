@@ -18,7 +18,7 @@
 # NUM_NODES is the number of nodes to deploy
 NUM_NODES=3
 
-# PYPI_OR_BRANCH is either "pypi" or the name of a local Git branch
+# BRANCH is either "pypi" or the name of a local Git branch
 # (e.g. "master" or "feat/3627/optional-delimiter-in-txfile")
 # It's where to get the BigchainDB code to be deployed on the nodes
 BRANCH="master"
