@@ -146,6 +146,7 @@ if [ "$WHAT_TO_DEPLOY" == "servers" ]; then
     # definition of init_bigchaindb() in fabfile.py to see why.
     fab init_bigchaindb
     fab set_shards:$NUM_NODES
+    echo "To start BigchainDB on all the nodes, do: fab start_bigchaindb"
 else
     # Deploying clients
     # The only thing to configure on clients is the api_endpoint
