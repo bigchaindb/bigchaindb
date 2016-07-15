@@ -17,6 +17,6 @@ install:
 
 before_script: rethinkdb --daemon
 
-script: py.test -n8 -v --cov=bigchaindb
+script: py.test -n auto -v --cov=bigchaindb
 
 after_success: codecov
