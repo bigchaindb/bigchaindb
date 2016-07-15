@@ -1,0 +1,14 @@
+# See http://read-the-docs.readthedocs.io/en/latest/yaml-config.html
+
+# Build HTML zip, PDF & ePub
+formats:
+    - htmlzip
+    - epub
+    - pdf
+
+requirements_file: docs/requirements.txt
+
+python:
+   version: 3
+   setup_py_install: false
+   pip_install: true
