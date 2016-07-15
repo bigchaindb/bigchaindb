@@ -38,6 +38,79 @@ def test_init_creates_db_tables_and_indexes():
         'assignee__transaction_timestamp').run(conn) is True
 
 
+def test_create_database():
+    conn = utils.get_conn()
+    dbname = utils.get_database_name()
+
+    # The db is set up by fixtures so we need to remove it
+    # and recreate it just with one table
+    r.db_drop(dbname).run(conn)
+    utils.create_database(conn, dbname)
+    assert r.db_list().contains(dbname).run(conn) is True
+
+
+def test_init_create_bigchain_table():
+    conn = utils.get_conn()
+    dbname = utils.get_database_name()
+
+    # The db is set up by fixtures so we need to remove it
+    # and recreate it just with one table
+    r.db_drop(dbname).run(conn)
+    utils.create_database(conn, dbname)
+    utils.init_bigchain_table(conn, dbname)
+
+    assert r.db(dbname).table_list().contains('bigchain').run(conn) is True
+    assert r.db(dbname).table_list().contains('backlog').run(conn) is False
+    assert r.db(dbname).table_list().contains('votes').run(conn) is False
+
+    assert r.db(dbname).table('bigchain').index_list().contains(
+        'block_timestamp').run(conn) is True
+    assert r.db(dbname).table('bigchain').index_list().contains(
+        'block_number').run(conn) is True
+    assert r.db(dbname).table('bigchain').index_list().contains(
+        'transaction_id').run(conn) is True
+    assert r.db(dbname).table('bigchain').index_list().contains(
+        'payload_uuid').run(conn) is True
+
+
+def test_init_create_backlog_table():
+    conn = utils.get_conn()
+    dbname = utils.get_database_name()
+
+    # The db is set up by fixtures so we need to remove it
+    # and recreate it just with one table
+    r.db_drop(dbname).run(conn)
+    utils.create_database(conn, dbname)
+    utils.init_backlog_table(conn, dbname)
+
+    assert r.db(dbname).table_list().contains('backlog').run(conn) is True
+    assert r.db(dbname).table_list().contains('bigchain').run(conn) is False
+    assert r.db(dbname).table_list().contains('votes').run(conn) is False
+
+    assert r.db(dbname).table('backlog').index_list().contains(
+        'transaction_timestamp').run(conn) is True
+    assert r.db(dbname).table('backlog').index_list().contains(
+        'assignee__transaction_timestamp').run(conn) is True
+
+
+def test_init_create_votes_table():
+    conn = utils.get_conn()
+    dbname = utils.get_database_name()
+
+    # The db is set up by fixtures so we need to remove it
+    # and recreate it just with one table
+    r.db_drop(dbname).run(conn)
+    utils.create_database(conn, dbname)
+    utils.init_votes_table(conn, dbname)
+
+    assert r.db(dbname).table_list().contains('votes').run(conn) is True
+    assert r.db(dbname).table_list().contains('bigchain').run(conn) is False
+    assert r.db(dbname).table_list().contains('backlog').run(conn) is False
+
+    assert r.db(dbname).table('votes').index_list().contains(
+        'block_and_voter').run(conn) is True
+
+
 def test_init_fails_if_db_exists():
     conn = utils.get_conn()
     dbname = bigchaindb.config['database']['name']

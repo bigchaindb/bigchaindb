@@ -18,13 +18,82 @@ def get_conn():
                      bigchaindb.config['database']['port'])
 
 
-def init():
-    # Try to access the keypair, throws an exception if it does not exist
-    b = bigchaindb.Bigchain()
+def init_bigchain_table(conn, dbname):
+    '''Create bigchain table and the secondary indexes'''
+    logger.info(' - tables')
+    # create the table
+    r.db(dbname).table_create('bigchain').run(conn)
 
-    conn = get_conn()
-    dbname = bigchaindb.config['database']['name']
+    logger.info(' - indexes')
+    # to order blocks by timestamp
+    r.db(dbname).table('bigchain')\
+        .index_create('block_timestamp', r.row['block']['timestamp'])\
+        .run(conn)
+    # to order blocks by block number
+    r.db(dbname).table('bigchain')\
+        .index_create('block_number', r.row['block']['block_number'])\
+        .run(conn)
+    # to query the bigchain for a transaction id
+    r.db(dbname).table('bigchain')\
+        .index_create('transaction_id',
+                      r.row['block']['transactions']['id'], multi=True)\
+        .run(conn)
+    # secondary index for payload data by UUID
+    r.db(dbname).table('bigchain')\
+        .index_create('payload_uuid',
+                      r.row['block']['transactions']['transaction']['data']['uuid'], multi=True)\
+        .run(conn)
 
+    # wait for rethinkdb to finish creating secondary indexes
+    r.db(dbname).table('bigchain').index_wait().run(conn)
+
+
+def init_backlog_table(conn, dbname):
+    '''Create backlog table and the secondary indexes.'''
+    logger.info(' - tables')
+    # create the table
+    r.db(dbname).table_create('backlog').run(conn)
+
+    logger.info(' - indexes')
+    # to order transactions by timestamp
+    r.db(dbname).table('backlog')\
+        .index_create('transaction_timestamp',
+                      r.row['transaction']['timestamp'])\
+        .run(conn)
+    # compound index to read transactions from the backlog per assignee
+    r.db(dbname).table('backlog')\
+        .index_create('assignee__transaction_timestamp',
+                      [r.row['assignee'], r.row['transaction']['timestamp']])\
+        .run(conn)
+
+    # wait for rethinkdb to finish creating secondary indexes
+    r.db(dbname).table('backlog').index_wait().run(conn)
+
+
+def init_votes_table(conn, dbname):
+    '''Create votes table and the secondary indexes.'''
+    logger.info(' - tables')
+    # create the table
+    r.db(dbname).table_create('votes').run(conn)
+
+    logger.info(' - indexes')
+    # compound index to order votes by block id and node
+    r.db(dbname).table('votes')\
+        .index_create('block_and_voter',
+                      [r.row['vote']['voting_for_block'],
+                       r.row['node_pubkey']])\
+        .run(conn)
+
+    # wait for rethinkdb to finish creating secondary indexes
+    r.db(dbname).table('votes').index_wait().run(conn)
+
+
+def get_database_name():
+    '''Return the database name.'''
+    return bigchaindb.config['database']['name']
+
+
+def create_database(conn, dbname):
     if r.db_list().contains(dbname).run(conn):
         raise exceptions.DatabaseAlreadyExists('Database `{}` already exists'.format(dbname))
 
@@ -32,41 +101,18 @@ def init():
     logger.info(' - database `%s`', dbname)
     r.db_create(dbname).run(conn)
 
-    logger.info(' - tables')
-    # create the tables
-    r.db(dbname).table_create('bigchain').run(conn)
-    r.db(dbname).table_create('backlog').run(conn)
-    r.db(dbname).table_create('votes').run(conn)
 
-    logger.info(' - indexes')
-    # create the secondary indexes
-    # to order blocks by timestamp
-    r.db(dbname).table('bigchain').index_create('block_timestamp', r.row['block']['timestamp']).run(conn)
-    # to order blocks by block number
-    r.db(dbname).table('bigchain').index_create('block_number', r.row['block']['block_number']).run(conn)
-    # to order transactions by timestamp
-    r.db(dbname).table('backlog').index_create('transaction_timestamp', r.row['transaction']['timestamp']).run(conn)
-    # to query the bigchain for a transaction id
-    r.db(dbname).table('bigchain').index_create('transaction_id',
-                                                r.row['block']['transactions']['id'], multi=True).run(conn)
-    # compound index to read transactions from the backlog per assignee
-    r.db(dbname).table('backlog')\
-        .index_create('assignee__transaction_timestamp', [r.row['assignee'], r.row['transaction']['timestamp']])\
-        .run(conn)
+def init():
+    # Try to access the keypair, throws an exception if it does not exist
+    b = bigchaindb.Bigchain()
 
-    # compound index to order votes by block id and node
-    r.db(dbname).table('votes').index_create('block_and_voter',
-                                             [r.row['vote']['voting_for_block'], r.row['node_pubkey']]).run(conn)
+    conn = get_conn()
+    dbname = get_database_name()
+    create_database(conn, dbname)
 
-    # secondary index for payload data by UUID
-    r.db(dbname).table('bigchain')\
-        .index_create('payload_uuid', r.row['block']['transactions']['transaction']['data']['uuid'], multi=True)\
-        .run(conn)
-
-    # wait for rethinkdb to finish creating secondary indexes
-    r.db(dbname).table('backlog').index_wait().run(conn)
-    r.db(dbname).table('bigchain').index_wait().run(conn)
-    r.db(dbname).table('votes').index_wait().run(conn)
+    init_bigchain_table(conn, dbname)
+    init_backlog_table(conn, dbname)
+    init_votes_table(conn, dbname)
 
     logger.info(' - genesis block')
     b.create_genesis_block()
