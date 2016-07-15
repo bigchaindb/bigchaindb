@@ -276,7 +276,7 @@ class TestBigchainApi(object):
         b.write_block(block_3, durability='hard')
 
         # make sure all the blocks are written at the same time
-        monkeypatch.setattr(util, 'timestamp', lambda: 1)
+        monkeypatch.setattr(util, 'timestamp', lambda: '1')
 
         b.write_vote(block_1, b.vote(block_1, b.get_last_voted_block()['id'], True))
         assert b.get_last_voted_block()['id'] == block_1['id']
@@ -302,15 +302,15 @@ class TestBigchainApi(object):
         b.write_block(block_3, durability='hard')
 
         # make sure all the blocks are written at different timestamps
-        monkeypatch.setattr(util, 'timestamp', lambda: 1)
+        monkeypatch.setattr(util, 'timestamp', lambda: '1')
         b.write_vote(block_1, b.vote(block_1, b.get_last_voted_block()['id'], True))
         assert b.get_last_voted_block()['id'] == block_1['id']
 
-        monkeypatch.setattr(util, 'timestamp', lambda: 2)
+        monkeypatch.setattr(util, 'timestamp', lambda: '2')
         b.write_vote(block_2, b.vote(block_2, b.get_last_voted_block()['id'], True))
         assert b.get_last_voted_block()['id'] == block_2['id']
 
-        monkeypatch.setattr(util, 'timestamp', lambda: 3)
+        monkeypatch.setattr(util, 'timestamp', lambda: '3')
         b.write_vote(block_3, b.vote(block_3, b.get_last_voted_block()['id'], True))
         assert b.get_last_voted_block()['id'] == block_3['id']
 
