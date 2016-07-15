@@ -10,5 +10,5 @@ requirements_file: docs/requirements.txt
 
 python:
    version: 3
-   setup_py_install: false
-   pip_install: true
+
+# Use the defaults of setup_py_install and pip_install
