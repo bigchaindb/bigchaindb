@@ -1,5 +1,9 @@
 # See http://read-the-docs.readthedocs.io/en/latest/yaml-config.html
 
+# When I used rtd-build to build the docs locally, it complained
+# that there was a missing key "name"
+name: BigchainDB
+
 # Build HTML zip, PDF & ePub
 formats:
     - htmlzip
