@@ -260,7 +260,6 @@ Each node must generate a vote for each block, to be appended the `votes` table.
         "timestamp": "<Unix time when the vote was generated, provided by the voting node>"
     },
     "signature": "<signature of vote>",
-    "block_number": "<roughly sequential integer index for block ordering>"
 }
 ```
 
