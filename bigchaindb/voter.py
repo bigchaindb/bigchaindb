@@ -65,7 +65,6 @@ class Voter(object):
         self.q_validated_block = mp.Queue()
         self.q_voted_block = mp.Queue()
         self.v_previous_block_id = mp.Value(ctypes.c_char_p)
-        self.v_previous_block_number = mp.Value(ctypes.c_uint64)
         self.initialized = mp.Event()
 
     def feed_blocks(self):
@@ -105,18 +104,15 @@ class Voter(object):
                 return
 
             logger.info('new_block arrived to voter')
-            block_number = self.v_previous_block_number.value + 1
 
             with self.monitor.timer('validate_block'):
                 validity = b.is_valid_block(new_block)
 
             self.q_validated_block.put((new_block,
                                         self.v_previous_block_id.value.decode(),
-                                        block_number,
                                         validity))
 
             self.v_previous_block_id.value = new_block['id'].encode()
-            self.v_previous_block_number.value = block_number
 
     def vote(self):
         """
@@ -134,9 +130,9 @@ class Voter(object):
                 self.q_voted_block.put('stop')
                 return
 
-            validated_block, previous_block_id, block_number, decision = elem
+            validated_block, previous_block_id, decision = elem
             vote = b.vote(validated_block, previous_block_id, decision)
-            self.q_voted_block.put((validated_block, vote, block_number))
+            self.q_voted_block.put((validated_block, vote))
 
     def update_block(self):
         """
@@ -154,22 +150,21 @@ class Voter(object):
                 logger.info('clean exit')
                 return
 
-            block, vote, block_number = elem
-            logger.info('updating block %s with number %s and with vote %s', block['id'], block_number, vote)
-            b.write_vote(block, vote, block_number)
+            block, vote = elem
+            logger.info('updating block %s and with vote %s', block['id'], vote)
+            b.write_vote(block, vote)
 
     def bootstrap(self):
         """
         Before starting handling the new blocks received by the changefeed we need to handle unvoted blocks
         added to the bigchain while the process was down
 
-        We also need to set the previous_block_id and the previous block_number
+        We also need to set the previous_block_id.
         """
 
         b = Bigchain()
         last_voted = b.get_last_voted_block()
 
-        self.v_previous_block_number.value = last_voted['block_number']
         self.v_previous_block_id.value = last_voted['id'].encode()
 
     def kill(self):
