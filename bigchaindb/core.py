@@ -581,8 +581,8 @@ class Bigchain(object):
                 .run(self.conn)['vote']['timestamp']
 
             last_voted = list(r.table('votes') \
-                .filter(r.row['node_pubkey'] == self.me) \
                 .filter(lambda x: x['vote']['timestamp'] == max_timestamp) \
+                .filter(r.row['node_pubkey'] == self.me) \
                 .run(self.conn))
 
         except r.ReqlNonExistenceError:
