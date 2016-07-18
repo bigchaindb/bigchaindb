@@ -33,10 +33,10 @@ tests_require = [
     'pep8',
     'pyflakes',
     'pylint',
-    'pytest',
     'pytest-cov',
     'pytest-xdist',
     'pytest-flask',
+    'pytest',
 ]
 
 dev_require = [
@@ -104,6 +104,7 @@ setup(
         'flask==0.10.1',
         'requests==2.9',
         'gunicorn~=19.0',
+        'py-ipld==0.0.1',
     ],
     setup_requires=['pytest-runner'],
     tests_require=tests_require,

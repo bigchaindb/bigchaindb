@@ -251,7 +251,8 @@ class Bigchain(object):
         given `txid` is only used once.
 
         Args:
-            tx_input (dict): Input of a transaction in the form `{'txid': 'transaction id', 'cid': 'condition id'}`
+            tx_input (dict): Input of a transaction in the form (IPLD merkle link)
+                `{'txid': { '/': 'transaction id' }, 'cid': 'condition id'}`
 
         Returns:
             The transaction that used the `txid` as an input if it exists else it returns `None`
@@ -275,7 +276,7 @@ class Bigchain(object):
                     num_valid_transactions += 1
                 if num_valid_transactions > 1:
                     raise exceptions.DoubleSpend('`{}` was spent more then once. There is a problem with the chain'.format(
-                        tx_input['txid']))
+                        tx_input['txid']['/']))
 
             if num_valid_transactions:
                 return transactions[0]
@@ -286,7 +287,7 @@ class Bigchain(object):
             return None
 
     def get_owned_ids(self, owner):
-        """Retrieve a list of `txids` that can we used has inputs.
+        """Retrieve a list of `txids` that can be used as inputs.
 
         Args:
             owner (str): base58 encoded public key.
@@ -318,13 +319,13 @@ class Bigchain(object):
                 # check if the owner is in the condition `new_owners`
                 if len(condition['new_owners']) == 1:
                     if condition['condition']['details']['public_key'] == owner:
-                        tx_input = {'txid': tx['id'], 'cid': condition['cid']}
+                        tx_input = {'txid': {'/': tx['id']}, 'cid': condition['cid']}
                 else:
                     # for transactions with multiple `new_owners` there will be several subfulfillments nested
                     # in the condition. We need to iterate the subfulfillments to make sure there is a
                     # subfulfillment for `owner`
                     if util.condition_details_has_owner(condition['condition']['details'], owner):
-                        tx_input = {'txid': tx['id'], 'cid': condition['cid']}
+                        tx_input = {'txid': {'/': tx['id']}, 'cid': condition['cid']}
                 # check if input was already spent
                 if not self.get_spent(tx_input):
                     owned.append(tx_input)

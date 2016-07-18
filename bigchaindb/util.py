@@ -10,6 +10,7 @@ import rapidjson
 
 import cryptoconditions as cc
 from cryptoconditions.exceptions import ParsingError
+from ipld import marshal, unmarshal
 
 import bigchaindb
 from bigchaindb import exceptions
@@ -94,9 +95,9 @@ def pool(builder, size, timeout=None):
 
 
 def serialize(data):
-    """Serialize a dict into a JSON formatted string.
+    """Serialize a dict into a JSON that is being serialized into a tagged cbor representation.
 
-    This function enforces rules like the separator and order of keys. This ensures that all dicts
+    Since this function is relying on py-ipld's marshal function, it is ensured that all dicts
     are serialized in the same way.
 
     This is specially important for hashing data. We need to make sure that everyone serializes their data
@@ -107,23 +108,23 @@ def serialize(data):
         data (dict): dict to serialize
 
     Returns:
-        str: JSON formatted string
+        binary: tagged cbor representation
 
     """
-    return rapidjson.dumps(data, skipkeys=False, ensure_ascii=False, sort_keys=True)
+    return marshal(data)
 
 
 def deserialize(data):
-    """Deserialize a JSON formatted string into a dict.
+    """Deserialize a binary tagged cbor representation of a dict into a dict.
 
     Args:
-        data (str): JSON formatted string.
+        binary: tagged cbor representation
 
     Returns:
-        dict: dict resulting from the serialization of a JSON formatted string.
+        dict: dict resulting from the serialization of a binary serialized cbor representation
     """
 
-    return rapidjson.loads(data)
+    return unmarshal(data)
 
 
 def timestamp():
@@ -175,7 +176,7 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
                         {
                             "current_owners": ["list of <pub-keys>"],
                             "input": {
-                                "txid": "<sha3 hash>",
+                                "txid": "<ipld multihash sha2-256>",
                                 "cid": "condition index"
                             },
                             "fulfillment": "fulfillement of condition cid",
@@ -350,6 +351,7 @@ def sign_tx(transaction, signing_keys, bigchain=None):
                                                                                 key_pairs)
 
         signed_fulfillment = parsed_fulfillment_signed.serialize_uri()
+        # TODO: Avoid updating reference. Rather change in transaction directly for easier readability
         fulfillment.update({'fulfillment': signed_fulfillment})
 
     return tx
@@ -509,7 +511,7 @@ def get_input_condition(bigchain, fulfillment):
     # if `TRANSFER` transaction
     if input_tx:
         # get previous condition
-        previous_tx = bigchain.get_transaction(input_tx['txid'])
+        previous_tx = bigchain.get_transaction(input_tx['txid']['/'])
         conditions = sorted(previous_tx['transaction']['conditions'], key=lambda d: d['cid'])
         return conditions[input_tx['cid']]
 
@@ -568,6 +570,8 @@ def get_hash_data(transaction):
         str: the hash of the transaction
     """
     tx = copy.deepcopy(transaction)
+    # NOTE: Checking for 'transaction' here and executing on the value of `tx` if it's
+    #       not available doesn't make sense. Instead this function should just throw.
     if 'transaction' in tx:
         tx = tx['transaction']
 

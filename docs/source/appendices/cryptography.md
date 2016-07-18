@@ -6,15 +6,15 @@ Before hashing or computing the signature of a JSON document, we serialize it as
 
 ## Hashes
 
-We compute hashes using the SHA3-256 algorithm and [pysha3](https://bitbucket.org/tiran/pykeccak) as the Python implementation. We store the hex-encoded hash in the database. For example:
+BigchainDB's hashes are computed using [py-ipld](https://github.com/bigchaindb/py-ipld) (see: [IPLD specification](https://github.com/ipfs/specs/tree/master/ipld)). It uses [pymultihash](https://github.com/ivilata/pymultihash) (see: [multihash specification](https://github.com/jbenet/multihash)) to compute hashes with the SHA2-256 algorithm.
+We store the base58-encoded hash in the database. For example:
 
 ```python
-import hashlib
-# monkey patch hashlib with sha3 functions
-import sha3
+from ipld import marshal, multihash
 
 data = "message"
-tx_hash = hashlib.sha3_256(data).hexdigest()
+tx_hash = marshal(multihash(data))
+# => QmbLAJRGa3FupoH7tYdCdrWFEmCdwY7WHDX8zQskUtHndF
 ```
 
 ## Signature Algorithm and Keys

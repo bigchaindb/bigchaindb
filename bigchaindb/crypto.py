@@ -1,12 +1,12 @@
 # Separate all crypto code so that we can easily test several implementations
 
-import sha3
 from cryptoconditions import crypto
+from ipld import multihash
 
 
-def hash_data(data):
-    """Hash the provided data using SHA3-256"""
-    return sha3.sha3_256(data.encode()).hexdigest()
+def hash_data(serialized_data):
+    """Hash the provided data using IPLD-specific multihash SHA2-256"""
+    return multihash(serialized_data)
 
 
 def generate_key_pair():
