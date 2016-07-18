@@ -613,7 +613,7 @@ class Bigchain(object):
         unvoted = r.table('bigchain') \
             .filter(lambda block: r.table('votes').get_all([block['id'], self.me], index='block_and_voter')
                     .is_empty()) \
-            .order_by(r.desc(r.row['block']['timestamp'])) \
+            .order_by(r.asc(r.row['block']['timestamp'])) \
             .run(self.conn)
 
         # FIXME: I (@vrde) don't like this solution. Filtering should be done at a
