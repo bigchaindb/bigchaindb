@@ -24,7 +24,8 @@ from awscommon import get_naeips
 
 
 SETTINGS = ['NUM_NODES', 'BRANCH', 'WHAT_TO_DEPLOY', 'USE_KEYPAIRS_FILE',
-            'IMAGE_ID', 'INSTANCE_TYPE']
+            'IMAGE_ID', 'INSTANCE_TYPE', 'USING_EBS', 'EBS_VOLUME_SIZE',
+            'EBS_OPTIMIZED']
 
 
 class SettingsTypeError(TypeError):
@@ -76,7 +77,7 @@ if not isinstance(WHAT_TO_DEPLOY, str):
     raise SettingsTypeError('WHAT_TO_DEPLOY should be a string')
 
 if not isinstance(USE_KEYPAIRS_FILE, bool):
-    msg = 'USE_KEYPAIRS_FILE should a boolean (True or False)'
+    msg = 'USE_KEYPAIRS_FILE should be a boolean (True or False)'
     raise SettingsTypeError(msg)
 
 if not isinstance(IMAGE_ID, str):
@@ -84,6 +85,15 @@ if not isinstance(IMAGE_ID, str):
 
 if not isinstance(INSTANCE_TYPE, str):
     raise SettingsTypeError('INSTANCE_TYPE should be a string')
+
+if not isinstance(USING_EBS, bool):
+    raise SettingsTypeError('USING_EBS should be a boolean (True or False)')
+
+if not isinstance(EBS_VOLUME_SIZE, int):
+    raise SettingsTypeError('EBS_VOLUME_SIZE should be an int')
+
+if not isinstance(EBS_OPTIMIZED, bool):
+    raise SettingsTypeError('EBS_OPTIMIZED should be a boolean (True or False)')
 
 if NUM_NODES > 64:
     raise ValueError('NUM_NODES should be less than or equal to 64. '
@@ -94,6 +104,12 @@ if WHAT_TO_DEPLOY not in ['servers', 'clients']:
     raise ValueError('WHAT_TO_DEPLOY should be either "servers" or "clients". '
                      'The AWS deployment configuration file sets it to {}'.
                      format(WHAT_TO_DEPLOY))
+
+# Since we assume 'gp2' volumes (for now), the possible range is 1 to 16384
+if EBS_VOLUME_SIZE > 16384:
+    raise ValueError('EBS_VOLUME_SIZE should be <= 16384. '
+                     'The AWS deployment configuration file sets it to {}'.
+                     format(EBS_VOLUME_SIZE))
 
 # Get an AWS EC2 "resource"
 # See http://boto3.readthedocs.org/en/latest/guide/resources.html
@@ -158,14 +174,40 @@ print('Commencing launch of {} instances on Amazon EC2...'.
 for _ in range(NUM_NODES):
     # Request the launch of one instance at a time
     # (so list_of_instances should contain only one item)
-    list_of_instances = ec2.create_instances(
-        ImageId=IMAGE_ID,
-        MinCount=1,
-        MaxCount=1,
-        KeyName='bigchaindb',
-        InstanceType=INSTANCE_TYPE,
-        SecurityGroupIds=['bigchaindb']
-    )
+    # See https://tinyurl.com/hbjewbb
+    if USING_EBS:
+        dm = {
+            'DeviceName': '/dev/sdp',
+            # Why /dev/sdp? See https://tinyurl.com/z2zqm6n
+            'Ebs': {
+                'VolumeSize': EBS_VOLUME_SIZE,  # GiB
+                'DeleteOnTermination': False,
+                'VolumeType': 'gp2',
+                'Encrypted': False
+            },
+            # 'NoDevice': 'device'
+            # Suppresses the specified device included
+            # in the block device mapping of the AMI.
+        }
+        list_of_instances = ec2.create_instances(
+            ImageId=IMAGE_ID,
+            MinCount=1,
+            MaxCount=1,
+            KeyName='bigchaindb',
+            InstanceType=INSTANCE_TYPE,
+            SecurityGroupIds=['bigchaindb'],
+            BlockDeviceMappings=[dm],
+            EbsOptimized=EBS_OPTIMIZED
+        )
+    else:  # not USING_EBS
+        list_of_instances = ec2.create_instances(
+            ImageId=IMAGE_ID,
+            MinCount=1,
+            MaxCount=1,
+            KeyName='bigchaindb',
+            InstanceType=INSTANCE_TYPE,
+            SecurityGroupIds=['bigchaindb']
+        )
 
     # Tag the just-launched instances (should be just one)
     for instance in list_of_instances:

@@ -32,6 +32,9 @@ echo "WHAT_TO_DEPLOY = "$WHAT_TO_DEPLOY
 echo "USE_KEYPAIRS_FILE = "$USE_KEYPAIRS_FILE
 echo "IMAGE_ID = "$IMAGE_ID
 echo "INSTANCE_TYPE = "$INSTANCE_TYPE
+echo "USING_EBS = "$USING_EBS
+echo "EBS_VOLUME_SIZE = "$EBS_VOLUME_SIZE
+echo "EBS_OPTIMIZED = "$EBS_OPTIMIZED
 
 # Check for AWS private key file (.pem file)
 if [ ! -f "pem/bigchaindb.pem" ]; then
@@ -146,6 +149,7 @@ if [ "$WHAT_TO_DEPLOY" == "servers" ]; then
     # definition of init_bigchaindb() in fabfile.py to see why.
     fab init_bigchaindb
     fab set_shards:$NUM_NODES
+    echo "To set the replication factor to 3, do: fab set_replicas:3"
     echo "To start BigchainDB on all the nodes, do: fab start_bigchaindb"
 else
     # Deploying clients
