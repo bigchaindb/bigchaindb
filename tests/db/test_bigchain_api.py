@@ -315,17 +315,17 @@ class TestBigchainApi(object):
         assert b.get_last_voted_block()['id'] == block_3['id']
 
     def test_no_vote_written_if_block_already_has_vote(self, b):
-        b.create_genesis_block()
+        genesis = b.create_genesis_block()
 
         block_1 = dummy_block()
 
         b.write_block(block_1, durability='hard')
 
-        b.write_vote(block_1, b.vote(block_1, b.get_last_voted_block()['id'], True))
+        b.write_vote(block_1, b.vote(block_1, genesis['id'], True))
         retrieved_block_1 = r.table('bigchain').get(block_1['id']).run(b.conn)
 
         # try to vote again on the retrieved block, should do nothing
-        b.write_vote(retrieved_block_1, b.vote(retrieved_block_1, b.get_last_voted_block()['id'], True))
+        b.write_vote(retrieved_block_1, b.vote(retrieved_block_1, genesis['id'], True))
         retrieved_block_2 = r.table('bigchain').get(block_1['id']).run(b.conn)
 
         assert retrieved_block_1 == retrieved_block_2
@@ -348,12 +348,12 @@ class TestBigchainApi(object):
             .format(block_id=block_1['id'], n_votes=str(2), n_voters=str(1))
 
     def test_multiple_votes_single_node(self, b):
-        b.create_genesis_block()
+        genesis = b.create_genesis_block()
         block_1 = dummy_block()
         b.write_block(block_1, durability='hard')
         # insert duplicate votes
         for i in range(2):
-            r.table('votes').insert(b.vote(block_1, b.get_last_voted_block()['id'], True)).run(b.conn)
+            r.table('votes').insert(b.vote(block_1, genesis['id'], True)).run(b.conn)
 
         from bigchaindb.exceptions import MultipleVotesError
         with pytest.raises(MultipleVotesError) as excinfo:
@@ -1215,6 +1215,7 @@ class TestMultipleInputs(object):
         assert owned_inputs_user2 == [{'cid': 0, 'txid': tx['id']}]
 
     def test_get_owned_ids_single_tx_single_output_invalid_block(self, b, user_sk, user_vk):
+        genesis = b.create_genesis_block()
         # create a new users
         user2_sk, user2_vk = crypto.generate_key_pair()
 
@@ -1225,7 +1226,7 @@ class TestMultipleInputs(object):
         b.write_block(block, durability='hard')
 
         # vote the block VALID
-        vote = b.vote(block, b.get_unvoted_blocks()[0]['id'], True)
+        vote = b.vote(block, genesis['id'], True)
         b.write_vote(block, vote)
 
         # get input
@@ -1343,6 +1344,8 @@ class TestMultipleInputs(object):
         assert spent_inputs_user1 == tx_signed
 
     def test_get_spent_single_tx_single_output_invalid_block(self, b, user_sk, user_vk):
+        genesis = b.create_genesis_block()
+
         # create a new users
         user2_sk, user2_vk = crypto.generate_key_pair()
 
@@ -1353,7 +1356,7 @@ class TestMultipleInputs(object):
         b.write_block(block, durability='hard')
 
         # vote the block VALID
-        vote = b.vote(block, b.get_unvoted_blocks()[0]['id'], True)
+        vote = b.vote(block, genesis['id'], True)
         b.write_vote(block, vote)
 
         # get input

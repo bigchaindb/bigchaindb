@@ -537,6 +537,9 @@ class Bigchain(object):
             invalid_reason (Optional[str]): Reason the block is invalid
         """
 
+        if block['id'] == previous_block_id:
+            raise exceptions.CyclicBlockchainError()
+
         vote = {
             'voting_for_block': block['id'],
             'previous_block': previous_block_id,
@@ -591,17 +594,16 @@ class Bigchain(object):
 
         # since the resolution of timestamp is a second,
         # we might have more than one vote per timestamp
-        if len(last_voted) > 1:
-            mapping = {v['vote']['previous_block']: v['vote']['voting_for_block']
-                       for v in last_voted}
-            last_block_id = list(mapping.values())[0]
-            while True:
-                try:
-                    last_block_id = mapping[last_block_id]
-                except KeyError:
-                    break
-        else:
-            last_block_id = last_voted[0]['vote']['voting_for_block']
+        mapping = {v['vote']['previous_block']: v['vote']['voting_for_block']
+                   for v in last_voted}
+        last_block_id = list(mapping.values())[0]
+        while True:
+            try:
+                if last_block_id == mapping[last_block_id]:
+                    raise exceptions.CyclicBlockchainError()
+                last_block_id = mapping[last_block_id]
+            except KeyError:
+                break
 
         res = r.table('bigchain').get(last_block_id).run(self.conn)
 

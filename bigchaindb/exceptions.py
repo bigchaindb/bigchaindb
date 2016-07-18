@@ -56,3 +56,7 @@ class MultipleVotesError(Exception):
 
 class GenesisBlockAlreadyExistsError(Exception):
     """Raised when trying to create the already existing genesis block"""
+
+
+class CyclicBlockchainError(Exception):
+    """Raised when there is a cycle in the blockchain"""
