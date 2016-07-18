@@ -577,11 +577,11 @@ class Bigchain(object):
             # get the latest value for the vote timestamp (over all votes)
             max_timestamp = r.table('votes') \
                 .filter(r.row['node_pubkey'] == self.me) \
-                .max(lambda x: x['vote']['timestamp']) \
+                .max(r.row['vote']['timestamp']) \
                 .run(self.conn)['vote']['timestamp']
 
             last_voted = list(r.table('votes') \
-                .filter(lambda x: x['vote']['timestamp'] == max_timestamp) \
+                .filter(r.row['vote']['timestamp'] == max_timestamp) \
                 .filter(r.row['node_pubkey'] == self.me) \
                 .run(self.conn))
 
