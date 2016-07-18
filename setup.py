@@ -105,9 +105,6 @@ setup(
         'gunicorn~=19.0',
         'py-ipld==0.0.1',
     ],
-    dependency_links=[
-        'git+https://github.com/bigchaindb/py-ipld.git@master#egg=py_ipld-0.0.1',
-    ],
     setup_requires=['pytest-runner'],
     tests_require=tests_require,
     extras_require={
