@@ -68,11 +68,11 @@ def install_base_software():
     sudo('pip3 install --upgrade pip wheel setuptools')
 
 
-# Install RethinkDB
+# Prepare RethinkDB storage
 @task
 @parallel
-def install_rethinkdb():
-    """Installation of RethinkDB"""
+def prep_rethinkdb_storage():
+    """Prepare RethinkDB storage"""
     with settings(warn_only=True):
         # preparing filesystem
         sudo("mkdir -p /data")
@@ -88,25 +88,51 @@ def install_rethinkdb():
         sudo("rm -rf /etc/fstab")
         sudo("echo 'LABEL=cloudimg-rootfs	/	 ext4     defaults,discard    0   0' >> /etc/fstab")
         sudo("echo '/dev/xvdb  /data        ext4    defaults,noatime    0   0' >> /etc/fstab")
-        # activate deadline scheduler
+        # activate deadline scheduler (I/O scheduler)
         with settings(sudo_user='root'):
             sudo("echo deadline > /sys/block/xvdb/queue/scheduler")
-        # install rethinkdb
-        sudo("echo 'deb http://download.rethinkdb.com/apt trusty main' | sudo tee /etc/apt/sources.list.d/rethinkdb.list")
-        sudo("wget -qO- http://download.rethinkdb.com/apt/pubkey.gpg | sudo apt-key add -")
-        sudo("apt-get update")
-        sudo("apt-get -y install rethinkdb")
-        # change fs to user
-        sudo('chown -R rethinkdb:rethinkdb /data')
-        # copy config file to target system
-        put('conf/rethinkdb.conf',
-            '/etc/rethinkdb/instances.d/instance1.conf',
-            mode=0600,
-            use_sudo=True)
-        # initialize data-dir
-        sudo('rm -rf /data/*')
-        # finally restart instance
-        sudo('/etc/init.d/rethinkdb restart')
+
+
+# Install RethinkDB
+@task
+@parallel
+def install_rethinkdb():
+    """Install RethinkDB"""
+    sudo("echo 'deb http://download.rethinkdb.com/apt trusty main' | sudo tee /etc/apt/sources.list.d/rethinkdb.list")
+    sudo("wget -qO- http://download.rethinkdb.com/apt/pubkey.gpg | sudo apt-key add -")
+    sudo("apt-get update")
+    sudo("apt-get -y install rethinkdb")
+    # Change owner:group of the RethinkDB data directory to rethinkdb:rethinkdb
+    sudo('chown -R rethinkdb:rethinkdb /data')
+
+
+# Configure RethinkDB
+@task
+@parallel
+def configure_rethinkdb():
+    """Copy the RethinkDB config file to the remote host"""
+    put('conf/rethinkdb.conf',
+        '/etc/rethinkdb/instances.d/instance1.conf',
+        mode=0600,
+        use_sudo=True)
+
+
+# Delete RethinkDB data
+@task
+@parallel
+def delete_rethinkdb_data():
+    """Delete the contents of the RethinkDB /data directory
+    but not the directory itself.
+    """
+    sudo('rm -rf /data/*')
+
+
+# Start RethinkDB
+@task
+@parallel
+def start_rethinkdb():
+    """Start RethinkDB"""
+    sudo('/etc/init.d/rethinkdb restart')
 
 
 # Install BigchainDB from PyPI

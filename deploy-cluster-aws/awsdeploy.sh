@@ -96,8 +96,12 @@ fab install_base_software
 if [ "$WHAT_TO_DEPLOY" == "servers" ]; then
     # (Re)create the RethinkDB configuration file conf/rethinkdb.conf
     python create_rethinkdb_conf.py
-    # Rollout storage backend (RethinkDB) and start it
+    # Rollout RethinkDB and start it
+    fab prep_rethinkdb_storage
     fab install_rethinkdb
+    fab configure_rethinkdb
+    fab delete_rethinkdb_data
+    fab start_rethinkdb
 fi
 
 # Rollout BigchainDB (but don't start it yet)
