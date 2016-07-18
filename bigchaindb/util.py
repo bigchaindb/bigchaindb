@@ -4,7 +4,7 @@ import contextlib
 import threading
 import queue
 import multiprocessing as mp
-from datetime import datetime
+import uuid
 
 import rapidjson
 
@@ -128,14 +128,13 @@ def deserialize(data):
 
 
 def timestamp():
-    """Calculate a UTC timestamp with microsecond precision.
+    """The Unix time, rounded to the nearest second.
+       See https://en.wikipedia.org/wiki/Unix_time
 
     Returns:
-        str: UTC timestamp.
-
+        str: the Unix time
     """
-    dt = datetime.utcnow()
-    return "{0:.6f}".format(time.mktime(dt.timetuple()) + dt.microsecond / 1e6)
+    return str(round(time.time()))
 
 
 # TODO: Consider remove the operation (if there are no inputs CREATE else TRANSFER)
@@ -222,16 +221,13 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
         inputs = [inputs]
 
     # handle payload
-    data = None
-    if payload is not None:
-        if isinstance(payload, dict):
-            hash_payload = crypto.hash_data(serialize(payload))
-            data = {
-                'hash': hash_payload,
-                'payload': payload
-            }
-        else:
-            raise TypeError('`payload` must be an dict instance')
+    if payload is not None and not isinstance(payload, dict):
+        raise TypeError('`payload` must be an dict instance or None')
+
+    data = {
+        'uuid': str(uuid.uuid4()),
+        'payload': payload
+    }
 
     # handle inputs
     fulfillments = []
@@ -303,7 +299,7 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
     return transaction
 
 
-def sign_tx(transaction, signing_keys):
+def sign_tx(transaction, signing_keys, bigchain=None):
     """Sign a transaction
 
     A transaction signed with the `current_owner` corresponding private key.
@@ -311,6 +307,8 @@ def sign_tx(transaction, signing_keys):
     Args:
         transaction (dict): transaction to sign.
         signing_keys (list): list of base58 encoded private keys to create the fulfillments of the transaction.
+        bigchain (obj): bigchain instance used to get the details of the previous transaction outputs. Useful
+                        if the `Bigchain` instance was instantiated with parameters that override the config file.
 
     Returns:
         dict: transaction with the `fulfillment` fields populated.
@@ -329,10 +327,11 @@ def sign_tx(transaction, signing_keys):
 
     tx = copy.deepcopy(transaction)
 
+    bigchain = bigchain if bigchain is not None else bigchaindb.Bigchain()
+
     for fulfillment in tx['transaction']['fulfillments']:
         fulfillment_message = get_fulfillment_message(transaction, fulfillment)
         # TODO: avoid instantiation, pass as argument!
-        bigchain = bigchaindb.Bigchain()
         input_condition = get_input_condition(bigchain, fulfillment)
         parsed_fulfillment = cc.Fulfillment.from_dict(input_condition['condition']['details'])
         # for the case in which the type of fulfillment is not covered by this method
@@ -402,13 +401,15 @@ def fulfill_threshold_signature_fulfillment(fulfillment, parsed_fulfillment, ful
         try:
             subfulfillment = parsed_fulfillment_copy.get_subcondition_from_vk(current_owner)[0]
         except IndexError:
-            exceptions.KeypairMismatchException('Public key {} cannot be found in the fulfillment'
-                                                .format(current_owner))
+            raise exceptions.KeypairMismatchException(
+                'Public key {} cannot be found in the fulfillment'.format(current_owner))
         try:
-            subfulfillment.sign(serialize(fulfillment_message), key_pairs[current_owner])
+            private_key = key_pairs[current_owner]
         except KeyError:
-            raise exceptions.KeypairMismatchException('Public key {} is not a pair to any of the private keys'
-                                                      .format(current_owner))
+            raise exceptions.KeypairMismatchException(
+                'Public key {} is not a pair to any of the private keys'.format(current_owner))
+
+        subfulfillment.sign(serialize(fulfillment_message), private_key)
         parsed_fulfillment.add_subfulfillment(subfulfillment)
 
     return parsed_fulfillment

@@ -45,10 +45,11 @@ dev_require = [
 ]
 
 docs_require = [
-    'recommonmark>=0.4.0',
     'Sphinx>=1.3.5',
-    'sphinxcontrib-napoleon>=0.4.4',
+    'recommonmark>=0.4.0',
     'sphinx-rtd-theme>=0.1.9',
+    'sphinxcontrib-napoleon>=0.4.4',
+    'sphinxcontrib-httpdomain>=1.5.0',
 ]
 
 benchmarks_require = [
@@ -92,7 +93,7 @@ setup(
         ]
     },
     install_requires=[
-        'rethinkdb==2.3.0',
+        'rethinkdb~=2.3',
         'pysha3==0.3',
         'pytz==2015.7',
         'cryptoconditions==0.4.1',

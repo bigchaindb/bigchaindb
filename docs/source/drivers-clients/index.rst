@@ -9,4 +9,5 @@ BigchainDB Drivers & Clients
 
    http-client-server-api
    python-driver-api-examples
+   example-apps
    

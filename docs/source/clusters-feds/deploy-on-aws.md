@@ -2,13 +2,11 @@
 
 This section explains a way to deploy a cluster of BigchainDB nodes on Amazon Web Services (AWS). We use some Bash and Python scripts to launch several instances (virtual servers) on Amazon Elastic Compute Cloud (EC2). Then we use Fabric to install RethinkDB and BigchainDB on all those instances.
 
-**NOTE: At the time of writing, these script _do_ launch a bunch of EC2 instances, and they do install RethinkDB plus BigchainDB on each instance, but don't expect to be able to use the cluster for anything useful. There are several issues related to configuration, networking, and external clients that must be sorted out first. That said, you might find it useful to try out the AWS deployment scripts, because setting up to use them, and using them, will be very similar once those issues get sorted out.**
-
 ## Why?
 
 You might ask why one would want to deploy a centrally-controlled BigchainDB cluster. Isn't BigchainDB supposed to be decentralized, where each node is controlled by a different person or organization?
 
-That's true, but there are some reasons why one might want a centrally-controlled cluster: 1) for testing, and 2) for initial deployment, after which the control of each node can be handed over to a different entity.
+Yes! These scripts are for deploying _test_ clusters, not production clusters.
 
 ## Python Setup
 
@@ -29,58 +27,10 @@ What did you just install?
 * "[Boto](https://boto3.readthedocs.org/en/latest/) is the Amazon Web Services (AWS) SDK for Python, which allows Python developers to write software that makes use of Amazon services like S3 and EC2." (`boto3` is the name of the latest Boto package.)
 * [The aws-cli package](https://pypi.python.org/pypi/awscli), which is an AWS Command Line Interface (CLI).
 
+
 ## AWS Setup
 
-Before you can deploy a BigchainDB cluster on AWS, you must have an AWS account. If you don't already have one, you can [sign up for one for free](https://aws.amazon.com/).
-
-### Create an AWS Access Key
-
-The next thing you'll need is an AWS access key. If you don't have one, you can create one using the [instructions in the AWS documentation](http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSGettingStartedGuide/AWSCredentials.html). You should get an access key ID (e.g. AKIAIOSFODNN7EXAMPLE) and a secret access key (e.g. wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY).
-
-You should also pick a default AWS region name (e.g. `eu-central-1`). That's where your cluster will run. The AWS documentation has [a list of them](http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region).
-
-Once you've got your AWS access key, and you've picked a default AWS region name, go to a terminal session and enter:
-```text
-aws configure
-```
-
-and answer the four questions. For example:
-```text
-AWS Access Key ID [None]: AKIAIOSFODNN7EXAMPLE
-AWS Secret Access Key [None]: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-Default region name [None]: eu-central-1
-Default output format [None]: [Press Enter]
-```
-
-This writes two files: 
-
-* `~/.aws/credentials`
-* `~/.aws/config`
-
-AWS tools and packages look for those files.
-
-### Get Enough Amazon Elastic IP Addresses
-
-Our AWS deployment scripts use elastic IP addresses (although that may change in the future). By default, AWS accounts get five elastic IP addresses. If you want to deploy a cluster with more than five nodes, then you will need more than five elastic IP addresses; you may have to apply for those; see [the AWS documentation on elastic IP addresses](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/elastic-ip-addresses-eip.html).
-
-### Create an Amazon EC2 Key Pair
-
-Go to the AWS EC2 Console and select "Key Pairs" in the left sidebar. Click the "Create Key Pair" button. Give it the name `bigchaindb`. You should be prompted to save a file named `bigchaindb.pem`. That file contains the RSA private key. (Amazon keeps the corresponding public key.) Save the file in `bigchaindb/deploy-cluster-aws/pem/bigchaindb.pem`.
-
-You should not share your private key. 
-
-### Create an Amazon EC2 Security Group
-
-Go to the AWS EC2 Console and select "Security Groups" in the left sidebar. Click the "Create Security Group" button. Give it the name `bigchaindb`. The description probably doesn't matter but we also put `bigchaindb` for that.
-
-Add some rules for Inbound traffic:
-
-* Type = All TCP, Protocol = TCP, Port Range = 0-65535, Source = 0.0.0.0/0
-* Type = SSH, Protocol = SSH, Port Range = 22, Source = 0.0.0.0/0
-* Type = All UDP, Protocol = UDP, Port Range = 0-65535, Source = 0.0.0.0/0
-* Type = All ICMP, Protocol = ICMP, Port Range = 0-65535, Source = 0.0.0.0/0
-
-**Note: These rules are extremely lax! They're meant to make testing easy.** You'll want to tighten them up if you intend to have a secure cluster. For example, Source = 0.0.0.0/0 is [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing) for "allow this traffic to come from _any_ IP address."
+See the page about [AWS Setup](../appendices/aws-setup.html) in the Appendices.
 
 
 ## Deploy a BigchainDB Monitor
@@ -124,7 +74,7 @@ fab --fabfile=fabfile-monitor.py --hosts=<EC2 hostname> run_monitor
 
 For more information about monitoring (e.g. how to view the Grafana dashboard in your web browser), see the [Monitoring](monitoring.html) section of this documentation.
 
-To configure a BigchainDB node to send monitoring data to the monitoring server, change the statsd host in the configuration of the BigchainDB node. The section on [Configuring a BigchainDB Node](configuration.html) explains how you can do that. (For example, you can change the statsd host in `$HOME/.bigchaindb`.)
+To configure a BigchainDB node to send monitoring data to the monitoring server, change the statsd host in the configuration of the BigchainDB node. The section on [Configuring a BigchainDB Node](../nodes/configuration.html) explains how you can do that. (For example, you can change the statsd host in `$HOME/.bigchaindb`.)
 
 
 ## Deploy a BigchainDB Cluster

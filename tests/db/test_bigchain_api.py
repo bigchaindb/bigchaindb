@@ -8,9 +8,7 @@ import rethinkdb as r
 import cryptoconditions as cc
 
 import bigchaindb
-from bigchaindb import util
-from bigchaindb import exceptions
-from bigchaindb import crypto
+from bigchaindb import crypto, exceptions, util
 from bigchaindb.voter import Voter
 from bigchaindb.block import Block, BlockDeleteRevert
 
@@ -20,6 +18,20 @@ from bigchaindb.block import Block, BlockDeleteRevert
                            'interfere with the correctness of the tests. ')
 def test_remove_unclosed_sockets():
     pass
+
+
+# Some util functions
+def dummy_tx():
+    b = bigchaindb.Bigchain()
+    tx = b.create_transaction(b.me, b.me, None, 'CREATE')
+    tx_signed = b.sign_transaction(tx, b.me_private)
+    return tx_signed
+
+
+def dummy_block():
+    b = bigchaindb.Bigchain()
+    block = b.create_block([dummy_tx()])
+    return block
 
 
 class TestBigchainApi(object):
@@ -32,6 +44,33 @@ class TestBigchainApi(object):
     def test_create_transaction_with_unsupported_payload_raises(self, b):
         with pytest.raises(TypeError):
             b.create_transaction('a', 'b', 'c', 'd', payload=[])
+
+    def test_create_transaction_payload_none(self, b, user_vk):
+        tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
+        assert len(tx['transaction']['data']['uuid']) == 36
+        assert tx['transaction']['data']['payload'] is None
+
+    def test_create_transaction_payload(self, b, user_vk):
+        payload = {'msg': 'Hello BigchainDB!'}
+        tx = b.create_transaction(b.me, user_vk, None, 'CREATE', payload=payload)
+        assert len(tx['transaction']['data']['uuid']) == 36
+        assert tx['transaction']['data']['payload'] == payload
+
+    def test_get_transactions_for_payload(self, b, user_vk):
+        payload = {'msg': 'Hello BigchainDB!'}
+        tx = b.create_transaction(b.me, user_vk, None, 'CREATE', payload=payload)
+        payload_uuid = tx['transaction']['data']['uuid']
+
+        block = b.create_block([tx])
+        b.write_block(block, durability='hard')
+
+        matches = b.get_tx_by_payload_uuid(payload_uuid)
+        assert len(matches) == 1
+        assert matches[0]['id'] == tx['id']
+
+    def test_get_transactions_for_payload_mismatch(self, b, user_vk):
+        matches = b.get_tx_by_payload_uuid('missing')
+        assert not matches
 
     @pytest.mark.usefixtures('inputs')
     def test_create_transaction_transfer(self, b, user_vk, user_sk):
@@ -48,24 +87,6 @@ class TestBigchainApi(object):
         assert b.validate_fulfillments(tx) == False
         assert b.validate_fulfillments(tx_signed) == True
 
-    def test_transaction_hash(self, b, user_vk):
-        payload = {'cats': 'are awesome'}
-        tx = b.create_transaction(user_vk, user_vk, None, 'CREATE', payload)
-        tx_calculated = {
-            'conditions': [{'cid': 0,
-                            'condition': tx['transaction']['conditions'][0]['condition'],
-                            'new_owners': [user_vk]}],
-            'data': {'hash': crypto.hash_data(util.serialize(payload)),
-                     'payload': payload},
-            'fulfillments': [{'current_owners': [user_vk],
-                              'fid': 0,
-                              'fulfillment': None,
-                              'input': None}],
-            'operation': 'CREATE',
-            'timestamp': tx['transaction']['timestamp']
-        }
-        assert tx['transaction']['data'] == tx_calculated['data']
-        # assert tx_hash == tx_calculated_hash
 
     def test_transaction_signature(self, b, user_sk, user_vk):
         tx = b.create_transaction(user_vk, user_vk, None, 'CREATE')
@@ -142,7 +163,7 @@ class TestBigchainApi(object):
     def test_assign_transaction_multiple_nodes(self, b, user_vk, user_sk):
         # create 5 federation nodes
         for _ in range(5):
-            b.federation_nodes.append(crypto.generate_key_pair()[1])
+            b.nodes_except_me.append(crypto.generate_key_pair()[1])
 
         # test assignee for several transactions
         for _ in range(20):
@@ -154,8 +175,8 @@ class TestBigchainApi(object):
             # retrieve the transaction
             response = r.table('backlog').get(tx_signed['id']).run(b.conn)
 
-            # check if the assignee is the federation_nodes
-            assert response['assignee'] in b.federation_nodes
+            # check if the assignee is one of the _other_ federation nodes
+            assert response['assignee'] in b.nodes_except_me
 
     @pytest.mark.usefixtures('inputs')
     def test_genesis_block(self, b):
@@ -171,7 +192,7 @@ class TestBigchainApi(object):
     def test_create_genesis_block_fails_if_table_not_empty(self, b):
         b.create_genesis_block()
 
-        with pytest.raises(bigchaindb.core.GenesisBlockAlreadyExistsError):
+        with pytest.raises(exceptions.GenesisBlockAlreadyExistsError):
             b.create_genesis_block()
 
         genesis_blocks = list(r.table('bigchain')
@@ -218,30 +239,38 @@ class TestBigchainApi(object):
         assert prev_block_id == last_block['id']
 
     def test_create_new_block(self, b):
-        new_block = b.create_block([])
+        tx = dummy_tx()
+        new_block = b.create_block([tx])
         block_hash = crypto.hash_data(util.serialize(new_block['block']))
 
         assert new_block['block']['voters'] == [b.me]
         assert new_block['block']['node_pubkey'] == b.me
         assert crypto.VerifyingKey(b.me).verify(util.serialize(new_block['block']), new_block['signature']) is True
         assert new_block['id'] == block_hash
-        assert new_block['votes'] == []
+
+    def test_create_empty_block(self, b):
+        with pytest.raises(exceptions.OperationError) as excinfo:
+            b.create_block([])
+
+        assert excinfo.value.args[0] == 'Empty block creation is not allowed'
 
     def test_get_last_voted_block_returns_genesis_if_no_votes_has_been_casted(self, b):
         b.create_genesis_block()
         genesis = list(r.table('bigchain')
                        .filter(r.row['block_number'] == 0)
                        .run(b.conn))[0]
-        assert b.get_last_voted_block() == genesis
+        gb = b.get_last_voted_block()
+        assert gb == genesis
+        assert b.validate_block(gb) == gb
 
     def test_get_last_voted_block_returns_the_correct_block(self, b):
         genesis = b.create_genesis_block()
 
         assert b.get_last_voted_block() == genesis
 
-        block_1 = b.create_block([])
-        block_2 = b.create_block([])
-        block_3 = b.create_block([])
+        block_1 = dummy_block()
+        block_2 = dummy_block()
+        block_3 = dummy_block()
 
         b.write_block(block_1, durability='hard')
         b.write_block(block_2, durability='hard')
@@ -259,7 +288,7 @@ class TestBigchainApi(object):
     def test_no_vote_written_if_block_already_has_vote(self, b):
         b.create_genesis_block()
 
-        block_1 = b.create_block([])
+        block_1 = dummy_block()
 
         b.write_block(block_1, durability='hard')
 
@@ -271,6 +300,57 @@ class TestBigchainApi(object):
         retrieved_block_2 = r.table('bigchain').get(block_1['id']).run(b.conn)
 
         assert retrieved_block_1 == retrieved_block_2
+
+    def test_more_votes_than_voters(self, b):
+        b.create_genesis_block()
+        block_1 = dummy_block()
+        b.write_block(block_1, durability='hard')
+        # insert duplicate votes
+        vote_1 = b.vote(block_1, b.get_last_voted_block(), True)
+        vote_2 = b.vote(block_1, b.get_last_voted_block(), True)
+        vote_2['node_pubkey'] = 'aaaaaaa'
+        r.table('votes').insert(vote_1).run(b.conn)
+        r.table('votes').insert(vote_2).run(b.conn)
+
+        from bigchaindb.exceptions import MultipleVotesError
+        with pytest.raises(MultipleVotesError) as excinfo:
+            b.block_election_status(block_1)
+        assert excinfo.value.args[0] == 'Block {block_id} has {n_votes} votes cast, but only {n_voters} voters'\
+            .format(block_id=block_1['id'], n_votes=str(2), n_voters=str(1))
+
+    def test_multiple_votes_single_node(self, b):
+        b.create_genesis_block()
+        block_1 = dummy_block()
+        b.write_block(block_1, durability='hard')
+        # insert duplicate votes
+        for i in range(2):
+            r.table('votes').insert(b.vote(block_1, b.get_last_voted_block(), True)).run(b.conn)
+
+        from bigchaindb.exceptions import MultipleVotesError
+        with pytest.raises(MultipleVotesError) as excinfo:
+            b.block_election_status(block_1)
+        assert excinfo.value.args[0] == 'Block {block_id} has multiple votes ({n_votes}) from voting node {node_id}'\
+            .format(block_id=block_1['id'], n_votes=str(2), node_id=b.me)
+
+        with pytest.raises(MultipleVotesError) as excinfo:
+            b.has_previous_vote(block_1)
+        assert excinfo.value.args[0] == 'Block {block_id} has {n_votes} votes from public key {me}'\
+            .format(block_id=block_1['id'], n_votes=str(2), me=b.me)
+
+    def test_improper_vote_error(selfs, b):
+        b.create_genesis_block()
+        block_1 = dummy_block()
+        b.write_block(block_1, durability='hard')
+        vote_1 = b.vote(block_1, b.get_last_voted_block(), True)
+        # mangle the signature
+        vote_1['signature'] = 'a' * 87
+        r.table('votes').insert(vote_1).run(b.conn)
+        from bigchaindb.exceptions import ImproperVoteError
+        with pytest.raises(ImproperVoteError) as excinfo:
+            b.has_previous_vote(block_1)
+        assert excinfo.value.args[0] == 'Block {block_id} already has an incorrectly signed ' \
+                                  'vote from public key {me}'.format(block_id=block_1['id'], me=b.me)
+
 
 class TestTransactionValidation(object):
     @pytest.mark.usefixtures('inputs')
@@ -406,7 +486,7 @@ class TestTransactionValidation(object):
 
 class TestBlockValidation(object):
     def test_wrong_block_hash(self, b):
-        block = b.create_block([])
+        block = dummy_block()
 
         # change block hash
         block.update({'id': 'abc'})
@@ -427,7 +507,7 @@ class TestBlockValidation(object):
             'timestamp': util.timestamp(),
             'transactions': [tx_invalid],
             'node_pubkey': b.me,
-            'voters': b.federation_nodes
+            'voters': b.nodes_except_me
         }
 
         block_data = util.serialize(block)
@@ -447,7 +527,7 @@ class TestBlockValidation(object):
         assert excinfo.value.args[0] == 'current_owner `a` does not own the input `{}`'.format(valid_input)
 
     def test_invalid_block_id(self, b):
-        block = b.create_block([])
+        block = dummy_block()
 
         # change block hash
         block.update({'id': 'abc'})
@@ -469,7 +549,7 @@ class TestBlockValidation(object):
 
     def test_invalid_signature(self, b):
         # create a valid block
-        block = b.create_block([])
+        block = dummy_block()
 
         # replace the block signature with an invalid one
         block['signature'] = crypto.SigningKey(b.me_private).sign(b'wrongdata')
@@ -481,7 +561,7 @@ class TestBlockValidation(object):
     def test_invalid_node_pubkey(self, b):
         # blocks can only be created by a federation node
         # create a valid block
-        block = b.create_block([])
+        block = dummy_block()
 
         # create some temp keys
         tmp_sk, tmp_vk = crypto.generate_key_pair()
@@ -507,7 +587,7 @@ class TestBigchainVoter(object):
 
         genesis = b.create_genesis_block()
         # create valid block
-        block = b.create_block([])
+        block = dummy_block()
         # assert block is valid
         assert b.is_valid_block(block)
         b.write_block(block, durability='hard')
@@ -525,9 +605,12 @@ class TestBigchainVoter(object):
         # retrive block from bigchain
         bigchain_block = r.table('bigchain').get(block['id']).run(b.conn)
 
+        # retrieve vote
+        vote = r.table('votes').get_all([block['id'], b.me], index='block_and_voter').run(b.conn)
+        vote = vote.next()
+
         # validate vote
-        assert len(bigchain_block['votes']) == 1
-        vote = bigchain_block['votes'][0]
+        assert vote is not None
 
         assert vote['vote']['voting_for_block'] == block['id']
         assert vote['vote']['previous_block'] == genesis['id']
@@ -566,9 +649,12 @@ class TestBigchainVoter(object):
         # retrive block from bigchain
         bigchain_block = r.table('bigchain').get(block['id']).run(b.conn)
 
+        # retrieve vote
+        vote = r.table('votes').get_all([block['id'], b.me], index='block_and_voter').run(b.conn)
+        vote = vote.next()
+
         # validate vote
-        assert len(bigchain_block['votes']) == 1
-        vote = bigchain_block['votes'][0]
+        assert vote is not None
 
         assert vote['vote']['voting_for_block'] == block['id']
         assert vote['vote']['previous_block'] == genesis['id']
@@ -579,7 +665,7 @@ class TestBigchainVoter(object):
 
     def test_vote_creation_valid(self, b):
         # create valid block
-        block = b.create_block([])
+        block = dummy_block()
         # retrieve vote
         vote = b.vote(block, 'abc', True)
 
@@ -593,7 +679,7 @@ class TestBigchainVoter(object):
 
     def test_vote_creation_invalid(self, b):
         # create valid block
-        block = b.create_block([])
+        block = dummy_block()
         # retrieve vote
         vote = b.vote(block, 'abc', False)
 
@@ -805,9 +891,9 @@ class TestBigchainBlock(object):
     def test_revert_delete_block(self, b):
         b.create_genesis_block()
 
-        block_1 = b.create_block([])
-        block_2 = b.create_block([])
-        block_3 = b.create_block([])
+        block_1 = dummy_block()
+        block_2 = dummy_block()
+        block_3 = dummy_block()
 
         b.write_block(block_1, durability='hard')
         b.write_block(block_2, durability='hard')
@@ -2107,7 +2193,7 @@ class TestCryptoconditions(object):
         assert b.is_valid_transaction(escrow_tx_transfer) == escrow_tx_transfer
         assert b.validate_transaction(escrow_tx_transfer) == escrow_tx_transfer
 
-        time.sleep(time_sleep)
+        time.sleep(time_sleep + 1)
 
         assert b.is_valid_transaction(escrow_tx_transfer) is False
         with pytest.raises(exceptions.InvalidSignature):
@@ -2242,7 +2328,7 @@ class TestCryptoconditions(object):
         block = b.create_block([escrow_tx_transfer])
         b.write_block(block, durability='hard')
 
-        time.sleep(time_sleep)
+        time.sleep(time_sleep + 1)
 
         assert b.is_valid_transaction(escrow_tx_transfer) is False
         with pytest.raises(exceptions.InvalidSignature):

@@ -12,4 +12,8 @@ Topic guides give background and explain concepts at a high level.
    decentralized
    diversity
    immutable
+   bft
+   assets
+   smart-contracts
    models
+   timestamps

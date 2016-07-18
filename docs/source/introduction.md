@@ -1,23 +1,23 @@
 # Introduction
 
-BigchainDB is a scalable blockchain database. That is, it's a "big data" database with some blockchain characteristics, including decentralization, immutability and native support for assets.
+BigchainDB is a scalable blockchain database. That is, it's a "big data" database with some blockchain characteristics, including [decentralization](topic-guides/decentralized.html), [immutability](topic-guides/immutable.html) and [native support for assets](topic-guides/assets.html).
 
 You can read about the motivations, goals and high-level architecture in the [BigchainDB whitepaper](https://www.bigchaindb.com/whitepaper/).
 
 
-## Who this Documentation for?
+## Setup Instructions for Various Cases
 
-The BigchainDB Documentation is intended primarily for:
+* [Set up a stand-alone BigchainDB node for learning and experimenting: Quickstart](quickstart.html)
+* [Set up and run a federation](clusters-feds/set-up-a-federation.html) (i.a. an organization with a BigchainDB cluster)
+* To set up a stand-alone node so you can help contribute to the development of BigchainDB Server, see [the CONTRIBUTING.md file](https://github.com/bigchaindb/bigchaindb/blob/master/CONTRIBUTING.md)
+* [Deploy a cluster on AWS](clusters-feds/deploy-on-aws.html)
 
-1. Developers of BigchainDB server software.
-2. People deploying and managing BigchainDB clusters.
-3. Developers of BigchainDB driver software (SDKs used to develop client software).
-4. App developers who are developing client apps to talk to one or more live, operational BigchainDB clusters. They would use one of the BigchainDB drivers.
+(Instructions for setting up a client will be provided once there's a public testnet.)
 
 
 ## Is BigchainDB Production-Ready?
 
-No, BigchainDB is not production-ready. You can use it to build a prototype or proof-of-concept (POC); many people are already doing that. Please don't use it for something mission-critical.
+No, BigchainDB is not production-ready. You can use it to build a prototype or proof-of-concept (POC); many people are already doing that.
 
 BigchainDB is currently in version 0.X. ([The Releases page on GitHub](https://github.com/bigchaindb/bigchaindb/releases) has the exact version number.) Once we believe that BigchainDB is production-ready, we'll release version 1.0.
 
@@ -27,3 +27,4 @@ BigchainDB is currently in version 0.X. ([The Releases page on GitHub](https://g
 ## Can I Help?
 
 Yes! BigchainDB is an open-source project; we welcome contributions of all kinds. If you want to request a feature, file a bug report, make a pull request, or help in some other way, please see [the CONTRIBUTING.md file](https://github.com/bigchaindb/bigchaindb/blob/master/CONTRIBUTING.md).
+
