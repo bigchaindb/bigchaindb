@@ -18,13 +18,27 @@ def get_conn():
                      bigchaindb.config['database']['port'])
 
 
-def init_bigchain_table(conn, dbname):
-    '''Create bigchain table and the secondary indexes'''
-    logger.info(' - tables')
-    # create the table
-    r.db(dbname).table_create('bigchain').run(conn)
+def get_database_name():
+    return bigchaindb.config['database']['name']
 
-    logger.info(' - indexes')
+
+def create_database(conn, dbname):
+    if r.db_list().contains(dbname).run(conn):
+        raise exceptions.DatabaseAlreadyExists('Database `{}` already exists'.format(dbname))
+
+    logger.info('Create:')
+    logger.info(' - database `%s`', dbname)
+    r.db_create(dbname).run(conn)
+
+
+def create_table(conn, dbname, table_name):
+    logger.info(' - %s table', table_name)
+    # create the table
+    r.db(dbname).table_create(table_name).run(conn)
+
+
+def create_bigchain_secondary_index(conn, dbname):
+    logger.info(' - bigchain indexes')
     # to order blocks by timestamp
     r.db(dbname).table('bigchain')\
         .index_create('block_timestamp', r.row['block']['timestamp'])\
@@ -44,13 +58,8 @@ def init_bigchain_table(conn, dbname):
     r.db(dbname).table('bigchain').index_wait().run(conn)
 
 
-def init_backlog_table(conn, dbname):
-    '''Create backlog table and the secondary indexes.'''
-    logger.info(' - tables')
-    # create the table
-    r.db(dbname).table_create('backlog').run(conn)
-
-    logger.info(' - indexes')
+def create_backlog_secondary_index(conn, dbname):
+    logger.info(' - backlog indexes')
     # to order transactions by timestamp
     r.db(dbname).table('backlog')\
         .index_create('transaction_timestamp',
@@ -66,12 +75,7 @@ def init_backlog_table(conn, dbname):
     r.db(dbname).table('backlog').index_wait().run(conn)
 
 
-def init_votes_table(conn, dbname):
-    '''Create votes table and the secondary indexes.'''
-    logger.info(' - tables')
-    # create the table
-    r.db(dbname).table_create('votes').run(conn)
-
+def create_votes_secondary_index(conn, dbname):
     logger.info(' - indexes')
     # compound index to order votes by block id and node
     r.db(dbname).table('votes')\
@@ -84,20 +88,6 @@ def init_votes_table(conn, dbname):
     r.db(dbname).table('votes').index_wait().run(conn)
 
 
-def get_database_name():
-    '''Return the database name.'''
-    return bigchaindb.config['database']['name']
-
-
-def create_database(conn, dbname):
-    if r.db_list().contains(dbname).run(conn):
-        raise exceptions.DatabaseAlreadyExists('Database `{}` already exists'.format(dbname))
-
-    logger.info('Create:')
-    logger.info(' - database `%s`', dbname)
-    r.db_create(dbname).run(conn)
-
-
 def init():
     # Try to access the keypair, throws an exception if it does not exist
     b = bigchaindb.Bigchain()
@@ -106,9 +96,12 @@ def init():
     dbname = get_database_name()
     create_database(conn, dbname)
 
-    init_bigchain_table(conn, dbname)
-    init_backlog_table(conn, dbname)
-    init_votes_table(conn, dbname)
+    table_names = ['bigchain', 'backlog', 'votes']
+    for table_name in table_names:
+        create_table(conn, dbname, table_name)
+    create_bigchain_secondary_index(conn, dbname)
+    create_backlog_secondary_index(conn, dbname)
+    create_votes_secondary_index(conn, dbname)
 
     logger.info(' - genesis block')
     b.create_genesis_block()
