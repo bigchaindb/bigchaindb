@@ -99,7 +99,7 @@ if [ "$WHAT_TO_DEPLOY" == "servers" ]; then
     # (Re)create the RethinkDB configuration file conf/rethinkdb.conf
     python create_rethinkdb_conf.py
     # Rollout RethinkDB and start it
-    fab prep_rethinkdb_storage
+    fab prep_rethinkdb_storage:$USING_EBS
     fab install_rethinkdb
     fab configure_rethinkdb
     fab delete_rethinkdb_data
