@@ -29,10 +29,6 @@ def init_bigchain_table(conn, dbname):
     r.db(dbname).table('bigchain')\
         .index_create('block_timestamp', r.row['block']['timestamp'])\
         .run(conn)
-    # to order blocks by block number
-    r.db(dbname).table('bigchain')\
-        .index_create('block_number', r.row['block']['block_number'])\
-        .run(conn)
     # to query the bigchain for a transaction id
     r.db(dbname).table('bigchain')\
         .index_create('transaction_id',

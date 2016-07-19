@@ -492,6 +492,16 @@ class Bigchain(object):
         response = r.table('bigchain').get_all(transaction_id, index='transaction_id').run(self.conn)
         return True if len(response.items) > 0 else False
 
+    def prepare_genesis_block(self):
+        """Prepare a genesis block."""
+
+        payload = {'message': 'Hello World from the BigchainDB'}
+        transaction = self.create_transaction([self.me], [self.me], None, 'GENESIS', payload=payload)
+        transaction_signed = self.sign_transaction(transaction, self.me_private)
+
+        # create the block
+        return self.create_block([transaction_signed])
+
     # TODO: Unless we prescribe the signature of create_transaction, this will
     #       also need to be moved into the plugin API.
     def create_genesis_block(self):
@@ -511,14 +521,7 @@ class Bigchain(object):
         if blocks_count:
             raise exceptions.GenesisBlockAlreadyExistsError('Cannot create the Genesis block')
 
-        payload = {'message': 'Hello World from the BigchainDB'}
-        transaction = self.create_transaction([self.me], [self.me], None, 'GENESIS', payload=payload)
-        transaction_signed = self.sign_transaction(transaction, self.me_private)
-
-        # create the block
-        block = self.create_block([transaction_signed])
-        # add block number before writing
-        block['block_number'] = 0
+        block = self.prepare_genesis_block()
         self.write_block(block, durability='hard')
 
         return block
@@ -533,6 +536,9 @@ class Bigchain(object):
             decision (bool): Whether the block is valid or invalid.
             invalid_reason (Optional[str]): Reason the block is invalid
         """
+
+        if block['id'] == previous_block_id:
+            raise exceptions.CyclicBlockchainError()
 
         vote = {
             'voting_for_block': block['id'],
@@ -553,17 +559,12 @@ class Bigchain(object):
 
         return vote_signed
 
-    def write_vote(self, block, vote, block_number):
+    def write_vote(self, block, vote):
         """Write the vote to the database."""
 
         # First, make sure this block doesn't contain a vote from this node
         if self.has_previous_vote(block):
             return None
-
-        # We need to *not* override the existing block_number, if any
-        # FIXME: MIGHT HAVE RACE CONDITIONS WITH THE OTHER NODES IN THE FEDERATION
-        if 'block_number' not in vote:
-            vote['block_number'] = block_number  # maybe this should be in the signed part...or better yet, removed..
 
         r.table('votes') \
             .insert(vote) \
@@ -572,22 +573,55 @@ class Bigchain(object):
     def get_last_voted_block(self):
         """Returns the last block that this node voted on."""
 
-        last_voted = r.table('votes') \
-            .filter(r.row['node_pubkey'] == self.me) \
-            .order_by(r.desc('block_number')) \
-            .limit(1) \
-            .run(self.conn)
+        try:
+            # get the latest value for the vote timestamp (over all votes)
+            max_timestamp = r.table('votes') \
+                .filter(r.row['node_pubkey'] == self.me) \
+                .max(r.row['vote']['timestamp']) \
+                .run(self.conn)['vote']['timestamp']
 
-        # return last vote if last vote exists else return Genesis block
-        if not last_voted:
+            last_voted = list(r.table('votes') \
+                .filter(r.row['vote']['timestamp'] == max_timestamp) \
+                .filter(r.row['node_pubkey'] == self.me) \
+                .run(self.conn))
+
+        except r.ReqlNonExistenceError:
+            # return last vote if last vote exists else return Genesis block
             return list(r.table('bigchain')
-                        .filter(r.row['block_number'] == 0)
+                        .filter(util.is_genesis_block)
                         .run(self.conn))[0]
 
-        res = r.table('bigchain').get(last_voted[0]['vote']['voting_for_block']).run(self.conn)
+        # Now the fun starts. Since the resolution of timestamp is a second,
+        # we might have more than one vote per timestamp. If this is the case
+        # then we need to rebuild the chain for the blocks that have been retrieved
+        # to get the last one.
 
-        if 'block_number' in last_voted[0]:
-            res['block_number'] = last_voted[0]['block_number']
+        # Given a block_id, mapping returns the id of the block pointing at it.
+        mapping = {v['vote']['previous_block']: v['vote']['voting_for_block']
+                   for v in last_voted}
+
+        # Since we follow the chain backwards, we can start from a random
+        # point of the chain and "move up" from it.
+        last_block_id = list(mapping.values())[0]
+
+        # We must be sure to break the infinite loop. This happens when:
+        # - the block we are currenty iterating is the one we are looking for.
+        #   This will trigger a KeyError, breaking the loop
+        # - we are visiting again a node we already explored, hence there is
+        #   a loop. This might happen if a vote points both `previous_block`
+        #   and `voting_for_block` to the same `block_id`
+        explored = set()
+
+        while True:
+            try:
+                if last_block_id in explored:
+                    raise exceptions.CyclicBlockchainError()
+                explored.add(last_block_id)
+                last_block_id = mapping[last_block_id]
+            except KeyError:
+                break
+
+        res = r.table('bigchain').get(last_block_id).run(self.conn)
 
         return res
 
@@ -597,13 +631,14 @@ class Bigchain(object):
         unvoted = r.table('bigchain') \
             .filter(lambda block: r.table('votes').get_all([block['id'], self.me], index='block_and_voter')
                     .is_empty()) \
-            .order_by(r.desc('block_number')) \
+            .order_by(r.asc(r.row['block']['timestamp'])) \
             .run(self.conn)
 
-        if unvoted and unvoted[0].get('block_number') == 0:
-            unvoted.pop(0)
+        # FIXME: I (@vrde) don't like this solution. Filtering should be done at a
+        #        database level. Solving issue #444 can help untangling the situation
+        unvoted = filter(lambda block: not util.is_genesis_block(block), unvoted)
 
-        return unvoted
+        return list(unvoted)
 
     def block_election_status(self, block):
         """Tally the votes on a block, and return the status: valid, invalid, or undecided."""

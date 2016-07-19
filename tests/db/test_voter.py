@@ -325,11 +325,8 @@ class TestBigchainVoter(object):
                        .run(b.conn))
 
         # retrieve votes
-        votes = r.table('votes')\
-            .order_by(r.asc((r.row['block_number'])))\
-            .run(b.conn)
+        votes = list(r.table('votes').run(b.conn))
 
-        assert blocks[0]['block_number'] == 0  # genesis block
         assert votes[0]['vote']['voting_for_block'] in (blocks[1]['id'], blocks[2]['id'])
         assert votes[1]['vote']['voting_for_block'] in (blocks[1]['id'], blocks[2]['id'])
 
