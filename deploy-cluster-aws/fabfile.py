@@ -65,30 +65,58 @@ def install_base_software():
                      software-properties-common python-software-properties \
                      python3-setuptools ipython3 sysstat s3cmd')
     sudo('easy_install3 pip')
-    sudo('pip3 install --upgrade pip wheel setuptools')
+    # It seems that breaking apart
+    # sudo('pip3 install --upgrade pip wheel setuptools')
+    # into three separate statements is more reliable:
+    sudo('pip3 install --upgrade pip')
+    sudo('pip3 install --upgrade wheel')
+    sudo('pip3 install --upgrade setuptools')
 
 
 # Prepare RethinkDB storage
 @task
 @parallel
-def prep_rethinkdb_storage():
+def prep_rethinkdb_storage(USING_EBS):
     """Prepare RethinkDB storage"""
-    with settings(warn_only=True):
-        # preparing filesystem
-        sudo("mkdir -p /data")
-        # Locally mounted storage (m3.2xlarge, but also c3.xxx)
+    # Convert USING_EBS from a string to a bool
+    USING_EBS = (USING_EBS.lower() == 'true')
+
+    # Make the /data directory for RethinkDB data
+    sudo("mkdir -p /data")
+
+    # OLD: with settings(warn_only=True):
+    if USING_EBS:  # on /dev/xvdp
+        # See https://tinyurl.com/h2nut68
+        sudo("mkfs -t ext4 /dev/xvdp")
+        sudo("mount /dev/xvdp /data")
+        # To mount this EBS volume on every system reboot,
+        # add an entry for the device to the /etc/fstab file.
+        # First, make a copy of the current /etc/fstab file
+        sudo("cp /etc/fstab /etc/fstab.orig")
+        # Append a line to /etc/fstab
+        sudo("echo '/dev/xvdp  /data  ext4  defaults,nofail,nobootwait  0  2' >> /etc/fstab")
+        # Veryify the /etc/fstab file. If something is wrong with it,
+        # then this should produce an error:
+        sudo("mount -a")
+        # Set the I/O scheduler for /dev/xdvp to deadline
+        with settings(sudo_user='root'):
+            sudo("echo deadline > /sys/block/xvdp/queue/scheduler")
+    else:  # not using EBS.
+        # Using the "instance store" that comes with the instance.
+        # If the instance store comes with more than one volume,
+        # this only mounts ONE of them: /dev/xvdb
+        # For example, m3.2xlarge instances have /dev/xvdb and /dev/xvdc
+        #  and /mnt is mounted on /dev/xvdb by default.
         try:
             sudo("umount /mnt")
             sudo("mkfs -t ext4 /dev/xvdb")
             sudo("mount /dev/xvdb /data")
         except:
             pass
-
-        # persist settings to fstab
         sudo("rm -rf /etc/fstab")
         sudo("echo 'LABEL=cloudimg-rootfs	/	 ext4     defaults,discard    0   0' >> /etc/fstab")
         sudo("echo '/dev/xvdb  /data        ext4    defaults,noatime    0   0' >> /etc/fstab")
-        # activate deadline scheduler (I/O scheduler)
+        # Set the I/O scheduler for /dev/xdvb to deadline
         with settings(sudo_user='root'):
             sudo("echo deadline > /sys/block/xvdb/queue/scheduler")
 
