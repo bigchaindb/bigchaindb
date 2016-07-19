@@ -201,7 +201,7 @@ def write_config(config, filename=None):
     """Write the provided configuration to a specific location.
 
     Args:
-        newconfig (dict): a dictionary with the configuration to load.
+        config (dict): a dictionary with the configuration to load.
         filename (str): the name of the file that will store the new configuration. Defaults to ``None``.
             If ``None``, the HOME of the current user and the string ``.bigchaindb`` will be used.
     """
