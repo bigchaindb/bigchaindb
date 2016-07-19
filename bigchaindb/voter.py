@@ -106,6 +106,11 @@ class Voter(object):
             logger.info('new_block arrived to voter')
 
             with self.monitor.timer('validate_block'):
+                # FIXME: the following check is done also in `is_valid_block`,
+                #        but validity can be true even if the block has already
+                #        a vote.
+                if b.has_previous_vote(new_block):
+                    continue
                 validity = b.is_valid_block(new_block)
 
             self.q_validated_block.put((new_block,
@@ -151,7 +156,7 @@ class Voter(object):
                 return
 
             block, vote = elem
-            logger.info('updating block %s and with vote %s', block['id'], vote)
+            logger.info('updating block %s and with vote %s', block, vote)
             b.write_vote(block, vote)
 
     def bootstrap(self):
