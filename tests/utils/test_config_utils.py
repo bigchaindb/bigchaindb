@@ -197,7 +197,7 @@ def test_update_config(monkeypatch):
         'database': {'host': 'test-host', 'name': 'bigchaindb', 'port': 28015}
     }
     monkeypatch.setattr('bigchaindb.config_utils.file_config', lambda *args, **kwargs: file_config)
-    config_utils.autoconfigure()
+    config_utils.autoconfigure(config=file_config)
 
     # update configuration, retaining previous changes
     config_utils.update_config({'database': {'port': 28016, 'name': 'bigchaindb_other'}})
@@ -205,4 +205,3 @@ def test_update_config(monkeypatch):
     assert bigchaindb.config['database']['host'] == 'test-host'
     assert bigchaindb.config['database']['name'] == 'bigchaindb_other'
     assert bigchaindb.config['database']['port'] == 28016
-
