@@ -42,8 +42,6 @@ def init():
     # create the secondary indexes
     # to order blocks by timestamp
     r.db(dbname).table('bigchain').index_create('block_timestamp', r.row['block']['timestamp']).run(conn)
-    # to order blocks by block number
-    r.db(dbname).table('bigchain').index_create('block_number', r.row['block']['block_number']).run(conn)
     # to order transactions by timestamp
     r.db(dbname).table('backlog').index_create('transaction_timestamp', r.row['transaction']['timestamp']).run(conn)
     # to query the bigchain for a transaction id
