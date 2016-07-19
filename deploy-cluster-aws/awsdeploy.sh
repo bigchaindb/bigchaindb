@@ -33,8 +33,10 @@ echo "USE_KEYPAIRS_FILE = "$USE_KEYPAIRS_FILE
 echo "IMAGE_ID = "$IMAGE_ID
 echo "INSTANCE_TYPE = "$INSTANCE_TYPE
 echo "USING_EBS = "$USING_EBS
-echo "EBS_VOLUME_SIZE = "$EBS_VOLUME_SIZE
-echo "EBS_OPTIMIZED = "$EBS_OPTIMIZED
+if [ "$USING_EBS" = True ]; then
+    echo "EBS_VOLUME_SIZE = "$EBS_VOLUME_SIZE
+    echo "EBS_OPTIMIZED = "$EBS_OPTIMIZED
+fi
 
 # Check for AWS private key file (.pem file)
 if [ ! -f "pem/bigchaindb.pem" ]; then
