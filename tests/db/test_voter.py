@@ -261,7 +261,6 @@ class TestBigchainVoter(object):
         assert vote['node_pubkey'] == b.me
         assert crypto.VerifyingKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
 
-    @pytest.mark.skipif(reason='This test raises bigger questions about atomicity.')
     def test_voter_considers_unvoted_blocks_when_single_node(self, b):
         # simulate a voter going donw in a single node environment
         b.create_genesis_block()
@@ -277,15 +276,14 @@ class TestBigchainVoter(object):
         q_new_block = mp.Queue()
         voter = Voter(q_new_block)
 
+        # vote
+        voter.start()
+        time.sleep(1)
+
         # create a new block that will appear in the changefeed
         block_3 = dummy_block()
         b.write_block(block_3, durability='hard')
 
-        # put the last block in the queue
-        q_new_block.put(block_3)
-
-        # vote
-        voter.start()
         time.sleep(1)
         voter.kill()
 
