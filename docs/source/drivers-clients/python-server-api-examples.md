@@ -1,10 +1,11 @@
 # The Python Server API by Example
 
-This section gives an example of using the Python Server API to interact _directly_ with a BigchainDB node running BigchainDB Server. That is, in this example, the Python code and BigchainDB Server run on the same machine.
+**Currently, the HTTP Client-Server API is very rudimentary, so you may want to use the Python Server API to develop prototype clients and applications, for now. Keep in mind that in the future, clients will only be able to use the HTTP Client-Server API (and possibly other Client-Server APIs) to communicate with BigchainDB nodes.**
 
-(One can also interact with a BigchainDB node via other APIs, including the HTTP Client-Server API.)
+This section has examples of using the Python Server API to interact _directly_ with a BigchainDB node running BigchainDB Server. That is, in these examples, the Python code and BigchainDB Server run on the same machine.
 
-We create a digital asset, sign it, write it to a BigchainDB Server instance, read it, transfer it to a different user, and then attempt to transfer it to another user, resulting in a double-spend error.
+One can also interact with a BigchainDB node via other APIs, including the HTTP Client-Server API.
+
 
 ## Getting Started
 
@@ -31,6 +32,7 @@ This instantiates an object `b` of class `Bigchain`. When instantiating a `Bigch
 In a federation of BigchainDB nodes, each node has its own `Bigchain` instance.
 
 The `Bigchain` class is the main API for all BigchainDB interactions, right now. It does things that BigchainDB nodes do, but it also does things that BigchainDB clients do. In the future, it will be refactored into different parts. The `Bigchain` class is documented [elsewhere (link)](../appendices/the-Bigchain-class.html).
+
 
 ## Create a Digital Asset
 

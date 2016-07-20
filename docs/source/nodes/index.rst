@@ -13,4 +13,3 @@ BigchainDB Nodes
    running-unit-tests
    configuration
    bigchaindb-cli
-   python-server-api-examples

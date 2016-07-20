@@ -35,4 +35,4 @@ bigchaindb start
 
 That's it!
 
-For now, you can get a good sense of how to work with BigchainDB by going through [the examples in the section on the Python Server API](nodes/python-server-api-examples.html).
+For now, you can get a good sense of how to work with BigchainDB by going through [the examples in the section on the Python Server API](drivers-clients/python-server-api-examples.html).
