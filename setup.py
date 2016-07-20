@@ -29,13 +29,12 @@ check_setuptools_features()
 
 
 tests_require = [
-    'pytest',
     'coverage',
     'pep8',
     'pyflakes',
     'pylint',
     'pytest',
-    'pytest-cov',
+    'pytest-cov==2.2.1',
     'pytest-xdist',
     'pytest-flask',
 ]
@@ -46,10 +45,11 @@ dev_require = [
 ]
 
 docs_require = [
-    'recommonmark>=0.4.0',
     'Sphinx>=1.3.5',
-    'sphinxcontrib-napoleon>=0.4.4',
+    'recommonmark>=0.4.0',
     'sphinx-rtd-theme>=0.1.9',
+    'sphinxcontrib-napoleon>=0.4.4',
+    'sphinxcontrib-httpdomain>=1.5.0',
 ]
 
 benchmarks_require = [
@@ -93,10 +93,10 @@ setup(
         ]
     },
     install_requires=[
-        'rethinkdb==2.3.0',
+        'rethinkdb~=2.3',
         'pysha3==0.3',
         'pytz==2015.7',
-        'cryptoconditions==0.3.0',
+        'cryptoconditions==0.4.1',
         'statsd==3.2.1',
         'python-rapidjson==0.0.6',
         'logstats==0.2.1',
@@ -109,7 +109,7 @@ setup(
     tests_require=tests_require,
     extras_require={
         'test': tests_require,
-        'dev':  dev_require + tests_require + docs_require + benchmarks_require,
-        'docs':  docs_require,
+        'dev': dev_require + tests_require + docs_require + benchmarks_require,
+        'docs': docs_require,
     },
 )

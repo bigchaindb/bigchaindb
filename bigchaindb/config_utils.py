@@ -183,11 +183,25 @@ def set_config(config):
     bigchaindb.config['CONFIGURED'] = True
 
 
+def update_config(config):
+    """Update bigchaindb.config with whatever is in the provided config dict,
+    and then set bigchaindb.config['CONFIGURED'] = True
+
+    Args:
+        config (dict): the config dict to read for changes
+                       to the default config
+    """
+
+    # Update the default config with whatever is in the passed config
+    update(bigchaindb.config, update_types(config, bigchaindb.config))
+    bigchaindb.config['CONFIGURED'] = True
+
+
 def write_config(config, filename=None):
     """Write the provided configuration to a specific location.
 
     Args:
-        newconfig (dict): a dictionary with the configuration to load.
+        config (dict): a dictionary with the configuration to load.
         filename (str): the name of the file that will store the new configuration. Defaults to ``None``.
             If ``None``, the HOME of the current user and the string ``.bigchaindb`` will be used.
     """
@@ -206,12 +220,17 @@ def autoconfigure(filename=None, config=None, force=False):
         logger.debug('System already configured, skipping autoconfiguration')
         return
 
-    newconfig = env_config(bigchaindb.config)
+    # start with the current configuration
+    newconfig = bigchaindb.config
 
+    # update configuration from file
     try:
         newconfig = update(newconfig, file_config(filename=filename))
     except FileNotFoundError as e:
         logger.warning('Cannot find config file `%s`.' % e.filename)
+
+    # override configuration with env variables
+    newconfig = env_config(newconfig)
 
     if config:
         newconfig = update(newconfig, config)

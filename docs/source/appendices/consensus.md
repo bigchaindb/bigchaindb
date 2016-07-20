@@ -23,7 +23,7 @@ To activate your plugin, you can either set the `consensus_plugin` field in your
 
 ## Plugin API
 
-BigchainDB's [current plugin API](../../bigchaindb/consensus.py) exposes five functions in an `AbstractConsensusRules` class:
+BigchainDB's [current plugin API](https://github.com/bigchaindb/bigchaindb/blob/master/bigchaindb/consensus.py) exposes five functions in an `AbstractConsensusRules` class:
 
 ```python
 validate_transaction(bigchain, transaction)

@@ -2,16 +2,13 @@ import copy
 import multiprocessing as mp
 import random
 import time
-import json
 
 import pytest
 import rethinkdb as r
 import cryptoconditions as cc
 
 import bigchaindb
-from bigchaindb import util
-from bigchaindb import exceptions
-from bigchaindb import crypto
+from bigchaindb import crypto, exceptions, util
 from bigchaindb.voter import Voter
 from bigchaindb.block import Block, BacklogDeleteRevert, BlockDeleteRevert
 
@@ -21,6 +18,20 @@ from bigchaindb.block import Block, BacklogDeleteRevert, BlockDeleteRevert
                            'interfere with the correctness of the tests. ')
 def test_remove_unclosed_sockets():
     pass
+
+
+# Some util functions
+def dummy_tx():
+    b = bigchaindb.Bigchain()
+    tx = b.create_transaction(b.me, b.me, None, 'CREATE')
+    tx_signed = b.sign_transaction(tx, b.me_private)
+    return tx_signed
+
+
+def dummy_block():
+    b = bigchaindb.Bigchain()
+    block = b.create_block([dummy_tx()])
+    return block
 
 
 class TestBigchainApi(object):
@@ -33,6 +44,33 @@ class TestBigchainApi(object):
     def test_create_transaction_with_unsupported_payload_raises(self, b):
         with pytest.raises(TypeError):
             b.create_transaction('a', 'b', 'c', 'd', payload=[])
+
+    def test_create_transaction_payload_none(self, b, user_vk):
+        tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
+        assert len(tx['transaction']['data']['uuid']) == 36
+        assert tx['transaction']['data']['payload'] is None
+
+    def test_create_transaction_payload(self, b, user_vk):
+        payload = {'msg': 'Hello BigchainDB!'}
+        tx = b.create_transaction(b.me, user_vk, None, 'CREATE', payload=payload)
+        assert len(tx['transaction']['data']['uuid']) == 36
+        assert tx['transaction']['data']['payload'] == payload
+
+    def test_get_transactions_for_payload(self, b, user_vk):
+        payload = {'msg': 'Hello BigchainDB!'}
+        tx = b.create_transaction(b.me, user_vk, None, 'CREATE', payload=payload)
+        payload_uuid = tx['transaction']['data']['uuid']
+
+        block = b.create_block([tx])
+        b.write_block(block, durability='hard')
+
+        matches = b.get_tx_by_payload_uuid(payload_uuid)
+        assert len(matches) == 1
+        assert matches[0]['id'] == tx['id']
+
+    def test_get_transactions_for_payload_mismatch(self, b, user_vk):
+        matches = b.get_tx_by_payload_uuid('missing')
+        assert not matches
 
     @pytest.mark.usefixtures('inputs')
     def test_create_transaction_transfer(self, b, user_vk, user_sk):
@@ -49,24 +87,6 @@ class TestBigchainApi(object):
         assert b.validate_fulfillments(tx) == False
         assert b.validate_fulfillments(tx_signed) == True
 
-    def test_transaction_hash(self, b, user_vk):
-        payload = {'cats': 'are awesome'}
-        tx = b.create_transaction(user_vk, user_vk, None, 'CREATE', payload)
-        tx_calculated = {
-            'conditions': [{'cid': 0,
-                            'condition': tx['transaction']['conditions'][0]['condition'],
-                            'new_owners': [user_vk]}],
-            'data': {'hash': crypto.hash_data(util.serialize(payload)),
-                     'payload': payload},
-            'fulfillments': [{'current_owners': [user_vk],
-                              'fid': 0,
-                              'fulfillment': None,
-                              'input': None}],
-            'operation': 'CREATE',
-            'timestamp': tx['transaction']['timestamp']
-        }
-        assert tx['transaction']['data'] == tx_calculated['data']
-        # assert tx_hash == tx_calculated_hash
 
     def test_transaction_signature(self, b, user_sk, user_vk):
         tx = b.create_transaction(user_vk, user_vk, None, 'CREATE')
@@ -120,7 +140,7 @@ class TestBigchainApi(object):
 
         # vote the block invalid
         vote = b.vote(block, b.get_last_voted_block()['id'], False)
-        b.write_vote(block, vote, 3)
+        b.write_vote(block, vote)
         response = b.get_transaction(tx_signed["id"])
 
         # should be None, because invalid blocks are ignored
@@ -143,7 +163,7 @@ class TestBigchainApi(object):
     def test_assign_transaction_multiple_nodes(self, b, user_vk, user_sk):
         # create 5 federation nodes
         for _ in range(5):
-            b.federation_nodes.append(crypto.generate_key_pair()[1])
+            b.nodes_except_me.append(crypto.generate_key_pair()[1])
 
         # test assignee for several transactions
         for _ in range(20):
@@ -155,28 +175,29 @@ class TestBigchainApi(object):
             # retrieve the transaction
             response = r.table('backlog').get(tx_signed['id']).run(b.conn)
 
-            # check if the assignee is the federation_nodes
-            assert response['assignee'] in b.federation_nodes
+            # check if the assignee is one of the _other_ federation nodes
+            assert response['assignee'] in b.nodes_except_me
 
     @pytest.mark.usefixtures('inputs')
     def test_genesis_block(self, b):
         response = list(r.table('bigchain')
-                        .filter(r.row['block_number'] == 0)
-                        .run(b.conn))[0]
+                        .filter(util.is_genesis_block)
+                        .run(b.conn))
 
-        assert response['block_number'] == 0
-        assert len(response['block']['transactions']) == 1
-        assert response['block']['transactions'][0]['transaction']['operation'] == 'GENESIS'
-        assert response['block']['transactions'][0]['transaction']['fulfillments'][0]['input'] is None
+        assert len(response) == 1
+        block = response[0]
+        assert len(block['block']['transactions']) == 1
+        assert block['block']['transactions'][0]['transaction']['operation'] == 'GENESIS'
+        assert block['block']['transactions'][0]['transaction']['fulfillments'][0]['input'] is None
 
     def test_create_genesis_block_fails_if_table_not_empty(self, b):
         b.create_genesis_block()
 
-        with pytest.raises(bigchaindb.core.GenesisBlockAlreadyExistsError):
+        with pytest.raises(exceptions.GenesisBlockAlreadyExistsError):
             b.create_genesis_block()
 
         genesis_blocks = list(r.table('bigchain')
-                              .filter(r.row['block_number'] == 0)
+                              .filter(util.is_genesis_block)
                               .run(b.conn))
 
         assert len(genesis_blocks) == 1
@@ -219,59 +240,148 @@ class TestBigchainApi(object):
         assert prev_block_id == last_block['id']
 
     def test_create_new_block(self, b):
-        new_block = b.create_block([])
+        tx = dummy_tx()
+        new_block = b.create_block([tx])
         block_hash = crypto.hash_data(util.serialize(new_block['block']))
 
         assert new_block['block']['voters'] == [b.me]
         assert new_block['block']['node_pubkey'] == b.me
         assert crypto.VerifyingKey(b.me).verify(util.serialize(new_block['block']), new_block['signature']) is True
         assert new_block['id'] == block_hash
-        assert new_block['votes'] == []
+
+    def test_create_empty_block(self, b):
+        with pytest.raises(exceptions.OperationError) as excinfo:
+            b.create_block([])
+
+        assert excinfo.value.args[0] == 'Empty block creation is not allowed'
 
     def test_get_last_voted_block_returns_genesis_if_no_votes_has_been_casted(self, b):
         b.create_genesis_block()
         genesis = list(r.table('bigchain')
-                       .filter(r.row['block_number'] == 0)
+                       .filter(util.is_genesis_block)
                        .run(b.conn))[0]
-        assert b.get_last_voted_block() == genesis
+        gb = b.get_last_voted_block()
+        assert gb == genesis
+        assert b.validate_block(gb) == gb
 
-    def test_get_last_voted_block_returns_the_correct_block(self, b):
+    def test_get_last_voted_block_returns_the_correct_block_same_timestamp(self, b, monkeypatch):
         genesis = b.create_genesis_block()
 
         assert b.get_last_voted_block() == genesis
 
-        block_1 = b.create_block([])
-        block_2 = b.create_block([])
-        block_3 = b.create_block([])
+        block_1 = dummy_block()
+        block_2 = dummy_block()
+        block_3 = dummy_block()
 
         b.write_block(block_1, durability='hard')
         b.write_block(block_2, durability='hard')
         b.write_block(block_3, durability='hard')
 
-        b.write_vote(block_1, b.vote(block_1, b.get_last_voted_block(), True), 1)
+        # make sure all the blocks are written at the same time
+        monkeypatch.setattr(util, 'timestamp', lambda: '1')
+
+        b.write_vote(block_1, b.vote(block_1, b.get_last_voted_block()['id'], True))
         assert b.get_last_voted_block()['id'] == block_1['id']
 
-        b.write_vote(block_2, b.vote(block_2, b.get_last_voted_block(), True), 2)
+        b.write_vote(block_2, b.vote(block_2, b.get_last_voted_block()['id'], True))
         assert b.get_last_voted_block()['id'] == block_2['id']
 
-        b.write_vote(block_3, b.vote(block_3, b.get_last_voted_block(), True), 3)
+        b.write_vote(block_3, b.vote(block_3, b.get_last_voted_block()['id'], True))
+        assert b.get_last_voted_block()['id'] == block_3['id']
+
+
+    def test_get_last_voted_block_returns_the_correct_block_different_timestamps(self, b, monkeypatch):
+        genesis = b.create_genesis_block()
+
+        assert b.get_last_voted_block() == genesis
+
+        block_1 = dummy_block()
+        block_2 = dummy_block()
+        block_3 = dummy_block()
+
+        b.write_block(block_1, durability='hard')
+        b.write_block(block_2, durability='hard')
+        b.write_block(block_3, durability='hard')
+
+        # make sure all the blocks are written at different timestamps
+        monkeypatch.setattr(util, 'timestamp', lambda: '1')
+        b.write_vote(block_1, b.vote(block_1, b.get_last_voted_block()['id'], True))
+        assert b.get_last_voted_block()['id'] == block_1['id']
+
+        monkeypatch.setattr(util, 'timestamp', lambda: '2')
+        b.write_vote(block_2, b.vote(block_2, b.get_last_voted_block()['id'], True))
+        assert b.get_last_voted_block()['id'] == block_2['id']
+
+        monkeypatch.setattr(util, 'timestamp', lambda: '3')
+        b.write_vote(block_3, b.vote(block_3, b.get_last_voted_block()['id'], True))
         assert b.get_last_voted_block()['id'] == block_3['id']
 
     def test_no_vote_written_if_block_already_has_vote(self, b):
-        b.create_genesis_block()
+        genesis = b.create_genesis_block()
 
-        block_1 = b.create_block([])
+        block_1 = dummy_block()
 
         b.write_block(block_1, durability='hard')
 
-        b.write_vote(block_1, b.vote(block_1, b.get_last_voted_block(), True), 1)
+        b.write_vote(block_1, b.vote(block_1, genesis['id'], True))
         retrieved_block_1 = r.table('bigchain').get(block_1['id']).run(b.conn)
 
         # try to vote again on the retrieved block, should do nothing
-        b.write_vote(retrieved_block_1, b.vote(retrieved_block_1, b.get_last_voted_block(), True), 1)
+        b.write_vote(retrieved_block_1, b.vote(retrieved_block_1, genesis['id'], True))
         retrieved_block_2 = r.table('bigchain').get(block_1['id']).run(b.conn)
 
         assert retrieved_block_1 == retrieved_block_2
+
+    def test_more_votes_than_voters(self, b):
+        b.create_genesis_block()
+        block_1 = dummy_block()
+        b.write_block(block_1, durability='hard')
+        # insert duplicate votes
+        vote_1 = b.vote(block_1, b.get_last_voted_block()['id'], True)
+        vote_2 = b.vote(block_1, b.get_last_voted_block()['id'], True)
+        vote_2['node_pubkey'] = 'aaaaaaa'
+        r.table('votes').insert(vote_1).run(b.conn)
+        r.table('votes').insert(vote_2).run(b.conn)
+
+        from bigchaindb.exceptions import MultipleVotesError
+        with pytest.raises(MultipleVotesError) as excinfo:
+            b.block_election_status(block_1)
+        assert excinfo.value.args[0] == 'Block {block_id} has {n_votes} votes cast, but only {n_voters} voters'\
+            .format(block_id=block_1['id'], n_votes=str(2), n_voters=str(1))
+
+    def test_multiple_votes_single_node(self, b):
+        genesis = b.create_genesis_block()
+        block_1 = dummy_block()
+        b.write_block(block_1, durability='hard')
+        # insert duplicate votes
+        for i in range(2):
+            r.table('votes').insert(b.vote(block_1, genesis['id'], True)).run(b.conn)
+
+        from bigchaindb.exceptions import MultipleVotesError
+        with pytest.raises(MultipleVotesError) as excinfo:
+            b.block_election_status(block_1)
+        assert excinfo.value.args[0] == 'Block {block_id} has multiple votes ({n_votes}) from voting node {node_id}'\
+            .format(block_id=block_1['id'], n_votes=str(2), node_id=b.me)
+
+        with pytest.raises(MultipleVotesError) as excinfo:
+            b.has_previous_vote(block_1)
+        assert excinfo.value.args[0] == 'Block {block_id} has {n_votes} votes from public key {me}'\
+            .format(block_id=block_1['id'], n_votes=str(2), me=b.me)
+
+    def test_improper_vote_error(selfs, b):
+        b.create_genesis_block()
+        block_1 = dummy_block()
+        b.write_block(block_1, durability='hard')
+        vote_1 = b.vote(block_1, b.get_last_voted_block()['id'], True)
+        # mangle the signature
+        vote_1['signature'] = 'a' * 87
+        r.table('votes').insert(vote_1).run(b.conn)
+        from bigchaindb.exceptions import ImproperVoteError
+        with pytest.raises(ImproperVoteError) as excinfo:
+            b.has_previous_vote(block_1)
+        assert excinfo.value.args[0] == 'Block {block_id} already has an incorrectly signed ' \
+                                  'vote from public key {me}'.format(block_id=block_1['id'], me=b.me)
+
 
 class TestTransactionValidation(object):
     @pytest.mark.usefixtures('inputs')
@@ -406,7 +516,7 @@ class TestTransactionValidation(object):
 
 class TestBlockValidation(object):
     def test_wrong_block_hash(self, b):
-        block = b.create_block([])
+        block = dummy_block()
 
         # change block hash
         block.update({'id': 'abc'})
@@ -427,7 +537,7 @@ class TestBlockValidation(object):
             'timestamp': util.timestamp(),
             'transactions': [tx_invalid],
             'node_pubkey': b.me,
-            'voters': b.federation_nodes
+            'voters': b.nodes_except_me
         }
 
         block_data = util.serialize(block)
@@ -447,7 +557,7 @@ class TestBlockValidation(object):
         assert excinfo.value.args[0] == 'current_owner `a` does not own the input `{}`'.format(valid_input)
 
     def test_invalid_block_id(self, b):
-        block = b.create_block([])
+        block = dummy_block()
 
         # change block hash
         block.update({'id': 'abc'})
@@ -469,7 +579,7 @@ class TestBlockValidation(object):
 
     def test_invalid_signature(self, b):
         # create a valid block
-        block = b.create_block([])
+        block = dummy_block()
 
         # replace the block signature with an invalid one
         block['signature'] = crypto.SigningKey(b.me_private).sign(b'wrongdata')
@@ -481,7 +591,7 @@ class TestBlockValidation(object):
     def test_invalid_node_pubkey(self, b):
         # blocks can only be created by a federation node
         # create a valid block
-        block = b.create_block([])
+        block = dummy_block()
 
         # create some temp keys
         tmp_sk, tmp_vk = crypto.generate_key_pair()
@@ -497,113 +607,6 @@ class TestBlockValidation(object):
         # check that validate_block raises an OperationError
         with pytest.raises(exceptions.OperationError):
             b.validate_block(block)
-
-
-class TestBigchainVoter(object):
-    def test_valid_block_voting(self, b):
-        # create queue and voter
-        q_new_block = mp.Queue()
-        voter = Voter(q_new_block)
-
-        genesis = b.create_genesis_block()
-        # create valid block
-        block = b.create_block([])
-        # assert block is valid
-        assert b.is_valid_block(block)
-        b.write_block(block, durability='hard')
-
-        # insert into queue
-        # FIXME: we disable this because the voter can currently vote more than one time for a block
-        # q_new_block.put(block)
-
-        # vote
-        voter.start()
-        # wait for vote to be written
-        time.sleep(1)
-        voter.kill()
-
-        # retrive block from bigchain
-        bigchain_block = r.table('bigchain').get(block['id']).run(b.conn)
-
-        # validate vote
-        assert len(bigchain_block['votes']) == 1
-        vote = bigchain_block['votes'][0]
-
-        assert vote['vote']['voting_for_block'] == block['id']
-        assert vote['vote']['previous_block'] == genesis['id']
-        assert vote['vote']['is_block_valid'] is True
-        assert vote['vote']['invalid_reason'] is None
-        assert vote['node_pubkey'] == b.me
-        assert crypto.VerifyingKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
-
-    def test_invalid_block_voting(self, b, user_vk):
-        # create queue and voter
-        q_new_block = mp.Queue()
-        voter = Voter(q_new_block)
-
-        # create transaction
-        transaction = b.create_transaction(b.me, user_vk, None, 'CREATE')
-        transaction_signed = b.sign_transaction(transaction, b.me_private)
-
-        genesis = b.create_genesis_block()
-        # create invalid block
-        block = b.create_block([transaction_signed])
-        # change transaction id to make it invalid
-        block['block']['transactions'][0]['id'] = 'abc'
-        assert b.is_valid_block(block) is False
-        b.write_block(block, durability='hard')
-
-        # insert into queue
-        # FIXME: we disable this because the voter can currently vote more than one time for a block
-        # q_new_block.put(block)
-
-        # vote
-        voter.start()
-        # wait for the vote to be written
-        time.sleep(1)
-        voter.kill()
-
-        # retrive block from bigchain
-        bigchain_block = r.table('bigchain').get(block['id']).run(b.conn)
-
-        # validate vote
-        assert len(bigchain_block['votes']) == 1
-        vote = bigchain_block['votes'][0]
-
-        assert vote['vote']['voting_for_block'] == block['id']
-        assert vote['vote']['previous_block'] == genesis['id']
-        assert vote['vote']['is_block_valid'] is False
-        assert vote['vote']['invalid_reason'] is None
-        assert vote['node_pubkey'] == b.me
-        assert crypto.VerifyingKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
-
-    def test_vote_creation_valid(self, b):
-        # create valid block
-        block = b.create_block([])
-        # retrieve vote
-        vote = b.vote(block, 'abc', True)
-
-        # assert vote is correct
-        assert vote['vote']['voting_for_block'] == block['id']
-        assert vote['vote']['previous_block'] == 'abc'
-        assert vote['vote']['is_block_valid'] is True
-        assert vote['vote']['invalid_reason'] is None
-        assert vote['node_pubkey'] == b.me
-        assert crypto.VerifyingKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
-
-    def test_vote_creation_invalid(self, b):
-        # create valid block
-        block = b.create_block([])
-        # retrieve vote
-        vote = b.vote(block, 'abc', False)
-
-        # assert vote is correct
-        assert vote['vote']['voting_for_block'] == block['id']
-        assert vote['vote']['previous_block'] == 'abc'
-        assert vote['vote']['is_block_valid'] is False
-        assert vote['vote']['invalid_reason'] is None
-        assert vote['node_pubkey'] == b.me
-        assert crypto.VerifyingKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
 
 
 class TestBigchainBlock(object):
@@ -871,17 +874,17 @@ class TestBigchainBlock(object):
     def test_revert_delete_block(self, b):
         b.create_genesis_block()
 
-        block_1 = b.create_block([])
-        block_2 = b.create_block([])
-        block_3 = b.create_block([])
+        block_1 = dummy_block()
+        block_2 = dummy_block()
+        block_3 = dummy_block()
 
         b.write_block(block_1, durability='hard')
         b.write_block(block_2, durability='hard')
         b.write_block(block_3, durability='hard')
 
-        b.write_vote(block_1, b.vote(block_1, b.get_last_voted_block(), True), 1)
-        b.write_vote(block_2, b.vote(block_2, b.get_last_voted_block(), True), 2)
-        b.write_vote(block_3, b.vote(block_3, b.get_last_voted_block(), True), 3)
+        b.write_vote(block_1, b.vote(block_1, b.get_last_voted_block()['id'], True))
+        b.write_vote(block_2, b.vote(block_2, b.get_last_voted_block()['id'], True))
+        b.write_vote(block_3, b.vote(block_3, b.get_last_voted_block()['id'], True))
 
         q_revert_delete = mp.Queue()
 
@@ -1167,6 +1170,7 @@ class TestMultipleInputs(object):
         assert owned_inputs_user2 == [{'cid': 0, 'txid': tx['id']}]
 
     def test_get_owned_ids_single_tx_single_output_invalid_block(self, b, user_sk, user_vk):
+        genesis = b.create_genesis_block()
         # create a new users
         user2_sk, user2_vk = crypto.generate_key_pair()
 
@@ -1177,8 +1181,8 @@ class TestMultipleInputs(object):
         b.write_block(block, durability='hard')
 
         # vote the block VALID
-        vote = b.vote(block, b.get_unvoted_blocks()[0]['id'], True)
-        b.write_vote(block, vote, 2)
+        vote = b.vote(block, genesis['id'], True)
+        b.write_vote(block, vote)
 
         # get input
         owned_inputs_user1 = b.get_owned_ids(user_vk)
@@ -1194,7 +1198,7 @@ class TestMultipleInputs(object):
 
         # vote the block invalid
         vote = b.vote(block, b.get_last_voted_block()['id'], False)
-        b.write_vote(block, vote, 3)
+        b.write_vote(block, vote)
 
         owned_inputs_user1 = b.get_owned_ids(user_vk)
         owned_inputs_user2 = b.get_owned_ids(user2_vk)
@@ -1295,6 +1299,8 @@ class TestMultipleInputs(object):
         assert spent_inputs_user1 == tx_signed
 
     def test_get_spent_single_tx_single_output_invalid_block(self, b, user_sk, user_vk):
+        genesis = b.create_genesis_block()
+
         # create a new users
         user2_sk, user2_vk = crypto.generate_key_pair()
 
@@ -1305,8 +1311,8 @@ class TestMultipleInputs(object):
         b.write_block(block, durability='hard')
 
         # vote the block VALID
-        vote = b.vote(block, b.get_unvoted_blocks()[0]['id'], True)
-        b.write_vote(block, vote, 2)
+        vote = b.vote(block, genesis['id'], True)
+        b.write_vote(block, vote)
 
         # get input
         owned_inputs_user1 = b.get_owned_ids(user_vk)
@@ -1323,7 +1329,7 @@ class TestMultipleInputs(object):
 
         # vote the block invalid
         vote = b.vote(block, b.get_last_voted_block()['id'], False)
-        b.write_vote(block, vote, 2)
+        b.write_vote(block, vote)
         response = b.get_transaction(tx_signed["id"])
         spent_inputs_user1 = b.get_spent(owned_inputs_user1[0])
 
@@ -1570,9 +1576,9 @@ class TestCryptoconditions(object):
         tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
         condition = tx['transaction']['conditions'][0]['condition']
         condition_from_uri = cc.Condition.from_uri(condition['uri'])
-        condition_from_json = cc.Fulfillment.from_json(condition['details']).condition
+        condition_from_dict = cc.Fulfillment.from_dict(condition['details']).condition
 
-        assert condition_from_uri.serialize_uri() == condition_from_json.serialize_uri()
+        assert condition_from_uri.serialize_uri() == condition_from_dict.serialize_uri()
         assert condition['details']['public_key'] == user_vk
 
         tx_signed = b.sign_transaction(tx, b.me_private)
@@ -1594,16 +1600,16 @@ class TestCryptoconditions(object):
         prev_tx = b.get_transaction(prev_tx_id['txid'])
         prev_condition = prev_tx['transaction']['conditions'][0]['condition']
         prev_condition_from_uri = cc.Condition.from_uri(prev_condition['uri'])
-        prev_condition_from_json = cc.Fulfillment.from_json(prev_condition['details']).condition
+        prev_condition_from_dict = cc.Fulfillment.from_dict(prev_condition['details']).condition
 
-        assert prev_condition_from_uri.serialize_uri() == prev_condition_from_json.serialize_uri()
+        assert prev_condition_from_uri.serialize_uri() == prev_condition_from_dict.serialize_uri()
         assert prev_condition['details']['public_key'] == user_vk
 
         condition = tx['transaction']['conditions'][0]['condition']
         condition_from_uri = cc.Condition.from_uri(condition['uri'])
-        condition_from_json = cc.Fulfillment.from_json(condition['details']).condition
+        condition_from_dict = cc.Fulfillment.from_dict(condition['details']).condition
 
-        assert condition_from_uri.serialize_uri() == condition_from_json.serialize_uri()
+        assert condition_from_uri.serialize_uri() == condition_from_dict.serialize_uri()
         assert condition['details']['public_key'] == other_vk
 
         tx_signed = b.sign_transaction(tx, user_sk)
@@ -1620,7 +1626,7 @@ class TestCryptoconditions(object):
         tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
         fulfillment = cc.Ed25519Fulfillment(public_key=user_vk)
         tx['transaction']['conditions'][0]['condition'] = {
-            'details': json.loads(fulfillment.serialize_json()),
+            'details': fulfillment.to_dict(),
             'uri': fulfillment.condition.serialize_uri()
         }
 
@@ -1643,7 +1649,7 @@ class TestCryptoconditions(object):
 
         fulfillment = cc.Ed25519Fulfillment(public_key=other_vk)
         tx['transaction']['conditions'][0]['condition'] = {
-            'details': json.loads(fulfillment.serialize_json()),
+            'details': fulfillment.to_dict(),
             'uri': fulfillment.condition.serialize_uri()
         }
 
@@ -1693,7 +1699,7 @@ class TestCryptoconditions(object):
 
         first_tx_condition = cc.Ed25519Fulfillment(public_key=other_vk)
         first_tx['transaction']['conditions'][0]['condition'] = {
-            'details': json.loads(first_tx_condition.serialize_json()),
+            'details': first_tx_condition.to_dict(),
             'uri': first_tx_condition.condition.serialize_uri()
         }
 
@@ -1740,7 +1746,7 @@ class TestCryptoconditions(object):
         first_tx_condition.add_subfulfillment(cc.Ed25519Fulfillment(public_key=other3_vk))
 
         first_tx['transaction']['conditions'][0]['condition'] = {
-            'details': json.loads(first_tx_condition.serialize_json()),
+            'details': first_tx_condition.to_dict(),
             'uri': first_tx_condition.condition.serialize_uri()
         }
         # conditions have been updated, so hash needs updating
@@ -1779,7 +1785,7 @@ class TestCryptoconditions(object):
         assert b.is_valid_transaction(next_tx) == next_tx
 
     @pytest.mark.usefixtures('inputs')
-    def test_override_condition_and_fulfillment_transfer_threshold_from_json(self, b, user_vk, user_sk):
+    def test_override_condition_and_fulfillment_transfer_threshold_from_dict(self, b, user_vk, user_sk):
         other1_sk, other1_vk = crypto.generate_key_pair()
         other2_sk, other2_vk = crypto.generate_key_pair()
         other3_sk, other3_vk = crypto.generate_key_pair()
@@ -1793,7 +1799,7 @@ class TestCryptoconditions(object):
         first_tx_condition.add_subfulfillment(cc.Ed25519Fulfillment(public_key=other3_vk))
 
         first_tx['transaction']['conditions'][0]['condition'] = {
-            'details': json.loads(first_tx_condition.serialize_json()),
+            'details': first_tx_condition.to_dict(),
             'uri': first_tx_condition.condition.serialize_uri()
         }
         # conditions have been updated, so hash needs updating
@@ -1818,7 +1824,7 @@ class TestCryptoconditions(object):
         next_tx_fulfillment_message = util.get_fulfillment_message(next_tx, next_tx_fulfillment, serialized=True)
 
         # parse the threshold cryptocondition
-        next_tx_fulfillment = cc.Fulfillment.from_json(first_tx['transaction']['conditions'][0]['condition']['details'])
+        next_tx_fulfillment = cc.Fulfillment.from_dict(first_tx['transaction']['conditions'][0]['condition']['details'])
 
         subfulfillment1 = next_tx_fulfillment.get_subcondition_from_vk(other1_vk)[0]
         subfulfillment2 = next_tx_fulfillment.get_subcondition_from_vk(other2_vk)[0]
@@ -1849,7 +1855,7 @@ class TestCryptoconditions(object):
         first_tx_condition.add_subfulfillment(cc.Ed25519Fulfillment(public_key=other2_vk))
 
         first_tx['transaction']['conditions'][0]['condition'] = {
-            'details': json.loads(first_tx_condition.serialize_json()),
+            'details': first_tx_condition.to_dict(),
             'uri': first_tx_condition.condition.serialize_uri()
         }
         # conditions have been updated, so hash needs updating
@@ -1901,7 +1907,7 @@ class TestCryptoconditions(object):
         expected_condition.add_subfulfillment(cc.Ed25519Fulfillment(public_key=user_vk))
         expected_condition.add_subfulfillment(cc.Ed25519Fulfillment(public_key=user2_vk))
         tx_expected_condition = {
-            'details': json.loads(expected_condition.serialize_json()),
+            'details': expected_condition.to_dict(),
             'uri': expected_condition.condition.serialize_uri()
         }
 
@@ -1923,7 +1929,7 @@ class TestCryptoconditions(object):
         tx_transfer_signed = b.sign_transaction(tx_transfer, [user_sk, user2_sk])
 
         # expected fulfillment
-        expected_fulfillment = cc.Fulfillment.from_json(
+        expected_fulfillment = cc.Fulfillment.from_dict(
             tx_create['transaction']['conditions'][0]['condition']['details'])
         subfulfillment1 = expected_fulfillment.subconditions[0]['body']
         subfulfillment2 = expected_fulfillment.subconditions[1]['body']
@@ -1947,7 +1953,7 @@ class TestCryptoconditions(object):
 
         hashlock_tx['transaction']['conditions'].append({
             'condition': {
-                'details': json.loads(first_tx_condition.serialize_json()),
+                'details': first_tx_condition.to_dict(),
                 'uri': first_tx_condition.condition.serialize_uri()
             },
             'cid': 0,
@@ -1969,6 +1975,7 @@ class TestCryptoconditions(object):
 
     @pytest.mark.usefixtures('inputs')
     def test_transfer_asset_with_hashlock_condition(self, b, user_vk, user_sk):
+        owned_count = len(b.get_owned_ids(user_vk))
         first_input_tx = b.get_owned_ids(user_vk).pop()
 
         hashlock_tx = b.create_transaction(user_vk, None, first_input_tx, 'TRANSFER')
@@ -1978,7 +1985,7 @@ class TestCryptoconditions(object):
 
         hashlock_tx['transaction']['conditions'].append({
             'condition': {
-                'details': json.loads(first_tx_condition.serialize_json()),
+                'details': first_tx_condition.to_dict(),
                 'uri': first_tx_condition.condition.serialize_uri()
             },
             'cid': 0,
@@ -1991,7 +1998,7 @@ class TestCryptoconditions(object):
 
         assert b.validate_transaction(hashlock_tx_signed) == hashlock_tx_signed
         assert b.is_valid_transaction(hashlock_tx_signed) == hashlock_tx_signed
-        assert len(b.get_owned_ids(user_vk)) == 1
+        assert len(b.get_owned_ids(user_vk)) == owned_count
 
         b.write_transaction(hashlock_tx_signed)
 
@@ -1999,7 +2006,7 @@ class TestCryptoconditions(object):
         block = b.create_block([hashlock_tx_signed])
         b.write_block(block, durability='hard')
 
-        assert len(b.get_owned_ids(user_vk)) == 0
+        assert len(b.get_owned_ids(user_vk)) == owned_count - 1
 
     def test_create_and_fulfill_asset_with_hashlock_condition(self, b, user_vk):
         hashlock_tx = b.create_transaction(b.me, None, None, 'CREATE')
@@ -2009,7 +2016,7 @@ class TestCryptoconditions(object):
 
         hashlock_tx['transaction']['conditions'].append({
             'condition': {
-                'details': json.loads(first_tx_condition.serialize_json()),
+                'details': first_tx_condition.to_dict(),
                 'uri': first_tx_condition.condition.serialize_uri()
             },
             'cid': 0,
@@ -2079,7 +2086,7 @@ class TestCryptoconditions(object):
 
         # create a transaction with multiple new_owners
         tx = b.create_transaction(b.me, new_owners, None, 'CREATE')
-        condition = cc.Fulfillment.from_json(tx['transaction']['conditions'][0]['condition']['details'])
+        condition = cc.Fulfillment.from_dict(tx['transaction']['conditions'][0]['condition']['details'])
 
         for new_owner in new_owners:
             subcondition = condition.get_subcondition_from_vk(new_owner)[0]
@@ -2097,6 +2104,8 @@ class TestCryptoconditions(object):
 
         condition_escrow = cc.ThresholdSha256Fulfillment(threshold=1)
         fulfillment_timeout = cc.TimeoutFulfillment(expire_time=str(float(util.timestamp()) + time_sleep))
+        fulfillment_timeout_inverted = cc.InvertedThresholdSha256Fulfillment(threshold=1)
+        fulfillment_timeout_inverted.add_subfulfillment(fulfillment_timeout)  # invert the timeout condition
         condition_user = cc.Ed25519Fulfillment(public_key=user_vk)
         condition_user2 = cc.Ed25519Fulfillment(public_key=user2_vk)
 
@@ -2108,14 +2117,14 @@ class TestCryptoconditions(object):
         # do not fulfill abort branch
         fulfillment_and_abort = cc.ThresholdSha256Fulfillment(threshold=2)
         fulfillment_and_abort.add_subfulfillment(condition_user)
-        fulfillment_and_abort.add_subfulfillment(fulfillment_timeout, weight=-1)
+        fulfillment_and_abort.add_subfulfillment(fulfillment_timeout_inverted)
 
         condition_escrow.add_subfulfillment(fulfillment_and_execute)
         condition_escrow.add_subfulfillment(fulfillment_and_abort)
 
         # Update the condition in the newly created transaction
         escrow_tx['transaction']['conditions'][0]['condition'] = {
-            'details': json.loads(condition_escrow.serialize_json()),
+            'details': condition_escrow.to_dict(),
             'uri': condition_escrow.condition.serialize_uri()
         }
 
@@ -2141,7 +2150,7 @@ class TestCryptoconditions(object):
         escrow_tx_transfer = b.create_transaction([user_vk, user2_vk], user2_vk, tx_retrieved_id, 'TRANSFER')
 
         # Parse the threshold cryptocondition
-        escrow_fulfillment = cc.Fulfillment.from_json(
+        escrow_fulfillment = cc.Fulfillment.from_dict(
             escrow_tx['transaction']['conditions'][0]['condition']['details'])
 
         subfulfillment_user = escrow_fulfillment.get_subcondition_from_vk(user_vk)[0]
@@ -2162,7 +2171,7 @@ class TestCryptoconditions(object):
         # do not fulfill abort branch
         fulfillment_and_abort = cc.ThresholdSha256Fulfillment(threshold=2)
         fulfillment_and_abort.add_subfulfillment(subfulfillment_user)
-        fulfillment_and_abort.add_subfulfillment(fulfillment_timeout, weight=-1)
+        fulfillment_and_abort.add_subfulfillment(fulfillment_timeout_inverted)
         escrow_fulfillment.add_subcondition(fulfillment_and_abort.condition)
 
         escrow_tx_transfer['transaction']['fulfillments'][0]['fulfillment'] = escrow_fulfillment.serialize_uri()
@@ -2171,7 +2180,7 @@ class TestCryptoconditions(object):
         assert b.is_valid_transaction(escrow_tx_transfer) == escrow_tx_transfer
         assert b.validate_transaction(escrow_tx_transfer) == escrow_tx_transfer
 
-        time.sleep(time_sleep)
+        time.sleep(time_sleep + 1)
 
         assert b.is_valid_transaction(escrow_tx_transfer) is False
         with pytest.raises(exceptions.InvalidSignature):
@@ -2182,7 +2191,7 @@ class TestCryptoconditions(object):
         escrow_tx_abort = b.create_transaction([user_vk, user2_vk], user_vk, tx_retrieved_id, 'TRANSFER')
 
         # Parse the threshold cryptocondition
-        escrow_fulfillment = cc.Fulfillment.from_json(
+        escrow_fulfillment = cc.Fulfillment.from_dict(
             escrow_tx['transaction']['conditions'][0]['condition']['details'])
 
         subfulfillment_user = escrow_fulfillment.get_subcondition_from_vk(user_vk)[0]
@@ -2203,7 +2212,7 @@ class TestCryptoconditions(object):
         fulfillment_and_abort = cc.ThresholdSha256Fulfillment(threshold=2)
         subfulfillment_user.sign(escrow_tx_fulfillment_message, crypto.SigningKey(user_sk))
         fulfillment_and_abort.add_subfulfillment(subfulfillment_user)
-        fulfillment_and_abort.add_subfulfillment(fulfillment_timeout, weight=-1)
+        fulfillment_and_abort.add_subfulfillment(fulfillment_timeout_inverted)
         escrow_fulfillment.add_subfulfillment(fulfillment_and_abort)
 
         escrow_tx_abort['transaction']['fulfillments'][0]['fulfillment'] = escrow_fulfillment.serialize_uri()
@@ -2224,6 +2233,8 @@ class TestCryptoconditions(object):
 
         condition_escrow = cc.ThresholdSha256Fulfillment(threshold=1)
         fulfillment_timeout = cc.TimeoutFulfillment(expire_time=str(float(util.timestamp()) + time_sleep))
+        fulfillment_timeout_inverted = cc.InvertedThresholdSha256Fulfillment(threshold=1)
+        fulfillment_timeout_inverted.add_subfulfillment(fulfillment_timeout)  # invert the timeout condition
         condition_user = cc.Ed25519Fulfillment(public_key=user_vk)
         condition_user2 = cc.Ed25519Fulfillment(public_key=user2_vk)
 
@@ -2235,14 +2246,14 @@ class TestCryptoconditions(object):
         # do not fulfill abort branch
         fulfillment_and_abort = cc.ThresholdSha256Fulfillment(threshold=2)
         fulfillment_and_abort.add_subfulfillment(condition_user)
-        fulfillment_and_abort.add_subfulfillment(fulfillment_timeout, weight=-1)
+        fulfillment_and_abort.add_subfulfillment(fulfillment_timeout_inverted)
 
         condition_escrow.add_subfulfillment(fulfillment_and_execute)
         condition_escrow.add_subfulfillment(fulfillment_and_abort)
 
         # Update the condition in the newly created transaction
         escrow_tx['transaction']['conditions'][0]['condition'] = {
-            'details': json.loads(condition_escrow.serialize_json()),
+            'details': condition_escrow.to_dict(),
             'uri': condition_escrow.condition.serialize_uri()
         }
 
@@ -2268,7 +2279,7 @@ class TestCryptoconditions(object):
         escrow_tx_transfer = b.create_transaction([user_vk, user2_vk], user2_vk, tx_retrieved_id, 'TRANSFER')
 
         # Parse the threshold cryptocondition
-        escrow_fulfillment = cc.Fulfillment.from_json(
+        escrow_fulfillment = cc.Fulfillment.from_dict(
             escrow_tx['transaction']['conditions'][0]['condition']['details'])
 
         subfulfillment_user = escrow_fulfillment.get_subcondition_from_vk(user_vk)[0]
@@ -2289,7 +2300,7 @@ class TestCryptoconditions(object):
         # do not fulfill abort branch
         fulfillment_and_abort = cc.ThresholdSha256Fulfillment(threshold=2)
         fulfillment_and_abort.add_subfulfillment(subfulfillment_user)
-        fulfillment_and_abort.add_subfulfillment(fulfillment_timeout, weight=-1)
+        fulfillment_and_abort.add_subfulfillment(fulfillment_timeout_inverted)
         escrow_fulfillment.add_subcondition(fulfillment_and_abort.condition)
 
         escrow_tx_transfer['transaction']['fulfillments'][0]['fulfillment'] = escrow_fulfillment.serialize_uri()
@@ -2304,7 +2315,7 @@ class TestCryptoconditions(object):
         block = b.create_block([escrow_tx_transfer])
         b.write_block(block, durability='hard')
 
-        time.sleep(time_sleep)
+        time.sleep(time_sleep + 1)
 
         assert b.is_valid_transaction(escrow_tx_transfer) is False
         with pytest.raises(exceptions.InvalidSignature):
@@ -2315,7 +2326,7 @@ class TestCryptoconditions(object):
         escrow_tx_abort = b.create_transaction([user_vk, user2_vk], user_vk, tx_retrieved_id, 'TRANSFER')
 
         # Parse the threshold cryptocondition
-        escrow_fulfillment = cc.Fulfillment.from_json(
+        escrow_fulfillment = cc.Fulfillment.from_dict(
             escrow_tx['transaction']['conditions'][0]['condition']['details'])
 
         subfulfillment_user = escrow_fulfillment.get_subcondition_from_vk(user_vk)[0]
@@ -2336,7 +2347,7 @@ class TestCryptoconditions(object):
         fulfillment_and_abort = cc.ThresholdSha256Fulfillment(threshold=2)
         subfulfillment_user.sign(escrow_tx_fulfillment_message, crypto.SigningKey(user_sk))
         fulfillment_and_abort.add_subfulfillment(subfulfillment_user)
-        fulfillment_and_abort.add_subfulfillment(fulfillment_timeout, weight=-1)
+        fulfillment_and_abort.add_subfulfillment(fulfillment_timeout_inverted)
         escrow_fulfillment.add_subfulfillment(fulfillment_and_abort)
 
         escrow_tx_abort['transaction']['fulfillments'][0]['fulfillment'] = escrow_fulfillment.serialize_uri()

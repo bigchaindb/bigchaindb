@@ -2,13 +2,13 @@
 
 This section gives an example of using the Python Server API to interact _directly_ with a BigchainDB node running BigchainDB Server. That is, in this example, the Python code and BigchainDB Server run on the same machine.
 
-(One can also interact with a BigchainDB node via other APIs, including the HTTP Client-Server API.) 
+(One can also interact with a BigchainDB node via other APIs, including the HTTP Client-Server API.)
 
 We create a digital asset, sign it, write it to a BigchainDB Server instance, read it, transfer it to a different user, and then attempt to transfer it to another user, resulting in a double-spend error.
 
 ## Getting Started
 
-First, make sure you have RethinkDB and BigchainDB _installed and running_, i.e. you [installed them](installing-server.html) and you ran:
+First, make sure you have RethinkDB and BigchainDB _installed and running_, i.e. you [installed them](setup-run-node.html) and you ran:
 ```text
 $ rethinkdb
 $ bigchaindb configure
@@ -30,9 +30,7 @@ This instantiates an object `b` of class `Bigchain`. When instantiating a `Bigch
 
 In a federation of BigchainDB nodes, each node has its own `Bigchain` instance.
 
-The `Bigchain` class is the main API for all BigchainDB interactions, right now. It does things that BigchainDB nodes do, but it also does things that BigchainDB clients do. In the future, it will be broken apart into a node/server class and a client class.
-
-The `Bigchain` class is documented in the [Developer Interface](developer-interface.html) section.
+The `Bigchain` class is the main API for all BigchainDB interactions, right now. It does things that BigchainDB nodes do, but it also does things that BigchainDB clients do. In the future, it will be refactored into different parts. The `Bigchain` class is documented [elsewhere (link)](../appendices/the-Bigchain-class.html).
 
 ## Create a Digital Asset
 
@@ -130,7 +128,7 @@ The locking script is refered to as a `condition` and a corresponding `fulfillme
 Since a transaction can have multiple outputs with each its own (crypto)condition, each transaction input should also refer to the condition index `cid`.
 
 <p align="center">
-  <img width="70%" height="70%" src ="./_static/tx_single_condition_single_fulfillment_v1.png" />
+  <img width="70%" height="70%" src ="../_static/tx_single_condition_single_fulfillment_v1.png" />
 </p>
 
 
@@ -382,7 +380,7 @@ With BigchainDB it is possible to send multiple assets to someone in a single tr
 The transaction will create a `fulfillment` - `condition` pair for each input, which can be refered to by `fid` and `cid` respectively.
 
 <p align="center">
-  <img width="70%" height="70%" src ="./_static/tx_multi_condition_multi_fulfillment_v1.png" />
+  <img width="70%" height="70%" src ="../_static/tx_multi_condition_multi_fulfillment_v1.png" />
 </p>
 
 ```python
@@ -537,7 +535,6 @@ We'll illustrate this by a threshold condition where 2 out of 3 `new_owners` nee
 
 ```python
 import copy
-import json
 
 import cryptoconditions as cc
 from bigchaindb import util, crypto
@@ -561,7 +558,7 @@ threshold_condition.add_subfulfillment(cc.Ed25519Fulfillment(public_key=threshol
 
 # Update the condition in the newly created transaction
 threshold_tx['transaction']['conditions'][0]['condition'] = {
-    'details': json.loads(threshold_condition.serialize_json()),
+    'details': threshold_condition.to_dict(),
     'uri': threshold_condition.condition.serialize_uri()
 }
 
@@ -669,7 +666,7 @@ tx_retrieved_id = b.get_owned_ids(thresholduser1_pub).pop()
 threshold_tx_transfer = b.create_transaction([thresholduser1_pub, thresholduser2_pub, thresholduser3_pub], thresholduser4_pub, tx_retrieved_id, 'TRANSFER')
 
 # Parse the threshold cryptocondition
-threshold_fulfillment = cc.Fulfillment.from_json(threshold_tx['transaction']['conditions'][0]['condition']['details'])
+threshold_fulfillment = cc.Fulfillment.from_dict(threshold_tx['transaction']['conditions'][0]['condition']['details'])
 
 subfulfillment1 = threshold_fulfillment.get_subcondition_from_vk(thresholduser1_pub)[0]
 subfulfillment2 = threshold_fulfillment.get_subcondition_from_vk(thresholduser2_pub)[0]
@@ -913,7 +910,7 @@ condition_timeout = cc.TimeoutFulfillment(expire_time=time_expire)
 # The conditions list is empty, so we need to append a new condition
 tx_timeout['transaction']['conditions'].append({
     'condition': {
-        'details': json.loads(condition_timeout.serialize_json()),
+        'details': condition_timeout.to_dict(),
         'uri': condition_timeout.condition.serialize_uri()
     },
     'cid': 0,
@@ -979,7 +976,7 @@ from time import sleep
 tx_timeout_transfer = b.create_transaction(None, testuser1_pub, {'txid': tx_timeout['id'], 'cid': 0}, 'TRANSFER')
 
 # Parse the timeout condition and create the corresponding fulfillment
-timeout_fulfillment = cc.Fulfillment.from_json(
+timeout_fulfillment = cc.Fulfillment.from_dict(
     tx_timeout['transaction']['conditions'][0]['condition']['details'])
 tx_timeout_transfer['transaction']['fulfillments'][0]['fulfillment'] = timeout_fulfillment.serialize_uri()
 
@@ -1017,7 +1014,7 @@ BigchainDB and cryptoconditions provides escrow out-of-the-box, without the need
 A threshold condition is used to represent the escrow, since BigchainDB transactions cannot have a _pending_ state.
 
 <p align="center">
-  <img width="70%" height="70%" src ="./_static/tx_escrow_execute_abort.png" />
+  <img width="70%" height="70%" src ="../_static/tx_escrow_execute_abort.png" />
 </p>
 
 The logic for switching between `execute` and `abort` conditions is conceptually simple:
@@ -1034,18 +1031,17 @@ else:
 The above switch can be implemented as follows using threshold cryptoconditions:
 
 <p align="center">
-  <img width="100%" height="100%" src ="./_static/cc_escrow_execute_abort.png" />
+  <img width="100%" height="100%" src ="../_static/cc_escrow_execute_abort.png" />
 </p>
 
-The small circle (&#9898;) at an input of a threshold condition denotes an inversion of the fulfillment:
+The inverted timeout is denoted by a -1 threshold, which negates the output of the fulfillment.
 
 ```python
 inverted_fulfillment.validate(msg) == not fulfillment.validate(msg)
 ```
 
-An inverted input to a threshold condition is simply obtained by negative weights.
-
-__Note__: negative weights are BigchainDB-specific and not (yet) supported by the ILP standard.
+__Note__: inverted thresholds are BigchainDB-specific and not supported by the ILP standard.
+The main reason is that it's difficult to tell whether the fulfillment was negated, or just omitted.
 
 
 The following code snippet shows how to create an escrow condition:
@@ -1057,13 +1053,15 @@ tx_retrieved_id = b.get_owned_ids(testuser2_pub).pop()
 # Create a base template with the execute and abort address
 tx_escrow = b.create_transaction(testuser2_pub, [testuser2_pub, testuser1_pub], tx_retrieved_id, 'TRANSFER')
 
-# Set expiry time - the execute address needs to fulfill before expiration 
+# Set expiry time - the execute address needs to fulfill before expiration
 time_sleep = 12
 time_expire = str(float(util.timestamp()) + time_sleep)  # 12 secs from now
 
 # Create the escrow and timeout condition
 condition_escrow = cc.ThresholdSha256Fulfillment(threshold=1)  # OR Gate
 condition_timeout = cc.TimeoutFulfillment(expire_time=time_expire)  # only valid if now() <= time_expire
+condition_timeout_inverted = cc.InvertedThresholdSha256Fulfillment(threshold=1)
+condition_timeout_inverted.add_subfulfillment(condition_timeout)  # invert the timeout condition
 
 # Create the execute branch
 condition_execute = cc.ThresholdSha256Fulfillment(threshold=2)  # AND gate
@@ -1074,12 +1072,12 @@ condition_escrow.add_subfulfillment(condition_execute)
 # Create the abort branch
 condition_abort = cc.ThresholdSha256Fulfillment(threshold=2)  # AND gate
 condition_abort.add_subfulfillment(cc.Ed25519Fulfillment(public_key=testuser2_pub))  # abort address
-condition_abort.add_subfulfillment(condition_timeout, weight=-1)  # the negative weight inverts the condition
+condition_abort.add_subfulfillment(condition_timeout_inverted)
 condition_escrow.add_subfulfillment(condition_abort)
 
 # Update the condition in the newly created transaction
 tx_escrow['transaction']['conditions'][0]['condition'] = {
-    'details': json.loads(condition_escrow.serialize_json()),
+    'details': condition_escrow.to_dict(),
     'uri': condition_escrow.condition.serialize_uri()
 }
 
@@ -1144,10 +1142,19 @@ tx_escrow_signed
                                     },
                                     {
                                         "bitmask":9,
-                                        "expire_time":"1464242352.227917",
+                                        "subfulfillments":[
+                                            {
+                                                "bitmask":9,
+                                                "expire_time":"1464242352.227917",
+                                                "type":"fulfillment",
+                                                "type_id":99,
+                                                "weight":1
+                                            }
+                                        ],
+                                        "threshold":1,
                                         "type":"fulfillment",
-                                        "type_id":99,
-                                        "weight":-1
+                                        "type_id":98,
+                                        "weight":1
                                     }
                                 ],
                                 "threshold":2,
@@ -1201,12 +1208,13 @@ In the case of `testuser1`, we create the `execute` fulfillment:
 tx_escrow_execute = b.create_transaction([testuser2_pub, testuser1_pub], testuser1_pub, {'txid': tx_escrow_signed['id'], 'cid': 0}, 'TRANSFER')
 
 # Parse the Escrow cryptocondition
-escrow_fulfillment = cc.Fulfillment.from_json(
+escrow_fulfillment = cc.Fulfillment.from_dict(
     tx_escrow['transaction']['conditions'][0]['condition']['details'])
 
 subfulfillment_testuser1 = escrow_fulfillment.get_subcondition_from_vk(testuser1_pub)[0]
 subfulfillment_testuser2 = escrow_fulfillment.get_subcondition_from_vk(testuser2_pub)[0]
 subfulfillment_timeout = escrow_fulfillment.subconditions[0]['body'].subconditions[1]['body']
+subfulfillment_timeout_inverted = escrow_fulfillment.subconditions[1]['body'].subconditions[1]['body']
 
 # Get the fulfillment message to sign
 tx_escrow_execute_fulfillment_message = \
@@ -1227,7 +1235,7 @@ escrow_fulfillment.add_subfulfillment(fulfillment_execute)
 # Do not fulfill the abort branch
 condition_abort = cc.ThresholdSha256Fulfillment(threshold=2)
 condition_abort.add_subfulfillment(subfulfillment_testuser2)
-condition_abort.add_subfulfillment(subfulfillment_timeout, weight=-1)
+condition_abort.add_subfulfillment(subfulfillment_timeout_inverted)
 escrow_fulfillment.add_subcondition(condition_abort.condition)  # Adding only the condition here
 
 # Update the execute transaction with the fulfillment
@@ -1241,12 +1249,13 @@ In the case of `testuser2`, we create the `abort` fulfillment:
 tx_escrow_abort = b.create_transaction([testuser2_pub, testuser1_pub], testuser2_pub, {'txid': tx_escrow_signed['id'], 'cid': 0}, 'TRANSFER')
 
 # Parse the threshold cryptocondition
-escrow_fulfillment = cc.Fulfillment.from_json(
+escrow_fulfillment = cc.Fulfillment.from_dict(
     tx_escrow['transaction']['conditions'][0]['condition']['details'])
 
 subfulfillment_testuser1 = escrow_fulfillment.get_subcondition_from_vk(testuser1_pub)[0]
 subfulfillment_testuser2 = escrow_fulfillment.get_subcondition_from_vk(testuser2_pub)[0]
 subfulfillment_timeout = escrow_fulfillment.subconditions[0]['body'].subconditions[1]['body']
+subfulfillment_timeout_inverted = escrow_fulfillment.subconditions[1]['body'].subconditions[1]['body']
 
 # Get the fulfillment message to sign
 tx_escrow_abort_fulfillment_message = \
@@ -1267,7 +1276,7 @@ escrow_fulfillment.add_subcondition(condition_execute.condition) # Adding only t
 fulfillment_abort = cc.ThresholdSha256Fulfillment(threshold=2)
 subfulfillment_testuser2.sign(tx_escrow_abort_fulfillment_message, crypto.SigningKey(testuser2_priv))
 fulfillment_abort.add_subfulfillment(subfulfillment_testuser2)
-fulfillment_abort.add_subfulfillment(subfulfillment_timeout, weight=-1)
+fulfillment_abort.add_subfulfillment(subfulfillment_timeout_inverted)
 escrow_fulfillment.add_subfulfillment(fulfillment_abort)
 
 # Update the abort transaction with the fulfillment

@@ -9,6 +9,20 @@ from bigchaindb.voter import Voter, Election, BlockStream
 from bigchaindb import crypto, Bigchain
 
 
+# Some util functions
+def dummy_tx():
+    b = Bigchain()
+    tx = b.create_transaction(b.me, b.me, None, 'CREATE')
+    tx_signed = b.sign_transaction(tx, b.me_private)
+    return tx_signed
+
+
+def dummy_block():
+    b = Bigchain()
+    block = b.create_block([dummy_tx()])
+    return block
+
+
 class TestBigchainVoter(object):
 
     def test_valid_block_voting(self, b):
@@ -17,7 +31,9 @@ class TestBigchainVoter(object):
         genesis = b.create_genesis_block()
 
         # create valid block
-        block = b.create_block([])
+        # sleep so that `block` as a higher timestamp then genesis
+        time.sleep(1)
+        block = dummy_block()
         # assert block is valid
         assert b.is_valid_block(block)
         b.write_block(block, durability='hard')
@@ -36,9 +52,12 @@ class TestBigchainVoter(object):
                        .order_by(r.asc((r.row['block']['timestamp'])))
                        .run(b.conn))
 
+        # retrieve vote
+        vote = r.table('votes').get_all([block['id'], b.me], index='block_and_voter').run(b.conn)
+        vote = vote.next()
+
         # validate vote
-        assert len(blocks[1]['votes']) == 1
-        vote = blocks[1]['votes'][0]
+        assert vote is not None
 
         assert vote['vote']['voting_for_block'] == block['id']
         assert vote['vote']['previous_block'] == genesis['id']
@@ -59,6 +78,8 @@ class TestBigchainVoter(object):
         assert b.is_valid_transaction(tx_signed)
 
         # create valid block
+        # sleep so that block as a higher timestamp then genesis
+        time.sleep(1)
         block = b.create_block([tx_signed])
         # assert block is valid
         assert b.is_valid_block(block)
@@ -77,10 +98,12 @@ class TestBigchainVoter(object):
         blocks = list(r.table('bigchain')
                        .order_by(r.asc((r.row['block']['timestamp'])))
                        .run(b.conn))
+        # retrieve vote
+        vote = r.table('votes').get_all([block['id'], b.me], index='block_and_voter').run(b.conn)
+        vote = vote.next()
 
         # validate vote
-        assert len(blocks[1]['votes']) == 1
-        vote = blocks[1]['votes'][0]
+        assert vote is not None
 
         assert vote['vote']['voting_for_block'] == block['id']
         assert vote['vote']['previous_block'] == genesis['id']
@@ -120,8 +143,12 @@ class TestBigchainVoter(object):
                        .order_by(r.asc((r.row['block']['timestamp'])))
                        .run(b.conn))
 
+        # retrieve vote
+        vote = r.table('votes').get_all([block['id'], b.me], index='block_and_voter').run(b.conn)
+        vote = vote.next()
+
         # validate vote
-        assert len(blocks[1]['votes']) == 1
+        assert vote is not None
 
         # create a `TRANSFER` transaction
         test_user2_priv, test_user2_pub = crypto.generate_key_pair()
@@ -149,10 +176,12 @@ class TestBigchainVoter(object):
                        .order_by(r.asc((r.row['block']['timestamp'])))
                        .run(b.conn))
 
-        # validate vote
-        assert len(blocks[2]['votes']) == 1
+        # retrieve vote
+        vote = r.table('votes').get_all([blocks[2]['id'], b.me], index='block_and_voter').run(b.conn)
+        vote = vote.next()
 
-        vote = blocks[2]['votes'][0]
+        # validate vote
+        assert vote is not None
 
         assert vote['vote']['voting_for_block'] == block['id']
         assert vote['vote']['is_block_valid'] is True
@@ -172,6 +201,8 @@ class TestBigchainVoter(object):
         genesis = b.create_genesis_block()
 
         # create invalid block
+        # sleep so that `block` as a higher timestamp then `genesis`
+        time.sleep(1)
         block = b.create_block([transaction_signed])
         # change transaction id to make it invalid
         block['block']['transactions'][0]['id'] = 'abc'
@@ -188,9 +219,12 @@ class TestBigchainVoter(object):
                        .order_by(r.asc((r.row['block']['timestamp'])))
                        .run(b.conn))
 
+        # retrieve vote
+        vote = r.table('votes').get_all([block['id'], b.me], index='block_and_voter').run(b.conn)
+        vote = vote.next()
+
         # validate vote
-        assert len(blocks[1]['votes']) == 1
-        vote = blocks[1]['votes'][0]
+        assert vote is not None
 
         assert vote['vote']['voting_for_block'] == block['id']
         assert vote['vote']['previous_block'] == genesis['id']
@@ -201,7 +235,7 @@ class TestBigchainVoter(object):
 
     def test_vote_creation_valid(self, b):
         # create valid block
-        block = b.create_block([])
+        block = dummy_block()
         # retrieve vote
         vote = b.vote(block, 'abc', True)
 
@@ -215,7 +249,7 @@ class TestBigchainVoter(object):
 
     def test_vote_creation_invalid(self, b):
         # create valid block
-        block = b.create_block([])
+        block = dummy_block()
         # retrieve vote
         vote = b.vote(block, 'abc', False)
 
@@ -233,24 +267,23 @@ class TestBigchainVoter(object):
 
         # insert blocks in the database while the voter process is not listening
         # (these blocks won't appear in the changefeed)
-        block_1 = b.create_block([])
+        block_1 = dummy_block()
         b.write_block(block_1, durability='hard')
-        block_2 = b.create_block([])
+        block_2 = dummy_block()
         b.write_block(block_2, durability='hard')
 
         # voter is back online, we simulate that by creating a queue and a Voter instance
         q_new_block = mp.Queue()
         voter = Voter(q_new_block)
 
-        # create a new block that will appear in the changefeed
-        block_3 = b.create_block([])
-        b.write_block(block_3, durability='hard')
-
-        # put the last block in the queue
-        q_new_block.put(block_3)
-
         # vote
         voter.start()
+        time.sleep(1)
+
+        # create a new block that will appear in the changefeed
+        block_3 = dummy_block()
+        b.write_block(block_3, durability='hard')
+
         time.sleep(1)
         voter.kill()
 
@@ -262,13 +295,20 @@ class TestBigchainVoter(object):
         # FIXME: remove genesis block, we don't vote on it (might change in the future)
         blocks.pop(0)
 
-        assert all(block['votes'][0]['node_pubkey'] == b.me for block in blocks)
+        # retrieve vote
+        votes = r.table('votes').run(b.conn)
+        votes = list(votes)
+
+        assert all(vote['node_pubkey'] == b.me for vote in votes)
 
     def test_voter_chains_blocks_with_the_previous_ones(self, b):
         b.create_genesis_block()
-        block_1 = b.create_block([])
+        # sleep so that `block_*` as a higher timestamp then `genesis`
+        time.sleep(1)
+        block_1 = dummy_block()
         b.write_block(block_1, durability='hard')
-        block_2 = b.create_block([])
+        time.sleep(1)
+        block_2 = dummy_block()
         b.write_block(block_2, durability='hard')
 
         q_new_block = mp.Queue()
@@ -283,18 +323,15 @@ class TestBigchainVoter(object):
                        .order_by(r.asc((r.row['block']['timestamp'])))
                        .run(b.conn))
 
-        assert blocks[0]['block_number'] == 0
-        assert blocks[1]['block_number'] == 1
-        assert blocks[2]['block_number'] == 2
+        # retrieve votes
+        votes = list(r.table('votes').run(b.conn))
 
-        # we don't vote on the genesis block right now
-        # assert blocks[0]['votes'][0]['vote']['voting_for_block'] == genesis['id']
-        assert blocks[1]['votes'][0]['vote']['voting_for_block'] == block_1['id']
-        assert blocks[2]['votes'][0]['vote']['voting_for_block'] == block_2['id']
+        assert votes[0]['vote']['voting_for_block'] in (blocks[1]['id'], blocks[2]['id'])
+        assert votes[1]['vote']['voting_for_block'] in (blocks[1]['id'], blocks[2]['id'])
 
     def test_voter_checks_for_previous_vote(self, b):
         b.create_genesis_block()
-        block_1 = b.create_block([])
+        block_1 = dummy_block()
         b.write_block(block_1, durability='hard')
 
         q_new_block = mp.Queue()
@@ -302,8 +339,6 @@ class TestBigchainVoter(object):
         voter = Voter(q_new_block)
         voter.start()
 
-        # queue block for voting
-        q_new_block.put(block_1)
         time.sleep(1)
         retrieved_block = r.table('bigchain').get(block_1['id']).run(b.conn)
 
@@ -326,7 +361,7 @@ class TestBlockElection(object):
 
     def test_quorum(self, b):
         # create a new block
-        test_block = b.create_block([])
+        test_block = dummy_block()
 
         # simulate a federation with four voters
         key_pairs = [crypto.generate_key_pair() for _ in range(4)]
@@ -351,49 +386,58 @@ class TestBlockElection(object):
          for vote in improperly_signed_valid_vote]
 
         # test unanimously valid block
-        test_block['votes'] = valid_vote
+        r.table('votes').insert(valid_vote, durability='hard').run(b.conn)
         assert b.block_election_status(test_block) == Bigchain.BLOCK_VALID
+        r.table('votes').delete().run(b.conn)
 
         # test partial quorum situations
-        test_block['votes'] = valid_vote[:2]
+        r.table('votes').insert(valid_vote[:2], durability='hard').run(b.conn)
         assert b.block_election_status(test_block) == Bigchain.BLOCK_UNDECIDED
+        r.table('votes').delete().run(b.conn)
         #
-        test_block['votes'] = valid_vote[:3]
+        r.table('votes').insert(valid_vote[:3], durability='hard').run(b.conn)
         assert b.block_election_status(test_block) == Bigchain.BLOCK_VALID
+        r.table('votes').delete().run(b.conn)
         #
-        test_block['votes'] = invalid_vote[:2]
+        r.table('votes').insert(invalid_vote[:2], durability='hard').run(b.conn)
         assert b.block_election_status(test_block) == Bigchain.BLOCK_INVALID
+        r.table('votes').delete().run(b.conn)
 
         # test unanimously valid block with one improperly signed vote -- should still succeed
-        test_block['votes'] = valid_vote[:3] + improperly_signed_valid_vote[:1]
+        r.table('votes').insert(valid_vote[:3] + improperly_signed_valid_vote[3:], durability='hard').run(b.conn)
         assert b.block_election_status(test_block) == Bigchain.BLOCK_VALID
+        r.table('votes').delete().run(b.conn)
 
         # test unanimously valid block with two improperly signed votes -- should fail
-        test_block['votes'] = valid_vote[:2] + improperly_signed_valid_vote[:2]
+        r.table('votes').insert(valid_vote[:2] + improperly_signed_valid_vote[2:], durability='hard').run(b.conn)
         assert b.block_election_status(test_block) == Bigchain.BLOCK_INVALID
+        r.table('votes').delete().run(b.conn)
 
         # test block with minority invalid vote
-        test_block['votes'] = invalid_vote[:1] + valid_vote[:3]
+        r.table('votes').insert(invalid_vote[:1] + valid_vote[1:], durability='hard').run(b.conn)
         assert b.block_election_status(test_block) == Bigchain.BLOCK_VALID
+        r.table('votes').delete().run(b.conn)
 
         # test split vote
-        test_block['votes'] = invalid_vote[:2] + valid_vote[:2]
+        r.table('votes').insert(invalid_vote[:2] + valid_vote[2:], durability='hard').run(b.conn)
         assert b.block_election_status(test_block) == Bigchain.BLOCK_INVALID
+        r.table('votes').delete().run(b.conn)
 
         # test undecided
-        test_block['votes'] = valid_vote[:2]
+        r.table('votes').insert(valid_vote[:2], durability='hard').run(b.conn)
         assert b.block_election_status(test_block) == Bigchain.BLOCK_UNDECIDED
+        r.table('votes').delete().run(b.conn)
 
         # change signatures in block, should fail
         test_block['block']['voters'][0] = 'abc'
         test_block['block']['voters'][1] = 'abc'
-        test_block['votes'] = valid_vote
+        r.table('votes').insert(valid_vote, durability='hard').run(b.conn)
         assert b.block_election_status(test_block) == Bigchain.BLOCK_INVALID
 
     def test_quorum_odd(self, b):
         # test partial quorum situations for odd numbers of voters
         # create a new block
-        test_block = b.create_block([])
+        test_block = dummy_block()
 
         # simulate a federation with four voters
         key_pairs = [crypto.generate_key_pair() for _ in range(5)]
@@ -411,17 +455,21 @@ class TestBlockElection(object):
         invalid_vote = [member.vote(test_block, 'abc', False)
                         for member in test_federation]
 
-        test_block['votes'] = valid_vote[:2]
+        r.table('votes').insert(valid_vote[:2], durability='hard').run(b.conn)
         assert b.block_election_status(test_block) == Bigchain.BLOCK_UNDECIDED
+        r.table('votes').delete().run(b.conn)
 
-        test_block['votes'] = invalid_vote[:2]
+        r.table('votes').insert(invalid_vote[:2], durability='hard').run(b.conn)
         assert b.block_election_status(test_block) == Bigchain.BLOCK_UNDECIDED
+        r.table('votes').delete().run(b.conn)
 
-        test_block['votes'] = valid_vote[:3]
+        r.table('votes').insert(valid_vote[:3], durability='hard').run(b.conn)
         assert b.block_election_status(test_block) == Bigchain.BLOCK_VALID
+        r.table('votes').delete().run(b.conn)
 
-        test_block['votes'] = invalid_vote[:3]
+        r.table('votes').insert(invalid_vote[:3], durability='hard').run(b.conn)
         assert b.block_election_status(test_block) == Bigchain.BLOCK_INVALID
+        r.table('votes').delete().run(b.conn)
 
     def test_tx_rewritten_after_invalid(self, b, user_vk):
         q_block_new_vote = mp.Queue()
@@ -450,11 +498,11 @@ class TestBlockElection(object):
                        [member.vote(test_block_2, 'abc', False) for member in test_federation[2:]]
 
         # construct valid block
-        test_block_1['votes'] = vote_1
+        r.table('votes').insert(vote_1, durability='hard').run(b.conn)
         q_block_new_vote.put(test_block_1)
 
         # construct invalid block
-        test_block_2['votes'] = vote_2
+        r.table('votes').insert(vote_2, durability='hard').run(b.conn)
         q_block_new_vote.put(test_block_2)
 
         election = Election(q_block_new_vote)
@@ -473,10 +521,10 @@ class TestBlockStream(object):
 
     def test_if_federation_size_is_greater_than_one_ignore_past_blocks(self, b):
         for _ in range(5):
-            b.federation_nodes.append(crypto.generate_key_pair()[1])
+            b.nodes_except_me.append(crypto.generate_key_pair()[1])
         new_blocks = mp.Queue()
         bs = BlockStream(new_blocks)
-        block_1 = b.create_block([])
+        block_1 = dummy_block()
         new_blocks.put(block_1)
         assert block_1 == bs.get()
 
@@ -485,8 +533,8 @@ class TestBlockStream(object):
         bs = BlockStream(new_blocks)
 
         # create two blocks
-        block_1 = b.create_block([])
-        block_2 = b.create_block([])
+        block_1 = dummy_block()
+        block_2 = dummy_block()
 
         # write the blocks
         b.write_block(block_1, durability='hard')
@@ -499,41 +547,6 @@ class TestBlockStream(object):
         # and check if we get exactly these two blocks
         assert bs.get() == block_1
         assert bs.get() == block_2
-
-    def test_if_old_blocks_get_should_return_old_block_first(self, b):
-        # create two blocks
-        block_1 = b.create_block([])
-        block_2 = b.create_block([])
-
-        # write the blocks
-        b.write_block(block_1, durability='hard')
-        b.write_block(block_2, durability='hard')
-
-        new_blocks = mp.Queue()
-        bs = BlockStream(new_blocks)
-
-        # assert len(list(bs.old_blocks)) == 2
-        # import pdb; pdb.set_trace()
-        # from pprint import pprint as pp
-        # pp(bs.old_blocks)
-        # pp(block_1)
-        # pp(block_2)
-
-        # create two new blocks that will appear in the changefeed
-        block_3 = b.create_block([])
-        block_4 = b.create_block([])
-
-        # simulate a changefeed
-        new_blocks.put(block_3)
-        new_blocks.put(block_4)
-
-        assert len(bs.unvoted_blocks) == 2
-
-        # and check if we get the old blocks first
-        assert bs.get() == block_1
-        assert bs.get() == block_2
-        assert bs.get() == block_3
-        assert bs.get() == block_4
 
     @pytest.mark.skipif(reason='We may have duplicated blocks when retrieving the BlockStream')
     def test_ignore_duplicated_blocks_when_retrieving_the_blockstream(self):

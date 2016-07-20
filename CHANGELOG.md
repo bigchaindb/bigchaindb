@@ -15,12 +15,66 @@ For reference, the possible headings are:
 * **Notes**
 
 
-## [Unreleased] - YYYY-MM-DD
-Tag name: 
+## [0.5.0] - YYYY-MM-DD
+Tag name: v0.5.0
 = commit: 
 committed: 
 
-(Add new stuff here from time to time until the next version release.)
+### Added
+- New `bigchaindb set-replicas` subcommand: [Pull Request #392](https://github.com/bigchaindb/bigchaindb/pull/392)
+- Informative JSON message when one makes a request to the root endpoint of the HTTP client-server API: [Pull Request #367](https://github.com/bigchaindb/bigchaindb/pull/367)
+- Return HTTP response code 404 when a transaction is not found: [Pull Request #369](https://github.com/bigchaindb/bigchaindb/pull/369)
+
+### Changed
+- Changed the order in which configuration settings get their values. If a setting is set by an environment variable, then that value will be _the_ value, regardless of whether another value is set in a local config file. Also added a method to programattically update the config settings. [Pull Request #395](https://github.com/bigchaindb/bigchaindb/pull/395)
+- Changed the definition of `util.sign_tx()`. It now has a third, optional argument: a Bigchain instance. [Pull Request #410](https://github.com/bigchaindb/bigchaindb/pull/410)
+
+### Notes
+- Several additions and changes to the documentation: Pull Requests
+[#388](https://github.com/bigchaindb/bigchaindb/pull/388),
+[#393](https://github.com/bigchaindb/bigchaindb/pull/393),
+[#397](https://github.com/bigchaindb/bigchaindb/pull/397),
+[#402](https://github.com/bigchaindb/bigchaindb/pull/402),
+[#403](https://github.com/bigchaindb/bigchaindb/pull/403),
+[#406](https://github.com/bigchaindb/bigchaindb/pull/406),
+[#408](https://github.com/bigchaindb/bigchaindb/pull/408)
+
+
+## [0.4.2] - 2016-06-15
+Tag name: v0.4.2
+= commit: 7ce6c3980cf70437d7ce716a67f069afa8ecb79e
+committed: June 15, 2016, 1:42 PM GMT+2
+
+### Added
+- Report the BigchainDB version number when starting BigchainDB: [Pull Request #385](https://github.com/bigchaindb/bigchaindb/pull/385)
+
+### Changed
+- Round timestamps to a precision of one second, and replace payload hash with payload UUID in transactions: [Pull Request #384](https://github.com/bigchaindb/bigchaindb/pull/384)
+- Updated cryptoconditions API usage: [Pull Request #373](https://github.com/bigchaindb/bigchaindb/pull/373) 
+
+
+## [0.4.1] - 2016-06-13
+Tag name: v0.4.1
+= commit: 9c4aa987bcbc294b6a5c3069e6c45a7ed77a4068
+committed: June 13, 2016, 9:52 AM GMT+2
+
+### Added
+- Revert `bigchain` deletes: [Pull Request #330](https://github.com/bigchaindb/bigchaindb/pull/330)
+
+### Changed
+- Use inverted threshold condition instead of negative weights for escrow: [Pull Request #355](https://github.com/bigchaindb/bigchaindb/pull/355)
+
+### Fixed
+- Removed duplicate `pytest` in `setup.py`: [Pull Request #365](https://github.com/bigchaindb/bigchaindb/pull/365)
+
+### Notes
+- There were several additions and changes to the documentation: Pull Requests
+[#343](https://github.com/bigchaindb/bigchaindb/pull/343),
+[#363](https://github.com/bigchaindb/bigchaindb/pull/363),
+[#364](https://github.com/bigchaindb/bigchaindb/pull/364),
+[#366](https://github.com/bigchaindb/bigchaindb/pull/366),
+[#370](https://github.com/bigchaindb/bigchaindb/pull/370),
+[#372](https://github.com/bigchaindb/bigchaindb/pull/372)
 
 
 ## [0.4.0] - 2016-05-27

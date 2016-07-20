@@ -30,8 +30,7 @@ def test_init_creates_db_tables_and_indexes():
     assert r.db(dbname).table_list().contains('backlog', 'bigchain').run(conn) is True
 
     assert r.db(dbname).table('bigchain').index_list().contains(
-        'block_timestamp',
-        'block_number').run(conn) is True
+        'block_timestamp').run(conn) is True
 
     assert r.db(dbname).table('backlog').index_list().contains(
         'transaction_timestamp',
