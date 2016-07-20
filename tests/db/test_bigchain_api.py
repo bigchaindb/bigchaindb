@@ -779,7 +779,7 @@ class TestBigchainBlock(object):
         # write a block and vote it valid
         b.write_block(block, durability='hard')
         vote = b.vote(block, genesis['id'], True)
-        b.write_vote(block, vote, 1)
+        b.write_vote(block, vote)
 
         q_transactions = mp.Queue()
         for tx in txs:
