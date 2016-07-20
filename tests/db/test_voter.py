@@ -276,15 +276,14 @@ class TestBigchainVoter(object):
         q_new_block = mp.Queue()
         voter = Voter(q_new_block)
 
+        # vote
+        voter.start()
+        time.sleep(1)
+
         # create a new block that will appear in the changefeed
         block_3 = dummy_block()
         b.write_block(block_3, durability='hard')
 
-        # put the last block in the queue
-        q_new_block.put(block_3)
-
-        # vote
-        voter.start()
         time.sleep(1)
         voter.kill()
 
@@ -325,11 +324,8 @@ class TestBigchainVoter(object):
                        .run(b.conn))
 
         # retrieve votes
-        votes = r.table('votes')\
-            .order_by(r.asc((r.row['block_number'])))\
-            .run(b.conn)
+        votes = list(r.table('votes').run(b.conn))
 
-        assert blocks[0]['block_number'] == 0  # genesis block
         assert votes[0]['vote']['voting_for_block'] in (blocks[1]['id'], blocks[2]['id'])
         assert votes[1]['vote']['voting_for_block'] in (blocks[1]['id'], blocks[2]['id'])
 
@@ -343,8 +339,6 @@ class TestBigchainVoter(object):
         voter = Voter(q_new_block)
         voter.start()
 
-        # queue block for voting
-        q_new_block.put(block_1)
         time.sleep(1)
         retrieved_block = r.table('bigchain').get(block_1['id']).run(b.conn)
 

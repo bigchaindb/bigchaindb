@@ -210,3 +210,9 @@ def test_check_hash_and_signature_invalid_signature(monkeypatch):
         'bigchaindb.util.validate_fulfillments', lambda tx: False)
     with pytest.raises(InvalidSignature):
         check_hash_and_signature(transaction)
+
+
+def test_is_genesis_block_returns_true_if_genesis(b):
+    from bigchaindb.util import is_genesis_block
+    genesis_block = b.prepare_genesis_block()
+    assert is_genesis_block(genesis_block)
