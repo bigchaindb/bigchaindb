@@ -52,20 +52,12 @@ def set_host(host_index):
 @task
 @parallel
 def install_base_software():
-    # new from Troy April 5, 2016. Why? See http://tinyurl.com/lccfrsj
-    # sudo('rm -rf /var/lib/apt/lists/*')
-    # sudo('apt-get -y clean')
-    # from before:
     sudo('apt-get -y update')
     sudo('dpkg --configure -a')
     sudo('apt-get -y -f install')
-    sudo('apt-get -y install build-essential wget bzip2 ca-certificates \
-                     libglib2.0-0 libxext6 libsm6 libxrender1 \
-                     git gcc g++ python3-dev libboost-python-dev \
-                     software-properties-common python-software-properties \
-                     python3-setuptools ipython3 sysstat s3cmd')
+    sudo('apt-get -y install wget git g++ python3-dev python3-setuptools')
     sudo('easy_install3 pip')
-    sudo('pip3 install --upgrade pip wheel setuptools')
+    sudo('pip3 install --upgrade setuptools')
 
 
 # Install RethinkDB
