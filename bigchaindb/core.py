@@ -526,22 +526,22 @@ class Bigchain(object):
 
         return block
 
-    def vote(self, block, previous_block_id, decision, invalid_reason=None):
+    def vote(self, block_id, previous_block_id, decision, invalid_reason=None):
         """Cast your vote on the block given the previous_block_hash and the decision (valid/invalid)
         return the block to the updated in the database.
 
         Args:
-            block (dict): Block to vote.
+            block_id (str): The id of the block to vote.
             previous_block_id (str): The id of the previous block.
             decision (bool): Whether the block is valid or invalid.
             invalid_reason (Optional[str]): Reason the block is invalid
         """
 
-        if block['id'] == previous_block_id:
+        if block_id == previous_block_id:
             raise exceptions.CyclicBlockchainError()
 
         vote = {
-            'voting_for_block': block['id'],
+            'voting_for_block': block_id,
             'previous_block': previous_block_id,
             'is_block_valid': decision,
             'invalid_reason': invalid_reason,
