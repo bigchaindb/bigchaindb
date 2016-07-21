@@ -156,7 +156,8 @@ class Voter(object):
                 return
 
             block, vote = elem
-            logger.info('updating block %s and with vote %s', block, vote)
+            pretty_vote = 'valid' if vote['vote']['is_block_valid'] else 'invalid'
+            logger.info('voting %s for block %s', pretty_vote, block['id'])
             b.write_vote(block, vote)
 
     def bootstrap(self):
