@@ -26,19 +26,18 @@ def create_database(conn, dbname):
     if r.db_list().contains(dbname).run(conn):
         raise exceptions.DatabaseAlreadyExists('Database `{}` already exists'.format(dbname))
 
-    logger.info('Create:')
-    logger.info(' - database `%s`', dbname)
+    logger.info('Create database `%s`.', dbname)
     r.db_create(dbname).run(conn)
 
 
 def create_table(conn, dbname, table_name):
-    logger.info(' - %s table', table_name)
+    logger.info('Create `%s` table.', table_name)
     # create the table
     r.db(dbname).table_create(table_name).run(conn)
 
 
 def create_bigchain_secondary_index(conn, dbname):
-    logger.info(' - bigchain indexes')
+    logger.info('Create `bigchain` secondary index.')
     # to order blocks by timestamp
     r.db(dbname).table('bigchain')\
         .index_create('block_timestamp', r.row['block']['timestamp'])\
@@ -59,7 +58,7 @@ def create_bigchain_secondary_index(conn, dbname):
 
 
 def create_backlog_secondary_index(conn, dbname):
-    logger.info(' - backlog indexes')
+    logger.info('Create `backlog` secondary index.')
     # to order transactions by timestamp
     r.db(dbname).table('backlog')\
         .index_create('transaction_timestamp',
@@ -76,7 +75,7 @@ def create_backlog_secondary_index(conn, dbname):
 
 
 def create_votes_secondary_index(conn, dbname):
-    logger.info(' - indexes')
+    logger.info('Create `votes` secondary index.')
     # compound index to order votes by block id and node
     r.db(dbname).table('votes')\
         .index_create('block_and_voter',
@@ -103,7 +102,7 @@ def init():
     create_backlog_secondary_index(conn, dbname)
     create_votes_secondary_index(conn, dbname)
 
-    logger.info(' - genesis block')
+    logger.info('Create genesis block.')
     b.create_genesis_block()
     logger.info('Done, have fun!')
 
