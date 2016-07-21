@@ -136,7 +136,7 @@ class Voter(object):
                 return
 
             validated_block, previous_block_id, decision = elem
-            vote = b.vote(validated_block, previous_block_id, decision)
+            vote = b.vote(validated_block['id'], previous_block_id, decision)
             self.q_voted_block.put((validated_block, vote))
 
     def update_block(self):

@@ -237,7 +237,7 @@ class TestBigchainVoter(object):
         # create valid block
         block = dummy_block()
         # retrieve vote
-        vote = b.vote(block, 'abc', True)
+        vote = b.vote(block['id'], 'abc', True)
 
         # assert vote is correct
         assert vote['vote']['voting_for_block'] == block['id']
@@ -251,7 +251,7 @@ class TestBigchainVoter(object):
         # create valid block
         block = dummy_block()
         # retrieve vote
-        vote = b.vote(block, 'abc', False)
+        vote = b.vote(block['id'], 'abc', False)
 
         # assert vote is correct
         assert vote['vote']['voting_for_block'] == block['id']
@@ -372,15 +372,15 @@ class TestBlockElection(object):
         test_block['block']['voters'] = [key_pair[1] for key_pair in key_pairs]
 
         # fake "yes" votes
-        valid_vote = [member.vote(test_block, 'abc', True)
+        valid_vote = [member.vote(test_block['id'], 'abc', True)
                       for member in test_federation]
 
         # fake "no" votes
-        invalid_vote = [member.vote(test_block, 'abc', False)
+        invalid_vote = [member.vote(test_block['id'], 'abc', False)
                         for member in test_federation]
 
         # fake "yes" votes with incorrect signatures
-        improperly_signed_valid_vote = [member.vote(test_block, 'abc', True) for
+        improperly_signed_valid_vote = [member.vote(test_block['id'], 'abc', True) for
                                         member in test_federation]
         [vote['vote'].update(this_should_ruin_things='lol')
          for vote in improperly_signed_valid_vote]
@@ -448,11 +448,11 @@ class TestBlockElection(object):
         test_block['block']['voters'] = [key_pair[1] for key_pair in key_pairs]
 
         # fake "yes" votes
-        valid_vote = [member.vote(test_block, 'abc', True)
+        valid_vote = [member.vote(test_block['id'], 'abc', True)
                       for member in test_federation]
 
         # fake "no" votes
-        invalid_vote = [member.vote(test_block, 'abc', False)
+        invalid_vote = [member.vote(test_block['id'], 'abc', False)
                         for member in test_federation]
 
         r.table('votes').insert(valid_vote[:2], durability='hard').run(b.conn)
@@ -490,12 +490,12 @@ class TestBlockElection(object):
         test_block_2['block']['voters'] = [key_pair[1] for key_pair in key_pairs]
 
         # votes for block one
-        vote_1 = [member.vote(test_block_1, 'abc', True)
+        vote_1 = [member.vote(test_block_1['id'], 'abc', True)
                       for member in test_federation]
 
         # votes for block two
-        vote_2 = [member.vote(test_block_2, 'abc', True) for member in test_federation[:2]] + \
-                       [member.vote(test_block_2, 'abc', False) for member in test_federation[2:]]
+        vote_2 = [member.vote(test_block_2['id'], 'abc', True) for member in test_federation[:2]] + \
+                       [member.vote(test_block_2['id'], 'abc', False) for member in test_federation[2:]]
 
         # construct valid block
         r.table('votes').insert(vote_1, durability='hard').run(b.conn)
