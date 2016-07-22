@@ -94,6 +94,8 @@ chmod +x add2known_hosts.sh
 # Rollout base packages (dependencies) needed before
 # storage backend (RethinkDB) and BigchainDB can be rolled out
 fab install_base_software
+fab get_pip3
+fab upgrade_setuptools
 
 if [ "$WHAT_TO_DEPLOY" == "servers" ]; then
     # (Re)create the RethinkDB configuration file conf/rethinkdb.conf

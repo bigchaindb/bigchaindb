@@ -139,7 +139,7 @@ class TestBigchainApi(object):
         b.write_block(block, durability='hard')
 
         # vote the block invalid
-        vote = b.vote(block, b.get_last_voted_block()['id'], False)
+        vote = b.vote(block['id'], b.get_last_voted_block()['id'], False)
         b.write_vote(block, vote)
         response = b.get_transaction(tx_signed["id"])
 
@@ -280,13 +280,13 @@ class TestBigchainApi(object):
         # make sure all the blocks are written at the same time
         monkeypatch.setattr(util, 'timestamp', lambda: '1')
 
-        b.write_vote(block_1, b.vote(block_1, b.get_last_voted_block()['id'], True))
+        b.write_vote(block_1, b.vote(block_1['id'], b.get_last_voted_block()['id'], True))
         assert b.get_last_voted_block()['id'] == block_1['id']
 
-        b.write_vote(block_2, b.vote(block_2, b.get_last_voted_block()['id'], True))
+        b.write_vote(block_2, b.vote(block_2['id'], b.get_last_voted_block()['id'], True))
         assert b.get_last_voted_block()['id'] == block_2['id']
 
-        b.write_vote(block_3, b.vote(block_3, b.get_last_voted_block()['id'], True))
+        b.write_vote(block_3, b.vote(block_3['id'], b.get_last_voted_block()['id'], True))
         assert b.get_last_voted_block()['id'] == block_3['id']
 
 
@@ -305,15 +305,15 @@ class TestBigchainApi(object):
 
         # make sure all the blocks are written at different timestamps
         monkeypatch.setattr(util, 'timestamp', lambda: '1')
-        b.write_vote(block_1, b.vote(block_1, b.get_last_voted_block()['id'], True))
+        b.write_vote(block_1, b.vote(block_1['id'], b.get_last_voted_block()['id'], True))
         assert b.get_last_voted_block()['id'] == block_1['id']
 
         monkeypatch.setattr(util, 'timestamp', lambda: '2')
-        b.write_vote(block_2, b.vote(block_2, b.get_last_voted_block()['id'], True))
+        b.write_vote(block_2, b.vote(block_2['id'], b.get_last_voted_block()['id'], True))
         assert b.get_last_voted_block()['id'] == block_2['id']
 
         monkeypatch.setattr(util, 'timestamp', lambda: '3')
-        b.write_vote(block_3, b.vote(block_3, b.get_last_voted_block()['id'], True))
+        b.write_vote(block_3, b.vote(block_3['id'], b.get_last_voted_block()['id'], True))
         assert b.get_last_voted_block()['id'] == block_3['id']
 
     def test_no_vote_written_if_block_already_has_vote(self, b):
@@ -323,11 +323,11 @@ class TestBigchainApi(object):
 
         b.write_block(block_1, durability='hard')
 
-        b.write_vote(block_1, b.vote(block_1, genesis['id'], True))
+        b.write_vote(block_1, b.vote(block_1['id'], genesis['id'], True))
         retrieved_block_1 = r.table('bigchain').get(block_1['id']).run(b.conn)
 
         # try to vote again on the retrieved block, should do nothing
-        b.write_vote(retrieved_block_1, b.vote(retrieved_block_1, genesis['id'], True))
+        b.write_vote(retrieved_block_1, b.vote(retrieved_block_1['id'], genesis['id'], True))
         retrieved_block_2 = r.table('bigchain').get(block_1['id']).run(b.conn)
 
         assert retrieved_block_1 == retrieved_block_2
@@ -337,8 +337,8 @@ class TestBigchainApi(object):
         block_1 = dummy_block()
         b.write_block(block_1, durability='hard')
         # insert duplicate votes
-        vote_1 = b.vote(block_1, b.get_last_voted_block()['id'], True)
-        vote_2 = b.vote(block_1, b.get_last_voted_block()['id'], True)
+        vote_1 = b.vote(block_1['id'], b.get_last_voted_block()['id'], True)
+        vote_2 = b.vote(block_1['id'], b.get_last_voted_block()['id'], True)
         vote_2['node_pubkey'] = 'aaaaaaa'
         r.table('votes').insert(vote_1).run(b.conn)
         r.table('votes').insert(vote_2).run(b.conn)
@@ -355,7 +355,7 @@ class TestBigchainApi(object):
         b.write_block(block_1, durability='hard')
         # insert duplicate votes
         for i in range(2):
-            r.table('votes').insert(b.vote(block_1, genesis['id'], True)).run(b.conn)
+            r.table('votes').insert(b.vote(block_1['id'], genesis['id'], True)).run(b.conn)
 
         from bigchaindb.exceptions import MultipleVotesError
         with pytest.raises(MultipleVotesError) as excinfo:
@@ -372,7 +372,7 @@ class TestBigchainApi(object):
         b.create_genesis_block()
         block_1 = dummy_block()
         b.write_block(block_1, durability='hard')
-        vote_1 = b.vote(block_1, b.get_last_voted_block()['id'], True)
+        vote_1 = b.vote(block_1['id'], b.get_last_voted_block()['id'], True)
         # mangle the signature
         vote_1['signature'] = 'a' * 87
         r.table('votes').insert(vote_1).run(b.conn)
@@ -816,9 +816,9 @@ class TestBigchainBlock(object):
         b.write_block(block_2, durability='hard')
         b.write_block(block_3, durability='hard')
 
-        b.write_vote(block_1, b.vote(block_1, b.get_last_voted_block()['id'], True))
-        b.write_vote(block_2, b.vote(block_2, b.get_last_voted_block()['id'], True))
-        b.write_vote(block_3, b.vote(block_3, b.get_last_voted_block()['id'], True))
+        b.write_vote(block_1, b.vote(block_1['id'], b.get_last_voted_block()['id'], True))
+        b.write_vote(block_2, b.vote(block_2['id'], b.get_last_voted_block()['id'], True))
+        b.write_vote(block_3, b.vote(block_3['id'], b.get_last_voted_block()['id'], True))
 
         q_revert_delete = mp.Queue()
 
@@ -1115,7 +1115,7 @@ class TestMultipleInputs(object):
         b.write_block(block, durability='hard')
 
         # vote the block VALID
-        vote = b.vote(block, genesis['id'], True)
+        vote = b.vote(block['id'], genesis['id'], True)
         b.write_vote(block, vote)
 
         # get input
@@ -1131,7 +1131,7 @@ class TestMultipleInputs(object):
         b.write_block(block, durability='hard')
 
         # vote the block invalid
-        vote = b.vote(block, b.get_last_voted_block()['id'], False)
+        vote = b.vote(block['id'], b.get_last_voted_block()['id'], False)
         b.write_vote(block, vote)
 
         owned_inputs_user1 = b.get_owned_ids(user_vk)
@@ -1245,7 +1245,7 @@ class TestMultipleInputs(object):
         b.write_block(block, durability='hard')
 
         # vote the block VALID
-        vote = b.vote(block, genesis['id'], True)
+        vote = b.vote(block['id'], genesis['id'], True)
         b.write_vote(block, vote)
 
         # get input
@@ -1262,7 +1262,7 @@ class TestMultipleInputs(object):
         b.write_block(block, durability='hard')
 
         # vote the block invalid
-        vote = b.vote(block, b.get_last_voted_block()['id'], False)
+        vote = b.vote(block['id'], b.get_last_voted_block()['id'], False)
         b.write_vote(block, vote)
         response = b.get_transaction(tx_signed["id"])
         spent_inputs_user1 = b.get_spent(owned_inputs_user1[0])

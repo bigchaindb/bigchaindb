@@ -1,4 +1,5 @@
 import copy
+from unittest.mock import mock_open, patch
 
 import pytest
 
@@ -7,6 +8,19 @@ from bigchaindb import exceptions
 
 
 ORIGINAL_CONFIG = copy.deepcopy(bigchaindb._config)
+
+
+@pytest.fixture
+def ignore_local_config_file(monkeypatch):
+    """
+    This fixture's purpose is to override the one under
+    :module:`tests/conftest.py` so that the original behaviour of
+    :func:`bigchaindb.config_utils.file_config` is restored, so that it can be
+    tested.
+
+    """
+    from bigchaindb.config_utils import file_config
+    monkeypatch.setattr('bigchaindb.config_utils.file_config', file_config)
 
 
 @pytest.fixture(scope='function', autouse=True)
@@ -205,3 +219,21 @@ def test_update_config(monkeypatch):
     assert bigchaindb.config['database']['host'] == 'test-host'
     assert bigchaindb.config['database']['name'] == 'bigchaindb_other'
     assert bigchaindb.config['database']['port'] == 28016
+
+
+def test_file_config():
+    from bigchaindb.config_utils import file_config, CONFIG_DEFAULT_PATH
+    with patch('builtins.open', mock_open(read_data='{}')) as m:
+        config = file_config()
+    m.assert_called_once_with(CONFIG_DEFAULT_PATH)
+    assert config == {}
+
+
+def test_write_config():
+    from bigchaindb.config_utils import write_config, CONFIG_DEFAULT_PATH
+    m = mock_open()
+    with patch('builtins.open', m):
+        write_config({})
+    m.assert_called_once_with(CONFIG_DEFAULT_PATH, 'w')
+    handle = m()
+    handle.write.assert_called_once_with('{}')
