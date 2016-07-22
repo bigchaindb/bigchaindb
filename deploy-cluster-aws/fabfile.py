@@ -52,20 +52,49 @@ def set_host(host_index):
 @task
 @parallel
 def install_base_software():
-    # new from Troy April 5, 2016. Why? See http://tinyurl.com/lccfrsj
-    # sudo('rm -rf /var/lib/apt/lists/*')
-    # sudo('apt-get -y clean')
-    # from before:
+    # This deletes the dir where "apt-get update" stores the list of packages
+    sudo('rm -rf /var/lib/apt/lists/')
+    # Re-create that directory, and its subdirectory named "partial"
+    sudo('mkdir -p /var/lib/apt/lists/partial/')
+    # Repopulate the list of packages in /var/lib/apt/lists/
+    # See https://tinyurl.com/zjvj9g3
+    sudo('apt-get -y update')
+    # Configure all unpacked but unconfigured packages.
+    # See https://tinyurl.com/zf24hm5
+    sudo('dpkg --configure -a')
+    # Attempt to correct a system with broken dependencies in place.
+    # See https://tinyurl.com/zpktd7l
+    sudo('apt-get -y -f install')
+    # For some reason, repeating the last three things makes this
+    # installation process more reliable...
     sudo('apt-get -y update')
     sudo('dpkg --configure -a')
     sudo('apt-get -y -f install')
-    sudo('apt-get -y install build-essential wget bzip2 ca-certificates \
-                     libglib2.0-0 libxext6 libsm6 libxrender1 \
-                     git gcc g++ python3-dev libboost-python-dev \
-                     software-properties-common python-software-properties \
-                     python3-setuptools ipython3 sysstat s3cmd')
-    sudo('easy_install3 pip')
-    sudo('pip3 install --upgrade pip wheel setuptools')
+    # Install the base dependencies not already installed.
+    sudo('apt-get -y install git g++ python3-dev')
+    sudo('apt-get -y -f install')
+
+
+# Get an up-to-date Python 3 version of pip
+@task
+@parallel
+def get_pip3():
+    # One way:
+    # sudo('apt-get -y install python3-setuptools')
+    # sudo('easy_install3 pip')
+    # Another way:
+    sudo('apt-get -y install python3-pip')
+    # Upgrade pip
+    sudo('pip3 install --upgrade pip')
+    # Check the version of pip3
+    run('pip3 --version')
+
+
+# Upgrade setuptools
+@task
+@parallel
+def upgrade_setuptools():
+    sudo('pip3 install --upgrade setuptools')
 
 
 # Install RethinkDB
