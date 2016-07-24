@@ -41,7 +41,6 @@ def ignore_local_config_file(monkeypatch):
     monkeypatch.setattr('bigchaindb.config_utils.file_config', mock_file_config)
 
 
-@pytest.fixture
 @pytest.fixture(scope='function', autouse=True)
 def restore_config(request, node_config):
     from bigchaindb import config_utils
