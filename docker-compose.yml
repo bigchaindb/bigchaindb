@@ -29,6 +29,7 @@ services:
       - ./pytest.ini:/usr/src/app/pytest.ini
       - ~/.bigchaindb_docker:/root/.bigchaindb_docker
     environment:
+      RETHINKDB_DATABASE_HOST: rdb
       BIGCHAINDB_DATABASE_HOST: rdb
       BIGCHAINDB_CONFIG_PATH: /root/.bigchaindb_docker/config
     command: bigchaindb start

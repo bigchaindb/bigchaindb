@@ -37,6 +37,7 @@ tests_require = [
     'pytest-cov==2.2.1',
     'pytest-xdist',
     'pytest-flask',
+    'pytest-rethinkdb>=0.1.3'
 ]
 
 dev_require = [
