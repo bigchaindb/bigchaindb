@@ -78,6 +78,3 @@ def start():
     pipeline.start()
     return pipeline
 
-
-if __name__ == '__main__':
-    start()

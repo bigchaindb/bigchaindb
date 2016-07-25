@@ -1,10 +1,11 @@
 import time
 import random
+from unittest.mock import patch
 
 import rethinkdb as r
 
 from bigchaindb.pipelines import block
-from multipipes import Pipe
+from multipipes import Pipe, Pipeline
 
 
 def test_filter_by_assignee(b, user_vk):
@@ -94,6 +95,15 @@ def test_prefeed(b, user_vk):
     assert len(list(backlog)) == 100
 
 
+@patch.object(Pipeline, 'start')
+def test_start(mock_start):
+    # TODO: `block.start` is just a wrapper around `block.create_pipeline`,
+    #       that is tested by `test_full_pipeline`.
+    #       If anyone has better ideas on how to test this, please do a PR :)
+    block.start()
+    mock_start.assert_called_with()
+
+
 def test_full_pipeline(b, user_vk):
     outpipe = Pipe()
 
@@ -111,8 +121,8 @@ def test_full_pipeline(b, user_vk):
 
     pipeline = block.create_pipeline()
     pipeline.setup(indata=block.get_changefeed(), outdata=outpipe)
-
     pipeline.start()
+
     time.sleep(2)
     pipeline.terminate()
 
