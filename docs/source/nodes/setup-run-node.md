@@ -115,27 +115,35 @@ With OS-level dependencies installed, you can install BigchainDB Server with `pi
 
 ### How to Install BigchainDB with pip
 
-BigchainDB (i.e. both the Server and the officially-supported drivers) is distributed as a Python package on PyPI so you can install it using `pip`. First, make sure you have a version of `pip` installed for Python 3.4+:
+BigchainDB (i.e. both the Server and the officially-supported drivers) is distributed as a Python package on PyPI so you can install it using `pip`. First, make sure you have an up-to-date Python 3.4+ version of `pip` installed:
 ```text
 pip -V
 ```
 
-If it says that `pip` isn't installed, or it says `pip` is associated with a Python version less than 3.4, then you must install a `pip` version associated with Python 3.4+. See [the `pip` installation instructions](https://pip.pypa.io/en/stable/installing/). On Ubuntu 14.04, we found that this works:
+If it says that `pip` isn't installed, or it says `pip` is associated with a Python version less than 3.4, then you must install a `pip` version associated with Python 3.4+. In the following instructions, we call it `pip3` but you may be able to use `pip` if that refers to the same thing. See [the `pip` installation instructions](https://pip.pypa.io/en/stable/installing/).
+
+On Ubuntu 14.04, we found that this works:
 ```text
-sudo apt-get install python3-setuptools
-sudo easy_install3 pip
-pip3 install --upgrade pip wheel setuptools
+sudo apt-get install python3-pip
 ```
 
-(Note: Using `sudo apt-get python3-pip` also installs a Python 3 version of `pip` (named `pip3`) but we found it installed a very old version and there were issues with updating it.)
+That should install a Python 3 version of `pip` named `pip3`. If that didn't work, then another way to get `pip3` is to do `sudo apt-get install python3-setuptools` followed by `sudo easy_install3 pip`.
 
-Once you have a version of `pip` associated with Python 3.4+, then you can install BigchainDB Server (and officially-supported BigchainDB drivers) using:
+You can upgrade `pip` (`pip3`) and `setuptools` to the latest versions using:
 ```text
-sudo pip install bigchaindb
+pip3 install --upgrade pip setuptools
+pip3 -V
 ```
-(or maybe `sudo pip3 install bigchaindb` or `sudo pip3.4 install bigchaindb`. The `sudo` may not be necessary.)
 
-Note: You can use `pip` to upgrade the `bigchaindb` package to the latest version using `sudo pip install --upgrade bigchaindb`
+Now you can install BigchainDB Server (and officially-supported BigchainDB drivers) using:
+```text
+pip3 install bigchaindb
+```
+
+(If you're not in a virtualenv and you want to install bigchaindb system-wide, then put `sudo` in front.)
+
+Note: You can use `pip3` to upgrade the `bigchaindb` package to the latest version using `pip3 install --upgrade bigchaindb`.
+
 
 ### How to Install BigchainDB from Source
 
