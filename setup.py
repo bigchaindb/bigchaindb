@@ -104,7 +104,7 @@ setup(
         'flask==0.10.1',
         'requests==2.9',
         'gunicorn~=19.0',
-        'pipes~=0.1.0',
+        'multipipes~=0.1.0',
     ],
     setup_requires=['pytest-runner'],
     tests_require=tests_require,
