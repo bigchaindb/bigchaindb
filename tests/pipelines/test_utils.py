@@ -1,6 +1,6 @@
 import time
 
-from pipes import Pipe
+from multipipes import Pipe
 from bigchaindb.pipelines import utils
 
 

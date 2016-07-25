@@ -1,5 +1,5 @@
 import rethinkdb as r
-from pipes import Pipeline, Node
+from multipipes import Pipeline, Node
 
 from bigchaindb.pipelines.utils import ChangeFeed
 from bigchaindb import Bigchain

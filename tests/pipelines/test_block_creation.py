@@ -4,7 +4,7 @@ import random
 import rethinkdb as r
 
 from bigchaindb.pipelines import block
-from pipes import Pipe
+from multipipes import Pipe
 
 
 def test_filter_by_assignee(b, user_vk):
