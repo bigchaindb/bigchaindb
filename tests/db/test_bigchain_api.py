@@ -10,7 +10,7 @@ import cryptoconditions as cc
 import bigchaindb
 from bigchaindb import crypto, exceptions, util
 from bigchaindb.voter import Voter
-from bigchaindb.block import Block, BlockDeleteRevert
+from bigchaindb.block import Block, BacklogDeleteRevert, BlockDeleteRevert
 
 
 @pytest.mark.skipif(reason='Some tests throw a ResourceWarning that might result in some weird '
@@ -657,6 +657,11 @@ class TestBigchainBlock(object):
 
         # check if the number of valid transactions
         assert block.q_tx_validated.qsize() - 1 == count_valid
+        assert block.q_tx_delete.qsize() == 100 - count_valid
+
+        block.create_blocks()
+        block.write_blocks()
+
         assert block.q_tx_delete.qsize() - 1 == 100
 
     def test_create_block(self, b, user_vk):
@@ -734,6 +739,67 @@ class TestBigchainBlock(object):
 
         # check if all transactions were deleted from the backlog
         assert r.table('backlog').count() == 0
+
+    def test_revert_delete_transactions(self, b, user_vk):
+        # make sure that there are no transactions in the backlog
+        r.table('backlog').delete().run(b.conn)
+
+        # create transactions and randomly invalidate some of them by changing the hash
+        q_transactions = mp.Queue()
+        count_valid = 0
+        for i in range(100):
+            valid = random.choice([True, False])
+            tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
+            tx = b.sign_transaction(tx, b.me_private)
+            if not valid:
+                tx['id'] = 'a' * 64
+            else:
+                count_valid += 1
+            q_transactions.put(tx)
+
+        # this is like a changefeed of deleted transactions
+        reverter = BacklogDeleteRevert(q_transactions, stale_delay=0)
+
+        reverter.start()
+        time.sleep(5)
+        reverter.kill()
+
+        # only valid transactions should make it back to the backlog
+        assert r.table('backlog').count().run(b.conn) == count_valid
+
+        # make sure that there are no transactions in the backlog
+        r.table('backlog').delete().run(b.conn)
+        genesis = b.create_genesis_block()
+
+        # make a block
+        txs = [b.create_transaction(b.me, user_vk, None, 'CREATE') for i in range(100)]
+        txs = [b.sign_transaction(tx, b.me_private) for tx in txs]
+        block = b.create_block(txs)
+
+        # write a block and vote it valid
+        b.write_block(block, durability='hard')
+        vote = b.vote(block, genesis['id'], True)
+        b.write_vote(block, vote)
+
+        q_transactions = mp.Queue()
+        for tx in txs:
+            q_transactions.put(tx)
+
+        # put some transactions in the queue that aren't in a block
+        for i in range(50):
+            tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
+            tx = b.sign_transaction(tx, b.me_private)
+            q_transactions.put(tx)
+
+        # this is like a changefeed of deleted transactions
+        reverter = BacklogDeleteRevert(q_transactions, stale_delay=0)
+
+        reverter.start()
+        time.sleep(5)
+        reverter.kill()
+
+        # only the 50 transactions not in a block should make it
+        assert r.table('backlog').count().run(b.conn) == 50
 
     def test_bootstrap(self, b, user_vk):
         # make sure that there are no transactions in the backlog

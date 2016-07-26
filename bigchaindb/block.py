@@ -1,6 +1,7 @@
 import logging
 import multiprocessing as mp
 import queue
+import time
 
 import rethinkdb as r
 
@@ -64,17 +65,16 @@ class Block(object):
 
             # poison pill
             if tx == 'stop':
-                self.q_tx_delete.put('stop')
                 self.q_tx_validated.put('stop')
                 return
-
-            self.q_tx_delete.put(tx['id'])
 
             with self.monitor.timer('validate_transaction', rate=bigchaindb.config['statsd']['rate']):
                 is_valid_transaction = b.is_valid_transaction(tx)
 
             if is_valid_transaction:
                 self.q_tx_validated.put(tx)
+            else:
+                self.q_tx_delete.put(tx['id'])
 
     def create_blocks(self):
         """
@@ -126,10 +126,14 @@ class Block(object):
 
             # poison pill
             if block == 'stop':
+                self.q_tx_delete.put('stop')
                 return
 
             with self.monitor.timer('write_block'):
                 b.write_block(block)
+
+            for tx in block['block']['transactions']:
+                self.q_tx_delete.put(tx['id'])
 
     def delete_transactions(self):
         """
@@ -228,6 +232,126 @@ class Block(object):
         p_blocks.start()
         p_write.start()
         p_delete.start()
+
+
+class BacklogDeleteRevert(Block):
+
+    def __init__(self, q_backlog_delete, stale_delay=30):
+        # invalid transactions can stay deleted
+        self.q_backlog_delete = q_backlog_delete
+        self.q_holding = mp.Queue()
+        self.q_tx_to_validate = mp.Queue()
+        self.q_tx_validated = mp.Queue()
+        self.q_transaction_to_revert = mp.Queue()
+        self.q_tx_delete = mp.Queue()
+
+        self.monitor = Monitor()
+
+        self.stale_delay = stale_delay
+
+    def hold_transactions(self):
+        while True:
+            tx = self.q_backlog_delete.get()
+
+            # poison pill
+            if tx == 'stop':
+                self.q_holding.put('stop')
+                return
+
+            self.q_holding.put({'received': time.time(), 'tx': tx})
+
+    def release_transactions(self):
+        while True:
+            tx_ts = self.q_holding.get()
+
+            # poison pill
+            if tx_ts == 'stop':
+                self.q_tx_to_validate.put('stop')
+                return
+
+            if (time.time() - tx_ts['received']) > self.stale_delay:
+                self.q_tx_to_validate.put(tx_ts['tx'])
+            else:
+                self.q_holding.put(tx_ts)
+
+    def locate_transactions(self):
+        """
+        Determine if a deleted transaction has made it into a block
+        """
+        # create bigchain instance
+        b = Bigchain()
+
+        while True:
+            tx = self.q_tx_validated.get()
+
+            # poison pill
+            if tx == 'stop':
+                self.q_tx_delete.put('stop')
+                self.q_transaction_to_revert.put('stop')
+                return
+
+            # check if tx is in a (valid) block
+            validity = b.get_blocks_status_containing_tx(tx['id'])
+
+            if validity and list(validity.values()).count(Bigchain.BLOCK_VALID) == 1:
+                # tx made it into a block, and can safely be deleted
+                self.q_tx_delete.put(tx['id'])
+            else:
+                # valid tx not in any block, should be re-inserted into backlog
+                self.q_transaction_to_revert.put(tx)
+
+    def revert_deletes(self):
+        """
+        Put an incorrectly deleted transaction back in the backlog
+        """
+        # create bigchain instance
+        b = Bigchain()
+
+        while True:
+            tx = self.q_transaction_to_revert.get()
+
+            # poison pill
+            if tx == 'stop':
+                return
+
+            b.write_transaction(tx)
+
+    def empty_delete_q(self):
+        """
+        Empty the delete queue
+        """
+
+        while True:
+            txid = self.q_tx_delete.get()
+
+            # poison pill
+            if txid == 'stop':
+                return
+
+    def kill(self):
+        for i in range(mp.cpu_count()):
+            self.q_backlog_delete.put('stop')
+
+    def start(self):
+        """
+        Initialize, spawn, and start the processes
+        """
+
+        # initialize the processes
+        p_hold = ProcessGroup(name='hold_transactions', target=self.hold_transactions)
+        p_release = ProcessGroup(name='release_transactions', target=self.release_transactions)
+        p_validate = ProcessGroup(name='validate_transactions', target=self.validate_transactions)
+        p_locate = ProcessGroup(name='locate_transactions', target=self.locate_transactions)
+        p_revert = ProcessGroup(name='revert_deletes', target=self.revert_deletes)
+        p_empty_delete_q = ProcessGroup(name='empty_delete_q', target=self.empty_delete_q)
+
+        # start the processes
+        p_hold.start()
+        p_release.start()
+        p_validate.start()
+        p_locate.start()
+        p_revert.start()
+        p_empty_delete_q.start()
 
 
 class BlockDeleteRevert(object):
