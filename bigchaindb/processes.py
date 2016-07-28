@@ -4,9 +4,9 @@ import multiprocessing as mp
 import rethinkdb as r
 
 import bigchaindb
-from bigchaindb.pipelines import block
+from bigchaindb.pipelines import block, election
 from bigchaindb import Bigchain
-from bigchaindb.voter import Voter, Election
+from bigchaindb.voter import Voter
 from bigchaindb.block import BlockDeleteRevert
 from bigchaindb.web import server
 
@@ -70,19 +70,18 @@ class Processes(object):
         p_map_bigchain = mp.Process(name='bigchain_mapper', target=self.map_bigchain)
         p_block_delete_revert = mp.Process(name='block_delete_revert', target=delete_reverter.start)
         p_voter = Voter(self.q_new_block)
-        p_election = Election(self.q_block_new_vote)
         # start the processes
         logger.info('starting bigchain mapper')
         p_map_bigchain.start()
         logger.info('starting backlog mapper')
         logger.info('starting block')
         block.start()
+        election.start()
         p_block_delete_revert.start()
 
         logger.info('starting voter')
         p_voter.start()
         logger.info('starting election')
-        p_election.start()
 
         # start message
         p_voter.initialized.wait()
