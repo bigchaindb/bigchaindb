@@ -27,8 +27,8 @@ def test_create_tx_with_empty_inputs():
         TransactionType,
     )
 
-    ffill = Fulfillment([])
-    cond = Condition([])
+    ffill = Fulfillment(None)
+    cond = Condition(None)
     tx = Transaction([ffill], [cond], TransactionType.CREATE).to_dict()
     assert 'id' in tx
     assert 'transaction' in tx
