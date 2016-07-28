@@ -353,7 +353,7 @@ class Bigchain(object):
             transaction (dict): transaction to check.
 
         Returns:
-            bool: `True` if the transaction is valid, `False` otherwise
+            `transaction` if the transaction is valid, `False` otherwise
         """
 
         try:

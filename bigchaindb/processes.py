@@ -89,7 +89,6 @@ class Processes(object):
 
         # initialize the processes
         p_map_bigchain = mp.Process(name='bigchain_mapper', target=self.map_bigchain)
-        p_map_backlog = mp.Process(name='backlog_mapper', target=self.map_backlog)
         p_block_delete_revert = mp.Process(name='block_delete_revert', target=delete_reverter.start)
         p_voter = Voter(self.q_new_block)
         p_election = Election(self.q_block_new_vote)
@@ -97,7 +96,6 @@ class Processes(object):
         logger.info('starting bigchain mapper')
         p_map_bigchain.start()
         logger.info('starting backlog mapper')
-        p_map_backlog.start()
         logger.info('starting block')
         block.start()
         p_block_delete_revert.start()
