@@ -158,7 +158,7 @@ class Voter(object):
             block, vote = elem
             pretty_vote = 'valid' if vote['vote']['is_block_valid'] else 'invalid'
             logger.info('voting %s for block %s', pretty_vote, block['id'])
-            b.write_vote(block, vote)
+            b.write_vote(vote)
 
     def bootstrap(self):
         """
