@@ -83,11 +83,11 @@ class Block:
                 (Default: ``False``).
 
         Returns:
-            The block.
+            The block, if a block is ready, or ``None``.
         """
         if tx:
             self.txs.append(tx)
-        if self.txs and (len(self.txs) == 1000 or timeout):
+        if len(self.txs) == 1000 or (timeout and self.txs):
             block = self.bigchain.create_block(self.txs)
             self.txs = []
             return block
