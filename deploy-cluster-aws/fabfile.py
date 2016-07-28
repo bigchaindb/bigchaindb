@@ -97,45 +97,94 @@ def upgrade_setuptools():
     sudo('pip3 install --upgrade setuptools')
 
 
-# Install RethinkDB
+# Prepare RethinkDB storage
 @task
 @parallel
-def install_rethinkdb():
-    """Installation of RethinkDB"""
-    with settings(warn_only=True):
-        # preparing filesystem
-        sudo("mkdir -p /data")
-        # Locally mounted storage (m3.2xlarge, but also c3.xxx)
+def prep_rethinkdb_storage(USING_EBS):
+    """Prepare RethinkDB storage"""
+    # Convert USING_EBS from a string to a bool
+    USING_EBS = (USING_EBS.lower() == 'true')
+
+    # Make the /data directory for RethinkDB data
+    sudo("mkdir -p /data")
+
+    # OLD: with settings(warn_only=True):
+    if USING_EBS:  # on /dev/xvdp
+        # See https://tinyurl.com/h2nut68
+        sudo("mkfs -t ext4 /dev/xvdp")
+        sudo("mount /dev/xvdp /data")
+        # To mount this EBS volume on every system reboot,
+        # add an entry for the device to the /etc/fstab file.
+        # First, make a copy of the current /etc/fstab file
+        sudo("cp /etc/fstab /etc/fstab.orig")
+        # Append a line to /etc/fstab
+        sudo("echo '/dev/xvdp  /data  ext4  defaults,nofail,nobootwait  0  2' >> /etc/fstab")
+        # Veryify the /etc/fstab file. If something is wrong with it,
+        # then this should produce an error:
+        sudo("mount -a")
+        # Set the I/O scheduler for /dev/xdvp to deadline
+        with settings(sudo_user='root'):
+            sudo("echo deadline > /sys/block/xvdp/queue/scheduler")
+    else:  # not using EBS.
+        # Using the "instance store" that comes with the instance.
+        # If the instance store comes with more than one volume,
+        # this only mounts ONE of them: /dev/xvdb
+        # For example, m3.2xlarge instances have /dev/xvdb and /dev/xvdc
+        #  and /mnt is mounted on /dev/xvdb by default.
         try:
             sudo("umount /mnt")
             sudo("mkfs -t ext4 /dev/xvdb")
             sudo("mount /dev/xvdb /data")
         except:
             pass
-
-        # persist settings to fstab
         sudo("rm -rf /etc/fstab")
         sudo("echo 'LABEL=cloudimg-rootfs	/	 ext4     defaults,discard    0   0' >> /etc/fstab")
         sudo("echo '/dev/xvdb  /data        ext4    defaults,noatime    0   0' >> /etc/fstab")
-        # activate deadline scheduler
+        # Set the I/O scheduler for /dev/xdvb to deadline
         with settings(sudo_user='root'):
             sudo("echo deadline > /sys/block/xvdb/queue/scheduler")
-        # install rethinkdb
-        sudo("echo 'deb http://download.rethinkdb.com/apt trusty main' | sudo tee /etc/apt/sources.list.d/rethinkdb.list")
-        sudo("wget -qO- http://download.rethinkdb.com/apt/pubkey.gpg | sudo apt-key add -")
-        sudo("apt-get update")
-        sudo("apt-get -y install rethinkdb")
-        # change fs to user
-        sudo('chown -R rethinkdb:rethinkdb /data')
-        # copy config file to target system
-        put('conf/rethinkdb.conf',
-            '/etc/rethinkdb/instances.d/instance1.conf',
-            mode=0600,
-            use_sudo=True)
-        # initialize data-dir
-        sudo('rm -rf /data/*')
-        # finally restart instance
-        sudo('/etc/init.d/rethinkdb restart')
+
+
+# Install RethinkDB
+@task
+@parallel
+def install_rethinkdb():
+    """Install RethinkDB"""
+    sudo("echo 'deb http://download.rethinkdb.com/apt trusty main' | sudo tee /etc/apt/sources.list.d/rethinkdb.list")
+    sudo("wget -qO- http://download.rethinkdb.com/apt/pubkey.gpg | sudo apt-key add -")
+    sudo("apt-get update")
+    sudo("apt-get -y install rethinkdb")
+    # Change owner:group of the RethinkDB data directory to rethinkdb:rethinkdb
+    sudo('chown -R rethinkdb:rethinkdb /data')
+
+
+# Configure RethinkDB
+@task
+@parallel
+def configure_rethinkdb():
+    """Copy the RethinkDB config file to the remote host"""
+    put('conf/rethinkdb.conf',
+        '/etc/rethinkdb/instances.d/instance1.conf',
+        mode=0600,
+        use_sudo=True)
+
+
+# Delete RethinkDB data
+@task
+@parallel
+def delete_rethinkdb_data():
+    """Delete the contents of the RethinkDB /data directory
+    but not the directory itself.
+    """
+    sudo('rm -rf /data/*')
+
+
+# Start RethinkDB
+@task
+@parallel
+def start_rethinkdb():
+    """Start RethinkDB"""
+    sudo('/etc/init.d/rethinkdb restart')
 
 
 # Install BigchainDB from PyPI
@@ -197,11 +246,18 @@ def init_bigchaindb():
     run('bigchaindb init', pty=False)
 
 
-# Set the number of shards (in the backlog and bigchain tables)
+# Set the number of shards (in all tables)
 @task
 @hosts(public_dns_names[0])
 def set_shards(num_shards):
     run('bigchaindb set-shards {}'.format(num_shards))
+
+
+# Set the number of replicas (in all tables)
+@task
+@hosts(public_dns_names[0])
+def set_replicas(num_replicas):
+    run('bigchaindb set-replicas {}'.format(num_replicas))
 
 
 # Start BigchainDB using screen

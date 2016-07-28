@@ -18,7 +18,7 @@
 # NUM_NODES is the number of nodes to deploy
 NUM_NODES=3
 
-# PYPI_OR_BRANCH is either "pypi" or the name of a local Git branch
+# BRANCH is either "pypi" or the name of a local Git branch
 # (e.g. "master" or "feat/3627/optional-delimiter-in-txfile")
 # It's where to get the BigchainDB code to be deployed on the nodes
 BRANCH="master"
@@ -49,3 +49,19 @@ IMAGE_ID="ami-accff2b1"
 # Examples: "m3.2xlarge", "c3.8xlarge", "c4.8xlarge"
 # For all options, see https://aws.amazon.com/ec2/instance-types/
 INSTANCE_TYPE="m3.2xlarge"
+
+# USING_EBS is True if you want to attach an Amazon EBS volume
+USING_EBS=False
+
+# EBS_VOLUME_SIZE is the size of the EBS volume to attach, in GiB
+# Since we assume 'gp2' volumes (for now), the possible range is 1 to 16384
+# If USING_EBS=False, EBS_VOLUME_SIZE is irrelevant and not used
+EBS_VOLUME_SIZE=30
+
+# EBS_OPTIMIZED is True or False, depending on whether you want
+# EBS-optimized instances. See:
+# https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSOptimized.html
+# Not all instance types support EBS optimization.
+# Setting EBS_OPTIMIZED=True may cost more, but not always.
+# If USING_EBS=False, EBS_OPTIMIZED is irrelevant and not used
+EBS_OPTIMIZED=False

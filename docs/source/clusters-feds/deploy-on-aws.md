@@ -103,6 +103,9 @@ WHAT_TO_DEPLOY="servers"
 USE_KEYPAIRS_FILE=False
 IMAGE_ID="ami-accff2b1"
 INSTANCE_TYPE="m3.2xlarge"
+USING_EBS=False
+EBS_VOLUME_SIZE=30
+EBS_OPTIMIZED=False
 ```
 
 If you're happy with those settings, then you can skip to the next step. Otherwise, you could make a copy of `example_deploy_conf.py` (e.g. `cp example_deploy_conf.py my_deploy_conf.py`) and then edit the copy using a text editor.
@@ -126,6 +129,8 @@ Step 3 is to launch the nodes ("instances") on AWS, to install all the necessary
 cd bigchaindb
 cd deploy-cluster-aws
 ./awsdeploy.sh my_deploy_conf.py
+# Only if you want to set the replication factor to 3
+fab set_replicas:3
 # Only if you want to start BigchainDB on all the nodes:
 fab start_bigchaindb
 ```
