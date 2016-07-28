@@ -1,6 +1,7 @@
 import logging
 import multiprocessing as mp
 import ctypes
+import rethinkdb as r
 
 from bigchaindb import Bigchain
 from bigchaindb.monitor import Monitor
@@ -201,13 +202,13 @@ class Voter(object):
 
 class Election(object):
 
-    def __init__(self, q_block_new_vote):
+    def __init__(self, q_new_vote):
         """
         Initialize the class with the needed queues.
 
         Initialize a queue where blocks with new votes will be held
         """
-        self.q_block_new_vote = q_block_new_vote
+        self.q_new_vote = q_new_vote
         self.q_invalid_blocks = mp.Queue()
 
     def check_for_quorum(self):
@@ -217,14 +218,15 @@ class Election(object):
         b = Bigchain()
 
         while True:
-            next_block = self.q_block_new_vote.get()
+            next_vote = self.q_new_vote.get()
 
             # poison pill
-            if next_block == 'stop':
+            if next_vote == 'stop':
                 self.q_invalid_blocks.put('stop')
                 logger.info('clean exit')
                 return
 
+            next_block = r.table('bigchain').get(next_vote['vote']['voting_for_block']).run(b.conn)
             if b.block_election_status(next_block) == 'invalid':
                 self.q_invalid_blocks.put(next_block)
 
@@ -248,7 +250,7 @@ class Election(object):
         """
         Terminate processes
         """
-        self.q_block_new_vote.put('stop')
+        self.q_new_vote.put('stop')
 
     def start(self):
         """
