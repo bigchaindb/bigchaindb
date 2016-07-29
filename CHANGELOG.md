@@ -11,14 +11,55 @@ For reference, the possible headings are:
 * **Removed** for deprecated features removed in this release.
 * **Fixed** for any bug fixes.
 * **Security** to invite users to upgrade in case of vulnerabilities.
-* **External Contributors** to list contributors outside of ascribe GmbH.
+* **External Contributors** to list contributors outside of BigchainDB GmbH.
 * **Notes**
 
-
-## [0.5.0] - YYYY-MM-DD
-Tag name: v0.5.0
+## [0.5.1] - YYYY-MM-DD
+Tag name: v0.5.1
 = commit: 
-committed: 
+committed:
+
+### Added
+- New third table, the 'votes' table: [Pull Request #379](https://github.com/bigchaindb/bigchaindb/pull/379)
+- Added `get_tx_by_payload_uuid()` including index: [Pull Request #411](https://github.com/bigchaindb/bigchaindb/pull/411)
+- Ability to deploy a test cluster on AWS using Amazon Elastic Block Store (EBS) for storage: [Pull Request #469](https://github.com/bigchaindb/bigchaindb/pull/469)
+- Ability to add different-size payloads to transactions when filling the backlog for benchmarking: [Pull Request #273](https://github.com/bigchaindb/bigchaindb/pull/273)
+
+### Changed
+- Votes are no longer appended to the blocks inside the 'bigchain' table. They're now written to their own table, the 'votes' table: [Pull Request #379](https://github.com/bigchaindb/bigchaindb/pull/379)
+- Refactored how blocks get constructed using the new approach to doing multiprocessing, using the `multipipes` package: [Pull Request #484](https://github.com/bigchaindb/bigchaindb/pull/484)
+- Changed all queries to use `read_mode='majority'`: [Pull Request #497](https://github.com/bigchaindb/bigchaindb/pull/497)
+- Revised how base software gets deployed on AWS instances: [Pull Request #478](https://github.com/bigchaindb/bigchaindb/pull/478)
+- Refactored `db.utils.init()`: [Pull Request #471](https://github.com/bigchaindb/bigchaindb/pull/471)
+
+### External Contributors
+- @shauns - [Pull Request #411](https://github.com/bigchaindb/bigchaindb/pull/411)
+- @lonelypeanut - [Pull Request #479](https://github.com/bigchaindb/bigchaindb/pull/479)
+- @lluminita - Pull Requests [#435](https://github.com/bigchaindb/bigchaindb/pull/435) & [#471](https://github.com/bigchaindb/bigchaindb/pull/471)
+
+### Notes
+- Several additions and changes to the documentation: Pull Requests
+[#416](https://github.com/bigchaindb/bigchaindb/pull/416),
+[#417](https://github.com/bigchaindb/bigchaindb/pull/417),
+[#418](https://github.com/bigchaindb/bigchaindb/pull/418),
+[#420](https://github.com/bigchaindb/bigchaindb/pull/420),
+[#421](https://github.com/bigchaindb/bigchaindb/pull/421),
+[#422](https://github.com/bigchaindb/bigchaindb/pull/422),
+[#423](https://github.com/bigchaindb/bigchaindb/pull/423),
+[#425](https://github.com/bigchaindb/bigchaindb/pull/425),
+[#428](https://github.com/bigchaindb/bigchaindb/pull/428),
+[#430](https://github.com/bigchaindb/bigchaindb/pull/430),
+[#431](https://github.com/bigchaindb/bigchaindb/pull/431),
+[#435](https://github.com/bigchaindb/bigchaindb/pull/435),
+[#442](https://github.com/bigchaindb/bigchaindb/pull/442),
+[#472](https://github.com/bigchaindb/bigchaindb/pull/472),
+[#481](https://github.com/bigchaindb/bigchaindb/pull/481)
+
+
+## [0.5.0] - 2016-07-04
+Tag name: v0.5.0
+= commit: 38329531304952128b48f2e5603db5fa08069c26
+committed: July 4, 2016, 1:07 PM GMT+2
 
 ### Added
 - New `bigchaindb set-replicas` subcommand: [Pull Request #392](https://github.com/bigchaindb/bigchaindb/pull/392)
