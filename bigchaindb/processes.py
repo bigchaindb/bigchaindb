@@ -34,27 +34,6 @@ class Processes(object):
         self.q_block_new_vote = mp.Queue()
         self.q_revert_delete = mp.Queue()
 
-    def map_backlog(self):
-        # listen to changes on the backlog and redirect the changes
-        # to the correct queues
-
-        # create a bigchain instance
-        b = Bigchain()
-
-        for change in r.table('backlog').changes().run(b.conn):
-
-            # insert
-            if change['old_val'] is None:
-                pass
-
-            # delete
-            if change['new_val'] is None:
-                pass
-
-            # update
-            if change['new_val'] is not None and change['old_val'] is not None:
-                pass
-
     def map_bigchain(self):
         # listen to changes on the bigchain and redirect the changes
         # to the correct queues
