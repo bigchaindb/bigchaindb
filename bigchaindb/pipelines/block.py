@@ -5,11 +5,16 @@ of actions to do on transactions is specified in the ``create_pipeline``
 function.
 """
 
+import logging
+
 import rethinkdb as r
 from multipipes import Pipeline, Node
 
 from bigchaindb.pipelines.utils import ChangeFeed
 from bigchaindb import Bigchain
+
+
+logger = logging.getLogger(__name__)
 
 
 class Block:
@@ -101,6 +106,9 @@ class Block:
         Returns:
             The block.
         """
+        logger.info('Write new block %s with %s transactions',
+                    block['id'],
+                    len(block['block']['transactions']))
         self.bigchain.write_block(block)
         return block
 
