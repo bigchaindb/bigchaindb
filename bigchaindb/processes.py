@@ -4,9 +4,10 @@ import multiprocessing as mp
 import rethinkdb as r
 
 import bigchaindb
+from bigchaindb.pipelines import block
 from bigchaindb import Bigchain
 from bigchaindb.voter import Voter, Election
-from bigchaindb.block import Block, BlockDeleteRevert
+from bigchaindb.block import BlockDeleteRevert
 from bigchaindb.web import server
 
 
@@ -30,30 +31,8 @@ class Processes(object):
     def __init__(self):
         # initialize the class
         self.q_new_block = mp.Queue()
-        self.q_new_transaction = mp.Queue()
         self.q_block_new_vote = mp.Queue()
         self.q_revert_delete = mp.Queue()
-
-    def map_backlog(self):
-        # listen to changes on the backlog and redirect the changes
-        # to the correct queues
-
-        # create a bigchain instance
-        b = Bigchain()
-
-        for change in r.table('backlog').changes().run(b.conn):
-
-            # insert
-            if change['old_val'] is None:
-                self.q_new_transaction.put(change['new_val'])
-
-            # delete
-            if change['new_val'] is None:
-                pass
-
-            # update
-            if change['new_val'] is not None and change['old_val'] is not None:
-                pass
 
     def map_bigchain(self):
         # listen to changes on the bigchain and redirect the changes
@@ -80,8 +59,6 @@ class Processes(object):
     def start(self):
         logger.info('Initializing BigchainDB...')
 
-        # instantiate block and voter
-        block = Block(self.q_new_transaction)
         delete_reverter = BlockDeleteRevert(self.q_revert_delete)
 
         # start the web api
@@ -91,19 +68,15 @@ class Processes(object):
 
         # initialize the processes
         p_map_bigchain = mp.Process(name='bigchain_mapper', target=self.map_bigchain)
-        p_map_backlog = mp.Process(name='backlog_mapper', target=self.map_backlog)
-        p_block = mp.Process(name='block', target=block.start)
         p_block_delete_revert = mp.Process(name='block_delete_revert', target=delete_reverter.start)
         p_voter = Voter(self.q_new_block)
         p_election = Election(self.q_block_new_vote)
-
         # start the processes
         logger.info('starting bigchain mapper')
         p_map_bigchain.start()
         logger.info('starting backlog mapper')
-        p_map_backlog.start()
         logger.info('starting block')
-        p_block.start()
+        block.start()
         p_block_delete_revert.start()
 
         logger.info('starting voter')
@@ -112,6 +85,5 @@ class Processes(object):
         p_election.start()
 
         # start message
-        block.initialized.wait()
         p_voter.initialized.wait()
         logger.info(BANNER.format(bigchaindb.config['server']['bind']))
