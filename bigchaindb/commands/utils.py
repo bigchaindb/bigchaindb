@@ -14,16 +14,24 @@ from bigchaindb import db
 from bigchaindb.version import __version__
 
 
-def start_rethinkdb():
+def start_rethinkdb(join_address=None):
     """Start RethinkDB as a child process and wait for it to be
     available.
+
+    Args:
+        join_address (string): starts rethink db joining an existent node if provided
 
     Raises:
         ``bigchaindb.exceptions.StartupError`` if RethinkDB cannot
         be started.
     """
 
-    proc = subprocess.Popen(['rethinkdb', '--bind', 'all'],
+    def_args = ['rethinkdb', '--bind', 'all']
+
+    if join_address is not None:
+        def_args += ['--join', join_address]
+
+    proc = subprocess.Popen(def_args,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT,
                             universal_newlines=True)
