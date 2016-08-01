@@ -47,6 +47,17 @@ def mock_rethink_db_drop(monkeypatch):
 
 
 @pytest.fixture
+def mock_rethink_db_drop_not_exist(monkeypatch):
+    def mockreturn(dbname):
+        class MockDropped(object):
+            def run(self, conn):
+                from bigchaindb.exceptions import DatabaseDoesNotExist
+                raise DatabaseDoesNotExist
+        return MockDropped()
+    monkeypatch.setattr('rethinkdb.db_drop', mockreturn)
+
+
+@pytest.fixture
 def mock_generate_key_pair(monkeypatch):
     monkeypatch.setattr('bigchaindb.crypto.generate_key_pair', lambda: ('privkey', 'pubkey'))
 
@@ -164,6 +175,12 @@ def test_bigchain_run_init_when_db_exists(mock_db_init_with_existing_db):
 
 
 def test_drop_existing_db(mock_rethink_db_drop):
+    from bigchaindb.commands.bigchain import run_drop
+    args = Namespace(config=None, yes=True)
+    run_drop(args)
+
+
+def test_drop_non_existing_db(mock_rethink_db_drop_not_exist):
     from bigchaindb.commands.bigchain import run_drop
     args = Namespace(config=None, yes=True)
     run_drop(args)
