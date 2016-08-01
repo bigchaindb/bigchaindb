@@ -1,6 +1,6 @@
-import pytest
+from pytest import patch
 import rethinkdb as r
-from multipipes import Pipe
+from multipipes import Pipe, Pipeline
 
 from bigchaindb import util
 from bigchaindb import crypto
@@ -208,9 +208,8 @@ def test_valid_block_voting_with_transfer_transactions(monkeypatch, b):
     assert crypto.VerifyingKey(b.me).verify(util.serialize(vote_doc['vote']),
                                             vote_doc['signature']) is True
 
-
     vote2_rs = r.table('votes').get_all([block2['id'], b.me],
-                                       index='block_and_voter').run(b.conn)
+                                        index='block_and_voter').run(b.conn)
     vote2_doc = vote2_rs.next()
     assert vote2_out['vote'] == vote2_doc['vote']
     assert vote2_doc['vote'] == {'voting_for_block': block2['id'],
@@ -256,3 +255,14 @@ def test_invalid_block_voting(monkeypatch, b, user_vk):
     assert vote_doc['node_pubkey'] == b.me
     assert crypto.VerifyingKey(b.me).verify(util.serialize(vote_doc['vote']),
                                             vote_doc['signature']) is True
+
+
+@patch.object(Pipeline, 'start')
+def test_start(mock_start):
+    # TODO: `block.start` is just a wrapper around `vote.create_pipeline`,
+    #       that is tested by `test_full_pipeline`.
+    #       If anyone has better ideas on how to test this, please do a PR :)
+    from bigchaindb.pipelines import vote
+
+    vote.start()
+    mock_start.assert_called_with()

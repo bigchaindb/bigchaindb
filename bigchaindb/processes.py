@@ -4,9 +4,9 @@ import multiprocessing as mp
 import rethinkdb as r
 
 import bigchaindb
-from bigchaindb.pipelines import block
+from bigchaindb.pipelines import block, vote
 from bigchaindb import Bigchain
-from bigchaindb.voter import Voter, Election
+from bigchaindb.voter import Election
 from bigchaindb.block import BlockDeleteRevert
 from bigchaindb.web import server
 
@@ -30,7 +30,6 @@ class Processes(object):
 
     def __init__(self):
         # initialize the class
-        self.q_new_block = mp.Queue()
         self.q_block_new_vote = mp.Queue()
         self.q_revert_delete = mp.Queue()
 
@@ -43,12 +42,8 @@ class Processes(object):
 
         for change in r.table('bigchain').changes().run(b.conn):
 
-            # insert
-            if change['old_val'] is None:
-                self.q_new_block.put(change['new_val'])
-
             # delete
-            elif change['new_val'] is None:
+            if change['new_val'] is None:
                 # this should never happen in regular operation
                 self.q_revert_delete.put(change['old_val'])
 
@@ -69,21 +64,18 @@ class Processes(object):
         # initialize the processes
         p_map_bigchain = mp.Process(name='bigchain_mapper', target=self.map_bigchain)
         p_block_delete_revert = mp.Process(name='block_delete_revert', target=delete_reverter.start)
-        p_voter = Voter(self.q_new_block)
         p_election = Election(self.q_block_new_vote)
         # start the processes
         logger.info('starting bigchain mapper')
         p_map_bigchain.start()
-        logger.info('starting backlog mapper')
         logger.info('starting block')
         block.start()
         p_block_delete_revert.start()
 
         logger.info('starting voter')
-        p_voter.start()
+        vote.start()
         logger.info('starting election')
         p_election.start()
 
         # start message
-        p_voter.initialized.wait()
         logger.info(BANNER.format(bigchaindb.config['server']['bind']))
