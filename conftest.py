@@ -41,6 +41,10 @@ def ignore_local_config_file(monkeypatch):
     monkeypatch.setattr('bigchaindb.config_utils.file_config', mock_file_config)
 
 
+CC_FULFILLMENT_URI = 'cf:0:'
+CC_CONDITION_URI = 'cc:0:3:47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU:0'
+
+
 # We need this function to avoid loading an existing
 # conf file located in the home of the user running
 # the tests. If it's too aggressive we can change it
@@ -80,3 +84,12 @@ def b(request, node_config):
     from bigchaindb import Bigchain
     return Bigchain()
 
+
+@pytest.fixture
+def ffill_uri():
+    return CC_FULFILLMENT_URI
+
+
+@pytest.fixture
+def cond_uri():
+    return CC_CONDITION_URI
