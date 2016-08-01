@@ -83,7 +83,7 @@ def test_start(mock_start):
     mock_start.assert_called_with()
 
 
-def test_full_pipline(b, user_vk):
+def test_full_pipeline(b, user_vk):
     outpipe = Pipe()
 
     # write two blocks
@@ -108,7 +108,7 @@ def test_full_pipline(b, user_vk):
     pipeline = election.create_pipeline()
     pipeline.setup(indata=election.get_changefeed(), outdata=outpipe)
     pipeline.start()
-
+    time.sleep(1)
     # vote one block valid, one invalid
     vote_valid = b.vote(valid_block['id'], 'abc', True)
     vote_invalid = b.vote(invalid_block['id'], 'abc', False)
