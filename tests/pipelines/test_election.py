@@ -116,7 +116,7 @@ def test_full_pipline(b, user_vk):
     r.table('votes').insert(vote_valid, durability='hard').run(b.conn)
     r.table('votes').insert(vote_invalid, durability='hard').run(b.conn)
 
-    time.sleep(2)
+    outpipe.get()
     pipeline.terminate()
 
     # only transactions from the invalid block should be returned to

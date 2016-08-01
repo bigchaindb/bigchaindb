@@ -26,6 +26,7 @@ class Election:
         """
         for tx in invalid_block['block']['transactions']:
             self.bigchain.write_transaction(tx)
+        return invalid_block
 
 
 def get_changefeed():
