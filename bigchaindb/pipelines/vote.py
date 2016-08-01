@@ -9,10 +9,10 @@ from bigchaindb import Bigchain
 class Vote:
 
     def __init__(self):
+        last_voted = Bigchain().get_last_voted_block()
+
         self.bigchain = Bigchain()
-        last_voted = self.bigchain.get_last_voted_block()
         self.last_voted_id = last_voted['id']
-        self.last_voted_number = last_voted['block_number']
 
         self.counters = Counter()
         self.validity = {}
@@ -41,6 +41,7 @@ class Vote:
 
     def write_vote(self, vote):
         self.bigchain.write_vote(vote)
+        return vote
 
 
 def initial():
