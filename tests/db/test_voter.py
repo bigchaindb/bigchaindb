@@ -1,11 +1,8 @@
-import pytest
 import time
 import rethinkdb as r
 import multiprocessing as mp
 
-from bigchaindb import util
-
-from bigchaindb.voter import Election, BlockStream
+from bigchaindb.voter import Election
 from bigchaindb import crypto, Bigchain
 
 
@@ -21,132 +18,6 @@ def dummy_block():
     b = Bigchain()
     block = b.create_block([dummy_tx()])
     return block
-
-
-class TestBigchainVoter(object):
-
-    def test_vote_creation_valid(self, b):
-        # create valid block
-        block = dummy_block()
-        # retrieve vote
-        vote = b.vote(block['id'], 'abc', True)
-
-        # assert vote is correct
-        assert vote['vote']['voting_for_block'] == block['id']
-        assert vote['vote']['previous_block'] == 'abc'
-        assert vote['vote']['is_block_valid'] is True
-        assert vote['vote']['invalid_reason'] is None
-        assert vote['node_pubkey'] == b.me
-        assert crypto.VerifyingKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
-
-    def test_vote_creation_invalid(self, b):
-        # create valid block
-        block = dummy_block()
-        # retrieve vote
-        vote = b.vote(block['id'], 'abc', False)
-
-        # assert vote is correct
-        assert vote['vote']['voting_for_block'] == block['id']
-        assert vote['vote']['previous_block'] == 'abc'
-        assert vote['vote']['is_block_valid'] is False
-        assert vote['vote']['invalid_reason'] is None
-        assert vote['node_pubkey'] == b.me
-        assert crypto.VerifyingKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
-
-    def test_voter_considers_unvoted_blocks_when_single_node(self, b):
-        # simulate a voter going donw in a single node environment
-        b.create_genesis_block()
-
-        # insert blocks in the database while the voter process is not listening
-        # (these blocks won't appear in the changefeed)
-        block_1 = dummy_block()
-        b.write_block(block_1, durability='hard')
-        block_2 = dummy_block()
-        b.write_block(block_2, durability='hard')
-
-        # voter is back online, we simulate that by creating a queue and a Voter instance
-        q_new_block = mp.Queue()
-        voter = Voter(q_new_block)
-
-        # vote
-        voter.start()
-        time.sleep(1)
-
-        # create a new block that will appear in the changefeed
-        block_3 = dummy_block()
-        b.write_block(block_3, durability='hard')
-
-        time.sleep(1)
-        voter.kill()
-
-        # retrive blocks from bigchain
-        blocks = list(r.table('bigchain')
-                       .order_by(r.asc((r.row['block']['timestamp'])))
-                       .run(b.conn))
-
-        # FIXME: remove genesis block, we don't vote on it (might change in the future)
-        blocks.pop(0)
-
-        # retrieve vote
-        votes = r.table('votes').run(b.conn)
-        votes = list(votes)
-
-        assert all(vote['node_pubkey'] == b.me for vote in votes)
-
-    def test_voter_chains_blocks_with_the_previous_ones(self, b):
-        b.create_genesis_block()
-        # sleep so that `block_*` as a higher timestamp then `genesis`
-        time.sleep(1)
-        block_1 = dummy_block()
-        b.write_block(block_1, durability='hard')
-        time.sleep(1)
-        block_2 = dummy_block()
-        b.write_block(block_2, durability='hard')
-
-        q_new_block = mp.Queue()
-
-        voter = Voter(q_new_block)
-        voter.start()
-        time.sleep(1)
-        voter.kill()
-
-        # retrive blocks from bigchain
-        blocks = list(r.table('bigchain')
-                       .order_by(r.asc((r.row['block']['timestamp'])))
-                       .run(b.conn))
-
-        # retrieve votes
-        votes = list(r.table('votes').run(b.conn))
-
-        assert votes[0]['vote']['voting_for_block'] in (blocks[1]['id'], blocks[2]['id'])
-        assert votes[1]['vote']['voting_for_block'] in (blocks[1]['id'], blocks[2]['id'])
-
-    def test_voter_checks_for_previous_vote(self, b):
-        b.create_genesis_block()
-        block_1 = dummy_block()
-        b.write_block(block_1, durability='hard')
-
-        q_new_block = mp.Queue()
-
-        voter = Voter(q_new_block)
-        voter.start()
-
-        time.sleep(1)
-        retrieved_block = r.table('bigchain').get(block_1['id']).run(b.conn)
-
-        # queue block for voting AGAIN
-        q_new_block.put(retrieved_block)
-        time.sleep(1)
-        voter.kill()
-
-        re_retrieved_block = r.table('bigchain').get(block_1['id']).run(b.conn)
-
-        # block should be unchanged
-        assert retrieved_block == re_retrieved_block
-
-    @pytest.mark.skipif(reason='Updating the block_number must be atomic')
-    def test_updating_block_number_must_be_atomic(self):
-        pass
 
 
 class TestBlockElection(object):

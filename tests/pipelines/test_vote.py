@@ -357,6 +357,8 @@ def test_voter_checks_for_previous_vote(monkeypatch, b):
     block_1 = dummy_block(b)
     inpipe.put(block_1)
 
+    assert r.table('votes').count().run(b.conn) == 0
+
     vote_pipeline = vote.create_pipeline()
     vote_pipeline.setup(indata=inpipe, outdata=outpipe)
     vote_pipeline.start()
@@ -364,17 +366,18 @@ def test_voter_checks_for_previous_vote(monkeypatch, b):
     # wait for the result
     outpipe.get()
 
-    retrieved_block = r.table('bigchain').get(block_1['id']).run(b.conn)
-
     # queue block for voting AGAIN
-    inpipe.put(retrieved_block)
+    inpipe.put(block_1)
 
-    re_retrieved_block = r.table('bigchain').get(block_1['id']).run(b.conn)
+    # queue another block
+    inpipe.put(dummy_block(b))
+
+    # wait for the result of the new block
+    outpipe.get()
 
     vote_pipeline.terminate()
 
-    # block should be unchanged
-    assert retrieved_block == re_retrieved_block
+    assert r.table('votes').count().run(b.conn) == 2
 
 
 @patch.object(Pipeline, 'start')

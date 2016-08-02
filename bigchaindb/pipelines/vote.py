@@ -38,9 +38,13 @@ class Vote:
             block (dict): the block to process
 
         Returns:
-            An iterator that yields a transaction, block id, and the total
-            number of transactions contained in the block.
+            ``None`` if the block has been already voted, an iterator that
+            yields a transaction, block id, and the total number of
+            transactions contained in the block otherwise.
         """
+
+        if self.bigchain.has_previous_vote(block):
+            return
 
         num_tx = len(block['block']['transactions'])
         for tx in block['block']['transactions']:
