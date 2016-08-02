@@ -16,6 +16,33 @@ def dummy_block(b):
     block = b.create_block([dummy_tx(b) for _ in range(10)])
     return block
 
+def test_vote_creation_valid(b):
+    # create valid block
+    block = dummy_block()
+    # retrieve vote
+    vote = b.vote(block['id'], 'abc', True)
+
+    # assert vote is correct
+    assert vote['vote']['voting_for_block'] == block['id']
+    assert vote['vote']['previous_block'] == 'abc'
+    assert vote['vote']['is_block_valid'] is True
+    assert vote['vote']['invalid_reason'] is None
+    assert vote['node_pubkey'] == b.me
+    assert crypto.VerifyingKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
+
+def test_vote_creation_invalid(b):
+    # create valid block
+    block = dummy_block()
+    # retrieve vote
+    vote = b.vote(block['id'], 'abc', False)
+
+    # assert vote is correct
+    assert vote['vote']['voting_for_block'] == block['id']
+    assert vote['vote']['previous_block'] == 'abc'
+    assert vote['vote']['is_block_valid'] is False
+    assert vote['vote']['invalid_reason'] is None
+    assert vote['node_pubkey'] == b.me
+    assert crypto.VerifyingKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
 
 def test_vote_ungroup_returns_a_set_of_results(b):
     from bigchaindb.pipelines import vote
