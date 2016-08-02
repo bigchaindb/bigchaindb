@@ -1,4 +1,4 @@
-from pytest import patch
+from unittest.mock import patch
 import rethinkdb as r
 from multipipes import Pipe, Pipeline
 
@@ -258,11 +258,13 @@ def test_invalid_block_voting(monkeypatch, b, user_vk):
 
 
 @patch.object(Pipeline, 'start')
-def test_start(mock_start):
+def test_start(mock_start, b):
     # TODO: `block.start` is just a wrapper around `vote.create_pipeline`,
     #       that is tested by `test_full_pipeline`.
     #       If anyone has better ideas on how to test this, please do a PR :)
     from bigchaindb.pipelines import vote
+
+    genesis = b.create_genesis_block()
 
     vote.start()
     mock_start.assert_called_with()
