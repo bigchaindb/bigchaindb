@@ -18,22 +18,21 @@ def find_rethinkdb_host():
     """Utility function to find the bigchainDB host
     linked by docker with ``--link <container_name>`
     DISCLAIMER: This is a really dummy function, but should work as long as --link
-    option in docker maintains its consistency
+    option in docker maintains its consistency (and the container name is called ``bigchaindb``
 
     Returns:
         IP Address of the host machine plus the default port to connect
     """
     default_port = '29015'
 
-    proc = subprocess.Popen(['cat', '/etc/hosts'],
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.STDOUT,
-                            universal_newlines=True)
-    lines = proc.stdout.readlines()
-    if len(lines) < 6:
-        raise StartupError('Expected default hosts format for docker simple container.')
-    ret_value = lines[6].split("\t")[0]
-    return ret_value + ":" + default_port
+    with open('/etc/hosts', encoding='utf-8') as fin:
+        for line in fin:
+            if line.find('bigchaindb') != -1:
+                fin.close()
+                return line.split("\t")[0] + ":" + default_port
+        fin.close()
+        raise StartupError('Expected default hosts format for docker simple container. '
+                           'Does your linked machine has a different name then `bigchaindb`?')
 
 
 def start_rethinkdb(join_address=None):

@@ -312,3 +312,19 @@ def test_set_replicas_raises_exception(mock_log, monkeypatch, b):
     run_set_replicas(args)
 
     assert mock_log.called
+
+
+@patch('subprocess.Popen')
+def test_start_rethinkdb_join_returns_a_process_when_successful(mock_popen):
+    from bigchaindb.commands import utils
+    mock_popen.return_value = Mock(stdout=['Server ready - Gonna join ya'])
+    assert utils.start_rethinkdb('127.0.0.1') is mock_popen.return_value
+
+
+@patch('subprocess.Popen')
+def test_start_rethinkdb_join_exits_when_cannot_start(mock_popen):
+    from bigchaindb import exceptions
+    from bigchaindb.commands import utils
+    mock_popen.return_value = Mock(stdout=['Nopety nope - no joining'])
+    with pytest.raises(exceptions.StartupError):
+        utils.start_rethinkdb('127.0.0.1')

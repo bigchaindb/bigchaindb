@@ -158,7 +158,7 @@ def run_start(args):
         try:
             if args.start_rethinkdb is True:
                 proc = utils.start_rethinkdb()
-            elif args.start_rethinkdb == '-auto':
+            elif args.start_rethinkdb == 'auto':
                 proc = utils.start_rethinkdb(utils.find_rethinkdb_host())
             else:
                 proc = utils.start_rethinkdb(args.start_rethinkdb)
@@ -247,16 +247,16 @@ def main():
     parser.add_argument('--experimental-join',
                         dest='start_rethinkdb',
                         action='store',
-                        help='Join to an existing BigChainDB Node '
+                        help='Join to an existing BigchainDB Node '
                              '- START_RETHINKDB holds the '
                              'Address of the RethinkDB server')
 
     parser.add_argument('--experimental-join-auto',
                         dest='start_rethinkdb',
                         action='store_const',
-                        const='-auto',
-                        help='Join to an existing BigChainDB '
-                             'Node supplied by looking up into the hosts file')
+                        const='auto',
+                        help='Join to an existing BigchainDB '
+                             'Node supplied by looking up into the hosts file - Container must be named `bigchaindb`')
 
     # all the commands are contained in the subparsers object,
     # the command selected by the user will be stored in `args.command`
