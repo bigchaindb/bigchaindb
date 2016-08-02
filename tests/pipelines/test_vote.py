@@ -264,7 +264,7 @@ def test_start(mock_start, b):
     #       If anyone has better ideas on how to test this, please do a PR :)
     from bigchaindb.pipelines import vote
 
-    genesis = b.create_genesis_block()
+    b.create_genesis_block()
 
     vote.start()
     mock_start.assert_called_with()
