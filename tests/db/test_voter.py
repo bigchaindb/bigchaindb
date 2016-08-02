@@ -5,7 +5,7 @@ import multiprocessing as mp
 
 from bigchaindb import util
 
-from bigchaindb.voter import Voter, Election, BlockStream
+from bigchaindb.voter import Election, BlockStream
 from bigchaindb import crypto, Bigchain
 
 
@@ -308,38 +308,3 @@ class TestBlockElection(object):
         # tx2 was in an invalid block and SHOULD be in the backlog
         assert r.table('backlog').get(tx2['id']).run(b.conn)['id'] == tx2['id']
 
-
-class TestBlockStream(object):
-
-    def test_if_federation_size_is_greater_than_one_ignore_past_blocks(self, b):
-        for _ in range(5):
-            b.nodes_except_me.append(crypto.generate_key_pair()[1])
-        new_blocks = mp.Queue()
-        bs = BlockStream(new_blocks)
-        block_1 = dummy_block()
-        new_blocks.put(block_1)
-        assert block_1 == bs.get()
-
-    def test_if_no_old_blocks_get_should_return_new_blocks(self, b):
-        new_blocks = mp.Queue()
-        bs = BlockStream(new_blocks)
-
-        # create two blocks
-        block_1 = dummy_block()
-        block_2 = dummy_block()
-
-        # write the blocks
-        b.write_block(block_1, durability='hard')
-        b.write_block(block_2, durability='hard')
-
-        # simulate a changefeed
-        new_blocks.put(block_1)
-        new_blocks.put(block_2)
-
-        # and check if we get exactly these two blocks
-        assert bs.get() == block_1
-        assert bs.get() == block_2
-
-    @pytest.mark.skipif(reason='We may have duplicated blocks when retrieving the BlockStream')
-    def test_ignore_duplicated_blocks_when_retrieving_the_blockstream(self):
-        pass

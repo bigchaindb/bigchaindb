@@ -1,6 +1,5 @@
 import copy
 import multiprocessing as mp
-import random
 import time
 
 import pytest
@@ -9,7 +8,6 @@ import cryptoconditions as cc
 
 import bigchaindb
 from bigchaindb import crypto, exceptions, util
-from bigchaindb.voter import Voter
 from bigchaindb.block import BlockDeleteRevert
 
 

@@ -157,6 +157,7 @@ def test_valid_block_voting_with_create_transaction(b, monkeypatch):
     assert crypto.VerifyingKey(b.me).verify(util.serialize(vote_doc['vote']),
                                             vote_doc['signature']) is True
 
+
 def test_valid_block_voting_with_transfer_transactions(monkeypatch, b):
     from bigchaindb.pipelines import vote
 
@@ -255,6 +256,125 @@ def test_invalid_block_voting(monkeypatch, b, user_vk):
     assert vote_doc['node_pubkey'] == b.me
     assert crypto.VerifyingKey(b.me).verify(util.serialize(vote_doc['vote']),
                                             vote_doc['signature']) is True
+
+
+def test_voter_considers_unvoted_blocks_when_single_node(monkeypatch, b):
+    from bigchaindb.pipelines import vote
+
+    outpipe = Pipe()
+
+    monkeypatch.setattr(util, 'timestamp', lambda: '1')
+    b.create_genesis_block()
+
+    # insert blocks in the database while the voter process is not listening
+    # (these blocks won't appear in the changefeed)
+    block_1 = dummy_block(b)
+    b.write_block(block_1, durability='hard')
+    block_2 = dummy_block(b)
+    b.write_block(block_2, durability='hard')
+
+    vote_pipeline = vote.create_pipeline()
+    vote_pipeline.setup(indata=vote.get_changefeed(), outdata=outpipe)
+    vote_pipeline.start()
+
+    # We expects two votes, so instead of waiting an arbitrary amount
+    # of time, we can do two blocking calls to `get`
+    outpipe.get()
+    outpipe.get()
+
+    # create a new block that will appear in the changefeed
+    block_3 = dummy_block(b)
+    b.write_block(block_3, durability='hard')
+
+    # Same as before with the two `get`s
+    outpipe.get()
+
+    vote_pipeline.terminate()
+
+    # retrive blocks from bigchain
+    blocks = list(r.table('bigchain')
+                   .order_by(r.asc((r.row['block']['timestamp'])))
+                   .run(b.conn))
+
+    # FIXME: remove genesis block, we don't vote on it (might change in the future)
+    blocks.pop(0)
+    vote_pipeline.terminate()
+
+    # retrieve vote
+    votes = r.table('votes').run(b.conn)
+    votes = list(votes)
+
+    assert all(vote['node_pubkey'] == b.me for vote in votes)
+
+
+def test_voter_chains_blocks_with_the_previous_ones(monkeypatch, b):
+    from bigchaindb.pipelines import vote
+
+    outpipe = Pipe()
+
+    monkeypatch.setattr(util, 'timestamp', lambda: '1')
+    b.create_genesis_block()
+
+    monkeypatch.setattr(util, 'timestamp', lambda: '2')
+    block_1 = dummy_block(b)
+    b.write_block(block_1, durability='hard')
+
+    monkeypatch.setattr(util, 'timestamp', lambda: '3')
+    block_2 = dummy_block(b)
+    b.write_block(block_2, durability='hard')
+
+    vote_pipeline = vote.create_pipeline()
+    vote_pipeline.setup(indata=vote.get_changefeed(), outdata=outpipe)
+    vote_pipeline.start()
+
+    # We expects two votes, so instead of waiting an arbitrary amount
+    # of time, we can do two blocking calls to `get`
+    outpipe.get()
+    outpipe.get()
+    vote_pipeline.terminate()
+
+    # retrive blocks from bigchain
+    blocks = list(r.table('bigchain')
+                   .order_by(r.asc((r.row['block']['timestamp'])))
+                   .run(b.conn))
+
+    # retrieve votes
+    votes = list(r.table('votes').run(b.conn))
+
+    assert votes[0]['vote']['voting_for_block'] in (blocks[1]['id'], blocks[2]['id'])
+    assert votes[1]['vote']['voting_for_block'] in (blocks[1]['id'], blocks[2]['id'])
+
+
+def test_voter_checks_for_previous_vote(monkeypatch, b):
+    from bigchaindb.pipelines import vote
+
+    inpipe = Pipe()
+    outpipe = Pipe()
+
+    monkeypatch.setattr(util, 'timestamp', lambda: '1')
+    b.create_genesis_block()
+
+    block_1 = dummy_block(b)
+    inpipe.put(block_1)
+
+    vote_pipeline = vote.create_pipeline()
+    vote_pipeline.setup(indata=inpipe, outdata=outpipe)
+    vote_pipeline.start()
+
+    # wait for the result
+    outpipe.get()
+
+    retrieved_block = r.table('bigchain').get(block_1['id']).run(b.conn)
+
+    # queue block for voting AGAIN
+    inpipe.put(retrieved_block)
+
+    re_retrieved_block = r.table('bigchain').get(block_1['id']).run(b.conn)
+
+    vote_pipeline.terminate()
+
+    # block should be unchanged
+    assert retrieved_block == re_retrieved_block
 
 
 @patch.object(Pipeline, 'start')
