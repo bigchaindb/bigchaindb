@@ -169,8 +169,8 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
     Reference:
         {
             "id": "<sha3 hash>",
-            "version": "transaction version number",
             "transaction": {
+                "version": "transaction version number",
                 "fulfillments": [
                         {
                             "current_owners": ["list of <pub-keys>"],
@@ -278,6 +278,7 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
             })
 
     tx = {
+        'version': 1,
         'fulfillments': fulfillments,
         'conditions': conditions,
         'operation': operation,
@@ -291,7 +292,6 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
     # create the transaction
     transaction = {
         'id': tx_hash,
-        'version': 1,
         'transaction': tx
     }
 
