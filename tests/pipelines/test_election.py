@@ -32,7 +32,7 @@ def test_check_for_quorum_invalid(b, user_vk):
     # cast votes
     r.table('votes').insert(votes, durability='hard').run(b.conn)
 
-    # since this block is now in valid, should pass to the next process
+    # since this block is now invalid, should pass to the next process
     assert e.check_for_quorum(votes[-1]) == test_block
 
 
@@ -76,7 +76,7 @@ def test_check_requeue_transaction(b, user_vk):
 
 @patch.object(Pipeline, 'start')
 def test_start(mock_start):
-    # TODO: `block.start` is just a wrapper around `block.create_pipeline`,
+    # TODO: `block.election` is just a wrapper around `block.create_pipeline`,
     #       that is tested by `test_full_pipeline`.
     #       If anyone has better ideas on how to test this, please do a PR :)
     election.start()
