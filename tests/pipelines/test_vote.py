@@ -16,9 +16,10 @@ def dummy_block(b):
     block = b.create_block([dummy_tx(b) for _ in range(10)])
     return block
 
+
 def test_vote_creation_valid(b):
     # create valid block
-    block = dummy_block()
+    block = dummy_block(b)
     # retrieve vote
     vote = b.vote(block['id'], 'abc', True)
 
@@ -28,11 +29,13 @@ def test_vote_creation_valid(b):
     assert vote['vote']['is_block_valid'] is True
     assert vote['vote']['invalid_reason'] is None
     assert vote['node_pubkey'] == b.me
-    assert crypto.VerifyingKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
+    assert crypto.VerifyingKey(b.me).verify(util.serialize(vote['vote']),
+                                            vote['signature']) is True
+
 
 def test_vote_creation_invalid(b):
     # create valid block
-    block = dummy_block()
+    block = dummy_block(b)
     # retrieve vote
     vote = b.vote(block['id'], 'abc', False)
 
@@ -42,7 +45,9 @@ def test_vote_creation_invalid(b):
     assert vote['vote']['is_block_valid'] is False
     assert vote['vote']['invalid_reason'] is None
     assert vote['node_pubkey'] == b.me
-    assert crypto.VerifyingKey(b.me).verify(util.serialize(vote['vote']), vote['signature']) is True
+    assert crypto.VerifyingKey(b.me).verify(util.serialize(vote['vote']),
+                                            vote['signature']) is True
+
 
 def test_vote_ungroup_returns_a_set_of_results(b):
     from bigchaindb.pipelines import vote
@@ -323,7 +328,8 @@ def test_voter_considers_unvoted_blocks_when_single_node(monkeypatch, b):
                    .order_by(r.asc((r.row['block']['timestamp'])))
                    .run(b.conn))
 
-    # FIXME: remove genesis block, we don't vote on it (might change in the future)
+    # FIXME: remove genesis block, we don't vote on it
+    # (might change in the future)
     blocks.pop(0)
     vote_pipeline.terminate()
 
