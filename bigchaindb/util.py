@@ -169,8 +169,8 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
     Reference:
         {
             "id": "<sha3 hash>",
-            "version": "transaction version number",
             "transaction": {
+                "version": "transaction version number",
                 "fulfillments": [
                         {
                             "current_owners": ["list of <pub-keys>"],
@@ -278,6 +278,7 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
             })
 
     tx = {
+        'version': 1,
         'fulfillments': fulfillments,
         'conditions': conditions,
         'operation': operation,
@@ -291,7 +292,6 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
     # create the transaction
     transaction = {
         'id': tx_hash,
-        'version': 1,
         'transaction': tx
     }
 
@@ -479,7 +479,7 @@ def get_fulfillment_message(transaction, fulfillment, serialized=False):
         'operation': transaction['transaction']['operation'],
         'timestamp': transaction['transaction']['timestamp'],
         'data': transaction['transaction']['data'],
-        'version': transaction['version'],
+        'version': transaction['transaction']['version'],
         'id': transaction['id']
     }
     # and the condition which needs to be retrieved from the output of a previous transaction
