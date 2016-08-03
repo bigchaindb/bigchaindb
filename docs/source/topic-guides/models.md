@@ -58,8 +58,8 @@ Assets can be mutable (changeable) or immutable. To change a mutable asset, you 
 ```json
 {
     "id": "<hash of transaction, excluding signatures (see explanation)>",
-    "version": "<version number of the transaction model>",
     "transaction": {
+        "version": "<version number of the transaction model>",
         "fulfillments": ["<list of fulfillments>"],
         "conditions": ["<list of conditions>"],
         "operation": "<string>",
@@ -75,8 +75,8 @@ Assets can be mutable (changeable) or immutable. To change a mutable asset, you 
 Here's some explanation of the contents of a transaction:
 
 - `id`: The hash of everything inside the serialized `transaction` body (i.e. `fulfillments`, `conditions`, `operation`, `timestamp` and `data`; see below), with one wrinkle: for each fulfillment in `fulfillments`, `fulfillment` is set to `null`. The `id` is also the database primary key.
-- `version`: Version number of the transaction model, so that software can support different transaction models.
 - `transaction`:
+    - `version`: Version number of the transaction model, so that software can support different transaction models.
     - `fulfillments`: List of fulfillments. Each _fulfillment_ contains a pointer to an unspent asset
     and a _crypto fulfillment_ that satisfies a spending condition set on the unspent asset. A _fulfillment_
     is usually a signature proving the ownership of the asset.
