@@ -91,6 +91,15 @@ def test_bigchain_run_start_with_rethinkdb_join(mock_start_rethinkdb,
 
     mock_start_rethinkdb.assert_called_with('127.0.0.1')
 
+    
+def test_bigchain_run_start_with_rethinkdb_join_fails():
+
+    from bigchaindb.commands.bigchain import run_start
+    args = Namespace(start_rethinkdb='invalid_host', config=None, yes=True)
+    with pytest.raises(SystemExit):
+        run_start(args)
+
+
 @patch('bigchaindb.commands.utils.start_rethinkdb')
 def test_bigchain_run_start_with_rethinkdb_join_auto(mock_start_rethinkdb,
                                            mock_run_configure,
