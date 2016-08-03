@@ -4,11 +4,16 @@ Specifically, what happens when a block becomes invalid.  The logic is
 encapsulated in the ``Election`` class, while the sequence of actions
 is specified in ``create_pipeline``.
 """
+import logging
+
 import rethinkdb as r
 from multipipes import Pipeline, Node
 
 from bigchaindb.pipelines.utils import ChangeFeed
 from bigchaindb import Bigchain
+
+
+logger = logging.getLogger(__name__)
 
 
 class Election:
@@ -30,6 +35,9 @@ class Election:
         """
         Liquidates transactions from invalid blocks so they can be processed again
         """
+        logger.info('Rewriting %s transactions from invalid block %s',
+                    len(invalid_block['block']['transactions']),
+                    invalid_block['id'])
         for tx in invalid_block['block']['transactions']:
             self.bigchain.write_transaction(tx)
         return invalid_block
