@@ -151,7 +151,7 @@ def test_create_tx_with_empty_inputs():
     tx = create_tx(None, None, [], None)
     assert 'id' in tx
     assert 'transaction' in tx
-    assert 'version' in tx
+    assert 'version' in tx['transaction']
     assert 'fulfillments' in tx['transaction']
     assert 'conditions' in tx['transaction']
     assert 'operation' in tx['transaction']
