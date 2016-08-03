@@ -479,7 +479,7 @@ def get_fulfillment_message(transaction, fulfillment, serialized=False):
         'operation': transaction['transaction']['operation'],
         'timestamp': transaction['transaction']['timestamp'],
         'data': transaction['transaction']['data'],
-        'version': transaction['version'],
+        'version': transaction['transaction']['version'],
         'id': transaction['id']
     }
     # and the condition which needs to be retrieved from the output of a previous transaction
