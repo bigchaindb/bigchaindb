@@ -361,3 +361,12 @@ def test_find_rethinkdb_host():
     with patch('builtins.open', return_value=fake_file, create=True):
         from bigchaindb.commands import utils
         assert utils.find_rethinkdb_host() == "127.0.0.1:29015"
+
+
+def test_find_rethinkdb_host_fails():
+    fake_file = StringIO('#EXAMPLE HOSTS FILE\n127.0.0.1\tnotBigchaindb\n')
+    with patch('builtins.open', return_value=fake_file, create=True):
+        from bigchaindb.commands import utils
+        from bigchaindb import exceptions
+        with pytest.raises(exceptions.StartupError):
+            utils.find_rethinkdb_host()
