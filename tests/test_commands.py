@@ -1,5 +1,6 @@
 import json
-from unittest.mock import Mock, patch
+from io import StringIO
+from unittest.mock import Mock, patch, mock_open
 from argparse import Namespace
 import copy
 
@@ -328,3 +329,10 @@ def test_start_rethinkdb_join_exits_when_cannot_start(mock_popen):
     mock_popen.return_value = Mock(stdout=['Nopety nope - no joining'])
     with pytest.raises(exceptions.StartupError):
         utils.start_rethinkdb('127.0.0.1')
+
+
+def test_find_rethinkdb_host():
+    fake_file = StringIO('#EXAMPLE HOSTS FILE\n127.0.0.1\tbigchaindb\n')
+    with patch('builtins.open', return_value=fake_file, create=True):
+        from bigchaindb.commands import utils
+        assert utils.find_rethinkdb_host() == "127.0.0.1:29015"
