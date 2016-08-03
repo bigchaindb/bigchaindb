@@ -31,7 +31,6 @@ class Processes(object):
     def __init__(self):
         # initialize the class
         self.q_new_block = mp.Queue()
-        self.q_block_new_vote = mp.Queue()
         self.q_revert_delete = mp.Queue()
 
     def map_bigchain(self):
@@ -52,10 +51,6 @@ class Processes(object):
                 # this should never happen in regular operation
                 self.q_revert_delete.put(change['old_val'])
 
-            # update (new vote)
-            elif change['new_val'] is not None and change['old_val'] is not None:
-                self.q_block_new_vote.put(change['new_val'])
-
     def start(self):
         logger.info('Initializing BigchainDB...')
 
@@ -73,14 +68,13 @@ class Processes(object):
         # start the processes
         logger.info('starting bigchain mapper')
         p_map_bigchain.start()
-        logger.info('starting backlog mapper')
         logger.info('starting block')
         block.start()
-        election.start()
         p_block_delete_revert.start()
 
         logger.info('starting voter')
         p_voter.start()
+        election.start()
         logger.info('starting election')
 
         # start message
