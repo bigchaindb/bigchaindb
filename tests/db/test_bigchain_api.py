@@ -1252,7 +1252,7 @@ class TestTransactionMalleability(object):
         assert b.is_valid_transaction(tx_changed) is False
 
         tx_changed = copy.deepcopy(tx_signed)
-        tx_changed['version'] = '0'
+        tx_changed['transaction']['version'] = '0'
         assert b.validate_fulfillments(tx_changed) is False
         assert b.is_valid_transaction(tx_changed) is False
 
