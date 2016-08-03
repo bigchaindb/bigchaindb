@@ -1,3 +1,9 @@
+"""This module takes care of all the logic related to block status.
+
+Specifically, what happens when a block becomes invalid.  The logic is
+encapsulated in the ``Election`` class, while the sequence of actions
+is specified in ``create_pipeline``.
+"""
 import rethinkdb as r
 from multipipes import Pipeline, Node
 
