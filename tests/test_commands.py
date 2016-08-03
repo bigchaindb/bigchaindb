@@ -80,6 +80,18 @@ def test_bigchain_run_start_with_rethinkdb(mock_start_rethinkdb,
     mock_start_rethinkdb.assert_called_with()
 
 
+@patch('bigchaindb.commands.utils.start_rethinkdb')
+def test_bigchain_run_start_with_rethinkdb_join(mock_start_rethinkdb,
+                                           mock_run_configure,
+                                           mock_processes_start,
+                                           mock_db_init_with_existing_db):
+    from bigchaindb.commands.bigchain import run_start
+    args = Namespace(start_rethinkdb='127.0.0.1', config=None, yes=True)
+    run_start(args)
+
+    mock_start_rethinkdb.assert_called_with('127.0.0.1')
+
+
 @pytest.mark.skipif(reason="BigchainDB doesn't support the automatic creation of a config file anymore")
 def test_bigchain_run_start_assume_yes_create_default_config(monkeypatch, mock_processes_start,
                                                              mock_generate_key_pair, mock_db_init_with_existing_db):
