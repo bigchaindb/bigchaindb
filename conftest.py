@@ -40,6 +40,7 @@ CC_CONDITION_URI = 'cc:0:3:47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU:0'
 @pytest.fixture(scope='function', autouse=True)
 def ignore_local_config_file(monkeypatch):
     def mock_file_config(filename=None):
+        # TODO: FileNotFoundError is not defined anywhere. Import it
         raise FileNotFoundError()
 
     monkeypatch.setattr('bigchaindb.config_utils.file_config', mock_file_config)
@@ -81,3 +82,9 @@ def ffill_uri():
 @pytest.fixture
 def cond_uri():
     return CC_CONDITION_URI
+
+
+@pytest.fixture
+def ffill(ffill_uri):
+    from cryptoconditions import Fulfillment
+    return Fulfillment.from_uri(ffill_uri)
