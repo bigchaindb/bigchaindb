@@ -14,16 +14,27 @@ from bigchaindb.util import ProcessGroup
 from bigchaindb.commands import utils
 
 
+SIZE_OF_FILLER = {'minimal': 0,
+                  'small': 10**3,
+                  'medium': 10**4,
+                  'large': 10**5}
+
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def create_write_transaction(tx_left):
+def create_write_transaction(tx_left, payload_filler):
     b = Bigchain()
+    payload_dict = {}
+    if payload_filler:
+        payload_dict['filler'] = payload_filler
     while tx_left > 0:
-        # use uuid to prevent duplicate transactions (transactions with the same hash)
+        # Include a random uuid string in the payload to prevent duplicate
+        # transactions (i.e. transactions with the same hash)
+        payload_dict['msg'] = str(uuid.uuid4())
         tx = b.create_transaction(b.me, b.me, None, 'CREATE',
-                                  payload={'msg': str(uuid.uuid4())})
+                                  payload=payload_dict)
         tx_signed = b.sign_transaction(tx, b.me_private)
         b.write_transaction(tx_signed)
         tx_left -= 1
@@ -31,7 +42,9 @@ def create_write_transaction(tx_left):
 
 def run_add_backlog(args):
     tx_left = args.num_transactions // mp.cpu_count()
-    workers = ProcessGroup(target=create_write_transaction, args=(tx_left,))
+    payload_filler = 'x' * SIZE_OF_FILLER[args.payload_size]
+    workers = ProcessGroup(target=create_write_transaction,
+                           args=(tx_left, payload_filler))
     workers.start()
 
 
@@ -105,8 +118,13 @@ def main():
     # add transactions to backlog
     backlog_parser = subparsers.add_parser('add-backlog',
                                            help='Add transactions to the backlog')
-    backlog_parser.add_argument('num_transactions', metavar='num_transactions', type=int, default=0,
+    backlog_parser.add_argument('num_transactions', metavar='num_transactions',
+                                type=int, default=0,
                                 help='Number of transactions to add to the backlog')
+    backlog_parser.add_argument('-s', '--payload-size',
+                                choices=SIZE_OF_FILLER.keys(),
+                                default='minimal',
+                                help='Payload size')
 
     # set statsd host
     statsd_parser = subparsers.add_parser('set-statsd-host',

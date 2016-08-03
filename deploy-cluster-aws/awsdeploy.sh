@@ -32,6 +32,11 @@ echo "WHAT_TO_DEPLOY = "$WHAT_TO_DEPLOY
 echo "USE_KEYPAIRS_FILE = "$USE_KEYPAIRS_FILE
 echo "IMAGE_ID = "$IMAGE_ID
 echo "INSTANCE_TYPE = "$INSTANCE_TYPE
+echo "USING_EBS = "$USING_EBS
+if [ "$USING_EBS" = True ]; then
+    echo "EBS_VOLUME_SIZE = "$EBS_VOLUME_SIZE
+    echo "EBS_OPTIMIZED = "$EBS_OPTIMIZED
+fi
 
 # Check for AWS private key file (.pem file)
 if [ ! -f "pem/bigchaindb.pem" ]; then
@@ -95,8 +100,12 @@ fab upgrade_setuptools
 if [ "$WHAT_TO_DEPLOY" == "servers" ]; then
     # (Re)create the RethinkDB configuration file conf/rethinkdb.conf
     python create_rethinkdb_conf.py
-    # Rollout storage backend (RethinkDB) and start it
+    # Rollout RethinkDB and start it
+    fab prep_rethinkdb_storage:$USING_EBS
     fab install_rethinkdb
+    fab configure_rethinkdb
+    fab delete_rethinkdb_data
+    fab start_rethinkdb
 fi
 
 # Rollout BigchainDB (but don't start it yet)
@@ -148,6 +157,8 @@ if [ "$WHAT_TO_DEPLOY" == "servers" ]; then
     # definition of init_bigchaindb() in fabfile.py to see why.
     fab init_bigchaindb
     fab set_shards:$NUM_NODES
+    echo "To set the replication factor to 3, do: fab set_replicas:3"
+    echo "To start BigchainDB on all the nodes, do: fab start_bigchaindb"
 else
     # Deploying clients
     # The only thing to configure on clients is the api_endpoint

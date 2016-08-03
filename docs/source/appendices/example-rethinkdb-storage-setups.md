@@ -1,32 +1,19 @@
 # Example RethinkDB Storage Setups
 
-## Example 1: A Partition of an AWS Instance Store
+## Example Amazon EC2 Setups
 
-Many [AWS EC2 instance types](https://aws.amazon.com/ec2/instance-types/) comes with an [instance store](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/InstanceStorage.html): temporary storage that disappears when the instance disappears. The size and setup of an instance store depends on the EC2 instance type.
+We have some scripts for [deploying a _test_ BigchainDB cluster on AWS](../clusters-feds/deploy-on-aws.html). Those scripts include command sequences to set up storage for RethinkDB.
+In particular, look in the file [/deploy-cluster-aws/fabfile.py](https://github.com/bigchaindb/bigchaindb/blob/master/deploy-cluster-aws/fabfile.py), under `def prep_rethinkdb_storage(USING_EBS)`. Note that there are two cases:
 
-We have some scripts for [deploying a _test_ BigchainDB cluster on AWS](../clusters-feds/deploy-on-aws.html). Those scripts include commands to set up a partition (`/dev/xvdb`) on an instance store for RethinkDB data. Those commands can be found in the file `/deploy-cluster-aws/fabfile.py`, under `def install_rethinkdb()` (i.e. the Fabric function to install RethinkDB).
+1. **Using EBS ([Amazon Elastic Block Store](https://aws.amazon.com/ebs/)).** This is always an option, and for some instance types ("EBS-only"), it's the only option.
+2. **Using an "instance store" volume provided with an Amazon EC2 instance.** Note that our scripts only use one of the (possibly many) volumes in the instance store.
 
-An AWS instance store is convenient, but it's intended for "buffers, caches, scratch data, and other temporary content." Moreover:
+There's some explanation of the steps in the [Amazon EC2 documentation about making an Amazon EBS volume available for use](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html).
 
-* You pay for all the storage, regardless of how much you use.
-* You can't increase the size of the instance store.
-* If the instance stops, terminates, or reboots, you lose the associated instance store.
-* Instance store data isn't replicated, so if the underlying disk drive fails, you lose the data in the instance store.
-* "You can't detach an instance store volume from one instance and attach it to a different instance."
-
-The [AWS documentation says](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/InstanceStorage.html), "...do not rely on instance store for valuable, long-term data. Instead, you can build a degree of redundancy (for example, RAID 1/5/6), or use a file system (for example, HDFS and MapR-FS) that supports redundancy and fault tolerance."
-
-**Even if you don't use an AWS instance store partition to store your node's RethinkDB data, you may find it useful to read the steps in `def install_rethinkdb()`: [see fabfile.py](https://github.com/bigchaindb/bigchaindb/blob/master/deploy-cluster-aws/fabfile.py).**
+You shouldn't use an EC2 "instance store" to store RethinkDB data for a production node, because it's not replicated and it's only intended for temporary, ephemeral data. If the associated instance crashes, is stopped, or is terminated, the data in the instance store is lost forever. Amazon EBS storage is replicated, has incremental snapshots, and is low-latency.
 
 
-## Example 2: An Amazon EBS Volume
-
-TODO
-
-Note: Amazon EBS volumes are always replicated.
-
-
-## Example 3: Using Amazon EFS
+## Example Using Amazon EFS
 
 TODO
 
