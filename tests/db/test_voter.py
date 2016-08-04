@@ -5,7 +5,7 @@ import multiprocessing as mp
 
 from bigchaindb import util
 
-from bigchaindb.voter import Voter, Election, BlockStream
+from bigchaindb.voter import Voter, BlockStream
 from bigchaindb import crypto, Bigchain
 
 
@@ -470,51 +470,6 @@ class TestBlockElection(object):
         r.table('votes').insert(invalid_vote[:3], durability='hard').run(b.conn)
         assert b.block_election_status(test_block) == Bigchain.BLOCK_INVALID
         r.table('votes').delete().run(b.conn)
-
-    def test_tx_rewritten_after_invalid(self, b, user_vk):
-        q_block_new_vote = mp.Queue()
-
-        # create blocks with transactions
-        tx1 = b.create_transaction(b.me, user_vk, None, 'CREATE')
-        tx2 = b.create_transaction(b.me, user_vk, None, 'CREATE')
-        test_block_1 = b.create_block([tx1])
-        test_block_2 = b.create_block([tx2])
-
-        # simulate a federation with four voters
-        key_pairs = [crypto.generate_key_pair() for _ in range(4)]
-        test_federation = [Bigchain(public_key=key_pair[1], private_key=key_pair[0])
-                           for key_pair in key_pairs]
-
-        # simulate a federation with four voters
-        test_block_1['block']['voters'] = [key_pair[1] for key_pair in key_pairs]
-        test_block_2['block']['voters'] = [key_pair[1] for key_pair in key_pairs]
-
-        # votes for block one
-        vote_1 = [member.vote(test_block_1['id'], 'abc', True)
-                      for member in test_federation]
-
-        # votes for block two
-        vote_2 = [member.vote(test_block_2['id'], 'abc', True) for member in test_federation[:2]] + \
-                       [member.vote(test_block_2['id'], 'abc', False) for member in test_federation[2:]]
-
-        # construct valid block
-        r.table('votes').insert(vote_1, durability='hard').run(b.conn)
-        q_block_new_vote.put(test_block_1)
-
-        # construct invalid block
-        r.table('votes').insert(vote_2, durability='hard').run(b.conn)
-        q_block_new_vote.put(test_block_2)
-
-        election = Election(q_block_new_vote)
-        election.start()
-        time.sleep(1)
-        election.kill()
-
-        # tx1 was in a valid block, and should not be in the backlog
-        assert r.table('backlog').get(tx1['id']).run(b.conn) is None
-
-        # tx2 was in an invalid block and SHOULD be in the backlog
-        assert r.table('backlog').get(tx2['id']).run(b.conn)['id'] == tx2['id']
 
 
 class TestBlockStream(object):
