@@ -209,7 +209,7 @@ def write_config(config, filename=None):
         filename = CONFIG_DEFAULT_PATH
 
     with open(filename, 'w') as f:
-        json.dump(config, f)
+        json.dump(config, f, indent=4)
 
 
 def autoconfigure(filename=None, config=None, force=False):
