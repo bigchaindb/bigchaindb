@@ -9,8 +9,19 @@ from collections import Counter
 
 from multipipes import Pipeline, Node
 
+from bigchaindb import config_utils, exceptions
 from bigchaindb.pipelines.utils import ChangeFeed
 from bigchaindb import Bigchain
+
+
+def create_invalid_tx():
+    """Create and return an invalid transaction.
+
+    The transaction is invalid because it's missing the signature."""
+
+    b = Bigchain()
+    tx = b.create_transaction(b.me, b.me, None, 'CREATE')
+    return tx
 
 
 class Vote:
@@ -23,15 +34,34 @@ class Vote:
     def __init__(self):
         """Initialize the Block voter."""
 
+        # Since cannot share a connection to RethinkDB using multiprocessing,
+        # we need to create a temporary instance of BigchainDB that we use
+        # only to query RethinkDB
         last_voted = Bigchain().get_last_voted_block()
+        self.consensus = config_utils.load_consensus_plugin()
 
+        # This is the Bigchain instance that will be "shared" (aka: copied)
+        # by all the subprocesses
         self.bigchain = Bigchain()
         self.last_voted_id = last_voted['id']
 
         self.counters = Counter()
         self.validity = {}
 
-    def ungroup(self, block):
+        self.invalid_dummy_tx = create_invalid_tx()
+
+    def validate_block(self, block):
+        if not self.bigchain.has_previous_vote(block):
+            try:
+                self.consensus.validate_block(self.bigchain, block)
+                valid = True
+            except (exceptions.InvalidHash,
+                    exceptions.OperationError,
+                    exceptions.InvalidSignature) as e:
+                valid = False
+            return block, valid
+
+    def ungroup(self, block, valid):
         """Given a block, ungroup the transactions in it.
 
         Args:
@@ -43,12 +73,16 @@ class Vote:
             transactions contained in the block otherwise.
         """
 
-        if self.bigchain.has_previous_vote(block):
-            return
-
-        num_tx = len(block['block']['transactions'])
-        for tx in block['block']['transactions']:
-            yield tx, block['id'], num_tx
+        # XXX: if a block is invalid we should skip the `validate_tx` step,
+        # but since we are in a pipeline we cannot just jump to another
+        # function. Hackish solution: generate an invalid transaction
+        # and propagate it to the next steps of the pipeline
+        if valid:
+            num_tx = len(block['block']['transactions'])
+            for tx in block['block']['transactions']:
+                yield tx, block['id'], num_tx
+        else:
+            yield self.invalid_dummy_tx, block['id'], 1
 
     def validate_tx(self, tx, block_id, num_tx):
         """Validate a transaction.
@@ -103,8 +137,8 @@ class Vote:
 def initial():
     """Return unvoted blocks."""
     b = Bigchain()
-    initial = b.get_unvoted_blocks()
-    return initial
+    rs = b.get_unvoted_blocks()
+    return rs
 
 
 def get_changefeed():
@@ -120,6 +154,7 @@ def create_pipeline():
     voter = Vote()
 
     vote_pipeline = Pipeline([
+        Node(voter.validate_block),
         Node(voter.ungroup),
         Node(voter.validate_tx, fraction_of_cores=1),
         Node(voter.vote),
