@@ -15,16 +15,15 @@ sudo apt-get update
 sudo apt-get install g++ python3-dev
 ```
 
-D. Get the latest version of pip, wheel and setuptools:
+D. Get the latest version of pip and setuptools:
 ```text
-sudo apt-get install python3-setuptools
-sudo easy_install3 pip
-pip3 install --upgrade pip wheel setuptools
+sudo apt-get install python3-pip
+sudo pip3 install --upgrade pip setuptools
 ```
 
 E. Install the `bigchaindb` Python package from PyPI:
 ```text
-sudo pip install bigchaindb
+sudo pip3 install bigchaindb
 ```
 
 F. Configure and run BigchainDB:
