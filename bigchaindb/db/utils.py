@@ -115,7 +115,7 @@ def drop(assume_yes=False):
     dbname = bigchaindb.config['database']['name']
     if assume_yes:
         response = 'y'
-        print(dbname)
+        
     else:
         response = input('Do you want to drop `{}` database? [y/n]: '.format(dbname))
 
@@ -124,8 +124,6 @@ def drop(assume_yes=False):
             logger.info('Drop database `%s`', dbname)
             r.db_drop(dbname).run(conn)
             logger.info('Done.')
-        #except r.ReqlOpFailedError:
-        #    raise exceptions.DatabaseDoesNotExist('Database `{}` does not exist'.format(dbname))
         except r.ReqlOpFailedError as e:
             if e.message != 'Database `{}` does not exist.'.format(dbname):
                 raise
