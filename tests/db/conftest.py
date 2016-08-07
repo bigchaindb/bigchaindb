@@ -73,9 +73,7 @@ def inputs(user_vk):
     from bigchaindb.exceptions import GenesisBlockAlreadyExistsError
     # 1. create the genesis block
     b = Bigchain()
-    print('bigchain test')
-    print(b)
-
+    
     try:
         b.create_genesis_block()
     except GenesisBlockAlreadyExistsError:
