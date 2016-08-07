@@ -22,6 +22,7 @@ from pkg_resources import iter_entry_points, ResolutionError
 
 import bigchaindb
 from bigchaindb.consensus import AbstractConsensusRules
+from bigchaindb import exceptions
 
 # TODO: move this to a proper configuration file for logging
 logging.getLogger('requests').setLevel(logging.WARNING)
@@ -97,8 +98,11 @@ def file_config(filename=None):
         filename = CONFIG_DEFAULT_PATH
 
     logger.debug('file_config() will try to open `{}`'.format(filename))
-    with open(filename) as f:
-        config = json.load(f)
+    try:
+        with open(filename) as f:
+            config = json.load(f)
+    except Exception as err:
+        raise exceptions.ConfigurationError('Failed to load configuration from `{}`, reason: {}'.format(filename, err))
 
     logger.info('Configuration loaded from `{}`'.format(filename))
 
