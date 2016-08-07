@@ -29,7 +29,6 @@ def create_database(conn, dbname):
     logger.info('Create database `%s`.', dbname)
     r.db_create(dbname).run(conn)
 
-
 def create_table(conn, dbname, table_name):
     logger.info('Create `%s` table.', table_name)
     # create the table
@@ -86,33 +85,37 @@ def create_votes_secondary_index(conn, dbname):
     # wait for rethinkdb to finish creating secondary indexes
     r.db(dbname).table('votes').index_wait().run(conn)
 
+def init_database():
+   conn = get_conn()
+   dbname = get_database_name()
+   print(dbname)
+   create_database(conn, dbname)
+
+   table_names = ['bigchain', 'backlog', 'votes']
+   for table_name in table_names:
+     create_table(conn, dbname, table_name)
+
+   create_bigchain_secondary_index(conn, dbname)
+   create_backlog_secondary_index(conn, dbname)
+   create_votes_secondary_index(conn, dbname)
+
 
 def init():
     # Try to access the keypair, throws an exception if it does not exist
     b = bigchaindb.Bigchain()
 
-    conn = get_conn()
-    dbname = get_database_name()
-    create_database(conn, dbname)
-
-    table_names = ['bigchain', 'backlog', 'votes']
-    for table_name in table_names:
-        create_table(conn, dbname, table_name)
-    create_bigchain_secondary_index(conn, dbname)
-    create_backlog_secondary_index(conn, dbname)
-    create_votes_secondary_index(conn, dbname)
+    init_database()
 
     logger.info('Create genesis block.')
     b.create_genesis_block()
     logger.info('Done, have fun!')
 
-
 def drop(assume_yes=False):
     conn = get_conn()
     dbname = bigchaindb.config['database']['name']
-
     if assume_yes:
         response = 'y'
+        print(dbname)
     else:
         response = input('Do you want to drop `{}` database? [y/n]: '.format(dbname))
 
@@ -121,7 +124,10 @@ def drop(assume_yes=False):
             logger.info('Drop database `%s`', dbname)
             r.db_drop(dbname).run(conn)
             logger.info('Done.')
-        except r.ReqlOpFailedError:
-            raise exceptions.DatabaseDoesNotExist('Database `{}` does not exist'.format(dbname))
+        #except r.ReqlOpFailedError:
+        #    raise exceptions.DatabaseDoesNotExist('Database `{}` does not exist'.format(dbname))
+        except r.ReqlOpFailedError as e:
+            if e.message != 'Database `{}` does not exist.'.format(dbname):
+                raise
     else:
-        logger.info('Drop aborted')
+      logger.info('Drop aborted')
