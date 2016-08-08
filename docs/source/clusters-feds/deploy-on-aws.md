@@ -74,7 +74,7 @@ fab --fabfile=fabfile-monitor.py --hosts=<EC2 hostname> run_monitor
 
 For more information about monitoring (e.g. how to view the Grafana dashboard in your web browser), see the [Monitoring](monitoring.html) section of this documentation.
 
-To configure a BigchainDB node to send monitoring data to the monitoring server, change the statsd host in the configuration of the BigchainDB node. The section on [Configuring a BigchainDB Node](../nodes/configuration.html) explains how you can do that. (For example, you can change the statsd host in `$HOME/.bigchaindb`.)
+To configure a BigchainDB node to send monitoring data to the monitoring server, change the statsd host in the configuration of the BigchainDB node. The section on [Configuring a BigchainDB Node](../server-reference/configuration.html) explains how you can do that. (For example, you can change the statsd host in `$HOME/.bigchaindb`.)
 
 
 ## Deploy a BigchainDB Cluster

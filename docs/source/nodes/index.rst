@@ -12,5 +12,4 @@ BigchainDB Nodes
    setup-run-node
    run-with-docker
    running-unit-tests
-   configuration
    bigchaindb-cli

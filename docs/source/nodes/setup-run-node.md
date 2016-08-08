@@ -170,7 +170,7 @@ Edit the created config file:
 * Change `"api_endpoint": "http://localhost:9984/api/v1"` to `"api_endpoint": "http://your_api_hostname:9984/api/v1"`
 * Change `"keyring": []` to `"keyring": ["public_key_of_other_node_A", "public_key_of_other_node_B", "..."]` i.e. a list of the public keys of all the other nodes in the federation. The keyring should _not_ include your node's public key.
 
-For more information about the BigchainDB config file, see [Configuring a BigchainDB Node](configuration.html).
+For more information about the BigchainDB config file, see [Configuring a BigchainDB Node](../server-reference/configuration.html).
 
 
 ## Run RethinkDB Server

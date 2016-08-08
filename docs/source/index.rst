@@ -15,4 +15,5 @@ Table of Contents
    clusters-feds/index
    topic-guides/index
    release-notes
+   server-reference/index
    appendices/index
