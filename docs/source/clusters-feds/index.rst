@@ -9,7 +9,7 @@ BigchainDB Clusters & Federations
 
    set-up-a-federation
    backup
-   deploy-on-aws
+   aws-testing-cluster
    monitoring
    future-docs
    

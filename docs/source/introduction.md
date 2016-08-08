@@ -9,7 +9,7 @@ You can read about the motivations, goals and high-level architecture in the [Bi
 
 * [Set up a stand-alone BigchainDB node for learning and experimenting: Quickstart](quickstart.html)
 * [Set up and run a dev/test node](dev-and-test/setup-run-node.html)
-* [Deploy a cluster on AWS](clusters-feds/deploy-on-aws.html)
+* [Deploy a testing cluster on AWS](clusters-feds/aws-testing-cluster.html)
 * [Set up and run a federation](clusters-feds/set-up-a-federation.html) (i.a. an organization with a BigchainDB cluster)
 
 (Instructions for setting up a client will be provided once there's a public testnet.)
