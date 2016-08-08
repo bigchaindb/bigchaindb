@@ -193,3 +193,21 @@ def test_invalid_tx_initialization():
         Transaction(Transaction.CREATE, [], wrong_data_type)
     with raises(TypeError):
         Transaction(Transaction.CREATE, [], [], wrong_data_type)
+    with raises(TypeError):
+        Transaction('RANSFER', [], [])
+    with raises(TypeError):
+        Transaction('TRANSFER', [], [])
+
+
+def test_validate_tx_signature(default_ffill, default_cond, user_vk, user_sk):
+    from copy import deepcopy
+    from bigchaindb.transaction import Transaction
+    from bigchaindb.crypto import SigningKey
+
+    tx = Transaction(Transaction.CREATE, [default_ffill], [default_cond])
+    expected = deepcopy(default_ffill)
+    expected.fulfillment.sign(str(tx), SigningKey(user_sk))
+
+    tx.sign([user_sk])
+    assert tx.fulfillments[0].fulfillment.to_dict()['signature'] == expected.fulfillment.to_dict()['signature']
+    assert tx.fulfillments_valid() is True
