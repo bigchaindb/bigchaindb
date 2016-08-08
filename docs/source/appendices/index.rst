@@ -9,6 +9,7 @@ Appendices
 
    install-os-level-deps
    install-latest-pip
+   run-with-docker
    json-serialization
    cryptography
    the-Bigchain-class
