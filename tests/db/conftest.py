@@ -30,12 +30,12 @@ def setup_database(request, node_config):
     conn = get_conn()
 
     if r.db_list().contains(db_name).run(conn):
-       r.db_drop(db_name).run(conn)
+        r.db_drop(db_name).run(conn)
 
     try:
-       init_database()
+        init_database()
     except DatabaseAlreadyExists:
-       print('Database already exists.')
+        print('Database already exists.')
 
     print('Finishing init database')
 
@@ -47,10 +47,11 @@ def setup_database(request, node_config):
             r.db_drop(db_name).run()
         except r.ReqlOpFailedError as e:
             if e.message != 'Database `{}` does not exist.'.format(db_name):
-                  raise
+                raise
         print('Finished deleting `{}`'.format(db_name))
 
     request.addfinalizer(fin)
+
 
 @pytest.fixture(scope='function', autouse=True)
 def cleanup_tables(request, node_config):
@@ -68,12 +69,12 @@ def cleanup_tables(request, node_config):
 
     request.addfinalizer(fin)
 
+
 @pytest.fixture
 def inputs(user_vk):
     from bigchaindb.exceptions import GenesisBlockAlreadyExistsError
     # 1. create the genesis block
     b = Bigchain()
-    
     try:
         b.create_genesis_block()
     except GenesisBlockAlreadyExistsError:
