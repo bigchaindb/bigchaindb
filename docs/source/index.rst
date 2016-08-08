@@ -11,9 +11,10 @@ Table of Contents
    quickstart
    node-cluster-fed
    nodes/index
+   dev-and-test/index
+   server-reference/index
    drivers-clients/index
    clusters-feds/index
    topic-guides/index
    release-notes
-   server-reference/index
    appendices/index
