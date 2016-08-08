@@ -16,3 +16,4 @@ Appendices
    ntp-notes
    example-rethinkdb-storage-setups
    licenses
+   install-with-lxd
