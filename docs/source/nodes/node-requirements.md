@@ -1,14 +1,10 @@
 # Node Requirements (OS, Memory, Storage, etc.)
 
-For now, we will assume that a BigchainDB node is just one server. In the future, a node may consist of several closely-coupled servers run by one node operator (federation member).
-
-
 ## OS Requirements
 
 * RethinkDB Server [will run on any modern OS](https://www.rethinkdb.com/docs/install/). Note that the Fedora package isn't officially supported. Also, official support for Windows is fairly recent ([April 2016](https://rethinkdb.com/blog/2.3-release/)).
-* Python 3.4+ [will run on any modern OS](https://docs.python.org/3.4/using/index.html).
-* [Some functionality in the `multiprocessing` package doesn't work on OS X](https://docs.python.org/3.4/library/multiprocessing.html#multiprocessing.Queue.qsize). You can still use Mac OS X if you use Docker or a virtual machine.
-* ZeroMQ [will run on any modern OS](http://zeromq.org/area:download).
+* BigchainDB Server requires Python 3.4+ and Python 3.4+ [will run on any modern OS](https://docs.python.org/3.4/using/index.html).
+* BigchaindB Server uses the Python `multiprocessing` package and [some functionality in the `multiprocessing` package doesn't work on OS X](https://docs.python.org/3.4/library/multiprocessing.html#multiprocessing.Queue.qsize). You can still use Mac OS X if you use Docker or a virtual machine.
 
 The BigchainDB core dev team uses Ubuntu 14.04 or Fedora 23.
 
