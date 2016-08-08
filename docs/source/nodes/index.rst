@@ -7,6 +7,7 @@ BigchainDB Nodes
 .. toctree::
    :maxdepth: 1
 
+   node-components
    node-requirements
    setup-run-node
    run-with-docker
