@@ -1,5 +1,7 @@
 # Set Up & Run a Dev/Test Node
 
+This page explains how to set up a minimal local BigchainDB node for development and testing purposes.
+
 The BigchainDB core dev team develops BigchainDB on Ubuntu 14.04 and Fedora 23, so we recommend you use one of those. BigchainDB Server doesn't work on Windows and Mac OS X (unless you use a VM or containers).
 
 First, read through the BigchainDB [CONTRIBUTING.md file](https://github.com/bigchaindb/bigchaindb/blob/master/CONTRIBUTING.md). It outlines the steps to setup a machine for developing and testing BigchainDB.
