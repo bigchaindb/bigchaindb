@@ -9,9 +9,10 @@ Table of Contents
 
    introduction
    quickstart
+   node-cluster-fed
    nodes/index
-   clusters-feds/index
    drivers-clients/index
+   clusters-feds/index
    topic-guides/index
    release-notes
    appendices/index
