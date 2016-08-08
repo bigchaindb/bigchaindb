@@ -7,6 +7,8 @@ Appendices
 .. toctree::
    :maxdepth: 1
 
+   install-os-level-deps
+   install-latest-pip
    json-serialization
    cryptography
    the-Bigchain-class
