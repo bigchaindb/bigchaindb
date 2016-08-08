@@ -161,7 +161,7 @@ Start by creating a default BigchainDB config file:
 bigchaindb -y configure
 ```
 
-(There's documentation for the `bigchaindb` command is in the section on [the BigchainDB Command Line Interface (CLI)](bigchaindb-cli.html).)
+(There's documentation for the `bigchaindb` command in the section on [the BigchainDB Command Line Interface (CLI)](../server-reference/bigchaindb-cli.html).)
 
 Edit the created config file: 
 
