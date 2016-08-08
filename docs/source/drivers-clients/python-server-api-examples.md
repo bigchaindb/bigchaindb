@@ -9,7 +9,7 @@ One can also interact with a BigchainDB node via other APIs, including the HTTP 
 
 ## Getting Started
 
-First, make sure you have RethinkDB and BigchainDB _installed and running_, i.e. you [installed them](setup-run-node.html) and you ran:
+First, make sure you have RethinkDB and BigchainDB _installed and running_, i.e. you [installed them](../dev-and-test/setup-run-node.html) and you ran:
 ```text
 $ rethinkdb
 $ bigchaindb configure

@@ -7,4 +7,5 @@ Develop & Test BigchainDB
 .. toctree::
    :maxdepth: 1
 
+   setup-run-node
    running-unit-tests

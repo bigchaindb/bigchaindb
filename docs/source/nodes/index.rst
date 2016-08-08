@@ -9,5 +9,4 @@ BigchainDB Nodes
 
    node-components
    node-requirements
-   setup-run-node
    run-with-docker
