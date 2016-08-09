@@ -1,6 +1,6 @@
 # Quickstart
 
-This page has instructions to set up a single stand-alone BigchainDB node for learning or experimenting. Instructions for other cases are [elsewhere](introduction.html). We will assume you're using Ubuntu 14.04 or similar. If you're not using Linux, then you might try [running BigchainDB with Docker](nodes/run-with-docker.html).
+This page has instructions to set up a single stand-alone BigchainDB node for learning or experimenting. Instructions for other cases are [elsewhere](introduction.html). We will assume you're using Ubuntu 14.04 or similar. If you're not using Linux, then you might try [running BigchainDB with Docker](appendices/run-with-docker.html).
 
 A. [Install RethinkDB Server](https://rethinkdb.com/docs/install/ubuntu/)
 

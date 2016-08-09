@@ -22,7 +22,7 @@ That's just one possible way of setting up the file system so as to provide extr
 
 Another way to get similar reliability would be to mount the RethinkDB data directory on an [Amazon EBS](https://aws.amazon.com/ebs/) volume. Each Amazon EBS volume is, "automatically replicated within its Availability Zone to protect you from component failure, offering high availability and durability."
 
-See [the section on setting up storage for RethinkDB](../nodes/setup-run-node.html#set-up-storage-for-rethinkdb-data) for more details.
+See [the section on setting up storage for RethinkDB](../dev-and-test/setup-run-node.html#set-up-storage-for-rethinkdb-data) for more details.
 
 As with shard replication, live file-system replication protects against many failure modes, but it doesn't protect against them all. You should still consider having normal, "cold" backups.
 
@@ -39,7 +39,7 @@ rethinkdb dump -e bigchain.bigchain -e bigchain.votes
 ```
 
 That should write a file named `rethinkdb_dump_<date>_<time>.tar.gz`. The `-e` option is used to specify which tables should be exported. You probably don't need to export the backlog table, but you definitely need to export the bigchain and votes tables. 
-`bigchain.votes` means the `votes` table in the RethinkDB database named `bigchain`. It's possible that your database has a different name: [the database name is a BigchainDB configuration setting](../nodes/configuration.html#database-host-database-port-database-name). The default name is `bigchain`. (Tip: you can see the values of all configuration settings using the `bigchaindb show-config` command.)
+`bigchain.votes` means the `votes` table in the RethinkDB database named `bigchain`. It's possible that your database has a different name: [the database name is a BigchainDB configuration setting](../server-reference/configuration.html#database-host-database-port-database-name). The default name is `bigchain`. (Tip: you can see the values of all configuration settings using the `bigchaindb show-config` command.)
 
 There's [more information about the `rethinkdb dump` command in the RethinkDB documentation](https://www.rethinkdb.com/docs/backup/). It also explains how to restore data to a cluster from an archive file.
 
@@ -108,7 +108,7 @@ Considerations for BigchainDB:
 
 Although it's not advertised as such, RethinkDB's built-in replication feature is similar to continous backup, except the "backup" (i.e. the set of replica shards) is spread across all the nodes. One could take that idea a bit farther by creating a set of backup-only servers with one full backup:
 
-* Give all the original BigchainDB nodes (RethinkDB nodes) the server tag `original`. This is the default if you used the RethinkDB config file suggested in the section titled [Configure RethinkDB Server](../nodes/setup-run-node.html#configure-rethinkdb-server).
+* Give all the original BigchainDB nodes (RethinkDB nodes) the server tag `original`. This is the default if you used the RethinkDB config file suggested in the section titled [Configure RethinkDB Server](../dev-and-test/setup-run-node.html#configure-rethinkdb-server).
 * Set up a group of servers running RethinkDB only, and give them the server tag `backup`. The `backup` servers could be geographically separated from all the `original` nodes (or not; it's up to the federation).
 * Clients shouldn't be able to read from or write to servers in the `backup` set.
 * Send a RethinkDB reconfigure command to the RethinkDB cluster to make it so that the `original` set has the same number of replicas as before (or maybe one less), and the `backup` set has one replica. Also, make sure the `primary_replica_tag='original'` so that all primary shards live on the `original` nodes.
