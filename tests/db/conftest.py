@@ -41,7 +41,6 @@ def setup_database(request, node_config):
 
     def fin():
         print('Deleting `{}` database'.format(db_name))
-        #drop(assume_yes=True)
         get_conn().repl()
         try:
             r.db_drop(db_name).run()
