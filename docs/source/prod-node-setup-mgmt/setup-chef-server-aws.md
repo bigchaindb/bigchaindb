@@ -1,6 +1,6 @@
 # Set Up Chef Server on AWS
 
-First, you need to get set up on AWS. See [the page about AWS Setup in the Appendices](../appendices/aws-setup.html).
+First, you need to get set up on AWS. See the page about [basic AWS Setup](../appendices/aws-setup.html) in the Appendices.
 
 Chef Software, Inc. provides an official Chef Server AMI (Amazon Machine Image) on the AWS Marketplace. They also wrote [documentation about it](https://docs.chef.io/aws_marketplace.html).
 
