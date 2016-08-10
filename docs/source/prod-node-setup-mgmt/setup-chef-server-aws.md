@@ -82,6 +82,12 @@ If you decide to subscribe for the official Chef Server AMI, then here are some 
 
  
 
-There is some [official AWS documentation about installing Chef Server on the AWS cloud](https://docs.aws.amazon.com/quickstart/latest/chef-server/welcome.html), but it's a bit dated and links to some out-of-date AWS Marketplace products. Nevertheless, you may find it useful to browse through that documentation because it explains what gets deployed.
+There is some [official AWS documentation about installing Chef Server on the AWS cloud](https://docs.aws.amazon.com/quickstart/latest/chef-server/welcome.html), but it's a bit dated and links to some out-of-date AWS Marketplace products. Nevertheless, you may want to browse that documentation because it explains what gets deployed.
 
+**About AWS OpsWorks**
 
+You might be tempted to use [AWS OpsWorks](https://aws.amazon.com/opsworks/) instead of setting up your own Chef Server etc. It's somewhat like a managed hosted version of Chef; one even uses Chef recipes with it. There are at least three problems though:
+
+1. Once you start using AWS OpsWorks, you're effectively locked in to AWS, because it has features that you can't move to another cloud hosting provider (e.g. "stacks," "layers," and deep integrations with other AWS services).
+2. AWS Opsworks doesn't integrate with _all_ AWS services.
+3. The team behind BigchainDB wants to avoid maintaining and documenting specialized operations tooling for each cloud provider. There might be _some_, but it should be minimial.
