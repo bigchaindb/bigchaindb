@@ -1,4 +1,4 @@
-# Installing bigchainDB on LXC containers using LXD
+# Installing BigchainDB on LXC containers using LXD
 
 You can visit this link to install LXD (instructions here): [LXD Install](https://linuxcontainers.org/lxd/getting-started-cli/)
 
@@ -11,7 +11,7 @@ Let us create an LXC container (via LXD) with the following command:
 (ubuntu:14.04 - this is the remote server the command fetches the image from)
 (bigchaindb - is the name of the container)
 
-Below is the `install.sh` script you will need to install bigchainDB within your container.
+Below is the `install.sh` script you will need to install BigchainDB within your container.
 
 Here is my `install.sh`:
 
@@ -38,6 +38,6 @@ Now, from the host (and the correct directory) where you saved `install.sh`, run
 
 `cat install.sh | lxc exec bigchaindb /bin/bash`
 
-If you followed the commands correctly, you will have successfully created an LXC container (using LXD) that can get you up and running with bigchainDB in <5 minutes (depending on how long it takes to download all the packages).
+If you followed the commands correctly, you will have successfully created an LXC container (using LXD) that can get you up and running with BigchainDB in <5 minutes (depending on how long it takes to download all the packages).
 
 From this point onwards, you can follow the [Python Example](https://bigchaindb.readthedocs.io/en/latest/drivers-clients/python-server-api-examples.html) .
