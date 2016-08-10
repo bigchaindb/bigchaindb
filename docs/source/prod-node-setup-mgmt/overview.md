@@ -9,11 +9,4 @@ Deploying and managing a production BigchainDB node is much more involved than w
 
 Thankfully, there are tools to help!
 
-[Chef](https://www.chef.io/chef/) is a tool to provision machines, install software on those machines, manage the state of those machines, and more. (When we say "machines," we mean bare-metal servers, virtual machines or containers.)
-BigchainDB node operators can use Chef (and related tools) to set up and manage the machines associated with their nodes.
-
-A note about terminology: In the world of Chef, a "node" is what we call a machine. In other words, a "BigchainDB node" may contain several "Chef nodes." 
-
-Before you can deploy a production node, you have to know where the machines will be hosted, e.g. AWS, Azure, Cloud Provider X, or your corporate datacenter. You will need an account with that host so that you can provision machines there.
-
-The next step is to provision a machine and install Chef server on it.
+This section explains how to use various tools to deploy and manage a production node.

@@ -5,6 +5,4 @@ Production Node Setup & Management
    :maxdepth: 1
 
    overview
-   setup-chef-server-general
-   setup-chef-server-aws
-   install-chef-dk
+
