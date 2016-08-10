@@ -32,9 +32,37 @@ What did you just install?
 * [The aws-cli package](https://pypi.python.org/pypi/awscli), which is an AWS Command Line Interface (CLI).
 
 
-## AWS Setup
+## Basic AWS Setup
 
-See the page about [AWS Setup](../appendices/aws-setup.html) in the Appendices.
+See the page about [basic AWS Setup](../appendices/aws-setup.html) in the Appendices.
+
+
+## Get Enough Amazon Elastic IP Addresses
+
+The AWS cluster deployment scripts use elastic IP addresses (although that may change in the future). By default, AWS accounts get five elastic IP addresses. If you want to deploy a cluster with more than five nodes, then you will need more than five elastic IP addresses; you may have to apply for those; see [the AWS documentation on elastic IP addresses](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/elastic-ip-addresses-eip.html).
+
+
+## Create an Amazon EC2 Key Pair
+
+Go to the AWS EC2 Console and select "Key Pairs" in the left sidebar. Click the "Create Key Pair" button. Give it the name `bigchaindb`. You should be prompted to save a file named `bigchaindb.pem`. That file contains the RSA private key. (You can get the public key from the private key, so there's no need to send it separately.)
+
+Save the file in `bigchaindb/deploy-cluster-aws/pem/bigchaindb.pem`.
+
+**You should not share your private key.**
+
+
+## Create an Amazon EC2 Security Group
+
+Go to the AWS EC2 Console and select "Security Groups" in the left sidebar. Click the "Create Security Group" button. Name it `bigchaindb`. The description probably doesn't matter; you can also put `bigchaindb` for that.
+
+Add these rules for Inbound traffic:
+
+* Type = All TCP, Protocol = TCP, Port Range = 0-65535, Source = 0.0.0.0/0
+* Type = SSH, Protocol = SSH, Port Range = 22, Source = 0.0.0.0/0
+* Type = All UDP, Protocol = UDP, Port Range = 0-65535, Source = 0.0.0.0/0
+* Type = All ICMP, Protocol = ICMP, Port Range = 0-65535, Source = 0.0.0.0/0
+
+**Note: These rules are extremely lax! They're meant to make testing easy.** For example, Source = 0.0.0.0/0 is [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing) for "allow this traffic to come from _any_ IP address."
 
 
 ## Deploy a BigchainDB Monitor
