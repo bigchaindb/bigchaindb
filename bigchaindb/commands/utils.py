@@ -14,16 +14,45 @@ from bigchaindb import db
 from bigchaindb.version import __version__
 
 
-def start_rethinkdb():
+def find_rethinkdb_host():
+    """Utility function to find the bigchainDB host
+    linked by docker with ``--link <container_name>`
+    DISCLAIMER: This is a really dummy function, but should work as long as --link
+    option in docker maintains its consistency (and the container name is called ``bigchaindb``
+
+    Returns:
+        IP Address of the host machine plus the default port to connect
+    """
+    default_port = '29015'
+
+    with open('/etc/hosts', encoding='utf-8') as fin:
+        for line in fin:
+            if line.find('bigchaindb') != -1:
+                fin.close()
+                return line.split("\t")[0] + ":" + default_port
+        fin.close()
+        raise StartupError('Expected default hosts format for docker simple container. '
+                           'Does your linked machine has a different name then `bigchaindb`?')
+
+
+def start_rethinkdb(join_address=None):
     """Start RethinkDB as a child process and wait for it to be
     available.
+
+    Args:
+        join_address (string): starts rethink db joining an existent node if provided
 
     Raises:
         ``bigchaindb.exceptions.StartupError`` if RethinkDB cannot
         be started.
     """
 
-    proc = subprocess.Popen(['rethinkdb', '--bind', 'all'],
+    def_args = ['rethinkdb', '--bind', 'all']
+
+    if join_address is not None:
+        def_args += ['--join', join_address]
+
+    proc = subprocess.Popen(def_args,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT,
                             universal_newlines=True)

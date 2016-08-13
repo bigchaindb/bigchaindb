@@ -1,5 +1,6 @@
 import json
-from unittest.mock import Mock, patch
+from io import StringIO
+from unittest.mock import Mock, patch, mock_open
 from argparse import Namespace
 import copy
 
@@ -77,6 +78,40 @@ def test_bigchain_run_start_with_rethinkdb(mock_start_rethinkdb,
     run_start(args)
 
     mock_start_rethinkdb.assert_called_with()
+
+
+@patch('bigchaindb.commands.utils.start_rethinkdb')
+def test_bigchain_run_start_with_rethinkdb_join(mock_start_rethinkdb,
+                                           mock_run_configure,
+                                           mock_processes_start,
+                                           mock_db_init_with_existing_db):
+    from bigchaindb.commands.bigchain import run_start
+    args = Namespace(start_rethinkdb='127.0.0.1', config=None, yes=True)
+    run_start(args)
+
+    mock_start_rethinkdb.assert_called_with('127.0.0.1')
+
+    
+def test_bigchain_run_start_with_rethinkdb_join_fails():
+
+    from bigchaindb.commands.bigchain import run_start
+    args = Namespace(start_rethinkdb='invalid_host', config=None, yes=True)
+    with pytest.raises(SystemExit):
+        run_start(args)
+
+
+@patch('bigchaindb.commands.utils.start_rethinkdb')
+def test_bigchain_run_start_with_rethinkdb_join_auto(mock_start_rethinkdb,
+                                           mock_run_configure,
+                                           mock_processes_start,
+                                           mock_db_init_with_existing_db):
+    fake_file = StringIO('#EXAMPLE HOSTS FILE\n127.0.0.1\tbigchaindb\n')
+    with patch('builtins.open', return_value=fake_file, create=True):
+        from bigchaindb.commands.bigchain import run_start
+        args = Namespace(start_rethinkdb='auto', config=None, yes=True)
+        run_start(args)
+
+        mock_start_rethinkdb.assert_called_with('127.0.0.1:29015')
 
 
 @pytest.mark.skipif(reason="BigchainDB doesn't support the automatic creation of a config file anymore")
@@ -312,3 +347,35 @@ def test_set_replicas_raises_exception(mock_log, monkeypatch, b):
     run_set_replicas(args)
 
     assert mock_log.called
+
+
+@patch('subprocess.Popen')
+def test_start_rethinkdb_join_returns_a_process_when_successful(mock_popen):
+    from bigchaindb.commands import utils
+    mock_popen.return_value = Mock(stdout=['Server ready - Gonna join ya'])
+    assert utils.start_rethinkdb('127.0.0.1') is mock_popen.return_value
+
+
+@patch('subprocess.Popen')
+def test_start_rethinkdb_join_exits_when_cannot_start(mock_popen):
+    from bigchaindb import exceptions
+    from bigchaindb.commands import utils
+    mock_popen.return_value = Mock(stdout=['Nopety nope - no joining'])
+    with pytest.raises(exceptions.StartupError):
+        utils.start_rethinkdb('127.0.0.1')
+
+
+def test_find_rethinkdb_host():
+    fake_file = StringIO('#EXAMPLE HOSTS FILE\n127.0.0.1\tbigchaindb\n')
+    with patch('builtins.open', return_value=fake_file, create=True):
+        from bigchaindb.commands import utils
+        assert utils.find_rethinkdb_host() == "127.0.0.1:29015"
+
+
+def test_find_rethinkdb_host_fails():
+    fake_file = StringIO('#EXAMPLE HOSTS FILE\n127.0.0.1\tnotBigchaindb\n')
+    with patch('builtins.open', return_value=fake_file, create=True):
+        from bigchaindb.commands import utils
+        from bigchaindb import exceptions
+        with pytest.raises(exceptions.StartupError):
+            utils.find_rethinkdb_host()
