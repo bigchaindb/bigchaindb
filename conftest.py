@@ -40,6 +40,9 @@ def ignore_local_config_file(monkeypatch):
 
     monkeypatch.setattr('bigchaindb.config_utils.file_config', mock_file_config)
 
+USER2_SIGNING_KEY = 'F86PQPiqMTwM2Qi2Sda3U4Vdh3AgadMdX3KNVsu5wNJr'
+USER2_VERIFYING_KEY = 'GDxwMFbwdATkQELZbMfW8bd9hbNYMZLyVXA3nur2aNbE'
+
 
 CC_FULFILLMENT_URI = 'cf:0:'
 CC_CONDITION_URI = 'cc:0:3:47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU:0'
@@ -85,6 +88,16 @@ def user_public_key():
 
 
 @pytest.fixture
+def user_vks():
+    return [USER_VERIFYING_KEY, USER2_VERIFYING_KEY]
+
+
+@pytest.fixture
+def user_sks():
+    return [USER_SIGNING_KEY, USER2_SIGNING_KEY]
+
+
+@pytest.fixture
 def b(request, node_config):
     restore_config(request, node_config)
     from bigchaindb import Bigchain
@@ -114,14 +127,25 @@ def ffill(cc_ffill, user_vk):
 
 
 @pytest.fixture
-def default_ffill(user_vk):
+def default_single_ffill(user_vk):
     from bigchaindb.transaction import Fulfillment
-    return Fulfillment.gen_default(user_vk)
+    return Fulfillment.gen_default([user_vk])
 
 
 @pytest.fixture
-def default_cond(default_ffill):
-    return default_ffill.gen_condition()
+def default_threshold_ffill(user_vks):
+    from bigchaindb.transaction import Fulfillment
+    return Fulfillment.gen_default(user_vks)
+
+
+@pytest.fixture
+def default_threshold_cond(default_threshold_ffill):
+    return default_threshold_ffill.gen_condition()
+
+
+@pytest.fixture
+def default_single_cond(default_single_ffill):
+    return default_single_ffill.gen_condition()
 
 
 @pytest.fixture
@@ -141,6 +165,6 @@ def data(payload, payload_id):
 
 
 @pytest.fixture
-def tx(default_ffill, default_cond):
+def tx(default_single_ffill, default_single_cond):
     from bigchaindb.transaction import Transaction
-    return Transaction(Transaction.CREATE, [default_ffill], [default_cond])
+    return Transaction(Transaction.CREATE, [default_single_ffill], [default_single_cond])
