@@ -7,7 +7,6 @@ import bigchaindb
 from bigchaindb.pipelines import block, election
 from bigchaindb import Bigchain
 from bigchaindb.voter import Voter
-from bigchaindb.block import BlockDeleteRevert
 from bigchaindb.web import server
 
 
@@ -54,8 +53,6 @@ class Processes(object):
     def start(self):
         logger.info('Initializing BigchainDB...')
 
-        delete_reverter = BlockDeleteRevert(self.q_revert_delete)
-
         # start the web api
         app_server = server.create_server(bigchaindb.config['server'])
         p_webapi = mp.Process(name='webapi', target=app_server.run)
@@ -63,14 +60,12 @@ class Processes(object):
 
         # initialize the processes
         p_map_bigchain = mp.Process(name='bigchain_mapper', target=self.map_bigchain)
-        p_block_delete_revert = mp.Process(name='block_delete_revert', target=delete_reverter.start)
         p_voter = Voter(self.q_new_block)
         # start the processes
         logger.info('starting bigchain mapper')
         p_map_bigchain.start()
         logger.info('starting block')
         block.start()
-        p_block_delete_revert.start()
 
         logger.info('starting voter')
         p_voter.start()

@@ -10,7 +10,6 @@ import cryptoconditions as cc
 import bigchaindb
 from bigchaindb import crypto, exceptions, util
 from bigchaindb.voter import Voter
-from bigchaindb.block import BlockDeleteRevert
 
 
 @pytest.mark.skipif(reason='Some tests throw a ResourceWarning that might result in some weird '
@@ -610,40 +609,6 @@ class TestBlockValidation(object):
 
 
 class TestBigchainBlock(object):
-
-    def test_revert_delete_block(self, b):
-        b.create_genesis_block()
-
-        block_1 = dummy_block()
-        block_2 = dummy_block()
-        block_3 = dummy_block()
-
-        b.write_block(block_1, durability='hard')
-        b.write_block(block_2, durability='hard')
-        b.write_block(block_3, durability='hard')
-
-        b.write_vote(block_1, b.vote(block_1['id'], b.get_last_voted_block()['id'], True))
-        b.write_vote(block_2, b.vote(block_2['id'], b.get_last_voted_block()['id'], True))
-        b.write_vote(block_3, b.vote(block_3['id'], b.get_last_voted_block()['id'], True))
-
-        q_revert_delete = mp.Queue()
-
-        reverter = BlockDeleteRevert(q_revert_delete)
-
-        # simulate changefeed
-        r.table('bigchain').get(block_2['id']).delete().run(b.conn)
-        q_revert_delete.put(block_2)
-
-        assert r.table('bigchain').get(block_2['id']).run(b.conn) is None
-
-        reverter.start()
-        time.sleep(1)
-        reverter.kill()
-
-        reverted_block_2 = r.table('bigchain').get(block_2['id']).run(b.conn)
-
-        assert reverted_block_2 == block_2
-
     def test_duplicated_transactions(self):
         pytest.skip('We may have duplicates in the initial_results and changefeed')
 
