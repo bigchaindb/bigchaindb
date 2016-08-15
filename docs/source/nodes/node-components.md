@@ -12,6 +12,6 @@ In a production environment, a BigchainDB node can have several other components
 * nginx or similar, as a reverse proxy and/or load balancer for the web server
 * An NTP daemon running on all machines running BigchainDB code, and possibly other machines
 * A RethinkDB proxy server
+* Scalable storage for RethinkDB (e.g. using RAID)
 * Monitoring software, to monitor all the machines in the node
-* Maybe more, e.g. a configuration management server and agents on all machines
-
+* Maybe a configuration management (CM) server and CM agents on all machines
