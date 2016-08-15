@@ -7,9 +7,9 @@ When you start Bigchaindb using `bigchaindb start`, an HTTP API is exposed at th
 
 `http://localhost:9984/api/v1/ <http://localhost:9984/api/v1/>`_
 
-but that address can be changed by changing the "API endpoint" configuration setting (e.g. in a local config file). There's more information about setting the API endpoint in :doc:`the section about Configuring a BigchainDB Node <../nodes/configuration>`.
+but that address can be changed by changing the "API endpoint" configuration setting (e.g. in a local config file). There's more information about setting the API endpoint in :doc:`the section about BigchainDB Configuration Settings <../server-reference/configuration>`.
 
-There are other configuration settings related to the web server (serving the HTTP API). In particular, the default is for the web server socket to bind to `localhost:9984` but that can be changed (e.g. to `0.0.0.0:9984`). For more details, see the "server" settings ("bind", "workers" and "threads") in :doc:`the section about Configuring a BigchainDB Node <../nodes/configuration>`.
+There are other configuration settings related to the web server (serving the HTTP API). In particular, the default is for the web server socket to bind to `localhost:9984` but that can be changed (e.g. to `0.0.0.0:9984`). For more details, see the "server" settings ("bind", "workers" and "threads") in :doc:`the section about BigchainDB Configuration Settings <../server-reference/configuration>`.
 
 The HTTP API currently exposes two endpoints, one to get information about a specific transaction, and one to push a new transaction to the BigchainDB cluster.
 

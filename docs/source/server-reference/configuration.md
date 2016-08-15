@@ -1,4 +1,6 @@
-# Node Configuration Settings
+# BigchainDB Configuration Settings
+
+**Note: At the time of writing, BigchainDB Server code and BigchainDB Python driver code are mixed together, so the following settings are the settings used by BigchainDB Server and also by clients written using the Python driver code. Soon, the code will be separated into server, driver and shared modules, so that BigchainDB Server and BigchainDB clients will have different configuration settings.**
 
 The value of each configuration setting is determined according to the following rules:
 

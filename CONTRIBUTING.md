@@ -38,9 +38,9 @@ Familiarize yourself with how we do coding and documentation in the BigchainDB p
 ### Step 2 - Install some Dependencies
 
 * [Install RethinkDB Server](https://rethinkdb.com/docs/install/)
-* Make sure you have Python 3.4+ (maybe in a virtualenv)
-* [Install BigchaindB Server's OS-level dependencies](http://bigchaindb.readthedocs.io/en/latest/nodes/setup-run-node.html#install-bigchaindb-server)
-* [Make sure you have the latest version of pip](http://bigchaindb.readthedocs.io/en/latest/nodes/setup-run-node.html#how-to-install-bigchaindb-with-pip)
+* Make sure you have Python 3.4+ (preferably in a virtualenv)
+* [Install BigchaindB Server's OS-level dependencies](http://bigchaindb.readthedocs.io/en/latest/appendices/install-os-level-deps.html)
+* [Make sure you have the latest Python 3 version of pip and setuptools](http://bigchaindb.readthedocs.io/en/latest/appendices/install-latest-pip.html)
 
 ### Step 3 - Fork bigchaindb on GitHub
 

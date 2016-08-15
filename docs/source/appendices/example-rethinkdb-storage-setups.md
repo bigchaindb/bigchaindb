@@ -2,7 +2,7 @@
 
 ## Example Amazon EC2 Setups
 
-We have some scripts for [deploying a _test_ BigchainDB cluster on AWS](../clusters-feds/deploy-on-aws.html). Those scripts include command sequences to set up storage for RethinkDB.
+We have some scripts for [deploying a _test_ BigchainDB cluster on AWS](../clusters-feds/aws-testing-cluster.html). Those scripts include command sequences to set up storage for RethinkDB.
 In particular, look in the file [/deploy-cluster-aws/fabfile.py](https://github.com/bigchaindb/bigchaindb/blob/master/deploy-cluster-aws/fabfile.py), under `def prep_rethinkdb_storage(USING_EBS)`. Note that there are two cases:
 
 1. **Using EBS ([Amazon Elastic Block Store](https://aws.amazon.com/ebs/)).** This is always an option, and for some instance types ("EBS-only"), it's the only option.
