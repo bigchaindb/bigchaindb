@@ -1,12 +1,16 @@
-# Deploy a Cluster on AWS
+# Deploy a Testing Cluster on AWS
 
-This section explains a way to deploy a cluster of BigchainDB nodes on Amazon Web Services (AWS). We use some Bash and Python scripts to launch several instances (virtual servers) on Amazon Elastic Compute Cloud (EC2). Then we use Fabric to install RethinkDB and BigchainDB on all those instances.
+This section explains a way to deploy a cluster of BigchainDB nodes on Amazon Web Services (AWS) for testing purposes.
 
 ## Why?
 
-You might ask why one would want to deploy a centrally-controlled BigchainDB cluster. Isn't BigchainDB supposed to be decentralized, where each node is controlled by a different person or organization?
+Why would anyone want to deploy a centrally-controlled BigchainDB cluster? Isn't BigchainDB supposed to be decentralized, where each node is controlled by a different person or organization?
 
-Yes! These scripts are for deploying _test_ clusters, not production clusters.
+Yes! These scripts are for deploying a testing cluster, not a production cluster.
+
+## How?
+
+We use some Bash and Python scripts to launch several instances (virtual servers) on Amazon Elastic Compute Cloud (EC2). Then we use Fabric to install RethinkDB and BigchainDB on all those instances.
 
 ## Python Setup
 
@@ -74,7 +78,7 @@ fab --fabfile=fabfile-monitor.py --hosts=<EC2 hostname> run_monitor
 
 For more information about monitoring (e.g. how to view the Grafana dashboard in your web browser), see the [Monitoring](monitoring.html) section of this documentation.
 
-To configure a BigchainDB node to send monitoring data to the monitoring server, change the statsd host in the configuration of the BigchainDB node. The section on [Configuring a BigchainDB Node](../nodes/configuration.html) explains how you can do that. (For example, you can change the statsd host in `$HOME/.bigchaindb`.)
+To configure a BigchainDB node to send monitoring data to the monitoring server, change the statsd host in the configuration of the BigchainDB node. The section on [Configuring a BigchainDB Node](../server-reference/configuration.html) explains how you can do that. (For example, you can change the statsd host in `$HOME/.bigchaindb`.)
 
 
 ## Deploy a BigchainDB Cluster

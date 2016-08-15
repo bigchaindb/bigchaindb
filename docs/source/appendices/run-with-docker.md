@@ -96,7 +96,7 @@ docker run --rm -v "$HOME/bigchaindb_docker:/data" -ti \
 
 Note the `--link` option to link to the first container (named `bigchaindb`).
 
-Aside: The `bigchaindb load` command has several options (e.g. `-m`). You can read more about it in [the documentation about the BigchainDB command line interface](bigchaindb-cli.html).
+Aside: The `bigchaindb load` command has several options (e.g. `-m`). You can read more about it in [the documentation about the BigchainDB command line interface](../server-reference/bigchaindb-cli.html).
 
 If you look at the RethinkDB dashboard (in your web browser), you should see the effects of the load test. You can also see some effects in the Docker logs using:
 ```text

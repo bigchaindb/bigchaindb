@@ -1,6 +1,6 @@
 # Set Up a Federation
 
-This section is about how to set up a BigchainDB _federation_, where each node is operated by a different operator. If you want to set up and run a BigchainDB cluster on AWS (where all nodes are operated by you), then see [the section about that](deploy-on-aws.html).
+This section is about how to set up a BigchainDB _federation_, where each node is operated by a different operator. If you want to set up and run a testing cluster on AWS (where all nodes are operated by you), then see [the section about that](aws-testing-cluster.html).
 
 
 ## Initial Checklist
@@ -19,8 +19,9 @@ The federation must decide some things before setting up the initial cluster (in
 2. What will the replication factor be? (It must be 3 or more for [RethinkDB failover](https://rethinkdb.com/docs/failover/) to work.)
 3. Which node will be responsible for sending the commands to configure the RethinkDB database?
 
-Once those things have been decided, each node operator can begin setting up their BigchainDB node.
-The steps to set up a cluster node are outlined in the section titled [Set Up and Run a Node](../nodes/setup-run-node.html). Each node operator will eventually need two pieces of information from all other nodes in the federation:
+Once those things have been decided, each node operator can begin [setting up their BigchainDB (production) node](../prod-node-setup-mgmt/index.html).
+
+Each node operator will eventually need two pieces of information from all other nodes in the federation:
 
 1. Their RethinkDB hostname, e.g. `rdb.farm2.organization.org`
 2. Their BigchainDB public key, e.g. `Eky3nkbxDTMgkmiJC8i5hKyVFiAQNmPP4a2G4JdDxJCK`

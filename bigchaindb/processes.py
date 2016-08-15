@@ -1,13 +1,8 @@
 import logging
 import multiprocessing as mp
 
-import rethinkdb as r
-
 import bigchaindb
-from bigchaindb.pipelines import block, vote
-from bigchaindb import Bigchain
-from bigchaindb.voter import Election
-from bigchaindb.block import BlockDeleteRevert
+from bigchaindb.pipelines import vote, block, election
 from bigchaindb.web import server
 
 
@@ -26,56 +21,23 @@ BANNER = """
 """
 
 
-class Processes(object):
+def start():
+    logger.info('Initializing BigchainDB...')
 
-    def __init__(self):
-        # initialize the class
-        self.q_block_new_vote = mp.Queue()
-        self.q_revert_delete = mp.Queue()
+    # start the processes
+    logger.info('Starting block')
+    block.start()
 
-    def map_bigchain(self):
-        # listen to changes on the bigchain and redirect the changes
-        # to the correct queues
+    logger.info('Starting voter')
+    vote.start()
 
-        # create a bigchain instance
-        b = Bigchain()
+    logger.info('Starting election')
+    election.start()
 
-        for change in r.table('bigchain').changes().run(b.conn):
+    # start the web api
+    app_server = server.create_server(bigchaindb.config['server'])
+    p_webapi = mp.Process(name='webapi', target=app_server.run)
+    p_webapi.start()
 
-            # delete
-            if change['new_val'] is None:
-                # this should never happen in regular operation
-                self.q_revert_delete.put(change['old_val'])
-
-            # update (new vote)
-            elif change['new_val'] is not None and change['old_val'] is not None:
-                self.q_block_new_vote.put(change['new_val'])
-
-    def start(self):
-        logger.info('Initializing BigchainDB...')
-
-        delete_reverter = BlockDeleteRevert(self.q_revert_delete)
-
-        # start the web api
-        app_server = server.create_server(bigchaindb.config['server'])
-        p_webapi = mp.Process(name='webapi', target=app_server.run)
-        p_webapi.start()
-
-        # initialize the processes
-        p_map_bigchain = mp.Process(name='bigchain_mapper', target=self.map_bigchain)
-        p_block_delete_revert = mp.Process(name='block_delete_revert', target=delete_reverter.start)
-        p_election = Election(self.q_block_new_vote)
-        # start the processes
-        logger.info('starting bigchain mapper')
-        p_map_bigchain.start()
-        logger.info('starting block')
-        block.start()
-        p_block_delete_revert.start()
-
-        logger.info('starting voter')
-        vote.start()
-        logger.info('starting election')
-        p_election.start()
-
-        # start message
-        logger.info(BANNER.format(bigchaindb.config['server']['bind']))
+    # start message
+    logger.info(BANNER.format(bigchaindb.config['server']['bind']))

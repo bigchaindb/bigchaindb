@@ -1,5 +1,4 @@
 import copy
-import multiprocessing as mp
 import time
 
 import pytest
@@ -8,7 +7,6 @@ import cryptoconditions as cc
 
 import bigchaindb
 from bigchaindb import crypto, exceptions, util
-from bigchaindb.block import BlockDeleteRevert
 
 
 @pytest.mark.skipif(reason='Some tests throw a ResourceWarning that might result in some weird '
@@ -36,8 +34,8 @@ class TestBigchainApi(object):
     def test_create_transaction_create(self, b, user_sk):
         tx = b.create_transaction(b.me, user_sk, None, 'CREATE')
 
-        assert sorted(tx) == ['id', 'transaction', 'version']
-        assert sorted(tx['transaction']) == ['conditions', 'data', 'fulfillments', 'operation', 'timestamp']
+        assert sorted(tx) == ['id', 'transaction']
+        assert sorted(tx['transaction']) == ['conditions', 'data', 'fulfillments', 'operation', 'timestamp', 'version']
 
     def test_create_transaction_with_unsupported_payload_raises(self, b):
         with pytest.raises(TypeError):
@@ -77,8 +75,8 @@ class TestBigchainApi(object):
 
         tx = b.create_transaction(user_vk, b.me, input_tx, 'TRANSFER')
 
-        assert sorted(tx) == ['id', 'transaction', 'version']
-        assert sorted(tx['transaction']) == ['conditions', 'data', 'fulfillments', 'operation', 'timestamp']
+        assert sorted(tx) == ['id', 'transaction']
+        assert sorted(tx['transaction']) == ['conditions', 'data', 'fulfillments', 'operation', 'timestamp', 'version']
 
         tx_signed = b.sign_transaction(tx, user_sk)
 
@@ -607,45 +605,6 @@ class TestBlockValidation(object):
             b.validate_block(block)
 
 
-class TestBigchainBlock(object):
-
-    def test_revert_delete_block(self, b):
-        b.create_genesis_block()
-
-        block_1 = dummy_block()
-        block_2 = dummy_block()
-        block_3 = dummy_block()
-
-        b.write_block(block_1, durability='hard')
-        b.write_block(block_2, durability='hard')
-        b.write_block(block_3, durability='hard')
-
-        b.write_vote(b.vote(block_1['id'], b.get_last_voted_block()['id'], True))
-        b.write_vote(b.vote(block_2['id'], b.get_last_voted_block()['id'], True))
-        b.write_vote(b.vote(block_3['id'], b.get_last_voted_block()['id'], True))
-
-        q_revert_delete = mp.Queue()
-
-        reverter = BlockDeleteRevert(q_revert_delete)
-
-        # simulate changefeed
-        r.table('bigchain').get(block_2['id']).delete().run(b.conn)
-        q_revert_delete.put(block_2)
-
-        assert r.table('bigchain').get(block_2['id']).run(b.conn) is None
-
-        reverter.start()
-        time.sleep(1)
-        reverter.kill()
-
-        reverted_block_2 = r.table('bigchain').get(block_2['id']).run(b.conn)
-
-        assert reverted_block_2 == block_2
-
-    def test_duplicated_transactions(self):
-        pytest.skip('We may have duplicates in the initial_results and changefeed')
-
-
 class TestMultipleInputs(object):
     def test_transfer_single_owners_single_input(self, b, user_sk, user_vk, inputs):
         # create a new user
@@ -1167,7 +1126,7 @@ class TestFulfillmentMessage(object):
         assert fulfillment_message['fulfillment']['input'] == original_fulfillment['input']
         assert fulfillment_message['operation'] == tx['transaction']['operation']
         assert fulfillment_message['timestamp'] == tx['transaction']['timestamp']
-        assert fulfillment_message['version'] == tx['version']
+        assert fulfillment_message['version'] == tx['transaction']['version']
 
     @pytest.mark.usefixtures('inputs')
     def test_fulfillment_message_transfer(self, b, user_vk):
@@ -1190,7 +1149,7 @@ class TestFulfillmentMessage(object):
         assert fulfillment_message['fulfillment']['input'] == original_fulfillment['input']
         assert fulfillment_message['operation'] == tx['transaction']['operation']
         assert fulfillment_message['timestamp'] == tx['transaction']['timestamp']
-        assert fulfillment_message['version'] == tx['version']
+        assert fulfillment_message['version'] == tx['transaction']['version']
 
     def test_fulfillment_message_multiple_current_owners_multiple_new_owners_multiple_inputs(self, b, user_vk):
         # create a new users
@@ -1228,7 +1187,7 @@ class TestFulfillmentMessage(object):
             assert fulfillment_message['fulfillment']['input'] == original_fulfillment['input']
             assert fulfillment_message['operation'] == tx['transaction']['operation']
             assert fulfillment_message['timestamp'] == tx['transaction']['timestamp']
-            assert fulfillment_message['version'] == tx['version']
+            assert fulfillment_message['version'] == tx['transaction']['version']
 
 
 class TestTransactionMalleability(object):
@@ -1250,7 +1209,7 @@ class TestTransactionMalleability(object):
         assert b.is_valid_transaction(tx_changed) is False
 
         tx_changed = copy.deepcopy(tx_signed)
-        tx_changed['version'] = '0'
+        tx_changed['transaction']['version'] = '0'
         assert b.validate_fulfillments(tx_changed) is False
         assert b.is_valid_transaction(tx_changed) is False
 

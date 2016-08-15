@@ -8,9 +8,9 @@ You can read about the motivations, goals and high-level architecture in the [Bi
 ## Setup Instructions for Various Cases
 
 * [Set up a stand-alone BigchainDB node for learning and experimenting: Quickstart](quickstart.html)
+* [Set up and run a dev/test node](dev-and-test/setup-run-node.html)
+* [Deploy a testing cluster on AWS](clusters-feds/aws-testing-cluster.html)
 * [Set up and run a federation](clusters-feds/set-up-a-federation.html) (i.a. an organization with a BigchainDB cluster)
-* To set up a stand-alone node so you can help contribute to the development of BigchainDB Server, see [the CONTRIBUTING.md file](https://github.com/bigchaindb/bigchaindb/blob/master/CONTRIBUTING.md)
-* [Deploy a cluster on AWS](clusters-feds/deploy-on-aws.html)
 
 (Instructions for setting up a client will be provided once there's a public testnet.)
 

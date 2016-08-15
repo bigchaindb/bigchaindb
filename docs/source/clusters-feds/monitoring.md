@@ -28,7 +28,7 @@ You can view the Grafana dashboard in your web browser at:
 
 (You may want to replace `localhost` with another hostname in that URL, e.g. the hostname of a remote monitoring server.)
 
-The login and password are `admin` by default. If BigchainDB is running and processing transactions, you should see analytics—if not, [start BigchainDB](../nodes/setup-run-node.html#run-bigchaindb) and load some test transactions:
+The login and password are `admin` by default. If BigchainDB is running and processing transactions, you should see analytics—if not, [start BigchainDB](../dev-and-test/setup-run-node.html#run-bigchaindb) and load some test transactions:
 ```text
 $ bigchaindb load
 ```
