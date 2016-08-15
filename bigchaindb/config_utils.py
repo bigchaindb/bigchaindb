@@ -98,11 +98,13 @@ def file_config(filename=None):
         filename = CONFIG_DEFAULT_PATH
 
     logger.debug('file_config() will try to open `{}`'.format(filename))
-    try:
-        with open(filename) as f:
+    with open(filename) as f:
+        try:
             config = json.load(f)
-    except Exception as err:
-        raise exceptions.ConfigurationError('Failed to load configuration from `{}`, reason: {}'.format(filename, err))
+        except ValueError as err:
+            raise exceptions.ConfigurationError(
+                'Failed to load configuration from `{}`, reason: {}'.format(filename, err)
+            )
 
     logger.info('Configuration loaded from `{}`'.format(filename))
 
