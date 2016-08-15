@@ -75,6 +75,3 @@ deploy-cluster-aws/confiles/
 deploy-cluster-aws/client_confile
 benchmarking-tests/hostlist.py
 
-# Terraform-related
-terraform.tfstate
-terraform.tfstate.backup
