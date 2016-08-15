@@ -32,8 +32,8 @@ def mock_db_init_with_existing_db(monkeypatch):
 
 @pytest.fixture
 def mock_processes_start(monkeypatch):
-    from bigchaindb.processes import Processes
-    monkeypatch.setattr(Processes, 'start', lambda *args: None)
+    from bigchaindb import processes
+    monkeypatch.setattr(processes, 'start', lambda *args: None)
 
 
 @pytest.fixture
