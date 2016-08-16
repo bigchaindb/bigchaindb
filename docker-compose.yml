@@ -22,6 +22,7 @@ services:
     container_name: docker-bigchaindb
     volumes:
       - ./bigchaindb:/usr/src/app/bigchaindb
+      - ./conf:/usr/src/app/conf
       - ./tests:/usr/src/app/tests
       - ./docs:/usr/src/app/docs
       - ./setup.py:/usr/src/app/setup.py

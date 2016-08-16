@@ -1,0 +1,23 @@
+{
+    "consensus_plugin": "default",
+    "database": {
+	"host": "localhost",
+	"port": 28015,
+	"name": "bigchain"
+    },
+     "keypair": {
+	"private": "",
+	"public": ""
+    },
+    "api_endpoint": "http://localhost:9984/api/v1",
+    "statsd": {
+	"host": "localhost",
+	"rate": 0.01,
+	"port": 8125},
+	"keyring": [],
+     "server": {
+	"workers": null,
+	"threads": null,
+	"bind": "localhost:9984"
+    }
+}
