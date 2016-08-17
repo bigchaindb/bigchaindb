@@ -1,7 +1,7 @@
 """This module provides the blueprint for some basic API endpoints.
 
-For more information please refer to the documentation in Apiary:
- - http://docs.bigchaindb.apiary.io/
+For more information please refer to the documentation on ReadTheDocs:
+ - https://bigchaindb.readthedocs.io/en/latest/drivers-clients/http-client-server-api.html
 """
 
 import flask
@@ -12,6 +12,7 @@ from bigchaindb import version
 
 
 info_views = Blueprint('info_views', __name__)
+
 
 @info_views.route('/')
 def home():
