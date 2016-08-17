@@ -6,4 +6,5 @@ Production Node Setup & Management
 
    overview
    install-terraform
+   prov-one-m-aws
    
