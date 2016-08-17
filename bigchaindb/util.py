@@ -137,7 +137,8 @@ def timestamp():
 
 
 # TODO: Consider remove the operation (if there are no inputs CREATE else TRANSFER)
-def create_tx(current_owners, new_owners, inputs, operation, payload=None):
+def create_tx(current_owners, new_owners, inputs, operation, payload=None, data=None, divisible=False,
+              updatable=False, amount=1, refillable=False):
     """Create a new transaction
 
     A transaction in the bigchain is a transfer of a digital asset between two entities represented
@@ -190,14 +191,16 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
                         }
                     ],
                 "operation": "<string>",
-                "timestamp": "<timestamp from client>",
-                "data": {
-                    "hash": "<SHA3-256 hash hexdigest of payload>",
-                    "payload": {
-                        "title": "The Winds of Plast",
-                        "creator": "Johnathan Plunkett",
-                        "IPFS_key": "QmfQ5QAjvg4GtA3wg3adpnDJug8ktA1BxurVqBD8rtgVjP"
-                    }
+                "timestamp": "<timesamp from client>",
+                "asset": {
+                    "id": "<uuid>",
+                    "divisible": "<true | false>",
+                    "updatable": "<true | false>",
+                    "amount": "<int>",
+                    "refillable": "<true | false>",
+                    "data": "<json document>"
+                },
+                "payload": {
                 }
             },
         }
@@ -216,20 +219,18 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
     if not isinstance(new_owners, list):
         new_owners = [new_owners]
 
-    if not isinstance(inputs, list):
+    if inputs is not None and not isinstance(inputs, list):
         inputs = [inputs]
 
     # handle payload
     if payload is not None and not isinstance(payload, dict):
-        raise TypeError('`payload` must be an dict instance or None')
-
-    data = {
-        'uuid': str(uuid.uuid4()),
-        'payload': payload
-    }
+        raise TypeError('`payload` must be a dict instance or None')
 
     # handle inputs
     fulfillments = []
+
+    # handle asset
+    asset = None
 
     # transfer
     if inputs:
@@ -242,6 +243,19 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
             })
     # create
     else:
+        # handle digital asset. Right now it is only checked on a create transaction
+        if data is not None and not isinstance(data, dict):
+            raise TypeError('`data` must be a dict instance or None')
+
+        asset = {
+            "id": str(uuid.uuid4()),
+            "divisible": divisible,
+            "updatable": updatable,
+            "amount": amount,
+            "refillable": refillable,
+            "data": data
+        }
+
         fulfillments.append({
             'current_owners': current_owners,
             'input': None,
@@ -283,7 +297,8 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
         'conditions': conditions,
         'operation': operation,
         'timestamp': timestamp(),
-        'data': data
+        'asset': asset,
+        'payload': payload
     }
 
     # serialize and convert to bytes
@@ -478,7 +493,8 @@ def get_fulfillment_message(transaction, fulfillment, serialized=False):
     fulfillment_message = {
         'operation': transaction['transaction']['operation'],
         'timestamp': transaction['transaction']['timestamp'],
-        'data': transaction['transaction']['data'],
+        'payload': transaction['transaction']['payload'],
+        'asset': transaction['transaction']['asset'],
         'version': transaction['transaction']['version'],
         'id': transaction['id']
     }
