@@ -26,9 +26,19 @@ fi
 # to set environment variables related to AWS deployment
 echo "Reading "$DEPLOY_CONF_FILE
 source $DEPLOY_CONF_FILE
+
+# Check if SSH_KEY_NAME got set
+if [ "$SSH_KEY_NAME" == "not-set-yet" ] || \
+   [ "$SSH_KEY_NAME" == "" ] || \
+   [ -z ${SSH_KEY_NAME+x} ]; then
+    echo "SSH_KEY_NAME was not set in that file"
+    exit 1
+fi
+
 echo "NUM_NODES = "$NUM_NODES
 echo "BRANCH = "$BRANCH
 echo "WHAT_TO_DEPLOY = "$WHAT_TO_DEPLOY
+echo "SSH_KEY_NAME" = $SSH_KEY_NAME
 echo "USE_KEYPAIRS_FILE = "$USE_KEYPAIRS_FILE
 echo "IMAGE_ID = "$IMAGE_ID
 echo "INSTANCE_TYPE = "$INSTANCE_TYPE
@@ -38,9 +48,9 @@ if [ "$USING_EBS" = True ]; then
     echo "EBS_OPTIMIZED = "$EBS_OPTIMIZED
 fi
 
-# Check for AWS private key file (.pem file)
-if [ ! -f "pem/bigchaindb.pem" ]; then
-    echo "File pem/bigchaindb.pem (AWS private key) is missing"
+# Check for the SSH private key file
+if [ ! -f "$HOME/.ssh/$SSH_KEY_NAME" ]; then
+    echo "The SSH private key file "$HOME"/.ssh/"$SSH_KEY_NAME" is missing"
     exit 1
 fi
 
@@ -70,9 +80,9 @@ fi
 TAG="BDB-"$WHAT_TO_DEPLOY"-"`date +%m-%d@%H:%M`
 echo "TAG = "$TAG
 
-# Change the file permissions on pem/bigchaindb.pem
+# Change the file permissions on the SSH private key file
 # so that the owner can read it, but that's all
-chmod 0400 pem/bigchaindb.pem
+chmod 0400 $HOME/.ssh/$SSH_KEY_NAME
 
 # The following Python script does these things:
 # 0. allocates more elastic IP addresses if necessary,
@@ -84,12 +94,18 @@ chmod 0400 pem/bigchaindb.pem
 # 5. writes the shellscript add2known_hosts.sh
 # 6. (over)writes a file named hostlist.py
 #    containing a list of all public DNS names.
+# 7. (over)writes a file named ssh_key.py
+#    containing the location of the private SSH key file.
 python launch_ec2_nodes.py --deploy-conf-file $DEPLOY_CONF_FILE --tag $TAG
 
 # Make add2known_hosts.sh executable then execute it.
 # This adds remote keys to ~/.ssh/known_hosts
 chmod +x add2known_hosts.sh
 ./add2known_hosts.sh
+
+# Test an SSH connection to one of the hosts
+# and prompt the user for their SSH password if necessary
+fab set_host:0 test_ssh
 
 # Rollout base packages (dependencies) needed before
 # storage backend (RethinkDB) and BigchainDB can be rolled out
