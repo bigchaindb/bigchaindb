@@ -2,7 +2,7 @@ from pytest import raises
 
 
 def test_fulfillment_serialization(ffill_uri, user_vk):
-    from bigchaindb.transaction import Fulfillment
+    from bigchaindb_common_common.transaction import Fulfillment
     from cryptoconditions import Fulfillment as CCFulfillment
 
     expected = {
@@ -18,7 +18,7 @@ def test_fulfillment_serialization(ffill_uri, user_vk):
 
 
 def test_fulfillment_deserialization_with_uri(ffill_uri, user_vk):
-    from bigchaindb.transaction import Fulfillment
+    from bigchaindb_common.transaction import Fulfillment
     from cryptoconditions import Fulfillment as CCFulfillment
 
     expected = Fulfillment(CCFulfillment.from_uri(ffill_uri), [user_vk])
@@ -35,7 +35,7 @@ def test_fulfillment_deserialization_with_uri(ffill_uri, user_vk):
 
 
 def test_fulfillment_deserialization_with_dict(cc_ffill, user_vk):
-    from bigchaindb.transaction import Fulfillment
+    from bigchaindb_common.transaction import Fulfillment
 
     expected = Fulfillment(cc_ffill, [user_vk])
 
@@ -52,14 +52,14 @@ def test_fulfillment_deserialization_with_dict(cc_ffill, user_vk):
 
 
 def test_invalid_fulfillment_initialization(cc_ffill, user_vk):
-    from bigchaindb.transaction import Fulfillment
+    from bigchaindb_common.transaction import Fulfillment
 
     with raises(TypeError):
         Fulfillment(cc_ffill, user_vk)
 
 
 def test_gen_default_fulfillment_with_single_owner_after(user_vk):
-    from bigchaindb.transaction import Fulfillment
+    from bigchaindb_common.transaction import Fulfillment
     from cryptoconditions import Ed25519Fulfillment
 
     ffill = Fulfillment.gen_default([user_vk])
@@ -70,7 +70,7 @@ def test_gen_default_fulfillment_with_single_owner_after(user_vk):
 
 
 def test_gen_default_fulfillment_with_multiple_owners_after(user_vks):
-    from bigchaindb.transaction import Fulfillment
+    from bigchaindb_common.transaction import Fulfillment
     from cryptoconditions import Ed25519Fulfillment, ThresholdSha256Fulfillment
 
     ffill = Fulfillment.gen_default(user_vks)
@@ -86,7 +86,7 @@ def test_gen_default_fulfillment_with_multiple_owners_after(user_vks):
 
 
 def test_invalid_gen_default_arguments():
-    from bigchaindb.transaction import Fulfillment
+    from bigchaindb_common.transaction import Fulfillment
 
     with raises(TypeError):
         Fulfillment.gen_default({})
@@ -95,7 +95,7 @@ def test_invalid_gen_default_arguments():
 
 
 def test_condition_serialization(cond_uri, user_vk):
-    from bigchaindb.transaction import Condition
+    from bigchaindb_common.transaction import Condition
 
     expected = {
         'condition': cond_uri,
@@ -109,7 +109,7 @@ def test_condition_serialization(cond_uri, user_vk):
 
 
 def test_condition_deserialization(cond_uri, user_vk):
-    from bigchaindb.transaction import Condition
+    from bigchaindb_common.transaction import Condition
 
     expected = Condition(cond_uri, [user_vk])
     cond = {
@@ -123,21 +123,21 @@ def test_condition_deserialization(cond_uri, user_vk):
 
 
 def test_invalid_condition_initialization(cond_uri, user_vk):
-    from bigchaindb.transaction import Condition
+    from bigchaindb_common.transaction import Condition
 
     with raises(TypeError):
         Condition(cond_uri, user_vk)
 
 
 def test_invalid_data_initialization():
-    from bigchaindb.transaction import Data
+    from bigchaindb_common.transaction import Data
 
     with raises(TypeError):
         Data([])
 
 
 def test_data_serialization(payload, payload_id):
-    from bigchaindb.transaction import Data
+    from bigchaindb_common.transaction import Data
 
     expected = {
         'payload': payload,
@@ -149,7 +149,7 @@ def test_data_serialization(payload, payload_id):
 
 
 def test_data_deserialization(payload, payload_id):
-    from bigchaindb.transaction import Data
+    from bigchaindb_common.transaction import Data
 
     expected = Data(payload, payload_id)
     data = Data.from_dict({'payload': payload, 'hash': payload_id})
@@ -158,7 +158,7 @@ def test_data_deserialization(payload, payload_id):
 
 
 def test_transaction_serialization(default_single_ffill, default_single_cond):
-    from bigchaindb.transaction import Transaction
+    from bigchaindb_common.transaction import Transaction
 
     tx_id = 'l0l'
     timestamp = '66666666666'
@@ -184,7 +184,7 @@ def test_transaction_serialization(default_single_ffill, default_single_cond):
 
 
 def test_transaction_deserialization(default_single_ffill, default_single_cond):
-    from bigchaindb.transaction import Transaction
+    from bigchaindb_common.transaction import Transaction
 
     tx_id = 'l0l'
     timestamp = '66666666666'
@@ -209,7 +209,7 @@ def test_transaction_deserialization(default_single_ffill, default_single_cond):
 
 
 def test_invalid_tx_initialization():
-    from bigchaindb.transaction import Transaction
+    from bigchaindb_common.transaction import Transaction
 
     wrong_data_type = {'payload': 'a totally wrong datatype'}
     with raises(TypeError):
@@ -233,8 +233,8 @@ def test_transaction_link_deserialization():
 def test_validate_tx_simple_signature(default_single_ffill, default_single_cond, user_vk, user_sk):
     from copy import deepcopy
 
-    from bigchaindb.crypto import SigningKey
-    from bigchaindb.transaction import Transaction
+    from bigchaindb_common.crypto import SigningKey
+    from bigchaindb_common.transaction import Transaction
 
     tx = Transaction(Transaction.CREATE, [default_single_ffill], [default_single_cond])
     expected = deepcopy(default_single_ffill)
@@ -248,8 +248,8 @@ def test_validate_tx_simple_signature(default_single_ffill, default_single_cond,
 def test_validate_tx_threshold_signature(default_threshold_ffill, default_threshold_cond, user_vks, user_sks):
     from copy import deepcopy
 
-    from bigchaindb.crypto import SigningKey
-    from bigchaindb.transaction import Transaction
+    from bigchaindb_common.crypto import SigningKey
+    from bigchaindb_common.transaction import Transaction
 
     tx = Transaction(Transaction.CREATE, [default_threshold_ffill], [default_threshold_cond])
     expected = deepcopy(default_threshold_ffill)
@@ -264,11 +264,10 @@ def test_validate_tx_threshold_signature(default_threshold_ffill, default_thresh
 def test_transfer(tx, user_vk, user_sk, user2_vk):
     from copy import deepcopy
 
-    from bigchaindb.crypto import SigningKey
-    from bigchaindb.transaction import Condition
+    from bigchaindb_common.crypto import SigningKey
+    from bigchaindb_common.transaction import Condition
     from cryptoconditions import Ed25519Fulfillment
 
-    import ipdb; ipdb.set_trace()
     cond = Condition(Ed25519Fulfillment(public_key=user2_vk).condition_uri, [user2_vk])
     transfer_tx = tx.transfer([cond])
 
