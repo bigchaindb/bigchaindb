@@ -5,24 +5,8 @@ Tasks:
 1. setup test database before starting the tests
 2. delete test database after running the tests
 """
-
-import os
-import copy
-
 import pytest
 
-
-DB_NAME = 'bigchain_test_{}'.format(os.getpid())
-
-CONFIG = {
-    'database': {
-        'name': DB_NAME
-    },
-    'keypair': {
-        'private': '31Lb1ZGKTyHnmVK3LUMrAUrPNfd4sE2YyBt3UA4A25aA',
-        'public': '4XYfCbabAWVUCbjTmRTFEu2sc3dFEdkse4r6X498B1s8'
-    }
-}
 
 # Test user. inputs will be created for this user. Cryptography Keys
 USER_SIGNING_KEY = '8eJ8q9ZQpReWyQT5aFCiwtZ5wDZC4eDnCen88p3tQ6ie'
@@ -39,30 +23,6 @@ PAYLOAD = {
     'msg': 'Hello BigchainDB!'
 }
 PAYLOAD_ID = '872fa6e6f46246cd44afdb2ee9cfae0e72885fb0910e2bcf9a5a2a4eadb417b8'
-
-
-# We need this function to avoid loading an existing
-# conf file located in the home of the user running
-# the tests. If it's too aggressive we can change it
-# later.
-@pytest.fixture(scope='function', autouse=True)
-def ignore_local_config_file(monkeypatch):
-    def mock_file_config(filename=None):
-        # TODO: FileNotFoundError is not defined anywhere. Import it
-        raise FileNotFoundError()
-
-    monkeypatch.setattr('bigchaindb.config_utils.file_config', mock_file_config)
-
-
-@pytest.fixture(scope='function', autouse=True)
-def restore_config(request, node_config):
-    from bigchaindb import config_utils
-    config_utils.set_config(node_config)
-
-
-@pytest.fixture(scope='module')
-def node_config():
-    return copy.deepcopy(CONFIG)
 
 
 @pytest.fixture
@@ -96,13 +56,6 @@ def user_sks():
 
 
 @pytest.fixture
-def b(request, node_config):
-    restore_config(request, node_config)
-    from bigchaindb import Bigchain
-    return Bigchain()
-
-
-@pytest.fixture
 def ffill_uri():
     return CC_FULFILLMENT_URI
 
@@ -120,7 +73,7 @@ def cc_ffill(ffill_uri, user_vk):
 
 @pytest.fixture
 def default_single_ffill(user_vk):
-    from bigchaindb.transaction import Fulfillment
+    from bigchaindb_common.transaction import Fulfillment
     return Fulfillment.gen_default([user_vk])
 
 
@@ -131,7 +84,7 @@ def default_single_cond(default_single_ffill):
 
 @pytest.fixture
 def default_threshold_ffill(user_vks):
-    from bigchaindb.transaction import Fulfillment
+    from bigchaindb_common.transaction import Fulfillment
     return Fulfillment.gen_default(user_vks)
 
 
@@ -152,11 +105,11 @@ def payload_id():
 
 @pytest.fixture
 def data(payload, payload_id):
-    from bigchaindb.transaction import Data
+    from bigchaindb_common.transaction import Data
     return Data(payload, payload_id)
 
 
 @pytest.fixture
 def tx(default_single_ffill, default_single_cond):
-    from bigchaindb.transaction import Transaction
+    from bigchaindb_common.transaction import Transaction
     return Transaction(Transaction.CREATE, [default_single_ffill], [default_single_cond])
