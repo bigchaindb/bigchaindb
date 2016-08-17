@@ -13,3 +13,7 @@ variable "root_storage_in_GiB" {
 variable "DB_storage_in_GiB" {
   default = 30
 }
+
+variable "ssh_key_name" {
+  # No default. Ask as needed.
+}

@@ -13,7 +13,7 @@ resource "aws_instance" "instance" {
     Name        = "BigchainDB_node"
   }
   ebs_optimized = true
-  key_name      = "bigchaindb"
+  key_name      = "${var.ssh_key_name}"
   vpc_security_group_ids = ["${aws_security_group.node_sg1.id}"]
   root_block_device = {
     volume_type = "gp2"
