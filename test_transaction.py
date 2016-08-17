@@ -222,6 +222,14 @@ def test_invalid_tx_initialization():
         Transaction('RANSFER', [], [])
 
 
+def test_transaction_link_serialization():
+    pass
+
+
+def test_transaction_link_deserialization():
+    pass
+
+
 def test_validate_tx_simple_signature(default_single_ffill, default_single_cond, user_vk, user_sk):
     from copy import deepcopy
 
@@ -251,3 +259,23 @@ def test_validate_tx_threshold_signature(default_threshold_ffill, default_thresh
 
     assert tx.fulfillments[0].to_dict()['fulfillment'] == expected.to_dict()['fulfillment']
     assert tx.fulfillments_valid() is True
+
+
+def test_transfer(tx, user_vk, user_sk, user2_vk):
+    from copy import deepcopy
+
+    from bigchaindb.crypto import SigningKey
+    from bigchaindb.transaction import Condition
+    from cryptoconditions import Ed25519Fulfillment
+
+    import ipdb; ipdb.set_trace()
+    cond = Condition(Ed25519Fulfillment(public_key=user2_vk).condition_uri, [user2_vk])
+    transfer_tx = tx.transfer([cond])
+
+    expected = deepcopy(transfer_tx.fulfillments[0])
+    expected.fulfillment.sign(str(transfer_tx), SigningKey(user_sk))
+
+    transfer_tx.sign([user_sk])
+
+    assert tx.fulfillments[0].fulfillment.to_dict()['signature'] == expected.fulfillment.to_dict()['signature']
+    assert transfer_tx.fulfillments_valid() is True
