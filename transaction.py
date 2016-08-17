@@ -174,7 +174,10 @@ class TransactionLink(object):
 
     @classmethod
     def from_dict(cls, link):
-        return cls(link['tx_id'], link['cid'])
+        try:
+            return cls(link['tx_id'], link['cid'])
+        except TypeError:
+            return cls()
 
     def to_dict(self):
         if self.tx_id is None and self.cid is None:
