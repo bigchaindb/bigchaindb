@@ -11,17 +11,16 @@ from cryptoconditions import (
 from cryptoconditions.exceptions import ParsingError
 
 # TODO: Eventually remove all coupling from the core BigchainDB code base, as this module will life separately.
-from bigchaindb.crypto import (
+from bigchaindb_common.crypto import (
     SigningKey,
     hash_data,
 )
-from bigchaindb.exceptions import (
+from bigchaindb_common.exceptions import (
     KeypairMismatchException,
 )
-from bigchaindb.util import (
+from bigchaindb_common.util import (
     serialize,
-    # TODO: Rename function in util to `gen_timestamp` or `create_timestamp`
-    timestamp as gen_timestamp,
+    gen_timestamp,
 )
 
 
