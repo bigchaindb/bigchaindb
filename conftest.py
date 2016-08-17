@@ -76,6 +76,16 @@ def user_vk():
 
 
 @pytest.fixture
+def user2_sk():
+    return USER2_SIGNING_KEY
+
+
+@pytest.fixture
+def user2_vk():
+    return USER2_VERIFYING_KEY
+
+
+@pytest.fixture
 def user_vks():
     return [USER_VERIFYING_KEY, USER2_VERIFYING_KEY]
 
@@ -109,15 +119,14 @@ def cc_ffill(ffill_uri, user_vk):
 
 
 @pytest.fixture
-def ffill(cc_ffill, user_vk):
-    from bigchaindb.transaction import Fulfillment
-    return Fulfillment(cc_ffill, [user_vk])
-
-
-@pytest.fixture
 def default_single_ffill(user_vk):
     from bigchaindb.transaction import Fulfillment
     return Fulfillment.gen_default([user_vk])
+
+
+@pytest.fixture
+def default_single_cond(default_single_ffill):
+    return default_single_ffill.gen_condition()
 
 
 @pytest.fixture
@@ -129,11 +138,6 @@ def default_threshold_ffill(user_vks):
 @pytest.fixture
 def default_threshold_cond(default_threshold_ffill):
     return default_threshold_ffill.gen_condition()
-
-
-@pytest.fixture
-def default_single_cond(default_single_ffill):
-    return default_single_ffill.gen_condition()
 
 
 @pytest.fixture
