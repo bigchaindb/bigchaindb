@@ -199,16 +199,16 @@ The HTTP API currently exposes two endpoints, one to get information about a spe
    **Disclaimer**
 
    ``CREATE`` transactions are treated differently from ``TRANSFER`` assets.
-   The reason is that a ``CREATE`` transaction needs to be signed by the federation nodes and not by the client.
+   The reason is that a ``CREATE`` transaction needs to be signed by a federation node and not by the client.
 
-   The following python snippet at the client can be used to generate ``CREATE`` transactions before they can be pushed to the API server:
+   The following python snippet in a client can be used to generate ``CREATE`` transactions before they can be pushed to the API server:
 
    .. code-block:: python
 
        from bigchaindb import util
        tx = util.create_and_sign_tx(my_privkey, my_pubkey, my_pubkey, None, 'CREATE')
 
-   When POSTing ``tx`` to the API, the ``CREATE`` transaction will be signed by the federation nodes.
+   When POSTing ``tx`` to the API, the ``CREATE`` transaction will be signed by a federation node.
 
    A ``TRANSFER`` transaction, that takes an existing input transaction to change ownership can be generated in multiple ways:
 
