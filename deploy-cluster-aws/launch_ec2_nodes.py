@@ -9,9 +9,12 @@
 5. writes the shellscript add2known_hosts.sh
 6. (over)writes a file named hostlist.py
    containing a list of all public DNS names.
+7. (over)writes a file named ssh_key.py
+   containing the location of the private SSH key file.
 """
 
 from __future__ import unicode_literals
+from os.path import expanduser
 import sys
 import time
 import socket
@@ -23,9 +26,9 @@ import boto3
 from awscommon import get_naeips
 
 
-SETTINGS = ['NUM_NODES', 'BRANCH', 'WHAT_TO_DEPLOY', 'USE_KEYPAIRS_FILE',
-            'IMAGE_ID', 'INSTANCE_TYPE', 'USING_EBS', 'EBS_VOLUME_SIZE',
-            'EBS_OPTIMIZED']
+SETTINGS = ['NUM_NODES', 'BRANCH', 'WHAT_TO_DEPLOY', 'SSH_KEY_NAME',
+            'USE_KEYPAIRS_FILE', 'IMAGE_ID', 'INSTANCE_TYPE', 'USING_EBS',
+            'EBS_VOLUME_SIZE', 'EBS_OPTIMIZED']
 
 
 class SettingsTypeError(TypeError):
@@ -76,6 +79,9 @@ if not isinstance(BRANCH, str):
 if not isinstance(WHAT_TO_DEPLOY, str):
     raise SettingsTypeError('WHAT_TO_DEPLOY should be a string')
 
+if not isinstance(SSH_KEY_NAME, str):
+    raise SettingsTypeError('SSH_KEY_NAME should be a string')
+
 if not isinstance(USE_KEYPAIRS_FILE, bool):
     msg = 'USE_KEYPAIRS_FILE should be a boolean (True or False)'
     raise SettingsTypeError(msg)
@@ -104,6 +110,11 @@ if WHAT_TO_DEPLOY not in ['servers', 'clients']:
     raise ValueError('WHAT_TO_DEPLOY should be either "servers" or "clients". '
                      'The AWS deployment configuration file sets it to {}'.
                      format(WHAT_TO_DEPLOY))
+
+if SSH_KEY_NAME in ['not-set-yet', '', None]:
+    raise ValueError('SSH_KEY_NAME should be set. '
+                     'The AWS deployment configuration file sets it to {}'.
+                     format(SSH_KEY_NAME))
 
 # Since we assume 'gp2' volumes (for now), the possible range is 1 to 16384
 if EBS_VOLUME_SIZE > 16384:
@@ -193,7 +204,7 @@ for _ in range(NUM_NODES):
             ImageId=IMAGE_ID,
             MinCount=1,
             MaxCount=1,
-            KeyName='bigchaindb',
+            KeyName=SSH_KEY_NAME,
             InstanceType=INSTANCE_TYPE,
             SecurityGroupIds=['bigchaindb'],
             BlockDeviceMappings=[dm],
@@ -204,7 +215,7 @@ for _ in range(NUM_NODES):
             ImageId=IMAGE_ID,
             MinCount=1,
             MaxCount=1,
-            KeyName='bigchaindb',
+            KeyName=SSH_KEY_NAME,
             InstanceType=INSTANCE_TYPE,
             SecurityGroupIds=['bigchaindb']
         )
@@ -281,6 +292,20 @@ with open('hostlist.py', 'w') as f:
     f.write('\n')
     f.write('public_dns_names = {}\n'.format(public_dns_names))
 
+# Create a file named ssh_key.py
+# containing the location of the private SSH key file.
+# If a ssh_key.py already exists, it will be overwritten.
+print('Writing ssh_key.py')
+with open('ssh_key.py', 'w') as f:
+    f.write('# -*- coding: utf-8 -*-\n')
+    f.write('"""This file exists as a convenient way for Fabric to get\n')
+    f.write('the location of the private SSH key file.')
+    f.write('"""\n')
+    f.write('\n')
+    f.write('from __future__ import unicode_literals\n')
+    f.write('\n')
+    home = expanduser('~')
+    f.write('ssh_key_path = "{}/.ssh/{}"\n'.format(home, SSH_KEY_NAME))
 
 # For each node in the cluster, check port 22 (ssh) until it's reachable
 for instance in instances_with_tag:
