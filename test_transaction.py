@@ -2,7 +2,7 @@ from pytest import raises
 
 
 def test_fulfillment_serialization(ffill_uri, user_vk):
-    from bigchaindb_common_common.transaction import Fulfillment
+    from bigchaindb_common.transaction import Fulfillment
     from cryptoconditions import Fulfillment as CCFulfillment
 
     expected = {
