@@ -4,6 +4,8 @@ BigchainDB: A Scalable Blockchain Database
 For full docs visit https://bigchaindb.readthedocs.org
 
 """
+from os.path import expanduser
+
 from setuptools import setup, find_packages
 
 
@@ -113,4 +115,7 @@ setup(
         'dev': dev_require + tests_require + docs_require + benchmarks_require,
         'docs': docs_require,
     },
+    data_files=[
+        (expanduser('~'), ['conf/.bigchaindb']),
+    ]
 )
