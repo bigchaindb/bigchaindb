@@ -10,8 +10,9 @@ def hash_data(data):
 
 
 def generate_key_pair():
-    sk, pk = crypto.ed25519_generate_key_pair()
-    return sk.decode(), pk.decode()
+    # TODO FOR CC: Adjust interface so that this function becomes unnecessary
+    private_key, public_key = crypto.ed25519_generate_key_pair()
+    return private_key.decode(), public_key.decode()
 
 SigningKey = crypto.Ed25519SigningKey
 VerifyingKey = crypto.Ed25519VerifyingKey
