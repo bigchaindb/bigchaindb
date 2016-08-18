@@ -56,6 +56,8 @@ def test_invalid_fulfillment_initialization(cc_ffill, user_vk):
 
     with raises(TypeError):
         Fulfillment(cc_ffill, user_vk)
+    with raises(TypeError):
+        Fulfillment(cc_ffill, [], tx_input='somethingthatiswrong')
 
 
 def test_gen_default_fulfillment_with_single_owner_after(user_vk):
@@ -223,14 +225,58 @@ def test_invalid_tx_initialization():
 
 
 def test_transaction_link_serialization():
-    pass
+    from bigchaindb_common.transaction import TransactionLink
+
+    tx_id = 'a transaction id'
+    expected = {
+        'tx_id': tx_id,
+        'cid': 0,
+    }
+    tx_link = TransactionLink(tx_id, 0)
+
+    assert tx_link.to_dict() == expected
+
+
+def test_transaction_link_serialization_with_empty_payload():
+    from bigchaindb_common.transaction import TransactionLink
+
+    expected = None
+    tx_link = TransactionLink()
+
+    assert tx_link.to_dict() == expected
 
 
 def test_transaction_link_deserialization():
-    pass
+    from bigchaindb_common.transaction import TransactionLink
+
+    tx_id = 'a transaction id'
+    expected = TransactionLink(tx_id, 0)
+    tx_link = {
+        'tx_id': tx_id,
+        'cid': 0,
+    }
+    tx_link = TransactionLink.from_dict(tx_link)
+
+    assert tx_link.to_dict() == expected.to_dict()
 
 
-def test_validate_tx_simple_signature(default_single_ffill, default_single_cond, user_vk, user_sk):
+def test_transaction_link_deserialization_with_empty_payload():
+    from bigchaindb_common.transaction import TransactionLink
+
+    expected = TransactionLink()
+    tx_link = TransactionLink.from_dict(None)
+
+    assert tx_link.to_dict() == expected.to_dict()
+
+
+def test_sign_with_invalid_parameters(tx, user_sk):
+    with raises(TypeError):
+        tx.sign(None)
+    with raises(TypeError):
+        tx.sign(user_sk)
+
+
+def test_validate_tx_simple_signature(default_single_ffill, default_single_cond, user_sk):
     from copy import deepcopy
 
     from bigchaindb_common.crypto import SigningKey
@@ -242,6 +288,32 @@ def test_validate_tx_simple_signature(default_single_ffill, default_single_cond,
     tx.sign([user_sk])
 
     assert tx.fulfillments[0].fulfillment.to_dict()['signature'] == expected.fulfillment.to_dict()['signature']
+    assert tx.fulfillments_valid() is True
+
+
+def test_validating_multiple_fulfillments(default_single_ffill, default_single_cond, user_sk):
+    from copy import deepcopy
+
+    from bigchaindb_common.crypto import SigningKey
+    from bigchaindb_common.transaction import Transaction
+
+    tx = Transaction(Transaction.CREATE,
+                     [default_single_ffill, deepcopy(default_single_ffill)],
+                     [default_single_cond, deepcopy(default_single_cond)])
+
+    expected_first = deepcopy(tx)
+    expected_second= deepcopy(tx)
+    expected_first.fulfillments = [expected_first.fulfillments[0]]
+    expected_first.conditions= [expected_first.conditions[0]]
+    expected_second.fulfillments = [expected_second.fulfillments[1]]
+    expected_second.conditions= [expected_second.conditions[1]]
+
+    expected_first.fulfillments[0].fulfillment.sign(str(expected_first), SigningKey(user_sk))
+    expected_second.fulfillments[0].fulfillment.sign(str(expected_second), SigningKey(user_sk))
+    tx.sign([user_sk])
+
+    assert tx.fulfillments[0].fulfillment.to_dict() == expected_first.fulfillments[0].fulfillment.to_dict()
+    assert tx.fulfillments[1].fulfillment.to_dict() == expected_second.fulfillments[0].fulfillment.to_dict()
     assert tx.fulfillments_valid() is True
 
 
