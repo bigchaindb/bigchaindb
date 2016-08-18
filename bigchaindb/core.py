@@ -351,7 +351,8 @@ class Bigchain(object):
     def is_valid_transaction(self, transaction):
         """Check whether a transacion is valid or invalid.
 
-        Similar to `validate_transaction` but does not raise an exception if the transaction is valid.
+        Similar to `validate_transaction` but never raises an exception.
+        It returns `False` if the transaction is invalid.
 
         Args:
             transaction (dict): transaction to check.
@@ -565,12 +566,8 @@ class Bigchain(object):
 
         return vote_signed
 
-    def write_vote(self, block, vote):
+    def write_vote(self, vote):
         """Write the vote to the database."""
-
-        # First, make sure this block doesn't contain a vote from this node
-        if self.has_previous_vote(block):
-            return None
 
         r.table('votes') \
             .insert(vote) \

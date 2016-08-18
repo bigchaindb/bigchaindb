@@ -7,6 +7,7 @@ from fabric.operations import run, put
 from fabric.context_managers import settings
 
 from hostlist import public_dns_names
+from ssh_key import ssh_key_path
 
 # Ignore known_hosts
 # http://docs.fabfile.org/en/1.10/usage/env.html#disable-known-hosts
@@ -18,7 +19,7 @@ env.hosts = public_dns_names
 
 # SSH key files to try when connecting:
 # http://docs.fabfile.org/en/1.10/usage/env.html#key-filename
-env.key_filename = 'pem/bigchaindb.pem'
+env.key_filename = ssh_key_path
 
 
 @task
