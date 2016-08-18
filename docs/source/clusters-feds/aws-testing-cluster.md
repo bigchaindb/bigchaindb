@@ -41,16 +41,6 @@ See the page about [basic AWS Setup](../appendices/aws-setup.html) in the Append
 
 The AWS cluster deployment scripts use elastic IP addresses (although that may change in the future). By default, AWS accounts get five elastic IP addresses. If you want to deploy a cluster with more than five nodes, then you will need more than five elastic IP addresses; you may have to apply for those; see [the AWS documentation on elastic IP addresses](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/elastic-ip-addresses-eip.html).
 
-
-## Create an Amazon EC2 Key Pair
-
-Go to the AWS EC2 Console and select "Key Pairs" in the left sidebar. Click the "Create Key Pair" button. Give it the name `bigchaindb`. You should be prompted to save a file named `bigchaindb.pem`. That file contains the RSA private key. (You can get the public key from the private key, so there's no need to send it separately.)
-
-Save the file in `bigchaindb/deploy-cluster-aws/pem/bigchaindb.pem`.
-
-**You should not share your private key.**
-
-
 ## Create an Amazon EC2 Security Group
 
 Go to the AWS EC2 Console and select "Security Groups" in the left sidebar. Click the "Create Security Group" button. Name it `bigchaindb`. The description probably doesn't matter; you can also put `bigchaindb` for that.
@@ -132,6 +122,7 @@ Step 2 is to make an AWS deployment configuration file, if necessary. There's an
 NUM_NODES=3
 BRANCH="master"
 WHAT_TO_DEPLOY="servers"
+SSH_KEY_NAME="not-set-yet"
 USE_KEYPAIRS_FILE=False
 IMAGE_ID="ami-accff2b1"
 INSTANCE_TYPE="m3.2xlarge"
@@ -140,7 +131,7 @@ EBS_VOLUME_SIZE=30
 EBS_OPTIMIZED=False
 ```
 
-If you're happy with those settings, then you can skip to the next step. Otherwise, you could make a copy of `example_deploy_conf.py` (e.g. `cp example_deploy_conf.py my_deploy_conf.py`) and then edit the copy using a text editor.
+Make a copy of that file and call it whatever you like (e.g. `cp example_deploy_conf.py my_deploy_conf.py`). You can leave most of the settings at their default values, but you must change the value of `SSH_KEY_NAME` to the name of your private SSH key. You can do that with a text editor. Set `SSH_KEY_NAME` to the name you used for `<key-name>` when you generated an RSA key pair for SSH (in basic AWS setup).
 
 If you want your nodes to have a predictable set of pre-generated keypairs, then you should 1) set `USE_KEYPAIRS_FILE=True` in the AWS deployment configuration file, and 2) provide a `keypairs.py` file containing enough keypairs for all of your nodes. You can generate a `keypairs.py` file using the `write_keypairs_file.py` script. For example:
 ```text
