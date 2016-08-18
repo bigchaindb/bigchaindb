@@ -1,10 +1,4 @@
-provider "aws" {
-  # An AWS access_key and secret_key are needed; Terraform looks
-  # for an AWS credentials file in the default location.
-  # See https://tinyurl.com/pu8gd9h
-  region = "${var.aws_region}"
-}
-
+# One instance (virtual machine) on AWS:
 # https://www.terraform.io/docs/providers/aws/r/instance.html
 resource "aws_instance" "instance" {
   ami           = "${lookup(var.amis, var.aws_region)}"
@@ -43,17 +37,11 @@ resource "aws_eip" "ip" {
   vpc      = true
 }
 
+# This attaches the instance to the EBS volume for RethinkDB storage
 # https://www.terraform.io/docs/providers/aws/r/volume_attachment.html
 resource "aws_volume_attachment" "ebs_att" {
   # Why /dev/sdp? See https://tinyurl.com/z2zqm6n
   device_name = "/dev/sdp"
   volume_id   = "${aws_ebs_volume.db_storage.id}"
   instance_id = "${aws_instance.instance.id}"
-}
-
-# You can get the value of "ip_address" after running terraform apply using:
-# $ terraform output ip_address
-# You could use that in a script, for example
-output "ip_address" {
-    value = "${aws_eip.ip.public_ip}"
 }

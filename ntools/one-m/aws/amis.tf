@@ -1,3 +1,7 @@
+# Each AWS region has a different AMI name
+# even though the contents are the same.
+# This file has the mapping from region --> AMI name.
+#
 # These are all Ubuntu 14.04 LTS AMIs
 # with Arch = amd64, Instance Type = hvm:ebs-ssd
 # from https://cloud-images.ubuntu.com/locator/ec2/
