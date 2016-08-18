@@ -44,7 +44,7 @@ class Election:
 
 
 def get_changefeed():
-    return ChangeFeed(table='votes', operation='insert')
+    return ChangeFeed(table='votes', operation=ChangeFeed.INSERT)
 
 
 def create_pipeline():
