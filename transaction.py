@@ -286,12 +286,13 @@ class Transaction(object):
     #       since for example the Transaction class in BigchainDB doesn't have to sign transactions.
     def _sign_fulfillments(self, private_keys):
         if private_keys is None or not isinstance(private_keys, list):
-            raise TypeError('`private_keys` cannot be None')
+            raise TypeError('`private_keys` must be a list instance')
 
         # Generate public keys from private keys and match them in a dictionary:
         #   key:     public_key
         #   value:   private_key
         def gen_public_key(private_key):
+            # TODO FOR CC: Adjust interface so that this function becomes unnecessary
             return private_key.get_verifying_key().to_ascii().decode()
         key_pairs = {gen_public_key(SigningKey(private_key)): SigningKey(private_key) for private_key in private_keys}
 
@@ -307,13 +308,13 @@ class Transaction(object):
     #       since for example the Transaction class in BigchainDB doesn't have to sign transactions.
     def _sign_fulfillment(self, fulfillment, tx_serialized, key_pairs):
         if isinstance(fulfillment.fulfillment, Ed25519Fulfillment):
-            self._fulfill_simple_signature_fulfillment(fulfillment, tx_serialized, key_pairs)
+            self._sign_simple_signature_fulfillment(fulfillment, tx_serialized, key_pairs)
         elif isinstance(fulfillment.fulfillment, ThresholdSha256Fulfillment):
-            self._fulfill_threshold_signature_fulfillment(fulfillment, tx_serialized, key_pairs)
+            self._sign_threshold_signature_fulfillment(fulfillment, tx_serialized, key_pairs)
 
     # TODO: This shouldn't be in the base of the Transaction class, but rather only for the client implementation,
     #       since for example the Transaction class in BigchainDB doesn't have to sign transactions.
-    def _fulfill_simple_signature_fulfillment(self, fulfillment, tx_serialized, key_pairs):
+    def _sign_simple_signature_fulfillment(self, fulfillment, tx_serialized, key_pairs):
         # TODO: Update comment
         """Fulfill a cryptoconditions.Ed25519Fulfillment
 
@@ -338,7 +339,7 @@ class Transaction(object):
 
     # TODO: This shouldn't be in the base of the Transaction class, but rather only for the client implementation,
     #       since for example the Transaction class in BigchainDB doesn't have to sign transactions.
-    def _fulfill_threshold_signature_fulfillment(self, fulfillment, tx_serialized, key_pairs):
+    def _sign_threshold_signature_fulfillment(self, fulfillment, tx_serialized, key_pairs):
         # TODO: Update comment
         """Fulfill a cryptoconditions.ThresholdSha256Fulfillment
 
