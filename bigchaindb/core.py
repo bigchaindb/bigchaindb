@@ -351,7 +351,8 @@ class Bigchain(object):
     def is_valid_transaction(self, transaction):
         """Check whether a transacion is valid or invalid.
 
-        Similar to `validate_transaction` but does not raise an exception if the transaction is valid.
+        Similar to `validate_transaction` but never raises an exception.
+        It returns `False` if the transaction is invalid.
 
         Args:
             transaction (dict): transaction to check.
