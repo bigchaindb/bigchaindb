@@ -103,7 +103,7 @@ def file_config(filename=None):
             config = json.load(f)
         except ValueError as err:
             raise exceptions.ConfigurationError(
-                'Failed to load configuration from `{}`, reason: {}'.format(filename, err)
+                'Failed to parse the JSON configuration from `{}`, {}'.format(filename, err)
             )
 
     logger.info('Configuration loaded from `{}`'.format(filename))
