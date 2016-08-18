@@ -291,7 +291,8 @@ class Transaction(object):
         # Generate public keys from private keys and match them in a dictionary:
         #   key:     public_key
         #   value:   private_key
-        gen_public_key = lambda private_key: private_key.get_verifying_key().to_ascii().decode()
+        def gen_public_key(private_key):
+            return private_key.get_verifying_key().to_ascii().decode()
         key_pairs = {gen_public_key(SigningKey(private_key)): SigningKey(private_key) for private_key in private_keys}
 
         # TODO: The condition for a transfer-tx will come from an input
@@ -382,9 +383,9 @@ class Transaction(object):
             bool: True if the signature is correct, False otherwise.
         """
         if len(self.fulfillments) > 1 and len(self.conditions) > 1:
-            # TODO: The condition for a transfer-tx will come from an input
-            gen_tx = lambda ffill, cond: Transaction(self.operation, [ffill], [cond], self.data, self.timestamp,
-                                                     self.version).fulfillments_valid()
+            def gen_tx(fulfillment, condition):
+                return Transaction(self.operation, [fulfillment], [condition], self.data, self.timestamp,
+                                   self.version).fulfillments_valid()
             return reduce(and_, map(gen_tx, self.fulfillments, self.conditions))
         else:
             return self._fulfillment_valid()
