@@ -36,3 +36,37 @@ Default output format [None]: [Press Enter]
 ```
 
 This writes two files: `~/.aws/credentials` and `~/.aws/config`. AWS tools and packages look for those files.
+
+
+## Generate an RSA Key Pair for SSH
+
+Eventually, you'll have one or more instances (virtual machines) running on AWS and you'll want to SSH to them. To do that, you need a public/private key pair. The public key will be sent to AWS, and you can tell AWS to put it in any instances you provision there. You'll keep the private key on your local workstation.
+
+First you need to make up a key name. Some ideas:
+
+* `bcdb-troy-1`
+* `bigchaindb-7`
+* `bcdb-jupiter`
+
+If you already have key pairs on AWS (Amazon EC2), you have to pick a name that's not already being used.
+Below, replace every instance of `<key-name>` with your actual key name.
+To generate a public/private RSA key pair with that name:
+```text
+ssh-keygen -t rsa -C "<key-name>" -f ~/.ssh/<key-name>
+```
+
+It will ask you for a passphrase. You can use whatever passphrase you like, but don't lose it. Two keys (files) will be created in `~/.ssh/`:
+
+1. `~/.ssh/<key-name>.pub` is the public key
+2. `~/.ssh/<key-name>` is the private key
+
+To send the public key to AWS, use the AWS Command-Line Interface:
+```text
+aws ec2 import-key-pair \
+--key-name "<key-name>" \
+--public-key-material file://~/.ssh/<key-name>.pub
+```
+
+If you're curious why there's a `file://` in front of the path to the public key, see issue [aws/aws-cli#41 on GitHub](https://github.com/aws/aws-cli/issues/41).
+
+If you want to verify that your key pair was imported by AWS, go to the Amazon EC2 console at [https://console.aws.amazon.com/ec2/](https://console.aws.amazon.com/ec2/), select the region you gave above when you did `aws configure` (e.g. eu-central-1), click on **Key Pairs** in the left sidebar, and check that `<key-name>` is listed.
