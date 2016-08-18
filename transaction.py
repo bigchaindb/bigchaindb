@@ -10,7 +10,6 @@ from cryptoconditions import (
 )
 from cryptoconditions.exceptions import ParsingError
 
-# TODO: Eventually remove all coupling from the core BigchainDB code base, as this module will life separately.
 from bigchaindb_common.crypto import (
     SigningKey,
     hash_data,
@@ -166,8 +165,7 @@ class Data(object):
 class TransactionLink(object):
     # NOTE: In an IPLD implementation, this class is not necessary anymore, as an IPLD link can simply point to an
     #       object, as well as an objects properties. So instead of having a (de)serializable class, we can have a
-    #       simple IPLD link of the form (not clear yet how to address indexes in arrays:
-    #        - https://github.com/ipld/specs/issues/20
+    #       simple IPLD link of the form: `/<tx_id>/transaction/conditions/<cid>/`
     def __init__(self, tx_id=None, cid=None):
         self.tx_id = tx_id
         self.cid = cid
@@ -258,11 +256,22 @@ class Transaction(object):
         else:
             self.fulfillments = fulfillments
 
-        # TODO: rename this to data
         if data is not None and not isinstance(data, Data):
             raise TypeError('`data` must be a Data instance or None')
         else:
             self.data = data
+
+    def add_fulfillment(self, fulfillment):
+        if fulfillment is not None and not isinstance(fulfillment, Fulfillment):
+            raise TypeError('`fulfillment` must be a Fulfillment instance or None')
+        else:
+            self.fulfillments.append(fulfillment)
+
+    def add_condition(self, condition):
+        if condition is not None and not isinstance(condition, Condition):
+            raise TypeError('`condition` must be a Condition instance or None')
+        else:
+            self.conditions.append(condition)
 
     # TODO: This shouldn't be in the base of the Transaction class, but rather only for the client implementation,
     #       since for example the Transaction class in BigchainDB doesn't have to sign transactions.
@@ -276,11 +285,8 @@ class Transaction(object):
     # TODO: This shouldn't be in the base of the Transaction class, but rather only for the client implementation,
     #       since for example the Transaction class in BigchainDB doesn't have to sign transactions.
     def _sign_fulfillments(self, private_keys):
-        if private_keys is None:
-            # TODO: Figure out the correct Python error
-            raise Exception('`private_keys` cannot be None')
-        if not isinstance(private_keys, list):
-            private_keys = [private_keys]
+        if private_keys is None or not isinstance(private_keys, list):
+            raise TypeError('`private_keys` cannot be None')
 
         # Generate public keys from private keys and match them in a dictionary:
         #   key:     public_key
@@ -291,7 +297,7 @@ class Transaction(object):
         # TODO: The condition for a transfer-tx will come from an input
         for fulfillment, condition in zip(self.fulfillments, self.conditions):
             # NOTE: We clone the current transaction but only add the condition and fulfillment we're currently
-            # working on.
+            # working on plus all previously signed ones.
             tx_partial = Transaction(self.operation, [fulfillment], [condition], self.data, self.timestamp,
                                      self.version)
             self._sign_fulfillment(fulfillment, str(tx_partial), key_pairs)
@@ -375,13 +381,11 @@ class Transaction(object):
         Returns:
             bool: True if the signature is correct, False otherwise.
         """
-        zipped_io = list(zip(self.fulfillments, self.conditions))
-
-        if len(zipped_io) > 1:
+        if len(self.fulfillments) > 1 and len(self.conditions) > 1:
             # TODO: The condition for a transfer-tx will come from an input
             gen_tx = lambda ffill, cond: Transaction(self.operation, [ffill], [cond], self.data, self.timestamp,
                                                      self.version).fulfillments_valid()
-            return reduce(and_, map(gen_tx, zipped_io))
+            return reduce(and_, map(gen_tx, self.fulfillments, self.conditions))
         else:
             return self._fulfillment_valid()
 
