@@ -71,7 +71,7 @@ class SillyConsensusRules(BaseConsensusRules):
 
 ## Packaging a plugin
 
-BigchainDB uses [setuptool's entry_point](https://pythonhosted.org/setuptools/setuptools.html) system to provide the plugin functionality. Any custom plugin needs to add this section to the `setup()` call in their `setup.py`:
+BigchainDB uses [setuptools](https://setuptools.readthedocs.io/en/latest/)' entry_points to provide the plugin functionality. Any custom plugin needs to add this section to the `setup()` call in their `setup.py`:
 
 ```python
 entry_points={
