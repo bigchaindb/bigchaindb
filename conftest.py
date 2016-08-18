@@ -9,11 +9,14 @@ import pytest
 
 
 # Test user. inputs will be created for this user. Cryptography Keys
-USER_SIGNING_KEY = '8eJ8q9ZQpReWyQT5aFCiwtZ5wDZC4eDnCen88p3tQ6ie'
-USER_VERIFYING_KEY = 'JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE'
+USER_PRIVATE_KEY = '8eJ8q9ZQpReWyQT5aFCiwtZ5wDZC4eDnCen88p3tQ6ie'
+USER_PUBLIC_KEY = 'JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE'
 
-USER2_SIGNING_KEY = 'F86PQPiqMTwM2Qi2Sda3U4Vdh3AgadMdX3KNVsu5wNJr'
-USER2_VERIFYING_KEY = 'GDxwMFbwdATkQELZbMfW8bd9hbNYMZLyVXA3nur2aNbE'
+USER2_PRIVATE_KEY = 'F86PQPiqMTwM2Qi2Sda3U4Vdh3AgadMdX3KNVsu5wNJr'
+USER2_PUBLIC_KEY = 'GDxwMFbwdATkQELZbMfW8bd9hbNYMZLyVXA3nur2aNbE'
+
+USER3_PRIVATE_KEY = '4rNQFzWQbVwuTiDVxwuFMvLG5zd8AhrQKCtVovBvcYsB'
+USER3_PUBLIC_KEY = 'Gbrg7JtxdjedQRmr81ZZbh1BozS7fBW88ZyxNDy7WLNC'
 
 
 CC_FULFILLMENT_URI = 'cf:0:'
@@ -26,33 +29,43 @@ PAYLOAD_ID = '872fa6e6f46246cd44afdb2ee9cfae0e72885fb0910e2bcf9a5a2a4eadb417b8'
 
 
 @pytest.fixture
-def user_sk():
-    return USER_SIGNING_KEY
+def user_priv():
+    return USER_PRIVATE_KEY
 
 
 @pytest.fixture
-def user_vk():
-    return USER_VERIFYING_KEY
+def user_pub():
+    return USER_PUBLIC_KEY
 
 
 @pytest.fixture
-def user2_sk():
-    return USER2_SIGNING_KEY
+def user2_priv():
+    return USER2_PRIVATE_KEY
 
 
 @pytest.fixture
-def user2_vk():
-    return USER2_VERIFYING_KEY
+def user2_pub():
+    return USER2_PUBLIC_KEY
 
 
 @pytest.fixture
-def user_vks():
-    return [USER_VERIFYING_KEY, USER2_VERIFYING_KEY]
+def user3_priv():
+    return USER3_PRIVATE_KEY
 
 
 @pytest.fixture
-def user_sks():
-    return [USER_SIGNING_KEY, USER2_SIGNING_KEY]
+def user3_pub():
+    return USER3_PUBLIC_KEY
+
+
+@pytest.fixture
+def user_pub_keys():
+    return [USER_PUBLIC_KEY, USER2_PUBLIC_KEY]
+
+
+@pytest.fixture
+def user_priv_keys():
+    return [USER_PRIVATE_KEY, USER2_PRIVATE_KEY]
 
 
 @pytest.fixture
@@ -66,15 +79,15 @@ def cond_uri():
 
 
 @pytest.fixture
-def cc_ffill(ffill_uri, user_vk):
+def cc_ffill(ffill_uri, user_pub):
     from cryptoconditions import Fulfillment
     return Fulfillment.from_uri(ffill_uri)
 
 
 @pytest.fixture
-def default_single_ffill(user_vk):
+def default_single_ffill(user_pub):
     from bigchaindb_common.transaction import Fulfillment
-    return Fulfillment.gen_default([user_vk])
+    return Fulfillment.gen_default([user_pub])
 
 
 @pytest.fixture
@@ -83,9 +96,9 @@ def default_single_cond(default_single_ffill):
 
 
 @pytest.fixture
-def default_threshold_ffill(user_vks):
+def default_threshold_ffill(user_pub_keys):
     from bigchaindb_common.transaction import Fulfillment
-    return Fulfillment.gen_default(user_vks)
+    return Fulfillment.gen_default(user_pub_keys)
 
 
 @pytest.fixture
