@@ -24,7 +24,7 @@ from bigchaindb_common.util import (
 
 
 class Fulfillment(object):
-    def __init__(self, fulfillment, owners_before=None, fid=0, tx_input=None):
+    def __init__(self, fulfillment, owners_before=None, tx_input=None):
         """Create a new fulfillment
 
         Args:
@@ -32,7 +32,6 @@ class Fulfillment(object):
             owners_before (Optional(list)): base58 encoded public key of the owners of the asset before this
             transaction.
         """
-        self.fid = fid
         # TODO: Check if `fulfillment` corresponds to `owners_before`, otherwise fail
         self.fulfillment = fulfillment
 
@@ -64,11 +63,10 @@ class Fulfillment(object):
             'input': tx_input,
             'fulfillment': fulfillment,
             'details': self.fulfillment.to_dict(),
-            'fid': self.fid,
         }
 
     @classmethod
-    def gen_default(cls, owners_after, fid=0):
+    def gen_default(cls, owners_after):
         """Creates default fulfillments for transactions, depending on how many `owners_after` are supplied.
         """
         if not isinstance(owners_after, list):
@@ -80,15 +78,15 @@ class Fulfillment(object):
                 # TODO: Replace this error with the logic for a hashlock condition
                 raise NotImplementedError('Hashlock conditions are not implemented in BigchainDB yet')
             elif owners_after_count == 1:
-                return cls(Ed25519Fulfillment(public_key=owners_after[0]), owners_after, fid)
+                return cls(Ed25519Fulfillment(public_key=owners_after[0]), owners_after)
             else:
-                threshold_ffill = cls(ThresholdSha256Fulfillment(threshold=len(owners_after)), owners_after, fid)
+                threshold_ffill = cls(ThresholdSha256Fulfillment(threshold=len(owners_after)), owners_after)
                 for owner_after in owners_after:
                     threshold_ffill.fulfillment.add_subfulfillment(Ed25519Fulfillment(public_key=owner_after))
                 return threshold_ffill
 
     def gen_condition(self):
-        return Condition(self.fulfillment.condition_uri, self.owners_before, self.fid)
+        return Condition(self.fulfillment.condition_uri, self.owners_before)
 
     @classmethod
     def from_dict(cls, ffill):
@@ -98,36 +96,36 @@ class Fulfillment(object):
             fulfillment = CCFulfillment.from_uri(ffill['fulfillment'])
         except TypeError:
             fulfillment = CCFulfillment.from_dict(ffill['details'])
-        return cls(fulfillment, ffill['owners_before'], ffill['fid'], TransactionLink.from_dict(ffill['input']))
+        return cls(fulfillment, ffill['owners_before'], TransactionLink.from_dict(ffill['input']))
 
 
 class TransactionLink(object):
     # NOTE: In an IPLD implementation, this class is not necessary anymore, as an IPLD link can simply point to an
     #       object, as well as an objects properties. So instead of having a (de)serializable class, we can have a
     #       simple IPLD link of the form: `/<tx_id>/transaction/conditions/<cid>/`
-    def __init__(self, tx_id=None, cid=None):
-        self.tx_id = tx_id
-        self.cid = cid
+    def __init__(self, transaction_id=None, condition_id=None):
+        self.transaction_id = transaction_id
+        self.condition_id = condition_id
 
     @classmethod
     def from_dict(cls, link):
         try:
-            return cls(link['tx_id'], link['cid'])
+            return cls(link['transaction_id'], link['condition_id'])
         except TypeError:
             return cls()
 
     def to_dict(self):
-        if self.tx_id is None and self.cid is None:
+        if self.transaction_id is None and self.condition_id is None:
             return None
         else:
             return {
-                'tx_id': self.tx_id,
-                'cid': self.cid,
+                'transaction_id': self.transaction_id,
+                'condition_id': self.condition_id,
             }
 
 
 class Condition(object):
-    def __init__(self, condition_uri, owners_after=None, cid=0):
+    def __init__(self, condition_uri, owners_after=None):
         # TODO: Add more description
         """Create a new condition for a fulfillment
 
@@ -136,7 +134,6 @@ class Condition(object):
             this transaction.
 
         """
-        self.cid = cid
         # TODO: Check if `condition_uri` corresponds to `owners_after`, otherwise fail
         self.condition_uri = condition_uri
 
@@ -149,14 +146,13 @@ class Condition(object):
         return {
             'owners_after': self.owners_after,
             'condition': self.condition_uri,
-            'cid': self.cid
         }
 
     @classmethod
     def from_dict(cls, cond):
         """ Serializes a BigchainDB 'jsonized' condition back to a BigchainDB Condition class.
         """
-        return cls(cond['condition'], cond['owners_after'], cond['cid'])
+        return cls(cond['condition'], cond['owners_after'])
 
 
 class Data(object):
@@ -441,9 +437,8 @@ class Transaction(object):
     def _fulfillments_as_inputs(self):
         return [Fulfillment(ffill.fulfillment,
                             ffill.owners_before,
-                            ffill.fid,
-                            TransactionLink(self.to_hash(), ffill.fid))
-                for ffill in self.fulfillments]
+                            TransactionLink(self.to_hash(), fulfillment_id))
+                for fulfillment_id, ffill in enumerate(self.fulfillments)]
 
     def to_dict(self):
         try:
@@ -471,7 +466,7 @@ class Transaction(object):
 
     @staticmethod
     def _remove_signatures(tx_dict):
-        # NOTE: Remove reference since we need `tx_dict` only for the transaction's hash
+        # NOTE: We remove the reference since we need `tx_dict` only for the transaction's hash
         tx_dict = deepcopy(tx_dict)
         for fulfillment in tx_dict['transaction']['fulfillments']:
             # NOTE: Not all Cryptoconditions return a `signature` key (e.g. ThresholdSha256Fulfillment), so setting it
