@@ -35,8 +35,8 @@ def test_transform_create(b, user_sk, user_vk):
     tx = util.transform_create(tx)
     tx = util.sign_tx(tx, b.me_private)
 
-    assert tx['transaction']['fulfillments'][0]['current_owners'][0] == b.me
-    assert tx['transaction']['conditions'][0]['new_owners'][0] == user_vk
+    assert tx['transaction']['fulfillments'][0]['owners_before'][0] == b.me
+    assert tx['transaction']['conditions'][0]['owners_after'][0] == user_vk
     assert util.validate_fulfillments(tx)
 
 
@@ -159,7 +159,7 @@ def test_create_tx_with_empty_inputs():
     assert 'data' in tx['transaction']
     assert len(tx['transaction']['fulfillments']) == 1
     assert tx['transaction']['fulfillments'][0] == {
-        'current_owners': [], 'input': None, 'fulfillment': None, 'fid': 0}
+        'owners_before': [], 'input': None, 'fulfillment': None, 'fid': 0}
 
 
 def test_fulfill_threshold_signature_fulfillment_pubkey_notfound(monkeypatch):
@@ -170,7 +170,7 @@ def test_fulfill_threshold_signature_fulfillment_pubkey_notfound(monkeypatch):
         'get_subcondition_from_vk',
         lambda x, y: []
     )
-    fulfillment = {'current_owners': (None,)}
+    fulfillment = {'owners_before': (None,)}
     parsed_fulfillment = ThresholdSha256Fulfillment()
     with pytest.raises(KeypairMismatchException):
         fulfill_threshold_signature_fulfillment(
@@ -185,7 +185,7 @@ def test_fulfill_threshold_signature_fulfillment_wrong_privkeys(monkeypatch):
         'get_subcondition_from_vk',
         lambda x, y: (None,)
     )
-    fulfillment = {'current_owners': ('alice-pub-key',)}
+    fulfillment = {'owners_before': ('alice-pub-key',)}
     parsed_fulfillment = ThresholdSha256Fulfillment()
     with pytest.raises(KeypairMismatchException):
         fulfill_threshold_signature_fulfillment(
