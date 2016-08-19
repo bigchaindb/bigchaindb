@@ -123,6 +123,24 @@ def data(payload, payload_id):
 
 
 @pytest.fixture
-def tx(default_single_ffill, default_single_cond):
+def utx(default_single_ffill, default_single_cond):
     from bigchaindb_common.transaction import Transaction
     return Transaction(Transaction.CREATE, [default_single_ffill], [default_single_cond])
+
+
+@pytest.fixture
+def transfer_utx(utx):
+    from bigchaindb_common.transaction import Condition
+    from cryptoconditions import Ed25519Fulfillment
+
+    cond = Condition(Ed25519Fulfillment(public_key=user2_pub).condition_uri, [user2_pub])
+    return utx.transfer([cond])
+
+
+@pytest.fixture
+def transfer_tx(utx, user2_pub, user_priv):
+    from bigchaindb_common.transaction import Condition
+    from cryptoconditions import Ed25519Fulfillment
+
+    cond = Condition(Ed25519Fulfillment(public_key=user2_pub).condition_uri, [user2_pub])
+    return utx.transfer([cond]).sign([user_priv])
