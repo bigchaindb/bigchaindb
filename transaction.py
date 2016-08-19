@@ -101,6 +101,31 @@ class Fulfillment(object):
         return cls(fulfillment, ffill['owners_before'], ffill['fid'], TransactionLink.from_dict(ffill['input']))
 
 
+class TransactionLink(object):
+    # NOTE: In an IPLD implementation, this class is not necessary anymore, as an IPLD link can simply point to an
+    #       object, as well as an objects properties. So instead of having a (de)serializable class, we can have a
+    #       simple IPLD link of the form: `/<tx_id>/transaction/conditions/<cid>/`
+    def __init__(self, tx_id=None, cid=None):
+        self.tx_id = tx_id
+        self.cid = cid
+
+    @classmethod
+    def from_dict(cls, link):
+        try:
+            return cls(link['tx_id'], link['cid'])
+        except TypeError:
+            return cls()
+
+    def to_dict(self):
+        if self.tx_id is None and self.cid is None:
+            return None
+        else:
+            return {
+                'tx_id': self.tx_id,
+                'cid': self.cid,
+            }
+
+
 class Condition(object):
     def __init__(self, condition_uri, owners_after=None, cid=0):
         # TODO: Add more description
@@ -160,31 +185,6 @@ class Data(object):
 
     def to_hash(self):
         return uuid4()
-
-
-class TransactionLink(object):
-    # NOTE: In an IPLD implementation, this class is not necessary anymore, as an IPLD link can simply point to an
-    #       object, as well as an objects properties. So instead of having a (de)serializable class, we can have a
-    #       simple IPLD link of the form: `/<tx_id>/transaction/conditions/<cid>/`
-    def __init__(self, tx_id=None, cid=None):
-        self.tx_id = tx_id
-        self.cid = cid
-
-    @classmethod
-    def from_dict(cls, link):
-        try:
-            return cls(link['tx_id'], link['cid'])
-        except TypeError:
-            return cls()
-
-    def to_dict(self):
-        if self.tx_id is None and self.cid is None:
-            return None
-        else:
-            return {
-                'tx_id': self.tx_id,
-                'cid': self.cid,
-            }
 
 
 class Transaction(object):
@@ -371,7 +371,7 @@ class Transaction(object):
 
             subfulfillment.sign(tx_serialized, private_key)
 
-    def fulfillments_valid(self):
+    def fulfillments_valid(self, input_condition_uris=None):
         # TODO: Update Comment
         """Verify the signature of a transaction
 
@@ -383,29 +383,57 @@ class Transaction(object):
         Returns:
             bool: True if the signature is correct, False otherwise.
         """
-        if len(self.fulfillments) > 1 and len(self.conditions) > 1:
-            def gen_tx(fulfillment, condition):
-                return Transaction(self.operation, [fulfillment], [condition], self.data, self.timestamp,
-                                   self.version).fulfillments_valid()
-            return reduce(and_, map(gen_tx, self.fulfillments, self.conditions))
-        else:
-            return self._fulfillment_valid()
+        if not isinstance(input_condition_uris, list) and input_condition_uris is not None:
+            raise TypeError('`input_condition_uris` must be list instance')
+        elif input_condition_uris is None:
+            input_condition_uris = []
 
-    def _fulfillment_valid(self):
+        input_condition_uris_count = len(input_condition_uris)
+        fulfillments_count = len(self.fulfillments)
+        conditions_count = len(self.conditions)
+
+        def gen_tx(fulfillment, condition, input_condition_uris=None):
+            return Transaction(self.operation, [fulfillment], [condition], self.data, self.timestamp,
+                               self.version).fulfillments_valid(input_condition_uris)
+
+        if self.operation is Transaction.CREATE:
+            if not fulfillments_count == conditions_count:
+                raise ValueError('Fulfillments, conditions must have the same count')
+            elif fulfillments_count > 1 and conditions_count > 1:
+                return reduce(and_, map(gen_tx, self.fulfillments, self.conditions))
+            else:
+                return self._fulfillment_valid()
+        elif self.operation is Transaction.TRANSFER:
+            if not fulfillments_count == conditions_count == input_condition_uris_count:
+                raise ValueError('Fulfillments, conditions and input_condition_uris must have the same count')
+            elif fulfillments_count > 1 and conditions_count > 1 and input_condition_uris > 1:
+                return reduce(and_, map(gen_tx, self.fulfillments, self.conditions, input_condition_uris))
+            else:
+                return self._fulfillment_valid(input_condition_uris.pop())
+        else:
+            raise TypeError('`operation` must be either `Transaction.TRANSFER` or `Transaction.CREATE`')
+
+    def _fulfillment_valid(self, input_condition_uri=None):
         # NOTE: We're always taking the first fulfillment, as this method is called recursively.
         #       See: `fulfillments_valid`
-        fulfillment = self.fulfillments[0].fulfillment
+        fulfillment = self.fulfillments[0]
 
         try:
-            parsed_fulfillment = CCFulfillment.from_uri(fulfillment.serialize_uri())
-        # TODO: Figure out if we need all three of those errors here
+            parsed_fulfillment = CCFulfillment.from_uri(fulfillment.fulfillment.serialize_uri())
         except (TypeError, ValueError, ParsingError):
             return False
 
-        # TODO: For transfer-transaction, we'll also have to validate against the given condition
-        # NOTE: We pass a timestamp here, as in case of a timeout condition we'll have to validate against it.
-        return parsed_fulfillment.validate(message=Transaction._to_str(Transaction._remove_signatures(self.to_dict())),
-                                           now=gen_timestamp())
+        if self.operation == Transaction.CREATE:
+            input_condition_valid = True
+        else:
+            # NOTE: When passing a `TRANSFER` transaction for validation, we check if it's valid by validating its
+            #       input condition (taken from previous transaction) against the current fulfillment.
+            input_condition_valid = input_condition_uri == fulfillment.fulfillment.condition_uri
+
+        tx_serialized = Transaction._to_str(Transaction._remove_signatures(self.to_dict()))
+        # NOTE: We pass a timestamp to `.validate`, as in case of a timeout condition we'll have to validate against
+        #       it.
+        return parsed_fulfillment.validate(message=tx_serialized, now=gen_timestamp()) and input_condition_valid
 
     def transfer(self, conditions):
         return Transaction(Transaction.TRANSFER, self._fulfillments_as_inputs(), conditions)
