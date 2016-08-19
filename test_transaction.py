@@ -310,6 +310,7 @@ def test_validate_tx_simple_signature(default_single_ffill, default_single_cond,
     from bigchaindb_common.crypto import SigningKey
     from bigchaindb_common.transaction import Transaction
 
+
     tx = Transaction(Transaction.CREATE, [default_single_ffill], [default_single_cond])
     expected = deepcopy(default_single_ffill)
     expected.fulfillment.sign(str(tx), SigningKey(user_priv))
@@ -329,14 +330,14 @@ def test_invoke_simple_signature_fulfillment_with_invalid_parameters(utx, defaul
 
 
 def test_invoke_threshold_signature_fulfillment_with_invalid_parameters(utx, default_threshold_ffill, user3_pub,
-                                                                        user3_priv):
+                                                                        user3_priv, user_pub_keys):
     from bigchaindb_common.exceptions import KeypairMismatchException
 
     with raises(KeypairMismatchException):
+        utx._sign_threshold_signature_fulfillment(default_threshold_ffill, 'somemessage', {user3_pub: user3_priv})
+    with raises(KeypairMismatchException):
         default_threshold_ffill.owners_before = ['somewrongvalue']
         utx._sign_threshold_signature_fulfillment(default_threshold_ffill, 'somemessage', None)
-    with raises(KeypairMismatchException):
-        utx._sign_threshold_signature_fulfillment(default_threshold_ffill, 'somemessage', [{user3_pub: user3_priv}])
 
 
 def test_validate_fulfillment_with_invalid_parameters(utx):
