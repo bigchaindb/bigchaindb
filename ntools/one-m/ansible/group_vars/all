@@ -1,0 +1,4 @@
+---
+# Variables here are for all host groups
+
+example_var: 23
