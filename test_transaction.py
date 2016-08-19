@@ -304,11 +304,11 @@ def test_add_condition_to_tx_with_invalid_parameters():
         tx.add_condition('somewronginput')
 
 
-def test_sign_with_invalid_parameters(tx, user_priv):
+def test_sign_with_invalid_parameters(utx, user_priv):
     with raises(TypeError):
-        tx.sign(None)
+        utx.sign(None)
     with raises(TypeError):
-        tx.sign(user_priv)
+        utx.sign(user_priv)
 
 
 def test_validate_tx_simple_signature(default_single_ffill, default_single_cond, user_priv):
@@ -326,26 +326,28 @@ def test_validate_tx_simple_signature(default_single_ffill, default_single_cond,
     assert tx.fulfillments_valid() is True
 
 
-def test_invoke_simple_signature_fulfillment_with_invalid_parameters(tx, default_single_ffill):
+def test_invoke_simple_signature_fulfillment_with_invalid_parameters(utx, default_single_ffill):
     from bigchaindb_common.exceptions import KeypairMismatchException
 
     with raises(KeypairMismatchException):
-        tx._sign_simple_signature_fulfillment(default_single_ffill, 'somemessage', {'wrong_pub_key': 'wrong_priv_key'})
+        utx._sign_simple_signature_fulfillment(default_single_ffill,
+                                               'somemessage',
+                                               {'wrong_pub_key': 'wrong_priv_key'})
 
 
-def test_invoke_threshold_signature_fulfillment_with_invalid_parameters(tx, default_threshold_ffill, user3_pub,
+def test_invoke_threshold_signature_fulfillment_with_invalid_parameters(utx, default_threshold_ffill, user3_pub,
                                                                         user3_priv):
     from bigchaindb_common.exceptions import KeypairMismatchException
 
     with raises(KeypairMismatchException):
         default_threshold_ffill.owners_before = ['somewrongvalue']
-        tx._sign_threshold_signature_fulfillment(default_threshold_ffill, 'somemessage', None)
+        utx._sign_threshold_signature_fulfillment(default_threshold_ffill, 'somemessage', None)
     with raises(KeypairMismatchException):
-        tx._sign_threshold_signature_fulfillment(default_threshold_ffill, 'somemessage', [{user3_pub: user3_priv}])
+        utx._sign_threshold_signature_fulfillment(default_threshold_ffill, 'somemessage', [{user3_pub: user3_priv}])
 
 
-def test_validate_fulfillment_with_invalid_parameters(tx):
-    assert tx._fulfillment_valid() == False
+def test_validate_fulfillment_with_invalid_parameters(utx):
+    assert utx._fulfillment_valid() == False
 
 
 def test_validating_multiple_fulfillments(default_single_ffill, default_single_cond, user_priv):
@@ -391,7 +393,7 @@ def test_validate_tx_threshold_signature(default_threshold_ffill, default_thresh
     assert tx.fulfillments_valid() is True
 
 
-def test_transfer(tx, user_pub, user_priv, user2_pub):
+def test_transfer(utx, user_pub, user_priv, user2_pub, cond_uri):
     from copy import deepcopy
 
     from bigchaindb_common.crypto import SigningKey
@@ -399,12 +401,30 @@ def test_transfer(tx, user_pub, user_priv, user2_pub):
     from cryptoconditions import Ed25519Fulfillment
 
     cond = Condition(Ed25519Fulfillment(public_key=user2_pub).condition_uri, [user2_pub])
-    transfer_tx = tx.transfer([cond])
+    transfer_tx = utx.transfer([cond])
 
     expected = deepcopy(transfer_tx.fulfillments[0])
     expected.fulfillment.sign(str(transfer_tx), SigningKey(user_priv))
 
     transfer_tx.sign([user_priv])
 
-    assert tx.fulfillments[0].fulfillment.to_dict()['signature'] == expected.fulfillment.to_dict()['signature']
-    assert transfer_tx.fulfillments_valid() is True
+    assert utx.fulfillments[0].fulfillment.to_dict()['signature'] == expected.fulfillment.to_dict()['signature']
+    assert transfer_tx.fulfillments_valid([utx.conditions[0].condition_uri]) is True
+
+
+def test_validate_fulfillments_of_transfer_tx_with_invalid_parameters(transfer_tx, cond_uri, utx, user_priv):
+    assert transfer_tx.fulfillments_valid(['Incorrect condition uri']) is False
+    assert transfer_tx.fulfillments_valid([cond_uri]) is False
+    assert transfer_tx.fulfillments_valid([utx.conditions[0].condition_uri]) is True
+
+    with raises(TypeError):
+        transfer_tx.fulfillments_valid('a string and not a list')
+    with raises(ValueError):
+        transfer_tx.fulfillments_valid([])
+    with raises(TypeError):
+        transfer_tx.operation = "Operation that doens't exist"
+        transfer_tx.fulfillments_valid([utx.conditions[0].condition_uri])
+    with raises(ValueError):
+        tx = utx.sign([user_priv])
+        tx.conditions = []
+        tx.fulfillments_valid()
