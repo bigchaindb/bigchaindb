@@ -6,5 +6,7 @@ Production Node Setup & Management
 
    overview
    install-terraform
+   install-ansible
    prov-one-m-aws
-   set-up-ansible
+   prov-one-m-azure
+   config-one-m
