@@ -32,7 +32,7 @@ class Fulfillment(object):
             owners_before (Optional(list)): base58 encoded public key of the owners of the asset before this
             transaction.
         """
-        # TODO: Check if `fulfillment` corresponds to `owners_before`, otherwise fail
+        # TODO: Derive `owner_before` from fulfillment
         self.fulfillment = fulfillment
 
         if tx_input is not None and not isinstance(tx_input, TransactionLink):
@@ -134,7 +134,7 @@ class Condition(object):
             this transaction.
 
         """
-        # TODO: Check if `condition_uri` corresponds to `owners_after`, otherwise fail
+        # TODO: Derive `owner_after` from condition
         self.condition_uri = condition_uri
 
         if not isinstance(owners_after, list):
@@ -298,7 +298,8 @@ class Transaction(object):
             # working on plus all previously signed ones.
             tx_partial = Transaction(self.operation, [fulfillment], [condition], self.data, self.timestamp,
                                      self.version)
-            self._sign_fulfillment(fulfillment, str(tx_partial), key_pairs)
+            tx_serialized = Transaction._to_str(Transaction._remove_signatures(tx_partial.to_dict()))
+            self._sign_fulfillment(fulfillment, tx_serialized, key_pairs)
 
     # TODO: This shouldn't be in the base of the Transaction class, but rather only for the client implementation,
     #       since for example the Transaction class in BigchainDB doesn't have to sign transactions.
@@ -388,9 +389,12 @@ class Transaction(object):
         fulfillments_count = len(self.fulfillments)
         conditions_count = len(self.conditions)
 
-        def gen_tx(fulfillment, condition, input_condition_uris=None):
-            return Transaction(self.operation, [fulfillment], [condition], self.data, self.timestamp,
-                               self.version).fulfillments_valid(input_condition_uris)
+        def gen_tx(fulfillment, condition, input_condition_uri=None):
+            tx = Transaction(self.operation, [fulfillment], [condition], self.data, self.timestamp, self.version)
+            if input_condition_uri is not None:
+                return tx.fulfillments_valid([input_condition_uri])
+            else:
+                return tx.fulfillments_valid()
 
         if self.operation is Transaction.CREATE:
             if not fulfillments_count == conditions_count:
@@ -402,7 +406,7 @@ class Transaction(object):
         elif self.operation is Transaction.TRANSFER:
             if not fulfillments_count == conditions_count == input_condition_uris_count:
                 raise ValueError('Fulfillments, conditions and input_condition_uris must have the same count')
-            elif fulfillments_count > 1 and conditions_count > 1 and input_condition_uris > 1:
+            elif fulfillments_count > 1 and conditions_count > 1 and input_condition_uris_count > 1:
                 return reduce(and_, map(gen_tx, self.fulfillments, self.conditions, input_condition_uris))
             else:
                 return self._fulfillment_valid(input_condition_uris.pop())
