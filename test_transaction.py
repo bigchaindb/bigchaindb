@@ -405,6 +405,25 @@ def test_transfer(utx, user_pub, user_priv, user2_pub, cond_uri):
     assert transfer_tx.fulfillments_valid([utx.conditions[0].condition_uri]) is True
 
 
+def test_multiple_fulfillment_validation_of_transfer_tx(default_single_ffill, default_single_cond, user_priv,
+                                                        user2_pub, user2_priv, user3_pub, user3_priv):
+    from copy import deepcopy
+
+    from bigchaindb_common.transaction import Transaction, Condition
+    from cryptoconditions import Ed25519Fulfillment
+
+    tx = Transaction(Transaction.CREATE,
+                     [default_single_ffill, deepcopy(default_single_ffill)],
+                     [default_single_cond, deepcopy(default_single_cond)])
+    tx.sign([user_priv])
+    conditions = [Condition(Ed25519Fulfillment(public_key=user2_pub).condition_uri, [user2_pub]),
+                  Condition(Ed25519Fulfillment(public_key=user3_pub).condition_uri, [user3_pub])]
+    transfer_utx = tx.transfer(conditions)
+    transfer_tx = transfer_utx.sign([user_priv])
+
+    assert transfer_tx.fulfillments_valid([cond.condition_uri for cond in tx.conditions]) is True
+
+
 def test_validate_fulfillments_of_transfer_tx_with_invalid_parameters(transfer_tx, cond_uri, utx, user_priv):
     assert transfer_tx.fulfillments_valid(['Incorrect condition uri']) is False
     assert transfer_tx.fulfillments_valid([cond_uri]) is False
