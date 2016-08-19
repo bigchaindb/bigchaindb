@@ -52,7 +52,7 @@ The HTTP API currently exposes two endpoints, one to get information about a spe
                         },
                         "uri":"cc:4:20:sVA_3p8gvl8yRFNTomqm6MaavKewka6dGYcFAuPrRXQ:96"
                     },
-                    "new_owners":[
+                    "owners_after":[
                         "CwA8s2QYQBfNz4WvjEwmJi83zYr7JhxRhidx6uZ5KBVd"
                     ]
                 }
@@ -63,7 +63,7 @@ The HTTP API currently exposes two endpoints, one to get information about a spe
             },
             "fulfillments":[
                 {
-                    "current_owners":[
+                    "owners_before":[
                         "JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE"
                     ],
                     "fid":0,
@@ -113,7 +113,7 @@ The HTTP API currently exposes two endpoints, one to get information about a spe
                         },
                         "uri":"cc:4:20:sVA_3p8gvl8yRFNTomqm6MaavKewka6dGYcFAuPrRXQ:96"
                     },
-                    "new_owners":[
+                    "owners_after":[
                         "CwA8s2QYQBfNz4WvjEwmJi83zYr7JhxRhidx6uZ5KBVd"
                     ]
                 }
@@ -124,7 +124,7 @@ The HTTP API currently exposes two endpoints, one to get information about a spe
             },
             "fulfillments":[
                 {
-                    "current_owners":[
+                    "owners_before":[
                         "JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE"
                     ],
                     "fid":0,
@@ -165,7 +165,7 @@ The HTTP API currently exposes two endpoints, one to get information about a spe
                         },
                         "uri":"cc:4:20:sVA_3p8gvl8yRFNTomqm6MaavKewka6dGYcFAuPrRXQ:96"
                     },
-                    "new_owners":[
+                    "owners_after":[
                         "CwA8s2QYQBfNz4WvjEwmJi83zYr7JhxRhidx6uZ5KBVd"
                     ]
                 }
@@ -176,7 +176,7 @@ The HTTP API currently exposes two endpoints, one to get information about a spe
             },
             "fulfillments":[
                 {
-                    "current_owners":[
+                    "owners_before":[
                         "JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE"
                     ],
                     "fid":0,
