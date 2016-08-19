@@ -9,7 +9,6 @@ def test_fulfillment_serialization(ffill_uri, user_pub):
         'owners_before': [user_pub],
         'fulfillment': ffill_uri,
         'details': CCFulfillment.from_uri(ffill_uri).to_dict(),
-        'fid': 0,
         'input': None,
     }
     ffill = Fulfillment(CCFulfillment.from_uri(ffill_uri), [user_pub])
@@ -26,7 +25,6 @@ def test_fulfillment_deserialization_with_uri(ffill_uri, user_pub):
         'owners_before': [user_pub],
         'fulfillment': ffill_uri,
         'details': CCFulfillment.from_uri(ffill_uri).to_dict(),
-        'fid': 0,
         'input': None,
     }
     ffill = Fulfillment.from_dict(ffill)
@@ -43,7 +41,6 @@ def test_fulfillment_deserialization_with_dict(cc_ffill, user_pub):
         'owners_before': [user_pub],
         'fulfillment': None,
         'details': cc_ffill.to_dict(),
-        'fid': 0,
         'input': None,
     }
     ffill = Fulfillment.from_dict(ffill)
@@ -66,7 +63,6 @@ def test_gen_default_fulfillment_with_single_owner_after(user_pub):
 
     ffill = Fulfillment.gen_default([user_pub])
     assert ffill.owners_before == [user_pub]
-    assert ffill.fid == 0
     assert ffill.tx_input is None
     assert ffill.fulfillment.to_dict() == Ed25519Fulfillment(public_key=user_pub).to_dict()
 
@@ -82,7 +78,6 @@ def test_gen_default_fulfillment_with_multiple_owners_after(user_pub_keys):
         expected_ffill.add_subfulfillment(Ed25519Fulfillment(public_key=user_pub))
 
     assert ffill.owners_before == user_pub_keys
-    assert ffill.fid == 0
     assert ffill.tx_input is None
     assert ffill.fulfillment.to_dict() == expected_ffill.to_dict()
 
@@ -102,7 +97,6 @@ def test_condition_serialization(cond_uri, user_pub):
     expected = {
         'condition': cond_uri,
         'owners_after': [user_pub],
-        'cid': 0,
     }
 
     cond = Condition(cond_uri, [user_pub])
@@ -117,7 +111,6 @@ def test_condition_deserialization(cond_uri, user_pub):
     cond = {
         'condition': cond_uri,
         'owners_after': [user_pub],
-        'cid': 0,
     }
     cond = Condition.from_dict(cond)
 
@@ -230,8 +223,8 @@ def test_transaction_link_serialization():
 
     tx_id = 'a transaction id'
     expected = {
-        'tx_id': tx_id,
-        'cid': 0,
+        'transaction_id': tx_id,
+        'condition_id': 0,
     }
     tx_link = TransactionLink(tx_id, 0)
 
@@ -253,8 +246,8 @@ def test_transaction_link_deserialization():
     tx_id = 'a transaction id'
     expected = TransactionLink(tx_id, 0)
     tx_link = {
-        'tx_id': tx_id,
-        'cid': 0,
+        'transaction_id': tx_id,
+        'condition_id': 0,
     }
     tx_link = TransactionLink.from_dict(tx_link)
 
