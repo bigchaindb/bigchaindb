@@ -1,18 +1,24 @@
 ---
 # ansible/roles/common/tasks/main.yml
+# Note: "become: true" basically means "become root user for this task" i.e. sudo <cmd>
+# See https://docs.ansible.com/ansible/become.html
 
-- name: Do the equivalent of apt-get update
+- name: Do the equivalent of "sudo apt-get update"
   apt: update_cache=yes
+  become: true
 
 - name: Uninstall ntpdate (deprecated)
   apt: name=ntpdate state=absent
+  become: true
   tags: ntp
 
 - name: Update all installed packages to their latest versions
   apt: upgrade=dist
+  become: true
 
 - name: Install ntp
   apt: name=ntp state=latest update_cache=yes
+  become: true
   tags: ntp
 
 #- name: Configure ntp file
@@ -22,7 +28,8 @@
 #  notify: restart ntp
 
 - name: Start the ntp service
-  service: name=ntpd state=started enabled=yes
+  service: name=ntp state=started enabled=yes
+  become: true
   tags: ntp
 
 #- name: test to see if selinux is running
