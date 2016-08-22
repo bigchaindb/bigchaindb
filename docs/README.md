@@ -6,7 +6,7 @@
 * For quick overview and help documents, feel free to create `README.md` or other `X.md` files, written using [GitHub-flavored Markdown](https://help.github.com/categories/writing-on-github/). Markdown files render nicely on GitHub. We might auto-convert some .md files into a format that can be included in the long-form documentation.
 * We use [Sphinx](http://www.sphinx-doc.org/en/stable/) to generate the long-form documentation in various formats (e.g. HTML, PDF).
 * We also use [Sphinx](http://www.sphinx-doc.org/en/stable/) to generate Python code documentation (from docstrings and possibly other sources).
-* We will use [Apiary](https://apiary.io/) to document all REST APIs.
+* We also use Sphinx to document all REST APIs, with the help of [the `httpdomain` extension](https://pythonhosted.org/sphinxcontrib-httpdomain/).
 
 # How to Generate the HTML Version of the Long-Form Documentation
 

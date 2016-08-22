@@ -20,17 +20,19 @@ class ChangeFeed(Node):
     to output before the actual changefeed.
     """
 
-    INSERT = 'insert'
-    DELETE = 'delete'
-    UPDATE = 'update'
+    INSERT = 1
+    DELETE = 2
+    UPDATE = 4
 
     def __init__(self, table, operation, prefeed=None):
         """Create a new RethinkDB ChangeFeed.
 
         Args:
             table (str): name of the table to listen to for changes.
-            operation (str): can be ChangeFeed.INSERT, ChangeFeed.DELETE, or
-                ChangeFeed.UPDATE.
+            operation (int): can be ChangeFeed.INSERT, ChangeFeed.DELETE, or
+                ChangeFeed.UPDATE. Combining multiple operation is possible using
+                the bitwise ``|`` operator
+                (e.g. ``ChangeFeed.INSERT | ChangeFeed.UPDATE``)
             prefeed (iterable): whatever set of data you want to be published
                 first.
         """
@@ -51,10 +53,10 @@ class ChangeFeed(Node):
             is_delete = change['new_val'] is None
             is_update = not is_insert and not is_delete
 
-            if is_insert and self.operation == ChangeFeed.INSERT:
+            if is_insert and (self.operation & ChangeFeed.INSERT):
                 self.outqueue.put(change['new_val'])
-            elif is_delete and self.operation == ChangeFeed.DELETE:
+            elif is_delete and (self.operation & ChangeFeed.DELETE):
                 self.outqueue.put(change['old_val'])
-            elif is_update and self.operation == ChangeFeed.UPDATE:
+            elif is_update and (self.operation & ChangeFeed.UPDATE):
                 self.outqueue.put(change)
 

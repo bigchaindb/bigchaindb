@@ -165,16 +165,14 @@ class Bigchain(object):
                                     if status != Bigchain.BLOCK_INVALID}
             if validity:
 
+                tx_status = self.TX_UNDECIDED
                 # If the transaction is in a valid or any undecided block, return it. Does not check
                 # if transactions in undecided blocks are consistent, but selects the valid block before
                 # undecided ones
-                for _id in validity:
-                    target_block_id = _id
-                    if validity[_id] == Bigchain.BLOCK_VALID:
+                for target_block_id in validity:
+                    if validity[target_block_id] == Bigchain.BLOCK_VALID:
                         tx_status = self.TX_VALID
                         break
-                    else:
-                        tx_status = self.TX_UNDECIDED
 
                 # Query the transaction in the target block and return
                 response = r.table('bigchain', read_mode=self.read_mode).get(target_block_id)\
@@ -318,11 +316,11 @@ class Bigchain(object):
             list: list of `txids` currently owned by `owner`
         """
 
-        # get all transactions in which owner is in the `new_owners` list
+        # get all transactions in which owner is in the `owners_after` list
         response = r.table('bigchain', read_mode=self.read_mode) \
             .concat_map(lambda doc: doc['block']['transactions']) \
             .filter(lambda tx: tx['transaction']['conditions']
-                    .contains(lambda c: c['new_owners']
+                    .contains(lambda c: c['owners_after']
                               .contains(owner))) \
             .run(self.conn)
         owned = []
@@ -338,12 +336,12 @@ class Bigchain(object):
             # to get a list of outputs available to spend
             for condition in tx['transaction']['conditions']:
                 # for simple signature conditions there are no subfulfillments
-                # check if the owner is in the condition `new_owners`
-                if len(condition['new_owners']) == 1:
+                # check if the owner is in the condition `owners_after`
+                if len(condition['owners_after']) == 1:
                     if condition['condition']['details']['public_key'] == owner:
                         tx_input = {'txid': tx['id'], 'cid': condition['cid']}
                 else:
-                    # for transactions with multiple `new_owners` there will be several subfulfillments nested
+                    # for transactions with multiple `owners_after` there will be several subfulfillments nested
                     # in the condition. We need to iterate the subfulfillments to make sure there is a
                     # subfulfillment for `owner`
                     if util.condition_details_has_owner(condition['condition']['details'], owner):
@@ -370,7 +368,8 @@ class Bigchain(object):
     def is_valid_transaction(self, transaction):
         """Check whether a transacion is valid or invalid.
 
-        Similar to `validate_transaction` but does not raise an exception if the transaction is valid.
+        Similar to `validate_transaction` but never raises an exception.
+        It returns `False` if the transaction is invalid.
 
         Args:
             transaction (dict): transaction to check.

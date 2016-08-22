@@ -114,7 +114,6 @@ class TestBigchainApi(object):
         input_tx = b.get_owned_ids(user_vk).pop()
         tx = b.create_transaction(user_vk, user_vk, input_tx, 'TRANSFER')
         tx_signed = b.sign_transaction(tx, user_sk)
-        b.write_transaction(tx_signed)
 
         # create block and write it to the bighcain before retrieving the transaction
         block = b.create_block([tx_signed])
@@ -123,7 +122,7 @@ class TestBigchainApi(object):
         response, status = b.get_transaction(tx_signed["id"], include_status=True)
         # add validity information, which will be returned
         assert util.serialize(tx_signed) == util.serialize(response)
-        assert status == 'undecided'
+        assert status == b.TX_UNDECIDED
 
     @pytest.mark.usefixtures('inputs')
     def test_read_transaction_backlog(self, b, user_vk, user_sk):
@@ -135,14 +134,13 @@ class TestBigchainApi(object):
         response, status = b.get_transaction(tx_signed["id"], include_status=True)
         # add validity information, which will be returned
         assert util.serialize(tx_signed) == util.serialize(response)
-        assert status == 'backlog'
+        assert status == b.TX_IN_BACKLOG
 
     @pytest.mark.usefixtures('inputs')
     def test_read_transaction_invalid_block(self, b, user_vk, user_sk):
         input_tx = b.get_owned_ids(user_vk).pop()
         tx = b.create_transaction(user_vk, user_vk, input_tx, 'TRANSFER')
         tx_signed = b.sign_transaction(tx, user_sk)
-        b.write_transaction(tx_signed)
 
         # create block
         block = b.create_block([tx_signed])
@@ -174,7 +172,7 @@ class TestBigchainApi(object):
         response, status = b.get_transaction(tx_signed["id"], include_status=True)
         # add validity information, which will be returned
         assert util.serialize(tx_signed) == util.serialize(response)
-        assert status == 'valid'
+        assert status == b.TX_VALID
 
     @pytest.mark.usefixtures('inputs')
     def test_assign_transaction_one_node(self, b, user_vk, user_sk):
@@ -456,7 +454,7 @@ class TestTransactionValidation(object):
         with pytest.raises(exceptions.InvalidSignature) as excinfo:
             b.validate_transaction(tx)
 
-        # assert excinfo.value.args[0] == 'current_owner `a` does not own the input `{}`'.format(valid_input)
+        # assert excinfo.value.args[0] == 'owner_before `a` does not own the input `{}`'.format(valid_input)
         assert b.is_valid_transaction(tx) is False
 
     @pytest.mark.usefixtures('inputs')
@@ -584,7 +582,7 @@ class TestBlockValidation(object):
         with pytest.raises(exceptions.TransactionOwnerError) as excinfo:
             b.validate_block(block)
 
-        assert excinfo.value.args[0] == 'current_owner `a` does not own the input `{}`'.format(valid_input)
+        assert excinfo.value.args[0] == 'owner_before `a` does not own the input `{}`'.format(valid_input)
 
     def test_invalid_block_id(self, b):
         block = dummy_block()
@@ -723,7 +721,7 @@ class TestMultipleInputs(object):
         assert len(tx_signed['transaction']['fulfillments']) == 1
         assert len(tx_signed['transaction']['conditions']) == 1
 
-    def test_single_current_owner_multiple_new_owners_single_input(self, b, user_sk, user_vk, inputs):
+    def test_single_owner_before_multiple_owners_after_single_input(self, b, user_sk, user_vk, inputs):
         # create a new users
         user2_sk, user2_vk = crypto.generate_key_pair()
         user3_sk, user3_vk = crypto.generate_key_pair()
@@ -741,7 +739,7 @@ class TestMultipleInputs(object):
         assert len(tx_signed['transaction']['fulfillments']) == 1
         assert len(tx_signed['transaction']['conditions']) == 1
 
-    def test_single_current_owner_multiple_new_owners_multiple_inputs(self, b, user_sk, user_vk):
+    def test_single_owner_before_multiple_owners_after_multiple_inputs(self, b, user_sk, user_vk):
         # create a new users
         user2_sk, user2_vk = crypto.generate_key_pair()
         user3_sk, user3_vk = crypto.generate_key_pair()
@@ -769,7 +767,7 @@ class TestMultipleInputs(object):
         assert len(tx_signed['transaction']['fulfillments']) == 3
         assert len(tx_signed['transaction']['conditions']) == 3
 
-    def test_multiple_current_owners_single_new_owner_single_input(self, b, user_sk, user_vk):
+    def test_multiple_owners_before_single_owner_after_single_input(self, b, user_sk, user_vk):
         # create a new users
         user2_sk, user2_vk = crypto.generate_key_pair()
         user3_sk, user3_vk = crypto.generate_key_pair()
@@ -793,7 +791,7 @@ class TestMultipleInputs(object):
         assert len(tx_signed['transaction']['fulfillments']) == 1
         assert len(tx_signed['transaction']['conditions']) == 1
 
-    def test_multiple_current_owners_single_new_owner_multiple_inputs(self, b, user_sk, user_vk):
+    def test_multiple_owners_before_single_owner_after_multiple_inputs(self, b, user_sk, user_vk):
         # create a new users
         user2_sk, user2_vk = crypto.generate_key_pair()
         user3_sk, user3_vk = crypto.generate_key_pair()
@@ -820,7 +818,7 @@ class TestMultipleInputs(object):
         assert len(tx_signed['transaction']['fulfillments']) == 3
         assert len(tx_signed['transaction']['conditions']) == 3
 
-    def test_multiple_current_owners_multiple_new_owners_single_input(self, b, user_sk, user_vk):
+    def test_multiple_owners_before_multiple_owners_after_single_input(self, b, user_sk, user_vk):
         # create a new users
         user2_sk, user2_vk = crypto.generate_key_pair()
         user3_sk, user3_vk = crypto.generate_key_pair()
@@ -845,7 +843,7 @@ class TestMultipleInputs(object):
         assert len(tx_signed['transaction']['fulfillments']) == 1
         assert len(tx_signed['transaction']['conditions']) == 1
 
-    def test_multiple_current_owners_multiple_new_owners_multiple_inputs(self, b, user_sk, user_vk):
+    def test_multiple_owners_before_multiple_owners_after_multiple_inputs(self, b, user_sk, user_vk):
         # create a new users
         user2_sk, user2_vk = crypto.generate_key_pair()
         user3_sk, user3_vk = crypto.generate_key_pair()
@@ -1155,7 +1153,7 @@ class TestFulfillmentMessage(object):
         assert fulfillment_message['data']['payload'] == tx['transaction']['data']['payload']
         assert fulfillment_message['id'] == tx['id']
         assert fulfillment_message['condition'] == tx['transaction']['conditions'][0]
-        assert fulfillment_message['fulfillment']['current_owners'] == original_fulfillment['current_owners']
+        assert fulfillment_message['fulfillment']['owners_before'] == original_fulfillment['owners_before']
         assert fulfillment_message['fulfillment']['fid'] == original_fulfillment['fid']
         assert fulfillment_message['fulfillment']['input'] == original_fulfillment['input']
         assert fulfillment_message['operation'] == tx['transaction']['operation']
@@ -1178,14 +1176,14 @@ class TestFulfillmentMessage(object):
         assert fulfillment_message['data']['payload'] == tx['transaction']['data']['payload']
         assert fulfillment_message['id'] == tx['id']
         assert fulfillment_message['condition'] == tx['transaction']['conditions'][0]
-        assert fulfillment_message['fulfillment']['current_owners'] == original_fulfillment['current_owners']
+        assert fulfillment_message['fulfillment']['owners_before'] == original_fulfillment['owners_before']
         assert fulfillment_message['fulfillment']['fid'] == original_fulfillment['fid']
         assert fulfillment_message['fulfillment']['input'] == original_fulfillment['input']
         assert fulfillment_message['operation'] == tx['transaction']['operation']
         assert fulfillment_message['timestamp'] == tx['transaction']['timestamp']
         assert fulfillment_message['version'] == tx['transaction']['version']
 
-    def test_fulfillment_message_multiple_current_owners_multiple_new_owners_multiple_inputs(self, b, user_vk):
+    def test_fulfillment_message_multiple_owners_before_multiple_owners_after_multiple_inputs(self, b, user_vk):
         # create a new users
         user2_sk, user2_vk = crypto.generate_key_pair()
         user3_sk, user3_vk = crypto.generate_key_pair()
@@ -1216,7 +1214,7 @@ class TestFulfillmentMessage(object):
             assert fulfillment_message['data']['payload'] == tx['transaction']['data']['payload']
             assert fulfillment_message['id'] == tx['id']
             assert fulfillment_message['condition'] == tx['transaction']['conditions'][original_fulfillment['fid']]
-            assert fulfillment_message['fulfillment']['current_owners'] == original_fulfillment['current_owners']
+            assert fulfillment_message['fulfillment']['owners_before'] == original_fulfillment['owners_before']
             assert fulfillment_message['fulfillment']['fid'] == original_fulfillment['fid']
             assert fulfillment_message['fulfillment']['input'] == original_fulfillment['input']
             assert fulfillment_message['operation'] == tx['transaction']['operation']
@@ -1269,7 +1267,7 @@ class TestTransactionMalleability(object):
         tx_changed = copy.deepcopy(tx_signed)
         tx_changed['transaction']['fulfillments'] = [
             {
-                "current_owners": [
+                "owners_before": [
                     "AFbofwJYEB7Cx2fgrPrCJzbdDVRzRKysoGXt4DsvuTGN"
                 ],
                 "fid": 0,
@@ -1287,7 +1285,7 @@ class TestTransactionMalleability(object):
         assert b.is_valid_transaction(tx_changed) is False
 
         tx_changed = copy.deepcopy(tx_signed)
-        tx_changed['transaction']['fulfillments'][0]['current_owners'] = [
+        tx_changed['transaction']['fulfillments'][0]['owners_before'] = [
             "AFbofwJYEB7Cx2fgrPrCJzbdDVRzRKysoGXt4DsvuTGN"]
         assert b.validate_fulfillments(tx_changed) is False
         assert b.is_valid_transaction(tx_changed) is False
@@ -1316,7 +1314,7 @@ class TestCryptoconditions(object):
         fulfillment = tx_signed['transaction']['fulfillments'][0]
         fulfillment_from_uri = cc.Fulfillment.from_uri(fulfillment['fulfillment'])
 
-        assert fulfillment['current_owners'][0] == b.me
+        assert fulfillment['owners_before'][0] == b.me
         assert fulfillment_from_uri.public_key.to_ascii().decode() == b.me
         assert b.validate_fulfillments(tx_signed) == True
         assert b.is_valid_transaction(tx_signed) == tx_signed
@@ -1347,7 +1345,7 @@ class TestCryptoconditions(object):
         fulfillment = tx_signed['transaction']['fulfillments'][0]
         fulfillment_from_uri = cc.Fulfillment.from_uri(fulfillment['fulfillment'])
 
-        assert fulfillment['current_owners'][0] == user_vk
+        assert fulfillment['owners_before'][0] == user_vk
         assert fulfillment_from_uri.public_key.to_ascii().decode() == user_vk
         assert fulfillment_from_uri.condition.serialize_uri() == prev_condition['uri']
         assert b.validate_fulfillments(tx_signed) == True
@@ -1366,7 +1364,7 @@ class TestCryptoconditions(object):
         fulfillment = tx_signed['transaction']['fulfillments'][0]
         fulfillment_from_uri = cc.Fulfillment.from_uri(fulfillment['fulfillment'])
 
-        assert fulfillment['current_owners'][0] == b.me
+        assert fulfillment['owners_before'][0] == b.me
         assert fulfillment_from_uri.public_key.to_ascii().decode() == b.me
         assert b.validate_fulfillments(tx_signed) == True
         assert b.is_valid_transaction(tx_signed) == tx_signed
@@ -1388,7 +1386,7 @@ class TestCryptoconditions(object):
         fulfillment = tx_signed['transaction']['fulfillments'][0]
         fulfillment_from_uri = cc.Fulfillment.from_uri(fulfillment['fulfillment'])
 
-        assert fulfillment['current_owners'][0] == user_vk
+        assert fulfillment['owners_before'][0] == user_vk
         assert fulfillment_from_uri.public_key.to_ascii().decode() == user_vk
         assert b.validate_fulfillments(tx_signed) == True
         assert b.is_valid_transaction(tx_signed) == tx_signed
@@ -1627,7 +1625,7 @@ class TestCryptoconditions(object):
     def test_default_threshold_conditions_for_multiple_owners(self, b, user_sk, user_vk):
         user2_sk, user2_vk = crypto.generate_key_pair()
 
-        # create transaction with multiple new_owners
+        # create transaction with multiple owners_after
         tx = b.create_transaction(b.me, [user_vk, user2_vk], None, 'CREATE')
 
         assert len(tx['transaction']['conditions']) == 1
@@ -1647,7 +1645,7 @@ class TestCryptoconditions(object):
     def test_default_threshold_fulfillments_for_multiple_owners(self, b, user_sk, user_vk):
         user2_sk, user2_vk = crypto.generate_key_pair()
 
-        # create transaction with multiple new_owners
+        # create transaction with multiple owners_after
         tx_create = b.create_transaction(b.me, [user_vk, user2_vk], None, 'CREATE')
         tx_create_signed = b.sign_transaction(tx_create, b.me_private)
         block = b.create_block([tx_create_signed])
@@ -1688,7 +1686,7 @@ class TestCryptoconditions(object):
                 'uri': first_tx_condition.condition.serialize_uri()
             },
             'cid': 0,
-            'new_owners': None
+            'owners_after': None
         })
         # conditions have been updated, so hash needs updating
         hashlock_tx['id'] = util.get_hash_data(hashlock_tx)
@@ -1720,7 +1718,7 @@ class TestCryptoconditions(object):
                 'uri': first_tx_condition.condition.serialize_uri()
             },
             'cid': 0,
-            'new_owners': None
+            'owners_after': None
         })
         # conditions have been updated, so hash needs updating
         hashlock_tx['id'] = util.get_hash_data(hashlock_tx)
@@ -1751,7 +1749,7 @@ class TestCryptoconditions(object):
                 'uri': first_tx_condition.condition.serialize_uri()
             },
             'cid': 0,
-            'new_owners': None
+            'owners_after': None
         })
         # conditions have been updated, so hash needs updating
         hashlock_tx['id'] = util.get_hash_data(hashlock_tx)
@@ -1813,15 +1811,15 @@ class TestCryptoconditions(object):
         user3_sk, user3_vk = crypto.generate_key_pair()
         user4_sk, user4_vk = crypto.generate_key_pair()
         user5_sk, user5_vk = crypto.generate_key_pair()
-        new_owners = [user_vk, user2_vk, user3_vk, user4_vk, user5_vk]
+        owners_after = [user_vk, user2_vk, user3_vk, user4_vk, user5_vk]
 
-        # create a transaction with multiple new_owners
-        tx = b.create_transaction(b.me, new_owners, None, 'CREATE')
+        # create a transaction with multiple owners_after
+        tx = b.create_transaction(b.me, owners_after, None, 'CREATE')
         condition = cc.Fulfillment.from_dict(tx['transaction']['conditions'][0]['condition']['details'])
 
-        for new_owner in new_owners:
-            subcondition = condition.get_subcondition_from_vk(new_owner)[0]
-            assert subcondition.public_key.to_ascii().decode() == new_owner
+        for owner_after in owners_after:
+            subcondition = condition.get_subcondition_from_vk(owner_after)[0]
+            assert subcondition.public_key.to_ascii().decode() == owner_after
 
     @pytest.mark.usefixtures('inputs')
     def test_transfer_asset_with_escrow_condition(self, b, user_vk, user_sk):

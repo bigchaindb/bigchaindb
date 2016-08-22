@@ -87,7 +87,7 @@ tx_retrieved
                     },
                     "uri":"cc:4:20:oqXTWvR3afHHX8OaOO84kZxS6nH4GEBXD4Vw8Mc5iBo:96"
                 },
-                "new_owners":[
+                "owners_after":[
                     "BwuhqQX8FPsmqYiRV2CSZYWWsSWgSSQQFHjqxKEuqkPs"
                 ]
             }
@@ -100,7 +100,7 @@ tx_retrieved
         },
         "fulfillments":[
             {
-                "current_owners":[
+                "owners_before":[
                     "3LQ5dTiddXymDhNzETB1rEkp4mA7fEV1Qeiu5ghHiJm9"
                 ],
                 "fid":0,
@@ -182,7 +182,7 @@ tx_transfer_retrieved
                     },
                     "uri":"cc:4:20:DIfyalZvV_9ukoO01mxmK3nxsfAWSKYYF33XDYkbY4E:96"
                 },
-                "new_owners":[
+                "owners_after":[
                     "qv8DvdNG5nZHWCP5aPSqgqxAvaPJpQj19abRvFCntor"
                 ]
             }
@@ -190,7 +190,7 @@ tx_transfer_retrieved
         "data":None,
         "fulfillments":[
             {
-                "current_owners":[
+                "owners_before":[
                     "BwuhqQX8FPsmqYiRV2CSZYWWsSWgSSQQFHjqxKEuqkPs"
                 ],
                 "fid":0,
@@ -231,7 +231,7 @@ DoubleSpend: input `{'cid': 0, 'txid': '933cd83a419d2735822a2154c84176a2f419cbd4
 
 ## Multiple Owners
 
-To create a new digital asset with _multiple_ owners, one can simply provide a list of `new_owners`:
+To create a new digital asset with _multiple_ owners, one can simply provide a list of `owners_after`:
 
 ```python
 # Create a new asset and assign it to multiple owners
@@ -282,7 +282,7 @@ tx_multisig_retrieved
                     },
                     "uri":"cc:2:29:DpflJzUSlnTUBx8lD8QUolOA-M9nQnrGwvWSk7f3REc:206"
                 },
-                "new_owners":[
+                "owners_after":[
                     "BwuhqQX8FPsmqYiRV2CSZYWWsSWgSSQQFHjqxKEuqkPs",
                     "qv8DvdNG5nZHWCP5aPSqgqxAvaPJpQj19abRvFCntor"
                 ]
@@ -291,7 +291,7 @@ tx_multisig_retrieved
         "data":None,
         "fulfillments":[
             {
-                "current_owners":[
+                "owners_before":[
                     "3LQ5dTiddXymDhNzETB1rEkp4mA7fEV1Qeiu5ghHiJm9"
                 ],
                 "fid":0,
@@ -306,7 +306,7 @@ tx_multisig_retrieved
 }
 ```
 
-The asset can be transfered as soon as each of the `new_owners` signs the transaction.
+The asset can be transfered as soon as each of the `owners_after` signs the transaction.
 
 To do so, simply provide a list of all private keys to the signing routine:
 
@@ -348,7 +348,7 @@ tx_multisig_transfer_retrieved
                     },
                     "uri":"cc:4:20:cAq6JQJXtwlxURqrksiyqLThB9zh08ZxSPLTDSaReYE:96"
                 },
-                "new_owners":[
+                "owners_after":[
                     "8YN9fALMj9CkeCcmTiM2kxwurpkMzHg9RkwSLJKMasvG"
                 ]
             }
@@ -356,7 +356,7 @@ tx_multisig_transfer_retrieved
         "data":None,
         "fulfillments":[
             {
-                "current_owners":[
+                "owners_before":[
                     "BwuhqQX8FPsmqYiRV2CSZYWWsSWgSSQQFHjqxKEuqkPs",
                     "qv8DvdNG5nZHWCP5aPSqgqxAvaPJpQj19abRvFCntor"
                 ],
@@ -427,7 +427,7 @@ tx_mimo_retrieved
                     },
                     "uri":"cc:4:20:2AXg2JJ7mQ8o2Q9-hafP-XmFh3YR7I2_Sz55AubfxIc:96"
                 },
-                "new_owners":[
+                "owners_after":[
                     "qv8DvdNG5nZHWCP5aPSqgqxAvaPJpQj19abRvFCntor"
                 ]
             },
@@ -443,7 +443,7 @@ tx_mimo_retrieved
                     },
                     "uri":"cc:4:20:2AXg2JJ7mQ8o2Q9-hafP-XmFh3YR7I2_Sz55AubfxIc:96"
                 },
-                "new_owners":[
+                "owners_after":[
                     "qv8DvdNG5nZHWCP5aPSqgqxAvaPJpQj19abRvFCntor"
                 ]
             },
@@ -459,7 +459,7 @@ tx_mimo_retrieved
                     },
                     "uri":"cc:4:20:2AXg2JJ7mQ8o2Q9-hafP-XmFh3YR7I2_Sz55AubfxIc:96"
                 },
-                "new_owners":[
+                "owners_after":[
                     "qv8DvdNG5nZHWCP5aPSqgqxAvaPJpQj19abRvFCntor"
                 ]
             }
@@ -467,7 +467,7 @@ tx_mimo_retrieved
         "data":None,
         "fulfillments":[
             {
-                "current_owners":[
+                "owners_before":[
                     "BwuhqQX8FPsmqYiRV2CSZYWWsSWgSSQQFHjqxKEuqkPs"
                 ],
                 "fid":0,
@@ -478,7 +478,7 @@ tx_mimo_retrieved
                 }
             },
             {
-                "current_owners":[
+                "owners_before":[
                     "BwuhqQX8FPsmqYiRV2CSZYWWsSWgSSQQFHjqxKEuqkPs"
                 ],
                 "fid":1,
@@ -489,7 +489,7 @@ tx_mimo_retrieved
                 }
             },
             {
-                "current_owners":[
+                "owners_before":[
                     "BwuhqQX8FPsmqYiRV2CSZYWWsSWgSSQQFHjqxKEuqkPs"
                 ],
                 "fid":2,
@@ -529,11 +529,11 @@ Setting up a generic threshold condition is a bit more elaborate than regular tr
  
 The basic workflow for creating a more complex cryptocondition is the following:
 
-1. Create a transaction template that include the public key of all (nested) parties as `new_owners`
+1. Create a transaction template that include the public key of all (nested) parties as `owners_after`
 2. Set up the threshold condition using the [cryptocondition library](https://github.com/bigchaindb/cryptoconditions)
 3. Update the condition and hash in the transaction template
 
-We'll illustrate this by a threshold condition where 2 out of 3 `new_owners` need to sign the transaction:
+We'll illustrate this by a threshold condition where 2 out of 3 `owners_after` need to sign the transaction:
 
 ```python
 import copy
@@ -620,7 +620,7 @@ tx_threshold_retrieved
                     },
                     "uri":"cc:2:29:FoElId4TE5TU2loonT7sayXhxwcmaJVoCeIduh56Dxw:246"
                 },
-                "new_owners":[
+                "owners_after":[
                     "8NaGq26YMcEvj8Sc5MnqspKzFTQd1eZBAuuPDw4ERHpz",
                     "ALE9Agojob28D1fHWCxFXJwpqrYPkcsUs26YksBVj27z",
                     "Cx4jWSGci7fw6z5QyeApCijbwnMpyuhp4C1kzuFc3XrM"
@@ -630,7 +630,7 @@ tx_threshold_retrieved
         "data":None,
         "fulfillments":[
             {
-                "current_owners":[
+                "owners_before":[
                     "qv8DvdNG5nZHWCP5aPSqgqxAvaPJpQj19abRvFCntor"
                 ],
                 "fid":0,
@@ -652,7 +652,7 @@ The transaction can now be transfered by fulfilling the threshold condition.
 
 The fulfillment involves:
 
-1. Create a transaction template that include the public key of all (nested) parties as `current_owners`
+1. Create a transaction template that include the public key of all (nested) parties as `owners_before`
 2. Parsing the threshold condition into a fulfillment using the [cryptocondition library](https://github.com/bigchaindb/cryptoconditions)
 3. Signing all necessary subfulfillments and updating the fulfillment field in the transaction
 
@@ -721,7 +721,7 @@ threshold_tx_transfer
                     },
                     "uri":"cc:4:20:xDz3NhRG-3eVzIB9sgnd99LKjOyDF-KlxWuf1TgNT0s:96"
                 },
-                "new_owners":[
+                "owners_after":[
                     "ED2pyPfsbNRTHkdMnaFkAwCSpZWRmbaM1h8fYzgRRMmc"
                 ]
             }
@@ -729,7 +729,7 @@ threshold_tx_transfer
         "data":None,
         "fulfillments":[
             {
-                "current_owners":[
+                "owners_before":[
                     "8NaGq26YMcEvj8Sc5MnqspKzFTQd1eZBAuuPDw4ERHpz",
                     "ALE9Agojob28D1fHWCxFXJwpqrYPkcsUs26YksBVj27z",
                     "Cx4jWSGci7fw6z5QyeApCijbwnMpyuhp4C1kzuFc3XrM"
@@ -758,10 +758,10 @@ Under the hood, fulfilling a hash-lock condition amounts to finding a string (a 
 
 One possible use case is to distribute preimages as "digital vouchers." The first person to redeem a voucher will get the associated asset.
 
-A federation node can create an asset with a hash-lock condition and no `new_owners`. Anyone who can fullfill the hash-lock condition can transfer the asset to themselves.
+A federation node can create an asset with a hash-lock condition and no `owners_after`. Anyone who can fullfill the hash-lock condition can transfer the asset to themselves.
 
 ```python
-# Create a hash-locked asset without any new_owners
+# Create a hash-locked asset without any owners_after
 hashlock_tx = b.create_transaction(b.me, None, None, 'CREATE')
 
 # Define a secret that will be hashed - fulfillments need to guess the secret
@@ -774,13 +774,13 @@ hashlock_tx['transaction']['conditions'].append({
         'uri': first_tx_condition.condition.serialize_uri()
     },
     'cid': 0,
-    'new_owners': None
+    'owners_after': None
 })
 
 # Conditions have been updated, so the hash needs updating
 hashlock_tx['id'] = util.get_hash_data(hashlock_tx)
 
-# The asset needs to be signed by the current_owner
+# The asset needs to be signed by the owner_before
 hashlock_tx_signed = b.sign_transaction(hashlock_tx, b.me_private)
 
 # Some validations
@@ -800,13 +800,13 @@ hashlock_tx_signed
                 "condition":{
                     "uri":"cc:0:3:nsW2IiYgk9EUtsg4uBe3pBnOgRoAEX2IIsPgjqZz47U:17"
                 },
-                "new_owners":None
+                "owners_after":None
             }
         ],
         "data":None,
         "fulfillments":[
             {
-                "current_owners":[
+                "owners_before":[
                     "FmLm6MxCABc8TsiZKdeYaZKo5yZWMM6Vty7Q1B6EgcP2"
                 ],
                 "fid":0,
@@ -864,7 +864,7 @@ hashlock_fulfill_tx
                     },
                     "uri":"cc:4:20:y9884Md2YI_wdnGSTJGhwvFaNsKLe8sqwimqk-2JLSI:96"
                 },
-                "new_owners":[
+                "owners_after":[
                     "EiqCKxnBCmmNb83qyGch48tULK9RLaEt4xFA43UVCVDb"
                 ]
             }
@@ -872,7 +872,7 @@ hashlock_fulfill_tx
         "data":None,
         "fulfillments":[
             {
-                "current_owners":[],
+                "owners_before":[],
                 "fid":0,
                 "fulfillment":"cf:0:bXVjaCBzZWNyZXQhIHdvdyE",
                 "input":{
@@ -901,7 +901,7 @@ __Note__: The timeout conditions are BigchainDB-specific and not (yet) supported
 __Caveat__: The times between nodes in a BigchainDB federation may (and will) differ slightly. In this case, the majority of the nodes will decide.
 
 ```python
-# Create a timeout asset without any new_owners
+# Create a timeout asset without any owners_after
 tx_timeout = b.create_transaction(b.me, None, None, 'CREATE')
 
 # Set expiry time - the asset needs to be transfered before expiration
@@ -916,13 +916,13 @@ tx_timeout['transaction']['conditions'].append({
         'uri': condition_timeout.condition.serialize_uri()
     },
     'cid': 0,
-    'new_owners': None
+    'owners_after': None
 })
 
 # Conditions have been updated, so the hash needs updating
 tx_timeout['id'] = util.get_hash_data(tx_timeout)
 
-# The asset needs to be signed by the current_owner
+# The asset needs to be signed by the owner_before
 tx_timeout_signed = b.sign_transaction(tx_timeout, b.me_private)
 
 # Some validations
@@ -948,13 +948,13 @@ tx_timeout_signed
                     },
                     "uri":"cc:63:9:sceU_NZc3cAjAvaR1TVmgj7am5y8hJEBoqLm-tbqGbQ:17"
                 },
-                "new_owners":null
+                "owners_after":null
             }
         ],
         "data":null,
         "fulfillments":[
             {
-                "current_owners":[
+                "owners_before":[
                     "FmLm6MxCABc8TsiZKdeYaZKo5yZWMM6Vty7Q1B6EgcP2"
                 ],
                 "fid":0,
@@ -1086,7 +1086,7 @@ tx_escrow['transaction']['conditions'][0]['condition'] = {
 # Conditions have been updated, so the hash needs updating
 tx_escrow['id'] = util.get_hash_data(tx_escrow)
 
-# The asset needs to be signed by the current_owner
+# The asset needs to be signed by the owner_before
 tx_escrow_signed = b.sign_transaction(tx_escrow, testuser2_priv)
 
 # Some validations
@@ -1171,7 +1171,7 @@ tx_escrow_signed
                     },
                     "uri":"cc:2:29:sg08ERtppQrGxot7mu7XMdNkZTc29xCbWE1r8DgxuL8:181"
                 },
-                "new_owners":[
+                "owners_after":[
                     "BwuhqQX8FPsmqYiRV2CSZYWWsSWgSSQQFHjqxKEuqkPs",
                     "qv8DvdNG5nZHWCP5aPSqgqxAvaPJpQj19abRvFCntor"
                 ]
@@ -1180,7 +1180,7 @@ tx_escrow_signed
         "data":null,
         "fulfillments":[
             {
-                "current_owners":[
+                "owners_before":[
                     "qv8DvdNG5nZHWCP5aPSqgqxAvaPJpQj19abRvFCntor"
                 ],
                 "fid":0,
