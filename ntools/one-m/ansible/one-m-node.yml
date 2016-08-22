@@ -1,0 +1,9 @@
+---
+# This playbook deploys a BigchainDB node in one machine (one-m).
+
+- name: deploy all software and configure it
+  hosts: all
+  remote_user: root
+
+  roles:
+    - common
