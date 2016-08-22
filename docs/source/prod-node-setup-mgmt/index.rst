@@ -9,4 +9,4 @@ Production Node Setup & Management
    install-ansible
    prov-one-m-aws
    prov-one-m-azure
-   config-one-m
+   start-one-m-node
