@@ -9,7 +9,7 @@ Deploying and managing a production BigchainDB node is much more involved than w
 
 Thankfully, there are tools that can help (e.g. provisioning tools and configuration management tools). You can use whatever tools you prefer.
 
-As an example, we provide documentation and code showing how to use Terraform and Ansible (together).
+As an example, we provide documentation and code showing how to use Terraform and Ansible (together). We use:
 
 * [Terraform](https://www.terraform.io/) to provision infrastructure such as AWS instances, storage and security groups
 * [Ansible](https://www.ansible.com/) to manage the software installed on that infrastructure (configuration management)

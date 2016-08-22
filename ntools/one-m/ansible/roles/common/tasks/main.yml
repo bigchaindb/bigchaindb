@@ -1,0 +1,31 @@
+---
+# ansible/roles/common/tasks/main.yml
+
+- name: Do the equivalent of apt-get update
+  apt: update_cache=yes
+
+- name: Uninstall ntpdate (deprecated)
+  apt: name=ntpdate state=absent
+  tags: ntp
+
+- name: Update all installed packages to their latest versions
+  apt: upgrade=dist
+
+- name: Install ntp
+  apt: name=ntp state=latest update_cache=yes
+  tags: ntp
+
+#- name: Configure ntp file
+#  template: src=ntp.conf.j2 dest=/etc/ntp.conf
+#  tags: ntp
+  # "restart ntp" is the name of a handler (in common/handlers/main.yml)
+#  notify: restart ntp
+
+- name: Start the ntp service
+  service: name=ntpd state=started enabled=yes
+  tags: ntp
+
+#- name: test to see if selinux is running
+#  command: getenforce
+#  register: sestatus
+#  changed_when: false
