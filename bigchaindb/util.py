@@ -159,6 +159,14 @@ def create_tx(owners_before, owners_after, inputs, operation, payload=None, data
         inputs (list): id of the transaction to use as input.
         operation (str): Either `CREATE` or `TRANSFER` operation.
         payload (Optional[dict]): dictionary with information about asset.
+        data (Optional[dict]): dictionary describing the digital asset (only used on a create transaction)
+        divisible (Optional[boolean): Whether the asset is divisible or not. Defaults to `False`.
+        updatable (Optional[boolean]): Whether the data in the asset can be updated in the future or not.
+                                       Defaults to `False`.
+        refillable (Optional[boolean]): Whether the amount of the asset can change after its creation.
+                                        Defaults to `False`.
+        amount (Optional[int]): The amount of "shares". Only relevant if the asset is marked as divisible.
+                                Defaults to `1`.
 
     Returns:
         dict: unsigned transaction.
@@ -187,7 +195,8 @@ def create_tx(owners_before, owners_after, inputs, operation, payload=None, data
                         {
                             "owners_after": ["list of <pub-keys>"],
                             "condition": "condition to be met",
-                            "cid": "condition index (1-to-1 mapping with fid)"
+                            "cid": "condition index (1-to-1 mapping with fid)",
+                            "amount": "<number of shares of a divisible asset>"
                         }
                     ],
                 "operation": "<string>",
@@ -196,7 +205,6 @@ def create_tx(owners_before, owners_after, inputs, operation, payload=None, data
                     "id": "<uuid>",
                     "divisible": "<true | false>",
                     "updatable": "<true | false>",
-                    "amount": "<int>",
                     "refillable": "<true | false>",
                     "data": "<json document>"
                 },
@@ -234,6 +242,14 @@ def create_tx(owners_before, owners_after, inputs, operation, payload=None, data
 
     # transfer
     if inputs:
+        # Since a transaction is specific to a digital asset we need to check if all the inputs are from the same
+        # digital asset (see https://github.com/bigchaindb/bigchaindb/issues/125#issuecomment-241020139)
+        # Here we need to get the transactions pointed by the inputs to check the asset id and the amounts if its a 
+        # divisible asset . This is inefficient because we are querying past transactions multiple times 
+        # (here and later on in the sign_tx)
+        # This can be improved and probably cached with @TimDaub transaction model
+        tx_inputs
+
         for fid, tx_input in enumerate(inputs):
             fulfillments.append({
                 'owners_before': owners_before,
@@ -247,11 +263,13 @@ def create_tx(owners_before, owners_after, inputs, operation, payload=None, data
         if data is not None and not isinstance(data, dict):
             raise TypeError('`data` must be a dict instance or None')
 
+        if divisible or updatable or refillable or amount != 1:
+            raise NotImplementedError("Divisible assets are not yet implemented!")
+
         asset = {
             "id": str(uuid.uuid4()),
             "divisible": divisible,
             "updatable": updatable,
-            "amount": amount,
             "refillable": refillable,
             "data": data
         }
@@ -288,7 +306,8 @@ def create_tx(owners_before, owners_after, inputs, operation, payload=None, data
                     'details': condition.to_dict(),
                     'uri': condition.condition_uri
                 },
-                'cid': fulfillment['fid']
+                'cid': fulfillment['fid'],
+                'amount': amount
             })
 
     tx = {
