@@ -1,38 +1,43 @@
-# Configure a One-Machine Node
+# Start a One-Machine Node
 
-In this step, we will install and configure all the software necessary to run BigchainDB, all on one machine.
+In this step, we will install, configure and run all the software necessary to run BigchainDB, all on one machine.
 
 
 ## Create an Ansible Inventory File
 
 An Ansible "inventory" file is a file which lists all the hosts (machines) you want to manage using Ansible. (Ansible will communicate with them via SSH.) Right now, we only want to manage one host.
 
-First, determine the public IP address of the host (i.e. something like `192.0.2.128`). Below we refer to it as `<ip_address>`.
+First, determine the public IP address of the host (i.e. something like `192.0.2.128`).
 
-Create a one-line text file named `hosts` using this command (with `<ip_address>` replaced):
+Then create a one-line text file named `hosts` by doing this:
 ```text
-echo "node1 ansible_host=<ip_address>" > hosts
+# cd to the directory .../bigchaindb/ntools/one-m/ansible
+echo "192.0.2.128" > hosts
 ```
 
-`node1` is a "host alias" (i.e. a made-up name) that you can use when referring to that host in Ansible. Move `hosts` to `/etc/ansible/` because that's the default place where Ansible looks for it:
+but replace `192.0.2.128` with the IP address of the host.
+
+
+## Run the Ansible Playbook
+
+The next step is to run the Ansible playbook `one-m-node.yml`. It installs all the software necessary in a one-machine BigchainDB node, configures it, and starts it. Here's how to run that playbook:
 ```text
-sudo mkdir -p /etc/ansible/
-sudo mv hosts /etc/ansible/
+# cd to the directory .../bigchaindb/ntools/one-m/ansible
+ansible-playbook -i hosts --private-key ~/.ssh/<key-name> one-m-node.yml
 ```
 
+where `<key-name>` should be replaced by the name of the SSH private key you created earlier (for SSHing to the host machine at your cloud hosting provider).
 
-## Tell Ansible the Location of the SSH Key File
+Note: At the time of writing, the playbook only installs and runs an NTP daemon, but more is coming soon.
 
-Ansible uses SSH to connect to the remote host, so it needs to know the location of the SSH (private) key file. (The corresponding public key should already be on the host you provisioned earler.) Normally, Ansible will ask for the location of the SSH key file as-needed. You can make it stop asking by putting the location in an [Ansible configuration file](https://docs.ansible.com/ansible/intro_configuration.html) (config file). (If you prefer, you could use [ssh-agent](https://en.wikipedia.org/wiki/Ssh-agent) instead.)
 
-The following command will do that (overwriting any existing file named `ansible.cfg`):
+## Optional: Create an Ansible Config File
+
+The above command (`ansible-playbook -i ...`) is fairly long. You can omit the optional arguments if you put their values in an [Ansible configuration file](https://docs.ansible.com/ansible/intro_configuration.html) (config file) instead. There are many places where you can put a config file, but to make one specifically for the "one-m" case, you should put it in `.../bigchaindb/ntools/one-m/ansible/`. In that directory, create a file named `ansible.cfg` with the following contents:
 ```text
-# cd to the .../bigchaindb/ntools/one-m/ansible directory
-echo "private_key_file=$HOME/.ssh/<key-name>" > ansible.cfg
+[defaults]
+private_key_file = $HOME/.ssh/<key-name>
+inventory = hosts
 ```
 
-where `<key-name>` must be replaced by the actual name of the SSH private key file.
-
-
-
-
+where, as before, `<key-name>` must be replaced.
