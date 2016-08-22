@@ -186,6 +186,7 @@ class Bigchain(object):
             response = r.table('backlog').get(txid).run(self.conn)
             if response:
                 tx_status = self.TX_IN_BACKLOG
+
         if include_status:
             return response, tx_status
         else:

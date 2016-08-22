@@ -84,3 +84,25 @@ def create_transaction():
 
     return flask.jsonify(**tx)
 
+
+@transaction_views.route('/transactions/<tx_id>/status')
+def get_transaction_status(tx_id):
+    """API endpoint to get details about the status of a transaction.
+
+    Args:
+        tx_id (str): the id of the transaction.
+
+    Return:
+        A JSON string containing the status of the transaction.
+        Possible values: "valid", "invalid", "undecided", "backlog", None
+    """
+
+    pool = current_app.config['bigchain_pool']
+
+    with pool() as bigchain:
+        tx, status = bigchain.get_transaction(tx_id, include_status=True)
+
+    if not tx:
+        return make_error(404)
+
+    return flask.jsonify({'status': status})
