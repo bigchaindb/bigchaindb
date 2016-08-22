@@ -137,7 +137,7 @@ class Bigchain(object):
         response = r.table('backlog').insert(signed_transaction, durability=durability).run(self.conn)
         return response
 
-    def get_transaction(self, txid):
+    def get_transaction(self, txid, include_status=False):
         """Retrieve a transaction with `txid` from bigchain.
 
         Queries the bigchain for a transaction, if it's in a valid or invalid
@@ -153,38 +153,40 @@ class Bigchain(object):
             returns `None`
         """
 
+        response, tx_status = None, None
+
         validity = self.get_blocks_status_containing_tx(txid)
 
         if validity:
             # Disregard invalid blocks, and return if there are no valid or undecided blocks
             validity = {_id: status for _id, status in validity.items()
                                     if status != Bigchain.BLOCK_INVALID}
-            if not validity:
-                return None
+            if validity:
 
-            # If the transaction is in a valid or any undecided block, return it. Does not check
-            # if transactions in undecided blocks are consistent, but selects the valid block before
-            # undecided ones
-            for _id in validity:
-                target_block_id = _id
-                if validity[_id] == Bigchain.BLOCK_VALID:
-                    tx_status = self.TX_VALID
-                    break
-                else:
-                    tx_status = self.TX_UNDECIDED
+                # If the transaction is in a valid or any undecided block, return it. Does not check
+                # if transactions in undecided blocks are consistent, but selects the valid block before
+                # undecided ones
+                for _id in validity:
+                    target_block_id = _id
+                    if validity[_id] == Bigchain.BLOCK_VALID:
+                        tx_status = self.TX_VALID
+                        break
+                    else:
+                        tx_status = self.TX_UNDECIDED
 
-            # Query the transaction in the target block and return
-            response = r.table('bigchain', read_mode=self.read_mode).get(target_block_id)\
-                .get_field('block').get_field('transactions')\
-                .filter(lambda tx: tx['id'] == txid).run(self.conn)[0]
-            response['validity'] = tx_status
-            return response
+                # Query the transaction in the target block and return
+                response = r.table('bigchain', read_mode=self.read_mode).get(target_block_id)\
+                    .get_field('block').get_field('transactions')\
+                    .filter(lambda tx: tx['id'] == txid).run(self.conn)[0]
 
         else:
             # Otherwise, check the backlog
             response = r.table('backlog').get(txid).run(self.conn)
             if response:
-                response['validity'] = self.TX_IN_BACKLOG
+                tx_status = self.TX_IN_BACKLOG
+        if include_status:
+            return response, tx_status
+        else:
             return response
 
     def search_block_election_on_index(self, value, index):

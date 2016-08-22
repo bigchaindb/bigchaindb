@@ -120,10 +120,10 @@ class TestBigchainApi(object):
         block = b.create_block([tx_signed])
         b.write_block(block, durability='hard')
 
-        response = b.get_transaction(tx_signed["id"])
+        response, status = b.get_transaction(tx_signed["id"], include_status=True)
         # add validity information, which will be returned
-        tx_signed['validity'] = 'undecided'
         assert util.serialize(tx_signed) == util.serialize(response)
+        assert status == 'undecided'
 
     @pytest.mark.usefixtures('inputs')
     def test_read_transaction_backlog(self, b, user_vk, user_sk):
@@ -132,10 +132,10 @@ class TestBigchainApi(object):
         tx_signed = b.sign_transaction(tx, user_sk)
         b.write_transaction(tx_signed)
 
-        response = b.get_transaction(tx_signed["id"])
+        response, status = b.get_transaction(tx_signed["id"], include_status=True)
         # add validity information, which will be returned
-        tx_signed['validity'] = 'backlog' 
         assert util.serialize(tx_signed) == util.serialize(response)
+        assert status == 'backlog'
 
     @pytest.mark.usefixtures('inputs')
     def test_read_transaction_invalid_block(self, b, user_vk, user_sk):
@@ -171,10 +171,10 @@ class TestBigchainApi(object):
         vote = b.vote(block['id'], b.get_last_voted_block()['id'], True)
         b.write_vote(vote)
 
-        response = b.get_transaction(tx_signed["id"])
+        response, status = b.get_transaction(tx_signed["id"], include_status=True)
         # add validity information, which will be returned
-        tx_signed['validity'] = 'valid' 
         assert util.serialize(tx_signed) == util.serialize(response)
+        assert status == 'valid'
 
     @pytest.mark.usefixtures('inputs')
     def test_assign_transaction_one_node(self, b, user_vk, user_sk):
