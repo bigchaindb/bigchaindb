@@ -19,7 +19,7 @@ It should ask you the value of `ssh_key_name`.
 
 It figured out the plan by reading all the `.tf` Terraform files in the directory.
 
-If you don't want to be asked for the `ssh_key_name`, you can change the default value of `ssh_key_name` or [you can set an environmen variable](https://www.terraform.io/docs/configuration/variables.html) named `TF_VAR_ssh_key_name`.
+If you don't want to be asked for the `ssh_key_name`, you can change the default value of `ssh_key_name` (in the file `variables.tf`) or [you can set an environmen variable](https://www.terraform.io/docs/configuration/variables.html) named `TF_VAR_ssh_key_name`.
 
 
 ## Provision
