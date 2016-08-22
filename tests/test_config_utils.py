@@ -229,6 +229,13 @@ def test_file_config():
     assert config == {}
 
 
+def test_invalid_file_config():
+    from bigchaindb.config_utils import file_config, CONFIG_DEFAULT_PATH
+    with patch('builtins.open', mock_open(read_data='{_INVALID_JSON_}')) as m:
+        with pytest.raises(exceptions.ConfigurationError):
+            file_config()
+
+
 def test_write_config():
     from bigchaindb.config_utils import write_config, CONFIG_DEFAULT_PATH
     m = mock_open()

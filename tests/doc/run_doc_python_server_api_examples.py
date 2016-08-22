@@ -252,7 +252,7 @@ print(json.dumps(threshold_tx_transfer, sort_keys=True, indent=4, separators=(',
 Hashlocked Conditions
 """
 
-# Create a hash-locked asset without any new_owners
+# Create a hash-locked asset without any owners_after
 hashlock_tx = b.create_transaction(b.me, None, None, 'CREATE')
 
 # Define a secret that will be hashed - fulfillments need to guess the secret
@@ -265,13 +265,13 @@ hashlock_tx['transaction']['conditions'].append({
         'uri': first_tx_condition.condition.serialize_uri()
     },
     'cid': 0,
-    'new_owners': None
+    'owners_after': None
 })
 
 # Conditions have been updated, so hash needs updating
 hashlock_tx['id'] = util.get_hash_data(hashlock_tx)
 
-# The asset needs to be signed by the current_owner
+# The asset needs to be signed by the owner_before
 hashlock_tx_signed = b.sign_transaction(hashlock_tx, b.me_private)
 
 # Some validations
@@ -327,7 +327,7 @@ tx_timeout['transaction']['conditions'].append({
         'uri': condition_timeout.condition.serialize_uri()
     },
     'cid': 0,
-    'new_owners': None
+    'owners_after': None
 })
 
 # conditions have been updated, so hash needs updating

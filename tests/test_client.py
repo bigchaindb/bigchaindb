@@ -44,11 +44,11 @@ def test_client_can_create_assets(mock_requests_post, client):
 
     # XXX: `CREATE` operations require the node that receives the transaction to modify the data in
     #      the transaction itself.
-    #      `current_owner` will be overwritten with the public key of the node in the federation
+    #      `owner_before` will be overwritten with the public key of the node in the federation
     #      that will create the real transaction. `signature` will be overwritten with the new signature.
     #      Note that this scenario is ignored by this test.
-    assert tx['transaction']['fulfillments'][0]['current_owners'][0] == client.public_key
-    assert tx['transaction']['conditions'][0]['new_owners'][0] == client.public_key
+    assert tx['transaction']['fulfillments'][0]['owners_before'][0] == client.public_key
+    assert tx['transaction']['conditions'][0]['owners_after'][0] == client.public_key
     assert tx['transaction']['fulfillments'][0]['input'] is None
 
     assert util.validate_fulfillments(tx)
@@ -56,8 +56,8 @@ def test_client_can_create_assets(mock_requests_post, client):
 
 def test_client_can_transfer_assets(mock_requests_post, mock_bigchaindb_sign, client):
     tx = client.transfer(client.public_key, 123)
-    assert tx['transaction']['fulfillments'][0]['current_owners'][0] == client.public_key
-    assert tx['transaction']['conditions'][0]['new_owners'][0] == client.public_key
+    assert tx['transaction']['fulfillments'][0]['owners_before'][0] == client.public_key
+    assert tx['transaction']['conditions'][0]['owners_after'][0] == client.public_key
     assert tx['transaction']['fulfillments'][0]['input'] == 123
 
 

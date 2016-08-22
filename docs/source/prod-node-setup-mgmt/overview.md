@@ -7,6 +7,7 @@ Deploying and managing a production BigchainDB node is much more involved than w
 * Production nodes need monitoring
 * Production nodes need maintenance, e.g. software upgrades, scaling
 
-Thankfully, there are tools to help!
+Thankfully, there are tools to help! We use:
 
-This section explains how to use various tools to deploy and manage a production node.
+* [Terraform](https://www.terraform.io/) to provision infrastructure such as AWS instances, storage and security groups
+* [Ansible](https://www.ansible.com/) to manage the software installed on that infrastructure (configuration management)

@@ -144,7 +144,7 @@ def initial():
 def get_changefeed():
     """Create and return the changefeed for the bigchain table."""
 
-    return ChangeFeed('bigchain', 'insert', prefeed=initial())
+    return ChangeFeed('bigchain', operation=ChangeFeed.INSERT, prefeed=initial())
 
 
 def create_pipeline():

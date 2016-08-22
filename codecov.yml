@@ -31,6 +31,7 @@ coverage:
     - "bigchaindb/version.py"
     - "benchmarking-tests/*"
     - "speed-tests/*"
+    - "ntools/*"
 
 comment:
   # @stevepeak (from codecov.io) suggested we change 'suggestions' to 'uncovered'
