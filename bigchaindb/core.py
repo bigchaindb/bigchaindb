@@ -145,6 +145,8 @@ class Bigchain(object):
 
         Args:
             txid (str): transaction id of the transaction to query
+            include_status (bool): also return the status of the transaction
+                                   the return value is then a tuple: (tx, status)
 
         Returns:
             A dict with the transaction details if the transaction was found.
