@@ -114,7 +114,6 @@ class TestBigchainApi(object):
         input_tx = b.get_owned_ids(user_vk).pop()
         tx = b.create_transaction(user_vk, user_vk, input_tx, 'TRANSFER')
         tx_signed = b.sign_transaction(tx, user_sk)
-        b.write_transaction(tx_signed)
 
         # create block and write it to the bighcain before retrieving the transaction
         block = b.create_block([tx_signed])
@@ -123,7 +122,7 @@ class TestBigchainApi(object):
         response, status = b.get_transaction(tx_signed["id"], include_status=True)
         # add validity information, which will be returned
         assert util.serialize(tx_signed) == util.serialize(response)
-        assert status == 'undecided'
+        assert status == b.TX_UNDECIDED
 
     @pytest.mark.usefixtures('inputs')
     def test_read_transaction_backlog(self, b, user_vk, user_sk):
@@ -135,14 +134,13 @@ class TestBigchainApi(object):
         response, status = b.get_transaction(tx_signed["id"], include_status=True)
         # add validity information, which will be returned
         assert util.serialize(tx_signed) == util.serialize(response)
-        assert status == 'backlog'
+        assert status == b.TX_IN_BACKLOG
 
     @pytest.mark.usefixtures('inputs')
     def test_read_transaction_invalid_block(self, b, user_vk, user_sk):
         input_tx = b.get_owned_ids(user_vk).pop()
         tx = b.create_transaction(user_vk, user_vk, input_tx, 'TRANSFER')
         tx_signed = b.sign_transaction(tx, user_sk)
-        b.write_transaction(tx_signed)
 
         # create block
         block = b.create_block([tx_signed])
@@ -174,7 +172,7 @@ class TestBigchainApi(object):
         response, status = b.get_transaction(tx_signed["id"], include_status=True)
         # add validity information, which will be returned
         assert util.serialize(tx_signed) == util.serialize(response)
-        assert status == 'valid'
+        assert status == b.TX_VALID
 
     @pytest.mark.usefixtures('inputs')
     def test_assign_transaction_one_node(self, b, user_vk, user_sk):

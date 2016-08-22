@@ -165,16 +165,14 @@ class Bigchain(object):
                                     if status != Bigchain.BLOCK_INVALID}
             if validity:
 
+                tx_status = self.TX_UNDECIDED
                 # If the transaction is in a valid or any undecided block, return it. Does not check
                 # if transactions in undecided blocks are consistent, but selects the valid block before
                 # undecided ones
-                for _id in validity:
-                    target_block_id = _id
-                    if validity[_id] == Bigchain.BLOCK_VALID:
+                for target_block_id in validity:
+                    if validity[target_block_id] == Bigchain.BLOCK_VALID:
                         tx_status = self.TX_VALID
                         break
-                    else:
-                        tx_status = self.TX_UNDECIDED
 
                 # Query the transaction in the target block and return
                 response = r.table('bigchain', read_mode=self.read_mode).get(target_block_id)\
