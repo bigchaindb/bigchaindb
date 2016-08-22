@@ -20,9 +20,11 @@ from functools import lru_cache
 
 from pkg_resources import iter_entry_points, ResolutionError
 
+from bigchaindb_common import exceptions
+
 import bigchaindb
 from bigchaindb.consensus import AbstractConsensusRules
-from bigchaindb import exceptions
+
 
 # TODO: move this to a proper configuration file for logging
 logging.getLogger('requests').setLevel(logging.WARNING)

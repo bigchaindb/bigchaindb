@@ -2,8 +2,8 @@ import requests
 
 import bigchaindb
 from bigchaindb import config_utils
-from bigchaindb import exceptions
-from bigchaindb import crypto
+
+from bigchaindb_common import crypto, exceptions
 
 
 class Client:

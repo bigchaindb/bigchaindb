@@ -163,8 +163,8 @@ def test_create_tx_with_empty_inputs():
 
 
 def test_fulfill_threshold_signature_fulfillment_pubkey_notfound(monkeypatch):
-    from bigchaindb.exceptions import KeypairMismatchException
     from bigchaindb.util import fulfill_threshold_signature_fulfillment
+    from bigchaindb_common.exceptions import KeypairMismatchException
     monkeypatch.setattr(
         ThresholdSha256Fulfillment,
         'get_subcondition_from_vk',
@@ -178,8 +178,8 @@ def test_fulfill_threshold_signature_fulfillment_pubkey_notfound(monkeypatch):
 
 
 def test_fulfill_threshold_signature_fulfillment_wrong_privkeys(monkeypatch):
-    from bigchaindb.exceptions import KeypairMismatchException
     from bigchaindb.util import fulfill_threshold_signature_fulfillment
+    from bigchaindb_common.exceptions import KeypairMismatchException
     monkeypatch.setattr(
         ThresholdSha256Fulfillment,
         'get_subcondition_from_vk',
@@ -193,8 +193,8 @@ def test_fulfill_threshold_signature_fulfillment_wrong_privkeys(monkeypatch):
 
 
 def test_check_hash_and_signature_invalid_hash(monkeypatch):
-    from bigchaindb.exceptions import InvalidHash
     from bigchaindb.util import check_hash_and_signature
+    from bigchaindb_common.exceptions import InvalidHash
     transaction = {'id': 'txid'}
     monkeypatch.setattr('bigchaindb.util.get_hash_data', lambda tx: 'txhash')
     with pytest.raises(InvalidHash):
@@ -202,8 +202,8 @@ def test_check_hash_and_signature_invalid_hash(monkeypatch):
 
 
 def test_check_hash_and_signature_invalid_signature(monkeypatch):
-    from bigchaindb.exceptions import InvalidSignature
     from bigchaindb.util import check_hash_and_signature
+    from bigchaindb_common.exceptions import InvalidSignature
     transaction = {'id': 'txid'}
     monkeypatch.setattr('bigchaindb.util.get_hash_data', lambda tx: 'txid')
     monkeypatch.setattr(

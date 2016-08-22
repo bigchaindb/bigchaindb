@@ -99,7 +99,7 @@ def cleanup_tables(request, node_config):
 
 @pytest.fixture
 def inputs(user_vk):
-    from bigchaindb.exceptions import GenesisBlockAlreadyExistsError
+    from bigchaindb_common.exceptions import GenesisBlockAlreadyExistsError
     # 1. create the genesis block
     b = Bigchain()
     try:

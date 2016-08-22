@@ -1,7 +1,8 @@
 import json
 
 import pytest
-from bigchaindb import crypto
+from bigchaindb_common import crypto
+
 from bigchaindb import util
 
 
