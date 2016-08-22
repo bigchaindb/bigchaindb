@@ -133,14 +133,14 @@ class BaseConsensusRules(AbstractConsensusRules):
             # TODO: for now lets assume a CREATE transaction only has one fulfillment
             if transaction['transaction']['fulfillments'][0]['input']:
                 raise ValueError('A CREATE operation has no inputs')
-            # TODO: for now lets assume a CREATE transaction only has one current_owner
-            if transaction['transaction']['fulfillments'][0]['current_owners'][0] not in (
+            # TODO: for now lets assume a CREATE transaction only has one owner_before
+            if transaction['transaction']['fulfillments'][0]['owners_before'][0] not in (
                     bigchain.nodes_except_me + [bigchain.me]):
                 raise exceptions.OperationError(
                     'Only federation nodes can use the operation `CREATE`')
 
         else:
-            # check if the input exists, is owned by the current_owner
+            # check if the input exists, is owned by the owner_before
             if not transaction['transaction']['fulfillments']:
                 raise ValueError('Transaction contains no fulfillments')
 
@@ -206,15 +206,15 @@ class BaseConsensusRules(AbstractConsensusRules):
         return block
 
     @staticmethod
-    def create_transaction(current_owner, new_owner, tx_input, operation, payload=None, data=None, divisible=False,
-                           updatable=False, amount=1, refillable=False):
+    def create_transaction(owner_before, owner_after, tx_input, operation, payload=None,
+                           data=None, updatable=False, refillable=False, amount=1):
         """Create a new transaction
 
         Refer to the documentation of ``bigchaindb.util.create_tx``
         """
 
-        return util.create_tx(current_owner, new_owner, tx_input, operation, payload, data, divisible,
-                              updatable, amount, refillable)
+        return util.create_tx(owner_before, owner_after, tx_input, operation,payload,
+                              data, refillable, amount)
 
     @staticmethod
     def sign_transaction(transaction, private_key, bigchain=None):

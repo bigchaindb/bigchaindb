@@ -56,8 +56,8 @@ class Client:
         """
 
         tx = self.consensus.create_transaction(
-            current_owner=self.public_key,
-            new_owner=self.public_key,
+            owner_before=self.public_key,
+            owner_after=self.public_key,
             tx_input=None,
             operation='CREATE',
             payload=payload)
@@ -66,11 +66,11 @@ class Client:
             tx, private_key=self.private_key)
         return self._push(signed_tx)
 
-    def transfer(self, new_owner, tx_input, payload=None):
+    def transfer(self, owner_after, tx_input, payload=None):
         """Issue a transaction to transfer an asset.
 
         Args:
-            new_owner (str): the public key of the new owner
+            owner_after (str): the public key of the new owner
             tx_input (str): the id of the transaction to use as input
             payload (dict, optional): the payload for the transaction.
 
@@ -79,8 +79,8 @@ class Client:
         """
 
         tx = self.consensus.create_transaction(
-            current_owner=self.public_key,
-            new_owner=new_owner,
+            owner_before=self.public_key,
+            owner_after=owner_after,
             tx_input=tx_input,
             operation='TRANSFER',
             payload=payload)

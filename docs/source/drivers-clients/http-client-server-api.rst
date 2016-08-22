@@ -13,17 +13,21 @@ There are other configuration settings related to the web server (serving the HT
 
 The HTTP API currently exposes two endpoints, one to get information about a specific transaction, and one to push a new transaction to the BigchainDB cluster.
 
-.. http:get:: /transactions/(tx_id)
+.. http:get:: /transactions/{tx_id}
 
-   The transaction with the transaction ID `tx_id`.
+   Get the transaction with the ID ``tx_id``.
+
+   This endpoint returns only a transaction from a ``VALID`` or ``UNDECIDED`` block on ``bigchain``, if exists.
+
+   :param tx_id: transaction ID
+   :type tx_id: hex string
 
    **Example request**:
 
    .. sourcecode:: http
 
-      GET /transactions/96480ce68912aa39a54766ac16334a835fbf777039670352ff967bf6d65bf4f7 HTTP/1.1
+      GET /transactions/7ad5a4b83bc8c70c4fd7420ff3c60693ab8e6d0e3124378ca69ed5acd2578792 HTTP/1.1
       Host: example.com
-      TODO: Other headers?
 
    **Example response**:
 
@@ -31,28 +35,54 @@ The HTTP API currently exposes two endpoints, one to get information about a spe
 
       HTTP/1.1 200 OK
       Content-Type: application/json
-      TODO: Other headers?
-      
-      {'id': '96480ce68912aa39a54766ac16334a835fbf777039670352ff967bf6d65bf4f7',
-       'transaction': {'conditions': [{'cid': 0,
-            'condition': {'details': {'bitmask': 32,
-              'public_key': 'FoWUUY6kK7QhgCsgVrV2vpDWfW43mq5ewb16Uh7FBbSF',
-              'signature': None,
-              'type': 'fulfillment',
-              'type_id': 4},
-             'uri': 'cc:4:20:2-2pA2qKr2i-GM6REdqJCLEL_CEWpy-5iQky7YgRZTA:96'},
-            'new_owners': ['FoWUUY6kK7QhgCsgVrV2vpDWfW43mq5ewb16Uh7FBbSF']}],
-          'data': {'payload': None, 'uuid': 'f14dc5a6-510e-4307-89c6-aec42af8a1ae'},
-          'fulfillments': [{'current_owners': ['Ftat68WVLsPxVFLz2Rh2Sbwrrt51uFE3UpjkxY73vGKZ'],
-            'fid': 0,
-            'fulfillment': 'cf:4:3TqMI1ZFolraqHWADT6nIvUUt4HOwqdr0_-yj5Cglbg1V5qQV2CF2Yup1l6fQH2uhLGGFo9uHhZ6HNv9lssiD0ZaG88Bg_MTkz6xg2SW2Cw_YgpM-CyESVT404g54ZsK',
-            'input': None}],
-          'operation': 'CREATE',
-          'timestamp': '1468494923'},
-       'version': 1}
+
+      {
+        "id":"7ad5a4b83bc8c70c4fd7420ff3c60693ab8e6d0e3124378ca69ed5acd2578792",
+        "transaction":{
+            "conditions":[
+                {
+                    "cid":0,
+                    "condition":{
+                        "details":{
+                            "bitmask":32,
+                            "public_key":"CwA8s2QYQBfNz4WvjEwmJi83zYr7JhxRhidx6uZ5KBVd",
+                            "signature":null,
+                            "type":"fulfillment",
+                            "type_id":4
+                        },
+                        "uri":"cc:4:20:sVA_3p8gvl8yRFNTomqm6MaavKewka6dGYcFAuPrRXQ:96"
+                    },
+                    "owners_after":[
+                        "CwA8s2QYQBfNz4WvjEwmJi83zYr7JhxRhidx6uZ5KBVd"
+                    ]
+                }
+            ],
+            "data":{
+                "payload":null,
+                "uuid":"a9999d69-6cde-4b80-819d-ed57f6abe257"
+            },
+            "fulfillments":[
+                {
+                    "owners_before":[
+                        "JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE"
+                    ],
+                    "fid":0,
+                    "fulfillment":"cf:4:__Y_Um6H73iwPe6ejWXEw930SQhqVGjtAHTXilPp0P01vE_Cx6zs3GJVoO1jhPL18C94PIVkLTGMUB2aKC9qsbIb3w8ejpOf0_I3OCuTbPdkd6r2lKMeVftMyMxkeWoM",
+                    "input":{
+                        "cid":0,
+                        "txid":"598ce4e9a29837a1c6fc337ee4a41b61c20ad25d01646754c825b1116abd8761"
+                    }
+                }
+            ],
+            "operation":"TRANSFER",
+            "timestamp":"1471423869",
+            "version":1
+         }
+      }
 
    :statuscode 200: A transaction with that ID was found.
    :statuscode 404: A transaction with that ID was not found.
+
 
 
 .. http:post:: /transactions/
@@ -66,9 +96,50 @@ The HTTP API currently exposes two endpoints, one to get information about a spe
       POST /transactions/ HTTP/1.1
       Host: example.com
       Content-Type: application/json
-      TODO: Other headers?
 
-      (TODO) Insert example request body here
+      {
+        "id":"7ad5a4b83bc8c70c4fd7420ff3c60693ab8e6d0e3124378ca69ed5acd2578792",
+        "transaction":{
+            "conditions":[
+                {
+                    "cid":0,
+                    "condition":{
+                        "details":{
+                            "bitmask":32,
+                            "public_key":"CwA8s2QYQBfNz4WvjEwmJi83zYr7JhxRhidx6uZ5KBVd",
+                            "signature":null,
+                            "type":"fulfillment",
+                            "type_id":4
+                        },
+                        "uri":"cc:4:20:sVA_3p8gvl8yRFNTomqm6MaavKewka6dGYcFAuPrRXQ:96"
+                    },
+                    "owners_after":[
+                        "CwA8s2QYQBfNz4WvjEwmJi83zYr7JhxRhidx6uZ5KBVd"
+                    ]
+                }
+            ],
+            "data":{
+                "payload":null,
+                "uuid":"a9999d69-6cde-4b80-819d-ed57f6abe257"
+            },
+            "fulfillments":[
+                {
+                    "owners_before":[
+                        "JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE"
+                    ],
+                    "fid":0,
+                    "fulfillment":"cf:4:__Y_Um6H73iwPe6ejWXEw930SQhqVGjtAHTXilPp0P01vE_Cx6zs3GJVoO1jhPL18C94PIVkLTGMUB2aKC9qsbIb3w8ejpOf0_I3OCuTbPdkd6r2lKMeVftMyMxkeWoM",
+                    "input":{
+                        "cid":0,
+                        "txid":"598ce4e9a29837a1c6fc337ee4a41b61c20ad25d01646754c825b1116abd8761"
+                    }
+                }
+            ],
+            "operation":"TRANSFER",
+            "timestamp":"1471423869",
+            "version":1
+         }
+      }
 
    **Example response**:
 
@@ -76,10 +147,78 @@ The HTTP API currently exposes two endpoints, one to get information about a spe
 
       HTTP/1.1 201 Created
       Content-Type: application/json
-      TODO: Other headers?
 
-      (TODO) Insert example response body here
+      {
+        "assignee":"4XYfCbabAWVUCbjTmRTFEu2sc3dFEdkse4r6X498B1s8",
+        "id":"7ad5a4b83bc8c70c4fd7420ff3c60693ab8e6d0e3124378ca69ed5acd2578792",
+        "transaction":{
+            "conditions":[
+                {
+                    "cid":0,
+                    "condition":{
+                        "details":{
+                            "bitmask":32,
+                            "public_key":"CwA8s2QYQBfNz4WvjEwmJi83zYr7JhxRhidx6uZ5KBVd",
+                            "signature":null,
+                            "type":"fulfillment",
+                            "type_id":4
+                        },
+                        "uri":"cc:4:20:sVA_3p8gvl8yRFNTomqm6MaavKewka6dGYcFAuPrRXQ:96"
+                    },
+                    "owners_after":[
+                        "CwA8s2QYQBfNz4WvjEwmJi83zYr7JhxRhidx6uZ5KBVd"
+                    ]
+                }
+            ],
+            "data":{
+                "payload":null,
+                "uuid":"a9999d69-6cde-4b80-819d-ed57f6abe257"
+            },
+            "fulfillments":[
+                {
+                    "owners_before":[
+                        "JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE"
+                    ],
+                    "fid":0,
+                    "fulfillment":"cf:4:__Y_Um6H73iwPe6ejWXEw930SQhqVGjtAHTXilPp0P01vE_Cx6zs3GJVoO1jhPL18C94PIVkLTGMUB2aKC9qsbIb3w8ejpOf0_I3OCuTbPdkd6r2lKMeVftMyMxkeWoM",
+                    "input":{
+                        "cid":0,
+                        "txid":"598ce4e9a29837a1c6fc337ee4a41b61c20ad25d01646754c825b1116abd8761"
+                    }
+                }
+            ],
+            "operation":"TRANSFER",
+            "timestamp":"1471423869",
+            "version":1
+        }
+      }
 
    :statuscode 201: A new transaction was created.
+   :statuscode 400: The transaction was invalid and not created.
 
-(TODO) What's the response status code if the POST fails?
+   **Disclaimer**
+
+   ``CREATE`` transactions are treated differently from ``TRANSFER`` assets.
+   The reason is that a ``CREATE`` transaction needs to be signed by a federation node and not by the client.
+
+   The following python snippet in a client can be used to generate ``CREATE`` transactions before they can be pushed to the API server:
+
+   .. code-block:: python
+
+       from bigchaindb import util
+       tx = util.create_and_sign_tx(my_privkey, my_pubkey, my_pubkey, None, 'CREATE')
+
+   When POSTing ``tx`` to the API, the ``CREATE`` transaction will be signed by a federation node.
+
+   A ``TRANSFER`` transaction, that takes an existing input transaction to change ownership can be generated in multiple ways:
+
+   .. code-block:: python
+
+       from bigchaindb import util, Bigchain
+       tx = util.create_and_sign_tx(my_privkey, my_pubkey, other_pubkey, input_tx, 'TRANSFER')
+       # or
+       b = Bigchain()
+       tx_unsigned = b.create_transaction(my_pubkey, other_pubkey, input_tx, 'TRANSFER')
+       tx = b.sign_transaction(tx_unsigned, my_privkey)
+
+   More information on generating transactions can be found in the `Python server API examples <python-server-api-examples.html>`_

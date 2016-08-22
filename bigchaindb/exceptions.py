@@ -1,6 +1,9 @@
 """Custom exceptions used in the `bigchaindb` package.
 """
 
+class ConfigurationError(Exception):
+    """Raised when there is a problem with server configuration"""
+
 
 class OperationError(Exception):
     """Raised when an operation cannot go through"""
