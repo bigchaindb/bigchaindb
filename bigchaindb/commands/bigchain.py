@@ -13,6 +13,10 @@ import builtins
 
 import logstats
 
+from bigchaindb_common import crypto
+from bigchaindb_common.exceptions import (StartupError,
+                                          DatabaseAlreadyExists,
+                                          KeypairNotFoundException)
 import rethinkdb as r
 
 import bigchaindb
@@ -20,12 +24,8 @@ import bigchaindb.config_utils
 from bigchaindb.util import ProcessGroup
 from bigchaindb.client import temp_client
 from bigchaindb import db
-from bigchaindb.exceptions import (StartupError,
-                                   DatabaseAlreadyExists,
-                                   KeypairNotFoundException)
 from bigchaindb.commands import utils
 from bigchaindb import processes
-from bigchaindb import crypto
 
 
 logging.basicConfig(level=logging.INFO)

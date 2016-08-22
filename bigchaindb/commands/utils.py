@@ -3,15 +3,16 @@ for ``argparse.ArgumentParser``.
 """
 
 import argparse
+from bigchaindb_common.exceptions import StartupError
 import multiprocessing as mp
 import subprocess
 
 import rethinkdb as r
 
 import bigchaindb
-from bigchaindb.exceptions import StartupError
 from bigchaindb import db
 from bigchaindb.version import __version__
+
 
 
 def start_rethinkdb():
@@ -19,7 +20,7 @@ def start_rethinkdb():
     available.
 
     Raises:
-        ``bigchaindb.exceptions.StartupError`` if RethinkDB cannot
+        ``bigchaindb_common.exceptions.StartupError`` if RethinkDB cannot
         be started.
     """
 

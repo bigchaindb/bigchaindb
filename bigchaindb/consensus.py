@@ -1,6 +1,8 @@
 from abc import ABCMeta, abstractmethod
 
-from bigchaindb import crypto, exceptions, util
+from bigchaindb_common import crypto, exceptions
+
+from bigchaindb import util
 
 
 class AbstractConsensusRules(metaclass=ABCMeta):

@@ -1,12 +1,12 @@
 import time
-import random
-from bigchaindb import crypto, Bigchain
 from unittest.mock import patch
 
+from bigchaindb_common import crypto
 import rethinkdb as r
-
-from bigchaindb.pipelines import election
 from multipipes import Pipe, Pipeline
+
+from bigchaindb import Bigchain
+from bigchaindb.pipelines import election
 
 
 def test_check_for_quorum_invalid(b, user_vk):

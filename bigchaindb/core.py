@@ -3,11 +3,12 @@ import math
 import operator
 import collections
 
+from bigchaindb_common import crypto, exceptions
 import rethinkdb as r
 import rapidjson
 
 import bigchaindb
-from bigchaindb import config_utils, crypto, exceptions, util
+from bigchaindb import config_utils, util
 
 
 class Bigchain(object):

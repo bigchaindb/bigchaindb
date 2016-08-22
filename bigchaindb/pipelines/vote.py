@@ -8,8 +8,9 @@ function.
 from collections import Counter
 
 from multipipes import Pipeline, Node
+from bigchaindb_common import exceptions
 
-from bigchaindb import config_utils, exceptions
+from bigchaindb import config_utils
 from bigchaindb.pipelines.utils import ChangeFeed
 from bigchaindb import Bigchain
 

@@ -2,10 +2,10 @@
 
 import logging
 
+from bigchaindb_common import exceptions
 import rethinkdb as r
 
 import bigchaindb
-from bigchaindb import exceptions
 
 
 logger = logging.getLogger(__name__)

@@ -2,11 +2,14 @@ import copy
 import time
 
 import pytest
-import rethinkdb as r
+
+from bigchaindb_common import crypto, exceptions
 import cryptoconditions as cc
+import rethinkdb as r
 
 import bigchaindb
-from bigchaindb import crypto, exceptions, util
+from bigchaindb import util
+
 
 
 @pytest.mark.skipif(reason='Some tests throw a ResourceWarning that might result in some weird '
@@ -339,8 +342,7 @@ class TestBigchainApi(object):
         r.table('votes').insert(vote_1).run(b.conn)
         r.table('votes').insert(vote_2).run(b.conn)
 
-        from bigchaindb.exceptions import MultipleVotesError
-        with pytest.raises(MultipleVotesError) as excinfo:
+        with pytest.raises(exceptions.MultipleVotesError) as excinfo:
             b.block_election_status(block_1)
         assert excinfo.value.args[0] == 'Block {block_id} has {n_votes} votes cast, but only {n_voters} voters'\
             .format(block_id=block_1['id'], n_votes=str(2), n_voters=str(1))
@@ -353,13 +355,12 @@ class TestBigchainApi(object):
         for i in range(2):
             r.table('votes').insert(b.vote(block_1['id'], genesis['id'], True)).run(b.conn)
 
-        from bigchaindb.exceptions import MultipleVotesError
-        with pytest.raises(MultipleVotesError) as excinfo:
+        with pytest.raises(exceptions.MultipleVotesError) as excinfo:
             b.block_election_status(block_1)
         assert excinfo.value.args[0] == 'Block {block_id} has multiple votes ({n_votes}) from voting node {node_id}'\
             .format(block_id=block_1['id'], n_votes=str(2), node_id=b.me)
 
-        with pytest.raises(MultipleVotesError) as excinfo:
+        with pytest.raises(exceptions.MultipleVotesError) as excinfo:
             b.has_previous_vote(block_1)
         assert excinfo.value.args[0] == 'Block {block_id} has {n_votes} votes from public key {me}'\
             .format(block_id=block_1['id'], n_votes=str(2), me=b.me)
@@ -372,8 +373,7 @@ class TestBigchainApi(object):
         # mangle the signature
         vote_1['signature'] = 'a' * 87
         r.table('votes').insert(vote_1).run(b.conn)
-        from bigchaindb.exceptions import ImproperVoteError
-        with pytest.raises(ImproperVoteError) as excinfo:
+        with pytest.raises(exceptions.ImproperVoteError) as excinfo:
             b.has_previous_vote(block_1)
         assert excinfo.value.args[0] == 'Block {block_id} already has an incorrectly signed ' \
                                   'vote from public key {me}'.format(block_id=block_1['id'], me=b.me)
@@ -463,7 +463,7 @@ class TestTransactionValidation(object):
         wrong_private_key = '4fyvJe1aw2qHZ4UNRYftXK7JU7zy9bCqoU5ps6Ne3xrY'
 
         with pytest.raises(exceptions.KeypairMismatchException):
-            tx_invalid_signed = b.sign_transaction(tx_valid, wrong_private_key)
+            b.sign_transaction(tx_valid, wrong_private_key)
 
         # create a correctly signed transaction and change the signature
         tx_signed = b.sign_transaction(tx_valid, user_sk)

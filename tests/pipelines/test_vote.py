@@ -1,9 +1,10 @@
 from unittest.mock import patch
+
+from bigchaindb_common import crypto
 import rethinkdb as r
 from multipipes import Pipe, Pipeline
 
 from bigchaindb import util
-from bigchaindb import crypto
 
 
 def dummy_tx(b):
