@@ -9,6 +9,7 @@ import uuid
 import rapidjson
 
 from bigchaindb_common import crypto, exceptions
+from bigchaindb_common.transaction import Transaction
 import cryptoconditions as cc
 from cryptoconditions.exceptions import ParsingError
 
@@ -90,6 +91,24 @@ def pool(builder, size, timeout=None):
         local_pool.put(instance)
 
     return pooled
+
+
+# TODO: Replace this with a Block model
+def serialize_block(block):
+    """Takes a block and serializes its transactions from models to JSON
+    """
+    block['transactions'] = [tx.to_dict() for tx
+                             in block['transactions']]
+    return serialize(block)
+
+
+# TODO: Replace this with a Block model
+def deserialize_block(block):
+    """Takes a block and serializes its transactions from JSON to models
+    """
+    block['block']['transactions'] = [Transaction.from_dict(tx) for tx
+                                      in block['block']['transactions']]
+    return block
 
 
 def serialize(data):
