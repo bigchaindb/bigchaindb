@@ -159,7 +159,9 @@ class BaseConsensusRules(AbstractConsensusRules):
                 # TODO: check if current owners own tx_input (maybe checked by InvalidSignature)
                 # check if the input was already spent by a transaction other than
                 # this one.
-                spent = bigchain.get_spent(fulfillment['input'])
+                input_txid = fulfillment['input']['txid']
+                input_cid = fulfillment['input']['cid']
+                spent = bigchain.get_spent(input_txid, input_cid)
                 if spent and spent['id'] != transaction['id']:
                     raise exceptions.DoubleSpend(
                         'input `{}` was already spent'.format(fulfillment['input']))

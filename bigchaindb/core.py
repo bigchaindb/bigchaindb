@@ -339,7 +339,7 @@ class Bigchain(object):
         transactions = list(cursor)
         return transactions
 
-    def get_spent(self, tx_input):
+    def get_spent(self, txid, cid):
         """Check if a `txid` was already used as an input.
 
         A transaction can be used as an input for another transaction. Bigchain needs to make sure that a
@@ -371,7 +371,7 @@ class Bigchain(object):
                     num_valid_transactions += 1
                 if num_valid_transactions > 1:
                     raise exceptions.DoubleSpend('`{}` was spent more then once. There is a problem with the chain'.format(
-                        tx_input['txid']))
+                        txid))
 
             if num_valid_transactions:
                 return transactions[0]
@@ -388,7 +388,7 @@ class Bigchain(object):
             owner (str): base58 encoded public key.
 
         Returns:
-            list: list of `txids` currently owned by `owner`
+            list of dicts: list of `txid`s and `cid`s  currently owned by `owner`
         """
 
         # get all transactions in which owner is in the `owners_after` list
@@ -422,7 +422,7 @@ class Bigchain(object):
                     if util.condition_details_has_owner(condition['condition']['details'], owner):
                         tx_input = {'txid': tx['id'], 'cid': condition['cid']}
                 # check if input was already spent
-                if not self.get_spent(tx_input):
+                if not self.get_spent(tx_input['txid'], tx_input['cid']):
                     owned.append(tx_input)
 
         return owned

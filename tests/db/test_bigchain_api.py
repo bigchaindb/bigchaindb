@@ -1012,10 +1012,12 @@ class TestMultipleInputs(object):
         b.write_block(block, durability='hard')
 
         # get input
-        owned_inputs_user1 = b.get_owned_ids(user_vk)
+        owned_inputs_user1 = b.get_owned_ids(user_vk).pop()
 
         # check spents
-        spent_inputs_user1 = b.get_spent(owned_inputs_user1[0])
+        input_txid = owned_inputs_user1['txid']
+        input_cid = owned_inputs_user1['cid']
+        spent_inputs_user1 = b.get_spent(input_txid, input_cid)
         assert spent_inputs_user1 is None
 
         # create a transaction and block
@@ -1024,7 +1026,7 @@ class TestMultipleInputs(object):
         block = b.create_block([tx_signed])
         b.write_block(block, durability='hard')
 
-        spent_inputs_user1 = b.get_spent(owned_inputs_user1[0])
+        spent_inputs_user1 = b.get_spent(input_txid, input_cid)
         assert spent_inputs_user1 == tx_signed
 
     def test_get_spent_single_tx_single_output_invalid_block(self, b, user_sk, user_vk):
@@ -1044,10 +1046,12 @@ class TestMultipleInputs(object):
         b.write_vote(vote)
 
         # get input
-        owned_inputs_user1 = b.get_owned_ids(user_vk)
+        owned_inputs_user1 = b.get_owned_ids(user_vk).pop()
 
         # check spents
-        spent_inputs_user1 = b.get_spent(owned_inputs_user1[0])
+        input_txid = owned_inputs_user1['txid']
+        input_cid = owned_inputs_user1['cid']
+        spent_inputs_user1 = b.get_spent(input_txid, input_cid)
         assert spent_inputs_user1 is None
 
         # create a transaction and block
@@ -1060,7 +1064,7 @@ class TestMultipleInputs(object):
         vote = b.vote(block['id'], b.get_last_voted_block()['id'], False)
         b.write_vote(vote)
         response = b.get_transaction(tx_signed["id"])
-        spent_inputs_user1 = b.get_spent(owned_inputs_user1[0])
+        spent_inputs_user1 = b.get_spent(input_txid, input_cid)
 
         # Now there should be no spents (the block is invalid)
         assert spent_inputs_user1 is None
@@ -1082,8 +1086,10 @@ class TestMultipleInputs(object):
         owned_inputs_user1 = b.get_owned_ids(user_vk)
 
         # check spents
-        for inp in owned_inputs_user1:
-            assert b.get_spent(inp) is None
+        for input_tx in owned_inputs_user1:
+            input_txid = input_tx['txid']
+            input_cid = input_tx['cid']
+            assert b.get_spent(input_txid, input_cid) is None
 
         # select inputs to use
         inputs = [owned_inputs_user1.pop(), owned_inputs_user1.pop()]
@@ -1095,12 +1101,16 @@ class TestMultipleInputs(object):
         b.write_block(block, durability='hard')
 
         # check that used inputs are marked as spent
-        for inp in inputs:
-            assert b.get_spent(inp) == tx_signed
+        for input_tx in inputs:
+            input_txid = input_tx['txid']
+            input_cid = input_tx['cid']
+            assert b.get_spent(input_txid, input_cid) == tx_signed
 
         # check that the other remain marked as unspent
-        for inp in owned_inputs_user1:
-            assert b.get_spent(inp) is None
+        for input_tx in owned_inputs_user1:
+            input_txid = input_tx['txid']
+            input_cid = input_tx['cid']
+            assert b.get_spent(input_txid, input_cid) is None
 
     def test_get_spent_multiple_owners(self, b, user_sk, user_vk):
         # create a new users
@@ -1120,8 +1130,10 @@ class TestMultipleInputs(object):
         owned_inputs_user1 = b.get_owned_ids(user_vk)
 
         # check spents
-        for inp in owned_inputs_user1:
-            assert b.get_spent(inp) is None
+        for input_tx in owned_inputs_user1:
+            input_txid = input_tx['txid']
+            input_cid = input_tx['cid']
+            assert b.get_spent(input_txid, input_cid) is None
 
         # select inputs to use
         inputs = [owned_inputs_user1.pop()]
@@ -1133,12 +1145,16 @@ class TestMultipleInputs(object):
         b.write_block(block, durability='hard')
 
         # check that used inputs are marked as spent
-        for inp in inputs:
-            assert b.get_spent(inp) == tx_signed
+        for input_tx in inputs:
+            input_txid = input_tx['txid']
+            input_cid = input_tx['cid']
+            assert b.get_spent(input_txid, input_cid) == tx_signed
 
         # check that the other remain marked as unspent
-        for inp in owned_inputs_user1:
-            assert b.get_spent(inp) is None
+        for input_tx in owned_inputs_user1:
+            input_txid = input_tx['txid']
+            input_cid = input_tx['cid']
+            assert b.get_spent(input_txid, input_cid) is None
 
 
 class TestFulfillmentMessage(object):
