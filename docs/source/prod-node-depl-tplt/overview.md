@@ -1,17 +1,14 @@
 # Overview
 
-Deploying and managing a production BigchainDB node is much more involved than working with a dev/test node:
+A BigchainDB production node has more components and requirements than a dev/test node. Those are outlined in the [BigchainDB Nodes](../nodes/index.html) section.
 
-* There are more components in a production node; see [the page about node components](../nodes/node-components.html)
-* Production nodes need more security
-* Production nodes need monitoring
-* Production nodes need maintenance, e.g. software upgrades, scaling
+You can provision and deploy a production node (to meet the requirments) using whatever tools you prefer.
 
-Thankfully, there are tools that can help (e.g. provisioning tools and configuration management tools). You can use whatever tools you prefer.
+This section documents a template (example), showing how one could use certain tools to provision and deploy a prodution node. Feel free to ignore this section or use it to help you with your preferred tools.
 
-As an example, we provide documentation and code showing how to use Terraform and Ansible (together). We use:
+In this section, we use:
 
-* [Terraform](https://www.terraform.io/) to provision infrastructure such as AWS instances, storage and security groups
-* [Ansible](https://www.ansible.com/) to manage the software installed on that infrastructure (configuration management)
+* [Terraform](https://www.terraform.io/) to provision infrastructure such as AWS instances, storage and security groups, and
+* [Ansible](https://www.ansible.com/) to manage the software and files on that infrastructure (configuration management).
 
-You can use those as-described or as a reference for setting up your preferred tools. If you notice something that could be done better, let us know (e.g. by creating an issue on GitHub).
+If you notice something that could be done better, let us know (e.g. by creating an issue on GitHub).
