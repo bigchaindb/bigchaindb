@@ -138,7 +138,7 @@ def timestamp():
 
 
 # TODO: Consider remove the operation (if there are no inputs CREATE else TRANSFER)
-def create_tx(owners_before, owners_after, inputs, operation, payload=None, data=None,
+def create_tx(owners_before, owners_after, inputs, operation, metadata=None, data=None,
               divisible=False, updatable=False, refillable=False, amount=1, bigchain=None):
     """Create a new transaction
 
@@ -159,7 +159,7 @@ def create_tx(owners_before, owners_after, inputs, operation, payload=None, data
         owners_after (list): base58 encoded public key of the new owners of the digital asset.
         inputs (list): id of the transaction to use as input.
         operation (str): Either `CREATE` or `TRANSFER` operation.
-        payload (Optional[dict]): dictionary with information about asset.
+        metadata (Optional[dict]): dictionary with information about asset.
         data (Optional[dict]): dictionary describing the digital asset (only used on a create transaction)
         divisible (Optional[boolean): Whether the asset is divisible or not. Defaults to `False`.
         updatable (Optional[boolean]): Whether the data in the asset can be updated in the future or not.
@@ -174,7 +174,7 @@ def create_tx(owners_before, owners_after, inputs, operation, payload=None, data
 
 
     Raises:
-        TypeError: if the optional ``payload`` argument is not a ``dict``.
+        TypeError: if the optional optinal arguments are the wrong type.
 
     Reference:
         {
@@ -209,7 +209,9 @@ def create_tx(owners_before, owners_after, inputs, operation, payload=None, data
                     "refillable": "<true | false>",
                     "data": "<json document>"
                 },
-                "payload": {
+                "metadata": {
+                    "id": "<uuid>",
+                    "data": "<json document">
                 }
             },
         }
@@ -231,9 +233,14 @@ def create_tx(owners_before, owners_after, inputs, operation, payload=None, data
     if inputs is not None and not isinstance(inputs, list):
         inputs = [inputs]
 
-    # handle payload
-    if payload is not None and not isinstance(payload, dict):
-        raise TypeError('`payload` must be a dict instance or None')
+    # handle metadata
+    if metadata is not None and not isinstance(metadata, dict):
+        raise TypeError('`metadata` must be a dict instance or None')
+
+    metadata = {
+        'id': str(uuid.uuid4()),
+        'data': metadata
+    }
 
     # handle inputs
     fulfillments = []
@@ -334,7 +341,7 @@ def create_tx(owners_before, owners_after, inputs, operation, payload=None, data
         'operation': operation,
         'timestamp': timestamp(),
         'asset': asset,
-        'payload': payload
+        'metadata': metadata
     }
 
     # serialize and convert to bytes
@@ -464,8 +471,8 @@ def fulfill_threshold_signature_fulfillment(fulfillment, parsed_fulfillment, ful
     return parsed_fulfillment
 
 
-def create_and_sign_tx(private_key, owner_before, owner_after, tx_input, operation='TRANSFER', payload=None):
-    tx = create_tx(owner_before, owner_after, tx_input, operation, payload)
+def create_and_sign_tx(private_key, owner_before, owner_after, tx_input, operation='TRANSFER', metadata=None):
+    tx = create_tx(owner_before, owner_after, tx_input, operation, metadata)
     return sign_tx(tx, private_key)
 
 
@@ -529,7 +536,7 @@ def get_fulfillment_message(transaction, fulfillment, serialized=False):
     fulfillment_message = {
         'operation': transaction['transaction']['operation'],
         'timestamp': transaction['transaction']['timestamp'],
-        'payload': transaction['transaction']['payload'],
+        'metadata': transaction['transaction']['metadata'],
         'asset': transaction['transaction']['asset'],
         'version': transaction['transaction']['version'],
         'id': transaction['id']
@@ -661,10 +668,10 @@ def transform_create(tx):
     #      if you need a Bigchain instance.
     b = bigchaindb.Bigchain()
     transaction = tx['transaction']
-    payload = None
-    if transaction['data'] and 'payload' in transaction['data']:
-        payload = transaction['data']['payload']
-    new_tx = create_tx(b.me, transaction['fulfillments'][0]['owners_before'], None, 'CREATE', payload=payload)
+    metadata = None
+    if transaction['metadata'] and 'data' in transaction['metadata']:
+        metadata = transaction['metadata']['data']
+    new_tx = create_tx(b.me, transaction['fulfillments'][0]['owners_before'], None, 'CREATE', metadata=metadata)
     return new_tx
 
 

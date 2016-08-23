@@ -76,7 +76,8 @@ class TestBigchainApi(object):
         tx = b.create_transaction(user_vk, b.me, input_tx, 'TRANSFER')
 
         assert sorted(tx) == ['id', 'transaction']
-        assert sorted(tx['transaction']) == ['conditions', 'data', 'fulfillments', 'operation', 'timestamp', 'version']
+        assert sorted(tx['transaction']) == ['conditions', 'metadata', 'fulfillments', 'operation',
+                                             'asset', 'timestamp', 'version']
 
         tx_signed = b.sign_transaction(tx, user_sk)
 
