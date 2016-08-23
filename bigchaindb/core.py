@@ -325,28 +325,27 @@ class Bigchain(object):
         else:
             return None
 
-    def get_tx_by_payload_uuid(self, payload_uuid):
-        """Retrieves transactions related to a digital asset.
+    def get_tx_by_metadata_id(self, metadata_id):
+        """Retrieves transactions related to a payload.
 
-        When creating a transaction one of the optional arguments is the `payload`. The payload is a generic
-        dict that contains information about the digital asset.
+        When creating a transaction one of the optional arguments is the `metadata`. The metadata is a generic
+        dict that contains extra information that can be appended to the transaction.
 
-        To make it easy to query BigchainDB for that digital asset we create a UUID for the payload and
-        store it with the transaction. This makes it easy for developers to keep track of their digital
-        assets in bigchain.
+        To make it easy to query the bigchain for that particular metadata we create a UUID for the metadata and
+        store it with the transaction.
 
         Args:
-            payload_uuid (str): the UUID for this particular payload.
+            metadata_id (str): the id for this particular metadata.
 
         Returns:
-            A list of transactions containing that payload. If no transaction exists with that payload it
+            A list of transactions containing that metadata. If no transaction exists with that metadata it
             returns an empty list `[]`
         """
-        cursor = self.connection.run(
-                r.table('bigchain', read_mode=self.read_mode)
-                .get_all(payload_uuid, index='payload_uuid')
-                .concat_map(lambda block: block['block']['transactions'])
-                .filter(lambda transaction: transaction['transaction']['data']['uuid'] == payload_uuid))
+        cursor = r.table('bigchain', read_mode=self.read_mode) \
+            .get_all(metadata_id, index='metadata_id') \
+            .concat_map(lambda block: block['block']['transactions']) \
+            .filter(lambda transaction: transaction['transaction']['metadata']['id'] == metadata_id) \
+            .run(self.conn)
 
         transactions = list(cursor)
         return [Transaction.from_dict(tx) for tx in transactions]
@@ -535,8 +534,10 @@ class Bigchain(object):
     def prepare_genesis_block(self):
         """Prepare a genesis block."""
 
-        payload = {'message': 'Hello World from the BigchainDB'}
-        transaction = Transaction.create([self.me], [self.me], payload=payload)
+        metadata = {'message': 'Hello World from the BigchainDB'}
+        # TODO: When updating the BDBC lib, change `payload` to `metadata`
+        transaction = Transaction.create([self.me], [self.me],
+                                         payload=metadata)
 
         # NOTE: The transaction model doesn't expose an API to generate a
         #       GENESIS transaction, as this is literally the only usage.
