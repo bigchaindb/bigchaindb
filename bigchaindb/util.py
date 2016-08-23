@@ -1,6 +1,6 @@
-import copy
 import time
 import contextlib
+from copy import deepcopy
 import threading
 import queue
 import multiprocessing as mp
@@ -9,11 +9,11 @@ import uuid
 import rapidjson
 
 from bigchaindb_common import crypto, exceptions
-from bigchaindb_common.transaction import Transaction
 import cryptoconditions as cc
 from cryptoconditions.exceptions import ParsingError
 
 import bigchaindb
+from bigchaindb.models import Transaction
 
 
 class ProcessGroup(object):
@@ -95,11 +95,19 @@ def pool(builder, size, timeout=None):
 
 # TODO: Replace this with a Block model
 def serialize_block(block):
+    return serialize(_serialize_txs_block(block))
+
+
+def _serialize_txs_block(block):
     """Takes a block and serializes its transactions from models to JSON
     """
-    block['transactions'] = [tx.to_dict() for tx
-                             in block['transactions']]
-    return serialize(block)
+    # NOTE: Avoid side effects on the block
+    block = deepcopy(block)
+    try:
+        block['block']['transactions'] = [tx.to_dict() for tx in block['block']['transactions']]
+    except KeyError:
+        block['transactions'] = [tx.to_dict() for tx in block['transactions']]
+    return block
 
 
 # TODO: Replace this with a Block model
@@ -342,7 +350,7 @@ def sign_tx(transaction, signing_keys, bigchain=None):
         vk = signing_key.get_verifying_key().to_ascii().decode()
         key_pairs[vk] = signing_key
 
-    tx = copy.deepcopy(transaction)
+    tx = deepcopy(transaction)
 
     bigchain = bigchain if bigchain is not None else bigchaindb.Bigchain()
 
@@ -410,7 +418,7 @@ def fulfill_threshold_signature_fulfillment(fulfillment, parsed_fulfillment, ful
             object: fulfilled cryptoconditions.ThresholdSha256Fulfillment
 
         """
-    parsed_fulfillment_copy = copy.deepcopy(parsed_fulfillment)
+    parsed_fulfillment_copy = deepcopy(parsed_fulfillment)
     parsed_fulfillment.subconditions = []
 
     for owner_before in fulfillment['owners_before']:
@@ -503,7 +511,7 @@ def get_fulfillment_message(transaction, fulfillment, serialized=False):
     # and the condition which needs to be retrieved from the output of a previous transaction
     # or created on the fly it this is a `CREATE` transaction
     fulfillment_message.update({
-        'fulfillment': copy.deepcopy(fulfillment),
+        'fulfillment': deepcopy(fulfillment),
         'condition': transaction['transaction']['conditions'][fulfillment['fid']]
     })
 
@@ -545,6 +553,7 @@ def get_input_condition(bigchain, fulfillment):
         }
 
 
+# TODO: Rename this function, it's handling fulfillments not conditions
 def condition_details_has_owner(condition_details, owner):
     """
 
@@ -585,7 +594,7 @@ def get_hash_data(transaction):
     Returns:
         str: the hash of the transaction
     """
-    tx = copy.deepcopy(transaction)
+    tx = deepcopy(transaction)
     if 'transaction' in tx:
         tx = tx['transaction']
 

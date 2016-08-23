@@ -11,18 +11,9 @@ from multipipes import Pipeline, Node
 from bigchaindb_common import exceptions
 
 from bigchaindb import config_utils
+from bigchaindb.models import Transaction
 from bigchaindb.pipelines.utils import ChangeFeed
 from bigchaindb import Bigchain
-
-
-def create_invalid_tx():
-    """Create and return an invalid transaction.
-
-    The transaction is invalid because it's missing the signature."""
-
-    b = Bigchain()
-    tx = b.create_transaction(b.me, b.me, None, 'CREATE')
-    return tx
 
 
 class Vote:
@@ -49,7 +40,9 @@ class Vote:
         self.counters = Counter()
         self.validity = {}
 
-        self.invalid_dummy_tx = create_invalid_tx()
+        self.invalid_dummy_tx = Transaction.create([self.bigchain.me],
+                                                   [self.bigchain.me],
+                                                   None, 'CREATE')
 
     def validate_block(self, block):
         if not self.bigchain.has_previous_vote(block):
@@ -58,7 +51,7 @@ class Vote:
                 valid = True
             except (exceptions.InvalidHash,
                     exceptions.OperationError,
-                    exceptions.InvalidSignature) as e:
+                    exceptions.InvalidSignature):
                 valid = False
             return block, valid
 
