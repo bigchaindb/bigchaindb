@@ -13,13 +13,20 @@ def test_get_transaction_endpoint(b, client, user_vk):
     input_tx = b.get_owned_ids(user_vk).pop()
     tx = b.get_transaction(input_tx['txid'])
     res = client.get(TX_ENDPOINT + input_tx['txid'])
-    assert tx == res.json
     assert res.status_code == 200
+    assert tx == res.json
+
+    res = client.get(TX_ENDPOINT + input_tx['txid'] + '/')
+    assert res.status_code == 200
+    assert tx == res.json
 
 
 @pytest.mark.usefixtures('inputs')
 def test_get_transaction_returns_404_if_not_found(client):
     res = client.get(TX_ENDPOINT + '123')
+    assert res.status_code == 404
+
+    res = client.get(TX_ENDPOINT + '123/')
     assert res.status_code == 404
 
 
@@ -36,6 +43,16 @@ def test_post_create_transaction_endpoint(b, client):
     tx = util.create_and_sign_tx(sk, vk, vk, None, 'CREATE')
 
     res = client.post(TX_ENDPOINT, data=json.dumps(tx))
+    assert res.json['transaction']['fulfillments'][0]['owners_before'][0] == b.me
+    assert res.json['transaction']['conditions'][0]['owners_after'][0] == vk
+
+
+def test_post_create_transaction_endpoint_without_trailing_slash(b, client):
+    sk, vk = crypto.generate_key_pair()
+
+    tx = util.create_and_sign_tx(sk, vk, vk, None, 'CREATE')
+
+    res = client.post(TX_ENDPOINT[:-1], data=json.dumps(tx))
     assert res.json['transaction']['fulfillments'][0]['owners_before'][0] == b.me
     assert res.json['transaction']['conditions'][0]['owners_after'][0] == vk
 
@@ -71,9 +88,16 @@ def test_get_transaction_status_endpoint(b, client, user_vk):
     assert status == res.json['status']
     assert res.status_code == 200
 
+    res = client.get(TX_ENDPOINT + input_tx['txid'] + "/status/")
+    assert status == res.json['status']
+    assert res.status_code == 200
+
 
 @pytest.mark.usefixtures('inputs')
 def test_get_transaction_status_returns_404_if_not_found(client):
     res = client.get(TX_ENDPOINT + '123' + "/status")
+    assert res.status_code == 404
+
+    res = client.get(TX_ENDPOINT + '123' + "/status/")
     assert res.status_code == 404
 
