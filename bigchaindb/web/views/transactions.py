@@ -100,7 +100,7 @@ def get_transaction_status(tx_id):
     pool = current_app.config['bigchain_pool']
 
     with pool() as bigchain:
-        status = bigchain.get_status(tx_id, include_status=True)
+        status = bigchain.get_status(tx_id)
 
     if not status:
         return make_error(404)
