@@ -245,8 +245,8 @@ def create_tx(owners_before, owners_after, inputs, operation, payload=None, data
     if inputs:
         # Since a transaction is specific to a digital asset we need to check if all the inputs are from the same
         # digital asset (see https://github.com/bigchaindb/bigchaindb/issues/125#issuecomment-241020139)
-        # Here we need to get the transactions pointed by the inputs to check the asset id and the amounts if its a 
-        # divisible asset . This is inefficient because we are querying past transactions multiple times 
+        # Here we need to get the transactions pointed by the inputs to check the asset id and the amounts if its a
+        # divisible asset . This is inefficient because we are querying past transactions multiple times
         # (here and later on in the sign_tx)
         # This can be improved and probably cached with @TimDaub transaction model
         bigchain = bigchain if bigchain is not None else bigchaindb.Bigchain()
