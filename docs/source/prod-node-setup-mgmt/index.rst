@@ -1,5 +1,5 @@
-Production Node Setup & Management
-==================================
+Production Node Deployment Template
+===================================
 
 .. toctree::
    :maxdepth: 1
