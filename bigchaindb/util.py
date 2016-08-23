@@ -137,7 +137,7 @@ def timestamp():
 
 
 # TODO: Consider remove the operation (if there are no inputs CREATE else TRANSFER)
-def create_tx(current_owners, new_owners, inputs, operation, payload=None):
+def create_tx(owners_before, owners_after, inputs, operation, payload=None):
     """Create a new transaction
 
     A transaction in the bigchain is a transfer of a digital asset between two entities represented
@@ -153,8 +153,8 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
         `TRANSFER` - A transfer operation allows for a transfer of the digital assets between entities.
 
     Args:
-        current_owners (list): base58 encoded public key of the current owners of the asset.
-        new_owners (list): base58 encoded public key of the new owners of the digital asset.
+        owners_before (list): base58 encoded public key of the current owners of the asset.
+        owners_after (list): base58 encoded public key of the new owners of the digital asset.
         inputs (list): id of the transaction to use as input.
         operation (str): Either `CREATE` or `TRANSFER` operation.
         payload (Optional[dict]): dictionary with information about asset.
@@ -173,7 +173,7 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
                 "version": "transaction version number",
                 "fulfillments": [
                         {
-                            "current_owners": ["list of <pub-keys>"],
+                            "owners_before": ["list of <pub-keys>"],
                             "input": {
                                 "txid": "<sha3 hash>",
                                 "cid": "condition index"
@@ -184,7 +184,7 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
                     ],
                 "conditions": [
                         {
-                            "new_owners": ["list of <pub-keys>"],
+                            "owners_after": ["list of <pub-keys>"],
                             "condition": "condition to be met",
                             "cid": "condition index (1-to-1 mapping with fid)"
                         }
@@ -205,16 +205,16 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
     # validate arguments (owners and inputs should be lists or None)
 
     # The None case appears on fulfilling a hashlock
-    if current_owners is None:
-        current_owners = []
-    if not isinstance(current_owners, list):
-        current_owners = [current_owners]
+    if owners_before is None:
+        owners_before = []
+    if not isinstance(owners_before, list):
+        owners_before = [owners_before]
 
     # The None case appears on assigning a hashlock
-    if new_owners is None:
-        new_owners = []
-    if not isinstance(new_owners, list):
-        new_owners = [new_owners]
+    if owners_after is None:
+        owners_after = []
+    if not isinstance(owners_after, list):
+        owners_after = [owners_after]
 
     if not isinstance(inputs, list):
         inputs = [inputs]
@@ -235,7 +235,7 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
     if inputs:
         for fid, tx_input in enumerate(inputs):
             fulfillments.append({
-                'current_owners': current_owners,
+                'owners_before': owners_before,
                 'input': tx_input,
                 'fulfillment': None,
                 'fid': fid
@@ -243,7 +243,7 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
     # create
     else:
         fulfillments.append({
-            'current_owners': current_owners,
+            'owners_before': owners_before,
             'input': None,
             'fulfillment': None,
             'fid': 0
@@ -254,14 +254,14 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
     for fulfillment in fulfillments:
 
         # threshold condition
-        if len(new_owners) > 1:
-            condition = cc.ThresholdSha256Fulfillment(threshold=len(new_owners))
-            for new_owner in new_owners:
-                condition.add_subfulfillment(cc.Ed25519Fulfillment(public_key=new_owner))
+        if len(owners_after) > 1:
+            condition = cc.ThresholdSha256Fulfillment(threshold=len(owners_after))
+            for owner_after in owners_after:
+                condition.add_subfulfillment(cc.Ed25519Fulfillment(public_key=owner_after))
 
         # simple signature condition
-        elif len(new_owners) == 1:
-            condition = cc.Ed25519Fulfillment(public_key=new_owners[0])
+        elif len(owners_after) == 1:
+            condition = cc.Ed25519Fulfillment(public_key=owners_after[0])
 
         # to be added later (hashlock conditions)
         else:
@@ -269,7 +269,7 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
 
         if condition:
             conditions.append({
-                'new_owners': new_owners,
+                'owners_after': owners_after,
                 'condition': {
                     'details': condition.to_dict(),
                     'uri': condition.condition_uri
@@ -301,7 +301,7 @@ def create_tx(current_owners, new_owners, inputs, operation, payload=None):
 def sign_tx(transaction, signing_keys, bigchain=None):
     """Sign a transaction
 
-    A transaction signed with the `current_owner` corresponding private key.
+    A transaction signed with the `owner_before` corresponding private key.
 
     Args:
         transaction (dict): transaction to sign.
@@ -317,7 +317,7 @@ def sign_tx(transaction, signing_keys, bigchain=None):
     if not isinstance(signing_keys, list):
         signing_keys = [signing_keys]
 
-    # create a mapping between sk and vk so that we can match the private key to the current_owners
+    # create a mapping between sk and vk so that we can match the private key to the owners_before
     key_pairs = {}
     for sk in signing_keys:
         signing_key = crypto.SigningKey(sk)
@@ -368,13 +368,13 @@ def fulfill_simple_signature_fulfillment(fulfillment, parsed_fulfillment, fulfil
             object: fulfilled cryptoconditions.Ed25519Fulfillment
 
         """
-    current_owner = fulfillment['current_owners'][0]
+    owner_before = fulfillment['owners_before'][0]
 
     try:
-        parsed_fulfillment.sign(serialize(fulfillment_message), key_pairs[current_owner])
+        parsed_fulfillment.sign(serialize(fulfillment_message), key_pairs[owner_before])
     except KeyError:
         raise exceptions.KeypairMismatchException('Public key {} is not a pair to any of the private keys'
-                                                  .format(current_owner))
+                                                  .format(owner_before))
 
     return parsed_fulfillment
 
@@ -395,17 +395,17 @@ def fulfill_threshold_signature_fulfillment(fulfillment, parsed_fulfillment, ful
     parsed_fulfillment_copy = copy.deepcopy(parsed_fulfillment)
     parsed_fulfillment.subconditions = []
 
-    for current_owner in fulfillment['current_owners']:
+    for owner_before in fulfillment['owners_before']:
         try:
-            subfulfillment = parsed_fulfillment_copy.get_subcondition_from_vk(current_owner)[0]
+            subfulfillment = parsed_fulfillment_copy.get_subcondition_from_vk(owner_before)[0]
         except IndexError:
             raise exceptions.KeypairMismatchException(
-                'Public key {} cannot be found in the fulfillment'.format(current_owner))
+                'Public key {} cannot be found in the fulfillment'.format(owner_before))
         try:
-            private_key = key_pairs[current_owner]
+            private_key = key_pairs[owner_before]
         except KeyError:
             raise exceptions.KeypairMismatchException(
-                'Public key {} is not a pair to any of the private keys'.format(current_owner))
+                'Public key {} is not a pair to any of the private keys'.format(owner_before))
 
         subfulfillment.sign(serialize(fulfillment_message), private_key)
         parsed_fulfillment.add_subfulfillment(subfulfillment)
@@ -413,8 +413,8 @@ def fulfill_threshold_signature_fulfillment(fulfillment, parsed_fulfillment, ful
     return parsed_fulfillment
 
 
-def create_and_sign_tx(private_key, current_owner, new_owner, tx_input, operation='TRANSFER', payload=None):
-    tx = create_tx(current_owner, new_owner, tx_input, operation, payload)
+def create_and_sign_tx(private_key, owner_before, owner_after, tx_input, operation='TRANSFER', payload=None):
+    tx = create_tx(owner_before, owner_after, tx_input, operation, payload)
     return sign_tx(tx, private_key)
 
 
@@ -432,7 +432,7 @@ def check_hash_and_signature(transaction):
 def validate_fulfillments(signed_transaction):
     """Verify the signature of a transaction
 
-    A valid transaction should have been signed `current_owner` corresponding private key.
+    A valid transaction should have been signed `owner_before` corresponding private key.
 
     Args:
         signed_transaction (dict): a transaction with the `signature` included.
@@ -516,8 +516,8 @@ def get_input_condition(bigchain, fulfillment):
     # if `CREATE` transaction
     # there is no previous transaction so we need to create one on the fly
     else:
-        current_owner = fulfillment['current_owners'][0]
-        condition = cc.Ed25519Fulfillment(public_key=current_owner)
+        owner_before = fulfillment['owners_before'][0]
+        condition = cc.Ed25519Fulfillment(public_key=owner_before)
 
         return {
             'condition': {
@@ -581,7 +581,7 @@ def get_hash_data(transaction):
 def verify_vote_signature(block, signed_vote):
     """Verify the signature of a vote
 
-    A valid vote should have been signed `current_owner` corresponding private key.
+    A valid vote should have been signed `owner_before` corresponding private key.
 
     Args:
         block (dict): block under election
@@ -612,7 +612,7 @@ def transform_create(tx):
     payload = None
     if transaction['data'] and 'payload' in transaction['data']:
         payload = transaction['data']['payload']
-    new_tx = create_tx(b.me, transaction['fulfillments'][0]['current_owners'], None, 'CREATE', payload=payload)
+    new_tx = create_tx(b.me, transaction['fulfillments'][0]['owners_before'], None, 'CREATE', payload=payload)
     return new_tx
 
 

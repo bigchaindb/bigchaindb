@@ -14,6 +14,7 @@ def test_get_transaction_endpoint(b, client, user_vk):
     tx = b.get_transaction(input_tx['txid'])
     res = client.get(TX_ENDPOINT + input_tx['txid'])
     assert tx == res.json
+    assert res.status_code == 200
 
 
 @pytest.mark.usefixtures('inputs')
@@ -30,23 +31,49 @@ def test_api_endpoint_shows_basic_info(client):
 
 
 def test_post_create_transaction_endpoint(b, client):
-    keypair = crypto.generate_key_pair()
+    sk, vk = crypto.generate_key_pair()
 
-    tx = util.create_and_sign_tx(keypair[0], keypair[1], keypair[1], None, 'CREATE')
+    tx = util.create_and_sign_tx(sk, vk, vk, None, 'CREATE')
 
     res = client.post(TX_ENDPOINT, data=json.dumps(tx))
-    assert res.json['transaction']['fulfillments'][0]['current_owners'][0] == b.me
-    assert res.json['transaction']['conditions'][0]['new_owners'][0] == keypair[1]
+    assert res.json['transaction']['fulfillments'][0]['owners_before'][0] == b.me
+    assert res.json['transaction']['conditions'][0]['owners_after'][0] == vk
 
 
 @pytest.mark.usefixtures('inputs')
 def test_post_transfer_transaction_endpoint(b, client, user_vk, user_sk):
-    to_keypair = crypto.generate_key_pair()
+    sk, vk = crypto.generate_key_pair()
     input_valid = b.get_owned_ids(user_vk).pop()
 
-    transfer = util.create_and_sign_tx(user_sk, user_vk, to_keypair[1], input_valid)
+    transfer = util.create_and_sign_tx(user_sk, user_vk, vk, input_valid)
     res = client.post(TX_ENDPOINT, data=json.dumps(transfer))
 
-    assert res.json['transaction']['fulfillments'][0]['current_owners'][0] == user_vk
-    assert res.json['transaction']['conditions'][0]['new_owners'][0] == to_keypair[1]
+    assert res.json['transaction']['fulfillments'][0]['owners_before'][0] == user_vk
+    assert res.json['transaction']['conditions'][0]['owners_after'][0] == vk
+
+
+@pytest.mark.usefixtures('inputs')
+def test_post_invalid_transfer_transaction_returns_400(b, client, user_vk, user_sk):
+    sk, vk = crypto.generate_key_pair()
+    input_valid = b.get_owned_ids(user_vk).pop()
+    transfer = b.create_transaction(user_vk, vk, input_valid, 'TRANSFER')
+    # transfer is not signed
+    res = client.post(TX_ENDPOINT, data=json.dumps(transfer))
+
+    assert res.status_code == 400
+
+
+@pytest.mark.usefixtures('inputs')
+def test_get_transaction_status_endpoint(b, client, user_vk):
+    input_tx = b.get_owned_ids(user_vk).pop()
+    tx, status = b.get_transaction(input_tx['txid'], include_status=True)
+    res = client.get(TX_ENDPOINT + input_tx['txid'] + "/status")
+    assert status == res.json['status']
+    assert res.status_code == 200
+
+
+@pytest.mark.usefixtures('inputs')
+def test_get_transaction_status_returns_404_if_not_found(client):
+    res = client.get(TX_ENDPOINT + '123' + "/status")
+    assert res.status_code == 404
 

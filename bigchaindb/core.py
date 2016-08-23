@@ -16,9 +16,14 @@ class Bigchain(object):
     Create, read, sign, write transactions to the database
     """
 
+    # return if a block has been voted invalid
     BLOCK_INVALID = 'invalid'
-    BLOCK_VALID = 'valid'
-    BLOCK_UNDECIDED = 'undecided'
+    # return if a block is valid, or tx is in valid block
+    BLOCK_VALID = TX_VALID = 'valid'
+    # return if block is undecided, or tx is in undecided block
+    BLOCK_UNDECIDED = TX_UNDECIDED = 'undecided'
+    # return if transaction is in backlog
+    TX_IN_BACKLOG = 'backlog'
 
     def __init__(self, host=None, port=None, dbname=None,
                  public_key=None, private_key=None, keyring=[],
@@ -132,19 +137,25 @@ class Bigchain(object):
         response = r.table('backlog').insert(signed_transaction, durability=durability).run(self.conn)
         return response
 
-    def get_transaction(self, txid):
+    def get_transaction(self, txid, include_status=False):
         """Retrieve a transaction with `txid` from bigchain.
 
-        Queries the bigchain for a transaction that was already included in a block.
+        Queries the bigchain for a transaction, if it's in a valid or invalid
+        block.
 
         Args:
             txid (str): transaction id of the transaction to query
+            include_status (bool): also return the status of the transaction
+                                   the return value is then a tuple: (tx, status)
 
         Returns:
             A dict with the transaction details if the transaction was found.
-
-            If no transaction with that `txid` was found it returns `None`
+            Will add the transaction status to payload ('valid', 'undecided',
+            or 'backlog'). If no transaction with that `txid` was found it 
+            returns `None`
         """
+
+        response, tx_status = None, None
 
         validity = self.get_blocks_status_containing_tx(txid)
 
@@ -152,26 +163,46 @@ class Bigchain(object):
             # Disregard invalid blocks, and return if there are no valid or undecided blocks
             validity = {_id: status for _id, status in validity.items()
                                     if status != Bigchain.BLOCK_INVALID}
-            if not validity:
-                return None
+            if validity:
 
-            # If the transaction is in a valid or any undecided block, return it. Does not check
-            # if transactions in undecided blocks are consistent, but selects the valid block before
-            # undecided ones
-            for _id in validity:
-                target_block_id = _id
-                if validity[_id] == Bigchain.BLOCK_VALID:
-                    break
+                tx_status = self.TX_UNDECIDED
+                # If the transaction is in a valid or any undecided block, return it. Does not check
+                # if transactions in undecided blocks are consistent, but selects the valid block before
+                # undecided ones
+                for target_block_id in validity:
+                    if validity[target_block_id] == Bigchain.BLOCK_VALID:
+                        tx_status = self.TX_VALID
+                        break
 
-            # Query the transaction in the target block and return
-            response = r.table('bigchain', read_mode=self.read_mode).get(target_block_id)\
-                .get_field('block').get_field('transactions')\
-                .filter(lambda tx: tx['id'] == txid).run(self.conn)
-
-            return response[0]
+                # Query the transaction in the target block and return
+                response = r.table('bigchain', read_mode=self.read_mode).get(target_block_id)\
+                    .get_field('block').get_field('transactions')\
+                    .filter(lambda tx: tx['id'] == txid).run(self.conn)[0]
 
         else:
-            return None
+            # Otherwise, check the backlog
+            response = r.table('backlog').get(txid).run(self.conn)
+            if response:
+                tx_status = self.TX_IN_BACKLOG
+
+        if include_status:
+            return response, tx_status
+        else:
+            return response
+
+    def get_status(self, txid):
+        """Retrieve the status of a transaction with `txid` from bigchain.
+
+        Args:
+            txid (str): transaction id of the transaction to query
+
+        Returns:
+            (string): transaction status ('valid', 'undecided',
+            or 'backlog'). If no transaction with that `txid` was found it
+            returns `None`
+        """
+        _, status = self.get_transaction(txid, include_status=True)
+        return status
 
     def search_block_election_on_index(self, value, index):
         """Retrieve block election information given a secondary index and value
@@ -299,11 +330,11 @@ class Bigchain(object):
             list: list of `txids` currently owned by `owner`
         """
 
-        # get all transactions in which owner is in the `new_owners` list
+        # get all transactions in which owner is in the `owners_after` list
         response = r.table('bigchain', read_mode=self.read_mode) \
             .concat_map(lambda doc: doc['block']['transactions']) \
             .filter(lambda tx: tx['transaction']['conditions']
-                    .contains(lambda c: c['new_owners']
+                    .contains(lambda c: c['owners_after']
                               .contains(owner))) \
             .run(self.conn)
         owned = []
@@ -319,12 +350,12 @@ class Bigchain(object):
             # to get a list of outputs available to spend
             for condition in tx['transaction']['conditions']:
                 # for simple signature conditions there are no subfulfillments
-                # check if the owner is in the condition `new_owners`
-                if len(condition['new_owners']) == 1:
+                # check if the owner is in the condition `owners_after`
+                if len(condition['owners_after']) == 1:
                     if condition['condition']['details']['public_key'] == owner:
                         tx_input = {'txid': tx['id'], 'cid': condition['cid']}
                 else:
-                    # for transactions with multiple `new_owners` there will be several subfulfillments nested
+                    # for transactions with multiple `owners_after` there will be several subfulfillments nested
                     # in the condition. We need to iterate the subfulfillments to make sure there is a
                     # subfulfillment for `owner`
                     if util.condition_details_has_owner(condition['condition']['details'], owner):
