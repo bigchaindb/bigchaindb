@@ -77,7 +77,7 @@ class Bigchain(object):
             dict: newly constructed transaction.
         """
 
-        return self.consensus.create_transaction(*args, **kwargs)
+        return self.consensus.create_transaction(*args, bigchain=self, **kwargs)
 
     def sign_transaction(self, transaction, *args, **kwargs):
         """Sign a transaction

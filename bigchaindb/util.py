@@ -14,6 +14,7 @@ from cryptoconditions.exceptions import ParsingError
 import bigchaindb
 from bigchaindb import exceptions
 from bigchaindb import crypto
+from bigchaindb import assets
 
 
 class ProcessGroup(object):
@@ -138,7 +139,7 @@ def timestamp():
 
 # TODO: Consider remove the operation (if there are no inputs CREATE else TRANSFER)
 def create_tx(owners_before, owners_after, inputs, operation, payload=None, data=None,
-              divisible=False, updatable=False, refillable=False, amount=1):
+              divisible=False, updatable=False, refillable=False, amount=1, bigchain=None):
     """Create a new transaction
 
     A transaction in the bigchain is a transfer of a digital asset between two entities represented
@@ -248,7 +249,9 @@ def create_tx(owners_before, owners_after, inputs, operation, payload=None, data
         # divisible asset . This is inefficient because we are querying past transactions multiple times 
         # (here and later on in the sign_tx)
         # This can be improved and probably cached with @TimDaub transaction model
-        tx_inputs
+        bigchain = bigchain if bigchain is not None else bigchaindb.Bigchain()
+        txids = [tx_input['txid'] for tx_input in inputs]
+        asset = assets.get_asset_id(txids, bigchain)
 
         for fid, tx_input in enumerate(inputs):
             fulfillments.append({
@@ -262,6 +265,20 @@ def create_tx(owners_before, owners_after, inputs, operation, payload=None, data
         # handle digital asset. Right now it is only checked on a create transaction
         if data is not None and not isinstance(data, dict):
             raise TypeError('`data` must be a dict instance or None')
+
+        # validate asset arguments
+        if not isinstance(divisible, bool):
+            raise TypeError('`divisible` must be a boolean')
+        if not isinstance(refillable, bool):
+            raise TypeError('`refillable` must be a boolean')
+        if not isinstance(updatable, bool):
+            raise TypeError('`updatable` must be a boolean')
+        if not isinstance(amount, int):
+            raise TypeError('`amount` must be an int')
+        if divisible is False and amount != 1:
+            raise exceptions.AmountError('Non-divisible assets must have amount 1')
+        if amount < 1:
+            raise exceptions.AmountError('The amount cannot be less then 1')
 
         if divisible or updatable or refillable or amount != 1:
             raise NotImplementedError("Divisible assets are not yet implemented!")

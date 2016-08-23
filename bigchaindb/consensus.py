@@ -207,14 +207,15 @@ class BaseConsensusRules(AbstractConsensusRules):
 
     @staticmethod
     def create_transaction(owner_before, owner_after, tx_input, operation, payload=None, data=None,
-                           divisible=False, updatable=False, refillable=False, amount=1):
+                           divisible=False, updatable=False, refillable=False, amount=1, bigchain=None):
         """Create a new transaction
 
         Refer to the documentation of ``bigchaindb.util.create_tx``
         """
 
         return util.create_tx(owner_before, owner_after, tx_input, operation, payload=payload, data=data,
-                              divisible=divisible, updatable=updatable, refillable=refillable, amount=amount)
+                              divisible=divisible, updatable=updatable, refillable=refillable,
+                              amount=amount, bigchain=bigchain)
 
     @staticmethod
     def sign_transaction(transaction, private_key, bigchain=None):
