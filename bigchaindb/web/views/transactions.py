@@ -100,9 +100,9 @@ def get_transaction_status(tx_id):
     pool = current_app.config['bigchain_pool']
 
     with pool() as bigchain:
-        tx, status = bigchain.get_transaction(tx_id, include_status=True)
+        status = bigchain.get_status(tx_id, include_status=True)
 
-    if not tx:
+    if not status:
         return make_error(404)
 
     return flask.jsonify({'status': status})

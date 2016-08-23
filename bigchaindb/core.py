@@ -190,6 +190,20 @@ class Bigchain(object):
         else:
             return response
 
+    def get_status(self, txid):
+        """Retrieve the status of a transaction with `txid` from bigchain.
+
+        Args:
+            txid (str): transaction id of the transaction to query
+
+        Returns:
+            A string transaction status to payload ('valid', 'undecided',
+            or 'backlog'). If no transaction with that `txid` was found it
+            returns `None`
+        """
+        _, status = self.get_transaction(txid, include_status=True)
+        return status
+
     def search_block_election_on_index(self, value, index):
         """Retrieve block election information given a secondary index and value
 
