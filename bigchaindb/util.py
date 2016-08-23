@@ -3,7 +3,6 @@ import threading
 import queue
 import multiprocessing as mp
 
-
 from bigchaindb_common import crypto
 from bigchaindb_common.util import serialize
 
