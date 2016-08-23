@@ -241,11 +241,11 @@ class TestBigchainApi(object):
     def test_create_new_block(self, b):
         tx = dummy_tx()
         new_block = b.create_block([tx])
-        block_hash = crypto.hash_data(util.serialize(new_block['block']))
+        block_hash = crypto.hash_data(util.serialize_block(new_block['block']))
 
         assert new_block['block']['voters'] == [b.me]
         assert new_block['block']['node_pubkey'] == b.me
-        assert crypto.VerifyingKey(b.me).verify(util.serialize(new_block['block']), new_block['signature']) is True
+        assert crypto.VerifyingKey(b.me).verify(util.serialize_block(new_block['block']), new_block['signature']) is True
         assert new_block['id'] == block_hash
 
     def test_create_empty_block(self, b):
@@ -536,7 +536,7 @@ class TestBlockValidation(object):
             'voters': b.nodes_except_me
         }
 
-        block_data = util.serialize(block)
+        block_data = util.serialize_block(block)
         block_hash = crypto.hash_data(block_data)
         block_signature = crypto.SigningKey(b.me_private).sign(block_data)
 
@@ -597,8 +597,8 @@ class TestBlockValidation(object):
 
         # just to make sure lets re-hash the block and create a valid signature
         # from a non federation node
-        block['id'] = crypto.hash_data(util.serialize(block['block']))
-        block['signature'] = crypto.SigningKey(tmp_sk).sign(util.serialize(block['block']))
+        block['id'] = crypto.hash_data(util.serialize_block(block['block']))
+        block['signature'] = crypto.SigningKey(tmp_sk).sign(util.serialize_block(block['block']))
 
         # check that validate_block raises an OperationError
         with pytest.raises(exceptions.OperationError):

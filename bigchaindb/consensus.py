@@ -194,7 +194,7 @@ class BaseConsensusRules(AbstractConsensusRules):
         """
 
         # Check if current hash is correct
-        calculated_hash = crypto.hash_data(util.serialize(block['block']))
+        calculated_hash = crypto.hash_data(util.serialize_block(block['block']))
         if calculated_hash != block['id']:
             raise exceptions.InvalidHash()
 
@@ -204,7 +204,7 @@ class BaseConsensusRules(AbstractConsensusRules):
 
         # Check if block signature is valid
         verifying_key = crypto.VerifyingKey(block['block']['node_pubkey'])
-        if not verifying_key.verify(util.serialize(block['block']), block['signature']):
+        if not verifying_key.verify(util.serialize_block(block['block']), block['signature']):
             raise exceptions.InvalidSignature('Invalid block signature')
 
         return block

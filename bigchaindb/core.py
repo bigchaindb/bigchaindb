@@ -4,8 +4,8 @@ import operator
 import collections
 
 from bigchaindb_common import crypto, exceptions
+from bigchaindb_common.transaction import Transaction
 import rethinkdb as r
-import rapidjson
 
 import bigchaindb
 from bigchaindb import config_utils, util
@@ -214,6 +214,7 @@ class Bigchain(object):
             if list(validity.values()).count(Bigchain.BLOCK_VALID) > 1:
                 block_ids = str([block for block in validity
                                        if validity[block] == Bigchain.BLOCK_VALID])
+                # TODO: Make this a case-specific Error
                 raise Exception('Transaction {tx} is present in multiple valid blocks: {block_ids}'
                                 .format(tx=txid, block_ids=block_ids))
 
@@ -228,8 +229,8 @@ class Bigchain(object):
         When creating a transaction one of the optional arguments is the `payload`. The payload is a generic
         dict that contains information about the digital asset.
 
-        To make it easy to query the bigchain for that digital asset we create a UUID for the payload and 
-        store it with the transaction. This makes it easy for developers to keep track of their digital 
+        To make it easy to query BigchainDB for that digital asset we create a UUID for the payload and
+        store it with the transaction. This makes it easy for developers to keep track of their digital
         assets in bigchain.
 
         Args:
@@ -246,7 +247,7 @@ class Bigchain(object):
             .run(self.conn)
 
         transactions = list(cursor)
-        return transactions
+        return [Transaction.from_dict(tx) for tx in transactions]
 
     def get_spent(self, txid, cid):
         """Check if a `txid` was already used as an input.
@@ -283,13 +284,14 @@ class Bigchain(object):
                         txid))
 
             if num_valid_transactions:
-                return transactions[0]
+                return Transaction.from_dict(transactions[0])
             else:
                 # all queried transactions were invalid
                 return None
         else:
             return None
 
+    # TODO: change serialization logic
     def get_owned_ids(self, owner):
         """Retrieve a list of `txids` that can we used has inputs.
 
@@ -336,40 +338,6 @@ class Bigchain(object):
 
         return owned
 
-    def validate_transaction(self, transaction):
-        """Validate a transaction.
-
-        Args:
-            transaction (dict): transaction to validate.
-
-        Returns:
-            The transaction if the transaction is valid else it raises an
-            exception describing the reason why the transaction is invalid.
-        """
-
-        return self.consensus.validate_transaction(self, transaction)
-
-    def is_valid_transaction(self, transaction):
-        """Check whether a transacion is valid or invalid.
-
-        Similar to `validate_transaction` but never raises an exception.
-        It returns `False` if the transaction is invalid.
-
-        Args:
-            transaction (dict): transaction to check.
-
-        Returns:
-            `transaction` if the transaction is valid, `False` otherwise
-        """
-
-        try:
-            self.validate_transaction(transaction)
-            return transaction
-        except (ValueError, exceptions.OperationError, exceptions.TransactionDoesNotExist,
-                exceptions.TransactionOwnerError, exceptions.DoubleSpend,
-                exceptions.InvalidHash, exceptions.InvalidSignature):
-            return False
-
     def create_block(self, validated_transactions):
         """Creates a block given a list of `validated_transactions`.
 
@@ -396,7 +364,7 @@ class Bigchain(object):
         }
 
         # Calculate the hash of the new block
-        block_data = util.serialize(block)
+        block_data = util.serialize_block(block)
         block_hash = crypto.hash_data(block_data)
         block_signature = crypto.SigningKey(self.me_private).sign(block_data)
 
@@ -429,9 +397,9 @@ class Bigchain(object):
         # Finally: Tentative assumption that every blockchain will want to
         # validate all transactions in each block
         for transaction in block['block']['transactions']:
-            if not self.is_valid_transaction(transaction):
-                # this will raise the exception
-                self.validate_transaction(transaction)
+            # NOTE: If a transaction is not valid, `is_valid` will throw an
+            #       an exception and block validation will be canceled.
+            transaction.is_valid()
 
         return block
 
@@ -450,19 +418,19 @@ class Bigchain(object):
                 but the vote is invalid.
 
         """
-        votes = list(r.table('votes', read_mode=self.read_mode)\
+        votes = list(r.table('votes', read_mode=self.read_mode)
                      .get_all([block['id'], self.me], index='block_and_voter').run(self.conn))
 
         if len(votes) > 1:
             raise exceptions.MultipleVotesError('Block {block_id} has {n_votes} votes from public key {me}'
-                                     .format(block_id=block['id'], n_votes=str(len(votes)), me=self.me))
+                                                .format(block_id=block['id'], n_votes=str(len(votes)), me=self.me))
         has_previous_vote = False
         if votes:
             if util.verify_vote_signature(block, votes[0]):
                 has_previous_vote = True
             else:
                 raise exceptions.ImproperVoteError('Block {block_id} already has an incorrectly signed vote '
-                                        'from public key {me}'.format(block_id=block['id'], me=self.me))
+                                                   'from public key {me}'.format(block_id=block['id'], me=self.me))
 
         return has_previous_vote
 
@@ -491,24 +459,18 @@ class Bigchain(object):
             block (dict): block to write to bigchain.
         """
 
-        block_serialized = rapidjson.dumps(block)
+        block_serialized = util.serialize_block(block)
         r.table('bigchain').insert(r.json(block_serialized), durability=durability).run(self.conn)
-
-    # TODO: Decide if we need this method
-    def transaction_exists(self, transaction_id):
-        response = r.table('bigchain', read_mode=self.read_mode)\
-            .get_all(transaction_id, index='transaction_id').run(self.conn)
-        return True if len(response.items) > 0 else False
 
     def prepare_genesis_block(self):
         """Prepare a genesis block."""
 
         payload = {'message': 'Hello World from the BigchainDB'}
-        transaction = self.create_transaction([self.me], [self.me], None, 'GENESIS', payload=payload)
-        transaction_signed = self.sign_transaction(transaction, self.me_private)
+        transaction = Transaction.create([self.me], [self.me], None, 'GENESIS', payload=payload)
+        transaction = transaction.sign([self.me_private])
 
         # create the block
-        return self.create_block([transaction_signed])
+        return self.create_block([transaction])
 
     # TODO: Unless we prescribe the signature of create_transaction, this will
     #       also need to be moved into the plugin API.
@@ -591,9 +553,11 @@ class Bigchain(object):
 
         except r.ReqlNonExistenceError:
             # return last vote if last vote exists else return Genesis block
-            return list(r.table('bigchain', read_mode=self.read_mode)
-                        .filter(util.is_genesis_block)
-                        .run(self.conn))[0]
+            block = list(r.table('bigchain', read_mode=self.read_mode)
+                .filter(util.is_genesis_block)
+                .run(self.conn))[0]
+            block = util.deserialize_block(block)
+            return block
 
         # Now the fun starts. Since the resolution of timestamp is a second,
         # we might have more than one vote per timestamp. If this is the case
@@ -625,14 +589,14 @@ class Bigchain(object):
             except KeyError:
                 break
 
-        res = r.table('bigchain', read_mode=self.read_mode).get(last_block_id).run(self.conn)
-
-        return res
+        block = r.table('bigchain', read_mode=self.read_mode).get(last_block_id).run(self.conn)
+        block = util.deserialize_block(block)
+        return block
 
     def get_unvoted_blocks(self):
-        """Return all the blocks that has not been voted by this node."""
+        """Return all the blocks that have not been voted on by this node."""
 
-        unvoted = r.table('bigchain', read_mode=self.read_mode) \
+        unvoted_blocks = r.table('bigchain', read_mode=self.read_mode) \
             .filter(lambda block: r.table('votes', read_mode=self.read_mode)
                     .get_all([block['id'], self.me], index='block_and_voter')
                     .is_empty()) \
@@ -641,9 +605,9 @@ class Bigchain(object):
 
         # FIXME: I (@vrde) don't like this solution. Filtering should be done at a
         #        database level. Solving issue #444 can help untangling the situation
-        unvoted = filter(lambda block: not util.is_genesis_block(block), unvoted)
-
-        return list(unvoted)
+        unvoted_blocks = filter(lambda block: not util.is_genesis_block(block), unvoted_blocks)
+        unvoted_blocks = [util.deserialize_block(block) for block in unvoted_blocks]
+        return unvoted_blocks
 
     def block_election_status(self, block):
         """Tally the votes on a block, and return the status: valid, invalid, or undecided."""
