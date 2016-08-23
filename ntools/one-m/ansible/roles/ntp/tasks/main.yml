@@ -1,0 +1,24 @@
+---
+# ansible/roles/ntp/tasks/main.yml
+
+- name: Ensure ntpdate is not installed (and uninstall it if necessary)
+  apt: name=ntpdate state=absent
+  become: true
+
+- name: Ensure the LATEST ntp is installed and do "sudo apt-get update" 
+  apt: name=ntp state=latest update_cache=yes
+  become: true
+
+- name: Retrieve facts about the file /etc/ntp.conf
+  stat: path=/etc/ntp.conf
+  register: ntp_conf_file
+
+- name: Fail when /etc/ntp.conf doesn't exist
+  fail: msg="The NTP config file /etc/ntp.conf doesn't exist'"
+  when: ntp_conf_file.stat.exists == False
+
+# For now, we assume the default /etc/ntp.conf file is okay
+
+- name: Ensure the ntp service is now started and should start on boot (enabled=yes)
+  service: name=ntp state=started enabled=yes
+  become: true
