@@ -34,7 +34,7 @@ Terraform will report its progress as it provisions all the resources. Once it's
 At this point, there is no software installed on the instance except for Ubuntu 14.04 and whatever else came with the Amazon Machine Image (AMI) specified in the configuration. The next step is to use Ansible to install and configure all the necessary software.
 
 
-## (Optional) "Destroy"
+## Optional: "Destroy"
 
 If you want to shut down all the resources just provisioned, you must first disable termination protection on the instance:
 
