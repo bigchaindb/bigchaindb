@@ -49,8 +49,8 @@ def setup_database(request, node_config):
     r.db(db_name).table('backlog').index_create('transaction_timestamp', r.row['transaction']['timestamp']).run()
     # to query by payload uuid
     r.db(db_name).table('bigchain').index_create(
-        'payload_uuid', 
-        r.row['block']['transactions']['transaction']['data']['uuid'], 
+        'payload_uuid',
+        r.row['block']['transactions']['transaction']['data']['uuid'],
         multi=True,
     ).run()
     # compound index to read transactions from the backlog per assignee
@@ -98,7 +98,28 @@ def cleanup_tables(request, node_config):
 
 
 @pytest.fixture
-def inputs(user_vk):
+def b_me():
+    return Bigchain().me
+
+
+@pytest.fixture
+def b_me_private():
+    return Bigchain().me_private
+
+
+@pytest.fixture
+def unsigned_tx(b_me, user_vk):
+    from bigchaindb.models import Transaction
+    return Transaction.create([b_me], [user_vk], None, 'CREATE')
+
+
+@pytest.fixture
+def signed_tx(unsigned_tx, user_sk):
+    return unsigned_tx.sign([user_sk])
+
+
+@pytest.fixture
+def inputs(user_vk, signed_tx):
     from bigchaindb_common.exceptions import GenesisBlockAlreadyExistsError
     # 1. create the genesis block
     b = Bigchain()
@@ -109,11 +130,6 @@ def inputs(user_vk):
 
     # 2. create block with transactions for `USER` to spend
     for block in range(4):
-        transactions = []
-        for i in range(10):
-            tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
-            tx_signed = b.sign_transaction(tx, b.me_private)
-            transactions.append(tx_signed)
-
+        transactions = [signed_tx for _ in range(10)]
         block = b.create_block(transactions)
         b.write_block(block, durability='hard')

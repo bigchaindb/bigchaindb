@@ -6,12 +6,14 @@ from time import time
 
 from itertools import compress
 from bigchaindb_common import crypto, exceptions
-from bigchaindb_common.transaction import Transaction
+from bigchaindb_common.transaction import TransactionLink
+
 import rethinkdb as r
 
 import bigchaindb
 from bigchaindb.db.utils import Connection
-from bigchaindb import config_utils, crypto, exceptions, util
+from bigchaindb import config_utils, util
+from bigchaindb.models import Transaction
 
 
 class Bigchain(object):
@@ -126,6 +128,8 @@ class Bigchain(object):
         Returns:
             dict: database response
         """
+        # TODO: Maybe put this somewhere different
+        signed_transaction = signed_transaction.to_dict()
 
         # we will assign this transaction to `one` node. This way we make sure that there are no duplicate
         # transactions on the bigchain
@@ -391,7 +395,8 @@ class Bigchain(object):
             owner (str): base58 encoded public key.
 
         Returns:
-            list of dicts: list of `txid`s and `cid`s  currently owned by `owner`
+            list (TransactionLink): list of `txid`s and `cid`s pointing to
+                                      another transaction's condition
         """
 
         # get all transactions in which owner is in the `owners_after` list
@@ -412,21 +417,22 @@ class Bigchain(object):
 
             # a transaction can contain multiple outputs (conditions) so we need to iterate over all of them
             # to get a list of outputs available to spend
-            for condition in tx['transaction']['conditions']:
+            for index, (ffill, cond) in enumerate(zip(tx['transaction']['fulfillments'],
+                                                      tx['transaction']['conditions'])):
                 # for simple signature conditions there are no subfulfillments
                 # check if the owner is in the condition `owners_after`
-                if len(condition['owners_after']) == 1:
-                    if condition['condition']['details']['public_key'] == owner:
-                        tx_input = {'txid': tx['id'], 'cid': condition['cid']}
+                if len(cond['owners_after']) == 1:
+                    if ffill['details']['public_key'] == owner:
+                        tx_link = TransactionLink(tx['id'], index)
                 else:
                     # for transactions with multiple `owners_after` there will be several subfulfillments nested
                     # in the condition. We need to iterate the subfulfillments to make sure there is a
                     # subfulfillment for `owner`
-                    if util.condition_details_has_owner(condition['condition']['details'], owner):
-                        tx_input = {'txid': tx['id'], 'cid': condition['cid']}
+                    if util.condition_details_has_owner(ffill['details'], owner):
+                        tx_link = TransactionLink(tx['id'], index)
                 # check if input was already spent
-                if not self.get_spent(tx_input['txid'], tx_input['cid']):
-                    owned.append(tx_input)
+                if not self.get_spent(tx_link.txid, tx_link.cid):
+                    owned.append(tx_link)
 
         return owned
 
@@ -491,7 +497,7 @@ class Bigchain(object):
         for transaction in block['block']['transactions']:
             # NOTE: If a transaction is not valid, `is_valid` will throw an
             #       an exception and block validation will be canceled.
-            transaction.is_valid()
+            transaction.is_valid(self)
 
         return block
 

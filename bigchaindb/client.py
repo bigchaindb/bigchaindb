@@ -2,6 +2,7 @@ import requests
 
 import bigchaindb
 from bigchaindb import config_utils
+from bigchaindb.models import Transaction
 
 from bigchaindb_common import crypto, exceptions
 
@@ -55,7 +56,7 @@ class Client:
             The transaction pushed to the Federation.
         """
 
-        tx = self.consensus.create_transaction(
+        tx = Transaction.create(
             owner_before=self.public_key,
             owner_after=self.public_key,
             tx_input=None,
@@ -78,12 +79,11 @@ class Client:
             The transaction pushed to the Federation.
         """
 
-        tx = self.consensus.create_transaction(
-            owner_before=self.public_key,
-            owner_after=owner_after,
-            tx_input=tx_input,
-            operation='TRANSFER',
-            payload=payload)
+        tx = self.consensus.create_transaction([self.public_key],
+                                               [owner_after],
+                                               tx_input,
+                                               'TRANSFER',
+                                               payload)
 
         signed_tx = self.consensus.sign_transaction(
             tx, private_key=self.private_key)
