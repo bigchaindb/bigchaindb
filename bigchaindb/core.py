@@ -197,7 +197,7 @@ class Bigchain(object):
             txid (str): transaction id of the transaction to query
 
         Returns:
-            A string transaction status to payload ('valid', 'undecided',
+            (string): transaction status ('valid', 'undecided',
             or 'backlog'). If no transaction with that `txid` was found it
             returns `None`
         """
