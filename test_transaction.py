@@ -136,7 +136,7 @@ def test_data_serialization(payload, payload_id):
 
     expected = {
         'payload': payload,
-        'hash': payload_id
+        'uuid': payload_id
     }
     data = Data(payload, payload_id)
 
@@ -147,7 +147,7 @@ def test_data_deserialization(payload, payload_id):
     from bigchaindb_common.transaction import Data
 
     expected = Data(payload, payload_id)
-    data = Data.from_dict({'payload': payload, 'hash': payload_id})
+    data = Data.from_dict({'payload': payload, 'uuid': payload_id})
 
     assert data.to_dict() == expected.to_dict()
 
@@ -223,8 +223,8 @@ def test_transaction_link_serialization():
 
     tx_id = 'a transaction id'
     expected = {
-        'transaction_id': tx_id,
-        'condition_id': 0,
+        'txid': tx_id,
+        'cid': 0,
     }
     tx_link = TransactionLink(tx_id, 0)
 
@@ -246,8 +246,8 @@ def test_transaction_link_deserialization():
     tx_id = 'a transaction id'
     expected = TransactionLink(tx_id, 0)
     tx_link = {
-        'transaction_id': tx_id,
-        'condition_id': 0,
+        'txid': tx_id,
+        'cid': 0,
     }
     tx_link = TransactionLink.from_dict(tx_link)
 
