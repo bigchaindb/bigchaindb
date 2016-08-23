@@ -103,24 +103,30 @@ class TransactionLink(object):
     # NOTE: In an IPLD implementation, this class is not necessary anymore, as an IPLD link can simply point to an
     #       object, as well as an objects properties. So instead of having a (de)serializable class, we can have a
     #       simple IPLD link of the form: `/<tx_id>/transaction/conditions/<cid>/`
-    def __init__(self, transaction_id=None, condition_id=None):
-        self.transaction_id = transaction_id
-        self.condition_id = condition_id
+    def __init__(self, txid=None, cid=None):
+        self.txid = txid
+        self.cid = cid
+
+    def is_defined(self):
+        if self.txid is None and self.cid is None:
+            return False
+        else:
+            return True
 
     @classmethod
     def from_dict(cls, link):
         try:
-            return cls(link['transaction_id'], link['condition_id'])
+            return cls(link['txid'], link['cid'])
         except TypeError:
             return cls()
 
     def to_dict(self):
-        if self.transaction_id is None and self.condition_id is None:
+        if self.txid is None and self.cid is None:
             return None
         else:
             return {
-                'transaction_id': self.transaction_id,
-                'condition_id': self.condition_id,
+                'txid': self.txid,
+                'cid': self.cid,
             }
 
 
@@ -166,7 +172,7 @@ class Data(object):
     @classmethod
     def from_dict(cls, payload):
         try:
-            return cls(payload['payload'], payload['hash'])
+            return cls(payload['payload'], payload['uuid'])
         except TypeError:
             return cls()
 
@@ -176,16 +182,18 @@ class Data(object):
         else:
             return {
                 'payload': self.payload,
-                'hash': str(self.payload_id),
+                'uuid': self.payload_id,
             }
 
     def to_hash(self):
-        return uuid4()
+        return str(uuid4())
 
 
 class Transaction(object):
     CREATE = 'CREATE'
     TRANSFER = 'TRANSFER'
+    GENESIS = 'GENESIS'
+    ALLOWED_OPERATIONS = (CREATE, TRANSFER, GENESIS)
     VERSION = 1
 
     def __init__(self, operation, fulfillments=None, conditions=None, data=None, timestamp=None, version=None):
@@ -233,7 +241,7 @@ class Transaction(object):
         self.timestamp = timestamp if timestamp is not None else gen_timestamp()
         self.version = version if version is not None else Transaction.VERSION
 
-        if operation is not Transaction.CREATE and operation is not Transaction.TRANSFER:
+        if operation not in Transaction.ALLOWED_OPERATIONS:
             raise TypeError('`operation` must be either CREATE or TRANSFER')
         else:
             self.operation = operation
@@ -256,6 +264,31 @@ class Transaction(object):
             raise TypeError('`data` must be a Data instance or None')
         else:
             self.data = data
+
+    @classmethod
+    def create(cls, owners_before, owners_after, inputs, operation, payload=None):
+        if operation == Transaction.CREATE or operation == Transaction.GENESIS:
+            ffill = Fulfillment.gen_default(owners_after)
+            cond = ffill.gen_condition()
+            return cls(operation, [ffill], [cond], Data(payload))
+        else:
+            # TODO: Replace this with an actual implementation, maybe calling
+            #       `self.transfer` is sufficient already :)
+            raise NotImplementedError()
+
+    def transfer(self, conditions):
+        # TODO: Check here if a condition is submitted or smth else
+        return Transaction(Transaction.TRANSFER, self._fulfillments_as_inputs(), conditions)
+
+    def simple_transfer(self, owners_after):
+        condition = Fulfillment.gen_default(owners_after).gen_condition()
+        return self.transfer([condition])
+
+    def _fulfillments_as_inputs(self):
+        return [Fulfillment(ffill.fulfillment,
+                            ffill.owners_before,
+                            TransactionLink(self.to_hash(), fulfillment_id))
+                for fulfillment_id, ffill in enumerate(self.fulfillments)]
 
     def add_fulfillment(self, fulfillment):
         if fulfillment is not None and not isinstance(fulfillment, Fulfillment):
@@ -396,7 +429,7 @@ class Transaction(object):
             else:
                 return tx.fulfillments_valid()
 
-        if self.operation is Transaction.CREATE:
+        if self.operation in (Transaction.CREATE, Transaction.GENESIS):
             if not fulfillments_count == conditions_count:
                 raise ValueError('Fulfillments, conditions must have the same count')
             elif fulfillments_count > 1 and conditions_count > 1:
@@ -411,7 +444,7 @@ class Transaction(object):
             else:
                 return self._fulfillment_valid(input_condition_uris.pop())
         else:
-            raise TypeError('`operation` must be either `Transaction.TRANSFER` or `Transaction.CREATE`')
+            raise TypeError('`operation` must be either `TRANSFER`, `CREATE` or `GENESIS`')
 
     def _fulfillment_valid(self, input_condition_uri=None):
         # NOTE: We're always taking the first fulfillment, as this method is called recursively.
@@ -434,15 +467,6 @@ class Transaction(object):
         # NOTE: We pass a timestamp to `.validate`, as in case of a timeout condition we'll have to validate against
         #       it.
         return parsed_fulfillment.validate(message=tx_serialized, now=gen_timestamp()) and input_condition_valid
-
-    def transfer(self, conditions):
-        return Transaction(Transaction.TRANSFER, self._fulfillments_as_inputs(), conditions)
-
-    def _fulfillments_as_inputs(self):
-        return [Fulfillment(ffill.fulfillment,
-                            ffill.owners_before,
-                            TransactionLink(self.to_hash(), fulfillment_id))
-                for fulfillment_id, ffill in enumerate(self.fulfillments)]
 
     def to_dict(self):
         try:
@@ -489,6 +513,10 @@ class Transaction(object):
     @staticmethod
     def _to_hash(value):
         return hash_data(value)
+
+    @property
+    def id(self):
+        return self.to_hash()
 
     def to_hash(self):
         return self.to_dict()['id']
