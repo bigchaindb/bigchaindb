@@ -138,7 +138,7 @@ def timestamp():
 
 
 # TODO: Consider remove the operation (if there are no inputs CREATE else TRANSFER)
-def create_tx(owners_before, owners_after, inputs, operation, metadata=None, data=None,
+def create_tx(owners_before, owners_after, inputs, operation, metadata=None, asset_data=None,
               divisible=False, updatable=False, refillable=False, amount=1, bigchain=None):
     """Create a new transaction
 
@@ -160,7 +160,7 @@ def create_tx(owners_before, owners_after, inputs, operation, metadata=None, dat
         inputs (list): id of the transaction to use as input.
         operation (str): Either `CREATE` or `TRANSFER` operation.
         metadata (Optional[dict]): dictionary with information about asset.
-        data (Optional[dict]): dictionary describing the digital asset (only used on a create transaction)
+        asset_data (Optional[dict]): dictionary describing the digital asset (only used on a create transaction)
         divisible (Optional[boolean): Whether the asset is divisible or not. Defaults to `False`.
         updatable (Optional[boolean]): Whether the data in the asset can be updated in the future or not.
                                        Defaults to `False`.
@@ -270,32 +270,14 @@ def create_tx(owners_before, owners_after, inputs, operation, metadata=None, dat
     # create
     else:
         # handle digital asset. Right now it is only checked on a create transaction
-        if data is not None and not isinstance(data, dict):
-            raise TypeError('`data` must be a dict instance or None')
-
-        # validate asset arguments
-        if not isinstance(divisible, bool):
-            raise TypeError('`divisible` must be a boolean')
-        if not isinstance(refillable, bool):
-            raise TypeError('`refillable` must be a boolean')
-        if not isinstance(updatable, bool):
-            raise TypeError('`updatable` must be a boolean')
-        if not isinstance(amount, int):
-            raise TypeError('`amount` must be an int')
-        if divisible is False and amount != 1:
-            raise exceptions.AmountError('Non-divisible assets must have amount 1')
-        if amount < 1:
-            raise exceptions.AmountError('The amount cannot be less then 1')
-
-        if divisible or updatable or refillable or amount != 1:
-            raise NotImplementedError("Divisible assets are not yet implemented!")
+        assets.validate_asset_creation(asset_data, divisible, updatable, refillable, amount)
 
         asset = {
             "id": str(uuid.uuid4()),
             "divisible": divisible,
             "updatable": updatable,
             "refillable": refillable,
-            "data": data
+            "data": asset_data
         }
 
         fulfillments.append({
