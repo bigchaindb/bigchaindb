@@ -1,6 +1,9 @@
 from abc import ABCMeta, abstractmethod
+from functools import reduce
+from operator import and_
 
 from bigchaindb_common import crypto, exceptions
+from bigchaindb_common.transaction import Transaction
 
 from bigchaindb import util
 
@@ -128,54 +131,40 @@ class BaseConsensusRules(AbstractConsensusRules):
             InvalidHash: if the hash of the transaction is wrong
             InvalidSignature: if the signature of the transaction is wrong
         """
-
-        # If the operation is CREATE the transaction should have no inputs and
-        # should be signed by a federation node
-        if transaction['transaction']['operation'] in ('CREATE', 'GENESIS'):
-            # TODO: for now lets assume a CREATE transaction only has one fulfillment
-            if transaction['transaction']['fulfillments'][0]['input']:
+        inputs_defined = reduce(and_, [bool(ffill.tx_input) for ffill
+                                       in transaction.fulfillments])
+        if transaction.operation in (Transaction.CREATE, Transaction.GENESIS):
+            if inputs_defined:
                 raise ValueError('A CREATE operation has no inputs')
-            # TODO: for now lets assume a CREATE transaction only has one owner_before
-            if transaction['transaction']['fulfillments'][0]['owners_before'][0] not in (
-                    bigchain.nodes_except_me + [bigchain.me]):
-                raise exceptions.OperationError(
-                    'Only federation nodes can use the operation `CREATE`')
+        elif transaction.operation == Transaction.TRANSFER:
 
-        else:
-            # check if the input exists, is owned by the owner_before
-            if not transaction['transaction']['fulfillments']:
+            if len(transaction.fulfillments) == 0:
                 raise ValueError('Transaction contains no fulfillments')
 
-            # check inputs
-            for fulfillment in transaction['transaction']['fulfillments']:
-                if not fulfillment['input']:
-                    raise ValueError('Only `CREATE` transactions can have null inputs')
-                tx_input = bigchain.get_transaction(fulfillment['input']['txid'])
+            if not inputs_defined:
+                raise ValueError('Only `CREATE` transactions can have null inputs')
 
-                if not tx_input:
-                    raise exceptions.TransactionDoesNotExist(
-                        'input `{}` does not exist in the bigchain'.format(
-                            fulfillment['input']['txid']))
-                # TODO: check if current owners own tx_input (maybe checked by InvalidSignature)
-                # check if the input was already spent by a transaction other than
-                # this one.
-                input_txid = fulfillment['input']['txid']
-                input_cid = fulfillment['input']['cid']
-                spent = bigchain.get_spent(input_txid, input_cid)
-                if spent and spent['id'] != transaction['id']:
-                    raise exceptions.DoubleSpend(
-                        'input `{}` was already spent'.format(fulfillment['input']))
+            input_conditions = []
+            for index, ffill in enumerate(transaction.fulfillments):
+                input_txid = ffill.tx_input.txid
+                input_tx = bigchain.get_transaction(input_txid)
+                if input_tx is None:
+                    raise exceptions.TransactionDoesNotExist("input `{}` doesn't exist"
+                                                             .format(input_txid))
+                else:
+                    input_conditions.append(input_tx.conditions[index])
 
-        # Check hash of the transaction
-        calculated_hash = util.get_hash_data(transaction)
-        if calculated_hash != transaction['id']:
-            raise exceptions.InvalidHash()
+                spent = bigchain.get_spent(input_txid, ffill.tx_input.cid)
+                if spent and spent.id != transaction.id:
+                    raise exceptions.DoubleSpend('input `{}` was already spent'
+                                                 .format(input_txid))
 
-        # Check fulfillments
-        if not util.validate_fulfillments(transaction):
-            raise exceptions.InvalidSignature()
-
-        return transaction
+            if not transaction.fulfillments_valid(input_conditions):
+                raise exceptions.InvalidSignature()
+            else:
+                return transaction
+        else:
+            raise TypeError('`operation` must be either `TRANSFER`, `CREATE` or `GENESIS`')
 
     @staticmethod
     def validate_block(bigchain, block):

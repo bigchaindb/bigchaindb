@@ -9,9 +9,9 @@ from collections import Counter
 
 from multipipes import Pipeline, Node
 from bigchaindb_common import exceptions
+from bigchaindb_common.transaction import Transaction
 
 from bigchaindb import config_utils
-from bigchaindb.models import Transaction
 from bigchaindb.pipelines.utils import ChangeFeed
 from bigchaindb import Bigchain
 

@@ -109,13 +109,30 @@ def b_me_private():
 
 @pytest.fixture
 def unsigned_tx(b_me, user_vk):
-    from bigchaindb.models import Transaction
+    from bigchaindb_common.transaction import Transaction
     return Transaction.create([b_me], [user_vk], None, 'CREATE')
 
 
 @pytest.fixture
 def signed_tx(unsigned_tx, user_sk):
     return unsigned_tx.sign([user_sk])
+
+
+@pytest.fixture
+def transfer_tx(signed_tx, user_vk, user_sk):
+    tx = signed_tx.simple_transfer([user_vk])
+    return tx.sign([user_sk])
+
+
+@pytest.fixture
+def ffill(user_vk):
+    from bigchaindb_common.transaction import Fulfillment
+    return Fulfillment.gen_default([user_vk])
+
+
+@pytest.fixture
+def cond(ffill):
+    return ffill.gen_condition()
 
 
 @pytest.fixture

@@ -15,7 +15,7 @@ def test_remove_unclosed_sockets():
 # TODO: Get rid of this and move to conftest
 def dummy_tx():
     import bigchaindb
-    from bigchaindb.models import Transaction
+    from bigchaindb_common.transaction import Transaction
     b = bigchaindb.Bigchain()
     tx = Transaction.create([b.me], [b.me], None, 'CREATE')
     tx = tx.sign([b.me_private])
@@ -32,7 +32,7 @@ def dummy_block():
 
 class TestBigchainApi(object):
     def test_get_transactions_for_payload(self, b, user_vk):
-        from bigchaindb.models import Transaction
+        from bigchaindb_common.transaction import Transaction
 
         payload = {'msg': 'Hello BigchainDB!'}
         tx = Transaction.create([b.me], [user_vk], None, 'CREATE', payload=payload)
@@ -378,134 +378,79 @@ class TestBigchainApi(object):
 
 
 class TestTransactionValidation(object):
-    @pytest.mark.usefixtures('inputs')
-    def test_create_operation_with_inputs(self, b, user_vk):
-        input_tx = b.get_owned_ids(user_vk).pop()
-        tx = b.create_transaction(b.me, user_vk, input_tx, 'CREATE')
+    def test_create_operation_with_inputs(self, b, user_vk, ffill, cond,
+                                          signed_tx):
+        from bigchaindb_common.transaction import (Fulfillment, TransactionLink,
+                                                   Transaction)
+
+        ffill = Fulfillment.gen_default([user_vk])
+        # Manipulate fulfillment so that it has a `tx_input` defined even
+        # though it shouldn't have one
+        ffill.tx_input = TransactionLink(signed_tx.id, 0)
+        tx = Transaction('CREATE', [ffill], [cond])
         with pytest.raises(ValueError) as excinfo:
             b.validate_transaction(tx)
-
         assert excinfo.value.args[0] == 'A CREATE operation has no inputs'
-        assert b.is_valid_transaction(tx) is False
 
-    def test_create_operation_not_federation_node(self, b, user_vk):
-        tx = b.create_transaction(user_vk, user_vk, None, 'CREATE')
-        with pytest.raises(exceptions.OperationError) as excinfo:
-            b.validate_transaction(tx)
-
-        assert excinfo.value.args[0] == 'Only federation nodes can use the operation `CREATE`'
-        assert b.is_valid_transaction(tx) is False
-
-    def test_non_create_operation_no_inputs(self, b, user_vk):
-        tx = b.create_transaction(user_vk, user_vk, None, 'TRANSFER')
+    def test_transfer_operation_no_inputs(self, b, user_vk, transfer_tx):
+        transfer_tx.fulfillments[0].tx_input = None
         with pytest.raises(ValueError) as excinfo:
-            b.validate_transaction(tx)
+            b.validate_transaction(transfer_tx)
 
         assert excinfo.value.args[0] == 'Only `CREATE` transactions can have null inputs'
-        assert b.is_valid_transaction(tx) is False
 
-    def test_non_create_input_not_found(self, b, user_vk):
-        tx = b.create_transaction(user_vk, user_vk, {'txid': 'c', 'cid': 0}, 'TRANSFER')
-        with pytest.raises(exceptions.TransactionDoesNotExist) as excinfo:
-            b.validate_transaction(tx)
+    def test_non_create_input_not_found(self, b, user_vk, transfer_tx):
+        from bigchaindb_common.exceptions import TransactionDoesNotExist
+        from bigchaindb_common.transaction import TransactionLink
 
-        assert excinfo.value.args[0] == 'input `c` does not exist in the bigchain'
-        assert b.is_valid_transaction(tx) is False
+        transfer_tx.fulfillments[0].tx_input = TransactionLink('c', 0)
+        with pytest.raises(TransactionDoesNotExist):
+            b.validate_transaction(transfer_tx)
 
     @pytest.mark.usefixtures('inputs')
     def test_non_create_valid_input_wrong_owner(self, b, user_vk):
-        input_valid = b.get_owned_ids(user_vk).pop()
-        sk, vk = crypto.generate_key_pair()
-        tx = b.create_transaction(vk, user_vk, input_valid, 'TRANSFER')
-        with pytest.raises(exceptions.InvalidSignature) as excinfo:
+        from bigchaindb_common.crypto import generate_key_pair
+        from bigchaindb_common.exceptions import InvalidSignature
+        from bigchaindb_common.transaction import Transaction
+
+        input_tx = b.get_owned_ids(user_vk).pop()
+        sk, vk = generate_key_pair()
+        tx = Transaction.create([vk], [user_vk], None, 'CREATE')
+        tx.operation = 'TRANSFER'
+        tx.fulfillments[0].tx_input = input_tx
+
+        with pytest.raises(InvalidSignature):
             b.validate_transaction(tx)
 
-        # assert excinfo.value.args[0] == 'owner_before `a` does not own the input `{}`'.format(valid_input)
-        assert b.is_valid_transaction(tx) is False
-
     @pytest.mark.usefixtures('inputs')
-    def test_non_create_double_spend(self, b, user_vk, user_sk):
-        input_valid = b.get_owned_ids(user_vk).pop()
-        tx_valid = b.create_transaction(user_vk, user_vk, input_valid, 'TRANSFER')
-        tx_valid_signed = b.sign_transaction(tx_valid, user_sk)
-        b.write_transaction(tx_valid_signed)
+    def test_non_create_double_spend(self, b, transfer_tx):
+        from bigchaindb_common.exceptions import DoubleSpend
 
-        # create and write block to bigchain
-        block = b.create_block([tx_valid_signed])
+        b.write_transaction(transfer_tx)
+        block = b.create_block([transfer_tx])
         b.write_block(block, durability='hard')
 
-        # create another transaction with the same input
-        tx_double_spend = b.create_transaction(user_vk, user_vk, input_valid, 'TRANSFER')
-        with pytest.raises(exceptions.DoubleSpend) as excinfo:
-            b.validate_transaction(tx_double_spend)
-
-        assert excinfo.value.args[0] == 'input `{}` was already spent'.format(input_valid)
-        assert b.is_valid_transaction(tx_double_spend) is False
-
-    @pytest.mark.usefixtures('inputs')
-    def test_wrong_transaction_hash(self, b, user_vk):
-        input_valid = b.get_owned_ids(user_vk).pop()
-        tx_valid = b.create_transaction(user_vk, user_vk, input_valid, 'TRANSFER')
-
-        # change the transaction hash
-        tx_valid.update({'id': 'abcd'})
-        with pytest.raises(exceptions.InvalidHash):
-            b.validate_transaction(tx_valid)
-        assert b.is_valid_transaction(tx_valid) is False
-
-    @pytest.mark.usefixtures('inputs')
-    def test_wrong_signature(self, b, user_sk, user_vk):
-        input_valid = b.get_owned_ids(user_vk).pop()
-        tx_valid = b.create_transaction(user_vk, user_vk, input_valid, 'TRANSFER')
-
-        wrong_private_key = '4fyvJe1aw2qHZ4UNRYftXK7JU7zy9bCqoU5ps6Ne3xrY'
-
-        with pytest.raises(exceptions.KeypairMismatchException):
-            b.sign_transaction(tx_valid, wrong_private_key)
-
-        # create a correctly signed transaction and change the signature
-        tx_signed = b.sign_transaction(tx_valid, user_sk)
-        fulfillment = tx_signed['transaction']['fulfillments'][0]['fulfillment']
-        changed_fulfillment = cc.Ed25519Fulfillment().from_uri(fulfillment)
-        changed_fulfillment.signature = b'0' * 64
-        tx_signed['transaction']['fulfillments'][0]['fulfillment'] = changed_fulfillment.serialize_uri()
-
-        with pytest.raises(exceptions.InvalidSignature):
-            b.validate_transaction(tx_signed)
-        assert b.is_valid_transaction(tx_signed) is False
-
-    def test_valid_create_transaction(self, b, user_vk):
-        tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
-        tx_signed = b.sign_transaction(tx, b.me_private)
-        assert tx_signed == b.validate_transaction(tx_signed)
-        assert tx_signed == b.is_valid_transaction(tx_signed)
-
-    @pytest.mark.usefixtures('inputs')
-    def test_valid_non_create_transaction(self, b, user_vk, user_sk):
-        input_valid = b.get_owned_ids(user_vk).pop()
-        tx_valid = b.create_transaction(user_vk, user_vk, input_valid, 'TRANSFER')
-
-        tx_valid_signed = b.sign_transaction(tx_valid, user_sk)
-        assert tx_valid_signed == b.validate_transaction(tx_valid_signed)
-        assert tx_valid_signed == b.is_valid_transaction(tx_valid_signed)
+        transfer_tx.timestamp = 123
+        # FIXME: https://github.com/bigchaindb/bigchaindb/issues/592
+        with pytest.raises(DoubleSpend):
+            b.validate_transaction(transfer_tx)
 
     @pytest.mark.usefixtures('inputs')
     def test_valid_non_create_transaction_after_block_creation(self, b, user_vk, user_sk):
-        input_valid = b.get_owned_ids(user_vk).pop()
-        tx_valid = b.create_transaction(user_vk, user_vk, input_valid, 'TRANSFER')
+        input_tx = b.get_owned_ids(user_vk).pop()
+        input_tx = b.get_transaction(input_tx.txid)
+        transfer_tx = input_tx.simple_transfer([user_vk])
+        transfer_tx= transfer_tx.sign([user_sk])
 
-        tx_valid_signed = b.sign_transaction(tx_valid, user_sk)
-        assert tx_valid_signed == b.validate_transaction(tx_valid_signed)
-        assert tx_valid_signed == b.is_valid_transaction(tx_valid_signed)
+        assert transfer_tx == b.validate_transaction(transfer_tx)
 
         # create block
-        block = b.create_block([tx_valid_signed])
+        block = b.create_block([transfer_tx])
         assert b.is_valid_block(block)
         b.write_block(block, durability='hard')
 
         # check that the transaction is still valid after being written to the bigchain
-        assert tx_valid_signed == b.validate_transaction(tx_valid_signed)
-        assert tx_valid_signed == b.is_valid_transaction(tx_valid_signed)
+        assert transfer_tx == b.validate_transaction(transfer_tx)
 
 
 class TestBlockValidation(object):

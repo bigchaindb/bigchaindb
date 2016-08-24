@@ -9,11 +9,11 @@ import uuid
 import rapidjson
 
 from bigchaindb_common import crypto, exceptions
+from bigchaindb_common.transaction import Transaction
 import cryptoconditions as cc
 from cryptoconditions.exceptions import ParsingError
 
 import bigchaindb
-from bigchaindb.models import Transaction
 
 
 class ProcessGroup(object):
