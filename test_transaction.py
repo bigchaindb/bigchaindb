@@ -29,7 +29,7 @@ def test_fulfillment_deserialization_with_uri(ffill_uri, user_pub):
     }
     ffill = Fulfillment.from_dict(ffill)
 
-    assert ffill.to_dict() == expected.to_dict()
+    assert ffill == expected
 
 
 def test_fulfillment_deserialization_with_dict(cc_ffill, user_pub):
@@ -45,7 +45,7 @@ def test_fulfillment_deserialization_with_dict(cc_ffill, user_pub):
     }
     ffill = Fulfillment.from_dict(ffill)
 
-    assert ffill.to_dict() == expected.to_dict()
+    assert ffill == expected
 
 
 def test_invalid_fulfillment_initialization(cc_ffill, user_pub):
@@ -114,7 +114,7 @@ def test_condition_deserialization(cond_uri, user_pub):
     }
     cond = Condition.from_dict(cond)
 
-    assert cond.to_dict() == expected.to_dict()
+    assert cond == expected
 
 
 def test_invalid_condition_initialization(cond_uri, user_pub):
@@ -149,7 +149,7 @@ def test_data_deserialization(payload, payload_id):
     expected = Data(payload, payload_id)
     data = Data.from_dict({'payload': payload, 'uuid': payload_id})
 
-    assert data.to_dict() == expected.to_dict()
+    assert data == expected
 
 
 def test_transaction_serialization(default_single_ffill, default_single_cond):
@@ -200,7 +200,7 @@ def test_transaction_deserialization(default_single_ffill, default_single_cond):
     tx['id'] = Transaction._to_hash(Transaction._to_str(Transaction._remove_signatures(tx)))
     tx = Transaction.from_dict(tx)
 
-    assert tx.to_dict() == expected.to_dict()
+    assert tx == expected
 
 
 def test_tx_serialization_with_incorrect_hash(utx):
@@ -266,7 +266,7 @@ def test_transaction_link_deserialization():
     }
     tx_link = TransactionLink.from_dict(tx_link)
 
-    assert tx_link.to_dict() == expected.to_dict()
+    assert tx_link == expected
 
 
 def test_transaction_link_deserialization_with_empty_payload():
@@ -275,7 +275,7 @@ def test_transaction_link_deserialization_with_empty_payload():
     expected = TransactionLink()
     tx_link = TransactionLink.from_dict(None)
 
-    assert tx_link.to_dict() == expected.to_dict()
+    assert tx_link == expected
 
 
 def test_add_fulfillment_to_tx(default_single_ffill):
