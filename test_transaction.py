@@ -403,7 +403,7 @@ def test_transfer(utx, user_pub, user_priv, user2_pub, cond_uri):
     transfer_tx.sign([user_priv])
 
     assert utx.fulfillments[0].fulfillment.to_dict()['signature'] == expected.fulfillment.to_dict()['signature']
-    assert transfer_tx.fulfillments_valid([utx.conditions[0].condition_uri]) is True
+    assert transfer_tx.fulfillments_valid(utx.conditions) is True
 
 
 def test_multiple_fulfillment_validation_of_transfer_tx(default_single_ffill, default_single_cond, user_priv,
@@ -422,21 +422,29 @@ def test_multiple_fulfillment_validation_of_transfer_tx(default_single_ffill, de
     transfer_utx = tx.transfer(conditions)
     transfer_tx = transfer_utx.sign([user_priv])
 
-    assert transfer_tx.fulfillments_valid([cond.condition_uri for cond in tx.conditions]) is True
+    assert transfer_tx.fulfillments_valid(tx.conditions) is True
 
 
-def test_validate_fulfillments_of_transfer_tx_with_invalid_parameters(transfer_tx, cond_uri, utx, user_priv):
-    assert transfer_tx.fulfillments_valid(['Incorrect condition uri']) is False
-    assert transfer_tx.fulfillments_valid([cond_uri]) is False
-    assert transfer_tx.fulfillments_valid([utx.conditions[0].condition_uri]) is True
+def test_validate_fulfillments_of_transfer_tx_with_invalid_parameters(transfer_tx,
+                                                                      cond_uri,
+                                                                      utx,
+                                                                      user2_pub,
+                                                                      user_priv):
+    from bigchaindb_common.transaction import Condition
 
+    assert transfer_tx.fulfillments_valid([Condition('invalidly formed condition uri',
+                                                     ['invalid'])]) is False
+    assert transfer_tx.fulfillments_valid([Condition(cond_uri, [user2_pub])]) is False
+
+    with raises(ValueError):
+        assert transfer_tx.fulfillments_valid(None) is False
     with raises(TypeError):
-        transfer_tx.fulfillments_valid('a string and not a list')
+        transfer_tx.fulfillments_valid('not a list')
     with raises(ValueError):
         transfer_tx.fulfillments_valid([])
     with raises(TypeError):
-        transfer_tx.operation = "Operation that doens't exist"
-        transfer_tx.fulfillments_valid([utx.conditions[0].condition_uri])
+        transfer_tx.operation = "Operation that doesn't exist"
+        transfer_tx.fulfillments_valid([utx.conditions[0]])
     with raises(ValueError):
         tx = utx.sign([user_priv])
         tx.conditions = []
