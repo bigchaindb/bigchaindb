@@ -46,6 +46,9 @@ class Fulfillment(object):
         else:
             self.owners_before = owners_before
 
+    def __eq__(self, other):
+        return self.to_dict() == other.to_dict()
+
     def to_dict(self):
         try:
             # When we have signed the fulfillment, this will work
@@ -111,6 +114,9 @@ class TransactionLink(object):
     def __bool__(self):
         return not (self.txid is None and self.cid is None)
 
+    def __eq__(self, other):
+        return self.to_dict() == self.to_dict()
+
     @classmethod
     def from_dict(cls, link):
         try:
@@ -146,6 +152,9 @@ class Condition(object):
         else:
             self.owners_after = owners_after
 
+    def __eq__(self, other):
+        return self.to_dict() == other.to_dict()
+
     def to_dict(self):
         return {
             'owners_after': self.owners_after,
@@ -166,6 +175,9 @@ class Data(object):
             raise TypeError('`payload` must be a dict instance or None')
         else:
             self.payload = payload
+
+    def __eq__(self, other):
+        return self.to_dict() == other.to_dict()
 
     @classmethod
     def from_dict(cls, payload):
@@ -262,6 +274,9 @@ class Transaction(object):
             raise TypeError('`data` must be a Data instance or None')
         else:
             self.data = data
+
+    def __eq__(self, other):
+        return self.to_dict() == other.to_dict()
 
     @classmethod
     def create(cls, owners_before, owners_after, inputs, operation, payload=None):
