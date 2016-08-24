@@ -16,6 +16,7 @@ from bigchaindb_common.crypto import (
 )
 from bigchaindb_common.exceptions import (
     KeypairMismatchException,
+    InvalidHash,
 )
 from bigchaindb_common.util import (
     serialize,
@@ -523,8 +524,23 @@ class Transaction(object):
         return Transaction._to_str(self.to_dict())
 
     @classmethod
+    # TODO: Make this method more pretty
     def from_dict(cls, tx_body):
-        tx = tx_body['transaction']
-        return cls(tx['operation'], [Fulfillment.from_dict(fulfillment) for fulfillment in tx['fulfillments']],
-                   [Condition.from_dict(condition) for condition in tx['conditions']], Data.from_dict(tx['data']),
-                   tx['timestamp'], tx_body['version'])
+        # NOTE: Remove reference to avoid side effects
+        tx_body = deepcopy(tx_body)
+        try:
+            proposed_tx_id = tx_body.pop('id')
+        except KeyError:
+            raise InvalidHash()
+        valid_tx_id = Transaction._to_hash(Transaction._to_str(Transaction._remove_signatures(tx_body)))
+        if proposed_tx_id != valid_tx_id:
+            raise InvalidHash()
+        else:
+            tx = tx_body['transaction']
+            fulfillments = [Fulfillment.from_dict(fulfillment) for fulfillment
+                            in tx['fulfillments']]
+            conditions = [Condition.from_dict(condition) for condition
+                          in tx['conditions']]
+            data = Data.from_dict(tx['data'])
+            return cls(tx['operation'], fulfillments, conditions, data,
+                       tx['timestamp'], tx_body['version'])
