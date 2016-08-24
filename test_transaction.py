@@ -181,14 +181,12 @@ def test_transaction_serialization(default_single_ffill, default_single_cond):
 def test_transaction_deserialization(default_single_ffill, default_single_cond):
     from bigchaindb_common.transaction import Transaction
 
-    tx_id = 'l0l'
     timestamp = '66666666666'
 
     expected = Transaction(Transaction.CREATE, [default_single_ffill], [default_single_cond], None, timestamp,
                            Transaction.VERSION)
 
     tx = {
-        'id': tx_id,
         'version': Transaction.VERSION,
         'transaction': {
             # NOTE: This test assumes that Fulfillments and Conditions can successfully be serialized
@@ -199,9 +197,26 @@ def test_transaction_deserialization(default_single_ffill, default_single_cond):
             'data': None,
         }
     }
+    tx['id'] = Transaction._to_hash(Transaction._to_str(Transaction._remove_signatures(tx)))
     tx = Transaction.from_dict(tx)
 
     assert tx.to_dict() == expected.to_dict()
+
+
+def test_tx_serialization_with_incorrect_hash(utx):
+    from bigchaindb_common.transaction import Transaction
+    from bigchaindb_common.exceptions import InvalidHash
+
+    utx_dict = utx.to_dict()
+    utx_dict['id'] = 'abc'
+    with raises(InvalidHash):
+        Transaction.from_dict(utx_dict)
+    utx_dict.pop('id')
+    with raises(InvalidHash):
+        Transaction.from_dict(utx_dict)
+    utx_dict['id'] = []
+    with raises(InvalidHash):
+        Transaction.from_dict(utx_dict)
 
 
 def test_invalid_tx_initialization():
@@ -309,7 +324,6 @@ def test_validate_tx_simple_signature(default_single_ffill, default_single_cond,
 
     from bigchaindb_common.crypto import SigningKey
     from bigchaindb_common.transaction import Transaction
-
 
     tx = Transaction(Transaction.CREATE, [default_single_ffill], [default_single_cond])
     expected = deepcopy(default_single_ffill)
