@@ -160,3 +160,33 @@ def test_get_asset_id_transaction_does_not_exist(b, user_vk):
 
     with pytest.raises(TransactionDoesNotExist):
         b.create_transaction(user_vk, user_vk, {'txid': 'bored', 'cid': '0'}, 'TRANSFER')
+
+
+@pytest.mark.usefixtures('inputs')
+def test_get_txs_by_asset_id(b, user_vk, user_sk):
+    tx_input = b.get_owned_ids(user_vk).pop()
+    tx = b.get_transaction(tx_input['txid'])
+    asset_id = tx['transaction']['asset']['id']
+    txs = b.get_txs_by_asset_id(asset_id)
+
+    assert len(txs) == 1
+    assert txs[0]['id'] == tx['id']
+    assert txs[0]['transaction']['asset']['id'] == asset_id
+
+    # create a transfer transaction
+    tx_transfer = b.create_transaction(user_vk, user_vk, tx_input, 'TRANSFER')
+    tx_transfer_signed = b.sign_transaction(tx_transfer, user_sk)
+    # create the block
+    block = b.create_block([tx_transfer_signed])
+    b.write_block(block, durability='hard')
+    # vote the block valid
+    vote = b.vote(block['id'], b.get_last_voted_block()['id'], True)
+    b.write_vote(vote)
+
+    txs = b.get_txs_by_asset_id(asset_id)
+
+    assert len(txs) == 2
+    assert tx['id'] in [t['id'] for t in txs]
+    assert tx_transfer['id'] in [t['id'] for t in txs]
+    assert asset_id == txs[0]['transaction']['asset']['id']
+    assert asset_id == txs[1]['transaction']['asset']['id']
