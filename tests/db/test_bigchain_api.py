@@ -455,16 +455,22 @@ class TestTransactionValidation(object):
 
 class TestBlockValidation(object):
     def test_wrong_block_hash(self, b):
+        from bigchaindb_common.exceptions import InvalidHash
+
         block = dummy_block()
 
         # change block hash
         block.update({'id': 'abc'})
-        with pytest.raises(exceptions.InvalidHash):
+        with pytest.raises(InvalidHash):
             b.validate_block(block)
 
     @pytest.mark.skipif(reason='Separated tx validation from block creation.')
     @pytest.mark.usefixtures('inputs')
     def test_invalid_transactions_in_block(self, b, user_vk, ):
+        from bigchaindb_common.exceptions import TransactionOwnerError
+        from bigchaindb_common import crypto
+        from bigchaindb import util
+
         # invalid transaction
         valid_input = b.get_owned_ids(user_vk).pop()
         tx_invalid = b.create_transaction('a', 'b', valid_input, 'c')
@@ -490,33 +496,32 @@ class TestBlockValidation(object):
             'votes': []
         }
 
-        with pytest.raises(exceptions.TransactionOwnerError) as excinfo:
+        with pytest.raises(TransactionOwnerError) as excinfo:
             b.validate_block(block)
 
         assert excinfo.value.args[0] == 'owner_before `a` does not own the input `{}`'.format(valid_input)
 
     def test_invalid_block_id(self, b):
+        from bigchaindb_common.exceptions import InvalidHash
+
         block = dummy_block()
 
         # change block hash
         block.update({'id': 'abc'})
-        with pytest.raises(exceptions.InvalidHash):
+        with pytest.raises(InvalidHash):
             b.validate_block(block)
 
     @pytest.mark.usefixtures('inputs')
-    def test_valid_block(self, b, user_vk, user_sk):
-        # create valid transaction
-        input_valid = b.get_owned_ids(user_vk).pop()
-        tx_valid = b.create_transaction(user_vk, user_vk, input_valid, 'TRANSFER')
-        tx_valid_signed = b.sign_transaction(tx_valid, user_sk)
-
-        # create valid block
-        block = b.create_block([tx_valid_signed])
+    def test_valid_block(self, b, transfer_tx):
+        block = b.create_block([transfer_tx])
 
         assert block == b.validate_block(block)
         assert b.is_valid_block(block)
 
     def test_invalid_signature(self, b):
+        from bigchaindb_common.exceptions import InvalidSignature
+        from bigchaindb_common import crypto
+
         # create a valid block
         block = dummy_block()
 
@@ -524,10 +529,14 @@ class TestBlockValidation(object):
         block['signature'] = crypto.SigningKey(b.me_private).sign(b'wrongdata')
 
         # check that validate_block raises an InvalidSignature exception
-        with pytest.raises(exceptions.InvalidSignature):
+        with pytest.raises(InvalidSignature):
             b.validate_block(block)
 
     def test_invalid_node_pubkey(self, b):
+        from bigchaindb_common.exceptions import OperationError
+        from bigchaindb_common import crypto
+        from bigchaindb import util
+
         # blocks can only be created by a federation node
         # create a valid block
         block = dummy_block()
@@ -544,12 +553,14 @@ class TestBlockValidation(object):
         block['signature'] = crypto.SigningKey(tmp_sk).sign(util.serialize_block(block['block']))
 
         # check that validate_block raises an OperationError
-        with pytest.raises(exceptions.OperationError):
+        with pytest.raises(OperationError):
             b.validate_block(block)
 
 
 class TestMultipleInputs(object):
     def test_transfer_single_owners_single_input(self, b, user_sk, user_vk, inputs):
+        from bigchaindb_common import crypto
+
         # create a new user
         user2_sk, user2_vk = crypto.generate_key_pair()
 
