@@ -11,8 +11,9 @@ from bigchaindb_common.transaction import TransactionLink
 import rethinkdb as r
 
 import bigchaindb
+
 from bigchaindb.db.utils import Connection
-from bigchaindb import config_utils, util
+from bigchaindb import assets, config_utils, util
 from bigchaindb.consensus import BaseConsensusRules
 from bigchaindb.models import Block, Transaction
 
@@ -326,7 +327,7 @@ class Bigchain(object):
             return None
 
     def get_tx_by_metadata_id(self, metadata_id):
-        """Retrieves transactions related to a payload.
+        """Retrieves transactions related to a metadata.
 
         When creating a transaction one of the optional arguments is the `metadata`. The metadata is a generic
         dict that contains extra information that can be appended to the transaction.
@@ -349,6 +350,21 @@ class Bigchain(object):
 
         transactions = list(cursor)
         return [Transaction.from_dict(tx) for tx in transactions]
+
+    def get_txs_by_asset_id(self, asset_id):
+        """Retrieves transactions related to a particular asset.
+
+        A digital asset in bigchaindb is identified by an uuid. This allows us to query all the transactions
+        related to a particular digital asset, knowing the id.
+
+        Args:
+            asset_id (str): the id for this particular metadata.
+
+        Returns:
+            A list of transactions containing related to the asset. If no transaction exists for that asset it
+            returns an empty list `[]`
+        """
+        return assets.get_transactions_by_asset_id(asset_id, self, read_mode=self.read_mode)
 
     def get_spent(self, txid, cid):
         """Check if a `txid` was already used as an input.

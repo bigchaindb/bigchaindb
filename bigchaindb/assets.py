@@ -1,3 +1,5 @@
+import rethinkdb as r
+
 from bigchaindb.exceptions import AssetIdMismatch, TransactionDoesNotExist, AmountError
 
 
@@ -63,3 +65,14 @@ def validate_asset_creation(asset_data, divisible, updatable, refillable, amount
 
     if divisible or updatable or refillable or amount != 1:
         raise NotImplementedError("Divisible assets are not yet implemented!")
+
+
+def get_transactions_by_asset_id(asset_id, bigchain, read_mode='majority'):
+    cursor = r.table('bigchain', read_mode=read_mode)\
+              .get_all(asset_id, index='asset_id')\
+              .concat_map(lambda block: block['block']['transactions'])\
+              .filter(lambda transaction: transaction['transaction']['asset']['id'] == asset_id)\
+              .run(bigchain.conn)
+
+    transactions = list(cursor)
+    return transactions
