@@ -54,6 +54,9 @@ def test_client_can_create_assets(mock_requests_post, client):
     assert util.validate_fulfillments(tx)
 
 
+
+@pytest.mark.skipif(reason=('The client cannot send assets that do not exist. ',
+                            'This is now checked at creation time.'))
 def test_client_can_transfer_assets(mock_requests_post, mock_bigchaindb_sign, client):
     tx = client.transfer(client.public_key, 123)
     assert tx['transaction']['fulfillments'][0]['owners_before'][0] == client.public_key

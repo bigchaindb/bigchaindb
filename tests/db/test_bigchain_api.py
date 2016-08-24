@@ -35,7 +35,8 @@ class TestBigchainApi(object):
         tx = b.create_transaction(b.me, user_sk, None, 'CREATE')
 
         assert sorted(tx) == ['id', 'transaction']
-        assert sorted(tx['transaction']) == ['conditions', 'data', 'fulfillments', 'operation', 'timestamp', 'version']
+        assert sorted(tx['transaction']) == ['asset', 'conditions', 'fulfillments', 'metadata',
+                                             'operation', 'timestamp', 'version']
 
     def test_create_transaction_with_unsupported_payload_raises(self, b):
         with pytest.raises(TypeError):
@@ -43,29 +44,29 @@ class TestBigchainApi(object):
 
     def test_create_transaction_payload_none(self, b, user_vk):
         tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
-        assert len(tx['transaction']['data']['uuid']) == 36
-        assert tx['transaction']['data']['payload'] is None
+        assert len(tx['transaction']['metadata']['id']) == 36
+        assert tx['transaction']['metadata']['data'] is None
 
     def test_create_transaction_payload(self, b, user_vk):
-        payload = {'msg': 'Hello BigchainDB!'}
-        tx = b.create_transaction(b.me, user_vk, None, 'CREATE', payload=payload)
-        assert len(tx['transaction']['data']['uuid']) == 36
-        assert tx['transaction']['data']['payload'] == payload
+        metadata = {'msg': 'Hello BigchainDB!'}
+        tx = b.create_transaction(b.me, user_vk, None, 'CREATE', metadata=metadata)
+        assert len(tx['transaction']['metadata']['id']) == 36
+        assert tx['transaction']['metadata']['data'] == metadata
 
-    def test_get_transactions_for_payload(self, b, user_vk):
-        payload = {'msg': 'Hello BigchainDB!'}
-        tx = b.create_transaction(b.me, user_vk, None, 'CREATE', payload=payload)
-        payload_uuid = tx['transaction']['data']['uuid']
+    def test_get_transactions_for_metadata(self, b, user_vk):
+        metadata = {'msg': 'Hello BigchainDB!'}
+        tx = b.create_transaction(b.me, user_vk, None, 'CREATE', metadata=metadata)
+        metadata_id = tx['transaction']['metadata']['id']
 
         block = b.create_block([tx])
         b.write_block(block, durability='hard')
 
-        matches = b.get_tx_by_payload_uuid(payload_uuid)
+        matches = b.get_tx_by_metadata_id(metadata_id)
         assert len(matches) == 1
         assert matches[0]['id'] == tx['id']
 
-    def test_get_transactions_for_payload_mismatch(self, b, user_vk):
-        matches = b.get_tx_by_payload_uuid('missing')
+    def test_get_transactions_for_metadata_mismatch(self, b, user_vk):
+        matches = b.get_tx_by_metadata_id('missing')
         assert not matches
 
     @pytest.mark.usefixtures('inputs')
@@ -76,8 +77,8 @@ class TestBigchainApi(object):
         tx = b.create_transaction(user_vk, b.me, input_tx, 'TRANSFER')
 
         assert sorted(tx) == ['id', 'transaction']
-        assert sorted(tx['transaction']) == ['conditions', 'metadata', 'fulfillments', 'operation',
-                                             'asset', 'timestamp', 'version']
+        assert sorted(tx['transaction']) == ['asset', 'conditions', 'fulfillments', 'metadata', 'operation',
+                                             'timestamp', 'version']
 
         tx_signed = b.sign_transaction(tx, user_sk)
 
@@ -407,8 +408,19 @@ class TestTransactionValidation(object):
         assert excinfo.value.args[0] == 'Only `CREATE` transactions can have null inputs'
         assert b.is_valid_transaction(tx) is False
 
+    @pytest.mark.usefixtures('inputs')
     def test_non_create_input_not_found(self, b, user_vk):
-        tx = b.create_transaction(user_vk, user_vk, {'txid': 'c', 'cid': 0}, 'TRANSFER')
+        with pytest.raises(exceptions.TransactionDoesNotExist) as excinfo:
+            b.create_transaction(user_vk, user_vk, {'txid': 'c', 'cid': 0}, 'TRANSFER')
+
+        assert excinfo.value.args[0] == 'Transaction with txid `c` does not exist in the bigchain'
+
+        # Create transaction does not let you create a malformed transaction.
+        # Create a custom malformed transaction and check if validate catches the error
+        tx_input = b.get_owned_ids(user_vk).pop()
+        tx = b.create_transaction(user_vk, user_vk, tx_input, 'TRANSFER')
+        tx['transaction']['fulfillments'][0]['input'] = {'txid': 'c', 'cid': 0}
+
         with pytest.raises(exceptions.TransactionDoesNotExist) as excinfo:
             b.validate_transaction(tx)
 
@@ -624,6 +636,8 @@ class TestMultipleInputs(object):
         assert len(tx_signed['transaction']['fulfillments']) == 1
         assert len(tx_signed['transaction']['conditions']) == 1
 
+    @pytest.mark.skipif(reason=('Multiple inputs are only allowed for the same asset. Remove this after ',
+                                'implementing multiple assets'))
     def test_transfer_single_owners_multiple_inputs(self, b, user_sk, user_vk):
         # create a new user
         user2_sk, user2_vk = crypto.generate_key_pair()
@@ -651,6 +665,8 @@ class TestMultipleInputs(object):
         assert len(tx_signed['transaction']['fulfillments']) == 3
         assert len(tx_signed['transaction']['conditions']) == 3
 
+    @pytest.mark.skipif(reason=('Multiple inputs are only allowed for the same asset. Remove this after ',
+                                'implementing multiple assets'))
     def test_transfer_single_owners_single_input_from_multiple_outputs(self, b, user_sk, user_vk):
         # create a new user
         user2_sk, user2_vk = crypto.generate_key_pair()
@@ -708,6 +724,8 @@ class TestMultipleInputs(object):
         assert len(tx_signed['transaction']['fulfillments']) == 1
         assert len(tx_signed['transaction']['conditions']) == 1
 
+    @pytest.mark.skipif(reason=('Multiple inputs are only allowed for the same asset. Remove this after ',
+                                'implementing multiple assets'))
     def test_single_owner_before_multiple_owners_after_multiple_inputs(self, b, user_sk, user_vk):
         # create a new users
         user2_sk, user2_vk = crypto.generate_key_pair()
@@ -760,6 +778,8 @@ class TestMultipleInputs(object):
         assert len(tx_signed['transaction']['fulfillments']) == 1
         assert len(tx_signed['transaction']['conditions']) == 1
 
+    @pytest.mark.skipif(reason=('Multiple inputs are only allowed for the same asset. Remove this after ',
+                                'implementing multiple assets'))
     def test_multiple_owners_before_single_owner_after_multiple_inputs(self, b, user_sk, user_vk):
         # create a new users
         user2_sk, user2_vk = crypto.generate_key_pair()
@@ -812,6 +832,8 @@ class TestMultipleInputs(object):
         assert len(tx_signed['transaction']['fulfillments']) == 1
         assert len(tx_signed['transaction']['conditions']) == 1
 
+    @pytest.mark.skipif(reason=('Multiple inputs are only allowed for the same asset. Remove this after ',
+                                'implementing multiple assets'))
     def test_multiple_owners_before_multiple_owners_after_multiple_inputs(self, b, user_sk, user_vk):
         # create a new users
         user2_sk, user2_vk = crypto.generate_key_pair()
@@ -905,6 +927,8 @@ class TestMultipleInputs(object):
         assert owned_inputs_user1 == [{'cid': 0, 'txid': tx['id']}]
         assert owned_inputs_user2 == []
 
+    @pytest.mark.skipif(reason=('Multiple inputs are only allowed for the same asset. Remove this after ',
+                                'implementing multiple assets'))
     def test_get_owned_ids_single_tx_multiple_outputs(self, b, user_sk, user_vk):
         # create a new users
         user2_sk, user2_vk = crypto.generate_key_pair()
@@ -1034,6 +1058,8 @@ class TestMultipleInputs(object):
         # Now there should be no spents (the block is invalid)
         assert spent_inputs_user1 is None
 
+    @pytest.mark.skipif(reason=('Multiple inputs are only allowed for the same asset. Remove this after ',
+                                'implementing multiple assets'))
     def test_get_spent_single_tx_multiple_outputs(self, b, user_sk, user_vk):
         # create a new users
         user2_sk, user2_vk = crypto.generate_key_pair()
@@ -1112,14 +1138,14 @@ class TestMultipleInputs(object):
 
 class TestFulfillmentMessage(object):
     def test_fulfillment_message_create(self, b, user_vk):
-        tx = b.create_transaction(b.me, user_vk, None, 'CREATE', payload={'pay': 'load'})
+        tx = b.create_transaction(b.me, user_vk, None, 'CREATE', metadata={'pay': 'load'})
         original_fulfillment = tx['transaction']['fulfillments'][0]
         fulfillment_message = util.get_fulfillment_message(tx, original_fulfillment)
 
         assert sorted(fulfillment_message) == \
-               ['condition', 'data', 'fulfillment', 'id', 'operation', 'timestamp', 'version']
+               ['asset', 'condition', 'fulfillment', 'id', 'metadata', 'operation', 'timestamp', 'version']
 
-        assert fulfillment_message['data']['payload'] == tx['transaction']['data']['payload']
+        assert fulfillment_message['metadata']['data'] == tx['transaction']['metadata']['data']
         assert fulfillment_message['id'] == tx['id']
         assert fulfillment_message['condition'] == tx['transaction']['conditions'][0]
         assert fulfillment_message['fulfillment']['owners_before'] == original_fulfillment['owners_before']
@@ -1134,15 +1160,15 @@ class TestFulfillmentMessage(object):
         input_tx = b.get_owned_ids(user_vk).pop()
         assert b.validate_fulfillments(b.get_transaction(input_tx['txid'])) == True
 
-        tx = b.create_transaction(user_vk, b.me, input_tx, 'TRANSFER', payload={'pay': 'load'})
+        tx = b.create_transaction(user_vk, b.me, input_tx, 'TRANSFER', metadata={'pay': 'load'})
 
         original_fulfillment = tx['transaction']['fulfillments'][0]
         fulfillment_message = util.get_fulfillment_message(tx, original_fulfillment)
 
         assert sorted(fulfillment_message) == \
-               ['condition', 'data', 'fulfillment', 'id', 'operation', 'timestamp', 'version']
+               ['asset', 'condition', 'fulfillment', 'id', 'metadata', 'operation', 'timestamp', 'version']
 
-        assert fulfillment_message['data']['payload'] == tx['transaction']['data']['payload']
+        assert fulfillment_message['metadata']['data'] == tx['transaction']['metadata']['data']
         assert fulfillment_message['id'] == tx['id']
         assert fulfillment_message['condition'] == tx['transaction']['conditions'][0]
         assert fulfillment_message['fulfillment']['owners_before'] == original_fulfillment['owners_before']
@@ -1152,6 +1178,8 @@ class TestFulfillmentMessage(object):
         assert fulfillment_message['timestamp'] == tx['transaction']['timestamp']
         assert fulfillment_message['version'] == tx['transaction']['version']
 
+    @pytest.mark.skipif(reason=('Multiple inputs are only allowed for the same asset. Remove this after ',
+                                'implementing multiple assets'))
     def test_fulfillment_message_multiple_owners_before_multiple_owners_after_multiple_inputs(self, b, user_vk):
         # create a new users
         user2_sk, user2_vk = crypto.generate_key_pair()
@@ -1172,7 +1200,7 @@ class TestFulfillmentMessage(object):
         inp = owned_inputs[:3]
 
         # create a transaction
-        tx = b.create_transaction([user_vk, user2_vk], [user3_vk, user4_vk], inp, 'TRANSFER', payload={'pay': 'load'})
+        tx = b.create_transaction([user_vk, user2_vk], [user3_vk, user4_vk], inp, 'TRANSFER', metadata={'pay': 'load'})
 
         for original_fulfillment in tx['transaction']['fulfillments']:
             fulfillment_message = util.get_fulfillment_message(tx, original_fulfillment)
@@ -1225,12 +1253,7 @@ class TestTransactionMalleability(object):
         assert b.is_valid_transaction(tx_changed) is False
 
         tx_changed = copy.deepcopy(tx_signed)
-        tx_changed['transaction']['data'] = {
-            "hash": "872fa6e6f46246cd44afdb2ee9cfae0e72885fb0910e2bcf9a5a2a4eadb417b8",
-            "payload": {
-                "msg": "Hello BigchainDB!"
-            }
-        }
+        tx_changed['transaction']['metadata']['data'] = {"msg": "Hello BigchainDB!"}
         assert b.validate_fulfillments(tx_changed) == False
 
         tx_changed = copy.deepcopy(tx_signed)
