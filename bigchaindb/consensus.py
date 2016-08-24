@@ -175,7 +175,7 @@ class BaseConsensusRules(AbstractConsensusRules):
 
             # validate asset id
             asset_id = assets.get_asset_id(txids, bigchain)
-            if asset_id != transaction['transaction']['asset']:
+            if asset_id != transaction['transaction']['asset']['id']:
                 raise exceptions.AssetIdMismatch(('The asset id of the input does not match the asset id ',
                                                   'of the transaction'))
 

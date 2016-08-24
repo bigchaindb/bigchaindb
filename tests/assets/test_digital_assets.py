@@ -23,7 +23,7 @@ def test_asset_transfer(b, user_vk, user_sk):
     tx_transfer_signed = b.sign_transaction(tx_transfer, user_sk)
 
     assert b.validate_transaction(tx_transfer_signed) == tx_transfer_signed
-    assert tx_transfer_signed['transaction']['asset'] == tx_create['transaction']['asset']['id']
+    assert tx_transfer_signed['transaction']['asset']['id'] == tx_create['transaction']['asset']['id']
 
 
 def test_validate_bad_asset_creation(b, user_vk):
@@ -88,7 +88,7 @@ def test_validate_bad_asset_transfer(b, user_vk, user_sk):
 
     tx_input = b.get_owned_ids(user_vk).pop()
     tx = b.create_transaction(user_vk, user_vk, tx_input, 'TRANFER')
-    tx['transaction']['asset'] = 'aaa'
+    tx['transaction']['asset']['id'] = 'aaa'
     tx['id'] = get_hash_data(tx['transaction'])
     tx_signed = b.sign_transaction(tx, user_sk)
     with pytest.raises(AssetIdMismatch):
@@ -141,7 +141,7 @@ def test_get_asset_id_transfer_transaction(b, user_vk, user_sk):
     b.write_vote(vote)
     asset_id = get_asset_id(tx_transfer['id'], bigchain=b)
 
-    assert asset_id == tx_transfer['transaction']['asset']
+    assert asset_id == tx_transfer['transaction']['asset']['id']
 
 
 @pytest.mark.usefixtures('inputs')

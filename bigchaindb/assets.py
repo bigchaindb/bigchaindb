@@ -25,10 +25,7 @@ def get_asset_id(txids, bigchain):
         tx = bigchain.get_transaction(txid)
         if tx is None:
             raise TransactionDoesNotExist('Transaction with txid `{}` does not exist in the bigchain'.format(txid))
-        if tx['transaction']['operation'] == 'CREATE':
-            asset_ids.append(tx['transaction']['asset']['id'])
-        else:
-            asset_ids.append(tx['transaction']['asset'])
+        asset_ids.append(tx['transaction']['asset']['id'])
 
     asset_ids = set(asset_ids)
     if len(asset_ids) > 1:

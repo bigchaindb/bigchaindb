@@ -258,7 +258,8 @@ def create_tx(owners_before, owners_after, inputs, operation, metadata=None, ass
         # This can be improved and probably cached with @TimDaub transaction model
         bigchain = bigchain if bigchain is not None else bigchaindb.Bigchain()
         txids = [tx_input['txid'] for tx_input in inputs]
-        asset = assets.get_asset_id(txids, bigchain)
+        asset_id = assets.get_asset_id(txids, bigchain)
+        asset = {'id': asset_id}
 
         for fid, tx_input in enumerate(inputs):
             fulfillments.append({
