@@ -2,9 +2,9 @@ import requests
 
 import bigchaindb
 from bigchaindb import config_utils
-from bigchaindb.models import Transaction
 
 from bigchaindb_common import crypto, exceptions
+from bigchaindb_common.transaction import Transaction
 
 
 class Client:

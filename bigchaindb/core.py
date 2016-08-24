@@ -4,13 +4,12 @@ import operator
 import collections
 
 from bigchaindb_common import crypto, exceptions
-from bigchaindb_common.transaction import TransactionLink
+from bigchaindb_common.transaction import Transaction, TransactionLink
 
 import rethinkdb as r
 
 import bigchaindb
 from bigchaindb import config_utils, util
-from bigchaindb.models import Transaction
 
 
 class Bigchain(object):
@@ -136,6 +135,40 @@ class Bigchain(object):
         # write to the backlog
         response = r.table('backlog').insert(signed_transaction, durability=durability).run(self.conn)
         return response
+
+    def validate_transaction(self, transaction):
+        """Validate a transaction.
+
+        Args:
+            transaction (dict): transaction to validate.
+
+        Returns:
+            The transaction if the transaction is valid else it raises an
+            exception describing the reason why the transaction is invalid.
+        """
+
+        return self.consensus.validate_transaction(self, transaction)
+
+    def is_valid_transaction(self, transaction):
+        """Check whether a transacion is valid or invalid.
+
+        Similar to `validate_transaction` but never raises an exception.
+        It returns `False` if the transaction is invalid.
+
+        Args:
+            transaction (dict): transaction to check.
+
+        Returns:
+            `transaction` if the transaction is valid, `False` otherwise
+        """
+
+        try:
+            self.validate_transaction(transaction)
+            return transaction
+        except (ValueError, exceptions.OperationError, exceptions.TransactionDoesNotExist,
+                exceptions.TransactionOwnerError, exceptions.DoubleSpend,
+                exceptions.InvalidHash, exceptions.InvalidSignature):
+            return False
 
     def get_transaction(self, txid):
         """Retrieve a transaction with `txid` from bigchain.
@@ -263,7 +296,7 @@ class Bigchain(object):
             tx_input (dict): Input of a transaction in the form `{'txid': 'transaction id', 'cid': 'condition id'}`
 
         Returns:
-            The transaction that used the `txid` as an input if it exists else it returns `None`
+            The transaction that used the `txid` as an input else `None`
         """
         # checks if an input was already spent
         # checks if the bigchain has any transaction with input {'txid': ..., 'cid': ...}
@@ -281,6 +314,7 @@ class Bigchain(object):
             num_valid_transactions = 0
             for transaction in transactions:
                 # ignore invalid blocks
+                # FIXME: Isn't there a faster solution than doing I/O again?
                 if self.get_transaction(transaction['id']):
                     num_valid_transactions += 1
                 if num_valid_transactions > 1:
@@ -344,6 +378,7 @@ class Bigchain(object):
 
         return owned
 
+
     def create_block(self, validated_transactions):
         """Creates a block given a list of `validated_transactions`.
 
@@ -405,7 +440,7 @@ class Bigchain(object):
         for transaction in block['block']['transactions']:
             # NOTE: If a transaction is not valid, `is_valid` will throw an
             #       an exception and block validation will be canceled.
-            transaction.is_valid(self)
+            self.consensus.validate_transaction(self, transaction)
 
         return block
 
