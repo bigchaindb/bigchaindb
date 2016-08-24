@@ -720,8 +720,9 @@ class TestMultipleInputs(object):
         assert len(tx.fulfillments) == 1
         assert len(tx.conditions) == 1
 
-    @pytest.mark.skipif(reason=('Multiple inputs are only allowed for the same asset. Remove this after ',
-                                'implementing multiple assets'))
+    @pytest.mark.skipif(reason=('Multiple inputs are only allowed for the '
+                                'same asset. Remove this after implementing ',
+                                'multiple assets'))
     def test_transfer_single_owners_multiple_inputs(self, b, user_sk, user_vk):
         from bigchaindb_common import crypto
         from bigchaindb.models import Transaction
