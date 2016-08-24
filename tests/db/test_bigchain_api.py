@@ -83,8 +83,15 @@ class TestBigchainApi(object):
 
         vote = b.vote(block.id, b.get_last_voted_block().id, True)
         b.write_vote(vote)
-
         assert b.has_previous_vote(block.id, block.voters) is True
+
+        matches = b.get_tx_by_metadata_id(metadata_id)
+        assert len(matches) == 1
+        assert matches[0]['id'] == tx['id']
+
+    def test_get_transactions_for_metadata_mismatch(self):
+        matches = b.get_tx_by_metadata_id('missing')
+        assert not matches
 
     def test_get_spent_with_double_spend(self, b, monkeypatch):
         from bigchaindb_common.exceptions import DoubleSpend
@@ -171,7 +178,7 @@ class TestBigchainApi(object):
         vote = b.vote(block2.id, b.get_last_voted_block().id, True)
         b.write_vote(vote)
 
-        assert b.get_transaction(tx1.id) == None
+        assert b.get_transaction(tx1.id) is None
         assert b.get_transaction(tx2.id) == tx2
 
     def test_get_transactions_for_payload(self, b, user_vk):
@@ -514,6 +521,24 @@ class TestBigchainApi(object):
             assert response['assignee'] in b.nodes_except_me
 
 
+    # TODO: Make this test work
+    @pytest.mark.usefixtures('inputs')
+    def test_non_create_input_not_found(self, b, user_vk):
+        with pytest.raises(exceptions.TransactionDoesNotExist) as excinfo:
+            b.create_transaction(user_vk, user_vk, {'txid': 'c', 'cid': 0}, 'TRANSFER')
+
+        assert excinfo.value.args[0] == 'Transaction with txid `c` does not exist in the bigchain'
+
+        # Create transaction does not let you create a malformed transaction.
+        # Create a custom malformed transaction and check if validate catches the error
+        tx_input = b.get_owned_ids(user_vk).pop()
+        tx = b.create_transaction(user_vk, user_vk, tx_input, 'TRANSFER')
+        tx['transaction']['fulfillments'][0]['input'] = {'txid': 'c', 'cid': 0}
+
+        with pytest.raises(exceptions.TransactionDoesNotExist) as excinfo:
+            b.validate_transaction(tx)
+
+
 class TestTransactionValidation(object):
     def test_create_operation_with_inputs(self, b, user_vk, create_tx):
         from bigchaindb_common.transaction import TransactionLink
@@ -695,6 +720,8 @@ class TestMultipleInputs(object):
         assert len(tx.fulfillments) == 1
         assert len(tx.conditions) == 1
 
+    @pytest.mark.skipif(reason=('Multiple inputs are only allowed for the same asset. Remove this after ',
+                                'implementing multiple assets'))
     def test_transfer_single_owners_multiple_inputs(self, b, user_sk, user_vk):
         from bigchaindb_common import crypto
         from bigchaindb.models import Transaction
@@ -722,6 +749,9 @@ class TestMultipleInputs(object):
         assert len(tx.fulfillments) == 3
         assert len(tx.conditions) == 3
 
+    @pytest.mark.skipif(reason=('Multiple inputs are only allowed for the '
+                                'same asset. Remove this after implementing ',
+                                'multiple assets'))
     def test_transfer_single_owners_single_input_from_multiple_outputs(self, b,
                                                                        user_sk,
                                                                        user_vk):
@@ -787,6 +817,9 @@ class TestMultipleInputs(object):
         assert len(tx.fulfillments) == 1
         assert len(tx.conditions) == 1
 
+    @pytest.mark.skipif(reason=('Multiple inputs are only allowed for the '
+                                'same asset. Remove this after implementing ',
+                                'multiple assets'))
     def test_single_owner_before_multiple_owners_after_multiple_inputs(self, b,
                                                                        user_sk,
                                                                        user_vk):
@@ -847,6 +880,9 @@ class TestMultipleInputs(object):
         assert len(transfer_tx.fulfillments) == 1
         assert len(transfer_tx.conditions) == 1
 
+    @pytest.mark.skipif(reason=('Multiple inputs are only allowed for the '
+                                'same asset. Remove this after implementing ',
+                                'multiple assets'))
     def test_multiple_owners_before_single_owner_after_multiple_inputs(self, b,
                                                                        user_sk,
                                                                        user_vk):
@@ -900,6 +936,9 @@ class TestMultipleInputs(object):
         assert len(tx.fulfillments) == 1
         assert len(tx.conditions) == 1
 
+    @pytest.mark.skipif(reason=('Multiple inputs are only allowed for the '
+                                'same asset. Remove this after implementing ',
+                                'multiple assets'))
     def test_multiple_owners_before_multiple_owners_after_multiple_inputs(self,
                                                                           b,
                                                                           user_sk,
@@ -999,6 +1038,9 @@ class TestMultipleInputs(object):
         assert owned_inputs_user1 == [TransactionLink(tx.id, 0)]
         assert owned_inputs_user2 == []
 
+    @pytest.mark.skipif(reason=('Multiple inputs are only allowed for the '
+                                'same asset. Remove this after implementing ',
+                                'multiple assets'))
     def test_get_owned_ids_single_tx_multiple_outputs(self, b, user_sk,
                                                       user_vk):
         import random
@@ -1138,6 +1180,9 @@ class TestMultipleInputs(object):
         # Now there should be no spents (the block is invalid)
         assert spent_inputs_user1 is None
 
+    @pytest.mark.skipif(reason=('Multiple inputs are only allowed for the '
+                                'same asset. Remove this after implementing ',
+                                'multiple assets'))
     def test_get_spent_single_tx_multiple_outputs(self, b, user_sk, user_vk):
         import random
         from bigchaindb_common import crypto

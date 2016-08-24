@@ -1,4 +1,4 @@
-from bigchaindb.exceptions import AssetIdMismatch
+from bigchaindb.exceptions import AssetIdMismatch, TransactionDoesNotExist
 
 
 def get_asset_id(txids, bigchain):
@@ -23,6 +23,8 @@ def get_asset_id(txids, bigchain):
     asset_ids = []
     for txid in set(txids):
         tx = bigchain.get_transaction(txid)
+        if tx is None:
+            raise TransactionDoesNotExist('Transaction with txid `{}` does not exist in the bigchain'.format(txid))
         if tx['transaction']['operation'] == 'CREATE':
             asset_ids.append(tx['transaction']['asset']['id'])
         else:
