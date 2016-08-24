@@ -107,11 +107,8 @@ class TransactionLink(object):
         self.txid = txid
         self.cid = cid
 
-    def is_defined(self):
-        if self.txid is None and self.cid is None:
-            return False
-        else:
-            return True
+    def __bool__(self):
+        return not (self.txid is None and self.cid is None)
 
     @classmethod
     def from_dict(cls, link):
@@ -278,7 +275,7 @@ class Transaction(object):
 
     def transfer(self, conditions):
         # TODO: Check here if a condition is submitted or smth else
-        return Transaction(Transaction.TRANSFER, self._fulfillments_as_inputs(), conditions)
+        return self.__class__(Transaction.TRANSFER, self._fulfillments_as_inputs(), conditions)
 
     def simple_transfer(self, owners_after):
         condition = Fulfillment.gen_default(owners_after).gen_condition()
@@ -401,21 +398,18 @@ class Transaction(object):
 
             subfulfillment.sign(tx_serialized, private_key)
 
-    def fulfillments_valid(self, input_condition_uris=None):
+    def fulfillments_valid(self, input_conditions=None):
+        if isinstance(input_conditions, list):
+            return self._fulfillments_valid([cond.condition_uri for cond
+                                            in input_conditions])
+        elif input_conditions is None:
+            return self._fulfillments_valid()
+        else:
+            raise TypeError('`input_conditions` must be list instance or None')
+
+    def _fulfillments_valid(self, input_condition_uris=None):
         # TODO: Update Comment
-        """Verify the signature of a transaction
-
-        A valid transaction should have been signed `current_owner` corresponding private key.
-
-        Args:
-            signed_transaction (dict): a transaction with the `signature` included.
-
-        Returns:
-            bool: True if the signature is correct, False otherwise.
-        """
-        if not isinstance(input_condition_uris, list) and input_condition_uris is not None:
-            raise TypeError('`input_condition_uris` must be list instance')
-        elif input_condition_uris is None:
+        if input_condition_uris is None:
             input_condition_uris = []
 
         input_condition_uris_count = len(input_condition_uris)
@@ -425,9 +419,9 @@ class Transaction(object):
         def gen_tx(fulfillment, condition, input_condition_uri=None):
             tx = Transaction(self.operation, [fulfillment], [condition], self.data, self.timestamp, self.version)
             if input_condition_uri is not None:
-                return tx.fulfillments_valid([input_condition_uri])
+                return tx._fulfillments_valid([input_condition_uri])
             else:
-                return tx.fulfillments_valid()
+                return tx._fulfillments_valid()
 
         if self.operation in (Transaction.CREATE, Transaction.GENESIS):
             if not fulfillments_count == conditions_count:
