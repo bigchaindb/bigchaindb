@@ -477,7 +477,7 @@ def test_create_create_transaction_single_io(user_cond, user_pub):
     assert tx == expected
 
 
-def test_validate_single_io_create_transaction(user_cond, user_pub, user_priv):
+def test_validate_single_io_create_transaction(user_pub, user_priv):
     from bigchaindb_common.transaction import Transaction
 
     tx = Transaction.create([user_pub], [user_pub], {'message': 'hello'})
@@ -529,7 +529,7 @@ def test_create_create_transaction_multiple_io(user_cond, user2_cond, user_pub,
     assert tx == expected
 
 
-def test_validate_multiple_io_create_transaction(user_cond, user_pub, user_priv,
+def test_validate_multiple_io_create_transaction(user_pub, user_priv,
                                                  user2_pub, user2_priv):
     from bigchaindb_common.transaction import Transaction
 
@@ -576,11 +576,60 @@ def test_create_create_transaction_threshold(user_pub, user2_pub, user3_pub,
     assert tx == expected
 
 
-def test_validate_threshold_create_transaction(user_cond, user_pub, user_priv,
-                                               user2_pub):
+def test_validate_threshold_create_transaction(user_pub, user_priv, user2_pub):
     from bigchaindb_common.transaction import Transaction
 
     tx = Transaction.create([user_pub], [user_pub, user2_pub],
                             {'message': 'hello'})
+    tx = tx.sign([user_priv])
+    assert tx.fulfillments_valid() is True
+
+
+def test_create_create_transaction_hashlock(user_pub):
+    from bigchaindb_common.transaction import Transaction, Condition
+    from cryptoconditions import PreimageSha256Fulfillment
+
+    secret = b'much secret, wow'
+    hashlock = PreimageSha256Fulfillment(preimage=secret)
+    cond = Condition(hashlock)
+
+    expected = {
+        'transaction': {
+            'conditions': [cond.to_dict(0)],
+            'data': {
+                'payload': {
+                    'message': 'hello'
+                }
+            },
+            'fulfillments': [
+                {
+                    'owners_before': [
+                        user_pub,
+                    ],
+                    'fid': 0,
+                    'fulfillment': None,
+                    'input': None
+                },
+            ],
+            'operation': 'CREATE',
+        },
+        'version': 1
+    }
+
+    tx = Transaction.create([user_pub], [], {'message': 'hello'},
+                            secret).to_dict()
+    # TODO: Fix this with monkeypatching
+    tx.pop('id')
+    tx['transaction']['data'].pop('uuid')
+    tx['transaction'].pop('timestamp')
+
+    assert tx == expected
+
+
+def test_validate_hashlock_create_transaction(user_pub, user_priv):
+    from bigchaindb_common.transaction import Transaction
+
+    tx = Transaction.create([user_pub], [], {'message': 'hello'},
+                            b'much secret, wow')
     tx = tx.sign([user_priv])
     assert tx.fulfillments_valid() is True
