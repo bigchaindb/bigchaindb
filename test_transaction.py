@@ -440,3 +440,119 @@ def test_validate_fulfillments_of_transfer_tx_with_invalid_parameters(transfer_t
         tx = utx.sign([user_priv])
         tx.conditions = []
         tx.fulfillments_valid()
+
+
+def test_create_create_transaction_single_io(user_cond, user_pub):
+    from bigchaindb_common.transaction import Transaction
+
+    expected = {
+        'transaction': {
+            'conditions': [user_cond.to_dict(0)],
+            'data': {
+                'payload': {
+                    'message': 'hello'
+                }
+            },
+            'fulfillments': [
+                {
+                    'owners_before': [
+                        user_pub
+                    ],
+                    'fid': 0,
+                    'fulfillment': None,
+                    'input': None
+                }
+            ],
+            'operation': 'CREATE',
+        },
+        'version': 1
+    }
+
+    tx = Transaction.create([user_pub], [user_pub], {'message': 'hello'}).to_dict()
+    # TODO: Fix this with monkeypatching
+    tx.pop('id')
+    tx['transaction']['data'].pop('uuid')
+    tx['transaction'].pop('timestamp')
+
+    assert tx == expected
+
+
+def test_create_create_transaction_multiple_io(user_cond, user2_cond, user_pub,
+                                               user2_pub):
+    from bigchaindb_common.transaction import Transaction
+
+    expected = {
+        'transaction': {
+            'conditions': [user_cond.to_dict(0), user2_cond.to_dict(1)],
+            'data': {
+                'payload': {
+                    'message': 'hello'
+                }
+            },
+            'fulfillments': [
+                {
+                    'owners_before': [
+                        user_pub,
+                    ],
+                    'fid': 0,
+                    'fulfillment': None,
+                    'input': None
+                },
+                {
+                    'owners_before': [
+                        user2_pub,
+                    ],
+                    'fid': 1,
+                    'fulfillment': None,
+                    'input': None
+                }
+            ],
+            'operation': 'CREATE',
+        },
+        'version': 1
+    }
+    tx = Transaction.create([user_pub, user2_pub], [user_pub, user2_pub],
+                            {'message': 'hello'}).to_dict()
+    # TODO: Fix this with monkeypatching
+    tx.pop('id')
+    tx['transaction']['data'].pop('uuid')
+    tx['transaction'].pop('timestamp')
+
+    assert tx == expected
+
+
+def test_create_create_transaction_threshold(user_pub, user2_pub, user3_pub,
+                                             user_user2_threshold_cond,
+                                             user_user2_threshold_ffill):
+    from bigchaindb_common.transaction import Transaction
+
+    expected = {
+        'transaction': {
+            'conditions': [user_user2_threshold_cond.to_dict(0)],
+            'data': {
+                'payload': {
+                    'message': 'hello'
+                }
+            },
+            'fulfillments': [
+                {
+                    'owners_before': [
+                        user_pub,
+                    ],
+                    'fid': 0,
+                    'fulfillment': None,
+                    'input': None
+                },
+            ],
+            'operation': 'CREATE',
+        },
+        'version': 1
+    }
+    tx = Transaction.create([user_pub], [user_pub, user2_pub],
+                            {'message': 'hello'}).to_dict()
+    # TODO: Fix this with monkeypatching
+    tx.pop('id')
+    tx['transaction']['data'].pop('uuid')
+    tx['transaction'].pop('timestamp')
+
+    assert tx == expected
