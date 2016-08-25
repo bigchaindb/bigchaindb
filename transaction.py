@@ -285,14 +285,13 @@ class Transaction(object):
                 threshold.add_subfulfillment(Ed25519Fulfillment(public_key=owner_after))
             cond_tx = Condition(threshold, owners_after)
             # TODO: Is this correct? Can I fulfill a threshold condition in
-            #       a create? I guess so.
+            #       a create? I guess so?!
             ffill = Ed25519Fulfillment(public_key=owners_before[0])
             ffill_tx = Fulfillment(ffill, owners_before)
             data = Data(payload)
             return cls(cls.CREATE, [ffill_tx], [cond_tx], data)
         else:
-            # TODO: figure out exception
-            raise Exception()
+            raise ValueError("This is not the case you're looking for ;)")
 
     def __eq__(self, other):
         return self.to_dict() == other.to_dict()
@@ -380,8 +379,12 @@ class Transaction(object):
 
     def fulfillments_valid(self, input_conditions=None):
         if self.operation in (Transaction.CREATE, Transaction.GENESIS):
-            return self._fulfillments_valid([cond.fulfillment.condition_uri
-                                             for cond in self.conditions])
+            # NOTE: Since in the case of a create-transaction we do not have
+            #       to check for input_conditions, we're just submitting dummy
+            #       values to the actual method. This simplifies it's logic
+            #       greatly, as we do not have to check against `None` values.
+            return self._fulfillments_valid(['dummyvalue'
+                                             for cond in self.fulfillments])
         elif self.operation == Transaction.TRANSFER:
             return self._fulfillments_valid([cond.fulfillment.condition_uri
                                              for cond in input_conditions])
@@ -397,21 +400,28 @@ class Transaction(object):
             tx = Transaction(self.operation, [fulfillment], [condition],
                              self.data, self.timestamp, self.version)
             tx_serialized = Transaction._to_str(Transaction._remove_signatures(tx.to_dict()))
-            return Transaction._fulfillment_valid(fulfillment, tx_serialized,
+            return Transaction._fulfillment_valid(fulfillment, self.operation,
+                                                  tx_serialized,
                                                   input_condition_uri)
 
+        # TODO: For sure there need to be an equal amount of fulfillments and
+        #       input_conditions, but not sure if there must be an equal amount
+        #       of conditions
         if not fulfillments_count == conditions_count == input_condition_uris_count:
             raise ValueError('Fulfillments, conditions and input_condition_uris must have the same count')
         else:
             return reduce(and_, map(gen_tx, self.fulfillments, self.conditions, input_condition_uris))
 
     @staticmethod
-    def _fulfillment_valid(fulfillment, tx_serialized, input_condition_uri=None):
+    def _fulfillment_valid(fulfillment, operation, tx_serialized, input_condition_uri=None):
         try:
             parsed_fulfillment = CCFulfillment.from_uri(fulfillment.fulfillment.serialize_uri())
         except (TypeError, ValueError, ParsingError):
             return False
-        input_condition_valid = input_condition_uri == fulfillment.fulfillment.condition_uri
+        if operation in (Transaction.CREATE, Transaction.GENESIS):
+            input_condition_valid = True
+        else:
+            input_condition_valid = input_condition_uri == fulfillment.fulfillment.condition_uri
 
         # NOTE: We pass a timestamp to `.validate`, as in case of a timeout condition we'll have to validate against
         #       it.
