@@ -2,7 +2,10 @@
 
 The [Terraform documentation has installation instructions](https://www.terraform.io/intro/getting-started/install.html) for all common operating systems.
 
-Note: Hashicorp (the company behind Terraform) will try to convince you that running Terraform on their servers (inside Atlas) would be great. **While that might be true for many, it is not true for BigchainDB.** BigchainDB federations are supposed to be decentralized, and if everyone used Atlas, that would be a point of centralization. If you don't want to run Terraform on your local machine, you could install it on a cloud machine under your control (e.g. on AWS).
+If you don't want to run Terraform on your local machine, you can install it on a cloud machine under your control (e.g. on AWS).
+
+Note: Hashicorp has an enterprise version of Terraform called "Terraform Enterprise." You can license it by itself or get it as part of Atlas. If you decide to license Terraform Enterprise or Atlas, be sure to install it on your own hosting (i.e. "on premise"), not on the hosting provided by Hashicorp. The reason is that BigchainDB clusters are supposed to be decentralized. If everyone used Hashicorp's hosted Atlas, then that would be a point of centralization.
+
 
 ## Ubuntu Installation Tips
 

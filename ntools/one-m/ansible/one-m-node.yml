@@ -1,0 +1,11 @@
+---
+# This playbook deploys a BigchainDB node in one machine (one-m).
+
+- name: Ensure a one-machine BigchainDB node is configured properly
+  hosts: all
+  remote_user: ubuntu
+
+  roles:
+    - bcdb_base
+    - ntp
+    # TODO: upgrade pip and setuptools, see https://github.com/bobbyrenwick/ansible-pip 

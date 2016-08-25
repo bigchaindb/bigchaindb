@@ -73,3 +73,7 @@ deploy-cluster-aws/hostlist.py
 deploy-cluster-aws/ssh_key.py
 benchmarking-tests/hostlist.py
 benchmarking-tests/ssh_key.py
+
+# Ansible-specific files
+ntools/one-m/ansible/hosts
+ntools/one-m/ansible/ansible.cfg

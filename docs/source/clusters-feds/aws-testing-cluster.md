@@ -28,7 +28,7 @@ What did you just install?
 * "[Fabric](http://www.fabfile.org/) is a Python (2.5-2.7) library and command-line tool for streamlining the use of SSH for application deployment or systems administration tasks."
 * [fabtools](https://github.com/ronnix/fabtools) are "tools for writing awesome Fabric files"
 * [requests](http://docs.python-requests.org/en/master/) is a Python package/library for sending HTTP requests
-* "[Boto](https://boto3.readthedocs.org/en/latest/) is the Amazon Web Services (AWS) SDK for Python, which allows Python developers to write software that makes use of Amazon services like S3 and EC2." (`boto3` is the name of the latest Boto package.)
+* "[Boto](https://boto3.readthedocs.io/en/latest/) is the Amazon Web Services (AWS) SDK for Python, which allows Python developers to write software that makes use of Amazon services like S3 and EC2." (`boto3` is the name of the latest Boto package.)
 * [The aws-cli package](https://pypi.python.org/pypi/awscli), which is an AWS Command Line Interface (CLI).
 
 

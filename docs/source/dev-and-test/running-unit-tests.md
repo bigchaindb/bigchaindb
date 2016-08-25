@@ -16,7 +16,7 @@ then in another terminal, do:
 $ python setup.py test
 ```
 
-(Aside: How does the above command work? The documentation for [pytest-runner](https://pypi.python.org/pypi/pytest-runner) explains. We use [pytest](http://pytest.org/latest/) to write all unit tests.)
+(Aside: How does the above command work? The documentation for [pytest-runner](https://pypi.python.org/pypi/pytest-runner) explains. We use [pytest](http://docs.pytest.org/en/latest/) to write all unit tests.)
 
 
 ### Using docker-compose to Run the Tests

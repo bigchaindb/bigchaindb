@@ -1,0 +1,25 @@
+---
+# ansible/roles/bcdb_base/tasks/main.yml
+
+# Note: "become: true" basically means "become root user for this task" i.e. sudo <cmd>
+# See https://docs.ansible.com/ansible/become.html
+
+- name: Do the equivalent of "sudo apt-get update"
+  apt: update_cache=yes
+  become: true
+
+- name: Configure all unpacked but unconfigured packages
+  shell: /usr/bin/dpkg --configure -a
+  become: true
+
+- name: Attempt to correct a system with broken dependencies in place
+  shell: /usr/bin/apt-get -y -f install
+  become: true
+
+- name: Ensure the LATEST git g++ python3-dev are installed
+  apt: name={{item}} state=latest
+  become: true
+  with_items:
+    - git
+    - g++
+    - python3-dev

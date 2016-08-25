@@ -12,7 +12,7 @@ Table of Contents
    node-cluster-fed
    nodes/index
    dev-and-test/index
-   prod-node-setup-mgmt/index
+   prod-node-depl-tplt/index
    server-reference/index
    drivers-clients/index
    clusters-feds/index

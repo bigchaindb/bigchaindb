@@ -19,7 +19,7 @@ It should ask you the value of `ssh_key_name`.
 
 It figured out the plan by reading all the `.tf` Terraform files in the directory.
 
-If you don't want to be asked for the `ssh_key_name`, you can change the default value of `ssh_key_name` or [you can set an environmen variable](https://www.terraform.io/docs/configuration/variables.html) named `TF_VAR_ssh_key_name`.
+If you don't want to be asked for the `ssh_key_name`, you can change the default value of `ssh_key_name` (in the file `variables.tf`) or [you can set an environmen variable](https://www.terraform.io/docs/configuration/variables.html) named `TF_VAR_ssh_key_name`.
 
 
 ## Provision
@@ -34,7 +34,7 @@ Terraform will report its progress as it provisions all the resources. Once it's
 At this point, there is no software installed on the instance except for Ubuntu 14.04 and whatever else came with the Amazon Machine Image (AMI) specified in the configuration. The next step is to use Ansible to install and configure all the necessary software.
 
 
-## (Optional) "Destroy"
+## Optional: "Destroy"
 
 If you want to shut down all the resources just provisioned, you must first disable termination protection on the instance:
 
