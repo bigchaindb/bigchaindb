@@ -5,6 +5,7 @@ from uuid import uuid4
 
 from cryptoconditions import (
     Fulfillment as CCFulfillment,
+    Condition as CCCondition,
     ThresholdSha256Fulfillment,
     Ed25519Fulfillment,
     PreimageSha256Fulfillment,
@@ -126,25 +127,35 @@ class Condition(object):
         return self.to_dict() == other.to_dict()
 
     def to_dict(self, cid=None):
+        # TODO FOR CC: It must be able to recognize a hashlock condition
+        #              and fulfillment!
+        condition = {}
+        try:
+            condition['details'] = self.fulfillment.to_dict()
+        except AttributeError:
+            pass
+
+        try:
+            condition['uri'] = self.fulfillment.condition_uri
+        except AttributeError:
+            condition['uri'] = self.fulfillment
+
         cond = {
             'owners_after': self.owners_after,
-            'condition': {
-                'details': self.fulfillment.to_dict(),
-                'uri': self.fulfillment.condition_uri,
-            }
+            'condition': condition
         }
-        # TODO: This case should have it's own serialization test
-        if self.owners_after is None:
-            # NOTE: Hashlock condition case, we cannot show the `fulfillment`'s
-            #       details, as this would expose the secret
-            cond['condition'].pop('details')
         if cid is not None:
             cond['cid'] = cid
         return cond
 
     @classmethod
     def from_dict(cls, cond):
-        fulfillment = CCFulfillment.from_dict(cond['condition']['details'])
+        # TODO: This case should have it's own serialization test
+        try:
+            fulfillment = CCFulfillment.from_dict(cond['condition']['details'])
+        except KeyError:
+            # NOTE: Hashlock condition case
+            fulfillment = cond['condition']['uri']
         return cls(fulfillment, cond['owners_after'])
 
 
@@ -298,12 +309,12 @@ class Transaction(object):
         elif len(owners_before) == 1 and len(owners_after) == 0 and secret is not None:
             # NOTE: Hashlock condition case
             hashlock = PreimageSha256Fulfillment(preimage=secret)
-            cond_tx = Condition(hashlock)
+            cond_tx = Condition(hashlock.condition_uri)
             ffill = Ed25519Fulfillment(public_key=owners_before[0])
             ffill_tx = Fulfillment(ffill, owners_before)
             return cls(cls.CREATE, [ffill_tx], [cond_tx], data)
 
-        elif len(owners_before) > 0 and len(owners_after) == 0 and secret is None:
+        elif len(owners_before) == 1 and len(owners_after) == 0 and secret is None:
             raise ValueError('Define a secret to create a hashlock condition')
         else:
             raise ValueError("This is not the case you're looking for ;)")
