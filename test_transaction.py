@@ -477,6 +477,14 @@ def test_create_create_transaction_single_io(user_cond, user_pub):
     assert tx == expected
 
 
+def test_validate_single_io_create_transaction(user_cond, user_pub, user_priv):
+    from bigchaindb_common.transaction import Transaction
+
+    tx = Transaction.create([user_pub], [user_pub], {'message': 'hello'})
+    tx = tx.sign([user_priv])
+    assert tx.fulfillments_valid() is True
+
+
 def test_create_create_transaction_multiple_io(user_cond, user2_cond, user_pub,
                                                user2_pub):
     from bigchaindb_common.transaction import Transaction
@@ -521,6 +529,16 @@ def test_create_create_transaction_multiple_io(user_cond, user2_cond, user_pub,
     assert tx == expected
 
 
+def test_validate_multiple_io_create_transaction(user_cond, user_pub, user_priv,
+                                                 user2_pub, user2_priv):
+    from bigchaindb_common.transaction import Transaction
+
+    tx = Transaction.create([user_pub, user2_pub], [user_pub, user2_pub],
+                            {'message': 'hello'})
+    tx = tx.sign([user_priv, user2_priv])
+    assert tx.fulfillments_valid() is True
+
+
 def test_create_create_transaction_threshold(user_pub, user2_pub, user3_pub,
                                              user_user2_threshold_cond,
                                              user_user2_threshold_ffill):
@@ -556,3 +574,13 @@ def test_create_create_transaction_threshold(user_pub, user2_pub, user3_pub,
     tx['transaction'].pop('timestamp')
 
     assert tx == expected
+
+
+def test_validate_threshold_create_transaction(user_cond, user_pub, user_priv,
+                                               user2_pub):
+    from bigchaindb_common.transaction import Transaction
+
+    tx = Transaction.create([user_pub], [user_pub, user2_pub],
+                            {'message': 'hello'})
+    tx = tx.sign([user_priv])
+    assert tx.fulfillments_valid() is True
