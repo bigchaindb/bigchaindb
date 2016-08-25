@@ -7,6 +7,7 @@ from cryptoconditions import (
     Fulfillment as CCFulfillment,
     ThresholdSha256Fulfillment,
     Ed25519Fulfillment,
+    PreimageSha256Fulfillment,
 )
 from cryptoconditions.exceptions import ParsingError
 
@@ -116,8 +117,8 @@ class Condition(object):
         """
         self.fulfillment = fulfillment
 
-        if not isinstance(owners_after, list):
-            raise TypeError('`owners_after` must be a list instance')
+        if not isinstance(owners_after, list) and owners_after is not None:
+            raise TypeError('`owners_after` must be a list instance or None')
         else:
             self.owners_after = owners_after
 
@@ -132,6 +133,11 @@ class Condition(object):
                 'uri': self.fulfillment.condition_uri,
             }
         }
+        # TODO: This case should have it's own serialization test
+        if self.owners_after is None:
+            # NOTE: Hashlock condition case, we cannot show the `fulfillment`'s
+            #       details, as this would expose the secret
+            cond['condition'].pop('details')
         if cid is not None:
             cond['cid'] = cid
         return cond
@@ -250,12 +256,13 @@ class Transaction(object):
             self.data = data
 
     @classmethod
-    def create(cls, owners_before, owners_after, payload):
+    def create(cls, owners_before, owners_after, payload, secret=None):
         if not isinstance(owners_before, list):
             raise TypeError('`owners_before` must be a list instance')
         if not isinstance(owners_after, list):
             raise TypeError('`owners_after` must be a list instance')
 
+        data = Data(payload)
         if len(owners_before) == len(owners_after) and len(owners_after) == 1:
             # NOTE: Standard case, one owner before, one after.
             # NOTE: For this case its sufficient to use the same
@@ -264,7 +271,6 @@ class Transaction(object):
             ffill_for_cond = Ed25519Fulfillment(public_key=owners_after[0])
             ffill_tx = Fulfillment(ffill, owners_before)
             cond_tx = Condition(ffill_for_cond, owners_after)
-            data = Data(payload)
             return cls(cls.CREATE, [ffill_tx], [cond_tx], data)
 
         elif len(owners_before) == len(owners_after) and len(owners_after) > 1:
@@ -275,7 +281,6 @@ class Transaction(object):
             conds = [Condition(Ed25519Fulfillment(public_key=owner_after),
                                [owner_after])
                      for owner_after in owners_after]
-            data = Data(payload)
             return cls(cls.CREATE, ffills, conds, data)
 
         elif len(owners_before) == 1 and len(owners_after) > 1:
@@ -288,8 +293,18 @@ class Transaction(object):
             #       a create? I guess so?!
             ffill = Ed25519Fulfillment(public_key=owners_before[0])
             ffill_tx = Fulfillment(ffill, owners_before)
-            data = Data(payload)
             return cls(cls.CREATE, [ffill_tx], [cond_tx], data)
+
+        elif len(owners_before) == 1 and len(owners_after) == 0 and secret is not None:
+            # NOTE: Hashlock condition case
+            hashlock = PreimageSha256Fulfillment(preimage=secret)
+            cond_tx = Condition(hashlock)
+            ffill = Ed25519Fulfillment(public_key=owners_before[0])
+            ffill_tx = Fulfillment(ffill, owners_before)
+            return cls(cls.CREATE, [ffill_tx], [cond_tx], data)
+
+        elif len(owners_before) > 0 and len(owners_after) == 0 and secret is None:
+            raise ValueError('Define a secret to create a hashlock condition')
         else:
             raise ValueError("This is not the case you're looking for ;)")
 
