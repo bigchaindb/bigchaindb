@@ -65,8 +65,8 @@ class TransactionStatusApi(Resource):
             tx_id (str): the id of the transaction.
 
         Return:
-            A JSON string containing the status of the transaction.
-            Possible values: "valid", "invalid", "undecided", "backlog"
+            A ``dict`` in the format ``{'status': <status>}``, where ``<status>``
+is one      of "valid", "invalid", "undecided", "backlog".
         """
 
         pool = current_app.config['bigchain_pool']
@@ -85,7 +85,7 @@ class TransactionListApi(Resource):
         """API endpoint to push transactions to the Federation.
 
         Return:
-            A JSON string containing the data about the transaction.
+            A ``dict`` containing the data about the transaction.
         """
         pool = current_app.config['bigchain_pool']
         monitor = current_app.config['monitor']
