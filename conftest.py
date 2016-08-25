@@ -59,16 +59,6 @@ def user3_pub():
 
 
 @pytest.fixture
-def user_pub_keys():
-    return [USER_PUBLIC_KEY, USER2_PUBLIC_KEY]
-
-
-@pytest.fixture
-def user_priv_keys():
-    return [USER_PRIVATE_KEY, USER2_PRIVATE_KEY]
-
-
-@pytest.fixture
 def ffill_uri():
     return CC_FULFILLMENT_URI
 
@@ -79,31 +69,62 @@ def cond_uri():
 
 
 @pytest.fixture
-def cc_ffill(ffill_uri, user_pub):
-    from cryptoconditions import Fulfillment
-    return Fulfillment.from_uri(ffill_uri)
+def user_Ed25519(user_pub):
+    from cryptoconditions import Ed25519Fulfillment
+    return Ed25519Fulfillment(public_key=user_pub)
 
 
 @pytest.fixture
-def default_single_ffill(user_pub):
+def user_user2_threshold(user_pub, user2_pub):
+    from cryptoconditions import (ThresholdSha256Fulfillment,
+                                  Ed25519Fulfillment)
+    user_pub_keys = [user_pub, user2_pub]
+    threshold = ThresholdSha256Fulfillment(threshold=len(user_pub_keys))
+    for user_pub in user_pub_keys:
+        threshold.add_subfulfillment(Ed25519Fulfillment(public_key=user_pub))
+    return threshold
+
+
+@pytest.fixture
+def user2_Ed25519(user2_pub):
+    from cryptoconditions import Ed25519Fulfillment
+    return Ed25519Fulfillment(public_key=user2_pub)
+
+
+@pytest.fixture
+def user_ffill(user_Ed25519, user_pub):
     from bigchaindb_common.transaction import Fulfillment
-    return Fulfillment.gen_default([user_pub])
+    return Fulfillment(user_Ed25519, [user_pub])
 
 
 @pytest.fixture
-def default_single_cond(default_single_ffill):
-    return default_single_ffill.gen_condition()
-
-
-@pytest.fixture
-def default_threshold_ffill(user_pub_keys):
+def user2_ffill(user2_Ed25519, user2_pub):
     from bigchaindb_common.transaction import Fulfillment
-    return Fulfillment.gen_default(user_pub_keys)
+    return Fulfillment(user2_Ed25519, [user2_pub])
 
 
 @pytest.fixture
-def default_threshold_cond(default_threshold_ffill):
-    return default_threshold_ffill.gen_condition()
+def user_user2_threshold_cond(user_user2_threshold, user_pub, user2_pub):
+    from bigchaindb_common.transaction import Condition
+    return Condition(user_user2_threshold, [user_pub, user2_pub])
+
+
+@pytest.fixture
+def user_user2_threshold_ffill(user_user2_threshold, user_pub, user2_pub):
+    from bigchaindb_common.transaction import Fulfillment
+    return Fulfillment(user_user2_threshold, [user_pub, user2_pub])
+
+
+@pytest.fixture
+def user_cond(user_Ed25519, user_pub):
+    from bigchaindb_common.transaction import Condition
+    return Condition(user_Ed25519, [user_pub])
+
+
+@pytest.fixture
+def user2_cond(user2_Ed25519, user2_pub):
+    from bigchaindb_common.transaction import Condition
+    return Condition(user2_Ed25519, [user2_pub])
 
 
 @pytest.fixture
@@ -123,24 +144,29 @@ def data(payload, payload_id):
 
 
 @pytest.fixture
-def utx(default_single_ffill, default_single_cond):
+def utx(user_ffill, user_cond):
     from bigchaindb_common.transaction import Transaction
-    return Transaction(Transaction.CREATE, [default_single_ffill], [default_single_cond])
+    return Transaction(Transaction.CREATE, [user_ffill], [user_cond])
 
 
 @pytest.fixture
-def transfer_utx(utx):
-    from bigchaindb_common.transaction import Condition
-    from cryptoconditions import Ed25519Fulfillment
-
-    cond = Condition(Ed25519Fulfillment(public_key=user2_pub).condition_uri, [user2_pub])
-    return utx.transfer([cond])
+def tx(utx, user_priv):
+    return utx.sign([user_priv])
 
 
 @pytest.fixture
-def transfer_tx(utx, user2_pub, user_priv):
-    from bigchaindb_common.transaction import Condition
-    from cryptoconditions import Ed25519Fulfillment
+def transfer_utx(user_cond, user2_cond, utx):
+    from bigchaindb_common.transaction import (Fulfillment, TransactionLink,
+                                               Transaction)
+    from cryptoconditions import Fulfillment as CCFulfillment
 
-    cond = Condition(Ed25519Fulfillment(public_key=user2_pub).condition_uri, [user2_pub])
-    return utx.transfer([cond]).sign([user_priv])
+    user_cond = user_cond.to_dict()
+    ffill = Fulfillment(utx.conditions[0].fulfillment,
+                        user_cond['owners_after'],
+                        TransactionLink(utx.id, 0))
+    return Transaction('TRANSFER', [ffill], [user2_cond])
+
+
+@pytest.fixture
+def transfer_tx(transfer_utx, user_priv):
+    return transfer_utx.sign([user_priv])
