@@ -76,6 +76,43 @@ def test_condition_deserialization(user_Ed25519, user_pub):
     assert cond == expected
 
 
+def test_condition_hashlock_serialization():
+    from bigchaindb_common.transaction import Condition
+    from cryptoconditions import PreimageSha256Fulfillment
+
+    secret = b'wow much secret'
+    hashlock = PreimageSha256Fulfillment(preimage=secret).condition_uri
+
+    expected = {
+        'condition': {
+            'uri': hashlock,
+        },
+        'owners_after': None,
+    }
+    cond = Condition(hashlock)
+
+    assert cond.to_dict() == expected
+
+
+def test_condition_hashlock_deserialization():
+    from bigchaindb_common.transaction import Condition
+    from cryptoconditions import PreimageSha256Fulfillment
+
+    secret = b'wow much secret'
+    hashlock = PreimageSha256Fulfillment(preimage=secret).condition_uri
+    expected = Condition(hashlock)
+
+    cond = {
+        'condition': {
+            'uri': hashlock
+        },
+        'owners_after': None,
+    }
+    cond = Condition.from_dict(cond)
+
+    assert cond == expected
+
+
 def test_invalid_condition_initialization(cond_uri, user_pub):
     from bigchaindb_common.transaction import Condition
 
@@ -590,7 +627,7 @@ def test_create_create_transaction_hashlock(user_pub):
     from cryptoconditions import PreimageSha256Fulfillment
 
     secret = b'much secret, wow'
-    hashlock = PreimageSha256Fulfillment(preimage=secret)
+    hashlock = PreimageSha256Fulfillment(preimage=secret).condition_uri
     cond = Condition(hashlock)
 
     expected = {
