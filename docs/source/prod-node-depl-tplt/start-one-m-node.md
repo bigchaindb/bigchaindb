@@ -30,7 +30,7 @@ where `<key-name>` should be replaced by the name of the SSH private key you cre
 
 What did you just do? Running that playbook ensures all the software necessary for a one-machine BigchainDB node is installed, configured, and running properly. You can run that playbook on a regular schedule to ensure that the system stays properly configured. If something is okay, it does nothing; it only takes action when something is not as-desired.
 
-Note: At the time of writing, the playbook only installs, configures and runs an NTP daemon, but more is coming soon.
+Note: At the time of writing (Aug. 25, 2016), the playbook isn't complete, so not all of the above happens yet.
 
 
 ## Optional: Create an Ansible Config File
