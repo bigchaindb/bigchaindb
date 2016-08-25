@@ -102,6 +102,7 @@ setup(
         'logstats==0.2.1',
         'base58==0.2.2',
         'flask==0.10.1',
+        'flask-restful~=0.3.0',
         'requests~=2.9',
         'gunicorn~=19.0',
         'multipipes~=0.1.0',
