@@ -249,6 +249,51 @@ class Transaction(object):
         else:
             self.data = data
 
+    @classmethod
+    def create(cls, owners_before, owners_after, payload):
+        if not isinstance(owners_before, list):
+            raise TypeError('`owners_before` must be a list instance')
+        if not isinstance(owners_after, list):
+            raise TypeError('`owners_after` must be a list instance')
+
+        if len(owners_before) == len(owners_after) and len(owners_after) == 1:
+            # NOTE: Standard case, one owner before, one after.
+            # NOTE: For this case its sufficient to use the same
+            #       fulfillment for the fulfillment and condition.
+            ffill = Ed25519Fulfillment(public_key=owners_before[0])
+            ffill_for_cond = Ed25519Fulfillment(public_key=owners_after[0])
+            ffill_tx = Fulfillment(ffill, owners_before)
+            cond_tx = Condition(ffill_for_cond, owners_after)
+            data = Data(payload)
+            return cls(cls.CREATE, [ffill_tx], [cond_tx], data)
+
+        elif len(owners_before) == len(owners_after) and len(owners_after) > 1:
+            # NOTE: Multiple inputs and outputs case.
+            ffills = [Fulfillment(Ed25519Fulfillment(public_key=owner_before),
+                                  [owner_before])
+                      for owner_before in owners_before]
+            conds = [Condition(Ed25519Fulfillment(public_key=owner_after),
+                               [owner_after])
+                     for owner_after in owners_after]
+            data = Data(payload)
+            return cls(cls.CREATE, ffills, conds, data)
+
+        elif len(owners_before) == 1 and len(owners_after) > 1:
+            # NOTE: Multiple owners case
+            threshold = ThresholdSha256Fulfillment(threshold=len(owners_after))
+            for owner_after in owners_after:
+                threshold.add_subfulfillment(Ed25519Fulfillment(public_key=owner_after))
+            cond_tx = Condition(threshold, owners_after)
+            # TODO: Is this correct? Can I fulfill a threshold condition in
+            #       a create? I guess so.
+            ffill = Ed25519Fulfillment(public_key=owners_before[0])
+            ffill_tx = Fulfillment(ffill, owners_before)
+            data = Data(payload)
+            return cls(cls.CREATE, [ffill_tx], [cond_tx], data)
+        else:
+            # TODO: figure out exception
+            raise Exception()
+
     def __eq__(self, other):
         return self.to_dict() == other.to_dict()
 
