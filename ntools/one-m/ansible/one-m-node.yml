@@ -8,4 +8,4 @@
   roles:
     - bcdb_base
     - ntp
-    # TODO: upgrade pip and setuptools, see https://github.com/bobbyrenwick/ansible-pip 
+    - db_storage

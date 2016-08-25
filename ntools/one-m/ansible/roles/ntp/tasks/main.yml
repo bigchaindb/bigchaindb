@@ -5,13 +5,15 @@
   apt: name=ntpdate state=absent
   become: true
 
-- name: Ensure the LATEST ntp is installed and do "sudo apt-get update" 
+- name: Ensure the latest ntp is installed
   apt: name=ntp state=latest update_cache=yes
   become: true
 
 - name: Retrieve facts about the file /etc/ntp.conf
   stat: path=/etc/ntp.conf
   register: ntp_conf_file
+
+- debug: var=ntp_conf_file.stat.exists
 
 - name: Fail when /etc/ntp.conf doesn't exist
   fail: msg="The NTP config file /etc/ntp.conf doesn't exist'"
