@@ -66,7 +66,7 @@ class TransactionStatusApi(Resource):
 
         Return:
             A ``dict`` in the format ``{'status': <status>}``, where ``<status>``
-is one      of "valid", "invalid", "undecided", "backlog".
+            is one of "valid", "invalid", "undecided", "backlog".
         """
 
         pool = current_app.config['bigchain_pool']
