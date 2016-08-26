@@ -2,4 +2,4 @@
 # ansible/roles/common/handlers/main.yml
 
 - name: restart ntp
-  service: name=ntpd state=restarted
+  service: name=ntp state=restarted
