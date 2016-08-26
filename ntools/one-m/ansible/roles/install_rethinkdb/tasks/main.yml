@@ -2,7 +2,9 @@
 # ansible/roles/install_rethinkdb/tasks/main.yml
 
 # Note: the .list extension will be added to the rethinkdb filename automatically
-- name: Ensure RethinkDB's APT repository for Ubuntu trusty is present in /etc/apt/sources.list.d/rethinkdb.list
+- name: >
+    Ensure RethinkDB's APT repository for Ubuntu trusty is present
+    in /etc/apt/sources.list.d/rethinkdb.list
   apt_repository:
     repo='deb http://download.rethinkdb.com/apt trusty main'
     filename=rethinkdb
