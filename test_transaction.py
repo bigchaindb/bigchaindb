@@ -506,7 +506,6 @@ def test_create_create_transaction_single_io(user_cond, user_pub):
     }
 
     tx = Transaction.create([user_pub], [user_pub], {'message': 'hello'}).to_dict()
-    # TODO: Fix this with monkeypatching
     tx.pop('id')
     tx['transaction']['data'].pop('uuid')
     tx['transaction'].pop('timestamp')
@@ -558,7 +557,6 @@ def test_create_create_transaction_multiple_io(user_cond, user2_cond, user_pub,
     }
     tx = Transaction.create([user_pub, user2_pub], [user_pub, user2_pub],
                             {'message': 'hello'}).to_dict()
-    # TODO: Fix this with monkeypatching
     tx.pop('id')
     tx['transaction']['data'].pop('uuid')
     tx['transaction'].pop('timestamp')
@@ -605,7 +603,6 @@ def test_create_create_transaction_threshold(user_pub, user2_pub, user3_pub,
     }
     tx = Transaction.create([user_pub], [user_pub, user2_pub],
                             {'message': 'hello'}).to_dict()
-    # TODO: Fix this with monkeypatching
     tx.pop('id')
     tx['transaction']['data'].pop('uuid')
     tx['transaction'].pop('timestamp')
@@ -655,7 +652,6 @@ def test_create_create_transaction_hashlock(user_pub):
 
     tx = Transaction.create([user_pub], [], {'message': 'hello'},
                             secret).to_dict()
-    # TODO: Fix this with monkeypatching
     tx.pop('id')
     tx['transaction']['data'].pop('uuid')
     tx['transaction'].pop('timestamp')
@@ -670,3 +666,56 @@ def test_validate_hashlock_create_transaction(user_pub, user_priv):
                             b'much secret, wow')
     tx = tx.sign([user_priv])
     assert tx.fulfillments_valid() is True
+
+
+def test_conditions_to_inputs(tx):
+    ffills = tx.to_spendable_fulfillments([0])
+    assert len(ffills) == 1
+    ffill= ffills.pop()
+    assert ffill.fulfillment == tx.conditions[0].fulfillment
+    assert ffill.owners_before == tx.conditions[0].owners_after
+    assert ffill.tx_input.txid == tx.id
+    assert ffill.tx_input.cid == 0
+
+
+def test_create_transfer_transaction_single_io(tx, user_pub, user2_pub,
+                                               user2_cond, user_priv):
+    from copy import deepcopy
+    from bigchaindb_common.transaction import Transaction
+    from bigchaindb_common.util import serialize
+    from bigchaindb_common.crypto import SigningKey
+
+    expected = {
+        'transaction': {
+            'conditions': [user2_cond.to_dict(0)],
+            'data': None,
+            'fulfillments': [
+                {
+                    'owners_before': [
+                        user_pub
+                    ],
+                    'fid': 0,
+                    'fulfillment': None,
+                    'input': {
+                        'txid': tx.id,
+                        'cid': 0
+                    }
+                }
+            ],
+            'operation': 'TRANSFER',
+        },
+        'version': 1
+    }
+    inputs = tx.to_spendable_fulfillments([0])
+    transfer_tx = Transaction.transfer(inputs, [user2_pub], None)
+    transfer_tx = transfer_tx.sign([user_priv])
+    transfer_tx = transfer_tx.to_dict()
+
+    expected_input = deepcopy(inputs[0])
+    expected['id'] = transfer_tx['id']
+    expected['transaction']['timestamp'] = transfer_tx['transaction']['timestamp']
+    expected_input.fulfillment.sign(serialize(expected), SigningKey(user_priv))
+    expected_ffill = expected_input.fulfillment.serialize_uri()
+    transfer_ffill = transfer_tx['transaction']['fulfillments'][0]['fulfillment']
+    assert transfer_ffill == expected_ffill
+    assert Transaction.from_dict(transfer_tx).fulfillments_valid([tx.conditions[0]]) is True
