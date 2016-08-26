@@ -3,7 +3,7 @@ variable "aws_region" {
 }
 
 variable "aws_instance_type" {
-  default = "m4.xlarge"
+  default = "m4.large"
 }
 
 variable "root_storage_in_GiB" {
