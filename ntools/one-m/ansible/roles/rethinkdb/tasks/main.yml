@@ -49,9 +49,3 @@
 - name: Ensure rethinkdb is now started
   service: name=rethinkdb state=started
   become: true
-
-# Other way (not idempotent):
-# Note: The default is for runuser and rungroup to both be rethinkdb
-#- name: Run rethinkdb as a daemon
-#  shell: rethinkdb --config-file /etc/rethinkdb/instances.d/instance1.conf --daemon
-#  become: true
