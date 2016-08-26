@@ -9,3 +9,4 @@
     - bcdb_base
     - ntp
     - db_storage
+    - install_rethinkdb
