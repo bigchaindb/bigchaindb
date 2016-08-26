@@ -24,3 +24,5 @@
 - name: Ensure the ntp service is now started and should start on boot (enabled=yes)
   service: name=ntp state=started enabled=yes
   become: true
+
+# All notified handlers are executed now (only once each, and only if notified)
