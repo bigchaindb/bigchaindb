@@ -158,8 +158,6 @@ def tx(utx, user_priv):
 def transfer_utx(user_cond, user2_cond, utx):
     from bigchaindb_common.transaction import (Fulfillment, TransactionLink,
                                                Transaction)
-    from cryptoconditions import Fulfillment as CCFulfillment
-
     user_cond = user_cond.to_dict()
     ffill = Fulfillment(utx.conditions[0].fulfillment,
                         user_cond['owners_after'],
