@@ -1,0 +1,57 @@
+---
+# ansible/roles/rethinkdb/tasks/main.yml
+
+# Note: the .list extension will be added to the rethinkdb filename automatically
+- name: >
+    Ensure RethinkDB's APT repository for Ubuntu trusty is present
+    in /etc/apt/sources.list.d/rethinkdb.list
+  apt_repository:
+    repo='deb http://download.rethinkdb.com/apt trusty main'
+    filename=rethinkdb
+    state=present
+  become: true
+
+- name: Ensure RethinkDB's public GPG key is in the set of APT keys
+  apt_key: url=http://download.rethinkdb.com/apt/pubkey.gpg state=present
+  become: true
+
+- name: Ensure the latest rethinkdb Ubuntu package is installed
+  apt: name=rethinkdb state=latest update_cache=yes
+  become: true
+
+- name: Ensure the /data directory's owner and group are both 'rethinkdb'
+  file: path=/data state=directory owner=rethinkdb group=rethinkdb
+  become: true
+
+# To enable starting RethinkDB on boot (on init.d systems),
+# the config file must be put in /etc/rethinkdb/instances.d/
+# See https://www.rethinkdb.com/docs/start-on-startup/
+# Note: This task does NOT have a notify: rethinkdb restart
+# A task to ensure RethinkDB is started comes later.
+- name: Write a RethinkDB config file
+  template:
+    src=rethinkdb.conf.j2
+    dest=/etc/rethinkdb/instances.d/instance1.conf
+    owner=rethinkdb
+    group=rethinkdb
+    mode=0664
+  become: true
+
+- name: Gather facts about the file /data/metadata
+  stat: path=/data/metadata
+  register: data_metadata_file
+
+- name: Create /data/metadata file if it doesn't exist
+  file: path=/data/metadata state=touch owner=rethinkdb group=rethinkdb mode=0664
+  when: not data_metadata_file.stat.exists
+  become: true
+
+- name: Ensure rethinkdb is now started
+  service: name=rethinkdb state=started
+  become: true
+
+# Other way (not idempotent):
+# Note: The default is for runuser and rungroup to both be rethinkdb
+#- name: Run rethinkdb as a daemon
+#  shell: rethinkdb --config-file /etc/rethinkdb/instances.d/instance1.conf --daemon
+#  become: true
