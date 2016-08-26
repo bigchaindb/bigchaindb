@@ -5,7 +5,6 @@ from uuid import uuid4
 
 from cryptoconditions import (
     Fulfillment as CCFulfillment,
-    Condition as CCCondition,
     ThresholdSha256Fulfillment,
     Ed25519Fulfillment,
     PreimageSha256Fulfillment,
@@ -267,7 +266,8 @@ class Transaction(object):
             self.data = data
 
     @classmethod
-    def create(cls, owners_before, owners_after, payload, secret=None):
+    def create(cls, owners_before, owners_after, payload, secret=None,
+               time_expire=None):
         if not isinstance(owners_before, list):
             raise TypeError('`owners_before` must be a list instance')
         if not isinstance(owners_after, list):
@@ -314,13 +314,41 @@ class Transaction(object):
             ffill_tx = Fulfillment(ffill, owners_before)
             return cls(cls.CREATE, [ffill_tx], [cond_tx], data)
 
+        elif len(owners_before) == 1 and len(owners_after) == 0 and time_expire is not None:
+            raise NotImplementedError('Timeout conditions will be implemented later')
+
         elif len(owners_before) == 1 and len(owners_after) == 0 and secret is None:
             raise ValueError('Define a secret to create a hashlock condition')
+
         else:
             raise ValueError("This is not the case you're looking for ;)")
 
+    @classmethod
+    def transfer(cls, inputs, owners_after, payload, secret=None, time_expiry=None):
+        if not isinstance(inputs, list):
+            raise TypeError('`inputs` must be a list instance')
+        if not isinstance(owners_after, list):
+            raise TypeError('`owners_after` must be a list instance')
+
+        data = Data(payload)
+        if len(inputs) == len(owners_after) and len(owners_after) == 1:
+            ffill_for_cond = Ed25519Fulfillment(public_key=owners_after[0])
+            cond_tx = Condition(ffill_for_cond, owners_after)
+            return cls(cls.TRANSFER, inputs, [cond_tx], data)
+
     def __eq__(self, other):
         return self.to_dict() == other.to_dict()
+
+    # TODO: There might be a better name
+    def to_spendable_fulfillments(self, condition_indices):
+        spendables = []
+        for cid in condition_indices:
+            input_cond = self.conditions[cid]
+            ffill = Fulfillment(input_cond.fulfillment,
+                                input_cond.owners_after,
+                                TransactionLink(self.id, cid))
+            spendables.append(ffill)
+        return spendables
 
     def add_fulfillment(self, fulfillment):
         if fulfillment is not None and not isinstance(fulfillment, Fulfillment):
