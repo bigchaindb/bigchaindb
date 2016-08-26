@@ -44,6 +44,9 @@ If you want to shut down all the resources just provisioned, you must first disa
 
 Terraform should "destroy" (i.e. terminate or delete) all the AWS resources you provisioned above.
 
+If it fails (e.g. because of an attached and mounted EBS volume), then you can terminate the instance using the EC2 console: **Actions** > **Instance State** > **Terminate** > **Yes, Terminate**. Once the instance is terminated, you should still do `terraform destroy` to make sure that all the other resources are destroyed.
+
+
 ## See Also
 
 * The [Terraform Documentation](https://www.terraform.io/docs/)
