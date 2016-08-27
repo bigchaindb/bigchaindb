@@ -15,8 +15,8 @@
   apt_key: url=http://download.rethinkdb.com/apt/pubkey.gpg state=present
   become: true
 
-- name: Ensure the latest rethinkdb Ubuntu package is installed
-  apt: name=rethinkdb state=latest update_cache=yes
+- name: Ensure the Ubuntu package rethinkdb 2.3.4~0trusty is installed
+  apt: name=rethinkdb=2.3.4~0trusty state=present update_cache=yes
   become: true
 
 - name: Ensure the /data directory's owner and group are both 'rethinkdb'
@@ -45,7 +45,13 @@
     group=rethinkdb
     mode=0664
   become: true
+  register: config_file
 
 - name: Ensure rethinkdb is now started
   service: name=rethinkdb state=started
   become: true
+  register: rethinkdb_started
+
+- debug: msg="The RethinkDB config file changed while RethinkDB was already running. 
+    RethinkDB was not stopped and restarted. You must do that manually."
+  when: config_file.changed and (not rethinkdb_started.changed)
