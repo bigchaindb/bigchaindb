@@ -37,7 +37,9 @@
 # See https://www.rethinkdb.com/docs/start-on-startup/
 # Note: This task does NOT have a notify: rethinkdb restart
 # A task to ensure RethinkDB is started comes later.
-- name: Write a RethinkDB config file
+- name: >
+    Generate a RethinkDB config file from rethinkdb.conf.j2 and put it in
+    /etc/rethinkdb/instances.d/instance1.conf
   template:
     src=rethinkdb.conf.j2
     dest=/etc/rethinkdb/instances.d/instance1.conf
