@@ -1,8 +1,8 @@
 import random
 import math
-import operator
 import collections
 
+from itertools import compress
 import rethinkdb as r
 import rapidjson
 
@@ -696,15 +696,27 @@ class Bigchain(object):
             raise exceptions.MultipleVotesError('Block {block_id} has {n_votes} votes cast, but only {n_voters} voters'
                                                 .format(block_id=block['id'], n_votes=str(len(votes)), n_voters=str(n_voters)))
 
+        # vote_cast is the list of votes e.g. [True, True, False]
         vote_cast = [vote['vote']['is_block_valid'] for vote in votes]
+        # prev_block are the ids of the nominal prev blocks e.g.
+        # ['block1_id', 'block1_id', 'block2_id']
+        prev_block = [vote['vote']['previous_block'] for vote in votes]
+        # vote_validity checks whether a vote is valid
+        # or invalid, e.g. [False, True, True]
         vote_validity = [self.consensus.verify_vote_signature(block, vote) for vote in votes]
 
         # element-wise product of stated vote and validity of vote
-        vote_list = list(map(operator.mul, vote_cast, vote_validity))
+        # vote_cast = [True, True, False] and
+        # vote_validity = [False, True, True] gives
+        # [True, False]
+        # Only the correctly signed votes are tallied.
+        vote_list = list(compress(vote_cast, vote_validity))
 
-        # validate votes here
+        # Total the votes. Here, valid and invalid refer
+        # to the vote cast, not whether the vote itself
+        # is valid or invalid.
         n_valid_votes = sum(vote_list)
-        n_invalid_votes = len(vote_list) - n_valid_votes
+        n_invalid_votes = len(vote_cast) - n_valid_votes
 
         # The use of ceiling and floor is to account for the case of an
         # even number of voters where half the voters have voted 'invalid'
@@ -714,6 +726,21 @@ class Bigchain(object):
         if n_invalid_votes >= math.ceil(n_voters / 2):
             return Bigchain.BLOCK_INVALID
         elif n_valid_votes > math.floor(n_voters / 2):
-            return Bigchain.BLOCK_VALID
+            # The block could be valid, but we still need to check if votes
+            # agree on the previous block.
+            #
+            # First, only consider blocks with legitimate votes
+            prev_block_list = list(compress(prev_block, vote_validity))
+            # Next, only consider the blocks with 'yes' votes
+            prev_block_valid_list = list(compress(prev_block_list, vote_list))
+            counts = collections.Counter(prev_block_valid_list)
+            # Make sure the majority vote agrees on previous node.
+            # The majority vote must be the most common, by definition.
+            # If it's not, there is no majority agreement on the previous
+            # block.
+            if counts.most_common()[0][1] > math.floor(n_voters / 2):
+                return Bigchain.BLOCK_VALID
+            else:
+                return Bigchain.BLOCK_INVALID
         else:
             return Bigchain.BLOCK_UNDECIDED
