@@ -1,6 +1,7 @@
 import random
 import math
 import collections
+from copy import deepcopy
 
 from itertools import compress
 import rethinkdb as r
@@ -130,6 +131,9 @@ class Bigchain(object):
             # I am the only node
             assignee = self.me
 
+        # We copy the transaction here to not add `assignee` to the transaction
+        # dictionary passed to this method (as it would update by reference).
+        signed_transaction = deepcopy(signed_transaction)
         # update the transaction
         signed_transaction.update({'assignee': assignee})
 
@@ -151,7 +155,7 @@ class Bigchain(object):
         Returns:
             A dict with the transaction details if the transaction was found.
             Will add the transaction status to payload ('valid', 'undecided',
-            or 'backlog'). If no transaction with that `txid` was found it 
+            or 'backlog'). If no transaction with that `txid` was found it
             returns `None`
         """
 
