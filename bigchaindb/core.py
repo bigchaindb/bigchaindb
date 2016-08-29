@@ -421,7 +421,6 @@ class Bigchain(object):
         else:
             return None
 
-    # TODO: change serialization logic
     def get_owned_ids(self, owner):
         """Retrieve a list of `txids` that can we used has inputs.
 

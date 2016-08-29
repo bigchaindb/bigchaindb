@@ -145,14 +145,15 @@ class BaseConsensusRules(AbstractConsensusRules):
                 raise ValueError('Only `CREATE` transactions can have null inputs')
 
             input_conditions = []
-            for index, ffill in enumerate(transaction.fulfillments):
+            for ffill in transaction.fulfillments:
                 input_txid = ffill.tx_input.txid
+                input_cid = ffill.tx_input.cid
                 input_tx = bigchain.get_transaction(input_txid)
                 if input_tx is None:
                     raise exceptions.TransactionDoesNotExist("input `{}` doesn't exist"
                                                              .format(input_txid))
                 else:
-                    input_conditions.append(input_tx.conditions[index])
+                    input_conditions.append(input_tx.conditions[input_cid])
 
                 spent = bigchain.get_spent(input_txid, ffill.tx_input.cid)
                 if spent and spent.id != transaction.id:
