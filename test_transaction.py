@@ -669,7 +669,7 @@ def test_validate_hashlock_create_transaction(user_pub, user_priv):
 
 
 def test_conditions_to_inputs(tx):
-    ffills = tx.to_spendable_fulfillments([0])
+    ffills = tx.to_inputs([0])
     assert len(ffills) == 1
     ffill= ffills.pop()
     assert ffill.fulfillment == tx.conditions[0].fulfillment
@@ -706,8 +706,8 @@ def test_create_transfer_transaction_single_io(tx, user_pub, user2_pub,
         },
         'version': 1
     }
-    inputs = tx.to_spendable_fulfillments([0])
-    transfer_tx = Transaction.transfer(inputs, [user2_pub], None)
+    inputs = tx.to_inputs([0])
+    transfer_tx = Transaction.transfer(inputs, [user2_pub])
     transfer_tx = transfer_tx.sign([user_priv])
     transfer_tx = transfer_tx.to_dict()
 
