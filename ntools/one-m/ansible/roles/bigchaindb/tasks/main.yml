@@ -1,5 +1,5 @@
 ---
-# ansible/roles/bcdb_base/tasks/main.yml
+# ansible/roles/bigchaindb/tasks/main.yml
 
 # Note: "become: true" basically means "become root user for this task" i.e. sudo <cmd>
 # See https://docs.ansible.com/ansible/become.html
@@ -24,6 +24,39 @@
 - name: Ensure the latest setuptools (Python package) is installed
   pip: executable=pip3 name=setuptools state=latest
   become: true
+
+- name: Install BigchainDB from PyPI using sudo pip3 install bigchaindb
+  pip: executable=pip3 name=bigchaindb state=latest
+  become: true
+
+- name: Gather facts about the file ~/.bigchaindb
+  stat: path={{ ansible_env.HOME }}/.bigchaindb
+  register: home_bigchaindb_config_file
+
+- name: If ~/.bigchaindb doesn't exist, generate a default BigchainDB config file there
+  shell: bigchaindb -y configure
+  when: not home_bigchaindb_config_file.stat.exists
+
+- name: Look up all processes with 'bigchaindb' in their name
+  shell: pgrep bigchaindb
+  ignore_errors: true
+  changed_when: false
+  register: pgrep_bigchaindb
+
+# pgrep_bigchaindb.rc (return code) should be 0 if a bigchaindb process is already running
+
+- name: Ensure a copy of start_bigchaindb.sh is on the remote host
+  copy: src=start_bigchaindb.sh dest=/tmp/start_bigchaindb.sh mode=0775
+  become: true
+
+# Running BigchainDB in the background from Ansible is tricky, see:
+# https://superuser.com/questions/870871/run-a-remote-script-application-in-detached-mode-in-ansible
+- name: If BigchainDB isn't running then run it
+  command: /tmp/start_bigchaindb.sh
+  async: 45
+  poll: 0
+  when: pgrep_bigchaindb.rc != 0
+
 
 # Notes about getting the latest version of pip3:
 #

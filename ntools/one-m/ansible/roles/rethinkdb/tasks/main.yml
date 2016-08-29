@@ -23,14 +23,24 @@
   file: path=/data state=directory owner=rethinkdb group=rethinkdb
   become: true
 
-- name: Gather facts about the file /data/metadata
-  stat: path=/data/metadata
-  register: data_metadata_file
+- name: Gather facts about the file /tmp/created_on_run1
+  stat: path=/tmp/created_on_run1
+  register: file_created_on_run1
 
-- name: Create /data/metadata file if it doesn't exist
-  file: path=/data/metadata state=touch owner=rethinkdb group=rethinkdb mode=0664
-  when: not data_metadata_file.stat.exists
+- name: if the file /tmp/created_on_run1 doesn't exist then create /data/delete_me
+  file: path=/data/delete_me state=touch owner=rethinkdb group=rethinkdb
   become: true
+  when: not file_created_on_run1.stat.exists
+
+- name: if the file /tmp/created_on_run1 doesn't exist then do sudo rm -rf /data/*
+  shell: rm -rf /data/*
+  become: true
+  when: not file_created_on_run1.stat.exists
+
+- name: if the file /tmp/created_on_run1 doesn't exist then create it
+  file: path=/tmp/created_on_run1 state=touch
+  become: true
+  when: not file_created_on_run1.stat.exists
 
 # To enable starting RethinkDB on boot (on init.d systems),
 # the config file must be put in /etc/rethinkdb/instances.d/
@@ -43,8 +53,8 @@
   template:
     src=rethinkdb.conf.j2
     dest=/etc/rethinkdb/instances.d/instance1.conf
-    owner=rethinkdb
-    group=rethinkdb
+    owner=root
+    group=root
     mode=0664
   become: true
   register: config_file
@@ -53,6 +63,8 @@
   service: name=rethinkdb state=started
   become: true
   register: rethinkdb_started
+
+- debug: var=rethinkdb_started
 
 - debug: msg="The RethinkDB config file changed while RethinkDB was already running. 
     RethinkDB was not stopped and restarted. You must do that manually."
