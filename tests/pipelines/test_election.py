@@ -97,8 +97,10 @@ def test_check_requeue_transaction(b, user_vk):
     test_block = b.create_block([tx1])
 
     e.requeue_transactions(test_block)
+    tx_backlog = r.table('backlog').get(tx1['id']).run(b.conn)
+    tx_backlog.pop('assignee')
 
-    assert r.table('backlog').get(tx1['id']).run(b.conn) == tx1
+    assert tx_backlog == tx1
 
 
 @patch.object(Pipeline, 'start')

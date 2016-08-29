@@ -83,7 +83,6 @@ class TestBigchainApi(object):
         assert b.validate_fulfillments(tx) == False
         assert b.validate_fulfillments(tx_signed) == True
 
-
     def test_transaction_signature(self, b, user_sk, user_vk):
         tx = b.create_transaction(user_vk, user_vk, None, 'CREATE')
         tx_signed = b.sign_transaction(tx, user_sk)
@@ -132,6 +131,7 @@ class TestBigchainApi(object):
         b.write_transaction(tx_signed)
 
         response, status = b.get_transaction(tx_signed["id"], include_status=True)
+        response.pop('assignee')
         # add validity information, which will be returned
         assert util.serialize(tx_signed) == util.serialize(response)
         assert status == b.TX_IN_BACKLOG
