@@ -266,7 +266,7 @@ class Transaction(object):
             self.data = data
 
     @classmethod
-    def create(cls, owners_before, owners_after, payload, secret=None,
+    def create(cls, owners_before, owners_after, payload=None, secret=None,
                time_expire=None):
         if not isinstance(owners_before, list):
             raise TypeError('`owners_before` must be a list instance')
@@ -324,7 +324,7 @@ class Transaction(object):
             raise ValueError("This is not the case you're looking for ;)")
 
     @classmethod
-    def transfer(cls, inputs, owners_after, payload, secret=None, time_expiry=None):
+    def transfer(cls, inputs, owners_after, payload=None, secret=None, time_expiry=None):
         if not isinstance(inputs, list):
             raise TypeError('`inputs` must be a list instance')
         if not isinstance(owners_after, list):
@@ -332,23 +332,43 @@ class Transaction(object):
 
         data = Data(payload)
         if len(inputs) == len(owners_after) and len(owners_after) == 1:
+            # NOTE: Standard case, one input and one output
             ffill_for_cond = Ed25519Fulfillment(public_key=owners_after[0])
             cond_tx = Condition(ffill_for_cond, owners_after)
             return cls(cls.TRANSFER, inputs, [cond_tx], data)
 
+        elif len(inputs) == 1 and len(owners_after) > 1:
+            # NOTE: Threshold condition case
+            threshold = ThresholdSha256Fulfillment(threshold=len(owners_after))
+            for owner_after in owners_after:
+                threshold.add_subfulfillment(Ed25519Fulfillment(public_key=owner_after))
+            cond_tx = Condition(threshold, owners_after)
+            return cls(cls.TRANSFER, inputs, [cond_tx], data)
+
+        elif len(inputs) == len(owners_after) and len(owners_after) > 1:
+            # NOTE: Multiple inputs and outputs and threshold
+            #       even though asset could also live on as multiple inputs
+            #       and outputs
+            pass
+
     def __eq__(self, other):
         return self.to_dict() == other.to_dict()
 
-    # TODO: There might be a better name
-    def to_spendable_fulfillments(self, condition_indices):
-        spendables = []
+    def to_inputs(self, condition_indices=None):
+        inputs = []
+        # NOTE: If no condition indices are passed, we just assume to
+        #       take all conditions as inputs.
+        if condition_indices is None or len(condition_indices) == 0:
+            condition_indices = [index for index, _
+                                 in enumerate(self.conditions)]
+
         for cid in condition_indices:
             input_cond = self.conditions[cid]
             ffill = Fulfillment(input_cond.fulfillment,
                                 input_cond.owners_after,
                                 TransactionLink(self.id, cid))
-            spendables.append(ffill)
-        return spendables
+            inputs.append(ffill)
+        return inputs
 
     def add_fulfillment(self, fulfillment):
         if fulfillment is not None and not isinstance(fulfillment, Fulfillment):
