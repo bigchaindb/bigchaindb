@@ -8,5 +8,4 @@ Production Node Deployment Template
    install-terraform
    install-ansible
    prov-one-m-aws
-   prov-one-m-azure
-   start-one-m-node
+   run-one-m-node

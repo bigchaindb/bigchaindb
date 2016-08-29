@@ -1,6 +1,14 @@
 # Provision a One-Machine Node on AWS
 
-This page describes how to provision the resources needed for a one-machine BigchainDB node on AWS using Terraform.
+We have an example Terraform configuration (set of files) to provision all the resources needed to run a one-machine BigchainDB node on AWS:
+
+* An instance on EC2
+* A security group
+* An EBS volume
+* An elastic IP address
+
+This page explains how to use Terraform to deploy our example Terraform configuration.
+
 
 ## Get Set
 
@@ -31,7 +39,7 @@ terraform apply
 
 Terraform will report its progress as it provisions all the resources. Once it's done, you can go to the Amazon EC2 web console and see the instance, its security group, its elastic IP, and its attached storage volumes (one for the root directory and one for RethinkDB storage).
 
-At this point, there is no software installed on the instance except for Ubuntu 14.04 and whatever else came with the Amazon Machine Image (AMI) specified in the configuration. The next step is to use Ansible to install and configure all the necessary software.
+At this point, there is no software installed on the instance except for Ubuntu 14.04 and whatever else came with the Amazon Machine Image (AMI) specified in the Terraform configuration (files). The next step is to use Ansible to install, configure and run all the necessary software.
 
 
 ## Optional: "Destroy"
