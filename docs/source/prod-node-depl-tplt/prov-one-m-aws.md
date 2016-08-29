@@ -2,7 +2,7 @@
 
 We have an example Terraform configuration (set of files) to provision all the resources needed to run a one-machine BigchainDB node on AWS:
 
-* An instance on EC2
+* An instance on EC2 (based on an Ubuntu 14.04 AMI)
 * A security group
 * An EBS volume
 * An elastic IP address
