@@ -6,6 +6,7 @@
   remote_user: ubuntu
 
   roles:
-    - bcdb_base
     - ntp
     - db_storage
+    - rethinkdb
+    - bigchaindb

@@ -1,6 +1,10 @@
-# Start a One-Machine Node
+# Run a One-Machine Node
 
-In this step, we will install, configure and run all the software necessary to run BigchainDB, all on one machine.
+We have an example Ansible playbook to install, configure and run a basic BigchainDB node on Ubuntu 14.04. It's in `.../bigchaindb/ntools/one-m/ansible/one-m-node.yml`.
+
+When you run the playbook (as per the instructions below), it ensures all the necessary software is installed, configured and running. It can be used to get a BigchainDB node set up on a bare Ubuntu 14.04 machine, but it can also be used to ensure that everything is okay on a running BigchainDB node. (If you run the playbook against a host where everything is okay, then it won't change anything on that host.)
+
+This page explains how to use our example Ansible playbook.
 
 
 ## Create an Ansible Inventory File
@@ -20,7 +24,7 @@ but replace `192.0.2.128` with the IP address of the host.
 
 ## Run the Ansible Playbook
 
-The next step is to run the Ansible playbook `one-m-node.yml`:
+The next step is to run the Ansible playbook named `one-m-node.yml`:
 ```text
 # cd to the directory .../bigchaindb/ntools/one-m/ansible
 ansible-playbook -i hosts --private-key ~/.ssh/<key-name> one-m-node.yml
@@ -30,7 +34,14 @@ where `<key-name>` should be replaced by the name of the SSH private key you cre
 
 What did you just do? Running that playbook ensures all the software necessary for a one-machine BigchainDB node is installed, configured, and running properly. You can run that playbook on a regular schedule to ensure that the system stays properly configured. If something is okay, it does nothing; it only takes action when something is not as-desired.
 
-Note: At the time of writing (Aug. 25, 2016), the playbook isn't complete, so not all of the above happens yet.
+
+## Some Notes on the One-Machine Node You Just Got Running
+
+* It ensures that the installed version of RethinkDB is `2.3.4~0trusty`. You can change that by changing the installation task.
+* It uses a very basic RethinkDB configuration file based on `bigchaindb/ntools/one-m/ansible/roles/rethinkdb/templates/rethinkdb.conf.j2`.
+* If you edit the RethinkDB configuration file, then running the Ansible playbook will **not** restart RethinkDB for you. You must do that manually. (You could just stop it using `sudo killall -9 rethinkdb` and then run the playbook to get it started again.)
+* It generates and uses a default BigchainDB configuration file, which is stores in `~/.bigchaindb` (the default location).
+* If you edit the BigchainDB configuration file, then running the Ansible playbook will **not* restart BigchainDB for you. You must do that manually. (You could just stop it using `sudo killall -9 bigchaindb` and then run the playbook to get it started again.)
 
 
 ## Optional: Create an Ansible Config File
