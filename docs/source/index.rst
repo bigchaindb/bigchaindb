@@ -9,7 +9,6 @@ Table of Contents
 
    introduction
    quickstart
-   node-cluster-fed
    cloud-deployment-starter-templates/index
    nodes/index
    dev-and-test/index
