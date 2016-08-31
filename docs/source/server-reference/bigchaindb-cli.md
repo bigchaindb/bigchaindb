@@ -11,6 +11,11 @@ The command-line command to interact with BigchainDB is `bigchaindb`.
 Show help for the `bigchaindb` command. `bigchaindb -h` does the same thing.
 
 
+## bigchaindb \-\-version
+
+Show the version number. `bigchaindb -v` does the same thing.
+
+
 ## bigchaindb configure
 
 Generate a local config file (which can be used to set some or all [BigchainDB node configuration settings](configuration.html)). It will auto-generate a public-private keypair and then ask you for the values of other configuration settings. If you press Enter for a value, it will use the default value.

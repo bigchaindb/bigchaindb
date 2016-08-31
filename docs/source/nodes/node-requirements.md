@@ -1,4 +1,7 @@
-# Node Requirements (OS, Memory, Storage, etc.)
+# Production Node Requirements
+
+Note: This section will be broken apart into several pages, e.g. NTP requirements, RethinkDB requirements, BigchainDB requirements, etc. and those pages will add more details.
+
 
 ## OS Requirements
 
