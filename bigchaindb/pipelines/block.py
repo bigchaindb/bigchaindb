@@ -47,7 +47,8 @@ class Block:
     def validate_tx(self, tx):
         """Validate a transaction.
 
-        Also checks if a transaction already exists in the blockchain.
+        Also checks if the transaction already exists in the blockchain. If it
+        does, or it's invalid, it's deleted from the backlog immediately.
 
         Args:
             tx (dict): the transaction to validate.
