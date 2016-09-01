@@ -76,7 +76,9 @@ def test_delete_tx(b, user_vk):
     tx = b.sign_transaction(tx, b.me_private)
     b.write_transaction(tx)
 
-    assert r.table('backlog').get(tx['id']).run(b.conn) == tx
+    tx_backlog = r.table('backlog').get(tx['id']).run(b.conn)
+    tx_backlog.pop('assignee')
+    assert tx_backlog == tx
 
     returned_tx = block_maker.delete_tx(tx)
 
