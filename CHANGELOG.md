@@ -22,7 +22,7 @@ committed:
 
 ### Added
 - Support for multiple operations in the ChangeFeed class: [Pull Request #569](https://github.com/bigchaindb/bigchaindb/pull/569)
-- Instructions, templates and code for deployting a starter node on AWS using Terraform and Ansible: Pull Requests
+- Instructions, templates and code for deploying a starter node on AWS using Terraform and Ansible: Pull Requests
 [#572](https://github.com/bigchaindb/bigchaindb/pull/572),
 [#589](https://github.com/bigchaindb/bigchaindb/pull/589),
 [#600](https://github.com/bigchaindb/bigchaindb/pull/600),
