@@ -83,7 +83,7 @@ class TransactionLink(object):
         self.cid = cid
 
     def __bool__(self):
-        return not (self.txid is None and self.cid is None)
+        return self.txid is not None and self.cid is not None
 
     def __eq__(self, other):
         return self.to_dict() == self.to_dict()
@@ -346,14 +346,14 @@ class Transaction(object):
             ffill_tx = Fulfillment(ffill, owners_before)
             return cls(cls.CREATE, [ffill_tx], [cond_tx], data)
 
-        elif len(owners_before) == 1 and len(owners_after) == 0 and time_expire is not None:
+        elif len(owners_before) > 0 and len(owners_after) == 0 and time_expire is not None:
             raise NotImplementedError('Timeout conditions will be implemented later')
 
-        elif len(owners_before) == 1 and len(owners_after) == 0 and secret is None:
+        elif len(owners_before) > 0 and len(owners_after) == 0 and secret is None:
             raise ValueError('Define a secret to create a hashlock condition')
 
         else:
-            raise ValueError("This is not the cases you're looking for ;)")
+            raise ValueError("These are not the cases you're looking for ;)")
 
     @classmethod
     def transfer(cls, inputs, owners_after, payload=None):
@@ -364,8 +364,6 @@ class Transaction(object):
         if not isinstance(owners_after, list):
             raise TypeError('`owners_after` must be a list instance')
 
-        #
-        #
         # NOTE: Different cases for threshold conditions:
         #
         #       Combining multiple `inputs` with an arbitrary number of
@@ -384,18 +382,15 @@ class Transaction(object):
         #               `a`'s signature would have a 50% weight on `inp1`
         #               compared to `b` and `c` that share 25% of the leftover
         #               weight respectively. `inp2` is owned completely by `d`.
-        #
-        #
-        if len(inputs) == len(owners_after) and len(owners_after) == 1:
-            conditions = [Condition.generate(owners_after)]
-        elif len(inputs) == len(owners_after) and len(owners_after) > 1:
-            conditions = [Condition.generate(owners) for owners
-                          in owners_after]
-        elif len(inputs) != len(owners_after):
+        if len(inputs) == len(owners_after):
+            if len(owners_after) == 1:
+                conditions = [Condition.generate(owners_after)]
+            elif len(owners_after) > 1:
+                conditions = [Condition.generate(owners) for owners
+                              in owners_after]
+        else:
             raise ValueError("`inputs` and `owners_after`'s count must be the "
                              "same")
-        else:
-            raise ValueError("This is not the cases you're looking for ;)")
 
         data = Data(payload)
         inputs = deepcopy(inputs)
