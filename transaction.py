@@ -148,6 +148,44 @@ class Condition(object):
         return cond
 
     @classmethod
+    def generate(cls, owners_after):
+        if not isinstance(owners_after, list):
+            raise TypeError('`owners_after` must be an instance of list')
+
+        if len(owners_after) == 0:
+            raise ValueError('`owners_after` needs to contain at least one'
+                             'owner')
+        elif len(owners_after) == 1 and not isinstance(owners_after[0], list):
+            try:
+                ffill = Ed25519Fulfillment(public_key=owners_after[0])
+            except TypeError:
+                ffill = owners_after[0]
+            return cls(ffill, owners_after)
+        else:
+            threshold = ThresholdSha256Fulfillment(threshold=len(owners_after))
+            return cls(reduce(cls._gen_condition, owners_after, threshold),
+                       owners_after)
+
+    @classmethod
+    def _gen_condition(cls, initial, current):
+        if isinstance(current, list) and len(current) > 1:
+            ffill = ThresholdSha256Fulfillment(threshold=len(current))
+            reduce(cls._gen_condition, current, ffill)
+        elif isinstance(current, list) and len(current) <= 1:
+            raise ValueError('Sublist cannot contain single owner')
+        else:
+            try:
+                current = current.pop()
+            except AttributeError:
+                pass
+            try:
+                ffill = Ed25519Fulfillment(public_key=current)
+            except TypeError:
+                ffill = current
+        initial.add_subfulfillment(ffill)
+        return initial
+
+    @classmethod
     def from_dict(cls, cond):
         # TODO: This case should have it's own serialization test
         try:
@@ -279,29 +317,23 @@ class Transaction(object):
             # NOTE: For this case its sufficient to use the same
             #       fulfillment for the fulfillment and condition.
             ffill = Ed25519Fulfillment(public_key=owners_before[0])
-            ffill_for_cond = Ed25519Fulfillment(public_key=owners_after[0])
             ffill_tx = Fulfillment(ffill, owners_before)
-            cond_tx = Condition(ffill_for_cond, owners_after)
+            cond_tx = Condition.generate(owners_after)
             return cls(cls.CREATE, [ffill_tx], [cond_tx], data)
 
         elif len(owners_before) == len(owners_after) and len(owners_after) > 1:
-            # NOTE: Multiple inputs and outputs case.
+            raise NotImplementedError('Multiple inputs and outputs not'
+                                      'available for CREATE')
+            # NOTE: Multiple inputs and outputs case. Currently not supported.
             ffills = [Fulfillment(Ed25519Fulfillment(public_key=owner_before),
                                   [owner_before])
                       for owner_before in owners_before]
-            conds = [Condition(Ed25519Fulfillment(public_key=owner_after),
-                               [owner_after])
-                     for owner_after in owners_after]
+            conds = [Condition.generate(owners) for owners in owners_after]
             return cls(cls.CREATE, ffills, conds, data)
 
         elif len(owners_before) == 1 and len(owners_after) > 1:
             # NOTE: Multiple owners case
-            threshold = ThresholdSha256Fulfillment(threshold=len(owners_after))
-            for owner_after in owners_after:
-                threshold.add_subfulfillment(Ed25519Fulfillment(public_key=owner_after))
-            cond_tx = Condition(threshold, owners_after)
-            # TODO: Is this correct? Can I fulfill a threshold condition in
-            #       a create? I guess so?!
+            cond_tx = Condition.generate(owners_after)
             ffill = Ed25519Fulfillment(public_key=owners_before[0])
             ffill_tx = Fulfillment(ffill, owners_before)
             return cls(cls.CREATE, [ffill_tx], [cond_tx], data)
@@ -321,35 +353,53 @@ class Transaction(object):
             raise ValueError('Define a secret to create a hashlock condition')
 
         else:
-            raise ValueError("This is not the case you're looking for ;)")
+            raise ValueError("This is not the cases you're looking for ;)")
 
     @classmethod
-    def transfer(cls, inputs, owners_after, payload=None, secret=None, time_expiry=None):
+    def transfer(cls, inputs, owners_after, payload=None):
         if not isinstance(inputs, list):
             raise TypeError('`inputs` must be a list instance')
+        if len(inputs) == 0:
+            raise ValueError('`inputs` must contain at least one item')
         if not isinstance(owners_after, list):
             raise TypeError('`owners_after` must be a list instance')
 
-        data = Data(payload)
+        #
+        #
+        # NOTE: Different cases for threshold conditions:
+        #
+        #       Combining multiple `inputs` with an arbitrary number of
+        #       `owners_after` can yield interesting cases for the creation of
+        #       threshold conditions we'd like to support. The following
+        #       notation is proposed:
+        #
+        #       1. The index of an `owner_after` corresponds to the index of
+        #          an input:
+        #          e.g. `transfer([input1], [a])`, means `input1` would now be
+        #               owned by user `a`.
+        #
+        #       2. `owners_after` can (almost) get arbitrary deeply nested,
+        #          creating various complex threshold conditions:
+        #          e.g. `transfer([inp1, inp2], [[a, [b, c]], d])`, means
+        #               `a`'s signature would have a 50% weight on `inp1`
+        #               compared to `b` and `c` that share 25% of the leftover
+        #               weight respectively. `inp2` is owned completely by `d`.
+        #
+        #
         if len(inputs) == len(owners_after) and len(owners_after) == 1:
-            # NOTE: Standard case, one input and one output
-            ffill_for_cond = Ed25519Fulfillment(public_key=owners_after[0])
-            cond_tx = Condition(ffill_for_cond, owners_after)
-            return cls(cls.TRANSFER, inputs, [cond_tx], data)
-
-        elif len(inputs) == 1 and len(owners_after) > 1:
-            # NOTE: Threshold condition case
-            threshold = ThresholdSha256Fulfillment(threshold=len(owners_after))
-            for owner_after in owners_after:
-                threshold.add_subfulfillment(Ed25519Fulfillment(public_key=owner_after))
-            cond_tx = Condition(threshold, owners_after)
-            return cls(cls.TRANSFER, inputs, [cond_tx], data)
-
+            conditions = [Condition.generate(owners_after)]
         elif len(inputs) == len(owners_after) and len(owners_after) > 1:
-            # NOTE: Multiple inputs and outputs and threshold
-            #       even though asset could also live on as multiple inputs
-            #       and outputs
-            pass
+            conditions = [Condition.generate(owners) for owners
+                          in owners_after]
+        elif len(inputs) != len(owners_after):
+            raise ValueError("`inputs` and `owners_after`'s count must be the "
+                             "same")
+        else:
+            raise ValueError("This is not the cases you're looking for ;)")
+
+        data = Data(payload)
+        inputs = deepcopy(inputs)
+        return cls(cls.TRANSFER, inputs, conditions, data)
 
     def __eq__(self, other):
         return self.to_dict() == other.to_dict()
