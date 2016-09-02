@@ -229,7 +229,7 @@ def test_generate_conditions_invalid_parameters(user_pub, user2_pub,
     with raises(ValueError):
         Condition.generate([])
     with raises(TypeError):
-        Condition.generate()
+        Condition.generate('not a list')
     with raises(ValueError):
         Condition.generate([[user_pub, [user2_pub, [user3_pub]]]])
     with raises(ValueError):
@@ -397,6 +397,16 @@ def test_transaction_link_deserialization_with_empty_payload():
     tx_link = TransactionLink.from_dict(None)
 
     assert tx_link == expected
+
+
+def test_cast_transaction_link_to_boolean():
+    from bigchaindb_common.transaction import TransactionLink
+
+    assert bool(TransactionLink()) is False
+    assert bool(TransactionLink('a', None)) is False
+    assert bool(TransactionLink(None, 'b')) is False
+    assert bool(TransactionLink('a', 'b')) is True
+    assert bool(TransactionLink(False, False)) is True
 
 
 def test_add_fulfillment_to_tx(user_ffill):
@@ -784,6 +794,23 @@ def test_validate_hashlock_create_transaction(user_pub, user_priv):
                             b'much secret, wow')
     tx = tx.sign([user_priv])
     assert tx.fulfillments_valid() is True
+
+
+def test_create_create_transaction_with_invalid_parameters():
+    from bigchaindb_common.transaction import Transaction
+
+    with raises(TypeError):
+        Transaction.create('not a list')
+    with raises(TypeError):
+        Transaction.create([], 'not a list')
+    with raises(NotImplementedError):
+        Transaction.create(['a', 'b'], ['c', 'd'])
+    with raises(NotImplementedError):
+        Transaction.create(['a'], [], time_expire=123)
+    with raises(ValueError):
+        Transaction.create(['a'], [], secret=None)
+    with raises(ValueError):
+        Transaction.create([], [], secret='wow, much secret')
 
 
 def test_conditions_to_inputs(tx):
