@@ -56,9 +56,9 @@ What did you just do? Running that playbook ensures all the software necessary f
 
 * It ensures that the installed version of RethinkDB is `2.3.4~0trusty`. You can change that by changing the installation task.
 * It uses a very basic RethinkDB configuration file based on `bigchaindb/ntools/one-m/ansible/roles/rethinkdb/templates/rethinkdb.conf.j2`.
-* If you edit the RethinkDB configuration file, then running the Ansible playbook will **not** restart RethinkDB for you. You must do that manually. (You could just stop it using `sudo killall -9 rethinkdb` and then run the playbook to get it started again.)
-* It generates and uses a default BigchainDB configuration file, which is stores in `~/.bigchaindb` (the default location).
-* If you edit the BigchainDB configuration file, then running the Ansible playbook will **not* restart BigchainDB for you. You must do that manually. (You could just stop it using `sudo killall -9 bigchaindb` and then run the playbook to get it started again.)
+* If you edit the RethinkDB configuration file, then running the Ansible playbook will **not** restart RethinkDB for you. You must do that manually. (You can stop RethinkDB using `sudo /etc/init.d/rethinkdb stop`; run the playbook to get RethinkDB started again. This assumes you're using init.d, which is what the Ansible playbook assumes. If you want to use systemd, you'll have to edit the playbook accordingly, and stop RethinkDB using `sudo systemctl stop rethinkdb@<name_instance>`.)
+* It generates and uses a default BigchainDB configuration file, which it stores in `~/.bigchaindb` (the default location).
+* If you edit the BigchainDB configuration file, then running the Ansible playbook will **not** restart BigchainDB for you. You must do that manually. (You could stop it using `sudo killall -9 bigchaindb`. Run the playbook to get it started again.)
 
 
 ## Optional: Create an Ansible Config File
