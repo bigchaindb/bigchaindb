@@ -10,5 +10,6 @@ If you find the cloud deployment starter templates for nodes helpful, then you m
 .. toctree::
    :maxdepth: 1
 
-   tp-node-deployment-on-aws
-   tp-node-deployment-on-azure
+   template-terraform-aws
+   template-ansible
+   template-azure
