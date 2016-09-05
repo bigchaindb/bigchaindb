@@ -12,6 +12,7 @@ from bigchaindb_common import exceptions
 from bigchaindb_common.transaction import Transaction
 
 from bigchaindb import config_utils
+from bigchaindb.consensus import BaseConsensusRules
 from bigchaindb.pipelines.utils import ChangeFeed
 from bigchaindb import Bigchain
 
@@ -30,7 +31,7 @@ class Vote:
         # we need to create a temporary instance of BigchainDB that we use
         # only to query RethinkDB
         last_voted = Bigchain().get_last_voted_block()
-        self.consensus = config_utils.load_consensus_plugin()
+        self.consensus = BaseConsensusRules
 
         # This is the Bigchain instance that will be "shared" (aka: copied)
         # by all the subprocesses

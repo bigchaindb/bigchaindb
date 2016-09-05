@@ -1,6 +1,7 @@
 import requests
 
 import bigchaindb
+from bigchaindb.consensus import BaseConsensusRules
 from bigchaindb import config_utils
 
 from bigchaindb_common import crypto, exceptions
@@ -41,7 +42,7 @@ class Client:
         self.public_key = public_key or bigchaindb.config['keypair']['public']
         self.private_key = private_key or bigchaindb.config['keypair']['private']
         self.api_endpoint = api_endpoint or bigchaindb.config['api_endpoint']
-        self.consensus = config_utils.load_consensus_plugin(consensus_plugin)
+        self.consensus = BaseConsensusRules
 
         if not self.public_key or not self.private_key:
             raise exceptions.KeypairNotFoundException()
