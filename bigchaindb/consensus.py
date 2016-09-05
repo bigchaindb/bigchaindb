@@ -113,6 +113,7 @@ class BaseConsensusRules(AbstractConsensusRules):
 
     @staticmethod
     def validate_transaction(bigchain, transaction):
+        # TODO: Update this comment
         """Validate a transaction.
 
         Args:

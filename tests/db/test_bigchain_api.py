@@ -1094,78 +1094,46 @@ class TestMultipleInputs(object):
 class TestTransactionMalleability(object):
     @pytest.mark.usefixtures('inputs')
     def test_create_transaction_transfer(self, b, user_vk, user_sk):
-        input_tx = b.get_owned_ids(user_vk).pop()
-        assert b.validate_fulfillments(b.get_transaction(input_tx['txid'])) is True
+        from bigchaindb_common.transaction import (Transaction, Data,
+                                                   TransactionLink)
 
-        tx = b.create_transaction(user_vk, b.me, input_tx, 'TRANSFER')
+        input_tx_link = b.get_owned_ids(user_vk).pop()
+        input_tx = b.get_transaction(input_tx_link.txid)
+        assert input_tx.fulfillments_valid() is True
 
-        tx_signed = b.sign_transaction(tx, user_sk)
+        transfer_tx = Transaction.transfer(input_tx.to_inputs(), [b.me])
+        transfer_tx = transfer_tx.sign([user_sk])
 
-        assert b.validate_fulfillments(tx_signed) is True
-        assert b.is_valid_transaction(tx_signed) == tx_signed
+        assert transfer_tx.fulfillments_valid(input_tx.conditions) is True
+        assert b.is_valid_transaction(transfer_tx) == transfer_tx
 
-        tx_changed = copy.deepcopy(tx_signed)
-        tx_changed['id'] = 'dsdasd'
-        assert b.validate_fulfillments(tx_changed) is False
+        tx_changed = copy.deepcopy(transfer_tx)
+        tx_changed.version = 123
+        assert tx_changed.fulfillments_valid(input_tx.conditions) is False
         assert b.is_valid_transaction(tx_changed) is False
 
-        tx_changed = copy.deepcopy(tx_signed)
-        tx_changed['transaction']['version'] = '0'
-        assert b.validate_fulfillments(tx_changed) is False
+        tx_changed = copy.deepcopy(transfer_tx)
+        tx_changed.operation = 'CREATE'
+        assert tx_changed.fulfillments_valid(input_tx.conditions) is False
         assert b.is_valid_transaction(tx_changed) is False
 
-        tx_changed = copy.deepcopy(tx_signed)
-        tx_changed['transaction']['operation'] = 'CREATE'
-        assert b.validate_fulfillments(tx_changed) is False
+        tx_changed = copy.deepcopy(transfer_tx)
+        tx_changed.timestamp = '1463033192.123456'
+        assert tx_changed.fulfillments_valid(input_tx.conditions) is False
         assert b.is_valid_transaction(tx_changed) is False
 
-        tx_changed = copy.deepcopy(tx_signed)
-        tx_changed['transaction']['timestamp'] = '1463033192.123456'
-        assert b.validate_fulfillments(tx_changed) is False
+        tx_changed = copy.deepcopy(transfer_tx)
+        tx_changed.data = Data({'msg': 'hello bdb'})
+        assert tx_changed.fulfillments_valid(input_tx.conditions) is False
+
+        tx_changed = copy.deepcopy(transfer_tx)
+        tx_changed.fulfillments[0].owners_before = ["AFbofwJYEB7Cx2fgrPrCJzbdDVRzRKysoGXt4DsvuTGN"]
+        assert tx_changed.fulfillments_valid(input_tx.conditions) is False
         assert b.is_valid_transaction(tx_changed) is False
 
-        tx_changed = copy.deepcopy(tx_signed)
-        tx_changed['transaction']['data'] = {
-            "hash": "872fa6e6f46246cd44afdb2ee9cfae0e72885fb0910e2bcf9a5a2a4eadb417b8",
-            "payload": {
-                "msg": "Hello BigchainDB!"
-            }
-        }
-        assert b.validate_fulfillments(tx_changed) == False
-
-        tx_changed = copy.deepcopy(tx_signed)
-        tx_changed['transaction']['fulfillments'] = [
-            {
-                "owners_before": [
-                    "AFbofwJYEB7Cx2fgrPrCJzbdDVRzRKysoGXt4DsvuTGN"
-                ],
-                "fid": 0,
-                "fulfillment": "cf:4:iXaq3UbandDj4DgBhFDcfHjkm2639RwgLmwAHUmuDFMfMEKMZ71eQw2qCMK951kBaNNJel_FCDuYnacn_MsWzYXOUJs6DGW3lYfXI_d55xuqpH2BenvRWKNp98tRRr4B",
-                "input": None
-            }
-        ]
-        assert b.validate_fulfillments(tx_changed) is False
-        assert b.is_valid_transaction(tx_changed) is False
-
-        tx_changed = copy.deepcopy(tx_signed)
-        tx_changed['transaction']['fulfillments'][0]['fid'] = 1
-        with pytest.raises(IndexError):
-            assert b.validate_fulfillments(tx_changed) is False
-        assert b.is_valid_transaction(tx_changed) is False
-
-        tx_changed = copy.deepcopy(tx_signed)
-        tx_changed['transaction']['fulfillments'][0]['owners_before'] = [
-            "AFbofwJYEB7Cx2fgrPrCJzbdDVRzRKysoGXt4DsvuTGN"]
-        assert b.validate_fulfillments(tx_changed) is False
-        assert b.is_valid_transaction(tx_changed) is False
-
-        tx_changed = copy.deepcopy(tx_signed)
-        tx_changed['transaction']['fulfillments'][0]['input'] = {
-            "cid": 0,
-            "txid": "3055348675fc6f23b75f13c55db6d112b66eee068e99d30a802883d3b1784203"
-        }
-        with pytest.raises(TypeError):
-            assert b.validate_fulfillments(tx_changed) is False
+        tx_changed = copy.deepcopy(transfer_tx)
+        tx_changed.fulfillments[0].tx_input = TransactionLink('a', 0)
+        assert tx_changed.fulfillments_valid(input_tx.conditions) is False
         assert b.is_valid_transaction(tx_changed) is False
 
 

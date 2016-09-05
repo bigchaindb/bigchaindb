@@ -137,6 +137,7 @@ class Bigchain(object):
         return response
 
     def validate_transaction(self, transaction):
+        # TODO: Update this comment
         """Validate a transaction.
 
         Args:
@@ -150,6 +151,7 @@ class Bigchain(object):
         return self.consensus.validate_transaction(self, transaction)
 
     def is_valid_transaction(self, transaction):
+        # TODO: Update this comment
         """Check whether a transacion is valid or invalid.
 
         Similar to `validate_transaction` but never raises an exception.
