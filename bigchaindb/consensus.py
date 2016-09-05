@@ -1,4 +1,3 @@
-from abc import ABCMeta, abstractmethod
 from functools import reduce
 from operator import and_
 
@@ -8,92 +7,7 @@ from bigchaindb_common.transaction import Transaction
 from bigchaindb import util
 
 
-class AbstractConsensusRules(metaclass=ABCMeta):
-    """Abstract base class for Bigchain plugins which implement consensus logic.
-
-    A consensus plugin must expose a class inheriting from this one via an
-    entry_point.
-
-    All methods listed below must be implemented.
-    """
-
-    @staticmethod
-    @abstractmethod
-    def validate_transaction(bigchain, transaction):
-        """Validate a transaction.
-
-        Args:
-            bigchain (Bigchain): an instantiated ``bigchaindb.Bigchain`` object.
-            transaction (dict): transaction to validate.
-
-        Returns:
-            The transaction if the transaction is valid else it raises an
-            exception describing the reason why the transaction is invalid.
-
-        Raises:
-            Descriptive exceptions indicating the reason the transaction failed.
-            See the `exceptions` module for bigchain-native error classes.
-        """
-
-    @staticmethod
-    @abstractmethod
-    def validate_block(bigchain, block):
-        """Validate a block.
-
-        Args:
-            bigchain (Bigchain): an instantiated ``bigchaindb.Bigchain`` object.
-            block (dict): block to validate.
-
-        Returns:
-            The block if the block is valid else it raises an exception
-            describing the reason why the block is invalid.
-
-        Raises:
-            Descriptive exceptions indicating the reason the block failed.
-            See the `exceptions` module for bigchain-native error classes.
-        """
-
-    @staticmethod
-    @abstractmethod
-    def sign_transaction(transaction, *args, **kwargs):
-        """Sign a transaction.
-
-        Args:
-            transaction (dict): transaction to sign.
-            any other arguments are left to plugin authors to decide.
-
-        Returns:
-            dict: transaction with any signatures applied.
-        """
-
-    @staticmethod
-    @abstractmethod
-    def validate_fulfillments(signed_transaction):
-        """Validate the fulfillments of a transaction.
-
-        Args:
-            signed_transaction (dict): signed transaction to verify
-
-        Returns:
-            bool: True if the transaction's required fulfillments are present
-                and correct, False otherwise.
-        """
-
-    @abstractmethod
-    def verify_vote_signature(block, signed_vote):
-        """Verify a cast vote.
-
-        Args:
-            block (dict): block under election
-            signed_vote (dict): signed vote to verify
-
-        Returns:
-            bool: True if the votes's required signature data is present
-                and correct, False otherwise.
-        """
-
-
-class BaseConsensusRules(AbstractConsensusRules):
+class BaseConsensusRules():
     """Base consensus rules for Bigchain.
 
     This class can be copied or overridden to write your own consensus rules!
@@ -187,24 +101,6 @@ class BaseConsensusRules(AbstractConsensusRules):
             raise exceptions.InvalidSignature('Invalid block signature')
 
         return block
-
-    @staticmethod
-    def sign_transaction(transaction, private_key, bigchain=None):
-        """Sign a transaction
-
-        Refer to the documentation of ``bigchaindb.util.sign_tx``
-        """
-
-        return util.sign_tx(transaction, private_key, bigchain=bigchain)
-
-    @staticmethod
-    def validate_fulfillments(signed_transaction):
-        """Validate the fulfillments of a transaction.
-
-        Refer to the documentation of ``bigchaindb.util.validate_fulfillments``
-        """
-
-        return util.validate_fulfillments(signed_transaction)
 
     @staticmethod
     def verify_vote_signature(block, signed_vote):

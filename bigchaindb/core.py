@@ -80,17 +80,6 @@ class Bigchain(object):
     def reconnect(self):
         return r.connect(host=self.host, port=self.port, db=self.dbname)
 
-    def sign_transaction(self, transaction, *args, **kwargs):
-        """Sign a transaction
-
-        Refer to the documentation of your consensus plugin.
-
-        Returns:
-            dict: transaction with any signatures applied.
-        """
-
-        return self.consensus.sign_transaction(transaction, *args, bigchain=self, **kwargs)
-
     def validate_fulfillments(self, signed_transaction, *args, **kwargs):
         """Validate the fulfillment(s) of a transaction.
 

@@ -162,64 +162,6 @@ def timestamp():
     return str(round(time.time()))
 
 
-def fulfill_simple_signature_fulfillment(fulfillment, parsed_fulfillment, fulfillment_message, key_pairs):
-    """Fulfill a cryptoconditions.Ed25519Fulfillment
-
-        Args:
-            fulfillment (dict): BigchainDB fulfillment to fulfill.
-            parsed_fulfillment (cryptoconditions.Ed25519Fulfillment): cryptoconditions.Ed25519Fulfillment instance.
-            fulfillment_message (dict): message to sign.
-            key_pairs (dict): dictionary of (public_key, private_key) pairs.
-
-        Returns:
-            object: fulfilled cryptoconditions.Ed25519Fulfillment
-
-        """
-    owner_before = fulfillment['owners_before'][0]
-
-    try:
-        parsed_fulfillment.sign(serialize(fulfillment_message), key_pairs[owner_before])
-    except KeyError:
-        raise exceptions.KeypairMismatchException('Public key {} is not a pair to any of the private keys'
-                                                  .format(owner_before))
-
-    return parsed_fulfillment
-
-
-def fulfill_threshold_signature_fulfillment(fulfillment, parsed_fulfillment, fulfillment_message, key_pairs):
-    """Fulfill a cryptoconditions.ThresholdSha256Fulfillment
-
-        Args:
-            fulfillment (dict): BigchainDB fulfillment to fulfill.
-            parsed_fulfillment (cryptoconditions.ThresholdSha256Fulfillment): cryptoconditions.ThresholdSha256Fulfillment instance.
-            fulfillment_message (dict): message to sign.
-            key_pairs (dict): dictionary of (public_key, private_key) pairs.
-
-        Returns:
-            object: fulfilled cryptoconditions.ThresholdSha256Fulfillment
-
-        """
-    parsed_fulfillment_copy = deepcopy(parsed_fulfillment)
-    parsed_fulfillment.subconditions = []
-
-    for owner_before in fulfillment['owners_before']:
-        try:
-            subfulfillment = parsed_fulfillment_copy.get_subcondition_from_vk(owner_before)[0]
-        except IndexError:
-            raise exceptions.KeypairMismatchException(
-                'Public key {} cannot be found in the fulfillment'.format(owner_before))
-        try:
-            private_key = key_pairs[owner_before]
-        except KeyError:
-            raise exceptions.KeypairMismatchException(
-                'Public key {} is not a pair to any of the private keys'.format(owner_before))
-
-        subfulfillment.sign(serialize(fulfillment_message), private_key)
-        parsed_fulfillment.add_subfulfillment(subfulfillment)
-
-    return parsed_fulfillment
-
-
 def create_and_sign_tx(private_key, owner_before, owner_after, tx_input, operation='TRANSFER', payload=None):
     tx = create_tx(owner_before, owner_after, tx_input, operation, payload)
     return sign_tx(tx, private_key)
@@ -234,104 +176,6 @@ def check_hash_and_signature(transaction):
     # Check signature
     if not validate_fulfillments(transaction):
         raise exceptions.InvalidSignature()
-
-
-def validate_fulfillments(signed_transaction):
-    """Verify the signature of a transaction
-
-    A valid transaction should have been signed `owner_before` corresponding private key.
-
-    Args:
-        signed_transaction (dict): a transaction with the `signature` included.
-
-    Returns:
-        bool: True if the signature is correct, False otherwise.
-    """
-    for fulfillment in signed_transaction['transaction']['fulfillments']:
-        fulfillment_message = get_fulfillment_message(signed_transaction, fulfillment)
-        try:
-            parsed_fulfillment = cc.Fulfillment.from_uri(fulfillment['fulfillment'])
-        except (TypeError, ValueError, ParsingError):
-            return False
-
-        # TODO: might already break on a False here
-        is_valid = parsed_fulfillment.validate(message=serialize(fulfillment_message),
-                                               now=timestamp())
-
-        # if transaction has an input (i.e. not a `CREATE` transaction)
-        # TODO: avoid instantiation, pass as argument!
-        bigchain = bigchaindb.Bigchain()
-        input_condition = get_input_condition(bigchain, fulfillment)
-        is_valid = is_valid and parsed_fulfillment.condition_uri == input_condition['condition']['uri']
-
-        if not is_valid:
-            return False
-
-    return True
-
-
-def get_fulfillment_message(transaction, fulfillment, serialized=False):
-    """Get the fulfillment message for signing a specific fulfillment in a transaction
-
-    Args:
-        transaction (dict): a transaction
-        fulfillment (dict): a specific fulfillment (for a condition index) within the transaction
-        serialized (Optional[bool]): False returns a dict, True returns a serialized string
-
-    Returns:
-        str|dict: fulfillment message
-    """
-    # data to sign contains common transaction data
-    fulfillment_message = {
-        'operation': transaction['transaction']['operation'],
-        'timestamp': transaction['transaction']['timestamp'],
-        'data': transaction['transaction']['data'],
-        'version': transaction['transaction']['version'],
-        'id': transaction['id']
-    }
-    # and the condition which needs to be retrieved from the output of a previous transaction
-    # or created on the fly it this is a `CREATE` transaction
-    fulfillment_message.update({
-        'fulfillment': deepcopy(fulfillment),
-        'condition': transaction['transaction']['conditions'][fulfillment['fid']]
-    })
-
-    # remove any fulfillment, as a fulfillment cannot sign itself
-    fulfillment_message['fulfillment']['fulfillment'] = None
-
-    if serialized:
-        return serialize(fulfillment_message)
-    return fulfillment_message
-
-
-def get_input_condition(bigchain, fulfillment):
-    """
-
-    Args:
-        bigchain:
-        fulfillment:
-    Returns:
-    """
-    input_tx = fulfillment['input']
-    # if `TRANSFER` transaction
-    if input_tx:
-        # get previous condition
-        previous_tx = bigchain.get_transaction(input_tx['txid'])
-        conditions = sorted(previous_tx['transaction']['conditions'], key=lambda d: d['cid'])
-        return conditions[input_tx['cid']]
-
-    # if `CREATE` transaction
-    # there is no previous transaction so we need to create one on the fly
-    else:
-        owner_before = fulfillment['owners_before'][0]
-        condition = cc.Ed25519Fulfillment(public_key=owner_before)
-
-        return {
-            'condition': {
-                'details': condition.to_dict(),
-                'uri': condition.condition_uri
-            }
-        }
 
 
 # TODO: Rename this function, it's handling fulfillments not conditions
@@ -364,26 +208,6 @@ def condition_details_has_owner(condition_details, owner):
                 and owner == condition_details['public_key']:
             return True
     return False
-
-
-def get_hash_data(transaction):
-    """ Get the hashed data that (should) correspond to the `transaction['id']`
-
-    Args:
-        transaction (dict): the transaction to be hashed
-
-    Returns:
-        str: the hash of the transaction
-    """
-    tx = deepcopy(transaction)
-    if 'transaction' in tx:
-        tx = tx['transaction']
-
-    # remove the fulfillment messages (signatures)
-    for fulfillment in tx['fulfillments']:
-        fulfillment['fulfillment'] = None
-
-    return crypto.hash_data(serialize(tx))
 
 
 def verify_vote_signature(block, signed_vote):
