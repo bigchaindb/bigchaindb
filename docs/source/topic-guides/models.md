@@ -66,7 +66,7 @@ Assets can be mutable (changeable) or immutable. To change a mutable asset, you 
         "timestamp": "<timestamp from client>",
         "asset": "<digital asset description (explained in the next section)>",
         "metadata": {
-            "uuid": "<uuid4>",
+            "id": "<uuid>",
             "data": "<any JSON document>"
         }
     }
@@ -88,7 +88,7 @@ Here's some explanation of the contents of a transaction:
     - `timestamp`: The Unix time when the transaction was created. It's provided by the client. See [the section on timestamps](timestamps.html).
 	- `asset`: Definition of the digital asset. See next section.
     - `metadata`:
-        - `uuid`: UUID version 4 (random) converted to a string of hex digits in standard form.
+        - `id`: UUID version 4 (random) converted to a string of hex digits in standard form.
         - `data`: Can be any JSON document. It may be empty in the case of a transfer transaction.
 
 Later, when we get to the models for the block and the vote, we'll see that both include a signature (from the node which created it). You may wonder why transactions don't have signatures... The answer is that they do! They're just hidden inside the `fulfillment` string of each fulfillment. A creation transaction is signed by the node that created it. A transfer transaction is signed by whoever currently controls or owns it.
