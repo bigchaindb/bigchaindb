@@ -34,7 +34,7 @@ def create_write_transaction(tx_left, payload_filler):
         # Include a random uuid string in the payload to prevent duplicate
         # transactions (i.e. transactions with the same hash)
         payload_dict['msg'] = str(uuid.uuid4())
-        tx = Transaction.create([b.me], [b.me], None, 'CREATE', payload=payload_dict)
+        tx = Transaction.create([b.me], [b.me], payload=payload_dict)
         tx = tx.sign([b.me_private])
         b.write_transaction(tx)
         tx_left -= 1

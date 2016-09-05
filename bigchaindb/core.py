@@ -356,27 +356,27 @@ class Bigchain(object):
                 if Bigchain.BLOCK_UNDECIDED not in validity.values():
                     continue
 
+            # TODO: Figure out if serialization to the transaction class should
+            #       happen here
             # a transaction can contain multiple outputs (conditions) so we need to iterate over all of them
             # to get a list of outputs available to spend
-            for index, (ffill, cond) in enumerate(zip(tx['transaction']['fulfillments'],
-                                                      tx['transaction']['conditions'])):
+            for index, cond in enumerate(tx['transaction']['conditions']):
                 # for simple signature conditions there are no subfulfillments
                 # check if the owner is in the condition `owners_after`
                 if len(cond['owners_after']) == 1:
-                    if ffill['details']['public_key'] == owner:
+                    if cond['condition']['details']['public_key'] == owner:
                         tx_link = TransactionLink(tx['id'], index)
                 else:
                     # for transactions with multiple `owners_after` there will be several subfulfillments nested
                     # in the condition. We need to iterate the subfulfillments to make sure there is a
                     # subfulfillment for `owner`
-                    if util.condition_details_has_owner(ffill['details'], owner):
+                    if util.condition_details_has_owner(cond['condition']['details'], owner):
                         tx_link = TransactionLink(tx['id'], index)
                 # check if input was already spent
                 if not self.get_spent(tx_link.txid, tx_link.cid):
                     owned.append(tx_link)
 
         return owned
-
 
     def create_block(self, validated_transactions):
         """Creates a block given a list of `validated_transactions`.
@@ -506,7 +506,9 @@ class Bigchain(object):
         """Prepare a genesis block."""
 
         payload = {'message': 'Hello World from the BigchainDB'}
-        transaction = Transaction.create([self.me], [self.me], None, 'GENESIS', payload=payload)
+        transaction = Transaction.create([self.me], [self.me], payload=payload)
+        # TODO for BDBC: Introduce a new proxy method for `.create`
+        transaction.operation = 'GENESIS'
         transaction = transaction.sign([self.me_private])
 
         # create the block
