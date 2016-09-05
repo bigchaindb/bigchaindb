@@ -9,6 +9,7 @@ from bigchaindb_common.transaction import Transaction, TransactionLink
 import rethinkdb as r
 
 import bigchaindb
+from bigchaindb.consensus import BaseConsensusRules
 from bigchaindb import config_utils, util
 
 
@@ -52,7 +53,7 @@ class Bigchain(object):
         self.me = public_key or bigchaindb.config['keypair']['public']
         self.me_private = private_key or bigchaindb.config['keypair']['private']
         self.nodes_except_me = keyring or bigchaindb.config['keyring']
-        self.consensus = config_utils.load_consensus_plugin(consensus_plugin)
+        self.consensus = BaseConsensusRules
         # change RethinkDB read mode to majority.  This ensures consistency in query results
         self.read_mode = 'majority'
 
