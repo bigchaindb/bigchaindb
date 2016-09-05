@@ -17,7 +17,7 @@ def dummy_tx():
     import bigchaindb
     from bigchaindb_common.transaction import Transaction
     b = bigchaindb.Bigchain()
-    tx = Transaction.create([b.me], [b.me], None, 'CREATE')
+    tx = Transaction.create([b.me], [b.me])
     tx = tx.sign([b.me_private])
     return tx
 
@@ -35,7 +35,7 @@ class TestBigchainApi(object):
         from bigchaindb_common.transaction import Transaction
 
         payload = {'msg': 'Hello BigchainDB!'}
-        tx = Transaction.create([b.me], [user_vk], None, 'CREATE', payload=payload)
+        tx = Transaction.create([b.me], [user_vk], payload=payload)
 
         block = b.create_block([tx])
         b.write_block(block, durability='hard')
@@ -50,9 +50,12 @@ class TestBigchainApi(object):
 
     @pytest.mark.usefixtures('inputs')
     def test_write_transaction(self, b, user_vk, user_sk):
+        from bigchaindb_common.transaction import Transaction
+
         input_tx = b.get_owned_ids(user_vk).pop()
         input_tx = b.get_transaction(input_tx.txid)
-        tx = input_tx.simple_transfer([user_sk])
+        inputs = input_tx.to_inputs()
+        tx = Transaction.transfer(inputs, [user_vk])
         tx = tx.sign([user_sk])
         response = b.write_transaction(tx)
 
@@ -64,10 +67,15 @@ class TestBigchainApi(object):
         assert response['inserted'] == 1
 
     @pytest.mark.usefixtures('inputs')
-    def test_read_transaction_undecided_block(self, b, user_vk, user_sk):
+    def test_read_transaction(self, b, user_vk, user_sk):
+        from bigchaindb_common.transaction import Transaction
+
         input_tx = b.get_owned_ids(user_vk).pop()
-        tx = b.create_transaction(user_vk, user_vk, input_tx, 'TRANSFER')
-        tx_signed = b.sign_transaction(tx, user_sk)
+        input_tx = b.get_transaction(input_tx.txid)
+        inputs = input_tx.to_inputs()
+        tx = Transaction.transfer(inputs, [user_vk])
+        tx = tx.sign([user_sk])
+        b.write_transaction(tx)
 
         # create block and write it to the bighcain before retrieving the transaction
         block = b.create_block([tx])
@@ -79,10 +87,13 @@ class TestBigchainApi(object):
         assert status == b.TX_UNDECIDED
 
     @pytest.mark.usefixtures('inputs')
-    def test_read_transaction_backlog(self, b, user_vk, user_sk):
+    def test_read_transaction_invalid_block(self, b, user_vk, user_sk):
+        from bigchaindb_common.transaction import Transaction
+
         input_tx = b.get_owned_ids(user_vk).pop()
         input_tx = b.get_transaction(input_tx.txid)
-        tx = input_tx.simple_transfer([user_sk])
+        inputs = input_tx.to_inputs()
+        tx = Transaction.transfer(inputs, [user_vk])
         tx = tx.sign([user_sk])
         b.write_transaction(tx)
 
@@ -340,10 +351,12 @@ class TestBigchainApi(object):
     @pytest.mark.usefixtures('inputs')
     def test_assign_transaction_one_node(self, b, user_vk, user_sk):
         import rethinkdb as r
+        from bigchaindb_common.transaction import Transaction
 
         input_tx = b.get_owned_ids(user_vk).pop()
         input_tx = b.get_transaction(input_tx.txid)
-        tx = input_tx.simple_transfer([user_sk])
+        inputs = input_tx.to_inputs()
+        tx = Transaction.transfer(inputs, [user_vk])
         tx = tx.sign([user_sk])
         b.write_transaction(tx)
 
@@ -357,6 +370,7 @@ class TestBigchainApi(object):
     def test_assign_transaction_multiple_nodes(self, b, user_vk, user_sk):
         import rethinkdb as r
         from bigchaindb_common.crypto import generate_key_pair
+        from bigchaindb_common.transaction import Transaction
 
         # create 5 federation nodes
         for _ in range(5):
@@ -366,7 +380,8 @@ class TestBigchainApi(object):
         for _ in range(20):
             input_tx = b.get_owned_ids(user_vk).pop()
             input_tx = b.get_transaction(input_tx.txid)
-            tx = input_tx.simple_transfer([user_sk])
+            inputs = input_tx.to_inputs()
+            tx = Transaction.transfer(inputs, [user_vk])
             tx = tx.sign([user_sk])
             b.write_transaction(tx)
 
@@ -378,18 +393,14 @@ class TestBigchainApi(object):
 
 
 class TestTransactionValidation(object):
-    def test_create_operation_with_inputs(self, b, user_vk, ffill, cond,
-                                          signed_tx):
-        from bigchaindb_common.transaction import (Fulfillment, TransactionLink,
-                                                   Transaction)
+    def test_create_operation_with_inputs(self, b, user_vk, unsigned_tx):
+        from bigchaindb_common.transaction import TransactionLink
 
-        ffill = Fulfillment.gen_default([user_vk])
         # Manipulate fulfillment so that it has a `tx_input` defined even
         # though it shouldn't have one
-        ffill.tx_input = TransactionLink(signed_tx.id, 0)
-        tx = Transaction('CREATE', [ffill], [cond])
+        unsigned_tx.fulfillments[0].tx_input = TransactionLink('abc', 0)
         with pytest.raises(ValueError) as excinfo:
-            b.validate_transaction(tx)
+            b.validate_transaction(unsigned_tx)
         assert excinfo.value.args[0] == 'A CREATE operation has no inputs'
 
     def test_transfer_operation_no_inputs(self, b, user_vk, transfer_tx):
@@ -415,7 +426,7 @@ class TestTransactionValidation(object):
 
         input_tx = b.get_owned_ids(user_vk).pop()
         sk, vk = generate_key_pair()
-        tx = Transaction.create([vk], [user_vk], None, 'CREATE')
+        tx = Transaction.create([vk], [user_vk])
         tx.operation = 'TRANSFER'
         tx.fulfillments[0].tx_input = input_tx
 
@@ -437,10 +448,13 @@ class TestTransactionValidation(object):
 
     @pytest.mark.usefixtures('inputs')
     def test_valid_non_create_transaction_after_block_creation(self, b, user_vk, user_sk):
+        from bigchaindb_common.transaction import Transaction
+
         input_tx = b.get_owned_ids(user_vk).pop()
         input_tx = b.get_transaction(input_tx.txid)
-        transfer_tx = input_tx.simple_transfer([user_vk])
-        transfer_tx= transfer_tx.sign([user_sk])
+        inputs = input_tx.to_inputs()
+        transfer_tx = Transaction.transfer(inputs, [user_vk])
+        transfer_tx = transfer_tx.sign([user_sk])
 
         assert transfer_tx == b.validate_transaction(transfer_tx)
 
@@ -558,15 +572,33 @@ class TestBlockValidation(object):
 
 
 class TestMultipleInputs(object):
+    def test_transfer_single_owner_single_input(self, b, inputs, user_vk,
+                                                user_sk):
+        from bigchaindb_common import crypto
+        from bigchaindb_common.transaction import Transaction
+        user2_sk, user2_vk = crypto.generate_key_pair()
+
+        tx_link = b.get_owned_ids(user_vk).pop()
+        input_tx = b.get_transaction(tx_link.txid)
+        inputs = input_tx.to_inputs()
+        tx = Transaction.transfer(inputs, [user2_vk])
+        tx = tx.sign([user_sk])
+
+        # validate transaction
+        assert b.is_valid_transaction(tx) == tx
+        assert len(tx.fulfillments) == 1
+        assert len(tx.conditions) == 1
+
     def test_transfer_single_owners_multiple_inputs(self, b, user_sk, user_vk):
         from bigchaindb_common import crypto
         from bigchaindb_common.transaction import Transaction
 
         user2_sk, user2_vk = crypto.generate_key_pair()
 
+        # TODO: Make this a fixture
         transactions = []
-        for i in range(10):
-            tx = Transaction.create([user_vk], [user_vk], None, 'CREATE')
+        for i in range(3):
+            tx = Transaction.create([user_vk], [user_vk])
             tx = tx.sign([user_sk])
             transactions.append(tx)
             b.write_transaction(tx)
@@ -575,35 +607,26 @@ class TestMultipleInputs(object):
 
         # get inputs
         owned_inputs = b.get_owned_ids(user_vk)
-        inputs = owned_inputs[:3]
-        fulfillments = []
-        # TODO FOR COMMON: This needs to be much simpler to create
-        for tx_input in inputs:
-            tx = b.get_transaction(tx_input.txid)
-            fulfillment = tx.fulfillments[0]
-            fulfillment.tx_input = tx_input
-            fulfillments.append(fulfillment)
-
-        # NOTE: We're sending all outputs to ourself, but in this case it
-        #       doesn't matter.
-        conditions = [ffill.gen_condition() for ffill in fulfillments]
-        tx = Transaction('TRANSFER', fulfillments, conditions)
-        # NOTE: All conditions are generate with a single key, so it's
-        #       sufficient to just pass one.
+        input_txs = [b.get_transaction(tx_link.txid) for tx_link
+                     in owned_inputs]
+        inputs = sum([input_tx.to_inputs() for input_tx in input_txs], [])
+        tx = Transaction.transfer(inputs, 3 * [[user_vk]])
         tx = tx.sign([user_sk])
         assert b.validate_transaction(tx) == tx
         assert len(tx.fulfillments) == 3
         assert len(tx.conditions) == 3
 
-    def test_transfer_single_owners_single_input_from_multiple_outputs(self, b, user_sk, user_vk):
+    def test_transfer_single_owners_single_input_from_multiple_outputs(self, b,
+                                                                       user_sk,
+                                                                       user_vk):
         import random
         from bigchaindb_common import crypto
-        from bigchaindb_common.transaction import Transaction, Condition, Fulfillment
-        from cryptoconditions import Ed25519Fulfillment
+        from bigchaindb_common.transaction import Transaction
+
         user2_sk, user2_vk = crypto.generate_key_pair()
 
         transactions = []
-        for i in range(10):
+        for i in range(3):
             payload = {'somedata': random.randint(0, 255)}
             tx = Transaction.create([user_vk], [user_vk], None, 'CREATE', payload)
             tx = tx.sign([user_sk])
@@ -614,17 +637,10 @@ class TestMultipleInputs(object):
 
         # get inputs
         owned_inputs = b.get_owned_ids(user_vk)
-        inputs = owned_inputs[:3]
-        fulfillments = []
-        # TODO FOR COMMON: This needs to be much simpler to create
-        for tx_input in inputs:
-            ffill = Fulfillment(Ed25519Fulfillment(public_key=user2_vk),
-                                                   [user_vk], tx_input)
-            fulfillments.append(ffill)
-
-        import ipdb; ipdb.set_trace()
-        conditions = [Condition.gen_transfer(user2_vk) for _ in range(len(fulfillments))]
-        tx = Transaction('TRANSFER', fulfillments, conditions)
+        input_txs = [b.get_transaction(tx_link.txid) for tx_link
+                     in owned_inputs]
+        inputs = sum([input_tx.to_inputs() for input_tx in input_txs], [])
+        tx = Transaction.transfer(inputs, 3 * [[user2_vk]])
         tx = tx.sign([user_sk])
 
         # create block with the transaction
@@ -636,216 +652,232 @@ class TestMultipleInputs(object):
         assert len(owned_inputs) == 3
 
         # create a transaction with a single input from a multiple output transaction
-        inp = owned_inputs.pop()
-        tx = b.create_transaction(user2_vk, user_vk, inp, 'TRANSFER')
-        tx_signed = b.sign_transaction(tx, user2_sk)
+        tx_link = owned_inputs.pop()
+        inputs = b.get_transaction(tx_link.txid).to_inputs([0])
+        tx = Transaction.transfer(inputs, [user_vk])
+        tx = tx.sign([user2_sk])
 
-        assert b.is_valid_transaction(tx_signed) == tx_signed
-        assert len(tx_signed['transaction']['fulfillments']) == 1
-        assert len(tx_signed['transaction']['conditions']) == 1
+        assert b.is_valid_transaction(tx) == tx
+        assert len(tx.fulfillments) == 1
+        assert len(tx.conditions) == 1
 
-    def test_single_owner_before_multiple_owners_after_single_input(self, b, user_sk, user_vk, inputs):
-        # create a new users
+    def test_single_owner_before_multiple_owners_after_single_input(self, b,
+                                                                    user_sk,
+                                                                    user_vk,
+                                                                    inputs):
+        from bigchaindb_common import crypto
+        from bigchaindb_common.transaction import Transaction
+
         user2_sk, user2_vk = crypto.generate_key_pair()
         user3_sk, user3_vk = crypto.generate_key_pair()
 
-        # get inputs
         owned_inputs = b.get_owned_ids(user_vk)
-        inp = owned_inputs.pop()
+        tx_link = owned_inputs.pop()
+        inputs = b.get_transaction(tx_link.txid).to_inputs()
+        tx = Transaction.transfer(inputs, [[user2_vk, user3_vk]])
+        tx = tx.sign([user_sk])
 
-        # create a transaction
-        tx = b.create_transaction(user_vk, [user2_sk, user3_vk], inp, 'TRANSFER')
-        tx_signed = b.sign_transaction(tx, user_sk)
+        assert b.is_valid_transaction(tx) == tx
+        assert len(tx.fulfillments) == 1
+        assert len(tx.conditions) == 1
 
-        # validate transaction
-        assert b.is_valid_transaction(tx_signed) == tx_signed
-        assert len(tx_signed['transaction']['fulfillments']) == 1
-        assert len(tx_signed['transaction']['conditions']) == 1
+    def test_single_owner_before_multiple_owners_after_multiple_inputs(self, b,
+                                                                       user_sk,
+                                                                       user_vk):
+        import random
+        from bigchaindb_common import crypto
+        from bigchaindb_common.transaction import Transaction
 
-    def test_single_owner_before_multiple_owners_after_multiple_inputs(self, b, user_sk, user_vk):
-        # create a new users
         user2_sk, user2_vk = crypto.generate_key_pair()
         user3_sk, user3_vk = crypto.generate_key_pair()
 
-        # create inputs to spend
         transactions = []
-        for i in range(5):
-            tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
-            tx_signed = b.sign_transaction(tx, b.me_private)
-            transactions.append(tx_signed)
-            b.write_transaction(tx_signed)
+        for i in range(3):
+            payload = {'somedata': random.randint(0, 255)}
+            tx = Transaction.create([user_vk], [user_vk], None, 'CREATE',
+                                    payload)
+            tx = tx.sign([user_sk])
+            transactions.append(tx)
+            b.write_transaction(tx)
         block = b.create_block(transactions)
         b.write_block(block, durability='hard')
 
-        # get inputs
         owned_inputs = b.get_owned_ids(user_vk)
-        inputs = owned_inputs[:3]
+        input_txs = [b.get_transaction(tx_link.txid) for tx_link
+                     in owned_inputs]
+        inputs = sum([input_tx.to_inputs() for input_tx in input_txs], [])
 
-        # create a transaction
-        tx = b.create_transaction(user_vk, [user2_vk, user3_vk], inputs, 'TRANSFER')
-        tx_signed = b.sign_transaction(tx, user_sk)
+        tx = Transaction.transfer(inputs, 3 * [[user2_vk, user3_vk]])
+        tx = tx.sign([user_sk])
 
         # validate transaction
-        assert b.is_valid_transaction(tx_signed) == tx_signed
-        assert len(tx_signed['transaction']['fulfillments']) == 3
-        assert len(tx_signed['transaction']['conditions']) == 3
+        assert b.is_valid_transaction(tx) == tx
+        assert len(tx.fulfillments) == 3
+        assert len(tx.conditions) == 3
 
-    def test_multiple_owners_before_single_owner_after_single_input(self, b, user_sk, user_vk):
-        # create a new users
+    def test_multiple_owners_before_single_owner_after_single_input(self, b,
+                                                                    user_sk,
+                                                                    user_vk):
+        from bigchaindb_common import crypto
+        from bigchaindb_common.transaction import Transaction
+
         user2_sk, user2_vk = crypto.generate_key_pair()
         user3_sk, user3_vk = crypto.generate_key_pair()
 
-        # create input to spend
-        tx = b.create_transaction(b.me, [user_vk, user2_vk], None, 'CREATE')
-        tx_signed = b.sign_transaction(tx, b.me_private)
-        block = b.create_block([tx_signed])
+        tx = Transaction.create([b.me], [user_vk, user2_vk])
+        tx = tx.sign([b.me_private])
+        block = b.create_block([tx])
         b.write_block(block, durability='hard')
 
-        # get input
-        owned_inputs = b.get_owned_ids(user_vk)
-        inp = owned_inputs[0]
+        owned_input = b.get_owned_ids(user_vk).pop()
+        input_tx = b.get_transaction(owned_input.txid)
+        inputs = input_tx.to_inputs()
 
-        # create a transaction
-        tx = b.create_transaction([user_vk, user2_vk], user3_vk, inp, 'TRANSFER')
-        tx_signed = b.sign_transaction(tx, [user_sk, user2_sk])
+        transfer_tx = Transaction.transfer(inputs, [user3_vk])
+        transfer_tx = transfer_tx.sign([user_sk, user2_sk])
 
         # validate transaction
-        assert b.is_valid_transaction(tx_signed) == tx_signed
-        assert len(tx_signed['transaction']['fulfillments']) == 1
-        assert len(tx_signed['transaction']['conditions']) == 1
+        assert b.is_valid_transaction(transfer_tx) == transfer_tx
+        assert len(transfer_tx.fulfillments) == 1
+        assert len(transfer_tx.conditions) == 1
 
-    def test_multiple_owners_before_single_owner_after_multiple_inputs(self, b, user_sk, user_vk):
-        # create a new users
+    def test_multiple_owners_before_single_owner_after_multiple_inputs(self, b,
+                                                                       user_sk,
+                                                                       user_vk):
+        from bigchaindb_common import crypto
+        from bigchaindb_common.transaction import Transaction
+
         user2_sk, user2_vk = crypto.generate_key_pair()
         user3_sk, user3_vk = crypto.generate_key_pair()
 
-        # create inputs to spend
         transactions = []
-        for i in range(5):
-            tx = b.create_transaction(b.me, [user_vk, user2_vk], None, 'CREATE')
-            tx_signed = b.sign_transaction(tx, b.me_private)
-            transactions.append(tx_signed)
+        for i in range(3):
+            tx = Transaction.create([b.me], [user_vk, user2_vk])
+            tx = tx.sign([b.me_private])
+            transactions.append(tx)
         block = b.create_block(transactions)
         b.write_block(block, durability='hard')
 
-        # get input
-        owned_inputs = b.get_owned_ids(user_vk)
-        inputs = owned_inputs[:3]
+        tx_links = b.get_owned_ids(user_vk)
+        inputs = sum([b.get_transaction(tx_link.txid).to_inputs() for tx_link
+                      in tx_links], [])
 
-        # create a transaction
-        tx = b.create_transaction([user_vk, user2_vk], user3_vk, inputs, 'TRANSFER')
-        tx_signed = b.sign_transaction(tx, [user_sk, user2_sk])
+        tx = Transaction.transfer(inputs, len(inputs) * [[user3_vk]])
+        tx = tx.sign([user_sk, user2_sk])
 
-        # validate transaction
-        assert b.is_valid_transaction(tx_signed) == tx_signed
-        assert len(tx_signed['transaction']['fulfillments']) == 3
-        assert len(tx_signed['transaction']['conditions']) == 3
+        assert b.is_valid_transaction(tx) == tx
+        assert len(tx.fulfillments) == 3
+        assert len(tx.conditions) == 3
 
-    def test_multiple_owners_before_multiple_owners_after_single_input(self, b, user_sk, user_vk):
-        # create a new users
+    def test_multiple_owners_before_multiple_owners_after_single_input(self, b,
+                                                                       user_sk,
+                                                                       user_vk):
+        from bigchaindb_common import crypto
+        from bigchaindb_common.transaction import Transaction
+
         user2_sk, user2_vk = crypto.generate_key_pair()
         user3_sk, user3_vk = crypto.generate_key_pair()
         user4_sk, user4_vk = crypto.generate_key_pair()
 
-        # create input to spend
-        tx = b.create_transaction(b.me, [user_vk, user2_vk], None, 'CREATE')
-        tx_signed = b.sign_transaction(tx, b.me_private)
-        block = b.create_block([tx_signed])
+        tx = Transaction.create([b.me], [user_vk, user2_vk])
+        tx = tx.sign([b.me_private])
+        block = b.create_block([tx])
         b.write_block(block, durability='hard')
 
-        # get input
-        owned_inputs = b.get_owned_ids(user_vk)
-        inp = owned_inputs[0]
+        tx_link = b.get_owned_ids(user_vk).pop()
+        tx_input = b.get_transaction(tx_link.txid).to_inputs()
 
-        # create a transaction
-        tx = b.create_transaction([user_vk, user2_vk], [user3_vk, user4_vk], inp, 'TRANSFER')
-        tx_signed = b.sign_transaction(tx, [user_sk, user2_sk])
+        tx = Transaction.transfer(tx_input, [[user3_vk, user4_vk]])
+        tx = tx.sign([user_sk, user2_sk])
 
-        # validate transaction
-        assert b.is_valid_transaction(tx_signed) == tx_signed
-        assert len(tx_signed['transaction']['fulfillments']) == 1
-        assert len(tx_signed['transaction']['conditions']) == 1
+        assert b.is_valid_transaction(tx) == tx
+        assert len(tx.fulfillments) == 1
+        assert len(tx.conditions) == 1
 
-    def test_multiple_owners_before_multiple_owners_after_multiple_inputs(self, b, user_sk, user_vk):
-        # create a new users
+    def test_multiple_owners_before_multiple_owners_after_multiple_inputs(self,
+                                                                          b,
+                                                                          user_sk,
+                                                                          user_vk):
+        from bigchaindb_common import crypto
+        from bigchaindb_common.transaction import Transaction
+
         user2_sk, user2_vk = crypto.generate_key_pair()
         user3_sk, user3_vk = crypto.generate_key_pair()
         user4_sk, user4_vk = crypto.generate_key_pair()
 
-        # create inputs to spend
         transactions = []
-        for i in range(5):
-            tx = b.create_transaction(b.me, [user_vk, user2_vk], None, 'CREATE')
-            tx_signed = b.sign_transaction(tx, b.me_private)
-            transactions.append(tx_signed)
+        for i in range(3):
+            tx = Transaction.create([b.me], [user_vk, user2_vk])
+            tx = tx.sign([b.me_private])
+            transactions.append(tx)
         block = b.create_block(transactions)
         b.write_block(block, durability='hard')
 
-        # get input
-        owned_inputs = b.get_owned_ids(user_vk)
-        inp = owned_inputs[:3]
+        tx_links = b.get_owned_ids(user_vk)
+        inputs = sum([b.get_transaction(tx_link.txid).to_inputs() for tx_link
+                      in tx_links], [])
 
-        # create a transaction
-        tx = b.create_transaction([user_vk, user2_vk], [user3_vk, user4_vk], inp, 'TRANSFER')
-        tx_signed = b.sign_transaction(tx, [user_sk, user2_sk])
+        tx = Transaction.transfer(inputs, len(inputs) * [[user3_vk, user4_vk]])
+        tx = tx.sign([user_sk, user2_sk])
 
-        # validate transaction
-        assert b.is_valid_transaction(tx_signed) == tx_signed
-        assert len(tx_signed['transaction']['fulfillments']) == 3
-        assert len(tx_signed['transaction']['conditions']) == 3
+        assert b.is_valid_transaction(tx) == tx
+        assert len(tx.fulfillments) == 3
+        assert len(tx.conditions) == 3
 
     def test_get_owned_ids_single_tx_single_output(self, b, user_sk, user_vk):
-        # create a new users
+        from bigchaindb_common import crypto
+        from bigchaindb_common.transaction import Transaction, TransactionLink
+
         user2_sk, user2_vk = crypto.generate_key_pair()
 
-        # create input to spend
-        tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
-        tx_signed = b.sign_transaction(tx, b.me_private)
-        block = b.create_block([tx_signed])
+        tx = Transaction.create([b.me], [user_vk])
+        tx = tx.sign([b.me_private])
+        block = b.create_block([tx])
         b.write_block(block, durability='hard')
 
-        # get input
         owned_inputs_user1 = b.get_owned_ids(user_vk)
         owned_inputs_user2 = b.get_owned_ids(user2_vk)
-        assert owned_inputs_user1 == [{'cid': 0, 'txid': tx['id']}]
+        assert owned_inputs_user1 == [TransactionLink(tx.id, 0)]
         assert owned_inputs_user2 == []
 
-        # create a transaction and block
-        tx = b.create_transaction(user_vk, user2_vk, owned_inputs_user1, 'TRANSFER')
-        tx_signed = b.sign_transaction(tx, user_sk)
-        block = b.create_block([tx_signed])
+        tx = Transaction.transfer(tx.to_inputs(), [user2_vk])
+        tx = tx.sign([user_sk])
+        block = b.create_block([tx])
         b.write_block(block, durability='hard')
 
         owned_inputs_user1 = b.get_owned_ids(user_vk)
         owned_inputs_user2 = b.get_owned_ids(user2_vk)
         assert owned_inputs_user1 == []
-        assert owned_inputs_user2 == [{'cid': 0, 'txid': tx['id']}]
+        assert owned_inputs_user2 == [TransactionLink(tx.id, 0)]
 
-    def test_get_owned_ids_single_tx_single_output_invalid_block(self, b, user_sk, user_vk):
+    def test_get_owned_ids_single_tx_single_output_invalid_block(self, b,
+                                                                 user_sk,
+                                                                 user_vk):
+        from bigchaindb_common import crypto
+        from bigchaindb_common.transaction import Transaction, TransactionLink
+
         genesis = b.create_genesis_block()
-        # create a new users
         user2_sk, user2_vk = crypto.generate_key_pair()
 
-        # create input to spend
-        tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
-        tx_signed = b.sign_transaction(tx, b.me_private)
-        block = b.create_block([tx_signed])
+        tx = Transaction.create([b.me], [user_vk])
+        tx = tx.sign([b.me_private])
+        block = b.create_block([tx])
         b.write_block(block, durability='hard')
 
         # vote the block VALID
         vote = b.vote(block['id'], genesis['id'], True)
         b.write_vote(vote)
 
-        # get input
         owned_inputs_user1 = b.get_owned_ids(user_vk)
         owned_inputs_user2 = b.get_owned_ids(user2_vk)
-        assert owned_inputs_user1 == [{'cid': 0, 'txid': tx['id']}]
+        assert owned_inputs_user1 == [TransactionLink(tx.id, 0)]
         assert owned_inputs_user2 == []
 
-        # create a transaction and block
-        tx_invalid = b.create_transaction(user_vk, user2_vk, owned_inputs_user1, 'TRANSFER')
-        tx_invalid_signed = b.sign_transaction(tx_invalid, user_sk)
-        block = b.create_block([tx_invalid_signed])
+        # NOTE: The transaction itself is valid, still will mark the block
+        #       as invalid to mock the behavior.
+        tx_invalid = Transaction.transfer(tx.to_inputs(), [user2_vk])
+        tx_invalid = tx_invalid.sign([user_sk])
+        block = b.create_block([tx_invalid])
         b.write_block(block, durability='hard')
 
         # vote the block invalid
@@ -856,19 +888,23 @@ class TestMultipleInputs(object):
         owned_inputs_user2 = b.get_owned_ids(user2_vk)
 
         # should be the same as before (note tx, not tx_invalid)
-        assert owned_inputs_user1 == [{'cid': 0, 'txid': tx['id']}]
+        assert owned_inputs_user1 == [TransactionLink(tx.id, 0)]
         assert owned_inputs_user2 == []
 
-    def test_get_owned_ids_single_tx_multiple_outputs(self, b, user_sk, user_vk):
-        # create a new users
+    def test_get_owned_ids_single_tx_multiple_outputs(self, b, user_sk,
+                                                      user_vk):
+        import random
+        from bigchaindb_common import crypto
+        from bigchaindb_common.transaction import Transaction, TransactionLink
+
         user2_sk, user2_vk = crypto.generate_key_pair()
 
-        # create inputs to spend
         transactions = []
-        for i in range(5):
-            tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
-            tx_signed = b.sign_transaction(tx, b.me_private)
-            transactions.append(tx_signed)
+        for i in range(2):
+            payload = {'somedata': random.randint(0, 255)}
+            tx = Transaction.create([b.me], [user_vk], payload)
+            tx = tx.sign([b.me_private])
+            transactions.append(tx)
         block = b.create_block(transactions)
         b.write_block(block, durability='hard')
 
@@ -876,208 +912,197 @@ class TestMultipleInputs(object):
         owned_inputs_user1 = b.get_owned_ids(user_vk)
         owned_inputs_user2 = b.get_owned_ids(user2_vk)
 
-        expected_owned_inputs_user1 = [{'txid': tx['id'], 'cid': 0} for tx in transactions]
+        expected_owned_inputs_user1 = [TransactionLink(tx.id, 0) for tx
+                                       in transactions]
         assert owned_inputs_user1 == expected_owned_inputs_user1
         assert owned_inputs_user2 == []
 
-        # create a transaction and block
-        tx = b.create_transaction(user_vk, user2_vk,
-                                  [expected_owned_inputs_user1.pop(), expected_owned_inputs_user1.pop()], 'TRANSFER')
-        tx_signed = b.sign_transaction(tx, user_sk)
-        block = b.create_block([tx_signed])
+        inputs = sum([tx.to_inputs() for tx in transactions], [])
+        tx = Transaction.transfer(inputs, len(inputs) * [[user2_vk]])
+        tx = tx.sign([user_sk])
+        block = b.create_block([tx])
         b.write_block(block, durability='hard')
 
         owned_inputs_user1 = b.get_owned_ids(user_vk)
         owned_inputs_user2 = b.get_owned_ids(user2_vk)
-        assert owned_inputs_user1 == expected_owned_inputs_user1
-        assert owned_inputs_user2 == [{'cid': 0, 'txid': tx['id']}, {'cid': 1, 'txid': tx['id']}]
+        assert owned_inputs_user1 == []
+        assert owned_inputs_user2 == [TransactionLink(tx.id, 0),
+                                      TransactionLink(tx.id, 1)]
 
     def test_get_owned_ids_multiple_owners(self, b, user_sk, user_vk):
-        # create a new users
+        from bigchaindb_common import crypto
+        from bigchaindb_common.transaction import Transaction, TransactionLink
+
         user2_sk, user2_vk = crypto.generate_key_pair()
         user3_sk, user3_vk = crypto.generate_key_pair()
 
-        # create inputs to spend
-        transactions = []
-        for i in range(5):
-            tx = b.create_transaction(b.me, [user_vk, user2_vk], None, 'CREATE')
-            tx_signed = b.sign_transaction(tx, b.me_private)
-            transactions.append(tx_signed)
-        block = b.create_block(transactions)
+        tx = Transaction.create([b.me], [user_vk, user2_vk])
+        tx = tx.sign([b.me_private])
+        block = b.create_block([tx])
         b.write_block(block, durability='hard')
 
-        # get input
         owned_inputs_user1 = b.get_owned_ids(user_vk)
         owned_inputs_user2 = b.get_owned_ids(user2_vk)
-        expected_owned_inputs_user1 = [{'txid': tx['id'], 'cid': 0} for tx in transactions]
+        expected_owned_inputs_user1 = [TransactionLink(tx.id, 0)]
+
         assert owned_inputs_user1 == owned_inputs_user2
         assert owned_inputs_user1 == expected_owned_inputs_user1
 
-        # create a transaction
-        tx = b.create_transaction([user_vk, user2_vk], user3_vk, expected_owned_inputs_user1.pop(), 'TRANSFER')
-        tx_signed = b.sign_transaction(tx, [user_sk, user2_sk])
-        block = b.create_block([tx_signed])
+        tx = Transaction.transfer(tx.to_inputs(), [user3_vk])
+        tx = tx.sign([user_sk, user2_sk])
+        block = b.create_block([tx])
         b.write_block(block, durability='hard')
 
         owned_inputs_user1 = b.get_owned_ids(user_vk)
         owned_inputs_user2 = b.get_owned_ids(user2_vk)
         assert owned_inputs_user1 == owned_inputs_user2
-        assert owned_inputs_user1 == expected_owned_inputs_user1
+        assert owned_inputs_user1 == []
 
     def test_get_spent_single_tx_single_output(self, b, user_sk, user_vk):
-        # create a new users
+        from bigchaindb_common import crypto
+        from bigchaindb_common.transaction import Transaction
+
         user2_sk, user2_vk = crypto.generate_key_pair()
 
-        # create input to spend
-        tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
-        tx_signed = b.sign_transaction(tx, b.me_private)
-        block = b.create_block([tx_signed])
+        tx = Transaction.create([b.me], [user_vk])
+        tx = tx.sign([b.me_private])
+        block = b.create_block([tx])
         b.write_block(block, durability='hard')
 
-        # get input
         owned_inputs_user1 = b.get_owned_ids(user_vk).pop()
 
         # check spents
-        input_txid = owned_inputs_user1['txid']
-        input_cid = owned_inputs_user1['cid']
+        input_txid = owned_inputs_user1.txid
+        input_cid = owned_inputs_user1.cid
         spent_inputs_user1 = b.get_spent(input_txid, input_cid)
         assert spent_inputs_user1 is None
 
         # create a transaction and block
-        tx = b.create_transaction(user_vk, user2_vk, owned_inputs_user1, 'TRANSFER')
-        tx_signed = b.sign_transaction(tx, user_sk)
-        block = b.create_block([tx_signed])
+        tx = Transaction.transfer(tx.to_inputs(), [user2_vk])
+        tx = tx.sign([user_sk])
+        block = b.create_block([tx])
         b.write_block(block, durability='hard')
 
         spent_inputs_user1 = b.get_spent(input_txid, input_cid)
-        assert spent_inputs_user1 == tx_signed
+        assert spent_inputs_user1 == tx
 
     def test_get_spent_single_tx_single_output_invalid_block(self, b, user_sk, user_vk):
+        from bigchaindb_common import crypto
+        from bigchaindb_common.transaction import Transaction
+
         genesis = b.create_genesis_block()
 
         # create a new users
         user2_sk, user2_vk = crypto.generate_key_pair()
 
-        # create input to spend
-        tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
-        tx_signed = b.sign_transaction(tx, b.me_private)
-        block = b.create_block([tx_signed])
+        tx = Transaction.create([b.me], [user_vk])
+        tx = tx.sign([b.me_private])
+        block = b.create_block([tx])
         b.write_block(block, durability='hard')
 
         # vote the block VALID
         vote = b.vote(block['id'], genesis['id'], True)
         b.write_vote(vote)
 
-        # get input
         owned_inputs_user1 = b.get_owned_ids(user_vk).pop()
 
         # check spents
-        input_txid = owned_inputs_user1['txid']
-        input_cid = owned_inputs_user1['cid']
+        input_txid = owned_inputs_user1.txid
+        input_cid = owned_inputs_user1.cid
         spent_inputs_user1 = b.get_spent(input_txid, input_cid)
         assert spent_inputs_user1 is None
 
         # create a transaction and block
-        tx = b.create_transaction(user_vk, user2_vk, owned_inputs_user1, 'TRANSFER')
-        tx_signed = b.sign_transaction(tx, user_sk)
-        block = b.create_block([tx_signed])
+        tx = Transaction.transfer(tx.to_inputs(), [user2_vk])
+        tx = tx.sign([user_sk])
+        block = b.create_block([tx])
         b.write_block(block, durability='hard')
 
         # vote the block invalid
         vote = b.vote(block['id'], b.get_last_voted_block()['id'], False)
         b.write_vote(vote)
-        response = b.get_transaction(tx_signed["id"])
+        # NOTE: I have no idea why this line is here
+        b.get_transaction(tx.id)
         spent_inputs_user1 = b.get_spent(input_txid, input_cid)
 
         # Now there should be no spents (the block is invalid)
         assert spent_inputs_user1 is None
 
     def test_get_spent_single_tx_multiple_outputs(self, b, user_sk, user_vk):
+        import random
+        from bigchaindb_common import crypto
+        from bigchaindb_common.transaction import Transaction
+
         # create a new users
         user2_sk, user2_vk = crypto.generate_key_pair()
 
-        # create inputs to spend
         transactions = []
-        for i in range(5):
-            tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
-            tx_signed = b.sign_transaction(tx, b.me_private)
-            transactions.append(tx_signed)
+        for i in range(3):
+            payload = {'somedata': random.randint(0, 255)}
+            tx = Transaction.create([b.me], [user_vk], payload)
+            tx = tx.sign([b.me_private])
+            transactions.append(tx)
         block = b.create_block(transactions)
         b.write_block(block, durability='hard')
 
-        # get input
         owned_inputs_user1 = b.get_owned_ids(user_vk)
 
         # check spents
         for input_tx in owned_inputs_user1:
-            input_txid = input_tx['txid']
-            input_cid = input_tx['cid']
-            assert b.get_spent(input_txid, input_cid) is None
+            assert b.get_spent(input_tx.txid, input_tx.cid) is None
 
         # select inputs to use
-        inputs = [owned_inputs_user1.pop(), owned_inputs_user1.pop()]
+        inputs = sum([tx.to_inputs() for tx in transactions[:2]], [])
 
         # create a transaction and block
-        tx = b.create_transaction(user_vk, user2_vk, inputs, 'TRANSFER')
-        tx_signed = b.sign_transaction(tx, user_sk)
-        block = b.create_block([tx_signed])
+        tx = Transaction.transfer(inputs, len(inputs) * [[user2_vk]])
+        tx = tx.sign([user_sk])
+        block = b.create_block([tx])
         b.write_block(block, durability='hard')
 
         # check that used inputs are marked as spent
-        for input_tx in inputs:
-            input_txid = input_tx['txid']
-            input_cid = input_tx['cid']
-            assert b.get_spent(input_txid, input_cid) == tx_signed
+        for ffill in inputs:
+            assert b.get_spent(ffill.tx_input.txid, ffill.tx_input.cid) == tx
 
-        # check that the other remain marked as unspent
-        for input_tx in owned_inputs_user1:
-            input_txid = input_tx['txid']
-            input_cid = input_tx['cid']
-            assert b.get_spent(input_txid, input_cid) is None
+        # check if remaining transaction that was unspent is also perceived
+        # spendable by BigchainDB
+        assert b.get_spent(transactions[2].id, 0) is None
 
     def test_get_spent_multiple_owners(self, b, user_sk, user_vk):
-        # create a new users
+        import random
+        from bigchaindb_common import crypto
+        from bigchaindb_common.transaction import Transaction
+
         user2_sk, user2_vk = crypto.generate_key_pair()
         user3_sk, user3_vk = crypto.generate_key_pair()
 
-        # create inputs to spend
         transactions = []
-        for i in range(5):
-            tx = b.create_transaction(b.me, [user_vk, user2_vk], None, 'CREATE')
-            tx_signed = b.sign_transaction(tx, b.me_private)
-            transactions.append(tx_signed)
+        for i in range(3):
+            payload = {'somedata': random.randint(0, 255)}
+            tx = Transaction.create([b.me], [user_vk, user2_vk], payload)
+            tx = tx.sign([b.me_private])
+            transactions.append(tx)
         block = b.create_block(transactions)
         b.write_block(block, durability='hard')
 
-        # get input
         owned_inputs_user1 = b.get_owned_ids(user_vk)
 
         # check spents
         for input_tx in owned_inputs_user1:
-            input_txid = input_tx['txid']
-            input_cid = input_tx['cid']
-            assert b.get_spent(input_txid, input_cid) is None
-
-        # select inputs to use
-        inputs = [owned_inputs_user1.pop()]
+            assert b.get_spent(input_tx.txid, input_tx.cid) is None
 
         # create a transaction
-        tx = b.create_transaction([user_vk, user2_vk], user3_vk, inputs, 'TRANSFER')
-        tx_signed = b.sign_transaction(tx, [user_sk, user2_sk])
-        block = b.create_block([tx_signed])
+        tx = Transaction.transfer(transactions[0].to_inputs(), [user3_vk])
+        tx = tx.sign([user_sk, user2_sk])
+        block = b.create_block([tx])
         b.write_block(block, durability='hard')
 
         # check that used inputs are marked as spent
-        for input_tx in inputs:
-            input_txid = input_tx['txid']
-            input_cid = input_tx['cid']
-            assert b.get_spent(input_txid, input_cid) == tx_signed
+        assert b.get_spent(transactions[0].id, 0) == tx
 
         # check that the other remain marked as unspent
-        for input_tx in owned_inputs_user1:
-            input_txid = input_tx['txid']
-            input_cid = input_tx['cid']
-            assert b.get_spent(input_txid, input_cid) is None
+        for unspent in transactions[1:]:
+            assert b.get_spent(unspent.id, 0) is None
 
 
 class TestFulfillmentMessage(object):

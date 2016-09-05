@@ -32,4 +32,3 @@ def app(request, node_config):
 @pytest.fixture
 def inputs(user_vk):
     conftest.inputs(user_vk)
-
