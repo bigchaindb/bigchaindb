@@ -73,6 +73,7 @@ def create_transaction():
 
     with pool() as bigchain:
         if tx['transaction']['operation'] == 'CREATE':
+            # TODO: Remove this
             tx = util.transform_create(tx)
             tx = bigchain.consensus.sign_transaction(tx, private_key=bigchain.me_private)
 
