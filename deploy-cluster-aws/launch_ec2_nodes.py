@@ -27,8 +27,8 @@ from awscommon import get_naeips
 
 
 SETTINGS = ['NUM_NODES', 'BRANCH', 'WHAT_TO_DEPLOY', 'SSH_KEY_NAME',
-            'USE_KEYPAIRS_FILE', 'IMAGE_ID', 'INSTANCE_TYPE', 'USING_EBS',
-            'EBS_VOLUME_SIZE', 'EBS_OPTIMIZED']
+            'USE_KEYPAIRS_FILE', 'IMAGE_ID', 'INSTANCE_TYPE', 'SECURITY_GROUP',
+            'USING_EBS', 'EBS_VOLUME_SIZE', 'EBS_OPTIMIZED']
 
 
 class SettingsTypeError(TypeError):
@@ -91,6 +91,9 @@ if not isinstance(IMAGE_ID, str):
 
 if not isinstance(INSTANCE_TYPE, str):
     raise SettingsTypeError('INSTANCE_TYPE should be a string')
+
+if not isinstance(SECURITY_GROUP, str):
+    raise SettingsTypeError('SECURITY_GROUP should be a string')
 
 if not isinstance(USING_EBS, bool):
     raise SettingsTypeError('USING_EBS should be a boolean (True or False)')
@@ -182,6 +185,8 @@ if NUM_NODES > len(non_associated_eips):
 print('Commencing launch of {} instances on Amazon EC2...'.
       format(NUM_NODES))
 
+sg_list = [SECURITY_GROUP]
+
 for _ in range(NUM_NODES):
     # Request the launch of one instance at a time
     # (so list_of_instances should contain only one item)
@@ -206,7 +211,7 @@ for _ in range(NUM_NODES):
             MaxCount=1,
             KeyName=SSH_KEY_NAME,
             InstanceType=INSTANCE_TYPE,
-            SecurityGroupIds=['bigchaindb'],
+            SecurityGroupIds=sg_list,
             BlockDeviceMappings=[dm],
             EbsOptimized=EBS_OPTIMIZED
         )
@@ -217,7 +222,7 @@ for _ in range(NUM_NODES):
             MaxCount=1,
             KeyName=SSH_KEY_NAME,
             InstanceType=INSTANCE_TYPE,
-            SecurityGroupIds=['bigchaindb']
+            SecurityGroupIds=sg_list
         )
 
     # Tag the just-launched instances (should be just one)
