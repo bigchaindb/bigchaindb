@@ -55,18 +55,6 @@ class AbstractConsensusRules(metaclass=ABCMeta):
 
     @staticmethod
     @abstractmethod
-    def create_transaction(*args, **kwargs):
-        """Create a new transaction.
-
-        Args:
-            The signature of this method is left to plugin authors to decide.
-
-        Returns:
-            dict: newly constructed transaction.
-        """
-
-    @staticmethod
-    @abstractmethod
     def sign_transaction(transaction, *args, **kwargs):
         """Sign a transaction.
 
@@ -199,17 +187,6 @@ class BaseConsensusRules(AbstractConsensusRules):
             raise exceptions.InvalidSignature('Invalid block signature')
 
         return block
-
-    @staticmethod
-    def create_transaction(owner_before, owner_after, tx_input, operation,
-                           payload=None):
-        """Create a new transaction
-
-        Refer to the documentation of ``bigchaindb.util.create_tx``
-        """
-
-        return util.create_tx(owner_before, owner_after, tx_input, operation,
-                              payload)
 
     @staticmethod
     def sign_transaction(transaction, private_key, bigchain=None):

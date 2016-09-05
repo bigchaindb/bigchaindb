@@ -80,17 +80,6 @@ class Bigchain(object):
     def reconnect(self):
         return r.connect(host=self.host, port=self.port, db=self.dbname)
 
-    def create_transaction(self, *args, **kwargs):
-        """Create a new transaction
-
-        Refer to the documentation of your consensus plugin.
-
-        Returns:
-            dict: newly constructed transaction.
-        """
-
-        return self.consensus.create_transaction(*args, **kwargs)
-
     def sign_transaction(self, transaction, *args, **kwargs):
         """Sign a transaction
 
