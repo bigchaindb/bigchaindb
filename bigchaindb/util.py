@@ -104,7 +104,8 @@ def _serialize_txs_block(block):
     # NOTE: Avoid side effects on the block
     block = deepcopy(block)
     try:
-        block['block']['transactions'] = [tx.to_dict() for tx in block['block']['transactions']]
+        block['block']['transactions'] = [tx.to_dict() for tx
+                                          in block['block']['transactions']]
     except KeyError:
         block['transactions'] = [tx.to_dict() for tx in block['transactions']]
     return block

@@ -8,6 +8,8 @@ function.
 import logging
 
 import rethinkdb as r
+from bigchaindb_common.transaction import Transaction
+from bigchaindb_common.exceptions import InvalidHash
 from multipipes import Pipeline, Node
 
 from bigchaindb.pipelines.utils import ChangeFeed
@@ -69,6 +71,11 @@ class Block:
         Returns:
             The transaction if valid, ``None`` otherwise.
         """
+        try:
+            tx = Transaction.from_dict(tx)
+        except InvalidHash:
+            return None
+
         tx = self.bigchain.is_valid_transaction(tx)
         if tx:
             return tx
@@ -157,4 +164,3 @@ def start():
     pipeline.setup(indata=get_changefeed())
     pipeline.start()
     return pipeline
-

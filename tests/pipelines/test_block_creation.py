@@ -1,5 +1,4 @@
 import time
-import random
 from unittest.mock import patch
 
 import rethinkdb as r
@@ -8,44 +7,41 @@ from bigchaindb.pipelines import block
 from multipipes import Pipe, Pipeline
 
 
-def test_filter_by_assignee(b, user_vk):
+def test_filter_by_assignee(b, signed_create_tx):
     block_maker = block.Block()
 
-    tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
-    tx = b.sign_transaction(tx, b.me_private)
-    tx['assignee'] = b.me
+    tx = signed_create_tx.to_dict()
+    tx.update({'assignee': b.me})
 
     # filter_tx has side effects on the `tx` instance by popping 'assignee'
     assert block_maker.filter_tx(tx) == tx
 
-    tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
-    tx = b.sign_transaction(tx, b.me_private)
-    tx['assignee'] = 'nobody'
+    tx = signed_create_tx.to_dict()
+    tx.update({'assignee': 'nobody'})
 
     assert block_maker.filter_tx(tx) is None
 
 
-def test_validate_transaction(b, user_vk):
+def test_validate_transaction(b, signed_create_tx):
     block_maker = block.Block()
 
-    tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
-    tx = b.sign_transaction(tx, b.me_private)
+    tx = signed_create_tx.to_dict()
     tx['id'] = 'a' * 64
 
     assert block_maker.validate_tx(tx) is None
 
-    tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
-    tx = b.sign_transaction(tx, b.me_private)
-
-    assert block_maker.validate_tx(tx) == tx
+    valid_tx = signed_create_tx.to_dict()
+    assert block_maker.validate_tx(valid_tx) == signed_create_tx
 
 
 def test_create_block(b, user_vk):
+    from bigchaindb_common.transaction import Transaction
+
     block_maker = block.Block()
 
     for i in range(100):
-        tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
-        tx = b.sign_transaction(tx, b.me_private)
+        tx = Transaction.create([b.me], [user_vk])
+        tx = tx.sign([b.me_private])
         block_maker.create(tx)
 
     # force the output triggering a `timeout`
@@ -55,39 +51,51 @@ def test_create_block(b, user_vk):
 
 
 def test_write_block(b, user_vk):
+    # TODO: Write Block class
+    from bigchaindb.util import _serialize_txs_block
+    from bigchaindb_common.transaction import Transaction
+
     block_maker = block.Block()
 
     txs = []
     for i in range(100):
-        tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
-        tx = b.sign_transaction(tx, b.me_private)
+        tx = Transaction.create([b.me], [user_vk])
+        tx = tx.sign([b.me_private])
         txs.append(tx)
 
     block_doc = b.create_block(txs)
     block_maker.write(block_doc)
+    expected = r.table('bigchain').get(block_doc['id']).run(b.conn)
 
-    assert r.table('bigchain').get(block_doc['id']).run(b.conn) == block_doc
+    assert expected == _serialize_txs_block(block_doc)
 
 
 def test_delete_tx(b, user_vk):
+    from bigchaindb_common.transaction import Transaction
+
     block_maker = block.Block()
 
-    tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
-    tx = b.sign_transaction(tx, b.me_private)
+    tx = Transaction.create([b.me], [user_vk])
+    tx = tx.sign([b.me_private])
     b.write_transaction(tx)
 
-    assert r.table('backlog').get(tx['id']).run(b.conn) == tx
+    backlog_tx = r.table('backlog').get(tx.id).run(b.conn)
+    backlog_tx.pop('assignee')
+    assert backlog_tx == tx.to_dict()
 
-    returned_tx = block_maker.delete_tx(tx)
+    returned_tx = block_maker.delete_tx(tx.to_dict())
 
-    assert returned_tx == tx
-    assert r.table('backlog').get(tx['id']).run(b.conn) is None
+    assert returned_tx == tx.to_dict()
+    assert r.table('backlog').get(tx.id).run(b.conn) is None
 
 
 def test_prefeed(b, user_vk):
+    import random
+    from bigchaindb_common.transaction import Transaction
+
     for i in range(100):
-        tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
-        tx = b.sign_transaction(tx, b.me_private)
+        tx = Transaction.create([b.me], [user_vk], {'msg': random.random()})
+        tx = tx.sign([b.me_private])
         b.write_transaction(tx)
 
     backlog = block.initial()
@@ -105,12 +113,17 @@ def test_start(mock_start):
 
 
 def test_full_pipeline(b, user_vk):
+    import random
+    # TODO: Create block model
+    from bigchaindb.util import _serialize_txs_block
+    from bigchaindb_common.transaction import Transaction
+
     outpipe = Pipe()
 
     count_assigned_to_me = 0
     for i in range(100):
-        tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
-        tx = b.sign_transaction(tx, b.me_private)
+        tx = Transaction.create([b.me], [user_vk], {'msg': random.random()})
+        tx = tx.sign([b.me_private]).to_dict()
         assignee = random.choice([b.me, 'aaa', 'bbb', 'ccc'])
         tx['assignee'] = assignee
         if assignee == b.me:
@@ -127,8 +140,8 @@ def test_full_pipeline(b, user_vk):
     pipeline.terminate()
 
     block_doc = outpipe.get()
+    chained_block = r.table('bigchain').get(block_doc['id']).run(b.conn)
 
     assert len(block_doc['block']['transactions']) == count_assigned_to_me
-    assert r.table('bigchain').get(block_doc['id']).run(b.conn) == block_doc
+    assert chained_block == _serialize_txs_block(block_doc)
     assert r.table('backlog').count().run(b.conn) == 100 - count_assigned_to_me
-
