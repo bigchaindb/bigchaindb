@@ -13,8 +13,23 @@ logger = logging.getLogger(__name__)
 
 
 class Connection:
+    """This class is a proxy to run queries against the database,
+    it is:
+    - lazy, since it creates a connection only when needed
+    - resilient, because before raising exceptions it tries
+      more times to run the query or open a connection.
+    """
 
     def __init__(self, host=None, port=None, db=None, max_tries=3):
+        """Create a new Connection instance.
+
+        Args:
+            host (str, optional): the host to connect to.
+            port (int, optional): the port to connect to.
+            db (str, optional): the database to use.
+            max_tries (int, optional): how many tries before giving up.
+        """
+
         self.host = host or bigchaindb.config['database']['host']
         self.port = port or bigchaindb.config['database']['port']
         self.db = db or bigchaindb.config['database']['name']
@@ -22,6 +37,12 @@ class Connection:
         self.conn = None
 
     def run(self, query):
+        """Run a query.
+
+        Args:
+            query: the RethinkDB query.
+        """
+
         if self.conn is None:
             self._connect()
 
