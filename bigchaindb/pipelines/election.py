@@ -10,6 +10,8 @@ import rethinkdb as r
 from multipipes import Pipeline, Node
 
 from bigchaindb.pipelines.utils import ChangeFeed
+# TODO: replace with block model
+from bigchaindb.util import deserialize_block
 from bigchaindb import Bigchain
 
 
@@ -30,7 +32,7 @@ class Election:
                 .get(next_vote['vote']['voting_for_block']))
 
         if self.bigchain.block_election_status(next_block) == self.bigchain.BLOCK_INVALID:
-            return next_block
+            return deserialize_block(next_block)
 
     def requeue_transactions(self, invalid_block):
         """
