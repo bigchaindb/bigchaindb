@@ -8,6 +8,7 @@ import rethinkdb as r
 import rapidjson
 
 import bigchaindb
+from bigchaindb.db.utils import Connection
 from bigchaindb import config_utils, crypto, exceptions, util
 
 
@@ -64,6 +65,7 @@ class Bigchain(object):
             raise exceptions.KeypairNotFoundException()
 
         self._conn = None
+        self.connection = Connection(host=self.host, port=self.port, db=self.dbname)
 
     @property
     def conn(self):
@@ -262,8 +264,8 @@ class Bigchain(object):
         When creating a transaction one of the optional arguments is the `payload`. The payload is a generic
         dict that contains information about the digital asset.
 
-        To make it easy to query the bigchain for that digital asset we create a UUID for the payload and 
-        store it with the transaction. This makes it easy for developers to keep track of their digital 
+        To make it easy to query the bigchain for that digital asset we create a UUID for the payload and
+        store it with the transaction. This makes it easy for developers to keep track of their digital
         assets in bigchain.
 
         Args:

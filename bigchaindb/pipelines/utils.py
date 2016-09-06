@@ -1,10 +1,15 @@
 """Utility classes and functions to work with the pipelines."""
 
 
+import time
 import rethinkdb as r
+import logging
 from multipipes import Node
 
 from bigchaindb import Bigchain
+
+
+logger = logging.getLogger(__name__)
 
 
 class ChangeFeed(Node):
@@ -47,8 +52,15 @@ class ChangeFeed(Node):
         for element in self.prefeed:
             self.outqueue.put(element)
 
-        for change in r.table(self.table).changes().run(self.bigchain.conn):
+        while True:
+            try:
+                self.run_changefeed()
+            except (r.ReqlDriverError, r.ReqlOpFailedError) as exc:
+                logger.exception(exc)
+                time.sleep(1)
 
+    def run_changefeed(self):
+        for change in self.bigchain.connection.run(r.table(self.table).changes()):
             is_insert = change['old_val'] is None
             is_delete = change['new_val'] is None
             is_update = not is_insert and not is_delete
