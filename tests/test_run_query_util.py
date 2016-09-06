@@ -72,7 +72,7 @@ def test_changefeed_reconnects_when_connection_lost(monkeypatch):
     # initialize ChangeFeed and put it in a thread
     changefeed = ChangeFeed('cat_facts', ChangeFeed.INSERT)
     changefeed.outqueue = mp.Queue()
-    t_changefeed = Thread(target=changefeed.run_forever)
+    t_changefeed = Thread(target=changefeed.run_forever, daemon=True)
 
     t_changefeed.start()
     time.sleep(1)
@@ -104,3 +104,7 @@ def test_changefeed_reconnects_when_connection_lost(monkeypatch):
 
     fact = changefeed.outqueue.get()['fact']
     assert fact == 'Cats sleep 70% of their lives.'
+
+    # stop the DB process
+    proc.terminate()
+    proc.wait()
