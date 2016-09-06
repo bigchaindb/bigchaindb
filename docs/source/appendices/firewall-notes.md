@@ -1,6 +1,17 @@
 # Notes for Firewall Setup
 
-This is a page of notes on the ports used by BigchainDB nodes and the traffic they should expect, to help with firewall setup (or security group setup on AWS). This page is _not_ a firewall tutorial or step-by-step guide.
+This is a page of notes on the ports potentially used by BigchainDB nodes and the traffic they should expect, to help with firewall setup (and security group setup on AWS). This page is _not_ a firewall tutorial or step-by-step guide.
+
+
+## Expected Unsolicited Inbound Traffic
+
+Assuming you aren't exposing the RethinkDB web interface on port 8080 (or any other port, because [there are more secure ways to access it](https://www.rethinkdb.com/docs/security/#binding-the-web-interface-port)), there are only three ports that should expect unsolicited inbound traffic:
+
+1. **Port 22** can expect inbound SSH (TCP) traffic from the node administrator (i.e. a small set of IP addresses).
+2. **Port 9984** can expect inbound HTTP (TCP) traffic from BigchainDB clients sending transactions to the BigchainDB HTTP API.
+3. **Port 29015** can expect inbound TCP traffic from other RethinkDB nodes in the RethinkDB cluster (for RethinkDB intracluster communications).
+
+All other ports should only get inbound traffic in response to specific requests from inside the node.
 
 
 ## Port 22
