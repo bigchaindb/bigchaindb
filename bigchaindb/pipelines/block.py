@@ -53,10 +53,10 @@ class Block:
         Returns:
             The transaction.
         """
-        r.table('backlog')\
-         .get(tx['id'])\
-         .delete(durability='hard')\
-         .run(self.bigchain.conn)
+        self.bigchain.connection.run(
+                r.table('backlog')
+                .get(tx['id'])
+                .delete(durability='hard'))
 
         return tx
 
@@ -118,12 +118,14 @@ def initial():
 
     b = Bigchain()
 
-    rs = r.table('backlog')\
-          .between([b.me, r.minval],
-                   [b.me, r.maxval],
-                   index='assignee__transaction_timestamp')\
-          .order_by(index=r.asc('assignee__transaction_timestamp'))\
-          .run(b.conn)
+    rs = b.connection.run(
+            r.table('backlog')
+            .between(
+                [b.me, r.minval],
+                [b.me, r.maxval],
+                index='assignee__transaction_timestamp')
+            .order_by(index=r.asc('assignee__transaction_timestamp')))
+
     return rs
 
 
