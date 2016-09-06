@@ -55,6 +55,7 @@ class ChangeFeed(Node):
         while True:
             try:
                 self.run_changefeed()
+                break
             except (r.ReqlDriverError, r.ReqlOpFailedError) as exc:
                 logger.exception(exc)
                 time.sleep(1)

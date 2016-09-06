@@ -1,8 +1,7 @@
 from unittest.mock import patch
 
-import rethinkdb
-
 from multipipes import Pipe
+from bigchaindb.db.utils import Connection
 from bigchaindb.pipelines.utils import ChangeFeed
 
 
@@ -18,7 +17,7 @@ MOCK_CHANGEFEED_DATA = [{
 }]
 
 
-@patch.object(rethinkdb.ast.RqlQuery, 'run', return_value=MOCK_CHANGEFEED_DATA)
+@patch.object(Connection, 'run', return_value=MOCK_CHANGEFEED_DATA)
 def test_changefeed_insert(mock_run):
     outpipe = Pipe()
     changefeed = ChangeFeed('backlog', ChangeFeed.INSERT)
@@ -28,7 +27,7 @@ def test_changefeed_insert(mock_run):
     assert outpipe.qsize() == 0
 
 
-@patch.object(rethinkdb.ast.RqlQuery, 'run', return_value=MOCK_CHANGEFEED_DATA)
+@patch.object(Connection, 'run', return_value=MOCK_CHANGEFEED_DATA)
 def test_changefeed_delete(mock_run):
     outpipe = Pipe()
     changefeed = ChangeFeed('backlog', ChangeFeed.DELETE)
@@ -38,7 +37,7 @@ def test_changefeed_delete(mock_run):
     assert outpipe.qsize() == 0
 
 
-@patch.object(rethinkdb.ast.RqlQuery, 'run', return_value=MOCK_CHANGEFEED_DATA)
+@patch.object(Connection, 'run', return_value=MOCK_CHANGEFEED_DATA)
 def test_changefeed_update(mock_run):
     outpipe = Pipe()
     changefeed = ChangeFeed('backlog', ChangeFeed.UPDATE)
@@ -49,7 +48,7 @@ def test_changefeed_update(mock_run):
     assert outpipe.qsize() == 0
 
 
-@patch.object(rethinkdb.ast.RqlQuery, 'run', return_value=MOCK_CHANGEFEED_DATA)
+@patch.object(Connection, 'run', return_value=MOCK_CHANGEFEED_DATA)
 def test_changefeed_multiple_operations(mock_run):
     outpipe = Pipe()
     changefeed = ChangeFeed('backlog', ChangeFeed.INSERT | ChangeFeed.UPDATE)
@@ -61,7 +60,7 @@ def test_changefeed_multiple_operations(mock_run):
     assert outpipe.qsize() == 0
 
 
-@patch.object(rethinkdb.ast.RqlQuery, 'run', return_value=MOCK_CHANGEFEED_DATA)
+@patch.object(Connection, 'run', return_value=MOCK_CHANGEFEED_DATA)
 def test_changefeed_prefeed(mock_run):
     outpipe = Pipe()
     changefeed = ChangeFeed('backlog', ChangeFeed.INSERT, prefeed=[1, 2, 3])
