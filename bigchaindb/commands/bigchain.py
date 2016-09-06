@@ -22,7 +22,8 @@ from bigchaindb.client import temp_client
 from bigchaindb import db
 from bigchaindb.exceptions import (StartupError,
                                    DatabaseAlreadyExists,
-                                   KeypairNotFoundException)
+                                   KeypairNotFoundException,
+                                   DatabaseDoesNotExist)
 from bigchaindb.commands import utils
 from bigchaindb import processes
 from bigchaindb import crypto
@@ -146,7 +147,12 @@ def run_init(args):
 def run_drop(args):
     """Drop the database"""
     bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
-    db.drop(assume_yes=args.yes)
+    try:
+        db.drop(assume_yes=args.yes)
+    except DatabaseDoesNotExist:
+        db_name = db.get_database_name()
+        print('Cannot drop \'{name}\'. The database does not exist.'.format(name=db_name), file=sys.stderr)
+        print('Consider initializing the database before attempting drop.', file=sys.stderr)
 
 
 def run_start(args):
