@@ -8,6 +8,8 @@ function.
 import logging
 
 import rethinkdb as r
+from bigchaindb_common.transaction import Transaction
+from bigchaindb_common.exceptions import InvalidHash
 from multipipes import Pipeline, Node
 
 from bigchaindb.pipelines.utils import ChangeFeed
@@ -57,23 +59,13 @@ class Block:
         Returns:
             The transaction if valid, ``None`` otherwise.
         """
-        if self.bigchain.transaction_exists(tx['id']):
-            # if the transaction already exists, we must check whether
-            # it's in a valid or undecided block
-            tx, status = self.bigchain.get_transaction(tx['id'],
-                                                       include_status=True)
-            if status == self.bigchain.TX_VALID \
-               or status == self.bigchain.TX_UNDECIDED:
-                # if the tx is already in a valid or undecided block,
-                # then it no longer should be in the backlog, or added
-                # to a new block. We can delete and drop it.
-                r.table('backlog').get(tx['id']) \
-                        .delete(durability='hard') \
-                        .run(self.bigchain.conn)
-                return None
+        try:
+            tx = Transaction.from_dict(tx)
+        except InvalidHash:
+            return None
 
-        tx_validated = self.bigchain.is_valid_transaction(tx)
-        if tx_validated:
+        tx = self.bigchain.is_valid_transaction(tx)
+        if tx:
             return tx
         else:
             # if the transaction is not valid, remove it from the
@@ -186,4 +178,3 @@ def start():
     pipeline.setup(indata=get_changefeed())
     pipeline.start()
     return pipeline
-

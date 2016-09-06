@@ -110,17 +110,12 @@ class Bigchain(object):
 
         # we will assign this transaction to `one` node. This way we make sure that there are no duplicate
         # transactions on the bigchain
-
         if self.nodes_except_me:
             assignee = random.choice(self.nodes_except_me)
         else:
             # I am the only node
             assignee = self.me
 
-        # We copy the transaction here to not add `assignee` to the transaction
-        # dictionary passed to this method (as it would update by reference).
-        signed_transaction = deepcopy(signed_transaction)
-        # update the transaction
         signed_transaction.update({'assignee': assignee})
         signed_transaction.update({'assignment_timestamp': time()})
 
