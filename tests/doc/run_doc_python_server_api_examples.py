@@ -2,6 +2,7 @@ import json
 from time import sleep
 
 import cryptoconditions as cc
+from bigchaindb_common.util import gen_timestamp
 
 from bigchaindb import Bigchain, util, crypto, exceptions
 
@@ -315,7 +316,7 @@ tx_timeout = b.create_transaction(b.me, None, None, 'CREATE')
 
 # Set expiry time (12 secs from now)
 time_sleep = 12
-time_expire = str(float(util.timestamp()) + time_sleep)
+time_expire = str(float(gen_timestamp()) + time_sleep)
 
 # only valid if the server time <= time_expire
 condition_timeout = cc.TimeoutFulfillment(expire_time=time_expire)
@@ -355,7 +356,7 @@ tx_timeout_transfer['transaction']['fulfillments'][0]['fulfillment'] = timeout_f
 # no need to sign transaction, like with hashlocks
 for i in range(time_sleep - 4):
     tx_timeout_valid = b.is_valid_transaction(tx_timeout_transfer) == tx_timeout_transfer
-    seconds_to_timeout = int(float(time_expire) - float(util.timestamp()))
+    seconds_to_timeout = int(float(time_expire) - float(gen_timestamp()))
     print('tx_timeout valid: {} ({}s to timeout)'.format(tx_timeout_valid, seconds_to_timeout))
     sleep(1)
 
@@ -370,7 +371,7 @@ tx_escrow = b.create_transaction(testuser2_pub, [testuser2_pub, testuser1_pub], 
 
 # Set expiry time (12 secs from now)
 time_sleep = 12
-time_expire = str(float(util.timestamp()) + time_sleep)
+time_expire = str(float(gen_timestamp()) + time_sleep)
 
 # Create escrow and timeout condition
 condition_escrow = cc.ThresholdSha256Fulfillment(threshold=1)  # OR Gate
@@ -486,6 +487,6 @@ for i in range(time_sleep - 4):
     valid_execute = b.is_valid_transaction(tx_escrow_execute) == tx_escrow_execute
     valid_abort = b.is_valid_transaction(tx_escrow_abort) == tx_escrow_abort
 
-    seconds_to_timeout = int(float(time_expire) - float(util.timestamp()))
+    seconds_to_timeout = int(float(time_expire) - float(gen_timestamp()))
     print('tx_execute valid: {} - tx_abort valid {} ({}s to timeout)'.format(valid_execute, valid_abort, seconds_to_timeout))
     sleep(1)

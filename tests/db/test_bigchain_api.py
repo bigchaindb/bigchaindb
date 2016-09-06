@@ -1,6 +1,3 @@
-import copy
-import time
-
 import pytest
 
 
@@ -11,7 +8,6 @@ def test_remove_unclosed_sockets():
     pass
 
 
-# Some util functions
 # TODO: Get rid of this and move to conftest
 def dummy_tx():
     import bigchaindb
@@ -223,7 +219,8 @@ class TestBigchainApi(object):
     # TODO: FIX THIS TEST
     @pytest.mark.skipif(reason='This test should be fixed, smth is wrong here')
     def test_get_last_voted_block_returns_the_correct_block_same_timestamp(self, b, monkeypatch):
-        from bigchaindb import util
+        from bigchaindb_common import util
+
         genesis = b.create_genesis_block()
 
         assert util.serialize_block(b.get_last_voted_block()) == util.serialize_block(genesis)
@@ -237,7 +234,7 @@ class TestBigchainApi(object):
         b.write_block(block_3, durability='hard')
 
         # make sure all the blocks are written at the same time
-        monkeypatch.setattr(util, 'timestamp', lambda: '1')
+        monkeypatch.setattr('time.time', lambda: 1)
 
         b.write_vote(b.vote(block_1['id'], b.get_last_voted_block()['id'], True))
         assert b.get_last_voted_block()['id'] == block_1['id']
@@ -251,7 +248,7 @@ class TestBigchainApi(object):
     # TODO: FIX THIS TEST
     @pytest.mark.skipif(reason='This test should be fixed, smth is wrong here')
     def test_get_last_voted_block_returns_the_correct_block_different_timestamps(self, b, monkeypatch):
-        from bigchaindb import util
+        from bigchaindb_common import util
 
         genesis = b.create_genesis_block()
 
@@ -266,15 +263,15 @@ class TestBigchainApi(object):
         b.write_block(block_3, durability='hard')
 
         # make sure all the blocks are written at different timestamps
-        monkeypatch.setattr(util, 'timestamp', lambda: '1')
+        monkeypatch.setattr('time.time', lambda: 1)
         b.write_vote(b.vote(block_1['id'], b.get_last_voted_block()['id'], True))
         assert b.get_last_voted_block()['id'] == block_1['id']
 
-        monkeypatch.setattr(util, 'timestamp', lambda: '2')
+        monkeypatch.setattr('time.time', lambda: 2)
         b.write_vote(b.vote(block_2['id'], b.get_last_voted_block()['id'], True))
         assert b.get_last_voted_block()['id'] == block_2['id']
 
-        monkeypatch.setattr(util, 'timestamp', lambda: '3')
+        monkeypatch.setattr('time.time', lambda: 3)
         b.write_vote(b.vote(block_3['id'], b.get_last_voted_block()['id'], True))
         assert b.get_last_voted_block()['id'] == block_3['id']
 
@@ -481,8 +478,10 @@ class TestBlockValidation(object):
     @pytest.mark.skipif(reason='Separated tx validation from block creation.')
     @pytest.mark.usefixtures('inputs')
     def test_invalid_transactions_in_block(self, b, user_vk, ):
-        from bigchaindb_common.exceptions import TransactionOwnerError
         from bigchaindb_common import crypto
+        from bigchaindb_common.exceptions import TransactionOwnerError
+        from bigchaindb_common.util import gen_timestamp
+
         from bigchaindb import util
 
         # invalid transaction
@@ -493,7 +492,7 @@ class TestBlockValidation(object):
 
         # create a block with invalid transactions
         block = {
-            'timestamp': util.timestamp(),
+            'timestamp': gen_timestamp(),
             'transactions': [tx_invalid],
             'node_pubkey': b.me,
             'voters': b.nodes_except_me

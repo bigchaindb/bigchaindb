@@ -6,6 +6,7 @@ from time import time
 
 from itertools import compress
 from bigchaindb_common import crypto, exceptions
+from bigchaindb_common.util import gen_timestamp, serialize
 from bigchaindb_common.transaction import Transaction, TransactionLink
 
 import rethinkdb as r
@@ -464,7 +465,7 @@ class Bigchain(object):
 
         # Create the new block
         block = {
-            'timestamp': util.timestamp(),
+            'timestamp': gen_timestamp(),
             'transactions': validated_transactions,
             'node_pubkey': self.me,
             'voters': self.nodes_except_me + [self.me]
@@ -635,10 +636,10 @@ class Bigchain(object):
             'previous_block': previous_block_id,
             'is_block_valid': decision,
             'invalid_reason': invalid_reason,
-            'timestamp': util.timestamp()
+            'timestamp': gen_timestamp()
         }
 
-        vote_data = util.serialize(vote)
+        vote_data = serialize(vote)
         signature = crypto.SigningKey(self.me_private).sign(vote_data)
 
         vote_signed = {
