@@ -70,9 +70,16 @@ class Block:
                         .run(self.bigchain.conn)
                 return None
 
-        tx = self.bigchain.is_valid_transaction(tx)
-        if tx:
+        tx_validated = self.bigchain.is_valid_transaction(tx)
+        if tx_validated:
             return tx
+        else:
+            # if the transaction is not valid, remove it from the
+            # backlog
+            r.table('backlog').get(tx['id']) \
+                    .delete(durability='hard') \
+                    .run(self.bigchain.conn)
+            return None 
 
     def create(self, tx, timeout=False):
         """Create a block.
