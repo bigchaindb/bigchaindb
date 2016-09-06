@@ -29,7 +29,7 @@ class ChangeFeed(Node):
     DELETE = 2
     UPDATE = 4
 
-    def __init__(self, table, operation, prefeed=None):
+    def __init__(self, table, operation, prefeed=None, bigchain=None):
         """Create a new RethinkDB ChangeFeed.
 
         Args:
@@ -40,13 +40,14 @@ class ChangeFeed(Node):
                 (e.g. ``ChangeFeed.INSERT | ChangeFeed.UPDATE``)
             prefeed (iterable): whatever set of data you want to be published
                 first.
+            bigchain (``Bigchain``): the bigchain instance to use (can be None).
         """
 
         super().__init__(name='changefeed')
         self.prefeed = prefeed if prefeed else []
         self.table = table
         self.operation = operation
-        self.bigchain = Bigchain()
+        self.bigchain = bigchain or Bigchain()
 
     def run_forever(self):
         for element in self.prefeed:
