@@ -78,6 +78,7 @@ def test_delete_tx(b, user_vk):
 
     tx_backlog = r.table('backlog').get(tx['id']).run(b.conn)
     tx_backlog.pop('assignee')
+    tx_backlog.pop('assignment_timestamp')
     assert tx_backlog == tx
 
     returned_tx = block_maker.delete_tx(tx)

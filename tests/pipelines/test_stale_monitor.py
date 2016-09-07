@@ -18,6 +18,8 @@ def test_get_stale(b, user_vk):
     tx_stale = stm.check_transactions()
 
     for _tx in tx_stale:
+        _tx.pop('assignee')
+        _tx.pop('assignment_timestamp')
         assert tx == _tx
 
 
@@ -39,6 +41,7 @@ def test_reassign_transactions(b, user_vk):
     stm = stale.StaleTransactionMonitor(timeout=0.001,
                                         backlog_reassign_delay=0.001)
     stm.bigchain.nodes_except_me = ['aaa', 'bbb', 'ccc']
+    tx = list(r.table('backlog').run(b.conn))[0]
     stm.reassign_transactions(tx)
 
     reassigned_tx = r.table('backlog').get(tx['id']).run(b.conn)
@@ -52,6 +55,7 @@ def test_reassign_transactions(b, user_vk):
     tx.update({'assignment_timestamp': time.time()})
     r.table('backlog').insert(tx, durability='hard').run(b.conn)
 
+    tx = list(r.table('backlog').run(b.conn))[0]
     stm.reassign_transactions(tx)
     assert r.table('backlog').get(tx['id']).run(b.conn)['assignee'] != 'lol'
 
@@ -79,7 +83,7 @@ def test_full_pipeline(user_vk):
         tx = b.sign_transaction(tx, b.me_private)
 
         b.write_transaction(tx)
-        original_txs[tx['id']] = tx
+        original_txs[tx['id']] = r.table('backlog').get(tx['id']).run(b.conn) 
 
     assert r.table('backlog').count().run(b.conn) == 100
 

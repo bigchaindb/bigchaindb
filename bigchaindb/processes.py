@@ -3,7 +3,6 @@ import multiprocessing as mp
 
 import bigchaindb
 from bigchaindb.pipelines import vote, block, election, stale
-from bigchaindb import Bigchain
 from bigchaindb.web import server
 
 
@@ -31,6 +30,9 @@ def start():
 
     logger.info('Starting voter')
     vote.start()
+
+    logger.info('Starting stale transaction monitor')
+    stale.start()
 
     logger.info('Starting election')
     election.start()
