@@ -44,22 +44,6 @@ class Block:
             tx.pop('assignee')
             return tx
 
-    def delete_tx(self, tx):
-        """Delete a transaction.
-
-        Args:
-            tx (dict): the transaction to delete.
-
-        Returns:
-            The transaction.
-        """
-        r.table('backlog')\
-         .get(tx['id'])\
-         .delete(durability='hard')\
-         .run(self.bigchain.conn)
-
-        return tx
-
     def validate_tx(self, tx):
         """Validate a transaction.
 
@@ -112,6 +96,22 @@ class Block:
         self.bigchain.write_block(block)
         return block
 
+    def delete_tx(self, block):
+        """Delete transactions.
+
+        Args:
+            block (dict): the block containg the transactions to delete.
+
+        Returns:
+            The block.
+        """
+        r.table('backlog')\
+         .get_all(*[tx['id'] for tx in block['block']['transactions']])\
+         .delete(durability='hard')\
+         .run(self.bigchain.conn)
+
+        return block
+
 
 def initial():
     """Return old transactions from the backlog."""
@@ -142,10 +142,10 @@ def create_pipeline():
 
     block_pipeline = Pipeline([
         Node(block.filter_tx),
-        Node(block.delete_tx),
         Node(block.validate_tx, fraction_of_cores=1),
         Node(block.create, timeout=1),
         Node(block.write),
+        Node(block.delete_tx),
     ])
 
     return block_pipeline
