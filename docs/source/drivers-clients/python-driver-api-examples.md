@@ -2,6 +2,10 @@
 
 The Python driver API is used by app developers to develop client apps which can communicate with one or more BigchainDB clusters. Under the hood, the Python driver API communicates with the BigchainDB cluster using the BigchainDB HTTP client-server API.
 
+Note: We've been moving the Python driver code into [its own repository](https://github.com/bigchaindb/bigchaindb-driver) with its own documentation. You can find that documentation at:
+
+[https://bigchaindb-driver.readthedocs.io/en/latest/index.html](https://bigchaindb-driver.readthedocs.io/en/latest/index.html).
+
 Here's an example of how to use the Python driver API. First, launch an interactive Python session, then:
 ```python
 In [1]: from bigchaindb.client import temp_client
