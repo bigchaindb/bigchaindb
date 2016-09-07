@@ -2,6 +2,7 @@ import random
 import math
 import collections
 from copy import deepcopy
+from time import time
 
 from itertools import compress
 import rethinkdb as r
@@ -137,11 +138,52 @@ class Bigchain(object):
         signed_transaction = deepcopy(signed_transaction)
         # update the transaction
         signed_transaction.update({'assignee': assignee})
-        signed_transaction.update({'assignment_timestamp': util.timestamp()})
+        signed_transaction.update({'assignment_timestamp': time()})
 
         # write to the backlog
         response = r.table('backlog').insert(signed_transaction, durability=durability).run(self.conn)
         return response
+
+    def reassign_transaction(self, transaction, durability='soft'):
+        """Assign a transaction to a new node
+
+        Args:
+            transaction (dict): assigned transaction
+
+        Returns:
+            dict: database response or None if no reassignment is possible
+        """
+
+        if self.nodes_except_me:
+            try:
+                index_current_assignee = self.nodes_except_me.index(transaction['assignee'])
+                new_assignee = random.choice(self.nodes_except_me[:index_current_assignee] +
+                                             self.nodes_except_me[index_current_assignee + 1:])
+            except ValueError:
+                # current assignee not in federation
+                new_assignee = random.choice(self.nodes_except_me)
+
+        else:
+            # There is no other node to assign to, nothing to do
+            return None
+
+        response = r.table('backlog')\
+            .get(transaction['id'])\
+            .update({'assignee': new_assignee,
+                     'assignment_timestamp': time()},
+                    durability=durability).run(self.conn)
+        return response
+
+    def get_stale_transactions(self):
+        """Get a RethinkDB cursor of stale transactions
+
+        Transactions are considered stale if they have been assigned a node, but are still in the
+        backlog after some amount of time specified in the configuration
+        """
+
+        return r.table('backlog')\
+            .filter(lambda tx: time() - tx['assignment_timestamp'] >
+                    self.backlog_reassign_delay).run(self.conn)
 
     def get_transaction(self, txid, include_status=False):
         """Retrieve a transaction with `txid` from bigchain.

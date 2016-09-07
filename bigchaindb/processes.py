@@ -2,7 +2,8 @@ import logging
 import multiprocessing as mp
 
 import bigchaindb
-from bigchaindb.pipelines import vote, block, election
+from bigchaindb.pipelines import vote, block, election, stale
+from bigchaindb import Bigchain
 from bigchaindb.web import server
 
 
