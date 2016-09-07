@@ -2,6 +2,7 @@ import random
 import math
 import collections
 from copy import deepcopy
+from time import time
 
 from itertools import compress
 import rethinkdb as r
@@ -28,7 +29,7 @@ class Bigchain(object):
 
     def __init__(self, host=None, port=None, dbname=None,
                  public_key=None, private_key=None, keyring=[],
-                 consensus_plugin=None):
+                 consensus_plugin=None, backlog_reassign_delay=None):
         """Initialize the Bigchain instance
 
         A Bigchain instance has several configuration parameters (e.g. host).
@@ -56,6 +57,7 @@ class Bigchain(object):
         self.me = public_key or bigchaindb.config['keypair']['public']
         self.me_private = private_key or bigchaindb.config['keypair']['private']
         self.nodes_except_me = keyring or bigchaindb.config['keyring']
+        self.backlog_reassign_delay = backlog_reassign_delay or bigchaindb.config['backlog_reassign_delay']
         self.consensus = config_utils.load_consensus_plugin(consensus_plugin)
         # change RethinkDB read mode to majority.  This ensures consistency in query results
         self.read_mode = 'majority'
@@ -136,10 +138,53 @@ class Bigchain(object):
         signed_transaction = deepcopy(signed_transaction)
         # update the transaction
         signed_transaction.update({'assignee': assignee})
+        signed_transaction.update({'assignment_timestamp': time()})
 
         # write to the backlog
         response = r.table('backlog').insert(signed_transaction, durability=durability).run(self.conn)
         return response
+
+    def reassign_transaction(self, transaction, durability='hard'):
+        """Assign a transaction to a new node
+
+        Args:
+            transaction (dict): assigned transaction
+
+        Returns:
+            dict: database response or None if no reassignment is possible
+        """
+
+        if self.nodes_except_me:
+            try:
+                federation_nodes = self.nodes_except_me + [self.me]
+                index_current_assignee = federation_nodes.index(transaction['assignee'])
+                new_assignee = random.choice(federation_nodes[:index_current_assignee] +
+                                             federation_nodes[index_current_assignee + 1:])
+            except ValueError:
+                # current assignee not in federation
+                new_assignee = random.choice(self.nodes_except_me)
+
+        else:
+            # There is no other node to assign to
+            new_assignee = self.me 
+
+        response = r.table('backlog')\
+            .get(transaction['id'])\
+            .update({'assignee': new_assignee,
+                     'assignment_timestamp': time()},
+                    durability=durability).run(self.conn)
+        return response
+
+    def get_stale_transactions(self):
+        """Get a RethinkDB cursor of stale transactions
+
+        Transactions are considered stale if they have been assigned a node, but are still in the
+        backlog after some amount of time specified in the configuration
+        """
+
+        return r.table('backlog')\
+            .filter(lambda tx: time() - tx['assignment_timestamp'] >
+                    self.backlog_reassign_delay).run(self.conn)
 
     def get_transaction(self, txid, include_status=False):
         """Retrieve a transaction with `txid` from bigchain.

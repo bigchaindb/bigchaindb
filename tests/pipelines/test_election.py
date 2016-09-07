@@ -99,6 +99,7 @@ def test_check_requeue_transaction(b, user_vk):
     e.requeue_transactions(test_block)
     tx_backlog = r.table('backlog').get(tx1['id']).run(b.conn)
     tx_backlog.pop('assignee')
+    tx_backlog.pop('assignment_timestamp')
 
     assert tx_backlog == tx1
 

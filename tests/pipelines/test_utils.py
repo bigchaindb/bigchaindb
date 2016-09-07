@@ -44,8 +44,7 @@ def test_changefeed_update(mock_run):
     changefeed = ChangeFeed('backlog', ChangeFeed.UPDATE)
     changefeed.outqueue = outpipe
     changefeed.run_forever()
-    assert outpipe.get() == {'new_val': 'seems like we have an update here',
-                             'old_val': 'seems like we have an update here'}
+    assert outpipe.get() == 'seems like we have an update here'
     assert outpipe.qsize() == 0
 
 
@@ -56,8 +55,7 @@ def test_changefeed_multiple_operations(mock_run):
     changefeed.outqueue = outpipe
     changefeed.run_forever()
     assert outpipe.get() == 'seems like we have an insert here'
-    assert outpipe.get() == {'new_val': 'seems like we have an update here',
-                             'old_val': 'seems like we have an update here'}
+    assert outpipe.get() == 'seems like we have an update here'
     assert outpipe.qsize() == 0
 
 
