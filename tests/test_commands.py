@@ -228,6 +228,15 @@ def test_start_rethinkdb_exits_when_cannot_start(mock_popen):
         utils.start_rethinkdb()
 
 
+@patch('subprocess.Popen')
+def test_start_temp_rethinkdb_returns_a_process_when_successful(mock_popen):
+    from bigchaindb.commands import utils
+    mock_popen.return_value = Mock(stdout=[
+        'Listening for client driver 1234',
+        'Server ready'])
+    assert utils.start_temp_rethinkdb() == (mock_popen.return_value, 1234)
+
+
 @patch('rethinkdb.ast.Table.reconfigure')
 def test_set_shards(mock_reconfigure, monkeypatch, b):
     from bigchaindb.commands.bigchain import run_set_shards
