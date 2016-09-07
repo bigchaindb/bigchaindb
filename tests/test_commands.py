@@ -67,7 +67,7 @@ def test_bigchain_run_start(mock_run_configure, mock_processes_start, mock_db_in
     run_start(args)
 
 
-@patch('bigchaindb.commands.utils.start_rethinkdb', return_value=(Mock(), 2))
+@patch('bigchaindb.commands.utils.start_rethinkdb', return_value=Mock())
 def test_bigchain_run_start_with_rethinkdb(mock_start_rethinkdb,
                                            mock_run_configure,
                                            mock_processes_start,
@@ -216,7 +216,7 @@ def test_start_rethinkdb_returns_a_process_when_successful(mock_popen):
     mock_popen.return_value = Mock(stdout=[
         'Listening for client driver 1234',
         'Server ready'])
-    assert utils.start_rethinkdb() == (mock_popen.return_value, 1234)
+    assert utils.start_rethinkdb() is mock_popen.return_value
 
 
 @patch('subprocess.Popen')
@@ -226,15 +226,6 @@ def test_start_rethinkdb_exits_when_cannot_start(mock_popen):
     mock_popen.return_value = Mock(stdout=['Nopety nope'])
     with pytest.raises(exceptions.StartupError):
         utils.start_rethinkdb()
-
-
-@patch('subprocess.Popen')
-def test_start_temp_rethinkdb_returns_a_process_when_successful(mock_popen):
-    from bigchaindb.commands import utils
-    mock_popen.return_value = Mock(stdout=[
-        'Listening for client driver 1234',
-        'Server ready'])
-    assert utils.start_temp_rethinkdb() == (mock_popen.return_value, 1234)
 
 
 @patch('rethinkdb.ast.Table.reconfigure')

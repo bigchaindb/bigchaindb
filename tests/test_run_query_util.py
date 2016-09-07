@@ -1,10 +1,8 @@
-from unittest.mock import patch
 from threading import Thread
 import pytest
 
 import rethinkdb as r
 
-from bigchaindb.commands.utils import start_temp_rethinkdb
 from bigchaindb.db.utils import Connection
 
 

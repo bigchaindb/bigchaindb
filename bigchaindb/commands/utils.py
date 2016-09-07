@@ -5,7 +5,6 @@ for ``argparse.ArgumentParser``.
 import argparse
 import multiprocessing as mp
 import subprocess
-import tempfile
 
 import rethinkdb as r
 
@@ -15,18 +14,7 @@ from bigchaindb import db
 from bigchaindb.version import __version__
 
 
-def start_temp_rethinkdb(port=0, directory=None):
-    directory = directory or tempfile.mkdtemp()
-
-    extra_opts = ['--cluster-port', '0',
-                  '--driver-port', str(port),
-                  '--no-http-admin',
-                  '--directory', directory]
-
-    return start_rethinkdb(wait_for_db=False, extra_opts=extra_opts)
-
-
-def start_rethinkdb(wait_for_db=True, extra_opts=None):
+def start_rethinkdb():
     """Start RethinkDB as a child process and wait for it to be
     available.
 
@@ -40,38 +28,31 @@ def start_rethinkdb(wait_for_db=True, extra_opts=None):
         be started.
     """
 
-    if not extra_opts:
-        extra_opts = []
-
-    proc = subprocess.Popen(['rethinkdb', '--bind', 'all'] + extra_opts,
+    proc = subprocess.Popen(['rethinkdb', '--bind', 'all'],
                             stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT,
                             universal_newlines=True)
 
     dbname = bigchaindb.config['database']['name']
     line = ''
-    port = None
 
     for line in proc.stdout:
-        if line.startswith('Listening for client driver'):
-            port = int(line.split()[-1])
         if line.startswith('Server ready'):
+
             # FIXME: seems like tables are not ready when the server is ready,
             #        that's why we need to query RethinkDB to know the state
             #        of the database. This code assumes the tables are ready
             #        when the database is ready. This seems a valid assumption.
-
-            if wait_for_db:
-                try:
-                    conn = db.get_conn()
-                    # Before checking if the db is ready, we need to query
-                    # the server to check if it contains that db
-                    if r.db_list().contains(dbname).run(conn):
-                        r.db(dbname).wait().run(conn)
-                except (r.ReqlOpFailedError, r.ReqlDriverError) as exc:
-                    raise StartupError('Error waiting for the database `{}` '
-                                       'to be ready'.format(dbname)) from exc
-            return proc, port
+            try:
+                conn = db.get_conn()
+                # Before checking if the db is ready, we need to query
+                # the server to check if it contains that db
+                if r.db_list().contains(dbname).run(conn):
+                    r.db(dbname).wait().run(conn)
+            except (r.ReqlOpFailedError, r.ReqlDriverError) as exc:
+                raise StartupError('Error waiting for the database `{}` '
+                                   'to be ready'.format(dbname)) from exc
+            return proc
 
     # We are here when we exhaust the stdout of the process.
     # The last `line` contains info about the error.

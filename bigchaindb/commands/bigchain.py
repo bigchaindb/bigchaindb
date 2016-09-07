@@ -156,7 +156,7 @@ def run_start(args):
 
     if args.start_rethinkdb:
         try:
-            proc, port = utils.start_rethinkdb()
+            proc = utils.start_rethinkdb()
         except StartupError as e:
             sys.exit('Error starting RethinkDB, reason is: {}'.format(e))
         logger.info('RethinkDB started with PID %s' % proc.pid)

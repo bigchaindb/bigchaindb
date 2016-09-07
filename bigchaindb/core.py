@@ -228,7 +228,7 @@ class Bigchain(object):
         # First, get information on all blocks which contain this transaction
         response = self.connection.run(
                 r.table('bigchain', read_mode=self.read_mode)
-                .get_all(value, index=index)\
+                .get_all(value, index=index)
                 .pluck('votes', 'id', {'block': ['voters']}))
 
         return list(response)
