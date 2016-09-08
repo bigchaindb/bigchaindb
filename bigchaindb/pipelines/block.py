@@ -42,6 +42,7 @@ class Block:
 
         if tx['assignee'] == self.bigchain.me:
             tx.pop('assignee')
+            tx.pop('assignment_timestamp')
             return tx
 
     def delete_tx(self, tx):

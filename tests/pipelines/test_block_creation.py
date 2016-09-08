@@ -14,9 +14,14 @@ def test_filter_by_assignee(b, user_vk):
     tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
     tx = b.sign_transaction(tx, b.me_private)
     tx['assignee'] = b.me
+    tx['assignment_timestamp'] = 111
 
     # filter_tx has side effects on the `tx` instance by popping 'assignee'
-    assert block_maker.filter_tx(tx) == tx
+    # and 'assignment_timestamp'
+    filtered_tx = block_maker.filter_tx(tx)
+    assert filtered_tx == tx
+    assert 'assignee' not in filtered_tx
+    assert 'assignment_timestamp' not in filtered_tx
 
     tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
     tx = b.sign_transaction(tx, b.me_private)
@@ -116,6 +121,7 @@ def test_full_pipeline(b, user_vk):
         tx = b.sign_transaction(tx, b.me_private)
         assignee = random.choice([b.me, 'aaa', 'bbb', 'ccc'])
         tx['assignee'] = assignee
+        tx['assignment_timestamp'] = time.time()
         if assignee == b.me:
             count_assigned_to_me += 1
         r.table('backlog').insert(tx, durability='hard').run(b.conn)
