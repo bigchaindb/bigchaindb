@@ -45,24 +45,11 @@ class Block:
             tx.pop('assignment_timestamp')
             return tx
 
-    def delete_tx(self, tx):
-        """Delete a transaction.
-
-        Args:
-            tx (dict): the transaction to delete.
-
-        Returns:
-            The transaction.
-        """
-        r.table('backlog')\
-         .get(tx['id'])\
-         .delete(durability='hard')\
-         .run(self.bigchain.conn)
-
-        return tx
-
     def validate_tx(self, tx):
         """Validate a transaction.
+
+        Also checks if the transaction already exists in the blockchain. If it
+        does, or it's invalid, it's deleted from the backlog immediately.
 
         Args:
             tx (dict): the transaction to validate.
@@ -70,9 +57,31 @@ class Block:
         Returns:
             The transaction if valid, ``None`` otherwise.
         """
-        tx = self.bigchain.is_valid_transaction(tx)
-        if tx:
+        if self.bigchain.transaction_exists(tx['id']):
+            # if the transaction already exists, we must check whether
+            # it's in a valid or undecided block
+            tx, status = self.bigchain.get_transaction(tx['id'],
+                                                       include_status=True)
+            if status == self.bigchain.TX_VALID \
+               or status == self.bigchain.TX_UNDECIDED:
+                # if the tx is already in a valid or undecided block,
+                # then it no longer should be in the backlog, or added
+                # to a new block. We can delete and drop it.
+                r.table('backlog').get(tx['id']) \
+                        .delete(durability='hard') \
+                        .run(self.bigchain.conn)
+                return None
+
+        tx_validated = self.bigchain.is_valid_transaction(tx)
+        if tx_validated:
             return tx
+        else:
+            # if the transaction is not valid, remove it from the
+            # backlog
+            r.table('backlog').get(tx['id']) \
+                    .delete(durability='hard') \
+                    .run(self.bigchain.conn)
+            return None 
 
     def create(self, tx, timeout=False):
         """Create a block.
@@ -113,6 +122,22 @@ class Block:
         self.bigchain.write_block(block)
         return block
 
+    def delete_tx(self, block):
+        """Delete transactions.
+
+        Args:
+            block (dict): the block containg the transactions to delete.
+
+        Returns:
+            The block.
+        """
+        r.table('backlog')\
+         .get_all(*[tx['id'] for tx in block['block']['transactions']])\
+         .delete(durability='hard')\
+         .run(self.bigchain.conn)
+
+        return block
+
 
 def initial():
     """Return old transactions from the backlog."""
@@ -143,10 +168,10 @@ def create_pipeline():
 
     block_pipeline = Pipeline([
         Node(block.filter_tx),
-        Node(block.delete_tx),
         Node(block.validate_tx, fraction_of_cores=1),
         Node(block.create, timeout=1),
         Node(block.write),
+        Node(block.delete_tx),
     ])
 
     return block_pipeline

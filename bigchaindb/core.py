@@ -573,11 +573,10 @@ class Bigchain(object):
         block_serialized = rapidjson.dumps(block)
         r.table('bigchain').insert(r.json(block_serialized), durability=durability).run(self.conn)
 
-    # TODO: Decide if we need this method
     def transaction_exists(self, transaction_id):
         response = r.table('bigchain', read_mode=self.read_mode)\
             .get_all(transaction_id, index='transaction_id').run(self.conn)
-        return True if len(response.items) > 0 else False
+        return len(response.items) > 0
 
     def prepare_genesis_block(self):
         """Prepare a genesis block."""
