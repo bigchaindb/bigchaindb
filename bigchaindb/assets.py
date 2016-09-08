@@ -17,19 +17,19 @@ def get_asset_id(txids, bigchain):
 
     Raises:
         AssetIdMismatch: If the inputs are related to different assets.
+        TransactionDoesNotExist: If one of the txids does not exist on the bigchain.
     """
 
     if not isinstance(txids, list):
         txids = [txids]
 
-    asset_ids = []
+    asset_ids = set()
     for txid in set(txids):
         tx = bigchain.get_transaction(txid)
         if tx is None:
             raise TransactionDoesNotExist('Transaction with txid `{}` does not exist in the bigchain'.format(txid))
-        asset_ids.append(tx['transaction']['asset']['id'])
+        asset_ids.add(tx['transaction']['asset']['id'])
 
-    asset_ids = set(asset_ids)
     if len(asset_ids) > 1:
         raise AssetIdMismatch("All inputs of a transaction need to have the same asset id.")
     return asset_ids.pop()
