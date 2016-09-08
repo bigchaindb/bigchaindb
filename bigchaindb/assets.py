@@ -39,13 +39,13 @@ def validate_asset_creation(asset_data, divisible, updatable, refillable, amount
     """Validate digital asset
 
     Args:
-        asset_data (Optional[dict]): dictionary describing the digital asset (only used on a create transaction)
-        divisible (Optional[boolean): Whether the asset is divisible or not. Defaults to `False`.
-        updatable (Optional[boolean]): Whether the data in the asset can be updated in the future or not.
+        asset_data (dict or None): dictionary describing the digital asset (only used on a create transaction)
+        divisible (boolean): Whether the asset is divisible or not. Defaults to `False`.
+        updatable (boolean): Whether the data in the asset can be updated in the future or not.
                                        Defaults to `False`.
-        refillable (Optional[boolean]): Whether the amount of the asset can change after its creation.
+        refillable (boolean): Whether the amount of the asset can change after its creation.
                                         Defaults to `False`.
-        amount (Optional[int]): The amount of "shares". Only relevant if the asset is marked as divisible.
+        amount (int): The amount of "shares". Only relevant if the asset is marked as divisible.
                                 Defaults to `1`.
     """
     if asset_data is not None and not isinstance(asset_data, dict):
