@@ -82,7 +82,7 @@ def test_validate_bad_asset_creation(b, user_vk):
 
 
 @pytest.mark.usefixtures('inputs')
-def test_validate_bad_asset_transfer(b, user_vk, user_sk):
+def test_validate_transfer_asset_id_mismatch(b, user_vk, user_sk):
     from bigchaindb.util import get_hash_data
     from bigchaindb.exceptions import AssetIdMismatch
 
