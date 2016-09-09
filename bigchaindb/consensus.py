@@ -153,7 +153,7 @@ class BaseConsensusRules(AbstractConsensusRules):
 
             # check inputs
             # store the inputs so that we can check if the asset ids match
-            txids = []
+            input_txs = []
             for fulfillment in transaction['transaction']['fulfillments']:
                 if not fulfillment['input']:
                     raise ValueError('Only `CREATE` transactions can have null inputs')
@@ -171,10 +171,10 @@ class BaseConsensusRules(AbstractConsensusRules):
                     raise exceptions.DoubleSpend(
                         'input `{}` was already spent'.format(fulfillment['input']))
 
-                txids.append(fulfillment['input']['txid'])
+                input_txs.append(tx_input)
 
             # validate asset id
-            asset_id = assets.get_asset_id(txids, bigchain)
+            asset_id = assets.get_asset_id(input_txs)
             if asset_id != transaction['transaction']['asset']['id']:
                 raise exceptions.AssetIdMismatch(('The asset id of the input does not match the asset id ',
                                                   'of the transaction'))

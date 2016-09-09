@@ -174,7 +174,8 @@ def create_tx(owners_before, owners_after, inputs, operation, metadata=None, ass
 
 
     Raises:
-        TypeError: if the optional optinal arguments are the wrong type.
+        TypeError: if the optional optional arguments are the wrong type.
+        TransactionDoesNotExist: if the provided inputs don't exist on the bigchain.
 
     Reference:
         {
@@ -257,8 +258,15 @@ def create_tx(owners_before, owners_after, inputs, operation, metadata=None, ass
         # (here and later on in the sign_tx)
         # This can be improved and probably cached with @TimDaub transaction model
         bigchain = bigchain if bigchain is not None else bigchaindb.Bigchain()
-        txids = [tx_input['txid'] for tx_input in inputs]
-        asset_id = assets.get_asset_id(txids, bigchain)
+        input_txs = []
+        for _input in inputs:
+            input_tx = bigchain.get_transaction(_input['txid'])
+            if not input_tx:
+                raise exceptions.TransactionDoesNotExist('input with txid `{}` does not exist in the bigchain'
+                                                         .format(_input['txid']))
+            input_txs.append(input_tx)
+
+        asset_id = assets.get_asset_id(input_txs)
         asset = {'id': asset_id}
 
         for fid, tx_input in enumerate(inputs):
@@ -671,4 +679,3 @@ def is_genesis_block(block):
     # we cannot have empty blocks, there will always be at least one
     # element in the list so we can safely refer to it
     return block['block']['transactions'][0]['transaction']['operation'] == 'GENESIS'
-
