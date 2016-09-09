@@ -120,7 +120,7 @@ def test_get_asset_id_create_transaction(b, user_vk):
 
     tx_input = b.get_owned_ids(user_vk).pop()
     tx_create = b.get_transaction(tx_input['txid'])
-    asset_id = get_asset_id(tx_input['txid'], bigchain=b)
+    asset_id = get_asset_id(tx_create)
 
     assert asset_id == tx_create['transaction']['asset']['id']
 
@@ -139,7 +139,7 @@ def test_get_asset_id_transfer_transaction(b, user_vk, user_sk):
     # vote the block valid
     vote = b.vote(block['id'], b.get_last_voted_block()['id'], True)
     b.write_vote(vote)
-    asset_id = get_asset_id(tx_transfer['id'], bigchain=b)
+    asset_id = get_asset_id(tx_transfer)
 
     assert asset_id == tx_transfer['transaction']['asset']['id']
 
@@ -150,9 +150,11 @@ def test_asset_id_mismatch(b, user_vk):
     from bigchaindb.exceptions import AssetIdMismatch
 
     tx_input1, tx_input2 = b.get_owned_ids(user_vk)[:2]
+    tx1 = b.get_transaction(tx_input1['txid'])
+    tx2 = b.get_transaction(tx_input2['txid'])
 
     with pytest.raises(AssetIdMismatch):
-        get_asset_id([tx_input1['txid'], tx_input2['txid']], bigchain=b)
+        get_asset_id([tx1, tx2])
 
 
 def test_get_asset_id_transaction_does_not_exist(b, user_vk):

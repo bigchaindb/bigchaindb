@@ -1,35 +1,31 @@
 import rethinkdb as r
 
-from bigchaindb.exceptions import AssetIdMismatch, TransactionDoesNotExist, AmountError
+from bigchaindb.exceptions import AssetIdMismatch, AmountError
 
 
-def get_asset_id(txids, bigchain):
+def get_asset_id(transactions):
     """Get the asset id from a list of transaction ids.
 
     This is useful when we want to check if the multiple inputs of a transaction
     are related to the same asset id.
 
     Args:
-        txids (list): list of transaction ids.
+        transactions (list): list of transaction usually inputs that should have a matching asset_id
 
     Returns:
         str: uuid of the asset.
 
     Raises:
         AssetIdMismatch: If the inputs are related to different assets.
-        TransactionDoesNotExist: If one of the txids does not exist on the bigchain.
     """
 
-    if not isinstance(txids, list):
-        txids = [txids]
+    if not isinstance(transactions, list):
+        transactions = [transactions]
 
-    asset_ids = set()
-    for txid in set(txids):
-        tx = bigchain.get_transaction(txid)
-        if tx is None:
-            raise TransactionDoesNotExist('Transaction with txid `{}` does not exist in the bigchain'.format(txid))
-        asset_ids.add(tx['transaction']['asset']['id'])
+    # create a set of asset_ids
+    asset_ids = {tx['transaction']['asset']['id'] for tx in transactions}
 
+    # check that all the transasctions have the same asset_id
     if len(asset_ids) > 1:
         raise AssetIdMismatch("All inputs of a transaction need to have the same asset id.")
     return asset_ids.pop()

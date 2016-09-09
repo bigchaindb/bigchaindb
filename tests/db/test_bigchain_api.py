@@ -527,7 +527,7 @@ class TestBigchainApi(object):
         with pytest.raises(exceptions.TransactionDoesNotExist) as excinfo:
             b.create_transaction(user_vk, user_vk, {'txid': 'c', 'cid': 0}, 'TRANSFER')
 
-        assert excinfo.value.args[0] == 'Transaction with txid `c` does not exist in the bigchain'
+        assert excinfo.value.args[0] == 'input with txid `c` does not exist in the bigchain'
 
         # Create transaction does not let you create a malformed transaction.
         # Create a custom malformed transaction and check if validate catches the error
