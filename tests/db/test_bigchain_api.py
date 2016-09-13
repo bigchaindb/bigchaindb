@@ -306,7 +306,7 @@ class TestBigchainApi(object):
         r.table('votes').insert(vote_2).run(b.conn)
 
         with pytest.raises(MultipleVotesError) as excinfo:
-            b.block_election_status(block_1)
+            b.block_election_status(block_1['id'], block_1['voters'])
         assert excinfo.value.args[0] == 'Block {block_id} has {n_votes} votes cast, but only {n_voters} voters'\
             .format(block_id=block_1['id'], n_votes=str(2), n_voters=str(1))
 
@@ -321,12 +321,12 @@ class TestBigchainApi(object):
             r.table('votes').insert(b.vote(block_1['id'], genesis['id'], True)).run(b.conn)
 
         with pytest.raises(MultipleVotesError) as excinfo:
-            b.block_election_status(block_1)
+            b.block_election_status(block_1['id'], block_1['voters'])
         assert excinfo.value.args[0] == 'Block {block_id} has multiple votes ({n_votes}) from voting node {node_id}'\
             .format(block_id=block_1['id'], n_votes=str(2), node_id=b.me)
 
         with pytest.raises(MultipleVotesError) as excinfo:
-            b.has_previous_vote(block_1)
+            b.has_previous_vote(block_1['id'], block_1['voters'])
         assert excinfo.value.args[0] == 'Block {block_id} has {n_votes} votes from public key {me}'\
             .format(block_id=block_1['id'], n_votes=str(2), me=b.me)
 
@@ -341,7 +341,7 @@ class TestBigchainApi(object):
         vote_1['signature'] = 'a' * 87
         r.table('votes').insert(vote_1).run(b.conn)
         with pytest.raises(ImproperVoteError) as excinfo:
-            b.has_previous_vote(block_1)
+            b.has_previous_vote(block_1['id'], block_1['voters'])
         assert excinfo.value.args[0] == 'Block {block_id} already has an incorrectly signed ' \
                                         'vote from public key {me}'.format(block_id=block_1['id'], me=b.me)
 

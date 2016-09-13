@@ -313,12 +313,15 @@ class Bigchain(object):
 
         if blocks:
             # Determine the election status of each block
-            validity = {block['id']: self.block_election_status(block) for block in blocks}
+            validity = {}
+            for block in blocks:
+                validity[block['id']] = self.block_election_status(block['id'],
+                                                                   block['voters'])
 
             # If there are multiple valid blocks with this transaction, something has gone wrong
             if list(validity.values()).count(Bigchain.BLOCK_VALID) > 1:
                 block_ids = str([block for block in validity
-                                       if validity[block] == Bigchain.BLOCK_VALID])
+                                 if validity[block] == Bigchain.BLOCK_VALID])
                 # TODO: Make this a case-specific Error
                 raise Exception('Transaction {tx} is present in multiple valid blocks: {block_ids}'
                                 .format(tx=txid, block_ids=block_ids))
@@ -496,7 +499,7 @@ class Bigchain(object):
             describing the reason why the block is invalid.
         """
         # First, make sure this node hasn't already voted on this block
-        if self.has_previous_vote(block):
+        if self.has_previous_vote(block['id'], block['voters']):
             return block
 
         # Run the plugin block validation logic
@@ -511,11 +514,12 @@ class Bigchain(object):
 
         return block
 
-    def has_previous_vote(self, block):
+    def has_previous_vote(self, block_id, voters):
         """Check for previous votes from this node
 
         Args:
-            block (dict): block to check.
+            block_id (str): the id of the block to check
+            voters (list): the voters of the block to check
 
         Returns:
             bool: :const:`True` if this block already has a
@@ -532,14 +536,14 @@ class Bigchain(object):
 
         if len(votes) > 1:
             raise exceptions.MultipleVotesError('Block {block_id} has {n_votes} votes from public key {me}'
-                                                .format(block_id=block['id'], n_votes=str(len(votes)), me=self.me))
+                                                .format(block_id=block_id, n_votes=str(len(votes)), me=self.me))
         has_previous_vote = False
         if votes:
-            if util.verify_vote_signature(block, votes[0]):
+            if util.verify_vote_signature(voters, votes[0]):
                 has_previous_vote = True
             else:
                 raise exceptions.ImproperVoteError('Block {block_id} already has an incorrectly signed vote '
-                                                   'from public key {me}'.format(block_id=block['id'], me=self.me))
+                                                   'from public key {me}'.format(block_id=block_id, me=self.me))
 
         return has_previous_vote
 
@@ -730,7 +734,7 @@ class Bigchain(object):
         unvoted_blocks = [util.deserialize_block(block) for block in unvoted_blocks]
         return unvoted_blocks
 
-    def block_election_status(self, block):
+    def block_election_status(self, block_id, voters):
         """Tally the votes on a block, and return the status: valid, invalid, or undecided."""
 
         votes = self.connection.run(r.table('votes', read_mode=self.read_mode)
@@ -738,17 +742,17 @@ class Bigchain(object):
 
         votes = list(votes)
 
-        n_voters = len(block['block']['voters'])
+        n_voters = len(voters)
 
         voter_counts = collections.Counter([vote['node_pubkey'] for vote in votes])
         for node in voter_counts:
             if voter_counts[node] > 1:
                 raise exceptions.MultipleVotesError('Block {block_id} has multiple votes ({n_votes}) from voting node {node_id}'
-                                                    .format(block_id=block['id'], n_votes=str(voter_counts[node]), node_id=node))
+                                                    .format(block_id=block_id, n_votes=str(voter_counts[node]), node_id=node))
 
         if len(votes) > n_voters:
             raise exceptions.MultipleVotesError('Block {block_id} has {n_votes} votes cast, but only {n_voters} voters'
-                                                .format(block_id=block['id'], n_votes=str(len(votes)), n_voters=str(n_voters)))
+                                                .format(block_id=block_id, n_votes=str(len(votes)), n_voters=str(n_voters)))
 
         # vote_cast is the list of votes e.g. [True, True, False]
         vote_cast = [vote['vote']['is_block_valid'] for vote in votes]

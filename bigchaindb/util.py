@@ -169,13 +169,13 @@ def condition_details_has_owner(condition_details, owner):
     return False
 
 
-def verify_vote_signature(block, signed_vote):
+def verify_vote_signature(voters, signed_vote):
     """Verify the signature of a vote
 
     A valid vote should have been signed `owner_before` corresponding private key.
 
     Args:
-        block (dict): block under election
+        voters (list): voters of the block that is under election
         signed_vote (dict): a vote with the `signature` included.
 
     Returns:
@@ -186,7 +186,7 @@ def verify_vote_signature(block, signed_vote):
     vk_base58 = signed_vote['node_pubkey']
 
     # immediately return False if the voter is not in the block voter list
-    if vk_base58 not in block['block']['voters']:
+    if vk_base58 not in voters:
         return False
 
     public_key = crypto.VerifyingKey(vk_base58)
