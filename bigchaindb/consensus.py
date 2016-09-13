@@ -125,6 +125,8 @@ class BaseConsensusRules(AbstractConsensusRules):
             DoubleSpend: if the transaction is a double spend
             InvalidHash: if the hash of the transaction is wrong
             InvalidSignature: if the signature of the transaction is wrong
+            FulfillmentNotInValidBlock: if the transaction contains a
+                fulfillment which is not in a valid block
         """
 
         # If the operation is CREATE the transaction should have no inputs and
