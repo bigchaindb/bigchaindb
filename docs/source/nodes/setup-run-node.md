@@ -1,8 +1,6 @@
 # Set Up and Run a Cluster Node
 
-If you want to set up a BigchainDB node that's intended to be one of the nodes in a BigchainDB cluster (i.e. where each node is operated by a different member of a federation), then this page is for you, otherwise see [elsewhere](../introduction.html).
-
-This is a page of general guidelines for setting up a node. It says nothing about how to upgrade software, storage, processing, etc. or other details of node management. That will be added in the future, in [the section on production node setup & management](../prod-node-depl-tplt/index.html). Once that section is more complete, this page will probably be deleted.
+This is a page of general guidelines for setting up a production node. It says nothing about how to upgrade software, storage, processing, etc. or other details of node management. It will be expanded more in the future.
 
 
 ## Get a Server

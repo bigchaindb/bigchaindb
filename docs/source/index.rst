@@ -9,10 +9,9 @@ Table of Contents
 
    introduction
    quickstart
-   node-cluster-fed
+   cloud-deployment-starter-templates/index
    nodes/index
    dev-and-test/index
-   prod-node-depl-tplt/index
    server-reference/index
    drivers-clients/index
    clusters-feds/index

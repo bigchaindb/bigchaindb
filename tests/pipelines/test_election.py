@@ -36,6 +36,33 @@ def test_check_for_quorum_invalid(b, user_vk):
     assert e.check_for_quorum(votes[-1]) == test_block
 
 
+def test_check_for_quorum_invalid_prev_node(b, user_vk):
+    e = election.Election()
+
+    # create blocks with transactions
+    tx1 = b.create_transaction(b.me, user_vk, None, 'CREATE')
+    test_block = b.create_block([tx1])
+
+    # simulate a federation with four voters
+    key_pairs = [crypto.generate_key_pair() for _ in range(4)]
+    test_federation = [Bigchain(public_key=key_pair[1], private_key=key_pair[0])
+                       for key_pair in key_pairs]
+
+    # add voters to block and write
+    test_block['block']['voters'] = [key_pair[1] for key_pair in key_pairs]
+    b.write_block(test_block)
+
+    # split vote over prev node
+    votes = [member.vote(test_block['id'], 'abc', True) for member in test_federation[:2]] + \
+                   [member.vote(test_block['id'], 'def', True) for member in test_federation[2:]]
+
+    # cast votes
+    r.table('votes').insert(votes, durability='hard').run(b.conn)
+
+    # since nodes cannot agree on prev block, the block is invalid
+    assert e.check_for_quorum(votes[-1]) == test_block
+
+
 def test_check_for_quorum_valid(b, user_vk):
     e = election.Election()
 
@@ -70,8 +97,11 @@ def test_check_requeue_transaction(b, user_vk):
     test_block = b.create_block([tx1])
 
     e.requeue_transactions(test_block)
+    tx_backlog = r.table('backlog').get(tx1['id']).run(b.conn)
+    tx_backlog.pop('assignee')
+    tx_backlog.pop('assignment_timestamp')
 
-    assert r.table('backlog').get(tx1['id']).run(b.conn) == tx1
+    assert tx_backlog == tx1
 
 
 @patch.object(Pipeline, 'start')

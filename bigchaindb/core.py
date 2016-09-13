@@ -1,8 +1,10 @@
 import random
 import math
-import operator
 import collections
+from copy import deepcopy
+from time import time
 
+from itertools import compress
 import rethinkdb as r
 import rapidjson
 
@@ -27,7 +29,7 @@ class Bigchain(object):
 
     def __init__(self, host=None, port=None, dbname=None,
                  public_key=None, private_key=None, keyring=[],
-                 consensus_plugin=None):
+                 consensus_plugin=None, backlog_reassign_delay=None):
         """Initialize the Bigchain instance
 
         A Bigchain instance has several configuration parameters (e.g. host).
@@ -55,6 +57,7 @@ class Bigchain(object):
         self.me = public_key or bigchaindb.config['keypair']['public']
         self.me_private = private_key or bigchaindb.config['keypair']['private']
         self.nodes_except_me = keyring or bigchaindb.config['keyring']
+        self.backlog_reassign_delay = backlog_reassign_delay or bigchaindb.config['backlog_reassign_delay']
         self.consensus = config_utils.load_consensus_plugin(consensus_plugin)
         # change RethinkDB read mode to majority.  This ensures consistency in query results
         self.read_mode = 'majority'
@@ -130,12 +133,58 @@ class Bigchain(object):
             # I am the only node
             assignee = self.me
 
+        # We copy the transaction here to not add `assignee` to the transaction
+        # dictionary passed to this method (as it would update by reference).
+        signed_transaction = deepcopy(signed_transaction)
         # update the transaction
         signed_transaction.update({'assignee': assignee})
+        signed_transaction.update({'assignment_timestamp': time()})
 
         # write to the backlog
         response = r.table('backlog').insert(signed_transaction, durability=durability).run(self.conn)
         return response
+
+    def reassign_transaction(self, transaction, durability='hard'):
+        """Assign a transaction to a new node
+
+        Args:
+            transaction (dict): assigned transaction
+
+        Returns:
+            dict: database response or None if no reassignment is possible
+        """
+
+        if self.nodes_except_me:
+            try:
+                federation_nodes = self.nodes_except_me + [self.me]
+                index_current_assignee = federation_nodes.index(transaction['assignee'])
+                new_assignee = random.choice(federation_nodes[:index_current_assignee] +
+                                             federation_nodes[index_current_assignee + 1:])
+            except ValueError:
+                # current assignee not in federation
+                new_assignee = random.choice(self.nodes_except_me)
+
+        else:
+            # There is no other node to assign to
+            new_assignee = self.me 
+
+        response = r.table('backlog')\
+            .get(transaction['id'])\
+            .update({'assignee': new_assignee,
+                     'assignment_timestamp': time()},
+                    durability=durability).run(self.conn)
+        return response
+
+    def get_stale_transactions(self):
+        """Get a RethinkDB cursor of stale transactions
+
+        Transactions are considered stale if they have been assigned a node, but are still in the
+        backlog after some amount of time specified in the configuration
+        """
+
+        return r.table('backlog')\
+            .filter(lambda tx: time() - tx['assignment_timestamp'] >
+                    self.backlog_reassign_delay).run(self.conn)
 
     def get_transaction(self, txid, include_status=False):
         """Retrieve a transaction with `txid` from bigchain.
@@ -151,7 +200,7 @@ class Bigchain(object):
         Returns:
             A dict with the transaction details if the transaction was found.
             Will add the transaction status to payload ('valid', 'undecided',
-            or 'backlog'). If no transaction with that `txid` was found it 
+            or 'backlog'). If no transaction with that `txid` was found it
             returns `None`
         """
 
@@ -524,11 +573,10 @@ class Bigchain(object):
         block_serialized = rapidjson.dumps(block)
         r.table('bigchain').insert(r.json(block_serialized), durability=durability).run(self.conn)
 
-    # TODO: Decide if we need this method
     def transaction_exists(self, transaction_id):
         response = r.table('bigchain', read_mode=self.read_mode)\
             .get_all(transaction_id, index='transaction_id').run(self.conn)
-        return True if len(response.items) > 0 else False
+        return len(response.items) > 0
 
     def prepare_genesis_block(self):
         """Prepare a genesis block."""
@@ -696,15 +744,27 @@ class Bigchain(object):
             raise exceptions.MultipleVotesError('Block {block_id} has {n_votes} votes cast, but only {n_voters} voters'
                                                 .format(block_id=block['id'], n_votes=str(len(votes)), n_voters=str(n_voters)))
 
+        # vote_cast is the list of votes e.g. [True, True, False]
         vote_cast = [vote['vote']['is_block_valid'] for vote in votes]
+        # prev_block are the ids of the nominal prev blocks e.g.
+        # ['block1_id', 'block1_id', 'block2_id']
+        prev_block = [vote['vote']['previous_block'] for vote in votes]
+        # vote_validity checks whether a vote is valid
+        # or invalid, e.g. [False, True, True]
         vote_validity = [self.consensus.verify_vote_signature(block, vote) for vote in votes]
 
         # element-wise product of stated vote and validity of vote
-        vote_list = list(map(operator.mul, vote_cast, vote_validity))
+        # vote_cast = [True, True, False] and
+        # vote_validity = [False, True, True] gives
+        # [True, False]
+        # Only the correctly signed votes are tallied.
+        vote_list = list(compress(vote_cast, vote_validity))
 
-        # validate votes here
+        # Total the votes. Here, valid and invalid refer
+        # to the vote cast, not whether the vote itself
+        # is valid or invalid.
         n_valid_votes = sum(vote_list)
-        n_invalid_votes = len(vote_list) - n_valid_votes
+        n_invalid_votes = len(vote_cast) - n_valid_votes
 
         # The use of ceiling and floor is to account for the case of an
         # even number of voters where half the voters have voted 'invalid'
@@ -714,6 +774,21 @@ class Bigchain(object):
         if n_invalid_votes >= math.ceil(n_voters / 2):
             return Bigchain.BLOCK_INVALID
         elif n_valid_votes > math.floor(n_voters / 2):
-            return Bigchain.BLOCK_VALID
+            # The block could be valid, but we still need to check if votes
+            # agree on the previous block.
+            #
+            # First, only consider blocks with legitimate votes
+            prev_block_list = list(compress(prev_block, vote_validity))
+            # Next, only consider the blocks with 'yes' votes
+            prev_block_valid_list = list(compress(prev_block_list, vote_list))
+            counts = collections.Counter(prev_block_valid_list)
+            # Make sure the majority vote agrees on previous node.
+            # The majority vote must be the most common, by definition.
+            # If it's not, there is no majority agreement on the previous
+            # block.
+            if counts.most_common()[0][1] > math.floor(n_voters / 2):
+                return Bigchain.BLOCK_VALID
+            else:
+                return Bigchain.BLOCK_INVALID
         else:
             return Bigchain.BLOCK_UNDECIDED

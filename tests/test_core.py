@@ -19,7 +19,8 @@ def config(request, monkeypatch):
         },
         'keyring': [],
         'CONFIGURED': True,
-        'consensus_plugin': 'default'
+        'consensus_plugin': 'default',
+        'backlog_reassign_delay': 30
     }
 
     monkeypatch.setattr('bigchaindb.config', config)
@@ -95,3 +96,14 @@ def test_transaction_exists(monkeypatch, items, exists):
         RqlQuery, 'run', lambda x, y: namedtuple('response', 'items')(items))
     bigchain = Bigchain(public_key='pubkey', private_key='privkey')
     assert bigchain.transaction_exists('txid') is exists
+
+
+def test_write_transaction_no_sideffects(b):
+    from rethinkdb.errors import ReqlOpFailedError
+    transaction = {'id': 'abc'}
+    expected = {'id': 'abc'}
+    with pytest.raises(ReqlOpFailedError):
+        b.write_transaction(transaction)
+    assert transaction == expected
+    with pytest.raises(KeyError):
+        transaction['assignee']

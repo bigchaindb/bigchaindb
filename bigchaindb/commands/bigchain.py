@@ -106,6 +106,11 @@ def run_configure(args, skip_if_exists=False):
                 input('Statsd {}? (default `{}`): '.format(key, val)) \
                 or val
 
+        val = conf['backlog_reassign_delay']
+        conf['backlog_reassign_delay'] = \
+            input('Stale transaction reassignment delay (in seconds)? (default `{}`): '.format(val)) \
+            or val
+
     if config_path != '-':
         bigchaindb.config_utils.write_config(conf, config_path)
     else:

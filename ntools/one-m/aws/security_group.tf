@@ -1,3 +1,8 @@
+# It might be better to:
+# 1. start by only allowing SSH on port 22 (in the security group)
+# 2. use SSH to set up a proper firewall on the (virtual) machine
+# 3. add a second security group with more ports open
+
 resource "aws_security_group" "node_sg1" {
   name_prefix = "BigchainDB_"
   description = "Single-machine BigchainDB node security group"
@@ -5,7 +10,7 @@ resource "aws_security_group" "node_sg1" {
     Name = "BigchainDB_one-m"
   }
 
-  # Allow *all* outbound traffic
+  # Allow all outbound traffic
   egress {
     from_port = 0
     to_port = 0
@@ -29,7 +34,7 @@ resource "aws_security_group" "node_sg1" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # HTTP used by some package managers
+  # HTTP is used by some package managers
   ingress {
     from_port = 80
     to_port = 80
@@ -48,7 +53,7 @@ resource "aws_security_group" "node_sg1" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # HTTPS used when installing RethinkDB
+  # HTTPS is used when installing RethinkDB
   # and by some package managers
   ingress {
     from_port = 443
@@ -65,8 +70,15 @@ resource "aws_security_group" "node_sg1" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # Don't allow port 8080 for the RethinkDB web interface.
+  # Future: Don't allow port 8080 for the RethinkDB web interface.
   # Use a SOCKS proxy or reverse proxy instead.
+
+  ingress {
+    from_port = 8080
+    to_port = 8080
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
   # BigchainDB Client-Server REST API
   ingress {

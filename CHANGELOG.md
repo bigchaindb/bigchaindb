@@ -14,10 +14,55 @@ For reference, the possible headings are:
 * **External Contributors** to list contributors outside of BigchainDB GmbH.
 * **Notes**
 
-## [0.5.1] - YYYY-MM-DD
-Tag name: v0.5.1
+
+## [0.6.0] - 2016-09-01
+Tag name: v0.6.0
 = commit: 
-committed:
+committed: 
+
+### Added
+- Support for multiple operations in the ChangeFeed class: [Pull Request #569](https://github.com/bigchaindb/bigchaindb/pull/569)
+- Instructions, templates and code for deploying a starter node on AWS using Terraform and Ansible: Pull Requests
+[#572](https://github.com/bigchaindb/bigchaindb/pull/572),
+[#589](https://github.com/bigchaindb/bigchaindb/pull/589),
+[#600](https://github.com/bigchaindb/bigchaindb/pull/600),
+[#605](https://github.com/bigchaindb/bigchaindb/pull/605),
+[#610](https://github.com/bigchaindb/bigchaindb/pull/610)
+- Check that the majority of votes on a block agree on the previous block. If they don't, consider the block invalid. [Pull Request #565](https://github.com/bigchaindb/bigchaindb/pull/565)
+
+### Changed
+- Set RethinkDB `read-mode='majority'` everywhere: [Pull Request #497](https://github.com/bigchaindb/bigchaindb/pull/497)
+- Ported election logic and voting logic to the new pipeline architecture: Pull Requests [#510](https://github.com/bigchaindb/bigchaindb/pull/510) and [#515](https://github.com/bigchaindb/bigchaindb/pull/515)
+- Moved the transaction (model) `version` inside the `transaction` (in the transaction data model): [Pull Request #518](https://github.com/bigchaindb/bigchaindb/pull/518)
+- Changed how the BigchainDB config file (JSON) gets written so it's easier for humans to read: [Pull Request #522](https://github.com/bigchaindb/bigchaindb/pull/522)
+- Improved and expanded the GET/POST endpoints for transactions (in the HTTP API): [Pull Request #563](https://github.com/bigchaindb/bigchaindb/pull/563)
+- Changed the AWS cluster deployment scripts so that the deployer now generates their keypair locally, rather than having Amazon do it: [Pull Request #567](https://github.com/bigchaindb/bigchaindb/pull/567)
+- When a transaction is retrieved by `get_transaction`, a `validity` field is added with a value one of `valid`, `undecided`, or `backlog`: [Pull Request #574](https://github.com/bigchaindb/bigchaindb/pull/574)
+- Renamed `current_owners` and `new_owners` (in the data models) to `owners_before` and `owners_after`, respectively (i.e. before/after *the transaction*): [Pull Request #578](https://github.com/bigchaindb/bigchaindb/pull/578)
+- Use `flask_restful` and class-based views for realizing the HTTP API: [Pull Request #588](https://github.com/bigchaindb/bigchaindb/pull/588)
+
+### Fixed
+- Fixed the confusing error message when there was a syntax error in the BigchainDB config file: [Pull Request #531](https://github.com/bigchaindb/bigchaindb/pull/531)
+- Fixed `write_transaction` so it no longer has the side effect of adding `assignee` to a transaction that is being processed: [Pull Request #606](https://github.com/bigchaindb/bigchaindb/pull/606)
+
+### External Contributors
+- @eladve - [Pull Request #518](https://github.com/bigchaindb/bigchaindb/pull/518)
+- @d01phin - Pull Requests [#522](https://github.com/bigchaindb/bigchaindb/pull/522) and [#531](https://github.com/bigchaindb/bigchaindb/pull/531)
+- @Kentoseth - [Pull Request #537](https://github.com/bigchaindb/bigchaindb/pull/537)
+
+### Notes
+- Several additions and changes to the documentation, e.g. Pull Requests
+[#523](https://github.com/bigchaindb/bigchaindb/pull/523),
+[#532](https://github.com/bigchaindb/bigchaindb/pull/532),
+[#537](https://github.com/bigchaindb/bigchaindb/pull/537),
+[#539](https://github.com/bigchaindb/bigchaindb/pull/539),
+[#610](https://github.com/bigchaindb/bigchaindb/pull/610), and more
+
+
+## [0.5.1] - 2016-07-29
+Tag name: v0.5.1
+= commit: ff042b5954abe48c7264d43128d52584eab2a806
+committed: Jul 29, 2016, 2:38 PM GMT+2
 
 ### Added
 - New third table, the 'votes' table: [Pull Request #379](https://github.com/bigchaindb/bigchaindb/pull/379)

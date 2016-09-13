@@ -43,16 +43,18 @@ The AWS cluster deployment scripts use elastic IP addresses (although that may c
 
 ## Create an Amazon EC2 Security Group
 
-Go to the AWS EC2 Console and select "Security Groups" in the left sidebar. Click the "Create Security Group" button. Name it `bigchaindb`. The description probably doesn't matter; you can also put `bigchaindb` for that.
+Go to the AWS EC2 Console and select "Security Groups" in the left sidebar. Click the "Create Security Group" button. You can name it whatever you like. (Notes: The default name in the example AWS deployment configuration file is `bigchaindb`. We had problems with names containing dashes.) The description should be something to help you remember what the security group is for.
 
-Add these rules for Inbound traffic:
+For a super lax, somewhat risky, anything-can-enter security group, add these rules for Inbound traffic:
 
 * Type = All TCP, Protocol = TCP, Port Range = 0-65535, Source = 0.0.0.0/0
 * Type = SSH, Protocol = SSH, Port Range = 22, Source = 0.0.0.0/0
 * Type = All UDP, Protocol = UDP, Port Range = 0-65535, Source = 0.0.0.0/0
 * Type = All ICMP, Protocol = ICMP, Port Range = 0-65535, Source = 0.0.0.0/0
 
-**Note: These rules are extremely lax! They're meant to make testing easy.** For example, Source = 0.0.0.0/0 is [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing) for "allow this traffic to come from _any_ IP address."
+(Note: Source = 0.0.0.0/0 is [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing) for "allow this traffic to come from _any_ IP address.")
+
+If you want to set up a more secure security group, see the [Notes for Firewall Setup](../appendices/firewall-notes.html).
 
 
 ## Deploy a BigchainDB Monitor
@@ -126,6 +128,7 @@ SSH_KEY_NAME="not-set-yet"
 USE_KEYPAIRS_FILE=False
 IMAGE_ID="ami-accff2b1"
 INSTANCE_TYPE="m3.2xlarge"
+SECURITY_GROUP="bigchaindb"
 USING_EBS=False
 EBS_VOLUME_SIZE=30
 EBS_OPTIMIZED=False
