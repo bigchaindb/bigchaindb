@@ -5,7 +5,6 @@ import bigchaindb
 from bigchaindb.pipelines import vote, block, election, stale
 from bigchaindb.web import server
 
-
 logger = logging.getLogger(__name__)
 
 BANNER = """
