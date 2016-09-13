@@ -11,7 +11,6 @@ from multipipes import Pipeline, Node
 from bigchaindb_common import exceptions
 from bigchaindb_common.transaction import Transaction
 
-from bigchaindb import config_utils
 from bigchaindb.consensus import BaseConsensusRules
 from bigchaindb.pipelines.utils import ChangeFeed
 from bigchaindb import Bigchain
@@ -45,7 +44,7 @@ class Vote:
                                                    [self.bigchain.me])
 
     def validate_block(self, block):
-        if not self.bigchain.has_previous_vote(block):
+        if not self.bigchain.has_previous_vote(block['id'], block['voters']):
             try:
                 self.consensus.validate_block(self.bigchain, block)
                 valid = True

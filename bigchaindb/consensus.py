@@ -103,10 +103,10 @@ class BaseConsensusRules():
         return block
 
     @staticmethod
-    def verify_vote_signature(block, signed_vote):
+    def verify_vote_signature(voters, signed_vote):
         """Verify the signature of a vote.
 
         Refer to the documentation of ``bigchaindb.util.verify_signature``
         """
 
-        return util.verify_vote_signature(block, signed_vote)
+        return util.verify_vote_signature(voters, signed_vote)

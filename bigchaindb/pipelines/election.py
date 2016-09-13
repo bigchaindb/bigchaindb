@@ -30,7 +30,9 @@ class Election:
         next_block = r.table('bigchain')\
             .get(next_vote['vote']['voting_for_block'])\
             .run(self.bigchain.conn)
-        if self.bigchain.block_election_status(next_block) == self.bigchain.BLOCK_INVALID:
+        election_status = self.bigchaindb.block_election_status(next_block['id'],
+                                                                next_block['voters'])
+        if election_status == self.bigchain.BLOCK_INVALID:
             return deserialize_block(next_block)
 
     def requeue_transactions(self, invalid_block):
