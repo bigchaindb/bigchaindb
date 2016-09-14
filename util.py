@@ -8,7 +8,7 @@ def gen_timestamp():
         See https://en.wikipedia.org/wiki/Unix_time
 
         Returns:
-    str: the Unix time
+            str: the Unix time
     """
     return str(round(time.time()))
 
@@ -24,10 +24,22 @@ def serialize(data):
         differences.
 
         Args:
-        data (dict): dict to serialize
+            data (dict): dict to serialize
 
-                     Returns:
-        str: JSON formatted string
+        Returns:
+            str: JSON formatted string
 
     """
     return rapidjson.dumps(data, skipkeys=False, ensure_ascii=False, sort_keys=True)
+
+
+def deserialize(data):
+    """Deserialize a JSON formatted string into a dict.
+
+        Args:
+            data (str): JSON formatted string.
+
+        Returns:
+            dict: dict resulting from the serialization of a JSON formatted string.
+    """
+    return rapidjson.loads(data)

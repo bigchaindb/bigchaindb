@@ -46,7 +46,15 @@ class Fulfillment(object):
         try:
             fulfillment = self.fulfillment.serialize_uri()
         except (TypeError, AttributeError):
-            fulfillment = None
+            # NOTE: When a non-signed transaction is casted to a dict,
+            #       `self.fulfillments` value is lost, as in the node's
+            #       transaction model that is saved to the database, does not
+            #       account for its dictionary form but just for its signed uri
+            #       form.
+            #       Hence, when a non-signed fulfillment is to be cast to a
+            #       dict, we just call its internal `to_dict` method here and
+            #       its `from_dict` method in `Fulfillment.from_dict`.
+            fulfillment = self.fulfillment.to_dict()
 
         try:
             # NOTE: `self.tx_input` can be `None` and that's fine
@@ -70,14 +78,17 @@ class Fulfillment(object):
         try:
             fulfillment = CCFulfillment.from_uri(ffill['fulfillment'])
         except TypeError:
-            fulfillment = None
+            # NOTE: See comment about this special case in
+            #       `Fulfillment.to_dict`
+            fulfillment = CCFulfillment.from_dict(ffill['fulfillment'])
         return cls(fulfillment, ffill['owners_before'], TransactionLink.from_dict(ffill['input']))
 
 
 class TransactionLink(object):
-    # NOTE: In an IPLD implementation, this class is not necessary anymore, as an IPLD link can simply point to an
-    #       object, as well as an objects properties. So instead of having a (de)serializable class, we can have a
-    #       simple IPLD link of the form: `/<tx_id>/transaction/conditions/<cid>/`
+    # NOTE: In an IPLD implementation, this class is not necessary anymore,
+    # as an IPLD link can simply point to an object, as well as an objects
+    # properties. So instead of having a (de)serializable class, we can have a
+    # simple IPLD link of the form: `/<tx_id>/transaction/conditions/<cid>/`
     def __init__(self, txid=None, cid=None):
         self.txid = txid
         self.cid = cid
@@ -111,8 +122,8 @@ class Condition(object):
         """Create a new condition for a fulfillment
 
         Args
-            owners_after (Optional(list)): base58 encoded public key of the owner of the digital asset after
-            this transaction.
+            owners_after (Optional(list)): base58 encoded public key of the
+            owner of the digital asset after this transaction.
 
         """
         self.fulfillment = fulfillment
@@ -234,48 +245,9 @@ class Transaction(object):
     ALLOWED_OPERATIONS = (CREATE, TRANSFER, GENESIS)
     VERSION = 1
 
-    def __init__(self, operation, fulfillments=None, conditions=None, data=None, timestamp=None, version=None):
+    def __init__(self, operation, fulfillments=None, conditions=None,
+                 data=None, timestamp=None, version=None):
         # TODO: Update this comment
-        """Create a new transaction in memory
-
-        A transaction in BigchainDB is a transfer of a digital asset between two entities represented
-        by public keys.
-
-        Currently BigchainDB supports two types of operations:
-
-            `CREATE` - Only federation nodes are allowed to use this operation. In a create operation
-            a federation node creates a digital asset in BigchainDB and assigns that asset to a public
-            key. The owner of the private key can then decided to transfer this digital asset by using the
-            `transaction id` of the transaction as an input in a `TRANSFER` transaction.
-
-            `TRANSFER` - A transfer operation allows for a transfer of the digital assets between entities.
-
-        If a transaction is initialized with the inputs being `None` a `operation` `CREATE` is
-        chosen. Otherwise the transaction is of `operation` `TRANSFER`.
-
-        Args:
-            # TODO: Write a description here
-            fulfillments
-            conditions
-            operation
-           data (Optional[dict]): dictionary with information about asset.
-
-        Raises:
-            TypeError: if the optional ``data`` argument is not a ``dict``.
-
-        # TODO: Incorporate this text somewhere better in the docs of this class
-        Some use cases for this class:
-
-            1. Create a new `CREATE` transaction:
-                - This means `inputs` is empty
-
-            2. Create a new `TRANSFER` transaction:
-                - This means `inputs` is a filled list (one to multiple transactions)
-
-            3. Written transactions must be managed somehow in the user's program: use `from_dict`
-
-
-        """
         self.timestamp = timestamp if timestamp is not None else gen_timestamp()
         self.version = version if version is not None else Transaction.VERSION
 
@@ -397,7 +369,11 @@ class Transaction(object):
         return cls(cls.TRANSFER, inputs, conditions, data)
 
     def __eq__(self, other):
-        return self.to_dict() == other.to_dict()
+        try:
+            other = other.to_dict()
+        except AttributeError:
+            return False
+        return self.to_dict() == other
 
     def to_inputs(self, condition_indices=None):
         inputs = []
@@ -428,6 +404,8 @@ class Transaction(object):
             self.conditions.append(condition)
 
     def sign(self, private_keys):
+        # TODO: Singing should be possible with at least one of all private
+        #       keys supplied to this method.
         """ Signs a transaction
             Acts as a proxy for `_sign_fulfillments`, for exposing a nicer API to the outside.
         """
@@ -460,6 +438,9 @@ class Transaction(object):
             self._sign_simple_signature_fulfillment(fulfillment, index, tx_serialized, key_pairs)
         elif isinstance(fulfillment.fulfillment, ThresholdSha256Fulfillment):
             self._sign_threshold_signature_fulfillment(fulfillment, index, tx_serialized, key_pairs)
+        else:
+            raise ValueError("Fulfillment couldn't be matched to "
+                             'Cryptocondition fulfillment type.')
 
     def _sign_simple_signature_fulfillment(self, fulfillment, index, tx_serialized, key_pairs):
         # NOTE: To eliminate the dangers of accidentially signing a condition by reference,
@@ -574,12 +555,14 @@ class Transaction(object):
 
     @staticmethod
     def _remove_signatures(tx_dict):
-        # NOTE: We remove the reference since we need `tx_dict` only for the transaction's hash
+        # NOTE: We remove the reference since we need `tx_dict` only for the
+        #       transaction's hash
         tx_dict = deepcopy(tx_dict)
         for fulfillment in tx_dict['transaction']['fulfillments']:
-            # NOTE: Not all Cryptoconditions return a `signature` key (e.g. ThresholdSha256Fulfillment), so setting it
-            #       to `None` in any case could yield incorrect signatures. This is why we only set it to `None` if
-            #       it's set in the dict.
+            # NOTE: Not all Cryptoconditions return a `signature` key (e.g.
+            # ThresholdSha256Fulfillment), so setting it to `None` in any case
+            # could yield incorrect signatures. This is why we only set it to
+            # `None` if it's set in the dict.
             fulfillment['fulfillment'] = None
         return tx_dict
 
@@ -599,7 +582,8 @@ class Transaction(object):
         return serialize(value)
 
     def __str__(self):
-        return Transaction._to_str(self.to_dict())
+        tx = Transaction._remove_signatures(self.to_dict())
+        return Transaction._to_str(tx)
 
     @classmethod
     # TODO: Make this method more pretty
