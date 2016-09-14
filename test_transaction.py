@@ -29,14 +29,27 @@ def test_fulfillment_deserialization_with_uri(ffill_uri, user_pub):
     assert ffill == expected
 
 
-def test_fulfillment_deserialization_with_dict(user_pub):
+def test_fulfillment_deserialization_with_invalid_fulfillment(user_pub):
     from bigchaindb_common.transaction import Fulfillment
-
-    expected = Fulfillment(None, [user_pub])
 
     ffill = {
         'owners_before': [user_pub],
         'fulfillment': None,
+        'input': None,
+    }
+    with raises(TypeError):
+        Fulfillment.from_dict(ffill)
+
+
+def test_fulfillment_deserialization_with_unsigned_fulfillment(ffill_uri,
+                                                               user_pub):
+    from bigchaindb_common.transaction import Fulfillment
+    from cryptoconditions import Fulfillment as CCFulfillment
+
+    expected = Fulfillment(CCFulfillment.from_uri(ffill_uri), [user_pub])
+    ffill = {
+        'owners_before': [user_pub],
+        'fulfillment': CCFulfillment.from_uri(ffill_uri),
         'input': None,
     }
     ffill = Fulfillment.from_dict(ffill)
@@ -631,10 +644,12 @@ def test_create_create_transaction_single_io(user_cond, user_pub):
         'version': 1
     }
 
-    tx = Transaction.create([user_pub], [user_pub], {'message': 'hello'}).to_dict()
+    payload = {'message': 'hello'}
+    tx = Transaction.create([user_pub], [user_pub], payload).to_dict()
     tx.pop('id')
     tx['transaction']['data'].pop('uuid')
     tx['transaction'].pop('timestamp')
+    tx['transaction']['fulfillments'][0]['fulfillment'] = None
 
     assert tx == expected
 
@@ -734,6 +749,7 @@ def test_create_create_transaction_threshold(user_pub, user2_pub, user3_pub,
     tx.pop('id')
     tx['transaction']['data'].pop('uuid')
     tx['transaction'].pop('timestamp')
+    tx['transaction']['fulfillments'][0]['fulfillment'] = None
 
     assert tx == expected
 
@@ -783,6 +799,7 @@ def test_create_create_transaction_hashlock(user_pub):
     tx.pop('id')
     tx['transaction']['data'].pop('uuid')
     tx['transaction'].pop('timestamp')
+    tx['transaction']['fulfillments'][0]['fulfillment'] = None
 
     assert tx == expected
 
