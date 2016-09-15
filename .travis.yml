@@ -12,7 +12,7 @@ before_install:
 
 install:
   - sudo apt-get install rethinkdb
-  - pip install -e .[test]
+  - pip install -e .[test] --process-dependency-links
   - pip install codecov
 
 before_script: rethinkdb --daemon
