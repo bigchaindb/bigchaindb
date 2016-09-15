@@ -3,8 +3,6 @@ import json
 import pytest
 from bigchaindb_common import crypto
 
-from bigchaindb import util
-
 
 TX_ENDPOINT = '/api/v1/transactions/'
 
@@ -12,9 +10,9 @@ TX_ENDPOINT = '/api/v1/transactions/'
 @pytest.mark.usefixtures('inputs')
 def test_get_transaction_endpoint(b, client, user_vk):
     input_tx = b.get_owned_ids(user_vk).pop()
-    tx = b.get_transaction(input_tx['txid'])
-    res = client.get(TX_ENDPOINT + input_tx['txid'])
-    assert tx == res.json
+    tx = b.get_transaction(input_tx.txid)
+    res = client.get(TX_ENDPOINT + tx.id)
+    assert tx.to_dict() == res.json
     assert res.status_code == 200
 
 
@@ -32,34 +30,44 @@ def test_api_endpoint_shows_basic_info(client):
 
 
 def test_post_create_transaction_endpoint(b, client):
-    keypair = crypto.generate_key_pair()
+    from bigchaindb.models import Transaction
+    user_priv, user_pub = crypto.generate_key_pair()
 
-    tx = util.create_and_sign_tx(keypair[0], keypair[1], keypair[1], None, 'CREATE')
+    tx = Transaction.create([user_pub], [user_pub])
+    tx = tx.sign([user_priv])
 
-    res = client.post(TX_ENDPOINT, data=json.dumps(tx))
-    assert res.json['transaction']['fulfillments'][0]['owners_before'][0] == b.me
-    assert res.json['transaction']['conditions'][0]['owners_after'][0] == keypair[1]
+    res = client.post(TX_ENDPOINT, data=json.dumps(tx.to_dict()))
+    assert res.json['transaction']['fulfillments'][0]['owners_before'][0] == user_pub
+    assert res.json['transaction']['conditions'][0]['owners_after'][0] == user_pub
 
 
 @pytest.mark.usefixtures('inputs')
 def test_post_transfer_transaction_endpoint(b, client, user_vk, user_sk):
-    to_keypair = crypto.generate_key_pair()
-    input_valid = b.get_owned_ids(user_vk).pop()
+    from bigchaindb.models import Transaction
 
-    transfer = util.create_and_sign_tx(user_sk, user_vk, to_keypair[1], input_valid)
-    res = client.post(TX_ENDPOINT, data=json.dumps(transfer))
+    user_priv, user_pub = crypto.generate_key_pair()
+
+    input_valid = b.get_owned_ids(user_vk).pop()
+    create_tx = b.get_transaction(input_valid.txid)
+    transfer_tx = Transaction.transfer(create_tx.to_inputs(), [user_pub])
+    transfer_tx = transfer_tx.sign([user_sk])
+
+    res = client.post(TX_ENDPOINT, data=json.dumps(transfer_tx.to_dict()))
 
     assert res.json['transaction']['fulfillments'][0]['owners_before'][0] == user_vk
-    assert res.json['transaction']['conditions'][0]['owners_after'][0] == to_keypair[1]
+    assert res.json['transaction']['conditions'][0]['owners_after'][0] == user_pub
 
 
 @pytest.mark.usefixtures('inputs')
 def test_post_invalid_transfer_transaction_returns_400(b, client, user_vk, user_sk):
-    to_keypair = crypto.generate_key_pair()
+    from bigchaindb.models import Transaction
+
+    user_priv, user_pub = crypto.generate_key_pair()
+
     input_valid = b.get_owned_ids(user_vk).pop()
-    transfer = b.create_transaction(user_vk, to_keypair[0], input_valid, 'TRANSFER')
-    # transfer is not signed
-    res = client.post(TX_ENDPOINT, data=json.dumps(transfer))
+    create_tx = b.get_transaction(input_valid.txid)
+    transfer_tx = Transaction.transfer(create_tx.to_inputs(), [user_pub])
+
+    res = client.post(TX_ENDPOINT, data=json.dumps(transfer_tx.to_dict()))
 
     assert res.status_code == 400
-

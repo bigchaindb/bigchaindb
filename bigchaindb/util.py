@@ -166,25 +166,11 @@ def verify_vote_signature(voters, signed_vote):
     return public_key.verify(serialize(signed_vote['vote']), signature)
 
 
-def transform_create(tx):
-    """Change the owner and signature for a ``CREATE`` transaction created by a node"""
-
-    # XXX: the next instruction opens a new connection to the DB, consider using a singleton or a global
-    #      if you need a Bigchain instance.
-    b = bigchaindb.Bigchain()
-    transaction = tx['transaction']
-    payload = None
-    if transaction['data'] and 'payload' in transaction['data']:
-        payload = transaction['data']['payload']
-    new_tx = create_tx(b.me, transaction['fulfillments'][0]['owners_before'], None, 'CREATE', payload=payload)
-    return new_tx
-
-
 def is_genesis_block(block):
     """Check if the block is the genesis block.
 
     Args:
-        block (dict): the block to check
+        block (dict | Block): the block to check
 
     Returns:
         bool: True if the block is the genesis block, False otherwise.
@@ -192,4 +178,7 @@ def is_genesis_block(block):
 
     # we cannot have empty blocks, there will always be at least one
     # element in the list so we can safely refer to it
-    return block['block']['transactions'][0]['transaction']['operation'] == 'GENESIS'
+    try:
+        return block.transactions[0].operation == 'GENESIS'
+    except AttributeError:
+        return block['block']['transactions'][0]['transaction']['operation'] == 'GENESIS'

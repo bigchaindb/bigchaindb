@@ -98,36 +98,7 @@ def cleanup_tables(request, node_config):
 
 
 @pytest.fixture
-def b_me():
-    return Bigchain().me
-
-
-@pytest.fixture
-def b_me_private():
-    return Bigchain().me_private
-
-
-@pytest.fixture
-def unsigned_tx(b_me, user_vk):
-    from bigchaindb.models import Transaction
-    return Transaction.create([b_me], [user_vk])
-
-
-@pytest.fixture
-def signed_tx(unsigned_tx, b_me_private):
-    return unsigned_tx.sign([b_me_private])
-
-
-@pytest.fixture
-def transfer_tx(signed_tx, user_vk, user_sk):
-    from bigchaindb.models import Transaction
-    inputs = signed_tx.to_inputs()
-    tx = Transaction.transfer(inputs, [user_vk])
-    return tx.sign([user_sk])
-
-
-@pytest.fixture
-def inputs(user_vk, signed_tx):
+def inputs(user_vk, signed_create_tx):
     from bigchaindb_common.exceptions import GenesisBlockAlreadyExistsError
     # 1. create the genesis block
     b = Bigchain()
@@ -138,6 +109,6 @@ def inputs(user_vk, signed_tx):
 
     # 2. create block with transactions for `USER` to spend
     for block in range(4):
-        transactions = [signed_tx for _ in range(10)]
+        transactions = [signed_create_tx for _ in range(10)]
         block = b.create_block(transactions)
         b.write_block(block, durability='hard')

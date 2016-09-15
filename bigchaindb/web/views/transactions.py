@@ -7,8 +7,10 @@ For more information please refer to the documentation on ReadTheDocs:
 import flask
 from flask import current_app, request, Blueprint
 
+from bigchaindb_common.exceptions import InvalidHash, InvalidSignature
+
 import bigchaindb
-from bigchaindb import util
+from bigchaindb.models import Transaction
 from bigchaindb.web.views.base import make_error
 
 transaction_views = Blueprint('transaction_views', __name__)
@@ -54,7 +56,7 @@ def get_transaction(tx_id):
     if not tx:
         return make_error(404)
 
-    return flask.jsonify(**tx)
+    return flask.jsonify(**tx.to_dict())
 
 
 @transaction_views.route('/transactions/', methods=['POST'])
@@ -67,20 +69,21 @@ def create_transaction():
     pool = current_app.config['bigchain_pool']
     monitor = current_app.config['monitor']
 
-    # `force` will try to format the body of the POST request even if the `content-type` header is not
-    # set to `application/json`
+    # `force` will try to format the body of the POST request even if the
+    # `content-type` header is not set to `application/json`
     tx = request.get_json(force=True)
 
+    try:
+        tx_obj = Transaction.from_dict(tx)
+    except (InvalidHash, InvalidSignature):
+        return make_error(400, 'Invalid transaction')
+
     with pool() as bigchain:
-        if tx['transaction']['operation'] == 'CREATE':
-            # TODO: Remove this
-            tx = util.transform_create(tx)
-            tx = bigchain.consensus.sign_transaction(tx, private_key=bigchain.me_private)
-
-        if not bigchain.is_valid_transaction(tx):
+        if bigchain.is_valid_transaction(tx_obj):
+            rate = bigchaindb.config['statsd']['rate']
+            with monitor.timer('write_transaction', rate=rate):
+                bigchain.write_transaction(tx_obj)
+        else:
             return make_error(400, 'Invalid transaction')
-
-        with monitor.timer('write_transaction', rate=bigchaindb.config['statsd']['rate']):
-            bigchain.write_transaction(tx)
 
     return flask.jsonify(**tx)
