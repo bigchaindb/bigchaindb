@@ -380,14 +380,14 @@ class TestBigchainApi(object):
 
 
 class TestTransactionValidation(object):
-    def test_create_operation_with_inputs(self, b, user_vk, unsigned_tx):
+    def test_create_operation_with_inputs(self, b, user_vk, create_tx):
         from bigchaindb_common.transaction import TransactionLink
 
         # Manipulate fulfillment so that it has a `tx_input` defined even
         # though it shouldn't have one
-        unsigned_tx.fulfillments[0].tx_input = TransactionLink('abc', 0)
+        create_tx.fulfillments[0].tx_input = TransactionLink('abc', 0)
         with pytest.raises(ValueError) as excinfo:
-            b.validate_transaction(unsigned_tx)
+            b.validate_transaction(create_tx)
         assert excinfo.value.args[0] == 'A CREATE operation has no inputs'
 
     def test_transfer_operation_no_inputs(self, b, user_vk, transfer_tx):

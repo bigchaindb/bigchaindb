@@ -21,8 +21,8 @@ import rethinkdb as r
 
 import bigchaindb
 import bigchaindb.config_utils
+from bigchaindb.models import Transaction
 from bigchaindb.util import ProcessGroup
-from bigchaindb.client import temp_client
 from bigchaindb import db
 from bigchaindb.commands import utils
 from bigchaindb import processes
@@ -193,10 +193,12 @@ def run_start(args):
 
 def _run_load(tx_left, stats):
     logstats.thread.start(stats)
-    client = temp_client()
+    b = bigchaindb.Bigchain()
 
     while True:
-        tx = client.create()
+        tx = Transaction.create([b.me], [b.me])
+        tx = tx.sign([b.me_private])
+        b.write_transaction(tx)
 
         stats['transactions'] += 1
 

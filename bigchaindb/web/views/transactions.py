@@ -6,8 +6,10 @@ For more information please refer to the documentation on ReadTheDocs:
 from flask import current_app, request, Blueprint
 from flask_restful import Resource, Api
 
+from bigchaindb_common.exceptions import InvalidHash, InvalidSignature
+
 import bigchaindb
-from bigchaindb import util
+from bigchaindb.models import Transaction
 from bigchaindb.web.views.base import make_error
 
 
