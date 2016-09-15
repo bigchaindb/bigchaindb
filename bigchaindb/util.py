@@ -9,12 +9,12 @@ import uuid
 import rapidjson
 
 from bigchaindb_common import crypto, exceptions
-from bigchaindb_common.transaction import Transaction
 from bigchaindb_common.util import serialize
 import cryptoconditions as cc
 from cryptoconditions.exceptions import ParsingError
 
 import bigchaindb
+from bigchaindb.models import Transaction
 
 
 class ProcessGroup(object):
@@ -92,33 +92,6 @@ def pool(builder, size, timeout=None):
         local_pool.put(instance)
 
     return pooled
-
-
-# TODO: Replace this with a Block model
-def serialize_block(block):
-    return serialize(_serialize_txs_block(block))
-
-
-def _serialize_txs_block(block):
-    """Takes a block and serializes its transactions from models to JSON
-    """
-    # NOTE: Avoid side effects on the block
-    block = deepcopy(block)
-    try:
-        block['block']['transactions'] = [tx.to_dict() for tx
-                                          in block['block']['transactions']]
-    except KeyError:
-        block['transactions'] = [tx.to_dict() for tx in block['transactions']]
-    return block
-
-
-# TODO: Replace this with a Block model
-def deserialize_block(block):
-    """Takes a block and serializes its transactions from JSON to models
-    """
-    block['block']['transactions'] = [Transaction.from_dict(tx) for tx
-                                      in block['block']['transactions']]
-    return block
 
 
 def create_and_sign_tx(private_key, owner_before, owner_after, tx_input, operation='TRANSFER', payload=None):

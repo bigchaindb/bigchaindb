@@ -10,8 +10,7 @@ import rethinkdb as r
 from multipipes import Pipeline, Node
 
 from bigchaindb.pipelines.utils import ChangeFeed
-# TODO: replace with block model
-from bigchaindb.util import deserialize_block
+from bigchaindb.models import Block
 from bigchaindb import Bigchain
 
 
@@ -39,9 +38,9 @@ class Election:
         Liquidates transactions from invalid blocks so they can be processed again
         """
         logger.info('Rewriting %s transactions from invalid block %s',
-                    len(invalid_block['block']['transactions']),
-                    invalid_block['id'])
-        for tx in invalid_block['block']['transactions']:
+                    len(invalid_block.transactions),
+                    invalid_block.id)
+        for tx in invalid_block.transactions:
             self.bigchain.write_transaction(tx)
         return invalid_block
 

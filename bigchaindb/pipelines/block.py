@@ -1,6 +1,6 @@
 """This module takes care of all the logic related to block creation.
 
-The logic is encapsulated in the ``Block`` class, while the sequence
+The logic is encapsulated in the ``BlockPipeline`` class, while the sequence
 of actions to do on transactions is specified in the ``create_pipeline``
 function.
 """
@@ -8,10 +8,9 @@ function.
 import logging
 
 import rethinkdb as r
-from bigchaindb_common.transaction import Transaction
-from bigchaindb_common.exceptions import InvalidHash
 from multipipes import Pipeline, Node
 
+from bigchaindb.models import Transaction
 from bigchaindb.pipelines.utils import ChangeFeed
 from bigchaindb import Bigchain
 
@@ -19,7 +18,7 @@ from bigchaindb import Bigchain
 logger = logging.getLogger(__name__)
 
 
-class Block:
+class BlockPipeline:
     """This class encapsulates the logic to create blocks.
 
     Note:
@@ -27,7 +26,7 @@ class Block:
     """
 
     def __init__(self):
-        """Initialize the Block creator"""
+        """Initialize the BlockPipeline creator"""
         self.bigchain = Bigchain()
         self.txs = []
 
@@ -38,10 +37,9 @@ class Block:
             tx (dict): the transaction to process.
 
         Returns:
-            The transaction if assigned to the current node,
+            The transaction (dict) if assigned to the current node,
             ``None`` otherwise.
         """
-
         if tx['assignee'] == self.bigchain.me:
             tx.pop('assignee')
             tx.pop('assignment_timestamp')
@@ -57,13 +55,9 @@ class Block:
             tx (dict): the transaction to validate.
 
         Returns:
-            The transaction if valid, ``None`` otherwise.
+            The transaction (Transaction) if valid, ``None`` otherwise.
         """
-        try:
-            tx = Transaction.from_dict(tx)
-        except InvalidHash:
-            return None
-
+        tx = Transaction.from_dict(tx)
         tx = self.bigchain.is_valid_transaction(tx)
         if tx:
             return tx
@@ -84,13 +78,13 @@ class Block:
         - a timeout happened.
 
         Args:
-            tx (dict): the transaction to validate, might be None if
+            tx (Transaction): the transaction to validate, might be None if
                 a timeout happens.
             timeout (bool): ``True`` if a timeout happened
                 (Default: ``False``).
 
         Returns:
-            The block, if a block is ready, or ``None``.
+            The block (Block), if a block is ready, or ``None``.
         """
         if tx:
             self.txs.append(tx)
@@ -103,14 +97,13 @@ class Block:
         """Write the block to the Database.
 
         Args:
-            block (dict): the block of transactions to write to the database.
+            block (Block): the block of transactions to write to the database.
 
         Returns:
             The block.
         """
-        logger.info('Write new block %s with %s transactions',
-                    block['id'],
-                    len(block['block']['transactions']))
+        logger.info('Write new block {} with {} transactions'.format(block.id,
+                    len(block.transactions)))
         self.bigchain.write_block(block)
         return block
 
@@ -158,7 +151,7 @@ def create_pipeline():
     """Create and return the pipeline of operations to be distributed
     on different processes."""
 
-    block = Block()
+    block = BlockPipeline()
 
     block_pipeline = Pipeline([
         Node(block.filter_tx),
@@ -173,7 +166,6 @@ def create_pipeline():
 
 def start():
     """Create, start, and return the block pipeline."""
-
     pipeline = create_pipeline()
     pipeline.setup(indata=get_changefeed())
     pipeline.start()

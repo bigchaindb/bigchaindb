@@ -7,13 +7,15 @@ from time import time
 from itertools import compress
 from bigchaindb_common import crypto, exceptions
 from bigchaindb_common.util import gen_timestamp, serialize
-from bigchaindb_common.transaction import Transaction, TransactionLink
+from bigchaindb_common.transaction import TransactionLink
 
 import rethinkdb as r
 
 import bigchaindb
 from bigchaindb.db.utils import Connection
 from bigchaindb import config_utils, util
+from bigchaindb.consensus import BaseConsensusRules
+from bigchaindb.models import Block, Transaction
 
 
 class Bigchain(object):
@@ -173,7 +175,7 @@ class Bigchain(object):
         """Validate a transaction.
 
         Args:
-            transaction (dict): transaction to validate.
+            transaction (Transaction): transaction to validate.
 
         Returns:
             The transaction if the transaction is valid else it raises an
@@ -183,22 +185,21 @@ class Bigchain(object):
         return self.consensus.validate_transaction(self, transaction)
 
     def is_valid_transaction(self, transaction):
-        # TODO: Update this comment
-        """Check whether a transacion is valid or invalid.
+        """Check whether a transaction is valid or invalid.
 
         Similar to `validate_transaction` but never raises an exception.
         It returns `False` if the transaction is invalid.
 
         Args:
-            transaction (dict): transaction to check.
+            transaction (Transaction): transaction to check.
 
         Returns:
-            `transaction` if the transaction is valid, `False` otherwise
+            `transaction` (Transaction) if the transaction is valid, otherwise
+            `False`
         """
 
         try:
-            self.validate_transaction(transaction)
-            return transaction
+            return self.validate_transaction(transaction)
         except (ValueError, exceptions.OperationError, exceptions.TransactionDoesNotExist,
                 exceptions.TransactionOwnerError, exceptions.DoubleSpend,
                 exceptions.InvalidHash, exceptions.InvalidSignature):
@@ -310,13 +311,12 @@ class Bigchain(object):
 
         # First, get information on all blocks which contain this transaction
         blocks = self.search_block_election_on_index(txid, 'transaction_id')
-
         if blocks:
             # Determine the election status of each block
             validity = {}
             for block in blocks:
                 validity[block['id']] = self.block_election_status(block['id'],
-                                                                   block['voters'])
+                                                                   block['block']['voters'])
 
             # If there are multiple valid blocks with this transaction, something has gone wrong
             if list(validity.values()).count(Bigchain.BLOCK_VALID) > 1:
@@ -449,41 +449,28 @@ class Bigchain(object):
 
         return owned
 
+    # TODO: Place this under `Block.create`
     def create_block(self, validated_transactions):
         """Creates a block given a list of `validated_transactions`.
 
-        Note that this method does not validate the transactions. Transactions should be validated before
-        calling create_block.
+        Note that this method does not validate the transactions. Transactions
+        should be validated before calling create_block.
 
         Args:
-            validated_transactions (list): list of validated transactions.
+            validated_transactions (list(Transaction)): list of validated
+                                                        transactions.
 
         Returns:
-            dict: created block.
+            Block: created block.
         """
-
         # Prevent the creation of empty blocks
         if len(validated_transactions) == 0:
-            raise exceptions.OperationError('Empty block creation is not allowed')
+            raise exceptions.OperationError('Empty block creation is not '
+                                            'allowed')
 
-        # Create the new block
-        block = {
-            'timestamp': gen_timestamp(),
-            'transactions': validated_transactions,
-            'node_pubkey': self.me,
-            'voters': self.nodes_except_me + [self.me]
-        }
-
-        # Calculate the hash of the new block
-        block_data = util.serialize_block(block)
-        block_hash = crypto.hash_data(block_data)
-        block_signature = crypto.SigningKey(self.me_private).sign(block_data)
-
-        block = {
-            'id': block_hash,
-            'block': block,
-            'signature': block_signature,
-        }
+        voters = self.nodes_except_me + [self.me]
+        block = Block(validated_transactions, self.me, gen_timestamp(), voters)
+        block = block.sign(self.me_private)
 
         return block
 
@@ -492,27 +479,13 @@ class Bigchain(object):
         """Validate a block.
 
         Args:
-            block (dict): block to validate.
+            block (Block): block to validate.
 
         Returns:
             The block if the block is valid else it raises and exception
             describing the reason why the block is invalid.
         """
-        # First, make sure this node hasn't already voted on this block
-        if self.has_previous_vote(block['id'], block['voters']):
-            return block
-
-        # Run the plugin block validation logic
-        self.consensus.validate_block(self, block)
-
-        # Finally: Tentative assumption that every blockchain will want to
-        # validate all transactions in each block
-        for transaction in block['block']['transactions']:
-            # NOTE: If a transaction is not valid, `is_valid` will throw an
-            #       an exception and block validation will be canceled.
-            self.consensus.validate_transaction(self, transaction)
-
-        return block
+        return self.consensus.validate_block(self, block)
 
     def has_previous_vote(self, block_id, voters):
         """Check for previous votes from this node
@@ -547,29 +520,11 @@ class Bigchain(object):
 
         return has_previous_vote
 
-    def is_valid_block(self, block):
-        """Check whether a block is valid or invalid.
-
-        Similar to `validate_block` but does not raise an exception if the block is invalid.
-
-        Args:
-            block (dict): block to check.
-
-        Returns:
-            bool: `True` if the block is valid, `False` otherwise.
-        """
-
-        try:
-            self.validate_block(block)
-            return True
-        except Exception:
-            return False
-
     def write_block(self, block, durability='soft'):
         """Write a block to bigchain.
 
         Args:
-            block (dict): block to write to bigchain.
+            block (Block): block to write to bigchain.
         """
 
         block_serialized = rapidjson.dumps(block)
@@ -719,7 +674,11 @@ class Bigchain(object):
         return res
 
     def get_unvoted_blocks(self):
-        """Return all the blocks that have not been voted on by this node."""
+        """Return all the blocks that have not been voted on by this node.
+
+        Returns:
+            block (list(dict)): a list of unvoted blocks
+        """
 
         unvoted = self.connection.run(
                 r.table('bigchain', read_mode=self.read_mode)
@@ -731,7 +690,6 @@ class Bigchain(object):
         # FIXME: I (@vrde) don't like this solution. Filtering should be done at a
         #        database level. Solving issue #444 can help untangling the situation
         unvoted_blocks = filter(lambda block: not util.is_genesis_block(block), unvoted_blocks)
-        unvoted_blocks = [util.deserialize_block(block) for block in unvoted_blocks]
         return unvoted_blocks
 
     def block_election_status(self, block_id, voters):
