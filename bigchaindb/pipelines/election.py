@@ -10,8 +10,7 @@ import rethinkdb as r
 from multipipes import Pipeline, Node
 
 from bigchaindb.pipelines.utils import ChangeFeed
-# TODO: replace with block model
-from bigchaindb.util import deserialize_block
+from bigchaindb.models import Block
 from bigchaindb import Bigchain
 
 
@@ -30,19 +29,19 @@ class Election:
         next_block = r.table('bigchain')\
             .get(next_vote['vote']['voting_for_block'])\
             .run(self.bigchain.conn)
-        election_status = self.bigchaindb.block_election_status(next_block['id'],
-                                                                next_block['voters'])
-        if election_status == self.bigchain.BLOCK_INVALID:
-            return deserialize_block(next_block)
+        block_status = self.bigchain.block_election_status(next_block['id'],
+                                                           next_block['block']['voters'])
+        if block_status == self.bigchain.BLOCK_INVALID:
+            return Block.from_dict(next_block)
 
     def requeue_transactions(self, invalid_block):
         """
         Liquidates transactions from invalid blocks so they can be processed again
         """
         logger.info('Rewriting %s transactions from invalid block %s',
-                    len(invalid_block['block']['transactions']),
-                    invalid_block['id'])
-        for tx in invalid_block['block']['transactions']:
+                    len(invalid_block.transactions),
+                    invalid_block.id)
+        for tx in invalid_block.transactions:
             self.bigchain.write_transaction(tx)
         return invalid_block
 

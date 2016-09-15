@@ -59,4 +59,3 @@ class ChangeFeed(Node):
                 self.outqueue.put(change['old_val'])
             elif is_update and (self.operation & ChangeFeed.UPDATE):
                 self.outqueue.put(change)
-

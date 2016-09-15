@@ -84,4 +84,3 @@ def create_transaction():
             bigchain.write_transaction(tx)
 
     return flask.jsonify(**tx)
-

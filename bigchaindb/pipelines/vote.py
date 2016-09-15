@@ -9,9 +9,9 @@ from collections import Counter
 
 from multipipes import Pipeline, Node
 from bigchaindb_common import exceptions
-from bigchaindb_common.transaction import Transaction
 
 from bigchaindb.consensus import BaseConsensusRules
+from bigchaindb.models import Transaction, Block
 from bigchaindb.pipelines.utils import ChangeFeed
 from bigchaindb import Bigchain
 
@@ -29,13 +29,12 @@ class Vote:
         # Since cannot share a connection to RethinkDB using multiprocessing,
         # we need to create a temporary instance of BigchainDB that we use
         # only to query RethinkDB
-        last_voted = Bigchain().get_last_voted_block()
         self.consensus = BaseConsensusRules
 
         # This is the Bigchain instance that will be "shared" (aka: copied)
         # by all the subprocesses
         self.bigchain = Bigchain()
-        self.last_voted_id = last_voted['id']
+        self.last_voted_id = Bigchain().get_last_voted_block().id
 
         self.counters = Counter()
         self.validity = {}
@@ -44,21 +43,36 @@ class Vote:
                                                    [self.bigchain.me])
 
     def validate_block(self, block):
-        if not self.bigchain.has_previous_vote(block['id'], block['voters']):
+        if not self.bigchain.has_previous_vote(block['id'], block['block']['voters']):
+            try:
+                block = Block.from_dict(block)
+            except (exceptions.InvalidHash, exceptions.InvalidSignature):
+                # XXX: if a block is invalid we should skip the `validate_tx`
+                # step, but since we are in a pipeline we cannot just jump to
+                # another function. Hackish solution: generate an invalid
+                # transaction and propagate it to the next steps of the
+                # pipeline.
+                return block['id'], [self.invalid_dummy_tx]
             try:
                 self.consensus.validate_block(self.bigchain, block)
-                valid = True
             except (exceptions.InvalidHash,
                     exceptions.OperationError,
                     exceptions.InvalidSignature):
-                valid = False
-            return block, valid
+                # XXX: if a block is invalid we should skip the `validate_tx`
+                # step, but since we are in a pipeline we cannot just jump to
+                # another function. Hackish solution: generate an invalid
+                # transaction and propagate it to the next steps of the
+                # pipeline.
+                return block.id, [self.invalid_dummy_tx]
+            return block.id, block.transactions
 
-    def ungroup(self, block, valid):
+    def ungroup(self, block_id, transactions):
         """Given a block, ungroup the transactions in it.
 
         Args:
-            block (dict): the block to process
+            block_id (str): the id of the block in progress.
+            transactions (list(Transaction)): transactions of the block in
+                progress.
 
         Returns:
             ``None`` if the block has been already voted, an iterator that
@@ -66,16 +80,9 @@ class Vote:
             transactions contained in the block otherwise.
         """
 
-        # XXX: if a block is invalid we should skip the `validate_tx` step,
-        # but since we are in a pipeline we cannot just jump to another
-        # function. Hackish solution: generate an invalid transaction
-        # and propagate it to the next steps of the pipeline
-        if valid:
-            num_tx = len(block['block']['transactions'])
-            for tx in block['block']['transactions']:
-                yield tx, block['id'], num_tx
-        else:
-            yield self.invalid_dummy_tx, block['id'], 1
+        num_tx = len(transactions)
+        for tx in transactions:
+            yield tx, block_id, num_tx
 
     def validate_tx(self, tx, block_id, num_tx):
         """Validate a transaction.

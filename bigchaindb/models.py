@@ -1,8 +1,70 @@
+from functools import reduce
+from operator import and_
+
 from bigchaindb_common.crypto import hash_data, VerifyingKey, SigningKey
 from bigchaindb_common.exceptions import (InvalidHash, InvalidSignature,
-                                          OperationError)
+                                          OperationError, DoubleSpend,
+                                          TransactionDoesNotExist)
 from bigchaindb_common.transaction import Transaction
 from bigchaindb_common.util import gen_timestamp, serialize
+
+
+class Transaction(Transaction):
+    def validate(self, bigchain):
+        """Validate a transaction.
+
+        Args:
+            bigchain (Bigchain): an instantiated bigchaindb.Bigchain object.
+
+        Returns:
+            The transaction (Transaction) if the transaction is valid else it
+            raises an exception describing the reason why the transaction is
+            invalid.
+
+        Raises:
+            OperationError: if the transaction operation is not supported
+            TransactionDoesNotExist: if the input of the transaction is not found
+            TransactionOwnerError: if the new transaction is using an input it doesn't own
+            DoubleSpend: if the transaction is a double spend
+            InvalidHash: if the hash of the transaction is wrong
+            InvalidSignature: if the signature of the transaction is wrong
+        """
+        input_conditions = []
+        inputs_defined = reduce(and_, [bool(ffill.tx_input) for ffill
+                                       in self.fulfillments])
+        if self.operation in (Transaction.CREATE, Transaction.GENESIS):
+            if inputs_defined:
+                raise ValueError('A CREATE operation has no inputs')
+        elif self.operation == Transaction.TRANSFER:
+
+            if len(self.fulfillments) == 0:
+                raise ValueError('Transaction contains no fulfillments')
+
+            if not inputs_defined:
+                raise ValueError('Only `CREATE` transactions can have null inputs')
+
+            for ffill in self.fulfillments:
+                input_txid = ffill.tx_input.txid
+                input_cid = ffill.tx_input.cid
+                input_tx = bigchain.get_transaction(input_txid)
+                if input_tx is None:
+                    raise TransactionDoesNotExist("input `{}` doesn't exist"
+                                                  .format(input_txid))
+                else:
+                    input_conditions.append(input_tx.conditions[input_cid])
+
+                spent = bigchain.get_spent(input_txid, ffill.tx_input.cid)
+                if spent and spent.id != self.id:
+                    raise DoubleSpend('input `{}` was already spent'
+                                      .format(input_txid))
+        else:
+            raise TypeError('`operation` must be either `TRANSFER`, `CREATE` '
+                            'or `GENESIS`')
+
+        if not self.fulfillments_valid(input_conditions):
+            raise InvalidSignature()
+        else:
+            return self
 
 
 class Block(object):
@@ -37,12 +99,59 @@ class Block(object):
             return False
         return self.to_dict() == other
 
+    def validate(self, bigchain):
+        """Validate a block.
+
+        Args:
+            bigchain (Bigchain): an instantiated bigchaindb.Bigchain object.
+
+        Returns:
+            block (Block): The block as a `Block` object if it is valid.
+                           Else it raises an appropriate exception describing
+                           the reason of invalidity.
+
+        Raises:
+            OperationError: if a non-federation node signed the block.
+        """
+
+        # First, make sure this node hasn't already voted on this block
+        if bigchain.has_previous_vote(self.id, self.voters):
+            return self
+
+        # Check if the block was created by a federation node
+        possible_voters = (bigchain.nodes_except_me + [bigchain.me])
+        if self.node_pubkey not in possible_voters:
+            raise OperationError('Only federation nodes can create blocks')
+
+        if not self.is_signature_valid():
+            raise InvalidSignature('Block signature invalid')
+
+        # Finally: Tentative assumption that every blockchain will want to
+        # validate all transactions in each block
+        for tx in self.transactions:
+            # NOTE: If a transaction is not valid, `is_valid` will throw an
+            #       an exception and block validation will be canceled.
+            bigchain.validate_transaction(tx)
+
+        return self
+
     def sign(self, private_key):
         block_body = self.to_dict()
         block_serialized = serialize(block_body['block'])
         private_key = SigningKey(private_key)
         self.signature = private_key.sign(block_serialized)
         return self
+
+    def is_signature_valid(self):
+        block = self.to_dict()['block']
+        block_serialized = serialize(block)
+        verifying_key = VerifyingKey(block['node_pubkey'])
+        try:
+            return verifying_key.verify(block_serialized, self.signature)
+        # TODO FOR CC: Shouldn't throw `AttributeError` or `ValueError` but
+        #              simply return `False`.
+        except (ValueError, AttributeError):
+            return False
 
     @classmethod
     def from_dict(cls, block_body):
@@ -76,6 +185,10 @@ class Block(object):
         return cls(transactions, block['node_pubkey'],
                    block['timestamp'], block['voters'], signature)
 
+    @property
+    def id(self):
+        return self.to_dict()['id']
+
     def to_dict(self):
         if len(self.transactions) == 0:
             raise OperationError('Empty block creation is not allowed')
@@ -94,3 +207,6 @@ class Block(object):
             'block': block,
             'signature': self.signature,
         }
+
+    def to_str(self):
+        return serialize(self.to_dict())

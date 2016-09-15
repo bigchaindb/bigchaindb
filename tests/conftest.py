@@ -71,7 +71,7 @@ def b(request, node_config):
 
 @pytest.fixture
 def create_tx(b, user_vk):
-    from bigchaindb_common.transaction import Transaction
+    from bigchaindb.models import Transaction
     return Transaction.create([b.me], [user_vk])
 
 

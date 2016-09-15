@@ -3,13 +3,10 @@ import pytest
 
 class TestBaseConsensusRules(object):
 
-    def test_validate_transaction(self):
+    def test_validate_transaction(b, self):
         from bigchaindb.consensus import BaseConsensusRules
-        transaction = {
-            'transaction': {
-                'operation': None,
-                'fulfillments': None,
-            },
-        }
+        from bigchaindb.models import Transaction
+
+        transaction = Transaction.create([b.me], [b.me])
         with pytest.raises(ValueError):
             BaseConsensusRules.validate_transaction(None, transaction)
