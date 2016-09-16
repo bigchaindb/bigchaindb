@@ -221,13 +221,17 @@ class Bigchain(object):
                 validity[block['id']] = self.block_election_status(block['id'],
                                                                    block['block']['voters'])
 
-            # If there are multiple valid blocks with this transaction, something has gone wrong
+            # NOTE: If there are multiple valid blocks with this transaction,
+            #       something has gone wrong
             if list(validity.values()).count(Bigchain.BLOCK_VALID) > 1:
                 block_ids = str([block for block in validity
                                  if validity[block] == Bigchain.BLOCK_VALID])
                 # TODO: Make this a case-specific Error
-                raise Exception('Transaction {tx} is present in multiple valid blocks: {block_ids}'
-                                .format(tx=txid, block_ids=block_ids))
+                raise exceptions.DoubleSpend('Transaction {tx} is present in '
+                                             'multiple valid blocks: '
+                                             '{block_ids}'
+                                             .format(tx=txid,
+                                                     block_ids=block_ids))
 
             return validity
 
