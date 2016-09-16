@@ -94,22 +94,6 @@ def pool(builder, size, timeout=None):
     return pooled
 
 
-def create_and_sign_tx(private_key, owner_before, owner_after, tx_input, operation='TRANSFER', payload=None):
-    tx = create_tx(owner_before, owner_after, tx_input, operation, payload)
-    return sign_tx(tx, private_key)
-
-
-def check_hash_and_signature(transaction):
-    # Check hash of the transaction
-    calculated_hash = get_hash_data(transaction)
-    if calculated_hash != transaction['id']:
-        raise exceptions.InvalidHash()
-
-    # Check signature
-    if not validate_fulfillments(transaction):
-        raise exceptions.InvalidSignature()
-
-
 # TODO: Rename this function, it's handling fulfillments not conditions
 def condition_details_has_owner(condition_details, owner):
     """
@@ -178,6 +162,7 @@ def is_genesis_block(block):
 
     # we cannot have empty blocks, there will always be at least one
     # element in the list so we can safely refer to it
+    # TODO: Remove this try-except and only handle `Block` as input
     try:
         return block.transactions[0].operation == 'GENESIS'
     except AttributeError:

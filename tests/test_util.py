@@ -3,8 +3,6 @@ from unittest.mock import patch, call
 
 import pytest
 
-from cryptoconditions import ThresholdSha256Fulfillment
-
 
 @pytest.fixture
 def mock_queue(monkeypatch):
