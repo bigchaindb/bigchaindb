@@ -21,5 +21,4 @@ class BaseConsensusRules():
 
         Refer to the documentation of ``bigchaindb.util.verify_signature``
         """
-
         return verify_vote_signature(voters, signed_vote)

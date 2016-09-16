@@ -83,19 +83,6 @@ class Bigchain(object):
     def reconnect(self):
         return r.connect(host=self.host, port=self.port, db=self.dbname)
 
-    def validate_fulfillments(self, signed_transaction, *args, **kwargs):
-        """Validate the fulfillment(s) of a transaction.
-
-        Refer to the documentation of your consensus plugin.
-
-        Returns:
-            bool: True if the transaction's required fulfillments are present
-                and correct, False otherwise.
-        """
-
-        return self.consensus.validate_fulfillments(
-            signed_transaction, *args, **kwargs)
-
     def write_transaction(self, signed_transaction, durability='soft'):
         """Write the transaction to bigchain.
 
@@ -103,12 +90,11 @@ class Bigchain(object):
         it has been validated by the nodes of the federation.
 
         Args:
-            signed_transaction (dict): transaction with the `signature` included.
+            signed_transaction (Transaction): transaction with the `signature` included.
 
         Returns:
             dict: database response
         """
-        # TODO: Maybe put this somewhere different
         signed_transaction = signed_transaction.to_dict()
 
         # we will assign this transaction to `one` node. This way we make sure that there are no duplicate
@@ -171,7 +157,6 @@ class Bigchain(object):
                     self.backlog_reassign_delay).run(self.conn)
 
     def validate_transaction(self, transaction):
-        # TODO: Update this comment
         """Validate a transaction.
 
         Args:
@@ -286,7 +271,7 @@ class Bigchain(object):
             index (str): name of a secondary index, e.g. 'transaction_id'
 
         Returns:
-            A list of blocks with with only election information
+            A list of blocks (list(dict))with with only election information
         """
         # First, get information on all blocks which contain this transaction
         response = self.connection.run(
@@ -364,10 +349,12 @@ class Bigchain(object):
         given `txid` is only used once.
 
         Args:
-            tx_input (dict): Input of a transaction in the form `{'txid': 'transaction id', 'cid': 'condition id'}`
+            txid (str): The id of the transaction
+            cid (num): the index of the condition in the respective transaction
 
         Returns:
-            The transaction that used the `txid` as an input else `None`
+            The transaction (Transaction) that used the `txid` as an input else
+            `None`
         """
         # checks if an input was already spent
         # checks if the bigchain has any transaction with input {'txid': ..., 'cid': ...}
@@ -492,7 +479,7 @@ class Bigchain(object):
 
         Args:
             block_id (str): the id of the block to check
-            voters (list): the voters of the block to check
+            voters (list(str)): the voters of the block to check
 
         Returns:
             bool: :const:`True` if this block already has a
