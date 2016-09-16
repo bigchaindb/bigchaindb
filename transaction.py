@@ -3,26 +3,15 @@ from functools import reduce
 from operator import and_
 from uuid import uuid4
 
-from cryptoconditions import (
-    Fulfillment as CCFulfillment,
-    ThresholdSha256Fulfillment,
-    Ed25519Fulfillment,
-    PreimageSha256Fulfillment,
-)
+from cryptoconditions import (Fulfillment as CCFulfillment,
+                              ThresholdSha256Fulfillment, Ed25519Fulfillment,
+                              PreimageSha256Fulfillment)
 from cryptoconditions.exceptions import ParsingError
 
-from bigchaindb_common.crypto import (
-    SigningKey,
-    hash_data,
-)
-from bigchaindb_common.exceptions import (
-    KeypairMismatchException,
-    InvalidHash,
-)
-from bigchaindb_common.util import (
-    serialize,
-    gen_timestamp,
-)
+from bigchaindb_common.crypto import SigningKey, hash_data
+from bigchaindb_common.exceptions import (KeypairMismatchException,
+                                          InvalidHash, InvalidSignature)
+from bigchaindb_common.util import serialize, gen_timestamp
 
 
 class Fulfillment(object):
@@ -77,6 +66,9 @@ class Fulfillment(object):
         """
         try:
             fulfillment = CCFulfillment.from_uri(ffill['fulfillment'])
+        except ValueError:
+            # TODO FOR CC: Throw an `InvalidSignature` error in this case.
+            raise InvalidSignature("Fulfillment URI could'nt been parsed")
         except TypeError:
             # NOTE: See comment about this special case in
             #       `Fulfillment.to_dict`
