@@ -27,6 +27,153 @@ def dummy_block():
 
 
 class TestBigchainApi(object):
+    def test_get_last_voted_block_cyclic_blockchain(self, b, monkeypatch):
+        from bigchaindb_common.crypto import SigningKey
+        from bigchaindb_common.exceptions import CyclicBlockchainError
+        from bigchaindb_common.util import serialize
+        from bigchaindb.models import Transaction
+
+        b.create_genesis_block()
+
+        tx = Transaction.create([b.me], [b.me])
+        tx = tx.sign([b.me_private])
+        monkeypatch.setattr('time.time', lambda: 1)
+        block1 = b.create_block([tx])
+        b.write_block(block1, durability='hard')
+
+        # Manipulate vote to create a cyclic Blockchain
+        vote = b.vote(block1.id, b.get_last_voted_block().id, True)
+        vote['vote']['previous_block'] = block1.id
+        vote_data = serialize(vote['vote'])
+        vote['signature'] = SigningKey(b.me_private).sign(vote_data)
+        b.write_vote(vote)
+
+        with pytest.raises(CyclicBlockchainError):
+            b.get_last_voted_block()
+
+    def test_try_voting_while_constructing_cyclic_blockchain(self, b,
+                                                             monkeypatch):
+        from bigchaindb_common.exceptions import CyclicBlockchainError
+        from bigchaindb.models import Transaction
+
+        b.create_genesis_block()
+
+        tx = Transaction.create([b.me], [b.me])
+        tx = tx.sign([b.me_private])
+        block1 = b.create_block([tx])
+
+        # We can simply submit twice the same block id and check if `Bigchain`
+        # throws
+        with pytest.raises(CyclicBlockchainError):
+            b.vote(block1.id, block1.id, True)
+
+    def test_has_previous_vote_when_already_voted(self, b, monkeypatch):
+        from bigchaindb.models import Transaction
+
+        b.create_genesis_block()
+
+        tx = Transaction.create([b.me], [b.me])
+        tx = tx.sign([b.me_private])
+
+        monkeypatch.setattr('time.time', lambda: 1)
+        block = b.create_block([tx])
+        b.write_block(block, durability='hard')
+
+        assert b.has_previous_vote(block.id, block.voters) is False
+
+        vote = b.vote(block.id, b.get_last_voted_block().id, True)
+        b.write_vote(vote)
+
+        assert b.has_previous_vote(block.id, block.voters) is True
+
+    def test_get_spent_with_double_spend(self, b, monkeypatch):
+        from bigchaindb_common.exceptions import DoubleSpend
+        from bigchaindb.models import Transaction
+
+        b.create_genesis_block()
+
+        tx = Transaction.create([b.me], [b.me])
+        tx = tx.sign([b.me_private])
+
+        monkeypatch.setattr('time.time', lambda: 1)
+        block1 = b.create_block([tx])
+        b.write_block(block1, durability='hard')
+
+        monkeypatch.setattr('time.time', lambda: 2)
+        transfer_tx = Transaction.transfer(tx.to_inputs(), [b.me])
+        transfer_tx = transfer_tx.sign([b.me_private])
+        block2 = b.create_block([transfer_tx])
+        b.write_block(block2, durability='hard')
+
+        monkeypatch.setattr('time.time', lambda: 3)
+        transfer_tx2 = Transaction.transfer(tx.to_inputs(), [b.me])
+        transfer_tx2 = transfer_tx2.sign([b.me_private])
+        block3 = b.create_block([transfer_tx2])
+        b.write_block(block3, durability='hard')
+
+        # Vote both block2 and block3 valid to provoke a double spend
+        vote = b.vote(block2.id, b.get_last_voted_block().id, True)
+        b.write_vote(vote)
+        vote = b.vote(block3.id, b.get_last_voted_block().id, True)
+        b.write_vote(vote)
+
+        with pytest.raises(DoubleSpend):
+            b.get_spent(tx.id, 0)
+
+    def test_get_block_status_for_tx_with_double_spend(self, b, monkeypatch):
+        from bigchaindb_common.exceptions import DoubleSpend
+        from bigchaindb.models import Transaction
+
+        b.create_genesis_block()
+
+        tx = Transaction.create([b.me], [b.me])
+        tx = tx.sign([b.me_private])
+
+        monkeypatch.setattr('time.time', lambda: 1)
+        block1 = b.create_block([tx])
+        b.write_block(block1, durability='hard')
+
+        monkeypatch.setattr('time.time', lambda: 2)
+        block2 = b.create_block([tx])
+        b.write_block(block2, durability='hard')
+
+        # Vote both blocks valid (creating a double spend)
+        vote = b.vote(block1.id, b.get_last_voted_block().id, True)
+        b.write_vote(vote)
+        vote = b.vote(block2.id, b.get_last_voted_block().id, True)
+        b.write_vote(vote)
+
+        with pytest.raises(DoubleSpend):
+            b.get_blocks_status_containing_tx(tx.id)
+
+    def test_get_transaction_in_invalid_and_valid_block(self, monkeypatch, b):
+        from bigchaindb.models import Transaction
+
+        b.create_genesis_block()
+
+        monkeypatch.setattr('time.time', lambda: 1)
+        tx1 = Transaction.create([b.me], [b.me])
+        tx1 = tx1.sign([b.me_private])
+        block1 = b.create_block([tx1])
+        b.write_block(block1, durability='hard')
+
+        monkeypatch.setattr('time.time', lambda: 2)
+        tx2 = Transaction.create([b.me], [b.me])
+        tx2 = tx2.sign([b.me_private])
+        block2 = b.create_block([tx2])
+        b.write_block(block2, durability='hard')
+
+        # vote the first block invalid
+        vote = b.vote(block1.id, b.get_last_voted_block().id, False)
+        b.write_vote(vote)
+
+        # vote the second block valid
+        vote = b.vote(block2.id, b.get_last_voted_block().id, True)
+        b.write_vote(vote)
+
+        assert b.get_transaction(tx1.id) == None
+        assert b.get_transaction(tx2.id) == tx2
+
     def test_get_transactions_for_payload(self, b, user_vk):
         from bigchaindb.models import Transaction
 
