@@ -91,4 +91,3 @@ def create_server(settings):
     app = create_app(settings)
     standalone = StandaloneApplication(app, settings)
     return standalone
-
