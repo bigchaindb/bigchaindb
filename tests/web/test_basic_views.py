@@ -44,6 +44,30 @@ def test_post_create_transaction_endpoint(b, client):
     assert res.json['transaction']['conditions'][0]['owners_after'][0] == user_pub
 
 
+def test_post_create_transaction_with_invalid_id(b, client):
+    from bigchaindb.models import Transaction
+    user_priv, user_pub = crypto.generate_key_pair()
+
+    tx = Transaction.create([user_pub], [user_pub])
+    tx = tx.sign([user_priv]).to_dict()
+    tx['id'] = 'invalid id'
+
+    res = client.post(TX_ENDPOINT, data=json.dumps(tx))
+    assert res.status_code == 400
+
+
+def test_post_create_transaction_with_invalid_signature(b, client):
+    from bigchaindb.models import Transaction
+    user_priv, user_pub = crypto.generate_key_pair()
+
+    tx = Transaction.create([user_pub], [user_pub])
+    tx = tx.sign([user_priv]).to_dict()
+    tx['transaction']['fulfillments'][0]['fulfillment'] = 'invalid signature'
+
+    res = client.post(TX_ENDPOINT, data=json.dumps(tx))
+    assert res.status_code == 400
+
+
 @pytest.mark.usefixtures('inputs')
 def test_post_transfer_transaction_endpoint(b, client, user_vk, user_sk):
     sk, vk = crypto.generate_key_pair()
