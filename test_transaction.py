@@ -41,6 +41,19 @@ def test_fulfillment_deserialization_with_invalid_fulfillment(user_pub):
         Fulfillment.from_dict(ffill)
 
 
+def test_fulfillment_deserialization_with_invalid_fulfillment_uri(user_pub):
+    from bigchaindb_common.exceptions import InvalidSignature
+    from bigchaindb_common.transaction import Fulfillment
+
+    ffill = {
+        'owners_before': [user_pub],
+        'fulfillment': 'an invalid fulfillment',
+        'input': None,
+    }
+    with raises(InvalidSignature):
+        Fulfillment.from_dict(ffill)
+
+
 def test_fulfillment_deserialization_with_unsigned_fulfillment(ffill_uri,
                                                                user_pub):
     from bigchaindb_common.transaction import Fulfillment
