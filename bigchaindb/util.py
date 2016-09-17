@@ -14,6 +14,7 @@ from cryptoconditions.exceptions import ParsingError
 import bigchaindb
 from bigchaindb import exceptions
 from bigchaindb import crypto
+from bigchaindb import assets
 
 
 class ProcessGroup(object):
@@ -137,7 +138,8 @@ def timestamp():
 
 
 # TODO: Consider remove the operation (if there are no inputs CREATE else TRANSFER)
-def create_tx(owners_before, owners_after, inputs, operation, payload=None):
+def create_tx(owners_before, owners_after, inputs, operation, metadata=None, asset_data=None,
+              divisible=False, updatable=False, refillable=False, amount=1, bigchain=None):
     """Create a new transaction
 
     A transaction in the bigchain is a transfer of a digital asset between two entities represented
@@ -157,14 +159,22 @@ def create_tx(owners_before, owners_after, inputs, operation, payload=None):
         owners_after (list): base58 encoded public key of the new owners of the digital asset.
         inputs (list): id of the transaction to use as input.
         operation (str): Either `CREATE` or `TRANSFER` operation.
-        payload (Optional[dict]): dictionary with information about asset.
+        metadata (Optional[dict]): dictionary with information about asset.
+        asset_data (Optional[dict]): dictionary describing the digital asset (only used on a create transaction)
+        divisible (Optional[boolean): Whether the asset is divisible or not. Defaults to `False`.
+        updatable (Optional[boolean]): Whether the data in the asset can be updated in the future or not.
+                                       Defaults to `False`.
+        refillable (Optional[boolean]): Whether the amount of the asset can change after its creation.
+                                        Defaults to `False`.
+        amount (Optional[int]): The amount of "shares". Only relevant if the asset is marked as divisible.
+                                Defaults to `1`.
 
     Returns:
         dict: unsigned transaction.
 
 
     Raises:
-        TypeError: if the optional ``payload`` argument is not a ``dict``.
+        TypeError: if the optional optinal arguments are the wrong type.
 
     Reference:
         {
@@ -186,18 +196,22 @@ def create_tx(owners_before, owners_after, inputs, operation, payload=None):
                         {
                             "owners_after": ["list of <pub-keys>"],
                             "condition": "condition to be met",
-                            "cid": "condition index (1-to-1 mapping with fid)"
+                            "cid": "condition index (1-to-1 mapping with fid)",
+                            "amount": "<number of shares of a divisible asset>"
                         }
                     ],
                 "operation": "<string>",
                 "timestamp": "<timestamp from client>",
-                "data": {
-                    "hash": "<SHA3-256 hash hexdigest of payload>",
-                    "payload": {
-                        "title": "The Winds of Plast",
-                        "creator": "Johnathan Plunkett",
-                        "IPFS_key": "QmfQ5QAjvg4GtA3wg3adpnDJug8ktA1BxurVqBD8rtgVjP"
-                    }
+                "asset": {
+                    "id": "<uuid>",
+                    "divisible": "<true | false>",
+                    "updatable": "<true | false>",
+                    "refillable": "<true | false>",
+                    "data": "<json document>"
+                },
+                "metadata": {
+                    "id": "<uuid>",
+                    "data": "<json document">
                 }
             },
         }
@@ -216,23 +230,37 @@ def create_tx(owners_before, owners_after, inputs, operation, payload=None):
     if not isinstance(owners_after, list):
         owners_after = [owners_after]
 
-    if not isinstance(inputs, list):
+    if inputs is not None and not isinstance(inputs, list):
         inputs = [inputs]
 
-    # handle payload
-    if payload is not None and not isinstance(payload, dict):
-        raise TypeError('`payload` must be an dict instance or None')
+    # handle metadata
+    if metadata is not None and not isinstance(metadata, dict):
+        raise TypeError('`metadata` must be a dict instance or None')
 
-    data = {
-        'uuid': str(uuid.uuid4()),
-        'payload': payload
+    metadata = {
+        'id': str(uuid.uuid4()),
+        'data': metadata
     }
 
     # handle inputs
     fulfillments = []
 
+    # handle asset
+    asset = None
+
     # transfer
     if inputs:
+        # Since a transaction is specific to a digital asset we need to check if all the inputs are from the same
+        # digital asset (see https://github.com/bigchaindb/bigchaindb/issues/125#issuecomment-241020139)
+        # Here we need to get the transactions pointed by the inputs to check the asset id and the amounts if its a
+        # divisible asset . This is inefficient because we are querying past transactions multiple times
+        # (here and later on in the sign_tx)
+        # This can be improved and probably cached with @TimDaub transaction model
+        bigchain = bigchain if bigchain is not None else bigchaindb.Bigchain()
+        txids = [tx_input['txid'] for tx_input in inputs]
+        asset_id = assets.get_asset_id(txids, bigchain)
+        asset = {'id': asset_id}
+
         for fid, tx_input in enumerate(inputs):
             fulfillments.append({
                 'owners_before': owners_before,
@@ -242,6 +270,17 @@ def create_tx(owners_before, owners_after, inputs, operation, payload=None):
             })
     # create
     else:
+        # handle digital asset. Right now it is only checked on a create transaction
+        assets.validate_asset_creation(asset_data, divisible, updatable, refillable, amount)
+
+        asset = {
+            "id": str(uuid.uuid4()),
+            "divisible": divisible,
+            "updatable": updatable,
+            "refillable": refillable,
+            "data": asset_data
+        }
+
         fulfillments.append({
             'owners_before': owners_before,
             'input': None,
@@ -274,7 +313,8 @@ def create_tx(owners_before, owners_after, inputs, operation, payload=None):
                     'details': condition.to_dict(),
                     'uri': condition.condition_uri
                 },
-                'cid': fulfillment['fid']
+                'cid': fulfillment['fid'],
+                'amount': amount
             })
 
     tx = {
@@ -283,7 +323,8 @@ def create_tx(owners_before, owners_after, inputs, operation, payload=None):
         'conditions': conditions,
         'operation': operation,
         'timestamp': timestamp(),
-        'data': data
+        'asset': asset,
+        'metadata': metadata
     }
 
     # serialize and convert to bytes
@@ -413,8 +454,8 @@ def fulfill_threshold_signature_fulfillment(fulfillment, parsed_fulfillment, ful
     return parsed_fulfillment
 
 
-def create_and_sign_tx(private_key, owner_before, owner_after, tx_input, operation='TRANSFER', payload=None):
-    tx = create_tx(owner_before, owner_after, tx_input, operation, payload)
+def create_and_sign_tx(private_key, owner_before, owner_after, tx_input, operation='TRANSFER', metadata=None):
+    tx = create_tx(owner_before, owner_after, tx_input, operation, metadata)
     return sign_tx(tx, private_key)
 
 
@@ -478,7 +519,8 @@ def get_fulfillment_message(transaction, fulfillment, serialized=False):
     fulfillment_message = {
         'operation': transaction['transaction']['operation'],
         'timestamp': transaction['transaction']['timestamp'],
-        'data': transaction['transaction']['data'],
+        'metadata': transaction['transaction']['metadata'],
+        'asset': transaction['transaction']['asset'],
         'version': transaction['transaction']['version'],
         'id': transaction['id']
     }
@@ -609,10 +651,10 @@ def transform_create(tx):
     #      if you need a Bigchain instance.
     b = bigchaindb.Bigchain()
     transaction = tx['transaction']
-    payload = None
-    if transaction['data'] and 'payload' in transaction['data']:
-        payload = transaction['data']['payload']
-    new_tx = create_tx(b.me, transaction['fulfillments'][0]['owners_before'], None, 'CREATE', payload=payload)
+    metadata = None
+    if transaction['metadata'] and 'data' in transaction['metadata']:
+        metadata = transaction['metadata']['data']
+    new_tx = create_tx(b.me, transaction['fulfillments'][0]['owners_before'], None, 'CREATE', metadata=metadata)
     return new_tx
 
 

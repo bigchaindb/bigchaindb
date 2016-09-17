@@ -49,8 +49,8 @@ def setup_database(request, node_config):
     r.db(db_name).table('backlog').index_create('transaction_timestamp', r.row['transaction']['timestamp']).run()
     # to query by payload uuid
     r.db(db_name).table('bigchain').index_create(
-        'payload_uuid', 
-        r.row['block']['transactions']['transaction']['data']['uuid'], 
+        'metadata_id', 
+        r.row['block']['transactions']['transaction']['metadata']['id'], 
         multi=True,
     ).run()
     # compound index to read transactions from the backlog per assignee
@@ -60,6 +60,11 @@ def setup_database(request, node_config):
     # compound index to order votes by block id and node
     r.db(db_name).table('votes').index_create('block_and_voter',
                                              [r.row['vote']['voting_for_block'], r.row['node_pubkey']]).run()
+    # secondary index for asset uuid
+    r.db(db_name).table('bigchain')\
+                .index_create('asset_id',
+                              r.row['block']['transactions']['transaction']['asset']['id'], multi=True)\
+                .run()
     # order transactions by id
     r.db(db_name).table('bigchain').index_create('transaction_id', r.row['block']['transactions']['id'],
                                                  multi=True).run()
