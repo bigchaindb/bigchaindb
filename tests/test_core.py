@@ -15,7 +15,6 @@ def config(request, monkeypatch):
         },
         'keyring': [],
         'CONFIGURED': True,
-        'consensus_plugin': 'default',
         'backlog_reassign_delay': 30
     }
 
@@ -48,7 +47,6 @@ def test_bigchain_class_initialization_with_parameters(config):
         'public_key': 'white',
         'private_key': 'black',
         'keyring': ['key_one', 'key_two'],
-        'consensus_plugin': 'default'
     }
     bigchain = Bigchain(**init_kwargs)
     assert bigchain.host == init_kwargs['host']
