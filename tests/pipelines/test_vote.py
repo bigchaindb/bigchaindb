@@ -321,7 +321,7 @@ def test_valid_block_voting_with_transfer_transactions(monkeypatch, b):
                                             vote2_doc['signature']) is True
 
 
-def test_invalid_tx_in_block_voting(monkeypatch, b, user_vk):
+def test_unsigned_tx_in_block_voting(monkeypatch, b, user_vk):
     from bigchaindb_common import crypto, util
     from bigchaindb.models import Transaction
     from bigchaindb.pipelines import vote
@@ -335,7 +335,6 @@ def test_invalid_tx_in_block_voting(monkeypatch, b, user_vk):
     vote_pipeline.setup(indata=inpipe, outdata=outpipe)
 
     # NOTE: `tx` is invalid, because it wasn't signed.
-    # TODO: Check signature and hash in transaction validation method
     tx = Transaction.create([b.me], [b.me])
     block = b.create_block([tx])
 
@@ -349,6 +348,84 @@ def test_invalid_tx_in_block_voting(monkeypatch, b, user_vk):
     vote_doc = vote_rs.next()
     assert vote_out['vote'] == vote_doc['vote']
     assert vote_doc['vote'] == {'voting_for_block': block.id,
+                                'previous_block': genesis.id,
+                                'is_block_valid': False,
+                                'invalid_reason': None,
+                                'timestamp': '1'}
+
+    assert vote_doc['node_pubkey'] == b.me
+    assert crypto.VerifyingKey(b.me).verify(util.serialize(vote_doc['vote']),
+                                            vote_doc['signature']) is True
+
+
+def test_invalid_id_tx_in_block_voting(monkeypatch, b, user_vk):
+    from bigchaindb_common import crypto, util
+    from bigchaindb.models import Transaction
+    from bigchaindb.pipelines import vote
+
+    inpipe = Pipe()
+    outpipe = Pipe()
+
+    monkeypatch.setattr('time.time', lambda: 1)
+    genesis = b.create_genesis_block()
+    vote_pipeline = vote.create_pipeline()
+    vote_pipeline.setup(indata=inpipe, outdata=outpipe)
+
+    # NOTE: `tx` is invalid, because its id is not corresponding to its content
+    tx = Transaction.create([b.me], [b.me])
+    tx = tx.sign([b.me_private])
+    block = b.create_block([tx]).to_dict()
+    block['block']['transactions'][0]['id'] = 'an invalid tx id'
+
+    inpipe.put(block)
+    vote_pipeline.start()
+    vote_out = outpipe.get()
+    vote_pipeline.terminate()
+
+    vote_rs = r.table('votes').get_all([block['id'], b.me],
+                                       index='block_and_voter').run(b.conn)
+    vote_doc = vote_rs.next()
+    assert vote_out['vote'] == vote_doc['vote']
+    assert vote_doc['vote'] == {'voting_for_block': block['id'],
+                                'previous_block': genesis.id,
+                                'is_block_valid': False,
+                                'invalid_reason': None,
+                                'timestamp': '1'}
+
+    assert vote_doc['node_pubkey'] == b.me
+    assert crypto.VerifyingKey(b.me).verify(util.serialize(vote_doc['vote']),
+                                            vote_doc['signature']) is True
+
+
+def test_invalid_content_in_tx_in_block_voting(monkeypatch, b, user_vk):
+    from bigchaindb_common import crypto, util
+    from bigchaindb.models import Transaction
+    from bigchaindb.pipelines import vote
+
+    inpipe = Pipe()
+    outpipe = Pipe()
+
+    monkeypatch.setattr('time.time', lambda: 1)
+    genesis = b.create_genesis_block()
+    vote_pipeline = vote.create_pipeline()
+    vote_pipeline.setup(indata=inpipe, outdata=outpipe)
+
+    # NOTE: `tx` is invalid, because its content is not corresponding to its id
+    tx = Transaction.create([b.me], [b.me])
+    tx = tx.sign([b.me_private])
+    block = b.create_block([tx]).to_dict()
+    block['block']['transactions'][0]['id'] = 'an invalid tx id'
+
+    inpipe.put(block)
+    vote_pipeline.start()
+    vote_out = outpipe.get()
+    vote_pipeline.terminate()
+
+    vote_rs = r.table('votes').get_all([block['id'], b.me],
+                                       index='block_and_voter').run(b.conn)
+    vote_doc = vote_rs.next()
+    assert vote_out['vote'] == vote_doc['vote']
+    assert vote_doc['vote'] == {'voting_for_block': block['id'],
                                 'previous_block': genesis.id,
                                 'is_block_valid': False,
                                 'invalid_reason': None,

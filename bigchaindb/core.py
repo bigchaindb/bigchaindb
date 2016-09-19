@@ -308,7 +308,6 @@ class Bigchain(object):
             if list(validity.values()).count(Bigchain.BLOCK_VALID) > 1:
                 block_ids = str([block for block in validity
                                  if validity[block] == Bigchain.BLOCK_VALID])
-                # TODO: Make this a case-specific Error
                 raise exceptions.DoubleSpend('Transaction {tx} is present in '
                                              'multiple valid blocks: '
                                              '{block_ids}'
@@ -418,8 +417,8 @@ class Bigchain(object):
                 if Bigchain.BLOCK_UNDECIDED not in validity.values():
                     continue
 
-            # TODO: Figure out if serialization to the transaction class should
-            #       happen here
+            # NOTE: It's OK to not serialize the transaction here, as we do not
+            #       use it after the execution of this function.
             # a transaction can contain multiple outputs (conditions) so we need to iterate over all of them
             # to get a list of outputs available to spend
             for index, cond in enumerate(tx['transaction']['conditions']):
@@ -533,15 +532,15 @@ class Bigchain(object):
 
         payload = {'message': 'Hello World from the BigchainDB'}
         transaction = Transaction.create([self.me], [self.me], payload=payload)
-        # TODO for BDBC: Introduce a new proxy method for `.create`
+
+        # NOTE: The transaction model doesn't expose an API to generate a
+        #       GENESIS transaction, as this is literally the only usage.
         transaction.operation = 'GENESIS'
         transaction = transaction.sign([self.me_private])
 
         # create the block
         return self.create_block([transaction])
 
-    # TODO: Unless we prescribe the signature of create_transaction, this will
-    #       also need to be moved into the plugin API.
     def create_genesis_block(self):
         """Create the genesis block
 
