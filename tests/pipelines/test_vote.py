@@ -89,6 +89,34 @@ def test_vote_validate_block(b):
         assert tx1 == tx2
 
 
+def test_validate_block_with_invalid_id(b):
+    from bigchaindb.pipelines import vote
+
+    b.create_genesis_block()
+    tx = dummy_tx(b)
+    block = b.create_block([tx]).to_dict()
+    block['id'] = 'an invalid id'
+
+    vote_obj = vote.Vote()
+    block_id, invalid_dummy_tx = vote_obj.validate_block(block)
+    assert block_id == block['id']
+    assert invalid_dummy_tx == [vote_obj.invalid_dummy_tx]
+
+
+def test_validate_block_with_invalid_signature(b):
+    from bigchaindb.pipelines import vote
+
+    b.create_genesis_block()
+    tx = dummy_tx(b)
+    block = b.create_block([tx]).to_dict()
+    block['signature'] = 'an invalid signature'
+
+    vote_obj = vote.Vote()
+    block_id, invalid_dummy_tx = vote_obj.validate_block(block)
+    assert block_id == block['id']
+    assert invalid_dummy_tx == [vote_obj.invalid_dummy_tx]
+
+
 def test_vote_validate_transaction(b):
     from bigchaindb.pipelines import vote
     from bigchaindb.models import Transaction
