@@ -57,6 +57,7 @@ def mock_bigchaindb_backup_config(monkeypatch):
         'keypair': {},
         'database': {'host': 'host', 'port': 12345, 'name': 'adbname'},
         'statsd': {'host': 'host', 'port': 12345, 'rate': 0.1},
+        'backlog_reassign_delay': 5
     }
     monkeypatch.setattr('bigchaindb._config', config)
 

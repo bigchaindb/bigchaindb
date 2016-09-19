@@ -132,6 +132,7 @@ class TestBigchainApi(object):
 
         response, status = b.get_transaction(tx_signed["id"], include_status=True)
         response.pop('assignee')
+        response.pop('assignment_timestamp')
         # add validity information, which will be returned
         assert util.serialize(tx_signed) == util.serialize(response)
         assert status == b.TX_IN_BACKLOG
