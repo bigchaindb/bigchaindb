@@ -29,6 +29,9 @@ class Transaction(Transaction):
             InvalidHash: if the hash of the transaction is wrong
             InvalidSignature: if the signature of the transaction is wrong
         """
+        if len(self.fulfillments) == 0:
+            raise ValueError('Transaction contains no fulfillments')
+
         input_conditions = []
         inputs_defined = reduce(and_, [bool(ffill.tx_input) for ffill
                                        in self.fulfillments])
@@ -36,10 +39,6 @@ class Transaction(Transaction):
             if inputs_defined:
                 raise ValueError('A CREATE operation has no inputs')
         elif self.operation == Transaction.TRANSFER:
-
-            if len(self.fulfillments) == 0:
-                raise ValueError('Transaction contains no fulfillments')
-
             if not inputs_defined:
                 raise ValueError('Only `CREATE` transactions can have null inputs')
 

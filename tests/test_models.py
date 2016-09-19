@@ -1,6 +1,22 @@
 from pytest import raises
 
 
+class TestTransactionModel(object):
+    def test_validating_an_invalid_transaction(self, b):
+        from bigchaindb.models import Transaction
+
+        tx = Transaction.create([b.me], [b.me])
+        tx.operation = 'something invalid'
+
+        with raises(TypeError):
+            tx.validate(b)
+
+        tx.operation = 'CREATE'
+        tx.fulfillments = []
+        with raises(ValueError):
+            tx.validate(b)
+
+
 class TestBlockModel(object):
     def test_block_initialization(self, monkeypatch):
         from bigchaindb.models import Block
@@ -147,3 +163,16 @@ class TestBlockModel(object):
 
         verifying_key = VerifyingKey(b.me)
         assert verifying_key.verify(expected_block_serialized, block.signature)
+
+    def test_validate_already_voted_on_block(self, b, monkeypatch):
+        from unittest.mock import Mock
+        from bigchaindb.models import Transaction
+
+        tx = Transaction.create([b.me], [b.me])
+        block = b.create_block([tx])
+
+        has_previous_vote = Mock()
+        has_previous_vote.return_value = True
+        monkeypatch.setattr(b, 'has_previous_vote', has_previous_vote)
+        assert block == block.validate(b)
+        assert has_previous_vote.called is True
