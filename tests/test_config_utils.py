@@ -149,7 +149,6 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch):
             'rate': 0.01,
         },
         'api_endpoint': 'http://localhost:9984/api/v1',
-        'consensus_plugin': 'default',
     }
 
 

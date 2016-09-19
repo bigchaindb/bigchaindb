@@ -30,7 +30,6 @@ config = {
         'rate': 0.01,
     },
     'api_endpoint': 'http://localhost:9984/api/v1',
-    'consensus_plugin': 'default',
 }
 
 # We need to maintain a backup copy of the original config dict in case

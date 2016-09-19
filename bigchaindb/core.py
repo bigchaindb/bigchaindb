@@ -26,8 +26,7 @@ class Bigchain(object):
     BLOCK_UNDECIDED = 'undecided'
 
     def __init__(self, host=None, port=None, dbname=None,
-                 public_key=None, private_key=None, keyring=[],
-                 consensus_plugin=None):
+                 public_key=None, private_key=None, keyring=[]):
         """Initialize the Bigchain instance
 
         A Bigchain instance has several configuration parameters (e.g. host).
