@@ -358,7 +358,6 @@ class Bigchain(object):
 
         return owned
 
-    # TODO: Place this under `Block.create`
     def create_block(self, validated_transactions):
         """Creates a block given a list of `validated_transactions`.
 
