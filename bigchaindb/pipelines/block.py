@@ -81,7 +81,7 @@ class Block:
             r.table('backlog').get(tx['id']) \
                     .delete(durability='hard') \
                     .run(self.bigchain.conn)
-            return None 
+            return None
 
     def create(self, tx, timeout=False):
         """Create a block.
@@ -144,12 +144,14 @@ def initial():
 
     b = Bigchain()
 
-    rs = r.table('backlog')\
-          .between([b.me, r.minval],
-                   [b.me, r.maxval],
-                   index='assignee__transaction_timestamp')\
-          .order_by(index=r.asc('assignee__transaction_timestamp'))\
-          .run(b.conn)
+    rs = b.connection.run(
+            r.table('backlog')
+            .between(
+                [b.me, r.minval],
+                [b.me, r.maxval],
+                index='assignee__transaction_timestamp')
+            .order_by(index=r.asc('assignee__transaction_timestamp')))
+
     return rs
 
 

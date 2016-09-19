@@ -18,6 +18,11 @@ def start_rethinkdb():
     """Start RethinkDB as a child process and wait for it to be
     available.
 
+    Args:
+        wait_for_db (bool): wait for the database to be ready
+        extra_opts (list): a list of extra options to be used when
+            starting the db
+
     Raises:
         ``bigchaindb.exceptions.StartupError`` if RethinkDB cannot
         be started.
@@ -33,11 +38,11 @@ def start_rethinkdb():
 
     for line in proc.stdout:
         if line.startswith('Server ready'):
+
             # FIXME: seems like tables are not ready when the server is ready,
             #        that's why we need to query RethinkDB to know the state
             #        of the database. This code assumes the tables are ready
             #        when the database is ready. This seems a valid assumption.
-
             try:
                 conn = db.get_conn()
                 # Before checking if the db is ready, we need to query
@@ -47,7 +52,6 @@ def start_rethinkdb():
             except (r.ReqlOpFailedError, r.ReqlDriverError) as exc:
                 raise StartupError('Error waiting for the database `{}` '
                                    'to be ready'.format(dbname)) from exc
-
             return proc
 
     # We are here when we exhaust the stdout of the process.
