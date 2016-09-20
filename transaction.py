@@ -152,9 +152,37 @@ class Condition(object):
 
     @classmethod
     def generate(cls, owners_after):
+        """Generates conditions from a specifically formed tuple or list.
+
+            If a ThresholdCondition has to be generated where the threshold is
+            always the number of subconditions it is split between, a list of
+            the following structure is sufficient:
+
+            [(address|condition)*, [(address|condition)*, ...], ...]
+
+            If however, the thresholds of individual threshold conditions to be
+            created have to be set specifically, a tuple of the following
+            structure is necessary:
+
+            ([(address|condition)*,
+              ([(address|condition)*, ...], subthreshold),
+              ...], threshold)
+
+            Args:
+                owners_after (list|tuple): The users that should be able to
+                                           fulfill the condition that is being
+                                           created.
+            Returns:
+                A `Condition` that can be used in a `Transaction`.
+
+        """
+        if isinstance(owners_after, tuple):
+            owners_after, threshold = owners_after
+        else:
+            threshold = len(owners_after)
+
         if not isinstance(owners_after, list):
             raise TypeError('`owners_after` must be an instance of list')
-
         if len(owners_after) == 0:
             raise ValueError('`owners_after` needs to contain at least one'
                              'owner')
@@ -165,26 +193,42 @@ class Condition(object):
                 ffill = owners_after[0]
             return cls(ffill, owners_after)
         else:
-            threshold = ThresholdSha256Fulfillment(threshold=len(owners_after))
-            return cls(reduce(cls._gen_condition, owners_after, threshold),
-                       owners_after)
+            initial_cond = ThresholdSha256Fulfillment(threshold=threshold)
+            threshold_cond = reduce(cls._gen_condition, owners_after,
+                                    initial_cond)
+            return cls(threshold_cond, owners_after)
 
     @classmethod
     def _gen_condition(cls, initial, current):
-        if isinstance(current, list) and len(current) > 1:
-            ffill = ThresholdSha256Fulfillment(threshold=len(current))
-            reduce(cls._gen_condition, current, ffill)
-        elif isinstance(current, list) and len(current) <= 1:
+        if isinstance(current, tuple):
+            owners_after, threshold = current
+        else:
+            owners_after = current
+            try:
+                threshold = len(owners_after)
+            except TypeError:
+                threshold = None
+
+        if isinstance(owners_after, list) and len(owners_after) > 1:
+            ffill = ThresholdSha256Fulfillment(threshold=threshold)
+            reduce(cls._gen_condition, owners_after, ffill)
+        elif isinstance(owners_after, list) and len(owners_after) <= 1:
             raise ValueError('Sublist cannot contain single owner')
         else:
             try:
-                current = current.pop()
+                owners_after = owners_after.pop()
             except AttributeError:
                 pass
             try:
-                ffill = Ed25519Fulfillment(public_key=current)
+                ffill = Ed25519Fulfillment(public_key=owners_after)
             except TypeError:
-                ffill = current
+                # NOTE: Instead of submitting base58 encoded addresses, a user
+                #       of this class can also submit fully instantiated
+                #       Cryptoconditions. In the case of casting `owners_after`
+                #       to a Ed25519Fulfillment with the result of a
+                #       `TypeError`, we're assuming that `owners_after` is a
+                #       Cryptocondition then.
+                ffill = owners_after
         initial.add_subfulfillment(ffill)
         return initial
 
