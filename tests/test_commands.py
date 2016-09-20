@@ -64,7 +64,7 @@ def mock_bigchaindb_backup_config(monkeypatch):
 
 def test_bigchain_run_start(mock_run_configure, mock_processes_start, mock_db_init_with_existing_db):
     from bigchaindb.commands.bigchain import run_start
-    args = Namespace(start_rethinkdb=False, config=None, yes=True)
+    args = Namespace(start_rethinkdb=False, allow_temp_keypair=False, config=None, yes=True)
     run_start(args)
 
 
@@ -74,7 +74,7 @@ def test_bigchain_run_start_with_rethinkdb(mock_start_rethinkdb,
                                            mock_processes_start,
                                            mock_db_init_with_existing_db):
     from bigchaindb.commands.bigchain import run_start
-    args = Namespace(start_rethinkdb=True, config=None, yes=True)
+    args = Namespace(start_rethinkdb=True, allow_temp_keypair=False, config=None, yes=True)
     run_start(args)
 
     mock_start_rethinkdb.assert_called_with()
@@ -227,6 +227,42 @@ def test_start_rethinkdb_exits_when_cannot_start(mock_popen):
     mock_popen.return_value = Mock(stdout=['Nopety nope'])
     with pytest.raises(exceptions.StartupError):
         utils.start_rethinkdb()
+
+
+@patch('bigchaindb.crypto.generate_key_pair', return_value=('private_key',
+                                                            'public_key'))
+def test_allow_temp_keypair_generates_one_on_the_fly(mock_gen_keypair,
+                                                     mock_processes_start,
+                                                     mock_db_init_with_existing_db):
+    import bigchaindb
+    from bigchaindb.commands.bigchain import run_start
+
+    bigchaindb.config['keypair'] = { 'private': None, 'public': None }
+
+    args = Namespace(allow_temp_keypair=True, start_rethinkdb=False, config=None, yes=True)
+    run_start(args)
+
+    assert bigchaindb.config['keypair']['private'] == 'private_key'
+    assert bigchaindb.config['keypair']['public'] == 'public_key'
+
+
+@patch('bigchaindb.crypto.generate_key_pair', return_value=('private_key',
+                                                            'public_key'))
+def test_allow_temp_keypair_doesnt_override_if_keypair_found(mock_gen_keypair,
+                                                             mock_processes_start,
+                                                             mock_db_init_with_existing_db):
+    import bigchaindb
+    from bigchaindb.commands.bigchain import run_start
+
+    # Preconditions for the test
+    assert isinstance(bigchaindb.config['keypair']['private'], str)
+    assert isinstance(bigchaindb.config['keypair']['public'], str)
+
+    args = Namespace(allow_temp_keypair=True, start_rethinkdb=False, config=None, yes=True)
+    run_start(args)
+
+    assert bigchaindb.config['keypair']['private'] != 'private_key'
+    assert bigchaindb.config['keypair']['public'] != 'public_key'
 
 
 @patch('rethinkdb.ast.Table.reconfigure')

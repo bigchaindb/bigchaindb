@@ -157,7 +157,19 @@ def run_drop(args):
 def run_start(args):
     """Start the processes to run the node"""
     logger.info('BigchainDB Version {}'.format(bigchaindb.__version__))
+
     bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
+
+    if args.allow_temp_keypair:
+        if not (bigchaindb.config['keypair']['private'] or
+                                  bigchaindb.config['keypair']['public']):
+
+            private_key, public_key = crypto.generate_key_pair()
+            bigchaindb.config['keypair']['private'] = private_key
+            bigchaindb.config['keypair']['public'] = public_key
+        else:
+            logger.warning('Keypair found, no need to create one on the fly.')
+
 
     if args.start_rethinkdb:
         try:
@@ -174,7 +186,8 @@ def run_start(args):
         sys.exit("Can't start BigchainDB, no keypair found. "
                  'Did you run `bigchaindb configure`?')
 
-    logger.info('Starting BigchainDB main process')
+    logger.info('Starting BigchainDB main process with public key %s',
+                bigchaindb.config['keypair']['public'])
     processes.start()
 
 
@@ -238,10 +251,15 @@ def main():
         description='Control your BigchainDB node.',
         parents=[utils.base_parser])
 
-    parser.add_argument('--experimental-start-rethinkdb',
+    parser.add_argument('--dev-start-rethinkdb',
                         dest='start_rethinkdb',
                         action='store_true',
                         help='Run RethinkDB on start')
+
+    parser.add_argument('--dev-allow-temp-keypair',
+                        dest='allow_temp_keypair',
+                        action='store_true',
+                        help='Generate a random keypair on start')
 
     # all the commands are contained in the subparsers object,
     # the command selected by the user will be stored in `args.command`
