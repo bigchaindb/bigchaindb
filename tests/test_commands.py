@@ -62,6 +62,34 @@ def mock_bigchaindb_backup_config(monkeypatch):
     monkeypatch.setattr('bigchaindb._config', config)
 
 
+def test_make_sure_we_dont_remove_any_command():
+    # thanks to: http://stackoverflow.com/a/18161115/597097
+    from bigchaindb.commands.bigchain import utils
+    from bigchaindb.commands.bigchain import create_parser
+    parser = create_parser()
+
+    with pytest.raises(SystemExit):
+        utils.start(parser, [], {})
+
+    assert parser.parse_args(['configure']).command
+    assert parser.parse_args(['show-config']).command
+    assert parser.parse_args(['export-my-pubkey']).command
+    assert parser.parse_args(['init']).command
+    assert parser.parse_args(['drop']).command
+    assert parser.parse_args(['start']).command
+    assert parser.parse_args(['set-shards', '1']).command
+    assert parser.parse_args(['set-replicas', '1']).command
+    assert parser.parse_args(['load']).command
+
+
+@patch('bigchaindb.commands.utils.start')
+def test_main_entrypoint(mock_start):
+    from bigchaindb.commands.bigchain import main
+    main()
+
+    assert mock_start.called
+
+
 def test_bigchain_run_start(mock_run_configure, mock_processes_start, mock_db_init_with_existing_db):
     from bigchaindb.commands.bigchain import run_start
     args = Namespace(start_rethinkdb=False, allow_temp_keypair=False, config=None, yes=True)

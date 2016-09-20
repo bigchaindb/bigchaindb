@@ -245,8 +245,7 @@ def run_set_replicas(args):
         except r.ReqlOpFailedError as e:
             logger.warn(e)
 
-
-def main():
+def create_parser():
     parser = argparse.ArgumentParser(
         description='Control your BigchainDB node.',
         parents=[utils.base_parser])
@@ -325,8 +324,8 @@ def main():
                                   'is set, the count is distributed equally to all the '
                                   'processes')
 
-    utils.start(parser, globals())
+    return parser
 
 
-if __name__ == '__main__':
-    main()
+def main():
+    utils.start(create_parser(), sys.argv[1:], globals())
