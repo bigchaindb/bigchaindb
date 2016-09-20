@@ -239,13 +239,13 @@ def test_valid_block_voting_with_transfer_transactions(monkeypatch, b):
     vote_pipeline = vote.create_pipeline()
     vote_pipeline.setup(indata=inpipe, outdata=outpipe)
 
-    inpipe.put(block)
-    inpipe.put(block2)
     vote_pipeline.start()
+    inpipe.put(block)
+    import time; time.sleep(1)
+    inpipe.put(block2)
     vote_out = outpipe.get()
     vote2_out = outpipe.get()
     vote_pipeline.terminate()
-
     vote_rs = r.table('votes').get_all([block['id'], b.me],
                                        index='block_and_voter').run(b.conn)
     vote_doc = vote_rs.next()

@@ -542,6 +542,31 @@ class TestTransactionValidation(object):
         assert tx_valid_signed == b.validate_transaction(tx_valid_signed)
         assert tx_valid_signed == b.is_valid_transaction(tx_valid_signed)
 
+    @pytest.mark.usefixtures('inputs')
+    def test_fulfillment_not_in_valid_block(self, b, user_vk, user_sk):
+        input_valid = b.get_owned_ids(user_vk).pop()
+        tx_valid = b.create_transaction(user_vk, user_vk, input_valid, 'TRANSFER')
+
+        tx_valid_signed = b.sign_transaction(tx_valid, user_sk)
+        assert tx_valid_signed == b.validate_transaction(tx_valid_signed)
+
+        # create a transaction that's valid but not in a voted valid block
+        tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
+        tx_signed = b.sign_transaction(tx, b.me_private)
+
+        # create block
+        block = b.create_block([tx_signed])
+        b.write_block(block, durability='hard')
+
+        # create transaction with the undecided input
+        tx_invalid = b.create_transaction(user_vk, user_vk,
+                                          {'cid': 0, 'txid': tx['id']},
+                                          'TRANSFER')
+
+        tx_invalid_signed = b.sign_transaction(tx_invalid, user_sk)
+        with pytest.raises(exceptions.FulfillmentNotInValidBlock):
+            b.validate_transaction(tx_invalid_signed)
+
 
 class TestBlockValidation(object):
     def test_wrong_block_hash(self, b):
@@ -656,19 +681,10 @@ class TestMultipleInputs(object):
         assert len(tx_signed['transaction']['fulfillments']) == 1
         assert len(tx_signed['transaction']['conditions']) == 1
 
+    @pytest.mark.usefixtures('inputs')
     def test_transfer_single_owners_multiple_inputs(self, b, user_sk, user_vk):
         # create a new user
         user2_sk, user2_vk = crypto.generate_key_pair()
-
-        # create inputs to spend
-        transactions = []
-        for i in range(10):
-            tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
-            tx_signed = b.sign_transaction(tx, b.me_private)
-            transactions.append(tx_signed)
-            b.write_transaction(tx_signed)
-        block = b.create_block(transactions)
-        b.write_block(block, durability='hard')
 
         # get inputs
         owned_inputs = b.get_owned_ids(user_vk)
@@ -683,19 +699,10 @@ class TestMultipleInputs(object):
         assert len(tx_signed['transaction']['fulfillments']) == 3
         assert len(tx_signed['transaction']['conditions']) == 3
 
+    @pytest.mark.usefixtures('inputs')
     def test_transfer_single_owners_single_input_from_multiple_outputs(self, b, user_sk, user_vk):
         # create a new user
         user2_sk, user2_vk = crypto.generate_key_pair()
-
-        # create inputs to spend
-        transactions = []
-        for i in range(10):
-            tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
-            tx_signed = b.sign_transaction(tx, b.me_private)
-            transactions.append(tx_signed)
-            b.write_transaction(tx_signed)
-        block = b.create_block(transactions)
-        b.write_block(block, durability='hard')
 
         # get inputs
         owned_inputs = b.get_owned_ids(user_vk)
@@ -708,6 +715,10 @@ class TestMultipleInputs(object):
         # create block with the transaction
         block = b.create_block([tx_signed])
         b.write_block(block, durability='hard')
+
+        # vote block valid
+        vote = b.vote(block['id'], b.get_last_voted_block()['id'], True)
+        b.write_vote(vote)
 
         # get inputs from user2
         owned_inputs = b.get_owned_ids(user2_vk)
@@ -740,20 +751,11 @@ class TestMultipleInputs(object):
         assert len(tx_signed['transaction']['fulfillments']) == 1
         assert len(tx_signed['transaction']['conditions']) == 1
 
+    @pytest.mark.usefixtures('inputs')
     def test_single_owner_before_multiple_owners_after_multiple_inputs(self, b, user_sk, user_vk):
         # create a new users
         user2_sk, user2_vk = crypto.generate_key_pair()
         user3_sk, user3_vk = crypto.generate_key_pair()
-
-        # create inputs to spend
-        transactions = []
-        for i in range(5):
-            tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
-            tx_signed = b.sign_transaction(tx, b.me_private)
-            transactions.append(tx_signed)
-            b.write_transaction(tx_signed)
-        block = b.create_block(transactions)
-        b.write_block(block, durability='hard')
 
         # get inputs
         owned_inputs = b.get_owned_ids(user_vk)
@@ -763,11 +765,20 @@ class TestMultipleInputs(object):
         tx = b.create_transaction(user_vk, [user2_vk, user3_vk], inputs, 'TRANSFER')
         tx_signed = b.sign_transaction(tx, user_sk)
 
+        # create block with the transaction
+        block = b.create_block([tx_signed])
+        b.write_block(block, durability='hard')
+
+        # vote block valid
+        vote = b.vote(block['id'], b.get_last_voted_block()['id'] ,True)
+        b.write_vote(vote)
+
         # validate transaction
         assert b.is_valid_transaction(tx_signed) == tx_signed
         assert len(tx_signed['transaction']['fulfillments']) == 3
         assert len(tx_signed['transaction']['conditions']) == 3
 
+    @pytest.mark.usefixtures('inputs')
     def test_multiple_owners_before_single_owner_after_single_input(self, b, user_sk, user_vk):
         # create a new users
         user2_sk, user2_vk = crypto.generate_key_pair()
@@ -778,6 +789,10 @@ class TestMultipleInputs(object):
         tx_signed = b.sign_transaction(tx, b.me_private)
         block = b.create_block([tx_signed])
         b.write_block(block, durability='hard')
+
+        # vote block valid
+        vote = b.vote(block['id'], b.get_last_voted_block()['id'] ,True)
+        b.write_vote(vote)
 
         # get input
         owned_inputs = b.get_owned_ids(user_vk)
@@ -792,19 +807,11 @@ class TestMultipleInputs(object):
         assert len(tx_signed['transaction']['fulfillments']) == 1
         assert len(tx_signed['transaction']['conditions']) == 1
 
-    def test_multiple_owners_before_single_owner_after_multiple_inputs(self, b, user_sk, user_vk):
+    @pytest.mark.usefixtures('inputs_shared')
+    def test_multiple_owners_before_single_owner_after_multiple_inputs(self, b,
+                                          user_sk, user_vk, user2_vk, user2_sk):
         # create a new users
-        user2_sk, user2_vk = crypto.generate_key_pair()
         user3_sk, user3_vk = crypto.generate_key_pair()
-
-        # create inputs to spend
-        transactions = []
-        for i in range(5):
-            tx = b.create_transaction(b.me, [user_vk, user2_vk], None, 'CREATE')
-            tx_signed = b.sign_transaction(tx, b.me_private)
-            transactions.append(tx_signed)
-        block = b.create_block(transactions)
-        b.write_block(block, durability='hard')
 
         # get input
         owned_inputs = b.get_owned_ids(user_vk)
@@ -819,6 +826,7 @@ class TestMultipleInputs(object):
         assert len(tx_signed['transaction']['fulfillments']) == 3
         assert len(tx_signed['transaction']['conditions']) == 3
 
+    @pytest.mark.usefixtures('inputs')
     def test_multiple_owners_before_multiple_owners_after_single_input(self, b, user_sk, user_vk):
         # create a new users
         user2_sk, user2_vk = crypto.generate_key_pair()
@@ -830,6 +838,10 @@ class TestMultipleInputs(object):
         tx_signed = b.sign_transaction(tx, b.me_private)
         block = b.create_block([tx_signed])
         b.write_block(block, durability='hard')
+
+        # vote block valid
+        vote = b.vote(block['id'], b.get_last_voted_block()['id'] ,True)
+        b.write_vote(vote)
 
         # get input
         owned_inputs = b.get_owned_ids(user_vk)
@@ -844,20 +856,13 @@ class TestMultipleInputs(object):
         assert len(tx_signed['transaction']['fulfillments']) == 1
         assert len(tx_signed['transaction']['conditions']) == 1
 
-    def test_multiple_owners_before_multiple_owners_after_multiple_inputs(self, b, user_sk, user_vk):
+    @pytest.mark.usefixtures('inputs_shared')
+    def test_multiple_owners_before_multiple_owners_after_multiple_inputs(self, b,
+                                                                user_sk, user_vk,
+                                                                user2_sk, user2_vk):
         # create a new users
-        user2_sk, user2_vk = crypto.generate_key_pair()
         user3_sk, user3_vk = crypto.generate_key_pair()
         user4_sk, user4_vk = crypto.generate_key_pair()
-
-        # create inputs to spend
-        transactions = []
-        for i in range(5):
-            tx = b.create_transaction(b.me, [user_vk, user2_vk], None, 'CREATE')
-            tx_signed = b.sign_transaction(tx, b.me_private)
-            transactions.append(tx_signed)
-        block = b.create_block(transactions)
-        b.write_block(block, durability='hard')
 
         # get input
         owned_inputs = b.get_owned_ids(user_vk)
@@ -1448,9 +1453,21 @@ class TestCryptoconditions(object):
         block = b.create_block([first_tx])
         b.write_block(block, durability='hard')
 
+        # vote block valid
+        vote = b.vote(block['id'], b.get_last_voted_block()['id'], True)
+        b.write_vote(vote)
+
         next_input_tx = b.get_owned_ids(other_vk).pop()
         # create another transaction with the same input
         next_tx = b.create_transaction(other_vk, user_vk, next_input_tx, 'TRANSFER')
+
+        # create and write block to bigchain
+        block = b.create_block([next_tx])
+        b.write_block(block, durability='hard')
+
+        # vote block valid
+        vote = b.vote(block['id'], b.get_last_voted_block()['id'], True)
+        b.write_vote(vote)
 
         next_tx_fulfillment = next_tx['transaction']['fulfillments'][0]
         next_tx_fulfillment_message = util.get_fulfillment_message(next_tx, next_tx_fulfillment, serialized=True)
@@ -1492,6 +1509,10 @@ class TestCryptoconditions(object):
         # create and write block to bigchain
         block = b.create_block([first_tx])
         b.write_block(block, durability='hard')
+
+        # vote block valid
+        vote = b.vote(block['id'], b.get_last_voted_block()['id'] ,True)
+        b.write_vote(vote)
 
         next_input_tx = b.get_owned_ids(other1_vk).pop()
         # create another transaction with the same input
@@ -1545,6 +1566,10 @@ class TestCryptoconditions(object):
         # create and write block to bigchain
         block = b.create_block([first_tx])
         b.write_block(block, durability='hard')
+
+        # vote block valid
+        vote = b.vote(block['id'], b.get_last_voted_block()['id'], True)
+        b.write_vote(vote)
 
         next_input_tx = b.get_owned_ids(other1_vk).pop()
         # create another transaction with the same input
@@ -1601,6 +1626,10 @@ class TestCryptoconditions(object):
         # create and write block to bigchain
         block = b.create_block([first_tx])
         b.write_block(block, durability='hard')
+
+        # vote block valid
+        vote = b.vote(block['id'], b.get_last_voted_block()['id'] ,True)
+        b.write_vote(vote)
 
         next_input_tx = b.get_owned_ids(other1_vk).pop()
         # create another transaction with the same input
@@ -1738,7 +1767,9 @@ class TestCryptoconditions(object):
 
         assert len(b.get_owned_ids(user_vk)) == owned_count - 1
 
+    @pytest.mark.usefixtures('inputs')
     def test_create_and_fulfill_asset_with_hashlock_condition(self, b, user_vk):
+        n_owned_ids = len(b.get_owned_ids(user_vk))
         hashlock_tx = b.create_transaction(b.me, None, None, 'CREATE')
 
         secret = b'much secret! wow!'
@@ -1760,13 +1791,13 @@ class TestCryptoconditions(object):
         assert b.validate_transaction(hashlock_tx_signed) == hashlock_tx_signed
         assert b.is_valid_transaction(hashlock_tx_signed) == hashlock_tx_signed
 
-        b.write_transaction(hashlock_tx_signed)
-
         # create and write block to bigchain
         block = b.create_block([hashlock_tx_signed])
         b.write_block(block, durability='hard')
 
-        assert len(b.get_owned_ids(b.me)) == 0
+        # vote block valid
+        vote = b.vote(block['id'], b.get_last_voted_block()['id'], True)
+        b.write_vote(vote)
 
         # create hashlock fulfillment tx
         hashlock_fulfill_tx = b.create_transaction(None, user_vk, {'txid': hashlock_tx['id'], 'cid': 0}, 'TRANSFER')
@@ -1792,8 +1823,7 @@ class TestCryptoconditions(object):
         block = b.create_block([hashlock_fulfill_tx])
         b.write_block(block, durability='hard')
 
-        assert len(b.get_owned_ids(b.me)) == 0
-        assert len(b.get_owned_ids(user_vk)) == 1
+        assert len(b.get_owned_ids(user_vk)) == n_owned_ids + 1
 
         # try doublespending
         user2_sk, user2_vk = crypto.generate_key_pair()
@@ -1866,11 +1896,13 @@ class TestCryptoconditions(object):
         assert b.validate_transaction(escrow_tx_signed) == escrow_tx_signed
         assert b.is_valid_transaction(escrow_tx_signed) == escrow_tx_signed
 
-        b.write_transaction(escrow_tx_signed)
-
         # create and write block to bigchain
         block = b.create_block([escrow_tx_signed])
         b.write_block(block, durability='hard')
+
+        # vote block valid
+        vote = b.vote(block['id'], b.get_last_voted_block()['id'], True)
+        b.write_vote(vote)
 
         # Retrieve the last transaction of thresholduser1_pub
         tx_retrieved_id = b.get_owned_ids(user2_vk).pop()
@@ -1995,11 +2027,13 @@ class TestCryptoconditions(object):
         assert b.validate_transaction(escrow_tx_signed) == escrow_tx_signed
         assert b.is_valid_transaction(escrow_tx_signed) == escrow_tx_signed
 
-        b.write_transaction(escrow_tx_signed)
-
         # create and write block to bigchain
         block = b.create_block([escrow_tx_signed])
         b.write_block(block, durability='hard')
+
+        # vote block valid
+        vote = b.vote(block['id'], b.get_last_voted_block()['id'], True)
+        b.write_vote(vote)
 
         # Retrieve the last transaction of thresholduser1_pub
         tx_retrieved_id = b.get_owned_ids(user2_vk).pop()
@@ -2038,8 +2072,6 @@ class TestCryptoconditions(object):
         # in-time validation (execute)
         assert b.is_valid_transaction(escrow_tx_transfer) == escrow_tx_transfer
         assert b.validate_transaction(escrow_tx_transfer) == escrow_tx_transfer
-
-        b.write_transaction(escrow_tx_transfer)
 
         # create and write block to bigchain
         block = b.create_block([escrow_tx_transfer])
