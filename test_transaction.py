@@ -166,6 +166,27 @@ def test_generate_conditions_split_half_recursive(user_pub, user2_pub,
     assert cond.fulfillment.to_dict() == expected.to_dict()
 
 
+def test_generate_conditions_split_half_recursive_custom_threshold(user_pub,
+                                                                   user2_pub,
+                                                                   user3_pub):
+    from bigchaindb_common.transaction import Condition
+    from cryptoconditions import Ed25519Fulfillment, ThresholdSha256Fulfillment
+
+    expected_simple1 = Ed25519Fulfillment(public_key=user_pub)
+    expected_simple2 = Ed25519Fulfillment(public_key=user2_pub)
+    expected_simple3 = Ed25519Fulfillment(public_key=user3_pub)
+
+    expected = ThresholdSha256Fulfillment(threshold=1)
+    expected.add_subfulfillment(expected_simple1)
+    expected_threshold = ThresholdSha256Fulfillment(threshold=1)
+    expected_threshold.add_subfulfillment(expected_simple2)
+    expected_threshold.add_subfulfillment(expected_simple3)
+    expected.add_subfulfillment(expected_threshold)
+
+    cond = Condition.generate(([user_pub, ([user2_pub, expected_simple3], 1)], 1))
+    assert cond.fulfillment.to_dict() == expected.to_dict()
+
+
 def test_generate_conditions_split_half_single_owner(user_pub, user2_pub,
                                                      user3_pub):
     from bigchaindb_common.transaction import Condition
