@@ -1,14 +1,6 @@
-"""
-Fixtures and setup / teardown functions
-
-Tasks:
-1. setup test database before starting the tests
-2. delete test database after running the tests
-"""
 import pytest
 
 
-# Test user. inputs will be created for this user. Cryptography Keys
 USER_PRIVATE_KEY = '8eJ8q9ZQpReWyQT5aFCiwtZ5wDZC4eDnCen88p3tQ6ie'
 USER_PUBLIC_KEY = 'JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE'
 
