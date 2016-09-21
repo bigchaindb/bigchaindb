@@ -316,14 +316,17 @@ def test_allow_temp_keypair_doesnt_override_if_keypair_found(mock_gen_keypair,
     from bigchaindb.commands.bigchain import run_start
 
     # Preconditions for the test
-    assert isinstance(bigchaindb.config['keypair']['private'], str)
-    assert isinstance(bigchaindb.config['keypair']['public'], str)
+    original_private_key = bigchaindb.config['keypair']['private']
+    original_public_key = bigchaindb.config['keypair']['public']
+
+    assert isinstance(original_public_key, str)
+    assert isinstance(original_private_key, str)
 
     args = Namespace(allow_temp_keypair=True, start_rethinkdb=False, config=None, yes=True)
     run_start(args)
 
-    assert bigchaindb.config['keypair']['private'] != 'private_key'
-    assert bigchaindb.config['keypair']['public'] != 'public_key'
+    assert bigchaindb.config['keypair']['private'] == original_private_key
+    assert bigchaindb.config['keypair']['public'] == original_public_key
 
 
 @patch('rethinkdb.ast.Table.reconfigure')
