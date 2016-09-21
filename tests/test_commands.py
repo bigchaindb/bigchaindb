@@ -66,6 +66,7 @@ def test_make_sure_we_dont_remove_any_command():
     # thanks to: http://stackoverflow.com/a/18161115/597097
     from bigchaindb.commands.bigchain import utils
     from bigchaindb.commands.bigchain import create_parser
+
     parser = create_parser()
 
     with pytest.raises(SystemExit):
@@ -80,6 +81,32 @@ def test_make_sure_we_dont_remove_any_command():
     assert parser.parse_args(['set-shards', '1']).command
     assert parser.parse_args(['set-replicas', '1']).command
     assert parser.parse_args(['load']).command
+
+
+def test_start_raises_if_command_not_implemented():
+    from bigchaindb.commands.bigchain import utils
+    from bigchaindb.commands.bigchain import create_parser
+
+    parser = create_parser()
+
+    with pytest.raises(NotImplementedError):
+        # Will raise because `scope`, the third parameter,
+        # doesn't contain the function `run_configure`
+        utils.start(parser, ['configure'], {})
+
+
+@patch('multiprocessing.cpu_count', return_value=42)
+def test_start_sets_multiprocess_var_based_on_cli_args(mock_cpu_count):
+    def run_load(args):
+        return args
+
+    from bigchaindb.commands.bigchain import utils
+    from bigchaindb.commands.bigchain import create_parser
+
+    parser = create_parser()
+
+    assert utils.start(parser, ['load'], {'run_load': run_load}).multiprocess == 1
+    assert utils.start(parser, ['load', '--multiprocess'], {'run_load': run_load}).multiprocess == 42
 
 
 @patch('bigchaindb.commands.utils.start')
