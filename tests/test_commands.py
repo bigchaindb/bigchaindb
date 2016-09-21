@@ -103,11 +103,11 @@ def test_start_raises_if_no_arguments_given():
 
 @patch('multiprocessing.cpu_count', return_value=42)
 def test_start_sets_multiprocess_var_based_on_cli_args(mock_cpu_count):
-    def run_load(args):
-        return args
-
     from bigchaindb.commands.bigchain import utils
     from bigchaindb.commands.bigchain import create_parser
+
+    def run_load(args):
+        return args
 
     parser = create_parser()
 
