@@ -59,7 +59,7 @@ def start_rethinkdb():
     raise StartupError(line)
 
 
-def start(parser, scope):
+def start(parser, argv, scope):
     """Utility function to execute a subcommand.
 
     The function will look up in the ``scope``
@@ -68,17 +68,18 @@ def start(parser, scope):
 
     Args:
         parser: an ArgumentParser instance.
+        argv: the list of command line arguments without the script name.
         scope (dict): map containing (eventually) the functions to be called.
 
     Raises:
         NotImplementedError: if ``scope`` doesn't contain a function called
                              ``run_<parser.args.command>``.
     """
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     if not args.command:
         parser.print_help()
-        return
+        raise SystemExit()
 
     # look up in the current scope for a function called 'run_<command>'
     # replacing all the dashes '-' with the lowercase character '_'
@@ -96,7 +97,7 @@ def start(parser, scope):
     elif args.multiprocess is None:
         args.multiprocess = mp.cpu_count()
 
-    func(args)
+    return func(args)
 
 
 base_parser = argparse.ArgumentParser(add_help=False, prog='bigchaindb')
