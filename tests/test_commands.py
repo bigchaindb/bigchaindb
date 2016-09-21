@@ -64,13 +64,9 @@ def mock_bigchaindb_backup_config(monkeypatch):
 
 def test_make_sure_we_dont_remove_any_command():
     # thanks to: http://stackoverflow.com/a/18161115/597097
-    from bigchaindb.commands.bigchain import utils
     from bigchaindb.commands.bigchain import create_parser
 
     parser = create_parser()
-
-    with pytest.raises(SystemExit):
-        utils.start(parser, [], {})
 
     assert parser.parse_args(['configure']).command
     assert parser.parse_args(['show-config']).command
@@ -93,6 +89,16 @@ def test_start_raises_if_command_not_implemented():
         # Will raise because `scope`, the third parameter,
         # doesn't contain the function `run_configure`
         utils.start(parser, ['configure'], {})
+
+
+def test_start_raises_if_no_arguments_given():
+    from bigchaindb.commands.bigchain import utils
+    from bigchaindb.commands.bigchain import create_parser
+
+    parser = create_parser()
+
+    with pytest.raises(SystemExit):
+        utils.start(parser, [], {})
 
 
 @patch('multiprocessing.cpu_count', return_value=42)
