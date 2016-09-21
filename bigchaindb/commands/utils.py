@@ -68,6 +68,7 @@ def start(parser, argv, scope):
 
     Args:
         parser: an ArgumentParser instance.
+        argv: the list of command line arguments without the script name.
         scope (dict): map containing (eventually) the functions to be called.
 
     Raises:
