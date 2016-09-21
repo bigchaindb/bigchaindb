@@ -68,7 +68,7 @@ class Fulfillment(object):
             fulfillment = CCFulfillment.from_uri(ffill['fulfillment'])
         except ValueError:
             # TODO FOR CC: Throw an `InvalidSignature` error in this case.
-            raise InvalidSignature("Fulfillment URI could'nt been parsed")
+            raise InvalidSignature("Fulfillment URI couldn't been parsed")
         except TypeError:
             # NOTE: See comment about this special case in
             #       `Fulfillment.to_dict`
@@ -111,13 +111,6 @@ class TransactionLink(object):
 class Condition(object):
     def __init__(self, fulfillment, owners_after=None):
         # TODO: Add more description
-        """Create a new condition for a fulfillment
-
-        Args
-            owners_after (Optional(list)): base58 encoded public key of the
-            owner of the digital asset after this transaction.
-
-        """
         self.fulfillment = fulfillment
 
         if not isinstance(owners_after, list) and owners_after is not None:
@@ -234,7 +227,6 @@ class Condition(object):
 
     @classmethod
     def from_dict(cls, cond):
-        # TODO: This case should have it's own serialization test
         try:
             fulfillment = CCFulfillment.from_dict(cond['condition']['details'])
         except KeyError:
@@ -283,12 +275,13 @@ class Transaction(object):
 
     def __init__(self, operation, fulfillments=None, conditions=None,
                  data=None, timestamp=None, version=None):
-        # TODO: Update this comment
+        # TODO: Write a comment
         self.timestamp = timestamp if timestamp is not None else gen_timestamp()
         self.version = version if version is not None else Transaction.VERSION
 
         if operation not in Transaction.ALLOWED_OPERATIONS:
-            raise TypeError('`operation` must be either CREATE or TRANSFER')
+            raise TypeError('`operation` must be one of {}'
+                            .format(', '.join(self.__cls__.ALLOWED_OPERATIONS)))
         else:
             self.operation = operation
 
@@ -460,7 +453,6 @@ class Transaction(object):
             return private_key.get_verifying_key().to_ascii().decode()
         key_pairs = {gen_public_key(SigningKey(private_key)): SigningKey(private_key) for private_key in private_keys}
 
-        # TODO: The condition for a transfer-tx will come from an input
         for index, (fulfillment, condition) in enumerate(zip(self.fulfillments, self.conditions)):
             # NOTE: We clone the current transaction but only add the condition and fulfillment we're currently
             # working on plus all previously signed ones.
@@ -540,9 +532,6 @@ class Transaction(object):
                                                   tx_serialized,
                                                   input_condition_uri)
 
-        # TODO: For sure there need to be an equal amount of fulfillments and
-        #       input_conditions, but not sure if there must be an equal amount
-        #       of conditions
         if not fulfillments_count == conditions_count == input_condition_uris_count:
             raise ValueError('Fulfillments, conditions and input_condition_uris must have the same count')
         else:
