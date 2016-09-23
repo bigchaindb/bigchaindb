@@ -681,7 +681,7 @@ class Bigchain(object):
 
         # FIXME: I (@vrde) don't like this solution. Filtering should be done at a
         #        database level. Solving issue #444 can help untangling the situation
-        unvoted_blocks = filter(lambda block: not util.is_genesis_block(block), unvoted_blocks)
+        unvoted_blocks = filter(lambda block: not util.is_genesis_block(block), unvoted)
         return unvoted_blocks
 
     def block_election_status(self, block_id, voters):

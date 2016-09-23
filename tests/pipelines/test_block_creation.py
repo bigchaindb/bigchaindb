@@ -105,34 +105,6 @@ def test_duplicate_transaction(b, user_vk):
     assert r.table('backlog').get(txs[0].id).run(b.conn) is None
 
 
-def test_duplicate_transaction(b, user_vk):
-    block_maker = block.Block()
-
-    txs = []
-    for i in range(10):
-        tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
-        tx = b.sign_transaction(tx, b.me_private)
-        txs.append(tx)
-
-    block_doc = b.create_block(txs)
-    block_maker.write(block_doc)
-
-    # block is in bigchain
-    assert r.table('bigchain').get(block_doc['id']).run(b.conn) == block_doc
-
-    b.write_transaction(txs[0])
-
-    # verify tx is in the backlog
-    assert r.table('backlog').get(txs[0]['id']).run(b.conn) is not None
-
-    # try to validate a transaction that's already in the chain; should not
-    # work
-    assert block_maker.validate_tx(txs[0]) is None
-
-    # duplicate tx should be removed from backlog
-    assert r.table('backlog').get(txs[0]['id']).run(b.conn) is None
-
-
 def test_delete_tx(b, user_vk):
     from bigchaindb.models import Transaction
     from bigchaindb.pipelines.block import BlockPipeline
@@ -147,18 +119,18 @@ def test_delete_tx(b, user_vk):
     # force the output triggering a `timeout`
     block_doc = block_maker.create(None, timeout=True)
 
-    for tx in block_doc['block']['transactions']:
-        returned_tx = r.table('backlog').get(tx.id).run(b.conn)
+    for tx in block_doc.to_dict()['block']['transactions']:
+        returned_tx = r.table('backlog').get(tx['id']).run(b.conn)
         returned_tx.pop('assignee')
         returned_tx.pop('assignment_timestamp')
-        assert returned_tx == tx.to_dict()
+        assert returned_tx == tx
 
     returned_block = block_maker.delete_tx(block_doc)
 
     assert returned_block == block_doc
 
-    for tx in block_doc['block']['transactions']:
-        assert r.table('backlog').get(tx.id).run(b.conn) is None
+    for tx in block_doc.to_dict()['block']['transactions']:
+        assert r.table('backlog').get(tx['id']).run(b.conn) is None
 
 
 def test_prefeed(b, user_vk):

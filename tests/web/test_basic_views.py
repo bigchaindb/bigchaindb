@@ -103,12 +103,12 @@ def test_post_invalid_transfer_transaction_returns_400(b, client, user_vk, user_
 @pytest.mark.usefixtures('inputs')
 def test_get_transaction_status_endpoint(b, client, user_vk):
     input_tx = b.get_owned_ids(user_vk).pop()
-    tx, status = b.get_transaction(input_tx['txid'], include_status=True)
-    res = client.get(TX_ENDPOINT + input_tx['txid'] + "/status")
+    tx, status = b.get_transaction(input_tx.txid, include_status=True)
+    res = client.get(TX_ENDPOINT + input_tx.txid + "/status")
     assert status == res.json['status']
     assert res.status_code == 200
 
-    res = client.get(TX_ENDPOINT + input_tx['txid'] + "/status/")
+    res = client.get(TX_ENDPOINT + input_tx.txid + "/status/")
     assert status == res.json['status']
     assert res.status_code == 200
 

@@ -126,13 +126,13 @@ class BlockPipeline:
         """Delete transactions.
 
         Args:
-            block (dict): the block containg the transactions to delete.
+            block (Block): the block containg the transactions to delete.
 
         Returns:
             The block.
         """
         r.table('backlog')\
-         .get_all(*[tx['id'] for tx in block['block']['transactions']])\
+         .get_all(*[tx['id'] for tx in block.to_dict()['block']['transactions']])\
          .delete(durability='hard')\
          .run(self.bigchain.conn)
 
