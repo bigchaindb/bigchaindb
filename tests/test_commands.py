@@ -290,8 +290,8 @@ def test_start_rethinkdb_exits_when_cannot_start(mock_popen):
         utils.start_rethinkdb()
 
 
-@patch('bigchaindb.crypto.generate_key_pair', return_value=('private_key',
-                                                            'public_key'))
+@patch('bigchaindb_common.crypto.generate_key_pair',
+       return_value=('private_key', 'public_key'))
 def test_allow_temp_keypair_generates_one_on_the_fly(mock_gen_keypair,
                                                      mock_processes_start,
                                                      mock_db_init_with_existing_db):
@@ -307,8 +307,8 @@ def test_allow_temp_keypair_generates_one_on_the_fly(mock_gen_keypair,
     assert bigchaindb.config['keypair']['public'] == 'public_key'
 
 
-@patch('bigchaindb.crypto.generate_key_pair', return_value=('private_key',
-                                                            'public_key'))
+@patch('bigchaindb_common.crypto.generate_key_pair',
+       return_value=('private_key', 'public_key'))
 def test_allow_temp_keypair_doesnt_override_if_keypair_found(mock_gen_keypair,
                                                              mock_processes_start,
                                                              mock_db_init_with_existing_db):
@@ -436,10 +436,10 @@ def test_calling_main(start_mock, base_parser_mock, parse_args_mock,
 
     assert argparser_mock.called is True
     assert parser.add_argument.called is True
-    parser.add_argument.assert_called_with('--experimental-start-rethinkdb',
-                                           dest='start_rethinkdb',
-                                           action='store_true',
-                                           help='Run RethinkDB on start')
+    parser.add_argument.assert_any_call('--dev-start-rethinkdb',
+                                        dest='start_rethinkdb',
+                                        action='store_true',
+                                        help='Run RethinkDB on start')
     parser.add_subparsers.assert_called_with(title='Commands',
                                              dest='command')
     subparsers.add_parser.assert_any_call('configure',

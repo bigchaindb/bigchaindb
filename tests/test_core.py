@@ -1,3 +1,7 @@
+from collections import namedtuple
+
+from rethinkdb.ast import RqlQuery
+
 import pytest
 
 
@@ -92,6 +96,7 @@ def test_transaction_exists(monkeypatch, items, exists):
     assert bigchain.transaction_exists('txid') is exists
 
 
+@pytest.mark.skip(reason='until tim decides')
 def test_write_transaction_no_sideffects(b):
     from rethinkdb.errors import ReqlOpFailedError
     transaction = {'id': 'abc'}

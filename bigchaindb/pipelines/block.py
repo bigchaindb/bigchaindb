@@ -58,13 +58,13 @@ class BlockPipeline:
             The transaction (Transaction) if valid, ``None`` otherwise.
         """
         tx = Transaction.from_dict(tx)
-        tx = self.bigchain.is_valid_transaction(tx)
-        if tx:
+        tx_validated = self.bigchain.is_valid_transaction(tx)
+        if tx_validated:
             return tx
         else:
             # if the transaction is not valid, remove it from the
             # backlog
-            r.table('backlog').get(tx['id']) \
+            r.table('backlog').get(tx.id) \
                     .delete(durability='hard') \
                     .run(self.bigchain.conn)
             return None

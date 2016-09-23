@@ -12,7 +12,7 @@ def test_filter_by_assignee(b, signed_create_tx):
     block_maker = BlockPipeline()
 
     tx = signed_create_tx.to_dict()
-    tx.update({'assignee': b.me})
+    tx.update({'assignee': b.me, 'assignment_timestamp': 111})
 
     # filter_tx has side effects on the `tx` instance by popping 'assignee'
     # and 'assignment_timestamp'
@@ -76,31 +76,33 @@ def test_write_block(b, user_vk):
 
 
 def test_duplicate_transaction(b, user_vk):
-    block_maker = block.Block()
+    from bigchaindb.models import Transaction
+    from bigchaindb.pipelines import block
+    block_maker = block.BlockPipeline()
 
     txs = []
     for i in range(10):
-        tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
-        tx = b.sign_transaction(tx, b.me_private)
+        tx = Transaction.create([b.me], [user_vk])
+        tx = tx.sign([b.me_private])
         txs.append(tx)
 
     block_doc = b.create_block(txs)
     block_maker.write(block_doc)
 
     # block is in bigchain
-    assert r.table('bigchain').get(block_doc['id']).run(b.conn) == block_doc
+    assert r.table('bigchain').get(block_doc.id).run(b.conn) == block_doc.to_dict()
 
     b.write_transaction(txs[0])
 
     # verify tx is in the backlog
-    assert r.table('backlog').get(txs[0]['id']).run(b.conn) is not None
+    assert r.table('backlog').get(txs[0].id).run(b.conn) is not None
 
     # try to validate a transaction that's already in the chain; should not
     # work
-    assert block_maker.validate_tx(txs[0]) is None
+    assert block_maker.validate_tx(txs[0].to_dict()) is None
 
     # duplicate tx should be removed from backlog
-    assert r.table('backlog').get(txs[0]['id']).run(b.conn) is None
+    assert r.table('backlog').get(txs[0].id).run(b.conn) is None
 
 
 def test_delete_tx(b, user_vk):

@@ -224,9 +224,9 @@ class TestBigchainApi(object):
         block = b.create_block([tx])
         b.write_block(block, durability='hard')
 
-        response, status = b.get_transaction(tx_signed["id"], include_status=True)
+        response, status = b.get_transaction(tx.id, include_status=True)
         # add validity information, which will be returned
-        assert util.serialize(tx_signed) == util.serialize(response)
+        assert tx.to_dict() == response.to_dict()
         assert status == b.TX_UNDECIDED
 
     @pytest.mark.usefixtures('inputs')
@@ -239,18 +239,6 @@ class TestBigchainApi(object):
         tx = Transaction.transfer(inputs, [user_vk])
         tx = tx.sign([user_sk])
         b.write_transaction(tx)
-
-        response, status = b.get_transaction(tx_signed["id"], include_status=True)
-
-        # add validity information, which will be returned
-        assert util.serialize(tx_signed) == util.serialize(response)
-        assert status == b.TX_IN_BACKLOG
-
-    @pytest.mark.usefixtures('inputs')
-    def test_read_transaction_invalid_block(self, b, user_vk, user_sk):
-        input_tx = b.get_owned_ids(user_vk).pop()
-        tx = b.create_transaction(user_vk, user_vk, input_tx, 'TRANSFER')
-        tx_signed = b.sign_transaction(tx, user_sk)
 
         # create block
         block = b.create_block([tx])
