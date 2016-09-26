@@ -28,7 +28,8 @@ services:
       - ./setup.cfg:/usr/src/app/setup.cfg
       - ./pytest.ini:/usr/src/app/pytest.ini
       - ~/.bigchaindb_docker:/root/.bigchaindb_docker
+    ports:
+      - "59984:9984"
     environment:
       BIGCHAINDB_DATABASE_HOST: rdb
       BIGCHAINDB_CONFIG_PATH: /root/.bigchaindb_docker/config
-    command: bigchaindb start

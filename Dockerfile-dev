@@ -1,12 +1,32 @@
-FROM python:3.5
+FROM ubuntu:xenial
 
-RUN apt-get update
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN apt-get update && \
+    apt-get -y dist-upgrade && \
+    apt-get -y install g++ python3 python3-pip && \
+    pip3 install --upgrade pip setuptools && \
+    apt-get -y auto-remove && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /usr/src/app
-WORKDIR /usr/src/app
-
-RUN pip install --upgrade pip
-
 COPY . /usr/src/app/
+WORKDIR /usr/src/app
+RUN pip3 install --no-cache-dir -e .[dev]
 
-RUN pip install --no-cache-dir -e .[dev]
+VOLUME ["/data"]
+WORKDIR /data
+
+ENV BIGCHAINDB_CONFIG_PATH /data/.bigchaindb
+ENV BIGCHAINDB_SERVER_BIND 0.0.0.0:9984
+ENV BIGCHAINDB_API_ENDPOINT http://bdb:9984/api/v1
+ENV BIGCHAINDB_DATABASE_HOST: rdb
+ENV BIGCHAINDB_DATABASE_NAME: bigchaindb
+
+EXPOSE 9984 28015 29015
+
+COPY ./docker-start.sh /start.sh
+RUN chmod a+x /start.sh
+
+CMD ["/start.sh"]
