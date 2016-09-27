@@ -10,7 +10,8 @@ import pytest
 import rethinkdb as r
 
 from bigchaindb import Bigchain
-from bigchaindb.db import get_conn
+from bigchaindb import db
+from bigchaindb.exceptions import DatabaseAlreadyExists
 
 
 @pytest.fixture(autouse=True)
@@ -23,58 +24,26 @@ def restore_config(request, node_config):
 def setup_database(request, node_config):
     print('Initializing test db')
     db_name = node_config['database']['name']
-    get_conn().repl()
+    conn = db.get_conn()
+
+    if r.db_list().contains(db_name).run(conn):
+        r.db_drop(db_name).run(conn)
+
     try:
-        r.db_create(db_name).run()
-    except r.ReqlOpFailedError as e:
-        if e.message == 'Database `{}` already exists.'.format(db_name):
-            r.db_drop(db_name).run()
-            r.db_create(db_name).run()
-        else:
-            raise
+        db.init_database()
+    except DatabaseAlreadyExists:
+        print('Database already exists.')
 
-    print('Finished initializing test db')
-
-    # setup tables
-    r.db(db_name).table_create('bigchain').run()
-    r.db(db_name).table_create('backlog').run()
-    r.db(db_name).table_create('votes').run()
-
-    # create the secondary indexes
-    # to order blocks by timestamp
-    r.db(db_name).table('bigchain').index_create('block_timestamp', r.row['block']['timestamp']).run()
-    # to order blocks by block number
-    r.db(db_name).table('bigchain').index_create('block_number', r.row['block']['block_number']).run()
-    # to order transactions by timestamp
-    r.db(db_name).table('backlog').index_create('transaction_timestamp', r.row['transaction']['timestamp']).run()
-    # to query by payload uuid
-    r.db(db_name).table('bigchain').index_create(
-        'payload_uuid', 
-        r.row['block']['transactions']['transaction']['data']['uuid'], 
-        multi=True,
-    ).run()
-    # compound index to read transactions from the backlog per assignee
-    r.db(db_name).table('backlog')\
-        .index_create('assignee__transaction_timestamp', [r.row['assignee'], r.row['transaction']['timestamp']])\
-        .run()
-    # compound index to order votes by block id and node
-    r.db(db_name).table('votes').index_create('block_and_voter',
-                                             [r.row['vote']['voting_for_block'], r.row['node_pubkey']]).run()
-    # order transactions by id
-    r.db(db_name).table('bigchain').index_create('transaction_id', r.row['block']['transactions']['id'],
-                                                 multi=True).run()
-
-    r.db(db_name).table('bigchain').index_wait('transaction_id').run()
+    print('Finishing init database')
 
     def fin():
         print('Deleting `{}` database'.format(db_name))
-        get_conn().repl()
+        db.get_conn().repl()
         try:
             r.db_drop(db_name).run()
         except r.ReqlOpFailedError as e:
             if e.message != 'Database `{}` does not exist.'.format(db_name):
                 raise
-
         print('Finished deleting `{}`'.format(db_name))
 
     request.addfinalizer(fin)
@@ -85,7 +54,7 @@ def cleanup_tables(request, node_config):
     db_name = node_config['database']['name']
 
     def fin():
-        get_conn().repl()
+        db.get_conn().repl()
         try:
             r.db(db_name).table('bigchain').delete().run()
             r.db(db_name).table('backlog').delete().run()
