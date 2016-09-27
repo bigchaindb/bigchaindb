@@ -147,8 +147,6 @@ class Block(object):
         verifying_key = VerifyingKey(block['node_pubkey'])
         try:
             return verifying_key.verify(block_serialized, self.signature)
-        # TODO FOR CC: Shouldn't throw `AttributeError` or `ValueError` but
-        #              simply return `False`.
         except (ValueError, AttributeError):
             return False
 
