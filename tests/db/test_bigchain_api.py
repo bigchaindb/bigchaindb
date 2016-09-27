@@ -525,20 +525,21 @@ class TestTransactionValidation(object):
             b.validate_transaction(create_tx)
         assert excinfo.value.args[0] == 'A CREATE operation has no inputs'
 
-    def test_transfer_operation_no_inputs(self, b, user_vk, transfer_tx):
-        transfer_tx.fulfillments[0].tx_input = None
+    def test_transfer_operation_no_inputs(self, b, user_vk,
+                                          signed_transfer_tx):
+        signed_transfer_tx.fulfillments[0].tx_input = None
         with pytest.raises(ValueError) as excinfo:
-            b.validate_transaction(transfer_tx)
+            b.validate_transaction(signed_transfer_tx)
 
         assert excinfo.value.args[0] == 'Only `CREATE` transactions can have null inputs'
 
-    def test_non_create_input_not_found(self, b, user_vk, transfer_tx):
+    def test_non_create_input_not_found(self, b, user_vk, signed_transfer_tx):
         from bigchaindb_common.exceptions import TransactionDoesNotExist
         from bigchaindb_common.transaction import TransactionLink
 
-        transfer_tx.fulfillments[0].tx_input = TransactionLink('c', 0)
+        signed_transfer_tx.fulfillments[0].tx_input = TransactionLink('c', 0)
         with pytest.raises(TransactionDoesNotExist):
-            b.validate_transaction(transfer_tx)
+            b.validate_transaction(signed_transfer_tx)
 
     @pytest.mark.usefixtures('inputs')
     def test_non_create_valid_input_wrong_owner(self, b, user_vk):
@@ -556,20 +557,22 @@ class TestTransactionValidation(object):
             b.validate_transaction(tx)
 
     @pytest.mark.usefixtures('inputs')
-    def test_non_create_double_spend(self, b, transfer_tx):
+    def test_non_create_double_spend(self, b, signed_transfer_tx):
         from bigchaindb_common.exceptions import DoubleSpend
 
-        b.write_transaction(transfer_tx)
-        block = b.create_block([transfer_tx])
+        b.write_transaction(signed_transfer_tx)
+        block = b.create_block([signed_transfer_tx])
         b.write_block(block, durability='hard')
 
-        transfer_tx.timestamp = 123
+        signed_transfer_tx.timestamp = 123
         # FIXME: https://github.com/bigchaindb/bigchaindb/issues/592
         with pytest.raises(DoubleSpend):
-            b.validate_transaction(transfer_tx)
+            b.validate_transaction(signed_transfer_tx)
 
     @pytest.mark.usefixtures('inputs')
-    def test_valid_non_create_transaction_after_block_creation(self, b, user_vk, user_sk):
+    def test_valid_non_create_transaction_after_block_creation(self, b,
+                                                               user_vk,
+                                                               user_sk):
         from bigchaindb.models import Transaction
 
         input_tx = b.get_owned_ids(user_vk).pop()
@@ -585,7 +588,8 @@ class TestTransactionValidation(object):
         assert b.validate_block(block) == block
         b.write_block(block, durability='hard')
 
-        # check that the transaction is still valid after being written to the bigchain
+        # check that the transaction is still valid after being written to the
+        # bigchain
         assert transfer_tx == b.validate_transaction(transfer_tx)
 
 

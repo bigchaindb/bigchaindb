@@ -81,7 +81,7 @@ def signed_create_tx(b, create_tx):
 
 
 @pytest.fixture
-def transfer_tx(signed_create_tx, user_vk, user_sk):
+def signed_transfer_tx(signed_create_tx, user_vk, user_sk):
     from bigchaindb.models import Transaction
     inputs = signed_create_tx.to_inputs()
     tx = Transaction.transfer(inputs, [user_vk])
