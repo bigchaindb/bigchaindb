@@ -1,7 +1,6 @@
 import random
 import math
 import collections
-from copy import deepcopy
 from time import time
 
 from itertools import compress
@@ -626,9 +625,10 @@ class Bigchain(object):
 
         except r.ReqlNonExistenceError:
             # return last vote if last vote exists else return Genesis block
-            block = list(self.connection.run(
+            res = self.connection.run(
                 r.table('bigchain', read_mode=self.read_mode)
-                .filter(util.is_genesis_block)))[0]
+                .filter(util.is_genesis_block))
+            block = list(res)[0]
             return Block.from_dict(block)
 
         # Now the fun starts. Since the resolution of timestamp is a second,
