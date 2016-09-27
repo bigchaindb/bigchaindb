@@ -115,7 +115,7 @@ class BlockPipeline:
             block (Block): the block of transactions to write to the database.
 
         Returns:
-            The block.
+            The Block.
         """
         logger.info('Write new block {} with {} transactions'.format(block.id,
                     len(block.transactions)))
@@ -132,7 +132,7 @@ class BlockPipeline:
             The block.
         """
         r.table('backlog')\
-         .get_all(*[tx['id'] for tx in block.to_dict()['block']['transactions']])\
+         .get_all(*[tx.id for tx in block.transactions])\
          .delete(durability='hard')\
          .run(self.bigchain.conn)
 
