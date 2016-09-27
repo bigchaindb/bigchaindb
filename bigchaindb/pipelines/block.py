@@ -37,7 +37,7 @@ class BlockPipeline:
             tx (dict): the transaction to process.
 
         Returns:
-            The transaction (dict) if assigned to the current node,
+            dict: The transaction if assigned to the current node,
             ``None`` otherwise.
         """
         if tx['assignee'] == self.bigchain.me:
@@ -55,7 +55,8 @@ class BlockPipeline:
             tx (dict): the transaction to validate.
 
         Returns:
-            The transaction (Transaction) if valid, ``None`` otherwise.
+            :class:`~bigchaindb.models.Transaction`: The transaction if valid,
+            ``None`` otherwise.
         """
         tx = Transaction.from_dict(tx)
         if self.bigchain.transaction_exists(tx.id):
@@ -93,13 +94,14 @@ class BlockPipeline:
         - a timeout happened.
 
         Args:
-            tx (Transaction): the transaction to validate, might be None if
-                a timeout happens.
+            tx (:class:`~bigchaindb.models.Transaction`): the transaction
+                to validate, might be None if a timeout happens.
             timeout (bool): ``True`` if a timeout happened
                 (Default: ``False``).
 
         Returns:
-            The block (Block), if a block is ready, or ``None``.
+            :class:`~bigchaindb.models.Block`: The block,
+            if a block is ready, or ``None``.
         """
         if tx:
             self.txs.append(tx)
@@ -112,10 +114,11 @@ class BlockPipeline:
         """Write the block to the Database.
 
         Args:
-            block (Block): the block of transactions to write to the database.
+            block (:class:`~bigchaindb.models.Block`): the block of
+                transactions to write to the database.
 
         Returns:
-            The Block.
+            :class:`~bigchaindb.models.Block`: The Block.
         """
         logger.info('Write new block {} with {} transactions'.format(block.id,
                     len(block.transactions)))
@@ -126,10 +129,11 @@ class BlockPipeline:
         """Delete transactions.
 
         Args:
-            block (Block): the block containg the transactions to delete.
+            block (:class:`~bigchaindb.models.Block`): the block
+                containg the transactions to delete.
 
         Returns:
-            The block.
+            :class:`~bigchaindb.models.Block`: The block.
         """
         r.table('backlog')\
          .get_all(*[tx.id for tx in block.transactions])\

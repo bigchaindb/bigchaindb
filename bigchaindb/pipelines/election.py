@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class Election:
+    """Election class."""
 
     def __init__(self):
         self.bigchain = Bigchain()
@@ -25,6 +26,10 @@ class Election:
     def check_for_quorum(self, next_vote):
         """
         Checks if block has enough invalid votes to make a decision
+
+        Args:
+            next_vote: The next vote.
+
         """
         next_block = self.bigchain.connection.run(
                 r.table('bigchain')

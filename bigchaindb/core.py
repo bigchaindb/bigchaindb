@@ -669,7 +669,7 @@ class Bigchain(object):
         """Return all the blocks that have not been voted on by this node.
 
         Returns:
-            block (list(dict)): a list of unvoted blocks
+            :obj:`list` of :obj:`dict`: a list of unvoted blocks
         """
 
         unvoted = self.connection.run(
