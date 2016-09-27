@@ -1,6 +1,3 @@
-from functools import reduce
-from operator import and_
-
 from bigchaindb_common.crypto import hash_data, VerifyingKey, SigningKey
 from bigchaindb_common.exceptions import (InvalidHash, InvalidSignature,
                                           OperationError, DoubleSpend,
@@ -23,8 +20,10 @@ class Transaction(Transaction):
 
         Raises:
             OperationError: if the transaction operation is not supported
-            TransactionDoesNotExist: if the input of the transaction is not found
-            TransactionOwnerError: if the new transaction is using an input it doesn't own
+            TransactionDoesNotExist: if the input of the transaction is not
+                                     found
+            TransactionOwnerError: if the new transaction is using an input it
+                                   doesn't own
             DoubleSpend: if the transaction is a double spend
             InvalidHash: if the hash of the transaction is wrong
             InvalidSignature: if the signature of the transaction is wrong
@@ -33,14 +32,15 @@ class Transaction(Transaction):
             raise ValueError('Transaction contains no fulfillments')
 
         input_conditions = []
-        inputs_defined = reduce(and_, [bool(ffill.tx_input) for ffill
-                                       in self.fulfillments])
+        inputs_defined = all([ffill.tx_input for ffill in self.fulfillments])
+
         if self.operation in (Transaction.CREATE, Transaction.GENESIS):
             if inputs_defined:
                 raise ValueError('A CREATE operation has no inputs')
         elif self.operation == Transaction.TRANSFER:
             if not inputs_defined:
-                raise ValueError('Only `CREATE` transactions can have null inputs')
+                raise ValueError('Only `CREATE` transactions can have null '
+                                 'inputs')
 
             for ffill in self.fulfillments:
                 input_txid = ffill.tx_input.txid
@@ -49,16 +49,17 @@ class Transaction(Transaction):
                 if input_tx is None:
                     raise TransactionDoesNotExist("input `{}` doesn't exist"
                                                   .format(input_txid))
-                else:
-                    input_conditions.append(input_tx.conditions[input_cid])
 
                 spent = bigchain.get_spent(input_txid, ffill.tx_input.cid)
                 if spent and spent.id != self.id:
                     raise DoubleSpend('input `{}` was already spent'
                                       .format(input_txid))
+
+                input_conditions.append(input_tx.conditions[input_cid])
         else:
-            raise TypeError('`operation` must be either `TRANSFER`, `CREATE` '
-                            'or `GENESIS`')
+            allowed_operations = ', '.join(Transaction.ALLOWED_OPERATIONS)
+            raise TypeError('`operation`: `{}` must be either {}.'
+                            .format(self.operation, allowed_operations))
 
         if not self.fulfillments_valid(input_conditions):
             raise InvalidSignature()
@@ -71,17 +72,13 @@ class Block(object):
                  voters=None, signature=None):
         if transactions is not None and not isinstance(transactions, list):
             raise TypeError('`transactions` must be a list instance or None')
-        elif transactions is None:
-            self.transactions = []
         else:
-            self.transactions = transactions
+            self.transactions = transactions or []
 
         if voters is not None and not isinstance(voters, list):
             raise TypeError('`voters` must be a list instance or None')
-        elif transactions is None:
-            self.voters = []
         else:
-            self.voters = voters
+            self.voters = voters or []
 
         if timestamp is not None:
             self.timestamp = timestamp
@@ -146,6 +143,8 @@ class Block(object):
         block_serialized = serialize(block)
         verifying_key = VerifyingKey(block['node_pubkey'])
         try:
+            # NOTE: CC throws a `ValueError` on some wrong signatures
+            #       https://github.com/bigchaindb/cryptoconditions/issues/27
             return verifying_key.verify(block_serialized, self.signature)
         except (ValueError, AttributeError):
             return False
@@ -166,8 +165,8 @@ class Block(object):
             raise InvalidHash()
 
         if signature is not None:
-            # TODO FOR CC: `verify` should accept an arbitrary string and then
-            #              return `False` or `True`. Shouldn't throw value err.
+            # NOTE: CC throws a `ValueError` on some wrong signatures
+            #       https://github.com/bigchaindb/cryptoconditions/issues/27
             try:
                 signature_valid = verifying_key.verify(block_serialized,
                                                        signature)
