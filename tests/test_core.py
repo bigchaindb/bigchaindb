@@ -19,7 +19,8 @@ def config(request, monkeypatch):
         },
         'keyring': [],
         'CONFIGURED': True,
-        'consensus_plugin': 'default'
+        'consensus_plugin': 'default',
+        'backlog_reassign_delay': 30
     }
 
     monkeypatch.setattr('bigchaindb.config', config)

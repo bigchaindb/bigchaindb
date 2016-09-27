@@ -145,7 +145,8 @@ def test_env_config(monkeypatch):
 
 def test_autoconfigure_read_both_from_file_and_env(monkeypatch):
     file_config = {
-        'database': {'host': 'test-host'}
+        'database': {'host': 'test-host'},
+        'backlog_reassign_delay': 5
     }
     monkeypatch.setattr('bigchaindb.config_utils.file_config', lambda *args, **kwargs: file_config)
     monkeypatch.setattr('os.environ', {'BIGCHAINDB_DATABASE_NAME': 'test-dbname',
@@ -180,6 +181,7 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch):
         },
         'api_endpoint': 'http://localhost:9984/api/v1',
         'consensus_plugin': 'default',
+        'backlog_reassign_delay': 5
     }
 
 

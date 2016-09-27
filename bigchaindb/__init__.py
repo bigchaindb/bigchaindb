@@ -31,6 +31,7 @@ config = {
     },
     'api_endpoint': 'http://localhost:9984/api/v1',
     'consensus_plugin': 'default',
+    'backlog_reassign_delay': 30
 }
 
 # We need to maintain a backup copy of the original config dict in case
