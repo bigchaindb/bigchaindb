@@ -13,6 +13,7 @@ Appendices
    json-serialization
    cryptography
    the-Bigchain-class
+   pipelines
    aws-setup
    firewall-notes
    ntp-notes
