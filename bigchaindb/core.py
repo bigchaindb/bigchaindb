@@ -274,7 +274,7 @@ class Bigchain(object):
             index (str): name of a secondary index, e.g. 'transaction_id'
 
         Returns:
-            A list of blocks (list(dict))with with only election information
+            :obj:`list` of :obj:`dict`: A list of blocks with with only election information
         """
         # First, get information on all blocks which contain this transaction
         response = self.connection.run(
