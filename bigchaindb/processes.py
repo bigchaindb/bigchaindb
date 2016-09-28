@@ -5,7 +5,6 @@ import bigchaindb
 from bigchaindb.pipelines import vote, block, election, stale
 from bigchaindb.web import server
 
-
 logger = logging.getLogger(__name__)
 
 BANNER = """
@@ -13,9 +12,9 @@ BANNER = """
 *                                                                          *
 *   Initialization complete. BigchainDB is ready and waiting for events.   *
 *   You can send events through the API documented at:                     *
-*    - http://docs.bigchaindb.apiary.io/                                   *
+* https://bigchaindb.readthedocs.io/en/latest/drivers-clients/http-client-server-api.html *
 *                                                                          *
-*   Listening to client connections on: {:<15}                    *
+*   Listening to client connections on: {:<15}                             *
 *                                                                          *
 ****************************************************************************
 """

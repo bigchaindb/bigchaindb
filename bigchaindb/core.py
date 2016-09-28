@@ -381,7 +381,7 @@ class Bigchain(object):
         else:
             return None
 
-    def get_owned_ids(self, owner):
+    def get_unspents(self, owner):
         """Retrieve a list of `txids` that can we used has inputs.
 
         Args:

@@ -10,7 +10,7 @@ TX_ENDPOINT = '/api/v1/transactions/'
 
 @pytest.mark.usefixtures('inputs')
 def test_get_transaction_endpoint(b, client, user_vk):
-    input_tx = b.get_owned_ids(user_vk).pop()
+    input_tx = b.get_unspents(user_vk).pop()
     tx = b.get_transaction(input_tx['txid'])
     res = client.get(TX_ENDPOINT + input_tx['txid'])
     assert res.status_code == 200
@@ -60,7 +60,7 @@ def test_post_create_transaction_endpoint_without_trailing_slash(b, client):
 @pytest.mark.usefixtures('inputs')
 def test_post_transfer_transaction_endpoint(b, client, user_vk, user_sk):
     sk, vk = crypto.generate_key_pair()
-    input_valid = b.get_owned_ids(user_vk).pop()
+    input_valid = b.get_unspents(user_vk).pop()
 
     transfer = util.create_and_sign_tx(user_sk, user_vk, vk, input_valid)
     res = client.post(TX_ENDPOINT, data=json.dumps(transfer))
@@ -72,7 +72,7 @@ def test_post_transfer_transaction_endpoint(b, client, user_vk, user_sk):
 @pytest.mark.usefixtures('inputs')
 def test_post_invalid_transfer_transaction_returns_400(b, client, user_vk, user_sk):
     sk, vk = crypto.generate_key_pair()
-    input_valid = b.get_owned_ids(user_vk).pop()
+    input_valid = b.get_unspents(user_vk).pop()
     transfer = b.create_transaction(user_vk, vk, input_valid, 'TRANSFER')
     # transfer is not signed
     res = client.post(TX_ENDPOINT, data=json.dumps(transfer))
@@ -82,7 +82,7 @@ def test_post_invalid_transfer_transaction_returns_400(b, client, user_vk, user_
 
 @pytest.mark.usefixtures('inputs')
 def test_get_transaction_status_endpoint(b, client, user_vk):
-    input_tx = b.get_owned_ids(user_vk).pop()
+    input_tx = b.get_unspents(user_vk).pop()
     tx, status = b.get_transaction(input_tx['txid'], include_status=True)
     res = client.get(TX_ENDPOINT + input_tx['txid'] + "/status")
     assert status == res.json['status']

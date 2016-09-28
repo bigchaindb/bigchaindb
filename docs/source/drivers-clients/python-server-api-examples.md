@@ -139,7 +139,7 @@ Since a transaction can have multiple outputs with each its own (crypto)conditio
 testuser2_priv, testuser2_pub = crypto.generate_key_pair()
 
 # Retrieve the transaction with condition id
-tx_retrieved_id = b.get_owned_ids(testuser1_pub).pop()
+tx_retrieved_id = b.get_unspents(testuser1_pub).pop()
 tx_retrieved_id
 ```
 
@@ -315,7 +315,7 @@ To do so, simply provide a list of all private keys to the signing routine:
 testuser3_priv, testuser3_pub = crypto.generate_key_pair()
 
 # Retrieve the multisig transaction
-tx_multisig_retrieved_id = b.get_owned_ids(testuser2_pub).pop()
+tx_multisig_retrieved_id = b.get_unspents(testuser2_pub).pop()
 
 # Transfer the asset from the 2 owners to the third testuser 
 tx_multisig_transfer = b.create_transaction([testuser1_pub, testuser2_pub], testuser3_pub, tx_multisig_retrieved_id, 'TRANSFER')
@@ -393,7 +393,7 @@ for i in range(3):
     b.write_transaction(tx_mimo_asset_signed)
 
 # Wait until they appear on the bigchain and get the inputs
-owned_mimo_inputs = b.get_owned_ids(testuser1_pub)
+owned_mimo_inputs = b.get_unspents(testuser1_pub)
 
 # Check the number of assets
 print(len(owned_mimo_inputs))
@@ -547,7 +547,7 @@ thresholduser2_priv, thresholduser2_pub = crypto.generate_key_pair()
 thresholduser3_priv, thresholduser3_pub = crypto.generate_key_pair()
 
 # Retrieve the last transaction of testuser2
-tx_retrieved_id = b.get_owned_ids(testuser2_pub).pop()
+tx_retrieved_id = b.get_unspents(testuser2_pub).pop()
 
 # Create a base template for a 1-input/2-output transaction
 threshold_tx = b.create_transaction(testuser2_pub, [thresholduser1_pub, thresholduser2_pub, thresholduser3_pub], tx_retrieved_id, 'TRANSFER')
@@ -662,7 +662,7 @@ The fulfillment involves:
 thresholduser4_priv, thresholduser4_pub = crypto.generate_key_pair()
 
 # Retrieve the last transaction of thresholduser1_pub
-tx_retrieved_id = b.get_owned_ids(thresholduser1_pub).pop()
+tx_retrieved_id = b.get_unspents(thresholduser1_pub).pop()
 
 # Create a base template for a 2-input/1-output transaction
 threshold_tx_transfer = b.create_transaction([thresholduser1_pub, thresholduser2_pub, thresholduser3_pub], thresholduser4_pub, tx_retrieved_id, 'TRANSFER')
@@ -1050,7 +1050,7 @@ The following code snippet shows how to create an escrow condition:
 
 ```python
 # Retrieve the last transaction of testuser2_pub (or create a new asset)
-tx_retrieved_id = b.get_owned_ids(testuser2_pub).pop()
+tx_retrieved_id = b.get_unspents(testuser2_pub).pop()
 
 # Create a base template with the execute and abort address
 tx_escrow = b.create_transaction(testuser2_pub, [testuser2_pub, testuser1_pub], tx_retrieved_id, 'TRANSFER')
