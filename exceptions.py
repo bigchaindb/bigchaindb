@@ -72,3 +72,11 @@ class CyclicBlockchainError(Exception):
 class FulfillmentNotInValidBlock(Exception):
     """Raised when a transaction depends on an invalid or undecided
     fulfillment"""
+
+
+class AssetIdMismatch(Exception):
+    """Raised when multiple transaction inputs related to different assets"""
+
+
+class AmountError(Exception):
+    """Raised when the amount of a non-divisible asset is different then 1"""
