@@ -13,6 +13,7 @@ Appendices
    json-serialization
    cryptography
    the-Bigchain-class
+   consensus
    pipelines
    aws-setup
    firewall-notes
