@@ -556,9 +556,12 @@ class TestTransactionValidation(object):
         with pytest.raises(InvalidSignature):
             b.validate_transaction(tx)
 
-    @pytest.mark.usefixtures('inputs')
-    def test_non_create_double_spend(self, b, signed_transfer_tx):
+    def test_non_create_double_spend(self, b, signed_create_tx,
+                                     signed_transfer_tx):
         from bigchaindb_common.exceptions import DoubleSpend
+
+        block1 = b.create_block([signed_create_tx])
+        b.write_block(block1)
 
         b.write_transaction(signed_transfer_tx)
         block = b.create_block([signed_transfer_tx])
