@@ -170,17 +170,17 @@ def create_pipeline():
     """Create and return the pipeline of operations to be distributed
     on different processes."""
 
-    block = BlockPipeline()
+    block_pipeline = BlockPipeline()
 
-    block_pipeline = Pipeline([
-        Node(block.filter_tx),
-        Node(block.validate_tx, fraction_of_cores=1),
-        Node(block.create, timeout=1),
-        Node(block.write),
-        Node(block.delete_tx),
+    pipeline = Pipeline([
+        Node(block_pipeline.filter_tx),
+        Node(block_pipeline.validate_tx, fraction_of_cores=1),
+        Node(block_pipeline.create, timeout=1),
+        Node(block_pipeline.write),
+        Node(block_pipeline.delete_tx),
     ])
 
-    return block_pipeline
+    return pipeline
 
 
 def start():
