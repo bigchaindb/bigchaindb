@@ -137,8 +137,8 @@ def metadata(data, data_id):
 
 @pytest.fixture
 def utx(user_ffill, user_cond):
-    from bigchaindb_common.transaction import Transaction
-    return Transaction(Transaction.CREATE, [user_ffill], [user_cond])
+    from bigchaindb_common.transaction import Transaction, Asset
+    return Transaction(Transaction.CREATE, Asset(), [user_ffill], [user_cond])
 
 
 @pytest.fixture
@@ -149,12 +149,12 @@ def tx(utx, user_priv):
 @pytest.fixture
 def transfer_utx(user_cond, user2_cond, utx):
     from bigchaindb_common.transaction import (Fulfillment, TransactionLink,
-                                               Transaction)
+                                               Transaction, Asset)
     user_cond = user_cond.to_dict()
     ffill = Fulfillment(utx.conditions[0].fulfillment,
                         user_cond['owners_after'],
                         TransactionLink(utx.id, 0))
-    return Transaction('TRANSFER', [ffill], [user2_cond])
+    return Transaction('TRANSFER', Asset(), [ffill], [user2_cond])
 
 
 @pytest.fixture
