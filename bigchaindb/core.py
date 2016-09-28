@@ -171,15 +171,17 @@ class Bigchain(object):
     def is_valid_transaction(self, transaction):
         """Check whether a transaction is valid or invalid.
 
-        Similar to `validate_transaction` but never raises an exception.
-        It returns `False` if the transaction is invalid.
+        Similar to :meth:`~bigchaindb.Bigchain.validate_transaction`
+        but never raises an exception. It returns :obj:`False` if
+        the transaction is invalid.
 
         Args:
-            transaction (Transaction): transaction to check.
+            transaction (:Class:`~bigchaindb.models.Transaction`): transaction
+                to check.
 
         Returns:
-            `transaction` (Transaction) if the transaction is valid, otherwise
-            `False`
+            The :class:`~bigchaindb.models.Transaction` instance if valid,
+            otherwise :obj:`False`.
         """
 
         try:
