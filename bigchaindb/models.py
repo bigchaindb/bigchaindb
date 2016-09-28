@@ -131,11 +131,11 @@ class Block(object):
 
         return self
 
-    def sign(self, private_key):
+    def sign(self, signing_key):
         block_body = self.to_dict()
         block_serialized = serialize(block_body['block'])
-        private_key = SigningKey(private_key)
-        self.signature = private_key.sign(block_serialized)
+        signing_key = SigningKey(signing_key)
+        self.signature = signing_key.sign(block_serialized)
         return self
 
     def is_signature_valid(self):
