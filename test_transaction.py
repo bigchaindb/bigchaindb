@@ -79,9 +79,10 @@ def test_condition_serialization(user_Ed25519, user_pub):
             'details': user_Ed25519.to_dict(),
         },
         'owners_after': [user_pub],
+        'amount': 1,
     }
 
-    cond = Condition(user_Ed25519, [user_pub])
+    cond = Condition(user_Ed25519, [user_pub], 1)
 
     assert cond.to_dict() == expected
 
@@ -89,13 +90,14 @@ def test_condition_serialization(user_Ed25519, user_pub):
 def test_condition_deserialization(user_Ed25519, user_pub):
     from bigchaindb_common.transaction import Condition
 
-    expected = Condition(user_Ed25519, [user_pub])
+    expected = Condition(user_Ed25519, [user_pub], 1)
     cond = {
         'condition': {
             'uri': user_Ed25519.condition_uri,
             'details': user_Ed25519.to_dict()
         },
         'owners_after': [user_pub],
+        'amount': 1,
     }
     cond = Condition.from_dict(cond)
 
@@ -114,8 +116,9 @@ def test_condition_hashlock_serialization():
             'uri': hashlock,
         },
         'owners_after': None,
+        'amount': 1,
     }
-    cond = Condition(hashlock)
+    cond = Condition(hashlock, amount=1)
 
     assert cond.to_dict() == expected
 
@@ -126,13 +129,14 @@ def test_condition_hashlock_deserialization():
 
     secret = b'wow much secret'
     hashlock = PreimageSha256Fulfillment(preimage=secret).condition_uri
-    expected = Condition(hashlock)
+    expected = Condition(hashlock, amount=1)
 
     cond = {
         'condition': {
             'uri': hashlock
         },
         'owners_after': None,
+        'amount': 1,
     }
     cond = Condition.from_dict(cond)
 
