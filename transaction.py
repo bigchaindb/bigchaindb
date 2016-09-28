@@ -10,8 +10,7 @@ from cryptoconditions.exceptions import ParsingError
 
 from bigchaindb_common.crypto import SigningKey, hash_data
 from bigchaindb_common.exceptions import (KeypairMismatchException,
-                                          InvalidHash, InvalidSignature,
-                                          AmountError)
+                                          InvalidHash, InvalidSignature)
 from bigchaindb_common.util import serialize, gen_timestamp
 
 
@@ -245,7 +244,6 @@ class Asset(object):
         else:
             self.data = data
 
-        # TODO: Add ID method here I guess
         self.data_id = data_id if data_id is not None else self.to_hash()
         self.divisible = divisible
         self.updatable = updatable
@@ -358,14 +356,14 @@ class Transaction(object):
             self.metadata = metadata
 
     @classmethod
-    def create(cls, owners_before, owners_after, payload=None, secret=None,
+    def create(cls, owners_before, owners_after, data=None, secret=None,
                time_expire=None):
         if not isinstance(owners_before, list):
             raise TypeError('`owners_before` must be a list instance')
         if not isinstance(owners_after, list):
             raise TypeError('`owners_after` must be a list instance')
 
-        metadata = Metadata(payload)
+        metadata = Metadata(data)
         if len(owners_before) == len(owners_after) and len(owners_after) == 1:
             # NOTE: Standard case, one owner before, one after.
             # NOTE: For this case its sufficient to use the same
@@ -414,7 +412,7 @@ class Transaction(object):
             raise ValueError("These are not the cases you're looking for ;)")
 
     @classmethod
-    def transfer(cls, inputs, owners_after, payload=None):
+    def transfer(cls, inputs, owners_after, data=None):
         if not isinstance(inputs, list):
             raise TypeError('`inputs` must be a list instance')
         if len(inputs) == 0:
@@ -450,7 +448,7 @@ class Transaction(object):
             raise ValueError("`inputs` and `owners_after`'s count must be the "
                              "same")
 
-        metadata = Metadata(payload)
+        metadata = Metadata(data)
         inputs = deepcopy(inputs)
         return cls(cls.TRANSFER, inputs, conditions, metadata)
 
