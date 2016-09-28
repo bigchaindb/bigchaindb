@@ -109,9 +109,11 @@ class TransactionLink(object):
 
 
 class Condition(object):
-    def __init__(self, fulfillment, owners_after=None):
+    def __init__(self, fulfillment, owners_after=None, amount=1):
         # TODO: Add more description
         self.fulfillment = fulfillment
+        # TODO: Not sure if we should validate for value here
+        self.amount = amount
 
         if not isinstance(owners_after, list) and owners_after is not None:
             raise TypeError('`owners_after` must be a list instance or None')
@@ -137,7 +139,8 @@ class Condition(object):
 
         cond = {
             'owners_after': self.owners_after,
-            'condition': condition
+            'condition': condition,
+            'amount': self.amount
         }
         if cid is not None:
             cond['cid'] = cid
@@ -232,7 +235,7 @@ class Condition(object):
         except KeyError:
             # NOTE: Hashlock condition case
             fulfillment = cond['condition']['uri']
-        return cls(fulfillment, cond['owners_after'])
+        return cls(fulfillment, cond['owners_after'], cond['amount'])
 
 
 class Asset(object):
