@@ -300,7 +300,7 @@ def test_transaction_serialization(user_ffill, user_cond):
             'conditions': [user_cond.to_dict(0)],
             'operation': Transaction.CREATE,
             'timestamp': timestamp,
-            'data': None,
+            'metadata': None,
         }
     }
 
@@ -329,7 +329,7 @@ def test_transaction_deserialization(user_ffill, user_cond):
             'conditions': [user_cond.to_dict()],
             'operation': Transaction.CREATE,
             'timestamp': timestamp,
-            'data': None,
+            'metadata': None,
         }
     }
     tx_no_signatures = Transaction._remove_signatures(tx)
@@ -358,13 +358,13 @@ def test_tx_serialization_with_incorrect_hash(utx):
 def test_invalid_tx_initialization():
     from bigchaindb_common.transaction import Transaction
 
-    wrong_data_type = {'payload': 'a totally wrong datatype'}
+    wrong_metadata_type = {'data': 'a totally wrong metadatatype'}
     with raises(TypeError):
-        Transaction(Transaction.CREATE, wrong_data_type)
+        Transaction(Transaction.CREATE, wrong_metadata_type)
     with raises(TypeError):
-        Transaction(Transaction.CREATE, [], wrong_data_type)
+        Transaction(Transaction.CREATE, [], wrong_metadata_type)
     with raises(TypeError):
-        Transaction(Transaction.CREATE, [], [], wrong_data_type)
+        Transaction(Transaction.CREATE, [], [], wrong_metadata_type)
     with raises(TypeError):
         Transaction('RANSFER', [], [])
 
@@ -378,32 +378,32 @@ def test_invalid_fulfillment_initialization(user_ffill, user_pub):
         Fulfillment(user_ffill, [], tx_input='somethingthatiswrong')
 
 
-def test_invalid_data_initialization():
-    from bigchaindb_common.transaction import Data
+def test_invalid_metadata_initialization():
+    from bigchaindb_common.transaction import Metadata
 
     with raises(TypeError):
-        Data([])
+        Metadata([])
 
 
-def test_data_serialization(payload, payload_id):
-    from bigchaindb_common.transaction import Data
+def test_metadata_serialization(data, data_id):
+    from bigchaindb_common.transaction import Metadata
 
     expected = {
-        'payload': payload,
-        'uuid': payload_id
+        'data': data,
+        'id': data_id,
     }
-    data = Data(payload, payload_id)
+    metadata = Metadata(data, data_id)
 
-    assert data.to_dict() == expected
+    assert metadata.to_dict() == expected
 
 
-def test_data_deserialization(payload, payload_id):
-    from bigchaindb_common.transaction import Data
+def test_metadata_deserialization(data, data_id):
+    from bigchaindb_common.transaction import Metadata
 
-    expected = Data(payload, payload_id)
-    data = Data.from_dict({'payload': payload, 'uuid': payload_id})
+    expected = Metadata(data, data_id)
+    metadata = Metadata.from_dict({'data': data, 'id': data_id})
 
-    assert data == expected
+    assert metadata == expected
 
 
 def test_transaction_link_serialization():
@@ -675,8 +675,8 @@ def test_create_create_transaction_single_io(user_cond, user_pub):
     expected = {
         'transaction': {
             'conditions': [user_cond.to_dict(0)],
-            'data': {
-                'payload': {
+            'metadata': {
+                'data': {
                     'message': 'hello'
                 }
             },
@@ -695,10 +695,10 @@ def test_create_create_transaction_single_io(user_cond, user_pub):
         'version': 1
     }
 
-    payload = {'message': 'hello'}
-    tx = Transaction.create([user_pub], [user_pub], payload).to_dict()
+    data = {'message': 'hello'}
+    tx = Transaction.create([user_pub], [user_pub], data).to_dict()
     tx.pop('id')
-    tx['transaction']['data'].pop('uuid')
+    tx['transaction']['metadata'].pop('id')
     tx['transaction'].pop('timestamp')
     tx['transaction']['fulfillments'][0]['fulfillment'] = None
 
@@ -721,8 +721,8 @@ def test_create_create_transaction_multiple_io(user_cond, user2_cond, user_pub,
     expected = {
         'transaction': {
             'conditions': [user_cond.to_dict(0), user2_cond.to_dict(1)],
-            'data': {
-                'payload': {
+            'metadata': {
+                'data': {
                     'message': 'hello'
                 }
             },
@@ -751,7 +751,7 @@ def test_create_create_transaction_multiple_io(user_cond, user2_cond, user_pub,
     tx = Transaction.create([user_pub, user2_pub], [user_pub, user2_pub],
                             {'message': 'hello'}).to_dict()
     tx.pop('id')
-    tx['transaction']['data'].pop('uuid')
+    tx['transaction']['metadata'].pop('id')
     tx['transaction'].pop('timestamp')
 
     assert tx == expected
@@ -776,8 +776,8 @@ def test_create_create_transaction_threshold(user_pub, user2_pub, user3_pub,
     expected = {
         'transaction': {
             'conditions': [user_user2_threshold_cond.to_dict(0)],
-            'data': {
-                'payload': {
+            'metadata': {
+                'data': {
                     'message': 'hello'
                 }
             },
@@ -798,7 +798,7 @@ def test_create_create_transaction_threshold(user_pub, user2_pub, user3_pub,
     tx = Transaction.create([user_pub], [user_pub, user2_pub],
                             {'message': 'hello'}).to_dict()
     tx.pop('id')
-    tx['transaction']['data'].pop('uuid')
+    tx['transaction']['metadata'].pop('id')
     tx['transaction'].pop('timestamp')
     tx['transaction']['fulfillments'][0]['fulfillment'] = None
 
@@ -825,8 +825,8 @@ def test_create_create_transaction_hashlock(user_pub):
     expected = {
         'transaction': {
             'conditions': [cond.to_dict(0)],
-            'data': {
-                'payload': {
+            'metadata': {
+                'data': {
                     'message': 'hello'
                 }
             },
@@ -848,7 +848,7 @@ def test_create_create_transaction_hashlock(user_pub):
     tx = Transaction.create([user_pub], [], {'message': 'hello'},
                             secret).to_dict()
     tx.pop('id')
-    tx['transaction']['data'].pop('uuid')
+    tx['transaction']['metadata'].pop('id')
     tx['transaction'].pop('timestamp')
     tx['transaction']['fulfillments'][0]['fulfillment'] = None
 
@@ -901,7 +901,7 @@ def test_create_transfer_transaction_single_io(tx, user_pub, user2_pub,
     expected = {
         'transaction': {
             'conditions': [user2_cond.to_dict(0)],
-            'data': None,
+            'metadata': None,
             'fulfillments': [
                 {
                     'owners_before': [
@@ -951,7 +951,7 @@ def test_create_transfer_transaction_multiple_io(user_pub, user_priv,
     expected = {
         'transaction': {
             'conditions': [user2_cond.to_dict(0), user2_cond.to_dict(1)],
-            'data': None,
+            'metadata': None,
             'fulfillments': [
                 {
                     'owners_before': [
