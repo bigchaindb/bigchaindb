@@ -237,7 +237,10 @@ class Bigchain(object):
 
         else:
             # Otherwise, check the backlog
-            response = self.connection.run(r.table('backlog').get(txid))
+            response = self.connection.run(r.table('backlog')
+                                           .get(txid)
+                                           .without('assignee', 'assignment_timestamp')
+                                           .default(None))
             if response:
                 tx_status = self.TX_IN_BACKLOG
 
