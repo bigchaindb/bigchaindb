@@ -236,35 +236,35 @@ class Condition(object):
         return cls(fulfillment, cond['owners_after'])
 
 
-class Data(object):
-    def __init__(self, payload=None, payload_id=None):
-        if payload_id is not None:
-            self.payload_id = payload_id
+class Metadata(object):
+    def __init__(self, data=None, data_id=None):
+        if data_id is not None:
+            self.data_id = data_id
         else:
-            self.payload_id = self.to_hash()
+            self.data_id = self.to_hash()
 
-        if payload is not None and not isinstance(payload, dict):
-            raise TypeError('`payload` must be a dict instance or None')
+        if data is not None and not isinstance(data, dict):
+            raise TypeError('`data` must be a dict instance or None')
         else:
-            self.payload = payload
+            self.data = data
 
     def __eq__(self, other):
         return self.to_dict() == other.to_dict()
 
     @classmethod
-    def from_dict(cls, payload):
+    def from_dict(cls, data):
         try:
-            return cls(payload['payload'], payload['uuid'])
+            return cls(data['data'], data['id'])
         except TypeError:
             return cls()
 
     def to_dict(self):
-        if self.payload is None:
+        if self.data is None:
             return None
         else:
             return {
-                'payload': self.payload,
-                'uuid': self.payload_id,
+                'data': self.data,
+                'id': self.data_id,
             }
 
     def to_hash(self):
@@ -279,7 +279,7 @@ class Transaction(object):
     VERSION = 1
 
     def __init__(self, operation, fulfillments=None, conditions=None,
-                 data=None, timestamp=None, version=None):
+                 metadata=None, timestamp=None, version=None):
         # TODO: Write a comment
         if version is not None:
             self.version = version
@@ -312,10 +312,10 @@ class Transaction(object):
         else:
             self.fulfillments = fulfillments
 
-        if data is not None and not isinstance(data, Data):
-            raise TypeError('`data` must be a Data instance or None')
+        if metadata is not None and not isinstance(metadata, Metadata):
+            raise TypeError('`metadata` must be a Metadata instance or None')
         else:
-            self.data = data
+            self.metadata = metadata
 
     @classmethod
     def create(cls, owners_before, owners_after, payload=None, secret=None,
@@ -325,7 +325,7 @@ class Transaction(object):
         if not isinstance(owners_after, list):
             raise TypeError('`owners_after` must be a list instance')
 
-        data = Data(payload)
+        metadata = Metadata(payload)
         if len(owners_before) == len(owners_after) and len(owners_after) == 1:
             # NOTE: Standard case, one owner before, one after.
             # NOTE: For this case its sufficient to use the same
@@ -333,7 +333,7 @@ class Transaction(object):
             ffill = Ed25519Fulfillment(public_key=owners_before[0])
             ffill_tx = Fulfillment(ffill, owners_before)
             cond_tx = Condition.generate(owners_after)
-            return cls(cls.CREATE, [ffill_tx], [cond_tx], data)
+            return cls(cls.CREATE, [ffill_tx], [cond_tx], metadata)
 
         elif len(owners_before) == len(owners_after) and len(owners_after) > 1:
             raise NotImplementedError('Multiple inputs and outputs not'
@@ -343,14 +343,14 @@ class Transaction(object):
                                   [owner_before])
                       for owner_before in owners_before]
             conds = [Condition.generate(owners) for owners in owners_after]
-            return cls(cls.CREATE, ffills, conds, data)
+            return cls(cls.CREATE, ffills, conds, metadata)
 
         elif len(owners_before) == 1 and len(owners_after) > 1:
             # NOTE: Multiple owners case
             cond_tx = Condition.generate(owners_after)
             ffill = Ed25519Fulfillment(public_key=owners_before[0])
             ffill_tx = Fulfillment(ffill, owners_before)
-            return cls(cls.CREATE, [ffill_tx], [cond_tx], data)
+            return cls(cls.CREATE, [ffill_tx], [cond_tx], metadata)
 
         elif (len(owners_before) == 1 and len(owners_after) == 0 and
               secret is not None):
@@ -359,7 +359,7 @@ class Transaction(object):
             cond_tx = Condition(hashlock.condition_uri)
             ffill = Ed25519Fulfillment(public_key=owners_before[0])
             ffill_tx = Fulfillment(ffill, owners_before)
-            return cls(cls.CREATE, [ffill_tx], [cond_tx], data)
+            return cls(cls.CREATE, [ffill_tx], [cond_tx], metadata)
 
         elif (len(owners_before) > 0 and len(owners_after) == 0 and
               time_expire is not None):
@@ -410,9 +410,9 @@ class Transaction(object):
             raise ValueError("`inputs` and `owners_after`'s count must be the "
                              "same")
 
-        data = Data(payload)
+        metadata = Metadata(payload)
         inputs = deepcopy(inputs)
-        return cls(cls.TRANSFER, inputs, conditions, data)
+        return cls(cls.TRANSFER, inputs, conditions, metadata)
 
     def __eq__(self, other):
         try:
@@ -483,8 +483,8 @@ class Transaction(object):
             #       and fulfillment we're currently working on plus all
             #       previously signed ones.
             tx_partial = Transaction(self.operation, [fulfillment],
-                                     [condition], self.data, self.timestamp,
-                                     self.version)
+                                     [condition], self.metadata,
+                                     self.timestamp, self.version)
 
             tx_partial_dict = tx_partial.to_dict()
             tx_partial_dict = Transaction._remove_signatures(tx_partial_dict)
@@ -575,10 +575,11 @@ class Transaction(object):
 
         def gen_tx(fulfillment, condition, input_condition_uri=None):
             tx = Transaction(self.operation, [fulfillment], [condition],
-                             self.data, self.timestamp, self.version)
+                             self.metadata, self.timestamp, self.version)
             tx_dict = tx.to_dict()
             tx_dict = Transaction._remove_signatures(tx_dict)
             tx_serialized = Transaction._to_str(tx_dict)
+
             return Transaction._fulfillment_valid(fulfillment, self.operation,
                                                   tx_serialized,
                                                   input_condition_uri)
@@ -612,10 +613,10 @@ class Transaction(object):
 
     def to_dict(self):
         try:
-            data = self.data.to_dict()
+            metadata = self.metadata.to_dict()
         except AttributeError:
-            # NOTE: data can be None and that's OK
-            data = None
+            # NOTE: metadata can be None and that's OK
+            metadata = None
 
         tx_body = {
             'fulfillments': [fulfillment.to_dict(fid) for fid, fulfillment
@@ -624,7 +625,7 @@ class Transaction(object):
                            in enumerate(self.conditions)],
             'operation': str(self.operation),
             'timestamp': self.timestamp,
-            'data': data,
+            'metadata': metadata,
         }
         tx = {
             'version': self.version,
@@ -692,7 +693,7 @@ class Transaction(object):
                             in tx['fulfillments']]
             conditions = [Condition.from_dict(condition) for condition
                           in tx['conditions']]
-            data = Data.from_dict(tx['data'])
+            metadata = Metadata.from_dict(tx['metadata'])
 
-            return cls(tx['operation'], fulfillments, conditions, data,
+            return cls(tx['operation'], fulfillments, conditions, metadata,
                        tx['timestamp'], tx_body['version'])
