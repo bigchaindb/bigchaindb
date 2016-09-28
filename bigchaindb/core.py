@@ -301,10 +301,12 @@ class Bigchain(object):
         blocks = self.search_block_election_on_index(txid, 'transaction_id')
         if blocks:
             # Determine the election status of each block
-            validity = {}
-            for block in blocks:
-                validity[block['id']] = self.block_election_status(block['id'],
-                                                                   block['block']['voters'])
+            validity = {
+                block['id']: self.block_election_status(
+                    block['id'],
+                    block['block']['voters']
+                ) for block in blocks
+            }
 
             # NOTE: If there are multiple valid blocks with this transaction,
             #       something has gone wrong
