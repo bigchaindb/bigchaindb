@@ -19,7 +19,7 @@ The federation must decide some things before setting up the initial cluster (in
 2. What will the replication factor be? (It must be 3 or more for [RethinkDB failover](https://rethinkdb.com/docs/failover/) to work.)
 3. Which node will be responsible for sending the commands to configure the RethinkDB database?
 
-Once those things have been decided, each node operator can begin [setting up their BigchainDB (production) node](../prod-node-setup-mgmt/index.html).
+Once those things have been decided, each node operator can begin setting up their BigchainDB (production) node.
 
 Each node operator will eventually need two pieces of information from all other nodes in the federation:
 

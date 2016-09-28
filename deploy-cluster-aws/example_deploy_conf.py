@@ -55,6 +55,11 @@ IMAGE_ID="ami-accff2b1"
 # For all options, see https://aws.amazon.com/ec2/instance-types/
 INSTANCE_TYPE="m3.2xlarge"
 
+# SECURITY_GROUP is the name of the AWS security group to use.
+# That security group must exist.
+# Examples: "bigchaindb", "bcdbsecure"
+SECURITY_GROUP="bigchaindb"
+
 # USING_EBS is True if you want to attach an Amazon EBS volume
 USING_EBS=False
 

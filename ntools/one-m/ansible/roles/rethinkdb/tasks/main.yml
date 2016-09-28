@@ -1,0 +1,71 @@
+---
+# ansible/roles/rethinkdb/tasks/main.yml
+
+# Note: the .list extension will be added to the rethinkdb filename automatically
+- name: >
+    Ensure RethinkDB's APT repository for Ubuntu trusty is present
+    in /etc/apt/sources.list.d/rethinkdb.list
+  apt_repository:
+    repo='deb http://download.rethinkdb.com/apt trusty main'
+    filename=rethinkdb
+    state=present
+  become: true
+
+- name: Ensure RethinkDB's public GPG key is in the set of APT keys
+  apt_key: url=http://download.rethinkdb.com/apt/pubkey.gpg state=present
+  become: true
+
+- name: Ensure the Ubuntu package rethinkdb 2.3.4~0trusty is installed
+  apt: name=rethinkdb=2.3.4~0trusty state=present update_cache=yes
+  become: true
+
+- name: Ensure the /data directory's owner and group are both 'rethinkdb'
+  file: path=/data state=directory owner=rethinkdb group=rethinkdb
+  become: true
+
+- name: Gather facts about the file /tmp/created_on_run1
+  stat: path=/tmp/created_on_run1
+  register: file_created_on_run1
+
+- name: if the file /tmp/created_on_run1 doesn't exist then create /data/delete_me
+  file: path=/data/delete_me state=touch owner=rethinkdb group=rethinkdb
+  become: true
+  when: not file_created_on_run1.stat.exists
+
+- name: if the file /tmp/created_on_run1 doesn't exist then do sudo rm -rf /data/*
+  shell: rm -rf /data/*
+  become: true
+  when: not file_created_on_run1.stat.exists
+
+- name: if the file /tmp/created_on_run1 doesn't exist then create it
+  file: path=/tmp/created_on_run1 state=touch
+  become: true
+  when: not file_created_on_run1.stat.exists
+
+# To enable starting RethinkDB on boot (on init.d systems),
+# the config file must be put in /etc/rethinkdb/instances.d/
+# See https://www.rethinkdb.com/docs/start-on-startup/
+# Note: This task does NOT have a notify: rethinkdb restart
+# A task to ensure RethinkDB is started comes later.
+- name: >
+    Generate a RethinkDB config file from rethinkdb.conf.j2 and put it in
+    /etc/rethinkdb/instances.d/instance1.conf
+  template:
+    src=rethinkdb.conf.j2
+    dest=/etc/rethinkdb/instances.d/instance1.conf
+    owner=root
+    group=root
+    mode=0664
+  become: true
+  register: config_file
+
+- name: Ensure rethinkdb is now started
+  service: name=rethinkdb state=started
+  become: true
+  register: rethinkdb_started
+
+- debug: var=rethinkdb_started
+
+- debug: msg="The RethinkDB config file changed while RethinkDB was already running. 
+    RethinkDB was not stopped and restarted. You must do that manually."
+  when: config_file.changed and (not rethinkdb_started.changed)

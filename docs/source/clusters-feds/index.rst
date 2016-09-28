@@ -1,8 +1,5 @@
-.. You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-BigchainDB Clusters & Federations
-=================================
+Clusters & Federations
+======================
 
 .. toctree::
    :maxdepth: 1

@@ -64,11 +64,11 @@ def validate_asset_creation(asset_data, divisible, updatable, refillable, amount
 
 
 def get_transactions_by_asset_id(asset_id, bigchain, read_mode='majority'):
-    cursor = r.table('bigchain', read_mode=read_mode)\
-              .get_all(asset_id, index='asset_id')\
-              .concat_map(lambda block: block['block']['transactions'])\
-              .filter(lambda transaction: transaction['transaction']['asset']['id'] == asset_id)\
-              .run(bigchain.conn)
+    cursor = bigchain.connection.run(
+        r.table('bigchain', read_mode=read_mode)
+         .get_all(asset_id, index='asset_id')
+         .concat_map(lambda block: block['block']['transactions'])
+         .filter(lambda transaction: transaction['transaction']['asset']['id'] == asset_id))
 
     transactions = list(cursor)
     return transactions

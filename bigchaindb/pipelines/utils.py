@@ -1,10 +1,15 @@
 """Utility classes and functions to work with the pipelines."""
 
 
+import time
 import rethinkdb as r
+import logging
 from multipipes import Node
 
 from bigchaindb import Bigchain
+
+
+logger = logging.getLogger(__name__)
 
 
 class ChangeFeed(Node):
@@ -24,7 +29,7 @@ class ChangeFeed(Node):
     DELETE = 2
     UPDATE = 4
 
-    def __init__(self, table, operation, prefeed=None):
+    def __init__(self, table, operation, prefeed=None, bigchain=None):
         """Create a new RethinkDB ChangeFeed.
 
         Args:
@@ -35,20 +40,29 @@ class ChangeFeed(Node):
                 (e.g. ``ChangeFeed.INSERT | ChangeFeed.UPDATE``)
             prefeed (iterable): whatever set of data you want to be published
                 first.
+            bigchain (``Bigchain``): the bigchain instance to use (can be None).
         """
 
         super().__init__(name='changefeed')
         self.prefeed = prefeed if prefeed else []
         self.table = table
         self.operation = operation
-        self.bigchain = Bigchain()
+        self.bigchain = bigchain or Bigchain()
 
     def run_forever(self):
         for element in self.prefeed:
             self.outqueue.put(element)
 
-        for change in r.table(self.table).changes().run(self.bigchain.conn):
+        while True:
+            try:
+                self.run_changefeed()
+                break
+            except (r.ReqlDriverError, r.ReqlOpFailedError) as exc:
+                logger.exception(exc)
+                time.sleep(1)
 
+    def run_changefeed(self):
+        for change in self.bigchain.connection.run(r.table(self.table).changes()):
             is_insert = change['old_val'] is None
             is_delete = change['new_val'] is None
             is_update = not is_insert and not is_delete
@@ -58,5 +72,5 @@ class ChangeFeed(Node):
             elif is_delete and (self.operation & ChangeFeed.DELETE):
                 self.outqueue.put(change['old_val'])
             elif is_update and (self.operation & ChangeFeed.UPDATE):
-                self.outqueue.put(change)
+                self.outqueue.put(change['new_val'])
 

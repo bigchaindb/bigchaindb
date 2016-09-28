@@ -84,6 +84,37 @@ The HTTP API currently exposes two endpoints, one to get information about a spe
    :statuscode 404: A transaction with that ID was not found.
 
 
+.. http:get:: /transactions/{tx_id}/status
+
+   Get the status of a transaction with the ID ``tx_id``.
+
+   This endpoint returns the status of a transaction if exists.
+
+   Possible values are ``valid``, ``invalid``, ``undecided`` or ``backlog``.
+
+   :param tx_id: transaction ID
+   :type tx_id: hex string
+
+   **Example request**:
+
+   .. sourcecode:: http
+
+      GET /transactions/7ad5a4b83bc8c70c4fd7420ff3c60693ab8e6d0e3124378ca69ed5acd2578792/status HTTP/1.1
+      Host: example.com
+
+   **Example response**:
+
+   .. sourcecode:: http
+
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+
+      {
+        "status": "valid"
+      }
+
+   :statuscode 200: A transaction with that ID was found and the status is returned.
+   :statuscode 404: A transaction with that ID was not found.
 
 .. http:post:: /transactions/
 

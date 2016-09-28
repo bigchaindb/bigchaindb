@@ -25,9 +25,10 @@ class Election:
         """
         Checks if block has enough invalid votes to make a decision
         """
-        next_block = r.table('bigchain')\
-            .get(next_vote['vote']['voting_for_block'])\
-            .run(self.bigchain.conn)
+        next_block = self.bigchain.connection.run(
+                r.table('bigchain')
+                .get(next_vote['vote']['voting_for_block']))
+
         if self.bigchain.block_election_status(next_block) == self.bigchain.BLOCK_INVALID:
             return next_block
 

@@ -1,12 +1,15 @@
 import random
 import math
-import operator
 import collections
+from copy import deepcopy
+from time import time
 
+from itertools import compress
 import rethinkdb as r
 import rapidjson
 
 import bigchaindb
+from bigchaindb.db.utils import Connection
 from bigchaindb import config_utils, crypto, exceptions, util, assets
 
 
@@ -16,13 +19,18 @@ class Bigchain(object):
     Create, read, sign, write transactions to the database
     """
 
+    # return if a block has been voted invalid
     BLOCK_INVALID = 'invalid'
-    BLOCK_VALID = 'valid'
-    BLOCK_UNDECIDED = 'undecided'
+    # return if a block is valid, or tx is in valid block
+    BLOCK_VALID = TX_VALID = 'valid'
+    # return if block is undecided, or tx is in undecided block
+    BLOCK_UNDECIDED = TX_UNDECIDED = 'undecided'
+    # return if transaction is in backlog
+    TX_IN_BACKLOG = 'backlog'
 
     def __init__(self, host=None, port=None, dbname=None,
                  public_key=None, private_key=None, keyring=[],
-                 consensus_plugin=None):
+                 consensus_plugin=None, backlog_reassign_delay=None):
         """Initialize the Bigchain instance
 
         A Bigchain instance has several configuration parameters (e.g. host).
@@ -50,6 +58,7 @@ class Bigchain(object):
         self.me = public_key or bigchaindb.config['keypair']['public']
         self.me_private = private_key or bigchaindb.config['keypair']['private']
         self.nodes_except_me = keyring or bigchaindb.config['keyring']
+        self.backlog_reassign_delay = backlog_reassign_delay or bigchaindb.config['backlog_reassign_delay']
         self.consensus = config_utils.load_consensus_plugin(consensus_plugin)
         # change RethinkDB read mode to majority.  This ensures consistency in query results
         self.read_mode = 'majority'
@@ -58,6 +67,7 @@ class Bigchain(object):
             raise exceptions.KeypairNotFoundException()
 
         self._conn = None
+        self.connection = Connection(host=self.host, port=self.port, db=self.dbname)
 
     @property
     def conn(self):
@@ -125,26 +135,80 @@ class Bigchain(object):
             # I am the only node
             assignee = self.me
 
+        # We copy the transaction here to not add `assignee` to the transaction
+        # dictionary passed to this method (as it would update by reference).
+        signed_transaction = deepcopy(signed_transaction)
         # update the transaction
         signed_transaction.update({'assignee': assignee})
+        signed_transaction.update({'assignment_timestamp': time()})
 
         # write to the backlog
-        response = r.table('backlog').insert(signed_transaction, durability=durability).run(self.conn)
+        response = self.connection.run(
+                r.table('backlog')
+                .insert(signed_transaction, durability=durability))
         return response
 
-    def get_transaction(self, txid):
+    def reassign_transaction(self, transaction, durability='hard'):
+        """Assign a transaction to a new node
+
+        Args:
+            transaction (dict): assigned transaction
+
+        Returns:
+            dict: database response or None if no reassignment is possible
+        """
+
+        if self.nodes_except_me:
+            try:
+                federation_nodes = self.nodes_except_me + [self.me]
+                index_current_assignee = federation_nodes.index(transaction['assignee'])
+                new_assignee = random.choice(federation_nodes[:index_current_assignee] +
+                                             federation_nodes[index_current_assignee + 1:])
+            except ValueError:
+                # current assignee not in federation
+                new_assignee = random.choice(self.nodes_except_me)
+
+        else:
+            # There is no other node to assign to
+            new_assignee = self.me
+
+        response = r.table('backlog')\
+            .get(transaction['id'])\
+            .update({'assignee': new_assignee,
+                     'assignment_timestamp': time()},
+                    durability=durability).run(self.conn)
+        return response
+
+    def get_stale_transactions(self):
+        """Get a RethinkDB cursor of stale transactions
+
+        Transactions are considered stale if they have been assigned a node, but are still in the
+        backlog after some amount of time specified in the configuration
+        """
+
+        return r.table('backlog')\
+            .filter(lambda tx: time() - tx['assignment_timestamp'] >
+                    self.backlog_reassign_delay).run(self.conn)
+
+    def get_transaction(self, txid, include_status=False):
         """Retrieve a transaction with `txid` from bigchain.
 
-        Queries the bigchain for a transaction that was already included in a block.
+        Queries the bigchain for a transaction, if it's in a valid or invalid
+        block.
 
         Args:
             txid (str): transaction id of the transaction to query
+            include_status (bool): also return the status of the transaction
+                                   the return value is then a tuple: (tx, status)
 
         Returns:
             A dict with the transaction details if the transaction was found.
-
-            If no transaction with that `txid` was found it returns `None`
+            Will add the transaction status to payload ('valid', 'undecided',
+            or 'backlog'). If no transaction with that `txid` was found it
+            returns `None`
         """
+
+        response, tx_status = None, None
 
         validity = self.get_blocks_status_containing_tx(txid)
 
@@ -152,26 +216,49 @@ class Bigchain(object):
             # Disregard invalid blocks, and return if there are no valid or undecided blocks
             validity = {_id: status for _id, status in validity.items()
                                     if status != Bigchain.BLOCK_INVALID}
-            if not validity:
-                return None
+            if validity:
 
-            # If the transaction is in a valid or any undecided block, return it. Does not check
-            # if transactions in undecided blocks are consistent, but selects the valid block before
-            # undecided ones
-            for _id in validity:
-                target_block_id = _id
-                if validity[_id] == Bigchain.BLOCK_VALID:
-                    break
+                tx_status = self.TX_UNDECIDED
+                # If the transaction is in a valid or any undecided block, return it. Does not check
+                # if transactions in undecided blocks are consistent, but selects the valid block before
+                # undecided ones
+                for target_block_id in validity:
+                    if validity[target_block_id] == Bigchain.BLOCK_VALID:
+                        tx_status = self.TX_VALID
+                        break
 
-            # Query the transaction in the target block and return
-            response = r.table('bigchain', read_mode=self.read_mode).get(target_block_id)\
-                .get_field('block').get_field('transactions')\
-                .filter(lambda tx: tx['id'] == txid).run(self.conn)
-
-            return response[0]
+                # Query the transaction in the target block and return
+                response = self.connection.run(
+                        r.table('bigchain', read_mode=self.read_mode)
+                        .get(target_block_id)
+                        .get_field('block')
+                        .get_field('transactions')
+                        .filter(lambda tx: tx['id'] == txid))[0]
 
         else:
-            return None
+            # Otherwise, check the backlog
+            response = self.connection.run(r.table('backlog').get(txid))
+            if response:
+                tx_status = self.TX_IN_BACKLOG
+
+        if include_status:
+            return response, tx_status
+        else:
+            return response
+
+    def get_status(self, txid):
+        """Retrieve the status of a transaction with `txid` from bigchain.
+
+        Args:
+            txid (str): transaction id of the transaction to query
+
+        Returns:
+            (string): transaction status ('valid', 'undecided',
+            or 'backlog'). If no transaction with that `txid` was found it
+            returns `None`
+        """
+        _, status = self.get_transaction(txid, include_status=True)
+        return status
 
     def search_block_election_on_index(self, value, index):
         """Retrieve block election information given a secondary index and value
@@ -184,8 +271,10 @@ class Bigchain(object):
             A list of blocks with with only election information
         """
         # First, get information on all blocks which contain this transaction
-        response = r.table('bigchain', read_mode=self.read_mode).get_all(value, index=index)\
-            .pluck('votes', 'id', {'block': ['voters']}).run(self.conn)
+        response = self.connection.run(
+                r.table('bigchain', read_mode=self.read_mode)
+                .get_all(value, index=index)
+                .pluck('votes', 'id', {'block': ['voters']}))
 
         return list(response)
 
@@ -237,11 +326,11 @@ class Bigchain(object):
             A list of transactions containing that metadata. If no transaction exists with that metadata it
             returns an empty list `[]`
         """
-        cursor = r.table('bigchain', read_mode=self.read_mode) \
-            .get_all(metadata_id, index='metadata_id') \
-            .concat_map(lambda block: block['block']['transactions']) \
-            .filter(lambda transaction: transaction['transaction']['metadata']['id'] == metadata_id) \
-            .run(self.conn)
+        cursor = self.connection.run(
+            r.table('bigchain', read_mode=self.read_mode)
+             .get_all(metadata_id, index='metadata_id')
+             .concat_map(lambda block: block['block']['transactions'])
+             .filter(lambda transaction: transaction['transaction']['metadata']['id'] == metadata_id))
 
         transactions = list(cursor)
         return transactions
@@ -275,11 +364,11 @@ class Bigchain(object):
         """
         # checks if an input was already spent
         # checks if the bigchain has any transaction with input {'txid': ..., 'cid': ...}
-        response = r.table('bigchain', read_mode=self.read_mode)\
-            .concat_map(lambda doc: doc['block']['transactions'])\
-            .filter(lambda transaction: transaction['transaction']['fulfillments']
-                    .contains(lambda fulfillment: fulfillment['input'] == tx_input))\
-            .run(self.conn)
+        response = self.connection.run(
+                r.table('bigchain', read_mode=self.read_mode)
+                .concat_map(lambda doc: doc['block']['transactions'])
+                .filter(lambda transaction: transaction['transaction']['fulfillments']
+                    .contains(lambda fulfillment: fulfillment['input'] == tx_input)))
 
         transactions = list(response)
 
@@ -314,12 +403,12 @@ class Bigchain(object):
         """
 
         # get all transactions in which owner is in the `owners_after` list
-        response = r.table('bigchain', read_mode=self.read_mode) \
-            .concat_map(lambda doc: doc['block']['transactions']) \
-            .filter(lambda tx: tx['transaction']['conditions']
+        response = self.connection.run(
+                r.table('bigchain', read_mode=self.read_mode)
+                .concat_map(lambda doc: doc['block']['transactions'])
+                .filter(lambda tx: tx['transaction']['conditions']
                     .contains(lambda c: c['owners_after']
-                              .contains(owner))) \
-            .run(self.conn)
+                        .contains(owner))))
         owned = []
 
         for tx in response:
@@ -463,8 +552,9 @@ class Bigchain(object):
                 but the vote is invalid.
 
         """
-        votes = list(r.table('votes', read_mode=self.read_mode)\
-                     .get_all([block['id'], self.me], index='block_and_voter').run(self.conn))
+        votes = list(self.connection.run(
+            r.table('votes', read_mode=self.read_mode)
+            .get_all([block['id'], self.me], index='block_and_voter')))
 
         if len(votes) > 1:
             raise exceptions.MultipleVotesError('Block {block_id} has {n_votes} votes from public key {me}'
@@ -505,13 +595,15 @@ class Bigchain(object):
         """
 
         block_serialized = rapidjson.dumps(block)
-        r.table('bigchain').insert(r.json(block_serialized), durability=durability).run(self.conn)
+        self.connection.run(
+                r.table('bigchain')
+                .insert(r.json(block_serialized), durability=durability))
 
-    # TODO: Decide if we need this method
     def transaction_exists(self, transaction_id):
-        response = r.table('bigchain', read_mode=self.read_mode)\
-            .get_all(transaction_id, index='transaction_id').run(self.conn)
-        return True if len(response.items) > 0 else False
+        response = self.connection.run(
+                r.table('bigchain', read_mode=self.read_mode)\
+                .get_all(transaction_id, index='transaction_id'))
+        return len(response.items) > 0
 
     def prepare_genesis_block(self):
         """Prepare a genesis block."""
@@ -537,7 +629,9 @@ class Bigchain(object):
         # 2. create the block with one transaction
         # 3. write the block to the bigchain
 
-        blocks_count = r.table('bigchain', read_mode=self.read_mode).count().run(self.conn)
+        blocks_count = self.connection.run(
+                r.table('bigchain', read_mode=self.read_mode)
+                .count())
 
         if blocks_count:
             raise exceptions.GenesisBlockAlreadyExistsError('Cannot create the Genesis block')
@@ -583,30 +677,30 @@ class Bigchain(object):
     def write_vote(self, vote):
         """Write the vote to the database."""
 
-        r.table('votes') \
-            .insert(vote) \
-            .run(self.conn)
+        self.connection.run(
+                r.table('votes')
+                .insert(vote))
 
     def get_last_voted_block(self):
         """Returns the last block that this node voted on."""
 
         try:
             # get the latest value for the vote timestamp (over all votes)
-            max_timestamp = r.table('votes', read_mode=self.read_mode) \
-                .filter(r.row['node_pubkey'] == self.me) \
-                .max(r.row['vote']['timestamp']) \
-                .run(self.conn)['vote']['timestamp']
+            max_timestamp = self.connection.run(
+                    r.table('votes', read_mode=self.read_mode)
+                    .filter(r.row['node_pubkey'] == self.me)
+                    .max(r.row['vote']['timestamp']))['vote']['timestamp']
 
-            last_voted = list(r.table('votes', read_mode=self.read_mode) \
-                .filter(r.row['vote']['timestamp'] == max_timestamp) \
-                .filter(r.row['node_pubkey'] == self.me) \
-                .run(self.conn))
+            last_voted = list(self.connection.run(
+                r.table('votes', read_mode=self.read_mode)
+                .filter(r.row['vote']['timestamp'] == max_timestamp)
+                .filter(r.row['node_pubkey'] == self.me)))
 
         except r.ReqlNonExistenceError:
             # return last vote if last vote exists else return Genesis block
-            return list(r.table('bigchain', read_mode=self.read_mode)
-                        .filter(util.is_genesis_block)
-                        .run(self.conn))[0]
+            return list(self.connection.run(
+                r.table('bigchain', read_mode=self.read_mode)
+                .filter(util.is_genesis_block)))[0]
 
         # Now the fun starts. Since the resolution of timestamp is a second,
         # we might have more than one vote per timestamp. If this is the case
@@ -638,19 +732,21 @@ class Bigchain(object):
             except KeyError:
                 break
 
-        res = r.table('bigchain', read_mode=self.read_mode).get(last_block_id).run(self.conn)
+        res = self.connection.run(
+                r.table('bigchain', read_mode=self.read_mode)
+                .get(last_block_id))
 
         return res
 
     def get_unvoted_blocks(self):
         """Return all the blocks that has not been voted by this node."""
 
-        unvoted = r.table('bigchain', read_mode=self.read_mode) \
-            .filter(lambda block: r.table('votes', read_mode=self.read_mode)
+        unvoted = self.connection.run(
+                r.table('bigchain', read_mode=self.read_mode)
+                .filter(lambda block: r.table('votes', read_mode=self.read_mode)
                     .get_all([block['id'], self.me], index='block_and_voter')
-                    .is_empty()) \
-            .order_by(r.asc(r.row['block']['timestamp'])) \
-            .run(self.conn)
+                    .is_empty())
+                .order_by(r.asc(r.row['block']['timestamp'])))
 
         # FIXME: I (@vrde) don't like this solution. Filtering should be done at a
         #        database level. Solving issue #444 can help untangling the situation
@@ -661,9 +757,8 @@ class Bigchain(object):
     def block_election_status(self, block):
         """Tally the votes on a block, and return the status: valid, invalid, or undecided."""
 
-        votes = r.table('votes', read_mode=self.read_mode) \
-            .between([block['id'], r.minval], [block['id'], r.maxval], index='block_and_voter') \
-            .run(self.conn)
+        votes = self.connection.run(r.table('votes', read_mode=self.read_mode)
+            .between([block['id'], r.minval], [block['id'], r.maxval], index='block_and_voter'))
 
         votes = list(votes)
 
@@ -679,15 +774,27 @@ class Bigchain(object):
             raise exceptions.MultipleVotesError('Block {block_id} has {n_votes} votes cast, but only {n_voters} voters'
                                                 .format(block_id=block['id'], n_votes=str(len(votes)), n_voters=str(n_voters)))
 
+        # vote_cast is the list of votes e.g. [True, True, False]
         vote_cast = [vote['vote']['is_block_valid'] for vote in votes]
+        # prev_block are the ids of the nominal prev blocks e.g.
+        # ['block1_id', 'block1_id', 'block2_id']
+        prev_block = [vote['vote']['previous_block'] for vote in votes]
+        # vote_validity checks whether a vote is valid
+        # or invalid, e.g. [False, True, True]
         vote_validity = [self.consensus.verify_vote_signature(block, vote) for vote in votes]
 
         # element-wise product of stated vote and validity of vote
-        vote_list = list(map(operator.mul, vote_cast, vote_validity))
+        # vote_cast = [True, True, False] and
+        # vote_validity = [False, True, True] gives
+        # [True, False]
+        # Only the correctly signed votes are tallied.
+        vote_list = list(compress(vote_cast, vote_validity))
 
-        # validate votes here
+        # Total the votes. Here, valid and invalid refer
+        # to the vote cast, not whether the vote itself
+        # is valid or invalid.
         n_valid_votes = sum(vote_list)
-        n_invalid_votes = len(vote_list) - n_valid_votes
+        n_invalid_votes = len(vote_cast) - n_valid_votes
 
         # The use of ceiling and floor is to account for the case of an
         # even number of voters where half the voters have voted 'invalid'
@@ -697,6 +804,21 @@ class Bigchain(object):
         if n_invalid_votes >= math.ceil(n_voters / 2):
             return Bigchain.BLOCK_INVALID
         elif n_valid_votes > math.floor(n_voters / 2):
-            return Bigchain.BLOCK_VALID
+            # The block could be valid, but we still need to check if votes
+            # agree on the previous block.
+            #
+            # First, only consider blocks with legitimate votes
+            prev_block_list = list(compress(prev_block, vote_validity))
+            # Next, only consider the blocks with 'yes' votes
+            prev_block_valid_list = list(compress(prev_block_list, vote_list))
+            counts = collections.Counter(prev_block_valid_list)
+            # Make sure the majority vote agrees on previous node.
+            # The majority vote must be the most common, by definition.
+            # If it's not, there is no majority agreement on the previous
+            # block.
+            if counts.most_common()[0][1] > math.floor(n_voters / 2):
+                return Bigchain.BLOCK_VALID
+            else:
+                return Bigchain.BLOCK_INVALID
         else:
             return Bigchain.BLOCK_UNDECIDED

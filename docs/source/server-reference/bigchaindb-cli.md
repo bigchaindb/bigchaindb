@@ -11,6 +11,11 @@ The command-line command to interact with BigchainDB is `bigchaindb`.
 Show help for the `bigchaindb` command. `bigchaindb -h` does the same thing.
 
 
+## bigchaindb \-\-version
+
+Show the version number. `bigchaindb -v` does the same thing.
+
+
 ## bigchaindb configure
 
 Generate a local config file (which can be used to set some or all [BigchainDB node configuration settings](configuration.html)). It will auto-generate a public-private keypair and then ask you for the values of other configuration settings. If you press Enter for a value, it will use the default value.
@@ -53,8 +58,9 @@ Drop (erase) the RethinkDB database. You will be prompted to make sure. If you w
 ## bigchaindb start
 
 Start BigchainDB. It always begins by trying a `bigchaindb init` first. See the note in the documentation for `bigchaindb init`.
-You can also use the `--experimental-start-rethinkdb` command line option to automatically start rethinkdb with bigchaindb if rethinkdb is not already running,
-e.g. `bigchaindb --experimental-start-rethinkdb start`. Note that this will also shutdown rethinkdb when the bigchaindb process stops.
+You can also use the `--dev-start-rethinkdb` command line option to automatically start rethinkdb with bigchaindb if rethinkdb is not already running,
+e.g. `bigchaindb --dev-start-rethinkdb start`. Note that this will also shutdown rethinkdb when the bigchaindb process stops.
+The option `--dev-allow-temp-keypair` will generate a keypair on the fly if no keypair is found, this is useful when you want to run a temporary instance of BigchainDB in a Docker container, for example.
 
 
 ## bigchaindb load

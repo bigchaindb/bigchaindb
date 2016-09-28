@@ -10,12 +10,14 @@ from fabric.api import sudo, env
 from fabric.api import task
 from fabric.operations import put, run
 
+from ssh_key import ssh_key_path
+
 # Ignore known_hosts
 # http://docs.fabfile.org/en/1.10/usage/env.html#disable-known-hosts
 env.disable_known_hosts = True
 
 env.user = 'ubuntu'
-env.key_filename = 'pem/bigchaindb.pem'
+env.key_filename = ssh_key_path
 
 
 @task
