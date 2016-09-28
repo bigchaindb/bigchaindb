@@ -45,11 +45,11 @@ class Client:
         if not self.public_key or not self.private_key:
             raise exceptions.KeypairNotFoundException()
 
-    def create(self, payload=None):
+    def create(self, metadata=None):
         """Issue a transaction to create an asset.
 
         Args:
-            payload (dict): the payload for the transaction.
+            metadata (dict): the metadata for the transaction.
 
         Return:
             The transaction pushed to the Federation.
@@ -60,19 +60,19 @@ class Client:
             owner_after=self.public_key,
             tx_input=None,
             operation='CREATE',
-            payload=payload)
+            metadata=metadata)
 
         signed_tx = self.consensus.sign_transaction(
             tx, private_key=self.private_key)
         return self._push(signed_tx)
 
-    def transfer(self, owner_after, tx_input, payload=None):
+    def transfer(self, owner_after, tx_input, metadata=None):
         """Issue a transaction to transfer an asset.
 
         Args:
             owner_after (str): the public key of the new owner
             tx_input (str): the id of the transaction to use as input
-            payload (dict, optional): the payload for the transaction.
+            metadata (dict, optional): the metadata for the transaction.
 
         Return:
             The transaction pushed to the Federation.
@@ -83,7 +83,7 @@ class Client:
             owner_after=owner_after,
             tx_input=tx_input,
             operation='TRANSFER',
-            payload=payload)
+            metadata=metadata)
 
         signed_tx = self.consensus.sign_transaction(
             tx, private_key=self.private_key)

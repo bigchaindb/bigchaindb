@@ -156,7 +156,7 @@ def test_create_tx_with_empty_inputs():
     assert 'conditions' in tx['transaction']
     assert 'operation' in tx['transaction']
     assert 'timestamp' in tx['transaction']
-    assert 'data' in tx['transaction']
+    assert 'metadata' in tx['transaction']
     assert len(tx['transaction']['fulfillments']) == 1
     assert tx['transaction']['fulfillments'][0] == {
         'owners_before': [], 'input': None, 'fulfillment': None, 'fid': 0}

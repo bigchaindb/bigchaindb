@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 
-from bigchaindb import crypto, exceptions, util
+from bigchaindb import crypto, exceptions, util, assets
 
 
 class AbstractConsensusRules(metaclass=ABCMeta):
@@ -139,12 +139,21 @@ class BaseConsensusRules(AbstractConsensusRules):
                 raise exceptions.OperationError(
                     'Only federation nodes can use the operation `CREATE`')
 
+            # validate digital asset
+            # A create transaction will have only one output
+            asset = transaction['transaction']['asset']
+            assets.validate_asset_creation(asset['data'], asset['divisible'], asset['updatable'],
+                                           asset['refillable'], transaction['transaction']['conditions'][0]['amount'])
+            # TODO: Validate uuid?
+
         else:
             # check if the input exists, is owned by the owner_before
             if not transaction['transaction']['fulfillments']:
                 raise ValueError('Transaction contains no fulfillments')
 
             # check inputs
+            # store the inputs so that we can check if the asset ids match
+            input_txs = []
             for fulfillment in transaction['transaction']['fulfillments']:
                 if not fulfillment['input']:
                     raise ValueError('Only `CREATE` transactions can have null inputs')
@@ -161,6 +170,14 @@ class BaseConsensusRules(AbstractConsensusRules):
                 if spent and spent['id'] != transaction['id']:
                     raise exceptions.DoubleSpend(
                         'input `{}` was already spent'.format(fulfillment['input']))
+
+                input_txs.append(tx_input)
+
+            # validate asset id
+            asset_id = assets.get_asset_id(input_txs)
+            if asset_id != transaction['transaction']['asset']['id']:
+                raise exceptions.AssetIdMismatch(('The asset id of the input does not match the asset id ',
+                                                  'of the transaction'))
 
         # Check hash of the transaction
         calculated_hash = util.get_hash_data(transaction)
@@ -206,15 +223,16 @@ class BaseConsensusRules(AbstractConsensusRules):
         return block
 
     @staticmethod
-    def create_transaction(owner_before, owner_after, tx_input, operation,
-                           payload=None):
+    def create_transaction(owner_before, owner_after, tx_input, operation, metadata=None, asset_data=None,
+                           divisible=False, updatable=False, refillable=False, amount=1, bigchain=None):
         """Create a new transaction
 
         Refer to the documentation of ``bigchaindb.util.create_tx``
         """
 
-        return util.create_tx(owner_before, owner_after, tx_input, operation,
-                              payload)
+        return util.create_tx(owner_before, owner_after, tx_input, operation, metadata=metadata, asset_data=asset_data,
+                              divisible=divisible, updatable=updatable, refillable=refillable,
+                              amount=amount, bigchain=bigchain)
 
     @staticmethod
     def sign_transaction(transaction, private_key, bigchain=None):
