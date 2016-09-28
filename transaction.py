@@ -10,7 +10,8 @@ from cryptoconditions.exceptions import ParsingError
 
 from bigchaindb_common.crypto import SigningKey, hash_data
 from bigchaindb_common.exceptions import (KeypairMismatchException,
-                                          InvalidHash, InvalidSignature)
+                                          InvalidHash, InvalidSignature,
+                                          AmountError)
 from bigchaindb_common.util import serialize, gen_timestamp
 
 
@@ -234,6 +235,45 @@ class Condition(object):
             # NOTE: Hashlock condition case
             fulfillment = cond['condition']['uri']
         return cls(fulfillment, cond['owners_after'])
+
+
+class Asset(object):
+    def __init__(self, data=None, data_id=None, divisible=False,
+                 updatable=False, refillable=False):
+        if data is not None and not isinstance(data, dict):
+            raise TypeError('`data` must be a dict instance or None')
+        else:
+            self.data = data
+
+        # TODO: Add ID method here I guess
+        self.data_id = data_id if data_id is not None else self.to_hash()
+        self.divisible = divisible
+        self.updatable = updatable
+        self.refillable = refillable
+
+    def __eq__(self, other):
+        try:
+            other_dict = other.to_dict()
+        except AttributeError:
+            return False
+        return self.to_dict() == other_dict
+
+    def to_dict(self):
+        return {
+            'id': self.data_id,
+            'divisible': self.divisible,
+            'updatable': self.updatable,
+            'refillable': self.refillable,
+            'data': self.data,
+        }
+
+    @classmethod
+    def from_dict(cls, asset):
+        return cls(asset['data'], asset['id'], asset['divisible'],
+                   asset['updatable'], asset['refillable'])
+
+    def to_hash(self):
+        return str(uuid4())
 
 
 class Metadata(object):
