@@ -1,6 +1,5 @@
 from copy import deepcopy
 from functools import reduce
-from operator import and_
 from uuid import uuid4
 
 from cryptoconditions import (Fulfillment as CCFulfillment,
@@ -267,8 +266,8 @@ class Asset(object):
 
     @classmethod
     def from_dict(cls, asset):
-        return cls(asset['data'], asset['id'], asset['divisible'],
-                   asset['updatable'], asset['refillable'])
+        return cls(asset.get('data'), asset['id'], asset.get('divisible'),
+                   asset.get('updatable'), asset.get('refillable'))
 
     def to_hash(self):
         return str(uuid4())
@@ -316,7 +315,7 @@ class Transaction(object):
     ALLOWED_OPERATIONS = (CREATE, TRANSFER, GENESIS)
     VERSION = 1
 
-    def __init__(self, operation, fulfillments=None, conditions=None,
+    def __init__(self, operation, asset, fulfillments=None, conditions=None,
                  metadata=None, timestamp=None, version=None):
         # TODO: Write a comment
         if version is not None:
@@ -335,6 +334,11 @@ class Transaction(object):
                             .format(allowed_ops))
         else:
             self.operation = operation
+
+        if not isinstance(asset, Asset):
+            raise TypeError('`asset` must be an Asset instance')
+        else:
+            self.asset = asset
 
         if conditions is not None and not isinstance(conditions, list):
             raise TypeError('`conditions` must be a list instance or None')
@@ -356,14 +360,14 @@ class Transaction(object):
             self.metadata = metadata
 
     @classmethod
-    def create(cls, owners_before, owners_after, data=None, secret=None,
-               time_expire=None):
+    def create(cls, owners_before, owners_after, metadata=None, asset=None,
+               secret=None, time_expire=None):
         if not isinstance(owners_before, list):
             raise TypeError('`owners_before` must be a list instance')
         if not isinstance(owners_after, list):
             raise TypeError('`owners_after` must be a list instance')
 
-        metadata = Metadata(data)
+        metadata = Metadata(metadata)
         if len(owners_before) == len(owners_after) and len(owners_after) == 1:
             # NOTE: Standard case, one owner before, one after.
             # NOTE: For this case its sufficient to use the same
@@ -371,7 +375,7 @@ class Transaction(object):
             ffill = Ed25519Fulfillment(public_key=owners_before[0])
             ffill_tx = Fulfillment(ffill, owners_before)
             cond_tx = Condition.generate(owners_after)
-            return cls(cls.CREATE, [ffill_tx], [cond_tx], metadata)
+            return cls(cls.CREATE, asset, [ffill_tx], [cond_tx], metadata)
 
         elif len(owners_before) == len(owners_after) and len(owners_after) > 1:
             raise NotImplementedError('Multiple inputs and outputs not'
@@ -381,14 +385,14 @@ class Transaction(object):
                                   [owner_before])
                       for owner_before in owners_before]
             conds = [Condition.generate(owners) for owners in owners_after]
-            return cls(cls.CREATE, ffills, conds, metadata)
+            return cls(cls.CREATE, asset, ffills, conds, metadata)
 
         elif len(owners_before) == 1 and len(owners_after) > 1:
             # NOTE: Multiple owners case
             cond_tx = Condition.generate(owners_after)
             ffill = Ed25519Fulfillment(public_key=owners_before[0])
             ffill_tx = Fulfillment(ffill, owners_before)
-            return cls(cls.CREATE, [ffill_tx], [cond_tx], metadata)
+            return cls(cls.CREATE, asset, [ffill_tx], [cond_tx], metadata)
 
         elif (len(owners_before) == 1 and len(owners_after) == 0 and
               secret is not None):
@@ -397,7 +401,7 @@ class Transaction(object):
             cond_tx = Condition(hashlock.condition_uri)
             ffill = Ed25519Fulfillment(public_key=owners_before[0])
             ffill_tx = Fulfillment(ffill, owners_before)
-            return cls(cls.CREATE, [ffill_tx], [cond_tx], metadata)
+            return cls(cls.CREATE, asset, [ffill_tx], [cond_tx], metadata)
 
         elif (len(owners_before) > 0 and len(owners_after) == 0 and
               time_expire is not None):
@@ -412,7 +416,7 @@ class Transaction(object):
             raise ValueError("These are not the cases you're looking for ;)")
 
     @classmethod
-    def transfer(cls, inputs, owners_after, data=None):
+    def transfer(cls, inputs, owners_after, metadata=None, asset=None):
         if not isinstance(inputs, list):
             raise TypeError('`inputs` must be a list instance')
         if len(inputs) == 0:
@@ -448,9 +452,9 @@ class Transaction(object):
             raise ValueError("`inputs` and `owners_after`'s count must be the "
                              "same")
 
-        metadata = Metadata(data)
+        metadata = Metadata(metadata)
         inputs = deepcopy(inputs)
-        return cls(cls.TRANSFER, inputs, conditions, metadata)
+        return cls(cls.TRANSFER, asset, inputs, conditions, metadata)
 
     def __eq__(self, other):
         try:
@@ -503,7 +507,6 @@ class Transaction(object):
         if private_keys is None or not isinstance(private_keys, list):
             raise TypeError('`private_keys` must be a list instance')
 
-        # TODO: Convert this comment to a doc string
         # Generate public keys from private keys and match them in a
         # dictionary:
         #   key:     public_key
@@ -520,14 +523,13 @@ class Transaction(object):
             # NOTE: We clone the current transaction but only add the condition
             #       and fulfillment we're currently working on plus all
             #       previously signed ones.
-            tx_partial = Transaction(self.operation, [fulfillment],
+            tx_partial = Transaction(self.operation, self.asset, [fulfillment],
                                      [condition], self.metadata,
                                      self.timestamp, self.version)
 
             tx_partial_dict = tx_partial.to_dict()
             tx_partial_dict = Transaction._remove_signatures(tx_partial_dict)
             tx_serialized = Transaction._to_str(tx_partial_dict)
-
             self._sign_fulfillment(fulfillment, index, tx_serialized,
                                    key_pairs)
 
@@ -612,8 +614,9 @@ class Transaction(object):
         conditions_count = len(self.conditions)
 
         def gen_tx(fulfillment, condition, input_condition_uri=None):
-            tx = Transaction(self.operation, [fulfillment], [condition],
-                             self.metadata, self.timestamp, self.version)
+            tx = Transaction(self.operation, self.asset, [fulfillment],
+                             [condition], self.metadata, self.timestamp,
+                             self.version)
             tx_dict = tx.to_dict()
             tx_dict = Transaction._remove_signatures(tx_dict)
             tx_serialized = Transaction._to_str(tx_dict)
@@ -627,8 +630,9 @@ class Transaction(object):
             raise ValueError('Fulfillments, conditions and '
                              'input_condition_uris must have the same count')
         else:
-            return reduce(and_, map(gen_tx, self.fulfillments, self.conditions,
-                                    input_condition_uris))
+            partial_transactions = map(gen_tx, self.fulfillments,
+                                       self.conditions, input_condition_uris)
+            return all(partial_transactions)
 
     @staticmethod
     def _fulfillment_valid(fulfillment, operation, tx_serialized,
@@ -656,6 +660,14 @@ class Transaction(object):
             # NOTE: metadata can be None and that's OK
             metadata = None
 
+        # TODO: At this point I'm not sure if this behavior shouldn't rather
+        #       be implemented in the Asset's `to_dict` method.
+        if self.operation in (self.__class__.GENESIS, self.__class__.CREATE):
+            asset = self.asset.to_dict()
+        else:
+            # NOTE: A `asset` in a `TRANSFER` only contains the asset's id
+            asset = {'id': self.asset.data_id}
+
         tx_body = {
             'fulfillments': [fulfillment.to_dict(fid) for fid, fulfillment
                              in enumerate(self.fulfillments)],
@@ -664,6 +676,7 @@ class Transaction(object):
             'operation': str(self.operation),
             'timestamp': self.timestamp,
             'metadata': metadata,
+            'asset': asset,
         }
         tx = {
             'version': self.version,
@@ -732,6 +745,7 @@ class Transaction(object):
             conditions = [Condition.from_dict(condition) for condition
                           in tx['conditions']]
             metadata = Metadata.from_dict(tx['metadata'])
+            asset = Asset.from_dict(tx['asset'])
 
-            return cls(tx['operation'], fulfillments, conditions, metadata,
-                       tx['timestamp'], tx_body['version'])
+            return cls(tx['operation'], asset, fulfillments, conditions,
+                       metadata, tx['timestamp'], tx_body['version'])
