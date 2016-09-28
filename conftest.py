@@ -23,10 +23,10 @@ USER2_VERIFYING_KEY = 'GDxwMFbwdATkQELZbMfW8bd9hbNYMZLyVXA3nur2aNbE'
 CC_FULFILLMENT_URI = 'cf:0:'
 CC_CONDITION_URI = 'cc:0:3:47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU:0'
 
-PAYLOAD = {
+DATA = {
     'msg': 'Hello BigchainDB!'
 }
-PAYLOAD_ID = '872fa6e6f46246cd44afdb2ee9cfae0e72885fb0910e2bcf9a5a2a4eadb417b8'
+DATA_ID = '872fa6e6f46246cd44afdb2ee9cfae0e72885fb0910e2bcf9a5a2a4eadb417b8'
 
 
 @pytest.fixture
@@ -98,19 +98,19 @@ def default_threshold_cond(default_threshold_ffill):
 
 
 @pytest.fixture
-def payload():
-    return PAYLOAD
+def data():
+    return DATA
 
 
 @pytest.fixture
-def payload_id():
-    return PAYLOAD_ID
+def data_id():
+    return DATA_ID
 
 
 @pytest.fixture
-def data(payload, payload_id):
-    from bigchaindb_common.transaction import Data
-    return Data(payload, payload_id)
+def metadata(data, data_id):
+    from bigchaindb_common.transaction import Metadata
+    return Metadata(data, data_id)
 
 
 @pytest.fixture
