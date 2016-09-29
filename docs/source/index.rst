@@ -1,12 +1,10 @@
 BigchainDB Server Documentation
 ===============================
 
-Table of Contents
------------------
-
 .. toctree::
    :maxdepth: 1
 
+   ← Back to All BigchainDB Docs <https://bigchaindb.readthedocs.io/en/latest/index.html>
    introduction
    quickstart
    cloud-deployment-starter-templates/index
