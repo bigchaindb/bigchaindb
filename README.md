@@ -6,18 +6,18 @@
 [![Join the chat at https://gitter.im/bigchaindb/bigchaindb](https://badges.gitter.im/bigchaindb/bigchaindb.svg)](https://gitter.im/bigchaindb/bigchaindb?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 
-# BigchainDB
+# BigchainDB Server
 
-A scalable blockchain database. [The whitepaper](https://www.bigchaindb.com/whitepaper/) explains what that means.
+BigchainDB is a scalable blockchain database. [The whitepaper](https://www.bigchaindb.com/whitepaper/) explains what that means.
 
 We're hiring! [Learn more](https://github.com/bigchaindb/org/blob/master/engjob.md).
 
 
-## Get Started
+## Get Started with BigchainDB Server
 
 ### [Quickstart](http://bigchaindb.readthedocs.io/en/latest/quickstart.html)
 ### [Set Up & Run a Dev/Test Node](http://bigchaindb.readthedocs.io/en/latest/dev-and-test/setup-run-node.html)
-### [Run BigchainDB with Docker](http://bigchaindb.readthedocs.io/en/latest/appendices/run-with-docker.html)
+### [Run BigchainDB Server with Docker](http://bigchaindb.readthedocs.io/en/latest/appendices/run-with-docker.html)
 
 ## Links for Everyone
 * [BigchainDB.com](https://www.bigchaindb.com/) - the main BigchainDB website, including newsletter signup
@@ -28,7 +28,7 @@ We're hiring! [Learn more](https://github.com/bigchaindb/org/blob/master/engjob.
 * [Google Group](https://groups.google.com/forum/#!forum/bigchaindb)
 
 ## Links for Developers
-* [Documentation](http://bigchaindb.readthedocs.io/en/latest/) - for developers
+* [BigchainDB Server Documentation](http://bigchaindb.readthedocs.io/en/latest/) - for developers
 * [CONTRIBUTING.md](CONTRIBUTING.md) - how to contribute
 * [Community guidelines](CODE_OF_CONDUCT.md)
 * [Open issues](https://github.com/bigchaindb/bigchaindb/issues)

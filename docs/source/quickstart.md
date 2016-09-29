@@ -26,7 +26,7 @@ E. Install the `bigchaindb` Python package from PyPI:
 sudo pip3 install bigchaindb
 ```
 
-F. Configure and run BigchainDB:
+F. Configure and run BigchainDB Server:
 ```text
 bigchaindb -y configure
 bigchaindb start
@@ -34,4 +34,4 @@ bigchaindb start
 
 That's it!
 
-For now, you can get a good sense of how to work with BigchainDB by going through [the examples in the section on the Python Server API](drivers-clients/python-server-api-examples.html).
+For now, you can get a good sense of how to work with BigchainDB Server by going through [the examples in the section on the Python Server API](drivers-clients/python-server-api-examples.html).

@@ -1,5 +1,5 @@
-BigchainDB Documentation
-========================
+BigchainDB Server Documentation
+===============================
 
 Table of Contents
 -----------------
