@@ -23,4 +23,3 @@ def home():
         'keyring': bigchaindb.config['keyring'],
         'api_endpoint': bigchaindb.config['api_endpoint']
     })
-

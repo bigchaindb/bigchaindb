@@ -8,6 +8,7 @@ import logging
 import rethinkdb as r
 
 from os.path import expanduser
+from bigchaindb_common.transaction import Transaction
 
 from bigchaindb import Bigchain
 from bigchaindb.util import ProcessGroup
@@ -33,10 +34,9 @@ def create_write_transaction(tx_left, payload_filler):
         # Include a random uuid string in the payload to prevent duplicate
         # transactions (i.e. transactions with the same hash)
         payload_dict['msg'] = str(uuid.uuid4())
-        tx = b.create_transaction(b.me, b.me, None, 'CREATE',
-                                  payload=payload_dict)
-        tx_signed = b.sign_transaction(tx, b.me_private)
-        b.write_transaction(tx_signed)
+        tx = Transaction.create([b.me], [b.me], payload=payload_dict)
+        tx = tx.sign([b.me_private])
+        b.write_transaction(tx)
         tx_left -= 1
 
 

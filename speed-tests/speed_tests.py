@@ -6,6 +6,8 @@ from line_profiler import LineProfiler
 
 import bigchaindb
 
+# BIG TODO: Adjust for new transaction model
+
 
 def speedtest_validate_transaction():
     # create a transaction

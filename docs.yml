@@ -1,0 +1,16 @@
+version: '2'
+
+services:
+  bdocs:
+    build:
+      context: .
+      dockerfile: ./Dockerfile-dev
+    volumes:
+      - .:/usr/src/app/
+    command: make -C docs html
+  vdocs:
+    image: nginx
+    ports:
+      - '33333:80'
+    volumes:
+      - ./docs/build/html:/usr/share/nginx/html
