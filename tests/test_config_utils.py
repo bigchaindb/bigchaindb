@@ -4,7 +4,6 @@ from unittest.mock import mock_open, patch
 import pytest
 
 import bigchaindb
-from bigchaindb import exceptions
 
 
 ORIGINAL_CONFIG = copy.deepcopy(bigchaindb._config)
@@ -43,6 +42,7 @@ def test_bigchain_instance_is_initialized_when_conf_provided():
 
 def test_bigchain_instance_raises_when_not_configured(monkeypatch):
     from bigchaindb import config_utils
+    from bigchaindb_common import exceptions
     assert 'CONFIGURED' not in bigchaindb.config
 
     # We need to disable ``bigchaindb.config_utils.autoconfigure`` to avoid reading
@@ -51,36 +51,6 @@ def test_bigchain_instance_raises_when_not_configured(monkeypatch):
 
     with pytest.raises(exceptions.KeypairNotFoundException):
         bigchaindb.Bigchain()
-
-
-def test_load_consensus_plugin_loads_default_rules_without_name():
-    from bigchaindb import config_utils
-    from bigchaindb.consensus import BaseConsensusRules
-
-    assert config_utils.load_consensus_plugin() == BaseConsensusRules
-
-
-def test_load_consensus_plugin_raises_with_unknown_name():
-    from pkg_resources import ResolutionError
-    from bigchaindb import config_utils
-
-    with pytest.raises(ResolutionError):
-        config_utils.load_consensus_plugin('bogus')
-
-
-def test_load_consensus_plugin_raises_with_invalid_subclass(monkeypatch):
-    # Monkeypatch entry_point.load to return something other than a
-    # ConsensusRules instance
-    from bigchaindb import config_utils
-    import time
-    monkeypatch.setattr(config_utils,
-                        'iter_entry_points',
-                        lambda *args: [type('entry_point', (object), {'load': lambda: object})])
-
-    with pytest.raises(TypeError):
-        # Since the function is decorated with `lru_cache`, we need to
-        # "miss" the cache using a name that has not been used previously
-        config_utils.load_consensus_plugin(str(time.time()))
 
 
 def test_map_leafs_iterator():
@@ -180,7 +150,6 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch):
             'rate': 0.01,
         },
         'api_endpoint': 'http://localhost:9984/api/v1',
-        'consensus_plugin': 'default',
         'backlog_reassign_delay': 5
     }
 
@@ -232,8 +201,9 @@ def test_file_config():
 
 
 def test_invalid_file_config():
-    from bigchaindb.config_utils import file_config, CONFIG_DEFAULT_PATH
-    with patch('builtins.open', mock_open(read_data='{_INVALID_JSON_}')) as m:
+    from bigchaindb.config_utils import file_config
+    from bigchaindb_common import exceptions
+    with patch('builtins.open', mock_open(read_data='{_INVALID_JSON_}')):
         with pytest.raises(exceptions.ConfigurationError):
             file_config()
 

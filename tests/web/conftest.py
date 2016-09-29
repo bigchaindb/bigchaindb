@@ -30,6 +30,8 @@ def app(request, node_config):
 
 
 @pytest.fixture
+# NOTE: In order to have a database setup as well as the `input` fixture,
+#       we have to proxy `db.conftest.input` here.
+# TODO: If possible replace this function with something nicer.
 def inputs(user_vk):
     conftest.inputs(user_vk)
-

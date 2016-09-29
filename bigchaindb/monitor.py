@@ -30,4 +30,3 @@ class Monitor(statsd.StatsClient):
         if 'port' not in kwargs:
             kwargs['port'] = bigchaindb.config['statsd']['port']
         super().__init__(*args, **kwargs)
-

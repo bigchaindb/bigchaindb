@@ -16,13 +16,11 @@ import copy
 import json
 import logging
 import collections
-from functools import lru_cache
 
-from pkg_resources import iter_entry_points, ResolutionError
+from bigchaindb_common import exceptions
 
 import bigchaindb
-from bigchaindb.consensus import AbstractConsensusRules
-from bigchaindb import exceptions
+
 
 # TODO: move this to a proper configuration file for logging
 logging.getLogger('requests').setLevel(logging.WARNING)
@@ -242,40 +240,3 @@ def autoconfigure(filename=None, config=None, force=False):
         newconfig = update(newconfig, config)
 
     set_config(newconfig)  # sets bigchaindb.config
-
-
-@lru_cache()
-def load_consensus_plugin(name=None):
-    """Find and load the chosen consensus plugin.
-
-    Args:
-        name (string): the name of the entry_point, as advertised in the
-            setup.py of the providing package.
-
-    Returns:
-        an uninstantiated subclass of ``bigchaindb.consensus.AbstractConsensusRules``
-    """
-    if not name:
-        name = bigchaindb.config.get('consensus_plugin', 'default')
-
-    # TODO: This will return the first plugin with group `bigchaindb.consensus`
-    #       and name `name` in the active WorkingSet.
-    #       We should probably support Requirements specs in the config, e.g.
-    #       consensus_plugin: 'my-plugin-package==0.0.1;default'
-    plugin = None
-    for entry_point in iter_entry_points('bigchaindb.consensus', name):
-        plugin = entry_point.load()
-
-    # No matching entry_point found
-    if not plugin:
-        raise ResolutionError(
-            'No plugin found in group `bigchaindb.consensus` with name `{}`'.
-            format(name))
-
-    # Is this strictness desireable?
-    # It will probably reduce developer headaches in the wild.
-    if not issubclass(plugin, (AbstractConsensusRules)):
-        raise TypeError("object of type '{}' does not implement `bigchaindb."
-                        "consensus.AbstractConsensusRules`".format(type(plugin)))
-
-    return plugin

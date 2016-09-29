@@ -22,7 +22,7 @@ def mock_write_config(monkeypatch):
 @pytest.fixture
 def mock_db_init_with_existing_db(monkeypatch):
     from bigchaindb import db
-    from bigchaindb.exceptions import DatabaseAlreadyExists
+    from bigchaindb_common.exceptions import DatabaseAlreadyExists
 
     def mockreturn():
         raise DatabaseAlreadyExists
@@ -48,7 +48,7 @@ def mock_rethink_db_drop(monkeypatch):
 
 @pytest.fixture
 def mock_generate_key_pair(monkeypatch):
-    monkeypatch.setattr('bigchaindb.crypto.generate_key_pair', lambda: ('privkey', 'pubkey'))
+    monkeypatch.setattr('bigchaindb_common.crypto.generate_key_pair', lambda: ('privkey', 'pubkey'))
 
 
 @pytest.fixture
@@ -283,15 +283,15 @@ def test_start_rethinkdb_returns_a_process_when_successful(mock_popen):
 
 @patch('subprocess.Popen')
 def test_start_rethinkdb_exits_when_cannot_start(mock_popen):
-    from bigchaindb import exceptions
+    from bigchaindb_common import exceptions
     from bigchaindb.commands import utils
     mock_popen.return_value = Mock(stdout=['Nopety nope'])
     with pytest.raises(exceptions.StartupError):
         utils.start_rethinkdb()
 
 
-@patch('bigchaindb.crypto.generate_key_pair', return_value=('private_key',
-                                                            'public_key'))
+@patch('bigchaindb_common.crypto.generate_key_pair',
+       return_value=('private_key', 'public_key'))
 def test_allow_temp_keypair_generates_one_on_the_fly(mock_gen_keypair,
                                                      mock_processes_start,
                                                      mock_db_init_with_existing_db):
@@ -307,8 +307,8 @@ def test_allow_temp_keypair_generates_one_on_the_fly(mock_gen_keypair,
     assert bigchaindb.config['keypair']['public'] == 'public_key'
 
 
-@patch('bigchaindb.crypto.generate_key_pair', return_value=('private_key',
-                                                            'public_key'))
+@patch('bigchaindb_common.crypto.generate_key_pair',
+       return_value=('private_key', 'public_key'))
 def test_allow_temp_keypair_doesnt_override_if_keypair_found(mock_gen_keypair,
                                                              mock_processes_start,
                                                              mock_db_init_with_existing_db):
@@ -415,3 +415,81 @@ def test_set_replicas_raises_exception(mock_log, monkeypatch, b):
     run_set_replicas(args)
 
     assert mock_log.called
+
+
+@patch('argparse.ArgumentParser.parse_args')
+@patch('bigchaindb.commands.utils.base_parser')
+@patch('bigchaindb.commands.utils.start')
+def test_calling_main(start_mock, base_parser_mock, parse_args_mock,
+                      monkeypatch):
+    from bigchaindb.commands.bigchain import main
+
+    argparser_mock = Mock()
+    parser = Mock()
+    subparsers = Mock()
+    subsubparsers = Mock()
+    subparsers.add_parser.return_value = subsubparsers
+    parser.add_subparsers.return_value = subparsers
+    argparser_mock.return_value = parser
+    monkeypatch.setattr('argparse.ArgumentParser', argparser_mock)
+    main()
+
+    assert argparser_mock.called is True
+    assert parser.add_argument.called is True
+    parser.add_argument.assert_any_call('--dev-start-rethinkdb',
+                                        dest='start_rethinkdb',
+                                        action='store_true',
+                                        help='Run RethinkDB on start')
+    parser.add_subparsers.assert_called_with(title='Commands',
+                                             dest='command')
+    subparsers.add_parser.assert_any_call('configure',
+                                          help='Prepare the config file '
+                                          'and create the node keypair')
+    subparsers.add_parser.assert_any_call('show-config',
+                                          help='Show the current '
+                                          'configuration')
+    subparsers.add_parserassert_any_call('export-my-pubkey',
+                                         help="Export this node's public "
+                                         'key')
+    subparsers.add_parser.assert_any_call('init', help='Init the database')
+    subparsers.add_parser.assert_any_call('drop', help='Drop the database')
+    subparsers.add_parser.assert_any_call('start', help='Start BigchainDB')
+
+    subparsers.add_parser.assert_any_call('set-shards',
+                                          help='Configure number of shards')
+
+    subsubparsers.add_argument.assert_any_call('num_shards',
+                                               metavar='num_shards',
+                                               type=int, default=1,
+                                               help='Number of shards')
+
+    subparsers.add_parser.assert_any_call('set-replicas',
+                                          help='Configure number of replicas')
+    subsubparsers.add_argument.assert_any_call('num_replicas',
+                                               metavar='num_replicas',
+                                               type=int, default=1,
+                                               help='Number of replicas (i.e. '
+                                               'the replication factor)')
+
+    subparsers.add_parser.assert_any_call('load',
+                                          help='Write transactions to the '
+                                          'backlog')
+
+    subsubparsers.add_argument.assert_any_call('-m', '--multiprocess',
+                                               nargs='?', type=int,
+                                               default=False,
+                                               help='Spawn multiple processes '
+                                               'to run the command, if no '
+                                               'value is provided, the number '
+                                               'of processes is equal to the '
+                                               'number of cores of the host '
+                                               'machine')
+    subsubparsers.add_argument.assert_any_call('-c', '--count',
+                                               default=0,
+                                               type=int,
+                                               help='Number of transactions '
+                                               'to push. If the parameter -m '
+                                               'is set, the count is '
+                                               'distributed equally to all '
+                                               'the processes')
+    assert start_mock.called is True

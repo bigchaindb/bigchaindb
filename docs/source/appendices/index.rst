@@ -13,8 +13,9 @@ Appendices
    json-serialization
    cryptography
    the-Bigchain-class
-   aws-setup
    consensus
+   pipelines
+   aws-setup
    firewall-notes
    ntp-notes
    example-rethinkdb-storage-setups

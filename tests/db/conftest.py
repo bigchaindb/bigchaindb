@@ -49,8 +49,8 @@ def setup_database(request, node_config):
     r.db(db_name).table('backlog').index_create('transaction_timestamp', r.row['transaction']['timestamp']).run()
     # to query by payload uuid
     r.db(db_name).table('bigchain').index_create(
-        'payload_uuid', 
-        r.row['block']['transactions']['transaction']['data']['uuid'], 
+        'payload_uuid',
+        r.row['block']['transactions']['transaction']['data']['uuid'],
         multi=True,
     ).run()
     # compound index to read transactions from the backlog per assignee
@@ -59,7 +59,7 @@ def setup_database(request, node_config):
         .run()
     # compound index to order votes by block id and node
     r.db(db_name).table('votes').index_create('block_and_voter',
-                                             [r.row['vote']['voting_for_block'], r.row['node_pubkey']]).run()
+                                              [r.row['vote']['voting_for_block'], r.row['node_pubkey']]).run()
     # order transactions by id
     r.db(db_name).table('bigchain').index_create('transaction_id', r.row['block']['transactions']['id'],
                                                  multi=True).run()
@@ -99,7 +99,8 @@ def cleanup_tables(request, node_config):
 
 @pytest.fixture
 def inputs(user_vk):
-    from bigchaindb.exceptions import GenesisBlockAlreadyExistsError
+    from bigchaindb.models import Transaction
+    from bigchaindb_common.exceptions import GenesisBlockAlreadyExistsError
     # 1. create the genesis block
     b = Bigchain()
     try:
@@ -109,11 +110,10 @@ def inputs(user_vk):
 
     # 2. create block with transactions for `USER` to spend
     for block in range(4):
-        transactions = []
-        for i in range(10):
-            tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
-            tx_signed = b.sign_transaction(tx, b.me_private)
-            transactions.append(tx_signed)
-
+        transactions = [
+            Transaction.create(
+                [b.me], [user_vk], payload={'i': i}).sign([b.me_private])
+            for i in range(10)
+        ]
         block = b.create_block(transactions)
         b.write_block(block, durability='hard')

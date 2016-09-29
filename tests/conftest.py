@@ -68,3 +68,21 @@ def b(request, node_config):
     from bigchaindb import Bigchain
     return Bigchain()
 
+
+@pytest.fixture
+def create_tx(b, user_vk):
+    from bigchaindb.models import Transaction
+    return Transaction.create([b.me], [user_vk])
+
+
+@pytest.fixture
+def signed_create_tx(b, create_tx):
+    return create_tx.sign([b.me_private])
+
+
+@pytest.fixture
+def signed_transfer_tx(signed_create_tx, user_vk, user_sk):
+    from bigchaindb.models import Transaction
+    inputs = signed_create_tx.to_inputs()
+    tx = Transaction.transfer(inputs, [user_vk])
+    return tx.sign([user_sk])
