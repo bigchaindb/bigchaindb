@@ -66,7 +66,7 @@ source_suffix = ['.rst', '.md']
 master_doc = 'index'
 
 # General information about the project.
-project = 'BigchainDB'
+project = 'BigchainDB Server'
 copyright = '2016'
 author = 'BigchainDB Contributors'
 
@@ -246,7 +246,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'bigchaindb.tex', 'BigchainDB Documentation',
+    (master_doc, 'bigchaindb.tex', 'BigchainDB Server Documentation',
      author, 'manual'),
 ]
 
@@ -276,7 +276,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'bigchaindb', 'BigchainDB Documentation',
+    (master_doc, 'bigchaindb', 'BigchainDB Server Documentation',
      [author], 1)
 ]
 
@@ -290,7 +290,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'bigchaindb', 'BigchainDB Documentation',
+    (master_doc, 'bigchaindb', 'BigchainDB Server Documentation',
      author, 'bigchaindb', 'A scalable blockchain database.',
      'Miscellaneous'),
 ]
