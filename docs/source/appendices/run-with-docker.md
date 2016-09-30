@@ -89,7 +89,7 @@ You should see a container named `bigchaindb` in the list.
 You can load test the BigchainDB running in that container by running the `bigchaindb load` command in a second container:
 
 ```text
-docker run --rm -v "$HOME/bigchaindb_docker:/data" -ti \
+docker run --rm -v "$HOME/bigchaindb_docker:/data" \
   --link bigchaindb \
   bigchaindb/bigchaindb load
 ```
