@@ -8,5 +8,4 @@ Clusters & Federations
    backup
    aws-testing-cluster
    monitoring
-   future-docs
    
