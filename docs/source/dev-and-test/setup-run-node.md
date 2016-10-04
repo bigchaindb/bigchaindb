@@ -98,3 +98,27 @@ should give you something like:
   "version": "0.6.0"
 }
 ```
+How does the above curl command work? Inside the Docker container, BigchainDB
+exposes the HTTP API on port `9984`. First we get the public port where that
+port is bound:
+
+```bash
+docker-compose port bdb 9984
+```
+
+The port binding will change whenever you stop/restart the `bdb` service. You
+should get an output similar to:
+
+```bash
+0.0.0.0:32772
+```
+
+but with a port different from `32772`.
+
+
+Knowing the public port we can now perform a simple `GET` operation against the
+root:
+
+```bash
+curl 0.0.0.0:32772
+```
