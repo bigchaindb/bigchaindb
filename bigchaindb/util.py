@@ -152,12 +152,8 @@ def is_genesis_block(block):
 
     # we cannot have empty blocks, there will always be at least one
     # element in the list so we can safely refer to it
-<<<<<<< e00a34e943b596c2302d3911929c052767008611
     # TODO: Remove this try-except and only handle `Block` as input
     try:
         return block.transactions[0].operation == 'GENESIS'
     except AttributeError:
         return block['block']['transactions'][0]['transaction']['operation'] == 'GENESIS'
-=======
-    return block['block']['transactions'][0]['transaction']['operation'] == 'GENESIS'
->>>>>>> Remove unnecessart database queries in get_asset_id
