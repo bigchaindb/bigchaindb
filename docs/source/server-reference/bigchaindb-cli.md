@@ -67,6 +67,9 @@ Write transactions to the backlog (for benchmarking tests). You can learn more a
 $ bigchaindb load -h
 ```
 
+Note: This command uses the Python Server API to write transactions to the database. It _doesn't_ use the HTTP API or a driver that wraps the HTTP API.
+
+
 ## bigchaindb set-shards
 
 Set the number of shards in the underlying datastore. For example, the following command will set the number of shards to four:
