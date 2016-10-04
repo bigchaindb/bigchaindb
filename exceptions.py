@@ -64,3 +64,7 @@ class GenesisBlockAlreadyExistsError(Exception):
 
 class CyclicBlockchainError(Exception):
     """Raised when there is a cycle in the blockchain"""
+
+
+class FulfillmentNotInValidBlock(Exception):
+    """Raised when a transaction depends on an invalid or undecided fulfillment"""
