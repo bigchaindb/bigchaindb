@@ -121,6 +121,8 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch):
     monkeypatch.setattr('bigchaindb.config_utils.file_config', lambda *args, **kwargs: file_config)
     monkeypatch.setattr('os.environ', {'BIGCHAINDB_DATABASE_NAME': 'test-dbname',
                                        'BIGCHAINDB_DATABASE_PORT': '4242',
+                                       'BIGCHAINDB_API_ENDPOINT': 'api://ipa',
+                                       'BIGCHAINDB_SERVER_BIND': '1.2.3.4:56',
                                        'BIGCHAINDB_KEYRING': 'pubkey_0:pubkey_1:pubkey_2'})
 
     import bigchaindb
@@ -130,7 +132,7 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch):
     assert bigchaindb.config == {
         'CONFIGURED': True,
         'server': {
-            'bind': 'localhost:9984',
+            'bind': '1.2.3.4:56',
             'workers': None,
             'threads': None,
         },
@@ -149,7 +151,7 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch):
             'port': 8125,
             'rate': 0.01,
         },
-        'api_endpoint': 'http://localhost:9984/api/v1',
+        'api_endpoint': 'api://ipa',
         'backlog_reassign_delay': 5
     }
 
