@@ -15,8 +15,11 @@ install:
   - sudo apt-get install rethinkdb
   - pip install -e .[test]
   - pip install codecov
+  - pip install flake8
 
-before_script: rethinkdb --daemon
+before_script:
+  - rethinkdb --daemon
+  - flake8 .
 
 script: py.test -n auto -s -v --cov=bigchaindb
 
