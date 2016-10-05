@@ -10,7 +10,7 @@ config = {
     'server': {
         # Note: this section supports all the Gunicorn settings:
         #       - http://docs.gunicorn.org/en/stable/settings.html
-        'bind': 'localhost:9984',
+        'bind': os.environ.get('BIGCHAINDB_SERVER_BIND') or 'localhost:9984',
         'workers': None, # if none, the value will be cpu_count * 2 + 1
         'threads': None, # if none, the value will be cpu_count * 2 + 1
     },
@@ -29,7 +29,7 @@ config = {
         'port': 8125,
         'rate': 0.01,
     },
-    'api_endpoint': 'http://localhost:9984/api/v1',
+    'api_endpoint': os.environ.get('BIGCHAINDB_API_ENDPOINT') or 'http://localhost:9984/api/v1',
     'backlog_reassign_delay': 30
 }
 

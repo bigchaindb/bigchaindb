@@ -27,8 +27,10 @@ services:
       - ./setup.py:/usr/src/app/setup.py
       - ./setup.cfg:/usr/src/app/setup.cfg
       - ./pytest.ini:/usr/src/app/pytest.ini
-      - ~/.bigchaindb_docker:/root/.bigchaindb_docker
     environment:
       BIGCHAINDB_DATABASE_HOST: rdb
-      BIGCHAINDB_CONFIG_PATH: /root/.bigchaindb_docker/config
+      BIGCHAINDB_API_ENDPOINT: http://bdb:9984/api/v1
+      BIGCHAINDB_SERVER_BIND: 0.0.0.0:9984
+    ports:
+      - "9984"
     command: bigchaindb start
