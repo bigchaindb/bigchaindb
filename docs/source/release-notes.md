@@ -1,6 +1,6 @@
 # Release Notes
 
-You can find a list of all BigchainDB releases and release notes on GitHub at:
+You can find a list of all BigchainDB Server releases and release notes on GitHub at:
 
 [https://github.com/bigchaindb/bigchaindb/releases](https://github.com/bigchaindb/bigchaindb/releases)
 

@@ -66,7 +66,7 @@ source_suffix = ['.rst', '.md']
 master_doc = 'index'
 
 # General information about the project.
-project = 'BigchainDB'
+project = 'BigchainDB Server'
 copyright = '2016'
 author = 'BigchainDB Contributors'
 
@@ -224,7 +224,7 @@ html_static_path = ['_static']
 #html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'bigchaindbdoc'
+htmlhelp_basename = 'bigchaindb-server-doc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -246,7 +246,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'bigchaindb.tex', 'BigchainDB Documentation',
+    (master_doc, 'bigchaindb-server.tex', 'BigchainDB Server Documentation',
      author, 'manual'),
 ]
 
@@ -276,7 +276,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'bigchaindb', 'BigchainDB Documentation',
+    (master_doc, 'bigchaindb-server', 'BigchainDB Server Documentation',
      [author], 1)
 ]
 
@@ -290,8 +290,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'bigchaindb', 'BigchainDB Documentation',
-     author, 'bigchaindb', 'A scalable blockchain database.',
+    (master_doc, 'bigchaindb-server', 'BigchainDB Server Documentation',
+     author, 'bigchaindb-server', 'A scalable blockchain database.',
      'Miscellaneous'),
 ]
 
@@ -309,4 +309,4 @@ texinfo_documents = [
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/': None}
+intersphinx_mapping = {'https://docs.python.org/3': None}

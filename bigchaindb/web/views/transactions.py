@@ -6,8 +6,10 @@ For more information please refer to the documentation on ReadTheDocs:
 from flask import current_app, request, Blueprint
 from flask_restful import Resource, Api
 
+from bigchaindb_common.exceptions import InvalidHash, InvalidSignature
+
 import bigchaindb
-from bigchaindb import util
+from bigchaindb.models import Transaction
 from bigchaindb.web.views.base import make_error
 
 
@@ -54,7 +56,7 @@ class TransactionApi(Resource):
         if not tx:
             return make_error(404)
 
-        return tx
+        return tx.to_dict()
 
 
 class TransactionStatusApi(Resource):
@@ -94,16 +96,18 @@ class TransactionListApi(Resource):
         # set to `application/json`
         tx = request.get_json(force=True)
 
+        try:
+            tx_obj = Transaction.from_dict(tx)
+        except (InvalidHash, InvalidSignature):
+            return make_error(400, 'Invalid transaction')
+
         with pool() as bigchain:
-            if tx['transaction']['operation'] == 'CREATE':
-                tx = util.transform_create(tx)
-                tx = bigchain.consensus.sign_transaction(tx, private_key=bigchain.me_private)
-
-            if not bigchain.is_valid_transaction(tx):
+            if bigchain.is_valid_transaction(tx_obj):
+                rate = bigchaindb.config['statsd']['rate']
+                with monitor.timer('write_transaction', rate=rate):
+                    bigchain.write_transaction(tx_obj)
+            else:
                 return make_error(400, 'Invalid transaction')
-
-            with monitor.timer('write_transaction', rate=bigchaindb.config['statsd']['rate']):
-                bigchain.write_transaction(tx)
 
         return tx
 

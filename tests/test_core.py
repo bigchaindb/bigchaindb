@@ -19,7 +19,6 @@ def config(request, monkeypatch):
         },
         'keyring': [],
         'CONFIGURED': True,
-        'consensus_plugin': 'default',
         'backlog_reassign_delay': 30
     }
 
@@ -52,7 +51,6 @@ def test_bigchain_class_initialization_with_parameters(config):
         'public_key': 'white',
         'private_key': 'black',
         'keyring': ['key_one', 'key_two'],
-        'consensus_plugin': 'default'
     }
     bigchain = Bigchain(**init_kwargs)
     assert bigchain.host == init_kwargs['host']
@@ -71,9 +69,9 @@ def test_get_blocks_status_containing_tx(monkeypatch):
         {'id': 1}, {'id': 2}
     ]
     monkeypatch.setattr(
-        Bigchain, 'search_block_election_on_index', lambda x, y, z: blocks)
+        Bigchain, 'search_block_election_on_index', lambda x, y: blocks)
     monkeypatch.setattr(
-        Bigchain, 'block_election_status', lambda x, y: Bigchain.BLOCK_VALID)
+        Bigchain, 'block_election_status', lambda x, y, z: Bigchain.BLOCK_VALID)
     bigchain = Bigchain(public_key='pubkey', private_key='privkey')
     with pytest.raises(Exception):
         bigchain.get_blocks_status_containing_tx('txid')
@@ -82,7 +80,7 @@ def test_get_blocks_status_containing_tx(monkeypatch):
 def test_has_previous_vote(monkeypatch):
     from bigchaindb.core import Bigchain
     monkeypatch.setattr(
-        'bigchaindb.util.verify_vote_signature', lambda block, vote: False)
+        'bigchaindb.util.verify_vote_signature', lambda voters, vote: False)
     bigchain = Bigchain(public_key='pubkey', private_key='privkey')
     block = {'votes': ({'node_pubkey': 'pubkey'},)}
     with pytest.raises(Exception):
@@ -98,6 +96,7 @@ def test_transaction_exists(monkeypatch, items, exists):
     assert bigchain.transaction_exists('txid') is exists
 
 
+@pytest.mark.skip(reason='until tim decides')
 def test_write_transaction_no_sideffects(b):
     from rethinkdb.errors import ReqlOpFailedError
     transaction = {'id': 'abc'}

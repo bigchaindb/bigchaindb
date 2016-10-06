@@ -9,8 +9,9 @@ import os
 
 
 def test_get_stale(b, user_vk):
-    tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
-    tx = b.sign_transaction(tx, b.me_private)
+    from bigchaindb.models import Transaction
+    tx = Transaction.create([b.me], [user_vk])
+    tx = tx.sign([b.me_private])
     b.write_transaction(tx, durability='hard')
 
     stm = stale.StaleTransactionMonitor(timeout=0.001,
@@ -20,22 +21,23 @@ def test_get_stale(b, user_vk):
     for _tx in tx_stale:
         _tx.pop('assignee')
         _tx.pop('assignment_timestamp')
-        assert tx == _tx
+        assert tx.to_dict() == _tx
 
 
 def test_reassign_transactions(b, user_vk):
+    from bigchaindb.models import Transaction
     # test with single node
-    tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
-    tx = b.sign_transaction(tx, b.me_private)
+    tx = Transaction.create([b.me], [user_vk])
+    tx = tx.sign([b.me_private])
     b.write_transaction(tx, durability='hard')
 
     stm = stale.StaleTransactionMonitor(timeout=0.001,
                                         backlog_reassign_delay=0.001)
-    stm.reassign_transactions(tx)
+    stm.reassign_transactions(tx.to_dict())
 
     # test with federation
-    tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
-    tx = b.sign_transaction(tx, b.me_private)
+    tx = Transaction.create([b.me], [user_vk])
+    tx = tx.sign([b.me_private])
     b.write_transaction(tx, durability='hard')
 
     stm = stale.StaleTransactionMonitor(timeout=0.001,
@@ -49,8 +51,8 @@ def test_reassign_transactions(b, user_vk):
     assert reassigned_tx['assignee'] != tx['assignee']
 
     # test with node not in federation
-    tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
-    tx = b.sign_transaction(tx, b.me_private)
+    tx = Transaction.create([b.me], [user_vk])
+    tx = tx.sign([b.me_private]).to_dict()
     tx.update({'assignee': 'lol'})
     tx.update({'assignment_timestamp': time.time()})
     r.table('backlog').insert(tx, durability='hard').run(b.conn)
@@ -61,6 +63,7 @@ def test_reassign_transactions(b, user_vk):
 
 
 def test_full_pipeline(user_vk):
+    from bigchaindb.models import Transaction
     CONFIG = {
         'database': {
             'name': 'bigchain_test_{}'.format(os.getpid())
@@ -77,13 +80,18 @@ def test_full_pipeline(user_vk):
     outpipe = Pipe()
 
     original_txs = {}
+    original_txc = []
 
     for i in range(100):
-        tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
-        tx = b.sign_transaction(tx, b.me_private)
+        # FIXME Notice the payload. This is only to make sure that the
+        # transactions hashes are unique. See
+        # https://github.com/bigchaindb/bigchaindb-common/issues/21
+        tx = Transaction.create([b.me], [user_vk], payload={'i': i})
+        tx = tx.sign([b.me_private])
+        original_txc.append(tx.to_dict())
 
         b.write_transaction(tx)
-        original_txs[tx['id']] = r.table('backlog').get(tx['id']).run(b.conn) 
+        original_txs[tx.id] = r.table('backlog').get(tx.id).run(b.conn)
 
     assert r.table('backlog').count().run(b.conn) == 100
 

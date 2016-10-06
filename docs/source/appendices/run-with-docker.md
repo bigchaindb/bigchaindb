@@ -38,7 +38,7 @@ Let's analyze that command:
  documentation](https://docs.docker.com/engine/userguide/containers/dockervolumes/#mount-a-host-directory-as-a-data-volume)
 * `-t` allocate a pseudo-TTY
 * `-i` keep STDIN open even if not attached
-* `bigchaindb/bigchaindb the image to use
+* `bigchaindb/bigchaindb` the image to use
 * `-y configure` execute the `configure` sub-command (of the `bigchaindb` command) inside the container, with the `-y` option to automatically use all the default config values
 
 
@@ -89,7 +89,8 @@ You should see a container named `bigchaindb` in the list.
 You can load test the BigchainDB running in that container by running the `bigchaindb load` command in a second container:
 
 ```text
-docker run --rm -v "$HOME/bigchaindb_docker:/data" -ti \
+docker run --rm -v "$HOME/bigchaindb_docker:/data" \
+  -e BIGCHAINDB_DATABASE_HOST=bigchaindb \
   --link bigchaindb \
   bigchaindb/bigchaindb load
 ```

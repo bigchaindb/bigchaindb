@@ -20,7 +20,6 @@ For convenience, here's a list of all the relevant environment variables (docume
 `BIGCHAINDB_SERVER_WORKERS`<br>
 `BIGCHAINDB_SERVER_THREADS`<br>
 `BIGCHAINDB_API_ENDPOINT`<br>
-`BIGCHAINDB_CONSENSUS_PLUGIN`<br>
 `BIGCHAINDB_STATSD_HOST`<br>
 `BIGCHAINDB_STATSD_PORT`<br>
 `BIGCHAINDB_STATSD_RATE`<br>
@@ -160,21 +159,6 @@ export BIGCHAINDB_API_ENDPOINT="http://localhost:9984/api/v1"
 **Default value (from a config file)**
 ```js
 "api_endpoint": "http://localhost:9984/api/v1"
-```
-
-
-## consensus_plugin
-
-The [consensus plugin](../appendices/consensus.html) to use. 
-
-**Example using an environment variable**
-```text
-export BIGCHAINDB_CONSENSUS_PLUGIN=default
-```
-
-**Example config file snippet: the default**
-```js
-"consensus_plugin": "default"
 ```
 
 

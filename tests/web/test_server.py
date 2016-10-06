@@ -1,6 +1,3 @@
-import copy
-
-
 def test_settings(monkeypatch):
     import bigchaindb
     from bigchaindb.web import server
@@ -10,4 +7,3 @@ def test_settings(monkeypatch):
     # for whatever reason the value is wrapped in a list
     # needs further investigation
     assert s.cfg.bind[0] == bigchaindb.config['server']['bind']
-
