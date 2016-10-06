@@ -1,3 +1,5 @@
+from time import sleep
+
 import pytest
 
 
@@ -560,13 +562,12 @@ class TestTransactionValidation(object):
     def test_non_create_double_spend(self, b, signed_create_tx,
                                      signed_transfer_tx):
         from bigchaindb_common.exceptions import DoubleSpend
-        from time import sleep
 
         block1 = b.create_block([signed_create_tx])
         b.write_block(block1)
 
         # vote block valid
-        vote = b.vote(block1.id, b.get_last_voted_block().to_dict()['id'], True)
+        vote = b.vote(block1.id, b.get_last_voted_block().id, True)
         b.write_vote(vote)
 
         b.write_transaction(signed_transfer_tx)
@@ -574,7 +575,7 @@ class TestTransactionValidation(object):
         b.write_block(block, durability='hard')
 
         # vote block valid
-        vote = b.vote(block.id, b.get_last_voted_block().to_dict()['id'], True)
+        vote = b.vote(block.id, b.get_last_voted_block().id, True)
         b.write_vote(vote)
 
         sleep(1)
@@ -773,7 +774,7 @@ class TestMultipleInputs(object):
         b.write_block(block, durability='hard')
 
         # vote block valid
-        vote = b.vote(block.id, b.get_last_voted_block().to_dict()['id'], True)
+        vote = b.vote(block.id, b.get_last_voted_block().id, True)
         b.write_vote(vote)
 
         # get inputs from user2
@@ -833,7 +834,7 @@ class TestMultipleInputs(object):
         b.write_block(block, durability='hard')
 
         # vote block valid
-        vote = b.vote(block.id, b.get_last_voted_block().to_dict()['id'], True)
+        vote = b.vote(block.id, b.get_last_voted_block().id, True)
         b.write_vote(vote)
 
         # validate transaction
@@ -857,7 +858,7 @@ class TestMultipleInputs(object):
         b.write_block(block, durability='hard')
 
         # vote block valid
-        vote = b.vote(block.id, b.get_last_voted_block().to_dict()['id'], True)
+        vote = b.vote(block.id, b.get_last_voted_block().id, True)
         b.write_vote(vote)
 
         owned_input = b.get_owned_ids(user_vk).pop()
@@ -909,7 +910,7 @@ class TestMultipleInputs(object):
         b.write_block(block, durability='hard')
 
         # vote block valid
-        vote = b.vote(block.id, b.get_last_voted_block().to_dict()['id'], True)
+        vote = b.vote(block.id, b.get_last_voted_block().id, True)
         b.write_vote(vote)
 
         # get input
