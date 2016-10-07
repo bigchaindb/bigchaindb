@@ -1,9 +1,6 @@
-# BigchainDB Command Line Interface (CLI)
+# Command Line Interface (CLI)
 
-**Note: At the time of writing, BigchainDB Server and our BigchainDB client are combined, so the BigchainDB CLI includes some server-specific commands and some client-specific commands (e.g. `bigchaindb load`). Soon, BigchainDB Server will be separate from all BigchainDB clients, and they'll all have different CLIs.**
-
-
-The command-line command to interact with BigchainDB is `bigchaindb`.
+The command-line command to interact with BigchainDB Server is `bigchaindb`.
 
 
 ## bigchaindb \-\-help
@@ -69,6 +66,9 @@ Write transactions to the backlog (for benchmarking tests). You can learn more a
 ```text
 $ bigchaindb load -h
 ```
+
+Note: This command uses the Python Server API to write transactions to the database. It _doesn't_ use the HTTP API or a driver that wraps the HTTP API.
+
 
 ## bigchaindb set-shards
 
