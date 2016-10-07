@@ -48,6 +48,7 @@ if [ "$USING_EBS" = True ]; then
     echo "EBS_VOLUME_SIZE = "$EBS_VOLUME_SIZE
     echo "EBS_OPTIMIZED = "$EBS_OPTIMIZED
 fi
+echo "BIND_HTTP_TO_LOCALHOST = "$BIND_HTTP_TO_LOCALHOST
 
 # Check for the SSH private key file
 if [ ! -f "$HOME/.ssh/$SSH_KEY_NAME" ]; then
@@ -116,7 +117,7 @@ fab upgrade_setuptools
 
 if [ "$WHAT_TO_DEPLOY" == "servers" ]; then
     # (Re)create the RethinkDB configuration file conf/rethinkdb.conf
-    python create_rethinkdb_conf.py
+    python create_rethinkdb_conf.py --bind-http-to-localhost $BIND_HTTP_TO_LOCALHOST
     # Rollout RethinkDB and start it
     fab prep_rethinkdb_storage:$USING_EBS
     fab install_rethinkdb

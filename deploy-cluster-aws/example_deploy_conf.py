@@ -74,3 +74,8 @@ EBS_VOLUME_SIZE=30
 # Setting EBS_OPTIMIZED=True may cost more, but not always.
 # If USING_EBS=False, EBS_OPTIMIZED is irrelevant and not used
 EBS_OPTIMIZED=False
+
+# BIND_HTTP_TO_LOCALHOST is True or False, depending on whether
+# you want the RethinkDB web interface port to be bound to localhost
+# (which is more secure). See https://www.rethinkdb.com/docs/security/
+BIND_HTTP_TO_LOCALHOST=False

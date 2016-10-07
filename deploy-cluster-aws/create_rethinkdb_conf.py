@@ -8,7 +8,18 @@ from __future__ import unicode_literals
 import os
 import os.path
 import shutil
+import argparse
 from hostlist import public_dns_names
+
+# Parse the command-line arguments
+parser = argparse.ArgumentParser()
+parser.add_argument("--bind-http-to-localhost",
+                    help="should RethinkDB web interface be bound to localhost?",
+                    required=True)
+args = parser.parse_args()
+bind_http_to_localhost = args.bind_http_to_localhost
+
+print('bind_http_to_localhost = {}'.format(bind_http_to_localhost))
 
 # cwd = current working directory
 old_cwd = os.getcwd()
@@ -24,6 +35,10 @@ with open('rethinkdb.conf', 'a') as f:
     f.write('## The host:port of a node that RethinkDB will connect to\n')
     for public_dns_name in public_dns_names:
         f.write('join=' + public_dns_name + ':29015\n')
+    if bind_http_to_localhost:
+        f.write('## Bind the web interface port to localhost\n')
+        # 127.0.0.1 is the usual IP address for localhost
+        f.write('bind-http=127.0.0.1\n')
 
 os.chdir(old_cwd)
 

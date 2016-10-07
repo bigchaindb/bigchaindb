@@ -28,7 +28,7 @@ from awscommon import get_naeips
 
 SETTINGS = ['NUM_NODES', 'BRANCH', 'WHAT_TO_DEPLOY', 'SSH_KEY_NAME',
             'USE_KEYPAIRS_FILE', 'IMAGE_ID', 'INSTANCE_TYPE', 'SECURITY_GROUP',
-            'USING_EBS', 'EBS_VOLUME_SIZE', 'EBS_OPTIMIZED']
+            'USING_EBS', 'EBS_VOLUME_SIZE', 'EBS_OPTIMIZED', 'BIND_HTTP_TO_LOCALHOST']
 
 
 class SettingsTypeError(TypeError):
@@ -103,6 +103,10 @@ if not isinstance(EBS_VOLUME_SIZE, int):
 
 if not isinstance(EBS_OPTIMIZED, bool):
     raise SettingsTypeError('EBS_OPTIMIZED should be a boolean (True or False)')
+
+if not isinstance(BIND_HTTP_TO_LOCALHOST, bool):
+    raise SettingsTypeError('BIND_HTTP_TO_LOCALHOST should be a boolean '
+                            '(True or False)')
 
 if NUM_NODES > 64:
     raise ValueError('NUM_NODES should be less than or equal to 64. '
