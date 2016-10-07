@@ -114,10 +114,10 @@ def inputs(user_vk):
         pass
 
     # 2. create block with transactions for `USER` to spend
-    for block in range(4):
+    for block in range(4): 
         transactions = [
             Transaction.create(
-                [b.me], [user_vk], payload={'i': i}).sign([b.me_private])
+                [b.me], [user_vk], metadata={'i': i}).sign([b.me_private])
             for i in range(10)
         ]
         block = b.create_block(transactions)

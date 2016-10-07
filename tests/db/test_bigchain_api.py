@@ -83,13 +83,11 @@ class TestBigchainApi(object):
 
         vote = b.vote(block.id, b.get_last_voted_block().id, True)
         b.write_vote(vote)
+
         assert b.has_previous_vote(block.id, block.voters) is True
 
-        matches = b.get_tx_by_metadata_id(metadata_id)
-        assert len(matches) == 1
-        assert matches[0]['id'] == tx['id']
 
-    def test_get_transactions_for_metadata_mismatch(self):
+    def test_get_transactions_for_metadata_mismatch(self, b):
         matches = b.get_tx_by_metadata_id('missing')
         assert not matches
 
@@ -107,13 +105,13 @@ class TestBigchainApi(object):
         b.write_block(block1, durability='hard')
 
         monkeypatch.setattr('time.time', lambda: 2)
-        transfer_tx = Transaction.transfer(tx.to_inputs(), [b.me])
+        transfer_tx = Transaction.transfer(tx.to_inputs(), [b.me], tx.asset)
         transfer_tx = transfer_tx.sign([b.me_private])
         block2 = b.create_block([transfer_tx])
         b.write_block(block2, durability='hard')
 
         monkeypatch.setattr('time.time', lambda: 3)
-        transfer_tx2 = Transaction.transfer(tx.to_inputs(), [b.me])
+        transfer_tx2 = Transaction.transfer(tx.to_inputs(), [b.me], tx.asset)
         transfer_tx2 = transfer_tx2.sign([b.me_private])
         block3 = b.create_block([transfer_tx2])
         b.write_block(block3, durability='hard')
@@ -181,21 +179,21 @@ class TestBigchainApi(object):
         assert b.get_transaction(tx1.id) is None
         assert b.get_transaction(tx2.id) == tx2
 
-    def test_get_transactions_for_payload(self, b, user_vk):
+    def test_get_transactions_for_metadata(self, b, user_vk):
         from bigchaindb.models import Transaction
 
-        payload = {'msg': 'Hello BigchainDB!'}
-        tx = Transaction.create([b.me], [user_vk], payload=payload)
+        metadata = {'msg': 'Hello BigchainDB!'}
+        tx = Transaction.create([b.me], [user_vk], metadata=metadata)
 
         block = b.create_block([tx])
         b.write_block(block, durability='hard')
 
-        matches = b.get_tx_by_payload_uuid(tx.data.payload_id)
+        matches = b.get_tx_by_payload_uuid(tx.metadata.data_id)
         assert len(matches) == 1
         assert matches[0].id == tx.id
 
-    def test_get_transactions_for_payload_mismatch(self, b, user_vk):
-        matches = b.get_tx_by_payload_uuid('missing')
+    def test_get_transactions_for_metadata(self, b, user_vk):
+        matches = b.get_tx_by_metadata_id('missing')
         assert not matches
 
     @pytest.mark.usefixtures('inputs')
@@ -205,7 +203,7 @@ class TestBigchainApi(object):
         input_tx = b.get_owned_ids(user_vk).pop()
         input_tx = b.get_transaction(input_tx.txid)
         inputs = input_tx.to_inputs()
-        tx = Transaction.transfer(inputs, [user_vk])
+        tx = Transaction.transfer(inputs, [user_vk], input_tx.asset)
         tx = tx.sign([user_sk])
         response = b.write_transaction(tx)
 
@@ -223,7 +221,7 @@ class TestBigchainApi(object):
         input_tx = b.get_owned_ids(user_vk).pop()
         input_tx = b.get_transaction(input_tx.txid)
         inputs = input_tx.to_inputs()
-        tx = Transaction.transfer(inputs, [user_vk])
+        tx = Transaction.transfer(inputs, [user_vk], input_tx.asset)
         tx = tx.sign([user_sk])
         b.write_transaction(tx)
 
@@ -243,7 +241,7 @@ class TestBigchainApi(object):
         input_tx = b.get_owned_ids(user_vk).pop()
         input_tx = b.get_transaction(input_tx.txid)
         inputs = input_tx.to_inputs()
-        tx = Transaction.transfer(inputs, [user_vk])
+        tx = Transaction.transfer(inputs, [user_vk], input_tx.asset)
         tx = tx.sign([user_sk])
         b.write_transaction(tx)
 
@@ -485,7 +483,7 @@ class TestBigchainApi(object):
         input_tx = b.get_owned_ids(user_vk).pop()
         input_tx = b.get_transaction(input_tx.txid)
         inputs = input_tx.to_inputs()
-        tx = Transaction.transfer(inputs, [user_vk])
+        tx = Transaction.transfer(inputs, [user_vk], input_tx.asset)
         tx = tx.sign([user_sk])
         b.write_transaction(tx)
 
@@ -510,7 +508,7 @@ class TestBigchainApi(object):
             input_tx = b.get_owned_ids(user_vk).pop()
             input_tx = b.get_transaction(input_tx.txid)
             inputs = input_tx.to_inputs()
-            tx = Transaction.transfer(inputs, [user_vk])
+            tx = Transaction.transfer(inputs, [user_vk], input_tx.asset)
             tx = tx.sign([user_sk])
             b.write_transaction(tx)
 
@@ -524,19 +522,25 @@ class TestBigchainApi(object):
     # TODO: Make this test work
     @pytest.mark.usefixtures('inputs')
     def test_non_create_input_not_found(self, b, user_vk):
-        with pytest.raises(exceptions.TransactionDoesNotExist) as excinfo:
-            b.create_transaction(user_vk, user_vk, {'txid': 'c', 'cid': 0}, 'TRANSFER')
+        from bigchaindb_common.exceptions import TransactionDoesNotExist
+        from bigchaindb_common.transaction import Fulfillment, Asset
+        from bigchaindb.models import Transaction
+        from bigchaindb import Bigchain
 
-        assert excinfo.value.args[0] == 'input with txid `c` does not exist in the bigchain'
+        # Create a fulfillment for a non existing transaction
+        fulfillment_dict = {'fulfillment': {'bitmask': 32,
+                                            'public_key': user_vk,
+                                            'signature': None,
+                                            'type': 'fulfillment',
+                                            'type_id': 4},
+                            'input': {'cid': 0,
+                                      'txid': 'somethingsomething'},
+                            'owners_before': [user_vk]}
+        fulfillment = Fulfillment.from_dict(fulfillment_dict) 
+        tx = Transaction.transfer([fulfillment], [user_vk], Asset())
 
-        # Create transaction does not let you create a malformed transaction.
-        # Create a custom malformed transaction and check if validate catches the error
-        tx_input = b.get_owned_ids(user_vk).pop()
-        tx = b.create_transaction(user_vk, user_vk, tx_input, 'TRANSFER')
-        tx['transaction']['fulfillments'][0]['input'] = {'txid': 'c', 'cid': 0}
-
-        with pytest.raises(exceptions.TransactionDoesNotExist) as excinfo:
-            b.validate_transaction(tx)
+        with pytest.raises(TransactionDoesNotExist) as excinfo:
+            tx.validate(Bigchain())
 
 
 class TestTransactionValidation(object):
@@ -606,7 +610,7 @@ class TestTransactionValidation(object):
         input_tx = b.get_owned_ids(user_vk).pop()
         input_tx = b.get_transaction(input_tx.txid)
         inputs = input_tx.to_inputs()
-        transfer_tx = Transaction.transfer(inputs, [user_vk])
+        transfer_tx = Transaction.transfer(inputs, [user_vk], input_tx.asset)
         transfer_tx = transfer_tx.sign([user_sk])
 
         assert transfer_tx == b.validate_transaction(transfer_tx)
@@ -712,7 +716,7 @@ class TestMultipleInputs(object):
         tx_link = b.get_owned_ids(user_vk).pop()
         input_tx = b.get_transaction(tx_link.txid)
         inputs = input_tx.to_inputs()
-        tx = Transaction.transfer(inputs, [user2_vk])
+        tx = Transaction.transfer(inputs, [user2_vk], input_tx.asset)
         tx = tx.sign([user_sk])
 
         # validate transaction
@@ -810,8 +814,8 @@ class TestMultipleInputs(object):
 
         owned_inputs = b.get_owned_ids(user_vk)
         tx_link = owned_inputs.pop()
-        inputs = b.get_transaction(tx_link.txid).to_inputs()
-        tx = Transaction.transfer(inputs, [[user2_vk, user3_vk]])
+        input_tx = b.get_transaction(tx_link.txid)
+        tx = Transaction.transfer(input_tx.to_inputs(), [[user2_vk, user3_vk]], input_tx.asset)
         tx = tx.sign([user_sk])
 
         assert b.is_valid_transaction(tx) == tx
@@ -873,7 +877,7 @@ class TestMultipleInputs(object):
         input_tx = b.get_transaction(owned_input.txid)
         inputs = input_tx.to_inputs()
 
-        transfer_tx = Transaction.transfer(inputs, [user3_vk])
+        transfer_tx = Transaction.transfer(inputs, [user3_vk], input_tx.asset)
         transfer_tx = transfer_tx.sign([user_sk, user2_sk])
 
         # validate transaction
@@ -928,9 +932,9 @@ class TestMultipleInputs(object):
         b.write_block(block, durability='hard')
 
         tx_link = b.get_owned_ids(user_vk).pop()
-        tx_input = b.get_transaction(tx_link.txid).to_inputs()
+        tx_input = b.get_transaction(tx_link.txid)
 
-        tx = Transaction.transfer(tx_input, [[user3_vk, user4_vk]])
+        tx = Transaction.transfer(tx_input.to_inputs(), [[user3_vk, user4_vk]], tx_input.asset)
         tx = tx.sign([user_sk, user2_sk])
 
         assert b.is_valid_transaction(tx) == tx
@@ -987,7 +991,7 @@ class TestMultipleInputs(object):
         assert owned_inputs_user1 == [TransactionLink(tx.id, 0)]
         assert owned_inputs_user2 == []
 
-        tx = Transaction.transfer(tx.to_inputs(), [user2_vk])
+        tx = Transaction.transfer(tx.to_inputs(), [user2_vk], tx.asset)
         tx = tx.sign([user_sk])
         block = b.create_block([tx])
         b.write_block(block, durability='hard')
@@ -1023,7 +1027,7 @@ class TestMultipleInputs(object):
 
         # NOTE: The transaction itself is valid, still will mark the block
         #       as invalid to mock the behavior.
-        tx_invalid = Transaction.transfer(tx.to_inputs(), [user2_vk])
+        tx_invalid = Transaction.transfer(tx.to_inputs(), [user2_vk], tx.asset)
         tx_invalid = tx_invalid.sign([user_sk])
         block = b.create_block([tx_invalid])
         b.write_block(block, durability='hard')
@@ -1101,7 +1105,7 @@ class TestMultipleInputs(object):
         assert owned_inputs_user1 == owned_inputs_user2
         assert owned_inputs_user1 == expected_owned_inputs_user1
 
-        tx = Transaction.transfer(tx.to_inputs(), [user3_vk])
+        tx = Transaction.transfer(tx.to_inputs(), [user3_vk], tx.asset)
         tx = tx.sign([user_sk, user2_sk])
         block = b.create_block([tx])
         b.write_block(block, durability='hard')
@@ -1131,7 +1135,7 @@ class TestMultipleInputs(object):
         assert spent_inputs_user1 is None
 
         # create a transaction and block
-        tx = Transaction.transfer(tx.to_inputs(), [user2_vk])
+        tx = Transaction.transfer(tx.to_inputs(), [user2_vk], tx.asset)
         tx = tx.sign([user_sk])
         block = b.create_block([tx])
         b.write_block(block, durability='hard')
@@ -1166,7 +1170,7 @@ class TestMultipleInputs(object):
         assert spent_inputs_user1 is None
 
         # create a transaction and block
-        tx = Transaction.transfer(tx.to_inputs(), [user2_vk])
+        tx = Transaction.transfer(tx.to_inputs(), [user2_vk], tx.asset)
         tx = tx.sign([user_sk])
         block = b.create_block([tx])
         b.write_block(block, durability='hard')
@@ -1248,7 +1252,7 @@ class TestMultipleInputs(object):
             assert b.get_spent(input_tx.txid, input_tx.cid) is None
 
         # create a transaction
-        tx = Transaction.transfer(transactions[0].to_inputs(), [user3_vk])
+        tx = Transaction.transfer(transactions[0].to_inputs(), [user3_vk], transactions[0].asset)
         tx = tx.sign([user_sk, user2_sk])
         block = b.create_block([tx])
         b.write_block(block, durability='hard')

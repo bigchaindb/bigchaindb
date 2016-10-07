@@ -2,40 +2,29 @@ import pytest
 from ..db.conftest import inputs
 
 
-def test_asset_creation(b, user_vk):
-    asset_data = {'msg': 'hello'}
-    tx = b.create_transaction(b.me, user_vk, None, 'CREATE', asset_data=asset_data)
-    tx_signed = b.sign_transaction(tx, b.me_private)
-
-    assert b.validate_transaction(tx_signed) == tx_signed
-    assert tx_signed['transaction']['asset']['data'] == asset_data
-    assert tx_signed['transaction']['asset']['refillable'] is False
-    assert tx_signed['transaction']['asset']['divisible'] is False
-    assert tx_signed['transaction']['asset']['updatable'] is False
-    assert tx_signed['transaction']['conditions'][0]['amount'] == 1
-
-
 @pytest.mark.usefixtures('inputs')
 def test_asset_transfer(b, user_vk, user_sk):
-    tx_input = b.get_owned_ids(user_vk).pop()
-    tx_create = b.get_transaction(tx_input['txid'])
-    tx_transfer = b.create_transaction(user_vk, user_vk, tx_input, 'TRANSFER')
-    tx_transfer_signed = b.sign_transaction(tx_transfer, user_sk)
+    from bigchaindb.models import Transaction
 
-    assert b.validate_transaction(tx_transfer_signed) == tx_transfer_signed
-    assert tx_transfer_signed['transaction']['asset']['id'] == tx_create['transaction']['asset']['id']
+    tx_input = b.get_owned_ids(user_vk).pop()
+    tx_create = b.get_transaction(tx_input.txid)
+    
+    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [user_vk], tx_create.asset)
+    tx_transfer_signed = tx_transfer.sign([user_sk])
+
+    assert tx_transfer_signed.validate(b) == tx_transfer_signed
+    assert tx_transfer_signed.asset.data_id == tx_create.asset.data_id
 
 
 def test_validate_bad_asset_creation(b, user_vk):
-    from bigchaindb.util import get_hash_data
-    from bigchaindb.exceptions import AmountError
+    from bigchaindb_common.exceptions import AmountError
+    from bigchaindb.models import Transaction
 
-    tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
-    tx['transaction']['asset'].update({'divisible': 1})
-    tx['id'] = get_hash_data(tx['transaction'])
-    tx_signed = b.sign_transaction(tx, b.me_private)
+    tx = Transaction.create([b.me], [user_vk])
+    tx.asset.divisible = 1
+    tx_signed = tx.sign([b.me_private])
     with pytest.raises(TypeError):
-        b.validate_transaction(tx_signed)
+        tx_signed.validate(b)
 
     tx = b.create_transaction(b.me, user_vk, None, 'CREATE')
     tx['transaction']['asset'].update({'refillable': 1})
@@ -84,7 +73,7 @@ def test_validate_bad_asset_creation(b, user_vk):
 @pytest.mark.usefixtures('inputs')
 def test_validate_transfer_asset_id_mismatch(b, user_vk, user_sk):
     from bigchaindb.util import get_hash_data
-    from bigchaindb.exceptions import AssetIdMismatch
+    from bigchaindb_common.exceptions import AssetIdMismatch
 
     tx_input = b.get_owned_ids(user_vk).pop()
     tx = b.create_transaction(user_vk, user_vk, tx_input, 'TRANFER')
@@ -96,7 +85,7 @@ def test_validate_transfer_asset_id_mismatch(b, user_vk, user_sk):
 
 
 def test_validate_asset_arguments(b):
-    from bigchaindb.exceptions import AmountError
+    from bigchaindb_common.exceptions import AmountError
 
     with pytest.raises(TypeError):
         b.create_transaction(b.me, b.me, None, 'CREATE', divisible=1)
@@ -147,7 +136,7 @@ def test_get_asset_id_transfer_transaction(b, user_vk, user_sk):
 @pytest.mark.usefixtures('inputs')
 def test_asset_id_mismatch(b, user_vk):
     from bigchaindb.assets import get_asset_id
-    from bigchaindb.exceptions import AssetIdMismatch
+    from bigchaindb_common.exceptions import AssetIdMismatch
 
     tx_input1, tx_input2 = b.get_owned_ids(user_vk)[:2]
     tx1 = b.get_transaction(tx_input1['txid'])
@@ -158,7 +147,7 @@ def test_asset_id_mismatch(b, user_vk):
 
 
 def test_get_asset_id_transaction_does_not_exist(b, user_vk):
-    from bigchaindb.exceptions import TransactionDoesNotExist
+    from bigchaindb_common.exceptions import TransactionDoesNotExist
 
     with pytest.raises(TransactionDoesNotExist):
         b.create_transaction(user_vk, user_vk, {'txid': 'bored', 'cid': '0'}, 'TRANSFER')

@@ -1,6 +1,6 @@
 import rethinkdb as r
 
-from bigchaindb.exceptions import AssetIdMismatch, AmountError
+from bigchaindb_common.exceptions import AssetIdMismatch, AmountError
 
 
 def get_asset_id(transactions):
@@ -29,38 +29,6 @@ def get_asset_id(transactions):
     if len(asset_ids) > 1:
         raise AssetIdMismatch("All inputs of a transaction need to have the same asset id.")
     return asset_ids.pop()
-
-
-def validate_asset_creation(asset_data, divisible, updatable, refillable, amount):
-    """Validate digital asset
-
-    Args:
-        asset_data (dict or None): dictionary describing the digital asset (only used on a create transaction)
-        divisible (boolean): Whether the asset is divisible or not. Defaults to `False`.
-        updatable (boolean): Whether the data in the asset can be updated in the future or not.
-                                       Defaults to `False`.
-        refillable (boolean): Whether the amount of the asset can change after its creation.
-                                        Defaults to `False`.
-        amount (int): The amount of "shares". Only relevant if the asset is marked as divisible.
-                                Defaults to `1`.
-    """
-    if asset_data is not None and not isinstance(asset_data, dict):
-        raise TypeError('`data` must be a dict instance or None')
-    if not isinstance(divisible, bool):
-        raise TypeError('`divisible` must be a boolean')
-    if not isinstance(refillable, bool):
-        raise TypeError('`refillable` must be a boolean')
-    if not isinstance(updatable, bool):
-        raise TypeError('`updatable` must be a boolean')
-    if not isinstance(amount, int):
-        raise TypeError('`amount` must be an int')
-    if divisible is False and amount != 1:
-        raise AmountError('Non-divisible assets must have amount 1')
-    if amount < 1:
-        raise AmountError('The amount cannot be less then 1')
-
-    if divisible or updatable or refillable or amount != 1:
-        raise NotImplementedError("Divisible assets are not yet implemented!")
 
 
 def get_transactions_by_asset_id(asset_id, bigchain, read_mode='majority'):

@@ -6,7 +6,7 @@ from time import time
 from itertools import compress
 from bigchaindb_common import crypto, exceptions
 from bigchaindb_common.util import gen_timestamp, serialize
-from bigchaindb_common.transaction import TransactionLink
+from bigchaindb_common.transaction import TransactionLink, Metadata
 
 import rethinkdb as r
 
@@ -553,7 +553,7 @@ class Bigchain(object):
         metadata = {'message': 'Hello World from the BigchainDB'}
         # TODO: When updating the BDBC lib, change `payload` to `metadata`
         transaction = Transaction.create([self.me], [self.me],
-                                         payload=metadata)
+                                         metadata=metadata)
 
         # NOTE: The transaction model doesn't expose an API to generate a
         #       GENESIS transaction, as this is literally the only usage.
