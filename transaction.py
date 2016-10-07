@@ -9,7 +9,8 @@ from cryptoconditions.exceptions import ParsingError
 
 from bigchaindb_common.crypto import SigningKey, hash_data
 from bigchaindb_common.exceptions import (KeypairMismatchException,
-                                          InvalidHash, InvalidSignature)
+                                          InvalidHash, InvalidSignature,
+                                          AmountError)
 from bigchaindb_common.util import serialize, gen_timestamp
 
 
@@ -241,15 +242,13 @@ class Condition(object):
 class Asset(object):
     def __init__(self, data=None, data_id=None, divisible=False,
                  updatable=False, refillable=False):
-        if data is not None and not isinstance(data, dict):
-            raise TypeError('`data` must be a dict instance or None')
-        else:
-            self.data = data
-
+        self.data = data
         self.data_id = data_id if data_id is not None else self.to_hash()
         self.divisible = divisible
         self.updatable = updatable
         self.refillable = refillable
+
+        self._validate_asset()
 
     def __eq__(self, other):
         try:
@@ -269,11 +268,33 @@ class Asset(object):
 
     @classmethod
     def from_dict(cls, asset):
-        return cls(asset.get('data'), asset['id'], asset.get('divisible'),
-                   asset.get('updatable'), asset.get('refillable'))
+        return cls(asset.get('data'), asset['id'], asset.get('divisible', False),
+                   asset.get('updatable', False), asset.get('refillable', False))
 
     def to_hash(self):
         return str(uuid4())
+
+    def _validate_asset(self):
+        """Validate digital asset"""
+        if self.data is not None and not isinstance(self.data, dict):
+            raise TypeError('`data` must be a dict instance or None')
+        if not isinstance(self.divisible, bool):
+            raise TypeError('`divisible` must be a boolean')
+        if not isinstance(self.refillable, bool):
+            raise TypeError('`refillable` must be a boolean')
+        if not isinstance(self.updatable, bool):
+            raise TypeError('`updatable` must be a boolean')
+
+        # TODO: amount needs to be validate, somehow, somewhere ...
+        # if not isinstance(self.amount, int):
+        #     raise TypeError('`amount` must be an int')
+        # if self.divisible is False and self.amount != 1:
+        #     raise AmountError('Non-divisible assets must have amount 1')
+        # if self.amount < 1:
+        #     raise AmountError('The amount cannot be less then 1')
+
+        # if self.divisible or self.updatable or self.refillable or self.amount != 1:
+        #     raise NotImplementedError("Divisible assets are not yet implemented!")
 
 
 class Metadata(object):
@@ -337,6 +358,10 @@ class Transaction(object):
                             .format(allowed_ops))
         else:
             self.operation = operation
+
+        # If an asset is not defined in a `CREATE` transaction, create a default one.
+        if asset is None and operation == Transaction.CREATE:
+            asset = Asset()
 
         if not isinstance(asset, Asset):
             raise TypeError('`asset` must be an Asset instance')
@@ -419,7 +444,7 @@ class Transaction(object):
             raise ValueError("These are not the cases you're looking for ;)")
 
     @classmethod
-    def transfer(cls, inputs, owners_after, metadata=None, asset=None):
+    def transfer(cls, inputs, owners_after, asset, metadata=None):
         if not isinstance(inputs, list):
             raise TypeError('`inputs` must be a list instance')
         if len(inputs) == 0:
