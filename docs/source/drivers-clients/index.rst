@@ -6,6 +6,6 @@ Drivers & Clients
 
    python-server-api-examples
    http-client-server-api
-   python-driver-api-examples
+   python-driver
    example-apps
    
