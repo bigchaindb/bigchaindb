@@ -11,7 +11,9 @@ import rethinkdb as r
 
 from bigchaindb import Bigchain
 from bigchaindb.db import get_conn
+from bigchaindb_common import crypto
 
+USER2_SK, USER2_VK = crypto.generate_key_pair()
 
 @pytest.fixture(autouse=True)
 def restore_config(request, node_config):
@@ -104,11 +106,12 @@ def inputs(user_vk):
     # 1. create the genesis block
     b = Bigchain()
     try:
-        b.create_genesis_block()
+        g = b.create_genesis_block()
     except GenesisBlockAlreadyExistsError:
         pass
 
-    # 2. create block with transactions for `USER` to spend
+    # 2. create blocks with transactions for `USER` to spend
+    prev_block_id = g.id
     for block in range(4):
         transactions = [
             Transaction.create(
@@ -117,3 +120,46 @@ def inputs(user_vk):
         ]
         block = b.create_block(transactions)
         b.write_block(block, durability='hard')
+
+        # 3. vote the blocks valid, so that the inputs are valid
+        vote = b.vote(block.id, prev_block_id, True)
+        prev_block_id = block.id
+        b.write_vote(vote)
+
+
+@pytest.fixture
+def user2_sk():
+    return USER2_SK
+
+
+@pytest.fixture
+def user2_vk():
+    return USER2_VK
+
+
+@pytest.fixture
+def inputs_shared(user_vk, user2_vk):
+    from bigchaindb.models import Transaction
+    from bigchaindb_common.exceptions import GenesisBlockAlreadyExistsError
+    # 1. create the genesis block
+    b = Bigchain()
+    try:
+        g = b.create_genesis_block()
+    except GenesisBlockAlreadyExistsError:
+        pass
+
+    # 2. create blocks with transactions for `USER` to spend
+    prev_block_id = g.id
+    for block in range(4):
+        transactions = [
+            Transaction.create(
+                [b.me], [user_vk, user2_vk], payload={'i': i}).sign([b.me_private])
+            for i in range(10)
+        ]
+        block = b.create_block(transactions)
+        b.write_block(block, durability='hard')
+
+        # 3. vote the blocks valid, so that the inputs are valid
+        vote = b.vote(block.id, prev_block_id, True)
+        prev_block_id = block.id
+        b.write_vote(vote)

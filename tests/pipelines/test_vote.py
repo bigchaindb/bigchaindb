@@ -1,3 +1,5 @@
+import time
+
 from unittest.mock import patch
 
 import rethinkdb as r
@@ -285,9 +287,10 @@ def test_valid_block_voting_with_transfer_transactions(monkeypatch, b):
     vote_pipeline = vote.create_pipeline()
     vote_pipeline.setup(indata=inpipe, outdata=outpipe)
 
-    inpipe.put(block.to_dict())
-    inpipe.put(block2.to_dict())
     vote_pipeline.start()
+    inpipe.put(block.to_dict())
+    time.sleep(1)
+    inpipe.put(block2.to_dict())
     vote_out = outpipe.get()
     vote2_out = outpipe.get()
     vote_pipeline.terminate()
