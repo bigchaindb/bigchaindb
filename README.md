@@ -2,7 +2,7 @@
 [![PyPI](https://img.shields.io/pypi/v/bigchaindb.svg)](https://pypi.python.org/pypi/BigchainDB)
 [![Travis branch](https://img.shields.io/travis/bigchaindb/bigchaindb/master.svg)](https://travis-ci.org/bigchaindb/bigchaindb)
 [![Codecov branch](https://img.shields.io/codecov/c/github/bigchaindb/bigchaindb/master.svg)](https://codecov.io/github/bigchaindb/bigchaindb?branch=master)
-[![Documentation Status](http://bigchaindb.readthedocs.io/projects/server/en/latest/?badge=latest)](https://bigchaindb.readthedocs.org/projects/server/en/latest/)
+[![Documentation Status](https://docs.bigchaindb.com/projects/server/en/latest/?badge=latest)](https://docs.bigchaindb.com/projects/server/en/latest/)
 [![Join the chat at https://gitter.im/bigchaindb/bigchaindb](https://badges.gitter.im/bigchaindb/bigchaindb.svg)](https://gitter.im/bigchaindb/bigchaindb?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 
@@ -15,9 +15,9 @@ We're hiring! [Learn more](https://github.com/bigchaindb/org/blob/master/engjob.
 
 ## Get Started with BigchainDB Server
 
-### [Quickstart](http://bigchaindb.readthedocs.io/projects/server/en/latest/quickstart.html)
-### [Set Up & Run a Dev/Test Node](http://bigchaindb.readthedocs.io/projects/server/en/latest/dev-and-test/setup-run-node.html)
-### [Run BigchainDB Server with Docker](http://bigchaindb.readthedocs.io/projects/server/en/latest/appendices/run-with-docker.html)
+### [Quickstart](https://docs.bigchaindb.com/projects/server/en/latest/quickstart.html)
+### [Set Up & Run a Dev/Test Node](https://docs.bigchaindb.com/projects/server/en/latest/dev-and-test/setup-run-node.html)
+### [Run BigchainDB Server with Docker](https://docs.bigchaindb.com/projects/server/en/latest/appendices/run-with-docker.html)
 
 ## Links for Everyone
 
@@ -30,8 +30,8 @@ We're hiring! [Learn more](https://github.com/bigchaindb/org/blob/master/engjob.
 
 ## Links for Developers
 
-* [BigchainDB Server Documentation](https://bigchaindb.readthedocs.io/projects/server/en/latest/)
-* [All BigchainDB Documentation](http://bigchaindb.readthedocs.io/en/latest/)
+* [All BigchainDB Documentation](https://docs.bigchaindb.com/en/latest/)
+* [BigchainDB Server Documentation](https://docs.bigchaindb.com/projects/server/en/latest/index.html)
 * [CONTRIBUTING.md](CONTRIBUTING.md) - how to contribute
 * [Community guidelines](CODE_OF_CONDUCT.md)
 * [Open issues](https://github.com/bigchaindb/bigchaindb/issues)
