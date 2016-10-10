@@ -1,7 +1,7 @@
 """This module provides the blueprint for some basic API endpoints.
 
 For more information please refer to the documentation on ReadTheDocs:
- - https://bigchaindb.readthedocs.io/projects/server/en/latest/drivers-clients/http-client-server-api.html
+ - https://docs.bigchaindb.com/projects/server/en/latest/drivers-clients/http-client-server-api.html
 """
 from flask import current_app, request, Blueprint
 from flask_restful import Resource, Api

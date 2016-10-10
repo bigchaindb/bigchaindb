@@ -2,7 +2,7 @@
 
 This is the documentation for BigchainDB Server, the BigchainDB software that one runs on servers (but not on clients).
 
-If you want to use BigchainDB Server, then you should first understand what BigchainDB is, plus some of the specialized BigchaindB terminology. You can read about that in [the overall BigchainDB project documentation](https://bigchaindb.readthedocs.io/en/latest/introduction.html).
+If you want to use BigchainDB Server, then you should first understand what BigchainDB is, plus some of the specialized BigchaindB terminology. You can read about that in [the overall BigchainDB project documentation](https://docs.bigchaindb.com/en/latest/index.html).
 
 Note that there are a few kinds of nodes:
 
