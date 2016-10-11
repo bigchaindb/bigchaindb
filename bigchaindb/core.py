@@ -137,11 +137,11 @@ class Bigchain(object):
             # There is no other node to assign to
             new_assignee = self.me
 
-        response = r.table('backlog')\
-            .get(transaction['id'])\
-            .update({'assignee': new_assignee,
-                     'assignment_timestamp': time()},
-                    durability=durability).run(self.conn)
+        response = self.connection.run(
+                r.table('backlog')
+                .get(transaction['id'])
+                .update({'assignee': new_assignee, 'assignment_timestamp': time()},
+                        durability=durability))
         return response
 
     def get_stale_transactions(self):
@@ -151,9 +151,9 @@ class Bigchain(object):
         backlog after some amount of time specified in the configuration
         """
 
-        return r.table('backlog')\
-            .filter(lambda tx: time() - tx['assignment_timestamp'] >
-                    self.backlog_reassign_delay).run(self.conn)
+        return self.connection.run(
+                r.table('backlog')
+                .filter(lambda tx: time() - tx['assignment_timestamp'] > self.backlog_reassign_delay))
 
     def validate_transaction(self, transaction):
         """Validate a transaction.
