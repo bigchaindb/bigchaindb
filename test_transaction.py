@@ -183,7 +183,8 @@ def test_generate_conditions_split_half_recursive_custom_threshold(user_pub,
     expected_threshold.add_subfulfillment(expected_simple3)
     expected.add_subfulfillment(expected_threshold)
 
-    cond = Condition.generate(([user_pub, ([user2_pub, expected_simple3], 1)], 1))
+    cond = Condition.generate(([user_pub, ([user2_pub, expected_simple3], 1)],
+                              1))
     assert cond.fulfillment.to_dict() == expected.to_dict()
 
 
@@ -293,7 +294,8 @@ def test_transaction_serialization(user_ffill, user_cond):
         'id': tx_id,
         'version': Transaction.VERSION,
         'transaction': {
-            # NOTE: This test assumes that Fulfillments and Conditions can successfully be serialized
+            # NOTE: This test assumes that Fulfillments and Conditions can
+            #       successfully be serialized
             'fulfillments': [user_ffill.to_dict(0)],
             'conditions': [user_cond.to_dict(0)],
             'operation': Transaction.CREATE,
@@ -302,7 +304,8 @@ def test_transaction_serialization(user_ffill, user_cond):
         }
     }
 
-    tx_dict = Transaction(Transaction.CREATE, [user_ffill], [user_cond]).to_dict()
+    tx = Transaction(Transaction.CREATE, [user_ffill], [user_cond])
+    tx_dict = tx.to_dict()
     tx_dict['id'] = tx_id
     tx_dict['transaction']['timestamp'] = timestamp
 
@@ -314,13 +317,14 @@ def test_transaction_deserialization(user_ffill, user_cond):
 
     timestamp = '66666666666'
 
-    expected = Transaction(Transaction.CREATE, [user_ffill], [user_cond], None, timestamp,
-                           Transaction.VERSION)
+    expected = Transaction(Transaction.CREATE, [user_ffill], [user_cond], None,
+                           timestamp, Transaction.VERSION)
 
     tx = {
         'version': Transaction.VERSION,
         'transaction': {
-            # NOTE: This test assumes that Fulfillments and Conditions can successfully be serialized
+            # NOTE: This test assumes that Fulfillments and Conditions can
+            #       successfully be serialized
             'fulfillments': [user_ffill.to_dict()],
             'conditions': [user_cond.to_dict()],
             'operation': Transaction.CREATE,
@@ -328,7 +332,8 @@ def test_transaction_deserialization(user_ffill, user_cond):
             'data': None,
         }
     }
-    tx['id'] = Transaction._to_hash(Transaction._to_str(Transaction._remove_signatures(tx)))
+    tx_no_signatures = Transaction._remove_signatures(tx)
+    tx['id'] = Transaction._to_hash(Transaction._to_str(tx_no_signatures))
     tx = Transaction.from_dict(tx)
 
     assert tx == expected
@@ -507,24 +512,25 @@ def test_validate_tx_simple_create_signature(user_ffill, user_cond, user_priv):
     expected.fulfillment.sign(str(tx), SigningKey(user_priv))
     tx.sign([user_priv])
 
-    assert tx.fulfillments[0].to_dict()['fulfillment'] == expected.fulfillment.serialize_uri()
+    expected_uri = expected.fulfillment.serialize_uri()
+    assert tx.fulfillments[0].to_dict()['fulfillment'] == expected_uri
     assert tx.fulfillments_valid() is True
 
 
-def test_invoke_simple_signature_fulfillment_with_invalid_parameters(utx, user_ffill):
+def test_invoke_simple_signature_fulfillment_with_invalid_params(utx,
+                                                                 user_ffill):
     from bigchaindb_common.exceptions import KeypairMismatchException
 
     with raises(KeypairMismatchException):
+        invalid_key_pair = {'wrong_pub_key': 'wrong_priv_key'}
         utx._sign_simple_signature_fulfillment(user_ffill,
                                                0,
                                                'somemessage',
-                                               {'wrong_pub_key': 'wrong_priv_key'})
+                                               invalid_key_pair)
 
 
-def test_invoke_threshold_signature_fulfillment_with_invalid_parameters(utx,
-                                                                        user_user2_threshold_ffill,
-                                                                        user3_pub,
-                                                                        user3_priv):
+def test_sign_threshold_with_invalid_params(utx, user_user2_threshold_ffill,
+                                            user3_pub, user3_priv):
     from bigchaindb_common.exceptions import KeypairMismatchException
 
     with raises(KeypairMismatchException):
@@ -544,10 +550,12 @@ def test_validate_fulfillment_with_invalid_parameters(utx):
     from bigchaindb_common.transaction import Transaction
     input_conditions = [cond.fulfillment.condition_uri for cond
                         in utx.conditions]
-    tx_serialized = Transaction._to_str(Transaction._remove_signatures(utx.to_dict()))
+    tx_dict = utx.to_dict()
+    tx_dict = Transaction._remove_signatures(tx_dict)
+    tx_serialized = Transaction._to_str(tx_dict)
     assert utx._fulfillment_valid(utx.fulfillments[0],
                                   tx_serialized,
-                                  input_conditions) == False
+                                  input_conditions) is False
 
 
 def test_validate_multiple_fulfillments(user_ffill, user_cond, user_priv):
@@ -567,12 +575,16 @@ def test_validate_multiple_fulfillments(user_ffill, user_cond, user_priv):
     expected_second.fulfillments = [expected_second.fulfillments[1]]
     expected_second.conditions = [expected_second.conditions[1]]
 
-    expected_first.fulfillments[0].fulfillment.sign(str(expected_first), SigningKey(user_priv))
-    expected_second.fulfillments[0].fulfillment.sign(str(expected_second), SigningKey(user_priv))
+    expected_first.fulfillments[0].fulfillment.sign(str(expected_first),
+                                                    SigningKey(user_priv))
+    expected_second.fulfillments[0].fulfillment.sign(str(expected_second),
+                                                     SigningKey(user_priv))
     tx.sign([user_priv])
 
-    assert tx.fulfillments[0].to_dict()['fulfillment'] == expected_first.fulfillments[0].fulfillment.serialize_uri()
-    assert tx.fulfillments[1].to_dict()['fulfillment'] == expected_second.fulfillments[0].fulfillment.serialize_uri()
+    assert tx.fulfillments[0].to_dict()['fulfillment'] == \
+        expected_first.fulfillments[0].fulfillment.serialize_uri()
+    assert tx.fulfillments[1].to_dict()['fulfillment'] == \
+        expected_second.fulfillments[0].fulfillment.serialize_uri()
     assert tx.fulfillments_valid() is True
 
 
@@ -587,13 +599,17 @@ def test_validate_tx_threshold_create_signature(user_user2_threshold_ffill,
     from bigchaindb_common.crypto import SigningKey
     from bigchaindb_common.transaction import Transaction
 
-    tx = Transaction(Transaction.CREATE, [user_user2_threshold_ffill], [user_user2_threshold_cond])
+    tx = Transaction(Transaction.CREATE, [user_user2_threshold_ffill],
+                     [user_user2_threshold_cond])
     expected = deepcopy(user_user2_threshold_cond)
-    expected.fulfillment.subconditions[0]['body'].sign(str(tx), SigningKey(user_priv))
-    expected.fulfillment.subconditions[1]['body'].sign(str(tx), SigningKey(user2_priv))
+    expected.fulfillment.subconditions[0]['body'].sign(str(tx),
+                                                       SigningKey(user_priv))
+    expected.fulfillment.subconditions[1]['body'].sign(str(tx),
+                                                       SigningKey(user2_priv))
     tx.sign([user_priv, user2_priv])
 
-    assert tx.fulfillments[0].to_dict()['fulfillment'] == expected.fulfillment.serialize_uri()
+    assert tx.fulfillments[0].to_dict()['fulfillment'] == \
+        expected.fulfillment.serialize_uri()
     assert tx.fulfillments_valid() is True
 
 
@@ -614,25 +630,26 @@ def test_multiple_fulfillment_validation_of_transfer_tx(user_ffill, user_cond,
     fulfillments = [Fulfillment(cond.fulfillment, cond.owners_after,
                                 TransactionLink(tx.id, index))
                     for index, cond in enumerate(tx.conditions)]
-    conditions = [Condition(Ed25519Fulfillment(public_key=user3_pub), [user3_pub]),
-                  Condition(Ed25519Fulfillment(public_key=user3_pub), [user3_pub])]
+    conditions = [Condition(Ed25519Fulfillment(public_key=user3_pub),
+                            [user3_pub]),
+                  Condition(Ed25519Fulfillment(public_key=user3_pub),
+                            [user3_pub])]
     transfer_tx = Transaction('TRANSFER', fulfillments, conditions)
-
     transfer_tx = transfer_tx.sign([user_priv])
 
     assert transfer_tx.fulfillments_valid(tx.conditions) is True
 
 
-def test_validate_fulfillments_of_transfer_tx_with_invalid_parameters(transfer_tx,
-                                                                      cond_uri,
-                                                                      utx,
-                                                                      user2_pub,
-                                                                      user_priv):
+def test_validate_fulfillments_of_transfer_tx_with_invalid_params(transfer_tx,
+                                                                  cond_uri,
+                                                                  utx,
+                                                                  user2_pub,
+                                                                  user_priv):
     from bigchaindb_common.transaction import Condition
     from cryptoconditions import Ed25519Fulfillment
 
-    assert transfer_tx.fulfillments_valid([Condition(Ed25519Fulfillment.from_uri('cf:0:'),
-                                                     ['invalid'])]) is False
+    invalid_cond = Condition(Ed25519Fulfillment.from_uri('cf:0:'), ['invalid'])
+    assert transfer_tx.fulfillments_valid([invalid_cond]) is False
     invalid_cond = utx.conditions[0]
     invalid_cond.owners_after = 'invalid'
     assert transfer_tx.fulfillments_valid([invalid_cond]) is True
@@ -906,15 +923,19 @@ def test_create_transfer_transaction_single_io(tx, user_pub, user2_pub,
     transfer_tx = Transaction.transfer(inputs, [user2_pub])
     transfer_tx = transfer_tx.sign([user_priv])
     transfer_tx = transfer_tx.to_dict()
+    transfer_tx_body = transfer_tx['transaction']
 
     expected_input = deepcopy(inputs[0])
     expected['id'] = transfer_tx['id']
-    expected['transaction']['timestamp'] = transfer_tx['transaction']['timestamp']
+    expected['transaction']['timestamp'] = transfer_tx_body['timestamp']
     expected_input.fulfillment.sign(serialize(expected), SigningKey(user_priv))
     expected_ffill = expected_input.fulfillment.serialize_uri()
-    transfer_ffill = transfer_tx['transaction']['fulfillments'][0]['fulfillment']
+    transfer_ffill = transfer_tx_body['fulfillments'][0]['fulfillment']
+
     assert transfer_ffill == expected_ffill
-    assert Transaction.from_dict(transfer_tx).fulfillments_valid([tx.conditions[0]]) is True
+
+    transfer_tx = Transaction.from_dict(transfer_tx)
+    assert transfer_tx.fulfillments_valid([tx.conditions[0]]) is True
 
 
 def test_create_transfer_transaction_multiple_io(user_pub, user_priv,
@@ -968,12 +989,16 @@ def test_create_transfer_transaction_multiple_io(user_pub, user_priv,
 
     assert len(transfer_tx.fulfillments) == 2
     assert len(transfer_tx.conditions) == 2
-    assert transfer_tx.fulfillments_valid(tx1.conditions + tx2.conditions) is True
+
+    combined_conditions = tx1.conditions + tx2.conditions
+    assert transfer_tx.fulfillments_valid(combined_conditions) is True
+
     transfer_tx = transfer_tx.to_dict()
     transfer_tx['transaction']['fulfillments'][0]['fulfillment'] = None
     transfer_tx['transaction']['fulfillments'][1]['fulfillment'] = None
     transfer_tx['transaction'].pop('timestamp')
     transfer_tx.pop('id')
+
     assert expected == transfer_tx
 
 
