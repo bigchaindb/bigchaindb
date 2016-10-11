@@ -23,11 +23,13 @@ class DoubleSpend(Exception):
 
 
 class InvalidHash(Exception):
-    """Raised if there was an error checking the hash for a particular operation"""
+    """Raised if there was an error checking the hash for a particular
+    operation"""
 
 
 class InvalidSignature(Exception):
-    """Raised if there was an error checking the signature for a particular operation"""
+    """Raised if there was an error checking the signature for a particular
+    operation"""
 
 
 class DatabaseAlreadyExists(Exception):
@@ -43,7 +45,8 @@ class KeypairNotFoundException(Exception):
 
 
 class KeypairMismatchException(Exception):
-    """Raised if the private key(s) provided for signing don't match any of the curret owner(s)"""
+    """Raised if the private key(s) provided for signing don't match any of the
+    current owner(s)"""
 
 
 class StartupError(Exception):
@@ -67,4 +70,5 @@ class CyclicBlockchainError(Exception):
 
 
 class FulfillmentNotInValidBlock(Exception):
-    """Raised when a transaction depends on an invalid or undecided fulfillment"""
+    """Raised when a transaction depends on an invalid or undecided
+    fulfillment"""
