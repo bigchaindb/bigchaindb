@@ -62,7 +62,7 @@ class Fulfillment(object):
 
     @classmethod
     def from_dict(cls, ffill):
-        """ Serializes a BigchainDB 'jsonized' fulfillment back to a BigchainDB Fulfillment class.
+        """Serializes a dictionary to a Fulfillment object.
         """
         try:
             fulfillment = CCFulfillment.from_uri(ffill['fulfillment'])
@@ -73,7 +73,8 @@ class Fulfillment(object):
             # NOTE: See comment about this special case in
             #       `Fulfillment.to_dict`
             fulfillment = CCFulfillment.from_dict(ffill['fulfillment'])
-        return cls(fulfillment, ffill['owners_before'], TransactionLink.from_dict(ffill['input']))
+        inp = TransactionLink.from_dict(ffill['input'])
+        return cls(fulfillment, ffill['owners_before'], inp)
 
 
 class TransactionLink(object):
@@ -237,7 +238,11 @@ class Condition(object):
 
 class Data(object):
     def __init__(self, payload=None, payload_id=None):
-        self.payload_id = payload_id if payload_id is not None else self.to_hash()
+        if payload_id is not None:
+            self.payload_id = payload_id
+        else:
+            self.payload_id = self.to_hash()
+
         if payload is not None and not isinstance(payload, dict):
             raise TypeError('`payload` must be a dict instance or None')
         else:
@@ -276,12 +281,20 @@ class Transaction(object):
     def __init__(self, operation, fulfillments=None, conditions=None,
                  data=None, timestamp=None, version=None):
         # TODO: Write a comment
-        self.timestamp = timestamp if timestamp is not None else gen_timestamp()
-        self.version = version if version is not None else Transaction.VERSION
+        if version is not None:
+            self.version = version
+        else:
+            self.version = self.__class__.VERSION
+
+        if timestamp is not None:
+            self.timestamp = timestamp
+        else:
+            self.timestamp = gen_timestamp()
 
         if operation not in Transaction.ALLOWED_OPERATIONS:
+            allowed_ops = ', '.join(self.__class__.ALLOWED_OPERATIONS)
             raise TypeError('`operation` must be one of {}'
-                            .format(', '.join(self.__class__.ALLOWED_OPERATIONS)))
+                            .format(allowed_ops))
         else:
             self.operation = operation
 
@@ -339,7 +352,8 @@ class Transaction(object):
             ffill_tx = Fulfillment(ffill, owners_before)
             return cls(cls.CREATE, [ffill_tx], [cond_tx], data)
 
-        elif len(owners_before) == 1 and len(owners_after) == 0 and secret is not None:
+        elif (len(owners_before) == 1 and len(owners_after) == 0 and
+              secret is not None):
             # NOTE: Hashlock condition case
             hashlock = PreimageSha256Fulfillment(preimage=secret)
             cond_tx = Condition(hashlock.condition_uri)
@@ -347,10 +361,13 @@ class Transaction(object):
             ffill_tx = Fulfillment(ffill, owners_before)
             return cls(cls.CREATE, [ffill_tx], [cond_tx], data)
 
-        elif len(owners_before) > 0 and len(owners_after) == 0 and time_expire is not None:
-            raise NotImplementedError('Timeout conditions will be implemented later')
+        elif (len(owners_before) > 0 and len(owners_after) == 0 and
+              time_expire is not None):
+            raise NotImplementedError('Timeout conditions will be implemented '
+                                      'later')
 
-        elif len(owners_before) > 0 and len(owners_after) == 0 and secret is None:
+        elif (len(owners_before) > 0 and len(owners_after) == 0 and
+              secret is None):
             raise ValueError('Define a secret to create a hashlock condition')
 
         else:
@@ -421,8 +438,10 @@ class Transaction(object):
         return inputs
 
     def add_fulfillment(self, fulfillment):
-        if fulfillment is not None and not isinstance(fulfillment, Fulfillment):
-            raise TypeError('`fulfillment` must be a Fulfillment instance or None')
+        if (fulfillment is not None and not
+                isinstance(fulfillment, Fulfillment)):
+            raise TypeError('`fulfillment` must be a Fulfillment instance or '
+                            'None')
         else:
             self.fulfillments.append(fulfillment)
 
@@ -436,7 +455,8 @@ class Transaction(object):
         # TODO: Singing should be possible with at least one of all private
         #       keys supplied to this method.
         """ Signs a transaction
-            Acts as a proxy for `_sign_fulfillments`, for exposing a nicer API to the outside.
+            Acts as a proxy for `_sign_fulfillments`, for exposing a nicer API
+            to the outside.
         """
         self._sign_fulfillments(private_keys)
         return self
@@ -445,64 +465,91 @@ class Transaction(object):
         if private_keys is None or not isinstance(private_keys, list):
             raise TypeError('`private_keys` must be a list instance')
 
-        # Generate public keys from private keys and match them in a dictionary:
+        # TODO: Convert this comment to a doc string
+        # Generate public keys from private keys and match them in a
+        # dictionary:
         #   key:     public_key
         #   value:   private_key
         def gen_public_key(private_key):
-            # TODO FOR CC: Adjust interface so that this function becomes unnecessary
+            # TODO FOR CC: Adjust interface so that this function becomes
+            #              unnecessary
             return private_key.get_verifying_key().to_ascii().decode()
-        key_pairs = {gen_public_key(SigningKey(private_key)): SigningKey(private_key) for private_key in private_keys}
+        key_pairs = {gen_public_key(SigningKey(private_key)):
+                     SigningKey(private_key) for private_key in private_keys}
 
-        for index, (fulfillment, condition) in enumerate(zip(self.fulfillments, self.conditions)):
-            # NOTE: We clone the current transaction but only add the condition and fulfillment we're currently
-            # working on plus all previously signed ones.
-            tx_partial = Transaction(self.operation, [fulfillment], [condition], self.data, self.timestamp,
+        zippedIO = enumerate(zip(self.fulfillments, self.conditions))
+        for index, (fulfillment, condition) in zippedIO:
+            # NOTE: We clone the current transaction but only add the condition
+            #       and fulfillment we're currently working on plus all
+            #       previously signed ones.
+            tx_partial = Transaction(self.operation, [fulfillment],
+                                     [condition], self.data, self.timestamp,
                                      self.version)
-            tx_serialized = Transaction._to_str(Transaction._remove_signatures(tx_partial.to_dict()))
-            self._sign_fulfillment(fulfillment, index, tx_serialized, key_pairs)
+
+            tx_partial_dict = tx_partial.to_dict()
+            tx_partial_dict = Transaction._remove_signatures(tx_partial_dict)
+            tx_serialized = Transaction._to_str(tx_partial_dict)
+
+            self._sign_fulfillment(fulfillment, index, tx_serialized,
+                                   key_pairs)
 
     def _sign_fulfillment(self, fulfillment, index, tx_serialized, key_pairs):
         if isinstance(fulfillment.fulfillment, Ed25519Fulfillment):
-            self._sign_simple_signature_fulfillment(fulfillment, index, tx_serialized, key_pairs)
+            self._sign_simple_signature_fulfillment(fulfillment, index,
+                                                    tx_serialized, key_pairs)
         elif isinstance(fulfillment.fulfillment, ThresholdSha256Fulfillment):
-            self._sign_threshold_signature_fulfillment(fulfillment, index, tx_serialized, key_pairs)
+            self._sign_threshold_signature_fulfillment(fulfillment, index,
+                                                       tx_serialized,
+                                                       key_pairs)
         else:
             raise ValueError("Fulfillment couldn't be matched to "
                              'Cryptocondition fulfillment type.')
 
-    def _sign_simple_signature_fulfillment(self, fulfillment, index, tx_serialized, key_pairs):
-        # NOTE: To eliminate the dangers of accidentially signing a condition by reference,
-        #       we remove the reference of fulfillment here intentionally.
-        #       If the user of this class knows how to use it, this should never happen,
-        #       but then again, never say never.
+    def _sign_simple_signature_fulfillment(self, fulfillment, index,
+                                           tx_serialized, key_pairs):
+        # NOTE: To eliminate the dangers of accidentally signing a condition by
+        #       reference, we remove the reference of fulfillment here
+        #       intentionally. If the user of this class knows how to use it,
+        #       this should never happen, but then again, never say never.
         fulfillment = deepcopy(fulfillment)
         owner_before = fulfillment.owners_before[0]
         try:
-            fulfillment.fulfillment.sign(tx_serialized, key_pairs[owner_before])
+            fulfillment.fulfillment.sign(tx_serialized,
+                                         key_pairs[owner_before])
         except KeyError:
-            raise KeypairMismatchException('Public key {} is not a pair to any of the private keys'
+            raise KeypairMismatchException('Public key {} is not a pair to '
+                                           'any of the private keys'
                                            .format(owner_before))
         self.fulfillments[index] = fulfillment
 
-    def _sign_threshold_signature_fulfillment(self, fulfillment, index, tx_serialized, key_pairs):
+    def _sign_threshold_signature_fulfillment(self, fulfillment, index,
+                                              tx_serialized, key_pairs):
         fulfillment = deepcopy(fulfillment)
         for owner_before in fulfillment.owners_before:
             try:
-                # TODO: CC should throw a KeypairMismatchException, instead of our manual mapping here
-                # TODO FOR CC: Naming wise this is not so smart, `get_subcondition` in fact doesn't return a condition
-                #              but a fulfillment:(
-                # TODO FOR CC: `get_subcondition` is singular. One would not expect to get a list back.
-                subfulfillment = fulfillment.fulfillment.get_subcondition_from_vk(owner_before)[0]
+                # TODO: CC should throw a KeypairMismatchException, instead of
+                #       our manual mapping here
+
+                # TODO FOR CC: Naming wise this is not so smart,
+                #              `get_subcondition` in fact doesn't return a
+                #              condition but a fulfillment
+
+                # TODO FOR CC: `get_subcondition` is singular. One would not
+                #              expect to get a list back.
+                ccffill = fulfillment.fulfillment
+                subffill = ccffill.get_subcondition_from_vk(owner_before)[0]
             except IndexError:
-                raise KeypairMismatchException('Public key {} cannot be found in the fulfillment'
+                raise KeypairMismatchException('Public key {} cannot be found '
+                                               'in the fulfillment'
                                                .format(owner_before))
             try:
                 private_key = key_pairs[owner_before]
             except KeyError:
-                raise KeypairMismatchException('Public key {} is not a pair to any of the private keys'
+                raise KeypairMismatchException('Public key {} is not a pair '
+                                               'to any of the private keys'
                                                .format(owner_before))
 
-            subfulfillment.sign(tx_serialized, private_key)
+            subffill.sign(tx_serialized, private_key)
         self.fulfillments[index] = fulfillment
 
     def fulfillments_valid(self, input_conditions=None):
@@ -517,7 +564,9 @@ class Transaction(object):
             return self._fulfillments_valid([cond.fulfillment.condition_uri
                                              for cond in input_conditions])
         else:
-            raise TypeError('`operation` must be either `TRANSFER`, `CREATE` or `GENESIS`')
+            allowed_ops = ', '.join(self.__class__.ALLOWED_OPERATIONS)
+            raise TypeError('`operation` must be one of {}'
+                            .format(allowed_ops))
 
     def _fulfillments_valid(self, input_condition_uris):
         input_condition_uris_count = len(input_condition_uris)
@@ -527,30 +576,39 @@ class Transaction(object):
         def gen_tx(fulfillment, condition, input_condition_uri=None):
             tx = Transaction(self.operation, [fulfillment], [condition],
                              self.data, self.timestamp, self.version)
-            tx_serialized = Transaction._to_str(Transaction._remove_signatures(tx.to_dict()))
+            tx_dict = tx.to_dict()
+            tx_dict = Transaction._remove_signatures(tx_dict)
+            tx_serialized = Transaction._to_str(tx_dict)
             return Transaction._fulfillment_valid(fulfillment, self.operation,
                                                   tx_serialized,
                                                   input_condition_uri)
 
-        if not fulfillments_count == conditions_count == input_condition_uris_count:
-            raise ValueError('Fulfillments, conditions and input_condition_uris must have the same count')
+        if not fulfillments_count == conditions_count == \
+           input_condition_uris_count:
+            raise ValueError('Fulfillments, conditions and '
+                             'input_condition_uris must have the same count')
         else:
-            return reduce(and_, map(gen_tx, self.fulfillments, self.conditions, input_condition_uris))
+            return reduce(and_, map(gen_tx, self.fulfillments, self.conditions,
+                                    input_condition_uris))
 
     @staticmethod
-    def _fulfillment_valid(fulfillment, operation, tx_serialized, input_condition_uri=None):
+    def _fulfillment_valid(fulfillment, operation, tx_serialized,
+                           input_condition_uri=None):
+        ccffill = fulfillment.fulfillment
         try:
-            parsed_fulfillment = CCFulfillment.from_uri(fulfillment.fulfillment.serialize_uri())
+            parsed_ffill = CCFulfillment.from_uri(ccffill.serialize_uri())
         except (TypeError, ValueError, ParsingError):
             return False
-        if operation in (Transaction.CREATE, Transaction.GENESIS):
-            input_condition_valid = True
-        else:
-            input_condition_valid = input_condition_uri == fulfillment.fulfillment.condition_uri
 
-        # NOTE: We pass a timestamp to `.validate`, as in case of a timeout condition we'll have to validate against
-        #       it.
-        return parsed_fulfillment.validate(message=tx_serialized, now=gen_timestamp()) and input_condition_valid
+        if operation in (Transaction.CREATE, Transaction.GENESIS):
+            input_cond_valid = True
+        else:
+            input_cond_valid = input_condition_uri == ccffill.condition_uri
+
+        # NOTE: We pass a timestamp to `.validate`, as in case of a timeout
+        #       condition we'll have to validate against it
+        return parsed_ffill.validate(message=tx_serialized,
+                                     now=gen_timestamp()) and input_cond_valid
 
     def to_dict(self):
         try:
@@ -573,9 +631,11 @@ class Transaction(object):
             'transaction': tx_body,
         }
 
-        tx_id = Transaction._to_hash(Transaction._to_str(Transaction._remove_signatures(tx)))
-        tx['id'] = tx_id
+        tx_no_signatures = Transaction._remove_signatures(tx)
+        tx_serialized = Transaction._to_str(tx_no_signatures)
+        tx_id = Transaction._to_hash(tx_serialized)
 
+        tx['id'] = tx_id
         return tx
 
     @staticmethod
@@ -619,7 +679,11 @@ class Transaction(object):
             proposed_tx_id = tx_body.pop('id')
         except KeyError:
             raise InvalidHash()
-        valid_tx_id = Transaction._to_hash(Transaction._to_str(Transaction._remove_signatures(tx_body)))
+
+        tx_body_no_signatures = Transaction._remove_signatures(tx_body)
+        tx_body_serialized = Transaction._to_str(tx_body_no_signatures)
+        valid_tx_id = Transaction._to_hash(tx_body_serialized)
+
         if proposed_tx_id != valid_tx_id:
             raise InvalidHash()
         else:
@@ -629,5 +693,6 @@ class Transaction(object):
             conditions = [Condition.from_dict(condition) for condition
                           in tx['conditions']]
             data = Data.from_dict(tx['data'])
+
             return cls(tx['operation'], fulfillments, conditions, data,
                        tx['timestamp'], tx_body['version'])
