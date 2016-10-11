@@ -16,11 +16,12 @@ def gen_timestamp():
 def serialize(data):
     """Serialize a dict into a JSON formatted string.
 
-        This function enforces rules like the separator and order of keys. This ensures that all dicts
-        are serialized in the same way.
+        This function enforces rules like the separator and order of keys.
+        This ensures that all dicts are serialized in the same way.
 
-        This is specially important for hashing data. We need to make sure that everyone serializes their data
-        in the same way so that we do not have hash mismatches for the same structure due to serialization
+        This is specially important for hashing data. We need to make sure that
+        everyone serializes their data in the same way so that we do not have
+        hash mismatches for the same structure due to serialization
         differences.
 
         Args:
@@ -30,7 +31,8 @@ def serialize(data):
             str: JSON formatted string
 
     """
-    return rapidjson.dumps(data, skipkeys=False, ensure_ascii=False, sort_keys=True)
+    return rapidjson.dumps(data, skipkeys=False, ensure_ascii=False,
+                           sort_keys=True)
 
 
 def deserialize(data):
@@ -40,6 +42,7 @@ def deserialize(data):
             data (str): JSON formatted string.
 
         Returns:
-            dict: dict resulting from the serialization of a JSON formatted string.
+            dict: dict resulting from the serialization of a JSON formatted
+            string.
     """
     return rapidjson.loads(data)
