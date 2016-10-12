@@ -9,8 +9,7 @@ from cryptoconditions.exceptions import ParsingError
 
 from bigchaindb_common.crypto import SigningKey, hash_data
 from bigchaindb_common.exceptions import (KeypairMismatchException,
-                                          InvalidHash, InvalidSignature,
-                                          AmountError)
+                                          InvalidHash, InvalidSignature)
 from bigchaindb_common.util import serialize, gen_timestamp
 
 
@@ -268,8 +267,10 @@ class Asset(object):
 
     @classmethod
     def from_dict(cls, asset):
-        return cls(asset.get('data'), asset['id'], asset.get('divisible', False),
-                   asset.get('updatable', False), asset.get('refillable', False))
+        return cls(asset.get('data'), asset['id'],
+                   asset.get('divisible', False),
+                   asset.get('updatable', False),
+                   asset.get('refillable', False))
 
     def to_hash(self):
         return str(uuid4())
@@ -284,17 +285,6 @@ class Asset(object):
             raise TypeError('`refillable` must be a boolean')
         if not isinstance(self.updatable, bool):
             raise TypeError('`updatable` must be a boolean')
-
-        # TODO: amount needs to be validate, somehow, somewhere ...
-        # if not isinstance(self.amount, int):
-        #     raise TypeError('`amount` must be an int')
-        # if self.divisible is False and self.amount != 1:
-        #     raise AmountError('Non-divisible assets must have amount 1')
-        # if self.amount < 1:
-        #     raise AmountError('The amount cannot be less then 1')
-
-        # if self.divisible or self.updatable or self.refillable or self.amount != 1:
-        #     raise NotImplementedError("Divisible assets are not yet implemented!")
 
 
 class Metadata(object):
@@ -359,7 +349,8 @@ class Transaction(object):
         else:
             self.operation = operation
 
-        # If an asset is not defined in a `CREATE` transaction, create a default one.
+        # If an asset is not defined in a `CREATE` transaction, create a
+        # default one.
         if asset is None and operation == Transaction.CREATE:
             asset = Asset()
 
