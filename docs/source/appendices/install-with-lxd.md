@@ -39,5 +39,3 @@ Now, from the host (and the correct directory) where you saved `install.sh`, run
 `cat install.sh | lxc exec bigchaindb /bin/bash`
 
 If you followed the commands correctly, you will have successfully created an LXC container (using LXD) that can get you up and running with BigchainDB in <5 minutes (depending on how long it takes to download all the packages).
-
-From this point onwards, you can follow the [Python Example](https://bigchaindb.readthedocs.io/en/latest/drivers-clients/python-server-api-examples.html) .
