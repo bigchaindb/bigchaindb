@@ -13,7 +13,7 @@ import rethinkdb as r
 import bigchaindb
 
 from bigchaindb.db.utils import Connection
-from bigchaindb import assets, config_utils, util
+from bigchaindb import config_utils, util
 from bigchaindb.consensus import BaseConsensusRules
 from bigchaindb.models import Block, Transaction
 
