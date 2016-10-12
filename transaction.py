@@ -73,8 +73,8 @@ class Fulfillment(object):
             # NOTE: See comment about this special case in
             #       `Fulfillment.to_dict`
             fulfillment = CCFulfillment.from_dict(ffill['fulfillment'])
-        inp = TransactionLink.from_dict(ffill['input'])
-        return cls(fulfillment, ffill['owners_before'], inp)
+        input_ = TransactionLink.from_dict(ffill['input'])
+        return cls(fulfillment, ffill['owners_before'], input_)
 
 
 class TransactionLink(object):
