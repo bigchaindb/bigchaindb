@@ -2,7 +2,7 @@
 
 Measure how many blocks per second are created on the _bigchain_ with a pre filled backlog.
 
-1. Deploy an aws cluster http://bigchaindb.readthedocs.io/en/latest/deploy-on-aws.html
+1. Deploy an aws cluster https://docs.bigchaindb.com/projects/server/en/latest/clusters-feds/aws-testing-cluster.html
 2. Make a symbolic link to hostlist.py: `ln -s ../deploy-cluster-aws/hostlist.py .`
 3. Make a symbolic link to bigchaindb.pem:
 ```bash

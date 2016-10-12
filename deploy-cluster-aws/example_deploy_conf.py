@@ -40,20 +40,19 @@ USE_KEYPAIRS_FILE=False
 
 # IMAGE_ID is the Amazon Machine Image (AMI) id to use
 # in all the servers/instances to be launched.
-# Examples:
-# "ami-accff2b1" = An Ubuntu 14.04.2 LTX "Ubuntu Cloud image" from Canonical
-#                  64-bit, hvm-ssd, published to eu-central-1
-#                  See http://tinyurl.com/hkjhg46
-# "ami-596b7235" = Ubuntu with IOPS storage? Does this work?
-#
-# See http://cloud-images.ubuntu.com/releases/14.04/release-20150325/
-IMAGE_ID="ami-accff2b1"
+# Canonical (the company behind Ubuntu) generates many AMIs
+# and you can search for one that meets your needs at:
+# https://cloud-images.ubuntu.com/locator/ec2/
+# Example:
+# "ami-72c33e1d"
+# (eu-central-1 Ubuntu 14.04 LTS amd64 hvm:ebs-ssd 20160919)
+IMAGE_ID="ami-72c33e1d"
 
 # INSTANCE_TYPE is the type of AWS instance to launch
 # i.e. How many CPUs do you want? How much storage? etc.
-# Examples: "m3.2xlarge", "c3.8xlarge", "c4.8xlarge"
+# Examples: "t2.medium", "m3.2xlarge", "c3.8xlarge", "c4.8xlarge"
 # For all options, see https://aws.amazon.com/ec2/instance-types/
-INSTANCE_TYPE="m3.2xlarge"
+INSTANCE_TYPE="t2.medium"
 
 # SECURITY_GROUP is the name of the AWS security group to use.
 # That security group must exist.
@@ -61,7 +60,7 @@ INSTANCE_TYPE="m3.2xlarge"
 SECURITY_GROUP="bigchaindb"
 
 # USING_EBS is True if you want to attach an Amazon EBS volume
-USING_EBS=False
+USING_EBS=True
 
 # EBS_VOLUME_SIZE is the size of the EBS volume to attach, in GiB
 # Since we assume 'gp2' volumes (for now), the possible range is 1 to 16384

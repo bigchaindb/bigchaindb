@@ -126,10 +126,10 @@ BRANCH="master"
 WHAT_TO_DEPLOY="servers"
 SSH_KEY_NAME="not-set-yet"
 USE_KEYPAIRS_FILE=False
-IMAGE_ID="ami-accff2b1"
-INSTANCE_TYPE="m3.2xlarge"
+IMAGE_ID="ami-72c33e1d"
+INSTANCE_TYPE="t2.medium"
 SECURITY_GROUP="bigchaindb"
-USING_EBS=False
+USING_EBS=True
 EBS_VOLUME_SIZE=30
 EBS_OPTIMIZED=False
 ```

@@ -2,6 +2,7 @@ from bigchaindb_common.crypto import hash_data, VerifyingKey, SigningKey
 from bigchaindb_common.exceptions import (InvalidHash, InvalidSignature,
                                           OperationError, DoubleSpend,
                                           TransactionDoesNotExist,
+                                          FulfillmentNotInValidBlock,
                                           AssetIdMismatch)
 from bigchaindb_common.transaction import Transaction, Asset
 from bigchaindb_common.util import gen_timestamp, serialize
@@ -81,10 +82,17 @@ class Transaction(Transaction):
             for ffill in self.fulfillments:
                 input_txid = ffill.tx_input.txid
                 input_cid = ffill.tx_input.cid
-                input_tx = bigchain.get_transaction(input_txid)
+                input_tx, status = bigchain.\
+                    get_transaction(input_txid, include_status=True)
+
                 if input_tx is None:
                     raise TransactionDoesNotExist("input `{}` doesn't exist"
                                                   .format(input_txid))
+
+                if status != bigchain.TX_VALID:
+                    raise FulfillmentNotInValidBlock(
+                        'input `{}` does not exist in a valid block'.format(
+                            input_txid))
 
                 spent = bigchain.get_spent(input_txid, ffill.tx_input.cid)
                 if spent and spent.id != self.id:
@@ -97,7 +105,7 @@ class Transaction(Transaction):
             # validate asset id
             asset_id = Asset.get_asset_id(input_txs)
             if asset_id != self.asset.data_id:
-                raise AssetIdMismatch('The asset id of the input does not match the asset id of the transaction') 
+                raise AssetIdMismatch('The asset id of the input does not match the asset id of the transaction')
         else:
             allowed_operations = ', '.join(Transaction.ALLOWED_OPERATIONS)
             raise TypeError('`operation`: `{}` must be either {}.'

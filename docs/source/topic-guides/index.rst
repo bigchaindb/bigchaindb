@@ -1,19 +1,12 @@
-.. You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Topic Guides
 ============
 
-Topic guides give background and explain concepts at a high level.
+.. note::
+
+   Most of the Topic Guides have been moved over to `the root BigchainDB project docs <https://docs.bigchaindb.com/en/latest/index.html>`_.
+
 
 .. toctree::
    :maxdepth: 1
 
-   decentralized
-   diversity
-   immutable
-   bft
-   assets
-   smart-contracts
    models
-   timestamps
