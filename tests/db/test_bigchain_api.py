@@ -577,9 +577,11 @@ class TestTransactionValidation(object):
         from bigchaindb.models import Transaction
 
         input_tx = b.get_owned_ids(user_vk).pop()
+        input_transaction = b.get_transaction(input_tx.txid)
         sk, vk = generate_key_pair()
         tx = Transaction.create([vk], [user_vk])
         tx.operation = 'TRANSFER'
+        tx.asset = input_transaction.asset
         tx.fulfillments[0].tx_input = input_tx
 
         with pytest.raises(InvalidSignature):

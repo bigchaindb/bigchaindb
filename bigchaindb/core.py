@@ -364,7 +364,13 @@ class Bigchain(object):
             A list of transactions containing related to the asset. If no transaction exists for that asset it
             returns an empty list `[]`
         """
-        return assets.get_transactions_by_asset_id(asset_id, self, read_mode=self.read_mode)
+        cursor = self.connection.run(
+            r.table('bigchain', read_mode=self.read_mode)
+             .get_all(asset_id, index='asset_id')
+             .concat_map(lambda block: block['block']['transactions'])
+             .filter(lambda transaction: transaction['transaction']['asset']['id'] == asset_id))
+
+        return [Transaction.from_dict(tx) for tx in cursor]
 
     def get_spent(self, txid, cid):
         """Check if a `txid` was already used as an input.
