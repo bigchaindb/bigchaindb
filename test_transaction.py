@@ -1079,13 +1079,13 @@ def test_create_transfer_transaction_multiple_io(user_pub, user_priv,
 
 
 def test_create_transfer_with_invalid_parameters():
-    from bigchaindb_common.transaction import Transaction
+    from bigchaindb_common.transaction import Transaction, Asset
 
     with raises(TypeError):
-        Transaction.transfer({}, [])
+        Transaction.transfer({}, [], Asset())
     with raises(ValueError):
-        Transaction.transfer([], [])
+        Transaction.transfer([], [], Asset())
     with raises(TypeError):
-        Transaction.transfer(['fulfillment'], {})
+        Transaction.transfer(['fulfillment'], {}, Asset())
     with raises(ValueError):
-        Transaction.transfer(['fulfillment'], [])
+        Transaction.transfer(['fulfillment'], [], Asset())
