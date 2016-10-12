@@ -26,7 +26,22 @@ def test_asset_invalid_asset_initialization():
 
     with raises(TypeError):
         Asset(data='some wrong type')
+    with raises(TypeError):
+        Asset(divisible=1)
+    with raises(TypeError):
+        Asset(refillable=1)
+    with raises(TypeError):
+        Asset(updatable=1)
 
+    # TODO: check where to test amount
+    """
+    with pytest.raises(TypeError):
+        b.create_transaction(b.me, b.me, None, 'CREATE', amount='a')
+    with pytest.raises(AmountError):
+        b.create_transaction(b.me, b.me, None, 'CREATE', divisible=False, amount=2)
+    with pytest.raises(AmountError):
+        b.create_transaction(b.me, b.me, None, 'CREATE', amount=0)
+    """
 
 def test_invalid_asset_comparison(data, data_id):
     from bigchaindb_common.transaction import Asset
