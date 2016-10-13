@@ -1,7 +1,5 @@
 from pytest import raises
 
-# TODO: Test asset amount
-
 
 def test_asset_default_values():
     from bigchaindb_common.transaction import Asset
