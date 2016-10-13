@@ -291,8 +291,8 @@ def test_generate_conditions_invalid_parameters(user_pub, user2_pub,
 def test_invalid_transaction_initialization():
     from bigchaindb_common.transaction import Transaction, Asset
 
-    with raises(TypeError):
-        Transaction(operation='invalid operation')
+    with raises(ValueError):
+        Transaction(operation='invalid operation', asset=Asset())
     with raises(TypeError):
         Transaction(operation='CREATE', asset='invalid asset')
     with raises(TypeError):
@@ -404,20 +404,6 @@ def test_tx_serialization_with_incorrect_hash(utx):
     utx_dict['id'] = []
     with raises(InvalidHash):
         Transaction.from_dict(utx_dict)
-
-
-def test_invalid_tx_initialization():
-    from bigchaindb_common.transaction import Transaction
-
-    wrong_metadata_type = {'data': 'a totally wrong metadatatype'}
-    with raises(TypeError):
-        Transaction(Transaction.CREATE, wrong_metadata_type)
-    with raises(TypeError):
-        Transaction(Transaction.CREATE, [], wrong_metadata_type)
-    with raises(TypeError):
-        Transaction(Transaction.CREATE, [], [], wrong_metadata_type)
-    with raises(TypeError):
-        Transaction('RANSFER', [], [])
 
 
 def test_invalid_fulfillment_initialization(user_ffill, user_pub):
