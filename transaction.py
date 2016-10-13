@@ -679,8 +679,6 @@ class Transaction(object):
             # NOTE: metadata can be None and that's OK
             metadata = None
 
-        # TODO: At this point I'm not sure if this behavior shouldn't rather
-        #       be implemented in the Asset's `to_dict` method.
         if self.operation in (self.__class__.GENESIS, self.__class__.CREATE):
             asset = self.asset.to_dict()
         else:
