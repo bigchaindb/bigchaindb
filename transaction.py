@@ -533,7 +533,14 @@ class Transaction(object):
         def gen_public_key(private_key):
             # TODO FOR CC: Adjust interface so that this function becomes
             #              unnecessary
-            return private_key.get_verifying_key().to_ascii().decode()
+
+            # cc now provides a single method `encode` to return the key
+            # in several different encodings.
+            public_key = private_key.get_verifying_key().encode()
+            # Returned values from cc are always bytestrings so here we need
+            # to decode to convert the bytestring into a python str
+            return public_key.decode()
+
         key_pairs = {gen_public_key(SigningKey(private_key)):
                      SigningKey(private_key) for private_key in private_keys}
 
@@ -573,7 +580,9 @@ class Transaction(object):
         fulfillment = deepcopy(fulfillment)
         owner_before = fulfillment.owners_before[0]
         try:
-            fulfillment.fulfillment.sign(tx_serialized,
+            # cryptoconditions makes no assumptions of the encoding of the
+            # message to sign or verify. It only accepts bytestrings
+            fulfillment.fulfillment.sign(tx_serialized.encode(),
                                          key_pairs[owner_before])
         except KeyError:
             raise KeypairMismatchException('Public key {} is not a pair to '
@@ -608,7 +617,9 @@ class Transaction(object):
                                                'to any of the private keys'
                                                .format(owner_before))
 
-            subffill.sign(tx_serialized, private_key)
+            # cryptoconditions makes no assumptions of the encoding of the
+            # message to sign or verify. It only accepts bytestrings
+            subffill.sign(tx_serialized.encode(), private_key)
         self.fulfillments[index] = fulfillment
 
     def fulfillments_valid(self, input_conditions=None):
@@ -669,7 +680,10 @@ class Transaction(object):
 
         # NOTE: We pass a timestamp to `.validate`, as in case of a timeout
         #       condition we'll have to validate against it
-        return parsed_ffill.validate(message=tx_serialized,
+
+        # cryptoconditions makes no assumptions of the encoding of the
+        # message to sign or verify. It only accepts bytestrings
+        return parsed_ffill.validate(message=tx_serialized.encode(),
                                      now=gen_timestamp()) and input_cond_valid
 
     def to_dict(self):
