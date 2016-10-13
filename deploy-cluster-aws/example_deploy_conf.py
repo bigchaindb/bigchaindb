@@ -78,4 +78,4 @@ EBS_OPTIMIZED=False
 # BIND_HTTP_TO_LOCALHOST is True or False, depending on whether
 # you want the RethinkDB web interface port to be bound to localhost
 # (which is more secure). See https://www.rethinkdb.com/docs/security/
-BIND_HTTP_TO_LOCALHOST=False
+BIND_HTTP_TO_LOCALHOST=True
