@@ -558,7 +558,6 @@ class Bigchain(object):
         """Prepare a genesis block."""
 
         metadata = {'message': 'Hello World from the BigchainDB'}
-        # TODO: When updating the BDBC lib, change `payload` to `metadata`
         transaction = Transaction.create([self.me], [self.me],
                                          metadata=metadata)
 

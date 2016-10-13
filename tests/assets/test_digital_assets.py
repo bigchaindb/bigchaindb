@@ -8,8 +8,9 @@ def test_asset_transfer(b, user_vk, user_sk):
 
     tx_input = b.get_owned_ids(user_vk).pop()
     tx_create = b.get_transaction(tx_input.txid)
-    
-    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [user_vk], tx_create.asset)
+
+    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [user_vk],
+                                       tx_create.asset)
     tx_transfer_signed = tx_transfer.sign([user_sk])
 
     assert tx_transfer_signed.validate(b) == tx_transfer_signed
@@ -17,7 +18,6 @@ def test_asset_transfer(b, user_vk, user_sk):
 
 
 def test_validate_bad_asset_creation(b, user_vk):
-    from bigchaindb_common.exceptions import AmountError
     from bigchaindb.models import Transaction
 
     # `divisible` needs to be a boolean
@@ -73,6 +73,7 @@ def test_validate_bad_asset_creation(b, user_vk):
         b.validate_transaction(tx_signed)
     """
 
+
 @pytest.mark.usefixtures('inputs')
 def test_validate_transfer_asset_id_mismatch(b, user_vk, user_sk):
     from bigchaindb_common.exceptions import AssetIdMismatch
@@ -80,19 +81,18 @@ def test_validate_transfer_asset_id_mismatch(b, user_vk, user_sk):
 
     tx_create = b.get_owned_ids(user_vk).pop()
     tx_create = b.get_transaction(tx_create.txid)
-    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [user_vk], tx_create.asset)
+    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [user_vk],
+                                       tx_create.asset)
     tx_transfer.asset.data_id = 'aaa'
     tx_transfer_signed = tx_transfer.sign([user_sk])
     with pytest.raises(AssetIdMismatch):
         tx_transfer_signed.validate(b)
 
 
-@pytest.mark.usefixtures('inputs')
 def test_get_asset_id_create_transaction(b, user_vk):
-    from bigchaindb.models import Asset
+    from bigchaindb.models import Transaction, Asset
 
-    tx_create = b.get_owned_ids(user_vk).pop()
-    tx_create = b.get_transaction(tx_create.txid)
+    tx_create = Transaction.create([b.me], [user_vk])
     asset_id = Asset.get_asset_id(tx_create)
 
     assert asset_id == tx_create.asset.data_id
@@ -105,7 +105,8 @@ def test_get_asset_id_transfer_transaction(b, user_vk, user_sk):
     tx_create = b.get_owned_ids(user_vk).pop()
     tx_create = b.get_transaction(tx_create.txid)
     # create a transfer transaction
-    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [user_vk], tx_create.asset)
+    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [user_vk],
+                                       tx_create.asset)
     tx_transfer_signed = tx_transfer.sign([user_sk])
     # create a block
     block = b.create_block([tx_transfer_signed])
@@ -118,14 +119,12 @@ def test_get_asset_id_transfer_transaction(b, user_vk, user_sk):
     assert asset_id == tx_transfer.asset.data_id
 
 
-@pytest.mark.usefixtures('inputs')
 def test_asset_id_mismatch(b, user_vk):
-    from bigchaindb.models import Asset
+    from bigchaindb.models import Transaction, Asset
     from bigchaindb_common.exceptions import AssetIdMismatch
 
-    tx_input1, tx_input2 = b.get_owned_ids(user_vk)[:2]
-    tx1 = b.get_transaction(tx_input1.txid)
-    tx2 = b.get_transaction(tx_input2.txid)
+    tx1 = Transaction.create([b.me], [user_vk])
+    tx2 = Transaction.create([b.me], [user_vk])
 
     with pytest.raises(AssetIdMismatch):
         Asset.get_asset_id([tx1, tx2])
@@ -145,7 +144,8 @@ def test_get_txs_by_asset_id(b, user_vk, user_sk):
     assert txs[0].asset.data_id == asset_id
 
     # create a transfer transaction
-    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [user_vk], tx_create.asset)
+    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [user_vk],
+                                       tx_create.asset)
     tx_transfer_signed = tx_transfer.sign([user_sk])
     # create the block
     block = b.create_block([tx_transfer_signed])

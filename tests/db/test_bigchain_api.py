@@ -521,24 +521,19 @@ class TestBigchainApi(object):
             assert response['assignee'] in b.nodes_except_me
 
 
-    # TODO: Make this test work
     @pytest.mark.usefixtures('inputs')
     def test_non_create_input_not_found(self, b, user_vk):
+        from cryptoconditions import Ed25519Fulfillment
         from bigchaindb_common.exceptions import TransactionDoesNotExist
-        from bigchaindb_common.transaction import Fulfillment, Asset
+        from bigchaindb_common.transaction import (Fulfillment, Asset,
+                                                   TransactionLink)
         from bigchaindb.models import Transaction
         from bigchaindb import Bigchain
 
         # Create a fulfillment for a non existing transaction
-        fulfillment_dict = {'fulfillment': {'bitmask': 32,
-                                            'public_key': user_vk,
-                                            'signature': None,
-                                            'type': 'fulfillment',
-                                            'type_id': 4},
-                            'input': {'cid': 0,
-                                      'txid': 'somethingsomething'},
-                            'owners_before': [user_vk]}
-        fulfillment = Fulfillment.from_dict(fulfillment_dict)
+        fulfillment = Fulfillment(Ed25519Fulfillment(public_key=user_vk),
+                                  [user_vk],
+                                  TransactionLink('somethingsomething', 0))
         tx = Transaction.transfer([fulfillment], [user_vk], Asset())
 
         with pytest.raises(TransactionDoesNotExist) as excinfo:
