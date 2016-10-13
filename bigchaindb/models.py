@@ -2,9 +2,40 @@ from bigchaindb_common.crypto import hash_data, VerifyingKey, SigningKey
 from bigchaindb_common.exceptions import (InvalidHash, InvalidSignature,
                                           OperationError, DoubleSpend,
                                           TransactionDoesNotExist,
-                                          FulfillmentNotInValidBlock)
-from bigchaindb_common.transaction import Transaction
+                                          FulfillmentNotInValidBlock,
+                                          AssetIdMismatch)
+from bigchaindb_common.transaction import Transaction, Asset
 from bigchaindb_common.util import gen_timestamp, serialize
+
+
+class Asset(Asset):
+    @staticmethod
+    def get_asset_id(transactions):
+        """Get the asset id from a list of transaction ids.
+
+        This is useful when we want to check if the multiple inputs of a transaction
+        are related to the same asset id.
+
+        Args:
+            transactions (list): list of transaction usually inputs that should have a matching asset_id
+
+        Returns:
+            str: uuid of the asset.
+
+        Raises:
+            AssetIdMismatch: If the inputs are related to different assets.
+        """
+
+        if not isinstance(transactions, list):
+            transactions = [transactions]
+
+        # create a set of asset_ids
+        asset_ids = {tx.asset.data_id for tx in transactions}
+
+        # check that all the transasctions have the same asset_id
+        if len(asset_ids) > 1:
+            raise AssetIdMismatch("All inputs of a transaction need to have the same asset id.")
+        return asset_ids.pop()
 
 
 class Transaction(Transaction):
@@ -36,13 +67,18 @@ class Transaction(Transaction):
         inputs_defined = all([ffill.tx_input for ffill in self.fulfillments])
 
         if self.operation in (Transaction.CREATE, Transaction.GENESIS):
+            # validate inputs
             if inputs_defined:
                 raise ValueError('A CREATE operation has no inputs')
+            # validate asset
+            self.asset._validate_asset()
         elif self.operation == Transaction.TRANSFER:
             if not inputs_defined:
                 raise ValueError('Only `CREATE` transactions can have null '
                                  'inputs')
-
+            # check inputs
+            # store the inputs so that we can check if the asset ids match
+            input_txs = []
             for ffill in self.fulfillments:
                 input_txid = ffill.tx_input.txid
                 input_cid = ffill.tx_input.cid
@@ -64,6 +100,12 @@ class Transaction(Transaction):
                                       .format(input_txid))
 
                 input_conditions.append(input_tx.conditions[input_cid])
+                input_txs.append(input_tx)
+
+            # validate asset id
+            asset_id = Asset.get_asset_id(input_txs)
+            if asset_id != self.asset.data_id:
+                raise AssetIdMismatch('The asset id of the input does not match the asset id of the transaction')
         else:
             allowed_operations = ', '.join(Transaction.ALLOWED_OPERATIONS)
             raise TypeError('`operation`: `{}` must be either {}.'

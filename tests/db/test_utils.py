@@ -79,7 +79,7 @@ def test_create_bigchain_secondary_index():
     assert r.db(dbname).table('bigchain').index_list().contains(
         'transaction_id').run(conn) is True
     assert r.db(dbname).table('bigchain').index_list().contains(
-        'payload_uuid').run(conn) is True
+        'metadata_id').run(conn) is True
 
 
 def test_create_backlog_table():

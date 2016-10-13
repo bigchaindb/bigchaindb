@@ -83,10 +83,7 @@ def test_full_pipeline(user_vk):
     original_txc = []
 
     for i in range(100):
-        # FIXME Notice the payload. This is only to make sure that the
-        # transactions hashes are unique. See
-        # https://github.com/bigchaindb/bigchaindb-common/issues/21
-        tx = Transaction.create([b.me], [user_vk], payload={'i': i})
+        tx = Transaction.create([b.me], [user_vk])
         tx = tx.sign([b.me_private])
         original_txc.append(tx.to_dict())
 
