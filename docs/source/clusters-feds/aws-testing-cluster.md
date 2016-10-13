@@ -132,7 +132,7 @@ SECURITY_GROUP="bigchaindb"
 USING_EBS=True
 EBS_VOLUME_SIZE=30
 EBS_OPTIMIZED=False
-BIND_HTTP_TO_LOCALHOST=False
+BIND_HTTP_TO_LOCALHOST=True
 ```
 
 Make a copy of that file and call it whatever you like (e.g. `cp example_deploy_conf.py my_deploy_conf.py`). You can leave most of the settings at their default values, but you must change the value of `SSH_KEY_NAME` to the name of your private SSH key. You can do that with a text editor. Set `SSH_KEY_NAME` to the name you used for `<key-name>` when you generated an RSA key pair for SSH (in basic AWS setup).
@@ -179,7 +179,11 @@ bigchaindb --help
 bigchaindb show-config
 ```
 
-You can also check out the RethinkDB web interface at port 8080 on any of the instances; just go to your web browser and visit a web address like `http://ec2-52-29-197-211.eu-central-1.compute.amazonaws.com:8080/`.
+You can also check out the RethinkDB web interface. The way to do that depends on how `BIND_HTTP_TO_LOCALHOST` was set in your AWS deployment configuration file:
+
+* If it was set to `False`, then just go to your web browser and visit a web address like `http://ec2-52-29-197-211.eu-central-1.compute.amazonaws.com:8080/`. (Replace `ec2-...aws.com` with the hostname of one of your instances.)
+* If it was set to `True` (the default in the example config file), then follow the instructions in the "Via a SOCKS proxy" section of [the "Secure your cluster" page of the RethinkDB documentation](https://www.rethinkdb.com/docs/security/).
+
 
 ## Server Monitoring with New Relic
 
