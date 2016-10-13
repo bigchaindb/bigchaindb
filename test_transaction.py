@@ -318,6 +318,18 @@ def test_invalid_transaction_initialization():
         )
 
 
+def test_create_default_asset_on_tx_initialization():
+    from bigchaindb_common.transaction import Transaction, Asset
+
+    tx = Transaction(Transaction.CREATE, None)
+    expected = Asset()
+    asset = tx.asset
+
+    expected.data_id = None
+    asset.data_id = None
+    assert asset == expected
+
+
 def test_transaction_serialization(user_ffill, user_cond, data, data_id):
     from bigchaindb_common.transaction import Transaction, Asset
 
