@@ -344,8 +344,8 @@ class Transaction(object):
 
         if operation not in Transaction.ALLOWED_OPERATIONS:
             allowed_ops = ', '.join(self.__class__.ALLOWED_OPERATIONS)
-            raise TypeError('`operation` must be one of {}'
-                            .format(allowed_ops))
+            raise ValueError('`operation` must be one of {}'
+                             .format(allowed_ops))
         else:
             self.operation = operation
 
