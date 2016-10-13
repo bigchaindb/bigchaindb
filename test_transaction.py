@@ -558,7 +558,7 @@ def test_validate_tx_simple_create_signature(user_ffill, user_cond, user_priv):
 
     tx = Transaction(Transaction.CREATE, Asset(), [user_ffill], [user_cond])
     expected = deepcopy(user_cond)
-    expected.fulfillment.sign(str(tx), SigningKey(user_priv))
+    expected.fulfillment.sign(str(tx).encode(), SigningKey(user_priv))
     tx.sign([user_priv])
 
     assert tx.fulfillments[0].to_dict()['fulfillment'] == \
@@ -625,9 +625,11 @@ def test_validate_multiple_fulfillments(user_ffill, user_cond, user_priv):
     expected_second.fulfillments = [expected_second.fulfillments[1]]
     expected_second.conditions = [expected_second.conditions[1]]
 
-    expected_first.fulfillments[0].fulfillment.sign(str(expected_first),
+    expected_first_bytes = str(expected_first).encode()
+    expected_first.fulfillments[0].fulfillment.sign(expected_first_bytes,
                                                     SigningKey(user_priv))
-    expected_second.fulfillments[0].fulfillment.sign(str(expected_second),
+    expected_second_bytes = str(expected_second).encode()
+    expected_second.fulfillments[0].fulfillment.sign(expected_second_bytes,
                                                      SigningKey(user_priv))
     tx.sign([user_priv])
 
@@ -652,9 +654,9 @@ def test_validate_tx_threshold_create_signature(user_user2_threshold_ffill,
     tx = Transaction(Transaction.CREATE, Asset(), [user_user2_threshold_ffill],
                      [user_user2_threshold_cond])
     expected = deepcopy(user_user2_threshold_cond)
-    expected.fulfillment.subconditions[0]['body'].sign(str(tx),
+    expected.fulfillment.subconditions[0]['body'].sign(str(tx).encode(),
                                                        SigningKey(user_priv))
-    expected.fulfillment.subconditions[1]['body'].sign(str(tx),
+    expected.fulfillment.subconditions[1]['body'].sign(str(tx).encode(),
                                                        SigningKey(user2_priv))
     tx.sign([user_priv, user2_priv])
 
@@ -1001,7 +1003,8 @@ def test_create_transfer_transaction_single_io(tx, user_pub, user2_pub,
     expected_input = deepcopy(inputs[0])
     expected['id'] = transfer_tx['id']
     expected['transaction']['timestamp'] = transfer_tx_body['timestamp']
-    expected_input.fulfillment.sign(serialize(expected), SigningKey(user_priv))
+    expected_input.fulfillment.sign(serialize(expected).encode(),
+                                    SigningKey(user_priv))
     expected_ffill = expected_input.fulfillment.serialize_uri()
     transfer_ffill = transfer_tx_body['fulfillments'][0]['fulfillment']
 
