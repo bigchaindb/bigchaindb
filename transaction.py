@@ -499,18 +499,14 @@ class Transaction(object):
         return inputs
 
     def add_fulfillment(self, fulfillment):
-        if (fulfillment is not None and not
-                isinstance(fulfillment, Fulfillment)):
-            raise TypeError('`fulfillment` must be a Fulfillment instance or '
-                            'None')
-        else:
-            self.fulfillments.append(fulfillment)
+        if not isinstance(fulfillment, Fulfillment):
+            raise TypeError('`fulfillment` must be a Fulfillment instance')
+        self.fulfillments.append(fulfillment)
 
     def add_condition(self, condition):
-        if condition is not None and not isinstance(condition, Condition):
+        if not isinstance(condition, Condition):
             raise TypeError('`condition` must be a Condition instance or None')
-        else:
-            self.conditions.append(condition)
+        self.conditions.append(condition)
 
     def sign(self, private_keys):
         # TODO: Singing should be possible with at least one of all private
