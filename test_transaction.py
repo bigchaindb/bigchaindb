@@ -1090,3 +1090,17 @@ def test_create_transfer_with_invalid_parameters():
         Transaction.transfer(['fulfillment'], {}, Asset())
     with raises(ValueError):
         Transaction.transfer(['fulfillment'], [], Asset())
+
+
+def test_cant_add_empty_condition():
+    from bigchaindb_common.transaction import Transaction
+    tx = Transaction(Transaction.CREATE, None)
+    with raises(TypeError):
+        tx.add_condition(None)
+
+
+def test_cant_add_empty_fulfillment():
+    from bigchaindb_common.transaction import Transaction
+    tx = Transaction(Transaction.CREATE, None)
+    with raises(TypeError):
+        tx.add_fulfillment(None)
