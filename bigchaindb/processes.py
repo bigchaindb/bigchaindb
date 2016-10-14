@@ -14,7 +14,7 @@ BANNER = """
 *   Initialization complete. BigchainDB Server is ready and waiting.       *
 *   You can send HTTP requests via the HTTP API documented in the          *
 *   BigchainDB Server docs at:                                             *
-*    https://docs.bigchaindb.com/projects/server/en/latest/index.html      *
+*    https://bigchaindb.com/http-api                                       *
 *                                                                          *
 *   Listening to client connections on: {:<15}                    *
 *                                                                          *
