@@ -1,20 +1,10 @@
-import time
 import contextlib
-from copy import deepcopy
 import threading
 import queue
 import multiprocessing as mp
-import uuid
 
-import rapidjson
-
-from bigchaindb_common import crypto, exceptions
+from bigchaindb_common import crypto
 from bigchaindb_common.util import serialize
-import cryptoconditions as cc
-from cryptoconditions.exceptions import ParsingError
-
-import bigchaindb
-from bigchaindb.models import Transaction
 
 
 class ProcessGroup(object):

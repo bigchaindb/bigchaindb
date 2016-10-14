@@ -84,7 +84,7 @@ Here's some explanation of the contents of a transaction:
     - `conditions`: List of conditions. Each _condition_ is a _crypto-condition_ that needs to be fulfilled by a transfer transaction in order to transfer ownership to new owners.
     See [Conditions and Fulfillments](#conditions-and-fulfillments) below.
     - `operation`: String representation of the operation being performed (currently either "CREATE" or "TRANSFER"). It determines how the transaction should be validated.
-    - `timestamp`: The Unix time when the transaction was created. It's provided by the client. See [the section on timestamps](timestamps.html).
+    - `timestamp`: The Unix time when the transaction was created. It's provided by the client. See the page about [timestamps in BigchainDB](https://docs.bigchaindb.com/en/latest/timestamps.html).
     - `data`:
         - `uuid`: UUID version 4 (random) converted to a string of hex digits in standard form.
         - `payload`: Can be any JSON document. It may be empty in the case of a transfer transaction.
@@ -245,7 +245,7 @@ If there is only one _current owner_, the fulfillment will be a simple signature
 
 - `id`: The hash of the serialized `block` (i.e. the `timestamp`, `transactions`, `node_pubkey`, and `voters`). This is also a database primary key; that's how we ensure that all blocks are unique.
 - `block`:
-    - `timestamp`: The Unix time when the block was created. It's provided by the node that created the block. See [the section on timestamps](timestamps.html).
+    - `timestamp`: The Unix time when the block was created. It's provided by the node that created the block. See the page about [timestamps in BigchainDB](https://docs.bigchaindb.com/en/latest/timestamps.html).
     - `transactions`: A list of the transactions included in the block.
     - `node_pubkey`: The public key of the node that create the block.
     - `voters`: A list of public keys of federation nodes. Since the size of the 

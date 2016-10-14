@@ -1,3 +1,5 @@
+from time import sleep
+
 import pytest
 
 
@@ -86,6 +88,11 @@ class TestBigchainApi(object):
 
         assert b.has_previous_vote(block.id, block.voters) is True
 
+
+    def test_get_transactions_for_metadata_mismatch(self, b):
+        matches = b.get_tx_by_metadata_id('missing')
+        assert not matches
+
     def test_get_spent_with_double_spend(self, b, monkeypatch):
         from bigchaindb_common.exceptions import DoubleSpend
         from bigchaindb.models import Transaction
@@ -100,13 +107,13 @@ class TestBigchainApi(object):
         b.write_block(block1, durability='hard')
 
         monkeypatch.setattr('time.time', lambda: 2)
-        transfer_tx = Transaction.transfer(tx.to_inputs(), [b.me])
+        transfer_tx = Transaction.transfer(tx.to_inputs(), [b.me], tx.asset)
         transfer_tx = transfer_tx.sign([b.me_private])
         block2 = b.create_block([transfer_tx])
         b.write_block(block2, durability='hard')
 
         monkeypatch.setattr('time.time', lambda: 3)
-        transfer_tx2 = Transaction.transfer(tx.to_inputs(), [b.me])
+        transfer_tx2 = Transaction.transfer(tx.to_inputs(), [b.me], tx.asset)
         transfer_tx2 = transfer_tx2.sign([b.me_private])
         block3 = b.create_block([transfer_tx2])
         b.write_block(block3, durability='hard')
@@ -171,24 +178,24 @@ class TestBigchainApi(object):
         vote = b.vote(block2.id, b.get_last_voted_block().id, True)
         b.write_vote(vote)
 
-        assert b.get_transaction(tx1.id) == None
+        assert b.get_transaction(tx1.id) is None
         assert b.get_transaction(tx2.id) == tx2
 
-    def test_get_transactions_for_payload(self, b, user_vk):
+    def test_get_transactions_for_metadata(self, b, user_vk):
         from bigchaindb.models import Transaction
 
-        payload = {'msg': 'Hello BigchainDB!'}
-        tx = Transaction.create([b.me], [user_vk], payload=payload)
+        metadata = {'msg': 'Hello BigchainDB!'}
+        tx = Transaction.create([b.me], [user_vk], metadata=metadata)
 
         block = b.create_block([tx])
         b.write_block(block, durability='hard')
 
-        matches = b.get_tx_by_payload_uuid(tx.data.payload_id)
+        matches = b.get_tx_by_payload_uuid(tx.metadata.data_id)
         assert len(matches) == 1
         assert matches[0].id == tx.id
 
-    def test_get_transactions_for_payload_mismatch(self, b, user_vk):
-        matches = b.get_tx_by_payload_uuid('missing')
+    def test_get_transactions_for_metadata(self, b, user_vk):
+        matches = b.get_tx_by_metadata_id('missing')
         assert not matches
 
     @pytest.mark.usefixtures('inputs')
@@ -198,7 +205,7 @@ class TestBigchainApi(object):
         input_tx = b.get_owned_ids(user_vk).pop()
         input_tx = b.get_transaction(input_tx.txid)
         inputs = input_tx.to_inputs()
-        tx = Transaction.transfer(inputs, [user_vk])
+        tx = Transaction.transfer(inputs, [user_vk], input_tx.asset)
         tx = tx.sign([user_sk])
         response = b.write_transaction(tx)
 
@@ -216,7 +223,7 @@ class TestBigchainApi(object):
         input_tx = b.get_owned_ids(user_vk).pop()
         input_tx = b.get_transaction(input_tx.txid)
         inputs = input_tx.to_inputs()
-        tx = Transaction.transfer(inputs, [user_vk])
+        tx = Transaction.transfer(inputs, [user_vk], input_tx.asset)
         tx = tx.sign([user_sk])
         b.write_transaction(tx)
 
@@ -236,7 +243,7 @@ class TestBigchainApi(object):
         input_tx = b.get_owned_ids(user_vk).pop()
         input_tx = b.get_transaction(input_tx.txid)
         inputs = input_tx.to_inputs()
-        tx = Transaction.transfer(inputs, [user_vk])
+        tx = Transaction.transfer(inputs, [user_vk], input_tx.asset)
         tx = tx.sign([user_sk])
         b.write_transaction(tx)
 
@@ -478,7 +485,7 @@ class TestBigchainApi(object):
         input_tx = b.get_owned_ids(user_vk).pop()
         input_tx = b.get_transaction(input_tx.txid)
         inputs = input_tx.to_inputs()
-        tx = Transaction.transfer(inputs, [user_vk])
+        tx = Transaction.transfer(inputs, [user_vk], input_tx.asset)
         tx = tx.sign([user_sk])
         b.write_transaction(tx)
 
@@ -503,7 +510,7 @@ class TestBigchainApi(object):
             input_tx = b.get_owned_ids(user_vk).pop()
             input_tx = b.get_transaction(input_tx.txid)
             inputs = input_tx.to_inputs()
-            tx = Transaction.transfer(inputs, [user_vk])
+            tx = Transaction.transfer(inputs, [user_vk], input_tx.asset)
             tx = tx.sign([user_sk])
             b.write_transaction(tx)
 
@@ -512,6 +519,25 @@ class TestBigchainApi(object):
 
             # check if the assignee is one of the _other_ federation nodes
             assert response['assignee'] in b.nodes_except_me
+
+
+    @pytest.mark.usefixtures('inputs')
+    def test_non_create_input_not_found(self, b, user_vk):
+        from cryptoconditions import Ed25519Fulfillment
+        from bigchaindb_common.exceptions import TransactionDoesNotExist
+        from bigchaindb_common.transaction import (Fulfillment, Asset,
+                                                   TransactionLink)
+        from bigchaindb.models import Transaction
+        from bigchaindb import Bigchain
+
+        # Create a fulfillment for a non existing transaction
+        fulfillment = Fulfillment(Ed25519Fulfillment(public_key=user_vk),
+                                  [user_vk],
+                                  TransactionLink('somethingsomething', 0))
+        tx = Transaction.transfer([fulfillment], [user_vk], Asset())
+
+        with pytest.raises(TransactionDoesNotExist) as excinfo:
+            tx.validate(Bigchain())
 
 
 class TestTransactionValidation(object):
@@ -548,14 +574,17 @@ class TestTransactionValidation(object):
         from bigchaindb.models import Transaction
 
         input_tx = b.get_owned_ids(user_vk).pop()
+        input_transaction = b.get_transaction(input_tx.txid)
         sk, vk = generate_key_pair()
         tx = Transaction.create([vk], [user_vk])
         tx.operation = 'TRANSFER'
+        tx.asset = input_transaction.asset
         tx.fulfillments[0].tx_input = input_tx
 
         with pytest.raises(InvalidSignature):
             b.validate_transaction(tx)
 
+    @pytest.mark.usefixtures('inputs')
     def test_non_create_double_spend(self, b, signed_create_tx,
                                      signed_transfer_tx):
         from bigchaindb_common.exceptions import DoubleSpend
@@ -563,9 +592,19 @@ class TestTransactionValidation(object):
         block1 = b.create_block([signed_create_tx])
         b.write_block(block1)
 
+        # vote block valid
+        vote = b.vote(block1.id, b.get_last_voted_block().id, True)
+        b.write_vote(vote)
+
         b.write_transaction(signed_transfer_tx)
         block = b.create_block([signed_transfer_tx])
         b.write_block(block, durability='hard')
+
+        # vote block valid
+        vote = b.vote(block.id, b.get_last_voted_block().id, True)
+        b.write_vote(vote)
+
+        sleep(1)
 
         signed_transfer_tx.timestamp = 123
         # FIXME: https://github.com/bigchaindb/bigchaindb/issues/592
@@ -581,7 +620,7 @@ class TestTransactionValidation(object):
         input_tx = b.get_owned_ids(user_vk).pop()
         input_tx = b.get_transaction(input_tx.txid)
         inputs = input_tx.to_inputs()
-        transfer_tx = Transaction.transfer(inputs, [user_vk])
+        transfer_tx = Transaction.transfer(inputs, [user_vk], input_tx.asset)
         transfer_tx = transfer_tx.sign([user_sk])
 
         assert transfer_tx == b.validate_transaction(transfer_tx)
@@ -594,6 +633,33 @@ class TestTransactionValidation(object):
         # check that the transaction is still valid after being written to the
         # bigchain
         assert transfer_tx == b.validate_transaction(transfer_tx)
+
+    @pytest.mark.usefixtures('inputs')
+    def test_fulfillment_not_in_valid_block(self, b, user_vk, user_sk):
+        from bigchaindb.models import Transaction
+        from bigchaindb_common.exceptions import FulfillmentNotInValidBlock
+
+        input_tx = b.get_owned_ids(user_vk).pop()
+        input_tx = b.get_transaction(input_tx.txid)
+        inputs = input_tx.to_inputs()
+
+        # create a transaction that's valid but not in a voted valid block
+        transfer_tx = Transaction.transfer(inputs, [user_vk], input_tx.asset)
+        transfer_tx = transfer_tx.sign([user_sk])
+
+        assert transfer_tx == b.validate_transaction(transfer_tx)
+
+        # create block
+        block = b.create_block([transfer_tx])
+        b.write_block(block, durability='hard')
+
+        # create transaction with the undecided input
+        tx_invalid = Transaction.transfer(transfer_tx.to_inputs(), [user_vk],
+                                         transfer_tx.asset)
+        tx_invalid = tx_invalid.sign([user_sk])
+
+        with pytest.raises(FulfillmentNotInValidBlock):
+            b.validate_transaction(tx_invalid)
 
 
 class TestBlockValidation(object):
@@ -687,7 +753,7 @@ class TestMultipleInputs(object):
         tx_link = b.get_owned_ids(user_vk).pop()
         input_tx = b.get_transaction(tx_link.txid)
         inputs = input_tx.to_inputs()
-        tx = Transaction.transfer(inputs, [user2_vk])
+        tx = Transaction.transfer(inputs, [user2_vk], input_tx.asset)
         tx = tx.sign([user_sk])
 
         # validate transaction
@@ -695,67 +761,58 @@ class TestMultipleInputs(object):
         assert len(tx.fulfillments) == 1
         assert len(tx.conditions) == 1
 
+    @pytest.mark.skipif(reason=('Multiple inputs are only allowed for the '
+                                'same asset. Remove this after implementing ',
+                                'multiple assets'))
+    @pytest.mark.usefixtures('inputs')
     def test_transfer_single_owners_multiple_inputs(self, b, user_sk, user_vk):
         from bigchaindb_common import crypto
         from bigchaindb.models import Transaction
 
         user2_sk, user2_vk = crypto.generate_key_pair()
 
-        # TODO: Make this a fixture
-        transactions = []
-        for i in range(3):
-            tx = Transaction.create([user_vk], [user_vk])
-            tx = tx.sign([user_sk])
-            transactions.append(tx)
-            b.write_transaction(tx)
-        block = b.create_block(transactions)
-        b.write_block(block, durability='hard')
-
         # get inputs
         owned_inputs = b.get_owned_ids(user_vk)
         input_txs = [b.get_transaction(tx_link.txid) for tx_link
                      in owned_inputs]
         inputs = sum([input_tx.to_inputs() for input_tx in input_txs], [])
-        tx = Transaction.transfer(inputs, 3 * [[user_vk]])
+        tx = Transaction.transfer(inputs, len(inputs) * [[user_vk]])
         tx = tx.sign([user_sk])
         assert b.validate_transaction(tx) == tx
-        assert len(tx.fulfillments) == 3
-        assert len(tx.conditions) == 3
+        assert len(tx.fulfillments) == len(inputs)
+        assert len(tx.conditions) == len(inputs)
 
+    @pytest.mark.skipif(reason=('Multiple inputs are only allowed for the '
+                                'same asset. Remove this after implementing ',
+                                'multiple assets'))
+    @pytest.mark.usefixtures('inputs')
     def test_transfer_single_owners_single_input_from_multiple_outputs(self, b,
                                                                        user_sk,
                                                                        user_vk):
-        import random
         from bigchaindb_common import crypto
         from bigchaindb.models import Transaction
 
         user2_sk, user2_vk = crypto.generate_key_pair()
 
-        transactions = []
-        for i in range(3):
-            payload = {'somedata': random.randint(0, 255)}
-            tx = Transaction.create([user_vk], [user_vk], None, 'CREATE', payload)
-            tx = tx.sign([user_sk])
-            transactions.append(tx)
-            b.write_transaction(tx)
-        block = b.create_block(transactions)
-        b.write_block(block, durability='hard')
-
         # get inputs
         owned_inputs = b.get_owned_ids(user_vk)
         input_txs = [b.get_transaction(tx_link.txid) for tx_link
                      in owned_inputs]
         inputs = sum([input_tx.to_inputs() for input_tx in input_txs], [])
-        tx = Transaction.transfer(inputs, 3 * [[user2_vk]])
+        tx = Transaction.transfer(inputs, len(inputs) * [[user2_vk]])
         tx = tx.sign([user_sk])
 
         # create block with the transaction
         block = b.create_block([tx])
         b.write_block(block, durability='hard')
 
+        # vote block valid
+        vote = b.vote(block.id, b.get_last_voted_block().id, True)
+        b.write_vote(vote)
+
         # get inputs from user2
         owned_inputs = b.get_owned_ids(user2_vk)
-        assert len(owned_inputs) == 3
+        assert len(owned_inputs) == len(inputs)
 
         # create a transaction with a single input from a multiple output transaction
         tx_link = owned_inputs.pop()
@@ -779,48 +836,49 @@ class TestMultipleInputs(object):
 
         owned_inputs = b.get_owned_ids(user_vk)
         tx_link = owned_inputs.pop()
-        inputs = b.get_transaction(tx_link.txid).to_inputs()
-        tx = Transaction.transfer(inputs, [[user2_vk, user3_vk]])
+        input_tx = b.get_transaction(tx_link.txid)
+        tx = Transaction.transfer(input_tx.to_inputs(), [[user2_vk, user3_vk]], input_tx.asset)
         tx = tx.sign([user_sk])
 
         assert b.is_valid_transaction(tx) == tx
         assert len(tx.fulfillments) == 1
         assert len(tx.conditions) == 1
 
+    @pytest.mark.skipif(reason=('Multiple inputs are only allowed for the '
+                                'same asset. Remove this after implementing ',
+                                'multiple assets'))
+    @pytest.mark.usefixtures('inputs')
     def test_single_owner_before_multiple_owners_after_multiple_inputs(self, b,
                                                                        user_sk,
                                                                        user_vk):
-        import random
         from bigchaindb_common import crypto
         from bigchaindb.models import Transaction
 
         user2_sk, user2_vk = crypto.generate_key_pair()
         user3_sk, user3_vk = crypto.generate_key_pair()
 
-        transactions = []
-        for i in range(3):
-            payload = {'somedata': random.randint(0, 255)}
-            tx = Transaction.create([user_vk], [user_vk], None, 'CREATE',
-                                    payload)
-            tx = tx.sign([user_sk])
-            transactions.append(tx)
-            b.write_transaction(tx)
-        block = b.create_block(transactions)
-        b.write_block(block, durability='hard')
-
         owned_inputs = b.get_owned_ids(user_vk)
         input_txs = [b.get_transaction(tx_link.txid) for tx_link
                      in owned_inputs]
         inputs = sum([input_tx.to_inputs() for input_tx in input_txs], [])
 
-        tx = Transaction.transfer(inputs, 3 * [[user2_vk, user3_vk]])
+        tx = Transaction.transfer(inputs, len(inputs) * [[user2_vk, user3_vk]])
         tx = tx.sign([user_sk])
+
+        # create block with the transaction
+        block = b.create_block([tx])
+        b.write_block(block, durability='hard')
+
+        # vote block valid
+        vote = b.vote(block.id, b.get_last_voted_block().id, True)
+        b.write_vote(vote)
 
         # validate transaction
         assert b.is_valid_transaction(tx) == tx
-        assert len(tx.fulfillments) == 3
-        assert len(tx.conditions) == 3
+        assert len(tx.fulfillments) == len(inputs)
+        assert len(tx.conditions) == len(inputs)
 
+    @pytest.mark.usefixtures('inputs')
     def test_multiple_owners_before_single_owner_after_single_input(self, b,
                                                                     user_sk,
                                                                     user_vk):
@@ -835,11 +893,15 @@ class TestMultipleInputs(object):
         block = b.create_block([tx])
         b.write_block(block, durability='hard')
 
+        # vote block valid
+        vote = b.vote(block.id, b.get_last_voted_block().id, True)
+        b.write_vote(vote)
+
         owned_input = b.get_owned_ids(user_vk).pop()
         input_tx = b.get_transaction(owned_input.txid)
         inputs = input_tx.to_inputs()
 
-        transfer_tx = Transaction.transfer(inputs, [user3_vk])
+        transfer_tx = Transaction.transfer(inputs, [user3_vk], input_tx.asset)
         transfer_tx = transfer_tx.sign([user_sk, user2_sk])
 
         # validate transaction
@@ -847,22 +909,17 @@ class TestMultipleInputs(object):
         assert len(transfer_tx.fulfillments) == 1
         assert len(transfer_tx.conditions) == 1
 
+    @pytest.mark.skipif(reason=('Multiple inputs are only allowed for the '
+                                'same asset. Remove this after implementing ',
+                                'multiple assets'))
+    @pytest.mark.usefixtures('inputs_shared')
     def test_multiple_owners_before_single_owner_after_multiple_inputs(self, b,
-                                                                       user_sk,
-                                                                       user_vk):
+                                          user_sk, user_vk, user2_vk, user2_sk):
         from bigchaindb_common import crypto
         from bigchaindb.models import Transaction
 
-        user2_sk, user2_vk = crypto.generate_key_pair()
+        # create a new users
         user3_sk, user3_vk = crypto.generate_key_pair()
-
-        transactions = []
-        for i in range(3):
-            tx = Transaction.create([b.me], [user_vk, user2_vk])
-            tx = tx.sign([b.me_private])
-            transactions.append(tx)
-        block = b.create_block(transactions)
-        b.write_block(block, durability='hard')
 
         tx_links = b.get_owned_ids(user_vk)
         inputs = sum([b.get_transaction(tx_link.txid).to_inputs() for tx_link
@@ -872,9 +929,10 @@ class TestMultipleInputs(object):
         tx = tx.sign([user_sk, user2_sk])
 
         assert b.is_valid_transaction(tx) == tx
-        assert len(tx.fulfillments) == 3
-        assert len(tx.conditions) == 3
+        assert len(tx.fulfillments) == len(inputs)
+        assert len(tx.conditions) == len(inputs)
 
+    @pytest.mark.usefixtures('inputs')
     def test_multiple_owners_before_multiple_owners_after_single_input(self, b,
                                                                        user_sk,
                                                                        user_vk):
@@ -890,34 +948,34 @@ class TestMultipleInputs(object):
         block = b.create_block([tx])
         b.write_block(block, durability='hard')
 
-        tx_link = b.get_owned_ids(user_vk).pop()
-        tx_input = b.get_transaction(tx_link.txid).to_inputs()
+        # vote block valid
+        vote = b.vote(block.id, b.get_last_voted_block().id, True)
+        b.write_vote(vote)
 
-        tx = Transaction.transfer(tx_input, [[user3_vk, user4_vk]])
+        # get input
+        tx_link = b.get_owned_ids(user_vk).pop()
+        tx_input = b.get_transaction(tx_link.txid)
+
+        tx = Transaction.transfer(tx_input.to_inputs(), [[user3_vk, user4_vk]], tx_input.asset)
         tx = tx.sign([user_sk, user2_sk])
 
         assert b.is_valid_transaction(tx) == tx
         assert len(tx.fulfillments) == 1
         assert len(tx.conditions) == 1
 
-    def test_multiple_owners_before_multiple_owners_after_multiple_inputs(self,
-                                                                          b,
-                                                                          user_sk,
-                                                                          user_vk):
+    @pytest.mark.skipif(reason=('Multiple inputs are only allowed for the '
+                                'same asset. Remove this after implementing ',
+                                'multiple assets'))
+    @pytest.mark.usefixtures('inputs_shared')
+    def test_multiple_owners_before_multiple_owners_after_multiple_inputs(self, b,
+                                                                user_sk, user_vk,
+                                                                user2_sk, user2_vk):
         from bigchaindb_common import crypto
         from bigchaindb.models import Transaction
 
-        user2_sk, user2_vk = crypto.generate_key_pair()
+        # create a new users
         user3_sk, user3_vk = crypto.generate_key_pair()
         user4_sk, user4_vk = crypto.generate_key_pair()
-
-        transactions = []
-        for i in range(3):
-            tx = Transaction.create([b.me], [user_vk, user2_vk])
-            tx = tx.sign([b.me_private])
-            transactions.append(tx)
-        block = b.create_block(transactions)
-        b.write_block(block, durability='hard')
 
         tx_links = b.get_owned_ids(user_vk)
         inputs = sum([b.get_transaction(tx_link.txid).to_inputs() for tx_link
@@ -927,8 +985,8 @@ class TestMultipleInputs(object):
         tx = tx.sign([user_sk, user2_sk])
 
         assert b.is_valid_transaction(tx) == tx
-        assert len(tx.fulfillments) == 3
-        assert len(tx.conditions) == 3
+        assert len(tx.fulfillments) == len(inputs)
+        assert len(tx.conditions) == len(inputs)
 
     def test_get_owned_ids_single_tx_single_output(self, b, user_sk, user_vk):
         from bigchaindb_common import crypto
@@ -947,7 +1005,7 @@ class TestMultipleInputs(object):
         assert owned_inputs_user1 == [TransactionLink(tx.id, 0)]
         assert owned_inputs_user2 == []
 
-        tx = Transaction.transfer(tx.to_inputs(), [user2_vk])
+        tx = Transaction.transfer(tx.to_inputs(), [user2_vk], tx.asset)
         tx = tx.sign([user_sk])
         block = b.create_block([tx])
         b.write_block(block, durability='hard')
@@ -983,7 +1041,7 @@ class TestMultipleInputs(object):
 
         # NOTE: The transaction itself is valid, still will mark the block
         #       as invalid to mock the behavior.
-        tx_invalid = Transaction.transfer(tx.to_inputs(), [user2_vk])
+        tx_invalid = Transaction.transfer(tx.to_inputs(), [user2_vk], tx.asset)
         tx_invalid = tx_invalid.sign([user_sk])
         block = b.create_block([tx_invalid])
         b.write_block(block, durability='hard')
@@ -999,6 +1057,9 @@ class TestMultipleInputs(object):
         assert owned_inputs_user1 == [TransactionLink(tx.id, 0)]
         assert owned_inputs_user2 == []
 
+    @pytest.mark.skipif(reason=('Multiple inputs are only allowed for the '
+                                'same asset. Remove this after implementing ',
+                                'multiple assets'))
     def test_get_owned_ids_single_tx_multiple_outputs(self, b, user_sk,
                                                       user_vk):
         import random
@@ -1058,7 +1119,7 @@ class TestMultipleInputs(object):
         assert owned_inputs_user1 == owned_inputs_user2
         assert owned_inputs_user1 == expected_owned_inputs_user1
 
-        tx = Transaction.transfer(tx.to_inputs(), [user3_vk])
+        tx = Transaction.transfer(tx.to_inputs(), [user3_vk], tx.asset)
         tx = tx.sign([user_sk, user2_sk])
         block = b.create_block([tx])
         b.write_block(block, durability='hard')
@@ -1088,7 +1149,7 @@ class TestMultipleInputs(object):
         assert spent_inputs_user1 is None
 
         # create a transaction and block
-        tx = Transaction.transfer(tx.to_inputs(), [user2_vk])
+        tx = Transaction.transfer(tx.to_inputs(), [user2_vk], tx.asset)
         tx = tx.sign([user_sk])
         block = b.create_block([tx])
         b.write_block(block, durability='hard')
@@ -1123,7 +1184,7 @@ class TestMultipleInputs(object):
         assert spent_inputs_user1 is None
 
         # create a transaction and block
-        tx = Transaction.transfer(tx.to_inputs(), [user2_vk])
+        tx = Transaction.transfer(tx.to_inputs(), [user2_vk], tx.asset)
         tx = tx.sign([user_sk])
         block = b.create_block([tx])
         b.write_block(block, durability='hard')
@@ -1138,6 +1199,9 @@ class TestMultipleInputs(object):
         # Now there should be no spents (the block is invalid)
         assert spent_inputs_user1 is None
 
+    @pytest.mark.skipif(reason=('Multiple inputs are only allowed for the '
+                                'same asset. Remove this after implementing ',
+                                'multiple assets'))
     def test_get_spent_single_tx_multiple_outputs(self, b, user_sk, user_vk):
         import random
         from bigchaindb_common import crypto
@@ -1202,7 +1266,7 @@ class TestMultipleInputs(object):
             assert b.get_spent(input_tx.txid, input_tx.cid) is None
 
         # create a transaction
-        tx = Transaction.transfer(transactions[0].to_inputs(), [user3_vk])
+        tx = Transaction.transfer(transactions[0].to_inputs(), [user3_vk], transactions[0].asset)
         tx = tx.sign([user_sk, user2_sk])
         block = b.create_block([tx])
         b.write_block(block, durability='hard')

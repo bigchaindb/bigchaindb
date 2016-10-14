@@ -1,3 +1,5 @@
+import time
+
 from unittest.mock import patch
 
 import rethinkdb as r
@@ -272,7 +274,7 @@ def test_valid_block_voting_with_transfer_transactions(monkeypatch, b):
 
     # create a `TRANSFER` transaction
     test_user2_priv, test_user2_pub = crypto.generate_key_pair()
-    tx2 = Transaction.transfer(tx.to_inputs(), [test_user2_pub])
+    tx2 = Transaction.transfer(tx.to_inputs(), [test_user2_pub], tx.asset)
     tx2 = tx2.sign([test_user_priv])
 
     monkeypatch.setattr('time.time', lambda: 2)
@@ -285,9 +287,10 @@ def test_valid_block_voting_with_transfer_transactions(monkeypatch, b):
     vote_pipeline = vote.create_pipeline()
     vote_pipeline.setup(indata=inpipe, outdata=outpipe)
 
-    inpipe.put(block.to_dict())
-    inpipe.put(block2.to_dict())
     vote_pipeline.start()
+    inpipe.put(block.to_dict())
+    time.sleep(1)
+    inpipe.put(block2.to_dict())
     vote_out = outpipe.get()
     vote2_out = outpipe.get()
     vote_pipeline.terminate()
