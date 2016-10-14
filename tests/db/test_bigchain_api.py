@@ -47,7 +47,7 @@ class TestBigchainApi(object):
         vote = b.vote(block1.id, b.get_last_voted_block().id, True)
         vote['vote']['previous_block'] = block1.id
         vote_data = serialize(vote['vote'])
-        vote['signature'] = SigningKey(b.me_private).sign(vote_data)
+        vote['signature'] = SigningKey(b.me_private).sign(vote_data.encode())
         b.write_vote(vote)
 
         with pytest.raises(CyclicBlockchainError):
