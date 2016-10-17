@@ -185,7 +185,7 @@ If there is only one _new owner_, the condition will be a simple signature condi
     - `cid`: Condition index so that we can reference this output as an input to another transaction. It also matches
     the input `fid`, making this the condition to fulfill in order to spend the asset used as input with `fid`.
     - `owners_after`: A list containing one item: the public key of the new owner.
-	- `amount`: The of shares for a divisible asset to send to the new owners.
+	- `amount`: The amount of shares for a divisible asset to send to the new owners.
 - **Condition body**:
     - `bitmask`: A set of bits representing the features required by the condition type.
     - `public_key`: The new owner's public key.
