@@ -137,7 +137,7 @@ def verify_vote_signature(voters, signed_vote):
         return False
 
     public_key = crypto.VerifyingKey(vk_base58)
-    return public_key.verify(serialize(signed_vote['vote']), signature)
+    return public_key.verify(serialize(signed_vote['vote']).encode(), signature)
 
 
 def is_genesis_block(block):

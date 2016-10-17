@@ -185,12 +185,13 @@ class Block(object):
         block_body = self.to_dict()
         block_serialized = serialize(block_body['block'])
         signing_key = SigningKey(signing_key)
-        self.signature = signing_key.sign(block_serialized)
+        self.signature = signing_key.sign(block_serialized.encode()).decode()
         return self
 
     def is_signature_valid(self):
         block = self.to_dict()['block']
-        block_serialized = serialize(block)
+        # cc only accepts bytesting messages 
+        block_serialized = serialize(block).encode()
         verifying_key = VerifyingKey(block['node_pubkey'])
         try:
             # NOTE: CC throws a `ValueError` on some wrong signatures
@@ -218,8 +219,8 @@ class Block(object):
             # NOTE: CC throws a `ValueError` on some wrong signatures
             #       https://github.com/bigchaindb/cryptoconditions/issues/27
             try:
-                signature_valid = verifying_key.verify(block_serialized,
-                                                       signature)
+                signature_valid = verifying_key\
+                        .verify(block_serialized.encode(), signature)
             except ValueError:
                 signature_valid = False
             if signature_valid is False:
