@@ -64,9 +64,10 @@ Assets can be mutable (changeable) or immutable. To change a mutable asset, you 
         "conditions": ["<list of conditions>"],
         "operation": "<string>",
         "timestamp": "<timestamp from client>",
-        "data": {
-            "uuid": "<uuid4>",
-            "payload": "<any JSON document>"
+        "asset": "<digital asset description (explained in the next section)>",
+        "metadata": {
+            "id": "<uuid>",
+            "data": "<any JSON document>"
         }
     }
 }
@@ -84,16 +85,50 @@ Here's some explanation of the contents of a transaction:
     - `conditions`: List of conditions. Each _condition_ is a _crypto-condition_ that needs to be fulfilled by a transfer transaction in order to transfer ownership to new owners.
     See [Conditions and Fulfillments](#conditions-and-fulfillments) below.
     - `operation`: String representation of the operation being performed (currently either "CREATE" or "TRANSFER"). It determines how the transaction should be validated.
-    - `timestamp`: The Unix time when the transaction was created. It's provided by the client. See the page about [timestamps in BigchainDB](https://docs.bigchaindb.com/en/latest/timestamps.html).
-    - `data`:
-        - `uuid`: UUID version 4 (random) converted to a string of hex digits in standard form.
-        - `payload`: Can be any JSON document. It may be empty in the case of a transfer transaction.
+    - `timestamp`: The Unix time when the transaction was created. It's provided by the client. See [the section on timestamps](timestamps.html).
+	- `asset`: Definition of the digital asset. See next section.
+    - `metadata`:
+        - `id`: UUID version 4 (random) converted to a string of hex digits in standard form.
+        - `data`: Can be any JSON document. It may be empty in the case of a transfer transaction.
 
 Later, when we get to the models for the block and the vote, we'll see that both include a signature (from the node which created it). You may wonder why transactions don't have signatures... The answer is that they do! They're just hidden inside the `fulfillment` string of each fulfillment. A creation transaction is signed by the node that created it. A transfer transaction is signed by whoever currently controls or owns it.
 
 What gets signed? For each fulfillment in the transaction, the "fullfillment message" that gets signed includes the `operation`, `timestamp`, `data`, `version`, `id`, corresponding `condition`, and the fulfillment itself, except with its fulfillment string set to `null`. The computed signature goes into creating the `fulfillment` string of the fulfillment.
 
 One other note: Currently, transactions contain only the public keys of asset-owners (i.e. who own an asset or who owned an asset in the past), inside the conditions and fulfillments. A transaction does _not_ contain the public key of the client (computer) which generated and sent it to a BigchainDB node. In fact, there's no need for a client to _have_ a public/private keypair. In the future, each client may also have a keypair, and it may have to sign each sent transaction (using its private key); see [Issue #347 on GitHub](https://github.com/bigchaindb/bigchaindb/issues/347). In practice, a person might think of their keypair as being both their "ownership-keypair" and their "client-keypair," but there is a difference, just like there's a difference between Joe and Joe's computer.
+
+
+## The Digital Asset Model
+To avoid redundant data in transactions the digital asset model is different for `CREATE` and `TRANSFER` transactions.
+
+The digital asset properties are defined at creation time in a `CREATE` transaction with the following model:
+```json
+{
+    "id": "<uuid>",
+    "divisible": "<true | false>",
+    "updatable": "<true | false>",
+    "refillable": "<true | false>",
+    "data": "<json document>"
+}
+```
+
+For `TRANSFER` transactions we only keep the asset id.
+```json
+{
+    "id": "<uuid>",
+}
+```
+
+
+- `id`: UUID version 4 (random) converted to a string of hex digits in standard form. Added server side.
+- `divisible`: Whether the asset is divisible or not. Defaults to false.
+- `updatable`: Whether the data in the asset can be updated in the future or not. Defaults to false.
+- `refillable`: Whether the amount of the asset can change after its creation. Defaults to false.
+- `data`: A user supplied JSON document with custom information about the asset. Defaults to null.
+- _amount_: The amount of "shares". Only relevant if the asset is marked as divisible. Defaults to 1. The amount is not specified in the asset, but in the conditions (see next section).
+
+At the time of this writing divisible, updatable, and refillable assets are not yet implemented.
+See [Issue #487 on Github](https://github.com/bigchaindb/bigchaindb/issues/487)
 
 
 ## Conditions and Fulfillments
@@ -141,7 +176,8 @@ If there is only one _new owner_, the condition will be a simple signature condi
         },
         "uri": "<string>"
     },
-    "owners_after": ["<new owner public key>"]
+    "owners_after": ["<new owner public key>"],
+    "amount": "<int>"
 }
 ```
 
@@ -149,6 +185,7 @@ If there is only one _new owner_, the condition will be a simple signature condi
     - `cid`: Condition index so that we can reference this output as an input to another transaction. It also matches
     the input `fid`, making this the condition to fulfill in order to spend the asset used as input with `fid`.
     - `owners_after`: A list containing one item: the public key of the new owner.
+	- `amount`: The of shares for a divisible asset to send to the new owners.
 - **Condition body**:
     - `bitmask`: A set of bits representing the features required by the condition type.
     - `public_key`: The new owner's public key.
@@ -245,7 +282,7 @@ If there is only one _current owner_, the fulfillment will be a simple signature
 
 - `id`: The hash of the serialized `block` (i.e. the `timestamp`, `transactions`, `node_pubkey`, and `voters`). This is also a database primary key; that's how we ensure that all blocks are unique.
 - `block`:
-    - `timestamp`: The Unix time when the block was created. It's provided by the node that created the block. See the page about [timestamps in BigchainDB](https://docs.bigchaindb.com/en/latest/timestamps.html).
+    - `timestamp`: The Unix time when the block was created. It's provided by the node that created the block. See [the section on timestamps](timestamps.html).
     - `transactions`: A list of the transactions included in the block.
     - `node_pubkey`: The public key of the node that create the block.
     - `voters`: A list of public keys of federation nodes. Since the size of the 
