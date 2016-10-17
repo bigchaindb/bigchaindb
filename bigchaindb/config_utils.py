@@ -1,13 +1,13 @@
-"""Utils to configure BigchainDB.
+"""Utils for reading and setting configuration settings.
 
-By calling `file_config`, the global configuration (stored in
-`$HOME/.bigchaindb`) will be updated with the values contained
-in the configuration file.
+The value of each BigchainDB Server configuration setting is
+determined according to the following rules:
 
-Note that there is a precedence in reading configuration values:
- - local config file;
- - environment vars;
- - default config file (contained in ``bigchaindb.__init__``).
+* If it's set by an environment variable, then use that value
+* Otherwise, if it's set in a local config file, then use that
+  value
+* Otherwise, use the default value (contained in 
+  ``bigchaindb.__init__``)
 """
 
 
