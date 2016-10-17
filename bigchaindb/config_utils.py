@@ -3,8 +3,8 @@
 The value of each BigchainDB Server configuration setting is
 determined according to the following rules:
 
-* If it’s set by an environment variable, then use that value
-* Otherwise, if it’s set in a local config file, then use that
+* If it's set by an environment variable, then use that value
+* Otherwise, if it's set in a local config file, then use that
   value
 * Otherwise, use the default value (contained in 
   ``bigchaindb.__init__``)
