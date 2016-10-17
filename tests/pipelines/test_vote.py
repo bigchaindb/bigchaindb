@@ -33,7 +33,7 @@ def test_vote_creation_valid(b):
     assert vote['vote']['is_block_valid'] is True
     assert vote['vote']['invalid_reason'] is None
     assert vote['node_pubkey'] == b.me
-    assert crypto.VerifyingKey(b.me).verify(serialize(vote['vote']),
+    assert crypto.VerifyingKey(b.me).verify(serialize(vote['vote']).encode(),
                                             vote['signature']) is True
 
 
@@ -52,7 +52,7 @@ def test_vote_creation_invalid(b):
     assert vote['vote']['is_block_valid'] is False
     assert vote['vote']['invalid_reason'] is None
     assert vote['node_pubkey'] == b.me
-    assert crypto.VerifyingKey(b.me).verify(serialize(vote['vote']),
+    assert crypto.VerifyingKey(b.me).verify(serialize(vote['vote']).encode(),
                                             vote['signature']) is True
 
 
@@ -176,8 +176,9 @@ def test_valid_block_voting_sequential(b, monkeypatch):
                                 'invalid_reason': None,
                                 'timestamp': '1'}
 
+    serialized_vote = util.serialize(vote_doc['vote']).encode()
     assert vote_doc['node_pubkey'] == b.me
-    assert crypto.VerifyingKey(b.me).verify(util.serialize(vote_doc['vote']),
+    assert crypto.VerifyingKey(b.me).verify(serialized_vote,
                                             vote_doc['signature']) is True
 
 
@@ -210,8 +211,9 @@ def test_valid_block_voting_multiprocessing(b, monkeypatch):
                                 'invalid_reason': None,
                                 'timestamp': '1'}
 
+    serialized_vote = util.serialize(vote_doc['vote']).encode()
     assert vote_doc['node_pubkey'] == b.me
-    assert crypto.VerifyingKey(b.me).verify(util.serialize(vote_doc['vote']),
+    assert crypto.VerifyingKey(b.me).verify(serialized_vote,
                                             vote_doc['signature']) is True
 
 
@@ -251,8 +253,9 @@ def test_valid_block_voting_with_create_transaction(b, monkeypatch):
                                 'invalid_reason': None,
                                 'timestamp': '1'}
 
+    serialized_vote = util.serialize(vote_doc['vote']).encode()
     assert vote_doc['node_pubkey'] == b.me
-    assert crypto.VerifyingKey(b.me).verify(util.serialize(vote_doc['vote']),
+    assert crypto.VerifyingKey(b.me).verify(serialized_vote,
                                             vote_doc['signature']) is True
 
 
@@ -305,8 +308,9 @@ def test_valid_block_voting_with_transfer_transactions(monkeypatch, b):
                                 'invalid_reason': None,
                                 'timestamp': '2'}
 
+    serialized_vote = util.serialize(vote_doc['vote']).encode()
     assert vote_doc['node_pubkey'] == b.me
-    assert crypto.VerifyingKey(b.me).verify(util.serialize(vote_doc['vote']),
+    assert crypto.VerifyingKey(b.me).verify(serialized_vote,
                                             vote_doc['signature']) is True
 
     vote2_rs = r.table('votes').get_all([block2.id, b.me],
@@ -319,8 +323,9 @@ def test_valid_block_voting_with_transfer_transactions(monkeypatch, b):
                                  'invalid_reason': None,
                                  'timestamp': '2'}
 
+    serialized_vote2 = util.serialize(vote2_doc['vote']).encode()
     assert vote2_doc['node_pubkey'] == b.me
-    assert crypto.VerifyingKey(b.me).verify(util.serialize(vote2_doc['vote']),
+    assert crypto.VerifyingKey(b.me).verify(serialized_vote2,
                                             vote2_doc['signature']) is True
 
 
@@ -356,8 +361,9 @@ def test_unsigned_tx_in_block_voting(monkeypatch, b, user_vk):
                                 'invalid_reason': None,
                                 'timestamp': '1'}
 
+    serialized_vote = util.serialize(vote_doc['vote']).encode()
     assert vote_doc['node_pubkey'] == b.me
-    assert crypto.VerifyingKey(b.me).verify(util.serialize(vote_doc['vote']),
+    assert crypto.VerifyingKey(b.me).verify(serialized_vote,
                                             vote_doc['signature']) is True
 
 
@@ -395,8 +401,9 @@ def test_invalid_id_tx_in_block_voting(monkeypatch, b, user_vk):
                                 'invalid_reason': None,
                                 'timestamp': '1'}
 
+    serialized_vote = util.serialize(vote_doc['vote']).encode()
     assert vote_doc['node_pubkey'] == b.me
-    assert crypto.VerifyingKey(b.me).verify(util.serialize(vote_doc['vote']),
+    assert crypto.VerifyingKey(b.me).verify(serialized_vote,
                                             vote_doc['signature']) is True
 
 
@@ -434,8 +441,9 @@ def test_invalid_content_in_tx_in_block_voting(monkeypatch, b, user_vk):
                                 'invalid_reason': None,
                                 'timestamp': '1'}
 
+    serialized_vote = util.serialize(vote_doc['vote']).encode()
     assert vote_doc['node_pubkey'] == b.me
-    assert crypto.VerifyingKey(b.me).verify(util.serialize(vote_doc['vote']),
+    assert crypto.VerifyingKey(b.me).verify(serialized_vote,
                                             vote_doc['signature']) is True
 
 
@@ -469,8 +477,9 @@ def test_invalid_block_voting(monkeypatch, b, user_vk):
                                 'invalid_reason': None,
                                 'timestamp': '1'}
 
+    serialized_vote = util.serialize(vote_doc['vote']).encode()
     assert vote_doc['node_pubkey'] == b.me
-    assert crypto.VerifyingKey(b.me).verify(util.serialize(vote_doc['vote']),
+    assert crypto.VerifyingKey(b.me).verify(serialized_vote,
                                             vote_doc['signature']) is True
 
 

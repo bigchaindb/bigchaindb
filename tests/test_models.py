@@ -155,11 +155,11 @@ class TestBlockModel(object):
             'node_pubkey': b.me,
             'voters': voters,
         }
-        expected_block_serialized = serialize(expected_block)
+        expected_block_serialized = serialize(expected_block).encode()
         expected = SigningKey(b.me_private).sign(expected_block_serialized)
         block = Block(transactions, b.me, timestamp, voters)
         block = block.sign(b.me_private)
-        assert block.signature == expected
+        assert block.signature == expected.decode()
 
         verifying_key = VerifyingKey(b.me)
         assert verifying_key.verify(expected_block_serialized, block.signature)
