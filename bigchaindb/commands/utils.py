@@ -14,7 +14,6 @@ from bigchaindb import db
 from bigchaindb.version import __version__
 
 
-
 def start_rethinkdb():
     """Start RethinkDB as a child process and wait for it to be
     available.

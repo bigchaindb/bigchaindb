@@ -11,8 +11,8 @@ config = {
         # Note: this section supports all the Gunicorn settings:
         #       - http://docs.gunicorn.org/en/stable/settings.html
         'bind': os.environ.get('BIGCHAINDB_SERVER_BIND') or 'localhost:9984',
-        'workers': None, # if none, the value will be cpu_count * 2 + 1
-        'threads': None, # if none, the value will be cpu_count * 2 + 1
+        'workers': None,  # if none, the value will be cpu_count * 2 + 1
+        'threads': None,  # if none, the value will be cpu_count * 2 + 1
     },
     'database': {
         'host': os.environ.get('BIGCHAINDB_DATABASE_HOST', 'localhost'),
