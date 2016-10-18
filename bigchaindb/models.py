@@ -190,7 +190,7 @@ class Block(object):
 
     def is_signature_valid(self):
         block = self.to_dict()['block']
-        # cc only accepts bytesting messages 
+        # cc only accepts bytesting messages
         block_serialized = serialize(block).encode()
         verifying_key = VerifyingKey(block['node_pubkey'])
         try:
