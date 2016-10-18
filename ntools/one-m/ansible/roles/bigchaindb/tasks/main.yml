@@ -13,6 +13,7 @@
     - git
     - g++
     - python3-dev
+    - libffi-dev
     - python3-setuptools  # mainly for easy_install3, which is used to get latest pip3
 
 # This should make both pip and pip3 be pip version >=8.1.2 (python 3.4).

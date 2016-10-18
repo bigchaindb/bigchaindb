@@ -77,7 +77,7 @@ def install_base_software():
     sudo('dpkg --configure -a')
     sudo('apt-get -y -f install')
     # Install the base dependencies not already installed.
-    sudo('apt-get -y install git g++ python3-dev')
+    sudo('apt-get -y install git g++ python3-dev libffi-dev')
     sudo('apt-get -y -f install')
 
 

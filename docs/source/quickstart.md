@@ -12,7 +12,7 @@ rethinkdb
 C. Ubuntu 14.04 already has Python 3.4, so you don't need to install it, but you do need to install a couple other things:
 ```text
 sudo apt-get update
-sudo apt-get install g++ python3-dev
+sudo apt-get install g++ python3-dev libffi-dev
 ```
 
 D. Get the latest version of pip and setuptools:
