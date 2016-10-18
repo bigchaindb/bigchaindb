@@ -71,6 +71,5 @@ def start(timeout=5, backlog_reassign_delay=5):
     """Create, start, and return the block pipeline."""
     pipeline = create_pipeline(timeout=timeout,
                                backlog_reassign_delay=backlog_reassign_delay)
-    pipeline.setup()
     pipeline.start()
     return pipeline

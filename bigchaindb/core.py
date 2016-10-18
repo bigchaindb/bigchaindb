@@ -71,14 +71,7 @@ class Bigchain(object):
         if not self.me or not self.me_private:
             raise exceptions.KeypairNotFoundException()
 
-        self._conn = None
         self.connection = Connection(host=self.host, port=self.port, db=self.dbname)
-
-    @property
-    def conn(self):
-        if not self._conn:
-            self._conn = self.reconnect()
-        return self._conn
 
     def reconnect(self):
         return r.connect(host=self.host, port=self.port, db=self.dbname)
@@ -343,11 +336,11 @@ class Bigchain(object):
             A list of transactions containing that metadata. If no transaction exists with that metadata it
             returns an empty list `[]`
         """
-        cursor = r.table('bigchain', read_mode=self.read_mode) \
-            .get_all(metadata_id, index='metadata_id') \
-            .concat_map(lambda block: block['block']['transactions']) \
-            .filter(lambda transaction: transaction['transaction']['metadata']['id'] == metadata_id) \
-            .run(self.conn)
+        cursor = self.connection.run(
+                r.table('bigchain', read_mode=self.read_mode)
+                .get_all(metadata_id, index='metadata_id')
+                .concat_map(lambda block: block['block']['transactions'])
+                .filter(lambda transaction: transaction['transaction']['metadata']['id'] == metadata_id))
 
         transactions = list(cursor)
         return [Transaction.from_dict(tx) for tx in transactions]
