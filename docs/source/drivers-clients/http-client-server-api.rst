@@ -1,17 +1,34 @@
 The HTTP Client-Server API
 ==========================
 
-Note: The HTTP client-server API is currently quite rudimentary. For example, there is no ability to do complex queries using the HTTP API. We plan to add querying capabilities in the future. If you want to build a full-featured proof-of-concept, we suggest you use :doc:`the Python Server API <../drivers-clients/python-server-api-examples>` for now.
+Note: The HTTP client-server API is currently quite rudimentary. For example, there is no ability to do complex queries using the HTTP API. We plan to add querying capabilities in the future.
 
-When you start Bigchaindb using `bigchaindb start`, an HTTP API is exposed at the address stored in the BigchainDB node configuration settings. The default is for that address to be:
+When you start Bigchaindb using `bigchaindb start`, an HTTP API is exposed at the address stored in the BigchainDB node configuration settings. The default is:
 
 `http://localhost:9984/api/v1/ <http://localhost:9984/api/v1/>`_
 
 but that address can be changed by changing the "API endpoint" configuration setting (e.g. in a local config file). There's more information about setting the API endpoint in :doc:`the section about BigchainDB Configuration Settings <../server-reference/configuration>`.
 
-There are other configuration settings related to the web server (serving the HTTP API). In particular, the default is for the web server socket to bind to `localhost:9984` but that can be changed (e.g. to `0.0.0.0:9984`). For more details, see the "server" settings ("bind", "workers" and "threads") in :doc:`the section about BigchainDB Configuration Settings <../server-reference/configuration>`.
+There are other configuration settings related to the web server (serving the HTTP API). In particular, the default is for the web server socket to bind to ``localhost:9984`` but that can be changed (e.g. to ``0.0.0.0:9984``). For more details, see the "server" settings ("bind", "workers" and "threads") in :doc:`the section about BigchainDB Configuration Settings <../server-reference/configuration>`.
 
-The HTTP API currently exposes two endpoints, one to get information about a specific transaction, and one to push a new transaction to the BigchainDB cluster.
+If you send an HTTP GET request to e.g. ``http://localhost:9984`` (with no ``/api/v1/`` on the end), then you should get an HTTP response with something like the following in the body:
+
+.. code-block:: json
+
+    {
+      "api_endpoint": "http://localhost:9984/api/v1",
+      "keyring": [
+        "6qHyZew94NMmUTYyHnkZsB8cxJYuRNEiEpXHe1ih9QX3",
+        "AdDuyrTyjrDt935YnFu4VBCVDhHtY2Y6rcy7x2TFeiRi"
+      ],
+      "public_key": "AiygKSRhZWTxxYT4AfgKoTG4TZAoPsWoEt6C6bLq4jJR",
+      "software": "BigchainDB",
+      "version": "0.6.0"
+    }
+
+
+HTTP API Endpoints
+------------------
 
 .. http:get:: /transactions/{tx_id}
 
