@@ -12,7 +12,9 @@ If the pull request is from someone who is _not_ an employee of ascribe, then:
 
 Hi @nameofuser
 
-Before we can merge this pull request, which may contain your intellectual property in the form of copyright or patents, our lawyers say we need you or your organization to agree to one of our contributor agreements. If you are contributing on behalf of yourself (and not on behalf of your employer or another organization you are part of) then you should:
+Before we can merge this pull request, we need you or your organization to agree to one of our contributor agreements. One of the big concerns for people using and developing open source software is that someone who contributed to the code might claim the code infringes on their copyright or patent. To guard against this, we ask all our contributors to sign a Contributor License Agreement. This gives us the right to use the code contributed and any patents the contribution relies on. It also gives us and our users comfort that they won't be sued for using open source software. We know it's a hassle, but it makes the project more reliable in the long run. Thank you for your understanding and your contribution!
+
+If you are contributing on behalf of yourself (and not on behalf of your employer or another organization you are part of) then you should:
 
 1. Go to: https://www.bigchaindb.com/cla/
 2. Read the Individual Contributor Agreement
