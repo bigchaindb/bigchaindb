@@ -38,7 +38,6 @@ def test_bigchain_class_default_initialization(config):
     assert bigchain.me_private == config['keypair']['private']
     assert bigchain.nodes_except_me == config['keyring']
     assert bigchain.consensus == BaseConsensusRules
-    assert bigchain._conn is None
 
 
 def test_bigchain_class_initialization_with_parameters(config):
@@ -60,7 +59,6 @@ def test_bigchain_class_initialization_with_parameters(config):
     assert bigchain.me_private == init_kwargs['private_key']
     assert bigchain.nodes_except_me == init_kwargs['keyring']
     assert bigchain.consensus == BaseConsensusRules
-    assert bigchain._conn is None
 
 
 def test_get_blocks_status_containing_tx(monkeypatch):

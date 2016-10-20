@@ -166,8 +166,7 @@ def test_valid_block_voting_sequential(b, monkeypatch):
         last_vote = vote_obj.vote(*vote_obj.validate_tx(tx, block_id, num_tx))
 
     vote_obj.write_vote(last_vote)
-    vote_rs = r.table('votes').get_all([block.id, b.me],
-                                       index='block_and_voter').run(b.conn)
+    vote_rs = b.connection.run(r.table('votes').get_all([block.id, b.me], index='block_and_voter'))
     vote_doc = vote_rs.next()
 
     assert vote_doc['vote'] == {'voting_for_block': block.id,
@@ -201,8 +200,7 @@ def test_valid_block_voting_multiprocessing(b, monkeypatch):
     vote_out = outpipe.get()
     vote_pipeline.terminate()
 
-    vote_rs = r.table('votes').get_all([block.id, b.me],
-                                       index='block_and_voter').run(b.conn)
+    vote_rs = b.connection.run(r.table('votes').get_all([block.id, b.me], index='block_and_voter'))
     vote_doc = vote_rs.next()
     assert vote_out['vote'] == vote_doc['vote']
     assert vote_doc['vote'] == {'voting_for_block': block.id,
@@ -243,8 +241,7 @@ def test_valid_block_voting_with_create_transaction(b, monkeypatch):
     vote_out = outpipe.get()
     vote_pipeline.terminate()
 
-    vote_rs = r.table('votes').get_all([block.id, b.me],
-                                       index='block_and_voter').run(b.conn)
+    vote_rs = b.connection.run(r.table('votes').get_all([block.id, b.me], index='block_and_voter'))
     vote_doc = vote_rs.next()
     assert vote_out['vote'] == vote_doc['vote']
     assert vote_doc['vote'] == {'voting_for_block': block.id,
@@ -298,8 +295,7 @@ def test_valid_block_voting_with_transfer_transactions(monkeypatch, b):
     vote2_out = outpipe.get()
     vote_pipeline.terminate()
 
-    vote_rs = r.table('votes').get_all([block.id, b.me],
-                                       index='block_and_voter').run(b.conn)
+    vote_rs = b.connection.run(r.table('votes').get_all([block.id, b.me], index='block_and_voter'))
     vote_doc = vote_rs.next()
     assert vote_out['vote'] == vote_doc['vote']
     assert vote_doc['vote'] == {'voting_for_block': block.id,
@@ -313,8 +309,7 @@ def test_valid_block_voting_with_transfer_transactions(monkeypatch, b):
     assert crypto.VerifyingKey(b.me).verify(serialized_vote,
                                             vote_doc['signature']) is True
 
-    vote2_rs = r.table('votes').get_all([block2.id, b.me],
-                                        index='block_and_voter').run(b.conn)
+    vote2_rs = b.connection.run(r.table('votes').get_all([block2.id, b.me], index='block_and_voter'))
     vote2_doc = vote2_rs.next()
     assert vote2_out['vote'] == vote2_doc['vote']
     assert vote2_doc['vote'] == {'voting_for_block': block2.id,
@@ -351,8 +346,7 @@ def test_unsigned_tx_in_block_voting(monkeypatch, b, user_vk):
     vote_out = outpipe.get()
     vote_pipeline.terminate()
 
-    vote_rs = r.table('votes').get_all([block.id, b.me],
-                                       index='block_and_voter').run(b.conn)
+    vote_rs = b.connection.run(r.table('votes').get_all([block.id, b.me], index='block_and_voter'))
     vote_doc = vote_rs.next()
     assert vote_out['vote'] == vote_doc['vote']
     assert vote_doc['vote'] == {'voting_for_block': block.id,
@@ -391,8 +385,7 @@ def test_invalid_id_tx_in_block_voting(monkeypatch, b, user_vk):
     vote_out = outpipe.get()
     vote_pipeline.terminate()
 
-    vote_rs = r.table('votes').get_all([block['id'], b.me],
-                                       index='block_and_voter').run(b.conn)
+    vote_rs = b.connection.run(r.table('votes').get_all([block['id'], b.me], index='block_and_voter'))
     vote_doc = vote_rs.next()
     assert vote_out['vote'] == vote_doc['vote']
     assert vote_doc['vote'] == {'voting_for_block': block['id'],
@@ -431,8 +424,7 @@ def test_invalid_content_in_tx_in_block_voting(monkeypatch, b, user_vk):
     vote_out = outpipe.get()
     vote_pipeline.terminate()
 
-    vote_rs = r.table('votes').get_all([block['id'], b.me],
-                                       index='block_and_voter').run(b.conn)
+    vote_rs = b.connection.run(r.table('votes').get_all([block['id'], b.me], index='block_and_voter'))
     vote_doc = vote_rs.next()
     assert vote_out['vote'] == vote_doc['vote']
     assert vote_doc['vote'] == {'voting_for_block': block['id'],
@@ -467,8 +459,7 @@ def test_invalid_block_voting(monkeypatch, b, user_vk):
     vote_out = outpipe.get()
     vote_pipeline.terminate()
 
-    vote_rs = r.table('votes').get_all([block['id'], b.me],
-                                       index='block_and_voter').run(b.conn)
+    vote_rs = b.connection.run(r.table('votes').get_all([block['id'], b.me], index='block_and_voter'))
     vote_doc = vote_rs.next()
     assert vote_out['vote'] == vote_doc['vote']
     assert vote_doc['vote'] == {'voting_for_block': block['id'],
@@ -520,9 +511,9 @@ def test_voter_considers_unvoted_blocks_when_single_node(monkeypatch, b):
     vote_pipeline.terminate()
 
     # retrieve blocks from bigchain
-    blocks = list(r.table('bigchain')
-                   .order_by(r.asc((r.row['block']['timestamp'])))
-                   .run(b.conn))
+    blocks = list(b.connection.run(
+                r.table('bigchain')
+                .order_by(r.asc((r.row['block']['timestamp'])))))
 
     # FIXME: remove genesis block, we don't vote on it
     # (might change in the future)
@@ -530,7 +521,7 @@ def test_voter_considers_unvoted_blocks_when_single_node(monkeypatch, b):
     vote_pipeline.terminate()
 
     # retrieve vote
-    votes = r.table('votes').run(b.conn)
+    votes = b.connection.run(r.table('votes'))
     votes = list(votes)
 
     assert all(vote['node_pubkey'] == b.me for vote in votes)
@@ -563,12 +554,12 @@ def test_voter_chains_blocks_with_the_previous_ones(monkeypatch, b):
     vote_pipeline.terminate()
 
     # retrive blocks from bigchain
-    blocks = list(r.table('bigchain')
-                   .order_by(r.asc((r.row['block']['timestamp'])))
-                   .run(b.conn))
+    blocks = list(b.connection.run(
+                     r.table('bigchain')
+                     .order_by(r.asc((r.row['block']['timestamp'])))))
 
     # retrieve votes
-    votes = list(r.table('votes').run(b.conn))
+    votes = list(b.connection.run(r.table('votes')))
 
     assert votes[0]['vote']['voting_for_block'] in (blocks[1]['id'], blocks[2]['id'])
     assert votes[1]['vote']['voting_for_block'] in (blocks[1]['id'], blocks[2]['id'])
@@ -587,7 +578,7 @@ def test_voter_checks_for_previous_vote(monkeypatch, b):
     block_1 = dummy_block(b)
     inpipe.put(block_1.to_dict())
 
-    assert r.table('votes').count().run(b.conn) == 0
+    assert b.connection.run(r.table('votes').count()) == 0
 
     vote_pipeline = vote.create_pipeline()
     vote_pipeline.setup(indata=inpipe, outdata=outpipe)
@@ -609,7 +600,7 @@ def test_voter_checks_for_previous_vote(monkeypatch, b):
 
     vote_pipeline.terminate()
 
-    assert r.table('votes').count().run(b.conn) == 2
+    assert b.connection.run(r.table('votes').count()) == 2
 
 
 @patch.object(Pipeline, 'start')

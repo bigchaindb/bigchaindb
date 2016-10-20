@@ -70,8 +70,9 @@ class Connection:
 def get_conn():
     '''Get the connection to the database.'''
 
-    return r.connect(bigchaindb.config['database']['host'],
-                     bigchaindb.config['database']['port'])
+    return r.connect(host=bigchaindb.config['database']['host'],
+                     port=bigchaindb.config['database']['port'],
+                     db=bigchaindb.config['database']['name'])
 
 
 def get_database_name():

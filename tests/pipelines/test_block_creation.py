@@ -69,7 +69,7 @@ def test_write_block(b, user_vk):
 
     block_doc = b.create_block(txs)
     block_maker.write(block_doc)
-    expected = r.table('bigchain').get(block_doc.id).run(b.conn)
+    expected = b.connection.run(r.table('bigchain').get(block_doc.id))
     expected = Block.from_dict(expected)
 
     assert expected == block_doc
@@ -90,19 +90,19 @@ def test_duplicate_transaction(b, user_vk):
     block_maker.write(block_doc)
 
     # block is in bigchain
-    assert r.table('bigchain').get(block_doc.id).run(b.conn) == block_doc.to_dict()
+    assert b.connection.run(r.table('bigchain').get(block_doc.id)) == block_doc.to_dict()
 
     b.write_transaction(txs[0])
 
     # verify tx is in the backlog
-    assert r.table('backlog').get(txs[0].id).run(b.conn) is not None
+    assert b.connection.run(r.table('backlog').get(txs[0].id)) is not None
 
     # try to validate a transaction that's already in the chain; should not
     # work
     assert block_maker.validate_tx(txs[0].to_dict()) is None
 
     # duplicate tx should be removed from backlog
-    assert r.table('backlog').get(txs[0].id).run(b.conn) is None
+    assert b.connection.run(r.table('backlog').get(txs[0].id)) is None
 
 
 def test_delete_tx(b, user_vk):
@@ -120,7 +120,7 @@ def test_delete_tx(b, user_vk):
     block_doc = block_maker.create(None, timeout=True)
 
     for tx in block_doc.to_dict()['block']['transactions']:
-        returned_tx = r.table('backlog').get(tx['id']).run(b.conn)
+        returned_tx = b.connection.run(r.table('backlog').get(tx['id']))
         returned_tx.pop('assignee')
         returned_tx.pop('assignment_timestamp')
         assert returned_tx == tx
@@ -130,7 +130,7 @@ def test_delete_tx(b, user_vk):
     assert returned_block == block_doc
 
     for tx in block_doc.to_dict()['block']['transactions']:
-        assert r.table('backlog').get(tx['id']).run(b.conn) is None
+        assert b.connection.run(r.table('backlog').get(tx['id'])) is None
 
 
 def test_prefeed(b, user_vk):
@@ -175,9 +175,9 @@ def test_full_pipeline(b, user_vk):
         tx['assignment_timestamp'] = time.time()
         if assignee == b.me:
             count_assigned_to_me += 1
-        r.table('backlog').insert(tx, durability='hard').run(b.conn)
+        b.connection.run(r.table('backlog').insert(tx, durability='hard'))
 
-    assert r.table('backlog').count().run(b.conn) == 100
+    assert b.connection.run(r.table('backlog').count()) == 100
 
     pipeline = create_pipeline()
     pipeline.setup(indata=get_changefeed(), outdata=outpipe)
@@ -187,9 +187,9 @@ def test_full_pipeline(b, user_vk):
     pipeline.terminate()
 
     block_doc = outpipe.get()
-    chained_block = r.table('bigchain').get(block_doc.id).run(b.conn)
+    chained_block = b.connection.run(r.table('bigchain').get(block_doc.id))
     chained_block = Block.from_dict(chained_block)
 
     assert len(block_doc.transactions) == count_assigned_to_me
     assert chained_block == block_doc
-    assert r.table('backlog').count().run(b.conn) == 100 - count_assigned_to_me
+    assert b.connection.run(r.table('backlog').count()) == 100 - count_assigned_to_me
