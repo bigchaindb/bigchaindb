@@ -7,10 +7,10 @@ from cryptoconditions import (Fulfillment as CCFulfillment,
                               PreimageSha256Fulfillment)
 from cryptoconditions.exceptions import ParsingError
 
-from bigchaindb_common.crypto import SigningKey, hash_data
-from bigchaindb_common.exceptions import (KeypairMismatchException,
+from bigchaindb.common.crypto import SigningKey, hash_data
+from bigchaindb.common.exceptions import (KeypairMismatchException,
                                           InvalidHash, InvalidSignature)
-from bigchaindb_common.util import serialize, gen_timestamp
+from bigchaindb.common.util import serialize, gen_timestamp
 
 
 class Fulfillment(object):
@@ -21,7 +21,7 @@ class Fulfillment(object):
                 to be signed with a private key.
             owners_before (:obj:`list` of :obj:`str`): A list of owners after a
                 Transaction was confirmed.
-            tx_input (:class:`~bigchaindb_common.transaction. TransactionLink`,
+            tx_input (:class:`~bigchaindb.common.transaction. TransactionLink`,
                 optional): A link representing the input of a `TRANSFER`
                 Transaction.
     """
@@ -34,7 +34,7 @@ class Fulfillment(object):
                     Fulfillment to be signed with a private key.
                 owners_before (:obj:`list` of :obj:`str`): A list of owners
                     after a Transaction was confirmed.
-                tx_input (:class:`~bigchaindb_common.transaction.
+                tx_input (:class:`~bigchaindb.common.transaction.
                     TransactionLink`, optional): A link representing the input
                     of a `TRANSFER` Transaction.
         """
@@ -110,7 +110,7 @@ class Fulfillment(object):
                 ffill (dict): The Fulfillment to be transformed.
 
             Returns:
-                :class:`~bigchaindb_common.transaction.Fulfillment`
+                :class:`~bigchaindb.common.transaction.Fulfillment`
 
             Raises:
                 InvalidSignature: If a Fulfillment's URI couldn't be parsed.
@@ -170,7 +170,7 @@ class TransactionLink(object):
                 link (dict): The link to be transformed.
 
             Returns:
-                :class:`~bigchaindb_common.transaction.TransactionLink`
+                :class:`~bigchaindb.common.transaction.TransactionLink`
         """
         try:
             return cls(link['txid'], link['cid'])
@@ -299,8 +299,8 @@ class Condition(object):
                 TypeError: If `owners_after` is an empty list.
         """
         # TODO: We probably want to remove the tuple logic for weights here
-        #       again: https://github.com/bigchaindb/bigchaindb-common/issues/
-        #       12#issuecomment-251665325
+        # again:
+        # github.com/bigchaindb/bigchaindb/issues/730#issuecomment-255144756
         if isinstance(owners_after, tuple):
             owners_after, threshold = owners_after
         else:
@@ -387,7 +387,7 @@ class Condition(object):
                 cond (dict): The Condition to be transformed.
 
             Returns:
-                :class:`~bigchaindb_common.transaction.Condition`
+                :class:`~bigchaindb.common.transaction.Condition`
         """
         try:
             fulfillment = CCFulfillment.from_dict(cond['condition']['details'])
@@ -455,7 +455,7 @@ class Asset(object):
                 asset (dict): The dictionary to be serialized.
 
             Returns:
-                :class:`~bigchaindb_common.transaction.Asset`
+                :class:`~bigchaindb.common.transaction.Asset`
         """
         return cls(asset.get('data'), asset['id'],
                    asset.get('divisible', False),
@@ -516,7 +516,7 @@ class Metadata(object):
                 data (dict): The dictionary to be serialized.
 
             Returns:
-                :class:`~bigchaindb_common.transaction.Metadata`
+                :class:`~bigchaindb.common.transaction.Metadata`
         """
         try:
             return cls(data['data'], data['id'])
@@ -552,12 +552,12 @@ class Transaction(object):
 
         Attributes:
             operation (str): Defines the operation of the Transaction.
-            fulfillments (:obj:`list` of :class:`~bigchaindb_common.
+            fulfillments (:obj:`list` of :class:`~bigchaindb.common.
                 transaction.Fulfillment`, optional): Define the assets to
                 spend.
-            conditions (:obj:`list` of :class:`~bigchaindb_common.
+            conditions (:obj:`list` of :class:`~bigchaindb.common.
                 transaction.Condition`, optional): Define the assets to lock.
-            metadata (:class:`~bigchaindb_common.transaction.Metadata`):
+            metadata (:class:`~bigchaindb.common.transaction.Metadata`):
                 Metadata to be stored along with the Transaction.
             timestamp (int): Defines the time a Transaction was created.
             version (int): Defines the version number of a Transaction.
@@ -578,15 +578,15 @@ class Transaction(object):
 
             Args:
                 operation (str): Defines the operation of the Transaction.
-                asset (:class:`~bigchaindb_common.transaction.Asset`): An Asset
+                asset (:class:`~bigchaindb.common.transaction.Asset`): An Asset
                     to be transferred or created in a Transaction.
-                fulfillments (:obj:`list` of :class:`~bigchaindb_common.
+                fulfillments (:obj:`list` of :class:`~bigchaindb.common.
                     transaction.Fulfillment`, optional): Define the assets to
                     spend.
-                conditions (:obj:`list` of :class:`~bigchaindb_common.
+                conditions (:obj:`list` of :class:`~bigchaindb.common.
                     transaction.Condition`, optional): Define the assets to
                     lock.
-                metadata (:class:`~bigchaindb_common.transaction.Metadata`):
+                metadata (:class:`~bigchaindb.common.transaction.Metadata`):
                     Metadata to be stored along with the Transaction.
                 timestamp (int): Defines the time a Transaction was created.
                 version (int): Defines the version number of a Transaction.
@@ -661,7 +661,7 @@ class Transaction(object):
                     represent the receivers of this Transaction.
                 metadata (dict): Python dictionary to be stored along with the
                     Transaction.
-                asset (:class:`~bigchaindb_common.transaction.Asset`): An Asset
+                asset (:class:`~bigchaindb.common.transaction.Asset`): An Asset
                     to be created in this Transaction.
                 secret (binarystr, optional): A secret string to create a hash-
                     lock Condition.
@@ -669,7 +669,7 @@ class Transaction(object):
                     valid.
 
             Returns:
-                :class:`~bigchaindb_common.transaction.Transaction`
+                :class:`~bigchaindb.common.transaction.Transaction`
         """
         if not isinstance(owners_before, list):
             raise TypeError('`owners_before` must be a list instance')
@@ -749,19 +749,19 @@ class Transaction(object):
                         weight respectively. `inp2` is owned completely by `d`.
 
             Args:
-                inputs (:obj:`list` of :class:`~bigchaindb_common.transaction.
+                inputs (:obj:`list` of :class:`~bigchaindb.common.transaction.
                     Fulfillment`): Converted "output" Conditions, intended to
                     be used as "input" Fulfillments in the transfer to
                     generate.
                 owners_after (:obj:`list` of :obj:`str`): A list of keys that
                     represent the receivers of this Transaction.
-                asset (:class:`~bigchaindb_common.transaction.Asset`): An Asset
+                asset (:class:`~bigchaindb.common.transaction.Asset`): An Asset
                     to be transferred in this Transaction.
                 metadata (dict): Python dictionary to be stored along with the
                     Transaction.
 
             Returns:
-                :class:`~bigchaindb_common.transaction.Transaction`
+                :class:`~bigchaindb.common.transaction.Transaction`
         """
         if not isinstance(inputs, list):
             raise TypeError('`inputs` must be a list instance')
@@ -809,7 +809,7 @@ class Transaction(object):
                     Conditions should be returned as inputs.
 
             Returns:
-                :obj:`list` of :class:`~bigchaindb_common.transaction.
+                :obj:`list` of :class:`~bigchaindb.common.transaction.
                     Fulfillment`
         """
         inputs = []
@@ -831,7 +831,7 @@ class Transaction(object):
         """Adds a Fulfillment to a Transaction's list of Fulfillments.
 
             Args:
-                fulfillment (:class:`~bigchaindb_common.transaction.
+                fulfillment (:class:`~bigchaindb.common.transaction.
                     Fulfillment`): A Fulfillment to be added to the
                     Transaction.
         """
@@ -843,7 +843,7 @@ class Transaction(object):
         """Adds a Condition to a Transaction's list of Conditions.
 
             Args:
-                condition (:class:`~bigchaindb_common.transaction.
+                condition (:class:`~bigchaindb.common.transaction.
                     Condition`): A Condition to be added to the
                     Transaction.
         """
@@ -869,7 +869,7 @@ class Transaction(object):
                     Transaction.
 
             Returns:
-                :class:`~bigchaindb_common.transaction.Transaction`
+                :class:`~bigchaindb.common.transaction.Transaction`
         """
         # TODO: Singing should be possible with at least one of all private
         #       keys supplied to this method.
@@ -920,7 +920,7 @@ class Transaction(object):
                     - ThresholdSha256Fulfillment.
 
             Args:
-                fulfillment (:class:`~bigchaindb_common.transaction.
+                fulfillment (:class:`~bigchaindb.common.transaction.
                     Fulfillment`) The Fulfillment to be signed.
                 index (int): The index (or `fid`) of the Fulfillment to be
                     signed.
@@ -943,7 +943,7 @@ class Transaction(object):
         """Signs a Ed25519Fulfillment.
 
             Args:
-                fulfillment (:class:`~bigchaindb_common.transaction.
+                fulfillment (:class:`~bigchaindb.common.transaction.
                     Fulfillment`) The Fulfillment to be signed.
                 index (int): The index (or `fid`) of the Fulfillment to be
                     signed.
@@ -972,7 +972,7 @@ class Transaction(object):
         """Signs a ThresholdSha256Fulfillment.
 
             Args:
-                fulfillment (:class:`~bigchaindb_common.transaction.
+                fulfillment (:class:`~bigchaindb.common.transaction.
                     Fulfillment`) The Fulfillment to be signed.
                 index (int): The index (or `fid`) of the Fulfillment to be
                     signed.
@@ -1019,7 +1019,7 @@ class Transaction(object):
                 evaluate parts of the validation-checks to `True`.
 
             Args:
-                input_conditions (:obj:`list` of :class:`~bigchaindb_common.
+                input_conditions (:obj:`list` of :class:`~bigchaindb.common.
                     transaction.Condition`): A list of Conditions to check the
                     Fulfillments against.
 
@@ -1094,7 +1094,7 @@ class Transaction(object):
                 does not validate against `input_condition_uri`.
 
             Args:
-                fulfillment (:class:`~bigchaindb_common.transaction.
+                fulfillment (:class:`~bigchaindb.common.transaction.
                     Fulfillment`) The Fulfillment to be signed.
                 operation (str): The type of Transaction.
                 tx_serialized (str): The Transaction used as a message when
@@ -1218,7 +1218,7 @@ class Transaction(object):
                 tx_body (dict): The Transaction to be transformed.
 
             Returns:
-                :class:`~bigchaindb_common.transaction.Transaction`
+                :class:`~bigchaindb.common.transaction.Transaction`
         """
         # NOTE: Remove reference to avoid side effects
         tx_body = deepcopy(tx_body)

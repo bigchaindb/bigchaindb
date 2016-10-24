@@ -37,8 +37,8 @@ class TestBlockModel(object):
                   'not a list or None')
 
     def test_block_serialization(self, b):
-        from bigchaindb_common.crypto import hash_data
-        from bigchaindb_common.util import gen_timestamp, serialize
+        from bigchaindb.common.crypto import hash_data
+        from bigchaindb.common.util import gen_timestamp, serialize
         from bigchaindb.models import Block, Transaction
 
         transactions = [Transaction.create([b.me], [b.me])]
@@ -61,7 +61,7 @@ class TestBlockModel(object):
         assert block.to_dict() == expected
 
     def test_block_invalid_serializaton(self):
-        from bigchaindb_common.exceptions import OperationError
+        from bigchaindb.common.exceptions import OperationError
         from bigchaindb.models import Block
 
         block = Block([])
@@ -69,8 +69,8 @@ class TestBlockModel(object):
             block.to_dict()
 
     def test_block_deserialization(self, b):
-        from bigchaindb_common.crypto import hash_data
-        from bigchaindb_common.util import gen_timestamp, serialize
+        from bigchaindb.common.crypto import hash_data
+        from bigchaindb.common.util import gen_timestamp, serialize
         from bigchaindb.models import Block, Transaction
 
         transactions = [Transaction.create([b.me], [b.me])]
@@ -94,7 +94,7 @@ class TestBlockModel(object):
         assert expected == Block.from_dict(block_body)
 
     def test_block_invalid_id_deserialization(self, b):
-        from bigchaindb_common.exceptions import InvalidHash
+        from bigchaindb.common.exceptions import InvalidHash
         from bigchaindb.models import Block
 
         block = {
@@ -108,9 +108,9 @@ class TestBlockModel(object):
             Block.from_dict(block)
 
     def test_block_invalid_signature_deserialization(self, b):
-        from bigchaindb_common.crypto import hash_data
-        from bigchaindb_common.exceptions import InvalidSignature
-        from bigchaindb_common.util import gen_timestamp, serialize
+        from bigchaindb.common.crypto import hash_data
+        from bigchaindb.common.exceptions import InvalidSignature
+        from bigchaindb.common.util import gen_timestamp, serialize
         from bigchaindb.models import Block, Transaction
 
         transactions = [Transaction.create([b.me], [b.me])]
@@ -142,8 +142,8 @@ class TestBlockModel(object):
         assert Block(transactions) == Block(transactions)
 
     def test_sign_block(self, b):
-        from bigchaindb_common.crypto import SigningKey, VerifyingKey
-        from bigchaindb_common.util import gen_timestamp, serialize
+        from bigchaindb.common.crypto import SigningKey, VerifyingKey
+        from bigchaindb.common.util import gen_timestamp, serialize
         from bigchaindb.models import Block, Transaction
 
         transactions = [Transaction.create([b.me], [b.me])]

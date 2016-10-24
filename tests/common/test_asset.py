@@ -2,7 +2,7 @@ from pytest import raises
 
 
 def test_asset_default_values():
-    from bigchaindb_common.transaction import Asset
+    from bigchaindb.common.transaction import Asset
 
     asset = Asset()
     assert asset.data is None
@@ -13,14 +13,14 @@ def test_asset_default_values():
 
 
 def test_asset_creation_with_data(data):
-    from bigchaindb_common.transaction import Asset
+    from bigchaindb.common.transaction import Asset
 
     asset = Asset(data)
     assert asset.data == data
 
 
 def test_asset_invalid_asset_initialization():
-    from bigchaindb_common.transaction import Asset
+    from bigchaindb.common.transaction import Asset
 
     with raises(TypeError):
         Asset(data='some wrong type')
@@ -33,13 +33,13 @@ def test_asset_invalid_asset_initialization():
 
 
 def test_invalid_asset_comparison(data, data_id):
-    from bigchaindb_common.transaction import Asset
+    from bigchaindb.common.transaction import Asset
 
     assert Asset(data, data_id) != 'invalid comparison'
 
 
 def test_asset_serialization(data, data_id):
-    from bigchaindb_common.transaction import Asset
+    from bigchaindb.common.transaction import Asset
 
     expected = {
         'id': data_id,
@@ -53,7 +53,7 @@ def test_asset_serialization(data, data_id):
 
 
 def test_asset_deserialization(data, data_id):
-    from bigchaindb_common.transaction import Asset
+    from bigchaindb.common.transaction import Asset
 
     asset_dict = {
         'id': data_id,
@@ -68,7 +68,7 @@ def test_asset_deserialization(data, data_id):
 
 
 def test_validate_asset():
-    from bigchaindb_common.transaction import Asset
+    from bigchaindb.common.transaction import Asset
 
     with raises(TypeError):
         Asset(divisible=1)

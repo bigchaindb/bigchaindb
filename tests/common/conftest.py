@@ -85,37 +85,37 @@ def user2_Ed25519(user2_pub):
 
 @pytest.fixture
 def user_ffill(user_Ed25519, user_pub):
-    from bigchaindb_common.transaction import Fulfillment
+    from bigchaindb.common.transaction import Fulfillment
     return Fulfillment(user_Ed25519, [user_pub])
 
 
 @pytest.fixture
 def user2_ffill(user2_Ed25519, user2_pub):
-    from bigchaindb_common.transaction import Fulfillment
+    from bigchaindb.common.transaction import Fulfillment
     return Fulfillment(user2_Ed25519, [user2_pub])
 
 
 @pytest.fixture
 def user_user2_threshold_cond(user_user2_threshold, user_pub, user2_pub):
-    from bigchaindb_common.transaction import Condition
+    from bigchaindb.common.transaction import Condition
     return Condition(user_user2_threshold, [user_pub, user2_pub])
 
 
 @pytest.fixture
 def user_user2_threshold_ffill(user_user2_threshold, user_pub, user2_pub):
-    from bigchaindb_common.transaction import Fulfillment
+    from bigchaindb.common.transaction import Fulfillment
     return Fulfillment(user_user2_threshold, [user_pub, user2_pub])
 
 
 @pytest.fixture
 def user_cond(user_Ed25519, user_pub):
-    from bigchaindb_common.transaction import Condition
+    from bigchaindb.common.transaction import Condition
     return Condition(user_Ed25519, [user_pub])
 
 
 @pytest.fixture
 def user2_cond(user2_Ed25519, user2_pub):
-    from bigchaindb_common.transaction import Condition
+    from bigchaindb.common.transaction import Condition
     return Condition(user2_Ed25519, [user2_pub])
 
 
@@ -131,13 +131,13 @@ def data_id():
 
 @pytest.fixture
 def metadata(data, data_id):
-    from bigchaindb_common.transaction import Metadata
+    from bigchaindb.common.transaction import Metadata
     return Metadata(data, data_id)
 
 
 @pytest.fixture
 def utx(user_ffill, user_cond):
-    from bigchaindb_common.transaction import Transaction, Asset
+    from bigchaindb.common.transaction import Transaction, Asset
     return Transaction(Transaction.CREATE, Asset(), [user_ffill], [user_cond])
 
 
@@ -148,7 +148,7 @@ def tx(utx, user_priv):
 
 @pytest.fixture
 def transfer_utx(user_cond, user2_cond, utx):
-    from bigchaindb_common.transaction import (Fulfillment, TransactionLink,
+    from bigchaindb.common.transaction import (Fulfillment, TransactionLink,
                                                Transaction, Asset)
     user_cond = user_cond.to_dict()
     ffill = Fulfillment(utx.conditions[0].fulfillment,

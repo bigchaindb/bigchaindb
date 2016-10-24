@@ -17,7 +17,7 @@ import json
 import logging
 import collections
 
-from bigchaindb_common import exceptions
+from bigchaindb.common import exceptions
 
 import bigchaindb
 
