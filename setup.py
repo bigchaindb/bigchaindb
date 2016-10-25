@@ -103,6 +103,7 @@ setup(
         'requests~=2.9',
         'gunicorn~=19.0',
         'multipipes~=0.1.0',
+        'bigchaindb-common==0.0.6',
     ],
     setup_requires=['pytest-runner'],
     tests_require=tests_require,

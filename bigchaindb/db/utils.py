@@ -3,7 +3,7 @@
 import time
 import logging
 
-from bigchaindb.common import exceptions
+from bigchaindb_common import exceptions
 import rethinkdb as r
 
 import bigchaindb

@@ -2,7 +2,7 @@ import json
 from time import sleep
 
 import cryptoconditions as cc
-from bigchaindb.common.util import gen_timestamp
+from bigchaindb_common.util import gen_timestamp
 
 from bigchaindb import Bigchain, util, crypto, exceptions
 

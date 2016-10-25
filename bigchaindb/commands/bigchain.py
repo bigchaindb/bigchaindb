@@ -13,8 +13,8 @@ import builtins
 
 import logstats
 
-from bigchaindb.common import crypto
-from bigchaindb.common.exceptions import (StartupError,
+from bigchaindb_common import crypto
+from bigchaindb_common.exceptions import (StartupError,
                                           DatabaseAlreadyExists,
                                           KeypairNotFoundException)
 import rethinkdb as r

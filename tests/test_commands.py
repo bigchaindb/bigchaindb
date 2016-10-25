@@ -22,7 +22,7 @@ def mock_write_config(monkeypatch):
 @pytest.fixture
 def mock_db_init_with_existing_db(monkeypatch):
     from bigchaindb import db
-    from bigchaindb.common.exceptions import DatabaseAlreadyExists
+    from bigchaindb_common.exceptions import DatabaseAlreadyExists
 
     def mockreturn():
         raise DatabaseAlreadyExists
@@ -48,7 +48,7 @@ def mock_rethink_db_drop(monkeypatch):
 
 @pytest.fixture
 def mock_generate_key_pair(monkeypatch):
-    monkeypatch.setattr('bigchaindb.common.crypto.generate_key_pair', lambda: ('privkey', 'pubkey'))
+    monkeypatch.setattr('bigchaindb_common.crypto.generate_key_pair', lambda: ('privkey', 'pubkey'))
 
 
 @pytest.fixture
@@ -283,14 +283,14 @@ def test_start_rethinkdb_returns_a_process_when_successful(mock_popen):
 
 @patch('subprocess.Popen')
 def test_start_rethinkdb_exits_when_cannot_start(mock_popen):
-    from bigchaindb.common import exceptions
+    from bigchaindb_common import exceptions
     from bigchaindb.commands import utils
     mock_popen.return_value = Mock(stdout=['Nopety nope'])
     with pytest.raises(exceptions.StartupError):
         utils.start_rethinkdb()
 
 
-@patch('bigchaindb.common.crypto.generate_key_pair',
+@patch('bigchaindb_common.crypto.generate_key_pair',
        return_value=('private_key', 'public_key'))
 def test_allow_temp_keypair_generates_one_on_the_fly(mock_gen_keypair,
                                                      mock_processes_start,
@@ -307,7 +307,7 @@ def test_allow_temp_keypair_generates_one_on_the_fly(mock_gen_keypair,
     assert bigchaindb.config['keypair']['public'] == 'public_key'
 
 
-@patch('bigchaindb.common.crypto.generate_key_pair',
+@patch('bigchaindb_common.crypto.generate_key_pair',
        return_value=('private_key', 'public_key'))
 def test_allow_temp_keypair_doesnt_override_if_keypair_found(mock_gen_keypair,
                                                              mock_processes_start,
