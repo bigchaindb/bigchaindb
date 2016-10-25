@@ -1,11 +1,11 @@
-from bigchaindb.common.crypto import hash_data, VerifyingKey, SigningKey
-from bigchaindb.common.exceptions import (InvalidHash, InvalidSignature,
+from bigchaindb_common.crypto import hash_data, VerifyingKey, SigningKey
+from bigchaindb_common.exceptions import (InvalidHash, InvalidSignature,
                                           OperationError, DoubleSpend,
                                           TransactionDoesNotExist,
                                           FulfillmentNotInValidBlock,
                                           AssetIdMismatch)
-from bigchaindb.common.transaction import Transaction, Asset
-from bigchaindb.common.util import gen_timestamp, serialize
+from bigchaindb_common.transaction import Transaction, Asset
+from bigchaindb_common.util import gen_timestamp, serialize
 
 
 class Asset(Asset):

@@ -8,7 +8,7 @@ import logging
 import rethinkdb as r
 
 from os.path import expanduser
-from bigchaindb.common.transaction import Transaction
+from bigchaindb_common.transaction import Transaction
 
 from bigchaindb import Bigchain
 from bigchaindb.util import ProcessGroup

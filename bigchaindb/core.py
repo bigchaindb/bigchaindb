@@ -4,9 +4,9 @@ import collections
 from time import time
 
 from itertools import compress
-from bigchaindb.common import crypto, exceptions
-from bigchaindb.common.util import gen_timestamp, serialize
-from bigchaindb.common.transaction import TransactionLink, Metadata
+from bigchaindb_common import crypto, exceptions
+from bigchaindb_common.util import gen_timestamp, serialize
+from bigchaindb_common.transaction import TransactionLink, Metadata
 
 import rethinkdb as r
 

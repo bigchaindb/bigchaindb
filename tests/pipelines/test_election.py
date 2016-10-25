@@ -1,7 +1,7 @@
 import time
 from unittest.mock import patch
 
-from bigchaindb.common import crypto
+from bigchaindb_common import crypto
 import rethinkdb as r
 from multipipes import Pipe, Pipeline
 

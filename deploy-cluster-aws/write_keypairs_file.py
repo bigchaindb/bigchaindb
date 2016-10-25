@@ -1,5 +1,5 @@
 """A Python 3 script to write a file with a specified number
-of keypairs, using bigchaindb.common.crypto.generate_key_pair()
+of keypairs, using bigchaindb_common.crypto.generate_key_pair()
 The written file is always named keypairs.py and it should be
 interpreted as a Python 2 script.
 
@@ -16,7 +16,7 @@ Using the list in other Python scripts:
 
 import argparse
 
-from bigchaindb.common import crypto
+from bigchaindb_common import crypto
 
 
 # Parse the command-line arguments
