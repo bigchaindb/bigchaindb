@@ -1,7 +1,7 @@
 import json
 
 import pytest
-from bigchaindb_common import crypto
+from bigchaindb.common import crypto
 
 
 TX_ENDPOINT = '/api/v1/transactions/'

@@ -19,8 +19,8 @@ def dummy_block(b):
 
 
 def test_vote_creation_valid(b):
-    from bigchaindb_common import crypto
-    from bigchaindb_common.util import serialize
+    from bigchaindb.common import crypto
+    from bigchaindb.common.util import serialize
 
     # create valid block
     block = dummy_block(b)
@@ -38,8 +38,8 @@ def test_vote_creation_valid(b):
 
 
 def test_vote_creation_invalid(b):
-    from bigchaindb_common import crypto
-    from bigchaindb_common.util import serialize
+    from bigchaindb.common import crypto
+    from bigchaindb.common.util import serialize
 
     # create valid block
     block = dummy_block(b)
@@ -154,7 +154,7 @@ def test_vote_accumulates_transactions(b):
 
 
 def test_valid_block_voting_sequential(b, monkeypatch):
-    from bigchaindb_common import crypto, util
+    from bigchaindb.common import crypto, util
     from bigchaindb.pipelines import vote
 
     monkeypatch.setattr('time.time', lambda: 1)
@@ -182,7 +182,7 @@ def test_valid_block_voting_sequential(b, monkeypatch):
 
 
 def test_valid_block_voting_multiprocessing(b, monkeypatch):
-    from bigchaindb_common import crypto, util
+    from bigchaindb.common import crypto, util
     from bigchaindb.pipelines import vote
 
     inpipe = Pipe()
@@ -216,7 +216,7 @@ def test_valid_block_voting_multiprocessing(b, monkeypatch):
 
 
 def test_valid_block_voting_with_create_transaction(b, monkeypatch):
-    from bigchaindb_common import crypto, util
+    from bigchaindb.common import crypto, util
     from bigchaindb.models import Transaction
     from bigchaindb.pipelines import vote
 
@@ -257,7 +257,7 @@ def test_valid_block_voting_with_create_transaction(b, monkeypatch):
 
 
 def test_valid_block_voting_with_transfer_transactions(monkeypatch, b):
-    from bigchaindb_common import crypto, util
+    from bigchaindb.common import crypto, util
     from bigchaindb.models import Transaction
     from bigchaindb.pipelines import vote
 
@@ -325,7 +325,7 @@ def test_valid_block_voting_with_transfer_transactions(monkeypatch, b):
 
 
 def test_unsigned_tx_in_block_voting(monkeypatch, b, user_vk):
-    from bigchaindb_common import crypto, util
+    from bigchaindb.common import crypto, util
     from bigchaindb.models import Transaction
     from bigchaindb.pipelines import vote
 
@@ -362,7 +362,7 @@ def test_unsigned_tx_in_block_voting(monkeypatch, b, user_vk):
 
 
 def test_invalid_id_tx_in_block_voting(monkeypatch, b, user_vk):
-    from bigchaindb_common import crypto, util
+    from bigchaindb.common import crypto, util
     from bigchaindb.models import Transaction
     from bigchaindb.pipelines import vote
 
@@ -401,7 +401,7 @@ def test_invalid_id_tx_in_block_voting(monkeypatch, b, user_vk):
 
 
 def test_invalid_content_in_tx_in_block_voting(monkeypatch, b, user_vk):
-    from bigchaindb_common import crypto, util
+    from bigchaindb.common import crypto, util
     from bigchaindb.models import Transaction
     from bigchaindb.pipelines import vote
 
@@ -440,7 +440,7 @@ def test_invalid_content_in_tx_in_block_voting(monkeypatch, b, user_vk):
 
 
 def test_invalid_block_voting(monkeypatch, b, user_vk):
-    from bigchaindb_common import crypto, util
+    from bigchaindb.common import crypto, util
     from bigchaindb.pipelines import vote
 
     inpipe = Pipe()
