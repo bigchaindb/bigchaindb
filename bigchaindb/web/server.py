@@ -49,19 +49,22 @@ class StandaloneApplication(gunicorn.app.base.BaseApplication):
         return self.application
 
 
-def create_app(settings):
+def create_app(*, debug=False, threads=4):
     """Return an instance of the Flask application.
 
     Args:
         debug (bool): a flag to activate the debug mode for the app
             (default: False).
+        threads (int): number of threads to use
+    Return:
+        an instance of the Flask application.
     """
 
     app = Flask(__name__)
 
-    app.debug = settings.get('debug', False)
+    app.debug = debug
 
-    app.config['bigchain_pool'] = util.pool(Bigchain, size=settings.get('threads', 4))
+    app.config['bigchain_pool'] = util.pool(Bigchain, size=threads)
     app.config['monitor'] = Monitor()
 
     app.register_blueprint(info_views, url_prefix='/')
@@ -88,6 +91,7 @@ def create_server(settings):
     if not settings.get('threads'):
         settings['threads'] = (multiprocessing.cpu_count() * 2) + 1
 
-    app = create_app(settings)
+    app = create_app(debug=settings.get('debug', False),
+                     threads=settings['threads'])
     standalone = StandaloneApplication(app, settings)
     return standalone
