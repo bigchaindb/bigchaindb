@@ -42,7 +42,7 @@ def test_bigchain_instance_is_initialized_when_conf_provided():
 
 def test_bigchain_instance_raises_when_not_configured(monkeypatch):
     from bigchaindb import config_utils
-    from bigchaindb_common import exceptions
+    from bigchaindb.common import exceptions
     assert 'CONFIGURED' not in bigchaindb.config
 
     # We need to disable ``bigchaindb.config_utils.autoconfigure`` to avoid reading
@@ -204,7 +204,7 @@ def test_file_config():
 
 def test_invalid_file_config():
     from bigchaindb.config_utils import file_config
-    from bigchaindb_common import exceptions
+    from bigchaindb.common import exceptions
     with patch('builtins.open', mock_open(read_data='{_INVALID_JSON_}')):
         with pytest.raises(exceptions.ConfigurationError):
             file_config()

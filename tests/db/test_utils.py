@@ -1,6 +1,6 @@
 import builtins
 
-from bigchaindb_common import exceptions
+from bigchaindb.common import exceptions
 import pytest
 import rethinkdb as r
 
