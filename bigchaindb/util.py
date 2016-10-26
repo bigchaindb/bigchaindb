@@ -119,7 +119,7 @@ def condition_details_has_owner(condition_details, owner):
 def verify_vote_signature(voters, signed_vote):
     """Verify the signature of a vote
 
-    A valid vote should have been signed `owner_before` corresponding private key.
+    A valid vote should have been signed by a voter's private key.
 
     Args:
         voters (list): voters of the block that is under election
