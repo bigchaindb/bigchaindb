@@ -73,9 +73,6 @@ class Bigchain(object):
 
         self.connection = Connection(host=self.host, port=self.port, db=self.dbname)
 
-    def reconnect(self):
-        return r.connect(host=self.host, port=self.port, db=self.dbname)
-
     def write_transaction(self, signed_transaction, durability='soft'):
         """Write the transaction to bigchain.
 
