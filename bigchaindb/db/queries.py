@@ -1,17 +1,13 @@
 from bigchaindb.db.utils import Connection
 
+
 class RethinkDBBackend:
 
     def __init__(self, host=None, port=None, dbname=None):
         self.host = host or bigchaindb.config['database']['host']
         self.port = port or bigchaindb.config['database']['port']
         self.dbname = dbname or bigchaindb.config['database']['name']
-
-    @property
-    def conn(self):
-        if not self._conn:
-            self._conn = self.reconnect()
-        return self._conn
+        self.connection = Connection(host=self.host, port=self.port, db=self.dbname)
 
     def write_transaction(self, signed_transaction, durability='soft'):
         # write to the backlog
@@ -20,30 +16,29 @@ class RethinkDBBackend:
                 .insert(signed_transaction, durability=durability))
 
 
-    def write_vote(self, vote):
+    def write_vote(self, vote, durability='soft'):
         """Write the vote to the database."""
 
         self.connection.run(
                 r.table('votes')
-                .insert(vote))
+                .insert(vote, durability=durability))
 
     def write_block(self, block, durability='soft'):
         self.connection.run(
                 r.table('bigchain')
                 .insert(r.json(block.to_str()), durability=durability))
 
-    def create_genesis_block(self):
-        blocks_count = self.connection.run(
+    def count_blocks(self):
+        return self.connection.run(
                 r.table('bigchain', read_mode=self.read_mode)
                 .count())
 
-
-    def get_transaction(self, txid, include_status=False):
+    def get_transaction(self, txid, block_id):
         if validity:
                 # Query the transaction in the target block and return
                 response = self.connection.run(
                         r.table('bigchain', read_mode=self.read_mode)
-                        .get(target_block_id)
+                        .get(block_id)
                         .get_field('block')
                         .get_field('transactions')
                         .filter(lambda tx: tx['id'] == txid))[0]
