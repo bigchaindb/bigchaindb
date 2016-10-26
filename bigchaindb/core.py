@@ -198,8 +198,8 @@ class Bigchain(object):
                                    the return value is then a tuple: (tx, status)
 
         Returns:
-            A :class:`~.Transaction` instance if the transaction was
-            found, otherwise ``None``.
+            A :class:`~.models.Transaction` instance if the transaction
+            was found, otherwise ``None``.
             If :attr:`include_status` is ``True``, also returns the
             transaction's status if the transaction was found.
         """
