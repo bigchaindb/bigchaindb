@@ -133,8 +133,20 @@ class Bigchain(object):
                 transaction['id'],
                 {'assignee': new_assignee, 'assignment_timestamp': time()})
 
+    def delete_transaction(self, *transaction_id):
+        """Delete a transaction from the backlog.
+
+        Args:
+            *transaction_id (str): the transaction(s) to delete
+
+        Returns:
+            The database response.
+        """
+
+        return self.backend.delete_transaction(*transaction_id)
+
     def get_stale_transactions(self):
-        """Get a cursor of stale transactions
+        """Get a cursor of stale transactions.
 
         Transactions are considered stale if they have been assigned a node, but are still in the
         backlog after some amount of time specified in the configuration
