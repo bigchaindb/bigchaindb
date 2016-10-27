@@ -28,6 +28,7 @@ services:
       - ./setup.cfg:/usr/src/app/setup.cfg
       - ./pytest.ini:/usr/src/app/pytest.ini
     environment:
+      RETHINKDB_DATABASE_HOST: rdb
       BIGCHAINDB_DATABASE_HOST: rdb
       BIGCHAINDB_API_ENDPOINT: http://bdb:9984/api/v1
       BIGCHAINDB_SERVER_BIND: 0.0.0.0:9984

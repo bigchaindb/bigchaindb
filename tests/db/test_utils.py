@@ -8,7 +8,6 @@ import bigchaindb
 from bigchaindb.db import utils
 from .conftest import setup_database as _setup_database
 
-
 # Since we are testing database initialization and database drop,
 # we need to use the `setup_database` fixture on a function level
 @pytest.fixture(scope='function', autouse=True)
@@ -16,8 +15,7 @@ def setup_database(request, node_config):
     _setup_database(request, node_config)
 
 
-def test_init_creates_db_tables_and_indexes():
-    conn = utils.get_conn()
+def test_init_creates_db_tables_and_indexes(conn):
     dbname = bigchaindb.config['database']['name']
 
     # The db is set up by fixtures so we need to remove it
@@ -37,8 +35,7 @@ def test_init_creates_db_tables_and_indexes():
         'assignee__transaction_timestamp').run(conn) is True
 
 
-def test_create_database():
-    conn = utils.get_conn()
+def test_create_database(conn):
     dbname = utils.get_database_name()
 
     # The db is set up by fixtures so we need to remove it
@@ -48,8 +45,7 @@ def test_create_database():
     assert r.db_list().contains(dbname).run(conn) is True
 
 
-def test_create_bigchain_table():
-    conn = utils.get_conn()
+def test_create_bigchain_table(conn):
     dbname = utils.get_database_name()
 
     # The db is set up by fixtures so we need to remove it
@@ -63,8 +59,7 @@ def test_create_bigchain_table():
     assert r.db(dbname).table_list().contains('votes').run(conn) is False
 
 
-def test_create_bigchain_secondary_index():
-    conn = utils.get_conn()
+def test_create_bigchain_secondary_index(conn):
     dbname = utils.get_database_name()
 
     # The db is set up by fixtures so we need to remove it
@@ -82,8 +77,7 @@ def test_create_bigchain_secondary_index():
         'metadata_id').run(conn) is True
 
 
-def test_create_backlog_table():
-    conn = utils.get_conn()
+def test_create_backlog_table(conn):
     dbname = utils.get_database_name()
 
     # The db is set up by fixtures so we need to remove it
@@ -97,8 +91,7 @@ def test_create_backlog_table():
     assert r.db(dbname).table_list().contains('votes').run(conn) is False
 
 
-def test_create_backlog_secondary_index():
-    conn = utils.get_conn()
+def test_create_backlog_secondary_index(conn):
     dbname = utils.get_database_name()
 
     # The db is set up by fixtures so we need to remove it
@@ -114,8 +107,7 @@ def test_create_backlog_secondary_index():
         'assignee__transaction_timestamp').run(conn) is True
 
 
-def test_create_votes_table():
-    conn = utils.get_conn()
+def test_create_votes_table(conn):
     dbname = utils.get_database_name()
 
     # The db is set up by fixtures so we need to remove it
@@ -129,8 +121,7 @@ def test_create_votes_table():
     assert r.db(dbname).table_list().contains('backlog').run(conn) is False
 
 
-def test_create_votes_secondary_index():
-    conn = utils.get_conn()
+def test_create_votes_secondary_index(conn):
     dbname = utils.get_database_name()
 
     # The db is set up by fixtures so we need to remove it
@@ -144,8 +135,7 @@ def test_create_votes_secondary_index():
         'block_and_voter').run(conn) is True
 
 
-def test_init_fails_if_db_exists():
-    conn = utils.get_conn()
+def test_init_fails_if_db_exists(conn):
     dbname = bigchaindb.config['database']['name']
 
     # The db is set up by fixtures
@@ -155,8 +145,7 @@ def test_init_fails_if_db_exists():
         utils.init()
 
 
-def test_drop_interactively_drops_the_database_when_user_says_yes(monkeypatch):
-    conn = utils.get_conn()
+def test_drop_interactively_drops_the_database_when_user_says_yes(monkeypatch, conn):
     dbname = bigchaindb.config['database']['name']
 
     # The db is set up by fixtures
@@ -168,8 +157,7 @@ def test_drop_interactively_drops_the_database_when_user_says_yes(monkeypatch):
     assert r.db_list().contains(dbname).run(conn) is False
 
 
-def test_drop_programmatically_drops_the_database_when_assume_yes_is_true(monkeypatch):
-    conn = utils.get_conn()
+def test_drop_programmatically_drops_the_database_when_assume_yes_is_true(monkeypatch, conn):
     dbname = bigchaindb.config['database']['name']
 
     # The db is set up by fixtures
@@ -180,8 +168,7 @@ def test_drop_programmatically_drops_the_database_when_assume_yes_is_true(monkey
     assert r.db_list().contains(dbname).run(conn) is False
 
 
-def test_drop_interactively_does_not_drop_the_database_when_user_says_no(monkeypatch):
-    conn = utils.get_conn()
+def test_drop_interactively_does_not_drop_the_database_when_user_says_no(monkeypatch, conn):
     dbname = bigchaindb.config['database']['name']
 
     # The db is set up by fixtures
@@ -193,8 +180,8 @@ def test_drop_interactively_does_not_drop_the_database_when_user_says_no(monkeyp
 
     assert r.db_list().contains(dbname).run(conn) is True
 
-def test_drop_non_existent_db_raises_an_error():
-    conn = utils.get_conn()
+
+def test_drop_non_existent_db_raises_an_error(conn):
     dbname = bigchaindb.config['database']['name']
 
     # The db is set up by fixtures
@@ -203,4 +190,3 @@ def test_drop_non_existent_db_raises_an_error():
 
     with pytest.raises(exceptions.DatabaseDoesNotExist):
         utils.drop(assume_yes=True)
-

@@ -33,10 +33,11 @@ tests_require = [
     'pep8',
     'pyflakes',
     'pylint',
-    'pytest',
+    'pytest>=2.9.1',
     'pytest-cov==2.2.1',
     'pytest-xdist',
     'pytest-flask',
+    'pytest-rethinkdb>=0.1.3'
 ]
 
 dev_require = [
