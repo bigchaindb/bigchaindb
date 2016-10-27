@@ -2,7 +2,7 @@
 
 A high-level description of the files and subdirectories of BigchainDB.
 
-There are three database tables which underpin BigchainDB: `backlog`, where incoming transactions are held temporarily until they can be consumed by; `bigchain`, where blocks of transactions are written permanently; and `votes`, where votes are written permanently.  It is the votes in the `votes` table which must be queried to determine block validity and order. For more in-depth explanation, see [the whitepaper](https://www.bigchaindb.com/whitepaper/).
+There are three database tables which underpin BigchainDB: `backlog`, where incoming transactions are held temporarily until they can be consumed; `bigchain`, where blocks of transactions are written permanently; and `votes`, where votes are written permanently.  It is the votes in the `votes` table which must be queried to determine block validity and order. For more in-depth explanation, see [the whitepaper](https://www.bigchaindb.com/whitepaper/).
 
 ## Files
 
@@ -16,7 +16,7 @@ The `Bigchain` class is defined here.  Most operations outlined in the [whitepap
 
 ### [`consensus.py`](./config_utils.py)
 
-Base class for consensus methods (verification of votes, blocks, and transactions).  The actual logic is mostly found in `transaction` and `block` models, defined in [`models.py`](https://github.com/bigchaindb/bigchaindb/blob/master/bigchaindb/models.py).
+Base class for consensus methods (verification of votes, blocks, and transactions).  The actual logic is mostly found in `transaction` and `block` models, defined in [`models.py`](./models.py).
 
 ### [`processes.py`](./processes.py)
 
@@ -34,7 +34,7 @@ Code for monitoring speed of various processes in BigchainDB via `statsd` and Gr
 
 ### [`pipelines`](./pipelines)
 
-Structure and implementation of various subprocesses started in [`processes.py`](https://github.com/bigchaindb/bigchaindb/blob/master/bigchaindb/processes.py).
+Structure and implementation of various subprocesses started in [`processes.py`](./processes.py).
 
 ### [`commands`](./commands)
 
