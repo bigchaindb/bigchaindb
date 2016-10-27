@@ -76,7 +76,7 @@ def test_validate_bad_asset_creation(b, user_vk):
 
 @pytest.mark.usefixtures('inputs')
 def test_validate_transfer_asset_id_mismatch(b, user_vk, user_sk):
-    from bigchaindb_common.exceptions import AssetIdMismatch
+    from bigchaindb.common.exceptions import AssetIdMismatch
     from bigchaindb.models import Transaction
 
     tx_create = b.get_owned_ids(user_vk).pop()
@@ -121,7 +121,7 @@ def test_get_asset_id_transfer_transaction(b, user_vk, user_sk):
 
 def test_asset_id_mismatch(b, user_vk):
     from bigchaindb.models import Transaction, Asset
-    from bigchaindb_common.exceptions import AssetIdMismatch
+    from bigchaindb.common.exceptions import AssetIdMismatch
 
     tx1 = Transaction.create([b.me], [user_vk])
     tx2 = Transaction.create([b.me], [user_vk])

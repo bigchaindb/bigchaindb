@@ -10,12 +10,14 @@
 
 # How to Generate the HTML Version of the Long-Form Documentation
 
-If you want to generate the HTML version of the long-form documentation on your local machine, you need to have Sphinx and some Sphinx-contrib packages installed. To do that, go to the BigchainDB `docs` directory (i.e. this directory) and do:
+If you want to generate the HTML version of the long-form documentation on your local machine, you need to have Sphinx and some Sphinx-contrib packages installed. To do that, go to a subdirectory of `docs` (e.g. `docs/server`) and do:
 ```bash
 pip install -r requirements.txt
 ```
-You can then generate the HTML documentation by doing:
+
+You can then generate the HTML documentation _in that subdirectory_ by doing:
 ```bash
 make html
 ```
-The generated HTML documentation will be in the `docs/build/html` directory. You can view it by opening `docs/build/html/index.html` in your web browser.
+
+It should tell you where the generated documentation (HTML files) can be found. You can view it in your web browser.

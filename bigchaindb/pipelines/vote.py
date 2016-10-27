@@ -8,7 +8,7 @@ function.
 from collections import Counter
 
 from multipipes import Pipeline, Node
-from bigchaindb_common import exceptions
+from bigchaindb.common import exceptions
 
 from bigchaindb.consensus import BaseConsensusRules
 from bigchaindb.models import Transaction, Block

@@ -11,7 +11,7 @@ import rethinkdb as r
 
 from bigchaindb import Bigchain
 from bigchaindb.db import get_conn
-from bigchaindb_common import crypto
+from bigchaindb.common import crypto
 
 USER2_SK, USER2_VK = crypto.generate_key_pair()
 
@@ -107,7 +107,7 @@ def cleanup_tables(request, node_config):
 @pytest.fixture
 def inputs(user_vk):
     from bigchaindb.models import Transaction
-    from bigchaindb_common.exceptions import GenesisBlockAlreadyExistsError
+    from bigchaindb.common.exceptions import GenesisBlockAlreadyExistsError
     # 1. create the genesis block
     b = Bigchain()
     try:
@@ -144,7 +144,7 @@ def user2_vk():
 @pytest.fixture
 def inputs_shared(user_vk, user2_vk):
     from bigchaindb.models import Transaction
-    from bigchaindb_common.exceptions import GenesisBlockAlreadyExistsError
+    from bigchaindb.common.exceptions import GenesisBlockAlreadyExistsError
     # 1. create the genesis block
     b = Bigchain()
     try:

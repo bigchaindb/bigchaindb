@@ -3,7 +3,7 @@ for ``argparse.ArgumentParser``.
 """
 
 import argparse
-from bigchaindb_common.exceptions import StartupError
+from bigchaindb.common.exceptions import StartupError
 import multiprocessing as mp
 import subprocess
 
@@ -19,14 +19,9 @@ def start_rethinkdb():
     """Start RethinkDB as a child process and wait for it to be
     available.
 
-    Args:
-        wait_for_db (bool): wait for the database to be ready
-        extra_opts (list): a list of extra options to be used when
-            starting the db
-
     Raises:
-        ``bigchaindb_common.exceptions.StartupError`` if RethinkDB cannot
-        be started.
+        :class:`~bigchaindb.common.exceptions.StartupError` if
+            RethinkDB cannot be started.
     """
 
     proc = subprocess.Popen(['rethinkdb', '--bind', 'all'],

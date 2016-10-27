@@ -4,9 +4,9 @@ import collections
 from time import time
 
 from itertools import compress
-from bigchaindb_common import crypto, exceptions
-from bigchaindb_common.util import gen_timestamp, serialize
-from bigchaindb_common.transaction import TransactionLink, Metadata
+from bigchaindb.common import crypto, exceptions
+from bigchaindb.common.util import gen_timestamp, serialize
+from bigchaindb.common.transaction import TransactionLink, Metadata
 
 import rethinkdb as r
 
@@ -198,10 +198,10 @@ class Bigchain(object):
                                    the return value is then a tuple: (tx, status)
 
         Returns:
-            A dict with the transaction details if the transaction was found.
-            Will add the transaction status to payload ('valid', 'undecided',
-            or 'backlog'). If no transaction with that `txid` was found it
-            returns `None`
+            A :class:`~.models.Transaction` instance if the transaction
+            was found, otherwise ``None``.
+            If :attr:`include_status` is ``True``, also returns the
+            transaction's status if the transaction was found.
         """
 
         response, tx_status = None, None
@@ -412,14 +412,14 @@ class Bigchain(object):
             return None
 
     def get_owned_ids(self, owner):
-        """Retrieve a list of `txids` that can we used has inputs.
+        """Retrieve a list of `txid`s that can be used as inputs.
 
         Args:
             owner (str): base58 encoded public key.
 
         Returns:
-            list (TransactionLink): list of `txid`s and `cid`s pointing to
-                                      another transaction's condition
+            :obj:`list` of TransactionLink: list of `txid`s and `cid`s
+            pointing to another transaction's condition
         """
 
         # get all transactions in which owner is in the `owners_after` list
@@ -587,11 +587,11 @@ class Bigchain(object):
         return block
 
     def vote(self, block_id, previous_block_id, decision, invalid_reason=None):
-        """Cast your vote on the block given the previous_block_hash and the decision (valid/invalid)
-        return the block to the updated in the database.
+        """Create a signed vote for a block given the
+		:attr:`previous_block_id` and the :attr:`decision` (valid/invalid).
 
         Args:
-            block_id (str): The id of the block to vote.
+            block_id (str): The id of the block to vote on.
             previous_block_id (str): The id of the previous block.
             decision (bool): Whether the block is valid or invalid.
             invalid_reason (Optional[str]): Reason the block is invalid
