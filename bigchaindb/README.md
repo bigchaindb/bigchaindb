@@ -1,6 +1,6 @@
 # Overview
 
-A high-level description of the files and subdirectories of BigchainDB. Heavily used external dependencies include [`multipipes`](https://github.com/bigchaindb/multipipes) and [`bigchaindb-common`](https://github.com/bigchaindb/bigchaindb-common).
+A high-level description of the files and subdirectories of BigchainDB.
 
 There are three database tables which underpin BigchainDB: `backlog`, where incoming transactions are held temporarily until they can be consumed by; `bigchain`, where blocks of transactions are written permanently; and `votes`, where votes are written permanently.  It is the votes in the `votes` table which must be queried to determine block validity and order. For more in-depth explanation, see [the whitepaper](https://www.bigchaindb.com/whitepaper/).
 
