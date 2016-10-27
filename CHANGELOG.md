@@ -49,6 +49,7 @@ committed:
 - @MinchinWeb - [Pull Request #696](https://github.com/bigchaindb/bigchaindb/pull/696)
 
 ### Notes
+- We made a small change to how we do version labeling. Going forward, we will have the version label set to 0.X.Y.dev in the master branch as we work on what will eventually be released as version 0.X.Y. The version number will only be changed to 0.X.Y just before the release. This version labeling scheme began with [Pull Request #752](https://github.com/bigchaindb/bigchaindb/pull/752)
 - Several additions and changes to the documentation, e.g. Pull Requests
 [#618](https://github.com/bigchaindb/bigchaindb/pull/618),
 [#621](https://github.com/bigchaindb/bigchaindb/pull/621),
