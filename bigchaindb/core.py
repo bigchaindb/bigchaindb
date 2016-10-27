@@ -482,10 +482,10 @@ class Bigchain(object):
             block (Block): block to write to bigchain.
         """
 
-        self.backend.write_block(block.to_str(), durability=durability)
+        return self.backend.write_block(block.to_str(), durability=durability)
 
     def transaction_exists(self, transaction_id):
-        self.backend.has_transaction(transaction_id)
+        return self.backend.has_transaction(transaction_id)
 
     def prepare_genesis_block(self):
         """Prepare a genesis block."""
