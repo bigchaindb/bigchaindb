@@ -31,7 +31,7 @@ check_setuptools_features()
 tests_require = [
     'coverage',
     'pep8',
-    'pyflakes',
+    'flake8',
     'pylint',
     'pytest',
     'pytest-cov==2.2.1',
