@@ -194,6 +194,7 @@ class RethinkDBBackend:
             The transaction that used the `txid` as an input else `None`
         """
 
+        # TODO: use index!
         return self.connection.run(
                 r.table('bigchain', read_mode=self.read_mode)
                 .concat_map(lambda doc: doc['block']['transactions'])
@@ -210,6 +211,7 @@ class RethinkDBBackend:
             A cursor for the matching transactions.
         """
 
+        # TODO: use index!
         return self.connection.run(
                 r.table('bigchain', read_mode=self.read_mode)
                 .concat_map(lambda doc: doc['block']['transactions'])
