@@ -15,10 +15,74 @@ For reference, the possible headings are:
 * **Notes**
 
 
-## [0.6.0] - 2016-09-01
-Tag name: v0.6.0
+## [0.7.0] - 2016-10-28
+Tag name: v0.7.0
 = commit: 
 committed: 
+
+### Added
+- Stale transactions in the `backlog` table now get reassigned to another node (for inclusion in a new block): [Pull Request #359](https://github.com/bigchaindb/bigchaindb/pull/359)
+- Many improvements to make the database connection more robust: [Pull Request #623](https://github.com/bigchaindb/bigchaindb/pull/623)
+- The new `--dev-allow-temp-keypair` option on `bigchaindb start` will generate a temporary keypair if no keypair is found. The `Dockerfile` was updated to use this. [Pull Request #635](https://github.com/bigchaindb/bigchaindb/pull/635)
+- The AWS deployment scripts now allow you to:
+   - specify the AWS security group as a configuration parameter: [Pull Request #620](https://github.com/bigchaindb/bigchaindb/pull/620)
+   - tell RethinkDB to bind HTTP to localhost (a more secure setup; now the default in the example config file): [Pull Request #666](https://github.com/bigchaindb/bigchaindb/pull/666)
+
+### Changed
+- Integrated the new `Transaction` model. This was a **big** change; 49 files changed. [Pull Request #641](https://github.com/bigchaindb/bigchaindb/pull/641)
+- Merged "common" code (used by BigchainDB Server and the Python driver), which used to be in its own repository (`bigchaindb/bigchaindb-common`), into the main `bigchaindb/bigchaindb` repository (this one): [Pull Request #742](https://github.com/bigchaindb/bigchaindb/pull/742)
+- Integrated the new digital asset model. This changed the data structure of a transaction and will make it easier to support divisible assets in the future. [Pull Request #680](https://github.com/bigchaindb/bigchaindb/pull/680)
+- Transactions are now deleted from the `backlog` table _after_ a block containing them is written to the `bigchain` table: [Pull Request #609](https://github.com/bigchaindb/bigchaindb/pull/609)
+- Changed the example AWS deployment configuration file: [Pull Request #665](https://github.com/bigchaindb/bigchaindb/pull/665)
+- Support for version 0.5.0 of the `cryptoconditions` Python package. Note that this means you must now install `ffi.h` (e.g. `sudo apt-get install libffi-dev` on Ubuntu). See Pull Requests [#685](https://github.com/bigchaindb/bigchaindb/pull/685) and [#698](https://github.com/bigchaindb/bigchaindb/pull/698)
+- Updated some database access code: Pull Requests [#676](https://github.com/bigchaindb/bigchaindb/pull/676) and [#701](https://github.com/bigchaindb/bigchaindb/pull/701)
+
+### Fixed
+- Internally, when a transaction is in the `backlog` table, it carries some extra book-keeping fields:
+   1. an `assignment_timestamp` (i.e. the time when it was assigned to a node), which is used to determine if it has gone stale.
+   2. an `assignee`: the public key of the node it was assigned to.
+- The `assignment_timestamp` wasn't removed before writing the transaction to a block. That was fixed in [Pull Request #627](https://github.com/bigchaindb/bigchaindb/pull/627)
+- The `assignment_timestamp` and `assignee` weren't removed in the response to an HTTP API request sent to the `/api/v1/transactions/<txid>` endpoint. That was fixed in [Pull Request #646](https://github.com/bigchaindb/bigchaindb/pull/646)
+- When validating a TRANSFER transaction, if any fulfillment refers to a transaction that's _not_ in a valid block, then the transaction isn't valid. This wasn't checked before but it is now. [Pull Request #629](https://github.com/bigchaindb/bigchaindb/pull/629)  
+
+### External Contributors
+- @MinchinWeb - [Pull Request #696](https://github.com/bigchaindb/bigchaindb/pull/696)
+
+### Notes
+- We made a small change to how we do version labeling. Going forward, we will have the version label set to 0.X.Y.dev in the master branch as we work on what will eventually be released as version 0.X.Y. The version number will only be changed to 0.X.Y just before the release. This version labeling scheme began with [Pull Request #752](https://github.com/bigchaindb/bigchaindb/pull/752)
+- Several additions and changes to the documentation, e.g. Pull Requests
+[#618](https://github.com/bigchaindb/bigchaindb/pull/618),
+[#621](https://github.com/bigchaindb/bigchaindb/pull/621),
+[#625](https://github.com/bigchaindb/bigchaindb/pull/625),
+[#645](https://github.com/bigchaindb/bigchaindb/pull/645),
+[#647](https://github.com/bigchaindb/bigchaindb/pull/647),
+[#648](https://github.com/bigchaindb/bigchaindb/pull/648),
+[#650](https://github.com/bigchaindb/bigchaindb/pull/650),
+[#651](https://github.com/bigchaindb/bigchaindb/pull/651),
+[#653](https://github.com/bigchaindb/bigchaindb/pull/653),
+[#655](https://github.com/bigchaindb/bigchaindb/pull/655),
+[#656](https://github.com/bigchaindb/bigchaindb/pull/656),
+[#657](https://github.com/bigchaindb/bigchaindb/pull/657),
+[#667](https://github.com/bigchaindb/bigchaindb/pull/667),
+[#668](https://github.com/bigchaindb/bigchaindb/pull/668),
+[#669](https://github.com/bigchaindb/bigchaindb/pull/669),
+[#673](https://github.com/bigchaindb/bigchaindb/pull/673),
+[#678](https://github.com/bigchaindb/bigchaindb/pull/678),
+[#684](https://github.com/bigchaindb/bigchaindb/pull/684),
+[#688](https://github.com/bigchaindb/bigchaindb/pull/688),
+[#699](https://github.com/bigchaindb/bigchaindb/pull/699),
+[#705](https://github.com/bigchaindb/bigchaindb/pull/705), 
+[#737](https://github.com/bigchaindb/bigchaindb/pull/737),
+[#748](https://github.com/bigchaindb/bigchaindb/pull/748), 
+[#753](https://github.com/bigchaindb/bigchaindb/pull/753), 
+[#757](https://github.com/bigchaindb/bigchaindb/pull/757), 
+[#759](https://github.com/bigchaindb/bigchaindb/pull/759), and more
+
+
+## [0.6.0] - 2016-09-01
+Tag name: v0.6.0
+= commit: bfc86e0295c7d1ef0acd3c275c125798bd5b0dfd
+committed: Sep 1, 2016, 2:15 PM GMT+2
 
 ### Added
 - Support for multiple operations in the ChangeFeed class: [Pull Request #569](https://github.com/bigchaindb/bigchaindb/pull/569)
