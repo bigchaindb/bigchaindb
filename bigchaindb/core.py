@@ -107,7 +107,7 @@ class Bigchain(object):
         # write to the backlog
         return self.backend.write_transaction(signed_transaction)
 
-    def reassign_transaction(self, transaction, durability='hard'):
+    def reassign_transaction(self, transaction):
         """Assign a transaction to a new node
 
         Args:
