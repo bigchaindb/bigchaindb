@@ -73,7 +73,8 @@ committed:
 [#699](https://github.com/bigchaindb/bigchaindb/pull/699),
 [#705](https://github.com/bigchaindb/bigchaindb/pull/705), 
 [#737](https://github.com/bigchaindb/bigchaindb/pull/737),
-[#748](https://github.com/bigchaindb/bigchaindb/pull/748), and more
+[#748](https://github.com/bigchaindb/bigchaindb/pull/748), 
+[#753](https://github.com/bigchaindb/bigchaindb/pull/753), and more
 
 
 ## [0.6.0] - 2016-09-01
