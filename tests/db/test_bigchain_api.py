@@ -650,9 +650,9 @@ class TestTransactionValidation(object):
         assert transfer_tx == b.validate_transaction(transfer_tx)
 
     @pytest.mark.usefixtures('inputs')
-    def test_fulfillment_not_in_valid_block(self, b, user_vk, user_sk):
+    def test_transaction_not_in_valid_block(self, b, user_vk, user_sk):
         from bigchaindb.models import Transaction
-        from bigchaindb.common.exceptions import FulfillmentNotInValidBlock
+        from bigchaindb.common.exceptions import TransactionNotInValidBlock
 
         input_tx = b.get_owned_ids(user_vk).pop()
         input_tx = b.get_transaction(input_tx.txid)
@@ -673,7 +673,7 @@ class TestTransactionValidation(object):
                                          transfer_tx.asset)
         tx_invalid = tx_invalid.sign([user_sk])
 
-        with pytest.raises(FulfillmentNotInValidBlock):
+        with pytest.raises(TransactionNotInValidBlock):
             b.validate_transaction(tx_invalid)
 
 

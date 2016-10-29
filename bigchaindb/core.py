@@ -183,7 +183,7 @@ class Bigchain(object):
         except (ValueError, exceptions.OperationError, exceptions.TransactionDoesNotExist,
                 exceptions.TransactionOwnerError, exceptions.DoubleSpend,
                 exceptions.InvalidHash, exceptions.InvalidSignature,
-                exceptions.FulfillmentNotInValidBlock):
+                exceptions.TransactionNotInValidBlock):
             return False
 
     def get_transaction(self, txid, include_status=False):

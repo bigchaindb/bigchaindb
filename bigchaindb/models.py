@@ -2,7 +2,7 @@ from bigchaindb.common.crypto import hash_data, VerifyingKey, SigningKey
 from bigchaindb.common.exceptions import (InvalidHash, InvalidSignature,
                                           OperationError, DoubleSpend,
                                           TransactionDoesNotExist,
-                                          FulfillmentNotInValidBlock,
+                                          TransactionNotInValidBlock,
                                           AssetIdMismatch)
 from bigchaindb.common.transaction import Transaction, Asset
 from bigchaindb.common.util import gen_timestamp, serialize
@@ -54,6 +54,8 @@ class Transaction(Transaction):
             OperationError: if the transaction operation is not supported
             TransactionDoesNotExist: if the input of the transaction is not
                                      found
+            TransactionNotInValidBlock: if the input of the transaction is not
+                                        in a valid block
             TransactionOwnerError: if the new transaction is using an input it
                                    doesn't own
             DoubleSpend: if the transaction is a double spend
@@ -90,7 +92,7 @@ class Transaction(Transaction):
                                                   .format(input_txid))
 
                 if status != bigchain.TX_VALID:
-                    raise FulfillmentNotInValidBlock(
+                    raise TransactionNotInValidBlock(
                         'input `{}` does not exist in a valid block'.format(
                             input_txid))
 
