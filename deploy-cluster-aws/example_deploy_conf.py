@@ -44,9 +44,8 @@ USE_KEYPAIRS_FILE=False
 # and you can search for one that meets your needs at:
 # https://cloud-images.ubuntu.com/locator/ec2/
 # Example:
-# "ami-72c33e1d"
-# (eu-central-1 Ubuntu 14.04 LTS amd64 hvm:ebs-ssd 20160919)
-IMAGE_ID="ami-72c33e1d"
+# (eu-central-1 Ubuntu 14.04 LTS amd64 hvm:ebs-ssd 20161020)
+IMAGE_ID="ami-9c09f0f3"
 
 # INSTANCE_TYPE is the type of AWS instance to launch
 # i.e. How many CPUs do you want? How much storage? etc.
