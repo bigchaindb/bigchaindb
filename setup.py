@@ -75,7 +75,7 @@ setup(
         'Topic :: Software Development',
         'Natural Language :: English',
         'License :: OSI Approved :: GNU Affero General Public License v3',
-        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3 :: Only',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Operating System :: MacOS :: MacOS X',
