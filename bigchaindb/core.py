@@ -62,7 +62,7 @@ class Bigchain(object):
         self.host = host or bigchaindb.config['database']['host']
         self.port = port or bigchaindb.config['database']['port']
         self.dbname = dbname or bigchaindb.config['database']['name']
-        self.backend = backend or get_backend()
+        self.backend = backend or get_backend(host, port, dbname)
         self.me = public_key or bigchaindb.config['keypair']['public']
         self.me_private = private_key or bigchaindb.config['keypair']['private']
         self.nodes_except_me = keyring or bigchaindb.config['keyring']
