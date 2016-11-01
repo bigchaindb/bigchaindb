@@ -371,8 +371,8 @@ class RethinkDBBackend:
         unvoted = self.connection.run(
                 r.table('bigchain', read_mode=self.read_mode)
                 .filter(lambda block: r.table('votes', read_mode=self.read_mode)
-                    .get_all([block['id'], node_pubkey], index='block_and_voter')
-                    .is_empty())
+                                       .get_all([block['id'], node_pubkey], index='block_and_voter')
+                                       .is_empty())
                 .order_by(r.asc(r.row['block']['timestamp'])))
 
         # FIXME: I (@vrde) don't like this solution. Filtering should be done at a
