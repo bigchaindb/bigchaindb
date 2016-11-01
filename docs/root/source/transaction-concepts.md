@@ -12,11 +12,18 @@ A creation transaction also establishes the conditions that must be met to trans
 
 A _transfer transaction_ can transfer an asset by fulfilling the current conditions on the asset. It can also specify new transfer conditions.
 
-Today, every transaction contains one fulfillment-condition pair. The fulfillment in a transfer transaction must correspond to a condition in a previous transaction.
+Today, every transaction contains one fulfillment-condition pair. The fulfillment in a transfer transaction must fulfill a condition in a previous transaction.
 
-When a node is asked to check the validity of a transaction, it must do several things, including:
+When a node is asked to check if a transaction is valid, it checks several things. Some things it checks are:
 
-* double-spending checks (for transfer transactions),
-* hash validation (i.e. is the calculated transaction hash equal to its id?), and
-* validation of all fulfillments, including validation of cryptographic signatures if they’re among the conditions.
+* Are all the fulfillments valid? (Do they correctly satisfy the conditions they claim to satisfy?)
+* If it's a creation transaction, is the asset valid?
+* If it's a transfer transaction:
+   * Is it trying to fulfill a condition in a nonexistent transaction?
+   * Is it trying to fulfill a condition that's not in a valid transaction? (It's okay if the condition is in a transaction in an invalid block; those transactions are ignored. Transactions in the backlog or undecided blocks are not ignored.)
+   * Is it trying to fulfill a condition that has already been fulfilled, or that some other pending transaction (in the backlog or an undecided block) also aims to fulfill?
+   * Is the asset ID in the transaction the same as the asset ID in all transactions whose conditions are being fulfilled?
 
+If you're curious about the details of transaction validation, the code is in the `validate` method of the `Transaction` class, in `bigchaindb/models.py` (at the time of writing).
+
+Note: The check to see if the transaction ID is equal to the hash of the transaction body is actually done whenever the transaction is converted from a Python dict to a Transaction object, which must be done before the `validate` method can be called (since it's called on a Transaction object).
