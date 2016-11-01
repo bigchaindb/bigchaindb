@@ -12,7 +12,7 @@ import rethinkdb as r
 from bigchaindb import Bigchain
 from bigchaindb.db import get_conn, init_database
 from bigchaindb.common import crypto
-from bigchaindb.exceptions import DatabaseAlreadyExists
+from bigchaindb.common.exceptions import DatabaseAlreadyExists
 
 USER2_SK, USER2_VK = crypto.generate_key_pair()
 
