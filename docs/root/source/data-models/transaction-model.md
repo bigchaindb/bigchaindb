@@ -28,11 +28,11 @@ Here's some explanation of the contents of a transaction:
     - `fulfillments`: List of fulfillments. Each _fulfillment_ contains a pointer to an unspent asset
     and a _crypto fulfillment_ that satisfies a spending condition set on the unspent asset. A _fulfillment_
     is usually a signature proving the ownership of the asset.
-    See [Conditions and Fulfillments](#conditions-and-fulfillments) below.
+    See the page about [Crypto-Conditions and Fulfillments](crypto-conditions.html).
     - `conditions`: List of conditions. Each _condition_ is a _crypto-condition_ that needs to be fulfilled by a transfer transaction in order to transfer ownership to new owners.
-    See [Conditions and Fulfillments](#conditions-and-fulfillments) below.
+    See the page about [Crypto-Conditions and Fulfillments](crypto-conditions.html).
     - `operation`: String representation of the operation being performed (currently either "CREATE", "TRANSFER" or "GENESIS"). It determines how the transaction should be validated.
-    - `timestamp`: The Unix time when the transaction was created. It's provided by the client. See [the section on timestamps](timestamps.html).
+    - `timestamp`: The Unix time when the transaction was created. It's provided by the client. See the page about [timestamps in BigchainDB](../timestamps.html).
 	- `asset`: Definition of the digital asset. See next section.
     - `metadata`:
         - `id`: UUID version 4 (random) converted to a string of hex digits in standard form.
