@@ -8,8 +8,6 @@ from bigchaindb.common import crypto, exceptions
 from bigchaindb.common.util import gen_timestamp, serialize
 from bigchaindb.common.transaction import TransactionLink
 
-import rethinkdb as r
-
 import bigchaindb
 
 from bigchaindb.db.utils import Connection, get_backend
