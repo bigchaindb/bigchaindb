@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# BigchainDB documentation build configuration file, created by
+# BigchainDB Server documentation build configuration file, created by
 # sphinx-quickstart on Tue Jan 19 14:42:58 2016.
 #
 # This file is execfile()d with the current directory set to its
@@ -32,7 +32,7 @@ import sphinx_rtd_theme
 
 # get version
 _version = {}
-with open('../../bigchaindb/version.py') as fp:
+with open('../../../bigchaindb/version.py') as fp:
     exec(fp.read(), _version)
 
 
@@ -41,7 +41,7 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.coverage',
     'sphinx.ext.viewcode',
-    'sphinxcontrib.napoleon',
+    'sphinx.ext.napoleon',
     'sphinxcontrib.httpdomain',
 ]
 

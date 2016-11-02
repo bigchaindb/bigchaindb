@@ -82,7 +82,6 @@ def run_configure(args, skip_if_exists=False):
             conf,
             bigchaindb.config_utils.env_config(bigchaindb.config))
 
-
     print('Generating keypair', file=sys.stderr)
     conf['keypair']['private'], conf['keypair']['public'] = \
         crypto.generate_key_pair()
@@ -162,14 +161,13 @@ def run_start(args):
 
     if args.allow_temp_keypair:
         if not (bigchaindb.config['keypair']['private'] or
-                                  bigchaindb.config['keypair']['public']):
+                bigchaindb.config['keypair']['public']):
 
             private_key, public_key = crypto.generate_key_pair()
             bigchaindb.config['keypair']['private'] = private_key
             bigchaindb.config['keypair']['public'] = public_key
         else:
             logger.warning('Keypair found, no need to create one on the fly.')
-
 
     if args.start_rethinkdb:
         try:

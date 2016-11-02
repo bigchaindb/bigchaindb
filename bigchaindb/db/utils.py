@@ -67,6 +67,18 @@ class Connection:
                     time.sleep(2**i)
 
 
+def get_backend(host=None, port=None, db=None):
+    '''Get a backend instance.'''
+
+    from bigchaindb.db.backends import rethinkdb
+
+    # NOTE: this function will be re-implemented when we have real
+    # multiple backends to support. Right now it returns the RethinkDB one.
+    return rethinkdb.RethinkDBBackend(host=host or bigchaindb.config['database']['host'],
+                                      port=port or bigchaindb.config['database']['port'],
+                                      db=db or bigchaindb.config['database']['name'])
+
+
 def get_conn():
     '''Get the connection to the database.'''
 

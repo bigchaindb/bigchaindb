@@ -13,16 +13,16 @@ logger = logging.getLogger(__name__)
 
 
 class ChangeFeed(Node):
-    """This class wraps a RethinkDB changefeed adding a `prefeed`.
+    """This class wraps a RethinkDB changefeed adding a ``prefeed``.
 
-    It extends the ``multipipes::Node`` class to make it pluggable in
-    other Pipelines instances, and it makes usage of ``self.outqueue``
-    to output the data.
+    It extends :class:`multipipes.Node` to make it pluggable in other
+    Pipelines instances, and makes usage of ``self.outqueue`` to output
+    the data.
 
     A changefeed is a real time feed on inserts, updates, and deletes, and
-    it's volatile. This class is a helper to create changefeeds. Moreover
-    it provides a way to specify a `prefeed`, that is a set of data (iterable)
-    to output before the actual changefeed.
+    is volatile. This class is a helper to create changefeeds. Moreover,
+    it provides a way to specify a ``prefeed`` of iterable data to output
+    before the actual changefeed.
     """
 
     INSERT = 1
@@ -35,8 +35,8 @@ class ChangeFeed(Node):
         Args:
             table (str): name of the table to listen to for changes.
             operation (int): can be ChangeFeed.INSERT, ChangeFeed.DELETE, or
-                ChangeFeed.UPDATE. Combining multiple operation is possible using
-                the bitwise ``|`` operator
+                ChangeFeed.UPDATE. Combining multiple operation is possible
+                with the bitwise ``|`` operator
                 (e.g. ``ChangeFeed.INSERT | ChangeFeed.UPDATE``)
             prefeed (iterable): whatever set of data you want to be published
                 first.
@@ -73,4 +73,3 @@ class ChangeFeed(Node):
                 self.outqueue.put(change['old_val'])
             elif is_update and (self.operation & ChangeFeed.UPDATE):
                 self.outqueue.put(change['new_val'])
-

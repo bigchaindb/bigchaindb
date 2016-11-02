@@ -34,4 +34,4 @@ bigchaindb start
 
 That's it!
 
-For now, you can get a good sense of how to work with BigchainDB Server by going through [the examples in the section on the Python Server API](drivers-clients/python-server-api-examples.html).
+Next Steps: You could build valid transactions and push them to your running BigchainDB Server using the [BigchaindB Python Driver](https://docs.bigchaindb.com/projects/py-driver/en/latest/index.html).
