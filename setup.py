@@ -34,7 +34,7 @@ tests_require = [
     'pyflakes',
     'pylint',
     'pytest',
-    'pytest-cov==2.2.1',
+    'pytest-cov>=2.2.1',
     'pytest-xdist',
     'pytest-flask',
 ]
