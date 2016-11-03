@@ -161,10 +161,7 @@ def create_votes_secondary_index(conn, dbname):
     r.db(dbname).table('votes').index_wait().run(conn)
 
 
-def init():
-    # Try to access the keypair, throws an exception if it does not exist
-    b = bigchaindb.Bigchain()
-
+def init_database():
     conn = get_conn()
     dbname = get_database_name()
     create_database(conn, dbname)
@@ -172,9 +169,17 @@ def init():
     table_names = ['bigchain', 'backlog', 'votes']
     for table_name in table_names:
         create_table(conn, dbname, table_name)
+
     create_bigchain_secondary_index(conn, dbname)
     create_backlog_secondary_index(conn, dbname)
     create_votes_secondary_index(conn, dbname)
+
+
+def init():
+    # Try to access the keypair, throws an exception if it does not exist
+    b = bigchaindb.Bigchain()
+
+    init_database()
 
     logger.info('Create genesis block.')
     b.create_genesis_block()
@@ -184,9 +189,9 @@ def init():
 def drop(assume_yes=False):
     conn = get_conn()
     dbname = bigchaindb.config['database']['name']
-
     if assume_yes:
         response = 'y'
+
     else:
         response = input('Do you want to drop `{}` database? [y/n]: '.format(dbname))
 
@@ -197,5 +202,6 @@ def drop(assume_yes=False):
             logger.info('Done.')
         except r.ReqlOpFailedError:
             raise exceptions.DatabaseDoesNotExist('Database `{}` does not exist'.format(dbname))
+
     else:
         logger.info('Drop aborted')
