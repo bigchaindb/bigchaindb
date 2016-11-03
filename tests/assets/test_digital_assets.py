@@ -1,4 +1,6 @@
 import pytest
+from unittest.mock import patch
+
 from ..db.conftest import inputs
 
 
@@ -161,3 +163,47 @@ def test_get_txs_by_asset_id(b, user_vk, user_sk):
     assert tx_transfer.id in [t.id for t in txs]
     assert asset_id == txs[0].asset.data_id
     assert asset_id == txs[1].asset.data_id
+
+
+def test_create_invalid_divisible_asset(b, user_vk, user_sk):
+    from bigchaindb.models import Transaction, Asset
+    from bigchaindb.common.exceptions import AmountError
+
+    # non divisible assets cannot have amount > 1
+    # Transaction.__init__ should raise an exception
+    asset = Asset(divisible=False) 
+    with pytest.raises(AmountError):
+        Transaction.create([user_vk], [user_vk], asset=asset, amount=2)
+
+    # divisible assets need to have an amount > 1
+    # Transaction.__init__ should raise an exception
+    asset = Asset(divisible=True)
+    with pytest.raises(AmountError):
+        Transaction.create([user_vk], [user_vk], asset=asset, amount=1)
+
+    # even if a transaction is badly constructed the server should raise the
+    # exception
+    asset = Asset(divisible=False)
+    with patch.object(Asset, '_validate_asset', return_value=None):
+        tx = Transaction.create([user_vk], [user_vk], asset=asset, amount=2)
+        tx_signed = tx.sign([user_sk])
+    with pytest.raises(AmountError):
+        tx_signed.validate(b)
+    assert b.is_valid_transaction(tx_signed) is False
+
+    asset = Asset(divisible=True)
+    with patch.object(Asset, '_validate_asset', return_value=None):
+        tx = Transaction.create([user_vk], [user_vk], asset=asset, amount=1)
+        tx_signed = tx.sign([user_sk])
+    with pytest.raises(AmountError):
+        tx_signed.validate(b)
+    assert b.is_valid_transaction(tx_signed) is False
+
+
+def test_create_valid_divisible_asset(b, user_vk, user_sk):
+    from bigchaindb.models import Transaction, Asset
+    
+    asset = Asset(divisible=True)
+    tx = Transaction.create([user_vk], [user_vk], asset=asset, amount=2)
+    tx_signed = tx.sign([user_sk])
+    assert b.is_valid_transaction(tx_signed)

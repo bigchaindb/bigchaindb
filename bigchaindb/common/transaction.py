@@ -9,7 +9,8 @@ from cryptoconditions.exceptions import ParsingError
 
 from bigchaindb.common.crypto import SigningKey, hash_data
 from bigchaindb.common.exceptions import (KeypairMismatchException,
-                                          InvalidHash, InvalidSignature)
+                                          InvalidHash, InvalidSignature,
+                                          AmountError)
 from bigchaindb.common.util import serialize, gen_timestamp
 
 
@@ -268,7 +269,7 @@ class Condition(object):
         return cond
 
     @classmethod
-    def generate(cls, owners_after):
+    def generate(cls, owners_after, amount=1):
         """Generates a Condition from a specifically formed tuple or list.
 
             Note:
@@ -305,7 +306,9 @@ class Condition(object):
             owners_after, threshold = owners_after
         else:
             threshold = len(owners_after)
-
+        
+        if not isinstance(amount, int):
+            raise TypeError('`amount` must be a int')
         if not isinstance(owners_after, list):
             raise TypeError('`owners_after` must be an instance of list')
         if len(owners_after) == 0:
@@ -316,12 +319,12 @@ class Condition(object):
                 ffill = Ed25519Fulfillment(public_key=owners_after[0])
             except TypeError:
                 ffill = owners_after[0]
-            return cls(ffill, owners_after)
+            return cls(ffill, owners_after, amount=amount)
         else:
             initial_cond = ThresholdSha256Fulfillment(threshold=threshold)
             threshold_cond = reduce(cls._gen_condition, owners_after,
                                     initial_cond)
-            return cls(threshold_cond, owners_after)
+            return cls(threshold_cond, owners_afteri, amount=amount)
 
     @classmethod
     def _gen_condition(cls, initial, current):
@@ -466,7 +469,7 @@ class Asset(object):
         """Generates a unqiue uuid for an Asset"""
         return str(uuid4())
 
-    def _validate_asset(self):
+    def _validate_asset(self, amount=None):
         """Validates the asset"""
         if self.data is not None and not isinstance(self.data, dict):
             raise TypeError('`data` must be a dict instance or None')
@@ -476,6 +479,29 @@ class Asset(object):
             raise TypeError('`refillable` must be a boolean')
         if not isinstance(self.updatable, bool):
             raise TypeError('`updatable` must be a boolean')
+
+        if self.refillable:
+            raise NotImplementedError('Refillable assets are not yet'
+                                      ' implemented')
+        if self.updatable:
+            raise NotImplementedError('Updatable assets are not yet'
+                                      ' implemented')
+
+        # If the amount is supplied we can perform extra validations to
+        # the asset
+        if amount is not None:
+            if not isinstance(amount, int):
+                raise TypeError('`amount` must be an int')
+
+            if self.divisible is False and amount != 1:
+                raise AmountError('non divisible assets always have'
+                                  ' amount equal to one')
+
+            # Since refillable assets are not yet implemented this should
+            # raise and exception
+            if self.divisible is True and amount < 2:
+                raise AmountError('divisible assets must have an amount'
+                                  ' greater than one')
 
 
 class Metadata(object):
@@ -621,6 +647,7 @@ class Transaction(object):
 
         if conditions is not None and not isinstance(conditions, list):
             raise TypeError('`conditions` must be a list instance or None')
+        # TODO: Check if there is a case in which conditions may be None
         elif conditions is None:
             self.conditions = []
         else:
@@ -628,6 +655,7 @@ class Transaction(object):
 
         if fulfillments is not None and not isinstance(fulfillments, list):
             raise TypeError('`fulfillments` must be a list instance or None')
+        # TODO: Check if there is a case in which fulfillments may be None
         elif fulfillments is None:
             self.fulfillments = []
         else:
@@ -638,9 +666,16 @@ class Transaction(object):
         else:
             self.metadata = metadata
 
+        # validate asset
+        # we know that each transaction relates to a single asset
+        # we can sum the amount of all the conditions
+        amount = sum([condition.amount for condition in self.conditions])
+        self.asset._validate_asset(amount=amount)
+
+
     @classmethod
     def create(cls, owners_before, owners_after, metadata=None, asset=None,
-               secret=None, time_expire=None):
+               secret=None, time_expire=None, amount=1):
         """A simple way to generate a `CREATE` transaction.
 
             Note:
@@ -675,6 +710,8 @@ class Transaction(object):
             raise TypeError('`owners_before` must be a list instance')
         if not isinstance(owners_after, list):
             raise TypeError('`owners_after` must be a list instance')
+        if not isinstance(amount, int):
+            raise TypeError('`amount` must be a int')
 
         metadata = Metadata(metadata)
         if len(owners_before) == len(owners_after) and len(owners_after) == 1:
@@ -683,7 +720,7 @@ class Transaction(object):
             #       fulfillment for the fulfillment and condition.
             ffill = Ed25519Fulfillment(public_key=owners_before[0])
             ffill_tx = Fulfillment(ffill, owners_before)
-            cond_tx = Condition.generate(owners_after)
+            cond_tx = Condition.generate(owners_after, amount=amount)
             return cls(cls.CREATE, asset, [ffill_tx], [cond_tx], metadata)
 
         elif len(owners_before) == len(owners_after) and len(owners_after) > 1:
@@ -693,7 +730,8 @@ class Transaction(object):
             ffills = [Fulfillment(Ed25519Fulfillment(public_key=owner_before),
                                   [owner_before])
                       for owner_before in owners_before]
-            conds = [Condition.generate(owners) for owners in owners_after]
+            conds = [Condition.generate(owners, amount=amount) 
+                     for owners in owners_after]
             return cls(cls.CREATE, asset, ffills, conds, metadata)
 
         elif len(owners_before) == 1 and len(owners_after) > 1:
@@ -707,7 +745,7 @@ class Transaction(object):
               secret is not None):
             # NOTE: Hashlock condition case
             hashlock = PreimageSha256Fulfillment(preimage=secret)
-            cond_tx = Condition(hashlock.condition_uri)
+            cond_tx = Condition(hashlock.condition_uri, amount=amount)
             ffill = Ed25519Fulfillment(public_key=owners_before[0])
             ffill_tx = Fulfillment(ffill, owners_before)
             return cls(cls.CREATE, asset, [ffill_tx], [cond_tx], metadata)
