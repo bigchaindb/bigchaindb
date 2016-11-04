@@ -38,17 +38,15 @@ class Fulfillment(object):
                     TransactionLink`, optional): A link representing the input
                     of a `TRANSFER` Transaction.
         """
-        self.fulfillment = fulfillment
-
         if tx_input is not None and not isinstance(tx_input, TransactionLink):
             raise TypeError('`tx_input` must be a TransactionLink instance')
-        else:
-            self.tx_input = tx_input
 
         if not isinstance(owners_before, list):
             raise TypeError('`owners_after` must be a list instance')
-        else:
-            self.owners_before = owners_before
+
+        self.fulfillment = fulfillment
+        self.tx_input = tx_input
+        self.owners_before = owners_before
 
     def __eq__(self, other):
         # TODO: If `other !== Fulfillment` return `False`
@@ -216,14 +214,13 @@ class Condition(object):
             Raises:
                 TypeError: if `owners_after` is not instance of `list`.
         """
+        if not isinstance(owners_after, list) and owners_after is not None:
+            raise TypeError('`owners_after` must be a list instance or None')
+
         self.fulfillment = fulfillment
         # TODO: Not sure if we should validate for value here
         self.amount = amount
-
-        if not isinstance(owners_after, list) and owners_after is not None:
-            raise TypeError('`owners_after` must be a list instance or None')
-        else:
-            self.owners_after = owners_after
+        self.owners_after = owners_after
 
     def __eq__(self, other):
         # TODO: If `other !== Condition` return `False`
@@ -493,16 +490,12 @@ class Metadata(object):
                 data_id (str): A hash corresponding to the contents of
                     `data`.
         """
-        # TODO: Rename `payload_id` to `id`
-        if data_id is not None:
-            self.data_id = data_id
-        else:
-            self.data_id = self.to_hash()
-
         if data is not None and not isinstance(data, dict):
             raise TypeError('`data` must be a dict instance or None')
-        else:
-            self.data = data
+
+        # TODO: Rename `payload_id` to `id`
+        self.data_id = data_id if data_id is not None else self.to_hash()
+        self.data = data
 
     def __eq__(self, other):
         # TODO: If `other !== Data` return `False`
@@ -592,51 +585,32 @@ class Transaction(object):
                 version (int): Defines the version number of a Transaction.
 
         """
-        if version is not None:
-            self.version = version
-        else:
-            self.version = self.__class__.VERSION
-
-        if timestamp is not None:
-            self.timestamp = timestamp
-        else:
-            self.timestamp = gen_timestamp()
-
         if operation not in Transaction.ALLOWED_OPERATIONS:
             allowed_ops = ', '.join(self.__class__.ALLOWED_OPERATIONS)
             raise ValueError('`operation` must be one of {}'
                              .format(allowed_ops))
-        else:
-            self.operation = operation
 
-        # If an asset is not defined in a `CREATE` transaction, create a
-        # default one.
-        if asset is None and operation == Transaction.CREATE:
-            asset = Asset()
-
-        if not isinstance(asset, Asset):
+        # Only assets for 'CREATE' operations can be un-defined.
+        if (asset and not isinstance(asset, Asset) or
+                not asset and operation != Transaction.CREATE):
             raise TypeError('`asset` must be an Asset instance')
-        else:
-            self.asset = asset
 
-        if conditions is not None and not isinstance(conditions, list):
+        if conditions and not isinstance(conditions, list):
             raise TypeError('`conditions` must be a list instance or None')
-        elif conditions is None:
-            self.conditions = []
-        else:
-            self.conditions = conditions
 
-        if fulfillments is not None and not isinstance(fulfillments, list):
+        if fulfillments and not isinstance(fulfillments, list):
             raise TypeError('`fulfillments` must be a list instance or None')
-        elif fulfillments is None:
-            self.fulfillments = []
-        else:
-            self.fulfillments = fulfillments
 
         if metadata is not None and not isinstance(metadata, Metadata):
             raise TypeError('`metadata` must be a Metadata instance or None')
-        else:
-            self.metadata = metadata
+
+        self.version = version if version is not None else self.VERSION
+        self.timestamp = timestamp if timestamp else gen_timestamp()
+        self.operation = operation
+        self.asset = asset if asset else Asset()
+        self.conditions = conditions if conditions else []
+        self.fulfillments = fulfillments if fulfillments else []
+        self.metadata = metadata
 
     @classmethod
     def create(cls, owners_before, owners_after, metadata=None, asset=None,
