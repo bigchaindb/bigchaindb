@@ -752,19 +752,16 @@ class Transaction(object):
             return cls(cls.CREATE, asset, [ffill_tx], [cond_tx], metadata)
 
         elif len(owners_before) == len(owners_after) and len(owners_after) > 1:
-            raise NotImplementedError('Multiple inputs and outputs not'
-                                      'available for CREATE')
-            # NOTE: Multiple inputs and outputs case. Currently not supported.
             ffills = [Fulfillment(Ed25519Fulfillment(public_key=owner_before),
                                   [owner_before])
                       for owner_before in owners_before]
-            conds = [Condition.generate(owners, amount=amount) 
+            conds = [Condition.generate([owners], amount=amount) 
                      for owners in owners_after]
             return cls(cls.CREATE, asset, ffills, conds, metadata)
 
         elif len(owners_before) == 1 and len(owners_after) > 1:
             # NOTE: Multiple owners case
-            cond_tx = Condition.generate(owners_after)
+            cond_tx = Condition.generate(owners_after, amount=amount)
             ffill = Ed25519Fulfillment(public_key=owners_before[0])
             ffill_tx = Fulfillment(ffill, owners_before)
             return cls(cls.CREATE, asset, [ffill_tx], [cond_tx], metadata)

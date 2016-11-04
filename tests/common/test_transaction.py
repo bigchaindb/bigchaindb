@@ -816,14 +816,14 @@ def test_create_create_transaction_multiple_io(user_cond, user2_cond, user_pub,
     assert tx == expected
 
 
-@mark.skip(reason='Multiple inputs and outputs in CREATE not supported')
+# @mark.skip(reason='Multiple inputs and outputs in CREATE not supported')
 # TODO: Add digital assets
 def test_validate_multiple_io_create_transaction(user_pub, user_priv,
                                                  user2_pub, user2_priv):
     from bigchaindb.common.transaction import Transaction
 
     tx = Transaction.create([user_pub, user2_pub], [user_pub, user2_pub],
-                            {'message': 'hello'})
+                            metadata={'message': 'hello'})
     tx = tx.sign([user_priv, user2_priv])
     assert tx.fulfillments_valid() is True
 
