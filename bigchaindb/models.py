@@ -8,36 +8,6 @@ from bigchaindb.common.transaction import Transaction, Asset
 from bigchaindb.common.util import gen_timestamp, serialize
 
 
-class Asset(Asset):
-    @staticmethod
-    def get_asset_id(transactions):
-        """Get the asset id from a list of transaction ids.
-
-        This is useful when we want to check if the multiple inputs of a transaction
-        are related to the same asset id.
-
-        Args:
-            transactions (list): list of transaction usually inputs that should have a matching asset_id
-
-        Returns:
-            str: uuid of the asset.
-
-        Raises:
-            AssetIdMismatch: If the inputs are related to different assets.
-        """
-
-        if not isinstance(transactions, list):
-            transactions = [transactions]
-
-        # create a set of asset_ids
-        asset_ids = {tx.asset.data_id for tx in transactions}
-
-        # check that all the transasctions have the same asset_id
-        if len(asset_ids) > 1:
-            raise AssetIdMismatch("All inputs of a transaction need to have the same asset id.")
-        return asset_ids.pop()
-
-
 class Transaction(Transaction):
     def validate(self, bigchain):
         """Validate a transaction.
@@ -190,7 +160,7 @@ class Block(object):
 
     def is_signature_valid(self):
         block = self.to_dict()['block']
-        # cc only accepts bytesting messages 
+        # cc only accepts bytesting messages
         block_serialized = serialize(block).encode()
         verifying_key = VerifyingKey(block['node_pubkey'])
         try:

@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch
 
-from ..db.conftest import inputs
+from ..db.conftest import inputs  # noqa
 
 
 @pytest.mark.usefixtures('inputs')
@@ -171,7 +171,7 @@ def test_create_invalid_divisible_asset(b, user_vk, user_sk):
 
     # non divisible assets cannot have amount > 1
     # Transaction.__init__ should raise an exception
-    asset = Asset(divisible=False) 
+    asset = Asset(divisible=False)
     with pytest.raises(AmountError):
         Transaction.create([user_vk], [user_vk], asset=asset, amount=2)
 
@@ -202,7 +202,7 @@ def test_create_invalid_divisible_asset(b, user_vk, user_sk):
 
 def test_create_valid_divisible_asset(b, user_vk, user_sk):
     from bigchaindb.models import Transaction, Asset
-    
+
     asset = Asset(divisible=True)
     tx = Transaction.create([user_vk], [user_vk], asset=asset, amount=2)
     tx_signed = tx.sign([user_sk])

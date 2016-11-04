@@ -10,7 +10,7 @@ from cryptoconditions.exceptions import ParsingError
 from bigchaindb.common.crypto import SigningKey, hash_data
 from bigchaindb.common.exceptions import (KeypairMismatchException,
                                           InvalidHash, InvalidSignature,
-                                          AmountError)
+                                          AmountError, AssetIdMismatch)
 from bigchaindb.common.util import serialize, gen_timestamp
 
 
@@ -306,7 +306,7 @@ class Condition(object):
             owners_after, threshold = owners_after
         else:
             threshold = len(owners_after)
-        
+
         if not isinstance(amount, int):
             raise TypeError('`amount` must be a int')
         if not isinstance(owners_after, list):
@@ -324,7 +324,7 @@ class Condition(object):
             initial_cond = ThresholdSha256Fulfillment(threshold=threshold)
             threshold_cond = reduce(cls._gen_condition, owners_after,
                                     initial_cond)
-            return cls(threshold_cond, owners_afteri, amount=amount)
+            return cls(threshold_cond, owners_after, amount=amount)
 
     @classmethod
     def _gen_condition(cls, initial, current):
@@ -468,6 +468,34 @@ class Asset(object):
     def to_hash(self):
         """Generates a unqiue uuid for an Asset"""
         return str(uuid4())
+
+    @staticmethod
+    def get_asset_id(transactions):
+        """Get the asset id from a list of transaction ids.
+
+        This is useful when we want to check if the multiple inputs of a transaction
+        are related to the same asset id.
+
+        Args:
+            transactions (list): list of transaction usually inputs that should have a matching asset_id
+
+        Returns:
+            str: uuid of the asset.
+
+        Raises:
+            AssetIdMismatch: If the inputs are related to different assets.
+        """
+
+        if not isinstance(transactions, list):
+            transactions = [transactions]
+
+        # create a set of asset_ids
+        asset_ids = {tx.asset.data_id for tx in transactions}
+
+        # check that all the transasctions have the same asset_id
+        if len(asset_ids) > 1:
+            raise AssetIdMismatch("All inputs of a transaction need to have the same asset id.")
+        return asset_ids.pop()
 
     def _validate_asset(self, amount=None):
         """Validates the asset"""
