@@ -100,6 +100,14 @@ class Fulfillment(object):
         return ffill
 
     @classmethod
+    def generate(cls, owners_before):
+        # TODO: write docstring
+
+        if len(owners_before) == 1:
+            ffill = Ed25519Fulfillment(public_key=owners_before[0])
+            return cls(ffill, owners_before)
+
+    @classmethod
     def from_dict(cls, ffill):
         """Transforms a Python dictionary to a Fulfillment object.
 
@@ -269,7 +277,8 @@ class Condition(object):
         return cond
 
     @classmethod
-    def generate(cls, owners_after, amount=1):
+    def generate(cls, owners_after, amount):
+        # TODO: Update docstring
         """Generates a Condition from a specifically formed tuple or list.
 
             Note:
@@ -703,7 +712,8 @@ class Transaction(object):
 
     @classmethod
     def create(cls, owners_before, owners_after, metadata=None, asset=None,
-               secret=None, time_expire=None, amount=1):
+               secret=None, time_expire=None):
+        # TODO: Update docstring
         """A simple way to generate a `CREATE` transaction.
 
             Note:
@@ -738,10 +748,24 @@ class Transaction(object):
             raise TypeError('`owners_before` must be a list instance')
         if not isinstance(owners_after, list):
             raise TypeError('`owners_after` must be a list instance')
-        if not isinstance(amount, int):
-            raise TypeError('`amount` must be a int')
 
         metadata = Metadata(metadata)
+
+        ffils = []
+        conds = []
+
+        # generate_conditions
+        for owner_after in owners_after:
+            pub_keys, amount = owner_after
+            conds.append(Condition.generate(pub_keys, amount))
+
+        # generate fulfillments
+        ffils.append(Fulfillment.generate(owners_before))
+
+        return cls(cls.CREATE, asset, ffils, conds, metadata)
+
+
+
         if len(owners_before) == len(owners_after) and len(owners_after) == 1:
             # NOTE: Standard case, one owner before, one after.
             # NOTE: For this case its sufficient to use the same
@@ -755,7 +779,7 @@ class Transaction(object):
             ffills = [Fulfillment(Ed25519Fulfillment(public_key=owner_before),
                                   [owner_before])
                       for owner_before in owners_before]
-            conds = [Condition.generate([owners], amount=amount) 
+            conds = [Condition.generate([owners], amount) 
                      for owners in owners_after]
             return cls(cls.CREATE, asset, ffills, conds, metadata)
 
@@ -1138,14 +1162,15 @@ class Transaction(object):
                                                   tx_serialized,
                                                   input_condition_uri)
 
-        if not fulfillments_count == conditions_count == \
-           input_condition_uris_count:
-            raise ValueError('Fulfillments, conditions and '
-                             'input_condition_uris must have the same count')
-        else:
-            partial_transactions = map(gen_tx, self.fulfillments,
-                                       self.conditions, input_condition_uris)
-            return all(partial_transactions)
+        # TODO: Why?? Need to ask @TimDaub
+        # if not fulfillments_count == conditions_count == \
+        #    input_condition_uris_count:
+        #     raise ValueError('Fulfillments, conditions and '
+        #                      'input_condition_uris must have the same count')
+        # else:
+        partial_transactions = map(gen_tx, self.fulfillments,
+                                   self.conditions, input_condition_uris)
+        return all(partial_transactions)
 
     @staticmethod
     def _fulfillment_valid(fulfillment, operation, tx_serialized,
