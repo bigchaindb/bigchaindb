@@ -245,7 +245,7 @@ class TestBigchainApi(object):
         inputs = input_tx.to_inputs()
         tx = Transaction.transfer(inputs, [user_vk], input_tx.asset)
         tx = tx.sign([user_sk])
-        b.write_transaction(tx)
+        # There's no need to b.write_transaction(tx) to the backlog
 
         # create block
         block = b.create_block([tx])
