@@ -210,8 +210,8 @@ def test_single_in_single_own_single_out_multiple_own_transfer(b, user_vk,
 
     # TRANSFER
     tx_transfer = Transaction.transfer(tx_create.to_inputs(),
-                                      [([b.me, b.me], 100)],
-                                      asset=tx_create.asset)
+                                       [([b.me, b.me], 100)],
+                                       asset=tx_create.asset)
     tx_transfer_signed = tx_transfer.sign([user_sk])
 
     assert tx_transfer_signed.validate(b) == tx_transfer_signed
@@ -251,8 +251,8 @@ def test_single_in_single_own_multiple_out_mix_own_transfer(b, user_vk,
 
     # TRANSFER
     tx_transfer = Transaction.transfer(tx_create.to_inputs(),
-                                      [([b.me], 50), ([b.me, b.me], 50)],
-                                      asset=tx_create.asset)
+                                       [([b.me], 50), ([b.me, b.me], 50)],
+                                       asset=tx_create.asset)
     tx_transfer_signed = tx_transfer.sign([user_sk])
 
     assert tx_transfer_signed.validate(b) == tx_transfer_signed
@@ -267,5 +267,346 @@ def test_single_in_single_own_multiple_out_mix_own_transfer(b, user_vk,
     assert len(tx_transfer_signed.fulfillments) == 1
 
 
-#def test_single_in_multiple_own_single_out_single_own_create(b, user_vk):
+# TRANSFER divisible asset
+# Single input
+# Multiple owners_before
+# Single output
+# Single owners_after
+@pytest.mark.usefixtures('inputs')
+def test_single_in_multiple_own_single_out_single_own_transfer(b, user_vk,
+                                                               user_sk):
+    from bigchaindb.models import Transaction
+    from bigchaindb.common.transaction import Asset
+
+    # CREATE divisible asset
+    asset = Asset(divisible=True)
+    tx_create = Transaction.create([b.me], [([b.me, user_vk], 100)],
+                                   asset=asset)
+    tx_create_signed = tx_create.sign([b.me_private])
+    # create block
+    block = b.create_block([tx_create_signed])
+    assert block.validate(b) == block
+    b.write_block(block, durability='hard')
+    # vote
+    vote = b.vote(block.id, b.get_last_voted_block().id, True)
+    b.write_vote(vote)
+
+    # TRANSFER
+    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([b.me], 100)],
+                                       asset=tx_create.asset)
+    tx_transfer_signed = tx_transfer.sign([b.me_private, user_sk])
+
+    assert tx_transfer_signed.validate(b) == tx_transfer_signed
+    assert len(tx_transfer_signed.conditions) == 1
+    assert tx_transfer_signed.conditions[0].amount == 100
+    assert len(tx_transfer_signed.fulfillments) == 1
+
+    ffill = tx_transfer_signed.fulfillments[0].fulfillment.to_dict()
+    assert 'subfulfillments' in ffill
+    assert len(ffill['subfulfillments']) == 2
+
+
+# TRANSFER divisible asset
+# Multiple inputs
+# Single owners_before per input
+# Single output
+# Single owners_after
+@pytest.mark.usefixtures('inputs')
+def test_multiple_in_single_own_single_out_single_own_transfer(b, user_vk,
+                                                               user_sk):
+    from bigchaindb.models import Transaction
+    from bigchaindb.common.transaction import Asset
+
+    # CREATE divisible asset
+    asset = Asset(divisible=True)
+    tx_create = Transaction.create([b.me], [([user_vk], 50), ([user_vk], 50)],
+                                   asset=asset)
+    tx_create_signed = tx_create.sign([b.me_private])
+    # create block
+    block = b.create_block([tx_create_signed])
+    assert block.validate(b) == block
+    b.write_block(block, durability='hard')
+    # vote
+    vote = b.vote(block.id, b.get_last_voted_block().id, True)
+    b.write_vote(vote)
+
+    # TRANSFER
+    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([b.me], 100)],
+                                       asset=tx_create.asset)
+    tx_transfer_signed = tx_transfer.sign([user_sk])
+
+    assert tx_transfer_signed.validate(b)
+    assert len(tx_transfer_signed.conditions) == 1
+    assert tx_transfer_signed.conditions[0].amount == 100
+    assert len(tx_transfer_signed.fulfillments) == 2
+
+
+# TRANSFER divisible asset
+# Multiple inputs
+# Multiple owners_before per input
+# Single output
+# Single owners_after
+@pytest.mark.usefixtures('inputs')
+def test_multiple_in_multiple_own_single_out_single_own_transfer(b, user_vk,
+                                                                 user_sk):
+    from bigchaindb.models import Transaction
+    from bigchaindb.common.transaction import Asset
+
+    # CREATE divisible asset
+    asset = Asset(divisible=True)
+    tx_create = Transaction.create([b.me],
+                                   [([user_vk, b.me], 50),
+                                    ([user_vk, b.me], 50)],
+                                   asset=asset)
+    tx_create_signed = tx_create.sign([b.me_private])
+    # create block
+    block = b.create_block([tx_create_signed])
+    assert block.validate(b) == block
+    b.write_block(block, durability='hard')
+    # vote
+    vote = b.vote(block.id, b.get_last_voted_block().id, True)
+    b.write_vote(vote)
+
+    # TRANSFER
+    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([b.me], 100)],
+                                       asset=tx_create.asset)
+    tx_transfer_signed = tx_transfer.sign([b.me_private, user_sk])
+
+    assert tx_transfer_signed.validate(b)
+    assert len(tx_transfer_signed.conditions) == 1
+    assert tx_transfer_signed.conditions[0].amount == 100
+    assert len(tx_transfer_signed.fulfillments) == 2
+
+    ffill_fid0 = tx_transfer_signed.fulfillments[0].fulfillment.to_dict()
+    ffill_fid1 = tx_transfer_signed.fulfillments[1].fulfillment.to_dict()
+    assert 'subfulfillments' in ffill_fid0
+    assert 'subfulfillments' in ffill_fid1
+    assert len(ffill_fid0['subfulfillments']) == 2
+    assert len(ffill_fid1['subfulfillments']) == 2
+
+
+
+# TRANSFER divisible asset
+# Multiple inputs
+# Mix: one input with a single owners_before, one input with multiple
+#      owners_before
+# Single output
+# Single owners_after
+@pytest.mark.usefixtures('inputs')
+def test_muiltiple_in_mix_own_multiple_out_single_own_transfer(b, user_vk,
+                                                               user_sk):
+    from bigchaindb.models import Transaction
+    from bigchaindb.common.transaction import Asset
+
+    # CREATE divisible asset
+    asset = Asset(divisible=True)
+    tx_create = Transaction.create([b.me],
+                                   [([user_vk], 50),
+                                    ([user_vk, b.me], 50)],
+                                   asset=asset)
+    tx_create_signed = tx_create.sign([b.me_private])
+    # create block
+    block = b.create_block([tx_create_signed])
+    assert block.validate(b) == block
+    b.write_block(block, durability='hard')
+    # vote
+    vote = b.vote(block.id, b.get_last_voted_block().id, True)
+    b.write_vote(vote)
+
+    # TRANSFER
+    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([b.me], 100)],
+                                       asset=tx_create.asset)
+    tx_transfer_signed = tx_transfer.sign([b.me_private, user_sk])
+
+    assert tx_transfer_signed.validate(b) == tx_transfer_signed
+    assert len(tx_transfer_signed.conditions) == 1
+    assert tx_transfer_signed.conditions[0].amount == 100
+    assert len(tx_transfer_signed.fulfillments) == 2
+
+    ffill_fid0 = tx_transfer_signed.fulfillments[0].fulfillment.to_dict()
+    ffill_fid1 = tx_transfer_signed.fulfillments[1].fulfillment.to_dict()
+    assert 'subfulfillments' not in ffill_fid0
+    assert 'subfulfillments' in ffill_fid1
+    assert len(ffill_fid1['subfulfillments']) == 2
+
+
+# TRANSFER divisible asset
+# Multiple inputs
+# Mix: one input with a single owners_before, one input with multiple
+#      owners_before
+# Multiple outputs
+# Mix: one output with a single owners_after, one output with multiple
+#      owners_after
+@pytest.mark.usefixtures('inputs')
+def test_muiltiple_in_mix_own_multiple_out_mix_own_transfer(b, user_vk,
+                                                            user_sk):
+    from bigchaindb.models import Transaction
+    from bigchaindb.common.transaction import Asset
+
+    # CREATE divisible asset
+    asset = Asset(divisible=True)
+    tx_create = Transaction.create([b.me],
+                                   [([user_vk], 50),
+                                    ([user_vk, b.me], 50)],
+                                   asset=asset)
+    tx_create_signed = tx_create.sign([b.me_private])
+    # create block
+    block = b.create_block([tx_create_signed])
+    assert block.validate(b) == block
+    b.write_block(block, durability='hard')
+    # vote
+    vote = b.vote(block.id, b.get_last_voted_block().id, True)
+    b.write_vote(vote)
+
+    # TRANSFER
+    tx_transfer = Transaction.transfer(tx_create.to_inputs(),
+                                       [([b.me], 50), ([b.me, user_vk], 50)],
+                                       asset=tx_create.asset)
+    tx_transfer_signed = tx_transfer.sign([b.me_private, user_sk])
+
+    assert tx_transfer_signed.validate(b) == tx_transfer_signed
+    assert len(tx_transfer_signed.conditions) == 2
+    assert tx_transfer_signed.conditions[0].amount == 50
+    assert tx_transfer_signed.conditions[1].amount == 50
+    assert len(tx_transfer_signed.fulfillments) == 2
+
+    cond_cid0 = tx_transfer_signed.conditions[0].to_dict()
+    cond_cid1 = tx_transfer_signed.conditions[1].to_dict()
+    assert 'subfulfillments' not in cond_cid0['condition']['details']
+    assert 'subfulfillments' in cond_cid1['condition']['details']
+    assert len(cond_cid1['condition']['details']['subfulfillments']) == 2
+
+    ffill_fid0 = tx_transfer_signed.fulfillments[0].fulfillment.to_dict()
+    ffill_fid1 = tx_transfer_signed.fulfillments[1].fulfillment.to_dict()
+    assert 'subfulfillments' not in ffill_fid0
+    assert 'subfulfillments' in ffill_fid1
+    assert len(ffill_fid1['subfulfillments']) == 2
+
+
+# TRANSFER divisible asset
+# Multiple inputs from different transactions
+# Single owners_before
+# Single output
+# Single owners_after
+@pytest.mark.usefixtures('inputs')
+def test_multiple_in_different_transactions(b, user_vk, user_sk):
+    from bigchaindb.models import Transaction
+    from bigchaindb.common.transaction import Asset
+
+    # CREATE divisible asset
+    # `b` creates a divisible asset and assigns 50 shares to `b` and
+    # 50 shares to `user_vk`
+    asset = Asset(divisible=True)
+    tx_create = Transaction.create([b.me],
+                                   [([user_vk], 50),
+                                    ([b.me], 50)],
+                                   asset=asset)
+    tx_create_signed = tx_create.sign([b.me_private])
+    # create block
+    block = b.create_block([tx_create_signed])
+    assert block.validate(b) == block
+    b.write_block(block, durability='hard')
+    # vote
+    vote = b.vote(block.id, b.get_last_voted_block().id, True)
+    b.write_vote(vote)
+
+    # TRANSFER divisible asset
+    # `b` transfers its 50 shares to `user_vk`
+    # after this transaction `user_vk` will have a total of 100 shares
+    # split across two different transactions
+    tx_transfer1 = Transaction.transfer([tx_create.to_inputs()[1]],
+                                        [([user_vk], 50)],
+                                        asset=tx_create.asset)
+    tx_transfer1_signed = tx_transfer1.sign([b.me_private])
+    # create block
+    block = b.create_block([tx_transfer1_signed])
+    assert block.validate(b) == block
+    b.write_block(block, durability='hard')
+    # vote
+    vote = b.vote(block.id, b.get_last_voted_block().id, True)
+    b.write_vote(vote)
+
+    # TRANSFER
+    # `user_vk` combines two different transaction with 50 shares each and
+    # transfers a total of 100 shares back to `b`
+    tx_transfer2 = Transaction.transfer([tx_create.to_inputs()[0],
+                                         tx_transfer1.to_inputs()[0]],
+                                        [([b.me], 100)],
+                                        asset=tx_create.asset)
+    tx_transfer2_signed = tx_transfer2.sign([user_sk])
+
+    assert tx_transfer2_signed.validate(b) == tx_transfer2_signed
+    assert len(tx_transfer2_signed.conditions) == 1
+    assert tx_transfer2_signed.conditions[0].amount == 100
+    assert len(tx_transfer2_signed.fulfillments) == 2
+
+    fid0_input = tx_transfer2_signed.fulfillments[0].to_dict()['input']['txid']
+    fid1_input = tx_transfer2_signed.fulfillments[1].to_dict()['input']['txid']
+    assert fid0_input == tx_create.id
+    assert fid1_input == tx_transfer1.id
+
+
+@pytest.mark.usefixtures('inputs')
+def test_transaction_unfulfilled_fulfillments(b, user_vk,
+                                              user_sk):
+    from bigchaindb.models import Transaction
+    from bigchaindb.common.transaction import Asset
+
+    # CREATE divisible asset
+    asset = Asset(divisible=True)
+    tx_create = Transaction.create([b.me],
+                                   [([user_vk, b.me], 50),
+                                    ([user_vk, b.me], 50)],
+                                   asset=asset)
+    tx_create_signed = tx_create.sign([b.me_private])
+    # create block
+    block = b.create_block([tx_create_signed])
+    assert block.validate(b) == block
+    b.write_block(block, durability='hard')
+    # vote
+    vote = b.vote(block.id, b.get_last_voted_block().id, True)
+    b.write_vote(vote)
+
+    # TRANSFER
+    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([b.me], 100)],
+                                       asset=tx_create.asset)
+    tx_transfer_signed = tx_transfer.sign([b.me_private, user_sk])
+
+    # TODO: This transaction has unfulfilled fulfillments and should be
+    #       invalid. Somehow the validation passes
+    assert b.is_valid_transaction(tx_transfer_signed) == False
+
 #test input output amount mismatch. Both when output is less and greater then input
+
+
+@pytest.mark.skip(reason=('get_subcondition_from_vk does not always work'
+                          ' as expected'))
+@pytest.mark.usefixtures('inputs')
+def test_threshold_same_public_key(b, user_vk, user_sk):
+    # If we try to fulfill a threshold condition where each subcondition has
+    # the same key get_subcondition_from_vk will always return the first
+    # subcondition. This means that only the 1st subfulfillment will be
+    # generated
+
+    from bigchaindb.models import Transaction
+    from bigchaindb.common.transaction import Asset
+
+    # CREATE divisible asset
+    asset = Asset(divisible=True)
+    tx_create = Transaction.create([b.me], [([user_vk, user_vk], 100)],
+                                   asset=asset)
+    tx_create_signed = tx_create.sign([b.me_private])
+    # create block
+    block = b.create_block([tx_create_signed])
+    assert block.validate(b) == block
+    b.write_block(block, durability='hard')
+    # vote
+    vote = b.vote(block.id, b.get_last_voted_block().id, True)
+    b.write_vote(vote)
+
+    # TRANSFER
+    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([b.me], 100)],
+                                       asset=tx_create.asset)
+    tx_transfer_signed = tx_transfer.sign([user_sk, user_sk])
+
+    assert tx_transfer_signed.validate(b) == tx_transfer_signed

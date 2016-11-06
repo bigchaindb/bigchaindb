@@ -469,6 +469,12 @@ class Asset(object):
             Returns:
                 :class:`~bigchaindb.common.transaction.Asset`
         """
+        # TODO: This is not correct. If using Transaction.from_dict() from a 
+        #       TRANSFER transaction we only have information about the `id`, meaning
+        #       that even if its a divisible asset, since the key does not exist if will be
+        #       set to False by default.
+        #       Maybe use something like an AssetLink similar to TransactionLink for 
+        #       TRANSFER transactions
         return cls(asset.get('data'), asset['id'],
                    asset.get('divisible', False),
                    asset.get('updatable', False),
@@ -706,8 +712,14 @@ class Transaction(object):
         # validate asset
         # we know that each transaction relates to a single asset
         # we can sum the amount of all the conditions
-        amount = sum([condition.amount for condition in self.conditions])
-        self.asset._validate_asset(amount=amount)
+
+        if self.operation == self.CREATE:
+            amount = sum([condition.amount for condition in self.conditions])
+            self.asset._validate_asset(amount=amount)
+        else:
+            # In transactions other then `CREATE` we don't know if its a divisible asset
+            # or not, so we cannot validate the amount here
+            self.asset._validate_asset()
 
 
     @classmethod
@@ -756,6 +768,7 @@ class Transaction(object):
 
         # generate_conditions
         for owner_after in owners_after:
+            # TODO: Check types so this doesn't fail unpacking
             pub_keys, amount = owner_after
             conds.append(Condition.generate(pub_keys, amount))
 
@@ -988,13 +1001,18 @@ class Transaction(object):
         key_pairs = {gen_public_key(SigningKey(private_key)):
                      SigningKey(private_key) for private_key in private_keys}
 
-        zippedIO = enumerate(zip(self.fulfillments, self.conditions))
-        for index, (fulfillment, condition) in zippedIO:
+        # TODO: What does the conditions of this transaction have to do with the 
+        #       fulfillments, and why does this enforce for the number of fulfillments
+        #       and conditions to be the same?
+        # TODO: Need to check how this was done before common but I from what I remember we
+        #       included the condition that we were fulfilling in the message to be signed.
+        # zippedIO = enumerate(zip(self.fulfillments, self.conditions))
+        for index, fulfillment in enumerate(self.fulfillments):
             # NOTE: We clone the current transaction but only add the condition
             #       and fulfillment we're currently working on plus all
             #       previously signed ones.
             tx_partial = Transaction(self.operation, self.asset, [fulfillment],
-                                     [condition], self.metadata,
+                                     self.conditions, self.metadata,
                                      self.timestamp, self.version)
 
             tx_partial_dict = tx_partial.to_dict()
@@ -1157,8 +1175,9 @@ class Transaction(object):
             """Splits multiple IO Transactions into partial single IO
             Transactions.
             """
+            # TODO: Understand how conditions are being handled
             tx = Transaction(self.operation, self.asset, [fulfillment],
-                             [condition], self.metadata, self.timestamp,
+                             self.conditions, self.metadata, self.timestamp,
                              self.version)
             tx_dict = tx.to_dict()
             tx_dict = Transaction._remove_signatures(tx_dict)
