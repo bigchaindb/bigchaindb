@@ -551,7 +551,7 @@ class Bigchain(object):
         """Prepare a genesis block."""
 
         metadata = {'message': 'Hello World from the BigchainDB'}
-        transaction = Transaction.create([self.me], [self.me],
+        transaction = Transaction.create([self.me], [([self.me], 1)],
                                          metadata=metadata)
 
         # NOTE: The transaction model doesn't expose an API to generate a

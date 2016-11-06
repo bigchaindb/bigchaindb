@@ -779,7 +779,7 @@ class Transaction(object):
             ffills = [Fulfillment(Ed25519Fulfillment(public_key=owner_before),
                                   [owner_before])
                       for owner_before in owners_before]
-            conds = [Condition.generate([owners], amount) 
+            conds = [Condition.generate([owners], amount)
                      for owners in owners_after]
             return cls(cls.CREATE, asset, ffills, conds, metadata)
 
@@ -857,20 +857,27 @@ class Transaction(object):
         if not isinstance(owners_after, list):
             raise TypeError('`owners_after` must be a list instance')
 
-        # NOTE: See doc strings `Note` for description.
-        if len(inputs) == len(owners_after):
-            if len(owners_after) == 1:
-                conditions = [Condition.generate(owners_after)]
-            elif len(owners_after) > 1:
-                conditions = [Condition.generate(owners) for owners
-                              in owners_after]
-        else:
-            raise ValueError("`inputs` and `owners_after`'s count must be the "
-                             "same")
+        # # NOTE: See doc strings `Note` for description.
+        # if len(inputs) == len(owners_after):
+        #     if len(owners_after) == 1:
+        #         conditions = [Condition.generate(owners_after)]
+        #     elif len(owners_after) > 1:
+        #         conditions = [Condition.generate(owners) for owners
+        #                       in owners_after]
+        # else:
+        #     # TODO: Why??
+        #     raise ValueError("`inputs` and `owners_after`'s count must be the "
+        #                      "same")
+
+        conds = []
+        for owner_after in owners_after:
+            pub_keys, amount = owner_after
+            conds.append(Condition.generate(pub_keys, amount))
+
 
         metadata = Metadata(metadata)
         inputs = deepcopy(inputs)
-        return cls(cls.TRANSFER, asset, inputs, conditions, metadata)
+        return cls(cls.TRANSFER, asset, inputs, conds, metadata)
 
     def __eq__(self, other):
         try:
