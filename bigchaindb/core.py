@@ -6,7 +6,7 @@ from time import time
 from itertools import compress
 from bigchaindb.common import crypto, exceptions
 from bigchaindb.common.util import gen_timestamp, serialize
-from bigchaindb.common.transaction import TransactionLink, Metadata
+from bigchaindb.common.transaction import TransactionLink, Metadata, Asset
 
 import rethinkdb as r
 
@@ -365,6 +365,32 @@ class Bigchain(object):
              .filter(lambda transaction: transaction['transaction']['asset']['id'] == asset_id))
 
         return [Transaction.from_dict(tx) for tx in cursor]
+
+    def get_asset_by_id(self, asset_id):
+        """Returns the asset associated with an asset_id
+
+            Args:
+                asset_id (str): The asset id
+
+            Returns:
+                :class:`~bigchaindb.common.transaction.Asset` if the asset
+                exists else None
+        """
+        cursor = self.connection.run(
+            r.table('bigchain', read_mode=self.read_mode)
+             .get_all(asset_id, index='asset_id')
+             .concat_map(lambda block: block['block']['transactions'])
+             .filter(lambda transaction:
+                     transaction['transaction']['asset']['id'] == asset_id)
+             .filter(lambda transaction:
+                     transaction['transaction']['operation'] == 'CREATE')
+             .pluck({'transaction': 'asset'}))
+        cursor = list(cursor)
+
+        if cursor:
+            return Asset.from_dict(cursor[0]['transaction']['asset'])
+
+        return cursor
 
     def get_spent(self, txid, cid):
         """Check if a `txid` was already used as an input.

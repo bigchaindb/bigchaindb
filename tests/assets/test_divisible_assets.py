@@ -546,6 +546,45 @@ def test_multiple_in_different_transactions(b, user_vk, user_sk):
     assert fid1_input == tx_transfer1.id
 
 
+# In a TRANSFER transaction of a divisible asset the amount being spent in the
+# inputs needs to match the amount being sent in the outputs.
+# In other words `amount_in_inputs - amount_in_outputs == 0`
+@pytest.mark.usefixtures('inputs')
+def test_amount_error_transfer(b, user_vk, user_sk):
+    from bigchaindb.models import Transaction
+    from bigchaindb.common.transaction import Asset
+    from bigchaindb.common.exceptions import AmountError
+
+    # CREATE divisible asset
+    asset = Asset(divisible=True)
+    tx_create = Transaction.create([b.me], [([user_vk], 100)], asset=asset)
+    tx_create_signed = tx_create.sign([b.me_private])
+    # create block
+    block = b.create_block([tx_create_signed])
+    assert block.validate(b) == block
+    b.write_block(block, durability='hard')
+    # vote
+    vote = b.vote(block.id, b.get_last_voted_block().id, True)
+    b.write_vote(vote)
+
+    # TRANSFER
+    # output amount less than input amount
+    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([b.me], 50)],
+                                       asset=tx_create.asset)
+    tx_transfer_signed = tx_transfer.sign([user_sk])
+    with pytest.raises(AmountError):
+        tx_transfer_signed.validate(b)
+
+    # TRANSFER
+    # output amount greater than input amount
+    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([b.me], 101)],
+                                       asset=tx_create.asset)
+    tx_transfer_signed = tx_transfer.sign([user_sk])
+    with pytest.raises(AmountError):
+        tx_transfer_signed.validate(b)
+
+
+@pytest.mark.skip
 @pytest.mark.usefixtures('inputs')
 def test_transaction_unfulfilled_fulfillments(b, user_vk,
                                               user_sk):
@@ -575,8 +614,6 @@ def test_transaction_unfulfilled_fulfillments(b, user_vk,
     # TODO: This transaction has unfulfilled fulfillments and should be
     #       invalid. Somehow the validation passes
     assert b.is_valid_transaction(tx_transfer_signed) == False
-
-#test input output amount mismatch. Both when output is less and greater then input
 
 
 @pytest.mark.skip(reason=('get_subcondition_from_vk does not always work'

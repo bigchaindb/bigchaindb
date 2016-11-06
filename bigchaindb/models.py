@@ -3,7 +3,7 @@ from bigchaindb.common.exceptions import (InvalidHash, InvalidSignature,
                                           OperationError, DoubleSpend,
                                           TransactionDoesNotExist,
                                           FulfillmentNotInValidBlock,
-                                          AssetIdMismatch)
+                                          AssetIdMismatch, AmountError)
 from bigchaindb.common.transaction import Transaction, Asset
 from bigchaindb.common.util import gen_timestamp, serialize
 
@@ -41,7 +41,8 @@ class Transaction(Transaction):
             if inputs_defined:
                 raise ValueError('A CREATE operation has no inputs')
             # validate asset
-            self.asset._validate_asset()
+            amount = sum([condition.amount for condition in self.conditions])
+            self.asset._validate_asset(amount=amount)
         elif self.operation == Transaction.TRANSFER:
             if not inputs_defined:
                 raise ValueError('Only `CREATE` transactions can have null '
@@ -49,6 +50,7 @@ class Transaction(Transaction):
             # check inputs
             # store the inputs so that we can check if the asset ids match
             input_txs = []
+            input_amount = 0
             for ffill in self.fulfillments:
                 input_txid = ffill.tx_input.txid
                 input_cid = ffill.tx_input.cid
@@ -71,11 +73,28 @@ class Transaction(Transaction):
 
                 input_conditions.append(input_tx.conditions[input_cid])
                 input_txs.append(input_tx)
+                input_amount += input_tx.conditions[input_cid].amount
 
             # validate asset id
             asset_id = Asset.get_asset_id(input_txs)
             if asset_id != self.asset.data_id:
-                raise AssetIdMismatch('The asset id of the input does not match the asset id of the transaction')
+                raise AssetIdMismatch(('The asset id of the input does not'
+                                       ' match the asset id of the'
+                                       ' transaction'))
+
+            # get the asset creation to see if its divisible or not
+            asset = bigchain.get_asset_by_id(asset_id)
+            # validate the asset
+            asset._validate_asset(amount=input_amount)
+            # validate the amounts
+            output_amount = sum([condition.amount for
+                                 condition in self.conditions])
+            if output_amount != input_amount:
+                raise AmountError(('The amout used in the inputs `{}`'
+                                   ' needs to be same as the amount used'
+                                   ' in the outputs `{}`')
+                                  .format(input_amount, output_amount))
+
         else:
             allowed_operations = ', '.join(Transaction.ALLOWED_OPERATIONS)
             raise TypeError('`operation`: `{}` must be either {}.'

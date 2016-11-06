@@ -146,7 +146,7 @@ def test_get_txs_by_asset_id(b, user_vk, user_sk):
     assert txs[0].asset.data_id == asset_id
 
     # create a transfer transaction
-    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [user_vk],
+    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([user_vk], 1)],
                                        tx_create.asset)
     tx_transfer_signed = tx_transfer.sign([user_sk])
     # create the block
@@ -164,6 +164,31 @@ def test_get_txs_by_asset_id(b, user_vk, user_sk):
     assert asset_id == txs[0].asset.data_id
     assert asset_id == txs[1].asset.data_id
 
+
+@pytest.mark.usefixtures('inputs')
+def test_get_asset_by_id(b, user_vk, user_sk):
+    from bigchaindb.models import Transaction
+
+    tx_create = b.get_owned_ids(user_vk).pop()
+    tx_create = b.get_transaction(tx_create.txid)
+    asset_id = tx_create.asset.data_id
+
+    # create a transfer transaction
+    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([user_vk], 1)],
+                                       tx_create.asset)
+    tx_transfer_signed = tx_transfer.sign([user_sk])
+    # create the block
+    block = b.create_block([tx_transfer_signed])
+    b.write_block(block, durability='hard')
+    # vote the block valid
+    vote = b.vote(block.id, b.get_last_voted_block().id, True)
+    b.write_vote(vote)
+
+    txs = b.get_txs_by_asset_id(asset_id)
+    assert len(txs) == 2
+
+    asset = b.get_asset_by_id(asset_id)
+    assert asset == tx_create.asset
 
 def test_create_invalid_divisible_asset(b, user_vk, user_sk):
     from bigchaindb.models import Transaction, Asset
