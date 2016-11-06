@@ -5,7 +5,7 @@ class TestTransactionModel(object):
     def test_validating_an_invalid_transaction(self, b):
         from bigchaindb.models import Transaction
 
-        tx = Transaction.create([b.me], [b.me])
+        tx = Transaction.create([b.me], [([b.me], 1)])
         tx.operation = 'something invalid'
 
         with raises(TypeError):
@@ -41,7 +41,7 @@ class TestBlockModel(object):
         from bigchaindb.common.util import gen_timestamp, serialize
         from bigchaindb.models import Block, Transaction
 
-        transactions = [Transaction.create([b.me], [b.me])]
+        transactions = [Transaction.create([b.me], [([b.me], 1)])]
         timestamp = gen_timestamp()
         voters = ['Qaaa', 'Qbbb']
         expected_block = {
@@ -73,7 +73,7 @@ class TestBlockModel(object):
         from bigchaindb.common.util import gen_timestamp, serialize
         from bigchaindb.models import Block, Transaction
 
-        transactions = [Transaction.create([b.me], [b.me])]
+        transactions = [Transaction.create([b.me], [([b.me], 1)])]
         timestamp = gen_timestamp()
         voters = ['Qaaa', 'Qbbb']
         expected = Block(transactions, b.me, timestamp, voters)
@@ -113,7 +113,7 @@ class TestBlockModel(object):
         from bigchaindb.common.util import gen_timestamp, serialize
         from bigchaindb.models import Block, Transaction
 
-        transactions = [Transaction.create([b.me], [b.me])]
+        transactions = [Transaction.create([b.me], [([b.me], 1)])]
         timestamp = gen_timestamp()
         voters = ['Qaaa', 'Qbbb']
 
@@ -136,7 +136,7 @@ class TestBlockModel(object):
     def test_compare_blocks(self, b):
         from bigchaindb.models import Block, Transaction
 
-        transactions = [Transaction.create([b.me], [b.me])]
+        transactions = [Transaction.create([b.me], [([b.me], 1)])]
 
         assert Block() != 'invalid comparison'
         assert Block(transactions) == Block(transactions)
@@ -146,7 +146,7 @@ class TestBlockModel(object):
         from bigchaindb.common.util import gen_timestamp, serialize
         from bigchaindb.models import Block, Transaction
 
-        transactions = [Transaction.create([b.me], [b.me])]
+        transactions = [Transaction.create([b.me], [([b.me], 1)])]
         timestamp = gen_timestamp()
         voters = ['Qaaa', 'Qbbb']
         expected_block = {
@@ -168,7 +168,7 @@ class TestBlockModel(object):
         from unittest.mock import Mock
         from bigchaindb.models import Transaction
 
-        tx = Transaction.create([b.me], [b.me])
+        tx = Transaction.create([b.me], [([b.me], 1)])
         block = b.create_block([tx])
 
         has_previous_vote = Mock()
