@@ -257,7 +257,36 @@ class TestBigchainApi(object):
         response = b.get_transaction(tx.id)
 
         # should be None, because invalid blocks are ignored
+        # and a copy of the tx is not in the backlog
         assert response is None
+
+    @pytest.mark.usefixtures('inputs')
+    def test_read_transaction_invalid_block_and_backlog(self, b, user_vk, user_sk):
+        from bigchaindb.models import Transaction
+
+        input_tx = b.get_owned_ids(user_vk).pop()
+        input_tx = b.get_transaction(input_tx.txid)
+        inputs = input_tx.to_inputs()
+        tx = Transaction.transfer(inputs, [user_vk], input_tx.asset)
+        tx = tx.sign([user_sk])
+
+        # Make sure there's a copy of tx in the backlog
+        b.write_transaction(tx)
+
+        # create block
+        block = b.create_block([tx])
+        b.write_block(block, durability='hard')
+
+        # vote the block invalid
+        vote = b.vote(block.id, b.get_last_voted_block().id, False)
+        b.write_vote(vote)
+
+        # a copy of the tx is both in the backlog and in an invalid
+        # block, so get_transaction should return a transaction,
+        # and a status of TX_IN_BACKLOG
+        response, status = b.get_transaction(tx.id, include_status=True)
+        assert tx.to_dict() == response.to_dict()
+        assert status == b.TX_IN_BACKLOG
 
     @pytest.mark.usefixtures('inputs')
     def test_genesis_block(self, b):
