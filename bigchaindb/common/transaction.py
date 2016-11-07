@@ -469,12 +469,12 @@ class Asset(object):
             Returns:
                 :class:`~bigchaindb.common.transaction.Asset`
         """
-        # TODO: This is not correct. If using Transaction.from_dict() from a 
-        #       TRANSFER transaction we only have information about the `id`, meaning
-        #       that even if its a divisible asset, since the key does not exist if will be
-        #       set to False by default.
-        #       Maybe use something like an AssetLink similar to TransactionLink for 
-        #       TRANSFER transactions
+        # TODO: This is not correct. If using Transaction.from_dict() from a
+        #       TRANSFER transaction we only have information about the `id`,
+        #       meaning that even if its a divisible asset, since the key does
+        #       not exist if will be set to False by default.
+        #       Maybe use something like an AssetLink similar to
+        #       TransactionLink for TRANSFER transactions
         return cls(asset.get('data'), asset['id'],
                    asset.get('divisible', False),
                    asset.get('updatable', False),
@@ -488,11 +488,12 @@ class Asset(object):
     def get_asset_id(transactions):
         """Get the asset id from a list of transaction ids.
 
-        This is useful when we want to check if the multiple inputs of a transaction
-        are related to the same asset id.
+        This is useful when we want to check if the multiple inputs of a
+        transaction are related to the same asset id.
 
         Args:
-            transactions (list): list of transaction usually inputs that should have a matching asset_id
+            transactions (list): list of transaction usually inputs that should
+                                 have a matching asset_id
 
         Returns:
             str: uuid of the asset.
@@ -509,7 +510,8 @@ class Asset(object):
 
         # check that all the transasctions have the same asset_id
         if len(asset_ids) > 1:
-            raise AssetIdMismatch("All inputs of a transaction need to have the same asset id.")
+            raise AssetIdMismatch(('All inputs of a transaction need'
+                                   ' to have the same asset id.'))
         return asset_ids.pop()
 
     def _validate_asset(self, amount=None):
@@ -717,10 +719,9 @@ class Transaction(object):
             amount = sum([condition.amount for condition in self.conditions])
             self.asset._validate_asset(amount=amount)
         else:
-            # In transactions other then `CREATE` we don't know if its a divisible asset
-            # or not, so we cannot validate the amount here
+            # In transactions other then `CREATE` we don't know if its a
+            # divisible asset or not, so we cannot validate the amount here
             self.asset._validate_asset()
-
 
     @classmethod
     def create(cls, owners_before, owners_after, metadata=None, asset=None,
@@ -762,7 +763,7 @@ class Transaction(object):
             raise TypeError('`owners_after` must be a list instance')
 
         if (len(owners_before) > 0 and len(owners_after) == 0 and
-            time_expire is not None):
+                time_expire is not None):
             raise NotImplementedError('Timeout conditions will be implemented '
                                       'later')
         elif (len(owners_before) > 0 and len(owners_after) == 0 and
@@ -773,6 +774,18 @@ class Transaction(object):
             raise ValueError("These are not the cases you're looking for ;)")
 
         metadata = Metadata(metadata)
+
+        # TODO: Not sure there is a need to ensure that `owners_before == 1`
+        # TODO: For divisible assets we will need to create one hashlock
+        #       condition per output
+        # if (len(owners_before) == 1 and len(owners_after) == 0 and
+        #         secret is not None):
+        #     # NOTE: Hashlock condition case
+        #     hashlock = PreimageSha256Fulfillment(preimage=secret)
+        #     cond_tx = Condition(hashlock.condition_uri, amount=amount)
+        #     ffill = Ed25519Fulfillment(public_key=owners_before[0])
+        #     ffill_tx = Fulfillment(ffill, owners_before)
+        #     return cls(cls.CREATE, asset, [ffill_tx], [cond_tx], metadata)
 
         ffils = []
         conds = []
