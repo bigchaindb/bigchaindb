@@ -761,6 +761,17 @@ class Transaction(object):
         if not isinstance(owners_after, list):
             raise TypeError('`owners_after` must be a list instance')
 
+        if (len(owners_before) > 0 and len(owners_after) == 0 and
+            time_expire is not None):
+            raise NotImplementedError('Timeout conditions will be implemented '
+                                      'later')
+        elif (len(owners_before) > 0 and len(owners_after) == 0 and
+              secret is None):
+            raise ValueError('Define a secret to create a hashlock condition')
+
+        else:
+            raise ValueError("These are not the cases you're looking for ;)")
+
         metadata = Metadata(metadata)
 
         ffils = []
@@ -776,53 +787,6 @@ class Transaction(object):
         ffils.append(Fulfillment.generate(owners_before))
 
         return cls(cls.CREATE, asset, ffils, conds, metadata)
-
-
-
-        if len(owners_before) == len(owners_after) and len(owners_after) == 1:
-            # NOTE: Standard case, one owner before, one after.
-            # NOTE: For this case its sufficient to use the same
-            #       fulfillment for the fulfillment and condition.
-            ffill = Ed25519Fulfillment(public_key=owners_before[0])
-            ffill_tx = Fulfillment(ffill, owners_before)
-            cond_tx = Condition.generate(owners_after, amount=amount)
-            return cls(cls.CREATE, asset, [ffill_tx], [cond_tx], metadata)
-
-        elif len(owners_before) == len(owners_after) and len(owners_after) > 1:
-            ffills = [Fulfillment(Ed25519Fulfillment(public_key=owner_before),
-                                  [owner_before])
-                      for owner_before in owners_before]
-            conds = [Condition.generate([owners], amount)
-                     for owners in owners_after]
-            return cls(cls.CREATE, asset, ffills, conds, metadata)
-
-        elif len(owners_before) == 1 and len(owners_after) > 1:
-            # NOTE: Multiple owners case
-            cond_tx = Condition.generate(owners_after, amount=amount)
-            ffill = Ed25519Fulfillment(public_key=owners_before[0])
-            ffill_tx = Fulfillment(ffill, owners_before)
-            return cls(cls.CREATE, asset, [ffill_tx], [cond_tx], metadata)
-
-        elif (len(owners_before) == 1 and len(owners_after) == 0 and
-              secret is not None):
-            # NOTE: Hashlock condition case
-            hashlock = PreimageSha256Fulfillment(preimage=secret)
-            cond_tx = Condition(hashlock.condition_uri, amount=amount)
-            ffill = Ed25519Fulfillment(public_key=owners_before[0])
-            ffill_tx = Fulfillment(ffill, owners_before)
-            return cls(cls.CREATE, asset, [ffill_tx], [cond_tx], metadata)
-
-        elif (len(owners_before) > 0 and len(owners_after) == 0 and
-              time_expire is not None):
-            raise NotImplementedError('Timeout conditions will be implemented '
-                                      'later')
-
-        elif (len(owners_before) > 0 and len(owners_after) == 0 and
-              secret is None):
-            raise ValueError('Define a secret to create a hashlock condition')
-
-        else:
-            raise ValueError("These are not the cases you're looking for ;)")
 
     @classmethod
     def transfer(cls, inputs, owners_after, asset, metadata=None):
