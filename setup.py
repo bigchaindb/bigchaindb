@@ -62,7 +62,6 @@ install_requires = [
     'statsd>=3.2.1',
     'python-rapidjson>=0.0.6',
     'logstats>=0.2.1',
-    'base58>=0.2.2',
     'flask>=0.10.1',
     'flask-restful~=0.3.0',
     'requests~=2.9',
