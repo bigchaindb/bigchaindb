@@ -189,19 +189,25 @@ class Bigchain(object):
             return False
 
     def get_transaction(self, txid, include_status=False):
-        """Retrieve a transaction with `txid` from bigchain.
+        """Get the transaction with the specified `txid` (and optionally its status)
 
-        Queries the bigchain for a transaction, if it's in a valid or invalid
-        block.
+        This query begins by looking in the bigchain table for all blocks containing
+        a transaction with the specified `txid`. If one of those blocks is valid, it
+        returns the matching transaction from that block. Else if some of those
+        blocks are undecided, it returns a matching transaction from one of them. If
+        the transaction was found in invalid blocks only, or in no blocks, then this
+        query looks for a matching transaction in the backlog table, and if it finds
+        one there, it returns that.
 
         Args:
-            txid (str): transaction id of the transaction to query
+            txid (str): transaction id of the transaction to get
             include_status (bool): also return the status of the transaction
                                    the return value is then a tuple: (tx, status)
 
         Returns:
             A :class:`~.models.Transaction` instance if the transaction
-            was found, otherwise ``None``.
+            was found in a valid block, an undecided block, or the backlog table,
+            otherwise ``None``.
             If :attr:`include_status` is ``True``, also returns the
             transaction's status if the transaction was found.
         """
@@ -209,6 +215,7 @@ class Bigchain(object):
         response, tx_status = None, None
 
         validity = self.get_blocks_status_containing_tx(txid)
+        check_backlog = True
 
         if validity:
             # Disregard invalid blocks, and return if there are no valid or undecided blocks
@@ -216,10 +223,14 @@ class Bigchain(object):
                         if status != Bigchain.BLOCK_INVALID}
             if validity:
 
+                # The transaction _was_ found in an undecided or valid block,
+                # so there's no need to look in the backlog table
+                check_backlog = False
+
                 tx_status = self.TX_UNDECIDED
                 # If the transaction is in a valid or any undecided block, return it. Does not check
-                # if transactions in undecided blocks are consistent, but selects the valid block before
-                # undecided ones
+                # if transactions in undecided blocks are consistent, but selects the valid block
+                # before undecided ones
                 for target_block_id in validity:
                     if validity[target_block_id] == Bigchain.BLOCK_VALID:
                         tx_status = self.TX_VALID
@@ -228,8 +239,7 @@ class Bigchain(object):
                 # Query the transaction in the target block and return
                 response = self.backend.get_transaction_from_block(txid, target_block_id)
 
-        else:
-            # Otherwise, check the backlog
+        if check_backlog:
             response = self.backend.get_transaction_from_backlog(txid)
 
             if response:
