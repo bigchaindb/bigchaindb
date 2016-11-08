@@ -98,17 +98,22 @@ def test_single_in_single_own_multiple_out_mix_own_create(b, user_vk):
 # Single input
 # Multiple owners_before
 # Ouput combinations already tested above
-# TODO: Support multiple owners_before in CREATE transactions
-@pytest.mark.skip(reason=('CREATE transaction do not support multiple'
-                          ' owners_before'))
-def test_single_in_multiple_own_single_out_single_own_create(b, user_vk):
+def test_single_in_multiple_own_single_out_single_own_create(b, user_vk,
+                                                             user_sk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.transaction import Asset
 
     asset = Asset(divisible=True)
-    tx = Transaction.create([b.me, b.me], [([user_vk], 100)], asset=asset)
-    tx_signed = tx.sign([b.me, b.me])
+    tx = Transaction.create([b.me, user_vk], [([user_vk], 100)], asset=asset)
+    tx_signed = tx.sign([b.me_private, user_sk])
     assert tx_signed.validate(b) == tx_signed
+    assert len(tx_signed.conditions) == 1
+    assert tx_signed.conditions[0].amount == 100
+    assert len(tx_signed.fulfillments) == 1
+
+    ffill = tx_signed.fulfillments[0].fulfillment.to_dict()
+    assert 'subfulfillments' in ffill
+    assert len(ffill['subfulfillments']) == 2
 
 
 # TRANSFER divisible asset

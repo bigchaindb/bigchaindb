@@ -874,7 +874,8 @@ def test_create_create_transaction_threshold(user_pub, user2_pub, user3_pub,
         'version': 1
     }
     asset = Asset(data, data_id)
-    tx = Transaction.create([user_pub], [user_pub, user2_pub], data, asset)
+    tx = Transaction.create([user_pub], [([user_pub, user2_pub], 1)],
+                            data, asset)
     tx_dict = tx.to_dict()
     tx_dict.pop('id')
     tx_dict['transaction']['metadata'].pop('id')
@@ -888,11 +889,13 @@ def test_validate_threshold_create_transaction(user_pub, user_priv, user2_pub,
                                                data):
     from bigchaindb.common.transaction import Transaction, Asset
 
-    tx = Transaction.create([user_pub], [user_pub, user2_pub], data, Asset())
+    tx = Transaction.create([user_pub], [([user_pub, user2_pub], 1)],
+                            data, Asset())
     tx = tx.sign([user_priv])
     assert tx.fulfillments_valid() is True
 
 
+@mark.skip(reason='Hashlocks are not implemented')
 def test_create_create_transaction_hashlock(user_pub, data, data_id):
     from cryptoconditions import PreimageSha256Fulfillment
     from bigchaindb.common.transaction import Transaction, Condition, Asset
@@ -939,6 +942,7 @@ def test_create_create_transaction_hashlock(user_pub, data, data_id):
     assert tx == expected
 
 
+@mark.skip(reson='Hashlocks are not implemented')
 def test_validate_hashlock_create_transaction(user_pub, user_priv, data):
     from bigchaindb.common.transaction import Transaction, Asset
 

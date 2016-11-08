@@ -102,10 +102,10 @@ class Fulfillment(object):
     @classmethod
     def generate(cls, owners_before):
         # TODO: write docstring
-
-        if len(owners_before) == 1:
-            ffill = Ed25519Fulfillment(public_key=owners_before[0])
-            return cls(ffill, owners_before)
+        # The amount here does not really matter. It is only use on the
+        # condition data model but here we only care about the fulfillment
+        condition = Condition.generate(owners_before, 1)
+        return cls(condition.fulfillment, condition.owners_after)
 
     @classmethod
     def from_dict(cls, ffill):
@@ -308,14 +308,7 @@ class Condition(object):
                 TypeError: If `owners_after` is not an instance of `list`.
                 TypeError: If `owners_after` is an empty list.
         """
-        # TODO: We probably want to remove the tuple logic for weights here
-        # again:
-        # github.com/bigchaindb/bigchaindb/issues/730#issuecomment-255144756
-        if isinstance(owners_after, tuple):
-            owners_after, threshold = owners_after
-        else:
-            threshold = len(owners_after)
-
+        threshold = len(owners_after)
         if not isinstance(amount, int):
             raise TypeError('`amount` must be a int')
         if not isinstance(owners_after, list):
@@ -724,8 +717,7 @@ class Transaction(object):
             self.asset._validate_asset()
 
     @classmethod
-    def create(cls, owners_before, owners_after, metadata=None, asset=None,
-               secret=None, time_expire=None):
+    def create(cls, owners_before, owners_after, metadata=None, asset=None):
         # TODO: Update docstring
         """A simple way to generate a `CREATE` transaction.
 
@@ -761,45 +753,28 @@ class Transaction(object):
             raise TypeError('`owners_before` must be a list instance')
         if not isinstance(owners_after, list):
             raise TypeError('`owners_after` must be a list instance')
-
-        if (len(owners_before) > 0 and len(owners_after) == 0 and
-                time_expire is not None):
-            raise NotImplementedError('Timeout conditions will be implemented '
-                                      'later')
-        elif (len(owners_before) > 0 and len(owners_after) == 0 and
-              secret is None):
-            raise ValueError('Define a secret to create a hashlock condition')
-
-        else:
-            raise ValueError("These are not the cases you're looking for ;)")
+        if len(owners_before) == 0:
+            raise ValueError('`owners_before` list cannot be empty')
+        if len(owners_after) == 0:
+            raise ValueError('`owners_after` list cannot be empty')
 
         metadata = Metadata(metadata)
-
-        # TODO: Not sure there is a need to ensure that `owners_before == 1`
-        # TODO: For divisible assets we will need to create one hashlock
-        #       condition per output
-        # if (len(owners_before) == 1 and len(owners_after) == 0 and
-        #         secret is not None):
-        #     # NOTE: Hashlock condition case
-        #     hashlock = PreimageSha256Fulfillment(preimage=secret)
-        #     cond_tx = Condition(hashlock.condition_uri, amount=amount)
-        #     ffill = Ed25519Fulfillment(public_key=owners_before[0])
-        #     ffill_tx = Fulfillment(ffill, owners_before)
-        #     return cls(cls.CREATE, asset, [ffill_tx], [cond_tx], metadata)
-
-        ffils = []
+        ffills = []
         conds = []
 
         # generate_conditions
         for owner_after in owners_after:
             # TODO: Check types so this doesn't fail unpacking
+            if not isinstance(owner_after, tuple) or len(owner_after) != 2:
+                raise ValueError(('Each `owner_after` in the list is a tuple'
+                                  ' of `([<list of public keys>], <amount>)`'))
             pub_keys, amount = owner_after
             conds.append(Condition.generate(pub_keys, amount))
 
         # generate fulfillments
-        ffils.append(Fulfillment.generate(owners_before))
+        ffills.append(Fulfillment.generate(owners_before))
 
-        return cls(cls.CREATE, asset, ffils, conds, metadata)
+        return cls(cls.CREATE, asset, ffills, conds, metadata)
 
     @classmethod
     def transfer(cls, inputs, owners_after, asset, metadata=None):
@@ -978,7 +953,7 @@ class Transaction(object):
         key_pairs = {gen_public_key(SigningKey(private_key)):
                      SigningKey(private_key) for private_key in private_keys}
 
-        # TODO: What does the conditions of this transaction have to do with the 
+        # TODO: What does the conditions of this transaction have to do with the
         #       fulfillments, and why does this enforce for the number of fulfillments
         #       and conditions to be the same?
         # TODO: Need to check how this was done before common but I from what I remember we
