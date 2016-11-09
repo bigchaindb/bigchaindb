@@ -97,8 +97,7 @@ def test_duplicate_transaction(b, user_vk):
     # verify tx is in the backlog
     assert b.connection.run(r.table('backlog').get(txs[0].id)) is not None
 
-    # try to validate a transaction that's already in the chain; should not
-    # work
+    # try to validate a transaction that's already in the chain; should not work
     assert block_maker.validate_tx(txs[0].to_dict()) is None
 
     # duplicate tx should be removed from backlog

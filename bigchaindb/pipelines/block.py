@@ -69,10 +69,7 @@ class BlockPipeline:
                 # if the tx is already in a valid or undecided block,
                 # then it no longer should be in the backlog, or added
                 # to a new block. We can delete and drop it.
-                self.bigchain.connection.run(
-                    r.table('backlog')
-                    .get(tx.id)
-                    .delete(durability='hard'))
+                self.bigchain.delete_transaction(tx.id)
                 return None
 
         tx_validated = self.bigchain.is_valid_transaction(tx)
@@ -81,10 +78,7 @@ class BlockPipeline:
         else:
             # if the transaction is not valid, remove it from the
             # backlog
-            self.bigchain.connection.run(
-                r.table('backlog')
-                .get(tx.id)
-                .delete(durability='hard'))
+            self.bigchain.delete_transaction(tx.id)
             return None
 
     def create(self, tx, timeout=False):
@@ -136,10 +130,7 @@ class BlockPipeline:
         Returns:
             :class:`~bigchaindb.models.Block`: The block.
         """
-        self.bigchain.connection.run(
-            r.table('backlog')
-            .get_all(*[tx.id for tx in block.transactions])
-            .delete(durability='hard'))
+        self.bigchain.delete_transaction(*[tx.id for tx in block.transactions])
         return block
 
 

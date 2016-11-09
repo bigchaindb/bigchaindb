@@ -31,10 +31,10 @@ check_setuptools_features()
 tests_require = [
     'coverage',
     'pep8',
-    'pyflakes',
+    'flake8',
     'pylint',
     'pytest',
-    'pytest-cov==2.2.1',
+    'pytest-cov>=2.2.1',
     'pytest-xdist',
     'pytest-flask',
 ]
@@ -48,12 +48,25 @@ docs_require = [
     'Sphinx>=1.3.5',
     'recommonmark>=0.4.0',
     'sphinx-rtd-theme>=0.1.9',
-    'sphinxcontrib-napoleon>=0.4.4',
     'sphinxcontrib-httpdomain>=1.5.0',
 ]
 
 benchmarks_require = [
     'line-profiler==1.0',
+]
+
+install_requires = [
+    'rethinkdb~=2.3',  # i.e. a version between 2.3 and 3.0
+    'pysha3>=0.3',
+    'cryptoconditions>=0.5.0',
+    'statsd>=3.2.1',
+    'python-rapidjson>=0.0.6',
+    'logstats>=0.2.1',
+    'flask>=0.10.1',
+    'flask-restful~=0.3.0',
+    'requests~=2.9',
+    'gunicorn~=19.0',
+    'multipipes~=0.1.0',
 ]
 
 setup(
@@ -75,7 +88,7 @@ setup(
         'Topic :: Software Development',
         'Natural Language :: English',
         'License :: OSI Approved :: GNU Affero General Public License v3',
-        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3 :: Only',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Operating System :: MacOS :: MacOS X',
@@ -89,21 +102,7 @@ setup(
             'bigchaindb=bigchaindb.commands.bigchain:main'
         ],
     },
-    install_requires=[
-        'rethinkdb~=2.3',
-        'pysha3==0.3',
-        'pytz==2015.7',
-        'cryptoconditions==0.5.0',
-        'statsd==3.2.1',
-        'python-rapidjson==0.0.6',
-        'logstats==0.2.1',
-        'base58==0.2.2',
-        'flask==0.10.1',
-        'flask-restful~=0.3.0',
-        'requests~=2.9',
-        'gunicorn~=19.0',
-        'multipipes~=0.1.0',
-    ],
+    install_requires=install_requires,
     setup_requires=['pytest-runner'],
     tests_require=tests_require,
     extras_require={
