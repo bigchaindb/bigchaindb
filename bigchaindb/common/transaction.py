@@ -274,7 +274,6 @@ class Condition(object):
 
     @classmethod
     def generate(cls, owners_after, amount):
-        # TODO: Update docstring
         """Generates a Condition from a specifically formed tuple or list.
 
             Note:
@@ -284,25 +283,18 @@ class Condition(object):
 
                 [(address|condition)*, [(address|condition)*, ...], ...]
 
-                If however, the thresholds of individual threshold conditions
-                to be created have to be set specifically, a tuple of the
-                following structure is necessary:
-
-                ([(address|condition)*,
-                  ([(address|condition)*, ...], subthreshold),
-                  ...], threshold)
-
             Args:
-                owners_after (:obj:`list` of :obj:`str`|tuple): The users that
-                    should be able to fulfill the Condition that is being
-                    created.
+                owners_after (:obj:`list` of :obj:`str`): The public key of
+                    the users that should be able to fulfill the Condition
+                    that is being created.
+                amount (:obj:`int`): The amount locked by the condition.
 
             Returns:
                 A Condition that can be used in a Transaction.
 
             Returns:
                 TypeError: If `owners_after` is not an instance of `list`.
-                TypeError: If `owners_after` is an empty list.
+                Value: If `owners_after` is an empty list.
         """
         threshold = len(owners_after)
         if not isinstance(amount, int):
@@ -686,7 +678,6 @@ class Transaction(object):
 
     @classmethod
     def create(cls, owners_before, owners_after, metadata=None, asset=None):
-        # TODO: Update docstring
         """A simple way to generate a `CREATE` transaction.
 
             Note:
@@ -694,7 +685,6 @@ class Transaction(object):
                 use cases:
                     - Ed25519
                     - ThresholdSha256
-                    - PreimageSha256.
 
                 Additionally, it provides support for the following BigchainDB
                 use cases:
@@ -709,10 +699,6 @@ class Transaction(object):
                     Transaction.
                 asset (:class:`~bigchaindb.common.transaction.Asset`): An Asset
                     to be created in this Transaction.
-                secret (binarystr, optional): A secret string to create a hash-
-                    lock Condition.
-                time_expire (int, optional): The UNIX time a Transaction is
-                    valid.
 
             Returns:
                 :class:`~bigchaindb.common.transaction.Transaction`
@@ -1079,7 +1065,6 @@ class Transaction(object):
             """Splits multiple IO Transactions into partial single IO
             Transactions.
             """
-            # TODO: Understand how conditions are being handled
             tx = Transaction(self.operation, self.asset, [fulfillment],
                              self.conditions, self.metadata, self.timestamp,
                              self.version)
@@ -1092,12 +1077,6 @@ class Transaction(object):
                                                   tx_serialized,
                                                   input_condition_uri)
 
-        # TODO: Why?? Need to ask @TimDaub
-        # if not fulfillments_count == conditions_count == \
-        #    input_condition_uris_count:
-        #     raise ValueError('Fulfillments, conditions and '
-        #                      'input_condition_uris must have the same count')
-        # else:
         if not fulfillments_count == input_condition_uris_count:
             raise ValueError('Fulfillments and '
                              'input_condition_uris must have the same count')

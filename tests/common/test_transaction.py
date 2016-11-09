@@ -598,7 +598,6 @@ def test_validate_multiple_fulfillments(user_ffill, user_cond, user_priv):
     from bigchaindb.common.crypto import SigningKey
     from bigchaindb.common.transaction import Transaction, Asset
 
-    # TODO: Why is there a fulfillment in the conditions list
     tx = Transaction(Transaction.CREATE, Asset(divisible=True),
                      [user_ffill, deepcopy(user_ffill)],
                      [user_cond, deepcopy(user_cond)])
@@ -792,7 +791,6 @@ def test_validate_multiple_io_create_transaction(user_pub, user_priv,
                                                  user2_pub, user2_priv):
     from bigchaindb.common.transaction import Transaction, Asset
 
-    # TODO: Fix multiple owners_before in create transactions
     tx = Transaction.create([user_pub, user2_pub],
                             [([user_pub], 1), ([user2_pub], 1)],
                             metadata={'message': 'hello'},
