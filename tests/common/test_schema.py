@@ -1,4 +1,3 @@
-
 from bigchaindb.common.schema import SchemaObject
 import unittest
 

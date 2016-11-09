@@ -1,4 +1,11 @@
-""" Schema definitions for BigchainDB data structure """
+"""
+Schema definitions for BigchainDB data structure.
+
+Schema definitons are defined here in classes which are then translated
+into Json Schema (http://json-schema.org/). The classes are used for
+readability and to make documenting easier.
+"""
+
 
 def nullable(data):
     """ Describe optional data """
@@ -27,7 +34,7 @@ class SchemaObject(object):
 
 class TransactionBody(SchemaObject):
     """
-    An TransactionBody contains the bulk of the information of a transaction.
+    A TransactionBody contains the body of the information of a transaction.
     """
     operation = {
         "type": "string",
@@ -153,6 +160,4 @@ class Transaction(SchemaObject):
     """
 
 
-SCHEMATA = {
-    'transaction': Transaction.to_json_schema()
-}
+TRANSACTION_JSON_SCHEMA = Transaction.to_json_schema()

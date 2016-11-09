@@ -1259,6 +1259,8 @@ class Transaction(object):
             Returns:
                 :class:`~bigchaindb.common.transaction.Transaction`
         """
+        import pdb; pdb.set_trace()
+
         # NOTE: Remove reference to avoid side effects
         tx_body = deepcopy(tx_body)
         try:
