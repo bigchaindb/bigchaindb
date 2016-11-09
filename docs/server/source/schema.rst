@@ -1,6 +1,6 @@
-======
-Schema
-======
+================
+Schema Reference
+================
 
 .. currentmodule:: bigchaindb.common.schema
 
@@ -8,5 +8,5 @@ Schema
    :members:
 
 
-.. autoclass:: InnerTransaction
+.. autoclass:: TransactionBody
    :members:

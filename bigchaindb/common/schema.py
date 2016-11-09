@@ -6,14 +6,28 @@ def nullable(data):
 
 
 class SchemaObject(object):
+    """ Class to represent a Schema Object """
     @classmethod
     def to_json_schema(cls):
-        pass
+        """
+        Convert a SchemaObject into Json Schema
+        """
+        out = {}
+        for k, v in cls.__dict__.items():
+            if k.startswith('__'):
+                continue
+            if isinstance(v, type) and issubclass(v, SchemaObject):
+                v = v.to_json_schema()
+            if k == '_definitions':
+                out['definitions'] = v
+            else:
+                out.setdefault('properties', {})[k] = v
+        return out
 
 
-class InnerTransaction(SchemaObject):
+class TransactionBody(SchemaObject):
     """
-    An InnerTransaction contains the bulk of the information of a transaction.
+    An TransactionBody contains the bulk of the information of a transaction.
     """
     operation = {
         "type": "string",
@@ -25,25 +39,6 @@ class InnerTransaction(SchemaObject):
     A "TRANSFER" transaction redefines ownership of a whole or part of an asset
     and has inputs.
     """
-
-    fulfillments = {
-        "type": "array",
-        "items": {
-            "current_owners": {
-                "$ref": "#/definitions/owners_list"
-            },
-            "input": nullable({
-                "$ref": "#/definitions/sha3_hexdigest"
-            }),
-            "fulfillment": {
-                "type": "string"
-            },
-            "fid": {
-                "type": "integer"
-            }
-        },
-        "required": ["current_owners", "input", "fulfillment", "fid"]
-    }
 
     conditions = {
         "type": "array",
@@ -70,6 +65,33 @@ class InnerTransaction(SchemaObject):
             "required": ["new_owners", "condition", "cid"]
         }
     }
+    """
+    Conditions are the outputs of a transaction, a successive transaction may
+    spend them by providing corresponding fulfillments.
+    """
+
+    fulfillments = {
+        "type": "array",
+        "items": {
+            "current_owners": {
+                "$ref": "#/definitions/owners_list"
+            },
+            "input": nullable({
+                "$ref": "#/definitions/sha3_hexdigest"
+            }),
+            "fulfillment": {
+                "type": "string"
+            },
+            "fid": {
+                "type": "integer"
+            }
+        },
+        "required": ["current_owners", "input", "fulfillment", "fid"]
+    }
+    """
+    Fulfillments provide inputs to a transaction by fulfilling conditions of
+    previous transactions.
+    """
 
     timestamp = {
         "type": "string",
@@ -90,7 +112,7 @@ class InnerTransaction(SchemaObject):
     required = ["fulfillments", "conditions", "operation", "timestamp", "data"]
 
 
-class Transaction(object):
+class Transaction(SchemaObject):
     """
     A Transaction is an operation to create or transfer an asset.
     """
@@ -108,7 +130,8 @@ class Transaction(object):
             "items": {"$ref": "#/DEFINITIONS/base58"}
         }),
     }
-    id = {"$ref": "#/definitions/sha3_hexdigest"}
+
+    id = {"$ref": "#/definitions/sha3_hexdigest"}  # noqa
     """
     Transaction ID is a sha3 hash of the JSON dump of the transaction,
     with object keys in alphabetical order.
@@ -123,7 +146,13 @@ class Transaction(object):
     Transaction is currently targeting version 1, but still somewhat in flux.
     """
 
-    transaction = InnerTransaction.to_json_schema()
+    transaction = TransactionBody
+    """
+    The body of the transaction. The body of the transaction is not at top level
+    so that the ID, which is a hash of the body, does not depend on itself.
+    """
 
 
-__all__ = ['Transaction', 'InnerTransaction']
+SCHEMATA = {
+    'transaction': Transaction.to_json_schema()
+}
