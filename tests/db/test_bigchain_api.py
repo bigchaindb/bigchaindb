@@ -582,7 +582,7 @@ class TestBigchainApi(object):
                                   TransactionLink('somethingsomething', 0))
         tx = Transaction.transfer([fulfillment], [([user_vk], 1)], Asset())
 
-        with pytest.raises(TransactionDoesNotExist) as excinfo:
+        with pytest.raises(TransactionDoesNotExist):
             tx.validate(Bigchain())
 
 
@@ -666,7 +666,8 @@ class TestTransactionValidation(object):
         input_tx = b.get_owned_ids(user_vk).pop()
         input_tx = b.get_transaction(input_tx.txid)
         inputs = input_tx.to_inputs()
-        transfer_tx = Transaction.transfer(inputs, [([user_vk], 1)], input_tx.asset)
+        transfer_tx = Transaction.transfer(inputs, [([user_vk], 1)],
+                                           input_tx.asset)
         transfer_tx = transfer_tx.sign([user_sk])
 
         assert transfer_tx == b.validate_transaction(transfer_tx)
@@ -690,7 +691,8 @@ class TestTransactionValidation(object):
         inputs = input_tx.to_inputs()
 
         # create a transaction that's valid but not in a voted valid block
-        transfer_tx = Transaction.transfer(inputs, [([user_vk], 1)], input_tx.asset)
+        transfer_tx = Transaction.transfer(inputs, [([user_vk], 1)],
+                                           input_tx.asset)
         transfer_tx = transfer_tx.sign([user_sk])
 
         assert transfer_tx == b.validate_transaction(transfer_tx)
@@ -965,7 +967,6 @@ class TestMultipleInputs(object):
 
     def test_get_owned_ids_single_tx_multiple_outputs(self, b, user_sk,
                                                       user_vk):
-        import random
         from bigchaindb.common import crypto
         from bigchaindb.common.transaction import TransactionLink, Asset
         from bigchaindb.models import Transaction
@@ -992,8 +993,8 @@ class TestMultipleInputs(object):
 
         # transfer divisible asset divided in two outputs
         tx_transfer = Transaction.transfer(tx_create.to_inputs(),
-                                            [([user2_vk], 1), ([user2_vk], 1)],
-                                            asset=tx_create.asset)
+                                           [([user2_vk], 1), ([user2_vk], 1)],
+                                           asset=tx_create.asset)
         tx_transfer_signed = tx_transfer.sign([user_sk])
         block = b.create_block([tx_transfer_signed])
         b.write_block(block, durability='hard')
@@ -1012,7 +1013,7 @@ class TestMultipleInputs(object):
         user2_sk, user2_vk = crypto.generate_key_pair()
         user3_sk, user3_vk = crypto.generate_key_pair()
 
-        tx = Transaction.create([b.me], [([user_vk, user2_vk],1)])
+        tx = Transaction.create([b.me], [([user_vk, user2_vk], 1)])
         tx = tx.sign([b.me_private])
         block = b.create_block([tx])
         b.write_block(block, durability='hard')
@@ -1105,7 +1106,6 @@ class TestMultipleInputs(object):
         assert spent_inputs_user1 is None
 
     def test_get_spent_single_tx_multiple_outputs(self, b, user_sk, user_vk):
-        import random
         from bigchaindb.common import crypto
         from bigchaindb.models import Transaction
         from bigchaindb.common.transaction import Asset
@@ -1158,7 +1158,8 @@ class TestMultipleInputs(object):
         transactions = []
         for i in range(3):
             payload = {'somedata': random.randint(0, 255)}
-            tx = Transaction.create([b.me], [([user_vk, user2_vk], 1)], payload)
+            tx = Transaction.create([b.me], [([user_vk, user2_vk], 1)],
+                                    payload)
             tx = tx.sign([b.me_private])
             transactions.append(tx)
         block = b.create_block(transactions)

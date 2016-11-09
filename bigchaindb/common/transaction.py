@@ -3,8 +3,7 @@ from functools import reduce
 from uuid import uuid4
 
 from cryptoconditions import (Fulfillment as CCFulfillment,
-                              ThresholdSha256Fulfillment, Ed25519Fulfillment,
-                              PreimageSha256Fulfillment)
+                              ThresholdSha256Fulfillment, Ed25519Fulfillment)
 from cryptoconditions.exceptions import ParsingError
 
 from bigchaindb.common.crypto import SigningKey, hash_data
@@ -800,7 +799,6 @@ class Transaction(object):
             pub_keys, amount = owner_after
             conds.append(Condition.generate(pub_keys, amount))
 
-
         metadata = Metadata(metadata)
         inputs = deepcopy(inputs)
         return cls(cls.TRANSFER, asset, inputs, conds, metadata)
@@ -914,12 +912,6 @@ class Transaction(object):
         key_pairs = {gen_public_key(SigningKey(private_key)):
                      SigningKey(private_key) for private_key in private_keys}
 
-        # TODO: What does the conditions of this transaction have to do with the
-        #       fulfillments, and why does this enforce for the number of fulfillments
-        #       and conditions to be the same?
-        # TODO: Need to check how this was done before common but I from what I remember we
-        #       included the condition that we were fulfilling in the message to be signed.
-        # zippedIO = enumerate(zip(self.fulfillments, self.conditions))
         for index, fulfillment in enumerate(self.fulfillments):
             # NOTE: We clone the current transaction but only add the condition
             #       and fulfillment we're currently working on plus all
@@ -1082,7 +1074,6 @@ class Transaction(object):
         """
         input_condition_uris_count = len(input_condition_uris)
         fulfillments_count = len(self.fulfillments)
-        conditions_count = len(self.conditions)
 
         def gen_tx(fulfillment, condition, input_condition_uri=None):
             """Splits multiple IO Transactions into partial single IO

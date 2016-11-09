@@ -596,7 +596,7 @@ def test_validate_multiple_fulfillments(user_ffill, user_cond, user_priv):
     from copy import deepcopy
 
     from bigchaindb.common.crypto import SigningKey
-    from bigchaindb.common.transaction import Transaction, Asset, Condition
+    from bigchaindb.common.transaction import Transaction, Asset
 
     # TODO: Why is there a fulfillment in the conditions list
     tx = Transaction(Transaction.CREATE, Asset(divisible=True),
@@ -920,9 +920,9 @@ def test_create_create_transaction_with_invalid_parameters(user_pub):
     with raises(TypeError):
         Transaction.create([], 'not a list')
     with raises(ValueError):
-        Transaction.create([],[user_pub])
+        Transaction.create([], [user_pub])
     with raises(ValueError):
-        Transaction.create([user_pub],[])
+        Transaction.create([user_pub], [])
     with raises(ValueError):
         Transaction.create([user_pub], [user_pub])
     with raises(ValueError):
@@ -998,7 +998,7 @@ def test_create_transfer_transaction_multiple_io(user_pub, user_priv,
 
     asset = Asset(divisible=True)
     tx = Transaction.create([user_pub], [([user_pub], 1), ([user2_pub], 1)],
-                             asset=asset, metadata={'message': 'hello'})
+                            asset=asset, metadata={'message': 'hello'})
     tx = tx.sign([user_priv])
 
     expected = {
@@ -1032,7 +1032,6 @@ def test_create_transfer_transaction_multiple_io(user_pub, user_priv,
         },
         'version': 1
     }
-    tx_inputs = tx.to_inputs()
 
     transfer_tx = Transaction.transfer(tx.to_inputs(),
                                        [([user2_pub], 1), ([user2_pub], 1)],

@@ -182,7 +182,8 @@ class Bigchain(object):
 
         try:
             return self.validate_transaction(transaction)
-        except (ValueError, exceptions.OperationError, exceptions.TransactionDoesNotExist,
+        except (ValueError, exceptions.OperationError,
+                exceptions.TransactionDoesNotExist,
                 exceptions.TransactionOwnerError, exceptions.DoubleSpend,
                 exceptions.InvalidHash, exceptions.InvalidSignature,
                 exceptions.FulfillmentNotInValidBlock, exceptions.AmountError):
@@ -357,7 +358,6 @@ class Bigchain(object):
         cursor = list(cursor)
         if cursor:
             return Asset.from_dict(cursor[0]['transaction']['asset'])
-
 
     def get_spent(self, txid, cid):
         """Check if a `txid` was already used as an input.

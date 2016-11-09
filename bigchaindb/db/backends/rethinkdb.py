@@ -178,7 +178,8 @@ class RethinkDBBackend:
             r.table('bigchain', read_mode=self.read_mode)
              .get_all(asset_id, index='asset_id')
              .concat_map(lambda block: block['block']['transactions'])
-             .filter(lambda transaction: transaction['transaction']['asset']['id'] == asset_id))
+             .filter(lambda transaction:
+                     transaction['transaction']['asset']['id'] == asset_id))
 
     def get_asset_by_id(self, asset_id):
         """Returns the asset associated with an asset_id
