@@ -32,7 +32,8 @@ def test_single_in_single_own_multiple_out_single_own_create(b, user_vk):
     from bigchaindb.common.transaction import Asset
 
     asset = Asset(divisible=True)
-    tx = Transaction.create([b.me], [([user_vk], 50), ([user_vk], 50)], asset=asset)
+    tx = Transaction.create([b.me], [([user_vk], 50), ([user_vk], 50)],
+                            asset=asset)
     tx_signed = tx.sign([b.me_private])
 
     assert tx_signed.validate(b) == tx_signed
@@ -161,7 +162,7 @@ def test_single_in_single_own_single_out_single_own_transfer(b, user_vk,
 # Single owners_after
 @pytest.mark.usefixtures('inputs')
 def test_single_in_single_own_multiple_out_single_own_transfer(b, user_vk,
-                                                              user_sk):
+                                                               user_sk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.transaction import Asset
 
@@ -197,7 +198,7 @@ def test_single_in_single_own_multiple_out_single_own_transfer(b, user_vk,
 # Multiple owners_after
 @pytest.mark.usefixtures('inputs')
 def test_single_in_single_own_single_out_multiple_own_transfer(b, user_vk,
-                                                              user_sk):
+                                                               user_sk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.transaction import Asset
 
@@ -238,7 +239,7 @@ def test_single_in_single_own_single_out_multiple_own_transfer(b, user_vk,
 #      owners_after
 @pytest.mark.usefixtures('inputs')
 def test_single_in_single_own_multiple_out_mix_own_transfer(b, user_vk,
-                                                           user_sk):
+                                                            user_sk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.transaction import Asset
 
@@ -388,7 +389,6 @@ def test_multiple_in_multiple_own_single_out_single_own_transfer(b, user_vk,
     assert 'subfulfillments' in ffill_fid1
     assert len(ffill_fid0['subfulfillments']) == 2
     assert len(ffill_fid1['subfulfillments']) == 2
-
 
 
 # TRANSFER divisible asset
@@ -589,46 +589,15 @@ def test_amount_error_transfer(b, user_vk, user_sk):
         tx_transfer_signed.validate(b)
 
 
-@pytest.mark.skip
-@pytest.mark.usefixtures('inputs')
-def test_transaction_unfulfilled_fulfillments(b, user_vk,
-                                              user_sk):
-    from bigchaindb.models import Transaction
-    from bigchaindb.common.transaction import Asset
-
-    # CREATE divisible asset
-    asset = Asset(divisible=True)
-    tx_create = Transaction.create([b.me],
-                                   [([user_vk, b.me], 50),
-                                    ([user_vk, b.me], 50)],
-                                   asset=asset)
-    tx_create_signed = tx_create.sign([b.me_private])
-    # create block
-    block = b.create_block([tx_create_signed])
-    assert block.validate(b) == block
-    b.write_block(block, durability='hard')
-    # vote
-    vote = b.vote(block.id, b.get_last_voted_block().id, True)
-    b.write_vote(vote)
-
-    # TRANSFER
-    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([b.me], 100)],
-                                       asset=tx_create.asset)
-    tx_transfer_signed = tx_transfer.sign([b.me_private, user_sk])
-
-    # TODO: This transaction has unfulfilled fulfillments and should be
-    #       invalid. Somehow the validation passes
-    assert b.is_valid_transaction(tx_transfer_signed) == False
-
-
-@pytest.mark.skip(reason=('get_subcondition_from_vk does not always work'
-                          ' as expected'))
+@pytest.mark.skip(reason='Figure out how to handle this case')
 @pytest.mark.usefixtures('inputs')
 def test_threshold_same_public_key(b, user_vk, user_sk):
     # If we try to fulfill a threshold condition where each subcondition has
     # the same key get_subcondition_from_vk will always return the first
     # subcondition. This means that only the 1st subfulfillment will be
     # generated
+    # Creating threshold conditions with the same key does not make sense but
+    # that does not mean that the code shouldn't work.
 
     from bigchaindb.models import Transaction
     from bigchaindb.common.transaction import Asset
@@ -652,3 +621,66 @@ def test_threshold_same_public_key(b, user_vk, user_sk):
     tx_transfer_signed = tx_transfer.sign([user_sk, user_sk])
 
     assert tx_transfer_signed.validate(b) == tx_transfer_signed
+
+
+@pytest.mark.usefixtures('inputs')
+def test_sum_amount(b, user_vk, user_sk):
+    from bigchaindb.models import Transaction
+    from bigchaindb.common.transaction import Asset
+
+    # CREATE divisible asset with 3 outputs with amount 1
+    asset = Asset(divisible=True)
+    tx_create = Transaction.create([b.me],
+                                   [([user_vk], 1),
+                                    ([user_vk], 1),
+                                    ([user_vk], 1)],
+                                   asset=asset)
+    tx_create_signed = tx_create.sign([b.me_private])
+    # create block
+    block = b.create_block([tx_create_signed])
+    assert block.validate(b) == block
+    b.write_block(block, durability='hard')
+    # vote
+    vote = b.vote(block.id, b.get_last_voted_block().id, True)
+    b.write_vote(vote)
+
+    # create a transfer transaction with one output and check if the amount
+    # is 3
+    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([b.me], 3)],
+                                       asset=tx_create.asset)
+    tx_transfer_signed = tx_transfer.sign([user_sk])
+
+    assert tx_transfer_signed.validate(b) == tx_transfer_signed
+    assert len(tx_transfer_signed.conditions) == 1
+    assert tx_transfer_signed.conditions[0].amount == 3
+
+
+@pytest.mark.usefixtures('inputs')
+def test_divide(b, user_vk, user_sk):
+    from bigchaindb.models import Transaction
+    from bigchaindb.common.transaction import Asset
+
+    # CREATE divisible asset with 1 output with amount 3
+    asset = Asset(divisible=True)
+    tx_create = Transaction.create([b.me], [([user_vk], 3)],
+                                   asset=asset)
+    tx_create_signed = tx_create.sign([b.me_private])
+    # create block
+    block = b.create_block([tx_create_signed])
+    assert block.validate(b) == block
+    b.write_block(block, durability='hard')
+    # vote
+    vote = b.vote(block.id, b.get_last_voted_block().id, True)
+    b.write_vote(vote)
+
+    # create a transfer transaction with 3 outputs and check if the amount
+    # of each output is 1
+    tx_transfer = Transaction.transfer(tx_create.to_inputs(),
+                                       [([b.me], 1), ([b.me], 1), ([b.me], 1)],
+                                       asset=tx_create.asset)
+    tx_transfer_signed = tx_transfer.sign([user_sk])
+
+    assert tx_transfer_signed.validate(b) == tx_transfer_signed
+    assert len(tx_transfer_signed.conditions) == 3
+    for condition in tx_transfer_signed.conditions:
+        assert condition.amount == 1

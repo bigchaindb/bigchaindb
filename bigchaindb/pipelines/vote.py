@@ -40,7 +40,7 @@ class Vote:
         self.validity = {}
 
         self.invalid_dummy_tx = Transaction.create([self.bigchain.me],
-                                                   [self.bigchain.me])
+                                                   [([self.bigchain.me], 1)])
 
     def validate_block(self, block):
         if not self.bigchain.has_previous_vote(block['id'], block['block']['voters']):

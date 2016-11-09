@@ -346,14 +346,11 @@ class Condition(object):
             Returns:
                 :class:`cryptoconditions.ThresholdSha256Fulfillment`:
         """
-        if isinstance(current, tuple):
-            owners_after, threshold = current
-        else:
-            owners_after = current
-            try:
-                threshold = len(owners_after)
-            except TypeError:
-                threshold = None
+        owners_after = current
+        try:
+            threshold = len(owners_after)
+        except TypeError:
+            threshold = None
 
         if isinstance(owners_after, list) and len(owners_after) > 1:
             ffill = ThresholdSha256Fulfillment(threshold=threshold)
@@ -764,7 +761,6 @@ class Transaction(object):
 
         # generate_conditions
         for owner_after in owners_after:
-            # TODO: Check types so this doesn't fail unpacking
             if not isinstance(owner_after, tuple) or len(owner_after) != 2:
                 raise ValueError(('Each `owner_after` in the list is a tuple'
                                   ' of `([<list of public keys>], <amount>)`'))
@@ -821,21 +817,14 @@ class Transaction(object):
             raise ValueError('`inputs` must contain at least one item')
         if not isinstance(owners_after, list):
             raise TypeError('`owners_after` must be a list instance')
-
-        # # NOTE: See doc strings `Note` for description.
-        # if len(inputs) == len(owners_after):
-        #     if len(owners_after) == 1:
-        #         conditions = [Condition.generate(owners_after)]
-        #     elif len(owners_after) > 1:
-        #         conditions = [Condition.generate(owners) for owners
-        #                       in owners_after]
-        # else:
-        #     # TODO: Why??
-        #     raise ValueError("`inputs` and `owners_after`'s count must be the "
-        #                      "same")
+        if len(owners_after) == 0:
+            raise ValueError('`owners_after` list cannot be empty')
 
         conds = []
         for owner_after in owners_after:
+            if not isinstance(owner_after, tuple) or len(owner_after) != 2:
+                raise ValueError(('Each `owner_after` in the list is a tuple'
+                                  ' of `([<list of public keys>], <amount>)`'))
             pub_keys, amount = owner_after
             conds.append(Condition.generate(pub_keys, amount))
 

@@ -171,28 +171,6 @@ def test_generate_conditions_split_half_recursive(user_pub, user2_pub,
     assert cond.fulfillment.to_dict() == expected.to_dict()
 
 
-def test_generate_conditions_split_half_recursive_custom_threshold(user_pub,
-                                                                   user2_pub,
-                                                                   user3_pub):
-    from bigchaindb.common.transaction import Condition
-    from cryptoconditions import Ed25519Fulfillment, ThresholdSha256Fulfillment
-
-    expected_simple1 = Ed25519Fulfillment(public_key=user_pub)
-    expected_simple2 = Ed25519Fulfillment(public_key=user2_pub)
-    expected_simple3 = Ed25519Fulfillment(public_key=user3_pub)
-
-    expected = ThresholdSha256Fulfillment(threshold=1)
-    expected.add_subfulfillment(expected_simple1)
-    expected_threshold = ThresholdSha256Fulfillment(threshold=1)
-    expected_threshold.add_subfulfillment(expected_simple2)
-    expected_threshold.add_subfulfillment(expected_simple3)
-    expected.add_subfulfillment(expected_threshold)
-
-    cond = Condition.generate(([user_pub, ([user2_pub, expected_simple3], 1)],
-                              1), 1)
-    assert cond.fulfillment.to_dict() == expected.to_dict()
-
-
 def test_generate_conditions_split_half_single_owner(user_pub, user2_pub,
                                                      user3_pub):
     from bigchaindb.common.transaction import Condition
@@ -614,24 +592,23 @@ def test_validate_fulfillment_with_invalid_parameters(utx):
                                   input_conditions) is False
 
 
-@mark.skip(reason='Talk to @TimDaub')
 def test_validate_multiple_fulfillments(user_ffill, user_cond, user_priv):
     from copy import deepcopy
 
     from bigchaindb.common.crypto import SigningKey
-    from bigchaindb.common.transaction import Transaction, Asset
+    from bigchaindb.common.transaction import Transaction, Asset, Condition
 
     # TODO: Why is there a fulfillment in the conditions list
-    tx = Transaction(Transaction.CREATE, Asset(),
+    tx = Transaction(Transaction.CREATE, Asset(divisible=True),
                      [user_ffill, deepcopy(user_ffill)],
-                     [user_ffill, deepcopy(user_cond)])
+                     [user_cond, deepcopy(user_cond)])
 
     expected_first = deepcopy(tx)
     expected_second = deepcopy(tx)
     expected_first.fulfillments = [expected_first.fulfillments[0]]
-    expected_first.conditions = [expected_first.conditions[0]]
+    expected_first.conditions = expected_first.conditions
     expected_second.fulfillments = [expected_second.fulfillments[1]]
-    expected_second.conditions = [expected_second.conditions[1]]
+    expected_second.conditions = expected_second.conditions
 
     expected_first_bytes = str(expected_first).encode()
     expected_first.fulfillments[0].fulfillment.sign(expected_first_bytes,
@@ -700,7 +677,6 @@ def test_multiple_fulfillment_validation_of_transfer_tx(user_ffill, user_cond,
     assert transfer_tx.fulfillments_valid(tx.conditions) is True
 
 
-@mark.skip(reason='Ask @TimDaub')
 def test_validate_fulfillments_of_transfer_tx_with_invalid_params(transfer_tx,
                                                                   cond_uri,
                                                                   utx,
@@ -724,11 +700,6 @@ def test_validate_fulfillments_of_transfer_tx_with_invalid_params(transfer_tx,
     with raises(TypeError):
         transfer_tx.operation = "Operation that doesn't exist"
         transfer_tx.fulfillments_valid([utx.conditions[0]])
-    # TODO: Why should this raise a ValueError?
-    with raises(ValueError):
-        tx = utx.sign([user_priv])
-        tx.conditions = []
-        tx.fulfillments_valid()
 
 
 def test_create_create_transaction_single_io(user_cond, user_pub, data,
@@ -782,12 +753,15 @@ def test_validate_single_io_create_transaction(user_pub, user_priv, data):
     assert tx.fulfillments_valid() is True
 
 
-@mark.skip(reason='Multiple inputs and outputs in CREATE not supported')
-# TODO: Add digital assets
 def test_create_create_transaction_multiple_io(user_cond, user2_cond, user_pub,
                                                user2_pub):
-    from bigchaindb.common.transaction import Transaction
+    from bigchaindb.common.transaction import Transaction, Asset, Fulfillment
 
+    # a fulfillment for a create transaction with multiple `owners_before`
+    # is a fulfillment for an implicit threshold condition with
+    # weight = len(owners_before)
+    ffill = Fulfillment.generate([user_pub, user2_pub]).to_dict()
+    ffill.update({'fid': 0})
     expected = {
         'transaction': {
             'conditions': [user_cond.to_dict(0), user2_cond.to_dict(1)],
@@ -796,33 +770,20 @@ def test_create_create_transaction_multiple_io(user_cond, user2_cond, user_pub,
                     'message': 'hello'
                 }
             },
-            'fulfillments': [
-                {
-                    'owners_before': [
-                        user_pub,
-                    ],
-                    'fid': 0,
-                    'fulfillment': None,
-                    'input': None
-                },
-                {
-                    'owners_before': [
-                        user2_pub,
-                    ],
-                    'fid': 1,
-                    'fulfillment': None,
-                    'input': None
-                }
-            ],
+            'fulfillments': [ffill],
             'operation': 'CREATE',
         },
         'version': 1
     }
-    tx = Transaction.create([user_pub, user2_pub], [user_pub, user2_pub],
-                            {'message': 'hello'}).to_dict()
+    asset = Asset(divisible=True)
+    tx = Transaction.create([user_pub, user2_pub],
+                            [([user_pub], 1), ([user2_pub], 1)],
+                            asset=asset,
+                            metadata={'message': 'hello'}).to_dict()
     tx.pop('id')
     tx['transaction']['metadata'].pop('id')
     tx['transaction'].pop('timestamp')
+    tx['transaction'].pop('asset')
 
     assert tx == expected
 
@@ -951,21 +912,21 @@ def test_validate_hashlock_create_transaction(user_pub, user_priv, data):
     assert tx.fulfillments_valid() is True
 
 
-def test_create_create_transaction_with_invalid_parameters():
+def test_create_create_transaction_with_invalid_parameters(user_pub):
     from bigchaindb.common.transaction import Transaction
 
     with raises(TypeError):
         Transaction.create('not a list')
     with raises(TypeError):
         Transaction.create([], 'not a list')
-    with raises(NotImplementedError):
-        Transaction.create(['a', 'b'], ['c', 'd'])
-    with raises(NotImplementedError):
-        Transaction.create(['a'], [], time_expire=123)
     with raises(ValueError):
-        Transaction.create(['a'], [], secret=None)
+        Transaction.create([],[user_pub])
     with raises(ValueError):
-        Transaction.create([], [], secret='wow, much secret')
+        Transaction.create([user_pub],[])
+    with raises(ValueError):
+        Transaction.create([user_pub], [user_pub])
+    with raises(ValueError):
+        Transaction.create([user_pub], [([user_pub],)])
 
 
 def test_conditions_to_inputs(tx):
@@ -1030,16 +991,15 @@ def test_create_transfer_transaction_single_io(tx, user_pub, user2_pub,
     assert transfer_tx.fulfillments_valid([tx.conditions[0]]) is True
 
 
-@mark.skip(reason='FIXME: When divisible assets land')
 def test_create_transfer_transaction_multiple_io(user_pub, user_priv,
                                                  user2_pub, user2_priv,
                                                  user3_pub, user2_cond):
-    from bigchaindb.common.transaction import Transaction
+    from bigchaindb.common.transaction import Transaction, Asset
 
-    tx1 = Transaction.create([user_pub], [user_pub], {'message': 'hello'})
-    tx1 = tx1.sign([user_priv])
-    tx2 = Transaction.create([user2_pub], [user2_pub], {'message': 'hello'})
-    tx2 = tx2.sign([user2_priv])
+    asset = Asset(divisible=True)
+    tx = Transaction.create([user_pub], [([user_pub], 1), ([user2_pub], 1)],
+                             asset=asset, metadata={'message': 'hello'})
+    tx = tx.sign([user_priv])
 
     expected = {
         'transaction': {
@@ -1053,7 +1013,7 @@ def test_create_transfer_transaction_multiple_io(user_pub, user_priv,
                     'fid': 0,
                     'fulfillment': None,
                     'input': {
-                        'txid': tx1.id,
+                        'txid': tx.id,
                         'cid': 0
                     }
                 }, {
@@ -1063,8 +1023,8 @@ def test_create_transfer_transaction_multiple_io(user_pub, user_priv,
                     'fid': 1,
                     'fulfillment': None,
                     'input': {
-                        'txid': tx2.id,
-                        'cid': 0
+                        'txid': tx.id,
+                        'cid': 1
                     }
                 }
             ],
@@ -1072,30 +1032,29 @@ def test_create_transfer_transaction_multiple_io(user_pub, user_priv,
         },
         'version': 1
     }
-    tx1_inputs = tx1.to_inputs()
-    tx2_inputs = tx2.to_inputs()
-    tx_inputs = tx1_inputs + tx2_inputs
+    tx_inputs = tx.to_inputs()
 
-    transfer_tx = Transaction.transfer(tx_inputs, [[user2_pub], [user2_pub]])
+    transfer_tx = Transaction.transfer(tx.to_inputs(),
+                                       [([user2_pub], 1), ([user2_pub], 1)],
+                                       asset=tx.asset)
     transfer_tx = transfer_tx.sign([user_priv, user2_priv])
-    transfer_tx = transfer_tx
 
     assert len(transfer_tx.fulfillments) == 2
     assert len(transfer_tx.conditions) == 2
 
-    combined_conditions = tx1.conditions + tx2.conditions
-    assert transfer_tx.fulfillments_valid(combined_conditions) is True
+    assert transfer_tx.fulfillments_valid(tx.conditions) is True
 
     transfer_tx = transfer_tx.to_dict()
     transfer_tx['transaction']['fulfillments'][0]['fulfillment'] = None
     transfer_tx['transaction']['fulfillments'][1]['fulfillment'] = None
     transfer_tx['transaction'].pop('timestamp')
     transfer_tx.pop('id')
+    transfer_tx['transaction'].pop('asset')
 
     assert expected == transfer_tx
 
 
-def test_create_transfer_with_invalid_parameters():
+def test_create_transfer_with_invalid_parameters(user_pub):
     from bigchaindb.common.transaction import Transaction, Asset
 
     with raises(TypeError):
@@ -1106,6 +1065,10 @@ def test_create_transfer_with_invalid_parameters():
         Transaction.transfer(['fulfillment'], {}, Asset())
     with raises(ValueError):
         Transaction.transfer(['fulfillment'], [], Asset())
+    with raises(ValueError):
+        Transaction.transfer(['fulfillment'], [user_pub], Asset())
+    with raises(ValueError):
+        Transaction.transfer(['fulfillment'], [([user_pub],)], Asset())
 
 
 def test_cant_add_empty_condition():
