@@ -4,25 +4,27 @@ import unittest
 
 
 class TestSchemaA(SchemaObject):
-    c = 'c'
+    a = 'a'
 
 
 class TestSchemaB(SchemaObject):
-    a = 'a'
-    b = TestSchemaA
+    b = 'b'
+    a = TestSchemaA
+    _definitions = {'d': 'd'}
 
 
 class TestSchemaObject(unittest.TestCase):
     def test_1(self):
-        expected = {'properties': {'b': {'properties': {'c': 'c'}}, 'a': 'a'}}
-
-        assert TestSchemaB.to_json_schema() == {
+        self.assertEqual(TestSchemaB.to_json_schema(), {
             'properties': {
-                'b': {
+                'a': {
                     'properties': {
-                        'c': 'c'
+                        'a': 'a'
                     }
                 },
-                'a': 'a'
-            }
-        }
+                'b': 'b',
+            },
+            'definitions': {
+                'd': 'd'
+            },
+        })
