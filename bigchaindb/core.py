@@ -353,21 +353,11 @@ class Bigchain(object):
                 :class:`~bigchaindb.common.transaction.Asset` if the asset
                 exists else None
         """
-        cursor = self.connection.run(
-            r.table('bigchain', read_mode=self.read_mode)
-             .get_all(asset_id, index='asset_id')
-             .concat_map(lambda block: block['block']['transactions'])
-             .filter(lambda transaction:
-                     transaction['transaction']['asset']['id'] == asset_id)
-             .filter(lambda transaction:
-                     transaction['transaction']['operation'] == 'CREATE')
-             .pluck({'transaction': 'asset'}))
+        cursor = self.backend.get_asset_by_id(asset_id)
         cursor = list(cursor)
-
         if cursor:
             return Asset.from_dict(cursor[0]['transaction']['asset'])
 
-        return cursor
 
     def get_spent(self, txid, cid):
         """Check if a `txid` was already used as an input.

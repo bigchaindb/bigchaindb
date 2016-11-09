@@ -269,7 +269,7 @@ class TestBigchainApi(object):
         input_tx = b.get_owned_ids(user_vk).pop()
         input_tx = b.get_transaction(input_tx.txid)
         inputs = input_tx.to_inputs()
-        tx = Transaction.transfer(inputs, [user_vk], input_tx.asset)
+        tx = Transaction.transfer(inputs, [([user_vk], 1)], input_tx.asset)
         tx = tx.sign([user_sk])
 
         # Make sure there's a copy of tx in the backlog
