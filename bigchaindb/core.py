@@ -188,6 +188,28 @@ class Bigchain(object):
                 exceptions.FulfillmentNotInValidBlock):
             return False
 
+    def get_block(self, block_id, include_status=False):
+        """Get the block with the specified `block_id` (and optionally its status)
+
+        Returns the block corresponding to `block_id` or None if no match is
+        found.
+
+        Args:
+            block_id (str): transaction id of the transaction to get
+            include_status (bool): also return the status of the block
+                       the return value is then a tuple: (block, status)
+        """
+        block = self.backend.get_block(block_id)
+        status = None
+
+        if include_status:
+            if block:
+                status = self.block_election_status(block_id,
+                                                    block['block']['voters'])
+            return block, status
+        else:
+            return block
+
     def get_transaction(self, txid, include_status=False):
         """Get the transaction with the specified `txid` (and optionally its status)
 
