@@ -16,3 +16,4 @@ BigchainDB Server Documentation
    topic-guides/index
    release-notes
    appendices/index
+   schema
