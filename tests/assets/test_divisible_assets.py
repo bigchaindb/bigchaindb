@@ -24,7 +24,7 @@ def test_single_in_single_own_single_out_single_own_create(b, user_vk):
 
 # CREATE divisible asset
 # Single input
-# Single onwers_before
+# Single owners_before
 # Multiple outputs
 # Single owners_after per output
 def test_single_in_single_own_multiple_out_single_own_create(b, user_vk):
@@ -98,7 +98,7 @@ def test_single_in_single_own_multiple_out_mix_own_create(b, user_vk):
 # CREATE divisible asset
 # Single input
 # Multiple owners_before
-# Ouput combinations already tested above
+# Output combinations already tested above
 def test_single_in_multiple_own_single_out_single_own_create(b, user_vk,
                                                              user_sk):
     from bigchaindb.models import Transaction
@@ -519,7 +519,7 @@ def test_multiple_in_different_transactions(b, user_vk, user_sk):
     # `b` transfers its 50 shares to `user_vk`
     # after this transaction `user_vk` will have a total of 100 shares
     # split across two different transactions
-    tx_transfer1 = Transaction.transfer([tx_create.to_inputs()[1]],
+    tx_transfer1 = Transaction.transfer(tx_create.to_inputs([1]),
                                         [([user_vk], 50)],
                                         asset=tx_create.asset)
     tx_transfer1_signed = tx_transfer1.sign([b.me_private])
@@ -534,8 +534,8 @@ def test_multiple_in_different_transactions(b, user_vk, user_sk):
     # TRANSFER
     # `user_vk` combines two different transaction with 50 shares each and
     # transfers a total of 100 shares back to `b`
-    tx_transfer2 = Transaction.transfer([tx_create.to_inputs()[0],
-                                         tx_transfer1.to_inputs()[0]],
+    tx_transfer2 = Transaction.transfer(tx_create.to_inputs([0]) +
+                                        tx_transfer1.to_inputs([0]),
                                         [([b.me], 100)],
                                         asset=tx_create.asset)
     tx_transfer2_signed = tx_transfer2.sign([user_sk])

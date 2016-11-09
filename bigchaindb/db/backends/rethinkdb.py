@@ -182,13 +182,13 @@ class RethinkDBBackend:
                      transaction['transaction']['asset']['id'] == asset_id))
 
     def get_asset_by_id(self, asset_id):
-        """Returns the asset associated with an asset_id
+        """Returns the asset associated with an asset_id.
 
             Args:
-                asset_id (str): The asset id
+                asset_id (str): The asset id.
 
             Returns:
-                Returns a rethinkdb cursor
+                Returns a rethinkdb cursor.
         """
         return self.connection.run(
             r.table('bigchain', read_mode=self.read_mode)

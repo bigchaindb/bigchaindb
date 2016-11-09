@@ -345,14 +345,14 @@ class Bigchain(object):
         return [Transaction.from_dict(tx) for tx in cursor]
 
     def get_asset_by_id(self, asset_id):
-        """Returns the asset associated with an asset_id
+        """Returns the asset associated with an asset_id.
 
             Args:
-                asset_id (str): The asset id
+                asset_id (str): The asset id.
 
             Returns:
                 :class:`~bigchaindb.common.transaction.Asset` if the asset
-                exists else None
+                exists else None.
         """
         cursor = self.backend.get_asset_by_id(asset_id)
         cursor = list(cursor)

@@ -81,12 +81,12 @@ def test_validate_asset():
     # test amount errors
     asset = Asset(divisible=False)
     with raises(AmountError):
-        asset._validate_asset(amount=2)
+        asset.validate_asset(amount=2)
 
     asset = Asset(divisible=True)
     with raises(AmountError):
-        asset._validate_asset(amount=1)
+        asset.validate_asset(amount=1)
 
     asset = Asset()
     with raises(TypeError):
-        asset._validate_asset(amount='a')
+        asset.validate_asset(amount='a')

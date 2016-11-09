@@ -228,31 +228,6 @@ def test_generate_conditions_single_owner_with_condition(user_pub):
     assert cond.fulfillment.to_dict() == expected.to_dict()
 
 
-# TODO FOR CC: see skip reason
-@mark.skip(reason='threshold(hashlock).to_dict() exposes secret')
-def test_generate_threshold_condition_with_hashlock(user_pub, user2_pub,
-                                                    user3_pub):
-    from bigchaindb.common.transaction import Condition
-    from cryptoconditions import (PreimageSha256Fulfillment,
-                                  Ed25519Fulfillment,
-                                  ThresholdSha256Fulfillment)
-
-    secret = b'much secret, wow'
-    hashlock = PreimageSha256Fulfillment(preimage=secret)
-
-    expected_simple1 = Ed25519Fulfillment(public_key=user_pub)
-    expected_simple3 = Ed25519Fulfillment(public_key=user3_pub)
-
-    expected = ThresholdSha256Fulfillment(threshold=2)
-    expected_sub = ThresholdSha256Fulfillment(threshold=2)
-    expected_sub.add_subfulfillment(expected_simple1)
-    expected_sub.add_subfulfillment(hashlock)
-    expected.add_subfulfillment(expected_simple3)
-
-    cond = Condition.generate([[user_pub, hashlock], expected_simple3], 1)
-    assert cond.fulfillment.to_dict() == expected.to_dict()
-
-
 def test_generate_conditions_invalid_parameters(user_pub, user2_pub,
                                                 user3_pub):
     from bigchaindb.common.transaction import Condition
@@ -300,7 +275,7 @@ def test_invalid_transaction_initialization():
 def test_create_default_asset_on_tx_initialization():
     from bigchaindb.common.transaction import Transaction, Asset
 
-    with patch.object(Asset, '_validate_asset', return_value=None):
+    with patch.object(Asset, 'validate_asset', return_value=None):
         tx = Transaction(Transaction.CREATE, None)
     expected = Asset()
     asset = tx.asset
@@ -493,7 +468,7 @@ def test_cast_transaction_link_to_boolean():
 def test_add_fulfillment_to_tx(user_ffill):
     from bigchaindb.common.transaction import Transaction, Asset
 
-    with patch.object(Asset, '_validate_asset', return_value=None):
+    with patch.object(Asset, 'validate_asset', return_value=None):
         tx = Transaction(Transaction.CREATE, Asset(), [], [])
     tx.add_fulfillment(user_ffill)
 
@@ -503,7 +478,7 @@ def test_add_fulfillment_to_tx(user_ffill):
 def test_add_fulfillment_to_tx_with_invalid_parameters():
     from bigchaindb.common.transaction import Transaction, Asset
 
-    with patch.object(Asset, '_validate_asset', return_value=None):
+    with patch.object(Asset, 'validate_asset', return_value=None):
         tx = Transaction(Transaction.CREATE, Asset())
     with raises(TypeError):
         tx.add_fulfillment('somewronginput')
@@ -512,7 +487,7 @@ def test_add_fulfillment_to_tx_with_invalid_parameters():
 def test_add_condition_to_tx(user_cond):
     from bigchaindb.common.transaction import Transaction, Asset
 
-    with patch.object(Asset, '_validate_asset', return_value=None):
+    with patch.object(Asset, 'validate_asset', return_value=None):
         tx = Transaction(Transaction.CREATE, Asset())
     tx.add_condition(user_cond)
 
@@ -522,7 +497,7 @@ def test_add_condition_to_tx(user_cond):
 def test_add_condition_to_tx_with_invalid_parameters():
     from bigchaindb.common.transaction import Transaction, Asset
 
-    with patch.object(Asset, '_validate_asset', return_value=None):
+    with patch.object(Asset, 'validate_asset', return_value=None):
         tx = Transaction(Transaction.CREATE, Asset(), [], [])
     with raises(TypeError):
         tx.add_condition('somewronginput')
@@ -605,9 +580,7 @@ def test_validate_multiple_fulfillments(user_ffill, user_cond, user_priv):
     expected_first = deepcopy(tx)
     expected_second = deepcopy(tx)
     expected_first.fulfillments = [expected_first.fulfillments[0]]
-    expected_first.conditions = expected_first.conditions
     expected_second.fulfillments = [expected_second.fulfillments[1]]
-    expected_second.conditions = expected_second.conditions
 
     expected_first_bytes = str(expected_first).encode()
     expected_first.fulfillments[0].fulfillment.sign(expected_first_bytes,
@@ -854,62 +827,6 @@ def test_validate_threshold_create_transaction(user_pub, user_priv, user2_pub,
     assert tx.fulfillments_valid() is True
 
 
-@mark.skip(reason='Hashlocks are not implemented')
-def test_create_create_transaction_hashlock(user_pub, data, data_id):
-    from cryptoconditions import PreimageSha256Fulfillment
-    from bigchaindb.common.transaction import Transaction, Condition, Asset
-
-    secret = b'much secret, wow'
-    hashlock = PreimageSha256Fulfillment(preimage=secret).condition_uri
-    cond = Condition(hashlock)
-
-    expected = {
-        'transaction': {
-            'conditions': [cond.to_dict(0)],
-            'metadata': {
-                'data': data,
-            },
-            'asset': {
-                'id': data_id,
-                'divisible': False,
-                'updatable': False,
-                'refillable': False,
-                'data': data,
-            },
-            'fulfillments': [
-                {
-                    'owners_before': [
-                        user_pub,
-                    ],
-                    'fid': 0,
-                    'fulfillment': None,
-                    'input': None
-                },
-            ],
-            'operation': 'CREATE',
-        },
-        'version': 1
-    }
-
-    asset = Asset(data, data_id)
-    tx = Transaction.create([user_pub], [], data, asset, secret).to_dict()
-    tx.pop('id')
-    tx['transaction']['metadata'].pop('id')
-    tx['transaction'].pop('timestamp')
-    tx['transaction']['fulfillments'][0]['fulfillment'] = None
-
-    assert tx == expected
-
-
-@mark.skip(reson='Hashlocks are not implemented')
-def test_validate_hashlock_create_transaction(user_pub, user_priv, data):
-    from bigchaindb.common.transaction import Transaction, Asset
-
-    tx = Transaction.create([user_pub], [], data, Asset(), b'much secret, wow')
-    tx = tx.sign([user_priv])
-    assert tx.fulfillments_valid() is True
-
-
 def test_create_create_transaction_with_invalid_parameters(user_pub):
     from bigchaindb.common.transaction import Transaction
 
@@ -1071,7 +988,7 @@ def test_create_transfer_with_invalid_parameters(user_pub):
 def test_cant_add_empty_condition():
     from bigchaindb.common.transaction import Transaction, Asset
 
-    with patch.object(Asset, '_validate_asset', return_value=None):
+    with patch.object(Asset, 'validate_asset', return_value=None):
         tx = Transaction(Transaction.CREATE, None)
     with raises(TypeError):
         tx.add_condition(None)
@@ -1080,7 +997,7 @@ def test_cant_add_empty_condition():
 def test_cant_add_empty_fulfillment():
     from bigchaindb.common.transaction import Transaction, Asset
 
-    with patch.object(Asset, '_validate_asset', return_value=None):
+    with patch.object(Asset, 'validate_asset', return_value=None):
         tx = Transaction(Transaction.CREATE, None)
     with raises(TypeError):
         tx.add_fulfillment(None)

@@ -413,7 +413,7 @@ class Asset(object):
         self.updatable = updatable
         self.refillable = refillable
 
-        self._validate_asset()
+        self.validate_asset()
 
     def __eq__(self, other):
         try:
@@ -470,8 +470,9 @@ class Asset(object):
         transaction are related to the same asset id.
 
         Args:
-            transactions (list): list of transaction usually inputs that should
-                                 have a matching asset_id
+            transactions (:obj:`list` of :class:`~bigchaindb.common.
+                transaction.Transaction`): list of transaction usually inputs
+                that should have a matching asset_id
 
         Returns:
             str: uuid of the asset.
@@ -488,11 +489,11 @@ class Asset(object):
 
         # check that all the transasctions have the same asset_id
         if len(asset_ids) > 1:
-            raise AssetIdMismatch(('All inputs of a transaction need'
-                                   ' to have the same asset id.'))
+            raise AssetIdMismatch(('All inputs of all transactions passed'
+                                   ' need to have the same asset id'))
         return asset_ids.pop()
 
-    def _validate_asset(self, amount=None):
+    def validate_asset(self, amount=None):
         """Validates the asset"""
         if self.data is not None and not isinstance(self.data, dict):
             raise TypeError('`data` must be a dict instance or None')
@@ -670,11 +671,11 @@ class Transaction(object):
 
         if self.operation == self.CREATE:
             amount = sum([condition.amount for condition in self.conditions])
-            self.asset._validate_asset(amount=amount)
+            self.asset.validate_asset(amount=amount)
         else:
             # In transactions other then `CREATE` we don't know if its a
             # divisible asset or not, so we cannot validate the amount here
-            self.asset._validate_asset()
+            self.asset.validate_asset()
 
     @classmethod
     def create(cls, owners_before, owners_after, metadata=None, asset=None):
@@ -719,8 +720,9 @@ class Transaction(object):
         # generate_conditions
         for owner_after in owners_after:
             if not isinstance(owner_after, tuple) or len(owner_after) != 2:
-                raise ValueError(('Each `owner_after` in the list is a tuple'
-                                  ' of `([<list of public keys>], <amount>)`'))
+                raise ValueError(('Each `owner_after` in the list must be a'
+                                  ' tuple of `([<list of public keys>],'
+                                  ' <amount>)`'))
             pub_keys, amount = owner_after
             conds.append(Condition.generate(pub_keys, amount))
 
@@ -780,8 +782,9 @@ class Transaction(object):
         conds = []
         for owner_after in owners_after:
             if not isinstance(owner_after, tuple) or len(owner_after) != 2:
-                raise ValueError(('Each `owner_after` in the list is a tuple'
-                                  ' of `([<list of public keys>], <amount>)`'))
+                raise ValueError(('Each `owner_after` in the list must be a'
+                                  ' tuple of `([<list of public keys>],'
+                                  ' <amount>)`'))
             pub_keys, amount = owner_after
             conds.append(Condition.generate(pub_keys, amount))
 

@@ -42,7 +42,7 @@ class Transaction(Transaction):
                 raise ValueError('A CREATE operation has no inputs')
             # validate asset
             amount = sum([condition.amount for condition in self.conditions])
-            self.asset._validate_asset(amount=amount)
+            self.asset.validate_asset(amount=amount)
         elif self.operation == Transaction.TRANSFER:
             if not inputs_defined:
                 raise ValueError('Only `CREATE` transactions can have null '
@@ -85,7 +85,7 @@ class Transaction(Transaction):
             # get the asset creation to see if its divisible or not
             asset = bigchain.get_asset_by_id(asset_id)
             # validate the asset
-            asset._validate_asset(amount=input_amount)
+            asset.validate_asset(amount=input_amount)
             # validate the amounts
             output_amount = sum([condition.amount for
                                  condition in self.conditions])

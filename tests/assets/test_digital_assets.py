@@ -25,7 +25,7 @@ def test_validate_bad_asset_creation(b, user_vk):
     # `divisible` needs to be a boolean
     tx = Transaction.create([b.me], [([user_vk], 1)])
     tx.asset.divisible = 1
-    with patch.object(Asset, '_validate_asset', return_value=None):
+    with patch.object(Asset, 'validate_asset', return_value=None):
         tx_signed = tx.sign([b.me_private])
     with pytest.raises(TypeError):
         tx_signed.validate(b)
@@ -33,7 +33,7 @@ def test_validate_bad_asset_creation(b, user_vk):
     # `refillable` needs to be a boolean
     tx = Transaction.create([b.me], [([user_vk], 1)])
     tx.asset.refillable = 1
-    with patch.object(Asset, '_validate_asset', return_value=None):
+    with patch.object(Asset, 'validate_asset', return_value=None):
         tx_signed = tx.sign([b.me_private])
     with pytest.raises(TypeError):
         b.validate_transaction(tx_signed)
@@ -41,7 +41,7 @@ def test_validate_bad_asset_creation(b, user_vk):
     # `updatable` needs to be a boolean
     tx = Transaction.create([b.me], [([user_vk], 1)])
     tx.asset.updatable = 1
-    with patch.object(Asset, '_validate_asset', return_value=None):
+    with patch.object(Asset, 'validate_asset', return_value=None):
         tx_signed = tx.sign([b.me_private])
     with pytest.raises(TypeError):
         b.validate_transaction(tx_signed)
@@ -49,7 +49,7 @@ def test_validate_bad_asset_creation(b, user_vk):
     # `data` needs to be a dictionary
     tx = Transaction.create([b.me], [([user_vk], 1)])
     tx.asset.data = 'a'
-    with patch.object(Asset, '_validate_asset', return_value=None):
+    with patch.object(Asset, 'validate_asset', return_value=None):
         tx_signed = tx.sign([b.me_private])
     with pytest.raises(TypeError):
         b.validate_transaction(tx_signed)
@@ -189,7 +189,7 @@ def test_create_invalid_divisible_asset(b, user_vk, user_sk):
     # even if a transaction is badly constructed the server should raise the
     # exception
     asset = Asset(divisible=False)
-    with patch.object(Asset, '_validate_asset', return_value=None):
+    with patch.object(Asset, 'validate_asset', return_value=None):
         tx = Transaction.create([user_vk], [([user_vk], 2)], asset=asset)
         tx_signed = tx.sign([user_sk])
     with pytest.raises(AmountError):
@@ -197,7 +197,7 @@ def test_create_invalid_divisible_asset(b, user_vk, user_sk):
     assert b.is_valid_transaction(tx_signed) is False
 
     asset = Asset(divisible=True)
-    with patch.object(Asset, '_validate_asset', return_value=None):
+    with patch.object(Asset, 'validate_asset', return_value=None):
         tx = Transaction.create([user_vk], [([user_vk], 1)], asset=asset)
         tx_signed = tx.sign([user_sk])
     with pytest.raises(AmountError):
