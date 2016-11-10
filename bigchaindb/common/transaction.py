@@ -1083,9 +1083,9 @@ class Transaction(object):
         if not fulfillments_count == input_condition_uris_count:
             raise ValueError('Fulfillments and '
                              'input_condition_uris must have the same count')
-        else:
-            partial_transactions = map(gen_tx, self.fulfillments,
-                                       self.conditions, input_condition_uris)
+
+        partial_transactions = map(gen_tx, self.fulfillments,
+                                   self.conditions, input_condition_uris)
         return all(partial_transactions)
 
     @staticmethod
