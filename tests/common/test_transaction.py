@@ -1,4 +1,4 @@
-from pytest import raises, mark
+from pytest import raises
 from unittest.mock import patch
 
 
@@ -463,6 +463,57 @@ def test_cast_transaction_link_to_boolean():
     assert bool(TransactionLink(None, 'b')) is False
     assert bool(TransactionLink('a', 'b')) is True
     assert bool(TransactionLink(False, False)) is True
+
+
+def test_asset_link_serialization():
+    from bigchaindb.common.transaction import AssetLink
+
+    data_id = 'a asset id'
+    expected = {
+        'id': data_id,
+    }
+    asset_link = AssetLink(data_id)
+
+    assert asset_link.to_dict() == expected
+
+
+def test_asset_link_serialization_with_empty_payload():
+    from bigchaindb.common.transaction import AssetLink
+
+    expected = None
+    asset_link = AssetLink()
+
+    assert asset_link.to_dict() == expected
+
+
+def test_asset_link_deserialization():
+    from bigchaindb.common.transaction import AssetLink
+
+    data_id = 'a asset id'
+    expected = AssetLink(data_id)
+    asset_link = {
+        'id': data_id
+    }
+    asset_link = AssetLink.from_dict(asset_link)
+
+    assert asset_link == expected
+
+
+def test_asset_link_deserialization_with_empty_payload():
+    from bigchaindb.common.transaction import AssetLink
+
+    expected = AssetLink()
+    asset_link = AssetLink.from_dict(None)
+
+    assert asset_link == expected
+
+
+def test_cast_asset_link_to_boolean():
+    from bigchaindb.common.transaction import AssetLink
+
+    assert bool(AssetLink()) is False
+    assert bool(AssetLink('a')) is True
+    assert bool(AssetLink(False)) is True
 
 
 def test_add_fulfillment_to_tx(user_ffill):

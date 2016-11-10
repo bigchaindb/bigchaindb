@@ -528,6 +528,54 @@ class Asset(object):
                                   ' greater than one')
 
 
+class AssetLink(Asset):
+    """An object for unidirectional linking to a Asset.
+    """
+
+    def __init__(self, data_id=None):
+        """Used to point to a specific Asset.
+
+            Args:
+                data_id (str): A Asset to link to.
+        """
+        self.data_id = data_id
+
+    def __bool__(self):
+        return self.data_id is not None
+
+    def __eq__(self, other):
+        return isinstance(other, AssetLink) and \
+                self.to_dict() == self.to_dict()
+
+    @classmethod
+    def from_dict(cls, link):
+        """Transforms a Python dictionary to a AssetLink object.
+
+            Args:
+                link (dict): The link to be transformed.
+
+            Returns:
+                :class:`~bigchaindb.common.transaction.AssetLink`
+        """
+        try:
+            return cls(link['id'])
+        except TypeError:
+            return cls()
+
+    def to_dict(self):
+        """Transforms the object to a Python dictionary.
+
+            Returns:
+                (dict|None): The link as an alternative serialization format.
+        """
+        if self.data_id is None:
+            return None
+        else:
+            return {
+                'id': self.data_id
+            }
+
+
 class Metadata(object):
     """Metadata is used to store a dictionary and its hash in a Transaction."""
 
@@ -668,14 +716,11 @@ class Transaction(object):
         # validate asset
         # we know that each transaction relates to a single asset
         # we can sum the amount of all the conditions
-
+        # for transactions other then CREATE we only have an id so there is
+        # nothing we can validate
         if self.operation == self.CREATE:
             amount = sum([condition.amount for condition in self.conditions])
             self.asset.validate_asset(amount=amount)
-        else:
-            # In transactions other then `CREATE` we don't know if its a
-            # divisible asset or not, so we cannot validate the amount here
-            self.asset.validate_asset()
 
     @classmethod
     def create(cls, owners_before, owners_after, metadata=None, asset=None):
@@ -1244,7 +1289,10 @@ class Transaction(object):
             conditions = [Condition.from_dict(condition) for condition
                           in tx['conditions']]
             metadata = Metadata.from_dict(tx['metadata'])
-            asset = Asset.from_dict(tx['asset'])
+            if tx['operation'] in [cls.CREATE, cls.GENESIS]:
+                asset = Asset.from_dict(tx['asset'])
+            else:
+                asset = AssetLink.from_dict(tx['asset'])
 
             return cls(tx['operation'], asset, fulfillments, conditions,
                        metadata, tx['timestamp'], tx_body['version'])
