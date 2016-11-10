@@ -1,6 +1,6 @@
 # The Vote Model
 
-A vote has the following structure:
+Every vote has the following JSON structure:
 
 ```json
 {
