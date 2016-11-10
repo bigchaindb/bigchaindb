@@ -130,13 +130,13 @@ def verify_vote_signature(voters, signed_vote):
     """
 
     signature = signed_vote['signature']
-    vk_base58 = signed_vote['node_pubkey']
+    pk_base58 = signed_vote['node_pubkey']
 
     # immediately return False if the voter is not in the block voter list
-    if vk_base58 not in voters:
+    if pk_base58 not in voters:
         return False
 
-    public_key = crypto.PublicKey(vk_base58)
+    public_key = crypto.PublicKey(pk_base58)
     return public_key.verify(serialize(signed_vote['vote']).encode(), signature)
 
 

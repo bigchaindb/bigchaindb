@@ -324,7 +324,7 @@ def test_valid_block_voting_with_transfer_transactions(monkeypatch, b):
                                             vote2_doc['signature']) is True
 
 
-def test_unsigned_tx_in_block_voting(monkeypatch, b, user_vk):
+def test_unsigned_tx_in_block_voting(monkeypatch, b, user_pk):
     from bigchaindb.common import crypto, util
     from bigchaindb.models import Transaction
     from bigchaindb.pipelines import vote
@@ -361,7 +361,7 @@ def test_unsigned_tx_in_block_voting(monkeypatch, b, user_vk):
                                             vote_doc['signature']) is True
 
 
-def test_invalid_id_tx_in_block_voting(monkeypatch, b, user_vk):
+def test_invalid_id_tx_in_block_voting(monkeypatch, b, user_pk):
     from bigchaindb.common import crypto, util
     from bigchaindb.models import Transaction
     from bigchaindb.pipelines import vote
@@ -400,7 +400,7 @@ def test_invalid_id_tx_in_block_voting(monkeypatch, b, user_vk):
                                             vote_doc['signature']) is True
 
 
-def test_invalid_content_in_tx_in_block_voting(monkeypatch, b, user_vk):
+def test_invalid_content_in_tx_in_block_voting(monkeypatch, b, user_pk):
     from bigchaindb.common import crypto, util
     from bigchaindb.models import Transaction
     from bigchaindb.pipelines import vote
@@ -439,7 +439,7 @@ def test_invalid_content_in_tx_in_block_voting(monkeypatch, b, user_vk):
                                             vote_doc['signature']) is True
 
 
-def test_invalid_block_voting(monkeypatch, b, user_vk):
+def test_invalid_block_voting(monkeypatch, b, user_pk):
     from bigchaindb.common import crypto, util
     from bigchaindb.pipelines import vote
 

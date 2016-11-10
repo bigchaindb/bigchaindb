@@ -52,5 +52,5 @@ signature = sk.sign(tx_serialized)
 
 # verify signature
 tx_serialized = bytes(serialize(tx))
-vk.verify(signature, tx_serialized)
+pk.verify(signature, tx_serialized)
 ```

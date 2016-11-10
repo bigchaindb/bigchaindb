@@ -58,7 +58,7 @@ def user_sk():
 
 
 @pytest.fixture
-def user_vk():
+def user_pk():
     return USER_PUBLIC_KEY
 
 
@@ -70,9 +70,9 @@ def b(request, node_config):
 
 
 @pytest.fixture
-def create_tx(b, user_vk):
+def create_tx(b, user_pk):
     from bigchaindb.models import Transaction
-    return Transaction.create([b.me], [user_vk])
+    return Transaction.create([b.me], [user_pk])
 
 
 @pytest.fixture
@@ -81,8 +81,8 @@ def signed_create_tx(b, create_tx):
 
 
 @pytest.fixture
-def signed_transfer_tx(signed_create_tx, user_vk, user_sk):
+def signed_transfer_tx(signed_create_tx, user_pk, user_sk):
     from bigchaindb.models import Transaction
     inputs = signed_create_tx.to_inputs()
-    tx = Transaction.transfer(inputs, [user_vk], signed_create_tx.asset)
+    tx = Transaction.transfer(inputs, [user_pk], signed_create_tx.asset)
     return tx.sign([user_sk])
