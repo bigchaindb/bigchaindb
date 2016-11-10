@@ -1,5 +1,4 @@
 import jsonschema
-import unittest
 
 from bigchaindb.common import schema
 
@@ -15,7 +14,7 @@ class TestSchemaB(schema.SchemaObject):
     _required = ['b']
 
 
-def test_1(self):
+def test_1():
     expected = {
         'properties': {
             'a': {
@@ -36,6 +35,11 @@ def test_1(self):
 
 
 def test_validate_transaction_basic(create_tx):
-    assert jsonschema.validate(create_tx.to_dict(),
-                               schema.Transaction.to_json_schema())
+    tx_dict = create_tx.to_dict()
+    tx_schema = schema.Transaction.to_json_schema()
+    try:
+        assert jsonschema.validate(tx_dict, tx_schema)
+    except Exception as e:
+        import pdb; pdb.set_trace()
+        1
 

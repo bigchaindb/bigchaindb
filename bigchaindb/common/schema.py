@@ -54,7 +54,7 @@ class TransactionBody(SchemaObject):
         "items": {
             "type": "object",
             "properties": {
-                "new_owners": {
+                "owners_after": {
                     "$ref": "#/definitions/owners_list"
                 },
                 "condition": {
@@ -71,7 +71,7 @@ class TransactionBody(SchemaObject):
                 },
                 "cid": {"type": "integer"}
             },
-            "required": ["new_owners", "condition", "cid"]
+            "required": ["owners_after", "condition", "cid"]
         }
     }
     """
