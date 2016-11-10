@@ -447,12 +447,6 @@ class Asset(object):
             Returns:
                 :class:`~bigchaindb.common.transaction.Asset`
         """
-        # TODO: This is not correct. If using Transaction.from_dict() from a
-        #       TRANSFER transaction we only have information about the `id`,
-        #       meaning that even if its a divisible asset, since the key does
-        #       not exist if will be set to False by default.
-        #       Maybe use something like an AssetLink similar to
-        #       TransactionLink for TRANSFER transactions
         return cls(asset.get('data'), asset['id'],
                    asset.get('divisible', False),
                    asset.get('updatable', False),
