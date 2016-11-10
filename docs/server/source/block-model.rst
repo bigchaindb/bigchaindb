@@ -1,7 +1,7 @@
 The Block Model
 ===============
 
-A block has the following structure:
+Every block has the following JSON structure:
 
 .. code-block:: json
 
