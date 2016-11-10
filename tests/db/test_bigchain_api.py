@@ -30,7 +30,7 @@ def dummy_block():
 
 class TestBigchainApi(object):
     def test_get_last_voted_block_cyclic_blockchain(self, b, monkeypatch):
-        from bigchaindb.common.crypto import SigningKey
+        from bigchaindb.common.crypto import PrivateKey
         from bigchaindb.common.exceptions import CyclicBlockchainError
         from bigchaindb.common.util import serialize
         from bigchaindb.models import Transaction
@@ -47,7 +47,7 @@ class TestBigchainApi(object):
         vote = b.vote(block1.id, b.get_last_voted_block().id, True)
         vote['vote']['previous_block'] = block1.id
         vote_data = serialize(vote['vote'])
-        vote['signature'] = SigningKey(b.me_private).sign(vote_data.encode())
+        vote['signature'] = PrivateKey(b.me_private).sign(vote_data.encode())
         b.write_vote(vote)
 
         with pytest.raises(CyclicBlockchainError):
@@ -734,7 +734,7 @@ class TestBlockValidation(object):
         #       skipped
         block_data = util.serialize_block(block)
         block_hash = crypto.hash_data(block_data)
-        block_signature = crypto.SigningKey(b.me_private).sign(block_data)
+        block_signature = crypto.PrivateKey(b.me_private).sign(block_data)
 
         block = {
             'id': block_hash,
@@ -758,7 +758,7 @@ class TestBlockValidation(object):
         block = dummy_block()
 
         # replace the block signature with an invalid one
-        block.signature = crypto.SigningKey(b.me_private).sign(b'wrongdata')
+        block.signature = crypto.PrivateKey(b.me_private).sign(b'wrongdata')
 
         # check that validate_block raises an InvalidSignature exception
         with pytest.raises(InvalidSignature):

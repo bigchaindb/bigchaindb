@@ -1,4 +1,4 @@
-from bigchaindb.common.crypto import hash_data, VerifyingKey, SigningKey
+from bigchaindb.common.crypto import hash_data, PublicKey, PrivateKey
 from bigchaindb.common.exceptions import (InvalidHash, InvalidSignature,
                                           OperationError, DoubleSpend,
                                           TransactionDoesNotExist,
@@ -181,22 +181,22 @@ class Block(object):
 
         return self
 
-    def sign(self, signing_key):
+    def sign(self, private_key):
         block_body = self.to_dict()
         block_serialized = serialize(block_body['block'])
-        signing_key = SigningKey(signing_key)
-        self.signature = signing_key.sign(block_serialized.encode()).decode()
+        private_key = PrivateKey(private_key)
+        self.signature = private_key.sign(block_serialized.encode()).decode()
         return self
 
     def is_signature_valid(self):
         block = self.to_dict()['block']
         # cc only accepts bytesting messages
         block_serialized = serialize(block).encode()
-        verifying_key = VerifyingKey(block['node_pubkey'])
+        public_key = PublicKey(block['node_pubkey'])
         try:
             # NOTE: CC throws a `ValueError` on some wrong signatures
             #       https://github.com/bigchaindb/cryptoconditions/issues/27
-            return verifying_key.verify(block_serialized, self.signature)
+            return public_key.verify(block_serialized, self.signature)
         except (ValueError, AttributeError):
             return False
 
@@ -205,7 +205,7 @@ class Block(object):
         block = block_body['block']
         block_serialized = serialize(block)
         block_id = hash_data(block_serialized)
-        verifying_key = VerifyingKey(block['node_pubkey'])
+        public_key = PublicKey(block['node_pubkey'])
 
         try:
             signature = block_body['signature']
@@ -219,7 +219,7 @@ class Block(object):
             # NOTE: CC throws a `ValueError` on some wrong signatures
             #       https://github.com/bigchaindb/cryptoconditions/issues/27
             try:
-                signature_valid = verifying_key\
+                signature_valid = public_key\
                         .verify(block_serialized.encode(), signature)
             except ValueError:
                 signature_valid = False

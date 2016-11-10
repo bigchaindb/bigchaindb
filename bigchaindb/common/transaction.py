@@ -7,7 +7,7 @@ from cryptoconditions import (Fulfillment as CCFulfillment,
                               PreimageSha256Fulfillment)
 from cryptoconditions.exceptions import ParsingError
 
-from bigchaindb.common.crypto import SigningKey, hash_data
+from bigchaindb.common.crypto import PrivateKey, hash_data
 from bigchaindb.common.exceptions import (KeypairMismatchException,
                                           InvalidHash, InvalidSignature)
 from bigchaindb.common.util import serialize, gen_timestamp
@@ -865,8 +865,8 @@ class Transaction(object):
             # to decode to convert the bytestring into a python str
             return public_key.decode()
 
-        key_pairs = {gen_public_key(SigningKey(private_key)):
-                     SigningKey(private_key) for private_key in private_keys}
+        key_pairs = {gen_public_key(PrivateKey(private_key)):
+                     PrivateKey(private_key) for private_key in private_keys}
 
         zippedIO = enumerate(zip(self.fulfillments, self.conditions))
         for index, (fulfillment, condition) in zippedIO:

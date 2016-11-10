@@ -136,7 +136,7 @@ def verify_vote_signature(voters, signed_vote):
     if vk_base58 not in voters:
         return False
 
-    public_key = crypto.VerifyingKey(vk_base58)
+    public_key = crypto.PublicKey(vk_base58)
     return public_key.verify(serialize(signed_vote['vote']).encode(), signature)
 
 
