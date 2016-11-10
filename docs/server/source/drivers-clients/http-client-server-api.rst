@@ -283,3 +283,54 @@ GET /transactions/{tx_id}
 
    :statuscode 200: A transaction with that ID was found.
    :statuscode 404: A transaction with that ID was not found.
+
+
+GET /unspents/
+-------------------------
+
+.. http:get:: /unspents?owner_after={owner_after}
+
+   Get a list of links to transactions' conditions that have not been used in
+   a previous transaction and could hence be called unspent conditions/outputs
+   (or simply: unspents).
+
+   This endpoint doesn't return anything if the querystring ``owner_after``
+   happens to not be defined in the request.
+
+   Note that if unspents for a certain ``owner_after`` have not been found by
+   the server, this will result in the server returning a 200 OK HTTP status
+   code and an empty list in the response's body.
+
+   :param owner_after: A public key, able to validly spend an output of a
+   transaction, assuming the user also has the corresponding private key.
+   :type owner_after: hex string
+
+   **Example request**:
+
+   .. sourcecode:: http
+
+      GET /unspents?owner_after=1AAAbbb...ccc HTTP/1.1
+      Host: example.com
+
+   **Example response**:
+
+   .. sourcecode:: http
+
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+
+      [
+        {
+          "txid": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e",
+          "cid": 0
+        },
+        {
+          "txid": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e",
+          "cid": 1
+        },
+      ]
+
+   :statuscode 200: A list of outputs were found and returned in the body of
+   the response.
+   :statuscode 400: The request wasn't understood by the server, e.g.
+   the ``owner_after`` querystring was not included in the request.
