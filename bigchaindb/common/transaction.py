@@ -1259,7 +1259,9 @@ class Transaction(object):
             Returns:
                 :class:`~bigchaindb.common.transaction.Transaction`
         """
-        import pdb; pdb.set_trace()
+        from jsonschema import validate
+        from bigchaindb.common.schema import TRANSACTION_JSON_SCHEMA
+        validate(tx_body, TRANSACTION_JSON_SCHEMA)
 
         # NOTE: Remove reference to avoid side effects
         tx_body = deepcopy(tx_body)

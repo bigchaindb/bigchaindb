@@ -19,14 +19,16 @@ class SchemaObject(object):
         """
         Convert a SchemaObject into Json Schema
         """
-        out = {}
+        out = {
+            'type': 'object'
+        }
         for k, v in cls.__dict__.items():
             if k.startswith('__'):
                 continue
             if isinstance(v, type) and issubclass(v, SchemaObject):
                 v = v.to_json_schema()
-            if k == '_definitions':
-                out['definitions'] = v
+            if k in ['_definitions', '_required']:
+                out[k[1:]] = v
             else:
                 out.setdefault('properties', {})[k] = v
         return out
@@ -102,7 +104,7 @@ class TransactionBody(SchemaObject):
 
     timestamp = {
         "type": "string",
-        "pattern": "\\d{10}\\.\\d{6}"
+        "pattern": "\\d{10}"
     }
 
     metadata = nullable({
@@ -116,7 +118,8 @@ class TransactionBody(SchemaObject):
         "required": ["hash", "payload"]
     })
 
-    required = ["fulfillments", "conditions", "operation", "timestamp", "data"]
+    _required = ["fulfillments", "conditions", "operation",
+                 "timestamp", "metadata"]
 
 
 class Transaction(SchemaObject):
