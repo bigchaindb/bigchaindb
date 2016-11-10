@@ -82,7 +82,7 @@ How? Let's split the command down into its components:
  - `install` tells pip to use the *install* action
  - `-e` installs a project in [editable mode](https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs)
  - `.` installs what's in the current directory
- - `[dev]` adds some [extra requirements](https://pythonhosted.org/setuptools/setuptools.html#declaring-extras-optional-features-with-their-own-dependencies) to the installation. (If you are curious, open `setup.py` and look for `dev` in the `extras_require` section.)
+ - `[dev]` adds some [extra requirements](https://setuptools.readthedocs.io/en/latest/setuptools.html#declaring-extras-optional-features-with-their-own-dependencies) to the installation. (If you are curious, open `setup.py` and look for `dev` in the `extras_require` section.)
 
 Aside: An alternative to `pip install -e .[dev]` is `python setup.py develop`.
 
