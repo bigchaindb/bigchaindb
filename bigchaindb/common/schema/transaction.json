@@ -13,7 +13,8 @@
                 "conditions",
                 "operation",
                 "timestamp",
-                "metadata"
+                "metadata",
+                "asset"
             ],
             "properties": {
                 "fulfillments": {
@@ -65,7 +66,8 @@
                         "required": [
                             "owners_after",
                             "condition",
-                            "cid"
+                            "cid",
+                            "amount"
                         ],
                         "properties": {
                             "cid": {
@@ -89,6 +91,9 @@
                             },
                             "owners_after": {
                                 "$ref": "#/definitions/owners_list"
+                            },
+                            "amount": {
+                                "type": "integer"
                             }
                         }
                     }
@@ -116,6 +121,42 @@
                             "type": "null"
                         }
                     ]
+                },
+                "asset": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                        "id",
+                        "divisible",
+                        "updatable",
+                        "refillable",
+                        "data"
+                    ],
+                    "properties": {
+                        "id": {
+                            "$ref": "#/definitions/uuid4"
+                        },
+                        "divisible": {
+                            "type": "boolean"
+                        },
+                        "updatable": {
+                            "type": "boolean"
+                        },
+                        "refillable": {
+                            "type": "boolean"
+                        },
+                        "data": {
+                            "anyOf": [
+                                {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ]
+                        }
+                    }
                 }
             }
         },
@@ -145,6 +186,10 @@
         },
         "sha3_hexdigest": {
             "pattern": "[0-9a-f]{64}",
+            "type": "string"
+        },
+        "uuid4": {
+            "pattern": "[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}",
             "type": "string"
         }
     }

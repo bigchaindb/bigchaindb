@@ -11,7 +11,8 @@ def test_validate_transaction_basic(create_tx):
 
 def test_addition_properties_false():
     """
-    Validate that each node has additionalProperties set.
+    Validate that each object node has additionalProperties set, so that
+    transactions with junk keys do not pass as valid.
     """
     def walk(node, path=''):
         if isinstance(node, list):
