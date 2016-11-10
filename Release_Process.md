@@ -3,7 +3,7 @@
 This is a summary of the steps we go through to release a new version of BigchainDB Server.
 
 1. Update the `CHANGELOG.md` file
-2. Update `bigchaindb/version.py`
+2. Update the version numbers in `bigchaindb/version.py`. Note that we try to use [semantic versioning](http://semver.org/) (i.e. MAJOR.MINOR.PATCH)
 3. Go to the [bigchaindb/bigchaindb Releases page on GitHub](https://github.com/bigchaindb/bigchaindb/releases)
    and click the "Draft a new release" button
 4. Name the tag something like v0.7.0
