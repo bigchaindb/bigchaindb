@@ -1,0 +1,151 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "id": {
+            "$ref": "#/definitions/sha3_hexdigest"
+        },
+        "transaction": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "fulfillments",
+                "conditions",
+                "operation",
+                "timestamp",
+                "metadata"
+            ],
+            "properties": {
+                "fulfillments": {
+                    "type": "array",
+                    "required": [
+                        "current_owners",
+                        "input",
+                        "fulfillment",
+                        "fid"
+                    ],
+                    "items": {
+                        "fid": {
+                            "type": "integer"
+                        },
+                        "current_owners": {
+                            "$ref": "#/definitions/owners_list"
+                        },
+                        "fulfillment": {
+                            "type": "string"
+                        },
+                        "input": {
+                            "anyOf": [
+                                {
+                                    "$ref": "#/definitions/sha3_hexdigest"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "timestamp": {
+                    "pattern": "\\d{10}",
+                    "type": "string"
+                },
+                "operation": {
+                    "type": "string",
+                    "enum": [
+                        "CREATE",
+                        "TRANSFER"
+                    ]
+                },
+                "conditions": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                            "owners_after",
+                            "condition",
+                            "cid"
+                        ],
+                        "properties": {
+                            "cid": {
+                                "type": "integer"
+                            },
+                            "condition": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": [
+                                    "uri"
+                                ],
+                                "properties": {
+                                    "details": {
+                                        "type": "object",
+                                        "additionalProperties": true
+                                    },
+                                    "uri": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "owners_after": {
+                                "$ref": "#/definitions/owners_list"
+                            }
+                        }
+                    }
+                },
+                "metadata": {
+                    "anyOf": [
+                        {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                                "hash",
+                                "payload"
+                            ],
+                            "properties": {
+                                "payload": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                },
+                                "hash": {
+                                    "$ref": "#/definitions/sha3_hexdigest"
+                                }
+                            }
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                }
+            }
+        },
+        "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1
+        }
+    },
+    "definitions": {
+        "base58": {
+            "pattern": "[1-9a-zA-Z^OIl]{43,44}",
+            "type": "string"
+        },
+        "owners_list": {
+            "anyOf": [
+                {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/base58"
+                    }
+                },
+                {
+                    "type": "null"
+                }
+            ]
+        },
+        "sha3_hexdigest": {
+            "pattern": "[0-9a-f]{64}",
+            "type": "string"
+        }
+    }
+}

@@ -1,45 +1,28 @@
+import json
+
 import jsonschema
-
-from bigchaindb.common import schema
-
-
-class TestSchemaA(schema.SchemaObject):
-    a = 'a'
-
-
-class TestSchemaB(schema.SchemaObject):
-    b = 'b'
-    a = TestSchemaA
-    _definitions = {'d': 'd'}
-    _required = ['b']
-
-
-def test_1():
-    expected = {
-        'properties': {
-            'a': {
-                'properties': {
-                    'a': 'a'
-                },
-                'type': 'object',
-            },
-            'b': 'b',
-        },
-        'definitions': {
-            'd': 'd'
-        },
-        'required': ['b'],
-        'type': 'object',
-    }
-    assert TestSchemaB.to_json_schema() == expected
 
 
 def test_validate_transaction_basic(create_tx):
     tx_dict = create_tx.to_dict()
-    tx_schema = schema.Transaction.to_json_schema()
-    try:
-        assert jsonschema.validate(tx_dict, tx_schema)
-    except Exception as e:
-        import pdb; pdb.set_trace()
-        1
+    tx_schema = json.load(open('bigchaindb/common/schema/transaction.json'))
+    jsonschema.validate(tx_dict, tx_schema)
 
+
+def test_addition_properties_false():
+    """
+    Validate that each node has additionalProperties set.
+    """
+    def walk(node, path=''):
+        if isinstance(node, list):
+            for i, nnode in enumerate(node):
+                walk(nnode, path + str(i) + '.')
+        if isinstance(node, dict):
+            if node.get('type') == 'object':
+                assert 'additionalProperties' in node, \
+                    ("additionalProperties not set at path:" + path)
+            for name, val in node.items():
+                walk(val, path + name + '.')
+
+    tx_schema = json.load(open('bigchaindb/common/schema/transaction.json'))
+    walk(tx_schema)
