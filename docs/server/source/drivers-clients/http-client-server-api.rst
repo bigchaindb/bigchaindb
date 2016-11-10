@@ -11,7 +11,7 @@ When you start Bigchaindb using `bigchaindb start`, an HTTP API is exposed at
 the address stored in the BigchainDB node configuration settings. The default
 is:
 
-`http://localhost:9984/api/v1/ <http://localhost:9984/api/v1/>`_
+`http://localhost:9984/api/v1/ <http://localhost:9984/api/v1/>` 
 
 but that address can be changed by changing the "API endpoint" configuration
 setting (e.g. in a local config file). There's more information about setting
