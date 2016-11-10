@@ -714,8 +714,8 @@ class Transaction(object):
             raise ValueError('`owners_after` list cannot be empty')
 
         metadata = Metadata(metadata)
-        ffills = []
-        conds = []
+        fulfillments = []
+        conditions = []
 
         # generate_conditions
         for owner_after in owners_after:
@@ -724,12 +724,12 @@ class Transaction(object):
                                   ' tuple of `([<list of public keys>],'
                                   ' <amount>)`'))
             pub_keys, amount = owner_after
-            conds.append(Condition.generate(pub_keys, amount))
+            conditions.append(Condition.generate(pub_keys, amount))
 
         # generate fulfillments
-        ffills.append(Fulfillment.generate(owners_before))
+        fulfillments.append(Fulfillment.generate(owners_before))
 
-        return cls(cls.CREATE, asset, ffills, conds, metadata)
+        return cls(cls.CREATE, asset, fulfillments, conditions, metadata)
 
     @classmethod
     def transfer(cls, inputs, owners_after, asset, metadata=None):
@@ -779,18 +779,18 @@ class Transaction(object):
         if len(owners_after) == 0:
             raise ValueError('`owners_after` list cannot be empty')
 
-        conds = []
+        conditions = []
         for owner_after in owners_after:
             if not isinstance(owner_after, tuple) or len(owner_after) != 2:
                 raise ValueError(('Each `owner_after` in the list must be a'
                                   ' tuple of `([<list of public keys>],'
                                   ' <amount>)`'))
             pub_keys, amount = owner_after
-            conds.append(Condition.generate(pub_keys, amount))
+            conditions.append(Condition.generate(pub_keys, amount))
 
         metadata = Metadata(metadata)
         inputs = deepcopy(inputs)
-        return cls(cls.TRANSFER, asset, inputs, conds, metadata)
+        return cls(cls.TRANSFER, asset, inputs, conditions, metadata)
 
     def __eq__(self, other):
         try:

@@ -90,7 +90,7 @@ class Transaction(Transaction):
             output_amount = sum([condition.amount for
                                  condition in self.conditions])
             if output_amount != input_amount:
-                raise AmountError(('The amout used in the inputs `{}`'
+                raise AmountError(('The amount used in the inputs `{}`'
                                    ' needs to be same as the amount used'
                                    ' in the outputs `{}`')
                                   .format(input_amount, output_amount))
