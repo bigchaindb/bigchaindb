@@ -11,7 +11,8 @@ import jsonschema
 from bigchaindb.common.crypto import SigningKey, hash_data
 from bigchaindb.common.exceptions import (KeypairMismatchException,
                                           InvalidHash, InvalidSignature,
-                                          AmountError, AssetIdMismatch)
+                                          AmountError, AssetIdMismatch,
+                                          ValidationError)
 from bigchaindb.common.schema import TX_JSON_SCHEMA
 from bigchaindb.common.util import serialize, gen_timestamp
 
@@ -1263,7 +1264,10 @@ class Transaction(object):
         """
 
         # Attempt full validation of tx body, fail quickly if possible
-        jsonschema.validate(tx_body, TX_JSON_SCHEMA)
+        try:
+            jsonschema.validate(tx_body, TX_JSON_SCHEMA)
+        except jsonschema.ValidationError as e:
+            raise ValidationError(str(e))
 
         # NOTE: Remove reference to avoid side effects
         tx_body = deepcopy(tx_body)

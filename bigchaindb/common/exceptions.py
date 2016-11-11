@@ -22,7 +22,11 @@ class DoubleSpend(Exception):
     """Raised if a double spend is found"""
 
 
-class InvalidHash(Exception):
+class ValidationError(Exception):
+    """Raised if any error with object schema"""
+
+
+class InvalidHash(ValidationError):
     """Raised if there was an error checking the hash for a particular
     operation"""
 

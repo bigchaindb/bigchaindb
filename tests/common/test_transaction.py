@@ -2,6 +2,8 @@ from pytest import raises
 from unittest.mock import patch
 import jsonschema
 
+from bigchaindb.common.exceptions import ValidationError
+
 
 def test_fulfillment_serialization(ffill_uri, user_pub):
     from bigchaindb.common.transaction import Fulfillment
@@ -285,6 +287,10 @@ def test_create_default_asset_on_tx_initialization():
     asset.data_id = None
     assert asset == expected
 
+    # Fails because no asset hash
+    with raises(ValidationError):
+        validate(tx)
+
 
 def test_transaction_serialization(user_ffill, user_cond, data, data_id):
     from bigchaindb.common.transaction import Transaction, Asset
@@ -322,6 +328,10 @@ def test_transaction_serialization(user_ffill, user_cond, data, data_id):
 
     assert tx_dict == expected
 
+    # Fails because asset id is not a uuid4
+    with raises(ValidationError):
+        validate(tx)
+
 
 def test_transaction_deserialization(user_ffill, user_cond, data, uuid4):
     from bigchaindb.common.transaction import Transaction, Asset
@@ -357,6 +367,8 @@ def test_transaction_deserialization(user_ffill, user_cond, data, uuid4):
 
     assert tx == expected
 
+    validate(tx)
+
 
 def test_tx_serialization_with_incorrect_hash(utx, ):
     from bigchaindb.common.transaction import Transaction
@@ -370,7 +382,7 @@ def test_tx_serialization_with_incorrect_hash(utx, ):
     with raises(InvalidHash):
         Transaction.from_dict(utx_dict)
     utx_dict['id'] = []
-    with raises(jsonschema.ValidationError):
+    with raises(ValidationError):
         Transaction.from_dict(utx_dict)
 
 
@@ -536,6 +548,8 @@ def test_add_fulfillment_to_tx(user_ffill):
 
     assert len(tx.fulfillments) == 1
 
+    validate(tx)
+
 
 def test_add_fulfillment_to_tx_with_invalid_parameters():
     from bigchaindb.common.transaction import Transaction, Asset
@@ -554,6 +568,8 @@ def test_add_condition_to_tx(user_cond):
     tx.add_condition(user_cond)
 
     assert len(tx.conditions) == 1
+
+    validate(tx)
 
 
 def test_add_condition_to_tx_with_invalid_parameters():
@@ -585,6 +601,8 @@ def test_validate_tx_simple_create_signature(user_ffill, user_cond, user_priv):
     assert tx.fulfillments[0].to_dict()['fulfillment'] == \
         expected.fulfillment.serialize_uri()
     assert tx.fulfillments_valid() is True
+
+    validate(tx)
 
 
 def test_invoke_simple_signature_fulfillment_with_invalid_params(utx,
@@ -658,6 +676,8 @@ def test_validate_multiple_fulfillments(user_ffill, user_cond, user_priv):
         expected_second.fulfillments[0].fulfillment.serialize_uri()
     assert tx.fulfillments_valid() is True
 
+    validate(tx)
+
 
 def test_validate_tx_threshold_create_signature(user_user2_threshold_ffill,
                                                 user_user2_threshold_cond,
@@ -682,6 +702,8 @@ def test_validate_tx_threshold_create_signature(user_user2_threshold_ffill,
     assert tx.fulfillments[0].to_dict()['fulfillment'] == \
         expected.fulfillment.serialize_uri()
     assert tx.fulfillments_valid() is True
+
+    validate(tx)
 
 
 def test_multiple_fulfillment_validation_of_transfer_tx(user_ffill, user_cond,
@@ -710,6 +732,8 @@ def test_multiple_fulfillment_validation_of_transfer_tx(user_ffill, user_cond,
 
     assert transfer_tx.fulfillments_valid(tx.conditions) is True
 
+    validate(tx)
+
 
 def test_validate_fulfillments_of_transfer_tx_with_invalid_params(transfer_tx,
                                                                   cond_uri,
@@ -734,6 +758,8 @@ def test_validate_fulfillments_of_transfer_tx_with_invalid_params(transfer_tx,
     with raises(TypeError):
         transfer_tx.operation = "Operation that doesn't exist"
         transfer_tx.fulfillments_valid([utx.conditions[0]])
+
+    validate(tx)
 
 
 def test_create_create_transaction_single_io(user_cond, user_pub, data,
@@ -778,6 +804,8 @@ def test_create_create_transaction_single_io(user_cond, user_pub, data,
 
     assert tx == expected
 
+    validate(tx)
+
 
 def test_validate_single_io_create_transaction(user_pub, user_priv, data):
     from bigchaindb.common.transaction import Transaction, Asset
@@ -821,6 +849,8 @@ def test_create_create_transaction_multiple_io(user_cond, user2_cond, user_pub,
 
     assert tx == expected
 
+    validate(tx)
+
 
 def test_validate_multiple_io_create_transaction(user_pub, user_priv,
                                                  user2_pub, user2_priv):
@@ -832,6 +862,8 @@ def test_validate_multiple_io_create_transaction(user_pub, user_priv,
                             asset=Asset(divisible=True))
     tx = tx.sign([user_priv, user2_priv])
     assert tx.fulfillments_valid() is True
+
+    validate(tx)
 
 
 def test_create_create_transaction_threshold(user_pub, user2_pub, user3_pub,
@@ -878,6 +910,8 @@ def test_create_create_transaction_threshold(user_pub, user2_pub, user3_pub,
 
     assert tx_dict == expected
 
+    validate(tx)
+
 
 def test_validate_threshold_create_transaction(user_pub, user_priv, user2_pub,
                                                data):
@@ -887,6 +921,8 @@ def test_validate_threshold_create_transaction(user_pub, user_priv, user2_pub,
                             data, Asset())
     tx = tx.sign([user_priv])
     assert tx.fulfillments_valid() is True
+
+    validate(tx)
 
 
 def test_create_create_transaction_with_invalid_parameters(user_pub):
@@ -967,6 +1003,8 @@ def test_create_transfer_transaction_single_io(tx, user_pub, user2_pub,
     transfer_tx = Transaction.from_dict(transfer_tx)
     assert transfer_tx.fulfillments_valid([tx.conditions[0]]) is True
 
+    validate(transfer_tx)
+
 
 def test_create_transfer_transaction_multiple_io(user_pub, user_priv,
                                                  user2_pub, user2_priv,
@@ -1029,6 +1067,8 @@ def test_create_transfer_transaction_multiple_io(user_pub, user_priv,
 
     assert expected == transfer_tx
 
+    validate(transfer_tx)
+
 
 def test_create_transfer_with_invalid_parameters(user_pub):
     from bigchaindb.common.transaction import Transaction, Asset
@@ -1063,3 +1103,9 @@ def test_cant_add_empty_fulfillment():
         tx = Transaction(Transaction.CREATE, None)
     with raises(TypeError):
         tx.add_fulfillment(None)
+
+
+def validate(tx):
+    from bigchaindb.common.transaction import Transaction
+    # Check that a transaction is valid by re-importing it
+    Transaction.from_dict(tx.to_dict())
