@@ -88,11 +88,6 @@ class TestBigchainApi(object):
 
         assert b.has_previous_vote(block.id, block.voters) is True
 
-
-    def test_get_transactions_for_metadata_mismatch(self, b):
-        matches = b.get_tx_by_metadata_id('missing')
-        assert not matches
-
     def test_get_spent_with_double_spend(self, b, monkeypatch):
         from bigchaindb.common.exceptions import DoubleSpend
         from bigchaindb.models import Transaction
@@ -190,12 +185,28 @@ class TestBigchainApi(object):
         block = b.create_block([tx])
         b.write_block(block, durability='hard')
 
-        matches = b.get_tx_by_payload_uuid(tx.metadata.data_id)
+        matches = b.get_transaction_by_metadata_id(tx.metadata.data_id)
         assert len(matches) == 1
         assert matches[0].id == tx.id
 
-    def test_get_transactions_for_metadata(self, b, user_vk):
-        matches = b.get_tx_by_metadata_id('missing')
+    @pytest.mark.usefixtures('inputs')
+    def test_get_transactions_for_metadata_invalid_block(self, b, user_vk):
+        from bigchaindb.models import Transaction
+
+        metadata = {'msg': 'Hello BigchainDB!'}
+        tx = Transaction.create([b.me], [user_vk], metadata=metadata)
+
+        block = b.create_block([tx])
+        b.write_block(block, durability='hard')
+        # vote block invalid
+        vote = b.vote(block.id, b.get_last_voted_block().id, False)
+        b.write_vote(vote)
+
+        matches = b.get_transaction_by_metadata_id(tx.metadata.data_id)
+        assert len(matches) == 0
+
+    def test_get_transactions_for_metadata_mismatch(self, b):
+        matches = b.get_transaction_by_metadata_id('missing')
         assert not matches
 
     @pytest.mark.usefixtures('inputs')
