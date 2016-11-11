@@ -160,25 +160,29 @@ class RethinkDBBackend:
                 .concat_map(lambda block: block['block']['transactions'])
                 .filter(lambda transaction: transaction['transaction']['metadata']['id'] == metadata_id))
 
-    def get_transactions_by_asset_id(self, asset_id):
-        """Retrieves transactions related to a particular asset.
+    def get_txids_by_asset_id(self, asset_id):
+        """Retrieves transactions ids related to a particular asset.
 
-        A digital asset in bigchaindb is identified by an uuid. This allows us to query all the transactions
-        related to a particular digital asset, knowing the id.
+        A digital asset in bigchaindb is identified by an uuid. This allows us
+        to query all the transactions related to a particular digital asset,
+        knowing the id.
 
         Args:
             asset_id (str): the id for this particular metadata.
 
         Returns:
-            A list of transactions containing related to the asset. If no transaction exists for that asset it
-            returns an empty list `[]`
+            A list of transactions ids related to the asset. If no transaction
+            exists for that asset it returns an empty list `[]`
         """
 
+        # here we only want to return the transaction ids since later on when
+        # we are going to retrieve the transaction with status validation
         return self.connection.run(
             r.table('bigchain', read_mode=self.read_mode)
              .get_all(asset_id, index='asset_id')
              .concat_map(lambda block: block['block']['transactions'])
-             .filter(lambda transaction: transaction['transaction']['asset']['id'] == asset_id))
+             .filter(lambda transaction: transaction['transaction']['asset']['id'] == asset_id)
+             .get_field('id'))
 
     def get_spent(self, transaction_id, condition_id):
         """Check if a `txid` was already used as an input.

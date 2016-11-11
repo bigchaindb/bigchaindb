@@ -1,5 +1,5 @@
 import pytest
-from ..db.conftest import inputs
+from ..db.conftest import inputs  # noqa
 
 
 @pytest.mark.usefixtures('inputs')
@@ -131,13 +131,13 @@ def test_asset_id_mismatch(b, user_vk):
 
 
 @pytest.mark.usefixtures('inputs')
-def test_get_txs_by_asset_id(b, user_vk, user_sk):
+def test_get_transactions_by_asset_id(b, user_vk, user_sk):
     from bigchaindb.models import Transaction
 
     tx_create = b.get_owned_ids(user_vk).pop()
     tx_create = b.get_transaction(tx_create.txid)
     asset_id = tx_create.asset.data_id
-    txs = b.get_txs_by_asset_id(asset_id)
+    txs = b.get_transactions_by_asset_id(asset_id)
 
     assert len(txs) == 1
     assert txs[0].id == tx_create.id
@@ -154,10 +154,39 @@ def test_get_txs_by_asset_id(b, user_vk, user_sk):
     vote = b.vote(block.id, b.get_last_voted_block().id, True)
     b.write_vote(vote)
 
-    txs = b.get_txs_by_asset_id(asset_id)
+    txs = b.get_transactions_by_asset_id(asset_id)
 
     assert len(txs) == 2
     assert tx_create.id in [t.id for t in txs]
     assert tx_transfer.id in [t.id for t in txs]
     assert asset_id == txs[0].asset.data_id
     assert asset_id == txs[1].asset.data_id
+
+
+@pytest.mark.usefixtures('inputs')
+def test_get_transactions_by_asset_id_with_invalid_block(b, user_vk, user_sk):
+    from bigchaindb.models import Transaction
+
+    tx_create = b.get_owned_ids(user_vk).pop()
+    tx_create = b.get_transaction(tx_create.txid)
+    asset_id = tx_create.asset.data_id
+    txs = b.get_transactions_by_asset_id(asset_id)
+
+    assert len(txs) == 1
+    assert txs[0].id == tx_create.id
+    assert txs[0].asset.data_id == asset_id
+
+    # create a transfer transaction
+    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [user_vk],
+                                       tx_create.asset)
+    tx_transfer_signed = tx_transfer.sign([user_sk])
+    # create the block
+    block = b.create_block([tx_transfer_signed])
+    b.write_block(block, durability='hard')
+    # vote the block valid
+    vote = b.vote(block.id, b.get_last_voted_block().id, False)
+    b.write_vote(vote)
+
+    txs = b.get_transactions_by_asset_id(asset_id)
+
+    assert len(txs) == 1

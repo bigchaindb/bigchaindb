@@ -326,22 +326,29 @@ class Bigchain(object):
         cursor = self.backend.get_transactions_by_metadata_id(metadata_id)
         return [Transaction.from_dict(tx) for tx in cursor]
 
-    def get_txs_by_asset_id(self, asset_id):
-        """Retrieves transactions related to a particular asset.
+    def get_transactions_by_asset_id(self, asset_id):
+        """Retrieves valid or undecided transactions related to a particular
+        asset.
 
-        A digital asset in bigchaindb is identified by an uuid. This allows us to query all the transactions
-        related to a particular digital asset, knowing the id.
+        A digital asset in bigchaindb is identified by an uuid. This allows us
+        to query all the transactions related to a particular digital asset,
+        knowing the id.
 
         Args:
             asset_id (str): the id for this particular metadata.
 
         Returns:
-            A list of transactions containing related to the asset. If no transaction exists for that asset it
-            returns an empty list `[]`
+            A list of valid or undecided transactions related to the asset.
+            If no transaction exists for that asset it returns an empty list
+            `[]`
         """
-
-        cursor = self.backend.get_transactions_by_asset_id(asset_id)
-        return [Transaction.from_dict(tx) for tx in cursor]
+        txids = self.backend.get_txids_by_asset_id(asset_id)
+        transactions = []
+        for txid in txids:
+            tx = self.get_transaction(txid)
+            if tx:
+                transactions.append(tx)
+        return transactions
 
     def get_spent(self, txid, cid):
         """Check if a `txid` was already used as an input.
