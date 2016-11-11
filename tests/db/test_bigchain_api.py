@@ -369,6 +369,15 @@ class TestBigchainApi(object):
 
         assert excinfo.value.args[0] == 'Empty block creation is not allowed'
 
+    @pytest.mark.usefixtures('inputs')
+    def test_get_block_by_id(self, b):
+        new_block = dummy_block()
+        b.write_block(new_block, durability='hard')
+
+        assert b.get_block(new_block.id) == new_block.to_dict()
+        block, status = b.get_block(new_block.id, include_status=True)
+        assert status == b.BLOCK_UNDECIDED
+
     def test_get_last_voted_block_returns_genesis_if_no_votes_has_been_casted(self, b):
         import rethinkdb as r
         from bigchaindb import util

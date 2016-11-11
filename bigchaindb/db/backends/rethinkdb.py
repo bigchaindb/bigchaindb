@@ -258,6 +258,17 @@ class RethinkDBBackend:
                 r.table('bigchain')
                 .insert(r.json(block), durability=durability))
 
+    def get_block(self, block_id):
+        """Get a block from the bigchain table
+
+        Args:
+            block_id (str): block id of the block to get
+
+        Returns:
+            block (dict): the block or `None`
+        """
+        return self.connection.run(r.table('bigchain').get(block_id))
+
     def has_transaction(self, transaction_id):
         """Check if a transaction exists in the bigchain table.
 
