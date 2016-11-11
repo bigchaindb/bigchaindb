@@ -43,7 +43,7 @@ def test_post_create_transaction_with_invalid_id(b, client):
 
     tx = Transaction.create([user_pub], [([user_pub], 1)])
     tx = tx.sign([user_priv]).to_dict()
-    tx['id'] = 'invalid id'
+    tx['id'] = 'abcd' * 16
 
     res = client.post(TX_ENDPOINT, data=json.dumps(tx))
     assert res.status_code == 400

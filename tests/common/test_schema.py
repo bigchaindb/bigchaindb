@@ -1,12 +1,18 @@
-import json
+from bigchaindb.common.schema import TX_JSON_SCHEMA
 
 import jsonschema
 
 
-def test_validate_transaction_basic(create_tx):
-    tx_dict = create_tx.to_dict()
-    tx_schema = json.load(open('bigchaindb/common/schema/transaction.json'))
-    jsonschema.validate(tx_dict, tx_schema)
+def test_validate_transaction_create(create_tx):
+    jsonschema.validate(create_tx.to_dict(), TX_JSON_SCHEMA)
+
+
+def test_validate_transaction_signed_create(signed_create_tx):
+    jsonschema.validate(signed_create_tx.to_dict(), TX_JSON_SCHEMA)
+
+
+def test_validate_transaction_signed_transfer(signed_transfer_tx):
+    jsonschema.validate(signed_transfer_tx.to_dict(), TX_JSON_SCHEMA)
 
 
 def test_addition_properties_false():
@@ -25,5 +31,4 @@ def test_addition_properties_false():
             for name, val in node.items():
                 walk(val, path + name + '.')
 
-    tx_schema = json.load(open('bigchaindb/common/schema/transaction.json'))
-    walk(tx_schema)
+    walk(TX_JSON_SCHEMA)

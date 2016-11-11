@@ -1,5 +1,6 @@
 from pytest import raises
 from unittest.mock import patch
+import jsonschema
 
 
 def test_fulfillment_serialization(ffill_uri, user_pub):
@@ -322,12 +323,12 @@ def test_transaction_serialization(user_ffill, user_cond, data, data_id):
     assert tx_dict == expected
 
 
-def test_transaction_deserialization(user_ffill, user_cond, data, data_id):
+def test_transaction_deserialization(user_ffill, user_cond, data, uuid4):
     from bigchaindb.common.transaction import Transaction, Asset
 
     timestamp = '66666666666'
 
-    expected_asset = Asset(data, data_id)
+    expected_asset = Asset(data, uuid4)
     expected = Transaction(Transaction.CREATE, expected_asset, [user_ffill],
                            [user_cond], None, timestamp, Transaction.VERSION)
 
@@ -342,7 +343,7 @@ def test_transaction_deserialization(user_ffill, user_cond, data, data_id):
             'timestamp': timestamp,
             'metadata': None,
             'asset': {
-                'id': data_id,
+                'id': uuid4,
                 'divisible': False,
                 'updatable': False,
                 'refillable': False,
@@ -357,19 +358,19 @@ def test_transaction_deserialization(user_ffill, user_cond, data, data_id):
     assert tx == expected
 
 
-def test_tx_serialization_with_incorrect_hash(utx):
+def test_tx_serialization_with_incorrect_hash(utx, ):
     from bigchaindb.common.transaction import Transaction
     from bigchaindb.common.exceptions import InvalidHash
 
     utx_dict = utx.to_dict()
-    utx_dict['id'] = 'abc'
+    utx_dict['id'] = ('abc' * 30)[:64]
     with raises(InvalidHash):
         Transaction.from_dict(utx_dict)
     utx_dict.pop('id')
     with raises(InvalidHash):
         Transaction.from_dict(utx_dict)
     utx_dict['id'] = []
-    with raises(InvalidHash):
+    with raises(jsonschema.ValidationError):
         Transaction.from_dict(utx_dict)
 
 
@@ -916,7 +917,7 @@ def test_conditions_to_inputs(tx):
 
 
 def test_create_transfer_transaction_single_io(tx, user_pub, user2_pub,
-                                               user2_cond, user_priv, data_id):
+                                               user2_cond, user_priv, uuid4):
     from copy import deepcopy
     from bigchaindb.common.crypto import SigningKey
     from bigchaindb.common.transaction import Transaction, Asset
@@ -927,7 +928,7 @@ def test_create_transfer_transaction_single_io(tx, user_pub, user2_pub,
             'conditions': [user2_cond.to_dict(0)],
             'metadata': None,
             'asset': {
-                'id': data_id,
+                'id': uuid4,
             },
             'fulfillments': [
                 {
@@ -947,7 +948,7 @@ def test_create_transfer_transaction_single_io(tx, user_pub, user2_pub,
         'version': 1
     }
     inputs = tx.to_inputs([0])
-    asset = Asset(None, data_id)
+    asset = Asset(None, uuid4)
     transfer_tx = Transaction.transfer(inputs, [([user2_pub], 1)], asset=asset)
     transfer_tx = transfer_tx.sign([user_priv])
     transfer_tx = transfer_tx.to_dict()
