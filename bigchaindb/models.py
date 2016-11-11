@@ -73,6 +73,8 @@ class Transaction(Transaction):
 
                 input_conditions.append(input_tx.conditions[input_cid])
                 input_txs.append(input_tx)
+                if input_tx.conditions[input_cid].amount < 1:
+                    raise AmountError('`amount` needs to be greater than zero')
                 input_amount += input_tx.conditions[input_cid].amount
 
             # validate asset id
@@ -87,8 +89,12 @@ class Transaction(Transaction):
             # validate the asset
             asset.validate_asset(amount=input_amount)
             # validate the amounts
-            output_amount = sum([condition.amount for
-                                 condition in self.conditions])
+            output_amount = 0
+            for condition in self.conditions:
+                if condition.amount < 1:
+                    raise AmountError('`amount` needs to be greater than zero')
+                output_amount += condition.amount
+
             if output_amount != input_amount:
                 raise AmountError(('The amount used in the inputs `{}`'
                                    ' needs to be same as the amount used'

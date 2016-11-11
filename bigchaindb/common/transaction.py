@@ -299,6 +299,8 @@ class Condition(object):
         threshold = len(owners_after)
         if not isinstance(amount, int):
             raise TypeError('`amount` must be a int')
+        if amount < 1:
+            raise AmountError('`amount` needs to be greater than zero')
         if not isinstance(owners_after, list):
             raise TypeError('`owners_after` must be an instance of list')
         if len(owners_after) == 0:

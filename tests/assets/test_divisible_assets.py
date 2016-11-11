@@ -1,5 +1,7 @@
 import pytest
 
+from unittest.mock import patch
+
 from ..db.conftest import inputs  # noqa
 
 
@@ -684,3 +686,94 @@ def test_divide(b, user_vk, user_sk):
     assert len(tx_transfer_signed.conditions) == 3
     for condition in tx_transfer_signed.conditions:
         assert condition.amount == 1
+
+
+# Check that negative inputs are caught when creating a TRANSFER transaction
+@pytest.mark.usefixtures('inputs')
+def test_non_positive_amounts_on_transfer(b, user_vk):
+    from bigchaindb.models import Transaction
+    from bigchaindb.common.transaction import Asset
+    from bigchaindb.common.exceptions import AmountError
+
+    # CREATE divisible asset with 1 output with amount 3
+    asset = Asset(divisible=True)
+    tx_create = Transaction.create([b.me], [([user_vk], 3)],
+                                   asset=asset)
+    tx_create_signed = tx_create.sign([b.me_private])
+    # create block
+    block = b.create_block([tx_create_signed])
+    assert block.validate(b) == block
+    b.write_block(block, durability='hard')
+    # vote
+    vote = b.vote(block.id, b.get_last_voted_block().id, True)
+    b.write_vote(vote)
+
+    with pytest.raises(AmountError):
+        Transaction.transfer(tx_create.to_inputs(),
+                             [([b.me], 4), ([b.me], -1)],
+                             asset=tx_create.asset)
+
+
+# Check that negative inputs are caught when validating a TRANSFER transaction
+@pytest.mark.usefixtures('inputs')
+def test_non_positive_amounts_on_transfer_validate(b, user_vk, user_sk):
+    from bigchaindb.models import Transaction
+    from bigchaindb.common.transaction import Asset
+    from bigchaindb.common.exceptions import AmountError
+
+    # CREATE divisible asset with 1 output with amount 3
+    asset = Asset(divisible=True)
+    tx_create = Transaction.create([b.me], [([user_vk], 3)],
+                                   asset=asset)
+    tx_create_signed = tx_create.sign([b.me_private])
+    # create block
+    block = b.create_block([tx_create_signed])
+    assert block.validate(b) == block
+    b.write_block(block, durability='hard')
+    # vote
+    vote = b.vote(block.id, b.get_last_voted_block().id, True)
+    b.write_vote(vote)
+
+    # create a transfer transaction with 3 outputs and check if the amount
+    # of each output is 1
+    tx_transfer = Transaction.transfer(tx_create.to_inputs(),
+                                       [([b.me], 4), ([b.me], 1)],
+                                       asset=tx_create.asset)
+    tx_transfer.conditions[1].amount = -1
+    tx_transfer_signed = tx_transfer.sign([user_sk])
+
+    with pytest.raises(AmountError):
+        tx_transfer_signed.validate(b)
+
+
+# Check that negative inputs are caught when creating a CREATE transaction
+@pytest.mark.usefixtures('inputs')
+def test_non_positive_amounts_on_create(b, user_vk):
+    from bigchaindb.models import Transaction
+    from bigchaindb.common.transaction import Asset
+    from bigchaindb.common.exceptions import AmountError
+
+    # CREATE divisible asset with 1 output with amount 3
+    asset = Asset(divisible=True)
+    with pytest.raises(AmountError):
+        Transaction.create([b.me], [([user_vk], -3)],
+                           asset=asset)
+
+
+# Check that negative inputs are caught when validating a CREATE transaction
+@pytest.mark.usefixtures('inputs')
+def test_non_positive_amounts_on_create_validate(b, user_vk):
+    from bigchaindb.models import Transaction
+    from bigchaindb.common.transaction import Asset
+    from bigchaindb.common.exceptions import AmountError
+
+    # CREATE divisible asset with 1 output with amount 3
+    asset = Asset(divisible=True)
+    tx_create = Transaction.create([b.me], [([user_vk], 3)],
+                                   asset=asset)
+    tx_create.conditions[0].amount = -3
+    with patch.object(Asset, 'validate_asset', return_value=None):
+        tx_create_signed = tx_create.sign([b.me_private])
+
+    with pytest.raises(AmountError):
+        tx_create_signed.validate(b)
