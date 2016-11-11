@@ -1,6 +1,5 @@
 from pytest import raises
 from unittest.mock import patch
-import jsonschema
 
 from bigchaindb.common.exceptions import ValidationError
 
@@ -759,11 +758,10 @@ def test_validate_fulfillments_of_transfer_tx_with_invalid_params(transfer_tx,
         transfer_tx.operation = "Operation that doesn't exist"
         transfer_tx.fulfillments_valid([utx.conditions[0]])
 
-    validate(tx)
+    validate(transfer_tx)
 
 
-def test_create_create_transaction_single_io(user_cond, user_pub, data,
-                                             data_id):
+def test_create_create_transaction_single_io(user_cond, user_pub, data, uuid4):
     from bigchaindb.common.transaction import Transaction, Asset
 
     expected = {
@@ -773,7 +771,7 @@ def test_create_create_transaction_single_io(user_cond, user_pub, data,
                 'data': data,
             },
             'asset': {
-                'id': data_id,
+                'id': uuid4,
                 'divisible': False,
                 'updatable': False,
                 'refillable': False,
@@ -791,18 +789,18 @@ def test_create_create_transaction_single_io(user_cond, user_pub, data,
             ],
             'operation': 'CREATE',
         },
-        'version': 1
+        'version': 1,
     }
 
-    asset = Asset(data, data_id)
-    tx = Transaction.create([user_pub], [([user_pub], 1)],
-                            data, asset).to_dict()
-    tx.pop('id')
-    tx['transaction']['metadata'].pop('id')
-    tx['transaction'].pop('timestamp')
-    tx['transaction']['fulfillments'][0]['fulfillment'] = None
+    asset = Asset(data, uuid4)
+    tx = Transaction.create([user_pub], [([user_pub], 1)], data, asset)
+    tx_dict = tx.to_dict()
+    tx_dict.pop('id')
+    tx_dict['transaction']['metadata'].pop('id')
+    tx_dict['transaction']['fulfillments'][0]['fulfillment'] = None
+    expected['transaction']['timestamp'] = tx_dict['transaction']['timestamp']
 
-    assert tx == expected
+    assert tx_dict == expected
 
     validate(tx)
 
@@ -869,7 +867,7 @@ def test_validate_multiple_io_create_transaction(user_pub, user_priv,
 def test_create_create_transaction_threshold(user_pub, user2_pub, user3_pub,
                                              user_user2_threshold_cond,
                                              user_user2_threshold_ffill, data,
-                                             data_id):
+                                             uuid4):
     from bigchaindb.common.transaction import Transaction, Asset
 
     expected = {
@@ -879,7 +877,7 @@ def test_create_create_transaction_threshold(user_pub, user2_pub, user3_pub,
                 'data': data,
             },
             'asset': {
-                'id': data_id,
+                'id': uuid4,
                 'divisible': False,
                 'updatable': False,
                 'refillable': False,
@@ -899,7 +897,7 @@ def test_create_create_transaction_threshold(user_pub, user2_pub, user3_pub,
         },
         'version': 1
     }
-    asset = Asset(data, data_id)
+    asset = Asset(data, uuid4)
     tx = Transaction.create([user_pub], [([user_pub, user2_pub], 1)],
                             data, asset)
     tx_dict = tx.to_dict()
@@ -909,8 +907,6 @@ def test_create_create_transaction_threshold(user_pub, user2_pub, user3_pub,
     tx_dict['transaction']['fulfillments'][0]['fulfillment'] = None
 
     assert tx_dict == expected
-
-    validate(tx)
 
 
 def test_validate_threshold_create_transaction(user_pub, user_priv, user2_pub,
