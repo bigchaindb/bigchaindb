@@ -786,20 +786,14 @@ class Transaction(object):
                 :obj:`list` of :class:`~bigchaindb.common.transaction.
                     Fulfillment`
         """
-        inputs = []
-        if condition_indices is None or len(condition_indices) == 0:
-            # NOTE: If no condition indices are passed, we just assume to
-            #       take all conditions as inputs.
-            condition_indices = [index for index, _
-                                 in enumerate(self.conditions)]
-
-        for cid in condition_indices:
-            input_cond = self.conditions[cid]
-            ffill = Fulfillment(input_cond.fulfillment,
-                                input_cond.owners_after,
-                                TransactionLink(self.id, cid))
-            inputs.append(ffill)
-        return inputs
+        # NOTE: If no condition indices are passed, we just assume to
+        #       take all conditions as inputs.
+        return [
+            Fulfillment(self.conditions[cid].fulfillment,
+                        self.conditions[cid].owners_after,
+                        TransactionLink(self.id, cid))
+            for cid in condition_indices or range(len(self.conditions))
+        ]
 
     def add_fulfillment(self, fulfillment):
         """Adds a Fulfillment to a Transaction's list of Fulfillments.
