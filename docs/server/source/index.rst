@@ -14,5 +14,9 @@ BigchainDB Server Documentation
    drivers-clients/index
    clusters-feds/index
    topic-guides/index
+   transaction-concepts
+   transaction-model/index
+   block-model
+   vote-model
    release-notes
    appendices/index
