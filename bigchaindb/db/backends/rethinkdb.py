@@ -317,6 +317,17 @@ class RethinkDBBackend:
                 r.table('votes')
                 .insert(vote))
 
+    def get_genesis_block(self):
+        """Get the genesis block
+
+        Returns:
+            The genesis block
+        """
+        return self.connection.run(
+            r.table('bigchain', read_mode=self.read_mode)
+            .filter(util.is_genesis_block)
+            .nth(0))
+
     def get_last_voted_block(self, node_pubkey):
         """Get the last voted block for a specific node.
 
@@ -341,10 +352,7 @@ class RethinkDBBackend:
 
         except r.ReqlNonExistenceError:
             # return last vote if last vote exists else return Genesis block
-            return self.connection.run(
-                r.table('bigchain', read_mode=self.read_mode)
-                .filter(util.is_genesis_block)
-                .nth(0))
+            return self.get_genesis_block()
 
         # Now the fun starts. Since the resolution of timestamp is a second,
         # we might have more than one vote per timestamp. If this is the case
