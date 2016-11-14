@@ -11,7 +11,7 @@ When you start Bigchaindb using `bigchaindb start`, an HTTP API is exposed at
 the address stored in the BigchainDB node configuration settings. The default
 is:
 
-`http://localhost:9984/api/v1/ <http://localhost:9984/api/v1/>` 
+`http://localhost:9984/api/v1/ <http://localhost:9984/api/v1/>`_
 
 but that address can be changed by changing the "API endpoint" configuration
 setting (e.g. in a local config file). There's more information about setting
@@ -294,8 +294,8 @@ GET /unspents/
    a previous transaction and could hence be called unspent conditions/outputs
    (or simply: unspents).
 
-   This endpoint doesn't return anything if the querystring ``owner_after``
-   happens to not be defined in the request.
+   This endpoint will return a ``HTTP 400 Bad Request`` if the querystring
+   ``owner_after`` happens to not be defined in the request.
 
    Note that if unspents for a certain ``owner_after`` have not been found by
    the server, this will result in the server returning a 200 OK HTTP status
@@ -303,7 +303,7 @@ GET /unspents/
 
    :param owner_after: A public key, able to validly spend an output of a
    transaction, assuming the user also has the corresponding private key.
-   :type owner_after: hex string
+   :type owner_after: base58 encoded string
 
    **Example request**:
 
