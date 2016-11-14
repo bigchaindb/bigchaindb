@@ -69,9 +69,9 @@ class CyclicBlockchainError(Exception):
     """Raised when there is a cycle in the blockchain"""
 
 
-class FulfillmentNotInValidBlock(Exception):
-    """Raised when a transaction depends on an invalid or undecided
-    fulfillment"""
+class TransactionNotInValidBlock(Exception):
+    """Raised when a transfer transaction is attempting to fulfill the
+    conditions of a transaction that is in an invalid or undecided block"""
 
 
 class AssetIdMismatch(Exception):
