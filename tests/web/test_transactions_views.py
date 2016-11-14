@@ -120,3 +120,25 @@ def test_get_transaction_status_returns_404_if_not_found(client):
 
     res = client.get(TX_ENDPOINT + '123' + "/status/")
     assert res.status_code == 404
+
+
+@pytest.mark.usefixtures('inputs')
+def test_get_transaction_unspents_endpoint(b, client, user_vk):
+    unspents = b.get_owned_ids(user_vk)
+    res = client.get(TX_ENDPOINT + 'unspents/' + user_vk)
+    assert res.status_code == 200
+    assert unspents == res.json
+
+    res = client.get(TX_ENDPOINT + 'unspents/' + user_vk + '/')
+    assert res.status_code == 200
+    assert unspents == res.json
+
+
+@pytest.mark.usefixtures('inputs')
+def test_get_transaction_unspents_endpoint_empty_list(client):
+    res = client.get(TX_ENDPOINT + 'unspents/' + 'cat')
+    assert res.status_code == 200
+    assert [] == res.json
+
+    res = client.get(TX_ENDPOINT + 'unspents')
+    assert res.status_code == 404

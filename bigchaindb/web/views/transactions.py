@@ -46,7 +46,7 @@ class TransactionApi(Resource):
             tx_id (str): the id of the transaction.
 
         Return:
-            A JSON string containing the data about the transaction.
+            A dict containing the data about the transaction.
         """
         pool = current_app.config['bigchain_pool']
 
@@ -111,12 +111,34 @@ class TransactionListApi(Resource):
 
         return tx
 
+
+class TransactionListUnspentApi(Resource):
+    def get(self, owner):
+        """API endpoint to get a list of unspent transactions of an owner.
+
+        Args:
+            owner (str): base58 encoded public key.
+
+        Return:
+            A list of transaction ids.
+        """
+        pool = current_app.config['bigchain_pool']
+
+        with pool() as bigchain:
+            txs = bigchain.get_owned_ids(owner)
+
+        return txs
+
 transaction_api.add_resource(TransactionApi,
                              '/transactions/<string:tx_id>',
                              strict_slashes=False)
 transaction_api.add_resource(TransactionStatusApi,
                              '/transactions/<string:tx_id>/status',
                              strict_slashes=False)
+
 transaction_api.add_resource(TransactionListApi,
                              '/transactions',
+                             strict_slashes=False)
+transaction_api.add_resource(TransactionListUnspentApi,
+                             '/transactions/unspents/<string:owner>',
                              strict_slashes=False)
