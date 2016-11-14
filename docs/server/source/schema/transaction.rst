@@ -142,15 +142,6 @@ See: `Metadata`_.
 
 
 
-Transaction.timestamp
-^^^^^^^^^^^^^^^^^^^^^
-
-**type:** string
-
-User provided timestamp of the transaction.
-
-
-
 
 
 Condition

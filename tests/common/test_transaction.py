@@ -297,7 +297,6 @@ def test_transaction_serialization(user_ffill, user_cond, data, data_id):
     from .util import validate_transaction_model
 
     tx_id = 'l0l'
-    timestamp = '66666666666'
 
     expected = {
         'id': tx_id,
@@ -308,7 +307,6 @@ def test_transaction_serialization(user_ffill, user_cond, data, data_id):
             'fulfillments': [user_ffill.to_dict(0)],
             'conditions': [user_cond.to_dict(0)],
             'operation': Transaction.CREATE,
-            'timestamp': timestamp,
             'metadata': None,
             'asset': {
                 'id': data_id,
@@ -325,7 +323,6 @@ def test_transaction_serialization(user_ffill, user_cond, data, data_id):
     tx_dict = tx.to_dict()
     tx_dict['id'] = tx_id
     tx_dict['transaction']['asset']['id'] = data_id
-    tx_dict['transaction']['timestamp'] = timestamp
 
     assert tx_dict == expected
 
@@ -338,11 +335,10 @@ def test_transaction_deserialization(user_ffill, user_cond, data, uuid4):
     from bigchaindb.common.transaction import Transaction, Asset
     from .util import validate_transaction_model
 
-    timestamp = '66666666666'
 
     expected_asset = Asset(data, uuid4)
     expected = Transaction(Transaction.CREATE, expected_asset, [user_ffill],
-                           [user_cond], None, timestamp, Transaction.VERSION)
+                           [user_cond], None, Transaction.VERSION)
 
     tx = {
         'version': Transaction.VERSION,
@@ -352,7 +348,6 @@ def test_transaction_deserialization(user_ffill, user_cond, data, uuid4):
             'fulfillments': [user_ffill.to_dict()],
             'conditions': [user_cond.to_dict()],
             'operation': Transaction.CREATE,
-            'timestamp': timestamp,
             'metadata': None,
             'asset': {
                 'id': uuid4,
@@ -795,10 +790,9 @@ def test_create_create_transaction_single_io(user_cond, user_pub, data, uuid4):
     asset = Asset(data, uuid4)
     tx = Transaction.create([user_pub], [([user_pub], 1)], data, asset)
     tx_dict = tx.to_dict()
-    tx_dict.pop('id')
     tx_dict['transaction']['metadata'].pop('id')
     tx_dict['transaction']['fulfillments'][0]['fulfillment'] = None
-    expected['transaction']['timestamp'] = tx_dict['transaction']['timestamp']
+    tx_dict.pop('id')
 
     assert tx_dict == expected
 
@@ -842,7 +836,6 @@ def test_create_create_transaction_multiple_io(user_cond, user2_cond, user_pub,
                             metadata={'message': 'hello'}).to_dict()
     tx.pop('id')
     tx['transaction']['metadata'].pop('id')
-    tx['transaction'].pop('timestamp')
     tx['transaction'].pop('asset')
 
     assert tx == expected
@@ -902,7 +895,6 @@ def test_create_create_transaction_threshold(user_pub, user2_pub, user3_pub,
     tx_dict = tx.to_dict()
     tx_dict.pop('id')
     tx_dict['transaction']['metadata'].pop('id')
-    tx_dict['transaction'].pop('timestamp')
     tx_dict['transaction']['fulfillments'][0]['fulfillment'] = None
 
     assert tx_dict == expected
@@ -989,7 +981,6 @@ def test_create_transfer_transaction_single_io(tx, user_pub, user2_pub,
 
     expected_input = deepcopy(inputs[0])
     expected['id'] = transfer_tx['id']
-    expected['transaction']['timestamp'] = transfer_tx_body['timestamp']
     expected_input.fulfillment.sign(serialize(expected).encode(),
                                     PrivateKey(user_priv))
     expected_ffill = expected_input.fulfillment.serialize_uri()
@@ -1058,7 +1049,6 @@ def test_create_transfer_transaction_multiple_io(user_pub, user_priv,
     transfer_tx = transfer_tx.to_dict()
     transfer_tx['transaction']['fulfillments'][0]['fulfillment'] = None
     transfer_tx['transaction']['fulfillments'][1]['fulfillment'] = None
-    transfer_tx['transaction'].pop('timestamp')
     transfer_tx.pop('id')
     transfer_tx['transaction'].pop('asset')
 

@@ -28,7 +28,6 @@ properties:
     - fulfillments
     - conditions
     - operation
-    - timestamp
     - metadata
     - asset
     properties:
@@ -64,8 +63,6 @@ properties:
           contain an id and an object with freeform metadata.
 
           See: `Metadata`_.
-      timestamp:
-        "$ref": "#/definitions/timestamp"
   version:
     type: integer
     minimum: 1
@@ -262,7 +259,3 @@ definitions:
             User provided transaction metadata.
           additionalProperties: true
     - type: 'null'
-  timestamp:
-    type: string
-    description: |
-        User provided timestamp of the transaction.

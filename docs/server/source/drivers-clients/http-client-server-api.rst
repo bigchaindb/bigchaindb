@@ -99,7 +99,6 @@ POST /transactions/
             "refillable": false
           },
           "metadata": null,
-          "timestamp": "1477578978",
           "fulfillments": [
             {
               "fid": 0,
@@ -156,7 +155,6 @@ POST /transactions/
             }
           ],
           "operation": "CREATE",
-          "timestamp": "1477578978",
           "asset": {
             "updatable": false,
             "refillable": false,
@@ -265,7 +263,6 @@ GET /transactions/{tx_id}
             "refillable": false
           },
           "metadata": null,
-          "timestamp": "1477578978",
           "fulfillments": [
             {
               "fid": 0,
