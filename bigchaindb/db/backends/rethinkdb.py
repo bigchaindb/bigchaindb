@@ -278,6 +278,17 @@ class RethinkDBBackend:
                 r.table('bigchain')
                 .insert(r.json(block), durability=durability))
 
+    def get_block(self, block_id):
+        """Get a block from the bigchain table
+
+        Args:
+            block_id (str): block id of the block to get
+
+        Returns:
+            block (dict): the block or `None`
+        """
+        return self.connection.run(r.table('bigchain').get(block_id))
+
     def has_transaction(self, transaction_id):
         """Check if a transaction exists in the bigchain table.
 
@@ -302,6 +313,17 @@ class RethinkDBBackend:
                 r.table('bigchain', read_mode=self.read_mode)
                 .count())
 
+    def count_backlog(self):
+        """Count the number of transactions in the backlog table.
+
+        Returns:
+            The number of transactions in the backlog.
+        """
+
+        return self.connection.run(
+                r.table('backlog', read_mode=self.read_mode)
+                .count())
+
     def write_vote(self, vote):
         """Write a vote to the votes table.
 
@@ -314,6 +336,17 @@ class RethinkDBBackend:
         return self.connection.run(
                 r.table('votes')
                 .insert(vote))
+
+    def get_genesis_block(self):
+        """Get the genesis block
+
+        Returns:
+            The genesis block
+        """
+        return self.connection.run(
+            r.table('bigchain', read_mode=self.read_mode)
+            .filter(util.is_genesis_block)
+            .nth(0))
 
     def get_last_voted_block(self, node_pubkey):
         """Get the last voted block for a specific node.
@@ -339,10 +372,7 @@ class RethinkDBBackend:
 
         except r.ReqlNonExistenceError:
             # return last vote if last vote exists else return Genesis block
-            return self.connection.run(
-                r.table('bigchain', read_mode=self.read_mode)
-                .filter(util.is_genesis_block)
-                .nth(0))
+            return self.get_genesis_block()
 
         # Now the fun starts. Since the resolution of timestamp is a second,
         # we might have more than one vote per timestamp. If this is the case

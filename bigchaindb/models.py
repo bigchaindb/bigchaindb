@@ -113,8 +113,36 @@ class Transaction(Transaction):
 
 
 class Block(object):
+    """Bundle a list of Transactions in a Block. Nodes vote on its validity.
+
+    Attributes:
+        transaction (:obj:`list` of :class:`~.Transaction`):
+            Transactions to be included in the Block.
+        node_pubkey (str): The public key of the node creating the
+            Block.
+        timestamp (str): The Unix time a Block was created.
+        voters (:obj:`list` of :obj:`str`): A list of a federation
+            nodes' public keys supposed to vote on the Block.
+        signature (str): A cryptographic signature ensuring the
+            integrity and validity of the creator of a Block.
+    """
+
     def __init__(self, transactions=None, node_pubkey=None, timestamp=None,
                  voters=None, signature=None):
+        """The Block model is mainly used for (de)serialization and integrity
+        checking.
+
+        Args:
+            transaction (:obj:`list` of :class:`~.Transaction`):
+                Transactions to be included in the Block.
+            node_pubkey (str): The public key of the node creating the
+                Block.
+            timestamp (str): The Unix time a Block was created.
+            voters (:obj:`list` of :obj:`str`): A list of a federation
+                nodes' public keys supposed to vote on the Block.
+            signature (str): A cryptographic signature ensuring the
+                integrity and validity of the creator of a Block.
+        """
         if transactions is not None and not isinstance(transactions, list):
             raise TypeError('`transactions` must be a list instance or None')
         else:
@@ -141,18 +169,20 @@ class Block(object):
         return self.to_dict() == other
 
     def validate(self, bigchain):
-        """Validate a block.
+        """Validate the Block.
 
         Args:
-            bigchain (Bigchain): an instantiated bigchaindb.Bigchain object.
+            bigchain (:class:`~bigchaindb.Bigchain`): An instantiated Bigchain
+                object.
 
         Returns:
-            block (Block): The block as a `Block` object if it is valid.
-                           Else it raises an appropriate exception describing
-                           the reason of invalidity.
+            :class:`~.Block`: If valid, return a `Block` object. Else an
+            appropriate exception describing the reason of invalidity is
+            raised.
 
         Raises:
-            OperationError: if a non-federation node signed the block.
+            OperationError: If a non-federation node signed the Block.
+            InvalidSignature: If a Block's signature is invalid.
         """
 
         # First, make sure this node hasn't already voted on this block
@@ -177,6 +207,15 @@ class Block(object):
         return self
 
     def sign(self, signing_key):
+        """Create a signature for the Block and overwrite `self.signature`.
+
+        Args:
+            signing_key (str): A signing key corresponding to
+                `self.node_pubkey`.
+
+        Returns:
+            :class:`~.Block`
+        """
         block_body = self.to_dict()
         block_serialized = serialize(block_body['block'])
         signing_key = SigningKey(signing_key)
@@ -184,8 +223,13 @@ class Block(object):
         return self
 
     def is_signature_valid(self):
+        """Check the validity of a Block's signature.
+
+        Returns:
+            bool: Stating the validity of the Block's signature.
+        """
         block = self.to_dict()['block']
-        # cc only accepts bytesting messages
+        # cc only accepts bytestring messages
         block_serialized = serialize(block).encode()
         verifying_key = VerifyingKey(block['node_pubkey'])
         try:
@@ -197,6 +241,21 @@ class Block(object):
 
     @classmethod
     def from_dict(cls, block_body):
+        """Transform a Python dictionary to a Block object.
+
+        Args:
+            block_body (dict): A block dictionary to be transformed.
+
+        Returns:
+            :class:`~Block`
+
+        Raises:
+            InvalidHash: If the block's id is not corresponding to its
+                data.
+            InvalidSignature: If the block's signature is not corresponding
+                to it's data or `node_pubkey`.
+        """
+        # TODO: Reuse `is_signature_valid` method here.
         block = block_body['block']
         block_serialized = serialize(block)
         block_id = hash_data(block_serialized)
@@ -215,7 +274,7 @@ class Block(object):
             #       https://github.com/bigchaindb/cryptoconditions/issues/27
             try:
                 signature_valid = verifying_key\
-                        .verify(block_serialized.encode(), signature)
+                    .verify(block_serialized.encode(), signature)
             except ValueError:
                 signature_valid = False
             if signature_valid is False:
@@ -232,6 +291,14 @@ class Block(object):
         return self.to_dict()['id']
 
     def to_dict(self):
+        """Transform the Block to a Python dictionary.
+
+        Returns:
+            dict: The Block as a dict.
+
+        Raises:
+            OperationError: If the Block doesn't contain any transactions.
+        """
         if len(self.transactions) == 0:
             raise OperationError('Empty block creation is not allowed')
 
