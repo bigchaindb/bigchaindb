@@ -111,6 +111,7 @@ class TransactionListApi(Resource):
 
         return tx
 
+
 transaction_api.add_resource(TransactionApi,
                              '/transactions/<string:tx_id>',
                              strict_slashes=False)
