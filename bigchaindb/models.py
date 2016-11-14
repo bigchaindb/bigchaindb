@@ -3,39 +3,9 @@ from bigchaindb.common.exceptions import (InvalidHash, InvalidSignature,
                                           OperationError, DoubleSpend,
                                           TransactionDoesNotExist,
                                           FulfillmentNotInValidBlock,
-                                          AssetIdMismatch)
+                                          AssetIdMismatch, AmountError)
 from bigchaindb.common.transaction import Transaction, Asset
 from bigchaindb.common.util import gen_timestamp, serialize
-
-
-class Asset(Asset):
-    @staticmethod
-    def get_asset_id(transactions):
-        """Get the asset id from a list of transaction ids.
-
-        This is useful when we want to check if the multiple inputs of a transaction
-        are related to the same asset id.
-
-        Args:
-            transactions (list): list of transaction usually inputs that should have a matching asset_id
-
-        Returns:
-            str: uuid of the asset.
-
-        Raises:
-            AssetIdMismatch: If the inputs are related to different assets.
-        """
-
-        if not isinstance(transactions, list):
-            transactions = [transactions]
-
-        # create a set of asset_ids
-        asset_ids = {tx.asset.data_id for tx in transactions}
-
-        # check that all the transasctions have the same asset_id
-        if len(asset_ids) > 1:
-            raise AssetIdMismatch("All inputs of a transaction need to have the same asset id.")
-        return asset_ids.pop()
 
 
 class Transaction(Transaction):
@@ -71,7 +41,8 @@ class Transaction(Transaction):
             if inputs_defined:
                 raise ValueError('A CREATE operation has no inputs')
             # validate asset
-            self.asset._validate_asset()
+            amount = sum([condition.amount for condition in self.conditions])
+            self.asset.validate_asset(amount=amount)
         elif self.operation == Transaction.TRANSFER:
             if not inputs_defined:
                 raise ValueError('Only `CREATE` transactions can have null '
@@ -79,6 +50,7 @@ class Transaction(Transaction):
             # check inputs
             # store the inputs so that we can check if the asset ids match
             input_txs = []
+            input_amount = 0
             for ffill in self.fulfillments:
                 input_txid = ffill.tx_input.txid
                 input_cid = ffill.tx_input.cid
@@ -101,11 +73,34 @@ class Transaction(Transaction):
 
                 input_conditions.append(input_tx.conditions[input_cid])
                 input_txs.append(input_tx)
+                if input_tx.conditions[input_cid].amount < 1:
+                    raise AmountError('`amount` needs to be greater than zero')
+                input_amount += input_tx.conditions[input_cid].amount
 
             # validate asset id
             asset_id = Asset.get_asset_id(input_txs)
             if asset_id != self.asset.data_id:
-                raise AssetIdMismatch('The asset id of the input does not match the asset id of the transaction')
+                raise AssetIdMismatch(('The asset id of the input does not'
+                                       ' match the asset id of the'
+                                       ' transaction'))
+
+            # get the asset creation to see if its divisible or not
+            asset = bigchain.get_asset_by_id(asset_id)
+            # validate the asset
+            asset.validate_asset(amount=input_amount)
+            # validate the amounts
+            output_amount = 0
+            for condition in self.conditions:
+                if condition.amount < 1:
+                    raise AmountError('`amount` needs to be greater than zero')
+                output_amount += condition.amount
+
+            if output_amount != input_amount:
+                raise AmountError(('The amount used in the inputs `{}`'
+                                   ' needs to be same as the amount used'
+                                   ' in the outputs `{}`')
+                                  .format(input_amount, output_amount))
+
         else:
             allowed_operations = ', '.join(Transaction.ALLOWED_OPERATIONS)
             raise TypeError('`operation`: `{}` must be either {}.'

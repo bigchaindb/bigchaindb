@@ -178,7 +178,27 @@ class RethinkDBBackend:
             r.table('bigchain', read_mode=self.read_mode)
              .get_all(asset_id, index='asset_id')
              .concat_map(lambda block: block['block']['transactions'])
-             .filter(lambda transaction: transaction['transaction']['asset']['id'] == asset_id))
+             .filter(lambda transaction:
+                     transaction['transaction']['asset']['id'] == asset_id))
+
+    def get_asset_by_id(self, asset_id):
+        """Returns the asset associated with an asset_id.
+
+            Args:
+                asset_id (str): The asset id.
+
+            Returns:
+                Returns a rethinkdb cursor.
+        """
+        return self.connection.run(
+            r.table('bigchain', read_mode=self.read_mode)
+             .get_all(asset_id, index='asset_id')
+             .concat_map(lambda block: block['block']['transactions'])
+             .filter(lambda transaction:
+                     transaction['transaction']['asset']['id'] == asset_id)
+             .filter(lambda transaction:
+                     transaction['transaction']['operation'] == 'CREATE')
+             .pluck({'transaction': 'asset'}))
 
     def get_spent(self, transaction_id, condition_id):
         """Check if a `txid` was already used as an input.
