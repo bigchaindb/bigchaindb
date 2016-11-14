@@ -598,7 +598,8 @@ class TestBigchainApi(object):
         from bigchaindb.models import Transaction
 
         for _ in range(4):
-            tx = Transaction.create([b.me], [user_vk]).sign([b.me_private])
+            tx = Transaction.create([b.me],
+                                    [([user_vk], 1)]).sign([b.me_private])
             b.write_transaction(tx)
 
         assert b.backend.count_backlog() == 4
