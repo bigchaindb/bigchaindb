@@ -118,7 +118,7 @@ class Transaction(Transaction):
 
 
 class Block(object):
-    """A Block bundles up to 1000 Transactions. Nodes vote on its validity.
+    """Bundle a list of Transactions in a Block. Nodes vote on its validity.
 
     Attributes:
         transaction (:obj:`list` of :class:`~.Transaction`):
@@ -129,7 +129,7 @@ class Block(object):
         voters (:obj:`list` of :obj:`str`): A list of a federation
             nodes' public keys supposed to vote on the Block.
         signature (str): A cryptographic signature ensuring the
-            integrity and creatorship of a Block.
+            integrity and validity of the creator of a Block.
     """
 
     def __init__(self, transactions=None, node_pubkey=None, timestamp=None,
@@ -146,7 +146,7 @@ class Block(object):
             voters (:obj:`list` of :obj:`str`): A list of a federation
                 nodes' public keys supposed to vote on the Block.
             signature (str): A cryptographic signature ensuring the
-                integrity and creatorship of a Block.
+                integrity and validity of the creator of a Block.
         """
         if transactions is not None and not isinstance(transactions, list):
             raise TypeError('`transactions` must be a list instance or None')
@@ -174,14 +174,14 @@ class Block(object):
         return self.to_dict() == other
 
     def validate(self, bigchain):
-        """Validates the Block.
+        """Validate the Block.
 
         Args:
             bigchain (:class:`~bigchaindb.Bigchain`): An instantiated Bigchain
                 object.
 
         Returns:
-            :class:`~.Block`: If valid, returns a `Block` object. Else an
+            :class:`~.Block`: If valid, return a `Block` object. Else an
             appropriate exception describing the reason of invalidity is
             raised.
 
@@ -212,7 +212,7 @@ class Block(object):
         return self
 
     def sign(self, signing_key):
-        """Creates a signature for the Block and overwrites `self.signature`.
+        """Create a signature for the Block and overwrite `self.signature`.
 
         Args:
             signing_key (str): A signing key corresponding to
@@ -228,7 +228,7 @@ class Block(object):
         return self
 
     def is_signature_valid(self):
-        """Checks the validity of a Block's signature.
+        """Check the validity of a Block's signature.
 
         Returns:
             bool: Stating the validity of the Block's signature.
@@ -246,7 +246,7 @@ class Block(object):
 
     @classmethod
     def from_dict(cls, block_body):
-        """Transforms a Python dictionary to a Block object.
+        """Transform a Python dictionary to a Block object.
 
         Args:
             block_body (dict): A block dictionary to be transformed.
@@ -296,7 +296,7 @@ class Block(object):
         return self.to_dict()['id']
 
     def to_dict(self):
-        """Transforms the Block to a Python dictionary.
+        """Transform the Block to a Python dictionary.
 
         Returns:
             dict: The Block as a dict.
