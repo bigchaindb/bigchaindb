@@ -292,9 +292,9 @@ class Condition(object):
             Returns:
                 A Condition that can be used in a Transaction.
 
-            Returns:
+            Raises:
                 TypeError: If `owners_after` is not an instance of `list`.
-                Value: If `owners_after` is an empty list.
+                ValueError: If `owners_after` is an empty list.
         """
         threshold = len(owners_after)
         if not isinstance(amount, int):
