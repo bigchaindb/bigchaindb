@@ -120,7 +120,24 @@ class Transaction(Transaction):
 class Block(object):
     """A Block bundles up to 1000 Transactions. Nodes vote on its validity.
 
-        Attributes:
+    Attributes:
+        transaction (:obj:`list` of :class:`~.Transaction`):
+            Transactions to be included in the Block.
+        node_pubkey (str): The public key of the node creating the
+            Block.
+        timestamp (str): The Unix time a Block was created.
+        voters (:obj:`list` of :obj:`str`): A list of a federation
+            nodes' public keys supposed to vote on the Block.
+        signature (str): A cryptographic signature ensuring the
+            integrity and creatorship of a Block.
+    """
+
+    def __init__(self, transactions=None, node_pubkey=None, timestamp=None,
+                 voters=None, signature=None):
+        """The Block model is mainly used for (de)serialization and integrity
+        checking.
+
+        Args:
             transaction (:obj:`list` of :class:`~.Transaction`):
                 Transactions to be included in the Block.
             node_pubkey (str): The public key of the node creating the
@@ -130,23 +147,6 @@ class Block(object):
                 nodes' public keys supposed to vote on the Block.
             signature (str): A cryptographic signature ensuring the
                 integrity and creatorship of a Block.
-    """
-
-    def __init__(self, transactions=None, node_pubkey=None, timestamp=None,
-                 voters=None, signature=None):
-        """The Block model is mainly used for (de)serialization and integrity
-        checking.
-
-            Args:
-                transaction (:obj:`list` of :class:`~.Transaction`):
-                    Transactions to be included in the Block.
-                node_pubkey (str): The public key of the node creating the
-                    Block.
-                timestamp (str): The Unix time a Block was created.
-                voters (:obj:`list` of :obj:`str`): A list of a federation
-                    nodes' public keys supposed to vote on the Block.
-                signature (str): A cryptographic signature ensuring the
-                    integrity and creatorship of a Block.
         """
         if transactions is not None and not isinstance(transactions, list):
             raise TypeError('`transactions` must be a list instance or None')
@@ -214,12 +214,12 @@ class Block(object):
     def sign(self, signing_key):
         """Creates a signature for the Block and overwrites `self.signature`.
 
-            Args:
-                signing_key (str): A signing key corresponding to
-                    `self.node_pubkey`.
+        Args:
+            signing_key (str): A signing key corresponding to
+                `self.node_pubkey`.
 
-            Returns:
-                :class:`~.Block`
+        Returns:
+            :class:`~.Block`
         """
         block_body = self.to_dict()
         block_serialized = serialize(block_body['block'])
@@ -230,8 +230,8 @@ class Block(object):
     def is_signature_valid(self):
         """Checks the validity of a Block's signature.
 
-            Returns:
-                bool: Stating the validity of the Block's signature.
+        Returns:
+            bool: Stating the validity of the Block's signature.
         """
         block = self.to_dict()['block']
         # cc only accepts bytestring messages
@@ -248,20 +248,20 @@ class Block(object):
     def from_dict(cls, block_body):
         """Transforms a Python dictionary to a Block object.
 
-            Note:
-                Throws errors if passed signature or id is incorrect.
+        Note:
+            Throws errors if passed signature or id is incorrect.
 
-            Args:
-                block_body (dict): A block dictionary to be transformed.
+        Args:
+            block_body (dict): A block dictionary to be transformed.
 
-            Returns:
-                :class:`~Block`
+        Returns:
+            :class:`~Block`
 
-            Raises:
-                InvalidHash: If the block's id is not corresponding to its
-                    data.
-                InvalidSignature: If the block's signature is not corresponding
-                    to it's data or `node_pubkey`.
+        Raises:
+            InvalidHash: If the block's id is not corresponding to its
+                data.
+            InvalidSignature: If the block's signature is not corresponding
+                to it's data or `node_pubkey`.
         """
         # TODO: Reuse `is_signature_valid` method here.
         block = block_body['block']
@@ -301,11 +301,11 @@ class Block(object):
     def to_dict(self):
         """Transforms the object to a Python dictionary.
 
-            Returns:
-                dict: The Block as an alternative serialization format.
+        Returns:
+            dict: The Block as an alternative serialization format.
 
-            Raises:
-                OperationError: If a Block doesn't contain any transactions.
+        Raises:
+            OperationError: If a Block doesn't contain any transactions.
         """
         if len(self.transactions) == 0:
             raise OperationError('Empty block creation is not allowed')
