@@ -248,9 +248,6 @@ class Block(object):
     def from_dict(cls, block_body):
         """Transforms a Python dictionary to a Block object.
 
-        Note:
-            Throws errors if passed signature or id is incorrect.
-
         Args:
             block_body (dict): A block dictionary to be transformed.
 
@@ -299,13 +296,13 @@ class Block(object):
         return self.to_dict()['id']
 
     def to_dict(self):
-        """Transforms the object to a Python dictionary.
+        """Transforms the Block to a Python dictionary.
 
         Returns:
-            dict: The Block as an alternative serialization format.
+            dict: The Block as a dict.
 
         Raises:
-            OperationError: If a Block doesn't contain any transactions.
+            OperationError: If the Block doesn't contain any transactions.
         """
         if len(self.transactions) == 0:
             raise OperationError('Empty block creation is not allowed')
