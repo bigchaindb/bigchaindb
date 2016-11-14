@@ -22,6 +22,7 @@ def test_asset_creation_with_data(data):
 def test_asset_invalid_asset_initialization():
     from bigchaindb.common.transaction import Asset
 
+    # check types
     with raises(TypeError):
         Asset(data='some wrong type')
     with raises(TypeError):
@@ -30,6 +31,12 @@ def test_asset_invalid_asset_initialization():
         Asset(refillable=1)
     with raises(TypeError):
         Asset(updatable=1)
+
+    # check for features that are not yet implemented
+    with raises(NotImplementedError):
+        Asset(updatable=True)
+    with raises(NotImplementedError):
+        Asset(refillable=True)
 
 
 def test_invalid_asset_comparison(data, data_id):
@@ -69,12 +76,17 @@ def test_asset_deserialization(data, data_id):
 
 def test_validate_asset():
     from bigchaindb.common.transaction import Asset
+    from bigchaindb.common.exceptions import AmountError
 
+    # test amount errors
+    asset = Asset(divisible=False)
+    with raises(AmountError):
+        asset.validate_asset(amount=2)
+
+    asset = Asset(divisible=True)
+    with raises(AmountError):
+        asset.validate_asset(amount=1)
+
+    asset = Asset()
     with raises(TypeError):
-        Asset(divisible=1)
-    with raises(TypeError):
-        Asset(refillable=1)
-    with raises(TypeError):
-        Asset(updatable=1)
-    with raises(TypeError):
-        Asset(data='we need more lemon pledge')
+        asset.validate_asset(amount='a')

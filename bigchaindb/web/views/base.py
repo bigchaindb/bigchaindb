@@ -12,4 +12,3 @@ def make_error(status_code, message=None):
     })
     response.status_code = status_code
     return response
-

@@ -10,7 +10,7 @@ import os
 
 def test_get_stale(b, user_vk):
     from bigchaindb.models import Transaction
-    tx = Transaction.create([b.me], [user_vk])
+    tx = Transaction.create([b.me], [([user_vk], 1)])
     tx = tx.sign([b.me_private])
     b.write_transaction(tx, durability='hard')
 
@@ -27,7 +27,7 @@ def test_get_stale(b, user_vk):
 def test_reassign_transactions(b, user_vk):
     from bigchaindb.models import Transaction
     # test with single node
-    tx = Transaction.create([b.me], [user_vk])
+    tx = Transaction.create([b.me], [([user_vk], 1)])
     tx = tx.sign([b.me_private])
     b.write_transaction(tx, durability='hard')
 
@@ -36,7 +36,7 @@ def test_reassign_transactions(b, user_vk):
     stm.reassign_transactions(tx.to_dict())
 
     # test with federation
-    tx = Transaction.create([b.me], [user_vk])
+    tx = Transaction.create([b.me], [([user_vk], 1)])
     tx = tx.sign([b.me_private])
     b.write_transaction(tx, durability='hard')
 
@@ -51,7 +51,7 @@ def test_reassign_transactions(b, user_vk):
     assert reassigned_tx['assignee'] != tx['assignee']
 
     # test with node not in federation
-    tx = Transaction.create([b.me], [user_vk])
+    tx = Transaction.create([b.me], [([user_vk], 1)])
     tx = tx.sign([b.me_private]).to_dict()
     tx.update({'assignee': 'lol'})
     tx.update({'assignment_timestamp': time.time()})
@@ -85,7 +85,7 @@ def test_full_pipeline(monkeypatch, user_vk):
     monkeypatch.setattr('time.time', lambda: 1)
 
     for i in range(100):
-        tx = Transaction.create([b.me], [user_vk])
+        tx = Transaction.create([b.me], [([user_vk], 1)])
         tx = tx.sign([b.me_private])
         original_txc.append(tx.to_dict())
 

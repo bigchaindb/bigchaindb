@@ -45,7 +45,7 @@ def test_create_block(b, user_vk):
     block_maker = BlockPipeline()
 
     for i in range(100):
-        tx = Transaction.create([b.me], [user_vk])
+        tx = Transaction.create([b.me], [([user_vk], 1)])
         tx = tx.sign([b.me_private])
         block_maker.create(tx)
 
@@ -63,7 +63,7 @@ def test_write_block(b, user_vk):
 
     txs = []
     for i in range(100):
-        tx = Transaction.create([b.me], [user_vk])
+        tx = Transaction.create([b.me], [([user_vk], 1)])
         tx = tx.sign([b.me_private])
         txs.append(tx)
 
@@ -82,7 +82,7 @@ def test_duplicate_transaction(b, user_vk):
 
     txs = []
     for i in range(10):
-        tx = Transaction.create([b.me], [user_vk])
+        tx = Transaction.create([b.me], [([user_vk], 1)])
         tx = tx.sign([b.me_private])
         txs.append(tx)
 
@@ -97,8 +97,7 @@ def test_duplicate_transaction(b, user_vk):
     # verify tx is in the backlog
     assert b.connection.run(r.table('backlog').get(txs[0].id)) is not None
 
-    # try to validate a transaction that's already in the chain; should not
-    # work
+    # try to validate a transaction that's already in the chain; should not work
     assert block_maker.validate_tx(txs[0].to_dict()) is None
 
     # duplicate tx should be removed from backlog
@@ -110,7 +109,7 @@ def test_delete_tx(b, user_vk):
     from bigchaindb.pipelines.block import BlockPipeline
     block_maker = BlockPipeline()
     for i in range(100):
-        tx = Transaction.create([b.me], [user_vk])
+        tx = Transaction.create([b.me], [([user_vk], 1)])
         tx = tx.sign([b.me_private])
         block_maker.create(tx)
         # make sure the tx appears in the backlog
@@ -139,7 +138,8 @@ def test_prefeed(b, user_vk):
     from bigchaindb.pipelines.block import initial
 
     for i in range(100):
-        tx = Transaction.create([b.me], [user_vk], {'msg': random.random()})
+        tx = Transaction.create([b.me], [([user_vk], 1)],
+                                {'msg': random.random()})
         tx = tx.sign([b.me_private])
         b.write_transaction(tx)
 
@@ -168,7 +168,8 @@ def test_full_pipeline(b, user_vk):
 
     count_assigned_to_me = 0
     for i in range(100):
-        tx = Transaction.create([b.me], [user_vk], {'msg': random.random()})
+        tx = Transaction.create([b.me], [([user_vk], 1)],
+                                {'msg': random.random()})
         tx = tx.sign([b.me_private]).to_dict()
         assignee = random.choice([b.me, 'aaa', 'bbb', 'ccc'])
         tx['assignee'] = assignee

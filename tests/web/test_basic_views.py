@@ -36,7 +36,7 @@ def test_post_create_transaction_endpoint(b, client):
     from bigchaindb.models import Transaction
     user_priv, user_pub = crypto.generate_key_pair()
 
-    tx = Transaction.create([user_pub], [user_pub])
+    tx = Transaction.create([user_pub], [([user_pub], 1)])
     tx = tx.sign([user_priv])
 
     res = client.post(TX_ENDPOINT, data=json.dumps(tx.to_dict()))
@@ -48,7 +48,7 @@ def test_post_create_transaction_with_invalid_id(b, client):
     from bigchaindb.models import Transaction
     user_priv, user_pub = crypto.generate_key_pair()
 
-    tx = Transaction.create([user_pub], [user_pub])
+    tx = Transaction.create([user_pub], [([user_pub], 1)])
     tx = tx.sign([user_priv]).to_dict()
     tx['id'] = 'invalid id'
 
@@ -60,7 +60,7 @@ def test_post_create_transaction_with_invalid_signature(b, client):
     from bigchaindb.models import Transaction
     user_priv, user_pub = crypto.generate_key_pair()
 
-    tx = Transaction.create([user_pub], [user_pub])
+    tx = Transaction.create([user_pub], [([user_pub], 1)])
     tx = tx.sign([user_priv]).to_dict()
     tx['transaction']['fulfillments'][0]['fulfillment'] = 'invalid signature'
 
@@ -77,7 +77,8 @@ def test_post_transfer_transaction_endpoint(b, client, user_vk, user_sk):
 
     input_valid = b.get_owned_ids(user_vk).pop()
     create_tx = b.get_transaction(input_valid.txid)
-    transfer_tx = Transaction.transfer(create_tx.to_inputs(), [user_pub], create_tx.asset)
+    transfer_tx = Transaction.transfer(create_tx.to_inputs(),
+                                       [([user_pub], 1)], create_tx.asset)
     transfer_tx = transfer_tx.sign([user_sk])
 
     res = client.post(TX_ENDPOINT, data=json.dumps(transfer_tx.to_dict()))
@@ -94,7 +95,8 @@ def test_post_invalid_transfer_transaction_returns_400(b, client, user_vk, user_
 
     input_valid = b.get_owned_ids(user_vk).pop()
     create_tx = b.get_transaction(input_valid.txid)
-    transfer_tx = Transaction.transfer(create_tx.to_inputs(), [user_pub], create_tx.asset)
+    transfer_tx = Transaction.transfer(create_tx.to_inputs(),
+                                       [([user_pub], 1)], create_tx.asset)
 
     res = client.post(TX_ENDPOINT, data=json.dumps(transfer_tx.to_dict()))
     assert res.status_code == 400
