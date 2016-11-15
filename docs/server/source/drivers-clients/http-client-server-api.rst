@@ -301,8 +301,7 @@ GET /unspents/
    the server, this will result in the server returning a 200 OK HTTP status
    code and an empty list in the response's body.
 
-   :param owner_after: A public key, able to validly spend an output of a
-   transaction, assuming the user also has the corresponding private key.
+   :param owner_after: A public key, able to validly spend an output of a transaction, assuming the user also has the corresponding private key.
    :type owner_after: base58 encoded string
 
    **Example request**:
@@ -320,12 +319,9 @@ GET /unspents/
       Content-Type: application/json
 
       [
-
         '../transactions/2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e/conditions/0',
         '../transactions/2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e/conditions/1'
       ]
 
-   :statuscode 200: A list of outputs were found and returned in the body of
-   the response.
-   :statuscode 400: The request wasn't understood by the server, e.g.
-   the ``owner_after`` querystring was not included in the request.
+   :statuscode 200: A list of outputs were found and returned in the body of the response.
+   :statuscode 400: The request wasn't understood by the server, e.g. the ``owner_after`` querystring was not included in the request.
