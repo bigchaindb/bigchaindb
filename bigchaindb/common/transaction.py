@@ -189,6 +189,12 @@ class TransactionLink(object):
                 'cid': self.cid,
             }
 
+    def to_uri(self, path=''):
+        if self.txid is None and self.cid is None:
+            return None
+        return '{}/transactions/{}/conditions/{}'.format(path, self.txid,
+                                                         self.cid)
+
 
 class Condition(object):
     """A Condition is used to lock an asset.
