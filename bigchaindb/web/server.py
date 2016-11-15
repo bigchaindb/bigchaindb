@@ -13,10 +13,12 @@ from bigchaindb import util
 from bigchaindb import Bigchain
 from bigchaindb.web.views.info import info_views
 from bigchaindb.web.views.transactions import transaction_views
+from bigchaindb.web.views.unspents import unspent_views
 
 from bigchaindb.monitor import Monitor
 
 
+# TODO: Figure out if we do we need all this boilerplate.
 class StandaloneApplication(gunicorn.app.base.BaseApplication):
     """Run a **wsgi** app wrapping it in a Gunicorn Base Application.
 
@@ -61,11 +63,13 @@ def create_app(settings):
 
     app.debug = settings.get('debug', False)
 
-    app.config['bigchain_pool'] = util.pool(Bigchain, size=settings.get('threads', 4))
+    app.config['bigchain_pool'] = util.pool(Bigchain,
+                                            size=settings.get('threads', 4))
     app.config['monitor'] = Monitor()
 
     app.register_blueprint(info_views, url_prefix='/')
     app.register_blueprint(transaction_views, url_prefix='/api/v1')
+    app.register_blueprint(unspent_views, url_prefix='/api/v1')
     return app
 
 
