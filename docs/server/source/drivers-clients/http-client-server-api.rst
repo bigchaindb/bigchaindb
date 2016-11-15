@@ -320,14 +320,9 @@ GET /unspents/
       Content-Type: application/json
 
       [
-        {
-          "txid": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e",
-          "cid": 0
-        },
-        {
-          "txid": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e",
-          "cid": 1
-        },
+
+        '../transactions/2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e/conditions/0',
+        '../transactions/2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e/conditions/1'
       ]
 
    :statuscode 200: A list of outputs were found and returned in the body of
