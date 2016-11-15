@@ -1,4 +1,4 @@
-def test_settings(monkeypatch):
+def test_settings():
     import bigchaindb
     from bigchaindb.web import server
 

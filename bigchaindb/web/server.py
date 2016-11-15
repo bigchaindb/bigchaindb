@@ -17,6 +17,7 @@ from bigchaindb.web.views.transactions import transaction_views
 from bigchaindb.monitor import Monitor
 
 
+# TODO: Figure out if we do we need all this boilerplate.
 class StandaloneApplication(gunicorn.app.base.BaseApplication):
     """Run a **wsgi** app wrapping it in a Gunicorn Base Application.
 
