@@ -123,6 +123,55 @@ GET /transactions/{tx_id}
    :statuscode 404: A transaction with that ID was not found.
 
 
+GET /transactions/{tx_id}/conditions/{cid}
+-------------------------
+
+.. http:get:: /transactions/{tx_id}/conditions/{cid}
+
+   Returns the condition with index ``cid`` from a transaction with ID
+   ``txid``.
+
+   If either a transaction with ID ``txid`` isn't found or the condition
+   requested at the index ``cid`` is not found, this endpoint will return a
+   ``400 Bad Request``.
+
+   :param tx_id: transaction ID
+   :type tx_id: hex string
+
+   :param cid: A condition's index in the transaction
+   :type cid: integer
+
+   **Example request**:
+
+   .. sourcecode:: http
+
+      GET /transactions/2d431...0b4b0e/conditions/0 HTTP/1.1
+      Host: example.com
+
+   **Example response**:
+
+   .. sourcecode:: http
+
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+
+      {
+        "condition": {
+          "uri": "cc:4:20:GG-pi3CeIlySZhQoJVBh9O23PzrOuhnYI7OHqIbHjkk:96",
+          "details": {
+            "signature": null,
+            "type": "fulfillment",
+            "type_id": 4,
+            "bitmask": 32,
+            "public_key": "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
+          }
+        }
+      }
+
+   :statuscode 200: A condition with ``cid`` was found in a transaction with ID ``tx_id``.
+   :statuscode 400: Either a transaction with ``tx_id`` or a condition with ``cid`` wasn't found.
+
+
 GET /unspents/
 -------------------------
 
