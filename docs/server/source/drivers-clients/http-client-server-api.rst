@@ -26,17 +26,18 @@ details, see the "server" settings ("bind", "workers" and "threads") in
 <../server-reference/configuration>`.
 
 
-API Root
---------
+API Root URL
+------------
 
-If you send an HTTP GET request to e.g. ``http://localhost:9984`` (with no
-``/api/v1/`` on the end), then you should get an HTTP response with something
-like the following in the body:
+If you send an HTTP GET request to e.g. ``http://localhost:9984`` 
+or ``http://apihosting4u.net:9984``
+(with no ``/api/v1/`` on the end), 
+then you should get an HTTP response 
+with something like the following in the body:
 
 .. code-block:: json
 
     {
-      "api_endpoint": "http://localhost:9984/api/v1",
       "keyring": [
         "6qHyZew94NMmUTYyHnkZsB8cxJYuRNEiEpXHe1ih9QX3",
         "AdDuyrTyjrDt935YnFu4VBCVDhHtY2Y6rcy7x2TFeiRi"
@@ -45,6 +46,25 @@ like the following in the body:
       "software": "BigchainDB",
       "version": "0.6.0"
     }
+
+If the API endpoint is publicly-accessible,
+then the public API Root URL is determined as follows:
+
+- The public IP address (like 12.34.56.78) 
+  is the public IP address of the machine exposing 
+  the HTTP API to the public internet (e.g. either the machine hosting 
+  Gunicorn or the machine running the reverse proxy such as Nginx). 
+  It's determined by AWS, Azure, Rackspace, or whoever is hosting the machine.
+
+- The DNS hostname (like apihosting4u.net) is determined by DNS records, 
+  such as an "A Record" associating apihosting4u.net with 12.34.56.78
+
+- The port (like 9984) is determined by the ``server.bind`` setting 
+  if Gunicorn is exposed directly to the public Internet. 
+  If a reverse proxy (like Nginx) is exposed directly to the public Internet 
+  instead, then it could expose the HTTP API on whatever port it wants to. 
+  (It should expose the HTTP API on port 9984, but it's not bound to do 
+  that by anything other than convention.)
 
 
 POST /transactions/
