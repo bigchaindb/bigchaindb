@@ -209,20 +209,24 @@ Transactions
 Statuses
 --------------------------------
 
-.. http:get:: /statuses/{tx_id}
+.. http:get:: /statuses/{tx_id | block_id}
 
-   Get the status of a transaction with the ID ``tx_id``, if a transaction
-   with that ``tx_id`` exists.
+   Get the status of an asynchronously written resource by their id.
+   Supports the retrieval of a status for a transaction using ``tx_id`` or the
+   retrieval of a status for a block using ``block_id``.
 
    The possible status values are ``backlog``, ``undecided``, ``valid`` or
    ``invalid``.
 
-   If a transaction is persisted to the chain and it's status is set to
+   If a transaction or block is persisted to the chain and it's status is set to
    ``valid`` or ``undecided``, a ``303 See Other`` status code is returned, as
-   well as a URL to the resource in the location header.
+   well as an URL to the resource in the location header.
 
    :param tx_id: transaction ID
    :type tx_id: hex string
+
+   :param block_id: block ID
+   :type block_id: hex string
 
    **Example request**:
 
@@ -234,6 +238,6 @@ Statuses
    .. literalinclude:: samples/get-tx-status-response.http
       :language: http
 
-   :statuscode 200: A transaction with that ID was found. The status is either ``backlog``, ``invalid``.
-   :statuscode 303: A transaction with that ID was found and persisted to the chain. A location header to the resource is provided.
-   :statuscode 404: A transaction with that ID was not found.
+   :statuscode 200: A transaction or block with that ID was found. The status is either ``backlog``, ``invalid``.
+   :statuscode 303: A transaction or block with that ID was found and persisted to the chain. A location header to the resource is provided.
+   :statuscode 404: A transaction or block with that ID was not found.
