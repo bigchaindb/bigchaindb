@@ -1,6 +1,5 @@
 """Implementation of the `bigchaindb` command,
-which is one of the commands in the BigchainDB
-command-line interface.
+the command-line interface (CLI) for BigchainDB Server.
 """
 
 import os
