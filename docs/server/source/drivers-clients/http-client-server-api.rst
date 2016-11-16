@@ -68,12 +68,12 @@ POST /transactions/
    :statuscode 400: The transaction was invalid and not created.
 
 
-GET /transactions/{tx_id}/status
+GET /statuses/2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e
 --------------------------------
 
-.. http:get:: /transactions/{tx_id}/status
+.. http:get:: /statuses/{tx_id}/
 
-   Get the status of the transaction with the ID ``tx_id``, if a transaction
+   Get the status of a transaction with the ID ``tx_id``, if a transaction
    with that ``tx_id`` exists.
 
    The possible status values are ``backlog``, ``undecided``, ``valid`` or
