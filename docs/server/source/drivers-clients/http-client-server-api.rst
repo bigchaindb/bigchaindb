@@ -117,7 +117,68 @@ Transactions
 
 .. http:get:: /transactions?fields=id,conditions&fulfilled=false&owner_afters={owners_after}
 
-   is an `alias for retrieving unfulfilled conditions for a set of public keys. <#get--conditions?fulfilled=false&owner_afters=owners_after>`_
+   Get a list of transactions with unfulfilled conditions.
+
+   If the querystring ``fulfilled`` is set to ``false`` and all conditions for
+   ``owners_after`` happen to be fulfilled already, this endpoint will return
+   an empty list.
+
+   This endpoint will return a ``HTTP 400 Bad Request`` if the querystring
+   ``owners_after`` happens to not be defined in the request.
+
+   This endpoint returns conditions only if the transaction they're in are
+   included in a ``VALID`` or ``UNDECIDED`` block on ``bigchain``.
+
+   :param fields: A comma separated string to expand properties on the transaction object to be returned.
+   :type fields: string
+
+   :param fulfilled: A flag to indicate if transaction's with fulfilled conditions should be returned.
+   :type fulfilled: boolean
+
+   :param owners_after: Public keys able to validly spend an output of a transaction, assuming the user also has the corresponding private key.
+   :type owners_after: base58 encoded string
+
+   **Example request**:
+
+   .. sourcecode:: http
+
+      GET /transactions?fields=id,conditions&fulfilled=false&owners_after=1AAAbbb...ccc HTTP/1.1
+      Host: example.com
+
+   **Example response**:
+
+   .. sourcecode:: http
+
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+
+      [{
+        "transaction": {
+          "conditions": [
+            {
+              "cid": 0,
+              "condition": {
+                "uri": "cc:4:20:GG-pi3CeIlySZhQoJVBh9O23PzrOuhnYI7OHqIbHjkk:96",
+                "details": {
+                  "signature": null,
+                  "type": "fulfillment",
+                  "type_id": 4,
+                  "bitmask": 32,
+                  "public_key": "1AAAbbb...ccc"
+                }
+              },
+              "amount": 1,
+              "owners_after": [
+                "1AAAbbb...ccc"
+              ]
+            }
+          ],
+        "id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e",
+      }]
+
+   :statuscode 200: A list of transaction's containing unfulfilled conditions was found and returned.
+   :statuscode 400: The request wasn't understood by the server, e.g. the ``owners_after`` querystring was not included in the request.
+
 
 .. http:post:: /transactions/
 
@@ -176,69 +237,3 @@ Statuses
    :statuscode 200: A transaction with that ID was found. The status is either ``backlog``, ``invalid``.
    :statuscode 303: A transaction with that ID was found and persisted to the chain. A location header to the resource is provided.
    :statuscode 404: A transaction with that ID was not found.
-
-
-Conditions
--------------------------
-
-.. http:get:: /conditions?fulfilled=false&owner_afters={owners_after}
-
-   Get a list of transactions with unfulfilled conditions (conditions that have
-   not been used yet in a persisted transaction.
-
-   If the querystring ``fulfilled`` is set to ``false`` and all conditions for
-   ``owners_after`` happen to be fulfilled already, this endpoint will return
-   an empty list.
-
-   This endpoint will return a ``HTTP 400 Bad Request`` if the querystring
-   ``owners_after`` happens to not be defined in the request.
-
-   This endpoint returns only a transaction from a ``VALID`` or ``UNDECIDED``
-   block on ``bigchain``, if exists.
-
-   :param fulfilled: A flag to indicate if transaction's with fulfilled conditions should be returned.
-   :type fulfilled: boolean
-
-   :param owners_after: Public keys able to validly spend an output of a transaction, assuming the user also has the corresponding private key.
-   :type owners_after: base58 encoded string
-
-   **Example request**:
-
-   .. sourcecode:: http
-
-      GET /conditions?fulfilled=false&owners_after=1AAAbbb...ccc HTTP/1.1
-      Host: example.com
-
-   **Example response**:
-
-   .. sourcecode:: http
-
-      HTTP/1.1 200 OK
-      Content-Type: application/json
-
-      [{
-        "transaction": {
-          "conditions": [
-            {
-              "cid": 0,
-              "condition": {
-                "uri": "cc:4:20:GG-pi3CeIlySZhQoJVBh9O23PzrOuhnYI7OHqIbHjkk:96",
-                "details": {
-                  "signature": null,
-                  "type": "fulfillment",
-                  "type_id": 4,
-                  "bitmask": 32,
-                  "public_key": "1AAAbbb...ccc"
-                }
-              },
-              "amount": 1,
-              "owners_after": [
-                "1AAAbbb...ccc"
-              ]
-            }
-          ],
-        "id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e",
-      }]
-
-   :statuscode 200: A list of transaction's containing unfulfilled conditions was found and returned.
-   :statuscode 400: The request wasn't understood by the server, e.g. the ``owners_after`` querystring was not included in the request.
