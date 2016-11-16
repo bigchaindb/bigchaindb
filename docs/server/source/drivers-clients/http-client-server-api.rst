@@ -47,12 +47,13 @@ POST /transactions/
 
    Push a new transaction.
 
-   Note: The posted transaction should be a valid and signed :doc:`transaction <../data-models/transaction-model>`.
-   The steps to build a valid transaction are beyond the scope of this page.
-   One would normally use a driver such as the `BigchainDB Python Driver
-   <https://docs.bigchaindb.com/projects/py-driver/en/latest/index.html>`_ to
-   build a valid transaction. The exact contents of a valid transaction depend 
-   on the associated public/private keypairs.
+   .. note::
+       The posted transaction should be valid `transaction
+       <https://bigchaindb.readthedocs.io/en/latest/data-models/transaction-model.html>`_.
+       The steps to build a valid transaction are beyond the scope of this page.
+       One would normally use a driver such as the `BigchainDB Python Driver
+       <https://docs.bigchaindb.com/projects/py-driver/en/latest/index.html>`_
+       to build a valid transaction.
 
    **Example request**:
 
