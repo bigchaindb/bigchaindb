@@ -230,6 +230,49 @@ Transactions
    :statuscode 200: A list of transaction's containing an asset with ID ``asset_id`` was found and returned.
    :statuscode 400: The request wasn't understood by the server, e.g. the ``asset_id`` querystring was not included in the request.
 
+.. http:get:: /transactions?fields=id,metadata&metadata_id={metadata_id}
+
+   Get a list of transactions that use metadata with the ID ``metadata_id``.
+
+   This endpoint will return a ``HTTP 400 Bad Request`` if the querystring
+   ``metadata_id`` happens to not be defined in the request.
+
+   This endpoint returns assets only if the transaction they're in are
+   included in a ``VALID`` or ``UNDECIDED`` block on ``bigchain``.
+
+   :param fields: A comma separated string to expand properties on the transaction object to be returned.
+   :type fields: string
+
+   :param metadata_id: metadata ID.
+   :type metadata_id: uuidv4
+
+   **Example request**:
+
+   .. sourcecode:: http
+
+      GET /transactions?fields=id,metadata&metadata_id=1AAAbbb...ccc HTTP/1.1
+      Host: example.com
+
+   **Example response**:
+
+   .. sourcecode:: http
+
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+
+      [{
+        "transaction": {
+        "metadata": {
+          "id": "1AAAbbb...ccc",
+          "data": {
+            "hello": "world"
+          },
+        "id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e",
+      }]
+
+   :statuscode 200: A list of transaction's containing metadata with ID ``metadata_id`` was found and returned.
+   :statuscode 400: The request wasn't understood by the server, e.g. the ``metadata_id`` querystring was not included in the request.
+
 .. http:post:: /transactions
 
    Push a new transaction.
