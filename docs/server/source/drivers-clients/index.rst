@@ -5,6 +5,6 @@ Drivers & Clients
    :maxdepth: 1
 
    http-client-server-api
-   python-driver
+   The Python Driver <https://docs.bigchaindb.com/projects/py-driver/en/latest/index.html>
    example-apps
    
