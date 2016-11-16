@@ -71,10 +71,10 @@ POST /transactions/
 GET /statuses/2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e
 --------------------------------
 
-.. http:get:: /statuses/{tx_id}
+.. http:get:: /statuses/{txid}
 
-   Get the status of a transaction with the ID ``tx_id``, if a transaction
-   with that ``tx_id`` exists.
+   Get the status of a transaction with the ID ``txid``, if a transaction
+   with that ``txid`` exists.
 
    The possible status values are ``backlog``, ``undecided``, ``valid`` or
    ``invalid``.
@@ -83,8 +83,8 @@ GET /statuses/2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e
    ``valid`` or ``undecided``, a ``303 See Other`` status code is returned, as
    well as a URL to the resource in the location header.
 
-   :param tx_id: transaction ID
-   :type tx_id: hex string
+   :param txid: transaction ID
+   :type txid: hex string
 
    **Example request**:
 
@@ -101,18 +101,18 @@ GET /statuses/2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e
    :statuscode 404: A transaction with that ID was not found.
 
 
-GET /transactions/{tx_id}
+GET /transactions/{txid}
 -------------------------
 
-.. http:get:: /transactions/{tx_id}
+.. http:get:: /transactions/{txid}
 
-   Get the transaction with the ID ``tx_id``.
+   Get the transaction with the ID ``txid``.
 
    This endpoint returns only a transaction from a ``VALID`` or ``UNDECIDED``
    block on ``bigchain``, if exists.
 
-   :param tx_id: transaction ID
-   :type tx_id: hex string
+   :param txid: transaction ID
+   :type txid: hex string
 
    **Example request**:
 
@@ -128,10 +128,10 @@ GET /transactions/{tx_id}
    :statuscode 404: A transaction with that ID was not found.
 
 
-GET /transactions/{tx_id}/conditions/{cid}
+GET /transactions/{txid}/conditions/{cid}
 -------------------------
 
-.. http:get:: /transactions/{tx_id}/conditions/{cid}
+.. http:get:: /transactions/{txid}/conditions/{cid}
 
    Returns the condition with index ``cid`` from a transaction with ID
    ``txid``.
@@ -140,8 +140,8 @@ GET /transactions/{tx_id}/conditions/{cid}
    requested at the index ``cid`` is not found, this endpoint will return a
    ``400 Bad Request``.
 
-   :param tx_id: transaction ID
-   :type tx_id: hex string
+   :param txid: transaction ID
+   :type txid: hex string
 
    :param cid: A condition's index in the transaction
    :type cid: integer
@@ -173,8 +173,8 @@ GET /transactions/{tx_id}/conditions/{cid}
         }
       }
 
-   :statuscode 200: A condition with ``cid`` was found in a transaction with ID ``tx_id``.
-   :statuscode 400: Either a transaction with ``tx_id`` or a condition with ``cid`` wasn't found.
+   :statuscode 200: A condition with ``cid`` was found in a transaction with ID ``txid``.
+   :statuscode 400: Either a transaction with ``txid`` or a condition with ``cid`` wasn't found.
 
 
 GET /unspents/
