@@ -131,7 +131,7 @@ Array of conditions (outputs) provided by this transaction.
 transaction.metadata
 ^^^^^^^^^^^^^^^^^^^^
 
-**type:** object or NULL
+**type:** object or null
 
 User provided transaction metadata. This field may be `null` or may
 contain any valid JSON payload provided by the user.
@@ -182,7 +182,7 @@ Body of the condition. Has the properties:
 conditions.owners_after
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-**type:** array (string) or NULL
+**type:** array (string) or null
 
 TODO
 
@@ -214,28 +214,28 @@ The offset of the fulfillment within the fulfillents array.
 
 
 
-fulfillment.current_owners
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+fulfillment.owners_before
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**type:** array (string) or NULL
+**type:** array (string) or null
 
-List of public keys of the new owners of the asset.
+List of public keys of the previous owners of the asset.
 
 
 
 fulfillment.fulfillment
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-**type:** string
+**type:** object or string
 
-A standardised *uri* string representing the signed fulfillment".
+TODO
 
 
 
 fulfillment.input
 ^^^^^^^^^^^^^^^^^
 
-**type:** string or NULL
+**type:** object or null
 
 TODO
 
@@ -291,7 +291,7 @@ TODO
 asset.data
 ^^^^^^^^^^
 
-**type:** object or NULL
+**type:** object or null
 
 User provided metadata associated with the asset. May also be NULL.
 

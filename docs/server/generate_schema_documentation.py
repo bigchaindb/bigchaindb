@@ -108,7 +108,7 @@ def property_description(prop):
     if '$ref' in prop:
         return property_description(resolve_ref(prop['$ref']))
     if 'anyOf' in prop:
-        return property_description(resolve_anyof(prop))
+        return property_description(prop['anyOf'][0])
     raise KeyError("description")
 
 
@@ -119,17 +119,10 @@ def property_type(prop):
             return 'array (%s)' % property_type(prop['items'])
         return prop['type']
     if 'anyOf' in prop:
-        return property_type(resolve_anyof(prop)) + ' or NULL'
+        return ' or '.join(property_type(p) for p in prop['anyOf'])
     if '$ref' in prop:
         return property_type(resolve_ref(prop['$ref']))
     raise ValueError("Could not resolve property type")
-
-
-def resolve_anyof(prop):
-    """ Get property from anyOf section """
-    poss = [dict(p) for p in prop['anyOf']]
-    assert len(poss) == 2 and poss[1] == {'type': 'null'}
-    return poss[0]
 
 
 def resolve_ref(ref):

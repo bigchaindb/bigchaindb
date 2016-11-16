@@ -177,7 +177,6 @@ definitions:
     - owners_before
     - input
     - fulfillment
-    - fid
     properties:
       fid:
         type: integer
@@ -188,14 +187,38 @@ definitions:
         description: |
             List of public keys of the previous owners of the asset.
       fulfillment:
-        type: string
-        description: |
-            A standardised *uri* string representing the signed fulfillment".
+        anyOf:
+        - type: object
+          additionalProperties: false
+          properties:
+            bitmask:
+              type: integer
+            public_key:
+              type: string
+            type:
+              type: string
+            signature:
+              anyOf:
+              - type: string
+              - type: 'null'
+            type_id:
+              type: integer
+          description: |
+              TODO
+        - type: string
       input:
         description: |
             TODO
         anyOf:
-        - "$ref": "#/definitions/sha3_hexdigest"
+        - type: 'object'
+          description: |
+            Reference to a condition of a previous transaction
+          additionalProperties: false
+          properties:
+            cid:
+              type: 'integer'
+            txid:
+              type: 'string'
         - type: 'null'
   metadata:
     anyOf:
