@@ -64,7 +64,7 @@ POST /transactions/
    .. literalinclude:: samples/post-tx-response.http
       :language: http
 
-   :statuscode 201: A new transaction was created.
+   :statuscode 202: The pushed transaction was accepted, but the processing has not been completed.
    :statuscode 400: The transaction was invalid and not created.
 
 
