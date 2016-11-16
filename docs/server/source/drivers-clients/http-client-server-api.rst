@@ -169,13 +169,13 @@ Transactions
    This endpoint returns conditions only if the transaction they're in are
    included in a ``VALID`` or ``UNDECIDED`` block on ``bigchain``.
 
-   :param fields: A comma separated string to expand properties on the transaction object to be returned.
+   :query fields: A comma separated string to expand properties on the transaction object to be returned.
    :type fields: string
 
-   :param fulfilled: A flag to indicate if transaction's with fulfilled conditions should be returned.
+   :query fulfilled: A flag to indicate if transaction's with fulfilled conditions should be returned.
    :type fulfilled: boolean
 
-   :param owners_after: Public keys able to validly spend an output of a transaction, assuming the user also has the corresponding private key.
+   :query owners_after: Public keys able to validly spend an output of a transaction, assuming the user also has the corresponding private key.
    :type owners_after: base58 encoded string
 
    **Example request**:
@@ -231,13 +231,13 @@ Transactions
    This endpoint returns assets only if the transaction they're in are
    included in a ``VALID`` or ``UNDECIDED`` block on ``bigchain``.
 
-   :param fields: A comma separated string to expand properties on the transaction object to be returned.
+   :query fields: A comma separated string to expand properties on the transaction object to be returned.
    :type fields: string
 
-   :param operation: One of the three supported operations of a transaction.
+   :query operation: One of the three supported operations of a transaction.
    :type operation: string
 
-   :param asset_id: asset ID.
+   :query asset_id: asset ID.
    :type asset_id: uuidv4
 
    **Example request**:
@@ -280,10 +280,10 @@ Transactions
    This endpoint returns assets only if the transaction they're in are
    included in a ``VALID`` or ``UNDECIDED`` block on ``bigchain``.
 
-   :param fields: A comma separated string to expand properties on the transaction object to be returned.
+   :query fields: A comma separated string to expand properties on the transaction object to be returned.
    :type fields: string
 
-   :param metadata_id: metadata ID.
+   :query metadata_id: metadata ID.
    :type metadata_id: uuidv4
 
    **Example request**:
