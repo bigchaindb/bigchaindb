@@ -5,7 +5,7 @@ import yaml
 
 
 def ordered_load(stream):
-    class OrderedLoader(yaml.Loader):
+    class OrderedLoader(yaml.SafeLoader):
         pass
 
     def construct_mapping(loader, node):
@@ -19,6 +19,5 @@ def ordered_load(stream):
 
 TX_SCHEMA_PATH = os.path.join(os.path.dirname(__file__), 'transaction.yaml')
 TX_SCHEMA_DATA = open(TX_SCHEMA_PATH).read()
-TX_SCHEMA = yaml.load(TX_SCHEMA_DATA)
+TX_SCHEMA = yaml.load(TX_SCHEMA_DATA, yaml.SafeLoader)
 TX_SCHEMA_ORDERED = ordered_load(TX_SCHEMA_DATA)
-
