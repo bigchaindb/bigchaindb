@@ -81,14 +81,6 @@ Metadata
 --------
 
 %(metadata)s
-
-Timestamp
----------
-
-**type**: string
-
-%(timestamp)s
-
 """
 
 
@@ -160,8 +152,6 @@ def main():
                                 TX['definitions']['asset']),
         'metadata': render_section('metadata',
                                    TX['definitions']['metadata']['anyOf'][0]),
-        'timestamp': render_section('timestamp',
-                                    TX['definitions']['timestamp']),
     }
 
     path = os.path.join(os.path.dirname(__file__), 'source/schema.rst')

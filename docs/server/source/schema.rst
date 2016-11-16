@@ -326,14 +326,3 @@ of type 4 (random).
 
 
 
-
-Timestamp
----------
-
-**type**: string
-
-User provided timestamp of the transaction.
-
-
-
-
