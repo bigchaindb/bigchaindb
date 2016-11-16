@@ -547,8 +547,6 @@ def test_add_fulfillment_to_tx(user_ffill):
 
     assert len(tx.fulfillments) == 1
 
-    validate(tx)
-
 
 def test_add_fulfillment_to_tx_with_invalid_parameters():
     from bigchaindb.common.transaction import Transaction, Asset
@@ -758,8 +756,6 @@ def test_validate_fulfillments_of_transfer_tx_with_invalid_params(transfer_tx,
         transfer_tx.operation = "Operation that doesn't exist"
         transfer_tx.fulfillments_valid([utx.conditions[0]])
 
-    validate(transfer_tx)
-
 
 def test_create_create_transaction_single_io(user_cond, user_pub, data, uuid4):
     from bigchaindb.common.transaction import Transaction, Asset
@@ -846,8 +842,6 @@ def test_create_create_transaction_multiple_io(user_cond, user2_cond, user_pub,
     tx['transaction'].pop('asset')
 
     assert tx == expected
-
-    validate(tx)
 
 
 def test_validate_multiple_io_create_transaction(user_pub, user_priv,
@@ -1062,8 +1056,6 @@ def test_create_transfer_transaction_multiple_io(user_pub, user_priv,
     transfer_tx['transaction'].pop('asset')
 
     assert expected == transfer_tx
-
-    validate(transfer_tx)
 
 
 def test_create_transfer_with_invalid_parameters(user_pub):
