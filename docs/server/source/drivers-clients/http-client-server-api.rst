@@ -39,9 +39,85 @@ with something like the following in the body:
       "version": "0.6.0"
     }
 
-
-POST /transactions/
+Transactions
 -------------------
+
+.. http:get:: /transactions/{txid}
+
+   Get the transaction with the ID ``txid``.
+
+   This endpoint returns only a transaction from a ``VALID`` or ``UNDECIDED``
+   block on ``bigchain``, if exists.
+
+   :param txid: transaction ID
+   :type txid: hex string
+
+   **Example request**:
+
+   .. sourcecode:: http
+
+      GET /transactions/2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e HTTP/1.1
+      Host: example.com
+
+   **Example response**:
+
+   .. sourcecode:: http
+
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+
+      {
+        "transaction": {
+          "conditions": [
+            {
+              "cid": 0,
+              "condition": {
+                "uri": "cc:4:20:GG-pi3CeIlySZhQoJVBh9O23PzrOuhnYI7OHqIbHjkk:96",
+                "details": {
+                  "signature": null,
+                  "type": "fulfillment",
+                  "type_id": 4,
+                  "bitmask": 32,
+                  "public_key": "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
+                }
+              },
+              "amount": 1,
+              "owners_after": [
+                "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
+              ]
+            }
+          ],
+          "operation": "CREATE",
+          "asset": {
+            "divisible": false,
+            "updatable": false,
+            "data": null,
+            "id": "aebeab22-e672-4d3b-a187-bde5fda6533d",
+            "refillable": false
+          },
+          "metadata": null,
+          "timestamp": "1477578978",
+          "fulfillments": [
+            {
+              "fid": 0,
+              "input": null,
+              "fulfillment": "cf:4:GG-pi3CeIlySZhQoJVBh9O23PzrOuhnYI7OHqIbHjkn2VnQaEWvecO1x82Qr2Va_JjFywLKIOEV1Ob9Ofkeln2K89ny2mB-s7RLNvYAVzWNiQnp18_nQEUsvwACEXTYJ",
+              "owners_before": [
+                "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
+              ]
+            }
+          ]
+        },
+        "id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e",
+        "version": 1
+      }
+
+   :statuscode 200: A transaction with that ID was found.
+   :statuscode 404: A transaction with that ID was not found.
+
+.. http:get:: /transactions?fields=id,conditions&fulfilled=false&owner_afters={owners_after}
+
+   is an `alias for retrieving unfulfilled conditions for a set of public keys. <#get--conditions?fulfilled=false&owner_afters=owners_after>`_
 
 .. http:post:: /transactions/
 
@@ -69,7 +145,7 @@ POST /transactions/
    :statuscode 400: The transaction was invalid and not created.
 
 
-GET /statuses
+Statuses
 --------------------------------
 
 .. http:get:: /statuses/{txid}
@@ -102,10 +178,10 @@ GET /statuses
    :statuscode 404: A transaction with that ID was not found.
 
 
-GET /transactions
+Conditions
 -------------------------
 
-.. http:get:: /transactions?fields=id,conditions&fulfilled=false&owner_afters={owners_after}
+.. http:get:: /conditions?fulfilled=false&owner_afters={owners_after}
 
    Get a list of transactions with unfulfilled conditions (conditions that have
    not been used yet in a persisted transaction.
@@ -117,8 +193,8 @@ GET /transactions
    This endpoint will return a ``HTTP 400 Bad Request`` if the querystring
    ``owners_after`` happens to not be defined in the request.
 
-   :param fields: The fields to be included in a transaction.
-   :type fields: string
+   This endpoint returns only a transaction from a ``VALID`` or ``UNDECIDED``
+   block on ``bigchain``, if exists.
 
    :param fulfilled: A flag to indicate if transaction's with fulfilled conditions should be returned.
    :type fulfilled: boolean
@@ -130,7 +206,7 @@ GET /transactions
 
    .. sourcecode:: http
 
-      GET /transactions?fields=id,conditions&fulfilled=false&owners_after=1AAAbbb...ccc HTTP/1.1
+      GET /conditions?fulfilled=false&owners_after=1AAAbbb...ccc HTTP/1.1
       Host: example.com
 
    **Example response**:
@@ -166,29 +242,3 @@ GET /transactions
 
    :statuscode 200: A list of transaction's containing unfulfilled conditions was found and returned.
    :statuscode 400: The request wasn't understood by the server, e.g. the ``owners_after`` querystring was not included in the request.
-
-GET /transactions/{txid}
--------------------------
-
-.. http:get:: /transactions/{txid}
-
-   Get the transaction with the ID ``txid``.
-
-   This endpoint returns only a transaction from a ``VALID`` or ``UNDECIDED``
-   block on ``bigchain``, if exists.
-
-   :param txid: transaction ID
-   :type txid: hex string
-
-   **Example request**:
-
-   .. literalinclude:: samples/get-tx-request.http
-      :language: http
-
-   **Example response**:
-
-   .. literalinclude:: samples/get-tx-response.http
-      :language: http
-
-   :statuscode 200: A transaction with that ID was found.
-   :statuscode 404: A transaction with that ID was not found.
