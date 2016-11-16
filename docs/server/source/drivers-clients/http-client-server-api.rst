@@ -42,15 +42,15 @@ with something like the following in the body:
 Transactions
 -------------------
 
-.. http:get:: /transactions/{txid}
+.. http:get:: /transactions/{id}
 
-   Get the transaction with the ID ``txid``.
+   Get the transaction with the ID ``id``.
 
    This endpoint returns only a transaction from a ``VALID`` or ``UNDECIDED``
    block on ``bigchain``, if exists.
 
-   :param txid: transaction ID
-   :type txid: hex string
+   :param id: transaction ID
+   :type id: hex string
 
    **Example request**:
 
@@ -148,10 +148,10 @@ Transactions
 Statuses
 --------------------------------
 
-.. http:get:: /statuses/{txid}
+.. http:get:: /statuses/{id}
 
-   Get the status of a transaction with the ID ``txid``, if a transaction
-   with that ``txid`` exists.
+   Get the status of a transaction with the ID ``id``, if a transaction
+   with that ``id`` exists.
 
    The possible status values are ``backlog``, ``undecided``, ``valid`` or
    ``invalid``.
@@ -160,8 +160,8 @@ Statuses
    ``valid`` or ``undecided``, a ``303 See Other`` status code is returned, as
    well as a URL to the resource in the location header.
 
-   :param txid: transaction ID
-   :type txid: hex string
+   :param id: transaction ID
+   :type id: hex string
 
    **Example request**:
 
