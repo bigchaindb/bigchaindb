@@ -69,7 +69,7 @@ POST /transactions/
    :statuscode 400: The transaction was invalid and not created.
 
 
-GET /statuses/2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e
+GET /statuses
 --------------------------------
 
 .. http:get:: /statuses/{txid}
@@ -105,35 +105,32 @@ GET /statuses/2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e
 GET /transactions
 -------------------------
 
-.. http:get:: /transactions?fields=id,conditions&fulfilled=false&owner_after={owner_after}
+.. http:get:: /transactions?fields=id,conditions&fulfilled=false&owner_afters={owners_after}
 
    Get a list of transactions with unfulfilled conditions (conditions that have
    not been used yet in a persisted transaction.
 
    If the querystring ``fulfilled`` is set to ``false`` and all conditions for
-   ``owner_after`` happen to be fulfilled already, this endpoint will return
+   ``owners_after`` happen to be fulfilled already, this endpoint will return
    an empty list.
 
-
-    .. note::
-
-       This endpoint will return a ``HTTP 400 Bad Request`` if the querystring
-       ``owner_after`` happens to not be defined in the request.
+   This endpoint will return a ``HTTP 400 Bad Request`` if the querystring
+   ``owners_after`` happens to not be defined in the request.
 
    :param fields: The fields to be included in a transaction.
    :type fields: string
 
    :param fulfilled: A flag to indicate if transaction's with fulfilled conditions should be returned.
-   :type fields: boolean
+   :type fulfilled: boolean
 
-   :param owner_after: A public key, able to validly spend an output of a transaction, assuming the user also has the corresponding private key.
-   :type owner_after: base58 encoded string
+   :param owners_after: Public keys able to validly spend an output of a transaction, assuming the user also has the corresponding private key.
+   :type owners_after: base58 encoded string
 
    **Example request**:
 
    .. sourcecode:: http
 
-      GET /transactions?fields=id,conditions&fulfilled=false&owner_after=1AAAbbb...ccc HTTP/1.1
+      GET /transactions?fields=id,conditions&fulfilled=false&owners_after=1AAAbbb...ccc HTTP/1.1
       Host: example.com
 
    **Example response**:
@@ -165,11 +162,10 @@ GET /transactions
             }
           ],
         "id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e",
-      }, ...]
-
+      }]
 
    :statuscode 200: A list of transaction's containing unfulfilled conditions was found and returned.
-   :statuscode 400: The request wasn't understood by the server, e.g. the ``owner_after`` querystring was not included in the request.
+   :statuscode 400: The request wasn't understood by the server, e.g. the ``owners_after`` querystring was not included in the request.
 
 GET /transactions/{txid}
 -------------------------
