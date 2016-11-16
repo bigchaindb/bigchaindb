@@ -115,6 +115,46 @@ Transactions
    :statuscode 200: A transaction with that ID was found.
    :statuscode 404: A transaction with that ID was not found.
 
+.. http:get:: /transactions
+
+   The current ``/transactions`` endpoint returns a ``404 Not Found`` HTTP
+   status code. Eventually, this functionality will get implemented.
+   We believe a PUSH rather than a PULL pattern is more appropriate, as the
+   items returned in the collection would change by the second.
+
+   There are however requests that might come of use, given the endpoint is
+   queried correctly. Some of them include retrieving a list of transactions
+   that include:
+
+   * `Unfulfilled conditions <#get--transactions?fields=id,conditions&fulfilled=false&owner_afters=owners_after>`_
+   * `A specific asset <#get--transactions?fields=id,asset,operation&operation=CREATE|TRANSFER&asset_id=asset_id>`_
+   * `Specific metadata <#get--transactions?fields=id,metadata&metadata_id=metadata_id>`_
+
+   In this section, we've listed those particular requests, as they will likely
+   to be very handy when implementing your application on top of BigchainDB.
+   A generalization of those parameters can follows:
+
+   :query fields: A comma separated string to expand properties on the transaction object to be returned.
+   :type fields: string
+
+   :query fulfilled: A flag to indicate if transaction's with fulfilled conditions should be returned.
+   :type fulfilled: boolean
+
+   :query owners_after: Public keys able to validly spend an output of a transaction, assuming the user also has the corresponding private key.
+   :type owners_after: base58 encoded string
+
+   :query operation: One of the three supported operations of a transaction.
+   :type operation: string
+
+   :query asset_id: asset ID.
+   :type asset_id: uuidv4
+
+   :query metadata_id: metadata ID.
+   :type metadata_id: uuidv4
+
+   :statuscode 404: BigchainDB does not expose this endpoint.
+
+
 .. http:get:: /transactions?fields=id,conditions&fulfilled=false&owner_afters={owners_after}
 
    Get a list of transactions with unfulfilled conditions.
