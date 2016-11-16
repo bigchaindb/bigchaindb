@@ -179,8 +179,58 @@ Transactions
    :statuscode 200: A list of transaction's containing unfulfilled conditions was found and returned.
    :statuscode 400: The request wasn't understood by the server, e.g. the ``owners_after`` querystring was not included in the request.
 
+.. http:get:: /transactions?fields=id,asset,operation&operation={CREATE|TRANSFER}&asset_id={asset_id}
 
-.. http:post:: /transactions/
+   Get a list of transactions that use an asset with the ID ``asset_id``.
+
+   This endpoint will return a ``HTTP 400 Bad Request`` if the querystring
+   ``asset_id`` happens to not be defined in the request.
+
+   ``operation`` can either be ``GENESIS``, ``CREATE`` or ``TRANSFER``.
+
+   This endpoint returns assets only if the transaction they're in are
+   included in a ``VALID`` or ``UNDECIDED`` block on ``bigchain``.
+
+   :param fields: A comma separated string to expand properties on the transaction object to be returned.
+   :type fields: string
+
+   :param operation: One of the three supported operations of a transaction.
+   :type operation: string
+
+   :param asset_id: asset ID.
+   :type asset_id: uuidv4
+
+   **Example request**:
+
+   .. sourcecode:: http
+
+      GET /transactions?fields=id,asset,operation&operation=CREATE&asset_id=1AAAbbb...ccc HTTP/1.1
+      Host: example.com
+
+   **Example response**:
+
+   .. sourcecode:: http
+
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+
+      [{
+        "transaction": {
+          "asset": {
+            "divisible": false,
+            "updatable": false,
+            "data": null,
+            "id": "1AAAbbb...ccc",
+            "refillable": false
+          },
+        "operation": "CREATE",
+        "id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e",
+      }]
+
+   :statuscode 200: A list of transaction's containing an asset with ID ``asset_id`` was found and returned.
+   :statuscode 400: The request wasn't understood by the server, e.g. the ``asset_id`` querystring was not included in the request.
+
+.. http:post:: /transactions
 
    Push a new transaction.
 
