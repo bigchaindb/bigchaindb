@@ -516,6 +516,16 @@ def test_cast_asset_link_to_boolean():
     assert bool(AssetLink(False)) is True
 
 
+def test_eq_asset_link():
+    from bigchaindb.common.transaction import AssetLink
+
+    asset_id_1 = 'asset_1'
+    asset_id_2 = 'asset_2'
+
+    assert AssetLink(asset_id_1) == AssetLink(asset_id_1)
+    assert AssetLink(asset_id_1) != AssetLink(asset_id_2)
+
+
 def test_add_fulfillment_to_tx(user_ffill):
     from bigchaindb.common.transaction import Transaction, Asset
 

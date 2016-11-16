@@ -541,7 +541,7 @@ class AssetLink(Asset):
 
     def __eq__(self, other):
         return isinstance(other, AssetLink) and \
-                self.to_dict() == self.to_dict()
+                self.to_dict() == other.to_dict()
 
     @classmethod
     def from_dict(cls, link):
