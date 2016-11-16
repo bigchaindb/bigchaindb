@@ -112,6 +112,8 @@ Transactions
         "version": 1
       }
 
+   :resheader Content-Type: ``application/json``
+
    :statuscode 200: A transaction with that ID was found.
    :statuscode 404: A transaction with that ID was not found.
 
@@ -216,6 +218,8 @@ Transactions
         "id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e",
       }]
 
+   :resheader Content-Type: ``application/json``
+
    :statuscode 200: A list of transaction's containing unfulfilled conditions was found and returned.
    :statuscode 400: The request wasn't understood by the server, e.g. the ``owners_after`` querystring was not included in the request.
 
@@ -267,6 +271,8 @@ Transactions
         "id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e",
       }]
 
+   :resheader Content-Type: ``application/json``
+
    :statuscode 200: A list of transaction's containing an asset with ID ``asset_id`` was found and returned.
    :statuscode 400: The request wasn't understood by the server, e.g. the ``asset_id`` querystring was not included in the request.
 
@@ -309,6 +315,8 @@ Transactions
           },
         "id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e",
       }]
+
+   :resheader Content-Type: ``application/json``
 
    :statuscode 200: A list of transaction's containing metadata with ID ``metadata_id`` was found and returned.
    :statuscode 400: The request wasn't understood by the server, e.g. the ``metadata_id`` querystring was not included in the request.
@@ -370,6 +378,9 @@ Statuses
 
    .. literalinclude:: samples/get-tx-status-response.http
       :language: http
+
+   :resheader Content-Type: ``application/json``
+   :resheader Location: Once the transaction has been persisted, this header will link to the actual resource.
 
    :statuscode 200: A transaction or block with that ID was found. The status is either ``backlog``, ``invalid``.
    :statuscode 303: A transaction or block with that ID was found and persisted to the chain. A location header to the resource is provided.
