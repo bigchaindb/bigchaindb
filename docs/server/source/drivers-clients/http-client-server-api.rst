@@ -334,3 +334,33 @@ Statuses
    :statuscode 200: A transaction or block with that ID was found. The status is either ``backlog``, ``invalid``.
    :statuscode 303: A transaction or block with that ID was found and persisted to the chain. A location header to the resource is provided.
    :statuscode 404: A transaction or block with that ID was not found.
+
+
+Assets
+--------------------------------
+
+.. http:get:: /assets/{asset_id}
+
+   Descriptions: TODO
+
+
+Metadata
+--------------------------------
+
+.. http:get:: /metadata/{metadata_id}
+
+
+Blocks
+--------------------------------
+
+.. http:get:: /blocks/{block_id}
+
+   Descriptions: TODO
+
+
+Votes
+--------------------------------
+
+.. http:get:: /votes?block_id={block_id}
+
+   Descriptions: TODO
