@@ -165,9 +165,6 @@ Transactions
    ``owners_after`` happen to be fulfilled already, this endpoint will return
    an empty list.
 
-   This endpoint will return a ``HTTP 400 Bad Request`` if the querystring
-   ``owners_after`` happens to not be defined in the request.
-
    This endpoint returns conditions only if the transaction they're in are
    included in a ``VALID`` or ``UNDECIDED`` block on ``bigchain``.
 
@@ -401,10 +398,22 @@ Blocks
 
    Descriptions: TODO
 
+.. http:get:: /blocks?tx_id={tx_id}
+
+   Descriptions: TODO
+
 
 Votes
 --------------------------------
 
+.. http:get:: /votes/{vote_id}
+
+   Descriptions: TODO
+
 .. http:get:: /votes?block_id={block_id}
+
+   Descriptions: TODO
+
+.. http:get:: /votes?block_id={block_id}&voter={voter}
 
    Descriptions: TODO
