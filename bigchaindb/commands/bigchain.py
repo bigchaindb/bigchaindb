@@ -193,7 +193,7 @@ def _run_load(tx_left, stats):
     b = bigchaindb.Bigchain()
 
     while True:
-        tx = Transaction.create([b.me], [b.me])
+        tx = Transaction.create([b.me], [([b.me], 1)])
         tx = tx.sign([b.me_private])
         b.write_transaction(tx)
 
