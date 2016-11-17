@@ -352,6 +352,8 @@ class Bigchain(object):
         transactions = []
         for txid in txids:
             tx = self.get_transaction(txid)
+            # if a valid or undecided transaction exists append it to the list
+            # of transactions
             if tx:
                 transactions.append(tx)
         return transactions
