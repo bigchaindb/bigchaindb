@@ -1,8 +1,6 @@
 from pytest import raises
 from unittest.mock import patch
 
-from bigchaindb.common.exceptions import ValidationError
-
 
 def test_fulfillment_serialization(ffill_uri, user_pub):
     from bigchaindb.common.transaction import Fulfillment
@@ -276,6 +274,7 @@ def test_invalid_transaction_initialization():
 
 def test_create_default_asset_on_tx_initialization():
     from bigchaindb.common.transaction import Transaction, Asset
+    from bigchaindb.common.exceptions import ValidationError
 
     with patch.object(Asset, 'validate_asset', return_value=None):
         tx = Transaction(Transaction.CREATE, None)
@@ -293,6 +292,7 @@ def test_create_default_asset_on_tx_initialization():
 
 def test_transaction_serialization(user_ffill, user_cond, data, data_id):
     from bigchaindb.common.transaction import Transaction, Asset
+    from bigchaindb.common.exceptions import ValidationError
 
     tx_id = 'l0l'
     timestamp = '66666666666'
