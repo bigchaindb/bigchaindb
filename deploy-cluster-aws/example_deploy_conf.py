@@ -43,9 +43,9 @@ USE_KEYPAIRS_FILE=False
 # Canonical (the company behind Ubuntu) generates many AMIs
 # and you can search for one that meets your needs at:
 # https://cloud-images.ubuntu.com/locator/ec2/
-# Example:
-# (eu-central-1 Ubuntu 14.04 LTS amd64 hvm:ebs-ssd 20161020)
-IMAGE_ID="ami-9c09f0f3"
+# Example: ami-8504fdea is what you get if you search for:
+# eu-central-1 16.04 LTS amd64 hvm:ebs-ssd
+IMAGE_ID="ami-8504fdea"
 
 # INSTANCE_TYPE is the type of AWS instance to launch
 # i.e. How many CPUs do you want? How much storage? etc.
