@@ -1,4 +1,6 @@
 ---
+"$schema": "http://json-schema.org/draft-04/schema#"
+id: "http://www.bigchaindb.com/schemas/transaction.json"
 type: object
 additionalProperties: false
 title: Transaction Schema
