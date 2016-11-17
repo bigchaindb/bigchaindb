@@ -37,7 +37,7 @@ Transaction Schema
 Transaction
 -----------
 
-This is the outer transaction wrapper. It contains the ID, version and the body of the transaction, which is also called `transaction`.
+This is the outer transaction wrapper. It contains the ID, version and the body of the transaction, which is also called ``transaction``.
 
 
 transaction.id
@@ -57,7 +57,7 @@ transaction.transaction
 
 **type:** object
 
-Body of the transaction.
+`Transaction Body`_.
 
 
 
@@ -66,7 +66,7 @@ transaction.version
 
 **type:** integer
 
-Transaction version identifier.
+BigchainDB transaction schema version.
 
 
 
@@ -75,7 +75,7 @@ Transaction version identifier.
 Transaction Body
 ----------------
 
-Body of the transaction.
+`Transaction Body`_.
 
 
 transaction.operation
@@ -102,9 +102,9 @@ transaction.asset
 
 **type:** object
 
-Description of the asset being transacted. In the case of a `TRANSFER`
+Description of the asset being transacted. In the case of a ``TRANSFER``
 transaction, this field contains only the ID of asset. In the case
-of a `CREATE` transaction, this field may contain properties:
+of a ``CREATE`` transaction, this field may contain properties:
 
 
 
@@ -133,7 +133,7 @@ transaction.metadata
 
 **type:** object or null
 
-User provided transaction metadata. This field may be `null` or may
+User provided transaction metadata. This field may be ``null`` or may
 contain any valid JSON payload provided by the user.
 
 
@@ -204,7 +204,7 @@ In the case of a non divisible asset, this will always be 1.
 Fulfillment
 -----------
 
-A fulfillment is an input to a transaction, named as such because it fulfills a condition of a previous transaction. In the case of a **CREATE** transaction, a fulfillment may provide no `input`.
+A fulfillment is an input to a transaction, named as such because it fulfills a condition of a previous transaction. In the case of a ``CREATE`` transaction, a fulfillment may provide no ``input``.
 
 fulfillment.fid
 ^^^^^^^^^^^^^^^
@@ -249,9 +249,9 @@ Reference to a condition of a previous transaction
 Asset
 -----
 
-Description of the asset being transacted. In the case of a `TRANSFER`
+Description of the asset being transacted. In the case of a ``TRANSFER``
 transaction, this field contains only the ID of asset. In the case
-of a `CREATE` transaction, this field may contain properties:
+of a ``CREATE`` transaction, this field may contain properties:
 
 
 asset.id
@@ -305,7 +305,7 @@ User provided metadata associated with the asset. May also be NULL.
 Metadata
 --------
 
-User provided transaction metadata. This field may be `null` or may
+User provided transaction metadata. This field may be ``null`` or may
 contain any valid JSON payload provided by the user.
 
 

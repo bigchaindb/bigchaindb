@@ -5,7 +5,7 @@ type: object
 additionalProperties: false
 title: Transaction Schema
 description: |
-    This is the outer transaction wrapper. It contains the ID, version and the body of the transaction, which is also called `transaction`.
+    This is the outer transaction wrapper. It contains the ID, version and the body of the transaction, which is also called ``transaction``.
 required:
 - id
 - transaction
@@ -22,7 +22,7 @@ properties:
     type: object
     title: transaction
     description: |
-        Body of the transaction.
+        `Transaction Body`_.
     additionalProperties: false
     required:
     - fulfillments
@@ -60,7 +60,7 @@ properties:
     minimum: 1
     maximum: 1
     description: |
-        Transaction version identifier.
+        BigchainDB transaction schema version.
 definitions:
   offset:
     type: integer
@@ -104,9 +104,9 @@ definitions:
   asset:
     type: object
     description: |
-        Description of the asset being transacted. In the case of a `TRANSFER`
+        Description of the asset being transacted. In the case of a ``TRANSFER``
         transaction, this field contains only the ID of asset. In the case
-        of a `CREATE` transaction, this field may contain properties:
+        of a ``CREATE`` transaction, this field may contain properties:
     additionalProperties: false
     required:
     - id
@@ -181,7 +181,7 @@ definitions:
     description:
       A fulfillment is an input to a transaction, named as such because it
       fulfills a condition of a previous transaction. In the case of a
-      **CREATE** transaction, a fulfillment may provide no `input`.
+      ``CREATE`` transaction, a fulfillment may provide no ``input``.
     additionalProperties: false
     required:
     - owners_before
@@ -235,7 +235,7 @@ definitions:
     anyOf:
     - type: object
       description: |
-          User provided transaction metadata. This field may be `null` or may
+          User provided transaction metadata. This field may be ``null`` or may
           contain any valid JSON payload provided by the user.
       additionalProperties: false
       required:
