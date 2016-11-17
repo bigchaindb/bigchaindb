@@ -605,7 +605,7 @@ class Bigchain(object):
         }
 
         vote_data = serialize(vote)
-        signature = crypto.SigningKey(self.me_private).sign(vote_data.encode())
+        signature = crypto.PrivateKey(self.me_private).sign(vote_data.encode())
 
         vote_signed = {
             'node_pubkey': self.me,

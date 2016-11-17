@@ -10,8 +10,8 @@ Using the list in other Python scripts:
     # in a Python 2 script:
     from keypairs import keypairs_list
     # keypairs_list is a list of (sk, pk) tuples
-    # sk = signing key (private key)
-    # pk = verifying key (public key)
+    # sk = private key
+    # pk = public key
 """
 
 import argparse

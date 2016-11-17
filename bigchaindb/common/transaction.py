@@ -6,7 +6,7 @@ from cryptoconditions import (Fulfillment as CCFulfillment,
                               ThresholdSha256Fulfillment, Ed25519Fulfillment)
 from cryptoconditions.exceptions import ParsingError
 
-from bigchaindb.common.crypto import SigningKey, hash_data
+from bigchaindb.common.crypto import PrivateKey, hash_data
 from bigchaindb.common.exceptions import (KeypairMismatchException,
                                           InvalidHash, InvalidSignature,
                                           AmountError, AssetIdMismatch)
@@ -933,8 +933,8 @@ class Transaction(object):
             # to decode to convert the bytestring into a python str
             return public_key.decode()
 
-        key_pairs = {gen_public_key(SigningKey(private_key)):
-                     SigningKey(private_key) for private_key in private_keys}
+        key_pairs = {gen_public_key(PrivateKey(private_key)):
+                     PrivateKey(private_key) for private_key in private_keys}
 
         for index, fulfillment in enumerate(self.fulfillments):
             # NOTE: We clone the current transaction but only add the condition
