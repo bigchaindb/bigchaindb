@@ -6,7 +6,7 @@ from time import time
 from itertools import compress
 from bigchaindb.common import crypto, exceptions
 from bigchaindb.common.util import gen_timestamp, serialize
-from bigchaindb.common.transaction import TransactionLink
+from bigchaindb.common.transaction import TransactionLink, Asset
 
 import bigchaindb
 
@@ -182,10 +182,11 @@ class Bigchain(object):
 
         try:
             return self.validate_transaction(transaction)
-        except (ValueError, exceptions.OperationError, exceptions.TransactionDoesNotExist,
+        except (ValueError, exceptions.OperationError,
+                exceptions.TransactionDoesNotExist,
                 exceptions.TransactionOwnerError, exceptions.DoubleSpend,
                 exceptions.InvalidHash, exceptions.InvalidSignature,
-                exceptions.FulfillmentNotInValidBlock):
+                exceptions.TransactionNotInValidBlock, exceptions.AmountError):
             return False
 
     def get_block(self, block_id, include_status=False):
@@ -375,6 +376,21 @@ class Bigchain(object):
         cursor = self.backend.get_transactions_by_asset_id(asset_id)
         return [Transaction.from_dict(tx) for tx in cursor]
 
+    def get_asset_by_id(self, asset_id):
+        """Returns the asset associated with an asset_id.
+
+            Args:
+                asset_id (str): The asset id.
+
+            Returns:
+                :class:`~bigchaindb.common.transaction.Asset` if the asset
+                exists else None.
+        """
+        cursor = self.backend.get_asset_by_id(asset_id)
+        cursor = list(cursor)
+        if cursor:
+            return Asset.from_dict(cursor[0]['transaction']['asset'])
+
     def get_spent(self, txid, cid):
         """Check if a `txid` was already used as an input.
 
@@ -543,7 +559,7 @@ class Bigchain(object):
         """Prepare a genesis block."""
 
         metadata = {'message': 'Hello World from the BigchainDB'}
-        transaction = Transaction.create([self.me], [self.me],
+        transaction = Transaction.create([self.me], [([self.me], 1)],
                                          metadata=metadata)
 
         # NOTE: The transaction model doesn't expose an API to generate a
