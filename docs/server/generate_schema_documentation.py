@@ -36,8 +36,6 @@ Transaction Schema
 
 * Metadata_
 
-* Timestamp_
-
 .. raw:: html
 
     <style>
