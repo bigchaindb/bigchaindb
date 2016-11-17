@@ -174,8 +174,8 @@ conditions.condition
 
 Body of the condition. Has the properties:
 
-- **details**: Cryptographic details of the condition.
-- **uri**: Cryptographic URI of the condition. TODO: more better.
+- **details**: Details of the condition.
+- **uri**: Condition encoded as an ASCII string.
 
 
 
@@ -184,7 +184,8 @@ conditions.owners_after
 
 **type:** array (string) or null
 
-TODO
+List of public keys associated with asset ownership at the time
+of the transaction.
 
 
 
@@ -228,7 +229,9 @@ fulfillment.fulfillment
 
 **type:** object or string
 
-TODO
+Fulfillment of a ondition_, or put a different way, this is a
+payload that satisfies a condition in order to spend the associated
+asset.
 
 
 
@@ -237,7 +240,7 @@ fulfillment.input
 
 **type:** object or null
 
-TODO
+Reference to a condition of a previous transaction
 
 
 
@@ -275,7 +278,7 @@ asset.updatable
 
 **type:** boolean
 
-TODO
+Whether or not the description of the asset may be updated. Defaults to false.
 
 
 
@@ -284,7 +287,7 @@ asset.refillable
 
 **type:** boolean
 
-TODO
+Whether the amount of the asset can change after its creation. Defaults to false.
 
 
 

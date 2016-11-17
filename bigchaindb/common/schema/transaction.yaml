@@ -112,11 +112,11 @@ definitions:
       updatable:
         type: boolean
         description: |
-            TODO
+            Whether or not the description of the asset may be updated. Defaults to false.
       refillable:
         type: boolean
         description: |
-          TODO
+          Whether the amount of the asset can change after its creation. Defaults to false.
       data:
         description: |
           User provided metadata associated with the asset. May also be NULL.
@@ -145,8 +145,8 @@ definitions:
         description: |
             Body of the condition. Has the properties:
 
-            - **details**: Cryptographic details of the condition.
-            - **uri**: Cryptographic URI of the condition. TODO: more better.
+            - **details**: Details of the condition.
+            - **uri**: Condition encoded as an ASCII string.
         type: object
         additionalProperties: false
         required:
@@ -160,7 +160,8 @@ definitions:
       owners_after:
         "$ref": "#/definitions/owners_list"
         description: |
-            TODO
+            List of public keys associated with asset ownership at the time
+            of the transaction.
       amount:
         type: integer
         description: |
@@ -204,11 +205,11 @@ definitions:
             type_id:
               type: integer
           description: |
-              TODO
+              Fulfillment of a ondition_, or put a different way, this is a
+              payload that satisfies a condition in order to spend the associated
+              asset.
         - type: string
       input:
-        description: |
-            TODO
         anyOf:
         - type: 'object'
           description: |
