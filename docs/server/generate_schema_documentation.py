@@ -86,6 +86,9 @@ Metadata
 """
 
 
+DEFINITION_BASE_PATH = '#/definitions/'
+
+
 def render_section(section_name, obj):
     """ Render a domain object and it's properties """
     out = [obj['description']]
@@ -128,9 +131,9 @@ def property_type(prop):
 
 
 def resolve_ref(ref):
-    """ Resolve reference """
-    assert ref.startswith('#/definitions/')
-    return TX['definitions'][ref[14:]]
+    """ Resolve definition reference """
+    assert ref.startswith(DEFINITION_BASE_PATH)
+    return TX['definitions'][ref[len(DEFINITION_BASE_PATH):]]
 
 
 def main():
