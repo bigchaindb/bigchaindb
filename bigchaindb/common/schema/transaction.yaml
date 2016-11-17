@@ -58,6 +58,9 @@ properties:
     description: |
         Transaction version identifier.
 definitions:
+  offset:
+    type: integer
+    minimum: 0
   base58:
     pattern: "[1-9a-zA-Z^OIl]{43,44}"
     type: string
@@ -138,7 +141,7 @@ definitions:
     - amount
     properties:
       cid:
-        type: integer
+        "$ref": "#/definitions/offset"
         description: |
             Index of this transaction's appearance in the `transaction.conditions`_
             array. In a transaction with 2 conditions, the `cid`s will be 0 and 1.
@@ -182,7 +185,7 @@ definitions:
     - fulfillment
     properties:
       fid:
-        type: integer
+        "$ref": "#/definitions/offset"
         description: |
             The offset of the fulfillment within the fulfillents array.
       owners_before:
@@ -207,10 +210,11 @@ definitions:
             type_id:
               type: integer
           description: |
-              Fulfillment of a ondition_, or put a different way, this is a
+              Fulfillment of a condition_, or put a different way, this is a
               payload that satisfies a condition in order to spend the associated
               asset.
         - type: string
+          pattern: "^cf:([1-9a-f][0-9a-f]{0,3}|0):[a-zA-Z0-9_-]*$"
       input:
         anyOf:
         - type: 'object'
@@ -219,9 +223,9 @@ definitions:
           additionalProperties: false
           properties:
             cid:
-              type: 'integer'
+              "$ref": "#/definitions/offset"
             txid:
-              type: 'string'
+              "$ref": "#/definitions/sha3_hexdigest"
         - type: 'null'
   metadata:
     anyOf:

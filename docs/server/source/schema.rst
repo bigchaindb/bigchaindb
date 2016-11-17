@@ -229,7 +229,7 @@ fulfillment.fulfillment
 
 **type:** object or string
 
-Fulfillment of a ondition_, or put a different way, this is a
+Fulfillment of a condition_, or put a different way, this is a
 payload that satisfies a condition in order to spend the associated
 asset.
 
