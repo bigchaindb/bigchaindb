@@ -8,8 +8,7 @@ description: |
     This is the outer transaction wrapper. It contains the ID, version and the body of the transaction, which is also called `transaction`.
 properties:
   id:
-    pattern: "[0-9a-f]{64}"
-    type: string
+    "$ref": "#/definitions/sha3_hexdigest"
     description: |
         A sha3 digest of the transaction. The ID is calculated by removing all
         derived hashes and signatures from the transaction, serializing it to
@@ -75,7 +74,7 @@ definitions:
     pattern: "[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}"
     type: string
     description: |
-        A `UUID <https://en.wikipedia.org/wiki/Universally_unique_identifier>`_
+        A `UUID <https://tools.ietf.org/html/rfc4122.html>`_
         of type 4 (random).
   operation:
     type: string
@@ -159,6 +158,7 @@ definitions:
             additionalProperties: true
           uri:
             type: string
+            pattern: "^cc:([1-9a-f][0-9a-f]{0,3}|0):[1-9a-f][0-9a-f]{0,15}:[a-zA-Z0-9_-]{0,86}:([1-9][0-9]{0,17}|0)$"
       owners_after:
         "$ref": "#/definitions/owners_list"
         description: |

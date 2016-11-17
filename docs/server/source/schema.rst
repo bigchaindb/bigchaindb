@@ -259,7 +259,7 @@ asset.id
 
 **type:** string
 
-A `UUID <https://en.wikipedia.org/wiki/Universally_unique_identifier>`_
+A `UUID <https://tools.ietf.org/html/rfc4122.html>`_
 of type 4 (random).
 
 
@@ -323,7 +323,7 @@ metadata.id
 
 **type:** string
 
-A `UUID <https://en.wikipedia.org/wiki/Universally_unique_identifier>`_
+A `UUID <https://tools.ietf.org/html/rfc4122.html>`_
 of type 4 (random).
 
 
