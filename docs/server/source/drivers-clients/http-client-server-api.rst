@@ -128,15 +128,13 @@ Transactions
    queried correctly. Some of them include retrieving a list of transactions
    that include:
 
-   * `Unfulfilled conditions <#get--transactions?fields=id,conditions&fulfilled=false&owners_after=owners_after>`_
-   * `A specific asset <#get--transactions?fields=id,asset,operation&operation=CREATE|TRANSFER&asset_id=asset_id>`_
-   * `Specific metadata <#get--transactions?fields=id,metadata&metadata_id=metadata_id>`_
+   * `Unfulfilled conditions <#get--transactions?fulfilled=false&owners_after=owners_after>`_
+   * `A specific asset <#get--transactions?operation=CREATE|TRANSFER&asset_id=asset_id>`_
+   * `Specific metadata <#get--transactions?&metadata_id=metadata_id>`_
 
    In this section, we've listed those particular requests, as they will likely
    to be very handy when implementing your application on top of BigchainDB.
    A generalization of those parameters can follows:
-
-   :query string fields: Comma separated list, allowed values are: ``asset``, ``conditions``, ``fulfillments``, ``id``, ``metadata``, ``operation``, ``owners_after``, ``version``.
 
    :query boolean fulfilled: A flag to indicate if transaction's with fulfilled conditions should be returned.
 
@@ -151,7 +149,7 @@ Transactions
    :statuscode 404: BigchainDB does not expose this endpoint.
 
 
-.. http:get:: /transactions?fields=id,conditions&fulfilled=false&owners_after={owners_after}
+.. http:get:: /transactions?fulfilled=false&owners_after={owners_after}
 
    Get a list of transactions with unfulfilled conditions.
 
@@ -162,8 +160,6 @@ Transactions
    This endpoint returns conditions only if the transaction they're in are
    included in a ``VALID`` or ``UNDECIDED`` block on ``bigchain``.
 
-   :query string fields: A comma separated string to expand properties on the transaction object to be returned.
-
    :query boolean fulfilled: A flag to indicate if transaction's with fulfilled conditions should be returned.
 
    :query string owners_after: Public key able to validly spend an output of a transaction, assuming the user also has the corresponding private key.
@@ -172,7 +168,7 @@ Transactions
 
    .. sourcecode:: http
 
-      GET /transactions?fields=id,conditions&fulfilled=false&owners_after=1AAAbbb...ccc HTTP/1.1
+      GET /transactions?fulfilled=false&owners_after=1AAAbbb...ccc HTTP/1.1
       Host: example.com
 
    **Example response**:
@@ -203,7 +199,29 @@ Transactions
               ]
             }
           ],
+          "operation": "CREATE",
+          "asset": {
+            "divisible": false,
+            "updatable": false,
+            "data": null,
+            "id": "aebeab22-e672-4d3b-a187-bde5fda6533d",
+            "refillable": false
+          },
+          "metadata": null,
+          "timestamp": "1477578978",
+          "fulfillments": [
+            {
+              "fid": 0,
+              "input": null,
+              "fulfillment": "cf:4:GG-pi3CeIlySZhQoJVBh9O23PzrOuhnYI7OHqIbHjkn2VnQaEWvecO1x82Qr2Va_JjFywLKIOEV1Ob9Ofkeln2K89ny2mB-s7RLNvYAVzWNiQnp18_nQEUsvwACEXTYJ",
+              "owners_before": [
+                "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
+              ]
+            }
+          ]
+        },
         "id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e",
+        "version": 1
       }]
 
    :resheader Content-Type: ``application/json``
@@ -211,14 +229,12 @@ Transactions
    :statuscode 200: A list of transaction's containing unfulfilled conditions was found and returned.
    :statuscode 400: The request wasn't understood by the server, e.g. the ``owners_after`` querystring was not included in the request.
 
-.. http:get:: /transactions?fields=id,asset,operation&operation={GENESIS|CREATE|TRANSFER}&asset_id={asset_id}
+.. http:get:: /transactions?operation={GENESIS|CREATE|TRANSFER}&asset_id={asset_id}
 
    Get a list of transactions that use an asset with the ID ``asset_id``.
 
    This endpoint returns assets only if the transaction they're in are
    included in a ``VALID`` or ``UNDECIDED`` block on ``bigchain``.
-
-   :query string fields: A comma separated string to expand properties on the transaction object to be returned.
 
    :query string operation: One of the three supported operations of a transaction: ``GENESIS``, ``CREATE``, ``TRANSFER``.
 
@@ -228,7 +244,7 @@ Transactions
 
    .. sourcecode:: http
 
-      GET /transactions?fields=id,asset,operation&operation=CREATE&asset_id=1AAAbbb...ccc HTTP/1.1
+      GET /transactions?operation=CREATE&asset_id=1AAAbbb...ccc HTTP/1.1
       Host: example.com
 
    **Example response**:
@@ -240,6 +256,26 @@ Transactions
 
       [{
         "transaction": {
+          "conditions": [
+            {
+              "cid": 0,
+              "condition": {
+                "uri": "cc:4:20:GG-pi3CeIlySZhQoJVBh9O23PzrOuhnYI7OHqIbHjkk:96",
+                "details": {
+                  "signature": null,
+                  "type": "fulfillment",
+                  "type_id": 4,
+                  "bitmask": 32,
+                  "public_key": "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
+                }
+              },
+              "amount": 1,
+              "owners_after": [
+                "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
+              ]
+            }
+          ],
+          "operation": "CREATE",
           "asset": {
             "divisible": false,
             "updatable": false,
@@ -247,8 +283,21 @@ Transactions
             "id": "1AAAbbb...ccc",
             "refillable": false
           },
-        "operation": "CREATE",
+          "metadata": null,
+          "timestamp": "1477578978",
+          "fulfillments": [
+            {
+              "fid": 0,
+              "input": null,
+              "fulfillment": "cf:4:GG-pi3CeIlySZhQoJVBh9O23PzrOuhnYI7OHqIbHjkn2VnQaEWvecO1x82Qr2Va_JjFywLKIOEV1Ob9Ofkeln2K89ny2mB-s7RLNvYAVzWNiQnp18_nQEUsvwACEXTYJ",
+              "owners_before": [
+                "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
+              ]
+            }
+          ]
+        },
         "id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e",
+        "version": 1
       }]
 
    :resheader Content-Type: ``application/json``
@@ -256,14 +305,12 @@ Transactions
    :statuscode 200: A list of transaction's containing an asset with ID ``asset_id`` was found and returned.
    :statuscode 400: The request wasn't understood by the server, e.g. the ``asset_id`` querystring was not included in the request.
 
-.. http:get:: /transactions?fields=id,metadata&metadata_id={metadata_id}
+.. http:get:: /transactions?metadata_id={metadata_id}
 
    Get a list of transactions that use metadata with the ID ``metadata_id``.
 
    This endpoint returns assets only if the transaction they're in are
    included in a ``VALID`` or ``UNDECIDED`` block on ``bigchain``.
-
-   :query string fields: A comma separated string to expand properties on the transaction object to be returned.
 
    :query string metadata_id: metadata ID.
 
@@ -271,7 +318,7 @@ Transactions
 
    .. sourcecode:: http
 
-      GET /transactions?fields=id,metadata&metadata_id=1AAAbbb...ccc HTTP/1.1
+      GET /transactions?metadata_id=1AAAbbb...ccc HTTP/1.1
       Host: example.com
 
    **Example response**:
@@ -283,12 +330,53 @@ Transactions
 
       [{
         "transaction": {
-        "metadata": {
-          "id": "1AAAbbb...ccc",
-          "data": {
-            "hello": "world"
+          "conditions": [
+            {
+              "cid": 0,
+              "condition": {
+                "uri": "cc:4:20:GG-pi3CeIlySZhQoJVBh9O23PzrOuhnYI7OHqIbHjkk:96",
+                "details": {
+                  "signature": null,
+                  "type": "fulfillment",
+                  "type_id": 4,
+                  "bitmask": 32,
+                  "public_key": "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
+                }
+              },
+              "amount": 1,
+              "owners_after": [
+                "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
+              ]
+            }
+          ],
+          "operation": "CREATE",
+          "asset": {
+            "divisible": false,
+            "updatable": false,
+            "data": null,
+            "id": "aebeab22-e672-4d3b-a187-bde5fda6533d",
+            "refillable": false
           },
+          "metadata": {
+            "id": "1AAAbbb...ccc",
+            "data": {
+              "hello": "world"
+            },
+          },
+          "timestamp": "1477578978",
+          "fulfillments": [
+            {
+              "fid": 0,
+              "input": null,
+              "fulfillment": "cf:4:GG-pi3CeIlySZhQoJVBh9O23PzrOuhnYI7OHqIbHjkn2VnQaEWvecO1x82Qr2Va_JjFywLKIOEV1Ob9Ofkeln2K89ny2mB-s7RLNvYAVzWNiQnp18_nQEUsvwACEXTYJ",
+              "owners_before": [
+                "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
+              ]
+            }
+          ]
+        },
         "id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e",
+        "version": 1
       }]
 
    :resheader Content-Type: ``application/json``
