@@ -45,7 +45,7 @@ def test_create_block(b, user_pk):
     block_maker = BlockPipeline()
 
     for i in range(100):
-        tx = Transaction.create([b.me], [user_pk])
+        tx = Transaction.create([b.me], [([user_pk], 1)])
         tx = tx.sign([b.me_private])
         block_maker.create(tx)
 
@@ -63,7 +63,7 @@ def test_write_block(b, user_pk):
 
     txs = []
     for i in range(100):
-        tx = Transaction.create([b.me], [user_pk])
+        tx = Transaction.create([b.me], [([user_pk], 1)])
         tx = tx.sign([b.me_private])
         txs.append(tx)
 
@@ -82,7 +82,7 @@ def test_duplicate_transaction(b, user_pk):
 
     txs = []
     for i in range(10):
-        tx = Transaction.create([b.me], [user_pk])
+        tx = Transaction.create([b.me], [([user_pk], 1)])
         tx = tx.sign([b.me_private])
         txs.append(tx)
 
@@ -109,7 +109,7 @@ def test_delete_tx(b, user_pk):
     from bigchaindb.pipelines.block import BlockPipeline
     block_maker = BlockPipeline()
     for i in range(100):
-        tx = Transaction.create([b.me], [user_pk])
+        tx = Transaction.create([b.me], [([user_pk], 1)])
         tx = tx.sign([b.me_private])
         block_maker.create(tx)
         # make sure the tx appears in the backlog
@@ -138,7 +138,8 @@ def test_prefeed(b, user_pk):
     from bigchaindb.pipelines.block import initial
 
     for i in range(100):
-        tx = Transaction.create([b.me], [user_pk], {'msg': random.random()})
+        tx = Transaction.create([b.me], [([user_pk], 1)],
+                                {'msg': random.random()})
         tx = tx.sign([b.me_private])
         b.write_transaction(tx)
 
@@ -167,7 +168,8 @@ def test_full_pipeline(b, user_pk):
 
     count_assigned_to_me = 0
     for i in range(100):
-        tx = Transaction.create([b.me], [user_pk], {'msg': random.random()})
+        tx = Transaction.create([b.me], [([user_pk], 1)],
+                                {'msg': random.random()})
         tx = tx.sign([b.me_private]).to_dict()
         assignee = random.choice([b.me, 'aaa', 'bbb', 'ccc'])
         tx['assignee'] = assignee

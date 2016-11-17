@@ -8,7 +8,7 @@ from multipipes import Pipe, Pipeline
 
 def dummy_tx(b):
     from bigchaindb.models import Transaction
-    tx = Transaction.create([b.me], [b.me])
+    tx = Transaction.create([b.me], [([b.me], 1)])
     tx = tx.sign([b.me_private])
     return tx
 
@@ -130,7 +130,7 @@ def test_vote_validate_transaction(b):
     assert validation == (True, 123, 1)
 
     # NOTE: Submit unsigned transaction to `validate_tx` yields `False`.
-    tx = Transaction.create([b.me], [b.me])
+    tx = Transaction.create([b.me], [([b.me], 1)])
     validation = vote_obj.validate_tx(tx, 456, 10)
     assert validation == (False, 456, 10)
 
@@ -224,7 +224,7 @@ def test_valid_block_voting_with_create_transaction(b, monkeypatch):
 
     # create a `CREATE` transaction
     test_user_priv, test_user_pub = crypto.generate_key_pair()
-    tx = Transaction.create([b.me], [test_user_pub])
+    tx = Transaction.create([b.me], [([test_user_pub], 1)])
     tx = tx.sign([b.me_private])
 
     monkeypatch.setattr('time.time', lambda: 1)
@@ -265,7 +265,7 @@ def test_valid_block_voting_with_transfer_transactions(monkeypatch, b):
 
     # create a `CREATE` transaction
     test_user_priv, test_user_pub = crypto.generate_key_pair()
-    tx = Transaction.create([b.me], [test_user_pub])
+    tx = Transaction.create([b.me], [([test_user_pub], 1)])
     tx = tx.sign([b.me_private])
 
     monkeypatch.setattr('time.time', lambda: 1)
@@ -274,7 +274,8 @@ def test_valid_block_voting_with_transfer_transactions(monkeypatch, b):
 
     # create a `TRANSFER` transaction
     test_user2_priv, test_user2_pub = crypto.generate_key_pair()
-    tx2 = Transaction.transfer(tx.to_inputs(), [test_user2_pub], tx.asset)
+    tx2 = Transaction.transfer(tx.to_inputs(), [([test_user2_pub], 1)],
+                               tx.asset)
     tx2 = tx2.sign([test_user_priv])
 
     monkeypatch.setattr('time.time', lambda: 2)
@@ -338,7 +339,7 @@ def test_unsigned_tx_in_block_voting(monkeypatch, b, user_pk):
     vote_pipeline.setup(indata=inpipe, outdata=outpipe)
 
     # NOTE: `tx` is invalid, because it wasn't signed.
-    tx = Transaction.create([b.me], [b.me])
+    tx = Transaction.create([b.me], [([b.me], 1)])
     block = b.create_block([tx])
 
     inpipe.put(block.to_dict())
@@ -375,7 +376,7 @@ def test_invalid_id_tx_in_block_voting(monkeypatch, b, user_pk):
     vote_pipeline.setup(indata=inpipe, outdata=outpipe)
 
     # NOTE: `tx` is invalid, because its id is not corresponding to its content
-    tx = Transaction.create([b.me], [b.me])
+    tx = Transaction.create([b.me], [([b.me], 1)])
     tx = tx.sign([b.me_private])
     block = b.create_block([tx]).to_dict()
     block['block']['transactions'][0]['id'] = 'an invalid tx id'
@@ -414,7 +415,7 @@ def test_invalid_content_in_tx_in_block_voting(monkeypatch, b, user_pk):
     vote_pipeline.setup(indata=inpipe, outdata=outpipe)
 
     # NOTE: `tx` is invalid, because its content is not corresponding to its id
-    tx = Transaction.create([b.me], [b.me])
+    tx = Transaction.create([b.me], [([b.me], 1)])
     tx = tx.sign([b.me_private])
     block = b.create_block([tx]).to_dict()
     block['block']['transactions'][0]['id'] = 'an invalid tx id'

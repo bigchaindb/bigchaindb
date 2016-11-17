@@ -84,7 +84,7 @@ def inputs(user_pk):
     prev_block_id = g.id
     for block in range(4):
         transactions = [
-            Transaction.create([b.me], [user_pk]).sign([b.me_private])
+            Transaction.create([b.me], [([user_pk], 1)]).sign([b.me_private])
             for i in range(10)
         ]
         block = b.create_block(transactions)

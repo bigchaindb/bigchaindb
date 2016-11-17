@@ -65,6 +65,14 @@ x = 'name: {}; score: {}'.format(name, n)
 we use the `format()` version. The [official Python documentation says](https://docs.python.org/2/library/stdtypes.html#str.format), "This method of string formatting is the new standard in Python 3, and should be preferred to the % formatting described in String Formatting Operations in new code."
 
 
+## Runnng the Flake8 Style Checker
+
+We use [Flake8](http://flake8.pycqa.org/en/latest/index.html) to check our Python code style. Once you have it installed, you can run it using:
+```text
+flake8 --max-line-length 119 bigchaindb/
+```
+
+
 ## Writing and Running (Python) Unit Tests
 
 We write unit tests for our Python code using the [pytest](http://pytest.org/latest/) framework.

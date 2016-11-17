@@ -15,7 +15,7 @@ def test_check_for_quorum_invalid(b, user_pk):
     e = election.Election()
 
     # create blocks with transactions
-    tx1 = Transaction.create([b.me], [user_pk])
+    tx1 = Transaction.create([b.me], [([user_pk], 1)])
     test_block = b.create_block([tx1])
 
     # simulate a federation with four voters
@@ -44,7 +44,7 @@ def test_check_for_quorum_invalid_prev_node(b, user_pk):
     e = election.Election()
 
     # create blocks with transactions
-    tx1 = Transaction.create([b.me], [user_pk])
+    tx1 = Transaction.create([b.me], [([user_pk], 1)])
     test_block = b.create_block([tx1])
 
     # simulate a federation with four voters
@@ -74,7 +74,7 @@ def test_check_for_quorum_valid(b, user_pk):
     e = election.Election()
 
     # create blocks with transactions
-    tx1 = Transaction.create([b.me], [user_pk])
+    tx1 = Transaction.create([b.me], [([user_pk], 1)])
     test_block = b.create_block([tx1])
 
     # simulate a federation with four voters
@@ -103,7 +103,7 @@ def test_check_requeue_transaction(b, user_pk):
     e = election.Election()
 
     # create blocks with transactions
-    tx1 = Transaction.create([b.me], [user_pk])
+    tx1 = Transaction.create([b.me], [([user_pk], 1)])
     test_block = b.create_block([tx1])
 
     e.requeue_transactions(test_block)
@@ -131,7 +131,8 @@ def test_full_pipeline(b, user_pk):
     # write two blocks
     txs = []
     for i in range(100):
-        tx = Transaction.create([b.me], [user_pk], {'msg': random.random()})
+        tx = Transaction.create([b.me], [([user_pk], 1)],
+                                {'msg': random.random()})
         tx = tx.sign([b.me_private])
         txs.append(tx)
 
@@ -140,7 +141,8 @@ def test_full_pipeline(b, user_pk):
 
     txs = []
     for i in range(100):
-        tx = Transaction.create([b.me], [user_pk], {'msg': random.random()})
+        tx = Transaction.create([b.me], [([user_pk], 1)],
+                                {'msg': random.random()})
         tx = tx.sign([b.me_private])
         txs.append(tx)
 

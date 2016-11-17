@@ -3,13 +3,13 @@ from functools import reduce
 from uuid import uuid4
 
 from cryptoconditions import (Fulfillment as CCFulfillment,
-                              ThresholdSha256Fulfillment, Ed25519Fulfillment,
-                              PreimageSha256Fulfillment)
+                              ThresholdSha256Fulfillment, Ed25519Fulfillment)
 from cryptoconditions.exceptions import ParsingError
 
 from bigchaindb.common.crypto import PrivateKey, hash_data
 from bigchaindb.common.exceptions import (KeypairMismatchException,
-                                          InvalidHash, InvalidSignature)
+                                          InvalidHash, InvalidSignature,
+                                          AmountError, AssetIdMismatch)
 from bigchaindb.common.util import serialize, gen_timestamp
 
 
@@ -95,6 +95,14 @@ class Fulfillment(object):
         if fid is not None:
             ffill['fid'] = fid
         return ffill
+
+    @classmethod
+    def generate(cls, owners_before):
+        # TODO: write docstring
+        # The amount here does not really matter. It is only use on the
+        # condition data model but here we only care about the fulfillment
+        condition = Condition.generate(owners_before, 1)
+        return cls(condition.fulfillment, condition.owners_after)
 
     @classmethod
     def from_dict(cls, ffill):
@@ -265,7 +273,7 @@ class Condition(object):
         return cond
 
     @classmethod
-    def generate(cls, owners_after):
+    def generate(cls, owners_after, amount):
         """Generates a Condition from a specifically formed tuple or list.
 
             Note:
@@ -275,34 +283,24 @@ class Condition(object):
 
                 [(address|condition)*, [(address|condition)*, ...], ...]
 
-                If however, the thresholds of individual threshold conditions
-                to be created have to be set specifically, a tuple of the
-                following structure is necessary:
-
-                ([(address|condition)*,
-                  ([(address|condition)*, ...], subthreshold),
-                  ...], threshold)
-
             Args:
-                owners_after (:obj:`list` of :obj:`str`|tuple): The users that
-                    should be able to fulfill the Condition that is being
-                    created.
+                owners_after (:obj:`list` of :obj:`str`): The public key of
+                    the users that should be able to fulfill the Condition
+                    that is being created.
+                amount (:obj:`int`): The amount locked by the condition.
 
             Returns:
                 A Condition that can be used in a Transaction.
 
-            Returns:
+            Raises:
                 TypeError: If `owners_after` is not an instance of `list`.
-                TypeError: If `owners_after` is an empty list.
+                ValueError: If `owners_after` is an empty list.
         """
-        # TODO: We probably want to remove the tuple logic for weights here
-        # again:
-        # github.com/bigchaindb/bigchaindb/issues/730#issuecomment-255144756
-        if isinstance(owners_after, tuple):
-            owners_after, threshold = owners_after
-        else:
-            threshold = len(owners_after)
-
+        threshold = len(owners_after)
+        if not isinstance(amount, int):
+            raise TypeError('`amount` must be a int')
+        if amount < 1:
+            raise AmountError('`amount` needs to be greater than zero')
         if not isinstance(owners_after, list):
             raise TypeError('`owners_after` must be an instance of list')
         if len(owners_after) == 0:
@@ -313,12 +311,12 @@ class Condition(object):
                 ffill = Ed25519Fulfillment(public_key=owners_after[0])
             except TypeError:
                 ffill = owners_after[0]
-            return cls(ffill, owners_after)
+            return cls(ffill, owners_after, amount=amount)
         else:
             initial_cond = ThresholdSha256Fulfillment(threshold=threshold)
             threshold_cond = reduce(cls._gen_condition, owners_after,
                                     initial_cond)
-            return cls(threshold_cond, owners_after)
+            return cls(threshold_cond, owners_after, amount=amount)
 
     @classmethod
     def _gen_condition(cls, initial, current):
@@ -338,14 +336,11 @@ class Condition(object):
             Returns:
                 :class:`cryptoconditions.ThresholdSha256Fulfillment`:
         """
-        if isinstance(current, tuple):
-            owners_after, threshold = current
-        else:
-            owners_after = current
-            try:
-                threshold = len(owners_after)
-            except TypeError:
-                threshold = None
+        owners_after = current
+        try:
+            threshold = len(owners_after)
+        except TypeError:
+            threshold = None
 
         if isinstance(owners_after, list) and len(owners_after) > 1:
             ffill = ThresholdSha256Fulfillment(threshold=threshold)
@@ -420,7 +415,7 @@ class Asset(object):
         self.updatable = updatable
         self.refillable = refillable
 
-        self._validate_asset()
+        self.validate_asset()
 
     def __eq__(self, other):
         try:
@@ -463,7 +458,38 @@ class Asset(object):
         """Generates a unqiue uuid for an Asset"""
         return str(uuid4())
 
-    def _validate_asset(self):
+    @staticmethod
+    def get_asset_id(transactions):
+        """Get the asset id from a list of transaction ids.
+
+        This is useful when we want to check if the multiple inputs of a
+        transaction are related to the same asset id.
+
+        Args:
+            transactions (:obj:`list` of :class:`~bigchaindb.common.
+                transaction.Transaction`): list of transaction usually inputs
+                that should have a matching asset_id
+
+        Returns:
+            str: uuid of the asset.
+
+        Raises:
+            AssetIdMismatch: If the inputs are related to different assets.
+        """
+
+        if not isinstance(transactions, list):
+            transactions = [transactions]
+
+        # create a set of asset_ids
+        asset_ids = {tx.asset.data_id for tx in transactions}
+
+        # check that all the transasctions have the same asset_id
+        if len(asset_ids) > 1:
+            raise AssetIdMismatch(('All inputs of all transactions passed'
+                                   ' need to have the same asset id'))
+        return asset_ids.pop()
+
+    def validate_asset(self, amount=None):
         """Validates the asset"""
         if self.data is not None and not isinstance(self.data, dict):
             raise TypeError('`data` must be a dict instance or None')
@@ -473,6 +499,77 @@ class Asset(object):
             raise TypeError('`refillable` must be a boolean')
         if not isinstance(self.updatable, bool):
             raise TypeError('`updatable` must be a boolean')
+
+        if self.refillable:
+            raise NotImplementedError('Refillable assets are not yet'
+                                      ' implemented')
+        if self.updatable:
+            raise NotImplementedError('Updatable assets are not yet'
+                                      ' implemented')
+
+        # If the amount is supplied we can perform extra validations to
+        # the asset
+        if amount is not None:
+            if not isinstance(amount, int):
+                raise TypeError('`amount` must be an int')
+
+            if self.divisible is False and amount != 1:
+                raise AmountError('non divisible assets always have'
+                                  ' amount equal to one')
+
+            # Since refillable assets are not yet implemented this should
+            # raise and exception
+            if self.divisible is True and amount < 2:
+                raise AmountError('divisible assets must have an amount'
+                                  ' greater than one')
+
+
+class AssetLink(Asset):
+    """An object for unidirectional linking to a Asset.
+    """
+
+    def __init__(self, data_id=None):
+        """Used to point to a specific Asset.
+
+            Args:
+                data_id (str): A Asset to link to.
+        """
+        self.data_id = data_id
+
+    def __bool__(self):
+        return self.data_id is not None
+
+    def __eq__(self, other):
+        return isinstance(other, AssetLink) and \
+                self.to_dict() == other.to_dict()
+
+    @classmethod
+    def from_dict(cls, link):
+        """Transforms a Python dictionary to a AssetLink object.
+
+            Args:
+                link (dict): The link to be transformed.
+
+            Returns:
+                :class:`~bigchaindb.common.transaction.AssetLink`
+        """
+        try:
+            return cls(link['id'])
+        except TypeError:
+            return cls()
+
+    def to_dict(self):
+        """Transforms the object to a Python dictionary.
+
+            Returns:
+                (dict|None): The link as an alternative serialization format.
+        """
+        if self.data_id is None:
+            return None
+        else:
+            return {
+                'id': self.data_id
+            }
 
 
 class Metadata(object):
@@ -612,9 +709,17 @@ class Transaction(object):
         self.fulfillments = fulfillments if fulfillments else []
         self.metadata = metadata
 
+        # validate asset
+        # we know that each transaction relates to a single asset
+        # we can sum the amount of all the conditions
+        # for transactions other then CREATE we only have an id so there is
+        # nothing we can validate
+        if self.operation == self.CREATE:
+            amount = sum([condition.amount for condition in self.conditions])
+            self.asset.validate_asset(amount=amount)
+
     @classmethod
-    def create(cls, owners_before, owners_after, metadata=None, asset=None,
-               secret=None, time_expire=None):
+    def create(cls, owners_before, owners_after, metadata=None, asset=None):
         """A simple way to generate a `CREATE` transaction.
 
             Note:
@@ -622,7 +727,6 @@ class Transaction(object):
                 use cases:
                     - Ed25519
                     - ThresholdSha256
-                    - PreimageSha256.
 
                 Additionally, it provides support for the following BigchainDB
                 use cases:
@@ -637,10 +741,6 @@ class Transaction(object):
                     Transaction.
                 asset (:class:`~bigchaindb.common.transaction.Asset`): An Asset
                     to be created in this Transaction.
-                secret (binarystr, optional): A secret string to create a hash-
-                    lock Condition.
-                time_expire (int, optional): The UNIX time a Transaction is
-                    valid.
 
             Returns:
                 :class:`~bigchaindb.common.transaction.Transaction`
@@ -649,54 +749,28 @@ class Transaction(object):
             raise TypeError('`owners_before` must be a list instance')
         if not isinstance(owners_after, list):
             raise TypeError('`owners_after` must be a list instance')
+        if len(owners_before) == 0:
+            raise ValueError('`owners_before` list cannot be empty')
+        if len(owners_after) == 0:
+            raise ValueError('`owners_after` list cannot be empty')
 
         metadata = Metadata(metadata)
-        if len(owners_before) == len(owners_after) and len(owners_after) == 1:
-            # NOTE: Standard case, one owner before, one after.
-            # NOTE: For this case its sufficient to use the same
-            #       fulfillment for the fulfillment and condition.
-            ffill = Ed25519Fulfillment(public_key=owners_before[0])
-            ffill_tx = Fulfillment(ffill, owners_before)
-            cond_tx = Condition.generate(owners_after)
-            return cls(cls.CREATE, asset, [ffill_tx], [cond_tx], metadata)
+        fulfillments = []
+        conditions = []
 
-        elif len(owners_before) == len(owners_after) and len(owners_after) > 1:
-            raise NotImplementedError('Multiple inputs and outputs not'
-                                      'available for CREATE')
-            # NOTE: Multiple inputs and outputs case. Currently not supported.
-            ffills = [Fulfillment(Ed25519Fulfillment(public_key=owner_before),
-                                  [owner_before])
-                      for owner_before in owners_before]
-            conds = [Condition.generate(owners) for owners in owners_after]
-            return cls(cls.CREATE, asset, ffills, conds, metadata)
+        # generate_conditions
+        for owner_after in owners_after:
+            if not isinstance(owner_after, tuple) or len(owner_after) != 2:
+                raise ValueError(('Each `owner_after` in the list must be a'
+                                  ' tuple of `([<list of public keys>],'
+                                  ' <amount>)`'))
+            pub_keys, amount = owner_after
+            conditions.append(Condition.generate(pub_keys, amount))
 
-        elif len(owners_before) == 1 and len(owners_after) > 1:
-            # NOTE: Multiple owners case
-            cond_tx = Condition.generate(owners_after)
-            ffill = Ed25519Fulfillment(public_key=owners_before[0])
-            ffill_tx = Fulfillment(ffill, owners_before)
-            return cls(cls.CREATE, asset, [ffill_tx], [cond_tx], metadata)
+        # generate fulfillments
+        fulfillments.append(Fulfillment.generate(owners_before))
 
-        elif (len(owners_before) == 1 and len(owners_after) == 0 and
-              secret is not None):
-            # NOTE: Hashlock condition case
-            hashlock = PreimageSha256Fulfillment(preimage=secret)
-            cond_tx = Condition(hashlock.condition_uri)
-            ffill = Ed25519Fulfillment(public_key=owners_before[0])
-            ffill_tx = Fulfillment(ffill, owners_before)
-            return cls(cls.CREATE, asset, [ffill_tx], [cond_tx], metadata)
-
-        elif (len(owners_before) > 0 and len(owners_after) == 0 and
-              time_expire is not None):
-            raise NotImplementedError('Timeout conditions will be implemented '
-                                      'later')
-
-        elif (len(owners_before) > 0 and len(owners_after) == 0 and
-              secret is None):
-            raise ValueError('Define a secret to create a hashlock condition')
-
-        else:
-            raise ValueError("These are not the cases you're looking for ;)")
+        return cls(cls.CREATE, asset, fulfillments, conditions, metadata)
 
     @classmethod
     def transfer(cls, inputs, owners_after, asset, metadata=None):
@@ -743,17 +817,17 @@ class Transaction(object):
             raise ValueError('`inputs` must contain at least one item')
         if not isinstance(owners_after, list):
             raise TypeError('`owners_after` must be a list instance')
+        if len(owners_after) == 0:
+            raise ValueError('`owners_after` list cannot be empty')
 
-        # NOTE: See doc strings `Note` for description.
-        if len(inputs) == len(owners_after):
-            if len(owners_after) == 1:
-                conditions = [Condition.generate(owners_after)]
-            elif len(owners_after) > 1:
-                conditions = [Condition.generate(owners) for owners
-                              in owners_after]
-        else:
-            raise ValueError("`inputs` and `owners_after`'s count must be the "
-                             "same")
+        conditions = []
+        for owner_after in owners_after:
+            if not isinstance(owner_after, tuple) or len(owner_after) != 2:
+                raise ValueError(('Each `owner_after` in the list must be a'
+                                  ' tuple of `([<list of public keys>],'
+                                  ' <amount>)`'))
+            pub_keys, amount = owner_after
+            conditions.append(Condition.generate(pub_keys, amount))
 
         metadata = Metadata(metadata)
         inputs = deepcopy(inputs)
@@ -786,20 +860,14 @@ class Transaction(object):
                 :obj:`list` of :class:`~bigchaindb.common.transaction.
                     Fulfillment`
         """
-        inputs = []
-        if condition_indices is None or len(condition_indices) == 0:
-            # NOTE: If no condition indices are passed, we just assume to
-            #       take all conditions as inputs.
-            condition_indices = [index for index, _
-                                 in enumerate(self.conditions)]
-
-        for cid in condition_indices:
-            input_cond = self.conditions[cid]
-            ffill = Fulfillment(input_cond.fulfillment,
-                                input_cond.owners_after,
-                                TransactionLink(self.id, cid))
-            inputs.append(ffill)
-        return inputs
+        # NOTE: If no condition indices are passed, we just assume to
+        #       take all conditions as inputs.
+        return [
+            Fulfillment(self.conditions[cid].fulfillment,
+                        self.conditions[cid].owners_after,
+                        TransactionLink(self.id, cid))
+            for cid in condition_indices or range(len(self.conditions))
+        ]
 
     def add_fulfillment(self, fulfillment):
         """Adds a Fulfillment to a Transaction's list of Fulfillments.
@@ -868,13 +936,12 @@ class Transaction(object):
         key_pairs = {gen_public_key(PrivateKey(private_key)):
                      PrivateKey(private_key) for private_key in private_keys}
 
-        zippedIO = enumerate(zip(self.fulfillments, self.conditions))
-        for index, (fulfillment, condition) in zippedIO:
+        for index, fulfillment in enumerate(self.fulfillments):
             # NOTE: We clone the current transaction but only add the condition
             #       and fulfillment we're currently working on plus all
             #       previously signed ones.
             tx_partial = Transaction(self.operation, self.asset, [fulfillment],
-                                     [condition], self.metadata,
+                                     self.conditions, self.metadata,
                                      self.timestamp, self.version)
 
             tx_partial_dict = tx_partial.to_dict()
@@ -1031,14 +1098,13 @@ class Transaction(object):
         """
         input_condition_uris_count = len(input_condition_uris)
         fulfillments_count = len(self.fulfillments)
-        conditions_count = len(self.conditions)
 
         def gen_tx(fulfillment, condition, input_condition_uri=None):
             """Splits multiple IO Transactions into partial single IO
             Transactions.
             """
             tx = Transaction(self.operation, self.asset, [fulfillment],
-                             [condition], self.metadata, self.timestamp,
+                             self.conditions, self.metadata, self.timestamp,
                              self.version)
             tx_dict = tx.to_dict()
             tx_dict = Transaction._remove_signatures(tx_dict)
@@ -1049,14 +1115,13 @@ class Transaction(object):
                                                   tx_serialized,
                                                   input_condition_uri)
 
-        if not fulfillments_count == conditions_count == \
-           input_condition_uris_count:
-            raise ValueError('Fulfillments, conditions and '
+        if not fulfillments_count == input_condition_uris_count:
+            raise ValueError('Fulfillments and '
                              'input_condition_uris must have the same count')
-        else:
-            partial_transactions = map(gen_tx, self.fulfillments,
-                                       self.conditions, input_condition_uris)
-            return all(partial_transactions)
+
+        partial_transactions = map(gen_tx, self.fulfillments,
+                                   self.conditions, input_condition_uris)
+        return all(partial_transactions)
 
     @staticmethod
     def _fulfillment_valid(fulfillment, operation, tx_serialized,
@@ -1214,7 +1279,10 @@ class Transaction(object):
             conditions = [Condition.from_dict(condition) for condition
                           in tx['conditions']]
             metadata = Metadata.from_dict(tx['metadata'])
-            asset = Asset.from_dict(tx['asset'])
+            if tx['operation'] in [cls.CREATE, cls.GENESIS]:
+                asset = Asset.from_dict(tx['asset'])
+            else:
+                asset = AssetLink.from_dict(tx['asset'])
 
             return cls(tx['operation'], asset, fulfillments, conditions,
                        metadata, tx['timestamp'], tx_body['version'])
