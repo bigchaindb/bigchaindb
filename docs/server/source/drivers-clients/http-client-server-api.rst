@@ -382,7 +382,48 @@ Blocks
 
 .. http:get:: /blocks/{block_id}
 
-   Descriptions: TODO
+   Get the block with the ID ``block_id``.
+
+   A block is only returned if it was labeled ``VALID`` or ``UNDECIDED`` and
+   exists in the table ``bigchain``.
+
+   :param block_id: block ID
+   :type block_id: hex string
+
+   **Example request**:
+
+   .. sourcecode:: http
+
+      GET /blocks/6152fbc7e0f7686512ed6b92c01e8c73ea1e3f51a7b037ac5cc8c860215e7202 HTTP/1.1
+      Host: example.com
+
+   **Example response**:
+
+   .. sourcecode:: http
+
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+
+      {
+        "block":{
+          "node_pubkey":"ErEeVZt8AfLbMJub25tjNxbpzzTNp3mGidL3GxGdd9bt",
+            "timestamp":"1479389911",
+            "transactions":[
+              '<transaction1>',
+              '<transaction2>'
+            ],
+            "voters":[
+              "ErEeVZt8AfLbMJub25tjNxbpzzTNp3mGidL3GxGdd9bt"
+            ]
+        },
+        "id":"6152fbc7e0f7686512ed6b92c01e8c73ea1e3f51a7b037ac5cc8c860215e7202",
+        "signature":"53wxrEQDYk1dXzmvNSytbCfmNVnPqPkDQaTnAe8Jf43s6ssejPxezkCvUnGTnduNUmaLjhaan1iRLi3peu6s5DzA"
+      }
+
+   :resheader Content-Type: ``application/json``
+
+   :statuscode 200: A block with that ID was found. Its status is either ``VALID`` or ``UNDECIDED``.
+   :statuscode 404: A block with that ID was not found.
 
 .. http:get:: /blocks?tx_id={tx_id}
 
