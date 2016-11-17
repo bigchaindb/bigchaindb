@@ -21,7 +21,7 @@ def test_validation_fails():
         validate_transaction_schema({})
 
 
-def test_addition_properties_false():
+def test_addition_properties_always_set():
     """
     Validate that each object node has additionalProperties set, so that
     transactions with junk keys do not pass as valid.

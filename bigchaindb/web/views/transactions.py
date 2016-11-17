@@ -6,7 +6,7 @@ For more information please refer to the documentation on ReadTheDocs:
 from flask import current_app, request, Blueprint
 from flask_restful import Resource, Api
 
-from bigchaindb.common.exceptions import InvalidHash, InvalidSignature
+from bigchaindb.common.exceptions import ValidationError, InvalidSignature
 
 import bigchaindb
 from bigchaindb.models import Transaction
@@ -98,7 +98,7 @@ class TransactionListApi(Resource):
 
         try:
             tx_obj = Transaction.from_dict(tx)
-        except (InvalidHash, InvalidSignature):
+        except (ValidationError, InvalidSignature):
             return make_error(400, 'Invalid transaction')
 
         with pool() as bigchain:

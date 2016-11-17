@@ -61,6 +61,11 @@ def test_post_create_transaction_with_invalid_signature(b, client):
     assert res.status_code == 400
 
 
+def test_post_create_transaction_with_invalid_structure(client):
+    res = client.post(TX_ENDPOINT, data='{}')
+    assert res.status_code == 400
+
+
 @pytest.mark.usefixtures('inputs')
 def test_post_transfer_transaction_endpoint(b, client, user_vk, user_sk):
     sk, vk = crypto.generate_key_pair()

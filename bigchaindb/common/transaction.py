@@ -1249,14 +1249,15 @@ class Transaction(object):
         return Transaction._to_str(tx)
 
     @staticmethod
-    def validate_structure(tx_body_orig):
+    def validate_structure(tx_body):
         """Validate the structure of a transaction body.
 
             Args:
                 tx_body (dict): The Transaction to be transformed.
         """
+        validate_transaction_schema(tx_body)
         # NOTE: Remove reference to avoid side effects
-        tx_body = deepcopy(tx_body_orig)
+        tx_body = deepcopy(tx_body)
         try:
             proposed_tx_id = tx_body.pop('id')
         except KeyError:
@@ -1268,8 +1269,6 @@ class Transaction(object):
 
         if proposed_tx_id != valid_tx_id:
             raise InvalidHash()
-
-        validate_transaction_schema(tx_body_orig)
 
     @classmethod
     def from_dict(cls, tx_body):

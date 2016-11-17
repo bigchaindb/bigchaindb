@@ -371,17 +371,17 @@ def test_transaction_deserialization(user_ffill, user_cond, data, uuid4):
 
 def test_tx_serialization_with_incorrect_hash(utx, ):
     from bigchaindb.common.transaction import Transaction
-    from bigchaindb.common.exceptions import InvalidHash
+    from bigchaindb.common.exceptions import InvalidHash, SchemaValidationError
 
     utx_dict = utx.to_dict()
     utx_dict['id'] = ('abc' * 30)[:64]
     with raises(InvalidHash):
         Transaction.from_dict(utx_dict)
     utx_dict.pop('id')
-    with raises(InvalidHash):
+    with raises(SchemaValidationError):
         Transaction.from_dict(utx_dict)
     utx_dict['id'] = []
-    with raises(ValidationError):
+    with raises(SchemaValidationError):
         Transaction.from_dict(utx_dict)
 
 
