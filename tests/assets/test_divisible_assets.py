@@ -10,12 +10,12 @@ from ..db.conftest import inputs  # noqa
 # Single owners_before
 # Single output
 # Single owners_after
-def test_single_in_single_own_single_out_single_own_create(b, user_vk):
+def test_single_in_single_own_single_out_single_own_create(b, user_pk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.transaction import Asset
 
     asset = Asset(divisible=True)
-    tx = Transaction.create([b.me], [([user_vk], 100)], asset=asset)
+    tx = Transaction.create([b.me], [([user_pk], 100)], asset=asset)
     tx_signed = tx.sign([b.me_private])
 
     assert tx_signed.validate(b) == tx_signed
@@ -29,12 +29,12 @@ def test_single_in_single_own_single_out_single_own_create(b, user_vk):
 # Single owners_before
 # Multiple outputs
 # Single owners_after per output
-def test_single_in_single_own_multiple_out_single_own_create(b, user_vk):
+def test_single_in_single_own_multiple_out_single_own_create(b, user_pk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.transaction import Asset
 
     asset = Asset(divisible=True)
-    tx = Transaction.create([b.me], [([user_vk], 50), ([user_vk], 50)],
+    tx = Transaction.create([b.me], [([user_pk], 50), ([user_pk], 50)],
                             asset=asset)
     tx_signed = tx.sign([b.me_private])
 
@@ -50,12 +50,12 @@ def test_single_in_single_own_multiple_out_single_own_create(b, user_vk):
 # Single owners_before
 # Single output
 # Multiple owners_after
-def test_single_in_single_own_single_out_multiple_own_create(b, user_vk):
+def test_single_in_single_own_single_out_multiple_own_create(b, user_pk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.transaction import Asset
 
     asset = Asset(divisible=True)
-    tx = Transaction.create([b.me], [([user_vk, user_vk], 100)], asset=asset)
+    tx = Transaction.create([b.me], [([user_pk, user_pk], 100)], asset=asset)
     tx_signed = tx.sign([b.me_private])
 
     assert tx_signed.validate(b) == tx_signed
@@ -75,13 +75,13 @@ def test_single_in_single_own_single_out_multiple_own_create(b, user_vk):
 # Multiple outputs
 # Mix: one output with a single owners_after, one output with multiple
 #      owners_after
-def test_single_in_single_own_multiple_out_mix_own_create(b, user_vk):
+def test_single_in_single_own_multiple_out_mix_own_create(b, user_pk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.transaction import Asset
 
     asset = Asset(divisible=True)
     tx = Transaction.create([b.me],
-                            [([user_vk], 50), ([user_vk, user_vk], 50)],
+                            [([user_pk], 50), ([user_pk, user_pk], 50)],
                             asset=asset)
     tx_signed = tx.sign([b.me_private])
 
@@ -101,13 +101,13 @@ def test_single_in_single_own_multiple_out_mix_own_create(b, user_vk):
 # Single input
 # Multiple owners_before
 # Output combinations already tested above
-def test_single_in_multiple_own_single_out_single_own_create(b, user_vk,
+def test_single_in_multiple_own_single_out_single_own_create(b, user_pk,
                                                              user_sk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.transaction import Asset
 
     asset = Asset(divisible=True)
-    tx = Transaction.create([b.me, user_vk], [([user_vk], 100)], asset=asset)
+    tx = Transaction.create([b.me, user_pk], [([user_pk], 100)], asset=asset)
     tx_signed = tx.sign([b.me_private, user_sk])
     assert tx_signed.validate(b) == tx_signed
     assert len(tx_signed.conditions) == 1
@@ -129,14 +129,14 @@ def test_single_in_multiple_own_single_out_single_own_create(b, user_vk,
 #       fail.
 #       Is there a better way of doing this?
 @pytest.mark.usefixtures('inputs')
-def test_single_in_single_own_single_out_single_own_transfer(b, user_vk,
+def test_single_in_single_own_single_out_single_own_transfer(b, user_pk,
                                                              user_sk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.transaction import Asset
 
     # CREATE divisible asset
     asset = Asset(divisible=True)
-    tx_create = Transaction.create([b.me], [([user_vk], 100)], asset=asset)
+    tx_create = Transaction.create([b.me], [([user_pk], 100)], asset=asset)
     tx_create_signed = tx_create.sign([b.me_private])
     # create block
     block = b.create_block([tx_create_signed])
@@ -163,14 +163,14 @@ def test_single_in_single_own_single_out_single_own_transfer(b, user_vk,
 # Multiple output
 # Single owners_after
 @pytest.mark.usefixtures('inputs')
-def test_single_in_single_own_multiple_out_single_own_transfer(b, user_vk,
+def test_single_in_single_own_multiple_out_single_own_transfer(b, user_pk,
                                                                user_sk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.transaction import Asset
 
     # CREATE divisible asset
     asset = Asset(divisible=True)
-    tx_create = Transaction.create([b.me], [([user_vk], 100)], asset=asset)
+    tx_create = Transaction.create([b.me], [([user_pk], 100)], asset=asset)
     tx_create_signed = tx_create.sign([b.me_private])
     # create block
     block = b.create_block([tx_create_signed])
@@ -199,14 +199,14 @@ def test_single_in_single_own_multiple_out_single_own_transfer(b, user_vk,
 # Single output
 # Multiple owners_after
 @pytest.mark.usefixtures('inputs')
-def test_single_in_single_own_single_out_multiple_own_transfer(b, user_vk,
+def test_single_in_single_own_single_out_multiple_own_transfer(b, user_pk,
                                                                user_sk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.transaction import Asset
 
     # CREATE divisible asset
     asset = Asset(divisible=True)
-    tx_create = Transaction.create([b.me], [([user_vk], 100)], asset=asset)
+    tx_create = Transaction.create([b.me], [([user_pk], 100)], asset=asset)
     tx_create_signed = tx_create.sign([b.me_private])
     # create block
     block = b.create_block([tx_create_signed])
@@ -240,14 +240,14 @@ def test_single_in_single_own_single_out_multiple_own_transfer(b, user_vk,
 # Mix: one output with a single owners_after, one output with multiple
 #      owners_after
 @pytest.mark.usefixtures('inputs')
-def test_single_in_single_own_multiple_out_mix_own_transfer(b, user_vk,
+def test_single_in_single_own_multiple_out_mix_own_transfer(b, user_pk,
                                                             user_sk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.transaction import Asset
 
     # CREATE divisible asset
     asset = Asset(divisible=True)
-    tx_create = Transaction.create([b.me], [([user_vk], 100)], asset=asset)
+    tx_create = Transaction.create([b.me], [([user_pk], 100)], asset=asset)
     tx_create_signed = tx_create.sign([b.me_private])
     # create block
     block = b.create_block([tx_create_signed])
@@ -281,14 +281,14 @@ def test_single_in_single_own_multiple_out_mix_own_transfer(b, user_vk,
 # Single output
 # Single owners_after
 @pytest.mark.usefixtures('inputs')
-def test_single_in_multiple_own_single_out_single_own_transfer(b, user_vk,
+def test_single_in_multiple_own_single_out_single_own_transfer(b, user_pk,
                                                                user_sk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.transaction import Asset
 
     # CREATE divisible asset
     asset = Asset(divisible=True)
-    tx_create = Transaction.create([b.me], [([b.me, user_vk], 100)],
+    tx_create = Transaction.create([b.me], [([b.me, user_pk], 100)],
                                    asset=asset)
     tx_create_signed = tx_create.sign([b.me_private])
     # create block
@@ -320,14 +320,14 @@ def test_single_in_multiple_own_single_out_single_own_transfer(b, user_vk,
 # Single output
 # Single owners_after
 @pytest.mark.usefixtures('inputs')
-def test_multiple_in_single_own_single_out_single_own_transfer(b, user_vk,
+def test_multiple_in_single_own_single_out_single_own_transfer(b, user_pk,
                                                                user_sk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.transaction import Asset
 
     # CREATE divisible asset
     asset = Asset(divisible=True)
-    tx_create = Transaction.create([b.me], [([user_vk], 50), ([user_vk], 50)],
+    tx_create = Transaction.create([b.me], [([user_pk], 50), ([user_pk], 50)],
                                    asset=asset)
     tx_create_signed = tx_create.sign([b.me_private])
     # create block
@@ -355,7 +355,7 @@ def test_multiple_in_single_own_single_out_single_own_transfer(b, user_vk,
 # Single output
 # Single owners_after
 @pytest.mark.usefixtures('inputs')
-def test_multiple_in_multiple_own_single_out_single_own_transfer(b, user_vk,
+def test_multiple_in_multiple_own_single_out_single_own_transfer(b, user_pk,
                                                                  user_sk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.transaction import Asset
@@ -363,8 +363,8 @@ def test_multiple_in_multiple_own_single_out_single_own_transfer(b, user_vk,
     # CREATE divisible asset
     asset = Asset(divisible=True)
     tx_create = Transaction.create([b.me],
-                                   [([user_vk, b.me], 50),
-                                    ([user_vk, b.me], 50)],
+                                   [([user_pk, b.me], 50),
+                                    ([user_pk, b.me], 50)],
                                    asset=asset)
     tx_create_signed = tx_create.sign([b.me_private])
     # create block
@@ -400,7 +400,7 @@ def test_multiple_in_multiple_own_single_out_single_own_transfer(b, user_vk,
 # Single output
 # Single owners_after
 @pytest.mark.usefixtures('inputs')
-def test_muiltiple_in_mix_own_multiple_out_single_own_transfer(b, user_vk,
+def test_muiltiple_in_mix_own_multiple_out_single_own_transfer(b, user_pk,
                                                                user_sk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.transaction import Asset
@@ -408,8 +408,8 @@ def test_muiltiple_in_mix_own_multiple_out_single_own_transfer(b, user_vk,
     # CREATE divisible asset
     asset = Asset(divisible=True)
     tx_create = Transaction.create([b.me],
-                                   [([user_vk], 50),
-                                    ([user_vk, b.me], 50)],
+                                   [([user_pk], 50),
+                                    ([user_pk, b.me], 50)],
                                    asset=asset)
     tx_create_signed = tx_create.sign([b.me_private])
     # create block
@@ -445,7 +445,7 @@ def test_muiltiple_in_mix_own_multiple_out_single_own_transfer(b, user_vk,
 # Mix: one output with a single owners_after, one output with multiple
 #      owners_after
 @pytest.mark.usefixtures('inputs')
-def test_muiltiple_in_mix_own_multiple_out_mix_own_transfer(b, user_vk,
+def test_muiltiple_in_mix_own_multiple_out_mix_own_transfer(b, user_pk,
                                                             user_sk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.transaction import Asset
@@ -453,8 +453,8 @@ def test_muiltiple_in_mix_own_multiple_out_mix_own_transfer(b, user_vk,
     # CREATE divisible asset
     asset = Asset(divisible=True)
     tx_create = Transaction.create([b.me],
-                                   [([user_vk], 50),
-                                    ([user_vk, b.me], 50)],
+                                   [([user_pk], 50),
+                                    ([user_pk, b.me], 50)],
                                    asset=asset)
     tx_create_signed = tx_create.sign([b.me_private])
     # create block
@@ -467,7 +467,7 @@ def test_muiltiple_in_mix_own_multiple_out_mix_own_transfer(b, user_vk,
 
     # TRANSFER
     tx_transfer = Transaction.transfer(tx_create.to_inputs(),
-                                       [([b.me], 50), ([b.me, user_vk], 50)],
+                                       [([b.me], 50), ([b.me, user_pk], 50)],
                                        asset=tx_create.asset)
     tx_transfer_signed = tx_transfer.sign([b.me_private, user_sk])
 
@@ -496,16 +496,16 @@ def test_muiltiple_in_mix_own_multiple_out_mix_own_transfer(b, user_vk,
 # Single output
 # Single owners_after
 @pytest.mark.usefixtures('inputs')
-def test_multiple_in_different_transactions(b, user_vk, user_sk):
+def test_multiple_in_different_transactions(b, user_pk, user_sk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.transaction import Asset
 
     # CREATE divisible asset
     # `b` creates a divisible asset and assigns 50 shares to `b` and
-    # 50 shares to `user_vk`
+    # 50 shares to `user_pk`
     asset = Asset(divisible=True)
     tx_create = Transaction.create([b.me],
-                                   [([user_vk], 50),
+                                   [([user_pk], 50),
                                     ([b.me], 50)],
                                    asset=asset)
     tx_create_signed = tx_create.sign([b.me_private])
@@ -518,11 +518,11 @@ def test_multiple_in_different_transactions(b, user_vk, user_sk):
     b.write_vote(vote)
 
     # TRANSFER divisible asset
-    # `b` transfers its 50 shares to `user_vk`
-    # after this transaction `user_vk` will have a total of 100 shares
+    # `b` transfers its 50 shares to `user_pk`
+    # after this transaction `user_pk` will have a total of 100 shares
     # split across two different transactions
     tx_transfer1 = Transaction.transfer(tx_create.to_inputs([1]),
-                                        [([user_vk], 50)],
+                                        [([user_pk], 50)],
                                         asset=tx_create.asset)
     tx_transfer1_signed = tx_transfer1.sign([b.me_private])
     # create block
@@ -534,7 +534,7 @@ def test_multiple_in_different_transactions(b, user_vk, user_sk):
     b.write_vote(vote)
 
     # TRANSFER
-    # `user_vk` combines two different transaction with 50 shares each and
+    # `user_pk` combines two different transaction with 50 shares each and
     # transfers a total of 100 shares back to `b`
     tx_transfer2 = Transaction.transfer(tx_create.to_inputs([0]) +
                                         tx_transfer1.to_inputs([0]),
@@ -557,14 +557,14 @@ def test_multiple_in_different_transactions(b, user_vk, user_sk):
 # inputs needs to match the amount being sent in the outputs.
 # In other words `amount_in_inputs - amount_in_outputs == 0`
 @pytest.mark.usefixtures('inputs')
-def test_amount_error_transfer(b, user_vk, user_sk):
+def test_amount_error_transfer(b, user_pk, user_sk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.transaction import Asset
     from bigchaindb.common.exceptions import AmountError
 
     # CREATE divisible asset
     asset = Asset(divisible=True)
-    tx_create = Transaction.create([b.me], [([user_vk], 100)], asset=asset)
+    tx_create = Transaction.create([b.me], [([user_pk], 100)], asset=asset)
     tx_create_signed = tx_create.sign([b.me_private])
     # create block
     block = b.create_block([tx_create_signed])
@@ -593,7 +593,7 @@ def test_amount_error_transfer(b, user_vk, user_sk):
 
 @pytest.mark.skip(reason='Figure out how to handle this case')
 @pytest.mark.usefixtures('inputs')
-def test_threshold_same_public_key(b, user_vk, user_sk):
+def test_threshold_same_public_key(b, user_pk, user_sk):
     # If we try to fulfill a threshold condition where each subcondition has
     # the same key get_subcondition_from_vk will always return the first
     # subcondition. This means that only the 1st subfulfillment will be
@@ -606,7 +606,7 @@ def test_threshold_same_public_key(b, user_vk, user_sk):
 
     # CREATE divisible asset
     asset = Asset(divisible=True)
-    tx_create = Transaction.create([b.me], [([user_vk, user_vk], 100)],
+    tx_create = Transaction.create([b.me], [([user_pk, user_pk], 100)],
                                    asset=asset)
     tx_create_signed = tx_create.sign([b.me_private])
     # create block
@@ -626,16 +626,16 @@ def test_threshold_same_public_key(b, user_vk, user_sk):
 
 
 @pytest.mark.usefixtures('inputs')
-def test_sum_amount(b, user_vk, user_sk):
+def test_sum_amount(b, user_pk, user_sk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.transaction import Asset
 
     # CREATE divisible asset with 3 outputs with amount 1
     asset = Asset(divisible=True)
     tx_create = Transaction.create([b.me],
-                                   [([user_vk], 1),
-                                    ([user_vk], 1),
-                                    ([user_vk], 1)],
+                                   [([user_pk], 1),
+                                    ([user_pk], 1),
+                                    ([user_pk], 1)],
                                    asset=asset)
     tx_create_signed = tx_create.sign([b.me_private])
     # create block
@@ -658,13 +658,13 @@ def test_sum_amount(b, user_vk, user_sk):
 
 
 @pytest.mark.usefixtures('inputs')
-def test_divide(b, user_vk, user_sk):
+def test_divide(b, user_pk, user_sk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.transaction import Asset
 
     # CREATE divisible asset with 1 output with amount 3
     asset = Asset(divisible=True)
-    tx_create = Transaction.create([b.me], [([user_vk], 3)],
+    tx_create = Transaction.create([b.me], [([user_pk], 3)],
                                    asset=asset)
     tx_create_signed = tx_create.sign([b.me_private])
     # create block
@@ -690,14 +690,14 @@ def test_divide(b, user_vk, user_sk):
 
 # Check that negative inputs are caught when creating a TRANSFER transaction
 @pytest.mark.usefixtures('inputs')
-def test_non_positive_amounts_on_transfer(b, user_vk):
+def test_non_positive_amounts_on_transfer(b, user_pk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.transaction import Asset
     from bigchaindb.common.exceptions import AmountError
 
     # CREATE divisible asset with 1 output with amount 3
     asset = Asset(divisible=True)
-    tx_create = Transaction.create([b.me], [([user_vk], 3)],
+    tx_create = Transaction.create([b.me], [([user_pk], 3)],
                                    asset=asset)
     tx_create_signed = tx_create.sign([b.me_private])
     # create block
@@ -716,14 +716,14 @@ def test_non_positive_amounts_on_transfer(b, user_vk):
 
 # Check that negative inputs are caught when validating a TRANSFER transaction
 @pytest.mark.usefixtures('inputs')
-def test_non_positive_amounts_on_transfer_validate(b, user_vk, user_sk):
+def test_non_positive_amounts_on_transfer_validate(b, user_pk, user_sk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.transaction import Asset
     from bigchaindb.common.exceptions import AmountError
 
     # CREATE divisible asset with 1 output with amount 3
     asset = Asset(divisible=True)
-    tx_create = Transaction.create([b.me], [([user_vk], 3)],
+    tx_create = Transaction.create([b.me], [([user_pk], 3)],
                                    asset=asset)
     tx_create_signed = tx_create.sign([b.me_private])
     # create block
@@ -748,7 +748,7 @@ def test_non_positive_amounts_on_transfer_validate(b, user_vk, user_sk):
 
 # Check that negative inputs are caught when creating a CREATE transaction
 @pytest.mark.usefixtures('inputs')
-def test_non_positive_amounts_on_create(b, user_vk):
+def test_non_positive_amounts_on_create(b, user_pk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.transaction import Asset
     from bigchaindb.common.exceptions import AmountError
@@ -756,20 +756,20 @@ def test_non_positive_amounts_on_create(b, user_vk):
     # CREATE divisible asset with 1 output with amount 3
     asset = Asset(divisible=True)
     with pytest.raises(AmountError):
-        Transaction.create([b.me], [([user_vk], -3)],
+        Transaction.create([b.me], [([user_pk], -3)],
                            asset=asset)
 
 
 # Check that negative inputs are caught when validating a CREATE transaction
 @pytest.mark.usefixtures('inputs')
-def test_non_positive_amounts_on_create_validate(b, user_vk):
+def test_non_positive_amounts_on_create_validate(b, user_pk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.transaction import Asset
     from bigchaindb.common.exceptions import AmountError
 
     # CREATE divisible asset with 1 output with amount 3
     asset = Asset(divisible=True)
-    tx_create = Transaction.create([b.me], [([user_vk], 3)],
+    tx_create = Transaction.create([b.me], [([user_pk], 3)],
                                    asset=asset)
     tx_create.conditions[0].amount = -3
     with patch.object(Asset, 'validate_asset', return_value=None):

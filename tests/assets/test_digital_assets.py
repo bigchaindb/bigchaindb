@@ -145,15 +145,15 @@ def test_get_txs_by_asset_id(b, user_pk, user_sk):
 
 
 @pytest.mark.usefixtures('inputs')
-def test_get_asset_by_id(b, user_vk, user_sk):
+def test_get_asset_by_id(b, user_pk, user_sk):
     from bigchaindb.models import Transaction
 
-    tx_create = b.get_owned_ids(user_vk).pop()
+    tx_create = b.get_owned_ids(user_pk).pop()
     tx_create = b.get_transaction(tx_create.txid)
     asset_id = tx_create.asset.data_id
 
     # create a transfer transaction
-    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([user_vk], 1)],
+    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([user_pk], 1)],
                                        tx_create.asset)
     tx_transfer_signed = tx_transfer.sign([user_sk])
     # create the block
@@ -170,7 +170,7 @@ def test_get_asset_by_id(b, user_vk, user_sk):
     assert asset == tx_create.asset
 
 
-def test_create_invalid_divisible_asset(b, user_vk, user_sk):
+def test_create_invalid_divisible_asset(b, user_pk, user_sk):
     from bigchaindb.models import Transaction, Asset
     from bigchaindb.common.exceptions import AmountError
 
@@ -178,19 +178,19 @@ def test_create_invalid_divisible_asset(b, user_vk, user_sk):
     # Transaction.__init__ should raise an exception
     asset = Asset(divisible=False)
     with pytest.raises(AmountError):
-        Transaction.create([user_vk], [([user_vk], 2)], asset=asset)
+        Transaction.create([user_pk], [([user_pk], 2)], asset=asset)
 
     # divisible assets need to have an amount > 1
     # Transaction.__init__ should raise an exception
     asset = Asset(divisible=True)
     with pytest.raises(AmountError):
-        Transaction.create([user_vk], [([user_vk], 1)], asset=asset)
+        Transaction.create([user_pk], [([user_pk], 1)], asset=asset)
 
     # even if a transaction is badly constructed the server should raise the
     # exception
     asset = Asset(divisible=False)
     with patch.object(Asset, 'validate_asset', return_value=None):
-        tx = Transaction.create([user_vk], [([user_vk], 2)], asset=asset)
+        tx = Transaction.create([user_pk], [([user_pk], 2)], asset=asset)
         tx_signed = tx.sign([user_sk])
     with pytest.raises(AmountError):
         tx_signed.validate(b)
@@ -198,17 +198,17 @@ def test_create_invalid_divisible_asset(b, user_vk, user_sk):
 
     asset = Asset(divisible=True)
     with patch.object(Asset, 'validate_asset', return_value=None):
-        tx = Transaction.create([user_vk], [([user_vk], 1)], asset=asset)
+        tx = Transaction.create([user_pk], [([user_pk], 1)], asset=asset)
         tx_signed = tx.sign([user_sk])
     with pytest.raises(AmountError):
         tx_signed.validate(b)
     assert b.is_valid_transaction(tx_signed) is False
 
 
-def test_create_valid_divisible_asset(b, user_vk, user_sk):
+def test_create_valid_divisible_asset(b, user_pk, user_sk):
     from bigchaindb.models import Transaction, Asset
 
     asset = Asset(divisible=True)
-    tx = Transaction.create([user_vk], [([user_vk], 2)], asset=asset)
+    tx = Transaction.create([user_pk], [([user_pk], 2)], asset=asset)
     tx_signed = tx.sign([user_sk])
     assert b.is_valid_transaction(tx_signed)

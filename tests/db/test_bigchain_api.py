@@ -594,12 +594,12 @@ class TestBigchainApi(object):
         with pytest.raises(TransactionDoesNotExist):
             tx.validate(Bigchain())
 
-    def test_count_backlog(self, b, user_vk):
+    def test_count_backlog(self, b, user_pk):
         from bigchaindb.models import Transaction
 
         for _ in range(4):
             tx = Transaction.create([b.me],
-                                    [([user_vk], 1)]).sign([b.me_private])
+                                    [([user_pk], 1)]).sign([b.me_private])
             b.write_transaction(tx)
 
         assert b.backend.count_backlog() == 4
