@@ -128,7 +128,7 @@ Transactions
    queried correctly. Some of them include retrieving a list of transactions
    that include:
 
-   * `Unfulfilled conditions <#get--transactions?fields=id,conditions&fulfilled=false&owner_afters=owners_after>`_
+   * `Unfulfilled conditions <#get--transactions?fields=id,conditions&fulfilled=false&owners_after=owners_after>`_
    * `A specific asset <#get--transactions?fields=id,asset,operation&operation=CREATE|TRANSFER&asset_id=asset_id>`_
    * `Specific metadata <#get--transactions?fields=id,metadata&metadata_id=metadata_id>`_
 
@@ -136,28 +136,22 @@ Transactions
    to be very handy when implementing your application on top of BigchainDB.
    A generalization of those parameters can follows:
 
-   :query fields: A comma separated string to expand properties on the transaction object to be returned.
-   :type fields: string
+   :query string fields: Comma separated list, allowed values are: ``asset``, ``conditions``, ``fulfillments``, ``id``, ``metadata``, ``operation``, ``owners_after``, ``version``.
 
-   :query fulfilled: A flag to indicate if transaction's with fulfilled conditions should be returned.
-   :type fulfilled: boolean
+   :query boolean fulfilled: A flag to indicate if transaction's with fulfilled conditions should be returned.
 
-   :query owners_after: Public keys able to validly spend an output of a transaction, assuming the user also has the corresponding private key.
-   :type owners_after: base58 encoded string
+   :query string owners_after: Public key able to validly spend an output of a transaction, assuming the user also has the corresponding private key.
 
-   :query operation: One of the three supported operations of a transaction.
-   :type operation: string
+   :query string operation: One of the three supported operations of a transaction: ``GENESIS``, ``CREATE``, ``TRANSFER``.
 
-   :query asset_id: asset ID.
-   :type asset_id: uuidv4
+   :query string asset_id: asset ID.
 
-   :query metadata_id: metadata ID.
-   :type metadata_id: uuidv4
+   :query string metadata_id: metadata ID.
 
    :statuscode 404: BigchainDB does not expose this endpoint.
 
 
-.. http:get:: /transactions?fields=id,conditions&fulfilled=false&owner_afters={owners_after}
+.. http:get:: /transactions?fields=id,conditions&fulfilled=false&owners_after={owners_after}
 
    Get a list of transactions with unfulfilled conditions.
 
@@ -168,14 +162,11 @@ Transactions
    This endpoint returns conditions only if the transaction they're in are
    included in a ``VALID`` or ``UNDECIDED`` block on ``bigchain``.
 
-   :query fields: A comma separated string to expand properties on the transaction object to be returned.
-   :type fields: string
+   :query string fields: A comma separated string to expand properties on the transaction object to be returned.
 
-   :query fulfilled: A flag to indicate if transaction's with fulfilled conditions should be returned.
-   :type fulfilled: boolean
+   :query boolean fulfilled: A flag to indicate if transaction's with fulfilled conditions should be returned.
 
-   :query owners_after: Public keys able to validly spend an output of a transaction, assuming the user also has the corresponding private key.
-   :type owners_after: base58 encoded string
+   :query string owners_after: Public key able to validly spend an output of a transaction, assuming the user also has the corresponding private key.
 
    **Example request**:
 
@@ -227,14 +218,11 @@ Transactions
    This endpoint returns assets only if the transaction they're in are
    included in a ``VALID`` or ``UNDECIDED`` block on ``bigchain``.
 
-   :query fields: A comma separated string to expand properties on the transaction object to be returned.
-   :type fields: string
+   :query string fields: A comma separated string to expand properties on the transaction object to be returned.
 
-   :query operation: One of the three supported operations of a transaction (``GENESIS``, ``CREATE``, ``TRANSFER``).
-   :type operation: string
+   :query string operation: One of the three supported operations of a transaction: ``GENESIS``, ``CREATE``, ``TRANSFER``.
 
-   :query asset_id: asset ID.
-   :type asset_id: uuidv4
+   :query string asset_id: asset ID.
 
    **Example request**:
 
@@ -275,11 +263,9 @@ Transactions
    This endpoint returns assets only if the transaction they're in are
    included in a ``VALID`` or ``UNDECIDED`` block on ``bigchain``.
 
-   :query fields: A comma separated string to expand properties on the transaction object to be returned.
-   :type fields: string
+   :query string fields: A comma separated string to expand properties on the transaction object to be returned.
 
-   :query metadata_id: metadata ID.
-   :type metadata_id: uuidv4
+   :query string metadata_id: metadata ID.
 
    **Example request**:
 
