@@ -85,14 +85,14 @@ transaction.operation
 
 Type of the transaction:
 
-A `CREATE` transaction creates an asset in BigchainDB. This
+A ``CREATE`` transaction creates an asset in BigchainDB. This
 transaction has outputs (conditions) but no inputs (fulfillments),
 so a dummy fulfillment is used.
 
-A `TRANSFER` transaction transfers ownership of an asset, by providing
+A ``TRANSFER`` transaction transfers ownership of an asset, by providing
 fulfillments to conditions of earlier transactions.
 
-A `GENESIS` transaction is a special case transaction used as the
+A ``GENESIS`` transaction is a special case transaction used as the
 sole member of the first block in a BigchainDB ledger.
 
 
