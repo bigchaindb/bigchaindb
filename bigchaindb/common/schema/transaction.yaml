@@ -6,6 +6,10 @@ additionalProperties: false
 title: Transaction Schema
 description: |
     This is the outer transaction wrapper. It contains the ID, version and the body of the transaction, which is also called `transaction`.
+required:
+- id
+- transaction
+- version
 properties:
   id:
     "$ref": "#/definitions/sha3_hexdigest"

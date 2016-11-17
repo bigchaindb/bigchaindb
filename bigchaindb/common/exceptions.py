@@ -23,12 +23,16 @@ class DoubleSpend(Exception):
 
 
 class ValidationError(Exception):
-    """Raised if any error with object schema"""
+    """Raised if there was an error in validation"""
 
 
 class InvalidHash(ValidationError):
     """Raised if there was an error checking the hash for a particular
     operation"""
+
+
+class SchemaValidationError(ValidationError):
+    """Raised if there was any error validating an object's schema"""
 
 
 class InvalidSignature(Exception):

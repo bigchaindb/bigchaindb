@@ -1,18 +1,24 @@
-from bigchaindb.common.schema import TX_SCHEMA
+from pytest import raises
 
-import jsonschema
+from bigchaindb.common.exceptions import SchemaValidationError
+from bigchaindb.common.schema import TX_SCHEMA, validate_transaction_schema
 
 
 def test_validate_transaction_create(create_tx):
-    jsonschema.validate(create_tx.to_dict(), TX_SCHEMA)
+    validate_transaction_schema(create_tx.to_dict())
 
 
 def test_validate_transaction_signed_create(signed_create_tx):
-    jsonschema.validate(signed_create_tx.to_dict(), TX_SCHEMA)
+    validate_transaction_schema(signed_create_tx.to_dict())
 
 
 def test_validate_transaction_signed_transfer(signed_transfer_tx):
-    jsonschema.validate(signed_transfer_tx.to_dict(), TX_SCHEMA)
+    validate_transaction_schema(signed_transfer_tx.to_dict())
+
+
+def test_validation_fails():
+    with raises(SchemaValidationError):
+        validate_transaction_schema({})
 
 
 def test_addition_properties_false():

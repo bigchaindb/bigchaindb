@@ -6,14 +6,11 @@ from cryptoconditions import (Fulfillment as CCFulfillment,
                               ThresholdSha256Fulfillment, Ed25519Fulfillment)
 from cryptoconditions.exceptions import ParsingError
 
-import jsonschema
-
 from bigchaindb.common.crypto import SigningKey, hash_data
 from bigchaindb.common.exceptions import (KeypairMismatchException,
                                           InvalidHash, InvalidSignature,
-                                          AmountError, AssetIdMismatch,
-                                          ValidationError)
-from bigchaindb.common.schema import TX_SCHEMA
+                                          AmountError, AssetIdMismatch)
+from bigchaindb.common.schema import validate_transaction_schema
 from bigchaindb.common.util import serialize, gen_timestamp
 
 
@@ -1272,11 +1269,7 @@ class Transaction(object):
         if proposed_tx_id != valid_tx_id:
             raise InvalidHash()
 
-        try:
-            jsonschema.validate(tx_body, TX_SCHEMA)
-        except jsonschema.ValidationError as exc:
-            raise ValidationError(str(exc))
-
+        validate_transaction_schema(tx_body_orig)
 
     @classmethod
     def from_dict(cls, tx_body):
