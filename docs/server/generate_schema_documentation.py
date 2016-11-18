@@ -158,17 +158,18 @@ def main():
     """ Main function """
     defs = TX_SCHEMA['definitions']
     doc = TPL_DOC % {
-        'wrapper': render_section('transaction', TX_SCHEMA),
-        'transaction': render_section('transaction',
+        'wrapper': render_section('Transaction', TX_SCHEMA),
+        'transaction': render_section('Transaction',
                                       TX_SCHEMA['properties']['transaction']),
-        'condition': render_section('conditions', defs['condition']),
-        'fulfillment': render_section('fulfillment', defs['fulfillment']),
-        'asset': render_section('asset', defs['asset']),
-        'metadata': render_section('metadata', defs['metadata']['anyOf'][0]),
+        'condition': render_section('Condition', defs['condition']),
+        'fulfillment': render_section('Fulfillment', defs['fulfillment']),
+        'asset': render_section('Asset', defs['asset']),
+        'metadata': render_section('Metadata', defs['metadata']['anyOf'][0]),
         'file': os.path.basename(__file__),
     }
 
-    path = os.path.join(os.path.dirname(__file__), 'source/schema.rst')
+    path = os.path.join(os.path.dirname(__file__),
+                        'source/schema/transaction.rst')
 
     open(path, 'w').write(doc)
 

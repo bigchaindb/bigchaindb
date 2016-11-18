@@ -40,7 +40,7 @@ Transaction
 This is the outer transaction wrapper. It contains the ID, version and the body of the transaction, which is also called ``transaction``.
 
 
-transaction.id
+Transaction.id
 ^^^^^^^^^^^^^^
 
 **type:** string
@@ -52,16 +52,16 @@ with sha3.
 
 
 
-transaction.transaction
+Transaction.transaction
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 **type:** object
 
-`Transaction Body`_.
+See: `Transaction Body`_.
 
 
 
-transaction.version
+Transaction.version
 ^^^^^^^^^^^^^^^^^^^
 
 **type:** integer
@@ -75,10 +75,10 @@ BigchainDB transaction schema version.
 Transaction Body
 ----------------
 
-`Transaction Body`_.
+See: `Transaction Body`_.
 
 
-transaction.operation
+Transaction.operation
 ^^^^^^^^^^^^^^^^^^^^^
 
 **type:** string
@@ -97,48 +97,52 @@ sole member of the first block in a BigchainDB ledger.
 
 
 
-transaction.asset
+Transaction.asset
 ^^^^^^^^^^^^^^^^^
 
 **type:** object
 
-Description of the asset being transacted. In the case of a ``TRANSFER``
-transaction, this field contains only the ID of asset. In the case
-of a ``CREATE`` transaction, this field may contain properties:
+Description of the asset being transacted.
+
+See: `Asset`_.
 
 
 
-transaction.fulfillments
+Transaction.fulfillments
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 **type:** array (object)
 
 Array of the fulfillments (inputs) of a transaction.
 
-See: fulfillment_.
+See: Fulfillment_.
 
 
 
-transaction.conditions
+Transaction.conditions
 ^^^^^^^^^^^^^^^^^^^^^^
 
 **type:** array (object)
 
 Array of conditions (outputs) provided by this transaction.
 
+See: Condition_.
 
 
-transaction.metadata
+
+Transaction.metadata
 ^^^^^^^^^^^^^^^^^^^^
 
 **type:** object or null
 
 User provided transaction metadata. This field may be ``null`` or may
-contain any valid JSON payload provided by the user.
+contain an id and an object with freeform metadata.
+
+See: `Metadata`_.
 
 
 
-transaction.timestamp
+Transaction.timestamp
 ^^^^^^^^^^^^^^^^^^^^^
 
 **type:** string
@@ -157,18 +161,18 @@ and what conditions must be met in order for it to be fulfilled. See also:
 fulfillment_.
 
 
-conditions.cid
-^^^^^^^^^^^^^^
+Condition.cid
+^^^^^^^^^^^^^
 
 **type:** integer
 
-Index of this transaction's appearance in the `transaction.conditions`_
-array. In a transaction with 2 conditions, the `cid`s will be 0 and 1.
+Index of this condition's appearance in the `Transaction.conditions`_
+array. In a transaction with 2 conditions, the ``cid``s will be 0 and 1.
 
 
 
-conditions.condition
-^^^^^^^^^^^^^^^^^^^^
+Condition.condition
+^^^^^^^^^^^^^^^^^^^
 
 **type:** object
 
@@ -179,8 +183,8 @@ Body of the condition. Has the properties:
 
 
 
-conditions.owners_after
-^^^^^^^^^^^^^^^^^^^^^^^
+Condition.owners_after
+^^^^^^^^^^^^^^^^^^^^^^
 
 **type:** array (string) or null
 
@@ -189,8 +193,8 @@ of the transaction.
 
 
 
-conditions.amount
-^^^^^^^^^^^^^^^^^
+Condition.amount
+^^^^^^^^^^^^^^^^
 
 **type:** integer
 
@@ -206,7 +210,7 @@ Fulfillment
 
 A fulfillment is an input to a transaction, named as such because it fulfills a condition of a previous transaction. In the case of a ``CREATE`` transaction, a fulfillment may provide no ``input``.
 
-fulfillment.fid
+Fulfillment.fid
 ^^^^^^^^^^^^^^^
 
 **type:** integer
@@ -215,7 +219,7 @@ The offset of the fulfillment within the fulfillents array.
 
 
 
-fulfillment.owners_before
+Fulfillment.owners_before
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **type:** array (string) or null
@@ -224,7 +228,7 @@ List of public keys of the previous owners of the asset.
 
 
 
-fulfillment.fulfillment
+Fulfillment.fulfillment
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 **type:** object or string
@@ -235,7 +239,7 @@ asset.
 
 
 
-fulfillment.input
+Fulfillment.input
 ^^^^^^^^^^^^^^^^^
 
 **type:** object or null
@@ -254,7 +258,7 @@ transaction, this field contains only the ID of asset. In the case
 of a ``CREATE`` transaction, this field may contain properties:
 
 
-asset.id
+Asset.id
 ^^^^^^^^
 
 **type:** string
@@ -264,7 +268,7 @@ of type 4 (random).
 
 
 
-asset.divisible
+Asset.divisible
 ^^^^^^^^^^^^^^^
 
 **type:** boolean
@@ -273,7 +277,7 @@ Whether or not the asset has a quantity that may be partially spent.
 
 
 
-asset.updatable
+Asset.updatable
 ^^^^^^^^^^^^^^^
 
 **type:** boolean
@@ -282,7 +286,7 @@ Whether or not the description of the asset may be updated. Defaults to false.
 
 
 
-asset.refillable
+Asset.refillable
 ^^^^^^^^^^^^^^^^
 
 **type:** boolean
@@ -291,12 +295,12 @@ Whether the amount of the asset can change after its creation. Defaults to false
 
 
 
-asset.data
+Asset.data
 ^^^^^^^^^^
 
 **type:** object or null
 
-User provided metadata associated with the asset. May also be NULL.
+User provided metadata associated with the asset. May also be ``null``.
 
 
 
@@ -306,25 +310,25 @@ Metadata
 --------
 
 User provided transaction metadata. This field may be ``null`` or may
-contain any valid JSON payload provided by the user.
+contain an id and an object with freeform metadata.
 
 
-metadata.data
-^^^^^^^^^^^^^
-
-**type:** object
-
-Freeform object containing user provided asset metadata.
-
-
-
-metadata.id
+Metadata.id
 ^^^^^^^^^^^
 
 **type:** string
 
 A `UUID <https://tools.ietf.org/html/rfc4122.html>`_
 of type 4 (random).
+
+
+
+Metadata.data
+^^^^^^^^^^^^^
+
+**type:** object
+
+User provided transaction metadata.
 
 
 
