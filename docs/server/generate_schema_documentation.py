@@ -171,7 +171,8 @@ def main():
     path = os.path.join(os.path.dirname(__file__),
                         'source/schema/transaction.rst')
 
-    open(path, 'w').write(doc)
+    with open(path, 'w') as handle:
+        handle.write(doc)
 
 
 if __name__ == '__main__':
