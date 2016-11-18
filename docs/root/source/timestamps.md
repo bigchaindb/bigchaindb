@@ -1,15 +1,13 @@
 # Timestamps in BigchainDB
 
-Each transaction, block and vote has an associated timestamp. Interpreting those timestamps is tricky, hence the need for this section.
+Each block and vote has an associated timestamp. Interpreting those timestamps is tricky, hence the need for this section.
 
 
 ## Timestamp Sources & Accuracy
 
-A transaction's timestamp is provided by the client which created and submitted the transaction to a BigchainDB node. A block's timestamp is provided by the BigchainDB node which created the block. A vote's timestamp is provided by the BigchainDB node which created the vote.
+Timestamps in BigchainDB are provided by the node which created the block and the node that created the vote.
 
-When a BigchainDB client or node needs a timestamp, it calls a BigchainDB utility function named `timestamp()`. There's a detailed explanation of how that function works below, but the short version is that it gets the [Unix time](https://en.wikipedia.org/wiki/Unix_time) from its system clock, rounded to the nearest second.
-
-We can't say anything about the accuracy of the system clock on clients. Timestamps from clients are still potentially useful, however, in a statistical sense. We say more about that below.
+When a BigchainDB node needs a timestamp, it calls a BigchainDB utility function named `timestamp()`. There's a detailed explanation of how that function works below, but the short version is that it gets the [Unix time](https://en.wikipedia.org/wiki/Unix_time) from its system clock, rounded to the nearest second.
 
 We advise BigchainDB nodes to run special software (an "NTP daemon") to keep their system clock in sync with standard time servers. (NTP stands for [Network Time Protocol](https://en.wikipedia.org/wiki/Network_Time_Protocol).)
 
@@ -36,35 +34,26 @@ In all likelihood, you will never have to worry about leap seconds because they 
 There's another gotcha with (Unix time) timestamps: you can't calculate the real-world elapsed time between two timestamps (correctly) by subtracting the smaller timestamp from the larger one. The result won't include any of the leap seconds that occured between the two timestamps. You could look up how many leap seconds happened between the two timestamps and add that to the result. There are many library functions for working with timestamps; those are beyond the scope of this documentation.
 
 
-## Avoid Doing Transactions Around Leap Seconds
-
-Because of the ambiguity and confusion that arises with Unix time around leap seconds, we advise users to avoid creating transactions around leap seconds.
-
-
 ## Interpreting Sets of Timestamps
 
-You can look at many timestamps to get a statistical sense of when something happened. For example, a transaction in a decided-valid block has many associated timestamps:
+You can look at many timestamps to get a statistical sense of when something happened. For example, a transaction in a decided-valid block has two associated timestamps:
 
-* its own timestamp
-* the timestamps of the other transactions in the block; there could be as many as 999 of those
 * the timestamp of the block
 * the timestamps of all the votes on the block
-
-Those timestamps come from many sources, so you can look at all of them to get some statistical sense of when the transaction "actually happened." The timestamp of the block should always be after the timestamp of the transaction, and the timestamp of the votes should always be after the timestamp of the block.
 
 
 ## How BigchainDB Uses Timestamps
 
 BigchainDB _doesn't_ use timestamps to determine the order of transactions or blocks. In particular, the order of blocks is determined by RethinkDB's changefeed on the bigchain table.
 
-BigchainDB does use timestamps for some things. It uses them to determine if a transaction has been waiting in the backlog for too long (i.e. because the node assigned to it hasn't handled it yet). It also uses timestamps to determine the status of timeout conditions (used by escrow).
+BigchainDB does use timestamps for some things. It uses them to determine if a transaction has been waiting in the backlog for too long (i.e. because the node assigned to it hasn't handled it yet).
 
 
 ## Including Trusted Timestamps
 
 If you want to create a transaction payload with a trusted timestamp, you can.
 
-One way to do that would be to send a payload to a trusted timestamping service. They will send back a timestamp, a signature, and their public key. They should also explain how you can verify the signature. You can then include the original payload, the timestamp, the signature, and the service's public key in your transaction. That way, anyone with the verification instructions can verify that the original payload was signed by the trusted timestamping service.
+One way to do that would be to send a payload to a trusted timestamping service. They will send back a timestamp, a signature, and their public key. They should also explain how you can verify the signature. You can then include the original payload, the timestamp, the signature, and the service's public key in your transaction metadata. That way, anyone with the verification instructions can verify that the original payload was signed by the trusted timestamping service.
 
 
 ## How the timestamp() Function Works
