@@ -377,7 +377,7 @@ def test_tx_serialization_with_incorrect_hash(utx):
     from bigchaindb.common.exceptions import InvalidHash, SchemaValidationError
 
     utx_dict = utx.to_dict()
-    utx_dict['id'] = ('abc' * 30)[:64]
+    utx_dict['id'] = 'a' * 64
     with raises(InvalidHash):
         Transaction.from_dict(utx_dict)
     utx_dict.pop('id')
