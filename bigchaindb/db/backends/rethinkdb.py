@@ -138,27 +138,31 @@ class RethinkDBBackend:
                 .get_all(transaction_id, index='transaction_id')
                 .pluck('votes', 'id', {'block': ['voters']}))
 
-    def get_transactions_by_metadata_id(self, metadata_id):
-        """Retrieves transactions related to a metadata.
+    def get_txids_by_metadata_id(self, metadata_id):
+        """Retrieves transaction ids related to a particular metadata.
 
-        When creating a transaction one of the optional arguments is the `metadata`. The metadata is a generic
-        dict that contains extra information that can be appended to the transaction.
+        When creating a transaction one of the optional arguments is the
+        `metadata`. The metadata is a generic dict that contains extra
+        information that can be appended to the transaction.
 
-        To make it easy to query the bigchain for that particular metadata we create a UUID for the metadata and
-        store it with the transaction.
+        To make it easy to query the bigchain for that particular metadata we
+        create a UUID for the metadata and store it with the transaction.
 
         Args:
             metadata_id (str): the id for this particular metadata.
 
         Returns:
-            A list of transactions containing that metadata. If no transaction exists with that metadata it
-            returns an empty list `[]`
+            A list of transaction ids containing that metadata. If no
+            transaction exists with that metadata it returns an empty list `[]`
         """
         return self.connection.run(
                 r.table('bigchain', read_mode=self.read_mode)
                 .get_all(metadata_id, index='metadata_id')
                 .concat_map(lambda block: block['block']['transactions'])
-                .filter(lambda transaction: transaction['transaction']['metadata']['id'] == metadata_id))
+                .filter(lambda transaction:
+                        transaction['transaction']['metadata']['id'] ==
+                        metadata_id)
+                .get_field('id'))
 
     def get_transactions_by_asset_id(self, asset_id):
         """Retrieves transactions related to a particular asset.
