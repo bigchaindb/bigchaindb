@@ -14,5 +14,6 @@ def generate_key_pair():
     private_key, public_key = crypto.ed25519_generate_key_pair()
     return private_key.decode(), public_key.decode()
 
-SigningKey = crypto.Ed25519SigningKey
-VerifyingKey = crypto.Ed25519VerifyingKey
+
+PrivateKey = crypto.Ed25519SigningKey
+PublicKey = crypto.Ed25519VerifyingKey

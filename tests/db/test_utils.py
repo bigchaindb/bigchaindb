@@ -33,7 +33,6 @@ def test_init_creates_db_tables_and_indexes():
         'block_timestamp').run(conn) is True
 
     assert r.db(dbname).table('backlog').index_list().contains(
-        'transaction_timestamp',
         'assignee__transaction_timestamp').run(conn) is True
 
 
@@ -108,8 +107,6 @@ def test_create_backlog_secondary_index():
     utils.create_table(conn, dbname, 'backlog')
     utils.create_backlog_secondary_index(conn, dbname)
 
-    assert r.db(dbname).table('backlog').index_list().contains(
-        'transaction_timestamp').run(conn) is True
     assert r.db(dbname).table('backlog').index_list().contains(
         'assignee__transaction_timestamp').run(conn) is True
 

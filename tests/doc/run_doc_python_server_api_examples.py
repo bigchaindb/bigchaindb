@@ -229,9 +229,9 @@ threshold_tx_fulfillment_message = util.get_fulfillment_message(threshold_tx_tra
 threshold_fulfillment.subconditions = []
 
 # sign and add the subconditions until threshold of 2 is reached
-subfulfillment1.sign(threshold_tx_fulfillment_message, crypto.SigningKey(thresholduser1_priv))
+subfulfillment1.sign(threshold_tx_fulfillment_message, crypto.PrivateKey(thresholduser1_priv))
 threshold_fulfillment.add_subfulfillment(subfulfillment1)
-subfulfillment2.sign(threshold_tx_fulfillment_message, crypto.SigningKey(thresholduser2_priv))
+subfulfillment2.sign(threshold_tx_fulfillment_message, crypto.PrivateKey(thresholduser2_priv))
 threshold_fulfillment.add_subfulfillment(subfulfillment2)
 
 # Add remaining (unfulfilled) fulfillment as a condition
@@ -436,7 +436,7 @@ escrow_fulfillment.subconditions = []
 
 # fulfill execute branch
 fulfillment_execute = cc.ThresholdSha256Fulfillment(threshold=2)
-subfulfillment_testuser1.sign(tx_escrow_execute_fulfillment_message, crypto.SigningKey(testuser1_priv))
+subfulfillment_testuser1.sign(tx_escrow_execute_fulfillment_message, crypto.PrivateKey(testuser1_priv))
 fulfillment_execute.add_subfulfillment(subfulfillment_testuser1)
 fulfillment_execute.add_subfulfillment(subfulfillment_timeout)
 escrow_fulfillment.add_subfulfillment(fulfillment_execute)
@@ -476,7 +476,7 @@ escrow_fulfillment.add_subcondition(condition_execute.condition)
 
 # Fulfill abort branch
 fulfillment_abort = cc.ThresholdSha256Fulfillment(threshold=2)
-subfulfillment_testuser2.sign(tx_escrow_abort_fulfillment_message, crypto.SigningKey(testuser2_priv))
+subfulfillment_testuser2.sign(tx_escrow_abort_fulfillment_message, crypto.PrivateKey(testuser2_priv))
 fulfillment_abort.add_subfulfillment(subfulfillment_testuser2)
 fulfillment_abort.add_subfulfillment(subfulfillment_timeout_inverted)
 escrow_fulfillment.add_subfulfillment(fulfillment_abort)

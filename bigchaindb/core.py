@@ -6,7 +6,7 @@ from time import time
 from itertools import compress
 from bigchaindb.common import crypto, exceptions
 from bigchaindb.common.util import gen_timestamp, serialize
-from bigchaindb.common.transaction import TransactionLink
+from bigchaindb.common.transaction import TransactionLink, Asset
 
 import bigchaindb
 
@@ -182,11 +182,34 @@ class Bigchain(object):
 
         try:
             return self.validate_transaction(transaction)
-        except (ValueError, exceptions.OperationError, exceptions.TransactionDoesNotExist,
+        except (ValueError, exceptions.OperationError,
+                exceptions.TransactionDoesNotExist,
                 exceptions.TransactionOwnerError, exceptions.DoubleSpend,
                 exceptions.InvalidHash, exceptions.InvalidSignature,
-                exceptions.FulfillmentNotInValidBlock):
+                exceptions.TransactionNotInValidBlock, exceptions.AmountError):
             return False
+
+    def get_block(self, block_id, include_status=False):
+        """Get the block with the specified `block_id` (and optionally its status)
+
+        Returns the block corresponding to `block_id` or None if no match is
+        found.
+
+        Args:
+            block_id (str): transaction id of the transaction to get
+            include_status (bool): also return the status of the block
+                       the return value is then a tuple: (block, status)
+        """
+        block = self.backend.get_block(block_id)
+        status = None
+
+        if include_status:
+            if block:
+                status = self.block_election_status(block_id,
+                                                    block['block']['voters'])
+            return block, status
+        else:
+            return block
 
     def get_transaction(self, txid, include_status=False):
         """Get the transaction with the specified `txid` (and optionally its status)
@@ -307,24 +330,34 @@ class Bigchain(object):
         else:
             return None
 
-    def get_tx_by_metadata_id(self, metadata_id):
-        """Retrieves transactions related to a metadata.
+    def get_transaction_by_metadata_id(self, metadata_id):
+        """Retrieves valid or undecided transactions related to a particular
+        metadata.
 
-        When creating a transaction one of the optional arguments is the `metadata`. The metadata is a generic
-        dict that contains extra information that can be appended to the transaction.
+        When creating a transaction one of the optional arguments is the
+        `metadata`. The metadata is a generic dict that contains extra
+        information that can be appended to the transaction.
 
-        To make it easy to query the bigchain for that particular metadata we create a UUID for the metadata and
-        store it with the transaction.
+        To make it easy to query the bigchain for that particular metadata we
+        create a UUID for the metadata and store it with the transaction.
 
         Args:
             metadata_id (str): the id for this particular metadata.
 
         Returns:
-            A list of transactions containing that metadata. If no transaction exists with that metadata it
-            returns an empty list `[]`
+            A list of valid or undecided transactions containing that metadata.
+            If no transaction exists with that metadata it returns an empty
+            list `[]`
         """
-        cursor = self.backend.get_transactions_by_metadata_id(metadata_id)
-        return [Transaction.from_dict(tx) for tx in cursor]
+        txids = self.backend.get_txids_by_metadata_id(metadata_id)
+        transactions = []
+        for txid in txids:
+            tx = self.get_transaction(txid)
+            # if a valid or undecided transaction exists append it to the list
+            # of transactions
+            if tx:
+                transactions.append(tx)
+        return transactions
 
     def get_transactions_by_asset_id(self, asset_id):
         """Retrieves valid or undecided transactions related to a particular
@@ -349,6 +382,21 @@ class Bigchain(object):
             if tx:
                 transactions.append(tx)
         return transactions
+
+    def get_asset_by_id(self, asset_id):
+        """Returns the asset associated with an asset_id.
+
+            Args:
+                asset_id (str): The asset id.
+
+            Returns:
+                :class:`~bigchaindb.common.transaction.Asset` if the asset
+                exists else None.
+        """
+        cursor = self.backend.get_asset_by_id(asset_id)
+        cursor = list(cursor)
+        if cursor:
+            return Asset.from_dict(cursor[0]['transaction']['asset'])
 
     def get_spent(self, txid, cid):
         """Check if a `txid` was already used as an input.
@@ -518,7 +566,7 @@ class Bigchain(object):
         """Prepare a genesis block."""
 
         metadata = {'message': 'Hello World from the BigchainDB'}
-        transaction = Transaction.create([self.me], [self.me],
+        transaction = Transaction.create([self.me], [([self.me], 1)],
                                          metadata=metadata)
 
         # NOTE: The transaction model doesn't expose an API to generate a
@@ -574,7 +622,7 @@ class Bigchain(object):
         }
 
         vote_data = serialize(vote)
-        signature = crypto.SigningKey(self.me_private).sign(vote_data.encode())
+        signature = crypto.PrivateKey(self.me_private).sign(vote_data.encode())
 
         vote_signed = {
             'node_pubkey': self.me,

@@ -138,27 +138,31 @@ class RethinkDBBackend:
                 .get_all(transaction_id, index='transaction_id')
                 .pluck('votes', 'id', {'block': ['voters']}))
 
-    def get_transactions_by_metadata_id(self, metadata_id):
-        """Retrieves transactions related to a metadata.
+    def get_txids_by_metadata_id(self, metadata_id):
+        """Retrieves transaction ids related to a particular metadata.
 
-        When creating a transaction one of the optional arguments is the `metadata`. The metadata is a generic
-        dict that contains extra information that can be appended to the transaction.
+        When creating a transaction one of the optional arguments is the
+        `metadata`. The metadata is a generic dict that contains extra
+        information that can be appended to the transaction.
 
-        To make it easy to query the bigchain for that particular metadata we create a UUID for the metadata and
-        store it with the transaction.
+        To make it easy to query the bigchain for that particular metadata we
+        create a UUID for the metadata and store it with the transaction.
 
         Args:
             metadata_id (str): the id for this particular metadata.
 
         Returns:
-            A list of transactions containing that metadata. If no transaction exists with that metadata it
-            returns an empty list `[]`
+            A list of transaction ids containing that metadata. If no
+            transaction exists with that metadata it returns an empty list `[]`
         """
         return self.connection.run(
                 r.table('bigchain', read_mode=self.read_mode)
                 .get_all(metadata_id, index='metadata_id')
                 .concat_map(lambda block: block['block']['transactions'])
-                .filter(lambda transaction: transaction['transaction']['metadata']['id'] == metadata_id))
+                .filter(lambda transaction:
+                        transaction['transaction']['metadata']['id'] ==
+                        metadata_id)
+                .get_field('id'))
 
     def get_txids_by_asset_id(self, asset_id):
         """Retrieves transactions ids related to a particular asset.
@@ -183,6 +187,25 @@ class RethinkDBBackend:
              .concat_map(lambda block: block['block']['transactions'])
              .filter(lambda transaction: transaction['transaction']['asset']['id'] == asset_id)
              .get_field('id'))
+
+    def get_asset_by_id(self, asset_id):
+        """Returns the asset associated with an asset_id.
+
+            Args:
+                asset_id (str): The asset id.
+
+            Returns:
+                Returns a rethinkdb cursor.
+        """
+        return self.connection.run(
+            r.table('bigchain', read_mode=self.read_mode)
+             .get_all(asset_id, index='asset_id')
+             .concat_map(lambda block: block['block']['transactions'])
+             .filter(lambda transaction:
+                     transaction['transaction']['asset']['id'] == asset_id)
+             .filter(lambda transaction:
+                     transaction['transaction']['operation'] == 'CREATE')
+             .pluck({'transaction': 'asset'}))
 
     def get_spent(self, transaction_id, condition_id):
         """Check if a `txid` was already used as an input.
@@ -262,6 +285,17 @@ class RethinkDBBackend:
                 r.table('bigchain')
                 .insert(r.json(block), durability=durability))
 
+    def get_block(self, block_id):
+        """Get a block from the bigchain table
+
+        Args:
+            block_id (str): block id of the block to get
+
+        Returns:
+            block (dict): the block or `None`
+        """
+        return self.connection.run(r.table('bigchain').get(block_id))
+
     def has_transaction(self, transaction_id):
         """Check if a transaction exists in the bigchain table.
 
@@ -286,6 +320,17 @@ class RethinkDBBackend:
                 r.table('bigchain', read_mode=self.read_mode)
                 .count())
 
+    def count_backlog(self):
+        """Count the number of transactions in the backlog table.
+
+        Returns:
+            The number of transactions in the backlog.
+        """
+
+        return self.connection.run(
+                r.table('backlog', read_mode=self.read_mode)
+                .count())
+
     def write_vote(self, vote):
         """Write a vote to the votes table.
 
@@ -298,6 +343,17 @@ class RethinkDBBackend:
         return self.connection.run(
                 r.table('votes')
                 .insert(vote))
+
+    def get_genesis_block(self):
+        """Get the genesis block
+
+        Returns:
+            The genesis block
+        """
+        return self.connection.run(
+            r.table('bigchain', read_mode=self.read_mode)
+            .filter(util.is_genesis_block)
+            .nth(0))
 
     def get_last_voted_block(self, node_pubkey):
         """Get the last voted block for a specific node.
@@ -323,10 +379,7 @@ class RethinkDBBackend:
 
         except r.ReqlNonExistenceError:
             # return last vote if last vote exists else return Genesis block
-            return self.connection.run(
-                r.table('bigchain', read_mode=self.read_mode)
-                .filter(util.is_genesis_block)
-                .nth(0))
+            return self.get_genesis_block()
 
         # Now the fun starts. Since the resolution of timestamp is a second,
         # we might have more than one vote per timestamp. If this is the case

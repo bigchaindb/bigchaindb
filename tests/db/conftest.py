@@ -14,7 +14,7 @@ from bigchaindb.db import get_conn, init_database
 from bigchaindb.common import crypto
 from bigchaindb.common.exceptions import DatabaseAlreadyExists
 
-USER2_SK, USER2_VK = crypto.generate_key_pair()
+USER2_SK, USER2_PK = crypto.generate_key_pair()
 
 
 @pytest.fixture(autouse=True)
@@ -70,7 +70,7 @@ def cleanup_tables(request, node_config):
 
 
 @pytest.fixture
-def inputs(user_vk):
+def inputs(user_pk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.exceptions import GenesisBlockAlreadyExistsError
     # 1. create the genesis block
@@ -84,7 +84,7 @@ def inputs(user_vk):
     prev_block_id = g.id
     for block in range(4):
         transactions = [
-            Transaction.create([b.me], [user_vk]).sign([b.me_private])
+            Transaction.create([b.me], [([user_pk], 1)]).sign([b.me_private])
             for i in range(10)
         ]
         block = b.create_block(transactions)
@@ -102,12 +102,12 @@ def user2_sk():
 
 
 @pytest.fixture
-def user2_vk():
-    return USER2_VK
+def user2_pk():
+    return USER2_PK
 
 
 @pytest.fixture
-def inputs_shared(user_vk, user2_vk):
+def inputs_shared(user_pk, user2_pk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.exceptions import GenesisBlockAlreadyExistsError
     # 1. create the genesis block
@@ -122,7 +122,7 @@ def inputs_shared(user_vk, user2_vk):
     for block in range(4):
         transactions = [
             Transaction.create(
-                [b.me], [user_vk, user2_vk], payload={'i': i}).sign([b.me_private])
+                [b.me], [user_pk, user2_pk], payload={'i': i}).sign([b.me_private])
             for i in range(10)
         ]
         block = b.create_block(transactions)
