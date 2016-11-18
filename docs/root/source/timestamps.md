@@ -36,7 +36,7 @@ There's another gotcha with (Unix time) timestamps: you can't calculate the real
 
 ## Interpreting Sets of Timestamps
 
-You can look at many timestamps to get a statistical sense of when something happened. For example, a transaction in a decided-valid block has two associated timestamps:
+You can look at many timestamps to get a statistical sense of when something happened. For example, a transaction in a decided-valid block has many associated timestamps:
 
 * the timestamp of the block
 * the timestamps of all the votes on the block
