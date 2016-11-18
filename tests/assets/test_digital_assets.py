@@ -183,7 +183,7 @@ def test_get_transactions_by_asset_id_with_invalid_block(b, user_vk, user_sk):
     # create the block
     block = b.create_block([tx_transfer_signed])
     b.write_block(block, durability='hard')
-    # vote the block valid
+    # vote the block invalid
     vote = b.vote(block.id, b.get_last_voted_block().id, False)
     b.write_vote(vote)
 
