@@ -196,7 +196,7 @@ class TestBigchainApi(object):
         from bigchaindb.models import Transaction
 
         metadata = {'msg': 'Hello BigchainDB!'}
-        tx = Transaction.create([b.me], [user_vk], metadata=metadata)
+        tx = Transaction.create([b.me], [([user_vk], 1)], metadata=metadata)
 
         block = b.create_block([tx])
         b.write_block(block, durability='hard')
