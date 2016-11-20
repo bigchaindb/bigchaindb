@@ -288,6 +288,11 @@ GET /transactions/{tx_id}
 GET /unspents/
 -------------------------
 
+.. note::
+
+   This endpoint (unspents) is not yet implemented. We published it here for preview and comment.
+   
+
 .. http:get:: /unspents?owner_after={owner_after}
 
    Get a list of links to transactions' conditions that have not been used in
