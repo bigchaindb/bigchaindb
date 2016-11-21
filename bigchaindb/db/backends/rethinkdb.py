@@ -245,6 +245,18 @@ class RethinkDBBackend:
                 .filter(lambda tx: tx['transaction']['conditions'].contains(
                     lambda c: c['owners_after'].contains(owner))))
 
+    def get_owners_after(self, public_keys):
+        """Retrieve a list of transactions that contain `public_keys` in
+        owners_after
+        """
+        return self.connection.run(
+            r.table('bigchain', read_mode=self.read_mode)
+            .get_all(b.me, index="owners_after2")
+            .distinct().concat_map(lambda doc: doc['block']['transactions'])
+            .filter(lambda tx: tx['transaction']['conditions']
+                    .contains(lambda c: c['owners_after']
+                              .contains(*public_keys))))
+
     def get_votes_by_block_id(self, block_id):
         """Get all the votes casted for a specific block.
 
