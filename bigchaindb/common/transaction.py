@@ -10,7 +10,6 @@ from bigchaindb.common.crypto import SigningKey, hash_data
 from bigchaindb.common.exceptions import (KeypairMismatchException,
                                           InvalidHash, InvalidSignature,
                                           AmountError, AssetIdMismatch)
-from bigchaindb.common.schema import validate_transaction_schema
 from bigchaindb.common.util import serialize, gen_timestamp
 
 
