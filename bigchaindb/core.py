@@ -426,9 +426,10 @@ class Bigchain(object):
                 if self.get_transaction(transaction['id']):
                     num_valid_transactions += 1
                 if num_valid_transactions > 1:
-                    raise exceptions.DoubleSpend(
-                        '`{}` was spent more then once. There is a problem with the chain'.format(
-                            txid))
+                    raise exceptions.DoubleSpend(('`{}` was spent more than'
+                                                  ' once. There is a problem'
+                                                  ' with the chain')
+                                                 .format(txid))
 
             if num_valid_transactions:
                 return Transaction.from_dict(transactions[0])
