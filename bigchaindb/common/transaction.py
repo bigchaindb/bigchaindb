@@ -1250,12 +1250,11 @@ class Transaction(object):
 
     @staticmethod
     def validate_structure(tx_body):
-        """Validate the structure of a transaction body.
+        """Validate the transaction ID of a transaction
 
             Args:
                 tx_body (dict): The Transaction to be transformed.
         """
-        validate_transaction_schema(tx_body)
         # NOTE: Remove reference to avoid side effects
         tx_body = deepcopy(tx_body)
         try:
