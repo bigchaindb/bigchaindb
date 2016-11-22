@@ -20,7 +20,7 @@ A block has the following structure:
 - ``id``: The hash of the serialized ``block`` (i.e. the ``timestamp``, ``transactions``, ``node_pubkey``, and ``voters``). This is also a database primary key; that's how we ensure that all blocks are unique.
 
 - ``block``:
-    - ``timestamp``: The Unix time when the block was created. It's provided by the node that created the block. See `the page about timestamps <https://docs.bigchaindb.com/en/latest/timestamps.html>`_.
+    - ``timestamp``: The Unix time when the block was created. It's provided by the node that created the block.
     - ``transactions``: A list of the transactions included in the block.
     - ``node_pubkey``: The public key of the node that created the block.
     - ``voters``: A list of the public keys of federation nodes at the time the block was created.

@@ -682,7 +682,7 @@ class TestTransactionValidation(object):
 
         sleep(1)
 
-        signed_transfer_tx.timestamp = 123
+        signed_transfer_tx.metadata.data = {'different': 1}
         # FIXME: https://github.com/bigchaindb/bigchaindb/issues/592
         with pytest.raises(DoubleSpend):
             b.validate_transaction(signed_transfer_tx)
