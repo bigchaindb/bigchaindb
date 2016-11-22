@@ -246,12 +246,13 @@ class RethinkDBBackend:
                     lambda c: c['owners_after'].contains(owner))))
 
     def get_owners_after(self, public_keys):
+        # TODO: Fix docstring
         """Retrieve a list of transactions that contain `public_keys` in
         owners_after
         """
         return self.connection.run(
             r.table('bigchain', read_mode=self.read_mode)
-            .get_all(b.me, index="owners_after2")
+            .get_all(*public_keys, index='owners_after')
             .distinct().concat_map(lambda doc: doc['block']['transactions'])
             .filter(lambda tx: tx['transaction']['conditions']
                     .contains(lambda c: c['owners_after']

@@ -925,7 +925,7 @@ class TestMultipleInputs(object):
         assert len(tx.fulfillments) == 1
         assert len(tx.conditions) == 1
 
-    def test_get_owned_ids_single_tx_single_output(self, b, user_sk, user_pk):
+    def test_get_unspents_single_tx_single_output(self, b, user_sk, user_pk):
         from bigchaindb.common import crypto
         from bigchaindb.common.transaction import TransactionLink
         from bigchaindb.models import Transaction
@@ -937,22 +937,22 @@ class TestMultipleInputs(object):
         block = b.create_block([tx])
         b.write_block(block, durability='hard')
 
-        owned_inputs_user1 = b.get_owned_ids(user_pk)
-        owned_inputs_user2 = b.get_owned_ids(user2_pk)
-        assert owned_inputs_user1 == [TransactionLink(tx.id, 0)]
-        assert owned_inputs_user2 == []
+        unspents_user1 = b.get_unspents([user_pk])
+        unspents_user2 = b.get_unspents([user2_pk])
+        assert unspents_user1 == [TransactionLink(tx.id, 0)]
+        assert unspents_user2 == []
 
         tx = Transaction.transfer(tx.to_inputs(), [([user2_pk], 1)], tx.asset)
         tx = tx.sign([user_sk])
         block = b.create_block([tx])
         b.write_block(block, durability='hard')
 
-        owned_inputs_user1 = b.get_owned_ids(user_pk)
-        owned_inputs_user2 = b.get_owned_ids(user2_pk)
-        assert owned_inputs_user1 == []
-        assert owned_inputs_user2 == [TransactionLink(tx.id, 0)]
+        unspents_user1 = b.get_unspents([user_pk])
+        unspents_user2 = b.get_unspents([user2_pk])
+        assert unspents_user1 == []
+        assert unspents_user2 == [TransactionLink(tx.id, 0)]
 
-    def test_get_owned_ids_single_tx_single_output_invalid_block(self, b,
+    def test_get_unspents_single_tx_single_output_invalid_block(self, b,
                                                                  user_sk,
                                                                  user_pk):
         from bigchaindb.common import crypto
@@ -971,10 +971,10 @@ class TestMultipleInputs(object):
         vote = b.vote(block.id, genesis.id, True)
         b.write_vote(vote)
 
-        owned_inputs_user1 = b.get_owned_ids(user_pk)
-        owned_inputs_user2 = b.get_owned_ids(user2_pk)
-        assert owned_inputs_user1 == [TransactionLink(tx.id, 0)]
-        assert owned_inputs_user2 == []
+        unspents_user1 = b.get_unspents([user_pk])
+        unspents_user2 = b.get_unspents([user2_pk])
+        assert unspents_user1 == [TransactionLink(tx.id, 0)]
+        assert unspents_user2 == []
 
         # NOTE: The transaction itself is valid, still will mark the block
         #       as invalid to mock the behavior.
@@ -988,14 +988,14 @@ class TestMultipleInputs(object):
         vote = b.vote(block.id, b.get_last_voted_block().id, False)
         b.write_vote(vote)
 
-        owned_inputs_user1 = b.get_owned_ids(user_pk)
-        owned_inputs_user2 = b.get_owned_ids(user2_pk)
+        unspents_user1 = b.get_unspents([user_pk])
+        unspents_user2 = b.get_unspents([user2_pk])
 
         # should be the same as before (note tx, not tx_invalid)
-        assert owned_inputs_user1 == [TransactionLink(tx.id, 0)]
-        assert owned_inputs_user2 == []
+        assert unspents_user1 == [TransactionLink(tx.id, 0)]
+        assert unspents_user2 == []
 
-    def test_get_owned_ids_single_tx_multiple_outputs(self, b, user_sk,
+    def test_get_unspents_single_tx_multiple_outputs(self, b, user_sk,
                                                       user_pk):
         from bigchaindb.common import crypto
         from bigchaindb.common.transaction import TransactionLink, Asset
@@ -1013,13 +1013,13 @@ class TestMultipleInputs(object):
         b.write_block(block, durability='hard')
 
         # get input
-        owned_inputs_user1 = b.get_owned_ids(user_pk)
-        owned_inputs_user2 = b.get_owned_ids(user2_pk)
+        unspents_user1 = b.get_unspents([user_pk])
+        unspents_user2 = b.get_unspents([user2_pk])
 
-        expected_owned_inputs_user1 = [TransactionLink(tx_create.id, 0),
-                                       TransactionLink(tx_create.id, 1)]
-        assert owned_inputs_user1 == expected_owned_inputs_user1
-        assert owned_inputs_user2 == []
+        expected_unspents_user1 = [TransactionLink(tx_create.id, 0),
+                                   TransactionLink(tx_create.id, 1)]
+        assert unspents_user1 == expected_unspents_user1
+        assert unspents_user2 == []
 
         # transfer divisible asset divided in two outputs
         tx_transfer = Transaction.transfer(tx_create.to_inputs(),
@@ -1029,13 +1029,13 @@ class TestMultipleInputs(object):
         block = b.create_block([tx_transfer_signed])
         b.write_block(block, durability='hard')
 
-        owned_inputs_user1 = b.get_owned_ids(user_pk)
-        owned_inputs_user2 = b.get_owned_ids(user2_pk)
-        assert owned_inputs_user1 == []
-        assert owned_inputs_user2 == [TransactionLink(tx_transfer.id, 0),
-                                      TransactionLink(tx_transfer.id, 1)]
+        unspents_user1 = b.get_unspents([user_pk])
+        unspents_user2 = b.get_unspents([user2_pk])
+        assert unspents_user1 == []
+        assert unspents_user2 == [TransactionLink(tx_transfer.id, 0),
+                                  TransactionLink(tx_transfer.id, 1)]
 
-    def test_get_owned_ids_multiple_owners(self, b, user_sk, user_pk):
+    def test_get_unspents_multiple_owners(self, b, user_sk, user_pk):
         from bigchaindb.common import crypto
         from bigchaindb.common.transaction import TransactionLink
         from bigchaindb.models import Transaction
@@ -1048,22 +1048,64 @@ class TestMultipleInputs(object):
         block = b.create_block([tx])
         b.write_block(block, durability='hard')
 
-        owned_inputs_user1 = b.get_owned_ids(user_pk)
-        owned_inputs_user2 = b.get_owned_ids(user2_pk)
-        expected_owned_inputs_user1 = [TransactionLink(tx.id, 0)]
+        unspents_user1 = b.get_unspents([user_pk])
+        unspents_user2 = b.get_unspents([user2_pk])
+        expected_unspents_user1 = [TransactionLink(tx.id, 0)]
 
-        assert owned_inputs_user1 == owned_inputs_user2
-        assert owned_inputs_user1 == expected_owned_inputs_user1
+        assert unspents_user1 == unspents_user2
+        assert unspents_user1 == expected_unspents_user1
 
         tx = Transaction.transfer(tx.to_inputs(), [([user3_pk], 1)], tx.asset)
         tx = tx.sign([user_sk, user2_sk])
         block = b.create_block([tx])
         b.write_block(block, durability='hard')
 
-        owned_inputs_user1 = b.get_owned_ids(user_pk)
-        owned_inputs_user2 = b.get_owned_ids(user2_pk)
-        assert owned_inputs_user1 == owned_inputs_user2
-        assert owned_inputs_user1 == []
+        unspents_user1 = b.get_unspents([user_pk])
+        unspents_user2 = b.get_unspents([user2_pk])
+        assert unspents_user1 == unspents_user2
+        assert unspents_user1 == []
+
+    def test_get_unspents_partial_owners(self, b, user_pk):
+        from bigchaindb.common.transaction import TransactionLink, Asset
+        from bigchaindb.models import Transaction
+        from bigchaindb.common import crypto
+
+        user2_sk, user2_pk = crypto.generate_key_pair()
+        user3_sk, user3_pk = crypto.generate_key_pair()
+
+        # create a transaction with a mix of partial ownership
+        asset = Asset(divisible=True)
+        tx = Transaction.create([b.me], [([user_pk], 1),
+                                         ([user_pk, user2_pk], 1),
+                                         ([user_pk, user2_pk, user3_pk], 1),
+                                         ([user2_pk, user3_pk], 1)],
+                                asset=asset)
+        tx_signed = tx.sign([b.me_private])
+        block = b.create_block([tx_signed])
+        b.write_block(block, durability='hard')
+
+        unspents_user1 = b.get_unspents([user_pk])
+        unspents_user2 = b.get_unspents([user2_pk])
+        unspents_user3 = b.get_unspents([user3_pk])
+        unspents_user1_user2 = b.get_unspents([user_pk, user2_pk])
+        unspents_user1_user3 = b.get_unspents([user_pk, user3_pk])
+        unspents_user2_user3 = b.get_unspents([user2_pk, user3_pk])
+        unspents_user1_user2_user3 = b.get_unspents([user_pk, user2_pk,
+                                                     user3_pk])
+
+        assert unspents_user1 == [TransactionLink(tx.id, i) for i in
+                                  [0, 1, 2]]
+        assert unspents_user2 == [TransactionLink(tx.id, i) for i in
+                                  [1, 2, 3]]
+        assert unspents_user3 == [TransactionLink(tx.id, i) for i in
+                                  [2, 3]]
+        assert unspents_user1_user2 == [TransactionLink(tx.id, i) for i in
+                                        [1, 2]]
+        assert unspents_user1_user3 == [TransactionLink(tx.id, 2)]
+        assert unspents_user2_user3 == [TransactionLink(tx.id, i) for i in
+                                        [2, 3]]
+        assert unspents_user1_user2_user3 == [TransactionLink(tx.id, 2)]
+
 
     def test_get_spent_single_tx_single_output(self, b, user_sk, user_pk):
         from bigchaindb.common import crypto
