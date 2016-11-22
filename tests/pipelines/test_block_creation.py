@@ -1,8 +1,6 @@
 import time
 from unittest.mock import patch
 
-import rethinkdb as r
-
 from multipipes import Pipe
 
 
@@ -69,7 +67,7 @@ def test_write_block(b, user_pk):
 
     block_doc = b.create_block(txs)
     block_maker.write(block_doc)
-    expected = b.connection.run(r.table('bigchain').get(block_doc.id))
+    expected = b.backend.get_block(block_doc.id)
     expected = Block.from_dict(expected)
 
     assert expected == block_doc
@@ -90,18 +88,19 @@ def test_duplicate_transaction(b, user_pk):
     block_maker.write(block_doc)
 
     # block is in bigchain
-    assert b.connection.run(r.table('bigchain').get(block_doc.id)) == block_doc.to_dict()
+    assert b.backend.get_block(block_doc.id) == block_doc.to_dict()
 
     b.write_transaction(txs[0])
 
     # verify tx is in the backlog
-    assert b.connection.run(r.table('backlog').get(txs[0].id)) is not None
+    assert b.get_transaction(txs[0].id) is not None
 
     # try to validate a transaction that's already in the chain; should not work
     assert block_maker.validate_tx(txs[0].to_dict()) is None
 
     # duplicate tx should be removed from backlog
-    assert b.connection.run(r.table('backlog').get(txs[0].id)) is None
+    response, status = b.get_transaction(txs[0].id, include_status=True)
+    assert status != b.TX_IN_BACKLOG
 
 
 def test_delete_tx(b, user_pk):
@@ -119,9 +118,7 @@ def test_delete_tx(b, user_pk):
     block_doc = block_maker.create(None, timeout=True)
 
     for tx in block_doc.to_dict()['block']['transactions']:
-        returned_tx = b.connection.run(r.table('backlog').get(tx['id']))
-        returned_tx.pop('assignee')
-        returned_tx.pop('assignment_timestamp')
+        returned_tx = b.get_transaction(tx['id']).to_dict()
         assert returned_tx == tx
 
     returned_block = block_maker.delete_tx(block_doc)
@@ -129,7 +126,8 @@ def test_delete_tx(b, user_pk):
     assert returned_block == block_doc
 
     for tx in block_doc.to_dict()['block']['transactions']:
-        assert b.connection.run(r.table('backlog').get(tx['id'])) is None
+        returned_tx, status = b.get_transaction(tx['id'], include_status=True)
+        assert status != b.TX_IN_BACKLOG
 
 
 def test_prefeed(b, user_pk):
@@ -165,20 +163,16 @@ def test_full_pipeline(b, user_pk):
     from bigchaindb.pipelines.block import create_pipeline, get_changefeed
 
     outpipe = Pipe()
-
-    count_assigned_to_me = 0
+    # include myself here, so that some tx are actually assigned to me
+    b.nodes_except_me = [b.me, 'aaa', 'bbb', 'ccc']
     for i in range(100):
         tx = Transaction.create([b.me], [([user_pk], 1)],
                                 {'msg': random.random()})
-        tx = tx.sign([b.me_private]).to_dict()
-        assignee = random.choice([b.me, 'aaa', 'bbb', 'ccc'])
-        tx['assignee'] = assignee
-        tx['assignment_timestamp'] = time.time()
-        if assignee == b.me:
-            count_assigned_to_me += 1
-        b.connection.run(r.table('backlog').insert(tx, durability='hard'))
+        tx = tx.sign([b.me_private])
 
-    assert b.connection.run(r.table('backlog').count()) == 100
+        b.write_transaction(tx)
+
+    assert b.backend.count_backlog() == 100
 
     pipeline = create_pipeline()
     pipeline.setup(indata=get_changefeed(), outdata=outpipe)
@@ -188,9 +182,9 @@ def test_full_pipeline(b, user_pk):
     pipeline.terminate()
 
     block_doc = outpipe.get()
-    chained_block = b.connection.run(r.table('bigchain').get(block_doc.id))
+    chained_block = b.backend.get_block(block_doc.id)
     chained_block = Block.from_dict(chained_block)
 
-    assert len(block_doc.transactions) == count_assigned_to_me
+    block_len = len(block_doc.transactions)
     assert chained_block == block_doc
-    assert b.connection.run(r.table('backlog').count()) == 100 - count_assigned_to_me
+    assert b.backend.count_backlog() == 100 - block_len 

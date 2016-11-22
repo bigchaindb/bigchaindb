@@ -1,10 +1,8 @@
-import rethinkdb as r
 from bigchaindb import Bigchain
 from bigchaindb.pipelines import stale
 from multipipes import Pipe, Pipeline
 from unittest.mock import patch
 from bigchaindb import config_utils
-import time
 import os
 
 
@@ -43,23 +41,23 @@ def test_reassign_transactions(b, user_pk):
     stm = stale.StaleTransactionMonitor(timeout=0.001,
                                         backlog_reassign_delay=0.001)
     stm.bigchain.nodes_except_me = ['aaa', 'bbb', 'ccc']
-    tx = list(b.connection.run(r.table('backlog')))[0]
+    tx = list(b.backend.get_stale_transactions(0))[0]
     stm.reassign_transactions(tx)
 
-    reassigned_tx = b.connection.run(r.table('backlog').get(tx['id']))
+    reassigned_tx = list(b.backend.get_stale_transactions(0))[0]
     assert reassigned_tx['assignment_timestamp'] > tx['assignment_timestamp']
     assert reassigned_tx['assignee'] != tx['assignee']
 
     # test with node not in federation
     tx = Transaction.create([b.me], [([user_pk], 1)])
-    tx = tx.sign([b.me_private]).to_dict()
-    tx.update({'assignee': 'lol'})
-    tx.update({'assignment_timestamp': time.time()})
-    b.connection.run(r.table('backlog').insert(tx, durability='hard'))
+    tx = tx.sign([b.me_private])
+    stm.bigchain.nodes_except_me = ['lol']
+    b.write_transaction(tx, durability='hard')
+    stm.bigchain.nodes_except_me = None
 
-    tx = list(b.connection.run(r.table('backlog')))[0]
+    tx = list(b.backend.get_stale_transactions(0))[0]
     stm.reassign_transactions(tx)
-    assert b.connection.run(r.table('backlog').get(tx['id']))['assignee'] != 'lol'
+    assert tx['assignee'] != 'lol'
 
 
 def test_full_pipeline(monkeypatch, user_pk):
@@ -90,9 +88,10 @@ def test_full_pipeline(monkeypatch, user_pk):
         original_txc.append(tx.to_dict())
 
         b.write_transaction(tx)
-        original_txs[tx.id] = b.connection.run(r.table('backlog').get(tx.id))
+    original_txs = list(b.backend.get_stale_transactions(0))
+    original_txs = {tx['id']: tx for tx in original_txs}
 
-    assert b.connection.run(r.table('backlog').count()) == 100
+    assert len(original_txs) == 100
 
     monkeypatch.undo()
 
@@ -107,8 +106,8 @@ def test_full_pipeline(monkeypatch, user_pk):
 
     pipeline.terminate()
 
-    assert b.connection.run(r.table('backlog').count()) == 100
-    reassigned_txs = list(b.connection.run(r.table('backlog')))
+    assert len(list(b.backend.get_stale_transactions(0))) == 100
+    reassigned_txs= list(b.backend.get_stale_transactions(0))
 
     # check that every assignment timestamp has increased, and every tx has a new assignee
     for reassigned_tx in reassigned_txs:
