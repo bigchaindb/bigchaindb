@@ -85,4 +85,5 @@ More About BigchainDB
    assets
    smart-contracts
    transaction-concepts
+   timestamps
    data-models/index
