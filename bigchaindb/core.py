@@ -368,7 +368,7 @@ class Bigchain(object):
         knowing the id.
 
         Args:
-            asset_id (str): the id for this particular metadata.
+            asset_id (str): the id for this particular asset.
 
         Returns:
             A list of valid or undecided transactions related to the asset.
