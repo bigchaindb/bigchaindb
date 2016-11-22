@@ -409,8 +409,8 @@ class Asset(object):
     def __init__(self, data=None, data_id=None, divisible=False,
                  updatable=False, refillable=False):
         """An Asset is not required to contain any extra data from outside."""
+        self.data_id = data_id
         self.data = data
-        self.data_id = data_id if data_id is not None else self.to_hash()
         self.divisible = divisible
         self.updatable = updatable
         self.refillable = refillable
@@ -717,6 +717,15 @@ class Transaction(object):
         if self.operation == self.CREATE:
             amount = sum([condition.amount for condition in self.conditions])
             self.asset.validate_asset(amount=amount)
+
+        if self.operation != self.TRANSFER:
+            # The asset id is a hash of the sorted set of fulfillment pubkeys
+            # (verified by the signatures) plus the hash of the asset data
+            pubkeys = set()
+            for ffill in self.fulfillments:
+                pubkeys.update(set(ffill.owners_before))
+            data = [sorted(pubkeys), self.asset.to_dict()]
+            self.asset.data_id = hash_data(serialize(data))
 
     @classmethod
     def create(cls, owners_before, owners_after, metadata=None, asset=None):
