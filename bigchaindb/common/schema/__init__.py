@@ -8,7 +8,8 @@ from bigchaindb.common.exceptions import SchemaValidationError
 
 
 TX_SCHEMA_PATH = os.path.join(os.path.dirname(__file__), 'transaction.yaml')
-TX_SCHEMA_YAML = open(TX_SCHEMA_PATH).read()
+with open(TX_SCHEMA_PATH) as handle:
+    TX_SCHEMA_YAML = handle.read()
 TX_SCHEMA = yaml.safe_load(TX_SCHEMA_YAML)
 
 
