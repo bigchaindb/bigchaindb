@@ -67,6 +67,8 @@ install_requires = [
     'requests~=2.9',
     'gunicorn~=19.0',
     'multipipes~=0.1.0',
+    'jsonschema~=2.5.1',
+    'pyyaml~=3.12',
 ]
 
 setup(
@@ -110,4 +112,5 @@ setup(
         'dev': dev_require + tests_require + docs_require + benchmarks_require,
         'docs': docs_require,
     },
+    package_data={'bigchaindb.common.schema': ['transaction.yaml']},
 )

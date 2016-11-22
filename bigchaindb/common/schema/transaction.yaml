@@ -1,0 +1,261 @@
+---
+"$schema": "http://json-schema.org/draft-04/schema#"
+id: "http://www.bigchaindb.com/schema/transaction.json"
+type: object
+additionalProperties: false
+title: Transaction Schema
+description: |
+    This is the outer transaction wrapper. It contains the ID, version and the body of the transaction, which is also called ``transaction``.
+required:
+- id
+- transaction
+- version
+properties:
+  id:
+    "$ref": "#/definitions/sha3_hexdigest"
+    description: |
+        A sha3 digest of the transaction. The ID is calculated by removing all
+        derived hashes and signatures from the transaction, serializing it to
+        JSON with keys in sorted order and then hashing the resulting string
+        with sha3.
+  transaction:
+    type: object
+    title: transaction
+    description: |
+        See: `Transaction Body`_.
+    additionalProperties: false
+    required:
+    - fulfillments
+    - conditions
+    - operation
+    - metadata
+    - asset
+    properties:
+      operation:
+        "$ref": "#/definitions/operation"
+      asset:
+        "$ref": "#/definitions/asset"
+        description: |
+          Description of the asset being transacted.
+
+          See: `Asset`_.
+      fulfillments:
+        type: array
+        title: "Fulfillments list"
+        description: |
+            Array of the fulfillments (inputs) of a transaction.
+
+            See: Fulfillment_.
+        items:
+          "$ref": "#/definitions/fulfillment"
+      conditions:
+        type: array
+        description: |
+            Array of conditions (outputs) provided by this transaction.
+
+            See: Condition_.
+        items:
+          "$ref": "#/definitions/condition"
+      metadata:
+        "$ref": "#/definitions/metadata"
+        description: |
+          User provided transaction metadata. This field may be ``null`` or may
+          contain an id and an object with freeform metadata.
+
+          See: `Metadata`_.
+  version:
+    type: integer
+    minimum: 1
+    maximum: 1
+    description: |
+        BigchainDB transaction schema version.
+definitions:
+  offset:
+    type: integer
+    minimum: 0
+  base58:
+    pattern: "[1-9a-zA-Z^OIl]{43,44}"
+    type: string
+  owners_list:
+    anyOf:
+    - type: array
+      items:
+        "$ref": "#/definitions/base58"
+    - type: 'null'
+  sha3_hexdigest:
+    pattern: "[0-9a-f]{64}"
+    type: string
+  uuid4:
+    pattern: "[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}"
+    type: string
+    description: |
+        A `UUID <https://tools.ietf.org/html/rfc4122.html>`_
+        of type 4 (random).
+  operation:
+    type: string
+    description: |
+        Type of the transaction:
+
+        A ``CREATE`` transaction creates an asset in BigchainDB. This
+        transaction has outputs (conditions) but no inputs (fulfillments),
+        so a dummy fulfillment is used.
+
+        A ``TRANSFER`` transaction transfers ownership of an asset, by providing
+        fulfillments to conditions of earlier transactions.
+
+        A ``GENESIS`` transaction is a special case transaction used as the
+        sole member of the first block in a BigchainDB ledger.
+    enum:
+    - CREATE
+    - TRANSFER
+    - GENESIS
+  asset:
+    type: object
+    description: |
+        Description of the asset being transacted. In the case of a ``TRANSFER``
+        transaction, this field contains only the ID of asset. In the case
+        of a ``CREATE`` transaction, this field may contain properties:
+    additionalProperties: false
+    required:
+    - id
+    properties:
+      id:
+        "$ref": "#/definitions/uuid4"
+      divisible:
+        type: boolean
+        description: |
+            Whether or not the asset has a quantity that may be partially spent.
+      updatable:
+        type: boolean
+        description: |
+            Whether or not the description of the asset may be updated. Defaults to false.
+      refillable:
+        type: boolean
+        description: |
+          Whether the amount of the asset can change after its creation. Defaults to false.
+      data:
+        description: |
+          User provided metadata associated with the asset. May also be ``null``.
+        anyOf:
+        - type: object
+          additionalProperties: true
+        - type: 'null'
+  condition:
+    type: object
+    description: |
+        An output of a transaction. A condition describes a quantity of an asset
+        and what conditions must be met in order for it to be fulfilled. See also:
+        fulfillment_.
+    additionalProperties: false
+    required:
+    - owners_after
+    - condition
+    - amount
+    properties:
+      cid:
+        "$ref": "#/definitions/offset"
+        description: |
+            Index of this condition's appearance in the `Transaction.conditions`_
+            array. In a transaction with 2 conditions, the ``cid``s will be 0 and 1.
+      condition:
+        description: |
+            Body of the condition. Has the properties:
+
+            - **details**: Details of the condition.
+            - **uri**: Condition encoded as an ASCII string.
+        type: object
+        additionalProperties: false
+        required:
+        - details
+        - uri
+        properties:
+          details:
+            type: object
+            additionalProperties: true
+          uri:
+            type: string
+            pattern: "^cc:([1-9a-f][0-9a-f]{0,3}|0):[1-9a-f][0-9a-f]{0,15}:[a-zA-Z0-9_-]{0,86}:([1-9][0-9]{0,17}|0)$"
+      owners_after:
+        "$ref": "#/definitions/owners_list"
+        description: |
+            List of public keys associated with asset ownership at the time
+            of the transaction.
+      amount:
+        type: integer
+        description: |
+            Integral amount of the asset represented by this condition.
+            In the case of a non divisible asset, this will always be 1.
+  fulfillment:
+    type: "object"
+    description:
+      A fulfillment is an input to a transaction, named as such because it
+      fulfills a condition of a previous transaction. In the case of a
+      ``CREATE`` transaction, a fulfillment may provide no ``input``.
+    additionalProperties: false
+    required:
+    - owners_before
+    - input
+    - fulfillment
+    properties:
+      fid:
+        "$ref": "#/definitions/offset"
+        description: |
+            The offset of the fulfillment within the fulfillents array.
+      owners_before:
+        "$ref": "#/definitions/owners_list"
+        description: |
+            List of public keys of the previous owners of the asset.
+      fulfillment:
+        anyOf:
+        - type: object
+          additionalProperties: false
+          properties:
+            bitmask:
+              type: integer
+            public_key:
+              type: string
+            type:
+              type: string
+            signature:
+              anyOf:
+              - type: string
+              - type: 'null'
+            type_id:
+              type: integer
+          description: |
+              Fulfillment of a condition_, or put a different way, this is a
+              payload that satisfies a condition in order to spend the associated
+              asset.
+        - type: string
+          pattern: "^cf:([1-9a-f][0-9a-f]{0,3}|0):[a-zA-Z0-9_-]*$"
+      input:
+        anyOf:
+        - type: 'object'
+          description: |
+            Reference to a condition of a previous transaction
+          additionalProperties: false
+          properties:
+            cid:
+              "$ref": "#/definitions/offset"
+            txid:
+              "$ref": "#/definitions/sha3_hexdigest"
+        - type: 'null'
+  metadata:
+    anyOf:
+    - type: object
+      description: |
+        User provided transaction metadata. This field may be ``null`` or may
+        contain an id and an object with freeform metadata.
+      additionalProperties: false
+      required:
+      - id
+      - data
+      properties:
+        id:
+          "$ref": "#/definitions/uuid4"
+        data:
+          type: object
+          description: |
+            User provided transaction metadata.
+          additionalProperties: true
+    - type: 'null'

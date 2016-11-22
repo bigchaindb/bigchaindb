@@ -19,6 +19,8 @@ DATA = {
 }
 DATA_ID = '872fa6e6f46246cd44afdb2ee9cfae0e72885fb0910e2bcf9a5a2a4eadb417b8'
 
+UUID4 = 'dc568f27-a113-46b4-9bd4-43015859e3e3'
+
 
 @pytest.fixture
 def user_priv():
@@ -127,6 +129,11 @@ def data():
 @pytest.fixture
 def data_id():
     return DATA_ID
+
+
+@pytest.fixture
+def uuid4():
+    return UUID4
 
 
 @pytest.fixture
