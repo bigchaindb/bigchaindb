@@ -224,9 +224,14 @@ class RethinkDBBackend:
         # TODO: use index!
         return self.connection.run(
                 r.table('bigchain', read_mode=self.read_mode)
+                .get_all([transaction_id, condition_id], index='inputs')
                 .concat_map(lambda doc: doc['block']['transactions'])
-                .filter(lambda transaction: transaction['transaction']['fulfillments'].contains(
-                    lambda fulfillment: fulfillment['input'] == {'txid': transaction_id, 'cid': condition_id})))
+                .filter(lambda transaction:
+                        transaction['transaction']['fulfillments']
+                        .contains(lambda fulfillment:
+                                  fulfillment['input'] ==
+                                  {'txid': transaction_id,
+                                   'cid': condition_id})))
 
     def get_owned_ids(self, owner):
         """Retrieve a list of `txids` that can we used has inputs.

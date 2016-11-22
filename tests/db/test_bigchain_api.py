@@ -1118,11 +1118,11 @@ class TestMultipleInputs(object):
         block = b.create_block([tx])
         b.write_block(block, durability='hard')
 
-        owned_inputs_user1 = b.get_owned_ids(user_pk).pop()
+        unspent_inputs_user1 = b.get_unspents([user_pk]).pop()
 
         # check spents
-        input_txid = owned_inputs_user1.txid
-        input_cid = owned_inputs_user1.cid
+        input_txid = unspent_inputs_user1.txid
+        input_cid = unspent_inputs_user1.cid
         spent_inputs_user1 = b.get_spent(input_txid, input_cid)
         assert spent_inputs_user1 is None
 
@@ -1153,11 +1153,11 @@ class TestMultipleInputs(object):
         vote = b.vote(block.id, genesis.id, True)
         b.write_vote(vote)
 
-        owned_inputs_user1 = b.get_owned_ids(user_pk).pop()
+        unspent_inputs_user1 = b.get_unspents([user_pk]).pop()
 
         # check spents
-        input_txid = owned_inputs_user1.txid
-        input_cid = owned_inputs_user1.cid
+        input_txid = unspent_inputs_user1.txid
+        input_cid = unspent_inputs_user1.cid
         spent_inputs_user1 = b.get_spent(input_txid, input_cid)
         assert spent_inputs_user1 is None
 
@@ -1196,10 +1196,10 @@ class TestMultipleInputs(object):
         block = b.create_block([tx_create_signed])
         b.write_block(block, durability='hard')
 
-        owned_inputs_user1 = b.get_owned_ids(user_pk)
+        unspent_inputs_user1 = b.get_unspents([user_pk])
 
         # check spents
-        for input_tx in owned_inputs_user1:
+        for input_tx in unspent_inputs_user1:
             assert b.get_spent(input_tx.txid, input_tx.cid) is None
 
         # transfer the first 2 inputs
@@ -1237,10 +1237,10 @@ class TestMultipleInputs(object):
         block = b.create_block(transactions)
         b.write_block(block, durability='hard')
 
-        owned_inputs_user1 = b.get_owned_ids(user_pk)
+        unspent_inputs_user1 = b.get_unspents([user_pk])
 
         # check spents
-        for input_tx in owned_inputs_user1:
+        for input_tx in unspent_inputs_user1:
             assert b.get_spent(input_tx.txid, input_tx.cid) is None
 
         # create a transaction
