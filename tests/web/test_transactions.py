@@ -43,7 +43,7 @@ def test_post_create_transaction_with_invalid_id(b, client):
 
     tx = Transaction.create([user_pub], [([user_pub], 1)])
     tx = tx.sign([user_priv]).to_dict()
-    tx['id'] = 'invalid id'
+    tx['id'] = 'abcd' * 16
 
     res = client.post(TX_ENDPOINT, data=json.dumps(tx))
     assert res.status_code == 400
@@ -55,9 +55,14 @@ def test_post_create_transaction_with_invalid_signature(b, client):
 
     tx = Transaction.create([user_pub], [([user_pub], 1)])
     tx = tx.sign([user_priv]).to_dict()
-    tx['transaction']['fulfillments'][0]['fulfillment'] = 'invalid signature'
+    tx['transaction']['fulfillments'][0]['fulfillment'] = 'cf:0:0'
 
     res = client.post(TX_ENDPOINT, data=json.dumps(tx))
+    assert res.status_code == 400
+
+
+def test_post_create_transaction_with_invalid_structure(client):
+    res = client.post(TX_ENDPOINT, data='{}')
     assert res.status_code == 400
 
 

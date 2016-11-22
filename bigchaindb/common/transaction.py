@@ -590,7 +590,6 @@ class Metadata(object):
         if data is not None and not isinstance(data, dict):
             raise TypeError('`data` must be a dict instance or None')
 
-        # TODO: Rename `payload_id` to `id`
         self.data_id = data_id if data_id is not None else self.to_hash()
         self.data = data
 
@@ -1248,16 +1247,12 @@ class Transaction(object):
         tx = Transaction._remove_signatures(self.to_dict())
         return Transaction._to_str(tx)
 
-    @classmethod
-    # TODO: Make this method more pretty
-    def from_dict(cls, tx_body):
-        """Transforms a Python dictionary to a Transaction object.
+    @staticmethod
+    def validate_structure(tx_body):
+        """Validate the transaction ID of a transaction
 
             Args:
                 tx_body (dict): The Transaction to be transformed.
-
-            Returns:
-                :class:`~bigchaindb.common.transaction.Transaction`
         """
         # NOTE: Remove reference to avoid side effects
         tx_body = deepcopy(tx_body)
@@ -1272,17 +1267,28 @@ class Transaction(object):
 
         if proposed_tx_id != valid_tx_id:
             raise InvalidHash()
-        else:
-            tx = tx_body['transaction']
-            fulfillments = [Fulfillment.from_dict(fulfillment) for fulfillment
-                            in tx['fulfillments']]
-            conditions = [Condition.from_dict(condition) for condition
-                          in tx['conditions']]
-            metadata = Metadata.from_dict(tx['metadata'])
-            if tx['operation'] in [cls.CREATE, cls.GENESIS]:
-                asset = Asset.from_dict(tx['asset'])
-            else:
-                asset = AssetLink.from_dict(tx['asset'])
 
-            return cls(tx['operation'], asset, fulfillments, conditions,
-                       metadata, tx['timestamp'], tx_body['version'])
+    @classmethod
+    def from_dict(cls, tx_body):
+        """Transforms a Python dictionary to a Transaction object.
+
+            Args:
+                tx_body (dict): The Transaction to be transformed.
+
+            Returns:
+                :class:`~bigchaindb.common.transaction.Transaction`
+        """
+        cls.validate_structure(tx_body)
+        tx = tx_body['transaction']
+        fulfillments = [Fulfillment.from_dict(fulfillment) for fulfillment
+                        in tx['fulfillments']]
+        conditions = [Condition.from_dict(condition) for condition
+                      in tx['conditions']]
+        metadata = Metadata.from_dict(tx['metadata'])
+        if tx['operation'] in [cls.CREATE, cls.GENESIS]:
+            asset = Asset.from_dict(tx['asset'])
+        else:
+            asset = AssetLink.from_dict(tx['asset'])
+
+        return cls(tx['operation'], asset, fulfillments, conditions,
+                   metadata, tx['timestamp'], tx_body['version'])
