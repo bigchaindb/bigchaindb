@@ -178,39 +178,6 @@ class TestBigchainApi(object):
         assert b.get_transaction(tx1.id) is None
         assert b.get_transaction(tx2.id) == tx2
 
-    def test_get_transactions_for_metadata(self, b, user_pk):
-        from bigchaindb.models import Transaction
-
-        metadata = {'msg': 'Hello BigchainDB!'}
-        tx = Transaction.create([b.me], [([user_pk], 1)], metadata=metadata)
-
-        block = b.create_block([tx])
-        b.write_block(block)
-
-        matches = b.get_transaction_by_metadata_id(tx.metadata.data_id)
-        assert len(matches) == 1
-        assert matches[0].id == tx.id
-
-    @pytest.mark.usefixtures('inputs')
-    def test_get_transactions_for_metadata_invalid_block(self, b, user_pk):
-        from bigchaindb.models import Transaction
-
-        metadata = {'msg': 'Hello BigchainDB!'}
-        tx = Transaction.create([b.me], [([user_pk], 1)], metadata=metadata)
-
-        block = b.create_block([tx])
-        b.write_block(block)
-        # vote block invalid
-        vote = b.vote(block.id, b.get_last_voted_block().id, False)
-        b.write_vote(vote)
-
-        matches = b.get_transaction_by_metadata_id(tx.metadata.data_id)
-        assert len(matches) == 0
-
-    def test_get_transactions_for_metadata_mismatch(self, b):
-        matches = b.get_transaction_by_metadata_id('missing')
-        assert not matches
-
     @pytest.mark.usefixtures('inputs')
     def test_write_transaction(self, b, user_pk, user_sk):
         from bigchaindb.models import Transaction
@@ -651,7 +618,7 @@ class TestTransactionValidation(object):
 
         sleep(1)
 
-        signed_transfer_tx.metadata.data = {'different': 1}
+        signed_transfer_tx.metadata = {'different': 1}
         # FIXME: https://github.com/bigchaindb/bigchaindb/issues/592
         with pytest.raises(DoubleSpend):
             b.validate_transaction(signed_transfer_tx)
