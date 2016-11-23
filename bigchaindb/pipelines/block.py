@@ -140,6 +140,7 @@ def initial():
 
     return bigchain.backend.get_old_transactions(bigchain.me)
 
+
 def get_changefeed():
     """Create and return the changefeed for the backlog."""
 
