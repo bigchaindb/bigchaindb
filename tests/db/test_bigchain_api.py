@@ -273,8 +273,8 @@ class TestBigchainApi(object):
         block = b.backend.get_genesis_block()
 
         assert len(block['block']['transactions']) == 1
-        assert block['block']['transactions'][0]['transaction']['operation'] == 'GENESIS'
-        assert block['block']['transactions'][0]['transaction']['fulfillments'][0]['input'] is None
+        assert block['block']['transactions'][0]['operation'] == 'GENESIS'
+        assert block['block']['transactions'][0]['fulfillments'][0]['input'] is None
 
     def test_create_genesis_block_fails_if_table_not_empty(self, b):
         from bigchaindb.common.exceptions import GenesisBlockAlreadyExistsError

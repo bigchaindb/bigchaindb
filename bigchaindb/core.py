@@ -367,7 +367,7 @@ class Bigchain(object):
         cursor = self.backend.get_asset_by_id(asset_id)
         cursor = list(cursor)
         if cursor:
-            return Asset.from_dict(cursor[0]['transaction']['asset'])
+            return Asset.from_dict(cursor[0]['asset'])
 
     def get_spent(self, txid, cid):
         """Check if a `txid` was already used as an input.
@@ -436,7 +436,7 @@ class Bigchain(object):
             # use it after the execution of this function.
             # a transaction can contain multiple outputs (conditions) so we need to iterate over all of them
             # to get a list of outputs available to spend
-            for index, cond in enumerate(tx['transaction']['conditions']):
+            for index, cond in enumerate(tx['conditions']):
                 # for simple signature conditions there are no subfulfillments
                 # check if the owner is in the condition `owners_after`
                 if len(cond['owners_after']) == 1:
