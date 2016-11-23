@@ -236,6 +236,17 @@ Transactions
    This endpoint returns assets only if the transaction they're in are
    included in a ``VALID`` or ``UNDECIDED`` block on ``bigchain``.
 
+   .. note::
+       The BigchainDB API currently doesn't expose an
+       ``/assets/{asset_id}`` endpoint, as there wouldn't be any way for a
+       client to verify that what was received is consistent with what was
+       persisted in the database.
+       However, BigchainDB's consensus ensures that any ``asset_id`` is
+       a unique key identifying an asset, meaning that when calling
+       ``/transactions?operation=CREATE&asset_id={asset_id}``, there will in
+       any case only be one transaction returned (in a list though, since
+       ``/transactions`` is a list-returning endpoint).
+
    :query string operation: One of the three supported operations of a transaction: ``GENESIS``, ``CREATE``, ``TRANSFER``.
 
    :query string asset_id: asset ID.
@@ -311,6 +322,17 @@ Transactions
 
    This endpoint returns assets only if the transaction they're in are
    included in a ``VALID`` or ``UNDECIDED`` block on ``bigchain``.
+
+   .. note::
+       The BigchainDB API currently doesn't expose an
+       ``/metadata/{metadata_id}`` endpoint, as there wouldn't be any way for a
+       client to verify that what was received is consistent with what was
+       persisted in the database.
+       However, BigchainDB's consensus ensures that any ``metadata_id`` is
+       a unique key identifying metadata, meaning that when calling
+       ``/transactions?metadata_id={metadata_id}``, there will in any case only
+       be one transaction returned (in a list though, since ``/transactions``
+       is a list-returning endpoint).
 
    :query string metadata_id: metadata ID.
 
