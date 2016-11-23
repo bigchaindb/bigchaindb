@@ -43,6 +43,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
     'sphinxcontrib.httpdomain',
+    'sphinx.ext.autosectionlabel',
 ]
 
 # autodoc settings
