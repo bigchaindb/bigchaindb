@@ -435,7 +435,7 @@ Transactions
 Statuses
 --------------------------------
 
-.. http:get:: /statuses/{tx_id | block_id}
+.. http:get:: /statuses/{tx_id|block_id}
 
    Get the status of an asynchronously written resource by their id.
 
@@ -445,9 +445,9 @@ Statuses
    The possible status values are ``backlog``, ``undecided``, ``valid`` or
    ``invalid``.
 
-   If a transaction or block is persisted to the chain and it's status is set to
-   ``valid`` or ``undecided``, a ``303 See Other`` status code is returned, as
-   well as an URL to the resource in the location header.
+   If a transaction or block is persisted to the chain and it's status is set
+   to ``valid`` or ``undecided``, a ``303 See Other`` status code is returned,
+   as well as an URL to the resource in the location header.
 
    :param tx_id: transaction ID
    :type tx_id: hex string
