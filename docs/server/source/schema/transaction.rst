@@ -157,8 +157,8 @@ Condition.cid
 
 **type:** integer
 
-Index of this condition's appearance in the `Transaction.conditions`_
-array. In a transaction with 2 conditions, the ``cid``s will be 0 and 1.
+Index of this condition's appearance in the Transaction.conditions_ 
+array. In a transaction with 2 conditions, the ``cid``\ s will be 0 and 1.
 
 
 
