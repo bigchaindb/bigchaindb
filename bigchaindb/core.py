@@ -330,35 +330,6 @@ class Bigchain(object):
         else:
             return None
 
-    def get_transaction_by_metadata_id(self, metadata_id):
-        """Retrieves valid or undecided transactions related to a particular
-        metadata.
-
-        When creating a transaction one of the optional arguments is the
-        `metadata`. The metadata is a generic dict that contains extra
-        information that can be appended to the transaction.
-
-        To make it easy to query the bigchain for that particular metadata we
-        create a UUID for the metadata and store it with the transaction.
-
-        Args:
-            metadata_id (str): the id for this particular metadata.
-
-        Returns:
-            A list of valid or undecided transactions containing that metadata.
-            If no transaction exists with that metadata it returns an empty
-            list `[]`
-        """
-        txids = self.backend.get_txids_by_metadata_id(metadata_id)
-        transactions = []
-        for txid in txids:
-            tx = self.get_transaction(txid)
-            # if a valid or undecided transaction exists append it to the list
-            # of transactions
-            if tx:
-                transactions.append(tx)
-        return transactions
-
     def get_transactions_by_asset_id(self, asset_id):
         """Retrieves valid or undecided transactions related to a particular
         asset.

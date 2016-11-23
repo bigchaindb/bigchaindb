@@ -136,7 +136,7 @@ Transaction.metadata
 **type:** object or null
 
 User provided transaction metadata. This field may be ``null`` or may
-contain an id and an object with freeform metadata.
+contain an object with freeform metadata.
 
 See: `Metadata`_.
 
@@ -301,26 +301,7 @@ Metadata
 --------
 
 User provided transaction metadata. This field may be ``null`` or may
-contain an id and an object with freeform metadata.
-
-
-Metadata.id
-^^^^^^^^^^^
-
-**type:** string
-
-A `UUID <https://tools.ietf.org/html/rfc4122.html>`_
-of type 4 (random).
-
-
-
-Metadata.data
-^^^^^^^^^^^^^
-
-**type:** object
-
-User provided transaction metadata.
-
+contain an object with freeform metadata.
 
 
 
