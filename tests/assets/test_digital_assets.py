@@ -8,7 +8,7 @@ from ..db.conftest import inputs  # noqa
 def test_asset_transfer(b, user_pk, user_sk):
     from bigchaindb.models import Transaction
 
-    tx_input = b.get_owned_ids(user_pk).pop()
+    tx_input = b.get_unspents([user_pk]).pop()
     tx_create = b.get_transaction(tx_input.txid)
 
     tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([user_pk], 1)],
@@ -60,7 +60,7 @@ def test_validate_transfer_asset_id_mismatch(b, user_pk, user_sk):
     from bigchaindb.common.exceptions import AssetIdMismatch
     from bigchaindb.models import Transaction
 
-    tx_create = b.get_owned_ids(user_pk).pop()
+    tx_create = b.get_unspents([user_pk]).pop()
     tx_create = b.get_transaction(tx_create.txid)
     tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([user_pk], 1)],
                                        tx_create.asset)
@@ -83,7 +83,7 @@ def test_get_asset_id_create_transaction(b, user_pk):
 def test_get_asset_id_transfer_transaction(b, user_pk, user_sk):
     from bigchaindb.models import Transaction, Asset
 
-    tx_create = b.get_owned_ids(user_pk).pop()
+    tx_create = b.get_unspents([user_pk]).pop()
     tx_create = b.get_transaction(tx_create.txid)
     # create a transfer transaction
     tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([user_pk], 1)],
@@ -115,7 +115,7 @@ def test_asset_id_mismatch(b, user_pk):
 def test_get_transactions_by_asset_id(b, user_pk, user_sk):
     from bigchaindb.models import Transaction
 
-    tx_create = b.get_owned_ids(user_pk).pop()
+    tx_create = b.get_unspents([user_pk]).pop()
     tx_create = b.get_transaction(tx_create.txid)
     asset_id = tx_create.asset.data_id
     txs = b.get_transactions_by_asset_id(asset_id)
@@ -148,7 +148,7 @@ def test_get_transactions_by_asset_id(b, user_pk, user_sk):
 def test_get_transactions_by_asset_id_with_invalid_block(b, user_pk, user_sk):
     from bigchaindb.models import Transaction
 
-    tx_create = b.get_owned_ids(user_pk).pop()
+    tx_create = b.get_unspents([user_pk]).pop()
     tx_create = b.get_transaction(tx_create.txid)
     asset_id = tx_create.asset.data_id
     txs = b.get_transactions_by_asset_id(asset_id)
@@ -177,7 +177,7 @@ def test_get_transactions_by_asset_id_with_invalid_block(b, user_pk, user_sk):
 def test_get_asset_by_id(b, user_pk, user_sk):
     from bigchaindb.models import Transaction
 
-    tx_create = b.get_owned_ids(user_pk).pop()
+    tx_create = b.get_unspents([user_pk]).pop()
     tx_create = b.get_transaction(tx_create.txid)
     asset_id = tx_create.asset.data_id
 

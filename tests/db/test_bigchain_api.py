@@ -215,7 +215,7 @@ class TestBigchainApi(object):
     def test_write_transaction(self, b, user_pk, user_sk):
         from bigchaindb.models import Transaction
 
-        input_tx = b.get_owned_ids(user_pk).pop()
+        input_tx = b.get_unspents([user_pk]).pop()
         input_tx = b.get_transaction(input_tx.txid)
         inputs = input_tx.to_inputs()
         tx = Transaction.transfer(inputs, [([user_pk], 1)], input_tx.asset)
@@ -233,7 +233,7 @@ class TestBigchainApi(object):
     def test_read_transaction(self, b, user_pk, user_sk):
         from bigchaindb.models import Transaction
 
-        input_tx = b.get_owned_ids(user_pk).pop()
+        input_tx = b.get_unspents([user_pk]).pop()
         input_tx = b.get_transaction(input_tx.txid)
         inputs = input_tx.to_inputs()
         tx = Transaction.transfer(inputs, [([user_pk], 1)], input_tx.asset)
@@ -253,7 +253,7 @@ class TestBigchainApi(object):
     def test_read_transaction_invalid_block(self, b, user_pk, user_sk):
         from bigchaindb.models import Transaction
 
-        input_tx = b.get_owned_ids(user_pk).pop()
+        input_tx = b.get_unspents([user_pk]).pop()
         input_tx = b.get_transaction(input_tx.txid)
         inputs = input_tx.to_inputs()
         tx = Transaction.transfer(inputs, [([user_pk], 1)], input_tx.asset)
@@ -277,7 +277,7 @@ class TestBigchainApi(object):
     def test_read_transaction_invalid_block_and_backlog(self, b, user_pk, user_sk):
         from bigchaindb.models import Transaction
 
-        input_tx = b.get_owned_ids(user_pk).pop()
+        input_tx = b.get_unspents([user_pk]).pop()
         input_tx = b.get_transaction(input_tx.txid)
         inputs = input_tx.to_inputs()
         tx = Transaction.transfer(inputs, [([user_pk], 1)], input_tx.asset)
@@ -547,7 +547,7 @@ class TestBigchainApi(object):
         from bigchaindb.models import Transaction
         from bigchaindb.db.utils import get_conn
 
-        input_tx = b.get_owned_ids(user_pk).pop()
+        input_tx = b.get_unspents([user_pk]).pop()
         input_tx = b.get_transaction(input_tx.txid)
         inputs = input_tx.to_inputs()
         tx = Transaction.transfer(inputs, [([user_pk], 1)], input_tx.asset)
@@ -573,7 +573,7 @@ class TestBigchainApi(object):
 
         # test assignee for several transactions
         for _ in range(20):
-            input_tx = b.get_owned_ids(user_pk).pop()
+            input_tx = b.get_unspents([user_pk]).pop()
             input_tx = b.get_transaction(input_tx.txid)
             inputs = input_tx.to_inputs()
             tx = Transaction.transfer(inputs, [([user_pk], 1)], input_tx.asset)
@@ -649,7 +649,7 @@ class TestTransactionValidation(object):
         from bigchaindb.common.exceptions import InvalidSignature
         from bigchaindb.models import Transaction
 
-        input_tx = b.get_owned_ids(user_pk).pop()
+        input_tx = b.get_unspents([user_pk]).pop()
         input_transaction = b.get_transaction(input_tx.txid)
         sk, pk = generate_key_pair()
         tx = Transaction.create([pk], [([user_pk], 1)])
@@ -693,7 +693,7 @@ class TestTransactionValidation(object):
                                                                user_sk):
         from bigchaindb.models import Transaction
 
-        input_tx = b.get_owned_ids(user_pk).pop()
+        input_tx = b.get_unspents([user_pk]).pop()
         input_tx = b.get_transaction(input_tx.txid)
         inputs = input_tx.to_inputs()
         transfer_tx = Transaction.transfer(inputs, [([user_pk], 1)],
@@ -716,7 +716,7 @@ class TestTransactionValidation(object):
         from bigchaindb.models import Transaction
         from bigchaindb.common.exceptions import TransactionNotInValidBlock
 
-        input_tx = b.get_owned_ids(user_pk).pop()
+        input_tx = b.get_unspents([user_pk]).pop()
         input_tx = b.get_transaction(input_tx.txid)
         inputs = input_tx.to_inputs()
 
@@ -752,7 +752,7 @@ class TestBlockValidation(object):
         from bigchaindb import util
 
         # invalid transaction
-        valid_input = b.get_owned_ids(user_pk).pop()
+        valid_input = b.get_unspents([user_pk]).pop()
         tx_invalid = b.create_transaction('a', 'b', valid_input, 'c')
 
         block = b.create_block([tx_invalid])
@@ -829,7 +829,7 @@ class TestMultipleInputs(object):
         from bigchaindb.models import Transaction
         user2_sk, user2_pk = crypto.generate_key_pair()
 
-        tx_link = b.get_owned_ids(user_pk).pop()
+        tx_link = b.get_unspents([user_pk]).pop()
         input_tx = b.get_transaction(tx_link.txid)
         inputs = input_tx.to_inputs()
         tx = Transaction.transfer(inputs, [([user2_pk], 1)], input_tx.asset)
@@ -850,7 +850,7 @@ class TestMultipleInputs(object):
         user2_sk, user2_pk = crypto.generate_key_pair()
         user3_sk, user3_pk = crypto.generate_key_pair()
 
-        owned_inputs = b.get_owned_ids(user_pk)
+        owned_inputs = b.get_unspents([user_pk])
         tx_link = owned_inputs.pop()
         input_tx = b.get_transaction(tx_link.txid)
         tx = Transaction.transfer(input_tx.to_inputs(),
@@ -880,7 +880,7 @@ class TestMultipleInputs(object):
         vote = b.vote(block.id, b.get_last_voted_block().id, True)
         b.write_vote(vote)
 
-        owned_input = b.get_owned_ids(user_pk).pop()
+        owned_input = b.get_unspents([user_pk]).pop()
         input_tx = b.get_transaction(owned_input.txid)
         inputs = input_tx.to_inputs()
 
@@ -914,7 +914,7 @@ class TestMultipleInputs(object):
         b.write_vote(vote)
 
         # get input
-        tx_link = b.get_owned_ids(user_pk).pop()
+        tx_link = b.get_unspents([user_pk]).pop()
         tx_input = b.get_transaction(tx_link.txid)
 
         tx = Transaction.transfer(tx_input.to_inputs(),
