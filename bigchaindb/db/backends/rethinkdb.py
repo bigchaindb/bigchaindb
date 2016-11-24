@@ -90,7 +90,7 @@ class RethinkDBBackend:
                 r.table('backlog')
                 .filter(lambda tx: time() - tx['assignment_timestamp'] > reassign_delay))
 
-    def get_old_transactions(self, node):
+    def get_old_transactions(self, node_pubkey):
         """Returns the oldest transactions.
 
         Old transactions are not necessarily stale transactions.  If a node
@@ -98,15 +98,15 @@ class RethinkDBBackend:
         to find transactions that were previously assigned to it.
 
         Args:
-            node (str): public key of node
+            node_pubkey (str): public key of node
 
         Returns:
             A cursor of transactions.
         """
         return self.connection.run(
             r.table('backlog')
-            .between([node, r.minval],
-                     [node, r.maxval],
+            .between([node_pubkey, r.minval],
+                     [node_pubkey, r.maxval],
                      index='assignee__transaction_timestamp')
             .order_by(index=r.asc('assignee__transaction_timestamp')))
 
