@@ -23,15 +23,20 @@ def _validate_schema(schema, body):
 
 
 TX_SCHEMA_PATH, TX_SCHEMA = _load_schema('transaction')
+
+
+def validate_transaction_schema(tx):
+    """ Validate a transaction dict """
+    _validate_schema(TX_SCHEMA, tx)
+
+
 VOTE_SCHEMA_PATH, VOTE_SCHEMA = _load_schema('vote')
 
 
-def validate_transaction_schema(tx_body):
-    """ Validate a transaction dict """
-    _validate_schema(TX_SCHEMA, tx_body)
-
-
-def validate_vote_schema(tx_body):
+def validate_vote_schema(vote):
     """ Validate a vote dict """
-    _validate_schema(VOTE_SCHEMA, tx_body)
-
+    # A vote does not have an ID, but the database may add one.
+    if 'id' in vote:
+        vote = dict(vote)
+        del vote['id']
+    _validate_schema(VOTE_SCHEMA, vote)
