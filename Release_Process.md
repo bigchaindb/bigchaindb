@@ -2,7 +2,7 @@
 
 This is a summary of the steps we go through to release a new version of BigchainDB Server.
 
-1. Run `python docs/server/generate_schema_documentation.py` and commit the changes in docs/server/sources/schema, if any.
+1. Run `python docs/server/generate_schema_documentation.py` and commit the changes in `docs/server/source/schema/`, if any.
 1. Update the `CHANGELOG.md` file
 1. Update the version numbers in `bigchaindb/version.py`. Note that we try to use [semantic versioning](http://semver.org/) (i.e. MAJOR.MINOR.PATCH)
 1. Go to the [bigchaindb/bigchaindb Releases page on GitHub](https://github.com/bigchaindb/bigchaindb/releases)
