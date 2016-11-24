@@ -32,7 +32,7 @@ What did you just install?
 * [The aws-cli package](https://pypi.python.org/pypi/awscli), which is an AWS Command Line Interface (CLI).
 
 
-## Basic AWS Setup
+## Setting up in AWS
 
 See the page about [basic AWS Setup](../appendices/aws-setup.html) in the Appendices.
 
