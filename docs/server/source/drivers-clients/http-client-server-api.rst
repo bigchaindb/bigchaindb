@@ -470,15 +470,22 @@ Statuses
 Blocks
 --------------------------------
 
-.. http:get:: /blocks/{block_id}
+.. http:get:: /blocks/{block_id}?status={VALID|UNDECIDED|INVALID}
 
    Get the block with the ID ``block_id``.
 
-   A block is only returned if it was labeled ``VALID`` or ``UNDECIDED`` and
-   exists in the table ``bigchain``.
+   .. note::
+       As ``status``'s default value is set to ``VALID``, only ``VALID`` blocks
+       will be returned by this endpoint. In case ``status=VALID``, but a block
+       that was labeled ``UNDECIDED`` or ``INVALID`` is requested by
+       ``block_id``, this endpoint will return a ``404 Not Found`` status code
+       to warn the user. To check a block's status independently, use the
+       `Statuses endpoint <#get--statuses-tx_id|block_id>`_.
 
    :param block_id: block ID
    :type block_id: hex string
+
+   :query string status: Per default set to ``VALID``. One of ``VALID``, ``UNDECIDED`` or ``INVALID``.
 
    **Example request**:
 
@@ -512,8 +519,9 @@ Blocks
 
    :resheader Content-Type: ``application/json``
 
-   :statuscode 200: A block with that ID was found. Its status is either ``VALID`` or ``UNDECIDED``.
-   :statuscode 404: A block with that ID was not found.
+   :statuscode 200: A block with that ID was found.
+   :statuscode 400: The request wasn't understood by the server, e.g. just requesting ``/blocks`` without the ``block_id``.
+   :statuscode 404: A block with that ID and a certain ``status`` was not found.
 
 .. http:get:: /blocks
 
