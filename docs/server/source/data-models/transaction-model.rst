@@ -55,7 +55,7 @@ Here's some explanation of the contents of a :ref:`transaction <transaction>`:
         - :ref:`id <metadata.id>`: UUID version 4 (random) converted to a string of hex digits in standard form.
         - :ref:`data <metadata.data>`: Can be any JSON document. It may be empty in the case of a transfer transaction.
 
-Later, when we get to the models for the block and the vote, we'll see that both include a signature (from the node which created it). You may wonder why transactions don't have signatures... The answer is that they do! They're just hidden inside the ``fulfillment`` string of each fulfillment. A creation transaction is signed by the node that created it. A transfer transaction is signed by whoever currently controls or owns it.
+Later, when we get to the models for the block and the vote, we'll see that both include a signature (from the node which created it). You may wonder why transactions don't have signatures... The answer is that they do! They're just hidden inside the ``fulfillment`` string of each fulfillment. A creation transaction is signed by whoever created it. A transfer transaction is signed by whoever currently controls or owns it.
 
 What gets signed? For each fulfillment in the transaction, the "fullfillment message" that gets signed includes the ``operation``, ``data``, ``version``, ``id``, corresponding ``condition``, and the fulfillment itself, except with its fulfillment string set to ``null``. The computed signature goes into creating the ``fulfillment`` string of the fulfillment.
 
