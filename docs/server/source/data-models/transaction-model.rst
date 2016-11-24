@@ -22,38 +22,35 @@ A transaction has the following structure:
     {
         "id": "<hash of transaction, excluding signatures (see explanation)>",
         "version": "<version number of the transaction model>",
-        "transaction": {
-            "fulfillments": ["<list of fulfillments>"],
-            "conditions": ["<list of conditions>"],
-            "operation": "<string>",
-            "asset": "<digital asset description (explained in the next section)>",
-            "metadata": {
-                "id": "<uuid>",
-                "data": "<any JSON document>"
-            }
+        "fulfillments": ["<list of fulfillments>"],
+        "conditions": ["<list of conditions>"],
+        "operation": "<string>",
+        "asset": "<digital asset description (explained in the next section)>",
+        "metadata": {
+            "id": "<uuid>",
+            "data": "<any JSON document>"
         }
     }
 
 Here's some explanation of the contents of a :ref:`transaction <transaction>`:
 
-- :ref:`id <transaction.id>`: The id of the transaction, and also the database primary key.
-- :ref:`version <transaction.version>`: Version number of the transaction model, so that software can support different transaction models.
-- :ref:`transaction <Transaction Body>`:
-    - **fulfillments**: List of fulfillments. Each :ref:`fulfillment <Fulfillment>` contains a pointer to an unspent asset
-      and a *crypto fulfillment* that satisfies a spending condition set on the unspent asset. A *fulfillment*
-      is usually a signature proving the ownership of the asset.
-      See :doc:`./crypto-conditions`.
+- id: The :ref:`id <transaction.id>` of the transaction, and also the database primary key.
+- version: :ref:`Version <transaction.version>` number of the transaction model, so that software can support different transaction models.
+- **fulfillments**: List of fulfillments. Each :ref:`fulfillment <Fulfillment>` contains a pointer to an unspent asset
+  and a *crypto fulfillment* that satisfies a spending condition set on the unspent asset. A *fulfillment*
+  is usually a signature proving the ownership of the asset.
+  See :doc:`./crypto-conditions`.
 
-    - **conditions**: List of conditions. Each :ref:`condition <Condition>` is a *crypto-condition* that needs to be fulfilled by a transfer transaction in order to transfer ownership to new owners.
-      See :doc:`./crypto-conditions`.
+- **conditions**: List of conditions. Each :ref:`condition <Condition>` is a *crypto-condition* that needs to be fulfilled by a transfer transaction in order to transfer ownership to new owners.
+  See :doc:`./crypto-conditions`.
 
-    - **operation**: String representation of the :ref:`operation <transaction.operation>` being performed (currently either "CREATE", "TRANSFER" or "GENESIS"). It determines how the transaction should be validated.
+- **operation**: String representation of the :ref:`operation <transaction.operation>` being performed (currently either "CREATE", "TRANSFER" or "GENESIS"). It determines how the transaction should be validated.
 
-	- **asset**: Definition of the digital :ref:`asset <Asset>`. See next section.
+- **asset**: Definition of the digital :ref:`asset <Asset>`. See next section.
 
-    - **metadata**:
-        - :ref:`id <metadata.id>`: UUID version 4 (random) converted to a string of hex digits in standard form.
-        - :ref:`data <metadata.data>`: Can be any JSON document. It may be empty in the case of a transfer transaction.
+- **metadata**:
+    - :ref:`id <metadata.id>`: UUID version 4 (random) converted to a string of hex digits in standard form.
+    - :ref:`data <metadata.data>`: Can be any JSON document. It may be empty in the case of a transfer transaction.
 
 Later, when we get to the models for the block and the vote, we'll see that both include a signature (from the node which created it). You may wonder why transactions don't have signatures... The answer is that they do! They're just hidden inside the ``fulfillment`` string of each fulfillment. A creation transaction is signed by whoever created it. A transfer transaction is signed by whoever currently controls or owns it.
 
