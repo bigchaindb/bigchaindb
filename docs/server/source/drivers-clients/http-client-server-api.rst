@@ -520,9 +520,107 @@ Blocks
    :statuscode 200: A block with that ID was found. Its status is either ``VALID`` or ``UNDECIDED``.
    :statuscode 404: A block with that ID was not found.
 
-.. http:get:: /blocks?tx_id={tx_id}
+.. http:get:: /blocks
 
-   Descriptions: TODO
+   The current ``/blocks`` endpoint returns a ``404 Not Found`` HTTP status
+   code. Eventually, this functionality will get implemented.
+   We believe a PUSH rather than a PULL pattern is more appropriate, as the
+   items returned in the collection would change by the second.
+
+   :statuscode 404: BigchainDB does not expose this endpoint.
+
+
+.. http:get:: /blocks?tx_id={tx_id}&status={VALID|UNDECIDED|INVALID}
+
+   Retrieve a list of blocks that contain a transaction with the ID ``tx_id``.
+
+   Any blocks, be they ``VALID``, ``UNDECIDED`` or ``INVALID`` will be
+   returned. To filter blocks by their status, use the optional ``status``
+   querystring.
+
+   .. note::
+       In case no block was found, an empty list and an HTTP status code
+       ``200 OK`` is returned, as the request was still successful.
+
+   :query string tx_id: transaction ID
+   :query string status: Filter blocks by their status. One of ``VALID``, ``UNDECIDED`` or ``INVALID``.
+
+   **Example request**:
+
+   .. sourcecode:: http
+
+      GET /blocks?tx_id=2d431...0b4b0e HTTP/1.1
+      Host: example.com
+
+   **Example response**:
+
+   .. sourcecode:: http
+
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+
+      {
+        "block":{
+          "node_pubkey":"ErEeVZt8AfLbMJub25tjNxbpzzTNp3mGidL3GxGdd9bt",
+            "timestamp":"1479389911",
+            "transactions":[
+              {
+                "transaction": {
+                  "conditions": [
+                    {
+                      "cid": 0,
+                      "condition": {
+                        "uri": "cc:4:20:GG-pi3CeIlySZhQoJVBh9O23PzrOuhnYI7OHqIbHjkk:96",
+                        "details": {
+                          "signature": null,
+                          "type": "fulfillment",
+                          "type_id": 4,
+                          "bitmask": 32,
+                          "public_key": "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
+                        }
+                      },
+                      "amount": 1,
+                      "owners_after": [
+                        "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
+                      ]
+                    }
+                  ],
+                  "operation": "CREATE",
+                  "asset": {
+                    "divisible": false,
+                    "updatable": false,
+                    "data": null,
+                    "id": "aebeab22-e672-4d3b-a187-bde5fda6533d",
+                    "refillable": false
+                  },
+                  "metadata": null,
+                  "timestamp": "1477578978",
+                  "fulfillments": [
+                    {
+                      "fid": 0,
+                      "input": null,
+                      "fulfillment": "cf:4:GG-pi3CeIlySZhQoJVBh9O23PzrOuhnYI7OHqIbHjkn2VnQaEWvecO1x82Qr2Va_JjFywLKIOEV1Ob9Ofkeln2K89ny2mB-s7RLNvYAVzWNiQnp18_nQEUsvwACEXTYJ",
+                      "owners_before": [
+                        "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
+                      ]
+                    }
+                  ]
+                },
+                "id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e",
+                "version": 1
+              }],
+            "voters":[
+              "ErEeVZt8AfLbMJub25tjNxbpzzTNp3mGidL3GxGdd9bt"
+            ]
+        },
+        "id":"6152fbc7e0f7686512ed6b92c01e8c73ea1e3f51a7b037ac5cc8c860215e7202",
+        "signature":"53wxrEQDYk1dXzmvNSytbCfmNVnPqPkDQaTnAe8Jf43s6ssejPxezkCvUnGTnduNUmaLjhaan1iRLi3peu6s5DzA"
+      }
+
+   :resheader Content-Type: ``application/json``
+
+   :statuscode 200: A list of blocks containing a transaction with ID ``tx_id`` was found and returned.
+   :statuscode 400: The request wasn't understood by the server, e.g. just requesting ``/blocks``, without defining ``tx_id``.
 
 
 Votes
