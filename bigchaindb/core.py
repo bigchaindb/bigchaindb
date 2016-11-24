@@ -648,7 +648,7 @@ class Bigchain(object):
         prev_block = [vote['vote']['previous_block'] for vote in votes]
         # vote_validity checks whether a vote is valid
         # or invalid, e.g. [False, True, True]
-        vote_validity = [self.consensus.verify_vote_signature(voters, vote) for vote in votes]
+        vote_validity = [self.consensus.verify_vote(voters, vote) for vote in votes]
 
         # element-wise product of stated vote and validity of vote
         # vote_cast = [True, True, False] and

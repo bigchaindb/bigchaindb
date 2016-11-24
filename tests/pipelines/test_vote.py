@@ -17,6 +17,9 @@ def dummy_block(b):
     return block
 
 
+DUMMY_SHA3 = '0123456789abcdef' * 4
+
+
 def test_vote_creation_valid(b):
     from bigchaindb.common import crypto
     from bigchaindb.common.util import serialize
@@ -24,11 +27,11 @@ def test_vote_creation_valid(b):
     # create valid block
     block = dummy_block(b)
     # retrieve vote
-    vote = b.vote(block.id, 'abc', True)
+    vote = b.vote(block.id, DUMMY_SHA3, True)
 
     # assert vote is correct
     assert vote['vote']['voting_for_block'] == block.id
-    assert vote['vote']['previous_block'] == 'abc'
+    assert vote['vote']['previous_block'] == DUMMY_SHA3
     assert vote['vote']['is_block_valid'] is True
     assert vote['vote']['invalid_reason'] is None
     assert vote['node_pubkey'] == b.me
@@ -44,11 +47,11 @@ def test_vote_creation_invalid(b):
     # create valid block
     block = dummy_block(b)
     # retrieve vote
-    vote = b.vote(block.id, 'abc', False)
+    vote = b.vote(block.id, DUMMY_SHA3, False)
 
     # assert vote is correct
     assert vote['vote']['voting_for_block'] == block.id
-    assert vote['vote']['previous_block'] == 'abc'
+    assert vote['vote']['previous_block'] == DUMMY_SHA3
     assert vote['vote']['is_block_valid'] is False
     assert vote['vote']['invalid_reason'] is None
     assert vote['node_pubkey'] == b.me
