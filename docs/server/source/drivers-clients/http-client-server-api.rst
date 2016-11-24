@@ -7,11 +7,6 @@ The HTTP Client-Server API
    there is no ability to do complex queries using the HTTP API. We plan to add
    more querying capabilities in the future.
 
-This page assumes you already know an API Root URL
-for a BigchainDB node or reverse proxy.
-It should be something like ``http://apihosting4u.net:9984``
-or ``http://12.34.56.78:9984``.
-
 If you set up a BigchainDB node or reverse proxy yourself,
 and you're not sure what the API Root URL is,
 then see the last section of this page for help.
