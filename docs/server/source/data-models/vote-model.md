@@ -4,7 +4,6 @@ A vote has the following structure:
 
 ```json
 {
-    "id": "<RethinkDB-generated ID for the vote>",
     "node_pubkey": "<the public key of the voting node>",
     "vote": {
         "voting_for_block": "<id of the block the node is voting for>",
