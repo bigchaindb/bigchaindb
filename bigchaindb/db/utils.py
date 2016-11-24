@@ -126,6 +126,25 @@ def create_bigchain_secondary_index(conn, dbname):
                 .index_create('asset_id',
                               r.row['block']['transactions']['transaction']['asset']['id'], multi=True)\
                 .run(conn)
+    # secondary index over a flattened list of  owners_after
+    r.db(dbname).table('bigchain')\
+                .index_create('owners_after',
+                              r.row['block']['transactions']['transaction']
+                               .concat_map(lambda tx: tx['conditions']
+                                           ['owners_after'])
+                               .reduce(lambda l, r: l + r), multi=True)\
+                .run(conn)
+    # secondary index on the inputs
+    r.db(dbname).table('bigchain')\
+                .index_create('inputs',
+                              r.row['block']['transactions']['transaction']
+                              .concat_map(lambda tx:
+                                          tx['fulfillments']['input'])
+                              .with_fields('txid', 'cid')
+                              .map(lambda input_: [input_['txid'],
+                                                   input_['cid']]),
+                              multi=True)\
+                .run(conn)
 
     # wait for rethinkdb to finish creating secondary indexes
     r.db(dbname).table('bigchain').index_wait().run(conn)

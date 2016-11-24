@@ -439,8 +439,9 @@ class Bigchain(object):
         else:
             return None
 
-    def get_owned_ids(self, owner):
-        """Retrieve a list of `txid`s that can be used as inputs.
+    def get_unspents(self, public_keys):
+        # TODO: Fix docstring
+        """Retrieve a list of `TransactionLink`s that can be used as inputs.
 
         Args:
             owner (str): base58 encoded public key.
@@ -451,8 +452,8 @@ class Bigchain(object):
         """
 
         # get all transactions in which owner is in the `owners_after` list
-        response = self.backend.get_owned_ids(owner)
-        owned = []
+        response = self.backend.get_owners_after(public_keys)
+        unspents = []
 
         for tx in response:
             # disregard transactions from invalid blocks
@@ -461,27 +462,18 @@ class Bigchain(object):
                 if Bigchain.BLOCK_UNDECIDED not in validity.values():
                     continue
 
-            # NOTE: It's OK to not serialize the transaction here, as we do not
-            # use it after the execution of this function.
-            # a transaction can contain multiple outputs (conditions) so we need to iterate over all of them
-            # to get a list of outputs available to spend
-            for index, cond in enumerate(tx['transaction']['conditions']):
-                # for simple signature conditions there are no subfulfillments
-                # check if the owner is in the condition `owners_after`
-                if len(cond['owners_after']) == 1:
-                    if cond['condition']['details']['public_key'] == owner:
-                        tx_link = TransactionLink(tx['id'], index)
-                else:
-                    # for transactions with multiple `owners_after` there will be several subfulfillments nested
-                    # in the condition. We need to iterate the subfulfillments to make sure there is a
-                    # subfulfillment for `owner`
-                    if util.condition_details_has_owner(cond['condition']['details'], owner):
-                        tx_link = TransactionLink(tx['id'], index)
-                # check if input was already spent
-                if not self.get_spent(tx_link.txid, tx_link.cid):
-                    owned.append(tx_link)
+            # A transaction can contain multiple outputs (conditions) so we
+            # need to iterate over all of them to get a list of outputs
+            # available to spend
+            for cond in tx['transaction']['conditions']:
+                # Check if the provided list of public keys is a subset of
+                # `owners_after`
+                if set(public_keys).issubset(cond['owners_after']):
+                    tx_link = TransactionLink(tx['id'], cond['cid'])
+                    if not self.get_spent(tx_link.txid, tx_link.cid):
+                        unspents.append(tx_link)
 
-        return owned
+        return unspents
 
     def create_block(self, validated_transactions):
         """Creates a block given a list of `validated_transactions`.

@@ -224,9 +224,14 @@ class RethinkDBBackend:
         # TODO: use index!
         return self.connection.run(
                 r.table('bigchain', read_mode=self.read_mode)
+                .get_all([transaction_id, condition_id], index='inputs')
                 .concat_map(lambda doc: doc['block']['transactions'])
-                .filter(lambda transaction: transaction['transaction']['fulfillments'].contains(
-                    lambda fulfillment: fulfillment['input'] == {'txid': transaction_id, 'cid': condition_id})))
+                .filter(lambda transaction:
+                        transaction['transaction']['fulfillments']
+                        .contains(lambda fulfillment:
+                                  fulfillment['input'] ==
+                                  {'txid': transaction_id,
+                                   'cid': condition_id})))
 
     def get_owned_ids(self, owner):
         """Retrieve a list of `txids` that can we used has inputs.
@@ -244,6 +249,19 @@ class RethinkDBBackend:
                 .concat_map(lambda doc: doc['block']['transactions'])
                 .filter(lambda tx: tx['transaction']['conditions'].contains(
                     lambda c: c['owners_after'].contains(owner))))
+
+    def get_owners_after(self, public_keys):
+        # TODO: Fix docstring
+        """Retrieve a list of transactions that contain `public_keys` in
+        owners_after
+        """
+        return self.connection.run(
+            r.table('bigchain', read_mode=self.read_mode)
+            .get_all(*public_keys, index='owners_after')
+            .distinct().concat_map(lambda doc: doc['block']['transactions'])
+            .filter(lambda tx: tx['transaction']['conditions']
+                    .contains(lambda c: c['owners_after']
+                              .contains(*public_keys))))
 
     def get_votes_by_block_id(self, block_id):
         """Get all the votes casted for a specific block.
