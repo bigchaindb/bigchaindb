@@ -86,3 +86,4 @@ More About BigchainDB
    smart-contracts
    transaction-concepts
    timestamps
+   Data Models <https://docs.bigchaindb.com/projects/server/en/latest/data-models/index.html>
