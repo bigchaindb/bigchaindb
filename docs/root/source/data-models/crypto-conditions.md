@@ -2,9 +2,11 @@
 
 To create a transaction that transfers an asset to new owners, one must fulfill the asset’s current conditions (crypto-conditions). The most basic kinds of conditions are:
 
-* **A hashlock condition:** One can fulfill a hashlock condition by providing the correct “preimage” (similar to a password or secret phrase)
 * **A simple signature condition:** One can fulfill a simple signature condition by a providing a valid cryptographic signature (i.e. corresponding to the public key of an owner, usually)
-* **A timeout condition:** Anyone can fulfill a timeout condition before the condition’s expiry time. After the expiry time, nobody can fulfill the condition. Another way to say this is that a timeout condition’s fulfillment is valid (TRUE) before the expiry time and invalid (FALSE) after the expiry time. Note: at the time of writing, timeout conditions are BigchainDB-specific (i.e. not part of the Interledger specs).
+
+* **A hashlock condition:** One can fulfill a hashlock condition by providing the correct “preimage” (similar to a password or secret phrase). _Note: hashlock conditions were supported in the past, but they're not currently supported. Support may be added again in the future._
+
+* **A timeout condition:** Anyone can fulfill a timeout condition before the condition’s expiry time. After the expiry time, nobody can fulfill the condition. Another way to say this is that a timeout condition’s fulfillment is valid (TRUE) before the expiry time and invalid (FALSE) after the expiry time. Note: at the time of writing, timeout conditions are BigchainDB-specific (i.e. not part of the Interledger specs). _Note: timeout conditions were supported in the past, but they're not currently supported. Support may be added again in the future._
 
 A more complex condition can be composed by using n of the above conditions as inputs to an m-of-n threshold condition (a logic gate which outputs TRUE iff m or more inputs are TRUE). If there are n inputs to a threshold condition:
 * 1-of-n is the same as a logical OR of all the inputs
