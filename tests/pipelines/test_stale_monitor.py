@@ -77,7 +77,6 @@ def test_full_pipeline(monkeypatch, user_pk):
     }
     config_utils.set_config(CONFIG)
     b = Bigchain()
-    outpipe = Pipe()
 
     original_txs = {}
     original_txc = []
@@ -96,9 +95,15 @@ def test_full_pipeline(monkeypatch, user_pk):
 
     monkeypatch.undo()
 
+    inpipe = Pipe()
+    # Each time the StaleTransactionMonitor pipeline runs, it reassigns
+    # all eligible transactions. Passing this inpipe prevents that from
+    # taking place more than once.
+    inpipe.put(())
+    outpipe = Pipe()
     pipeline = stale.create_pipeline(backlog_reassign_delay=1,
                                      timeout=1)
-    pipeline.setup(outdata=outpipe)
+    pipeline.setup(indata=inpipe, outdata=outpipe)
     pipeline.start()
 
     # to terminate
