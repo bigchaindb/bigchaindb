@@ -45,10 +45,11 @@ dev_require = [
 ]
 
 docs_require = [
-    'Sphinx>=1.3.5',
+    'Sphinx>=1.4.8',
     'recommonmark>=0.4.0',
     'sphinx-rtd-theme>=0.1.9',
     'sphinxcontrib-httpdomain>=1.5.0',
+    'sphinxcontrib-napoleon>=0.4.4',
 ]
 
 benchmarks_require = [
