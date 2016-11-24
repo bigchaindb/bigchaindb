@@ -5,7 +5,7 @@ type: object
 additionalProperties: false
 title: Transaction Schema
 description: |
-    TODO - What should go here?
+    A transaction represents the creation or transfer of assets in BigchainDB.
 required:
 - id
 - fulfillments
