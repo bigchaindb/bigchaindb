@@ -7,6 +7,10 @@ title: Vote Schema
 description: |
     A Vote is an endorsement of a Block (identified by a hash) by
     a node (identified by a public key).
+
+    The outer Vote object contains the details of the vote being made
+    as well as the signature and identifying information of the node
+    passing the vote.
 required:
 - node_pubkey
 - signature
@@ -34,16 +38,6 @@ properties:
     - voting_for_block
     - timestamp
     properties:
-      invalid_reason:
-        anyOf:
-        - type: "string"
-          description: |
-            Reason the block is voted invalid, or ``null``.
-        - type: "null"
-      is_block_valid:
-        type: "boolean"
-        description: |
-          This field is ``true`` if the block was deemed valid by the node.
       previous_block:
         "$ref": "#/definitions/sha3_hexdigest"
         description: |
@@ -53,6 +47,16 @@ properties:
         "$ref": "#/definitions/sha3_hexdigest"
         description: |
           Sha3 identifier of the block being voted on.
+      is_block_valid:
+        type: "boolean"
+        description: |
+          This field is ``true`` if the block was deemed valid by the node.
+      invalid_reason:
+        anyOf:
+        - type: "string"
+          description: |
+            Reason the block is voted invalid, or ``null``.
+        - type: "null"
       timestamp:
         type: "string"
         pattern: "[0-9]{10}"
