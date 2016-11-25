@@ -627,7 +627,7 @@ class Bigchain(object):
 
         vote_signed = {
             'node_pubkey': self.me,
-            'signature': signature,
+            'signature': signature.decode(),
             'vote': vote
         }
 

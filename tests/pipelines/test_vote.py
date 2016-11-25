@@ -33,6 +33,7 @@ def test_vote_creation_valid(b):
     assert vote['vote']['is_block_valid'] is True
     assert vote['vote']['invalid_reason'] is None
     assert vote['node_pubkey'] == b.me
+    assert isinstance(vote['signature'], str)
     assert crypto.PublicKey(b.me).verify(serialize(vote['vote']).encode(),
                                             vote['signature']) is True
 
