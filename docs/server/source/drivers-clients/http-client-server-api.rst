@@ -638,6 +638,48 @@ Votes
 
 .. http:get:: /votes?block_id={block_id}
 
-   Descriptions: TODO
+   Retrieve a list of votes for a certain block with ID ``block_id``.
+   To check for the validity of a vote, a user of this endpoint needs to
+   perform the `following steps: <https://github.com/bigchaindb/bigchaindb/blob/8ebd93ed3273e983f5770b1617292aadf9f1462b/bigchaindb/util.py#L119>`_
+
+   1. Check if the vote's ``node_pubkey`` is allowed to vote.
+   2. Verify the vote's signature against the vote's body (``vote.vote``) and
+   ``node_pubkey``.
+
+   :query string block_id: The block ID to filter the votes.
+
+   **Example request**:
+
+   .. sourcecode:: http
+
+      GET /votes?block_id=6152f...e7202 HTTP/1.1
+      Host: example.com
+
+   **Example response**:
+
+   .. sourcecode:: http
+
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+
+      [{
+        "node_pubkey": "ErEeVZt8AfLbMJub25tjNxbpzzTNp3mGidL3GxGdd9bt" ,
+        "signature": "53wxrEQDYk1dXzmvNSytbCfmNVnPqPkDQaTnAe8Jf43s6ssejPxezkCvUnGTnduNUmaLjhaan1iRLi3peu6s5DzA",
+        "vote": {
+          "invalid_reason": null ,
+          "is_block_valid": true ,
+          "previous_block": "6152fbc7e0f7686512ed6b92c01e8c73ea1e3f51a7b037ac5cc8c860215e7202" ,
+          "timestamp": "1480082692" ,
+          "voting_for_block": "6152f...e7202"
+        }
+      }]
+
+   :resheader Content-Type: ``application/json``
+
+   :statuscode 200: A list of votes voting for a block with ID ``block_id`` was found and returned.
+   :statuscode 400: The request wasn't understood by the server, e.g. just requesting ``/votes``, without defining ``block_id``.
+
 
 .. http:get:: /votes?block_id={block_id}&voter={voter}
+
+   Description: TODO
