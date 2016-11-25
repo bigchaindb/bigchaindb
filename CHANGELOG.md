@@ -1,4 +1,5 @@
 # Change Log (Release Notes)
+
 All _notable_ changes to this project will be documented in this file (`CHANGELOG.md`).
 This project adheres to [Semantic Versioning](http://semver.org/) (or at least we try).
 Contributors to this file, please follow the guidelines on [keepachangelog.com](http://keepachangelog.com/).
@@ -15,10 +16,68 @@ For reference, the possible headings are:
 * **Notes**
 
 
+## [0.8.0] - 2016-11-25
+Tag name: v0.8.0
+= commit:
+committed:
+
+### Added
+- The big new thing in version 0.8.0 is support for divisible assets, i.e. assets like carrots or thumbtacks, where the initial CREATE transaction can register/create some amount (e.g. 542 carrots), the first TRANSFER transaction can split that amount across multiple owners, and so on. [Pull Request #794](https://github.com/bigchaindb/bigchaindb/pull/794)
+- Wrote a formal schema for the JSON structure of transactions. Transactions are now checked against that schema. [Pull Request #798](https://github.com/bigchaindb/bigchaindb/pull/798)
+
+### Changed
+- CREATE transactions must now be signed by all `owners_before` (rather than by a federation node). [Pull Request #794](https://github.com/bigchaindb/bigchaindb/pull/794)
+- The user-provided timestamp was removed from the transaction data model (schema). [Pull Request #817](https://github.com/bigchaindb/bigchaindb/pull/817)
+- `get_transaction()` will now return a transaction from the backlog, even if there are copies of the transaction in invalid blocks. [Pull Request #793](https://github.com/bigchaindb/bigchaindb/pull/793)
+- Several pull requests to translate RethinkDB database calls into abstract/generic database calls, and to implement those abstract calls for two backends: RethinkDB and MongoDB. Pull Requests
+[#754](https://github.com/bigchaindb/bigchaindb/pull/754),
+[#799](https://github.com/bigchaindb/bigchaindb/pull/799),
+[#806](https://github.com/bigchaindb/bigchaindb/pull/806),
+[#809](https://github.com/bigchaindb/bigchaindb/pull/809),
+[#853](https://github.com/bigchaindb/bigchaindb/pull/853)
+- Renamed "verifying key" to "public key". Renamed "signing key" to "private key". Renamed "vk" to "pk". [Pull Request #807](https://github.com/bigchaindb/bigchaindb/pull/807)
+- `get_transaction_by_asset_id` now ignores invalid transactions. [Pull Request #810](https://github.com/bigchaindb/bigchaindb/pull/810)
+- `get_transaction_by_metadata_id` now ignores invalid transactions. [Pull Request #811](https://github.com/bigchaindb/bigchaindb/pull/811)
+- Updates to the configs and scripts for deploying a test network on AWS. The example config file deploys virtual machines running Ubuntu 16.04 now. Pull Requests 
+[#771](https://github.com/bigchaindb/bigchaindb/pull/771),
+[#813](https://github.com/bigchaindb/bigchaindb/pull/813)
+- Changed logging of transactions on block creation so now it just says the length of the list of transactions, rather than listing all the transactions. [Pull Request #861](https://github.com/bigchaindb/bigchaindb/pull/861)
+
+### Fixed
+- Equality checks with AssetLinks. [Pull Request #825](https://github.com/bigchaindb/bigchaindb/pull/825)
+- Bug in `bigchaindb load`. [Pull Request #824](https://github.com/bigchaindb/bigchaindb/pull/824)
+- Two issus found with timestamp indexes. [Pull Request #816](https://github.com/bigchaindb/bigchaindb/pull/816)
+- Hard-coded `backlog_reassign_delay`. [Pull Request #854](https://github.com/bigchaindb/bigchaindb/pull/854)
+- Race condition in `test_stale_monitor.py`. [Pull Request #846](https://github.com/bigchaindb/bigchaindb/pull/846)
+
+### External Contributors
+- @najlachamseddine - [Pull Request #528](https://github.com/bigchaindb/bigchaindb/pull/528)
+- @ChristianGaertner - [Pull Request #659](https://github.com/bigchaindb/bigchaindb/pull/659)
+- @MinchinWeb - [Pull Request #695](https://github.com/bigchaindb/bigchaindb/pull/695)
+- @ckeyer - [Pull Request #785](https://github.com/bigchaindb/bigchaindb/pull/785)
+
+### Notes
+- @ChristianGaertner added a Python style checker (Flake8) to Travis CI, so external contributors should be aware that the Python code in their pull requests will be checked. See [our Python Style Guide](PYTHON_STYLE_GUIDE.md).
+- Several additions and changes to the documentation, e.g. Pull Requests
+[#690](https://github.com/bigchaindb/bigchaindb/pull/690),
+[#764](https://github.com/bigchaindb/bigchaindb/pull/764),
+[#766](https://github.com/bigchaindb/bigchaindb/pull/766),
+[#769](https://github.com/bigchaindb/bigchaindb/pull/769),
+[#777](https://github.com/bigchaindb/bigchaindb/pull/777),
+[#800](https://github.com/bigchaindb/bigchaindb/pull/800),
+[#801](https://github.com/bigchaindb/bigchaindb/pull/801),
+[#802](https://github.com/bigchaindb/bigchaindb/pull/802),
+[#803](https://github.com/bigchaindb/bigchaindb/pull/803),
+[#819](https://github.com/bigchaindb/bigchaindb/pull/819),
+[#827](https://github.com/bigchaindb/bigchaindb/pull/827),
+[#859](https://github.com/bigchaindb/bigchaindb/pull/859)
+
+
+
 ## [0.7.0] - 2016-10-28
 Tag name: v0.7.0
-= commit: 
-committed: 
+= commit: 2dd7f1af27478c529e6d2d916f64daa3fbda3885
+committed: Oct 28, 2016, 4:00 PM GMT+2
 
 ### Added
 - Stale transactions in the `backlog` table now get reassigned to another node (for inclusion in a new block): [Pull Request #359](https://github.com/bigchaindb/bigchaindb/pull/359)
