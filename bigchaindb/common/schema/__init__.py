@@ -35,8 +35,4 @@ VOTE_SCHEMA_PATH, VOTE_SCHEMA = _load_schema('vote')
 
 def validate_vote_schema(vote):
     """ Validate a vote dict """
-    # A vote does not have an ID, but the database may add one.
-    if 'id' in vote:
-        vote = dict(vote)
-        del vote['id']
     _validate_schema(VOTE_SCHEMA, vote)
