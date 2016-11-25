@@ -108,7 +108,7 @@ class TestBigchainApi(object):
         block2 = b.create_block([transfer_tx])
         b.write_block(block2, durability='hard')
 
-        monkeypatch.setattr('time.time', lambda: 3)
+        monkeypatch.setattr('time.time', lambda: 3333333333)
         transfer_tx2 = Transaction.transfer(tx.to_inputs(), [([b.me], 1)],
                                             tx.asset)
         transfer_tx2 = transfer_tx2.sign([b.me_private])
@@ -137,7 +137,7 @@ class TestBigchainApi(object):
         block1 = b.create_block([tx])
         b.write_block(block1, durability='hard')
 
-        monkeypatch.setattr('time.time', lambda: 2)
+        monkeypatch.setattr('time.time', lambda: 2222222222)
         block2 = b.create_block([tx])
         b.write_block(block2, durability='hard')
 
@@ -161,7 +161,7 @@ class TestBigchainApi(object):
         block1 = b.create_block([tx1])
         b.write_block(block1, durability='hard')
 
-        monkeypatch.setattr('time.time', lambda: 2)
+        monkeypatch.setattr('time.time', lambda: 2222222222)
         tx2 = Transaction.create([b.me], [([b.me], 1)])
         tx2 = tx2.sign([b.me_private])
         block2 = b.create_block([tx2])
