@@ -29,7 +29,7 @@ committed:
 - CREATE transactions must now be signed by all `owners_before` (rather than by a federation node). [Pull Request #794](https://github.com/bigchaindb/bigchaindb/pull/794)
 - The user-provided timestamp was removed from the transaction data model (schema). [Pull Request #817](https://github.com/bigchaindb/bigchaindb/pull/817)
 - `get_transaction()` will now return a transaction from the backlog, even if there are copies of the transaction in invalid blocks. [Pull Request #793](https://github.com/bigchaindb/bigchaindb/pull/793)
-- Several pull requests to translate RethinkDB database calls into abstract/generic database calls, and to implement those abstract calls for two backends: RethinkDB and MongoDB. Pull Requests
+- Several pull requests to introduce a generalized database interface, to move RethinkDB calls into a separate implementation of that interface, and to work on a new MongoDB implementation of that interface. Pull Requests
 [#754](https://github.com/bigchaindb/bigchaindb/pull/754),
 [#799](https://github.com/bigchaindb/bigchaindb/pull/799),
 [#806](https://github.com/bigchaindb/bigchaindb/pull/806),
@@ -46,7 +46,7 @@ committed:
 ### Fixed
 - Equality checks with AssetLinks. [Pull Request #825](https://github.com/bigchaindb/bigchaindb/pull/825)
 - Bug in `bigchaindb load`. [Pull Request #824](https://github.com/bigchaindb/bigchaindb/pull/824)
-- Two issus found with timestamp indexes. [Pull Request #816](https://github.com/bigchaindb/bigchaindb/pull/816)
+- Two issues found with timestamp indexes. [Pull Request #816](https://github.com/bigchaindb/bigchaindb/pull/816)
 - Hard-coded `backlog_reassign_delay`. [Pull Request #854](https://github.com/bigchaindb/bigchaindb/pull/854)
 - Race condition in `test_stale_monitor.py`. [Pull Request #846](https://github.com/bigchaindb/bigchaindb/pull/846)
 - When creating a signed vote, decode the vote signature to a `str`. [Pull Request #869](https://github.com/bigchaindb/bigchaindb/pull/869)
