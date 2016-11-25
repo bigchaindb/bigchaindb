@@ -636,14 +636,8 @@ Blocks
 Votes
 --------------------------------
 
-.. http:get:: /votes/{vote_id}
-
-   Descriptions: TODO
-
 .. http:get:: /votes?block_id={block_id}
 
    Descriptions: TODO
 
 .. http:get:: /votes?block_id={block_id}&voter={voter}
-
-   Descriptions: TODO
