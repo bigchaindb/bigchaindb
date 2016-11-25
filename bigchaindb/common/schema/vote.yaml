@@ -25,12 +25,12 @@ properties:
     type: "string"
     pattern: "[1-9a-zA-Z^OIl]{86,88}"
     description:
-        Ed25519 signature of the ``vote`` object.
+        Ed25519 signature of the `Vote Details`_ object.
   vote:
     type: "object"
     additionalProperties: false
     description: |
-        Vote details to be signed.
+        `Vote Details`_ to be signed.
     required:
     - invalid_reason
     - is_block_valid
@@ -41,12 +41,12 @@ properties:
       previous_block:
         "$ref": "#/definitions/sha3_hexdigest"
         description: |
-          Sha3 identifier of the block that preceeds the block being voted on.
+          SHA3 identifier of the block that preceeds the block being voted on.
           The notion of a "previous" block is subject to vote.
       voting_for_block:
         "$ref": "#/definitions/sha3_hexdigest"
         description: |
-          Sha3 identifier of the block being voted on.
+          SHA3 identifier of the block being voted on.
       is_block_valid:
         type: "boolean"
         description: |
@@ -56,6 +56,10 @@ properties:
         - type: "string"
           description: |
             Reason the block is voted invalid, or ``null``.
+
+            .. container:: notice
+
+              **Note**: The invalid_reason was not being used and may be dropped in a future version of BigchainDB. See Issue `#217 <https://github.com/bigchaindb/bigchaindb/issues/217>`_ on GitHub.
         - type: "null"
       timestamp:
         type: "string"

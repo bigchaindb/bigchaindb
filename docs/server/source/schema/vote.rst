@@ -29,7 +29,7 @@ Vote.signature
 
 **type:** string
 
-Ed25519 signature of the ``vote`` object.
+Ed25519 signature of the `Vote Details`_ object.
 
 
 Vote.vote
@@ -37,7 +37,7 @@ Vote.vote
 
 **type:** object
 
-Vote details to be signed.
+`Vote Details`_ to be signed.
 
 
 
@@ -46,7 +46,7 @@ Vote details to be signed.
 Vote Details
 ------------
 
-Vote details to be signed.
+`Vote Details`_ to be signed.
 
 
 Vote.previous_block
@@ -54,7 +54,7 @@ Vote.previous_block
 
 **type:** string
 
-Sha3 identifier of the block that preceeds the block being voted on.
+SHA3 identifier of the block that preceeds the block being voted on.
 The notion of a "previous" block is subject to vote.
 
 
@@ -64,7 +64,7 @@ Vote.voting_for_block
 
 **type:** string
 
-Sha3 identifier of the block being voted on.
+SHA3 identifier of the block being voted on.
 
 
 
@@ -83,6 +83,10 @@ Vote.invalid_reason
 **type:** string or null
 
 Reason the block is voted invalid, or ``null``.
+
+.. container:: notice
+
+  **Note**: The invalid_reason was not being used and may be dropped in a future version of BigchainDB. See Issue `#217 <https://github.com/bigchaindb/bigchaindb/issues/217>`_ on GitHub.
 
 
 
@@ -114,5 +118,14 @@ to the system time of the node.
          padding: 6px;
          font-size: 100%;
          font-family: monospace;
+    }
+    .document .section p {
+        margin-bottom: 16px;
+    }
+    .notice {
+        margin: 0px 16px 16px 16px;
+        background-color: white;
+        border: 1px solid gold;
+        padding: 3px 6px;
     }
     </style>

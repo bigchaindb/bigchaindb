@@ -35,6 +35,15 @@ TPL_STYLES = """
          font-size: 100%%;
          font-family: monospace;
     }
+    .document .section p {
+        margin-bottom: 16px;
+    }
+    .notice {
+        margin: 0px 16px 16px 16px;
+        background-color: white;
+        border: 1px solid gold;
+        padding: 3px 6px;
+    }
     </style>
 """
 
