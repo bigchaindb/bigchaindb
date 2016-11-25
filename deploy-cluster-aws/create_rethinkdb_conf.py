@@ -17,9 +17,9 @@ parser.add_argument("--bind-http-to-localhost",
                     help="should RethinkDB web interface be bound to localhost?",
                     required=True)
 args = parser.parse_args()
-bind_http_to_localhost = args.bind_http_to_localhost
-
-print('bind_http_to_localhost = {}'.format(bind_http_to_localhost))
+# args.bind_http_to_localhost is a string at this point.
+# It's either 'True' or 'False' but we want a boolean:
+bind_http_to_localhost = (args.bind_http_to_localhost == 'True')
 
 # cwd = current working directory
 old_cwd = os.getcwd()
