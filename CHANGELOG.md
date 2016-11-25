@@ -16,7 +16,7 @@ For reference, the possible headings are:
 * **Notes**
 
 
-## [0.8.0] - 2016-11-25
+## [0.8.0] - 2016-11-??
 Tag name: v0.8.0
 = commit:
 committed:
@@ -49,6 +49,7 @@ committed:
 - Two issus found with timestamp indexes. [Pull Request #816](https://github.com/bigchaindb/bigchaindb/pull/816)
 - Hard-coded `backlog_reassign_delay`. [Pull Request #854](https://github.com/bigchaindb/bigchaindb/pull/854)
 - Race condition in `test_stale_monitor.py`. [Pull Request #846](https://github.com/bigchaindb/bigchaindb/pull/846)
+- When creating a signed vote, decode the vote signature to a `str`. [Pull Request #869](https://github.com/bigchaindb/bigchaindb/pull/869)
 
 ### External Contributors
 - @najlachamseddine - [Pull Request #528](https://github.com/bigchaindb/bigchaindb/pull/528)
