@@ -7,11 +7,25 @@ import yaml
 from bigchaindb.common.exceptions import SchemaValidationError
 
 
+def drop_schema_descriptions(node):
+    """ Drop descriptions from schema, since they clutter log output """
+    if isinstance(node, list):
+        any(map(drop_schema_descriptions, node))
+    elif isinstance(node, dict):
+        print(node)
+        if node.get('type') == 'object':
+            if 'description' in node:
+                del node['description']
+        any(map(drop_schema_descriptions, node.values()))
+
+
 def _load_schema(name):
     """ Load a schema from disk """
     path = os.path.join(os.path.dirname(__file__), name + '.yaml')
     with open(path) as handle:
-        return path, yaml.safe_load(handle)
+        schema = yaml.safe_load(handle)
+        drop_schema_descriptions(schema)
+        return path, schema
 
 
 def _validate_schema(schema, body):
