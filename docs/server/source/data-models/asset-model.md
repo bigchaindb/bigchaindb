@@ -28,5 +28,4 @@ For `TRANSFER` transactions we only keep the asset id.
 - `data`: A user supplied JSON document with custom information about the asset. Defaults to null.
 - _amount_: The amount of "shares". Only relevant if the asset is marked as divisible. Defaults to 1. The amount is not specified in the asset, but in the conditions (see next section).
 
-At the time of this writing divisible, updatable, and refillable assets are not yet implemented.
-See [Issue #487 on Github](https://github.com/bigchaindb/bigchaindb/issues/487)
+At the time of this writing, updatable and refillable assets are not yet implemented.
