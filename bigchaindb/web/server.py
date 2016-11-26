@@ -13,10 +13,12 @@ from bigchaindb import util
 from bigchaindb import Bigchain
 from bigchaindb.web.views.info import info_views
 from bigchaindb.web.views.transactions import transaction_views
+from bigchaindb.web.views.unspents import unspent_views
 
 from bigchaindb.monitor import Monitor
 
 
+# TODO: Figure out if we do we need all this boilerplate.
 class StandaloneApplication(gunicorn.app.base.BaseApplication):
     """Run a **wsgi** app wrapping it in a Gunicorn Base Application.
 
@@ -49,26 +51,25 @@ class StandaloneApplication(gunicorn.app.base.BaseApplication):
         return self.application
 
 
-def create_app(*, debug=False, threads=4):
+def create_app(settings):
     """Return an instance of the Flask application.
 
     Args:
         debug (bool): a flag to activate the debug mode for the app
             (default: False).
-        threads (int): number of threads to use
-    Return:
-        an instance of the Flask application.
     """
 
     app = Flask(__name__)
 
-    app.debug = debug
+    app.debug = settings.get('debug', False)
 
-    app.config['bigchain_pool'] = util.pool(Bigchain, size=threads)
+    app.config['bigchain_pool'] = util.pool(Bigchain,
+                                            size=settings.get('threads', 4))
     app.config['monitor'] = Monitor()
 
     app.register_blueprint(info_views, url_prefix='/')
     app.register_blueprint(transaction_views, url_prefix='/api/v1')
+    app.register_blueprint(unspent_views, url_prefix='/api/v1')
     return app
 
 
@@ -91,7 +92,6 @@ def create_server(settings):
     if not settings.get('threads'):
         settings['threads'] = (multiprocessing.cpu_count() * 2) + 1
 
-    app = create_app(debug=settings.get('debug', False),
-                     threads=settings['threads'])
+    app = create_app(settings)
     standalone = StandaloneApplication(app, settings)
     return standalone
