@@ -1,12 +1,13 @@
 """This module provides the blueprint for some basic API endpoints.
 
 For more information please refer to the documentation on ReadTheDocs:
- - https://docs.bigchaindb.com/projects/server/en/latest/drivers-clients/http-client-server-api.html
+ - https://docs.bigchaindb.com/projects/server/en/latest/drivers-clients/
+   http-client-server-api.html
 """
 from flask import current_app, request, Blueprint
 from flask_restful import Resource, Api
 
-from bigchaindb.common.exceptions import ValidationError, InvalidSignature
+from bigchaindb.common.exceptions import InvalidHash, InvalidSignature
 
 import bigchaindb
 from bigchaindb.models import Transaction
@@ -17,6 +18,7 @@ transaction_views = Blueprint('transaction_views', __name__)
 transaction_api = Api(transaction_views)
 
 
+# TODO: Do we really need this?
 # Unfortunately I cannot find a reference to this decorator.
 # This answer on SO is quite useful tho:
 # - http://stackoverflow.com/a/13432373/597097
@@ -67,8 +69,8 @@ class TransactionStatusApi(Resource):
             tx_id (str): the id of the transaction.
 
         Return:
-            A ``dict`` in the format ``{'status': <status>}``, where ``<status>``
-            is one of "valid", "invalid", "undecided", "backlog".
+            A ``dict`` in the format ``{'status': <status>}``, where
+            ``<status>`` is one of "valid", "invalid", "undecided", "backlog".
         """
 
         pool = current_app.config['bigchain_pool']
@@ -92,13 +94,13 @@ class TransactionListApi(Resource):
         pool = current_app.config['bigchain_pool']
         monitor = current_app.config['monitor']
 
-        # `force` will try to format the body of the POST request even if the `content-type` header is not
-        # set to `application/json`
+        # `force` will try to format the body of the POST request even if the
+        # `content-type` header is not set to `application/json`
         tx = request.get_json(force=True)
 
         try:
             tx_obj = Transaction.from_dict(tx)
-        except (ValidationError, InvalidSignature):
+        except (InvalidHash, InvalidSignature):
             return make_error(400, 'Invalid transaction')
 
         with pool() as bigchain:
