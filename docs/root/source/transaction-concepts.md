@@ -15,7 +15,7 @@ one might register an identity or a creative work. The things are often called
 
 BigchainDB supports divisible assets as of BigchainDB Server v0.8.0.
 That means you can create/register an asset with an initial quantity,
-e.g. 700 thumbtacks. Divisible assets can be split apart or recombined
+e.g. 700 oak trees. Divisible assets can be split apart or recombined
 by transfer transactions (described more below).
 
 A CREATE transaction also establishes the conditions that must be met to
@@ -28,21 +28,28 @@ Protocol (ILP)](https://interledger.org/).
 ## TRANSFER Transactions
 
 A TRANSFER transaction can transfer an asset
-(or set of assets of the same type)
-by fulfilling the current conditions on the asset(s).
+by fulfilling the current conditions on the asset.
 It must also specify new transfer conditions.
 
-Example: Someone might construct a TRANSFER transaction
+**Example 1:** Suppose a red car is owned and controlled by Joe.
+Suppose the current transfer condition on the car says
+that any valid transfer must be signed by Joe.
+Joe and a buyer named Rae could build a TRANSFER transaction containing
+Joe's signature (to fulfill the current transfer condition)
+plus a new transfer condition saying that any valid transfer
+must be signed by Rae.
+
+**Example 2:** Someone might construct a TRANSFER transaction
 that fulfills the transfer conditions on four
 previously-untransferred assets of the same asset type
-e.g. thumbtacks. The amounts might be 20, 10, 45 and 25, say,
-for a total of 100 thumbtacks.
+e.g. paperclips. The amounts might be 20, 10, 45 and 25, say,
+for a total of 100 paperclips.
 The TRANSFER transaction would also set up new transfer conditions.
-For example, maybe a set of 60 thumbtacks can only be transferred
-if Gertrude signs, and a separate set of 40 thumbtacks can only be
+For example, maybe a set of 60 paperclips can only be transferred
+if Gertrude signs, and a separate set of 40 paperclips can only be
 transferred if both Jack and Kelly sign.
-Note how the sum of the incoming thumbtacks must equal the sum
-of the outgoing thumbtacks (100).
+Note how the sum of the incoming paperclips must equal the sum
+of the outgoing paperclips (100).
 
 ## Transaction Validity
 
