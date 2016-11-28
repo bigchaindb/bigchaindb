@@ -303,44 +303,24 @@ class TestBigchainApi(object):
 
     @pytest.mark.usefixtures('inputs')
     def test_genesis_block(self, b):
-        import rethinkdb as r
-        from bigchaindb.util import is_genesis_block
-        from bigchaindb.db.utils import get_conn
+        block = b.backend.get_genesis_block()
 
-        response = list(r.table('bigchain')
-                        .filter(is_genesis_block)
-                        .run(get_conn()))
-
-        assert len(response) == 1
-        block = response[0]
         assert len(block['block']['transactions']) == 1
         assert block['block']['transactions'][0]['transaction']['operation'] == 'GENESIS'
         assert block['block']['transactions'][0]['transaction']['fulfillments'][0]['input'] is None
 
     def test_create_genesis_block_fails_if_table_not_empty(self, b):
-        import rethinkdb as r
         from bigchaindb.common.exceptions import GenesisBlockAlreadyExistsError
-        from bigchaindb.util import is_genesis_block
-        from bigchaindb.db.utils import get_conn
 
         b.create_genesis_block()
 
         with pytest.raises(GenesisBlockAlreadyExistsError):
             b.create_genesis_block()
 
-        genesis_blocks = list(r.table('bigchain')
-                              .filter(is_genesis_block)
-                              .run(get_conn()))
-
-        assert len(genesis_blocks) == 1
-
     @pytest.mark.skipif(reason='This test may not make sense after changing the chainification mode')
     def test_get_last_block(self, b):
-        import rethinkdb as r
-        from bigchaindb.db.utils import get_conn
-
         # get the number of blocks
-        num_blocks = r.table('bigchain').count().run(get_conn())
+        num_blocks = b.backend.count_blocks()
 
         # get the last block
         last_block = b.get_last_block()
@@ -392,15 +372,10 @@ class TestBigchainApi(object):
         assert status == b.BLOCK_UNDECIDED
 
     def test_get_last_voted_block_returns_genesis_if_no_votes_has_been_casted(self, b):
-        import rethinkdb as r
-        from bigchaindb import util
         from bigchaindb.models import Block
-        from bigchaindb.db.utils import get_conn
 
         b.create_genesis_block()
-        genesis = list(r.table('bigchain')
-                       .filter(util.is_genesis_block)
-                       .run(get_conn()))[0]
+        genesis = b.backend.get_genesis_block()
         genesis = Block.from_dict(genesis)
         gb = b.get_last_voted_block()
         assert gb == genesis
@@ -463,29 +438,25 @@ class TestBigchainApi(object):
         assert b.get_last_voted_block().id == block_3.id
 
     def test_no_vote_written_if_block_already_has_vote(self, b):
-        import rethinkdb as r
         from bigchaindb.models import Block
-        from bigchaindb.db.utils import get_conn
 
         genesis = b.create_genesis_block()
         block_1 = dummy_block()
         b.write_block(block_1, durability='hard')
 
         b.write_vote(b.vote(block_1.id, genesis.id, True))
-        retrieved_block_1 = r.table('bigchain').get(block_1.id).run(get_conn())
+        retrieved_block_1 = b.get_block(block_1.id)
         retrieved_block_1 = Block.from_dict(retrieved_block_1)
 
         # try to vote again on the retrieved block, should do nothing
         b.write_vote(b.vote(retrieved_block_1.id, genesis.id, True))
-        retrieved_block_2 = r.table('bigchain').get(block_1.id).run(get_conn())
+        retrieved_block_2 = b.get_block(block_1.id)
         retrieved_block_2 = Block.from_dict(retrieved_block_2)
 
         assert retrieved_block_1 == retrieved_block_2
 
     def test_more_votes_than_voters(self, b):
-        import rethinkdb as r
         from bigchaindb.common.exceptions import MultipleVotesError
-        from bigchaindb.db.utils import get_conn
 
         b.create_genesis_block()
         block_1 = dummy_block()
@@ -494,8 +465,8 @@ class TestBigchainApi(object):
         vote_1 = b.vote(block_1.id, b.get_last_voted_block().id, True)
         vote_2 = b.vote(block_1.id, b.get_last_voted_block().id, True)
         vote_2['node_pubkey'] = 'aaaaaaa'
-        r.table('votes').insert(vote_1).run(get_conn())
-        r.table('votes').insert(vote_2).run(get_conn())
+        b.write_vote(vote_1)
+        b.write_vote(vote_2)
 
         with pytest.raises(MultipleVotesError) as excinfo:
             b.block_election_status(block_1.id, block_1.voters)
@@ -503,16 +474,14 @@ class TestBigchainApi(object):
             .format(block_id=block_1.id, n_votes=str(2), n_voters=str(1))
 
     def test_multiple_votes_single_node(self, b):
-        import rethinkdb as r
         from bigchaindb.common.exceptions import MultipleVotesError
-        from bigchaindb.db.utils import get_conn
 
         genesis = b.create_genesis_block()
         block_1 = dummy_block()
         b.write_block(block_1, durability='hard')
         # insert duplicate votes
         for i in range(2):
-            r.table('votes').insert(b.vote(block_1.id, genesis.id, True)).run(get_conn())
+            b.write_vote(b.vote(block_1.id, genesis.id, True))
 
         with pytest.raises(MultipleVotesError) as excinfo:
             b.block_election_status(block_1.id, block_1.voters)
@@ -525,9 +494,7 @@ class TestBigchainApi(object):
             .format(block_id=block_1.id, n_votes=str(2), me=b.me)
 
     def test_improper_vote_error(selfs, b):
-        import rethinkdb as r
         from bigchaindb.common.exceptions import ImproperVoteError
-        from bigchaindb.db.utils import get_conn
 
         b.create_genesis_block()
         block_1 = dummy_block()
@@ -535,7 +502,7 @@ class TestBigchainApi(object):
         vote_1 = b.vote(block_1.id, b.get_last_voted_block().id, True)
         # mangle the signature
         vote_1['signature'] = 'a' * 87
-        r.table('votes').insert(vote_1).run(get_conn())
+        b.write_vote(vote_1)
         with pytest.raises(ImproperVoteError) as excinfo:
             b.has_previous_vote(block_1.id, block_1.id)
         assert excinfo.value.args[0] == 'Block {block_id} already has an incorrectly signed ' \
@@ -543,9 +510,7 @@ class TestBigchainApi(object):
 
     @pytest.mark.usefixtures('inputs')
     def test_assign_transaction_one_node(self, b, user_pk, user_sk):
-        import rethinkdb as r
         from bigchaindb.models import Transaction
-        from bigchaindb.db.utils import get_conn
 
         input_tx = b.get_owned_ids(user_pk).pop()
         input_tx = b.get_transaction(input_tx.txid)
@@ -555,17 +520,15 @@ class TestBigchainApi(object):
         b.write_transaction(tx)
 
         # retrieve the transaction
-        response = r.table('backlog').get(tx.id).run(get_conn())
+        response = list(b.backend.get_stale_transactions(0))[0]
 
         # check if the assignee is the current node
         assert response['assignee'] == b.me
 
     @pytest.mark.usefixtures('inputs')
     def test_assign_transaction_multiple_nodes(self, b, user_pk, user_sk):
-        import rethinkdb as r
         from bigchaindb.common.crypto import generate_key_pair
         from bigchaindb.models import Transaction
-        from bigchaindb.db.utils import get_conn
 
         # create 5 federation nodes
         for _ in range(5):
@@ -580,11 +543,12 @@ class TestBigchainApi(object):
             tx = tx.sign([user_sk])
             b.write_transaction(tx)
 
-            # retrieve the transaction
-            response = r.table('backlog').get(tx.id).run(get_conn())
+        # retrieve the transaction
+        response = b.backend.get_stale_transactions(0)
 
-            # check if the assignee is one of the _other_ federation nodes
-            assert response['assignee'] in b.nodes_except_me
+        # check if the assignee is one of the _other_ federation nodes
+        for tx in response:
+            assert tx['assignee'] in b.nodes_except_me
 
 
     @pytest.mark.usefixtures('inputs')
