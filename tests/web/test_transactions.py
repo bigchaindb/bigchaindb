@@ -66,6 +66,18 @@ def test_post_create_transaction_with_invalid_structure(client):
     assert res.status_code == 400
 
 
+def test_post_create_transaction_with_invalid_schema(client):
+    from bigchaindb.models import Transaction
+    user_priv, user_pub = crypto.generate_key_pair()
+    tx = Transaction.create(
+        [user_pub], [([user_pub], 1)]).sign([user_priv]).to_dict()
+    del tx['version']
+    res = client.post(TX_ENDPOINT, data=json.dumps(tx))
+    assert res.status_code == 400
+    assert res.json['message'] == (
+        "Invalid transaction schema: 'version' is a required property")
+
+
 @pytest.mark.usefixtures('inputs')
 def test_post_transfer_transaction_endpoint(b, client, user_pk, user_sk):
     sk, pk = crypto.generate_key_pair()
