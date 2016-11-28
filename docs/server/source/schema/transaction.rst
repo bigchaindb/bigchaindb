@@ -301,7 +301,7 @@ Metadata
 --------
 
 User provided transaction metadata. This field may be ``null`` or may
-contain an object with freeform metadata.
+contain an non empty object with freeform metadata.
 
 
 
