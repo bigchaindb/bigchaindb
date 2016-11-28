@@ -9,15 +9,16 @@ from bigchaindb.common.exceptions import SchemaValidationError
 
 def drop_schema_descriptions(node):
     """ Drop descriptions from schema, since they clutter log output """
-    if isinstance(node, list):
-        for val in node:
-            drop_schema_descriptions(val)
-    elif isinstance(node, dict):
-        if node.get('type') == 'object':
-            if 'description' in node:
-                del node['description']
-        for val in node.values():
-            drop_schema_descriptions(val)
+    if 'description' in node:
+        del node['description']
+    for n in node.get('properties', {}).values():
+        drop_schema_descriptions(n)
+    for n in node.get('definitions', {}).values():
+        drop_schema_descriptions(n)
+    for n in node.get('anyOf', []):
+        drop_schema_descriptions(n)
+
+
 
 
 def _load_schema(name):
@@ -25,8 +26,8 @@ def _load_schema(name):
     path = os.path.join(os.path.dirname(__file__), name + '.yaml')
     with open(path) as handle:
         schema = yaml.safe_load(handle)
-        drop_schema_descriptions(schema)
-        return path, schema
+    drop_schema_descriptions(schema)
+    return path, schema
 
 
 def _validate_schema(schema, body):

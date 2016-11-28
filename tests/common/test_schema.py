@@ -1,4 +1,3 @@
-from copy import deepcopy
 from bigchaindb.common.schema import TX_SCHEMA, VOTE_SCHEMA, \
     drop_schema_descriptions
 
@@ -29,14 +28,42 @@ def test_vote_schema_additionalproperties():
 
 def test_drop_descriptions():
     node = {
-        'a': 1,
         'description': 'abc',
-        'b': [{
-            'type': 'object',
-            'description': 'gone, baby',
-        }]
+        'properties': {
+            'description': {
+                'description': ('The property named "description" should stay'
+                                'but description meta field goes'),
+            },
+            'properties': {
+                'description': 'this must go'
+            },
+            'any': {
+                'anyOf': [
+                    {
+                        'description': 'must go'
+                    }
+                ]
+            }
+        },
+        'definitions': {
+            'wat': {
+                'description': "go"
+            }
+        }
     }
-    node2 = deepcopy(node)
     drop_schema_descriptions(node)
-    del node2['b'][0]['description']
-    assert node == node2
+    expected = {
+        'properties': {
+            'description': {},
+            'properties': {},
+            'any': {
+                'anyOf': [
+                    {}
+                ]
+            }
+        },
+        'definitions': {
+            'wat': {},
+        }
+    }
+    assert node == expected
