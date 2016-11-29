@@ -19,8 +19,6 @@ def drop_schema_descriptions(node):
         drop_schema_descriptions(n)
 
 
-
-
 def _load_schema(name):
     """ Load a schema from disk """
     path = os.path.join(os.path.dirname(__file__), name + '.yaml')
