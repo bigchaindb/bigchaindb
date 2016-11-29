@@ -73,7 +73,6 @@ POST /transactions/
         "transaction": {
           "conditions": [
             {
-              "cid": 0,
               "condition": {
                 "uri": "cc:4:20:GG-pi3CeIlySZhQoJVBh9O23PzrOuhnYI7OHqIbHjkk:96",
                 "details": {
@@ -101,7 +100,6 @@ POST /transactions/
           "metadata": null,
           "fulfillments": [
             {
-              "fid": 0,
               "input": null,
               "fulfillment": "cf:4:GG-pi3CeIlySZhQoJVBh9O23PzrOuhnYI7OHqIbHjkn2VnQaEWvecO1x82Qr2Va_JjFywLKIOEV1Ob9Ofkeln2K89ny2mB-s7RLNvYAVzWNiQnp18_nQEUsvwACEXTYJ",
               "owners_before": [
@@ -141,14 +139,12 @@ POST /transactions/
               "owners_after": [
                 "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
               ],
-              "cid": 0
             }
           ],
           "fulfillments": [
             {
               "input": null,
               "fulfillment": "cf:4:GG-pi3CeIlySZhQoJVBh9O23PzrOuhnYI7OHqIbHjkn2VnQaEWvecO1x82Qr2Va_JjFywLKIOEV1Ob9Ofkeln2K89ny2mB-s7RLNvYAVzWNiQnp18_nQEUsvwACEXTYJ",
-              "fid": 0,
               "owners_before": [
                 "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
               ]
@@ -237,7 +233,6 @@ GET /transactions/{tx_id}
         "transaction": {
           "conditions": [
             {
-              "cid": 0,
               "condition": {
                 "uri": "cc:4:20:GG-pi3CeIlySZhQoJVBh9O23PzrOuhnYI7OHqIbHjkk:96",
                 "details": {
@@ -265,7 +260,6 @@ GET /transactions/{tx_id}
           "metadata": null,
           "fulfillments": [
             {
-              "fid": 0,
               "input": null,
               "fulfillment": "cf:4:GG-pi3CeIlySZhQoJVBh9O23PzrOuhnYI7OHqIbHjkn2VnQaEWvecO1x82Qr2Va_JjFywLKIOEV1Ob9Ofkeln2K89ny2mB-s7RLNvYAVzWNiQnp18_nQEUsvwACEXTYJ",
               "owners_before": [

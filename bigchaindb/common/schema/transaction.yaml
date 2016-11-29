@@ -152,11 +152,6 @@ definitions:
     - condition
     - amount
     properties:
-      cid:
-        "$ref": "#/definitions/offset"
-        description: |
-            Index of this condition's appearance in the `Transaction.conditions`_
-            array. In a transaction with 2 conditions, the ``cid``s will be 0 and 1.
       condition:
         description: |
             Body of the condition. Has the properties:
@@ -197,10 +192,6 @@ definitions:
     - input
     - fulfillment
     properties:
-      fid:
-        "$ref": "#/definitions/offset"
-        description: |
-            The offset of the fulfillment within the fulfillents array.
       owners_before:
         "$ref": "#/definitions/owners_list"
         description: |

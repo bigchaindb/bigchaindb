@@ -152,16 +152,6 @@ and what conditions must be met in order for it to be fulfilled. See also:
 fulfillment_.
 
 
-Condition.cid
-^^^^^^^^^^^^^
-
-**type:** integer
-
-Index of this condition's appearance in the Transaction.conditions_ 
-array. In a transaction with 2 conditions, the ``cid``\ s will be 0 and 1.
-
-
-
 Condition.condition
 ^^^^^^^^^^^^^^^^^^^
 
@@ -200,15 +190,6 @@ Fulfillment
 -----------
 
 A fulfillment is an input to a transaction, named as such because it fulfills a condition of a previous transaction. In the case of a ``CREATE`` transaction, a fulfillment may provide no ``input``.
-
-Fulfillment.fid
-^^^^^^^^^^^^^^^
-
-**type:** integer
-
-The offset of the fulfillment within the fulfillents array.
-
-
 
 Fulfillment.owners_before
 ^^^^^^^^^^^^^^^^^^^^^^^^^
