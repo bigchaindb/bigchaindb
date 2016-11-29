@@ -59,7 +59,8 @@ POST /transactions/
    The steps to build a valid transaction are beyond the scope of this page.
    One would normally use a driver such as the `BigchainDB Python Driver
    <https://docs.bigchaindb.com/projects/py-driver/en/latest/index.html>`_ to
-   build a valid transaction for a public/private keypair.
+   build a valid transaction. The exact contents of a valid transaction depend 
+   on the associated public/private keypairs.
 
    **Example request**:
 
