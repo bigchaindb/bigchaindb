@@ -4,31 +4,54 @@ In BigchainDB, _Transactions_ are used to register, issue, create or transfer
 things (e.g. assets).
 
 Transactions are the most basic kind of record stored by BigchainDB. There are
-two kinds: creation transactions and transfer transactions.
+two kinds: CREATE transactions and TRANSFER transactions.
 
-A _creation transaction_ can be used to register, issue, create or otherwise
+## CREATE Transactions
+
+A CREATE transaction can be used to register, issue, create or otherwise
 initiate the history of a single thing (or asset) in BigchainDB. For example,
 one might register an identity or a creative work. The things are often called
 "assets" but they might not be literal assets.
 
-Currently, BigchainDB only supports indivisible assets. You can't split an
-asset apart into multiple assets, nor can you combine several assets together
-into one. [Issue #129](https://github.com/bigchaindb/bigchaindb/issues/129) is
-an enhancement proposal to support divisible assets.
+BigchainDB supports divisible assets as of BigchainDB Server v0.8.0.
+That means you can create/register an asset with an initial quantity,
+e.g. 700 oak trees. Divisible assets can be split apart or recombined
+by transfer transactions (described more below).
 
-A creation transaction also establishes the conditions that must be met to
-transfer the asset. For example, there may be a condition that any transfer
+A CREATE transaction also establishes the conditions that must be met to
+transfer the asset(s). For example, there may be a condition that any transfer
 must be signed (cryptographically) by the private key associated with a
 given public key. More sophisticated conditions are possible.
 BigchainDB's conditions are based on the crypto-conditions of the [Interledger
 Protocol (ILP)](https://interledger.org/).
 
-A _transfer transaction_ can transfer an asset by fulfilling the current
-conditions on the asset. It can also specify new transfer conditions.
+## TRANSFER Transactions
 
-Today, every transaction contains one fulfillment-condition pair. The
-fulfillment in a transfer transaction must fulfill a condition in a previous
-transaction.
+A TRANSFER transaction can transfer an asset
+by fulfilling the current conditions on the asset.
+It must also specify new transfer conditions.
+
+**Example 1:** Suppose a red car is owned and controlled by Joe.
+Suppose the current transfer condition on the car says
+that any valid transfer must be signed by Joe.
+Joe and a buyer named Rae could build a TRANSFER transaction containing
+Joe's signature (to fulfill the current transfer condition)
+plus a new transfer condition saying that any valid transfer
+must be signed by Rae.
+
+**Example 2:** Someone might construct a TRANSFER transaction
+that fulfills the transfer conditions on four
+previously-untransferred assets of the same asset type
+e.g. paperclips. The amounts might be 20, 10, 45 and 25, say,
+for a total of 100 paperclips.
+The TRANSFER transaction would also set up new transfer conditions.
+For example, maybe a set of 60 paperclips can only be transferred
+if Gertrude signs, and a separate set of 40 paperclips can only be
+transferred if both Jack and Kelly sign.
+Note how the sum of the incoming paperclips must equal the sum
+of the outgoing paperclips (100).
+
+## Transaction Validity
 
 When a node is asked to check if a transaction is valid, it checks several
 things. Some things it checks are:
@@ -47,6 +70,8 @@ things. Some things it checks are:
      also aims to fulfill?
    * Is the asset ID in the transaction the same as the asset ID in all
      transactions whose conditions are being fulfilled?
+   * Is the sum of the amounts in the fulfillments equal
+     to the sum of the amounts in the new conditions?
 
 If you're curious about the details of transaction validation, the code is in
 the `validate` method of the `Transaction` class, in `bigchaindb/models.py` (at
