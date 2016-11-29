@@ -54,7 +54,7 @@ Vote.previous_block
 
 **type:** string
 
-SHA3 identifier of the block that preceeds the block being voted on.
+ID (SHA3 hash) of the block that precedes the block being voted on.
 The notion of a "previous" block is subject to vote.
 
 
@@ -64,7 +64,7 @@ Vote.voting_for_block
 
 **type:** string
 
-SHA3 identifier of the block being voted on.
+ID (SHA3 hash) of the block being voted on.
 
 
 

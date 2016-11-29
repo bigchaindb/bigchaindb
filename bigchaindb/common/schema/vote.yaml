@@ -41,12 +41,12 @@ properties:
       previous_block:
         "$ref": "#/definitions/sha3_hexdigest"
         description: |
-          SHA3 identifier of the block that preceeds the block being voted on.
+          ID (SHA3 hash) of the block that precedes the block being voted on.
           The notion of a "previous" block is subject to vote.
       voting_for_block:
         "$ref": "#/definitions/sha3_hexdigest"
         description: |
-          SHA3 identifier of the block being voted on.
+          ID (SHA3 hash) of the block being voted on.
       is_block_valid:
         type: "boolean"
         description: |
