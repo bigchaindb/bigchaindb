@@ -16,7 +16,7 @@ For reference, the possible headings are:
 * **Notes**
 
 
-## [0.8.0] - 2016-11-??
+## [0.8.0] - 2016-11-29
 Tag name: v0.8.0
 = commit:
 committed:
@@ -24,6 +24,7 @@ committed:
 ### Added
 - The big new thing in version 0.8.0 is support for divisible assets, i.e. assets like carrots or thumbtacks, where the initial CREATE transaction can register/create some amount (e.g. 542 carrots), the first TRANSFER transaction can split that amount across multiple owners, and so on. [Pull Request #794](https://github.com/bigchaindb/bigchaindb/pull/794)
 - Wrote a formal schema for the JSON structure of transactions. Transactions are now checked against that schema. [Pull Request #798](https://github.com/bigchaindb/bigchaindb/pull/798)
+- New configuration parameter: `backlog_reassign_delay`. [Pull Request #883](https://github.com/bigchaindb/bigchaindb/pull/883)
 
 ### Changed
 - CREATE transactions must now be signed by all `owners_before` (rather than by a federation node). [Pull Request #794](https://github.com/bigchaindb/bigchaindb/pull/794)
@@ -31,6 +32,7 @@ committed:
 - `get_transaction()` will now return a transaction from the backlog, even if there are copies of the transaction in invalid blocks. [Pull Request #793](https://github.com/bigchaindb/bigchaindb/pull/793)
 - Several pull requests to introduce a generalized database interface, to move RethinkDB calls into a separate implementation of that interface, and to work on a new MongoDB implementation of that interface. Pull Requests
 [#754](https://github.com/bigchaindb/bigchaindb/pull/754),
+[#783](https://github.com/bigchaindb/bigchaindb/pull/783),
 [#799](https://github.com/bigchaindb/bigchaindb/pull/799),
 [#806](https://github.com/bigchaindb/bigchaindb/pull/806),
 [#809](https://github.com/bigchaindb/bigchaindb/pull/809),
@@ -50,6 +52,7 @@ committed:
 - Hard-coded `backlog_reassign_delay`. [Pull Request #854](https://github.com/bigchaindb/bigchaindb/pull/854)
 - Race condition in `test_stale_monitor.py`. [Pull Request #846](https://github.com/bigchaindb/bigchaindb/pull/846)
 - When creating a signed vote, decode the vote signature to a `str`. [Pull Request #869](https://github.com/bigchaindb/bigchaindb/pull/869)
+- Bug in AWS deployment scripts. Setting `BIND_HTTP_TO_LOCALHOST` to `False` didn't actually work. It does now. [Pull Request #870](https://github.com/bigchaindb/bigchaindb/pull/870)
 
 ### External Contributors
 - @najlachamseddine - [Pull Request #528](https://github.com/bigchaindb/bigchaindb/pull/528)
@@ -71,8 +74,10 @@ committed:
 [#803](https://github.com/bigchaindb/bigchaindb/pull/803),
 [#819](https://github.com/bigchaindb/bigchaindb/pull/819),
 [#827](https://github.com/bigchaindb/bigchaindb/pull/827),
-[#859](https://github.com/bigchaindb/bigchaindb/pull/859)
-
+[#859](https://github.com/bigchaindb/bigchaindb/pull/859),
+[#872](https://github.com/bigchaindb/bigchaindb/pull/872),
+[#882](https://github.com/bigchaindb/bigchaindb/pull/882),
+[#883](https://github.com/bigchaindb/bigchaindb/pull/883)
 
 
 ## [0.7.0] - 2016-10-28
