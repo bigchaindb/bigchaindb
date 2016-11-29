@@ -54,12 +54,12 @@ POST /transactions/
 
    Push a new transaction.
 
-   Note: The posted transaction should be valid `transaction
+   Note: The posted transaction should be a valid and signed `transaction
    <https://bigchaindb.readthedocs.io/en/latest/data-models/transaction-model.html>`_.
    The steps to build a valid transaction are beyond the scope of this page.
    One would normally use a driver such as the `BigchainDB Python Driver
    <https://docs.bigchaindb.com/projects/py-driver/en/latest/index.html>`_ to
-   build a valid transaction.
+   build a valid transaction for a public/private keypair.
 
    **Example request**:
 
@@ -75,18 +75,18 @@ POST /transactions/
             {
               "cid": 0,
               "condition": {
-                "uri": "cc:4:20:GG-pi3CeIlySZhQoJVBh9O23PzrOuhnYI7OHqIbHjkk:96",
+                "uri": "cc:4:20:fSlVCKNSzSl0meiwwuUk5JpJ0KLlECTqbd25KyQefFY:96",
                 "details": {
                   "signature": null,
                   "type": "fulfillment",
                   "type_id": 4,
                   "bitmask": 32,
-                  "public_key": "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
+                  "public_key": "9RaWxppkP9UyYWA7NJb5FcgkzfJNPfvPX3FCNw2T5Pwb"
                 }
               },
               "amount": 1,
               "owners_after": [
-                "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
+                "9RaWxppkP9UyYWA7NJb5FcgkzfJNPfvPX3FCNw2T5Pwb"
               ]
             }
           ],
@@ -95,7 +95,7 @@ POST /transactions/
             "divisible": false,
             "updatable": false,
             "data": null,
-            "id": "aebeab22-e672-4d3b-a187-bde5fda6533d",
+            "id": "b57801f8-b865-4360-9d1a-3e3009f5ce01",
             "refillable": false
           },
           "metadata": null,
@@ -103,14 +103,14 @@ POST /transactions/
             {
               "fid": 0,
               "input": null,
-              "fulfillment": "cf:4:GG-pi3CeIlySZhQoJVBh9O23PzrOuhnYI7OHqIbHjkn2VnQaEWvecO1x82Qr2Va_JjFywLKIOEV1Ob9Ofkeln2K89ny2mB-s7RLNvYAVzWNiQnp18_nQEUsvwACEXTYJ",
+              "fulfillment": "cf:4:fSlVCKNSzSl0meiwwuUk5JpJ0KLlECTqbd25KyQefFaf8bQVH1gesZGEGZepCE8_kgo-UfBrCHPlvBsnAsfq56GWjrLTyZ9NXISwcyJ3zmygnVhCMG8xzE6c9fj1-6wK",
               "owners_before": [
-                "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
+                  "9RaWxppkP9UyYWA7NJb5FcgkzfJNPfvPX3FCNw2T5Pwb"
               ]
             }
           ]
         },
-        "id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e",
+        "id": "65f1f69b6ebf995a7b2c5ae8a6fb480ce20f0e8f1eb1d77d75f37ab00ccdeec3",
         "version": 1
       }
 
@@ -122,24 +122,24 @@ POST /transactions/
       Content-Type: application/json
 
       {
-        "id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e",
+        "id": "65f1f69b6ebf995a7b2c5ae8a6fb480ce20f0e8f1eb1d77d75f37ab00ccdeec3",
         "version": 1,
         "transaction": {
           "conditions": [
             {
               "amount": 1,
               "condition": {
-                "uri": "cc:4:20:GG-pi3CeIlySZhQoJVBh9O23PzrOuhnYI7OHqIbHjkk:96",
+                "uri": "cc:4:20:fSlVCKNSzSl0meiwwuUk5JpJ0KLlECTqbd25KyQefFY:96",
                 "details": {
                   "signature": null,
                   "type_id": 4,
                   "type": "fulfillment",
                   "bitmask": 32,
-                  "public_key": "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
+                  "public_key": "9RaWxppkP9UyYWA7NJb5FcgkzfJNPfvPX3FCNw2T5Pwb"
                 }
               },
               "owners_after": [
-                "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
+                "9RaWxppkP9UyYWA7NJb5FcgkzfJNPfvPX3FCNw2T5Pwb"
               ],
               "cid": 0
             }
@@ -147,10 +147,10 @@ POST /transactions/
           "fulfillments": [
             {
               "input": null,
-              "fulfillment": "cf:4:GG-pi3CeIlySZhQoJVBh9O23PzrOuhnYI7OHqIbHjkn2VnQaEWvecO1x82Qr2Va_JjFywLKIOEV1Ob9Ofkeln2K89ny2mB-s7RLNvYAVzWNiQnp18_nQEUsvwACEXTYJ",
+              "fulfillment": "cf:4:fSlVCKNSzSl0meiwwuUk5JpJ0KLlECTqbd25KyQefFaf8bQVH1gesZGEGZepCE8_kgo-UfBrCHPlvBsnAsfq56GWjrLTyZ9NXISwcyJ3zmygnVhCMG8xzE6c9fj1-6wK",
               "fid": 0,
               "owners_before": [
-                "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
+                "9RaWxppkP9UyYWA7NJb5FcgkzfJNPfvPX3FCNw2T5Pwb"
               ]
             }
           ],
@@ -160,7 +160,7 @@ POST /transactions/
             "refillable": false,
             "divisible": false,
             "data": null,
-            "id": "aebeab22-e672-4d3b-a187-bde5fda6533d"
+            "id": "b57801f8-b865-4360-9d1a-3e3009f5ce01"
           },
           "metadata": null
         }
@@ -188,7 +188,7 @@ GET /transactions/{tx_id}/status
 
    .. sourcecode:: http
 
-      GET /transactions/7ad5a4b83bc8c70c4fd7420ff3c60693ab8e6d0e3124378ca69ed5acd2578792/status HTTP/1.1
+      GET /transactions/65f1f69b6ebf995a7b2c5ae8a6fb480ce20f0e8f1eb1d77d75f37ab00ccdeec3/status HTTP/1.1
       Host: example.com
 
    **Example response**:
@@ -223,7 +223,7 @@ GET /transactions/{tx_id}
 
    .. sourcecode:: http
 
-      GET /transactions/2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e HTTP/1.1
+      GET /transactions/65f1f69b6ebf995a7b2c5ae8a6fb480ce20f0e8f1eb1d77d75f37ab00ccdeec3 HTTP/1.1
       Host: example.com
 
    **Example response**:
@@ -239,18 +239,18 @@ GET /transactions/{tx_id}
             {
               "cid": 0,
               "condition": {
-                "uri": "cc:4:20:GG-pi3CeIlySZhQoJVBh9O23PzrOuhnYI7OHqIbHjkk:96",
+                "uri": "cc:4:20:fSlVCKNSzSl0meiwwuUk5JpJ0KLlECTqbd25KyQefFY:96",
                 "details": {
                   "signature": null,
                   "type": "fulfillment",
                   "type_id": 4,
                   "bitmask": 32,
-                  "public_key": "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
+                  "public_key": "9RaWxppkP9UyYWA7NJb5FcgkzfJNPfvPX3FCNw2T5Pwb"
                 }
               },
               "amount": 1,
               "owners_after": [
-                "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
+                "9RaWxppkP9UyYWA7NJb5FcgkzfJNPfvPX3FCNw2T5Pwb"
               ]
             }
           ],
@@ -259,7 +259,7 @@ GET /transactions/{tx_id}
             "divisible": false,
             "updatable": false,
             "data": null,
-            "id": "aebeab22-e672-4d3b-a187-bde5fda6533d",
+            "id": "b57801f8-b865-4360-9d1a-3e3009f5ce01",
             "refillable": false
           },
           "metadata": null,
@@ -267,14 +267,14 @@ GET /transactions/{tx_id}
             {
               "fid": 0,
               "input": null,
-              "fulfillment": "cf:4:GG-pi3CeIlySZhQoJVBh9O23PzrOuhnYI7OHqIbHjkn2VnQaEWvecO1x82Qr2Va_JjFywLKIOEV1Ob9Ofkeln2K89ny2mB-s7RLNvYAVzWNiQnp18_nQEUsvwACEXTYJ",
+              "fulfillment": "cf:4:fSlVCKNSzSl0meiwwuUk5JpJ0KLlECTqbd25KyQefFaf8bQVH1gesZGEGZepCE8_kgo-UfBrCHPlvBsnAsfq56GWjrLTyZ9NXISwcyJ3zmygnVhCMG8xzE6c9fj1-6wK",
               "owners_before": [
-                "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
+                "9RaWxppkP9UyYWA7NJb5FcgkzfJNPfvPX3FCNw2T5Pwb"
               ]
             }
           ]
         },
-        "id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e",
+        "id": "65f1f69b6ebf995a7b2c5ae8a6fb480ce20f0e8f1eb1d77d75f37ab00ccdeec3",
         "version": 1
       }
 
