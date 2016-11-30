@@ -35,6 +35,10 @@ _version = {}
 with open('../../../bigchaindb/version.py') as fp:
     exec(fp.read(), _version)
 
+import os.path
+import sys
+
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__) + '/..'))
 
 extensions = [
     'sphinx.ext.autodoc',
@@ -44,6 +48,10 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinxcontrib.httpdomain',
     'sphinx.ext.autosectionlabel',
+    # Below are actually build steps made to look like sphinx extensions.
+    # It was the easiest way to get it running with ReadTheDocs.
+    'generate_schema_documentation',
+    'generate_http_server_api_documentation',
 ]
 
 # autodoc settings
