@@ -387,34 +387,6 @@ def test_invalid_fulfillment_initialization(user_ffill, user_pub):
         Fulfillment(user_ffill, [], tx_input='somethingthatiswrong')
 
 
-def test_invalid_metadata_initialization():
-    from bigchaindb.common.transaction import Metadata
-
-    with raises(TypeError):
-        Metadata([])
-
-
-def test_metadata_serialization(data, data_id):
-    from bigchaindb.common.transaction import Metadata
-
-    expected = {
-        'data': data,
-        'id': data_id,
-    }
-    metadata = Metadata(data, data_id)
-
-    assert metadata.to_dict() == expected
-
-
-def test_metadata_deserialization(data, data_id):
-    from bigchaindb.common.transaction import Metadata
-
-    expected = Metadata(data, data_id)
-    metadata = Metadata.from_dict({'data': data, 'id': data_id})
-
-    assert metadata == expected
-
-
 def test_transaction_link_serialization():
     from bigchaindb.common.transaction import TransactionLink
 
@@ -762,9 +734,7 @@ def test_create_create_transaction_single_io(user_cond, user_pub, data, uuid4):
     expected = {
         'transaction': {
             'conditions': [user_cond.to_dict(0)],
-            'metadata': {
-                'data': data,
-            },
+            'metadata': data,
             'asset': {
                 'id': uuid4,
                 'divisible': False,
@@ -790,7 +760,6 @@ def test_create_create_transaction_single_io(user_cond, user_pub, data, uuid4):
     asset = Asset(data, uuid4)
     tx = Transaction.create([user_pub], [([user_pub], 1)], data, asset)
     tx_dict = tx.to_dict()
-    tx_dict['transaction']['metadata'].pop('id')
     tx_dict['transaction']['fulfillments'][0]['fulfillment'] = None
     tx_dict.pop('id')
 
@@ -820,9 +789,7 @@ def test_create_create_transaction_multiple_io(user_cond, user2_cond, user_pub,
         'transaction': {
             'conditions': [user_cond.to_dict(0), user2_cond.to_dict(1)],
             'metadata': {
-                'data': {
-                    'message': 'hello'
-                }
+                'message': 'hello'
             },
             'fulfillments': [ffill],
             'operation': 'CREATE',
@@ -835,7 +802,6 @@ def test_create_create_transaction_multiple_io(user_cond, user2_cond, user_pub,
                             asset=asset,
                             metadata={'message': 'hello'}).to_dict()
     tx.pop('id')
-    tx['transaction']['metadata'].pop('id')
     tx['transaction'].pop('asset')
 
     assert tx == expected
@@ -865,9 +831,7 @@ def test_create_create_transaction_threshold(user_pub, user2_pub, user3_pub,
     expected = {
         'transaction': {
             'conditions': [user_user2_threshold_cond.to_dict(0)],
-            'metadata': {
-                'data': data,
-            },
+            'metadata': data,
             'asset': {
                 'id': uuid4,
                 'divisible': False,
@@ -894,7 +858,6 @@ def test_create_create_transaction_threshold(user_pub, user2_pub, user3_pub,
                             data, asset)
     tx_dict = tx.to_dict()
     tx_dict.pop('id')
-    tx_dict['transaction']['metadata'].pop('id')
     tx_dict['transaction']['fulfillments'][0]['fulfillment'] = None
 
     assert tx_dict == expected
