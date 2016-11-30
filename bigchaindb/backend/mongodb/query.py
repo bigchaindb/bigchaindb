@@ -40,3 +40,29 @@ def transaction_exists(conn, transaction_id):
         return True
     else:
         return False
+
+
+@query.get_transaction_from_block.register(MongoDBConnection)
+def get_transaction_from_block(conn, block_id, tx_id):
+    # this is definitely wrong, but it's something like this
+    return conn.db['bigchain'].find_one({'id': block_id,
+                                         'block.transactions.id': tx_id})
+
+
+@query.get_tx_by_metadata_id.register(MongoDBConnection)
+def get_tx_by_metadata_id(conn, metadata_id):
+    return conn.db['bigchain']\
+            .find({'block.transactions.transaction.metadata.id': metadata_id})
+
+
+@query.get_txs_by_asset_id.register(MongoDBConnection)
+def get_txs_by_asset_id(conn, asset_id):
+    return conn.db['bigchain']\
+            .find({'block.transaction.transaction.asset.id': asset_id})
+
+
+@query.get_tx_by_fulfillment.register(MongoDBConnection)
+def get_tx_by_fulfillment(conn, txid, cid):
+    return conn.db['bigchain']\
+            .find({'block.transactions.transaction.fulfillments.txid': txid,
+                   'block.transactions.transaction.fulfillments.cid': cid})
