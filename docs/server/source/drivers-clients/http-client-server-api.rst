@@ -64,108 +64,13 @@ POST /transactions/
 
    **Example request**:
 
-   .. sourcecode:: http
-
-      POST /transactions/ HTTP/1.1
-      Host: example.com
-      Content-Type: application/json
-
-      {
-        "transaction": {
-          "conditions": [
-            {
-              "cid": 0,
-              "condition": {
-                "uri": "cc:4:20:fSlVCKNSzSl0meiwwuUk5JpJ0KLlECTqbd25KyQefFY:96",
-                "details": {
-                  "signature": null,
-                  "type": "fulfillment",
-                  "type_id": 4,
-                  "bitmask": 32,
-                  "public_key": "9RaWxppkP9UyYWA7NJb5FcgkzfJNPfvPX3FCNw2T5Pwb"
-                }
-              },
-              "amount": 1,
-              "owners_after": [
-                "9RaWxppkP9UyYWA7NJb5FcgkzfJNPfvPX3FCNw2T5Pwb"
-              ]
-            }
-          ],
-          "operation": "CREATE",
-          "asset": {
-            "divisible": false,
-            "updatable": false,
-            "data": null,
-            "id": "b57801f8-b865-4360-9d1a-3e3009f5ce01",
-            "refillable": false
-          },
-          "metadata": null,
-          "fulfillments": [
-            {
-              "fid": 0,
-              "input": null,
-              "fulfillment": "cf:4:fSlVCKNSzSl0meiwwuUk5JpJ0KLlECTqbd25KyQefFaf8bQVH1gesZGEGZepCE8_kgo-UfBrCHPlvBsnAsfq56GWjrLTyZ9NXISwcyJ3zmygnVhCMG8xzE6c9fj1-6wK",
-              "owners_before": [
-                  "9RaWxppkP9UyYWA7NJb5FcgkzfJNPfvPX3FCNw2T5Pwb"
-              ]
-            }
-          ]
-        },
-        "id": "65f1f69b6ebf995a7b2c5ae8a6fb480ce20f0e8f1eb1d77d75f37ab00ccdeec3",
-        "version": 1
-      }
+   .. literalinclude:: samples/post-tx-request.http
+      :language: http
 
    **Example response**:
 
-   .. sourcecode:: http
-
-      HTTP/1.1 201 Created
-      Content-Type: application/json
-
-      {
-        "id": "65f1f69b6ebf995a7b2c5ae8a6fb480ce20f0e8f1eb1d77d75f37ab00ccdeec3",
-        "version": 1,
-        "transaction": {
-          "conditions": [
-            {
-              "amount": 1,
-              "condition": {
-                "uri": "cc:4:20:fSlVCKNSzSl0meiwwuUk5JpJ0KLlECTqbd25KyQefFY:96",
-                "details": {
-                  "signature": null,
-                  "type_id": 4,
-                  "type": "fulfillment",
-                  "bitmask": 32,
-                  "public_key": "9RaWxppkP9UyYWA7NJb5FcgkzfJNPfvPX3FCNw2T5Pwb"
-                }
-              },
-              "owners_after": [
-                "9RaWxppkP9UyYWA7NJb5FcgkzfJNPfvPX3FCNw2T5Pwb"
-              ],
-              "cid": 0
-            }
-          ],
-          "fulfillments": [
-            {
-              "input": null,
-              "fulfillment": "cf:4:fSlVCKNSzSl0meiwwuUk5JpJ0KLlECTqbd25KyQefFaf8bQVH1gesZGEGZepCE8_kgo-UfBrCHPlvBsnAsfq56GWjrLTyZ9NXISwcyJ3zmygnVhCMG8xzE6c9fj1-6wK",
-              "fid": 0,
-              "owners_before": [
-                "9RaWxppkP9UyYWA7NJb5FcgkzfJNPfvPX3FCNw2T5Pwb"
-              ]
-            }
-          ],
-          "operation": "CREATE",
-          "asset": {
-            "updatable": false,
-            "refillable": false,
-            "divisible": false,
-            "data": null,
-            "id": "b57801f8-b865-4360-9d1a-3e3009f5ce01"
-          },
-          "metadata": null
-        }
-      }
+   .. literalinclude:: samples/post-tx-response.http
+      :language: http
 
    :statuscode 201: A new transaction was created.
    :statuscode 400: The transaction was invalid and not created.
@@ -187,21 +92,13 @@ GET /transactions/{tx_id}/status
 
    **Example request**:
 
-   .. sourcecode:: http
-
-      GET /transactions/65f1f69b6ebf995a7b2c5ae8a6fb480ce20f0e8f1eb1d77d75f37ab00ccdeec3/status HTTP/1.1
-      Host: example.com
+   .. literalinclude:: samples/get-tx-status-request.http
+      :language: http
 
    **Example response**:
 
-   .. sourcecode:: http
-
-      HTTP/1.1 200 OK
-      Content-Type: application/json
-
-      {
-        "status": "valid"
-      }
+   .. literalinclude:: samples/get-tx-status-response.http
+      :language: http
 
    :statuscode 200: A transaction with that ID was found and the status is returned.
    :statuscode 404: A transaction with that ID was not found.
@@ -222,62 +119,13 @@ GET /transactions/{tx_id}
 
    **Example request**:
 
-   .. sourcecode:: http
-
-      GET /transactions/65f1f69b6ebf995a7b2c5ae8a6fb480ce20f0e8f1eb1d77d75f37ab00ccdeec3 HTTP/1.1
-      Host: example.com
+   .. literalinclude:: samples/get-tx-request.http
+      :language: http
 
    **Example response**:
 
-   .. sourcecode:: http
-
-      HTTP/1.1 200 OK
-      Content-Type: application/json
-
-      {
-        "transaction": {
-          "conditions": [
-            {
-              "cid": 0,
-              "condition": {
-                "uri": "cc:4:20:fSlVCKNSzSl0meiwwuUk5JpJ0KLlECTqbd25KyQefFY:96",
-                "details": {
-                  "signature": null,
-                  "type": "fulfillment",
-                  "type_id": 4,
-                  "bitmask": 32,
-                  "public_key": "9RaWxppkP9UyYWA7NJb5FcgkzfJNPfvPX3FCNw2T5Pwb"
-                }
-              },
-              "amount": 1,
-              "owners_after": [
-                "9RaWxppkP9UyYWA7NJb5FcgkzfJNPfvPX3FCNw2T5Pwb"
-              ]
-            }
-          ],
-          "operation": "CREATE",
-          "asset": {
-            "divisible": false,
-            "updatable": false,
-            "data": null,
-            "id": "b57801f8-b865-4360-9d1a-3e3009f5ce01",
-            "refillable": false
-          },
-          "metadata": null,
-          "fulfillments": [
-            {
-              "fid": 0,
-              "input": null,
-              "fulfillment": "cf:4:fSlVCKNSzSl0meiwwuUk5JpJ0KLlECTqbd25KyQefFaf8bQVH1gesZGEGZepCE8_kgo-UfBrCHPlvBsnAsfq56GWjrLTyZ9NXISwcyJ3zmygnVhCMG8xzE6c9fj1-6wK",
-              "owners_before": [
-                "9RaWxppkP9UyYWA7NJb5FcgkzfJNPfvPX3FCNw2T5Pwb"
-              ]
-            }
-          ]
-        },
-        "id": "65f1f69b6ebf995a7b2c5ae8a6fb480ce20f0e8f1eb1d77d75f37ab00ccdeec3",
-        "version": 1
-      }
+   .. literalinclude:: samples/get-tx-response.http
+      :language: http
 
    :statuscode 200: A transaction with that ID was found.
    :statuscode 404: A transaction with that ID was not found.

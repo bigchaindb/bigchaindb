@@ -168,11 +168,19 @@ def main():
         'file': os.path.basename(__file__),
     }
 
-    path = os.path.join(os.path.dirname(__file__),
-                        'source/schema/transaction.rst')
+    base_path = os.path.join(os.path.dirname(__file__), 'source/schema')
+    path = os.path.join(base_path, 'transaction.rst')
+
+    if not os.path.exists(base_path):
+        os.makedirs(base_path)
 
     with open(path, 'w') as handle:
         handle.write(doc)
+
+
+def setup(*_):
+    """ Fool sphinx into think it's an extension muahaha """
+    main()
 
 
 if __name__ == '__main__':
