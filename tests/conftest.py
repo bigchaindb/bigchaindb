@@ -25,8 +25,8 @@ CONFIG = {
 }
 
 # Test user. inputs will be created for this user. Cryptography Keys
-USER_SIGNING_KEY = '8eJ8q9ZQpReWyQT5aFCiwtZ5wDZC4eDnCen88p3tQ6ie'
-USER_VERIFYING_KEY = 'JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE'
+USER_PRIVATE_KEY = '8eJ8q9ZQpReWyQT5aFCiwtZ5wDZC4eDnCen88p3tQ6ie'
+USER_PUBLIC_KEY = 'JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE'
 
 
 # We need this function to avoid loading an existing
@@ -54,12 +54,12 @@ def node_config():
 
 @pytest.fixture
 def user_sk():
-    return USER_SIGNING_KEY
+    return USER_PRIVATE_KEY
 
 
 @pytest.fixture
-def user_vk():
-    return USER_VERIFYING_KEY
+def user_pk():
+    return USER_PUBLIC_KEY
 
 
 @pytest.fixture
@@ -70,9 +70,9 @@ def b(request, node_config):
 
 
 @pytest.fixture
-def create_tx(b, user_vk):
+def create_tx(b, user_pk):
     from bigchaindb.models import Transaction
-    return Transaction.create([b.me], [([user_vk], 1)])
+    return Transaction.create([b.me], [([user_pk], 1)])
 
 
 @pytest.fixture
@@ -81,8 +81,8 @@ def signed_create_tx(b, create_tx):
 
 
 @pytest.fixture
-def signed_transfer_tx(signed_create_tx, user_vk, user_sk):
+def signed_transfer_tx(signed_create_tx, user_pk, user_sk):
     from bigchaindb.models import Transaction
     inputs = signed_create_tx.to_inputs()
-    tx = Transaction.transfer(inputs, [([user_vk], 1)], signed_create_tx.asset)
+    tx = Transaction.transfer(inputs, [([user_pk], 1)], signed_create_tx.asset)
     return tx.sign([user_sk])

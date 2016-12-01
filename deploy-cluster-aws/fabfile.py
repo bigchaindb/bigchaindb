@@ -156,7 +156,12 @@ def prep_rethinkdb_storage(USING_EBS):
 @parallel
 def install_rethinkdb():
     """Install RethinkDB"""
-    sudo("echo 'deb http://download.rethinkdb.com/apt trusty main' | sudo tee /etc/apt/sources.list.d/rethinkdb.list")
+    # Old way:
+    # sudo("echo 'deb http://download.rethinkdb.com/apt trusty main' | sudo tee /etc/apt/sources.list.d/rethinkdb.list")
+    # New way: (from https://www.rethinkdb.com/docs/install/ubuntu/ )
+    sudo('source /etc/lsb-release && '
+         'echo "deb http://download.rethinkdb.com/apt $DISTRIB_CODENAME main" | '
+         'sudo tee /etc/apt/sources.list.d/rethinkdb.list')
     sudo("wget -qO- http://download.rethinkdb.com/apt/pubkey.gpg | sudo apt-key add -")
     sudo("apt-get update")
     sudo("apt-get -y install rethinkdb")

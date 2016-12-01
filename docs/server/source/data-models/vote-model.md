@@ -13,7 +13,7 @@ A vote has the following structure:
         "invalid_reason": "<None|DOUBLE_SPEND|TRANSACTIONS_HASH_MISMATCH|NODES_PUBKEYS_MISMATCH",
         "timestamp": "<Unix time when the vote was generated, provided by the voting node>"
     },
-    "signature": "<signature of vote>",
+    "signature": "<signature of vote>"
 }
 ```
 

@@ -77,3 +77,7 @@ benchmarking-tests/ssh_key.py
 # Ansible-specific files
 ntools/one-m/ansible/hosts
 ntools/one-m/ansible/ansible.cfg
+
+# Just in time documentation
+docs/server/source/schema
+docs/server/source/drivers-clients/samples

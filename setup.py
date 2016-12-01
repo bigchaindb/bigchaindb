@@ -27,6 +27,18 @@ def check_setuptools_features():
 
 check_setuptools_features()
 
+dev_require = [
+    'ipdb',
+    'ipython',
+]
+
+docs_require = [
+    'Sphinx>=1.4.8',
+    'recommonmark>=0.4.0',
+    'sphinx-rtd-theme>=0.1.9',
+    'sphinxcontrib-httpdomain>=1.5.0',
+    'sphinxcontrib-napoleon>=0.4.4',
+]
 
 tests_require = [
     'coverage',
@@ -37,19 +49,7 @@ tests_require = [
     'pytest-cov>=2.2.1',
     'pytest-xdist',
     'pytest-flask',
-]
-
-dev_require = [
-    'ipdb',
-    'ipython',
-]
-
-docs_require = [
-    'Sphinx>=1.3.5',
-    'recommonmark>=0.4.0',
-    'sphinx-rtd-theme>=0.1.9',
-    'sphinxcontrib-httpdomain>=1.5.0',
-]
+] + docs_require
 
 benchmarks_require = [
     'line-profiler==1.0',
@@ -67,6 +67,8 @@ install_requires = [
     'requests~=2.9',
     'gunicorn~=19.0',
     'multipipes~=0.1.0',
+    'jsonschema~=2.5.1',
+    'pyyaml~=3.12',
 ]
 
 setup(
@@ -110,4 +112,5 @@ setup(
         'dev': dev_require + tests_require + docs_require + benchmarks_require,
         'docs': docs_require,
     },
+    package_data={'bigchaindb.common.schema': ['transaction.yaml']},
 )

@@ -138,48 +138,29 @@ class RethinkDBBackend:
                 .get_all(transaction_id, index='transaction_id')
                 .pluck('votes', 'id', {'block': ['voters']}))
 
-    def get_transactions_by_metadata_id(self, metadata_id):
-        """Retrieves transactions related to a metadata.
+    def get_txids_by_asset_id(self, asset_id):
+        """Retrieves transactions ids related to a particular asset.
 
-        When creating a transaction one of the optional arguments is the `metadata`. The metadata is a generic
-        dict that contains extra information that can be appended to the transaction.
-
-        To make it easy to query the bigchain for that particular metadata we create a UUID for the metadata and
-        store it with the transaction.
-
-        Args:
-            metadata_id (str): the id for this particular metadata.
-
-        Returns:
-            A list of transactions containing that metadata. If no transaction exists with that metadata it
-            returns an empty list `[]`
-        """
-        return self.connection.run(
-                r.table('bigchain', read_mode=self.read_mode)
-                .get_all(metadata_id, index='metadata_id')
-                .concat_map(lambda block: block['block']['transactions'])
-                .filter(lambda transaction: transaction['transaction']['metadata']['id'] == metadata_id))
-
-    def get_transactions_by_asset_id(self, asset_id):
-        """Retrieves transactions related to a particular asset.
-
-        A digital asset in bigchaindb is identified by an uuid. This allows us to query all the transactions
-        related to a particular digital asset, knowing the id.
+        A digital asset in bigchaindb is identified by an uuid. This allows us
+        to query all the transactions related to a particular digital asset,
+        knowing the id.
 
         Args:
             asset_id (str): the id for this particular metadata.
 
         Returns:
-            A list of transactions containing related to the asset. If no transaction exists for that asset it
-            returns an empty list `[]`
+            A list of transactions ids related to the asset. If no transaction
+            exists for that asset it returns an empty list `[]`
         """
 
+        # here we only want to return the transaction ids since later on when
+        # we are going to retrieve the transaction with status validation
         return self.connection.run(
             r.table('bigchain', read_mode=self.read_mode)
              .get_all(asset_id, index='asset_id')
              .concat_map(lambda block: block['block']['transactions'])
-             .filter(lambda transaction:
-                     transaction['transaction']['asset']['id'] == asset_id))
+             .filter(lambda transaction: transaction['asset']['id'] == asset_id)
+             .get_field('id'))
 
     def get_asset_by_id(self, asset_id):
         """Returns the asset associated with an asset_id.
@@ -195,10 +176,10 @@ class RethinkDBBackend:
              .get_all(asset_id, index='asset_id')
              .concat_map(lambda block: block['block']['transactions'])
              .filter(lambda transaction:
-                     transaction['transaction']['asset']['id'] == asset_id)
+                     transaction['asset']['id'] == asset_id)
              .filter(lambda transaction:
-                     transaction['transaction']['operation'] == 'CREATE')
-             .pluck({'transaction': 'asset'}))
+                     transaction['operation'] == 'CREATE')
+             .pluck('asset'))
 
     def get_spent(self, transaction_id, condition_id):
         """Check if a `txid` was already used as an input.
@@ -218,7 +199,7 @@ class RethinkDBBackend:
         return self.connection.run(
                 r.table('bigchain', read_mode=self.read_mode)
                 .concat_map(lambda doc: doc['block']['transactions'])
-                .filter(lambda transaction: transaction['transaction']['fulfillments'].contains(
+                .filter(lambda transaction: transaction['fulfillments'].contains(
                     lambda fulfillment: fulfillment['input'] == {'txid': transaction_id, 'cid': condition_id})))
 
     def get_owned_ids(self, owner):
@@ -235,7 +216,7 @@ class RethinkDBBackend:
         return self.connection.run(
                 r.table('bigchain', read_mode=self.read_mode)
                 .concat_map(lambda doc: doc['block']['transactions'])
-                .filter(lambda tx: tx['transaction']['conditions'].contains(
+                .filter(lambda tx: tx['conditions'].contains(
                     lambda c: c['owners_after'].contains(owner))))
 
     def get_votes_by_block_id(self, block_id):

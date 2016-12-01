@@ -21,6 +21,7 @@ For convenience, here's a list of all the relevant environment variables (docume
 `BIGCHAINDB_STATSD_PORT`<br>
 `BIGCHAINDB_STATSD_RATE`<br>
 `BIGCHAINDB_CONFIG_PATH`<br>
+`BIGCHAINDB_BACKLOG_REASSIGN_DELAY`<br>
 
 The local config file is `$HOME/.bigchaindb` by default (a file which might not even exist), but you can tell BigchainDB to use a different file by using the `-c` command-line option, e.g. `bigchaindb -c path/to/config_file.json start`
 or using the `BIGCHAINDB_CONFIG_PATH` environment variable, e.g. `BIGHAINDB_CONFIG_PATH=.my_bigchaindb_config bigchaindb start`.
@@ -153,4 +154,18 @@ export BIGCHAINDB_STATSD_RATE=0.01
 **Example config file snippet: the default**
 ```js
 "statsd": {"host": "localhost", "port": 8125, "rate": 0.01}
+```
+
+## backlog_reassign_delay
+
+Specifies how long, in seconds, transactions can remain in the backlog before being reassigned.  Long-waiting transactions must be reassigned because the assigned node may no longer be responsive.  The default duration is 120 seconds.
+
+**Example using environment variables**
+```text
+export BIGCHAINDB_BACKLOG_REASSIGN_DELAY=30
+``` 
+
+**Default value (from a config file)**
+```js
+"backlog_reassign_delay": 120 
 ```

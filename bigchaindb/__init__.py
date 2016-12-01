@@ -29,7 +29,7 @@ config = {
         'port': 8125,
         'rate': 0.01,
     },
-    'backlog_reassign_delay': 30
+    'backlog_reassign_delay': 120
 }
 
 # We need to maintain a backup copy of the original config dict in case

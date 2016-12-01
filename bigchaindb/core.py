@@ -330,41 +330,29 @@ class Bigchain(object):
         else:
             return None
 
-    def get_tx_by_metadata_id(self, metadata_id):
-        """Retrieves transactions related to a metadata.
+    def get_transactions_by_asset_id(self, asset_id):
+        """Retrieves valid or undecided transactions related to a particular
+        asset.
 
-        When creating a transaction one of the optional arguments is the `metadata`. The metadata is a generic
-        dict that contains extra information that can be appended to the transaction.
-
-        To make it easy to query the bigchain for that particular metadata we create a UUID for the metadata and
-        store it with the transaction.
-
-        Args:
-            metadata_id (str): the id for this particular metadata.
-
-        Returns:
-            A list of transactions containing that metadata. If no transaction exists with that metadata it
-            returns an empty list `[]`
-        """
-        cursor = self.backend.get_transactions_by_metadata_id(metadata_id)
-        return [Transaction.from_dict(tx) for tx in cursor]
-
-    def get_txs_by_asset_id(self, asset_id):
-        """Retrieves transactions related to a particular asset.
-
-        A digital asset in bigchaindb is identified by an uuid. This allows us to query all the transactions
-        related to a particular digital asset, knowing the id.
+        A digital asset in bigchaindb is identified by an uuid. This allows us
+        to query all the transactions related to a particular digital asset,
+        knowing the id.
 
         Args:
-            asset_id (str): the id for this particular metadata.
+            asset_id (str): the id for this particular asset.
 
         Returns:
-            A list of transactions containing related to the asset. If no transaction exists for that asset it
-            returns an empty list `[]`
+            A list of valid or undecided transactions related to the asset.
+            If no transaction exists for that asset it returns an empty list
+            `[]`
         """
-
-        cursor = self.backend.get_transactions_by_asset_id(asset_id)
-        return [Transaction.from_dict(tx) for tx in cursor]
+        txids = self.backend.get_txids_by_asset_id(asset_id)
+        transactions = []
+        for txid in txids:
+            tx = self.get_transaction(txid)
+            if tx:
+                transactions.append(tx)
+        return transactions
 
     def get_asset_by_id(self, asset_id):
         """Returns the asset associated with an asset_id.
@@ -379,7 +367,7 @@ class Bigchain(object):
         cursor = self.backend.get_asset_by_id(asset_id)
         cursor = list(cursor)
         if cursor:
-            return Asset.from_dict(cursor[0]['transaction']['asset'])
+            return Asset.from_dict(cursor[0]['asset'])
 
     def get_spent(self, txid, cid):
         """Check if a `txid` was already used as an input.
@@ -409,9 +397,10 @@ class Bigchain(object):
                 if self.get_transaction(transaction['id']):
                     num_valid_transactions += 1
                 if num_valid_transactions > 1:
-                    raise exceptions.DoubleSpend(
-                        '`{}` was spent more then once. There is a problem with the chain'.format(
-                            txid))
+                    raise exceptions.DoubleSpend(('`{}` was spent more than'
+                                                  ' once. There is a problem'
+                                                  ' with the chain')
+                                                 .format(txid))
 
             if num_valid_transactions:
                 return Transaction.from_dict(transactions[0])
@@ -447,7 +436,7 @@ class Bigchain(object):
             # use it after the execution of this function.
             # a transaction can contain multiple outputs (conditions) so we need to iterate over all of them
             # to get a list of outputs available to spend
-            for index, cond in enumerate(tx['transaction']['conditions']):
+            for index, cond in enumerate(tx['conditions']):
                 # for simple signature conditions there are no subfulfillments
                 # check if the owner is in the condition `owners_after`
                 if len(cond['owners_after']) == 1:
@@ -605,11 +594,11 @@ class Bigchain(object):
         }
 
         vote_data = serialize(vote)
-        signature = crypto.SigningKey(self.me_private).sign(vote_data.encode())
+        signature = crypto.PrivateKey(self.me_private).sign(vote_data.encode())
 
         vote_signed = {
             'node_pubkey': self.me,
-            'signature': signature,
+            'signature': signature.decode(),
             'vote': vote
         }
 

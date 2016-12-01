@@ -116,15 +116,10 @@ def create_bigchain_secondary_index(conn, dbname):
         .index_create('transaction_id',
                       r.row['block']['transactions']['id'], multi=True)\
         .run(conn)
-    # secondary index for payload data by UUID
-    r.db(dbname).table('bigchain')\
-        .index_create('metadata_id',
-                      r.row['block']['transactions']['transaction']['metadata']['id'], multi=True)\
-        .run(conn)
     # secondary index for asset uuid
     r.db(dbname).table('bigchain')\
                 .index_create('asset_id',
-                              r.row['block']['transactions']['transaction']['asset']['id'], multi=True)\
+                              r.row['block']['transactions']['asset']['id'], multi=True)\
                 .run(conn)
 
     # wait for rethinkdb to finish creating secondary indexes
@@ -133,15 +128,10 @@ def create_bigchain_secondary_index(conn, dbname):
 
 def create_backlog_secondary_index(conn, dbname):
     logger.info('Create `backlog` secondary index.')
-    # to order transactions by timestamp
-    r.db(dbname).table('backlog')\
-        .index_create('transaction_timestamp',
-                      r.row['transaction']['timestamp'])\
-        .run(conn)
     # compound index to read transactions from the backlog per assignee
     r.db(dbname).table('backlog')\
         .index_create('assignee__transaction_timestamp',
-                      [r.row['assignee'], r.row['transaction']['timestamp']])\
+                      [r.row['assignee'], r.row['assignment_timestamp']])\
         .run(conn)
 
     # wait for rethinkdb to finish creating secondary indexes

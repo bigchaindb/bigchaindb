@@ -1,16 +1,14 @@
-import rethinkdb as r
 from bigchaindb import Bigchain
 from bigchaindb.pipelines import stale
 from multipipes import Pipe, Pipeline
 from unittest.mock import patch
 from bigchaindb import config_utils
-import time
 import os
 
 
-def test_get_stale(b, user_vk):
+def test_get_stale(b, user_pk):
     from bigchaindb.models import Transaction
-    tx = Transaction.create([b.me], [([user_vk], 1)])
+    tx = Transaction.create([b.me], [([user_pk], 1)])
     tx = tx.sign([b.me_private])
     b.write_transaction(tx, durability='hard')
 
@@ -24,10 +22,10 @@ def test_get_stale(b, user_vk):
         assert tx.to_dict() == _tx
 
 
-def test_reassign_transactions(b, user_vk):
+def test_reassign_transactions(b, user_pk):
     from bigchaindb.models import Transaction
     # test with single node
-    tx = Transaction.create([b.me], [([user_vk], 1)])
+    tx = Transaction.create([b.me], [([user_pk], 1)])
     tx = tx.sign([b.me_private])
     b.write_transaction(tx, durability='hard')
 
@@ -36,33 +34,33 @@ def test_reassign_transactions(b, user_vk):
     stm.reassign_transactions(tx.to_dict())
 
     # test with federation
-    tx = Transaction.create([b.me], [([user_vk], 1)])
+    tx = Transaction.create([b.me], [([user_pk], 1)])
     tx = tx.sign([b.me_private])
     b.write_transaction(tx, durability='hard')
 
     stm = stale.StaleTransactionMonitor(timeout=0.001,
                                         backlog_reassign_delay=0.001)
     stm.bigchain.nodes_except_me = ['aaa', 'bbb', 'ccc']
-    tx = list(b.connection.run(r.table('backlog')))[0]
+    tx = list(b.backend.get_stale_transactions(0))[0]
     stm.reassign_transactions(tx)
 
-    reassigned_tx = b.connection.run(r.table('backlog').get(tx['id']))
+    reassigned_tx = list(b.backend.get_stale_transactions(0))[0]
     assert reassigned_tx['assignment_timestamp'] > tx['assignment_timestamp']
     assert reassigned_tx['assignee'] != tx['assignee']
 
     # test with node not in federation
-    tx = Transaction.create([b.me], [([user_vk], 1)])
-    tx = tx.sign([b.me_private]).to_dict()
-    tx.update({'assignee': 'lol'})
-    tx.update({'assignment_timestamp': time.time()})
-    b.connection.run(r.table('backlog').insert(tx, durability='hard'))
+    tx = Transaction.create([b.me], [([user_pk], 1)])
+    tx = tx.sign([b.me_private])
+    stm.bigchain.nodes_except_me = ['lol']
+    b.write_transaction(tx, durability='hard')
+    stm.bigchain.nodes_except_me = None
 
-    tx = list(b.connection.run(r.table('backlog')))[0]
+    tx = list(b.backend.get_stale_transactions(0))[0]
     stm.reassign_transactions(tx)
-    assert b.connection.run(r.table('backlog').get(tx['id']))['assignee'] != 'lol'
+    assert tx['assignee'] != 'lol'
 
 
-def test_full_pipeline(monkeypatch, user_vk):
+def test_full_pipeline(monkeypatch, user_pk):
     from bigchaindb.models import Transaction
     CONFIG = {
         'database': {
@@ -77,7 +75,6 @@ def test_full_pipeline(monkeypatch, user_vk):
     }
     config_utils.set_config(CONFIG)
     b = Bigchain()
-    outpipe = Pipe()
 
     original_txs = {}
     original_txc = []
@@ -85,20 +82,27 @@ def test_full_pipeline(monkeypatch, user_vk):
     monkeypatch.setattr('time.time', lambda: 1)
 
     for i in range(100):
-        tx = Transaction.create([b.me], [([user_vk], 1)])
+        tx = Transaction.create([b.me], [([user_pk], 1)])
         tx = tx.sign([b.me_private])
         original_txc.append(tx.to_dict())
 
         b.write_transaction(tx)
-        original_txs[tx.id] = b.connection.run(r.table('backlog').get(tx.id))
+    original_txs = list(b.backend.get_stale_transactions(0))
+    original_txs = {tx['id']: tx for tx in original_txs}
 
-    assert b.connection.run(r.table('backlog').count()) == 100
+    assert len(original_txs) == 100
 
     monkeypatch.undo()
 
+    inpipe = Pipe()
+    # Each time the StaleTransactionMonitor pipeline runs, it reassigns
+    # all eligible transactions. Passing this inpipe prevents that from
+    # taking place more than once.
+    inpipe.put(())
+    outpipe = Pipe()
     pipeline = stale.create_pipeline(backlog_reassign_delay=1,
                                      timeout=1)
-    pipeline.setup(outdata=outpipe)
+    pipeline.setup(indata=inpipe, outdata=outpipe)
     pipeline.start()
 
     # to terminate
@@ -107,8 +111,8 @@ def test_full_pipeline(monkeypatch, user_vk):
 
     pipeline.terminate()
 
-    assert b.connection.run(r.table('backlog').count()) == 100
-    reassigned_txs = list(b.connection.run(r.table('backlog')))
+    assert len(list(b.backend.get_stale_transactions(0))) == 100
+    reassigned_txs= list(b.backend.get_stale_transactions(0))
 
     # check that every assignment timestamp has increased, and every tx has a new assignee
     for reassigned_tx in reassigned_txs:
