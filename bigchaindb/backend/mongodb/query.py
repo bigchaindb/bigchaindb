@@ -1,3 +1,7 @@
+from time import time
+
+from pymongo import ReturnDocument
+
 from bigchaindb.backend import query
 from bigchaindb.backend.mongodb.connection import MongoDBConnection
 
@@ -5,6 +9,44 @@ from bigchaindb.backend.mongodb.connection import MongoDBConnection
 @query.write_transaction.register(MongoDBConnection)
 def write_transaction(conn, signed_transaction):
     return conn.db['backlog'].insert_one(signed_transaction)
+
+
+@query.update_transaction.register(MongoDBConnection)
+def update_transaction(conn, transaction_id, doc):
+    return conn.db['backlog']\
+            .find_one_and_update({'id': transaction_id},
+                                 doc,
+                                 return_document=ReturnDocument.AFTER)
+
+
+@query.delete_transaction.register(MongoDBConnection)
+def delete_transaction(conn, *transaction_id):
+    return conn.db['backlog'].delete_many({'id': {'$in': transaction_id}})
+
+
+@query.get_stale_transactions.register(MongoDBConnection)
+def get_stale_transactions(conn, reassign_delay):
+    return conn.db['backlog']\
+            .find({'assignment_timestamp': {'$lt': time() - reassign_delay}})
+
+
+@query.get_transaction_from_block.register(MongoDBConnection)
+def get_transaction_from_block(conn, block_id, tx_id):
+    # this is definitely wrong, but it's something like this
+    return conn.db['bigchain'].find_one({'id': block_id,
+                                         'block.transactions.id': tx_id})
+
+
+@query.get_transaction_from_backlog(MongoDBConnection)
+def get_transaction_from_backlog(conn, transaction_id):
+    return conn.db['backlog'].find_one({'id': transaction_id})
+
+
+@query.get_blocks_status_from_transaction(MongoDBConnection)
+def get_blocks_status_from_transaction(conn, transaction_id):
+    return conn.db['bigchain']\
+            .find({'block.transactions.id': transaction_id},
+                  projection=['id', 'block.voters'])
 
 
 @query.write_vote.register(MongoDBConnection)
@@ -42,13 +84,6 @@ def transaction_exists(conn, transaction_id):
         return False
 
 
-@query.get_transaction_from_block.register(MongoDBConnection)
-def get_transaction_from_block(conn, block_id, tx_id):
-    # this is definitely wrong, but it's something like this
-    return conn.db['bigchain'].find_one({'id': block_id,
-                                         'block.transactions.id': tx_id})
-
-
 @query.get_tx_by_metadata_id.register(MongoDBConnection)
 def get_tx_by_metadata_id(conn, metadata_id):
     return conn.db['bigchain']\
@@ -66,3 +101,10 @@ def get_tx_by_fulfillment(conn, txid, cid):
     return conn.db['bigchain']\
             .find({'block.transactions.transaction.fulfillments.txid': txid,
                    'block.transactions.transaction.fulfillments.cid': cid})
+
+
+@query.get_owned_ids.register(MongoDBConnection)
+def get_owned_ids(conn, owner):
+    return conn.db['bigchain']\
+            .find({'block.transactions.transaction.conditions.owners_after':
+                   owner})
