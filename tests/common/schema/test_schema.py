@@ -1,4 +1,5 @@
-from bigchaindb.common.schema import TX_SCHEMA, VOTE_SCHEMA
+from bigchaindb.common.schema import TX_SCHEMA, VOTE_SCHEMA, \
+    drop_schema_descriptions
 
 
 def _test_additionalproperties(node, path=''):
@@ -23,3 +24,46 @@ def test_transaction_schema_additionalproperties():
 
 def test_vote_schema_additionalproperties():
     _test_additionalproperties(VOTE_SCHEMA)
+
+
+def test_drop_descriptions():
+    node = {
+        'description': 'abc',
+        'properties': {
+            'description': {
+                'description': ('The property named "description" should stay'
+                                'but description meta field goes'),
+            },
+            'properties': {
+                'description': 'this must go'
+            },
+            'any': {
+                'anyOf': [
+                    {
+                        'description': 'must go'
+                    }
+                ]
+            }
+        },
+        'definitions': {
+            'wat': {
+                'description': "go"
+            }
+        }
+    }
+    drop_schema_descriptions(node)
+    expected = {
+        'properties': {
+            'description': {},
+            'properties': {},
+            'any': {
+                'anyOf': [
+                    {}
+                ]
+            }
+        },
+        'definitions': {
+            'wat': {},
+        }
+    }
+    assert node == expected
