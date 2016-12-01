@@ -178,7 +178,8 @@ class RethinkDBBackend:
              .filter(lambda transaction:
                      transaction['asset']['id'] == asset_id)
              .filter(lambda transaction:
-                     transaction['operation'] == 'CREATE'))
+                     transaction['operation'] == 'CREATE')
+             .pluck('asset'))
 
     def get_spent(self, transaction_id, condition_id):
         """Check if a `txid` was already used as an input.
