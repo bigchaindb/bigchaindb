@@ -159,7 +159,7 @@ class RethinkDBBackend:
             r.table('bigchain', read_mode=self.read_mode)
              .get_all(asset_id, index='asset_id')
              .concat_map(lambda block: block['block']['transactions'])
-             .filter(lambda transaction: transaction['transaction']['asset']['id'] == asset_id)
+             .filter(lambda transaction: transaction['asset']['id'] == asset_id)
              .get_field('id'))
 
     def get_asset_by_id(self, asset_id):
@@ -176,10 +176,10 @@ class RethinkDBBackend:
              .get_all(asset_id, index='asset_id')
              .concat_map(lambda block: block['block']['transactions'])
              .filter(lambda transaction:
-                     transaction['transaction']['asset']['id'] == asset_id)
+                     transaction['asset']['id'] == asset_id)
              .filter(lambda transaction:
-                     transaction['transaction']['operation'] == 'CREATE')
-             .pluck({'transaction': 'asset'}))
+                     transaction['operation'] == 'CREATE')
+             .pluck('asset'))
 
     def get_spent(self, transaction_id, condition_id):
         """Check if a `txid` was already used as an input.
@@ -199,7 +199,7 @@ class RethinkDBBackend:
         return self.connection.run(
                 r.table('bigchain', read_mode=self.read_mode)
                 .concat_map(lambda doc: doc['block']['transactions'])
-                .filter(lambda transaction: transaction['transaction']['fulfillments'].contains(
+                .filter(lambda transaction: transaction['fulfillments'].contains(
                     lambda fulfillment: fulfillment['input'] == {'txid': transaction_id, 'cid': condition_id})))
 
     def get_owned_ids(self, owner):
@@ -216,7 +216,7 @@ class RethinkDBBackend:
         return self.connection.run(
                 r.table('bigchain', read_mode=self.read_mode)
                 .concat_map(lambda doc: doc['block']['transactions'])
-                .filter(lambda tx: tx['transaction']['conditions'].contains(
+                .filter(lambda tx: tx['conditions'].contains(
                     lambda c: c['owners_after'].contains(owner))))
 
     def get_votes_by_block_id(self, block_id):
