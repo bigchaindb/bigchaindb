@@ -1,14 +1,19 @@
 """Utils to initialize and drop the database."""
 
 import logging
-
-from bigchaindb.common import exceptions
 import rethinkdb as r
+
+from bigchaindb import backend
+from bigchaindb.common import exceptions
+from bigchaindb.backend.util import make_module_dispatch_registrar
+from bigchaindb.backend.rethinkdb.connection import RethinkDBConnection
 
 
 logger = logging.getLogger(__name__)
+schema_dispatch = make_module_dispatch_registrar(backend.schema)
 
 
+@schema_dispatch(RethinkDBConnection)
 def create_database(connection, name):
     if connection.run(r.db_list().contains(name)):
         raise exceptions.DatabaseAlreadyExists('Database `{}` already exists'.format(name))
@@ -17,16 +22,19 @@ def create_database(connection, name):
     connection.run(r.db_create(name))
 
 
+@schema_dispatch(RethinkDBConnection)
 def create_tables(connection, name):
     for table_name in ['bigchain', 'backlog', 'votes']:
         logger.info('Create `%s` table.', table_name)
         connection.run(r.db(name).table_create(table_name))
 
 
+@schema_dispatch(RethinkDBConnection)
 def create_indexes(connection, name):
     create_bigchain_secondary_index(connection, name)
 
 
+@schema_dispatch(RethinkDBConnection)
 def drop_database(connection, name):
     try:
         logger.info('Drop database `%s`', name)
