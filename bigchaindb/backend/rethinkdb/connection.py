@@ -2,7 +2,7 @@ import time
 
 import rethinkdb as r
 
-from bigchaindb.db import Connection
+from bigchaindb.backend.connection import Connection
 import bigchaindb
 
 
