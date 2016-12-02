@@ -37,16 +37,30 @@ def get_transaction_from_block(conn, block_id, tx_id):
                                          'block.transactions.id': tx_id})
 
 
-@query.get_transaction_from_backlog(MongoDBConnection)
+@query.get_transaction_from_backlog.register(MongoDBConnection)
 def get_transaction_from_backlog(conn, transaction_id):
     return conn.db['backlog'].find_one({'id': transaction_id})
 
 
-@query.get_blocks_status_from_transaction(MongoDBConnection)
+@query.get_blocks_status_from_transaction.register(MongoDBConnection)
 def get_blocks_status_from_transaction(conn, transaction_id):
     return conn.db['bigchain']\
             .find({'block.transactions.id': transaction_id},
                   projection=['id', 'block.voters'])
+
+
+@query.get_txids_by_asset_id.register(MongoDBConnection)
+def get_txids_by_asset_id(conn, asset_id):
+    return conn.db['bigchain']\
+            .find({'block.transactions.asset.id': asset_id},
+                  projection=['id'])
+
+
+@query.get_asset_by_id.register(MongoDBConnection)
+def get_asset_by_id(conn, asset_id):
+    return conn.db['bigchain']\
+            .find_one({'block.transactions.asset.id': asset_id},
+                      projection=['block.transactions.asset'])
 
 
 @query.write_vote.register(MongoDBConnection)
