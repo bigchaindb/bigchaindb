@@ -60,9 +60,11 @@ Content-Type: application/json
 
 def main():
     """ Main function """
-    pubkey = '9RaWxppkP9UyYWA7NJb5FcgkzfJNPfvPX3FCNw2T5Pwb'
+    privkey = 'CfdqtD7sS7FgkMoGPXw55MVGGFwQLAoHYTcBhZDtF99Z'
+    pubkey = '4K9sWUMFwTgaDGPfdynrbxWqWS6sWmKbZoTjxLtVUibD'
     asset = Asset(None, 'e6969f87-4fc9-4467-b62a-f0dfa1c85002')
     tx = Transaction.create([pubkey], [([pubkey], 1)], asset=asset)
+    tx = tx.sign([privkey])
     tx_json = json.dumps(tx.to_dict(), indent=2, sort_keys=True)
 
     base_path = os.path.join(os.path.dirname(__file__),
