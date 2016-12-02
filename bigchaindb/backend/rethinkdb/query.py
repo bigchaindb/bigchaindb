@@ -4,14 +4,19 @@ from time import time
 
 import rethinkdb as r
 
-from bigchaindb import util
+from bigchaindb import backend, util
 from bigchaindb.common import exceptions
+from bigchaindb.backend.util import make_module_dispatch_registrar
+from bigchaindb.backend.rethinkdb.connection import RethinkDBConnection
 
 
 READ_MODE = 'majority'
 WRITE_DURABILITY = 'hard'
 
+query_dispatch = make_module_dispatch_registrar(backend.query)
 
+
+@query_dispatch(RethinkDBConnection)
 def write_transaction(connection, signed_transaction):
     """Write a transaction to the backlog table.
 
@@ -27,6 +32,7 @@ def write_transaction(connection, signed_transaction):
             .insert(signed_transaction, durability=WRITE_DURABILITY))
 
 
+@query_dispatch(RethinkDBConnection)
 def update_transaction(connection, transaction_id, doc):
     """Update a transaction in the backlog table.
 
@@ -44,6 +50,7 @@ def update_transaction(connection, transaction_id, doc):
             .update(doc))
 
 
+@query_dispatch(RethinkDBConnection)
 def delete_transaction(connection, *transaction_id):
     """Delete a transaction from the backlog.
 
@@ -60,6 +67,7 @@ def delete_transaction(connection, *transaction_id):
             .delete(durability=WRITE_DURABILITY))
 
 
+@query_dispatch(RethinkDBConnection)
 def get_stale_transactions(connection, reassign_delay):
     """Get a cursor of stale transactions.
 
@@ -79,6 +87,7 @@ def get_stale_transactions(connection, reassign_delay):
             .filter(lambda tx: time() - tx['assignment_timestamp'] > reassign_delay))
 
 
+@query_dispatch(RethinkDBConnection)
 def get_transaction_from_block(connection, transaction_id, block_id):
     """Get a transaction from a specific block.
 
@@ -97,6 +106,7 @@ def get_transaction_from_block(connection, transaction_id, block_id):
             .filter(lambda tx: tx['id'] == transaction_id))[0]
 
 
+@query_dispatch(RethinkDBConnection)
 def get_transaction_from_backlog(connection, transaction_id):
     """Get a transaction from backlog.
 
@@ -113,6 +123,7 @@ def get_transaction_from_backlog(connection, transaction_id):
             .default(None))
 
 
+@query_dispatch(RethinkDBConnection)
 def get_blocks_status_from_transaction(connection, transaction_id):
     """Retrieve block election information given a secondary index and value
 
@@ -130,6 +141,7 @@ def get_blocks_status_from_transaction(connection, transaction_id):
             .pluck('votes', 'id', {'block': ['voters']}))
 
 
+@query_dispatch(RethinkDBConnection)
 def get_txids_by_metadata_id(connection, metadata_id):
     """Retrieves transaction ids related to a particular metadata.
 
@@ -157,6 +169,7 @@ def get_txids_by_metadata_id(connection, metadata_id):
             .get_field('id'))
 
 
+@query_dispatch(RethinkDBConnection)
 def get_txids_by_asset_id(connection, asset_id):
     """Retrieves transactions ids related to a particular asset.
 
@@ -182,6 +195,7 @@ def get_txids_by_asset_id(connection, asset_id):
          .get_field('id'))
 
 
+@query_dispatch(RethinkDBConnection)
 def get_asset_by_id(connection, asset_id):
     """Returns the asset associated with an asset_id.
 
@@ -202,6 +216,7 @@ def get_asset_by_id(connection, asset_id):
          .pluck({'transaction': 'asset'}))
 
 
+@query_dispatch(RethinkDBConnection)
 def get_spent(connection, transaction_id, condition_id):
     """Check if a `txid` was already used as an input.
 
@@ -224,6 +239,7 @@ def get_spent(connection, transaction_id, condition_id):
                 lambda fulfillment: fulfillment['input'] == {'txid': transaction_id, 'cid': condition_id})))
 
 
+@query_dispatch(RethinkDBConnection)
 def get_owned_ids(connection, owner):
     """Retrieve a list of `txids` that can we used has inputs.
 
@@ -242,6 +258,7 @@ def get_owned_ids(connection, owner):
                 lambda c: c['owners_after'].contains(owner))))
 
 
+@query_dispatch(RethinkDBConnection)
 def get_votes_by_block_id(connection, block_id):
     """Get all the votes casted for a specific block.
 
@@ -256,6 +273,7 @@ def get_votes_by_block_id(connection, block_id):
             .between([block_id, r.minval], [block_id, r.maxval], index='block_and_voter'))
 
 
+@query_dispatch(RethinkDBConnection)
 def get_votes_by_block_id_and_voter(connection, block_id, node_pubkey):
     """Get all the votes casted for a specific block by a specific voter.
 
@@ -271,6 +289,7 @@ def get_votes_by_block_id_and_voter(connection, block_id, node_pubkey):
             .get_all([block_id, node_pubkey], index='block_and_voter'))
 
 
+@query_dispatch(RethinkDBConnection)
 def write_block(connection, block):
     """Write a block to the bigchain table.
 
@@ -285,6 +304,7 @@ def write_block(connection, block):
             .insert(r.json(block), durability=WRITE_DURABILITY))
 
 
+@query_dispatch(RethinkDBConnection)
 def get_block(connection, block_id):
     """Get a block from the bigchain table
 
@@ -297,6 +317,7 @@ def get_block(connection, block_id):
     return connection.run(r.table('bigchain').get(block_id))
 
 
+@query_dispatch(RethinkDBConnection)
 def has_transaction(connection, transaction_id):
     """Check if a transaction exists in the bigchain table.
 
@@ -311,6 +332,7 @@ def has_transaction(connection, transaction_id):
             .get_all(transaction_id, index='transaction_id').count()))
 
 
+@query_dispatch(RethinkDBConnection)
 def count_blocks(connection):
     """Count the number of blocks in the bigchain table.
 
@@ -323,6 +345,7 @@ def count_blocks(connection):
             .count())
 
 
+@query_dispatch(RethinkDBConnection)
 def count_backlog(connection):
     """Count the number of transactions in the backlog table.
 
@@ -335,6 +358,7 @@ def count_backlog(connection):
             .count())
 
 
+@query_dispatch(RethinkDBConnection)
 def write_vote(connection, vote):
     """Write a vote to the votes table.
 
@@ -349,6 +373,7 @@ def write_vote(connection, vote):
             .insert(vote))
 
 
+@query_dispatch(RethinkDBConnection)
 def get_genesis_block(connection):
     """Get the genesis block
 
@@ -361,6 +386,7 @@ def get_genesis_block(connection):
         .nth(0))
 
 
+@query_dispatch(RethinkDBConnection)
 def get_last_voted_block(connection, node_pubkey):
     """Get the last voted block for a specific node.
 
@@ -422,6 +448,7 @@ def get_last_voted_block(connection, node_pubkey):
             .get(last_block_id))
 
 
+@query_dispatch(RethinkDBConnection)
 def get_unvoted_blocks(connection, node_pubkey):
     """Return all the blocks that have not been voted by the specified node.
 
