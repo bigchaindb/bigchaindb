@@ -1,13 +1,23 @@
-class Schema:
+"""Schema-providing interfaces for backend databases"""
 
-    def create_database(self):
-        raise NotImplementedError()
+from functools import singledispatch
 
-    def create_tables(self):
-        raise NotImplementedError()
 
-    def create_indexes(self):
-        raise NotImplementedError()
+@singledispatch
+def create_database(connection, name):
+    raise NotImplementedError()
 
-    def drop_database(self):
-        raise NotImplementedError()
+
+@singledispatch
+def create_tables(connection, name):
+    raise NotImplementedError()
+
+
+@singledispatch
+def create_indexes(connection, name):
+    raise NotImplementedError()
+
+
+@singledispatch
+def drop_database(connection, name):
+    raise NotImplementedError()
