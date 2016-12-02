@@ -106,7 +106,7 @@ def get_blocks_status_from_transaction(connection, transaction_id):
 
 
 @singledispatch
-def get_transactions_by_metadata_id(connection, metadata_id):
+def get_txids_by_metadata_id(connection, metadata_id):
     """Retrieves transactions related to a metadata.
 
     When creating a transaction one of the optional arguments is the `metadata`. The metadata is a generic
@@ -127,7 +127,7 @@ def get_transactions_by_metadata_id(connection, metadata_id):
 
 
 @singledispatch
-def get_transactions_by_asset_id(connection, asset_id):
+def get_txids_by_asset_id(connection, asset_id):
     """Retrieves transactions related to a particular asset.
 
     A digital asset in bigchaindb is identified by an uuid. This allows us to query all the transactions
@@ -139,6 +139,20 @@ def get_transactions_by_asset_id(connection, asset_id):
     Returns:
         A list of transactions containing related to the asset. If no transaction exists for that asset it
         returns an empty list `[]`
+    """
+
+    raise NotImplementedError()
+
+
+@singledispatch
+def get_asset_by_id(conneciton, asset_id):
+    """Returns the asset associated with an asset_id.
+
+        Args:
+            asset_id (str): The asset id.
+
+        Returns:
+            Returns a rethinkdb cursor.
     """
 
     raise NotImplementedError()
@@ -234,11 +248,36 @@ def has_transaction(connection, transaction_id):
 
 
 @singledispatch
+def get_block(connection, block_id):
+    """Get a block from the bigchain table
+
+    Args:
+        block_id (str): block id of the block to get
+
+    Returns:
+        block (dict): the block or `None`
+    """
+
+    raise NotImplementedError()
+
+
+@singledispatch
 def count_blocks(connection):
     """Count the number of blocks in the bigchain table.
 
     Returns:
         The number of blocks.
+    """
+
+    raise NotImplementedError()
+
+
+@singledispatch
+def count_backlog(connection):
+    """Count the number of transactions in the backlog table.
+
+    Returns:
+        The number of transactions in the backlog.
     """
 
     raise NotImplementedError()
@@ -253,6 +292,17 @@ def write_vote(connection, vote):
 
     Returns:
         The database response.
+    """
+
+    raise NotImplementedError()
+
+
+@singledispatch
+def get_genesis_block(connection):
+    """Get the genesis block
+
+    Returns:
+        The genesis block
     """
 
     raise NotImplementedError()
