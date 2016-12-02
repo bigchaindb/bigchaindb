@@ -1,15 +1,11 @@
-from importlib import import_module
-
-BACKENDS = {
-    'rethinkdb': 'bigchaindb.backend.rethinkdb.connection.RethinkDBConnection'
-}
-
-
-def connect(backend, host, port, dbname):
-    module_name, _, class_name = BACKENDS[backend].rpartition('.')
-    Class = getattr(import_module(module_name), class_name)
-    return Class(host, port, dbname)
+class ConnectionError(Exception):
+    """Raised when there is a connection error when running a query."""
 
 
 class Connection:
-    pass
+
+    def run(self):
+        raise NotImplementedError()
+
+    def connect(self):
+        raise NotImplementedError()

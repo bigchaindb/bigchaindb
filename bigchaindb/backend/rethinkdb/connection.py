@@ -1,12 +1,9 @@
 import time
-import logging
 
 import rethinkdb as r
 
+from bigchaindb.db import Connection
 import bigchaindb
-from bigchaindb.backend.connection import Connection
-
-logger = logging.getLogger(__name__)
 
 
 class RethinkDBConnection(Connection):
@@ -41,7 +38,7 @@ class RethinkDBConnection(Connection):
         """
 
         if self.conn is None:
-            self._connect()
+            self.connect()
 
         for i in range(self.max_tries):
             try:
@@ -50,9 +47,9 @@ class RethinkDBConnection(Connection):
                 if i + 1 == self.max_tries:
                     raise
                 else:
-                    self._connect()
+                    self.connect()
 
-    def _connect(self):
+    def connect(self):
         for i in range(self.max_tries):
             try:
                 self.conn = r.connect(host=self.host, port=self.port,
