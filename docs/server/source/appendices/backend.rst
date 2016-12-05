@@ -3,6 +3,7 @@
 ###############################################
 
 .. automodule:: bigchaindb.backend
+    :special-members: __init__
 
 
 Generic Backend
@@ -32,6 +33,9 @@ Generic Backend
  
 :mod:`bigchaindb.backend.rethinkdb` -- RethinkDB Backend
 ========================================================
+
+.. automodule:: bigchaindb.backend.rethinkdb
+    :special-members: __init__
 
 :mod:`bigchaindb.backend.rethinkdb.connection`
 ----------------------------------------------
