@@ -5,7 +5,7 @@ import rethinkdb as r
 
 from bigchaindb import backend
 from bigchaindb.common import exceptions
-from bigchaindb.backend.util import make_module_dispatch_registrar
+from bigchaindb.backend.utils import make_module_dispatch_registrar
 from bigchaindb.backend.rethinkdb.connection import RethinkDBConnection
 
 
