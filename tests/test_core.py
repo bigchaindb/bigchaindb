@@ -62,12 +62,12 @@ def test_bigchain_class_initialization_with_parameters(config):
 
 
 def test_get_blocks_status_containing_tx(monkeypatch):
-    from bigchaindb.db.backends.rethinkdb import RethinkDBBackend
+    from bigchaindb.backend import query as backend_query
     from bigchaindb.core import Bigchain
     blocks = [
         {'id': 1}, {'id': 2}
     ]
-    monkeypatch.setattr(RethinkDBBackend, 'get_blocks_status_from_transaction', lambda x: blocks)
+    monkeypatch.setattr(backend_query, 'get_blocks_status_from_transaction', lambda x: blocks)
     monkeypatch.setattr(Bigchain, 'block_election_status', lambda x, y, z: Bigchain.BLOCK_VALID)
     bigchain = Bigchain(public_key='pubkey', private_key='privkey')
     with pytest.raises(Exception):
