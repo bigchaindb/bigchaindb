@@ -1,3 +1,4 @@
+import builtins
 import json
 from unittest.mock import Mock, patch
 from argparse import Namespace
@@ -21,29 +22,19 @@ def mock_write_config(monkeypatch):
 
 @pytest.fixture
 def mock_db_init_with_existing_db(monkeypatch):
-    from bigchaindb import db
+    from bigchaindb import commands
     from bigchaindb.common.exceptions import DatabaseAlreadyExists
 
     def mockreturn():
         raise DatabaseAlreadyExists
 
-    monkeypatch.setattr(db, 'init', mockreturn)
+    monkeypatch.setattr(commands.bigchain, '_run_init', mockreturn)
 
 
 @pytest.fixture
 def mock_processes_start(monkeypatch):
     from bigchaindb import processes
     monkeypatch.setattr(processes, 'start', lambda *args: None)
-
-
-@pytest.fixture
-def mock_rethink_db_drop(monkeypatch):
-    def mockreturn(dbname):
-        class MockDropped(object):
-            def run(self, conn):
-                return
-        return MockDropped()
-    monkeypatch.setattr('rethinkdb.db_drop', mockreturn)
 
 
 @pytest.fixture
@@ -225,10 +216,33 @@ def test_bigchain_run_init_when_db_exists(mock_db_init_with_existing_db):
     run_init(args)
 
 
-def test_drop_existing_db(mock_rethink_db_drop):
+@patch('bigchaindb.schema.drop_database')
+def test_drop_db_when_assumed_yes(mock_db_drop):
     from bigchaindb.commands.bigchain import run_drop
     args = Namespace(config=None, yes=True)
+
     run_drop(args)
+    assert mock_db_drop.called
+
+
+@patch('bigchaindb.schema.drop_database')
+def test_drop_db_when_interactive_yes(mock_db_drop, monkeypatch):
+    from bigchaindb.commands.bigchain import run_drop
+    args = Namespace(config=None, yes=False)
+    monkeypatch.setattr(builtins, 'input', lambda x: 'y')
+
+    run_drop(args)
+    assert mock_db_drop.called
+
+
+@patch('bigchaindb.schema.drop_database')
+def test_drop_db_does_not_drop_when_interactive_no(mock_db_drop, monkeypatch):
+    from bigchaindb.commands.bigchain import run_drop
+    args = Namespace(config=None, yes=False)
+    monkeypatch.setattr(builtins, 'input', lambda x: 'n')
+
+    run_drop(args)
+    assert not mock_db_drop.called
 
 
 def test_run_configure_when_config_exists_and_skipping(monkeypatch):
