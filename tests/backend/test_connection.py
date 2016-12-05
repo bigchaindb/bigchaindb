@@ -10,7 +10,7 @@ def test_get_connection_returns_the_correct_instance():
         'backend': 'rethinkdb',
         'host': 'localhost',
         'port': 28015,
-        'dbname': 'test'
+        'name': 'test'
     }
 
     conn = connect(**config)
