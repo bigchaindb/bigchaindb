@@ -10,9 +10,10 @@ import pytest
 import rethinkdb as r
 
 from bigchaindb import Bigchain
-from bigchaindb.db import get_conn, init_database
+from bigchaindb.backend import connect, init_database
 from bigchaindb.common import crypto
 from bigchaindb.common.exceptions import DatabaseAlreadyExists
+
 
 USER2_SK, USER2_PK = crypto.generate_key_pair()
 
@@ -27,10 +28,10 @@ def restore_config(request, node_config):
 def setup_database(request, node_config):
     print('Initializing test db')
     db_name = node_config['database']['name']
-    conn = get_conn()
+    conn = connect()
 
-    if r.db_list().contains(db_name).run(conn):
-        r.db_drop(db_name).run(conn)
+    if conn.run(r.db_list().contains(db_name)):
+        conn.run(r.db_drop(db_name))
 
     try:
         init_database()
@@ -41,9 +42,9 @@ def setup_database(request, node_config):
 
     def fin():
         print('Deleting `{}` database'.format(db_name))
-        get_conn().repl()
+        conn = connect()
         try:
-            r.db_drop(db_name).run()
+            conn.run(r.db_drop(db_name))
         except r.ReqlOpFailedError as e:
             if e.message != 'Database `{}` does not exist.'.format(db_name):
                 raise
@@ -57,11 +58,11 @@ def cleanup_tables(request, node_config):
     db_name = node_config['database']['name']
 
     def fin():
-        get_conn().repl()
+        conn = connect()
         try:
-            r.db(db_name).table('bigchain').delete().run()
-            r.db(db_name).table('backlog').delete().run()
-            r.db(db_name).table('votes').delete().run()
+            conn.run(r.db(db_name).table('bigchain').delete())
+            conn.run(r.db(db_name).table('backlog').delete())
+            conn.run(r.db(db_name).table('votes').delete())
         except r.ReqlOpFailedError as e:
             if e.message != 'Database `{}` does not exist.'.format(db_name):
                 raise
