@@ -35,6 +35,10 @@ class RethinkDBConnection(Connection):
 
         Args:
             query: the RethinkDB query.
+
+        Raises:
+            :exc:`rethinkdb.ReqlDriverError`: After
+                :attr:`~.RethinkDBConnection.max_tries`.
         """
 
         if self.conn is None:
@@ -49,6 +53,15 @@ class RethinkDBConnection(Connection):
                 self.connect()
 
     def connect(self):
+        """Sets a connection to RethinkDB.
+
+        The connection is available via :attr:`~.RethinkDBConnection.conn`.
+
+        Raises:
+            :exc:`rethinkdb.ReqlDriverError`: After
+                :attr:`~.RethinkDBConnection.max_tries`.
+
+        """
         for i in range(self.max_tries):
             try:
                 self.conn = r.connect(host=self.host, port=self.port,

@@ -1,44 +1,55 @@
-#######
-Backend
-#######
+###############################################
+:mod:`bigchaindb.backend` -- Backend Interfaces
+###############################################
 
 .. automodule:: bigchaindb.backend
-    :members:
 
 
 Generic Backend
 ===============
 
+:mod:`bigchaindb.backend.connection` -- Connection
+--------------------------------------------------
+
 .. automodule:: bigchaindb.backend.connection
-    :members:
 
+:mod:`bigchaindb.backend.schema` -- Schema
+------------------------------------------
 .. automodule:: bigchaindb.backend.schema
-    :members:
 
+:mod:`bigchaindb.backend.query` -- Query
+----------------------------------------
 .. automodule:: bigchaindb.backend.query
-    :members:
 
+:mod:`bigchaindb.backend.changefeed` -- Changefeed
+--------------------------------------------------
 .. automodule:: bigchaindb.backend.changefeed
-    :members:
 
+:mod:`bigchaindb.backend.utils`
+-------------------------------
 .. automodule:: bigchaindb.backend.utils
-    :members:
 
  
-RethinkDB Backend
-=================
+:mod:`bigchaindb.backend.rethinkdb` -- RethinkDB Backend
+========================================================
+
+:mod:`bigchaindb.backend.rethinkdb.connection`
+----------------------------------------------
 
 .. automodule:: bigchaindb.backend.rethinkdb.connection
-    :members:
+    :special-members: __init__
 
+:mod:`bigchaindb.backend.rethinkdb.schema`
+------------------------------------------
 .. automodule:: bigchaindb.backend.rethinkdb.schema
-    :members:
 
+:mod:`bigchaindb.backend.rethinkdb.query`
+-----------------------------------------
 .. automodule:: bigchaindb.backend.rethinkdb.query
-    :members:
 
+:mod:`bigchaindb.backend.rethinkdb.changefeed`
+----------------------------------------------
 .. automodule:: bigchaindb.backend.rethinkdb.changefeed
-    :members:
 
 
 MongoDB Backend
