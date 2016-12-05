@@ -15,6 +15,7 @@ Appendices
    the-Bigchain-class
    consensus
    pipelines
+   backend
    aws-setup
    firewall-notes
    ntp-notes
