@@ -1,6 +1,7 @@
-import pytest
-
+from functools import singledispatch
 from types import ModuleType
+
+import pytest
 
 
 @pytest.fixture
@@ -9,7 +10,6 @@ def mock_module():
 
 
 def test_module_dispatch_registers(mock_module):
-    from functools import singledispatch
     from bigchaindb.backend.utils import make_module_dispatch_registrar
 
     @singledispatch
@@ -26,7 +26,6 @@ def test_module_dispatch_registers(mock_module):
 
 
 def test_module_dispatch_dispatches(mock_module):
-    from functools import singledispatch
     from bigchaindb.backend.utils import make_module_dispatch_registrar
 
     @singledispatch
