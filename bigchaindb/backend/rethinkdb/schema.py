@@ -33,6 +33,8 @@ def create_tables(connection, name):
 @schema_dispatch(RethinkDBConnection)
 def create_indexes(connection, name):
     create_bigchain_secondary_index(connection, name)
+    create_backlog_secondary_index(connection, name)
+    create_votes_secondary_index(connection, name)
 
 
 @schema_dispatch(RethinkDBConnection)
