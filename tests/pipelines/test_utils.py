@@ -1,7 +1,7 @@
 from unittest.mock import patch
 
 from multipipes import Pipe
-from bigchaindb.db.utils import Connection
+from bigchaindb.backend.connection import Connection
 from bigchaindb.pipelines.utils import ChangeFeed
 
 

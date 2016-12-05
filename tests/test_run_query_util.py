@@ -3,11 +3,11 @@ import pytest
 
 import rethinkdb as r
 
-from bigchaindb.db.utils import Connection
+from bigchaindb.backend import connect
 
 
 def test_run_a_simple_query():
-    conn = Connection()
+    conn = connect()
     query = r.expr('1')
     assert conn.run(query) == '1'
 
@@ -17,7 +17,7 @@ def test_raise_exception_when_max_tries():
         def run(self, conn):
             raise r.ReqlDriverError('mock')
 
-    conn = Connection()
+    conn = connect()
 
     with pytest.raises(r.ReqlDriverError):
         conn.run(MockQuery())
@@ -30,7 +30,7 @@ def test_reconnect_when_connection_lost():
     def raise_exception(*args, **kwargs):
         raise r.ReqlDriverError('mock')
 
-    conn = Connection()
+    conn = connect()
     original_connect = r.connect
     r.connect = raise_exception
 
@@ -74,7 +74,6 @@ def test_changefeed_reconnects_when_connection_lost(monkeypatch):
                          'old_val': None }
             else:
                 time.sleep(10)
-
 
     bigchain = Bigchain()
     bigchain.connection = MockConnection()
