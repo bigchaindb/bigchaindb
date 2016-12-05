@@ -43,7 +43,7 @@ class RethinkDBConnection(Connection):
         for i in range(self.max_tries):
             try:
                 return query.run(self.conn)
-            except r.ReqlDriverError as exc:
+            except r.ReqlDriverError:
                 if i + 1 == self.max_tries:
                     raise
                 self.connect()
@@ -53,7 +53,7 @@ class RethinkDBConnection(Connection):
             try:
                 self.conn = r.connect(host=self.host, port=self.port,
                                       db=self.db)
-            except r.ReqlDriverError as exc:
+            except r.ReqlDriverError:
                 if i + 1 == self.max_tries:
                     raise
                 time.sleep(2**i)
