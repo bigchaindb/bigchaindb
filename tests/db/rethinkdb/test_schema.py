@@ -163,31 +163,6 @@ def test_drop_interactively_drops_the_database_when_user_says_yes(monkeypatch):
     assert r.db_list().contains(dbname).run(conn) is False
 
 
-def test_drop_programmatically_drops_the_database_when_assume_yes_is_true(monkeypatch):
-    conn = utils.get_conn()
-    dbname = bigchaindb.config['database']['name']
-
-    # The db is set up by fixtures
-    assert r.db_list().contains(dbname).run(conn) is True
-
-    utils.drop(assume_yes=True)
-
-    assert r.db_list().contains(dbname).run(conn) is False
-
-
-def test_drop_interactively_does_not_drop_the_database_when_user_says_no(monkeypatch):
-    conn = utils.get_conn()
-    dbname = bigchaindb.config['database']['name']
-
-    # The db is set up by fixtures
-    print(r.db_list().contains(dbname).run(conn))
-    assert r.db_list().contains(dbname).run(conn) is True
-
-    monkeypatch.setattr(builtins, 'input', lambda x: 'n')
-    utils.drop()
-
-    assert r.db_list().contains(dbname).run(conn) is True
-
 def test_drop_non_existent_db_raises_an_error():
     conn = utils.get_conn()
     dbname = bigchaindb.config['database']['name']
@@ -198,4 +173,3 @@ def test_drop_non_existent_db_raises_an_error():
 
     with pytest.raises(exceptions.DatabaseDoesNotExist):
         utils.drop(assume_yes=True)
-
