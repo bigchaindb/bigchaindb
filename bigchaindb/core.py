@@ -10,8 +10,7 @@ from bigchaindb.common.transaction import TransactionLink, Asset
 
 import bigchaindb
 
-from bigchaindb import backend
-from bigchaindb import config_utils, util
+from bigchaindb import backend, config_utils, util
 from bigchaindb.consensus import BaseConsensusRules
 from bigchaindb.models import Block, Transaction
 
