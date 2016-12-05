@@ -1,6 +1,6 @@
-import pytest
-
 from types import ModuleType
+
+import pytest
 
 
 @pytest.fixture
