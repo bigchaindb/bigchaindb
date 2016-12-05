@@ -10,7 +10,7 @@ import subprocess
 import rethinkdb as r
 
 import bigchaindb
-from bigchaindb import db
+from bigchaindb import backend
 from bigchaindb.version import __version__
 
 
@@ -39,11 +39,11 @@ def start_rethinkdb():
             #        of the database. This code assumes the tables are ready
             #        when the database is ready. This seems a valid assumption.
             try:
-                conn = db.get_conn()
+                conn = backend.connect()
                 # Before checking if the db is ready, we need to query
                 # the server to check if it contains that db
-                if r.db_list().contains(dbname).run(conn):
-                    r.db(dbname).wait().run(conn)
+                if conn.run(r.db_list().contains(dbname)):
+                    conn.run(r.db(dbname).wait())
             except (r.ReqlOpFailedError, r.ReqlDriverError) as exc:
                 raise StartupError('Error waiting for the database `{}` '
                                    'to be ready'.format(dbname)) from exc
