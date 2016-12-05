@@ -13,7 +13,7 @@ def write_transaction(connection, signed_transaction):
     Returns:
         The result of the operation.
     """
-    raise NotImplementedError()
+    raise NotImplementedError
 
 
 @singledispatch
@@ -27,7 +27,7 @@ def update_transaction(connection, transaction_id, doc):
     Returns:
         The result of the operation.
     """
-    raise NotImplementedError()
+    raise NotImplementedError
 
 
 @singledispatch
@@ -40,7 +40,7 @@ def delete_transaction(connection, *transaction_id):
     Returns:
         The database response.
     """
-    raise NotImplementedError()
+    raise NotImplementedError
 
 
 @singledispatch
@@ -58,7 +58,7 @@ def get_stale_transactions(connection, reassign_delay):
         A cursor of transactions.
     """
 
-    raise NotImplementedError()
+    raise NotImplementedError
 
 
 @singledispatch
@@ -73,7 +73,7 @@ def get_transaction_from_block(connection, transaction_id, block_id):
         The matching transaction.
     """
 
-    raise NotImplementedError()
+    raise NotImplementedError
 
 
 @singledispatch
@@ -87,7 +87,7 @@ def get_transaction_from_backlog(connection, transaction_id):
         The matching transaction.
     """
 
-    raise NotImplementedError()
+    raise NotImplementedError
 
 
 @singledispatch
@@ -102,7 +102,7 @@ def get_blocks_status_from_transaction(connection, transaction_id):
         :obj:`list` of :obj:`dict`: A list of blocks with with only election information
     """
 
-    raise NotImplementedError()
+    raise NotImplementedError
 
 
 @singledispatch
@@ -123,7 +123,7 @@ def get_txids_by_metadata_id(connection, metadata_id):
         returns an empty list `[]`
     """
 
-    raise NotImplementedError()
+    raise NotImplementedError
 
 
 @singledispatch
@@ -141,7 +141,7 @@ def get_txids_by_asset_id(connection, asset_id):
         returns an empty list `[]`
     """
 
-    raise NotImplementedError()
+    raise NotImplementedError
 
 
 @singledispatch
@@ -155,7 +155,7 @@ def get_asset_by_id(conneciton, asset_id):
             Returns a rethinkdb cursor.
     """
 
-    raise NotImplementedError()
+    raise NotImplementedError
 
 
 @singledispatch
@@ -173,7 +173,7 @@ def get_spent(connection, transaction_id, condition_id):
         The transaction that used the `txid` as an input else `None`
     """
 
-    raise NotImplementedError()
+    raise NotImplementedError
 
 
 @singledispatch
@@ -187,7 +187,7 @@ def get_owned_ids(connection, owner):
         A cursor for the matching transactions.
     """
 
-    raise NotImplementedError()
+    raise NotImplementedError
 
 
 @singledispatch
@@ -201,7 +201,7 @@ def get_votes_by_block_id(connection, block_id):
         A cursor for the matching votes.
     """
 
-    raise NotImplementedError()
+    raise NotImplementedError
 
 
 @singledispatch
@@ -216,7 +216,7 @@ def get_votes_by_block_id_and_voter(connection, block_id, node_pubkey):
         A cursor for the matching votes.
     """
 
-    raise NotImplementedError()
+    raise NotImplementedError
 
 
 @singledispatch
@@ -230,7 +230,7 @@ def write_block(connection, block, durability='soft'):
         The database response.
     """
 
-    raise NotImplementedError()
+    raise NotImplementedError
 
 
 @singledispatch
@@ -244,7 +244,7 @@ def has_transaction(connection, transaction_id):
         ``True`` if the transaction exists, ``False`` otherwise.
     """
 
-    raise NotImplementedError()
+    raise NotImplementedError
 
 
 @singledispatch
@@ -258,7 +258,7 @@ def get_block(connection, block_id):
         block (dict): the block or `None`
     """
 
-    raise NotImplementedError()
+    raise NotImplementedError
 
 
 @singledispatch
@@ -269,7 +269,7 @@ def count_blocks(connection):
         The number of blocks.
     """
 
-    raise NotImplementedError()
+    raise NotImplementedError
 
 
 @singledispatch
@@ -280,7 +280,7 @@ def count_backlog(connection):
         The number of transactions in the backlog.
     """
 
-    raise NotImplementedError()
+    raise NotImplementedError
 
 
 @singledispatch
@@ -294,7 +294,7 @@ def write_vote(connection, vote):
         The database response.
     """
 
-    raise NotImplementedError()
+    raise NotImplementedError
 
 
 @singledispatch
@@ -305,7 +305,7 @@ def get_genesis_block(connection):
         The genesis block
     """
 
-    raise NotImplementedError()
+    raise NotImplementedError
 
 
 @singledispatch
@@ -320,7 +320,7 @@ def get_last_voted_block(connection, node_pubkey):
         any vote then the genesis block is returned.
     """
 
-    raise NotImplementedError()
+    raise NotImplementedError
 
 
 @singledispatch
@@ -334,4 +334,4 @@ def get_unvoted_blocks(connection, node_pubkey):
         :obj:`list` of :obj:`dict`: a list of unvoted blocks
     """
 
-    raise NotImplementedError()
+    raise NotImplementedError
