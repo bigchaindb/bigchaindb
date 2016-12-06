@@ -6,12 +6,12 @@ import rethinkdb as r
 
 from bigchaindb import backend
 from bigchaindb.common import exceptions
-from bigchaindb.backend.utils import make_module_dispatch_registrar
+from bigchaindb.backend.utils import module_dispatch_registrar
 from bigchaindb.backend.rethinkdb.connection import RethinkDBConnection
 
 
 logger = logging.getLogger(__name__)
-register_schema = make_module_dispatch_registrar(backend.schema)
+register_schema = module_dispatch_registrar(backend.schema)
 
 
 @register_schema(RethinkDBConnection)
