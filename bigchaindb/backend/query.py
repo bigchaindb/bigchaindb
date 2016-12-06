@@ -13,6 +13,7 @@ def write_transaction(connection, signed_transaction):
     Returns:
         The result of the operation.
     """
+
     raise NotImplementedError
 
 
@@ -27,6 +28,7 @@ def update_transaction(connection, transaction_id, doc):
     Returns:
         The result of the operation.
     """
+
     raise NotImplementedError
 
 
@@ -35,7 +37,7 @@ def delete_transaction(connection, *transaction_id):
     """Delete a transaction from the backlog.
 
     Args:
-        *transaction_id (str): the transaction(s) to delete
+        *transaction_id (str): the transaction(s) to delete.
 
     Returns:
         The database response.
@@ -107,20 +109,21 @@ def get_blocks_status_from_transaction(connection, transaction_id):
 
 @singledispatch
 def get_txids_by_metadata_id(connection, metadata_id):
-    """Retrieves transactions related to a metadata.
+    """Retrieves transaction ids related to a particular metadata.
 
-    When creating a transaction one of the optional arguments is the `metadata`. The metadata is a generic
-    dict that contains extra information that can be appended to the transaction.
+    When creating a transaction one of the optional arguments is the
+    `metadata`. The metadata is a generic dict that contains extra
+    information that can be appended to the transaction.
 
-    To make it easy to query the bigchain for that particular metadata we create a UUID for the metadata and
-    store it with the transaction.
+    To make it easy to query the bigchain for that particular metadata as we
+    create a UUID for the metadata and store it with the transaction.
 
     Args:
         metadata_id (str): the id for this particular metadata.
 
     Returns:
-        A list of transactions containing that metadata. If no transaction exists with that metadata it
-        returns an empty list `[]`
+        A list of transaction ids containing that metadata. If no
+        transaction exists with that metadata it returns an empty list `[]`
     """
 
     raise NotImplementedError
@@ -128,17 +131,18 @@ def get_txids_by_metadata_id(connection, metadata_id):
 
 @singledispatch
 def get_txids_by_asset_id(connection, asset_id):
-    """Retrieves transactions related to a particular asset.
+    """Retrieves transactions ids related to a particular asset.
 
-    A digital asset in bigchaindb is identified by an uuid. This allows us to query all the transactions
-    related to a particular digital asset, knowing the id.
+    A digital asset in bigchaindb is identified by an uuid. This allows us
+    to query all the transactions related to a particular digital asset,
+    knowing the id.
 
     Args:
         asset_id (str): the id for this particular metadata.
 
     Returns:
-        A list of transactions containing related to the asset. If no transaction exists for that asset it
-        returns an empty list `[]`
+        A list of transactions ids related to the asset. If no transaction
+        exists for that asset it returns an empty list `[]`
     """
 
     raise NotImplementedError
@@ -148,11 +152,11 @@ def get_txids_by_asset_id(connection, asset_id):
 def get_asset_by_id(conneciton, asset_id):
     """Returns the asset associated with an asset_id.
 
-        Args:
-            asset_id (str): The asset id.
+    Args:
+        asset_id (str): The asset id.
 
-        Returns:
-            Returns a rethinkdb cursor.
+    Returns:
+        Returns a rethinkdb cursor.
     """
 
     raise NotImplementedError
@@ -162,12 +166,13 @@ def get_asset_by_id(conneciton, asset_id):
 def get_spent(connection, transaction_id, condition_id):
     """Check if a `txid` was already used as an input.
 
-    A transaction can be used as an input for another transaction. Bigchain needs to make sure that a
-    given `txid` is only used once.
+    A transaction can be used as an input for another transaction. Bigchain
+    needs to make sure that a given `txid` is only used once.
 
     Args:
         transaction_id (str): The id of the transaction.
-        condition_id (int): The index of the condition in the respective transaction.
+        condition_id (int): The index of the condition in the respective
+            transaction.
 
     Returns:
         The transaction that used the `txid` as an input else `None`
@@ -234,20 +239,6 @@ def write_block(connection, block, durability='soft'):
 
 
 @singledispatch
-def has_transaction(connection, transaction_id):
-    """Check if a transaction exists in the bigchain table.
-
-    Args:
-        transaction_id (str): the id of the transaction to check.
-
-    Returns:
-        ``True`` if the transaction exists, ``False`` otherwise.
-    """
-
-    raise NotImplementedError
-
-
-@singledispatch
 def get_block(connection, block_id):
     """Get a block from the bigchain table
 
@@ -256,6 +247,20 @@ def get_block(connection, block_id):
 
     Returns:
         block (dict): the block or `None`
+    """
+
+    raise NotImplementedError
+
+
+@singledispatch
+def has_transaction(connection, transaction_id):
+    """Check if a transaction exists in the bigchain table.
+
+    Args:
+        transaction_id (str): the id of the transaction to check.
+
+    Returns:
+        ``True`` if the transaction exists, ``False`` otherwise.
     """
 
     raise NotImplementedError
