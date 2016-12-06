@@ -17,7 +17,6 @@ For convenience, here's a list of all the relevant environment variables (docume
 `BIGCHAINDB_SERVER_BIND`<br>
 `BIGCHAINDB_SERVER_WORKERS`<br>
 `BIGCHAINDB_SERVER_THREADS`<br>
-`BIGCHAINDB_API_ENDPOINT`<br>
 `BIGCHAINDB_STATSD_HOST`<br>
 `BIGCHAINDB_STATSD_PORT`<br>
 `BIGCHAINDB_STATSD_RATE`<br>
@@ -138,26 +137,6 @@ export BIGCHAINDB_SERVER_THREADS=5
     "workers": null,
     "threads": null
 }
-```
-
-
-## api_endpoint
-
-`api_endpoint` is the URL where a BigchainDB client can get access to the HTTP client-server API.
-
-**Example using an environment variable**
-```text
-export BIGCHAINDB_API_ENDPOINT="http://localhost:9984/api/v1"
-```
-
-**Example config file snippet**
-```js
-"api_endpoint": "http://webserver.blocks587.net:9984/api/v1"
-```
-
-**Default value (from a config file)**
-```js
-"api_endpoint": "http://localhost:9984/api/v1"
 ```
 
 
