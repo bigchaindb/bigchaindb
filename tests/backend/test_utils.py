@@ -45,11 +45,11 @@ def test_module_dispatch_dispatches(mock_module):
 def test_module_dispatch_errors_on_missing_func(mock_module):
     from bigchaindb.backend.utils import (
         module_dispatch_registrar,
-        BackendModuleDispatchRegisterError,
+        ModuleDispatchRegistrationError,
     )
     mock_dispatch = module_dispatch_registrar(mock_module)
 
-    with pytest.raises(BackendModuleDispatchRegisterError):
+    with pytest.raises(ModuleDispatchRegistrationError):
         @mock_dispatch(str)
         def dispatched():
             pass
@@ -58,7 +58,7 @@ def test_module_dispatch_errors_on_missing_func(mock_module):
 def test_module_dispatch_errors_on_non_dispatchable_func(mock_module):
     from bigchaindb.backend.utils import (
         module_dispatch_registrar,
-        BackendModuleDispatchRegisterError,
+        ModuleDispatchRegistrationError,
     )
 
     def dispatcher():
@@ -66,7 +66,7 @@ def test_module_dispatch_errors_on_non_dispatchable_func(mock_module):
     mock_module.dispatched = dispatcher
     mock_dispatch = module_dispatch_registrar(mock_module)
 
-    with pytest.raises(BackendModuleDispatchRegisterError):
+    with pytest.raises(ModuleDispatchRegistrationError):
         @mock_dispatch(str)
         def dispatched():
             pass
