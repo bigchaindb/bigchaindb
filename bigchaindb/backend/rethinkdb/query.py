@@ -6,14 +6,14 @@ import rethinkdb as r
 
 from bigchaindb import backend, util
 from bigchaindb.common import exceptions
-from bigchaindb.backend.utils import make_module_dispatch_registrar
+from bigchaindb.backend.utils import module_dispatch_registrar
 from bigchaindb.backend.rethinkdb.connection import RethinkDBConnection
 
 
 READ_MODE = 'majority'
 WRITE_DURABILITY = 'hard'
 
-register_query = make_module_dispatch_registrar(backend.query)
+register_query = module_dispatch_registrar(backend.query)
 
 
 @register_query(RethinkDBConnection)
