@@ -4,7 +4,7 @@ import rethinkdb as r
 import bigchaindb
 from bigchaindb import backend
 from bigchaindb.backend.rethinkdb import schema
-from .conftest import setup_database as _setup_database
+from ..conftest import setup_database as _setup_database
 
 
 # Since we are testing database initialization and database drop,
