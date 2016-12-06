@@ -3,6 +3,7 @@ from time import time
 from pymongo import ReturnDocument
 
 from bigchaindb.backend import query
+from bigchaindb.common.exceptions import CyclicBlockchainError
 from bigchaindb.backend.mongodb.connection import MongoDBConnection
 
 
@@ -59,62 +60,18 @@ def get_txids_by_asset_id(conn, asset_id):
 @query.get_asset_by_id.register(MongoDBConnection)
 def get_asset_by_id(conn, asset_id):
     return conn.db['bigchain']\
-            .find_one({'block.transactions.asset.id': asset_id},
+            .find_one({'block.transactions.asset.id': asset_id,
+                       'block.transactions.asset.operation': 'CREATE'},
                       projection=['block.transactions.asset'])
 
 
-@query.write_vote.register(MongoDBConnection)
-def write_vote(conn, vote):
-    return conn.db['votes'].insert_one(vote)
-
-
-@query.write_block.register(MongoDBConnection)
-def write_block(conn, block):
-    return conn.db['bigchain'].insert_one(block.to_dict())
-
-
-@query.genesis_block_exists.register(MongoDBConnection)
-def genesis_block_exists(conn):
-    return conn.db['bigchain'].count() > 0
-
-
-@query.search_block_election_on_index.register(MongoDBConnection)
-def search_block_election_on_index(conn, value, index):
+@query.get_spent.register(MongoDBConnection)
+def get_spent(conn, transaction_id, condition_id):
     return conn.db['bigchain']\
-        .find({index: value}, projection={'votes', 'id', 'block.voters'})
-
-
-@query.get_votes_on_block.register(MongoDBConnection)
-def get_votes_on_block(conn, block_id):
-    return conn.db['votes'].find({'vote.voting_for_block': block_id})
-
-
-@query.transaction_exists.register(MongoDBConnection)
-def transaction_exists(conn, transaction_id):
-    if conn.db['bigchain']\
-       .find_one({'block.transactions.id': transaction_id}):
-        return True
-    else:
-        return False
-
-
-@query.get_tx_by_metadata_id.register(MongoDBConnection)
-def get_tx_by_metadata_id(conn, metadata_id):
-    return conn.db['bigchain']\
-            .find({'block.transactions.transaction.metadata.id': metadata_id})
-
-
-@query.get_txs_by_asset_id.register(MongoDBConnection)
-def get_txs_by_asset_id(conn, asset_id):
-    return conn.db['bigchain']\
-            .find({'block.transaction.transaction.asset.id': asset_id})
-
-
-@query.get_tx_by_fulfillment.register(MongoDBConnection)
-def get_tx_by_fulfillment(conn, txid, cid):
-    return conn.db['bigchain']\
-            .find({'block.transactions.transaction.fulfillments.txid': txid,
-                   'block.transactions.transaction.fulfillments.cid': cid})
+            .find_one({'block.transactions.fulfillments.input.txid':
+                       transaction_id,
+                       'block.transactions.fulfillments.input.cid':
+                       condition_id})
 
 
 @query.get_owned_ids.register(MongoDBConnection)
@@ -122,3 +79,85 @@ def get_owned_ids(conn, owner):
     return conn.db['bigchain']\
             .find({'block.transactions.transaction.conditions.owners_after':
                    owner})
+
+
+@query.get_votes_by_block_id.register(MongoDBConnection)
+def get_votes_by_block_id(conn, block_id):
+    return conn.db['votes']\
+            .find({'vote.voting_for_block': block_id})
+
+
+@query.get_votes_by_block_id_and_voter.register(MongoDBConnection)
+def get_votes_block_id_and_voter(conn, block_id, node_pubkey):
+    return conn.db['votes']\
+            .find({'vote.voting_for_block': block_id,
+                   'node_pubkey': node_pubkey})
+
+
+@query.write_block.register(MongoDBConnection)
+def write_block(conn, block):
+    return conn.db['bigchain'].insert_one(block.to_dict())
+
+
+@query.get_block.register(MongoDBConnection)
+def get_block(conn, block_id):
+    return conn.db['bigchain'].find_one({'id': block_id})
+
+
+@query.has_transaction.register(MongoDBConnection)
+def has_transaction(conn, transaction_id):
+    return bool(conn.db['bigchain']
+                .find_one({'block.transactions.id': transaction_id}))
+
+
+@query.count_blocks.register(MongoDBConnection)
+def count_blocks(conn):
+    return conn.db['bigchain'].count()
+
+
+@query.count_backlog(MongoDBConnection)
+def count_backlog(conn):
+    return conn.db['backlog'].count()
+
+
+@query.write_vote.register(MongoDBConnection)
+def write_vote(conn, vote):
+    return conn.db['votes'].insert_one(vote)
+
+
+@query.get_genesis_block.register(MongoDBConnection)
+def get_genesis_block(conn):
+    return conn.db['bigchain'].find_one({'block.transactions.0.operation' ==
+                                         'GENESIS'})
+
+
+@query.get_last_voted_block.register(MongoDBConnection)
+def get_last_voted_block(conn, node_pubkey):
+    last_voted = conn.db['votes']\
+                  .find({'node_pubkey': node_pubkey},
+                        sort=[('vote.timestamp', -1)])
+    if not last_voted:
+        return get_genesis_block(conn)
+
+    mapping = {v['vote']['previous_block']: v['vote']['voting_for_block']
+               for v in last_voted}
+
+    last_block_id = list(mapping.values())[0]
+
+    explored = set()
+
+    while True:
+        try:
+            if last_block_id in explored:
+                raise CyclicBlockchainError()
+            explored.add(last_block_id)
+            last_block_id = mapping[last_block_id]
+        except KeyError:
+            break
+
+    return get_block(conn, last_block_id)
+
+
+@query.get_unvoted_blocks.register(MongoDBConnection)
+def get_unvoted_blocks(conn, node_pubkey):
+    pass
