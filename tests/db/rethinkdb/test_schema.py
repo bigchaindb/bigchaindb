@@ -21,7 +21,7 @@ def test_init_creates_db_tables_and_indexes():
     # The db is set up by fixtures so we need to remove it
     conn.run(r.db_drop(dbname))
 
-    schema.create_database()
+    schema.create_database(conn, dbname)
 
     assert conn.run(r.db_list().contains(dbname)) is True
 
