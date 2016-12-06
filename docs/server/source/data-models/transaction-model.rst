@@ -26,10 +26,7 @@ A transaction has the following structure:
         "conditions": ["<list of conditions>"],
         "operation": "<string>",
         "asset": "<digital asset description (explained in the next section)>",
-        "metadata": {
-            "id": "<uuid>",
-            "data": "<any JSON document>"
-        }
+        "metadata": "<any JSON document>"
     }
 
 Here's some explanation of the contents of a :ref:`transaction <transaction>`:
@@ -48,9 +45,7 @@ Here's some explanation of the contents of a :ref:`transaction <transaction>`:
 
 - **asset**: Definition of the digital :ref:`asset <Asset>`. See next section.
 
-- **metadata**:
-    - :ref:`id <metadata.id>`: UUID version 4 (random) converted to a string of hex digits in standard form.
-    - :ref:`data <metadata.data>`: Can be any JSON document. It may be empty in the case of a transfer transaction.
+- **metadata**: User-provided transaction :ref:`metadata <metadata>`: Can be any JSON document, or `NULL`.
 
 Later, when we get to the models for the block and the vote, we'll see that both include a signature (from the node which created it). You may wonder why transactions don't have signatures... The answer is that they do! They're just hidden inside the ``fulfillment`` string of each fulfillment. A creation transaction is signed by whoever created it. A transfer transaction is signed by whoever currently controls or owns it.
 
