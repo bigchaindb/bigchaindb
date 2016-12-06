@@ -15,13 +15,14 @@ def setup_database(request, node_config):
 
 
 def test_init_creates_db_tables_and_indexes():
+    from bigchaindb.backend.schema import init_database
     conn = backend.connect()
     dbname = bigchaindb.config['database']['name']
 
     # The db is set up by fixtures so we need to remove it
     conn.run(r.db_drop(dbname))
 
-    schema.create_database(conn, dbname)
+    init_database()
 
     assert conn.run(r.db_list().contains(dbname)) is True
 
@@ -32,6 +33,20 @@ def test_init_creates_db_tables_and_indexes():
 
     assert conn.run(r.db(dbname).table('backlog').index_list().contains(
         'assignee__transaction_timestamp')) is True
+
+
+def test_init_database_fails_if_db_exists():
+    from bigchaindb.backend.schema import init_database
+    from bigchaindb.common import exceptions
+
+    conn = backend.connect()
+    dbname = bigchaindb.config['database']['name']
+
+    # The db is set up by fixtures
+    assert conn.run(r.db_list().contains(dbname)) is True
+
+    with pytest.raises(exceptions.DatabaseAlreadyExists):
+        init_database()
 
 
 def test_create_database():
@@ -89,19 +104,6 @@ def test_create_bigchain_secondary_index():
     # Votes table
     assert conn.run(r.db(dbname).table('votes').index_list().contains(
         'block_and_voter')) is True
-
-
-def test_init_database_fails_if_db_exists():
-    from bigchaindb.common import exceptions
-
-    conn = backend.connect()
-    dbname = bigchaindb.config['database']['name']
-
-    # The db is set up by fixtures
-    assert conn.run(r.db_list().contains(dbname)) is True
-
-    with pytest.raises(exceptions.DatabaseAlreadyExists):
-        schema.init_database()
 
 
 def test_drop():
