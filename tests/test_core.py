@@ -49,7 +49,7 @@ def test_bigchain_class_initialization_with_parameters(config):
         'keyring': ['key_one', 'key_two'],
     }
     connection = Connection()
-    bigchain = Bigchain(**init_kwargs, connection=connection)
+    bigchain = Bigchain(connection=connection, **init_kwargs)
     assert bigchain.connection == connection
     assert bigchain.me == init_kwargs['public_key']
     assert bigchain.me_private == init_kwargs['private_key']
