@@ -179,7 +179,7 @@ def test_valid_block_voting_sequential(b, monkeypatch):
     serialized_vote = util.serialize(vote_doc['vote']).encode()
     assert vote_doc['node_pubkey'] == b.me
     assert crypto.PublicKey(b.me).verify(serialized_vote,
-                                            vote_doc['signature']) is True
+                                         vote_doc['signature']) is True
 
 
 def test_valid_block_voting_multiprocessing(b, monkeypatch):
@@ -214,7 +214,7 @@ def test_valid_block_voting_multiprocessing(b, monkeypatch):
     serialized_vote = util.serialize(vote_doc['vote']).encode()
     assert vote_doc['node_pubkey'] == b.me
     assert crypto.PublicKey(b.me).verify(serialized_vote,
-                                            vote_doc['signature']) is True
+                                         vote_doc['signature']) is True
 
 
 def test_valid_block_voting_with_create_transaction(b, monkeypatch):
@@ -256,7 +256,7 @@ def test_valid_block_voting_with_create_transaction(b, monkeypatch):
     serialized_vote = util.serialize(vote_doc['vote']).encode()
     assert vote_doc['node_pubkey'] == b.me
     assert crypto.PublicKey(b.me).verify(serialized_vote,
-                                            vote_doc['signature']) is True
+                                         vote_doc['signature']) is True
 
 
 def test_valid_block_voting_with_transfer_transactions(monkeypatch, b):
@@ -312,7 +312,7 @@ def test_valid_block_voting_with_transfer_transactions(monkeypatch, b):
     serialized_vote = util.serialize(vote_doc['vote']).encode()
     assert vote_doc['node_pubkey'] == b.me
     assert crypto.PublicKey(b.me).verify(serialized_vote,
-                                            vote_doc['signature']) is True
+                                         vote_doc['signature']) is True
 
     vote2_rs = query.get_votes_by_block_id_and_voter(b.connection, block2.id, b.me)
     vote2_doc = vote2_rs.next()
@@ -364,7 +364,7 @@ def test_unsigned_tx_in_block_voting(monkeypatch, b, user_pk):
     serialized_vote = util.serialize(vote_doc['vote']).encode()
     assert vote_doc['node_pubkey'] == b.me
     assert crypto.PublicKey(b.me).verify(serialized_vote,
-                                            vote_doc['signature']) is True
+                                         vote_doc['signature']) is True
 
 
 def test_invalid_id_tx_in_block_voting(monkeypatch, b, user_pk):
@@ -404,7 +404,7 @@ def test_invalid_id_tx_in_block_voting(monkeypatch, b, user_pk):
     serialized_vote = util.serialize(vote_doc['vote']).encode()
     assert vote_doc['node_pubkey'] == b.me
     assert crypto.PublicKey(b.me).verify(serialized_vote,
-                                            vote_doc['signature']) is True
+                                         vote_doc['signature']) is True
 
 
 def test_invalid_content_in_tx_in_block_voting(monkeypatch, b, user_pk):
@@ -444,7 +444,7 @@ def test_invalid_content_in_tx_in_block_voting(monkeypatch, b, user_pk):
     serialized_vote = util.serialize(vote_doc['vote']).encode()
     assert vote_doc['node_pubkey'] == b.me
     assert crypto.PublicKey(b.me).verify(serialized_vote,
-                                            vote_doc['signature']) is True
+                                         vote_doc['signature']) is True
 
 
 def test_invalid_block_voting(monkeypatch, b, user_pk):
@@ -480,7 +480,7 @@ def test_invalid_block_voting(monkeypatch, b, user_pk):
     serialized_vote = util.serialize(vote_doc['vote']).encode()
     assert vote_doc['node_pubkey'] == b.me
     assert crypto.PublicKey(b.me).verify(serialized_vote,
-                                            vote_doc['signature']) is True
+                                         vote_doc['signature']) is True
 
 
 def test_voter_considers_unvoted_blocks_when_single_node(monkeypatch, b):

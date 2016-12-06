@@ -29,7 +29,7 @@ def test_check_for_quorum_invalid(b, user_pk):
 
     # split_vote (invalid)
     votes = [member.vote(test_block.id, 'abc', True) for member in test_federation[:2]] + \
-                   [member.vote(test_block.id, 'abc', False) for member in test_federation[2:]]
+            [member.vote(test_block.id, 'abc', False) for member in test_federation[2:]]
 
     # cast votes
     for vote in votes:
@@ -59,7 +59,7 @@ def test_check_for_quorum_invalid_prev_node(b, user_pk):
 
     # split vote over prev node
     votes = [member.vote(test_block.id, 'abc', True) for member in test_federation[:2]] + \
-                   [member.vote(test_block.id, 'def', True) for member in test_federation[2:]]
+            [member.vote(test_block.id, 'def', True) for member in test_federation[2:]]
 
     # cast votes
     for vote in votes:
@@ -111,10 +111,9 @@ def test_check_requeue_transaction(b, user_pk):
     e.requeue_transactions(test_block)
 
     backlog_tx, status = b.get_transaction(tx1.id, include_status=True)
-    #backlog_tx = b.connection.run(r.table('backlog').get(tx1.id))
+    # backlog_tx = b.connection.run(r.table('backlog').get(tx1.id))
     assert status == b.TX_IN_BACKLOG
     assert backlog_tx == tx1
-
 
 
 @patch.object(Pipeline, 'start')
