@@ -10,7 +10,7 @@ import pytest
 import rethinkdb as r
 
 from bigchaindb import Bigchain
-from bigchaindb.backend import connect, init_database
+from bigchaindb.backend import connect, schema
 from bigchaindb.common import crypto
 from bigchaindb.common.exceptions import DatabaseAlreadyExists
 
@@ -34,7 +34,7 @@ def setup_database(request, node_config):
         conn.run(r.db_drop(db_name))
 
     try:
-        init_database()
+        schema.init_database()
     except DatabaseAlreadyExists:
         print('Database already exists.')
 
