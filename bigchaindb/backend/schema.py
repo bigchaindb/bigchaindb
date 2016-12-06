@@ -2,6 +2,9 @@
 
 from functools import singledispatch
 
+import bigchaindb
+from bigchaindb.backend.connection import connect
+
 
 @singledispatch
 def create_database(connection, name):
@@ -53,3 +56,25 @@ def drop_database(connection, name):
     """
 
     raise NotImplementedError
+
+
+def init_database(name=None):
+    """Initialize the configured backend for use with BigchainDB.
+
+    Creates a database with :attr:`name` with any required tables
+    and supporting indexes.
+
+    Args:
+        name (str): the name of the database to create.
+
+    Raises:
+        :exc:`~bigchaindb.common.exceptions.DatabaseAlreadyExists`: If the
+        given :attr:`name` already exists as a database.
+    """
+
+    conn = connect()
+    name = name or bigchaindb.config['database']['name']
+
+    create_database(conn, name)
+    create_tables(conn, name)
+    create_indexes(conn, name)
