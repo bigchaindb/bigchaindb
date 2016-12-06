@@ -10,7 +10,7 @@ def test_get_stale(b, user_pk):
     from bigchaindb.models import Transaction
     tx = Transaction.create([b.me], [([user_pk], 1)])
     tx = tx.sign([b.me_private])
-    b.write_transaction(tx, durability='hard')
+    b.write_transaction(tx)
 
     stm = stale.StaleTransactionMonitor(timeout=0.001,
                                         backlog_reassign_delay=0.001)
@@ -28,7 +28,7 @@ def test_reassign_transactions(b, user_pk):
     # test with single node
     tx = Transaction.create([b.me], [([user_pk], 1)])
     tx = tx.sign([b.me_private])
-    b.write_transaction(tx, durability='hard')
+    b.write_transaction(tx)
 
     stm = stale.StaleTransactionMonitor(timeout=0.001,
                                         backlog_reassign_delay=0.001)
@@ -37,7 +37,7 @@ def test_reassign_transactions(b, user_pk):
     # test with federation
     tx = Transaction.create([b.me], [([user_pk], 1)])
     tx = tx.sign([b.me_private])
-    b.write_transaction(tx, durability='hard')
+    b.write_transaction(tx)
 
     stm = stale.StaleTransactionMonitor(timeout=0.001,
                                         backlog_reassign_delay=0.001)
@@ -53,7 +53,7 @@ def test_reassign_transactions(b, user_pk):
     tx = Transaction.create([b.me], [([user_pk], 1)])
     tx = tx.sign([b.me_private])
     stm.bigchain.nodes_except_me = ['lol']
-    b.write_transaction(tx, durability='hard')
+    b.write_transaction(tx)
     stm.bigchain.nodes_except_me = None
 
     tx = list(query.get_stale_transactions(b.connection, 0))[0]

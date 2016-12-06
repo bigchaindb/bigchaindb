@@ -89,7 +89,7 @@ def inputs(user_pk):
             for i in range(10)
         ]
         block = b.create_block(transactions)
-        b.write_block(block, durability='hard')
+        b.write_block(block)
 
         # 3. vote the blocks valid, so that the inputs are valid
         vote = b.vote(block.id, prev_block_id, True)
@@ -127,7 +127,7 @@ def inputs_shared(user_pk, user2_pk):
             for i in range(10)
         ]
         block = b.create_block(transactions)
-        b.write_block(block, durability='hard')
+        b.write_block(block)
 
         # 3. vote the blocks valid, so that the inputs are valid
         vote = b.vote(block.id, prev_block_id, True)

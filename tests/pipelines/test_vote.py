@@ -277,7 +277,7 @@ def test_valid_block_voting_with_transfer_transactions(monkeypatch, b):
 
     monkeypatch.setattr('time.time', lambda: 1111111111)
     block = b.create_block([tx])
-    b.write_block(block, durability='hard')
+    b.write_block(block)
 
     # create a `TRANSFER` transaction
     test_user2_priv, test_user2_pub = crypto.generate_key_pair()
@@ -287,7 +287,7 @@ def test_valid_block_voting_with_transfer_transactions(monkeypatch, b):
 
     monkeypatch.setattr('time.time', lambda: 2222222222)
     block2 = b.create_block([tx2])
-    b.write_block(block2, durability='hard')
+    b.write_block(block2)
 
     inpipe = Pipe()
     outpipe = Pipe()
@@ -501,11 +501,11 @@ def test_voter_considers_unvoted_blocks_when_single_node(monkeypatch, b):
     monkeypatch.setattr('time.time', lambda: 2222222222)
     block_1 = dummy_block(b)
     block_ids.append(block_1.id)
-    b.write_block(block_1, durability='hard')
     monkeypatch.setattr('time.time', lambda: 3333333333)
+    b.write_block(block_1)
     block_2 = dummy_block(b)
     block_ids.append(block_2.id)
-    b.write_block(block_2, durability='hard')
+    b.write_block(block_2)
 
     vote_pipeline = vote.create_pipeline()
     vote_pipeline.setup(indata=vote.get_changefeed(), outdata=outpipe)
@@ -520,7 +520,7 @@ def test_voter_considers_unvoted_blocks_when_single_node(monkeypatch, b):
     monkeypatch.setattr('time.time', lambda: 4444444444)
     block_3 = dummy_block(b)
     block_ids.append(block_3.id)
-    b.write_block(block_3, durability='hard')
+    b.write_block(block_3)
 
     # Same as before with the two `get`s
     outpipe.get()
@@ -547,12 +547,12 @@ def test_voter_chains_blocks_with_the_previous_ones(monkeypatch, b):
     monkeypatch.setattr('time.time', lambda: 2222222222)
     block_1 = dummy_block(b)
     block_ids.append(block_1.id)
-    b.write_block(block_1, durability='hard')
+    b.write_block(block_1)
 
     monkeypatch.setattr('time.time', lambda: 3333333333)
     block_2 = dummy_block(b)
     block_ids.append(block_2.id)
-    b.write_block(block_2, durability='hard')
+    b.write_block(block_2)
 
     vote_pipeline = vote.create_pipeline()
     vote_pipeline.setup(indata=vote.get_changefeed(), outdata=outpipe)
