@@ -41,7 +41,7 @@ class TestBigchainApi(object):
         tx = tx.sign([b.me_private])
         monkeypatch.setattr('time.time', lambda: 1)
         block1 = b.create_block([tx])
-        b.write_block(block1, durability='hard')
+        b.write_block(block1)
 
         # Manipulate vote to create a cyclic Blockchain
         vote = b.vote(block1.id, b.get_last_voted_block().id, True)
@@ -79,7 +79,7 @@ class TestBigchainApi(object):
 
         monkeypatch.setattr('time.time', lambda: 1)
         block = b.create_block([tx])
-        b.write_block(block, durability='hard')
+        b.write_block(block)
 
         assert b.has_previous_vote(block.id, block.voters) is False
 
@@ -99,21 +99,21 @@ class TestBigchainApi(object):
 
         monkeypatch.setattr('time.time', lambda: 1)
         block1 = b.create_block([tx])
-        b.write_block(block1, durability='hard')
+        b.write_block(block1)
 
         monkeypatch.setattr('time.time', lambda: 2)
         transfer_tx = Transaction.transfer(tx.to_inputs(), [([b.me], 1)],
                                            tx.asset)
         transfer_tx = transfer_tx.sign([b.me_private])
         block2 = b.create_block([transfer_tx])
-        b.write_block(block2, durability='hard')
+        b.write_block(block2)
 
         monkeypatch.setattr('time.time', lambda: 3)
         transfer_tx2 = Transaction.transfer(tx.to_inputs(), [([b.me], 1)],
                                             tx.asset)
         transfer_tx2 = transfer_tx2.sign([b.me_private])
         block3 = b.create_block([transfer_tx2])
-        b.write_block(block3, durability='hard')
+        b.write_block(block3)
 
         # Vote both block2 and block3 valid to provoke a double spend
         vote = b.vote(block2.id, b.get_last_voted_block().id, True)
@@ -135,11 +135,11 @@ class TestBigchainApi(object):
 
         monkeypatch.setattr('time.time', lambda: 1)
         block1 = b.create_block([tx])
-        b.write_block(block1, durability='hard')
+        b.write_block(block1)
 
         monkeypatch.setattr('time.time', lambda: 2)
         block2 = b.create_block([tx])
-        b.write_block(block2, durability='hard')
+        b.write_block(block2)
 
         # Vote both blocks valid (creating a double spend)
         vote = b.vote(block1.id, b.get_last_voted_block().id, True)
@@ -159,13 +159,13 @@ class TestBigchainApi(object):
         tx1 = Transaction.create([b.me], [([b.me], 1)])
         tx1 = tx1.sign([b.me_private])
         block1 = b.create_block([tx1])
-        b.write_block(block1, durability='hard')
+        b.write_block(block1)
 
         monkeypatch.setattr('time.time', lambda: 2)
         tx2 = Transaction.create([b.me], [([b.me], 1)])
         tx2 = tx2.sign([b.me_private])
         block2 = b.create_block([tx2])
-        b.write_block(block2, durability='hard')
+        b.write_block(block2)
 
         # vote the first block invalid
         vote = b.vote(block1.id, b.get_last_voted_block().id, False)
@@ -185,7 +185,7 @@ class TestBigchainApi(object):
         tx = Transaction.create([b.me], [([user_pk], 1)], metadata=metadata)
 
         block = b.create_block([tx])
-        b.write_block(block, durability='hard')
+        b.write_block(block)
 
         matches = b.get_transaction_by_metadata_id(tx.metadata.data_id)
         assert len(matches) == 1
@@ -199,7 +199,7 @@ class TestBigchainApi(object):
         tx = Transaction.create([b.me], [([user_pk], 1)], metadata=metadata)
 
         block = b.create_block([tx])
-        b.write_block(block, durability='hard')
+        b.write_block(block)
         # vote block invalid
         vote = b.vote(block.id, b.get_last_voted_block().id, False)
         b.write_vote(vote)
@@ -242,7 +242,7 @@ class TestBigchainApi(object):
 
         # create block and write it to the bighcain before retrieving the transaction
         block = b.create_block([tx])
-        b.write_block(block, durability='hard')
+        b.write_block(block)
 
         response, status = b.get_transaction(tx.id, include_status=True)
         # add validity information, which will be returned
@@ -262,7 +262,7 @@ class TestBigchainApi(object):
 
         # create block
         block = b.create_block([tx])
-        b.write_block(block, durability='hard')
+        b.write_block(block)
 
         # vote the block invalid
         vote = b.vote(block.id, b.get_last_voted_block().id, False)
@@ -288,7 +288,7 @@ class TestBigchainApi(object):
 
         # create block
         block = b.create_block([tx])
-        b.write_block(block, durability='hard')
+        b.write_block(block)
 
         # vote the block invalid
         vote = b.vote(block.id, b.get_last_voted_block().id, False)
@@ -338,7 +338,7 @@ class TestBigchainApi(object):
     def test_get_previous_block(self, b):
         last_block = b.get_last_block()
         new_block = b.create_block([])
-        b.write_block(new_block, durability='hard')
+        b.write_block(new_block)
 
         prev_block = b.get_previous_block(new_block)
 
@@ -348,7 +348,7 @@ class TestBigchainApi(object):
     def test_get_previous_block_id(self, b):
         last_block = b.get_last_block()
         new_block = b.create_block([])
-        b.write_block(new_block, durability='hard')
+        b.write_block(new_block)
 
         prev_block_id = b.get_previous_block_id(new_block)
 
@@ -365,7 +365,7 @@ class TestBigchainApi(object):
     @pytest.mark.usefixtures('inputs')
     def test_get_block_by_id(self, b):
         new_block = dummy_block()
-        b.write_block(new_block, durability='hard')
+        b.write_block(new_block)
 
         assert b.get_block(new_block.id) == new_block.to_dict()
         block, status = b.get_block(new_block.id, include_status=True)
@@ -393,9 +393,9 @@ class TestBigchainApi(object):
         monkeypatch.setattr('time.time', lambda: 3)
         block_3 = dummy_block()
 
-        b.write_block(block_1, durability='hard')
-        b.write_block(block_2, durability='hard')
-        b.write_block(block_3, durability='hard')
+        b.write_block(block_1)
+        b.write_block(block_2)
+        b.write_block(block_3)
 
         # make sure all the votes are written with the same timestamps
         monkeypatch.setattr('time.time', lambda: 4)
@@ -420,9 +420,9 @@ class TestBigchainApi(object):
         monkeypatch.setattr('time.time', lambda: 3)
         block_3 = dummy_block()
 
-        b.write_block(block_1, durability='hard')
-        b.write_block(block_2, durability='hard')
-        b.write_block(block_3, durability='hard')
+        b.write_block(block_1)
+        b.write_block(block_2)
+        b.write_block(block_3)
 
         # make sure all the votes are written with different timestamps
         monkeypatch.setattr('time.time', lambda: 4)
@@ -442,7 +442,7 @@ class TestBigchainApi(object):
 
         genesis = b.create_genesis_block()
         block_1 = dummy_block()
-        b.write_block(block_1, durability='hard')
+        b.write_block(block_1)
 
         b.write_vote(b.vote(block_1.id, genesis.id, True))
         retrieved_block_1 = b.get_block(block_1.id)
@@ -460,7 +460,7 @@ class TestBigchainApi(object):
 
         b.create_genesis_block()
         block_1 = dummy_block()
-        b.write_block(block_1, durability='hard')
+        b.write_block(block_1)
         # insert duplicate votes
         vote_1 = b.vote(block_1.id, b.get_last_voted_block().id, True)
         vote_2 = b.vote(block_1.id, b.get_last_voted_block().id, True)
@@ -478,7 +478,7 @@ class TestBigchainApi(object):
 
         genesis = b.create_genesis_block()
         block_1 = dummy_block()
-        b.write_block(block_1, durability='hard')
+        b.write_block(block_1)
         # insert duplicate votes
         for i in range(2):
             b.write_vote(b.vote(block_1.id, genesis.id, True))
@@ -498,7 +498,7 @@ class TestBigchainApi(object):
 
         b.create_genesis_block()
         block_1 = dummy_block()
-        b.write_block(block_1, durability='hard')
+        b.write_block(block_1)
         vote_1 = b.vote(block_1.id, b.get_last_voted_block().id, True)
         # mangle the signature
         vote_1['signature'] = 'a' * 87
@@ -638,7 +638,7 @@ class TestTransactionValidation(object):
 
         b.write_transaction(signed_transfer_tx)
         block = b.create_block([signed_transfer_tx])
-        b.write_block(block, durability='hard')
+        b.write_block(block)
 
         # vote block valid
         vote = b.vote(block.id, b.get_last_voted_block().id, True)
@@ -669,7 +669,7 @@ class TestTransactionValidation(object):
         # create block
         block = b.create_block([transfer_tx])
         assert b.validate_block(block) == block
-        b.write_block(block, durability='hard')
+        b.write_block(block)
 
         # check that the transaction is still valid after being written to the
         # bigchain
@@ -693,7 +693,7 @@ class TestTransactionValidation(object):
 
         # create block
         block = b.create_block([transfer_tx])
-        b.write_block(block, durability='hard')
+        b.write_block(block)
 
         # create transaction with the undecided input
         tx_invalid = Transaction.transfer(transfer_tx.to_inputs(),
@@ -838,7 +838,7 @@ class TestMultipleInputs(object):
         tx = Transaction.create([b.me], [([user_pk, user2_pk], 1)])
         tx = tx.sign([b.me_private])
         block = b.create_block([tx])
-        b.write_block(block, durability='hard')
+        b.write_block(block)
 
         # vote block valid
         vote = b.vote(block.id, b.get_last_voted_block().id, True)
@@ -871,7 +871,7 @@ class TestMultipleInputs(object):
         tx = Transaction.create([b.me], [([user_pk, user2_pk], 1)])
         tx = tx.sign([b.me_private])
         block = b.create_block([tx])
-        b.write_block(block, durability='hard')
+        b.write_block(block)
 
         # vote block valid
         vote = b.vote(block.id, b.get_last_voted_block().id, True)
@@ -899,7 +899,7 @@ class TestMultipleInputs(object):
         tx = Transaction.create([b.me], [([user_pk], 1)])
         tx = tx.sign([b.me_private])
         block = b.create_block([tx])
-        b.write_block(block, durability='hard')
+        b.write_block(block)
 
         owned_inputs_user1 = b.get_owned_ids(user_pk)
         owned_inputs_user2 = b.get_owned_ids(user2_pk)
@@ -909,7 +909,7 @@ class TestMultipleInputs(object):
         tx = Transaction.transfer(tx.to_inputs(), [([user2_pk], 1)], tx.asset)
         tx = tx.sign([user_sk])
         block = b.create_block([tx])
-        b.write_block(block, durability='hard')
+        b.write_block(block)
 
         owned_inputs_user1 = b.get_owned_ids(user_pk)
         owned_inputs_user2 = b.get_owned_ids(user2_pk)
@@ -929,7 +929,7 @@ class TestMultipleInputs(object):
         tx = Transaction.create([b.me], [([user_pk], 1)])
         tx = tx.sign([b.me_private])
         block = b.create_block([tx])
-        b.write_block(block, durability='hard')
+        b.write_block(block)
 
         # vote the block VALID
         vote = b.vote(block.id, genesis.id, True)
@@ -946,7 +946,7 @@ class TestMultipleInputs(object):
                                           tx.asset)
         tx_invalid = tx_invalid.sign([user_sk])
         block = b.create_block([tx_invalid])
-        b.write_block(block, durability='hard')
+        b.write_block(block)
 
         # vote the block invalid
         vote = b.vote(block.id, b.get_last_voted_block().id, False)
@@ -974,7 +974,7 @@ class TestMultipleInputs(object):
                                        asset=asset)
         tx_create_signed = tx_create.sign([b.me_private])
         block = b.create_block([tx_create_signed])
-        b.write_block(block, durability='hard')
+        b.write_block(block)
 
         # get input
         owned_inputs_user1 = b.get_owned_ids(user_pk)
@@ -991,7 +991,7 @@ class TestMultipleInputs(object):
                                            asset=tx_create.asset)
         tx_transfer_signed = tx_transfer.sign([user_sk])
         block = b.create_block([tx_transfer_signed])
-        b.write_block(block, durability='hard')
+        b.write_block(block)
 
         owned_inputs_user1 = b.get_owned_ids(user_pk)
         owned_inputs_user2 = b.get_owned_ids(user2_pk)
@@ -1010,7 +1010,7 @@ class TestMultipleInputs(object):
         tx = Transaction.create([b.me], [([user_pk, user2_pk], 1)])
         tx = tx.sign([b.me_private])
         block = b.create_block([tx])
-        b.write_block(block, durability='hard')
+        b.write_block(block)
 
         owned_inputs_user1 = b.get_owned_ids(user_pk)
         owned_inputs_user2 = b.get_owned_ids(user2_pk)
@@ -1022,7 +1022,7 @@ class TestMultipleInputs(object):
         tx = Transaction.transfer(tx.to_inputs(), [([user3_pk], 1)], tx.asset)
         tx = tx.sign([user_sk, user2_sk])
         block = b.create_block([tx])
-        b.write_block(block, durability='hard')
+        b.write_block(block)
 
         owned_inputs_user1 = b.get_owned_ids(user_pk)
         owned_inputs_user2 = b.get_owned_ids(user2_pk)
@@ -1038,7 +1038,7 @@ class TestMultipleInputs(object):
         tx = Transaction.create([b.me], [([user_pk], 1)])
         tx = tx.sign([b.me_private])
         block = b.create_block([tx])
-        b.write_block(block, durability='hard')
+        b.write_block(block)
 
         owned_inputs_user1 = b.get_owned_ids(user_pk).pop()
 
@@ -1052,7 +1052,7 @@ class TestMultipleInputs(object):
         tx = Transaction.transfer(tx.to_inputs(), [([user2_pk], 1)], tx.asset)
         tx = tx.sign([user_sk])
         block = b.create_block([tx])
-        b.write_block(block, durability='hard')
+        b.write_block(block)
 
         spent_inputs_user1 = b.get_spent(input_txid, input_cid)
         assert spent_inputs_user1 == tx
@@ -1069,7 +1069,7 @@ class TestMultipleInputs(object):
         tx = Transaction.create([b.me], [([user_pk], 1)])
         tx = tx.sign([b.me_private])
         block = b.create_block([tx])
-        b.write_block(block, durability='hard')
+        b.write_block(block)
 
         # vote the block VALID
         vote = b.vote(block.id, genesis.id, True)
@@ -1087,7 +1087,7 @@ class TestMultipleInputs(object):
         tx = Transaction.transfer(tx.to_inputs(), [([user2_pk], 1)], tx.asset)
         tx = tx.sign([user_sk])
         block = b.create_block([tx])
-        b.write_block(block, durability='hard')
+        b.write_block(block)
 
         # vote the block invalid
         vote = b.vote(block.id, b.get_last_voted_block().id, False)
@@ -1116,7 +1116,7 @@ class TestMultipleInputs(object):
                                        asset=asset)
         tx_create_signed = tx_create.sign([b.me_private])
         block = b.create_block([tx_create_signed])
-        b.write_block(block, durability='hard')
+        b.write_block(block)
 
         owned_inputs_user1 = b.get_owned_ids(user_pk)
 
@@ -1130,7 +1130,7 @@ class TestMultipleInputs(object):
                                            asset=tx_create.asset)
         tx_transfer_signed = tx_transfer.sign([user_sk])
         block = b.create_block([tx_transfer_signed])
-        b.write_block(block, durability='hard')
+        b.write_block(block)
 
         # check that used inputs are marked as spent
         for ffill in tx_create.to_inputs()[:2]:
@@ -1157,7 +1157,7 @@ class TestMultipleInputs(object):
             tx = tx.sign([b.me_private])
             transactions.append(tx)
         block = b.create_block(transactions)
-        b.write_block(block, durability='hard')
+        b.write_block(block)
 
         owned_inputs_user1 = b.get_owned_ids(user_pk)
 
@@ -1170,7 +1170,7 @@ class TestMultipleInputs(object):
                                   [([user3_pk], 1)], transactions[0].asset)
         tx = tx.sign([user_sk, user2_sk])
         block = b.create_block([tx])
-        b.write_block(block, durability='hard')
+        b.write_block(block)
 
         # check that used inputs are marked as spent
         assert b.get_spent(transactions[0].id, 0) == tx
