@@ -303,7 +303,8 @@ class TestBigchainApi(object):
 
     @pytest.mark.usefixtures('inputs')
     def test_genesis_block(self, b):
-        block = b.backend.get_genesis_block()
+        from bigchaindb.backend import query
+        block = query.get_genesis_block(b.connection)
 
         assert len(block['block']['transactions']) == 1
         assert block['block']['transactions'][0]['transaction']['operation'] == 'GENESIS'
@@ -319,8 +320,9 @@ class TestBigchainApi(object):
 
     @pytest.mark.skipif(reason='This test may not make sense after changing the chainification mode')
     def test_get_last_block(self, b):
+        from bigchaindb.backend import query
         # get the number of blocks
-        num_blocks = b.backend.count_blocks()
+        num_blocks = query.count_blocks(b.connection)
 
         # get the last block
         last_block = b.get_last_block()
@@ -373,9 +375,10 @@ class TestBigchainApi(object):
 
     def test_get_last_voted_block_returns_genesis_if_no_votes_has_been_casted(self, b):
         from bigchaindb.models import Block
+        from bigchaindb.backend import query
 
         b.create_genesis_block()
-        genesis = b.backend.get_genesis_block()
+        genesis = query.get_genesis_block(b.connection)
         genesis = Block.from_dict(genesis)
         gb = b.get_last_voted_block()
         assert gb == genesis
@@ -510,6 +513,7 @@ class TestBigchainApi(object):
 
     @pytest.mark.usefixtures('inputs')
     def test_assign_transaction_one_node(self, b, user_pk, user_sk):
+        from bigchaindb.backend import query
         from bigchaindb.models import Transaction
 
         input_tx = b.get_owned_ids(user_pk).pop()
@@ -520,13 +524,14 @@ class TestBigchainApi(object):
         b.write_transaction(tx)
 
         # retrieve the transaction
-        response = list(b.backend.get_stale_transactions(0))[0]
+        response = list(query.get_stale_transactions(b.connection, 0))[0]
 
         # check if the assignee is the current node
         assert response['assignee'] == b.me
 
     @pytest.mark.usefixtures('inputs')
     def test_assign_transaction_multiple_nodes(self, b, user_pk, user_sk):
+        from bigchaindb.backend import query
         from bigchaindb.common.crypto import generate_key_pair
         from bigchaindb.models import Transaction
 
@@ -544,12 +549,11 @@ class TestBigchainApi(object):
             b.write_transaction(tx)
 
         # retrieve the transaction
-        response = b.backend.get_stale_transactions(0)
+        response = query.get_stale_transactions(b.connection, 0)
 
         # check if the assignee is one of the _other_ federation nodes
         for tx in response:
             assert tx['assignee'] in b.nodes_except_me
-
 
     @pytest.mark.usefixtures('inputs')
     def test_non_create_input_not_found(self, b, user_pk):
@@ -570,6 +574,7 @@ class TestBigchainApi(object):
             tx.validate(Bigchain())
 
     def test_count_backlog(self, b, user_pk):
+        from bigchaindb.backend import query
         from bigchaindb.models import Transaction
 
         for _ in range(4):
@@ -577,7 +582,7 @@ class TestBigchainApi(object):
                                     [([user_pk], 1)]).sign([b.me_private])
             b.write_transaction(tx)
 
-        assert b.backend.count_backlog() == 4
+        assert query.count_backlog(b.connection) == 4
 
 
 class TestTransactionValidation(object):
