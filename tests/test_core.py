@@ -9,6 +9,7 @@ import pytest
 def config(request, monkeypatch):
     config = {
         'database': {
+            'backend': 'rethinkdb',
             'host': 'host',
             'port': 28015,
             'name': 'bigchain',
@@ -44,9 +45,6 @@ def test_bigchain_class_initialization_with_parameters(config):
     from bigchaindb.core import Bigchain
     from bigchaindb.consensus import BaseConsensusRules
     init_kwargs = {
-        'host': 'some_node',
-        'port': '12345',
-        'dbname': 'atom',
         'public_key': 'white',
         'private_key': 'black',
         'keyring': ['key_one', 'key_two'],

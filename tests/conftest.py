@@ -16,11 +16,12 @@ DB_NAME = 'bigchain_test_{}'.format(os.getpid())
 
 CONFIG = {
     'database': {
-        'name': DB_NAME
+        'backend': 'rethinkdb',
+        'name': DB_NAME,
     },
     'keypair': {
         'private': '31Lb1ZGKTyHnmVK3LUMrAUrPNfd4sE2YyBt3UA4A25aA',
-        'public': '4XYfCbabAWVUCbjTmRTFEu2sc3dFEdkse4r6X498B1s8'
+        'public': '4XYfCbabAWVUCbjTmRTFEu2sc3dFEdkse4r6X498B1s8',
     }
 }
 
