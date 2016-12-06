@@ -20,10 +20,11 @@ class RethinkDBConnection(Connection):
         """Create a new Connection instance.
 
         Args:
-            host (str, optional): the host to connect to.
-            port (int, optional): the port to connect to.
-            dbname (str, optional): the name of the database to use.
+            host (str): the host to connect to.
+            port (int): the port to connect to.
+            dbname (str): the name of the database to use.
             max_tries (int, optional): how many tries before giving up.
+                Defaults to 3.
         """
 
         self.host = host
@@ -37,6 +38,10 @@ class RethinkDBConnection(Connection):
 
         Args:
             query: the RethinkDB query.
+
+        Raises:
+            :exc:`rethinkdb.ReqlDriverError`: After
+                :attr:`~.RethinkDBConnection.max_tries`.
         """
 
         if self.conn is None:
@@ -45,18 +50,25 @@ class RethinkDBConnection(Connection):
         for i in range(self.max_tries):
             try:
                 return query.run(self.conn)
-            except r.ReqlDriverError as exc:
+            except r.ReqlDriverError:
                 if i + 1 == self.max_tries:
                     raise
-                else:
-                    self._connect()
+                self._connect()
 
     def _connect(self):
+        """Sets a connection to RethinkDB.
+
+        The connection is available via :attr:`~.RethinkDBConnection.conn`.
+
+        Raises:
+            :exc:`rethinkdb.ReqlDriverError`: After
+                :attr:`~.RethinkDBConnection.max_tries`.
+        """
+
         for i in range(self.max_tries):
             try:
                 self.conn = r.connect(host=self.host, port=self.port, db=self.dbname)
-            except r.ReqlDriverError as exc:
+            except r.ReqlDriverError:
                 if i + 1 == self.max_tries:
                     raise
-                else:
-                    time.sleep(2**i)
+                time.sleep(2**i)

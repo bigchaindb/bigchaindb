@@ -41,6 +41,7 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.coverage',
     'sphinx.ext.viewcode',
+    'sphinx.ext.todo',
     'sphinx.ext.napoleon',
     'sphinxcontrib.httpdomain',
     'sphinx.ext.autosectionlabel',
@@ -48,6 +49,11 @@ extensions = [
 
 # autodoc settings
 autodoc_member_order = 'bysource'
+autodoc_default_flags = [
+    'members',
+]
+
+todo_include_todos = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
