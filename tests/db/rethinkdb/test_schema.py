@@ -76,7 +76,7 @@ def test_create_tables():
     assert len(conn.run(r.db(dbname).table_list())) == 3
 
 
-def test_create_bigchain_secondary_index():
+def test_create_secondary_indexes():
     conn = backend.connect()
     dbname = bigchaindb.config['database']['name']
 
@@ -85,7 +85,7 @@ def test_create_bigchain_secondary_index():
     conn.run(r.db_drop(dbname))
     schema.create_database(conn, dbname)
     schema.create_tables(conn, dbname)
-    schema.create_bigchain_secondary_index(conn, dbname)
+    schema.create_indexes(conn, dbname)
 
     # Bigchain table
     assert conn.run(r.db(dbname).table('bigchain').index_list().contains(
