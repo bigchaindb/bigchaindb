@@ -25,7 +25,6 @@ def test_raise_exception_when_max_tries():
 
 def test_reconnect_when_connection_lost():
     import time
-    import rethinkdb as r
 
     def raise_exception(*args, **kwargs):
         raise r.ReqlDriverError('mock')
