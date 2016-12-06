@@ -39,4 +39,6 @@ def connect(backend=None, host=None, port=None, name=None):
 
 
 class Connection:
-    pass
+
+    def run(self, query):
+        raise NotImplementedError()
