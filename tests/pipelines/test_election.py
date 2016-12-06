@@ -136,6 +136,7 @@ def test_start(mock_start):
 
 def test_full_pipeline(b, user_pk):
     import random
+    from bigchaindb.backend import query
     from bigchaindb.models import Transaction
 
     outpipe = Pipe()
@@ -177,8 +178,8 @@ def test_full_pipeline(b, user_pk):
 
     # only transactions from the invalid block should be returned to
     # the backlog
-    assert b.backend.count_backlog() == 100
+    assert query.count_backlog(b.connection) == 100
     # NOTE: I'm still, I'm still tx from the block.
     tx_from_block = set([tx.id for tx in invalid_block.transactions])
-    tx_from_backlog = set([tx['id'] for tx in list(b.backend.get_stale_transactions(0))])
+    tx_from_backlog = set([tx['id'] for tx in list(query.get_stale_transactions(b.connection, 0))])
     assert tx_from_block == tx_from_backlog
