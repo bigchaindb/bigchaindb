@@ -203,7 +203,7 @@ def get_votes_by_block_id_and_voter(connection, block_id, node_pubkey):
 
 
 @singledispatch
-def write_block(connection, block, durability='soft'):
+def write_block(connection, block):
     """Write a block to the bigchain table.
 
     Args:

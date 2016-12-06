@@ -61,7 +61,7 @@ class Bigchain(object):
         if not self.me or not self.me_private:
             raise exceptions.KeypairNotFoundException()
 
-    def write_transaction(self, signed_transaction, durability='soft'):
+    def write_transaction(self, signed_transaction):
         """Write the transaction to bigchain.
 
         When first writing a transaction to the bigchain the transaction will be kept in a backlog until
@@ -509,14 +509,14 @@ class Bigchain(object):
 
         return has_previous_vote
 
-    def write_block(self, block, durability='soft'):
+    def write_block(self, block):
         """Write a block to bigchain.
 
         Args:
             block (Block): block to write to bigchain.
         """
 
-        return backend.query.write_block(self.connection, block.to_str(), durability=durability)
+        return backend.query.write_block(self.connection, block.to_str())
 
     def transaction_exists(self, transaction_id):
         return backend.query.has_transaction(self.connection, transaction_id)
@@ -554,7 +554,7 @@ class Bigchain(object):
             raise exceptions.GenesisBlockAlreadyExistsError('Cannot create the Genesis block')
 
         block = self.prepare_genesis_block()
-        self.write_block(block, durability='hard')
+        self.write_block(block)
 
         return block
 
