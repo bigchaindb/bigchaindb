@@ -49,6 +49,7 @@ tests_require = [
     'pytest-cov>=2.2.1',
     'pytest-xdist',
     'pytest-flask',
+    'tox',
 ] + docs_require
 
 benchmarks_require = [
