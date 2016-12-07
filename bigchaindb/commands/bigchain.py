@@ -138,7 +138,7 @@ def _run_init():
     # Try to access the keypair, throws an exception if it does not exist
     b = bigchaindb.Bigchain()
 
-    schema.init_database(b.connection)
+    schema.init_database(connection=b.connection)
 
     logger.info('Create genesis block.')
     b.create_genesis_block()
