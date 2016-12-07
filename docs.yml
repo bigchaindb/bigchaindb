@@ -7,7 +7,7 @@ services:
       dockerfile: ./Dockerfile-dev
     volumes:
       - .:/usr/src/app/
-    command: make -C docs html
+    command: make -C docs/server html
   vdocs:
     image: nginx
     ports:
