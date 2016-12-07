@@ -22,7 +22,8 @@ import bigchaindb
 import bigchaindb.config_utils
 from bigchaindb.models import Transaction
 from bigchaindb.util import ProcessGroup
-from bigchaindb import db
+from bigchaindb import backend
+from bigchaindb.backend import schema
 from bigchaindb.commands import utils
 from bigchaindb import processes
 
@@ -133,6 +134,17 @@ def run_export_my_pubkey(args):
         # exits with exit code 1 (signals tha an error happened)
 
 
+def _run_init():
+    # Try to access the keypair, throws an exception if it does not exist
+    b = bigchaindb.Bigchain()
+
+    schema.init_database(b.connection)
+
+    logger.info('Create genesis block.')
+    b.create_genesis_block()
+    logger.info('Done, have fun!')
+
+
 def run_init(args):
     """Initialize the database"""
     bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
@@ -140,7 +152,7 @@ def run_init(args):
     # 1. prompt the user to inquire whether they wish to drop the db
     # 2. force the init, (e.g., via -f flag)
     try:
-        db.init()
+        _run_init()
     except DatabaseAlreadyExists:
         print('The database already exists.', file=sys.stderr)
         print('If you wish to re-initialize it, first drop it.', file=sys.stderr)
@@ -149,7 +161,16 @@ def run_init(args):
 def run_drop(args):
     """Drop the database"""
     bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
-    db.drop(assume_yes=args.yes)
+    dbname = bigchaindb.config['database']['name']
+
+    if not args.yes:
+        response = input('Do you want to drop `{}` database? [y/n]: '.format(dbname))
+        if response != 'y':
+            return
+
+    conn = backend.connect()
+    dbname = bigchaindb.config['database']['name']
+    schema.drop_database(conn, dbname)
 
 
 def run_start(args):
@@ -176,7 +197,7 @@ def run_start(args):
         logger.info('RethinkDB started with PID %s' % proc.pid)
 
     try:
-        db.init()
+        _run_init()
     except DatabaseAlreadyExists:
         pass
     except KeypairNotFoundException:
@@ -222,23 +243,25 @@ def run_load(args):
 
 
 def run_set_shards(args):
+    conn = backend.connect()
     for table in ['bigchain', 'backlog', 'votes']:
         # See https://www.rethinkdb.com/api/python/config/
-        table_config = r.table(table).config().run(db.get_conn())
+        table_config = conn.run(r.table(table).config())
         num_replicas = len(table_config['shards'][0]['replicas'])
         try:
-            r.table(table).reconfigure(shards=args.num_shards, replicas=num_replicas).run(db.get_conn())
+            conn.run(r.table(table).reconfigure(shards=args.num_shards, replicas=num_replicas))
         except r.ReqlOpFailedError as e:
             logger.warn(e)
 
 
 def run_set_replicas(args):
+    conn = backend.connect()
     for table in ['bigchain', 'backlog', 'votes']:
         # See https://www.rethinkdb.com/api/python/config/
-        table_config = r.table(table).config().run(db.get_conn())
+        table_config = conn.run(r.table(table).config())
         num_shards = len(table_config['shards'])
         try:
-            r.table(table).reconfigure(shards=num_shards, replicas=args.num_replicas).run(db.get_conn())
+            conn.run(r.table(table).reconfigure(shards=num_shards, replicas=args.num_replicas))
         except r.ReqlOpFailedError as e:
             logger.warn(e)
 
