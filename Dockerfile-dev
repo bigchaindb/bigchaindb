@@ -1,6 +1,6 @@
 FROM python:3.5
 
-RUN apt-get update
+RUN apt-get update && apt-get install -y python3.4 vim
 
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
