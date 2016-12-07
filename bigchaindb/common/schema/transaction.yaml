@@ -147,7 +147,7 @@ definitions:
         "$ref": "#/definitions/offset"
         description: |
             Index of this condition's appearance in the `Transaction.conditions`_
-            array. In a transaction with 2 conditions, the ``cid``s will be 0 and 1.
+            array. In a transaction with 2 conditions, the ``cid`` s will be 0 and 1.
       condition:
         description: |
             Body of the condition. Has the properties:

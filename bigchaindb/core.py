@@ -411,13 +411,13 @@ class Bigchain(object):
             return None
 
     def get_owned_ids(self, owner):
-        """Retrieve a list of `txid`s that can be used as inputs.
+        """Retrieve a list of ``txid`` s that can be used as inputs.
 
         Args:
             owner (str): base58 encoded public key.
 
         Returns:
-            :obj:`list` of TransactionLink: list of `txid`s and `cid`s
+            :obj:`list` of TransactionLink: list of ``txid`` s and ``cid`` s
             pointing to another transaction's condition
         """
 
