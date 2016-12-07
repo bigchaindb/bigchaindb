@@ -20,6 +20,5 @@ def home():
         'software': 'BigchainDB',
         'version': version.__version__,
         'public_key': bigchaindb.config['keypair']['public'],
-        'keyring': bigchaindb.config['keyring'],
-        'api_endpoint': bigchaindb.config['api_endpoint']
+        'keyring': bigchaindb.config['keyring']
     })

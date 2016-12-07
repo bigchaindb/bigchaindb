@@ -29,7 +29,9 @@ services:
       - ./pytest.ini:/usr/src/app/pytest.ini
     environment:
       BIGCHAINDB_DATABASE_HOST: rdb
-      BIGCHAINDB_API_ENDPOINT: http://bdb:9984/api/v1
+#      BigchainDB Server doesn't need BIGCHAINDB_API_ENDPOINT any more
+#      but maybe our Docker or Docker Compose stuff does?
+#      BIGCHAINDB_API_ENDPOINT: http://bdb:9984/api/v1
       BIGCHAINDB_SERVER_BIND: 0.0.0.0:9984
     ports:
       - "9984"

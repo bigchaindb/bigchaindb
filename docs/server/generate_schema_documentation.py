@@ -27,8 +27,6 @@ Transaction Schema
 
 * `Transaction`_
 
-* `Transaction Body`_
-
 * Condition_
 
 * Fulfillment_
@@ -57,11 +55,6 @@ Transaction Schema
 
 Transaction
 -----------
-
-%(wrapper)s
-
-Transaction Body
-----------------
 
 %(transaction)s
 
@@ -158,9 +151,7 @@ def main():
     """ Main function """
     defs = TX_SCHEMA['definitions']
     doc = TPL_DOC % {
-        'wrapper': render_section('Transaction', TX_SCHEMA),
-        'transaction': render_section('Transaction',
-                                      TX_SCHEMA['properties']['transaction']),
+        'transaction': render_section('Transaction', TX_SCHEMA),
         'condition': render_section('Condition', defs['condition']),
         'fulfillment': render_section('Fulfillment', defs['fulfillment']),
         'asset': render_section('Asset', defs['asset']),
@@ -168,11 +159,19 @@ def main():
         'file': os.path.basename(__file__),
     }
 
-    path = os.path.join(os.path.dirname(__file__),
-                        'source/schema/transaction.rst')
+    base_path = os.path.join(os.path.dirname(__file__), 'source/schema')
+    path = os.path.join(base_path, 'transaction.rst')
+
+    if not os.path.exists(base_path):
+        os.makedirs(base_path)
 
     with open(path, 'w') as handle:
         handle.write(doc)
+
+
+def setup(*_):
+    """ Fool sphinx into think it's an extension muahaha """
+    main()
 
 
 if __name__ == '__main__':

@@ -17,7 +17,9 @@ WORKDIR /data
 
 ENV BIGCHAINDB_CONFIG_PATH /data/.bigchaindb
 ENV BIGCHAINDB_SERVER_BIND 0.0.0.0:9984
-ENV BIGCHAINDB_API_ENDPOINT http://bigchaindb:9984/api/v1
+# BigchainDB Server doesn't need BIGCHAINDB_API_ENDPOINT any more
+# but maybe our Docker or Docker Compose stuff does?
+# ENV BIGCHAINDB_API_ENDPOINT http://bigchaindb:9984/api/v1
 
 ENTRYPOINT ["bigchaindb", "--dev-start-rethinkdb", "--dev-allow-temp-keypair"]
 

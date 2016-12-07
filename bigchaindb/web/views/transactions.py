@@ -6,7 +6,11 @@ For more information please refer to the documentation on ReadTheDocs:
 from flask import current_app, request, Blueprint
 from flask_restful import Resource, Api
 
-from bigchaindb.common.exceptions import ValidationError, InvalidSignature
+from bigchaindb.common.exceptions import (
+    ValidationError,
+    InvalidSignature,
+    SchemaValidationError,
+)
 
 import bigchaindb
 from bigchaindb.models import Transaction
@@ -98,6 +102,12 @@ class TransactionListApi(Resource):
 
         try:
             tx_obj = Transaction.from_dict(tx)
+        except SchemaValidationError as e:
+            return make_error(
+                400,
+                message='Invalid transaction schema: {}'.format(
+                    e.__cause__.message)
+            )
         except (ValidationError, InvalidSignature):
             return make_error(400, 'Invalid transaction')
 

@@ -44,7 +44,8 @@ echo "IMAGE_ID = "$IMAGE_ID
 echo "INSTANCE_TYPE = "$INSTANCE_TYPE
 echo "SECURITY_GROUP = "$SECURITY_GROUP
 echo "USING_EBS = "$USING_EBS
-if [ "$USING_EBS" = True ]; then
+# Treat booleans as strings which must be either "True" or "False"
+if [ "$USING_EBS" == "True" ]; then
     echo "EBS_VOLUME_SIZE = "$EBS_VOLUME_SIZE
     echo "EBS_OPTIMIZED = "$EBS_OPTIMIZED
 fi
@@ -117,7 +118,11 @@ fab upgrade_setuptools
 
 if [ "$WHAT_TO_DEPLOY" == "servers" ]; then
     # (Re)create the RethinkDB configuration file conf/rethinkdb.conf
-    python create_rethinkdb_conf.py --bind-http-to-localhost $BIND_HTTP_TO_LOCALHOST
+    if [ "$BIND_HTTP_TO_LOCALHOST" == "True" ]; then
+        python create_rethinkdb_conf.py --bind-http-to-localhost
+    else
+        python create_rethinkdb_conf.py
+    fi
     # Rollout RethinkDB and start it
     fab prep_rethinkdb_storage:$USING_EBS
     fab install_rethinkdb
@@ -155,7 +160,7 @@ if [ "$WHAT_TO_DEPLOY" == "servers" ]; then
     # bigchaindb installed, so bigchaindb configure can't be called)
 
     # Transform the config files in the confiles directory
-    # to have proper keyrings, api_endpoint values, etc.
+    # to have proper keyrings etc.
     if [ "$USE_KEYPAIRS_FILE" == "True" ]; then
         python clusterize_confiles.py -k confiles $NUM_NODES
     else
@@ -179,8 +184,6 @@ if [ "$WHAT_TO_DEPLOY" == "servers" ]; then
     echo "To start BigchainDB on all the nodes, do: fab start_bigchaindb"
 else
     # Deploying clients
-    # The only thing to configure on clients is the api_endpoint
-    # It should be the public DNS name of a BigchainDB server
     fab send_client_confile:client_confile
 
     # Start sending load from the clients to the servers

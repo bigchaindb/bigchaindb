@@ -33,8 +33,8 @@ def test_post_create_transaction_endpoint(b, client):
     tx = tx.sign([user_priv])
 
     res = client.post(TX_ENDPOINT, data=json.dumps(tx.to_dict()))
-    assert res.json['transaction']['fulfillments'][0]['owners_before'][0] == user_pub
-    assert res.json['transaction']['conditions'][0]['owners_after'][0] == user_pub
+    assert res.json['fulfillments'][0]['owners_before'][0] == user_pub
+    assert res.json['conditions'][0]['owners_after'][0] == user_pub
 
 
 def test_post_create_transaction_with_invalid_id(b, client):
@@ -55,7 +55,7 @@ def test_post_create_transaction_with_invalid_signature(b, client):
 
     tx = Transaction.create([user_pub], [([user_pub], 1)])
     tx = tx.sign([user_priv]).to_dict()
-    tx['transaction']['fulfillments'][0]['fulfillment'] = 'cf:0:0'
+    tx['fulfillments'][0]['fulfillment'] = 'cf:0:0'
 
     res = client.post(TX_ENDPOINT, data=json.dumps(tx))
     assert res.status_code == 400
@@ -64,6 +64,18 @@ def test_post_create_transaction_with_invalid_signature(b, client):
 def test_post_create_transaction_with_invalid_structure(client):
     res = client.post(TX_ENDPOINT, data='{}')
     assert res.status_code == 400
+
+
+def test_post_create_transaction_with_invalid_schema(client):
+    from bigchaindb.models import Transaction
+    user_priv, user_pub = crypto.generate_key_pair()
+    tx = Transaction.create(
+        [user_pub], [([user_pub], 1)]).sign([user_priv]).to_dict()
+    del tx['version']
+    res = client.post(TX_ENDPOINT, data=json.dumps(tx))
+    assert res.status_code == 400
+    assert res.json['message'] == (
+        "Invalid transaction schema: 'version' is a required property")
 
 
 @pytest.mark.usefixtures('inputs')
@@ -81,8 +93,8 @@ def test_post_transfer_transaction_endpoint(b, client, user_pk, user_sk):
 
     res = client.post(TX_ENDPOINT, data=json.dumps(transfer_tx.to_dict()))
 
-    assert res.json['transaction']['fulfillments'][0]['owners_before'][0] == user_pk
-    assert res.json['transaction']['conditions'][0]['owners_after'][0] == user_pub
+    assert res.json['fulfillments'][0]['owners_before'][0] == user_pk
+    assert res.json['conditions'][0]['owners_after'][0] == user_pub
 
 
 @pytest.mark.usefixtures('inputs')

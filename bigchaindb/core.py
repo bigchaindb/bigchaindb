@@ -317,35 +317,6 @@ class Bigchain(object):
         else:
             return None
 
-    def get_transaction_by_metadata_id(self, metadata_id):
-        """Retrieves valid or undecided transactions related to a particular
-        metadata.
-
-        When creating a transaction one of the optional arguments is the
-        `metadata`. The metadata is a generic dict that contains extra
-        information that can be appended to the transaction.
-
-        To make it easy to query the bigchain for that particular metadata we
-        create a UUID for the metadata and store it with the transaction.
-
-        Args:
-            metadata_id (str): the id for this particular metadata.
-
-        Returns:
-            A list of valid or undecided transactions containing that metadata.
-            If no transaction exists with that metadata it returns an empty
-            list `[]`
-        """
-        txids = backend.query.get_txids_by_metadata_id(self.connection, metadata_id)
-        transactions = []
-        for txid in txids:
-            tx = self.get_transaction(txid)
-            # if a valid or undecided transaction exists append it to the list
-            # of transactions
-            if tx:
-                transactions.append(tx)
-        return transactions
-
     def get_transactions_by_asset_id(self, asset_id):
         """Retrieves valid or undecided transactions related to a particular
         asset.
@@ -383,7 +354,7 @@ class Bigchain(object):
         cursor = backend.query.get_asset_by_id(self.connection, asset_id)
         cursor = list(cursor)
         if cursor:
-            return Asset.from_dict(cursor[0]['transaction']['asset'])
+            return Asset.from_dict(cursor[0]['asset'])
 
     def get_spent(self, txid, cid):
         """Check if a `txid` was already used as an input.
@@ -452,7 +423,7 @@ class Bigchain(object):
             # use it after the execution of this function.
             # a transaction can contain multiple outputs (conditions) so we need to iterate over all of them
             # to get a list of outputs available to spend
-            for index, cond in enumerate(tx['transaction']['conditions']):
+            for index, cond in enumerate(tx['conditions']):
                 # for simple signature conditions there are no subfulfillments
                 # check if the owner is in the condition `owners_after`
                 if len(cond['owners_after']) == 1:
