@@ -58,21 +58,25 @@ def drop_database(connection, name):
     raise NotImplementedError
 
 
-def init_database(name=None):
+def init_database(conn=None, name=None):
     """Initialize the configured backend for use with BigchainDB.
 
     Creates a database with :attr:`name` with any required tables
     and supporting indexes.
 
     Args:
+        conn (:class:`~bigchaindb.backend.connection.Connection`): an existing
+            connection to use to initialize the database.
+            Creates one if not given.
         name (str): the name of the database to create.
+            Defaults to the name in the BigchainDB configuration.
 
     Raises:
         :exc:`~bigchaindb.common.exceptions.DatabaseAlreadyExists`: If the
         given :attr:`name` already exists as a database.
     """
 
-    conn = connect()
+    conn = conn or connect()
     name = name or bigchaindb.config['database']['name']
 
     create_database(conn, name)
