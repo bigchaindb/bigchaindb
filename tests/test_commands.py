@@ -1,4 +1,3 @@
-import builtins
 import json
 from unittest.mock import Mock, patch
 from argparse import Namespace
@@ -216,7 +215,7 @@ def test_bigchain_run_init_when_db_exists(mock_db_init_with_existing_db):
     run_init(args)
 
 
-@patch('bigchaindb.schema.drop_database')
+@patch('bigchaindb.backend.schema.drop_database')
 def test_drop_db_when_assumed_yes(mock_db_drop):
     from bigchaindb.commands.bigchain import run_drop
     args = Namespace(config=None, yes=True)
@@ -225,21 +224,21 @@ def test_drop_db_when_assumed_yes(mock_db_drop):
     assert mock_db_drop.called
 
 
-@patch('bigchaindb.schema.drop_database')
+@patch('bigchaindb.backend.schema.drop_database')
 def test_drop_db_when_interactive_yes(mock_db_drop, monkeypatch):
     from bigchaindb.commands.bigchain import run_drop
     args = Namespace(config=None, yes=False)
-    monkeypatch.setattr(builtins, 'input', lambda x: 'y')
+    monkeypatch.setattr('bigchaindb.commands.bigchain.input', lambda x: 'y')
 
     run_drop(args)
     assert mock_db_drop.called
 
 
-@patch('bigchaindb.schema.drop_database')
+@patch('bigchaindb.backend.schema.drop_database')
 def test_drop_db_does_not_drop_when_interactive_no(mock_db_drop, monkeypatch):
     from bigchaindb.commands.bigchain import run_drop
     args = Namespace(config=None, yes=False)
-    monkeypatch.setattr(builtins, 'input', lambda x: 'n')
+    monkeypatch.setattr('bigchaindb.commands.bigchain.input', lambda x: 'n')
 
     run_drop(args)
     assert not mock_db_drop.called

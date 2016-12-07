@@ -208,7 +208,7 @@ def get_last_voted_block(connection, node_pubkey):
 
     except r.ReqlNonExistenceError:
         # return last vote if last vote exists else return Genesis block
-        return get_genesis_block()
+        return get_genesis_block(connection)
 
     # Now the fun starts. Since the resolution of timestamp is a second,
     # we might have more than one vote per timestamp. If this is the case

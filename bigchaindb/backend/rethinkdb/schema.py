@@ -15,99 +15,99 @@ register_schema = module_dispatch_registrar(backend.schema)
 
 
 @register_schema(RethinkDBConnection)
-def create_database(connection, name):
-    if connection.run(r.db_list().contains(name)):
-        raise exceptions.DatabaseAlreadyExists('Database `{}` already exists'.format(name))
+def create_database(connection, dbname):
+    if connection.run(r.db_list().contains(dbname)):
+        raise exceptions.DatabaseAlreadyExists('Database `{}` already exists'.format(dbname))
 
-    logger.info('Create database `%s`.', name)
-    connection.run(r.db_create(name))
+    logger.info('Create database `%s`.', dbname)
+    connection.run(r.db_create(dbname))
 
 
 @register_schema(RethinkDBConnection)
-def create_tables(connection, name):
+def create_tables(connection, dbname):
     for table_name in ['bigchain', 'backlog', 'votes']:
         logger.info('Create `%s` table.', table_name)
-        connection.run(r.db(name).table_create(table_name))
+        connection.run(r.db(dbname).table_create(table_name))
 
 
 @register_schema(RethinkDBConnection)
-def create_indexes(connection, name):
-    create_bigchain_secondary_index(connection, name)
-    create_backlog_secondary_index(connection, name)
-    create_votes_secondary_index(connection, name)
+def create_indexes(connection, dbname):
+    create_bigchain_secondary_index(connection, dbname)
+    create_backlog_secondary_index(connection, dbname)
+    create_votes_secondary_index(connection, dbname)
 
 
 @register_schema(RethinkDBConnection)
-def drop_database(connection, name):
+def drop_database(connection, dbname):
     try:
-        logger.info('Drop database `%s`', name)
-        connection.run(r.db_drop(name))
+        logger.info('Drop database `%s`', dbname)
+        connection.run(r.db_drop(dbname))
         logger.info('Done.')
     except r.ReqlOpFailedError:
-        raise exceptions.DatabaseDoesNotExist('Database `{}` does not exist'.format(name))
+        raise exceptions.DatabaseDoesNotExist('Database `{}` does not exist'.format(dbname))
 
 
-def create_bigchain_secondary_index(connection, name):
+def create_bigchain_secondary_index(connection, dbname):
     logger.info('Create `bigchain` secondary index.')
 
     # to order blocks by timestamp
     connection.run(
-        r.db(name)
+        r.db(dbname)
         .table('bigchain')
         .index_create('block_timestamp', r.row['block']['timestamp']))
 
     # to query the bigchain for a transaction id
     connection.run(
-        r.db(name)
+        r.db(dbname)
         .table('bigchain')
         .index_create('transaction_id', r.row['block']['transactions']['id'], multi=True))
 
     # secondary index for payload data by UUID
     connection.run(
-        r.db(name)
+        r.db(dbname)
         .table('bigchain')
         .index_create('metadata_id', r.row['block']['transactions']['transaction']['metadata']['id'], multi=True))
 
     # secondary index for asset uuid
     connection.run(
-        r.db(name)
+        r.db(dbname)
         .table('bigchain')
         .index_create('asset_id', r.row['block']['transactions']['transaction']['asset']['id'], multi=True))
 
     # wait for rethinkdb to finish creating secondary indexes
     connection.run(
-        r.db(name)
+        r.db(dbname)
         .table('bigchain')
         .index_wait())
 
 
-def create_backlog_secondary_index(connection, name):
+def create_backlog_secondary_index(connection, dbname):
     logger.info('Create `backlog` secondary index.')
 
     # compound index to read transactions from the backlog per assignee
     connection.run(
-        r.db(name)
+        r.db(dbname)
         .table('backlog')
         .index_create('assignee__transaction_timestamp', [r.row['assignee'], r.row['assignment_timestamp']]))
 
     # wait for rethinkdb to finish creating secondary indexes
     connection.run(
-        r.db(name)
+        r.db(dbname)
         .table('backlog')
         .index_wait())
 
 
-def create_votes_secondary_index(connection, name):
+def create_votes_secondary_index(connection, dbname):
     logger.info('Create `votes` secondary index.')
 
     # compound index to order votes by block id and node
     connection.run(
-        r.db(name)
+        r.db(dbname)
         .table('votes')
         .index_create('block_and_voter', [r.row['vote']['voting_for_block'], r.row['node_pubkey']]))
 
     # wait for rethinkdb to finish creating secondary indexes
     connection.run(
-        r.db(name)
+        r.db(dbname)
         .table('votes')
         .index_wait())
