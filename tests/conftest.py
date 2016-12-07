@@ -16,7 +16,6 @@ DB_NAME = 'bigchain_test_{}'.format(os.getpid())
 
 CONFIG = {
     'database': {
-        'backend': 'rethinkdb',
         'name': DB_NAME,
     },
     'keypair': {
