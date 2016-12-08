@@ -95,7 +95,8 @@ def test_duplicate_transaction(b, user_pk):
     # verify tx is in the backlog
     assert b.get_transaction(txs[0].id) is not None
 
-    # try to validate a transaction that's already in the chain; should not work
+    # try to validate a transaction that's already in the chain; should not
+    # work
     assert block_maker.validate_tx(txs[0].to_dict()) is None
 
     # duplicate tx should be removed from backlog
@@ -159,9 +160,10 @@ def test_start(create_pipeline):
 
 def test_full_pipeline(b, user_pk):
     import random
-    from bigchaindb.backend import query
+    from bigchaindb.backend import query, get_changefeed
+    from bigchaindb.backend.changefeed import ChangeFeed
     from bigchaindb.models import Block, Transaction
-    from bigchaindb.pipelines.block import create_pipeline, get_changefeed
+    from bigchaindb.pipelines.block import create_pipeline, initial
 
     outpipe = Pipe()
     # include myself here, so that some tx are actually assigned to me
@@ -175,8 +177,11 @@ def test_full_pipeline(b, user_pk):
 
     assert query.count_backlog(b.connection) == 100
 
+    changefeed = get_changefeed(b.connection, 'backlog',
+                                ChangeFeed.INSERT | ChangeFeed.UPDATE,
+                                prefeed=initial())
     pipeline = create_pipeline()
-    pipeline.setup(indata=get_changefeed(), outdata=outpipe)
+    pipeline.setup(indata=changefeed, outdata=outpipe)
     pipeline.start()
 
     time.sleep(2)

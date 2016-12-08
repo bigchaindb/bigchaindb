@@ -253,5 +253,5 @@ def get_old_transactions(connection, node_pubkey):
          .between([node_pubkey, r.minval],
                   [node_pubkey, r.maxval],
                   index='assignee__transaction_timestamp')
-         .order_by(index=r.asc('assignee_transaction_timestamp'))
+         .order_by(index=r.asc('assignee__transaction_timestamp'))
     )
