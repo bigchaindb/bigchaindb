@@ -68,7 +68,7 @@ we use the `format()` version. The [official Python documentation says](https://
 ## Runnng the Flake8 Style Checker
 
 We use [Flake8](http://flake8.pycqa.org/en/latest/index.html) to check our Python code style. Once you have it installed, you can run it using:
-```text
+```bash
 flake8 --max-line-length 119 bigchaindb/
 ```
 
@@ -80,17 +80,17 @@ We write unit tests for our Python code using the [pytest](http://pytest.org/lat
 All tests go in the `bigchaindb/tests` directory or one of its subdirectories. You can use the tests already in there as templates or examples.
 
 You can run all unit tests using:
-```text
+```bash
 py.test -v
 ```
 
 or, if that doesn't work, try:
-```text
+```bash
 python -m pytest -v
 ```
 
 or:
-```text
+```bash
 python setup.py test
 ```
 
