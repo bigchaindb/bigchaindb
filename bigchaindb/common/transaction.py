@@ -1183,14 +1183,16 @@ class Transaction(object):
         try:
             proposed_tx_id = tx_body.pop('id')
         except KeyError:
-            raise InvalidHash()
+            raise InvalidHash('No transaction id found!')
 
         tx_body_no_signatures = Transaction._remove_signatures(tx_body)
         tx_body_serialized = Transaction._to_str(tx_body_no_signatures)
         valid_tx_id = Transaction._to_hash(tx_body_serialized)
 
         if proposed_tx_id != valid_tx_id:
-            raise InvalidHash()
+            err_msg = ("The transaction's id '{}' isn't equal to "
+                       "the hash of its body, i.e. it's not valid.")
+            raise InvalidHash(err_msg.format(proposed_tx_id))
 
     @classmethod
     def from_dict(cls, tx):
