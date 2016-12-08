@@ -79,7 +79,7 @@ class Fulfillment(object):
             #       Hence, when a non-signed fulfillment is to be cast to a
             #       dict, we just call its internal `to_dict` method here and
             #       its `from_dict` method in `Fulfillment.from_dict`.
-            fulfillment = self.fulfillment.to_dict()
+            fulfillment = None
 
         try:
             # NOTE: `self.tx_input` can be `None` and that's fine
@@ -129,7 +129,7 @@ class Fulfillment(object):
         except TypeError:
             # NOTE: See comment about this special case in
             #       `Fulfillment.to_dict`
-            fulfillment = CCFulfillment.from_dict(ffill['fulfillment'])
+            fulfillment = None
         input_ = TransactionLink.from_dict(ffill['input'])
         return cls(fulfillment, ffill['owners_before'], input_)
 
