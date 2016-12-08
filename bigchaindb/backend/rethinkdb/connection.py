@@ -9,20 +9,21 @@ logger = logging.getLogger(__name__)
 
 
 class RethinkDBConnection(Connection):
-    """This class is a proxy to run queries against the database,
-    it is:
-    - lazy, since it creates a connection only when needed
-    - resilient, because before raising exceptions it tries
-      more times to run the query or open a connection.
+    """
+    This class is a proxy to run queries against the database, it is:
+
+        - lazy, since it creates a connection only when needed
+        - resilient, because before raising exceptions it tries
+          more times to run the query or open a connection.
     """
 
     def __init__(self, host, port, dbname, max_tries=3):
-        """Create a new Connection instance.
+        """Create a new :class:`~.RethinkDBConnection` instance.
+
+        See :meth:`.Connection.__init__` for
+        :attr:`host`, :attr:`port`, and :attr:`dbname`.
 
         Args:
-            host (str): the host to connect to.
-            port (int): the port to connect to.
-            dbname (str): the name of the database to use.
             max_tries (int, optional): how many tries before giving up.
                 Defaults to 3.
         """
@@ -34,7 +35,7 @@ class RethinkDBConnection(Connection):
         self.conn = None
 
     def run(self, query):
-        """Run a query.
+        """Run a RethinkDB query.
 
         Args:
             query: the RethinkDB query.

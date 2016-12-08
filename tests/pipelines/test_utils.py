@@ -25,7 +25,7 @@ def mock_changefeed_data():
 
 @pytest.fixture
 def mock_changefeed_bigchain(mock_changefeed_data):
-    connection = Connection()
+    connection = Connection(host=None, port=None, dbname=None)
     connection.run = Mock(return_value=mock_changefeed_data)
     return Bigchain(connection=connection)
 
