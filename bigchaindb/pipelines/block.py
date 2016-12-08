@@ -10,8 +10,11 @@ import logging
 import rethinkdb as r
 from multipipes import Pipeline, Node, Pipe
 
+import bigchaindb
+from bigchaindb.backend import connect
+from bigchaindb.backend.changefeed import ChangeFeed
+from bigchaindb.backend import get_changefeed
 from bigchaindb.models import Transaction
-from bigchaindb.pipelines.utils import ChangeFeed
 from bigchaindb import Bigchain
 
 
@@ -147,13 +150,6 @@ def initial():
         .order_by(index=r.asc('assignee__transaction_timestamp')))
 
 
-def get_changefeed():
-    """Create and return the changefeed for the backlog."""
-
-    return ChangeFeed('backlog', ChangeFeed.INSERT | ChangeFeed.UPDATE,
-                      prefeed=initial())
-
-
 def create_pipeline():
     """Create and return the pipeline of operations to be distributed
     on different processes."""
@@ -174,7 +170,11 @@ def create_pipeline():
 
 def start():
     """Create, start, and return the block pipeline."""
+    connection = connect(**bigchaindb.config['database'])
+    changefeed = get_changefeed(connection, 'backlog',
+                                ChangeFeed.INSER | ChangeFeed.UPDATE,
+                                preefed=initial())
     pipeline = create_pipeline()
-    pipeline.setup(indata=get_changefeed())
+    pipeline.setup(indata=changefeed)
     pipeline.start()
     return pipeline
