@@ -68,7 +68,7 @@ we use the `format()` version. The [official Python documentation says](https://
 ## Runnng the Flake8 Style Checker
 
 We use [Flake8](http://flake8.pycqa.org/en/latest/index.html) to check our Python code style. Once you have it installed, you can run it using:
-```bash
+```text
 flake8 --max-line-length 119 bigchaindb/
 ```
 
@@ -80,17 +80,17 @@ We write unit and integration tests for our Python code using the [pytest](http:
 All tests go in the `bigchaindb/tests` directory or one of its subdirectories. You can use the tests already in there as templates or examples.
 
 You can run all tests using:
-```bash
+```text
 py.test -v
 ```
 
 or, if that doesn't work, try:
-```bash
+```text
 python -m pytest -v
 ```
 
 or:
-```bash
+```text
 python setup.py test
 ```
 
@@ -101,17 +101,17 @@ If you want to learn about all the things you can do with pytest, see [the pytes
 We use [tox](https://tox.readthedocs.io/en/latest/) to run multiple suites of tests against multiple environments during automated testing. Generally you don't need to run this yourself, but it might be useful when troubleshooting a failing CI build.
 
 To run all the tox tests, use:
-```bash
+```text
 tox
 ```
 
 or:
-```bash
+```text
 python -m tox
 ```
 
 To run only a few environments, use the `-e` flag:
-```bash
+```text
 tox -e {ENVLIST}
 ```
 
