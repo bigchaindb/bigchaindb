@@ -73,13 +73,13 @@ flake8 --max-line-length 119 bigchaindb/
 ```
 
 
-## Writing and Running (Python) Unit Tests
+## Writing and Running (Python) Tests
 
-We write unit tests for our Python code using the [pytest](http://pytest.org/latest/) framework.
+We write unit and integration tests for our Python code using the [pytest](http://pytest.org/latest/) framework.
 
 All tests go in the `bigchaindb/tests` directory or one of its subdirectories. You can use the tests already in there as templates or examples.
 
-You can run all unit tests using:
+You can run all tests using:
 ```bash
 py.test -v
 ```
