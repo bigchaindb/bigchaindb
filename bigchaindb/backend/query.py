@@ -1,4 +1,4 @@
-"""Query interfaces for backend databases."""
+"""Query interfaces for backends."""
 
 from functools import singledispatch
 

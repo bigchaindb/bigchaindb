@@ -11,6 +11,9 @@ BACKENDS = {
 def connect(backend=None, host=None, port=None, name=None):
     """Create a connection to the database backend.
 
+    All arguments default to the current configuration's values if not
+    given.
+
     Args:
         backend (str): the name of the backend to use.
         host (str): the host to connect to.
@@ -19,6 +22,10 @@ def connect(backend=None, host=None, port=None, name=None):
 
     Returns:
         An instance of :class:`~bigchaindb.backend.connection.Connection`.
+
+    Raises:
+        :exc:`~ConfigurationError`: If the given (or defaulted) :attr:`backend`
+            is not supported or could not be loaded.
     """
 
     backend = backend or bigchaindb.config['database']['backend']

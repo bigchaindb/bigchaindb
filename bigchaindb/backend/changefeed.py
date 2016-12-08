@@ -1,1 +1,1 @@
-"""Changefeed interfaces for backend databases."""
+"""Changefeed interfaces for backends."""
