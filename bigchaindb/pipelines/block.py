@@ -6,9 +6,7 @@ function.
 """
 
 import logging
-
-import rethinkdb as r
-from multipipes import Pipeline, Node, Pipe
+from multipipes import Pipeline, Node
 
 import bigchaindb
 from bigchaindb.backend import connect
@@ -119,7 +117,8 @@ class BlockPipeline:
         Returns:
             :class:`~bigchaindb.models.Block`: The Block.
         """
-        logger.info('Write new block %s with %s transactions', block.id, len(block.transactions))
+        logger.info('Write new block %s with %s transactions',
+                    block.id, len(block.transactions))
         self.bigchain.write_block(block)
         return block
 
@@ -142,12 +141,7 @@ def initial():
 
     bigchain = Bigchain()
 
-    return bigchain.connection.run(
-        r.table('backlog')
-        .between([bigchain.me, r.minval],
-                 [bigchain.me, r.maxval],
-                 index='assignee__transaction_timestamp')
-        .order_by(index=r.asc('assignee__transaction_timestamp')))
+    return bigchain.get_old_transactions()
 
 
 def create_pipeline():

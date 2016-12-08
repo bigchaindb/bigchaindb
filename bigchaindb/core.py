@@ -676,3 +676,15 @@ class Bigchain(object):
                 return Bigchain.BLOCK_INVALID
         else:
             return Bigchain.BLOCK_UNDECIDED
+
+    def get_old_transactions(self):
+        """Return all the transactions from the backlog that have not been
+           processed by the specified node.
+
+        Args:
+            node_pubkey (str): base58 encoded public key
+
+        Returns:
+            :obj:`list` of :obj:`dict`: a list of unprocessed transactions
+        """
+        return backend.query.get_old_transactions(self.connection, self.me)
