@@ -1,5 +1,3 @@
-"""Query implementation for RethinkDB"""
-
 from time import time
 
 import rethinkdb as r
