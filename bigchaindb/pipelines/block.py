@@ -8,7 +8,7 @@ function.
 import logging
 
 import rethinkdb as r
-from multipipes import Pipeline, Node
+from multipipes import Pipeline, Node, Pipe
 
 from bigchaindb.models import Transaction
 from bigchaindb.pipelines.utils import ChangeFeed
@@ -161,6 +161,7 @@ def create_pipeline():
     block_pipeline = BlockPipeline()
 
     pipeline = Pipeline([
+        Pipe(maxsize=1000),
         Node(block_pipeline.filter_tx),
         Node(block_pipeline.validate_tx, fraction_of_cores=1),
         Node(block_pipeline.create, timeout=1),
