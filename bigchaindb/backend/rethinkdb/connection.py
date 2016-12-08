@@ -24,9 +24,6 @@ class RethinkDBConnection(Connection):
         :attr:`host`, :attr:`port`, and :attr:`dbname`.
 
         Args:
-            host (str): the host to connect to.
-            port (int): the port to connect to.
-            dbname (str): the name of the database to use.
             max_tries (int, optional): how many tries before giving up.
                 Defaults to 3.
         """
