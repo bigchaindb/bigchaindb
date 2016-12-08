@@ -2,8 +2,10 @@ language: python
 cache: pip
 
 env:
-  - TOXENV=py34
-  - TOXENV=py35
+  - TOXENV=py34-mdb
+  - TOXENV=py34-rdb
+  - TOXENV=py35-mdb
+  - TOXENV=py35-rdb
   - TOXENV=flake8
   - TOXENV=docsroot
   - TOXENV=docsserver
