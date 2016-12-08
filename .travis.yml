@@ -1,25 +1,19 @@
-sudo: required
 language: python
 cache: pip
-python:
-  - 3.4
-  - 3.5
 
-before_install:
-  - source /etc/lsb-release
-  - echo "deb http://download.rethinkdb.com/apt $DISTRIB_CODENAME main" | sudo tee -a /etc/apt/sources.list.d/rethinkdb.list
-  - wget -qO- https://download.rethinkdb.com/apt/pubkey.gpg | sudo apt-key add -
-  - sudo apt-get update -qq
+env:
+  - TOXENV=py34
+  - TOXENV=py35
+  - TOXENV=flake8
+  - TOXENV=docsroot
+  - TOXENV=docsserver
 
-install:
-  - sudo apt-get install rethinkdb
-  - pip install -e .[test]
-  - pip install codecov
+before_install: sudo .ci/travis-before-install.sh
 
-before_script:
-  - flake8 --max-line-length 119 bigchaindb/
-  - rethinkdb --daemon
+install: .ci/travis-install.sh
 
-script: py.test -n auto -s -v --cov=bigchaindb
+before_script: .ci/travis-before-script.sh
 
-after_success: codecov
+script: tox -e ${TOXENV}
+
+after_success: .ci/travis-after-success.sh

@@ -27,6 +27,7 @@ services:
       - ./setup.py:/usr/src/app/setup.py
       - ./setup.cfg:/usr/src/app/setup.cfg
       - ./pytest.ini:/usr/src/app/pytest.ini
+      - ./tox.ini:/usr/src/app/tox.ini
     environment:
       BIGCHAINDB_DATABASE_HOST: rdb
 #      BigchainDB Server doesn't need BIGCHAINDB_API_ENDPOINT any more
