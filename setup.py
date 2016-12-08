@@ -45,7 +45,7 @@ tests_require = [
     'pep8',
     'flake8',
     'pylint',
-    'pytest',
+    'pytest>=3.0.0',
     'pytest-cov>=2.2.1',
     'pytest-xdist',
     'pytest-flask',
