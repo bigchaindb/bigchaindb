@@ -8,14 +8,14 @@ from bigchaindb.backend.connection import connect
 
 @singledispatch
 def create_database(connection, dbname):
-    """Create database to be used by BigchainDB
+    """Create database to be used by BigchainDB.
 
     Args:
         dbname (str): the name of the database to create.
 
     Raises:
-        :exc:`~bigchaindb.common.exceptions.DatabaseAlreadyExists`: If the
-        given :attr:`dbname` already exists as a database.
+        :exc:`~DatabaseAlreadyExists`: If the given :attr:`dbname` already
+            exists as a database.
     """
 
     raise NotImplementedError
@@ -23,7 +23,7 @@ def create_database(connection, dbname):
 
 @singledispatch
 def create_tables(connection, dbname):
-    """Create the tables to be used by BigchainDB
+    """Create the tables to be used by BigchainDB.
 
     Args:
         dbname (str): the name of the database to create tables for.
@@ -34,7 +34,7 @@ def create_tables(connection, dbname):
 
 @singledispatch
 def create_indexes(connection, dbname):
-    """Create the indexes to be used by BigchainDB
+    """Create the indexes to be used by BigchainDB.
 
     Args:
         dbname (str): the name of the database to create indexes for.
@@ -45,14 +45,14 @@ def create_indexes(connection, dbname):
 
 @singledispatch
 def drop_database(connection, dbname):
-    """Drop the database used by BigchainDB
+    """Drop the database used by BigchainDB.
 
     Args:
         dbname (str): the name of the database to drop.
 
     Raises:
-        :exc:`~bigchaindb.common.exceptions.DatabaseDoesNotExist`: If the
-        given :attr:`dbname` does not exist as a database.
+        :exc:`~DatabaseDoesNotExist`: If the given :attr:`dbname` does not
+            exist as a database.
     """
 
     raise NotImplementedError
@@ -73,8 +73,8 @@ def init_database(connection=None, dbname=None):
             configuration.
 
     Raises:
-        :exc:`~bigchaindb.common.exceptions.DatabaseAlreadyExists`: If the
-        given :attr:`dbname` already exists as a database.
+        :exc:`~DatabaseAlreadyExists`: If the given :attr:`dbname` already
+            exists as a database.
     """
 
     connection = connection or connect()
