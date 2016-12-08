@@ -83,7 +83,7 @@ The database backend to use (e.g. RethinkDB) and its hostname, port and name.
 
 **Example using environment variables**
 ```text
-export BIGCHAINDB_DATABASE_HOST=rethinkdb
+export BIGCHAINDB_DATABASE_BACKEND=rethinkdb
 export BIGCHAINDB_DATABASE_HOST=localhost
 export BIGCHAINDB_DATABASE_PORT=28015
 export BIGCHAINDB_DATABASE_NAME=bigchain
