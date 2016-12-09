@@ -1,8 +1,8 @@
 import logging
 
 from bigchaindb.util import verify_vote_signature
-from bigchaindb.common.schema import SchemaValidationError, \
-    validate_vote_schema
+from bigchaindb.common.schema import (SchemaValidationError,
+                                      validate_vote_schema)
 
 
 logger = logging.getLogger(__name__)

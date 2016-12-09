@@ -1,5 +1,5 @@
-from bigchaindb.common.schema import TX_SCHEMA, VOTE_SCHEMA, \
-    drop_schema_descriptions
+from bigchaindb.common.schema import (TX_SCHEMA, VOTE_SCHEMA,
+                                      drop_schema_descriptions)
 
 
 def _test_additionalproperties(node, path=''):
@@ -51,7 +51,6 @@ def test_drop_descriptions():
             }
         }
     }
-    drop_schema_descriptions(node)
     expected = {
         'properties': {
             'description': {},
@@ -66,4 +65,5 @@ def test_drop_descriptions():
             'wat': {},
         }
     }
+    drop_schema_descriptions(node)
     assert node == expected
