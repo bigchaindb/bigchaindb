@@ -8,8 +8,8 @@ description: |
     A transaction represents the creation or transfer of assets in BigchainDB.
 required:
 - id
-- fulfillments
-- conditions
+- inputs
+- outputs
 - operation
 - metadata
 - asset
@@ -30,23 +30,23 @@ properties:
       Description of the asset being transacted.
 
       See: `Asset`_.
-  fulfillments:
+  inputs:
     type: array
-    title: "Fulfillments list"
+    title: "Transaction inputs"
     description: |
-        Array of the fulfillments (inputs) of a transaction.
+        Array of the inputs of a transaction.
 
-        See: Fulfillment_.
+        See: Input_.
     items:
-      "$ref": "#/definitions/fulfillment"
-  conditions:
+      "$ref": "#/definitions/input"
+  outputs:
     type: array
     description: |
-        Array of conditions (outputs) provided by this transaction.
+        Array of outputs provided by this transaction.
 
-        See: Condition_.
+        See: Output_.
     items:
-      "$ref": "#/definitions/condition"
+      "$ref": "#/definitions/output"
   metadata:
     "$ref": "#/definitions/metadata"
     description: |
@@ -67,7 +67,7 @@ definitions:
   base58:
     pattern: "[1-9a-zA-Z^OIl]{43,44}"
     type: string
-  owners_list:
+  public_keys:
     anyOf:
     - type: array
       items:
@@ -131,21 +131,30 @@ definitions:
         - type: object
           additionalProperties: true
         - type: 'null'
-  condition:
+  output:
     type: object
     description: |
-        An output of a transaction. A condition describes a quantity of an asset
-        and what conditions must be met in order for it to be fulfilled. See also:
-        fulfillment_.
+        A transaction output. Describes a quantity of an asset and a locking
+        script to spend the output.
+
+        See also: Input_.
     additionalProperties: false
     required:
-    - owners_after
-    - condition
     - amount
+    - language
+    - condition
+    - public_keys
     properties:
+      amount:
+        type: integer
+        description: |
+            Integral amount of the asset represented by this condition.
+            In the case of a non divisible asset, this will always be 1.
+      language:
+        type: string
       condition:
         description: |
-            Body of the condition. Has the properties:
+            Describes the condition that needs to be met to spend the output. Has the properties: 
 
             - **details**: Details of the condition.
             - **uri**: Condition encoded as an ASCII string.
@@ -161,26 +170,17 @@ definitions:
           uri:
             type: string
             pattern: "^cc:([1-9a-f][0-9a-f]{0,3}|0):[1-9a-f][0-9a-f]{0,15}:[a-zA-Z0-9_-]{0,86}:([1-9][0-9]{0,17}|0)$"
-      owners_after:
-        "$ref": "#/definitions/owners_list"
+      public_keys:
+        "$ref": "#/definitions/public_keys"
         description: |
-            List of public keys associated with asset ownership at the time
-            of the transaction.
-      amount:
-        type: integer
-        description: |
-            Integral amount of the asset represented by this condition.
-            In the case of a non divisible asset, this will always be 1.
-  fulfillment:
+            List of public keys associated with asset control.
+  input:
     type: "object"
     description:
-      A fulfillment is an input to a transaction, named as such because it
-      fulfills a condition of a previous transaction. In the case of a
-      ``CREATE`` transaction, a fulfillment may provide no ``input``.
+      An input spends a previous output, by providing a fulfillment to the output's
+      condition.
     additionalProperties: false
     required:
-    - owners_before
-    - input
     - fulfillment
     properties:
       owners_before:
@@ -210,18 +210,19 @@ definitions:
               asset.
         - type: string
           pattern: "^cf:([1-9a-f][0-9a-f]{0,3}|0):[a-zA-Z0-9_-]*$"
-      input:
-        anyOf:
-        - type: 'object'
-          description: |
-            Reference to a condition of a previous transaction
-          additionalProperties: false
-          properties:
-            cid:
-              "$ref": "#/definitions/offset"
-            txid:
-              "$ref": "#/definitions/sha3_hexdigest"
-        - type: 'null'
+      spends:
+        type: 'object'
+        description: |
+          Reference to the output that is being spent.
+        additionalProperties: false
+        required:
+        - idx
+        - txid
+        properties:
+          idx:
+            "$ref": "#definitions/offset"
+          txid:
+            "$ref": "#definitions/sha3_hexdigest"
   metadata:
     anyOf:
     - type: object
