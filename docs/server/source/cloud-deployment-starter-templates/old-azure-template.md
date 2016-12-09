@@ -1,16 +1,20 @@
-# Template: Node Deployment on Azure
+# Old Azure Template
+
+**Note: As its name suggests, this is an old template for deploying a node on Azure. It will probably be removed eventually. We advise you use the [New Azure Template](new-azure-template.html) instead.**
+
+<hr>
 
 If you didn't read the introduction to the [cloud deployment starter templates](index.html), please do that now. The main point is that they're not for deploying a production node; they can be used as a starting point.
 
-One can deploy a BigchainDB node on Azure using the template in [Microsoft's azure-quickstart-templates repository on GitHub](https://github.com/Azure/azure-quickstart-templates):
+One can deploy a BigchainDB node on Azure using the template in the `blockchain` directory of Microsoft's `azure-quickstart-templates` repository on GitHub:
 
-1. Go to [the /blockchain subdirectory in that repository](https://github.com/Azure/azure-quickstart-templates/tree/master/blockchain).
+1. Go to [the `blockchain` directory in that repository](https://github.com/Azure/azure-quickstart-templates/tree/master/blockchain).
 
 2. Click the button labelled **Deploy to Azure**.
 
 3. If you're not already logged in to Microsoft Azure, then you'll be prompted to login. If you don't have an account, then you'll have to create one.
 
-4. One you are logged in to the Microsoft Azure Portal, you should be taken to a form titled **Blockchain Template**. Below there are some notes to help with filling in that form.
+4. One you are logged in to the Microsoft Azure Portal, you should be taken to a form titled **Blockchain Template**. There are some notes to help with filling in that form at the bottom of this page.
 
 5. Deployment takes a few minutes. You can follow the notifications by clicking the bell icon at the top of the screen. When done, you should see a notification saying "Deployment to resource group '[your resource group name]' was successful." The install script (`bigchaindb.sh`) installed RethinkDB, configured it using the default RethinkDB config file, and ran it. It also used pip to install [the latest `bigchaindb` from PyPI](https://pypi.python.org/pypi/BigchainDB).
 
@@ -29,7 +33,7 @@ BigchainDB should now be running on the Azure VM.
 Remember to shut everything down when you're done (via the Azure Portal), because it generally costs money to run stuff on Azure.
 
 
-## Notes on the Blockchain Template Form Fields
+## Notes on all the Blockchain Template Form Fields
 
 **Resource group** - You can use an existing resource group (if you have one) or create a new one named whatever you like, but avoid using fancy characters in the name because Azure might have problems if you do.
 
