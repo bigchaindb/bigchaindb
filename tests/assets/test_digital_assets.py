@@ -14,7 +14,7 @@ def test_asset_transfer(b, user_pk, user_sk):
     tx_transfer_signed = tx_transfer.sign([user_sk])
 
     assert tx_transfer_signed.validate(b) == tx_transfer_signed
-    assert tx_transfer_signed.asset.data_id == tx_create.asset.data_id
+    assert tx_transfer_signed.asset.data_id == tx_create.id
 
 
 def test_validate_bad_asset_creation(b, user_pk):

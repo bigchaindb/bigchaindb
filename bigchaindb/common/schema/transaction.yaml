@@ -107,11 +107,11 @@ definitions:
         transaction, this field contains only the ID of asset. In the case
         of a ``CREATE`` transaction, this field may contain properties:
     additionalProperties: false
-    required:
-    - id
     properties:
       id:
-        "$ref": "#/definitions/uuid4"
+        "$ref": "#/definitions/sha3_hexdigest"
+        description: |
+          ID of the transaction that created the asset.
       data:
         description: |
           User provided metadata associated with the asset. May also be ``null``.
