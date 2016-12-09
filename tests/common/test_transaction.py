@@ -303,8 +303,8 @@ def test_transaction_serialization(user_ffill, user_cond, data, data_id):
         'version': Transaction.VERSION,
         # NOTE: This test assumes that Fulfillments and Conditions can
         #       successfully be serialized
-        'fulfillments': [user_ffill.to_dict(0)],
-        'conditions': [user_cond.to_dict(0)],
+        'fulfillments': [user_ffill.to_dict()],
+        'conditions': [user_cond.to_dict()],
         'operation': Transaction.CREATE,
         'metadata': None,
         'asset': {
@@ -728,7 +728,7 @@ def test_create_create_transaction_single_io(user_cond, user_pub, data, uuid4):
     from .util import validate_transaction_model
 
     expected = {
-        'conditions': [user_cond.to_dict(0)],
+        'conditions': [user_cond.to_dict()],
         'metadata': data,
         'asset': {
             'id': uuid4,
@@ -742,7 +742,6 @@ def test_create_create_transaction_single_io(user_cond, user_pub, data, uuid4):
                 'owners_before': [
                     user_pub
                 ],
-                'fid': 0,
                 'fulfillment': None,
                 'input': None
             }
@@ -778,9 +777,8 @@ def test_create_create_transaction_multiple_io(user_cond, user2_cond, user_pub,
     # is a fulfillment for an implicit threshold condition with
     # weight = len(owners_before)
     ffill = Fulfillment.generate([user_pub, user2_pub]).to_dict()
-    ffill.update({'fid': 0})
     expected = {
-        'conditions': [user_cond.to_dict(0), user2_cond.to_dict(1)],
+        'conditions': [user_cond.to_dict(), user2_cond.to_dict()],
         'metadata': {
             'message': 'hello'
         },
@@ -821,7 +819,7 @@ def test_create_create_transaction_threshold(user_pub, user2_pub, user3_pub,
     from bigchaindb.common.transaction import Transaction, Asset
 
     expected = {
-        'conditions': [user_user2_threshold_cond.to_dict(0)],
+        'conditions': [user_user2_threshold_cond.to_dict()],
         'metadata': data,
         'asset': {
             'id': uuid4,
@@ -835,7 +833,6 @@ def test_create_create_transaction_threshold(user_pub, user2_pub, user3_pub,
                 'owners_before': [
                     user_pub,
                 ],
-                'fid': 0,
                 'fulfillment': None,
                 'input': None
             },
@@ -902,7 +899,7 @@ def test_create_transfer_transaction_single_io(tx, user_pub, user2_pub,
     from .util import validate_transaction_model
 
     expected = {
-        'conditions': [user2_cond.to_dict(0)],
+        'conditions': [user2_cond.to_dict()],
         'metadata': None,
         'asset': {
             'id': uuid4,
@@ -912,7 +909,6 @@ def test_create_transfer_transaction_single_io(tx, user_pub, user2_pub,
                 'owners_before': [
                     user_pub
                 ],
-                'fid': 0,
                 'fulfillment': None,
                 'input': {
                     'txid': tx.id,
@@ -955,14 +951,13 @@ def test_create_transfer_transaction_multiple_io(user_pub, user_priv,
     tx = tx.sign([user_priv])
 
     expected = {
-        'conditions': [user2_cond.to_dict(0), user2_cond.to_dict(1)],
+        'conditions': [user2_cond.to_dict(), user2_cond.to_dict()],
         'metadata': None,
         'fulfillments': [
             {
                 'owners_before': [
                     user_pub
                 ],
-                'fid': 0,
                 'fulfillment': None,
                 'input': {
                     'txid': tx.id,
@@ -972,7 +967,6 @@ def test_create_transfer_transaction_multiple_io(user_pub, user_priv,
                 'owners_before': [
                     user2_pub
                 ],
-                'fid': 1,
                 'fulfillment': None,
                 'input': {
                     'txid': tx.id,

@@ -32,7 +32,6 @@ If there is only one _new owner_, the condition will be a simple signature condi
 
 ```json
 {
-    "cid": "<condition index>",
     "condition": {
         "details": {
             "bitmask": "<base16 int>",
@@ -49,8 +48,6 @@ If there is only one _new owner_, the condition will be a simple signature condi
 ```
 
 - **Condition header**:
-    - `cid`: Condition index so that we can reference this output as an input to another transaction. It also matches
-    the input `fid`, making this the condition to fulfill in order to spend the asset used as input with `fid`.
     - `owners_after`: A list containing one item: the public key of the new owner.
 	- `amount`: The amount of shares for a divisible asset to send to the new owners.
 - **Condition body**:
@@ -66,7 +63,6 @@ to spend the asset. For example:
 
 ```json
 {
-    "cid": "<condition index>",
     "condition": {
         "details": {
             "bitmask": 41,
@@ -115,7 +111,6 @@ If there is only one _current owner_, the fulfillment will be a simple signature
 ```json
 {
     "owners_before": ["<public key of the owner before the transaction happened>"],
-    "fid": 0,
     "fulfillment": "cf:4:RxFzIE679tFBk8zwEgizhmTuciAylvTUwy6EL6ehddHFJOhK5F4IjwQ1xLu2oQK9iyRCZJdfWAefZVjTt3DeG5j2exqxpGliOPYseNkRAWEakqJ_UrCwgnj92dnFRAEE",
     "input": {
         "cid": 0,
@@ -124,10 +119,8 @@ If there is only one _current owner_, the fulfillment will be a simple signature
 }
 ```
 
-- `fid`: Fulfillment index. It matches a `cid` in the conditions with a new _crypto-condition_ that the new owner
-  needs to fulfill to spend this asset.
 - `owners_before`: A list of public keys of the owners before the transaction; in this case it has just one public key.
 - `fulfillment`: A crypto-conditions URI that encodes the cryptographic fulfillments like signatures and others, see [crypto-conditions](https://interledger.org/five-bells-condition/spec.html).
 - `input`: Pointer to the asset and condition of a previous transaction
-    - `cid`: Condition index
+    - `cid`: Condition index - the index of the condition in the array of conditions in the previous transaction
     - `txid`: Transaction id

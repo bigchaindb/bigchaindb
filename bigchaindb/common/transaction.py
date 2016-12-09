@@ -52,18 +52,12 @@ class Fulfillment(object):
         # TODO: If `other !== Fulfillment` return `False`
         return self.to_dict() == other.to_dict()
 
-    def to_dict(self, fid=None):
+    def to_dict(self):
         """Transforms the object to a Python dictionary.
 
             Note:
-                A `fid` can be submitted to be included in the dictionary
-                representation.
-
                 If a Fulfillment hasn't been signed yet, this method returns a
                 dictionary representation.
-
-            Args:
-                fid (int, optional): The Fulfillment's index in a Transaction.
 
             Returns:
                 dict: The Fulfillment as an alternative serialization format.
@@ -92,8 +86,6 @@ class Fulfillment(object):
             'input': tx_input,
             'fulfillment': fulfillment,
         }
-        if fid is not None:
-            ffill['fid'] = fid
         return ffill
 
     @classmethod
@@ -234,18 +226,12 @@ class Condition(object):
         # TODO: If `other !== Condition` return `False`
         return self.to_dict() == other.to_dict()
 
-    def to_dict(self, cid=None):
+    def to_dict(self):
         """Transforms the object to a Python dictionary.
 
             Note:
-                A `cid` can be submitted to be included in the dictionary
-                representation.
-
                 A dictionary serialization of the Fulfillment the Condition was
                 derived from is always provided.
-
-            Args:
-                cid (int, optional): The Condition's index in a Transaction.
 
             Returns:
                 dict: The Condition as an alternative serialization format.
@@ -268,8 +254,6 @@ class Condition(object):
             'condition': condition,
             'amount': self.amount
         }
-        if cid is not None:
-            cond['cid'] = cid
         return cond
 
     @classmethod
@@ -796,11 +780,12 @@ class Transaction(object):
         """
         # NOTE: If no condition indices are passed, we just assume to
         #       take all conditions as inputs.
+        indices = condition_indices or range(len(self.conditions))
         return [
             Fulfillment(self.conditions[cid].fulfillment,
                         self.conditions[cid].owners_after,
                         TransactionLink(self.id, cid))
-            for cid in condition_indices or range(len(self.conditions))
+            for cid in indices
         ]
 
     def add_fulfillment(self, fulfillment):
@@ -1111,10 +1096,10 @@ class Transaction(object):
             asset = {'id': self.asset.data_id}
 
         tx = {
-            'fulfillments': [fulfillment.to_dict(fid) for fid, fulfillment
-                             in enumerate(self.fulfillments)],
-            'conditions': [condition.to_dict(cid) for cid, condition
-                           in enumerate(self.conditions)],
+            'fulfillments': [fulfillment.to_dict() for fulfillment
+                             in self.fulfillments],
+            'conditions': [condition.to_dict() for condition
+                           in self.conditions],
             'operation': str(self.operation),
             'metadata': self.metadata,
             'asset': asset,
