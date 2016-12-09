@@ -33,7 +33,7 @@ BigchainDB should now be running on the Azure VM.
 Remember to shut everything down when you're done (via the Azure Portal), because it generally costs money to run stuff on Azure.
 
 
-## Notes on the Blockchain Template Form Fields
+## Notes on all the Blockchain Template Form Fields
 
 **Resource group** - You can use an existing resource group (if you have one) or create a new one named whatever you like, but avoid using fancy characters in the name because Azure might have problems if you do.
 
