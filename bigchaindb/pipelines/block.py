@@ -7,7 +7,6 @@ function.
 
 import logging
 
-import rethinkdb as r
 from multipipes import Pipeline, Node, Pipe
 
 from bigchaindb.models import Transaction
@@ -134,24 +133,10 @@ class BlockPipeline:
         return block
 
 
-def initial():
-    """Return old transactions from the backlog."""
-
-    bigchain = Bigchain()
-
-    return bigchain.connection.run(
-        r.table('backlog')
-        .between([bigchain.me, r.minval],
-                 [bigchain.me, r.maxval],
-                 index='assignee__transaction_timestamp')
-        .order_by(index=r.asc('assignee__transaction_timestamp')))
-
-
 def get_changefeed():
     """Create and return the changefeed for the backlog."""
 
-    return ChangeFeed('backlog', ChangeFeed.INSERT | ChangeFeed.UPDATE,
-                      prefeed=initial())
+    return ChangeFeed('backlog', ChangeFeed.INSERT | ChangeFeed.UPDATE)
 
 
 def create_pipeline():

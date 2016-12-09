@@ -130,22 +130,6 @@ def test_delete_tx(b, user_pk):
         assert status != b.TX_IN_BACKLOG
 
 
-def test_prefeed(b, user_pk):
-    import random
-    from bigchaindb.models import Transaction
-    from bigchaindb.pipelines.block import initial
-
-    for i in range(100):
-        tx = Transaction.create([b.me], [([user_pk], 1)],
-                                {'msg': random.random()})
-        tx = tx.sign([b.me_private])
-        b.write_transaction(tx)
-
-    backlog = initial()
-
-    assert len(list(backlog)) == 100
-
-
 @patch('bigchaindb.pipelines.block.create_pipeline')
 def test_start(create_pipeline):
     from bigchaindb.pipelines import block
@@ -163,6 +147,11 @@ def test_full_pipeline(b, user_pk):
     from bigchaindb.pipelines.block import create_pipeline, get_changefeed
 
     outpipe = Pipe()
+
+    pipeline = create_pipeline()
+    pipeline.setup(indata=get_changefeed(), outdata=outpipe)
+    pipeline.start()
+
     # include myself here, so that some tx are actually assigned to me
     b.nodes_except_me = [b.me, 'aaa', 'bbb', 'ccc']
     for i in range(100):
@@ -172,13 +161,8 @@ def test_full_pipeline(b, user_pk):
 
         b.write_transaction(tx)
 
-    assert b.backend.count_backlog() == 100
-
-    pipeline = create_pipeline()
-    pipeline.setup(indata=get_changefeed(), outdata=outpipe)
-    pipeline.start()
-
     time.sleep(2)
+
     pipeline.terminate()
 
     block_doc = outpipe.get()
