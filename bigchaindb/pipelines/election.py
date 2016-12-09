@@ -8,7 +8,9 @@ import logging
 
 from multipipes import Pipeline, Node
 
-from bigchaindb.pipelines.utils import ChangeFeed
+import bigchaindb
+from bigchaindb.backend import connect, get_changefeed
+from bigchaindb.backend.changefeed import ChangeFeed
 from bigchaindb.models import Block
 from bigchaindb import Bigchain
 
@@ -50,10 +52,6 @@ class Election:
         return invalid_block
 
 
-def get_changefeed():
-    return ChangeFeed(table='votes', operation=ChangeFeed.INSERT)
-
-
 def create_pipeline():
     election = Election()
 
@@ -66,7 +64,9 @@ def create_pipeline():
 
 
 def start():
+    connection = connect(**bigchaindb.config['database'])
+    changefeed = get_changefeed(connection, 'votes', ChangeFeed.INSERT)
     pipeline = create_pipeline()
-    pipeline.setup(indata=get_changefeed())
+    pipeline.setup(indata=changefeed)
     pipeline.start()
     return pipeline
