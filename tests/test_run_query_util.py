@@ -48,8 +48,8 @@ def test_changefeed_reconnects_when_connection_lost(monkeypatch):
     import time
     import multiprocessing as mp
 
-    from bigchaindb import Bigchain
-    from bigchaindb.pipelines.utils import ChangeFeed
+    from bigchaindb.backend.changefeed import ChangeFeed
+    from bigchaindb.backend.rethinkdb.changefeed import RethinkDBChangeFeed
 
     class MockConnection:
         tries = 0
@@ -75,10 +75,8 @@ def test_changefeed_reconnects_when_connection_lost(monkeypatch):
             else:
                 time.sleep(10)
 
-    bigchain = Bigchain()
-    bigchain.connection = MockConnection()
-    changefeed = ChangeFeed('cat_facts', ChangeFeed.INSERT,
-                            bigchain=bigchain)
+    changefeed = RethinkDBChangeFeed('cat_facts', ChangeFeed.INSERT,
+                            connection=MockConnection())
     changefeed.outqueue = mp.Queue()
     t_changefeed = Thread(target=changefeed.run_forever, daemon=True)
 
