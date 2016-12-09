@@ -10,10 +10,12 @@ from collections import Counter
 from multipipes import Pipeline, Node
 from bigchaindb.common import exceptions
 
+import bigchaindb
+from bigchaindb import Bigchain
+from bigchaindb.backend import connect, get_changefeed
+from bigchaindb.backend.changefeed import ChangeFeed
 from bigchaindb.consensus import BaseConsensusRules
 from bigchaindb.models import Transaction, Block
-from bigchaindb.pipelines.utils import ChangeFeed
-from bigchaindb import Bigchain
 
 
 class Vote:
@@ -142,12 +144,6 @@ def initial():
     return rs
 
 
-def get_changefeed():
-    """Create and return the changefeed for the bigchain table."""
-
-    return ChangeFeed('bigchain', operation=ChangeFeed.INSERT, prefeed=initial())
-
-
 def create_pipeline():
     """Create and return the pipeline of operations to be distributed
     on different processes."""
@@ -168,7 +164,10 @@ def create_pipeline():
 def start():
     """Create, start, and return the block pipeline."""
 
+    connection = connect(**bigchaindb.config['database'])
+    changefeed = get_changefeed(connection, 'bigchain', ChangeFeed.INSERT,
+                                prefeed=initial())
     pipeline = create_pipeline()
-    pipeline.setup(indata=get_changefeed())
+    pipeline.setup(indata=changefeed)
     pipeline.start()
     return pipeline
