@@ -16,4 +16,4 @@ This section unpacks each one in turn.
    asset-model
    crypto-conditions
    block-model
-   ../schema/vote
+   vote-model
