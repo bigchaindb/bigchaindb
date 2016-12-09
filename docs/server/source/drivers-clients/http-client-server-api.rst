@@ -26,17 +26,18 @@ details, see the "server" settings ("bind", "workers" and "threads") in
 <../server-reference/configuration>`.
 
 
-API Root
---------
+API Root URL
+------------
 
-If you send an HTTP GET request to e.g. ``http://localhost:9984`` (with no
-``/api/v1/`` on the end), then you should get an HTTP response with something
-like the following in the body:
+If you send an HTTP GET request to e.g. ``http://localhost:9984`` 
+or ``http://apihosting4u.net:9984``
+(with no ``/api/v1/`` on the end), 
+then you should get an HTTP response 
+with something like the following in the body:
 
 .. code-block:: json
 
     {
-      "api_endpoint": "http://localhost:9984/api/v1",
       "keyring": [
         "6qHyZew94NMmUTYyHnkZsB8cxJYuRNEiEpXHe1ih9QX3",
         "AdDuyrTyjrDt935YnFu4VBCVDhHtY2Y6rcy7x2TFeiRi"
@@ -46,6 +47,25 @@ like the following in the body:
       "version": "0.6.0"
     }
 
+If the API endpoint is publicly-accessible,
+then the public API Root URL is determined as follows:
+
+- The public IP address (like 12.34.56.78) 
+  is the public IP address of the machine exposing 
+  the HTTP API to the public internet (e.g. either the machine hosting 
+  Gunicorn or the machine running the reverse proxy such as Nginx). 
+  It's determined by AWS, Azure, Rackspace, or whoever is hosting the machine.
+
+- The DNS hostname (like apihosting4u.net) is determined by DNS records, 
+  such as an "A Record" associating apihosting4u.net with 12.34.56.78
+
+- The port (like 9984) is determined by the ``server.bind`` setting 
+  if Gunicorn is exposed directly to the public Internet. 
+  If a reverse proxy (like Nginx) is exposed directly to the public Internet 
+  instead, then it could expose the HTTP API on whatever port it wants to. 
+  (It should expose the HTTP API on port 9984, but it's not bound to do 
+  that by anything other than convention.)
+
 
 POST /transactions/
 -------------------
@@ -54,113 +74,23 @@ POST /transactions/
 
    Push a new transaction.
 
-   Note: The posted transaction should be valid `transaction
+   Note: The posted transaction should be a valid and signed `transaction
    <https://bigchaindb.readthedocs.io/en/latest/data-models/transaction-model.html>`_.
    The steps to build a valid transaction are beyond the scope of this page.
    One would normally use a driver such as the `BigchainDB Python Driver
    <https://docs.bigchaindb.com/projects/py-driver/en/latest/index.html>`_ to
-   build a valid transaction.
+   build a valid transaction. The exact contents of a valid transaction depend 
+   on the associated public/private keypairs.
 
    **Example request**:
 
-   .. sourcecode:: http
-
-      POST /transactions/ HTTP/1.1
-      Host: example.com
-      Content-Type: application/json
-
-      {
-        "transaction": {
-          "conditions": [
-            {
-              "condition": {
-                "uri": "cc:4:20:GG-pi3CeIlySZhQoJVBh9O23PzrOuhnYI7OHqIbHjkk:96",
-                "details": {
-                  "signature": null,
-                  "type": "fulfillment",
-                  "type_id": 4,
-                  "bitmask": 32,
-                  "public_key": "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
-                }
-              },
-              "amount": 1,
-              "owners_after": [
-                "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
-              ]
-            }
-          ],
-          "operation": "CREATE",
-          "asset": {
-            "divisible": false,
-            "updatable": false,
-            "data": null,
-            "id": "aebeab22-e672-4d3b-a187-bde5fda6533d",
-            "refillable": false
-          },
-          "metadata": null,
-          "fulfillments": [
-            {
-              "input": null,
-              "fulfillment": "cf:4:GG-pi3CeIlySZhQoJVBh9O23PzrOuhnYI7OHqIbHjkn2VnQaEWvecO1x82Qr2Va_JjFywLKIOEV1Ob9Ofkeln2K89ny2mB-s7RLNvYAVzWNiQnp18_nQEUsvwACEXTYJ",
-              "owners_before": [
-                "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
-              ]
-            }
-          ]
-        },
-        "id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e",
-        "version": 1
-      }
+   .. literalinclude:: samples/post-tx-request.http
+      :language: http
 
    **Example response**:
 
-   .. sourcecode:: http
-
-      HTTP/1.1 201 Created
-      Content-Type: application/json
-
-      {
-        "id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e",
-        "version": 1,
-        "transaction": {
-          "conditions": [
-            {
-              "amount": 1,
-              "condition": {
-                "uri": "cc:4:20:GG-pi3CeIlySZhQoJVBh9O23PzrOuhnYI7OHqIbHjkk:96",
-                "details": {
-                  "signature": null,
-                  "type_id": 4,
-                  "type": "fulfillment",
-                  "bitmask": 32,
-                  "public_key": "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
-                }
-              },
-              "owners_after": [
-                "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
-              ],
-            }
-          ],
-          "fulfillments": [
-            {
-              "input": null,
-              "fulfillment": "cf:4:GG-pi3CeIlySZhQoJVBh9O23PzrOuhnYI7OHqIbHjkn2VnQaEWvecO1x82Qr2Va_JjFywLKIOEV1Ob9Ofkeln2K89ny2mB-s7RLNvYAVzWNiQnp18_nQEUsvwACEXTYJ",
-              "owners_before": [
-                "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
-              ]
-            }
-          ],
-          "operation": "CREATE",
-          "asset": {
-            "updatable": false,
-            "refillable": false,
-            "divisible": false,
-            "data": null,
-            "id": "aebeab22-e672-4d3b-a187-bde5fda6533d"
-          },
-          "metadata": null
-        }
-      }
+   .. literalinclude:: samples/post-tx-response.http
+      :language: http
 
    :statuscode 201: A new transaction was created.
    :statuscode 400: The transaction was invalid and not created.
@@ -182,21 +112,13 @@ GET /transactions/{tx_id}/status
 
    **Example request**:
 
-   .. sourcecode:: http
-
-      GET /transactions/7ad5a4b83bc8c70c4fd7420ff3c60693ab8e6d0e3124378ca69ed5acd2578792/status HTTP/1.1
-      Host: example.com
+   .. literalinclude:: samples/get-tx-status-request.http
+      :language: http
 
    **Example response**:
 
-   .. sourcecode:: http
-
-      HTTP/1.1 200 OK
-      Content-Type: application/json
-
-      {
-        "status": "valid"
-      }
+   .. literalinclude:: samples/get-tx-status-response.http
+      :language: http
 
    :statuscode 200: A transaction with that ID was found and the status is returned.
    :statuscode 404: A transaction with that ID was not found.
@@ -217,60 +139,13 @@ GET /transactions/{tx_id}
 
    **Example request**:
 
-   .. sourcecode:: http
-
-      GET /transactions/2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e HTTP/1.1
-      Host: example.com
+   .. literalinclude:: samples/get-tx-request.http
+      :language: http
 
    **Example response**:
 
-   .. sourcecode:: http
-
-      HTTP/1.1 200 OK
-      Content-Type: application/json
-
-      {
-        "transaction": {
-          "conditions": [
-            {
-              "condition": {
-                "uri": "cc:4:20:GG-pi3CeIlySZhQoJVBh9O23PzrOuhnYI7OHqIbHjkk:96",
-                "details": {
-                  "signature": null,
-                  "type": "fulfillment",
-                  "type_id": 4,
-                  "bitmask": 32,
-                  "public_key": "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
-                }
-              },
-              "amount": 1,
-              "owners_after": [
-                "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
-              ]
-            }
-          ],
-          "operation": "CREATE",
-          "asset": {
-            "divisible": false,
-            "updatable": false,
-            "data": null,
-            "id": "aebeab22-e672-4d3b-a187-bde5fda6533d",
-            "refillable": false
-          },
-          "metadata": null,
-          "fulfillments": [
-            {
-              "input": null,
-              "fulfillment": "cf:4:GG-pi3CeIlySZhQoJVBh9O23PzrOuhnYI7OHqIbHjkn2VnQaEWvecO1x82Qr2Va_JjFywLKIOEV1Ob9Ofkeln2K89ny2mB-s7RLNvYAVzWNiQnp18_nQEUsvwACEXTYJ",
-              "owners_before": [
-                "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
-              ]
-            }
-          ]
-        },
-        "id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e",
-        "version": 1
-      }
+   .. literalinclude:: samples/get-tx-response.http
+      :language: http
 
    :statuscode 200: A transaction with that ID was found.
    :statuscode 404: A transaction with that ID was not found.
@@ -315,8 +190,8 @@ GET /unspents/
       Content-Type: application/json
 
       [
-        '../transactions/2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e/conditions/0',
-        '../transactions/2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e/conditions/1'
+        "../transactions/2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e/conditions/0",
+        "../transactions/2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e/conditions/1"
       ]
 
    :statuscode 200: A list of outputs were found and returned in the body of the response.

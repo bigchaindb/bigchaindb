@@ -77,8 +77,6 @@ def test_create_bigchain_secondary_index():
         'block_timestamp').run(conn) is True
     assert r.db(dbname).table('bigchain').index_list().contains(
         'transaction_id').run(conn) is True
-    assert r.db(dbname).table('bigchain').index_list().contains(
-        'metadata_id').run(conn) is True
 
 
 def test_create_backlog_table():

@@ -5,10 +5,14 @@ type: object
 additionalProperties: false
 title: Transaction Schema
 description: |
-    This is the outer transaction wrapper. It contains the ID, version and the body of the transaction, which is also called ``transaction``.
+    A transaction represents the creation or transfer of assets in BigchainDB.
 required:
 - id
-- transaction
+- fulfillments
+- conditions
+- operation
+- metadata
+- asset
 - version
 properties:
   id:
@@ -18,51 +22,38 @@ properties:
         derived hashes and signatures from the transaction, serializing it to
         JSON with keys in sorted order and then hashing the resulting string
         with sha3.
-  transaction:
-    type: object
-    title: transaction
+  operation:
+    "$ref": "#/definitions/operation"
+  asset:
+    "$ref": "#/definitions/asset"
     description: |
-        See: `Transaction Body`_.
-    additionalProperties: false
-    required:
-    - fulfillments
-    - conditions
-    - operation
-    - metadata
-    - asset
-    properties:
-      operation:
-        "$ref": "#/definitions/operation"
-      asset:
-        "$ref": "#/definitions/asset"
-        description: |
-          Description of the asset being transacted.
+      Description of the asset being transacted.
 
-          See: `Asset`_.
-      fulfillments:
-        type: array
-        title: "Fulfillments list"
-        description: |
-            Array of the fulfillments (inputs) of a transaction.
+      See: `Asset`_.
+  fulfillments:
+    type: array
+    title: "Fulfillments list"
+    description: |
+        Array of the fulfillments (inputs) of a transaction.
 
-            See: Fulfillment_.
-        items:
-          "$ref": "#/definitions/fulfillment"
-      conditions:
-        type: array
-        description: |
-            Array of conditions (outputs) provided by this transaction.
+        See: Fulfillment_.
+    items:
+      "$ref": "#/definitions/fulfillment"
+  conditions:
+    type: array
+    description: |
+        Array of conditions (outputs) provided by this transaction.
 
-            See: Condition_.
-        items:
-          "$ref": "#/definitions/condition"
-      metadata:
-        "$ref": "#/definitions/metadata"
-        description: |
-          User provided transaction metadata. This field may be ``null`` or may
-          contain an id and an object with freeform metadata.
+        See: Condition_.
+    items:
+      "$ref": "#/definitions/condition"
+  metadata:
+    "$ref": "#/definitions/metadata"
+    description: |
+      User provided transaction metadata. This field may be ``null`` or may
+      contain an id and an object with freeform metadata.
 
-          See: `Metadata`_.
+      See: `Metadata`_.
   version:
     type: integer
     minimum: 1
@@ -236,17 +227,7 @@ definitions:
     - type: object
       description: |
         User provided transaction metadata. This field may be ``null`` or may
-        contain an id and an object with freeform metadata.
-      additionalProperties: false
-      required:
-      - id
-      - data
-      properties:
-        id:
-          "$ref": "#/definitions/uuid4"
-        data:
-          type: object
-          description: |
-            User provided transaction metadata.
-          additionalProperties: true
+        contain an non empty object with freeform metadata.
+      additionalProperties: true
+      minProperties: 1
     - type: 'null'

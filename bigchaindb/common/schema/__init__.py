@@ -18,7 +18,7 @@ def validate_transaction_schema(tx_body):
     try:
         jsonschema.validate(tx_body, TX_SCHEMA)
     except jsonschema.ValidationError as exc:
-        raise SchemaValidationError(str(exc))
+        raise SchemaValidationError(str(exc)) from exc
 
 
 __all__ = ['TX_SCHEMA', 'TX_SCHEMA_YAML', 'validate_transaction_schema']

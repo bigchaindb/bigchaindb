@@ -29,7 +29,6 @@ config = {
         'port': 8125,
         'rate': 0.01,
     },
-    'api_endpoint': os.environ.get('BIGCHAINDB_API_ENDPOINT') or 'http://localhost:9984/api/v1',
     'backlog_reassign_delay': 120
 }
 

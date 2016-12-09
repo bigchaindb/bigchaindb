@@ -116,15 +116,10 @@ def create_bigchain_secondary_index(conn, dbname):
         .index_create('transaction_id',
                       r.row['block']['transactions']['id'], multi=True)\
         .run(conn)
-    # secondary index for payload data by UUID
-    r.db(dbname).table('bigchain')\
-        .index_create('metadata_id',
-                      r.row['block']['transactions']['transaction']['metadata']['id'], multi=True)\
-        .run(conn)
     # secondary index for asset uuid
     r.db(dbname).table('bigchain')\
                 .index_create('asset_id',
-                              r.row['block']['transactions']['transaction']['asset']['id'], multi=True)\
+                              r.row['block']['transactions']['asset']['id'], multi=True)\
                 .run(conn)
 
     # wait for rethinkdb to finish creating secondary indexes

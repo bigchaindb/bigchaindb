@@ -137,12 +137,6 @@ def uuid4():
 
 
 @pytest.fixture
-def metadata(data, data_id):
-    from bigchaindb.common.transaction import Metadata
-    return Metadata(data, data_id)
-
-
-@pytest.fixture
 def utx(user_ffill, user_cond):
     from bigchaindb.common.transaction import Transaction, Asset
     return Transaction(Transaction.CREATE, Asset(), [user_ffill], [user_cond])

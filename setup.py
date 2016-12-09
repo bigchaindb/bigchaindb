@@ -27,18 +27,6 @@ def check_setuptools_features():
 
 check_setuptools_features()
 
-
-tests_require = [
-    'coverage',
-    'pep8',
-    'flake8',
-    'pylint',
-    'pytest',
-    'pytest-cov>=2.2.1',
-    'pytest-xdist',
-    'pytest-flask',
-]
-
 dev_require = [
     'ipdb',
     'ipython',
@@ -51,6 +39,18 @@ docs_require = [
     'sphinxcontrib-httpdomain>=1.5.0',
     'sphinxcontrib-napoleon>=0.4.4',
 ]
+
+tests_require = [
+    'coverage',
+    'pep8',
+    'flake8',
+    'pylint',
+    'pytest>=3.0.0',
+    'pytest-cov>=2.2.1',
+    'pytest-xdist',
+    'pytest-flask',
+    'tox',
+] + docs_require
 
 benchmarks_require = [
     'line-profiler==1.0',

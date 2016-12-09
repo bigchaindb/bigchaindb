@@ -17,11 +17,11 @@ For convenience, here's a list of all the relevant environment variables (docume
 `BIGCHAINDB_SERVER_BIND`<br>
 `BIGCHAINDB_SERVER_WORKERS`<br>
 `BIGCHAINDB_SERVER_THREADS`<br>
-`BIGCHAINDB_API_ENDPOINT`<br>
 `BIGCHAINDB_STATSD_HOST`<br>
 `BIGCHAINDB_STATSD_PORT`<br>
 `BIGCHAINDB_STATSD_RATE`<br>
 `BIGCHAINDB_CONFIG_PATH`<br>
+`BIGCHAINDB_BACKLOG_REASSIGN_DELAY`<br>
 
 The local config file is `$HOME/.bigchaindb` by default (a file which might not even exist), but you can tell BigchainDB to use a different file by using the `-c` command-line option, e.g. `bigchaindb -c path/to/config_file.json start`
 or using the `BIGCHAINDB_CONFIG_PATH` environment variable, e.g. `BIGHAINDB_CONFIG_PATH=.my_bigchaindb_config bigchaindb start`.
@@ -140,26 +140,6 @@ export BIGCHAINDB_SERVER_THREADS=5
 ```
 
 
-## api_endpoint
-
-`api_endpoint` is the URL where a BigchainDB client can get access to the HTTP client-server API.
-
-**Example using an environment variable**
-```text
-export BIGCHAINDB_API_ENDPOINT="http://localhost:9984/api/v1"
-```
-
-**Example config file snippet**
-```js
-"api_endpoint": "http://webserver.blocks587.net:9984/api/v1"
-```
-
-**Default value (from a config file)**
-```js
-"api_endpoint": "http://localhost:9984/api/v1"
-```
-
-
 ## statsd.host, statsd.port & statsd.rate
 
 These settings are used to configure where, and how often, [StatsD](https://github.com/etsy/statsd) should send data for [cluster monitoring](../clusters-feds/monitoring.html) purposes. `statsd.host` is the hostname of the monitoring server, where StatsD should send its data. `stats.port` is the port. `statsd.rate` is the fraction of transaction operations that should be sampled. It's a float between 0.0 and 1.0.
@@ -174,4 +154,18 @@ export BIGCHAINDB_STATSD_RATE=0.01
 **Example config file snippet: the default**
 ```js
 "statsd": {"host": "localhost", "port": 8125, "rate": 0.01}
+```
+
+## backlog_reassign_delay
+
+Specifies how long, in seconds, transactions can remain in the backlog before being reassigned.  Long-waiting transactions must be reassigned because the assigned node may no longer be responsive.  The default duration is 120 seconds.
+
+**Example using environment variables**
+```text
+export BIGCHAINDB_BACKLOG_REASSIGN_DELAY=30
+``` 
+
+**Default value (from a config file)**
+```js
+"backlog_reassign_delay": 120 
 ```

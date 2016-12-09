@@ -156,4 +156,4 @@ def is_genesis_block(block):
     try:
         return block.transactions[0].operation == 'GENESIS'
     except AttributeError:
-        return block['block']['transactions'][0]['transaction']['operation'] == 'GENESIS'
+        return block['block']['transactions'][0]['operation'] == 'GENESIS'

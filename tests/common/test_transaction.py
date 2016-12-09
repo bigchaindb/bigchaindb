@@ -301,20 +301,18 @@ def test_transaction_serialization(user_ffill, user_cond, data, data_id):
     expected = {
         'id': tx_id,
         'version': Transaction.VERSION,
-        'transaction': {
-            # NOTE: This test assumes that Fulfillments and Conditions can
-            #       successfully be serialized
-            'fulfillments': [user_ffill.to_dict()],
-            'conditions': [user_cond.to_dict()],
-            'operation': Transaction.CREATE,
-            'metadata': None,
-            'asset': {
-                'id': data_id,
-                'divisible': False,
-                'updatable': False,
-                'refillable': False,
-                'data': data,
-            }
+        # NOTE: This test assumes that Fulfillments and Conditions can
+        #       successfully be serialized
+        'fulfillments': [user_ffill.to_dict()],
+        'conditions': [user_cond.to_dict()],
+        'operation': Transaction.CREATE,
+        'metadata': None,
+        'asset': {
+            'id': data_id,
+            'divisible': False,
+            'updatable': False,
+            'refillable': False,
+            'data': data,
         }
     }
 
@@ -322,7 +320,7 @@ def test_transaction_serialization(user_ffill, user_cond, data, data_id):
                      [user_cond])
     tx_dict = tx.to_dict()
     tx_dict['id'] = tx_id
-    tx_dict['transaction']['asset']['id'] = data_id
+    tx_dict['asset']['id'] = data_id
 
     assert tx_dict == expected
 
@@ -342,20 +340,18 @@ def test_transaction_deserialization(user_ffill, user_cond, data, uuid4):
 
     tx = {
         'version': Transaction.VERSION,
-        'transaction': {
-            # NOTE: This test assumes that Fulfillments and Conditions can
-            #       successfully be serialized
-            'fulfillments': [user_ffill.to_dict()],
-            'conditions': [user_cond.to_dict()],
-            'operation': Transaction.CREATE,
-            'metadata': None,
-            'asset': {
-                'id': uuid4,
-                'divisible': False,
-                'updatable': False,
-                'refillable': False,
-                'data': data,
-            }
+        # NOTE: This test assumes that Fulfillments and Conditions can
+        #       successfully be serialized
+        'fulfillments': [user_ffill.to_dict()],
+        'conditions': [user_cond.to_dict()],
+        'operation': Transaction.CREATE,
+        'metadata': None,
+        'asset': {
+            'id': uuid4,
+            'divisible': False,
+            'updatable': False,
+            'refillable': False,
+            'data': data,
         }
     }
     tx_no_signatures = Transaction._remove_signatures(tx)
@@ -385,34 +381,6 @@ def test_invalid_fulfillment_initialization(user_ffill, user_pub):
         Fulfillment(user_ffill, user_pub)
     with raises(TypeError):
         Fulfillment(user_ffill, [], tx_input='somethingthatiswrong')
-
-
-def test_invalid_metadata_initialization():
-    from bigchaindb.common.transaction import Metadata
-
-    with raises(TypeError):
-        Metadata([])
-
-
-def test_metadata_serialization(data, data_id):
-    from bigchaindb.common.transaction import Metadata
-
-    expected = {
-        'data': data,
-        'id': data_id,
-    }
-    metadata = Metadata(data, data_id)
-
-    assert metadata.to_dict() == expected
-
-
-def test_metadata_deserialization(data, data_id):
-    from bigchaindb.common.transaction import Metadata
-
-    expected = Metadata(data, data_id)
-    metadata = Metadata.from_dict({'data': data, 'id': data_id})
-
-    assert metadata == expected
 
 
 def test_transaction_link_serialization():
@@ -760,37 +728,32 @@ def test_create_create_transaction_single_io(user_cond, user_pub, data, uuid4):
     from .util import validate_transaction_model
 
     expected = {
-        'transaction': {
-            'conditions': [user_cond.to_dict()],
-            'metadata': {
-                'data': data,
-            },
-            'asset': {
-                'id': uuid4,
-                'divisible': False,
-                'updatable': False,
-                'refillable': False,
-                'data': data,
-            },
-            'fulfillments': [
-                {
-                    'owners_before': [
-                        user_pub
-                    ],
-                    'fulfillment': None,
-                    'input': None
-                }
-            ],
-            'operation': 'CREATE',
+        'conditions': [user_cond.to_dict()],
+        'metadata': data,
+        'asset': {
+            'id': uuid4,
+            'divisible': False,
+            'updatable': False,
+            'refillable': False,
+            'data': data,
         },
+        'fulfillments': [
+            {
+                'owners_before': [
+                    user_pub
+                ],
+                'fulfillment': None,
+                'input': None
+            }
+        ],
+        'operation': 'CREATE',
         'version': 1,
     }
 
     asset = Asset(data, uuid4)
     tx = Transaction.create([user_pub], [([user_pub], 1)], data, asset)
     tx_dict = tx.to_dict()
-    tx_dict['transaction']['metadata'].pop('id')
-    tx_dict['transaction']['fulfillments'][0]['fulfillment'] = None
+    tx_dict['fulfillments'][0]['fulfillment'] = None
     tx_dict.pop('id')
 
     assert tx_dict == expected
@@ -815,16 +778,12 @@ def test_create_create_transaction_multiple_io(user_cond, user2_cond, user_pub,
     # weight = len(owners_before)
     ffill = Fulfillment.generate([user_pub, user2_pub]).to_dict()
     expected = {
-        'transaction': {
-            'conditions': [user_cond.to_dict(), user2_cond.to_dict()],
-            'metadata': {
-                'data': {
-                    'message': 'hello'
-                }
-            },
-            'fulfillments': [ffill],
-            'operation': 'CREATE',
+        'conditions': [user_cond.to_dict(), user2_cond.to_dict()],
+        'metadata': {
+            'message': 'hello'
         },
+        'fulfillments': [ffill],
+        'operation': 'CREATE',
         'version': 1
     }
     asset = Asset(divisible=True)
@@ -833,8 +792,7 @@ def test_create_create_transaction_multiple_io(user_cond, user2_cond, user_pub,
                             asset=asset,
                             metadata={'message': 'hello'}).to_dict()
     tx.pop('id')
-    tx['transaction']['metadata'].pop('id')
-    tx['transaction'].pop('asset')
+    tx.pop('asset')
 
     assert tx == expected
 
@@ -861,29 +819,25 @@ def test_create_create_transaction_threshold(user_pub, user2_pub, user3_pub,
     from bigchaindb.common.transaction import Transaction, Asset
 
     expected = {
-        'transaction': {
-            'conditions': [user_user2_threshold_cond.to_dict()],
-            'metadata': {
-                'data': data,
-            },
-            'asset': {
-                'id': uuid4,
-                'divisible': False,
-                'updatable': False,
-                'refillable': False,
-                'data': data,
-            },
-            'fulfillments': [
-                {
-                    'owners_before': [
-                        user_pub,
-                    ],
-                    'fulfillment': None,
-                    'input': None
-                },
-            ],
-            'operation': 'CREATE',
+        'conditions': [user_user2_threshold_cond.to_dict()],
+        'metadata': data,
+        'asset': {
+            'id': uuid4,
+            'divisible': False,
+            'updatable': False,
+            'refillable': False,
+            'data': data,
         },
+        'fulfillments': [
+            {
+                'owners_before': [
+                    user_pub,
+                ],
+                'fulfillment': None,
+                'input': None
+            },
+        ],
+        'operation': 'CREATE',
         'version': 1
     }
     asset = Asset(data, uuid4)
@@ -891,8 +845,7 @@ def test_create_create_transaction_threshold(user_pub, user2_pub, user3_pub,
                             data, asset)
     tx_dict = tx.to_dict()
     tx_dict.pop('id')
-    tx_dict['transaction']['metadata'].pop('id')
-    tx_dict['transaction']['fulfillments'][0]['fulfillment'] = None
+    tx_dict['fulfillments'][0]['fulfillment'] = None
 
     assert tx_dict == expected
 
@@ -946,26 +899,24 @@ def test_create_transfer_transaction_single_io(tx, user_pub, user2_pub,
     from .util import validate_transaction_model
 
     expected = {
-        'transaction': {
-            'conditions': [user2_cond.to_dict()],
-            'metadata': None,
-            'asset': {
-                'id': uuid4,
-            },
-            'fulfillments': [
-                {
-                    'owners_before': [
-                        user_pub
-                    ],
-                    'fulfillment': None,
-                    'input': {
-                        'txid': tx.id,
-                        'cid': 0
-                    }
-                }
-            ],
-            'operation': 'TRANSFER',
+        'conditions': [user2_cond.to_dict()],
+        'metadata': None,
+        'asset': {
+            'id': uuid4,
         },
+        'fulfillments': [
+            {
+                'owners_before': [
+                    user_pub
+                ],
+                'fulfillment': None,
+                'input': {
+                    'txid': tx.id,
+                    'cid': 0
+                }
+            }
+        ],
+        'operation': 'TRANSFER',
         'version': 1
     }
     inputs = tx.to_inputs([0])
@@ -973,14 +924,13 @@ def test_create_transfer_transaction_single_io(tx, user_pub, user2_pub,
     transfer_tx = Transaction.transfer(inputs, [([user2_pub], 1)], asset=asset)
     transfer_tx = transfer_tx.sign([user_priv])
     transfer_tx = transfer_tx.to_dict()
-    transfer_tx_body = transfer_tx['transaction']
 
     expected_input = deepcopy(inputs[0])
     expected['id'] = transfer_tx['id']
     expected_input.fulfillment.sign(serialize(expected).encode(),
                                     PrivateKey(user_priv))
     expected_ffill = expected_input.fulfillment.serialize_uri()
-    transfer_ffill = transfer_tx_body['fulfillments'][0]['fulfillment']
+    transfer_ffill = transfer_tx['fulfillments'][0]['fulfillment']
 
     assert transfer_ffill == expected_ffill
 
@@ -1001,32 +951,30 @@ def test_create_transfer_transaction_multiple_io(user_pub, user_priv,
     tx = tx.sign([user_priv])
 
     expected = {
-        'transaction': {
-            'conditions': [user2_cond.to_dict(), user2_cond.to_dict()],
-            'metadata': None,
-            'fulfillments': [
-                {
-                    'owners_before': [
-                        user_pub
-                    ],
-                    'fulfillment': None,
-                    'input': {
-                        'txid': tx.id,
-                        'cid': 0
-                    }
-                }, {
-                    'owners_before': [
-                        user2_pub
-                    ],
-                    'fulfillment': None,
-                    'input': {
-                        'txid': tx.id,
-                        'cid': 1
-                    }
+        'conditions': [user2_cond.to_dict(), user2_cond.to_dict()],
+        'metadata': None,
+        'fulfillments': [
+            {
+                'owners_before': [
+                    user_pub
+                ],
+                'fulfillment': None,
+                'input': {
+                    'txid': tx.id,
+                    'cid': 0
                 }
-            ],
-            'operation': 'TRANSFER',
-        },
+            }, {
+                'owners_before': [
+                    user2_pub
+                ],
+                'fulfillment': None,
+                'input': {
+                    'txid': tx.id,
+                    'cid': 1
+                }
+            }
+        ],
+        'operation': 'TRANSFER',
         'version': 1
     }
 
@@ -1041,10 +989,10 @@ def test_create_transfer_transaction_multiple_io(user_pub, user_priv,
     assert transfer_tx.fulfillments_valid(tx.conditions) is True
 
     transfer_tx = transfer_tx.to_dict()
-    transfer_tx['transaction']['fulfillments'][0]['fulfillment'] = None
-    transfer_tx['transaction']['fulfillments'][1]['fulfillment'] = None
+    transfer_tx['fulfillments'][0]['fulfillment'] = None
+    transfer_tx['fulfillments'][1]['fulfillment'] = None
+    transfer_tx.pop('asset')
     transfer_tx.pop('id')
-    transfer_tx['transaction'].pop('asset')
 
     assert expected == transfer_tx
 
