@@ -113,7 +113,7 @@ def test_env_config(monkeypatch):
     assert result == expected
 
 
-def test_autoconfigure_read_both_from_file_and_env(monkeypatch):
+def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
     file_config = {
         'database': {'host': 'test-host'},
         'backlog_reassign_delay': 5
@@ -136,7 +136,7 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch):
             'threads': None,
         },
         'database': {
-            'backend': 'rethinkdb',
+            'backend': request.config.getoption('--database-backend'),
             'host': 'test-host',
             'port': 4242,
             'name': 'test-dbname',

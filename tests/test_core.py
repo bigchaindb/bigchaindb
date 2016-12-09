@@ -1,5 +1,3 @@
-from collections import namedtuple
-
 from rethinkdb.ast import RqlQuery
 
 import pytest
@@ -9,7 +7,7 @@ import pytest
 def config(request, monkeypatch):
     config = {
         'database': {
-            'backend': 'rethinkdb',
+            'backend': request.config.getoption('--database-backend'),
             'host': 'host',
             'port': 28015,
             'name': 'bigchain',
