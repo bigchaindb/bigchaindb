@@ -28,6 +28,10 @@ def _load_schema(name):
     return path, schema
 
 
+TX_SCHEMA_PATH, TX_SCHEMA = _load_schema('transaction')
+VOTE_SCHEMA_PATH, VOTE_SCHEMA = _load_schema('vote')
+
+
 def _validate_schema(schema, body):
     """ Validate data against a schema """
     try:
@@ -36,15 +40,9 @@ def _validate_schema(schema, body):
         raise SchemaValidationError(str(exc)) from exc
 
 
-TX_SCHEMA_PATH, TX_SCHEMA = _load_schema('transaction')
-
-
 def validate_transaction_schema(tx):
     """ Validate a transaction dict """
     _validate_schema(TX_SCHEMA, tx)
-
-
-VOTE_SCHEMA_PATH, VOTE_SCHEMA = _load_schema('vote')
 
 
 def validate_vote_schema(vote):
