@@ -12,5 +12,4 @@ If you find the cloud deployment starter templates for nodes helpful, then you m
 
    template-terraform-aws
    template-ansible
-   new-azure-template
-   old-azure-template
+   azure-quickstart-template
