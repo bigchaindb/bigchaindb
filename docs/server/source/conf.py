@@ -45,6 +45,7 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.coverage',
     'sphinx.ext.viewcode',
+    'sphinx.ext.todo',
     'sphinx.ext.napoleon',
     'sphinxcontrib.httpdomain',
     'sphinx.ext.autosectionlabel',
@@ -59,6 +60,8 @@ autodoc_member_order = 'bysource'
 autodoc_default_flags = [
     'members',
 ]
+
+todo_include_todos = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -133,7 +136,6 @@ pygments_style = 'sphinx'
 #keep_warnings = False
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
-todo_include_todos = False
 
 
 # -- Options for HTML output ----------------------------------------------
