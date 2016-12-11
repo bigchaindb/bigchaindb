@@ -69,4 +69,4 @@ aws ec2 import-key-pair \
 
 If you're curious why there's a `file://` in front of the path to the public key, see issue [aws/aws-cli#41 on GitHub](https://github.com/aws/aws-cli/issues/41).
 
-If you want to verify that your key pair was imported by AWS, go to the Amazon EC2 console at [https://console.aws.amazon.com/ec2/](https://console.aws.amazon.com/ec2/), select the region you gave above when you did `aws configure` (e.g. eu-central-1), click on **Key Pairs** in the left sidebar, and check that `<key-name>` is listed.
+If you want to verify that your key pair was imported by AWS, go to [the Amazon EC2 console](https://console.aws.amazon.com/ec2/v2/home), select the region you gave above when you did `aws configure` (e.g. eu-central-1), click on **Key Pairs** in the left sidebar, and check that `<key-name>` is listed.
