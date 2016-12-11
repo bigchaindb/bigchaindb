@@ -37,7 +37,7 @@ The BigchainDB [CONTRIBUTING.md file](https://github.com/bigchaindb/bigchaindb/b
 
 Ian Worrall of [Encrypted Labs](http://www.encryptedlabs.com/) wrote a document (PDF) explaining how to set up a BigchainDB (Server) dev machine on Cloud9:
 
-[Download that document from GitHub](https://github.com/bigchaindb/bigchaindb/raw/master/docs/server/source/_static/cloud9.pdf)
+[Download that document from GitHub](https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/docs/server/source/_static/cloud9.pdf)
 
 ## Option C: Using a Local Dev Machine and Docker
 
