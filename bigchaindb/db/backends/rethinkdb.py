@@ -230,7 +230,8 @@ class RethinkDBBackend:
         """
         return self.connection.run(
                 r.table('votes', read_mode=self.read_mode)
-                .between([block_id, r.minval], [block_id, r.maxval], index='block_and_voter'))
+                .between([block_id, r.minval], [block_id, r.maxval], index='block_and_voter')
+                .without('id'))
 
     def get_votes_by_block_id_and_voter(self, block_id, node_pubkey):
         """Get all the votes casted for a specific block by a specific voter.
@@ -244,7 +245,8 @@ class RethinkDBBackend:
         """
         return self.connection.run(
                 r.table('votes', read_mode=self.read_mode)
-                .get_all([block_id, node_pubkey], index='block_and_voter'))
+                .get_all([block_id, node_pubkey], index='block_and_voter')
+                .without('id'))
 
     def write_block(self, block, durability='soft'):
         """Write a block to the bigchain table.
