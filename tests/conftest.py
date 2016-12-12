@@ -33,9 +33,12 @@ def pytest_addoption(parser):
     from bigchaindb.backend import connection
 
     backends = ', '.join(connection.BACKENDS.keys())
-
-    parser.addoption('--database-backend', action='store', default='rethinkdb',
-                     help='Defines the backend to use (available: {})'.format(backends))
+    parser.addoption(
+        '--database-backend',
+        action='store',
+        default=os.environ.get('BIGCHAINDB_DATABASE_BACKEND', 'rethinkdb'),
+        help='Defines the backend to use (available: {})'.format(backends),
+    )
 
 
 # We need this function to avoid loading an existing
