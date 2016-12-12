@@ -11,6 +11,7 @@ For convenience, here's a list of all the relevant environment variables (docume
 `BIGCHAINDB_KEYPAIR_PUBLIC`<br>
 `BIGCHAINDB_KEYPAIR_PRIVATE`<br>
 `BIGCHAINDB_KEYRING`<br>
+`BIGCHAINDB_DATABASE_BACKEND`<br>
 `BIGCHAINDB_DATABASE_HOST`<br>
 `BIGCHAINDB_DATABASE_PORT`<br>
 `BIGCHAINDB_DATABASE_NAME`<br>
@@ -76,12 +77,13 @@ Note how the keys in the list are separated by colons.
 ```
 
 
-## database.host, database.port & database.name
+## database.backend, database.host, database.port & database.name
 
-The RethinkDB database hostname, port and name.
+The database backend to use (e.g. RethinkDB) and its hostname, port and name.
 
 **Example using environment variables**
 ```text
+export BIGCHAINDB_DATABASE_BACKEND=rethinkdb
 export BIGCHAINDB_DATABASE_HOST=localhost
 export BIGCHAINDB_DATABASE_PORT=28015
 export BIGCHAINDB_DATABASE_NAME=bigchain
@@ -90,6 +92,7 @@ export BIGCHAINDB_DATABASE_NAME=bigchain
 **Example config file snippet**
 ```js
 "database": {
+    "backend": "rethinkdb",
     "host": "localhost",
     "port": 28015,
     "name": "bigchain"
@@ -99,11 +102,15 @@ export BIGCHAINDB_DATABASE_NAME=bigchain
 **Default values (a snippet from `bigchaindb/__init__.py`)**
 ```python
 'database': {
+    "backend": "rethinkdb",
     'host': os.environ.get('BIGCHAINDB_DATABASE_HOST', 'localhost'),
     'port': 28015,
     'name': 'bigchain',
 }
 ```
+
+**Note**: As of now, only RethinkDB ("rethinkdb") is supported as a value for `database.backend`. In
+the future, other options (e.g. MongoDB) will be available.
 
 
 ## server.bind, server.workers & server.threads
