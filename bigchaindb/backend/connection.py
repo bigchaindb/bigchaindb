@@ -9,7 +9,7 @@ BACKENDS = {
 
 
 def connect(backend=None, host=None, port=None, name=None):
-    '''Create a connection to a database.
+    """Create a connection to the database backend.
 
     Args:
         backend (str): the name of the backend to use.
@@ -19,7 +19,7 @@ def connect(backend=None, host=None, port=None, name=None):
 
     Returns:
         An instance of :class:`~bigchaindb.backend.connection.Connection`.
-    '''
+    """
 
     backend = backend or bigchaindb.config['database']['backend']
     host = host or bigchaindb.config['database']['host']

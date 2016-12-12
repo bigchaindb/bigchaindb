@@ -94,7 +94,7 @@ def get_transaction_from_backlog(connection, transaction_id):
 
 @singledispatch
 def get_blocks_status_from_transaction(connection, transaction_id):
-    """Retrieve block election information given a secondary index and value
+    """Retrieve block election information given a secondary index and value.
 
     Args:
         value: a value to search (e.g. transaction id string, payload hash string)
@@ -120,7 +120,7 @@ def get_txids_by_asset_id(connection, asset_id):
 
     Returns:
         A list of transactions ids related to the asset. If no transaction
-        exists for that asset it returns an empty list `[]`
+        exists for that asset it returns an empty list ``[]``
     """
 
     raise NotImplementedError
@@ -218,7 +218,7 @@ def write_block(connection, block):
 
 @singledispatch
 def get_block(connection, block_id):
-    """Get a block from the bigchain table
+    """Get a block from the bigchain table.
 
     Args:
         block_id (str): block id of the block to get
@@ -282,7 +282,7 @@ def write_vote(connection, vote):
 
 @singledispatch
 def get_genesis_block(connection):
-    """Get the genesis block
+    """Get the genesis block.
 
     Returns:
         The genesis block
