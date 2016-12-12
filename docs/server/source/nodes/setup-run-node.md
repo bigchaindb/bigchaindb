@@ -58,7 +58,7 @@ There are many options and tradeoffs. Don't forget to look into Amazon Elastic B
 
 ## Install RethinkDB Server
 
-If you don't already have RethinkDB Server installed, you must install it. The RethinkDB documentation has instructions for [how to install RethinkDB Server on a variety of operating systems](http://rethinkdb.com/docs/install/).
+If you don't already have RethinkDB Server installed, you must install it. The RethinkDB documentation has instructions for [how to install RethinkDB Server on a variety of operating systems](https://rethinkdb.com/docs/install/).
 
 
 ## Configure RethinkDB Server
