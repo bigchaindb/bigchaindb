@@ -6,8 +6,6 @@ Transaction Schema
 
 * `Transaction`_
 
-* `Transaction Body`_
-
 * Condition_
 
 * Fulfillment_
@@ -37,7 +35,7 @@ Transaction Schema
 Transaction
 -----------
 
-This is the outer transaction wrapper. It contains the ID, version and the body of the transaction, which is also called ``transaction``.
+A transaction represents the creation or transfer of assets in BigchainDB.
 
 
 Transaction.id
@@ -50,32 +48,6 @@ derived hashes and signatures from the transaction, serializing it to
 JSON with keys in sorted order and then hashing the resulting string
 with sha3.
 
-
-
-Transaction.transaction
-^^^^^^^^^^^^^^^^^^^^^^^
-
-**type:** object
-
-See: `Transaction Body`_.
-
-
-
-Transaction.version
-^^^^^^^^^^^^^^^^^^^
-
-**type:** integer
-
-BigchainDB transaction schema version.
-
-
-
-
-
-Transaction Body
-----------------
-
-See: `Transaction Body`_.
 
 
 Transaction.operation
@@ -142,6 +114,15 @@ See: `Metadata`_.
 
 
 
+Transaction.version
+^^^^^^^^^^^^^^^^^^^
+
+**type:** integer
+
+BigchainDB transaction schema version.
+
+
+
 
 
 Condition
@@ -157,8 +138,8 @@ Condition.cid
 
 **type:** integer
 
-Index of this condition's appearance in the Transaction.conditions_ 
-array. In a transaction with 2 conditions, the ``cid``\ s will be 0 and 1.
+Index of this condition's appearance in the `Transaction.conditions`_
+array. In a transaction with 2 conditions, the ``cid`` s will be 0 and 1.
 
 
 
@@ -301,26 +282,7 @@ Metadata
 --------
 
 User provided transaction metadata. This field may be ``null`` or may
-contain an id and an object with freeform metadata.
-
-
-Metadata.id
-^^^^^^^^^^^
-
-**type:** string
-
-A `UUID <https://tools.ietf.org/html/rfc4122.html>`_
-of type 4 (random).
-
-
-
-Metadata.data
-^^^^^^^^^^^^^
-
-**type:** object
-
-User provided transaction metadata.
-
+contain an non empty object with freeform metadata.
 
 
 
