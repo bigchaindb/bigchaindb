@@ -58,6 +58,7 @@ benchmarks_require = [
 
 install_requires = [
     'rethinkdb~=2.3',  # i.e. a version between 2.3 and 3.0
+    'pymongo~=3.4',
     'pysha3>=0.3',
     'cryptoconditions>=0.5.0',
     'statsd>=3.2.1',
