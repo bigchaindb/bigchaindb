@@ -16,17 +16,26 @@ DB_NAME = 'bigchain_test_{}'.format(os.getpid())
 
 CONFIG = {
     'database': {
-        'name': DB_NAME
+        'name': DB_NAME,
     },
     'keypair': {
         'private': '31Lb1ZGKTyHnmVK3LUMrAUrPNfd4sE2YyBt3UA4A25aA',
-        'public': '4XYfCbabAWVUCbjTmRTFEu2sc3dFEdkse4r6X498B1s8'
+        'public': '4XYfCbabAWVUCbjTmRTFEu2sc3dFEdkse4r6X498B1s8',
     }
 }
 
 # Test user. inputs will be created for this user. Cryptography Keys
 USER_PRIVATE_KEY = '8eJ8q9ZQpReWyQT5aFCiwtZ5wDZC4eDnCen88p3tQ6ie'
 USER_PUBLIC_KEY = 'JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE'
+
+
+def pytest_addoption(parser):
+    from bigchaindb.backend import connection
+
+    backends = ', '.join(connection.BACKENDS.keys())
+
+    parser.addoption('--database-backend', action='store', default='rethinkdb',
+                     help='Defines the backend to use (available: {})'.format(backends))
 
 
 # We need this function to avoid loading an existing
@@ -49,8 +58,10 @@ def restore_config(request, node_config):
 
 
 @pytest.fixture(scope='module')
-def node_config():
-    return copy.deepcopy(CONFIG)
+def node_config(request):
+    config = copy.deepcopy(CONFIG)
+    config['database']['backend'] = request.config.getoption('--database-backend')
+    return config
 
 
 @pytest.fixture
