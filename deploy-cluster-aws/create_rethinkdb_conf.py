@@ -13,13 +13,13 @@ from hostlist import public_dns_names
 
 # Parse the command-line arguments
 parser = argparse.ArgumentParser()
-parser.add_argument("--bind-http-to-localhost",
-                    help="should RethinkDB web interface be bound to localhost?",
-                    required=True)
+# The next line isn't strictly necessary, but it clarifies the default case:
+parser.set_defaults(bind_http_to_localhost=False)
+parser.add_argument('--bind-http-to-localhost',
+                    action='store_true',
+                    help='should RethinkDB web interface be bound to localhost?')
 args = parser.parse_args()
 bind_http_to_localhost = args.bind_http_to_localhost
-
-print('bind_http_to_localhost = {}'.format(bind_http_to_localhost))
 
 # cwd = current working directory
 old_cwd = os.getcwd()

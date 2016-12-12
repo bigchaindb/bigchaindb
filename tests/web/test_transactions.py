@@ -1,3 +1,4 @@
+import builtins
 import json
 
 import pytest
@@ -33,11 +34,12 @@ def test_post_create_transaction_endpoint(b, client):
     tx = tx.sign([user_priv])
 
     res = client.post(TX_ENDPOINT, data=json.dumps(tx.to_dict()))
-    assert res.json['transaction']['fulfillments'][0]['owners_before'][0] == user_pub
-    assert res.json['transaction']['conditions'][0]['owners_after'][0] == user_pub
+    assert res.json['fulfillments'][0]['owners_before'][0] == user_pub
+    assert res.json['conditions'][0]['owners_after'][0] == user_pub
 
 
 def test_post_create_transaction_with_invalid_id(b, client):
+    from bigchaindb.common.exceptions import InvalidHash
     from bigchaindb.models import Transaction
     user_priv, user_pub = crypto.generate_key_pair()
 
@@ -47,23 +49,74 @@ def test_post_create_transaction_with_invalid_id(b, client):
 
     res = client.post(TX_ENDPOINT, data=json.dumps(tx))
     assert res.status_code == 400
+    err_msg = ("The transaction's id '{}' isn't equal to "
+               "the hash of its body, i.e. it's not valid.").format(tx['id'])
+    assert res.json['message'] == (
+        'Invalid transaction ({}): {}'.format(InvalidHash.__name__, err_msg))
 
 
 def test_post_create_transaction_with_invalid_signature(b, client):
+    from bigchaindb.common.exceptions import InvalidSignature
     from bigchaindb.models import Transaction
     user_priv, user_pub = crypto.generate_key_pair()
 
     tx = Transaction.create([user_pub], [([user_pub], 1)])
     tx = tx.sign([user_priv]).to_dict()
-    tx['transaction']['fulfillments'][0]['fulfillment'] = 'cf:0:0'
+    tx['fulfillments'][0]['fulfillment'] = 'cf:0:0'
 
     res = client.post(TX_ENDPOINT, data=json.dumps(tx))
     assert res.status_code == 400
+    assert res.json['message'] == (
+        "Invalid transaction ({}): Fulfillment URI "
+        "couldn't been parsed".format(InvalidSignature.__name__))
 
 
 def test_post_create_transaction_with_invalid_structure(client):
     res = client.post(TX_ENDPOINT, data='{}')
     assert res.status_code == 400
+
+
+def test_post_create_transaction_with_invalid_schema(client):
+    from bigchaindb.models import Transaction
+    user_priv, user_pub = crypto.generate_key_pair()
+    tx = Transaction.create(
+        [user_pub], [([user_pub], 1)]).sign([user_priv]).to_dict()
+    del tx['version']
+    res = client.post(TX_ENDPOINT, data=json.dumps(tx))
+    assert res.status_code == 400
+    assert res.json['message'] == (
+        "Invalid transaction schema: 'version' is a required property")
+
+
+@pytest.mark.parametrize('exc,msg', (
+    ('AmountError', 'Do the math again!'),
+    ('DoubleSpend', 'Nope! It is gone now!'),
+    ('InvalidHash', 'Do not smoke that!'),
+    ('InvalidSignature', 'Falsche Unterschrift!'),
+    ('OperationError', 'Create and transfer!'),
+    ('TransactionDoesNotExist', 'Hallucinations?'),
+    ('TransactionOwnerError', 'Not yours!'),
+    ('TransactionNotInValidBlock', 'Wait, maybe?'),
+    ('ValueError', '?'),
+))
+def test_post_invalid_transaction(client, exc, msg, monkeypatch):
+    from bigchaindb.common import exceptions
+    try:
+        exc_cls = getattr(exceptions, exc)
+    except AttributeError:
+        exc_cls = getattr(builtins, 'ValueError')
+
+    def mock_validation(self_, tx):
+        raise exc_cls(msg)
+
+    monkeypatch.setattr(
+        'bigchaindb.Bigchain.validate_transaction', mock_validation)
+    monkeypatch.setattr(
+        'bigchaindb.models.Transaction.from_dict', lambda tx: None)
+    res = client.post(TX_ENDPOINT, data=json.dumps({}))
+    assert res.status_code == 400
+    assert (res.json['message'] ==
+            'Invalid transaction ({}): {}'.format(exc, msg))
 
 
 @pytest.mark.usefixtures('inputs')
@@ -81,8 +134,8 @@ def test_post_transfer_transaction_endpoint(b, client, user_pk, user_sk):
 
     res = client.post(TX_ENDPOINT, data=json.dumps(transfer_tx.to_dict()))
 
-    assert res.json['transaction']['fulfillments'][0]['owners_before'][0] == user_pk
-    assert res.json['transaction']['conditions'][0]['owners_after'][0] == user_pub
+    assert res.json['fulfillments'][0]['owners_before'][0] == user_pk
+    assert res.json['conditions'][0]['owners_after'][0] == user_pub
 
 
 @pytest.mark.usefixtures('inputs')

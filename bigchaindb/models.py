@@ -6,6 +6,7 @@ from bigchaindb.common.exceptions import (InvalidHash, InvalidSignature,
                                           AssetIdMismatch, AmountError)
 from bigchaindb.common.transaction import Transaction, Asset
 from bigchaindb.common.util import gen_timestamp, serialize
+from bigchaindb.common.schema import validate_transaction_schema
 
 
 class Transaction(Transaction):
@@ -112,6 +113,11 @@ class Transaction(Transaction):
             raise InvalidSignature()
         else:
             return self
+
+    @classmethod
+    def from_dict(cls, tx_body):
+        validate_transaction_schema(tx_body)
+        return super().from_dict(tx_body)
 
 
 class Block(object):

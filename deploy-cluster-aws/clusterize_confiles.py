@@ -98,9 +98,6 @@ for i, filename in enumerate(conf_files):
         # Allow incoming server traffic from any IP address
         # to port 9984
         conf_dict['server']['bind'] = '0.0.0.0:9984'
-        # Set the api_endpoint
-        conf_dict['api_endpoint'] = 'http://' + public_dns_names[i] + \
-                                    ':9984/api/v1'
 
     # Delete the config file
     os.remove(file_path)

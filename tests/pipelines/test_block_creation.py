@@ -67,7 +67,7 @@ def test_write_block(b, user_pk):
 
     block_doc = b.create_block(txs)
     block_maker.write(block_doc)
-    expected = b.backend.get_block(block_doc.id)
+    expected = b.get_block(block_doc.id)
     expected = Block.from_dict(expected)
 
     assert expected == block_doc
@@ -88,7 +88,7 @@ def test_duplicate_transaction(b, user_pk):
     block_maker.write(block_doc)
 
     # block is in bigchain
-    assert b.backend.get_block(block_doc.id) == block_doc.to_dict()
+    assert b.get_block(block_doc.id) == block_doc.to_dict()
 
     b.write_transaction(txs[0])
 
@@ -159,6 +159,7 @@ def test_start(create_pipeline):
 
 def test_full_pipeline(b, user_pk):
     import random
+    from bigchaindb.backend import query
     from bigchaindb.models import Block, Transaction
     from bigchaindb.pipelines.block import create_pipeline, get_changefeed
 
@@ -172,7 +173,7 @@ def test_full_pipeline(b, user_pk):
 
         b.write_transaction(tx)
 
-    assert b.backend.count_backlog() == 100
+    assert query.count_backlog(b.connection) == 100
 
     pipeline = create_pipeline()
     pipeline.setup(indata=get_changefeed(), outdata=outpipe)
@@ -182,9 +183,9 @@ def test_full_pipeline(b, user_pk):
     pipeline.terminate()
 
     block_doc = outpipe.get()
-    chained_block = b.backend.get_block(block_doc.id)
+    chained_block = b.get_block(block_doc.id)
     chained_block = Block.from_dict(chained_block)
 
     block_len = len(block_doc.transactions)
     assert chained_block == block_doc
-    assert b.backend.count_backlog() == 100 - block_len 
+    assert query.count_backlog(b.connection) == 100 - block_len

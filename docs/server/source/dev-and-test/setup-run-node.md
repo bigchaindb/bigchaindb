@@ -91,7 +91,6 @@ should give you something like:
 
 ```bash
 {
-  "api_endpoint": "http://bdb:9984/api/v1",
   "keyring": [],
   "public_key": "Brx8g4DdtEhccsENzNNV6yvQHR8s9ebhKyXPFkWUXh5e",
   "software": "BigchainDB",

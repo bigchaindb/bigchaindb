@@ -56,7 +56,7 @@ class RethinkDBConnection(Connection):
                 self._connect()
 
     def _connect(self):
-        """Sets a connection to RethinkDB.
+        """Set a connection to RethinkDB.
 
         The connection is available via :attr:`~.RethinkDBConnection.conn`.
 
@@ -65,10 +65,14 @@ class RethinkDBConnection(Connection):
                 :attr:`~.RethinkDBConnection.max_tries`.
         """
 
-        for i in range(self.max_tries):
+        for i in range(1, self.max_tries + 1):
+            logging.debug('Connecting to database %s:%s/%s. (Attempt %s/%s)',
+                          self.host, self.port, self.dbname, i, self.max_tries)
             try:
                 self.conn = r.connect(host=self.host, port=self.port, db=self.dbname)
             except r.ReqlDriverError:
-                if i + 1 == self.max_tries:
+                if i == self.max_tries:
                     raise
-                time.sleep(2**i)
+                wait_time = 2**i
+                logging.debug('Error connecting to database, waiting %ss', wait_time)
+                time.sleep(wait_time)

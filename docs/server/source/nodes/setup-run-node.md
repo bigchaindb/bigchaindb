@@ -167,7 +167,6 @@ Edit the created config file:
 
 * Open `$HOME/.bigchaindb` (the created config file) in your text editor.
 * Change `"server": {"bind": "localhost:9984", ... }` to `"server": {"bind": "0.0.0.0:9984", ... }`. This makes it so traffic can come from any IP address to port 9984 (the HTTP Client-Server API port).
-* Change `"api_endpoint": "http://localhost:9984/api/v1"` to `"api_endpoint": "http://your_api_hostname:9984/api/v1"`
 * Change `"keyring": []` to `"keyring": ["public_key_of_other_node_A", "public_key_of_other_node_B", "..."]` i.e. a list of the public keys of all the other nodes in the federation. The keyring should _not_ include your node's public key.
 
 For more information about the BigchainDB config file, see [Configuring a BigchainDB Node](configuration.html).
