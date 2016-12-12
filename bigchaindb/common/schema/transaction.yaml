@@ -210,7 +210,7 @@ definitions:
               asset.
         - type: string
           pattern: "^cf:([1-9a-f][0-9a-f]{0,3}|0):[a-zA-Z0-9_-]*$"
-      spends:
+      fulfills:
         type: 'object'
         description: |
           Reference to the output that is being spent.
