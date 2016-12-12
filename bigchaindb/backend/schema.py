@@ -1,4 +1,4 @@
-"""Schema-providing interfaces for backend databases"""
+"""Database creation and schema-providing interfaces for backends."""
 
 from functools import singledispatch
 

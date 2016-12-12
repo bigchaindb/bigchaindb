@@ -9,7 +9,10 @@ BACKENDS = {
 
 
 def connect(backend=None, host=None, port=None, name=None):
-    """Create a connection to the database backend.
+    """Create a new connection to the database backend.
+
+    All arguments default to the current configuration's values if not
+    given.
 
     Args:
         backend (str): the name of the backend to use.
@@ -18,7 +21,12 @@ def connect(backend=None, host=None, port=None, name=None):
         name (str): the name of the database to use.
 
     Returns:
-        An instance of :class:`~bigchaindb.backend.connection.Connection`.
+        An instance of :class:`~bigchaindb.backend.connection.Connection`
+        based on the given (or defaulted) :attr:`backend`.
+
+    Raises:
+        :exc:`~ConfigurationError`: If the given (or defaulted) :attr:`backend`
+            is not supported or could not be loaded.
     """
 
     backend = backend or bigchaindb.config['database']['backend']
@@ -39,6 +47,28 @@ def connect(backend=None, host=None, port=None, name=None):
 
 
 class Connection:
+    """Connection class interface.
+
+    All backend implementations should provide a connection class that
+    from and implements this class.
+    """
+
+    def __init__(self, host=None, port=None, dbname=None, *args, **kwargs):
+        """Create a new :class:`~.Connection` instance.
+
+        Args:
+            host (str): the host to connect to.
+            port (int): the port to connect to.
+            dbname (str): the name of the database to use.
+            **kwargs: arbitrary keyword arguments provided by the
+                configuration's ``database`` settings
+        """
 
     def run(self, query):
+        """Run a query.
+
+        Args:
+            query: the query to run
+        """
+
         raise NotImplementedError()

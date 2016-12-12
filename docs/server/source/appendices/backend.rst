@@ -1,41 +1,41 @@
-###############################################
-:mod:`bigchaindb.backend` -- Backend Interfaces
-###############################################
+###########################
+Database Backend Interfaces
+###########################
 
 .. automodule:: bigchaindb.backend
     :special-members: __init__
 
 
-Generic Backend
-===============
+Generic Interfaces
+==================
 
-:mod:`bigchaindb.backend.connection` -- Connection
---------------------------------------------------
+:mod:`bigchaindb.backend.connection`
+------------------------------------
 
 .. automodule:: bigchaindb.backend.connection
+    :special-members: __init__
 
-:mod:`bigchaindb.backend.schema` -- Schema
-------------------------------------------
-.. automodule:: bigchaindb.backend.schema
+:mod:`bigchaindb.backend.changefeed`
+------------------------------------
+.. automodule:: bigchaindb.backend.changefeed
 
-:mod:`bigchaindb.backend.query` -- Query
-----------------------------------------
+:mod:`bigchaindb.backend.query`
+-------------------------------
 .. automodule:: bigchaindb.backend.query
 
-:mod:`bigchaindb.backend.changefeed` -- Changefeed
---------------------------------------------------
-.. automodule:: bigchaindb.backend.changefeed
+:mod:`bigchaindb.backend.schema`
+--------------------------------
+.. automodule:: bigchaindb.backend.schema
 
 :mod:`bigchaindb.backend.utils`
 -------------------------------
 .. automodule:: bigchaindb.backend.utils
 
- 
-:mod:`bigchaindb.backend.rethinkdb` -- RethinkDB Backend
-========================================================
+
+RethinkDB Backend
+=================
 
 .. automodule:: bigchaindb.backend.rethinkdb
-    :special-members: __init__
 
 :mod:`bigchaindb.backend.rethinkdb.connection`
 ----------------------------------------------
