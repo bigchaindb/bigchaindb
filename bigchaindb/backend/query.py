@@ -108,28 +108,6 @@ def get_blocks_status_from_transaction(connection, transaction_id):
 
 
 @singledispatch
-def get_txids_by_metadata_id(connection, metadata_id):
-    """Retrieves transaction ids related to a particular metadata.
-
-    When creating a transaction one of the optional arguments is the
-    `metadata`. The metadata is a generic dict that contains extra
-    information that can be appended to the transaction.
-
-    To make it easy to query the bigchain for that particular metadata as we
-    create a UUID for the metadata and store it with the transaction.
-
-    Args:
-        metadata_id (str): the id for this particular metadata.
-
-    Returns:
-        A list of transaction ids containing that metadata. If no
-        transaction exists with that metadata it returns an empty list `[]`
-    """
-
-    raise NotImplementedError
-
-
-@singledispatch
 def get_txids_by_asset_id(connection, asset_id):
     """Retrieves transactions ids related to a particular asset.
 

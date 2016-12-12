@@ -74,18 +74,6 @@ def get_blocks_status_from_transaction(connection, transaction_id):
 
 
 @register_query(RethinkDBConnection)
-def get_txids_by_metadata_id(connection, metadata_id):
-    return connection.run(
-            r.table('bigchain', read_mode=READ_MODE)
-            .get_all(metadata_id, index='metadata_id')
-            .concat_map(lambda block: block['block']['transactions'])
-            .filter(lambda transaction:
-                    transaction['transaction']['metadata']['id'] ==
-                    metadata_id)
-            .get_field('id'))
-
-
-@register_query(RethinkDBConnection)
 def get_txids_by_asset_id(connection, asset_id):
     # here we only want to return the transaction ids since later on when
     # we are going to retrieve the transaction with status validation
@@ -93,7 +81,7 @@ def get_txids_by_asset_id(connection, asset_id):
         r.table('bigchain')
          .get_all(asset_id, index='asset_id')
          .concat_map(lambda block: block['block']['transactions'])
-         .filter(lambda transaction: transaction['transaction']['asset']['id'] == asset_id)
+         .filter(lambda transaction: transaction['asset']['id'] == asset_id)
          .get_field('id'))
 
 
@@ -103,11 +91,9 @@ def get_asset_by_id(connection, asset_id):
         r.table('bigchain', read_mode=READ_MODE)
          .get_all(asset_id, index='asset_id')
          .concat_map(lambda block: block['block']['transactions'])
-         .filter(lambda transaction:
-                 transaction['transaction']['asset']['id'] == asset_id)
-         .filter(lambda transaction:
-                 transaction['transaction']['operation'] == 'CREATE')
-         .pluck({'transaction': 'asset'}))
+         .filter(lambda transaction: transaction['asset']['id'] == asset_id)
+         .filter(lambda transaction: transaction['operation'] == 'CREATE')
+         .pluck('asset'))
 
 
 @register_query(RethinkDBConnection)
@@ -116,7 +102,7 @@ def get_spent(connection, transaction_id, condition_id):
     return connection.run(
             r.table('bigchain', read_mode=READ_MODE)
             .concat_map(lambda doc: doc['block']['transactions'])
-            .filter(lambda transaction: transaction['transaction']['fulfillments'].contains(
+            .filter(lambda transaction: transaction['fulfillments'].contains(
                 lambda fulfillment: fulfillment['input'] == {'txid': transaction_id, 'cid': condition_id})))
 
 
@@ -126,7 +112,7 @@ def get_owned_ids(connection, owner):
     return connection.run(
             r.table('bigchain', read_mode=READ_MODE)
             .concat_map(lambda doc: doc['block']['transactions'])
-            .filter(lambda tx: tx['transaction']['conditions'].contains(
+            .filter(lambda tx: tx['conditions'].contains(
                 lambda c: c['owners_after'].contains(owner))))
 
 
