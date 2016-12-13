@@ -1,9 +1,12 @@
 """Database creation and schema-providing interfaces for backends."""
 
 from functools import singledispatch
+import logging
 
 import bigchaindb
 from bigchaindb.backend.connection import connect
+
+logger = logging.getLogger(__name__)
 
 
 @singledispatch
