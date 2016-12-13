@@ -88,7 +88,7 @@ definitions:
         Type of the transaction:
 
         A ``CREATE`` transaction creates an asset in BigchainDB. This
-        transaction has outputs but no inputs, so a dummy fulfillment is used.
+        transaction has outputs but no inputs, so a dummy input is created.
 
         A ``TRANSFER`` transaction transfers ownership of an asset, by providing
         fulfillments to outputs conditions of earlier transactions.
@@ -146,7 +146,7 @@ definitions:
       amount:
         type: integer
         description: |
-            Integral amount of the asset represented by this condition.
+            Integral amount of the asset represented by this output.
             In the case of a non divisible asset, this will always be 1.
       condition:
         description: |
@@ -202,9 +202,9 @@ definitions:
             type_id:
               type: integer
           description: |
-              Fulfillment of a condition_, or put a different way, this is a
-              payload that satisfies a condition in order to spend the associated
-              asset.
+              Fulfillment of an `Output.condition`_, or put a different way, this is a
+              payload that satisfies an output condition in order to spend
+              the associated asset.
         - type: string
           pattern: "^cf:([1-9a-f][0-9a-f]{0,3}|0):[a-zA-Z0-9_-]*$"
       fulfills:
