@@ -45,17 +45,6 @@ class RethinkDBChangeFeed(ChangeFeed):
 def get_changefeed(connection, table, operation, *, prefeed=None):
     """Return a RethinkDB changefeed.
 
-    Args:
-        connection (:class:`~bigchaindb.backend.rethinkdb.connection.RethinkDBConnection`):  # noqa
-            A connection to the database.
-        table (str): name of the table to listen to for changes.
-        operation (int): can be ChangeFeed.INSERT, ChangeFeed.DELETE, or
-            ChangeFeed.UPDATE. Combining multiple operation is possible
-            with the bitwise ``|`` operator
-            (e.g. ``ChangeFeed.INSERT | ChangeFeed.UPDATE``)
-        prefeed (iterable): whatever set of data you want to be published
-            first.
-
     Returns:
         An instance of
         :class:`~bigchaindb.backend.rethinkdb.RethinkDBChangeFeed`.

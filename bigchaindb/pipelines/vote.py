@@ -12,7 +12,7 @@ from bigchaindb.common import exceptions
 
 import bigchaindb
 from bigchaindb import Bigchain
-from bigchaindb.backend import connect, get_changefeed
+from bigchaindb import backend
 from bigchaindb.backend.changefeed import ChangeFeed
 from bigchaindb.consensus import BaseConsensusRules
 from bigchaindb.models import Transaction, Block
@@ -161,13 +161,16 @@ def create_pipeline():
     return vote_pipeline
 
 
+def get_changefeed():
+    connection = backend.connect(**bigchaindb.config['database'])
+    return backend.get_changefeed(connection, 'bigchain', ChangeFeed.INSERT,
+                                  prefeed=initial())
+
+
 def start():
     """Create, start, and return the block pipeline."""
 
-    connection = connect(**bigchaindb.config['database'])
-    changefeed = get_changefeed(connection, 'bigchain', ChangeFeed.INSERT,
-                                prefeed=initial())
     pipeline = create_pipeline()
-    pipeline.setup(indata=changefeed)
+    pipeline.setup(indata=get_changefeed())
     pipeline.start()
     return pipeline

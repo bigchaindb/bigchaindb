@@ -9,7 +9,7 @@ import logging
 from multipipes import Pipeline, Node, Pipe
 
 import bigchaindb
-from bigchaindb.backend import connect, get_changefeed
+from bigchaindb import backend
 from bigchaindb.backend.changefeed import ChangeFeed
 from bigchaindb.models import Transaction
 from bigchaindb import Bigchain
@@ -161,13 +161,16 @@ def create_pipeline():
     return pipeline
 
 
+def get_changefeed():
+    connection = backend.connect(**bigchaindb.config['database'])
+    return backend.get_changefeed(connection, 'backlog',
+                                  ChangeFeed.INSERT | ChangeFeed.UPDATE,
+                                  prefeed=initial())
+
+
 def start():
     """Create, start, and return the block pipeline."""
-    connection = connect(**bigchaindb.config['database'])
-    changefeed = get_changefeed(connection, 'backlog',
-                                ChangeFeed.INSERT | ChangeFeed.UPDATE,
-                                prefeed=initial())
     pipeline = create_pipeline()
-    pipeline.setup(indata=changefeed)
+    pipeline.setup(indata=get_changefeed())
     pipeline.start()
     return pipeline

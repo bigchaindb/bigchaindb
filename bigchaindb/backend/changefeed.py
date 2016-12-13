@@ -30,13 +30,14 @@ class ChangeFeed(Node):
         Args:
             table (str): name of the table to listen to for changes.
             operation (int): can be ChangeFeed.INSERT, ChangeFeed.DELETE, or
-                ChangeFeed.UPDATE. Combining multiple operation is possible
+                ChangeFeed.UPDATE. Combining multiple operations is possible
                 with the bitwise ``|`` operator
                 (e.g. ``ChangeFeed.INSERT | ChangeFeed.UPDATE``)
-            prefeed (:class:`~collections.abc.Iterable`): whatever set of data
-                you want to be published first.
-            connection (:class:`~bigchaindb.backend.connection.Connection`):
-                A connection to the database (can be None).
+            prefeed (:class:`~collections.abc.Iterable`, optional): whatever
+                set of data you want to be published first.
+            connection (:class:`~bigchaindb.backend.connection.Connection`, optional):  # noqa
+                A connection to the database. If no connection is provided a
+                default connection will be created.
         """
 
         super().__init__(name='changefeed')
@@ -53,7 +54,7 @@ class ChangeFeed(Node):
         """Main loop of the ``multipipes.Node``
 
         This method is responsible for first feeding the prefeed to the
-        outqueue and after that start the changefeed and recover from any
+        outqueue and after that starting the changefeed and recovering from any
         errors that may occur in the backend.
         """
         raise NotImplementedError

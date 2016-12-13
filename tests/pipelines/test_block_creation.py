@@ -160,11 +160,9 @@ def test_start(create_pipeline):
 
 def test_full_pipeline(b, user_pk):
     import random
-    import bigchaindb
-    from bigchaindb.backend import query, get_changefeed, connect
-    from bigchaindb.backend.changefeed import ChangeFeed
+    from bigchaindb.backend import query
     from bigchaindb.models import Block, Transaction
-    from bigchaindb.pipelines.block import create_pipeline, initial
+    from bigchaindb.pipelines.block import create_pipeline, get_changefeed
 
     outpipe = Pipe()
     # include myself here, so that some tx are actually assigned to me
@@ -178,12 +176,8 @@ def test_full_pipeline(b, user_pk):
 
     assert query.count_backlog(b.connection) == 100
 
-    connection = connect(**bigchaindb.config['database'])
-    changefeed = get_changefeed(connection, 'backlog',
-                                ChangeFeed.INSERT | ChangeFeed.UPDATE,
-                                prefeed=initial())
     pipeline = create_pipeline()
-    pipeline.setup(indata=changefeed, outdata=outpipe)
+    pipeline.setup(indata=get_changefeed(), outdata=outpipe)
     pipeline.start()
 
     time.sleep(2)
