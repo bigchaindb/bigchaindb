@@ -26,7 +26,7 @@ def create_database(conn, dbname):
 
 
 @register_schema(MongoDBConnection)
-def create_table(conn, dbname):
+def create_tables(conn, dbname):
     for table_name in ['bigchain', 'backlog', 'votes']:
         logger.info('Create `%s` table.', table_name)
         # create the table
@@ -42,7 +42,7 @@ def create_indexes(conn, dbname):
 
 
 @register_schema(MongoDBConnection)
-def drop(conn, dbname):
+def drop_database(conn, dbname):
     conn.drop_database(dbname)
 
 
