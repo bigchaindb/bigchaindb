@@ -26,6 +26,6 @@ For `TRANSFER` transactions we only keep the asset id.
 - `updatable`: Whether the data in the asset can be updated in the future or not. Defaults to false.
 - `refillable`: Whether the amount of the asset can change after its creation. Defaults to false.
 - `data`: A user supplied JSON document with custom information about the asset. Defaults to null.
-- _amount_: The amount of "shares". Only relevant if the asset is marked as divisible. Defaults to 1. The amount is not specified in the asset, but in the conditions (see next section).
+- _amount_: The amount of "shares". Only relevant if the asset is marked as divisible. Defaults to 1. The amount is not specified in the asset, but in the outputs (see next section).
 
 At the time of this writing, updatable and refillable assets are not yet implemented.
