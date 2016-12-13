@@ -1,6 +1,7 @@
 """Changefeed interfaces for backends."""
 
 from functools import singledispatch
+
 from multipipes import Node
 
 import bigchaindb
@@ -32,8 +33,8 @@ class ChangeFeed(Node):
                 ChangeFeed.UPDATE. Combining multiple operation is possible
                 with the bitwise ``|`` operator
                 (e.g. ``ChangeFeed.INSERT | ChangeFeed.UPDATE``)
-            prefeed (iterable): whatever set of data you want to be published
-                first.
+            prefeed (:class:`~collections.abc.Iterable`): whatever set of data
+                you want to be published first.
             connection (:class:`~bigchaindb.backend.connection.Connection`):
                 A connection to the database (can be None).
         """
