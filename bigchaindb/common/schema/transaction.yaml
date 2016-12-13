@@ -91,7 +91,7 @@ definitions:
         transaction has outputs but no inputs, so a dummy input is created.
 
         A ``TRANSFER`` transaction transfers ownership of an asset, by providing
-        fulfillments to outputs conditions of earlier transactions.
+        fulfillments to conditions in outputs of earlier transactions.
 
         A ``GENESIS`` transaction is a special case transaction used as the
         sole member of the first block in a BigchainDB ledger.
