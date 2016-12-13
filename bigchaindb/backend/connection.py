@@ -5,7 +5,8 @@ from bigchaindb.common.exceptions import ConfigurationError
 
 
 BACKENDS = {
-    'rethinkdb': 'bigchaindb.backend.rethinkdb.connection.RethinkDBConnection'
+    'rethinkdb': 'bigchaindb.backend.rethinkdb.connection.RethinkDBConnection',
+    'mongodb': 'bigchaindb.backend.mongodb.connection.MongoDBConnection',
 }
 
 
