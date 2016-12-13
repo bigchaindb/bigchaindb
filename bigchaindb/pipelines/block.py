@@ -6,7 +6,7 @@ function.
 """
 
 import logging
-from multipipes import Pipeline, Node
+from multipipes import Pipeline, Node, Pipe
 
 import bigchaindb
 from bigchaindb.backend import connect, get_changefeed
