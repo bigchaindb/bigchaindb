@@ -2,7 +2,7 @@ import time
 import logging
 
 from pymongo import MongoClient
-from pymongo.errors import ConnectionError
+from pymongo.errors import ConnectionFailure
 
 import bigchaindb
 from bigchaindb.backend.connection import Connection
@@ -39,7 +39,7 @@ class MongoDBConnection(Connection):
         for i in range(self.max_tries):
             try:
                 self.conn = MongoClient(self.host, self.port)
-            except ConnectionError as exc:
+            except ConnectionFailure as exc:
                 if i + 1 == self.max_tries:
                     raise
                 else:
