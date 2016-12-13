@@ -57,9 +57,9 @@ Transaction Schema
 
 * `Transaction`_
 
-* Condition_
+* Input_
 
-* Fulfillment_
+* Output_
 
 * Asset_
 
@@ -71,15 +71,15 @@ Transaction
 
 %(transaction)s
 
-Condition
+Input
 ----------
 
-%(condition)s
+%(input)s
 
-Fulfillment
+Output
 -----------
 
-%(fulfillment)s
+%(output)s
 
 Asset
 -----
@@ -99,8 +99,8 @@ def generate_transaction_docs():
 
     doc = TPL_TRANSACTION % {
         'transaction': render_section('Transaction', schema),
-        'condition': render_section('Condition', defs['condition']),
-        'fulfillment': render_section('Fulfillment', defs['fulfillment']),
+        'output': render_section('Output', defs['output']),
+        'input': render_section('Input', defs['input']),
         'asset': render_section('Asset', defs['asset']),
         'metadata': render_section('Metadata', defs['metadata']['anyOf'][0]),
         'container': 'transaction-schema',

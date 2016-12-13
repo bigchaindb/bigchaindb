@@ -79,7 +79,7 @@ class CyclicBlockchainError(Exception):
 
 class TransactionNotInValidBlock(Exception):
     """Raised when a transfer transaction is attempting to fulfill the
-    conditions of a transaction that is in an invalid or undecided block"""
+    outputs of a transaction that is in an invalid or undecided block"""
 
 
 class AssetIdMismatch(Exception):

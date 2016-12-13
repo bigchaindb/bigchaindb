@@ -33,18 +33,18 @@ class Transaction(Transaction):
             InvalidHash: if the hash of the transaction is wrong
             InvalidSignature: if the signature of the transaction is wrong
         """
-        if len(self.fulfillments) == 0:
-            raise ValueError('Transaction contains no fulfillments')
+        if len(self.inputs) == 0:
+            raise ValueError('Transaction contains no inputs')
 
         input_conditions = []
-        inputs_defined = all([ffill.tx_input for ffill in self.fulfillments])
+        inputs_defined = all([inp.fulfills for inp in self.inputs])
 
         if self.operation in (Transaction.CREATE, Transaction.GENESIS):
             # validate inputs
             if inputs_defined:
                 raise ValueError('A CREATE operation has no inputs')
             # validate asset
-            amount = sum([condition.amount for condition in self.conditions])
+            amount = sum([out.amount for out in self.outputs])
             self.asset.validate_asset(amount=amount)
         elif self.operation == Transaction.TRANSFER:
             if not inputs_defined:
@@ -54,9 +54,9 @@ class Transaction(Transaction):
             # store the inputs so that we can check if the asset ids match
             input_txs = []
             input_amount = 0
-            for ffill in self.fulfillments:
-                input_txid = ffill.tx_input.txid
-                input_cid = ffill.tx_input.cid
+            for input in self.inputs:
+                input_txid = input.fulfills.txid
+                input_idx = input.fulfills.idx
                 input_tx, status = bigchain.\
                     get_transaction(input_txid, include_status=True)
 
@@ -69,23 +69,22 @@ class Transaction(Transaction):
                         'input `{}` does not exist in a valid block'.format(
                             input_txid))
 
-                spent = bigchain.get_spent(input_txid, ffill.tx_input.cid)
+                spent = bigchain.get_spent(input_txid, input_idx)
                 if spent and spent.id != self.id:
                     raise DoubleSpend('input `{}` was already spent'
                                       .format(input_txid))
 
-                input_conditions.append(input_tx.conditions[input_cid])
+                input_conditions.append(input_tx.outputs[input_idx])
                 input_txs.append(input_tx)
-                if input_tx.conditions[input_cid].amount < 1:
+                if input_tx.outputs[input_idx].amount < 1:
                     raise AmountError('`amount` needs to be greater than zero')
-                input_amount += input_tx.conditions[input_cid].amount
+                input_amount += input_tx.outputs[input_idx].amount
 
             # validate asset id
             asset_id = Asset.get_asset_id(input_txs)
             if asset_id != self.asset.data_id:
-                raise AssetIdMismatch(('The asset id of the input does not'
-                                       ' match the asset id of the'
-                                       ' transaction'))
+                raise AssetIdMismatch('The asset id of the input does not '
+                                      'match the asset id of the transaction')
 
             # get the asset creation to see if its divisible or not
             asset = bigchain.get_asset_by_id(asset_id)
@@ -93,10 +92,10 @@ class Transaction(Transaction):
             asset.validate_asset(amount=input_amount)
             # validate the amounts
             output_amount = 0
-            for condition in self.conditions:
-                if condition.amount < 1:
+            for output in self.outputs:
+                if output.amount < 1:
                     raise AmountError('`amount` needs to be greater than zero')
-                output_amount += condition.amount
+                output_amount += output.amount
 
             if output_amount != input_amount:
                 raise AmountError(('The amount used in the inputs `{}`'
@@ -109,7 +108,7 @@ class Transaction(Transaction):
             raise TypeError('`operation`: `{}` must be either {}.'
                             .format(self.operation, allowed_operations))
 
-        if not self.fulfillments_valid(input_conditions):
+        if not self.inputs_valid(input_conditions):
             raise InvalidSignature()
         else:
             return self
