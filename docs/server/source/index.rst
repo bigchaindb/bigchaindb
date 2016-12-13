@@ -16,5 +16,6 @@ BigchainDB Server Documentation
    topic-guides/index
    data-models/index
    schema/transaction
+   schema/vote
    release-notes
    appendices/index

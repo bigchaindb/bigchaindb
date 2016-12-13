@@ -141,7 +141,7 @@ def test_single_in_single_own_single_out_single_own_transfer(b, user_pk,
     # create block
     block = b.create_block([tx_create_signed])
     assert block.validate(b) == block
-    b.write_block(block, durability='hard')
+    b.write_block(block)
     # vote
     vote = b.vote(block.id, b.get_last_voted_block().id, True)
     b.write_vote(vote)
@@ -175,7 +175,7 @@ def test_single_in_single_own_multiple_out_single_own_transfer(b, user_pk,
     # create block
     block = b.create_block([tx_create_signed])
     assert block.validate(b) == block
-    b.write_block(block, durability='hard')
+    b.write_block(block)
     # vote
     vote = b.vote(block.id, b.get_last_voted_block().id, True)
     b.write_vote(vote)
@@ -211,7 +211,7 @@ def test_single_in_single_own_single_out_multiple_own_transfer(b, user_pk,
     # create block
     block = b.create_block([tx_create_signed])
     assert block.validate(b) == block
-    b.write_block(block, durability='hard')
+    b.write_block(block)
     # vote
     vote = b.vote(block.id, b.get_last_voted_block().id, True)
     b.write_vote(vote)
@@ -252,7 +252,7 @@ def test_single_in_single_own_multiple_out_mix_own_transfer(b, user_pk,
     # create block
     block = b.create_block([tx_create_signed])
     assert block.validate(b) == block
-    b.write_block(block, durability='hard')
+    b.write_block(block)
     # vote
     vote = b.vote(block.id, b.get_last_voted_block().id, True)
     b.write_vote(vote)
@@ -294,7 +294,7 @@ def test_single_in_multiple_own_single_out_single_own_transfer(b, user_pk,
     # create block
     block = b.create_block([tx_create_signed])
     assert block.validate(b) == block
-    b.write_block(block, durability='hard')
+    b.write_block(block)
     # vote
     vote = b.vote(block.id, b.get_last_voted_block().id, True)
     b.write_vote(vote)
@@ -333,7 +333,7 @@ def test_multiple_in_single_own_single_out_single_own_transfer(b, user_pk,
     # create block
     block = b.create_block([tx_create_signed])
     assert block.validate(b) == block
-    b.write_block(block, durability='hard')
+    b.write_block(block)
     # vote
     vote = b.vote(block.id, b.get_last_voted_block().id, True)
     b.write_vote(vote)
@@ -370,7 +370,7 @@ def test_multiple_in_multiple_own_single_out_single_own_transfer(b, user_pk,
     # create block
     block = b.create_block([tx_create_signed])
     assert block.validate(b) == block
-    b.write_block(block, durability='hard')
+    b.write_block(block)
     # vote
     vote = b.vote(block.id, b.get_last_voted_block().id, True)
     b.write_vote(vote)
@@ -415,7 +415,7 @@ def test_muiltiple_in_mix_own_multiple_out_single_own_transfer(b, user_pk,
     # create block
     block = b.create_block([tx_create_signed])
     assert block.validate(b) == block
-    b.write_block(block, durability='hard')
+    b.write_block(block)
     # vote
     vote = b.vote(block.id, b.get_last_voted_block().id, True)
     b.write_vote(vote)
@@ -460,7 +460,7 @@ def test_muiltiple_in_mix_own_multiple_out_mix_own_transfer(b, user_pk,
     # create block
     block = b.create_block([tx_create_signed])
     assert block.validate(b) == block
-    b.write_block(block, durability='hard')
+    b.write_block(block)
     # vote
     vote = b.vote(block.id, b.get_last_voted_block().id, True)
     b.write_vote(vote)
@@ -512,7 +512,7 @@ def test_multiple_in_different_transactions(b, user_pk, user_sk):
     # create block
     block = b.create_block([tx_create_signed])
     assert block.validate(b) == block
-    b.write_block(block, durability='hard')
+    b.write_block(block)
     # vote
     vote = b.vote(block.id, b.get_last_voted_block().id, True)
     b.write_vote(vote)
@@ -528,7 +528,7 @@ def test_multiple_in_different_transactions(b, user_pk, user_sk):
     # create block
     block = b.create_block([tx_transfer1_signed])
     assert block.validate(b) == block
-    b.write_block(block, durability='hard')
+    b.write_block(block)
     # vote
     vote = b.vote(block.id, b.get_last_voted_block().id, True)
     b.write_vote(vote)
@@ -569,7 +569,7 @@ def test_amount_error_transfer(b, user_pk, user_sk):
     # create block
     block = b.create_block([tx_create_signed])
     assert block.validate(b) == block
-    b.write_block(block, durability='hard')
+    b.write_block(block)
     # vote
     vote = b.vote(block.id, b.get_last_voted_block().id, True)
     b.write_vote(vote)
@@ -612,7 +612,7 @@ def test_threshold_same_public_key(b, user_pk, user_sk):
     # create block
     block = b.create_block([tx_create_signed])
     assert block.validate(b) == block
-    b.write_block(block, durability='hard')
+    b.write_block(block)
     # vote
     vote = b.vote(block.id, b.get_last_voted_block().id, True)
     b.write_vote(vote)
@@ -641,7 +641,7 @@ def test_sum_amount(b, user_pk, user_sk):
     # create block
     block = b.create_block([tx_create_signed])
     assert block.validate(b) == block
-    b.write_block(block, durability='hard')
+    b.write_block(block)
     # vote
     vote = b.vote(block.id, b.get_last_voted_block().id, True)
     b.write_vote(vote)
@@ -670,7 +670,7 @@ def test_divide(b, user_pk, user_sk):
     # create block
     block = b.create_block([tx_create_signed])
     assert block.validate(b) == block
-    b.write_block(block, durability='hard')
+    b.write_block(block)
     # vote
     vote = b.vote(block.id, b.get_last_voted_block().id, True)
     b.write_vote(vote)
@@ -703,7 +703,7 @@ def test_non_positive_amounts_on_transfer(b, user_pk):
     # create block
     block = b.create_block([tx_create_signed])
     assert block.validate(b) == block
-    b.write_block(block, durability='hard')
+    b.write_block(block)
     # vote
     vote = b.vote(block.id, b.get_last_voted_block().id, True)
     b.write_vote(vote)
@@ -729,7 +729,7 @@ def test_non_positive_amounts_on_transfer_validate(b, user_pk, user_sk):
     # create block
     block = b.create_block([tx_create_signed])
     assert block.validate(b) == block
-    b.write_block(block, durability='hard')
+    b.write_block(block)
     # vote
     vote = b.vote(block.id, b.get_last_voted_block().id, True)
     b.write_vote(vote)

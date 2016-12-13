@@ -35,7 +35,7 @@ Let's analyze that command:
  `$HOME/bigchaindb_docker` to the container directory `/data`;
  this allows us to have the data persisted on the host machine,
  you can read more in the [official Docker
- documentation](https://docs.docker.com/engine/userguide/containers/dockervolumes/#mount-a-host-directory-as-a-data-volume)
+ documentation](https://docs.docker.com/engine/tutorials/dockervolumes/#/mount-a-host-directory-as-a-data-volume)
 * `-t` allocate a pseudo-TTY
 * `-i` keep STDIN open even if not attached
 * `bigchaindb/bigchaindb` the image to use

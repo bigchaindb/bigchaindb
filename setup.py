@@ -30,6 +30,7 @@ check_setuptools_features()
 dev_require = [
     'ipdb',
     'ipython',
+    'watchdog',
 ]
 
 docs_require = [
@@ -57,11 +58,13 @@ benchmarks_require = [
 ]
 
 install_requires = [
+    # TODO Consider not installing the db drivers, or putting them in extras.
     'rethinkdb~=2.3',  # i.e. a version between 2.3 and 3.0
+    'pymongo~=3.4',
     'pysha3>=0.3',
     'cryptoconditions>=0.5.0',
     'statsd>=3.2.1',
-    'python-rapidjson>=0.0.6',
+    'python-rapidjson>=0.0.8',
     'logstats>=0.2.1',
     'flask>=0.10.1',
     'flask-restful~=0.3.0',

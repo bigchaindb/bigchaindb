@@ -17,6 +17,9 @@ def dummy_block(b):
     return block
 
 
+DUMMY_SHA3 = '0123456789abcdef' * 4
+
+
 def test_vote_creation_valid(b):
     from bigchaindb.common import crypto
     from bigchaindb.common.util import serialize
@@ -24,17 +27,17 @@ def test_vote_creation_valid(b):
     # create valid block
     block = dummy_block(b)
     # retrieve vote
-    vote = b.vote(block.id, 'abc', True)
+    vote = b.vote(block.id, DUMMY_SHA3, True)
 
     # assert vote is correct
     assert vote['vote']['voting_for_block'] == block.id
-    assert vote['vote']['previous_block'] == 'abc'
+    assert vote['vote']['previous_block'] == DUMMY_SHA3
     assert vote['vote']['is_block_valid'] is True
     assert vote['vote']['invalid_reason'] is None
     assert vote['node_pubkey'] == b.me
     assert isinstance(vote['signature'], str)
     assert crypto.PublicKey(b.me).verify(serialize(vote['vote']).encode(),
-                                            vote['signature']) is True
+                                         vote['signature']) is True
 
 
 def test_vote_creation_invalid(b):
@@ -44,16 +47,16 @@ def test_vote_creation_invalid(b):
     # create valid block
     block = dummy_block(b)
     # retrieve vote
-    vote = b.vote(block.id, 'abc', False)
+    vote = b.vote(block.id, DUMMY_SHA3, False)
 
     # assert vote is correct
     assert vote['vote']['voting_for_block'] == block.id
-    assert vote['vote']['previous_block'] == 'abc'
+    assert vote['vote']['previous_block'] == DUMMY_SHA3
     assert vote['vote']['is_block_valid'] is False
     assert vote['vote']['invalid_reason'] is None
     assert vote['node_pubkey'] == b.me
     assert crypto.PublicKey(b.me).verify(serialize(vote['vote']).encode(),
-                                            vote['signature']) is True
+                                         vote['signature']) is True
 
 
 def test_vote_ungroup_returns_a_set_of_results(b):
@@ -154,10 +157,11 @@ def test_vote_accumulates_transactions(b):
 
 
 def test_valid_block_voting_sequential(b, monkeypatch):
+    from bigchaindb.backend import query
     from bigchaindb.common import crypto, util
     from bigchaindb.pipelines import vote
 
-    monkeypatch.setattr('time.time', lambda: 1)
+    monkeypatch.setattr('time.time', lambda: 1111111111)
     genesis = b.create_genesis_block()
     vote_obj = vote.Vote()
     block = dummy_block(b)
@@ -166,29 +170,30 @@ def test_valid_block_voting_sequential(b, monkeypatch):
         last_vote = vote_obj.vote(*vote_obj.validate_tx(tx, block_id, num_tx))
 
     vote_obj.write_vote(last_vote)
-    vote_rs = b.backend.get_votes_by_block_id_and_voter(block_id, b.me)
+    vote_rs = query.get_votes_by_block_id_and_voter(b.connection, block_id, b.me)
     vote_doc = vote_rs.next()
 
     assert vote_doc['vote'] == {'voting_for_block': block.id,
                                 'previous_block': genesis.id,
                                 'is_block_valid': True,
                                 'invalid_reason': None,
-                                'timestamp': '1'}
+                                'timestamp': '1111111111'}
 
     serialized_vote = util.serialize(vote_doc['vote']).encode()
     assert vote_doc['node_pubkey'] == b.me
     assert crypto.PublicKey(b.me).verify(serialized_vote,
-                                            vote_doc['signature']) is True
+                                         vote_doc['signature']) is True
 
 
 def test_valid_block_voting_multiprocessing(b, monkeypatch):
+    from bigchaindb.backend import query
     from bigchaindb.common import crypto, util
     from bigchaindb.pipelines import vote
 
     inpipe = Pipe()
     outpipe = Pipe()
 
-    monkeypatch.setattr('time.time', lambda: 1)
+    monkeypatch.setattr('time.time', lambda: 1111111111)
     genesis = b.create_genesis_block()
     vote_pipeline = vote.create_pipeline()
     vote_pipeline.setup(indata=inpipe, outdata=outpipe)
@@ -200,22 +205,23 @@ def test_valid_block_voting_multiprocessing(b, monkeypatch):
     vote_out = outpipe.get()
     vote_pipeline.terminate()
 
-    vote_rs = b.backend.get_votes_by_block_id_and_voter(block.id, b.me)
+    vote_rs = query.get_votes_by_block_id_and_voter(b.connection, block.id, b.me)
     vote_doc = vote_rs.next()
     assert vote_out['vote'] == vote_doc['vote']
     assert vote_doc['vote'] == {'voting_for_block': block.id,
                                 'previous_block': genesis.id,
                                 'is_block_valid': True,
                                 'invalid_reason': None,
-                                'timestamp': '1'}
+                                'timestamp': '1111111111'}
 
     serialized_vote = util.serialize(vote_doc['vote']).encode()
     assert vote_doc['node_pubkey'] == b.me
     assert crypto.PublicKey(b.me).verify(serialized_vote,
-                                            vote_doc['signature']) is True
+                                         vote_doc['signature']) is True
 
 
 def test_valid_block_voting_with_create_transaction(b, monkeypatch):
+    from bigchaindb.backend import query
     from bigchaindb.common import crypto, util
     from bigchaindb.models import Transaction
     from bigchaindb.pipelines import vote
@@ -227,7 +233,7 @@ def test_valid_block_voting_with_create_transaction(b, monkeypatch):
     tx = Transaction.create([b.me], [([test_user_pub], 1)])
     tx = tx.sign([b.me_private])
 
-    monkeypatch.setattr('time.time', lambda: 1)
+    monkeypatch.setattr('time.time', lambda: 1111111111)
     block = b.create_block([tx])
 
     inpipe = Pipe()
@@ -241,22 +247,23 @@ def test_valid_block_voting_with_create_transaction(b, monkeypatch):
     vote_out = outpipe.get()
     vote_pipeline.terminate()
 
-    vote_rs = b.backend.get_votes_by_block_id_and_voter(block.id, b.me)
+    vote_rs = query.get_votes_by_block_id_and_voter(b.connection, block.id, b.me)
     vote_doc = vote_rs.next()
     assert vote_out['vote'] == vote_doc['vote']
     assert vote_doc['vote'] == {'voting_for_block': block.id,
                                 'previous_block': genesis.id,
                                 'is_block_valid': True,
                                 'invalid_reason': None,
-                                'timestamp': '1'}
+                                'timestamp': '1111111111'}
 
     serialized_vote = util.serialize(vote_doc['vote']).encode()
     assert vote_doc['node_pubkey'] == b.me
     assert crypto.PublicKey(b.me).verify(serialized_vote,
-                                            vote_doc['signature']) is True
+                                         vote_doc['signature']) is True
 
 
 def test_valid_block_voting_with_transfer_transactions(monkeypatch, b):
+    from bigchaindb.backend import query
     from bigchaindb.common import crypto, util
     from bigchaindb.models import Transaction
     from bigchaindb.pipelines import vote
@@ -268,9 +275,9 @@ def test_valid_block_voting_with_transfer_transactions(monkeypatch, b):
     tx = Transaction.create([b.me], [([test_user_pub], 1)])
     tx = tx.sign([b.me_private])
 
-    monkeypatch.setattr('time.time', lambda: 1)
+    monkeypatch.setattr('time.time', lambda: 1111111111)
     block = b.create_block([tx])
-    b.write_block(block, durability='hard')
+    b.write_block(block)
 
     # create a `TRANSFER` transaction
     test_user2_priv, test_user2_pub = crypto.generate_key_pair()
@@ -278,9 +285,9 @@ def test_valid_block_voting_with_transfer_transactions(monkeypatch, b):
                                tx.asset)
     tx2 = tx2.sign([test_user_priv])
 
-    monkeypatch.setattr('time.time', lambda: 2)
+    monkeypatch.setattr('time.time', lambda: 2222222222)
     block2 = b.create_block([tx2])
-    b.write_block(block2, durability='hard')
+    b.write_block(block2)
 
     inpipe = Pipe()
     outpipe = Pipe()
@@ -296,36 +303,37 @@ def test_valid_block_voting_with_transfer_transactions(monkeypatch, b):
     vote2_out = outpipe.get()
     vote_pipeline.terminate()
 
-    vote_rs = b.backend.get_votes_by_block_id_and_voter(block.id, b.me)
+    vote_rs = query.get_votes_by_block_id_and_voter(b.connection, block.id, b.me)
     vote_doc = vote_rs.next()
     assert vote_out['vote'] == vote_doc['vote']
     assert vote_doc['vote'] == {'voting_for_block': block.id,
                                 'previous_block': genesis.id,
                                 'is_block_valid': True,
                                 'invalid_reason': None,
-                                'timestamp': '2'}
+                                'timestamp': '2222222222'}
 
     serialized_vote = util.serialize(vote_doc['vote']).encode()
     assert vote_doc['node_pubkey'] == b.me
     assert crypto.PublicKey(b.me).verify(serialized_vote,
-                                            vote_doc['signature']) is True
+                                         vote_doc['signature']) is True
 
-    vote2_rs = b.backend.get_votes_by_block_id_and_voter(block2.id, b.me)
+    vote2_rs = query.get_votes_by_block_id_and_voter(b.connection, block2.id, b.me)
     vote2_doc = vote2_rs.next()
     assert vote2_out['vote'] == vote2_doc['vote']
     assert vote2_doc['vote'] == {'voting_for_block': block2.id,
                                  'previous_block': block.id,
                                  'is_block_valid': True,
                                  'invalid_reason': None,
-                                 'timestamp': '2'}
+                                 'timestamp': '2222222222'}
 
     serialized_vote2 = util.serialize(vote2_doc['vote']).encode()
     assert vote2_doc['node_pubkey'] == b.me
     assert crypto.PublicKey(b.me).verify(serialized_vote2,
-                                            vote2_doc['signature']) is True
+                                         vote2_doc['signature']) is True
 
 
 def test_unsigned_tx_in_block_voting(monkeypatch, b, user_pk):
+    from bigchaindb.backend import query
     from bigchaindb.common import crypto, util
     from bigchaindb.models import Transaction
     from bigchaindb.pipelines import vote
@@ -333,7 +341,7 @@ def test_unsigned_tx_in_block_voting(monkeypatch, b, user_pk):
     inpipe = Pipe()
     outpipe = Pipe()
 
-    monkeypatch.setattr('time.time', lambda: 1)
+    monkeypatch.setattr('time.time', lambda: 1111111111)
     genesis = b.create_genesis_block()
     vote_pipeline = vote.create_pipeline()
     vote_pipeline.setup(indata=inpipe, outdata=outpipe)
@@ -347,22 +355,23 @@ def test_unsigned_tx_in_block_voting(monkeypatch, b, user_pk):
     vote_out = outpipe.get()
     vote_pipeline.terminate()
 
-    vote_rs = b.backend.get_votes_by_block_id_and_voter(block.id, b.me)
+    vote_rs = query.get_votes_by_block_id_and_voter(b.connection, block.id, b.me)
     vote_doc = vote_rs.next()
     assert vote_out['vote'] == vote_doc['vote']
     assert vote_doc['vote'] == {'voting_for_block': block.id,
                                 'previous_block': genesis.id,
                                 'is_block_valid': False,
                                 'invalid_reason': None,
-                                'timestamp': '1'}
+                                'timestamp': '1111111111'}
 
     serialized_vote = util.serialize(vote_doc['vote']).encode()
     assert vote_doc['node_pubkey'] == b.me
     assert crypto.PublicKey(b.me).verify(serialized_vote,
-                                            vote_doc['signature']) is True
+                                         vote_doc['signature']) is True
 
 
 def test_invalid_id_tx_in_block_voting(monkeypatch, b, user_pk):
+    from bigchaindb.backend import query
     from bigchaindb.common import crypto, util
     from bigchaindb.models import Transaction
     from bigchaindb.pipelines import vote
@@ -370,7 +379,7 @@ def test_invalid_id_tx_in_block_voting(monkeypatch, b, user_pk):
     inpipe = Pipe()
     outpipe = Pipe()
 
-    monkeypatch.setattr('time.time', lambda: 1)
+    monkeypatch.setattr('time.time', lambda: 1111111111)
     genesis = b.create_genesis_block()
     vote_pipeline = vote.create_pipeline()
     vote_pipeline.setup(indata=inpipe, outdata=outpipe)
@@ -386,22 +395,23 @@ def test_invalid_id_tx_in_block_voting(monkeypatch, b, user_pk):
     vote_out = outpipe.get()
     vote_pipeline.terminate()
 
-    vote_rs = b.backend.get_votes_by_block_id_and_voter(block['id'], b.me)
+    vote_rs = query.get_votes_by_block_id_and_voter(b.connection, block['id'], b.me)
     vote_doc = vote_rs.next()
     assert vote_out['vote'] == vote_doc['vote']
     assert vote_doc['vote'] == {'voting_for_block': block['id'],
                                 'previous_block': genesis.id,
                                 'is_block_valid': False,
                                 'invalid_reason': None,
-                                'timestamp': '1'}
+                                'timestamp': '1111111111'}
 
     serialized_vote = util.serialize(vote_doc['vote']).encode()
     assert vote_doc['node_pubkey'] == b.me
     assert crypto.PublicKey(b.me).verify(serialized_vote,
-                                            vote_doc['signature']) is True
+                                         vote_doc['signature']) is True
 
 
 def test_invalid_content_in_tx_in_block_voting(monkeypatch, b, user_pk):
+    from bigchaindb.backend import query
     from bigchaindb.common import crypto, util
     from bigchaindb.models import Transaction
     from bigchaindb.pipelines import vote
@@ -409,7 +419,7 @@ def test_invalid_content_in_tx_in_block_voting(monkeypatch, b, user_pk):
     inpipe = Pipe()
     outpipe = Pipe()
 
-    monkeypatch.setattr('time.time', lambda: 1)
+    monkeypatch.setattr('time.time', lambda: 1111111111)
     genesis = b.create_genesis_block()
     vote_pipeline = vote.create_pipeline()
     vote_pipeline.setup(indata=inpipe, outdata=outpipe)
@@ -425,29 +435,30 @@ def test_invalid_content_in_tx_in_block_voting(monkeypatch, b, user_pk):
     vote_out = outpipe.get()
     vote_pipeline.terminate()
 
-    vote_rs = b.backend.get_votes_by_block_id_and_voter(block['id'], b.me)
+    vote_rs = query.get_votes_by_block_id_and_voter(b.connection, block['id'], b.me)
     vote_doc = vote_rs.next()
     assert vote_out['vote'] == vote_doc['vote']
     assert vote_doc['vote'] == {'voting_for_block': block['id'],
                                 'previous_block': genesis.id,
                                 'is_block_valid': False,
                                 'invalid_reason': None,
-                                'timestamp': '1'}
+                                'timestamp': '1111111111'}
 
     serialized_vote = util.serialize(vote_doc['vote']).encode()
     assert vote_doc['node_pubkey'] == b.me
     assert crypto.PublicKey(b.me).verify(serialized_vote,
-                                            vote_doc['signature']) is True
+                                         vote_doc['signature']) is True
 
 
 def test_invalid_block_voting(monkeypatch, b, user_pk):
+    from bigchaindb.backend import query
     from bigchaindb.common import crypto, util
     from bigchaindb.pipelines import vote
 
     inpipe = Pipe()
     outpipe = Pipe()
 
-    monkeypatch.setattr('time.time', lambda: 1)
+    monkeypatch.setattr('time.time', lambda: 1111111111)
     genesis = b.create_genesis_block()
     vote_pipeline = vote.create_pipeline()
     vote_pipeline.setup(indata=inpipe, outdata=outpipe)
@@ -460,40 +471,41 @@ def test_invalid_block_voting(monkeypatch, b, user_pk):
     vote_out = outpipe.get()
     vote_pipeline.terminate()
 
-    vote_rs = b.backend.get_votes_by_block_id_and_voter(block['id'], b.me)
+    vote_rs = query.get_votes_by_block_id_and_voter(b.connection, block['id'], b.me)
     vote_doc = vote_rs.next()
     assert vote_out['vote'] == vote_doc['vote']
     assert vote_doc['vote'] == {'voting_for_block': block['id'],
                                 'previous_block': genesis.id,
                                 'is_block_valid': False,
                                 'invalid_reason': None,
-                                'timestamp': '1'}
+                                'timestamp': '1111111111'}
 
     serialized_vote = util.serialize(vote_doc['vote']).encode()
     assert vote_doc['node_pubkey'] == b.me
     assert crypto.PublicKey(b.me).verify(serialized_vote,
-                                            vote_doc['signature']) is True
+                                         vote_doc['signature']) is True
 
 
 def test_voter_considers_unvoted_blocks_when_single_node(monkeypatch, b):
+    from bigchaindb.backend import query
     from bigchaindb.pipelines import vote
 
     outpipe = Pipe()
 
-    monkeypatch.setattr('time.time', lambda: 1)
+    monkeypatch.setattr('time.time', lambda: 1111111111)
     b.create_genesis_block()
 
     block_ids = []
     # insert blocks in the database while the voter process is not listening
     # (these blocks won't appear in the changefeed)
-    monkeypatch.setattr('time.time', lambda: 2)
+    monkeypatch.setattr('time.time', lambda: 2222222222)
     block_1 = dummy_block(b)
     block_ids.append(block_1.id)
-    b.write_block(block_1, durability='hard')
-    monkeypatch.setattr('time.time', lambda: 3)
+    monkeypatch.setattr('time.time', lambda: 3333333333)
+    b.write_block(block_1)
     block_2 = dummy_block(b)
     block_ids.append(block_2.id)
-    b.write_block(block_2, durability='hard')
+    b.write_block(block_2)
 
     vote_pipeline = vote.create_pipeline()
     vote_pipeline.setup(indata=vote.get_changefeed(), outdata=outpipe)
@@ -505,10 +517,10 @@ def test_voter_considers_unvoted_blocks_when_single_node(monkeypatch, b):
     outpipe.get()
 
     # create a new block that will appear in the changefeed
-    monkeypatch.setattr('time.time', lambda: 4)
+    monkeypatch.setattr('time.time', lambda: 4444444444)
     block_3 = dummy_block(b)
     block_ids.append(block_3.id)
-    b.write_block(block_3, durability='hard')
+    b.write_block(block_3)
 
     # Same as before with the two `get`s
     outpipe.get()
@@ -516,30 +528,31 @@ def test_voter_considers_unvoted_blocks_when_single_node(monkeypatch, b):
     vote_pipeline.terminate()
 
     # retrieve vote
-    votes = [list(b.backend.get_votes_by_block_id(_id))[0]
+    votes = [list(query.get_votes_by_block_id(b.connection, _id))[0]
              for _id in block_ids]
 
     assert all(vote['node_pubkey'] == b.me for vote in votes)
 
 
 def test_voter_chains_blocks_with_the_previous_ones(monkeypatch, b):
+    from bigchaindb.backend import query
     from bigchaindb.pipelines import vote
 
     outpipe = Pipe()
 
-    monkeypatch.setattr('time.time', lambda: 1)
+    monkeypatch.setattr('time.time', lambda: 1111111111)
     b.create_genesis_block()
 
     block_ids = []
-    monkeypatch.setattr('time.time', lambda: 2)
+    monkeypatch.setattr('time.time', lambda: 2222222222)
     block_1 = dummy_block(b)
     block_ids.append(block_1.id)
-    b.write_block(block_1, durability='hard')
+    b.write_block(block_1)
 
-    monkeypatch.setattr('time.time', lambda: 3)
+    monkeypatch.setattr('time.time', lambda: 3333333333)
     block_2 = dummy_block(b)
     block_ids.append(block_2.id)
-    b.write_block(block_2, durability='hard')
+    b.write_block(block_2)
 
     vote_pipeline = vote.create_pipeline()
     vote_pipeline.setup(indata=vote.get_changefeed(), outdata=outpipe)
@@ -553,27 +566,29 @@ def test_voter_chains_blocks_with_the_previous_ones(monkeypatch, b):
 
     # retrive blocks from bigchain
     blocks = [b.get_block(_id) for _id in block_ids]
+
     # retrieve votes
-    votes = [list(b.backend.get_votes_by_block_id(_id))[0]
+    votes = [list(query.get_votes_by_block_id(b.connection, _id))[0]
              for _id in block_ids]
 
-    assert votes[0]['vote']['voting_for_block'] in (blocks[0]['id'], blocks[1]['id'])
-    assert votes[1]['vote']['voting_for_block'] in (blocks[0]['id'], blocks[1]['id'])
+    assert ({v['vote']['voting_for_block'] for v in votes} ==
+            {block['id'] for block in blocks})
 
 
 def test_voter_checks_for_previous_vote(monkeypatch, b):
+    from bigchaindb.backend import query
     from bigchaindb.pipelines import vote
 
     inpipe = Pipe()
     outpipe = Pipe()
 
-    monkeypatch.setattr('time.time', lambda: 1)
+    monkeypatch.setattr('time.time', lambda: 1111111111)
     b.create_genesis_block()
 
-    monkeypatch.setattr('time.time', lambda: 2)
+    monkeypatch.setattr('time.time', lambda: 2222222222)
     block_1 = dummy_block(b)
     inpipe.put(block_1.to_dict())
-    assert len(list(b.backend.get_votes_by_block_id(block_1.id))) == 0
+    assert len(list(query.get_votes_by_block_id(b.connection, block_1.id))) == 0
 
     vote_pipeline = vote.create_pipeline()
     vote_pipeline.setup(indata=inpipe, outdata=outpipe)
@@ -583,11 +598,11 @@ def test_voter_checks_for_previous_vote(monkeypatch, b):
     outpipe.get()
 
     # queue block for voting AGAIN
-    monkeypatch.setattr('time.time', lambda: 3)
+    monkeypatch.setattr('time.time', lambda: 3333333333)
     inpipe.put(block_1.to_dict())
 
     # queue another block
-    monkeypatch.setattr('time.time', lambda: 4)
+    monkeypatch.setattr('time.time', lambda: 4444444444)
     block_2 = dummy_block(b)
     inpipe.put(block_2.to_dict())
 
@@ -596,8 +611,8 @@ def test_voter_checks_for_previous_vote(monkeypatch, b):
 
     vote_pipeline.terminate()
 
-    assert len(list(b.backend.get_votes_by_block_id(block_1.id))) == 1
-    assert len(list(b.backend.get_votes_by_block_id(block_2.id))) == 1
+    assert len(list(query.get_votes_by_block_id(b.connection, block_1.id))) == 1
+    assert len(list(query.get_votes_by_block_id(b.connection, block_2.id))) == 1
 
 
 @patch.object(Pipeline, 'start')

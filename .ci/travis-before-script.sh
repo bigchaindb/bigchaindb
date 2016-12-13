@@ -2,6 +2,8 @@
 
 set -e -x
 
-if [ "${TOXENV}" == "py34" ] || [ "${TOXENV}" == "py35" ]; then
+if [[ "${TOXENV}" == *-rdb ]]; then
     rethinkdb --daemon
+elif [[ "${TOXENV}" == *-mdb ]]; then
+    sudo service mongod start
 fi
