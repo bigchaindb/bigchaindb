@@ -30,6 +30,7 @@ check_setuptools_features()
 dev_require = [
     'ipdb',
     'ipython',
+    'watchdog',
 ]
 
 docs_require = [
