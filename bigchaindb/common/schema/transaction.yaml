@@ -141,7 +141,6 @@ definitions:
     additionalProperties: false
     required:
     - amount
-    - language
     - condition
     - public_keys
     properties:
@@ -150,8 +149,6 @@ definitions:
         description: |
             Integral amount of the asset represented by this condition.
             In the case of a non divisible asset, this will always be 1.
-      language:
-        type: string
       condition:
         description: |
             Describes the condition that needs to be met to spend the output. Has the properties: 
@@ -181,10 +178,11 @@ definitions:
       condition.
     additionalProperties: false
     required:
+    - owners_before
     - fulfillment
     properties:
       owners_before:
-        "$ref": "#/definitions/owners_list"
+        "$ref": "#/definitions/public_keys"
         description: |
             List of public keys of the previous owners of the asset.
       fulfillment:
@@ -211,18 +209,20 @@ definitions:
         - type: string
           pattern: "^cf:([1-9a-f][0-9a-f]{0,3}|0):[a-zA-Z0-9_-]*$"
       fulfills:
-        type: 'object'
-        description: |
-          Reference to the output that is being spent.
-        additionalProperties: false
-        required:
-        - idx
-        - txid
-        properties:
-          idx:
-            "$ref": "#definitions/offset"
-          txid:
-            "$ref": "#definitions/sha3_hexdigest"
+        anyOf:
+        - type: 'object'
+          description: |
+            Reference to the output that is being spent.
+          additionalProperties: false
+          required:
+          - idx
+          - txid
+          properties:
+            idx:
+              "$ref": "#/definitions/offset"
+            txid:
+              "$ref": "#/definitions/sha3_hexdigest"
+        - type: 'null'
   metadata:
     anyOf:
     - type: object
