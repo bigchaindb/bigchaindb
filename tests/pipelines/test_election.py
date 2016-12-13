@@ -119,7 +119,7 @@ def test_check_requeue_transaction(b, user_pk):
     e.requeue_transactions(test_block)
 
     backlog_tx, status = b.get_transaction(tx1.id, include_status=True)
-    #backlog_tx = b.connection.run(r.table('backlog').get(tx1.id))
+    time.sleep(1)
     assert status == b.TX_IN_BACKLOG
     assert backlog_tx == tx1
 
