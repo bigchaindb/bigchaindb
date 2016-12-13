@@ -12,7 +12,7 @@ class TestTransactionModel(object):
             tx.validate(b)
 
         tx.operation = 'CREATE'
-        tx.fulfillments = []
+        tx.inputs = []
         with raises(ValueError):
             tx.validate(b)
 

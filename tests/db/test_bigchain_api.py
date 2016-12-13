@@ -275,7 +275,7 @@ class TestBigchainApi(object):
 
         assert len(block['block']['transactions']) == 1
         assert block['block']['transactions'][0]['operation'] == 'GENESIS'
-        assert block['block']['transactions'][0]['fulfillments'][0]['input'] is None
+        assert block['block']['transactions'][0]['inputs'][0]['fulfills'] is None
 
     def test_create_genesis_block_fails_if_table_not_empty(self, b):
         from bigchaindb.common.exceptions import GenesisBlockAlreadyExistsError
@@ -526,16 +526,16 @@ class TestBigchainApi(object):
     def test_non_create_input_not_found(self, b, user_pk):
         from cryptoconditions import Ed25519Fulfillment
         from bigchaindb.common.exceptions import TransactionDoesNotExist
-        from bigchaindb.common.transaction import (Fulfillment, Asset,
+        from bigchaindb.common.transaction import (Input, Asset,
                                                    TransactionLink)
         from bigchaindb.models import Transaction
         from bigchaindb import Bigchain
 
-        # Create a fulfillment for a non existing transaction
-        fulfillment = Fulfillment(Ed25519Fulfillment(public_key=user_pk),
-                                  [user_pk],
-                                  TransactionLink('somethingsomething', 0))
-        tx = Transaction.transfer([fulfillment], [([user_pk], 1)], Asset())
+        # Create an input for a non existing transaction
+        input = Input(Ed25519Fulfillment(public_key=user_pk),
+                      [user_pk],
+                      TransactionLink('somethingsomething', 0))
+        tx = Transaction.transfer([input], [([user_pk], 1)], Asset())
 
         with pytest.raises(TransactionDoesNotExist):
             tx.validate(Bigchain())
@@ -556,16 +556,16 @@ class TestTransactionValidation(object):
     def test_create_operation_with_inputs(self, b, user_pk, create_tx):
         from bigchaindb.common.transaction import TransactionLink
 
-        # Manipulate fulfillment so that it has a `tx_input` defined even
+        # Manipulate input so that it has a `fulfills` defined even
         # though it shouldn't have one
-        create_tx.fulfillments[0].tx_input = TransactionLink('abc', 0)
+        create_tx.inputs[0].fulfills = TransactionLink('abc', 0)
         with pytest.raises(ValueError) as excinfo:
             b.validate_transaction(create_tx)
         assert excinfo.value.args[0] == 'A CREATE operation has no inputs'
 
     def test_transfer_operation_no_inputs(self, b, user_pk,
                                           signed_transfer_tx):
-        signed_transfer_tx.fulfillments[0].tx_input = None
+        signed_transfer_tx.inputs[0].fulfills = None
         with pytest.raises(ValueError) as excinfo:
             b.validate_transaction(signed_transfer_tx)
 
@@ -575,7 +575,7 @@ class TestTransactionValidation(object):
         from bigchaindb.common.exceptions import TransactionDoesNotExist
         from bigchaindb.common.transaction import TransactionLink
 
-        signed_transfer_tx.fulfillments[0].tx_input = TransactionLink('c', 0)
+        signed_transfer_tx.inputs[0].fulfills = TransactionLink('c', 0)
         with pytest.raises(TransactionDoesNotExist):
             b.validate_transaction(signed_transfer_tx)
 
@@ -591,7 +591,7 @@ class TestTransactionValidation(object):
         tx = Transaction.create([pk], [([user_pk], 1)])
         tx.operation = 'TRANSFER'
         tx.asset = input_transaction.asset
-        tx.fulfillments[0].tx_input = input_tx
+        tx.inputs[0].fulfills = input_tx
 
         with pytest.raises(InvalidSignature):
             b.validate_transaction(tx)
@@ -773,8 +773,8 @@ class TestMultipleInputs(object):
 
         # validate transaction
         assert b.is_valid_transaction(tx) == tx
-        assert len(tx.fulfillments) == 1
-        assert len(tx.conditions) == 1
+        assert len(tx.inputs) == 1
+        assert len(tx.outputs) == 1
 
     def test_single_owner_before_multiple_owners_after_single_input(self, b,
                                                                     user_sk,
@@ -794,8 +794,8 @@ class TestMultipleInputs(object):
         tx = tx.sign([user_sk])
 
         assert b.is_valid_transaction(tx) == tx
-        assert len(tx.fulfillments) == 1
-        assert len(tx.conditions) == 1
+        assert len(tx.inputs) == 1
+        assert len(tx.outputs) == 1
 
     @pytest.mark.usefixtures('inputs')
     def test_multiple_owners_before_single_owner_after_single_input(self, b,
@@ -826,8 +826,8 @@ class TestMultipleInputs(object):
 
         # validate transaction
         assert b.is_valid_transaction(transfer_tx) == transfer_tx
-        assert len(transfer_tx.fulfillments) == 1
-        assert len(transfer_tx.conditions) == 1
+        assert len(transfer_tx.inputs) == 1
+        assert len(transfer_tx.outputs) == 1
 
     @pytest.mark.usefixtures('inputs')
     def test_multiple_owners_before_multiple_owners_after_single_input(self, b,
@@ -858,8 +858,8 @@ class TestMultipleInputs(object):
         tx = tx.sign([user_sk, user2_sk])
 
         assert b.is_valid_transaction(tx) == tx
-        assert len(tx.fulfillments) == 1
-        assert len(tx.conditions) == 1
+        assert len(tx.inputs) == 1
+        assert len(tx.outputs) == 1
 
     def test_get_owned_ids_single_tx_single_output(self, b, user_sk, user_pk):
         from bigchaindb.common import crypto
@@ -1016,8 +1016,8 @@ class TestMultipleInputs(object):
 
         # check spents
         input_txid = owned_inputs_user1.txid
-        input_cid = owned_inputs_user1.cid
-        spent_inputs_user1 = b.get_spent(input_txid, input_cid)
+        input_idx = owned_inputs_user1.idx
+        spent_inputs_user1 = b.get_spent(input_txid, input_idx)
         assert spent_inputs_user1 is None
 
         # create a transaction and block
@@ -1026,7 +1026,7 @@ class TestMultipleInputs(object):
         block = b.create_block([tx])
         b.write_block(block)
 
-        spent_inputs_user1 = b.get_spent(input_txid, input_cid)
+        spent_inputs_user1 = b.get_spent(input_txid, input_idx)
         assert spent_inputs_user1 == tx
 
     def test_get_spent_single_tx_single_output_invalid_block(self, b, user_sk, user_pk):
@@ -1051,8 +1051,8 @@ class TestMultipleInputs(object):
 
         # check spents
         input_txid = owned_inputs_user1.txid
-        input_cid = owned_inputs_user1.cid
-        spent_inputs_user1 = b.get_spent(input_txid, input_cid)
+        input_idx = owned_inputs_user1.idx
+        spent_inputs_user1 = b.get_spent(input_txid, input_idx)
         assert spent_inputs_user1 is None
 
         # create a transaction and block
@@ -1066,7 +1066,7 @@ class TestMultipleInputs(object):
         b.write_vote(vote)
         # NOTE: I have no idea why this line is here
         b.get_transaction(tx.id)
-        spent_inputs_user1 = b.get_spent(input_txid, input_cid)
+        spent_inputs_user1 = b.get_spent(input_txid, input_idx)
 
         # Now there should be no spents (the block is invalid)
         assert spent_inputs_user1 is None
@@ -1094,7 +1094,7 @@ class TestMultipleInputs(object):
 
         # check spents
         for input_tx in owned_inputs_user1:
-            assert b.get_spent(input_tx.txid, input_tx.cid) is None
+            assert b.get_spent(input_tx.txid, input_tx.idx) is None
 
         # transfer the first 2 inputs
         tx_transfer = Transaction.transfer(tx_create.to_inputs()[:2],
@@ -1106,12 +1106,12 @@ class TestMultipleInputs(object):
 
         # check that used inputs are marked as spent
         for ffill in tx_create.to_inputs()[:2]:
-            spent_tx = b.get_spent(ffill.tx_input.txid, ffill.tx_input.cid)
+            spent_tx = b.get_spent(ffill.fulfills.txid, ffill.fulfills.idx)
             assert spent_tx == tx_transfer_signed
 
         # check if remaining transaction that was unspent is also perceived
         # spendable by BigchainDB
-        assert b.get_spent(tx_create.to_inputs()[2].tx_input.txid, 2) is None
+        assert b.get_spent(tx_create.to_inputs()[2].fulfills.txid, 2) is None
 
     def test_get_spent_multiple_owners(self, b, user_sk, user_pk):
         import random
@@ -1135,7 +1135,7 @@ class TestMultipleInputs(object):
 
         # check spents
         for input_tx in owned_inputs_user1:
-            assert b.get_spent(input_tx.txid, input_tx.cid) is None
+            assert b.get_spent(input_tx.txid, input_tx.idx) is None
 
         # create a transaction
         tx = Transaction.transfer(transactions[0].to_inputs(),
