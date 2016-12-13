@@ -30,7 +30,7 @@ def test_input_deserialization_with_uri(ffill_uri, user_pub):
     assert input == expected
 
 
-def test_input_deserialization_with_invalid_fulfillment(user_pub):
+def test_input_deserialization_with_invalid_input(user_pub):
     from bigchaindb.common.transaction import Input
 
     ffill = {
@@ -70,7 +70,7 @@ def test_input_deserialization_with_unsigned_fulfillment(ffill_uri, user_pub):
     assert input == expected
 
 
-def test_condition_serialization(user_Ed25519, user_pub):
+def test_output_serialization(user_Ed25519, user_pub):
     from bigchaindb.common.transaction import Output
 
     expected = {
@@ -87,7 +87,7 @@ def test_condition_serialization(user_Ed25519, user_pub):
     assert cond.to_dict() == expected
 
 
-def test_condition_deserialization(user_Ed25519, user_pub):
+def test_output_deserialization(user_Ed25519, user_pub):
     from bigchaindb.common.transaction import Output
 
     expected = Output(user_Ed25519, [user_pub], 1)
@@ -104,7 +104,7 @@ def test_condition_deserialization(user_Ed25519, user_pub):
     assert cond == expected
 
 
-def test_condition_hashlock_serialization():
+def test_output_hashlock_serialization():
     from bigchaindb.common.transaction import Output
     from cryptoconditions import PreimageSha256Fulfillment
 
@@ -123,7 +123,7 @@ def test_condition_hashlock_serialization():
     assert cond.to_dict() == expected
 
 
-def test_condition_hashlock_deserialization():
+def test_output_hashlock_deserialization():
     from bigchaindb.common.transaction import Output
     from cryptoconditions import PreimageSha256Fulfillment
 
@@ -143,14 +143,14 @@ def test_condition_hashlock_deserialization():
     assert cond == expected
 
 
-def test_invalid_condition_initialization(cond_uri, user_pub):
+def test_invalid_output_initialization(cond_uri, user_pub):
     from bigchaindb.common.transaction import Output
 
     with raises(TypeError):
         Output(cond_uri, user_pub)
 
 
-def test_generate_conditions_split_half_recursive(user_pub, user2_pub,
+def test_generate_output_split_half_recursive(user_pub, user2_pub,
                                                   user3_pub):
     from bigchaindb.common.transaction import Output
     from cryptoconditions import Ed25519Fulfillment, ThresholdSha256Fulfillment
@@ -170,7 +170,7 @@ def test_generate_conditions_split_half_recursive(user_pub, user2_pub,
     assert cond.fulfillment.to_dict() == expected.to_dict()
 
 
-def test_generate_conditions_split_half_single_owner(user_pub, user2_pub,
+def test_generate_outputs_split_half_single_owner(user_pub, user2_pub,
                                                      user3_pub):
     from bigchaindb.common.transaction import Output
     from cryptoconditions import Ed25519Fulfillment, ThresholdSha256Fulfillment
@@ -190,7 +190,7 @@ def test_generate_conditions_split_half_single_owner(user_pub, user2_pub,
     assert cond.fulfillment.to_dict() == expected.to_dict()
 
 
-def test_generate_conditions_flat_ownage(user_pub, user2_pub, user3_pub):
+def test_generate_outputs_flat_ownage(user_pub, user2_pub, user3_pub):
     from bigchaindb.common.transaction import Output
     from cryptoconditions import Ed25519Fulfillment, ThresholdSha256Fulfillment
 
@@ -207,7 +207,7 @@ def test_generate_conditions_flat_ownage(user_pub, user2_pub, user3_pub):
     assert cond.fulfillment.to_dict() == expected.to_dict()
 
 
-def test_generate_conditions_single_owner(user_pub):
+def test_generate_output_single_owner(user_pub):
     from bigchaindb.common.transaction import Output
     from cryptoconditions import Ed25519Fulfillment
 
@@ -217,7 +217,7 @@ def test_generate_conditions_single_owner(user_pub):
     assert cond.fulfillment.to_dict() == expected.to_dict()
 
 
-def test_generate_conditions_single_owner_with_condition(user_pub):
+def test_generate_output_single_owner_with_output(user_pub):
     from bigchaindb.common.transaction import Output
     from cryptoconditions import Ed25519Fulfillment
 
@@ -227,7 +227,7 @@ def test_generate_conditions_single_owner_with_condition(user_pub):
     assert cond.fulfillment.to_dict() == expected.to_dict()
 
 
-def test_generate_conditions_invalid_parameters(user_pub, user2_pub,
+def test_generate_output_invalid_parameters(user_pub, user2_pub,
                                                 user3_pub):
     from bigchaindb.common.transaction import Output
 
@@ -372,7 +372,7 @@ def test_tx_serialization_with_incorrect_hash(utx):
     utx_dict.pop('id')
 
 
-def test_invalid_fulfillment_initialization(user_input, user_pub):
+def test_invalid_input_initialization(user_input, user_pub):
     from bigchaindb.common.transaction import Input
 
     with raises(TypeError):
@@ -602,16 +602,15 @@ def test_sign_threshold_with_invalid_params(utx, user_user2_threshold_input,
                                                   {user3_pub: user3_priv})
 
 
-def test_validate_fulfillment_with_invalid_parameters(utx):
+def test_validate_input_with_invalid_parameters(utx):
     from bigchaindb.common.transaction import Transaction
 
     input_conditions = [out.fulfillment.condition_uri for out in utx.outputs]
     tx_dict = utx.to_dict()
     tx_dict = Transaction._remove_signatures(tx_dict)
     tx_serialized = Transaction._to_str(tx_dict)
-    assert utx._input_valid(utx.inputs[0],
-                                  tx_serialized,
-                                  input_conditions) is False
+    valid = utx._input_valid(utx.inputs[0], tx_serialized, input_conditions)
+    assert not valid
 
 
 def test_validate_multiple_inputs(user_input, user_output, user_priv):
@@ -1016,7 +1015,7 @@ def test_create_transfer_with_invalid_parameters(user_pub):
         Transaction.transfer(['fulfillment'], [([user_pub],)], Asset())
 
 
-def test_cant_add_empty_condition():
+def test_cant_add_empty_output():
     from bigchaindb.common.transaction import Transaction, Asset
 
     with patch.object(Asset, 'validate_asset', return_value=None):
@@ -1025,7 +1024,7 @@ def test_cant_add_empty_condition():
         tx.add_output(None)
 
 
-def test_cant_add_empty_fulfillment():
+def test_cant_add_empty_input():
     from bigchaindb.common.transaction import Transaction, Asset
 
     with patch.object(Asset, 'validate_asset', return_value=None):
