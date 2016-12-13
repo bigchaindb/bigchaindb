@@ -65,7 +65,7 @@ All keys are represented with
 The cryptoconditions package uses the
 [**base58** package](https://pypi.python.org/pypi/base58)
 to calculate a Base58 encoding.
-(There's no standard Base58 encoding.)
+(There's no standard for Base58 encoding.)
 Here's an example public/private key pair:
 
 ```js
