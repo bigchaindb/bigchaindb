@@ -9,6 +9,7 @@ from bigchaindb.backend.connection import Connection
 
 logger = logging.getLogger(__name__)
 
+
 class MongoDBConnection(Connection):
 
     def __init__(self, host=None, port=None, dbname=None, max_tries=3):
