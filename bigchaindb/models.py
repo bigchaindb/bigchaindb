@@ -44,7 +44,7 @@ class Transaction(Transaction):
             if inputs_defined:
                 raise ValueError('A CREATE operation has no inputs')
             # validate asset
-            amount = sum([out.amount for out in self.outputs])
+            amount = sum([output.amount for output in self.outputs])
             self.asset.validate_asset(amount=amount)
         elif self.operation == Transaction.TRANSFER:
             if not inputs_defined:
