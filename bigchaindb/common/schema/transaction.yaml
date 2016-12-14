@@ -220,7 +220,7 @@ definitions:
             idx:
               "$ref": "#/definitions/offset"
               description: |
-                Index of the condition (in the output) being fulfilled
+                Index of the output containing the condition being fulfilled
             txid:
               "$ref": "#/definitions/sha3_hexdigest"
               description: |
