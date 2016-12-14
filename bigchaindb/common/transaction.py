@@ -431,21 +431,23 @@ class Asset(object):
 
     @staticmethod
     def get_asset_id(transactions):
-        """Get the asset id from a list of transaction ids.
+        """Get the asset id from a list of :class:`~.Transactions`.
 
         This is useful when we want to check if the multiple inputs of a
         transaction are related to the same asset id.
 
         Args:
             transactions (:obj:`list` of :class:`~bigchaindb.common.
-                transaction.Transaction`): list of transaction usually inputs
-                that should have a matching asset_id
+                transaction.Transaction`): A list of Transactions.
+                Usually input Transactions that should have a matching
+                asset ID.
 
         Returns:
             str: uuid of the asset.
 
         Raises:
-            AssetIdMismatch: If the inputs are related to different assets.
+            :exc:`AssetIdMismatch`: If the inputs are related to different
+                assets.
         """
 
         if not isinstance(transactions, list):
@@ -454,7 +456,7 @@ class Asset(object):
         # create a set of asset_ids
         asset_ids = {tx.asset.data_id for tx in transactions}
 
-        # check that all the transasctions have the same asset_id
+        # check that all the transasctions have the same asset id
         if len(asset_ids) > 1:
             raise AssetIdMismatch(('All inputs of all transactions passed'
                                    ' need to have the same asset id'))
@@ -537,6 +539,10 @@ class Transaction(object):
                 spend.
             conditions (:obj:`list` of :class:`~bigchaindb.common.
                 transaction.Condition`, optional): Define the assets to lock.
+            asset (:class:`~.Asset`|:class:`~.AssetLink`): Asset or Asset link
+                associated with this Transaction. ``CREATE`` and ``GENESIS``
+                Transactions require an Asset while ``TRANSFER`` Transactions
+                require an AssetLink.
             metadata (dict):
                 Metadata to be stored along with the Transaction.
             version (int): Defines the version number of a Transaction.
