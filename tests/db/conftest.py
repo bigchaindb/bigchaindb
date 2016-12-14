@@ -7,12 +7,12 @@ Tasks:
 """
 
 import pytest
-import rethinkdb as r
 
 from bigchaindb import Bigchain
 from bigchaindb.backend import connect, schema
 from bigchaindb.common import crypto
-from bigchaindb.common.exceptions import DatabaseAlreadyExists
+from bigchaindb.common.exceptions import (DatabaseAlreadyExists,
+                                          DatabaseDoesNotExist)
 
 
 USER2_SK, USER2_PK = crypto.generate_key_pair()
@@ -30,23 +30,22 @@ def setup_database(request, node_config):
     db_name = node_config['database']['name']
     conn = connect()
 
-    if conn.run(r.db_list().contains(db_name)):
-        conn.run(r.db_drop(db_name))
-
     try:
-        schema.init_database()
+        schema.init_database(conn)
     except DatabaseAlreadyExists:
         print('Database already exists.')
+        schema.drop_database(conn, db_name)
+        schema.init_database(conn)
 
     print('Finishing init database')
 
     def fin():
-        print('Deleting `{}` database'.format(db_name))
         conn = connect()
+        print('Deleting `{}` database'.format(db_name))
         try:
-            conn.run(r.db_drop(db_name))
-        except r.ReqlOpFailedError as e:
-            if e.message != 'Database `{}` does not exist.'.format(db_name):
+            schema.drop_database(conn, db_name)
+        except DatabaseDoesNotExist as e:
+            if str(e) != 'Database `{}` does not exist'.format(db_name):
                 raise
         print('Finished deleting `{}`'.format(db_name))
 
@@ -60,11 +59,12 @@ def cleanup_tables(request, node_config):
     def fin():
         conn = connect()
         try:
-            conn.run(r.db(db_name).table('bigchain').delete())
-            conn.run(r.db(db_name).table('backlog').delete())
-            conn.run(r.db(db_name).table('votes').delete())
-        except r.ReqlOpFailedError as e:
-            if e.message != 'Database `{}` does not exist.'.format(db_name):
+            schema.drop_database(conn, db_name)
+            schema.create_database(conn, db_name)
+            schema.create_tables(conn, db_name)
+            schema.create_indexes(conn, db_name)
+        except DatabaseDoesNotExist as e:
+            if str(e) != 'Database `{}` does not exist'.format(db_name):
                 raise
 
     request.addfinalizer(fin)
