@@ -16,6 +16,8 @@ from bigchaindb.common.util import serialize, gen_timestamp
 class Input(object):
     """A Input is used to spend assets locked by an Output.
 
+    Wraps around a Crypto-condition Fulfillment.
+
         Attributes:
             fulfillment (:class:`cryptoconditions.Fulfillment`): A Fulfillment
                 to be signed with a private key.
@@ -27,7 +29,7 @@ class Input(object):
     """
 
     def __init__(self, fulfillment, owners_before, fulfills=None):
-        """Fulfillment shims a Cryptocondition Fulfillment for BigchainDB.
+        """Create an instance of an :class:`~.Input`.
 
             Args:
                 fulfillment (:class:`cryptoconditions.Fulfillment`): A
@@ -104,7 +106,7 @@ class Input(object):
                 Fulfillment that is not yet signed.
 
             Args:
-                data (dict): The Fulfillment to be transformed.
+                data (dict): The Input to be transformed.
 
             Returns:
                 :class:`~bigchaindb.common.transaction.Input`
@@ -591,7 +593,7 @@ class Transaction(object):
                 asset (:class:`~bigchaindb.common.transaction.Asset`): An Asset
                     to be transferred or created in a Transaction.
                 inputs (:obj:`list` of :class:`~bigchaindb.common.
-                    transaction.Fulfillment`, optional): Define the assets to
+                    transaction.Input`, optional): Define the assets to
                     spend.
                 outputs (:obj:`list` of :class:`~bigchaindb.common.
                     transaction.Condition`, optional): Define the assets to
@@ -792,7 +794,7 @@ class Transaction(object):
         """Adds an input to a Transaction's list of inputs.
 
             Args:
-                fulfillment (:class:`~bigchaindb.common.transaction.
+                input_ (:class:`~bigchaindb.common.transaction.
                     Input`): An Input to be added to the Transaction.
         """
         if not isinstance(input_, Input):
