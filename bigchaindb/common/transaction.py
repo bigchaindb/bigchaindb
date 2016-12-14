@@ -998,26 +998,26 @@ class Transaction(object):
             raise TypeError('`operation` must be one of {}'
                             .format(allowed_ops))
 
-    def _inputs_valid(self, output_uris):
+    def _inputs_valid(self, output_condition_uris):
         """Validates an Input against a given set of Outputs.
 
             Note:
-                The number of `output_uris` must be equal to the
+                The number of `output_condition_uris` must be equal to the
                 number of Inputs a Transaction has.
 
             Args:
-                output_uris (:obj:`list` of :obj:`str`): A list of
+                output_condition_uris (:obj:`list` of :obj:`str`): A list of
                     Outputs to check the Inputs against.
 
             Returns:
                 bool: If all Outputs are valid.
         """
 
-        if len(self.inputs) != len(output_uris):
+        if len(self.inputs) != len(output_condition_uris):
             raise ValueError('Inputs and '
-                             'output_uris must have the same count')
+                             'output_condition_uris must have the same count')
 
-        def gen_tx(input, output, output_uri=None):
+        def gen_tx(input, output, output_condition_uri=None):
             """Splits multiple IO Transactions into partial single IO
             Transactions.
             """
@@ -1029,19 +1029,19 @@ class Transaction(object):
 
             # TODO: Use local reference to class, not `Transaction.`
             return Transaction._input_valid(input, self.operation,
-                                            tx_serialized, output_uri)
+                                            tx_serialized, output_condition_uri)
 
         partial_transactions = map(gen_tx, self.inputs,
-                                   self.outputs, output_uris)
+                                   self.outputs, output_condition_uris)
         return all(partial_transactions)
 
     @staticmethod
-    def _input_valid(input, operation, tx_serialized, output_uri=None):
+    def _input_valid(input, operation, tx_serialized, output_condition_uri=None):
         """Validates a single Input against a single Output.
 
             Note:
                 In case of a `CREATE` or `GENESIS` Transaction, this method
-                does not validate against `output_uri`.
+                does not validate against `output_condition_uri`.
 
             Args:
                 input (:class:`~bigchaindb.common.transaction.
@@ -1049,7 +1049,7 @@ class Transaction(object):
                 operation (str): The type of Transaction.
                 tx_serialized (str): The Transaction used as a message when
                     initially signing it.
-                output_uri (str, optional): An Output to check the
+                output_condition_uri (str, optional): An Output to check the
                     Input against.
 
             Returns:
@@ -1066,7 +1066,7 @@ class Transaction(object):
             #       output is always valid.
             output_valid = True
         else:
-            output_valid = output_uri == ccffill.condition_uri
+            output_valid = output_condition_uri == ccffill.condition_uri
 
         # NOTE: We pass a timestamp to `.validate`, as in case of a timeout
         #       condition we'll have to validate against it
