@@ -477,7 +477,7 @@ class Asset(object):
                 raise AmountError('`amount` must be greater than 0')
 
 
-class AssetLink(Asset):
+class AssetLink(object):
     """An object for unidirectional linking to a Asset.
     """
 
