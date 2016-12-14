@@ -1,6 +1,7 @@
+from importlib import import_module
+
 import bigchaindb
 from bigchaindb.common.exceptions import ConfigurationError
-from importlib import import_module
 
 
 BACKENDS = {

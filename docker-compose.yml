@@ -28,6 +28,7 @@ services:
       - ./setup.cfg:/usr/src/app/setup.cfg
       - ./pytest.ini:/usr/src/app/pytest.ini
       - ./tox.ini:/usr/src/app/tox.ini
+      - ./Makefile:/usr/src/app/Makefile
     environment:
       BIGCHAINDB_DATABASE_HOST: rdb
       BIGCHAINDB_SERVER_BIND: 0.0.0.0:9984

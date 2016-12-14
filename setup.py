@@ -30,6 +30,7 @@ check_setuptools_features()
 dev_require = [
     'ipdb',
     'ipython',
+    'watchdog',
 ]
 
 docs_require = [
@@ -63,7 +64,7 @@ install_requires = [
     'pysha3>=0.3',
     'cryptoconditions>=0.5.0',
     'statsd>=3.2.1',
-    'python-rapidjson>=0.0.6',
+    'python-rapidjson>=0.0.8',
     'logstats>=0.2.1',
     'flask>=0.10.1',
     'flask-restful~=0.3.0',
@@ -115,5 +116,5 @@ setup(
         'dev': dev_require + tests_require + docs_require + benchmarks_require,
         'docs': docs_require,
     },
-    package_data={'bigchaindb.common.schema': ['transaction.yaml']},
+    package_data={'bigchaindb.common.schema': ['*.yaml']},
 )

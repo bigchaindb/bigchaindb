@@ -6,6 +6,7 @@ function.
 """
 
 import logging
+
 from multipipes import Pipeline, Node, Pipe
 
 import bigchaindb
@@ -133,14 +134,6 @@ class BlockPipeline:
         """
         self.bigchain.delete_transaction(*[tx.id for tx in block.transactions])
         return block
-
-
-def initial():
-    """Return old transactions from the backlog."""
-
-    bigchain = Bigchain()
-
-    return bigchain.get_old_transactions()
 
 
 def create_pipeline():
