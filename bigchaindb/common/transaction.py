@@ -195,7 +195,7 @@ class Output(object):
         Attributes:
             fulfillment (:class:`cryptoconditions.Fulfillment`): A Fulfillment
                 to extract a Condition from.
-            owners_after (:obj:`list` of :obj:`str`, optional): A list of
+            public_keys (:obj:`list` of :obj:`str`, optional): A list of
                 owners before a Transaction was confirmed.
     """
 
@@ -302,7 +302,7 @@ class Output(object):
             return cls(threshold_cond, public_keys, amount=amount)
 
     @classmethod
-    def _gen_condition(cls, initial, current):
+    def _gen_condition(cls, initial, new_public_keys):
         """Generates ThresholdSha256 conditions from a list of new owners.
 
             Note:
@@ -313,38 +313,37 @@ class Output(object):
             Args:
                 initial (:class:`cryptoconditions.ThresholdSha256Fulfillment`):
                     A Condition representing the overall root.
-                current (:obj:`list` of :obj:`str`|str): A list of new owners
-                    or a single new owner.
+                new_public_keys (:obj:`list` of :obj:`str`|str): A list of new
+                    owners or a single new owner.
 
             Returns:
                 :class:`cryptoconditions.ThresholdSha256Fulfillment`:
         """
-        owners_after = current
         try:
-            threshold = len(owners_after)
+            threshold = len(new_public_keys)
         except TypeError:
             threshold = None
 
-        if isinstance(owners_after, list) and len(owners_after) > 1:
+        if isinstance(new_public_keys, list) and len(new_public_keys) > 1:
             ffill = ThresholdSha256Fulfillment(threshold=threshold)
-            reduce(cls._gen_condition, owners_after, ffill)
-        elif isinstance(owners_after, list) and len(owners_after) <= 1:
+            reduce(cls._gen_condition, new_public_keys, ffill)
+        elif isinstance(new_public_keys, list) and len(new_public_keys) <= 1:
             raise ValueError('Sublist cannot contain single owner')
         else:
             try:
-                owners_after = owners_after.pop()
+                new_public_keys = new_public_keys.pop()
             except AttributeError:
                 pass
             try:
-                ffill = Ed25519Fulfillment(public_key=owners_after)
+                ffill = Ed25519Fulfillment(public_key=new_public_keys)
             except TypeError:
                 # NOTE: Instead of submitting base58 encoded addresses, a user
                 #       of this class can also submit fully instantiated
-                #       Cryptoconditions. In the case of casting `owners_after`
-                #       to a Ed25519Fulfillment with the result of a
-                #       `TypeError`, we're assuming that `owners_after` is a
-                #       Cryptocondition then.
-                ffill = owners_after
+                #       Cryptoconditions. In the case of casting
+                #       `new_public_keys` to a Ed25519Fulfillment with the
+                #       result of a `TypeError`, we're assuming that
+                #       `new_public_keys` is a Cryptocondition then.
+                ffill = new_public_keys
         initial.add_subfulfillment(ffill)
         return initial
 
