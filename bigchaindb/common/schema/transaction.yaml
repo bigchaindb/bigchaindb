@@ -133,8 +133,8 @@ definitions:
   output:
     type: object
     description: |
-        A transaction output. Describes a quantity of an asset and a locking
-        script to spend the output.
+        A transaction output. Describes the quantity of an asset and the
+        requirements that must be met to spend the output.
 
         See also: Input_.
     additionalProperties: false
@@ -173,8 +173,8 @@ definitions:
   input:
     type: "object"
     description:
-      An input spends a previous output, by providing a fulfillment to the output's
-      condition.
+      An input spends a previous output, by providing one or more fulfillments
+      that fulfill the conditions of the previous output.
     additionalProperties: false
     required:
     - owners_before
@@ -219,8 +219,12 @@ definitions:
           properties:
             idx:
               "$ref": "#/definitions/offset"
+              description: |
+                Index of the output containing the condition being fulfilled
             txid:
               "$ref": "#/definitions/sha3_hexdigest"
+              description: |
+                Transaction ID containing the output to spend
         - type: 'null'
   metadata:
     anyOf:

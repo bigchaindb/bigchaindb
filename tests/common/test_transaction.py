@@ -832,10 +832,10 @@ def test_create_create_transaction_threshold(user_pub, user2_pub, user3_pub,
         'inputs': [
             {
                 'owners_before': [
-                    user_pub
+                    user_pub,
                 ],
                 'fulfillment': None,
-                'fulfills': None
+                'fulfills': None,
             },
         ],
         'operation': 'CREATE',

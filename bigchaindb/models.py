@@ -37,14 +37,14 @@ class Transaction(Transaction):
             raise ValueError('Transaction contains no inputs')
 
         input_conditions = []
-        inputs_defined = all([inp.fulfills for inp in self.inputs])
+        inputs_defined = all([input_.fulfills for input_ in self.inputs])
 
         if self.operation in (Transaction.CREATE, Transaction.GENESIS):
             # validate inputs
             if inputs_defined:
                 raise ValueError('A CREATE operation has no inputs')
             # validate asset
-            amount = sum([out.amount for out in self.outputs])
+            amount = sum([output.amount for output in self.outputs])
             self.asset.validate_asset(amount=amount)
         elif self.operation == Transaction.TRANSFER:
             if not inputs_defined:

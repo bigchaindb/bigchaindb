@@ -424,17 +424,17 @@ class Bigchain(object):
             # use it after the execution of this function.
             # a transaction can contain multiple outputs so we need to iterate over all of them
             # to get a list of outputs available to spend
-            for index, out in enumerate(tx['outputs']):
+            for index, output in enumerate(tx['outputs']):
                 # for simple signature conditions there are no subfulfillments
                 # check if the owner is in the condition `owners_after`
-                if len(out['public_keys']) == 1:
-                    if out['condition']['details']['public_key'] == owner:
+                if len(output['public_keys']) == 1:
+                    if output['condition']['details']['public_key'] == owner:
                         tx_link = TransactionLink(tx['id'], index)
                 else:
                     # for transactions with multiple `public_keys` there will be several subfulfillments nested
                     # in the condition. We need to iterate the subfulfillments to make sure there is a
                     # subfulfillment for `owner`
-                    if util.condition_details_has_owner(out['condition']['details'], owner):
+                    if util.condition_details_has_owner(output['condition']['details'], owner):
                         tx_link = TransactionLink(tx['id'], index)
                 # check if input was already spent
                 if not self.get_spent(tx_link.txid, tx_link.idx):
