@@ -157,8 +157,7 @@ def create_pipeline():
 def get_changefeed():
     connection = backend.connect(**bigchaindb.config['database'])
     return backend.get_changefeed(connection, 'backlog',
-                                  ChangeFeed.INSERT | ChangeFeed.UPDATE,
-                                  prefeed=initial())
+                                  ChangeFeed.INSERT | ChangeFeed.UPDATE)
 
 
 def start():

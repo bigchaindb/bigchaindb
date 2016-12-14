@@ -244,14 +244,3 @@ def get_unvoted_blocks(connection, node_pubkey):
     #        database level. Solving issue #444 can help untangling the situation
     unvoted_blocks = filter(lambda block: not util.is_genesis_block(block), unvoted)
     return unvoted_blocks
-
-
-@register_query(RethinkDBConnection)
-def get_old_transactions(connection, node_pubkey):
-    return connection.run(
-        r.table('backlog')
-         .between([node_pubkey, r.minval],
-                  [node_pubkey, r.maxval],
-                  index='assignee__transaction_timestamp')
-         .order_by(index=r.asc('assignee__transaction_timestamp'))
-    )

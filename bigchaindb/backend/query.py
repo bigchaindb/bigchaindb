@@ -318,18 +318,3 @@ def get_unvoted_blocks(connection, node_pubkey):
     """
 
     raise NotImplementedError
-
-
-@singledispatch
-def get_old_transactions(connection, node_pubkey):
-    """Return all the transactions from the backlog that have not been
-       processed by the specified node.
-
-    Args:
-        node_pubkey (str): base58 encoded public key
-
-    Returns:
-        :obj:`list` of :obj:`dict`: a list of unprocessed transactions
-    """
-
-    raise NotImplementedError
