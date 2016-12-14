@@ -274,27 +274,17 @@ def test_invalid_transaction_initialization():
 
 def test_create_default_asset_on_tx_initialization():
     from bigchaindb.common.transaction import Transaction, Asset
-    from bigchaindb.common.exceptions import ValidationError
-    from .util import validate_transaction_model
 
     with patch.object(Asset, 'validate_asset', return_value=None):
         tx = Transaction(Transaction.CREATE, None)
     expected = Asset()
     asset = tx.asset
 
-    expected.data_id = None
-    asset.data_id = None
     assert asset == expected
 
-    # Fails because no asset hash
-    with raises(ValidationError):
-        validate_transaction_model(tx)
 
-
-def test_transaction_serialization(user_ffill, user_cond, data, data_id):
+def test_transaction_serialization(user_ffill, user_cond, data):
     from bigchaindb.common.transaction import Transaction, Asset
-    from bigchaindb.common.exceptions import ValidationError
-    from .util import validate_transaction_model
 
     tx_id = 'l0l'
 
@@ -308,30 +298,23 @@ def test_transaction_serialization(user_ffill, user_cond, data, data_id):
         'operation': Transaction.CREATE,
         'metadata': None,
         'asset': {
-            'id': data_id,
             'data': data,
         }
     }
 
-    tx = Transaction(Transaction.CREATE, Asset(data, data_id), [user_ffill],
+    tx = Transaction(Transaction.CREATE, Asset(data), [user_ffill],
                      [user_cond])
     tx_dict = tx.to_dict()
     tx_dict['id'] = tx_id
-    tx_dict['asset']['id'] = data_id
 
     assert tx_dict == expected
 
-    # Fails because asset id is not a uuid4
-    with raises(ValidationError):
-        validate_transaction_model(tx)
 
-
-def test_transaction_deserialization(user_ffill, user_cond, data, uuid4):
+def test_transaction_deserialization(user_ffill, user_cond, data):
     from bigchaindb.common.transaction import Transaction, Asset
     from .util import validate_transaction_model
 
-
-    expected_asset = Asset(data, uuid4)
+    expected_asset = Asset(data)
     expected = Transaction(Transaction.CREATE, expected_asset, [user_ffill],
                            [user_cond], None, Transaction.VERSION)
 
@@ -344,7 +327,6 @@ def test_transaction_deserialization(user_ffill, user_cond, data, uuid4):
         'operation': Transaction.CREATE,
         'metadata': None,
         'asset': {
-            'id': uuid4,
             'data': data,
         }
     }
@@ -746,7 +728,7 @@ def test_validate_fulfillments_of_transfer_tx_with_invalid_params(transfer_tx,
         transfer_tx.fulfillments_valid([utx.conditions[0]])
 
 
-def test_create_create_transaction_single_io(user_cond, user_pub, data, uuid4):
+def test_create_create_transaction_single_io(user_cond, user_pub, data):
     from bigchaindb.common.transaction import Transaction, Asset
     from .util import validate_transaction_model
 
@@ -754,7 +736,6 @@ def test_create_create_transaction_single_io(user_cond, user_pub, data, uuid4):
         'conditions': [user_cond.to_dict()],
         'metadata': data,
         'asset': {
-            'id': uuid4,
             'data': data,
         },
         'fulfillments': [
@@ -770,7 +751,7 @@ def test_create_create_transaction_single_io(user_cond, user_pub, data, uuid4):
         'version': 1,
     }
 
-    asset = Asset(data, uuid4)
+    asset = Asset(data)
     tx = Transaction.create([user_pub], [([user_pub], 1)], data, asset)
     tx_dict = tx.to_dict()
     tx_dict['fulfillments'][0]['fulfillment'] = None
@@ -834,15 +815,13 @@ def test_validate_multiple_io_create_transaction(user_pub, user_priv,
 
 def test_create_create_transaction_threshold(user_pub, user2_pub, user3_pub,
                                              user_user2_threshold_cond,
-                                             user_user2_threshold_ffill, data,
-                                             uuid4):
+                                             user_user2_threshold_ffill, data):
     from bigchaindb.common.transaction import Transaction, Asset
 
     expected = {
         'conditions': [user_user2_threshold_cond.to_dict()],
         'metadata': data,
         'asset': {
-            'id': uuid4,
             'data': data,
         },
         'fulfillments': [
@@ -857,7 +836,7 @@ def test_create_create_transaction_threshold(user_pub, user2_pub, user3_pub,
         'operation': 'CREATE',
         'version': 1
     }
-    asset = Asset(data, uuid4)
+    asset = Asset(data)
     tx = Transaction.create([user_pub], [([user_pub, user2_pub], 1)],
                             data, asset)
     tx_dict = tx.to_dict()

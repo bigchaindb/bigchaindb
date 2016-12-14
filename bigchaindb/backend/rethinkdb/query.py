@@ -87,10 +87,9 @@ def get_txids_by_asset_id(connection, asset_id):
 def get_asset_by_id(connection, asset_id):
     return connection.run(
         r.table('bigchain', read_mode=READ_MODE)
-         .get_all(asset_id, index='asset_id')
+         .get_all(asset_id, index='transaction_id')
          .concat_map(lambda block: block['block']['transactions'])
-         .filter(lambda transaction: transaction['asset']['id'] == asset_id)
-         .filter(lambda transaction: transaction['operation'] == 'CREATE')
+         .filter(lambda transaction: transaction['id'] == asset_id)
          .pluck('asset'))
 
 

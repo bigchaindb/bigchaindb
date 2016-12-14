@@ -17,9 +17,6 @@ CC_CONDITION_URI = 'cc:0:3:47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU:0'
 DATA = {
     'msg': 'Hello BigchainDB!'
 }
-DATA_ID = '872fa6e6f46246cd44afdb2ee9cfae0e72885fb0910e2bcf9a5a2a4eadb417b8'
-
-UUID4 = 'dc568f27-a113-46b4-9bd4-43015859e3e3'
 
 
 @pytest.fixture
@@ -124,16 +121,6 @@ def user2_cond(user2_Ed25519, user2_pub):
 @pytest.fixture
 def data():
     return DATA
-
-
-@pytest.fixture
-def data_id():
-    return DATA_ID
-
-
-@pytest.fixture
-def uuid4():
-    return UUID4
 
 
 @pytest.fixture

@@ -1,6 +1,5 @@
 from copy import deepcopy
 from functools import reduce
-from uuid import uuid4
 
 from cryptoconditions import (Fulfillment as CCFulfillment,
                               ThresholdSha256Fulfillment, Ed25519Fulfillment)
@@ -384,14 +383,11 @@ class Asset(object):
 
         Attributes:
             data (dict): A dictionary of data that can be added to an Asset.
-            data_id (str): A unique identifier of `data`'s content.
     """
 
-    def __init__(self, data=None, data_id=None):
+    def __init__(self, data=None):
         """An Asset is not required to contain any extra data from outside."""
         self.data = data
-        self.data_id = data_id if data_id is not None else self.to_hash()
-
         self.validate_asset()
 
     def __eq__(self, other):
@@ -409,7 +405,6 @@ class Asset(object):
                     format.
         """
         return {
-            'id': self.data_id,
             'data': self.data,
         }
 
@@ -423,11 +418,7 @@ class Asset(object):
             Returns:
                 :class:`~bigchaindb.common.transaction.Asset`
         """
-        return cls(asset.get('data'), asset['id'])
-
-    def to_hash(self):
-        """Generates a unqiue uuid for an Asset"""
-        return str(uuid4())
+        return cls(asset.get('data'))
 
     @staticmethod
     def get_asset_id(transactions):
@@ -443,7 +434,7 @@ class Asset(object):
                 asset ID.
 
         Returns:
-            str: uuid of the asset.
+            str: ID of the asset.
 
         Raises:
             :exc:`AssetIdMismatch`: If the inputs are related to different
@@ -453,8 +444,9 @@ class Asset(object):
         if not isinstance(transactions, list):
             transactions = [transactions]
 
-        # create a set of asset_ids
-        asset_ids = {tx.asset.data_id for tx in transactions}
+        # create a set of the transactions' asset ids
+        asset_ids = {tx.id if tx.operation == Transaction.CREATE else tx.asset.id
+                     for tx in transactions}
 
         # check that all the transasctions have the same asset id
         if len(asset_ids) > 1:
