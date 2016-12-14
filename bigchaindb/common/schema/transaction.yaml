@@ -173,8 +173,8 @@ definitions:
   input:
     type: "object"
     description:
-      An input spends a previous output, by providing a fulfillment to the output's
-      condition.
+      An input spends a previous output, by providing one or more fulfillments
+      that fulfill the conditions of the previous output.
     additionalProperties: false
     required:
     - owners_before
