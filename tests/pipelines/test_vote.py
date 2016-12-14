@@ -1,5 +1,4 @@
 import time
-
 from unittest.mock import patch
 
 from multipipes import Pipe, Pipeline
