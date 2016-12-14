@@ -28,7 +28,7 @@ Protocol (ILP)](https://interledger.org/).
 ## TRANSFER Transactions
 
 A TRANSFER transaction can transfer an asset
-by provding inputs which fulfill the current output conditions on the asset.
+by providing inputs which fulfill the current output conditions on the asset.
 It must also specify new transfer conditions.
 
 **Example 1:** Suppose a red car is owned and controlled by Joe.
