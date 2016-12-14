@@ -33,9 +33,12 @@ def pytest_addoption(parser):
     from bigchaindb.backend import connection
 
     backends = ', '.join(connection.BACKENDS.keys())
-
-    parser.addoption('--database-backend', action='store', default='rethinkdb',
-                     help='Defines the backend to use (available: {})'.format(backends))
+    parser.addoption(
+        '--database-backend',
+        action='store',
+        default=os.environ.get('BIGCHAINDB_DATABASE_BACKEND', 'rethinkdb'),
+        help='Defines the backend to use (available: {})'.format(backends),
+    )
 
 
 # We need this function to avoid loading an existing
@@ -47,7 +50,8 @@ def ignore_local_config_file(monkeypatch):
     def mock_file_config(filename=None):
         raise FileNotFoundError()
 
-    monkeypatch.setattr('bigchaindb.config_utils.file_config', mock_file_config)
+    monkeypatch.setattr('bigchaindb.config_utils.file_config',
+                        mock_file_config)
 
 
 @pytest.fixture(scope='function', autouse=True)
@@ -97,3 +101,18 @@ def signed_transfer_tx(signed_create_tx, user_pk, user_sk):
     inputs = signed_create_tx.to_inputs()
     tx = Transaction.transfer(inputs, [([user_pk], 1)], signed_create_tx.asset)
     return tx.sign([user_sk])
+
+
+@pytest.fixture
+def structurally_valid_vote():
+    return {
+        'node_pubkey': 'c' * 44,
+        'signature': 'd' * 86,
+        'vote': {
+            'voting_for_block': 'a' * 64,
+            'previous_block': 'b' * 64,
+            'is_block_valid': False,
+            'invalid_reason': None,
+            'timestamp': '1111111111'
+        }
+    }

@@ -1,5 +1,3 @@
-"""Query implementation for RethinkDB"""
-
 from time import time
 
 import rethinkdb as r
@@ -120,14 +118,16 @@ def get_owned_ids(connection, owner):
 def get_votes_by_block_id(connection, block_id):
     return connection.run(
             r.table('votes', read_mode=READ_MODE)
-            .between([block_id, r.minval], [block_id, r.maxval], index='block_and_voter'))
+            .between([block_id, r.minval], [block_id, r.maxval], index='block_and_voter')
+            .without('id'))
 
 
 @register_query(RethinkDBConnection)
 def get_votes_by_block_id_and_voter(connection, block_id, node_pubkey):
     return connection.run(
             r.table('votes')
-            .get_all([block_id, node_pubkey], index='block_and_voter'))
+            .get_all([block_id, node_pubkey], index='block_and_voter')
+            .without('id'))
 
 
 @register_query(RethinkDBConnection)

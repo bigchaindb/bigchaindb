@@ -1,4 +1,11 @@
+import logging
+
 from bigchaindb.util import verify_vote_signature
+from bigchaindb.common.schema import (SchemaValidationError,
+                                      validate_vote_schema)
+
+
+logger = logging.getLogger(__name__)
 
 
 class BaseConsensusRules():
@@ -19,10 +26,19 @@ class BaseConsensusRules():
         return block.validate(bigchain)
 
     @staticmethod
-    def verify_vote_signature(voters, signed_vote):
+    def verify_vote(voters, signed_vote):
         """Verify the signature of a vote.
 
         Refer to the documentation of
         :func:`bigchaindb.util.verify_signature`.
         """
-        return verify_vote_signature(voters, signed_vote)
+        if verify_vote_signature(voters, signed_vote):
+            try:
+                validate_vote_schema(signed_vote)
+                return True
+            except SchemaValidationError as exc:
+                logger.warning(exc)
+        else:
+            logger.warning("Vote failed signature verification: "
+                           "%s with voters: %s", signed_vote, voters)
+        return False

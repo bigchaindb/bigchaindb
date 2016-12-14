@@ -14,7 +14,7 @@ We advise BigchainDB nodes to run special software (an "NTP daemon") to keep the
 
 ## Converting Timestamps to UTC
 
-To convert a BigchainDB timestamp (a Unix time) to UTC, you need to know how the node providing the timestamp was set up. That's because different setups will report a different "Unix time" value around leap seconds! There's [a nice Red Hat Developer Blog post about the various setup options](http://developers.redhat.com/blog/2015/06/01/five-different-ways-handle-leap-seconds-ntp/). If you want more details, see [David Mills' pages about leap seconds, NTP, etc.](https://www.eecis.udel.edu/~mills/leap.html) (David Mills designed NTP.)
+To convert a BigchainDB timestamp (a Unix time) to UTC, you need to know how the node providing the timestamp was set up. That's because different setups will report a different "Unix time" value around leap seconds! There's [a nice Red Hat Developer Blog post about the various setup options](https://developers.redhat.com/blog/2015/06/01/five-different-ways-handle-leap-seconds-ntp/). If you want more details, see [David Mills' pages about leap seconds, NTP, etc.](https://www.eecis.udel.edu/~mills/leap.html) (David Mills designed NTP.)
 
 We advise BigchainDB nodes to run an NTP daemon with particular settings so that their timestamps are consistent.
 

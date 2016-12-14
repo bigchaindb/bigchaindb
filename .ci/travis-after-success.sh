@@ -2,6 +2,6 @@
 
 set -e -x
 
-if [ "${TOXENV}" == "py35" ]; then
+if [[ -z ${TOXENV} ]]; then
     codecov
 fi

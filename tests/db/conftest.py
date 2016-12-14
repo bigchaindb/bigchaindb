@@ -15,6 +15,7 @@ from bigchaindb.common.exceptions import (DatabaseAlreadyExists,
                                           DatabaseDoesNotExist)
 
 
+
 USER2_SK, USER2_PK = crypto.generate_key_pair()
 
 
