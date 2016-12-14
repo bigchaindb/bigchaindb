@@ -137,7 +137,7 @@ class TransactionLink(object):
     """
 
     def __init__(self, txid=None, idx=None):
-        """Used to point to a specific Condition of a Transaction.
+        """Create an instance of a :class:`~.TransactionLink`.
 
             Note:
                 In an IPLD implementation, this class is not necessary anymore,
@@ -202,7 +202,7 @@ class Output(object):
     """
 
     def __init__(self, fulfillment, public_keys=None, amount=1):
-        """Condition shims a Cryptocondition condition for BigchainDB.
+        """Create an instance of a :class:`~.Output`.
 
             Args:
                 fulfillment (:class:`cryptoconditions.Fulfillment`): A
@@ -513,7 +513,7 @@ class AssetLink(Asset):
     """
 
     def __init__(self, data_id=None):
-        """Used to point to a specific Asset.
+        """Create an instance of a :class:`~.AssetLink`.
 
             Args:
                 data_id (str): A Asset to link to.
