@@ -777,6 +777,8 @@ class Transaction(object):
                 :obj:`list` of :class:`~bigchaindb.common.transaction.
                     Input`
         """
+        # NOTE: If no indices are passed, we just assume to take all outputs
+        #       as inputs.
         indices = indices or range(len(self.outputs))
         return [
             Input(self.outputs[idx].fulfillment,
