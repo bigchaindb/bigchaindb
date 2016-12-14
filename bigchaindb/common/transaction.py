@@ -1027,9 +1027,10 @@ class Transaction(object):
             tx_dict = Transaction._remove_signatures(tx_dict)
             tx_serialized = Transaction._to_str(tx_dict)
 
-            # TODO: Use local reference to class, not `Transaction.`
-            return Transaction._input_valid(input, self.operation,
-                                            tx_serialized, output_condition_uri)
+            return self.__class__._input_valid(input,
+                                               self.operation,
+                                               tx_serialized,
+                                               output_condition_uri)
 
         partial_transactions = map(gen_tx, self.inputs,
                                    self.outputs, output_condition_uris)
