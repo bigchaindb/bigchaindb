@@ -2,8 +2,8 @@ from copy import deepcopy
 from functools import reduce
 from uuid import uuid4
 
-from cryptoconditions import (Fulfillment as CCFulfillment,
-                              ThresholdSha256Fulfillment, Ed25519Fulfillment)
+from cryptoconditions import (Fulfillment, ThresholdSha256Fulfillment,
+                              Ed25519Fulfillment)
 from cryptoconditions.exceptions import ParsingError
 
 from bigchaindb.common.crypto import PrivateKey, hash_data
@@ -113,14 +113,14 @@ class Input(object):
                 InvalidSignature: If an Input's URI couldn't be parsed.
         """
         try:
-            fulfillment = CCFulfillment.from_uri(data['fulfillment'])
+            fulfillment = Fulfillment.from_uri(data['fulfillment'])
         except ValueError:
             # TODO FOR CC: Throw an `InvalidSignature` error in this case.
             raise InvalidSignature("Fulfillment URI couldn't been parsed")
         except TypeError:
             # NOTE: See comment about this special case in
             #       `Input.to_dict`
-            fulfillment = CCFulfillment.from_dict(data['fulfillment'])
+            fulfillment = Fulfillment.from_dict(data['fulfillment'])
         fulfills = TransactionLink.from_dict(data['fulfills'])
         return cls(fulfillment, data['owners_before'], fulfills)
 
@@ -365,7 +365,7 @@ class Output(object):
                 :class:`~bigchaindb.common.transaction.Output`
         """
         try:
-            fulfillment = CCFulfillment.from_dict(data['condition']['details'])
+            fulfillment = Fulfillment.from_dict(data['condition']['details'])
         except KeyError:
             # NOTE: Hashlock condition case
             fulfillment = data['condition']['uri']
@@ -1058,7 +1058,7 @@ class Transaction(object):
         """
         ccffill = input_.fulfillment
         try:
-            parsed_ffill = CCFulfillment.from_uri(ccffill.serialize_uri())
+            parsed_ffill = Fulfillment.from_uri(ccffill.serialize_uri())
         except (TypeError, ValueError, ParsingError):
             return False
 
