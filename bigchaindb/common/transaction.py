@@ -128,7 +128,7 @@ class Input(object):
 
 
 class TransactionLink(object):
-    """An object for unidirectional linking to a Transaction's Condition.
+    """An object for unidirectional linking to a Transaction's Output.
 
         Attributes:
             txid (str, optional): A Transaction to link to.
@@ -194,6 +194,8 @@ class TransactionLink(object):
 class Output(object):
     """An Output is used to lock an asset.
 
+    Wraps around a Crypto-condition Condition.
+
         Attributes:
             fulfillment (:class:`cryptoconditions.Fulfillment`): A Fulfillment
                 to extract a Condition from.
@@ -210,7 +212,7 @@ class Output(object):
                 public_keys (:obj:`list` of :obj:`str`, optional): A list of
                     owners before a Transaction was confirmed.
                 amount (int): The amount of Assets to be locked with this
-                    Condition.
+                    Output.
 
             Raises:
                 TypeError: if `public_keys` is not instance of `list`.
@@ -259,7 +261,7 @@ class Output(object):
 
     @classmethod
     def generate(cls, public_keys, amount):
-        """Generates a Condition from a specifically formed tuple or list.
+        """Generates a Output from a specifically formed tuple or list.
 
             Note:
                 If a ThresholdCondition has to be generated where the threshold
@@ -272,10 +274,10 @@ class Output(object):
                 public_keys (:obj:`list` of :obj:`str`): The public key of
                     the users that should be able to fulfill the Condition
                     that is being created.
-                amount (:obj:`int`): The amount locked by the condition.
+                amount (:obj:`int`): The amount locked by the Output.
 
             Returns:
-                A Condition that can be used in a Transaction.
+                An Output that can be used in a Transaction.
 
             Raises:
                 TypeError: If `public_keys` is not an instance of `list`.
@@ -310,7 +312,7 @@ class Output(object):
             Note:
                 This method is intended only to be used with a reduce function.
                 For a description on how to use this method, see
-                `Condition.generate`.
+                :meth:`~.Output.generate`.
 
             Args:
                 initial (:class:`cryptoconditions.ThresholdSha256Fulfillment`):
@@ -596,7 +598,7 @@ class Transaction(object):
                     transaction.Input`, optional): Define the assets to
                     spend.
                 outputs (:obj:`list` of :class:`~bigchaindb.common.
-                    transaction.Condition`, optional): Define the assets to
+                    transaction.Output`, optional): Define the assets to
                     lock.
                 metadata (dict):
                     Metadata to be stored along with the Transaction.
@@ -635,7 +637,7 @@ class Transaction(object):
         # for transactions other then CREATE we only have an id so there is
         # nothing we can validate
         if self.operation == self.CREATE:
-            amount = sum([condition.amount for condition in self.outputs])
+            amount = sum([output.amount for output in self.outputs])
             self.asset.validate_asset(amount=amount)
 
     @classmethod
