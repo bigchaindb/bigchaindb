@@ -80,12 +80,12 @@ class Input(object):
         except AttributeError:
             fulfills = None
 
-        input = {
+        input_ = {
             'owners_before': self.owners_before,
             'fulfills': fulfills,
             'fulfillment': fulfillment,
         }
-        return input
+        return input_
 
     @classmethod
     def generate(cls, public_keys):
@@ -789,16 +789,16 @@ class Transaction(object):
             for idx in indices
         ]
 
-    def add_input(self, input):
+    def add_input(self, input_):
         """Adds an input to a Transaction's list of inputs.
 
             Args:
                 fulfillment (:class:`~bigchaindb.common.transaction.
                     Input`): An Input to be added to the Transaction.
         """
-        if not isinstance(input, Input):
-            raise TypeError('`input` must be a Input instance')
-        self.inputs.append(input)
+        if not isinstance(input_, Input):
+            raise TypeError('`input_` must be a Input instance')
+        self.inputs.append(input_)
 
     def add_output(self, output):
         """Adds an output to a Transaction's list of outputs.
@@ -855,21 +855,21 @@ class Transaction(object):
         key_pairs = {gen_public_key(PrivateKey(private_key)):
                      PrivateKey(private_key) for private_key in private_keys}
 
-        for index, input in enumerate(self.inputs):
+        for index, input_ in enumerate(self.inputs):
             # NOTE: We clone the current transaction but only add the output
             #       and input we're currently working on plus all
             #       previously signed ones.
-            tx_partial = Transaction(self.operation, self.asset, [input],
+            tx_partial = Transaction(self.operation, self.asset, [input_],
                                      self.outputs, self.metadata,
                                      self.version)
 
             tx_partial_dict = tx_partial.to_dict()
             tx_partial_dict = Transaction._remove_signatures(tx_partial_dict)
             tx_serialized = Transaction._to_str(tx_partial_dict)
-            self._sign_input(input, index, tx_serialized, key_pairs)
+            self._sign_input(input_, index, tx_serialized, key_pairs)
         return self
 
-    def _sign_input(self, input, index, tx_serialized, key_pairs):
+    def _sign_input(self, input_, index, tx_serialized, key_pairs):
         """Signs a single Input with a partial Transaction as message.
 
             Note:
@@ -879,29 +879,29 @@ class Transaction(object):
                     - ThresholdSha256Fulfillment.
 
             Args:
-                input (:class:`~bigchaindb.common.transaction.
+                input_ (:class:`~bigchaindb.common.transaction.
                     Input`) The Input to be signed.
                 index (int): The index of the input to be signed.
                 tx_serialized (str): The Transaction to be used as message.
                 key_pairs (dict): The keys to sign the Transaction with.
         """
-        if isinstance(input.fulfillment, Ed25519Fulfillment):
-            self._sign_simple_signature_fulfillment(input, index,
+        if isinstance(input_.fulfillment, Ed25519Fulfillment):
+            self._sign_simple_signature_fulfillment(input_, index,
                                                     tx_serialized, key_pairs)
-        elif isinstance(input.fulfillment, ThresholdSha256Fulfillment):
-            self._sign_threshold_signature_fulfillment(input, index,
+        elif isinstance(input_.fulfillment, ThresholdSha256Fulfillment):
+            self._sign_threshold_signature_fulfillment(input_, index,
                                                        tx_serialized,
                                                        key_pairs)
         else:
             raise ValueError("Fulfillment couldn't be matched to "
                              'Cryptocondition fulfillment type.')
 
-    def _sign_simple_signature_fulfillment(self, input, index,
+    def _sign_simple_signature_fulfillment(self, input_, index,
                                            tx_serialized, key_pairs):
         """Signs a Ed25519Fulfillment.
 
             Args:
-                input (:class:`~bigchaindb.common.transaction.
+                input_ (:class:`~bigchaindb.common.transaction.
                     Input`) The input to be signed.
                 index (int): The index of the input to be
                     signed.
@@ -909,35 +909,35 @@ class Transaction(object):
                 key_pairs (dict): The keys to sign the Transaction with.
         """
         # NOTE: To eliminate the dangers of accidentally signing a condition by
-        #       reference, we remove the reference of input here
+        #       reference, we remove the reference of input_ here
         #       intentionally. If the user of this class knows how to use it,
         #       this should never happen, but then again, never say never.
-        input = deepcopy(input)
-        public_key = input.owners_before[0]
+        input_ = deepcopy(input_)
+        public_key = input_.owners_before[0]
         try:
             # cryptoconditions makes no assumptions of the encoding of the
             # message to sign or verify. It only accepts bytestrings
-            input.fulfillment.sign(tx_serialized.encode(), key_pairs[public_key])
+            input_.fulfillment.sign(tx_serialized.encode(), key_pairs[public_key])
         except KeyError:
             raise KeypairMismatchException('Public key {} is not a pair to '
                                            'any of the private keys'
                                            .format(public_key))
-        self.inputs[index] = input
+        self.inputs[index] = input_
 
-    def _sign_threshold_signature_fulfillment(self, input, index,
+    def _sign_threshold_signature_fulfillment(self, input_, index,
                                               tx_serialized, key_pairs):
         """Signs a ThresholdSha256Fulfillment.
 
             Args:
-                input (:class:`~bigchaindb.common.transaction.
+                input_ (:class:`~bigchaindb.common.transaction.
                     Input`) The Input to be signed.
                 index (int): The index of the Input to be
                     signed.
                 tx_serialized (str): The Transaction to be used as message.
                 key_pairs (dict): The keys to sign the Transaction with.
         """
-        input = deepcopy(input)
-        for owner_before in input.owners_before:
+        input_ = deepcopy(input_)
+        for owner_before in input_.owners_before:
             try:
                 # TODO: CC should throw a KeypairMismatchException, instead of
                 #       our manual mapping here
@@ -948,7 +948,7 @@ class Transaction(object):
 
                 # TODO FOR CC: `get_subcondition` is singular. One would not
                 #              expect to get a list back.
-                ccffill = input.fulfillment
+                ccffill = input_.fulfillment
                 subffill = ccffill.get_subcondition_from_vk(owner_before)[0]
             except IndexError:
                 raise KeypairMismatchException('Public key {} cannot be found '
@@ -964,7 +964,7 @@ class Transaction(object):
             # cryptoconditions makes no assumptions of the encoding of the
             # message to sign or verify. It only accepts bytestrings
             subffill.sign(tx_serialized.encode(), private_key)
-        self.inputs[index] = input
+        self.inputs[index] = input_
 
     def inputs_valid(self, outputs=None):
         """Validates the Inputs in the Transaction against given
@@ -1017,17 +1017,17 @@ class Transaction(object):
             raise ValueError('Inputs and '
                              'output_condition_uris must have the same count')
 
-        def gen_tx(input, output, output_condition_uri=None):
+        def gen_tx(input_, output, output_condition_uri=None):
             """Splits multiple IO Transactions into partial single IO
             Transactions.
             """
-            tx = Transaction(self.operation, self.asset, [input],
+            tx = Transaction(self.operation, self.asset, [input_],
                              self.outputs, self.metadata, self.version)
             tx_dict = tx.to_dict()
             tx_dict = Transaction._remove_signatures(tx_dict)
             tx_serialized = Transaction._to_str(tx_dict)
 
-            return self.__class__._input_valid(input,
+            return self.__class__._input_valid(input_,
                                                self.operation,
                                                tx_serialized,
                                                output_condition_uri)
@@ -1037,7 +1037,7 @@ class Transaction(object):
         return all(partial_transactions)
 
     @staticmethod
-    def _input_valid(input, operation, tx_serialized, output_condition_uri=None):
+    def _input_valid(input_, operation, tx_serialized, output_condition_uri=None):
         """Validates a single Input against a single Output.
 
             Note:
@@ -1045,7 +1045,7 @@ class Transaction(object):
                 does not validate against `output_condition_uri`.
 
             Args:
-                input (:class:`~bigchaindb.common.transaction.
+                input_ (:class:`~bigchaindb.common.transaction.
                     Input`) The Input to be signed.
                 operation (str): The type of Transaction.
                 tx_serialized (str): The Transaction used as a message when
@@ -1056,7 +1056,7 @@ class Transaction(object):
             Returns:
                 bool: If the Input is valid.
         """
-        ccffill = input.fulfillment
+        ccffill = input_.fulfillment
         try:
             parsed_ffill = CCFulfillment.from_uri(ccffill.serialize_uri())
         except (TypeError, ValueError, ParsingError):
@@ -1091,7 +1091,7 @@ class Transaction(object):
             asset = {'id': self.asset.data_id}
 
         tx = {
-            'inputs': [input.to_dict() for input in self.inputs],
+            'inputs': [input_.to_dict() for input_ in self.inputs],
             'outputs': [output.to_dict() for output in self.outputs],
             'operation': str(self.operation),
             'metadata': self.metadata,
@@ -1121,12 +1121,12 @@ class Transaction(object):
         # NOTE: We remove the reference since we need `tx_dict` only for the
         #       transaction's hash
         tx_dict = deepcopy(tx_dict)
-        for input in tx_dict['inputs']:
+        for input_ in tx_dict['inputs']:
             # NOTE: Not all Cryptoconditions return a `signature` key (e.g.
             #       ThresholdSha256Fulfillment), so setting it to `None` in any
             #       case could yield incorrect signatures. This is why we only
             #       set it to `None` if it's set in the dict.
-            input['fulfillment'] = None
+            input_['fulfillment'] = None
         return tx_dict
 
     @staticmethod
@@ -1183,7 +1183,7 @@ class Transaction(object):
                 :class:`~bigchaindb.common.transaction.Transaction`
         """
         cls.validate_structure(tx)
-        inputs = [Input.from_dict(input) for input in tx['inputs']]
+        inputs = [Input.from_dict(input_) for input_ in tx['inputs']]
         outputs = [Output.from_dict(output) for output in tx['outputs']]
         if tx['operation'] in [cls.CREATE, cls.GENESIS]:
             asset = Asset.from_dict(tx['asset'])
