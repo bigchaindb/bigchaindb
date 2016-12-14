@@ -970,7 +970,7 @@ class Transaction(object):
 
             Note:
                 Given a `CREATE` or `GENESIS` Transaction is passed,
-                dummyvalues for Outputs are submitted for validation that
+                dummy values for Outputs are submitted for validation that
                 evaluate parts of the validation-checks to `True`.
 
             Args:
@@ -1061,7 +1061,7 @@ class Transaction(object):
 
         if operation in (Transaction.CREATE, Transaction.GENESIS):
             # NOTE: In the case of a `CREATE` or `GENESIS` transaction, the
-            #       output is always validate to `True`.
+            #       output is always valid.
             output_valid = True
         else:
             output_valid = output_uri == ccffill.condition_uri
