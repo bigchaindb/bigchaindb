@@ -219,8 +219,12 @@ definitions:
           properties:
             idx:
               "$ref": "#/definitions/offset"
+              description: |
+                Index of the condition (in the output) being fulfilled
             txid:
               "$ref": "#/definitions/sha3_hexdigest"
+              description: |
+                Transaction ID containing the output to spend
         - type: 'null'
   metadata:
     anyOf:
