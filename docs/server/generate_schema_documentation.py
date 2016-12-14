@@ -72,12 +72,12 @@ Transaction
 %(transaction)s
 
 Input
-----------
+-----
 
 %(input)s
 
 Output
------------
+------
 
 %(output)s
 
