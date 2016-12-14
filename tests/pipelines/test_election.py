@@ -166,6 +166,7 @@ def test_full_pipeline(b, user_pk):
     pipeline.setup(indata=election.get_changefeed(), outdata=outpipe)
     pipeline.start()
     time.sleep(1)
+
     # vote one block valid, one invalid
     vote_valid = b.vote(valid_block.id, 'b' * 64, True)
     vote_invalid = b.vote(invalid_block.id, 'c' * 64, False)
