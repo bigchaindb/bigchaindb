@@ -150,12 +150,12 @@ def tx(utx, user_priv):
 @pytest.fixture
 def transfer_utx(user_cond, user2_cond, utx):
     from bigchaindb.common.transaction import (Fulfillment, TransactionLink,
-                                               Transaction, Asset)
+                                               Transaction, AssetLink)
     user_cond = user_cond.to_dict()
     ffill = Fulfillment(utx.conditions[0].fulfillment,
                         user_cond['owners_after'],
                         TransactionLink(utx.id, 0))
-    return Transaction('TRANSFER', Asset(), [ffill], [user2_cond])
+    return Transaction('TRANSFER', AssetLink(utx.id), [ffill], [user2_cond])
 
 
 @pytest.fixture

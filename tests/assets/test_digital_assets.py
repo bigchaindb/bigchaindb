@@ -4,13 +4,14 @@ from unittest.mock import patch
 
 @pytest.mark.usefixtures('inputs')
 def test_asset_transfer(b, user_pk, user_sk):
+    from bigchaindb.common.transaction import AssetLink
     from bigchaindb.models import Transaction
 
     tx_input = b.get_owned_ids(user_pk).pop()
     tx_create = b.get_transaction(tx_input.txid)
 
     tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([user_pk], 1)],
-                                       tx_create.asset)
+                                       AssetLink.from_inputs(tx_create))
     tx_transfer_signed = tx_transfer.sign([user_sk])
 
     assert tx_transfer_signed.validate(b) == tx_transfer_signed
@@ -32,12 +33,13 @@ def test_validate_bad_asset_creation(b, user_pk):
 @pytest.mark.usefixtures('inputs')
 def test_validate_transfer_asset_id_mismatch(b, user_pk, user_sk):
     from bigchaindb.common.exceptions import AssetIdMismatch
+    from bigchaindb.common.transaction import AssetLink
     from bigchaindb.models import Transaction
 
     tx_create = b.get_owned_ids(user_pk).pop()
     tx_create = b.get_transaction(tx_create.txid)
     tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([user_pk], 1)],
-                                       tx_create.asset)
+                                       AssetLink.from_inputs(tx_create))
     tx_transfer.asset.data_id = 'aaa'
     tx_transfer_signed = tx_transfer.sign([user_sk])
     with pytest.raises(AssetIdMismatch):
@@ -55,13 +57,14 @@ def test_get_asset_id_create_transaction(b, user_pk):
 
 @pytest.mark.usefixtures('inputs')
 def test_get_asset_id_transfer_transaction(b, user_pk, user_sk):
+    from bigchaindb.common.transaction import AssetLink
     from bigchaindb.models import Transaction, Asset
 
     tx_create = b.get_owned_ids(user_pk).pop()
     tx_create = b.get_transaction(tx_create.txid)
     # create a transfer transaction
     tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([user_pk], 1)],
-                                       tx_create.asset)
+                                       AssetLink.from_inputs(tx_create))
     tx_transfer_signed = tx_transfer.sign([user_sk])
     # create a block
     block = b.create_block([tx_transfer_signed])
@@ -87,6 +90,7 @@ def test_asset_id_mismatch(b, user_pk):
 
 @pytest.mark.usefixtures('inputs')
 def test_get_transactions_by_asset_id(b, user_pk, user_sk):
+    from bigchaindb.common.transaction import AssetLink
     from bigchaindb.models import Transaction
 
     tx_create = b.get_owned_ids(user_pk).pop()
@@ -100,7 +104,7 @@ def test_get_transactions_by_asset_id(b, user_pk, user_sk):
 
     # create a transfer transaction
     tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([user_pk], 1)],
-                                       tx_create.asset)
+                                       AssetLink.from_inputs(tx_create))
     tx_transfer_signed = tx_transfer.sign([user_sk])
     # create the block
     block = b.create_block([tx_transfer_signed])
@@ -120,6 +124,7 @@ def test_get_transactions_by_asset_id(b, user_pk, user_sk):
 
 @pytest.mark.usefixtures('inputs')
 def test_get_transactions_by_asset_id_with_invalid_block(b, user_pk, user_sk):
+    from bigchaindb.common.transaction import AssetLink
     from bigchaindb.models import Transaction
 
     tx_create = b.get_owned_ids(user_pk).pop()
@@ -133,7 +138,7 @@ def test_get_transactions_by_asset_id_with_invalid_block(b, user_pk, user_sk):
 
     # create a transfer transaction
     tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([user_pk], 1)],
-                                       tx_create.asset)
+                                       AssetLink.from_inputs(tx_create))
     tx_transfer_signed = tx_transfer.sign([user_sk])
     # create the block
     block = b.create_block([tx_transfer_signed])
@@ -149,6 +154,7 @@ def test_get_transactions_by_asset_id_with_invalid_block(b, user_pk, user_sk):
 
 @pytest.mark.usefixtures('inputs')
 def test_get_asset_by_id(b, user_pk, user_sk):
+    from bigchaindb.common.transaction import AssetLink
     from bigchaindb.models import Transaction
 
     tx_create = b.get_owned_ids(user_pk).pop()
@@ -157,7 +163,7 @@ def test_get_asset_by_id(b, user_pk, user_sk):
 
     # create a transfer transaction
     tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([user_pk], 1)],
-                                       tx_create.asset)
+                                       AssetLink.from_inputs(tx_create))
     tx_transfer_signed = tx_transfer.sign([user_sk])
     # create the block
     block = b.create_block([tx_transfer_signed])

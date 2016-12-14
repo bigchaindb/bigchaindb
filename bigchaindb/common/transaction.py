@@ -581,8 +581,8 @@ class Transaction(object):
 
             Args:
                 operation (str): Defines the operation of the Transaction.
-                asset (:class:`~bigchaindb.common.transaction.Asset`): An Asset
-                    to be transferred or created in a Transaction.
+                asset (:class:`~.Asset`|:class:`~.AssetLink`): An Asset to be
+                    created or an AssetLink linking an asset to be transferred.
                 fulfillments (:obj:`list` of :class:`~bigchaindb.common.
                     transaction.Fulfillment`, optional): Define the assets to
                     spend.
@@ -599,10 +599,17 @@ class Transaction(object):
             raise ValueError('`operation` must be one of {}'
                              .format(allowed_ops))
 
-        # Only assets for 'CREATE' operations can be un-defined.
-        if (asset and not isinstance(asset, Asset) or
-                not asset and operation != Transaction.CREATE):
-            raise TypeError('`asset` must be an Asset instance')
+        # Assets for 'CREATE' and 'GENESIS' operations must be None or of Asset
+        # type and Assets for 'TRANSFER' operations must be of AssetLink type.
+        if (operation in [Transaction.CREATE, Transaction.GENESIS] and
+                asset is not None and
+                not isinstance(asset, Asset)):
+            raise TypeError(("`asset` must be an Asset instance for "
+                             "'{}' Transactions".format(operation)))
+        elif (operation == Transaction.TRANSFER and
+                not (asset and isinstance(asset, AssetLink))):
+            raise TypeError(("`asset` must be an valid AssetLink instance for "
+                             "'TRANSFER' Transactions".format(operation)))
 
         if conditions and not isinstance(conditions, list):
             raise TypeError('`conditions` must be a list instance or None')
@@ -683,7 +690,7 @@ class Transaction(object):
         return cls(cls.CREATE, asset, fulfillments, conditions, metadata)
 
     @classmethod
-    def transfer(cls, inputs, owners_after, asset, metadata=None):
+    def transfer(cls, inputs, owners_after, asset_link, metadata=None):
         """A simple way to generate a `TRANSFER` transaction.
 
             Note:
@@ -713,8 +720,9 @@ class Transaction(object):
                     generate.
                 owners_after (:obj:`list` of :obj:`str`): A list of keys that
                     represent the receivers of this Transaction.
-                asset (:class:`~bigchaindb.common.transaction.Asset`): An Asset
-                    to be transferred in this Transaction.
+                asset_link (:class:`~bigchaindb.common.transaction.AssetLink`):
+                    An AssetLink linking an asset to be transferred in this
+                    Transaction.
                 metadata (dict): Python dictionary to be stored along with the
                     Transaction.
 
@@ -740,7 +748,7 @@ class Transaction(object):
             conditions.append(Condition.generate(pub_keys, amount))
 
         inputs = deepcopy(inputs)
-        return cls(cls.TRANSFER, asset, inputs, conditions, metadata)
+        return cls(cls.TRANSFER, asset_link, inputs, conditions, metadata)
 
     def __eq__(self, other):
         try:
@@ -1080,12 +1088,6 @@ class Transaction(object):
             Returns:
                 dict: The Transaction as an alternative serialization format.
         """
-        if self.operation in (self.__class__.GENESIS, self.__class__.CREATE):
-            asset = self.asset.to_dict()
-        else:
-            # NOTE: An `asset` in a `TRANSFER` only contains the asset's id
-            asset = {'id': self.asset.data_id}
-
         tx = {
             'fulfillments': [fulfillment.to_dict() for fulfillment
                              in self.fulfillments],
@@ -1093,7 +1095,7 @@ class Transaction(object):
                            in self.conditions],
             'operation': str(self.operation),
             'metadata': self.metadata,
-            'asset': asset,
+            'asset': self.asset.to_dict(),
             'version': self.version,
         }
 
