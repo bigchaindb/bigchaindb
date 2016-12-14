@@ -62,8 +62,8 @@ class ChangeFeed(Node):
     def run_changefeed(self):
         """Backend specific method to run the changefeed.
 
-        The changefeed is is usually a backend cursor that is not closed when
-        all the results are exausted. Instead it remains open waiting for new
+        The changefeed is usually a backend cursor that is not closed when all
+        the results are exausted. Instead it remains open waiting for new
         results.
 
         This method should also filter each result based on the ``operation``
