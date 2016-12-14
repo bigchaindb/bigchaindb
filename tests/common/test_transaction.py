@@ -453,11 +453,11 @@ def test_cast_transaction_link_to_boolean():
 def test_asset_link_serialization():
     from bigchaindb.common.transaction import AssetLink
 
-    data_id = 'a asset id'
+    asset_id = 'a asset id'
     expected = {
-        'id': data_id,
+        'id': asset_id,
     }
-    asset_link = AssetLink(data_id)
+    asset_link = AssetLink(asset_id)
 
     assert asset_link.to_dict() == expected
 
@@ -474,10 +474,10 @@ def test_asset_link_serialization_with_empty_payload():
 def test_asset_link_deserialization():
     from bigchaindb.common.transaction import AssetLink
 
-    data_id = 'a asset id'
-    expected = AssetLink(data_id)
+    asset_id = 'a asset id'
+    expected = AssetLink(asset_id)
     asset_link = {
-        'id': data_id
+        'id': asset_id
     }
     asset_link = AssetLink.from_dict(asset_link)
 

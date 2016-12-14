@@ -481,16 +481,16 @@ class AssetLink(Asset):
     """An object for unidirectional linking to a Asset.
     """
 
-    def __init__(self, data_id=None):
+    def __init__(self, asset_id=None):
         """Used to point to a specific Asset.
 
             Args:
-                data_id (str): A Asset to link to.
+                asset_id (str): The ID of an asset to link to.
         """
-        self.data_id = data_id
+        self.id = asset_id
 
     def __bool__(self):
-        return self.data_id is not None
+        return self.id is not None
 
     def __eq__(self, other):
         return isinstance(other, AssetLink) and \
@@ -516,12 +516,14 @@ class AssetLink(Asset):
 
             Returns:
                 (dict|None): The link as an alternative serialization format.
+                    Returns None if the link is empty (i.e. is not linking to
+                    an asset).
         """
-        if self.data_id is None:
+        if self.id is None:
             return None
         else:
             return {
-                'id': self.data_id
+                'id': self.id
             }
 
 
