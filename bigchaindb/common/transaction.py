@@ -614,9 +614,9 @@ class Transaction(object):
 
         self.version = version if version is not None else self.VERSION
         self.operation = operation
-        self.asset = asset if asset else Asset()
-        self.conditions = conditions if conditions else []
-        self.fulfillments = fulfillments if fulfillments else []
+        self.asset = asset or Asset()
+        self.conditions = conditions or []
+        self.fulfillments = fulfillments or []
         self.metadata = metadata
 
         # validate asset
