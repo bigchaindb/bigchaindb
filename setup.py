@@ -116,5 +116,5 @@ setup(
         'dev': dev_require + tests_require + docs_require + benchmarks_require,
         'docs': docs_require,
     },
-    package_data={'bigchaindb.common.schema': ['transaction.yaml']},
+    package_data={'bigchaindb.common.schema': ['*.yaml']},
 )
