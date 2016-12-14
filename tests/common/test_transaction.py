@@ -493,6 +493,15 @@ def test_asset_link_deserialization_with_empty_payload():
     assert asset_link == expected
 
 
+def test_asset_link_from_inputs(utx, transfer_utx):
+    from bigchaindb.common.transaction import AssetLink
+
+    expected = AssetLink(utx.id)
+    asset_link = AssetLink.from_inputs(utx, transfer_utx)
+
+    assert asset_link == expected
+
+
 def test_cast_asset_link_to_boolean():
     from bigchaindb.common.transaction import AssetLink
 

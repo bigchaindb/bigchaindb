@@ -511,6 +511,22 @@ class AssetLink(object):
         except TypeError:
             return cls()
 
+    @classmethod
+    def from_inputs(cls, *inputs):
+        """Creates an AssetLink based on given input :class:`~.Transactions`.
+
+        Args:
+            inputs (:class:`~.Transaction`): One or more input transactions
+
+        Returns:
+            An :class:`~.AssetLink` linking to the asset linked by the inputs.
+
+        Raises:
+            :exc:`AssetIdMismatch`: If the :attr:`inputs` do not link to the
+                same asset.
+        """
+        return cls(Asset.get_asset_id(list(inputs)))
+
     def to_dict(self):
         """Transforms the object to a Python dictionary.
 
