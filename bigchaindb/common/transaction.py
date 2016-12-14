@@ -653,9 +653,11 @@ class Transaction(object):
 
             Args:
                 creators (:obj:`list` of :obj:`str`): A list of keys that
-                    represent the creators of this Transaction.
+                    represent the creators of the asset created by this
+                    Transaction.
                 recipients (:obj:`list` of :obj:`str`): A list of keys that
-                    represent the recipients of this Transaction.
+                    represent the recipients of the asset created by this
+                    Transaction.
                 metadata (dict): Python dictionary to be stored along with the
                     Transaction.
                 asset (:class:`~bigchaindb.common.transaction.Asset`): An Asset
