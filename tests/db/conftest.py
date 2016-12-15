@@ -11,8 +11,7 @@ import pytest
 from bigchaindb import Bigchain
 from bigchaindb.backend import connect, schema
 from bigchaindb.common import crypto
-from bigchaindb.common.exceptions import (DatabaseAlreadyExists,
-                                          DatabaseDoesNotExist)
+from bigchaindb.common.exceptions import DatabaseDoesNotExist
 
 
 USER2_SK, USER2_PK = crypto.generate_key_pair()
@@ -31,11 +30,11 @@ def setup_database(request, node_config):
     conn = connect()
 
     try:
-        schema.init_database(conn)
-    except DatabaseAlreadyExists:
-        print('Database already exists.')
         schema.drop_database(conn, db_name)
-        schema.init_database(conn)
+    except DatabaseDoesNotExist:
+        pass
+
+    schema.init_database(conn)
 
     print('Finishing init database')
 
@@ -44,9 +43,9 @@ def setup_database(request, node_config):
         print('Deleting `{}` database'.format(db_name))
         try:
             schema.drop_database(conn, db_name)
-        except DatabaseDoesNotExist as e:
-            if str(e) != 'Database `{}` does not exist'.format(db_name):
-                raise
+        except DatabaseDoesNotExist:
+            pass
+
         print('Finished deleting `{}`'.format(db_name))
 
     request.addfinalizer(fin)
