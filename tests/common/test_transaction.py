@@ -376,6 +376,8 @@ def test_invalid_input_initialization(user_input, user_pub):
     from bigchaindb.common.transaction import Input
 
     with raises(TypeError):
+        Input(user_input, user_pub)
+    with raises(TypeError):
         Input(user_input, tx_input='somethingthatiswrong')
 
 
@@ -600,6 +602,12 @@ def test_sign_threshold_with_invalid_params(utx, user_user2_threshold_input,
                                                   0,
                                                   'somemessage',
                                                   {user3_pub: user3_priv})
+    with raises(KeypairMismatchException):
+        user_user2_threshold_input.owners_before = ['somewrongvalue']
+        utx._sign_threshold_signature_fulfillment(user_user2_threshold_input,
+                                                  0,
+                                                  'somemessage',
+                                                  None)
 
 
 def test_validate_input_with_invalid_parameters(utx):
