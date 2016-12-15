@@ -33,12 +33,12 @@ Here's some explanation of the contents of a :ref:`transaction <transaction>`:
 
 - id: The :ref:`id <transaction.id>` of the transaction, and also the database primary key.
 - version: :ref:`Version <transaction.version>` number of the transaction model, so that software can support different transaction models.
-- **inputs**: List of inputs. Each :ref:`input <Input>` contains a pointer to an unspent asset
-  and a *crypto fulfillment* that satisfies a spending condition set on the unspent asset. A *fulfillment*
+- **inputs**: List of inputs. Each :ref:`input <Input>` contains a pointer to an unspent output
+  and a *crypto fulfillment* that satisfies the conditions of that output. A *fulfillment*
   is usually a signature proving the ownership of the asset.
   See :doc:`./crypto-conditions`.
 
-- **outputs**: List of outputs. Each :ref:`output <Output>` is a *crypto-condition* that needs to be fulfilled by a transfer transaction in order to transfer ownership to new owners.
+- **outputs**: List of outputs. Each :ref:`output <Output>` contains *crypto-conditions* that need to be fulfilled by a transfer transaction in order to transfer ownership to new owners.
   See :doc:`./crypto-conditions`.
 
 - **operation**: String representation of the :ref:`operation <transaction.operation>` being performed (currently either "CREATE", "TRANSFER" or "GENESIS"). It determines how the transaction should be validated.
