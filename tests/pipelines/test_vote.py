@@ -6,6 +6,7 @@ from multipipes import Pipe, Pipeline
 import pytest
 
 
+# TODO: dummy_tx and dummy_block could be fixtures
 def dummy_tx(b):
     from bigchaindb.models import Transaction
     tx = Transaction.create([b.me], [([b.me], 1)],
