@@ -9,8 +9,10 @@ import logging
 
 from multipipes import Pipeline, Node, Pipe
 
+import bigchaindb
+from bigchaindb import backend
+from bigchaindb.backend.changefeed import ChangeFeed
 from bigchaindb.models import Transaction
-from bigchaindb.pipelines.utils import ChangeFeed
 from bigchaindb import Bigchain
 
 
@@ -115,7 +117,8 @@ class BlockPipeline:
         Returns:
             :class:`~bigchaindb.models.Block`: The Block.
         """
-        logger.info('Write new block %s with %s transactions', block.id, len(block.transactions))
+        logger.info('Write new block %s with %s transactions',
+                    block.id, len(block.transactions))
         self.bigchain.write_block(block)
         return block
 
@@ -131,12 +134,6 @@ class BlockPipeline:
         """
         self.bigchain.delete_transaction(*[tx.id for tx in block.transactions])
         return block
-
-
-def get_changefeed():
-    """Create and return the changefeed for the backlog."""
-
-    return ChangeFeed('backlog', ChangeFeed.INSERT | ChangeFeed.UPDATE)
 
 
 def create_pipeline():
@@ -155,6 +152,12 @@ def create_pipeline():
     ])
 
     return pipeline
+
+
+def get_changefeed():
+    connection = backend.connect(**bigchaindb.config['database'])
+    return backend.get_changefeed(connection, 'backlog',
+                                  ChangeFeed.INSERT | ChangeFeed.UPDATE)
 
 
 def start():
