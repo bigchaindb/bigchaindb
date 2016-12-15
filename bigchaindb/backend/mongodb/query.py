@@ -94,7 +94,7 @@ def get_votes_by_block_id(conn, block_id):
 
 
 @register_query(MongoDBConnection)
-def get_votes_block_id_and_voter(conn, block_id, node_pubkey):
+def get_votes_by_block_id_and_voter(conn, block_id, node_pubkey):
     return conn.db['votes']\
             .find({'vote.voting_for_block': block_id,
                    'node_pubkey': node_pubkey})
