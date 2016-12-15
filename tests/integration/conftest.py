@@ -11,14 +11,9 @@ def restore_config(request, node_config):
     config_utils.set_config(node_config)
 
 
-@pytest.fixture(scope='module', autouse=True)
+@pytest.fixture(scope='function', autouse=True)
 def setup_database(request, node_config):
     conftest.setup_database(request, node_config)
-
-
-@pytest.fixture(scope='function', autouse=True)
-def cleanup_tables(request, node_config):
-    conftest.cleanup_tables(request, node_config)
 
 
 @pytest.fixture
