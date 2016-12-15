@@ -1,3 +1,4 @@
+import random
 import time
 from unittest.mock import patch
 
@@ -7,7 +8,8 @@ import pytest
 
 def dummy_tx(b):
     from bigchaindb.models import Transaction
-    tx = Transaction.create([b.me], [([b.me], 1)])
+    tx = Transaction.create([b.me], [([b.me], 1)],
+                            metadata={'msg': random.random()})
     tx = tx.sign([b.me_private])
     return tx
 

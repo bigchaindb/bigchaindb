@@ -1,4 +1,5 @@
 import pytest
+import random
 from unittest.mock import patch
 
 
@@ -81,8 +82,10 @@ def test_asset_id_mismatch(b, user_pk):
     from bigchaindb.models import Transaction, Asset
     from bigchaindb.common.exceptions import AssetIdMismatch
 
-    tx1 = Transaction.create([b.me], [([user_pk], 1)])
-    tx2 = Transaction.create([b.me], [([user_pk], 1)])
+    tx1 = Transaction.create([b.me], [([user_pk], 1)],
+                             metadata={'msg': random.random()})
+    tx2 = Transaction.create([b.me], [([user_pk], 1)],
+                             metadata={'msg': random.random()})
 
     with pytest.raises(AssetIdMismatch):
         Asset.get_asset_id([tx1, tx2])

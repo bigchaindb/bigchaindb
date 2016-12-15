@@ -1,6 +1,7 @@
 from time import sleep
 
 import pytest
+import random
 
 
 @pytest.mark.skipif(reason='Some tests throw a ResourceWarning that might result in some weird '
@@ -158,13 +159,15 @@ class TestBigchainApi(object):
         b.create_genesis_block()
 
         monkeypatch.setattr('time.time', lambda: 1)
-        tx1 = Transaction.create([b.me], [([b.me], 1)])
+        tx1 = Transaction.create([b.me], [([b.me], 1)],
+                                 metadata={'msg': random.random()})
         tx1 = tx1.sign([b.me_private])
         block1 = b.create_block([tx1])
         b.write_block(block1)
 
         monkeypatch.setattr('time.time', lambda: 2222222222)
-        tx2 = Transaction.create([b.me], [([b.me], 1)])
+        tx2 = Transaction.create([b.me], [([b.me], 1)],
+                                 metadata={'msg': random.random()})
         tx2 = tx2.sign([b.me_private])
         block2 = b.create_block([tx2])
         b.write_block(block2)
@@ -525,7 +528,8 @@ class TestBigchainApi(object):
             input_tx = b.get_transaction(input_tx.txid)
             inputs = input_tx.to_inputs()
             tx = Transaction.transfer(inputs, [([user_pk], 1)],
-                                      AssetLink.from_inputs(input_tx))
+                                      asset_link=AssetLink.from_inputs(input_tx),
+                                      metadata={'msg': random.random()})
             tx = tx.sign([user_sk])
             b.write_transaction(tx)
 
@@ -560,8 +564,9 @@ class TestBigchainApi(object):
         from bigchaindb.models import Transaction
 
         for _ in range(4):
-            tx = Transaction.create([b.me],
-                                    [([user_pk], 1)]).sign([b.me_private])
+            tx = Transaction.create([b.me], [([user_pk], 1)],
+                                    metadata={'msg': random.random()}) \
+                            .sign([b.me_private])
             b.write_transaction(tx)
 
         assert query.count_backlog(b.connection) == 4
@@ -1157,7 +1162,6 @@ class TestMultipleInputs(object):
 
     @pytest.mark.usefixtures('setup_database')
     def test_get_spent_multiple_owners(self, b, user_sk, user_pk):
-        import random
         from bigchaindb.common import crypto
         from bigchaindb.common.transaction import AssetLink
         from bigchaindb.models import Transaction
