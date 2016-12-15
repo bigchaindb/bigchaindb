@@ -214,10 +214,10 @@ definitions:
             Reference to the output that is being spent.
           additionalProperties: false
           required:
-          - idx
+          - output
           - txid
           properties:
-            idx:
+            output:
               "$ref": "#/definitions/offset"
               description: |
                 Index of the output containing the condition being fulfilled

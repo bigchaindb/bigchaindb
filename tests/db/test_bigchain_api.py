@@ -1025,7 +1025,7 @@ class TestMultipleInputs(object):
 
         # check spents
         input_txid = owned_inputs_user1.txid
-        input_idx = owned_inputs_user1.idx
+        input_idx = owned_inputs_user1.output
         spent_inputs_user1 = b.get_spent(input_txid, input_idx)
         assert spent_inputs_user1 is None
 
@@ -1061,7 +1061,7 @@ class TestMultipleInputs(object):
 
         # check spents
         input_txid = owned_inputs_user1.txid
-        input_idx = owned_inputs_user1.idx
+        input_idx = owned_inputs_user1.output
         spent_inputs_user1 = b.get_spent(input_txid, input_idx)
         assert spent_inputs_user1 is None
 
@@ -1105,7 +1105,7 @@ class TestMultipleInputs(object):
 
         # check spents
         for input_tx in owned_inputs_user1:
-            assert b.get_spent(input_tx.txid, input_tx.idx) is None
+            assert b.get_spent(input_tx.txid, input_tx.output) is None
 
         # transfer the first 2 inputs
         tx_transfer = Transaction.transfer(tx_create.to_inputs()[:2],
@@ -1117,7 +1117,7 @@ class TestMultipleInputs(object):
 
         # check that used inputs are marked as spent
         for ffill in tx_create.to_inputs()[:2]:
-            spent_tx = b.get_spent(ffill.fulfills.txid, ffill.fulfills.idx)
+            spent_tx = b.get_spent(ffill.fulfills.txid, ffill.fulfills.output)
             assert spent_tx == tx_transfer_signed
 
         # check if remaining transaction that was unspent is also perceived
@@ -1147,7 +1147,7 @@ class TestMultipleInputs(object):
 
         # check spents
         for input_tx in owned_inputs_user1:
-            assert b.get_spent(input_tx.txid, input_tx.idx) is None
+            assert b.get_spent(input_tx.txid, input_tx.output) is None
 
         # create a transaction
         tx = Transaction.transfer(transactions[0].to_inputs(),

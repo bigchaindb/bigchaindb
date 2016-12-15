@@ -356,7 +356,7 @@ class Bigchain(object):
         if cursor:
             return Asset.from_dict(cursor[0]['asset'])
 
-    def get_spent(self, txid, idx):
+    def get_spent(self, txid, output):
         """Check if a `txid` was already used as an input.
 
         A transaction can be used as an input for another transaction. Bigchain needs to make sure that a
@@ -364,7 +364,7 @@ class Bigchain(object):
 
         Args:
             txid (str): The id of the transaction
-            idx (num): the index of the output in the respective transaction
+            output (num): the index of the output in the respective transaction
 
         Returns:
             The transaction (Transaction) that used the `txid` as an input else
@@ -372,8 +372,8 @@ class Bigchain(object):
         """
         # checks if an input was already spent
         # checks if the bigchain has any transaction with input {'txid': ...,
-        # 'idx': ...}
-        transactions = list(backend.query.get_spent(self.connection, txid, idx))
+        # 'output': ...}
+        transactions = list(backend.query.get_spent(self.connection, txid, output))
 
         # a transaction_id should have been spent at most one time
         if transactions:
@@ -405,7 +405,7 @@ class Bigchain(object):
             owner (str): base58 encoded public key.
 
         Returns:
-            :obj:`list` of TransactionLink: list of ``txid`` s and ``idx`` s
+            :obj:`list` of TransactionLink: list of ``txid`` s and ``output`` s
             pointing to another transaction's condition
         """
 
@@ -437,7 +437,7 @@ class Bigchain(object):
                     if util.condition_details_has_owner(output['condition']['details'], owner):
                         tx_link = TransactionLink(tx['id'], index)
                 # check if input was already spent
-                if not self.get_spent(tx_link.txid, tx_link.idx):
+                if not self.get_spent(tx_link.txid, tx_link.output):
                     owned.append(tx_link)
 
         return owned

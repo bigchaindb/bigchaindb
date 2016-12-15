@@ -132,11 +132,11 @@ class TransactionLink(object):
 
         Attributes:
             txid (str, optional): A Transaction to link to.
-            idx (int, optional): An output's index in a Transaction with id
+            output (int, optional): An output's index in a Transaction with id
             `txid`.
     """
 
-    def __init__(self, txid=None, idx=None):
+    def __init__(self, txid=None, output=None):
         """Create an instance of a :class:`~.TransactionLink`.
 
             Note:
@@ -144,18 +144,18 @@ class TransactionLink(object):
                 as an IPLD link can simply point to an object, as well as an
                 objects properties. So instead of having a (de)serializable
                 class, we can have a simple IPLD link of the form:
-                `/<tx_id>/transaction/outputs/<idx>/`.
+                `/<tx_id>/transaction/outputs/<output>/`.
 
             Args:
                 txid (str, optional): A Transaction to link to.
-                idx (int, optional): An Outputs's index in a Transaction with
+                output (int, optional): An Outputs's index in a Transaction with
                     id `txid`.
         """
         self.txid = txid
-        self.idx = idx
+        self.output = output
 
     def __bool__(self):
-        return self.txid is not None and self.idx is not None
+        return self.txid is not None and self.output is not None
 
     def __eq__(self, other):
         # TODO: If `other !== TransactionLink` return `False`
@@ -172,7 +172,7 @@ class TransactionLink(object):
                 :class:`~bigchaindb.common.transaction.TransactionLink`
         """
         try:
-            return cls(link['txid'], link['idx'])
+            return cls(link['txid'], link['output'])
         except TypeError:
             return cls()
 
@@ -182,12 +182,12 @@ class TransactionLink(object):
             Returns:
                 (dict|None): The link as an alternative serialization format.
         """
-        if self.txid is None and self.idx is None:
+        if self.txid is None and self.output is None:
             return None
         else:
             return {
                 'txid': self.txid,
-                'idx': self.idx,
+                'output': self.output,
             }
 
     def to_uri(self, path=''):

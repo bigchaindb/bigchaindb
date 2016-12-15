@@ -95,13 +95,13 @@ def get_asset_by_id(connection, asset_id):
 
 
 @register_query(RethinkDBConnection)
-def get_spent(connection, transaction_id, output_id):
+def get_spent(connection, transaction_id, output):
     # TODO: use index!
     return connection.run(
             r.table('bigchain', read_mode=READ_MODE)
             .concat_map(lambda doc: doc['block']['transactions'])
             .filter(lambda transaction: transaction['inputs'].contains(
-                lambda input: input['fulfills'] == {'txid': transaction_id, 'idx': output_id})))
+                lambda input: input['fulfills'] == {'txid': transaction_id, 'output': output})))
 
 
 @register_query(RethinkDBConnection)
