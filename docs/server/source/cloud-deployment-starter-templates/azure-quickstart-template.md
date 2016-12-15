@@ -14,7 +14,7 @@ One can deploy a BigchainDB node on Azure using the template in the `bigchaindb-
 
 1. Once you are logged in to the Microsoft Azure Portal, you should be taken to a form titled **BigchainDB**. Some notes to help with filling in that form are available [below](azure-quickstart-template.html#notes-on-the-blockchain-template-form-fields).
 
-1. Deployment takes a few minutes. You can follow the notifications by clicking the bell icon at the top of the screen. At the time of writing, the final deployment operation (running the `init.sh` script) was failing. We will fix that, but for now, just follow these instructions and we'll update them once that's fixed.
+1. Deployment takes a few minutes. You can follow the notifications by clicking the bell icon at the top of the screen. At the time of writing, the final deployment operation (running the `init.sh` script) was failing, but a pull request ([#2884](https://github.com/Azure/azure-quickstart-templates/pull/2884)) has been made to fix that and these instructions say what you can do before that pull request gets merged...
 
 1. Find out the public IP address of the virtual machine in the Azure Portal. Example: `40.69.87.250`
 
@@ -22,13 +22,21 @@ One can deploy a BigchainDB node on Azure using the template in the `bigchaindb-
 
 1. You should be prompted for a password. Give the `<Admin_password>` you entered into the form.
 
-1. Go to the `init.sh` script at [https://github.com/Azure/azure-quickstart-templates/blob/master/bigchaindb-on-ubuntu/scripts/init.sh](https://github.com/Azure/azure-quickstart-templates/blob/master/bigchaindb-on-ubuntu/scripts/init.sh)
+1. If pull request [#2884](https://github.com/Azure/azure-quickstart-templates/pull/2884) has been merged, then skip this step. Otherwise, go to the `init.sh` script at [https://github.com/Azure/azure-quickstart-templates/blob/master/bigchaindb-on-ubuntu/scripts/init.sh](https://github.com/Azure/azure-quickstart-templates/blob/master/bigchaindb-on-ubuntu/scripts/init.sh). Your goal is to read through that script and check if each line should be run manually in the terminal. For example, is RethinkDB already installed and running? You can figure that out using `pgrep rethinkdb`. And so on. If in doubt, just try running each command in `init.sh`.
 
-1. Manually run all the commands in that `init.sh` script *except for* **sudo easy_install3 pip**. This will install RethinkDB, run RethinkDB, and install BigchainDB Server.
+1. Configure BigchainDB Server by doing:
+```text
+bigchaindb configure
+```
+It will ask you several questions. You can press `Enter` (or `Return`) to accept the default for all of them *except for one*. When it asks **API Server bind? (default \`localhost:9984\`):**, you should answer:
+```text
+API Server bind? (default `localhost:9984`): 0.0.0.0:9984
+```
 
-1. Configure BigchainDB Server using the default BigchainDB settings: `bigchaindb -y configure`
-
-1. Run BigchainDB Server: `bigchaindb start`
+Finally, run BigchainDB Server by doing:
+```text
+bigchaindb start
+```
 
 BigchainDB Server should now be running on the Azure virtual machine.
 
