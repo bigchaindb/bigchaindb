@@ -111,12 +111,12 @@ def get_blocks_status_from_transaction(connection, transaction_id):
 def get_txids_by_asset_id(connection, asset_id):
     """Retrieves transactions ids related to a particular asset.
 
-    A digital asset in bigchaindb is identified by an uuid. This allows us
-    to query all the transactions related to a particular digital asset,
-    knowing the id.
+    A digital asset in bigchaindb is identified by its ``CREATE``
+    transaction's ID. Knowing this ID allows us to query all the
+    transactions related to a particular digital asset.
 
     Args:
-        asset_id (str): the id for this particular metadata.
+        asset_id (str): the ID of the asset.
 
     Returns:
         A list of transactions ids related to the asset. If no transaction
