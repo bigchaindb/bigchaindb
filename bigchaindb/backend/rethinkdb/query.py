@@ -1,3 +1,4 @@
+from itertools import chain
 from time import time
 
 import rethinkdb as r
@@ -75,22 +76,32 @@ def get_blocks_status_from_transaction(connection, transaction_id):
 def get_txids_by_asset_id(connection, asset_id):
     # here we only want to return the transaction ids since later on when
     # we are going to retrieve the transaction with status validation
-    return connection.run(
+
+    # First find the asset's CREATE transaction
+    create_tx_cursor = connection.run(
+        _get_asset_create_tx_query(asset_id).get_field('id'))
+
+    # Then find any TRANSFER transactions related to the asset
+    transfer_tx_cursor = connection.run(
         r.table('bigchain')
          .get_all(asset_id, index='asset_id')
          .concat_map(lambda block: block['block']['transactions'])
          .filter(lambda transaction: transaction['asset']['id'] == asset_id)
          .get_field('id'))
 
+    return chain(create_tx_cursor, transfer_tx_cursor)
+
 
 @register_query(RethinkDBConnection)
 def get_asset_by_id(connection, asset_id):
-    return connection.run(
-        r.table('bigchain', read_mode=READ_MODE)
-         .get_all(asset_id, index='transaction_id')
-         .concat_map(lambda block: block['block']['transactions'])
-         .filter(lambda transaction: transaction['id'] == asset_id)
-         .pluck('asset'))
+    return connection.run(_get_asset_create_tx_query(asset_id).pluck('asset'))
+
+
+def _get_asset_create_tx_query(asset_id):
+    return r.table('bigchain', read_mode=READ_MODE) \
+            .get_all(asset_id, index='transaction_id') \
+            .concat_map(lambda block: block['block']['transactions']) \
+            .filter(lambda transaction: transaction['id'] == asset_id)
 
 
 @register_query(RethinkDBConnection)
