@@ -5,9 +5,9 @@ UNSPENTS_ENDPOINT = '/api/v1/unspents/'
 
 
 @pytest.mark.usefixtures('inputs')
-def test_get_unspents_endpoint(b, client, user_vk):
-    expected = [u.to_uri('..') for u in b.get_owned_ids(user_vk)]
-    res = client.get(UNSPENTS_ENDPOINT + '?owner_after={}'.format(user_vk))
+def test_get_unspents_endpoint(b, client, user_pk):
+    expected = [u.to_uri('..') for u in b.get_owned_ids(user_pk)]
+    res = client.get(UNSPENTS_ENDPOINT + '?owner_after={}'.format(user_pk))
     assert expected == res.json
     assert res.status_code == 200
 
