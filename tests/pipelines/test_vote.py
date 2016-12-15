@@ -2,6 +2,7 @@ import time
 from unittest.mock import patch
 
 from multipipes import Pipe, Pipeline
+import pytest
 
 
 def dummy_tx(b):
@@ -58,6 +59,7 @@ def test_vote_creation_invalid(b):
                                          vote['signature']) is True
 
 
+@pytest.mark.usefixtures('setup_database')
 def test_vote_ungroup_returns_a_set_of_results(b):
     from bigchaindb.pipelines import vote
 
@@ -69,6 +71,7 @@ def test_vote_ungroup_returns_a_set_of_results(b):
     assert len(txs) == 10
 
 
+@pytest.mark.usefixtures('setup_database')
 def test_vote_validate_block(b):
     from bigchaindb.pipelines import vote
 
@@ -93,6 +96,7 @@ def test_vote_validate_block(b):
         assert tx1 == tx2
 
 
+@pytest.mark.usefixtures('setup_database')
 def test_validate_block_with_invalid_id(b):
     from bigchaindb.pipelines import vote
 
@@ -107,6 +111,7 @@ def test_validate_block_with_invalid_id(b):
     assert invalid_dummy_tx == [vote_obj.invalid_dummy_tx]
 
 
+@pytest.mark.usefixtures('setup_database')
 def test_validate_block_with_invalid_signature(b):
     from bigchaindb.pipelines import vote
 
@@ -121,6 +126,7 @@ def test_validate_block_with_invalid_signature(b):
     assert invalid_dummy_tx == [vote_obj.invalid_dummy_tx]
 
 
+@pytest.mark.usefixtures('setup_database')
 def test_vote_validate_transaction(b):
     from bigchaindb.pipelines import vote
     from bigchaindb.models import Transaction
@@ -137,6 +143,7 @@ def test_vote_validate_transaction(b):
     assert validation == (False, 456, 10)
 
 
+@pytest.mark.usefixtures('setup_database')
 def test_vote_accumulates_transactions(b):
     from bigchaindb.pipelines import vote
 
@@ -155,6 +162,7 @@ def test_vote_accumulates_transactions(b):
     assert validation == (False, 456, 10)
 
 
+@pytest.mark.usefixtures('setup_database')
 def test_valid_block_voting_sequential(b, monkeypatch):
     from bigchaindb.backend import query
     from bigchaindb.common import crypto, util
@@ -184,6 +192,7 @@ def test_valid_block_voting_sequential(b, monkeypatch):
                                          vote_doc['signature']) is True
 
 
+@pytest.mark.usefixtures('setup_database')
 def test_valid_block_voting_multiprocessing(b, monkeypatch):
     from bigchaindb.backend import query
     from bigchaindb.common import crypto, util
@@ -219,6 +228,7 @@ def test_valid_block_voting_multiprocessing(b, monkeypatch):
                                          vote_doc['signature']) is True
 
 
+@pytest.mark.usefixtures('setup_database')
 def test_valid_block_voting_with_create_transaction(b, monkeypatch):
     from bigchaindb.backend import query
     from bigchaindb.common import crypto, util
@@ -261,6 +271,7 @@ def test_valid_block_voting_with_create_transaction(b, monkeypatch):
                                          vote_doc['signature']) is True
 
 
+@pytest.mark.usefixtures('setup_database')
 def test_valid_block_voting_with_transfer_transactions(monkeypatch, b):
     from bigchaindb.backend import query
     from bigchaindb.common import crypto, util
@@ -331,6 +342,7 @@ def test_valid_block_voting_with_transfer_transactions(monkeypatch, b):
                                          vote2_doc['signature']) is True
 
 
+@pytest.mark.usefixtures('setup_database')
 def test_unsigned_tx_in_block_voting(monkeypatch, b, user_pk):
     from bigchaindb.backend import query
     from bigchaindb.common import crypto, util
@@ -369,6 +381,7 @@ def test_unsigned_tx_in_block_voting(monkeypatch, b, user_pk):
                                          vote_doc['signature']) is True
 
 
+@pytest.mark.usefixtures('setup_database')
 def test_invalid_id_tx_in_block_voting(monkeypatch, b, user_pk):
     from bigchaindb.backend import query
     from bigchaindb.common import crypto, util
@@ -409,6 +422,7 @@ def test_invalid_id_tx_in_block_voting(monkeypatch, b, user_pk):
                                          vote_doc['signature']) is True
 
 
+@pytest.mark.usefixtures('setup_database')
 def test_invalid_content_in_tx_in_block_voting(monkeypatch, b, user_pk):
     from bigchaindb.backend import query
     from bigchaindb.common import crypto, util
@@ -449,6 +463,7 @@ def test_invalid_content_in_tx_in_block_voting(monkeypatch, b, user_pk):
                                          vote_doc['signature']) is True
 
 
+@pytest.mark.usefixtures('setup_database')
 def test_invalid_block_voting(monkeypatch, b, user_pk):
     from bigchaindb.backend import query
     from bigchaindb.common import crypto, util
@@ -485,6 +500,7 @@ def test_invalid_block_voting(monkeypatch, b, user_pk):
                                          vote_doc['signature']) is True
 
 
+@pytest.mark.usefixtures('setup_database')
 def test_voter_considers_unvoted_blocks_when_single_node(monkeypatch, b):
     from bigchaindb.backend import query
     from bigchaindb.pipelines import vote
@@ -533,6 +549,7 @@ def test_voter_considers_unvoted_blocks_when_single_node(monkeypatch, b):
     assert all(vote['node_pubkey'] == b.me for vote in votes)
 
 
+@pytest.mark.usefixtures('setup_database')
 def test_voter_chains_blocks_with_the_previous_ones(monkeypatch, b):
     from bigchaindb.backend import query
     from bigchaindb.pipelines import vote
@@ -574,6 +591,7 @@ def test_voter_chains_blocks_with_the_previous_ones(monkeypatch, b):
             {block['id'] for block in blocks})
 
 
+@pytest.mark.usefixtures('setup_database')
 def test_voter_checks_for_previous_vote(monkeypatch, b):
     from bigchaindb.backend import query
     from bigchaindb.pipelines import vote
@@ -615,6 +633,7 @@ def test_voter_checks_for_previous_vote(monkeypatch, b):
 
 
 @patch.object(Pipeline, 'start')
+@pytest.mark.usefixtures('setup_database')
 def test_start(mock_start, b):
     # TODO: `block.start` is just a wrapper around `vote.create_pipeline`,
     #       that is tested by `test_full_pipeline`.

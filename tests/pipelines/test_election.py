@@ -1,6 +1,8 @@
 import time
 from unittest.mock import patch
 
+import pytest
+
 from bigchaindb.common import crypto
 from multipipes import Pipe, Pipeline
 
@@ -8,6 +10,7 @@ from bigchaindb import Bigchain
 from bigchaindb.pipelines import election
 
 
+@pytest.mark.usefixtures('setup_database')
 def test_check_for_quorum_invalid(b, user_pk):
     from bigchaindb.models import Transaction
 
@@ -41,6 +44,7 @@ def test_check_for_quorum_invalid(b, user_pk):
     assert e.check_for_quorum(votes[-1]) == test_block
 
 
+@pytest.mark.usefixtures('setup_database')
 def test_check_for_quorum_invalid_prev_node(b, user_pk):
     from bigchaindb.models import Transaction
     e = election.Election()
@@ -75,6 +79,7 @@ def test_check_for_quorum_invalid_prev_node(b, user_pk):
     assert e.check_for_quorum(votes[-1]) == test_block
 
 
+@pytest.mark.usefixtures('setup_database')
 def test_check_for_quorum_valid(b, user_pk):
     from bigchaindb.models import Transaction
 
@@ -107,6 +112,7 @@ def test_check_for_quorum_valid(b, user_pk):
     assert e.check_for_quorum(votes[-1]) is None
 
 
+@pytest.mark.usefixtures('setup_database')
 def test_check_requeue_transaction(b, user_pk):
     from bigchaindb.models import Transaction
 
@@ -134,6 +140,7 @@ def test_start(mock_start):
     mock_start.assert_called_with()
 
 
+@pytest.mark.usefixtures('setup_database')
 def test_full_pipeline(b, user_pk):
     import random
     from bigchaindb.backend import query

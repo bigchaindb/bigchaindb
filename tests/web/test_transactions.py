@@ -26,6 +26,7 @@ def test_get_transaction_returns_404_if_not_found(client):
     assert res.status_code == 404
 
 
+@pytest.mark.usefixtures('setup_database')
 def test_post_create_transaction_endpoint(b, client):
     from bigchaindb.models import Transaction
     user_priv, user_pub = crypto.generate_key_pair()

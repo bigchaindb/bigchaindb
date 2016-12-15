@@ -1,8 +1,6 @@
 import pytest
 from unittest.mock import patch
 
-from ..db.conftest import inputs  # noqa
-
 
 @pytest.mark.usefixtures('inputs')
 def test_asset_transfer(b, user_pk, user_sk):

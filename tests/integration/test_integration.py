@@ -4,6 +4,7 @@ import pytest
 from bigchaindb import Bigchain
 
 
+# TODO remove as it is unused?
 @pytest.fixture
 def inputs(user_pk):
     from bigchaindb.models import Transaction

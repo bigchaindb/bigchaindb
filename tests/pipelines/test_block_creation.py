@@ -2,6 +2,7 @@ import time
 from unittest.mock import patch
 
 from multipipes import Pipe
+import pytest
 
 
 def test_filter_by_assignee(b, signed_create_tx):
@@ -25,6 +26,7 @@ def test_filter_by_assignee(b, signed_create_tx):
     assert block_maker.filter_tx(tx) is None
 
 
+@pytest.mark.usefixtures('setup_database')
 def test_validate_transaction(b, create_tx):
     from bigchaindb.pipelines.block import BlockPipeline
 
@@ -53,6 +55,7 @@ def test_create_block(b, user_pk):
     assert len(block_doc.transactions) == 100
 
 
+@pytest.mark.usefixtures('setup_database')
 def test_write_block(b, user_pk):
     from bigchaindb.models import Block, Transaction
     from bigchaindb.pipelines.block import BlockPipeline
@@ -73,6 +76,7 @@ def test_write_block(b, user_pk):
     assert expected == block_doc
 
 
+@pytest.mark.usefixtures('setup_database')
 def test_duplicate_transaction(b, user_pk):
     from bigchaindb.models import Transaction
     from bigchaindb.pipelines import block
@@ -104,6 +108,7 @@ def test_duplicate_transaction(b, user_pk):
     assert status != b.TX_IN_BACKLOG
 
 
+@pytest.mark.usefixtures('setup_database')
 def test_delete_tx(b, user_pk):
     from bigchaindb.models import Transaction
     from bigchaindb.pipelines.block import BlockPipeline
@@ -132,6 +137,7 @@ def test_delete_tx(b, user_pk):
 
 
 @patch('bigchaindb.pipelines.block.create_pipeline')
+@pytest.mark.usefixtures('setup_database')
 def test_start(create_pipeline):
     from bigchaindb.pipelines import block
 
@@ -142,6 +148,7 @@ def test_start(create_pipeline):
     assert pipeline == create_pipeline.return_value
 
 
+@pytest.mark.usefixtures('setup_database')
 def test_full_pipeline(b, user_pk):
     import random
     from bigchaindb.backend import query

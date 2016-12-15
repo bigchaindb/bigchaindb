@@ -21,13 +21,8 @@ def mock_write_config(monkeypatch):
 
 @pytest.fixture
 def mock_db_init_with_existing_db(monkeypatch):
-    from bigchaindb import commands
-    from bigchaindb.common.exceptions import DatabaseAlreadyExists
-
-    def mockreturn():
-        raise DatabaseAlreadyExists
-
-    monkeypatch.setattr(commands.bigchain, '_run_init', mockreturn)
+    from bigchaindb.commands import bigchain
+    monkeypatch.setattr(bigchain, '_run_init', lambda: None)
 
 
 @pytest.fixture
@@ -305,6 +300,7 @@ def test_start_rethinkdb_exits_when_cannot_start(mock_popen):
 
 @patch('bigchaindb.common.crypto.generate_key_pair',
        return_value=('private_key', 'public_key'))
+@pytest.mark.usefixtures('restore_config')
 def test_allow_temp_keypair_generates_one_on_the_fly(mock_gen_keypair,
                                                      mock_processes_start,
                                                      mock_db_init_with_existing_db):
@@ -322,6 +318,7 @@ def test_allow_temp_keypair_generates_one_on_the_fly(mock_gen_keypair,
 
 @patch('bigchaindb.common.crypto.generate_key_pair',
        return_value=('private_key', 'public_key'))
+@pytest.mark.usefixtures('restore_config')
 def test_allow_temp_keypair_doesnt_override_if_keypair_found(mock_gen_keypair,
                                                              mock_processes_start,
                                                              mock_db_init_with_existing_db):

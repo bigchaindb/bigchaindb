@@ -2,8 +2,6 @@ import pytest
 
 from unittest.mock import patch
 
-from ..db.conftest import inputs  # noqa
-
 
 # CREATE divisible asset
 # Single input
