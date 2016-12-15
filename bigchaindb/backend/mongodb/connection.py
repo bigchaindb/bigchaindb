@@ -26,7 +26,13 @@ class MongoDBConnection(Connection):
         self.port = port or bigchaindb.config['database']['port']
         self.dbname = dbname or bigchaindb.config['database']['name']
         self.max_tries = max_tries
-        self.conn = None
+        self.connection = None
+
+    @property
+    def conn(self):
+        if self.connection is None:
+            self._connect()
+        return self.connection
 
     @property
     def db(self):
@@ -39,7 +45,7 @@ class MongoDBConnection(Connection):
     def _connect(self):
         for i in range(self.max_tries):
             try:
-                self.conn = MongoClient(self.host, self.port)
+                self.connection = MongoClient(self.host, self.port)
             except ConnectionFailure as exc:
                 if i + 1 == self.max_tries:
                     raise
