@@ -54,8 +54,8 @@ class Transaction(Transaction):
             # store the inputs so that we can check if the asset ids match
             input_txs = []
             input_amount = 0
-            for input in self.inputs:
-                input_txid = input.fulfills.txid
+            for input_ in self.inputs:
+                input_txid = input_.fulfills.txid
                 input_tx, status = bigchain.\
                     get_transaction(input_txid, include_status=True)
 
@@ -68,12 +68,12 @@ class Transaction(Transaction):
                         'input `{}` does not exist in a valid block'.format(
                             input_txid))
 
-                spent = bigchain.get_spent(input_txid, input.fulfills.output)
+                spent = bigchain.get_spent(input_txid, input_.fulfills.output)
                 if spent and spent.id != self.id:
                     raise DoubleSpend('input `{}` was already spent'
                                       .format(input_txid))
 
-                output = input_tx.outputs[input.fulfills.output]
+                output = input_tx.outputs[input_.fulfills.output]
                 input_conditions.append(output)
                 input_txs.append(input_tx)
                 if output.amount < 1:
