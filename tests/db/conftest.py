@@ -23,7 +23,7 @@ def restore_config(request, node_config):
     config_utils.set_config(node_config)
 
 
-@pytest.fixture(scope='module', autouse=True)
+@pytest.fixture(scope='function', autouse=True)
 def setup_database(request, node_config):
     print('Initializing test db')
     db_name = node_config['database']['name']
@@ -47,24 +47,6 @@ def setup_database(request, node_config):
             pass
 
         print('Finished deleting `{}`'.format(db_name))
-
-    request.addfinalizer(fin)
-
-
-@pytest.fixture(scope='function', autouse=True)
-def cleanup_tables(request, node_config):
-    db_name = node_config['database']['name']
-
-    def fin():
-        conn = connect()
-        try:
-            schema.drop_database(conn, db_name)
-            schema.create_database(conn, db_name)
-            schema.create_tables(conn, db_name)
-            schema.create_indexes(conn, db_name)
-        except DatabaseDoesNotExist as e:
-            if str(e) != 'Database `{}` does not exist'.format(db_name):
-                raise
 
     request.addfinalizer(fin)
 
