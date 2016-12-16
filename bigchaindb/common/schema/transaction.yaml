@@ -91,7 +91,7 @@ definitions:
         transaction has outputs but no inputs, so a dummy input is created.
 
         A ``TRANSFER`` transaction transfers ownership of an asset, by providing
-        fulfillments to conditions in outputs of earlier transactions.
+        an input that meets the conditions of an earlier transaction's outputs.
 
         A ``GENESIS`` transaction is a special case transaction used as the
         sole member of the first block in a BigchainDB ledger.
@@ -169,7 +169,7 @@ definitions:
       public_keys:
         "$ref": "#/definitions/public_keys"
         description: |
-            List of public keys associated with asset control.
+            List of public keys associated with the conditions on an output.
   input:
     type: "object"
     description:
@@ -202,9 +202,9 @@ definitions:
             type_id:
               type: integer
           description: |
-              Fulfillment of an `Output.condition`_, or put a different way, this is a
-              payload that satisfies an output condition in order to spend
-              the associated asset.
+              Fulfillment of an `Output.condition`_, or, put a different way, a payload
+              that satisfies the condition of a previous output to prove that the
+              creator(s) of this transaction have control over the listed asset.
         - type: string
           pattern: "^cf:([1-9a-f][0-9a-f]{0,3}|0):[a-zA-Z0-9_-]*$"
       fulfills:
