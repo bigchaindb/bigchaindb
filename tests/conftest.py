@@ -44,6 +44,17 @@ def pytest_addoption(parser):
     )
 
 
+def pytest_ignore_collect(path, config):
+    from bigchaindb.backend.connection import BACKENDS
+    path = str(path)
+
+    if os.path.isdir(path):
+        dirname = os.path.split(path)[1]
+        if dirname in BACKENDS.keys() and dirname != config.getoption('--database-backend'):
+            print('Ignoring unrequested backend test dir: ', path)
+            return True
+
+
 # We need this function to avoid loading an existing
 # conf file located in the home of the user running
 # the tests. If it's too aggressive we can change it

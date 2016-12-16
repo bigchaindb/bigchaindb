@@ -4,47 +4,6 @@ from argparse import Namespace
 import copy
 
 import pytest
-import rethinkdb
-
-
-@pytest.fixture
-def mock_run_configure(monkeypatch):
-    from bigchaindb.commands import bigchain
-    monkeypatch.setattr(bigchain, 'run_configure', lambda *args, **kwargs: None)
-
-
-@pytest.fixture
-def mock_write_config(monkeypatch):
-    from bigchaindb import config_utils
-    monkeypatch.setattr(config_utils, 'write_config', lambda *args: None)
-
-
-@pytest.fixture
-def mock_db_init_with_existing_db(monkeypatch):
-    from bigchaindb.commands import bigchain
-    monkeypatch.setattr(bigchain, '_run_init', lambda: None)
-
-
-@pytest.fixture
-def mock_processes_start(monkeypatch):
-    from bigchaindb import processes
-    monkeypatch.setattr(processes, 'start', lambda *args: None)
-
-
-@pytest.fixture
-def mock_generate_key_pair(monkeypatch):
-    monkeypatch.setattr('bigchaindb.common.crypto.generate_key_pair', lambda: ('privkey', 'pubkey'))
-
-
-@pytest.fixture
-def mock_bigchaindb_backup_config(monkeypatch):
-    config = {
-        'keypair': {},
-        'database': {'host': 'host', 'port': 12345, 'name': 'adbname'},
-        'statsd': {'host': 'host', 'port': 12345, 'rate': 0.1},
-        'backlog_reassign_delay': 5
-    }
-    monkeypatch.setattr('bigchaindb._config', config)
 
 
 def test_make_sure_we_dont_remove_any_command():
@@ -112,18 +71,6 @@ def test_bigchain_run_start(mock_run_configure, mock_processes_start, mock_db_in
     from bigchaindb.commands.bigchain import run_start
     args = Namespace(start_rethinkdb=False, allow_temp_keypair=False, config=None, yes=True)
     run_start(args)
-
-
-@patch('bigchaindb.commands.utils.start_rethinkdb', return_value=Mock())
-def test_bigchain_run_start_with_rethinkdb(mock_start_rethinkdb,
-                                           mock_run_configure,
-                                           mock_processes_start,
-                                           mock_db_init_with_existing_db):
-    from bigchaindb.commands.bigchain import run_start
-    args = Namespace(start_rethinkdb=True, allow_temp_keypair=False, config=None, yes=True)
-    run_start(args)
-
-    mock_start_rethinkdb.assert_called_with()
 
 
 @pytest.mark.skipif(reason="BigchainDB doesn't support the automatic creation of a config file anymore")
@@ -280,24 +227,6 @@ def test_run_configure_when_config_does_exist(monkeypatch,
     assert value == {}
 
 
-@patch('subprocess.Popen')
-def test_start_rethinkdb_returns_a_process_when_successful(mock_popen):
-    from bigchaindb.commands import utils
-    mock_popen.return_value = Mock(stdout=[
-        'Listening for client driver 1234',
-        'Server ready'])
-    assert utils.start_rethinkdb() is mock_popen.return_value
-
-
-@patch('subprocess.Popen')
-def test_start_rethinkdb_exits_when_cannot_start(mock_popen):
-    from bigchaindb.common import exceptions
-    from bigchaindb.commands import utils
-    mock_popen.return_value = Mock(stdout=['Nopety nope'])
-    with pytest.raises(exceptions.StartupError):
-        utils.start_rethinkdb()
-
-
 @patch('bigchaindb.common.crypto.generate_key_pair',
        return_value=('private_key', 'public_key'))
 @pytest.mark.usefixtures('restore_config')
@@ -337,94 +266,6 @@ def test_allow_temp_keypair_doesnt_override_if_keypair_found(mock_gen_keypair,
 
     assert bigchaindb.config['keypair']['private'] == original_private_key
     assert bigchaindb.config['keypair']['public'] == original_public_key
-
-
-@patch('rethinkdb.ast.Table.reconfigure')
-def test_set_shards(mock_reconfigure, monkeypatch, b):
-    from bigchaindb.commands.bigchain import run_set_shards
-
-    # this will mock the call to retrieve the database config
-    # we will set it to return one replica
-    def mockreturn_one_replica(self, conn):
-        return {'shards': [{'replicas': [1]}]}
-
-    monkeypatch.setattr(rethinkdb.RqlQuery, 'run', mockreturn_one_replica)
-    args = Namespace(num_shards=3)
-    run_set_shards(args)
-    mock_reconfigure.assert_called_with(replicas=1, shards=3)
-
-    # this will mock the call to retrieve the database config
-    # we will set it to return three replica
-    def mockreturn_three_replicas(self, conn):
-        return {'shards': [{'replicas': [1, 2, 3]}]}
-
-    monkeypatch.setattr(rethinkdb.RqlQuery, 'run', mockreturn_three_replicas)
-    run_set_shards(args)
-    mock_reconfigure.assert_called_with(replicas=3, shards=3)
-
-
-@patch('logging.Logger.warn')
-def test_set_shards_raises_exception(mock_log, monkeypatch, b):
-    from bigchaindb.commands.bigchain import run_set_shards
-
-    # test that we are correctly catching the exception
-    def mock_raise(*args, **kwargs):
-        raise rethinkdb.ReqlOpFailedError('')
-
-    def mockreturn_one_replica(self, conn):
-        return {'shards': [{'replicas': [1]}]}
-
-    monkeypatch.setattr(rethinkdb.RqlQuery, 'run', mockreturn_one_replica)
-    monkeypatch.setattr(rethinkdb.ast.Table, 'reconfigure', mock_raise)
-
-    args = Namespace(num_shards=3)
-    run_set_shards(args)
-
-    assert mock_log.called
-
-
-@patch('rethinkdb.ast.Table.reconfigure')
-def test_set_replicas(mock_reconfigure, monkeypatch, b):
-    from bigchaindb.commands.bigchain import run_set_replicas
-
-    # this will mock the call to retrieve the database config
-    # we will set it to return two shards
-    def mockreturn_two_shards(self, conn):
-        return {'shards': [1, 2]}
-
-    monkeypatch.setattr(rethinkdb.RqlQuery, 'run', mockreturn_two_shards)
-    args = Namespace(num_replicas=2)
-    run_set_replicas(args)
-    mock_reconfigure.assert_called_with(replicas=2, shards=2)
-
-    # this will mock the call to retrieve the database config
-    # we will set it to return three shards
-    def mockreturn_three_shards(self, conn):
-        return {'shards': [1, 2, 3]}
-
-    monkeypatch.setattr(rethinkdb.RqlQuery, 'run', mockreturn_three_shards)
-    run_set_replicas(args)
-    mock_reconfigure.assert_called_with(replicas=2, shards=3)
-
-
-@patch('logging.Logger.warn')
-def test_set_replicas_raises_exception(mock_log, monkeypatch, b):
-    from bigchaindb.commands.bigchain import run_set_replicas
-
-    # test that we are correctly catching the exception
-    def mock_raise(*args, **kwargs):
-        raise rethinkdb.ReqlOpFailedError('')
-
-    def mockreturn_two_shards(self, conn):
-        return {'shards': [1, 2]}
-
-    monkeypatch.setattr(rethinkdb.RqlQuery, 'run', mockreturn_two_shards)
-    monkeypatch.setattr(rethinkdb.ast.Table, 'reconfigure', mock_raise)
-
-    args = Namespace(num_replicas=2)
-    run_set_replicas(args)
-
-    assert mock_log.called
 
 
 @patch('argparse.ArgumentParser.parse_args')

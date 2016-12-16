@@ -25,7 +25,6 @@ def test_raise_exception_when_max_tries():
 
 def test_reconnect_when_connection_lost():
     import time
-    import rethinkdb as r
 
     def raise_exception(*args, **kwargs):
         raise r.ReqlDriverError('mock')
@@ -65,18 +64,18 @@ def test_changefeed_reconnects_when_connection_lost(monkeypatch):
             if self.tries == 1:
                 raise r.ReqlDriverError('mock')
             elif self.tries == 2:
-                return { 'new_val': { 'fact': 'A group of cats is called a clowder.' },
-                         'old_val': None }
+                return {'new_val': {'fact': 'A group of cats is called a clowder.'},
+                        'old_val': None}
             if self.tries == 3:
                 raise r.ReqlDriverError('mock')
             elif self.tries == 4:
-                return { 'new_val': {'fact': 'Cats sleep 70% of their lives.' },
-                         'old_val': None }
+                return {'new_val': {'fact': 'Cats sleep 70% of their lives.'},
+                        'old_val': None}
             else:
                 time.sleep(10)
 
     changefeed = RethinkDBChangeFeed('cat_facts', ChangeFeed.INSERT,
-                            connection=MockConnection())
+                                     connection=MockConnection())
     changefeed.outqueue = mp.Queue()
     t_changefeed = Thread(target=changefeed.run_forever, daemon=True)
 
