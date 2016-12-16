@@ -191,10 +191,10 @@ class TransactionLink(object):
             }
 
     def to_uri(self, path=''):
-        if self.txid is None and self.cid is None:
+        if self.txid is None and self.output is None:
             return None
-        return '{}/transactions/{}/conditions/{}'.format(path, self.txid,
-                                                         self.cid)
+        return '{}/transactions/{}/outputs/{}'.format(path, self.txid,
+                                                      self.output)
 
 
 class Output(object):
