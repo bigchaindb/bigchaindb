@@ -53,12 +53,14 @@ def create_bigchain_secondary_index(conn, dbname):
     conn.conn[dbname]['bigchain'].create_index('id', name='block_id')
 
     # to order blocks by timestamp
-    conn.conn[dbname]['bigchain'].create_index([('block.timestamp', ASCENDING)],
-                                          name='block_timestamp')
+    conn.conn[dbname]['bigchain'].create_index([('block.timestamp',
+                                                 ASCENDING)],
+                                               name='block_timestamp')
 
     # to query the bigchain for a transaction id, this field is unique
     conn.conn[dbname]['bigchain'].create_index('block.transactions.id',
-                                          name='transaction_id', unique=True)
+                                               name='transaction_id',
+                                               unique=True)
 
     # secondary index for payload data by UUID, this field is unique
     conn.conn[dbname]['bigchain']\
@@ -83,9 +85,9 @@ def create_backlog_secondary_index(conn, dbname):
     logger.info('Create `backlog` secondary index.')
 
     # to order transactions by timestamp
-    conn.conn[dbname]['backlog']\
-            .create_index([('transaction.timestamp', ASCENDING)],
-                          name='transaction_timestamp')
+    conn.conn[dbname]['backlog'].create_index([('transaction.timestamp',
+                                                ASCENDING)],
+                                              name='transaction_timestamp')
 
     # compound index to read transactions from the backlog per assignee
     conn.conn[dbname]['backlog']\
@@ -99,11 +101,12 @@ def create_votes_secondary_index(conn, dbname):
 
     # index on block id to quickly poll
     conn.conn[dbname]['votes'].create_index('vote.voting_for_block',
-                                       name='voting_for')
+                                            name='voting_for')
 
     # is the first index redundant then?
     # compound index to order votes by block id and node
-    conn.conn[dbname]['votes']\
-            .create_index([('vote.voting_for_block', ASCENDING),
-                           ('node_pubkey', ASCENDING)],
-                          name='block_and_voter')
+    conn.conn[dbname]['votes'].create_index([('vote.voting_for_block',
+                                              ASCENDING),
+                                             ('node_pubkey',
+                                              ASCENDING)],
+                                            name='block_and_voter')
