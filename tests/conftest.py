@@ -145,7 +145,7 @@ def structurally_valid_vote():
 
 
 @pytest.fixture
-def setup_database(request, restore_config, node_config):
+def setup_database(restore_config, node_config):
     from bigchaindb.backend import connect, schema
     from bigchaindb.common.exceptions import DatabaseDoesNotExist
     print('Initializing test db')
@@ -158,20 +158,18 @@ def setup_database(request, restore_config, node_config):
         pass
 
     schema.init_database(conn)
-
     print('Finishing init database')
 
-    def fin():
-        conn = connect()
-        print('Deleting `{}` database'.format(db_name))
-        try:
-            schema.drop_database(conn, db_name)
-        except DatabaseDoesNotExist:
-            pass
+    yield
 
-        print('Finished deleting `{}`'.format(db_name))
+    print('Deleting `{}` database'.format(db_name))
+    conn = connect()
+    try:
+        schema.drop_database(conn, db_name)
+    except DatabaseDoesNotExist:
+        pass
 
-    request.addfinalizer(fin)
+    print('Finished deleting `{}`'.format(db_name))
 
 
 @pytest.fixture
