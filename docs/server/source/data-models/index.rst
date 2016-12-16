@@ -14,6 +14,6 @@ This section unpacks each one in turn.
 
    transaction-model 
    asset-model
-   crypto-conditions
+   inputs-outputs
    block-model
    vote-model
