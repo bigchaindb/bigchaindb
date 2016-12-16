@@ -10,7 +10,6 @@ import os
 import copy
 
 import pytest
-import rethinkdb as r
 
 from bigchaindb.common import crypto
 
@@ -138,54 +137,35 @@ def structurally_valid_vote():
 @pytest.fixture
 def setup_database(request, restore_config, node_config):
     from bigchaindb.backend import connect, schema
-    from bigchaindb.common.exceptions import DatabaseAlreadyExists
+    from bigchaindb.common.exceptions import DatabaseDoesNotExist
     print('Initializing test db')
     db_name = node_config['database']['name']
     conn = connect()
 
-    if conn.run(r.db_list().contains(db_name)):
-        conn.run(r.db_drop(db_name))
-
     try:
-        schema.init_database()
-    except DatabaseAlreadyExists:
-        print('Database already exists.')
+        schema.drop_database(conn, db_name)
+    except DatabaseDoesNotExist:
+        pass
+
+    schema.init_database(conn)
 
     print('Finishing init database')
 
     def fin():
-        print('Deleting `{}` database'.format(db_name))
         conn = connect()
+        print('Deleting `{}` database'.format(db_name))
         try:
-            conn.run(r.db_drop(db_name))
-        except r.ReqlOpFailedError as e:
-            if e.message != 'Database `{}` does not exist.'.format(db_name):
-                raise
+            schema.drop_database(conn, db_name)
+        except DatabaseDoesNotExist:
+            pass
+
         print('Finished deleting `{}`'.format(db_name))
 
     request.addfinalizer(fin)
 
 
 @pytest.fixture
-def cleanup_tables(request, node_config):
-    db_name = node_config['database']['name']
-
-    def fin():
-        from bigchaindb.backend import connect
-        conn = connect()
-        try:
-            conn.run(r.db(db_name).table('bigchain').delete())
-            conn.run(r.db(db_name).table('backlog').delete())
-            conn.run(r.db(db_name).table('votes').delete())
-        except r.ReqlOpFailedError as e:
-            if e.message != 'Database `{}` does not exist.'.format(db_name):
-                raise
-
-    request.addfinalizer(fin)
-
-
-@pytest.fixture
-def inputs(user_pk, cleanup_tables, setup_database):
+def inputs(user_pk, setup_database):
     from bigchaindb import Bigchain
     from bigchaindb.models import Transaction
     from bigchaindb.common.exceptions import GenesisBlockAlreadyExistsError
@@ -213,7 +193,7 @@ def inputs(user_pk, cleanup_tables, setup_database):
 
 
 @pytest.fixture
-def inputs_shared(user_pk, user2_pk):
+def inputs_shared(user_pk, user2_pk, setup_database):
     from bigchaindb import Bigchain
     from bigchaindb.models import Transaction
     from bigchaindb.common.exceptions import GenesisBlockAlreadyExistsError
