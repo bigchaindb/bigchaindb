@@ -1,12 +1,16 @@
 from importlib import import_module
+import logging
 
 import bigchaindb
 from bigchaindb.common.exceptions import ConfigurationError
 
 
 BACKENDS = {
+    'mongodb': 'bigchaindb.backend.mongodb.connection.MongoDBConnection',
     'rethinkdb': 'bigchaindb.backend.rethinkdb.connection.RethinkDBConnection'
 }
+
+logger = logging.getLogger(__name__)
 
 
 def connect(backend=None, host=None, port=None, name=None):
@@ -44,6 +48,7 @@ def connect(backend=None, host=None, port=None, name=None):
     except (ImportError, AttributeError) as exc:
         raise ConfigurationError('Error loading backend `{}`'.format(backend)) from exc
 
+    logger.debug('Connection: {}'.format(Class))
     return Class(host, port, dbname)
 
 

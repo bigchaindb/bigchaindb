@@ -64,6 +64,9 @@ def restore_config(request, node_config):
 def node_config(request):
     config = copy.deepcopy(CONFIG)
     config['database']['backend'] = request.config.getoption('--database-backend')
+    if config['database']['backend'] == 'mongodb':
+        # not a great way to do this
+        config['database']['port'] = 27017
     return config
 
 

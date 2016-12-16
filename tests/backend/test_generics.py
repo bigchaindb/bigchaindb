@@ -1,3 +1,6 @@
+from importlib import import_module
+from unittest.mock import patch
+
 from pytest import mark, raises
 
 
@@ -64,3 +67,26 @@ def test_changefeed_class(changefeed_class_func_name, args_qty):
     changefeed_class_func = getattr(ChangeFeed, changefeed_class_func_name)
     with raises(NotImplementedError):
         changefeed_class_func(None, *range(args_qty))
+
+
+@mark.parametrize('db,conn_cls', (
+    ('mongodb', 'MongoDBConnection'),
+    ('rethinkdb', 'RethinkDBConnection'),
+))
+@patch('bigchaindb.backend.schema.create_indexes',
+       autospec=True, return_value=None)
+@patch('bigchaindb.backend.schema.create_tables',
+       autospec=True, return_value=None)
+@patch('bigchaindb.backend.schema.create_database',
+       autospec=True, return_value=None)
+def test_init_database(mock_create_database, mock_create_tables,
+                       mock_create_indexes, db, conn_cls):
+    from bigchaindb.backend.schema import init_database
+    conn = getattr(
+        import_module('bigchaindb.backend.{}.connection'.format(db)),
+        conn_cls,
+    )('host', 'port', 'dbname')
+    init_database(connection=conn, dbname='mickeymouse')
+    mock_create_database.assert_called_once_with(conn, 'mickeymouse')
+    mock_create_tables.assert_called_once_with(conn, 'mickeymouse')
+    mock_create_indexes.assert_called_once_with(conn, 'mickeymouse')
