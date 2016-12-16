@@ -5,7 +5,10 @@ from unittest.mock import patch
 from bigchaindb import config_utils
 import os
 
+import pytest
 
+
+@pytest.mark.usefixtures('setup_database')
 def test_get_stale(b, user_pk):
     from bigchaindb.models import Transaction
     tx = Transaction.create([b.me], [([user_pk], 1)])
@@ -22,6 +25,7 @@ def test_get_stale(b, user_pk):
         assert tx.to_dict() == _tx
 
 
+@pytest.mark.usefixtures('setup_database')
 def test_reassign_transactions(b, user_pk):
     from bigchaindb.backend import query
     from bigchaindb.models import Transaction
@@ -61,6 +65,7 @@ def test_reassign_transactions(b, user_pk):
     assert tx['assignee'] != 'lol'
 
 
+@pytest.mark.usefixtures('setup_database')
 def test_full_pipeline(monkeypatch, user_pk):
     from bigchaindb.backend import query
     from bigchaindb.models import Transaction

@@ -11,7 +11,10 @@ import copy
 
 import pytest
 
+from bigchaindb.common import crypto
 
+
+USER2_SK, USER2_PK = crypto.generate_key_pair()
 DB_NAME = 'bigchain_test_{}'.format(os.getpid())
 
 CONFIG = {
@@ -45,7 +48,7 @@ def pytest_addoption(parser):
 # conf file located in the home of the user running
 # the tests. If it's too aggressive we can change it
 # later.
-@pytest.fixture(scope='function', autouse=True)
+@pytest.fixture
 def ignore_local_config_file(monkeypatch):
     def mock_file_config(filename=None):
         raise FileNotFoundError()
@@ -54,8 +57,8 @@ def ignore_local_config_file(monkeypatch):
                         mock_file_config)
 
 
-@pytest.fixture(scope='function', autouse=True)
-def restore_config(request, node_config):
+@pytest.fixture
+def restore_config(ignore_local_config_file, node_config):
     from bigchaindb import config_utils
     config_utils.set_config(node_config)
 
@@ -81,8 +84,17 @@ def user_pk():
 
 
 @pytest.fixture
-def b(request, node_config):
-    restore_config(request, node_config)
+def user2_sk():
+    return USER2_SK
+
+
+@pytest.fixture
+def user2_pk():
+    return USER2_PK
+
+
+@pytest.fixture
+def b(restore_config):
     from bigchaindb import Bigchain
     return Bigchain()
 
@@ -119,3 +131,90 @@ def structurally_valid_vote():
             'timestamp': '1111111111'
         }
     }
+
+
+@pytest.fixture
+def setup_database(request, restore_config, node_config):
+    from bigchaindb.backend import connect, schema
+    from bigchaindb.common.exceptions import DatabaseDoesNotExist
+    print('Initializing test db')
+    db_name = node_config['database']['name']
+    conn = connect()
+
+    try:
+        schema.drop_database(conn, db_name)
+    except DatabaseDoesNotExist:
+        pass
+
+    schema.init_database(conn)
+
+    print('Finishing init database')
+
+    def fin():
+        conn = connect()
+        print('Deleting `{}` database'.format(db_name))
+        try:
+            schema.drop_database(conn, db_name)
+        except DatabaseDoesNotExist:
+            pass
+
+        print('Finished deleting `{}`'.format(db_name))
+
+    request.addfinalizer(fin)
+
+
+@pytest.fixture
+def inputs(user_pk, setup_database):
+    from bigchaindb import Bigchain
+    from bigchaindb.models import Transaction
+    from bigchaindb.common.exceptions import GenesisBlockAlreadyExistsError
+    # 1. create the genesis block
+    b = Bigchain()
+    try:
+        g = b.create_genesis_block()
+    except GenesisBlockAlreadyExistsError:
+        pass
+
+    # 2. create blocks with transactions for `USER` to spend
+    prev_block_id = g.id
+    for block in range(4):
+        transactions = [
+            Transaction.create([b.me], [([user_pk], 1)]).sign([b.me_private])
+            for i in range(10)
+        ]
+        block = b.create_block(transactions)
+        b.write_block(block)
+
+        # 3. vote the blocks valid, so that the inputs are valid
+        vote = b.vote(block.id, prev_block_id, True)
+        prev_block_id = block.id
+        b.write_vote(vote)
+
+
+@pytest.fixture
+def inputs_shared(user_pk, user2_pk, setup_database):
+    from bigchaindb import Bigchain
+    from bigchaindb.models import Transaction
+    from bigchaindb.common.exceptions import GenesisBlockAlreadyExistsError
+    # 1. create the genesis block
+    b = Bigchain()
+    try:
+        g = b.create_genesis_block()
+    except GenesisBlockAlreadyExistsError:
+        pass
+
+    # 2. create blocks with transactions for `USER` to spend
+    prev_block_id = g.id
+    for block in range(4):
+        transactions = [
+            Transaction.create(
+                [b.me], [user_pk, user2_pk], payload={'i': i}).sign([b.me_private])
+            for i in range(10)
+        ]
+        block = b.create_block(transactions)
+        b.write_block(block)
+
+        # 3. vote the blocks valid, so that the inputs are valid
+        vote = b.vote(block.id, prev_block_id, True)
+        prev_block_id = block.id
+        b.write_vote(vote)
