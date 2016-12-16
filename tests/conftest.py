@@ -48,7 +48,6 @@ def pytest_addoption(parser):
 # conf file located in the home of the user running
 # the tests. If it's too aggressive we can change it
 # later.
-#@pytest.fixture(scope='function', autouse=True)
 @pytest.fixture
 def ignore_local_config_file(monkeypatch):
     def mock_file_config(filename=None):
@@ -58,7 +57,6 @@ def ignore_local_config_file(monkeypatch):
                         mock_file_config)
 
 
-#@pytest.fixture(scope='function', autouse=True)
 @pytest.fixture
 def restore_config(ignore_local_config_file, node_config):
     from bigchaindb import config_utils
@@ -93,9 +91,7 @@ def user2_pk():
 
 
 @pytest.fixture
-#def b(request, node_config):
 def b(restore_config):
-    #restore_config(request, node_config)
     from bigchaindb import Bigchain
     return Bigchain()
 
