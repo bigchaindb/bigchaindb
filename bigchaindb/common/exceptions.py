@@ -87,4 +87,4 @@ class AssetIdMismatch(Exception):
 
 
 class AmountError(Exception):
-    """Raised when the amount of a non-divisible asset is different then 1"""
+    """Raise when there is a problem with output amounts"""

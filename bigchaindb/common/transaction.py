@@ -382,28 +382,15 @@ class Condition(object):
 class Asset(object):
     """An Asset is a fungible unit to spend and lock with Transactions.
 
-        Note:
-            Currently, the following flags are not yet fully supported:
-                - `divisible`
-                - `updatable`
-                - `refillable`
-
         Attributes:
             data (dict): A dictionary of data that can be added to an Asset.
             data_id (str): A unique identifier of `data`'s content.
-            divisible (bool): A flag indicating if an Asset can be divided.
-            updatable (bool): A flag indicating if an Asset can be updated.
-            refillable (bool): A flag indicating if an Asset can be refilled.
     """
 
-    def __init__(self, data=None, data_id=None, divisible=False,
-                 updatable=False, refillable=False):
+    def __init__(self, data=None, data_id=None):
         """An Asset is not required to contain any extra data from outside."""
         self.data = data
         self.data_id = data_id if data_id is not None else self.to_hash()
-        self.divisible = divisible
-        self.updatable = updatable
-        self.refillable = refillable
 
         self.validate_asset()
 
@@ -423,9 +410,6 @@ class Asset(object):
         """
         return {
             'id': self.data_id,
-            'divisible': self.divisible,
-            'updatable': self.updatable,
-            'refillable': self.refillable,
             'data': self.data,
         }
 
@@ -439,10 +423,7 @@ class Asset(object):
             Returns:
                 :class:`~bigchaindb.common.transaction.Asset`
         """
-        return cls(asset.get('data'), asset['id'],
-                   asset.get('divisible', False),
-                   asset.get('updatable', False),
-                   asset.get('refillable', False))
+        return cls(asset.get('data'), asset['id'])
 
     def to_hash(self):
         """Generates a unqiue uuid for an Asset"""
@@ -483,19 +464,6 @@ class Asset(object):
         """Validates the asset"""
         if self.data is not None and not isinstance(self.data, dict):
             raise TypeError('`data` must be a dict instance or None')
-        if not isinstance(self.divisible, bool):
-            raise TypeError('`divisible` must be a boolean')
-        if not isinstance(self.refillable, bool):
-            raise TypeError('`refillable` must be a boolean')
-        if not isinstance(self.updatable, bool):
-            raise TypeError('`updatable` must be a boolean')
-
-        if self.refillable:
-            raise NotImplementedError('Refillable assets are not yet'
-                                      ' implemented')
-        if self.updatable:
-            raise NotImplementedError('Updatable assets are not yet'
-                                      ' implemented')
 
         # If the amount is supplied we can perform extra validations to
         # the asset
@@ -503,15 +471,8 @@ class Asset(object):
             if not isinstance(amount, int):
                 raise TypeError('`amount` must be an int')
 
-            if self.divisible is False and amount != 1:
-                raise AmountError('non divisible assets always have'
-                                  ' amount equal to one')
-
-            # Since refillable assets are not yet implemented this should
-            # raise and exception
-            if self.divisible is True and amount < 2:
-                raise AmountError('divisible assets must have an amount'
-                                  ' greater than one')
+            if amount < 1:
+                raise AmountError('`amount` must be greater than 0')
 
 
 class AssetLink(Asset):

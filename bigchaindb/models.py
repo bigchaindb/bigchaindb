@@ -87,7 +87,7 @@ class Transaction(Transaction):
                                        ' match the asset id of the'
                                        ' transaction'))
 
-            # get the asset creation to see if its divisible or not
+            # get the asset creation
             asset = bigchain.get_asset_by_id(asset_id)
             # validate the asset
             asset.validate_asset(amount=input_amount)

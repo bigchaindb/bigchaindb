@@ -940,7 +940,7 @@ class TestMultipleInputs(object):
         user2_sk, user2_pk = crypto.generate_key_pair()
 
         # create divisible asset
-        asset = Asset(divisible=True)
+        asset = Asset()
         tx_create = Transaction.create([b.me],
                                        [([user_pk], 1), ([user_pk], 1)],
                                        asset=asset)
@@ -1080,7 +1080,7 @@ class TestMultipleInputs(object):
         user2_sk, user2_pk = crypto.generate_key_pair()
 
         # create a divisible asset with 3 outputs
-        asset = Asset(divisible=True)
+        asset = Asset()
         tx_create = Transaction.create([b.me],
                                        [([user_pk], 1),
                                         ([user_pk], 1),
