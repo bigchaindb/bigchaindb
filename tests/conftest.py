@@ -60,7 +60,7 @@ def ignore_local_config_file(monkeypatch):
 
 #@pytest.fixture(scope='function', autouse=True)
 @pytest.fixture
-def restore_config(request, ignore_local_config_file, node_config):
+def restore_config(ignore_local_config_file, node_config):
     from bigchaindb import config_utils
     config_utils.set_config(node_config)
 
@@ -94,7 +94,7 @@ def user2_pk():
 
 @pytest.fixture
 #def b(request, node_config):
-def b(request, restore_config):
+def b(restore_config):
     #restore_config(request, node_config)
     from bigchaindb import Bigchain
     return Bigchain()
