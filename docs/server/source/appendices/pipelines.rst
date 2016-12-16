@@ -24,9 +24,3 @@ Stale Transaction Monitoring
 ============================
 
 .. automodule:: bigchaindb.pipelines.stale
-
-
-Utilities
-=========
-
-.. automodule:: bigchaindb.pipelines.utils

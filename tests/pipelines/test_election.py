@@ -118,8 +118,8 @@ def test_check_requeue_transaction(b, user_pk):
 
     e.requeue_transactions(test_block)
 
+    time.sleep(1)
     backlog_tx, status = b.get_transaction(tx1.id, include_status=True)
-    #backlog_tx = b.connection.run(r.table('backlog').get(tx1.id))
     assert status == b.TX_IN_BACKLOG
     assert backlog_tx == tx1
 
@@ -166,6 +166,7 @@ def test_full_pipeline(b, user_pk):
     pipeline.setup(indata=election.get_changefeed(), outdata=outpipe)
     pipeline.start()
     time.sleep(1)
+
     # vote one block valid, one invalid
     vote_valid = b.vote(valid_block.id, 'b' * 64, True)
     vote_invalid = b.vote(invalid_block.id, 'c' * 64, False)

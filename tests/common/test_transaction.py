@@ -428,6 +428,24 @@ def test_transaction_link_deserialization_with_empty_payload():
     assert tx_link == expected
 
 
+def test_transaction_link_empty_to_uri():
+    from bigchaindb.common.transaction import TransactionLink
+
+    expected = None
+    tx_link = TransactionLink().to_uri()
+
+    assert expected == tx_link
+
+
+def test_transaction_link_to_uri():
+    from bigchaindb.common.transaction import TransactionLink
+
+    expected = 'path/transactions/abc/conditions/0'
+    tx_link = TransactionLink('abc', 0).to_uri('path')
+
+    assert expected == tx_link
+
+
 def test_cast_transaction_link_to_boolean():
     from bigchaindb.common.transaction import TransactionLink
 
