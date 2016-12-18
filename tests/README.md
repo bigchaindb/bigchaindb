@@ -1,14 +1,14 @@
-# Tests
+# BigchainDB Server Tests
 
-## Test Structure
+## The bigchaindb/tests/ Folder
 
-Generally all tests are meant to be unit tests, with the exception of those in the [`integration/` folder](./integration/).
+The `bigchaindb/tests/` folder is where all the tests for BigchainDB Server live. Most of them are unit tests. Integration tests are in the [`bigchaindb/tests/integration/` folder](./integration/).
 
 A few notes:
 
-- [`common/`](./common/) contains self-contained tests only testing
+- [`bigchaindb/tests/common/`](./common/) contains self-contained tests only testing
   [`bigchaindb/common/`](../bigchaindb/common/)
-- [`db/`](./db/) contains tests requiring the database backend (e.g. RethinkDB)
+- [`bigchaindb/tests/db/`](./db/) contains tests requiring the database backend (e.g. RethinkDB)
 
 ## Pytest Customizations
 
