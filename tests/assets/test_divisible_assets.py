@@ -126,6 +126,7 @@ def test_single_in_multiple_own_single_out_single_own_create(b, user_pk,
 #       else there will be no genesis block and b.get_last_voted_block will
 #       fail.
 #       Is there a better way of doing this?
+@pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_single_in_single_own_single_out_single_own_transfer(b, user_pk,
                                                              user_sk):
@@ -160,6 +161,7 @@ def test_single_in_single_own_single_out_single_own_transfer(b, user_pk,
 # Single owners_before
 # Multiple output
 # Single owners_after
+@pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_single_in_single_own_multiple_out_single_own_transfer(b, user_pk,
                                                                user_sk):
@@ -196,6 +198,7 @@ def test_single_in_single_own_multiple_out_single_own_transfer(b, user_pk,
 # Single owners_before
 # Single output
 # Multiple owners_after
+@pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_single_in_single_own_single_out_multiple_own_transfer(b, user_pk,
                                                                user_sk):
@@ -237,6 +240,7 @@ def test_single_in_single_own_single_out_multiple_own_transfer(b, user_pk,
 # Multiple outputs
 # Mix: one output with a single owners_after, one output with multiple
 #      owners_after
+@pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_single_in_single_own_multiple_out_mix_own_transfer(b, user_pk,
                                                             user_sk):
@@ -278,6 +282,7 @@ def test_single_in_single_own_multiple_out_mix_own_transfer(b, user_pk,
 # Multiple owners_before
 # Single output
 # Single owners_after
+@pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_single_in_multiple_own_single_out_single_own_transfer(b, user_pk,
                                                                user_sk):
@@ -317,6 +322,7 @@ def test_single_in_multiple_own_single_out_single_own_transfer(b, user_pk,
 # Single owners_before per input
 # Single output
 # Single owners_after
+@pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_multiple_in_single_own_single_out_single_own_transfer(b, user_pk,
                                                                user_sk):
@@ -352,6 +358,7 @@ def test_multiple_in_single_own_single_out_single_own_transfer(b, user_pk,
 # Multiple owners_before per input
 # Single output
 # Single owners_after
+@pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_multiple_in_multiple_own_single_out_single_own_transfer(b, user_pk,
                                                                  user_sk):
@@ -397,6 +404,7 @@ def test_multiple_in_multiple_own_single_out_single_own_transfer(b, user_pk,
 #      owners_before
 # Single output
 # Single owners_after
+@pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_muiltiple_in_mix_own_multiple_out_single_own_transfer(b, user_pk,
                                                                user_sk):
@@ -442,6 +450,7 @@ def test_muiltiple_in_mix_own_multiple_out_single_own_transfer(b, user_pk,
 # Multiple outputs
 # Mix: one output with a single owners_after, one output with multiple
 #      owners_after
+@pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_muiltiple_in_mix_own_multiple_out_mix_own_transfer(b, user_pk,
                                                             user_sk):
@@ -493,6 +502,7 @@ def test_muiltiple_in_mix_own_multiple_out_mix_own_transfer(b, user_pk,
 # Single owners_before
 # Single output
 # Single owners_after
+@pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_multiple_in_different_transactions(b, user_pk, user_sk):
     from bigchaindb.models import Transaction
@@ -554,6 +564,7 @@ def test_multiple_in_different_transactions(b, user_pk, user_sk):
 # In a TRANSFER transaction of a divisible asset the amount being spent in the
 # inputs needs to match the amount being sent in the outputs.
 # In other words `amount_in_inputs - amount_in_outputs == 0`
+@pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_amount_error_transfer(b, user_pk, user_sk):
     from bigchaindb.models import Transaction
@@ -590,6 +601,7 @@ def test_amount_error_transfer(b, user_pk, user_sk):
 
 
 @pytest.mark.skip(reason='Figure out how to handle this case')
+@pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_threshold_same_public_key(b, user_pk, user_sk):
     # If we try to fulfill a threshold condition where each subcondition has
@@ -623,6 +635,7 @@ def test_threshold_same_public_key(b, user_pk, user_sk):
     assert tx_transfer_signed.validate(b) == tx_transfer_signed
 
 
+@pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_sum_amount(b, user_pk, user_sk):
     from bigchaindb.models import Transaction
@@ -655,6 +668,7 @@ def test_sum_amount(b, user_pk, user_sk):
     assert tx_transfer_signed.conditions[0].amount == 3
 
 
+@pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_divide(b, user_pk, user_sk):
     from bigchaindb.models import Transaction
@@ -687,6 +701,7 @@ def test_divide(b, user_pk, user_sk):
 
 
 # Check that negative inputs are caught when creating a TRANSFER transaction
+@pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_non_positive_amounts_on_transfer(b, user_pk):
     from bigchaindb.models import Transaction
@@ -713,6 +728,7 @@ def test_non_positive_amounts_on_transfer(b, user_pk):
 
 
 # Check that negative inputs are caught when validating a TRANSFER transaction
+@pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_non_positive_amounts_on_transfer_validate(b, user_pk, user_sk):
     from bigchaindb.models import Transaction
@@ -745,6 +761,7 @@ def test_non_positive_amounts_on_transfer_validate(b, user_pk, user_sk):
 
 
 # Check that negative inputs are caught when creating a CREATE transaction
+@pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_non_positive_amounts_on_create(b, user_pk):
     from bigchaindb.models import Transaction
@@ -759,6 +776,7 @@ def test_non_positive_amounts_on_create(b, user_pk):
 
 
 # Check that negative inputs are caught when validating a CREATE transaction
+@pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_non_positive_amounts_on_create_validate(b, user_pk):
     from bigchaindb.models import Transaction
