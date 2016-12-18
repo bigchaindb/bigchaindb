@@ -3,6 +3,8 @@ from time import sleep
 import pytest
 import random
 
+pytestmark = pytest.mark.bdb
+
 
 @pytest.mark.skipif(reason='Some tests throw a ResourceWarning that might result in some weird '
                            'exceptions while running the tests. The problem seems to *not* '
@@ -29,7 +31,6 @@ def dummy_block():
     return block
 
 
-@pytest.mark.usefixtures('setup_database')
 class TestBigchainApi(object):
     def test_get_last_voted_block_cyclic_blockchain(self, b, monkeypatch):
         from bigchaindb.common.crypto import PrivateKey
@@ -591,7 +592,7 @@ class TestTransactionValidation(object):
 
         assert excinfo.value.args[0] == 'Only `CREATE` transactions can have null inputs'
 
-    @pytest.mark.usefixtures('setup_database')
+
     def test_non_create_input_not_found(self, b, user_pk, signed_transfer_tx):
         from bigchaindb.common.exceptions import TransactionDoesNotExist
         from bigchaindb.common.transaction import TransactionLink
@@ -745,7 +746,7 @@ class TestBlockValidation(object):
 
         assert excinfo.value.args[0] == 'owner_before `a` does not own the input `{}`'.format(valid_input)
 
-    @pytest.mark.usefixtures('setup_database')
+
     def test_invalid_signature(self, b):
         from bigchaindb.common.exceptions import InvalidSignature
         from bigchaindb.common import crypto
@@ -760,7 +761,7 @@ class TestBlockValidation(object):
         with pytest.raises(InvalidSignature):
             b.validate_block(block)
 
-    @pytest.mark.usefixtures('setup_database')
+
     def test_invalid_node_pubkey(self, b):
         from bigchaindb.common.exceptions import OperationError
         from bigchaindb.common import crypto
@@ -894,7 +895,6 @@ class TestMultipleInputs(object):
         assert len(tx.fulfillments) == 1
         assert len(tx.conditions) == 1
 
-    @pytest.mark.usefixtures('setup_database')
     def test_get_owned_ids_single_tx_single_output(self, b, user_sk, user_pk):
         from bigchaindb.common import crypto
         from bigchaindb.common.transaction import AssetLink, TransactionLink
@@ -923,7 +923,6 @@ class TestMultipleInputs(object):
         assert owned_inputs_user1 == []
         assert owned_inputs_user2 == [TransactionLink(tx.id, 0)]
 
-    @pytest.mark.usefixtures('setup_database')
     def test_get_owned_ids_single_tx_single_output_invalid_block(self, b,
                                                                  user_sk,
                                                                  user_pk):
@@ -967,7 +966,6 @@ class TestMultipleInputs(object):
         assert owned_inputs_user1 == [TransactionLink(tx.id, 0)]
         assert owned_inputs_user2 == []
 
-    @pytest.mark.usefixtures('setup_database')
     def test_get_owned_ids_single_tx_multiple_outputs(self, b, user_sk,
                                                       user_pk):
         from bigchaindb.common import crypto
@@ -1009,7 +1007,6 @@ class TestMultipleInputs(object):
         assert owned_inputs_user2 == [TransactionLink(tx_transfer.id, 0),
                                       TransactionLink(tx_transfer.id, 1)]
 
-    @pytest.mark.usefixtures('setup_database')
     def test_get_owned_ids_multiple_owners(self, b, user_sk, user_pk):
         from bigchaindb.common import crypto
         from bigchaindb.common.transaction import AssetLink, TransactionLink
@@ -1041,7 +1038,6 @@ class TestMultipleInputs(object):
         assert owned_inputs_user1 == owned_inputs_user2
         assert owned_inputs_user1 == []
 
-    @pytest.mark.usefixtures('setup_database')
     def test_get_spent_single_tx_single_output(self, b, user_sk, user_pk):
         from bigchaindb.common import crypto
         from bigchaindb.common.transaction import AssetLink
@@ -1072,7 +1068,6 @@ class TestMultipleInputs(object):
         spent_inputs_user1 = b.get_spent(input_txid, input_cid)
         assert spent_inputs_user1 == tx
 
-    @pytest.mark.usefixtures('setup_database')
     def test_get_spent_single_tx_single_output_invalid_block(self, b, user_sk, user_pk):
         from bigchaindb.common import crypto
         from bigchaindb.common.transaction import AssetLink
@@ -1117,7 +1112,6 @@ class TestMultipleInputs(object):
         # Now there should be no spents (the block is invalid)
         assert spent_inputs_user1 is None
 
-    @pytest.mark.usefixtures('setup_database')
     def test_get_spent_single_tx_multiple_outputs(self, b, user_sk, user_pk):
         from bigchaindb.common import crypto
         from bigchaindb.common.transaction import Asset, AssetLink
@@ -1160,7 +1154,6 @@ class TestMultipleInputs(object):
         # spendable by BigchainDB
         assert b.get_spent(tx_create.to_inputs()[2].tx_input.txid, 2) is None
 
-    @pytest.mark.usefixtures('setup_database')
     def test_get_spent_multiple_owners(self, b, user_sk, user_pk):
         from bigchaindb.common import crypto
         from bigchaindb.common.transaction import AssetLink

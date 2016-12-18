@@ -9,7 +9,7 @@ from bigchaindb import config_utils
 import pytest
 
 
-@pytest.mark.usefixtures('setup_database')
+@pytest.mark.bdb
 def test_get_stale(b, user_pk):
     from bigchaindb.models import Transaction
     tx = Transaction.create([b.me], [([user_pk], 1)])
@@ -26,7 +26,7 @@ def test_get_stale(b, user_pk):
         assert tx.to_dict() == _tx
 
 
-@pytest.mark.usefixtures('setup_database')
+@pytest.mark.bdb
 def test_reassign_transactions(b, user_pk):
     from bigchaindb.backend import query
     from bigchaindb.models import Transaction
@@ -66,22 +66,15 @@ def test_reassign_transactions(b, user_pk):
     assert tx['assignee'] != 'lol'
 
 
-@pytest.mark.usefixtures('setup_database')
+@pytest.mark.bdb
 def test_full_pipeline(monkeypatch, user_pk):
     from bigchaindb.backend import query
     from bigchaindb.models import Transaction
     CONFIG = {
-        'database': {
-            'name': 'bigchain_test_{}'.format(os.getpid())
-        },
-        'keypair': {
-            'private': '31Lb1ZGKTyHnmVK3LUMrAUrPNfd4sE2YyBt3UA4A25aA',
-            'public': '4XYfCbabAWVUCbjTmRTFEu2sc3dFEdkse4r6X498B1s8'
-        },
         'keyring': ['aaa', 'bbb'],
         'backlog_reassign_delay': 0.01
     }
-    config_utils.set_config(CONFIG)
+    config_utils.update_config(CONFIG)
     b = Bigchain()
 
     original_txs = {}

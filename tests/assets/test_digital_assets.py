@@ -3,6 +3,7 @@ import random
 from unittest.mock import patch
 
 
+@pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_asset_transfer(b, user_pk, user_sk):
     from bigchaindb.common.transaction import AssetLink
@@ -31,6 +32,7 @@ def test_validate_bad_asset_creation(b, user_pk):
         b.validate_transaction(tx_signed)
 
 
+@pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_validate_transfer_asset_id_mismatch(b, user_pk, user_sk):
     from bigchaindb.common.exceptions import AssetIdMismatch
@@ -56,6 +58,7 @@ def test_get_asset_id_create_transaction(b, user_pk):
     assert asset_id == tx_create.id
 
 
+@pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_get_asset_id_transfer_transaction(b, user_pk, user_sk):
     from bigchaindb.common.transaction import AssetLink
@@ -91,6 +94,7 @@ def test_asset_id_mismatch(b, user_pk):
         Asset.get_asset_id([tx1, tx2])
 
 
+@pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_get_transactions_by_asset_id(b, user_pk, user_sk):
     from bigchaindb.common.transaction import AssetLink
@@ -126,6 +130,7 @@ def test_get_transactions_by_asset_id(b, user_pk, user_sk):
     assert asset_id == txs[1].asset.id
 
 
+@pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_get_transactions_by_asset_id_with_invalid_block(b, user_pk, user_sk):
     from bigchaindb.common.transaction import AssetLink
@@ -156,6 +161,7 @@ def test_get_transactions_by_asset_id_with_invalid_block(b, user_pk, user_sk):
     assert len(txs) == 1
 
 
+@pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_get_asset_by_id(b, user_pk, user_sk):
     from bigchaindb.common.transaction import AssetLink

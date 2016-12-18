@@ -8,6 +8,7 @@ from bigchaindb.common import crypto
 TX_ENDPOINT = '/api/v1/transactions/'
 
 
+@pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_get_transaction_endpoint(b, client, user_pk):
     input_tx = b.get_owned_ids(user_pk).pop()
@@ -17,6 +18,7 @@ def test_get_transaction_endpoint(b, client, user_pk):
     assert res.status_code == 200
 
 
+@pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_get_transaction_returns_404_if_not_found(client):
     res = client.get(TX_ENDPOINT + '123')
@@ -26,7 +28,7 @@ def test_get_transaction_returns_404_if_not_found(client):
     assert res.status_code == 404
 
 
-@pytest.mark.usefixtures('setup_database')
+@pytest.mark.bdb
 def test_post_create_transaction_endpoint(b, client):
     from bigchaindb.models import Transaction
     user_priv, user_pub = crypto.generate_key_pair()
@@ -120,6 +122,7 @@ def test_post_invalid_transaction(client, exc, msg, monkeypatch):
             'Invalid transaction ({}): {}'.format(exc, msg))
 
 
+@pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_post_transfer_transaction_endpoint(b, client, user_pk, user_sk):
     sk, pk = crypto.generate_key_pair()
@@ -141,6 +144,7 @@ def test_post_transfer_transaction_endpoint(b, client, user_pk, user_sk):
     assert res.json['conditions'][0]['owners_after'][0] == user_pub
 
 
+@pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_post_invalid_transfer_transaction_returns_400(b, client, user_pk, user_sk):
     from bigchaindb.models import Transaction
@@ -158,6 +162,7 @@ def test_post_invalid_transfer_transaction_returns_400(b, client, user_pk, user_
     assert res.status_code == 400
 
 
+@pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_get_transaction_status_endpoint(b, client, user_pk):
     input_tx = b.get_owned_ids(user_pk).pop()
@@ -171,6 +176,7 @@ def test_get_transaction_status_endpoint(b, client, user_pk):
     assert res.status_code == 200
 
 
+@pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_get_transaction_status_returns_404_if_not_found(client):
     res = client.get(TX_ENDPOINT + '123' + "/status")
