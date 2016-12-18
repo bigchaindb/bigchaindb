@@ -28,7 +28,8 @@ To contribute code or documentation, you need a [GitHub account](https://github.
 
 Familiarize yourself with how we do coding and documentation in the BigchainDB project, including:
 
-* [our Python Style Guide](PYTHON_STYLE_GUIDE.md) (includes how we write tests)
+* [our Python Style Guide](PYTHON_STYLE_GUIDE.md)
+* [how we write and run tests](./tests/README.md)
 * [our documentation strategy](./docs/README.md) (including in-code documentation)
 * the GitHub Flow (workflow)
     * [GitHub Guide: Understanding the GitHub Flow](https://guides.github.com/introduction/flow/)
@@ -103,7 +104,7 @@ git checkout -b new-branch-name
 With your new branch checked out locally, make changes or additions to the code or documentation. Remember to:
 
 * follow [our Python Style Guide](PYTHON_STYLE_GUIDE.md).
-* write and run tests for any new or changed code. There's a section in [our Python Style Guide](PYTHON_STYLE_GUIDE.md) about writing and running tests.
+* write and run tests for any new or changed code. There's [a README file in the `tests/` folder](./tests/README.md) about how to do that.
 * add or update documentation as necessary. Follow [our documentation strategy](./docs/README.md).
 
 As you go, git add and git commit your changes or additions, e.g.
@@ -119,7 +120,7 @@ git fetch upstream
 git merge upstream/master
 ```
 
-Once you're done commiting a set of new things and you're ready to submit them for inclusion, please be sure to run all the tests (as per the instructions at the end of our [Python Style Guide](PYTHON_STYLE_GUIDE.md)).
+Once you're done commiting a set of new things and you're ready to submit them for inclusion, please be sure to run all the tests as per the instructions in [the README file in the `tests/` folder](./tests/README.md).
 
 (When you submit your pull request [following the instructions below], we run all the tests automatically, so we will see if some are failing. If you don't know why some tests are failing, you can still submit your pull request, but be sure to note the failing tests and to ask for help with resolving them.)
 
