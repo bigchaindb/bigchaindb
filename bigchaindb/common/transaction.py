@@ -647,7 +647,7 @@ class Transaction(object):
             self.asset.validate_asset(amount=amount)
 
     @classmethod
-    def create(cls, creators, recipients, metadata=None, asset=None):
+    def create(cls, tx_signers, recipients, metadata=None, asset=None):
         """A simple way to generate a `CREATE` transaction.
 
             Note:
@@ -661,8 +661,8 @@ class Transaction(object):
                     - Multiple inputs and outputs.
 
             Args:
-                creators (:obj:`list` of :obj:`str`): A list of keys that
-                    represent the creators of the asset created by this
+                tx_signers (:obj:`list` of :obj:`str`): A list of keys that
+                    represent the signers of the asset created by this
                     Transaction.
                 recipients (:obj:`list` of :obj:`str`): A list of keys that
                     represent the recipients of the asset created by this
@@ -675,12 +675,12 @@ class Transaction(object):
             Returns:
                 :class:`~bigchaindb.common.transaction.Transaction`
         """
-        if not isinstance(creators, list):
-            raise TypeError('`creators` must be a list instance')
+        if not isinstance(tx_signers, list):
+            raise TypeError('`tx_signers` must be a list instance')
         if not isinstance(recipients, list):
             raise TypeError('`recipients` must be a list instance')
-        if len(creators) == 0:
-            raise ValueError('`creators` list cannot be empty')
+        if len(tx_signers) == 0:
+            raise ValueError('`tx_signers` list cannot be empty')
         if len(recipients) == 0:
             raise ValueError('`recipients` list cannot be empty')
 
@@ -697,7 +697,7 @@ class Transaction(object):
             outputs.append(Output.generate(pub_keys, amount))
 
         # generate inputs
-        inputs.append(Input.generate(creators))
+        inputs.append(Input.generate(tx_signers))
 
         return cls(cls.CREATE, asset, inputs, outputs, metadata)
 
