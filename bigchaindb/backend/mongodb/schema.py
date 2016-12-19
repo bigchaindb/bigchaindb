@@ -49,9 +49,6 @@ def drop_database(conn, dbname):
 def create_bigchain_secondary_index(conn, dbname):
     logger.info('Create `bigchain` secondary index.')
 
-    # to select blocks by id
-    conn.conn[dbname]['bigchain'].create_index('id', name='block_id')
-
     # to order blocks by timestamp
     conn.conn[dbname]['bigchain'].create_index([('block.timestamp',
                                                  ASCENDING)],
@@ -62,32 +59,14 @@ def create_bigchain_secondary_index(conn, dbname):
                                                name='transaction_id',
                                                unique=True)
 
-    # secondary index for payload data by UUID, this field is unique
-    conn.conn[dbname]['bigchain']\
-        .create_index('block.transactions.transaction.metadata.id',
-                      name='metadata_id', unique=True)
-
     # secondary index for asset uuid, this field is unique
     conn.conn[dbname]['bigchain']\
         .create_index('block.transactions.transaction.asset.id',
                       name='asset_id', unique=True)
 
-    # compound index on fulfillment and transactions id
-    conn.conn[dbname]['bigchain']\
-        .create_index([('block.transactions.transaction.fulfillments.txid',
-                        ASCENDING),
-                       ('block.transactions.transaction.fulfillments.cid',
-                        ASCENDING)],
-                      name='tx_and_fulfillment')
-
 
 def create_backlog_secondary_index(conn, dbname):
     logger.info('Create `backlog` secondary index.')
-
-    # to order transactions by timestamp
-    conn.conn[dbname]['backlog'].create_index([('transaction.timestamp',
-                                                ASCENDING)],
-                                              name='transaction_timestamp')
 
     # compound index to read transactions from the backlog per assignee
     conn.conn[dbname]['backlog']\
@@ -98,10 +77,6 @@ def create_backlog_secondary_index(conn, dbname):
 
 def create_votes_secondary_index(conn, dbname):
     logger.info('Create `votes` secondary index.')
-
-    # index on block id to quickly poll
-    conn.conn[dbname]['votes'].create_index('vote.voting_for_block',
-                                            name='voting_for')
 
     # is the first index redundant then?
     # compound index to order votes by block id and node
