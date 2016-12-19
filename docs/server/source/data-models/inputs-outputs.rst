@@ -21,16 +21,20 @@ One can also put different weights on the inputs to a threshold condition, along
 
 The (single) output of a threshold condition can be used as one of the inputs of other threshold conditions. This means that one can combine threshold conditions to build complex logical expressions, e.g. (x OR y) AND (u OR v).
 
-Aside: In BigchainDB, the output of an m-of-n threshold condition can be inverted on the way out, so an output that would have been TRUE would get changed to FALSE (and vice versa). This enables the creation of NOT, NOR and NAND gates. At the time of writing, this “inverted threshold condition” is BigchainDB-specific (i.e. not part of the Interledger specs). It should only be used in combination with a timeout condition.
+.. note::
+
+    In BigchainDB, the output of an m-of-n threshold condition can be inverted on the way out, so an output that would have been TRUE would get changed to FALSE (and vice versa). This enables the creation of NOT, NOR and NAND gates. At the time of writing, this “inverted threshold condition” is BigchainDB-specific (i.e. not part of the Interledger specs). It should only be used in combination with a timeout condition.
 
 When one creates a condition, one can calculate its fulfillment length (e.g. 96). The more complex the condition, the larger its fulfillment length will be. A BigchainDB federation can put an upper limit on the allowed fulfillment length, as a way of capping the complexity of conditions (and the computing time required to validate them).
 
 If someone tries to make a condition where the output of a threshold condition feeds into the input of another “earlier” threshold condition (i.e. in a closed logical circuit), then their computer will take forever to calculate the (infinite) “condition URI”, at least in theory. In practice, their computer will run out of memory or their client software will timeout after a while.
 
-Aside: In what follows, the list of `public_keys` (in a condition) is always the controllers of the asset at the time the transaction completed, but before the next transaction started. The list of `owners_before` (in an input) is always equal to the list of `public_keys` in that asset's previous transaction.
-
 Outputs
 -------
+
+.. note::
+
+    In what follows, the list of `public_keys` (in a condition) is always the controllers of the asset at the time the transaction completed, but before the next transaction started. The list of `owners_before` (in an input) is always equal to the list of `public_keys` in that asset's previous transaction.
 
 One New Owner
 `````````````
