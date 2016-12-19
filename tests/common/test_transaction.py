@@ -438,7 +438,7 @@ def test_transaction_link_empty_to_uri():
 def test_transaction_link_to_uri():
     from bigchaindb.common.transaction import TransactionLink
 
-    expected = 'path/transactions/abc/conditions/0'
+    expected = 'path/transactions/abc/outputs/0'
     tx_link = TransactionLink('abc', 0).to_uri('path')
 
     assert expected == tx_link
