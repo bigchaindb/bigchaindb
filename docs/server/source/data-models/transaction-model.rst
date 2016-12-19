@@ -36,10 +36,10 @@ Here's some explanation of the contents of a :ref:`transaction <transaction>`:
 - **inputs**: List of inputs. Each :ref:`input <Input>` contains a pointer to an unspent output
   and a *crypto fulfillment* that satisfies the conditions of that output. A *fulfillment*
   is usually a signature proving the ownership of the asset.
-  See :doc:`./crypto-conditions`.
+  See :doc:`./inputs-outputs`.
 
 - **outputs**: List of outputs. Each :ref:`output <Output>` contains *crypto-conditions* that need to be fulfilled by a transfer transaction in order to transfer ownership to new owners.
-  See :doc:`./crypto-conditions`.
+  See :doc:`./inputs-outputs`.
 
 - **operation**: String representation of the :ref:`operation <transaction.operation>` being performed (currently either "CREATE", "TRANSFER" or "GENESIS"). It determines how the transaction should be validated.
 
