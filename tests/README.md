@@ -1,26 +1,26 @@
 # BigchainDB Server Tests
 
-## The bigchaindb/tests/ Folder
+## The tests/ Folder
 
-The `bigchaindb/tests/` folder is where all the tests for BigchainDB Server live. Most of them are unit tests. Integration tests are in the [`bigchaindb/tests/integration/` folder](./integration/).
+The `tests/` folder is where all the tests for BigchainDB Server live. Most of them are unit tests. Integration tests are in the [`tests/integration/` folder](./integration/).
 
 A few notes:
 
-- [`bigchaindb/tests/common/`](./common/) contains self-contained tests only testing
+- [`tests/common/`](./common/) contains self-contained tests only testing
   [`bigchaindb/common/`](../bigchaindb/common/)
-- [`bigchaindb/tests/db/`](./db/) contains tests requiring the database backend (e.g. RethinkDB)
+- [`tests/db/`](./db/) contains tests requiring the database backend (e.g. RethinkDB)
 
 
 ## Writing Tests
 
-We write unit and integration tests for our Python code using the [pytest](http://pytest.org/latest/) framework. You can use the tests in the `bigchaindb/tests/` folder as templates or examples.
+We write unit and integration tests for our Python code using the [pytest](http://pytest.org/latest/) framework. You can use the tests in the `tests/` folder as templates or examples.
 
 
 ## Running Tests
 
 ### Running Tests Directly
 
-If you installed BigchainDB Server using `pip install bigchaindb`, then you didn't install the tests. Before you can run all the tests, you must install BigchainDB from source. The [`bigchaindb/CONTRIBUTING.md` file](../CONTRIBUTING.md) has instructions for how to do that.
+If you installed BigchainDB Server using `pip install bigchaindb`, then you didn't install the tests. Before you can run all the tests, you must install BigchainDB from source. The [`CONTRIBUTING.md` file](../CONTRIBUTING.md) has instructions for how to do that.
 
 Next, make sure you have RethinkDB running in the background (e.g. using `rethinkdb --daemon`).
 
