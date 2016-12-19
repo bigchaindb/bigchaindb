@@ -3,7 +3,7 @@ Inputs and Outputs
 
 BigchainDB is modelled around *assets*, and *inputs* and *outputs* are the mechanism by which control of an asset is transferred.
 
-Amounts of an asset are encoded in the outputs of a transaction, and each output may be spent separately. In order to spend an output, the output's `conditions` must be met by an `input` that provides corresponding `fulfillments`. Each output may be spent exactly once, by a single input. Note that any asset associated with an output holding an amount greater than one is considered a divisible asset that may be split up in future transactions.
+Amounts of an asset are encoded in the outputs of a transaction, and each output may be spent separately. In order to spend an output, the output's `conditions` must be met by an `input` that provides corresponding `fulfillments`. Each output may be spent at most once, by a single input. Note that any asset associated with an output holding an amount greater than one is considered a divisible asset that may be split up in future transactions.
 
 .. note::
 
@@ -12,18 +12,15 @@ Amounts of an asset are encoded in the outputs of a transaction, and each output
 In the most basic case, an output may define a **simple signature condition**, which gives control of the output to the entity controlling a corresponding private key.
 
 A more complex condition can be composed by using n of the above conditions as inputs to an m-of-n threshold condition (a logic gate which outputs TRUE if and only if m or more inputs are TRUE). If there are n inputs to a threshold condition:
+
 * 1-of-n is the same as a logical OR of all the inputs
 * n-of-n is the same as a logical AND of all the inputs
 
 For example, one could create a condition requiring m (of n) signatures before their asset can be transferred.
 
-One can also put different weights on the inputs to a threshold condition, along with a threshold that the weighted-sum-of-inputs must pass for the output to be TRUE. Weights could be used, for example, to express the number of units of an asset that someone controls.
+One can also put different weights on the inputs to a threshold condition, along with a threshold that the weighted-sum-of-inputs must pass for the output to be TRUE.
 
 The (single) output of a threshold condition can be used as one of the inputs of other threshold conditions. This means that one can combine threshold conditions to build complex logical expressions, e.g. (x OR y) AND (u OR v).
-
-.. note::
-
-    In BigchainDB, the output of an m-of-n threshold condition can be inverted on the way out, so an output that would have been TRUE would get changed to FALSE (and vice versa). This enables the creation of NOT, NOR and NAND gates. At the time of writing, this “inverted threshold condition” is BigchainDB-specific (i.e. not part of the Interledger specs). It should only be used in combination with a timeout condition.
 
 When one creates a condition, one can calculate its fulfillment length (e.g. 96). The more complex the condition, the larger its fulfillment length will be. A BigchainDB federation can put an upper limit on the allowed fulfillment length, as a way of capping the complexity of conditions (and the computing time required to validate them).
 
@@ -97,15 +94,15 @@ to spend the asset. For example:
             },
             "uri": "cc:2:29:ytNK3X6-bZsbF-nCGDTuopUIMi1HCyCkyPewm6oLI3o:206"},
             "public_keys": [
-                "owner 1 public key>",
-                "owner 2 public key>"
+                "<owner 1 public key>",
+                "<owner 2 public key>"
             ]
     }
 
 
 - `subfulfillments`: a list of fulfillments
     - `weight`: integer weight for each subfulfillment's contribution to the threshold
-- `threshold`: threshold to reach for the subfulfillments to reach a valid fulfillment 
+- `threshold`: threshold to reach for the subfulfillments to reach a valid fulfillment
 
 The `weight`s and `threshold` could be adjusted. For example, if the `threshold` was changed to 1 above, then only one of the new owners would have to provide a signature to spend the asset.
 
