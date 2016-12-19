@@ -106,14 +106,14 @@ class TestBigchainApi(object):
 
         monkeypatch.setattr('time.time', lambda: 2)
         transfer_tx = Transaction.transfer(tx.to_inputs(), [([b.me], 1)],
-                                           AssetLink.from_inputs(tx))
+                                           AssetLink(tx.id))
         transfer_tx = transfer_tx.sign([b.me_private])
         block2 = b.create_block([transfer_tx])
         b.write_block(block2)
 
         monkeypatch.setattr('time.time', lambda: 3333333333)
         transfer_tx2 = Transaction.transfer(tx.to_inputs(), [([b.me], 1)],
-                                            AssetLink.from_inputs(tx))
+                                            AssetLink(tx.id))
         transfer_tx2 = transfer_tx2.sign([b.me_private])
         block3 = b.create_block([transfer_tx2])
         b.write_block(block3)
@@ -192,7 +192,7 @@ class TestBigchainApi(object):
         input_tx = b.get_transaction(input_tx.txid)
         inputs = input_tx.to_inputs()
         tx = Transaction.transfer(inputs, [([user_pk], 1)],
-                                  AssetLink.from_inputs(input_tx))
+                                  AssetLink(input_tx.id))
         tx = tx.sign([user_sk])
         response = b.write_transaction(tx)
 
@@ -212,7 +212,7 @@ class TestBigchainApi(object):
         input_tx = b.get_transaction(input_tx.txid)
         inputs = input_tx.to_inputs()
         tx = Transaction.transfer(inputs, [([user_pk], 1)],
-                                  AssetLink.from_inputs(input_tx))
+                                  AssetLink(input_tx.id))
         tx = tx.sign([user_sk])
         b.write_transaction(tx)
 
@@ -234,7 +234,7 @@ class TestBigchainApi(object):
         input_tx = b.get_transaction(input_tx.txid)
         inputs = input_tx.to_inputs()
         tx = Transaction.transfer(inputs, [([user_pk], 1)],
-                                  AssetLink.from_inputs(input_tx))
+                                  AssetLink(input_tx.id))
         tx = tx.sign([user_sk])
         # There's no need to b.write_transaction(tx) to the backlog
 
@@ -260,7 +260,7 @@ class TestBigchainApi(object):
         input_tx = b.get_transaction(input_tx.txid)
         inputs = input_tx.to_inputs()
         tx = Transaction.transfer(inputs, [([user_pk], 1)],
-                                  AssetLink.from_inputs(input_tx))
+                                  AssetLink(input_tx.id))
         tx = tx.sign([user_sk])
 
         # Make sure there's a copy of tx in the backlog
@@ -501,7 +501,7 @@ class TestBigchainApi(object):
         input_tx = b.get_transaction(input_tx.txid)
         inputs = input_tx.to_inputs()
         tx = Transaction.transfer(inputs, [([user_pk], 1)],
-                                  AssetLink.from_inputs(input_tx))
+                                  AssetLink(input_tx.id))
         tx = tx.sign([user_sk])
         b.write_transaction(tx)
 
@@ -528,7 +528,7 @@ class TestBigchainApi(object):
             input_tx = b.get_transaction(input_tx.txid)
             inputs = input_tx.to_inputs()
             tx = Transaction.transfer(inputs, [([user_pk], 1)],
-                                      asset_link=AssetLink.from_inputs(input_tx),
+                                      asset_link=AssetLink(input_tx.id),
                                       metadata={'msg': random.random()})
             tx = tx.sign([user_sk])
             b.write_transaction(tx)
@@ -612,7 +612,7 @@ class TestTransactionValidation(object):
         sk, pk = generate_key_pair()
         tx = Transaction.create([pk], [([user_pk], 1)])
         tx.operation = 'TRANSFER'
-        tx.asset = AssetLink.from_inputs(input_transaction)
+        tx.asset = AssetLink(input_transaction.id)
         tx.fulfillments[0].tx_input = input_tx
 
         with pytest.raises(InvalidSignature):
@@ -656,7 +656,7 @@ class TestTransactionValidation(object):
         input_tx = b.get_transaction(input_tx.txid)
         inputs = input_tx.to_inputs()
         transfer_tx = Transaction.transfer(inputs, [([user_pk], 1)],
-                                           AssetLink.from_inputs(input_tx))
+                                           AssetLink(input_tx.id))
         transfer_tx = transfer_tx.sign([user_sk])
 
         assert transfer_tx == b.validate_transaction(transfer_tx)
@@ -682,7 +682,7 @@ class TestTransactionValidation(object):
 
         # create a transaction that's valid but not in a voted valid block
         transfer_tx = Transaction.transfer(inputs, [([user_pk], 1)],
-                                           AssetLink.from_inputs(input_tx))
+                                           AssetLink(input_tx.id))
         transfer_tx = transfer_tx.sign([user_sk])
 
         assert transfer_tx == b.validate_transaction(transfer_tx)
@@ -694,7 +694,7 @@ class TestTransactionValidation(object):
         # create transaction with the undecided input
         tx_invalid = Transaction.transfer(transfer_tx.to_inputs(),
                                           [([user_pk], 1)],
-                                          AssetLink.from_inputs(transfer_tx))
+                                          AssetLink(transfer_tx.asset.id))
         tx_invalid = tx_invalid.sign([user_sk])
 
         with pytest.raises(TransactionNotInValidBlock):
@@ -796,7 +796,7 @@ class TestMultipleInputs(object):
         input_tx = b.get_transaction(tx_link.txid)
         inputs = input_tx.to_inputs()
         tx = Transaction.transfer(inputs, [([user2_pk], 1)],
-                                  AssetLink.from_inputs(input_tx))
+                                  AssetLink(input_tx.id))
         tx = tx.sign([user_sk])
 
         # validate transaction
@@ -820,7 +820,7 @@ class TestMultipleInputs(object):
         input_tx = b.get_transaction(tx_link.txid)
         tx = Transaction.transfer(input_tx.to_inputs(),
                                   [([user2_pk, user3_pk], 1)],
-                                  AssetLink.from_inputs(input_tx))
+                                  AssetLink(input_tx.id))
         tx = tx.sign([user_sk])
 
         assert b.is_valid_transaction(tx) == tx
@@ -852,7 +852,7 @@ class TestMultipleInputs(object):
         inputs = input_tx.to_inputs()
 
         transfer_tx = Transaction.transfer(inputs, [([user3_pk], 1)],
-                                           AssetLink.from_inputs(input_tx))
+                                           AssetLink(input_tx.id))
         transfer_tx = transfer_tx.sign([user_sk, user2_sk])
 
         # validate transaction
@@ -887,7 +887,7 @@ class TestMultipleInputs(object):
 
         tx = Transaction.transfer(tx_input.to_inputs(),
                                   [([user3_pk, user4_pk], 1)],
-                                  AssetLink.from_inputs(tx_input))
+                                  AssetLink(tx_input.id))
         tx = tx.sign([user_sk, user2_sk])
 
         assert b.is_valid_transaction(tx) == tx
@@ -913,7 +913,7 @@ class TestMultipleInputs(object):
         assert owned_inputs_user2 == []
 
         tx = Transaction.transfer(tx.to_inputs(), [([user2_pk], 1)],
-                                  AssetLink.from_inputs(tx))
+                                  AssetLink(tx.id))
         tx = tx.sign([user_sk])
         block = b.create_block([tx])
         b.write_block(block)
@@ -951,7 +951,7 @@ class TestMultipleInputs(object):
         # NOTE: The transaction itself is valid, still will mark the block
         #       as invalid to mock the behavior.
         tx_invalid = Transaction.transfer(tx.to_inputs(), [([user2_pk], 1)],
-                                          AssetLink.from_inputs(tx))
+                                          AssetLink(tx.id))
         tx_invalid = tx_invalid.sign([user_sk])
         block = b.create_block([tx_invalid])
         b.write_block(block)
@@ -998,7 +998,7 @@ class TestMultipleInputs(object):
         # transfer divisible asset divided in two outputs
         tx_transfer = Transaction.transfer(tx_create.to_inputs(),
                                            [([user2_pk], 1), ([user2_pk], 1)],
-                                           asset_link=AssetLink.from_inputs(tx_create))
+                                           asset_link=AssetLink(tx_create.id))
         tx_transfer_signed = tx_transfer.sign([user_sk])
         block = b.create_block([tx_transfer_signed])
         b.write_block(block)
@@ -1031,7 +1031,7 @@ class TestMultipleInputs(object):
         assert owned_inputs_user1 == expected_owned_inputs_user1
 
         tx = Transaction.transfer(tx.to_inputs(), [([user3_pk], 1)],
-                                  AssetLink.from_inputs(tx))
+                                  AssetLink(tx.id))
         tx = tx.sign([user_sk, user2_sk])
         block = b.create_block([tx])
         b.write_block(block)
@@ -1064,7 +1064,7 @@ class TestMultipleInputs(object):
 
         # create a transaction and block
         tx = Transaction.transfer(tx.to_inputs(), [([user2_pk], 1)],
-                                  AssetLink.from_inputs(tx))
+                                  AssetLink(tx.id))
         tx = tx.sign([user_sk])
         block = b.create_block([tx])
         b.write_block(block)
@@ -1102,7 +1102,7 @@ class TestMultipleInputs(object):
 
         # create a transaction and block
         tx = Transaction.transfer(tx.to_inputs(), [([user2_pk], 1)],
-                                  AssetLink.from_inputs(tx))
+                                  AssetLink(tx.id))
         tx = tx.sign([user_sk])
         block = b.create_block([tx])
         b.write_block(block)
@@ -1146,7 +1146,7 @@ class TestMultipleInputs(object):
         # transfer the first 2 inputs
         tx_transfer = Transaction.transfer(tx_create.to_inputs()[:2],
                                            [([user2_pk], 1), ([user2_pk], 1)],
-                                           asset_link=AssetLink.from_inputs(tx_create))
+                                           asset_link=AssetLink(tx_create.id))
         tx_transfer_signed = tx_transfer.sign([user_sk])
         block = b.create_block([tx_transfer_signed])
         b.write_block(block)
@@ -1188,7 +1188,7 @@ class TestMultipleInputs(object):
         # create a transaction
         tx = Transaction.transfer(transactions[0].to_inputs(),
                                   [([user3_pk], 1)],
-                                  AssetLink.from_inputs(transactions[0]))
+                                  AssetLink(transactions[0].id))
         tx = tx.sign([user_sk, user2_sk])
         block = b.create_block([tx])
         b.write_block(block)

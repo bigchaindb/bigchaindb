@@ -129,7 +129,7 @@ def signed_transfer_tx(signed_create_tx, user_pk, user_sk):
     inputs = signed_create_tx.to_inputs()
     tx = Transaction.transfer(inputs,
                               [([user_pk], 1)],
-                              AssetLink.from_inputs(signed_create_tx))
+                              AssetLink(signed_create_tx.id))
     return tx.sign([user_sk])
 
 

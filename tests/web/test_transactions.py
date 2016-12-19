@@ -132,7 +132,7 @@ def test_post_transfer_transaction_endpoint(b, client, user_pk, user_sk):
     create_tx = b.get_transaction(input_valid.txid)
     transfer_tx = Transaction.transfer(create_tx.to_inputs(),
                                        [([user_pub], 1)],
-                                       AssetLink.from_inputs(create_tx))
+                                       AssetLink(create_tx.id))
     transfer_tx = transfer_tx.sign([user_sk])
 
     res = client.post(TX_ENDPOINT, data=json.dumps(transfer_tx.to_dict()))
@@ -152,7 +152,7 @@ def test_post_invalid_transfer_transaction_returns_400(b, client, user_pk, user_
     create_tx = b.get_transaction(input_valid.txid)
     transfer_tx = Transaction.transfer(create_tx.to_inputs(),
                                        [([user_pub], 1)],
-                                       AssetLink.from_inputs(create_tx))
+                                       AssetLink(create_tx.id))
 
     res = client.post(TX_ENDPOINT, data=json.dumps(transfer_tx.to_dict()))
     assert res.status_code == 400
