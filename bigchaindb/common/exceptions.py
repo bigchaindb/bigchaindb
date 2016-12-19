@@ -87,4 +87,4 @@ class AssetIdMismatch(Exception):
 
 
 class AmountError(Exception):
-    """Raise when there is a problem with output amounts"""
+    """Raised when there is a problem with a transaction's output amounts"""
