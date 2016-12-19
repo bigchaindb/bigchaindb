@@ -3,21 +3,21 @@ Inputs and Outputs
 
 BigchainDB is modelled around *assets*, and *inputs* and *outputs* are the mechanism by which control of an asset is transferred.
 
-Amounts of an asset are encoded in the outputs of a transaction, and each output may be spent separately. In order to spend an output, it's `conditions` must be met, by an `input` that provides corresponding `fulfillments`. Each output may be spent exactly once, by a single input.
+Amounts of an asset are encoded in the outputs of a transaction, and each output may be spent separately. In order to spend an output, the output's `conditions` must be met by an `input` that provides corresponding `fulfillments`. Each output may be spent exactly once, by a single input.
 
 .. note::
 
-    This document (and various places in the BigchainDB documentation and code) talks about control of an asset in terms of *owners* and *ownership*. The language is chosen to represent the most common use cases, but in some more complex scenarios, it is not accurate to say that the output is owned by the controllers of those public keys, only that those are the public keys associated with the ability to fulfill the output. Also, depending on the use case, the entity controlling an output via a private key may not be the legal owner of the asset in the corresponding legal domain. However, since we aim to use language that is simple to understand and covers the majority of use cases, we talk in terms of *owners* of an output that have the ability to *spend* that output.
+    This document (and various places in the BigchainDB documentation and code) talks about control of an asset in terms of *owners* and *ownership*. The language is chosen to represent the most common use cases, but in some more complex scenarios, it may not be accurate to say that the output is owned by the controllers of those public keys–it would only be correct to say that those public keys are associated with the ability to fulfill the output. Also, depending on the use case, the entity controlling an output via a private key may not be the legal owner of the asset in the corresponding legal domain. However, since we aim to use language that is simple to understand and covers the majority of use cases, we talk in terms of *owners* of an output that have the ability to *spend* that output.
 
 In the most basic case, an output may define a **simple signature condition**, which gives control of the output to the entity controlling a corresponding private key.
 
-A more complex condition can be composed by using n of the above conditions as inputs to an m-of-n threshold condition (a logic gate which outputs TRUE iff m or more inputs are TRUE). If there are n inputs to a threshold condition:
+A more complex condition can be composed by using n of the above conditions as inputs to an m-of-n threshold condition (a logic gate which outputs TRUE if and only if m or more inputs are TRUE). If there are n inputs to a threshold condition:
 * 1-of-n is the same as a logical OR of all the inputs
 * n-of-n is the same as a logical AND of all the inputs
 
 For example, one could create a condition requiring m (of n) signatures before their asset can be transferred.
 
-One can also put different weights on the inputs to threshold condition, along with a threshold that the weighted-sum-of-inputs must pass for the output to be TRUE. Weights could be used, for example, to express the number of units of an asset that someone controls.
+One can also put different weights on the inputs to a threshold condition, along with a threshold that the weighted-sum-of-inputs must pass for the output to be TRUE. Weights could be used, for example, to express the number of units of an asset that someone controls.
 
 The (single) output of a threshold condition can be used as one of the inputs of other threshold conditions. This means that one can combine threshold conditions to build complex logical expressions, e.g. (x OR y) AND (u OR v).
 
@@ -27,7 +27,7 @@ When one creates a condition, one can calculate its fulfillment length (e.g. 96)
 
 If someone tries to make a condition where the output of a threshold condition feeds into the input of another “earlier” threshold condition (i.e. in a closed logical circuit), then their computer will take forever to calculate the (infinite) “condition URI”, at least in theory. In practice, their computer will run out of memory or their client software will timeout after a while.
 
-Aside: In what follows, the list of `public_keys` (in a condition) is always who controlled the asset at the time the transaction completed, but before the next transaction started. The list of `owners_before` (in an input) is always equal to the list of `public_keys` in that asset's previous transaction.
+Aside: In what follows, the list of `public_keys` (in a condition) is always the controllers of the asset at the time the transaction completed, but before the next transaction started. The list of `owners_before` (in an input) is always equal to the list of `public_keys` in that asset's previous transaction.
 
 Outputs
 -------
