@@ -3,7 +3,7 @@ Inputs and Outputs
 
 BigchainDB is modelled around *assets*, and *inputs* and *outputs* are the mechanism by which control of an asset is transferred.
 
-Amounts of an asset are encoded in the outputs of a transaction, and each output may be spent separately. In order to spend an output, the output's `conditions` must be met by an `input` that provides corresponding `fulfillments`. Each output may be spent at most once, by a single input. Note that any asset associated with an output holding an amount greater than one is considered a divisible asset that may be split up in future transactions.
+Amounts of an asset are encoded in the outputs of a transaction, and each output may be spent separately. In order to spend an output, the output's ``conditions`` must be met by an ``input`` that provides corresponding ``fulfillments``. Each output may be spent at most once, by a single input. Note that any asset associated with an output holding an amount greater than one is considered a divisible asset that may be split up in future transactions.
 
 .. note::
 
@@ -31,7 +31,7 @@ Outputs
 
 .. note::
 
-    In what follows, the list of `public_keys` (in a condition) is always the controllers of the asset at the time the transaction completed, but before the next transaction started. The list of `owners_before` (in an input) is always equal to the list of `public_keys` in that asset's previous transaction.
+    In what follows, the list of ``public_keys`` (in a condition) is always the controllers of the asset at the time the transaction completed, but before the next transaction started. The list of ``owners_before`` (in an input) is always equal to the list of ``public_keys`` in that asset's previous transaction.
 
 One New Owner
 `````````````
@@ -100,11 +100,11 @@ to spend the asset. For example:
     }
 
 
-- `subfulfillments`: a list of fulfillments
-    - `weight`: integer weight for each subfulfillment's contribution to the threshold
-- `threshold`: threshold to reach for the subfulfillments to reach a valid fulfillment
+- ``subfulfillments``: a list of fulfillments
+    - ``weight``: integer weight for each subfulfillment's contribution to the threshold
+- ``threshold``: threshold to reach for the subfulfillments to reach a valid fulfillment
 
-The `weight`s and `threshold` could be adjusted. For example, if the `threshold` was changed to 1 above, then only one of the new owners would have to provide a signature to spend the asset.
+The ``weight``s and ``threshold`` could be adjusted. For example, if the ``threshold`` was changed to 1 above, then only one of the new owners would have to provide a signature to spend the asset.
 
 Inputs
 ------
