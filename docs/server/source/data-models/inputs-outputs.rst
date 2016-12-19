@@ -3,7 +3,7 @@ Inputs and Outputs
 
 BigchainDB is modelled around *assets*, and *inputs* and *outputs* are the mechanism by which control of an asset is transferred.
 
-Amounts of an asset are encoded in the outputs of a transaction, and each output may be spent separately. In order to spend an output, the output's `conditions` must be met by an `input` that provides corresponding `fulfillments`. Each output may be spent exactly once, by a single input.
+Amounts of an asset are encoded in the outputs of a transaction, and each output may be spent separately. In order to spend an output, the output's `conditions` must be met by an `input` that provides corresponding `fulfillments`. Each output may be spent exactly once, by a single input. Note that any asset associated with an output holding an amount greater than one is considered a divisible asset that may be split up in future transactions.
 
 .. note::
 
