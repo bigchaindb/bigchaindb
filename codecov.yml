@@ -32,7 +32,6 @@ coverage:
     - "benchmarking-tests/*"
     - "speed-tests/*"
     - "ntools/*"
-    - "bigchaindb/backend/mongodb/*"
 
 comment:
   # @stevepeak (from codecov.io) suggested we change 'suggestions' to 'uncovered'
