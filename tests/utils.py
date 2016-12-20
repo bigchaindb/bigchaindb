@@ -38,4 +38,6 @@ def flush_rethink_db(connection, dbname):
 
 @flush_db.register(MongoDBConnection)
 def flush_mongo_db(connection, dbname):
-    raise NotImplementedError
+    connection.conn[dbname].bigchain.delete_many({})
+    connection.conn[dbname].backlog.delete_many({})
+    connection.conn[dbname].votes.delete_many({})
