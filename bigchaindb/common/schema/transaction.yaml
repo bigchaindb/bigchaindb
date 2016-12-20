@@ -112,18 +112,6 @@ definitions:
     properties:
       id:
         "$ref": "#/definitions/uuid4"
-      divisible:
-        type: boolean
-        description: |
-            Whether or not the asset has a quantity that may be partially spent.
-      updatable:
-        type: boolean
-        description: |
-            Whether or not the description of the asset may be updated. Defaults to false.
-      refillable:
-        type: boolean
-        description: |
-          Whether the amount of the asset can change after its creation. Defaults to false.
       data:
         description: |
           User provided metadata associated with the asset. May also be ``null``.
@@ -170,7 +158,6 @@ definitions:
         type: integer
         description: |
             Integral amount of the asset represented by this condition.
-            In the case of a non divisible asset, this will always be 1.
   fulfillment:
     type: "object"
     description:

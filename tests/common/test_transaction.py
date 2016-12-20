@@ -309,9 +309,6 @@ def test_transaction_serialization(user_ffill, user_cond, data, data_id):
         'metadata': None,
         'asset': {
             'id': data_id,
-            'divisible': False,
-            'updatable': False,
-            'refillable': False,
             'data': data,
         }
     }
@@ -348,9 +345,6 @@ def test_transaction_deserialization(user_ffill, user_cond, data, uuid4):
         'metadata': None,
         'asset': {
             'id': uuid4,
-            'divisible': False,
-            'updatable': False,
-            'refillable': False,
             'data': data,
         }
     }
@@ -632,7 +626,7 @@ def test_validate_multiple_fulfillments(user_ffill, user_cond, user_priv):
     from bigchaindb.common.transaction import Transaction, Asset
     from .util import validate_transaction_model
 
-    tx = Transaction(Transaction.CREATE, Asset(divisible=True),
+    tx = Transaction(Transaction.CREATE, Asset(),
                      [user_ffill, deepcopy(user_ffill)],
                      [user_cond, deepcopy(user_cond)])
 
@@ -696,7 +690,7 @@ def test_multiple_fulfillment_validation_of_transfer_tx(user_ffill, user_cond,
     from cryptoconditions import Ed25519Fulfillment
     from .util import validate_transaction_model
 
-    tx = Transaction(Transaction.CREATE, Asset(divisible=True),
+    tx = Transaction(Transaction.CREATE, Asset(),
                      [user_ffill, deepcopy(user_ffill)],
                      [user_cond, deepcopy(user_cond)])
     tx.sign([user_priv])
@@ -750,9 +744,6 @@ def test_create_create_transaction_single_io(user_cond, user_pub, data, uuid4):
         'metadata': data,
         'asset': {
             'id': uuid4,
-            'divisible': False,
-            'updatable': False,
-            'refillable': False,
             'data': data,
         },
         'fulfillments': [
@@ -804,7 +795,7 @@ def test_create_create_transaction_multiple_io(user_cond, user2_cond, user_pub,
         'operation': 'CREATE',
         'version': 1
     }
-    asset = Asset(divisible=True)
+    asset = Asset()
     tx = Transaction.create([user_pub, user2_pub],
                             [([user_pub], 1), ([user2_pub], 1)],
                             asset=asset,
@@ -823,7 +814,7 @@ def test_validate_multiple_io_create_transaction(user_pub, user_priv,
     tx = Transaction.create([user_pub, user2_pub],
                             [([user_pub], 1), ([user2_pub], 1)],
                             metadata={'message': 'hello'},
-                            asset=Asset(divisible=True))
+                            asset=Asset())
     tx = tx.sign([user_priv, user2_priv])
     assert tx.fulfillments_valid() is True
 
@@ -841,9 +832,6 @@ def test_create_create_transaction_threshold(user_pub, user2_pub, user3_pub,
         'metadata': data,
         'asset': {
             'id': uuid4,
-            'divisible': False,
-            'updatable': False,
-            'refillable': False,
             'data': data,
         },
         'fulfillments': [
@@ -963,7 +951,7 @@ def test_create_transfer_transaction_multiple_io(user_pub, user_priv,
                                                  user3_pub, user2_cond):
     from bigchaindb.common.transaction import Transaction, Asset
 
-    asset = Asset(divisible=True)
+    asset = Asset()
     tx = Transaction.create([user_pub], [([user_pub], 1), ([user2_pub], 1)],
                             asset=asset, metadata={'message': 'hello'})
     tx = tx.sign([user_priv])
