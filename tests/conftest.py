@@ -49,7 +49,13 @@ def pytest_ignore_collect(path, config):
 def pytest_configure(config):
     config.addinivalue_line(
         'markers',
-        'bdb(): use bigchaindb')
+        'bdb(): Mark the test as needing BigchainDB, i.e. a database with '
+        'the three tables: "backlog", "bigchain", "votes". BigchainDB will '
+        'be configured such that the database and tables are available for an '
+        'entire test session. For distributed tests, the database name will '
+        'be suffixed with the process identifier, e.g.: "bigchain_test_gw0", '
+        'to ensure that each process session has its own separate database.'
+    )
 
 
 @pytest.fixture(autouse=True)
