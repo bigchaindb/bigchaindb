@@ -118,11 +118,11 @@ def _setup_database(_configure_bigchaindb):
     from bigchaindb.backend import connect, schema
     from bigchaindb.common.exceptions import DatabaseDoesNotExist
     print('Initializing test db')
-    db_name = config['database']['name']
+    dbname = config['database']['name']
     conn = connect()
 
     try:
-        schema.drop_database(conn, db_name)
+        schema.drop_database(conn, dbname)
     except DatabaseDoesNotExist:
         pass
 
@@ -131,14 +131,14 @@ def _setup_database(_configure_bigchaindb):
 
     yield
 
-    print('Deleting `{}` database'.format(db_name))
+    print('Deleting `{}` database'.format(dbname))
     conn = connect()
     try:
-        schema.drop_database(conn, db_name)
+        schema.drop_database(conn, dbname)
     except DatabaseDoesNotExist:
         pass
 
-    print('Finished deleting `{}`'.format(db_name))
+    print('Finished deleting `{}`'.format(dbname))
 
 
 @pytest.fixture
