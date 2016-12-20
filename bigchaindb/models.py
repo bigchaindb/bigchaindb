@@ -82,7 +82,7 @@ class Transaction(Transaction):
 
             # validate asset id
             asset_id = Asset.get_asset_id(input_txs)
-            if asset_id != self.asset.data_id:
+            if asset_id != self.asset.id:
                 raise AssetIdMismatch(('The asset id of the input does not'
                                        ' match the asset id of the'
                                        ' transaction'))

@@ -8,6 +8,7 @@ Tasks:
 
 import os
 import copy
+import random
 
 import pytest
 
@@ -123,9 +124,12 @@ def signed_create_tx(b, create_tx):
 
 @pytest.fixture
 def signed_transfer_tx(signed_create_tx, user_pk, user_sk):
+    from bigchaindb.common.transaction import AssetLink
     from bigchaindb.models import Transaction
     inputs = signed_create_tx.to_inputs()
-    tx = Transaction.transfer(inputs, [([user_pk], 1)], signed_create_tx.asset)
+    tx = Transaction.transfer(inputs,
+                              [([user_pk], 1)],
+                              AssetLink(signed_create_tx.id))
     return tx.sign([user_sk])
 
 
@@ -188,8 +192,10 @@ def inputs(user_pk, setup_database):
     prev_block_id = g.id
     for block in range(4):
         transactions = [
-            Transaction.create([b.me], [([user_pk], 1)]).sign([b.me_private])
-            for i in range(10)
+            Transaction.create([b.me], [([user_pk], 1)],
+                               metadata={'msg': random.random()})
+                       .sign([b.me_private])
+            for _ in range(10)
         ]
         block = b.create_block(transactions)
         b.write_block(block)
@@ -216,9 +222,10 @@ def inputs_shared(user_pk, user2_pk, setup_database):
     prev_block_id = g.id
     for block in range(4):
         transactions = [
-            Transaction.create(
-                [b.me], [user_pk, user2_pk], payload={'i': i}).sign([b.me_private])
-            for i in range(10)
+            Transaction.create([b.me], [user_pk, user2_pk],
+                               metadata={'msg': random.random()})
+                       .sign([b.me_private])
+            for _ in range(10)
         ]
         block = b.create_block(transactions)
         b.write_block(block)

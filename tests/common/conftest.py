@@ -17,9 +17,6 @@ CC_CONDITION_URI = 'cc:0:3:47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU:0'
 DATA = {
     'msg': 'Hello BigchainDB!'
 }
-DATA_ID = '872fa6e6f46246cd44afdb2ee9cfae0e72885fb0910e2bcf9a5a2a4eadb417b8'
-
-UUID4 = 'dc568f27-a113-46b4-9bd4-43015859e3e3'
 
 
 @pytest.fixture
@@ -127,16 +124,6 @@ def data():
 
 
 @pytest.fixture
-def data_id():
-    return DATA_ID
-
-
-@pytest.fixture
-def uuid4():
-    return UUID4
-
-
-@pytest.fixture
 def utx(user_ffill, user_cond):
     from bigchaindb.common.transaction import Transaction, Asset
     return Transaction(Transaction.CREATE, Asset(), [user_ffill], [user_cond])
@@ -150,12 +137,12 @@ def tx(utx, user_priv):
 @pytest.fixture
 def transfer_utx(user_cond, user2_cond, utx):
     from bigchaindb.common.transaction import (Fulfillment, TransactionLink,
-                                               Transaction, Asset)
+                                               Transaction, AssetLink)
     user_cond = user_cond.to_dict()
     ffill = Fulfillment(utx.conditions[0].fulfillment,
                         user_cond['owners_after'],
                         TransactionLink(utx.id, 0))
-    return Transaction('TRANSFER', Asset(), [ffill], [user2_cond])
+    return Transaction('TRANSFER', AssetLink(utx.id), [ffill], [user2_cond])
 
 
 @pytest.fixture

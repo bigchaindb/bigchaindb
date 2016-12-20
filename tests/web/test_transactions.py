@@ -124,13 +124,15 @@ def test_post_invalid_transaction(client, exc, msg, monkeypatch):
 def test_post_transfer_transaction_endpoint(b, client, user_pk, user_sk):
     sk, pk = crypto.generate_key_pair()
     from bigchaindb.models import Transaction
+    from bigchaindb.common.transaction import AssetLink
 
     user_priv, user_pub = crypto.generate_key_pair()
 
     input_valid = b.get_owned_ids(user_pk).pop()
     create_tx = b.get_transaction(input_valid.txid)
     transfer_tx = Transaction.transfer(create_tx.to_inputs(),
-                                       [([user_pub], 1)], create_tx.asset)
+                                       [([user_pub], 1)],
+                                       AssetLink(create_tx.id))
     transfer_tx = transfer_tx.sign([user_sk])
 
     res = client.post(TX_ENDPOINT, data=json.dumps(transfer_tx.to_dict()))
@@ -142,13 +144,15 @@ def test_post_transfer_transaction_endpoint(b, client, user_pk, user_sk):
 @pytest.mark.usefixtures('inputs')
 def test_post_invalid_transfer_transaction_returns_400(b, client, user_pk, user_sk):
     from bigchaindb.models import Transaction
+    from bigchaindb.common.transaction import AssetLink
 
     user_priv, user_pub = crypto.generate_key_pair()
 
     input_valid = b.get_owned_ids(user_pk).pop()
     create_tx = b.get_transaction(input_valid.txid)
     transfer_tx = Transaction.transfer(create_tx.to_inputs(),
-                                       [([user_pub], 1)], create_tx.asset)
+                                       [([user_pub], 1)],
+                                       AssetLink(create_tx.id))
 
     res = client.post(TX_ENDPOINT, data=json.dumps(transfer_tx.to_dict()))
     assert res.status_code == 400

@@ -1,3 +1,4 @@
+import random
 import time
 from unittest.mock import patch
 
@@ -5,9 +6,11 @@ from multipipes import Pipe, Pipeline
 import pytest
 
 
+# TODO: dummy_tx and dummy_block could be fixtures
 def dummy_tx(b):
     from bigchaindb.models import Transaction
-    tx = Transaction.create([b.me], [([b.me], 1)])
+    tx = Transaction.create([b.me], [([b.me], 1)],
+                            metadata={'msg': random.random()})
     tx = tx.sign([b.me_private])
     return tx
 
@@ -275,6 +278,7 @@ def test_valid_block_voting_with_create_transaction(b, monkeypatch):
 def test_valid_block_voting_with_transfer_transactions(monkeypatch, b):
     from bigchaindb.backend import query
     from bigchaindb.common import crypto, util
+    from bigchaindb.common.transaction import AssetLink
     from bigchaindb.models import Transaction
     from bigchaindb.pipelines import vote
 
@@ -292,7 +296,7 @@ def test_valid_block_voting_with_transfer_transactions(monkeypatch, b):
     # create a `TRANSFER` transaction
     test_user2_priv, test_user2_pub = crypto.generate_key_pair()
     tx2 = Transaction.transfer(tx.to_inputs(), [([test_user2_pub], 1)],
-                               tx.asset)
+                               AssetLink(tx.id))
     tx2 = tx2.sign([test_user_priv])
 
     monkeypatch.setattr('time.time', lambda: 2222222222)

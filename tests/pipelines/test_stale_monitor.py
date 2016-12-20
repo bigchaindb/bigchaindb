@@ -1,9 +1,10 @@
+import os
+import random
 from bigchaindb import Bigchain
 from bigchaindb.pipelines import stale
 from multipipes import Pipe, Pipeline
 from unittest.mock import patch
 from bigchaindb import config_utils
-import os
 
 import pytest
 
@@ -89,7 +90,8 @@ def test_full_pipeline(monkeypatch, user_pk):
     monkeypatch.setattr('time.time', lambda: 1)
 
     for i in range(100):
-        tx = Transaction.create([b.me], [([user_pk], 1)])
+        tx = Transaction.create([b.me], [([user_pk], 1)],
+                                metadata={'msg': random.random()})
         tx = tx.sign([b.me_private])
         original_txc.append(tx.to_dict())
 

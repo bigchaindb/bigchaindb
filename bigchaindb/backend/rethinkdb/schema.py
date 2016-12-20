@@ -60,7 +60,7 @@ def create_bigchain_secondary_index(connection, dbname):
         .table('bigchain')
         .index_create('transaction_id', r.row['block']['transactions']['id'], multi=True))
 
-    # secondary index for asset uuid
+    # secondary index for asset links (in TRANSFER transactions)
     connection.run(
         r.db(dbname)
         .table('bigchain')

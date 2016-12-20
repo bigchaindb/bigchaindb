@@ -62,7 +62,7 @@ def main():
     """ Main function """
     privkey = 'CfdqtD7sS7FgkMoGPXw55MVGGFwQLAoHYTcBhZDtF99Z'
     pubkey = '4K9sWUMFwTgaDGPfdynrbxWqWS6sWmKbZoTjxLtVUibD'
-    asset = Asset(None, 'e6969f87-4fc9-4467-b62a-f0dfa1c85002')
+    asset = Asset(None)
     tx = Transaction.create([pubkey], [([pubkey], 1)], asset=asset)
     tx = tx.sign([privkey])
     tx_json = json.dumps(tx.to_dict(), indent=2, sort_keys=True)
