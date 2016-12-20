@@ -1,7 +1,8 @@
 import pytest
 
+pytestmark = pytest.mark.bdb
 
-@pytest.mark.usefixtures('setup_database')
+
 def test_init_creates_db_tables_and_indexes():
     import bigchaindb
     from bigchaindb import backend
@@ -29,7 +30,6 @@ def test_init_creates_db_tables_and_indexes():
     assert sorted(indexes) == ['_id_', 'block_and_voter']
 
 
-@pytest.mark.usefixtures('setup_database')
 def test_init_database_fails_if_db_exists():
     import bigchaindb
     from bigchaindb import backend
@@ -46,7 +46,6 @@ def test_init_database_fails_if_db_exists():
         init_database()
 
 
-@pytest.mark.usefixtures('setup_database')
 def test_create_tables():
     import bigchaindb
     from bigchaindb import backend
@@ -64,7 +63,6 @@ def test_create_tables():
     assert sorted(collection_names) == ['backlog', 'bigchain', 'votes']
 
 
-@pytest.mark.usefixtures('setup_database')
 def test_create_secondary_indexes():
     import bigchaindb
     from bigchaindb import backend
@@ -93,7 +91,6 @@ def test_create_secondary_indexes():
     assert sorted(indexes) == ['_id_', 'block_and_voter']
 
 
-@pytest.mark.usefixtures('setup_database')
 def test_drop():
     import bigchaindb
     from bigchaindb import backend
