@@ -516,7 +516,7 @@ class Bigchain(object):
             block (Block): block to write to bigchain.
         """
 
-        return backend.query.write_block(self.connection, block.to_str())
+        return backend.query.write_block(self.connection, block)
 
     def transaction_exists(self, transaction_id):
         return backend.query.has_transaction(self.connection, transaction_id)
