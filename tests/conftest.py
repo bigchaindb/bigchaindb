@@ -56,12 +56,26 @@ def pytest_configure(config):
         'be suffixed with the process identifier, e.g.: "bigchain_test_gw0", '
         'to ensure that each process session has its own separate database.'
     )
+    config.addinivalue_line(
+        'markers',
+        'genesis(): Mark the test as needing a genesis block in place. The '
+        'prerequisite steps of configuration and database setup are taken '
+        'care of at session scope (if needed), prior to creating the genesis '
+        'block. The genesis block has function scope: it is destroyed after '
+        'each test function/method.'
+    )
 
 
 @pytest.fixture(autouse=True)
 def _bdb_marker(request):
     if request.keywords.get('bdb', None):
         request.getfixturevalue('_bdb')
+
+
+@pytest.fixture(autouse=True)
+def _genesis_marker(request):
+    if request.keywords.get('genesis', None):
+        request.getfixturevalue('_genesis')
 
 
 @pytest.fixture(autouse=True)
@@ -158,6 +172,16 @@ def _bdb(_setup_database, _configure_bigchaindb):
     flush_db(conn, dbname)
 
 
+@pytest.fixture
+def _genesis(_bdb, genesis_block):
+    # TODO for precision's sake, delete the block once the test is done. The
+    # deletion is done indirectly via the teardown code of _bdb but explicit
+    # deletion of the block would make things clearer. E.g.:
+    # yield
+    # tests.utils.delete_genesis_block(conn, dbname)
+    pass
+
+
 # We need this function to avoid loading an existing
 # conf file located in the home of the user running
 # the tests. If it's too aggressive we can change it
@@ -235,19 +259,16 @@ def structurally_valid_vote():
 
 
 @pytest.fixture
-def inputs(user_pk):
-    from bigchaindb import Bigchain
-    from bigchaindb.models import Transaction
-    from bigchaindb.common.exceptions import GenesisBlockAlreadyExistsError
-    # 1. create the genesis block
-    b = Bigchain()
-    try:
-        g = b.create_genesis_block()
-    except GenesisBlockAlreadyExistsError:
-        pass
+def genesis_block(b):
+    return b.create_genesis_block()
 
-    # 2. create blocks with transactions for `USER` to spend
-    prev_block_id = g.id
+
+@pytest.fixture
+def inputs(user_pk, b, genesis_block):
+    from bigchaindb.models import Transaction
+
+    # create blocks with transactions for `USER` to spend
+    prev_block_id = genesis_block.id
     for block in range(4):
         transactions = [
             Transaction.create([b.me], [([user_pk], 1)],
@@ -258,26 +279,18 @@ def inputs(user_pk):
         block = b.create_block(transactions)
         b.write_block(block)
 
-        # 3. vote the blocks valid, so that the inputs are valid
+        # vote the blocks valid, so that the inputs are valid
         vote = b.vote(block.id, prev_block_id, True)
         prev_block_id = block.id
         b.write_vote(vote)
 
 
 @pytest.fixture
-def inputs_shared(user_pk, user2_pk):
-    from bigchaindb import Bigchain
+def inputs_shared(user_pk, user2_pk, genesis_block):
     from bigchaindb.models import Transaction
-    from bigchaindb.common.exceptions import GenesisBlockAlreadyExistsError
-    # 1. create the genesis block
-    b = Bigchain()
-    try:
-        g = b.create_genesis_block()
-    except GenesisBlockAlreadyExistsError:
-        pass
 
-    # 2. create blocks with transactions for `USER` to spend
-    prev_block_id = g.id
+    # create blocks with transactions for `USER` to spend
+    prev_block_id = genesis_block.id
     for block in range(4):
         transactions = [
             Transaction.create([b.me], [user_pk, user2_pk],
@@ -288,7 +301,7 @@ def inputs_shared(user_pk, user2_pk):
         block = b.create_block(transactions)
         b.write_block(block)
 
-        # 3. vote the blocks valid, so that the inputs are valid
+        # vote the blocks valid, so that the inputs are valid
         vote = b.vote(block.id, prev_block_id, True)
         prev_block_id = block.id
         b.write_vote(vote)
