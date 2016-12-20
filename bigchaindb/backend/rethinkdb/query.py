@@ -144,7 +144,7 @@ def get_votes_by_block_id_and_voter(connection, block_id, node_pubkey):
 def write_block(connection, block):
     return connection.run(
             r.table('bigchain')
-            .insert(r.json(block), durability=WRITE_DURABILITY))
+            .insert(r.json(block.to_str()), durability=WRITE_DURABILITY))
 
 
 @register_query(RethinkDBConnection)
