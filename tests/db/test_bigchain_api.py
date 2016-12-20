@@ -32,13 +32,13 @@ def dummy_block():
 
 
 class TestBigchainApi(object):
+
+    @pytest.mark.genesis
     def test_get_last_voted_block_cyclic_blockchain(self, b, monkeypatch):
         from bigchaindb.common.crypto import PrivateKey
         from bigchaindb.common.exceptions import CyclicBlockchainError
         from bigchaindb.common.util import serialize
         from bigchaindb.models import Transaction
-
-        b.create_genesis_block()
 
         tx = Transaction.create([b.me], [([b.me], 1)])
         tx = tx.sign([b.me_private])
@@ -56,12 +56,11 @@ class TestBigchainApi(object):
         with pytest.raises(CyclicBlockchainError):
             b.get_last_voted_block()
 
+    @pytest.mark.genesis
     def test_try_voting_while_constructing_cyclic_blockchain(self, b,
                                                              monkeypatch):
         from bigchaindb.common.exceptions import CyclicBlockchainError
         from bigchaindb.models import Transaction
-
-        b.create_genesis_block()
 
         tx = Transaction.create([b.me], [([b.me], 1)])
         tx = tx.sign([b.me_private])
@@ -72,10 +71,9 @@ class TestBigchainApi(object):
         with pytest.raises(CyclicBlockchainError):
             b.vote(block1.id, block1.id, True)
 
+    @pytest.mark.genesis
     def test_has_previous_vote_when_already_voted(self, b, monkeypatch):
         from bigchaindb.models import Transaction
-
-        b.create_genesis_block()
 
         tx = Transaction.create([b.me], [([b.me], 1)])
         tx = tx.sign([b.me_private])
@@ -91,12 +89,11 @@ class TestBigchainApi(object):
 
         assert b.has_previous_vote(block.id, block.voters) is True
 
+    @pytest.mark.genesis
     def test_get_spent_with_double_spend(self, b, monkeypatch):
         from bigchaindb.common.exceptions import DoubleSpend
         from bigchaindb.common.transaction import AssetLink
         from bigchaindb.models import Transaction
-
-        b.create_genesis_block()
 
         tx = Transaction.create([b.me], [([b.me], 1)])
         tx = tx.sign([b.me_private])
@@ -128,11 +125,10 @@ class TestBigchainApi(object):
         with pytest.raises(DoubleSpend):
             b.get_spent(tx.id, 0)
 
+    @pytest.mark.genesis
     def test_get_block_status_for_tx_with_double_spend(self, b, monkeypatch):
         from bigchaindb.common.exceptions import DoubleSpend
         from bigchaindb.models import Transaction
-
-        b.create_genesis_block()
 
         tx = Transaction.create([b.me], [([b.me], 1)])
         tx = tx.sign([b.me_private])
@@ -154,10 +150,9 @@ class TestBigchainApi(object):
         with pytest.raises(DoubleSpend):
             b.get_blocks_status_containing_tx(tx.id)
 
+    @pytest.mark.genesis
     def test_get_transaction_in_invalid_and_valid_block(self, monkeypatch, b):
         from bigchaindb.models import Transaction
-
-        b.create_genesis_block()
 
         monkeypatch.setattr('time.time', lambda: 1)
         tx1 = Transaction.create([b.me], [([b.me], 1)],
@@ -291,10 +286,9 @@ class TestBigchainApi(object):
         assert block['block']['transactions'][0]['operation'] == 'GENESIS'
         assert block['block']['transactions'][0]['fulfillments'][0]['input'] is None
 
+    @pytest.mark.genesis
     def test_create_genesis_block_fails_if_table_not_empty(self, b):
         from bigchaindb.common.exceptions import GenesisBlockAlreadyExistsError
-
-        b.create_genesis_block()
 
         with pytest.raises(GenesisBlockAlreadyExistsError):
             b.create_genesis_block()
@@ -354,21 +348,22 @@ class TestBigchainApi(object):
         block, status = b.get_block(new_block.id, include_status=True)
         assert status == b.BLOCK_UNDECIDED
 
+    @pytest.mark.genesis
     def test_get_last_voted_block_returns_genesis_if_no_votes_has_been_casted(self, b):
         from bigchaindb.models import Block
         from bigchaindb.backend import query
 
-        b.create_genesis_block()
         genesis = query.get_genesis_block(b.connection)
         genesis = Block.from_dict(genesis)
         gb = b.get_last_voted_block()
         assert gb == genesis
         assert b.validate_block(gb) == gb
 
-    def test_get_last_voted_block_returns_the_correct_block_same_timestamp(self, b, monkeypatch):
-        genesis = b.create_genesis_block()
-
-        assert b.get_last_voted_block() == genesis
+    def test_get_last_voted_block_returns_the_correct_block_same_timestamp(self,
+                                                                           b,
+                                                                           monkeypatch,
+                                                                           genesis_block):
+        assert b.get_last_voted_block() == genesis_block
 
         monkeypatch.setattr('time.time', lambda: 1)
         block_1 = dummy_block()
@@ -392,10 +387,11 @@ class TestBigchainApi(object):
         b.write_vote(b.vote(block_3.id, b.get_last_voted_block().id, True))
         assert b.get_last_voted_block().id == block_3.id
 
-    def test_get_last_voted_block_returns_the_correct_block_different_timestamps(self, b, monkeypatch):
-        genesis = b.create_genesis_block()
-
-        assert b.get_last_voted_block() == genesis
+    def test_get_last_voted_block_returns_the_correct_block_different_timestamps(self,
+                                                                                 b,
+                                                                                 monkeypatch,
+                                                                                 genesis_block):
+        assert b.get_last_voted_block() == genesis_block
 
         monkeypatch.setattr('time.time', lambda: 1)
         block_1 = dummy_block()
@@ -421,28 +417,27 @@ class TestBigchainApi(object):
         b.write_vote(b.vote(block_3.id, b.get_last_voted_block().id, True))
         assert b.get_last_voted_block().id == block_3.id
 
-    def test_no_vote_written_if_block_already_has_vote(self, b):
+    def test_no_vote_written_if_block_already_has_vote(self, b, genesis_block):
         from bigchaindb.models import Block
 
-        genesis = b.create_genesis_block()
         block_1 = dummy_block()
         b.write_block(block_1)
 
-        b.write_vote(b.vote(block_1.id, genesis.id, True))
+        b.write_vote(b.vote(block_1.id, genesis_block.id, True))
         retrieved_block_1 = b.get_block(block_1.id)
         retrieved_block_1 = Block.from_dict(retrieved_block_1)
 
         # try to vote again on the retrieved block, should do nothing
-        b.write_vote(b.vote(retrieved_block_1.id, genesis.id, True))
+        b.write_vote(b.vote(retrieved_block_1.id, genesis_block.id, True))
         retrieved_block_2 = b.get_block(block_1.id)
         retrieved_block_2 = Block.from_dict(retrieved_block_2)
 
         assert retrieved_block_1 == retrieved_block_2
 
+    @pytest.mark.genesis
     def test_more_votes_than_voters(self, b):
         from bigchaindb.common.exceptions import MultipleVotesError
 
-        b.create_genesis_block()
         block_1 = dummy_block()
         b.write_block(block_1)
         # insert duplicate votes
@@ -457,15 +452,14 @@ class TestBigchainApi(object):
         assert excinfo.value.args[0] == 'Block {block_id} has {n_votes} votes cast, but only {n_voters} voters'\
             .format(block_id=block_1.id, n_votes=str(2), n_voters=str(1))
 
-    def test_multiple_votes_single_node(self, b):
+    def test_multiple_votes_single_node(self, b, genesis_block):
         from bigchaindb.common.exceptions import MultipleVotesError
 
-        genesis = b.create_genesis_block()
         block_1 = dummy_block()
         b.write_block(block_1)
         # insert duplicate votes
         for i in range(2):
-            b.write_vote(b.vote(block_1.id, genesis.id, True))
+            b.write_vote(b.vote(block_1.id, genesis_block.id, True))
 
         with pytest.raises(MultipleVotesError) as excinfo:
             b.block_election_status(block_1.id, block_1.voters)
@@ -477,10 +471,10 @@ class TestBigchainApi(object):
         assert excinfo.value.args[0] == 'Block {block_id} has {n_votes} votes from public key {me}'\
             .format(block_id=block_1.id, n_votes=str(2), me=b.me)
 
+    @pytest.mark.genesis
     def test_improper_vote_error(selfs, b):
         from bigchaindb.common.exceptions import ImproperVoteError
 
-        b.create_genesis_block()
         block_1 = dummy_block()
         b.write_block(block_1)
         vote_1 = b.vote(block_1.id, b.get_last_voted_block().id, True)
@@ -925,12 +919,12 @@ class TestMultipleInputs(object):
 
     def test_get_owned_ids_single_tx_single_output_invalid_block(self, b,
                                                                  user_sk,
-                                                                 user_pk):
+                                                                 user_pk,
+                                                                 genesis_block):
         from bigchaindb.common import crypto
         from bigchaindb.common.transaction import AssetLink, TransactionLink
         from bigchaindb.models import Transaction
 
-        genesis = b.create_genesis_block()
         user2_sk, user2_pk = crypto.generate_key_pair()
 
         tx = Transaction.create([b.me], [([user_pk], 1)])
@@ -939,7 +933,7 @@ class TestMultipleInputs(object):
         b.write_block(block)
 
         # vote the block VALID
-        vote = b.vote(block.id, genesis.id, True)
+        vote = b.vote(block.id, genesis_block.id, True)
         b.write_vote(vote)
 
         owned_inputs_user1 = b.get_owned_ids(user_pk)
@@ -1068,12 +1062,13 @@ class TestMultipleInputs(object):
         spent_inputs_user1 = b.get_spent(input_txid, input_cid)
         assert spent_inputs_user1 == tx
 
-    def test_get_spent_single_tx_single_output_invalid_block(self, b, user_sk, user_pk):
+    def test_get_spent_single_tx_single_output_invalid_block(self, b,
+                                                             user_sk,
+                                                             user_pk,
+                                                             genesis_block):
         from bigchaindb.common import crypto
         from bigchaindb.common.transaction import AssetLink
         from bigchaindb.models import Transaction
-
-        genesis = b.create_genesis_block()
 
         # create a new users
         user2_sk, user2_pk = crypto.generate_key_pair()
@@ -1084,7 +1079,7 @@ class TestMultipleInputs(object):
         b.write_block(block)
 
         # vote the block VALID
-        vote = b.vote(block.id, genesis.id, True)
+        vote = b.vote(block.id, genesis_block.id, True)
         b.write_vote(vote)
 
         owned_inputs_user1 = b.get_owned_ids(user_pk).pop()
