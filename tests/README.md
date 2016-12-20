@@ -63,6 +63,14 @@ then run the tests using:
 $ docker-compose run --rm bdb py.test -v
 ```
 
+If you've upgraded to a newer version of BigchainDB, you might have to rebuild the images before
+being able to run the tests. Run:
+
+```text
+$ docker-compose build
+```
+
+to rebuild all the images (usually you only need to rebuild the `bdb` image).
 
 ## Automated Testing of All Pull Requests
 
