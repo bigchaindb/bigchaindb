@@ -662,10 +662,9 @@ class Transaction(object):
 
             Args:
                 tx_signers (:obj:`list` of :obj:`str`): A list of keys that
-                    represent the signers of the asset created by this
-                    Transaction.
+                    represent the signers of the CREATE Transaction.
                 recipients (:obj:`list` of :obj:`str`): A list of keys that
-                    represent the recipients of the asset created by this
+                    represent the recipients of the outputs of this
                     Transaction.
                 metadata (dict): Python dictionary to be stored along with the
                     Transaction.
