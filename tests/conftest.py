@@ -110,15 +110,15 @@ def _configure_bigchaindb(request):
         # not a great way to do this
         config['database']['port'] = 27017
     config_utils.set_config(config)
-    return config
 
 
 @pytest.fixture(scope='session')
 def _setup_database(_configure_bigchaindb):
+    from bigchaindb import config
     from bigchaindb.backend import connect, schema
     from bigchaindb.common.exceptions import DatabaseDoesNotExist
     print('Initializing test db')
-    db_name = _configure_bigchaindb['database']['name']
+    db_name = config['database']['name']
     conn = connect()
 
     try:
@@ -144,9 +144,10 @@ def _setup_database(_configure_bigchaindb):
 @pytest.fixture
 def _bdb(_setup_database, _configure_bigchaindb):
     yield
+    from bigchaindb import config
     from bigchaindb.backend import connect
     from .utils import flush_db
-    dbname = _configure_bigchaindb['database']['name']
+    dbname = config['database']['name']
     conn = connect()
     flush_db(conn, dbname)
 
