@@ -50,6 +50,9 @@ Build the images:
 docker-compose build
 ```
 
+**Note**: If you're upgrading BigchainDB and have previously already built the images, you may need
+to rebuild them after the upgrade to install any new dependencies.
+
 Start RethinkDB:
 
 ```bash
