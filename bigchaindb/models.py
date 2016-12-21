@@ -39,6 +39,10 @@ class Transaction(Transaction):
         input_conditions = []
         inputs_defined = all([ffill.tx_input for ffill in self.fulfillments])
 
+        # validate amounts
+        if any(condition.amount < 1 for condition in self.conditions):
+            raise AmountError('`amount` needs to be greater than zero')
+
         if self.operation in (Transaction.CREATE, Transaction.GENESIS):
             # validate asset
             if self.asset['data'] is not None and not isinstance(self.asset['data'], dict):
@@ -47,9 +51,6 @@ class Transaction(Transaction):
             # validate inputs
             if inputs_defined:
                 raise ValueError('A CREATE operation has no inputs')
-            # validate amounts
-            if any(condition.amount < 1 for condition in self.conditions):
-                raise AmountError('`amount` needs to be greater than zero')
         elif self.operation == Transaction.TRANSFER:
             # validate asset
             if not isinstance(self.asset['id'], str):
@@ -94,12 +95,6 @@ class Transaction(Transaction):
                                        ' match the asset id of the'
                                        ' transaction'))
 
-            # validate the amounts
-            if any(any(condition.amount < 1 for condition in conditions) for
-                    conditions in [input_conditions, self.conditions]):
-                # If any condition's amount is less than 1 in any condition in
-                # the inputs and outputs
-                raise AmountError('`amount` must be greater than zero')
             input_amount = sum([input_condition.amount for input_condition in input_conditions])
             output_amount = sum([output_condition.amount for output_condition in self.conditions])
 
