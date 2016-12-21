@@ -254,6 +254,8 @@ def test_invalid_transaction_initialization(asset_definition):
     with raises(TypeError):
         Transaction(operation='CREATE', asset='invalid asset')
     with raises(TypeError):
+        Transaction(operation='TRANSFER', asset={})
+    with raises(TypeError):
         Transaction(
             operation='CREATE',
             asset=asset_definition,
