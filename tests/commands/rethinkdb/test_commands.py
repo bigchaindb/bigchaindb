@@ -47,7 +47,7 @@ def test_set_shards(mock_reconfigure, monkeypatch, b):
     monkeypatch.setattr(rethinkdb.RqlQuery, 'run', mockreturn_one_replica)
     args = Namespace(num_shards=3)
     run_set_shards(args)
-    mock_reconfigure.assert_called_with(replicas=1, shards=3)
+    mock_reconfigure.assert_called_with(replicas=1, shards=3, dry_run=False)
 
     # this will mock the call to retrieve the database config
     # we will set it to return three replica
@@ -56,7 +56,7 @@ def test_set_shards(mock_reconfigure, monkeypatch, b):
 
     monkeypatch.setattr(rethinkdb.RqlQuery, 'run', mockreturn_three_replicas)
     run_set_shards(args)
-    mock_reconfigure.assert_called_with(replicas=3, shards=3)
+    mock_reconfigure.assert_called_with(replicas=3, shards=3, dry_run=False)
 
 
 @patch('logging.Logger.warn')
@@ -91,7 +91,7 @@ def test_set_replicas(mock_reconfigure, monkeypatch, b):
     monkeypatch.setattr(rethinkdb.RqlQuery, 'run', mockreturn_two_shards)
     args = Namespace(num_replicas=2)
     run_set_replicas(args)
-    mock_reconfigure.assert_called_with(replicas=2, shards=2)
+    mock_reconfigure.assert_called_with(replicas=2, shards=2, dry_run=False)
 
     # this will mock the call to retrieve the database config
     # we will set it to return three shards
@@ -100,7 +100,7 @@ def test_set_replicas(mock_reconfigure, monkeypatch, b):
 
     monkeypatch.setattr(rethinkdb.RqlQuery, 'run', mockreturn_three_shards)
     run_set_replicas(args)
-    mock_reconfigure.assert_called_with(replicas=2, shards=3)
+    mock_reconfigure.assert_called_with(replicas=2, shards=3, dry_run=False)
 
 
 @patch('logging.Logger.warn')

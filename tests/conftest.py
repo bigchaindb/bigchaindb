@@ -170,13 +170,24 @@ def _setup_database(_configure_bigchaindb):
 
 @pytest.fixture
 def _bdb(_setup_database, _configure_bigchaindb):
-    yield
     from bigchaindb import config
     from bigchaindb.backend import connect
-    from .utils import flush_db
-    dbname = config['database']['name']
+    from bigchaindb.backend.admin import get_config
+    from bigchaindb.backend.schema import TABLES
+    from .utils import flush_db, update_table_config
     conn = connect()
+    # TODO remove condition once the mongodb implementation is done
+    if config['database']['backend'] == 'rethinkdb':
+        table_configs_before = {
+            t: get_config(conn, table=t) for t in TABLES
+        }
+    yield
+    dbname = config['database']['name']
     flush_db(conn, dbname)
+    # TODO remove condition once the mongodb implementation is done
+    if config['database']['backend'] == 'rethinkdb':
+        for t, c in table_configs_before.items():
+            update_table_config(conn, t, **c)
 
 
 @pytest.fixture
@@ -355,3 +366,30 @@ def not_yet_created_db(request):
         schema.drop_database(conn, dbname)
     except DatabaseDoesNotExist:
         pass
+
+
+@pytest.fixture
+def db_config():
+    from bigchaindb import config
+    return config['database']
+
+
+@pytest.fixture
+def db_host(db_config):
+    return db_config['host']
+
+
+@pytest.fixture
+def db_port(db_config):
+    return db_config['port']
+
+
+@pytest.fixture
+def db_name(db_config):
+    return db_config['name']
+
+
+@pytest.fixture
+def db_conn():
+    from bigchaindb.backend import connect
+    return connect()
