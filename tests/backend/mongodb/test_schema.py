@@ -1,4 +1,5 @@
 import pytest
+from unittest.mock import patch
 
 pytestmark = pytest.mark.bdb
 
@@ -104,3 +105,52 @@ def test_drop():
 
     schema.drop_database(conn, dbname)
     assert dbname not in conn.conn.database_names()
+
+
+def test_get_replica_set_name_not_enabled():
+    from pymongo.database import Database
+    from bigchaindb import backend
+    from bigchaindb.backend.mongodb.schema import _get_replica_set_name
+    from bigchaindb.common.exceptions import ConfigurationError
+
+    conn = backend.connect()
+
+    # no replSet option set
+    cmd_line_opts = {'argv': ['mongod', '--dbpath=/data'],
+                     'ok': 1.0,
+                     'parsed': {'storage': {'dbPath': '/data'}}}
+    with patch.object(Database, 'command', return_value=cmd_line_opts):
+        with pytest.raises(ConfigurationError):
+            _get_replica_set_name(conn)
+
+
+def test_get_replica_set_name_command_line():
+    from pymongo.database import Database
+    from bigchaindb import backend
+    from bigchaindb.backend.mongodb.schema import _get_replica_set_name
+
+    conn = backend.connect()
+
+    # replSet option set through the command line
+    cmd_line_opts = {'argv': ['mongod', '--dbpath=/data', '--replSet=rs0'],
+                     'ok': 1.0,
+                     'parsed': {'replication': {'replSet': 'rs0'},
+                                'storage': {'dbPath': '/data'}}}
+    with patch.object(Database, 'command', return_value=cmd_line_opts):
+        assert _get_replica_set_name(conn) == 'rs0'
+
+
+def test_get_replica_set_name_config_file():
+    from pymongo.database import Database
+    from bigchaindb import backend
+    from bigchaindb.backend.mongodb.schema import _get_replica_set_name
+
+    conn = backend.connect()
+
+    # replSet option set through the config file
+    cmd_line_opts = {'argv': ['mongod', '--dbpath=/data', '--replSet=rs0'],
+                     'ok': 1.0,
+                     'parsed': {'replication': {'replSetName': 'rs0'},
+                                'storage': {'dbPath': '/data'}}}
+    with patch.object(Database, 'command', return_value=cmd_line_opts):
+        assert _get_replica_set_name(conn) == 'rs0'
