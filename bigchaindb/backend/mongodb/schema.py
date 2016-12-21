@@ -104,11 +104,10 @@ def initialize_replica_set(conn):
         if exc_info.details['codeName'] == 'AlreadyInitialized':
             logger.info('Replica set already initialized')
             return
-        else:
-            raise
-
-    _wait_for_replica_set_initialization(conn)
-    logger.info('Initialized replica set')
+        raise
+    else:
+        _wait_for_replica_set_initialization(conn)
+        logger.info('Initialized replica set')
 
 
 def _get_replica_set_name(conn):
@@ -151,7 +150,6 @@ def _wait_for_replica_set_initialization(conn):
     logger.info('Waiting for mongodb replica set initialization')
     while True:
         logs = conn.conn.admin.command('getLog', 'rs')['log']
-        for line in logs:
-            if 'database writes are now permitted' in line:
+        if any('database writes are now permitted' in line for line in logs):
                 return
         time.sleep(0.1)

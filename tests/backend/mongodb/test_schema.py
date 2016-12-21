@@ -107,7 +107,7 @@ def test_drop():
     assert dbname not in conn.conn.database_names()
 
 
-def test_get_replica_set_name():
+def test_get_replica_set_name_not_enabled():
     from pymongo.database import Database
     from bigchaindb import backend
     from bigchaindb.backend.mongodb.schema import _get_replica_set_name
@@ -123,6 +123,14 @@ def test_get_replica_set_name():
         with pytest.raises(ConfigurationError):
             _get_replica_set_name(conn)
 
+
+def test_get_replica_set_name_command_line():
+    from pymongo.database import Database
+    from bigchaindb import backend
+    from bigchaindb.backend.mongodb.schema import _get_replica_set_name
+
+    conn = backend.connect()
+
     # replSet option set through the command line
     cmd_line_opts = {'argv': ['mongod', '--dbpath=/data', '--replSet=rs0'],
                      'ok': 1.0,
@@ -130,6 +138,14 @@ def test_get_replica_set_name():
                                 'storage': {'dbPath': '/data'}}}
     with patch.object(Database, 'command', return_value=cmd_line_opts):
         assert _get_replica_set_name(conn) == 'rs0'
+
+
+def test_get_replica_set_name_config_file():
+    from pymongo.database import Database
+    from bigchaindb import backend
+    from bigchaindb.backend.mongodb.schema import _get_replica_set_name
+
+    conn = backend.connect()
 
     # replSet option set through the config file
     cmd_line_opts = {'argv': ['mongod', '--dbpath=/data', '--replSet=rs0'],
