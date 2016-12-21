@@ -107,7 +107,6 @@ def test_drop():
     assert dbname not in conn.conn.database_names()
 
 
-@pytest.mark.usefixtures('setup_database')
 def test_get_replica_set_name():
     from pymongo.database import Database
     from bigchaindb import backend
