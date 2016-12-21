@@ -14,19 +14,9 @@ import pytest
 
 from bigchaindb.common import crypto
 
+TEST_DB_NAME = 'bigchain_test'
 
 USER2_SK, USER2_PK = crypto.generate_key_pair()
-DB_NAME = 'bigchain_test_{}'.format(os.getpid())
-
-CONFIG = {
-    'database': {
-        'name': DB_NAME,
-    },
-    'keypair': {
-        'private': '31Lb1ZGKTyHnmVK3LUMrAUrPNfd4sE2YyBt3UA4A25aA',
-        'public': '4XYfCbabAWVUCbjTmRTFEu2sc3dFEdkse4r6X498B1s8',
-    }
-}
 
 # Test user. inputs will be created for this user. Cryptography Keys
 USER_PRIVATE_KEY = '8eJ8q9ZQpReWyQT5aFCiwtZ5wDZC4eDnCen88p3tQ6ie'
@@ -56,6 +46,118 @@ def pytest_ignore_collect(path, config):
             return True
 
 
+def pytest_configure(config):
+    config.addinivalue_line(
+        'markers',
+        'bdb(): Mark the test as needing BigchainDB, i.e. a database with '
+        'the three tables: "backlog", "bigchain", "votes". BigchainDB will '
+        'be configured such that the database and tables are available for an '
+        'entire test session. For distributed tests, the database name will '
+        'be suffixed with the process identifier, e.g.: "bigchain_test_gw0", '
+        'to ensure that each process session has its own separate database.'
+    )
+
+
+@pytest.fixture(autouse=True)
+def _bdb_marker(request):
+    if request.keywords.get('bdb', None):
+        request.getfixturevalue('_bdb')
+
+
+@pytest.fixture(autouse=True)
+def _restore_config(_configure_bigchaindb):
+    from bigchaindb import config, config_utils
+    config_before_test = copy.deepcopy(config)
+    yield
+    config_utils.set_config(config_before_test)
+
+
+@pytest.fixture
+def _restore_dbs(request):
+    from bigchaindb.backend import connect, schema
+    from bigchaindb.common.exceptions import DatabaseDoesNotExist
+    from .utils import list_dbs
+    conn = connect()
+    dbs_before_test = list_dbs(conn)
+    yield
+    dbs_after_test = list_dbs(conn)
+    dbs_to_delete = (
+        db for db in set(dbs_after_test) - set(dbs_before_test)
+        if TEST_DB_NAME not in db
+    )
+    print(dbs_to_delete)
+    for db in dbs_to_delete:
+        try:
+            schema.drop_database(conn, db)
+        except DatabaseDoesNotExist:
+            pass
+
+
+@pytest.fixture(scope='session')
+def _configure_bigchaindb(request):
+    from bigchaindb import config_utils
+    test_db_name = TEST_DB_NAME
+    # Put a suffix like _gw0, _gw1 etc on xdist processes
+    xdist_suffix = getattr(request.config, 'slaveinput', {}).get('slaveid')
+    if xdist_suffix:
+        test_db_name = '{}_{}'.format(TEST_DB_NAME, xdist_suffix)
+    config = {
+        'database': {
+            'name': test_db_name,
+            'backend': request.config.getoption('--database-backend'),
+        },
+        'keypair': {
+            'private': '31Lb1ZGKTyHnmVK3LUMrAUrPNfd4sE2YyBt3UA4A25aA',
+            'public': '4XYfCbabAWVUCbjTmRTFEu2sc3dFEdkse4r6X498B1s8',
+        }
+    }
+    # FIXME
+    if config['database']['backend'] == 'mongodb':
+        # not a great way to do this
+        config['database']['port'] = 27017
+    config_utils.set_config(config)
+
+
+@pytest.fixture(scope='session')
+def _setup_database(_configure_bigchaindb):
+    from bigchaindb import config
+    from bigchaindb.backend import connect, schema
+    from bigchaindb.common.exceptions import DatabaseDoesNotExist
+    print('Initializing test db')
+    dbname = config['database']['name']
+    conn = connect()
+
+    try:
+        schema.drop_database(conn, dbname)
+    except DatabaseDoesNotExist:
+        pass
+
+    schema.init_database(conn)
+    print('Finishing init database')
+
+    yield
+
+    print('Deleting `{}` database'.format(dbname))
+    conn = connect()
+    try:
+        schema.drop_database(conn, dbname)
+    except DatabaseDoesNotExist:
+        pass
+
+    print('Finished deleting `{}`'.format(dbname))
+
+
+@pytest.fixture
+def _bdb(_setup_database, _configure_bigchaindb):
+    yield
+    from bigchaindb import config
+    from bigchaindb.backend import connect
+    from .utils import flush_db
+    dbname = config['database']['name']
+    conn = connect()
+    flush_db(conn, dbname)
+
+
 # We need this function to avoid loading an existing
 # conf file located in the home of the user running
 # the tests. If it's too aggressive we can change it
@@ -67,22 +169,6 @@ def ignore_local_config_file(monkeypatch):
 
     monkeypatch.setattr('bigchaindb.config_utils.file_config',
                         mock_file_config)
-
-
-@pytest.fixture
-def restore_config(ignore_local_config_file, node_config):
-    from bigchaindb import config_utils
-    config_utils.set_config(node_config)
-
-
-@pytest.fixture(scope='module')
-def node_config(request):
-    config = copy.deepcopy(CONFIG)
-    config['database']['backend'] = request.config.getoption('--database-backend')
-    if config['database']['backend'] == 'mongodb':
-        # not a great way to do this
-        config['database']['port'] = 27017
-    return config
 
 
 @pytest.fixture
@@ -106,7 +192,7 @@ def user2_pk():
 
 
 @pytest.fixture
-def b(restore_config):
+def b():
     from bigchaindb import Bigchain
     return Bigchain()
 
@@ -149,35 +235,7 @@ def structurally_valid_vote():
 
 
 @pytest.fixture
-def setup_database(restore_config, node_config):
-    from bigchaindb.backend import connect, schema
-    from bigchaindb.common.exceptions import DatabaseDoesNotExist
-    print('Initializing test db')
-    db_name = node_config['database']['name']
-    conn = connect()
-
-    try:
-        schema.drop_database(conn, db_name)
-    except DatabaseDoesNotExist:
-        pass
-
-    schema.init_database(conn)
-    print('Finishing init database')
-
-    yield
-
-    print('Deleting `{}` database'.format(db_name))
-    conn = connect()
-    try:
-        schema.drop_database(conn, db_name)
-    except DatabaseDoesNotExist:
-        pass
-
-    print('Finished deleting `{}`'.format(db_name))
-
-
-@pytest.fixture
-def inputs(user_pk, setup_database):
+def inputs(user_pk):
     from bigchaindb import Bigchain
     from bigchaindb.models import Transaction
     from bigchaindb.common.exceptions import GenesisBlockAlreadyExistsError
@@ -207,7 +265,7 @@ def inputs(user_pk, setup_database):
 
 
 @pytest.fixture
-def inputs_shared(user_pk, user2_pk, setup_database):
+def inputs_shared(user_pk, user2_pk):
     from bigchaindb import Bigchain
     from bigchaindb.models import Transaction
     from bigchaindb.common.exceptions import GenesisBlockAlreadyExistsError
@@ -234,3 +292,45 @@ def inputs_shared(user_pk, user2_pk, setup_database):
         vote = b.vote(block.id, prev_block_id, True)
         prev_block_id = block.id
         b.write_vote(vote)
+
+
+@pytest.fixture
+def dummy_db(request):
+    from bigchaindb.backend import connect, schema
+    from bigchaindb.common.exceptions import (DatabaseDoesNotExist,
+                                              DatabaseAlreadyExists)
+    conn = connect()
+    dbname = request.fixturename
+    xdist_suffix = getattr(request.config, 'slaveinput', {}).get('slaveid')
+    if xdist_suffix:
+        dbname = '{}_{}'.format(dbname, xdist_suffix)
+    try:
+        schema.create_database(conn, dbname)
+    except DatabaseAlreadyExists:
+        schema.drop_database(conn, dbname)
+        schema.create_database(conn, dbname)
+    yield dbname
+    try:
+        schema.drop_database(conn, dbname)
+    except DatabaseDoesNotExist:
+        pass
+
+
+@pytest.fixture
+def not_yet_created_db(request):
+    from bigchaindb.backend import connect, schema
+    from bigchaindb.common.exceptions import DatabaseDoesNotExist
+    conn = connect()
+    dbname = request.fixturename
+    xdist_suffix = getattr(request.config, 'slaveinput', {}).get('slaveid')
+    if xdist_suffix:
+        dbname = '{}_{}'.format(dbname, xdist_suffix)
+    try:
+        schema.drop_database(conn, dbname)
+    except DatabaseDoesNotExist:
+        pass
+    yield dbname
+    try:
+        schema.drop_database(conn, dbname)
+    except DatabaseDoesNotExist:
+        pass
