@@ -41,7 +41,7 @@ class Transaction(Transaction):
 
         if self.operation in (Transaction.CREATE, Transaction.GENESIS):
             # validate asset
-            if self.asset.data is not None and not isinstance(self.asset.data, dict):
+            if self.asset['data'] is not None and not isinstance(self.asset['data'], dict):
                 raise TypeError(('`asset.data` must be a dict instance or '
                                  'None for `CREATE` transactions'))
             # validate inputs
@@ -52,7 +52,7 @@ class Transaction(Transaction):
                 raise AmountError('`amount` needs to be greater than zero')
         elif self.operation == Transaction.TRANSFER:
             # validate asset
-            if not isinstance(self.asset.id, str):
+            if not isinstance(self.asset['id'], str):
                 raise ValueError(('`asset.id` must be a string for '
                                   '`TRANSFER` transations'))
             # check inputs
@@ -89,7 +89,7 @@ class Transaction(Transaction):
 
             # validate asset id
             asset_id = Transaction.get_asset_id(input_txs)
-            if asset_id != self.asset.id:
+            if asset_id != self.asset['id']:
                 raise AssetIdMismatch(('The asset id of the input does not'
                                        ' match the asset id of the'
                                        ' transaction'))

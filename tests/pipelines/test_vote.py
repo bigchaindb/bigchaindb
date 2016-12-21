@@ -278,7 +278,6 @@ def test_valid_block_voting_with_create_transaction(b, monkeypatch):
 def test_valid_block_voting_with_transfer_transactions(monkeypatch, b):
     from bigchaindb.backend import query
     from bigchaindb.common import crypto, util
-    from bigchaindb.common.transaction import AssetLink
     from bigchaindb.models import Transaction
     from bigchaindb.pipelines import vote
 
@@ -296,7 +295,7 @@ def test_valid_block_voting_with_transfer_transactions(monkeypatch, b):
     # create a `TRANSFER` transaction
     test_user2_priv, test_user2_pub = crypto.generate_key_pair()
     tx2 = Transaction.transfer(tx.to_inputs(), [([test_user2_pub], 1)],
-                               AssetLink(tx.id))
+                               asset_id=tx.id)
     tx2 = tx2.sign([test_user_priv])
 
     monkeypatch.setattr('time.time', lambda: 2222222222)
