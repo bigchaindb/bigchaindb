@@ -49,10 +49,10 @@ def test_validate_transfer_asset_id_mismatch(b, user_pk, user_sk):
 
 
 def test_get_asset_id_create_transaction(b, user_pk):
-    from bigchaindb.models import Transaction, Asset
+    from bigchaindb.models import Transaction
 
     tx_create = Transaction.create([b.me], [([user_pk], 1)])
-    asset_id = Asset.get_asset_id(tx_create)
+    asset_id = Transaction.get_asset_id(tx_create)
 
     assert asset_id == tx_create.id
 
@@ -61,7 +61,7 @@ def test_get_asset_id_create_transaction(b, user_pk):
 @pytest.mark.usefixtures('inputs')
 def test_get_asset_id_transfer_transaction(b, user_pk, user_sk):
     from bigchaindb.common.transaction import AssetLink
-    from bigchaindb.models import Transaction, Asset
+    from bigchaindb.models import Transaction
 
     tx_create = b.get_owned_ids(user_pk).pop()
     tx_create = b.get_transaction(tx_create.txid)
@@ -75,13 +75,13 @@ def test_get_asset_id_transfer_transaction(b, user_pk, user_sk):
     # vote the block valid
     vote = b.vote(block.id, b.get_last_voted_block().id, True)
     b.write_vote(vote)
-    asset_id = Asset.get_asset_id(tx_transfer)
+    asset_id = Transaction.get_asset_id(tx_transfer)
 
     assert asset_id == tx_transfer.asset.id
 
 
 def test_asset_id_mismatch(b, user_pk):
-    from bigchaindb.models import Transaction, Asset
+    from bigchaindb.models import Transaction
     from bigchaindb.common.exceptions import AssetIdMismatch
 
     tx1 = Transaction.create([b.me], [([user_pk], 1)],
@@ -90,7 +90,7 @@ def test_asset_id_mismatch(b, user_pk):
                              metadata={'msg': random.random()})
 
     with pytest.raises(AssetIdMismatch):
-        Asset.get_asset_id([tx1, tx2])
+        Transaction.get_asset_id([tx1, tx2])
 
 
 @pytest.mark.bdb
@@ -164,7 +164,7 @@ def test_get_transactions_by_asset_id_with_invalid_block(b, user_pk, user_sk):
 @pytest.mark.usefixtures('inputs')
 def test_get_asset_by_id(b, user_pk, user_sk):
     from bigchaindb.common.transaction import AssetLink
-    from bigchaindb.models import Asset, Transaction
+    from bigchaindb.models import Transaction
 
     tx_create = b.get_owned_ids(user_pk).pop()
     tx_create = b.get_transaction(tx_create.txid)
@@ -180,7 +180,7 @@ def test_get_asset_by_id(b, user_pk, user_sk):
     vote = b.vote(block.id, b.get_last_voted_block().id, True)
     b.write_vote(vote)
 
-    asset_id = Asset.get_asset_id([tx_create, tx_transfer])
+    asset_id = Transaction.get_asset_id([tx_create, tx_transfer])
     txs = b.get_transactions_by_asset_id(asset_id)
     assert len(txs) == 2
 
@@ -189,8 +189,9 @@ def test_get_asset_by_id(b, user_pk, user_sk):
 
 
 def test_create_invalid_divisible_asset(b, user_pk, user_sk):
-    from bigchaindb.models import Transaction, Asset
+    from bigchaindb.models import Transaction
     from bigchaindb.common.exceptions import AmountError
+    from bigchaindb.common.transaction import Asset
 
     # Asset amount must be more than 0
     asset = Asset()
@@ -203,7 +204,8 @@ def test_create_invalid_divisible_asset(b, user_pk, user_sk):
 
 
 def test_create_valid_divisible_asset(b, user_pk, user_sk):
-    from bigchaindb.models import Transaction, Asset
+    from bigchaindb.models import Transaction
+    from bigchaindb.common.transaction import Asset
 
     asset = Asset()
     tx = Transaction.create([user_pk], [([user_pk], 2)], asset=asset)

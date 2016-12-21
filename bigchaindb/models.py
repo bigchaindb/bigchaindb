@@ -4,7 +4,7 @@ from bigchaindb.common.exceptions import (InvalidHash, InvalidSignature,
                                           TransactionDoesNotExist,
                                           TransactionNotInValidBlock,
                                           AssetIdMismatch, AmountError)
-from bigchaindb.common.transaction import Transaction, Asset
+from bigchaindb.common.transaction import Transaction
 from bigchaindb.common.util import gen_timestamp, serialize
 from bigchaindb.common.schema import validate_transaction_schema
 
@@ -88,7 +88,7 @@ class Transaction(Transaction):
                 input_txs.append(input_tx)
 
             # validate asset id
-            asset_id = Asset.get_asset_id(input_txs)
+            asset_id = Transaction.get_asset_id(input_txs)
             if asset_id != self.asset.id:
                 raise AssetIdMismatch(('The asset id of the input does not'
                                        ' match the asset id of the'

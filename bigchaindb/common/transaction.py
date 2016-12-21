@@ -425,40 +425,6 @@ class Asset(object):
         """
         return cls(asset.get('data'))
 
-    @staticmethod
-    def get_asset_id(transactions):
-        """Get the asset id from a list of :class:`~.Transactions`.
-
-        This is useful when we want to check if the multiple inputs of a
-        transaction are related to the same asset id.
-
-        Args:
-            transactions (:obj:`list` of :class:`~bigchaindb.common.
-                transaction.Transaction`): A list of Transactions.
-                Usually input Transactions that should have a matching
-                asset ID.
-
-        Returns:
-            str: ID of the asset.
-
-        Raises:
-            :exc:`AssetIdMismatch`: If the inputs are related to different
-                assets.
-        """
-
-        if not isinstance(transactions, list):
-            transactions = [transactions]
-
-        # create a set of the transactions' asset ids
-        asset_ids = {tx.id if tx.operation == Transaction.CREATE else tx.asset.id
-                     for tx in transactions}
-
-        # check that all the transasctions have the same asset id
-        if len(asset_ids) > 1:
-            raise AssetIdMismatch(('All inputs of all transactions passed'
-                                   ' need to have the same asset id'))
-        return asset_ids.pop()
-
 
 class AssetLink(object):
     """An object for unidirectional linking to a Asset.
@@ -1106,6 +1072,41 @@ class Transaction(object):
     def __str__(self):
         tx = Transaction._remove_signatures(self.to_dict())
         return Transaction._to_str(tx)
+
+    @staticmethod
+    def get_asset_id(transactions):
+        """Get the asset id from a list of :class:`~.Transactions`.
+
+        This is useful when we want to check if the multiple inputs of a
+        transaction are related to the same asset id.
+
+        Args:
+            transactions (:obj:`list` of :class:`~bigchaindb.common.
+                transaction.Transaction`): A list of Transactions.
+                Usually input Transactions that should have a matching
+                asset ID.
+
+        Returns:
+            str: ID of the asset.
+
+        Raises:
+            :exc:`AssetIdMismatch`: If the inputs are related to different
+                assets.
+        """
+
+        if not isinstance(transactions, list):
+            transactions = [transactions]
+
+        # create a set of the transactions' asset ids
+        asset_ids = {tx.id if tx.operation == Transaction.CREATE else tx.asset.id
+                     for tx in transactions}
+
+        # check that all the transasctions have the same asset id
+        if len(asset_ids) > 1:
+            raise AssetIdMismatch(('All inputs of all transactions passed'
+                                   ' need to have the same asset id'))
+        return asset_ids.pop()
+
 
     @staticmethod
     def validate_structure(tx_body):
