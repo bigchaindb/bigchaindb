@@ -41,3 +41,13 @@ def flush_mongo_db(connection, dbname):
     connection.conn[dbname].bigchain.delete_many({})
     connection.conn[dbname].backlog.delete_many({})
     connection.conn[dbname].votes.delete_many({})
+
+
+@singledispatch
+def update_table_config(connection, table, **kwrgas):
+    raise NotImplementedError
+
+
+@update_table_config.register(RethinkDBConnection)
+def update_table_config(connection, table, **kwargs):
+    return connection.run(r.table(table).config().update(dict(**kwargs)))

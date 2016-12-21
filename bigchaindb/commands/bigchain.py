@@ -16,14 +16,14 @@ from bigchaindb.common import crypto
 from bigchaindb.common.exceptions import (StartupError,
                                           DatabaseAlreadyExists,
                                           KeypairNotFoundException)
-import rethinkdb as r
-
 import bigchaindb
 import bigchaindb.config_utils
 from bigchaindb.models import Transaction
 from bigchaindb.utils import ProcessGroup
 from bigchaindb import backend
 from bigchaindb.backend import schema
+from bigchaindb.backend.admin import set_replicas, set_shards
+from bigchaindb.backend.exceptions import DatabaseOpFailedError
 from bigchaindb.commands import utils
 from bigchaindb import processes
 
@@ -245,26 +245,18 @@ def run_load(args):
 
 def run_set_shards(args):
     conn = backend.connect()
-    for table in ['bigchain', 'backlog', 'votes']:
-        # See https://www.rethinkdb.com/api/python/config/
-        table_config = conn.run(r.table(table).config())
-        num_replicas = len(table_config['shards'][0]['replicas'])
-        try:
-            conn.run(r.table(table).reconfigure(shards=args.num_shards, replicas=num_replicas))
-        except r.ReqlOpFailedError as e:
-            logger.warn(e)
+    try:
+        set_shards(conn, shards=args.num_shards)
+    except DatabaseOpFailedError as e:
+        logger.warn(e)
 
 
 def run_set_replicas(args):
     conn = backend.connect()
-    for table in ['bigchain', 'backlog', 'votes']:
-        # See https://www.rethinkdb.com/api/python/config/
-        table_config = conn.run(r.table(table).config())
-        num_shards = len(table_config['shards'])
-        try:
-            conn.run(r.table(table).reconfigure(shards=num_shards, replicas=args.num_replicas))
-        except r.ReqlOpFailedError as e:
-            logger.warn(e)
+    try:
+        set_replicas(conn, replicas=args.num_replicas)
+    except DatabaseOpFailedError as e:
+        logger.warn(e)
 
 
 def create_parser():

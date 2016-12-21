@@ -16,7 +16,7 @@ generic backend interfaces to the implementations in this module.
 """
 
 # Register the single dispatched modules on import.
-from bigchaindb.backend.rethinkdb import changefeed, schema, query  # noqa
+from bigchaindb.backend.rethinkdb import admin, changefeed, schema, query  # noqa
 
 # RethinkDBConnection should always be accessed via
 # ``bigchaindb.backend.connect()``.

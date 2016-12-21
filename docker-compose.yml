@@ -15,6 +15,13 @@ services:
     volumes_from:
       - rdb-data
 
+  rdb-2:
+    image: rethinkdb
+    ports:
+      - "8080"
+      - "29015"
+    command: rethinkdb --join rdb:29015 --bind all
+
   rdb-data:
     image: rethinkdb:2.3.5
     volumes:

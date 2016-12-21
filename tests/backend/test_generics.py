@@ -90,3 +90,16 @@ def test_init_database(mock_create_database, mock_create_tables,
     mock_create_database.assert_called_once_with(conn, 'mickeymouse')
     mock_create_tables.assert_called_once_with(conn, 'mickeymouse')
     mock_create_indexes.assert_called_once_with(conn, 'mickeymouse')
+
+
+@mark.parametrize('admin_func_name,kwargs', (
+    ('get_config', {'table': None}),
+    ('reconfigure', {'table': None, 'shards': None, 'replicas': None}),
+    ('set_shards', {'shards': None}),
+    ('set_replicas', {'replicas': None}),
+))
+def test_admin(admin_func_name, kwargs):
+    from bigchaindb.backend import admin
+    admin_func = getattr(admin, admin_func_name)
+    with raises(NotImplementedError):
+        admin_func(None, **kwargs)
