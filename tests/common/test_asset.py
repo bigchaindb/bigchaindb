@@ -48,12 +48,3 @@ def test_asset_deserialization(data):
     asset = Asset.from_dict(asset_dict)
     expected = Asset(data)
     assert asset == expected
-
-
-def test_validate_asset():
-    from bigchaindb.common.transaction import Asset
-
-    # test amount errors
-    asset = Asset()
-    with raises(TypeError):
-        asset.validate_asset(amount='a')

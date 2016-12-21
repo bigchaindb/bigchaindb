@@ -1,6 +1,5 @@
 import pytest
 import random
-from unittest.mock import patch
 
 
 @pytest.mark.bdb
@@ -21,13 +20,13 @@ def test_asset_transfer(b, user_pk, user_sk):
 
 
 def test_validate_bad_asset_creation(b, user_pk):
-    from bigchaindb.models import Transaction, Asset
+    from bigchaindb.models import Transaction
 
     # `data` needs to be a dictionary
     tx = Transaction.create([b.me], [([user_pk], 1)])
     tx.asset.data = 'a'
-    with patch.object(Asset, 'validate_asset', return_value=None):
-        tx_signed = tx.sign([b.me_private])
+    tx_signed = tx.sign([b.me_private])
+
     with pytest.raises(TypeError):
         b.validate_transaction(tx_signed)
 
@@ -197,19 +196,10 @@ def test_create_invalid_divisible_asset(b, user_pk, user_sk):
     asset = Asset()
     tx = Transaction.create([user_pk], [([user_pk], 1)], asset=asset)
     tx.conditions[0].amount = 0
-    with pytest.raises(AmountError):
-        tx.sign([user_sk])
+    tx.sign([user_sk])
 
-    # even if a transaction is badly constructed the server should raise the
-    # exception
-    asset = Asset()
-    tx = Transaction.create([user_pk], [([user_pk], 1)], asset=asset)
-    tx.conditions[0].amount = 0
-    with patch.object(Asset, 'validate_asset', return_value=None):
-        tx_signed = tx.sign([user_sk])
     with pytest.raises(AmountError):
-        tx_signed.validate(b)
-    assert b.is_valid_transaction(tx_signed) is False
+        b.validate_transaction(tx)
 
 
 def test_create_valid_divisible_asset(b, user_pk, user_sk):

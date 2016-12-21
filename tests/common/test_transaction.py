@@ -1,5 +1,4 @@
 from pytest import raises
-from unittest.mock import patch
 
 
 def test_fulfillment_serialization(ffill_uri, user_pub):
@@ -146,9 +145,14 @@ def test_condition_hashlock_deserialization():
 
 def test_invalid_condition_initialization(cond_uri, user_pub):
     from bigchaindb.common.transaction import Condition
+    from bigchaindb.common.exceptions import AmountError
 
     with raises(TypeError):
         Condition(cond_uri, user_pub)
+    with raises(TypeError):
+        Condition(cond_uri, [user_pub], 'amount')
+    with raises(AmountError):
+        Condition(cond_uri, [user_pub], 0)
 
 
 def test_generate_conditions_split_half_recursive(user_pub, user2_pub,
@@ -275,8 +279,7 @@ def test_invalid_transaction_initialization():
 def test_create_default_asset_on_tx_initialization():
     from bigchaindb.common.transaction import Transaction, Asset
 
-    with patch.object(Asset, 'validate_asset', return_value=None):
-        tx = Transaction(Transaction.CREATE, None)
+    tx = Transaction(Transaction.CREATE, None)
     expected = Asset()
     asset = tx.asset
 
@@ -496,8 +499,7 @@ def test_eq_asset_link():
 def test_add_fulfillment_to_tx(user_ffill):
     from bigchaindb.common.transaction import Transaction, Asset
 
-    with patch.object(Asset, 'validate_asset', return_value=None):
-        tx = Transaction(Transaction.CREATE, Asset(), [], [])
+    tx = Transaction(Transaction.CREATE, Asset(), [], [])
     tx.add_fulfillment(user_ffill)
 
     assert len(tx.fulfillments) == 1
@@ -505,9 +507,8 @@ def test_add_fulfillment_to_tx(user_ffill):
 
 def test_add_fulfillment_to_tx_with_invalid_parameters():
     from bigchaindb.common.transaction import Transaction, Asset
+    tx = Transaction(Transaction.CREATE, Asset())
 
-    with patch.object(Asset, 'validate_asset', return_value=None):
-        tx = Transaction(Transaction.CREATE, Asset())
     with raises(TypeError):
         tx.add_fulfillment('somewronginput')
 
@@ -516,8 +517,7 @@ def test_add_condition_to_tx(user_cond):
     from bigchaindb.common.transaction import Transaction, Asset
     from .util import validate_transaction_model
 
-    with patch.object(Asset, 'validate_asset', return_value=None):
-        tx = Transaction(Transaction.CREATE, Asset())
+    tx = Transaction(Transaction.CREATE, Asset())
     tx.add_condition(user_cond)
 
     assert len(tx.conditions) == 1
@@ -527,9 +527,8 @@ def test_add_condition_to_tx(user_cond):
 
 def test_add_condition_to_tx_with_invalid_parameters():
     from bigchaindb.common.transaction import Transaction, Asset
+    tx = Transaction(Transaction.CREATE, Asset(), [], [])
 
-    with patch.object(Asset, 'validate_asset', return_value=None):
-        tx = Transaction(Transaction.CREATE, Asset(), [], [])
     with raises(TypeError):
         tx.add_condition('somewronginput')
 
@@ -1015,18 +1014,16 @@ def test_create_transfer_with_invalid_parameters(tx, user_pub):
 
 
 def test_cant_add_empty_condition():
-    from bigchaindb.common.transaction import Transaction, Asset
+    from bigchaindb.common.transaction import Transaction
+    tx = Transaction(Transaction.CREATE, None)
 
-    with patch.object(Asset, 'validate_asset', return_value=None):
-        tx = Transaction(Transaction.CREATE, None)
     with raises(TypeError):
         tx.add_condition(None)
 
 
 def test_cant_add_empty_fulfillment():
-    from bigchaindb.common.transaction import Transaction, Asset
+    from bigchaindb.common.transaction import Transaction
+    tx = Transaction(Transaction.CREATE, None)
 
-    with patch.object(Asset, 'validate_asset', return_value=None):
-        tx = Transaction(Transaction.CREATE, None)
     with raises(TypeError):
         tx.add_fulfillment(None)

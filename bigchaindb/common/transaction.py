@@ -221,9 +221,12 @@ class Condition(object):
         """
         if not isinstance(owners_after, list) and owners_after is not None:
             raise TypeError('`owners_after` must be a list instance or None')
+        if not isinstance(amount, int):
+            raise TypeError('`amount` must be an int')
+        if amount < 1:
+            raise AmountError('`amount` must be greater than 0')
 
         self.fulfillment = fulfillment
-        # TODO: Not sure if we should validate for value here
         self.amount = amount
         self.owners_after = owners_after
 
@@ -387,8 +390,10 @@ class Asset(object):
 
     def __init__(self, data=None):
         """An Asset is not required to contain any extra data from outside."""
+        if data is not None and not isinstance(data, dict):
+            raise TypeError('`data` must be a dict instance or None')
+
         self.data = data
-        self.validate_asset()
 
     def __eq__(self, other):
         try:
@@ -453,20 +458,6 @@ class Asset(object):
             raise AssetIdMismatch(('All inputs of all transactions passed'
                                    ' need to have the same asset id'))
         return asset_ids.pop()
-
-    def validate_asset(self, amount=None):
-        """Validates the asset"""
-        if self.data is not None and not isinstance(self.data, dict):
-            raise TypeError('`data` must be a dict instance or None')
-
-        # If the amount is supplied we can perform extra validations to
-        # the asset
-        if amount is not None:
-            if not isinstance(amount, int):
-                raise TypeError('`amount` must be an int')
-
-            if amount < 1:
-                raise AmountError('`amount` must be greater than 0')
 
 
 class AssetLink(object):
@@ -602,15 +593,6 @@ class Transaction(object):
         self.conditions = conditions or []
         self.fulfillments = fulfillments or []
         self.metadata = metadata
-
-        # validate asset
-        # we know that each transaction relates to a single asset
-        # we can sum the amount of all the conditions
-        # for transactions other then CREATE we only have an id so there is
-        # nothing we can validate
-        if self.operation == self.CREATE:
-            amount = sum([condition.amount for condition in self.conditions])
-            self.asset.validate_asset(amount=amount)
 
     @classmethod
     def create(cls, owners_before, owners_after, metadata=None, asset=None):

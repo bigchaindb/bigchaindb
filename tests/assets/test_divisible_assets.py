@@ -788,8 +788,7 @@ def test_non_positive_amounts_on_create_validate(b, user_pk):
     tx_create = Transaction.create([b.me], [([user_pk], 3)],
                                    asset=asset)
     tx_create.conditions[0].amount = -3
-    with patch.object(Asset, 'validate_asset', return_value=None):
-        tx_create_signed = tx_create.sign([b.me_private])
+    tx_create_signed = tx_create.sign([b.me_private])
 
     with pytest.raises(AmountError):
         tx_create_signed.validate(b)
