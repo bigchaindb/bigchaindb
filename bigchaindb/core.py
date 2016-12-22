@@ -57,7 +57,7 @@ class Bigchain(object):
         self.nodes_except_me = keyring or bigchaindb.config['keyring']
         self.backlog_reassign_delay = backlog_reassign_delay or bigchaindb.config['backlog_reassign_delay']
         self.consensus = BaseConsensusRules
-        self.connection = connection if connection else backend.connect(**bigchaindb.config['database'])
+        self.connection = connection if connection else backend.connect()
         if not self.me or not self.me_private:
             raise exceptions.KeypairNotFoundException()
 

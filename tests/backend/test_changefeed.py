@@ -22,10 +22,9 @@ def mock_changefeed_data():
 
 @pytest.fixture
 def mock_changefeed_connection(mock_changefeed_data):
-    import bigchaindb
     from bigchaindb.backend import connect
 
-    connection = connect(**bigchaindb.config['database'])
+    connection = connect()
     connection.run = Mock(return_value=mock_changefeed_data)
     return connection
 
