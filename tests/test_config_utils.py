@@ -106,7 +106,7 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
         'backlog_reassign_delay': 5
     }
     monkeypatch.setattr('bigchaindb.config_utils.file_config', lambda *args, **kwargs: file_config)
-    monkeypatch.setattr('os.environ', {'BIGCHAINDB_DATABASE_NAME': 'test-dbname',
+    monkeypatch.setattr('os.environ', {'BIGCHAINDB_DATABASE_DBNAME': 'test-dbname',
                                        'BIGCHAINDB_DATABASE_PORT': '4242',
                                        'BIGCHAINDB_SERVER_BIND': '1.2.3.4:56',
                                        'BIGCHAINDB_KEYRING': 'pubkey_0:pubkey_1:pubkey_2'})
@@ -147,7 +147,7 @@ def test_autoconfigure_env_precedence(monkeypatch):
         'database': {'host': 'test-host', 'dbname': 'bigchaindb', 'port': 28015}
     }
     monkeypatch.setattr('bigchaindb.config_utils.file_config', lambda *args, **kwargs: file_config)
-    monkeypatch.setattr('os.environ', {'BIGCHAINDB_DATABASE_NAME': 'test-dbname',
+    monkeypatch.setattr('os.environ', {'BIGCHAINDB_DATABASE_DBNAME': 'test-dbname',
                                        'BIGCHAINDB_DATABASE_PORT': '4242',
                                        'BIGCHAINDB_SERVER_BIND': 'localhost:9985'})
 
