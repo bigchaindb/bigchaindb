@@ -117,7 +117,7 @@ def _configure_bigchaindb(request):
         test_db_name = '{}_{}'.format(TEST_DB_NAME, xdist_suffix)
     config = {
         'database': {
-            'name': test_db_name,
+            'dbname': test_db_name,
             'backend': request.config.getoption('--database-backend'),
         },
         'keypair': {
@@ -138,7 +138,7 @@ def _setup_database(_configure_bigchaindb):
     from bigchaindb.backend import connect, schema
     from bigchaindb.common.exceptions import DatabaseDoesNotExist
     print('Initializing test db')
-    dbname = config['database']['name']
+    dbname = config['database']['dbname']
     conn = connect()
 
     try:
@@ -167,7 +167,7 @@ def _bdb(_setup_database, _configure_bigchaindb):
     from bigchaindb import config
     from bigchaindb.backend import connect
     from .utils import flush_db
-    dbname = config['database']['name']
+    dbname = config['database']['dbname']
     conn = connect()
     flush_db(conn, dbname)
 

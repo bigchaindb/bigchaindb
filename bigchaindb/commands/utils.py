@@ -28,7 +28,7 @@ def start_rethinkdb():
                             stderr=subprocess.STDOUT,
                             universal_newlines=True)
 
-    dbname = bigchaindb.config['database']['name']
+    dbname = bigchaindb.config['database']['dbname']
     line = ''
 
     for line in proc.stdout:

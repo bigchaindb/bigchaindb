@@ -18,7 +18,7 @@ config = {
         'backend': os.environ.get('BIGCHAINDB_DATABASE_BACKEND', 'rethinkdb'),
         'host': os.environ.get('BIGCHAINDB_DATABASE_HOST', 'localhost'),
         'port': int(os.environ.get('BIGCHAINDB_DATABASE_PORT', 28015)),
-        'name': 'bigchain',
+        'dbname': 'bigchain',
     },
     'keypair': {
         'public': None,

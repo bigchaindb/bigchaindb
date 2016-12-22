@@ -81,7 +81,7 @@ def init_database(connection=None, dbname=None):
     """
 
     connection = connection or connect()
-    dbname = dbname or bigchaindb.config['database']['name']
+    dbname = dbname or bigchaindb.config['database']['dbname']
 
     create_database(connection, dbname)
     create_tables(connection, dbname)
