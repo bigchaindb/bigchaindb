@@ -133,8 +133,9 @@ def write_vote(conn, vote):
 
 @register_query(MongoDBConnection)
 def get_genesis_block(conn):
-    return conn.db['bigchain'].find_one({'block.transactions.0.operation' ==
-                                         'GENESIS'})
+    return conn.db['bigchain'].find_one({
+        'block.transactions.0.operation': 'GENESIS'
+    })
 
 
 @register_query(MongoDBConnection)
@@ -142,7 +143,10 @@ def get_last_voted_block(conn, node_pubkey):
     last_voted = conn.db['votes']\
                   .find({'node_pubkey': node_pubkey},
                         sort=[('vote.timestamp', -1)])
-    if not last_voted:
+
+    # pymongo seems to return a cursor even if there are no results
+    # so we actually need to check the count
+    if last_voted.count() == 0:
         return get_genesis_block(conn)
 
     mapping = {v['vote']['previous_block']: v['vote']['voting_for_block']
