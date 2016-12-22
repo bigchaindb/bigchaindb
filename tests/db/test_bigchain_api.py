@@ -578,7 +578,6 @@ class TestTransactionValidation(object):
 
         assert excinfo.value.args[0] == 'Only `CREATE` transactions can have null inputs'
 
-
     def test_non_create_input_not_found(self, b, user_pk, signed_transfer_tx):
         from bigchaindb.common.exceptions import TransactionDoesNotExist
         from bigchaindb.common.transaction import TransactionLink
@@ -729,7 +728,6 @@ class TestBlockValidation(object):
 
         assert excinfo.value.args[0] == 'owner_before `a` does not own the input `{}`'.format(valid_input)
 
-
     def test_invalid_signature(self, b):
         from bigchaindb.common.exceptions import InvalidSignature
         from bigchaindb.common import crypto
@@ -743,7 +741,6 @@ class TestBlockValidation(object):
         # check that validate_block raises an InvalidSignature exception
         with pytest.raises(InvalidSignature):
             b.validate_block(block)
-
 
     def test_invalid_node_pubkey(self, b):
         from bigchaindb.common.exceptions import OperationError

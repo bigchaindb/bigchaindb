@@ -130,7 +130,6 @@ def test_check_requeue_transaction(b, user_pk):
     assert backlog_tx == tx1
 
 
-
 @patch.object(Pipeline, 'start')
 def test_start(mock_start):
     # TODO: `block.election` is just a wrapper around `block.create_pipeline`,
