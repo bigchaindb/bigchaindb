@@ -11,11 +11,12 @@ logger = logging.getLogger(__name__)
 
 class MongoDBConnection(Connection):
 
-    def __init__(self, host, port, dbname, max_tries=3):
+    def __init__(self, host, port, dbname, max_tries=3, **kwargs):
         """Create a new :class:`~.MongoDBConnection` instance.
 
         See :meth:`.Connection.__init__` for
-        :attr:`host`, :attr:`port`, and :attr:`dbname`.
+        :attr:`host`, :attr:`port`, and :attr:`dbname`. :attr:`kwargs`
+        is ignored.
 
         Args:
             max_tries (int, optional): how many tries before giving up.
