@@ -1,6 +1,6 @@
 import logging
 
-from bigchaindb.util import verify_vote_signature
+from bigchaindb.utils import verify_vote_signature
 from bigchaindb.common.schema import (SchemaValidationError,
                                       validate_vote_schema)
 
@@ -30,7 +30,7 @@ class BaseConsensusRules():
         """Verify the signature of a vote.
 
         Refer to the documentation of
-        :func:`bigchaindb.util.verify_signature`.
+        :func:`bigchaindb.utils.verify_signature`.
         """
         if verify_vote_signature(voters, signed_vote):
             try:

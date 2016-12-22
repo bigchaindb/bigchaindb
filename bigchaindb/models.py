@@ -5,7 +5,7 @@ from bigchaindb.common.exceptions import (InvalidHash, InvalidSignature,
                                           TransactionNotInValidBlock,
                                           AssetIdMismatch, AmountError)
 from bigchaindb.common.transaction import Transaction
-from bigchaindb.common.util import gen_timestamp, serialize
+from bigchaindb.common.utils import gen_timestamp, serialize
 from bigchaindb.common.schema import validate_transaction_schema
 
 

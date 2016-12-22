@@ -3,7 +3,7 @@ from time import time
 
 import rethinkdb as r
 
-from bigchaindb import backend, util
+from bigchaindb import backend, utils
 from bigchaindb.common import exceptions
 from bigchaindb.backend.utils import module_dispatch_registrar
 from bigchaindb.backend.rethinkdb.connection import RethinkDBConnection
@@ -184,7 +184,7 @@ def write_vote(connection, vote):
 def get_genesis_block(connection):
     return connection.run(
         r.table('bigchain', read_mode=READ_MODE)
-        .filter(util.is_genesis_block)
+        .filter(utils.is_genesis_block)
         .nth(0))
 
 
@@ -252,5 +252,5 @@ def get_unvoted_blocks(connection, node_pubkey):
 
     # FIXME: I (@vrde) don't like this solution. Filtering should be done at a
     #        database level. Solving issue #444 can help untangling the situation
-    unvoted_blocks = filter(lambda block: not util.is_genesis_block(block), unvoted)
+    unvoted_blocks = filter(lambda block: not utils.is_genesis_block(block), unvoted)
     return unvoted_blocks

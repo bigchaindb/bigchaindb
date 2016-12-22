@@ -5,12 +5,12 @@ from time import time
 
 from itertools import compress
 from bigchaindb.common import crypto, exceptions
-from bigchaindb.common.util import gen_timestamp, serialize
+from bigchaindb.common.utils import gen_timestamp, serialize
 from bigchaindb.common.transaction import TransactionLink
 
 import bigchaindb
 
-from bigchaindb import backend, config_utils, util
+from bigchaindb import backend, config_utils, utils
 from bigchaindb.consensus import BaseConsensusRules
 from bigchaindb.models import Block, Transaction
 
@@ -433,7 +433,7 @@ class Bigchain(object):
                     # for transactions with multiple `public_keys` there will be several subfulfillments nested
                     # in the condition. We need to iterate the subfulfillments to make sure there is a
                     # subfulfillment for `owner`
-                    if util.condition_details_has_owner(output['condition']['details'], owner):
+                    if utils.condition_details_has_owner(output['condition']['details'], owner):
                         tx_link = TransactionLink(tx['id'], index)
                 # check if input was already spent
                 if not self.get_spent(tx_link.txid, tx_link.output):
@@ -501,7 +501,7 @@ class Bigchain(object):
                                                 .format(block_id=block_id, n_votes=str(len(votes)), me=self.me))
         has_previous_vote = False
         if votes:
-            if util.verify_vote_signature(voters, votes[0]):
+            if utils.verify_vote_signature(voters, votes[0]):
                 has_previous_vote = True
             else:
                 raise exceptions.ImproperVoteError('Block {block_id} already has an incorrectly signed vote '

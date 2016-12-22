@@ -9,7 +9,7 @@ from bigchaindb.common.crypto import PrivateKey, hash_data
 from bigchaindb.common.exceptions import (KeypairMismatchException,
                                           InvalidHash, InvalidSignature,
                                           AmountError, AssetIdMismatch)
-from bigchaindb.common.util import serialize, gen_timestamp
+from bigchaindb.common.utils import serialize, gen_timestamp
 
 
 class Input(object):
