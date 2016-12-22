@@ -275,9 +275,11 @@ def inputs(user_pk, b, genesis_block):
     prev_block_id = genesis_block.id
     for block in range(4):
         transactions = [
-            Transaction.create([b.me], [([user_pk], 1)],
-                               metadata={'msg': random.random()})
-                       .sign([b.me_private])
+            Transaction.create(
+                [b.me],
+                [([user_pk], 1)],
+                metadata={'msg': random.random()},
+            ).sign([b.me_private])
             for _ in range(10)
         ]
         block = b.create_block(transactions)
@@ -297,9 +299,11 @@ def inputs_shared(user_pk, user2_pk, genesis_block):
     prev_block_id = genesis_block.id
     for block in range(4):
         transactions = [
-            Transaction.create([b.me], [user_pk, user2_pk],
-                               metadata={'msg': random.random()})
-                       .sign([b.me_private])
+            Transaction.create(
+                [b.me],
+                [user_pk, user2_pk],
+                metadata={'msg': random.random()},
+            ).sign([b.me_private])
             for _ in range(10)
         ]
         block = b.create_block(transactions)
