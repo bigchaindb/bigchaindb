@@ -51,26 +51,25 @@ class MongoDBChangeFeed(ChangeFeed):
         # in the meantime it will raise a StopIteration excetiption.
         cursor = self.connection.conn.local.oplog.rs.find(
             {'ns': namespace, 'ts': {'$gt': last_ts}},
-            cursor_type=pymongo.CursorType.TAILABLE_AWAIT,
-            oplog_replay=True
+            cursor_type=pymongo.CursorType.TAILABLE_AWAIT
         )
 
         while cursor.alive:
             try:
                 record = cursor.next()
             except StopIteration:
-                print('mongodb cursor waiting')
+                continue
             else:
                 is_insert = record['op'] == 'i'
                 is_delete = record['op'] == 'd'
                 is_update = record['op'] == 'u'
 
-                if is_insert and self.operation == ChangeFeed.INSERT:
+                if is_insert and (self.operation & ChangeFeed.INSERT):
                     self.outqueue.put(record['o'])
-                elif is_delete and self.operation == ChangeFeed.DELETE:
+                elif is_delete and (self.operation & ChangeFeed.DELETE):
                     # on delete it only returns the id of the document
                     self.outqueue.put(record['o'])
-                elif is_update and self.operation == ChangeFeed.UPDATE:
+                elif is_update and (self.operation & ChangeFeed.UPDATE):
                     # not sure what to do here. Lets return the entire
                     # operation
                     self.outqueue.put(record)
