@@ -92,7 +92,6 @@ class TestBigchainApi(object):
     @pytest.mark.genesis
     def test_get_spent_with_double_spend(self, b, monkeypatch):
         from bigchaindb.common.exceptions import DoubleSpend
-        from bigchaindb.common.transaction import AssetLink
         from bigchaindb.models import Transaction
 
         tx = Transaction.create([b.me], [([b.me], 1)])
@@ -104,14 +103,14 @@ class TestBigchainApi(object):
 
         monkeypatch.setattr('time.time', lambda: 2)
         transfer_tx = Transaction.transfer(tx.to_inputs(), [([b.me], 1)],
-                                           AssetLink(tx.id))
+                                           asset_id=tx.id)
         transfer_tx = transfer_tx.sign([b.me_private])
         block2 = b.create_block([transfer_tx])
         b.write_block(block2)
 
         monkeypatch.setattr('time.time', lambda: 3333333333)
         transfer_tx2 = Transaction.transfer(tx.to_inputs(), [([b.me], 1)],
-                                            AssetLink(tx.id))
+                                            asset_id=tx.id)
         transfer_tx2 = transfer_tx2.sign([b.me_private])
         block3 = b.create_block([transfer_tx2])
         b.write_block(block3)
@@ -181,14 +180,13 @@ class TestBigchainApi(object):
 
     @pytest.mark.usefixtures('inputs')
     def test_write_transaction(self, b, user_pk, user_sk):
-        from bigchaindb.common.transaction import AssetLink
         from bigchaindb.models import Transaction
 
         input_tx = b.get_owned_ids(user_pk).pop()
         input_tx = b.get_transaction(input_tx.txid)
         inputs = input_tx.to_inputs()
         tx = Transaction.transfer(inputs, [([user_pk], 1)],
-                                  AssetLink(input_tx.id))
+                                  asset_id=input_tx.id)
         tx = tx.sign([user_sk])
         response = b.write_transaction(tx)
 
@@ -201,14 +199,13 @@ class TestBigchainApi(object):
 
     @pytest.mark.usefixtures('inputs')
     def test_read_transaction(self, b, user_pk, user_sk):
-        from bigchaindb.common.transaction import AssetLink
         from bigchaindb.models import Transaction
 
         input_tx = b.get_owned_ids(user_pk).pop()
         input_tx = b.get_transaction(input_tx.txid)
         inputs = input_tx.to_inputs()
         tx = Transaction.transfer(inputs, [([user_pk], 1)],
-                                  AssetLink(input_tx.id))
+                                  asset_id=input_tx.id)
         tx = tx.sign([user_sk])
         b.write_transaction(tx)
 
@@ -223,14 +220,13 @@ class TestBigchainApi(object):
 
     @pytest.mark.usefixtures('inputs')
     def test_read_transaction_invalid_block(self, b, user_pk, user_sk):
-        from bigchaindb.common.transaction import AssetLink
         from bigchaindb.models import Transaction
 
         input_tx = b.get_owned_ids(user_pk).pop()
         input_tx = b.get_transaction(input_tx.txid)
         inputs = input_tx.to_inputs()
         tx = Transaction.transfer(inputs, [([user_pk], 1)],
-                                  AssetLink(input_tx.id))
+                                  asset_id=input_tx.id)
         tx = tx.sign([user_sk])
         # There's no need to b.write_transaction(tx) to the backlog
 
@@ -249,14 +245,13 @@ class TestBigchainApi(object):
 
     @pytest.mark.usefixtures('inputs')
     def test_read_transaction_invalid_block_and_backlog(self, b, user_pk, user_sk):
-        from bigchaindb.common.transaction import AssetLink
         from bigchaindb.models import Transaction
 
         input_tx = b.get_owned_ids(user_pk).pop()
         input_tx = b.get_transaction(input_tx.txid)
         inputs = input_tx.to_inputs()
         tx = Transaction.transfer(inputs, [([user_pk], 1)],
-                                  AssetLink(input_tx.id))
+                                  asset_id=input_tx.id)
         tx = tx.sign([user_sk])
 
         # Make sure there's a copy of tx in the backlog
@@ -489,14 +484,13 @@ class TestBigchainApi(object):
     @pytest.mark.usefixtures('inputs')
     def test_assign_transaction_one_node(self, b, user_pk, user_sk):
         from bigchaindb.backend import query
-        from bigchaindb.common.transaction import AssetLink
         from bigchaindb.models import Transaction
 
         input_tx = b.get_owned_ids(user_pk).pop()
         input_tx = b.get_transaction(input_tx.txid)
         inputs = input_tx.to_inputs()
         tx = Transaction.transfer(inputs, [([user_pk], 1)],
-                                  AssetLink(input_tx.id))
+                                  asset_id=input_tx.id)
         tx = tx.sign([user_sk])
         b.write_transaction(tx)
 
@@ -510,7 +504,6 @@ class TestBigchainApi(object):
     def test_assign_transaction_multiple_nodes(self, b, user_pk, user_sk):
         from bigchaindb.backend import query
         from bigchaindb.common.crypto import generate_key_pair
-        from bigchaindb.common.transaction import AssetLink
         from bigchaindb.models import Transaction
 
         # create 5 federation nodes
@@ -523,7 +516,7 @@ class TestBigchainApi(object):
             input_tx = b.get_transaction(input_tx.txid)
             inputs = input_tx.to_inputs()
             tx = Transaction.transfer(inputs, [([user_pk], 1)],
-                                      asset_link=AssetLink(input_tx.id),
+                                      asset_id=input_tx.id,
                                       metadata={'msg': random.random()})
             tx = tx.sign([user_sk])
             b.write_transaction(tx)
@@ -539,8 +532,7 @@ class TestBigchainApi(object):
     def test_non_create_input_not_found(self, b, user_pk):
         from cryptoconditions import Ed25519Fulfillment
         from bigchaindb.common.exceptions import TransactionDoesNotExist
-        from bigchaindb.common.transaction import (AssetLink, Fulfillment,
-                                                   TransactionLink)
+        from bigchaindb.common.transaction import Fulfillment, TransactionLink
         from bigchaindb.models import Transaction
         from bigchaindb import Bigchain
 
@@ -549,7 +541,7 @@ class TestBigchainApi(object):
                                   [user_pk],
                                   TransactionLink('somethingsomething', 0))
         tx = Transaction.transfer([fulfillment], [([user_pk], 1)],
-                                  AssetLink('mock_asset_link'))
+                                  asset_id='mock_asset_link')
 
         with pytest.raises(TransactionDoesNotExist):
             tx.validate(Bigchain())
@@ -599,7 +591,6 @@ class TestTransactionValidation(object):
     def test_non_create_valid_input_wrong_owner(self, b, user_pk):
         from bigchaindb.common.crypto import generate_key_pair
         from bigchaindb.common.exceptions import InvalidSignature
-        from bigchaindb.common.transaction import AssetLink
         from bigchaindb.models import Transaction
 
         input_tx = b.get_owned_ids(user_pk).pop()
@@ -607,7 +598,7 @@ class TestTransactionValidation(object):
         sk, pk = generate_key_pair()
         tx = Transaction.create([pk], [([user_pk], 1)])
         tx.operation = 'TRANSFER'
-        tx.asset = AssetLink(input_transaction.id)
+        tx.asset = {'id': input_transaction.id}
         tx.fulfillments[0].tx_input = input_tx
 
         with pytest.raises(InvalidSignature):
@@ -644,14 +635,13 @@ class TestTransactionValidation(object):
     def test_valid_non_create_transaction_after_block_creation(self, b,
                                                                user_pk,
                                                                user_sk):
-        from bigchaindb.common.transaction import AssetLink
         from bigchaindb.models import Transaction
 
         input_tx = b.get_owned_ids(user_pk).pop()
         input_tx = b.get_transaction(input_tx.txid)
         inputs = input_tx.to_inputs()
         transfer_tx = Transaction.transfer(inputs, [([user_pk], 1)],
-                                           AssetLink(input_tx.id))
+                                           asset_id=input_tx.id)
         transfer_tx = transfer_tx.sign([user_sk])
 
         assert transfer_tx == b.validate_transaction(transfer_tx)
@@ -669,7 +659,6 @@ class TestTransactionValidation(object):
     def test_transaction_not_in_valid_block(self, b, user_pk, user_sk):
         from bigchaindb.models import Transaction
         from bigchaindb.common.exceptions import TransactionNotInValidBlock
-        from bigchaindb.common.transaction import AssetLink
 
         input_tx = b.get_owned_ids(user_pk).pop()
         input_tx = b.get_transaction(input_tx.txid)
@@ -677,7 +666,7 @@ class TestTransactionValidation(object):
 
         # create a transaction that's valid but not in a voted valid block
         transfer_tx = Transaction.transfer(inputs, [([user_pk], 1)],
-                                           AssetLink(input_tx.id))
+                                           asset_id=input_tx.id)
         transfer_tx = transfer_tx.sign([user_sk])
 
         assert transfer_tx == b.validate_transaction(transfer_tx)
@@ -689,7 +678,7 @@ class TestTransactionValidation(object):
         # create transaction with the undecided input
         tx_invalid = Transaction.transfer(transfer_tx.to_inputs(),
                                           [([user_pk], 1)],
-                                          AssetLink(transfer_tx.asset.id))
+                                          asset_id=transfer_tx.asset['id'])
         tx_invalid = tx_invalid.sign([user_sk])
 
         with pytest.raises(TransactionNotInValidBlock):
@@ -783,7 +772,6 @@ class TestMultipleInputs(object):
     def test_transfer_single_owner_single_input(self, b, inputs, user_pk,
                                                 user_sk):
         from bigchaindb.common import crypto
-        from bigchaindb.common.transaction import AssetLink
         from bigchaindb.models import Transaction
         user2_sk, user2_pk = crypto.generate_key_pair()
 
@@ -791,7 +779,7 @@ class TestMultipleInputs(object):
         input_tx = b.get_transaction(tx_link.txid)
         inputs = input_tx.to_inputs()
         tx = Transaction.transfer(inputs, [([user2_pk], 1)],
-                                  AssetLink(input_tx.id))
+                                  asset_id=input_tx.id)
         tx = tx.sign([user_sk])
 
         # validate transaction
@@ -804,7 +792,6 @@ class TestMultipleInputs(object):
                                                                     user_pk,
                                                                     inputs):
         from bigchaindb.common import crypto
-        from bigchaindb.common.transaction import AssetLink
         from bigchaindb.models import Transaction
 
         user2_sk, user2_pk = crypto.generate_key_pair()
@@ -815,7 +802,7 @@ class TestMultipleInputs(object):
         input_tx = b.get_transaction(tx_link.txid)
         tx = Transaction.transfer(input_tx.to_inputs(),
                                   [([user2_pk, user3_pk], 1)],
-                                  AssetLink(input_tx.id))
+                                  asset_id=input_tx.id)
         tx = tx.sign([user_sk])
 
         assert b.is_valid_transaction(tx) == tx
@@ -827,7 +814,6 @@ class TestMultipleInputs(object):
                                                                     user_sk,
                                                                     user_pk):
         from bigchaindb.common import crypto
-        from bigchaindb.common.transaction import AssetLink
         from bigchaindb.models import Transaction
 
         user2_sk, user2_pk = crypto.generate_key_pair()
@@ -847,7 +833,7 @@ class TestMultipleInputs(object):
         inputs = input_tx.to_inputs()
 
         transfer_tx = Transaction.transfer(inputs, [([user3_pk], 1)],
-                                           AssetLink(input_tx.id))
+                                           asset_id=input_tx.id)
         transfer_tx = transfer_tx.sign([user_sk, user2_sk])
 
         # validate transaction
@@ -860,7 +846,6 @@ class TestMultipleInputs(object):
                                                                        user_sk,
                                                                        user_pk):
         from bigchaindb.common import crypto
-        from bigchaindb.common.transaction import AssetLink
         from bigchaindb.models import Transaction
 
         user2_sk, user2_pk = crypto.generate_key_pair()
@@ -882,7 +867,7 @@ class TestMultipleInputs(object):
 
         tx = Transaction.transfer(tx_input.to_inputs(),
                                   [([user3_pk, user4_pk], 1)],
-                                  AssetLink(tx_input.id))
+                                  asset_id=tx_input.id)
         tx = tx.sign([user_sk, user2_sk])
 
         assert b.is_valid_transaction(tx) == tx
@@ -891,7 +876,7 @@ class TestMultipleInputs(object):
 
     def test_get_owned_ids_single_tx_single_output(self, b, user_sk, user_pk):
         from bigchaindb.common import crypto
-        from bigchaindb.common.transaction import AssetLink, TransactionLink
+        from bigchaindb.common.transaction import TransactionLink
         from bigchaindb.models import Transaction
 
         user2_sk, user2_pk = crypto.generate_key_pair()
@@ -907,7 +892,7 @@ class TestMultipleInputs(object):
         assert owned_inputs_user2 == []
 
         tx = Transaction.transfer(tx.to_inputs(), [([user2_pk], 1)],
-                                  AssetLink(tx.id))
+                                  asset_id=tx.id)
         tx = tx.sign([user_sk])
         block = b.create_block([tx])
         b.write_block(block)
@@ -922,7 +907,7 @@ class TestMultipleInputs(object):
                                                                  user_pk,
                                                                  genesis_block):
         from bigchaindb.common import crypto
-        from bigchaindb.common.transaction import AssetLink, TransactionLink
+        from bigchaindb.common.transaction import TransactionLink
         from bigchaindb.models import Transaction
 
         user2_sk, user2_pk = crypto.generate_key_pair()
@@ -944,7 +929,7 @@ class TestMultipleInputs(object):
         # NOTE: The transaction itself is valid, still will mark the block
         #       as invalid to mock the behavior.
         tx_invalid = Transaction.transfer(tx.to_inputs(), [([user2_pk], 1)],
-                                          AssetLink(tx.id))
+                                          asset_id=tx.id)
         tx_invalid = tx_invalid.sign([user_sk])
         block = b.create_block([tx_invalid])
         b.write_block(block)
@@ -963,17 +948,13 @@ class TestMultipleInputs(object):
     def test_get_owned_ids_single_tx_multiple_outputs(self, b, user_sk,
                                                       user_pk):
         from bigchaindb.common import crypto
-        from bigchaindb.common.transaction import (TransactionLink, Asset,
-                                                   AssetLink)
+        from bigchaindb.common.transaction import TransactionLink
         from bigchaindb.models import Transaction
 
         user2_sk, user2_pk = crypto.generate_key_pair()
 
         # create divisible asset
-        asset = Asset()
-        tx_create = Transaction.create([b.me],
-                                       [([user_pk], 1), ([user_pk], 1)],
-                                       asset=asset)
+        tx_create = Transaction.create([b.me], [([user_pk], 1), ([user_pk], 1)])
         tx_create_signed = tx_create.sign([b.me_private])
         block = b.create_block([tx_create_signed])
         b.write_block(block)
@@ -990,7 +971,7 @@ class TestMultipleInputs(object):
         # transfer divisible asset divided in two outputs
         tx_transfer = Transaction.transfer(tx_create.to_inputs(),
                                            [([user2_pk], 1), ([user2_pk], 1)],
-                                           asset_link=AssetLink(tx_create.id))
+                                           asset_id=tx_create.id)
         tx_transfer_signed = tx_transfer.sign([user_sk])
         block = b.create_block([tx_transfer_signed])
         b.write_block(block)
@@ -1003,7 +984,7 @@ class TestMultipleInputs(object):
 
     def test_get_owned_ids_multiple_owners(self, b, user_sk, user_pk):
         from bigchaindb.common import crypto
-        from bigchaindb.common.transaction import AssetLink, TransactionLink
+        from bigchaindb.common.transaction import TransactionLink
         from bigchaindb.models import Transaction
 
         user2_sk, user2_pk = crypto.generate_key_pair()
@@ -1022,7 +1003,7 @@ class TestMultipleInputs(object):
         assert owned_inputs_user1 == expected_owned_inputs_user1
 
         tx = Transaction.transfer(tx.to_inputs(), [([user3_pk], 1)],
-                                  AssetLink(tx.id))
+                                  asset_id=tx.id)
         tx = tx.sign([user_sk, user2_sk])
         block = b.create_block([tx])
         b.write_block(block)
@@ -1034,7 +1015,6 @@ class TestMultipleInputs(object):
 
     def test_get_spent_single_tx_single_output(self, b, user_sk, user_pk):
         from bigchaindb.common import crypto
-        from bigchaindb.common.transaction import AssetLink
         from bigchaindb.models import Transaction
 
         user2_sk, user2_pk = crypto.generate_key_pair()
@@ -1054,7 +1034,7 @@ class TestMultipleInputs(object):
 
         # create a transaction and block
         tx = Transaction.transfer(tx.to_inputs(), [([user2_pk], 1)],
-                                  AssetLink(tx.id))
+                                  asset_id=tx.id)
         tx = tx.sign([user_sk])
         block = b.create_block([tx])
         b.write_block(block)
@@ -1067,7 +1047,6 @@ class TestMultipleInputs(object):
                                                              user_pk,
                                                              genesis_block):
         from bigchaindb.common import crypto
-        from bigchaindb.common.transaction import AssetLink
         from bigchaindb.models import Transaction
 
         # create a new users
@@ -1092,7 +1071,7 @@ class TestMultipleInputs(object):
 
         # create a transaction and block
         tx = Transaction.transfer(tx.to_inputs(), [([user2_pk], 1)],
-                                  AssetLink(tx.id))
+                                  asset_id=tx.id)
         tx = tx.sign([user_sk])
         block = b.create_block([tx])
         b.write_block(block)
@@ -1109,19 +1088,16 @@ class TestMultipleInputs(object):
 
     def test_get_spent_single_tx_multiple_outputs(self, b, user_sk, user_pk):
         from bigchaindb.common import crypto
-        from bigchaindb.common.transaction import Asset, AssetLink
         from bigchaindb.models import Transaction
 
         # create a new users
         user2_sk, user2_pk = crypto.generate_key_pair()
 
         # create a divisible asset with 3 outputs
-        asset = Asset()
         tx_create = Transaction.create([b.me],
                                        [([user_pk], 1),
                                         ([user_pk], 1),
-                                        ([user_pk], 1)],
-                                       asset=asset)
+                                        ([user_pk], 1)])
         tx_create_signed = tx_create.sign([b.me_private])
         block = b.create_block([tx_create_signed])
         b.write_block(block)
@@ -1135,7 +1111,7 @@ class TestMultipleInputs(object):
         # transfer the first 2 inputs
         tx_transfer = Transaction.transfer(tx_create.to_inputs()[:2],
                                            [([user2_pk], 1), ([user2_pk], 1)],
-                                           asset_link=AssetLink(tx_create.id))
+                                           asset_id=tx_create.id)
         tx_transfer_signed = tx_transfer.sign([user_sk])
         block = b.create_block([tx_transfer_signed])
         b.write_block(block)
@@ -1151,7 +1127,6 @@ class TestMultipleInputs(object):
 
     def test_get_spent_multiple_owners(self, b, user_sk, user_pk):
         from bigchaindb.common import crypto
-        from bigchaindb.common.transaction import AssetLink
         from bigchaindb.models import Transaction
 
         user2_sk, user2_pk = crypto.generate_key_pair()
@@ -1176,7 +1151,7 @@ class TestMultipleInputs(object):
         # create a transaction
         tx = Transaction.transfer(transactions[0].to_inputs(),
                                   [([user3_pk], 1)],
-                                  AssetLink(transactions[0].id))
+                                  asset_id=transactions[0].id)
         tx = tx.sign([user_sk, user2_sk])
         block = b.create_block([tx])
         b.write_block(block)

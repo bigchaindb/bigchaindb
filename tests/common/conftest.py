@@ -14,6 +14,16 @@ USER3_PUBLIC_KEY = 'Gbrg7JtxdjedQRmr81ZZbh1BozS7fBW88ZyxNDy7WLNC'
 CC_FULFILLMENT_URI = 'cf:0:'
 CC_CONDITION_URI = 'cc:0:3:47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU:0'
 
+ASSET_DEFINITION = {
+    'data': {
+        'definition': 'Asset definition'
+    }
+}
+
+ASSET_LINK = {
+    'id': 'a' * 64
+}
+
 DATA = {
     'msg': 'Hello BigchainDB!'
 }
@@ -119,14 +129,24 @@ def user2_cond(user2_Ed25519, user2_pub):
 
 
 @pytest.fixture
+def asset_definition():
+    return ASSET_DEFINITION
+
+
+@pytest.fixture
+def asset_link():
+    return ASSET_LINK
+
+
+@pytest.fixture
 def data():
     return DATA
 
 
 @pytest.fixture
 def utx(user_ffill, user_cond):
-    from bigchaindb.common.transaction import Transaction, Asset
-    return Transaction(Transaction.CREATE, Asset(), [user_ffill], [user_cond])
+    from bigchaindb.common.transaction import Transaction
+    return Transaction(Transaction.CREATE, {'data': None}, [user_ffill], [user_cond])
 
 
 @pytest.fixture
@@ -137,12 +157,12 @@ def tx(utx, user_priv):
 @pytest.fixture
 def transfer_utx(user_cond, user2_cond, utx):
     from bigchaindb.common.transaction import (Fulfillment, TransactionLink,
-                                               Transaction, AssetLink)
+                                               Transaction)
     user_cond = user_cond.to_dict()
     ffill = Fulfillment(utx.conditions[0].fulfillment,
                         user_cond['owners_after'],
                         TransactionLink(utx.id, 0))
-    return Transaction('TRANSFER', AssetLink(utx.id), [ffill], [user2_cond])
+    return Transaction('TRANSFER', {'id': utx.id}, [ffill], [user2_cond])
 
 
 @pytest.fixture

@@ -221,9 +221,12 @@ class Condition(object):
         """
         if not isinstance(owners_after, list) and owners_after is not None:
             raise TypeError('`owners_after` must be a list instance or None')
+        if not isinstance(amount, int):
+            raise TypeError('`amount` must be an int')
+        if amount < 1:
+            raise AmountError('`amount` must be greater than 0')
 
         self.fulfillment = fulfillment
-        # TODO: Not sure if we should validate for value here
         self.amount = amount
         self.owners_after = owners_after
 
@@ -378,147 +381,6 @@ class Condition(object):
         return cls(fulfillment, cond['owners_after'], cond['amount'])
 
 
-class Asset(object):
-    """An Asset is a fungible unit to spend and lock with Transactions.
-
-        Attributes:
-            data (dict): A dictionary of data that can be added to an Asset.
-    """
-
-    def __init__(self, data=None):
-        """An Asset is not required to contain any extra data from outside."""
-        self.data = data
-        self.validate_asset()
-
-    def __eq__(self, other):
-        try:
-            other_dict = other.to_dict()
-        except AttributeError:
-            return False
-        return self.to_dict() == other_dict
-
-    def to_dict(self):
-        """Transforms the object to a Python dictionary.
-
-            Returns:
-                (dict): The Asset object as an alternative serialization
-                    format.
-        """
-        return {
-            'data': self.data,
-        }
-
-    @classmethod
-    def from_dict(cls, asset):
-        """Transforms a Python dictionary to an Asset object.
-
-            Args:
-                asset (dict): The dictionary to be serialized.
-
-            Returns:
-                :class:`~bigchaindb.common.transaction.Asset`
-        """
-        return cls(asset.get('data'))
-
-    @staticmethod
-    def get_asset_id(transactions):
-        """Get the asset id from a list of :class:`~.Transactions`.
-
-        This is useful when we want to check if the multiple inputs of a
-        transaction are related to the same asset id.
-
-        Args:
-            transactions (:obj:`list` of :class:`~bigchaindb.common.
-                transaction.Transaction`): A list of Transactions.
-                Usually input Transactions that should have a matching
-                asset ID.
-
-        Returns:
-            str: ID of the asset.
-
-        Raises:
-            :exc:`AssetIdMismatch`: If the inputs are related to different
-                assets.
-        """
-
-        if not isinstance(transactions, list):
-            transactions = [transactions]
-
-        # create a set of the transactions' asset ids
-        asset_ids = {tx.id if tx.operation == Transaction.CREATE else tx.asset.id
-                     for tx in transactions}
-
-        # check that all the transasctions have the same asset id
-        if len(asset_ids) > 1:
-            raise AssetIdMismatch(('All inputs of all transactions passed'
-                                   ' need to have the same asset id'))
-        return asset_ids.pop()
-
-    def validate_asset(self, amount=None):
-        """Validates the asset"""
-        if self.data is not None and not isinstance(self.data, dict):
-            raise TypeError('`data` must be a dict instance or None')
-
-        # If the amount is supplied we can perform extra validations to
-        # the asset
-        if amount is not None:
-            if not isinstance(amount, int):
-                raise TypeError('`amount` must be an int')
-
-            if amount < 1:
-                raise AmountError('`amount` must be greater than 0')
-
-
-class AssetLink(object):
-    """An object for unidirectional linking to a Asset.
-    """
-
-    def __init__(self, asset_id=None):
-        """Used to point to a specific Asset.
-
-            Args:
-                asset_id (str): The ID of an asset to link to.
-        """
-        self.id = asset_id
-
-    def __bool__(self):
-        return self.id is not None
-
-    def __eq__(self, other):
-        return isinstance(other, AssetLink) and \
-                self.to_dict() == other.to_dict()
-
-    @classmethod
-    def from_dict(cls, link):
-        """Transforms a Python dictionary to a AssetLink object.
-
-            Args:
-                link (dict): The link to be transformed.
-
-            Returns:
-                :class:`~bigchaindb.common.transaction.AssetLink`
-        """
-        try:
-            return cls(link['id'])
-        except TypeError:
-            return cls()
-
-    def to_dict(self):
-        """Transforms the object to a Python dictionary.
-
-            Returns:
-                (dict|None): The link as an alternative serialization format.
-                    Returns None if the link is empty (i.e. is not linking to
-                    an asset).
-        """
-        if self.id is None:
-            return None
-        else:
-            return {
-                'id': self.id
-            }
-
-
 class Transaction(object):
     """A Transaction is used to create and transfer assets.
 
@@ -533,10 +395,10 @@ class Transaction(object):
                 spend.
             conditions (:obj:`list` of :class:`~bigchaindb.common.
                 transaction.Condition`, optional): Define the assets to lock.
-            asset (:class:`~.Asset`|:class:`~.AssetLink`): Asset or Asset link
-                associated with this Transaction. ``CREATE`` and ``GENESIS``
-                Transactions require an Asset while ``TRANSFER`` Transactions
-                require an AssetLink.
+            asset (dict): Asset payload for this Transaction. ``CREATE`` and
+                ``GENESIS`` Transactions require a dict with a ``data``
+                property while ``TRANSFER`` Transactions require a dict with a
+                ``id`` property.
             metadata (dict):
                 Metadata to be stored along with the Transaction.
             version (int): Defines the version number of a Transaction.
@@ -557,35 +419,33 @@ class Transaction(object):
 
             Args:
                 operation (str): Defines the operation of the Transaction.
-                asset (:class:`~.Asset`|:class:`~.AssetLink`): An Asset to be
-                    created or an AssetLink linking an asset to be transferred.
+                asset (dict): Asset payload for this Transaction.
                 fulfillments (:obj:`list` of :class:`~bigchaindb.common.
                     transaction.Fulfillment`, optional): Define the assets to
                     spend.
                 conditions (:obj:`list` of :class:`~bigchaindb.common.
                     transaction.Condition`, optional): Define the assets to
                     lock.
-                metadata (dict):
-                    Metadata to be stored along with the Transaction.
+                metadata (dict): Metadata to be stored along with the
+                    Transaction.
                 version (int): Defines the version number of a Transaction.
-
         """
         if operation not in Transaction.ALLOWED_OPERATIONS:
             allowed_ops = ', '.join(self.__class__.ALLOWED_OPERATIONS)
             raise ValueError('`operation` must be one of {}'
                              .format(allowed_ops))
 
-        # Assets for 'CREATE' and 'GENESIS' operations must be None or of Asset
-        # type and Assets for 'TRANSFER' operations must be of AssetLink type.
+        # Asset payloads for 'CREATE' and 'GENESIS' operations must be None or
+        # dicts holding a `data` property. Asset payloads for 'TRANSFER'
+        # operations must be dicts holding an `id` property.
         if (operation in [Transaction.CREATE, Transaction.GENESIS] and
-                asset is not None and
-                not isinstance(asset, Asset)):
-            raise TypeError(("`asset` must be an Asset instance for "
-                             "'{}' Transactions".format(operation)))
+                asset is not None and not (isinstance(asset, dict) and 'data' in asset)):
+            raise TypeError(('`asset` must be None or a dict holding a `data` '
+                             " property instance for '{}' Transactions".format(operation)))
         elif (operation == Transaction.TRANSFER and
-                not (asset and isinstance(asset, AssetLink))):
-            raise TypeError(("`asset` must be an valid AssetLink instance for "
-                             "'TRANSFER' Transactions".format(operation)))
+                not (isinstance(asset, dict) and 'id' in asset)):
+            raise TypeError(('`asset` must be a dict holding an `id` property '
+                             "for 'TRANSFER' Transactions".format(operation)))
 
         if conditions and not isinstance(conditions, list):
             raise TypeError('`conditions` must be a list instance or None')
@@ -598,19 +458,10 @@ class Transaction(object):
 
         self.version = version if version is not None else self.VERSION
         self.operation = operation
-        self.asset = asset or Asset()
+        self.asset = asset
         self.conditions = conditions or []
         self.fulfillments = fulfillments or []
         self.metadata = metadata
-
-        # validate asset
-        # we know that each transaction relates to a single asset
-        # we can sum the amount of all the conditions
-        # for transactions other then CREATE we only have an id so there is
-        # nothing we can validate
-        if self.operation == self.CREATE:
-            amount = sum([condition.amount for condition in self.conditions])
-            self.asset.validate_asset(amount=amount)
 
     @classmethod
     def create(cls, owners_before, owners_after, metadata=None, asset=None):
@@ -631,10 +482,10 @@ class Transaction(object):
                     represent the creators of this asset.
                 owners_after (:obj:`list` of :obj:`str`): A list of keys that
                     represent the receivers of this Transaction.
-                metadata (dict): Python dictionary to be stored along with the
+                metadata (dict): The metadata to be stored along with the
                     Transaction.
-                asset (:class:`~bigchaindb.common.transaction.Asset`): An Asset
-                    to be created in this Transaction.
+                asset (dict): The metadata associated with the asset that will
+                    be created in this Transaction.
 
             Returns:
                 :class:`~bigchaindb.common.transaction.Transaction`
@@ -647,6 +498,8 @@ class Transaction(object):
             raise ValueError('`owners_before` list cannot be empty')
         if len(owners_after) == 0:
             raise ValueError('`owners_after` list cannot be empty')
+        if not (asset is None or isinstance(asset, dict)):
+            raise TypeError('`asset` must be a dict or None')
 
         fulfillments = []
         conditions = []
@@ -663,10 +516,10 @@ class Transaction(object):
         # generate fulfillments
         fulfillments.append(Fulfillment.generate(owners_before))
 
-        return cls(cls.CREATE, asset, fulfillments, conditions, metadata)
+        return cls(cls.CREATE, {'data': asset}, fulfillments, conditions, metadata)
 
     @classmethod
-    def transfer(cls, inputs, owners_after, asset_link, metadata=None):
+    def transfer(cls, inputs, owners_after, asset_id, metadata=None):
         """A simple way to generate a `TRANSFER` transaction.
 
             Note:
@@ -696,9 +549,8 @@ class Transaction(object):
                     generate.
                 owners_after (:obj:`list` of :obj:`str`): A list of keys that
                     represent the receivers of this Transaction.
-                asset_link (:class:`~bigchaindb.common.transaction.AssetLink`):
-                    An AssetLink linking an asset to be transferred in this
-                    Transaction.
+                asset_id (str): The asset ID of the asset to be transferred in
+                    this Transaction.
                 metadata (dict): Python dictionary to be stored along with the
                     Transaction.
 
@@ -713,6 +565,8 @@ class Transaction(object):
             raise TypeError('`owners_after` must be a list instance')
         if len(owners_after) == 0:
             raise ValueError('`owners_after` list cannot be empty')
+        if not isinstance(asset_id, str):
+            raise TypeError('`asset_id` must be a string')
 
         conditions = []
         for owner_after in owners_after:
@@ -724,7 +578,7 @@ class Transaction(object):
             conditions.append(Condition.generate(pub_keys, amount))
 
         inputs = deepcopy(inputs)
-        return cls(cls.TRANSFER, asset_link, inputs, conditions, metadata)
+        return cls(cls.TRANSFER, {'id': asset_id}, inputs, conditions, metadata)
 
     def __eq__(self, other):
         try:
@@ -1071,7 +925,7 @@ class Transaction(object):
                            in self.conditions],
             'operation': str(self.operation),
             'metadata': self.metadata,
-            'asset': self.asset.to_dict(),
+            'asset': self.asset,
             'version': self.version,
         }
 
@@ -1126,6 +980,40 @@ class Transaction(object):
         return Transaction._to_str(tx)
 
     @staticmethod
+    def get_asset_id(transactions):
+        """Get the asset id from a list of :class:`~.Transactions`.
+
+        This is useful when we want to check if the multiple inputs of a
+        transaction are related to the same asset id.
+
+        Args:
+            transactions (:obj:`list` of :class:`~bigchaindb.common.
+                transaction.Transaction`): A list of Transactions.
+                Usually input Transactions that should have a matching
+                asset ID.
+
+        Returns:
+            str: ID of the asset.
+
+        Raises:
+            :exc:`AssetIdMismatch`: If the inputs are related to different
+                assets.
+        """
+
+        if not isinstance(transactions, list):
+            transactions = [transactions]
+
+        # create a set of the transactions' asset ids
+        asset_ids = {tx.id if tx.operation == Transaction.CREATE else tx.asset['id']
+                     for tx in transactions}
+
+        # check that all the transasctions have the same asset id
+        if len(asset_ids) > 1:
+            raise AssetIdMismatch(('All inputs of all transactions passed'
+                                   ' need to have the same asset id'))
+        return asset_ids.pop()
+
+    @staticmethod
     def validate_structure(tx_body):
         """Validate the transaction ID of a transaction
 
@@ -1163,10 +1051,6 @@ class Transaction(object):
                         in tx['fulfillments']]
         conditions = [Condition.from_dict(condition) for condition
                       in tx['conditions']]
-        if tx['operation'] in [cls.CREATE, cls.GENESIS]:
-            asset = Asset.from_dict(tx['asset'])
-        else:
-            asset = AssetLink.from_dict(tx['asset'])
 
-        return cls(tx['operation'], asset, fulfillments, conditions,
+        return cls(tx['operation'], tx['asset'], fulfillments, conditions,
                    tx['metadata'], tx['version'])

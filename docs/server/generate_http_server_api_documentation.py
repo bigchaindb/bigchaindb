@@ -4,7 +4,7 @@ import json
 import os
 import os.path
 
-from bigchaindb.common.transaction import Asset, Transaction
+from bigchaindb.common.transaction import Transaction
 
 
 TPLS = {}
@@ -62,8 +62,7 @@ def main():
     """ Main function """
     privkey = 'CfdqtD7sS7FgkMoGPXw55MVGGFwQLAoHYTcBhZDtF99Z'
     pubkey = '4K9sWUMFwTgaDGPfdynrbxWqWS6sWmKbZoTjxLtVUibD'
-    asset = Asset(None)
-    tx = Transaction.create([pubkey], [([pubkey], 1)], asset=asset)
+    tx = Transaction.create([pubkey], [([pubkey], 1)])
     tx = tx.sign([privkey])
     tx_json = json.dumps(tx.to_dict(), indent=2, sort_keys=True)
 
