@@ -37,7 +37,7 @@ class TestBigchainApi(object):
     def test_get_last_voted_block_cyclic_blockchain(self, b, monkeypatch):
         from bigchaindb.common.crypto import PrivateKey
         from bigchaindb.common.exceptions import CyclicBlockchainError
-        from bigchaindb.common.util import serialize
+        from bigchaindb.common.utils import serialize
         from bigchaindb.models import Transaction
 
         tx = Transaction.create([b.me], [([b.me], 1)])
@@ -688,11 +688,10 @@ class TestBlockValidation(object):
     @pytest.mark.skipif(reason='Separated tx validation from block creation.')
     @pytest.mark.usefixtures('inputs')
     def test_invalid_transactions_in_block(self, b, user_pk):
+        from bigchaindb import utils
         from bigchaindb.common import crypto
         from bigchaindb.common.exceptions import TransactionOwnerError
-        from bigchaindb.common.util import gen_timestamp
-
-        from bigchaindb import util
+        from bigchaindb.common.utils import gen_timestamp
 
         # invalid transaction
         valid_input = b.get_owned_ids(user_pk).pop()
@@ -710,7 +709,7 @@ class TestBlockValidation(object):
 
         # NOTE: This is not the correct function anymore, but this test is
         #       skipped
-        block_data = util.serialize_block(block)
+        block_data = utils.serialize_block(block)
         block_hash = crypto.hash_data(block_data)
         block_signature = crypto.PrivateKey(b.me_private).sign(block_data)
 

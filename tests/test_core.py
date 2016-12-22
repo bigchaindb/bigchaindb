@@ -82,7 +82,7 @@ def test_get_blocks_status_containing_tx(monkeypatch):
 def test_has_previous_vote(monkeypatch):
     from bigchaindb.core import Bigchain
     monkeypatch.setattr(
-        'bigchaindb.util.verify_vote_signature', lambda voters, vote: False)
+        'bigchaindb.utils.verify_vote_signature', lambda voters, vote: False)
     bigchain = Bigchain(public_key='pubkey', private_key='privkey')
     block = {'votes': ({'node_pubkey': 'pubkey'},)}
     with pytest.raises(Exception):

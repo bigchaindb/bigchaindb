@@ -21,7 +21,7 @@ import rethinkdb as r
 import bigchaindb
 import bigchaindb.config_utils
 from bigchaindb.models import Transaction
-from bigchaindb.util import ProcessGroup
+from bigchaindb.utils import ProcessGroup
 from bigchaindb import backend
 from bigchaindb.backend import schema
 from bigchaindb.commands import utils

@@ -4,7 +4,7 @@ import queue
 import multiprocessing as mp
 
 from bigchaindb.common import crypto
-from bigchaindb.common.util import serialize
+from bigchaindb.common.utils import serialize
 
 
 class ProcessGroup(object):

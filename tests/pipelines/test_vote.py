@@ -25,7 +25,7 @@ DUMMY_SHA3 = '0123456789abcdef' * 4
 
 def test_vote_creation_valid(b):
     from bigchaindb.common import crypto
-    from bigchaindb.common.util import serialize
+    from bigchaindb.common.utils import serialize
 
     # create valid block
     block = dummy_block(b)
@@ -45,7 +45,7 @@ def test_vote_creation_valid(b):
 
 def test_vote_creation_invalid(b):
     from bigchaindb.common import crypto
-    from bigchaindb.common.util import serialize
+    from bigchaindb.common.utils import serialize
 
     # create valid block
     block = dummy_block(b)
@@ -162,7 +162,7 @@ def test_vote_accumulates_transactions(b):
 @pytest.mark.bdb
 def test_valid_block_voting_sequential(b, genesis_block, monkeypatch):
     from bigchaindb.backend import query
-    from bigchaindb.common import crypto, util
+    from bigchaindb.common import crypto, utils
     from bigchaindb.pipelines import vote
 
     monkeypatch.setattr('time.time', lambda: 1111111111)
@@ -182,7 +182,7 @@ def test_valid_block_voting_sequential(b, genesis_block, monkeypatch):
                                 'invalid_reason': None,
                                 'timestamp': '1111111111'}
 
-    serialized_vote = util.serialize(vote_doc['vote']).encode()
+    serialized_vote = utils.serialize(vote_doc['vote']).encode()
     assert vote_doc['node_pubkey'] == b.me
     assert crypto.PublicKey(b.me).verify(serialized_vote,
                                          vote_doc['signature']) is True
@@ -191,7 +191,7 @@ def test_valid_block_voting_sequential(b, genesis_block, monkeypatch):
 @pytest.mark.bdb
 def test_valid_block_voting_multiprocessing(b, genesis_block, monkeypatch):
     from bigchaindb.backend import query
-    from bigchaindb.common import crypto, util
+    from bigchaindb.common import crypto, utils
     from bigchaindb.pipelines import vote
 
     inpipe = Pipe()
@@ -217,7 +217,7 @@ def test_valid_block_voting_multiprocessing(b, genesis_block, monkeypatch):
                                 'invalid_reason': None,
                                 'timestamp': '1111111111'}
 
-    serialized_vote = util.serialize(vote_doc['vote']).encode()
+    serialized_vote = utils.serialize(vote_doc['vote']).encode()
     assert vote_doc['node_pubkey'] == b.me
     assert crypto.PublicKey(b.me).verify(serialized_vote,
                                          vote_doc['signature']) is True
@@ -228,7 +228,7 @@ def test_valid_block_voting_with_create_transaction(b,
                                                     genesis_block,
                                                     monkeypatch):
     from bigchaindb.backend import query
-    from bigchaindb.common import crypto, util
+    from bigchaindb.common import crypto, utils
     from bigchaindb.models import Transaction
     from bigchaindb.pipelines import vote
 
@@ -260,7 +260,7 @@ def test_valid_block_voting_with_create_transaction(b,
                                 'invalid_reason': None,
                                 'timestamp': '1111111111'}
 
-    serialized_vote = util.serialize(vote_doc['vote']).encode()
+    serialized_vote = utils.serialize(vote_doc['vote']).encode()
     assert vote_doc['node_pubkey'] == b.me
     assert crypto.PublicKey(b.me).verify(serialized_vote,
                                          vote_doc['signature']) is True
@@ -270,7 +270,7 @@ def test_valid_block_voting_with_create_transaction(b,
 def test_valid_block_voting_with_transfer_transactions(monkeypatch,
                                                        b, genesis_block):
     from bigchaindb.backend import query
-    from bigchaindb.common import crypto, util
+    from bigchaindb.common import crypto, utils
     from bigchaindb.models import Transaction
     from bigchaindb.pipelines import vote
 
@@ -316,7 +316,7 @@ def test_valid_block_voting_with_transfer_transactions(monkeypatch,
                                 'invalid_reason': None,
                                 'timestamp': '2222222222'}
 
-    serialized_vote = util.serialize(vote_doc['vote']).encode()
+    serialized_vote = utils.serialize(vote_doc['vote']).encode()
     assert vote_doc['node_pubkey'] == b.me
     assert crypto.PublicKey(b.me).verify(serialized_vote,
                                          vote_doc['signature']) is True
@@ -330,7 +330,7 @@ def test_valid_block_voting_with_transfer_transactions(monkeypatch,
                                  'invalid_reason': None,
                                  'timestamp': '2222222222'}
 
-    serialized_vote2 = util.serialize(vote2_doc['vote']).encode()
+    serialized_vote2 = utils.serialize(vote2_doc['vote']).encode()
     assert vote2_doc['node_pubkey'] == b.me
     assert crypto.PublicKey(b.me).verify(serialized_vote2,
                                          vote2_doc['signature']) is True
@@ -339,7 +339,7 @@ def test_valid_block_voting_with_transfer_transactions(monkeypatch,
 @pytest.mark.bdb
 def test_unsigned_tx_in_block_voting(monkeypatch, b, user_pk, genesis_block):
     from bigchaindb.backend import query
-    from bigchaindb.common import crypto, util
+    from bigchaindb.common import crypto, utils
     from bigchaindb.models import Transaction
     from bigchaindb.pipelines import vote
 
@@ -368,7 +368,7 @@ def test_unsigned_tx_in_block_voting(monkeypatch, b, user_pk, genesis_block):
                                 'invalid_reason': None,
                                 'timestamp': '1111111111'}
 
-    serialized_vote = util.serialize(vote_doc['vote']).encode()
+    serialized_vote = utils.serialize(vote_doc['vote']).encode()
     assert vote_doc['node_pubkey'] == b.me
     assert crypto.PublicKey(b.me).verify(serialized_vote,
                                          vote_doc['signature']) is True
@@ -377,7 +377,7 @@ def test_unsigned_tx_in_block_voting(monkeypatch, b, user_pk, genesis_block):
 @pytest.mark.bdb
 def test_invalid_id_tx_in_block_voting(monkeypatch, b, user_pk, genesis_block):
     from bigchaindb.backend import query
-    from bigchaindb.common import crypto, util
+    from bigchaindb.common import crypto, utils
     from bigchaindb.models import Transaction
     from bigchaindb.pipelines import vote
 
@@ -408,7 +408,7 @@ def test_invalid_id_tx_in_block_voting(monkeypatch, b, user_pk, genesis_block):
                                 'invalid_reason': None,
                                 'timestamp': '1111111111'}
 
-    serialized_vote = util.serialize(vote_doc['vote']).encode()
+    serialized_vote = utils.serialize(vote_doc['vote']).encode()
     assert vote_doc['node_pubkey'] == b.me
     assert crypto.PublicKey(b.me).verify(serialized_vote,
                                          vote_doc['signature']) is True
@@ -418,7 +418,7 @@ def test_invalid_id_tx_in_block_voting(monkeypatch, b, user_pk, genesis_block):
 def test_invalid_content_in_tx_in_block_voting(monkeypatch, b,
                                                user_pk, genesis_block):
     from bigchaindb.backend import query
-    from bigchaindb.common import crypto, util
+    from bigchaindb.common import crypto, utils
     from bigchaindb.models import Transaction
     from bigchaindb.pipelines import vote
 
@@ -449,7 +449,7 @@ def test_invalid_content_in_tx_in_block_voting(monkeypatch, b,
                                 'invalid_reason': None,
                                 'timestamp': '1111111111'}
 
-    serialized_vote = util.serialize(vote_doc['vote']).encode()
+    serialized_vote = utils.serialize(vote_doc['vote']).encode()
     assert vote_doc['node_pubkey'] == b.me
     assert crypto.PublicKey(b.me).verify(serialized_vote,
                                          vote_doc['signature']) is True
@@ -458,7 +458,7 @@ def test_invalid_content_in_tx_in_block_voting(monkeypatch, b,
 @pytest.mark.bdb
 def test_invalid_block_voting(monkeypatch, b, user_pk, genesis_block):
     from bigchaindb.backend import query
-    from bigchaindb.common import crypto, util
+    from bigchaindb.common import crypto, utils
     from bigchaindb.pipelines import vote
 
     inpipe = Pipe()
@@ -485,7 +485,7 @@ def test_invalid_block_voting(monkeypatch, b, user_pk, genesis_block):
                                 'invalid_reason': None,
                                 'timestamp': '1111111111'}
 
-    serialized_vote = util.serialize(vote_doc['vote']).encode()
+    serialized_vote = utils.serialize(vote_doc['vote']).encode()
     assert vote_doc['node_pubkey'] == b.me
     assert crypto.PublicKey(b.me).verify(serialized_vote,
                                          vote_doc['signature']) is True

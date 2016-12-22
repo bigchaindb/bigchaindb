@@ -38,7 +38,7 @@ class TestBlockModel(object):
 
     def test_block_serialization(self, b):
         from bigchaindb.common.crypto import hash_data
-        from bigchaindb.common.util import gen_timestamp, serialize
+        from bigchaindb.common.utils import gen_timestamp, serialize
         from bigchaindb.models import Block, Transaction
 
         transactions = [Transaction.create([b.me], [([b.me], 1)])]
@@ -70,7 +70,7 @@ class TestBlockModel(object):
 
     def test_block_deserialization(self, b):
         from bigchaindb.common.crypto import hash_data
-        from bigchaindb.common.util import gen_timestamp, serialize
+        from bigchaindb.common.utils import gen_timestamp, serialize
         from bigchaindb.models import Block, Transaction
 
         transactions = [Transaction.create([b.me], [([b.me], 1)])]
@@ -110,7 +110,7 @@ class TestBlockModel(object):
     def test_block_invalid_signature_deserialization(self, b):
         from bigchaindb.common.crypto import hash_data
         from bigchaindb.common.exceptions import InvalidSignature
-        from bigchaindb.common.util import gen_timestamp, serialize
+        from bigchaindb.common.utils import gen_timestamp, serialize
         from bigchaindb.models import Block, Transaction
 
         transactions = [Transaction.create([b.me], [([b.me], 1)])]
@@ -143,7 +143,7 @@ class TestBlockModel(object):
 
     def test_sign_block(self, b):
         from bigchaindb.common.crypto import PrivateKey, PublicKey
-        from bigchaindb.common.util import gen_timestamp, serialize
+        from bigchaindb.common.utils import gen_timestamp, serialize
         from bigchaindb.models import Block, Transaction
 
         transactions = [Transaction.create([b.me], [([b.me], 1)])]
