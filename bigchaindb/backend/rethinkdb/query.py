@@ -105,13 +105,13 @@ def _get_asset_create_tx_query(asset_id):
 
 
 @register_query(RethinkDBConnection)
-def get_spent(connection, transaction_id, condition_id):
+def get_spent(connection, transaction_id, output):
     # TODO: use index!
     return connection.run(
             r.table('bigchain', read_mode=READ_MODE)
             .concat_map(lambda doc: doc['block']['transactions'])
-            .filter(lambda transaction: transaction['fulfillments'].contains(
-                lambda fulfillment: fulfillment['input'] == {'txid': transaction_id, 'cid': condition_id})))
+            .filter(lambda transaction: transaction['inputs'].contains(
+                lambda input: input['fulfills'] == {'txid': transaction_id, 'output': output})))
 
 
 @register_query(RethinkDBConnection)
@@ -120,8 +120,8 @@ def get_owned_ids(connection, owner):
     return connection.run(
             r.table('bigchain', read_mode=READ_MODE)
             .concat_map(lambda doc: doc['block']['transactions'])
-            .filter(lambda tx: tx['conditions'].contains(
-                lambda c: c['owners_after'].contains(owner))))
+            .filter(lambda tx: tx['outputs'].contains(
+                lambda c: c['public_keys'].contains(owner))))
 
 
 @register_query(RethinkDBConnection)

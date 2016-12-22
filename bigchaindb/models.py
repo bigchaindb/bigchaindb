@@ -33,14 +33,14 @@ class Transaction(Transaction):
             InvalidHash: if the hash of the transaction is wrong
             InvalidSignature: if the signature of the transaction is wrong
         """
-        if len(self.fulfillments) == 0:
-            raise ValueError('Transaction contains no fulfillments')
+        if len(self.inputs) == 0:
+            raise ValueError('Transaction contains no inputs')
 
         input_conditions = []
-        inputs_defined = all([ffill.tx_input for ffill in self.fulfillments])
+        inputs_defined = all([input_.fulfills for input_ in self.inputs])
 
         # validate amounts
-        if any(condition.amount < 1 for condition in self.conditions):
+        if any(output.amount < 1 for output in self.outputs):
             raise AmountError('`amount` needs to be greater than zero')
 
         if self.operation in (Transaction.CREATE, Transaction.GENESIS):
@@ -63,9 +63,8 @@ class Transaction(Transaction):
 
             # store the inputs so that we can check if the asset ids match
             input_txs = []
-            for ffill in self.fulfillments:
-                input_txid = ffill.tx_input.txid
-                input_cid = ffill.tx_input.cid
+            for input_ in self.inputs:
+                input_txid = input_.fulfills.txid
                 input_tx, status = bigchain.\
                     get_transaction(input_txid, include_status=True)
 
@@ -78,15 +77,16 @@ class Transaction(Transaction):
                         'input `{}` does not exist in a valid block'.format(
                             input_txid))
 
-                spent = bigchain.get_spent(input_txid, ffill.tx_input.cid)
+                spent = bigchain.get_spent(input_txid, input_.fulfills.output)
                 if spent and spent.id != self.id:
                     raise DoubleSpend('input `{}` was already spent'
                                       .format(input_txid))
 
-                input_condition = input_tx.conditions[input_cid]
-                input_conditions.append(input_condition)
-
+                output = input_tx.outputs[input_.fulfills.output]
+                input_conditions.append(output)
                 input_txs.append(input_tx)
+                if output.amount < 1:
+                    raise AmountError('`amount` needs to be greater than zero')
 
             # validate asset id
             asset_id = Transaction.get_asset_id(input_txs)
@@ -95,8 +95,13 @@ class Transaction(Transaction):
                                        ' match the asset id of the'
                                        ' transaction'))
 
+            # validate the amounts
+            for output in self.outputs:
+                if output.amount < 1:
+                    raise AmountError('`amount` needs to be greater than zero')
+
             input_amount = sum([input_condition.amount for input_condition in input_conditions])
-            output_amount = sum([output_condition.amount for output_condition in self.conditions])
+            output_amount = sum([output_condition.amount for output_condition in self.outputs])
 
             if output_amount != input_amount:
                 raise AmountError(('The amount used in the inputs `{}`'
@@ -109,7 +114,7 @@ class Transaction(Transaction):
             raise TypeError('`operation`: `{}` must be either {}.'
                             .format(self.operation, allowed_operations))
 
-        if not self.fulfillments_valid(input_conditions):
+        if not self.inputs_valid(input_conditions):
             raise InvalidSignature()
 
         return self

@@ -355,7 +355,7 @@ class Bigchain(object):
         if cursor:
             return cursor[0]['asset']
 
-    def get_spent(self, txid, cid):
+    def get_spent(self, txid, output):
         """Check if a `txid` was already used as an input.
 
         A transaction can be used as an input for another transaction. Bigchain needs to make sure that a
@@ -363,15 +363,16 @@ class Bigchain(object):
 
         Args:
             txid (str): The id of the transaction
-            cid (num): the index of the condition in the respective transaction
+            output (num): the index of the output in the respective transaction
 
         Returns:
             The transaction (Transaction) that used the `txid` as an input else
             `None`
         """
         # checks if an input was already spent
-        # checks if the bigchain has any transaction with input {'txid': ..., 'cid': ...}
-        transactions = list(backend.query.get_spent(self.connection, txid, cid))
+        # checks if the bigchain has any transaction with input {'txid': ...,
+        # 'output': ...}
+        transactions = list(backend.query.get_spent(self.connection, txid, output))
 
         # a transaction_id should have been spent at most one time
         if transactions:
@@ -403,7 +404,7 @@ class Bigchain(object):
             owner (str): base58 encoded public key.
 
         Returns:
-            :obj:`list` of TransactionLink: list of ``txid`` s and ``cid`` s
+            :obj:`list` of TransactionLink: list of ``txid`` s and ``output`` s
             pointing to another transaction's condition
         """
 
@@ -420,22 +421,22 @@ class Bigchain(object):
 
             # NOTE: It's OK to not serialize the transaction here, as we do not
             # use it after the execution of this function.
-            # a transaction can contain multiple outputs (conditions) so we need to iterate over all of them
+            # a transaction can contain multiple outputs so we need to iterate over all of them
             # to get a list of outputs available to spend
-            for index, cond in enumerate(tx['conditions']):
+            for index, output in enumerate(tx['outputs']):
                 # for simple signature conditions there are no subfulfillments
                 # check if the owner is in the condition `owners_after`
-                if len(cond['owners_after']) == 1:
-                    if cond['condition']['details']['public_key'] == owner:
+                if len(output['public_keys']) == 1:
+                    if output['condition']['details']['public_key'] == owner:
                         tx_link = TransactionLink(tx['id'], index)
                 else:
-                    # for transactions with multiple `owners_after` there will be several subfulfillments nested
+                    # for transactions with multiple `public_keys` there will be several subfulfillments nested
                     # in the condition. We need to iterate the subfulfillments to make sure there is a
                     # subfulfillment for `owner`
-                    if util.condition_details_has_owner(cond['condition']['details'], owner):
+                    if util.condition_details_has_owner(output['condition']['details'], owner):
                         tx_link = TransactionLink(tx['id'], index)
                 # check if input was already spent
-                if not self.get_spent(tx_link.txid, tx_link.cid):
+                if not self.get_spent(tx_link.txid, tx_link.output):
                     owned.append(tx_link)
 
         return owned

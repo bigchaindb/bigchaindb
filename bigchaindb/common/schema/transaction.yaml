@@ -8,8 +8,8 @@ description: |
     A transaction represents the creation or transfer of assets in BigchainDB.
 required:
 - id
-- fulfillments
-- conditions
+- inputs
+- outputs
 - operation
 - metadata
 - asset
@@ -30,23 +30,23 @@ properties:
       Description of the asset being transacted.
 
       See: `Asset`_.
-  fulfillments:
+  inputs:
     type: array
-    title: "Fulfillments list"
+    title: "Transaction inputs"
     description: |
-        Array of the fulfillments (inputs) of a transaction.
+        Array of the inputs of a transaction.
 
-        See: Fulfillment_.
+        See: Input_.
     items:
-      "$ref": "#/definitions/fulfillment"
-  conditions:
+      "$ref": "#/definitions/input"
+  outputs:
     type: array
     description: |
-        Array of conditions (outputs) provided by this transaction.
+        Array of outputs provided by this transaction.
 
-        See: Condition_.
+        See: Output_.
     items:
-      "$ref": "#/definitions/condition"
+      "$ref": "#/definitions/output"
   metadata:
     "$ref": "#/definitions/metadata"
     description: |
@@ -67,7 +67,7 @@ definitions:
   base58:
     pattern: "[1-9a-zA-Z^OIl]{43,44}"
     type: string
-  owners_list:
+  public_keys:
     anyOf:
     - type: array
       items:
@@ -88,11 +88,10 @@ definitions:
         Type of the transaction:
 
         A ``CREATE`` transaction creates an asset in BigchainDB. This
-        transaction has outputs (conditions) but no inputs (fulfillments),
-        so a dummy fulfillment is used.
+        transaction has outputs but no inputs, so a dummy input is created.
 
         A ``TRANSFER`` transaction transfers ownership of an asset, by providing
-        fulfillments to conditions of earlier transactions.
+        an input that meets the conditions of an earlier transaction's outputs.
 
         A ``GENESIS`` transaction is a special case transaction used as the
         sole member of the first block in a BigchainDB ledger.
@@ -120,21 +119,27 @@ definitions:
         - type: object
           additionalProperties: true
         - type: 'null'
-  condition:
+  output:
     type: object
     description: |
-        An output of a transaction. A condition describes a quantity of an asset
-        and what conditions must be met in order for it to be fulfilled. See also:
-        fulfillment_.
+        A transaction output. Describes the quantity of an asset and the
+        requirements that must be met to spend the output.
+
+        See also: Input_.
     additionalProperties: false
     required:
-    - owners_after
-    - condition
     - amount
+    - condition
+    - public_keys
     properties:
+      amount:
+        type: integer
+        description: |
+            Integral amount of the asset represented by this output.
+            In the case of a non divisible asset, this will always be 1.
       condition:
         description: |
-            Body of the condition. Has the properties:
+            Describes the condition that needs to be met to spend the output. Has the properties: 
 
             - **details**: Details of the condition.
             - **uri**: Condition encoded as an ASCII string.
@@ -150,29 +155,26 @@ definitions:
           uri:
             type: string
             pattern: "^cc:([1-9a-f][0-9a-f]{0,3}|0):[1-9a-f][0-9a-f]{0,15}:[a-zA-Z0-9_-]{0,86}:([1-9][0-9]{0,17}|0)$"
-      owners_after:
-        "$ref": "#/definitions/owners_list"
+      public_keys:
+        "$ref": "#/definitions/public_keys"
         description: |
-            List of public keys associated with asset ownership at the time
-            of the transaction.
+            List of public keys associated with the conditions on an output.
       amount:
         type: integer
         description: |
             Integral amount of the asset represented by this condition.
-  fulfillment:
+  input:
     type: "object"
     description:
-      A fulfillment is an input to a transaction, named as such because it
-      fulfills a condition of a previous transaction. In the case of a
-      ``CREATE`` transaction, a fulfillment may provide no ``input``.
+      An input spends a previous output, by providing one or more fulfillments
+      that fulfill the conditions of the previous output.
     additionalProperties: false
     required:
     - owners_before
-    - input
     - fulfillment
     properties:
       owners_before:
-        "$ref": "#/definitions/owners_list"
+        "$ref": "#/definitions/public_keys"
         description: |
             List of public keys of the previous owners of the asset.
       fulfillment:
@@ -193,22 +195,29 @@ definitions:
             type_id:
               type: integer
           description: |
-              Fulfillment of a condition_, or put a different way, this is a
-              payload that satisfies a condition in order to spend the associated
-              asset.
+              Fulfillment of an `Output.condition`_, or, put a different way, a payload
+              that satisfies the condition of a previous output to prove that the
+              creator(s) of this transaction have control over the listed asset.
         - type: string
           pattern: "^cf:([1-9a-f][0-9a-f]{0,3}|0):[a-zA-Z0-9_-]*$"
-      input:
+      fulfills:
         anyOf:
         - type: 'object'
           description: |
-            Reference to a condition of a previous transaction
+            Reference to the output that is being spent.
           additionalProperties: false
+          required:
+          - output
+          - txid
           properties:
-            cid:
+            output:
               "$ref": "#/definitions/offset"
+              description: |
+                Index of the output containing the condition being fulfilled
             txid:
               "$ref": "#/definitions/sha3_hexdigest"
+              description: |
+                Transaction ID containing the output to spend
         - type: 'null'
   metadata:
     anyOf:
