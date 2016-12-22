@@ -10,7 +10,6 @@ from collections import Counter
 from multipipes import Pipeline, Node
 from bigchaindb.common import exceptions
 
-import bigchaindb
 from bigchaindb import Bigchain
 from bigchaindb import backend
 from bigchaindb.backend.changefeed import ChangeFeed

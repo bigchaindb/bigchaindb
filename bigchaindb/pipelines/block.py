@@ -9,7 +9,6 @@ import logging
 
 from multipipes import Pipeline, Node, Pipe
 
-import bigchaindb
 from bigchaindb import backend
 from bigchaindb.backend.changefeed import ChangeFeed
 from bigchaindb.models import Transaction

@@ -8,7 +8,6 @@ import logging
 
 from multipipes import Pipeline, Node
 
-import bigchaindb
 from bigchaindb import backend
 from bigchaindb.backend.changefeed import ChangeFeed
 from bigchaindb.models import Block
