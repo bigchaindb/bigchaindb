@@ -59,15 +59,15 @@ class Connection:
     from and implements this class.
     """
 
-    def __init__(self, host=None, port=None, dbname=None, *args, **kwargs):
+    def __init__(self, host, port, dbname, **kwargs):
         """Create a new :class:`~.Connection` instance.
 
         Args:
             host (str): the host to connect to.
             port (int): the port to connect to.
             dbname (str): the name of the database to use.
-            **kwargs: arbitrary keyword arguments provided by the
-                configuration's ``database`` settings
+            **kwargs: arbitrary keyword arguments provided by the node
+                configuration's ``database`` settings or :func:`connect`
         """
 
     def run(self, query):
