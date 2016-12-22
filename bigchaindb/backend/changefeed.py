@@ -44,7 +44,7 @@ class ChangeFeed(Node):
         self.prefeed = prefeed if prefeed else []
         self.table = table
         self.operation = operation
-        self.connection = connection if connection else bigchaindb.backend.connect()
+        self.connection = connection or bigchaindb.backend.connect()
 
     def run_forever(self):
         """Main loop of the ``multipipes.Node``
