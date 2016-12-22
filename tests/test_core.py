@@ -1,5 +1,3 @@
-from rethinkdb.ast import RqlQuery
-
 import pytest
 
 

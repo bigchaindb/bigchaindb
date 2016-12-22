@@ -1,4 +1,3 @@
-import os
 import random
 from bigchaindb import Bigchain
 from bigchaindb.pipelines import stale

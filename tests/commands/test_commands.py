@@ -214,6 +214,7 @@ def test_run_configure_when_config_does_exist(monkeypatch,
                                               mock_generate_key_pair,
                                               mock_bigchaindb_backup_config):
     value = {}
+
     def mock_write_config(newconfig, filename=None):
         value['return'] = newconfig
 
@@ -236,7 +237,7 @@ def test_allow_temp_keypair_generates_one_on_the_fly(mock_gen_keypair,
     import bigchaindb
     from bigchaindb.commands.bigchain import run_start
 
-    bigchaindb.config['keypair'] = { 'private': None, 'public': None }
+    bigchaindb.config['keypair'] = {'private': None, 'public': None}
 
     args = Namespace(allow_temp_keypair=True, start_rethinkdb=False, config=None, yes=True)
     run_start(args)

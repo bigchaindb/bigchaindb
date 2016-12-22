@@ -20,4 +20,3 @@ def test_processes_start(mock_vote, mock_block, mock_election, mock_stale,
     mock_election.assert_called_with()
     mock_stale.assert_called_with()
     mock_process.assert_called_with()
-
