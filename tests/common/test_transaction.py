@@ -154,8 +154,7 @@ def test_invalid_output_initialization(cond_uri, user_pub):
         Output(cond_uri, [user_pub], 0)
 
 
-def test_generate_output_split_half_recursive(user_pub, user2_pub,
-                                                  user3_pub):
+def test_generate_output_split_half_recursive(user_pub, user2_pub, user3_pub):
     from bigchaindb.common.transaction import Output
     from cryptoconditions import Ed25519Fulfillment, ThresholdSha256Fulfillment
 
@@ -174,8 +173,8 @@ def test_generate_output_split_half_recursive(user_pub, user2_pub,
     assert cond.fulfillment.to_dict() == expected.to_dict()
 
 
-def test_generate_outputs_split_half_single_owner(user_pub, user2_pub,
-                                                     user3_pub):
+def test_generate_outputs_split_half_single_owner(user_pub,
+                                                  user2_pub, user3_pub):
     from bigchaindb.common.transaction import Output
     from cryptoconditions import Ed25519Fulfillment, ThresholdSha256Fulfillment
 
@@ -231,8 +230,7 @@ def test_generate_output_single_owner_with_output(user_pub):
     assert cond.fulfillment.to_dict() == expected.to_dict()
 
 
-def test_generate_output_invalid_parameters(user_pub, user2_pub,
-                                                user3_pub):
+def test_generate_output_invalid_parameters(user_pub, user2_pub, user3_pub):
     from bigchaindb.common.transaction import Output
 
     with raises(ValueError):
@@ -289,7 +287,6 @@ def test_create_default_asset_on_tx_initialization(asset_definition):
 
 def test_transaction_serialization(user_input, user_output, data):
     from bigchaindb.common.transaction import Transaction
-    from .utils import validate_transaction_model
 
     tx_id = 'l0l'
 
@@ -559,7 +556,7 @@ def test_validate_multiple_inputs(user_input, user_output, user_priv,
 
     expected_first_bytes = str(expected_first).encode()
     expected_first.inputs[0].fulfillment.sign(expected_first_bytes,
-                                                    PrivateKey(user_priv))
+                                              PrivateKey(user_priv))
     expected_second_bytes = str(expected_second).encode()
     expected_second.inputs[0].fulfillment.sign(expected_second_bytes,
                                                PrivateKey(user_priv))
