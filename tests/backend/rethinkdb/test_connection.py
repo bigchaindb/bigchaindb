@@ -1,18 +1,39 @@
+import time
+import multiprocessing as mp
 from threading import Thread
-import pytest
 
+import pytest
 import rethinkdb as r
 
-from bigchaindb.backend import connect
+
+def test_get_connection_returns_the_correct_instance():
+    from bigchaindb.backend import connect
+    from bigchaindb.backend.connection import Connection
+    from bigchaindb.backend.rethinkdb.connection import RethinkDBConnection
+
+    config = {
+        'backend': 'rethinkdb',
+        'host': 'localhost',
+        'port': 28015,
+        'name': 'test'
+    }
+
+    conn = connect(**config)
+    assert isinstance(conn, Connection)
+    assert isinstance(conn, RethinkDBConnection)
 
 
 def test_run_a_simple_query():
+    from bigchaindb.backend import connect
+
     conn = connect()
     query = r.expr('1')
     assert conn.run(query) == '1'
 
 
 def test_raise_exception_when_max_tries():
+    from bigchaindb.backend import connect
+
     class MockQuery:
         def run(self, conn):
             raise r.ReqlDriverError('mock')
@@ -24,7 +45,7 @@ def test_raise_exception_when_max_tries():
 
 
 def test_reconnect_when_connection_lost():
-    import time
+    from bigchaindb.backend import connect
 
     def raise_exception(*args, **kwargs):
         raise r.ReqlDriverError('mock')
@@ -44,9 +65,6 @@ def test_reconnect_when_connection_lost():
 
 
 def test_changefeed_reconnects_when_connection_lost(monkeypatch):
-    import time
-    import multiprocessing as mp
-
     from bigchaindb.backend.changefeed import ChangeFeed
     from bigchaindb.backend.rethinkdb.changefeed import RethinkDBChangeFeed
 
@@ -64,7 +82,8 @@ def test_changefeed_reconnects_when_connection_lost(monkeypatch):
             if self.tries == 1:
                 raise r.ReqlDriverError('mock')
             elif self.tries == 2:
-                return {'new_val': {'fact': 'A group of cats is called a clowder.'},
+                return {'new_val': {'fact':
+                                    'A group of cats is called a clowder.'},
                         'old_val': None}
             if self.tries == 3:
                 raise r.ReqlDriverError('mock')

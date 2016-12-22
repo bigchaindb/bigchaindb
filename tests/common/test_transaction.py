@@ -1,5 +1,4 @@
 from pytest import raises
-from unittest.mock import patch
 
 
 def test_input_serialization(ffill_uri, user_pub):
@@ -145,9 +144,14 @@ def test_output_hashlock_deserialization():
 
 def test_invalid_output_initialization(cond_uri, user_pub):
     from bigchaindb.common.transaction import Output
+    from bigchaindb.common.exceptions import AmountError
 
     with raises(TypeError):
         Output(cond_uri, user_pub)
+    with raises(TypeError):
+        Output(cond_uri, [user_pub], 'amount')
+    with raises(AmountError):
+        Output(cond_uri, [user_pub], 0)
 
 
 def test_generate_output_split_half_recursive(user_pub, user2_pub,
@@ -241,58 +245,50 @@ def test_generate_output_invalid_parameters(user_pub, user2_pub,
         Output.generate([[user_pub]], 1)
 
 
-def test_invalid_transaction_initialization():
-    from bigchaindb.common.transaction import Transaction, Asset
+def test_invalid_transaction_initialization(asset_definition):
+    from bigchaindb.common.transaction import Transaction
 
     with raises(ValueError):
-        Transaction(operation='invalid operation', asset=Asset())
+        Transaction(operation='invalid operation', asset=asset_definition)
     with raises(TypeError):
         Transaction(operation='CREATE', asset='invalid asset')
     with raises(TypeError):
+        Transaction(operation='TRANSFER', asset={})
+    with raises(TypeError):
         Transaction(
             operation='CREATE',
-            asset=Asset(),
+            asset=asset_definition,
             outputs='invalid outputs'
         )
     with raises(TypeError):
         Transaction(
             operation='CREATE',
-            asset=Asset(),
+            asset=asset_definition,
             outputs=[],
             inputs='invalid inputs'
         )
     with raises(TypeError):
         Transaction(
             operation='CREATE',
-            asset=Asset(),
+            asset=asset_definition,
             outputs=[],
             inputs=[],
             metadata='invalid metadata'
         )
 
 
-def test_create_default_asset_on_tx_initialization():
-    from bigchaindb.common.transaction import Transaction, Asset
-    from bigchaindb.common.exceptions import ValidationError
-    from .util import validate_transaction_model
+def test_create_default_asset_on_tx_initialization(asset_definition):
+    from bigchaindb.common.transaction import Transaction
 
-    with patch.object(Asset, 'validate_asset', return_value=None):
-        tx = Transaction(Transaction.CREATE, None)
-    expected = Asset()
+    expected = {'data': None}
+    tx = Transaction(Transaction.CREATE, asset=expected)
     asset = tx.asset
 
-    expected.data_id = None
-    asset.data_id = None
     assert asset == expected
 
-    # Fails because no asset hash
-    with raises(ValidationError):
-        validate_transaction_model(tx)
 
-
-def test_transaction_serialization(user_input, user_output, data, data_id):
-    from bigchaindb.common.transaction import Transaction, Asset
-    from bigchaindb.common.exceptions import ValidationError
+def test_transaction_serialization(user_input, user_output, data):
+    from bigchaindb.common.transaction import Transaction
     from .util import validate_transaction_model
 
     tx_id = 'l0l'
@@ -307,32 +303,23 @@ def test_transaction_serialization(user_input, user_output, data, data_id):
         'operation': Transaction.CREATE,
         'metadata': None,
         'asset': {
-            'id': data_id,
-            'divisible': False,
-            'updatable': False,
-            'refillable': False,
             'data': data,
         }
     }
 
-    tx = Transaction(Transaction.CREATE, Asset(data, data_id), [user_input],
+    tx = Transaction(Transaction.CREATE, {'data': data}, [user_input],
                      [user_output])
     tx_dict = tx.to_dict()
     tx_dict['id'] = tx_id
-    tx_dict['asset']['id'] = data_id
 
     assert tx_dict == expected
 
-    # Fails because asset id is not a uuid4
-    with raises(ValidationError):
-        validate_transaction_model(tx)
 
-
-def test_transaction_deserialization(user_input, user_output, data, uuid4):
-    from bigchaindb.common.transaction import Transaction, Asset
+def test_transaction_deserialization(user_input, user_output, data):
+    from bigchaindb.common.transaction import Transaction
     from .util import validate_transaction_model
 
-    expected_asset = Asset(data, uuid4)
+    expected_asset = {'data': data}
     expected = Transaction(Transaction.CREATE, expected_asset, [user_input],
                            [user_output], None, Transaction.VERSION)
 
@@ -345,10 +332,6 @@ def test_transaction_deserialization(user_input, user_output, data, uuid4):
         'operation': Transaction.CREATE,
         'metadata': None,
         'asset': {
-            'id': uuid4,
-            'divisible': False,
-            'updatable': False,
-            'refillable': False,
             'data': data,
         }
     }
@@ -454,92 +437,28 @@ def test_cast_transaction_link_to_boolean():
     assert bool(TransactionLink(False, False)) is True
 
 
-def test_asset_link_serialization():
-    from bigchaindb.common.transaction import AssetLink
+def test_add_input_to_tx(user_input, asset_definition):
+    from bigchaindb.common.transaction import Transaction
 
-    data_id = 'a asset id'
-    expected = {
-        'id': data_id,
-    }
-    asset_link = AssetLink(data_id)
-
-    assert asset_link.to_dict() == expected
-
-
-def test_asset_link_serialization_with_empty_payload():
-    from bigchaindb.common.transaction import AssetLink
-
-    expected = None
-    asset_link = AssetLink()
-
-    assert asset_link.to_dict() == expected
-
-
-def test_asset_link_deserialization():
-    from bigchaindb.common.transaction import AssetLink
-
-    data_id = 'a asset id'
-    expected = AssetLink(data_id)
-    asset_link = {
-        'id': data_id
-    }
-    asset_link = AssetLink.from_dict(asset_link)
-
-    assert asset_link == expected
-
-
-def test_asset_link_deserialization_with_empty_payload():
-    from bigchaindb.common.transaction import AssetLink
-
-    expected = AssetLink()
-    asset_link = AssetLink.from_dict(None)
-
-    assert asset_link == expected
-
-
-def test_cast_asset_link_to_boolean():
-    from bigchaindb.common.transaction import AssetLink
-
-    assert bool(AssetLink()) is False
-    assert bool(AssetLink('a')) is True
-    assert bool(AssetLink(False)) is True
-
-
-def test_eq_asset_link():
-    from bigchaindb.common.transaction import AssetLink
-
-    asset_id_1 = 'asset_1'
-    asset_id_2 = 'asset_2'
-
-    assert AssetLink(asset_id_1) == AssetLink(asset_id_1)
-    assert AssetLink(asset_id_1) != AssetLink(asset_id_2)
-
-
-def test_add_input_to_tx(user_input):
-    from bigchaindb.common.transaction import Transaction, Asset
-
-    with patch.object(Asset, 'validate_asset', return_value=None):
-        tx = Transaction(Transaction.CREATE, Asset(), [], [])
+    tx = Transaction(Transaction.CREATE, asset_definition, [], [])
     tx.add_input(user_input)
 
     assert len(tx.inputs) == 1
 
 
-def test_add_input_to_tx_with_invalid_parameters():
-    from bigchaindb.common.transaction import Transaction, Asset
+def test_add_input_to_tx_with_invalid_parameters(asset_definition):
+    from bigchaindb.common.transaction import Transaction
+    tx = Transaction(Transaction.CREATE, asset_definition)
 
-    with patch.object(Asset, 'validate_asset', return_value=None):
-        tx = Transaction(Transaction.CREATE, Asset())
     with raises(TypeError):
         tx.add_input('somewronginput')
 
 
-def test_add_output_to_tx(user_output):
-    from bigchaindb.common.transaction import Transaction, Asset
+def test_add_output_to_tx(user_output, asset_definition):
+    from bigchaindb.common.transaction import Transaction
     from .util import validate_transaction_model
 
-    with patch.object(Asset, 'validate_asset', return_value=None):
-        tx = Transaction(Transaction.CREATE, Asset())
+    tx = Transaction(Transaction.CREATE, asset_definition)
     tx.add_output(user_output)
 
     assert len(tx.outputs) == 1
@@ -547,11 +466,10 @@ def test_add_output_to_tx(user_output):
     validate_transaction_model(tx)
 
 
-def test_add_output_to_tx_with_invalid_parameters():
-    from bigchaindb.common.transaction import Transaction, Asset
+def test_add_output_to_tx_with_invalid_parameters(asset_definition):
+    from bigchaindb.common.transaction import Transaction
+    tx = Transaction(Transaction.CREATE, asset_definition, [], [])
 
-    with patch.object(Asset, 'validate_asset', return_value=None):
-        tx = Transaction(Transaction.CREATE, Asset(), [], [])
     with raises(TypeError):
         tx.add_output('somewronginput')
 
@@ -563,13 +481,14 @@ def test_sign_with_invalid_parameters(utx, user_priv):
         utx.sign(user_priv)
 
 
-def test_validate_tx_simple_create_signature(user_input, user_output, user_priv):
+def test_validate_tx_simple_create_signature(user_input, user_output, user_priv,
+                                             asset_definition):
     from copy import deepcopy
     from bigchaindb.common.crypto import PrivateKey
-    from bigchaindb.common.transaction import Transaction, Asset
+    from bigchaindb.common.transaction import Transaction
     from .util import validate_transaction_model
 
-    tx = Transaction(Transaction.CREATE, Asset(), [user_input], [user_output])
+    tx = Transaction(Transaction.CREATE, asset_definition, [user_input], [user_output])
     expected = deepcopy(user_output)
     expected.fulfillment.sign(str(tx).encode(), PrivateKey(user_priv))
     tx.sign([user_priv])
@@ -621,14 +540,15 @@ def test_validate_input_with_invalid_parameters(utx):
     assert not valid
 
 
-def test_validate_multiple_inputs(user_input, user_output, user_priv):
+def test_validate_multiple_inputs(user_input, user_output, user_priv,
+                                  asset_definition):
     from copy import deepcopy
 
     from bigchaindb.common.crypto import PrivateKey
-    from bigchaindb.common.transaction import Transaction, Asset
+    from bigchaindb.common.transaction import Transaction
     from .util import validate_transaction_model
 
-    tx = Transaction(Transaction.CREATE, Asset(divisible=True),
+    tx = Transaction(Transaction.CREATE, asset_definition,
                      [user_input, deepcopy(user_input)],
                      [user_output, deepcopy(user_output)])
 
@@ -659,14 +579,16 @@ def test_validate_tx_threshold_create_signature(user_user2_threshold_input,
                                                 user_pub,
                                                 user2_pub,
                                                 user_priv,
-                                                user2_priv):
+                                                user2_priv,
+                                                asset_definition):
     from copy import deepcopy
 
     from bigchaindb.common.crypto import PrivateKey
-    from bigchaindb.common.transaction import Transaction, Asset
+    from bigchaindb.common.transaction import Transaction
     from .util import validate_transaction_model
 
-    tx = Transaction(Transaction.CREATE, Asset(), [user_user2_threshold_input],
+    tx = Transaction(Transaction.CREATE, asset_definition,
+                     [user_user2_threshold_input],
                      [user_user2_threshold_output])
     expected = deepcopy(user_user2_threshold_output)
     expected.fulfillment.subconditions[0]['body'].sign(str(tx).encode(),
@@ -685,14 +607,15 @@ def test_validate_tx_threshold_create_signature(user_user2_threshold_input,
 def test_multiple_input_validation_of_transfer_tx(user_input, user_output,
                                                   user_priv, user2_pub,
                                                   user2_priv, user3_pub,
-                                                  user3_priv):
+                                                  user3_priv,
+                                                  asset_definition):
     from copy import deepcopy
     from bigchaindb.common.transaction import (Transaction, TransactionLink,
-                                               Input, Output, Asset)
+                                               Input, Output)
     from cryptoconditions import Ed25519Fulfillment
     from .util import validate_transaction_model
 
-    tx = Transaction(Transaction.CREATE, Asset(divisible=True),
+    tx = Transaction(Transaction.CREATE, asset_definition,
                      [user_input, deepcopy(user_input)],
                      [user_output, deepcopy(user_output)])
     tx.sign([user_priv])
@@ -702,7 +625,7 @@ def test_multiple_input_validation_of_transfer_tx(user_input, user_output,
               for index, cond in enumerate(tx.outputs)]
     outputs = [Output(Ed25519Fulfillment(public_key=user3_pub), [user3_pub]),
                Output(Ed25519Fulfillment(public_key=user3_pub), [user3_pub])]
-    transfer_tx = Transaction('TRANSFER', tx.asset, inputs, outputs)
+    transfer_tx = Transaction('TRANSFER', {'id': tx.id}, inputs, outputs)
     transfer_tx = transfer_tx.sign([user_priv])
 
     assert transfer_tx.inputs_valid(tx.outputs) is True
@@ -732,18 +655,14 @@ def test_validate_inputs_of_transfer_tx_with_invalid_params(
         transfer_tx.inputs_valid([utx.outputs[0]])
 
 
-def test_create_create_transaction_single_io(user_output, user_pub, data, uuid4):
-    from bigchaindb.common.transaction import Transaction, Asset
+def test_create_create_transaction_single_io(user_output, user_pub, data):
+    from bigchaindb.common.transaction import Transaction
     from .util import validate_transaction_model
 
     expected = {
         'outputs': [user_output.to_dict()],
         'metadata': data,
         'asset': {
-            'id': uuid4,
-            'divisible': False,
-            'updatable': False,
-            'refillable': False,
             'data': data,
         },
         'inputs': [
@@ -759,8 +678,8 @@ def test_create_create_transaction_single_io(user_output, user_pub, data, uuid4)
         'version': 1,
     }
 
-    asset = Asset(data, uuid4)
-    tx = Transaction.create([user_pub], [([user_pub], 1)], data, asset)
+    tx = Transaction.create([user_pub], [([user_pub], 1)], metadata=data,
+                            asset=data)
     tx_dict = tx.to_dict()
     tx_dict['inputs'][0]['fulfillment'] = None
     tx_dict.pop('id')
@@ -770,17 +689,18 @@ def test_create_create_transaction_single_io(user_output, user_pub, data, uuid4)
     validate_transaction_model(tx)
 
 
-def test_validate_single_io_create_transaction(user_pub, user_priv, data):
-    from bigchaindb.common.transaction import Transaction, Asset
+def test_validate_single_io_create_transaction(user_pub, user_priv, data,
+                                               asset_definition):
+    from bigchaindb.common.transaction import Transaction
 
-    tx = Transaction.create([user_pub], [([user_pub], 1)], data, Asset())
+    tx = Transaction.create([user_pub], [([user_pub], 1)], metadata=data)
     tx = tx.sign([user_priv])
     assert tx.inputs_valid() is True
 
 
 def test_create_create_transaction_multiple_io(user_output, user2_output, user_pub,
-                                               user2_pub):
-    from bigchaindb.common.transaction import Transaction, Asset, Input
+                                               user2_pub, asset_definition):
+    from bigchaindb.common.transaction import Transaction, Input
 
     # a fulfillment for a create transaction with multiple `owners_before`
     # is a fulfillment for an implicit threshold condition with
@@ -795,10 +715,8 @@ def test_create_create_transaction_multiple_io(user_output, user2_output, user_p
         'operation': 'CREATE',
         'version': 1
     }
-    asset = Asset(divisible=True)
     tx = Transaction.create([user_pub, user2_pub],
                             [([user_pub], 1), ([user2_pub], 1)],
-                            asset=asset,
                             metadata={'message': 'hello'}).to_dict()
     tx.pop('id')
     tx.pop('asset')
@@ -807,14 +725,14 @@ def test_create_create_transaction_multiple_io(user_output, user2_output, user_p
 
 
 def test_validate_multiple_io_create_transaction(user_pub, user_priv,
-                                                 user2_pub, user2_priv):
-    from bigchaindb.common.transaction import Transaction, Asset
+                                                 user2_pub, user2_priv,
+                                                 asset_definition):
+    from bigchaindb.common.transaction import Transaction
     from .util import validate_transaction_model
 
     tx = Transaction.create([user_pub, user2_pub],
                             [([user_pub], 1), ([user2_pub], 1)],
-                            metadata={'message': 'hello'},
-                            asset=Asset(divisible=True))
+                            metadata={'message': 'hello'})
     tx = tx.sign([user_priv, user2_priv])
     assert tx.inputs_valid() is True
 
@@ -823,18 +741,13 @@ def test_validate_multiple_io_create_transaction(user_pub, user_priv,
 
 def test_create_create_transaction_threshold(user_pub, user2_pub, user3_pub,
                                              user_user2_threshold_output,
-                                             user_user2_threshold_input, data,
-                                             uuid4):
-    from bigchaindb.common.transaction import Transaction, Asset
+                                             user_user2_threshold_input, data):
+    from bigchaindb.common.transaction import Transaction
 
     expected = {
         'outputs': [user_user2_threshold_output.to_dict()],
         'metadata': data,
         'asset': {
-            'id': uuid4,
-            'divisible': False,
-            'updatable': False,
-            'refillable': False,
             'data': data,
         },
         'inputs': [
@@ -849,9 +762,8 @@ def test_create_create_transaction_threshold(user_pub, user2_pub, user3_pub,
         'operation': 'CREATE',
         'version': 1
     }
-    asset = Asset(data, uuid4)
     tx = Transaction.create([user_pub], [([user_pub, user2_pub], 1)],
-                            data, asset)
+                            metadata=data, asset=data)
     tx_dict = tx.to_dict()
     tx_dict.pop('id')
     tx_dict['inputs'][0]['fulfillment'] = None
@@ -860,12 +772,12 @@ def test_create_create_transaction_threshold(user_pub, user2_pub, user3_pub,
 
 
 def test_validate_threshold_create_transaction(user_pub, user_priv, user2_pub,
-                                               data):
-    from bigchaindb.common.transaction import Transaction, Asset
+                                               data, asset_definition):
+    from bigchaindb.common.transaction import Transaction
     from .util import validate_transaction_model
 
     tx = Transaction.create([user_pub], [([user_pub, user2_pub], 1)],
-                            data, Asset())
+                            metadata=data)
     tx = tx.sign([user_priv])
     assert tx.inputs_valid() is True
 
@@ -887,6 +799,13 @@ def test_create_create_transaction_with_invalid_parameters(user_pub):
         Transaction.create([user_pub], [user_pub])
     with raises(ValueError):
         Transaction.create([user_pub], [([user_pub],)])
+    with raises(TypeError):
+        Transaction.create([user_pub], [([user_pub], 1)],
+                           metadata='not a dict or none')
+    with raises(TypeError):
+        Transaction.create([user_pub],
+                           [([user_pub], 1)],
+                           asset='not a dict or none')
 
 
 def test_outputs_to_inputs(tx):
@@ -900,10 +819,10 @@ def test_outputs_to_inputs(tx):
 
 
 def test_create_transfer_transaction_single_io(tx, user_pub, user2_pub,
-                                               user2_output, user_priv, uuid4):
+                                               user2_output, user_priv):
     from copy import deepcopy
     from bigchaindb.common.crypto import PrivateKey
-    from bigchaindb.common.transaction import Transaction, Asset
+    from bigchaindb.common.transaction import Transaction
     from bigchaindb.common.util import serialize
     from .util import validate_transaction_model
 
@@ -911,7 +830,7 @@ def test_create_transfer_transaction_single_io(tx, user_pub, user2_pub,
         'outputs': [user2_output.to_dict()],
         'metadata': None,
         'asset': {
-            'id': uuid4,
+            'id': tx.id,
         },
         'inputs': [
             {
@@ -929,8 +848,8 @@ def test_create_transfer_transaction_single_io(tx, user_pub, user2_pub,
         'version': 1
     }
     inputs = tx.to_inputs([0])
-    asset = Asset(None, uuid4)
-    transfer_tx = Transaction.transfer(inputs, [([user2_pub], 1)], asset=asset)
+    transfer_tx = Transaction.transfer(inputs, [([user2_pub], 1)],
+                                       asset_id=tx.id)
     transfer_tx = transfer_tx.sign([user_priv])
     transfer_tx = transfer_tx.to_dict()
 
@@ -951,12 +870,12 @@ def test_create_transfer_transaction_single_io(tx, user_pub, user2_pub,
 
 def test_create_transfer_transaction_multiple_io(user_pub, user_priv,
                                                  user2_pub, user2_priv,
-                                                 user3_pub, user2_output):
-    from bigchaindb.common.transaction import Transaction, Asset
+                                                 user3_pub, user2_output,
+                                                 asset_definition):
+    from bigchaindb.common.transaction import Transaction
 
-    asset = Asset(divisible=True)
     tx = Transaction.create([user_pub], [([user_pub], 1), ([user2_pub], 1)],
-                            asset=asset, metadata={'message': 'hello'})
+                            metadata={'message': 'hello'})
     tx = tx.sign([user_priv])
 
     expected = {
@@ -989,7 +908,7 @@ def test_create_transfer_transaction_multiple_io(user_pub, user_priv,
 
     transfer_tx = Transaction.transfer(tx.to_inputs(),
                                        [([user2_pub], 1), ([user2_pub], 1)],
-                                       asset=tx.asset)
+                                       asset_id=tx.id)
     transfer_tx = transfer_tx.sign([user_priv, user2_priv])
 
     assert len(transfer_tx.inputs) == 2
@@ -1006,36 +925,40 @@ def test_create_transfer_transaction_multiple_io(user_pub, user_priv,
     assert expected == transfer_tx
 
 
-def test_create_transfer_with_invalid_parameters(user_pub):
-    from bigchaindb.common.transaction import Transaction, Asset
+def test_create_transfer_with_invalid_parameters(tx, user_pub):
+    from bigchaindb.common.transaction import Transaction
 
     with raises(TypeError):
-        Transaction.transfer({}, [], Asset())
+        Transaction.transfer({}, [], tx.id)
     with raises(ValueError):
-        Transaction.transfer([], [], Asset())
+        Transaction.transfer([], [], tx.id)
     with raises(TypeError):
-        Transaction.transfer(['fulfillment'], {}, Asset())
+        Transaction.transfer(['fulfillment'], {}, tx.id)
     with raises(ValueError):
-        Transaction.transfer(['fulfillment'], [], Asset())
+        Transaction.transfer(['fulfillment'], [], tx.id)
     with raises(ValueError):
-        Transaction.transfer(['fulfillment'], [user_pub], Asset())
+        Transaction.transfer(['fulfillment'], [user_pub], tx.id)
     with raises(ValueError):
-        Transaction.transfer(['fulfillment'], [([user_pub],)], Asset())
+        Transaction.transfer(['fulfillment'], [([user_pub],)], tx.id)
+    with raises(TypeError):
+        Transaction.transfer(['fulfillment'], [([user_pub], 1)],
+                             tx.id, metadata='not a dict or none')
+    with raises(TypeError):
+        Transaction.transfer(['fulfillment'], [([user_pub], 1)],
+                             ['not a string'])
 
 
 def test_cant_add_empty_output():
-    from bigchaindb.common.transaction import Transaction, Asset
+    from bigchaindb.common.transaction import Transaction
+    tx = Transaction(Transaction.CREATE, None)
 
-    with patch.object(Asset, 'validate_asset', return_value=None):
-        tx = Transaction(Transaction.CREATE, None)
     with raises(TypeError):
         tx.add_output(None)
 
 
 def test_cant_add_empty_input():
-    from bigchaindb.common.transaction import Transaction, Asset
+    from bigchaindb.common.transaction import Transaction
+    tx = Transaction(Transaction.CREATE, None)
 
-    with patch.object(Asset, 'validate_asset', return_value=None):
-        tx = Transaction(Transaction.CREATE, None)
     with raises(TypeError):
         tx.add_input(None)

@@ -22,8 +22,6 @@ One can deploy a BigchainDB node on Azure using the template in the `bigchaindb-
 
 1. You should be prompted for a password. Give the `<Admin_password>` you entered into the form.
 
-1. If pull request [#2884](https://github.com/Azure/azure-quickstart-templates/pull/2884) has been merged, then skip this step. Otherwise, go to the `init.sh` script at [https://github.com/Azure/azure-quickstart-templates/blob/master/bigchaindb-on-ubuntu/scripts/init.sh](https://github.com/Azure/azure-quickstart-templates/blob/master/bigchaindb-on-ubuntu/scripts/init.sh). Your goal is to read through that script and check if each line should be run manually in the terminal. For example, is RethinkDB already installed and running? You can figure that out using `pgrep rethinkdb`. And so on. If in doubt, just try running each command in `init.sh`.
-
 1. Configure BigchainDB Server by doing:
 ```text
 bigchaindb configure

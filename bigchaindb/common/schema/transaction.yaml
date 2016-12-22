@@ -104,25 +104,14 @@ definitions:
     description: |
         Description of the asset being transacted. In the case of a ``TRANSFER``
         transaction, this field contains only the ID of asset. In the case
-        of a ``CREATE`` transaction, this field may contain properties:
+        of a ``CREATE`` transaction, this field contains only the user-defined
+        payload.
     additionalProperties: false
-    required:
-    - id
     properties:
       id:
-        "$ref": "#/definitions/uuid4"
-      divisible:
-        type: boolean
+        "$ref": "#/definitions/sha3_hexdigest"
         description: |
-            Whether or not the asset has a quantity that may be partially spent.
-      updatable:
-        type: boolean
-        description: |
-            Whether or not the description of the asset may be updated. Defaults to false.
-      refillable:
-        type: boolean
-        description: |
-          Whether the amount of the asset can change after its creation. Defaults to false.
+          ID of the transaction that created the asset.
       data:
         description: |
           User provided metadata associated with the asset. May also be ``null``.
@@ -170,6 +159,10 @@ definitions:
         "$ref": "#/definitions/public_keys"
         description: |
             List of public keys associated with the conditions on an output.
+      amount:
+        type: integer
+        description: |
+            Integral amount of the asset represented by this condition.
   input:
     type: "object"
     description:

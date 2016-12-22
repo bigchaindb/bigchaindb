@@ -2,8 +2,9 @@ import time
 
 import pytest
 
+pytestmark = [pytest.mark.bdb, pytest.mark.usefixtures('processes')]
 
-@pytest.mark.usefixtures('processes')
+
 def test_fast_double_create(b, user_pk):
     from bigchaindb.models import Transaction
     from bigchaindb.backend.query import count_blocks
@@ -25,7 +26,6 @@ def test_fast_double_create(b, user_pk):
     assert count_blocks(b.connection) == 2
 
 
-@pytest.mark.usefixtures('processes')
 def test_double_create(b, user_pk):
     from bigchaindb.models import Transaction
     from bigchaindb.backend.query import count_blocks

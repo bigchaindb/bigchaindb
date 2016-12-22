@@ -6,7 +6,7 @@ from time import time
 from itertools import compress
 from bigchaindb.common import crypto, exceptions
 from bigchaindb.common.util import gen_timestamp, serialize
-from bigchaindb.common.transaction import TransactionLink, Asset
+from bigchaindb.common.transaction import TransactionLink
 
 import bigchaindb
 
@@ -348,13 +348,12 @@ class Bigchain(object):
                 asset_id (str): The asset id.
 
             Returns:
-                :class:`~bigchaindb.common.transaction.Asset` if the asset
-                exists else None.
+                dict if the asset exists else None.
         """
         cursor = backend.query.get_asset_by_id(self.connection, asset_id)
         cursor = list(cursor)
         if cursor:
-            return Asset.from_dict(cursor[0]['asset'])
+            return cursor[0]['asset']
 
     def get_spent(self, txid, output):
         """Check if a `txid` was already used as an input.
@@ -517,7 +516,7 @@ class Bigchain(object):
             block (Block): block to write to bigchain.
         """
 
-        return backend.query.write_block(self.connection, block.to_str())
+        return backend.query.write_block(self.connection, block)
 
     def transaction_exists(self, transaction_id):
         return backend.query.has_transaction(self.connection, transaction_id)

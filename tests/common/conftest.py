@@ -14,12 +14,19 @@ USER3_PUBLIC_KEY = 'Gbrg7JtxdjedQRmr81ZZbh1BozS7fBW88ZyxNDy7WLNC'
 CC_FULFILLMENT_URI = 'cf:0:'
 CC_CONDITION_URI = 'cc:0:3:47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU:0'
 
+ASSET_DEFINITION = {
+    'data': {
+        'definition': 'Asset definition'
+    }
+}
+
+ASSET_LINK = {
+    'id': 'a' * 64
+}
+
 DATA = {
     'msg': 'Hello BigchainDB!'
 }
-DATA_ID = '872fa6e6f46246cd44afdb2ee9cfae0e72885fb0910e2bcf9a5a2a4eadb417b8'
-
-UUID4 = 'dc568f27-a113-46b4-9bd4-43015859e3e3'
 
 
 @pytest.fixture
@@ -122,24 +129,24 @@ def user2_output(user2_Ed25519, user2_pub):
 
 
 @pytest.fixture
+def asset_definition():
+    return ASSET_DEFINITION
+
+
+@pytest.fixture
+def asset_link():
+    return ASSET_LINK
+
+
+@pytest.fixture
 def data():
     return DATA
 
 
 @pytest.fixture
-def data_id():
-    return DATA_ID
-
-
-@pytest.fixture
-def uuid4():
-    return UUID4
-
-
-@pytest.fixture
 def utx(user_input, user_output):
-    from bigchaindb.common.transaction import Transaction, Asset
-    return Transaction(Transaction.CREATE, Asset(), [user_input],
+    from bigchaindb.common.transaction import Transaction
+    return Transaction(Transaction.CREATE, {'data': None}, [user_input],
                        [user_output])
 
 
@@ -151,12 +158,12 @@ def tx(utx, user_priv):
 @pytest.fixture
 def transfer_utx(user_output, user2_output, utx):
     from bigchaindb.common.transaction import (Input, TransactionLink,
-                                               Transaction, Asset)
+                                               Transaction)
     user_output = user_output.to_dict()
     input = Input(utx.outputs[0].fulfillment,
                   user_output['public_keys'],
                   TransactionLink(utx.id, 0))
-    return Transaction('TRANSFER', Asset(), [input], [user2_output])
+    return Transaction('TRANSFER', {'id': utx.id}, [input], [user2_output])
 
 
 @pytest.fixture

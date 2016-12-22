@@ -4,7 +4,7 @@ from bigchaindb.common.exceptions import (InvalidHash, InvalidSignature,
                                           TransactionDoesNotExist,
                                           TransactionNotInValidBlock,
                                           AssetIdMismatch, AmountError)
-from bigchaindb.common.transaction import Transaction, Asset
+from bigchaindb.common.transaction import Transaction
 from bigchaindb.common.util import gen_timestamp, serialize
 from bigchaindb.common.schema import validate_transaction_schema
 
@@ -39,21 +39,30 @@ class Transaction(Transaction):
         input_conditions = []
         inputs_defined = all([input_.fulfills for input_ in self.inputs])
 
+        # validate amounts
+        if any(output.amount < 1 for output in self.outputs):
+            raise AmountError('`amount` needs to be greater than zero')
+
         if self.operation in (Transaction.CREATE, Transaction.GENESIS):
+            # validate asset
+            if self.asset['data'] is not None and not isinstance(self.asset['data'], dict):
+                raise TypeError(('`asset.data` must be a dict instance or '
+                                 'None for `CREATE` transactions'))
             # validate inputs
             if inputs_defined:
                 raise ValueError('A CREATE operation has no inputs')
-            # validate asset
-            amount = sum([output.amount for output in self.outputs])
-            self.asset.validate_asset(amount=amount)
         elif self.operation == Transaction.TRANSFER:
+            # validate asset
+            if not isinstance(self.asset['id'], str):
+                raise ValueError(('`asset.id` must be a string for '
+                                  '`TRANSFER` transations'))
+            # check inputs
             if not inputs_defined:
                 raise ValueError('Only `CREATE` transactions can have null '
                                  'inputs')
-            # check inputs
+
             # store the inputs so that we can check if the asset ids match
             input_txs = []
-            input_amount = 0
             for input_ in self.inputs:
                 input_txid = input_.fulfills.txid
                 input_tx, status = bigchain.\
@@ -78,24 +87,21 @@ class Transaction(Transaction):
                 input_txs.append(input_tx)
                 if output.amount < 1:
                     raise AmountError('`amount` needs to be greater than zero')
-                input_amount += output.amount
 
             # validate asset id
-            asset_id = Asset.get_asset_id(input_txs)
-            if asset_id != self.asset.data_id:
-                raise AssetIdMismatch('The asset id of the input does not '
-                                      'match the asset id of the transaction')
+            asset_id = Transaction.get_asset_id(input_txs)
+            if asset_id != self.asset['id']:
+                raise AssetIdMismatch(('The asset id of the input does not'
+                                       ' match the asset id of the'
+                                       ' transaction'))
 
-            # get the asset creation to see if its divisible or not
-            asset = bigchain.get_asset_by_id(asset_id)
-            # validate the asset
-            asset.validate_asset(amount=input_amount)
             # validate the amounts
-            output_amount = 0
             for output in self.outputs:
                 if output.amount < 1:
                     raise AmountError('`amount` needs to be greater than zero')
-                output_amount += output.amount
+
+            input_amount = sum([input_condition.amount for input_condition in input_conditions])
+            output_amount = sum([output_condition.amount for output_condition in self.outputs])
 
             if output_amount != input_amount:
                 raise AmountError(('The amount used in the inputs `{}`'
@@ -110,8 +116,8 @@ class Transaction(Transaction):
 
         if not self.inputs_valid(input_conditions):
             raise InvalidSignature()
-        else:
-            return self
+
+        return self
 
     @classmethod
     def from_dict(cls, tx_body):

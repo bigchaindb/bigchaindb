@@ -6,7 +6,7 @@ from bigchaindb import backend
 from bigchaindb.backend.rethinkdb import schema
 
 
-@pytest.mark.usefixtures('setup_database')
+@pytest.mark.bdb
 def test_init_creates_db_tables_and_indexes():
     from bigchaindb.backend.schema import init_database
     conn = backend.connect()
@@ -28,7 +28,7 @@ def test_init_creates_db_tables_and_indexes():
         'assignee__transaction_timestamp')) is True
 
 
-@pytest.mark.usefixtures('setup_database')
+@pytest.mark.bdb
 def test_init_database_fails_if_db_exists():
     from bigchaindb.backend.schema import init_database
     from bigchaindb.common import exceptions
@@ -43,14 +43,13 @@ def test_init_database_fails_if_db_exists():
         init_database()
 
 
-def test_create_database():
+def test_create_database(not_yet_created_db):
     conn = backend.connect()
-    dbname = bigchaindb.config['database']['name']
-    schema.create_database(conn, dbname)
-    assert conn.run(r.db_list().contains(dbname)) is True
+    schema.create_database(conn, not_yet_created_db)
+    assert conn.run(r.db_list().contains(not_yet_created_db)) is True
 
 
-@pytest.mark.usefixtures('setup_database')
+@pytest.mark.bdb
 def test_create_tables():
     conn = backend.connect()
     dbname = bigchaindb.config['database']['name']
@@ -67,7 +66,7 @@ def test_create_tables():
     assert len(conn.run(r.db(dbname).table_list())) == 3
 
 
-@pytest.mark.usefixtures('setup_database')
+@pytest.mark.bdb
 def test_create_secondary_indexes():
     conn = backend.connect()
     dbname = bigchaindb.config['database']['name']
@@ -96,29 +95,17 @@ def test_create_secondary_indexes():
         'block_and_voter')) is True
 
 
-@pytest.mark.usefixtures('setup_database')
-def test_drop():
+def test_drop(dummy_db):
     conn = backend.connect()
-    dbname = bigchaindb.config['database']['name']
-
-    # The db is set up by fixtures
-    assert conn.run(r.db_list().contains(dbname)) is True
-
-    schema.drop_database(conn, dbname)
-    assert conn.run(r.db_list().contains(dbname)) is False
+    assert conn.run(r.db_list().contains(dummy_db)) is True
+    schema.drop_database(conn, dummy_db)
+    assert conn.run(r.db_list().contains(dummy_db)) is False
 
 
-@pytest.mark.usefixtures('setup_database')
-def test_drop_non_existent_db_raises_an_error():
+def test_drop_non_existent_db_raises_an_error(dummy_db):
     from bigchaindb.common import exceptions
-
     conn = backend.connect()
-    dbname = bigchaindb.config['database']['name']
-
-    # The db is set up by fixtures
-    assert conn.run(r.db_list().contains(dbname)) is True
-
-    schema.drop_database(conn, dbname)
-
+    assert conn.run(r.db_list().contains(dummy_db)) is True
+    schema.drop_database(conn, dummy_db)
     with pytest.raises(exceptions.DatabaseDoesNotExist):
-        schema.drop_database(conn, dbname)
+        schema.drop_database(conn, dummy_db)

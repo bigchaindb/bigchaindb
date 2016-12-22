@@ -47,8 +47,15 @@ It seems the preference is for slashes, but using parentheses is okay too. (Ther
 
 If you need to `import` lots of names from a module or package, and they won't all fit in one line (without making the line too long), then use parentheses to spread the names across multiple lines, like so:
 ```python
+from Tkinter import (
+    Tk, Frame, Button, Entry, Canvas, Text,
+    LEFT, DISABLED, NORMAL, RIDGE, END,
+)
+
+# Or
+
 from Tkinter import (Tk, Frame, Button, Entry, Canvas, Text,
-    LEFT, DISABLED, NORMAL, RIDGE, END)
+                     LEFT, DISABLED, NORMAL, RIDGE, END)
 ```
 
 For the rationale, see [PEP 328](https://www.python.org/dev/peps/pep-0328/#rationale-for-parentheses).
@@ -65,7 +72,7 @@ x = 'name: {}; score: {}'.format(name, n)
 we use the `format()` version. The [official Python documentation says](https://docs.python.org/2/library/stdtypes.html#str.format), "This method of string formatting is the new standard in Python 3, and should be preferred to the % formatting described in String Formatting Operations in new code."
 
 
-## Runnng the Flake8 Style Checker
+## Running the Flake8 Style Checker
 
 We use [Flake8](http://flake8.pycqa.org/en/latest/index.html) to check our Python code style. Once you have it installed, you can run it using:
 ```text
@@ -75,48 +82,6 @@ flake8 --max-line-length 119 bigchaindb/
 
 ## Writing and Running (Python) Tests
 
-We write unit and integration tests for our Python code using the [pytest](http://pytest.org/latest/) framework.
+The content of this section was moved to [`bigchiandb/tests/README.md`](./tests/README.md).
 
-All tests go in the `bigchaindb/tests` directory or one of its subdirectories. You can use the tests already in there as templates or examples.
-
-You can run all tests using:
-```text
-py.test -v
-```
-
-or, if that doesn't work, try:
-```text
-python -m pytest -v
-```
-
-or:
-```text
-python setup.py test
-```
-
-If you want to learn about all the things you can do with pytest, see [the pytest documentation](http://pytest.org/latest/).
-
-### Tox
-
-We use [tox](https://tox.readthedocs.io/en/latest/) to run multiple suites of tests against multiple environments during automated testing. Generally you don't need to run this yourself, but it might be useful when troubleshooting a failing CI build.
-
-To run all the tox tests, use:
-```text
-tox
-```
-
-or:
-```text
-python -m tox
-```
-
-To run only a few environments, use the `-e` flag:
-```text
-tox -e {ENVLIST}
-```
-
-where `{ENVLIST}` is one or more of the environments specified in the [tox.ini file](tox.ini).
-
-### Automated testing of pull requests
-
-We use [Travis CI](https://travis-ci.com/), so that whenever someone creates a new BigchainDB pull request on GitHub, Travis CI gets the new code and does _a bunch of stuff_. You can find out what we tell Travis CI to do in [the `.travis.yml` file](.travis.yml): it tells Travis CI how to install BigchainDB, how to run all the tests, and what to do "after success" (e.g. run `codecov`). (We use [Codecov](https://codecov.io/) to get a rough estimate of our test coverage.)
+Note: We automatically run all tests on all pull requests (using Travis CI), so you should definitely run all tests locally before you submit a pull request. See the above-linked README file for instructions.
