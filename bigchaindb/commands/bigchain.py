@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 # We need this because `input` always prints on stdout, while it should print
 # to stderr. It's a very old bug, check it out here:
 # - https://bugs.python.org/issue1927
-def input(prompt):
+def input_on_stderr(prompt=''):
     print(prompt, end='', file=sys.stderr)
     return builtins.input()
 
@@ -70,8 +70,8 @@ def run_configure(args, skip_if_exists=False):
         return
 
     if config_file_exists and not args.yes:
-        want = input('Config file `{}` exists, do you want to override it? '
-                     '(cannot be undone) [y/N]: '.format(config_path))
+        want = input_on_stderr('Config file `{}` exists, do you want to '
+                               'override it? (cannot be undone) [y/N]: '.format(config_path))
         if want != 'y':
             return
 
@@ -90,24 +90,25 @@ def run_configure(args, skip_if_exists=False):
         for key in ('bind', ):
             val = conf['server'][key]
             conf['server'][key] = \
-                input('API Server {}? (default `{}`): '.format(key, val)) \
+                input_on_stderr('API Server {}? (default `{}`): '.format(key, val)) \
                 or val
 
         for key in ('host', 'port', 'name'):
             val = conf['database'][key]
             conf['database'][key] = \
-                input('Database {}? (default `{}`): '.format(key, val)) \
+                input_on_stderr('Database {}? (default `{}`): '.format(key, val)) \
                 or val
 
         for key in ('host', 'port', 'rate'):
             val = conf['statsd'][key]
             conf['statsd'][key] = \
-                input('Statsd {}? (default `{}`): '.format(key, val)) \
+                input_on_stderr('Statsd {}? (default `{}`): '.format(key, val)) \
                 or val
 
         val = conf['backlog_reassign_delay']
         conf['backlog_reassign_delay'] = \
-            input('Stale transaction reassignment delay (in seconds)? (default `{}`): '.format(val)) \
+            input_on_stderr(('Stale transaction reassignment delay (in '
+                             'seconds)? (default `{}`): '.format(val))) \
             or val
 
     if config_path != '-':
@@ -164,7 +165,7 @@ def run_drop(args):
     dbname = bigchaindb.config['database']['name']
 
     if not args.yes:
-        response = input('Do you want to drop `{}` database? [y/n]: '.format(dbname))
+        response = input_on_stderr('Do you want to drop `{}` database? [y/n]: '.format(dbname))
         if response != 'y':
             return
 

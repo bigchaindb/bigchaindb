@@ -170,7 +170,7 @@ def test_drop_db_when_assumed_yes(mock_db_drop):
 def test_drop_db_when_interactive_yes(mock_db_drop, monkeypatch):
     from bigchaindb.commands.bigchain import run_drop
     args = Namespace(config=None, yes=False)
-    monkeypatch.setattr('bigchaindb.commands.bigchain.input', lambda x: 'y')
+    monkeypatch.setattr('bigchaindb.commands.bigchain.input_on_stderr', lambda x: 'y')
 
     run_drop(args)
     assert mock_db_drop.called
@@ -180,7 +180,7 @@ def test_drop_db_when_interactive_yes(mock_db_drop, monkeypatch):
 def test_drop_db_does_not_drop_when_interactive_no(mock_db_drop, monkeypatch):
     from bigchaindb.commands.bigchain import run_drop
     args = Namespace(config=None, yes=False)
-    monkeypatch.setattr('bigchaindb.commands.bigchain.input', lambda x: 'n')
+    monkeypatch.setattr('bigchaindb.commands.bigchain.input_on_stderr', lambda x: 'n')
 
     run_drop(args)
     assert not mock_db_drop.called
@@ -196,7 +196,7 @@ def test_run_configure_when_config_exists_and_skipping(monkeypatch):
 
 # TODO Beware if you are putting breakpoints in there, and using the '-s'
 # switch with pytest. It will just hang. Seems related to the monkeypatching of
-# input.
+# input_on_stderr.
 def test_run_configure_when_config_does_not_exist(monkeypatch,
                                                   mock_write_config,
                                                   mock_generate_key_pair,
