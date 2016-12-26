@@ -130,7 +130,7 @@ Transactions
    :resheader Content-Type: ``application/json``
 
    :statuscode 200: A list of transaction's containing unfulfilled conditions was found and returned.
-   :statuscode 400: The request wasn't understood by the server, e.g. the ``owners_after`` querystring was not included in the request.
+   :statuscode 400: The request wasn't understood by the server, e.g. the ``public_keys`` querystring was not included in the request.
 
 .. http:get:: /transactions?operation={GENESIS|CREATE|TRANSFER}&asset_id={asset_id}
 
