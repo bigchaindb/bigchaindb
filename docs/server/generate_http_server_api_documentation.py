@@ -9,6 +9,38 @@ from bigchaindb.common.transaction import Transaction
 
 TPLS = {}
 
+
+TPLS['get-tx-id-request'] = """\
+GET /transactions/%(txid)s HTTP/1.1
+Host: example.com
+
+"""
+
+
+TPLS['get-tx-id-response'] = """\
+HTTP/1.1 200 OK
+Content-Type: application/json
+X-BigchainDB-Timestamp: 1482766245
+
+%(tx)s
+"""
+
+
+TPLS['get-tx-unfulfilled-request'] = """\
+GET /transactions?fulfilled=false&public_keys=%(public_keys)s HTTP/1.1
+Host: example.com
+
+"""
+
+
+TPLS['get-tx-unfulfilled-response'] = """\
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+[%(tx)s]
+"""
+
+
 TPLS['post-tx-request'] = """\
 POST /transactions/ HTTP/1.1
 Host: example.com
@@ -32,7 +64,6 @@ Host: example.com
 
 """
 
-
 TPLS['get-tx-status-response'] = """\
 HTTP/1.1 200 OK
 Content-Type: application/json
@@ -43,20 +74,6 @@ Content-Type: application/json
 """
 
 
-TPLS['get-tx-request'] = """\
-GET /transactions/%(txid)s HTTP/1.1
-Host: example.com
-
-"""
-
-
-TPLS['get-tx-response'] = """\
-HTTP/1.1 200 OK
-Content-Type: application/json
-X-BigchainDB-Timestamp: 1482766245
-
-%(tx)s
-"""
 
 
 def main():
@@ -75,7 +92,9 @@ def main():
 
     for name, tpl in TPLS.items():
         path = os.path.join(base_path, name + '.http')
-        code = tpl % {'tx': tx_json, 'txid': tx.id}
+        code = tpl % {'tx': tx_json,
+                      'txid': tx.id,
+                      'public_keys': tx.outputs[0].public_keys[0]}
         with open(path, 'w') as handle:
             handle.write(code)
 
