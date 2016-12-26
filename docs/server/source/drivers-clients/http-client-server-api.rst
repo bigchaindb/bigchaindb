@@ -513,8 +513,8 @@ Blocks
           "node_pubkey":"ErEeVZt8AfLbMJub25tjNxbpzzTNp3mGidL3GxGdd9bt",
             "timestamp":"1479389911",
             "transactions":[
-              '<transaction1>',
-              '<transaction2>'
+              "<transaction1>",
+              "<transaction2>"
             ],
             "voters":[
               "ErEeVZt8AfLbMJub25tjNxbpzzTNp3mGidL3GxGdd9bt"
@@ -643,8 +643,8 @@ Votes
    perform the `following steps: <https://github.com/bigchaindb/bigchaindb/blob/8ebd93ed3273e983f5770b1617292aadf9f1462b/bigchaindb/util.py#L119>`_
 
    1. Check if the vote's ``node_pubkey`` is allowed to vote.
-   2. Verify the vote's signature against the vote's body (``vote.vote``) and
-   ``node_pubkey``.
+   2. Verify the vote's signature against the vote's body (``vote.vote``) and ``node_pubkey``.
+
 
    :query string block_id: The block ID to filter the votes.
 
