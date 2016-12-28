@@ -79,13 +79,18 @@ Transactions
    queried correctly. Some of them include retrieving a list of transactions
    that include:
 
-   * `Unfulfilled conditions <#get--transactions?fulfilled=false&public_keys=public_keys>`_
-   * `A specific asset <#get--transactions?operation=CREATE|TRANSFER&asset_id=asset_id>`_
-   * `Specific metadata <#get--transactions?&metadata_id=metadata_id>`_
+   * `Unfulfilled outputs <#get--transactions?fulfilled=false&public_keys=public_keys>`_
+   * `Transactions related to a specific asset <#get--transactions?operation=CREATE|TRANSFER&asset_id=asset_id>`_
 
    In this section, we've listed those particular requests, as they will likely
    to be very handy when implementing your application on top of BigchainDB.
-   A generalization of those parameters can follows:
+
+   .. note::
+      Looking up transactions with a specific ``metadata`` field is currently not supported.
+      This functionality requires something like custom indexing per client or read-only followers,
+      which is not yet on the roadmap.
+
+   A generalization of those parameters follows:
 
    :query boolean fulfilled: A flag to indicate if transaction's with fulfilled conditions should be returned.
 
@@ -94,8 +99,6 @@ Transactions
    :query string operation: One of the three supported operations of a transaction: ``GENESIS``, ``CREATE``, ``TRANSFER``.
 
    :query string asset_id: asset ID.
-
-   :query string metadata_id: metadata ID.
 
    :statuscode 404: BigchainDB does not expose this endpoint.
 
@@ -169,95 +172,6 @@ Transactions
    :statuscode 200: A list of transaction's containing an asset with ID ``asset_id`` was found and returned.
    :statuscode 400: The request wasn't understood by the server, e.g. the ``asset_id`` querystring was not included in the request.
 
-.. http:get:: /transactions?metadata_id={metadata_id}
-
-   Get a list of transactions that use metadata with the ID ``metadata_id``.
-
-   This endpoint returns assets only if the transaction they're in are
-   included in a ``VALID`` or ``UNDECIDED`` block on ``bigchain``.
-
-   .. note::
-       The BigchainDB API currently doesn't expose an
-       ``/metadata/{metadata_id}`` endpoint, as there wouldn't be any way for a
-       client to verify that what was received is consistent with what was
-       persisted in the database.
-       However, BigchainDB's consensus ensures that any ``metadata_id`` is
-       a unique key identifying metadata, meaning that when calling
-       ``/transactions?metadata_id={metadata_id}``, there will in any case only
-       be one transaction returned (in a list though, since ``/transactions``
-       is a list-returning endpoint).
-
-   :query string metadata_id: metadata ID.
-
-   **Example request**:
-
-   .. sourcecode:: http
-
-      GET /transactions?metadata_id=1AAAbbb...ccc HTTP/1.1
-      Host: example.com
-
-   **Example response**:
-
-   .. sourcecode:: http
-
-      HTTP/1.1 200 OK
-      Content-Type: application/json
-
-      [{
-        "transaction": {
-          "conditions": [
-            {
-              "cid": 0,
-              "condition": {
-                "uri": "cc:4:20:GG-pi3CeIlySZhQoJVBh9O23PzrOuhnYI7OHqIbHjkk:96",
-                "details": {
-                  "signature": null,
-                  "type": "fulfillment",
-                  "type_id": 4,
-                  "bitmask": 32,
-                  "public_key": "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
-                }
-              },
-              "amount": 1,
-              "owners_after": [
-                "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
-              ]
-            }
-          ],
-          "operation": "CREATE",
-          "asset": {
-            "divisible": false,
-            "updatable": false,
-            "data": null,
-            "id": "aebeab22-e672-4d3b-a187-bde5fda6533d",
-            "refillable": false
-          },
-          "metadata": {
-            "id": "1AAAbbb...ccc",
-            "data": {
-              "hello": "world"
-            },
-          },
-          "timestamp": "1477578978",
-          "fulfillments": [
-            {
-              "fid": 0,
-              "input": null,
-              "fulfillment": "cf:4:GG-pi3CeIlySZhQoJVBh9O23PzrOuhnYI7OHqIbHjkn2VnQaEWvecO1x82Qr2Va_JjFywLKIOEV1Ob9Ofkeln2K89ny2mB-s7RLNvYAVzWNiQnp18_nQEUsvwACEXTYJ",
-              "owners_before": [
-                "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
-              ]
-            }
-          ]
-        },
-        "id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e",
-        "version": 1
-      }]
-
-   :resheader Content-Type: ``application/json``
-
-   :statuscode 200: A list of transaction's containing metadata with ID ``metadata_id`` was found and returned.
-   :statuscode 400: The request wasn't understood by the server, e.g. the ``metadata_id`` querystring was not included in the request.
 
 .. http:post:: /transactions
 
