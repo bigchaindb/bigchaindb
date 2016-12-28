@@ -66,29 +66,37 @@ Content-Type: application/json
 
 
 TPLS['post-tx-response'] = """\
-HTTP/1.1 201 Created
+HTTP/1.1 202 Accepted
 Content-Type: application/json
-
-%(tx)s
+Location: ../statuses/%(txid)s
 """
 
 
-TPLS['get-tx-status-request'] = """\
-GET /transactions/%(txid)s/status HTTP/1.1
+TPLS['get-statuses-tx-request'] = """\
+GET /statuses/%(txid)s HTTP/1.1
 Host: example.com
 
 """
 
-TPLS['get-tx-status-response'] = """\
+TPLS['get-statuses-tx-invalid-response'] = """\
 HTTP/1.1 200 OK
 Content-Type: application/json
+
+{
+  "status": "invalid"
+}
+"""
+
+
+TPLS['get-statuses-tx-valid-response'] = """\
+HTTP/1.1 303 See Other
+Content-Type: application/json
+Location: ../transactions/%(txid)s
 
 {
   "status": "valid"
 }
 """
-
-
 
 
 def main():

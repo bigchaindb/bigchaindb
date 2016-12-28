@@ -224,12 +224,17 @@ Statuses
 
    **Example request**:
 
-   .. literalinclude:: samples/get-tx-status-request.http
+   .. literalinclude:: samples/get-statuses-tx-request.http
       :language: http
 
    **Example response**:
 
-   .. literalinclude:: samples/get-tx-status-response.http
+   .. literalinclude:: samples/get-statuses-tx-invalid-response.http
+      :language: http
+
+   **Example response**:
+
+   .. literalinclude:: samples/get-statuses-tx-valid-response.http
       :language: http
 
    :resheader Content-Type: ``application/json``
