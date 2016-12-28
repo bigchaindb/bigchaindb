@@ -156,63 +156,13 @@ Transactions
 
    **Example request**:
 
-   .. sourcecode:: http
-
-      GET /transactions?operation=CREATE&asset_id=1AAAbbb...ccc HTTP/1.1
-      Host: example.com
+   .. literalinclude:: samples/get-tx-by-asset-request.http
+      :language: http
 
    **Example response**:
 
-   .. sourcecode:: http
-
-      HTTP/1.1 200 OK
-      Content-Type: application/json
-
-      [{
-        "transaction": {
-          "conditions": [
-            {
-              "cid": 0,
-              "condition": {
-                "uri": "cc:4:20:GG-pi3CeIlySZhQoJVBh9O23PzrOuhnYI7OHqIbHjkk:96",
-                "details": {
-                  "signature": null,
-                  "type": "fulfillment",
-                  "type_id": 4,
-                  "bitmask": 32,
-                  "public_key": "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
-                }
-              },
-              "amount": 1,
-              "owners_after": [
-                "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
-              ]
-            }
-          ],
-          "operation": "CREATE",
-          "asset": {
-            "divisible": false,
-            "updatable": false,
-            "data": null,
-            "id": "1AAAbbb...ccc",
-            "refillable": false
-          },
-          "metadata": null,
-          "timestamp": "1477578978",
-          "fulfillments": [
-            {
-              "fid": 0,
-              "input": null,
-              "fulfillment": "cf:4:GG-pi3CeIlySZhQoJVBh9O23PzrOuhnYI7OHqIbHjkn2VnQaEWvecO1x82Qr2Va_JjFywLKIOEV1Ob9Ofkeln2K89ny2mB-s7RLNvYAVzWNiQnp18_nQEUsvwACEXTYJ",
-              "owners_before": [
-                "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
-              ]
-            }
-          ]
-        },
-        "id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e",
-        "version": 1
-      }]
+   .. literalinclude:: samples/get-tx-by-asset-response.http
+      :language: http
 
    :resheader Content-Type: ``application/json``
 

@@ -4,8 +4,7 @@ import json
 import os
 import os.path
 
-from bigchaindb.common.transaction import Transaction
-
+from bigchaindb.common.transaction import Transaction, Input, TransactionLink
 
 TPLS = {}
 
@@ -27,7 +26,7 @@ X-BigchainDB-Timestamp: 1482766245
 
 
 TPLS['get-tx-unfulfilled-request'] = """\
-GET /transactions?fulfilled=false&public_keys=%(public_keys)s HTTP/1.1
+GET /transactions?fulfilled=false&public_keys=%(public_keys_transfer_last)s HTTP/1.1
 Host: example.com
 
 """
@@ -37,7 +36,23 @@ TPLS['get-tx-unfulfilled-response'] = """\
 HTTP/1.1 200 OK
 Content-Type: application/json
 
-[%(tx)s]
+[%(tx_transfer_last)s]
+"""
+
+
+TPLS['get-tx-by-asset-request'] = """\
+GET /transactions?operation=transfer&asset_id=%(txid)s HTTP/1.1
+Host: example.com
+
+"""
+
+
+TPLS['get-tx-by-asset-response'] = """\
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+[%(tx_transfer)s,
+%(tx_transfer_last)s]
 """
 
 
@@ -80,9 +95,32 @@ def main():
     """ Main function """
     privkey = 'CfdqtD7sS7FgkMoGPXw55MVGGFwQLAoHYTcBhZDtF99Z'
     pubkey = '4K9sWUMFwTgaDGPfdynrbxWqWS6sWmKbZoTjxLtVUibD'
-    tx = Transaction.create([pubkey], [([pubkey], 1)])
+    asset = {'msg': 'Hello BigchainDB!'}
+    tx = Transaction.create([pubkey], [([pubkey], 1)], asset=asset)
     tx = tx.sign([privkey])
     tx_json = json.dumps(tx.to_dict(), indent=2, sort_keys=True)
+
+    privkey_transfer = '3AeWpPdhEZzWLYfkfYHBfMFC2r1f8HEaGS9NtbbKssya'
+    pubkey_transfer = '3yfQPHeWAa1MxTX9Zf9176QqcpcnWcanVZZbaHb8B3h9'
+
+    cid = 0
+    input_ = Input(fulfillment=tx.outputs[cid].fulfillment,
+                   fulfills=TransactionLink(txid=tx.id, output=cid),
+                   owners_before=tx.outputs[cid].public_keys)
+    tx_transfer = Transaction.transfer([input_], [([pubkey_transfer], 1)], asset_id=tx.id)
+    tx_transfer = tx_transfer.sign([privkey])
+    tx_transfer_json = json.dumps(tx_transfer.to_dict(), indent=2, sort_keys=True)
+
+    privkey_transfer_last = 'sG3jWDtdTXUidBJK53ucSTrosktG616U3tQHBk81eQe'
+    pubkey_transfer_last = '3Af3fhhjU6d9WecEM9Uw5hfom9kNEwE7YuDWdqAUssqm'
+
+    cid = 0
+    input_ = Input(fulfillment=tx_transfer.outputs[cid].fulfillment,
+                   fulfills=TransactionLink(txid=tx_transfer.id, output=cid),
+                   owners_before=tx_transfer.outputs[cid].public_keys)
+    tx_transfer_last = Transaction.transfer([input_], [([pubkey_transfer_last], 1)], asset_id=tx.id)
+    tx_transfer_last = tx_transfer_last.sign([privkey_transfer])
+    tx_transfer_last_json = json.dumps(tx_transfer_last.to_dict(), indent=2, sort_keys=True)
 
     base_path = os.path.join(os.path.dirname(__file__),
                              'source/drivers-clients/samples')
@@ -94,7 +132,13 @@ def main():
         path = os.path.join(base_path, name + '.http')
         code = tpl % {'tx': tx_json,
                       'txid': tx.id,
-                      'public_keys': tx.outputs[0].public_keys[0]}
+                      'tx_transfer': tx_transfer_json,
+                      'tx_transfer_id': tx_transfer.id,
+                      'tx_transfer_last': tx_transfer_last_json,
+                      'tx_transfer_last_id': tx_transfer_last.id,
+                      'public_keys': tx.outputs[0].public_keys[0],
+                      'public_keys_transfer': tx_transfer.outputs[0].public_keys[0],
+                      'public_keys_transfer_last': tx_transfer_last.outputs[0].public_keys[0]}
         with open(path, 'w') as handle:
             handle.write(code)
 
