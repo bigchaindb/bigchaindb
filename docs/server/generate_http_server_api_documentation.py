@@ -5,6 +5,8 @@ import os
 import os.path
 
 from bigchaindb.common.transaction import Transaction, Input, TransactionLink
+from bigchaindb.models import Block
+
 
 TPLS = {}
 
@@ -99,6 +101,20 @@ Location: ../transactions/%(txid)s
 """
 
 
+TPLS['get-block-request'] = """\
+GET /blocks/%(blockid)s HTTP/1.1
+Host: example.com
+
+"""
+
+TPLS['get-block-response'] = """\
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+%(block)s
+"""
+
+
 def main():
     """ Main function """
     privkey = 'CfdqtD7sS7FgkMoGPXw55MVGGFwQLAoHYTcBhZDtF99Z'
@@ -130,6 +146,11 @@ def main():
     tx_transfer_last = tx_transfer_last.sign([privkey_transfer])
     tx_transfer_last_json = json.dumps(tx_transfer_last.to_dict(), indent=2, sort_keys=True)
 
+    node = "ErEeVZt8AfLbMJub25tjNxbpzzTNp3mGidL3GxGdd9bt"
+    signature = "53wxrEQDYk1dXzmvNSytbCfmNVnPqPkDQaTnAe8Jf43s6ssejPxezkCvUnGTnduNUmaLjhaan1iRLi3peu6s5DzA"
+    block = Block(transactions=[tx], node_pubkey=node, voters=[node], signature=signature)
+    block_json = json.dumps(block.to_dict(), indent=2, sort_keys=True)
+
     base_path = os.path.join(os.path.dirname(__file__),
                              'source/drivers-clients/samples')
 
@@ -146,7 +167,9 @@ def main():
                       'tx_transfer_last_id': tx_transfer_last.id,
                       'public_keys': tx.outputs[0].public_keys[0],
                       'public_keys_transfer': tx_transfer.outputs[0].public_keys[0],
-                      'public_keys_transfer_last': tx_transfer_last.outputs[0].public_keys[0]}
+                      'public_keys_transfer_last': tx_transfer_last.outputs[0].public_keys[0],
+                      'block': block_json,
+                      'blockid': block.id}
         with open(path, 'w') as handle:
             handle.write(code)
 
@@ -158,3 +181,5 @@ def setup(*_):
 
 if __name__ == '__main__':
     main()
+
+

@@ -266,33 +266,14 @@ Blocks
 
    **Example request**:
 
-   .. sourcecode:: http
-
-      GET /blocks/6152fbc7e0f7686512ed6b92c01e8c73ea1e3f51a7b037ac5cc8c860215e7202 HTTP/1.1
-      Host: example.com
+   .. literalinclude:: samples/get-block-request.http
+      :language: http
 
    **Example response**:
 
-   .. sourcecode:: http
+   .. literalinclude:: samples/get-block-response.http
+      :language: http
 
-      HTTP/1.1 200 OK
-      Content-Type: application/json
-
-      {
-        "block":{
-          "node_pubkey":"ErEeVZt8AfLbMJub25tjNxbpzzTNp3mGidL3GxGdd9bt",
-            "timestamp":"1479389911",
-            "transactions":[
-              "<transaction1>",
-              "<transaction2>"
-            ],
-            "voters":[
-              "ErEeVZt8AfLbMJub25tjNxbpzzTNp3mGidL3GxGdd9bt"
-            ]
-        },
-        "id":"6152fbc7e0f7686512ed6b92c01e8c73ea1e3f51a7b037ac5cc8c860215e7202",
-        "signature":"53wxrEQDYk1dXzmvNSytbCfmNVnPqPkDQaTnAe8Jf43s6ssejPxezkCvUnGTnduNUmaLjhaan1iRLi3peu6s5DzA"
-      }
 
    :resheader Content-Type: ``application/json``
 
