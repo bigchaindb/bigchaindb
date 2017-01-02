@@ -25,34 +25,40 @@ with something like the following in the body:
 .. code-block:: json
 
     {
+      "_links": {
+        "docs": { "href": "https://docs.bigchaindb.com/projects/server/en/v0.9.0/" }
+      }
       "keyring": [
         "6qHyZew94NMmUTYyHnkZsB8cxJYuRNEiEpXHe1ih9QX3",
         "AdDuyrTyjrDt935YnFu4VBCVDhHtY2Y6rcy7x2TFeiRi"
       ],
       "public_key": "AiygKSRhZWTxxYT4AfgKoTG4TZAoPsWoEt6C6bLq4jJR",
       "software": "BigchainDB",
-      "version": "0.9.0"
+      "version": "0.9.0",
     }
 
 
-API Root URL
+API Root Endpoint
 -------------------
 
-If you send an HTTP GET request to the API Root URL
-e.g. ``http://localhost:9984/api/v1/``
-or ``http://apihosting4u.net:9984/api/v1/``,
+If you send an HTTP GET request to the API Root Endpoint
+e.g. ``http://localhost:9984/api/v0.9/``
+or ``http://apihosting4u.net:9984/api/v0.9/``,
 then you should get an HTTP response
-that allows you to discover the BigchainDB endpoints:
+that allows you to discover the BigchainDB API endpoints:
 
 .. code-block:: json
 
     {
       "_links": {
-        "self": { "href": "/" },
-        "transactions": { "href": "/transactions" },
-        "statuses": { "href": "/statuses" },
         "blocks": { "href": "/blocks" },
+        "docs": { "href": "https://docs.bigchaindb.com/projects/server/en/v0.9.0/drivers-clients/http-client-server-api.html" },
+        "self": { "href": "/" },
+        "statuses": { "href": "/statuses" },
+        "transactions": { "href": "/transactions" },
         "votes": { "href": "/votes" }
+      },
+      "version" : "0.9.0"
     }
 
 Transactions
@@ -455,3 +461,40 @@ Votes
 .. http:get:: /votes?block_id={block_id}&voter={voter}
 
    Description: TODO
+
+
+Determining the API Root URL
+----------------------------
+
+When you start BigchainDB Server using ``bigchaindb start``,
+an HTTP API is exposed at some address. The default is:
+
+`http://localhost:9984/api/v0.9/ <http://localhost:9984/api/v0.9/>`_
+
+It's bound to ``localhost``,
+so you can access it from the same machine,
+but it won't be directly accessible from the outside world.
+(The outside world could connect via a SOCKS proxy or whatnot.)
+
+The documentation about BigchainDB Server :any:`Configuration Settings`
+has a section about how to set ``server.bind`` so as to make
+the HTTP API publicly accessible.
+
+If the API endpoint is publicly accessible,
+then the public API Root URL is determined as follows:
+
+- The public IP address (like 12.34.56.78)
+  is the public IP address of the machine exposing
+  the HTTP API to the public internet (e.g. either the machine hosting
+  Gunicorn or the machine running the reverse proxy such as Nginx).
+  It's determined by AWS, Azure, Rackspace, or whoever is hosting the machine.
+
+- The DNS hostname (like apihosting4u.net) is determined by DNS records,
+  such as an "A Record" associating apihosting4u.net with 12.34.56.78
+
+- The port (like 9984) is determined by the ``server.bind`` setting
+  if Gunicorn is exposed directly to the public Internet.
+  If a reverse proxy (like Nginx) is exposed directly to the public Internet
+  instead, then it could expose the HTTP API on whatever port it wants to.
+  (It should expose the HTTP API on port 9984, but it's not bound to do
+  that by anything other than convention.)
