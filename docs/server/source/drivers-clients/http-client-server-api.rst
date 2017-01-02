@@ -334,75 +334,13 @@ Blocks
 
    **Example request**:
 
-   .. sourcecode:: http
-
-      GET /blocks?tx_id=2d431...0b4b0e HTTP/1.1
-      Host: example.com
+   .. literalinclude:: samples/get-block-txid-request.http
+      :language: http
 
    **Example response**:
 
-   .. sourcecode:: http
-
-      HTTP/1.1 200 OK
-      Content-Type: application/json
-
-      {
-        "block":{
-          "node_pubkey":"ErEeVZt8AfLbMJub25tjNxbpzzTNp3mGidL3GxGdd9bt",
-            "timestamp":"1479389911",
-            "transactions":[
-              {
-                "transaction": {
-                  "conditions": [
-                    {
-                      "cid": 0,
-                      "condition": {
-                        "uri": "cc:4:20:GG-pi3CeIlySZhQoJVBh9O23PzrOuhnYI7OHqIbHjkk:96",
-                        "details": {
-                          "signature": null,
-                          "type": "fulfillment",
-                          "type_id": 4,
-                          "bitmask": 32,
-                          "public_key": "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
-                        }
-                      },
-                      "amount": 1,
-                      "owners_after": [
-                        "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
-                      ]
-                    }
-                  ],
-                  "operation": "CREATE",
-                  "asset": {
-                    "divisible": false,
-                    "updatable": false,
-                    "data": null,
-                    "id": "aebeab22-e672-4d3b-a187-bde5fda6533d",
-                    "refillable": false
-                  },
-                  "metadata": null,
-                  "timestamp": "1477578978",
-                  "fulfillments": [
-                    {
-                      "fid": 0,
-                      "input": null,
-                      "fulfillment": "cf:4:GG-pi3CeIlySZhQoJVBh9O23PzrOuhnYI7OHqIbHjkn2VnQaEWvecO1x82Qr2Va_JjFywLKIOEV1Ob9Ofkeln2K89ny2mB-s7RLNvYAVzWNiQnp18_nQEUsvwACEXTYJ",
-                      "owners_before": [
-                        "2ePYHfV3yS3xTxF9EE3Xjo8zPwq2RmLPFAJGQqQKc3j6"
-                      ]
-                    }
-                  ]
-                },
-                "id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e",
-                "version": 1
-              }],
-            "voters":[
-              "ErEeVZt8AfLbMJub25tjNxbpzzTNp3mGidL3GxGdd9bt"
-            ]
-        },
-        "id":"6152fbc7e0f7686512ed6b92c01e8c73ea1e3f51a7b037ac5cc8c860215e7202",
-        "signature":"53wxrEQDYk1dXzmvNSytbCfmNVnPqPkDQaTnAe8Jf43s6ssejPxezkCvUnGTnduNUmaLjhaan1iRLi3peu6s5DzA"
-      }
+   .. literalinclude:: samples/get-block-txid-response.http
+      :language: http
 
    :resheader Content-Type: ``application/json``
 

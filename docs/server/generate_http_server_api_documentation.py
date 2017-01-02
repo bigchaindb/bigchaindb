@@ -114,6 +114,19 @@ Content-Type: application/json
 %(block)s
 """
 
+TPLS['get-block-txid-request'] = """\
+GET /blocks?tx_id=%(txid)s HTTP/1.1
+Host: example.com
+
+"""
+
+TPLS['get-block-txid-response'] = """\
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+[%(block)s]
+"""
+
 
 def main():
     """ Main function """
