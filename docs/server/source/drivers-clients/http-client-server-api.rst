@@ -1,11 +1,10 @@
 The HTTP Client-Server API
 ==========================
 
-.. note::
-
-   The HTTP client-server API is currently quite rudimentary. For example,
-   there is no ability to do complex queries using the HTTP API. We plan to add
-   more querying capabilities in the future.
+This page assumes you already know an API Root URL
+for a BigchainDB node or reverse proxy.
+It should be something like ``http://apihosting4u.net:9984``
+or ``http://12.34.56.78:9984``.
 
 If you set up a BigchainDB node or reverse proxy yourself,
 and you're not sure what the API Root URL is,
@@ -119,7 +118,7 @@ Transactions
 
    A generalization of those parameters follows:
 
-   :query boolean fulfilled: A flag to indicate if transaction's with fulfilled conditions should be returned.
+   :query boolean fulfilled: A flag to indicate if transactions with fulfilled conditions should be returned.
 
    :query string public_keys: Public key able to validly spend an output of a transaction, assuming the user also has the corresponding private key.
 
@@ -141,7 +140,7 @@ Transactions
    This endpoint returns conditions only if the transaction they're in are
    included in a ``VALID`` or ``UNDECIDED`` block on ``bigchain``.
 
-   :query boolean fulfilled: A flag to indicate if transaction's with fulfilled conditions should be returned.
+   :query boolean fulfilled: A flag to indicate if transactions with fulfilled conditions should be returned.
 
    :query string public_keys: Public key able to validly spend an output of a transaction, assuming the user also has the corresponding private key.
 
@@ -159,7 +158,7 @@ Transactions
 
    :resheader Content-Type: ``application/json``
 
-   :statuscode 200: A list of transaction's containing unfulfilled conditions was found and returned.
+   :statuscode 200: A list of transactions containing unfulfilled conditions was found and returned.
    :statuscode 400: The request wasn't understood by the server, e.g. the ``public_keys`` querystring was not included in the request.
 
 .. http:get:: /transactions?operation={GENESIS|CREATE|TRANSFER}&asset_id={asset_id}
@@ -196,7 +195,7 @@ Transactions
 
    :resheader Content-Type: ``application/json``
 
-   :statuscode 200: A list of transaction's containing an asset with ID ``asset_id`` was found and returned.
+   :statuscode 200: A list of transactions containing an asset with ID ``asset_id`` was found and returned.
    :statuscode 400: The request wasn't understood by the server, e.g. the ``asset_id`` querystring was not included in the request.
 
 
