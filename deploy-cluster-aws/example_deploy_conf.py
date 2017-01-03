@@ -75,7 +75,12 @@ EBS_VOLUME_SIZE=30
 # If USING_EBS=False, EBS_OPTIMIZED is irrelevant and not used
 EBS_OPTIMIZED=False
 
+# ENABLE_WEB_ADMIN is True or False, depending on whether you want
+# the RethinkDB web administration console / interface to be enabled.
+ENABLE_WEB_ADMIN=True
+
 # BIND_HTTP_TO_LOCALHOST is True or False, depending on whether
 # you want the RethinkDB web interface port to be bound to localhost
 # (which is more secure). See https://www.rethinkdb.com/docs/security/
+# If ENABLE_WEB_ADMIN is False, BIND_HTTP_TO_LOCALHOST is irrelevant and not used
 BIND_HTTP_TO_LOCALHOST=True

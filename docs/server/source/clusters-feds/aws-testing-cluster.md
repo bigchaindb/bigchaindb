@@ -132,6 +132,7 @@ SECURITY_GROUP="bigchaindb"
 USING_EBS=True
 EBS_VOLUME_SIZE=30
 EBS_OPTIMIZED=False
+ENABLE_WEB_ADMIN=True
 BIND_HTTP_TO_LOCALHOST=True
 ```
 
@@ -181,7 +182,7 @@ bigchaindb --help
 bigchaindb show-config
 ```
 
-You can also check out the RethinkDB web interface. The way to do that depends on how `BIND_HTTP_TO_LOCALHOST` was set in your AWS deployment configuration file:
+If you enabled the RethinkDB web interface (by setting `ENABLE_WEB_ADMIN=True` in your AWS configuration file), then you can also check that. The way to do that depends on how `BIND_HTTP_TO_LOCALHOST` was set (in your AWS deployment configuration file):
 
 * If it was set to `False`, then just go to your web browser and visit a web address like `http://ec2-52-29-197-211.eu-central-1.compute.amazonaws.com:8080/`. (Replace `ec2-...aws.com` with the hostname of one of your instances.)
 * If it was set to `True` (the default in the example config file), then follow the instructions in the "Via a SOCKS proxy" section of [the "Secure your cluster" page of the RethinkDB documentation](https://www.rethinkdb.com/docs/security/).
