@@ -1,7 +1,9 @@
+import random
 import time
 from unittest.mock import patch
 
 from multipipes import Pipe
+import pytest
 
 
 def test_filter_by_assignee(b, signed_create_tx):
@@ -25,6 +27,7 @@ def test_filter_by_assignee(b, signed_create_tx):
     assert block_maker.filter_tx(tx) is None
 
 
+@pytest.mark.bdb
 def test_validate_transaction(b, create_tx):
     from bigchaindb.pipelines.block import BlockPipeline
 
@@ -42,8 +45,9 @@ def test_create_block(b, user_pk):
 
     block_maker = BlockPipeline()
 
-    for i in range(100):
-        tx = Transaction.create([b.me], [([user_pk], 1)])
+    for _ in range(100):
+        tx = Transaction.create([b.me], [([user_pk], 1)],
+                                metadata={'msg': random.random()})
         tx = tx.sign([b.me_private])
         block_maker.create(tx)
 
@@ -53,6 +57,7 @@ def test_create_block(b, user_pk):
     assert len(block_doc.transactions) == 100
 
 
+@pytest.mark.bdb
 def test_write_block(b, user_pk):
     from bigchaindb.models import Block, Transaction
     from bigchaindb.pipelines.block import BlockPipeline
@@ -60,27 +65,30 @@ def test_write_block(b, user_pk):
     block_maker = BlockPipeline()
 
     txs = []
-    for i in range(100):
-        tx = Transaction.create([b.me], [([user_pk], 1)])
+    for _ in range(100):
+        tx = Transaction.create([b.me], [([user_pk], 1)],
+                                metadata={'msg': random.random()})
         tx = tx.sign([b.me_private])
         txs.append(tx)
 
     block_doc = b.create_block(txs)
     block_maker.write(block_doc)
-    expected = b.backend.get_block(block_doc.id)
+    expected = b.get_block(block_doc.id)
     expected = Block.from_dict(expected)
 
     assert expected == block_doc
 
 
+@pytest.mark.bdb
 def test_duplicate_transaction(b, user_pk):
     from bigchaindb.models import Transaction
     from bigchaindb.pipelines import block
     block_maker = block.BlockPipeline()
 
     txs = []
-    for i in range(10):
-        tx = Transaction.create([b.me], [([user_pk], 1)])
+    for _ in range(10):
+        tx = Transaction.create([b.me], [([user_pk], 1)],
+                                metadata={'msg': random.random()})
         tx = tx.sign([b.me_private])
         txs.append(tx)
 
@@ -88,14 +96,15 @@ def test_duplicate_transaction(b, user_pk):
     block_maker.write(block_doc)
 
     # block is in bigchain
-    assert b.backend.get_block(block_doc.id) == block_doc.to_dict()
+    assert b.get_block(block_doc.id) == block_doc.to_dict()
 
     b.write_transaction(txs[0])
 
     # verify tx is in the backlog
     assert b.get_transaction(txs[0].id) is not None
 
-    # try to validate a transaction that's already in the chain; should not work
+    # try to validate a transaction that's already in the chain; should not
+    # work
     assert block_maker.validate_tx(txs[0].to_dict()) is None
 
     # duplicate tx should be removed from backlog
@@ -103,12 +112,14 @@ def test_duplicate_transaction(b, user_pk):
     assert status != b.TX_IN_BACKLOG
 
 
+@pytest.mark.bdb
 def test_delete_tx(b, user_pk):
     from bigchaindb.models import Transaction
     from bigchaindb.pipelines.block import BlockPipeline
     block_maker = BlockPipeline()
     for i in range(100):
-        tx = Transaction.create([b.me], [([user_pk], 1)])
+        tx = Transaction.create([b.me], [([user_pk], 1)],
+                                metadata={'msg': random.random()})
         tx = tx.sign([b.me_private])
         block_maker.create(tx)
         # make sure the tx appears in the backlog
@@ -130,23 +141,8 @@ def test_delete_tx(b, user_pk):
         assert status != b.TX_IN_BACKLOG
 
 
-def test_prefeed(b, user_pk):
-    import random
-    from bigchaindb.models import Transaction
-    from bigchaindb.pipelines.block import initial
-
-    for i in range(100):
-        tx = Transaction.create([b.me], [([user_pk], 1)],
-                                {'msg': random.random()})
-        tx = tx.sign([b.me_private])
-        b.write_transaction(tx)
-
-    backlog = initial()
-
-    assert len(list(backlog)) == 100
-
-
 @patch('bigchaindb.pipelines.block.create_pipeline')
+@pytest.mark.bdb
 def test_start(create_pipeline):
     from bigchaindb.pipelines import block
 
@@ -157,34 +153,45 @@ def test_start(create_pipeline):
     assert pipeline == create_pipeline.return_value
 
 
+@pytest.mark.bdb
 def test_full_pipeline(b, user_pk):
-    import random
     from bigchaindb.models import Block, Transaction
-    from bigchaindb.pipelines.block import create_pipeline, get_changefeed
+    from bigchaindb.pipelines.block import create_pipeline
 
     outpipe = Pipe()
-    # include myself here, so that some tx are actually assigned to me
-    b.nodes_except_me = [b.me, 'aaa', 'bbb', 'ccc']
-    for i in range(100):
-        tx = Transaction.create([b.me], [([user_pk], 1)],
-                                {'msg': random.random()})
-        tx = tx.sign([b.me_private])
-
-        b.write_transaction(tx)
-
-    assert b.backend.count_backlog() == 100
 
     pipeline = create_pipeline()
-    pipeline.setup(indata=get_changefeed(), outdata=outpipe)
+    pipeline.setup(outdata=outpipe)
+    inpipe = pipeline.items[0]
+
+    # include myself here, so that some tx are actually assigned to me
+    b.nodes_except_me = [b.me, 'aaa', 'bbb', 'ccc']
+    number_assigned_to_others = 0
+    for i in range(100):
+        tx = Transaction.create([b.me], [([user_pk], 1)],
+                                metadata={'msg': random.random()})
+        tx = tx.sign([b.me_private])
+
+        tx = tx.to_dict()
+
+        # simulate write_transaction
+        tx['assignee'] = random.choice(b.nodes_except_me)
+        if tx['assignee'] != b.me:
+            number_assigned_to_others += 1
+        tx['assignment_timestamp'] = time.time()
+        inpipe.put(tx)
+
+    assert inpipe.qsize() == 100
+
     pipeline.start()
 
     time.sleep(2)
-    pipeline.terminate()
 
+    pipeline.terminate()
     block_doc = outpipe.get()
-    chained_block = b.backend.get_block(block_doc.id)
+    chained_block = b.get_block(block_doc.id)
     chained_block = Block.from_dict(chained_block)
 
     block_len = len(block_doc.transactions)
     assert chained_block == block_doc
-    assert b.backend.count_backlog() == 100 - block_len 
+    assert number_assigned_to_others == 100 - block_len

@@ -9,14 +9,16 @@ import multiprocessing
 from flask import Flask
 import gunicorn.app.base
 
-from bigchaindb import util
+from bigchaindb import utils
 from bigchaindb import Bigchain
 from bigchaindb.web.views.info import info_views
 from bigchaindb.web.views.transactions import transaction_views
+from bigchaindb.web.views.unspents import unspent_views
 
 from bigchaindb.monitor import Monitor
 
 
+# TODO: Figure out if we do we need all this boilerplate.
 class StandaloneApplication(gunicorn.app.base.BaseApplication):
     """Run a **wsgi** app wrapping it in a Gunicorn Base Application.
 
@@ -64,11 +66,12 @@ def create_app(*, debug=False, threads=4):
 
     app.debug = debug
 
-    app.config['bigchain_pool'] = util.pool(Bigchain, size=threads)
+    app.config['bigchain_pool'] = utils.pool(Bigchain, size=threads)
     app.config['monitor'] = Monitor()
 
     app.register_blueprint(info_views, url_prefix='/')
     app.register_blueprint(transaction_views, url_prefix='/api/v1')
+    app.register_blueprint(unspent_views, url_prefix='/api/v1')
     return app
 
 

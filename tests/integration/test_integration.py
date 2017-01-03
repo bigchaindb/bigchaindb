@@ -1,34 +1,15 @@
 import time
+
 import pytest
 
-from bigchaindb import Bigchain
+pytestmark = [pytest.mark.bdb, pytest.mark.usefixtures('processes')]
 
 
-@pytest.fixture
-def inputs(user_pk):
-    from bigchaindb.models import Transaction
-
-    b = Bigchain()
-
-    # create blocks with transactions for `USER` to spend
-    for block in range(4):
-        transactions = [
-            Transaction.create(
-                [b.me], [([user_pk], 1)],
-                metadata={'i': i})
-            .sign([b.me_private])
-            for i in range(10)
-        ]
-        block = b.create_block(transactions)
-        b.write_block(block, durability='hard')
-
-
-@pytest.mark.usefixtures('processes')
 def test_fast_double_create(b, user_pk):
     from bigchaindb.models import Transaction
+    from bigchaindb.backend.query import count_blocks
     tx = Transaction.create([b.me], [([user_pk], 1)],
-                            metadata={'test': 'test'}) \
-            .sign([b.me_private])
+                            metadata={'test': 'test'}).sign([b.me_private])
 
     # write everything fast
     b.write_transaction(tx)
@@ -42,15 +23,14 @@ def test_fast_double_create(b, user_pk):
     # test the transaction appears only once
     last_voted_block = b.get_last_voted_block()
     assert len(last_voted_block.transactions) == 1
-    assert b.backend.count_blocks() == 2
+    assert count_blocks(b.connection) == 2
 
 
-@pytest.mark.usefixtures('processes')
 def test_double_create(b, user_pk):
     from bigchaindb.models import Transaction
+    from bigchaindb.backend.query import count_blocks
     tx = Transaction.create([b.me], [([user_pk], 1)],
-                            metadata={'test': 'test'}) \
-            .sign([b.me_private])
+                            metadata={'test': 'test'}).sign([b.me_private])
 
     b.write_transaction(tx)
     time.sleep(2)
@@ -63,4 +43,4 @@ def test_double_create(b, user_pk):
     # test the transaction appears only once
     last_voted_block = b.get_last_voted_block()
     assert len(last_voted_block.transactions) == 1
-    assert b.backend.count_blocks() == 2
+    assert count_blocks(b.connection) == 2

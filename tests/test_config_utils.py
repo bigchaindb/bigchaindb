@@ -9,19 +9,6 @@ import bigchaindb
 ORIGINAL_CONFIG = copy.deepcopy(bigchaindb._config)
 
 
-@pytest.fixture
-def ignore_local_config_file(monkeypatch):
-    """
-    This fixture's purpose is to override the one under
-    :module:`tests/conftest.py` so that the original behaviour of
-    :func:`bigchaindb.config_utils.file_config` is restored, so that it can be
-    tested.
-
-    """
-    from bigchaindb.config_utils import file_config
-    monkeypatch.setattr('bigchaindb.config_utils.file_config', file_config)
-
-
 @pytest.fixture(scope='function', autouse=True)
 def clean_config(monkeypatch):
     monkeypatch.setattr('bigchaindb.config', copy.deepcopy(ORIGINAL_CONFIG))
@@ -113,7 +100,7 @@ def test_env_config(monkeypatch):
     assert result == expected
 
 
-def test_autoconfigure_read_both_from_file_and_env(monkeypatch):
+def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
     file_config = {
         'database': {'host': 'test-host'},
         'backlog_reassign_delay': 5
@@ -136,6 +123,7 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch):
             'threads': None,
         },
         'database': {
+            'backend': request.config.getoption('--database-backend'),
             'host': 'test-host',
             'port': 4242,
             'name': 'test-dbname',

@@ -3,7 +3,7 @@
 BigchainDB uses [StatsD](https://github.com/etsy/statsd) for cluster monitoring. We require some additional infrastructure to take full advantage of its functionality:
 
 * an agent to listen for metrics: [Telegraf](https://github.com/influxdata/telegraf),
-* a time-series database: [InfluxDB](https://influxdata.com/time-series-platform/influxdb/), and
+* a time-series database: [InfluxDB](https://www.influxdata.com/time-series-platform/influxdb/), and
 * a frontend to display analytics: [Grafana](http://grafana.org/).
 
 We put each of those inside its own Docker container. The whole system is illustrated below.

@@ -18,29 +18,31 @@ That means you can create/register an asset with an initial quantity,
 e.g. 700 oak trees. Divisible assets can be split apart or recombined
 by transfer transactions (described more below).
 
-A CREATE transaction also establishes the conditions that must be met to
-transfer the asset(s). For example, there may be a condition that any transfer
-must be signed (cryptographically) by the private key associated with a
-given public key. More sophisticated conditions are possible.
-BigchainDB's conditions are based on the crypto-conditions of the [Interledger
-Protocol (ILP)](https://interledger.org/).
+A CREATE transaction also establishes, in its outputs, the conditions that must
+be met to transfer the asset(s). The conditions may also be associated with a
+list of public keys that, depending on the condition, may have full or partial
+control over the asset(s). For example, there may be a condition that any
+transfer must be signed (cryptographically) by the private key associated with a
+given public key. More sophisticated conditions are possible. BigchainDB's
+conditions are based on the crypto-conditions of the [Interledger Protocol
+(ILP)](https://interledger.org/).
 
 ## TRANSFER Transactions
 
 A TRANSFER transaction can transfer an asset
-by fulfilling the current conditions on the asset.
+by providing inputs which fulfill the current output conditions on the asset.
 It must also specify new transfer conditions.
 
 **Example 1:** Suppose a red car is owned and controlled by Joe.
 Suppose the current transfer condition on the car says
 that any valid transfer must be signed by Joe.
 Joe and a buyer named Rae could build a TRANSFER transaction containing
-Joe's signature (to fulfill the current transfer condition)
-plus a new transfer condition saying that any valid transfer
+an input with Joe's signature (to fulfill the current output condition)
+plus a new output condition saying that any valid transfer
 must be signed by Rae.
 
 **Example 2:** Someone might construct a TRANSFER transaction
-that fulfills the transfer conditions on four
+that fulfills the output conditions on four
 previously-untransferred assets of the same asset type
 e.g. paperclips. The amounts might be 20, 10, 45 and 25, say,
 for a total of 100 paperclips.

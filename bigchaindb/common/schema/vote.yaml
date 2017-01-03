@@ -1,0 +1,73 @@
+---
+"$schema": "http://json-schema.org/draft-04/schema#"
+id: "http://www.bigchaindb.com/schema/vote.json"
+type: object
+additionalProperties: false
+title: Vote Schema
+description: |
+    A Vote is an endorsement of a Block (identified by a hash) by
+    a node (identified by a public key).
+
+    The outer Vote object contains the details of the vote being made
+    as well as the signature and identifying information of the node
+    passing the vote.
+required:
+- node_pubkey
+- signature
+- vote
+properties:
+  node_pubkey:
+    type: "string"
+    pattern: "[1-9a-zA-Z^OIl]{43,44}"
+    description: |
+        Ed25519 public key identifying the voting node.
+  signature:
+    type: "string"
+    pattern: "[1-9a-zA-Z^OIl]{86,88}"
+    description:
+        Ed25519 signature of the `Vote Details`_ object.
+  vote:
+    type: "object"
+    additionalProperties: false
+    description: |
+        `Vote Details`_ to be signed.
+    required:
+    - invalid_reason
+    - is_block_valid
+    - previous_block
+    - voting_for_block
+    - timestamp
+    properties:
+      previous_block:
+        "$ref": "#/definitions/sha3_hexdigest"
+        description: |
+          ID (SHA3 hash) of the block that precedes the block being voted on.
+          The notion of a "previous" block is subject to vote.
+      voting_for_block:
+        "$ref": "#/definitions/sha3_hexdigest"
+        description: |
+          ID (SHA3 hash) of the block being voted on.
+      is_block_valid:
+        type: "boolean"
+        description: |
+          This field is ``true`` if the block was deemed valid by the node.
+      invalid_reason:
+        anyOf:
+        - type: "string"
+          description: |
+            Reason the block is voted invalid, or ``null``.
+
+            .. container:: notice
+
+              **Note**: The invalid_reason was not being used and may be dropped in a future version of BigchainDB. See Issue `#217 <https://github.com/bigchaindb/bigchaindb/issues/217>`_ on GitHub.
+        - type: "null"
+      timestamp:
+        type: "string"
+        pattern: "[0-9]{10}"
+        description: |
+          Unix timestamp that the vote was created by the node, according
+          to the system time of the node.
+definitions:
+  sha3_hexdigest:
+    pattern: "[0-9a-f]{64}"
+    type: string

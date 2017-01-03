@@ -5,4 +5,4 @@ Develop & Test BigchainDB Server
    :maxdepth: 1
 
    setup-run-node
-   running-unit-tests
+   running-all-tests

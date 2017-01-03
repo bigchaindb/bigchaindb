@@ -9,7 +9,7 @@ There are several NTP daemons available, including:
 * Maybe [Ntimed](http://nwtime.org/projects/ntimed/), once it's production-ready
 * [More](https://en.wikipedia.org/wiki/Ntpd#Implementations)
 
-We suggest you run your NTP daemon in a mode which will tell your OS kernel to handle leap seconds in a particular way: the default NTP way, so that system clock adjustments are localized and not spread out across the minutes, hours, or days surrounding leap seconds (e.g. "slewing" or "smearing"). There's [a nice Red Hat Developer Blog post about the various options](http://developers.redhat.com/blog/2015/06/01/five-different-ways-handle-leap-seconds-ntp/).
+We suggest you run your NTP daemon in a mode which will tell your OS kernel to handle leap seconds in a particular way: the default NTP way, so that system clock adjustments are localized and not spread out across the minutes, hours, or days surrounding leap seconds (e.g. "slewing" or "smearing"). There's [a nice Red Hat Developer Blog post about the various options](https://developers.redhat.com/blog/2015/06/01/five-different-ways-handle-leap-seconds-ntp/).
 
 Use the default mode with `ntpd` and `chronyd`. For another NTP daemon, consult its documentation.
 

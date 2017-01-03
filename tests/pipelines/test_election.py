@@ -1,6 +1,8 @@
 import time
 from unittest.mock import patch
 
+import pytest
+
 from bigchaindb.common import crypto
 from multipipes import Pipe, Pipeline
 
@@ -8,6 +10,7 @@ from bigchaindb import Bigchain
 from bigchaindb.pipelines import election
 
 
+@pytest.mark.bdb
 def test_check_for_quorum_invalid(b, user_pk):
     from bigchaindb.models import Transaction
 
@@ -28,8 +31,10 @@ def test_check_for_quorum_invalid(b, user_pk):
     b.write_block(test_block)
 
     # split_vote (invalid)
-    votes = [member.vote(test_block.id, 'abc', True) for member in test_federation[:2]] + \
-                   [member.vote(test_block.id, 'abc', False) for member in test_federation[2:]]
+    votes = [member.vote(test_block.id, 'a' * 64, True)
+             for member in test_federation[:2]] + \
+            [member.vote(test_block.id, 'b' * 64, False)
+             for member in test_federation[2:]]
 
     # cast votes
     for vote in votes:
@@ -39,6 +44,7 @@ def test_check_for_quorum_invalid(b, user_pk):
     assert e.check_for_quorum(votes[-1]) == test_block
 
 
+@pytest.mark.bdb
 def test_check_for_quorum_invalid_prev_node(b, user_pk):
     from bigchaindb.models import Transaction
     e = election.Election()
@@ -49,8 +55,10 @@ def test_check_for_quorum_invalid_prev_node(b, user_pk):
 
     # simulate a federation with four voters
     key_pairs = [crypto.generate_key_pair() for _ in range(4)]
-    test_federation = [Bigchain(public_key=key_pair[1], private_key=key_pair[0])
-                       for key_pair in key_pairs]
+    test_federation = [
+        Bigchain(public_key=key_pair[1], private_key=key_pair[0])
+        for key_pair in key_pairs
+    ]
 
     # add voters to block and write
     test_block.voters = [key_pair[1] for key_pair in key_pairs]
@@ -58,8 +66,10 @@ def test_check_for_quorum_invalid_prev_node(b, user_pk):
     b.write_block(test_block)
 
     # split vote over prev node
-    votes = [member.vote(test_block.id, 'abc', True) for member in test_federation[:2]] + \
-                   [member.vote(test_block.id, 'def', True) for member in test_federation[2:]]
+    votes = [member.vote(test_block.id, 'a' * 64, True)
+             for member in test_federation[:2]] + \
+            [member.vote(test_block.id, 'b' * 64, True)
+             for member in test_federation[2:]]
 
     # cast votes
     for vote in votes:
@@ -69,6 +79,7 @@ def test_check_for_quorum_invalid_prev_node(b, user_pk):
     assert e.check_for_quorum(votes[-1]) == test_block
 
 
+@pytest.mark.bdb
 def test_check_for_quorum_valid(b, user_pk):
     from bigchaindb.models import Transaction
 
@@ -80,8 +91,10 @@ def test_check_for_quorum_valid(b, user_pk):
 
     # simulate a federation with four voters
     key_pairs = [crypto.generate_key_pair() for _ in range(4)]
-    test_federation = [Bigchain(public_key=key_pair[1], private_key=key_pair[0])
-                       for key_pair in key_pairs]
+    test_federation = [
+        Bigchain(public_key=key_pair[1], private_key=key_pair[0])
+        for key_pair in key_pairs
+    ]
 
     # add voters to block and write
     test_block.voters = [key_pair[1] for key_pair in key_pairs]
@@ -89,7 +102,7 @@ def test_check_for_quorum_valid(b, user_pk):
     b.write_block(test_block)
 
     # votes for block one
-    votes = [member.vote(test_block.id, 'abc', True)
+    votes = [member.vote(test_block.id, 'a' * 64, True)
              for member in test_federation]
     # cast votes
     for vote in votes:
@@ -99,6 +112,7 @@ def test_check_for_quorum_valid(b, user_pk):
     assert e.check_for_quorum(votes[-1]) is None
 
 
+@pytest.mark.bdb
 def test_check_requeue_transaction(b, user_pk):
     from bigchaindb.models import Transaction
 
@@ -110,11 +124,10 @@ def test_check_requeue_transaction(b, user_pk):
 
     e.requeue_transactions(test_block)
 
+    time.sleep(1)
     backlog_tx, status = b.get_transaction(tx1.id, include_status=True)
-    #backlog_tx = b.connection.run(r.table('backlog').get(tx1.id))
     assert status == b.TX_IN_BACKLOG
     assert backlog_tx == tx1
-
 
 
 @patch.object(Pipeline, 'start')
@@ -126,8 +139,10 @@ def test_start(mock_start):
     mock_start.assert_called_with()
 
 
+@pytest.mark.bdb
 def test_full_pipeline(b, user_pk):
     import random
+    from bigchaindb.backend import query
     from bigchaindb.models import Transaction
 
     outpipe = Pipe()
@@ -157,9 +172,10 @@ def test_full_pipeline(b, user_pk):
     pipeline.setup(indata=election.get_changefeed(), outdata=outpipe)
     pipeline.start()
     time.sleep(1)
+
     # vote one block valid, one invalid
-    vote_valid = b.vote(valid_block.id, 'abc', True)
-    vote_invalid = b.vote(invalid_block.id, 'abc', False)
+    vote_valid = b.vote(valid_block.id, 'b' * 64, True)
+    vote_invalid = b.vote(invalid_block.id, 'c' * 64, False)
 
     b.write_vote(vote_valid)
     b.write_vote(vote_invalid)
@@ -169,8 +185,8 @@ def test_full_pipeline(b, user_pk):
 
     # only transactions from the invalid block should be returned to
     # the backlog
-    assert b.backend.count_backlog() == 100
+    assert query.count_backlog(b.connection) == 100
     # NOTE: I'm still, I'm still tx from the block.
     tx_from_block = set([tx.id for tx in invalid_block.transactions])
-    tx_from_backlog = set([tx['id'] for tx in list(b.backend.get_stale_transactions(0))])
+    tx_from_backlog = set([tx['id'] for tx in list(query.get_stale_transactions(b.connection, 0))])
     assert tx_from_block == tx_from_backlog
