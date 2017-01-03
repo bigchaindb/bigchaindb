@@ -88,7 +88,10 @@ HTTP/1.1 200 OK
 Content-Type: application/json
 
 {
-  "status": "invalid"
+  "status": "invalid",
+  "_links" : {
+    "block": "/blocks/%(blockid)s"
+  }
 }
 """
 
@@ -99,7 +102,11 @@ Content-Type: application/json
 Location: ../transactions/%(txid)s
 
 {
-  "status": "valid"
+  "status": "valid",
+  "_links" : {
+    "tx" : "/transactions/%(txid)s",
+    "block": "/blocks/%(blockid)s"
+  }
 }
 """
 
@@ -189,15 +196,14 @@ def main():
     block = Block(transactions=[tx], node_pubkey=node, voters=[node], signature=signature)
     block_json = json.dumps(block.to_dict(), indent=2, sort_keys=True)
 
-    base_path = os.path.join(os.path.dirname(__file__),
-                             'source/drivers-clients/samples')
-
     # vote
     DUMMY_SHA3 = '0123456789abcdef' * 4
     b = Bigchain(public_key=node)
     vote = b.vote(block.id, DUMMY_SHA3, True)
     vote_json = json.dumps(vote, indent=2, sort_keys=True)
 
+    base_path = os.path.join(os.path.dirname(__file__),
+                             'source/drivers-clients/samples')
     if not os.path.exists(base_path):
         os.makedirs(base_path)
 
