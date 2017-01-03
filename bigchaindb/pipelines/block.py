@@ -44,6 +44,8 @@ class BlockPipeline:
         if tx['assignee'] == self.bigchain.me:
             tx.pop('assignee')
             tx.pop('assignment_timestamp')
+            # required for mongodb
+            tx.pop('_id', None)
             return tx
 
     def validate_tx(self, tx):

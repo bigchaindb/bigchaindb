@@ -20,10 +20,15 @@ def write_transaction(conn, signed_transaction):
 
 @register_query(MongoDBConnection)
 def update_transaction(conn, transaction_id, doc):
+    # with mongodb we need to add update operators to the doc
+    update_doc = {'$set': {
+        'assignee': doc['assignee'],
+        'assignment_timestamp': doc['assignment_timestamp']
+    }}
     return conn.db['backlog']\
-            .find_one_and_update({'id': transaction_id},
-                                 doc,
-                                 return_document=ReturnDocument.AFTER)
+               .find_one_and_update({'id': transaction_id},
+                                    update_doc,
+                                    return_document=ReturnDocument.AFTER)
 
 
 @register_query(MongoDBConnection)

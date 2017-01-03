@@ -39,7 +39,9 @@ class MongoDBChangeFeed(ChangeFeed):
         self.connection._connect()
         # namespace to allow us to only listen to changes in a single
         # collection
-        namespace = '{}.{}'.format(self.connection.dbname, self.table)
+        dbname = self.connection.dbname
+        table = self.table
+        namespace = '{}.{}'.format(dbname, table)
         # last timestamp in the oplog. We only care for operations happening
         # in the future.
         last_ts = self.connection.conn.local.oplog.rs.find()\
@@ -70,9 +72,13 @@ class MongoDBChangeFeed(ChangeFeed):
                     # on delete it only returns the id of the document
                     self.outqueue.put(record['o'])
                 elif is_update and (self.operation & ChangeFeed.UPDATE):
-                    # not sure what to do here. Lets return the entire
-                    # operation
-                    self.outqueue.put(record)
+                    # the oplog entry for updates only returns the update
+                    # operations to apply to the document and not the
+                    # document itself. So here we first read the document
+                    # and then return it
+                    doc = self.connection.conn[dbname][table]\
+                              .find_one(record['o2'])
+                    self.outqueue.put(doc)
 
 
 @register_changefeed(MongoDBConnection)
