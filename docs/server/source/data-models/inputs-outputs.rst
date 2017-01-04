@@ -7,7 +7,7 @@ Amounts of an asset are encoded in the outputs of a transaction, and each output
 
 .. note::
 
-    This document (and various places in the BigchainDB documentation and code) talks about control of an asset in terms of *owners* and *ownership*. The language is chosen to represent the most common use cases, but in some more complex scenarios, it may not be accurate to say that the output is owned by the controllers of those public keys-it would only be correct to say that those public keys are associated with the ability to fulfill the output. Also, depending on the use case, the entity controlling an output via a private key may not be the legal owner of the asset in the corresponding legal domain. However, since we aim to use language that is simple to understand and covers the majority of use cases, we talk in terms of *owners* of an output that have the ability to *spend* that output.
+    This document (and various places in the BigchainDB documentation and code) talks about control of an asset in terms of *owners* and *ownership*. The language is chosen to represent the most common use cases, but in some more complex scenarios, it may not be accurate to say that the output is owned by the controllers of those public keys¨Cit would only be correct to say that those public keys are associated with the ability to fulfill the output. Also, depending on the use case, the entity controlling an output via a private key may not be the legal owner of the asset in the corresponding legal domain. However, since we aim to use language that is simple to understand and covers the majority of use cases, we talk in terms of *owners* of an output that have the ability to *spend* that output.
 
 In the most basic case, an output may define a **simple signature condition**, which gives control of the output to the entity controlling a corresponding private key.
 
@@ -24,7 +24,7 @@ The (single) output of a threshold condition can be used as one of the inputs of
 
 When one creates a condition, one can calculate its fulfillment length (e.g. 96). The more complex the condition, the larger its fulfillment length will be. A BigchainDB federation can put an upper limit on the allowed fulfillment length, as a way of capping the complexity of conditions (and the computing time required to validate them).
 
-If someone tries to make a condition where the output of a threshold condition feeds into the input of another "earlier" threshold condition (i.e. in a closed logical circuit), then their computer will take forever to calculate the (infinite) "condition URI", at least in theory. In practice, their computer will run out of memory or their client software will timeout after a while.
+If someone tries to make a condition where the output of a threshold condition feeds into the input of another ¡°earlier¡± threshold condition (i.e. in a closed logical circuit), then their computer will take forever to calculate the (infinite) ¡°condition URI¡±, at least in theory. In practice, their computer will run out of memory or their client software will timeout after a while.
 
 Outputs
 -------
