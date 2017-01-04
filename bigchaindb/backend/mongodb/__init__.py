@@ -16,7 +16,7 @@ generic backend interfaces to the implementations in this module.
 """
 
 # Register the single dispatched modules on import.
-from bigchaindb.backend.mongodb import schema, query  # noqa no changefeed for now
+from bigchaindb.backend.mongodb import schema, query, changefeed  # noqa
 
 # MongoDBConnection should always be accessed via
 # ``bigchaindb.backend.connect()``.

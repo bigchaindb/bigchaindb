@@ -61,13 +61,12 @@ def create_bigchain_secondary_index(conn, dbname):
 
     # to query the bigchain for a transaction id, this field is unique
     conn.conn[dbname]['bigchain'].create_index('block.transactions.id',
-                                               name='transaction_id',
-                                               unique=True)
+                                               name='transaction_id')
 
     # secondary index for asset uuid, this field is unique
     conn.conn[dbname]['bigchain']\
         .create_index('block.transactions.transaction.asset.id',
-                      name='asset_id', unique=True)
+                      name='asset_id')
 
 
 def create_backlog_secondary_index(conn, dbname):
