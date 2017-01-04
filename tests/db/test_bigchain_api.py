@@ -153,14 +153,14 @@ class TestBigchainApi(object):
     def test_get_transaction_in_invalid_and_valid_block(self, monkeypatch, b):
         from bigchaindb.models import Transaction
 
-        monkeypatch.setattr('time.time', lambda: 1)
+        monkeypatch.setattr('time.time', lambda: 1000000000)
         tx1 = Transaction.create([b.me], [([b.me], 1)],
                                  metadata={'msg': random.random()})
         tx1 = tx1.sign([b.me_private])
         block1 = b.create_block([tx1])
         b.write_block(block1)
 
-        monkeypatch.setattr('time.time', lambda: 2222222222)
+        monkeypatch.setattr('time.time', lambda: 2000000000)
         tx2 = Transaction.create([b.me], [([b.me], 1)],
                                  metadata={'msg': random.random()})
         tx2 = tx2.sign([b.me_private])

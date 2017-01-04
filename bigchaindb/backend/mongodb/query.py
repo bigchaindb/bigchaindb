@@ -40,10 +40,20 @@ def get_stale_transactions(conn, reassign_delay):
 
 
 @register_query(MongoDBConnection)
-def get_transaction_from_block(conn, block_id, tx_id):
-    # this is definitely wrong, but it's something like this
-    return conn.db['bigchain'].find_one({'id': block_id,
-                                         'block.transactions.id': tx_id})
+def get_transaction_from_block(conn, transaction_id, block_id):
+    return conn.db['bigchain'].aggregate([
+        {'$match': {'id': block_id}},
+        {'$project': {
+            'block.transactions': {
+                '$filter': {
+                    'input': '$block.transactions',
+                    'as': 'transaction',
+                    'cond': {
+                        '$eq': ['$$transaction.id', transaction_id]
+                    }
+                }
+            }
+        }}]).next()['block']['transactions'][0]
 
 
 @register_query(MongoDBConnection)
@@ -92,14 +102,16 @@ def get_owned_ids(conn, owner):
 @register_query(MongoDBConnection)
 def get_votes_by_block_id(conn, block_id):
     return conn.db['votes']\
-            .find({'vote.voting_for_block': block_id})
+            .find({'vote.voting_for_block': block_id},
+                  projection={'_id': False})
 
 
 @register_query(MongoDBConnection)
 def get_votes_by_block_id_and_voter(conn, block_id, node_pubkey):
     return conn.db['votes']\
             .find({'vote.voting_for_block': block_id,
-                   'node_pubkey': node_pubkey})
+                   'node_pubkey': node_pubkey},
+                  projection={'_id': False})
 
 
 @register_query(MongoDBConnection)
