@@ -7,7 +7,7 @@ Amounts of an asset are encoded in the outputs of a transaction, and each output
 
 .. note::
 
-    This document (and various places in the BigchainDB documentation and code) talks about control of an asset in terms of *owners* and *ownership*. The language is chosen to represent the most common use cases, but in some more complex scenarios, it may not be accurate to say that the output is owned by the controllers of those public keys–it would only be correct to say that those public keys are associated with the ability to fulfill the output. Also, depending on the use case, the entity controlling an output via a private key may not be the legal owner of the asset in the corresponding legal domain. However, since we aim to use language that is simple to understand and covers the majority of use cases, we talk in terms of *owners* of an output that have the ability to *spend* that output.
+    This document (and various places in the BigchainDB documentation and code) talks about control of an asset in terms of *owners* and *ownership*. The language is chosen to represent the most common use cases, but in some more complex scenarios, it may not be accurate to say that the output is owned by the controllers of those public keys鈥搃t would only be correct to say that those public keys are associated with the ability to fulfill the output. Also, depending on the use case, the entity controlling an output via a private key may not be the legal owner of the asset in the corresponding legal domain. However, since we aim to use language that is simple to understand and covers the majority of use cases, we talk in terms of *owners* of an output that have the ability to *spend* that output.
 
 In the most basic case, an output may define a **simple signature condition**, which gives control of the output to the entity controlling a corresponding private key.
 
@@ -24,7 +24,7 @@ The (single) output of a threshold condition can be used as one of the inputs of
 
 When one creates a condition, one can calculate its fulfillment length (e.g. 96). The more complex the condition, the larger its fulfillment length will be. A BigchainDB federation can put an upper limit on the allowed fulfillment length, as a way of capping the complexity of conditions (and the computing time required to validate them).
 
-If someone tries to make a condition where the output of a threshold condition feeds into the input of another “earlier” threshold condition (i.e. in a closed logical circuit), then their computer will take forever to calculate the (infinite) “condition URI”, at least in theory. In practice, their computer will run out of memory or their client software will timeout after a while.
+If someone tries to make a condition where the output of a threshold condition feeds into the input of another 鈥渆arlier鈥� threshold condition (i.e. in a closed logical circuit), then their computer will take forever to calculate the (infinite) 鈥渃ondition URI鈥�, at least in theory. In practice, their computer will run out of memory or their client software will timeout after a while.
 
 Outputs
 -------
@@ -127,3 +127,24 @@ If there is only one *current owner*, the fulfillment will be a simple signature
 
 
 See the reference on :ref:`inputs <Input>` for descriptions of the meaning of each field.
+
+Multiple Current Owners
+`````````````````
+
+If there are Multiple _current owners_, the fulfillment will be a little different from One Current Owner (Suppose it has two current owners).
+
+.. code-block:: json
+	{
+    	"owners_before": ["<public key of the first owner before the transaction happened>","<public key of the second owner before the transaction happened>"],
+    	"fulfillment": "cf:2:AQIBAgEBYwAEYEv6O5HjHGl7OWo2Tu5mWcWQcL_OGrFuUjyej-dK3LM99TbZsRd8c9luQhU30xCH5AdNaupxg-pLHuk8DoSaDA1MHQGXUZ80a_cV-4UaaaCpdey8K0CEcJxre0X96hTHCwABAWMABGBnsuHExhuSj5Mdm-q0KoPgX4nAt0s00k1WTMCzuUpQIp6aStLoTSMlsvS4fmDtOSv9gubekKLuHTMAk-LQFSKF1JdzwaVWAA2UOv0v_OS2gY3A-r0kRq8HtzjYdcmVswUA",
+    	"input": {
+        	"cid": 0,
+        	"txid": "e4805f1bfc999d6409b38e3a4c3b2fafad7c1280eb0d441da7083e945dd89eb8"
+    	}
+	}
+
+- ``owners_before``: A list of public keys of the owners before the transaction; in this case it has two owners, hence two public keys.
+- ``fulfillment``: A crypto-conditions URI that encodes the cryptographic fulfillments like signatures and others;'cf' indicates this is a fulfillment, '2' indicates the condition type is THRESHOLD-SHA-256 (while '4' in One Current Owner indicates its condition type is ED25519).
+- ``input``: Pointer to the asset and condition of a previous transaction
+    - ``cid``: Condition index - the index of the condition in the array of conditions in the previous transaction
+    - ``txid``: Transaction id
