@@ -205,14 +205,15 @@ def main():
     tx_transfer_last_json = json.dumps(tx_transfer_last.to_dict(), indent=2, sort_keys=True)
 
     # block
-    node = "ErEeVZt8AfLbMJub25tjNxbpzzTNp3mGidL3GxGdd9bt"
+    node_private = "5G2kE1zJAgTajkVSbPAQWo4c2izvtwqaNHYsaNpbbvxX"
+    node_public = "DngBurxfeNVKZWCEcDnLj1eMPAS7focUZTE5FndFGuHT"
     signature = "53wxrEQDYk1dXzmvNSytbCfmNVnPqPkDQaTnAe8Jf43s6ssejPxezkCvUnGTnduNUmaLjhaan1iRLi3peu6s5DzA"
-    block = Block(transactions=[tx], node_pubkey=node, voters=[node], signature=signature)
+    block = Block(transactions=[tx], node_pubkey=node_public, voters=[node_public], signature=signature)
     block_json = json.dumps(block.to_dict(), indent=2, sort_keys=True)
 
     # vote
     DUMMY_SHA3 = '0123456789abcdef' * 4
-    b = Bigchain(public_key=node)
+    b = Bigchain(public_key=node_public)
     vote = b.vote(block.id, DUMMY_SHA3, True)
     vote_json = json.dumps(vote, indent=2, sort_keys=True)
 
