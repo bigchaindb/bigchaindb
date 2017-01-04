@@ -129,7 +129,7 @@ If there is only one *current owner*, the fulfillment will be a simple signature
 See the reference on :ref:`inputs <Input>` for descriptions of the meaning of each field.
 
 Multiple Current Owners
-`````````````````
+```````````````````````
 
 If there are Multiple _current owners_, the fulfillment will be a little different from One Current Owner (Suppose it has two current owners).
 
