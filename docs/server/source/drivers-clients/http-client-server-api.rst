@@ -67,7 +67,7 @@ Transactions
 
    Get the transaction with the ID ``tx_id``.
 
-   This endpoint returns only a transaction from a ``VALID`` or ``UNDECIDED``
+   This endpoint returns only a transaction from the ``BACKLOG`` or a ``VALID`` or ``UNDECIDED``
    block on ``bigchain``, if exists.
 
    A transaction itself doesn't include a ``timestamp`` property. Only the
@@ -142,7 +142,7 @@ Transactions
    an empty list.
 
    This endpoint returns conditions only if the transaction they're in are
-   included in a ``VALID`` or ``UNDECIDED`` block on ``bigchain``.
+   included in the ``BACKLOG`` or in a ``VALID`` or ``UNDECIDED`` block on ``bigchain``.
 
    :query boolean fulfilled: A flag to indicate if transactions with fulfilled conditions should be returned.
 
@@ -170,7 +170,7 @@ Transactions
    Get a list of transactions that use an asset with the ID ``asset_id``.
 
    This endpoint returns assets only if the transaction they're in are
-   included in a ``VALID`` or ``UNDECIDED`` block on ``bigchain``.
+   included in the ``BACKLOG`` or in a ``VALID`` or ``UNDECIDED`` block on ``bigchain``.
 
    .. note::
        The BigchainDB API currently doesn't expose an
@@ -209,7 +209,7 @@ Transactions
    Currently, filtering on specific fields in the ``asset`` or ``metadata`` is assumed to be done clientside.
 
    This endpoint returns assets only if the transaction they're in are
-   included in a ``VALID`` or ``UNDECIDED`` block on ``bigchain``.
+   included in the ``BACKLOG`` or in a ``VALID`` or ``UNDECIDED`` block on ``bigchain``.
 
    :query string operation: One of the three supported operations of a transaction: ``GENESIS``, ``CREATE``, ``TRANSFER``.
 
