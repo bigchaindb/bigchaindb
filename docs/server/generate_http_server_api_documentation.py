@@ -177,7 +177,7 @@ def main():
     privkey = 'CfdqtD7sS7FgkMoGPXw55MVGGFwQLAoHYTcBhZDtF99Z'
     pubkey = '4K9sWUMFwTgaDGPfdynrbxWqWS6sWmKbZoTjxLtVUibD'
     asset = {'msg': 'Hello BigchainDB!'}
-    tx = Transaction.create([pubkey], [([pubkey], 1)], asset=asset)
+    tx = Transaction.create([pubkey], [([pubkey], 1)], asset=asset, metadata={'sequence': 0})
     tx = tx.sign([privkey])
     tx_json = json.dumps(tx.to_dict(), indent=2, sort_keys=True)
 
@@ -189,7 +189,7 @@ def main():
     input_ = Input(fulfillment=tx.outputs[cid].fulfillment,
                    fulfills=TransactionLink(txid=tx.id, output=cid),
                    owners_before=tx.outputs[cid].public_keys)
-    tx_transfer = Transaction.transfer([input_], [([pubkey_transfer], 1)], asset_id=tx.id)
+    tx_transfer = Transaction.transfer([input_], [([pubkey_transfer], 1)], asset_id=tx.id, metadata={'sequence': 1})
     tx_transfer = tx_transfer.sign([privkey])
     tx_transfer_json = json.dumps(tx_transfer.to_dict(), indent=2, sort_keys=True)
 
@@ -200,7 +200,7 @@ def main():
     input_ = Input(fulfillment=tx_transfer.outputs[cid].fulfillment,
                    fulfills=TransactionLink(txid=tx_transfer.id, output=cid),
                    owners_before=tx_transfer.outputs[cid].public_keys)
-    tx_transfer_last = Transaction.transfer([input_], [([pubkey_transfer_last], 1)], asset_id=tx.id)
+    tx_transfer_last = Transaction.transfer([input_], [([pubkey_transfer_last], 1)], asset_id=tx.id, metadata={'sequence': 2})
     tx_transfer_last = tx_transfer_last.sign([privkey_transfer])
     tx_transfer_last_json = json.dumps(tx_transfer_last.to_dict(), indent=2, sort_keys=True)
 
