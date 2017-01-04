@@ -3,8 +3,8 @@ The HTTP Client-Server API
 
 This page assumes you already know an API Root URL
 for a BigchainDB node or reverse proxy.
-It should be something like ``http://apihosting4u.net:9984``
-or ``http://12.34.56.78:9984``.
+It should be something like ``https://example.com:9984``
+or ``https://12.34.56.78:9984``.
 
 If you set up a BigchainDB node or reverse proxy yourself,
 and you're not sure what the API Root URL is,
@@ -14,11 +14,11 @@ then see the last section of this page for help.
 BigchainDB Root URL
 -------------------
 
-If you send an HTTP GET request to the API Root URL
-e.g. ``http://localhost:9984`` 
-or ``http://apihosting4u.net:9984``
-(with no ``/api/v1/`` on the end), 
-then you should get an HTTP response 
+If you send an HTTP GET request to the BigchainDB Root URL
+e.g. ``http://localhost:9984``
+or ``https://example.com:9984``
+(with no ``/api/v1/`` on the end),
+then you should get an HTTP response
 with something like the following in the body:
 
 .. code-block:: json
@@ -42,7 +42,7 @@ API Root Endpoint
 
 If you send an HTTP GET request to the API Root Endpoint
 e.g. ``http://localhost:9984/api/v0.9/``
-or ``http://apihosting4u.net:9984/api/v0.9/``,
+or ``https://example.com:9984/api/v0.9/``,
 then you should get an HTTP response
 that allows you to discover the BigchainDB API endpoints:
 
@@ -50,12 +50,12 @@ that allows you to discover the BigchainDB API endpoints:
 
     {
       "_links": {
-        "blocks": { "href": "/blocks" },
+        "blocks": { "href": "https://example.com:9984/api/v0.9/blocks" },
         "docs": { "href": "https://docs.bigchaindb.com/projects/server/en/v0.9.0/drivers-clients/http-client-server-api.html" },
-        "self": { "href": "/" },
-        "statuses": { "href": "/statuses" },
-        "transactions": { "href": "/transactions" },
-        "votes": { "href": "/votes" }
+        "self": { "href": "https://example.com:9984/api/v0.9" },
+        "statuses": { "href": "https://example.com:9984/api/v0.9/statuses" },
+        "transactions": { "href": "https://example.com:9984/api/v0.9/transactions" },
+        "votes": { "href": "https://example.com:9984/api/v0.9/votes" }
       },
       "version" : "0.9.0"
     }
@@ -96,12 +96,40 @@ Transactions
 
 .. http:get:: /transactions
 
-   The current ``/transactions`` endpoint returns a ``404 Not Found`` HTTP
-   status code. Eventually, this functionality will get implemented.
+   The unfiltered ``/transactions`` endpoint without any query parameters
+   returns a list of available transaction usages and relevant endpoints.
    We believe a PUSH rather than a PULL pattern is more appropriate, as the
    items returned in the collection would change by the second.
 
-   There are however requests that might come of use, given the endpoint is
+   **Example request**:
+
+   .. sourcecode:: http
+
+      GET /transactions HTTP/1.1
+      Host: example.com
+
+   **Example response**:
+
+   .. sourcecode:: http
+
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+
+      {
+        "_links": {
+          "asset_history": { "href": "https://example.com:9984/api/v0.9/transactions?operation={GENESIS|CREATE|TRANSFER}&asset_id={asset_id}" },
+          "asset_list": { "href": "https://example.com:9984/api/v0.9/transactions?operation=CREATE&is_asset=true&public_keys={public_keys}" },
+          "docs": { "href": "https://docs.bigchaindb.com/projects/server/en/v0.9.0/drivers-clients/http-client-server-api.html" },
+          "item": { "href": "https://example.com:9984/api/v0.9/transactions/{tx_id}" },
+          "self": { "href": "https://example.com:9984/api/v0.9/transactions" },
+          "unfulfilled": { "href": "https://example.com:9984/api/v0.9/transactions?fulfilled=false&public_keys={public_keys}" }
+        },
+        "version" : "0.9.0"
+      }
+
+   :statuscode 200: BigchainDB transactions root endpoint.
+
+   There are however filtered requests that might come of use, given the endpoint is
    queried correctly. Some of them include retrieving a list of transactions
    that include:
 
@@ -128,9 +156,6 @@ Transactions
    :query string operation: One of the three supported operations of a transaction: ``GENESIS``, ``CREATE``, ``TRANSFER``.
 
    :query string asset_id: asset ID.
-
-
-   :statuscode 404: BigchainDB does not expose this endpoint.
 
 
 .. http:get:: /transactions?fulfilled=false&public_keys={public_keys}
@@ -344,12 +369,37 @@ Blocks
 
 .. http:get:: /blocks
 
-   The current ``/blocks`` endpoint returns a ``404 Not Found`` HTTP status
-   code. Eventually, this functionality will get implemented.
+   The unfiltered ``/blocks`` endpoint without any query parameters
+   returns a list of available block usages and relevant endpoints.
    We believe a PUSH rather than a PULL pattern is more appropriate, as the
    items returned in the collection would change by the second.
 
-   :statuscode 404: BigchainDB does not expose this endpoint.
+
+   **Example request**:
+
+   .. sourcecode:: http
+
+      GET /blocks HTTP/1.1
+      Host: example.com
+
+   **Example response**:
+
+   .. sourcecode:: http
+
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+
+      {
+        "_links": {
+          "blocks": { "href": "https://example.com:9984/api/v0.9/blocks?tx_id={tx_id}&status={VALID|UNDECIDED|INVALID}" },
+          "docs": { "href": "https://docs.bigchaindb.com/projects/server/en/v0.9.0/drivers-clients/http-client-server-api.html" },
+          "item": { "href": "https://example.com:9984/api/v0.9/blocks/{block_id}?status={VALID|UNDECIDED|INVALID}" },
+          "self": { "href": "https://example.com:9984/api/v0.9/blocks" }
+        },
+        "version" : "0.9.0"
+      }
+
+   :statuscode 200: BigchainDB blocks root endpoint.
 
 
 .. http:get:: /blocks?tx_id={tx_id}&status={VALID|UNDECIDED|INVALID}
@@ -440,8 +490,8 @@ then the public API Root URL is determined as follows:
   Gunicorn or the machine running the reverse proxy such as Nginx).
   It's determined by AWS, Azure, Rackspace, or whoever is hosting the machine.
 
-- The DNS hostname (like apihosting4u.net) is determined by DNS records,
-  such as an "A Record" associating apihosting4u.net with 12.34.56.78
+- The DNS hostname (like example.com) is determined by DNS records,
+  such as an "A Record" associating example.com with 12.34.56.78
 
 - The port (like 9984) is determined by the ``server.bind`` setting
   if Gunicorn is exposed directly to the public Internet.
