@@ -14,11 +14,17 @@ from hostlist import public_dns_names
 # Parse the command-line arguments
 parser = argparse.ArgumentParser()
 # The next line isn't strictly necessary, but it clarifies the default case:
+parser.set_defaults(enable_web_admin=False)
+parser.add_argument('--enable-web-admin',
+                    action='store_true',
+                    help='should the RethinkDB web interface be enabled?')
+# The next line isn't strictly necessary, but it clarifies the default case:
 parser.set_defaults(bind_http_to_localhost=False)
 parser.add_argument('--bind-http-to-localhost',
                     action='store_true',
                     help='should RethinkDB web interface be bound to localhost?')
 args = parser.parse_args()
+enable_web_admin = args.enable_web_admin
 bind_http_to_localhost = args.bind_http_to_localhost
 
 # cwd = current working directory
@@ -35,10 +41,15 @@ with open('rethinkdb.conf', 'a') as f:
     f.write('## The host:port of a node that RethinkDB will connect to\n')
     for public_dns_name in public_dns_names:
         f.write('join=' + public_dns_name + ':29015\n')
-    if bind_http_to_localhost:
-        f.write('## Bind the web interface port to localhost\n')
-        # 127.0.0.1 is the usual IP address for localhost
-        f.write('bind-http=127.0.0.1\n')
+    if not enable_web_admin:
+        f.write('## Disable the RethinkDB web administration console\n')
+        f.write('no-http-admin\n')
+    else:
+        # enable the web admin, i.e. don't disable it (the default), and:
+        if bind_http_to_localhost:
+            f.write('## Bind the web interface port to localhost\n')
+            # 127.0.0.1 is the usual IP address for localhost
+            f.write('bind-http=127.0.0.1\n')
 
 os.chdir(old_cwd)
 
