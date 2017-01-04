@@ -213,7 +213,7 @@ def main():
 
     # vote
     DUMMY_SHA3 = '0123456789abcdef' * 4
-    b = Bigchain(public_key=node_public)
+    b = Bigchain(public_key=node_public, private_key=node_private)
     vote = b.vote(block.id, DUMMY_SHA3, True)
     vote_json = json.dumps(vote, indent=2, sort_keys=True)
 
