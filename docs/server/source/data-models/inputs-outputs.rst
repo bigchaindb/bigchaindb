@@ -131,7 +131,7 @@ See the reference on :ref:`inputs <Input>` for descriptions of the meaning of ea
 Multiple Current Owners
 ```````````````````````
 
-If there are Multiple _current owners_, the fulfillment will be a little different from One Current Owner (Suppose it has two current owners).
+If there are Multiple *current owners*, the fulfillment will be a little different from One Current Owner (Suppose it has two current owners).
 
 .. code-block:: json
 
