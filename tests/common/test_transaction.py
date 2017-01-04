@@ -675,7 +675,7 @@ def test_create_create_transaction_single_io(user_output, user_pub, data):
             }
         ],
         'operation': 'CREATE',
-        'version': 1,
+        'version': Transaction.VERSION,
     }
 
     tx = Transaction.create([user_pub], [([user_pub], 1)], metadata=data,
@@ -713,7 +713,7 @@ def test_create_create_transaction_multiple_io(user_output, user2_output, user_p
         },
         'inputs': [input],
         'operation': 'CREATE',
-        'version': 1
+        'version': Transaction.VERSION
     }
     tx = Transaction.create([user_pub, user2_pub],
                             [([user_pub], 1), ([user2_pub], 1)],
@@ -760,7 +760,7 @@ def test_create_create_transaction_threshold(user_pub, user2_pub, user3_pub,
             },
         ],
         'operation': 'CREATE',
-        'version': 1
+        'version': Transaction.VERSION
     }
     tx = Transaction.create([user_pub], [([user_pub, user2_pub], 1)],
                             metadata=data, asset=data)
@@ -845,7 +845,7 @@ def test_create_transfer_transaction_single_io(tx, user_pub, user2_pub,
             }
         ],
         'operation': 'TRANSFER',
-        'version': 1
+        'version': Transaction.VERSION
     }
     inputs = tx.to_inputs([0])
     transfer_tx = Transaction.transfer(inputs, [([user2_pub], 1)],
@@ -903,7 +903,7 @@ def test_create_transfer_transaction_multiple_io(user_pub, user_priv,
             }
         ],
         'operation': 'TRANSFER',
-        'version': 1
+        'version': Transaction.VERSION
     }
 
     transfer_tx = Transaction.transfer(tx.to_inputs(),
@@ -957,8 +957,23 @@ def test_cant_add_empty_output():
 
 
 def test_cant_add_empty_input():
+    import bigchaindb.version
     from bigchaindb.common.transaction import Transaction
     tx = Transaction(Transaction.CREATE, None)
 
     with raises(TypeError):
         tx.add_input(None)
+
+
+def test_validate_version(utx):
+    import bigchaindb.version
+    from .utils import validate_transaction_model
+    from bigchaindb.common.exceptions import SchemaValidationError
+
+    assert utx.version == bigchaindb.version.__version__
+
+    validate_transaction_model(utx)
+
+    utx.version = '1.0.0'
+    with raises(SchemaValidationError):
+        validate_transaction_model(utx)
