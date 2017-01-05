@@ -115,7 +115,7 @@ Transactions
           "docs": { "href": "https://docs.bigchaindb.com/projects/server/en/v0.9.0/drivers-clients/http-client-server-api.html" },
           "item": { "href": "https://example.com:9984/api/v0.9/transactions/{tx_id}" },
           "self": { "href": "https://example.com:9984/api/v0.9/transactions" },
-          "unfulfilled": { "href": "https://example.com:9984/api/v0.9/transactions?fulfilled=false&public_keys={public_keys}" }
+          "unspent": { "href": "https://example.com:9984/api/v0.9/transactions?unspent=true&public_keys={public_keys}" }
         },
         "version" : "0.9.0"
       }
@@ -126,7 +126,7 @@ Transactions
    queried correctly. Some of them include retrieving a list of transactions
    that include:
 
-   * `Unfulfilled outputs <#get--transactions?fulfilled=false&public_keys=public_keys>`_
+   * `Unspent outputs <#get--transactions?unspent=true&public_keys=public_keys>`_
    * `Transactions related to a specific asset <#get--transactions?operation=GENESIS|CREATE|TRANSFER&asset_id=asset_id>`_
 
    In this section, we've listed those particular requests, as they will likely
@@ -139,7 +139,7 @@ Transactions
 
    A generalization of those parameters follows:
 
-   :query boolean fulfilled: A flag to indicate if transactions with fulfilled conditions should be returned.
+   :query boolean unspent: A flag to indicate whether only transactions with unspent outputs should be returned.
 
    :query string public_keys: Public key able to validly spend an output of a transaction, assuming the user also has the corresponding private key.
 
@@ -148,36 +148,37 @@ Transactions
    :query string asset_id: asset ID.
 
 
-.. http:get:: /transactions?fulfilled=false&public_keys={public_keys}
+.. http:get:: /transactions?unspent=true&public_keys={public_keys}
 
-   Get a list of transactions with unfulfilled conditions.
+   Get a list of transactions with unspent outputs.
 
-   If the querystring ``fulfilled`` is set to ``false`` and all conditions for
-   ``public_keys`` happen to be fulfilled already, this endpoint will return
-   an empty list.
+   If the querystring ``unspent`` is set to ``false`` and all outputs for
+   ``public_keys`` happen to be spent already, this endpoint will return
+   an empty list. Transactions with multiple outputs that have not all been spent
+   will be included in the response.
 
-   This endpoint returns conditions only if the transaction they're in are
+   This endpoint returns transactions only if they are
    included in the ``BACKLOG`` or in a ``VALID`` or ``UNDECIDED`` block on ``bigchain``.
 
-   :query boolean fulfilled: A flag to indicate if transactions with fulfilled conditions should be returned.
+   :query boolean unspent: A flag to indicate if transactions with unspent outputs should be returned.
 
    :query string public_keys: Public key able to validly spend an output of a transaction, assuming the user also has the corresponding private key.
 
    **Example request**:
 
 
-   .. literalinclude:: samples/get-tx-unfulfilled-request.http
+   .. literalinclude:: samples/get-tx-unspent-request.http
       :language: http
 
 
    **Example response**:
 
-   .. literalinclude:: samples/get-tx-unfulfilled-response.http
+   .. literalinclude:: samples/get-tx-unspent-response.http
       :language: http
 
    :resheader Content-Type: ``application/json``
 
-   :statuscode 200: A list of transactions containing unfulfilled conditions was found and returned.
+   :statuscode 200: A list of transactions containing unspent outputs was found and returned.
    :statuscode 400: The request wasn't understood by the server, e.g. the ``public_keys`` querystring was not included in the request.
 
 .. http:get:: /transactions?operation={GENESIS|CREATE|TRANSFER}&asset_id={asset_id}
