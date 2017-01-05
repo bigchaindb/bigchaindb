@@ -23,7 +23,6 @@ Host: example.com
 TPLS['get-tx-id-response'] = """\
 HTTP/1.1 200 OK
 Content-Type: application/json
-X-BigchainDB-Timestamp: 1482766245
 
 %(tx)s
 """

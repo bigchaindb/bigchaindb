@@ -70,11 +70,6 @@ Transactions
    This endpoint returns only a transaction from the ``BACKLOG`` or a ``VALID`` or ``UNDECIDED``
    block on ``bigchain``, if exists.
 
-   A transaction itself doesn't include a ``timestamp`` property. Only the
-   block a transaction was included in has a unix ``timestamp`` property. It is
-   returned by this endpoint in a HTTP custom entity header called
-   ``X-BigchainDB-Timestamp``.
-
    :param tx_id: transaction ID
    :type tx_id: hex string
 
@@ -88,7 +83,6 @@ Transactions
    .. literalinclude:: samples/get-tx-id-response.http
       :language: http
 
-   :resheader X-BigchainDB-Timestamp: A unix timestamp describing when a transaction was included into a valid block. The timestamp provided is taken from the block the transaction was included in.
    :resheader Content-Type: ``application/json``
 
    :statuscode 200: A transaction with that ID was found.
