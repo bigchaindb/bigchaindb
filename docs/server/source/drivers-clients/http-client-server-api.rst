@@ -111,8 +111,7 @@ Transactions
 
       {
         "_links": {
-          "asset_history": { "href": "https://example.com:9984/api/v0.9/transactions?operation={GENESIS|CREATE|TRANSFER}&asset_id={asset_id}" },
-          "asset_list": { "href": "https://example.com:9984/api/v0.9/transactions?operation=CREATE&is_asset=true&public_keys={public_keys}" },
+          "assets": { "href": "https://example.com:9984/api/v0.9/transactions?operation={GENESIS|CREATE|TRANSFER}&asset_id={asset_id}" },
           "docs": { "href": "https://docs.bigchaindb.com/projects/server/en/v0.9.0/drivers-clients/http-client-server-api.html" },
           "item": { "href": "https://example.com:9984/api/v0.9/transactions/{tx_id}" },
           "self": { "href": "https://example.com:9984/api/v0.9/transactions" },
@@ -129,7 +128,6 @@ Transactions
 
    * `Unfulfilled outputs <#get--transactions?fulfilled=false&public_keys=public_keys>`_
    * `Transactions related to a specific asset <#get--transactions?operation=GENESIS|CREATE|TRANSFER&asset_id=asset_id>`_
-   * `Listing of assets <#get--transactions?operation=CREATE&is_asset=true&public_keys=public_keys>`_
 
    In this section, we've listed those particular requests, as they will likely
    to be very handy when implementing your application on top of BigchainDB.
@@ -142,8 +140,6 @@ Transactions
    A generalization of those parameters follows:
 
    :query boolean fulfilled: A flag to indicate if transactions with fulfilled conditions should be returned.
-
-   :query boolean is_asset: A flag to indicate if the ``asset`` field of the transaction is ``null`` or not.
 
    :query string public_keys: Public key able to validly spend an output of a transaction, assuming the user also has the corresponding private key.
 
@@ -221,37 +217,6 @@ Transactions
    :statuscode 200: A list of transactions containing an asset with ID ``asset_id`` was found and returned.
    :statuscode 400: The request wasn't understood by the server, e.g. the ``asset_id`` querystring was not included in the request.
 
-.. http:get:: /transactions?operation=CREATE&is_asset=true&public_keys={public_keys}
-
-   Get a list of ``CREATE`` transactions that have the asset field defined.
-   This can serve as a recipe for retrieving your list of assets.
-   Currently, filtering on specific fields in the ``asset`` or ``metadata`` is assumed to be done clientside.
-
-   This endpoint returns assets only if the transaction they're in are
-   included in the ``BACKLOG`` or in a ``VALID`` or ``UNDECIDED`` block on ``bigchain``.
-
-   :query string operation: One of the three supported operations of a transaction: ``GENESIS``, ``CREATE``, ``TRANSFER``.
-
-   :query boolean is_asset: A flag to indicate if the ``asset`` field of the transaction is ``null`` or not.
-
-   :query string public_keys: Public key able to validly spend an output of a transaction, assuming the user also has the corresponding private key.
-
-
-   **Example request**:
-
-   .. literalinclude:: samples/get-assets-request.http
-      :language: http
-
-   **Example response**:
-
-   .. literalinclude:: samples/get-assets-response.http
-      :language: http
-
-
-   :resheader Content-Type: ``application/json``
-
-   :statuscode 200: A list of transactions containing an asset and ``public_keys`` found and returned.
-   :statuscode 400: The request wasn't understood by the server, e.g. the ``is_asset`` querystring was not included in the request.
 
 .. http:post:: /transactions
 
