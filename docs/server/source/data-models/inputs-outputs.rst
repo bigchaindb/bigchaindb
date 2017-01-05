@@ -131,14 +131,14 @@ See the reference on :ref:`inputs <Input>` for descriptions of the meaning of ea
 Multiple Current Owners
 ```````````````````````
 
-If there are multiple *current owners*, the fulfillment will be a little different from `One Current Owner`_ (suppose it has two current owners).
+If there are multiple *current owners*, the fulfillment will be a little different from `One Current Owner`_. Suppose it has two current owners.
 
 .. code-block:: json
 
     {
         "owners_before": ["<public key of the first owner before the transaction happened>","<public key of the second owner before the transaction happened>"],
         "fulfillment": "cf:2:AQIBAgEBYwAEYEv6O5HjHGl7OWo2Tu5mWcWQcL_OGrFuUjyej-dK3LM99TbZsRd8c9luQhU30xCH5AdNaupxg-pLHuk8DoSaDA1MHQGXUZ80a_cV-4UaaaCpdey8K0CEcJxre0X96hTHCwABAWMABGBnsuHExhuSj5Mdm-q0KoPgX4nAt0s00k1WTMCzuUpQIp6aStLoTSMlsvS4fmDtOSv9gubekKLuHTMAk-LQFSKF1JdzwaVWAA2UOv0v_OS2gY3A-r0kRq8HtzjYdcmVswUA",
-        "input": {
+        "fulfills": {
             "output": 0,
             "txid": "e4805f1bfc999d6409b38e3a4c3b2fafad7c1280eb0d441da7083e945dd89eb8"
         }
