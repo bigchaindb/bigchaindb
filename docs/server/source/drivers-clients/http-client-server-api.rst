@@ -303,12 +303,13 @@ Blocks
    Get the block with the ID ``block_id``.
 
    .. note::
-       As ``status``'s default value is set to ``VALID``, only ``VALID`` blocks
+       As ``status``'s default value is set to ``VALID``, hence only ``VALID`` blocks
        will be returned by this endpoint. In case ``status=VALID``, but a block
        that was labeled ``UNDECIDED`` or ``INVALID`` is requested by
        ``block_id``, this endpoint will return a ``404 Not Found`` status code
        to warn the user. To check a block's status independently, use the
-       `Statuses endpoint <#get--statuses-tx_id|block_id>`_.
+       `Statuses endpoint <#get--statuses-tx_id|block_id>`_. The ``INVALID`` status
+       can be handy to figure out why the block was rejected.
 
    :param block_id: block ID
    :type block_id: hex string
