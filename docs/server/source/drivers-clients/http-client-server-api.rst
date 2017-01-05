@@ -226,7 +226,8 @@ Transactions
 
 .. http:post:: /transactions
 
-   Push a new transaction.
+   Push a new transaction. The endpoint will return a ``statuses`` endpoint to track
+   the status of the transaction.
 
    .. note::
        The posted transaction should be valid `transaction

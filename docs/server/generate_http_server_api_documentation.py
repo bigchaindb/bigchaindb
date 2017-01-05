@@ -71,6 +71,10 @@ TPLS['post-tx-response'] = """\
 HTTP/1.1 202 Accepted
 Content-Type: application/json
 Location: ../statuses/%(txid)s
+
+{
+  "status": "/statuses/%(txid)s"
+}
 """
 
 
