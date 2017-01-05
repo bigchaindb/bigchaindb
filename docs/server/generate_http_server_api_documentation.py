@@ -58,21 +58,6 @@ Content-Type: application/json
 %(tx_transfer_last)s]
 """
 
-TPLS['get-assets-request'] = """\
-GET /transactions?operation=CREATE&is_asset=true&public_keys=%(public_keys)s HTTP/1.1
-Host: example.com
-
-"""
-
-
-TPLS['get-assets-response'] = """\
-HTTP/1.1 200 OK
-Content-Type: application/json
-
-[%(tx)s]
-"""
-
-
 TPLS['post-tx-request'] = """\
 POST /transactions/ HTTP/1.1
 Host: example.com
