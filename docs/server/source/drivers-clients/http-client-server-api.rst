@@ -184,8 +184,11 @@ Transactions
 .. http:get:: /transactions?operation={CREATE|TRANSFER}&asset_id={asset_id}
 
    Get a list of transactions that use an asset with the ID ``asset_id``.
+   Every ``TRANSFER`` transaction that originates from a ``CREATE`` transaction
+   with ``asset_id`` will be included. This allows users to query the entire history or
+   provenance of an asset.
 
-   This endpoint returns assets only if the transaction they're in are
+   This endpoint returns transactions only if they are
    included in the ``BACKLOG`` or in a ``VALID`` or ``UNDECIDED`` block on ``bigchain``.
 
    .. note::
