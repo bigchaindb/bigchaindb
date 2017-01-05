@@ -4,8 +4,8 @@ For more information please refer to the documentation on ReadTheDocs:
  - https://docs.bigchaindb.com/projects/server/en/latest/drivers-clients/
    http-client-server-api.html
 """
-from flask import current_app, request, Blueprint
-from flask_restful import Resource, Api
+from flask import current_app, request
+from flask_restful import Resource
 
 from bigchaindb.common.exceptions import (
     AmountError,
@@ -23,32 +23,6 @@ from bigchaindb.common.exceptions import (
 import bigchaindb
 from bigchaindb.models import Transaction
 from bigchaindb.web.views.base import make_error
-
-
-transaction_views = Blueprint('transaction_views', __name__)
-transaction_api = Api(transaction_views)
-
-
-# TODO: Do we really need this?
-# Unfortunately I cannot find a reference to this decorator.
-# This answer on SO is quite useful tho:
-# - http://stackoverflow.com/a/13432373/597097
-@transaction_views.record
-def record(state):
-    """This function checks if the blueprint can be initialized
-    with the provided state."""
-
-    bigchain_pool = state.app.config.get('bigchain_pool')
-    monitor = state.app.config.get('monitor')
-
-    if bigchain_pool is None:
-        raise Exception('This blueprint expects you to provide '
-                        'a pool of Bigchain instances called `bigchain_pool`')
-
-    if monitor is None:
-        raise ValueError('This blueprint expects you to provide '
-                         'a monitor instance to record system '
-                         'performance.')
 
 
 class TransactionApi(Resource):
@@ -146,13 +120,3 @@ class TransactionListApi(Resource):
 
         return tx
 
-
-transaction_api.add_resource(TransactionApi,
-                             '/transactions/<string:tx_id>',
-                             strict_slashes=False)
-transaction_api.add_resource(TransactionStatusApi,
-                             '/transactions/<string:tx_id>/status',
-                             strict_slashes=False)
-transaction_api.add_resource(TransactionListApi,
-                             '/transactions',
-                             strict_slashes=False)
