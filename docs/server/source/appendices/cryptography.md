@@ -9,14 +9,15 @@ as described in [the section on JSON serialization](json-serialization.html).
 ## Hashes
 
 BigchainDB computes transaction and block hashes using an implementation of the
-[SHA3-256](https://en.wikipedia.org/wiki/SHA-3)
+[SHA3-256](https://pypi.python.org/pypi/pysha3)
 algorithm provided by the
 [**pysha3** package](https://bitbucket.org/tiran/pykeccak),
 which is a wrapper around the optimized reference implementation
 from [http://keccak.noekeon.org](http://keccak.noekeon.org).
 
-Here's the relevant code from `bigchaindb/bigchaindb/common/crypto.py`
-(as of 11 December 2016):
+**Important**: Since selecting the Keccak hashing algorithm for SHA-3 in 2012, NIST [released a new version](https://en.wikipedia.org/wiki/SHA-3#cite_note-14) of the hash using the same algorithm but slightly different parameters. As of version 0.9, BigchainDB is using the latest version, supported by pysha3 1.0b1. See below for an example output of the hash function.
+
+Here's the relevant code from `bigchaindb/bigchaindb/common/crypto.py:
 
 ```python
 import sha3
@@ -37,7 +38,10 @@ For example:
 >>> import sha3
 >>> data = '字'
 >>> sha3.sha3_256(data.encode()).hexdigest()
-'c67820de36d949a35ca24492e15767e2972b22f77213f6704ac0adec123c5690'
+'2b38731ba4ef72d4034bef49e87c381d1fbe75435163b391dd33249331f91fe7'
+>>> data = 'hello world'
+>>> sha3.sha3_256(data.encode()).hexdigest()
+'644bcc7e564373040999aac89e7622f3ca71fba1d972fd94a31c3bfbf24e3938'
 ```
 
 Note: Hashlocks (which are one kind of crypto-condition)
