@@ -198,6 +198,8 @@ Transactions
        ``/transactions?operation=CREATE&asset_id={asset_id}``, there will in
        any case only be one transaction returned (in a list though, since
        ``/transactions`` is a list-returning endpoint).
+       Leaving out the ``asset_id`` query and calling
+       ``/transactions?operation=CREATE`` returns the list of assets.
 
    :query string operation: One of the two supported operations of a transaction: ``CREATE``, ``TRANSFER``.
 
