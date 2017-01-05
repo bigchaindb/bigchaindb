@@ -111,7 +111,7 @@ Transactions
 
       {
         "_links": {
-          "assets": { "href": "https://example.com:9984/api/v0.9/transactions?operation={GENESIS|CREATE|TRANSFER}&asset_id={asset_id}" },
+          "assets": { "href": "https://example.com:9984/api/v0.9/transactions?operation={CREATE|TRANSFER}&asset_id={asset_id}" },
           "docs": { "href": "https://docs.bigchaindb.com/projects/server/en/v0.9.0/drivers-clients/http-client-server-api.html" },
           "item": { "href": "https://example.com:9984/api/v0.9/transactions/{tx_id}" },
           "self": { "href": "https://example.com:9984/api/v0.9/transactions" },
@@ -127,7 +127,7 @@ Transactions
    that include:
 
    * `Unspent outputs <#get--transactions?unspent=true&public_keys=public_keys>`_
-   * `Transactions related to a specific asset <#get--transactions?operation=GENESIS|CREATE|TRANSFER&asset_id=asset_id>`_
+   * `Transactions related to a specific asset <#get--transactions?operation=CREATE|TRANSFER&asset_id=asset_id>`_
 
    In this section, we've listed those particular requests, as they will likely
    to be very handy when implementing your application on top of BigchainDB.
@@ -143,7 +143,7 @@ Transactions
 
    :query string public_keys: Public key able to validly spend an output of a transaction, assuming the user also has the corresponding private key.
 
-   :query string operation: One of the three supported operations of a transaction: ``GENESIS``, ``CREATE``, ``TRANSFER``.
+   :query string operation: One of the two supported operations of a transaction: ``CREATE``, ``TRANSFER``.
 
    :query string asset_id: asset ID.
 
@@ -181,7 +181,7 @@ Transactions
    :statuscode 200: A list of transactions containing unspent outputs was found and returned.
    :statuscode 400: The request wasn't understood by the server, e.g. the ``public_keys`` querystring was not included in the request.
 
-.. http:get:: /transactions?operation={GENESIS|CREATE|TRANSFER}&asset_id={asset_id}
+.. http:get:: /transactions?operation={CREATE|TRANSFER}&asset_id={asset_id}
 
    Get a list of transactions that use an asset with the ID ``asset_id``.
 
@@ -199,7 +199,7 @@ Transactions
        any case only be one transaction returned (in a list though, since
        ``/transactions`` is a list-returning endpoint).
 
-   :query string operation: One of the three supported operations of a transaction: ``GENESIS``, ``CREATE``, ``TRANSFER``.
+   :query string operation: One of the two supported operations of a transaction: ``CREATE``, ``TRANSFER``.
 
    :query string asset_id: asset ID.
 
