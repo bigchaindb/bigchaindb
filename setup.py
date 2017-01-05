@@ -61,7 +61,7 @@ install_requires = [
     # TODO Consider not installing the db drivers, or putting them in extras.
     'rethinkdb~=2.3',  # i.e. a version between 2.3 and 3.0
     'pymongo~=3.4',
-    'pysha3==1.0b1',
+    'pysha3==1.0.0',
     'cryptoconditions>=0.5.0',
     'statsd>=3.2.1',
     'python-rapidjson>=0.0.8',
