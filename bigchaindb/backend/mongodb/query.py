@@ -4,6 +4,7 @@ from time import time
 from itertools import chain
 
 from pymongo import ReturnDocument
+from pymongo import errors
 
 from bigchaindb import backend
 from bigchaindb.common.exceptions import CyclicBlockchainError
@@ -16,7 +17,10 @@ register_query = module_dispatch_registrar(backend.query)
 
 @register_query(MongoDBConnection)
 def write_transaction(conn, signed_transaction):
-    return conn.db['backlog'].insert_one(signed_transaction)
+    try:
+        return conn.db['backlog'].insert_one(signed_transaction)
+    except errors.DuplicateKeyError:
+        return
 
 
 @register_query(MongoDBConnection)

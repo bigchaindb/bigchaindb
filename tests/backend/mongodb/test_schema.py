@@ -25,7 +25,8 @@ def test_init_creates_db_tables_and_indexes():
                                'transaction_id']
 
     indexes = conn.conn[dbname]['backlog'].index_information().keys()
-    assert sorted(indexes) == ['_id_', 'assignee__transaction_timestamp']
+    assert sorted(indexes) == ['_id_', 'assignee__transaction_timestamp',
+                               'transaction_id']
 
     indexes = conn.conn[dbname]['votes'].index_information().keys()
     assert sorted(indexes) == ['_id_', 'block_and_voter']
@@ -85,13 +86,19 @@ def test_create_secondary_indexes():
 
     # Backlog table
     indexes = conn.conn[dbname]['backlog'].index_information().keys()
-    assert sorted(indexes) == ['_id_', 'assignee__transaction_timestamp']
+    assert sorted(indexes) == ['_id_', 'assignee__transaction_timestamp',
+                               'transaction_id']
 
     # Votes table
     indexes = conn.conn[dbname]['votes'].index_information().keys()
     assert sorted(indexes) == ['_id_', 'block_and_voter']
 
 
+# The database is set up with a session scope.
+# If we run this test we will remove secondary indexes that are nedeed for
+# the rest of the tests
+@pytest.mark.skipif(reason='This will remove the secondary indexes needed'
+                           ' for the rest of the tests')
 def test_drop():
     import bigchaindb
     from bigchaindb import backend

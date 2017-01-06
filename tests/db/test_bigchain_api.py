@@ -97,18 +97,18 @@ class TestBigchainApi(object):
         tx = Transaction.create([b.me], [([b.me], 1)])
         tx = tx.sign([b.me_private])
 
-        monkeypatch.setattr('time.time', lambda: 1)
+        monkeypatch.setattr('time.time', lambda: 1000000000)
         block1 = b.create_block([tx])
         b.write_block(block1)
 
-        monkeypatch.setattr('time.time', lambda: 2)
+        monkeypatch.setattr('time.time', lambda: 1000000020)
         transfer_tx = Transaction.transfer(tx.to_inputs(), [([b.me], 1)],
                                            asset_id=tx.id)
         transfer_tx = transfer_tx.sign([b.me_private])
         block2 = b.create_block([transfer_tx])
         b.write_block(block2)
 
-        monkeypatch.setattr('time.time', lambda: 3333333333)
+        monkeypatch.setattr('time.time', lambda: 1000000030)
         transfer_tx2 = Transaction.transfer(tx.to_inputs(), [([b.me], 1)],
                                             asset_id=tx.id)
         transfer_tx2 = transfer_tx2.sign([b.me_private])
@@ -132,11 +132,11 @@ class TestBigchainApi(object):
         tx = Transaction.create([b.me], [([b.me], 1)])
         tx = tx.sign([b.me_private])
 
-        monkeypatch.setattr('time.time', lambda: 1)
+        monkeypatch.setattr('time.time', lambda: 1000000000)
         block1 = b.create_block([tx])
         b.write_block(block1)
 
-        monkeypatch.setattr('time.time', lambda: 2222222222)
+        monkeypatch.setattr('time.time', lambda: 1000000020)
         block2 = b.create_block([tx])
         b.write_block(block2)
 
@@ -160,7 +160,7 @@ class TestBigchainApi(object):
         block1 = b.create_block([tx1])
         b.write_block(block1)
 
-        monkeypatch.setattr('time.time', lambda: 2000000000)
+        monkeypatch.setattr('time.time', lambda: 1000000020)
         tx2 = Transaction.create([b.me], [([b.me], 1)],
                                  metadata={'msg': random.random()})
         tx2 = tx2.sign([b.me_private])
@@ -180,6 +180,7 @@ class TestBigchainApi(object):
 
     @pytest.mark.usefixtures('inputs')
     def test_write_transaction(self, b, user_pk, user_sk):
+        from bigchaindb import Bigchain
         from bigchaindb.models import Transaction
 
         input_tx = b.get_owned_ids(user_pk).pop()
@@ -190,12 +191,10 @@ class TestBigchainApi(object):
         tx = tx.sign([user_sk])
         response = b.write_transaction(tx)
 
-        assert response['skipped'] == 0
-        assert response['deleted'] == 0
-        assert response['unchanged'] == 0
-        assert response['errors'] == 0
-        assert response['replaced'] == 0
-        assert response['inserted'] == 1
+        tx_from_db, status = b.get_transaction(tx.id, include_status=True)
+
+        assert tx_from_db.to_dict() == tx.to_dict()
+        assert status == Bigchain.TX_IN_BACKLOG
 
     @pytest.mark.usefixtures('inputs')
     def test_read_transaction(self, b, user_pk, user_sk):
