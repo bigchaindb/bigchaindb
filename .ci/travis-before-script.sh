@@ -2,9 +2,7 @@
 
 set -e -x
 
-if [[ "${TOXENV}" == *-rdb ]]; then
-    rethinkdb --daemon
-elif [[ "${TOXENV}" == *-mdb ]]; then
+if [[ "${BIGCHAINDB_DATABASE_BACKEND}" == mongodb ]]; then
     sudo tee -a /etc/mongod.conf <<EOF
     replication:
       replSetName: bigchain
