@@ -26,6 +26,7 @@ with something like the following in the body:
     {
       "_links": {
         "docs": "https://docs.bigchaindb.com/projects/server/en/v0.9.0/"
+        "api_v1": "http://example.com:9984/api/v1/"
       },
       "keyring": [
         "6qHyZew94NMmUTYyHnkZsB8cxJYuRNEiEpXHe1ih9QX3",
@@ -50,12 +51,10 @@ that allows you to discover the BigchainDB API endpoints:
 
     {
       "_links": {
-        "blocks": "https://example.com:9984/api/v1/blocks",
         "docs": "https://docs.bigchaindb.com/projects/server/en/v0.9.0/drivers-clients/http-client-server-api.html",
         "self": "https://example.com:9984/api/v1",
         "statuses": "https://example.com:9984/api/v1/statuses",
         "transactions": "https://example.com:9984/api/v1/transactions",
-        "votes": "https://example.com:9984/api/v1/votes"
       },
       "version" : "0.9.0"
     }
