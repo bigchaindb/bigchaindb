@@ -2,12 +2,9 @@
 
 set -e -x
 
-echo 'running before script'
-echo $TOXENV
-
 if [[ "${TOXENV}" == *-rdb ]]; then
     rethinkdb --daemon
-elif [[ "${TOXENV}" == *-mdb ]]; then
+elif [[ "${BIGCHAINDB_DATABASE_BACKEND}" == mongodb ]]; then
     echo 'Setting up mongodb'
     sudo tee -a /etc/mongod.conf <<EOF
 replication:
