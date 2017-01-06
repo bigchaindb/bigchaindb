@@ -119,4 +119,3 @@ class TransactionListApi(Resource):
                     bigchain.write_transaction(tx_obj)
 
         return tx
-
