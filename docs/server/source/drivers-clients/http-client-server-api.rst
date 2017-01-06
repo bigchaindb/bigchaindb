@@ -25,7 +25,7 @@ with something like the following in the body:
 
     {
       "_links": {
-        "docs": { "href": "https://docs.bigchaindb.com/projects/server/en/v0.9.0/" }
+        "docs": "https://docs.bigchaindb.com/projects/server/en/v0.9.0/"
       },
       "keyring": [
         "6qHyZew94NMmUTYyHnkZsB8cxJYuRNEiEpXHe1ih9QX3",
@@ -50,12 +50,12 @@ that allows you to discover the BigchainDB API endpoints:
 
     {
       "_links": {
-        "blocks": { "href": "https://example.com:9984/api/v1/blocks" },
-        "docs": { "href": "https://docs.bigchaindb.com/projects/server/en/v0.9.0/drivers-clients/http-client-server-api.html" },
-        "self": { "href": "https://example.com:9984/api/v1" },
-        "statuses": { "href": "https://example.com:9984/api/v1/statuses" },
-        "transactions": { "href": "https://example.com:9984/api/v1/transactions" },
-        "votes": { "href": "https://example.com:9984/api/v1/votes" }
+        "blocks": "https://example.com:9984/api/v1/blocks",
+        "docs": "https://docs.bigchaindb.com/projects/server/en/v0.9.0/drivers-clients/http-client-server-api.html",
+        "self": "https://example.com:9984/api/v1",
+        "statuses": "https://example.com:9984/api/v1/statuses",
+        "transactions": "https://example.com:9984/api/v1/transactions",
+        "votes": "https://example.com:9984/api/v1/votes"
       },
       "version" : "0.9.0"
     }
@@ -111,11 +111,11 @@ Transactions
 
       {
         "_links": {
-          "assets": { "href": "https://example.com:9984/api/v1/transactions?operation={CREATE|TRANSFER}&asset_id={asset_id}" },
-          "docs": { "href": "https://docs.bigchaindb.com/projects/server/en/v0.9.0/drivers-clients/http-client-server-api.html" },
-          "item": { "href": "https://example.com:9984/api/v1/transactions/{tx_id}" },
-          "self": { "href": "https://example.com:9984/api/v1/transactions" },
-          "unspent": { "href": "https://example.com:9984/api/v1/transactions?unspent=true&public_keys={public_keys}" }
+          "assets": "https://example.com:9984/api/v1/transactions?operation={CREATE|TRANSFER}&asset_id={asset_id}",
+          "docs": "https://docs.bigchaindb.com/projects/server/en/v0.9.0/drivers-clients/http-client-server-api.html",
+          "item": "https://example.com:9984/api/v1/transactions/{tx_id}",
+          "self": "https://example.com:9984/api/v1/transactions",
+          "unspent": "https://example.com:9984/api/v1/transactions?unspent=true&public_keys={public_keys}"
         },
         "version" : "0.9.0"
       }
@@ -362,10 +362,10 @@ Blocks
 
       {
         "_links": {
-          "blocks": { "href": "https://example.com:9984/api/v1/blocks?tx_id={tx_id}&status={VALID|UNDECIDED|INVALID}" },
-          "docs": { "href": "https://docs.bigchaindb.com/projects/server/en/v0.9.0/drivers-clients/http-client-server-api.html" },
-          "item": { "href": "https://example.com:9984/api/v1/blocks/{block_id}?status={VALID|UNDECIDED|INVALID}" },
-          "self": { "href": "https://example.com:9984/api/v1/blocks" }
+          "blocks": "https://example.com:9984/api/v1/blocks?tx_id={tx_id}&status={VALID|UNDECIDED|INVALID}",
+          "docs": "https://docs.bigchaindb.com/projects/server/en/v0.9.0/drivers-clients/http-client-server-api.html",
+          "item": "https://example.com:9984/api/v1/blocks/{block_id}?status={VALID|UNDECIDED|INVALID}",
+          "self": "https://example.com:9984/api/v1/blocks"
         },
         "version" : "0.9.0"
       }
