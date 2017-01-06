@@ -2,6 +2,9 @@
 
 set -e -x
 
+echo 'running before script'
+echo $TOXENV
+
 if [[ "${TOXENV}" == *-rdb ]]; then
     rethinkdb --daemon
 elif [[ "${TOXENV}" == *-mdb ]]; then
