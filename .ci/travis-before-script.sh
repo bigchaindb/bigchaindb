@@ -6,10 +6,8 @@ if [[ "${TOXENV}" == *-rdb ]]; then
     rethinkdb --daemon
 elif [[ "${BIGCHAINDB_DATABASE_BACKEND}" == mongodb ]]; then
     echo 'Setting up mongodb'
-    sudo tee -a /etc/mongod.conf <<EOF
-replication:
-  replSetName: bigchain
-EOF
-    sudo service mongodb restart
-    sleep 15
+    wget https://downloads.mongodb.com/linux/mongodb-linux-x86_64-enterprise-ubuntu1404-3.4.1.tgz -O /tmp/mongodb.tgz
+    tar -xvf /tmp/mongodb.tgz
+    mkdir /tmp/data
+    ${PWD}/mongodb-linux-x86_64-enterprise-ubuntu1404-3.4.1/bin/mongod --dbpath /tmp/data --replSet=rs0 &> /dev/null &
 fi
