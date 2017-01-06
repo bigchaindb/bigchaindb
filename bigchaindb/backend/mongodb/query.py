@@ -1,6 +1,7 @@
 """Query implementation for MongoDB"""
 
 from time import time
+from itertools import chain
 
 from pymongo import ReturnDocument
 
@@ -36,7 +37,8 @@ def delete_transaction(conn, *transaction_id):
 @register_query(MongoDBConnection)
 def get_stale_transactions(conn, reassign_delay):
     return conn.db['backlog']\
-            .find({'assignment_timestamp': {'$lt': time() - reassign_delay}})
+            .find({'assignment_timestamp': {'$lt': time() - reassign_delay}},
+                  projection={'_id': False})
 
 
 @register_query(MongoDBConnection)
@@ -58,7 +60,10 @@ def get_transaction_from_block(conn, transaction_id, block_id):
 
 @register_query(MongoDBConnection)
 def get_transaction_from_backlog(conn, transaction_id):
-    return conn.db['backlog'].find_one({'id': transaction_id})
+    return conn.db['backlog']\
+               .find_one({'id': transaction_id},
+                         projection={'_id': False, 'assignee': False,
+                                     'assignment_timestamp': False})
 
 
 @register_query(MongoDBConnection)
@@ -70,33 +75,83 @@ def get_blocks_status_from_transaction(conn, transaction_id):
 
 @register_query(MongoDBConnection)
 def get_txids_by_asset_id(conn, asset_id):
-    return conn.db['bigchain']\
-            .find({'block.transactions.asset.id': asset_id},
-                  projection=['id'])
+    # get the txid of the create transaction for asset_id
+    cursor = conn.db['bigchain'].aggregate([
+        {'$match': {
+            'block.transactions.id': asset_id,
+            'block.transactions.operation': 'CREATE'
+        }},
+        {'$unwind': '$block.transactions'},
+        {'$match': {
+            'block.transactions.id': asset_id,
+            'block.transactions.operation': 'CREATE'
+        }},
+        {'$project': {'block.transactions.id': True}}
+    ])
+    create_tx_txids = (elem['block']['transactions']['id'] for elem in cursor)
+
+    # get txids of transfer transaction with asset_id
+    cursor = conn.db['bigchain'].aggregate([
+        {'$match': {
+            'block.transactions.asset.id': asset_id
+        }},
+        {'$unwind': '$block.transactions'},
+        {'$match': {
+            'block.transactions.asset.id': asset_id
+        }},
+        {'$project': {'block.transactions.id': True}}
+    ])
+    transfer_tx_ids = (elem['block']['transactions']['id'] for elem in cursor)
+
+    return chain(create_tx_txids, transfer_tx_ids)
 
 
 @register_query(MongoDBConnection)
 def get_asset_by_id(conn, asset_id):
-    return conn.db['bigchain']\
-            .find_one({'block.transactions.asset.id': asset_id,
-                       'block.transactions.asset.operation': 'CREATE'},
-                      projection=['block.transactions.asset'])
+    cursor = conn.db['bigchain'].aggregate([
+        {'$match': {
+            'block.transactions.id': asset_id,
+            'block.transactions.operation': 'CREATE'
+        }},
+        {'$unwind': '$block.transactions'},
+        {'$match': {
+            'block.transactions.id': asset_id,
+            'block.transactions.operation': 'CREATE'
+        }},
+        {'$project': {'block.transactions.asset': True}}
+    ])
+    # we need to access some nested fields before returning so lets use a
+    # generator to avoid having to read all records on the cursor at this point
+    return (elem['block']['transactions'] for elem in cursor)
 
 
 @register_query(MongoDBConnection)
 def get_spent(conn, transaction_id, condition_id):
-    return conn.db['bigchain']\
-            .find_one({'block.transactions.fulfillments.input.txid':
-                       transaction_id,
-                       'block.transactions.fulfillments.input.cid':
-                       condition_id})
+    cursor = conn.db['bigchain'].aggregate([
+        {'$unwind': '$block.transactions'},
+        {'$match': {
+            'block.transactions.fulfillments.input.txid': transaction_id,
+            'block.transactions.fulfillments.input.cid': condition_id
+        }}
+    ])
+    # we need to access some nested fields before returning so lets use a
+    # generator to avoid having to read all records on the cursor at this point
+    return (elem['block']['transactions'] for elem in cursor)
 
 
 @register_query(MongoDBConnection)
 def get_owned_ids(conn, owner):
-    return conn.db['bigchain']\
-            .find({'block.transactions.transaction.conditions.owners_after':
-                   owner})
+    cursor = conn.db['bigchain'].aggregate([
+        {'$unwind': '$block.transactions'},
+        {'$match': {
+            'block.transactions.conditions.owners_after': {
+                '$elemMatch': {'$eq': owner}
+            }
+        }}
+    ])
+    # we need to access some nested fields before returning so lets use a
+    # generator to avoid having to read all records on the cursor at this point
+    return (elem['block']['transactions'] for elem in cursor)
 
 
 @register_query(MongoDBConnection)
@@ -121,7 +176,8 @@ def write_block(conn, block):
 
 @register_query(MongoDBConnection)
 def get_block(conn, block_id):
-    return conn.db['bigchain'].find_one({'id': block_id})
+    return conn.db['bigchain'].find_one({'id': block_id},
+                                        projection={'_id': False})
 
 
 @register_query(MongoDBConnection)
@@ -184,4 +240,18 @@ def get_last_voted_block(conn, node_pubkey):
 
 @register_query(MongoDBConnection)
 def get_unvoted_blocks(conn, node_pubkey):
-    pass
+    return conn.db['bigchain'].aggregate([
+        {'$lookup': {
+            'from': 'votes',
+            'localField': 'id',
+            'foreignField': 'vote.voting_for_block',
+            'as': 'votes'
+        }},
+        {'$match': {
+            'votes.node_pubkey': {'$ne': node_pubkey},
+            'block.transactions.operation': {'$ne': 'GENESIS'}
+        }},
+        {'$project': {
+            'votes': False, '_id': False
+        }}
+    ])

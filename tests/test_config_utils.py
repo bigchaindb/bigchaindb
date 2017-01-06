@@ -102,7 +102,10 @@ def test_env_config(monkeypatch):
 
 def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
     file_config = {
-        'database': {'host': 'test-host'},
+        'database': {
+            'host': 'test-host',
+            'backend': request.config.getoption('--database-backend')
+        },
         'backlog_reassign_delay': 5
     }
     monkeypatch.setattr('bigchaindb.config_utils.file_config', lambda *args, **kwargs: file_config)
