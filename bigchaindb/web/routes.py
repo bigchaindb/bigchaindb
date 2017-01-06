@@ -17,6 +17,7 @@ def r(*args, **kwargs):
 
 
 ROUTES_API_V1 = [
+    r('/', info.ApiV1Index),
     r('transactions/<string:tx_id>', tx.TransactionApi),
     r('transactions/<string:tx_id>/status', tx.TransactionStatusApi),
     r('transactions', tx.TransactionListApi),
@@ -25,6 +26,6 @@ ROUTES_API_V1 = [
 
 
 API_SECTIONS = [
-    (None, [r('/', info.IndexApi)]),
+    (None, [r('/', info.RootIndex)]),
     ('/api/v1/', ROUTES_API_V1),
 ]
