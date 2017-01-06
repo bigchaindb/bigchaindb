@@ -257,12 +257,13 @@ Transactions
 Statuses
 --------------------------------
 
-.. http:get:: /statuses/{tx_id|block_id}
+.. http:get:: /statuses?tx_id={tx_id}|block_id={block_id}
 
    Get the status of an asynchronously written resource by their id.
 
    Supports the retrieval of a status for a transaction using ``tx_id`` or the
-   retrieval of a status for a block using ``block_id``.
+   retrieval of a status for a block using ``block_id``. Only use exactly one of both
+   queries, as they are required but mutually exclusive.
 
    The possible status values are ``backlog``, ``undecided``, ``valid`` or
    ``invalid``.
@@ -312,7 +313,7 @@ Blocks
        that was labeled ``UNDECIDED`` or ``INVALID`` is requested by
        ``block_id``, this endpoint will return a ``404 Not Found`` status code
        to warn the user. To check a block's status independently, use the
-       `Statuses endpoint <#get--statuses-tx_id|block_id>`_. The ``INVALID`` status
+       `Statuses endpoint <#get--statuses?tx_id=tx_id|block_id=block_id>`_. The ``INVALID`` status
        can be handy to figure out why the block was rejected.
 
    :param block_id: block ID
