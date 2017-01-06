@@ -41,8 +41,8 @@ API Root Endpoint
 -------------------
 
 If you send an HTTP GET request to the API Root Endpoint
-e.g. ``http://localhost:9984/api/v0.9/``
-or ``https://example.com:9984/api/v0.9/``,
+e.g. ``http://localhost:9984/api/v1/``
+or ``https://example.com:9984/api/v1/``,
 then you should get an HTTP response
 that allows you to discover the BigchainDB API endpoints:
 
@@ -50,12 +50,12 @@ that allows you to discover the BigchainDB API endpoints:
 
     {
       "_links": {
-        "blocks": { "href": "https://example.com:9984/api/v0.9/blocks" },
+        "blocks": { "href": "https://example.com:9984/api/v1/blocks" },
         "docs": { "href": "https://docs.bigchaindb.com/projects/server/en/v0.9.0/drivers-clients/http-client-server-api.html" },
-        "self": { "href": "https://example.com:9984/api/v0.9" },
-        "statuses": { "href": "https://example.com:9984/api/v0.9/statuses" },
-        "transactions": { "href": "https://example.com:9984/api/v0.9/transactions" },
-        "votes": { "href": "https://example.com:9984/api/v0.9/votes" }
+        "self": { "href": "https://example.com:9984/api/v1" },
+        "statuses": { "href": "https://example.com:9984/api/v1/statuses" },
+        "transactions": { "href": "https://example.com:9984/api/v1/transactions" },
+        "votes": { "href": "https://example.com:9984/api/v1/votes" }
       },
       "version" : "0.9.0"
     }
@@ -111,11 +111,11 @@ Transactions
 
       {
         "_links": {
-          "assets": { "href": "https://example.com:9984/api/v0.9/transactions?operation={CREATE|TRANSFER}&asset_id={asset_id}" },
+          "assets": { "href": "https://example.com:9984/api/v1/transactions?operation={CREATE|TRANSFER}&asset_id={asset_id}" },
           "docs": { "href": "https://docs.bigchaindb.com/projects/server/en/v0.9.0/drivers-clients/http-client-server-api.html" },
-          "item": { "href": "https://example.com:9984/api/v0.9/transactions/{tx_id}" },
-          "self": { "href": "https://example.com:9984/api/v0.9/transactions" },
-          "unspent": { "href": "https://example.com:9984/api/v0.9/transactions?unspent=true&public_keys={public_keys}" }
+          "item": { "href": "https://example.com:9984/api/v1/transactions/{tx_id}" },
+          "self": { "href": "https://example.com:9984/api/v1/transactions" },
+          "unspent": { "href": "https://example.com:9984/api/v1/transactions?unspent=true&public_keys={public_keys}" }
         },
         "version" : "0.9.0"
       }
@@ -362,10 +362,10 @@ Blocks
 
       {
         "_links": {
-          "blocks": { "href": "https://example.com:9984/api/v0.9/blocks?tx_id={tx_id}&status={VALID|UNDECIDED|INVALID}" },
+          "blocks": { "href": "https://example.com:9984/api/v1/blocks?tx_id={tx_id}&status={VALID|UNDECIDED|INVALID}" },
           "docs": { "href": "https://docs.bigchaindb.com/projects/server/en/v0.9.0/drivers-clients/http-client-server-api.html" },
-          "item": { "href": "https://example.com:9984/api/v0.9/blocks/{block_id}?status={VALID|UNDECIDED|INVALID}" },
-          "self": { "href": "https://example.com:9984/api/v0.9/blocks" }
+          "item": { "href": "https://example.com:9984/api/v1/blocks/{block_id}?status={VALID|UNDECIDED|INVALID}" },
+          "self": { "href": "https://example.com:9984/api/v1/blocks" }
         },
         "version" : "0.9.0"
       }
@@ -441,7 +441,7 @@ Determining the API Root URL
 When you start BigchainDB Server using ``bigchaindb start``,
 an HTTP API is exposed at some address. The default is:
 
-`http://localhost:9984/api/v0.9/ <http://localhost:9984/api/v0.9/>`_
+`http://localhost:9984/api/v1/ <http://localhost:9984/api/v1/>`_
 
 It's bound to ``localhost``,
 so you can access it from the same machine,
