@@ -67,10 +67,10 @@ class MongoDBChangeFeed(ChangeFeed):
             # See https://github.com/bigchaindb/bigchaindb/issues/992
             if is_insert and (self.operation & ChangeFeed.INSERT):
                 record['o'].pop('_id', None)
-                doc = record['o']
+                self.outqueue.put(record['o'])
             elif is_delete and (self.operation & ChangeFeed.DELETE):
                 # on delete it only returns the id of the document
-                doc = record['o']
+                self.outqueue.put(record['o'])
             elif is_update and (self.operation & ChangeFeed.UPDATE):
                 # the oplog entry for updates only returns the update
                 # operations to apply to the document and not the
@@ -78,7 +78,7 @@ class MongoDBChangeFeed(ChangeFeed):
                 # and then return it.
                 doc = self.connection.conn[dbname][table]\
                         .find_one(record['o2'], projection={'_id': False})
-            self.outqueue.put(doc)
+                self.outqueue.put(doc)
 
 
 @register_changefeed(MongoDBConnection)
