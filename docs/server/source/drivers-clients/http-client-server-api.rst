@@ -268,8 +268,8 @@ Statuses
    ``invalid``.
 
    If a transaction or block is persisted to the chain and it's status is set
-   to ``valid`` or ``undecided``, a ``303 See Other`` status code is returned,
-   as well as an URL to the resource in the location header.
+   to ``valid`` or ``undecided``, a ``200`` status code is returned,
+   as well as an URL to the resource.
 
    :param tx_id: transaction ID
    :type tx_id: hex string
@@ -295,8 +295,7 @@ Statuses
    :resheader Content-Type: ``application/json``
    :resheader Location: Once the transaction has been persisted, this header will link to the actual resource.
 
-   :statuscode 200: A transaction or block with that ID was found. The status is either ``backlog``, ``invalid``.
-   :statuscode 303: A transaction or block with that ID was found and persisted to the chain. A location header to the resource is provided.
+   :statuscode 200: A transaction or block with that ID was found.
    :statuscode 404: A transaction or block with that ID was not found.
 
 Blocks

@@ -96,12 +96,14 @@ Content-Type: application/json
 
 
 TPLS['get-statuses-tx-valid-response'] = """\
-HTTP/1.1 303 See Other
+HTTP/1.1 200 OK
 Content-Type: application/json
-Location: ../transactions/%(txid)s
 
 {
-  "status": "valid"
+  "status": "valid",
+  "_links": {
+    "tx": "/transactions/%(txid)s"
+  }
 }
 """
 
