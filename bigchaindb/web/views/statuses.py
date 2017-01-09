@@ -1,4 +1,4 @@
-"""This module provides the blueprint for some basic API endpoints.
+"""This module provides the blueprint for the statuses API endpoints.
 
 For more information please refer to the documentation on ReadTheDocs:
  - https://docs.bigchaindb.com/projects/server/en/latest/drivers-clients/
@@ -28,18 +28,35 @@ class StatusApi(Resource):
             return make_error(400, "Provide exactly one query parameter. Choices are: block_id, tx_id")
 
         pool = current_app.config['bigchain_pool']
-        status = None
+        status, links = None, None
 
         with pool() as bigchain:
             if args['tx_id']:
                 status = bigchain.get_status(args['tx_id'])
+                links = {
+                    "_links": {
+                        "tx": "/transactions/{}".format(args['tx_id'])
+                    }
+                }
+
             elif args['block_id']:
                 block = bigchain.get_block(block_id=args['block_id'])
                 if not block:
                     return make_error(404)
                 status = bigchain.block_election_status(block['id'], block['block']['voters'])
+                # TODO: enable once blocks endpoint is available
+                # links = {
+                #     "block": "/blocks/{}".format(args['block_id'])
+                # }
 
         if not status:
             return make_error(404)
 
-        return {'status': status}
+        response = {
+            'status': status
+        }
+
+        if links:
+            response.update(links)
+
+        return response

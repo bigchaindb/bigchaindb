@@ -12,6 +12,7 @@ def test_get_transaction_status_endpoint(b, client, user_pk):
     tx, status = b.get_transaction(input_tx.txid, include_status=True)
     res = client.get(STATUSES_ENDPOINT + "?tx_id=" + input_tx.txid)
     assert status == res.json['status']
+    assert res.json['_links']['tx'] == "/transactions/{}".format(input_tx.txid)
     assert res.status_code == 200
 
 
@@ -33,6 +34,7 @@ def test_get_block_status_endpoint_undecided(b, client):
 
     res = client.get(STATUSES_ENDPOINT + "?block_id=" + block.id)
     assert status == res.json['status']
+    assert '_links' not in res.json
     assert res.status_code == 200
 
 
@@ -53,6 +55,7 @@ def test_get_block_status_endpoint_valid(b, client):
 
     res = client.get(STATUSES_ENDPOINT + "?block_id=" + block.id)
     assert status == res.json['status']
+    assert '_links' not in res.json
     assert res.status_code == 200
 
 
@@ -73,6 +76,7 @@ def test_get_block_status_endpoint_invalid(b, client):
 
     res = client.get(STATUSES_ENDPOINT + "?block_id=" + block.id)
     assert status == res.json['status']
+    assert '_links' not in res.json
     assert res.status_code == 200
 
 
