@@ -130,12 +130,12 @@ def get_asset_by_id(conn, asset_id):
 
 
 @register_query(MongoDBConnection)
-def get_spent(conn, transaction_id, condition_id):
+def get_spent(conn, transaction_id, output):
     cursor = conn.db['bigchain'].aggregate([
         {'$unwind': '$block.transactions'},
         {'$match': {
-            'block.transactions.fulfillments.input.txid': transaction_id,
-            'block.transactions.fulfillments.input.cid': condition_id
+            'block.transactions.inputs.fulfills.txid': transaction_id,
+            'block.transactions.inputs.fulfills.output': output
         }}
     ])
     # we need to access some nested fields before returning so lets use a
@@ -148,7 +148,7 @@ def get_owned_ids(conn, owner):
     cursor = conn.db['bigchain'].aggregate([
         {'$unwind': '$block.transactions'},
         {'$match': {
-            'block.transactions.conditions.owners_after': {
+            'block.transactions.outputs.public_keys': {
                 '$elemMatch': {'$eq': owner}
             }
         }}
