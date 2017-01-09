@@ -25,7 +25,7 @@ with something like the following in the body:
 
     {
       "_links": {
-        "docs": "https://docs.bigchaindb.com/projects/server/en/v0.9.0/"
+        "docs": "https://docs.bigchaindb.com/projects/server/en/v0.9.0/",
         "api_v1": "http://example.com:9984/api/v1/"
       },
       "keyring": [
