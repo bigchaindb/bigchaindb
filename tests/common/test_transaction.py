@@ -974,6 +974,7 @@ def test_validate_version(utx):
 
     validate_transaction_model(utx)
 
+    # At version 1, transaction version will break step with server version.
     utx.version = '1.0.0'
     with raises(SchemaValidationError):
         validate_transaction_model(utx)
