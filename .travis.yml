@@ -12,8 +12,6 @@ env:
 
 matrix:
   fast_finish: true
-  allow_failures:
-  - env: BIGCHAINDB_DATABASE_BACKEND=mongodb
   exclude:
   - python: 3.4 
     env: TOXENV=flake8 
