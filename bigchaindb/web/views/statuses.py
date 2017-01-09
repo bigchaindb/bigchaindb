@@ -34,9 +34,7 @@ class StatusApi(Resource):
             if args['tx_id']:
                 status = bigchain.get_status(args['tx_id'])
                 links = {
-                    "_links": {
-                        "tx": "/transactions/{}".format(args['tx_id'])
-                    }
+                    "tx": "/transactions/{}".format(args['tx_id'])
                 }
 
             elif args['block_id']:
@@ -57,6 +55,8 @@ class StatusApi(Resource):
         }
 
         if links:
-            response.update(links)
+            response.update({
+                "_links": links
+            })
 
         return response
