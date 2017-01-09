@@ -133,14 +133,14 @@ GET /unspents/
 
 .. http:get:: /unspents?owner_after={owner_after}
 
-   Get a list of links to transactions' conditions that have not been used in
-   a previous transaction and could hence be called unspent conditions/outputs
+   Get a list of links to transactions' outputs that have not been used in
+   a previous transaction and could hence be called unspent outputs
    (or simply: unspents).
 
    This endpoint will return a ``HTTP 400 Bad Request`` if the querystring
    ``owner_after`` happens to not be defined in the request.
 
-   Note that if unspents for a certain ``owner_after`` have not been found by
+   Note that if unspents for a certain ``public_key`` have not been found by
    the server, this will result in the server returning a 200 OK HTTP status
    code and an empty list in the response's body.
 
@@ -162,8 +162,8 @@ GET /unspents/
       Content-Type: application/json
 
       [
-        "../transactions/2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e/conditions/0",
-        "../transactions/2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e/conditions/1"
+        "../transactions/2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e/outputs/0",
+        "../transactions/2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e/outputs/1"
       ]
 
    :statuscode 200: A list of outputs were found and returned in the body of the response.

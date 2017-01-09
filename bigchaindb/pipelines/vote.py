@@ -5,10 +5,10 @@ of actions to do on transactions is specified in the ``create_pipeline``
 function.
 """
 
+import logging
 from collections import Counter
 
 from multipipes import Pipeline, Node
-from bigchaindb.common import exceptions
 
 import bigchaindb
 from bigchaindb import Bigchain
@@ -16,6 +16,10 @@ from bigchaindb import backend
 from bigchaindb.backend.changefeed import ChangeFeed
 from bigchaindb.consensus import BaseConsensusRules
 from bigchaindb.models import Transaction, Block
+from bigchaindb.common import exceptions
+
+
+logger = logging.getLogger(__name__)
 
 
 class Vote:
@@ -132,7 +136,9 @@ class Vote:
         Args:
             vote: the vote to write.
         """
-
+        validity = 'valid' if vote['vote']['is_block_valid'] else 'invalid'
+        logger.info("Voting '%s' for block %s", validity,
+                    vote['vote']['voting_for_block'])
         self.bigchain.write_vote(vote)
         return vote
 

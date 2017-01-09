@@ -48,6 +48,8 @@ class StaleTransactionMonitor:
         Returns:
             transaction
         """
+        # NOTE: Maybe this is to verbose?
+        logger.info('Reassigning transaction with id %s', tx['id'])
         self.bigchain.reassign_transaction(tx)
         return tx
 

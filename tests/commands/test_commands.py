@@ -101,7 +101,7 @@ def test_bigchain_run_start_assume_yes_create_default_config(monkeypatch, mock_p
 # TODO Please beware, that if debugging, the "-s" switch for pytest will
 # interfere with capsys.
 # See related issue: https://github.com/pytest-dev/pytest/issues/128
-@pytest.mark.usefixtures('restore_config')
+@pytest.mark.usefixtures('ignore_local_config_file')
 def test_bigchain_show_config(capsys):
     from bigchaindb import config
     from bigchaindb.commands.bigchain import run_show_config
@@ -170,7 +170,7 @@ def test_drop_db_when_assumed_yes(mock_db_drop):
 def test_drop_db_when_interactive_yes(mock_db_drop, monkeypatch):
     from bigchaindb.commands.bigchain import run_drop
     args = Namespace(config=None, yes=False)
-    monkeypatch.setattr('bigchaindb.commands.bigchain.input', lambda x: 'y')
+    monkeypatch.setattr('bigchaindb.commands.bigchain.input_on_stderr', lambda x: 'y')
 
     run_drop(args)
     assert mock_db_drop.called
@@ -180,7 +180,7 @@ def test_drop_db_when_interactive_yes(mock_db_drop, monkeypatch):
 def test_drop_db_does_not_drop_when_interactive_no(mock_db_drop, monkeypatch):
     from bigchaindb.commands.bigchain import run_drop
     args = Namespace(config=None, yes=False)
-    monkeypatch.setattr('bigchaindb.commands.bigchain.input', lambda x: 'n')
+    monkeypatch.setattr('bigchaindb.commands.bigchain.input_on_stderr', lambda x: 'n')
 
     run_drop(args)
     assert not mock_db_drop.called
@@ -196,7 +196,7 @@ def test_run_configure_when_config_exists_and_skipping(monkeypatch):
 
 # TODO Beware if you are putting breakpoints in there, and using the '-s'
 # switch with pytest. It will just hang. Seems related to the monkeypatching of
-# input.
+# input_on_stderr.
 def test_run_configure_when_config_does_not_exist(monkeypatch,
                                                   mock_write_config,
                                                   mock_generate_key_pair,
@@ -214,6 +214,7 @@ def test_run_configure_when_config_does_exist(monkeypatch,
                                               mock_generate_key_pair,
                                               mock_bigchaindb_backup_config):
     value = {}
+
     def mock_write_config(newconfig, filename=None):
         value['return'] = newconfig
 
@@ -229,14 +230,14 @@ def test_run_configure_when_config_does_exist(monkeypatch,
 
 @patch('bigchaindb.common.crypto.generate_key_pair',
        return_value=('private_key', 'public_key'))
-@pytest.mark.usefixtures('restore_config')
+@pytest.mark.usefixtures('ignore_local_config_file')
 def test_allow_temp_keypair_generates_one_on_the_fly(mock_gen_keypair,
                                                      mock_processes_start,
                                                      mock_db_init_with_existing_db):
     import bigchaindb
     from bigchaindb.commands.bigchain import run_start
 
-    bigchaindb.config['keypair'] = { 'private': None, 'public': None }
+    bigchaindb.config['keypair'] = {'private': None, 'public': None}
 
     args = Namespace(allow_temp_keypair=True, start_rethinkdb=False, config=None, yes=True)
     run_start(args)
@@ -247,7 +248,7 @@ def test_allow_temp_keypair_generates_one_on_the_fly(mock_gen_keypair,
 
 @patch('bigchaindb.common.crypto.generate_key_pair',
        return_value=('private_key', 'public_key'))
-@pytest.mark.usefixtures('restore_config')
+@pytest.mark.usefixtures('ignore_local_config_file')
 def test_allow_temp_keypair_doesnt_override_if_keypair_found(mock_gen_keypair,
                                                              mock_processes_start,
                                                              mock_db_init_with_existing_db):

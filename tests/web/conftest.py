@@ -2,7 +2,7 @@ import pytest
 
 
 @pytest.fixture
-def app(request, restore_config):
+def app(request):
     from bigchaindb.web import server
     app = server.create_app(debug=True)
     return app

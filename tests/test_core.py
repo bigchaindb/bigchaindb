@@ -1,5 +1,3 @@
-from rethinkdb.ast import RqlQuery
-
 import pytest
 
 
@@ -84,16 +82,17 @@ def test_get_blocks_status_containing_tx(monkeypatch):
 def test_has_previous_vote(monkeypatch):
     from bigchaindb.core import Bigchain
     monkeypatch.setattr(
-        'bigchaindb.util.verify_vote_signature', lambda voters, vote: False)
+        'bigchaindb.utils.verify_vote_signature', lambda voters, vote: False)
     bigchain = Bigchain(public_key='pubkey', private_key='privkey')
     block = {'votes': ({'node_pubkey': 'pubkey'},)}
     with pytest.raises(Exception):
         bigchain.has_previous_vote(block)
 
 
-@pytest.mark.parametrize('count,exists', ((1, True), (0, False)))
-def test_transaction_exists(monkeypatch, count, exists):
+@pytest.mark.parametrize('exists', (True, False))
+def test_transaction_exists(monkeypatch, exists):
     from bigchaindb.core import Bigchain
-    monkeypatch.setattr(RqlQuery, 'run', lambda x, y: count)
+    monkeypatch.setattr(
+        'bigchaindb.backend.query.has_transaction', lambda x, y: exists)
     bigchain = Bigchain(public_key='pubkey', private_key='privkey')
     assert bigchain.transaction_exists('txid') is exists

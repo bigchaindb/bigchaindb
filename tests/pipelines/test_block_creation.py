@@ -1,3 +1,4 @@
+import random
 import time
 from unittest.mock import patch
 
@@ -26,7 +27,7 @@ def test_filter_by_assignee(b, signed_create_tx):
     assert block_maker.filter_tx(tx) is None
 
 
-@pytest.mark.usefixtures('setup_database')
+@pytest.mark.bdb
 def test_validate_transaction(b, create_tx):
     from bigchaindb.pipelines.block import BlockPipeline
 
@@ -44,8 +45,9 @@ def test_create_block(b, user_pk):
 
     block_maker = BlockPipeline()
 
-    for i in range(100):
-        tx = Transaction.create([b.me], [([user_pk], 1)])
+    for _ in range(100):
+        tx = Transaction.create([b.me], [([user_pk], 1)],
+                                metadata={'msg': random.random()})
         tx = tx.sign([b.me_private])
         block_maker.create(tx)
 
@@ -55,7 +57,7 @@ def test_create_block(b, user_pk):
     assert len(block_doc.transactions) == 100
 
 
-@pytest.mark.usefixtures('setup_database')
+@pytest.mark.bdb
 def test_write_block(b, user_pk):
     from bigchaindb.models import Block, Transaction
     from bigchaindb.pipelines.block import BlockPipeline
@@ -63,8 +65,9 @@ def test_write_block(b, user_pk):
     block_maker = BlockPipeline()
 
     txs = []
-    for i in range(100):
-        tx = Transaction.create([b.me], [([user_pk], 1)])
+    for _ in range(100):
+        tx = Transaction.create([b.me], [([user_pk], 1)],
+                                metadata={'msg': random.random()})
         tx = tx.sign([b.me_private])
         txs.append(tx)
 
@@ -76,15 +79,16 @@ def test_write_block(b, user_pk):
     assert expected == block_doc
 
 
-@pytest.mark.usefixtures('setup_database')
+@pytest.mark.bdb
 def test_duplicate_transaction(b, user_pk):
     from bigchaindb.models import Transaction
     from bigchaindb.pipelines import block
     block_maker = block.BlockPipeline()
 
     txs = []
-    for i in range(10):
-        tx = Transaction.create([b.me], [([user_pk], 1)])
+    for _ in range(10):
+        tx = Transaction.create([b.me], [([user_pk], 1)],
+                                metadata={'msg': random.random()})
         tx = tx.sign([b.me_private])
         txs.append(tx)
 
@@ -108,13 +112,14 @@ def test_duplicate_transaction(b, user_pk):
     assert status != b.TX_IN_BACKLOG
 
 
-@pytest.mark.usefixtures('setup_database')
+@pytest.mark.bdb
 def test_delete_tx(b, user_pk):
     from bigchaindb.models import Transaction
     from bigchaindb.pipelines.block import BlockPipeline
     block_maker = BlockPipeline()
     for i in range(100):
-        tx = Transaction.create([b.me], [([user_pk], 1)])
+        tx = Transaction.create([b.me], [([user_pk], 1)],
+                                metadata={'msg': random.random()})
         tx = tx.sign([b.me_private])
         block_maker.create(tx)
         # make sure the tx appears in the backlog
@@ -137,7 +142,7 @@ def test_delete_tx(b, user_pk):
 
 
 @patch('bigchaindb.pipelines.block.create_pipeline')
-@pytest.mark.usefixtures('setup_database')
+@pytest.mark.bdb
 def test_start(create_pipeline):
     from bigchaindb.pipelines import block
 
@@ -148,12 +153,10 @@ def test_start(create_pipeline):
     assert pipeline == create_pipeline.return_value
 
 
-@pytest.mark.usefixtures('setup_database')
+@pytest.mark.bdb
 def test_full_pipeline(b, user_pk):
-    import random
-    from bigchaindb.backend import query
     from bigchaindb.models import Block, Transaction
-    from bigchaindb.pipelines.block import create_pipeline, get_changefeed
+    from bigchaindb.pipelines.block import create_pipeline
 
     outpipe = Pipe()
 
@@ -166,7 +169,7 @@ def test_full_pipeline(b, user_pk):
     number_assigned_to_others = 0
     for i in range(100):
         tx = Transaction.create([b.me], [([user_pk], 1)],
-                                {'msg': random.random()})
+                                metadata={'msg': random.random()})
         tx = tx.sign([b.me_private])
 
         tx = tx.to_dict()

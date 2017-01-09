@@ -3,8 +3,7 @@ from bigchaindb.pipelines import block, election, vote, stale
 
 
 @pytest.fixture
-def processes(b, setup_database):
-    b.create_genesis_block()
+def processes(genesis_block):
     block_maker = block.start()
     voter = vote.start()
     election_runner = election.start()

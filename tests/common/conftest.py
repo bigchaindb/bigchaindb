@@ -14,12 +14,19 @@ USER3_PUBLIC_KEY = 'Gbrg7JtxdjedQRmr81ZZbh1BozS7fBW88ZyxNDy7WLNC'
 CC_FULFILLMENT_URI = 'cf:0:'
 CC_CONDITION_URI = 'cc:0:3:47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU:0'
 
+ASSET_DEFINITION = {
+    'data': {
+        'definition': 'Asset definition'
+    }
+}
+
+ASSET_LINK = {
+    'id': 'a' * 64
+}
+
 DATA = {
     'msg': 'Hello BigchainDB!'
 }
-DATA_ID = '872fa6e6f46246cd44afdb2ee9cfae0e72885fb0910e2bcf9a5a2a4eadb417b8'
-
-UUID4 = 'dc568f27-a113-46b4-9bd4-43015859e3e3'
 
 
 @pytest.fixture
@@ -86,39 +93,49 @@ def user2_Ed25519(user2_pub):
 
 
 @pytest.fixture
-def user_ffill(user_Ed25519, user_pub):
-    from bigchaindb.common.transaction import Fulfillment
-    return Fulfillment(user_Ed25519, [user_pub])
+def user_input(user_Ed25519, user_pub):
+    from bigchaindb.common.transaction import Input
+    return Input(user_Ed25519, [user_pub])
 
 
 @pytest.fixture
-def user2_ffill(user2_Ed25519, user2_pub):
-    from bigchaindb.common.transaction import Fulfillment
-    return Fulfillment(user2_Ed25519, [user2_pub])
+def user2_input(user2_Ed25519, user2_pub):
+    from bigchaindb.common.transaction import Input
+    return Input(user2_Ed25519, [user2_pub])
 
 
 @pytest.fixture
-def user_user2_threshold_cond(user_user2_threshold, user_pub, user2_pub):
-    from bigchaindb.common.transaction import Condition
-    return Condition(user_user2_threshold, [user_pub, user2_pub])
+def user_user2_threshold_output(user_user2_threshold, user_pub, user2_pub):
+    from bigchaindb.common.transaction import Output
+    return Output(user_user2_threshold, [user_pub, user2_pub])
 
 
 @pytest.fixture
-def user_user2_threshold_ffill(user_user2_threshold, user_pub, user2_pub):
-    from bigchaindb.common.transaction import Fulfillment
-    return Fulfillment(user_user2_threshold, [user_pub, user2_pub])
+def user_user2_threshold_input(user_user2_threshold, user_pub, user2_pub):
+    from bigchaindb.common.transaction import Input
+    return Input(user_user2_threshold, [user_pub, user2_pub])
 
 
 @pytest.fixture
-def user_cond(user_Ed25519, user_pub):
-    from bigchaindb.common.transaction import Condition
-    return Condition(user_Ed25519, [user_pub])
+def user_output(user_Ed25519, user_pub):
+    from bigchaindb.common.transaction import Output
+    return Output(user_Ed25519, [user_pub])
 
 
 @pytest.fixture
-def user2_cond(user2_Ed25519, user2_pub):
-    from bigchaindb.common.transaction import Condition
-    return Condition(user2_Ed25519, [user2_pub])
+def user2_output(user2_Ed25519, user2_pub):
+    from bigchaindb.common.transaction import Output
+    return Output(user2_Ed25519, [user2_pub])
+
+
+@pytest.fixture
+def asset_definition():
+    return ASSET_DEFINITION
+
+
+@pytest.fixture
+def asset_link():
+    return ASSET_LINK
 
 
 @pytest.fixture
@@ -127,19 +144,10 @@ def data():
 
 
 @pytest.fixture
-def data_id():
-    return DATA_ID
-
-
-@pytest.fixture
-def uuid4():
-    return UUID4
-
-
-@pytest.fixture
-def utx(user_ffill, user_cond):
-    from bigchaindb.common.transaction import Transaction, Asset
-    return Transaction(Transaction.CREATE, Asset(), [user_ffill], [user_cond])
+def utx(user_input, user_output):
+    from bigchaindb.common.transaction import Transaction
+    return Transaction(Transaction.CREATE, {'data': None}, [user_input],
+                       [user_output])
 
 
 @pytest.fixture
@@ -148,14 +156,14 @@ def tx(utx, user_priv):
 
 
 @pytest.fixture
-def transfer_utx(user_cond, user2_cond, utx):
-    from bigchaindb.common.transaction import (Fulfillment, TransactionLink,
-                                               Transaction, Asset)
-    user_cond = user_cond.to_dict()
-    ffill = Fulfillment(utx.conditions[0].fulfillment,
-                        user_cond['owners_after'],
-                        TransactionLink(utx.id, 0))
-    return Transaction('TRANSFER', Asset(), [ffill], [user2_cond])
+def transfer_utx(user_output, user2_output, utx):
+    from bigchaindb.common.transaction import (Input, TransactionLink,
+                                               Transaction)
+    user_output = user_output.to_dict()
+    input = Input(utx.outputs[0].fulfillment,
+                  user_output['public_keys'],
+                  TransactionLink(utx.id, 0))
+    return Transaction('TRANSFER', {'id': utx.id}, [input], [user2_output])
 
 
 @pytest.fixture

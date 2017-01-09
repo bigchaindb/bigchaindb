@@ -28,9 +28,9 @@ def mock_queue(monkeypatch):
 
 
 def test_empty_pool_is_populated_with_instances(mock_queue):
-    from bigchaindb import util
+    from bigchaindb import utils
 
-    pool = util.pool(lambda: 'hello', 4)
+    pool = utils.pool(lambda: 'hello', 4)
 
     assert len(mock_queue.items) == 0
 
@@ -56,9 +56,9 @@ def test_empty_pool_is_populated_with_instances(mock_queue):
 
 
 def test_pool_blocks_if_no_instances_available(mock_queue):
-    from bigchaindb import util
+    from bigchaindb import utils
 
-    pool = util.pool(lambda: 'hello', 4)
+    pool = utils.pool(lambda: 'hello', 4)
 
     assert len(mock_queue.items) == 0
 
@@ -94,9 +94,9 @@ def test_pool_blocks_if_no_instances_available(mock_queue):
 
 
 def test_pool_raises_empty_exception_when_timeout(mock_queue):
-    from bigchaindb import util
+    from bigchaindb import utils
 
-    pool = util.pool(lambda: 'hello', 1, timeout=1)
+    pool = utils.pool(lambda: 'hello', 1, timeout=1)
 
     assert len(mock_queue.items) == 0
 
@@ -114,7 +114,7 @@ def test_pool_raises_empty_exception_when_timeout(mock_queue):
 
 @patch('multiprocessing.Process')
 def test_process_group_instantiates_and_start_processes(mock_process):
-    from bigchaindb.util import ProcessGroup
+    from bigchaindb.utils import ProcessGroup
 
     def noop():
         pass
@@ -134,6 +134,6 @@ def test_process_group_instantiates_and_start_processes(mock_process):
 
 
 def test_is_genesis_block_returns_true_if_genesis(b):
-    from bigchaindb.util import is_genesis_block
+    from bigchaindb.utils import is_genesis_block
     genesis_block = b.prepare_genesis_block()
     assert is_genesis_block(genesis_block)

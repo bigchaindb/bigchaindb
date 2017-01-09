@@ -49,7 +49,10 @@ if [ "$USING_EBS" == "True" ]; then
     echo "EBS_VOLUME_SIZE = "$EBS_VOLUME_SIZE
     echo "EBS_OPTIMIZED = "$EBS_OPTIMIZED
 fi
-echo "BIND_HTTP_TO_LOCALHOST = "$BIND_HTTP_TO_LOCALHOST
+echo "ENABLE_WEB_ADMIN = "$ENABLE_WEB_ADMIN
+if [ "$ENABLE_WEB_ADMIN" == "True" ]; then
+    echo "BIND_HTTP_TO_LOCALHOST = "$BIND_HTTP_TO_LOCALHOST
+fi
 
 # Check for the SSH private key file
 if [ ! -f "$HOME/.ssh/$SSH_KEY_NAME" ]; then
@@ -118,8 +121,12 @@ fab upgrade_setuptools
 
 if [ "$WHAT_TO_DEPLOY" == "servers" ]; then
     # (Re)create the RethinkDB configuration file conf/rethinkdb.conf
-    if [ "$BIND_HTTP_TO_LOCALHOST" == "True" ]; then
-        python create_rethinkdb_conf.py --bind-http-to-localhost
+    if [ "$ENABLE_WEB_ADMIN" == "True" ]; then
+        if [ "$BIND_HTTP_TO_LOCALHOST" == "True" ]; then
+            python create_rethinkdb_conf.py --enable-web-admin --bind-http-to-localhost
+        else
+            python create_rethinkdb_conf.py --enable-web-admin
+        fi
     else
         python create_rethinkdb_conf.py
     fi

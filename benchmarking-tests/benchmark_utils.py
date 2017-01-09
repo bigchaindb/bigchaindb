@@ -11,7 +11,7 @@ from os.path import expanduser
 from bigchaindb.common.transaction import Transaction
 
 from bigchaindb import Bigchain
-from bigchaindb.util import ProcessGroup
+from bigchaindb.utils import ProcessGroup
 from bigchaindb.commands import utils
 
 

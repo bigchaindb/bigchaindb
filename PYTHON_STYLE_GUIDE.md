@@ -47,8 +47,15 @@ It seems the preference is for slashes, but using parentheses is okay too. (Ther
 
 If you need to `import` lots of names from a module or package, and they won't all fit in one line (without making the line too long), then use parentheses to spread the names across multiple lines, like so:
 ```python
+from Tkinter import (
+    Tk, Frame, Button, Entry, Canvas, Text,
+    LEFT, DISABLED, NORMAL, RIDGE, END,
+)
+
+# Or
+
 from Tkinter import (Tk, Frame, Button, Entry, Canvas, Text,
-    LEFT, DISABLED, NORMAL, RIDGE, END)
+                     LEFT, DISABLED, NORMAL, RIDGE, END)
 ```
 
 For the rationale, see [PEP 328](https://www.python.org/dev/peps/pep-0328/#rationale-for-parentheses).
