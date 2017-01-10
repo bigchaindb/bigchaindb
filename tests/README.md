@@ -68,6 +68,8 @@ The `pytest` command has many options. If you want to learn about all the things
 
 You can also use [Docker Compose](https://docs.docker.com/compose/) to run all the tests.
 
+#### With RethinkDB as the backend
+
 First, start `RethinkDB` in the background:
 
 ```text
@@ -80,14 +82,29 @@ then run the tests using:
 $ docker-compose run --rm bdb py.test -v
 ```
 
-If you've upgraded to a newer version of BigchainDB, you might have to rebuild the images before
-being able to run the tests. Run:
+#### With MongoDB as the backend
+
+First, start `MongoDB` in the background:
+
+```text
+$ docker-compose up -d mdb
+```
+
+then run the tests using:
+
+```text
+$ docker-compose run --rm bdb-mdb py.test -v
+```
+
+If you've upgraded to a newer version of BigchainDB, you might have to rebuild
+the images before being able to run the tests. Run:
 
 ```text
 $ docker-compose build
 ```
 
-to rebuild all the images (usually you only need to rebuild the `bdb` image).
+to rebuild all the images (usually you only need to rebuild the `bdb` and
+ `bdb-mdb` images).
 
 ## Automated Testing of All Pull Requests
 
