@@ -3,7 +3,8 @@ from flask_restful import Api
 from bigchaindb.web.views import (
     info,
     statuses,
-    transactions as tx, unspents,
+    transactions as tx,
+    unspents,
 )
 
 
