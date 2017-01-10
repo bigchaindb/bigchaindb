@@ -94,24 +94,15 @@ def test_create_secondary_indexes():
     assert sorted(indexes) == ['_id_', 'block_and_voter']
 
 
-# The database is set up with a session scope.
-# If we run this test we will remove secondary indexes that are nedeed for
-# the rest of the tests
-@pytest.mark.skipif(reason='This will remove the secondary indexes needed'
-                           ' for the rest of the tests')
-def test_drop():
+def test_drop(dummy_db):
     import bigchaindb
     from bigchaindb import backend
     from bigchaindb.backend import schema
 
     conn = backend.connect()
-    dbname = bigchaindb.config['database']['name']
-
-    # The db is set up by fixtures
-    assert dbname in conn.conn.database_names()
-
-    schema.drop_database(conn, dbname)
-    assert dbname not in conn.conn.database_names()
+    assert dummy_db in conn.conn.database_names()
+    schema.drop_database(conn, dummy_db)
+    assert dummy_db not in conn.conn.database_names()
 
 
 def test_get_replica_set_name_not_enabled():
