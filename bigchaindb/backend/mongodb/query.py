@@ -47,19 +47,25 @@ def get_stale_transactions(conn, reassign_delay):
 
 @register_query(MongoDBConnection)
 def get_transaction_from_block(conn, transaction_id, block_id):
-    return conn.db['bigchain'].aggregate([
-        {'$match': {'id': block_id}},
-        {'$project': {
-            'block.transactions': {
-                '$filter': {
-                    'input': '$block.transactions',
-                    'as': 'transaction',
-                    'cond': {
-                        '$eq': ['$$transaction.id', transaction_id]
+    try:
+        return conn.db['bigchain'].aggregate([
+            {'$match': {'id': block_id}},
+            {'$project': {
+                'block.transactions': {
+                    '$filter': {
+                        'input': '$block.transactions',
+                        'as': 'transaction',
+                        'cond': {
+                            '$eq': ['$$transaction.id', transaction_id]
+                        }
                     }
                 }
-            }
-        }}]).next()['block']['transactions'][0]
+            }}]).next()['block']['transactions'].pop()
+    except (StopIteration, IndexError):
+        # StopIteration is raised if the block was not found
+        # IndexError is returned if the block is found but no transactions
+        # match
+        return
 
 
 @register_query(MongoDBConnection)
@@ -207,9 +213,10 @@ def write_vote(conn, vote):
 
 @register_query(MongoDBConnection)
 def get_genesis_block(conn):
-    return conn.db['bigchain'].find_one({
-        'block.transactions.0.operation': 'GENESIS'
-    })
+    return conn.db['bigchain'].find_one(
+        {'block.transactions.0.operation': 'GENESIS'},
+        {'_id': False}
+    )
 
 
 @register_query(MongoDBConnection)
