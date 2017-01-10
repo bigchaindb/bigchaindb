@@ -136,10 +136,17 @@ def _configure_bigchaindb(request):
 def _setup_database(_configure_bigchaindb):
     from bigchaindb import config
     from bigchaindb.backend import connect, schema
+    from bigchaindb.backend.mongodb.schema import initialize_replica_set
     from bigchaindb.common.exceptions import DatabaseDoesNotExist
     print('Initializing test db')
     dbname = config['database']['name']
     conn = connect()
+
+    # if we are setting up mongodb for the first time we need to make sure
+    # that the replica set is initialized before doing any operation in the
+    # database
+    if config['database']['backend'] == 'mongodb':
+        initialize_replica_set(conn)
 
     try:
         schema.drop_database(conn, dbname)
@@ -315,10 +322,10 @@ def dummy_db(request):
     if xdist_suffix:
         dbname = '{}_{}'.format(dbname, xdist_suffix)
     try:
-        schema.create_database(conn, dbname)
+        schema.init_database(conn, dbname)
     except DatabaseAlreadyExists:
         schema.drop_database(conn, dbname)
-        schema.create_database(conn, dbname)
+        schema.init_database(conn, dbname)
     yield dbname
     try:
         schema.drop_database(conn, dbname)
