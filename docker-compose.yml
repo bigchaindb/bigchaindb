@@ -15,7 +15,7 @@ services:
       - rdb-data
 
   rdb-data:
-    image: rethinkdb
+    image: rethinkdb:2.3.5
     volumes:
       - /data
     command: "true"
