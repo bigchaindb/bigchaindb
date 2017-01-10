@@ -4,6 +4,7 @@ from bigchaindb.web.views import (
     info,
     statuses,
     transactions as tx, unspents,
+    votes,
 )
 
 
@@ -25,6 +26,7 @@ ROUTES_API_V1 = [
     r('transactions/<string:tx_id>', tx.TransactionApi),
     r('transactions', tx.TransactionListApi),
     r('unspents/', unspents.UnspentListApi),
+    r('votes/', votes.VotesApi),
 ]
 
 
