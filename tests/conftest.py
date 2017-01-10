@@ -322,10 +322,10 @@ def dummy_db(request):
     if xdist_suffix:
         dbname = '{}_{}'.format(dbname, xdist_suffix)
     try:
-        schema.create_database(conn, dbname)
+        schema.init_database(conn, dbname)
     except DatabaseAlreadyExists:
         schema.drop_database(conn, dbname)
-        schema.create_database(conn, dbname)
+        schema.init_database(conn, dbname)
     yield dbname
     try:
         schema.drop_database(conn, dbname)
