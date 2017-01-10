@@ -8,7 +8,8 @@ A few notes:
 
 - [`tests/common/`](./common/) contains self-contained tests only testing
   [`bigchaindb/common/`](../bigchaindb/common/)
-- [`tests/db/`](./db/) contains tests requiring the database backend (e.g. RethinkDB)
+- [`tests/backend/`](./backend/) contains tests requiring
+  the database backend (RethinkDB or MongoDB)
 
 
 ## Writing Tests
@@ -20,9 +21,24 @@ We write unit and integration tests for our Python code using the [pytest](http:
 
 ### Running Tests Directly
 
-If you installed BigchainDB Server using `pip install bigchaindb`, then you didn't install the tests. Before you can run all the tests, you must install BigchainDB from source. The [`CONTRIBUTING.md` file](../CONTRIBUTING.md) has instructions for how to do that.
+If you installed BigchainDB Server using `pip install bigchaindb`, then you
+didn't install the tests. Before you can run all the tests, you must install
+BigchainDB from source. The [`CONTRIBUTING.md` file](../CONTRIBUTING.md) has
+instructions for how to do that.
 
-Next, make sure you have RethinkDB running in the background (e.g. using `rethinkdb --daemon`).
+Next, make sure you have RethinkDB or MongoDB running in the background. You
+can run RethinkDB using `rethinkdb --daemon` or MongoDB using `mongod
+--replSet=rs0`.
+
+The `pytest` command has many options. If you want to learn about all the
+things you can do with pytest, see [the pytest
+documentation](http://pytest.org/latest/). We've also added a customization to
+pytest:
+
+`--database-backend`: Defines the backend to use for the tests. It defaults to
+`rethinkdb`
+It must be one of the backends available in the [server
+configuration](https://docs.bigchaindb.com/projects/server/en/latest/server-reference/configuration.html).
 
 Now you can run all tests using:
 ```text
@@ -39,12 +55,13 @@ or:
 python setup.py test
 ```
 
+**Note**: the above pytest commands default to use RethinkDB as the backend. If
+you wish to run the tests against MongoDB add the `--database-backend=mongodb`
+to the `pytest` command.
+
 How does `python setup.py test` work? The documentation for [pytest-runner](https://pypi.python.org/pypi/pytest-runner) explains.
 
 The `pytest` command has many options. If you want to learn about all the things you can do with pytest, see [the pytest documentation](http://pytest.org/latest/). We've also added a customization to pytest:
-
-`--database-backend`: Defines the backend to use for the tests.
-It must be one of the backends available in the [server configuration](https://docs.bigchaindb.com/projects/server/en/latest/server-reference/configuration.html).
 
 
 ### Running Tests with Docker Compose
