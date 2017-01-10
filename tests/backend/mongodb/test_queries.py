@@ -1,6 +1,6 @@
 import pytest
 
-pytestmark = [pytest.mark.bdb]
+pytestmark = pytest.mark.bdb
 
 
 def test_write_transaction(signed_create_tx):
