@@ -10,7 +10,6 @@ from collections import Counter
 
 from multipipes import Pipeline, Node
 
-import bigchaindb
 from bigchaindb import Bigchain
 from bigchaindb import backend
 from bigchaindb.backend.changefeed import ChangeFeed
@@ -168,7 +167,7 @@ def create_pipeline():
 
 
 def get_changefeed():
-    connection = backend.connect(**bigchaindb.config['database'])
+    connection = backend.connect()
     return backend.get_changefeed(connection, 'bigchain', ChangeFeed.INSERT,
                                   prefeed=initial())
 

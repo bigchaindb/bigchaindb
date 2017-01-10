@@ -4,7 +4,6 @@ import logging
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 
-import bigchaindb
 from bigchaindb.backend.connection import Connection
 
 logger = logging.getLogger(__name__)
@@ -12,19 +11,21 @@ logger = logging.getLogger(__name__)
 
 class MongoDBConnection(Connection):
 
-    def __init__(self, host=None, port=None, dbname=None, max_tries=3):
-        """Create a new Connection instance.
+    def __init__(self, host, port, dbname, max_tries=3, **kwargs):
+        """Create a new :class:`~.MongoDBConnection` instance.
+
+        See :meth:`.Connection.__init__` for
+        :attr:`host`, :attr:`port`, and :attr:`dbname`. :attr:`kwargs`
+        is ignored.
 
         Args:
-            host (str, optional): the host to connect to.
-            port (int, optional): the port to connect to.
-            dbname (str, optional): the database to use.
             max_tries (int, optional): how many tries before giving up.
+                Defaults to 3.
         """
 
-        self.host = host or bigchaindb.config['database']['host']
-        self.port = port or bigchaindb.config['database']['port']
-        self.dbname = dbname or bigchaindb.config['database']['name']
+        self.host = host
+        self.port = port
+        self.dbname = dbname
         self.max_tries = max_tries
         self.connection = None
 

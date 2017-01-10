@@ -106,7 +106,7 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
         'backlog_reassign_delay': 5
     }
     monkeypatch.setattr('bigchaindb.config_utils.file_config', lambda *args, **kwargs: file_config)
-    monkeypatch.setattr('os.environ', {'BIGCHAINDB_DATABASE_NAME': 'test-dbname',
+    monkeypatch.setattr('os.environ', {'BIGCHAINDB_DATABASE_DBNAME': 'test-dbname',
                                        'BIGCHAINDB_DATABASE_PORT': '4242',
                                        'BIGCHAINDB_SERVER_BIND': '1.2.3.4:56',
                                        'BIGCHAINDB_KEYRING': 'pubkey_0:pubkey_1:pubkey_2'})
@@ -124,9 +124,9 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
         },
         'database': {
             'backend': request.config.getoption('--database-backend'),
+            'dbname': 'test-dbname',
             'host': 'test-host',
             'port': 4242,
-            'name': 'test-dbname',
         },
         'keypair': {
             'public': None,
@@ -144,10 +144,10 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
 
 def test_autoconfigure_env_precedence(monkeypatch):
     file_config = {
-        'database': {'host': 'test-host', 'name': 'bigchaindb', 'port': 28015}
+        'database': {'host': 'test-host', 'dbname': 'bigchaindb', 'port': 28015}
     }
     monkeypatch.setattr('bigchaindb.config_utils.file_config', lambda *args, **kwargs: file_config)
-    monkeypatch.setattr('os.environ', {'BIGCHAINDB_DATABASE_NAME': 'test-dbname',
+    monkeypatch.setattr('os.environ', {'BIGCHAINDB_DATABASE_DBNAME': 'test-dbname',
                                        'BIGCHAINDB_DATABASE_PORT': '4242',
                                        'BIGCHAINDB_SERVER_BIND': 'localhost:9985'})
 
@@ -157,7 +157,7 @@ def test_autoconfigure_env_precedence(monkeypatch):
 
     assert bigchaindb.config['CONFIGURED']
     assert bigchaindb.config['database']['host'] == 'test-host'
-    assert bigchaindb.config['database']['name'] == 'test-dbname'
+    assert bigchaindb.config['database']['dbname'] == 'test-dbname'
     assert bigchaindb.config['database']['port'] == 4242
     assert bigchaindb.config['server']['bind'] == 'localhost:9985'
 
@@ -167,16 +167,16 @@ def test_update_config(monkeypatch):
     from bigchaindb import config_utils
 
     file_config = {
-        'database': {'host': 'test-host', 'name': 'bigchaindb', 'port': 28015}
+        'database': {'host': 'test-host', 'dbname': 'bigchaindb', 'port': 28015}
     }
     monkeypatch.setattr('bigchaindb.config_utils.file_config', lambda *args, **kwargs: file_config)
     config_utils.autoconfigure(config=file_config)
 
     # update configuration, retaining previous changes
-    config_utils.update_config({'database': {'port': 28016, 'name': 'bigchaindb_other'}})
+    config_utils.update_config({'database': {'port': 28016, 'dbname': 'bigchaindb_other'}})
 
     assert bigchaindb.config['database']['host'] == 'test-host'
-    assert bigchaindb.config['database']['name'] == 'bigchaindb_other'
+    assert bigchaindb.config['database']['dbname'] == 'bigchaindb_other'
     assert bigchaindb.config['database']['port'] == 28016
 
 

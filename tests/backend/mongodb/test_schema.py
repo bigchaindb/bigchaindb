@@ -10,7 +10,7 @@ def test_init_creates_db_tables_and_indexes():
     from bigchaindb.backend.schema import init_database
 
     conn = backend.connect()
-    dbname = bigchaindb.config['database']['name']
+    dbname = bigchaindb.config['database']['dbname']
 
     # the db is set up by the fixture so we need to remove it
     conn.conn.drop_database(dbname)
@@ -38,7 +38,7 @@ def test_init_database_fails_if_db_exists():
     from bigchaindb.common import exceptions
 
     conn = backend.connect()
-    dbname = bigchaindb.config['database']['name']
+    dbname = bigchaindb.config['database']['dbname']
 
     # The db is set up by the fixtures
     assert dbname in conn.conn.database_names()
@@ -53,7 +53,7 @@ def test_create_tables():
     from bigchaindb.backend import schema
 
     conn = backend.connect()
-    dbname = bigchaindb.config['database']['name']
+    dbname = bigchaindb.config['database']['dbname']
 
     # The db is set up by the fixtures so we need to remove it
     conn.conn.drop_database(dbname)
@@ -70,7 +70,7 @@ def test_create_secondary_indexes():
     from bigchaindb.backend import schema
 
     conn = backend.connect()
-    dbname = bigchaindb.config['database']['name']
+    dbname = bigchaindb.config['database']['dbname']
 
     # The db is set up by the fixtures so we need to remove it
     conn.conn.drop_database(dbname)
@@ -98,7 +98,7 @@ def test_drop():
     from bigchaindb.backend import schema
 
     conn = backend.connect()
-    dbname = bigchaindb.config['database']['name']
+    dbname = bigchaindb.config['database']['dbname']
 
     # The db is set up by fixtures
     assert dbname in conn.conn.database_names()

@@ -8,7 +8,6 @@ import logging
 
 from multipipes import Pipeline, Node
 
-import bigchaindb
 from bigchaindb import backend
 from bigchaindb.backend.changefeed import ChangeFeed
 from bigchaindb.models import Block
@@ -64,7 +63,7 @@ def create_pipeline():
 
 
 def get_changefeed():
-    connection = backend.connect(**bigchaindb.config['database'])
+    connection = backend.connect()
     return backend.get_changefeed(connection, 'votes', ChangeFeed.INSERT)
 
 

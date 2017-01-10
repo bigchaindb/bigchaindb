@@ -10,7 +10,7 @@ from bigchaindb.backend.rethinkdb import schema
 def test_init_creates_db_tables_and_indexes():
     from bigchaindb.backend.schema import init_database
     conn = backend.connect()
-    dbname = bigchaindb.config['database']['name']
+    dbname = bigchaindb.config['database']['dbname']
 
     # The db is set up by fixtures so we need to remove it
     conn.run(r.db_drop(dbname))
@@ -34,7 +34,7 @@ def test_init_database_fails_if_db_exists():
     from bigchaindb.common import exceptions
 
     conn = backend.connect()
-    dbname = bigchaindb.config['database']['name']
+    dbname = bigchaindb.config['database']['dbname']
 
     # The db is set up by fixtures
     assert conn.run(r.db_list().contains(dbname)) is True
@@ -52,7 +52,7 @@ def test_create_database(not_yet_created_db):
 @pytest.mark.bdb
 def test_create_tables():
     conn = backend.connect()
-    dbname = bigchaindb.config['database']['name']
+    dbname = bigchaindb.config['database']['dbname']
 
     # The db is set up by fixtures so we need to remove it
     # and recreate it just with one table
@@ -69,7 +69,7 @@ def test_create_tables():
 @pytest.mark.bdb
 def test_create_secondary_indexes():
     conn = backend.connect()
-    dbname = bigchaindb.config['database']['name']
+    dbname = bigchaindb.config['database']['dbname']
 
     # The db is set up by fixtures so we need to remove it
     # and recreate it just with one table

@@ -162,7 +162,7 @@ def run_init(args):
 def run_drop(args):
     """Drop the database"""
     bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
-    dbname = bigchaindb.config['database']['name']
+    dbname = bigchaindb.config['database']['dbname']
 
     if not args.yes:
         response = input_on_stderr('Do you want to drop `{}` database? [y/n]: '.format(dbname))
@@ -170,7 +170,7 @@ def run_drop(args):
             return
 
     conn = backend.connect()
-    dbname = bigchaindb.config['database']['name']
+    dbname = bigchaindb.config['database']['dbname']
     schema.drop_database(conn, dbname)
 
 

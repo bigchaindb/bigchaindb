@@ -12,9 +12,9 @@ For convenience, here's a list of all the relevant environment variables (docume
 `BIGCHAINDB_KEYPAIR_PRIVATE`<br>
 `BIGCHAINDB_KEYRING`<br>
 `BIGCHAINDB_DATABASE_BACKEND`<br>
+`BIGCHAINDB_DATABASE_DBNAME`<br>
 `BIGCHAINDB_DATABASE_HOST`<br>
 `BIGCHAINDB_DATABASE_PORT`<br>
-`BIGCHAINDB_DATABASE_NAME`<br>
 `BIGCHAINDB_SERVER_BIND`<br>
 `BIGCHAINDB_SERVER_WORKERS`<br>
 `BIGCHAINDB_SERVER_THREADS`<br>
@@ -84,9 +84,9 @@ The database backend to use (e.g. RethinkDB) and its hostname, port and name.
 **Example using environment variables**
 ```text
 export BIGCHAINDB_DATABASE_BACKEND=rethinkdb
+export BIGCHAINDB_DATABASE_DBNAME=bigchain
 export BIGCHAINDB_DATABASE_HOST=localhost
 export BIGCHAINDB_DATABASE_PORT=28015
-export BIGCHAINDB_DATABASE_NAME=bigchain
 ```
 
 **Example config file snippet**

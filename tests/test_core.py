@@ -6,9 +6,9 @@ def config(request, monkeypatch):
     config = {
         'database': {
             'backend': request.config.getoption('--database-backend'),
+            'dbname': 'bigchain',
             'host': 'host',
             'port': 28015,
-            'name': 'bigchain',
         },
         'keypair': {
             'public': 'pubkey',
@@ -32,7 +32,7 @@ def test_bigchain_class_default_initialization(config):
     assert isinstance(bigchain.connection, Connection)
     assert bigchain.connection.host == config['database']['host']
     assert bigchain.connection.port == config['database']['port']
-    assert bigchain.connection.dbname == config['database']['name']
+    assert bigchain.connection.dbname == config['database']['dbname']
     assert bigchain.me == config['keypair']['public']
     assert bigchain.me_private == config['keypair']['private']
     assert bigchain.nodes_except_me == config['keyring']
@@ -50,16 +50,16 @@ def test_bigchain_class_initialization_with_parameters(config):
     }
     init_db_kwargs = {
         'backend': 'rethinkdb',
+        'dbname': 'this_is_the_db_name',
         'host': 'this_is_the_db_host',
         'port': 12345,
-        'name': 'this_is_the_db_name',
     }
     connection = connect(**init_db_kwargs)
     bigchain = Bigchain(connection=connection, **init_kwargs)
     assert bigchain.connection == connection
     assert bigchain.connection.host == init_db_kwargs['host']
     assert bigchain.connection.port == init_db_kwargs['port']
-    assert bigchain.connection.dbname == init_db_kwargs['name']
+    assert bigchain.connection.dbname == init_db_kwargs['dbname']
     assert bigchain.me == init_kwargs['public_key']
     assert bigchain.me_private == init_kwargs['private_key']
     assert bigchain.nodes_except_me == init_kwargs['keyring']
