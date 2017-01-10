@@ -1,4 +1,4 @@
-"""This module provides the blueprint for the statuses API endpoints.
+"""This module provides the blueprint for the votes API endpoints.
 
 For more information please refer to the documentation on ReadTheDocs:
  - https://docs.bigchaindb.com/projects/server/en/latest/drivers-clients/
@@ -13,11 +13,10 @@ from bigchaindb.web.views.base import make_error
 
 class VotesApi(Resource):
     def get(self):
-        """API endpoint to get details about the status of a transaction or a block.
+        """API endpoint to get details about votes on a block.
 
         Return:
-            A ``dict`` in the format ``{'status': <status>}``, where
-            ``<status>`` is one of "valid", "invalid", "undecided", "backlog".
+            A list of votes voting for a block with ID ``block_id``.
         """
         parser = reqparse.RequestParser()
         parser.add_argument('block_id', type=str)
