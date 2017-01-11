@@ -298,8 +298,57 @@ Statuses
    :statuscode 200: A transaction or block with that ID was found.
    :statuscode 404: A transaction or block with that ID was not found.
 
-Blocks
+Advanced Usage
 --------------------------------
+
+The following endpoints are more advanced and meant for debugging and transparency purposes.
+
+More precisely, the `blocks endpoint <#blocks>`_ allows you to retrieve a block by ``block_id`` as well the list of blocks that
+a certain transaction with ``tx_id`` occured in (a transaction can occur in multiple ``invalid`` blocks until it
+either gets rejected or validated by the system). This endpoint gives the ability to drill down on the lifecycle of a
+transaction
+
+The `votes endpoint <#votes>`_ contains all the voting information for a specific block. So after retrieving the
+``block_id`` for a given ``tx_id``, one can now simply inspect the votes that happened at a specific time on that block.
+
+
+
+Blocks
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. http:get:: /blocks
+
+   The unfiltered ``/blocks`` endpoint without any query parameters
+   returns a list of available block usages and relevant endpoints.
+   We believe a PUSH rather than a PULL pattern is more appropriate, as the
+   items returned in the collection would change by the second.
+
+
+   **Example request**:
+
+   .. sourcecode:: http
+
+      GET /blocks HTTP/1.1
+      Host: example.com
+
+   **Example response**:
+
+   .. sourcecode:: http
+
+      HTTP/1.1 200 OK
+      Content-Type: application/json
+
+      {
+        "_links": {
+          "blocks": "https://example.com:9984/api/v1/blocks?tx_id={tx_id}&status={VALID|UNDECIDED|INVALID}",
+          "docs": "https://docs.bigchaindb.com/projects/server/en/v0.9.0/drivers-clients/http-client-server-api.html",
+          "item": "https://example.com:9984/api/v1/blocks/{block_id}?status={VALID|UNDECIDED|INVALID}",
+          "self": "https://example.com:9984/api/v1/blocks"
+        },
+        "version" : "0.9.0"
+      }
+
+   :statuscode 200: BigchainDB blocks root endpoint.
 
 .. http:get:: /blocks/{block_id}?status={VALID|UNDECIDED|INVALID}
 
@@ -336,48 +385,12 @@ Blocks
    :statuscode 400: The request wasn't understood by the server, e.g. just requesting ``/blocks`` without the ``block_id``.
    :statuscode 404: A block with that ID and a certain ``status`` was not found.
 
-.. http:get:: /blocks
+.. http:get:: /blocks?tx_id={tx_id}
 
-   The unfiltered ``/blocks`` endpoint without any query parameters
-   returns a list of available block usages and relevant endpoints.
-   We believe a PUSH rather than a PULL pattern is more appropriate, as the
-   items returned in the collection would change by the second.
-
-
-   **Example request**:
-
-   .. sourcecode:: http
-
-      GET /blocks HTTP/1.1
-      Host: example.com
-
-   **Example response**:
-
-   .. sourcecode:: http
-
-      HTTP/1.1 200 OK
-      Content-Type: application/json
-
-      {
-        "_links": {
-          "blocks": "https://example.com:9984/api/v1/blocks?tx_id={tx_id}&status={VALID|UNDECIDED|INVALID}",
-          "docs": "https://docs.bigchaindb.com/projects/server/en/v0.9.0/drivers-clients/http-client-server-api.html",
-          "item": "https://example.com:9984/api/v1/blocks/{block_id}?status={VALID|UNDECIDED|INVALID}",
-          "self": "https://example.com:9984/api/v1/blocks"
-        },
-        "version" : "0.9.0"
-      }
-
-   :statuscode 200: BigchainDB blocks root endpoint.
-
-
-.. http:get:: /blocks?tx_id={tx_id}&status={VALID|UNDECIDED|INVALID}
-
-   Retrieve a list of blocks that contain a transaction with the ID ``tx_id``.
+   Retrieve a list of ``block_id`` with their corresponding status that contain a transaction with the ID ``tx_id``.
 
    Any blocks, be they ``VALID``, ``UNDECIDED`` or ``INVALID`` will be
-   returned. To filter blocks by their status, use the optional ``status``
-   querystring.
+   returned.
 
    .. note::
        In case no block was found, an empty list and an HTTP status code
@@ -403,7 +416,7 @@ Blocks
 
 
 Votes
---------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. http:get:: /votes?block_id={block_id}
 

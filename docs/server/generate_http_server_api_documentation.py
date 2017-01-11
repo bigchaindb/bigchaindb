@@ -134,7 +134,7 @@ TPLS['get-block-txid-response'] = """\
 HTTP/1.1 200 OK
 Content-Type: application/json
 
-[%(block)s]
+%(block_status)s
 """
 
 
@@ -194,11 +194,21 @@ def main():
     block = Block(transactions=[tx], node_pubkey=node_public, voters=[node_public], signature=signature)
     block_json = json.dumps(block.to_dict(), indent=2, sort_keys=True)
 
+    block_transfer = Block(transactions=[tx_transfer], node_pubkey=node_public, voters=[node_public], signature=signature)
+    block_transfer_json = json.dumps(block.to_dict(), indent=2, sort_keys=True)
+
     # vote
     DUMMY_SHA3 = '0123456789abcdef' * 4
     b = Bigchain(public_key=node_public, private_key=node_private)
     vote = b.vote(block.id, DUMMY_SHA3, True)
     vote_json = json.dumps(vote, indent=2, sort_keys=True)
+
+    # block status
+    block_status = {
+        block_transfer.id: 'invalid',
+        block.id: 'valid'
+    }
+    block_status_json = json.dumps(block_status, indent=2, sort_keys=True)
 
     base_path = os.path.join(os.path.dirname(__file__),
                              'source/drivers-clients/samples')
@@ -218,6 +228,7 @@ def main():
                       'public_keys_transfer_last': tx_transfer_last.outputs[0].public_keys[0],
                       'block': block_json,
                       'blockid': block.id,
+                      'block_status': block_status_json,
                       'vote': vote_json}
         with open(path, 'w') as handle:
             handle.write(code)
