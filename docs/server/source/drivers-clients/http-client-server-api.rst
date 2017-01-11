@@ -316,57 +316,14 @@ The `votes endpoint <#votes>`_ contains all the voting information for a specifi
 Blocks
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. http:get:: /blocks
+.. http:get:: /blocks/{block_id}
 
-   The unfiltered ``/blocks`` endpoint without any query parameters
-   returns a list of available block usages and relevant endpoints.
-   We believe a PUSH rather than a PULL pattern is more appropriate, as the
-   items returned in the collection would change by the second.
-
-
-   **Example request**:
-
-   .. sourcecode:: http
-
-      GET /blocks HTTP/1.1
-      Host: example.com
-
-   **Example response**:
-
-   .. sourcecode:: http
-
-      HTTP/1.1 200 OK
-      Content-Type: application/json
-
-      {
-        "_links": {
-          "blocks": "https://example.com:9984/api/v1/blocks?tx_id={tx_id}&status={VALID|UNDECIDED|INVALID}",
-          "docs": "https://docs.bigchaindb.com/projects/server/en/v0.9.0/drivers-clients/http-client-server-api.html",
-          "item": "https://example.com:9984/api/v1/blocks/{block_id}?status={VALID|UNDECIDED|INVALID}",
-          "self": "https://example.com:9984/api/v1/blocks"
-        },
-        "version" : "0.9.0"
-      }
-
-   :statuscode 200: BigchainDB blocks root endpoint.
-
-.. http:get:: /blocks/{block_id}?status={VALID|UNDECIDED|INVALID}
-
-   Get the block with the ID ``block_id``.
-
-   .. note::
-       As ``status``'s default value is set to ``VALID``, hence only ``VALID`` blocks
-       will be returned by this endpoint. In case ``status=VALID``, but a block
-       that was labeled ``UNDECIDED`` or ``INVALID`` is requested by
-       ``block_id``, this endpoint will return a ``404 Not Found`` status code
-       to warn the user. To check a block's status independently, use the
-       `Statuses endpoint <#get--statuses?tx_id=tx_id|block_id=block_id>`_. The ``INVALID`` status
-       can be handy to figure out why the block was rejected.
+   Get the block with the ID ``block_id``. Any blocks, be they ``VALID``, ``UNDECIDED`` or ``INVALID`` will be
+   returned. To check a block's status independently, use the `Statuses endpoint <#get--statuses?tx_id=tx_id|block_id=block_id>`_.
+   To check the votes on a block, have a look at the `votes endpoint <#votes>`_.
 
    :param block_id: block ID
    :type block_id: hex string
-
-   :query string status: Per default set to ``VALID``. One of ``VALID``, ``UNDECIDED`` or ``INVALID``.
 
    **Example request**:
 
@@ -383,20 +340,44 @@ Blocks
 
    :statuscode 200: A block with that ID was found.
    :statuscode 400: The request wasn't understood by the server, e.g. just requesting ``/blocks`` without the ``block_id``.
-   :statuscode 404: A block with that ID and a certain ``status`` was not found.
+   :statuscode 404: A block with that ID was not found.
 
-.. http:get:: /blocks?tx_id={tx_id}
+
+.. http:get:: /blocks
+
+   The unfiltered ``/blocks`` endpoint without any query parameters returns a `400` status code.
+   The list endpoint should be filtered with a ``tx_id`` query parameter,
+   see the ``/blocks?tx_id={tx_id}&status=UNDECIDED|VALID|INVALID``
+   `endpoint <#get--blocks?tx_id=tx_id&status=UNDECIDED|VALID|INVALID>`_.
+
+
+   **Example request**:
+
+   .. sourcecode:: http
+
+      GET /blocks HTTP/1.1
+      Host: example.com
+
+   **Example response**:
+
+   .. sourcecode:: http
+
+      HTTP/1.1 400 OK
+
+   :statuscode 400: The request wasn't understood by the server, e.g. just requesting ``/blocks`` without the ``block_id``.
+
+.. http:get:: /blocks?tx_id={tx_id}&status={UNDECIDED|VALID|INVALID}
 
    Retrieve a list of ``block_id`` with their corresponding status that contain a transaction with the ID ``tx_id``.
 
-   Any blocks, be they ``VALID``, ``UNDECIDED`` or ``INVALID`` will be
-   returned.
+   Any blocks, be they ``UNDECIDED``, ``VALID`` or ``INVALID`` will be
+   returned if no status filter is provided.
 
    .. note::
        In case no block was found, an empty list and an HTTP status code
        ``200 OK`` is returned, as the request was still successful.
 
-   :query string tx_id: transaction ID
+   :query string tx_id: transaction ID *(required)*
    :query string status: Filter blocks by their status. One of ``VALID``, ``UNDECIDED`` or ``INVALID``.
 
    **Example request**:
@@ -413,6 +394,8 @@ Blocks
 
    :statuscode 200: A list of blocks containing a transaction with ID ``tx_id`` was found and returned.
    :statuscode 400: The request wasn't understood by the server, e.g. just requesting ``/blocks``, without defining ``tx_id``.
+
+
 
 
 Votes

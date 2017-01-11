@@ -134,7 +134,7 @@ TPLS['get-block-txid-response'] = """\
 HTTP/1.1 200 OK
 Content-Type: application/json
 
-%(block_status)s
+%(block_list)s
 """
 
 
@@ -204,11 +204,11 @@ def main():
     vote_json = json.dumps(vote, indent=2, sort_keys=True)
 
     # block status
-    block_status = {
-        block_transfer.id: 'invalid',
-        block.id: 'valid'
-    }
-    block_status_json = json.dumps(block_status, indent=2, sort_keys=True)
+    block_list = [
+        block_transfer.id,
+        block.id
+    ]
+    block_list_json = json.dumps(block_list, indent=2, sort_keys=True)
 
     base_path = os.path.join(os.path.dirname(__file__),
                              'source/drivers-clients/samples')
@@ -228,7 +228,7 @@ def main():
                       'public_keys_transfer_last': tx_transfer_last.outputs[0].public_keys[0],
                       'block': block_json,
                       'blockid': block.id,
-                      'block_status': block_status_json,
+                      'block_list': block_list_json,
                       'vote': vote_json}
         with open(path, 'w') as handle:
             handle.write(code)
