@@ -362,7 +362,7 @@ Blocks
 
    .. sourcecode:: http
 
-      HTTP/1.1 400 OK
+      HTTP/1.1 400 Bad Request
 
    :statuscode 400: The request wasn't understood by the server, e.g. just requesting ``/blocks`` without the ``block_id``.
 
