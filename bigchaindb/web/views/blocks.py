@@ -34,27 +34,28 @@ class BlockApi(Resource):
 
 class BlockListApi(Resource):
     def get(self):
-        """API endpoint to get the related blocks and statuses of a transaction.
+        """API endpoint to get the related blocks for a transaction.
 
         Return:
-            A ``dict`` in the format ``{'block_id': <status>}``, where
-            ``<status>`` is one of "valid", "invalid", "undecided", "backlog".
-            It's possible to return multiple keys of 'block_id'.
+            A ``list`` of ``block_id`` that may be filtered when provided
+            a status query parameter: "valid", "invalid", "undecided".
         """
         parser = reqparse.RequestParser()
-        parser.add_argument('tx_id', type=str)
+        parser.add_argument('tx_id', type=str, required=True)
+        parser.add_argument('status', type=str, choices=['valid', 'invalid', 'undecided'])
 
         args = parser.parse_args(strict=True)
-
-        if sum(arg is not None for arg in args.values()) != 1:
-            return make_error(400, "Provide exactly one query parameter. Choices are: block_id, tx_id")
+        tx_id = args['tx_id']
+        status = args['status']
 
         pool = current_app.config['bigchain_pool']
-        blocks = None
 
         with pool() as bigchain:
-            if args['tx_id']:
-                blocks = bigchain.get_blocks_status_containing_tx(args['tx_id'])
+            blocks = bigchain.get_blocks_status_containing_tx(tx_id)
+            if blocks:
+                if status:
+                    blocks = {k: v for k, v in blocks.items() if v == status}
+                blocks = list(blocks.keys())
 
         if not blocks:
             return make_error(404)
