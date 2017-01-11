@@ -158,4 +158,3 @@ def test_post_invalid_transfer_transaction_returns_400(b, client, user_pk, user_
 
     res = client.post(TX_ENDPOINT, data=json.dumps(transfer_tx.to_dict()))
     assert res.status_code == 400
-
