@@ -333,7 +333,7 @@ Blocks
 
    The unfiltered ``/blocks`` endpoint without any query parameters returns a `400` status code.
    The list endpoint should be filtered with a ``tx_id`` query parameter,
-   see the ``/blocks?tx_id={tx_id}&status=UNDECIDED|VALID|INVALID``
+   see the ``/blocks?tx_id={tx_id}&status={UNDECIDED|VALID|INVALID}``
    `endpoint <#get--blocks?tx_id=tx_id&status=UNDECIDED|VALID|INVALID>`_.
 
 
