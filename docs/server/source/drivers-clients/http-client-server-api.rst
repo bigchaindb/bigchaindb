@@ -90,9 +90,7 @@ Transactions
 .. http:get:: /transactions
 
    The unfiltered ``/transactions`` endpoint without any query parameters
-   returns a list of available transaction usages and relevant endpoints.
-   We believe a PUSH rather than a PULL pattern is more appropriate, as the
-   items returned in the collection would change by the second.
+   returns a status code `400`. For valid filters, see the sections below.
 
    **Example request**:
 
@@ -105,21 +103,9 @@ Transactions
 
    .. sourcecode:: http
 
-      HTTP/1.1 200 OK
-      Content-Type: application/json
+      HTTP/1.1 400 Bad Request
 
-      {
-        "_links": {
-          "assets": "https://example.com:9984/api/v1/transactions?operation={CREATE|TRANSFER}&asset_id={asset_id}",
-          "docs": "https://docs.bigchaindb.com/projects/server/en/v0.9.0/drivers-clients/http-client-server-api.html",
-          "item": "https://example.com:9984/api/v1/transactions/{tx_id}",
-          "self": "https://example.com:9984/api/v1/transactions",
-          "unspent": "https://example.com:9984/api/v1/transactions?unspent=true&public_keys={public_keys}"
-        },
-        "version" : "0.9.0"
-      }
-
-   :statuscode 200: BigchainDB transactions root endpoint.
+   :statuscode 400: The request wasn't understood by the server, a mandatory querystring was not included in the request.
 
    There are however filtered requests that might come of use, given the endpoint is
    queried correctly. Some of them include retrieving a list of transactions
