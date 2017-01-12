@@ -58,8 +58,7 @@ class BlockListApi(Resource):
                 if status:
                     blocks = {k: v for k, v in blocks.items() if v == status}
                 blocks = list(blocks.keys())
-
-        if not blocks:
-            return make_error(404)
+            else:
+                blocks = []
 
         return blocks

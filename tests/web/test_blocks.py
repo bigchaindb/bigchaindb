@@ -38,6 +38,11 @@ def test_get_blocks_by_txid_endpoint(b, client):
     tx2 = Transaction.create([b.me], [([b.me], 10)])
     tx2 = tx2.sign([b.me_private])
 
+    res = client.get(BLOCKS_ENDPOINT + "?tx_id=" + tx.id)
+    # test if block is retrieved as undecided
+    assert res.status_code == 200
+    assert len(res.json) == 0
+
     block_invalid = b.create_block([tx])
     b.write_block(block_invalid)
 
@@ -121,12 +126,6 @@ def test_get_blocks_by_txid_and_status_endpoint(b, client):
     assert res.status_code == 200
     assert block_valid.id in res.json
     assert len(res.json) == 1
-
-
-@pytest.mark.bdb
-def test_get_blocks_by_txid_endpoint_returns_404_if_not_found(client):
-    res = client.get(BLOCKS_ENDPOINT + "?tx_id=123")
-    assert res.status_code == 404
 
 
 @pytest.mark.bdb
