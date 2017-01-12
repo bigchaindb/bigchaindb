@@ -7,6 +7,7 @@ For more information please refer to the documentation on ReadTheDocs:
 from flask import current_app
 from flask_restful import Resource, reqparse
 
+from bigchaindb import Bigchain
 from bigchaindb.web.views.base import make_error
 
 
@@ -42,7 +43,8 @@ class BlockListApi(Resource):
         """
         parser = reqparse.RequestParser()
         parser.add_argument('tx_id', type=str, required=True)
-        parser.add_argument('status', type=str, choices=['valid', 'invalid', 'undecided'])
+        parser.add_argument('status', type=str,
+                            choices=[Bigchain.BLOCK_VALID, Bigchain.BLOCK_INVALID, Bigchain.BLOCK_UNDECIDED])
 
         args = parser.parse_args(strict=True)
         tx_id = args['tx_id']

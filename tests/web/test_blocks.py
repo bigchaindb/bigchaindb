@@ -81,6 +81,8 @@ def test_get_blocks_by_txid_endpoint(b, client):
 @pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_get_blocks_by_txid_and_status_endpoint(b, client):
+    from bigchaindb import Bigchain
+
     tx = Transaction.create([b.me], [([b.me], 1)])
     tx = tx.sign([b.me_private])
 
@@ -98,13 +100,13 @@ def test_get_blocks_by_txid_and_status_endpoint(b, client):
     block_valid = b.create_block([tx, tx2])
     b.write_block(block_valid)
 
-    res = client.get("{}?tx_id={}&status={}".format(BLOCKS_ENDPOINT, tx.id, 'invalid'))
+    res = client.get("{}?tx_id={}&status={}".format(BLOCKS_ENDPOINT, tx.id, Bigchain.BLOCK_INVALID))
     # test if block is retrieved as invalid
     assert res.status_code == 200
     assert block_invalid.id in res.json
     assert len(res.json) == 1
 
-    res = client.get("{}?tx_id={}&status={}".format(BLOCKS_ENDPOINT, tx.id, 'undecided'))
+    res = client.get("{}?tx_id={}&status={}".format(BLOCKS_ENDPOINT, tx.id, Bigchain.BLOCK_UNDECIDED))
     # test if block is retrieved as undecided
     assert res.status_code == 200
     assert block_valid.id in res.json
@@ -114,7 +116,7 @@ def test_get_blocks_by_txid_and_status_endpoint(b, client):
     vote = b.vote(block_valid.id, block_invalid.id, True)
     b.write_vote(vote)
 
-    res = client.get("{}?tx_id={}&status={}".format(BLOCKS_ENDPOINT, tx.id, 'valid'))
+    res = client.get("{}?tx_id={}&status={}".format(BLOCKS_ENDPOINT, tx.id, Bigchain.BLOCK_VALID))
     # test if block is retrieved as valid
     assert res.status_code == 200
     assert block_valid.id in res.json
@@ -153,4 +155,3 @@ def test_get_blocks_by_txid_endpoint_returns_400_bad_query_params(client):
             'status': '123 is not a valid choice'
         }
     }
-
