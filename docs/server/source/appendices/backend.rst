@@ -27,6 +27,10 @@ Generic Interfaces
 --------------------------------
 .. automodule:: bigchaindb.backend.schema
 
+:mod:`bigchaindb.backend.admin`
+-------------------------------
+.. automodule:: bigchaindb.backend.admin
+
 :mod:`bigchaindb.backend.utils`
 -------------------------------
 .. automodule:: bigchaindb.backend.utils
@@ -54,6 +58,10 @@ RethinkDB Backend
 :mod:`bigchaindb.backend.rethinkdb.changefeed`
 ----------------------------------------------
 .. automodule:: bigchaindb.backend.rethinkdb.changefeed
+
+:mod:`bigchaindb.backend.rethinkdb.admin`
+-----------------------------------------
+.. automodule:: bigchaindb.backend.rethinkdb.admin
 
 
 MongoDB Backend
