@@ -1,4 +1,15 @@
-"""Database creation and schema-providing interfaces for backends."""
+"""Database creation and schema-providing interfaces for backends.
+
+Attributes:
+    TABLES (tuple): The three standard tables BigchainDB relies on:
+
+        * ``backlog`` for incoming transactions awaiting to be put into
+          a block.
+        * ``bigchain`` for blocks.
+        * ``votes`` to store votes for each block by each federation
+          node.
+
+"""
 
 from functools import singledispatch
 import logging
