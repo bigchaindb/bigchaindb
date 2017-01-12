@@ -248,14 +248,12 @@ Statuses
 
    Supports the retrieval of a status for a transaction using ``tx_id`` or the
    retrieval of a status for a block using ``block_id``. Only use exactly one of both
-   queries, as they are required but mutually exclusive.
+   queries, as they are required but mutually exclusive. A URL to the resource is also
+   provided under ``_links``.
 
-   The possible status values are ``backlog``, ``undecided``, ``valid`` or
-   ``invalid``.
-
-   If a transaction or block is persisted to the chain and it's status is set
-   to ``valid`` or ``undecided``, a ``200`` status code is returned,
-   as well as an URL to the resource.
+   The possible status values are ``undecided``, ``valid`` or
+   ``invalid`` for both blocks and transactions. An additional state ``backlog`` is provided
+   for transactions.
 
    :param tx_id: transaction ID
    :type tx_id: hex string
