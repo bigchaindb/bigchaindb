@@ -26,7 +26,7 @@ def test_get_votes_endpoint(b, client):
 
 @pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
-def test_get_votes_multiple(b, client):
+def test_get_votes_endpoint_multiple_votes(b, client):
     tx = Transaction.create([b.me], [([b.me], 1)])
     tx = tx.sign([b.me_private])
 
@@ -54,7 +54,7 @@ def test_get_votes_endpoint_returns_empty_list_not_found(client):
 
 
 @pytest.mark.bdb
-def test_get_status_endpoint_returns_400_bad_query_params(client):
+def test_get_votes_endpoint_returns_400_bad_query_params(client):
     res = client.get(VOTES_ENDPOINT)
     assert res.status_code == 400
 
