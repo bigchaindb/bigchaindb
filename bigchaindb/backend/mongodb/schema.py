@@ -72,6 +72,12 @@ def create_bigchain_secondary_index(conn, dbname):
 def create_backlog_secondary_index(conn, dbname):
     logger.info('Create `backlog` secondary index.')
 
+    # secondary index on the transaction id with a uniqueness constraint
+    # to make sure there are no duplicated transactions in the backlog
+    conn.conn[dbname]['backlog'].create_index('id',
+                                              name='transaction_id',
+                                              unique=True)
+
     # compound index to read transactions from the backlog per assignee
     conn.conn[dbname]['backlog']\
         .create_index([('assignee', ASCENDING),

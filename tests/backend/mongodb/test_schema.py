@@ -25,7 +25,8 @@ def test_init_creates_db_tables_and_indexes():
                                'transaction_id']
 
     indexes = conn.conn[dbname]['backlog'].index_information().keys()
-    assert sorted(indexes) == ['_id_', 'assignee__transaction_timestamp']
+    assert sorted(indexes) == ['_id_', 'assignee__transaction_timestamp',
+                               'transaction_id']
 
     indexes = conn.conn[dbname]['votes'].index_information().keys()
     assert sorted(indexes) == ['_id_', 'block_and_voter']
@@ -85,26 +86,22 @@ def test_create_secondary_indexes():
 
     # Backlog table
     indexes = conn.conn[dbname]['backlog'].index_information().keys()
-    assert sorted(indexes) == ['_id_', 'assignee__transaction_timestamp']
+    assert sorted(indexes) == ['_id_', 'assignee__transaction_timestamp',
+                               'transaction_id']
 
     # Votes table
     indexes = conn.conn[dbname]['votes'].index_information().keys()
     assert sorted(indexes) == ['_id_', 'block_and_voter']
 
 
-def test_drop():
-    import bigchaindb
+def test_drop(dummy_db):
     from bigchaindb import backend
     from bigchaindb.backend import schema
 
     conn = backend.connect()
-    dbname = bigchaindb.config['database']['name']
-
-    # The db is set up by fixtures
-    assert dbname in conn.conn.database_names()
-
-    schema.drop_database(conn, dbname)
-    assert dbname not in conn.conn.database_names()
+    assert dummy_db in conn.conn.database_names()
+    schema.drop_database(conn, dummy_db)
+    assert dummy_db not in conn.conn.database_names()
 
 
 def test_get_replica_set_name_not_enabled():

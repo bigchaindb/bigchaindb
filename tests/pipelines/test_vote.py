@@ -279,7 +279,7 @@ def test_valid_block_voting_with_transfer_transactions(monkeypatch,
     tx = Transaction.create([b.me], [([test_user_pub], 1)])
     tx = tx.sign([b.me_private])
 
-    monkeypatch.setattr('time.time', lambda: 1111111111)
+    monkeypatch.setattr('time.time', lambda: 1000000000)
     block = b.create_block([tx])
     b.write_block(block)
 
@@ -289,7 +289,7 @@ def test_valid_block_voting_with_transfer_transactions(monkeypatch,
                                asset_id=tx.id)
     tx2 = tx2.sign([test_user_priv])
 
-    monkeypatch.setattr('time.time', lambda: 2222222222)
+    monkeypatch.setattr('time.time', lambda: 2000000000)
     block2 = b.create_block([tx2])
     b.write_block(block2)
 
@@ -314,7 +314,7 @@ def test_valid_block_voting_with_transfer_transactions(monkeypatch,
                                 'previous_block': genesis_block.id,
                                 'is_block_valid': True,
                                 'invalid_reason': None,
-                                'timestamp': '2222222222'}
+                                'timestamp': '2000000000'}
 
     serialized_vote = utils.serialize(vote_doc['vote']).encode()
     assert vote_doc['node_pubkey'] == b.me
@@ -328,7 +328,7 @@ def test_valid_block_voting_with_transfer_transactions(monkeypatch,
                                  'previous_block': block.id,
                                  'is_block_valid': True,
                                  'invalid_reason': None,
-                                 'timestamp': '2222222222'}
+                                 'timestamp': '2000000000'}
 
     serialized_vote2 = utils.serialize(vote2_doc['vote']).encode()
     assert vote2_doc['node_pubkey'] == b.me
@@ -498,15 +498,15 @@ def test_voter_considers_unvoted_blocks_when_single_node(monkeypatch, b):
 
     outpipe = Pipe()
 
-    monkeypatch.setattr('time.time', lambda: 1111111111)
+    monkeypatch.setattr('time.time', lambda: 1000000000)
 
     block_ids = []
     # insert blocks in the database while the voter process is not listening
     # (these blocks won't appear in the changefeed)
-    monkeypatch.setattr('time.time', lambda: 2222222222)
+    monkeypatch.setattr('time.time', lambda: 1000000020)
     block_1 = dummy_block(b)
     block_ids.append(block_1.id)
-    monkeypatch.setattr('time.time', lambda: 3333333333)
+    monkeypatch.setattr('time.time', lambda: 1000000030)
     b.write_block(block_1)
     block_2 = dummy_block(b)
     block_ids.append(block_2.id)
@@ -522,7 +522,7 @@ def test_voter_considers_unvoted_blocks_when_single_node(monkeypatch, b):
     outpipe.get()
 
     # create a new block that will appear in the changefeed
-    monkeypatch.setattr('time.time', lambda: 4444444444)
+    monkeypatch.setattr('time.time', lambda: 1000000040)
     block_3 = dummy_block(b)
     block_ids.append(block_3.id)
     b.write_block(block_3)
@@ -546,15 +546,15 @@ def test_voter_chains_blocks_with_the_previous_ones(monkeypatch, b):
 
     outpipe = Pipe()
 
-    monkeypatch.setattr('time.time', lambda: 1111111111)
+    monkeypatch.setattr('time.time', lambda: 1000000000)
 
     block_ids = []
-    monkeypatch.setattr('time.time', lambda: 2222222222)
+    monkeypatch.setattr('time.time', lambda: 1000000020)
     block_1 = dummy_block(b)
     block_ids.append(block_1.id)
     b.write_block(block_1)
 
-    monkeypatch.setattr('time.time', lambda: 3333333333)
+    monkeypatch.setattr('time.time', lambda: 1000000030)
     block_2 = dummy_block(b)
     block_ids.append(block_2.id)
     b.write_block(block_2)
@@ -588,9 +588,9 @@ def test_voter_checks_for_previous_vote(monkeypatch, b):
     inpipe = Pipe()
     outpipe = Pipe()
 
-    monkeypatch.setattr('time.time', lambda: 1111111111)
+    monkeypatch.setattr('time.time', lambda: 1000000000)
 
-    monkeypatch.setattr('time.time', lambda: 2222222222)
+    monkeypatch.setattr('time.time', lambda: 1000000020)
     block_1 = dummy_block(b)
     inpipe.put(block_1.to_dict())
     assert len(list(query.get_votes_by_block_id(b.connection, block_1.id))) == 0
@@ -603,11 +603,11 @@ def test_voter_checks_for_previous_vote(monkeypatch, b):
     outpipe.get()
 
     # queue block for voting AGAIN
-    monkeypatch.setattr('time.time', lambda: 3333333333)
+    monkeypatch.setattr('time.time', lambda: 1000000030)
     inpipe.put(block_1.to_dict())
 
     # queue another block
-    monkeypatch.setattr('time.time', lambda: 4444444444)
+    monkeypatch.setattr('time.time', lambda: 1000000040)
     block_2 = dummy_block(b)
     inpipe.put(block_2.to_dict())
 

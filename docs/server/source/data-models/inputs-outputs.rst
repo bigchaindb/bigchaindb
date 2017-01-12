@@ -127,3 +127,26 @@ If there is only one *current owner*, the fulfillment will be a simple signature
 
 
 See the reference on :ref:`inputs <Input>` for descriptions of the meaning of each field.
+
+Multiple Current Owners
+```````````````````````
+
+If there are multiple *current owners*, the fulfillment will be a little different from `One Current Owner`_. Suppose it has two current owners.
+
+.. code-block:: json
+
+    {
+        "owners_before": ["<public key of the first owner before the transaction happened>","<public key of the second owner before the transaction happened>"],
+        "fulfillment": "cf:2:AQIBAgEBYwAEYEv6O5HjHGl7OWo2Tu5mWcWQcL_OGrFuUjyej-dK3LM99TbZsRd8c9luQhU30xCH5AdNaupxg-pLHuk8DoSaDA1MHQGXUZ80a_cV-4UaaaCpdey8K0CEcJxre0X96hTHCwABAWMABGBnsuHExhuSj5Mdm-q0KoPgX4nAt0s00k1WTMCzuUpQIp6aStLoTSMlsvS4fmDtOSv9gubekKLuHTMAk-LQFSKF1JdzwaVWAA2UOv0v_OS2gY3A-r0kRq8HtzjYdcmVswUA",
+        "fulfills": {
+            "output": 0,
+            "txid": "e4805f1bfc999d6409b38e3a4c3b2fafad7c1280eb0d441da7083e945dd89eb8"
+        }
+    }
+
+
+- ``owners_before``: A list of public keys of the owners before the transaction; in this case it has two owners, hence two public keys.
+- ``fulfillment``: A crypto-conditions URI that encodes the cryptographic fulfillments like signatures and others;'cf' indicates this is a fulfillment, '2' indicates the condition type is THRESHOLD-SHA-256 (while '4' in `One Current Owner`_ indicates its condition type is ED25519).
+- ``fulfills``: Pointer to an output from a previous transaction that is being spent
+    - ``output``: The index of the output in a previous transaction
+    - ``txid``: ID of the transaction

@@ -2,9 +2,9 @@
 
 This document is for whoever has the ability to merge pull requests in the Git repositories associated with BigchainDB.
 
-If the pull request is from an employee of ascribe GmbH, then you can ignore this document.
+If the pull request is from an employee of BigchainDB GmbH, then you can ignore this document.
 
-If the pull request is from someone who is _not_ an employee of ascribe, then:
+If the pull request is from someone who is _not_ an employee of BigchainDB, then:
 
 * Have they agreed to the Individual Contributor Agreement in the past? (Troy, Greg, and others have a list.) If yes, then you can merge the PR and ignore the rest of this document.
 * Do they belong to a company or organization which agreed to the Entity Contributor Agreement in the past, and will they be contributing on behalf of that company or organization? (Troy, Greg, and others have a list.) If yes, then you can merge the PR and ignore the rest of this document.
@@ -34,7 +34,7 @@ We will email you (or your employer) with further instructions.
 
 (END OF COMMENT)
 
-Once they click SEND, we (ascribe) will get an email with the information in the form. (Troy gets those emails for sure, I'm not sure who else.) The next step is to send an email to the email address submitted in the form, saying something like (where the stuff in [square brackets] should be replaced):
+Once they click SEND, we (BigchainDB) will get an email with the information in the form. (Troy gets those emails for sure, I'm not sure who else.) The next step is to send an email to the email address submitted in the form, saying something like (where the stuff in [square brackets] should be replaced):
 
 Hi [NAME],
 
