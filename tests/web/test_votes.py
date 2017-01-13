@@ -48,6 +48,10 @@ def test_get_votes_endpoint_multiple_votes(b, client):
 
 @pytest.mark.bdb
 def test_get_votes_endpoint_returns_empty_list_not_found(client):
+    res = client.get(VOTES_ENDPOINT + "?block_id=")
+    assert [] == res.json
+    assert res.status_code == 200
+
     res = client.get(VOTES_ENDPOINT + "?block_id=123")
     assert [] == res.json
     assert res.status_code == 200
