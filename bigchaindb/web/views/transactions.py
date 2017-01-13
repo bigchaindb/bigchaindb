@@ -46,29 +46,6 @@ class TransactionApi(Resource):
         return tx.to_dict()
 
 
-class TransactionStatusApi(Resource):
-    def get(self, tx_id):
-        """API endpoint to get details about the status of a transaction.
-
-        Args:
-            tx_id (str): the id of the transaction.
-
-        Return:
-            A ``dict`` in the format ``{'status': <status>}``, where
-            ``<status>`` is one of "valid", "invalid", "undecided", "backlog".
-        """
-
-        pool = current_app.config['bigchain_pool']
-
-        with pool() as bigchain:
-            status = bigchain.get_status(tx_id)
-
-        if not status:
-            return make_error(404)
-
-        return {'status': status}
-
-
 class TransactionListApi(Resource):
     def post(self):
         """API endpoint to push transactions to the Federation.
