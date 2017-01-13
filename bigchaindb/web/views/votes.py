@@ -19,18 +19,12 @@ class VotesApi(Resource):
             A list of votes voting for a block with ID ``block_id``.
         """
         parser = reqparse.RequestParser()
-        parser.add_argument('block_id', type=str)
+        parser.add_argument('block_id', type=str, required=True)
 
         args = parser.parse_args(strict=True)
 
-        if sum(arg is not None for arg in args.values()) != 1:
-            return make_error(400, "Provide the block_id query parameter.")
-
         pool = current_app.config['bigchain_pool']
-        votes = []
-
         with pool() as bigchain:
-            if args['block_id']:
-                votes = list(backend.query.get_votes_by_block_id(bigchain.connection, args['block_id']))
+            votes = list(backend.query.get_votes_by_block_id(bigchain.connection, args['block_id']))
 
         return votes
