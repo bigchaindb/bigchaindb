@@ -36,11 +36,7 @@ class MongoDBConnection(Connection):
 
     @property
     def db(self):
-        if self.conn is None:
-            self._connect()
-
-        else:
-            return self.conn[self.dbname]
+        return self.conn[self.dbname]
 
     def _connect(self):
         for i in range(self.max_tries):

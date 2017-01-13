@@ -1,5 +1,9 @@
+from unittest import mock
+
 import pytest
-from unittest.mock import patch
+from pymongo.database import Database
+from pymongo.errors import OperationFailure
+
 
 pytestmark = pytest.mark.bdb
 
@@ -105,7 +109,6 @@ def test_drop(dummy_db):
 
 
 def test_get_replica_set_name_not_enabled():
-    from pymongo.database import Database
     from bigchaindb import backend
     from bigchaindb.backend.mongodb.schema import _get_replica_set_name
     from bigchaindb.common.exceptions import ConfigurationError
@@ -116,13 +119,12 @@ def test_get_replica_set_name_not_enabled():
     cmd_line_opts = {'argv': ['mongod', '--dbpath=/data'],
                      'ok': 1.0,
                      'parsed': {'storage': {'dbPath': '/data'}}}
-    with patch.object(Database, 'command', return_value=cmd_line_opts):
+    with mock.patch.object(Database, 'command', return_value=cmd_line_opts):
         with pytest.raises(ConfigurationError):
             _get_replica_set_name(conn)
 
 
 def test_get_replica_set_name_command_line():
-    from pymongo.database import Database
     from bigchaindb import backend
     from bigchaindb.backend.mongodb.schema import _get_replica_set_name
 
@@ -133,12 +135,11 @@ def test_get_replica_set_name_command_line():
                      'ok': 1.0,
                      'parsed': {'replication': {'replSet': 'rs0'},
                                 'storage': {'dbPath': '/data'}}}
-    with patch.object(Database, 'command', return_value=cmd_line_opts):
+    with mock.patch.object(Database, 'command', return_value=cmd_line_opts):
         assert _get_replica_set_name(conn) == 'rs0'
 
 
 def test_get_replica_set_name_config_file():
-    from pymongo.database import Database
     from bigchaindb import backend
     from bigchaindb.backend.mongodb.schema import _get_replica_set_name
 
@@ -149,5 +150,46 @@ def test_get_replica_set_name_config_file():
                      'ok': 1.0,
                      'parsed': {'replication': {'replSetName': 'rs0'},
                                 'storage': {'dbPath': '/data'}}}
-    with patch.object(Database, 'command', return_value=cmd_line_opts):
+    with mock.patch.object(Database, 'command', return_value=cmd_line_opts):
         assert _get_replica_set_name(conn) == 'rs0'
+
+
+def test_wait_for_replica_set_initialization():
+    from bigchaindb.backend.mongodb.schema import _wait_for_replica_set_initialization  # noqa
+    from bigchaindb.backend import connect
+    conn = connect()
+
+    with mock.patch.object(Database, 'command') as mock_command:
+        mock_command.side_effect = [
+            {'log': ['a line']},
+            {'log': ['database writes are now permitted']},
+        ]
+
+        # check that it returns
+        assert _wait_for_replica_set_initialization(conn) is None
+
+
+def test_initialize_replica_set():
+    from bigchaindb.backend.mongodb.schema import initialize_replica_set
+    from bigchaindb.backend import connect
+    conn = connect()
+
+    with mock.patch.object(Database, 'command') as mock_command:
+        mock_command.side_effect = [
+            mock.DEFAULT,
+            None,
+            {'log': ['database writes are now permitted']},
+        ]
+
+        # check that it returns
+        assert initialize_replica_set(conn) is None
+
+    # test it raises OperationError if anything wrong
+    with mock.patch.object(Database, 'command') as mock_command:
+        mock_command.side_effect = [
+            mock.DEFAULT,
+            OperationFailure(None, details={'codeName': ''})
+        ]
+
+        with pytest.raises(OperationFailure):
+            initialize_replica_set(conn)
