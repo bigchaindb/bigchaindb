@@ -55,9 +55,8 @@ properties:
 
       See: `Metadata`_.
   version:
-    type: integer
-    minimum: 1
-    maximum: 1
+    type: string
+    pattern: "^0\\."
     description: |
         BigchainDB transaction schema version.
 definitions:

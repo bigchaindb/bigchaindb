@@ -10,6 +10,7 @@ from bigchaindb.common.exceptions import (KeypairMismatchException,
                                           InvalidHash, InvalidSignature,
                                           AmountError, AssetIdMismatch)
 from bigchaindb.common.utils import serialize, gen_timestamp
+import bigchaindb.version
 
 
 class Input(object):
@@ -409,7 +410,7 @@ class Transaction(object):
     TRANSFER = 'TRANSFER'
     GENESIS = 'GENESIS'
     ALLOWED_OPERATIONS = (CREATE, TRANSFER, GENESIS)
-    VERSION = 1
+    VERSION = bigchaindb.version.__version__
 
     def __init__(self, operation, asset, inputs=None, outputs=None,
                  metadata=None, version=None):
