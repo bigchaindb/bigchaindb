@@ -8,7 +8,6 @@ from flask import current_app
 from flask_restful import Resource, reqparse
 
 from bigchaindb import backend
-from bigchaindb.web.views.base import make_error
 
 
 class VotesApi(Resource):
