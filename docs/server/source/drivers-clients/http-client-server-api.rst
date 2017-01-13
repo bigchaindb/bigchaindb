@@ -34,7 +34,7 @@ with something like the following in the body:
       ],
       "public_key": "AiygKSRhZWTxxYT4AfgKoTG4TZAoPsWoEt6C6bLq4jJR",
       "software": "BigchainDB",
-      "version": "0.9.0",
+      "version": "0.9.0"
     }
 
 
