@@ -954,7 +954,6 @@ def test_cant_add_empty_output():
 
 
 def test_cant_add_empty_input():
-    import bigchaindb.version
     from bigchaindb.common.transaction import Transaction
     tx = Transaction(Transaction.CREATE, None)
 
