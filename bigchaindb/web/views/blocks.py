@@ -53,12 +53,8 @@ class BlockListApi(Resource):
         pool = current_app.config['bigchain_pool']
 
         with pool() as bigchain:
-            blocks = bigchain.get_blocks_status_containing_tx(tx_id)
-            if blocks:
-                if status:
-                    blocks = {k: v for k, v in blocks.items() if v == status}
-                blocks = list(blocks.keys())
-            else:
-                blocks = []
+            block_statuses = bigchain.get_blocks_status_containing_tx(tx_id)
+            blocks = [block_id for block_id, block_status in block_statuses.items()
+                      if not status or block_status == status]
 
         return blocks
