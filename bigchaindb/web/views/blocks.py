@@ -38,8 +38,9 @@ class BlockListApi(Resource):
         """API endpoint to get the related blocks for a transaction.
 
         Return:
-            A ``list`` of ``block_id`` that may be filtered when provided
-            a status query parameter: "valid", "invalid", "undecided".
+            A ``list`` of ``block_id``s that contain the given transaction. The
+            list may be filtered when provided a status query parameter:
+            "valid", "invalid", "undecided".
         """
         parser = reqparse.RequestParser()
         parser.add_argument('tx_id', type=str, required=True)

@@ -38,11 +38,6 @@ def test_get_blocks_by_txid_endpoint(b, client):
     tx2 = Transaction.create([b.me], [([b.me], 10)])
     tx2 = tx2.sign([b.me_private])
 
-    res = client.get(BLOCKS_ENDPOINT + "?tx_id=" + tx.id)
-    # test if block is retrieved as undecided
-    assert res.status_code == 200
-    assert len(res.json) == 0
-
     block_invalid = b.create_block([tx])
     b.write_block(block_invalid)
 
@@ -97,35 +92,62 @@ def test_get_blocks_by_txid_and_status_endpoint(b, client):
     block_invalid = b.create_block([tx])
     b.write_block(block_invalid)
 
-    # vote the block invalid
-    vote = b.vote(block_invalid.id, b.get_last_voted_block().id, False)
-    b.write_vote(vote)
-
     # create a new block containing the same tx (and tx2 to avoid block id collision)
     block_valid = b.create_block([tx, tx2])
     b.write_block(block_valid)
 
     res = client.get("{}?tx_id={}&status={}".format(BLOCKS_ENDPOINT, tx.id, Bigchain.BLOCK_INVALID))
-    # test if block is retrieved as invalid
+    # test if no blocks are retrieved as invalid
+    assert res.status_code == 200
+    assert len(res.json) == 0
+
+    res = client.get("{}?tx_id={}&status={}".format(BLOCKS_ENDPOINT, tx.id, Bigchain.BLOCK_UNDECIDED))
+    # test if both blocks are retrieved as undecided
+    assert res.status_code == 200
+    assert block_valid.id in res.json
+    assert block_invalid.id in res.json
+    assert len(res.json) == 2
+
+    res = client.get("{}?tx_id={}&status={}".format(BLOCKS_ENDPOINT, tx.id, Bigchain.BLOCK_VALID))
+    # test if no blocks are retrieved as valid
+    assert res.status_code == 200
+    assert len(res.json) == 0
+
+    # vote one of the blocks invalid
+    vote = b.vote(block_invalid.id, b.get_last_voted_block().id, False)
+    b.write_vote(vote)
+
+    # vote the other block valid
+    vote = b.vote(block_valid.id, block_invalid.id, True)
+    b.write_vote(vote)
+
+    res = client.get("{}?tx_id={}&status={}".format(BLOCKS_ENDPOINT, tx.id, Bigchain.BLOCK_INVALID))
+    # test if the invalid block is retrieved as invalid
     assert res.status_code == 200
     assert block_invalid.id in res.json
     assert len(res.json) == 1
 
     res = client.get("{}?tx_id={}&status={}".format(BLOCKS_ENDPOINT, tx.id, Bigchain.BLOCK_UNDECIDED))
-    # test if block is retrieved as undecided
+    # test if no blocks are retrieved as undecided
     assert res.status_code == 200
-    assert block_valid.id in res.json
-    assert len(res.json) == 1
-
-    # vote the block valid
-    vote = b.vote(block_valid.id, block_invalid.id, True)
-    b.write_vote(vote)
+    assert len(res.json) == 0
 
     res = client.get("{}?tx_id={}&status={}".format(BLOCKS_ENDPOINT, tx.id, Bigchain.BLOCK_VALID))
-    # test if block is retrieved as valid
+    # test if the valid block is retrieved as valid
     assert res.status_code == 200
     assert block_valid.id in res.json
     assert len(res.json) == 1
+
+
+@pytest.mark.bdb
+def test_get_blocks_by_txid_endpoint_returns_empty_list_not_found(client):
+    res = client.get(BLOCKS_ENDPOINT + "?tx_id=")
+    assert res.status_code == 200
+    assert len(res.json) == 0
+
+    res = client.get(BLOCKS_ENDPOINT + "?tx_id=123")
+    assert res.status_code == 200
+    assert len(res.json) == 0
 
 
 @pytest.mark.bdb
