@@ -2,7 +2,7 @@ import logging
 import time
 
 import pymongo
-from pymongo.errors import ConnectionFailure, OperationFailure
+from pymongo import errors
 
 from bigchaindb import backend
 from bigchaindb.backend.changefeed import ChangeFeed
@@ -29,7 +29,9 @@ class MongoDBChangeFeed(ChangeFeed):
             try:
                 self.run_changefeed()
                 break
-            except (ConnectionFailure, OperationFailure) as exc:
+            except (errors.ConnectionFailure, errors.OperationFailure,
+                    errors.AutoReconnect,
+                    errors.ServerSelectionTimeoutError) as exc:
                 logger.exception(exc)
                 time.sleep(1)
 
@@ -67,18 +69,20 @@ class MongoDBChangeFeed(ChangeFeed):
             # See https://github.com/bigchaindb/bigchaindb/issues/992
             if is_insert and (self.operation & ChangeFeed.INSERT):
                 record['o'].pop('_id', None)
-                doc = record['o']
+                self.outqueue.put(record['o'])
             elif is_delete and (self.operation & ChangeFeed.DELETE):
                 # on delete it only returns the id of the document
-                doc = record['o']
+                self.outqueue.put(record['o'])
             elif is_update and (self.operation & ChangeFeed.UPDATE):
                 # the oplog entry for updates only returns the update
                 # operations to apply to the document and not the
                 # document itself. So here we first read the document
                 # and then return it.
-                doc = self.connection.conn[dbname][table]\
-                        .find_one(record['o2'], projection={'_id': False})
-            self.outqueue.put(doc)
+                doc = self.connection.conn[dbname][table].find_one(
+                    {'_id': record['o2']},
+                    {'_id': False}
+                )
+                self.outqueue.put(doc)
 
 
 @register_changefeed(MongoDBConnection)

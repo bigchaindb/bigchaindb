@@ -2,9 +2,10 @@ version: '2'
 
 services:
   mdb:
-    image: mongo
+    image: mongo:3.4.1
     ports:
       - "27017"
+    command: mongod --replSet=rs0
 
   rdb:
     image: rethinkdb
@@ -15,7 +16,7 @@ services:
       - rdb-data
 
   rdb-data:
-    image: rethinkdb
+    image: rethinkdb:2.3.5
     volumes:
       - /data
     command: "true"
