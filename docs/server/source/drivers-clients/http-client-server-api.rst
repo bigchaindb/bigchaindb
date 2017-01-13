@@ -242,24 +242,31 @@ Transactions
 Statuses
 --------------------------------
 
-.. http:get:: /statuses?tx_id={tx_id}|block_id={block_id}
+.. http:get:: /statuses
 
-   Get the status of an asynchronously written resource by their id.
+   Get the status of an asynchronously written transaction or block by their id.
 
-   Supports the retrieval of a status for a transaction using ``tx_id`` or the
-   retrieval of a status for a block using ``block_id``. Only use exactly one of both
-   queries, as they are required but mutually exclusive. A URL to the resource is also
-   provided under ``_links``.
-
-   The possible status values are ``undecided``, ``valid`` or
-   ``invalid`` for both blocks and transactions. An additional state ``backlog`` is provided
+   The possible status values are ``undecided``, ``valid`` or ``invalid`` for
+   both blocks and transactions. An additional state ``backlog`` is provided
    for transactions.
 
-   :param tx_id: transaction ID
-   :type tx_id: hex string
+   A link to the resource is also provided in the returned payload under
+   ``_links``.
 
-   :param block_id: block ID
-   :type block_id: hex string
+   :query string tx_id: transaction ID
+   :query string block_id: block ID
+
+   .. note::
+
+        Exactly one of the ``tx_id`` or ``block_id`` query parameters must be
+        used together with this endpoint (see below for getting `transaction
+        statuses <#get--statuses?tx_id=tx_id>`_ and `block statuses
+        <#get--statuses?block_id=block_id>`_).
+
+
+.. http:get:: /statuses?tx_id={tx_id}
+
+    Get the status of a transaction.
 
    **Example request**:
 
@@ -279,8 +286,35 @@ Statuses
    :resheader Content-Type: ``application/json``
    :resheader Location: Once the transaction has been persisted, this header will link to the actual resource.
 
-   :statuscode 200: A transaction or block with that ID was found.
-   :statuscode 404: A transaction or block with that ID was not found.
+   :statuscode 200: A transaction with that ID was found.
+   :statuscode 404: A transaction with that ID was not found.
+
+
+.. http:get:: /statuses?block_id={block_id}
+
+    Get the status of a block.
+
+   **Example request**:
+
+   .. literalinclude:: samples/get-statuses-block-request.http
+      :language: http
+
+   **Example response**:
+
+   .. literalinclude:: samples/get-statuses-block-invalid-response.http
+      :language: http
+
+   **Example response**:
+
+   .. literalinclude:: samples/get-statuses-block-valid-response.http
+      :language: http
+
+   :resheader Content-Type: ``application/json``
+   :resheader Location: Once the block has been persisted, this header will link to the actual resource.
+
+   :statuscode 200: A block with that ID was found.
+   :statuscode 404: A block with that ID was not found.
+
 
 Advanced Usage
 --------------------------------
@@ -303,7 +337,7 @@ Blocks
 .. http:get:: /blocks/{block_id}
 
    Get the block with the ID ``block_id``. Any blocks, be they ``VALID``, ``UNDECIDED`` or ``INVALID`` will be
-   returned. To check a block's status independently, use the `Statuses endpoint <#get--statuses?tx_id=tx_id|block_id=block_id>`_.
+   returned. To check a block's status independently, use the `Statuses endpoint <#status>`_.
    To check the votes on a block, have a look at the `votes endpoint <#votes>`_.
 
    :param block_id: block ID

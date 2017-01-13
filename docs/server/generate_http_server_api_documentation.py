@@ -107,6 +107,36 @@ Content-Type: application/json
 """
 
 
+TPLS['get-statuses-block-request'] = """\
+GET /statuses?block_id=%(blockid)s HTTP/1.1
+Host: example.com
+
+"""
+
+
+TPLS['get-statuses-block-invalid-response'] = """\
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "status": "invalid"
+}
+"""
+
+
+TPLS['get-statuses-block-valid-response'] = """\
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "status": "valid",
+  "_links": {
+    "block": "/blocks/%(blockid)s"
+  }
+}
+"""
+
+
 TPLS['get-block-request'] = """\
 GET /blocks/%(blockid)s HTTP/1.1
 Host: example.com
