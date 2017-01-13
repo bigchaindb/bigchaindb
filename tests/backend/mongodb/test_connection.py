@@ -1,6 +1,7 @@
-import pytest
-
 from unittest import mock
+
+import pytest
+from pymongo.errors import ConnectionFailure
 
 
 def test_get_connection_returns_the_correct_instance():
@@ -23,7 +24,6 @@ def test_get_connection_returns_the_correct_instance():
 @mock.patch('pymongo.MongoClient.__init__')
 @mock.patch('time.sleep')
 def test_connection_error(mock_sleep, mock_client):
-    from pymongo.errors import ConnectionFailure
     from bigchaindb.backend import connect
 
     # force the driver to trow ConnectionFailure

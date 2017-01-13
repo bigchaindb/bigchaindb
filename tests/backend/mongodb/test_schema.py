@@ -1,7 +1,9 @@
-import pytest
-
 from unittest import mock
+
+import pytest
 from pymongo.database import Database
+from pymongo.errors import OperationFailure
+
 
 pytestmark = pytest.mark.bdb
 
@@ -168,7 +170,6 @@ def test_wait_for_replica_set_initialization():
 
 
 def test_initialize_replica_set():
-    from pymongo.errors import OperationFailure
     from bigchaindb.backend.mongodb.schema import initialize_replica_set
     from bigchaindb.backend import connect
     conn = connect()
