@@ -1,5 +1,7 @@
-import pytest
 from unittest import mock
+
+import pytest
+from pymongo.errors import ConnectionFailure
 
 from multipipes import Pipe
 
@@ -152,7 +154,6 @@ def test_changefeed_prefeed(mock_cursor_next, mock_cursor_alive,
 @mock.patch('pymongo.cursor.Cursor.alive', new_callable=mock.PropertyMock)
 @mock.patch('bigchaindb.backend.mongodb.changefeed.MongoDBChangeFeed.run_changefeed')  # noqa
 def test_connection_failure(mock_run_changefeed, mock_cursor_alive):
-    from pymongo.errors import ConnectionFailure
     from bigchaindb.backend import get_changefeed, connect
     from bigchaindb.backend.changefeed import ChangeFeed
 
@@ -164,5 +165,5 @@ def test_connection_failure(mock_run_changefeed, mock_cursor_alive):
     changefeed.run_forever()
 
     # run_changefeed raises an exception the first time its called and then
-    # its called again
+    # it's called again
     assert mock_run_changefeed.call_count == 2
