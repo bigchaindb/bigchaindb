@@ -189,7 +189,7 @@ class TestBigchainApi(object):
         tx = Transaction.transfer(inputs, [([user_pk], 1)],
                                   asset_id=input_tx.id)
         tx = tx.sign([user_sk])
-        response = b.write_transaction(tx)
+        b.write_transaction(tx)
 
         tx_from_db, status = b.get_transaction(tx.id, include_status=True)
 

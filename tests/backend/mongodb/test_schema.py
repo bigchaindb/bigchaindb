@@ -95,7 +95,6 @@ def test_create_secondary_indexes():
 
 
 def test_drop(dummy_db):
-    import bigchaindb
     from bigchaindb import backend
     from bigchaindb.backend import schema
 
