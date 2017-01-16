@@ -119,7 +119,7 @@ def test_get_transactions_by_asset_id(b, user_pk, user_sk):
 
     assert len(txs) == 2
     assert {tx_create.id, tx_transfer.id} == set(tx.id for tx in txs)
-    assert {asset_id} == {Transaction.get_asset_id(txs)}
+    assert asset_id == Transaction.get_asset_id(txs)
 
 
 @pytest.mark.bdb
