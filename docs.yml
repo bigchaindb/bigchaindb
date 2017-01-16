@@ -13,4 +13,4 @@ services:
     ports:
       - '33333:80'
     volumes:
-      - ./docs/build/html:/usr/share/nginx/html
+      - ./docs/server/build/html:/usr/share/nginx/html
