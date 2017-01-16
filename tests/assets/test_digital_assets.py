@@ -118,11 +118,8 @@ def test_get_transactions_by_asset_id(b, user_pk, user_sk):
     txs = b.get_transactions_by_asset_id(asset_id)
 
     assert len(txs) == 2
-    assert tx_create.id in [t.id for t in txs]
-    assert tx_transfer.id in [t.id for t in txs]
-    # FIXME: can I rely on the ordering here?
-    assert asset_id == txs[0].id
-    assert asset_id == txs[1].asset['id']
+    assert {tx_create.id, tx_transfer.id} == set(tx.id for tx in txs)
+    assert {asset_id} == {Transaction.get_asset_id(txs)}
 
 
 @pytest.mark.bdb
