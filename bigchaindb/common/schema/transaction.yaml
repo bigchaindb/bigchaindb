@@ -103,8 +103,8 @@ definitions:
     description: |
         Description of the asset being transacted. In the case of a ``TRANSFER``
         transaction, this field contains only the ID of asset. In the case
-        of a ``CREATE`` transaction, this field contains only the user-defined
-        payload.
+        of a ``CREATE`` transaction, this field contains the user-defined
+        payload and may contain the asset ID (duplicated from the Transaction ID).
     additionalProperties: false
     properties:
       id:
