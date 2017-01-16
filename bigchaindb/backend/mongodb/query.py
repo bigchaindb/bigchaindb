@@ -1,7 +1,6 @@
 """Query implementation for MongoDB"""
 
 from time import time
-from itertools import chain
 
 from pymongo import ReturnDocument
 from pymongo import errors
