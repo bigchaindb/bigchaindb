@@ -80,7 +80,16 @@ setup(
     name='BigchainDB',
     version=version['__version__'],
     description='BigchainDB: A Scalable Blockchain Database',
-    long_description=__doc__,
+    long_description=(
+        "BigchainDB allows developers and enterprise to deploy blockchain "
+        "proof-of-concepts, platforms and applications with a scalable blockchain "
+        "database. BigchainDB supports a wide range of industries and use cases "
+        "from identity and intellectual property to supply chains, energy, IoT "
+        "and financial ecosystems. With high throughput, sub-second latency and "
+        "powerful functionality to automate business processes, BigchainDB looks, "
+        "acts and feels like a database but has the core blockchain "
+        "characteristics that enterprises want."
+        ),
     url='https://github.com/BigchainDB/bigchaindb/',
     author='BigchainDB Contributors',
     author_email='dev@bigchaindb.com',
