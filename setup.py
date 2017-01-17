@@ -1,7 +1,7 @@
 """
 BigchainDB: A Scalable Blockchain Database
 
-For full docs visit https://bigchaindb.readthedocs.org
+For full docs visit https://docs.bigchaindb.com
 
 """
 from setuptools import setup, find_packages
