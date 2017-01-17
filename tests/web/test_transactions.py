@@ -162,7 +162,7 @@ def test_post_transfer_transaction_endpoint(b, client, user_pk, user_sk):
 
 @pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
-def test_post_invalid_transfer_transaction_returns_400(b, client, user_pk, user_sk):
+def test_post_invalid_transfer_transaction_returns_400(b, client, user_pk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.exceptions import InvalidSignature
 
