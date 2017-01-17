@@ -1,7 +1,6 @@
 from time import sleep
 
 import pytest
-import random
 
 pytestmark = pytest.mark.bdb
 
@@ -155,14 +154,14 @@ class TestBigchainApi(object):
 
         monkeypatch.setattr('time.time', lambda: 1000000000)
         tx1 = Transaction.create([b.me], [([b.me], 1)],
-                                 metadata={'msg': random.random()})
+                                 metadata={'msg': 1})
         tx1 = tx1.sign([b.me_private])
         block1 = b.create_block([tx1])
         b.write_block(block1)
 
         monkeypatch.setattr('time.time', lambda: 1000000020)
         tx2 = Transaction.create([b.me], [([b.me], 1)],
-                                 metadata={'msg': random.random()})
+                                 metadata={'msg': 2})
         tx2 = tx2.sign([b.me_private])
         block2 = b.create_block([tx2])
         b.write_block(block2)
@@ -510,13 +509,13 @@ class TestBigchainApi(object):
             b.nodes_except_me.append(generate_key_pair()[1])
 
         # test assignee for several transactions
-        for _ in range(20):
+        for i in range(20):
             input_tx = b.get_owned_ids(user_pk).pop()
             input_tx = b.get_transaction(input_tx.txid)
             inputs = input_tx.to_inputs()
             tx = Transaction.transfer(inputs, [([user_pk], 1)],
                                       asset_id=input_tx.id,
-                                      metadata={'msg': random.random()})
+                                      metadata={'msg': i})
             tx = tx.sign([user_sk])
             b.write_transaction(tx)
 
@@ -549,9 +548,9 @@ class TestBigchainApi(object):
         from bigchaindb.backend import query
         from bigchaindb.models import Transaction
 
-        for _ in range(4):
+        for i in range(4):
             tx = Transaction.create([b.me], [([user_pk], 1)],
-                                    metadata={'msg': random.random()}) \
+                                    metadata={'msg': i}) \
                             .sign([b.me_private])
             b.write_transaction(tx)
 
@@ -1129,7 +1128,7 @@ class TestMultipleInputs(object):
 
         transactions = []
         for i in range(3):
-            payload = {'somedata': random.randint(0, 255)}
+            payload = {'somedata': i}
             tx = Transaction.create([b.me], [([user_pk, user2_pk], 1)],
                                     payload)
             tx = tx.sign([b.me_private])
