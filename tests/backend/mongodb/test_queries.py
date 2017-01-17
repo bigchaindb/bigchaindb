@@ -312,7 +312,8 @@ def test_write_vote(structurally_valid_vote):
     query.write_vote(conn, structurally_valid_vote)
     # retrieve the vote
     vote_db = conn.db.votes.find_one(
-        {'node_pubkey': structurally_valid_vote['node_pubkey']}
+        {'node_pubkey': structurally_valid_vote['node_pubkey']},
+        {'_id': False}
     )
 
     assert vote_db == structurally_valid_vote

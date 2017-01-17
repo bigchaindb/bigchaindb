@@ -208,7 +208,9 @@ def count_backlog(conn):
 
 @register_query(MongoDBConnection)
 def write_vote(conn, vote):
-    return conn.db['votes'].insert_one(vote)
+    conn.db['votes'].insert_one(vote)
+    vote.pop('_id')
+    return vote
 
 
 @register_query(MongoDBConnection)
