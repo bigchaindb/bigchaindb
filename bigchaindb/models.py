@@ -115,7 +115,7 @@ class Transaction(Transaction):
                             .format(self.operation, allowed_operations))
 
         if not self.inputs_valid(input_conditions):
-            raise InvalidSignature()
+            raise InvalidSignature('Transaction signature is invalid.')
 
         return self
 
