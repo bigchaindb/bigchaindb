@@ -41,7 +41,7 @@ def test_post_create_transaction_endpoint(b, client):
     assert res.json['outputs'][0]['public_keys'][0] == user_pub
 
 
-def test_post_create_transaction_with_invalid_id(b, client):
+def test_post_create_transaction_with_invalid_id(b, client, caplog):
     from bigchaindb.common.exceptions import InvalidHash
     from bigchaindb.models import Transaction
     user_priv, user_pub = crypto.generate_key_pair()
@@ -51,14 +51,18 @@ def test_post_create_transaction_with_invalid_id(b, client):
     tx['id'] = 'abcd' * 16
 
     res = client.post(TX_ENDPOINT, data=json.dumps(tx))
-    assert res.status_code == 400
-    err_msg = ("The transaction's id '{}' isn't equal to "
-               "the hash of its body, i.e. it's not valid.").format(tx['id'])
-    assert res.json['message'] == (
-        'Invalid transaction ({}): {}'.format(InvalidHash.__name__, err_msg))
+    expected_status_code = 400
+    expected_error_message = (
+        "Invalid transaction ({}): The transaction's id '{}' isn't equal to "
+        "the hash of its body, i.e. it's not valid."
+    ).format(InvalidHash.__name__, tx['id'])
+    assert res.status_code == expected_status_code
+    assert res.json['message'] == expected_error_message
+    assert caplog.records[0].args['status'] == expected_status_code
+    assert caplog.records[0].args['message'] == expected_error_message
 
 
-def test_post_create_transaction_with_invalid_signature(b, client):
+def test_post_create_transaction_with_invalid_signature(b, client, caplog):
     from bigchaindb.common.exceptions import InvalidSignature
     from bigchaindb.models import Transaction
     user_priv, user_pub = crypto.generate_key_pair()
@@ -68,10 +72,15 @@ def test_post_create_transaction_with_invalid_signature(b, client):
     tx['inputs'][0]['fulfillment'] = 'cf:0:0'
 
     res = client.post(TX_ENDPOINT, data=json.dumps(tx))
-    assert res.status_code == 400
-    assert res.json['message'] == (
+    expected_status_code = 400
+    expected_error_message = (
         "Invalid transaction ({}): Fulfillment URI "
-        "couldn't been parsed".format(InvalidSignature.__name__))
+        "couldn't been parsed"
+    ).format(InvalidSignature.__name__)
+    assert res.status_code == expected_status_code
+    assert res.json['message'] == expected_error_message
+    assert caplog.records[0].args['status'] == expected_status_code
+    assert caplog.records[0].args['message'] == expected_error_message
 
 
 def test_post_create_transaction_with_invalid_structure(client):
@@ -79,16 +88,20 @@ def test_post_create_transaction_with_invalid_structure(client):
     assert res.status_code == 400
 
 
-def test_post_create_transaction_with_invalid_schema(client):
+def test_post_create_transaction_with_invalid_schema(client, caplog):
     from bigchaindb.models import Transaction
     user_priv, user_pub = crypto.generate_key_pair()
     tx = Transaction.create(
         [user_pub], [([user_pub], 1)]).sign([user_priv]).to_dict()
     del tx['version']
     res = client.post(TX_ENDPOINT, data=json.dumps(tx))
-    assert res.status_code == 400
-    assert res.json['message'] == (
+    expected_status_code = 400
+    expected_error_message = (
         "Invalid transaction schema: 'version' is a required property")
+    assert res.status_code == expected_status_code
+    assert res.json['message'] == expected_error_message
+    assert caplog.records[0].args['status'] == expected_status_code
+    assert caplog.records[0].args['message'] == expected_error_message
 
 
 @pytest.mark.parametrize('exc,msg', (
@@ -102,7 +115,7 @@ def test_post_create_transaction_with_invalid_schema(client):
     ('TransactionNotInValidBlock', 'Wait, maybe?'),
     ('ValueError', '?'),
 ))
-def test_post_invalid_transaction(client, exc, msg, monkeypatch):
+def test_post_invalid_transaction(client, exc, msg, monkeypatch, caplog):
     from bigchaindb.common import exceptions
     try:
         exc_cls = getattr(exceptions, exc)
@@ -117,9 +130,13 @@ def test_post_invalid_transaction(client, exc, msg, monkeypatch):
     monkeypatch.setattr(
         'bigchaindb.models.Transaction.from_dict', lambda tx: None)
     res = client.post(TX_ENDPOINT, data=json.dumps({}))
-    assert res.status_code == 400
+    expected_status_code = 400
+    expected_error_message = 'Invalid transaction ({}): {}'.format(exc, msg)
+    assert res.status_code == expected_status_code
     assert (res.json['message'] ==
             'Invalid transaction ({}): {}'.format(exc, msg))
+    assert caplog.records[2].args['status'] == expected_status_code
+    assert caplog.records[2].args['message'] == expected_error_message
 
 
 @pytest.mark.bdb
@@ -147,6 +164,7 @@ def test_post_transfer_transaction_endpoint(b, client, user_pk, user_sk):
 @pytest.mark.usefixtures('inputs')
 def test_post_invalid_transfer_transaction_returns_400(b, client, user_pk, user_sk):
     from bigchaindb.models import Transaction
+    from bigchaindb.common.exceptions import InvalidSignature
 
     user_priv, user_pub = crypto.generate_key_pair()
 
@@ -157,4 +175,8 @@ def test_post_invalid_transfer_transaction_returns_400(b, client, user_pk, user_
                                        asset_id=create_tx.id)
 
     res = client.post(TX_ENDPOINT, data=json.dumps(transfer_tx.to_dict()))
-    assert res.status_code == 400
+    expected_status_code = 400
+    expected_error_message = 'Invalid transaction ({}): {}'.format(
+        InvalidSignature.__name__, 'Transaction signature is invalid.')
+    assert res.status_code == expected_status_code
+    assert res.json['message'] == expected_error_message

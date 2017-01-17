@@ -4,6 +4,8 @@ For more information please refer to the documentation on ReadTheDocs:
  - https://docs.bigchaindb.com/projects/server/en/latest/drivers-clients/
    http-client-server-api.html
 """
+import logging
+
 from flask import current_app, request
 from flask_restful import Resource
 
@@ -23,6 +25,8 @@ from bigchaindb.common.exceptions import (
 import bigchaindb
 from bigchaindb.models import Transaction
 from bigchaindb.web.views.base import make_error
+
+logger = logging.getLogger(__name__)
 
 
 class TransactionApi(Resource):
