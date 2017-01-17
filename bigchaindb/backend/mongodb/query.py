@@ -1,7 +1,6 @@
 """Query implementation for MongoDB"""
 
 from time import time
-from itertools import chain
 
 from pymongo import ReturnDocument
 from pymongo import errors
@@ -85,22 +84,6 @@ def get_blocks_status_from_transaction(conn, transaction_id):
 
 @register_query(MongoDBConnection)
 def get_txids_by_asset_id(conn, asset_id):
-    # get the txid of the create transaction for asset_id
-    cursor = conn.db['bigchain'].aggregate([
-        {'$match': {
-            'block.transactions.id': asset_id,
-            'block.transactions.operation': 'CREATE'
-        }},
-        {'$unwind': '$block.transactions'},
-        {'$match': {
-            'block.transactions.id': asset_id,
-            'block.transactions.operation': 'CREATE'
-        }},
-        {'$project': {'block.transactions.id': True}}
-    ])
-    create_tx_txids = (elem['block']['transactions']['id'] for elem in cursor)
-
-    # get txids of transfer transaction with asset_id
     cursor = conn.db['bigchain'].aggregate([
         {'$match': {
             'block.transactions.asset.id': asset_id
@@ -111,9 +94,7 @@ def get_txids_by_asset_id(conn, asset_id):
         }},
         {'$project': {'block.transactions.id': True}}
     ])
-    transfer_tx_ids = (elem['block']['transactions']['id'] for elem in cursor)
-
-    return chain(create_tx_txids, transfer_tx_ids)
+    return (elem['block']['transactions']['id'] for elem in cursor)
 
 
 @register_query(MongoDBConnection)
