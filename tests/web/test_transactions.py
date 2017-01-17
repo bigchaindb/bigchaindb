@@ -166,7 +166,7 @@ def test_post_invalid_transfer_transaction_returns_400(b, client, user_pk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.exceptions import InvalidSignature
 
-    user_priv, user_pub = crypto.generate_key_pair()
+    user_pub = crypto.generate_key_pair()[1]
 
     input_valid = b.get_owned_ids(user_pk).pop()
     create_tx = b.get_transaction(input_valid.txid)
