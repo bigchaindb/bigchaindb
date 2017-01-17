@@ -26,7 +26,7 @@ def test_schema(schema_func_name, args_qty):
     ('get_stale_transactions', 1),
     ('get_blocks_status_from_transaction', 1),
     ('get_transaction_from_backlog', 1),
-    ('get_txids_by_asset_id', 1),
+    ('get_txids_filtered', 1),
     ('get_asset_by_id', 1),
     ('get_owned_ids', 1),
     ('get_votes_by_block_id', 1),
