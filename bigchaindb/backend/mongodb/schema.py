@@ -6,6 +6,7 @@ import logging
 from pymongo import ASCENDING, DESCENDING
 from pymongo import errors
 
+import bigchaindb
 from bigchaindb import backend
 from bigchaindb.common import exceptions
 from bigchaindb.backend.utils import module_dispatch_registrar
@@ -99,8 +100,8 @@ def create_votes_secondary_index(conn, dbname):
 
 def initialize_replica_set(conn):
     """Initialize a replica set. If already initialized skip."""
-    replica_set_name = _get_replica_set_name(conn)
-    config = {'_id': replica_set_name,
+    _check_replica_set(conn)
+    config = {'_id': bigchaindb.config['database']['replicaset'],
               'members': [{'_id': 0, 'host': 'localhost:27017'}]}
 
     try:
@@ -115,17 +116,15 @@ def initialize_replica_set(conn):
         logger.info('Initialized replica set')
 
 
-def _get_replica_set_name(conn):
+def _check_replica_set(conn):
     """Checks if the replSet option was enabled either through the command
-       line option or config file.
+       line option or config file and if it matches the one provided by
+       bigchaindb configuration.
 
        Note:
            The setting we are looking for will have a different name depending
            if it was set by the config file (`replSetName`) or by command
            line arguments (`replSet`).
-
-       Returns:
-           The replica set name if enabled.
 
         Raise:
             :exc:`~ConfigurationError`: If mongod was not started with the
@@ -134,11 +133,19 @@ def _get_replica_set_name(conn):
     options = conn.conn.admin.command('getCmdLineOpts')
     try:
         repl_opts = options['parsed']['replication']
-        return repl_opts.get('replSetName', None) or repl_opts['replSet']
+        repl_set_name = repl_opts.get('replSetName', None) or repl_opts['replSet']
     except KeyError:
         raise exceptions.ConfigurationError('mongod was not started with'
                                             ' the replSet option.')
 
+    bdb_repl_set_name = bigchaindb.config['database']['replicaset']
+    if repl_set_name != bdb_repl_set_name:
+        raise exceptions.ConfigurationError('The replicaset configuration of '
+                                            'bigchaindb (`{}`) needs to match '
+                                            'the replica set name from MongoDB'
+                                            ' (`{}`)'
+                                            .format(bdb_repl_set_name,
+                                                    repl_set_name))
 
 def _wait_for_replica_set_initialization(conn):
     """Wait for a replica set to finish initialization.
