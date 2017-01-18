@@ -81,7 +81,7 @@ setup(
     version=version['__version__'],
     description='BigchainDB: A Scalable Blockchain Database',
     long_description=(
-        "BigchainDB allows developers and enterprise to deploy blockchain "
+        "BigchainDB allows developers and enterprises to deploy blockchain "
         "proof-of-concepts, platforms and applications with a scalable blockchain "
         "database. BigchainDB supports a wide range of industries and use cases "
         "from identity and intellectual property to supply chains, energy, IoT "
