@@ -24,7 +24,6 @@ def mock_config_opts():
                        'storage': {'dbPath': '/data'}}}
 
 
-
 def test_init_creates_db_tables_and_indexes():
     import bigchaindb
     from bigchaindb import backend

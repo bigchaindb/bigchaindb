@@ -147,6 +147,7 @@ def _check_replica_set(conn):
                                             .format(bdb_repl_set_name,
                                                     repl_set_name))
 
+
 def _wait_for_replica_set_initialization(conn):
     """Wait for a replica set to finish initialization.
 
