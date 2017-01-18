@@ -130,6 +130,7 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
             'host': 'test-host',
             'port': 4242,
             'name': 'test-dbname',
+            'replicaset': 'bigchain-rs'
         },
         'keypair': {
             'public': None,
@@ -207,3 +208,22 @@ def test_write_config():
     m.assert_called_once_with(CONFIG_DEFAULT_PATH, 'w')
     handle = m()
     handle.write.assert_called_once_with('{}')
+
+
+@pytest.mark.parametrize('env_name,env_value,config_key', (
+    ('BIGCHAINDB_DATABASE_BACKEND', 'test-backend', 'backend'),
+    ('BIGCHAINDB_DATABASE_HOST', 'test-host', 'host'),
+    ('BIGCHAINDB_DATABASE_PORT', 4242, 'port'),
+    ('BIGCHAINDB_DATABASE_NAME', 'test-db', 'name'),
+    ('BIGCHAINDB_DATABASE_REPLICASET', 'test-replicaset', 'replicaset')
+))
+def test_database_envs(env_name, env_value, config_key, monkeypatch):
+    import bigchaindb
+
+    monkeypatch.setattr('os.environ', {env_name: env_value})
+    bigchaindb.config_utils.autoconfigure()
+
+    expected_config = copy.deepcopy(bigchaindb.config)
+    expected_config['database'][config_key] = env_value
+
+    assert bigchaindb.config == expected_config

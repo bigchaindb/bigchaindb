@@ -13,12 +13,14 @@ def test_get_connection_returns_the_correct_instance():
         'backend': 'mongodb',
         'host': 'localhost',
         'port': 27017,
-        'name': 'test'
+        'name': 'test',
+        'replicaset': 'bigchain-rs'
     }
 
     conn = connect(**config)
     assert isinstance(conn, Connection)
     assert isinstance(conn, MongoDBConnection)
+    assert conn.conn._topology_settings.replica_set_name == config['replicaset']
 
 
 @mock.patch('pymongo.MongoClient.__init__')

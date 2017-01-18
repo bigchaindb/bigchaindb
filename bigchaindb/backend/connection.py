@@ -13,7 +13,7 @@ BACKENDS = {
 logger = logging.getLogger(__name__)
 
 
-def connect(backend=None, host=None, port=None, name=None):
+def connect(backend=None, host=None, port=None, name=None, replicaset=None):
     """Create a new connection to the database backend.
 
     All arguments default to the current configuration's values if not
@@ -24,6 +24,8 @@ def connect(backend=None, host=None, port=None, name=None):
         host (str): the host to connect to.
         port (int): the port to connect to.
         name (str): the name of the database to use.
+        replicaset (str): the name of the replica set (only relevant for
+                          MongoDB connections).
 
     Returns:
         An instance of :class:`~bigchaindb.backend.connection.Connection`

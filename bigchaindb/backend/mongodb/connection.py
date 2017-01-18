@@ -12,7 +12,8 @@ logger = logging.getLogger(__name__)
 
 class MongoDBConnection(Connection):
 
-    def __init__(self, host=None, port=None, dbname=None, max_tries=3):
+    def __init__(self, host=None, port=None, dbname=None, max_tries=3,
+                 replicaset=None):
         """Create a new Connection instance.
 
         Args:
@@ -20,10 +21,13 @@ class MongoDBConnection(Connection):
             port (int, optional): the port to connect to.
             dbname (str, optional): the database to use.
             max_tries (int, optional): how many tries before giving up.
+            replicaset (str, optional): the name of the replica set to
+                                        connect to.
         """
 
         self.host = host or bigchaindb.config['database']['host']
         self.port = port or bigchaindb.config['database']['port']
+        self.replicaset = replicaset or bigchaindb.config['database']['replicaset']
         self.dbname = dbname or bigchaindb.config['database']['name']
         self.max_tries = max_tries
         self.connection = None
@@ -41,7 +45,8 @@ class MongoDBConnection(Connection):
     def _connect(self):
         for i in range(self.max_tries):
             try:
-                self.connection = MongoClient(self.host, self.port)
+                self.connection = MongoClient(self.host, self.port,
+                                              replicaset=self.replicaset)
             except ConnectionFailure as exc:
                 if i + 1 == self.max_tries:
                     raise
