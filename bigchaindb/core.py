@@ -417,6 +417,19 @@ class Bigchain(object):
 
         return owned
 
+    def get_transactions_filtered(self, asset_id=None, operation=None):
+        """
+        Get a list of transactions filtered on some criteria
+        """
+        if not asset_id:
+            raise ValueError("Need asset_id")
+        txids = backend.query.get_txids_filtered(self.connection, asset_id,
+                                                 operation)
+        for txid in txids:
+            tx, status = self.get_transaction(txid, True)
+            if status == self.TX_VALID:
+                yield tx
+
     def create_block(self, validated_transactions):
         """Creates a block given a list of `validated_transactions`.
 
