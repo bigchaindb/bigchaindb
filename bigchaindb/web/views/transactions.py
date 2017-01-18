@@ -57,12 +57,14 @@ class TransactionListApi(Resource):
     def get(self):
         parser = reqparse.RequestParser()
         parser.add_argument('operation', type=parameters.valid_operation)
-        parser.add_argument('unspent', type=parameters.valid_bool)
-        parser.add_argument('public_key', type=parameters.valid_ed25519,
-                            action="append")
-        parser.add_argument('asset_id', type=parameters.valid_txid)
+        parser.add_argument('asset_id', type=parameters.valid_txid,
+                            required=True)
         args = parser.parse_args()
-        return args
+
+        with current_app.config['bigchain_pool']() as bigchain:
+            txes = bigchain.get_transactions_filtered(**args)
+
+        return [tx.to_dict() for tx in txes]
 
     def post(self):
         """API endpoint to push transactions to the Federation.

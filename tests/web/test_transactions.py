@@ -1,5 +1,6 @@
 import builtins
 import json
+from unittest.mock import Mock, patch
 
 import pytest
 from bigchaindb.common import crypto
@@ -180,3 +181,38 @@ def test_post_invalid_transfer_transaction_returns_400(b, client, user_pk):
         InvalidSignature.__name__, 'Transaction signature is invalid.')
     assert res.status_code == expected_status_code
     assert res.json['message'] == expected_error_message
+
+
+def test_transactions_get_list_good(client):
+    from functools import partial
+    def gtf(conn, **args):
+        return [type('', (), {'to_dict': partial(lambda a: a, arg)})
+                for arg in sorted(args.items())]
+
+    asset_id = '1' * 64
+
+    with patch('bigchaindb.core.Bigchain.get_transactions_filtered', gtf):
+        url = TX_ENDPOINT + "?asset_id=" + asset_id
+        assert client.get(url).json == [
+            ['asset_id', asset_id],
+            ['operation', None]
+        ]
+        url = TX_ENDPOINT + "?asset_id=" + asset_id + "&operation=CREATE"
+        assert client.get(url).json == [
+            ['asset_id', asset_id],
+            ['operation', 'CREATE']
+        ]
+
+
+def test_transactions_get_list_bad(client):
+    with patch('bigchaindb.core.Bigchain.get_transactions_filtered',
+               lambda *_, **__: should_not_be_called()):
+        # Test asset id validated
+        url = TX_ENDPOINT + "?asset_id=" + '1' * 63
+        assert client.get(url).status_code == 400
+        # Test operation validated
+        url = TX_ENDPOINT + "?asset_id=" + '1' * 64 + "&operation=CEATE"
+        assert client.get(url).status_code == 400
+        # Test asset ID required
+        url = TX_ENDPOINT + "?operation=CREATE"
+        assert client.get(url).status_code == 400
