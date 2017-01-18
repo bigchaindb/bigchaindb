@@ -3,6 +3,7 @@
 import time
 import logging
 
+from pymongo import MongoClient
 from pymongo import ASCENDING, DESCENDING
 from pymongo import errors
 
@@ -26,9 +27,6 @@ def create_database(conn, dbname):
     logger.info('Create database `%s`.', dbname)
     # TODO: read and write concerns can be declared here
     conn.conn.get_database(dbname)
-
-    # initialize the replica set
-    initialize_replica_set(conn)
 
 
 @register_schema(MongoDBConnection)
@@ -98,17 +96,23 @@ def create_votes_secondary_index(conn, dbname):
                                             name='block_and_voter')
 
 
-def initialize_replica_set(conn):
+def initialize_replica_set():
     """Initialize a replica set. If already initialized skip."""
+
+    # Setup a MongoDB connection
+    # The reason we do this instead of `backend.connect` is that
+    # `backend.connect` will connect you to a replica set but this fails if
+    # you try to connect to a replica set that is not yet initialized
+    conn = MongoClient(host=bigchaindb.config['database']['host'],
+                       port=bigchaindb.config['database']['port'])
     _check_replica_set(conn)
     config = {'_id': bigchaindb.config['database']['replicaset'],
               'members': [{'_id': 0, 'host': 'localhost:27017'}]}
 
     try:
-        conn.conn.admin.command('replSetInitiate', config)
+        conn.admin.command('replSetInitiate', config)
     except errors.OperationFailure as exc_info:
         if exc_info.details['codeName'] == 'AlreadyInitialized':
-            logger.info('Replica set already initialized')
             return
         raise
     else:
@@ -130,7 +134,7 @@ def _check_replica_set(conn):
             :exc:`~ConfigurationError`: If mongod was not started with the
             replSet option.
     """
-    options = conn.conn.admin.command('getCmdLineOpts')
+    options = conn.admin.command('getCmdLineOpts')
     try:
         repl_opts = options['parsed']['replication']
         repl_set_name = repl_opts.get('replSetName', None) or repl_opts['replSet']
@@ -162,7 +166,7 @@ def _wait_for_replica_set_initialization(conn):
     # we find the line that says the database is ready
     logger.info('Waiting for mongodb replica set initialization')
     while True:
-        logs = conn.conn.admin.command('getLog', 'rs')['log']
+        logs = conn.admin.command('getLog', 'rs')['log']
         if any('database writes are now permitted' in line for line in logs):
                 return
         time.sleep(0.1)

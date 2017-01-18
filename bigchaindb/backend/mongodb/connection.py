@@ -6,6 +6,7 @@ from pymongo.errors import ConnectionFailure
 
 import bigchaindb
 from bigchaindb.backend.connection import Connection
+from bigchaindb.backend import mongodb
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +46,10 @@ class MongoDBConnection(Connection):
     def _connect(self):
         for i in range(self.max_tries):
             try:
+                # we should only return a connection if the replica set is
+                # initialized. initialize_replica_set will check if the
+                # replica set is initialized else it will initialize it.
+                mongodb.schema.initialize_replica_set()
                 self.connection = MongoClient(self.host, self.port,
                                               replicaset=self.replicaset)
             except ConnectionFailure as exc:

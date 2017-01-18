@@ -1,6 +1,7 @@
 from unittest import mock
 
 import pytest
+from pymongo import MongoClient
 from pymongo.database import Database
 from pymongo.errors import OperationFailure
 
@@ -22,6 +23,13 @@ def mock_config_opts():
             'ok': 1.0,
             'parsed': {'replication': {'replSetName': 'bigchain-rs'},
                        'storage': {'dbPath': '/data'}}}
+
+
+@pytest.fixture
+def mongodb_connection():
+    import bigchaindb
+    return MongoClient(host=bigchaindb.config['database']['host'],
+                       port=bigchaindb.config['database']['port'])
 
 
 def test_init_creates_db_tables_and_indexes():
@@ -124,12 +132,9 @@ def test_drop(dummy_db):
     assert dummy_db not in conn.conn.database_names()
 
 
-def test_check_replica_set_not_enabled():
-    from bigchaindb import backend
+def test_check_replica_set_not_enabled(mongodb_connection):
     from bigchaindb.backend.mongodb.schema import _check_replica_set
     from bigchaindb.common.exceptions import ConfigurationError
-
-    conn = backend.connect()
 
     # no replSet option set
     cmd_line_opts = {'argv': ['mongod', '--dbpath=/data'],
@@ -137,38 +142,31 @@ def test_check_replica_set_not_enabled():
                      'parsed': {'storage': {'dbPath': '/data'}}}
     with mock.patch.object(Database, 'command', return_value=cmd_line_opts):
         with pytest.raises(ConfigurationError):
-            _check_replica_set(conn)
+            _check_replica_set(mongodb_connection)
 
 
-def test_check_replica_set_command_line(mock_cmd_line_opts):
-    from bigchaindb import backend
+def test_check_replica_set_command_line(mongodb_connection,
+                                        mock_cmd_line_opts):
     from bigchaindb.backend.mongodb.schema import _check_replica_set
-
-    conn = backend.connect()
 
     # replSet option set through the command line
     with mock.patch.object(Database, 'command',
                            return_value=mock_cmd_line_opts):
-        assert _check_replica_set(conn) is None
+        assert _check_replica_set(mongodb_connection) is None
 
 
-def test_check_replica_set_config_file(mock_config_opts):
-    from bigchaindb import backend
+def test_check_replica_set_config_file(mongodb_connection, mock_config_opts):
     from bigchaindb.backend.mongodb.schema import _check_replica_set
-
-    conn = backend.connect()
 
     # replSet option set through the config file
     with mock.patch.object(Database, 'command', return_value=mock_config_opts):
-        assert _check_replica_set(conn) is None
+        assert _check_replica_set(mongodb_connection) is None
 
 
-def test_check_replica_set_name_mismatch(mock_cmd_line_opts):
-    from bigchaindb import backend
+def test_check_replica_set_name_mismatch(mongodb_connection,
+                                         mock_cmd_line_opts):
     from bigchaindb.backend.mongodb.schema import _check_replica_set
     from bigchaindb.common.exceptions import ConfigurationError
-
-    conn = backend.connect()
 
     # change the replica set name so it does not match the bigchaindb config
     mock_cmd_line_opts['parsed']['replication']['replSet'] = 'rs0'
@@ -176,13 +174,11 @@ def test_check_replica_set_name_mismatch(mock_cmd_line_opts):
     with mock.patch.object(Database, 'command',
                            return_value=mock_cmd_line_opts):
         with pytest.raises(ConfigurationError):
-            _check_replica_set(conn)
+            _check_replica_set(mongodb_connection)
 
 
-def test_wait_for_replica_set_initialization():
+def test_wait_for_replica_set_initialization(mongodb_connection):
     from bigchaindb.backend.mongodb.schema import _wait_for_replica_set_initialization  # noqa
-    from bigchaindb.backend import connect
-    conn = connect()
 
     with mock.patch.object(Database, 'command') as mock_command:
         mock_command.side_effect = [
@@ -191,13 +187,12 @@ def test_wait_for_replica_set_initialization():
         ]
 
         # check that it returns
-        assert _wait_for_replica_set_initialization(conn) is None
+        assert _wait_for_replica_set_initialization(mongodb_connection) is None
 
 
 def test_initialize_replica_set(mock_cmd_line_opts):
     from bigchaindb.backend.mongodb.schema import initialize_replica_set
-    from bigchaindb.backend import connect
-    conn = connect()
+
     with mock.patch.object(Database, 'command') as mock_command:
         mock_command.side_effect = [
             mock_cmd_line_opts,
@@ -206,7 +201,7 @@ def test_initialize_replica_set(mock_cmd_line_opts):
         ]
 
         # check that it returns
-        assert initialize_replica_set(conn) is None
+        assert initialize_replica_set() is None
 
     # test it raises OperationError if anything wrong
     with mock.patch.object(Database, 'command') as mock_command:
@@ -216,4 +211,4 @@ def test_initialize_replica_set(mock_cmd_line_opts):
         ]
 
         with pytest.raises(OperationFailure):
-            initialize_replica_set(conn)
+            initialize_replica_set()
