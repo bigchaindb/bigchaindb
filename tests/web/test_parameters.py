@@ -22,8 +22,8 @@ def test_valid_txid():
 def test_valid_bool():
     from bigchaindb.web.views.parameters import valid_bool
 
-    assert valid_bool('true') == True
-    valid_bool('false') == False
+    assert valid_bool('true') is True
+    assert valid_bool('false') is False
 
     with pytest.raises(ValueError):
         valid_bool('TRUE')

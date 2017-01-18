@@ -17,7 +17,7 @@ def valid_bool(val):
 
 def valid_ed25519(key):
     if (re.match('^[1-9a-zA-Z]{43,44}$', key) and not
-        re.match('.*[Il0O]', key)):
+       re.match('.*[Il0O]', key)):
         return key
     raise ValueError("Invalid base58 ed25519 key")
 

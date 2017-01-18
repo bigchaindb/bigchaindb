@@ -28,9 +28,8 @@ def txlist(b, user_pk, user2_pk, user_sk, user2_sk, genesis_block):
     b.write_block(block2)
 
     # Create block with double spend
-    tx_doublespend = Transaction.transfer(create1.to_inputs(),
-                                   [([user_pk], 9)],
-                                   create1.id).sign([user2_sk])
+    tx_doublespend = Transaction.transfer(create1.to_inputs(), [([user_pk], 9)],
+                                          create1.id).sign([user2_sk])
     block_doublespend = b.create_block([tx_doublespend])
     b.write_block(block_doublespend)
 
@@ -43,7 +42,7 @@ def txlist(b, user_pk, user2_pk, user_sk, user2_sk, genesis_block):
 
     # Create undecided block
     untx = Transaction.create([user_pk], [([user2_pk], 7)]) \
-                       .sign([user_sk])
+        .sign([user_sk])
     block_undecided = b.create_block([untx])
     b.write_block(block_undecided)
 

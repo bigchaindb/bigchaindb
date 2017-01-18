@@ -1,6 +1,6 @@
 import builtins
 import json
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pytest
 from bigchaindb.common import crypto
@@ -185,6 +185,7 @@ def test_post_invalid_transfer_transaction_returns_400(b, client, user_pk):
 
 def test_transactions_get_list_good(client):
     from functools import partial
+
     def gtf(conn, **args):
         return [type('', (), {'to_dict': partial(lambda a: a, arg)})
                 for arg in sorted(args.items())]
@@ -205,6 +206,8 @@ def test_transactions_get_list_good(client):
 
 
 def test_transactions_get_list_bad(client):
+    def should_not_be_called():
+        assert False
     with patch('bigchaindb.core.Bigchain.get_transactions_filtered',
                lambda *_, **__: should_not_be_called()):
         # Test asset id validated

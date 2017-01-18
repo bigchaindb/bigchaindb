@@ -5,7 +5,6 @@ For more information please refer to the documentation on ReadTheDocs:
    http-client-server-api.html
 """
 import logging
-import re
 
 from flask import current_app, request
 from flask_restful import Resource, reqparse
