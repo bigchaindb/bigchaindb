@@ -159,7 +159,7 @@ class TransactionLink(object):
 
     def __eq__(self, other):
         # TODO: If `other !== TransactionLink` return `False`
-        return self.to_dict() == self.to_dict()
+        return self.to_dict() == other.to_dict()
 
     @classmethod
     def from_dict(cls, link):

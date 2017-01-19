@@ -1,6 +1,7 @@
 from time import sleep
 
 import pytest
+from unittest.mock import patch
 
 pytestmark = pytest.mark.bdb
 
@@ -1156,3 +1157,15 @@ class TestMultipleInputs(object):
         # check that the other remain marked as unspent
         for unspent in transactions[1:]:
             assert b.get_spent(unspent.id, 0) is None
+
+
+def test_get_owned_ids_calls():
+    from bigchaindb.common.transaction import TransactionLink as TL
+    from bigchaindb.core import Bigchain
+    with patch('bigchaindb.core.Bigchain.get_outputs') as get_outputs:
+        get_outputs.return_value = [TL('a', 1), TL('b', 2)]
+        with patch('bigchaindb.core.Bigchain.get_spent') as get_spent:
+            get_spent.side_effect = [True, False]
+            out = Bigchain().get_owned_ids('abc')
+    assert get_outputs.called_once_with('abc')
+    assert out == [TL('b', 2)]
