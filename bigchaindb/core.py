@@ -424,11 +424,17 @@ class Bigchain(object):
             :obj:`list` of TransactionLink: list of ``txid`` s and ``output`` s
             pointing to another transaction's condition
         """
-        owned = []
-        for tx_link in self.get_outputs(owner):
-            if not self.get_spent(tx_link.txid, tx_link.output):
-                owned.append(tx_link)
-        return owned
+        return self.get_outputs_filtered(owner, include_spent=False)
+
+    def get_outputs_filtered(self, owner, include_spent=True):
+        """
+        Get a list of output links filtered on some criteria
+        """
+        outputs = self.get_outputs(owner)
+        if not include_spent:
+            outputs = [o for o in outputs
+                       if not self.get_spent(o.txid, o.output)]
+        return outputs
 
     def get_transactions_filtered(self, asset_id, operation=None):
         """
