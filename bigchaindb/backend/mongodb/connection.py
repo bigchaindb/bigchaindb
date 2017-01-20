@@ -44,15 +44,16 @@ class MongoDBConnection(Connection):
         return self.conn[self.dbname]
 
     def _connect(self):
+        # we should only return a connection if the replica set is
+        # initialized. initialize_replica_set will check if the
+        # replica set is initialized else it will initialize it.
+        initialize_replica_set()
+
         for i in range(self.max_tries):
             try:
-                # we should only return a connection if the replica set is
-                # initialized. initialize_replica_set will check if the
-                # replica set is initialized else it will initialize it.
-                initialize_replica_set()
                 self.connection = MongoClient(self.host, self.port,
                                               replicaset=self.replicaset)
-            except errors.ConnectionFailure as exc:
+            except errors.ConnectionFailure:
                 if i + 1 == self.max_tries:
                     raise
                 else:
@@ -69,8 +70,10 @@ def initialize_replica_set():
     conn = MongoClient(host=bigchaindb.config['database']['host'],
                        port=bigchaindb.config['database']['port'])
     _check_replica_set(conn)
+    host = '{}:{}'.format(bigchaindb.config['database']['host'],
+                          bigchaindb.config['database']['port'])
     config = {'_id': bigchaindb.config['database']['replicaset'],
-              'members': [{'_id': 0, 'host': 'localhost:27017'}]}
+              'members': [{'_id': 0, 'host': host}]}
 
     try:
         conn.admin.command('replSetInitiate', config)
@@ -131,5 +134,5 @@ def _wait_for_replica_set_initialization(conn):
     while True:
         logs = conn.admin.command('getLog', 'rs')['log']
         if any('database writes are now permitted' in line for line in logs):
-                return
+            return
         time.sleep(0.1)

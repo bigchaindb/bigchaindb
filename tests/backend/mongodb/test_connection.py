@@ -51,9 +51,10 @@ def test_get_connection_returns_the_correct_instance():
     assert conn.conn._topology_settings.replica_set_name == config['replicaset']
 
 
+@mock.patch('bigchaindb.backend.mongodb.connection.initialize_replica_set')
 @mock.patch('pymongo.MongoClient.__init__')
 @mock.patch('time.sleep')
-def test_connection_error(mock_sleep, mock_client):
+def test_connection_error(mock_sleep, mock_client, mock_init_repl_set):
     from bigchaindb.backend import connect
 
     # force the driver to trow ConnectionFailure
