@@ -14,7 +14,7 @@ The `Bigchain` class is defined here.  Most operations outlined in the [whitepap
 
 `Block`, `Transaction`, and `Asset` classes are defined here.  The classes mirror the block and transaction structure from the [documentation](https://docs.bigchaindb.com/projects/server/en/latest/topic-guides/models.html), but also include methods for validation and signing.
 
-### [`consensus.py`](./config_utils.py)
+### [`consensus.py`](./consensus.py)
 
 Base class for consensus methods (verification of votes, blocks, and transactions).  The actual logic is mostly found in `transaction` and `block` models, defined in [`models.py`](./models.py).
 
