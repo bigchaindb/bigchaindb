@@ -9,6 +9,7 @@ def config(request, monkeypatch):
             'host': 'host',
             'port': 28015,
             'name': 'bigchain',
+            'replicaset': 'bigchain-rs',
         },
         'keypair': {
             'public': 'pubkey',

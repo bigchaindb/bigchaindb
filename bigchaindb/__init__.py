@@ -18,7 +18,8 @@ config = {
         'backend': os.environ.get('BIGCHAINDB_DATABASE_BACKEND', 'rethinkdb'),
         'host': os.environ.get('BIGCHAINDB_DATABASE_HOST', 'localhost'),
         'port': int(os.environ.get('BIGCHAINDB_DATABASE_PORT', 28015)),
-        'name': 'bigchain',
+        'name': os.environ.get('BIGCHAINDB_DATABASE_NAME', 'bigchain'),
+        'replicaset': os.environ.get('BIGCHAINDB_DATABASE_REPLICASET', 'bigchain-rs'),
     },
     'keypair': {
         'public': None,

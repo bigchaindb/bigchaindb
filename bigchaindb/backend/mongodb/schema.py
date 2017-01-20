@@ -1,10 +1,8 @@
 """Utils to initialize and drop the database."""
 
-import time
 import logging
 
 from pymongo import ASCENDING, DESCENDING
-from pymongo import errors
 
 from bigchaindb import backend
 from bigchaindb.common import exceptions
@@ -25,9 +23,6 @@ def create_database(conn, dbname):
     logger.info('Create database `%s`.', dbname)
     # TODO: read and write concerns can be declared here
     conn.conn.get_database(dbname)
-
-    # initialize the replica set
-    initialize_replica_set(conn)
 
 
 @register_schema(MongoDBConnection)
@@ -95,66 +90,3 @@ def create_votes_secondary_index(conn, dbname):
                                              ('node_pubkey',
                                               ASCENDING)],
                                             name='block_and_voter')
-
-
-def initialize_replica_set(conn):
-    """Initialize a replica set. If already initialized skip."""
-    replica_set_name = _get_replica_set_name(conn)
-    config = {'_id': replica_set_name,
-              'members': [{'_id': 0, 'host': 'localhost:27017'}]}
-
-    try:
-        conn.conn.admin.command('replSetInitiate', config)
-    except errors.OperationFailure as exc_info:
-        if exc_info.details['codeName'] == 'AlreadyInitialized':
-            logger.info('Replica set already initialized')
-            return
-        raise
-    else:
-        _wait_for_replica_set_initialization(conn)
-        logger.info('Initialized replica set')
-
-
-def _get_replica_set_name(conn):
-    """Checks if the replSet option was enabled either through the command
-       line option or config file.
-
-       Note:
-           The setting we are looking for will have a different name depending
-           if it was set by the config file (`replSetName`) or by command
-           line arguments (`replSet`).
-
-       Returns:
-           The replica set name if enabled.
-
-        Raise:
-            :exc:`~ConfigurationError`: If mongod was not started with the
-            replSet option.
-    """
-    options = conn.conn.admin.command('getCmdLineOpts')
-    try:
-        repl_opts = options['parsed']['replication']
-        return repl_opts.get('replSetName', None) or repl_opts['replSet']
-    except KeyError:
-        raise exceptions.ConfigurationError('mongod was not started with'
-                                            ' the replSet option.')
-
-
-def _wait_for_replica_set_initialization(conn):
-    """Wait for a replica set to finish initialization.
-
-    If a replica set is being initialized for the first time it takes some
-    time. Nodes need to discover each other and an election needs to take
-    place. During this time the database is not writable so we need to wait
-    before continuing with the rest of the initialization
-    """
-
-    # I did not find a better way to do this for now.
-    # To check if the database is ready we will poll the mongodb logs until
-    # we find the line that says the database is ready
-    logger.info('Waiting for mongodb replica set initialization')
-    while True:
-        logs = conn.conn.admin.command('getLog', 'rs')['log']
-        if any('database writes are now permitted' in line for line in logs):
-                return
-        time.sleep(0.1)

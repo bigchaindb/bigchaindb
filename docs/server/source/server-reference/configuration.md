@@ -15,6 +15,7 @@ For convenience, here's a list of all the relevant environment variables (docume
 `BIGCHAINDB_DATABASE_HOST`<br>
 `BIGCHAINDB_DATABASE_PORT`<br>
 `BIGCHAINDB_DATABASE_NAME`<br>
+`BIGCHAINDB_DATABASE_REPLICASET`<br>
 `BIGCHAINDB_SERVER_BIND`<br>
 `BIGCHAINDB_SERVER_WORKERS`<br>
 `BIGCHAINDB_SERVER_THREADS`<br>
@@ -77,7 +78,7 @@ Note how the keys in the list are separated by colons.
 ```
 
 
-## database.backend, database.host, database.port & database.name
+## database.backend, database.host, database.port, database.name & database.replicaset
 
 The database backend to use (e.g. RethinkDB) and its hostname, port and name.
 
@@ -87,6 +88,7 @@ export BIGCHAINDB_DATABASE_BACKEND=rethinkdb
 export BIGCHAINDB_DATABASE_HOST=localhost
 export BIGCHAINDB_DATABASE_PORT=28015
 export BIGCHAINDB_DATABASE_NAME=bigchain
+export BIGCHAINDB_DATABASE_REPLICASET=bigchain-rs
 ```
 
 **Example config file snippet**
@@ -95,22 +97,25 @@ export BIGCHAINDB_DATABASE_NAME=bigchain
     "backend": "rethinkdb",
     "host": "localhost",
     "port": 28015,
-    "name": "bigchain"
+    "name": "bigchain",
+    "replicaset": "bigchain-rs"
 }
 ```
 
 **Default values (a snippet from `bigchaindb/__init__.py`)**
 ```python
 'database': {
-    "backend": "rethinkdb",
+    'backend': os.environ.get('BIGCHAINDB_DATABASE_BACKEND', 'rethinkdb'),
     'host': os.environ.get('BIGCHAINDB_DATABASE_HOST', 'localhost'),
-    'port': 28015,
-    'name': 'bigchain',
+    'port': int(os.environ.get('BIGCHAINDB_DATABASE_PORT', 28015)),
+    'name': os.environ.get('BIGCHAINDB_DATABASE_NAME', 'bigchain'),
+    'replicaset': os.environ.get('BIGCHAINDB_DATABASE_REPLICASET', 'bigchain-rs')
 }
 ```
 
-**Note**: As of now, only RethinkDB ("rethinkdb") is supported as a value for `database.backend`. In
-the future, other options (e.g. MongoDB) will be available.
+**Note**: We are currently adding support for MongoDB. The `replicaset` and
+`BIGCHAINDB_DATABASE_REPLICASET` option is only used if the `backend` or
+`BIGCHAINDB_DATABASE_BACKEND` is set to `"mongodb"`.
 
 
 ## server.bind, server.workers & server.threads
