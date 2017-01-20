@@ -417,12 +417,10 @@ class Bigchain(object):
 
         return owned
 
-    def get_transactions_filtered(self, asset_id=None, operation=None):
+    def get_transactions_filtered(self, asset_id, operation=None):
         """
         Get a list of transactions filtered on some criteria
         """
-        if not asset_id:
-            raise ValueError("Need asset_id")
         txids = backend.query.get_txids_filtered(self.connection, asset_id,
                                                  operation)
         for txid in txids:
