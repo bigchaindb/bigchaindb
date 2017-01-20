@@ -108,25 +108,6 @@ def get_blocks_status_from_transaction(connection, transaction_id):
 
 
 @singledispatch
-def get_txids_by_asset_id(connection, asset_id):
-    """Retrieves transactions ids related to a particular asset.
-
-    A digital asset in bigchaindb is identified by its ``CREATE``
-    transaction's ID. Knowing this ID allows us to query all the
-    transactions related to a particular digital asset.
-
-    Args:
-        asset_id (str): the ID of the asset.
-
-    Returns:
-        A list of transactions ids related to the asset. If no transaction
-        exists for that asset it returns an empty list ``[]``
-    """
-
-    raise NotImplementedError
-
-
-@singledispatch
 def get_asset_by_id(conneciton, asset_id):
     """Returns the asset associated with an asset_id.
 
