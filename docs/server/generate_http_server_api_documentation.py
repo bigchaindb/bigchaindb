@@ -42,21 +42,6 @@ Content-Type: application/json
 """
 
 
-TPLS['get-tx-unspent-request'] = """\
-GET /transactions?unspent=true&public_keys=%(public_keys_transfer_last)s HTTP/1.1
-Host: example.com
-
-"""
-
-
-TPLS['get-tx-unspent-response'] = """\
-HTTP/1.1 200 OK
-Content-Type: application/json
-
-[%(tx_transfer_last)s]
-"""
-
-
 TPLS['get-tx-by-asset-request'] = """\
 GET /transactions?operation=TRANSFER&asset_id=%(txid)s HTTP/1.1
 Host: example.com

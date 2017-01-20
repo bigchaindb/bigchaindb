@@ -40,7 +40,7 @@ that allows you to discover the BigchainDB API endpoints:
 Transactions
 -------------------
 
-.. http:get:: /transactions/{tx_id}
+.. http:get:: /api/v1/transactions/{tx_id}
 
    Get the transaction with the ID ``tx_id``.
 
@@ -70,7 +70,7 @@ Transactions
    :statuscode 200: A transaction with that ID was found.
    :statuscode 404: A transaction with that ID was not found.
 
-.. http:get:: /transactions
+.. http:get:: /api/v1/transactions
 
    The unfiltered ``/transactions`` endpoint without any query parameters
    returns a status code `400`. For valid filters, see the sections below.
@@ -94,7 +94,7 @@ Transactions
 
    :query string asset_id: The ID of the asset.
 
-.. http:get:: /transactions?operation={CREATE|TRANSFER}&asset_id={asset_id}
+.. http:get:: /api/v1/transactions?operation={CREATE|TRANSFER}&asset_id={asset_id}
 
    Get a list of transactions that use an asset with the ID ``asset_id``.
    Every ``TRANSFER`` transaction that originates from a ``CREATE`` transaction
@@ -123,7 +123,7 @@ Transactions
    :statuscode 400: The request wasn't understood by the server, e.g. the ``asset_id`` querystring was not included in the request.
 
 
-.. http:post:: /transactions
+.. http:post:: /api/v1/transactions
 
    Push a new transaction.
 
@@ -151,10 +151,54 @@ Transactions
    :statuscode 400: The transaction was malformed and not accepted in the ``BACKLOG``.
 
 
+Transaction Outputs
+-------------------
+
+The ``/api/v1/outputs`` endpoint returns transactions outputs filtered by a
+given public key, and optionally filtered to only include outputs that have
+not already been spent. 
+
+
+.. http:get:: /api/v1/outputs?public_key={public_key}
+
+   Get transaction outputs by public key. The `public_key` parameter must be
+   a base58 encoded ed25519 public key associated with transaction output
+   ownership.
+
+   Returns a list of links to transaction outputs.
+   
+   :param public_key: Base58 encoded public key associated with output ownership. This parameter is mandatory and without it the endpoint will return a ``400`` response code.
+   :param unspent: Boolean value ("true" or "false") indicating if the result set should be limited to outputs that are available to spend.
+   
+ 
+   **Example request**:
+ 
+   .. sourcecode:: http
+ 
+     GET /outputs?public_key=1AAAbbb...ccc HTTP/1.1
+     Host: example.com
+
+   **Example response**:
+   
+   .. sourcecode:: http
+
+     HTTP/1.1 200 OK
+     Content-Type: application/json
+
+     [
+       "../transactions/2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e/outputs/0",
+       "../transactions/2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e/outputs/1"
+     ]
+ 
+   :statuscode 200: A list of outputs were found and returned in the body of the response.
+   :statuscode 400: The request wasn't understood by the server, e.g. the ``public_key`` querystring was not included in the request.
+
+
+
 Statuses
 --------------------------------
 
-.. http:get:: /statuses
+.. http:get:: /api/v1/statuses
 
    Get the status of an asynchronously written transaction or block by their id.
 
@@ -176,7 +220,7 @@ Statuses
         <#get--statuses?block_id=block_id>`_).
 
 
-.. http:get:: /statuses?tx_id={tx_id}
+.. http:get:: /api/v1/statuses?tx_id={tx_id}
 
     Get the status of a transaction.
 
@@ -202,7 +246,7 @@ Statuses
    :statuscode 404: A transaction with that ID was not found.
 
 
-.. http:get:: /statuses?block_id={block_id}
+.. http:get:: /api/v1/statuses?block_id={block_id}
 
     Get the status of a block.
 
@@ -246,7 +290,7 @@ The `votes endpoint <#votes>`_ contains all the voting information for a specifi
 Blocks
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. http:get:: /blocks/{block_id}
+.. http:get:: /api/v1/blocks/{block_id}
 
    Get the block with the ID ``block_id``. Any blocks, be they ``VALID``, ``UNDECIDED`` or ``INVALID`` will be
    returned. To check a block's status independently, use the `Statuses endpoint <#status>`_.
@@ -273,7 +317,7 @@ Blocks
    :statuscode 404: A block with that ID was not found.
 
 
-.. http:get:: /blocks
+.. http:get:: /api/v1/blocks
 
    The unfiltered ``/blocks`` endpoint without any query parameters returns a `400` status code.
    The list endpoint should be filtered with a ``tx_id`` query parameter,
@@ -296,7 +340,7 @@ Blocks
 
    :statuscode 400: The request wasn't understood by the server, e.g. just requesting ``/blocks`` without the ``block_id``.
 
-.. http:get:: /blocks?tx_id={tx_id}&status={UNDECIDED|VALID|INVALID}
+.. http:get:: /api/v1/blocks?tx_id={tx_id}&status={UNDECIDED|VALID|INVALID}
 
    Retrieve a list of ``block_id`` with their corresponding status that contain a transaction with the ID ``tx_id``.
 
@@ -331,7 +375,7 @@ Blocks
 Votes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. http:get:: /votes?block_id={block_id}
+.. http:get:: /api/v1/votes?block_id={block_id}
 
    Retrieve a list of votes for a certain block with ID ``block_id``.
    To check for the validity of a vote, a user of this endpoint needs to
