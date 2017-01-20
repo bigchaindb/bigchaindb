@@ -72,7 +72,7 @@ Transactions
 
 .. http:get:: /api/v1/transactions
 
-   The unfiltered ``/transactions`` endpoint without any query parameters
+   The unfiltered ``/api/v1/transactions`` endpoint without any query parameters
    returns a status code `400`. For valid filters, see the sections below.
 
    There are however filtered requests that might come of use, given the endpoint is
@@ -175,7 +175,7 @@ not already been spent.
  
    .. sourcecode:: http
  
-     GET /outputs?public_key=1AAAbbb...ccc HTTP/1.1
+     GET /api/v1/outputs?public_key=1AAAbbb...ccc HTTP/1.1
      Host: example.com
 
    **Example response**:
@@ -329,7 +329,7 @@ Blocks
 
    .. sourcecode:: http
 
-      GET /blocks HTTP/1.1
+      GET /api/v1/blocks HTTP/1.1
       Host: example.com
 
    **Example response**:

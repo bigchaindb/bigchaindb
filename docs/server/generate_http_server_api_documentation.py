@@ -28,7 +28,7 @@ Content-Type: application/json
 """
 
 TPLS['get-tx-id-request'] = """\
-GET /transactions/%(txid)s HTTP/1.1
+GET /api/v1/transactions/%(txid)s HTTP/1.1
 Host: example.com
 
 """
@@ -43,7 +43,7 @@ Content-Type: application/json
 
 
 TPLS['get-tx-by-asset-request'] = """\
-GET /transactions?operation=TRANSFER&asset_id=%(txid)s HTTP/1.1
+GET /api/v1/transactions?operation=TRANSFER&asset_id=%(txid)s HTTP/1.1
 Host: example.com
 
 """
@@ -58,7 +58,7 @@ Content-Type: application/json
 """
 
 TPLS['post-tx-request'] = """\
-POST /transactions/ HTTP/1.1
+POST /api/v1/transactions/ HTTP/1.1
 Host: example.com
 Content-Type: application/json
 
@@ -105,7 +105,7 @@ Content-Type: application/json
 
 
 TPLS['get-statuses-block-request'] = """\
-GET /statuses?block_id=%(blockid)s HTTP/1.1
+GET /api/v1/statuses?block_id=%(blockid)s HTTP/1.1
 Host: example.com
 
 """
@@ -135,7 +135,7 @@ Content-Type: application/json
 
 
 TPLS['get-block-request'] = """\
-GET /blocks/%(blockid)s HTTP/1.1
+GET /api/v1/blocks/%(blockid)s HTTP/1.1
 Host: example.com
 
 """
@@ -150,7 +150,7 @@ Content-Type: application/json
 
 
 TPLS['get-block-txid-request'] = """\
-GET /blocks?tx_id=%(txid)s HTTP/1.1
+GET /api/v1/blocks?tx_id=%(txid)s HTTP/1.1
 Host: example.com
 
 """
@@ -165,7 +165,7 @@ Content-Type: application/json
 
 
 TPLS['get-vote-request'] = """\
-GET /votes?block_id=%(blockid)s HTTP/1.1
+GET /api/v1/votes?block_id=%(blockid)s HTTP/1.1
 Host: example.com
 
 """
