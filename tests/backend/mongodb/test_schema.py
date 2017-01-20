@@ -1,5 +1,4 @@
 import pytest
-from pymongo import MongoClient
 
 
 pytestmark = pytest.mark.bdb
