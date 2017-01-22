@@ -455,7 +455,7 @@ class Bigchain(object):
             Block: created block.
         """
         # Prevent the creation of empty blocks
-        if len(validated_transactions) == 0:
+        if not validated_transactions:
             raise exceptions.OperationError('Empty block creation is not '
                                             'allowed')
 
