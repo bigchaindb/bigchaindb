@@ -186,13 +186,17 @@ def test_post_invalid_transfer_transaction_returns_400(b, client, user_pk):
 def test_transactions_get_list_good(client):
     from functools import partial
 
-    def gtf(conn, **args):
+    def get_txs_patched(conn, **args):
+        """ Patch `get_transactions_filtered` so that rather than return an array
+            of transactions it returns an array of shims with a to_dict() method
+            that reports one of the arguments passed to `get_transactions_filtered`.
+            """
         return [type('', (), {'to_dict': partial(lambda a: a, arg)})
                 for arg in sorted(args.items())]
 
     asset_id = '1' * 64
 
-    with patch('bigchaindb.core.Bigchain.get_transactions_filtered', gtf):
+    with patch('bigchaindb.core.Bigchain.get_transactions_filtered', get_txs_patched):
         url = TX_ENDPOINT + "?asset_id=" + asset_id
         assert client.get(url).json == [
             ['asset_id', asset_id],
