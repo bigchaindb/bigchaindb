@@ -410,7 +410,7 @@ class Transaction(object):
     TRANSFER = 'TRANSFER'
     GENESIS = 'GENESIS'
     ALLOWED_OPERATIONS = (CREATE, TRANSFER, GENESIS)
-    VERSION = bigchaindb.version.__version__
+    VERSION = bigchaindb.version.__short_version__[:-4]  # 0.9, 0.10 etc
 
     def __init__(self, operation, asset, inputs=None, outputs=None,
                  metadata=None, version=None):
