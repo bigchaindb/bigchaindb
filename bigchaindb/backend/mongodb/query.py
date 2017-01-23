@@ -83,21 +83,6 @@ def get_blocks_status_from_transaction(conn, transaction_id):
 
 
 @register_query(MongoDBConnection)
-def get_txids_by_asset_id(conn, asset_id):
-    cursor = conn.db['bigchain'].aggregate([
-        {'$match': {
-            'block.transactions.asset.id': asset_id
-        }},
-        {'$unwind': '$block.transactions'},
-        {'$match': {
-            'block.transactions.asset.id': asset_id
-        }},
-        {'$project': {'block.transactions.id': True}}
-    ])
-    return (elem['block']['transactions']['id'] for elem in cursor)
-
-
-@register_query(MongoDBConnection)
 def get_asset_by_id(conn, asset_id):
     cursor = conn.db['bigchain'].aggregate([
         {'$match': {
@@ -249,3 +234,19 @@ def get_unvoted_blocks(conn, node_pubkey):
             'votes': False, '_id': False
         }}
     ])
+
+
+@register_query(MongoDBConnection)
+def get_txids_filtered(conn, asset_id, operation=None):
+    match = {'block.transactions.asset.id': asset_id}
+
+    if operation:
+        match['block.transactions.operation'] = operation
+
+    cursor = conn.db['bigchain'].aggregate([
+        {'$match': match},
+        {'$unwind': '$block.transactions'},
+        {'$match': match},
+        {'$project': {'block.transactions.id': True}}
+    ])
+    return (r['block']['transactions']['id'] for r in cursor)

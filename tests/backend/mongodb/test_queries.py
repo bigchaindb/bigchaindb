@@ -125,24 +125,6 @@ def test_get_block_status_from_transaction(create_tx):
     assert block_db['block']['voters'] == block.voters
 
 
-def test_get_txids_by_asset_id(signed_create_tx, signed_transfer_tx):
-    from bigchaindb.backend import connect, query
-    from bigchaindb.models import Block
-    conn = connect()
-
-    # create and insert two blocks, one for the create and one for the
-    # transfer transaction
-    block = Block(transactions=[signed_create_tx])
-    conn.db.bigchain.insert_one(block.to_dict())
-    block = Block(transactions=[signed_transfer_tx])
-    conn.db.bigchain.insert_one(block.to_dict())
-
-    txids = list(query.get_txids_by_asset_id(conn, signed_create_tx.id))
-
-    assert len(txids) == 2
-    assert txids == [signed_create_tx.id, signed_transfer_tx.id]
-
-
 def test_get_asset_by_id(create_tx):
     from bigchaindb.backend import connect, query
     from bigchaindb.models import Block
@@ -366,3 +348,30 @@ def test_get_unvoted_blocks(signed_create_tx):
 
     assert len(unvoted_blocks) == 1
     assert unvoted_blocks[0] == block.to_dict()
+
+
+def test_get_txids_filtered(signed_create_tx, signed_transfer_tx):
+    from bigchaindb.backend import connect, query
+    from bigchaindb.models import Block, Transaction
+    conn = connect()
+
+    # create and insert two blocks, one for the create and one for the
+    # transfer transaction
+    block = Block(transactions=[signed_create_tx])
+    conn.db.bigchain.insert_one(block.to_dict())
+    block = Block(transactions=[signed_transfer_tx])
+    conn.db.bigchain.insert_one(block.to_dict())
+
+    asset_id = Transaction.get_asset_id([signed_create_tx, signed_transfer_tx])
+
+    # Test get by just asset id
+    txids = set(query.get_txids_filtered(conn, asset_id))
+    assert txids == {signed_create_tx.id, signed_transfer_tx.id}
+
+    # Test get by asset and CREATE
+    txids = set(query.get_txids_filtered(conn, asset_id, Transaction.CREATE))
+    assert txids == {signed_create_tx.id}
+
+    # Test get by asset and TRANSFER
+    txids = set(query.get_txids_filtered(conn, asset_id, Transaction.TRANSFER))
+    assert txids == {signed_transfer_tx.id}
