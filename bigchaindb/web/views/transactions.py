@@ -61,9 +61,9 @@ class TransactionListApi(Resource):
         args = parser.parse_args()
 
         with current_app.config['bigchain_pool']() as bigchain:
-            txes = bigchain.get_transactions_filtered(**args)
+            txs = bigchain.get_transactions_filtered(**args)
 
-        return [tx.to_dict() for tx in txes]
+        return [tx.to_dict() for tx in txs]
 
     def post(self):
         """API endpoint to push transactions to the Federation.
