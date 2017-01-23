@@ -1,6 +1,6 @@
 # Quickstart
 
-This page has instructions to set up a single stand-alone BigchainDB node for learning or experimenting. Instructions for other cases are [elsewhere](introduction.html). We will assume you're using Ubuntu 14.04 or similar. If you're not using Linux, then you might try [running BigchainDB with Docker](appendices/run-with-docker.html).
+This page has instructions to set up a single stand-alone BigchainDB node for learning or experimenting. Instructions for other cases are [elsewhere](introduction.html). We will assume you're using Ubuntu 16.04 or similar. If you're not using Linux, then you might try [running BigchainDB with Docker](appendices/run-with-docker.html).
 
 A. [Install RethinkDB Server](https://rethinkdb.com/docs/install/ubuntu/)
 
@@ -9,7 +9,7 @@ B. Open a Terminal and run RethinkDB Server with the command:
 rethinkdb
 ```
 
-C. Ubuntu 14.04 already has Python 3.4, so you don't need to install it, but you do need to install a couple other things:
+C. Ubuntu 16.04 already has Python 3.5, so you don't need to install it, but you do need to install some other things:
 ```text
 sudo apt-get update
 sudo apt-get install g++ python3-dev libffi-dev
