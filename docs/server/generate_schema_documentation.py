@@ -189,7 +189,7 @@ def render_section(section_name, obj):
                 'type': property_type(prop),
             }]
         except Exception as exc:
-            raise ValueError("Error rendering property: %s" % name, exc)
+            raise ValueError('Error rendering property: %s' % name, exc)
     return '\n\n'.join(out + [''])
 
 
@@ -201,7 +201,7 @@ def property_description(prop):
         return property_description(resolve_ref(prop['$ref']))
     if 'anyOf' in prop:
         return property_description(prop['anyOf'][0])
-    raise KeyError("description")
+    raise KeyError('description')
 
 
 def property_type(prop):
@@ -214,7 +214,7 @@ def property_type(prop):
         return ' or '.join(property_type(p) for p in prop['anyOf'])
     if '$ref' in prop:
         return property_type(resolve_ref(prop['$ref']))
-    raise ValueError("Could not resolve property type")
+    raise ValueError('Could not resolve property type')
 
 
 DEFINITION_BASE_PATH = '#/definitions/'
