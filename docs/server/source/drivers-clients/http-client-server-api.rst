@@ -21,21 +21,8 @@ or ``https://example.com:9984``
 then you should get an HTTP response
 with something like the following in the body:
 
-.. code-block:: json
-
-    {
-      "_links": {
-        "docs": "https://docs.bigchaindb.com/projects/server/en/v0.9.0/",
-        "api_v1": "http://example.com:9984/api/v1/"
-      },
-      "keyring": [
-        "6qHyZew94NMmUTYyHnkZsB8cxJYuRNEiEpXHe1ih9QX3",
-        "AdDuyrTyjrDt935YnFu4VBCVDhHtY2Y6rcy7x2TFeiRi"
-      ],
-      "public_key": "AiygKSRhZWTxxYT4AfgKoTG4TZAoPsWoEt6C6bLq4jJR",
-      "software": "BigchainDB",
-      "version": "0.9.0"
-    }
+.. literalinclude:: samples/index-response.http
+    :language: http
 
 
 API Root Endpoint
@@ -47,22 +34,13 @@ or ``https://example.com:9984/api/v1/``,
 then you should get an HTTP response
 that allows you to discover the BigchainDB API endpoints:
 
-.. code-block:: json
-
-    {
-      "_links": {
-        "docs": "https://docs.bigchaindb.com/projects/server/en/v0.9.0/drivers-clients/http-client-server-api.html",
-        "self": "https://example.com:9984/api/v1",
-        "statuses": "https://example.com:9984/api/v1/statuses",
-        "transactions": "https://example.com:9984/api/v1/transactions",
-      },
-      "version" : "0.9.0"
-    }
+.. literalinclude:: samples/api-index-response.http
+    :language: http
 
 Transactions
 -------------------
 
-.. http:get:: /transactions/{tx_id}
+.. http:get:: /api/v1/transactions/{tx_id}
 
    Get the transaction with the ID ``tx_id``.
 
@@ -87,107 +65,38 @@ Transactions
    :statuscode 200: A transaction with that ID was found.
    :statuscode 404: A transaction with that ID was not found.
 
-.. http:get:: /transactions
+.. http:get:: /api/v1/transactions
 
-   The unfiltered ``/transactions`` endpoint without any query parameters
+   The unfiltered ``/api/v1/transactions`` endpoint without any query parameters
    returns a status code `400`. For valid filters, see the sections below.
-
-   **Example request**:
-
-   .. sourcecode:: http
-
-      GET /transactions HTTP/1.1
-      Host: example.com
-
-   **Example response**:
-
-   .. sourcecode:: http
-
-      HTTP/1.1 400 Bad Request
-
-   :statuscode 400: The request wasn't understood by the server, a mandatory querystring was not included in the request.
 
    There are however filtered requests that might come of use, given the endpoint is
    queried correctly. Some of them include retrieving a list of transactions
    that include:
 
-   * `Unspent outputs <#get--transactions?unspent=true&public_keys=public_keys>`_
    * `Transactions related to a specific asset <#get--transactions?operation=CREATE|TRANSFER&asset_id=asset_id>`_
 
    In this section, we've listed those particular requests, as they will likely
    to be very handy when implementing your application on top of BigchainDB.
 
    .. note::
-      Looking up transactions with a specific ``metadata`` field is currently not supported.
-      This functionality requires something like custom indexing per client or read-only followers,
-      which is not yet on the roadmap.
+      Looking up transactions with a specific ``metadata`` field is currently not supported,
+      however, providing a way to query based on ``metadata`` data is on our roadmap.
 
    A generalization of those parameters follows:
 
-   :query boolean unspent: A flag to indicate whether only transactions with unspent outputs should be returned.
-
-   :query string public_keys: Public key able to validly spend an output of a transaction, assuming the user also has the corresponding private key.
-
    :query string operation: One of the two supported operations of a transaction: ``CREATE``, ``TRANSFER``.
 
-   :query string asset_id: asset ID.
+   :query string asset_id: The ID of the asset.
 
-
-.. http:get:: /transactions?unspent=true&public_keys={public_keys}
-
-   Get a list of transactions with unspent outputs.
-
-   If the querystring ``unspent`` is set to ``false`` and all outputs for
-   ``public_keys`` happen to be spent already, this endpoint will return
-   an empty list. Transactions with multiple outputs that have not all been spent
-   will be included in the response.
-
-   This endpoint returns transactions only if they are
-   included in the ``BACKLOG`` or in a ``VALID`` or ``UNDECIDED`` block on ``bigchain``.
-
-   :query boolean unspent: A flag to indicate if transactions with unspent outputs should be returned.
-
-   :query string public_keys: Public key able to validly spend an output of a transaction, assuming the user also has the corresponding private key.
-
-   **Example request**:
-
-
-   .. literalinclude:: samples/get-tx-unspent-request.http
-      :language: http
-
-
-   **Example response**:
-
-   .. literalinclude:: samples/get-tx-unspent-response.http
-      :language: http
-
-   :resheader Content-Type: ``application/json``
-
-   :statuscode 200: A list of transactions containing unspent outputs was found and returned.
-   :statuscode 400: The request wasn't understood by the server, e.g. the ``public_keys`` querystring was not included in the request.
-
-.. http:get:: /transactions?operation={CREATE|TRANSFER}&asset_id={asset_id}
+.. http:get:: /api/v1/transactions?operation={CREATE|TRANSFER}&asset_id={asset_id}
 
    Get a list of transactions that use an asset with the ID ``asset_id``.
    Every ``TRANSFER`` transaction that originates from a ``CREATE`` transaction
    with ``asset_id`` will be included. This allows users to query the entire history or
    provenance of an asset.
 
-   This endpoint returns transactions only if they are
-   included in the ``BACKLOG`` or in a ``VALID`` or ``UNDECIDED`` block on ``bigchain``.
-
-   .. note::
-       The BigchainDB API currently doesn't expose an
-       ``/assets/{asset_id}`` endpoint, as there wouldn't be any way for a
-       client to verify that what was received is consistent with what was
-       persisted in the database.
-       However, BigchainDB's consensus ensures that any ``asset_id`` is
-       a unique key identifying an asset, meaning that when calling
-       ``/transactions?operation=CREATE&asset_id={asset_id}``, there will in
-       any case only be one transaction returned (in a list though, since
-       ``/transactions`` is a list-returning endpoint).
-       Leaving out the ``asset_id`` query and calling
-       ``/transactions?operation=CREATE`` returns the list of assets.
+   This endpoint returns transactions only if they are decided ``VALID`` by the server.
 
    :query string operation: One of the two supported operations of a transaction: ``CREATE``, ``TRANSFER``.
 
@@ -209,14 +118,14 @@ Transactions
    :statuscode 400: The request wasn't understood by the server, e.g. the ``asset_id`` querystring was not included in the request.
 
 
-.. http:post:: /transactions
+.. http:post:: /api/v1/transactions
 
-   Push a new transaction. The endpoint will return a ``statuses`` endpoint to track
-   the status of the transaction.
+   Push a new transaction.
 
    .. note::
-       The posted transaction should be valid `transaction
-       <https://bigchaindb.readthedocs.io/en/latest/data-models/transaction-model.html>`_.
+       The posted `transaction
+       <https://docs.bigchaindb.com/projects/server/en/latest/data-models/transaction-model.html>`_
+       should be structurally valid and not spending an already spent output.
        The steps to build a valid transaction are beyond the scope of this page.
        One would normally use a driver such as the `BigchainDB Python Driver
        <https://docs.bigchaindb.com/projects/py-driver/en/latest/index.html>`_
@@ -233,16 +142,59 @@ Transactions
       :language: http
 
    :resheader Content-Type: ``application/json``
-   :resheader Location: As the transaction will be persisted asynchronously, an endpoint to monitor its status is provided in this header.
 
-   :statuscode 202: The pushed transaction was accepted in the ``BACKLOG``, but the processing has not been completed.
+   :statuscode 200: The pushed transaction was accepted in the ``BACKLOG``, but the processing has not been completed.
    :statuscode 400: The transaction was malformed and not accepted in the ``BACKLOG``.
+
+
+Transaction Outputs
+-------------------
+
+The ``/api/v1/outputs`` endpoint returns transactions outputs filtered by a
+given public key, and optionally filtered to only include outputs that have
+not already been spent. 
+
+
+.. http:get:: /api/v1/outputs?public_key={public_key}
+
+   Get transaction outputs by public key. The `public_key` parameter must be
+   a base58 encoded ed25519 public key associated with transaction output
+   ownership.
+
+   Returns a list of links to transaction outputs.
+   
+   :param public_key: Base58 encoded public key associated with output ownership. This parameter is mandatory and without it the endpoint will return a ``400`` response code.
+   :param unspent: Boolean value ("true" or "false") indicating if the result set should be limited to outputs that are available to spend.
+   
+ 
+   **Example request**:
+ 
+   .. sourcecode:: http
+ 
+     GET /api/v1/outputs?public_key=1AAAbbb...ccc HTTP/1.1
+     Host: example.com
+
+   **Example response**:
+   
+   .. sourcecode:: http
+
+     HTTP/1.1 200 OK
+     Content-Type: application/json
+
+     [
+       "../transactions/2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e/outputs/0",
+       "../transactions/2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e/outputs/1"
+     ]
+ 
+   :statuscode 200: A list of outputs were found and returned in the body of the response.
+   :statuscode 400: The request wasn't understood by the server, e.g. the ``public_key`` querystring was not included in the request.
+
 
 
 Statuses
 --------------------------------
 
-.. http:get:: /statuses
+.. http:get:: /api/v1/statuses
 
    Get the status of an asynchronously written transaction or block by their id.
 
@@ -264,7 +216,7 @@ Statuses
         <#get--statuses?block_id=block_id>`_).
 
 
-.. http:get:: /statuses?tx_id={tx_id}
+.. http:get:: /api/v1/statuses?tx_id={tx_id}
 
     Get the status of a transaction.
 
@@ -290,7 +242,7 @@ Statuses
    :statuscode 404: A transaction with that ID was not found.
 
 
-.. http:get:: /statuses?block_id={block_id}
+.. http:get:: /api/v1/statuses?block_id={block_id}
 
     Get the status of a block.
 
@@ -334,7 +286,7 @@ The `votes endpoint <#votes>`_ contains all the voting information for a specifi
 Blocks
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. http:get:: /blocks/{block_id}
+.. http:get:: /api/v1/blocks/{block_id}
 
    Get the block with the ID ``block_id``. Any blocks, be they ``VALID``, ``UNDECIDED`` or ``INVALID`` will be
    returned. To check a block's status independently, use the `Statuses endpoint <#status>`_.
@@ -361,7 +313,7 @@ Blocks
    :statuscode 404: A block with that ID was not found.
 
 
-.. http:get:: /blocks
+.. http:get:: /api/v1/blocks
 
    The unfiltered ``/blocks`` endpoint without any query parameters returns a `400` status code.
    The list endpoint should be filtered with a ``tx_id`` query parameter,
@@ -373,7 +325,7 @@ Blocks
 
    .. sourcecode:: http
 
-      GET /blocks HTTP/1.1
+      GET /api/v1/blocks HTTP/1.1
       Host: example.com
 
    **Example response**:
@@ -384,7 +336,7 @@ Blocks
 
    :statuscode 400: The request wasn't understood by the server, e.g. just requesting ``/blocks`` without the ``block_id``.
 
-.. http:get:: /blocks?tx_id={tx_id}&status={UNDECIDED|VALID|INVALID}
+.. http:get:: /api/v1/blocks?tx_id={tx_id}&status={UNDECIDED|VALID|INVALID}
 
    Retrieve a list of ``block_id`` with their corresponding status that contain a transaction with the ID ``tx_id``.
 
@@ -419,7 +371,7 @@ Blocks
 Votes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. http:get:: /votes?block_id={block_id}
+.. http:get:: /api/v1/votes?block_id={block_id}
 
    Retrieve a list of votes for a certain block with ID ``block_id``.
    To check for the validity of a vote, a user of this endpoint needs to

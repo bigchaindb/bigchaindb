@@ -7,14 +7,28 @@ import os.path
 from bigchaindb.common.transaction import Transaction, Input, TransactionLink
 from bigchaindb.core import Bigchain
 from bigchaindb.models import Block
-
+from bigchaindb.web import server
 
 
 TPLS = {}
 
 
+TPLS['index-response'] = """\
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+%(index)s
+"""
+
+TPLS['api-index-response'] = """\
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+%(api_index)s
+"""
+
 TPLS['get-tx-id-request'] = """\
-GET /transactions/%(txid)s HTTP/1.1
+GET /api/v1/transactions/%(txid)s HTTP/1.1
 Host: example.com
 
 """
@@ -28,23 +42,8 @@ Content-Type: application/json
 """
 
 
-TPLS['get-tx-unspent-request'] = """\
-GET /transactions?unspent=true&public_keys=%(public_keys_transfer_last)s HTTP/1.1
-Host: example.com
-
-"""
-
-
-TPLS['get-tx-unspent-response'] = """\
-HTTP/1.1 200 OK
-Content-Type: application/json
-
-[%(tx_transfer_last)s]
-"""
-
-
 TPLS['get-tx-by-asset-request'] = """\
-GET /transactions?operation=transfer&asset_id=%(txid)s HTTP/1.1
+GET /api/v1/transactions?operation=TRANSFER&asset_id=%(txid)s HTTP/1.1
 Host: example.com
 
 """
@@ -59,7 +58,7 @@ Content-Type: application/json
 """
 
 TPLS['post-tx-request'] = """\
-POST /transactions/ HTTP/1.1
+POST /api/v1/transactions/ HTTP/1.1
 Host: example.com
 Content-Type: application/json
 
@@ -68,12 +67,10 @@ Content-Type: application/json
 
 
 TPLS['post-tx-response'] = """\
-HTTP/1.1 202 Accepted
+HTTP/1.1 200 OK
 Content-Type: application/json
 
-{
-  "status": "/statuses?tx_id=%(txid)s"
-}
+%(tx)s
 """
 
 
@@ -108,7 +105,7 @@ Content-Type: application/json
 
 
 TPLS['get-statuses-block-request'] = """\
-GET /statuses?block_id=%(blockid)s HTTP/1.1
+GET /api/v1/statuses?block_id=%(blockid)s HTTP/1.1
 Host: example.com
 
 """
@@ -138,7 +135,7 @@ Content-Type: application/json
 
 
 TPLS['get-block-request'] = """\
-GET /blocks/%(blockid)s HTTP/1.1
+GET /api/v1/blocks/%(blockid)s HTTP/1.1
 Host: example.com
 
 """
@@ -153,7 +150,7 @@ Content-Type: application/json
 
 
 TPLS['get-block-txid-request'] = """\
-GET /blocks?tx_id=%(txid)s HTTP/1.1
+GET /api/v1/blocks?tx_id=%(txid)s HTTP/1.1
 Host: example.com
 
 """
@@ -168,7 +165,7 @@ Content-Type: application/json
 
 
 TPLS['get-vote-request'] = """\
-GET /votes?block_id=%(blockid)s HTTP/1.1
+GET /api/v1/votes?block_id=%(blockid)s HTTP/1.1
 Host: example.com
 
 """
@@ -185,13 +182,37 @@ Content-Type: application/json
 def main():
     """ Main function """
 
+    ctx = {}
+
+    def pretty_json(data):
+        return json.dumps(data, indent=2, sort_keys=True)
+
+    client = server.create_app().test_client()
+
+    host = 'example.com:9984'
+
+    # HTTP Index
+    res = client.get('/', environ_overrides={'HTTP_HOST': host})
+    res_data = json.loads(res.data.decode())
+    res_data['keyring'] = [
+        "6qHyZew94NMmUTYyHnkZsB8cxJYuRNEiEpXHe1ih9QX3",
+        "AdDuyrTyjrDt935YnFu4VBCVDhHtY2Y6rcy7x2TFeiRi"
+    ]
+    ctx['index'] = pretty_json(res_data)
+
+    # API index
+    res = client.get('/api/v1/', environ_overrides={'HTTP_HOST': host})
+    ctx['api_index'] = pretty_json(json.loads(res.data.decode()))
+
     # tx create
     privkey = 'CfdqtD7sS7FgkMoGPXw55MVGGFwQLAoHYTcBhZDtF99Z'
     pubkey = '4K9sWUMFwTgaDGPfdynrbxWqWS6sWmKbZoTjxLtVUibD'
     asset = {'msg': 'Hello BigchainDB!'}
     tx = Transaction.create([pubkey], [([pubkey], 1)], asset=asset, metadata={'sequence': 0})
     tx = tx.sign([privkey])
-    tx_json = json.dumps(tx.to_dict(), indent=2, sort_keys=True)
+    ctx['tx'] = pretty_json(tx.to_dict())
+    ctx['public_keys'] = tx.outputs[0].public_keys[0]
+    ctx['txid'] = tx.id
 
     # tx transfer
     privkey_transfer = '3AeWpPdhEZzWLYfkfYHBfMFC2r1f8HEaGS9NtbbKssya'
@@ -203,41 +224,48 @@ def main():
                    owners_before=tx.outputs[cid].public_keys)
     tx_transfer = Transaction.transfer([input_], [([pubkey_transfer], 1)], asset_id=tx.id, metadata={'sequence': 1})
     tx_transfer = tx_transfer.sign([privkey])
-    tx_transfer_json = json.dumps(tx_transfer.to_dict(), indent=2, sort_keys=True)
+    ctx['tx_transfer'] = pretty_json(tx_transfer.to_dict())
+    ctx['public_keys_transfer'] = tx_transfer.outputs[0].public_keys[0]
+    ctx['tx_transfer_id'] = tx_transfer.id
 
-    privkey_transfer_last = 'sG3jWDtdTXUidBJK53ucSTrosktG616U3tQHBk81eQe'
+    # privkey_transfer_last = 'sG3jWDtdTXUidBJK53ucSTrosktG616U3tQHBk81eQe'
     pubkey_transfer_last = '3Af3fhhjU6d9WecEM9Uw5hfom9kNEwE7YuDWdqAUssqm'
 
     cid = 0
     input_ = Input(fulfillment=tx_transfer.outputs[cid].fulfillment,
                    fulfills=TransactionLink(txid=tx_transfer.id, output=cid),
                    owners_before=tx_transfer.outputs[cid].public_keys)
-    tx_transfer_last = Transaction.transfer([input_], [([pubkey_transfer_last], 1)], asset_id=tx.id, metadata={'sequence': 2})
+    tx_transfer_last = Transaction.transfer([input_], [([pubkey_transfer_last], 1)],
+                                            asset_id=tx.id, metadata={'sequence': 2})
     tx_transfer_last = tx_transfer_last.sign([privkey_transfer])
-    tx_transfer_last_json = json.dumps(tx_transfer_last.to_dict(), indent=2, sort_keys=True)
+    ctx['tx_transfer_last'] = pretty_json(tx_transfer_last.to_dict())
+    ctx['tx_transfer_last_id'] = tx_transfer_last.id
+    ctx['public_keys_transfer_last'] = tx_transfer_last.outputs[0].public_keys[0]
 
     # block
     node_private = "5G2kE1zJAgTajkVSbPAQWo4c2izvtwqaNHYsaNpbbvxX"
     node_public = "DngBurxfeNVKZWCEcDnLj1eMPAS7focUZTE5FndFGuHT"
     signature = "53wxrEQDYk1dXzmvNSytbCfmNVnPqPkDQaTnAe8Jf43s6ssejPxezkCvUnGTnduNUmaLjhaan1iRLi3peu6s5DzA"
     block = Block(transactions=[tx], node_pubkey=node_public, voters=[node_public], signature=signature)
-    block_json = json.dumps(block.to_dict(), indent=2, sort_keys=True)
+    ctx['block'] = pretty_json(block.to_dict())
+    ctx['blockid'] = block.id
 
-    block_transfer = Block(transactions=[tx_transfer], node_pubkey=node_public, voters=[node_public], signature=signature)
-    block_transfer_json = json.dumps(block.to_dict(), indent=2, sort_keys=True)
+    block_transfer = Block(transactions=[tx_transfer], node_pubkey=node_public,
+                           voters=[node_public], signature=signature)
+    ctx['block_transfer'] = pretty_json(block.to_dict())
 
     # vote
     DUMMY_SHA3 = '0123456789abcdef' * 4
     b = Bigchain(public_key=node_public, private_key=node_private)
     vote = b.vote(block.id, DUMMY_SHA3, True)
-    vote_json = json.dumps(vote, indent=2, sort_keys=True)
+    ctx['vote'] = pretty_json(vote)
 
     # block status
     block_list = [
         block_transfer.id,
         block.id
     ]
-    block_list_json = json.dumps(block_list, indent=2, sort_keys=True)
+    ctx['block_list'] = pretty_json(block_list)
 
     base_path = os.path.join(os.path.dirname(__file__),
                              'source/drivers-clients/samples')
@@ -246,19 +274,7 @@ def main():
 
     for name, tpl in TPLS.items():
         path = os.path.join(base_path, name + '.http')
-        code = tpl % {'tx': tx_json,
-                      'txid': tx.id,
-                      'tx_transfer': tx_transfer_json,
-                      'tx_transfer_id': tx_transfer.id,
-                      'tx_transfer_last': tx_transfer_last_json,
-                      'tx_transfer_last_id': tx_transfer_last.id,
-                      'public_keys': tx.outputs[0].public_keys[0],
-                      'public_keys_transfer': tx_transfer.outputs[0].public_keys[0],
-                      'public_keys_transfer_last': tx_transfer_last.outputs[0].public_keys[0],
-                      'block': block_json,
-                      'blockid': block.id,
-                      'block_list': block_list_json,
-                      'vote': vote_json}
+        code = tpl % ctx
         with open(path, 'w') as handle:
             handle.write(code)
 
@@ -270,5 +286,3 @@ def setup(*_):
 
 if __name__ == '__main__':
     main()
-
-
