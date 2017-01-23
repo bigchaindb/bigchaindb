@@ -74,7 +74,7 @@ Transactions
    queried correctly. Some of them include retrieving a list of transactions
    that include:
 
-   * `Transactions related to a specific asset <#get--transactions?operation=CREATE|TRANSFER&asset_id=asset_id>`_
+   * `Transactions related to a specific asset <#get--transactions?asset_id=asset_id&operation=CREATE|TRANSFER>`_
 
    In this section, we've listed those particular requests, as they will likely
    to be very handy when implementing your application on top of BigchainDB.
@@ -85,11 +85,11 @@ Transactions
 
    A generalization of those parameters follows:
 
-   :query string operation: One of the two supported operations of a transaction: ``CREATE``, ``TRANSFER``.
-
    :query string asset_id: The ID of the asset.
 
-.. http:get:: /api/v1/transactions?operation={CREATE|TRANSFER}&asset_id={asset_id}
+   :query string operation: (Optional) One of the two supported operations of a transaction: ``CREATE``, ``TRANSFER``.
+
+.. http:get:: /api/v1/transactions?asset_id={asset_id}&operation={CREATE|TRANSFER}
 
    Get a list of transactions that use an asset with the ID ``asset_id``.
    Every ``TRANSFER`` transaction that originates from a ``CREATE`` transaction
@@ -98,7 +98,7 @@ Transactions
 
    This endpoint returns transactions only if they are decided ``VALID`` by the server.
 
-   :query string operation: One of the two supported operations of a transaction: ``CREATE``, ``TRANSFER``.
+   :query string operation: (Optional) One of the two supported operations of a transaction: ``CREATE``, ``TRANSFER``.
 
    :query string asset_id: asset ID.
 
