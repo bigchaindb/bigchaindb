@@ -1,4 +1,3 @@
-from importlib import import_module
 from unittest.mock import patch
 
 from pytest import mark, raises
@@ -69,10 +68,6 @@ def test_changefeed_class(changefeed_class_func_name, args_qty):
         changefeed_class_func(None, *range(args_qty))
 
 
-@mark.parametrize('db,conn_cls', (
-    ('mongodb', 'MongoDBConnection'),
-    ('rethinkdb', 'RethinkDBConnection'),
-))
 @patch('bigchaindb.backend.schema.create_indexes',
        autospec=True, return_value=None)
 @patch('bigchaindb.backend.schema.create_tables',
@@ -80,16 +75,24 @@ def test_changefeed_class(changefeed_class_func_name, args_qty):
 @patch('bigchaindb.backend.schema.create_database',
        autospec=True, return_value=None)
 def test_init_database(mock_create_database, mock_create_tables,
-                       mock_create_indexes, db, conn_cls):
+                       mock_create_indexes):
     from bigchaindb.backend.schema import init_database
-    conn = getattr(
-        import_module('bigchaindb.backend.{}.connection'.format(db)),
-        conn_cls,
-    )('host', 'port', 'dbname')
+    from bigchaindb.backend.rethinkdb.connection import RethinkDBConnection
+    from bigchaindb.backend.mongodb.connection import MongoDBConnection
+
+    # rethinkdb
+    conn = RethinkDBConnection('host', 'port', 'dbname')
     init_database(connection=conn, dbname='mickeymouse')
-    mock_create_database.assert_called_once_with(conn, 'mickeymouse')
-    mock_create_tables.assert_called_once_with(conn, 'mickeymouse')
-    mock_create_indexes.assert_called_once_with(conn, 'mickeymouse')
+    mock_create_database.assert_called_with(conn, 'mickeymouse')
+    mock_create_tables.assert_called_with(conn, 'mickeymouse')
+    mock_create_indexes.assert_called_with(conn, 'mickeymouse')
+
+    # mongodb
+    conn = MongoDBConnection('host', 'port', 'dbname', replicaset='rs')
+    init_database(connection=conn, dbname='mickeymouse')
+    mock_create_database.assert_called_with(conn, 'mickeymouse')
+    mock_create_tables.assert_called_with(conn, 'mickeymouse')
+    mock_create_indexes.assert_called_with(conn, 'mickeymouse')
 
 
 @mark.parametrize('admin_func_name,kwargs', (

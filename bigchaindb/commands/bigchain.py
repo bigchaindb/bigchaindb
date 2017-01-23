@@ -86,6 +86,16 @@ def run_configure(args, skip_if_exists=False):
     conf['keypair']['private'], conf['keypair']['public'] = \
         crypto.generate_key_pair()
 
+    # select the correct config defaults based on the backend
+    print('Generating default configuration for backend {}'
+          .format(args.backend))
+    database = {}
+    if args.backend == 'rethinkdb':
+        database = bigchaindb._database_rethinkdb
+    elif args.backend == 'mongodb':
+        database = bigchaindb._database_mongodb
+    conf['database'] = database
+
     if not args.yes:
         for key in ('bind', ):
             val = conf['server'][key]
@@ -282,9 +292,13 @@ def create_parser():
                                        dest='command')
 
     # parser for writing a config file
-    subparsers.add_parser('configure',
-                          help='Prepare the config file '
-                               'and create the node keypair')
+    config_parser = subparsers.add_parser('configure',
+                                          help='Prepare the config file '
+                                               'and create the node keypair')
+    config_parser.add_argument('backend',
+                               choices=['rethinkdb', 'mongodb'],
+                               help='The backend to use. It can be either '
+                                    'rethinkdb or mongodb.')
 
     # parsers for showing/exporting config values
     subparsers.add_parser('show-config',

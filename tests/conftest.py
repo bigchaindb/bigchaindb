@@ -109,26 +109,24 @@ def _restore_dbs(request):
 
 @pytest.fixture(scope='session')
 def _configure_bigchaindb(request):
+    import bigchaindb
     from bigchaindb import config_utils
     test_db_name = TEST_DB_NAME
     # Put a suffix like _gw0, _gw1 etc on xdist processes
     xdist_suffix = getattr(request.config, 'slaveinput', {}).get('slaveid')
     if xdist_suffix:
         test_db_name = '{}_{}'.format(TEST_DB_NAME, xdist_suffix)
+
+    backend = request.config.getoption('--database-backend')
+    backend_conf = getattr(bigchaindb, '_database_' + backend)
     config = {
-        'database': {
-            'name': test_db_name,
-            'backend': request.config.getoption('--database-backend'),
-        },
+        'database': backend_conf,
         'keypair': {
             'private': '31Lb1ZGKTyHnmVK3LUMrAUrPNfd4sE2YyBt3UA4A25aA',
             'public': '4XYfCbabAWVUCbjTmRTFEu2sc3dFEdkse4r6X498B1s8',
         }
     }
-    # FIXME
-    if config['database']['backend'] == 'mongodb':
-        # not a great way to do this
-        config['database']['port'] = 27017
+    config['database']['name'] = test_db_name
     config_utils.set_config(config)
 
 

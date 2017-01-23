@@ -130,7 +130,6 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
             'host': 'test-host',
             'port': 4242,
             'name': 'test-dbname',
-            'replicaset': 'bigchain-rs'
         },
         'keypair': {
             'public': None,
@@ -215,7 +214,6 @@ def test_write_config():
     ('BIGCHAINDB_DATABASE_HOST', 'test-host', 'host'),
     ('BIGCHAINDB_DATABASE_PORT', 4242, 'port'),
     ('BIGCHAINDB_DATABASE_NAME', 'test-db', 'name'),
-    ('BIGCHAINDB_DATABASE_REPLICASET', 'test-replicaset', 'replicaset')
 ))
 def test_database_envs(env_name, env_value, config_key, monkeypatch):
     import bigchaindb
@@ -225,5 +223,20 @@ def test_database_envs(env_name, env_value, config_key, monkeypatch):
 
     expected_config = copy.deepcopy(bigchaindb.config)
     expected_config['database'][config_key] = env_value
+
+    assert bigchaindb.config == expected_config
+
+
+def test_database_envs_replicaset(monkeypatch):
+    # the replica set env is only used if the backend is mongodb
+    import bigchaindb
+
+    monkeypatch.setattr('os.environ', {'BIGCHAINDB_DATABASE_REPLICASET':
+                                       'test-replicaset'})
+    bigchaindb.config['database'] = bigchaindb._database_mongodb
+    bigchaindb.config_utils.autoconfigure()
+
+    expected_config = copy.deepcopy(bigchaindb.config)
+    expected_config['database']['replicaset'] = 'test-replicaset'
 
     assert bigchaindb.config == expected_config
