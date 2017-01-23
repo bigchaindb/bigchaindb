@@ -18,6 +18,13 @@ The instructions that follow have been tested on Ubuntu 14.04, but may also work
 
 **Note: Our Python scripts for deploying to AWS use Python 2 because Fabric doesn't work with Python 3.**
 
+You must install the Python package named `fabric`, but it depends on the `cryptography` package, and that depends on some OS-level packages. On Ubuntu 14.04, you can install those OS-level packages using:
+```text
+sudo apt-get install build-essential libssl-dev libffi-dev python-dev
+```
+
+For other operating systems, see [the installation instructions for the `cryptography` package](https://cryptography.io/en/latest/installation/).
+
 Maybe create a Python 2 virtual environment and activate it. Then install the following Python packages (in that virtual environment):
 ```text
 pip install fabric fabtools requests boto3 awscli
