@@ -74,6 +74,7 @@ install_requires = [
     'multipipes~=0.1.0',
     'jsonschema~=2.5.1',
     'pyyaml~=3.12',
+    'blinker~=1.4',
 ]
 
 setup(
