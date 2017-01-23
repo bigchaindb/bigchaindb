@@ -14,20 +14,28 @@ def clean_config(monkeypatch):
     monkeypatch.setattr('bigchaindb.config', copy.deepcopy(ORIGINAL_CONFIG))
 
 
-def test_bigchain_instance_is_initialized_when_conf_provided():
+def test_bigchain_instance_is_initialized_when_conf_provided(request):
+    import bigchaindb
     from bigchaindb import config_utils
     assert 'CONFIGURED' not in bigchaindb.config
 
     config_utils.set_config({'keypair': {'public': 'a', 'private': 'b'}})
 
     assert bigchaindb.config['CONFIGURED'] is True
+
+    # set the current backend so that Bigchain can create a connection
+    backend = request.config.getoption('--database-backend')
+    backend_conf = getattr(bigchaindb, '_database_' + backend)
+    bigchaindb.config['database'] = backend_conf
+
     b = bigchaindb.Bigchain()
 
     assert b.me
     assert b.me_private
 
 
-def test_bigchain_instance_raises_when_not_configured(monkeypatch):
+def test_bigchain_instance_raises_when_not_configured(request, monkeypatch):
+    import bigchaindb
     from bigchaindb import config_utils
     from bigchaindb.common import exceptions
     assert 'CONFIGURED' not in bigchaindb.config
@@ -35,6 +43,11 @@ def test_bigchain_instance_raises_when_not_configured(monkeypatch):
     # We need to disable ``bigchaindb.config_utils.autoconfigure`` to avoid reading
     # from existing configurations
     monkeypatch.setattr(config_utils, 'autoconfigure', lambda: 0)
+
+    # set the current backend so that Bigchain can create a connection
+    backend = request.config.getoption('--database-backend')
+    backend_conf = getattr(bigchaindb, '_database_' + backend)
+    bigchaindb.config['database'] = backend_conf
 
     with pytest.raises(exceptions.KeypairNotFoundException):
         bigchaindb.Bigchain()
