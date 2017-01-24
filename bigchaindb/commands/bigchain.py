@@ -22,7 +22,8 @@ from bigchaindb.models import Transaction
 from bigchaindb.utils import ProcessGroup
 from bigchaindb import backend
 from bigchaindb.backend import schema
-from bigchaindb.backend.admin import set_replicas, set_shards
+from bigchaindb.backend.admin import (set_replicas, set_shards, add_replicas,
+                                      remove_replicas)
 from bigchaindb.backend.exceptions import DatabaseOpFailedError
 from bigchaindb.commands import utils
 from bigchaindb import processes
@@ -269,6 +270,32 @@ def run_set_replicas(args):
         logger.warn(e)
 
 
+def run_add_replicas(args):
+    # Note: This command is specific to MongoDB
+    bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
+    conn = backend.connect()
+
+    try:
+        add_replicas(conn, args.replicas)
+    except DatabaseOpFailedError as e:
+        logger.warn(e)
+    else:
+        logger.info('Added {} to the replicaset.'.format(args.replicas))
+
+
+def run_remove_replicas(args):
+    # Note: This command is specific to MongoDB
+    bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
+    conn = backend.connect()
+
+    try:
+        remove_replicas(conn, args.replicas)
+    except DatabaseOpFailedError as e:
+        logger.warn(e)
+    else:
+        logger.info('Removed {} from the replicaset.'.format(args.replicas))
+
+
 def create_parser():
     parser = argparse.ArgumentParser(
         description='Control your BigchainDB node.',
@@ -333,6 +360,32 @@ def create_parser():
     replicas_parser.add_argument('num_replicas', metavar='num_replicas',
                                  type=int, default=1,
                                  help='Number of replicas (i.e. the replication factor)')
+
+    # parser for adding nodes to the replica set
+    add_replicas_parser = subparsers.add_parser('add-replicas',
+                                                help='Add a set of nodes to the '
+                                                     'replica set. This command '
+                                                     'is specific to the MongoDB'
+                                                     ' backend.')
+
+    add_replicas_parser.add_argument('replicas', nargs='+',
+                                     type=utils.mongodb_host,
+                                     help='A list of space separated hosts to '
+                                          'add to the replicaset. Each host '
+                                          'should be in the form `host:port`.')
+
+    # parser for removing nodes from the replica set
+    rm_replicas_parser = subparsers.add_parser('remove-replicas',
+                                               help='Remove a set of nodes from the '
+                                                    'replica set. This command '
+                                                    'is specific to the MongoDB'
+                                                    ' backend.')
+
+    rm_replicas_parser.add_argument('replicas', nargs='+',
+                                    type=utils.mongodb_host,
+                                    help='A list of space separated hosts to '
+                                         'remove from the replicaset. Each host '
+                                         'should be in the form `host:port`.')
 
     load_parser = subparsers.add_parser('load',
                                         help='Write transactions to the backlog')

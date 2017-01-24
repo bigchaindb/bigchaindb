@@ -23,10 +23,10 @@ def set_replicas(connection, *, replicas):
 
 
 @singledispatch
-def add_replicas(connection, *, replicas):
+def add_replicas(connection, replicas):
     raise NotImplementedError
 
 
 @singledispatch
-def remove_replicas(connection, *, replicas):
+def remove_replicas(connection, replicas):
     raise NotImplementedError
