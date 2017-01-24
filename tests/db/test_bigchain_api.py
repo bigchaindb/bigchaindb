@@ -1169,22 +1169,24 @@ def test_get_owned_ids_calls_get_outputs_filtered():
 
 
 def test_get_outputs_filtered_only_unspent():
-    from bigchaindb.common.transaction import TransactionLink as TL
+    from bigchaindb.common.transaction import TransactionLink
     from bigchaindb.core import Bigchain
     with patch('bigchaindb.core.Bigchain.get_outputs') as get_outputs:
-        get_outputs.return_value = [TL('a', 1), TL('b', 2)]
+        get_outputs.return_value = [TransactionLink('a', 1),
+                                    TransactionLink('b', 2)]
         with patch('bigchaindb.core.Bigchain.get_spent') as get_spent:
             get_spent.side_effect = [True, False]
             out = Bigchain().get_outputs_filtered('abc', include_spent=False)
     get_outputs.assert_called_once_with('abc')
-    assert out == [TL('b', 2)]
+    assert out == [TransactionLink('b', 2)]
 
 
 def test_get_outputs_filtered():
-    from bigchaindb.common.transaction import TransactionLink as TL
+    from bigchaindb.common.transaction import TransactionLink
     from bigchaindb.core import Bigchain
     with patch('bigchaindb.core.Bigchain.get_outputs') as get_outputs:
-        get_outputs.return_value = [TL('a', 1), TL('b', 2)]
+        get_outputs.return_value = [TransactionLink('a', 1),
+                                    TransactionLink('b', 2)]
         with patch('bigchaindb.core.Bigchain.get_spent') as get_spent:
             out = Bigchain().get_outputs_filtered('abc')
     get_outputs.assert_called_once_with('abc')
