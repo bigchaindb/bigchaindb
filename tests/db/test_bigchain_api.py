@@ -1163,8 +1163,8 @@ def test_get_owned_ids_calls_get_outputs_filtered():
     from bigchaindb.core import Bigchain
     with patch('bigchaindb.core.Bigchain.get_outputs_filtered') as gof:
         b = Bigchain()
-        res = b.get_owned_ids("abc")
-    gof.assert_called_once_with("abc", include_spent=False)
+        res = b.get_owned_ids('abc')
+    gof.assert_called_once_with('abc', include_spent=False)
     assert res == gof()
 
 
