@@ -966,11 +966,13 @@ def test_cant_add_empty_input():
 
 
 def test_validate_version(utx):
+    import re
     import bigchaindb.version
     from .utils import validate_transaction_model
     from bigchaindb.common.exceptions import SchemaValidationError
 
-    assert utx.version == bigchaindb.version.__version__
+    short_ver = bigchaindb.version.__short_version__
+    assert utx.version == re.match(r'^(.*\d)', short_ver).group(1)
 
     validate_transaction_model(utx)
 
