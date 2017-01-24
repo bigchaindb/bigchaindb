@@ -267,15 +267,26 @@ class Bigchain(object):
             return response
 
     def get_transaction_status(self, txid):
-        """Retrieve the status of a transaction with `txid` from bigchain.
+        """Retrieves the status of the transaction having the given
+        ``txid``.
 
         Args:
-            txid (str): transaction id of the transaction to query
+            txid (str): Transaction id of the transaction to query the
+                status for.
 
         Returns:
-            (string): transaction status ('valid', 'undecided',
-            or 'backlog'). If no transaction with that `txid` was found it
-            returns `None`
+            str: The transaction status (``'valid'``, ``'undecided'``,
+            ``'backlog'``, or ``'invalid'``). If no transaction with
+            the given ``txid`` was found it returns ``None``.
+
+        Note:
+            A transaction's lifecycle is such that it may go through the
+            ``backlog``, ``undecided``, and ``invalid`` states a few
+            times before being ``valid``. Consequently, if a transaction
+            lands in an ``invalid`` block, but goes through an
+            additional round, it may be reported as being in the
+            ``backlog`` or in an ``undecided`` block, or eventually in
+            a ``valid`` block.
         """
         try:
             statuses = self.get_blocks_status_containing_tx(txid).values()
