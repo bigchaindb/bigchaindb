@@ -23,6 +23,7 @@ For convenience, here's a list of all the relevant environment variables (docume
 `BIGCHAINDB_STATSD_RATE`<br>
 `BIGCHAINDB_CONFIG_PATH`<br>
 `BIGCHAINDB_BACKLOG_REASSIGN_DELAY`<br>
+`BIGCHAINDB_CONSENSUS_PLUGIN`<br>
 
 The local config file is `$HOME/.bigchaindb` by default (a file which might not even exist), but you can tell BigchainDB to use a different file by using the `-c` command-line option, e.g. `bigchaindb -c path/to/config_file.json start`
 or using the `BIGCHAINDB_CONFIG_PATH` environment variable, e.g. `BIGHAINDB_CONFIG_PATH=.my_bigchaindb_config bigchaindb start`.
@@ -56,7 +57,7 @@ Internally (i.e. in the Python code), both keys have a default value of `None`, 
 
 ## keyring
 
-A list of the public keys of all the nodes in the cluster, excluding the public key of this node. 
+A list of the public keys of all the nodes in the cluster, excluding the public key of this node.
 
 **Example using an environment variable**
 ```text
@@ -67,7 +68,7 @@ Note how the keys in the list are separated by colons.
 
 **Example config file snippet**
 ```js
-"keyring": ["BnCsre9MPBeQK8QZBFznU2dJJ2GwtvnSMdemCmod2XPB", 
+"keyring": ["BnCsre9MPBeQK8QZBFznU2dJJ2GwtvnSMdemCmod2XPB",
             "4cYQHoQrvPiut3Sjs8fVR1BMZZpJjMTC4bsMTt9V71aQ"]
 ```
 
@@ -170,9 +171,23 @@ Specifies how long, in seconds, transactions can remain in the backlog before be
 **Example using environment variables**
 ```text
 export BIGCHAINDB_BACKLOG_REASSIGN_DELAY=30
-``` 
+```
 
 **Default value (from a config file)**
 ```js
-"backlog_reassign_delay": 120 
+"backlog_reassign_delay": 120
+```
+
+## consensus_plugin
+
+The [consensus plugin](../appendices/consensus.html) to use.
+
+**Example using an environment variable**
+```text
+export BIGCHAINDB_CONSENSUS_PLUGIN=default
+```
+
+**Example config file snippet: the default**
+```js
+"consensus_plugin": "default"
 ```
