@@ -272,11 +272,61 @@ def genesis_block(b):
 
 
 @pytest.fixture
+def backlog_tx(b, signed_create_tx):
+    b.write_transaction(signed_create_tx)
+    return signed_create_tx
+
+
+@pytest.fixture
+def undecided_block(b, signed_create_tx):
+    block = b.create_block([signed_create_tx])
+    b.write_block(block)
+    return block
+
+
+@pytest.fixture
+def undecided_block_2(b, signed_create_tx, signed_transfer_tx):
+    block = b.create_block([signed_create_tx, signed_transfer_tx])
+    b.write_block(block)
+    return block
+
+
+@pytest.fixture
+def undecided_tx(b, undecided_block):
+    return undecided_block.transactions[0]
+
+
+@pytest.fixture
+def valid_block(b, genesis_block, undecided_block):
+    vote = b.vote(undecided_block.id, genesis_block.id, True)
+    b.write_vote(vote)
+    return undecided_block
+
+
+@pytest.fixture
+def invalid_block(b, genesis_block, undecided_block):
+    vote = b.vote(undecided_block.id, genesis_block.id, False)
+    b.write_vote(vote)
+    return undecided_block
+
+
+@pytest.fixture
+def valid_tx(b, valid_block):
+    return valid_block.transactions[0]
+
+
+@pytest.fixture
+def invalid_tx(b, invalid_block):
+    return invalid_block.transactions[0]
+
+
+@pytest.fixture
 def inputs(user_pk, b, genesis_block):
     from bigchaindb.models import Transaction
 
     # create blocks with transactions for `USER` to spend
     prev_block_id = genesis_block.id
+    blocks = []
     for block in range(4):
         transactions = [
             Transaction.create(
@@ -293,6 +343,8 @@ def inputs(user_pk, b, genesis_block):
         vote = b.vote(block.id, prev_block_id, True)
         prev_block_id = block.id
         b.write_vote(vote)
+        blocks.append(block)
+    return blocks
 
 
 @pytest.fixture
