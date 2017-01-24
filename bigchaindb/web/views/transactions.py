@@ -9,7 +9,6 @@ import logging
 from flask import current_app, request
 from flask_restful import Resource, reqparse
 
-
 from bigchaindb.common.exceptions import (
     AmountError,
     DoubleSpend,
@@ -24,11 +23,18 @@ from bigchaindb.common.exceptions import (
 )
 
 import bigchaindb
+from bigchaindb import Bigchain
 from bigchaindb.models import Transaction
 from bigchaindb.web.views.base import make_error
 from bigchaindb.web.views import parameters
 
 logger = logging.getLogger(__name__)
+
+TRANSACTION_STATUSES = (
+    Bigchain.BLOCK_VALID,
+    Bigchain.BLOCK_UNDECIDED,
+    Bigchain.TX_IN_BACKLOG,
+)
 
 
 class TransactionApi(Resource):
@@ -41,13 +47,33 @@ class TransactionApi(Resource):
         Return:
             A JSON string containing the data about the transaction.
         """
+        parser = reqparse.RequestParser(trim=True)
+        parser.add_argument(
+            'status',
+            default='valid',
+            type=str,
+            choices=TRANSACTION_STATUSES,
+            case_sensitive=False,
+            help=('Unsupported transaction status: {error_msg}. ' +
+                  'Must be one of: ("{}", "{}", "{}")'.format(
+                      *TRANSACTION_STATUSES)),
+        )
+        args = parser.parse_args(strict=True)
+        requested_status = args['status']
+
         pool = current_app.config['bigchain_pool']
 
         with pool() as bigchain:
-            tx = bigchain.get_transaction(tx_id)
+            tx, status = bigchain.get_transaction(tx_id, include_status=True)
 
-        if not tx:
-            return make_error(404)
+        if not tx or status != requested_status:
+            return make_error(
+                404,
+                message=(
+                    'Transaction with id: "{}" and '
+                    'status: "{}" could not be found.'
+                ).format(tx_id, requested_status)
+            )
 
         return tx.to_dict()
 
