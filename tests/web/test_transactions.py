@@ -54,8 +54,8 @@ def test_post_create_transaction_with_invalid_id(b, client, caplog):
     res = client.post(TX_ENDPOINT, data=json.dumps(tx))
     expected_status_code = 400
     expected_error_message = (
-        "Invalid transaction ({}): The transaction's id '{}' isn't equal to "
-        "the hash of its body, i.e. it's not valid."
+        'Invalid transaction ({}): The transaction\'s id \'{}\' isn\'t equal to '
+        'the hash of its body, i.e. it\'s not valid.'
     ).format(InvalidHash.__name__, tx['id'])
     assert res.status_code == expected_status_code
     assert res.json['message'] == expected_error_message
@@ -75,8 +75,8 @@ def test_post_create_transaction_with_invalid_signature(b, client, caplog):
     res = client.post(TX_ENDPOINT, data=json.dumps(tx))
     expected_status_code = 400
     expected_error_message = (
-        "Invalid transaction ({}): Fulfillment URI "
-        "couldn't been parsed"
+        'Invalid transaction ({}): Fulfillment URI '
+        'couldn\'t been parsed'
     ).format(InvalidSignature.__name__)
     assert res.status_code == expected_status_code
     assert res.json['message'] == expected_error_message

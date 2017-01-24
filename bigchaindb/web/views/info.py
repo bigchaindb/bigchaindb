@@ -36,10 +36,10 @@ class ApiV1Index(Resource):
             '/drivers-clients/http-client-server-api.html',
         ]
         return {
-            "_links": {
-                "docs": ''.join(docs_url),
-                "self": api_root,
-                "statuses": api_root + "statuses/",
-                "transactions": api_root + "transactions/",
+            '_links': {
+                'docs': ''.join(docs_url),
+                'self': api_root,
+                'statuses': api_root + 'statuses/',
+                'transactions': api_root + 'transactions/',
             },
         }
