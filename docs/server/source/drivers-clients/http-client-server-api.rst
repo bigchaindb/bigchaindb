@@ -10,6 +10,7 @@ If you set up a BigchainDB node or reverse proxy yourself,
 and you're not sure what the API Root URL is,
 then see the last section of this page for help.
 
+.. _bigchaindb-root-url:
 
 BigchainDB Root URL
 -------------------
@@ -392,6 +393,8 @@ Votes
    :statuscode 200: A list of votes voting for a block with ID ``block_id`` was found and returned.
    :statuscode 400: The request wasn't understood by the server, e.g. just requesting ``/votes``, without defining ``block_id``.
 
+
+.. _determining-the-api-root-url:
 
 Determining the API Root URL
 ----------------------------
