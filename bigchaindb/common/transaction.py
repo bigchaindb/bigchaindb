@@ -118,7 +118,7 @@ class Input(object):
             fulfillment = Fulfillment.from_uri(data['fulfillment'])
         except ValueError:
             # TODO FOR CC: Throw an `InvalidSignature` error in this case.
-            raise InvalidSignature('Fulfillment URI couldn\'t been parsed')
+            raise InvalidSignature("Fulfillment URI couldn't been parsed")
         except TypeError:
             # NOTE: See comment about this special case in
             #       `Input.to_dict`

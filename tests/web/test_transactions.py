@@ -97,7 +97,7 @@ def test_post_create_transaction_with_invalid_schema(client, caplog):
     res = client.post(TX_ENDPOINT, data=json.dumps(tx))
     expected_status_code = 400
     expected_error_message = (
-        'Invalid transaction schema: \'version\' is a required property')
+        "Invalid transaction schema: 'version' is a required property")
     assert res.status_code == expected_status_code
     assert res.json['message'] == expected_error_message
     assert caplog.records[0].args['status'] == expected_status_code
