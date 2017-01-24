@@ -1039,7 +1039,7 @@ class Transaction(object):
 
         if tx_body.get('operation') == Transaction.CREATE:
             if proposed_tx_id != tx_body['asset'].get('id'):
-                raise InvalidHash("CREATE tx has wrong asset_id")
+                raise InvalidHash('CREATE tx has wrong asset_id')
 
     @classmethod
     def from_dict(cls, tx):
