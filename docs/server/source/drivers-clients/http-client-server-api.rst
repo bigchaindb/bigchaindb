@@ -37,6 +37,7 @@ that allows you to discover the BigchainDB API endpoints:
 .. literalinclude:: samples/api-index-response.http
     :language: http
 
+
 Transactions
 -------------------
 
@@ -152,7 +153,7 @@ Transaction Outputs
 
 The ``/api/v1/outputs`` endpoint returns transactions outputs filtered by a
 given public key, and optionally filtered to only include outputs that have
-not already been spent. 
+not already been spent.
 
 
 .. http:get:: /api/v1/outputs?public_key={public_key}
@@ -162,20 +163,20 @@ not already been spent.
    ownership.
 
    Returns a list of links to transaction outputs.
-   
+
    :param public_key: Base58 encoded public key associated with output ownership. This parameter is mandatory and without it the endpoint will return a ``400`` response code.
    :param unspent: Boolean value ("true" or "false") indicating if the result set should be limited to outputs that are available to spend.
-   
- 
+
+
    **Example request**:
- 
+
    .. sourcecode:: http
- 
+
      GET /api/v1/outputs?public_key=1AAAbbb...ccc HTTP/1.1
      Host: example.com
 
    **Example response**:
-   
+
    .. sourcecode:: http
 
      HTTP/1.1 200 OK
@@ -185,10 +186,9 @@ not already been spent.
        "../transactions/2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e/outputs/0",
        "../transactions/2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e/outputs/1"
      ]
- 
+
    :statuscode 200: A list of outputs were found and returned in the body of the response.
    :statuscode 400: The request wasn't understood by the server, e.g. the ``public_key`` querystring was not included in the request.
-
 
 
 Statuses
@@ -282,7 +282,6 @@ The `votes endpoint <#votes>`_ contains all the voting information for a specifi
 ``block_id`` for a given ``tx_id``, one can now simply inspect the votes that happened at a specific time on that block.
 
 
-
 Blocks
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -364,8 +363,6 @@ Blocks
 
    :statuscode 200: A list of blocks containing a transaction with ID ``tx_id`` was found and returned.
    :statuscode 400: The request wasn't understood by the server, e.g. just requesting ``/blocks``, without defining ``tx_id``.
-
-
 
 
 Votes
