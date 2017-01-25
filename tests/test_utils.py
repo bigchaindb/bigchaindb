@@ -137,3 +137,11 @@ def test_is_genesis_block_returns_true_if_genesis(b):
     from bigchaindb.utils import is_genesis_block
     genesis_block = b.prepare_genesis_block()
     assert is_genesis_block(genesis_block)
+
+
+def test_lazy_execution():
+    from bigchaindb.utils import Lazy
+    l = Lazy()
+    l.split(',')[1].split(' ').pop(1).strip()
+    result = l.run('Like humans, cats tend to favor one paw over another')
+    assert result == 'cats'

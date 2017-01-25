@@ -157,3 +157,31 @@ def is_genesis_block(block):
         return block.transactions[0].operation == 'GENESIS'
     except AttributeError:
         return block['block']['transactions'][0]['operation'] == 'GENESIS'
+
+
+class Lazy:
+
+    def __init__(self):
+        self.stack = []
+
+    def __getattr__(self, name):
+        self.stack.append(name)
+        return self
+
+    def __call__(self, *args, **kwargs):
+        self.stack.append((args, kwargs))
+        return self
+
+    def __getitem__(self, key):
+        self.stack.append('__getitem__')
+        self.stack.append(([key], {}))
+        return self
+
+    def run(self, instance):
+        last = instance
+
+        for method, (args, kwargs) in zip(self.stack[::2], self.stack[1::2]):
+            last = getattr(last, method)(*args, **kwargs)
+
+        self.stack = []
+        return last

@@ -5,6 +5,7 @@ from pymongo import MongoClient
 from pymongo import errors
 
 import bigchaindb
+from bigchaindb.utils import Lazy
 from bigchaindb.common import exceptions
 from bigchaindb.backend.connection import Connection
 
@@ -43,6 +44,9 @@ class MongoDBConnection(Connection):
     def db(self):
         return self.conn[self.dbname]
 
+    def run(self, query):
+        return query.run(self.db)
+
     def _connect(self):
         # we should only return a connection if the replica set is
         # initialized. initialize_replica_set will check if the
@@ -58,6 +62,10 @@ class MongoDBConnection(Connection):
                     raise
                 else:
                     time.sleep(2**i)
+
+
+def table(name):
+    return Lazy()[name]
 
 
 def initialize_replica_set():
