@@ -436,6 +436,15 @@ def test_cast_transaction_link_to_boolean():
     assert bool(TransactionLink(False, False)) is True
 
 
+def test_transaction_link_eq():
+    from bigchaindb.common.transaction import TransactionLink
+
+    assert TransactionLink(1, 2) == TransactionLink(1, 2)
+    assert TransactionLink(2, 2) != TransactionLink(1, 2)
+    assert TransactionLink(1, 1) != TransactionLink(1, 2)
+    assert TransactionLink(2, 1) != TransactionLink(1, 2)
+
+
 def test_add_input_to_tx(user_input, asset_definition):
     from bigchaindb.common.transaction import Transaction
 

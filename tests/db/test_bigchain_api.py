@@ -1,6 +1,7 @@
 from time import sleep
 
 import pytest
+from unittest.mock import patch
 
 pytestmark = pytest.mark.bdb
 
@@ -1156,3 +1157,38 @@ class TestMultipleInputs(object):
         # check that the other remain marked as unspent
         for unspent in transactions[1:]:
             assert b.get_spent(unspent.id, 0) is None
+
+
+def test_get_owned_ids_calls_get_outputs_filtered():
+    from bigchaindb.core import Bigchain
+    with patch('bigchaindb.core.Bigchain.get_outputs_filtered') as gof:
+        b = Bigchain()
+        res = b.get_owned_ids('abc')
+    gof.assert_called_once_with('abc', include_spent=False)
+    assert res == gof()
+
+
+def test_get_outputs_filtered_only_unspent():
+    from bigchaindb.common.transaction import TransactionLink
+    from bigchaindb.core import Bigchain
+    with patch('bigchaindb.core.Bigchain.get_outputs') as get_outputs:
+        get_outputs.return_value = [TransactionLink('a', 1),
+                                    TransactionLink('b', 2)]
+        with patch('bigchaindb.core.Bigchain.get_spent') as get_spent:
+            get_spent.side_effect = [True, False]
+            out = Bigchain().get_outputs_filtered('abc', include_spent=False)
+    get_outputs.assert_called_once_with('abc')
+    assert out == [TransactionLink('b', 2)]
+
+
+def test_get_outputs_filtered():
+    from bigchaindb.common.transaction import TransactionLink
+    from bigchaindb.core import Bigchain
+    with patch('bigchaindb.core.Bigchain.get_outputs') as get_outputs:
+        get_outputs.return_value = [TransactionLink('a', 1),
+                                    TransactionLink('b', 2)]
+        with patch('bigchaindb.core.Bigchain.get_spent') as get_spent:
+            out = Bigchain().get_outputs_filtered('abc')
+    get_outputs.assert_called_once_with('abc')
+    get_spent.assert_not_called()
+    assert out == get_outputs.return_value

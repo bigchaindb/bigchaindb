@@ -373,8 +373,9 @@ class Bigchain(object):
         else:
             return None
 
-    def get_owned_ids(self, owner):
-        """Retrieve a list of ``txid`` s that can be used as inputs.
+    def get_outputs(self, owner):
+        """Retrieve a list of links to transaction outputs for a given public
+           key.
 
         Args:
             owner (str): base58 encoded public key.
@@ -383,10 +384,9 @@ class Bigchain(object):
             :obj:`list` of TransactionLink: list of ``txid`` s and ``output`` s
             pointing to another transaction's condition
         """
-
         # get all transactions in which owner is in the `owners_after` list
         response = backend.query.get_owned_ids(self.connection, owner)
-        owned = []
+        links = []
 
         for tx in response:
             # disregard transactions from invalid blocks
@@ -411,11 +411,30 @@ class Bigchain(object):
                     # subfulfillment for `owner`
                     if utils.condition_details_has_owner(output['condition']['details'], owner):
                         tx_link = TransactionLink(tx['id'], index)
-                # check if input was already spent
-                if not self.get_spent(tx_link.txid, tx_link.output):
-                    owned.append(tx_link)
+                links.append(tx_link)
+        return links
 
-        return owned
+    def get_owned_ids(self, owner):
+        """Retrieve a list of ``txid`` s that can be used as inputs.
+
+        Args:
+            owner (str): base58 encoded public key.
+
+        Returns:
+            :obj:`list` of TransactionLink: list of ``txid`` s and ``output`` s
+            pointing to another transaction's condition
+        """
+        return self.get_outputs_filtered(owner, include_spent=False)
+
+    def get_outputs_filtered(self, owner, include_spent=True):
+        """
+        Get a list of output links filtered on some criteria
+        """
+        outputs = self.get_outputs(owner)
+        if not include_spent:
+            outputs = [o for o in outputs
+                       if not self.get_spent(o.txid, o.output)]
+        return outputs
 
     def get_transactions_filtered(self, asset_id, operation=None):
         """
