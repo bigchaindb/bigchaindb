@@ -38,6 +38,9 @@ def test_post_create_transaction_endpoint(b, client):
     tx = tx.sign([user_priv])
 
     res = client.post(TX_ENDPOINT, data=json.dumps(tx.to_dict()))
+
+    assert res.status_code == 202
+
     assert res.json['inputs'][0]['owners_before'][0] == user_pub
     assert res.json['outputs'][0]['public_keys'][0] == user_pub
 
@@ -156,6 +159,8 @@ def test_post_transfer_transaction_endpoint(b, client, user_pk, user_sk):
     transfer_tx = transfer_tx.sign([user_sk])
 
     res = client.post(TX_ENDPOINT, data=json.dumps(transfer_tx.to_dict()))
+
+    assert res.status_code == 202
 
     assert res.json['inputs'][0]['owners_before'][0] == user_pk
     assert res.json['outputs'][0]['public_keys'][0] == user_pub

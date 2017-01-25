@@ -113,4 +113,4 @@ class TransactionListApi(Resource):
                 with monitor.timer('write_transaction', rate=rate):
                     bigchain.write_transaction(tx_obj)
 
-        return tx
+        return tx, 202
