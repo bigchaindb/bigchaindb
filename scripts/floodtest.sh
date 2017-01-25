@@ -5,8 +5,22 @@
 # Run BigchainDB test suite repeatedly in parallel. For hunting race conditions.
 # 
 # Author: scott@bigchaindb.com
+#
+# Arguments:
+#     [int] Number of workers
+#
+# Environment variables:
+# $FLOOD_CMD - Test command to run, defaults to "pytest -v -s -x"
+#
+# In order to run this command repeatedly, try:
+#
+# while true; do path/to/floodtest.sh $x || break; done
+#
+
 
 set -e
+
+test_cmd=${FLOOD_CMD:-pytest -v -x -s}
 
 function runWorker () {
 	set -x
@@ -16,7 +30,7 @@ function runWorker () {
 	fi
 	cd $1
 	docker-compose -p flood-$1 up -d mdb
-	docker-compose -p flood-$1 run --rm bdb-mdb pytest -v -x -s
+	docker-compose -p flood-$1 run --rm bdb-mdb $test_cmd
 	# Neccesary so that no root-owned files are left lying around,
 	# otherwise we can't clean up outside the container without `sudo`. 
 	docker-compose -p flood-$1 run -w/usr/src --rm bdb-mdb bash -c \
