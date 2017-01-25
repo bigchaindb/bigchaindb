@@ -67,7 +67,7 @@ Content-Type: application/json
 
 
 TPLS['post-tx-response'] = """\
-HTTP/1.1 200 OK
+HTTP/1.1 202 Accepted
 Content-Type: application/json
 
 %(tx)s

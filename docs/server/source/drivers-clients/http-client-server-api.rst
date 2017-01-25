@@ -45,8 +45,8 @@ Transactions
 
    Get the transaction with the ID ``tx_id``.
 
-   This endpoint returns only a transaction from the ``BACKLOG`` or a ``VALID`` or ``UNDECIDED``
-   block on ``bigchain``, if exists.
+   This endpoint returns a transaction only if a ``VALID`` block on
+   ``bigchain`` exists.
 
    :param tx_id: transaction ID
    :type tx_id: hex string
@@ -144,7 +144,7 @@ Transactions
 
    :resheader Content-Type: ``application/json``
 
-   :statuscode 200: The pushed transaction was accepted in the ``BACKLOG``, but the processing has not been completed.
+   :statuscode 202: The pushed transaction was accepted in the ``BACKLOG``, but the processing has not been completed.
    :statuscode 400: The transaction was malformed and not accepted in the ``BACKLOG``.
 
 
@@ -198,10 +198,6 @@ Statuses
 
    Get the status of an asynchronously written transaction or block by their id.
 
-   The possible status values are ``undecided``, ``valid`` or ``invalid`` for
-   both blocks and transactions. An additional state ``backlog`` is provided
-   for transactions.
-
    A link to the resource is also provided in the returned payload under
    ``_links``.
 
@@ -220,14 +216,13 @@ Statuses
 
     Get the status of a transaction.
 
+    The possible status values are ``undecided``, ``valid`` or ``backlog``.
+    If a transaction in neither of those states is found, a ``404 Not Found``
+    HTTP status code is returned. `We're currently looking into ways to unambigously let the user know about a transaction's status that was included in an invalid block. <https://github.com/bigchaindb/bigchaindb/issues/1039>`_
+
    **Example request**:
 
    .. literalinclude:: samples/get-statuses-tx-request.http
-      :language: http
-
-   **Example response**:
-
-   .. literalinclude:: samples/get-statuses-tx-invalid-response.http
       :language: http
 
    **Example response**:
@@ -245,6 +240,8 @@ Statuses
 .. http:get:: /api/v1/statuses?block_id={block_id}
 
     Get the status of a block.
+
+    The possible status values are ``undecided``, ``valid`` or ``invalid``.
 
    **Example request**:
 
