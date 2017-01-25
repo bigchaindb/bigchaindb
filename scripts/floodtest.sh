@@ -15,12 +15,12 @@ function runWorker () {
 		git clone bigchaindb $1
 	fi
 	cd $1
-        git pull
-        docker-compose -p flood-$1 up -d mdb
+	docker-compose -p flood-$1 up -d mdb
 	docker-compose -p flood-$1 run --rm bdb-mdb pytest -v -x -s
-        # Neccesary so that no root-owned files are left lying around, otherwise we can't clean up outside the container
-	# without `sudo`. 
-	docker-compose -p flood-$1 run -w/usr/src --rm bdb-mdb bash -c 'self=`stat -c %u app/bigchaindb`; chown -R $self:$self app'
+	# Neccesary so that no root-owned files are left lying around,
+	# otherwise we can't clean up outside the container without `sudo`. 
+	docker-compose -p flood-$1 run -w/usr/src --rm bdb-mdb bash -c \
+		'self=`stat -c %u app/bigchaindb`; chown -R $self:$self app'
 	docker-compose stop bdb-mdb
 	cd ..
 	rm -rf $1
