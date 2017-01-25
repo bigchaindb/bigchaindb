@@ -1,6 +1,6 @@
 import json
 from unittest.mock import Mock, patch
-from argparse import Namespace
+from argparse import Namespace, ArgumentTypeError
 import copy
 
 import pytest
@@ -376,3 +376,55 @@ def test_calling_main(start_mock, base_parser_mock, parse_args_mock,
                                                'distributed equally to all '
                                                'the processes')
     assert start_mock.called is True
+
+
+@patch('bigchaindb.backend.admin.add_replicas')
+def test_run_add_replicas(mock_add_replicas):
+    from bigchaindb.commands.bigchain import run_add_replicas
+    from bigchaindb.backend.exceptions import DatabaseOpFailedError
+
+    args = Namespace(config=None, replicas=['localhost:27017'])
+
+    # test add_replicas no raises
+    mock_add_replicas.return_value = None
+    assert run_add_replicas(args) is None
+
+    # test add_replicas with `DatabaseOpFailedError`
+    mock_add_replicas.side_effect = DatabaseOpFailedError()
+    assert run_add_replicas(args) is None
+
+    # test add_replicas with `NotImplementedError`
+    mock_add_replicas.side_effect = NotImplementedError()
+    assert run_add_replicas(args) is None
+
+
+@patch('bigchaindb.backend.admin.remove_replicas')
+def test_run_remove_replicas(mock_remove_replicas):
+    from bigchaindb.commands.bigchain import run_remove_replicas
+    from bigchaindb.backend.exceptions import DatabaseOpFailedError
+
+    args = Namespace(config=None, replicas=['localhost:27017'])
+
+    # test add_replicas no raises
+    mock_remove_replicas.return_value = None
+    assert run_remove_replicas(args) is None
+
+    # test add_replicas with `DatabaseOpFailedError`
+    mock_remove_replicas.side_effect = DatabaseOpFailedError()
+    assert run_remove_replicas(args) is None
+
+    # test add_replicas with `NotImplementedError`
+    mock_remove_replicas.side_effect = NotImplementedError()
+    assert run_remove_replicas(args) is None
+
+
+def test_mongodb_host_type():
+    from bigchaindb.commands.utils import mongodb_host
+
+    # bad port provided
+    with pytest.raises(ArgumentTypeError):
+        mongodb_host('localhost:11111111111')
+
+    # no port information provided
+    with pytest.raises(ArgumentTypeError):
+        mongodb_host('localhost')

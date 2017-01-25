@@ -277,7 +277,7 @@ def run_add_replicas(args):
 
     try:
         add_replicas(conn, args.replicas)
-    except DatabaseOpFailedError as e:
+    except (DatabaseOpFailedError, NotImplementedError) as e:
         logger.warn(e)
     else:
         logger.info('Added {} to the replicaset.'.format(args.replicas))
@@ -290,7 +290,7 @@ def run_remove_replicas(args):
 
     try:
         remove_replicas(conn, args.replicas)
-    except DatabaseOpFailedError as e:
+    except (DatabaseOpFailedError, NotImplementedError) as e:
         logger.warn(e)
     else:
         logger.info('Removed {} from the replicaset.'.format(args.replicas))

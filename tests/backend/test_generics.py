@@ -100,6 +100,8 @@ def test_init_database(mock_create_database, mock_create_tables,
     ('reconfigure', {'table': None, 'shards': None, 'replicas': None}),
     ('set_shards', {'shards': None}),
     ('set_replicas', {'replicas': None}),
+    ('add_replicas', {'replicas': None}),
+    ('remove_replicas', {'replicas': None}),
 ))
 def test_admin(admin_func_name, kwargs):
     from bigchaindb.backend import admin
