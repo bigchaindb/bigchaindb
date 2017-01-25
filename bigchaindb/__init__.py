@@ -5,6 +5,12 @@ import os
 # PORT_NUMBER = reduce(lambda x, y: x * y, map(ord, 'BigchainDB')) % 2**16
 # basically, the port number is 9984
 
+
+def _get_database_from_env():
+    return globals()['_database_' + os.environ.get(
+        'BIGCHAINDB_DATABASE_BACKEND', 'rethinkdb')]
+
+
 _database_rethinkdb = {
     'backend': os.environ.get('BIGCHAINDB_DATABASE_BACKEND', 'rethinkdb'),
     'host': os.environ.get('BIGCHAINDB_DATABASE_HOST', 'localhost'),
@@ -28,7 +34,7 @@ config = {
         'workers': None,  # if none, the value will be cpu_count * 2 + 1
         'threads': None,  # if none, the value will be cpu_count * 2 + 1
     },
-    'database': _database_rethinkdb,
+    'database': _get_database_from_env(),
     'keypair': {
         'public': None,
         'private': None,
