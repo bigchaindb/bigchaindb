@@ -165,7 +165,7 @@ not already been spent.
    Returns a list of links to transaction outputs.
 
    :param public_key: Base58 encoded public key associated with output ownership. This parameter is mandatory and without it the endpoint will return a ``400`` response code.
-   :param unspent: Boolean value ("true" or "false") indicating if the result set should be limited to outputs that are available to spend.
+   :param unspent: Boolean value ("true" or "false") indicating if the result set should be limited to outputs that are available to spend. Defaults to "false".
 
 
    **Example request**:
