@@ -88,6 +88,11 @@ class Transaction(Transaction):
                 if output.amount < 1:
                     raise AmountError('`amount` needs to be greater than zero')
 
+            # Validate that all inputs are distinct
+            links = [i.fulfills.to_uri() for i in self.inputs]
+            if len(links) != len(set(links)):
+                raise DoubleSpend('tx "{}" spends inputs twice'.format(self.id))
+
             # validate asset id
             asset_id = Transaction.get_asset_id(input_txs)
             if asset_id != self.asset['id']:
