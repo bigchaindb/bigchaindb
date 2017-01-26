@@ -16,6 +16,19 @@ For reference, the possible headings are:
 * **Notes**
 
 
+## [0.8.1] - 2017-01-16
+Tag name: v0.8.1
+= commit:
+committed:
+
+### Changed
+- Upgrade pysha3 to 1.0.0 (supports official NIST standard).
+
+### Fixed
+- Workaround for rapidjson problem with package metadata extraction
+  (https://github.com/kenrobbins/python-rapidjson/pull/52). 
+
+
 ## [0.8.0] - 2016-11-29
 Tag name: v0.8.0
 = commit:
