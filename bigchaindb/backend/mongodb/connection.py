@@ -64,7 +64,7 @@ class MongoDBConnection(Connection):
                     time.sleep(2**i)
 
 
-def table(name):
+def collection(name):
     return Lazy()[name]
 
 
