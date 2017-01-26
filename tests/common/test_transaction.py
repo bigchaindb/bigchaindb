@@ -1,3 +1,4 @@
+import rapidjson
 from pytest import raises
 
 
@@ -480,6 +481,26 @@ def test_add_output_to_tx_with_invalid_parameters(asset_definition):
 
     with raises(TypeError):
         tx.add_output('somewronginput')
+
+
+def test_sign_single_fulfillment_outputs_correct_uri(utx, user_priv):
+    from cryptoconditions import Ed25519Fulfillment
+    from cryptoconditions.crypto import Ed25519SigningKey
+    utx_dict = utx.to_dict()
+    utx_dict['inputs'][0]['fulfillment'] = None
+    message = rapidjson.dumps(
+        utx_dict,
+        skipkeys=False,
+        ensure_ascii=False,
+        sort_keys=True,
+    ).encode()
+
+    fulfillment = Ed25519Fulfillment(public_key=user_priv)
+    fulfillment.sign(message, Ed25519SigningKey(user_priv))
+    fulfillment_uri = fulfillment.serialize_uri()
+
+    tx = utx.sign([user_priv])
+    assert tx.to_dict()['inputs'][0]['fulfillment'] == fulfillment_uri
 
 
 def test_sign_with_invalid_parameters(utx, user_priv):

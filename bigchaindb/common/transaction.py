@@ -925,14 +925,34 @@ class Transaction(object):
             'version': self.version,
         }
 
-        tx_no_signatures = Transaction._remove_signatures(tx)
-        tx_serialized = Transaction._to_str(tx_no_signatures)
-        tx['id'] = Transaction._to_hash(tx_serialized)
+        tx['id'] = Transaction._generate_tx_id(tx)
         if self.operation == Transaction.CREATE:
             # Duplicate asset into asset for consistency with TRANSFER
             # transactions
             tx['asset']['id'] = tx['id']
         return tx
+
+    @staticmethod
+    def _generate_tx_id(tx):
+        """Generates an ID from a Transaction dictionary
+
+        Args:
+            tx (dict): The Transaction (as a dict) to get an ID from
+
+        Returns:
+            string: The Transaction's ID
+        """
+        # Remove any parts that are not used when generating the tx
+        # This includes any existing ID, signatures (as signing a transaction
+        # should maintain the # original tx ID), and duplicated tx IDs in a
+        # CREATE transaction's asset.
+        tx.pop('id', None)
+        tx = Transaction._remove_signatures(tx)
+        if tx['operation'] == Transaction.CREATE:
+            tx['asset'].pop('id', None)
+
+        tx_body_serialized = Transaction._to_str(tx)
+        return Transaction._to_hash(tx_body_serialized)
 
     @staticmethod
     # TODO: Remove `_dict` prefix of variable.
@@ -955,9 +975,6 @@ class Transaction(object):
             #       case could yield incorrect signatures. This is why we only
             #       set it to `None` if it's set in the dict.
             input_['fulfillment'] = None
-        # Pop duplicated asset_id from CREATE tx
-        if tx_dict['operation'] == Transaction.CREATE:
-            tx_dict['asset'].pop('id', None)
         return tx_dict
 
     @staticmethod
@@ -1028,10 +1045,7 @@ class Transaction(object):
         except KeyError:
             raise InvalidHash('No transaction id found!')
 
-        tx_body_no_signatures = Transaction._remove_signatures(tx_body)
-        tx_body_serialized = Transaction._to_str(tx_body_no_signatures)
-        valid_tx_id = Transaction._to_hash(tx_body_serialized)
-
+        valid_tx_id = Transaction._generate_tx_id(tx_body)
         if proposed_tx_id != valid_tx_id:
             err_msg = ("The transaction's id '{}' isn't equal to "
                        "the hash of its body, i.e. it's not valid.")
