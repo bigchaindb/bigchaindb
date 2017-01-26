@@ -10,6 +10,11 @@ logger = logging.getLogger(__name__)
 
 class BaseConsensusRules():
     """Base consensus rules for Bigchain.
+
+    A consensus plugin must expose a class inheriting from this one via an entry_point.
+
+    All methods listed below must be implemented.
+
     """
 
     @staticmethod
