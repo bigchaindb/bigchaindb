@@ -180,8 +180,11 @@ class Lazy:
     def run(self, instance):
         last = instance
 
-        for method, (args, kwargs) in zip(self.stack[::2], self.stack[1::2]):
-            last = getattr(last, method)(*args, **kwargs)
+        for item in self.stack:
+            if isinstance(item, str):
+                last = getattr(last, item)
+            else:
+                last = last(*item[0], **item[1])
 
         self.stack = []
         return last
