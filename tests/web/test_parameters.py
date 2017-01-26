@@ -24,11 +24,9 @@ def test_valid_bool():
 
     assert valid_bool('true') is True
     assert valid_bool('false') is False
+    assert valid_bool('tRUE') is True
+    assert valid_bool('fALSE') is False
 
-    with pytest.raises(ValueError):
-        valid_bool('TRUE')
-    with pytest.raises(ValueError):
-        valid_bool('FALSE')
     with pytest.raises(ValueError):
         valid_bool('0')
     with pytest.raises(ValueError):
@@ -64,13 +62,11 @@ def test_valid_ed25519():
 def test_valid_operation():
     from bigchaindb.web.views.parameters import valid_operation
 
-    assert valid_operation('CREATE') == 'CREATE'
-    assert valid_operation('TRANSFER') == 'TRANSFER'
+    assert valid_operation('create') == 'CREATE'
+    assert valid_operation('transfer') == 'TRANSFER'
+    assert valid_operation('CREATe') == 'CREATE'
+    assert valid_operation('TRANSFEr') == 'TRANSFER'
 
-    with pytest.raises(ValueError):
-        valid_operation('create')
-    with pytest.raises(ValueError):
-        valid_operation('transfer')
     with pytest.raises(ValueError):
         valid_operation('GENESIS')
     with pytest.raises(ValueError):

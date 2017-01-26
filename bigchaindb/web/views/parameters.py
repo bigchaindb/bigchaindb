@@ -8,6 +8,7 @@ def valid_txid(txid):
 
 
 def valid_bool(val):
+    val = val.lower()
     if val == 'true':
         return True
     if val == 'false':
@@ -23,6 +24,7 @@ def valid_ed25519(key):
 
 
 def valid_operation(op):
+    op = op.upper()
     if op == 'CREATE':
         return 'CREATE'
     if op == 'TRANSFER':
