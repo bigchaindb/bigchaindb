@@ -119,7 +119,7 @@ class TransactionListApi(Resource):
             )
         except (ValidationError, InvalidSignature) as e:
             return make_error(
-                400,
+                408,
                 'Invalid transaction ({}): {}'.format(type(e).__name__, e)
             )
 
