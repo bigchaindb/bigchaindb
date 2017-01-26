@@ -378,6 +378,7 @@ def test_calling_main(start_mock, base_parser_mock, parse_args_mock,
     assert start_mock.called is True
 
 
+@pytest.mark.usefixtures('ignore_local_config_file')
 @patch('bigchaindb.backend.admin.add_replicas')
 def test_run_add_replicas(mock_add_replicas):
     from bigchaindb.commands.bigchain import run_add_replicas
@@ -398,6 +399,7 @@ def test_run_add_replicas(mock_add_replicas):
     assert run_add_replicas(args) is None
 
 
+@pytest.mark.usefixtures('ignore_local_config_file')
 @patch('bigchaindb.backend.admin.remove_replicas')
 def test_run_remove_replicas(mock_remove_replicas):
     from bigchaindb.commands.bigchain import run_remove_replicas
