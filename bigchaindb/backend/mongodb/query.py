@@ -214,7 +214,7 @@ def write_vote(conn, vote):
 def get_genesis_block(conn):
     return conn.run(
         table('bigchain')
-            .find_one(
+        .find_one(
             {'block.transactions.0.operation': 'GENESIS'},
             {'_id': False}
         ))
