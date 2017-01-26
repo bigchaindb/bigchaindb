@@ -300,7 +300,6 @@ def test_transaction_serialization(user_input, user_output, data):
         'operation': Transaction.CREATE,
         'metadata': None,
         'asset': {
-            'id': tx_id,
             'data': data,
         }
     }
@@ -308,7 +307,7 @@ def test_transaction_serialization(user_input, user_output, data):
     tx = Transaction(Transaction.CREATE, {'data': data}, [user_input],
                      [user_output])
     tx_dict = tx.to_dict()
-    tx_dict['id'] = tx_dict['asset']['id'] = tx_id
+    tx_dict['id'] = tx_id
 
     assert tx_dict == expected
 
@@ -335,7 +334,6 @@ def test_transaction_deserialization(user_input, user_output, data):
     }
     tx_no_signatures = Transaction._remove_signatures(tx)
     tx['id'] = Transaction._to_hash(Transaction._to_str(tx_no_signatures))
-    tx['asset']['id'] = tx['id']
     tx = Transaction.from_dict(tx)
 
     assert tx == expected
@@ -691,7 +689,6 @@ def test_create_create_transaction_single_io(user_output, user_pub, data):
     tx_dict = tx.to_dict()
     tx_dict['inputs'][0]['fulfillment'] = None
     tx_dict.pop('id')
-    tx_dict['asset'].pop('id')
 
     assert tx_dict == expected
 
@@ -775,7 +772,6 @@ def test_create_create_transaction_threshold(user_pub, user2_pub, user3_pub,
                             metadata=data, asset=data)
     tx_dict = tx.to_dict()
     tx_dict.pop('id')
-    tx_dict['asset'].pop('id')
     tx_dict['inputs'][0]['fulfillment'] = None
 
     assert tx_dict == expected
@@ -989,25 +985,3 @@ def test_validate_version(utx):
     utx.version = '1.0.0'
     with raises(SchemaValidationError):
         validate_transaction_model(utx)
-
-
-def test_create_tx_has_asset_id(tx):
-    tx = tx.to_dict()
-    assert tx['id'] == tx['asset']['id']
-
-
-def test_create_tx_validates_asset_id(tx):
-    from bigchaindb.common.transaction import Transaction
-    from bigchaindb.common.exceptions import InvalidHash
-
-    tx = tx.to_dict()
-
-    # Test fails with wrong asset_id
-    tx['asset']['id'] = tx['asset']['id'][::-1]
-    with raises(InvalidHash):
-        Transaction.from_dict(tx)
-
-    # Test fails with no asset_id
-    tx['asset'].pop('id')
-    with raises(InvalidHash):
-        Transaction.from_dict(tx)
