@@ -39,6 +39,7 @@ def test_bigchain_instance_raises_when_not_configured(monkeypatch):
     with pytest.raises(exceptions.KeypairNotFoundException):
         bigchaindb.Bigchain()
 
+
 def test_load_consensus_plugin_loads_default_rules_without_name():
     from bigchaindb import config_utils
     from bigchaindb.consensus import BaseConsensusRules
@@ -67,6 +68,7 @@ def test_load_consensus_plugin_raises_with_invalid_subclass(monkeypatch):
         # Since the function is decorated with `lru_cache`, we need to
         # "miss" the cache using a name that has not been used previously
         config_utils.load_consensus_plugin(str(time.time()))
+
 
 def test_map_leafs_iterator():
     from bigchaindb import config_utils

@@ -245,6 +245,7 @@ def autoconfigure(filename=None, config=None, force=False):
 
     set_config(newconfig)  # sets bigchaindb.config
 
+
 @lru_cache()
 def load_consensus_plugin(name=None):
     """Find and load the chosen consensus plugin.
@@ -257,7 +258,7 @@ def load_consensus_plugin(name=None):
         an uninstantiated subclass of ``bigchaindb.consensus.AbstractConsensusRules``
     """
     if not name:
-        return BaseConsensusRules;
+        return BaseConsensusRules
 
     # TODO: This will return the first plugin with group `bigchaindb.consensus`
     #       and name `name` in the active WorkingSet.
