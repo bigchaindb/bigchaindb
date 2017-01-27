@@ -3,7 +3,7 @@
 The release process for BigchainDB server differs slightly depending on whether it's a minor or a patch release.
 
 BigchainDB follows [semantic versioning](http://semver.org/) (i.e. MAJOR.MINOR.PATCH), taking into account
-that [major version 0 does not export a stable API](http://semver.org/#spec-item-4).
+that [major version 0.x does not export a stable API](http://semver.org/#spec-item-4).
 
 ## Minor release
 
