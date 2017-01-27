@@ -43,6 +43,9 @@ class MongoDBConnection(Connection):
     def db(self):
         return self.conn[self.dbname]
 
+    def run(self, query_func):
+        return query_func(self.db)
+
     def _connect(self):
         # we should only return a connection if the replica set is
         # initialized. initialize_replica_set will check if the
