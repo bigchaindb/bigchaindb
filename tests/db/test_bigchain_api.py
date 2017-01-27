@@ -1178,3 +1178,34 @@ class TestMultipleInputs(object):
         # check that the other remain marked as unspent
         for unspent in transactions[1:]:
             assert b.get_spent(unspent.id, 0) is None
+
+
+def test_cant_spend_same_input_twice_in_tx(b):
+    """
+    Recreate duplicated fulfillments bug
+    https://github.com/bigchaindb/bigchaindb/issues/1099
+    """
+    from bigchaindb.models import Asset, Transaction
+    from bigchaindb.common.exceptions import DoubleSpend
+
+    # create a divisible asset
+    tx_create = Transaction.create([b.me], [([b.me], 100)],
+                                   asset=Asset(divisible=True))
+    tx_create_signed = tx_create.sign([b.me_private])
+    assert b.validate_transaction(tx_create_signed) == tx_create_signed
+
+    ## create a block and valid vote
+    b.create_genesis_block()
+    block = b.create_block([tx_create_signed])
+    b.write_block(block, durability='hard')
+    vote = b.vote(block.id, b.get_last_voted_block().id, True)
+    b.write_vote(vote)
+
+    # Create a transfer transaction with duplicated fulfillments
+    dup_inputs = tx_create.to_inputs() + tx_create.to_inputs()
+    tx_transfer = Transaction.transfer(dup_inputs, [([b.me], 200)],
+                                       asset=tx_create_signed.asset)
+    tx_transfer_signed = tx_transfer.sign([b.me_private])
+    assert b.is_valid_transaction(tx_transfer_signed) is False
+    with pytest.raises(DoubleSpend):
+        tx_transfer_signed.validate(b)

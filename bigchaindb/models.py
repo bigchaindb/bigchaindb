@@ -79,6 +79,11 @@ class Transaction(Transaction):
                     raise AmountError('`amount` needs to be greater than zero')
                 input_amount += input_tx.conditions[input_cid].amount
 
+            # Validate that all inputs are distinct
+            links = [(f.tx_input.txid, f.tx_input.cid) for f in self.fulfillments]
+            if len(links) != len(set(links)):
+                raise DoubleSpend('tx "{}" spends inputs twice'.format(self.id))
+
             # validate asset id
             asset_id = Asset.get_asset_id(input_txs)
             if asset_id != self.asset.data_id:

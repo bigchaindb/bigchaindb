@@ -16,6 +16,14 @@ For reference, the possible headings are:
 * **Notes**
 
 
+## [0.8.2] - 2017-01-27
+Tag name: v0.8.2
+
+### Fixed
+- Fix spend input twice in same transaction
+  (https://github.com/bigchaindb/bigchaindb/issues/1099).
+
+
 ## [0.8.1] - 2017-01-16
 Tag name: v0.8.1
 = commit:
@@ -36,7 +44,7 @@ committed:
 
 ### Added
 - The big new thing in version 0.8.0 is support for divisible assets, i.e. assets like carrots or thumbtacks, where the initial CREATE transaction can register/create some amount (e.g. 542 carrots), the first TRANSFER transaction can split that amount across multiple owners, and so on. [Pull Request #794](https://github.com/bigchaindb/bigchaindb/pull/794)
-- Wrote a formal schema for the JSON structure of transactions. Transactions are now checked against that schema. [Pull Request #798](https://github.com/bigchaindb/bigchaindb/pull/798)
+- Wrote a formal schema for the JSON structure of transactions. [Pull Request #798](https://github.com/bigchaindb/bigchaindb/pull/798)
 - New configuration parameter: `backlog_reassign_delay`. [Pull Request #883](https://github.com/bigchaindb/bigchaindb/pull/883)
 
 ### Changed
