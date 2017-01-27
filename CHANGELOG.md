@@ -16,6 +16,14 @@ For reference, the possible headings are:
 * **Notes**
 
 
+## [0.8.2] - 2017-01-27
+Tag name: v0.8.2
+
+### Fixed
+- Fix spend input twice in same transaction
+  (https://github.com/bigchaindb/bigchaindb/issues/1099).
+
+
 ## [0.8.1] - 2017-01-16
 Tag name: v0.8.1
 = commit:
