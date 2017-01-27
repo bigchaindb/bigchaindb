@@ -65,6 +65,11 @@ class MongoDBConnection(Connection):
 
 
 def collection(name):
+    """Return a lazy object that can be used to compose a query.
+
+    Args:
+        name (str): the name of the collection to query.
+    """
     return Lazy()[name]
 
 
