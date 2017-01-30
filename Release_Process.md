@@ -45,4 +45,8 @@ These steps are common between minor and patch releases:
 1. Generate the release tarball with `python setup.py sdist`. Upload the release to Pypi.
 1. Login to readthedocs.org as a maintainer of the BigchainDB Server docs.
    Go to Admin --> Versions and under **Choose Active Versions**, make sure that the new version's tag is
-   "Active" and "Public"
+   "Active" and "Public", and make sure the new version's branch
+   (without the 'v' in front) is _not_ active
+1. Also in readthedocs.org, go to Admin --> Advanced Settings
+   and make sure that "Default branch:" (i.e. what "latest" points to)
+   is set to the new release's tag, e.g. `v0.9.1`. (Don't miss the 'v' in front.)
