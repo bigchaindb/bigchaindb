@@ -1,6 +1,7 @@
 import time
 import multiprocessing as mp
 from threading import Thread
+from unittest.mock import patch
 
 import pytest
 import rethinkdb as r
@@ -118,3 +119,15 @@ def test_changefeed_reconnects_when_connection_lost(monkeypatch):
 
     fact = changefeed.outqueue.get()['fact']
     assert fact == 'Cats sleep 70% of their lives.'
+
+
+@patch('rethinkdb.connect')
+def test_connection_happens_one_time_if_successful(mock_connect):
+    from bigchaindb.backend import connect
+
+    query = r.expr('1')
+    conn = connect('rethinkdb', 'localhost', 1337, 'whatev')
+    conn.run(query)
+    mock_connect.assert_called_once_with(host='localhost',
+                                         port=1337,
+                                         db='whatev')

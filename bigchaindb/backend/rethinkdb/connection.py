@@ -77,3 +77,5 @@ class RethinkDBConnection(Connection):
                 wait_time = 2**i
                 logging.debug('Error connecting to database, waiting %ss', wait_time)
                 time.sleep(wait_time)
+            else:
+                break
