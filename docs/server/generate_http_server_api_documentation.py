@@ -198,6 +198,7 @@ def main():
         "6qHyZew94NMmUTYyHnkZsB8cxJYuRNEiEpXHe1ih9QX3",
         "AdDuyrTyjrDt935YnFu4VBCVDhHtY2Y6rcy7x2TFeiRi"
     ]
+    res_data['public_key'] = 'NC8c8rYcAhyKVpx1PCV65CBmyq4YUbLysy3Rqrg8L8mz'
     ctx['index'] = pretty_json(res_data)
 
     # API index
