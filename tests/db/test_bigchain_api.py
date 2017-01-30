@@ -1222,3 +1222,15 @@ def test_cant_spend_same_input_twice_in_tx(b, genesis_block):
     assert b.is_valid_transaction(tx_transfer_signed) is False
     with pytest.raises(DoubleSpend):
         tx_transfer_signed.validate(b)
+
+
+@pytest.mark.bdb
+def test_transaction_unicode(b):
+    import json
+    from bigchaindb.models import Transaction
+    tx = (Transaction.create([b.me], [([b.me], 100)],
+                             {'beer': '\N{BEER MUG}'})
+          ).sign([b.me_private])
+    block = b.create_block([tx])
+    assert block.validate(b) == block
+    assert '{"beer": "\\ud83c\\udf7a"}' in json.dumps(block.to_dict())
