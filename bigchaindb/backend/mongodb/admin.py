@@ -18,13 +18,20 @@ def add_replicas(connection, replicas):
     """Add a set of replicas to the replicaset
 
     Args:
-        replicas list of strings: of the form "hostname:port".
+        connection (:class:`~bigchaindb.backend.connection.Connection`):
+            A connection to the database.
+        replicas (:obj:`list` of :obj:`str`): replica addresses in the
+            form "hostname:port".
+
+    Raises:
+        DatabaseOpFailedError: If the reconfiguration fails due to a MongoDB
+            :exc:`OperationFailure`
     """
     # get current configuration
     conf = connection.conn.admin.command('replSetGetConfig')
 
-    # MongoDB does not automatically add and id for the members so we need
-    # to chose one that does not exists yet. The safest way is to use
+    # MongoDB does not automatically add an id for the members so we need
+    # to choose one that does not exists yet. The safest way is to use
     # incrementing ids, so we first check what is the highest id already in
     # the set and continue from there.
     cur_id = max([member['_id'] for member in conf['config']['members']])
@@ -35,11 +42,13 @@ def add_replicas(connection, replicas):
         conf['config']['members'].append({'_id': cur_id, 'host': replica})
 
     # increase the configuration version number
+    # when reconfiguring, mongodb expects a version number higher than the one
+    # it currently has
     conf['config']['version'] += 1
 
     # apply new configuration
     try:
-        return connection.conn.admin.command('replSetReconfig', conf['config'])
+        connection.conn.admin.command('replSetReconfig', conf['config'])
     except OperationFailure as exc:
         raise DatabaseOpFailedError(exc.details['errmsg'])
 
@@ -48,6 +57,15 @@ def add_replicas(connection, replicas):
 def remove_replicas(connection, replicas):
     """Remove a set of replicas from the replicaset
 
+    Args:
+        connection (:class:`~bigchaindb.backend.connection.Connection`):
+            A connection to the database.
+        replicas (:obj:`list` of :obj:`str`): replica addresses in the
+            form "hostname:port".
+
+    Raises:
+        DatabaseOpFailedError: If the reconfiguration fails due to a MongoDB
+            :exc:`OperationFailure`
     """
     # get the current configuration
     conf = connection.conn.admin.command('replSetGetConfig')
@@ -63,6 +81,6 @@ def remove_replicas(connection, replicas):
 
     # apply new configuration
     try:
-        return connection.conn.admin.command('replSetReconfig', conf['config'])
+        connection.conn.admin.command('replSetReconfig', conf['config'])
     except OperationFailure as exc:
         raise DatabaseOpFailedError(exc.details['errmsg'])

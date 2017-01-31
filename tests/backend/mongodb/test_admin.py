@@ -30,14 +30,22 @@ def mock_replicaset_config():
     }
 
 
-def test_add_replicas(mock_replicaset_config):
+@pytest.fixture
+def connection():
     from bigchaindb.backend import connect
-    from bigchaindb.backend.admin import add_replicas
-
     connection = connect()
-    # force the connection object to setup a connection to the database
-    # before we mock `Database.command`
-    connection.conn
+    # connection is a lazy object. It only actually creates a connection to
+    # the database when its first used.
+    # During the setup of a MongoDBConnection some `Database.command` are
+    # executed to make sure that the replica set is correctly initialized.
+    # Here we force the the connection setup so that all required
+    # `Database.command` are executed before we mock them it in the tests.
+    connection._connect()
+    return connection
+
+
+def test_add_replicas(mock_replicaset_config, connection):
+    from bigchaindb.backend.admin import add_replicas
 
     expected_config = copy.deepcopy(mock_replicaset_config)
     expected_config['config']['members'] += [
@@ -54,15 +62,9 @@ def test_add_replicas(mock_replicaset_config):
                                     expected_config['config'])
 
 
-def test_add_replicas_raises(mock_replicaset_config):
-    from bigchaindb.backend import connect
+def test_add_replicas_raises(mock_replicaset_config, connection):
     from bigchaindb.backend.admin import add_replicas
     from bigchaindb.backend.exceptions import DatabaseOpFailedError
-
-    connection = connect()
-    # force the connection object to setup a connection to the database
-    # before we mock `Database.command`
-    connection.conn
 
     with mock.patch.object(Database, 'command') as mock_command:
         mock_command.side_effect = [
@@ -73,14 +75,8 @@ def test_add_replicas_raises(mock_replicaset_config):
             add_replicas(connection, ['localhost:27018'])
 
 
-def test_remove_replicas(mock_replicaset_config):
-    from bigchaindb.backend import connect
+def test_remove_replicas(mock_replicaset_config, connection):
     from bigchaindb.backend.admin import remove_replicas
-
-    connection = connect()
-    # force the connection object to setup a connection to the database
-    # before we mock `Database.command`
-    connection.conn
 
     expected_config = copy.deepcopy(mock_replicaset_config)
     expected_config['config']['version'] += 1
@@ -99,15 +95,9 @@ def test_remove_replicas(mock_replicaset_config):
                                     expected_config['config'])
 
 
-def test_remove_replicas_raises(mock_replicaset_config):
-    from bigchaindb.backend import connect
+def test_remove_replicas_raises(mock_replicaset_config, connection):
     from bigchaindb.backend.admin import remove_replicas
     from bigchaindb.backend.exceptions import DatabaseOpFailedError
-
-    connection = connect()
-    # force the connection object to setup a connection to the database
-    # before we mock `Database.command`
-    connection.conn
 
     with mock.patch.object(Database, 'command') as mock_command:
         mock_command.side_effect = [
