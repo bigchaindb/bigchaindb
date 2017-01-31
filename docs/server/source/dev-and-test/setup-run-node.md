@@ -44,7 +44,7 @@ $ bigchaindb -y configure mongodb
 
 Note: [The BigchainDB CLI](../server-reference/bigchaindb-cli.html) and the [BigchainDB Configuration Settings](../server-reference/configuration.html) are documented elsewhere. (Click the links.)
 
-Start MongoDB using:
+Start MongoDB __3.4+__ using:
 ```text
 $ mongod --replSet=bigchain-rs
 ```
@@ -122,7 +122,7 @@ docker-compose up -d mdb
 MongoDB should now be up and running. You can check the port binding for the
 MongoDB driver port using:
 ```bash
-$ docker-compose port rdb 27017
+$ docker-compose port mdb 27017
 ```
 
 Start a BigchainDB node:

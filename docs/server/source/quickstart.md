@@ -5,7 +5,7 @@ This page has instructions to set up a single stand-alone BigchainDB node for le
 A. Install the database backend. 
 
 [Install RethinkDB Server](https://rethinkdb.com/docs/install/ubuntu/) or
-[Install MongoDB Server](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/)
+[Install MongoDB Server 3.4+](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/)
 
 B. Run the database backend. Open a Terminal and run the command:
 
@@ -14,7 +14,7 @@ with RethinkDB
 $ rethinkdb
 ```
 
-with MongoDB
+with MongoDB __3.4+__
 ```text
 $ mongod --replSet=bigchain-rs
 ```
