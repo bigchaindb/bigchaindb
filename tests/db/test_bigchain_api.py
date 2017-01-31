@@ -1236,5 +1236,7 @@ def test_transaction_unicode(b):
     tx = (Transaction.create([b.me], [([b.me], 100)], beer_python)
           ).sign([b.me_private])
     block = b.create_block([tx])
+    b.write_block(block)
+    assert b.get_block(block.id) == block.to_dict()
     assert block.validate(b) == block
     assert beer_json in serialize(block.to_dict())
