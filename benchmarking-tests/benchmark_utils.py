@@ -1,3 +1,5 @@
+from __future__ import division
+
 import multiprocessing as mp
 import uuid
 import json
@@ -41,7 +43,7 @@ def create_write_transaction(tx_left, payload_filler):
 
 
 def run_add_backlog(args):
-    tx_left = args.num_transactions // mp.cpu_count()
+    tx_left = args.num_transactions / mp.cpu_count()
     payload_filler = 'x' * SIZE_OF_FILLER[args.payload_size]
     workers = ProcessGroup(target=create_write_transaction,
                            args=(tx_left, payload_filler))
@@ -74,8 +76,9 @@ def run_gather_metrics(args):
                 'If this does not happen you can exit at any time using Ctrl-C'
                 ' saving all the metrics gathered up to this point.')
 
-    logger.info('\t{:<20} {:<20} {:<20} {:<20}'.format('timestamp', 'tx in block',
-                                                     'tx/s', '% complete'))
+    logger.info('\t{:<20} {:<20} {:<20} {:<20}'.format('timestamp',
+                                                       'tx in block',
+                                                       'tx/s', '% complete'))
 
     # listen to the changefeed
     try:
@@ -95,12 +98,12 @@ def run_gather_metrics(args):
                 percent_complete = round((num_transactions_received / num_transactions) * 100)
 
                 if elapsed_time != 0:
-                    transactions_per_second = round(num_transactions_received / elapsed_time)
+                    transactions_per_second = round(num_transactions_received /
+                                                    elapsed_time)
                 else:
                     transactions_per_second = float('nan')
 
-                logger.info('\t{:<20} {:<20} {:<20} {:<20}'.format(time_now, block_num_transactions,
-                                                                   transactions_per_second, percent_complete))
+                logger.info('\t{:<20} {:<20} {:<20} {:<20}'.format(time_now, block_num_transactions, transactions_per_second, percent_complete))
 
                 if (num_transactions - num_transactions_received) == 0:
                     break
@@ -129,7 +132,8 @@ def main():
     # set statsd host
     statsd_parser = subparsers.add_parser('set-statsd-host',
                                           help='Set statsd host')
-    statsd_parser.add_argument('statsd_host', metavar='statsd_host', default='localhost',
+    statsd_parser.add_argument('statsd_host', metavar='statsd_host',
+                               default='localhost',
                                help='Hostname of the statsd server')
 
     # metrics
@@ -149,4 +153,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
