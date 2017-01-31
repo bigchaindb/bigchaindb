@@ -11,6 +11,9 @@ RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
 
 ENV LANG en_US.UTF-8
 
+# The `apt-get update` command executed with the install instructions should
+# not use a locally cached storage layer. Force update the cache again.
+# https://docs.docker.com/engine/userguide/eng-image/dockerfile_best-practices/#run
 RUN apt-get update && apt-get -y install python3 python3-pip libffi-dev \
     && pip3 install --upgrade pip \
     && pip3 install --upgrade setuptools
