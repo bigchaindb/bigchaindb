@@ -30,6 +30,11 @@ To run BigchainDB Server, do:
 $ bigchaindb start
 ```
 
+You can [run all the unit tests](running-unit-tests.html) to test your installation.
+
+The BigchainDB [CONTRIBUTING.md file](https://github.com/bigchaindb/bigchaindb/blob/master/CONTRIBUTING.md) has more details about how to contribute.
+
+
 ### With MongoDB
 
 Create a default BigchainDB config file (in `$HOME/.bigchaindb`):
@@ -58,7 +63,6 @@ $ bigchaindb start
 You can [run all the unit tests](running-unit-tests.html) to test your installation.
 
 The BigchainDB [CONTRIBUTING.md file](https://github.com/bigchaindb/bigchaindb/blob/master/CONTRIBUTING.md) has more details about how to contribute.
-
 
 
 ## Option B: Using a Local Dev Machine and Docker

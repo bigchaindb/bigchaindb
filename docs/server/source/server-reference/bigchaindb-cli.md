@@ -19,7 +19,7 @@ Generate a local configuration file (which can be used to set some or all [Bigch
 
 Since BigchainDB supports multiple databases you need to always specify the
 database backend that you want to use. At this point only two database backends
-are support, `rethinkdb` and `mongodb`.
+are supported: `rethinkdb` and `mongodb`.
 
 If you use the `-c` command-line option, it will generate the file at the specified path:
 ```text
