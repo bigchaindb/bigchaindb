@@ -116,7 +116,7 @@ def mongodb_host(host):
         raise argparse.ArgumentTypeError(exc.args[0])
 
     # we do require the port to be provided.
-    if port is None:
+    if port is None or hostname == '':
         raise argparse.ArgumentTypeError('expected host in the form '
                                          '`host:port`. Got `{}` instead.'
                                          .format(host))

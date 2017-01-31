@@ -22,6 +22,8 @@ def test_make_sure_we_dont_remove_any_command():
     assert parser.parse_args(['set-shards', '1']).command
     assert parser.parse_args(['set-replicas', '1']).command
     assert parser.parse_args(['load']).command
+    assert parser.parse_args(['add-replicas', 'localhost:27017']).command
+    assert parser.parse_args(['remove-replicas', 'localhost:27017']).command
 
 
 def test_start_raises_if_command_not_implemented():
@@ -379,7 +381,7 @@ def test_calling_main(start_mock, base_parser_mock, parse_args_mock,
 
 
 @pytest.mark.usefixtures('ignore_local_config_file')
-@patch('bigchaindb.backend.admin.add_replicas')
+@patch('bigchaindb.commands.bigchain.add_replicas')
 def test_run_add_replicas(mock_add_replicas):
     from bigchaindb.commands.bigchain import run_add_replicas
     from bigchaindb.backend.exceptions import DatabaseOpFailedError
@@ -389,18 +391,24 @@ def test_run_add_replicas(mock_add_replicas):
     # test add_replicas no raises
     mock_add_replicas.return_value = None
     assert run_add_replicas(args) is None
+    assert mock_add_replicas.call_count == 1
+    mock_add_replicas.reset_mock()
 
     # test add_replicas with `DatabaseOpFailedError`
     mock_add_replicas.side_effect = DatabaseOpFailedError()
     assert run_add_replicas(args) is None
+    assert mock_add_replicas.call_count == 1
+    mock_add_replicas.reset_mock()
 
     # test add_replicas with `NotImplementedError`
     mock_add_replicas.side_effect = NotImplementedError()
     assert run_add_replicas(args) is None
+    assert mock_add_replicas.call_count == 1
+    mock_add_replicas.reset_mock()
 
 
 @pytest.mark.usefixtures('ignore_local_config_file')
-@patch('bigchaindb.backend.admin.remove_replicas')
+@patch('bigchaindb.commands.bigchain.remove_replicas')
 def test_run_remove_replicas(mock_remove_replicas):
     from bigchaindb.commands.bigchain import run_remove_replicas
     from bigchaindb.backend.exceptions import DatabaseOpFailedError
@@ -410,14 +418,20 @@ def test_run_remove_replicas(mock_remove_replicas):
     # test add_replicas no raises
     mock_remove_replicas.return_value = None
     assert run_remove_replicas(args) is None
+    assert mock_remove_replicas.call_count == 1
+    mock_remove_replicas.reset_mock()
 
     # test add_replicas with `DatabaseOpFailedError`
     mock_remove_replicas.side_effect = DatabaseOpFailedError()
     assert run_remove_replicas(args) is None
+    assert mock_remove_replicas.call_count == 1
+    mock_remove_replicas.reset_mock()
 
     # test add_replicas with `NotImplementedError`
     mock_remove_replicas.side_effect = NotImplementedError()
     assert run_remove_replicas(args) is None
+    assert mock_remove_replicas.call_count == 1
+    mock_remove_replicas.reset_mock()
 
 
 def test_mongodb_host_type():
@@ -430,3 +444,7 @@ def test_mongodb_host_type():
     # no port information provided
     with pytest.raises(ArgumentTypeError):
         mongodb_host('localhost')
+
+    # bad host provided
+    with pytest.raises(ArgumentTypeError):
+        mongodb_host(':27017')

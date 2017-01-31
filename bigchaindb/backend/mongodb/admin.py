@@ -31,7 +31,7 @@ def add_replicas(connection, replicas):
     conf = connection.conn.admin.command('replSetGetConfig')
 
     # MongoDB does not automatically add an id for the members so we need
-    # to choose one that does not exists yet. The safest way is to use
+    # to choose one that does not exist yet. The safest way is to use
     # incrementing ids, so we first check what is the highest id already in
     # the set and continue from there.
     cur_id = max([member['_id'] for member in conf['config']['members']])
