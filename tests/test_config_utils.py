@@ -131,6 +131,27 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
     from bigchaindb import config_utils
     config_utils.autoconfigure()
 
+    backend = request.config.getoption('--database-backend')
+    database_rethinkdb = {
+        'backend': 'rethinkdb',
+        'host': 'test-host',
+        'port': 4242,
+        'name': 'test-dbname',
+    }
+    database_mongodb = {
+        'backend': 'mongodb',
+        'host': 'test-host',
+        'port': 4242,
+        'name': 'test-dbname',
+        'replicaset': 'bigchain-rs',
+    }
+
+    database = {}
+    if backend == 'mongodb':
+        database = database_mongodb
+    elif backend == 'rethinkdb':
+        database = database_rethinkdb
+
     assert bigchaindb.config == {
         'CONFIGURED': True,
         'server': {
@@ -138,12 +159,7 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
             'workers': None,
             'threads': None,
         },
-        'database': {
-            'backend': request.config.getoption('--database-backend'),
-            'host': 'test-host',
-            'port': 4242,
-            'name': 'test-dbname',
-        },
+        'database': database,
         'keypair': {
             'public': None,
             'private': None,

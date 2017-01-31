@@ -20,6 +20,11 @@ _database_mongodb = {
     'replicaset': os.environ.get('BIGCHAINDB_DATABASE_REPLICASET', 'bigchain-rs'),
 }
 
+_database_map = {
+    'mongodb': _database_mongodb,
+    'rethinkdb': _database_rethinkdb
+}
+
 config = {
     'server': {
         # Note: this section supports all the Gunicorn settings:
@@ -28,7 +33,9 @@ config = {
         'workers': None,  # if none, the value will be cpu_count * 2 + 1
         'threads': None,  # if none, the value will be cpu_count * 2 + 1
     },
-    'database': _database_rethinkdb,
+    'database': _database_map[
+        os.environ.get('BIGCHAINDB_DATABASE_BACKEND', 'rethinkdb')
+    ],
     'keypair': {
         'public': None,
         'private': None,
