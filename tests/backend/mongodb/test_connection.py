@@ -56,13 +56,14 @@ def test_get_connection_returns_the_correct_instance():
 @mock.patch('time.sleep')
 def test_connection_error(mock_sleep, mock_client, mock_init_repl_set):
     from bigchaindb.backend import connect
+    from bigchaindb.backend.exceptions import ConnectionError
 
     # force the driver to trow ConnectionFailure
     # the mock on time.sleep is to prevent the actual sleep when running
     # the tests
     mock_client.side_effect = ConnectionFailure()
 
-    with pytest.raises(ConnectionFailure):
+    with pytest.raises(ConnectionError):
         conn = connect()
         conn.db
 
