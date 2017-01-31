@@ -76,17 +76,17 @@ class MongoDBConnection(Connection):
             attempt += 1
 
             try:
+                # we should only return a connection if the replica set is
+                # initialized. initialize_replica_set will check if the
+                # replica set is initialized else it will initialize it.
+                initialize_replica_set(self.host, self.port, self.connection_timeout)
+
                 # FYI: this might raise a `ServerSelectionTimeoutError`,
                 # that is a subclass of `ConnectionFailure`.
                 self.connection = MongoClient(self.host,
                                               self.port,
                                               replicaset=self.replicaset,
                                               serverselectiontimeoutms=self.connection_timeout)
-
-                # we should only return a connection if the replica set is
-                # initialized. initialize_replica_set will check if the
-                # replica set is initialized else it will initialize it.
-                initialize_replica_set(self.host, self.port, self.connection_timeout)
             except (errors.ConnectionFailure, errors.AutoReconnect) as exc:
                 logger.warning('Attempt %s/%s. Connection to %s:%s failed after %sms.',
                                attempt, self.max_tries if self.max_tries != 0 else '∞',
