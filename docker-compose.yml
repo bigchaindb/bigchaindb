@@ -5,7 +5,7 @@ services:
     image: mongo:3.4.1
     ports:
       - "27017"
-    command: mongod --replSet=rs0
+    command: mongod --replSet=bigchain-rs
 
   rdb:
     image: rethinkdb
