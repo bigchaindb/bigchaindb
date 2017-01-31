@@ -1226,11 +1226,15 @@ def test_cant_spend_same_input_twice_in_tx(b, genesis_block):
 
 @pytest.mark.bdb
 def test_transaction_unicode(b):
-    import json
+    from bigchaindb.common.utils import serialize
     from bigchaindb.models import Transaction
-    tx = (Transaction.create([b.me], [([b.me], 100)],
-                             {'beer': '\N{BEER MUG}'})
+
+    # http://www.fileformat.info/info/unicode/char/1f37a/index.htm
+    beer_python = {'beer': '\N{BEER MUG}'}
+    beer_json = '{"beer":"\N{BEER MUG}"}'
+
+    tx = (Transaction.create([b.me], [([b.me], 100)], beer_python)
           ).sign([b.me_private])
     block = b.create_block([tx])
     assert block.validate(b) == block
-    assert '{"beer": "\\ud83c\\udf7a"}' in json.dumps(block.to_dict())
+    assert beer_json in serialize(block.to_dict())
