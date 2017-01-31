@@ -94,13 +94,7 @@ If you're testing or developing BigchainDB on a stand-alone node, then you shoul
 
 ## Install BigchainDB Server
 
-BigchainDB Server has some OS-level dependencies that must be installed.
-
-On Ubuntu 16.04, we found that the following was enough:
-```text
-sudo apt-get update
-sudo apt-get install g++ python3-dev libffi-dev
-```
+First, [install the OS-level dependencies of BigchainDB Server (link)](../appendices/install-os-level-deps.html).
 
 With OS-level dependencies installed, you can install BigchainDB Server with `pip` or from source.
 
