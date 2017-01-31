@@ -11,9 +11,9 @@ RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
 
 ENV LANG en_US.UTF-8
 
-RUN apt-get -y install python3 python3-pip libffi-dev
-RUN pip3 install --upgrade pip
-RUN pip3 install --upgrade setuptools
+RUN apt-get update && apt-get -y install python3 python3-pip libffi-dev \
+    && pip3 install --upgrade pip \
+    && pip3 install --upgrade setuptools
 
 RUN mkdir -p /usr/src/app
 
