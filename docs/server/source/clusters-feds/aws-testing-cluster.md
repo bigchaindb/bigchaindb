@@ -14,11 +14,11 @@ We use some Bash and Python scripts to launch several instances (virtual servers
 
 ## Python Setup
 
-The instructions that follow have been tested on Ubuntu 14.04, but may also work on similar distros or operating systems.
+The instructions that follow have been tested on Ubuntu 16.04. Similar instructions should work on similar Linux distros.
 
 **Note: Our Python scripts for deploying to AWS use Python 2 because Fabric doesn't work with Python 3.**
 
-You must install the Python package named `fabric`, but it depends on the `cryptography` package, and that depends on some OS-level packages. On Ubuntu 14.04, you can install those OS-level packages using:
+You must install the Python package named `fabric`, but it depends on the `cryptography` package, and that depends on some OS-level packages. On Ubuntu 16.04, you can install those OS-level packages using:
 ```text
 sudo apt-get install build-essential libssl-dev libffi-dev python-dev
 ```
@@ -72,7 +72,7 @@ One way to monitor a BigchainDB cluster is to use the monitoring setup described
 
 You can deploy a monitoring server on AWS. To do that, go to the AWS EC2 Console and launch an instance:
 
-1. Choose an AMI: select Ubuntu Server 14.04 LTS.
+1. Choose an AMI: select Ubuntu Server 16.04 LTS.
 2. Choose an Instance Type: a t2.micro will suffice.
 3. Configure Instance Details: you can accept the defaults, but feel free to change them.
 4. Add Storage: A "Root" volume type should already be included. You _could_ store monitoring data there (e.g. in a folder named `/influxdb-data`) but we will attach another volume and store the monitoring data there instead. Select "Add New Volume" and an EBS volume type.
