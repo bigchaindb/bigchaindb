@@ -8,6 +8,7 @@ from pymongo import errors
 import bigchaindb
 from bigchaindb.utils import Lazy
 from bigchaindb.common import exceptions
+from bigchaindb.backend import exceptions as backend_exceptions
 from bigchaindb.backend.connection import Connection
 
 logger = logging.getLogger(__name__)
@@ -51,7 +52,7 @@ class MongoDBConnection(Connection):
     @property
     def conn(self):
         if self.connection is None:
-            self.connection = self._connect()
+            self._connect()
         return self.connection
 
     @property
@@ -77,23 +78,24 @@ class MongoDBConnection(Connection):
             try:
                 # FYI: this might raise a `ServerSelectionTimeoutError`,
                 # that is a subclass of `ConnectionFailure`.
-                connection = MongoClient(self.host,
-                                         self.port,
-                                         replicaset=self.replicaset,
-                                         serverselectiontimeoutms=self.connection_timeout)
+                self.connection = MongoClient(self.host,
+                                              self.port,
+                                              replicaset=self.replicaset,
+                                              serverselectiontimeoutms=self.connection_timeout)
 
                 # we should only return a connection if the replica set is
                 # initialized. initialize_replica_set will check if the
                 # replica set is initialized else it will initialize it.
                 initialize_replica_set(self.host, self.port, self.connection_timeout)
-                return connection
             except (errors.ConnectionFailure, errors.AutoReconnect) as exc:
                 logger.warning('Attempt %s/%s. Connection to %s:%s failed after %sms.',
                                attempt, self.max_tries if self.max_tries != 0 else '∞',
                                self.host, self.port, self.connection_timeout)
                 if attempt == self.max_tries:
-                    logger.exception('Cannot connect to the Database. Giving up.')
-                    raise errors.ConnectionFailure() from exc
+                    logger.critical('Cannot connect to the Database. Giving up.')
+                    raise backend_exceptions.ConnectionError() from exc
+            else:
+                break
 
 
 def collection(name):

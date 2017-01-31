@@ -8,7 +8,8 @@ from bigchaindb import backend
 from bigchaindb.backend.changefeed import ChangeFeed
 from bigchaindb.backend.utils import module_dispatch_registrar
 from bigchaindb.backend.mongodb.connection import MongoDBConnection
-
+from bigchaindb.backend.exceptions import (DatabaseOpFailedError,
+                                           ConnectionError)
 
 logger = logging.getLogger(__name__)
 register_changefeed = module_dispatch_registrar(backend.changefeed)
@@ -31,7 +32,8 @@ class MongoDBChangeFeed(ChangeFeed):
                 break
             except (errors.ConnectionFailure, errors.OperationFailure,
                     errors.AutoReconnect,
-                    errors.ServerSelectionTimeoutError) as exc:
+                    errors.ServerSelectionTimeoutError,
+                    DatabaseOpFailedError, ConnectionError) as exc:
                 logger.exception(exc)
                 time.sleep(1)
 

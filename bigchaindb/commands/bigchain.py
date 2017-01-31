@@ -23,7 +23,8 @@ from bigchaindb.utils import ProcessGroup
 from bigchaindb import backend
 from bigchaindb.backend import schema
 from bigchaindb.backend.admin import set_replicas, set_shards
-from bigchaindb.backend.exceptions import DatabaseOpFailedError
+from bigchaindb.backend.exceptions import (DatabaseOpFailedError,
+                                           ConnectionError)
 from bigchaindb.commands import utils
 from bigchaindb import processes
 
@@ -157,6 +158,8 @@ def run_init(args):
     except DatabaseAlreadyExists:
         print('The database already exists.', file=sys.stderr)
         print('If you wish to re-initialize it, first drop it.', file=sys.stderr)
+    except ConnectionError:
+        print('Cannot connect to the database.', file=sys.stderr)
 
 
 def run_drop(args):
@@ -201,6 +204,8 @@ def run_start(args):
         _run_init()
     except DatabaseAlreadyExists:
         pass
+    except ConnectionError:
+        print('Cannot connect to the database.', file=sys.stderr)
     except KeypairNotFoundException:
         sys.exit("Can't start BigchainDB, no keypair found. "
                  'Did you run `bigchaindb configure`?')
