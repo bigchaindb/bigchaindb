@@ -12,7 +12,8 @@ def test_make_sure_we_dont_remove_any_command():
 
     parser = create_parser()
 
-    assert parser.parse_args(['configure']).command
+    assert parser.parse_args(['configure', 'rethinkdb']).command
+    assert parser.parse_args(['configure', 'mongodb']).command
     assert parser.parse_args(['show-config']).command
     assert parser.parse_args(['export-my-pubkey']).command
     assert parser.parse_args(['init']).command
@@ -31,8 +32,8 @@ def test_start_raises_if_command_not_implemented():
 
     with pytest.raises(NotImplementedError):
         # Will raise because `scope`, the third parameter,
-        # doesn't contain the function `run_configure`
-        utils.start(parser, ['configure'], {})
+        # doesn't contain the function `run_start`
+        utils.start(parser, ['start'], {})
 
 
 def test_start_raises_if_no_arguments_given():
@@ -204,7 +205,7 @@ def test_run_configure_when_config_does_not_exist(monkeypatch,
     from bigchaindb.commands.bigchain import run_configure
     monkeypatch.setattr('os.path.exists', lambda path: False)
     monkeypatch.setattr('builtins.input', lambda: '\n')
-    args = Namespace(config='foo', yes=True)
+    args = Namespace(config='foo', backend='rethinkdb', yes=True)
     return_value = run_configure(args)
     assert return_value is None
 
@@ -226,6 +227,36 @@ def test_run_configure_when_config_does_exist(monkeypatch,
     args = Namespace(config='foo', yes=None)
     run_configure(args)
     assert value == {}
+
+
+@pytest.mark.parametrize('backend', (
+    'rethinkdb',
+    'mongodb',
+))
+def test_run_configure_with_backend(backend, monkeypatch, mock_write_config):
+    import bigchaindb
+    from bigchaindb.commands.bigchain import run_configure
+
+    value = {}
+
+    def mock_write_config(new_config, filename=None):
+        value['return'] = new_config
+
+    monkeypatch.setattr('os.path.exists', lambda path: False)
+    monkeypatch.setattr('builtins.input', lambda: '\n')
+    monkeypatch.setattr('bigchaindb.config_utils.write_config',
+                        mock_write_config)
+
+    args = Namespace(config='foo', backend=backend, yes=True)
+    expected_config = bigchaindb.config
+    run_configure(args)
+
+    # update the expected config with the correct backend and keypair
+    backend_conf = getattr(bigchaindb, '_database_' + backend)
+    expected_config.update({'database': backend_conf,
+                            'keypair': value['return']['keypair']})
+
+    assert value['return'] == expected_config
 
 
 @patch('bigchaindb.common.crypto.generate_key_pair',

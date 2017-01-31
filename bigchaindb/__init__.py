@@ -5,6 +5,25 @@ import os
 # PORT_NUMBER = reduce(lambda x, y: x * y, map(ord, 'BigchainDB')) % 2**16
 # basically, the port number is 9984
 
+_database_rethinkdb = {
+    'backend': os.environ.get('BIGCHAINDB_DATABASE_BACKEND', 'rethinkdb'),
+    'host': os.environ.get('BIGCHAINDB_DATABASE_HOST', 'localhost'),
+    'port': int(os.environ.get('BIGCHAINDB_DATABASE_PORT', 28015)),
+    'name': os.environ.get('BIGCHAINDB_DATABASE_NAME', 'bigchain'),
+}
+
+_database_mongodb = {
+    'backend': os.environ.get('BIGCHAINDB_DATABASE_BACKEND', 'mongodb'),
+    'host': os.environ.get('BIGCHAINDB_DATABASE_HOST', 'localhost'),
+    'port': int(os.environ.get('BIGCHAINDB_DATABASE_PORT', 27017)),
+    'name': os.environ.get('BIGCHAINDB_DATABASE_NAME', 'bigchain'),
+    'replicaset': os.environ.get('BIGCHAINDB_DATABASE_REPLICASET', 'bigchain-rs'),
+}
+
+_database_map = {
+    'mongodb': _database_mongodb,
+    'rethinkdb': _database_rethinkdb
+}
 
 config = {
     'server': {
@@ -14,13 +33,9 @@ config = {
         'workers': None,  # if none, the value will be cpu_count * 2 + 1
         'threads': None,  # if none, the value will be cpu_count * 2 + 1
     },
-    'database': {
-        'backend': os.environ.get('BIGCHAINDB_DATABASE_BACKEND', 'rethinkdb'),
-        'host': os.environ.get('BIGCHAINDB_DATABASE_HOST', 'localhost'),
-        'port': int(os.environ.get('BIGCHAINDB_DATABASE_PORT', 28015)),
-        'name': os.environ.get('BIGCHAINDB_DATABASE_NAME', 'bigchain'),
-        'replicaset': os.environ.get('BIGCHAINDB_DATABASE_REPLICASET', 'bigchain-rs'),
-    },
+    'database': _database_map[
+        os.environ.get('BIGCHAINDB_DATABASE_BACKEND', 'rethinkdb')
+    ],
     'keypair': {
         'public': None,
         'private': None,
