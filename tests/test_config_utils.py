@@ -10,8 +10,13 @@ ORIGINAL_CONFIG = copy.deepcopy(bigchaindb._config)
 
 
 @pytest.fixture(scope='function', autouse=True)
-def clean_config(monkeypatch):
-    monkeypatch.setattr('bigchaindb.config', copy.deepcopy(ORIGINAL_CONFIG))
+def clean_config(monkeypatch, request):
+
+    import bigchaindb
+    original_config = copy.deepcopy(ORIGINAL_CONFIG)
+    backend = request.config.getoption('--database-backend')
+    original_config['database'] = bigchaindb._database_map[backend]
+    monkeypatch.setattr('bigchaindb.config', original_config)
 
 
 def test_bigchain_instance_is_initialized_when_conf_provided(request):
@@ -22,11 +27,6 @@ def test_bigchain_instance_is_initialized_when_conf_provided(request):
     config_utils.set_config({'keypair': {'public': 'a', 'private': 'b'}})
 
     assert bigchaindb.config['CONFIGURED'] is True
-
-    # set the current backend so that Bigchain can create a connection
-    backend = request.config.getoption('--database-backend')
-    backend_conf = getattr(bigchaindb, '_database_' + backend)
-    bigchaindb.config['database'] = backend_conf
 
     b = bigchaindb.Bigchain()
 
@@ -43,11 +43,6 @@ def test_bigchain_instance_raises_when_not_configured(request, monkeypatch):
     # We need to disable ``bigchaindb.config_utils.autoconfigure`` to avoid reading
     # from existing configurations
     monkeypatch.setattr(config_utils, 'autoconfigure', lambda: 0)
-
-    # set the current backend so that Bigchain can create a connection
-    backend = request.config.getoption('--database-backend')
-    backend_conf = getattr(bigchaindb, '_database_' + backend)
-    bigchaindb.config['database'] = backend_conf
 
     with pytest.raises(exceptions.KeypairNotFoundException):
         bigchaindb.Bigchain()
@@ -114,47 +109,55 @@ def test_env_config(monkeypatch):
 
 
 def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
+    # constants
+    DATABASE_HOST = 'test-host'
+    DATABASE_NAME = 'test-dbname'
+    DATABASE_PORT = 4242
+    DATABASE_BACKEND = request.config.getoption('--database-backend')
+    SERVER_BIND = '1.2.3.4:56'
+    KEYRING = 'pubkey_0:pubkey_1:pubkey_2'
+
     file_config = {
         'database': {
-            'host': 'test-host',
-            'backend': request.config.getoption('--database-backend')
+            'host': DATABASE_HOST
         },
         'backlog_reassign_delay': 5
     }
     monkeypatch.setattr('bigchaindb.config_utils.file_config', lambda *args, **kwargs: file_config)
-    monkeypatch.setattr('os.environ', {'BIGCHAINDB_DATABASE_NAME': 'test-dbname',
-                                       'BIGCHAINDB_DATABASE_PORT': '4242',
-                                       'BIGCHAINDB_SERVER_BIND': '1.2.3.4:56',
-                                       'BIGCHAINDB_KEYRING': 'pubkey_0:pubkey_1:pubkey_2'})
+    monkeypatch.setattr('os.environ', {'BIGCHAINDB_DATABASE_NAME': DATABASE_NAME,
+                                       'BIGCHAINDB_DATABASE_PORT': str(DATABASE_PORT),
+                                       'BIGCHAINDB_DATABASE_BACKEND': DATABASE_BACKEND,
+                                       'BIGCHAINDB_SERVER_BIND': SERVER_BIND,
+                                       'BIGCHAINDB_KEYRING': KEYRING})
 
     import bigchaindb
     from bigchaindb import config_utils
     config_utils.autoconfigure()
 
-    backend = request.config.getoption('--database-backend')
     database_rethinkdb = {
         'backend': 'rethinkdb',
-        'host': 'test-host',
-        'port': 4242,
-        'name': 'test-dbname',
+        'host': DATABASE_HOST,
+        'port': DATABASE_PORT,
+        'name': DATABASE_NAME,
     }
     database_mongodb = {
         'backend': 'mongodb',
-        'host': 'test-host',
-        'port': 4242,
-        'name': 'test-dbname',
+        'host': DATABASE_HOST,
+        'port': DATABASE_PORT,
+        'name': DATABASE_NAME,
         'replicaset': 'bigchain-rs',
     }
 
-    # default
-    database = database_rethinkdb
-    if backend == 'mongodb':
+    database = {}
+    if DATABASE_BACKEND == 'mongodb':
         database = database_mongodb
+    elif DATABASE_BACKEND == 'rethinkdb':
+        database = database_rethinkdb
 
     assert bigchaindb.config == {
         'CONFIGURED': True,
         'server': {
-            'bind': '1.2.3.4:56',
+            'bind': SERVER_BIND,
             'workers': None,
             'threads': None,
         },
@@ -163,7 +166,7 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
             'public': None,
             'private': None,
         },
-        'keyring': ['pubkey_0', 'pubkey_1', 'pubkey_2'],
+        'keyring': KEYRING.split(':'),
         'statsd': {
             'host': 'localhost',
             'port': 8125,

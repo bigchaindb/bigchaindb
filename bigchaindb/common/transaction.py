@@ -159,7 +159,7 @@ class TransactionLink(object):
 
     def __eq__(self, other):
         # TODO: If `other !== TransactionLink` return `False`
-        return self.to_dict() == self.to_dict()
+        return self.to_dict() == other.to_dict()
 
     @classmethod
     def from_dict(cls, link):
@@ -410,7 +410,7 @@ class Transaction(object):
     TRANSFER = 'TRANSFER'
     GENESIS = 'GENESIS'
     ALLOWED_OPERATIONS = (CREATE, TRANSFER, GENESIS)
-    VERSION = bigchaindb.version.__version__
+    VERSION = bigchaindb.version.__short_version__[:-4]  # 0.9, 0.10 etc
 
     def __init__(self, operation, asset, inputs=None, outputs=None,
                  metadata=None, version=None):
@@ -444,7 +444,6 @@ class Transaction(object):
                 asset is not None and not (isinstance(asset, dict) and 'data' in asset)):
             raise TypeError(('`asset` must be None or a dict holding a `data` '
                              " property instance for '{}' Transactions".format(operation)))
-            asset.pop('id', None)  # Remove duplicated asset ID if there is one
         elif (operation == Transaction.TRANSFER and
                 not (isinstance(asset, dict) and 'id' in asset)):
             raise TypeError(('`asset` must be a dict holding an `id` property '
@@ -927,11 +926,9 @@ class Transaction(object):
 
         tx_no_signatures = Transaction._remove_signatures(tx)
         tx_serialized = Transaction._to_str(tx_no_signatures)
-        tx['id'] = Transaction._to_hash(tx_serialized)
-        if self.operation == Transaction.CREATE:
-            # Duplicate asset into asset for consistency with TRANSFER
-            # transactions
-            tx['asset']['id'] = tx['id']
+        tx_id = Transaction._to_hash(tx_serialized)
+
+        tx['id'] = tx_id
         return tx
 
     @staticmethod
@@ -955,9 +952,6 @@ class Transaction(object):
             #       case could yield incorrect signatures. This is why we only
             #       set it to `None` if it's set in the dict.
             input_['fulfillment'] = None
-        # Pop duplicated asset_id from CREATE tx
-        if tx_dict['operation'] == Transaction.CREATE:
-            tx_dict['asset'].pop('id', None)
         return tx_dict
 
     @staticmethod
@@ -1036,10 +1030,6 @@ class Transaction(object):
             err_msg = ("The transaction's id '{}' isn't equal to "
                        "the hash of its body, i.e. it's not valid.")
             raise InvalidHash(err_msg.format(proposed_tx_id))
-
-        if tx_body.get('operation') == Transaction.CREATE:
-            if proposed_tx_id != tx_body['asset'].get('id'):
-                raise InvalidHash("CREATE tx has wrong asset_id")
 
     @classmethod
     def from_dict(cls, tx):

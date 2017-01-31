@@ -1,12 +1,14 @@
 """Query implementation for MongoDB"""
 
 from time import time
+from itertools import chain
 
 from pymongo import ReturnDocument
 from pymongo import errors
 
 from bigchaindb import backend
 from bigchaindb.common.exceptions import CyclicBlockchainError
+from bigchaindb.common.transaction import Transaction
 from bigchaindb.backend.utils import module_dispatch_registrar
 from bigchaindb.backend.mongodb.connection import MongoDBConnection
 
@@ -83,18 +85,40 @@ def get_blocks_status_from_transaction(conn, transaction_id):
 
 
 @register_query(MongoDBConnection)
-def get_txids_by_asset_id(conn, asset_id):
-    cursor = conn.db['bigchain'].aggregate([
-        {'$match': {
-            'block.transactions.asset.id': asset_id
-        }},
-        {'$unwind': '$block.transactions'},
-        {'$match': {
-            'block.transactions.asset.id': asset_id
-        }},
-        {'$project': {'block.transactions.id': True}}
-    ])
-    return (elem['block']['transactions']['id'] for elem in cursor)
+def get_txids_filtered(conn, asset_id, operation=None):
+    parts = []
+
+    if operation in (Transaction.CREATE, None):
+        # get the txid of the create transaction for asset_id
+        cursor = conn.db['bigchain'].aggregate([
+            {'$match': {
+                'block.transactions.id': asset_id,
+                'block.transactions.operation': 'CREATE'
+            }},
+            {'$unwind': '$block.transactions'},
+            {'$match': {
+                'block.transactions.id': asset_id,
+                'block.transactions.operation': 'CREATE'
+            }},
+            {'$project': {'block.transactions.id': True}}
+        ])
+        parts.append(elem['block']['transactions']['id'] for elem in cursor)
+
+    if operation in (Transaction.TRANSFER, None):
+        # get txids of transfer transaction with asset_id
+        cursor = conn.db['bigchain'].aggregate([
+            {'$match': {
+                'block.transactions.asset.id': asset_id
+            }},
+            {'$unwind': '$block.transactions'},
+            {'$match': {
+                'block.transactions.asset.id': asset_id
+            }},
+            {'$project': {'block.transactions.id': True}}
+        ])
+        parts.append(elem['block']['transactions']['id'] for elem in cursor)
+
+    return chain(*parts)
 
 
 @register_query(MongoDBConnection)

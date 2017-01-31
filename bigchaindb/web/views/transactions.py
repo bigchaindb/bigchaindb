@@ -7,7 +7,8 @@ For more information please refer to the documentation on ReadTheDocs:
 import logging
 
 from flask import current_app, request
-from flask_restful import Resource
+from flask_restful import Resource, reqparse
+
 
 from bigchaindb.common.exceptions import (
     AmountError,
@@ -25,6 +26,7 @@ from bigchaindb.common.exceptions import (
 import bigchaindb
 from bigchaindb.models import Transaction
 from bigchaindb.web.views.base import make_error
+from bigchaindb.web.views import parameters
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +53,18 @@ class TransactionApi(Resource):
 
 
 class TransactionListApi(Resource):
+    def get(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('operation', type=parameters.valid_operation)
+        parser.add_argument('asset_id', type=parameters.valid_txid,
+                            required=True)
+        args = parser.parse_args()
+
+        with current_app.config['bigchain_pool']() as bigchain:
+            txs = bigchain.get_transactions_filtered(**args)
+
+        return [tx.to_dict() for tx in txs]
+
     def post(self):
         """API endpoint to push transactions to the Federation.
 
@@ -99,4 +113,4 @@ class TransactionListApi(Resource):
                 with monitor.timer('write_transaction', rate=rate):
                     bigchain.write_transaction(tx_obj)
 
-        return tx
+        return tx, 202

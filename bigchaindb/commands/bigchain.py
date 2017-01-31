@@ -90,12 +90,7 @@ def run_configure(args, skip_if_exists=False):
     # select the correct config defaults based on the backend
     print('Generating default configuration for backend {}'
           .format(args.backend))
-    database = {}
-    if args.backend == 'rethinkdb':
-        database = bigchaindb._database_rethinkdb
-    elif args.backend == 'mongodb':
-        database = bigchaindb._database_mongodb
-    conf['database'] = database
+    conf['database'] = bigchaindb._database_map[args.backend]
 
     if not args.yes:
         for key in ('bind', ):

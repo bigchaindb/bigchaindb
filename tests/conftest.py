@@ -118,9 +118,8 @@ def _configure_bigchaindb(request):
         test_db_name = '{}_{}'.format(TEST_DB_NAME, xdist_suffix)
 
     backend = request.config.getoption('--database-backend')
-    backend_conf = getattr(bigchaindb, '_database_' + backend)
     config = {
-        'database': backend_conf,
+        'database': bigchaindb._database_map[backend],
         'keypair': {
             'private': '31Lb1ZGKTyHnmVK3LUMrAUrPNfd4sE2YyBt3UA4A25aA',
             'public': '4XYfCbabAWVUCbjTmRTFEu2sc3dFEdkse4r6X498B1s8',

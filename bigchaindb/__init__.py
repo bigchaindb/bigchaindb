@@ -5,12 +5,6 @@ import os
 # PORT_NUMBER = reduce(lambda x, y: x * y, map(ord, 'BigchainDB')) % 2**16
 # basically, the port number is 9984
 
-
-def _get_database_from_env():
-    return globals()['_database_' + os.environ.get(
-        'BIGCHAINDB_DATABASE_BACKEND', 'rethinkdb')]
-
-
 _database_rethinkdb = {
     'backend': os.environ.get('BIGCHAINDB_DATABASE_BACKEND', 'rethinkdb'),
     'host': os.environ.get('BIGCHAINDB_DATABASE_HOST', 'localhost'),
@@ -26,6 +20,11 @@ _database_mongodb = {
     'replicaset': os.environ.get('BIGCHAINDB_DATABASE_REPLICASET', 'bigchain-rs'),
 }
 
+_database_map = {
+    'mongodb': _database_mongodb,
+    'rethinkdb': _database_rethinkdb
+}
+
 config = {
     'server': {
         # Note: this section supports all the Gunicorn settings:
@@ -34,7 +33,9 @@ config = {
         'workers': None,  # if none, the value will be cpu_count * 2 + 1
         'threads': None,  # if none, the value will be cpu_count * 2 + 1
     },
-    'database': _get_database_from_env(),
+    'database': _database_map[
+        os.environ.get('BIGCHAINDB_DATABASE_BACKEND', 'rethinkdb')
+    ],
     'keypair': {
         'public': None,
         'private': None,
