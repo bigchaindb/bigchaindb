@@ -49,6 +49,7 @@ def test_double_create(b, user_pk):
 @pytest.mark.usefixtures('inputs')
 def test_get_owned_ids_works_after_double_spend(b, user_pk, user_sk):
     """ Test for #633 https://github.com/bigchaindb/bigchaindb/issues/633 """
+    from bigchaindb.common.exceptions import DoubleSpend
     from bigchaindb.models import Transaction
     input_valid = b.get_owned_ids(user_pk).pop()
     input_valid = b.get_transaction(input_valid.txid)
@@ -76,4 +77,5 @@ def test_get_owned_ids_works_after_double_spend(b, user_pk, user_sk):
 
     # still doesn't throw an exception
     b.get_owned_ids(user_pk)
-    assert b.is_valid_transaction(tx_double_spend) is False
+    with pytest.raises(DoubleSpend):
+        b.validate_transaction(tx_double_spend)
