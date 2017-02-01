@@ -163,16 +163,3 @@ class TestBlockModel(object):
 
         public_key = PublicKey(b.me)
         assert public_key.verify(expected_block_serialized, block.signature)
-
-    def test_validate_already_voted_on_block(self, b, monkeypatch):
-        from unittest.mock import Mock
-        from bigchaindb.models import Transaction
-
-        tx = Transaction.create([b.me], [([b.me], 1)])
-        block = b.create_block([tx])
-
-        has_previous_vote = Mock()
-        has_previous_vote.return_value = True
-        monkeypatch.setattr(b, 'has_previous_vote', has_previous_vote)
-        assert block == block.validate(b)
-        assert has_previous_vote.called is True
