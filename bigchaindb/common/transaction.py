@@ -482,8 +482,8 @@ class Transaction(object):
             Args:
                 tx_signers (:obj:`list` of :obj:`str`): A list of keys that
                     represent the signers of the CREATE Transaction.
-                recipients (:obj:`list` of :obj:`str`): A list of keys that
-                    represent the recipients of the outputs of this
+                recipients (:obj:`list` of :obj:`tuple`): A list of
+                    ([keys],amount) that represent the recipients of this
                     Transaction.
                 metadata (dict): The metadata to be stored along with the
                     Transaction.
@@ -549,7 +549,7 @@ class Transaction(object):
                 inputs (:obj:`list` of :class:`~bigchaindb.common.transaction.
                     Input`): Converted `Output`s, intended to
                     be used as inputs in the transfer to generate.
-                recipients (:obj:`list` of :obj:`str`): A list of
+                recipients (:obj:`list` of :obj:`tuple`): A list of
                     ([keys],amount) that represent the recipients of this
                     Transaction.
                 asset_id (str): The asset ID of the asset to be transferred in
