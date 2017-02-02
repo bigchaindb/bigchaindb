@@ -41,11 +41,6 @@ config = {
         'private': None,
     },
     'keyring': [],
-    'statsd': {
-        'host': 'localhost',
-        'port': 8125,
-        'rate': 0.01,
-    },
     'backlog_reassign_delay': 120
 }
 

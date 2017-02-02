@@ -105,12 +105,6 @@ def run_configure(args, skip_if_exists=False):
                 input_on_stderr('Database {}? (default `{}`): '.format(key, val)) \
                 or val
 
-        for key in ('host', 'port', 'rate'):
-            val = conf['statsd'][key]
-            conf['statsd'][key] = \
-                input_on_stderr('Statsd {}? (default `{}`): '.format(key, val)) \
-                or val
-
         val = conf['backlog_reassign_delay']
         conf['backlog_reassign_delay'] = \
             input_on_stderr(('Stale transaction reassignment delay (in '
