@@ -76,6 +76,8 @@ class MongoDBConnection(Connection):
             return query.run(self.conn)
         except pymongo.errors.DuplicateKeyError as exc:
             raise DuplicateKeyError from exc
+        except pymongo.errors.AutoReconnect as exc:
+            raise ConnectionError from exc
         except pymongo.errors.OperationFailure as exc:
             raise OperationError from exc
 
