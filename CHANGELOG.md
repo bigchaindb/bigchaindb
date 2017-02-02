@@ -40,6 +40,7 @@ It has been more than two months since the v0.8.0 release, so there have been _m
 
 ### Fixed
 - Fixed a memory (RAM) overflow problem when under heavy load by bounding the size of the queue at the entrance to the block pipeline. [Pull Request #908](https://github.com/bigchaindb/bigchaindb/pull/908)
+- Fixed some logic in block validation. [Pull Request #1130](https://github.com/bigchaindb/bigchaindb/pull/1130)
 
 ### External Contributors
 - @utarl - [Pull Request #1019](https://github.com/bigchaindb/bigchaindb/pull/1019)
