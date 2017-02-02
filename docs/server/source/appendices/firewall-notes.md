@@ -44,11 +44,6 @@ Port 161 is the default SNMP port (usually UDP, sometimes TCP). SNMP is used, fo
 Port 443 is the default HTTPS port (TCP). You may need to open it up for outbound requests (and inbound responses) temporarily because some RethinkDB installation instructions use wget over HTTPS to get the RethinkDB GPG key. Package managers might also get some packages using HTTPS.
 
 
-## Port 8125
-
-If you set up a [cluster-monitoring server](../clusters-feds/monitoring.html), then StatsD will send UDP packets to Telegraf (on the monitoring server) via port 8125.
-
-
 ## Port 8080
 
 Port 8080 is the default port used by RethinkDB for its adminstrative web (HTTP) interface (TCP). While you _can_, you shouldn't allow traffic arbitrary external sources. You can still use the RethinkDB web interface by binding it to localhost and then accessing it via a SOCKS proxy or reverse proxy; see "Binding the web interface port" on [the RethinkDB page about securing your cluster](https://rethinkdb.com/docs/security/).
@@ -76,8 +71,3 @@ Port 29015 is the default port for RethinkDB intracluster connections (TCP). It 
 ## Other Ports
 
 On Linux, you can use commands such as `netstat -tunlp` or `lsof -i` to get a sense of currently open/listening ports and connections, and the associated processes. 
-
-
-## Cluster-Monitoring Server
-
-If you set up a [cluster-monitoring server](../clusters-feds/monitoring.html) (running Telegraf, InfluxDB & Grafana), Telegraf will listen on port 8125 for UDP packets from StatsD, and the Grafana web dashboard will use port 3000. (Those are the default ports.)

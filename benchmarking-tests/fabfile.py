@@ -30,14 +30,6 @@ def put_benchmark_utils():
 
 @task
 @parallel
-def set_statsd_host(statsd_host='localhost'):
-    run('python3 benchmark_utils.py set-statsd-host {}'.format(statsd_host))
-    print('update configuration')
-    run('bigchaindb show-config')
-
-
-@task
-@parallel
 def prepare_backlog(num_transactions=10000):
     run('python3 benchmark_utils.py add-backlog {}'.format(num_transactions))
 
