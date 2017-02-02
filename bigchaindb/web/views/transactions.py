@@ -72,7 +72,6 @@ class TransactionListApi(Resource):
             A ``dict`` containing the data about the transaction.
         """
         pool = current_app.config['bigchain_pool']
-        monitor = current_app.config['monitor']
 
         # `force` will try to format the body of the POST request even if the
         # `content-type` header is not set to `application/json`
@@ -109,8 +108,6 @@ class TransactionListApi(Resource):
                     'Invalid transaction ({}): {}'.format(type(e).__name__, e)
                 )
             else:
-                rate = bigchaindb.config['statsd']['rate']
-                with monitor.timer('write_transaction', rate=rate):
-                    bigchain.write_transaction(tx_obj)
+                bigchain.write_transaction(tx_obj)
 
         return tx, 202
