@@ -3,6 +3,8 @@ import json
 from unittest.mock import patch
 
 import pytest
+from flask import url_for
+
 from bigchaindb.common import crypto
 
 
@@ -17,6 +19,132 @@ def test_get_transaction_endpoint(b, client, user_pk):
     res = client.get(TX_ENDPOINT + tx.id)
     assert tx.to_dict() == res.json
     assert res.status_code == 200
+
+
+@pytest.mark.bdb
+def test_get_backlog_transaction(client, backlog_tx):
+    from bigchaindb import Bigchain
+    from bigchaindb.web.views.transactions import TransactionApi
+    path = url_for(TransactionApi.__name__.lower(), tx_id=backlog_tx.id)
+    res = client.get(path=path,
+                     query_string={'status': Bigchain.TX_IN_BACKLOG})
+    assert res.status_code == 200
+    assert res.json == backlog_tx.to_dict()
+
+
+@pytest.mark.bdb
+def test_get_undecided_transaction(client, undecided_tx):
+    from bigchaindb import Bigchain
+    from bigchaindb.web.views.transactions import TransactionApi
+    path = url_for(TransactionApi.__name__.lower(), tx_id=undecided_tx.id)
+    res = client.get(path=path,
+                     query_string={'status': Bigchain.BLOCK_UNDECIDED})
+    assert res.status_code == 200
+    assert res.json == undecided_tx.to_dict()
+
+
+@pytest.mark.bdb
+def test_get_valid_transaction(client, valid_block):
+    from bigchaindb import Bigchain
+    from bigchaindb.web.views.transactions import TransactionApi
+    tx = valid_block.transactions[0]
+    path = url_for(TransactionApi.__name__.lower(), tx_id=tx.id)
+    res = client.get(path=path, query_string={'status': Bigchain.BLOCK_VALID})
+    assert res.status_code == 200
+    assert res.json == tx.to_dict()
+
+
+@pytest.mark.bdb
+@pytest.mark.parametrize('tx_status', ('valid', 'backlog', 'undecided'))
+def test_get_with_status_param_not_found(client, tx_status, caplog):
+    from bigchaindb.web.views.transactions import TransactionApi
+    path = url_for(TransactionApi.__name__.lower(), tx_id=1)
+    res = client.get(path=path, query_string={'status': tx_status})
+    expected_error_message = (
+        'Transaction with id: "{}" and '
+        'status: "{}" could not be found.'
+    ).format(1, tx_status)
+    expected_status_code = 404
+    assert res.status_code == expected_status_code
+    assert len(res.json) == 2
+    assert res.json['status'] == expected_status_code
+    assert res.json['message'] == expected_error_message
+    assert len(caplog.records[-1].args)
+    assert caplog.records[-1].args['status'] == expected_status_code
+    assert caplog.records[-1].args['message'] == expected_error_message
+
+
+@pytest.mark.bdb
+@pytest.mark.usefixtures('backlog_tx', 'undecided_block')
+def test_get_valid_transaction_not_found(client, signed_create_tx, caplog):
+    from bigchaindb.web.views.transactions import TransactionApi
+    path = url_for(TransactionApi.__name__.lower(), tx_id=signed_create_tx.id)
+    res = client.get(path=path, query_string={'status': 'valid'})
+    expected_error_message = (
+        'Transaction with id: "{}" and '
+        'status: "{}" could not be found.'
+    ).format(signed_create_tx.id, 'valid')
+    expected_status_code = 404
+    assert res.status_code == expected_status_code
+    assert len(res.json) == 2
+    assert res.json['status'] == expected_status_code
+    assert res.json['message'] == expected_error_message
+    assert len(caplog.records[-1].args)
+    assert caplog.records[-1].args['status'] == expected_status_code
+    assert caplog.records[-1].args['message'] == expected_error_message
+
+
+@pytest.mark.bdb
+@pytest.mark.usefixtures('backlog_tx', 'valid_block', 'undecided_block_2')
+def test_get_undecided_transaction_not_found(client, signed_create_tx, caplog):
+    from bigchaindb.web.views.transactions import TransactionApi
+    path = url_for(TransactionApi.__name__.lower(), tx_id=signed_create_tx.id)
+    res = client.get(path=path, query_string={'status': 'undecided'})
+    expected_error_message = (
+        'Transaction with id: "{}" and '
+        'status: "{}" could not be found.'
+    ).format(signed_create_tx.id, 'undecided')
+    expected_status_code = 404
+    assert res.status_code == expected_status_code
+    assert len(res.json) == 2
+    assert res.json['status'] == expected_status_code
+    assert res.json['message'] == expected_error_message
+    assert len(caplog.records[-1].args)
+    assert caplog.records[-1].args['status'] == expected_status_code
+    assert caplog.records[-1].args['message'] == expected_error_message
+
+
+@pytest.mark.bdb
+@pytest.mark.usefixtures('valid_block', 'undecided_block_2', 'backlog_tx')
+def test_get_backlog_transaction_not_found(client, signed_create_tx, caplog):
+    from bigchaindb.web.views.transactions import TransactionApi
+    path = url_for(TransactionApi.__name__.lower(), tx_id=signed_create_tx.id)
+    res = client.get(path=path, query_string={'status': 'undecided'})
+    expected_error_message = (
+        'Transaction with id: "{}" and '
+        'status: "{}" could not be found.'
+    ).format(signed_create_tx.id, 'undecided')
+    expected_status_code = 404
+    assert res.status_code == expected_status_code
+    assert len(res.json) == 2
+    assert res.json['status'] == expected_status_code
+    assert res.json['message'] == expected_error_message
+    assert len(caplog.records[-1].args)
+    assert caplog.records[-1].args['status'] == expected_status_code
+    assert caplog.records[-1].args['message'] == expected_error_message
+
+
+def test_get_transaction_with_invalid_query_param(client, caplog):
+    from bigchaindb.web.views.transactions import (TransactionApi,
+                                                   TRANSACTION_STATUSES)
+    path = url_for(TransactionApi.__name__.lower(), tx_id=1)
+    res = client.get(path=path, query_string={'status': 'abc'})
+    assert res.status_code == 400
+    assert res.json['message']['status'] == (
+        'Unsupported transaction status: abc is not a valid choice. '
+        'Must be one of: ("{}", "{}", "{}")'.format(*TRANSACTION_STATUSES)
+    )
+    assert caplog.records
 
 
 @pytest.mark.bdb

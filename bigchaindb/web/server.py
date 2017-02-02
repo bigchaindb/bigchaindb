@@ -6,7 +6,7 @@ The application is implemented in Flask and runs using Gunicorn.
 import copy
 import multiprocessing
 
-from flask import Flask
+from flask import Flask, got_request_exception
 import gunicorn.app.base
 
 from bigchaindb import utils
@@ -14,6 +14,17 @@ from bigchaindb import Bigchain
 from bigchaindb.web.routes import add_routes
 
 from bigchaindb.monitor import Monitor
+
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+def log_exception(sender, exception, **extra):
+    """ Log an exception to our logging framework """
+    # TODO log via the sneder object instead:
+    # sender.logger.warning('Got exception during processing: %s', exception)
+    logger.warning('Got exception during processing: %s', exception)
 
 
 # TODO: Figure out if we do we need all this boilerplate.
@@ -68,6 +79,7 @@ def create_app(*, debug=False, threads=4):
     app.config['monitor'] = Monitor()
 
     add_routes(app)
+    got_request_exception.connect(log_exception, app)
 
     return app
 
