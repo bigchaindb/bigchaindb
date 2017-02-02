@@ -5,7 +5,7 @@ import rethinkdb as r
 
 from bigchaindb.backend import admin
 from bigchaindb.backend.schema import TABLES
-from bigchaindb.backend.exceptions import DatabaseOpFailedError
+from bigchaindb.backend.exceptions import OperationError
 from bigchaindb.backend.utils import module_dispatch_registrar
 from bigchaindb.backend.rethinkdb.connection import RethinkDBConnection
 
@@ -78,7 +78,7 @@ def reconfigure(connection, *, table, shards, replicas,
             <https://rethinkdb.com/api/python/reconfigure/>`_.
 
     Raises:
-        DatabaseOpFailedError: If the reconfiguration fails due to a
+        OperationError: If the reconfiguration fails due to a
             RethinkDB :exc:`ReqlOpFailedError` or
             :exc:`ReqlQueryLogicError`.
 
@@ -96,7 +96,7 @@ def reconfigure(connection, *, table, shards, replicas,
     try:
         return connection.run(r.table(table).reconfigure(**params))
     except (r.ReqlOpFailedError, r.ReqlQueryLogicError) as e:
-        raise DatabaseOpFailedError from e
+        raise OperationError from e
 
 
 @register_admin(RethinkDBConnection)

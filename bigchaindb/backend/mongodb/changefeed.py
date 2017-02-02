@@ -1,15 +1,15 @@
+import os
 import logging
 import time
 
 import pymongo
-from pymongo import errors
 
 from bigchaindb import backend
 from bigchaindb.backend.changefeed import ChangeFeed
 from bigchaindb.backend.utils import module_dispatch_registrar
 from bigchaindb.backend.mongodb.connection import MongoDBConnection
-from bigchaindb.backend.exceptions import (DatabaseOpFailedError,
-                                           ConnectionError)
+from bigchaindb.backend.exceptions import BackendError
+
 
 logger = logging.getLogger(__name__)
 register_changefeed = module_dispatch_registrar(backend.changefeed)
@@ -30,11 +30,8 @@ class MongoDBChangeFeed(ChangeFeed):
             try:
                 self.run_changefeed()
                 break
-            except (errors.ConnectionFailure, errors.OperationFailure,
-                    errors.AutoReconnect,
-                    errors.ServerSelectionTimeoutError,
-                    DatabaseOpFailedError, ConnectionError) as exc:
-                logger.exception(exc)
+            except BackendError:
+                logger.exception('Error connecting to the database, retrying')
                 time.sleep(1)
 
     def run_changefeed(self):
@@ -43,9 +40,10 @@ class MongoDBChangeFeed(ChangeFeed):
         namespace = '{}.{}'.format(dbname, table)
         # last timestamp in the oplog. We only care for operations happening
         # in the future.
-        last_ts = self.connection.conn.local.oplog.rs.find()\
-                      .sort('$natural', pymongo.DESCENDING).limit(1)\
-                      .next()['ts']
+        last_ts = self.connection.run(
+            self.connection.query().local.oplog.rs.find()
+            .sort('$natural', pymongo.DESCENDING).limit(1)
+            .next()['ts'])
         # tailable cursor. A tailable cursor will remain open even after the
         # last result was returned. ``TAILABLE_AWAIT`` will block for some
         # timeout after the last result was returned. If no result is received
@@ -56,6 +54,7 @@ class MongoDBChangeFeed(ChangeFeed):
         )
 
         while cursor.alive:
+            print(os.getpid(), 'alive')
             try:
                 record = cursor.next()
             except StopIteration:

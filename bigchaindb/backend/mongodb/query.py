@@ -10,8 +10,9 @@ from pymongo import errors
 from bigchaindb import backend
 from bigchaindb.common.exceptions import CyclicBlockchainError
 from bigchaindb.common.transaction import Transaction
+from bigchaindb.backend.exceptions import DuplicateKeyError
 from bigchaindb.backend.utils import module_dispatch_registrar
-from bigchaindb.backend.mongodb.connection import MongoDBConnection, collection
+from bigchaindb.backend.mongodb.connection import MongoDBConnection
 
 
 register_query = module_dispatch_registrar(backend.query)
@@ -21,9 +22,9 @@ register_query = module_dispatch_registrar(backend.query)
 def write_transaction(conn, signed_transaction):
     try:
         return conn.run(
-            collection('backlog')
+            conn.collection('backlog')
             .insert_one(signed_transaction))
-    except errors.DuplicateKeyError:
+    except DuplicateKeyError:
         return
 
 
@@ -32,7 +33,7 @@ def update_transaction(conn, transaction_id, doc):
     # with mongodb we need to add update operators to the doc
     doc = {'$set': doc}
     return conn.run(
-        collection('backlog')
+        conn.collection('backlog')
         .find_one_and_update(
             {'id': transaction_id},
             doc,
@@ -42,14 +43,14 @@ def update_transaction(conn, transaction_id, doc):
 @register_query(MongoDBConnection)
 def delete_transaction(conn, *transaction_id):
     return conn.run(
-        collection('backlog')
+        conn.collection('backlog')
         .delete_many({'id': {'$in': transaction_id}}))
 
 
 @register_query(MongoDBConnection)
 def get_stale_transactions(conn, reassign_delay):
     return conn.run(
-        collection('backlog')
+        conn.collection('backlog')
         .find({'assignment_timestamp': {'$lt': time() - reassign_delay}},
               projection={'_id': False}))
 
@@ -58,7 +59,7 @@ def get_stale_transactions(conn, reassign_delay):
 def get_transaction_from_block(conn, transaction_id, block_id):
     try:
         return conn.run(
-            collection('bigchain')
+            conn.collection('bigchain')
             .aggregate([
                 {'$match': {'id': block_id}},
                 {'$project': {
@@ -84,7 +85,7 @@ def get_transaction_from_block(conn, transaction_id, block_id):
 @register_query(MongoDBConnection)
 def get_transaction_from_backlog(conn, transaction_id):
     return conn.run(
-        collection('backlog')
+        conn.collection('backlog')
         .find_one({'id': transaction_id},
                   projection={'_id': False,
                               'assignee': False,
@@ -94,7 +95,7 @@ def get_transaction_from_backlog(conn, transaction_id):
 @register_query(MongoDBConnection)
 def get_blocks_status_from_transaction(conn, transaction_id):
     return conn.run(
-        collection('bigchain')
+        conn.collection('bigchain')
         .find({'block.transactions.id': transaction_id},
               projection=['id', 'block.voters']))
 
@@ -139,7 +140,7 @@ def get_txids_filtered(conn, asset_id, operation=None):
 @register_query(MongoDBConnection)
 def get_asset_by_id(conn, asset_id):
     cursor = conn.run(
-        collection('bigchain')
+        conn.collection('bigchain')
         .aggregate([
             {'$match': {
                 'block.transactions.id': asset_id,
@@ -160,7 +161,7 @@ def get_asset_by_id(conn, asset_id):
 @register_query(MongoDBConnection)
 def get_spent(conn, transaction_id, output):
     cursor = conn.run(
-        collection('bigchain').aggregate([
+        conn.collection('bigchain').aggregate([
             {'$unwind': '$block.transactions'},
             {'$match': {
                 'block.transactions.inputs.fulfills.txid': transaction_id,
@@ -175,7 +176,7 @@ def get_spent(conn, transaction_id, output):
 @register_query(MongoDBConnection)
 def get_owned_ids(conn, owner):
     cursor = conn.run(
-        collection('bigchain')
+        conn.collection('bigchain')
         .aggregate([
             {'$unwind': '$block.transactions'},
             {'$match': {
@@ -192,7 +193,7 @@ def get_owned_ids(conn, owner):
 @register_query(MongoDBConnection)
 def get_votes_by_block_id(conn, block_id):
     return conn.run(
-        collection('votes')
+        conn.collection('votes')
         .find({'vote.voting_for_block': block_id},
               projection={'_id': False}))
 
@@ -200,7 +201,7 @@ def get_votes_by_block_id(conn, block_id):
 @register_query(MongoDBConnection)
 def get_votes_by_block_id_and_voter(conn, block_id, node_pubkey):
     return conn.run(
-        collection('votes')
+        conn.collection('votes')
         .find({'vote.voting_for_block': block_id,
                'node_pubkey': node_pubkey},
               projection={'_id': False}))
@@ -209,14 +210,14 @@ def get_votes_by_block_id_and_voter(conn, block_id, node_pubkey):
 @register_query(MongoDBConnection)
 def write_block(conn, block):
     return conn.run(
-        collection('bigchain')
+        conn.collection('bigchain')
         .insert_one(block.to_dict()))
 
 
 @register_query(MongoDBConnection)
 def get_block(conn, block_id):
     return conn.run(
-        collection('bigchain')
+        conn.collection('bigchain')
         .find_one({'id': block_id},
                   projection={'_id': False}))
 
@@ -224,27 +225,27 @@ def get_block(conn, block_id):
 @register_query(MongoDBConnection)
 def has_transaction(conn, transaction_id):
     return bool(conn.run(
-        collection('bigchain')
+        conn.collection('bigchain')
         .find_one({'block.transactions.id': transaction_id})))
 
 
 @register_query(MongoDBConnection)
 def count_blocks(conn):
     return conn.run(
-        collection('bigchain')
+        conn.collection('bigchain')
         .count())
 
 
 @register_query(MongoDBConnection)
 def count_backlog(conn):
     return conn.run(
-        collection('backlog')
+        conn.collection('backlog')
         .count())
 
 
 @register_query(MongoDBConnection)
 def write_vote(conn, vote):
-    conn.run(collection('votes').insert_one(vote))
+    conn.run(conn.collection('votes').insert_one(vote))
     vote.pop('_id')
     return vote
 
@@ -252,7 +253,7 @@ def write_vote(conn, vote):
 @register_query(MongoDBConnection)
 def get_genesis_block(conn):
     return conn.run(
-        collection('bigchain')
+        conn.collection('bigchain')
         .find_one(
             {'block.transactions.0.operation': 'GENESIS'},
             {'_id': False}
@@ -262,7 +263,7 @@ def get_genesis_block(conn):
 @register_query(MongoDBConnection)
 def get_last_voted_block(conn, node_pubkey):
     last_voted = conn.run(
-            collection('votes')
+            conn.collection('votes')
             .find({'node_pubkey': node_pubkey},
                   sort=[('vote.timestamp', -1)]))
 

@@ -32,6 +32,7 @@ def connect(backend=None, host=None, port=None, name=None, replicaset=None):
         based on the given (or defaulted) :attr:`backend`.
 
     Raises:
+        :exc:`~ConnectionError`: If the connection to the database fails.
         :exc:`~ConfigurationError`: If the given (or defaulted) :attr:`backend`
             is not supported or could not be loaded.
     """
@@ -77,6 +78,13 @@ class Connection:
 
         Args:
             query: the query to run
+        Raises:
+            :exc:`~DuplicateKeyError`: If the query fails because of a
+                duplicate key constraint.
+            :exc:`~OperationFailure`: If the query fails for any other
+                reason.
+            :exc:`~ConnectionError`: If the connection to the database
+                fails.
         """
 
         raise NotImplementedError()

@@ -23,7 +23,7 @@ from bigchaindb.utils import ProcessGroup
 from bigchaindb import backend
 from bigchaindb.backend import schema
 from bigchaindb.backend.admin import set_replicas, set_shards
-from bigchaindb.backend.exceptions import (DatabaseOpFailedError,
+from bigchaindb.backend.exceptions import (OperationError,
                                            ConnectionError)
 from bigchaindb.commands import utils
 from bigchaindb import processes
@@ -252,7 +252,7 @@ def run_set_shards(args):
     conn = backend.connect()
     try:
         set_shards(conn, shards=args.num_shards)
-    except DatabaseOpFailedError as e:
+    except OperationError as e:
         logger.warn(e)
 
 
@@ -260,7 +260,7 @@ def run_set_replicas(args):
     conn = backend.connect()
     try:
         set_replicas(conn, replicas=args.num_replicas)
-    except DatabaseOpFailedError as e:
+    except OperationError as e:
         logger.warn(e)
 
 

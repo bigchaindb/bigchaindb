@@ -2,13 +2,14 @@ import time
 import logging
 from itertools import repeat
 
-from pymongo import MongoClient
-from pymongo import errors
+import pymongo
 
 import bigchaindb
 from bigchaindb.utils import Lazy
-from bigchaindb.common import exceptions
-from bigchaindb.backend import exceptions as backend_exceptions
+from bigchaindb.common.exceptions import ConfigurationError
+from bigchaindb.backend.exceptions import (DuplicateKeyError,
+                                           OperationError,
+                                           ConnectionError)
 from bigchaindb.backend.connection import Connection
 
 logger = logging.getLogger(__name__)
@@ -59,18 +60,33 @@ class MongoDBConnection(Connection):
     def db(self):
         return self.conn[self.dbname]
 
+    def query(self):
+        return Lazy()
+
+    def collection(self, name):
+        """Return a lazy object that can be used to compose a query.
+
+        Args:
+            name (str): the name of the collection to query.
+        """
+        return self.query()[self.dbname][name]
+
     def run(self, query):
-        attempt = 0
-        for i in self.max_tries_counter:
-            attempt += 1
-            try:
-                return query.run(self.conn[self.dbname])
-            except errors.AutoReconnect:
-                if attempt == self.max_tries:
-                    raise
-                self._connect()
+        try:
+            return query.run(self.conn)
+        except pymongo.errors.DuplicateKeyError as exc:
+            raise DuplicateKeyError from exc
+        except pymongo.errors.OperationFailure as exc:
+            raise OperationError from exc
 
     def _connect(self):
+        """Try to connect to the database.
+
+        Raises:
+            :exc:`~ConnectionError`: If the connection to the database
+                fails.
+        """
+
         attempt = 0
         for i in self.max_tries_counter:
             attempt += 1
@@ -83,28 +99,22 @@ class MongoDBConnection(Connection):
 
                 # FYI: this might raise a `ServerSelectionTimeoutError`,
                 # that is a subclass of `ConnectionFailure`.
-                self.connection = MongoClient(self.host,
-                                              self.port,
-                                              replicaset=self.replicaset,
-                                              serverselectiontimeoutms=self.connection_timeout)
-            except (errors.ConnectionFailure, errors.AutoReconnect) as exc:
+                self.connection = pymongo.MongoClient(self.host,
+                                                      self.port,
+                                                      replicaset=self.replicaset,
+                                                      serverselectiontimeoutms=self.connection_timeout)
+
+            # `initialize_replica_set` might raise `ConnectionFailure` or `OperationFailure`.
+            except (pymongo.errors.ConnectionFailure,
+                    pymongo.errors.OperationFailure) as exc:
                 logger.warning('Attempt %s/%s. Connection to %s:%s failed after %sms.',
                                attempt, self.max_tries if self.max_tries != 0 else '∞',
                                self.host, self.port, self.connection_timeout)
                 if attempt == self.max_tries:
                     logger.critical('Cannot connect to the Database. Giving up.')
-                    raise backend_exceptions.ConnectionError() from exc
+                    raise ConnectionError() from exc
             else:
                 break
-
-
-def collection(name):
-    """Return a lazy object that can be used to compose a query.
-
-    Args:
-        name (str): the name of the collection to query.
-    """
-    return Lazy()[name]
 
 
 def initialize_replica_set(host, port, connection_timeout):
@@ -114,7 +124,7 @@ def initialize_replica_set(host, port, connection_timeout):
     # The reason we do this instead of `backend.connect` is that
     # `backend.connect` will connect you to a replica set but this fails if
     # you try to connect to a replica set that is not yet initialized
-    conn = MongoClient(host=host,
+    conn = pymongo.MongoClient(host=host,
                        port=port,
                        serverselectiontimeoutms=connection_timeout)
     _check_replica_set(conn)
@@ -125,7 +135,7 @@ def initialize_replica_set(host, port, connection_timeout):
 
     try:
         conn.admin.command('replSetInitiate', config)
-    except errors.OperationFailure as exc_info:
+    except pymongo.errors.OperationFailure as exc_info:
         if exc_info.details['codeName'] == 'AlreadyInitialized':
             return
         raise
@@ -153,12 +163,12 @@ def _check_replica_set(conn):
         repl_opts = options['parsed']['replication']
         repl_set_name = repl_opts.get('replSetName', None) or repl_opts['replSet']
     except KeyError:
-        raise exceptions.ConfigurationError('mongod was not started with'
+        raise ConfigurationError('mongod was not started with'
                                             ' the replSet option.')
 
     bdb_repl_set_name = bigchaindb.config['database']['replicaset']
     if repl_set_name != bdb_repl_set_name:
-        raise exceptions.ConfigurationError('The replicaset configuration of '
+        raise ConfigurationError('The replicaset configuration of '
                                             'bigchaindb (`{}`) needs to match '
                                             'the replica set name from MongoDB'
                                             ' (`{}`)'
