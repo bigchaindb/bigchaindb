@@ -1,4 +1,3 @@
-import os
 import logging
 import time
 
@@ -28,9 +27,13 @@ class MongoDBChangeFeed(ChangeFeed):
 
         while True:
             try:
+                # XXX: hack to force reconnection,
+                #      the correct way to fix this is to manage errors
+                #      for cursors.conn
+                self.connection.connection = None
                 self.run_changefeed()
                 break
-            except BackendError:
+            except (BackendError, pymongo.errors.ConnectionFailure):
                 logger.exception('Error connecting to the database, retrying')
                 time.sleep(1)
 
@@ -48,13 +51,13 @@ class MongoDBChangeFeed(ChangeFeed):
         # last result was returned. ``TAILABLE_AWAIT`` will block for some
         # timeout after the last result was returned. If no result is received
         # in the meantime it will raise a StopIteration excetiption.
-        cursor = self.connection.conn.local.oplog.rs.find(
-            {'ns': namespace, 'ts': {'$gt': last_ts}},
-            cursor_type=pymongo.CursorType.TAILABLE_AWAIT
-        )
+        cursor = self.connection.run(
+            self.connection.query().local.oplog.rs.find(
+                {'ns': namespace, 'ts': {'$gt': last_ts}},
+                cursor_type=pymongo.CursorType.TAILABLE_AWAIT
+            ))
 
         while cursor.alive:
-            print(os.getpid(), 'alive')
             try:
                 record = cursor.next()
             except StopIteration:
