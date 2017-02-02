@@ -1,6 +1,7 @@
 import random
 import math
 import collections
+import logging
 from time import time
 
 from itertools import compress
@@ -13,6 +14,8 @@ import bigchaindb
 from bigchaindb import backend, config_utils, utils
 from bigchaindb.consensus import BaseConsensusRules
 from bigchaindb.models import Block, Transaction
+
+logger = logging.getLogger(__name__)
 
 
 class Bigchain(object):
@@ -263,19 +266,49 @@ class Bigchain(object):
         else:
             return response
 
-    def get_status(self, txid):
-        """Retrieve the status of a transaction with `txid` from bigchain.
+    def get_transaction_status(self, txid):
+        """Retrieves the status of the transaction having the given
+        ``txid``.
 
         Args:
-            txid (str): transaction id of the transaction to query
+            txid (str): Transaction id of the transaction to query the
+                status for.
 
         Returns:
-            (string): transaction status ('valid', 'undecided',
-            or 'backlog'). If no transaction with that `txid` was found it
-            returns `None`
+            str: The transaction status (``'valid'``, ``'undecided'``,
+            ``'backlog'``, or ``'invalid'``). If no transaction with
+            the given ``txid`` was found it returns ``None``.
+
+        Note:
+            A transaction's lifecycle is such that it may go through the
+            ``backlog``, ``undecided``, and ``invalid`` states a few
+            times before being ``valid``. Consequently, if a transaction
+            lands in an ``invalid`` block, but goes through an
+            additional round, it may be reported as being in the
+            ``backlog`` or in an ``undecided`` block, or eventually in
+            a ``valid`` block.
         """
-        _, status = self.get_transaction(txid, include_status=True)
-        return status
+        try:
+            statuses = self.get_blocks_status_containing_tx(txid).values()
+        except (TypeError, AttributeError):
+            logger.debug(
+                'No blocks found for transaction %s. Looking into BACKLOG.',
+                txid,
+            )
+            if backend.query.\
+                    get_transaction_from_backlog(self.connection, txid):
+                return self.TX_IN_BACKLOG
+
+        else:
+            if self.BLOCK_VALID in statuses:
+                return self.BLOCK_VALID
+            elif self.BLOCK_UNDECIDED in statuses:
+                return self.BLOCK_UNDECIDED
+            elif backend.query.get_transaction_from_backlog(
+                                                        self.connection, txid):
+                return self.TX_IN_BACKLOG
+            elif self.BLOCK_INVALID in statuses:
+                return self.BLOCK_INVALID
 
     def get_blocks_status_containing_tx(self, txid):
         """Retrieve block ids and statuses related to a transaction

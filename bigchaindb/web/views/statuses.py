@@ -35,7 +35,7 @@ class StatusApi(Resource):
 
         with pool() as bigchain:
             if tx_id:
-                status = bigchain.get_status(tx_id)
+                status = bigchain.get_transaction_status(tx_id)
                 links = {
                     'tx': '/transactions/{}'.format(tx_id)
                 }
