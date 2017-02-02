@@ -20,3 +20,15 @@ def set_shards(connection, *, shards):
 @singledispatch
 def set_replicas(connection, *, replicas):
     raise NotImplementedError
+
+
+@singledispatch
+def add_replicas(connection, replicas):
+    raise NotImplementedError('This command is specific to the '
+                              'MongoDB backend.')
+
+
+@singledispatch
+def remove_replicas(connection, replicas):
+    raise NotImplementedError('This command is specific to the '
+                              'MongoDB backend.')
