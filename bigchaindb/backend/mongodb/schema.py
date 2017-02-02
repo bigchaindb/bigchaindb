@@ -63,6 +63,18 @@ def create_bigchain_secondary_index(conn, dbname):
         .create_index('block.transactions.transaction.asset.id',
                       name='asset_id')
 
+    # secondary index on the public keys of outputs
+    conn.conn[dbname]['bigchain']\
+        .create_index('block.transactions.outputs.public_keys',
+                      name='outputs')
+
+    # secondary index on inputs/transaction links (txid, output)
+    conn.conn[dbname]['bigchain']\
+        .create_index([
+            ('block.transactions.inputs.fulfills.txid', ASCENDING),
+            ('block.transactions.inputs.fulfills.output', ASCENDING),
+        ], name='inputs')
+
 
 def create_backlog_secondary_index(conn, dbname):
     logger.info('Create `backlog` secondary index.')
