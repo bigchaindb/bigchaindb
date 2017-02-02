@@ -125,8 +125,8 @@ def initialize_replica_set(host, port, connection_timeout):
     # `backend.connect` will connect you to a replica set but this fails if
     # you try to connect to a replica set that is not yet initialized
     conn = pymongo.MongoClient(host=host,
-                       port=port,
-                       serverselectiontimeoutms=connection_timeout)
+                               port=port,
+                               serverselectiontimeoutms=connection_timeout)
     _check_replica_set(conn)
     host = '{}:{}'.format(bigchaindb.config['database']['host'],
                           bigchaindb.config['database']['port'])
@@ -164,16 +164,15 @@ def _check_replica_set(conn):
         repl_set_name = repl_opts.get('replSetName', None) or repl_opts['replSet']
     except KeyError:
         raise ConfigurationError('mongod was not started with'
-                                            ' the replSet option.')
+                                 ' the replSet option.')
 
     bdb_repl_set_name = bigchaindb.config['database']['replicaset']
     if repl_set_name != bdb_repl_set_name:
         raise ConfigurationError('The replicaset configuration of '
-                                            'bigchaindb (`{}`) needs to match '
-                                            'the replica set name from MongoDB'
-                                            ' (`{}`)'
-                                            .format(bdb_repl_set_name,
-                                                    repl_set_name))
+                                 'bigchaindb (`{}`) needs to match '
+                                 'the replica set name from MongoDB'
+                                 ' (`{}`)'.format(bdb_repl_set_name,
+                                                  repl_set_name))
 
 
 def _wait_for_replica_set_initialization(conn):

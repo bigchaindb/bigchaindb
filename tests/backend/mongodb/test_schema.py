@@ -21,8 +21,8 @@ def test_init_creates_db_tables_and_indexes():
     assert sorted(collection_names) == ['backlog', 'bigchain', 'votes']
 
     indexes = conn.conn[dbname]['bigchain'].index_information().keys()
-    assert sorted(indexes) == ['_id_', 'asset_id', 'block_timestamp',
-                               'transaction_id']
+    assert sorted(indexes) == ['_id_', 'asset_id', 'block_timestamp', 'inputs',
+                               'outputs', 'transaction_id']
 
     indexes = conn.conn[dbname]['backlog'].index_information().keys()
     assert sorted(indexes) == ['_id_', 'assignee__transaction_timestamp',
@@ -81,8 +81,8 @@ def test_create_secondary_indexes():
 
     # Bigchain table
     indexes = conn.conn[dbname]['bigchain'].index_information().keys()
-    assert sorted(indexes) == ['_id_', 'asset_id', 'block_timestamp',
-                               'transaction_id']
+    assert sorted(indexes) == ['_id_', 'asset_id', 'block_timestamp', 'inputs',
+                               'outputs', 'transaction_id']
 
     # Backlog table
     indexes = conn.conn[dbname]['backlog'].index_information().keys()

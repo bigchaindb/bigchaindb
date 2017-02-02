@@ -3,14 +3,15 @@ for ``argparse.ArgumentParser``.
 """
 
 import argparse
-from bigchaindb.common.exceptions import StartupError
 import multiprocessing as mp
 import subprocess
 
 import rethinkdb as r
+from pymongo import uri_parser
 
 import bigchaindb
 from bigchaindb import backend
+from bigchaindb.common.exceptions import StartupError
 from bigchaindb.version import __version__
 
 
@@ -93,6 +94,34 @@ def start(parser, argv, scope):
         args.multiprocess = mp.cpu_count()
 
     return func(args)
+
+
+def mongodb_host(host):
+    """Utility function that works as a type for mongodb ``host`` args.
+
+    This function validates the ``host`` args provided by to the
+    ``add-replicas`` and ``remove-replicas`` commands and checks if each arg
+    is in the form "host:port"
+
+    Args:
+        host (str): A string containing hostname and port (e.g. "host:port")
+
+    Raises:
+        ArgumentTypeError: if it fails to parse the argument
+    """
+    # check if mongodb can parse the host
+    try:
+        hostname, port = uri_parser.parse_host(host, default_port=None)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(exc.args[0])
+
+    # we do require the port to be provided.
+    if port is None or hostname == '':
+        raise argparse.ArgumentTypeError('expected host in the form '
+                                         '`host:port`. Got `{}` instead.'
+                                         .format(host))
+
+    return host
 
 
 base_parser = argparse.ArgumentParser(add_help=False, prog='bigchaindb')

@@ -23,9 +23,9 @@ If your BigchainDB node is running on an Amazon Linux instance (i.e. a Linux ins
 That said, you should check _which_ NTP daemon is installed. Is it recent? Is it configured securely?
 
 
-## Ubuntu's ntp Package
+## The Ubuntu ntp Packages
 
-The [Ubuntu 14.04 (Trusty Tahr) package `ntp`](https://launchpad.net/ubuntu/trusty/+source/ntp) is based on the reference implementation of an NTP daemon (i.e. `ntpd`).
+The [Ubuntu `ntp` packages](https://launchpad.net/ubuntu/+source/ntp) are based on the reference implementation of NTP.
 
 The following commands will uninstall the `ntp` and `ntpdate` packages, install the latest `ntp` package (which _might not be based on the latest ntpd code_), and start the NTP daemon (a local NTP server). (`ntpdate` is not reinstalled because it's [deprecated](https://askubuntu.com/questions/297560/ntpd-vs-ntpdate-pros-and-cons) and you shouldn't use it.)
 ```text

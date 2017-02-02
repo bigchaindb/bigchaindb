@@ -2,11 +2,12 @@
 # ansible/roles/rethinkdb/tasks/main.yml
 
 # Note: the .list extension will be added to the rethinkdb filename automatically
+# Note: xenial is the $DISTRIB_CODENAME for Ubuntu 16.04
 - name: >
-    Ensure RethinkDB's APT repository for Ubuntu trusty is present
+    Ensure RethinkDB's APT repository for Ubuntu xenial is present
     in /etc/apt/sources.list.d/rethinkdb.list
   apt_repository:
-    repo='deb http://download.rethinkdb.com/apt trusty main'
+    repo='deb http://download.rethinkdb.com/apt xenial main'
     filename=rethinkdb
     state=present
   become: true
@@ -15,8 +16,8 @@
   apt_key: url=http://download.rethinkdb.com/apt/pubkey.gpg state=present
   become: true
 
-- name: Ensure the Ubuntu package rethinkdb 2.3.4~0trusty is installed
-  apt: name=rethinkdb=2.3.4~0trusty state=present update_cache=yes
+- name: Ensure the latest rethinkdb package is installed
+  apt: name=rethinkdb state=latest update_cache=yes
   become: true
 
 - name: Ensure the /data directory's owner and group are both 'rethinkdb'

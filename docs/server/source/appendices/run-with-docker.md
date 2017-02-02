@@ -21,7 +21,7 @@ be stored in a file on your host machine at `~/bigchaindb_docker/.bigchaindb`:
 
 ```text
 docker run --rm -v "$HOME/bigchaindb_docker:/data" -ti \
-  bigchaindb/bigchaindb -y configure
+  bigchaindb/bigchaindb -y configure rethinkdb
 Generating keypair
 Configuration written to /data/.bigchaindb
 Ready to go!

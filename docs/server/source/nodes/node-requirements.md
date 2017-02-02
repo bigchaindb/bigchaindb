@@ -9,7 +9,7 @@ Note: This section will be broken apart into several pages, e.g. NTP requirement
 * BigchainDB Server requires Python 3.4+ and Python 3.4+ [will run on any modern OS](https://docs.python.org/3.4/using/index.html).
 * BigchaindB Server uses the Python `multiprocessing` package and [some functionality in the `multiprocessing` package doesn't work on OS X](https://docs.python.org/3.4/library/multiprocessing.html#multiprocessing.Queue.qsize). You can still use Mac OS X if you use Docker or a virtual machine.
 
-The BigchainDB core dev team uses Ubuntu 14.04, Ubuntu 16.04, Fedora 23, and Fedora 24.
+The BigchainDB core dev team uses recent LTS versions of Ubuntu and recent versions of Fedora.
 
 We don't test BigchainDB on Windows or Mac OS X, but you can try.
 
