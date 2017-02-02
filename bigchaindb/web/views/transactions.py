@@ -23,7 +23,6 @@ from bigchaindb.common.exceptions import (
     ValidationError,
 )
 
-import bigchaindb
 from bigchaindb.models import Transaction
 from bigchaindb.web.views.base import make_error
 from bigchaindb.web.views import parameters
