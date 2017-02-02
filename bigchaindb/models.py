@@ -209,10 +209,6 @@ class Block(object):
         return self
 
     def _validate_block(self, bigchain):
-        # First, make sure this node hasn't already voted on this block
-        if bigchain.has_previous_vote(self.id, self.voters):
-            return self
-
         # Check if the block was created by a federation node
         possible_voters = (bigchain.nodes_except_me + [bigchain.me])
         if self.node_pubkey not in possible_voters:
