@@ -85,6 +85,10 @@ def test_create_secondary_indexes():
         'transaction_id')) is True
     assert conn.run(r.db(dbname).table('bigchain').index_list().contains(
         'asset_id')) is True
+    assert conn.run(r.db(dbname).table('bigchain').index_list().contains(
+        'inputs')) is True
+    assert conn.run(r.db(dbname).table('bigchain').index_list().contains(
+        'outputs')) is True
 
     # Backlog table
     assert conn.run(r.db(dbname).table('backlog').index_list().contains(
