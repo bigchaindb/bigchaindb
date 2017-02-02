@@ -203,6 +203,12 @@ class Block(object):
             InvalidSignature: If a Block's signature is invalid.
         """
 
+        self._validate_block(bigchain)
+        self._validate_block_transactions(bigchain)
+
+        return self
+
+    def _validate_block(self, bigchain):
         # First, make sure this node hasn't already voted on this block
         if bigchain.has_previous_vote(self.id, self.voters):
             return self
@@ -212,17 +218,15 @@ class Block(object):
         if self.node_pubkey not in possible_voters:
             raise OperationError('Only federation nodes can create blocks')
 
+        # Check that the signature is valid
         if not self.is_signature_valid():
-            raise InvalidSignature('Block signature invalid')
+            raise InvalidSignature('Invalid block signature')
 
-        # Finally: Tentative assumption that every blockchain will want to
-        # validate all transactions in each block
+    def _validate_block_transactions(self, bigchain):
         for tx in self.transactions:
-            # NOTE: If a transaction is not valid, `is_valid` will throw an
-            #       an exception and block validation will be canceled.
+            # If a transaction is not valid, `validate_transactions` will
+            # throw an an exception and block validation will be canceled.
             bigchain.validate_transaction(tx)
-
-        return self
 
     def sign(self, private_key):
         """Create a signature for the Block and overwrite `self.signature`.
@@ -273,33 +277,18 @@ class Block(object):
             InvalidSignature: If the block's signature is not corresponding
                 to it's data or `node_pubkey`.
         """
-        # TODO: Reuse `is_signature_valid` method here.
+        # Validate block id
         block = block_body['block']
         block_serialized = serialize(block)
         block_id = hash_data(block_serialized)
-        public_key = PublicKey(block['node_pubkey'])
-
-        try:
-            signature = block_body['signature']
-        except KeyError:
-            signature = None
 
         if block_id != block_body['id']:
             raise InvalidHash()
 
-        if signature is not None:
-            # NOTE: CC throws a `ValueError` on some wrong signatures
-            #       https://github.com/bigchaindb/cryptoconditions/issues/27
-            try:
-                signature_valid = public_key\
-                        .verify(block_serialized.encode(), signature)
-            except ValueError:
-                signature_valid = False
-            if signature_valid is False:
-                raise InvalidSignature('Invalid block signature')
-
         transactions = [Transaction.from_dict(tx) for tx
                         in block['transactions']]
+
+        signature = block_body.get('signature')
 
         return cls(transactions, block['node_pubkey'],
                    block['timestamp'], block['voters'], signature)

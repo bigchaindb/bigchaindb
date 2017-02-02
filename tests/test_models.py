@@ -107,7 +107,7 @@ class TestBlockModel(object):
         with raises(InvalidHash):
             Block.from_dict(block)
 
-    def test_block_invalid_signature_deserialization(self, b):
+    def test_block_invalid_signature(self, b):
         from bigchaindb.common.crypto import hash_data
         from bigchaindb.common.exceptions import InvalidSignature
         from bigchaindb.common.utils import gen_timestamp, serialize
@@ -131,7 +131,7 @@ class TestBlockModel(object):
         }
 
         with raises(InvalidSignature):
-            Block.from_dict(block_body)
+            Block.from_dict(block_body).validate(b)
 
     def test_compare_blocks(self, b):
         from bigchaindb.models import Block, Transaction
