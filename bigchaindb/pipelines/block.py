@@ -13,6 +13,8 @@ import bigchaindb
 from bigchaindb import backend
 from bigchaindb.backend.changefeed import ChangeFeed
 from bigchaindb.models import Transaction
+from bigchaindb.common.exceptions import (SchemaValidationError, InvalidHash,
+                                          InvalidSignature, AmountError)
 from bigchaindb import Bigchain
 
 
@@ -59,7 +61,12 @@ class BlockPipeline:
             :class:`~bigchaindb.models.Transaction`: The transaction if valid,
             ``None`` otherwise.
         """
-        tx = Transaction.from_dict(tx)
+        try:
+            tx = Transaction.from_dict(tx)
+        except (SchemaValidationError, InvalidHash, InvalidSignature,
+                AmountError):
+            return None
+
         if self.bigchain.transaction_exists(tx.id):
             # if the transaction already exists, we must check whether
             # it's in a valid or undecided block
