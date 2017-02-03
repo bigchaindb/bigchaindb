@@ -64,50 +64,6 @@ For a super lax, somewhat risky, anything-can-enter security group, add these ru
 If you want to set up a more secure security group, see the [Notes for Firewall Setup](../appendices/firewall-notes.html).
 
 
-## Deploy a BigchainDB Monitor
-
-This step is optional.
-
-One way to monitor a BigchainDB cluster is to use the monitoring setup described in the [Monitoring](monitoring.html) section of this documentation. If you want to do that, then you may want to deploy the monitoring server first, so you can tell your BigchainDB nodes where to send their monitoring data.
-
-You can deploy a monitoring server on AWS. To do that, go to the AWS EC2 Console and launch an instance:
-
-1. Choose an AMI: select Ubuntu Server 16.04 LTS.
-2. Choose an Instance Type: a t2.micro will suffice.
-3. Configure Instance Details: you can accept the defaults, but feel free to change them.
-4. Add Storage: A "Root" volume type should already be included. You _could_ store monitoring data there (e.g. in a folder named `/influxdb-data`) but we will attach another volume and store the monitoring data there instead. Select "Add New Volume" and an EBS volume type.
-5. Tag Instance: give your instance a memorable name.
-6. Configure Security Group: choose your bigchaindb security group.
-7. Review and launch your instance.
-
-When it asks, choose an existing key pair: the one you created earlier (named `bigchaindb`).
-
-Give your instance some time to launch and become able to accept SSH connections. You can see its current status in the AWS EC2 Console (in the "Instances" section). SSH into your instance using something like:
-```text
-cd deploy-cluster-aws
-ssh -i pem/bigchaindb.pem ubuntu@ec2-52-58-157-229.eu-central-1.compute.amazonaws.com
-```
-
-where `ec2-52-58-157-229.eu-central-1.compute.amazonaws.com` should be replaced by your new instance's EC2 hostname. (To get that, go to the AWS EC2 Console, select Instances, click on your newly-launched instance, and copy its "Public DNS" name.)
-
-Next, create a file system on the attached volume, make a directory named `/influxdb-data`, and set the attached volume's mount point to be `/influxdb-data`. For detailed instructions on how to do that, see the AWS documentation for [Making an Amazon EBS Volume Available for Use](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html).
-
-Then install Docker and Docker Compose:
-```text
-# in a Python 2.5-2.7 virtual environment where fabric, boto3, etc. are installed
-fab --fabfile=fabfile-monitor.py --hosts=<EC2 hostname> install_docker
-```
-
-After Docker is installed, we can run the monitor with:
-```text
-fab --fabfile=fabfile-monitor.py --hosts=<EC2 hostname> run_monitor
-```
-
-For more information about monitoring (e.g. how to view the Grafana dashboard in your web browser), see the [Monitoring](monitoring.html) section of this documentation.
-
-To configure a BigchainDB node to send monitoring data to the monitoring server, change the statsd host in the configuration of the BigchainDB node. The section on [Configuring a BigchainDB Node](../server-reference/configuration.html) explains how you can do that. (For example, you can change the statsd host in `$HOME/.bigchaindb`.)
-
-
 ## Deploy a BigchainDB Cluster
 
 ### Step 1

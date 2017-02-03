@@ -62,14 +62,6 @@ resource "aws_security_group" "node_sg1" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # StatsD
-  ingress {
-    from_port = 8125
-    to_port = 8125
-    protocol = "udp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
   # Future: Don't allow port 8080 for the RethinkDB web interface.
   # Use a SOCKS proxy or reverse proxy instead.
 
