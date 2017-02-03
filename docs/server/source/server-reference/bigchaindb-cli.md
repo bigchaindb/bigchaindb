@@ -46,14 +46,19 @@ Write the node's public key (i.e. one of its configuration values) to standard o
 
 ## bigchaindb init
 
-Create a RethinkDB database, all RethinkDB database tables, various RethinkDB database indexes, and the genesis block.
+Create a backend database (RethinkDB or MongoDB),
+all database tables/collections,
+various backend database indexes,
+and the genesis block.
 
-Note: The `bigchaindb start` command (see below) always starts by trying a `bigchaindb init` first. If it sees that the RethinkDB database already exists, then it doesn't re-initialize the database. One doesn't have to do `bigchaindb init` before `bigchaindb start`. `bigchaindb init` is useful if you only want to initialize (but not start).
+Note: The `bigchaindb start` command (see below) always starts by trying a `bigchaindb init` first. If it sees that the backend database already exists, then it doesn't re-initialize the database. One doesn't have to do `bigchaindb init` before `bigchaindb start`. `bigchaindb init` is useful if you only want to initialize (but not start).
 
 
 ## bigchaindb drop
 
-Drop (erase) the RethinkDB database. You will be prompted to make sure. If you want to force-drop the database (i.e. skipping the yes/no prompt), then use `bigchaindb -y drop`
+Drop (erase) the backend database (a RethinkDB or MongoDB database).
+You will be prompted to make sure.
+If you want to force-drop the database (i.e. skipping the yes/no prompt), then use `bigchaindb -y drop`
 
 
 ## bigchaindb start
@@ -76,17 +81,30 @@ Note: This command uses the Python Server API to write transactions to the datab
 
 ## bigchaindb set-shards
 
-Set the number of shards in the underlying datastore. For example, the following command will set the number of shards to four:
+This command is specific to RethinkDB so it will only run if BigchainDB is
+configured with `rethinkdb` as the backend.
+
+If RethinkDB is the backend database, then:
 ```text
 $ bigchaindb set-shards 4
 ```
 
+will set the number of shards (in all RethinkDB tables) to 4.
+
+
 ## bigchaindb set-replicas
 
-Set the number of replicas (of each shard) in the underlying datastore. For example, the following command will set the number of replicas to three (i.e. it will set the replication factor to three):
+This command is specific to RethinkDB so it will only run if BigchainDB is
+configured with `rethinkdb` as the backend.
+
+If RethinkDB is the backend database, then:
 ```text
 $ bigchaindb set-replicas 3
 ```
+
+will set the number of replicas (of each shard) to 3
+(i.e. it will set the replication factor to 3).
+
 
 ## bigchaindb add-replicas
 

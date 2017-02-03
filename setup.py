@@ -65,7 +65,6 @@ install_requires = [
     'pymongo~=3.4',
     'pysha3==1.0.0',
     'cryptoconditions>=0.5.0',
-    'statsd>=3.2.1',
     'python-rapidjson>=0.0.8',
     'logstats>=0.2.1',
     'flask>=0.10.1',

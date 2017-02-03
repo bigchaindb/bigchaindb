@@ -167,11 +167,6 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
             'private': None,
         },
         'keyring': KEYRING.split(':'),
-        'statsd': {
-            'host': 'localhost',
-            'port': 8125,
-            'rate': 0.01,
-        },
         'backlog_reassign_delay': 5
     }
 

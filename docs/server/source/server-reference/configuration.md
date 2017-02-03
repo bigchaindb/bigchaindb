@@ -19,9 +19,6 @@ For convenience, here's a list of all the relevant environment variables (docume
 `BIGCHAINDB_SERVER_BIND`<br>
 `BIGCHAINDB_SERVER_WORKERS`<br>
 `BIGCHAINDB_SERVER_THREADS`<br>
-`BIGCHAINDB_STATSD_HOST`<br>
-`BIGCHAINDB_STATSD_PORT`<br>
-`BIGCHAINDB_STATSD_RATE`<br>
 `BIGCHAINDB_CONFIG_PATH`<br>
 `BIGCHAINDB_BACKLOG_REASSIGN_DELAY`<br>
 
@@ -149,23 +146,6 @@ export BIGCHAINDB_SERVER_THREADS=5
     "workers": null,
     "threads": null
 }
-```
-
-
-## statsd.host, statsd.port & statsd.rate
-
-These settings are used to configure where, and how often, [StatsD](https://github.com/etsy/statsd) should send data for [cluster monitoring](../clusters-feds/monitoring.html) purposes. `statsd.host` is the hostname of the monitoring server, where StatsD should send its data. `stats.port` is the port. `statsd.rate` is the fraction of transaction operations that should be sampled. It's a float between 0.0 and 1.0.
-
-**Example using environment variables**
-```text
-export BIGCHAINDB_STATSD_HOST="http://monitor.monitors-r-us.io"
-export BIGCHAINDB_STATSD_PORT=8125
-export BIGCHAINDB_STATSD_RATE=0.01
-```
-
-**Example config file snippet: the default**
-```js
-"statsd": {"host": "localhost", "port": 8125, "rate": 0.01}
 ```
 
 ## backlog_reassign_delay

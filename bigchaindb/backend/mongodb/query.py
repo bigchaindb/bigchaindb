@@ -1,7 +1,6 @@
 """Query implementation for MongoDB"""
 
 from time import time
-from itertools import chain
 
 from pymongo import ReturnDocument
 
@@ -100,39 +99,30 @@ def get_blocks_status_from_transaction(conn, transaction_id):
 
 @register_query(MongoDBConnection)
 def get_txids_filtered(conn, asset_id, operation=None):
-    parts = []
+    match_create = {
+        'block.transactions.operation': 'CREATE',
+        'block.transactions.id': asset_id
+    }
+    match_transfer = {
+        'block.transactions.operation': 'TRANSFER',
+        'block.transactions.asset.id': asset_id
+    }
 
-    if operation in (Transaction.CREATE, None):
-        # get the txid of the create transaction for asset_id
-        cursor = conn.db['bigchain'].aggregate([
-            {'$match': {
-                'block.transactions.id': asset_id,
-                'block.transactions.operation': 'CREATE'
-            }},
-            {'$unwind': '$block.transactions'},
-            {'$match': {
-                'block.transactions.id': asset_id,
-                'block.transactions.operation': 'CREATE'
-            }},
-            {'$project': {'block.transactions.id': True}}
-        ])
-        parts.append(elem['block']['transactions']['id'] for elem in cursor)
+    if operation == Transaction.CREATE:
+        match = match_create
+    elif operation == Transaction.TRANSFER:
+        match = match_transfer
+    else:
+        match = {'$or': [match_create, match_transfer]}
 
-    if operation in (Transaction.TRANSFER, None):
-        # get txids of transfer transaction with asset_id
-        cursor = conn.db['bigchain'].aggregate([
-            {'$match': {
-                'block.transactions.asset.id': asset_id
-            }},
-            {'$unwind': '$block.transactions'},
-            {'$match': {
-                'block.transactions.asset.id': asset_id
-            }},
-            {'$project': {'block.transactions.id': True}}
-        ])
-        parts.append(elem['block']['transactions']['id'] for elem in cursor)
-
-    return chain(*parts)
+    pipeline = [
+        {'$match': match},
+        {'$unwind': '$block.transactions'},
+        {'$match': match},
+        {'$project': {'block.transactions.id': True}}
+    ]
+    cursor = conn.db['bigchain'].aggregate(pipeline)
+    return (elem['block']['transactions']['id'] for elem in cursor)
 
 
 @register_query(MongoDBConnection)

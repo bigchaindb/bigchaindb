@@ -60,8 +60,7 @@ def create_bigchain_secondary_index(conn, dbname):
 
     # secondary index for asset uuid, this field is unique
     conn.conn[dbname]['bigchain']\
-        .create_index('block.transactions.transaction.asset.id',
-                      name='asset_id')
+        .create_index('block.transactions.asset.id', name='asset_id')
 
     # secondary index on the public keys of outputs
     conn.conn[dbname]['bigchain']\
