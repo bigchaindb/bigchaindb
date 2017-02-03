@@ -26,10 +26,6 @@ Entry point for the BigchainDB process, after initialization.  All subprocesses 
 
 Methods for managing the configuration, including loading configuration files, automatically generating the configuration, and keeping the configuration consistent across BigchainDB instances.
 
-### [`monitor.py`](./monitor.py)
-
-Code for monitoring speed of various processes in BigchainDB via `statsd` and Grafana.  [See documentation.](https://docs.bigchaindb.com/projects/server/en/latest/clusters-feds/monitoring.html)
-
 ## Folders
 
 ### [`pipelines`](./pipelines)

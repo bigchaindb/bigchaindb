@@ -13,8 +13,6 @@ from bigchaindb import utils
 from bigchaindb import Bigchain
 from bigchaindb.web.routes import add_routes
 
-from bigchaindb.monitor import Monitor
-
 
 # TODO: Figure out if we do we need all this boilerplate.
 class StandaloneApplication(gunicorn.app.base.BaseApplication):
@@ -65,7 +63,6 @@ def create_app(*, debug=False, threads=4):
     app.debug = debug
 
     app.config['bigchain_pool'] = utils.pool(Bigchain, size=threads)
-    app.config['monitor'] = Monitor()
 
     add_routes(app)
 
