@@ -43,6 +43,7 @@ It has been more than two months since the v0.8.0 release, so there have been _m
 - Fixed some logic in block validation. [Pull Request #1130](https://github.com/bigchaindb/bigchaindb/pull/1130)
 
 ### External Contributors
+- @amirelemam - [Pull Request #762](https://github.com/bigchaindb/bigchaindb/pull/762) (closed but used as the basis for [Pull Request #1074](https://github.com/bigchaindb/bigchaindb/pull/1074))
 - @utarl - [Pull Request #1019](https://github.com/bigchaindb/bigchaindb/pull/1019)
 
 ### Notes
