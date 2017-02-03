@@ -193,6 +193,12 @@ class Block(object):
             bigchain (:class:`~bigchaindb.Bigchain`): An instantiated Bigchain
                 object.
 
+        Note:
+            The hash of the block (`id`) is validated on the `self.from_dict`
+            method. This is because the `from_dict` is the only method in
+            which we have the original json payload. The `id` provided by
+            this class is a mutable property that is generated on the fly.
+
         Returns:
             :class:`~.Block`: If valid, return a `Block` object. Else an
             appropriate exception describing the reason of invalidity is
@@ -200,7 +206,17 @@ class Block(object):
 
         Raises:
             OperationError: If a non-federation node signed the Block.
-            InvalidSignature: If a Block's signature is invalid.
+            InvalidSignature: If a Block's signature is invalid or if the
+                block contains a transaction with an invalid signature.
+            OperationError: if the transaction operation is not supported
+            TransactionDoesNotExist: if the input of the transaction is not
+                                     found
+            TransactionNotInValidBlock: if the input of the transaction is not
+                                        in a valid block
+            TransactionOwnerError: if the new transaction is using an input it
+                                   doesn't own
+            DoubleSpend: if the transaction is a double spend
+            InvalidHash: if the hash of the transaction is wrong
         """
 
         self._validate_block(bigchain)
@@ -209,6 +225,16 @@ class Block(object):
         return self
 
     def _validate_block(self, bigchain):
+        """Validate the Block without validating the transactions.
+
+        Args:
+            bigchain (:class:`~bigchaindb.Bigchain`): An instantiated Bigchain
+                object.
+
+        Raises:
+            OperationError: If a non-federation node signed the Block.
+            InvalidSignature: If a Block's signature is invalid.
+        """
         # Check if the block was created by a federation node
         possible_voters = (bigchain.nodes_except_me + [bigchain.me])
         if self.node_pubkey not in possible_voters:
@@ -219,6 +245,23 @@ class Block(object):
             raise InvalidSignature('Invalid block signature')
 
     def _validate_block_transactions(self, bigchain):
+        """Validate Block transactions.
+
+        Args:
+            bigchain (Bigchain): an instantiated bigchaindb.Bigchain object.
+
+        Raises:
+            OperationError: if the transaction operation is not supported
+            TransactionDoesNotExist: if the input of the transaction is not
+                                     found
+            TransactionNotInValidBlock: if the input of the transaction is not
+                                        in a valid block
+            TransactionOwnerError: if the new transaction is using an input it
+                                   doesn't own
+            DoubleSpend: if the transaction is a double spend
+            InvalidHash: if the hash of the transaction is wrong
+            InvalidSignature: if the signature of the transaction is wrong
+        """
         for tx in self.transactions:
             # If a transaction is not valid, `validate_transactions` will
             # throw an an exception and block validation will be canceled.
@@ -270,8 +313,6 @@ class Block(object):
         Raises:
             InvalidHash: If the block's id is not corresponding to its
                 data.
-            InvalidSignature: If the block's signature is not corresponding
-                to it's data or `node_pubkey`.
         """
         # Validate block id
         block = block_body['block']
