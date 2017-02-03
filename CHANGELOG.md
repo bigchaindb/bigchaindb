@@ -37,6 +37,7 @@ It has been more than two months since the v0.8.0 release, so there have been _m
 
 ### Removed
 - `api_endpoint` was removed from the BigchainDB configuration settings. (It was never used anyway.) [Pull Request #821](https://github.com/bigchaindb/bigchaindb/pull/821)
+- Removed all remaining StatsD monitoring code, configuration settings, docs, etc. (We'll add another monitoring solution in the future.) [Pull Request #1138](https://github.com/bigchaindb/bigchaindb/pull/1138)
 
 ### Fixed
 - Fixed a memory (RAM) overflow problem when under heavy load by bounding the size of the queue at the entrance to the block pipeline. [Pull Request #908](https://github.com/bigchaindb/bigchaindb/pull/908)
