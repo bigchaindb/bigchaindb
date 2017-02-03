@@ -40,6 +40,12 @@ def connect(backend=None, host=None, port=None, name=None, replicaset=None):
     host = host or bigchaindb.config['database']['host']
     port = port or bigchaindb.config['database']['port']
     dbname = name or bigchaindb.config['database']['name']
+    # Not sure how to handle this here. This setting is only relevant for
+    # mongodb.
+    # I added **kwargs for both RethinkDBConnection and MongoDBConnection
+    # to handle these these additional args. In case of RethinkDBConnection
+    # it just does not do anything with it.
+    replicaset = replicaset or bigchaindb.config['database'].get('replicaset')
 
     try:
         module_name, _, class_name = BACKENDS[backend].rpartition('.')
@@ -51,7 +57,7 @@ def connect(backend=None, host=None, port=None, name=None, replicaset=None):
         raise ConfigurationError('Error loading backend `{}`'.format(backend)) from exc
 
     logger.debug('Connection: {}'.format(Class))
-    return Class(host, port, dbname)
+    return Class(host, port, dbname, replicaset=replicaset)
 
 
 class Connection:

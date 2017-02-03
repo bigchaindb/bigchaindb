@@ -39,6 +39,6 @@ class BaseConsensusRules():
             except SchemaValidationError as exc:
                 logger.warning(exc)
         else:
-            logger.warning("Vote failed signature verification: "
-                           "%s with voters: %s", signed_vote, voters)
+            logger.warning('Vote failed signature verification: '
+                           '%s with voters: %s', signed_vote, voters)
         return False

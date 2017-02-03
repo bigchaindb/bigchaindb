@@ -17,7 +17,7 @@ class RethinkDBConnection(Connection):
           more times to run the query or open a connection.
     """
 
-    def __init__(self, host, port, dbname, max_tries=3):
+    def __init__(self, host, port, dbname, max_tries=3, **kwargs):
         """Create a new :class:`~.RethinkDBConnection` instance.
 
         See :meth:`.Connection.__init__` for
@@ -77,3 +77,5 @@ class RethinkDBConnection(Connection):
                 wait_time = 2**i
                 logging.debug('Error connecting to database, waiting %ss', wait_time)
                 time.sleep(wait_time)
+            else:
+                break

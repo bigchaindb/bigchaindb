@@ -1,9 +1,11 @@
+from itertools import chain
 from time import time
 
 import rethinkdb as r
 
 from bigchaindb import backend, utils
 from bigchaindb.common import exceptions
+from bigchaindb.common.transaction import Transaction
 from bigchaindb.backend.utils import module_dispatch_registrar
 from bigchaindb.backend.rethinkdb.connection import RethinkDBConnection
 
@@ -72,19 +74,27 @@ def get_blocks_status_from_transaction(connection, transaction_id):
 
 
 @register_query(RethinkDBConnection)
-def get_txids_by_asset_id(connection, asset_id):
+def get_txids_filtered(connection, asset_id, operation=None):
     # here we only want to return the transaction ids since later on when
     # we are going to retrieve the transaction with status validation
 
-    # Then find any TRANSFER transactions related to the asset
-    tx_cursor = connection.run(
-        r.table('bigchain')
-         .get_all(asset_id, index='asset_id')
-         .concat_map(lambda block: block['block']['transactions'])
-         .filter(lambda transaction: transaction['asset']['id'] == asset_id)
-         .get_field('id'))
+    parts = []
 
-    return tx_cursor
+    if operation in (Transaction.CREATE, None):
+        # First find the asset's CREATE transaction
+        parts.append(connection.run(
+            _get_asset_create_tx_query(asset_id).get_field('id')))
+
+    if operation in (Transaction.TRANSFER, None):
+        # Then find any TRANSFER transactions related to the asset
+        parts.append(connection.run(
+            r.table('bigchain')
+            .get_all(asset_id, index='asset_id')
+            .concat_map(lambda block: block['block']['transactions'])
+            .filter(lambda transaction: transaction['asset']['id'] == asset_id)
+            .get_field('id')))
+
+    return chain(*parts)
 
 
 @register_query(RethinkDBConnection)
@@ -101,21 +111,22 @@ def _get_asset_create_tx_query(asset_id):
 
 @register_query(RethinkDBConnection)
 def get_spent(connection, transaction_id, output):
-    # TODO: use index!
     return connection.run(
             r.table('bigchain', read_mode=READ_MODE)
-            .concat_map(lambda doc: doc['block']['transactions'])
-            .filter(lambda transaction: transaction['inputs'].contains(
-                lambda input: input['fulfills'] == {'txid': transaction_id, 'output': output})))
+             .get_all([transaction_id, output], index='inputs')
+             .concat_map(lambda doc: doc['block']['transactions'])
+             .filter(lambda transaction: transaction['inputs'].contains(
+                lambda input_: input_['fulfills'] == {'txid': transaction_id, 'output': output})))
 
 
 @register_query(RethinkDBConnection)
 def get_owned_ids(connection, owner):
-    # TODO: use index!
     return connection.run(
             r.table('bigchain', read_mode=READ_MODE)
-            .concat_map(lambda doc: doc['block']['transactions'])
-            .filter(lambda tx: tx['outputs'].contains(
+             .get_all(owner, index='outputs')
+             .distinct()
+             .concat_map(lambda doc: doc['block']['transactions'])
+             .filter(lambda tx: tx['outputs'].contains(
                 lambda c: c['public_keys'].contains(owner))))
 
 

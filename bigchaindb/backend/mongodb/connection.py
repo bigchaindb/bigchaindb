@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class MongoDBConnection(Connection):
 
     def __init__(self, host=None, port=None, dbname=None, max_tries=3,
-                 replicaset=None):
+                 replicaset=None, **kwargs):
         """Create a new Connection instance.
 
         Args:

@@ -13,7 +13,7 @@ def _test_additionalproperties(node, path=''):
     if isinstance(node, dict):
         if node.get('type') == 'object':
             assert 'additionalProperties' in node, \
-                ("additionalProperties not set at path:" + path)
+                ('additionalProperties not set at path:' + path)
         for name, val in node.items():
             _test_additionalproperties(val, path + name + '.')
 
@@ -47,7 +47,7 @@ def test_drop_descriptions():
         },
         'definitions': {
             'wat': {
-                'description': "go"
+                'description': 'go'
             }
         }
     }

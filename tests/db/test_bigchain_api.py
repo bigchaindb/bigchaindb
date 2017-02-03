@@ -1,6 +1,7 @@
 from time import sleep
 
 import pytest
+from unittest.mock import patch
 
 pytestmark = pytest.mark.bdb
 
@@ -1156,3 +1157,86 @@ class TestMultipleInputs(object):
         # check that the other remain marked as unspent
         for unspent in transactions[1:]:
             assert b.get_spent(unspent.id, 0) is None
+
+
+def test_get_owned_ids_calls_get_outputs_filtered():
+    from bigchaindb.core import Bigchain
+    with patch('bigchaindb.core.Bigchain.get_outputs_filtered') as gof:
+        b = Bigchain()
+        res = b.get_owned_ids('abc')
+    gof.assert_called_once_with('abc', include_spent=False)
+    assert res == gof()
+
+
+def test_get_outputs_filtered_only_unspent():
+    from bigchaindb.common.transaction import TransactionLink
+    from bigchaindb.core import Bigchain
+    with patch('bigchaindb.core.Bigchain.get_outputs') as get_outputs:
+        get_outputs.return_value = [TransactionLink('a', 1),
+                                    TransactionLink('b', 2)]
+        with patch('bigchaindb.core.Bigchain.get_spent') as get_spent:
+            get_spent.side_effect = [True, False]
+            out = Bigchain().get_outputs_filtered('abc', include_spent=False)
+    get_outputs.assert_called_once_with('abc')
+    assert out == [TransactionLink('b', 2)]
+
+
+def test_get_outputs_filtered():
+    from bigchaindb.common.transaction import TransactionLink
+    from bigchaindb.core import Bigchain
+    with patch('bigchaindb.core.Bigchain.get_outputs') as get_outputs:
+        get_outputs.return_value = [TransactionLink('a', 1),
+                                    TransactionLink('b', 2)]
+        with patch('bigchaindb.core.Bigchain.get_spent') as get_spent:
+            out = Bigchain().get_outputs_filtered('abc')
+    get_outputs.assert_called_once_with('abc')
+    get_spent.assert_not_called()
+    assert out == get_outputs.return_value
+
+
+@pytest.mark.bdb
+def test_cant_spend_same_input_twice_in_tx(b, genesis_block):
+    """
+    Recreate duplicated fulfillments bug
+    https://github.com/bigchaindb/bigchaindb/issues/1099
+    """
+    from bigchaindb.models import Transaction
+    from bigchaindb.common.exceptions import DoubleSpend
+
+    # create a divisible asset
+    tx_create = Transaction.create([b.me], [([b.me], 100)])
+    tx_create_signed = tx_create.sign([b.me_private])
+    assert b.validate_transaction(tx_create_signed) == tx_create_signed
+
+    # create a block and valid vote
+    block = b.create_block([tx_create_signed])
+    b.write_block(block)
+    vote = b.vote(block.id, genesis_block.id, True)
+    b.write_vote(vote)
+
+    # Create a transfer transaction with duplicated fulfillments
+    dup_inputs = tx_create.to_inputs() + tx_create.to_inputs()
+    tx_transfer = Transaction.transfer(dup_inputs, [([b.me], 200)],
+                                       asset_id=tx_create.id)
+    tx_transfer_signed = tx_transfer.sign([b.me_private])
+    assert b.is_valid_transaction(tx_transfer_signed) is False
+    with pytest.raises(DoubleSpend):
+        tx_transfer_signed.validate(b)
+
+
+@pytest.mark.bdb
+def test_transaction_unicode(b):
+    from bigchaindb.common.utils import serialize
+    from bigchaindb.models import Transaction
+
+    # http://www.fileformat.info/info/unicode/char/1f37a/index.htm
+    beer_python = {'beer': '\N{BEER MUG}'}
+    beer_json = '{"beer":"\N{BEER MUG}"}'
+
+    tx = (Transaction.create([b.me], [([b.me], 100)], beer_python)
+          ).sign([b.me_private])
+    block = b.create_block([tx])
+    b.write_block(block)
+    assert b.get_block(block.id) == block.to_dict()
+    assert block.validate(b) == block
+    assert beer_json in serialize(block.to_dict())

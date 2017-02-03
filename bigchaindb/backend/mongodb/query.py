@@ -7,6 +7,7 @@ from pymongo import errors
 
 from bigchaindb import backend
 from bigchaindb.common.exceptions import CyclicBlockchainError
+from bigchaindb.common.transaction import Transaction
 from bigchaindb.backend.utils import module_dispatch_registrar
 from bigchaindb.backend.mongodb.connection import MongoDBConnection
 
@@ -83,17 +84,30 @@ def get_blocks_status_from_transaction(conn, transaction_id):
 
 
 @register_query(MongoDBConnection)
-def get_txids_by_asset_id(conn, asset_id):
-    cursor = conn.db['bigchain'].aggregate([
-        {'$match': {
-            'block.transactions.asset.id': asset_id
-        }},
+def get_txids_filtered(conn, asset_id, operation=None):
+    match_create = {
+        'block.transactions.operation': 'CREATE',
+        'block.transactions.id': asset_id
+    }
+    match_transfer = {
+        'block.transactions.operation': 'TRANSFER',
+        'block.transactions.asset.id': asset_id
+    }
+
+    if operation == Transaction.CREATE:
+        match = match_create
+    elif operation == Transaction.TRANSFER:
+        match = match_transfer
+    else:
+        match = {'$or': [match_create, match_transfer]}
+
+    pipeline = [
+        {'$match': match},
         {'$unwind': '$block.transactions'},
-        {'$match': {
-            'block.transactions.asset.id': asset_id
-        }},
+        {'$match': match},
         {'$project': {'block.transactions.id': True}}
-    ])
+    ]
+    cursor = conn.db['bigchain'].aggregate(pipeline)
     return (elem['block']['transactions']['id'] for elem in cursor)
 
 
@@ -119,6 +133,10 @@ def get_asset_by_id(conn, asset_id):
 @register_query(MongoDBConnection)
 def get_spent(conn, transaction_id, output):
     cursor = conn.db['bigchain'].aggregate([
+        {'$match': {
+            'block.transactions.inputs.fulfills.txid': transaction_id,
+            'block.transactions.inputs.fulfills.output': output
+        }},
         {'$unwind': '$block.transactions'},
         {'$match': {
             'block.transactions.inputs.fulfills.txid': transaction_id,
@@ -133,12 +151,9 @@ def get_spent(conn, transaction_id, output):
 @register_query(MongoDBConnection)
 def get_owned_ids(conn, owner):
     cursor = conn.db['bigchain'].aggregate([
+        {'$match': {'block.transactions.outputs.public_keys': owner}},
         {'$unwind': '$block.transactions'},
-        {'$match': {
-            'block.transactions.outputs.public_keys': {
-                '$elemMatch': {'$eq': owner}
-            }
-        }}
+        {'$match': {'block.transactions.outputs.public_keys': owner}}
     ])
     # we need to access some nested fields before returning so lets use a
     # generator to avoid having to read all records on the cursor at this point

@@ -28,7 +28,7 @@ class StatusApi(Resource):
 
         # logical xor - exactly one query argument required
         if bool(tx_id) == bool(block_id):
-            return make_error(400, "Provide exactly one query parameter. Choices are: block_id, tx_id")
+            return make_error(400, 'Provide exactly one query parameter. Choices are: block_id, tx_id')
 
         pool = current_app.config['bigchain_pool']
         status, links = None, None
@@ -37,7 +37,7 @@ class StatusApi(Resource):
             if tx_id:
                 status = bigchain.get_status(tx_id)
                 links = {
-                    "tx": "/transactions/{}".format(tx_id)
+                    'tx': '/transactions/{}'.format(tx_id)
                 }
 
             elif block_id:
@@ -56,7 +56,7 @@ class StatusApi(Resource):
 
         if links:
             response.update({
-                "_links": links
+                '_links': links
             })
 
         return response

@@ -1,8 +1,6 @@
 #! /bin/bash
 
-# The set -e option instructs bash to immediately exit
-# if any command has a non-zero exit status
-set -e
+set -euo pipefail
 
 function printErr()
     {
@@ -36,5 +34,5 @@ mkdir $CONFDIR
 for (( i=0; i<$NUMFILES; i++ )); do
     CONPATH=$CONFDIR"/bcdb_conf"$i
     echo "Writing "$CONPATH
-    bigchaindb -y -c $CONPATH configure
+    bigchaindb -y -c $CONPATH configure rethinkdb
 done

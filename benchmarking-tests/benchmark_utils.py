@@ -1,13 +1,11 @@
 import multiprocessing as mp
 import uuid
-import json
 import argparse
 import csv
 import time
 import logging
 import rethinkdb as r
 
-from os.path import expanduser
 from bigchaindb.common.transaction import Transaction
 
 from bigchaindb import Bigchain
@@ -47,15 +45,6 @@ def run_add_backlog(args):
     workers = ProcessGroup(target=create_write_transaction,
                            args=(tx_left, payload_filler))
     workers.start()
-
-
-def run_set_statsd_host(args):
-    with open(expanduser('~') + '/.bigchaindb', 'r') as f:
-        conf = json.load(f)
-
-    conf['statsd']['host'] = args.statsd_host
-    with open(expanduser('~') + '/.bigchaindb', 'w') as f:
-        json.dump(conf, f)
 
 
 def run_gather_metrics(args):
@@ -144,14 +133,6 @@ def main():
                                 choices=SIZE_OF_FILLER.keys(),
                                 default='minimal',
                                 help='Payload size')
-
-    # set statsd host
-    statsd_parser = subparsers.add_parser('set-statsd-host',
-                                          help='Set statsd host')
-    statsd_parser.add_argument('statsd_host',
-                               metavar='statsd_host',
-                               default='localhost',
-                               help='Hostname of the statsd server')
 
     # metrics
     metrics_parser = subparsers.add_parser('gather-metrics',

@@ -1,8 +1,10 @@
-#! /bin/bash
+#!/bin/bash
 
-# The set -e option instructs bash to immediately exit
-# if any command has a non-zero exit status
-set -e
+set -euo pipefail
+# -e Abort at the first failed line (i.e. if exit status is not 0)
+# -u Abort when undefined variable is used
+# -o pipefail (Bash-only) Piped commands return the status
+#    of the last failed command, rather than the status of the last command
 
 # Check for the first command-line argument
 # (the name of the AWS deployment config file)

@@ -1,5 +1,6 @@
 import builtins
 import json
+from unittest.mock import patch
 
 import pytest
 from bigchaindb.common import crypto
@@ -37,6 +38,9 @@ def test_post_create_transaction_endpoint(b, client):
     tx = tx.sign([user_priv])
 
     res = client.post(TX_ENDPOINT, data=json.dumps(tx.to_dict()))
+
+    assert res.status_code == 202
+
     assert res.json['inputs'][0]['owners_before'][0] == user_pub
     assert res.json['outputs'][0]['public_keys'][0] == user_pub
 
@@ -53,8 +57,8 @@ def test_post_create_transaction_with_invalid_id(b, client, caplog):
     res = client.post(TX_ENDPOINT, data=json.dumps(tx))
     expected_status_code = 400
     expected_error_message = (
-        "Invalid transaction ({}): The transaction's id '{}' isn't equal to "
-        "the hash of its body, i.e. it's not valid."
+        'Invalid transaction ({}): The transaction\'s id \'{}\' isn\'t equal to '
+        'the hash of its body, i.e. it\'s not valid.'
     ).format(InvalidHash.__name__, tx['id'])
     assert res.status_code == expected_status_code
     assert res.json['message'] == expected_error_message
@@ -74,8 +78,8 @@ def test_post_create_transaction_with_invalid_signature(b, client, caplog):
     res = client.post(TX_ENDPOINT, data=json.dumps(tx))
     expected_status_code = 400
     expected_error_message = (
-        "Invalid transaction ({}): Fulfillment URI "
-        "couldn't been parsed"
+        'Invalid transaction ({}): Fulfillment URI '
+        'couldn\'t been parsed'
     ).format(InvalidSignature.__name__)
     assert res.status_code == expected_status_code
     assert res.json['message'] == expected_error_message
@@ -156,6 +160,8 @@ def test_post_transfer_transaction_endpoint(b, client, user_pk, user_sk):
 
     res = client.post(TX_ENDPOINT, data=json.dumps(transfer_tx.to_dict()))
 
+    assert res.status_code == 202
+
     assert res.json['inputs'][0]['owners_before'][0] == user_pk
     assert res.json['outputs'][0]['public_keys'][0] == user_pub
 
@@ -180,3 +186,45 @@ def test_post_invalid_transfer_transaction_returns_400(b, client, user_pk):
         InvalidSignature.__name__, 'Transaction signature is invalid.')
     assert res.status_code == expected_status_code
     assert res.json['message'] == expected_error_message
+
+
+def test_transactions_get_list_good(client):
+    from functools import partial
+
+    def get_txs_patched(conn, **args):
+        """ Patch `get_transactions_filtered` so that rather than return an array
+            of transactions it returns an array of shims with a to_dict() method
+            that reports one of the arguments passed to `get_transactions_filtered`.
+            """
+        return [type('', (), {'to_dict': partial(lambda a: a, arg)})
+                for arg in sorted(args.items())]
+
+    asset_id = '1' * 64
+
+    with patch('bigchaindb.core.Bigchain.get_transactions_filtered', get_txs_patched):
+        url = TX_ENDPOINT + "?asset_id=" + asset_id
+        assert client.get(url).json == [
+            ['asset_id', asset_id],
+            ['operation', None]
+        ]
+        url = TX_ENDPOINT + "?asset_id=" + asset_id + "&operation=CREATE"
+        assert client.get(url).json == [
+            ['asset_id', asset_id],
+            ['operation', 'CREATE']
+        ]
+
+
+def test_transactions_get_list_bad(client):
+    def should_not_be_called():
+        assert False
+    with patch('bigchaindb.core.Bigchain.get_transactions_filtered',
+               lambda *_, **__: should_not_be_called()):
+        # Test asset id validated
+        url = TX_ENDPOINT + "?asset_id=" + '1' * 63
+        assert client.get(url).status_code == 400
+        # Test operation validated
+        url = TX_ENDPOINT + "?asset_id=" + '1' * 64 + "&operation=CEATE"
+        assert client.get(url).status_code == 400
+        # Test asset ID required
+        url = TX_ENDPOINT + "?operation=CREATE"
+        assert client.get(url).status_code == 400

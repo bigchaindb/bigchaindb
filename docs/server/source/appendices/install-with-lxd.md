@@ -1,5 +1,7 @@
 # Installing BigchainDB on LXC containers using LXD
 
+**Note: This page was contributed by an external contributor and is not actively maintained. We include it in case someone is interested.**
+
 You can visit this link to install LXD (instructions here): [LXD Install](https://linuxcontainers.org/lxd/getting-started-cli/)
 
 (assumption is that you are using Ubuntu 14.04 for host/container)
