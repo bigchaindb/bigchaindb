@@ -150,16 +150,15 @@ def test_changefeed_prefeed(mock_cursor_next, mock_cursor_alive,
 
 
 @pytest.mark.bdb
-@mock.patch('pymongo.cursor.Cursor.alive', new_callable=mock.PropertyMock)
-@mock.patch('bigchaindb.backend.mongodb.connection.MongoDBConnection.run')  # noqa
-def test_connection_failure(mock_run_changefeed, mock_cursor_alive):
+@mock.patch('bigchaindb.backend.mongodb.changefeed.MongoDBChangeFeed.run_changefeed')  # noqa
+def test_connection_failure(mock_run_changefeed):
     from bigchaindb.backend import get_changefeed, connect
     from bigchaindb.backend.exceptions import ConnectionError
     from bigchaindb.backend.changefeed import ChangeFeed
 
     conn = connect()
-    mock_cursor_alive.return_value = False
-    mock_run_changefeed.side_effect = [ConnectionError(), mock.DEFAULT]
+    mock_run_changefeed.side_effect = [ConnectionError(),
+                                       mock.DEFAULT]
 
     changefeed = get_changefeed(conn, 'backlog', ChangeFeed.INSERT)
     changefeed.run_forever()
