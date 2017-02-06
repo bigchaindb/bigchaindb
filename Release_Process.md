@@ -10,9 +10,9 @@ that [major version 0.x does not export a stable API](http://semver.org/#spec-it
 A minor release is preceeded by a feature freeze and created from the 'master' branch. This is a summary of the steps we go through to release a new minor version of BigchainDB Server.
 
 1. Update the `CHANGELOG.md` file in master
-1. Create and checkout a new branch for the release, named after the minor version, without a preceeding 'v', e.g. `git checkout -b 0.9`
+1. Create and checkout a new branch for the release, named after the minor version, without a preceeding 'v', e.g. `git checkout -b 0.9.4`
 1. In `bigchaindb/version.py`, update `__version__` and `__short_version__`, e.g. to `0.9` and `0.9.0` (with no `.dev` on the end)
-1. Commit changes and push new branch to Github
+1. Commit changes, push new branch to Github, and merge it into master
 1. Follow steps outlined in [Common Steps](#common-steps)
 1. In 'master' branch, Edit `bigchaindb/version.py`, increment the minor version to the next planned release, e.g. `0.10.0.dev'.
 This is so people reading the latest docs will know that they're for the latest (master branch)
@@ -43,7 +43,7 @@ These steps are common between minor and patch releases:
    - Title: Same as tag name
    - Description: The body of the changelog entry (Added, Changed etc)
 1. Publish the release on Github
-1. Generate the release tarball with `python setup.py sdist`. Upload the release to Pypi.
+1. Generate the release tarball with `python setup.py sdist`. Upload the release to PyPI, e.g. `twine upload dist/BigchainDB-0.9.0.tar.gz` (requires you to have a `~/.pypirc` file)
 1. Login to readthedocs.org as a maintainer of the BigchainDB Server docs.
    Go to Admin --> Versions and under **Choose Active Versions**, make sure that the new version's tag is
    "Active" and "Public", and make sure the new version's branch
