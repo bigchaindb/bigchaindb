@@ -64,14 +64,14 @@ def test_add_replicas(mock_replicaset_config, connection):
 
 def test_add_replicas_raises(mock_replicaset_config, connection):
     from bigchaindb.backend.admin import add_replicas
-    from bigchaindb.backend.exceptions import DatabaseOpFailedError
+    from bigchaindb.backend.exceptions import OperationError
 
     with mock.patch.object(Database, 'command') as mock_command:
         mock_command.side_effect = [
             mock_replicaset_config,
             OperationFailure(error=1, details={'errmsg': ''})
         ]
-        with pytest.raises(DatabaseOpFailedError):
+        with pytest.raises(OperationError):
             add_replicas(connection, ['localhost:27018'])
 
 
@@ -97,12 +97,12 @@ def test_remove_replicas(mock_replicaset_config, connection):
 
 def test_remove_replicas_raises(mock_replicaset_config, connection):
     from bigchaindb.backend.admin import remove_replicas
-    from bigchaindb.backend.exceptions import DatabaseOpFailedError
+    from bigchaindb.backend.exceptions import OperationError
 
     with mock.patch.object(Database, 'command') as mock_command:
         mock_command.side_effect = [
             mock_replicaset_config,
             OperationFailure(error=1, details={'errmsg': ''})
         ]
-        with pytest.raises(DatabaseOpFailedError):
+        with pytest.raises(OperationError):
             remove_replicas(connection, ['localhost:27018'])

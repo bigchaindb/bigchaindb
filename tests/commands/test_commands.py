@@ -384,7 +384,7 @@ def test_calling_main(start_mock, base_parser_mock, parse_args_mock,
 @patch('bigchaindb.commands.bigchain.add_replicas')
 def test_run_add_replicas(mock_add_replicas):
     from bigchaindb.commands.bigchain import run_add_replicas
-    from bigchaindb.backend.exceptions import DatabaseOpFailedError
+    from bigchaindb.backend.exceptions import OperationError
 
     args = Namespace(config=None, replicas=['localhost:27017'])
 
@@ -394,8 +394,8 @@ def test_run_add_replicas(mock_add_replicas):
     assert mock_add_replicas.call_count == 1
     mock_add_replicas.reset_mock()
 
-    # test add_replicas with `DatabaseOpFailedError`
-    mock_add_replicas.side_effect = DatabaseOpFailedError()
+    # test add_replicas with `OperationError`
+    mock_add_replicas.side_effect = OperationError()
     assert run_add_replicas(args) is None
     assert mock_add_replicas.call_count == 1
     mock_add_replicas.reset_mock()
@@ -411,7 +411,7 @@ def test_run_add_replicas(mock_add_replicas):
 @patch('bigchaindb.commands.bigchain.remove_replicas')
 def test_run_remove_replicas(mock_remove_replicas):
     from bigchaindb.commands.bigchain import run_remove_replicas
-    from bigchaindb.backend.exceptions import DatabaseOpFailedError
+    from bigchaindb.backend.exceptions import OperationError
 
     args = Namespace(config=None, replicas=['localhost:27017'])
 
@@ -421,8 +421,8 @@ def test_run_remove_replicas(mock_remove_replicas):
     assert mock_remove_replicas.call_count == 1
     mock_remove_replicas.reset_mock()
 
-    # test add_replicas with `DatabaseOpFailedError`
-    mock_remove_replicas.side_effect = DatabaseOpFailedError()
+    # test add_replicas with `OperationError`
+    mock_remove_replicas.side_effect = OperationError()
     assert run_remove_replicas(args) is None
     assert mock_remove_replicas.call_count == 1
     mock_remove_replicas.reset_mock()

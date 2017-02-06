@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 pytestmark = pytest.mark.bdb
 
 
+@pytest.mark.skipif(reason='Will be handled by #1126')
 def test_asset_id_index():
     from bigchaindb.backend.mongodb.query import get_txids_filtered
     from bigchaindb.backend import connect

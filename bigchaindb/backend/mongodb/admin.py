@@ -5,7 +5,7 @@ from pymongo.errors import OperationFailure
 
 from bigchaindb.backend import admin
 from bigchaindb.backend.utils import module_dispatch_registrar
-from bigchaindb.backend.exceptions import DatabaseOpFailedError
+from bigchaindb.backend.exceptions import OperationError
 from bigchaindb.backend.mongodb.connection import MongoDBConnection
 
 logger = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ def add_replicas(connection, replicas):
             form "hostname:port".
 
     Raises:
-        DatabaseOpFailedError: If the reconfiguration fails due to a MongoDB
+        OperationError: If the reconfiguration fails due to a MongoDB
             :exc:`OperationFailure`
     """
     # get current configuration
@@ -50,7 +50,7 @@ def add_replicas(connection, replicas):
     try:
         connection.conn.admin.command('replSetReconfig', conf['config'])
     except OperationFailure as exc:
-        raise DatabaseOpFailedError(exc.details['errmsg'])
+        raise OperationError(exc.details['errmsg'])
 
 
 @register_admin(MongoDBConnection)
@@ -64,7 +64,7 @@ def remove_replicas(connection, replicas):
             form "hostname:port".
 
     Raises:
-        DatabaseOpFailedError: If the reconfiguration fails due to a MongoDB
+        OperationError: If the reconfiguration fails due to a MongoDB
             :exc:`OperationFailure`
     """
     # get the current configuration
@@ -83,4 +83,4 @@ def remove_replicas(connection, replicas):
     try:
         connection.conn.admin.command('replSetReconfig', conf['config'])
     except OperationFailure as exc:
-        raise DatabaseOpFailedError(exc.details['errmsg'])
+        raise OperationError(exc.details['errmsg'])
