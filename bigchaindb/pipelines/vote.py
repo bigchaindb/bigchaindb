@@ -53,7 +53,7 @@ class Vote:
                                                block['block']['voters']):
             try:
                 block = Block.from_dict(block)
-            except (exceptions.InvalidHash, exceptions.InvalidSignature):
+            except (exceptions.InvalidHash):
                 # XXX: if a block is invalid we should skip the `validate_tx`
                 # step, but since we are in a pipeline we cannot just jump to
                 # another function. Hackish solution: generate an invalid
@@ -61,10 +61,8 @@ class Vote:
                 # pipeline.
                 return block['id'], [self.invalid_dummy_tx]
             try:
-                self.consensus.validate_block(self.bigchain, block)
-            except (exceptions.InvalidHash,
-                    exceptions.OperationError,
-                    exceptions.InvalidSignature):
+                block._validate_block(self.bigchain)
+            except (exceptions.OperationError, exceptions.InvalidSignature):
                 # XXX: if a block is invalid we should skip the `validate_tx`
                 # step, but since we are in a pipeline we cannot just jump to
                 # another function. Hackish solution: generate an invalid
