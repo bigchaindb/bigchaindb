@@ -27,9 +27,11 @@ class MongoDBChangeFeed(ChangeFeed):
 
         while True:
             try:
-                # XXX: hack to force reconnection,
-                #      the correct way to fix this is to manage errors
-                #      for cursors.conn
+                # XXX: hack to force reconnection. Why? Because the cursor
+                # in `run_changefeed` does not run in the context of a
+                # Connection object, so if the connection is lost we need
+                # to manually reset the connection to None.
+                # See #1154
                 self.connection.connection = None
                 self.run_changefeed()
                 break
