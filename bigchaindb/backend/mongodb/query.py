@@ -121,7 +121,9 @@ def get_txids_filtered(conn, asset_id, operation=None):
         {'$match': match},
         {'$project': {'block.transactions.id': True}}
     ]
-    cursor = conn.db['bigchain'].aggregate(pipeline)
+    cursor = conn.run(
+        conn.collection('bigchain')
+        .aggregate(pipeline))
     return (elem['block']['transactions']['id'] for elem in cursor)
 
 
@@ -281,18 +283,20 @@ def get_last_voted_block(conn, node_pubkey):
 
 @register_query(MongoDBConnection)
 def get_unvoted_blocks(conn, node_pubkey):
-    return conn.db['bigchain'].aggregate([
-        {'$lookup': {
-            'from': 'votes',
-            'localField': 'id',
-            'foreignField': 'vote.voting_for_block',
-            'as': 'votes'
-        }},
-        {'$match': {
-            'votes.node_pubkey': {'$ne': node_pubkey},
-            'block.transactions.operation': {'$ne': 'GENESIS'}
-        }},
-        {'$project': {
-            'votes': False, '_id': False
-        }}
-    ])
+    return conn.run(
+        conn.collection('bigchain')
+        .aggregate([
+            {'$lookup': {
+                'from': 'votes',
+                'localField': 'id',
+                'foreignField': 'vote.voting_for_block',
+                'as': 'votes'
+            }},
+            {'$match': {
+                'votes.node_pubkey': {'$ne': node_pubkey},
+                'block.transactions.operation': {'$ne': 'GENESIS'}
+            }},
+            {'$project': {
+                'votes': False, '_id': False
+            }}
+        ]))
