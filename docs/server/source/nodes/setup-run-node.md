@@ -144,7 +144,7 @@ python setup.py install
 
 Start by creating a default BigchainDB config file:
 ```text
-bigchaindb -y configure
+bigchaindb -y configure rethinkdb
 ```
 
 (There's documentation for the `bigchaindb` command is in the section on [the BigchainDB Command Line Interface (CLI)](bigchaindb-cli.html).)
