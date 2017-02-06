@@ -73,11 +73,16 @@ class MongoDBConnection(Connection):
 
     def run(self, query):
         try:
-            return query.run(self.conn)
-        except pymongo.errors.DuplicateKeyError as exc:
-            raise DuplicateKeyError from exc
+            try:
+                return query.run(self.conn)
+            except pymongo.errors.AutoReconnect as exc:
+                logger.warning('Lost connection to the database, '
+                               'retrying query.')
+                return query.run(self.conn)
         except pymongo.errors.AutoReconnect as exc:
             raise ConnectionError from exc
+        except pymongo.errors.DuplicateKeyError as exc:
+            raise DuplicateKeyError from exc
         except pymongo.errors.OperationFailure as exc:
             raise OperationError from exc
 

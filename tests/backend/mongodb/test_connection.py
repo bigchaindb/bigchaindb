@@ -79,19 +79,24 @@ def test_connection_run_errors(mock_client, mock_init_repl_set):
                                                ConnectionError)
 
     conn = connect()
-    query = mock.Mock()
 
+    query = mock.Mock()
     query.run.side_effect = pymongo.errors.AutoReconnect('foo')
     with pytest.raises(ConnectionError):
         conn.run(query)
+    assert query.run.call_count == 2
 
+    query = mock.Mock()
     query.run.side_effect = pymongo.errors.DuplicateKeyError('foo')
     with pytest.raises(DuplicateKeyError):
         conn.run(query)
+    assert query.run.call_count == 1
 
+    query = mock.Mock()
     query.run.side_effect = pymongo.errors.OperationFailure('foo')
     with pytest.raises(OperationError):
         conn.run(query)
+    assert query.run.call_count == 1
 
 
 def test_check_replica_set_not_enabled(mongodb_connection):
