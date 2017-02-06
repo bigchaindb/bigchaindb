@@ -24,7 +24,7 @@ One can deploy a BigchainDB node on Azure using the template in the `bigchaindb-
 
 1. Configure BigchainDB Server by doing:
 ```text
-bigchaindb configure
+bigchaindb configure rethinkdb
 ```
 It will ask you several questions. You can press `Enter` (or `Return`) to accept the default for all of them *except for one*. When it asks **API Server bind? (default \`localhost:9984\`):**, you should answer:
 ```text
