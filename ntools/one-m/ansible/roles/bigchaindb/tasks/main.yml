@@ -37,7 +37,7 @@
   register: home_bigchaindb_config_file
 
 - name: If ~/.bigchaindb doesn't exist, generate a default BigchainDB config file there
-  shell: bigchaindb -y configure
+  shell: bigchaindb -y configure rethinkdb
   when: not home_bigchaindb_config_file.stat.exists
 
 - name: Look up all processes with 'bigchaindb' in their name
