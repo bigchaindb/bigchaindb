@@ -41,11 +41,12 @@ These steps are common between minor and patch releases:
 1. Fill in the details:
    - Tag version: version number preceeded by 'v', e.g. "v0.9.1"
    - Target: the release branch that was just pushed
-   - Title: Same as tag name
-   - Description: The body of the changelog entry (Added, Changed etc)
-1. Publish the release on GitHub
-1. (Optional) Do a `make clean` in the repository root directory (`bigchaindb/`)
-1. Generate the release tarball with `python setup.py sdist`. Upload the release to PyPI, e.g. `twine upload dist/BigchainDB-0.9.0.tar.gz` (requires you to have a `~/.pypirc` file)
+   - Title: Same as tag name above, e.g "v0.9.1"
+   - Description: The body of the changelog entry (Added, Changed, etc.)
+1. Click "Publish release" to publish the release on GitHub
+1. Make sure your local Git is in the same state as the release: e.g. `git fetch <remote-name>` and `git checkout v0.9.1`
+1. Make sure you have a `~/.pypirc` file containing credentials for PyPI
+1. Do a `make release` to build and publish the new `bigchaindb` package on PyPI
 1. Login to readthedocs.org as a maintainer of the BigchainDB Server docs.
    Go to Admin --> Versions and under **Choose Active Versions**, make sure that the new version's tag is
    "Active" and "Public", and make sure the new version's branch
