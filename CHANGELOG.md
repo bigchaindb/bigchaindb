@@ -15,6 +15,13 @@ For reference, the possible headings are:
 * **External Contributors** to list contributors outside of BigchainDB GmbH.
 * **Notes**
 
+## [0.9.1] - 2017-02-06
+Tag name: v0.9.1
+
+### Fixed
+* Fixed bug in how the transaction `VERSION` string was calculated from the BigchainDB Server `__short_version__` string. [Pull Request #1160](https://github.com/bigchaindb/bigchaindb/pull/1160)
+
+
 ## [0.9.0] - 2017-02-06
 Tag name: v0.9.0
 
