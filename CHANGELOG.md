@@ -29,14 +29,14 @@ It has been more than two months since the v0.8.0 release, so there have been _m
 
 ### Added
 - Support for MongoDB as a backend database.
-- Some configuration settings and `bigchaindb` command-line commands were added. In particular, one can specify the database backend (`rethinkdb` or `mongodb`). For MongoDB, one can specify the name of the replicaset. Also for MongoDB, there are new command-line commands to add and remove hosts from the replicaset. See [the Settings & CLI docs](https://docs.bigchaindb.com/projects/server/en/v0.9.0/server-reference/index.html).
+- Some configuration settings and `bigchaindb` command-line commands were added. In particular, one can specify the database backend (`rethinkdb` or `mongodb`). For MongoDB, one can specify the name of the replicaset. Also for MongoDB, there are new command-line commands to add and remove hosts from the replicaset. See [the Settings & CLI docs](https://docs.bigchaindb.com/projects/server/en/v0.9.1/server-reference/index.html).
 - Transaction schema validation. The transaction schema is also used to auto-generate some docs. [Pull Request #880](https://github.com/bigchaindb/bigchaindb/pull/880)
 - Vote schema validation. The vote schema is also used to auto-generate some docs. [Pull Request #865](https://github.com/bigchaindb/bigchaindb/pull/865)
 - New `ENABLE_WEB_ADMIN` setting in the AWS deployment configuration file. [Pull Request #1015](https://github.com/bigchaindb/bigchaindb/pull/1015)
 
 ### Changed
-- The transaction model has changed substantially. @libscott wrote a blog post about the changes and it will be published soon on [the BigchainDB Blog](https://blog.bigchaindb.com/). Also, see [the docs about the transaction model](https://docs.bigchaindb.com/projects/server/en/v0.9.0/data-models/transaction-model.html).
-- The HTTP API has changed substantially. @diminator wrote a blog post about the changes and it will be published soon on [the BigchainDB Blog](https://blog.bigchaindb.com/).  Also, see [the docs about the vote model](https://docs.bigchaindb.com/projects/server/en/v0.9.0/data-models/vote-model.html).
+- The transaction model has changed substantially. @libscott wrote a blog post about the changes and it will be published soon on [the BigchainDB Blog](https://blog.bigchaindb.com/). Also, see [the docs about the transaction model](https://docs.bigchaindb.com/projects/server/en/v0.9.1/data-models/transaction-model.html).
+- The HTTP API has changed substantially. @diminator wrote a blog post about the changes and it will be published soon on [the BigchainDB Blog](https://blog.bigchaindb.com/).  Also, see [the docs about the vote model](https://docs.bigchaindb.com/projects/server/en/v0.9.1/data-models/vote-model.html).
 - All RethinkDB-specific database calls were replaced with abstract calls to a backend database.
 - Some improvements to the Dockerfile, e.g. Pull Requests [#1011](https://github.com/bigchaindb/bigchaindb/pull/1011) and [#1121](https://github.com/bigchaindb/bigchaindb/pull/1121)
 - Many improvements to the tests
