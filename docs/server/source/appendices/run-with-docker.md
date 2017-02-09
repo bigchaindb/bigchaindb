@@ -27,7 +27,7 @@ docker run \
   --tty \
   --volume "$HOME/bigchaindb_docker:/data" \
   bigchaindb/bigchaindb \
-  -y configure --dev-allow-temp-keypair \
+  -y configure \
   [mongodb|rethinkdb]
 
 Generating keypair
@@ -58,7 +58,7 @@ Let's analyze that command:
 ### Run the backend database
 From v0.9 onwards, you can run either RethinkDB or MongoDB.
 
-We use the virtual interface created by the docker daemon to allow
+We use the virtual interface created by the Docker daemon to allow
 communication between the BigchainDB and database containers.
 It has an IP address of 172.17.0.1 by default.
 
