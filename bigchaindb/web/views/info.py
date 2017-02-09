@@ -4,7 +4,6 @@ import flask
 from flask_restful import Resource
 
 import bigchaindb
-from bigchaindb.web.views.base import base_url
 from bigchaindb import version
 
 
@@ -14,7 +13,7 @@ class RootIndex(Resource):
             'https://docs.bigchaindb.com/projects/server/en/',
             version.__short_version__ + '/'
         ]
-        api_v1_url = base_url() + 'api/v1/'
+        api_v1_url = '/api/v1/'
         return flask.jsonify({
             '_links': {
                 'docs': ''.join(docs_url),
@@ -29,7 +28,7 @@ class RootIndex(Resource):
 
 class ApiV1Index(Resource):
     def get(self):
-        api_root = base_url() + 'api/v1/'
+        api_root = '/api/v1/'
         docs_url = [
             'https://docs.bigchaindb.com/projects/server/en/',
             version.__short_version__,

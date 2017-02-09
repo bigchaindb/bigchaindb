@@ -3,7 +3,7 @@ Common classes and methods for API handlers
 """
 import logging
 
-from flask import jsonify, request
+from flask import jsonify
 
 logger = logging.getLogger(__name__)
 
@@ -16,8 +16,3 @@ def make_error(status_code, message=None):
     response = jsonify(response_content)
     response.status_code = status_code
     return response
-
-
-def base_url():
-    return '%s://%s/' % (request.environ['wsgi.url_scheme'],
-                         request.environ['HTTP_HOST'])

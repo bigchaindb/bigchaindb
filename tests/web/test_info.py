@@ -9,7 +9,7 @@ def test_api_root_endpoint(client):
     assert res.json == {
         '_links': {
             'docs': 'https://docs.bigchaindb.com/projects/server/en/tst/',
-            'api_v1': 'http://localhost/api/v1/',
+            'api_v1': '/api/v1/',
         },
         'version': 'tsttst',
         'keyring': ['abc'],
@@ -28,8 +28,8 @@ def test_api_v1_endpoint(client):
     assert res.json == {
         '_links': {
             'docs': ''.join(docs_url),
-            'self': 'http://localhost/api/v1/',
-            'statuses': 'http://localhost/api/v1/statuses/',
-            'transactions': 'http://localhost/api/v1/transactions/',
+            'self': '/api/v1/',
+            'statuses': '/api/v1/statuses/',
+            'transactions': '/api/v1/transactions/',
         }
     }
