@@ -11,8 +11,8 @@ from bigchaindb import version
 class RootIndex(Resource):
     def get(self):
         docs_url = [
-            'https://docs.bigchaindb.com/projects/server/en/',
-            version.__short_version__ + '/'
+            'https://docs.bigchaindb.com/projects/server/en/v',
+            version.__version__ + '/'
         ]
         api_v1_url = base_url() + 'api/v1/'
         return flask.jsonify({
@@ -31,8 +31,8 @@ class ApiV1Index(Resource):
     def get(self):
         api_root = base_url() + 'api/v1/'
         docs_url = [
-            'https://docs.bigchaindb.com/projects/server/en/',
-            version.__short_version__,
+            'https://docs.bigchaindb.com/projects/server/en/v',
+            version.__version__,
             '/drivers-clients/http-client-server-api.html',
         ]
         return {
