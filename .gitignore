@@ -81,3 +81,6 @@ ntools/one-m/ansible/ansible.cfg
 # Just in time documentation
 docs/server/source/schema
 docs/server/source/drivers-clients/samples
+
+# Azure credentials for Terraform
+secret.tfvars
