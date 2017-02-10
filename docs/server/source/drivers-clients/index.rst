@@ -22,7 +22,7 @@ community projects listed below.
 Community Driven Libraries and Tools
 ------------------------------------
 
-* `Javascript transaction builder <(https://github.com/sohkai/js-bigchaindb-quickstart>`_
+* `Javascript transaction builder <https://github.com/sohkai/js-bigchaindb-quickstart>`_
 * `Haskell transaction builder <https://github.com/libscott/bigchaindb-hs>`_
 * `Go driver <https://github.com/zbo14/envoke/blob/master/bigchain/bigchain.go>`_
 
