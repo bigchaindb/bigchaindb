@@ -75,12 +75,11 @@ servedocs: docs ## compile the docs watching for changes
 	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
 
 release: clean ## package and upload a release
-	python setup.py sdist upload
-	python setup.py bdist_wheel upload
+	twine upload dist/*
 
-dist: clean ## builds source and wheel package
+dist: clean ## builds source (and not for now, wheel package)
 	python setup.py sdist
-	python setup.py bdist_wheel
+	# python setup.py bdist_wheel
 	ls -l dist
 
 install: clean ## install the package to the active Python's site-packages
