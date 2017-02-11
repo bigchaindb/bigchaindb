@@ -7,6 +7,7 @@
 # client_id = "..."
 # client_secret = "..."
 # tenant_id = "..."
+# vm1_admin_password = "..."
 # The secret.tfvars file will be read if you use:
 # $ terraform <subcommand> -var-file="secret.tfvars"
 
