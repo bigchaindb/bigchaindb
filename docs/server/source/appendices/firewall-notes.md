@@ -10,7 +10,7 @@ Assuming you aren't exposing the RethinkDB web interface on port 8080 (or any ot
 1. **Port 22** can expect inbound SSH (TCP) traffic from the node administrator (i.e. a small set of IP addresses).
 2. **Port 9984** can expect inbound HTTP (TCP) traffic from BigchainDB clients sending transactions to the BigchainDB HTTP API.
 3. If you're using RethinkDB, **Port 29015** can expect inbound TCP traffic from other RethinkDB nodes in the RethinkDB cluster (for RethinkDB intracluster communications).
-4. If you're using MongoDB, **Port 27017** can expect inbound TCP traffic from other nodes. Also, see Port 28017 below.
+4. If you're using MongoDB, **Port 27017** can expect inbound TCP traffic from other nodes.
 
 All other ports should only get inbound traffic in response to specific requests from inside the node.
 
@@ -62,11 +62,6 @@ You may want to have Gunicorn and the reverse proxy running on different servers
 ## Port 28015
 
 Port 28015 is the default port used by RethinkDB client driver connections (TCP). If your BigchainDB node is just one server, then Port 28015 only needs to listen on localhost, because all the client drivers will be running on localhost. Port 28015 doesn't need to accept inbound traffic from the outside world.
-
-
-## Port 28017
-
-Port 28017 is the default port used by MongoDB for its web status page.
 
 
 ## Port 29015
