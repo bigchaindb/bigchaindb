@@ -9,7 +9,8 @@ Assuming you aren't exposing the RethinkDB web interface on port 8080 (or any ot
 
 1. **Port 22** can expect inbound SSH (TCP) traffic from the node administrator (i.e. a small set of IP addresses).
 2. **Port 9984** can expect inbound HTTP (TCP) traffic from BigchainDB clients sending transactions to the BigchainDB HTTP API.
-3. **Port 29015** can expect inbound TCP traffic from other RethinkDB nodes in the RethinkDB cluster (for RethinkDB intracluster communications).
+3. If you're using RethinkDB, **Port 29015** can expect inbound TCP traffic from other RethinkDB nodes in the RethinkDB cluster (for RethinkDB intracluster communications).
+4. If you're using MongoDB, **Port 27017** can expect inbound TCP traffic from other nodes.
 
 All other ports should only get inbound traffic in response to specific requests from inside the node.
 
