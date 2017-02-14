@@ -8,6 +8,6 @@ We make some assumptions about production nodes:
 
 2. Each production node in a federation's cluster is managed by a different person or team.
 
-Because of the first assumption, we don't provide a detailed cookbook explaining how to secure a server, or other things that a sysadmin should know. (We do provide some [starter templates](../cloud-deployment-starter-templates/index.html), but those are just a starting point.)
+Because of the first assumption, we don't provide a detailed cookbook explaining how to secure a server, or other things that a sysadmin should know. (We do provide some [templates](../cloud-deployment-templates/index.html), but those are just a starting point.)
 
 
