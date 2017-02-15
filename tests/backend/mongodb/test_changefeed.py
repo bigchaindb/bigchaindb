@@ -19,7 +19,7 @@ def mock_changefeed_data():
         {
             'op': 'u',
             'o': {'msg': 'seems like we have an update here'},
-            'o2': 'some-id'
+            'o2': {'_id': 'some-id'}
         },
     ]
 
