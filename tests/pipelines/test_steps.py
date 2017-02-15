@@ -6,11 +6,7 @@ import random
 @pytest.mark.genesis
 def test_stepping_changefeed_produces_update(b, steps):
     tx = input_single_create(b)
-
-    # timeouts are 0 so will reassign immediately
-    steps.stale_check_transactions()
-    steps.stale_reassign_transactions()
-
+    stale_reassign(steps)
     # We expect 2 changefeed events
     steps.block_changefeed()
     steps.block_changefeed()
@@ -40,6 +36,8 @@ def test_steps_double_CREATE_inclusion(b, steps, genesis_block):
         steps.block_write()
         steps.block_delete_tx()
         vote_full(steps)
+
+    assert steps.counts == {}
 
     # Raises DoubleSpend
     b.get_blocks_status_containing_tx(tx.id)
