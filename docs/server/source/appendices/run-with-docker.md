@@ -49,9 +49,6 @@ Let's analyze that command:
 * `bigchaindb/bigchaindb` the image to use. All the options after the container name are passed on to the entrypoint inside the container.
 * `-y configure` execute the `configure` sub-command (of the `bigchaindb`
  command) inside the container, with the `-y` option to automatically use all the default config values
-* `--dev-allow-temp-keypair` specifies that this is a dev environment and
-  enables creation of temporary key pairs to be written to the configuration
-  file
 * `mongodb` or `rethinkdb` specifies the database backend to use with bigchaindb
 
 
