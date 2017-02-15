@@ -13,4 +13,6 @@ If you find the cloud deployment templates for nodes helpful, then you may also 
    template-terraform-aws
    template-ansible
    azure-quickstart-template
-   advanced-node-on-azure
+   template-kubernetes-azure
+   node-on-kubernetes
+   
