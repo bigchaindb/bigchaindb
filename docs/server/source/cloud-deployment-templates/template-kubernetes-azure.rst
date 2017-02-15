@@ -1,14 +1,9 @@
-Advanced Node on Azure
-======================
+Template: Deploy a Kubernetes Cluster on Azure
+==============================================
 
-.. note::
-
-   This page is a work in progress.
-
-This page describes how to deploy an "advanced BigchainDB node"
-on Microsoft Azure; advanced because it uses Docker containers,
-multiple virtual machines, and `Kubernetes <https://kubernetes.io/>`_
-for container orchestration.
+A BigchainDB node can be run inside a `Kubernetes <https://kubernetes.io/>`_
+cluster.
+This page describes one way to deploy a Kubernetes cluster on Azure.
 
 
 Step 1: Get a Pay-As-You-Go Azure Subscription
@@ -104,3 +99,5 @@ go to **Resource groups** (with the blue cube icon)
 and click on the one you created
 to see all the resources in it.
 
+Next, you can :doc:`run a BigchainDB node on your new
+Kubernetes cluster <node-on-kubernetes>`.
