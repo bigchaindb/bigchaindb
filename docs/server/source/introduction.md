@@ -8,7 +8,7 @@ Note that there are a few kinds of nodes:
 
 - A **dev/test node** is a node created by a developer working on BigchainDB Server, e.g. for testing new or changed code. A dev/test node is typically run on the developer's local machine.
 
-- A **bare-bones node** is a node deployed in the cloud, either as part of a testing cluster or as a starting point before upgrading the node to be production-ready. Our cloud deployment starter templates deploy a bare-bones node, as do our scripts for deploying a testing cluster on AWS.
+- A **bare-bones node** is a node deployed in the cloud, either as part of a testing cluster or as a starting point before upgrading the node to be production-ready. Our cloud deployment templates deploy a bare-bones node, as do our scripts for deploying a testing cluster on AWS.
 
 - A **production node** is a node that is part of a federation's BigchainDB cluster. A production node has the most components and requirements.
 
@@ -16,7 +16,7 @@ Note that there are a few kinds of nodes:
 ## Setup Instructions for Various Cases
 
 * [Set up a local stand-alone BigchainDB node for learning and experimenting: Quickstart](quickstart.html)
-* [Set up and run a bare-bones node in the cloud](cloud-deployment-starter-templates/index.html)
+* [Set up and run a bare-bones node in the cloud](cloud-deployment-templates/index.html)
 * [Set up and run a local dev/test node for developing and testing BigchainDB Server](dev-and-test/setup-run-node.html)
 * [Deploy a testing cluster on AWS](clusters-feds/aws-testing-cluster.html)
 * [Set up and run a federation (including production nodes)](clusters-feds/set-up-a-federation.html)

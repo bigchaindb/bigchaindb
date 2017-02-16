@@ -7,7 +7,7 @@ BigchainDB Server Documentation
    ← Back to All BigchainDB Docs <https://docs.bigchaindb.com/en/latest/index.html>
    introduction
    quickstart
-   cloud-deployment-starter-templates/index
+   cloud-deployment-templates/index
    nodes/index
    dev-and-test/index
    server-reference/index
