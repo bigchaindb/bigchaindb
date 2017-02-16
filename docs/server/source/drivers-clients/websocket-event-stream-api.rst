@@ -36,35 +36,17 @@ response contains a ``streams_<version>`` property in ``_links``::
 Connection Keep Alive
 ~~~~~~~~~~~~~~~~~~~~~
 
-The Event Stream API requires clients to signal that they'd like their
-connection to stay open by sending "pings" across the open connection.
-BigchainDB nodes will automatically close any connections that haven't sent a
-ping in the last three minutes.
-
-.. note::
-
-    While three minutes is the limit before a BigchainDB server will terminate
-    a connection, we suggest sending a ping every 30 seconds for better
-    reliability.
-
-A "ping" consists of a message containing only the string ``"ping"``, for example
-in JavaScript:
-
-.. code-block:: javascript
-
-    new WebSocket("...").send("ping")
-
-If the BigchainDB node received the ping, it'll respond back with a message
-containing only the string ``"pong"``.
-
+The Event Stream API initially does not provide any mechanisms for connection
+keep alive other than enabling TCP keepalive on each open WebSocket connection.
+In the future, we may add additional functionality to handle ping/pong frames
+or payloads designed for keep alive.
 
 Streams
 -------
 
 Each stream is meant as a unidirectional communication channel, where the
-BigchainDB node is the only party sending messages (except for `keep-alive
-pings <#connection-keep-alive>`_). Any messages sent to the BigchainDB node
-(except the keep-alive pings) will be ignored.
+BigchainDB node is the only party sending messages. Any messages sent to the
+BigchainDB node will be ignored.
 
 Streams will always be under the WebSocket protocol (so ``ws://`` or
 ``wss://``) and accessible as extensions to the ``/api/v<version>/streams/``
