@@ -93,8 +93,10 @@ class Watchdog(threading.Thread):
         if block_id in self.sets['valid-block']:
             pass  # ...
         elif status == 'valid':
-            spends = set(get_block_spends(block))
-            assert spends.difference(self.utxos) == set(), \
+            spends = list(get_block_spends(block))
+            assert len(spends) == len(set(spends)), \
+                ('DOUBLE SPEND SINGLE BLOCK', block_id)
+            assert set(spends).difference(self.utxos) == set(), \
                 ('DOUBLE SPEND ACROSS BLOCKS', block_id)
             self.valid_blocks.add(block_id)
             self.utxos.difference_update(spends)

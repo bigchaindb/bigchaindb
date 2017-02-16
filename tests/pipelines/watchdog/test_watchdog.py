@@ -57,3 +57,12 @@ def test_double_spend_across_blocks(b, ctx):
     write_block(b, [transfer_tx(b, [tx_create])])
     block = write_block(b, [transfer_tx(b, [tx_create])])
     assert ctx.watchdog.join() == ('DOUBLE SPEND ACROSS BLOCKS', block.id)
+
+
+def test_double_spend_single_block(b, ctx):
+    tx_create = create_tx(b)
+    write_block(b, [tx_create])
+    tx_transfer = transfer_tx(b, [tx_create])
+    tx_transfer = transfer_tx(b, [tx_create])
+    block = write_block(b, [tx_transfer, tx_transfer])
+    assert ctx.watchdog.join() == ('DOUBLE SPEND SINGLE BLOCK', block.id)
