@@ -16,6 +16,7 @@ class Watchdog(threading.Thread):
         self.blocks = {}
         self.valid_blocks = set()
         self.utxos = set()
+        self.txids = set()
         self.error = None
         self.ready = False
         self.stop = False
@@ -94,21 +95,29 @@ class Watchdog(threading.Thread):
             pass  # ...
         elif status == 'valid':
             spends = list(get_block_spends(block))
+            txids = [tx['id'] for tx in block['block']['transactions']]
+
+            # Detect double spends
             assert len(spends) == len(set(spends)), \
                 ('DOUBLE SPEND SINGLE BLOCK', block_id)
             assert set(spends).difference(self.utxos) == set(), \
                 ('DOUBLE SPEND ACROSS BLOCKS', block_id)
+
+            # Detect duplicate transactions
+            assert len(txids) == len(set(txids)), \
+                ('DUPLICATE TX SINGLE BLOCK', block_id)
+            assert self.txids.intersection(txids) == set(), \
+                ('DUPLICATE TX ACROSS BLOCKS', block_id)
+
+            # All good
             self.valid_blocks.add(block_id)
             self.utxos.difference_update(spends)
             self.utxos.update(get_block_outputs(block))
+            self.txids.update(txids)
 
 
-"""
-    def check_dupe_tx_in_block(self, block):
-        txids = [tx['id'] for tx in block['block']['transactions']]
-        assert len(txids) == len(set(txids)), 'BLOCK DUPLICATE TX'
-        self.sets['block-txs-' + block['id']].update(txids)
-"""
+def check_dupe_tx_in_block(block):
+    return
 
 
 def get_block_spends(block):
