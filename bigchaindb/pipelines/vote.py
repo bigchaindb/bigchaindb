@@ -101,6 +101,15 @@ class Vote:
             Three values are returned, the validity of the transaction,
             ``block_id``, ``num_tx``.
         """
+
+        # If tx in any undecided or valid blocks that are not this block, say
+        # not valid
+        validity = self.bigchain.get_blocks_status_containing_tx(tx.id)
+        validity.pop(block_id)
+        for status in validity.values():
+            if status != self.bigchain.BLOCK_INVALID:
+                return False, block_id, num_tx
+
         return bool(self.bigchain.is_valid_transaction(tx)), block_id, num_tx
 
     def vote(self, tx_validity, block_id, num_tx):

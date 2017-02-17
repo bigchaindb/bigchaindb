@@ -1,6 +1,9 @@
 import pytest
 import random
 
+################################################################################
+# Test some basic assumption
+
 
 @pytest.mark.bdb
 @pytest.mark.genesis
@@ -39,8 +42,8 @@ def test_steps_double_CREATE_inclusion(b, steps, genesis_block):
 
     assert steps.counts == {}
 
-    # Raises DoubleSpend
-    b.get_blocks_status_containing_tx(tx.id)
+    statuses = b.get_blocks_status_containing_tx(tx.id)
+    assert set(statuses.values()) == set([b.BLOCK_VALID, b.BLOCK_INVALID])
 
 
 ################################################################################
