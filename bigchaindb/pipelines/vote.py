@@ -104,9 +104,9 @@ class Vote:
 
         # If tx in any undecided or valid blocks that are not this block, say
         # not valid
-        validity = self.bigchain.get_blocks_status_containing_tx(tx.id)
-        validity.pop(block_id)
-        for status in validity.values():
+        block_statuses = self.bigchain.get_blocks_status_containing_tx(tx.id)
+        block_statuses.pop(block_id)
+        for status in block_statuses.values():
             if status != self.bigchain.BLOCK_INVALID:
                 return False, block_id, num_tx
 
