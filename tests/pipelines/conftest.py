@@ -20,9 +20,8 @@ def changing_timestamps():
 
 
 @pytest.fixture
-def watchdog():
+def watchdog(b):
     from bigchaindb.watchdog import Watchdog
-    watchdog = Watchdog()
+    watchdog = Watchdog(b)
     watchdog.start()
     yield watchdog
-    watchdog.join()

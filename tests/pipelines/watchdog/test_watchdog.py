@@ -1,30 +1,14 @@
 import pytest
+from unittest.mock import patch
 import random
-from bigchaindb import watchdog as dog
 
-"""
-
-Correctness assertions
-
-Tx output spent only once (across one block or many blocks)
-Tx appears only once (across one block or many blocks)
-No structurally invalid Tx (schema, policy, sum of inputs == sum of outputs)
-No Tx that spends non existing output
-All fulfillments must contain signature
-All signatures are verified using Tx identity and crypto-condition of output
-Threshold and Ed25519 condition is supported (up to some size limit)
-All Txes verifiable according to signatures and hash(serialize(tx))
-Txes appear in dependency order which is a PARTIAL order
-We are able to provide non embarrassing timestamp
-"""
 
 pytestmark = [pytest.mark.bdb]
 
 
 @pytest.fixture
-def ctx(b, changing_timestamps, genesis_block, watchdog):
-    b.create_genesis_block
-    return type('', (), {'watchdog': watchdog})()
+def dog(b, changing_timestamps, genesis_block, watchdog):
+    return watchdog
 
 
 def create_tx(b):
@@ -51,31 +35,60 @@ def write_block(b, txs):
     return block
 
 
-def test_double_spend_across_blocks(b, ctx):
+def test_block_election_status_change(b, dog):
+    block = write_block(b, [create_tx(b)])
+    # Create a second vote
+    vote = b.vote(block.id, 'fake', True)
+    assert dog.join() is None
+    b.write_vote(vote)
+    with patch.object(dog, 'b') as b_:
+        b_.block_election_status.return_value = 'invalid'
+        assert dog.join() == ('BLOCK ELECTION STATUS CHANGE', block.id)
+
+
+def test_double_spend_single_block(b, dog):
+    tx_create = create_tx(b)
+    write_block(b, [tx_create])
+    tx_transfer0 = transfer_tx(b, [tx_create])
+    tx_transfer1 = transfer_tx(b, [tx_create])
+    block = write_block(b, [tx_transfer0, tx_transfer1])
+    assert dog.join() == ('DOUBLE SPEND SINGLE BLOCK', block.id)
+
+
+def test_double_spend_across_blocks(b, dog):
     tx_create = create_tx(b)
     write_block(b, [tx_create])
     write_block(b, [transfer_tx(b, [tx_create])])
     block = write_block(b, [transfer_tx(b, [tx_create])])
-    assert ctx.watchdog.join() == ('DOUBLE SPEND ACROSS BLOCKS', block.id)
+    assert dog.join() == ('DOUBLE SPEND ACROSS BLOCKS', block.id)
 
 
-def test_double_spend_single_block(b, ctx):
-    tx_create = create_tx(b)
-    write_block(b, [tx_create])
-    tx_transfer = transfer_tx(b, [tx_create])
-    tx_transfer = transfer_tx(b, [tx_create])
-    block = write_block(b, [tx_transfer, tx_transfer])
-    assert ctx.watchdog.join() == ('DOUBLE SPEND SINGLE BLOCK', block.id)
-
-
-def test_duplicate_tx_single_block(b, ctx):
+def test_duplicate_tx_single_block(b, dog):
     tx_create = create_tx(b)
     block = write_block(b, [tx_create, tx_create])
-    assert ctx.watchdog.join() == ('DUPLICATE TX SINGLE BLOCK', block.id)
+    assert dog.join() == ('DUPLICATE TX SINGLE BLOCK', block.id)
 
 
-def test_duplicate_tx_different_block(b, ctx):
+def test_duplicate_tx_different_block(b, dog):
     tx_create = create_tx(b)
     write_block(b, [tx_create])
     block = write_block(b, [tx_create])
-    assert ctx.watchdog.join() == ('DUPLICATE TX ACROSS BLOCKS', block.id)
+    assert dog.join() == ('DUPLICATE TX ACROSS BLOCKS', block.id)
+
+
+def test_input_does_not_exists(b, dog):
+    tx_create = create_tx(b)
+    write_block(b, [tx_create])
+    tx_transfer = transfer_tx(b, [tx_create])
+    tx_transfer.inputs[0].fulfills.txid = 'nop'
+    block = write_block(b, [tx_transfer])
+    assert dog.join() == ('INPUT DOES NOT EXIST', block.id)
+
+
+def test_tx_balance_error(b, dog):
+    tx_create = create_tx(b)
+    write_block(b, [tx_create])
+    tx_transfer = transfer_tx(b, [tx_create])
+    tx_transfer.outputs[0].amount = 2
+    block = write_block(b, [tx_transfer])
+    assert dog.join() == ('TX BALANCE ERROR', block.id)

@@ -1,75 +1,56 @@
 import pymongo
-from bigchaindb.core import Bigchain
-from collections import defaultdict
 import logging as _logging
-import time
-import threading
-
 
 log = _logging.getLogger('watchdog')
 
 
-class Watchdog(threading.Thread):
-    def __init__(self):
-        self.b = Bigchain()
-        self.sets = defaultdict(set)
+class Watchdog:
+    def __init__(self, bigchain):
+        self.b = bigchain
+        # A cache of blocks that are pending validation
         self.blocks = {}
-        self.valid_blocks = set()
-        self.utxos = set()
+        # Block validation results
+        self.block_status = {}
+        # Valid transaction outputs
+        self.alltxos = set()
+        # Valid unspent transaction outputs
+        self.utxos = {}
+        # Valid transaction IDs
         self.txids = set()
-        self.error = None
-        self.ready = False
-        self.stop = False
-        super(Watchdog, self).__init__()
 
     def start(self):
-        super(Watchdog, self).start()
-        while not self.ready:
-            time.sleep(0.001)
-
-    def join(self):
-        self.stop = True
-        super(Watchdog, self).join()
-        return self.error
-
-    def run(self):
         connection = self.b.connection
-
-        last_ts = connection.run(
+        self.start_ts = connection.run(
             connection.query().local.oplog.rs.find()
             .sort('$natural', pymongo.DESCENDING).limit(1)
             .next()['ts'])
 
-        cursor = connection.run(
+        self.cursor = connection.run(
             connection.query().local.oplog.rs.find(
-                {'ts': {'$gt': last_ts}},
+                {'ts': {'$gt': self.start_ts}},
                 cursor_type=pymongo.CursorType.TAILABLE_AWAIT
             ))
 
-        self.ready = True
-
-        log.info('Watchdog listening')
-
-        while cursor.alive:
+    def join(self):
+        while self.cursor.alive:
             try:
-                self.record = cursor.next()
+                self.record = self.cursor.next()
             except StopIteration:
-                if self.stop:
-                    break
-                continue
+                break
 
             try:
                 self.process(self.record)
             except Exception as e:
                 if type(e) == AssertionError:
-                    e = e.args[0] if len(e.args) == 1 else e.args
-                self.error = e
-                log.warn('Watchdog caught: %s', repr(e))
-                break
+                    return e.args[0] if len(e.args) == 1 else e.args
+                raise
 
     def process(self, item):
         table = item['ns'].split('.')[1]
         getattr(self, 'process_' + table)(item)
+
+    def process_backlog(self, _):
+        pass
 
     def process_bigchain(self, item):
         assert item['op'] == 'i', 'BIGCHAIN INSERT ONLY'
@@ -77,7 +58,6 @@ class Watchdog(threading.Thread):
         log.info('Process block %s', block['id'])
 
         self.blocks[block['id']] = block
-        self.sets['bigchain'].add(block['id'])
 
     def process_votes(self, item):
         block_id = item['o']['vote']['voting_for_block']
@@ -86,49 +66,75 @@ class Watchdog(threading.Thread):
         block_id = item['o']['vote']['voting_for_block']
         assert item['op'] == 'i', 'VOTES INSERT ONLY'
 
-        block = self.blocks[block_id]
+        block = self.blocks.get(block_id)
+        assert block, ('VOTE NON EXISTENT BLOCK', block_id)
 
         status = self.b.block_election_status(block_id,
                                               block['block']['voters'])
 
-        if block_id in self.sets['valid-block']:
-            pass  # ...
-        elif status == 'valid':
-            spends = list(get_block_spends(block))
-            txids = [tx['id'] for tx in block['block']['transactions']]
+        if block_id in self.block_status:
+            assert status == self.block_status[block_id], \
+                ('BLOCK ELECTION STATUS CHANGE', block_id)
+            return
 
-            # Detect double spends
-            assert len(spends) == len(set(spends)), \
-                ('DOUBLE SPEND SINGLE BLOCK', block_id)
-            assert set(spends).difference(self.utxos) == set(), \
-                ('DOUBLE SPEND ACROSS BLOCKS', block_id)
+        if status == 'valid':
+            self.process_valid_block(block)
+            self.block_status[block_id] = 'valid'
+        elif status == 'invalid':
+            self.block_status[block_id] = 'invalid'
 
-            # Detect duplicate transactions
-            assert len(txids) == len(set(txids)), \
-                ('DUPLICATE TX SINGLE BLOCK', block_id)
-            assert self.txids.intersection(txids) == set(), \
-                ('DUPLICATE TX ACROSS BLOCKS', block_id)
+    def process_valid_block(self, block):
+        txs = block['block']['transactions']
+        txids = [tx['id'] for tx in txs]
 
-            # All good
-            self.valid_blocks.add(block_id)
-            self.utxos.difference_update(spends)
-            self.utxos.update(get_block_outputs(block))
-            self.txids.update(txids)
+        # Check for duplicate tx
+        assert len(txids) == len(set(txids)), \
+            ('DUPLICATE TX SINGLE BLOCK', block['id'])
+        assert self.txids.intersection(txids) == set(), \
+            ('DUPLICATE TX ACROSS BLOCKS', block['id'])
+        self.txids.update(txids)
 
+        # Check for double spend in block
+        spends = list(get_block_spends(block))
+        assert len(spends) == len(set(spends)), \
+            ('DOUBLE SPEND SINGLE BLOCK', block['id'])
 
-def check_dupe_tx_in_block(block):
-    return
+        # Spend each tx
+        for tx in txs:
+            if tx['operation'] == 'TRANSFER':
+                self.spend(tx, block['id'])
+
+        # Update TXOs
+        for tx in txs:
+            for i, output in enumerate(tx['outputs']):
+                key = (tx['id'], i)
+                self.utxos[key] = output
+                self.alltxos.add(key)
+
+    def spend(self, tx, block_id):
+        # We'll assume that DOUBLE SPEND SINGLE BLOCK can catch any double
+        # spend in a single TX
+        balance = 0
+        for inp in tx['inputs']:
+            spend = spend_key(inp)
+            assert spend in self.alltxos, ('INPUT DOES NOT EXIST', block_id)
+            output = self.utxos.get(spend)
+            assert output, ('DOUBLE SPEND ACROSS BLOCKS', block_id)
+            balance -= output['amount']
+            del self.utxos[spend]
+
+        for i, output in enumerate(tx['outputs']):
+            balance += output['amount']
+
+        assert balance == 0, ('TX BALANCE ERROR', block_id)
 
 
 def get_block_spends(block):
     for tx in block['block']['transactions']:
         if tx['operation'] == 'TRANSFER':
             for inp in tx['inputs']:
-                ff = inp['fulfills']
-                yield (ff['txid'], ff['output'])
+                yield spend_key(inp)
 
 
-def get_block_outputs(block):
-    for tx in block['block']['transactions']:
-        for i in range(len(tx['outputs'])):
-            yield (tx['id'], i)
+def spend_key(input_):
+    return input_['fulfills']['txid'], input_['fulfills']['output']
