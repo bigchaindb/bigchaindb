@@ -77,18 +77,16 @@ Note how the keys in the list are separated by colons.
 
 ## database.backend, database.host, database.port, database.name & database.replicaset
 
-The database backend to use (e.g. RethinkDB) and its hostname, port and name.
+The database backend to use (`rethinkdb` or `mongodb`) and its hostname, port and name. If the database backend is `mongodb`, then there's a fifth setting: the name of the replica set. If the database backend is `rethinkdb`, you *can* set the name of the replica set, but it won't be used for anything.
 
 **Example using environment variables**
 ```text
-export BIGCHAINDB_DATABASE_BACKEND=rethinkdb
+export BIGCHAINDB_DATABASE_BACKEND=mongodb
 export BIGCHAINDB_DATABASE_HOST=localhost
-export BIGCHAINDB_DATABASE_PORT=28015
+export BIGCHAINDB_DATABASE_PORT=27017
 export BIGCHAINDB_DATABASE_NAME=bigchain
 export BIGCHAINDB_DATABASE_REPLICASET=bigchain-rs
 ```
-
-Note: If the backend database is RethinkDB, you *can* set `BIGCHAINDB_DATABASE_REPLICASET` but it won't be used for anything.
 
 **Default values**
 
