@@ -13,6 +13,7 @@ from multipipes import Pipeline, Node
 import bigchaindb
 from bigchaindb import Bigchain
 from bigchaindb import backend
+from bigchaindb import config_utils
 from bigchaindb.backend.changefeed import ChangeFeed
 from bigchaindb.consensus import BaseConsensusRules
 from bigchaindb.models import Transaction, Block
@@ -35,10 +36,17 @@ class Vote:
         # Since cannot share a connection to RethinkDB using multiprocessing,
         # we need to create a temporary instance of BigchainDB that we use
         # only to query RethinkDB
-        self.consensus = BaseConsensusRules
+
+        consensusPlugin = bigchaindb.config.get('consensus_plugin')
+
+        if consensusPlugin:
+            self.consensus = config_utils.load_consensus_plugin(consensusPlugin)
+        else:
+            self.consensus = BaseConsensusRules
 
         # This is the Bigchain instance that will be "shared" (aka: copied)
         # by all the subprocesses
+
         self.bigchain = Bigchain()
         self.last_voted_id = Bigchain().get_last_voted_block().id
 
