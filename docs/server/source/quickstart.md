@@ -2,18 +2,11 @@
 
 This page has instructions to set up a single stand-alone BigchainDB node for learning or experimenting. Instructions for other cases are [elsewhere](introduction.html). We will assume you're using Ubuntu 16.04 or similar. If you're not using Linux, then you might try [running BigchainDB with Docker](appendices/run-with-docker.html).
 
-A. Install the database backend. 
+A. Install MongoDB as the database backend. (There are other options but you can ignore them for now.)
 
 [Install MongoDB Server 3.4+](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/)
 
-B. Run the database backend. Open a Terminal and run the command:
-
-with RethinkDB
-```text
-$ rethinkdb
-```
-
-with MongoDB __3.4+__
+B. Run MongoDB. Open a Terminal and run the command:
 ```text
 $ mongod --replSet=bigchain-rs
 ```
@@ -35,19 +28,12 @@ E. Install the `bigchaindb` Python package from PyPI:
 $ sudo pip3 install bigchaindb
 ```
 
-F. Configure the BigchainDB Server: and run BigchainDB Server:
-
-with RethinkDB
-```text
-$ bigchaindb -y configure rethinkdb
-```
-
-with MongoDB
+F. Configure BigchainDB Server:
 ```text
 $ bigchaindb -y configure mongodb
 ```
 
-G. Run the BigchainDB Server:
+G. Run BigchainDB Server:
 ```text
 $ bigchaindb start
 ```
