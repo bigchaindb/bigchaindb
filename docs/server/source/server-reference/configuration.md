@@ -77,42 +77,39 @@ Note how the keys in the list are separated by colons.
 
 ## database.backend, database.host, database.port, database.name & database.replicaset
 
-The database backend to use (e.g. RethinkDB) and its hostname, port and name.
+The database backend to use (`rethinkdb` or `mongodb`) and its hostname, port and name. If the database backend is `mongodb`, then there's a fifth setting: the name of the replica set. If the database backend is `rethinkdb`, you *can* set the name of the replica set, but it won't be used for anything.
 
 **Example using environment variables**
 ```text
-export BIGCHAINDB_DATABASE_BACKEND=rethinkdb
+export BIGCHAINDB_DATABASE_BACKEND=mongodb
 export BIGCHAINDB_DATABASE_HOST=localhost
-export BIGCHAINDB_DATABASE_PORT=28015
+export BIGCHAINDB_DATABASE_PORT=27017
 export BIGCHAINDB_DATABASE_NAME=bigchain
 export BIGCHAINDB_DATABASE_REPLICASET=bigchain-rs
 ```
 
-**Example config file snippet**
+**Default values**
+
+If (no environment variables were set and there's no local config file), or you used `bigchaindb -y configure rethinkdb` to create a default local config file for a RethinkDB backend, then the defaults will be:
 ```js
 "database": {
     "backend": "rethinkdb",
     "host": "localhost",
-    "port": 28015,
     "name": "bigchain",
+    "port": 28015
+}
+```
+
+If you used `bigchaindb -y configure mongodb` to create a default local config file for a MongoDB backend, then the defaults will be:
+```js
+"database": {
+    "backend": "mongodb",
+    "host": "localhost",
+    "name": "bigchain",
+    "port": 27017,
     "replicaset": "bigchain-rs"
 }
 ```
-
-**Default values (a snippet from `bigchaindb/__init__.py`)**
-```python
-'database': {
-    'backend': os.environ.get('BIGCHAINDB_DATABASE_BACKEND', 'rethinkdb'),
-    'host': os.environ.get('BIGCHAINDB_DATABASE_HOST', 'localhost'),
-    'port': int(os.environ.get('BIGCHAINDB_DATABASE_PORT', 28015)),
-    'name': os.environ.get('BIGCHAINDB_DATABASE_NAME', 'bigchain'),
-    'replicaset': os.environ.get('BIGCHAINDB_DATABASE_REPLICASET', 'bigchain-rs')
-}
-```
-
-**Note**: We are currently adding support for MongoDB. The `replicaset` and
-`BIGCHAINDB_DATABASE_REPLICASET` option is only used if the `backend` or
-`BIGCHAINDB_DATABASE_BACKEND` is set to `"mongodb"`.
 
 
 ## server.bind, server.workers & server.threads
