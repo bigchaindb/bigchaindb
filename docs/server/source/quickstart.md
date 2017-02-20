@@ -55,4 +55,22 @@ $ bigchaindb start
 
 That's it!
 
-Next Steps: You could build valid transactions and push them to your running BigchainDB Server using the [BigchaindB Python Driver](https://docs.bigchaindb.com/projects/py-driver/en/latest/index.html).
+Next Steps: You could... 
+
+* [install the BigchainDB Python Driver](https://docs.bigchaindb.com/projects/py-driver/en/latest/quickstart.html) and
+* [use the BigchainDB Python Driver to build a valid transaction, and post that transaction to your running server](https://docs.bigchaindb.com/projects/py-driver/en/latest/usage.html).
+
+<hr>
+
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
