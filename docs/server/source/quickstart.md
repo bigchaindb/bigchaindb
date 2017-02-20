@@ -4,7 +4,6 @@ This page has instructions to set up a single stand-alone BigchainDB node for le
 
 A. Install the database backend. 
 
-[Install RethinkDB Server](https://rethinkdb.com/docs/install/ubuntu/) or
 [Install MongoDB Server 3.4+](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/)
 
 B. Run the database backend. Open a Terminal and run the command:
@@ -53,12 +52,10 @@ G. Run the BigchainDB Server:
 $ bigchaindb start
 ```
 
-That's it!
+You now have a running BigchainDB Server and can post transactions to it.
+One way to do that is to use the BigchainDB Python Driver.
 
-Next Steps: You could... 
-
-* [install the BigchainDB Python Driver](https://docs.bigchaindb.com/projects/py-driver/en/latest/quickstart.html) and
-* [use the BigchainDB Python Driver to build a valid transaction, and post that transaction to your running server](https://docs.bigchaindb.com/projects/py-driver/en/latest/usage.html).
+[Install the BigchainDB Python Driver (link)](https://docs.bigchaindb.com/projects/py-driver/en/latest/quickstart.html)
 
 <hr>
 
