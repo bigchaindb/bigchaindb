@@ -53,7 +53,8 @@ def test_steps_double_CREATE_inclusion(b, steps, genesis_block):
 def input_single_create(b):
     from bigchaindb.common.transaction import Transaction
     metadata = {'r': random.random()}
-    tx = Transaction.create([b.me], [([b.me], 1)], metadata)
+    tx = (Transaction.create([b.me], [([b.me], 1)], metadata)
+                     .sign([b.me_private]))
     b.write_transaction(tx)
     return tx
 
