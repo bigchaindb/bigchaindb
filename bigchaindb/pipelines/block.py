@@ -78,6 +78,8 @@ class BlockPipeline:
                 # then it no longer should be in the backlog, or added
                 # to a new block. We can delete and drop it.
                 self.bigchain.delete_transaction(tx.id)
+                logger.debug('Tx deleted from backlog, txid %s status %s',
+                             tx.id, status)
                 return None
 
         tx_validated = self.bigchain.is_valid_transaction(tx)
