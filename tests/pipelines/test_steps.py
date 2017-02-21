@@ -3,6 +3,7 @@ import random
 
 
 @pytest.mark.bdb
+@pytest.mark.genesis
 def test_stepping_changefeed_produces_update(b, steps):
     tx = input_single_create(b)
 
@@ -14,8 +15,8 @@ def test_stepping_changefeed_produces_update(b, steps):
     steps.block_changefeed()
     steps.block_changefeed()
 
-    assert steps.get_counts() == {'block_filter_tx': 2}
-    assert ([tx['id'] for tx in steps.queues['block_filter_tx']] ==
+    assert steps.counts == {'block_filter_tx': 2}
+    assert ([tx['id'] for (tx,) in steps.queues['block_filter_tx']] ==
             [tx.id, tx.id])
 
 
