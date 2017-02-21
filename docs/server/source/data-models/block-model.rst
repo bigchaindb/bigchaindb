@@ -27,7 +27,7 @@ A block has the following structure:
       It's the list of federation nodes which can cast a vote on this block.
       This list can change from block to block, as nodes join and leave the federation.
 
-- ``signature``: :ref:`Cryptographic signature <Signature Algorithm and Keys>` of the block by the node that created the block. To generate the signature, the node builds a dict including the ``id``, the inner ``block`` & the ``signature`` (with a value of ``None``), it serializes that dict, and then signs *that* with its private key.
+- ``signature``: :ref:`Cryptographic signature <Signature Algorithm and Keys>` of the block by the node that created the block (i.e. the node with public key ``node_pubkey``). To generate the signature, the node signs the serialized inner ``block`` (the same thing that was hashed to determine the ``id``) using the private key corresponding to ``node_pubkey``.
 
 
 Working with Blocks
