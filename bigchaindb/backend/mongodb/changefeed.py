@@ -85,10 +85,12 @@ class MongoDBChangeFeed(ChangeFeed):
                 # document itself. So here we first read the document
                 # and then return it.
                 doc = self.connection.conn[dbname][table].find_one(
-                    {'_id': record['o2']},
+                    {'_id': record['o2']['_id']},
                     {'_id': False}
                 )
                 self.outqueue.put(doc)
+
+            logger.debug('Record in changefeed: %s:%s', table, record['op'])
 
 
 @register_changefeed(MongoDBConnection)
