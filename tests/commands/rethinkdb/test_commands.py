@@ -59,8 +59,7 @@ def test_set_shards(mock_reconfigure, monkeypatch, b):
     mock_reconfigure.assert_called_with(replicas=3, shards=3, dry_run=False)
 
 
-@patch('logging.Logger.warn')
-def test_set_shards_raises_exception(mock_log, monkeypatch, b):
+def test_set_shards_raises_exception(monkeypatch, b, capsys):
     from bigchaindb.commands.bigchain import run_set_shards
 
     # test that we are correctly catching the exception
@@ -76,7 +75,9 @@ def test_set_shards_raises_exception(mock_log, monkeypatch, b):
     args = Namespace(num_shards=3)
     run_set_shards(args)
 
-    assert mock_log.called
+    out, err = capsys.readouterr()
+    assert out[:-1] == 'Failed to reconfigure tables.'
+    assert not err
 
 
 @patch('rethinkdb.ast.Table.reconfigure')
@@ -103,8 +104,7 @@ def test_set_replicas(mock_reconfigure, monkeypatch, b):
     mock_reconfigure.assert_called_with(replicas=2, shards=3, dry_run=False)
 
 
-@patch('logging.Logger.warn')
-def test_set_replicas_raises_exception(mock_log, monkeypatch, b):
+def test_set_replicas_raises_exception(monkeypatch, b, capsys):
     from bigchaindb.commands.bigchain import run_set_replicas
 
     # test that we are correctly catching the exception
@@ -120,4 +120,6 @@ def test_set_replicas_raises_exception(mock_log, monkeypatch, b):
     args = Namespace(num_replicas=2)
     run_set_replicas(args)
 
-    assert mock_log.called
+    out, err = capsys.readouterr()
+    assert out[:-1] == 'Failed to reconfigure tables.'
+    assert not err
