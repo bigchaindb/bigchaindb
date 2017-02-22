@@ -27,10 +27,7 @@ from bigchaindb.backend.admin import (set_replicas, set_shards, add_replicas,
 from bigchaindb.backend.exceptions import OperationError
 from bigchaindb.commands import utils
 from bigchaindb import processes
-
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from bigchaindb.log.setup import setup_logging
 
 
 # We need this because `input` always prints on stdout, while it should print
@@ -178,6 +175,11 @@ def run_start(args):
     """Start the processes to run the node"""
     print('BigchainDB Version {}'.format(bigchaindb.__version__))
     bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
+
+    # TODO setup logging -- pass logging config, extracted out from main config
+    setup_logging()
+
+    logger = logging.getLogger(__name__)
 
     if args.allow_temp_keypair:
         if not (bigchaindb.config['keypair']['private'] or
