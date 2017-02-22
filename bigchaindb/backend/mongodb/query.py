@@ -213,13 +213,6 @@ def get_block(conn, block_id):
 
 
 @register_query(MongoDBConnection)
-def has_transaction(conn, transaction_id):
-    return bool(conn.run(
-        conn.collection('bigchain')
-        .find_one({'block.transactions.id': transaction_id})))
-
-
-@register_query(MongoDBConnection)
 def count_blocks(conn):
     return conn.run(
         conn.collection('bigchain')

@@ -212,20 +212,6 @@ def get_block(connection, block_id):
 
 
 @singledispatch
-def has_transaction(connection, transaction_id):
-    """Check if a transaction exists in the bigchain table.
-
-    Args:
-        transaction_id (str): the id of the transaction to check.
-
-    Returns:
-        ``True`` if the transaction exists, ``False`` otherwise.
-    """
-
-    raise NotImplementedError
-
-
-@singledispatch
 def count_blocks(connection):
     """Count the number of blocks in the bigchain table.
 

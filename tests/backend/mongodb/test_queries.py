@@ -248,19 +248,6 @@ def test_get_block(signed_create_tx):
     assert block_db == block.to_dict()
 
 
-def test_has_transaction(signed_create_tx):
-    from bigchaindb.backend import connect, query
-    from bigchaindb.models import Block
-    conn = connect()
-
-    # create and insert block
-    block = Block(transactions=[signed_create_tx])
-    conn.db.bigchain.insert_one(block.to_dict())
-
-    assert query.has_transaction(conn, signed_create_tx.id)
-    assert query.has_transaction(conn, 'aaa') is False
-
-
 def test_count_blocks(signed_create_tx):
     from bigchaindb.backend import connect, query
     from bigchaindb.models import Block

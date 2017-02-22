@@ -29,7 +29,6 @@ def test_schema(schema_func_name, args_qty):
     ('get_votes_by_block_id', 1),
     ('write_block', 1),
     ('get_block', 1),
-    ('has_transaction', 1),
     ('write_vote', 1),
     ('get_last_voted_block', 1),
     ('get_unvoted_blocks', 1),
