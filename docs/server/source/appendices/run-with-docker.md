@@ -75,7 +75,7 @@ docker run \
 
 
 You can also access the RethinkDB dashboard at
-[http://localhost:58080/](http://localhost:58080/)
+[http://172.17.0.1:58080/](http://172.17.0.1:58080/)
 
 
 #### For MongoDB
