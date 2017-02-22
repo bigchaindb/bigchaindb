@@ -276,8 +276,8 @@ def load_consensus_plugin(name=None):
 
     # Is this strictness desireable?
     # It will probably reduce developer headaches in the wild.
-    if not issubclass(plugin, (BaseConsensusRules)):
-        raise TypeError("object of type '{}' does not implement `bigchaindb."
-                        "consensus.BaseConsensusRules`".format(type(plugin)))
+    if not issubclass(plugin, (BaseConsensusRules,)):
+        raise TypeError('object of type "{}" does not implement `bigchaindb.'
+                        'consensus.BaseConsensusRules`'.format(type(plugin)))
 
     return plugin
