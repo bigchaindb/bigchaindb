@@ -202,12 +202,12 @@ def test_transactions_get_list_good(client):
     asset_id = '1' * 64
 
     with patch('bigchaindb.core.Bigchain.get_transactions_filtered', get_txs_patched):
-        url = TX_ENDPOINT + "?asset_id=" + asset_id
+        url = TX_ENDPOINT + '?asset_id=' + asset_id
         assert client.get(url).json == [
             ['asset_id', asset_id],
             ['operation', None]
         ]
-        url = TX_ENDPOINT + "?asset_id=" + asset_id + "&operation=CREATE"
+        url = TX_ENDPOINT + '?asset_id=' + asset_id + '&operation=CREATE'
         assert client.get(url).json == [
             ['asset_id', asset_id],
             ['operation', 'CREATE']
@@ -220,11 +220,11 @@ def test_transactions_get_list_bad(client):
     with patch('bigchaindb.core.Bigchain.get_transactions_filtered',
                lambda *_, **__: should_not_be_called()):
         # Test asset id validated
-        url = TX_ENDPOINT + "?asset_id=" + '1' * 63
+        url = TX_ENDPOINT + '?asset_id=' + '1' * 63
         assert client.get(url).status_code == 400
         # Test operation validated
-        url = TX_ENDPOINT + "?asset_id=" + '1' * 64 + "&operation=CEATE"
+        url = TX_ENDPOINT + '?asset_id=' + '1' * 64 + '&operation=CEATE'
         assert client.get(url).status_code == 400
         # Test asset ID required
-        url = TX_ENDPOINT + "?operation=CREATE"
+        url = TX_ENDPOINT + '?operation=CREATE'
         assert client.get(url).status_code == 400
