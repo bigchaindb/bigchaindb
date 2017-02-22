@@ -4,7 +4,7 @@ import re
 def valid_txid(txid):
     if re.match('^[a-fA-F0-9]{64}$', txid):
         return txid.lower()
-    raise ValueError("Invalid hash")
+    raise ValueError('Invalid hash')
 
 
 def valid_bool(val):
@@ -20,7 +20,7 @@ def valid_ed25519(key):
     if (re.match('^[1-9a-zA-Z]{43,44}$', key) and not
        re.match('.*[Il0O]', key)):
         return key
-    raise ValueError("Invalid base58 ed25519 key")
+    raise ValueError('Invalid base58 ed25519 key')
 
 
 def valid_operation(op):
