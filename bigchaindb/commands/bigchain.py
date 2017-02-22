@@ -122,7 +122,7 @@ def run_configure(args, skip_if_exists=False):
 def run_export_my_pubkey(args):
     """Export this node's public key to standard output
     """
-    logger.debug('bigchaindb args = {}'.format(args))
+    print('bigchaindb args = {}'.format(args))
     bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
     pubkey = bigchaindb.config['keypair']['public']
     if pubkey is not None:
@@ -141,9 +141,9 @@ def _run_init():
 
     schema.init_database(connection=b.connection)
 
-    logger.info('Create genesis block.')
+    print('Create genesis block.')
     b.create_genesis_block()
-    logger.info('Done, have fun!')
+    print('Done, have fun!')
 
 
 def run_init(args):
@@ -176,8 +176,7 @@ def run_drop(args):
 
 def run_start(args):
     """Start the processes to run the node"""
-    logger.info('BigchainDB Version {}'.format(bigchaindb.__version__))
-
+    print('BigchainDB Version {}'.format(bigchaindb.__version__))
     bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
 
     if args.allow_temp_keypair:
@@ -229,7 +228,7 @@ def _run_load(tx_left, stats):
 
 def run_load(args):
     bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
-    logger.info('Starting %s processes', args.multiprocess)
+    print('Starting %s processes', args.multiprocess)
     stats = logstats.Logstats()
     logstats.thread.start(stats)
 
@@ -248,7 +247,7 @@ def run_set_shards(args):
     try:
         set_shards(conn, shards=args.num_shards)
     except OperationError as e:
-        logger.warn(e)
+        print(e)
 
 
 def run_set_replicas(args):
@@ -256,7 +255,7 @@ def run_set_replicas(args):
     try:
         set_replicas(conn, replicas=args.num_replicas)
     except OperationError as e:
-        logger.warn(e)
+        print(e)
 
 
 def run_add_replicas(args):
@@ -267,9 +266,9 @@ def run_add_replicas(args):
     try:
         add_replicas(conn, args.replicas)
     except (OperationError, NotImplementedError) as e:
-        logger.warn(e)
+        print(e)
     else:
-        logger.info('Added {} to the replicaset.'.format(args.replicas))
+        print('Added {} to the replicaset.'.format(args.replicas))
 
 
 def run_remove_replicas(args):
@@ -280,9 +279,9 @@ def run_remove_replicas(args):
     try:
         remove_replicas(conn, args.replicas)
     except (OperationError, NotImplementedError) as e:
-        logger.warn(e)
+        print(e)
     else:
-        logger.info('Removed {} from the replicaset.'.format(args.replicas))
+        print('Removed {} from the replicaset.'.format(args.replicas))
 
 
 def create_parser():
