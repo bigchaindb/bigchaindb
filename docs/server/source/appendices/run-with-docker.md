@@ -90,6 +90,10 @@ docker run \
 
 ### Run BigchainDB
 
+To ensure that BigchainDB connects to the backend database bound to the virtual
+interface `172.17.0.1`, we modify the config file database.host parameter form
+`localhost` to `172.17.0.1`.
+
 ```text
 docker run \
   --detach \
