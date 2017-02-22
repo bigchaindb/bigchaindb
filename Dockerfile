@@ -26,6 +26,8 @@ WORKDIR /usr/src/app
 
 RUN pip3 install --no-cache-dir -e .
 
+VOLUME ["/data"]
+
 WORKDIR /data
 
 ENV BIGCHAINDB_CONFIG_PATH /data/.bigchaindb
