@@ -629,3 +629,17 @@ def test_start(mock_start, b):
     from bigchaindb.pipelines import vote
     vote.start()
     mock_start.assert_called_with()
+
+
+@pytest.mark.genesis
+def test_vote_no_double_inclusion(b):
+    from bigchaindb.pipelines import vote
+
+    tx = dummy_tx(b)
+    block = b.create_block([tx])
+    r = vote.Vote().validate_tx(tx, block.id, 1)
+    assert r == (True, block.id, 1)
+
+    b.write_block(block)
+    r = vote.Vote().validate_tx(tx, 'other_block_id', 1)
+    assert r == (False, 'other_block_id', 1)
