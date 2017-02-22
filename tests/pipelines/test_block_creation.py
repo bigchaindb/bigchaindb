@@ -39,6 +39,37 @@ def test_validate_transaction(b, create_tx):
     assert block_maker.validate_tx(valid_tx.to_dict()) == valid_tx
 
 
+def test_validate_transaction_handles_exceptions(b, signed_create_tx):
+    """
+    This test makes sure that `BlockPipeline.validate_tx` handles possible
+    exceptions from `Transaction.from_dict`.
+    """
+    from bigchaindb.pipelines.block import BlockPipeline
+    block_maker = BlockPipeline()
+
+    # Test SchemaValidationError
+    tx_dict = signed_create_tx.to_dict()
+    tx_dict['invalid_key'] = 'schema validation gonna getcha!'
+    assert block_maker.validate_tx(tx_dict) is None
+
+    # Test InvalidHash
+    tx_dict = signed_create_tx.to_dict()
+    tx_dict['id'] = 'a' * 64
+    assert block_maker.validate_tx(tx_dict) is None
+
+    # Test InvalidSignature when we pass a bad fulfillment
+    tx_dict = signed_create_tx.to_dict()
+    tx_dict['inputs'][0]['fulfillment'] = 'cf:0:aaaaaaaaaaaaaaaaaaaaaaaaa'
+    assert block_maker.validate_tx(tx_dict) is None
+
+    # Test AmountError
+    signed_create_tx.outputs[0].amount = 0
+    tx_dict = signed_create_tx.to_dict()
+    # set the correct value back so that we can continue using it
+    signed_create_tx.outputs[0].amount = 1
+    assert block_maker.validate_tx(tx_dict) is None
+
+
 def test_create_block(b, user_pk):
     from bigchaindb.models import Transaction
     from bigchaindb.pipelines.block import BlockPipeline

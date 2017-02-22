@@ -15,11 +15,71 @@ For reference, the possible headings are:
 * **External Contributors** to list contributors outside of BigchainDB GmbH.
 * **Notes**
 
+## [0.9.1] - 2017-02-06
+Tag name: v0.9.1
+
+### Fixed
+* Fixed bug in how the transaction `VERSION` string was calculated from the BigchainDB Server `__short_version__` string. [Pull Request #1160](https://github.com/bigchaindb/bigchaindb/pull/1160)
+
+
+## [0.9.0] - 2017-02-06
+Tag name: v0.9.0
+
+It has been more than two months since the v0.8.0 release, so there have been _many_ changes. We decided to describe them in broad strokes, with links to more details elsewhere.
+
+### Added
+- Support for MongoDB as a backend database.
+- Some configuration settings and `bigchaindb` command-line commands were added. In particular, one can specify the database backend (`rethinkdb` or `mongodb`). For MongoDB, one can specify the name of the replicaset. Also for MongoDB, there are new command-line commands to add and remove hosts from the replicaset. See [the Settings & CLI docs](https://docs.bigchaindb.com/projects/server/en/v0.9.0/server-reference/index.html).
+- Transaction schema validation. The transaction schema is also used to auto-generate some docs. [Pull Request #880](https://github.com/bigchaindb/bigchaindb/pull/880)
+- Vote schema validation. The vote schema is also used to auto-generate some docs. [Pull Request #865](https://github.com/bigchaindb/bigchaindb/pull/865)
+- New `ENABLE_WEB_ADMIN` setting in the AWS deployment configuration file. [Pull Request #1015](https://github.com/bigchaindb/bigchaindb/pull/1015)
+
+### Changed
+- The transaction model has changed substantially. @libscott wrote a blog post about the changes and it will be published soon on [the BigchainDB Blog](https://blog.bigchaindb.com/). Also, see [the docs about the transaction model](https://docs.bigchaindb.com/projects/server/en/v0.9.0/data-models/transaction-model.html).
+- The HTTP API has changed substantially. @diminator wrote a blog post about the changes and it will be published soon on [the BigchainDB Blog](https://blog.bigchaindb.com/).  Also, see [the docs about the vote model](https://docs.bigchaindb.com/projects/server/en/v0.9.0/data-models/vote-model.html).
+- All RethinkDB-specific database calls were replaced with abstract calls to a backend database.
+- Some improvements to the Dockerfile, e.g. Pull Requests [#1011](https://github.com/bigchaindb/bigchaindb/pull/1011) and [#1121](https://github.com/bigchaindb/bigchaindb/pull/1121)
+- Many improvements to the tests
+- We standardized on supporting Ubuntu 16.04 for now (but BigchainDB Server also works on similar Linux distros).
+
+### Removed
+- `api_endpoint` was removed from the BigchainDB configuration settings. (It was never used anyway.) [Pull Request #821](https://github.com/bigchaindb/bigchaindb/pull/821)
+- Removed all remaining StatsD monitoring code, configuration settings, docs, etc. (We'll add another monitoring solution in the future.) [Pull Request #1138](https://github.com/bigchaindb/bigchaindb/pull/1138)
+
+### Fixed
+- Fixed a memory (RAM) overflow problem when under heavy load by bounding the size of the queue at the entrance to the block pipeline. [Pull Request #908](https://github.com/bigchaindb/bigchaindb/pull/908)
+- Fixed some logic in block validation. [Pull Request #1130](https://github.com/bigchaindb/bigchaindb/pull/1130)
+
+### External Contributors
+- @amirelemam - [Pull Request #762](https://github.com/bigchaindb/bigchaindb/pull/762) (closed but used as the basis for [Pull Request #1074](https://github.com/bigchaindb/bigchaindb/pull/1074))
+- @utarl - [Pull Request #1019](https://github.com/bigchaindb/bigchaindb/pull/1019)
+
+### Notes
+- There were many additions and changes to the documentation. Fun fact: The JSON in the HTTP API docs is now auto-generated to be consistent with the current code.
+- There's a draft spec for a BigchainDB Event Stream API and we welcome your feedback. See [Pull Request #1086](https://github.com/bigchaindb/bigchaindb/pull/1086)
+
+
+## [0.8.2] - 2017-01-27
+Tag name: v0.8.2
+
+### Fixed
+- Fix spend input twice in same transaction
+  (https://github.com/bigchaindb/bigchaindb/issues/1099).
+
+
+## [0.8.1] - 2017-01-16
+Tag name: v0.8.1
+
+### Changed
+- Upgrade pysha3 to 1.0.0 (supports official NIST standard).
+
+### Fixed
+- Workaround for rapidjson problem with package metadata extraction
+  (https://github.com/kenrobbins/python-rapidjson/pull/52). 
+
 
 ## [0.8.0] - 2016-11-29
 Tag name: v0.8.0
-= commit:
-committed:
 
 ### Added
 - The big new thing in version 0.8.0 is support for divisible assets, i.e. assets like carrots or thumbtacks, where the initial CREATE transaction can register/create some amount (e.g. 542 carrots), the first TRANSFER transaction can split that amount across multiple owners, and so on. [Pull Request #794](https://github.com/bigchaindb/bigchaindb/pull/794)

@@ -45,6 +45,7 @@ tests_require = [
     'coverage',
     'pep8',
     'flake8',
+    'flake8-quotes==0.8.1',
     'pylint',
     'pytest>=3.0.0',
     'pytest-catchlog>=1.2.2',
@@ -62,9 +63,8 @@ install_requires = [
     # TODO Consider not installing the db drivers, or putting them in extras.
     'rethinkdb~=2.3',  # i.e. a version between 2.3 and 3.0
     'pymongo~=3.4',
-    'pysha3==1.0.0',
+    'pysha3~=1.0.2',
     'cryptoconditions>=0.5.0',
-    'statsd>=3.2.1',
     'python-rapidjson>=0.0.8',
     'logstats>=0.2.1',
     'flask>=0.10.1',

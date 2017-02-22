@@ -15,13 +15,21 @@ In a terminal shell, pull the latest version of the BigchainDB Docker image usin
 docker pull bigchaindb/bigchaindb
 ```
 
-then do a one-time configuration step to create the config file; we will use
+### Configuration
+A one-time configuration step is required to create the config file; we will use
 the `-y` option to accept all the default values. The configuration file will
 be stored in a file on your host machine at `~/bigchaindb_docker/.bigchaindb`:
 
 ```text
-docker run --rm -v "$HOME/bigchaindb_docker:/data" -ti \
-  bigchaindb/bigchaindb -y configure
+docker run \
+  --interactive \
+  --rm \
+  --tty \
+  --volume "$HOME/bigchaindb_docker:/data" \
+  bigchaindb/bigchaindb \
+  -y configure \
+  [mongodb|rethinkdb]
+
 Generating keypair
 Configuration written to /data/.bigchaindb
 Ready to go!
@@ -30,44 +38,85 @@ Ready to go!
 Let's analyze that command:
 
 * `docker run` tells Docker to run some image
+* `--interactive` keep STDIN open even if not attached
 * `--rm` remove the container once we are done
-* `-v "$HOME/bigchaindb_docker:/data"` map the host directory
+* `--tty` allocate a pseudo-TTY
+* `--volume "$HOME/bigchaindb_docker:/data"` map the host directory
  `$HOME/bigchaindb_docker` to the container directory `/data`;
  this allows us to have the data persisted on the host machine,
  you can read more in the [official Docker
  documentation](https://docs.docker.com/engine/tutorials/dockervolumes/#/mount-a-host-directory-as-a-data-volume)
-* `-t` allocate a pseudo-TTY
-* `-i` keep STDIN open even if not attached
-* `bigchaindb/bigchaindb` the image to use
-* `-y configure` execute the `configure` sub-command (of the `bigchaindb` command) inside the container, with the `-y` option to automatically use all the default config values
+* `bigchaindb/bigchaindb` the image to use. All the options after the container name are passed on to the entrypoint inside the container.
+* `-y configure` execute the `configure` sub-command (of the `bigchaindb`
+ command) inside the container, with the `-y` option to automatically use all the default config values
+* `mongodb` or `rethinkdb` specifies the database backend to use with bigchaindb
+
+To ensure that BigchainDB connects to the backend database bound to the virtual
+interface `172.17.0.1`, you must edit the BigchainDB configuration file
+(`~/bigchaindb_docker/.bigchaindb`) and change database.host from `localhost`
+to `172.17.0.1`.
 
 
-After configuring the system, you can run BigchainDB with the following command:
+### Run the backend database
+From v0.9 onwards, you can run either RethinkDB or MongoDB.
+
+We use the virtual interface created by the Docker daemon to allow
+communication between the BigchainDB and database containers.
+It has an IP address of 172.17.0.1 by default.
+
+You can also use docker host networking or bind to your primary (eth)
+ interface, if needed.
+
+#### For RethinkDB
 
 ```text
-docker run -v "$HOME/bigchaindb_docker:/data" -d \
-  --name bigchaindb \
-  -p "58080:8080" -p "59984:9984" \
-  bigchaindb/bigchaindb start
+docker run \
+  --detach \
+  --name=rethinkdb \
+  --publish=172.17.0.1:28015:28015 \
+  --publish=172.17.0.1:58080:8080 \
+  rethinkdb:2.3
+```
+
+
+You can also access the RethinkDB dashboard at
+[http://172.17.0.1:58080/](http://172.17.0.1:58080/)
+
+
+#### For MongoDB
+
+```text
+docker run \
+  --detach \
+  --name=mongodb \
+  --publish=172.17.0.1:27017:27017 \
+  mongo:3.4.1 --replSet=bigchain-rs
+```
+
+### Run BigchainDB
+
+```text
+docker run \
+  --detach \
+  --name=bigchaindb \
+  --publish=59984:9984 \
+  --volume=$HOME/bigchaindb_docker:/data \
+  bigchaindb/bigchaindb \
+  start
 ```
 
 The command is slightly different from the previous one, the differences are:
 
-* `-d` run the container in the background
+* `--detach` run the container in the background
 * `--name bigchaindb` give a nice name to the container so it's easier to
  refer to it later
-* `-p "58080:8080"` map the host port `58080` to the container port `8080`
- (the RethinkDB admin interface)
-* `-p "59984:9984"` map the host port `59984` to the container port `9984`
+* `--publish "59984:9984"` map the host port `59984` to the container port `9984`
  (the BigchainDB API server)
 * `start` start the BigchainDB service
 
 Another way to publish the ports exposed by the container is to use the `-P` (or
 `--publish-all`) option. This will publish all exposed ports to random ports. You can
 always run `docker ps` to check the random mapping.
-
-You can also access the RethinkDB dashboard at
-[http://localhost:58080/](http://localhost:58080/)
 
 If that doesn't work, then replace `localhost` with the IP or hostname of the
 machine running the Docker engine. If you are running docker-machine (e.g. on
@@ -89,10 +138,13 @@ You should see a container named `bigchaindb` in the list.
 You can load test the BigchainDB running in that container by running the `bigchaindb load` command in a second container:
 
 ```text
-docker run --rm -v "$HOME/bigchaindb_docker:/data" \
-  -e BIGCHAINDB_DATABASE_HOST=bigchaindb \
+docker run \
+  --env BIGCHAINDB_DATABASE_HOST=bigchaindb \
   --link bigchaindb \
-  bigchaindb/bigchaindb load
+  --rm \
+  --volume "$HOME/bigchaindb_docker:/data" \
+  bigchaindb/bigchaindb \
+  load
 ```
 
 Note the `--link` option to link to the first container (named `bigchaindb`).

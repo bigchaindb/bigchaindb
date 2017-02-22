@@ -57,8 +57,8 @@ def test_set_shards_dry_run(rdb_conn, db_name, db_conn):
 @pytest.mark.bdb
 @pytest.mark.skipif(
     _count_rethinkdb_servers() < 2,
-    reason=("Requires at least two servers. It's impossible to have"
-            "more replicas of the data than there are servers.")
+    reason=('Requires at least two servers. It\'s impossible to have'
+            'more replicas of the data than there are servers.')
 )
 def test_set_replicas(rdb_conn, db_name, db_conn):
     from bigchaindb.backend.schema import TABLES
@@ -85,8 +85,8 @@ def test_set_replicas(rdb_conn, db_name, db_conn):
 @pytest.mark.bdb
 @pytest.mark.skipif(
     _count_rethinkdb_servers() < 2,
-    reason=("Requires at least two servers. It's impossible to have"
-            "more replicas of the data than there are servers.")
+    reason=('Requires at least two servers. It\'s impossible to have'
+            'more replicas of the data than there are servers.')
 )
 def test_set_replicas_dry_run(rdb_conn, db_name, db_conn):
     from bigchaindb.backend.schema import TABLES
@@ -109,8 +109,8 @@ def test_set_replicas_dry_run(rdb_conn, db_name, db_conn):
 @pytest.mark.bdb
 @pytest.mark.skipif(
     _count_rethinkdb_servers() < 2,
-    reason=("Requires at least two servers. It's impossible to have"
-            "more replicas of the data than there are servers.")
+    reason=('Requires at least two servers. It\'s impossible to have'
+            'more replicas of the data than there are servers.')
 )
 def test_reconfigure(rdb_conn, db_name, db_conn):
     from bigchaindb.backend.rethinkdb.admin import reconfigure
@@ -177,8 +177,8 @@ def test_reconfigure_replicas_without_nonvoting_replica_tags(rdb_conn,
                                                              db_name,
                                                              db_conn):
     from bigchaindb.backend.rethinkdb.admin import reconfigure
-    from bigchaindb.backend.exceptions import DatabaseOpFailedError
-    with pytest.raises(DatabaseOpFailedError) as exc:
+    from bigchaindb.backend.exceptions import OperationError
+    with pytest.raises(OperationError) as exc:
         reconfigure(db_conn, table='backlog', shards=1,
                     replicas={'default': 1}, primary_replica_tag='default')
     assert isinstance(exc.value.__cause__, r.ReqlQueryLogicError)
@@ -187,8 +187,8 @@ def test_reconfigure_replicas_without_nonvoting_replica_tags(rdb_conn,
 @pytest.mark.bdb
 def test_reconfigure_too_many_replicas(rdb_conn, db_name, db_conn):
     from bigchaindb.backend.rethinkdb.admin import reconfigure
-    from bigchaindb.backend.exceptions import DatabaseOpFailedError
+    from bigchaindb.backend.exceptions import OperationError
     replicas = _count_rethinkdb_servers() + 1
-    with pytest.raises(DatabaseOpFailedError) as exc:
+    with pytest.raises(OperationError) as exc:
         reconfigure(db_conn, table='backlog', shards=1, replicas=replicas)
     assert isinstance(exc.value.__cause__, r.ReqlOpFailedError)

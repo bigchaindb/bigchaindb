@@ -9,7 +9,8 @@ Assuming you aren't exposing the RethinkDB web interface on port 8080 (or any ot
 
 1. **Port 22** can expect inbound SSH (TCP) traffic from the node administrator (i.e. a small set of IP addresses).
 2. **Port 9984** can expect inbound HTTP (TCP) traffic from BigchainDB clients sending transactions to the BigchainDB HTTP API.
-3. **Port 29015** can expect inbound TCP traffic from other RethinkDB nodes in the RethinkDB cluster (for RethinkDB intracluster communications).
+3. If you're using RethinkDB, **Port 29015** can expect inbound TCP traffic from other RethinkDB nodes in the RethinkDB cluster (for RethinkDB intracluster communications).
+4. If you're using MongoDB, **Port 27017** can expect inbound TCP traffic from other nodes.
 
 All other ports should only get inbound traffic in response to specific requests from inside the node.
 
@@ -44,11 +45,6 @@ Port 161 is the default SNMP port (usually UDP, sometimes TCP). SNMP is used, fo
 Port 443 is the default HTTPS port (TCP). You may need to open it up for outbound requests (and inbound responses) temporarily because some RethinkDB installation instructions use wget over HTTPS to get the RethinkDB GPG key. Package managers might also get some packages using HTTPS.
 
 
-## Port 8125
-
-If you set up a [cluster-monitoring server](../clusters-feds/monitoring.html), then StatsD will send UDP packets to Telegraf (on the monitoring server) via port 8125.
-
-
 ## Port 8080
 
 Port 8080 is the default port used by RethinkDB for its adminstrative web (HTTP) interface (TCP). While you _can_, you shouldn't allow traffic arbitrary external sources. You can still use the RethinkDB web interface by binding it to localhost and then accessing it via a SOCKS proxy or reverse proxy; see "Binding the web interface port" on [the RethinkDB page about securing your cluster](https://rethinkdb.com/docs/security/).
@@ -76,8 +72,3 @@ Port 29015 is the default port for RethinkDB intracluster connections (TCP). It 
 ## Other Ports
 
 On Linux, you can use commands such as `netstat -tunlp` or `lsof -i` to get a sense of currently open/listening ports and connections, and the associated processes. 
-
-
-## Cluster-Monitoring Server
-
-If you set up a [cluster-monitoring server](../clusters-feds/monitoring.html) (running Telegraf, InfluxDB & Grafana), Telegraf will listen on port 8125 for UDP packets from StatsD, and the Grafana web dashboard will use port 3000. (Those are the default ports.)

@@ -221,7 +221,7 @@ def install_bigchaindb_from_git_archive():
 @task
 @parallel
 def configure_bigchaindb():
-    run('bigchaindb -y configure', pty=False)
+    run('bigchaindb -y configure rethinkdb', pty=False)
 
 
 # Send the specified configuration file to

@@ -7,5 +7,4 @@ Clusters & Federations
    set-up-a-federation
    backup
    aws-testing-cluster
-   monitoring
    

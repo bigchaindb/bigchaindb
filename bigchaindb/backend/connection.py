@@ -32,6 +32,7 @@ def connect(backend=None, host=None, port=None, name=None, replicaset=None):
         based on the given (or defaulted) :attr:`backend`.
 
     Raises:
+        :exc:`~ConnectionError`: If the connection to the database fails.
         :exc:`~ConfigurationError`: If the given (or defaulted) :attr:`backend`
             is not supported or could not be loaded.
     """
@@ -40,6 +41,12 @@ def connect(backend=None, host=None, port=None, name=None, replicaset=None):
     host = host or bigchaindb.config['database']['host']
     port = port or bigchaindb.config['database']['port']
     dbname = name or bigchaindb.config['database']['name']
+    # Not sure how to handle this here. This setting is only relevant for
+    # mongodb.
+    # I added **kwargs for both RethinkDBConnection and MongoDBConnection
+    # to handle these these additional args. In case of RethinkDBConnection
+    # it just does not do anything with it.
+    replicaset = replicaset or bigchaindb.config['database'].get('replicaset')
 
     try:
         module_name, _, class_name = BACKENDS[backend].rpartition('.')
@@ -51,7 +58,7 @@ def connect(backend=None, host=None, port=None, name=None, replicaset=None):
         raise ConfigurationError('Error loading backend `{}`'.format(backend)) from exc
 
     logger.debug('Connection: {}'.format(Class))
-    return Class(host, port, dbname)
+    return Class(host, port, dbname, replicaset=replicaset)
 
 
 class Connection:
@@ -77,6 +84,13 @@ class Connection:
 
         Args:
             query: the query to run
+        Raises:
+            :exc:`~DuplicateKeyError`: If the query fails because of a
+                duplicate key constraint.
+            :exc:`~OperationFailure`: If the query fails for any other
+                reason.
+            :exc:`~ConnectionError`: If the connection to the database
+                fails.
         """
 
         raise NotImplementedError()

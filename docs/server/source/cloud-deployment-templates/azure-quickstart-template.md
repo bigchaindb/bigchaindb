@@ -1,6 +1,6 @@
 # Azure Quickstart Template
 
-If you didn't read the introduction to the [cloud deployment starter templates](index.html), please do that now. The main point is that they're not for deploying a production node; they can be used as a starting point.
+If you didn't read the introduction to the [cloud deployment templates](index.html), please do that now. The main point is that they're not for deploying a production node; they can be used as a starting point.
 
 Note: There was an Azure quickstart template in the `blockchain` directory of Microsoft's `Azure/azure-quickstart-templates` repository on GitHub. It's gone now; it was replaced by the one described here.
 
@@ -24,7 +24,7 @@ One can deploy a BigchainDB node on Azure using the template in the `bigchaindb-
 
 1. Configure BigchainDB Server by doing:
 ```text
-bigchaindb configure
+bigchaindb configure rethinkdb
 ```
 It will ask you several questions. You can press `Enter` (or `Return`) to accept the default for all of them *except for one*. When it asks **API Server bind? (default \`localhost:9984\`):**, you should answer:
 ```text

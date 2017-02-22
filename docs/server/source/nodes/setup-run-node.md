@@ -94,21 +94,7 @@ If you're testing or developing BigchainDB on a stand-alone node, then you shoul
 
 ## Install BigchainDB Server
 
-BigchainDB Server has some OS-level dependencies that must be installed.
-
-On Ubuntu 14.04, we found that the following was enough:
-```text
-sudo apt-get update
-sudo apt-get install g++ python3-dev libffi-dev
-```
-
-On Fedora 23, we found that the following was enough (tested in February 2015):
-```text
-sudo dnf update
-sudo dnf install gcc-c++ redhat-rpm-config python3-devel libffi-devel
-```
-
-(If you're using a version of Fedora before version 22, you may have to use `yum` instead of `dnf`.)
+First, [install the OS-level dependencies of BigchainDB Server (link)](../appendices/install-os-level-deps.html).
 
 With OS-level dependencies installed, you can install BigchainDB Server with `pip` or from source.
 
@@ -122,7 +108,7 @@ pip -V
 
 If it says that `pip` isn't installed, or it says `pip` is associated with a Python version less than 3.4, then you must install a `pip` version associated with Python 3.4+. In the following instructions, we call it `pip3` but you may be able to use `pip` if that refers to the same thing. See [the `pip` installation instructions](https://pip.pypa.io/en/stable/installing/).
 
-On Ubuntu 14.04, we found that this works:
+On Ubuntu 16.04, we found that this works:
 ```text
 sudo apt-get install python3-pip
 ```
@@ -158,7 +144,7 @@ python setup.py install
 
 Start by creating a default BigchainDB config file:
 ```text
-bigchaindb -y configure
+bigchaindb -y configure rethinkdb
 ```
 
 (There's documentation for the `bigchaindb` command is in the section on [the BigchainDB Command Line Interface (CLI)](bigchaindb-cli.html).)

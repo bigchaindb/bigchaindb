@@ -19,9 +19,6 @@ For convenience, here's a list of all the relevant environment variables (docume
 `BIGCHAINDB_SERVER_BIND`<br>
 `BIGCHAINDB_SERVER_WORKERS`<br>
 `BIGCHAINDB_SERVER_THREADS`<br>
-`BIGCHAINDB_STATSD_HOST`<br>
-`BIGCHAINDB_STATSD_PORT`<br>
-`BIGCHAINDB_STATSD_RATE`<br>
 `BIGCHAINDB_CONFIG_PATH`<br>
 `BIGCHAINDB_BACKLOG_REASSIGN_DELAY`<br>
 `BIGCHAINDB_CONSENSUS_PLUGIN`<br>
@@ -32,7 +29,7 @@ Note that the `-c` command line option will always take precedence if both the `
 
 You can read the current default values in the file [bigchaindb/\_\_init\_\_.py](https://github.com/bigchaindb/bigchaindb/blob/master/bigchaindb/__init__.py). (The link is to the latest version.)
 
-Running `bigchaindb -y configure` will generate a local config file in `$HOME/.bigchaindb` with all the default values, with two exceptions: It will generate a valid private/public keypair, rather than using the default keypair (`None` and `None`).
+Running `bigchaindb -y configure rethinkdb` will generate a local config file in `$HOME/.bigchaindb` with all the default values, with two exceptions: It will generate a valid private/public keypair, rather than using the default keypair (`None` and `None`).
 
 
 ## keypair.public & keypair.private
@@ -53,7 +50,7 @@ export BIGCHAINDB_KEYPAIR_PRIVATE=5C5Cknco7YxBRP9AgB1cbUVTL4FAcooxErLygw1DeG2D
 }
 ```
 
-Internally (i.e. in the Python code), both keys have a default value of `None`, but that's not a valid key. Therefore you can't rely on the defaults for the keypair. If you want to run BigchainDB, you must provide a valid keypair, either in the environment variables or in the local config file. You can generate a local config file with a valid keypair (and default everything else) using `bigchaindb -y configure`.
+Internally (i.e. in the Python code), both keys have a default value of `None`, but that's not a valid key. Therefore you can't rely on the defaults for the keypair. If you want to run BigchainDB, you must provide a valid keypair, either in the environment variables or in the local config file. You can generate a local config file with a valid keypair (and default everything else) using `bigchaindb -y configure rethinkdb`.
 
 
 ## keyring
@@ -81,42 +78,39 @@ Note how the keys in the list are separated by colons.
 
 ## database.backend, database.host, database.port, database.name & database.replicaset
 
-The database backend to use (e.g. RethinkDB) and its hostname, port and name.
+The database backend to use (`rethinkdb` or `mongodb`) and its hostname, port and name. If the database backend is `mongodb`, then there's a fifth setting: the name of the replica set. If the database backend is `rethinkdb`, you *can* set the name of the replica set, but it won't be used for anything.
 
 **Example using environment variables**
 ```text
-export BIGCHAINDB_DATABASE_BACKEND=rethinkdb
+export BIGCHAINDB_DATABASE_BACKEND=mongodb
 export BIGCHAINDB_DATABASE_HOST=localhost
-export BIGCHAINDB_DATABASE_PORT=28015
+export BIGCHAINDB_DATABASE_PORT=27017
 export BIGCHAINDB_DATABASE_NAME=bigchain
 export BIGCHAINDB_DATABASE_REPLICASET=bigchain-rs
 ```
 
-**Example config file snippet**
+**Default values**
+
+If (no environment variables were set and there's no local config file), or you used `bigchaindb -y configure rethinkdb` to create a default local config file for a RethinkDB backend, then the defaults will be:
 ```js
 "database": {
     "backend": "rethinkdb",
     "host": "localhost",
-    "port": 28015,
     "name": "bigchain",
+    "port": 28015
+}
+```
+
+If you used `bigchaindb -y configure mongodb` to create a default local config file for a MongoDB backend, then the defaults will be:
+```js
+"database": {
+    "backend": "mongodb",
+    "host": "localhost",
+    "name": "bigchain",
+    "port": 27017,
     "replicaset": "bigchain-rs"
 }
 ```
-
-**Default values (a snippet from `bigchaindb/__init__.py`)**
-```python
-'database': {
-    'backend': os.environ.get('BIGCHAINDB_DATABASE_BACKEND', 'rethinkdb'),
-    'host': os.environ.get('BIGCHAINDB_DATABASE_HOST', 'localhost'),
-    'port': int(os.environ.get('BIGCHAINDB_DATABASE_PORT', 28015)),
-    'name': os.environ.get('BIGCHAINDB_DATABASE_NAME', 'bigchain'),
-    'replicaset': os.environ.get('BIGCHAINDB_DATABASE_REPLICASET', 'bigchain-rs')
-}
-```
-
-**Note**: We are currently adding support for MongoDB. The `replicaset` and
-`BIGCHAINDB_DATABASE_REPLICASET` option is only used if the `backend` or
-`BIGCHAINDB_DATABASE_BACKEND` is set to `"mongodb"`.
 
 
 ## server.bind, server.workers & server.threads
@@ -150,23 +144,6 @@ export BIGCHAINDB_SERVER_THREADS=5
     "workers": null,
     "threads": null
 }
-```
-
-
-## statsd.host, statsd.port & statsd.rate
-
-These settings are used to configure where, and how often, [StatsD](https://github.com/etsy/statsd) should send data for [cluster monitoring](../clusters-feds/monitoring.html) purposes. `statsd.host` is the hostname of the monitoring server, where StatsD should send its data. `stats.port` is the port. `statsd.rate` is the fraction of transaction operations that should be sampled. It's a float between 0.0 and 1.0.
-
-**Example using environment variables**
-```text
-export BIGCHAINDB_STATSD_HOST="http://monitor.monitors-r-us.io"
-export BIGCHAINDB_STATSD_PORT=8125
-export BIGCHAINDB_STATSD_RATE=0.01
-```
-
-**Example config file snippet: the default**
-```js
-"statsd": {"host": "localhost", "port": 8125, "rate": 0.01}
 ```
 
 ## backlog_reassign_delay

@@ -12,12 +12,14 @@
 # To better understand the /etc/fstab fields/columns, see:
 # http://man7.org/linux/man-pages/man5/fstab.5.html
 # https://tinyurl.com/jmmsyon = the soure code of the mount module
+# Note: It seems the "nobootwait" option is gone in Ubuntu 16.04. See
+# https://askubuntu.com/questions/786928/ubuntu-16-04-fstab-fails-with-nobootwait
 - name: Ensure /data dir exists and is mounted + update /etc/fstab
   mount:
     name=/data
     src=/dev/xvdp
     fstype=ext4
-    opts="defaults,nofail,nobootwait"
+    opts="defaults,nofail"
     dump=0
     passno=2
     state=mounted

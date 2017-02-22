@@ -1,8 +1,8 @@
 # Template: Using Terraform to Provision an Ubuntu Machine on AWS
 
-If you didn't read the introduction to the [cloud deployment starter templates](index.html), please do that now. The main point is that they're not for deploying a production node; they can be used as a starting point.
+If you didn't read the introduction to the [cloud deployment templates](index.html), please do that now. The main point is that they're not for deploying a production node; they can be used as a starting point.
 
-This page explains a way to use [Terraform](https://www.terraform.io/) to provision an Ubuntu machine (i.e. an EC2 instance with Ubuntu 14.04) and other resources on [AWS](https://aws.amazon.com/). That machine can then be used to host a one-machine BigchainDB node.
+This page explains a way to use [Terraform](https://www.terraform.io/) to provision an Ubuntu machine (i.e. an EC2 instance with Ubuntu 16.04) and other resources on [AWS](https://aws.amazon.com/). That machine can then be used to host a one-machine BigchainDB node.
 
 
 ## Install Terraform
@@ -65,7 +65,7 @@ terraform apply
 
 Terraform will report its progress as it provisions all the resources. Once it's done, you can go to the Amazon EC2 web console and see the instance, its security group, its elastic IP, and its attached storage volumes (one for the root directory and one for RethinkDB storage).
 
-At this point, there is no software installed on the instance except for Ubuntu 14.04 and whatever else came with the Amazon Machine Image (AMI) specified in the Terraform configuration (files).
+At this point, there is no software installed on the instance except for Ubuntu 16.04 and whatever else came with the Amazon Machine Image (AMI) specified in the Terraform configuration (files).
 
 The next step is to install, configure and run all the necessary software for a BigchainDB node. You could use [our example Ansible playbook](template-ansible.html) to do that.
 

@@ -7,7 +7,7 @@ pip -V
 
 If it says that `pip` isn't installed, or it says `pip` is associated with a Python version less than 3.4, then you must install a `pip` version associated with Python 3.4+. In the following instructions, we call it `pip3` but you may be able to use `pip` if that refers to the same thing. See [the `pip` installation instructions](https://pip.pypa.io/en/stable/installing/).
 
-On Ubuntu 14.04, we found that this works:
+On Ubuntu 16.04, we found that this works:
 ```text
 sudo apt-get install python3-pip
 ```

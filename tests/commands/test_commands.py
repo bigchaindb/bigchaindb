@@ -1,6 +1,6 @@
 import json
 from unittest.mock import Mock, patch
-from argparse import Namespace
+from argparse import Namespace, ArgumentTypeError
 import copy
 
 import pytest
@@ -12,7 +12,8 @@ def test_make_sure_we_dont_remove_any_command():
 
     parser = create_parser()
 
-    assert parser.parse_args(['configure']).command
+    assert parser.parse_args(['configure', 'rethinkdb']).command
+    assert parser.parse_args(['configure', 'mongodb']).command
     assert parser.parse_args(['show-config']).command
     assert parser.parse_args(['export-my-pubkey']).command
     assert parser.parse_args(['init']).command
@@ -21,6 +22,8 @@ def test_make_sure_we_dont_remove_any_command():
     assert parser.parse_args(['set-shards', '1']).command
     assert parser.parse_args(['set-replicas', '1']).command
     assert parser.parse_args(['load']).command
+    assert parser.parse_args(['add-replicas', 'localhost:27017']).command
+    assert parser.parse_args(['remove-replicas', 'localhost:27017']).command
 
 
 def test_start_raises_if_command_not_implemented():
@@ -31,8 +34,8 @@ def test_start_raises_if_command_not_implemented():
 
     with pytest.raises(NotImplementedError):
         # Will raise because `scope`, the third parameter,
-        # doesn't contain the function `run_configure`
-        utils.start(parser, ['configure'], {})
+        # doesn't contain the function `run_start`
+        utils.start(parser, ['start'], {})
 
 
 def test_start_raises_if_no_arguments_given():
@@ -204,7 +207,7 @@ def test_run_configure_when_config_does_not_exist(monkeypatch,
     from bigchaindb.commands.bigchain import run_configure
     monkeypatch.setattr('os.path.exists', lambda path: False)
     monkeypatch.setattr('builtins.input', lambda: '\n')
-    args = Namespace(config='foo', yes=True)
+    args = Namespace(config='foo', backend='rethinkdb', yes=True)
     return_value = run_configure(args)
     assert return_value is None
 
@@ -226,6 +229,36 @@ def test_run_configure_when_config_does_exist(monkeypatch,
     args = Namespace(config='foo', yes=None)
     run_configure(args)
     assert value == {}
+
+
+@pytest.mark.parametrize('backend', (
+    'rethinkdb',
+    'mongodb',
+))
+def test_run_configure_with_backend(backend, monkeypatch, mock_write_config):
+    import bigchaindb
+    from bigchaindb.commands.bigchain import run_configure
+
+    value = {}
+
+    def mock_write_config(new_config, filename=None):
+        value['return'] = new_config
+
+    monkeypatch.setattr('os.path.exists', lambda path: False)
+    monkeypatch.setattr('builtins.input', lambda: '\n')
+    monkeypatch.setattr('bigchaindb.config_utils.write_config',
+                        mock_write_config)
+
+    args = Namespace(config='foo', backend=backend, yes=True)
+    expected_config = bigchaindb.config
+    run_configure(args)
+
+    # update the expected config with the correct backend and keypair
+    backend_conf = getattr(bigchaindb, '_database_' + backend)
+    expected_config.update({'database': backend_conf,
+                            'keypair': value['return']['keypair']})
+
+    assert value['return'] == expected_config
 
 
 @patch('bigchaindb.common.crypto.generate_key_pair',
@@ -345,3 +378,73 @@ def test_calling_main(start_mock, base_parser_mock, parse_args_mock,
                                                'distributed equally to all '
                                                'the processes')
     assert start_mock.called is True
+
+
+@pytest.mark.usefixtures('ignore_local_config_file')
+@patch('bigchaindb.commands.bigchain.add_replicas')
+def test_run_add_replicas(mock_add_replicas):
+    from bigchaindb.commands.bigchain import run_add_replicas
+    from bigchaindb.backend.exceptions import OperationError
+
+    args = Namespace(config=None, replicas=['localhost:27017'])
+
+    # test add_replicas no raises
+    mock_add_replicas.return_value = None
+    assert run_add_replicas(args) is None
+    assert mock_add_replicas.call_count == 1
+    mock_add_replicas.reset_mock()
+
+    # test add_replicas with `OperationError`
+    mock_add_replicas.side_effect = OperationError()
+    assert run_add_replicas(args) is None
+    assert mock_add_replicas.call_count == 1
+    mock_add_replicas.reset_mock()
+
+    # test add_replicas with `NotImplementedError`
+    mock_add_replicas.side_effect = NotImplementedError()
+    assert run_add_replicas(args) is None
+    assert mock_add_replicas.call_count == 1
+    mock_add_replicas.reset_mock()
+
+
+@pytest.mark.usefixtures('ignore_local_config_file')
+@patch('bigchaindb.commands.bigchain.remove_replicas')
+def test_run_remove_replicas(mock_remove_replicas):
+    from bigchaindb.commands.bigchain import run_remove_replicas
+    from bigchaindb.backend.exceptions import OperationError
+
+    args = Namespace(config=None, replicas=['localhost:27017'])
+
+    # test add_replicas no raises
+    mock_remove_replicas.return_value = None
+    assert run_remove_replicas(args) is None
+    assert mock_remove_replicas.call_count == 1
+    mock_remove_replicas.reset_mock()
+
+    # test add_replicas with `OperationError`
+    mock_remove_replicas.side_effect = OperationError()
+    assert run_remove_replicas(args) is None
+    assert mock_remove_replicas.call_count == 1
+    mock_remove_replicas.reset_mock()
+
+    # test add_replicas with `NotImplementedError`
+    mock_remove_replicas.side_effect = NotImplementedError()
+    assert run_remove_replicas(args) is None
+    assert mock_remove_replicas.call_count == 1
+    mock_remove_replicas.reset_mock()
+
+
+def test_mongodb_host_type():
+    from bigchaindb.commands.utils import mongodb_host
+
+    # bad port provided
+    with pytest.raises(ArgumentTypeError):
+        mongodb_host('localhost:11111111111')
+
+    # no port information provided
+    with pytest.raises(ArgumentTypeError):
+        mongodb_host('localhost')
+
+    # bad host provided
+    with pytest.raises(ArgumentTypeError):
+        mongodb_host(':27017')

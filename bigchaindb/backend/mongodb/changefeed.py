@@ -2,12 +2,12 @@ import logging
 import time
 
 import pymongo
-from pymongo import errors
 
 from bigchaindb import backend
 from bigchaindb.backend.changefeed import ChangeFeed
 from bigchaindb.backend.utils import module_dispatch_registrar
 from bigchaindb.backend.mongodb.connection import MongoDBConnection
+from bigchaindb.backend.exceptions import BackendError
 
 
 logger = logging.getLogger(__name__)
@@ -27,12 +27,16 @@ class MongoDBChangeFeed(ChangeFeed):
 
         while True:
             try:
+                # XXX: hack to force reconnection. Why? Because the cursor
+                # in `run_changefeed` does not run in the context of a
+                # Connection object, so if the connection is lost we need
+                # to manually reset the connection to None.
+                # See #1154
+                self.connection.connection = None
                 self.run_changefeed()
                 break
-            except (errors.ConnectionFailure, errors.OperationFailure,
-                    errors.AutoReconnect,
-                    errors.ServerSelectionTimeoutError) as exc:
-                logger.exception(exc)
+            except (BackendError, pymongo.errors.ConnectionFailure):
+                logger.exception('Error connecting to the database, retrying')
                 time.sleep(1)
 
     def run_changefeed(self):
@@ -41,17 +45,19 @@ class MongoDBChangeFeed(ChangeFeed):
         namespace = '{}.{}'.format(dbname, table)
         # last timestamp in the oplog. We only care for operations happening
         # in the future.
-        last_ts = self.connection.conn.local.oplog.rs.find()\
-                      .sort('$natural', pymongo.DESCENDING).limit(1)\
-                      .next()['ts']
+        last_ts = self.connection.run(
+            self.connection.query().local.oplog.rs.find()
+            .sort('$natural', pymongo.DESCENDING).limit(1)
+            .next()['ts'])
         # tailable cursor. A tailable cursor will remain open even after the
         # last result was returned. ``TAILABLE_AWAIT`` will block for some
         # timeout after the last result was returned. If no result is received
         # in the meantime it will raise a StopIteration excetiption.
-        cursor = self.connection.conn.local.oplog.rs.find(
-            {'ns': namespace, 'ts': {'$gt': last_ts}},
-            cursor_type=pymongo.CursorType.TAILABLE_AWAIT
-        )
+        cursor = self.connection.run(
+            self.connection.query().local.oplog.rs.find(
+                {'ns': namespace, 'ts': {'$gt': last_ts}},
+                cursor_type=pymongo.CursorType.TAILABLE_AWAIT
+            ))
 
         while cursor.alive:
             try:
@@ -79,10 +85,12 @@ class MongoDBChangeFeed(ChangeFeed):
                 # document itself. So here we first read the document
                 # and then return it.
                 doc = self.connection.conn[dbname][table].find_one(
-                    {'_id': record['o2']},
+                    {'_id': record['o2']['_id']},
                     {'_id': False}
                 )
                 self.outqueue.put(doc)
+
+            logger.debug('Record in changefeed: %s:%s', table, record['op'])
 
 
 @register_changefeed(MongoDBConnection)
