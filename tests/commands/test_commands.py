@@ -132,8 +132,10 @@ def test_bigchain_export_my_pubkey_when_pubkey_set(capsys, monkeypatch):
     _, _ = capsys.readouterr()  # has the effect of clearing capsys
     run_export_my_pubkey(args)
     out, err = capsys.readouterr()
-    assert out == config['keypair']['public'] + '\n'
-    assert out == 'Charlie_Bucket\n'
+    lines = out.splitlines()
+    assert config['keypair']['public'] in lines
+    assert 'Charlie_Bucket' in lines
+    assert 'bigchaindb args = {}'.format(args) in lines
 
 
 def test_bigchain_export_my_pubkey_when_pubkey_not_set(monkeypatch):
