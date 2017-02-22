@@ -51,6 +51,11 @@ Let's analyze that command:
  command) inside the container, with the `-y` option to automatically use all the default config values
 * `mongodb` or `rethinkdb` specifies the database backend to use with bigchaindb
 
+To ensure that BigchainDB connects to the backend database bound to the virtual
+interface `172.17.0.1`, you must edit the BigchainDB configuration file
+(`~/bigchaindb_docker/.bigchaindb`) and change database.host from `localhost`
+to `172.17.0.1`.
+
 
 ### Run the backend database
 From v0.9 onwards, you can run either RethinkDB or MongoDB.
@@ -89,10 +94,6 @@ docker run \
 ```
 
 ### Run BigchainDB
-
-To ensure that BigchainDB connects to the backend database bound to the virtual
-interface `172.17.0.1`, we modify the BigchainDB config file database.host parameter from
-`localhost` to `172.17.0.1` before starting the BigchainDB container.
 
 ```text
 docker run \
