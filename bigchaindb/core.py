@@ -178,6 +178,22 @@ class Bigchain(object):
                 exceptions.TransactionNotInValidBlock, exceptions.AmountError):
             return False
 
+    def is_new_transaction(self, txid, exclude_block_id=None):
+        """
+        Return True if the transaction does not exist in any
+        VALID or UNDECIDED block. Return False otherwise.
+
+        Args:
+            txid (str): Transaction ID
+            exclude_block_id (str): Exclude block from search
+        """
+        block_statuses = self.get_blocks_status_containing_tx(txid)
+        block_statuses.pop(exclude_block_id, None)
+        for status in block_statuses.values():
+            if status != self.BLOCK_INVALID:
+                return False
+        return True
+
     def get_block(self, block_id, include_status=False):
         """Get the block with the specified `block_id` (and optionally its status)
 
