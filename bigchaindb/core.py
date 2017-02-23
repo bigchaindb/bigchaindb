@@ -486,12 +486,11 @@ class Bigchain(object):
         """
         return self.consensus.validate_block(self, block)
 
-    def has_previous_vote(self, block_id, voters):
+    def has_previous_vote(self, block_id):
         """Check for previous votes from this node
 
         Args:
             block_id (str): the id of the block to check
-            voters (list(str)): the voters of the block to check
 
         Returns:
             bool: :const:`True` if this block already has a
@@ -507,15 +506,14 @@ class Bigchain(object):
         if len(votes) > 1:
             raise exceptions.MultipleVotesError('Block {block_id} has {n_votes} votes from public key {me}'
                                                 .format(block_id=block_id, n_votes=str(len(votes)), me=self.me))
-        has_previous_vote = False
-        if votes:
-            if utils.verify_vote_signature(voters, votes[0]):
-                has_previous_vote = True
-            else:
-                raise exceptions.ImproperVoteError('Block {block_id} already has an incorrectly signed vote '
-                                                   'from public key {me}'.format(block_id=block_id, me=self.me))
+        if len(votes) < 1:
+            return False
 
-        return has_previous_vote
+        if self.consensus.voting.verify_vote_signature(votes[0]):
+            return True
+        else:
+            raise exceptions.ImproperVoteError('Block {block_id} already has an incorrectly signed vote '
+                                               'from public key {me}'.format(block_id=block_id, me=self.me))
 
     def write_block(self, block):
         """Write a block to bigchain.
@@ -618,12 +616,17 @@ class Bigchain(object):
         # XXX: should this return instaces of Block?
         return backend.query.get_unvoted_blocks(self.connection, self.me)
 
-    def block_election_status(self, block):
-        """Tally the votes on a block, and return the status:
-           valid, invalid, or undecided."""
+    def block_election(self, block):
+        if type(block) != dict:
+            block = block.to_dict()
         votes = list(backend.query.get_votes_by_block_id(self.connection,
-                                                         block.id))
+                                                         block['id']))
         keyring = self.nodes_except_me + [self.me]
         result = self.consensus.voting.block_election(block, votes, keyring)
         # TODO: logging
-        return result['status']
+        return result
+
+    def block_election_status(self, block):
+        """Tally the votes on a block, and return the status:
+           valid, invalid, or undecided."""
+        return self.block_election(block)['status']

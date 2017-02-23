@@ -96,8 +96,10 @@ def test_check_for_quorum_valid(b, user_pk):
         for key_pair in key_pairs
     ]
 
+    keyring = e.bigchain.nodes_except_me = [key_pair[1] for key_pair in key_pairs]
+
     # add voters to block and write
-    test_block.voters = [key_pair[1] for key_pair in key_pairs]
+    test_block.voters = keyring
     test_block = test_block.sign(b.me_private)
     b.write_block(test_block)
 

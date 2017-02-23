@@ -28,11 +28,12 @@ class Voting:
         """
         Calculate the election status of a block.
         """
-        eligible_voters = set(block['voters']) & set(keyring)
+        eligible_voters = set(block['block']['voters']) & set(keyring)
         eligible_votes, ineligible_votes = \
             cls.partition_eligible_votes(votes, eligible_voters)
+        n_voters = len(eligible_voters)
         results = cls.count_votes(eligible_votes)
-        results['status'] = cls.decide_votes(results['counts'])
+        results['status'] = cls.decide_votes(n_voters, **results['counts'])
         results['ineligible'] = ineligible_votes
         return results
 
@@ -100,11 +101,13 @@ class Voting:
             else:
                 n_invalid += 1
 
+        n_prev = prev_blocks.most_common()[0][1] if prev_blocks else 0
+
         return {
             'counts': {
                 'n_valid': n_valid,
                 'n_invalid': n_invalid,
-                'n_agree_prev_block': prev_blocks.most_common()[0][1],
+                'n_agree_prev_block': n_prev,
             },
             'cheat': cheat,
             'malformed': malformed,
