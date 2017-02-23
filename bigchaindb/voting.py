@@ -7,6 +7,11 @@ to test.
 import collections
 
 
+VALID = 'valid'
+INVALID = 'invalid'
+UNDECIDED = 'undecided'
+
+
 def partition_eligible_votes(votes, eligible_voters, verify_vote_signature):
     """
     Filter votes from unknown nodes or nodes that are not listed on
@@ -92,8 +97,3 @@ def decide_votes(n_voters, n_valid, n_invalid, n_agree_prev_block):
             return VALID
         return INVALID
     return UNDECIDED
-
-
-INVALID = 'invalid'
-VALID = TX_VALID = 'valid'
-UNDECIDED = TX_UNDECIDED = 'undecided'

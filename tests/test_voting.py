@@ -5,6 +5,10 @@ from bigchaindb.voting import (count_votes, partition_eligible_votes,
                                decide_votes, INVALID, VALID, UNDECIDED)
 
 
+################################################################################
+# Tests for checking vote eligibility
+
+
 def test_partition_eligible_votes():
     nodes = list(map(Bigchain, 'abc'))
     votes = [n.vote('block', 'a', True) for n in nodes]
@@ -24,6 +28,10 @@ def test_count_votes():
         'n_invalid': 0,
         'n_agree_prev_block': 3
     }, {})
+
+
+################################################################################
+# Tests for vote decision making
 
 
 DECISION_TESTS = [dict(
@@ -59,3 +67,12 @@ def test_decide_votes_invalid(kwargs):
     assert decide_votes(**kwargs) == INVALID
     kwargs['n_invalid'] -= 1
     assert decide_votes(**kwargs) == UNDECIDED
+
+
+def test_decide_votes_checks_arguments():
+    with pytest.raises(ValueError):
+        decide_votes(n_voters=1, n_valid=2, n_invalid=0, n_agree_prev_block=0)
+    with pytest.raises(ValueError):
+        decide_votes(n_voters=1, n_valid=0, n_invalid=2, n_agree_prev_block=0)
+    with pytest.raises(ValueError):
+        decide_votes(n_voters=1, n_valid=0, n_invalid=0, n_agree_prev_block=2)
