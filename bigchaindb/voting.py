@@ -170,5 +170,5 @@ class Voting:
         try:
             validate_vote_schema(vote)
             return True
-        except SchemaValidationError:
+        except SchemaValidationError as e:
             return False

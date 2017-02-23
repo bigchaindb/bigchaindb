@@ -106,52 +106,30 @@ def test_decide_votes_checks_arguments():
                             n_agree_prev_block=2)
 
 
+################################################################################
+# Tests for vote signature
+
+
+def test_verify_vote_signature_passes(b):
+    vote = b.vote('block', 'a', True)
+    assert Voting.verify_vote_signature(vote)
+
+
+def test_verify_vote_signature_fails(b):
+    vote = b.vote('block', 'a', True)
+    vote['signature'] = ''
+    assert not Voting.verify_vote_signature(vote)
+
 
 ################################################################################
-
-# DEBT
-
+# Tests for vote schema
 
 
-def _test_verify_vote_passes(b, structurally_valid_vote):
-    from bigchaindb.consensus import BaseConsensusRules
-    from bigchaindb.common import crypto
-    from bigchaindb.common.utils import serialize
-    vote_body = structurally_valid_vote['vote']
-    vote_data = serialize(vote_body)
-    signature = crypto.PrivateKey(b.me_private).sign(vote_data.encode())
-    vote_signed = {
-        'node_pubkey': b.me,
-        'signature': signature.decode(),
-        'vote': vote_body
-    }
-    assert BaseConsensusRules.verify_vote([b.me], vote_signed)
-
-
-def _test_verify_vote_fails_signature(b, structurally_valid_vote):
-    from bigchaindb.consensus import BaseConsensusRules
-    vote_body = structurally_valid_vote['vote']
-    vote_signed = {
-        'node_pubkey': b.me,
-        'signature': 'a' * 86,
-        'vote': vote_body
-    }
-    assert not BaseConsensusRules.verify_vote([b.me], vote_signed)
-
-
-def _test_verify_vote_fails_schema(b):
-    from bigchaindb.consensus import BaseConsensusRules
-    from bigchaindb.common import crypto
-    from bigchaindb.common.utils import serialize
-    vote_body = {}
-    vote_data = serialize(vote_body)
-    signature = crypto.PrivateKey(b.me_private).sign(vote_data.encode())
-    vote_signed = {
-        'node_pubkey': b.me,
-        'signature': signature.decode(),
-        'vote': vote_body
-    }
-    assert not BaseConsensusRules.verify_vote([b.me], vote_signed)
+def test_verify_vote_schema(b):
+    vote = b.vote('b' * 64, 'a' * 64, True)
+    assert Voting.verify_vote_schema(vote)
+    vote = b.vote('b', 'a', True)
+    assert not Voting.verify_vote_schema(vote)
 
 
 """
