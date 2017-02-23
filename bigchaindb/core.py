@@ -56,10 +56,18 @@ class Bigchain(object):
         self.me = public_key or bigchaindb.config['keypair']['public']
         self.me_private = private_key or bigchaindb.config['keypair']['private']
         self.nodes_except_me = keyring or bigchaindb.config['keyring']
+
         if backlog_reassign_delay is None:
             backlog_reassign_delay = bigchaindb.config['backlog_reassign_delay']
         self.backlog_reassign_delay = backlog_reassign_delay
-        self.consensus = BaseConsensusRules
+
+        consensusPlugin = bigchaindb.config.get('consensus_plugin')
+
+        if consensusPlugin:
+            self.consensus = config_utils.load_consensus_plugin(consensusPlugin)
+        else:
+            self.consensus = BaseConsensusRules
+
         self.connection = connection if connection else backend.connect(**bigchaindb.config['database'])
         if not self.me or not self.me_private:
             raise exceptions.KeypairNotFoundException()
