@@ -41,7 +41,24 @@ config = {
         'private': None,
     },
     'keyring': [],
-    'backlog_reassign_delay': 120
+    'backlog_reassign_delay': 120,
+    'logging': {
+        'level': 'INFO',
+        'granular_levels': {
+            'bichaindb.backend': 'INFO',
+            'bichaindb.commands': 'INFO',
+            'bichaindb.common': 'INFO',
+            'bichaindb.log': 'INFO',
+            'bichaindb.pipelines': 'INFO',
+            'bichaindb.web': 'INFO',
+            'bichaindb.config_utils': 'INFO',
+            'bichaindb.consensus': 'INFO',
+            'bichaindb.core': 'INFO',
+            'bichaindb.models': 'INFO',
+            'bichaindb.processes': 'INFO',
+            'bichaindb.utils': 'INFO',
+        },
+    },
 }
 
 # We need to maintain a backup copy of the original config dict in case
