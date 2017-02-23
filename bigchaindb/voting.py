@@ -49,12 +49,11 @@ class Voting:
             voter_eligible = vote.get('node_pubkey') in eligible_voters
             if voter_eligible:
                 try:
-                    cls.verify_vote_signature(vote)
+                    if cls.verify_vote_signature(vote):
+                        eligible.append(vote)
+                        continue
                 except ValueError:
                     pass
-                else:
-                    eligible.append(vote)
-                    continue
             ineligible.append(vote)
 
         return eligible, ineligible

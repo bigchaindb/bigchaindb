@@ -9,15 +9,26 @@ from bigchaindb.voting import Voting, INVALID, VALID, UNDECIDED
 # Tests for checking vote eligibility
 
 
-@patch('bigchaindb.voting.Voting.verify_vote_signature')
-def test_partition_eligible_votes(_):
-    nodes = list(map(Bigchain, 'abc'))
-    votes = [n.vote('block', 'a', True) for n in nodes]
+def test_partition_eligible_votes():
+    class TestVoting(Voting):
+        @classmethod
+        def verify_vote_signature(cls, vote):
+            if vote['node_pubkey'] == 'invalid sig':
+                return False
+            if vote['node_pubkey'] == 'value error':
+                raise ValueError()
+            return True
 
-    el, inel = Voting.partition_eligible_votes(votes, 'abc')
+    voters = ['valid', 'invalid sig', 'value error', 'not in set']
+    votes = [{'node_pubkey': k} for k in voters]
 
-    assert el == votes
-    assert inel == []
+    el, inel = TestVoting.partition_eligible_votes(votes, voters[:-1])
+    assert el == [votes[0]]
+    assert inel == votes[1:]
+
+
+################################################################################
+# Test vote counting
 
 
 @patch('bigchaindb.voting.Voting.verify_vote_schema')
