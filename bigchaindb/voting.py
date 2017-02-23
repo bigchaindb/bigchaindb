@@ -94,8 +94,8 @@ class Voting:
                 n_invalid += 1
                 continue
 
-            prev_blocks[vote['vote']['previous_block']] += 1
             if vote['vote']['is_block_valid']:
+                prev_blocks[vote['vote']['previous_block']] += 1
                 n_valid += 1
             else:
                 n_invalid += 1

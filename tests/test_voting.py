@@ -31,16 +31,27 @@ def test_partition_eligible_votes():
 # Test vote counting
 
 
-@patch('bigchaindb.voting.Voting.verify_vote_schema')
-def test_count_votes(_):
-    nodes = list(map(Bigchain, 'abc'))
+def test_count_votes():
+    class TestVoting(Voting):
+        @classmethod
+        def verify_vote_schema(cls, vote):
+            return vote['node_pubkey'] != 'malformed'
 
-    votes = [n.vote('block', 'a', True) for n in nodes]
+    voters = ['cheat', 'cheat', 'says invalid', 'malformed']
+    voters += ['kosher' + str(i) for i in range(10)]
 
-    assert Voting.count_votes(votes)['counts'] == {
-        'n_valid': 3,
-        'n_invalid': 0,
-        'n_agree_prev_block': 3
+    votes = [Bigchain(v).vote('block', 'a', True) for v in voters]
+    votes[2]['vote']['is_block_valid'] = False
+    votes[-1]['vote']['previous_block'] = 'z'
+
+    assert TestVoting.count_votes(votes) == {
+        'counts': {
+            'n_valid': 10,
+            'n_invalid': 3,
+            'n_agree_prev_block': 9
+        },
+        'cheat': [votes[:2]],
+        'malformed': [votes[3]],
     }
 
 
