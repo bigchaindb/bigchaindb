@@ -1,6 +1,5 @@
 import time
 import logging
-from itertools import repeat
 
 import pymongo
 
@@ -15,46 +14,20 @@ from bigchaindb.backend.connection import Connection
 logger = logging.getLogger(__name__)
 
 
-# TODO: waiting for #1082 to be merged
-#       to move this constants in the configuration.
-
-CONNECTION_TIMEOUT = 4000  # in milliseconds
-MAX_RETRIES = 3  # number of tries before giving up, if 0 then try forever
-
-
 class MongoDBConnection(Connection):
 
-    def __init__(self, host=None, port=None, dbname=None,
-                 connection_timeout=None, max_tries=None,
-                 replicaset=None):
+    def __init__(self, replicaset=None, **kwargs):
         """Create a new Connection instance.
 
         Args:
-            host (str, optional): the host to connect to.
-            port (int, optional): the port to connect to.
-            dbname (str, optional): the database to use.
-            connection_timeout (int, optional): the milliseconds to wait
-                until timing out the database connection attempt.
-            max_tries (int, optional): how many tries before giving up,
-                if 0 then try forever.
             replicaset (str, optional): the name of the replica set to
                                         connect to.
+            **kwargs: arbitrary keyword arguments provided by the
+                configuration's ``database`` settings
         """
 
-        self.host = host or bigchaindb.config['database']['host']
-        self.port = port or bigchaindb.config['database']['port']
+        super().__init__(**kwargs)
         self.replicaset = replicaset or bigchaindb.config['database']['replicaset']
-        self.dbname = dbname or bigchaindb.config['database']['name']
-        self.connection_timeout = connection_timeout if connection_timeout is not None else CONNECTION_TIMEOUT
-        self.max_tries = max_tries if max_tries is not None else MAX_RETRIES
-        self.max_tries_counter = range(self.max_tries) if self.max_tries != 0 else repeat(0)
-        self.connection = None
-
-    @property
-    def conn(self):
-        if self.connection is None:
-            self._connect()
-        return self.connection
 
     @property
     def db(self):
@@ -94,34 +67,23 @@ class MongoDBConnection(Connection):
                 fails.
         """
 
-        attempt = 0
-        for i in self.max_tries_counter:
-            attempt += 1
+        try:
+            # we should only return a connection if the replica set is
+            # initialized. initialize_replica_set will check if the
+            # replica set is initialized else it will initialize it.
+            initialize_replica_set(self.host, self.port, self.connection_timeout)
 
-            try:
-                # we should only return a connection if the replica set is
-                # initialized. initialize_replica_set will check if the
-                # replica set is initialized else it will initialize it.
-                initialize_replica_set(self.host, self.port, self.connection_timeout)
+            # FYI: this might raise a `ServerSelectionTimeoutError`,
+            # that is a subclass of `ConnectionFailure`.
+            return pymongo.MongoClient(self.host,
+                                       self.port,
+                                       replicaset=self.replicaset,
+                                       serverselectiontimeoutms=self.connection_timeout)
 
-                # FYI: this might raise a `ServerSelectionTimeoutError`,
-                # that is a subclass of `ConnectionFailure`.
-                self.connection = pymongo.MongoClient(self.host,
-                                                      self.port,
-                                                      replicaset=self.replicaset,
-                                                      serverselectiontimeoutms=self.connection_timeout)
-
-            # `initialize_replica_set` might raise `ConnectionFailure` or `OperationFailure`.
-            except (pymongo.errors.ConnectionFailure,
-                    pymongo.errors.OperationFailure) as exc:
-                logger.warning('Attempt %s/%s. Connection to %s:%s failed after %sms.',
-                               attempt, self.max_tries if self.max_tries != 0 else '∞',
-                               self.host, self.port, self.connection_timeout)
-                if attempt == self.max_tries:
-                    logger.critical('Cannot connect to the Database. Giving up.')
-                    raise ConnectionError() from exc
-            else:
-                break
+        # `initialize_replica_set` might raise `ConnectionFailure` or `OperationFailure`.
+        except (pymongo.errors.ConnectionFailure,
+                pymongo.errors.OperationFailure) as exc:
+            raise ConnectionError() from exc
 
 
 def initialize_replica_set(host, port, connection_timeout):
@@ -166,9 +128,10 @@ def _check_replica_set(conn):
             replSet option.
     """
     options = conn.admin.command('getCmdLineOpts')
+    print(options)
     try:
         repl_opts = options['parsed']['replication']
-        repl_set_name = repl_opts.get('replSetName', None) or repl_opts['replSet']
+        repl_set_name = repl_opts.get('replSetName', repl_opts.get('replSet'))
     except KeyError:
         raise ConfigurationError('mongod was not started with'
                                  ' the replSet option.')

@@ -10,6 +10,8 @@ def config(request, monkeypatch):
             'port': 28015,
             'name': 'bigchain',
             'replicaset': 'bigchain-rs',
+            'connection_timeout': 5000,
+            'max_tries': 3
         },
         'keypair': {
             'public': 'pubkey',
