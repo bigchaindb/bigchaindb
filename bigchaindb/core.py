@@ -11,6 +11,7 @@ from bigchaindb.common.transaction import TransactionLink
 import bigchaindb
 
 from bigchaindb import backend, config_utils, utils
+from bigchaindb.backend import exceptions as backend_exceptions
 from bigchaindb.consensus import BaseConsensusRules
 from bigchaindb.models import Block, Transaction
 
@@ -308,11 +309,10 @@ class Bigchain(object):
             if list(validity.values()).count(Bigchain.BLOCK_VALID) > 1:
                 block_ids = str([block for block in validity
                                  if validity[block] == Bigchain.BLOCK_VALID])
-                raise exceptions.DoubleSpend('Transaction {tx} is present in '
-                                             'multiple valid blocks: '
-                                             '{block_ids}'
-                                             .format(tx=txid,
-                                                     block_ids=block_ids))
+                raise backend_exceptions.BigchainDBCritical(
+                    'Transaction {tx} is present in '
+                    'multiple valid blocks: {block_ids}'
+                    .format(tx=txid, block_ids=block_ids))
 
             return validity
 
