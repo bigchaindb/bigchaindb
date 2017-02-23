@@ -1,9 +1,6 @@
 import random
-import math
-import collections
 from time import time
 
-from itertools import compress
 from bigchaindb.common import crypto, exceptions
 from bigchaindb.common.utils import gen_timestamp, serialize
 from bigchaindb.common.transaction import TransactionLink
@@ -203,8 +200,7 @@ class Bigchain(object):
 
         if include_status:
             if block:
-                status = self.block_election_status(block_id,
-                                                    block['block']['voters'])
+                status = self.block_election_status(block)
             return block, status
         else:
             return block
@@ -305,12 +301,8 @@ class Bigchain(object):
         blocks = backend.query.get_blocks_status_from_transaction(self.connection, txid)
         if blocks:
             # Determine the election status of each block
-            validity = {
-                block['id']: self.block_election_status(
-                    block['id'],
-                    block['block']['voters']
-                ) for block in blocks
-            }
+            validity = {block['id']: self.block_election_status(block)
+                        for block in blocks}
 
             # NOTE: If there are multiple valid blocks with this transaction,
             # something has gone wrong
@@ -626,69 +618,12 @@ class Bigchain(object):
         # XXX: should this return instaces of Block?
         return backend.query.get_unvoted_blocks(self.connection, self.me)
 
-    def block_election_status(self, block_id, voters):
-        """Tally the votes on a block, and return the status: valid, invalid, or undecided."""
-
-        votes = list(backend.query.get_votes_by_block_id(self.connection, block_id))
-        n_voters = len(voters)
-
-        voter_counts = collections.Counter([vote['node_pubkey'] for vote in votes])
-        for node in voter_counts:
-            if voter_counts[node] > 1:
-                raise exceptions.MultipleVotesError(
-                    'Block {block_id} has multiple votes ({n_votes}) from voting node {node_id}'
-                    .format(block_id=block_id, n_votes=str(voter_counts[node]), node_id=node))
-
-        if len(votes) > n_voters:
-            raise exceptions.MultipleVotesError('Block {block_id} has {n_votes} votes cast, but only {n_voters} voters'
-                                                .format(block_id=block_id, n_votes=str(len(votes)),
-                                                        n_voters=str(n_voters)))
-
-        # vote_cast is the list of votes e.g. [True, True, False]
-        vote_cast = [vote['vote']['is_block_valid'] for vote in votes]
-        # prev_block are the ids of the nominal prev blocks e.g.
-        # ['block1_id', 'block1_id', 'block2_id']
-        prev_block = [vote['vote']['previous_block'] for vote in votes]
-        # vote_validity checks whether a vote is valid
-        # or invalid, e.g. [False, True, True]
-        vote_validity = [self.consensus.verify_vote(voters, vote) for vote in votes]
-
-        # element-wise product of stated vote and validity of vote
-        # vote_cast = [True, True, False] and
-        # vote_validity = [False, True, True] gives
-        # [True, False]
-        # Only the correctly signed votes are tallied.
-        vote_list = list(compress(vote_cast, vote_validity))
-
-        # Total the votes. Here, valid and invalid refer
-        # to the vote cast, not whether the vote itself
-        # is valid or invalid.
-        n_valid_votes = sum(vote_list)
-        n_invalid_votes = len(vote_cast) - n_valid_votes
-
-        # The use of ceiling and floor is to account for the case of an
-        # even number of voters where half the voters have voted 'invalid'
-        # and half 'valid'. In this case, the block should be marked invalid
-        # to avoid a tie. In the case of an odd number of voters this is not
-        # relevant, since one side must be a majority.
-        if n_invalid_votes >= math.ceil(n_voters / 2):
-            return Bigchain.BLOCK_INVALID
-        elif n_valid_votes > math.floor(n_voters / 2):
-            # The block could be valid, but we still need to check if votes
-            # agree on the previous block.
-            #
-            # First, only consider blocks with legitimate votes
-            prev_block_list = list(compress(prev_block, vote_validity))
-            # Next, only consider the blocks with 'yes' votes
-            prev_block_valid_list = list(compress(prev_block_list, vote_list))
-            counts = collections.Counter(prev_block_valid_list)
-            # Make sure the majority vote agrees on previous node.
-            # The majority vote must be the most common, by definition.
-            # If it's not, there is no majority agreement on the previous
-            # block.
-            if counts.most_common()[0][1] > math.floor(n_voters / 2):
-                return Bigchain.BLOCK_VALID
-            else:
-                return Bigchain.BLOCK_INVALID
-        else:
-            return Bigchain.BLOCK_UNDECIDED
+    def block_election_status(self, block):
+        """Tally the votes on a block, and return the status:
+           valid, invalid, or undecided."""
+        votes = list(backend.query.get_votes_by_block_id(self.connection,
+                                                         block.id))
+        keyring = self.nodes_except_me + [self.me]
+        result = self.consensus.voting.block_election(block, votes, keyring)
+        # TODO: logging
+        return result['status']
