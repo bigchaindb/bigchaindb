@@ -80,16 +80,6 @@ def test_get_blocks_status_containing_tx(monkeypatch):
         bigchain.get_blocks_status_containing_tx('txid')
 
 
-def test_has_previous_vote(monkeypatch):
-    from bigchaindb.core import Bigchain
-    monkeypatch.setattr(
-        'bigchaindb.utils.verify_vote_signature', lambda voters, vote: False)
-    bigchain = Bigchain(public_key='pubkey', private_key='privkey')
-    block = {'votes': ({'node_pubkey': 'pubkey'},)}
-    with pytest.raises(Exception):
-        bigchain.has_previous_vote(block)
-
-
 @pytest.mark.parametrize('exists', (True, False))
 def test_transaction_exists(monkeypatch, exists):
     from bigchaindb.core import Bigchain
