@@ -36,7 +36,6 @@ def test_setup_logging_without_config():
     assert root_logger.hasHandlers()
     assert isinstance(root_logger.handlers[0], StreamHandler)
 
-"""
 @pytest.mark.usefixtures('reset_logging_config')
 def test_setup_logging_with_config():
     from bigchaindb.log.setup import setup_logging
@@ -56,4 +55,3 @@ def test_setup_logging_with_config():
     assert bigchaindb_core_logger.level == 10
     assert bigchaindb_core_logger.hasHandlers()
     assert bigchaindb_core_logger.parent == root_logger
-"""

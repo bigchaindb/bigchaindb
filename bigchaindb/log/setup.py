@@ -22,11 +22,11 @@ LOGGING = {
             # 'formatter': 'default',
         },
     },
-    'loggers': {
-        'bigchaindb.pipelines': {
-            'handlers': ['console'],
-        },
-    },
+    #'loggers': {
+    #    'bigchaindb.pipelines': {
+    #        'handlers': ['console'],
+    #    },
+    #},
     'root': {
         'level': 'INFO',
         'handlers': ['console'],
