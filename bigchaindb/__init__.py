@@ -44,20 +44,11 @@ config = {
     'backlog_reassign_delay': 120,
     'logging': {
         'level': 'INFO',
-        'granular_levels': {
-            'bichaindb.backend': 'INFO',
-            'bichaindb.commands': 'INFO',
-            'bichaindb.common': 'INFO',
-            'bichaindb.log': 'INFO',
-            'bichaindb.pipelines': 'INFO',
-            'bichaindb.web': 'INFO',
-            'bichaindb.config_utils': 'INFO',
-            'bichaindb.consensus': 'INFO',
-            'bichaindb.core': 'INFO',
-            'bichaindb.models': 'INFO',
-            'bichaindb.processes': 'INFO',
-            'bichaindb.utils': 'INFO',
-        },
+        # granular levels can be set via a dict, e.g.:
+        # 'granular_levels': {
+        #     'bichaindb.backend': 'INFO',
+        #     'bichaindb.core': 'INFO',
+        # },
     },
 }
 

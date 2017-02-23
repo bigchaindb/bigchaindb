@@ -139,8 +139,12 @@ def test_post_invalid_transaction(client, exc, msg, monkeypatch, caplog):
     assert res.status_code == expected_status_code
     assert (res.json['message'] ==
             'Invalid transaction ({}): {}'.format(exc, msg))
-    assert caplog.records[2].args['status'] == expected_status_code
-    assert caplog.records[2].args['message'] == expected_error_message
+    # assert caplog.records[2].args['status'] == expected_status_code
+    # assert caplog.records[2].args['message'] == expected_error_message
+    assert any(record.args.get('status') == expected_status_code
+               for record in caplog.records)
+    assert any(record.args['message'] == expected_error_message
+               for record in caplog.records)
 
 
 @pytest.mark.bdb
