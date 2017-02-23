@@ -32,7 +32,7 @@ class Voting:
         eligible_votes, ineligible_votes = \
             cls.partition_eligible_votes(votes, eligible_voters)
         results = cls.count_votes(eligible_votes)
-        results['status'] = decide_votes(results['counts'])
+        results['status'] = cls.decide_votes(results['counts'])
         results['ineligible'] = ineligible_votes
         return results
 
@@ -46,10 +46,15 @@ class Voting:
 
         for vote in votes:
             voter_eligible = vote.get('node_pubkey') in eligible_voters
-            if voter_eligible and cls.verify_vote_signature(vote):
-                eligible.append(vote)
-            else:
-                ineligible.append(vote)
+            if voter_eligible:
+                try:
+                    cls.verify_vote_signature(vote)
+                except ValueError:
+                    pass
+                else:
+                    eligible.append(vote)
+                    continue
+            ineligible.append(vote)
 
         return eligible, ineligible
 
@@ -150,10 +155,10 @@ class Voting:
         pk_base58 = vote.get('node_pubkey')
 
         if not (type(signature) == str and type(pk_base58) == str):
-            raise ValueError("Malformed vote: %s" % vote)
+            raise ValueError('Malformed vote: %s' % vote)
 
         public_key = PublicKey(pk_base58)
-        body = serialize(signed_vote['vote']).encode()
+        body = serialize(vote['vote']).encode()
         return public_key.verify(body, signature)
 
     @classmethod
