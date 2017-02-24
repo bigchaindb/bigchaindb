@@ -25,7 +25,6 @@ from bigchaindb.backend.admin import (set_replicas, set_shards, add_replicas,
 from bigchaindb.backend.exceptions import OperationError
 from bigchaindb.commands import utils
 from bigchaindb.commands.utils import configure_bigchaindb, input_on_stderr
-from bigchaindb.log.setup import setup_logging
 
 
 # Note about printing:
@@ -171,9 +170,6 @@ def run_drop(args):
 def run_start(args):
     """Start the processes to run the node"""
     print('BigchainDB Version {}'.format(bigchaindb.__version__))
-
-    # TODO setup logging -- pass logging config, extracted out from main config
-    setup_logging()
 
     logger = logging.getLogger(__name__)
 
