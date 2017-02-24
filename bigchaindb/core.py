@@ -623,7 +623,6 @@ class Bigchain(object):
                                                          block['id']))
         keyring = self.nodes_except_me + [self.me]
         result = self.consensus.voting.block_election(block, votes, keyring)
-        # TODO: logging
         return result
 
     def block_election_status(self, block):

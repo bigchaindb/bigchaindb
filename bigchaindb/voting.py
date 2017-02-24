@@ -34,6 +34,7 @@ class Voting:
             cls.partition_eligible_votes(votes, eligible_voters)
         n_voters = len(eligible_voters)
         results = cls.count_votes(eligible_votes)
+        results['block_id'] = block['id']
         results['status'] = cls.decide_votes(n_voters, **results['counts'])
         results['ineligible'] = ineligible_votes
         return results

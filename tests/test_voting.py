@@ -149,7 +149,7 @@ def test_block_election(b):
             return True
 
     keyring = 'abc'
-    block = {'block': {'voters': 'ab'}}
+    block = {'id': 'xyz', 'block': {'voters': 'ab'}}
     votes = [{
         'node_pubkey': c,
         'vote': {'is_block_valid': True, 'previous_block': 'a'}
@@ -157,6 +157,7 @@ def test_block_election(b):
 
     assert TestVoting.block_election(block, votes, keyring) == {
         'status': VALID,
+        'block_id': 'xyz',
         'counts': {'n_agree_prev_block': 2, 'n_valid': 2, 'n_invalid': 0},
         'ineligible': [votes[-1]],
         'cheat': [],
