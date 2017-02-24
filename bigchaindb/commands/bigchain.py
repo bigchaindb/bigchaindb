@@ -287,16 +287,6 @@ def create_parser():
         description='Control your BigchainDB node.',
         parents=[utils.base_parser])
 
-    parser.add_argument('--dev-start-rethinkdb',
-                        dest='start_rethinkdb',
-                        action='store_true',
-                        help='Run RethinkDB on start')
-
-    parser.add_argument('--dev-allow-temp-keypair',
-                        dest='allow_temp_keypair',
-                        action='store_true',
-                        help='Generate a random keypair on start')
-
     # all the commands are contained in the subparsers object,
     # the command selected by the user will be stored in `args.command`
     # that is used by the `main` function to select which other
@@ -328,8 +318,18 @@ def create_parser():
                           help='Drop the database')
 
     # parser for starting BigchainDB
-    subparsers.add_parser('start',
-                          help='Start BigchainDB')
+    start_parser = subparsers.add_parser('start',
+                                         help='Start BigchainDB')
+
+    start_parser.add_argument('--dev-allow-temp-keypair',
+                              dest='allow_temp_keypair',
+                              action='store_true',
+                              help='Generate a random keypair on start')
+
+    start_parser.add_argument('--dev-start-rethinkdb',
+                              dest='start_rethinkdb',
+                              action='store_true',
+                              help='Run RethinkDB on start')
 
     # parser for configuring the number of shards
     sharding_parser = subparsers.add_parser('set-shards',
