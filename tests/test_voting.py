@@ -1,6 +1,6 @@
 import pytest
-from unittest.mock import patch
 
+from bigchaindb.backend.exceptions import BigchainDBCritical
 from bigchaindb.core import Bigchain
 from bigchaindb.voting import Voting, INVALID, VALID, UNDECIDED
 
@@ -95,13 +95,13 @@ def test_decide_votes_invalid(kwargs):
 
 
 def test_decide_votes_checks_arguments():
-    with pytest.raises(ValueError):
+    with pytest.raises(BigchainDBCritical):
         Voting.decide_votes(n_voters=1, n_valid=2, n_invalid=0,
                             n_agree_prev_block=0)
-    with pytest.raises(ValueError):
+    with pytest.raises(BigchainDBCritical):
         Voting.decide_votes(n_voters=1, n_valid=0, n_invalid=2,
                             n_agree_prev_block=0)
-    with pytest.raises(ValueError):
+    with pytest.raises(BigchainDBCritical):
         Voting.decide_votes(n_voters=1, n_valid=0, n_invalid=0,
                             n_agree_prev_block=2)
 

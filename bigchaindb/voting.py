@@ -1,4 +1,5 @@
 import collections
+from bigchaindb.backend.exceptions import BigchainDBCritical
 from bigchaindb.common.schema import SchemaValidationError, validate_vote_schema
 from bigchaindb.common.utils import serialize
 from bigchaindb.common.crypto import PublicKey
@@ -126,7 +127,7 @@ class Voting:
 
         # Check insane cases. This is basic, not exhaustive.
         if n_valid + n_invalid > n_voters or n_agree_prev_block > n_voters:
-            raise ValueError('Arguments not sane: %s' % {
+            raise BigchainDBCritical('Arguments not sane: %s' % {
                 'n_voters': n_voters,
                 'n_valid': n_valid,
                 'n_invalid': n_invalid,
