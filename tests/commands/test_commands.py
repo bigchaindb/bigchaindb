@@ -381,11 +381,6 @@ def test_calling_main(start_mock, base_parser_mock, parse_args_mock,
     main()
 
     assert argparser_mock.called is True
-    assert parser.add_argument.called is True
-    parser.add_argument.assert_any_call('--dev-start-rethinkdb',
-                                        dest='start_rethinkdb',
-                                        action='store_true',
-                                        help='Run RethinkDB on start')
     parser.add_subparsers.assert_called_with(title='Commands',
                                              dest='command')
     subparsers.add_parser.assert_any_call('configure',
@@ -399,11 +394,19 @@ def test_calling_main(start_mock, base_parser_mock, parse_args_mock,
                                          'key')
     subparsers.add_parser.assert_any_call('init', help='Init the database')
     subparsers.add_parser.assert_any_call('drop', help='Drop the database')
+
     subparsers.add_parser.assert_any_call('start', help='Start BigchainDB')
+    subsubparsers.add_argument.assert_any_call('--dev-start-rethinkdb',
+                                               dest='start_rethinkdb',
+                                               action='store_true',
+                                               help='Run RethinkDB on start')
+    subsubparsers.add_argument.assert_any_call('--dev-allow-temp-keypair',
+                                               dest='allow_temp_keypair',
+                                               action='store_true',
+                                               help='Generate a random keypair on start')
 
     subparsers.add_parser.assert_any_call('set-shards',
                                           help='Configure number of shards')
-
     subsubparsers.add_argument.assert_any_call('num_shards',
                                                metavar='num_shards',
                                                type=int, default=1,
