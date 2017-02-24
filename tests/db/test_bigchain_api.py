@@ -1240,3 +1240,40 @@ def test_transaction_unicode(b):
     assert b.get_block(block.id) == block.to_dict()
     assert block.validate(b) == block
     assert beer_json in serialize(block.to_dict())
+
+
+@pytest.mark.bdb
+def test_is_new_transaction(b, genesis_block):
+    from bigchaindb.models import Transaction
+
+    def write_tx(n):
+        tx = Transaction.create([b.me], [([b.me], n)])
+        tx = tx.sign([b.me_private])
+        # Tx is new because it's not in any block
+        assert b.is_new_transaction(tx.id)
+
+        block = b.create_block([tx])
+        b.write_block(block)
+        return tx, block
+
+    # test VALID case
+    tx, block = write_tx(1)
+    # Tx is now in undecided block
+    assert not b.is_new_transaction(tx.id)
+    assert b.is_new_transaction(tx.id, exclude_block_id=block.id)
+    # After voting valid, should not be new
+    vote = b.vote(block.id, genesis_block.id, True)
+    b.write_vote(vote)
+    assert not b.is_new_transaction(tx.id)
+    assert b.is_new_transaction(tx.id, exclude_block_id=block.id)
+
+    # test INVALID case
+    tx, block = write_tx(2)
+    # Tx is now in undecided block
+    assert not b.is_new_transaction(tx.id)
+    assert b.is_new_transaction(tx.id, exclude_block_id=block.id)
+    vote = b.vote(block.id, genesis_block.id, False)
+    b.write_vote(vote)
+    # Tx is new because it's only found in an invalid block
+    assert b.is_new_transaction(tx.id)
+    assert b.is_new_transaction(tx.id, exclude_block_id=block.id)
