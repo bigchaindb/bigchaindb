@@ -132,42 +132,33 @@ def test_verify_vote_schema(b):
     assert not Voting.verify_vote_schema(vote)
 
 
-"""
-    @pytest.mark.genesis
-    def test_more_votes_than_voters(self, b):
-        from bigchaindb.common.exceptions import MultipleVotesError
+################################################################################
+# block_election tests
+# A more thorough test will follow  as part of #1217
 
-        block_1 = dummy_block()
-        b.write_block(block_1)
-        # insert duplicate votes
-        vote_1 = b.vote(block_1.id, b.get_last_voted_block().id, True)
-        vote_2 = b.vote(block_1.id, b.get_last_voted_block().id, True)
-        vote_2['node_pubkey'] = 'aaaaaaa'
-        b.write_vote(vote_1)
-        b.write_vote(vote_2)
 
-        with pytest.raises(MultipleVotesError) as excinfo:
-            b.block_election_status(block_1.id, block_1.voters)
-        assert excinfo.value.args[0] == 'Block {block_id} has {n_votes} votes cast, but only {n_voters} voters'\
-            .format(block_id=block_1.id, n_votes=str(2), n_voters=str(1))
+def test_block_election(b):
 
-    def test_multiple_votes_single_node(self, b, genesis_block):
-        from bigchaindb.common.exceptions import MultipleVotesError
+    class TestVoting(Voting):
+        @classmethod
+        def verify_vote_signature(cls, vote):
+            return True
 
-        block_1 = dummy_block()
-        b.write_block(block_1)
-        # insert duplicate votes
-        for i in range(2):
-            b.write_vote(b.vote(block_1.id, genesis_block.id, True))
+        @classmethod
+        def verify_vote_schema(cls, vote):
+            return True
 
-        with pytest.raises(MultipleVotesError) as excinfo:
-            b.block_election_status(block_1.id, block_1.voters)
-        assert excinfo.value.args[0] == 'Block {block_id} has multiple votes ({n_votes}) from voting node {node_id}'\
-            .format(block_id=block_1.id, n_votes=str(2), node_id=b.me)
+    keyring = 'abc'
+    block = {'block': {'voters': 'ab'}}
+    votes = [{
+        'node_pubkey': c,
+        'vote': {'is_block_valid': True, 'previous_block': 'a'}
+    } for c in 'abc']
 
-        with pytest.raises(MultipleVotesError) as excinfo:
-            b.has_previous_vote(block_1.id)
-        assert excinfo.value.args[0] == 'Block {block_id} has {n_votes} votes from public key {me}'\
-            .format(block_id=block_1.id, n_votes=str(2), me=b.me)
-
-"""
+    assert TestVoting.block_election(block, votes, keyring) == {
+        'status': VALID,
+        'counts': {'n_agree_prev_block': 2, 'n_valid': 2, 'n_invalid': 0},
+        'ineligible': [votes[-1]],
+        'cheat': [],
+        'malformed': [],
+    }
