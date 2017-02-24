@@ -16,6 +16,7 @@ import bigchaindb
 import bigchaindb.config_utils
 from bigchaindb import backend
 from bigchaindb.common.exceptions import StartupError
+from bigchaindb.log.setup import setup_logging
 from bigchaindb.version import __version__
 
 
@@ -23,6 +24,12 @@ def configure_bigchaindb(command):
     @functools.wraps(command)
     def configure(args):
         bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
+
+        logging_config = bigchaindb.config['logging'] or {}
+        if 'log_level' in args and args.log_level:
+            logging_config['level'] = args.log_level
+        setup_logging(logging_config)
+
         command(args)
 
     return configure

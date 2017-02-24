@@ -25,7 +25,6 @@ from bigchaindb.commands.messages import (
     RETHINKDB_STARTUP_ERROR,
 )
 from bigchaindb.commands.utils import configure_bigchaindb, input_on_stderr
-from bigchaindb.log.setup import setup_logging
 
 
 logging.basicConfig(level=logging.INFO)
