@@ -3,8 +3,10 @@ for ``argparse.ArgumentParser``.
 """
 
 import argparse
+import builtins
 import multiprocessing as mp
 import subprocess
+import sys
 
 import rethinkdb as r
 from pymongo import uri_parser
@@ -13,6 +15,14 @@ import bigchaindb
 from bigchaindb import backend
 from bigchaindb.common.exceptions import StartupError
 from bigchaindb.version import __version__
+
+
+# We need this because `input` always prints on stdout, while it should print
+# to stderr. It's a very old bug, check it out here:
+# - https://bugs.python.org/issue1927
+def input_on_stderr(prompt=''):
+    print(prompt, end='', file=sys.stderr)
+    return builtins.input()
 
 
 def start_rethinkdb():
