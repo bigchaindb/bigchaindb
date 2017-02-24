@@ -220,11 +220,14 @@ def write_config(config, filename=None):
         json.dump(config, f, indent=4)
 
 
+def is_configured():
+    return bool(bigchaindb.config.get('CONFIGURED'))
+
+
 def autoconfigure(filename=None, config=None, force=False):
     """Run ``file_config`` and ``env_config`` if the module has not
     been initialized."""
-
-    if not force and bigchaindb.config.get('CONFIGURED'):
+    if not force and is_configured():
         logger.debug('System already configured, skipping autoconfiguration')
         return
 
