@@ -76,8 +76,8 @@ def test_set_shards_raises_exception(monkeypatch, b, capsys):
     run_set_shards(args)
 
     out, err = capsys.readouterr()
-    assert out[:-1] == 'Failed to reconfigure tables.'
-    assert not err
+    assert err[:-1] == 'Failed to reconfigure tables.'
+    assert not out
 
 
 @patch('rethinkdb.ast.Table.reconfigure')
@@ -121,5 +121,5 @@ def test_set_replicas_raises_exception(monkeypatch, b, capsys):
     run_set_replicas(args)
 
     out, err = capsys.readouterr()
-    assert out[:-1] == 'Failed to reconfigure tables.'
-    assert not err
+    assert err[:-1] == 'Failed to reconfigure tables.'
+    assert not out
