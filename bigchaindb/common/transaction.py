@@ -1024,6 +1024,12 @@ class Transaction(object):
 
         tx_body_no_signatures = Transaction._remove_signatures(tx_body)
         tx_body_serialized = Transaction._to_str(tx_body_no_signatures)
+
+
+        print("*********** BODY *************");
+        print(tx_body_serialized);
+
+
         valid_tx_id = Transaction._to_hash(tx_body_serialized)
 
         if proposed_tx_id != valid_tx_id:
