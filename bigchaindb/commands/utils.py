@@ -151,6 +151,10 @@ base_parser.add_argument('-c', '--config',
                          help='Specify the location of the configuration file '
                               '(use "-" for stdout)')
 
+base_parser.add_argument('-l', '--log-level',
+                         choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+                         help='Log level')
+
 base_parser.add_argument('-y', '--yes', '--yes-please',
                          action='store_true',
                          help='Assume "yes" as answer to all prompts and run '
