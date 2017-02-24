@@ -12,6 +12,8 @@ import random
 
 import pytest
 
+from logging import getLogger
+from logging.config import dictConfig
 from bigchaindb.common import crypto
 
 TEST_DB_NAME = 'bigchain_test'
@@ -201,6 +203,15 @@ def ignore_local_config_file(monkeypatch):
 
     monkeypatch.setattr('bigchaindb.config_utils.file_config',
                         mock_file_config)
+
+
+@pytest.fixture
+def reset_logging_config():
+    # root_logger_level = getLogger().level
+    root_logger_level = 'DEBUG'
+    dictConfig({'version': 1, 'root': {'level': 'NOTSET'}})
+    yield
+    getLogger().setLevel(root_logger_level)
 
 
 @pytest.fixture
