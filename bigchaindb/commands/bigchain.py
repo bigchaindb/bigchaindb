@@ -3,12 +3,11 @@ the command-line interface (CLI) for BigchainDB Server.
 """
 
 import os
-import sys
 import logging
 import argparse
 import copy
 import json
-import builtins
+import sys
 
 import logstats
 
@@ -20,7 +19,7 @@ import bigchaindb
 import bigchaindb.config_utils
 from bigchaindb.models import Transaction
 from bigchaindb.utils import ProcessGroup
-from bigchaindb import backend
+from bigchaindb import backend, processes
 from bigchaindb.backend import schema
 from bigchaindb.backend.admin import (set_replicas, set_shards, add_replicas,
                                       remove_replicas)
@@ -30,19 +29,11 @@ from bigchaindb.commands.messages import (
     CANNOT_START_KEYPAIR_NOT_FOUND,
     RETHINKDB_STARTUP_ERROR,
 )
-from bigchaindb import processes
+from bigchaindb.commands.utils import input_on_stderr
 
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-
-# We need this because `input` always prints on stdout, while it should print
-# to stderr. It's a very old bug, check it out here:
-# - https://bugs.python.org/issue1927
-def input_on_stderr(prompt=''):
-    print(prompt, end='', file=sys.stderr)
-    return builtins.input()
 
 
 def run_show_config(args):
