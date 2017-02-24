@@ -1,5 +1,4 @@
 from logging import getLogger, StreamHandler
-from logging.config import dictConfig
 
 import pytest
 
@@ -17,15 +16,6 @@ def reset_loggers(*logger_names):
             logger.removeFilter(log_filter)
 
 
-@pytest.fixture
-def reset_logging_config():
-    #root_logger_level = getLogger().level
-    root_logger_level = 'DEBUG'
-    dictConfig({'version': 1, 'root': {'level': 'NOTSET'}})
-    yield
-    getLogger().setLevel(root_logger_level)
-
-
 @pytest.mark.usefixtures('reset_logging_config')
 def test_setup_logging_without_config():
     from bigchaindb.log.setup import setup_logging
@@ -35,6 +25,7 @@ def test_setup_logging_without_config():
     assert root_logger.level == 20
     assert root_logger.hasHandlers()
     assert isinstance(root_logger.handlers[0], StreamHandler)
+
 
 @pytest.mark.usefixtures('reset_logging_config')
 def test_setup_logging_with_config():
