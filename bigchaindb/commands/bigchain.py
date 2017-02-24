@@ -16,7 +16,6 @@ from bigchaindb.common.exceptions import (StartupError,
                                           DatabaseAlreadyExists,
                                           KeypairNotFoundException)
 import bigchaindb
-import bigchaindb.config_utils
 from bigchaindb.models import Transaction
 from bigchaindb.utils import ProcessGroup
 from bigchaindb import backend, processes
@@ -29,7 +28,7 @@ from bigchaindb.commands.messages import (
     CANNOT_START_KEYPAIR_NOT_FOUND,
     RETHINKDB_STARTUP_ERROR,
 )
-from bigchaindb.commands.utils import input_on_stderr
+from bigchaindb.commands.utils import configure_bigchaindb, input_on_stderr
 
 
 logging.basicConfig(level=logging.INFO)
@@ -42,12 +41,12 @@ logger = logging.getLogger(__name__)
 #   should be printed to stderr.
 
 
+@configure_bigchaindb
 def run_show_config(args):
     """Show the current configuration"""
     # TODO Proposal: remove the "hidden" configuration. Only show config. If
     # the system needs to be configured, then display information on how to
     # configure the system.
-    bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
     config = copy.deepcopy(bigchaindb.config)
     del config['CONFIGURED']
     private_key = config['keypair']['private']
@@ -120,10 +119,10 @@ def run_configure(args, skip_if_exists=False):
     print('Ready to go!', file=sys.stderr)
 
 
+@configure_bigchaindb
 def run_export_my_pubkey(args):
     """Export this node's public key to standard output
     """
-    bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
     pubkey = bigchaindb.config['keypair']['public']
     if pubkey is not None:
         print(pubkey)
@@ -145,9 +144,9 @@ def _run_init():
     logger.info('Genesis block created.')
 
 
+@configure_bigchaindb
 def run_init(args):
     """Initialize the database"""
-    bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
     # TODO Provide mechanism to:
     # 1. prompt the user to inquire whether they wish to drop the db
     # 2. force the init, (e.g., via -f flag)
@@ -158,9 +157,9 @@ def run_init(args):
         print('If you wish to re-initialize it, first drop it.', file=sys.stderr)
 
 
+@configure_bigchaindb
 def run_drop(args):
     """Drop the database"""
-    bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
     dbname = bigchaindb.config['database']['name']
 
     if not args.yes:
@@ -173,10 +172,10 @@ def run_drop(args):
     schema.drop_database(conn, dbname)
 
 
+@configure_bigchaindb
 def run_start(args):
     """Start the processes to run the node"""
     logger.info('BigchainDB Version %s', bigchaindb.__version__)
-    bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
 
     if args.allow_temp_keypair:
         if not (bigchaindb.config['keypair']['private'] or
@@ -224,8 +223,8 @@ def _run_load(tx_left, stats):
                 break
 
 
+@configure_bigchaindb
 def run_load(args):
-    bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
     logger.info('Starting %s processes', args.multiprocess)
     stats = logstats.Logstats()
     logstats.thread.start(stats)
@@ -240,6 +239,7 @@ def run_load(args):
     workers.start()
 
 
+@configure_bigchaindb
 def run_set_shards(args):
     conn = backend.connect()
     try:
@@ -248,6 +248,7 @@ def run_set_shards(args):
         sys.exit(str(e))
 
 
+@configure_bigchaindb
 def run_set_replicas(args):
     conn = backend.connect()
     try:
@@ -256,9 +257,9 @@ def run_set_replicas(args):
         sys.exit(str(e))
 
 
+@configure_bigchaindb
 def run_add_replicas(args):
     # Note: This command is specific to MongoDB
-    bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
     conn = backend.connect()
 
     try:
@@ -269,9 +270,9 @@ def run_add_replicas(args):
         print('Added {} to the replicaset.'.format(args.replicas))
 
 
+@configure_bigchaindb
 def run_remove_replicas(args):
     # Note: This command is specific to MongoDB
-    bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
     conn = backend.connect()
 
     try:

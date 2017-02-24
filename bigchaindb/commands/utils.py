@@ -4,6 +4,7 @@ for ``argparse.ArgumentParser``.
 
 import argparse
 import builtins
+import functools
 import multiprocessing as mp
 import subprocess
 import sys
@@ -12,9 +13,19 @@ import rethinkdb as r
 from pymongo import uri_parser
 
 import bigchaindb
+import bigchaindb.config_utils
 from bigchaindb import backend
 from bigchaindb.common.exceptions import StartupError
 from bigchaindb.version import __version__
+
+
+def configure_bigchaindb(command):
+    @functools.wraps(command)
+    def configure(args):
+        bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
+        command(args)
+
+    return configure
 
 
 # We need this because `input` always prints on stdout, while it should print
