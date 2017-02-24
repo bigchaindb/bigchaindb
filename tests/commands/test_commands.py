@@ -1,6 +1,6 @@
 import json
 from unittest.mock import Mock, patch
-from argparse import Namespace, ArgumentTypeError
+from argparse import Namespace
 import copy
 
 import pytest
@@ -24,42 +24,6 @@ def test_make_sure_we_dont_remove_any_command():
     assert parser.parse_args(['load']).command
     assert parser.parse_args(['add-replicas', 'localhost:27017']).command
     assert parser.parse_args(['remove-replicas', 'localhost:27017']).command
-
-
-def test_start_raises_if_command_not_implemented():
-    from bigchaindb.commands.bigchain import utils
-    from bigchaindb.commands.bigchain import create_parser
-
-    parser = create_parser()
-
-    with pytest.raises(NotImplementedError):
-        # Will raise because `scope`, the third parameter,
-        # doesn't contain the function `run_start`
-        utils.start(parser, ['start'], {})
-
-
-def test_start_raises_if_no_arguments_given():
-    from bigchaindb.commands.bigchain import utils
-    from bigchaindb.commands.bigchain import create_parser
-
-    parser = create_parser()
-
-    with pytest.raises(SystemExit):
-        utils.start(parser, [], {})
-
-
-@patch('multiprocessing.cpu_count', return_value=42)
-def test_start_sets_multiprocess_var_based_on_cli_args(mock_cpu_count):
-    from bigchaindb.commands.bigchain import utils
-    from bigchaindb.commands.bigchain import create_parser
-
-    def run_load(args):
-        return args
-
-    parser = create_parser()
-
-    assert utils.start(parser, ['load'], {'run_load': run_load}).multiprocess == 1
-    assert utils.start(parser, ['load', '--multiprocess'], {'run_load': run_load}).multiprocess == 42
 
 
 @patch('bigchaindb.commands.utils.start')
@@ -504,19 +468,3 @@ def test_run_remove_replicas(mock_remove_replicas):
     assert exc.value.args == ('err',)
     assert mock_remove_replicas.call_count == 1
     mock_remove_replicas.reset_mock()
-
-
-def test_mongodb_host_type():
-    from bigchaindb.commands.utils import mongodb_host
-
-    # bad port provided
-    with pytest.raises(ArgumentTypeError):
-        mongodb_host('localhost:11111111111')
-
-    # no port information provided
-    with pytest.raises(ArgumentTypeError):
-        mongodb_host('localhost')
-
-    # bad host provided
-    with pytest.raises(ArgumentTypeError):
-        mongodb_host(':27017')
