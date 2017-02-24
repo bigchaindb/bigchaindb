@@ -1,6 +1,6 @@
 import pytest
-from unittest.mock import patch
 
+from bigchaindb.backend.exceptions import BigchainDBCritical
 from bigchaindb.core import Bigchain
 from bigchaindb.voting import Voting, INVALID, VALID, UNDECIDED
 
@@ -9,27 +9,49 @@ from bigchaindb.voting import Voting, INVALID, VALID, UNDECIDED
 # Tests for checking vote eligibility
 
 
-@patch('bigchaindb.voting.Voting.verify_vote_signature')
-def test_partition_eligible_votes(_):
-    nodes = list(map(Bigchain, 'abc'))
-    votes = [n.vote('block', 'a', True) for n in nodes]
+def test_partition_eligible_votes():
+    class TestVoting(Voting):
+        @classmethod
+        def verify_vote_signature(cls, vote):
+            if vote['node_pubkey'] == 'invalid sig':
+                return False
+            if vote['node_pubkey'] == 'value error':
+                raise ValueError()
+            return True
 
-    el, inel = Voting.partition_eligible_votes(votes, 'abc')
+    voters = ['valid', 'invalid sig', 'value error', 'not in set']
+    votes = [{'node_pubkey': k} for k in voters]
 
-    assert el == votes
-    assert inel == []
+    el, inel = TestVoting.partition_eligible_votes(votes, voters[:-1])
+    assert el == [votes[0]]
+    assert inel == votes[1:]
 
 
-@patch('bigchaindb.voting.Voting.verify_vote_schema')
-def test_count_votes(_):
-    nodes = list(map(Bigchain, 'abc'))
+################################################################################
+# Test vote counting
 
-    votes = [n.vote('block', 'a', True) for n in nodes]
 
-    assert Voting.count_votes(votes)['counts'] == {
-        'n_valid': 3,
-        'n_invalid': 0,
-        'n_agree_prev_block': 3
+def test_count_votes():
+    class TestVoting(Voting):
+        @classmethod
+        def verify_vote_schema(cls, vote):
+            return vote['node_pubkey'] != 'malformed'
+
+    voters = ['cheat', 'cheat', 'says invalid', 'malformed']
+    voters += ['kosher' + str(i) for i in range(10)]
+
+    votes = [Bigchain(v).vote('block', 'a', True) for v in voters]
+    votes[2]['vote']['is_block_valid'] = False
+    votes[-1]['vote']['previous_block'] = 'z'
+
+    assert TestVoting.count_votes(votes) == {
+        'counts': {
+            'n_valid': 10,
+            'n_invalid': 3,
+            'n_agree_prev_block': 9
+        },
+        'cheat': [votes[:2]],
+        'malformed': [votes[3]],
     }
 
 
@@ -73,12 +95,38 @@ def test_decide_votes_invalid(kwargs):
 
 
 def test_decide_votes_checks_arguments():
-    with pytest.raises(ValueError):
+    with pytest.raises(BigchainDBCritical):
         Voting.decide_votes(n_voters=1, n_valid=2, n_invalid=0,
                             n_agree_prev_block=0)
-    with pytest.raises(ValueError):
+    with pytest.raises(BigchainDBCritical):
         Voting.decide_votes(n_voters=1, n_valid=0, n_invalid=2,
                             n_agree_prev_block=0)
-    with pytest.raises(ValueError):
+    with pytest.raises(BigchainDBCritical):
         Voting.decide_votes(n_voters=1, n_valid=0, n_invalid=0,
                             n_agree_prev_block=2)
+
+
+################################################################################
+# Tests for vote signature
+
+
+def test_verify_vote_signature_passes(b):
+    vote = b.vote('block', 'a', True)
+    assert Voting.verify_vote_signature(vote)
+
+
+def test_verify_vote_signature_fails(b):
+    vote = b.vote('block', 'a', True)
+    vote['signature'] = ''
+    assert not Voting.verify_vote_signature(vote)
+
+
+################################################################################
+# Tests for vote schema
+
+
+def test_verify_vote_schema(b):
+    vote = b.vote('b' * 64, 'a' * 64, True)
+    assert Voting.verify_vote_schema(vote)
+    vote = b.vote('b', 'a', True)
+    assert not Voting.verify_vote_schema(vote)

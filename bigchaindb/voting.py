@@ -1,4 +1,5 @@
 import collections
+from bigchaindb.backend.exceptions import BigchainDBCritical
 from bigchaindb.common.schema import SchemaValidationError, validate_vote_schema
 from bigchaindb.common.utils import serialize
 from bigchaindb.common.crypto import PublicKey
@@ -28,11 +29,12 @@ class Voting:
         """
         Calculate the election status of a block.
         """
-        eligible_voters = set(block['voters']) & set(keyring)
+        eligible_voters = set(block['block']['voters']) & set(keyring)
         eligible_votes, ineligible_votes = \
             cls.partition_eligible_votes(votes, eligible_voters)
+        n_voters = len(eligible_voters)
         results = cls.count_votes(eligible_votes)
-        results['status'] = cls.decide_votes(results['counts'])
+        results['status'] = cls.decide_votes(n_voters, **results['counts'])
         results['ineligible'] = ineligible_votes
         return results
 
@@ -48,12 +50,11 @@ class Voting:
             voter_eligible = vote.get('node_pubkey') in eligible_voters
             if voter_eligible:
                 try:
-                    cls.verify_vote_signature(vote)
+                    if cls.verify_vote_signature(vote):
+                        eligible.append(vote)
+                        continue
                 except ValueError:
                     pass
-                else:
-                    eligible.append(vote)
-                    continue
             ineligible.append(vote)
 
         return eligible, ineligible
@@ -94,17 +95,19 @@ class Voting:
                 n_invalid += 1
                 continue
 
-            prev_blocks[vote['vote']['previous_block']] += 1
             if vote['vote']['is_block_valid']:
+                prev_blocks[vote['vote']['previous_block']] += 1
                 n_valid += 1
             else:
                 n_invalid += 1
+
+        n_prev = prev_blocks.most_common()[0][1] if prev_blocks else 0
 
         return {
             'counts': {
                 'n_valid': n_valid,
                 'n_invalid': n_invalid,
-                'n_agree_prev_block': prev_blocks.most_common()[0][1],
+                'n_agree_prev_block': n_prev,
             },
             'cheat': cheat,
             'malformed': malformed,
@@ -124,7 +127,7 @@ class Voting:
 
         # Check insane cases. This is basic, not exhaustive.
         if n_valid + n_invalid > n_voters or n_agree_prev_block > n_voters:
-            raise ValueError('Arguments not sane: %s' % {
+            raise BigchainDBCritical('Arguments not sane: %s' % {
                 'n_voters': n_voters,
                 'n_valid': n_valid,
                 'n_invalid': n_invalid,
@@ -168,5 +171,5 @@ class Voting:
         try:
             validate_vote_schema(vote)
             return True
-        except SchemaValidationError:
+        except SchemaValidationError as e:
             return False
