@@ -12,14 +12,14 @@ UNDECIDED = 'undecided'
 
 class Voting:
     """
-    Everything to do with creating and checking votes.
+    Everything to do with verifying and counting votes for block election.
 
     All functions in this class should be referentially transparent, that is,
     they always give the same output for a given input. This makes it easier
     to test. This also means no logging!
 
     Assumptions regarding data:
-        * Vote is a dictionary, but it is not assumed that any properties are.
+        * Vote is a dictionary, but no assumptions are made on it's properties.
         * Everything else is assumed to be structurally correct, otherwise errors
         may be thrown.
     """
@@ -30,9 +30,9 @@ class Voting:
         Calculate the election status of a block.
         """
         eligible_voters = set(block['block']['voters']) & set(keyring)
+        n_voters = len(eligible_voters)
         eligible_votes, ineligible_votes = \
             cls.partition_eligible_votes(votes, eligible_voters)
-        n_voters = len(eligible_voters)
         results = cls.count_votes(eligible_votes)
         results['block_id'] = block['id']
         results['status'] = cls.decide_votes(n_voters, **results['counts'])
