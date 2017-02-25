@@ -1,5 +1,5 @@
 import collections
-from bigchaindb.backend.exceptions import BigchainDBCritical
+
 from bigchaindb.common.schema import SchemaValidationError, validate_vote_schema
 from bigchaindb.common.utils import serialize
 from bigchaindb.common.crypto import PublicKey
@@ -57,31 +57,30 @@ class Voting:
                 except ValueError:
                     pass
             ineligible.append(vote)
-
         return eligible, ineligible
 
     @classmethod
     def count_votes(cls, eligible_votes):
         """
         Given a list of eligible votes, (votes from known nodes that are listed
-        as voters), count the votes to produce three quantities:
+        as voters), produce the number that say valid and the number that say
+        invalid.
 
-            Number of votes that say valid
-            Number of votes that say invalid
-            Highest agreement on previous block ID
-
-        Also, detect if there are multiple votes from a single node and return them
-        in a separate "cheat" dictionary.
+        * Detect if there are multiple votes from a single node and return them
+          in a separate "cheat" dictionary.
+        * Votes must agree on previous block, otherwise they become invalid.
         """
-        by_voter = collections.defaultdict(list)
-        for vote in eligible_votes:
-            by_voter[vote['node_pubkey']].append(vote)
-
         n_valid = 0
         n_invalid = 0
         prev_blocks = collections.Counter()
         cheat = []
         malformed = []
+        prev_block = None
+
+        # Group by pubkey to detect duplicate voting
+        by_voter = collections.defaultdict(list)
+        for vote in eligible_votes:
+            by_voter[vote['node_pubkey']].append(vote)
 
         for pubkey, votes in by_voter.items():
             if len(votes) > 1:
@@ -102,20 +101,28 @@ class Voting:
             else:
                 n_invalid += 1
 
-        n_prev = prev_blocks.most_common()[0][1] if prev_blocks else 0
+        # Neutralise difference between valid block and previous block,
+        # so that nodes must agree on previous block
+        if n_valid:
+            prev_block, n_prev = prev_blocks.most_common()[0]
+            del prev_blocks[prev_block]
+            diff = n_valid - n_prev
+            n_valid -= diff
+            n_invalid += diff
 
         return {
             'counts': {
                 'n_valid': n_valid,
                 'n_invalid': n_invalid,
-                'n_agree_prev_block': n_prev,
             },
             'cheat': cheat,
             'malformed': malformed,
+            'previous_block': prev_block,
+            'other_previous_block': dict(prev_blocks),
         }
 
     @classmethod
-    def decide_votes(cls, n_voters, n_valid, n_invalid, n_agree_prev_block):
+    def decide_votes(cls, n_voters, n_valid, n_invalid):
         """
         Decide on votes.
 
@@ -125,22 +132,10 @@ class Voting:
         A tie on an even number of votes counts as INVALID so the >= operator is
         used.
         """
-
-        # Check insane cases. This is basic, not exhaustive.
-        if n_valid + n_invalid > n_voters or n_agree_prev_block > n_voters:
-            raise BigchainDBCritical('Arguments not sane: %s' % {
-                'n_voters': n_voters,
-                'n_valid': n_valid,
-                'n_invalid': n_invalid,
-                'n_agree_prev_block': n_agree_prev_block,
-            })
-
         if n_invalid * 2 >= n_voters:
             return INVALID
         if n_valid * 2 > n_voters:
-            if n_agree_prev_block * 2 > n_voters:
-                return VALID
-            return INVALID
+            return VALID
         return UNDECIDED
 
     @classmethod
