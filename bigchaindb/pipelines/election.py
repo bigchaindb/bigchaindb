@@ -41,7 +41,7 @@ class Election:
 
         next_block = self.bigchain.get_block(block_id)
 
-        result = self.bigchain.block_election_status(next_block)
+        result = self.bigchain.block_election(next_block)
         if result['status'] == self.bigchain.BLOCK_INVALID:
             return Block.from_dict(next_block)
 
