@@ -1,7 +1,7 @@
 import rethinkdb as r
 
 from bigchaindb.backend.connection import Connection
-from bigchaindb.backend.exceptions import ConnectionError
+from bigchaindb.backend.exceptions import ConnectionError, OperationError
 
 
 class RethinkDBConnection(Connection):
@@ -24,7 +24,10 @@ class RethinkDBConnection(Connection):
                 :attr:`~.RethinkDBConnection.max_tries`.
         """
 
-        return query.run(self.conn)
+        try:
+            return query.run(self.conn)
+        except r.ReqlDriverError as exc:
+            raise OperationError from exc
 
     def _connect(self):
         """Set a connection to RethinkDB.
@@ -39,4 +42,4 @@ class RethinkDBConnection(Connection):
         try:
             return r.connect(host=self.host, port=self.port, db=self.dbname)
         except r.ReqlDriverError as exc:
-            raise ConnectionError() from exc
+            raise ConnectionError from exc

@@ -61,7 +61,9 @@ def connect(backend=None, host=None, port=None, name=None, max_tries=None,
         raise ConfigurationError('Error loading backend `{}`'.format(backend)) from exc
 
     logger.debug('Connection: {}'.format(Class))
-    return Class(host=host, port=port, dbname=dbname, replicaset=replicaset)
+    return Class(host=host, port=port, dbname=dbname,
+                 max_tries=max_tries, connection_timeout=connection_timeout,
+                 replicaset=replicaset)
 
 
 class Connection:
@@ -142,3 +144,5 @@ class Connection:
                 if attempt == self.max_tries:
                     logger.critical('Cannot connect to the Database. Giving up.')
                     raise ConnectionError() from exc
+            else:
+                break
