@@ -24,8 +24,8 @@ class RethinkDBChangeFeed(ChangeFeed):
             try:
                 self.run_changefeed()
                 break
-            except BackendError as exc:
-                logger.exception(exc)
+            except (BackendError, r.ReqlDriverError) as exc:
+                logger.exception('Error connecting to the database, retrying')
                 time.sleep(1)
 
     def run_changefeed(self):
