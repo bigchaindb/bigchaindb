@@ -428,21 +428,6 @@ class TestBigchainApi(object):
 
         assert retrieved_block_1 == retrieved_block_2
 
-    @pytest.mark.genesis
-    def test_improper_vote_error(selfs, b):
-        from bigchaindb.common.exceptions import ImproperVoteError
-
-        block_1 = dummy_block()
-        b.write_block(block_1)
-        vote_1 = b.vote(block_1.id, b.get_last_voted_block().id, True)
-        # mangle the signature
-        vote_1['signature'] = 'a' * 87
-        b.write_vote(vote_1)
-        with pytest.raises(ImproperVoteError) as excinfo:
-            b.has_previous_vote(block_1.id)
-        assert excinfo.value.args[0] == 'Block {block_id} already has an incorrectly signed ' \
-                                        'vote from public key {me}'.format(block_id=block_1.id, me=b.me)
-
     @pytest.mark.usefixtures('inputs')
     def test_assign_transaction_one_node(self, b, user_pk, user_sk):
         from bigchaindb.backend import query

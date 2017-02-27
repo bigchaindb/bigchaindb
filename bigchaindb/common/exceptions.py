@@ -62,14 +62,6 @@ class StartupError(BigchainDBError):
     """Raised when there is an error starting up the system"""
 
 
-class ImproperVoteError(BigchainDBError):
-    """Raised if a vote is not constructed correctly, or signed incorrectly"""
-
-
-class MultipleVotesError(BigchainDBError):
-    """Raised if a voter has voted more than once"""
-
-
 class GenesisBlockAlreadyExistsError(BigchainDBError):
     """Raised when trying to create the already existing genesis block"""
 

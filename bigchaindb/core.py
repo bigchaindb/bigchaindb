@@ -496,24 +496,10 @@ class Bigchain(object):
             bool: :const:`True` if this block already has a
             valid vote from this node, :const:`False` otherwise.
 
-        Raises:
-            ImproperVoteError: If there is already a vote,
-                but the vote is invalid.
-
         """
         votes = list(backend.query.get_votes_by_block_id_and_voter(self.connection, block_id, self.me))
-
-        if len(votes) > 1:
-            raise exceptions.MultipleVotesError('Block {block_id} has {n_votes} votes from public key {me}'
-                                                .format(block_id=block_id, n_votes=str(len(votes)), me=self.me))
-        if len(votes) < 1:
-            return False
-
-        if self.consensus.voting.verify_vote_signature(votes[0]):
-            return True
-        else:
-            raise exceptions.ImproperVoteError('Block {block_id} already has an incorrectly signed vote '
-                                               'from public key {me}'.format(block_id=block_id, me=self.me))
+        el, _ = self.consensus.voting.partition_eligible_votes(votes, [self.me])
+        return bool(el)
 
     def write_block(self, block):
         """Write a block to bigchain.
