@@ -1,7 +1,6 @@
 import time
 import multiprocessing as mp
 from threading import Thread
-from unittest import mock
 from unittest.mock import patch
 
 import pytest
