@@ -70,12 +70,9 @@ class Voting:
           in a separate "cheat" dictionary.
         * Votes must agree on previous block, otherwise they become invalid.
         """
-        n_valid = 0
-        n_invalid = 0
         prev_blocks = collections.Counter()
         cheat = []
         malformed = []
-        prev_block = None
 
         # Group by pubkey to detect duplicate voting
         by_voter = collections.defaultdict(list)
@@ -85,35 +82,28 @@ class Voting:
         for pubkey, votes in by_voter.items():
             if len(votes) > 1:
                 cheat.append(votes)
-                n_invalid += 1
                 continue
 
             vote = votes[0]
 
             if not cls.verify_vote_schema(vote):
                 malformed.append(vote)
-                n_invalid += 1
                 continue
 
-            if vote['vote']['is_block_valid']:
+            if vote['vote']['is_block_valid'] is True:
                 prev_blocks[vote['vote']['previous_block']] += 1
-                n_valid += 1
-            else:
-                n_invalid += 1
 
-        # Neutralise difference between valid block and previous block,
-        # so that nodes must agree on previous block
-        if n_valid:
-            prev_block, n_prev = prev_blocks.most_common()[0]
+        n_valid = 0
+        prev_block = None
+        # Valid votes must agree on previous block
+        if prev_blocks:
+            prev_block, n_valid = prev_blocks.most_common()[0]
             del prev_blocks[prev_block]
-            diff = n_valid - n_prev
-            n_valid -= diff
-            n_invalid += diff
 
         return {
             'counts': {
                 'n_valid': n_valid,
-                'n_invalid': n_invalid,
+                'n_invalid': len(by_voter) - n_valid,
             },
             'cheat': cheat,
             'malformed': malformed,
@@ -127,10 +117,9 @@ class Voting:
         Decide on votes.
 
         To return VALID there must be a clear majority that say VALID
-        and also agree on the previous block. This is achieved using the > operator.
+        and also agree on the previous block.
 
-        A tie on an even number of votes counts as INVALID so the >= operator is
-        used.
+        A tie on an even number of votes counts as INVALID.
         """
         if n_invalid * 2 >= n_voters:
             return INVALID
@@ -140,15 +129,8 @@ class Voting:
 
     @classmethod
     def verify_vote_signature(cls, vote):
-        """Verify the signature of a vote
-
-        A valid vote should have been signed by a voter's private key.
-
-        Args:
-            vote (list): voters of the block that is under election
-
-        Returns:
-            bool: True if the signature is correct, False otherwise.
+        """
+        Verify the signature of a vote
         """
         signature = vote.get('signature')
         pk_base58 = vote.get('node_pubkey')
