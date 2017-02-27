@@ -69,6 +69,9 @@ class Bigchain(object):
         if not self.me or not self.me_private:
             raise exceptions.KeypairNotFoundException()
 
+    federation = property(lambda self: set(self.nodes_except_me + [self.me]))
+    """ Set of federation member public keys """
+
     def write_transaction(self, signed_transaction):
         """Write the transaction to bigchain.
 
@@ -107,19 +110,8 @@ class Bigchain(object):
             dict: database response or None if no reassignment is possible
         """
 
-        if self.nodes_except_me:
-            try:
-                federation_nodes = self.nodes_except_me + [self.me]
-                index_current_assignee = federation_nodes.index(transaction['assignee'])
-                new_assignee = random.choice(federation_nodes[:index_current_assignee] +
-                                             federation_nodes[index_current_assignee + 1:])
-            except ValueError:
-                # current assignee not in federation
-                new_assignee = random.choice(self.nodes_except_me)
-
-        else:
-            # There is no other node to assign to
-            new_assignee = self.me
+        other_nodes = self.federation.difference([transaction['assignee']])
+        new_assignee = random.choice(other_nodes) if other_nodes else self.me
 
         return backend.query.update_transaction(
                 self.connection, transaction['id'],
@@ -467,7 +459,7 @@ class Bigchain(object):
             raise exceptions.OperationError('Empty block creation is not '
                                             'allowed')
 
-        voters = self.nodes_except_me + [self.me]
+        voters = list(self.federation)
         block = Block(validated_transactions, self.me, gen_timestamp(), voters)
         block = block.sign(self.me_private)
 
@@ -607,9 +599,8 @@ class Bigchain(object):
             block = block.to_dict()
         votes = list(backend.query.get_votes_by_block_id(self.connection,
                                                          block['id']))
-        keyring = self.nodes_except_me + [self.me]
-        result = self.consensus.voting.block_election(block, votes, keyring)
-        return result
+        return self.consensus.voting.block_election(block, votes,
+                                                    self.federation)
 
     def block_election_status(self, block):
         """Tally the votes on a block, and return the status:

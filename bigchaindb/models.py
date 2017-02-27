@@ -236,9 +236,11 @@ class Block(object):
             InvalidSignature: If a Block's signature is invalid.
         """
         # Check if the block was created by a federation node
-        possible_voters = (bigchain.nodes_except_me + [bigchain.me])
-        if self.node_pubkey not in possible_voters:
+        if self.node_pubkey not in bigchain.federation:
             raise OperationError('Only federation nodes can create blocks')
+
+        if set(self.voters) != bigchain.federation:
+            raise OperationError('Block voters differs from server keyring')
 
         # Check that the signature is valid
         if not self.is_signature_valid():
