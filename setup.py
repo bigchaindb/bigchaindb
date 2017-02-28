@@ -50,6 +50,7 @@ tests_require = [
     'pytest>=3.0.0',
     'pytest-catchlog>=1.2.2',
     'pytest-cov>=2.2.1',
+    'pytest-mock',
     'pytest-xdist',
     'pytest-flask',
     'tox',
