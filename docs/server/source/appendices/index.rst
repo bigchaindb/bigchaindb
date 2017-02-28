@@ -17,6 +17,7 @@ Appendices
    pipelines
    backend
    aws-setup
+   generate-key-pair-for-ssh
    firewall-notes
    ntp-notes
    example-rethinkdb-storage-setups
