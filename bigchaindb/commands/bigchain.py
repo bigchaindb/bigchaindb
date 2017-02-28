@@ -26,6 +26,10 @@ from bigchaindb.backend.admin import (set_replicas, set_shards, add_replicas,
                                       remove_replicas)
 from bigchaindb.backend.exceptions import OperationError
 from bigchaindb.commands import utils
+from bigchaindb.commands.messages import (
+    CANNOT_START_KEYPAIR_NOT_FOUND,
+    RETHINKDB_STARTUP_ERROR,
+)
 from bigchaindb import processes
 
 
@@ -193,7 +197,7 @@ def run_start(args):
         try:
             proc = utils.start_rethinkdb()
         except StartupError as e:
-            sys.exit('Error starting RethinkDB, reason is: {}'.format(e))
+            sys.exit(RETHINKDB_STARTUP_ERROR.format(e))
         logger.info('RethinkDB started with PID %s' % proc.pid)
 
     try:
@@ -201,8 +205,7 @@ def run_start(args):
     except DatabaseAlreadyExists:
         pass
     except KeypairNotFoundException:
-        sys.exit("Can't start BigchainDB, no keypair found. "
-                 'Did you run `bigchaindb configure`?')
+        sys.exit(CANNOT_START_KEYPAIR_NOT_FOUND)
 
     logger.info('Starting BigchainDB main process with public key %s',
                 bigchaindb.config['keypair']['public'])
