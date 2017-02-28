@@ -21,7 +21,7 @@ Step 2: Configure kubectl
 The default location of the kubectl configuration file is ``~/.kube/config``.
 If you don't have that file, then you need to get it.
 
-If you deployed your Kubernetes cluster on Azure
+**Azure.** If you deployed your Kubernetes cluster on Azure
 using the Azure CLI 2.0 (as per :doc:`our template <template-kubernetes-azure>`),
 then you can get the ``~/.kube/config`` file using:
 
@@ -32,15 +32,117 @@ then you can get the ``~/.kube/config`` file using:
    --name <ACS cluster name>
 
 
-Step 3: Run a MongoDB Container 
--------------------------------
+Step 3: Create a StorageClass
+-----------------------------
 
-To start a MongoDB Docker container in a pod on one of the cluster nodes:
+MongoDB needs somewhere to store its data persistently,
+outside the container where MongoDB is running.
+Explaining how Kubernetes handles persistent volumes,
+and the associated terminology,
+is beyond the scope of this documentation;
+see `the Kubernetes docs about persistent volumes
+<https://kubernetes.io/docs/user-guide/persistent-volumes>`_.
+
+The first thing to do is create a Kubernetes StorageClass.
+
+**Azure.** First, you need an Azure storage account.
+While you might be able to use an existing one,
+create a new one specifically for MongoDB data:
 
 .. code:: bash
 
-   $ kubectl ?????
+   $ az storage account create --name <name for new storage account> \
+   --resource-group <name of resource group containing the cluster> \
+   --location <same as resource group location, required> \
+   --sku Standard_LRS
+
+where LRS means locally-redundant storage. Other option-values (and other options) can be found in `the docs for az storage account create <https://docs.microsoft.com/en-us/cli/azure/storage/account#create>`_.
+
+Next, create a Kubernetes Storage Class named ``slow``
+by writing a file named ``azureStorageClass.yml`` containing:
+
+.. code:: yaml
+
+   kind: StorageClass
+   apiVersion: storage.k8s.io/v1beta1
+   metadata:
+     name: slow
+   provisioner: kubernetes.io/azure-disk
+   parameters:
+     skuName: Standard_LRS
+     location: <region where your cluster is located>
+
+and then:
+
+.. code:: bash
+
+   $ kubectl apply -f azureStorageClass.yml
+
+You can check if it worked using ``kubectl get storageclasses``.
+
+Note that there is no line of the form
+``storageAccount: <azure storage account name>``
+under ``parameters:``. When we included one
+and then created a PersistentVolumeClaim based on it,
+the PersistentVolumeClaim would get stuck
+in a "Pending" state.
 
 
-Note: The BigchainDB Dashboard can be deployed
-as a Docker container, like everything else.
+Step 4: Create a PersistentVolumeClaim
+--------------------------------------
+
+Next, you'll create a PersistentVolumeClaim named ``mongoclaim``.
+Create a file named ``mongoclaim.yml``
+with the following contents:
+
+.. code:: yaml
+
+   kind: PersistentVolumeClaim
+   apiVersion: v1
+   metadata:
+     name: mongoclaim
+     annotations:
+       volume.beta.kubernetes.io/storage-class: slow
+   spec:
+     accessModes:
+       - ReadWriteOnce
+     resources:
+       requests:
+         storage: 2Gi
+
+Note how there's no explicit depencency on the storage provider.
+``ReadWriteOnce`` (RWO) means the volume can be mounted as
+read-write by a single Kubernetes node.
+(``ReadWriteOnce`` is the *only* access mode supported
+by AzureDisk.)
+``storage: 2Gi`` means the volume has a size of two
+`gibibytes <https://en.wikipedia.org/wiki/Gibibyte>`_.
+(You can change that if you like.)
+
+Create ``mongoclaim`` in your Kubernetes cluster:
+
+.. code:: bash
+
+   $ kubectl apply -f mongoclaim.yml
+
+You can check its status using:
+
+.. code:: bash
+
+   $ kubectl get pvc
+
+Initially, the status of ``mongoclaim`` might be "Pending"
+but it should become "Bound" fairly quickly.
+
+.. code:: bash
+
+   $ kubectl describe pvc
+   Name:            mongoclaim
+   Namespace:       default
+   StorageClass:    slow
+   Status:          Bound
+   Volume:          pvc-ebed81f1-fdca-11e6-abf0-000d3a27ab21
+   Labels:          <none>
+   Capacity:        2Gi
+   Access Modes:    RWO
+   No events.
