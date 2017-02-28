@@ -496,7 +496,8 @@ def test_validate_tx_simple_create_signature(user_input, user_output, user_priv,
 
     tx = Transaction(Transaction.CREATE, asset_definition, [user_input], [user_output])
     expected = deepcopy(user_output)
-    expected.fulfillment.sign(str(tx).encode(), PrivateKey(user_priv))
+    message = ('0:' + str(tx)).encode()
+    expected.fulfillment.sign(message, PrivateKey(user_priv))
     tx.sign([user_priv])
 
     assert tx.inputs[0].to_dict()['fulfillment'] == \
@@ -513,7 +514,6 @@ def test_invoke_simple_signature_fulfillment_with_invalid_params(utx,
     with raises(KeypairMismatchException):
         invalid_key_pair = {'wrong_pub_key': 'wrong_priv_key'}
         utx._sign_simple_signature_fulfillment(user_input,
-                                               0,
                                                'somemessage',
                                                invalid_key_pair)
 
@@ -524,13 +524,11 @@ def test_sign_threshold_with_invalid_params(utx, user_user2_threshold_input,
 
     with raises(KeypairMismatchException):
         utx._sign_threshold_signature_fulfillment(user_user2_threshold_input,
-                                                  0,
                                                   'somemessage',
                                                   {user3_pub: user3_priv})
     with raises(KeypairMismatchException):
         user_user2_threshold_input.owners_before = ['somewrongvalue']
         utx._sign_threshold_signature_fulfillment(user_user2_threshold_input,
-                                                  0,
                                                   'somemessage',
                                                   None)
 
@@ -560,13 +558,11 @@ def test_validate_multiple_inputs(user_input, user_output, user_priv,
 
     expected_first = deepcopy(tx)
     expected_second = deepcopy(tx)
-    expected_first.inputs = [expected_first.inputs[0]]
-    expected_second.inputs = [expected_second.inputs[1]]
 
-    expected_first_bytes = str(expected_first).encode()
+    expected_first_bytes = ('0:' + str(tx)).encode()
     expected_first.inputs[0].fulfillment.sign(expected_first_bytes,
                                               PrivateKey(user_priv))
-    expected_second_bytes = str(expected_second).encode()
+    expected_second_bytes = ('1:' + str(tx)).encode()
     expected_second.inputs[0].fulfillment.sign(expected_second_bytes,
                                                PrivateKey(user_priv))
     tx.sign([user_priv])
@@ -596,10 +592,11 @@ def test_validate_tx_threshold_create_signature(user_user2_threshold_input,
     tx = Transaction(Transaction.CREATE, asset_definition,
                      [user_user2_threshold_input],
                      [user_user2_threshold_output])
+    message = ('0:' + str(tx)).encode()
     expected = deepcopy(user_user2_threshold_output)
-    expected.fulfillment.subconditions[0]['body'].sign(str(tx).encode(),
+    expected.fulfillment.subconditions[0]['body'].sign(message,
                                                        PrivateKey(user_priv))
-    expected.fulfillment.subconditions[1]['body'].sign(str(tx).encode(),
+    expected.fulfillment.subconditions[1]['body'].sign(message,
                                                        PrivateKey(user2_priv))
     tx.sign([user_priv, user2_priv])
 
@@ -861,7 +858,7 @@ def test_create_transfer_transaction_single_io(tx, user_pub, user2_pub,
 
     expected_input = deepcopy(inputs[0])
     expected['id'] = transfer_tx['id']
-    expected_input.fulfillment.sign(serialize(expected).encode(),
+    expected_input.fulfillment.sign(('0:' + serialize(expected)).encode(),
                                     PrivateKey(user_priv))
     expected_ffill = expected_input.fulfillment.serialize_uri()
     transfer_ffill = transfer_tx['inputs'][0]['fulfillment']
