@@ -133,7 +133,7 @@ The "agent" nodes don't get public IP addresses or hostnames,
 so you can't SSH to them *directly*,
 but you can first SSH to the master
 and then SSH to an agent from there 
-(using the *private* IP address of the agent node).
+(using the *private* IP address or hostname of the agent node).
 To do that, you either need to copy your SSH key pair to
 the master (a bad idea),
 or use something like
