@@ -39,10 +39,6 @@ from the `Azure Portal <https://portal.azure.com>`_
 (i.e. online in your web browser)
 but it's actually easier to do it using the Azure
 Command-Line Interface (CLI).
-(The Azure Portal will ask you for a public SSH key
-and a "service principal," and you'll have to create those
-first if they don't exist. The CLI will create them
-for you if necessary.)
 
 Microsoft has `instructions to install the Azure CLI 2.0
 on most common operating systems
