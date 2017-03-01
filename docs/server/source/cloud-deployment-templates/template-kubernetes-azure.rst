@@ -18,7 +18,20 @@ You may find that you have to sign up for a Free Trial subscription first.
 That's okay: you can have many subscriptions.
 
 
-Step 2: Deploy an Azure Container Service (ACS)
+Step 2: Create an SSH Key Pair
+------------------------------
+
+You'll want an SSH key pair so you'll be able to SSH
+to the virtual machines that you'll deploy in the next step.
+(If you already have an SSH key pair, you *could* reuse it,
+but it's probably a good idea to make a new SSH key pair
+for your Kubernetes VMs and nothing else.)
+
+See the
+:ref:`page about how to generate a key pair for SSH <Generate a Key Pair for SSH>`.
+
+
+Step 3: Deploy an Azure Container Service (ACS)
 -----------------------------------------------
 
 It's *possible* to deploy an Azure Container Service (ACS)
@@ -26,10 +39,6 @@ from the `Azure Portal <https://portal.azure.com>`_
 (i.e. online in your web browser)
 but it's actually easier to do it using the Azure
 Command-Line Interface (CLI).
-(The Azure Portal will ask you for a public SSH key
-and a "service principal," and you'll have to create those
-first if they don't exist. The CLI will create them
-for you if necessary.)
 
 Microsoft has `instructions to install the Azure CLI 2.0
 on most common operating systems
@@ -82,8 +91,7 @@ Finally, you can deploy an ACS using something like:
    --agent-count 3 \
    --agent-vm-size Standard_D2_v2 \
    --dns-prefix <make up a name> \
-   --generate-ssh-keys \
-   --location <same location as the resource group> \
+   --ssh-key-value ~/.ssh/<name>.pub \
    --orchestrator-type kubernetes
 
 There are more options. For help understanding all the options, use the built-in help:
@@ -98,6 +106,34 @@ You can watch the progress in the `Azure Portal
 go to **Resource groups** (with the blue cube icon)
 and click on the one you created
 to see all the resources in it.
+
+Next, you can :doc:`run a BigchainDB node on your new
+Kubernetes cluster <node-on-kubernetes>`.
+
+
+Optional: SSH to Your New Kubernetes Cluster Nodes
+--------------------------------------------------
+
+You can SSH to one of the just-deployed Kubernetes "master" nodes
+(virtual machines) using:
+
+.. code:: bash
+
+   $ ssh -i ~/.ssh/<name>.pub azureuser@<master-ip-address-or-hostname>
+
+where you can get the IP address or hostname
+of a master node from the Azure Portal.
+Note how the default username is ``azureuser``.
+
+The "agent" nodes don't get public IP addresses or hostnames,
+so you can't SSH to them *directly*,
+but you can first SSH to the master
+and then SSH to an agent from there 
+(using the *private* IP address or hostname of the agent node).
+To do that, you either need to copy your SSH key pair to
+the master (a bad idea),
+or use something like
+`SSH agent forwarding <https://yakking.branchable.com/posts/ssh-A/>`_ (better).
 
 Next, you can :doc:`run a BigchainDB node on your new
 Kubernetes cluster <node-on-kubernetes>`.
