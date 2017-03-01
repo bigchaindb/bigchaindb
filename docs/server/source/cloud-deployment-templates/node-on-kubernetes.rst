@@ -119,14 +119,14 @@ with the following contents:
        - ReadWriteOnce
      resources:
        requests:
-         storage: 2Gi
+         storage: 20Gi
 
 Note how there's no explicit mention of Azure, AWS or whatever.
 ``ReadWriteOnce`` (RWO) means the volume can be mounted as
 read-write by a single Kubernetes node.
 (``ReadWriteOnce`` is the *only* access mode supported
 by AzureDisk.)
-``storage: 2Gi`` means the volume has a size of two
+``storage: 20Gi`` means the volume has a size of 20
 `gibibytes <https://en.wikipedia.org/wiki/Gibibyte>`_.
 (You can change that if you like.)
 
