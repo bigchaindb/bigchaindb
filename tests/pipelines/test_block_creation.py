@@ -231,7 +231,7 @@ def test_full_pipeline(b, user_pk):
 def test_block_snowflake(create_tx, signed_transfer_tx):
     from bigchaindb.pipelines.block import tx_collector
     snowflake = tx_collector()
-    snowflake.send(create_tx)
+    assert snowflake.send(create_tx) == [create_tx]
     snowflake.send(signed_transfer_tx)
     snowflake.send(create_tx)
     assert snowflake.send(None) == [create_tx, signed_transfer_tx]

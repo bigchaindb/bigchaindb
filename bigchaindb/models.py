@@ -262,7 +262,7 @@ class Block(object):
             DoubleSpend: if the transaction is a double spend
             InvalidHash: if the hash of the transaction is wrong
             InvalidSignature: if the signature of the transaction is wrong
-            ValidationError: If the block contains a duplicated TX
+            DuplicateTransaction: If the block contains a duplicated TX
         """
         txids = [tx.id for tx in self.transactions]
         if len(txids) != len(set(txids)):
