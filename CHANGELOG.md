@@ -15,6 +15,14 @@ For reference, the possible headings are:
 * **External Contributors** to list contributors outside of BigchainDB GmbH.
 * **Notes**
 
+## [0.9.2] - 2017-03-02
+Tag name: v0.9.2
+
+### Fixed
+Pin `python-rapidjson` library in `setup.py` to prevent `bigchaindb`'s
+installation to fail due to
+https://github.com/python-rapidjson/python-rapidjson/issues/62.
+
 ## [0.9.1] - 2017-02-06
 Tag name: v0.9.1
 
