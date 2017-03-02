@@ -31,7 +31,7 @@ class BlockPipeline:
     def __init__(self):
         """Initialize the BlockPipeline creator"""
         self.bigchain = Bigchain()
-        self.txs = []
+        self.txs = tx_collector()
 
     def filter_tx(self, tx):
         """Filter a transaction.
@@ -98,11 +98,10 @@ class BlockPipeline:
             :class:`~bigchaindb.models.Block`: The block,
             if a block is ready, or ``None``.
         """
-        if tx:
-            self.txs.append(tx)
-        if len(self.txs) == 1000 or (timeout and self.txs):
-            block = self.bigchain.create_block(self.txs)
-            self.txs = []
+        txs = self.txs.send(tx)
+        if len(txs) == 1000 or (timeout and txs):
+            block = self.bigchain.create_block(txs)
+            self.txs = tx_collector()
             return block
 
     def write(self, block):
@@ -132,6 +131,27 @@ class BlockPipeline:
         """
         self.bigchain.delete_transaction(*[tx.id for tx in block.transactions])
         return block
+
+
+def tx_collector():
+    """ A helper to deduplicate transactions """
+
+    def snowflake():
+        txids = set()
+        txs = []
+        while True:
+            tx = yield txs
+            if tx:
+                if tx.id not in txids:
+                    txids.add(tx.id)
+                    txs.append(tx)
+                else:
+                    logger.info('Refusing to add tx to block twice: ' +
+                                tx.id)
+
+    s = snowflake()
+    s.send(None)
+    return s
 
 
 def create_pipeline():

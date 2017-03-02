@@ -20,9 +20,26 @@ def test_stepping_changefeed_produces_update(b, steps):
             [tx.id, tx.id])
 
 
+@pytest.mark.bdb
+@pytest.mark.genesis
+def test_dupe_tx_in_block(b, steps):
+    tx = input_single_create(b)
+    for i in range(2):
+        steps.stale_check_transactions()
+        steps.stale_reassign_transactions()
+        steps.block_changefeed()
+        steps.block_filter_tx()
+    steps.block_validate_tx()
+    steps.block_validate_tx()
+    assert steps.counts == {'block_create': 2}
+    steps.block_create(timeout=False)
+    block = steps.block_create(timeout=True)
+    assert block.transactions == [tx]
+
+
 def input_single_create(b):
     from bigchaindb.common.transaction import Transaction
     metadata = {'r': random.random()}
-    tx = Transaction.create([b.me], [([b.me], 1)], metadata)
+    tx = Transaction.create([b.me], [([b.me], 1)], metadata).sign([b.me_private])
     b.write_transaction(tx)
     return tx
