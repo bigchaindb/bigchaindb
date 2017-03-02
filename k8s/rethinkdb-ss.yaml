@@ -15,7 +15,10 @@ spec:
   ports:
   - port: 8080
     targetPort: 8080
-    name: rethinkdb-api
+    name: rethinkdb-http-port
+  - port: 28015
+    targetPort: 28015
+    name: rethinkdb-driver-port
   type: LoadBalancer
 ---
 apiVersion: apps/v1beta1
@@ -40,8 +43,12 @@ spec:
         ports:
         - containerPort: 8080
           hostPort: 8080
-          name: rdb-port
-          protocol: TCP 
+          name: rdb-http-port
+          protocol: TCP
+        - containerPort: 28015
+          hostPort: 28015
+          name: rdb-client-port
+          protocol: TCP
         volumeMounts:
         - name: rdb-data
           mountPath: /data
