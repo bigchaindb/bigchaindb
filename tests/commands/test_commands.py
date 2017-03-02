@@ -135,7 +135,6 @@ def test_bigchain_export_my_pubkey_when_pubkey_set(capsys, monkeypatch):
     lines = out.splitlines()
     assert config['keypair']['public'] in lines
     assert 'Charlie_Bucket' in lines
-    assert 'bigchaindb args = {}'.format(args) in lines
 
 
 def test_bigchain_export_my_pubkey_when_pubkey_not_set(monkeypatch):
@@ -455,14 +454,18 @@ def test_run_add_replicas(mock_add_replicas):
     mock_add_replicas.reset_mock()
 
     # test add_replicas with `OperationError`
-    mock_add_replicas.side_effect = OperationError()
-    assert run_add_replicas(args) is None
+    mock_add_replicas.side_effect = OperationError('err')
+    with pytest.raises(SystemExit) as exc:
+        run_add_replicas(args)
+    assert exc.value.args == ('err',)
     assert mock_add_replicas.call_count == 1
     mock_add_replicas.reset_mock()
 
     # test add_replicas with `NotImplementedError`
-    mock_add_replicas.side_effect = NotImplementedError()
-    assert run_add_replicas(args) is None
+    mock_add_replicas.side_effect = NotImplementedError('err')
+    with pytest.raises(SystemExit) as exc:
+        run_add_replicas(args)
+    assert exc.value.args == ('err',)
     assert mock_add_replicas.call_count == 1
     mock_add_replicas.reset_mock()
 
@@ -482,14 +485,18 @@ def test_run_remove_replicas(mock_remove_replicas):
     mock_remove_replicas.reset_mock()
 
     # test add_replicas with `OperationError`
-    mock_remove_replicas.side_effect = OperationError()
-    assert run_remove_replicas(args) is None
+    mock_remove_replicas.side_effect = OperationError('err')
+    with pytest.raises(SystemExit) as exc:
+        run_remove_replicas(args)
+    assert exc.value.args == ('err',)
     assert mock_remove_replicas.call_count == 1
     mock_remove_replicas.reset_mock()
 
     # test add_replicas with `NotImplementedError`
-    mock_remove_replicas.side_effect = NotImplementedError()
-    assert run_remove_replicas(args) is None
+    mock_remove_replicas.side_effect = NotImplementedError('err')
+    with pytest.raises(SystemExit) as exc:
+        run_remove_replicas(args)
+    assert exc.value.args == ('err',)
     assert mock_remove_replicas.call_count == 1
     mock_remove_replicas.reset_mock()
 
