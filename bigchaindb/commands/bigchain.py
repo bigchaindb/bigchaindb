@@ -126,7 +126,6 @@ def run_configure(args, skip_if_exists=False):
 def run_export_my_pubkey(args):
     """Export this node's public key to standard output
     """
-    print('bigchaindb args = {}'.format(args))
     bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
     pubkey = bigchaindb.config['keypair']['public']
     if pubkey is not None:
@@ -145,9 +144,8 @@ def _run_init():
 
     schema.init_database(connection=b.connection)
 
-    print('Create genesis block.')
     b.create_genesis_block()
-    print('Done, have fun!')
+    logger.info('Genesis block created.')
 
 
 def run_init(args):
@@ -180,7 +178,7 @@ def run_drop(args):
 
 def run_start(args):
     """Start the processes to run the node"""
-    print('BigchainDB Version {}'.format(bigchaindb.__version__))
+    logger.info('BigchainDB Version %s', bigchaindb.__version__)
     bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
 
     if args.allow_temp_keypair:
@@ -231,7 +229,7 @@ def _run_load(tx_left, stats):
 
 def run_load(args):
     bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
-    print('Starting %s processes', args.multiprocess)
+    logger.info('Starting %s processes', args.multiprocess)
     stats = logstats.Logstats()
     logstats.thread.start(stats)
 
@@ -250,7 +248,7 @@ def run_set_shards(args):
     try:
         set_shards(conn, shards=args.num_shards)
     except OperationError as e:
-        print(e)
+        sys.exit(str(e))
 
 
 def run_set_replicas(args):
@@ -258,7 +256,7 @@ def run_set_replicas(args):
     try:
         set_replicas(conn, replicas=args.num_replicas)
     except OperationError as e:
-        print(e)
+        sys.exit(str(e))
 
 
 def run_add_replicas(args):
@@ -269,7 +267,7 @@ def run_add_replicas(args):
     try:
         add_replicas(conn, args.replicas)
     except (OperationError, NotImplementedError) as e:
-        print(e)
+        sys.exit(str(e))
     else:
         print('Added {} to the replicaset.'.format(args.replicas))
 
@@ -282,7 +280,7 @@ def run_remove_replicas(args):
     try:
         remove_replicas(conn, args.replicas)
     except (OperationError, NotImplementedError) as e:
-        print(e)
+        sys.exit(str(e))
     else:
         print('Removed {} from the replicaset.'.format(args.replicas))
 
