@@ -1,48 +1,50 @@
 ###############################################################
 # This config file runs bigchaindb:latest and connects to the #
-# rethinkdb backend as a service                              #
+# mongodb backend as a service                                #
 ###############################################################
 
 apiVersion: v1
 kind: Service
 metadata:
-  name: bdb-rdb-service
+  name: bdb-mdb-service
   namespace: default
   labels:
-    name: bdb-rdb-service
+    name: bdb-mdb-service
 spec:
   selector:
-    app: bdb-rdb
+    app: bdb-mdb
   ports:
   - port: 9984
     targetPort: 9984
-    name: bdb-rdb-api
+    name: bdb-api
   type: LoadBalancer
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: bdb-rdb
+  name: bdb-mdb
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: bdb-rdb
+        app: bdb-mdb
     spec:
       terminationGracePeriodSeconds: 10
       containers:
-      - name: bdb-rdb
+      - name: bdb-mdb
         image: bigchaindb/bigchaindb:latest
         args:
         - start
         env:
         - name: BIGCHAINDB_DATABASE_HOST
-          value: rdb-service
+          value: mdb-service
         - name: BIGCHAINDB_DATABASE_PORT
-          value: "28015"
+          value: "27017"
+        - name: BIGCHAINDB_DATABASE_REPLICASET
+          value: bigchain-rs
         - name: BIGCHIANDB_DATABASE_BACKEND
-          value: rethinkdb
+          value: mongodb
         - name: BIGCHAINDB_DATABASE_NAME
           value: bigchain
         - name: BIGCHAINDB_SERVER_BIND
