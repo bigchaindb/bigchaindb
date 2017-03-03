@@ -89,8 +89,8 @@ def test_get_divisble_transactions_returns_500(b, client):
     mine([transfer_tx])
 
     transfer_tx_carly = Transaction.transfer([transfer_tx.to_inputs()[1]],
-                                       [([carly_pub], 1)],
-                                       asset_id=create_tx.id)
+                                             [([carly_pub], 1)],
+                                             asset_id=create_tx.id)
     transfer_tx_carly.sign([bob_priv])
 
     res = client.post(TX_ENDPOINT, data=json.dumps(transfer_tx_carly.to_dict()))
