@@ -75,6 +75,8 @@ docker run \
   --name=rethinkdb \
   --publish=172.17.0.1:28015:28015 \
   --publish=172.17.0.1:58080:8080 \
+  --restart=always \
+  --volume "$HOME/bigchaindb_docker:/data" \
   rethinkdb:2.3
 ```
 
@@ -85,11 +87,25 @@ You can also access the RethinkDB dashboard at
 
 #### For MongoDB
 
+Note: MongoDB runs as user `mongodb` which had the UID `999` and GID `999`
+inside the container. For the volume to be mounted properly, as user `mongodb`
+in your host, you should have a `mongodb` user with UID and GID `999`.
+If you have another user on the host with UID `999`, the mapped files will
+be owned by this user in the host.
+If there is no owner with UID 999, you can create the corresponding user and
+group.
+
+`groupadd -r --gid 999 mongodb && useradd -r --uid 999 -g mongodb mongodb`
+
+
 ```text
 docker run \
   --detach \
   --name=mongodb \
   --publish=172.17.0.1:27017:27017 \
+  --restart=always \
+  --volume=/tmp/mongodb_docker/db:/data/db \
+  --volume=/tmp/mongodb_docker/configdb:/data/configdb \
   mongo:3.4.1 --replSet=bigchain-rs
 ```
 
@@ -100,6 +116,7 @@ docker run \
   --detach \
   --name=bigchaindb \
   --publish=59984:9984 \
+  --restart=always \
   --volume=$HOME/bigchaindb_docker:/data \
   bigchaindb/bigchaindb \
   start
