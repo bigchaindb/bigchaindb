@@ -128,7 +128,7 @@ def test_validate_block_with_invalid_signature(b):
 @pytest.mark.genesis
 def test_vote_validate_transaction(b):
     from bigchaindb.pipelines import vote
-    from bigchaindb.models import Transaction
+    from bigchaindb.common.exceptions import ValidationError
 
     tx = dummy_tx(b)
     vote_obj = vote.Vote()
@@ -145,7 +145,6 @@ def test_vote_validate_transaction(b):
         validate.side_effect = IOError()
         with pytest.raises(IOError):
             validation = vote_obj.validate_tx(tx, 456, 10)
-
 
 
 @pytest.mark.genesis

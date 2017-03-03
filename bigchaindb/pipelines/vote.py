@@ -108,8 +108,8 @@ class Vote:
         try:
             tx.validate(self.bigchain)
             valid = True
-        except exceptions.ValidationError:
-            # TODO: log
+        except exceptions.ValidationError as e:
+            logger.warning('Invalid tx: %s' % e)
             valid = False
 
         return valid, block_id, num_tx

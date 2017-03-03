@@ -76,7 +76,7 @@ class BlockPipeline:
             tx.validate(self.bigchain)
             return tx
         except ValidationError as e:
-            # todo: log
+            logger.warning('Invalid tx: %s' % e)
             self.bigchain.delete_transaction(tx.id)
             return None
 

@@ -42,6 +42,11 @@ class OperationError(BigchainDBError):
 
 ################################################################################
 # Validation errors
+#
+# All validation errors (which are handleable errors, not faults) should
+# subclass ValidationError. However, where possible they should also have their
+# own distinct type to differentiate them from other validation errors,
+# especially for the purposes of testing.
 
 
 class ValidationError(BigchainDBError):
