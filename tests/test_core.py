@@ -90,12 +90,3 @@ def test_has_previous_vote(monkeypatch):
     block = {'votes': ({'node_pubkey': 'pubkey'},)}
     with pytest.raises(Exception):
         bigchain.has_previous_vote(block)
-
-
-@pytest.mark.parametrize('exists', (True, False))
-def test_transaction_exists(monkeypatch, exists):
-    from bigchaindb.core import Bigchain
-    monkeypatch.setattr(
-        'bigchaindb.backend.query.has_transaction', lambda x, y: exists)
-    bigchain = Bigchain(public_key='pubkey', private_key='privkey')
-    assert bigchain.transaction_exists('txid') is exists

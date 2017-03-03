@@ -159,13 +159,6 @@ def get_block(connection, block_id):
 
 
 @register_query(RethinkDBConnection)
-def has_transaction(connection, transaction_id):
-    return bool(connection.run(
-            r.table('bigchain', read_mode=READ_MODE)
-            .get_all(transaction_id, index='transaction_id').count()))
-
-
-@register_query(RethinkDBConnection)
 def count_blocks(connection):
     return connection.run(
             r.table('bigchain', read_mode=READ_MODE)

@@ -90,8 +90,8 @@ class TestBigchainApi(object):
         assert b.has_previous_vote(block.id, block.voters) is True
 
     @pytest.mark.genesis
-    def test_get_spent_with_double_spend(self, b, monkeypatch):
-        from bigchaindb.common.exceptions import DoubleSpend
+    def test_get_spent_with_double_inclusion_detected(self, b, monkeypatch):
+        from bigchaindb.backend.exceptions import BigchainDBCritical
         from bigchaindb.models import Transaction
 
         tx = Transaction.create([b.me], [([b.me], 1)])
@@ -115,18 +115,18 @@ class TestBigchainApi(object):
         block3 = b.create_block([transfer_tx2])
         b.write_block(block3)
 
-        # Vote both block2 and block3 valid to provoke a double spend
+        # Vote both block2 and block3 valid
         vote = b.vote(block2.id, b.get_last_voted_block().id, True)
         b.write_vote(vote)
         vote = b.vote(block3.id, b.get_last_voted_block().id, True)
         b.write_vote(vote)
 
-        with pytest.raises(DoubleSpend):
+        with pytest.raises(BigchainDBCritical):
             b.get_spent(tx.id, 0)
 
     @pytest.mark.genesis
-    def test_get_block_status_for_tx_with_double_spend(self, b, monkeypatch):
-        from bigchaindb.common.exceptions import DoubleSpend
+    def test_get_block_status_for_tx_with_double_inclusion(self, b, monkeypatch):
+        from bigchaindb.backend.exceptions import BigchainDBCritical
         from bigchaindb.models import Transaction
 
         tx = Transaction.create([b.me], [([b.me], 1)])
@@ -146,7 +146,7 @@ class TestBigchainApi(object):
         vote = b.vote(block2.id, b.get_last_voted_block().id, True)
         b.write_vote(vote)
 
-        with pytest.raises(DoubleSpend):
+        with pytest.raises(BigchainDBCritical):
             b.get_blocks_status_containing_tx(tx.id)
 
     @pytest.mark.genesis
@@ -1240,3 +1240,40 @@ def test_transaction_unicode(b):
     assert b.get_block(block.id) == block.to_dict()
     assert block.validate(b) == block
     assert beer_json in serialize(block.to_dict())
+
+
+@pytest.mark.bdb
+def test_is_new_transaction(b, genesis_block):
+    from bigchaindb.models import Transaction
+
+    def write_tx(n):
+        tx = Transaction.create([b.me], [([b.me], n)])
+        tx = tx.sign([b.me_private])
+        # Tx is new because it's not in any block
+        assert b.is_new_transaction(tx.id)
+
+        block = b.create_block([tx])
+        b.write_block(block)
+        return tx, block
+
+    # test VALID case
+    tx, block = write_tx(1)
+    # Tx is now in undecided block
+    assert not b.is_new_transaction(tx.id)
+    assert b.is_new_transaction(tx.id, exclude_block_id=block.id)
+    # After voting valid, should not be new
+    vote = b.vote(block.id, genesis_block.id, True)
+    b.write_vote(vote)
+    assert not b.is_new_transaction(tx.id)
+    assert b.is_new_transaction(tx.id, exclude_block_id=block.id)
+
+    # test INVALID case
+    tx, block = write_tx(2)
+    # Tx is now in undecided block
+    assert not b.is_new_transaction(tx.id)
+    assert b.is_new_transaction(tx.id, exclude_block_id=block.id)
+    vote = b.vote(block.id, genesis_block.id, False)
+    b.write_vote(vote)
+    # Tx is new because it's only found in an invalid block
+    assert b.is_new_transaction(tx.id)
+    assert b.is_new_transaction(tx.id, exclude_block_id=block.id)

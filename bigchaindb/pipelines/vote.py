@@ -14,7 +14,6 @@ import bigchaindb
 from bigchaindb import Bigchain
 from bigchaindb import backend
 from bigchaindb.backend.changefeed import ChangeFeed
-from bigchaindb.consensus import BaseConsensusRules
 from bigchaindb.models import Transaction, Block
 from bigchaindb.common import exceptions
 
@@ -35,10 +34,10 @@ class Vote:
         # Since cannot share a connection to RethinkDB using multiprocessing,
         # we need to create a temporary instance of BigchainDB that we use
         # only to query RethinkDB
-        self.consensus = BaseConsensusRules
 
         # This is the Bigchain instance that will be "shared" (aka: copied)
         # by all the subprocesses
+
         self.bigchain = Bigchain()
         self.last_voted_id = Bigchain().get_last_voted_block().id
 
@@ -90,7 +89,8 @@ class Vote:
             yield tx, block_id, num_tx
 
     def validate_tx(self, tx, block_id, num_tx):
-        """Validate a transaction.
+        """Validate a transaction. Transaction must also not be in any VALID
+           block.
 
         Args:
             tx (dict): the transaction to validate
@@ -101,7 +101,12 @@ class Vote:
             Three values are returned, the validity of the transaction,
             ``block_id``, ``num_tx``.
         """
-        return bool(self.bigchain.is_valid_transaction(tx)), block_id, num_tx
+        new = self.bigchain.is_new_transaction(tx.id, exclude_block_id=block_id)
+        if not new:
+            return False, block_id, num_tx
+
+        valid = bool(self.bigchain.is_valid_transaction(tx))
+        return valid, block_id, num_tx
 
     def vote(self, tx_validity, block_id, num_tx):
         """Collect the validity of transactions and cast a vote when ready.

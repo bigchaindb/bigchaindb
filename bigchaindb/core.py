@@ -11,6 +11,7 @@ from bigchaindb.common.transaction import TransactionLink
 import bigchaindb
 
 from bigchaindb import backend, config_utils, utils
+from bigchaindb.backend import exceptions as backend_exceptions
 from bigchaindb.consensus import BaseConsensusRules
 from bigchaindb.models import Block, Transaction
 
@@ -55,10 +56,18 @@ class Bigchain(object):
         self.me = public_key or bigchaindb.config['keypair']['public']
         self.me_private = private_key or bigchaindb.config['keypair']['private']
         self.nodes_except_me = keyring or bigchaindb.config['keyring']
+
         if backlog_reassign_delay is None:
             backlog_reassign_delay = bigchaindb.config['backlog_reassign_delay']
         self.backlog_reassign_delay = backlog_reassign_delay
-        self.consensus = BaseConsensusRules
+
+        consensusPlugin = bigchaindb.config.get('consensus_plugin')
+
+        if consensusPlugin:
+            self.consensus = config_utils.load_consensus_plugin(consensusPlugin)
+        else:
+            self.consensus = BaseConsensusRules
+
         self.connection = connection if connection else backend.connect(**bigchaindb.config['database'])
         if not self.me or not self.me_private:
             raise exceptions.KeypairNotFoundException()
@@ -177,6 +186,22 @@ class Bigchain(object):
                 exceptions.InvalidHash, exceptions.InvalidSignature,
                 exceptions.TransactionNotInValidBlock, exceptions.AmountError):
             return False
+
+    def is_new_transaction(self, txid, exclude_block_id=None):
+        """
+        Return True if the transaction does not exist in any
+        VALID or UNDECIDED block. Return False otherwise.
+
+        Args:
+            txid (str): Transaction ID
+            exclude_block_id (str): Exclude block from search
+        """
+        block_statuses = self.get_blocks_status_containing_tx(txid)
+        block_statuses.pop(exclude_block_id, None)
+        for status in block_statuses.values():
+            if status != self.BLOCK_INVALID:
+                return False
+        return True
 
     def get_block(self, block_id, include_status=False):
         """Get the block with the specified `block_id` (and optionally its status)
@@ -308,11 +333,10 @@ class Bigchain(object):
             if list(validity.values()).count(Bigchain.BLOCK_VALID) > 1:
                 block_ids = str([block for block in validity
                                  if validity[block] == Bigchain.BLOCK_VALID])
-                raise exceptions.DoubleSpend('Transaction {tx} is present in '
-                                             'multiple valid blocks: '
-                                             '{block_ids}'
-                                             .format(tx=txid,
-                                                     block_ids=block_ids))
+                raise backend_exceptions.BigchainDBCritical(
+                    'Transaction {tx} is present in '
+                    'multiple valid blocks: {block_ids}'
+                    .format(tx=txid, block_ids=block_ids))
 
             return validity
 
@@ -525,9 +549,6 @@ class Bigchain(object):
         """
 
         return backend.query.write_block(self.connection, block)
-
-    def transaction_exists(self, transaction_id):
-        return backend.query.has_transaction(self.connection, transaction_id)
 
     def prepare_genesis_block(self):
         """Prepare a genesis block."""
