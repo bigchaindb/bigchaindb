@@ -1,0 +1,116 @@
+##################################################################
+# This config file uses bdb:latest with a spearate mongodb:3.4.1 #
+##################################################################
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: bdb-service
+  namespace: default
+  labels:
+    name: bdb-service
+spec:
+  selector:
+    app: bdb
+  ports:
+  - port: 9984
+    targetPort: 9984
+    name: bdb-http-api
+  - port: 27017
+    targetPort: 27017
+    name: bdb-mdb-port
+  type: LoadBalancer
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet 
+metadata:
+  name: bdb
+  namespace: default
+spec:
+  serviceName: bdb
+  replicas: 1
+  template:
+    metadata:
+      name: bdb
+      labels:
+        app: bdb
+      annotations:
+        pod.beta.kubernetes.io/init-containers: '[
+            {
+                "name": "bdb-configure",
+                "image": "bigchaindb/bigchaindb:latest",
+                "command": ["bigchaindb", "-y", "configure", "mongodb"],
+                "volumeMounts": [
+                    {
+                        "name": "bigchaindb-data",
+                        "mountPath": "/data"
+                    }
+                ]
+            }
+        ]'
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: bdb-server
+        image: bigchaindb/bigchaindb:latest
+        args:
+        - -c
+        - /data/.bigchaindb
+        - start
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9984
+          hostPort: 9984
+          name: bdb-port
+          protocol: TCP 
+        volumeMounts:
+        - name: bigchaindb-data
+          mountPath: /data
+        resources:
+          limits:
+            cpu: 200m
+            memory: 768Mi
+        livenessProbe:
+          httpGet:
+            path: /
+            port: bdb-port
+          initialDelaySeconds: 15
+          timeoutSeconds: 10
+#        readinessProbe:
+#          httpGet:
+#            path: /
+#            port: bdb-port
+#          initialDelaySeconds: 15
+#          timeoutSeconds: 10
+      - name: mongodb
+        image: mongo:3.4.1
+        args:
+        - --replSet=bigchain-rs
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 27017
+          hostPort: 27017
+          name: mdb-port
+          protocol: TCP 
+        volumeMounts:
+        - name: mdb-data
+          mountPath: /data
+        resources:
+          limits:
+            cpu: 200m
+            memory: 768Mi
+        livenessProbe:
+          tcpSocket:
+            port: mdb-port
+          successThreshold: 1
+          failureThreshold: 3
+          periodSeconds: 15
+          timeoutSeconds: 1
+      restartPolicy: Always
+      volumes:
+      - name: bigchaindb-data
+        hostPath:
+          path: /disk/bigchaindb-data
+      - name: mdb-data
+        hostPath:
+          path: /disk/mdb-data
