@@ -21,7 +21,7 @@ be stored in a file on your host machine at `~/bigchaindb_docker/.bigchaindb`:
 
 ```text
 docker run --rm -v "$HOME/bigchaindb_docker:/data" -ti \
-  bigchaindb/bigchaindb -y configure rethinkdb
+  bigchaindb/bigchaindb:0.9.3 -y configure rethinkdb
 Generating keypair
 Configuration written to /data/.bigchaindb
 Ready to go!
@@ -48,7 +48,7 @@ After configuring the system, you can run BigchainDB with the following command:
 docker run -v "$HOME/bigchaindb_docker:/data" -d \
   --name bigchaindb \
   -p "58080:8080" -p "59984:9984" \
-  bigchaindb/bigchaindb start
+  bigchaindb/bigchaindb:0.9.3 start
 ```
 
 The command is slightly different from the previous one, the differences are:
@@ -92,7 +92,7 @@ You can load test the BigchainDB running in that container by running the `bigch
 docker run --rm -v "$HOME/bigchaindb_docker:/data" \
   -e BIGCHAINDB_DATABASE_HOST=bigchaindb \
   --link bigchaindb \
-  bigchaindb/bigchaindb load
+  bigchaindb/bigchaindb:0.9.3 load
 ```
 
 Note the `--link` option to link to the first container (named `bigchaindb`).
