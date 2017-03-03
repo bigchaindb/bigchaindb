@@ -308,7 +308,7 @@ class Bigchain(object):
             if list(validity.values()).count(Bigchain.BLOCK_VALID) > 1:
                 block_ids = str([block for block in validity
                                  if validity[block] == Bigchain.BLOCK_VALID])
-                raise backend_exceptions.BigchainDBCritical(
+                raise backend_exceptions.CriticalDoubleInclusion(
                     'Transaction {tx} is present in '
                     'multiple valid blocks: {block_ids}'
                     .format(tx=txid, block_ids=block_ids))
@@ -361,7 +361,7 @@ class Bigchain(object):
                 if self.get_transaction(transaction['id']):
                     num_valid_transactions += 1
                 if num_valid_transactions > 1:
-                    raise exceptions.BigchainDBCritical(
+                    raise backend_exceptions.CriticalDoubleSpend(
                         '`{}` was spent more than once. There is a problem'
                         ' with the chain'.format(txid))
 

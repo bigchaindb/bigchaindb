@@ -93,7 +93,7 @@ class TestBigchainApi(object):
 
     @pytest.mark.genesis
     def test_get_spent_with_double_inclusion_detected(self, b, monkeypatch):
-        from bigchaindb.backend.exceptions import BigchainDBCritical
+        from bigchaindb.backend.exceptions import CriticalDoubleInclusion
         from bigchaindb.models import Transaction
 
         tx = Transaction.create([b.me], [([b.me], 1)])
@@ -123,12 +123,47 @@ class TestBigchainApi(object):
         vote = b.vote(block3.id, b.get_last_voted_block().id, True)
         b.write_vote(vote)
 
-        with pytest.raises(BigchainDBCritical):
+        with pytest.raises(CriticalDoubleInclusion):
+            b.get_spent(tx.id, 0)
+
+    @pytest.mark.genesis
+    def test_get_spent_with_double_spend_detected(self, b, monkeypatch):
+        from bigchaindb.backend.exceptions import CriticalDoubleSpend
+        from bigchaindb.models import Transaction
+
+        tx = Transaction.create([b.me], [([b.me], 1)])
+        tx = tx.sign([b.me_private])
+
+        monkeypatch.setattr('time.time', lambda: 1000000000)
+        block1 = b.create_block([tx])
+        b.write_block(block1)
+
+        monkeypatch.setattr('time.time', lambda: 1000000020)
+        transfer_tx = Transaction.transfer(tx.to_inputs(), [([b.me], 1)],
+                                           asset_id=tx.id)
+        transfer_tx = transfer_tx.sign([b.me_private])
+        block2 = b.create_block([transfer_tx])
+        b.write_block(block2)
+
+        monkeypatch.setattr('time.time', lambda: 1000000030)
+        transfer_tx2 = Transaction.transfer(tx.to_inputs(), [([b.me], 2)],
+                                            asset_id=tx.id)
+        transfer_tx2 = transfer_tx2.sign([b.me_private])
+        block3 = b.create_block([transfer_tx2])
+        b.write_block(block3)
+
+        # Vote both block2 and block3 valid
+        vote = b.vote(block2.id, b.get_last_voted_block().id, True)
+        b.write_vote(vote)
+        vote = b.vote(block3.id, b.get_last_voted_block().id, True)
+        b.write_vote(vote)
+
+        with pytest.raises(CriticalDoubleSpend):
             b.get_spent(tx.id, 0)
 
     @pytest.mark.genesis
     def test_get_block_status_for_tx_with_double_inclusion(self, b, monkeypatch):
-        from bigchaindb.backend.exceptions import BigchainDBCritical
+        from bigchaindb.backend.exceptions import CriticalDoubleInclusion
         from bigchaindb.models import Transaction
 
         tx = Transaction.create([b.me], [([b.me], 1)])
@@ -148,7 +183,7 @@ class TestBigchainApi(object):
         vote = b.vote(block2.id, b.get_last_voted_block().id, True)
         b.write_vote(vote)
 
-        with pytest.raises(BigchainDBCritical):
+        with pytest.raises(CriticalDoubleInclusion):
             b.get_blocks_status_containing_tx(tx.id)
 
     @pytest.mark.genesis

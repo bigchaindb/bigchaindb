@@ -17,5 +17,9 @@ class DuplicateKeyError(OperationError):
     """Exception raised when an insert fails because the key is not unique"""
 
 
-class BigchainDBCritical(Exception):
-    """Unhandleable error that requires attention"""
+class CriticalDoubleSpend(BigchainDBError):
+    """Data integrity error that requires attention"""
+
+
+class CriticalDoubleInclusion(BigchainDBError):
+    """Data integrity error that requires attention"""
