@@ -34,38 +34,34 @@ spec:
       name: bdb
       labels:
         app: bdb
-      annotations:
-        pod.beta.kubernetes.io/init-containers: '[
-            {
-                "name": "bdb-configure",
-                "image": "bigchaindb/bigchaindb:latest",
-                "command": ["bigchaindb", "-y", "configure", "rethinkdb"],
-                "volumeMounts": [
-                    {
-                        "name": "bigchaindb-data",
-                        "mountPath": "/data"
-                    }
-                ]
-            }
-        ]'
     spec:
       terminationGracePeriodSeconds: 10
       containers:
       - name: bdb-server
         image: bigchaindb/bigchaindb:latest
         args:
-        - -c
-        - /data/.bigchaindb
         - start
+        env:
+        - name: BIGCHAINDB_KEYPAIR_PRIVATE
+          value: 56mEvwwVxcYsFQ3Y8UTFB8DVBv38yoUhxzDW3DAdLVd2
+        - name: BIGCHAINDB_KEYPAIR_PUBLIC
+          value: 9DsHwiEtvk51UHmNM2eV66czFha69j3CdtNrCj1RcZWR
+        - name: BIGCHAINDB_KEYRING
+          value: ""
+        - name: BIGCHAINDB_DATABASE_BACKEND
+          value: rethinkdb
+        - name: BIGCHAINDB_DATABASE_PORT
+          value: "28015"
+        - name: BIGCHAINDB_DATABASE_HOST
+          value: localhost
+        - name: BIGCHAINDB_SERVER_BIND
+          value: "0.0.0.0:9984"
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 9984
           hostPort: 9984
           name: bdb-port
-          protocol: TCP 
-        volumeMounts:
-        - name: bigchaindb-data
-          mountPath: /data
+          protocol: TCP
         resources:
           limits:
             cpu: 200m
@@ -115,9 +111,6 @@ spec:
           timeoutSeconds: 10
       restartPolicy: Always
       volumes:
-      - name: bigchaindb-data
-        hostPath:
-          path: /disk/bigchaindb-data
       - name: rdb-data
-        hostPath:
-          path: /disk/rdb-data
+        persistentVolumeClaim:
+          claimName: mongoclaim
