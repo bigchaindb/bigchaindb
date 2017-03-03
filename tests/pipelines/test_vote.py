@@ -135,10 +135,17 @@ def test_vote_validate_transaction(b):
     validation = vote_obj.validate_tx(tx, 123, 1)
     assert validation == (True, 123, 1)
 
-    # NOTE: Submit unsigned transaction to `validate_tx` yields `False`.
-    tx = Transaction.create([b.me], [([b.me], 1)])
-    validation = vote_obj.validate_tx(tx, 456, 10)
-    assert validation == (False, 456, 10)
+    with patch('bigchaindb.models.Transaction.validate') as validate:
+        # Assert that validationerror gets caught
+        validate.side_effect = ValidationError()
+        validation = vote_obj.validate_tx(tx, 456, 10)
+        assert validation == (False, 456, 10)
+
+        # Assert that another error doesnt
+        validate.side_effect = IOError()
+        with pytest.raises(IOError):
+            validation = vote_obj.validate_tx(tx, 456, 10)
+
 
 
 @pytest.mark.genesis

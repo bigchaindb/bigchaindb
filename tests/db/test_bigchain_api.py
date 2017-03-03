@@ -3,6 +3,8 @@ from time import sleep
 import pytest
 from unittest.mock import patch
 
+from bigchaindb.common.exceptions import ValidationError
+
 pytestmark = pytest.mark.bdb
 
 
@@ -565,14 +567,14 @@ class TestTransactionValidation(object):
         # Manipulate input so that it has a `fulfills` defined even
         # though it shouldn't have one
         create_tx.inputs[0].fulfills = TransactionLink('abc', 0)
-        with pytest.raises(ValueError) as excinfo:
+        with pytest.raises(ValidationError) as excinfo:
             b.validate_transaction(create_tx)
         assert excinfo.value.args[0] == 'A CREATE operation has no inputs'
 
     def test_transfer_operation_no_inputs(self, b, user_pk,
                                           signed_transfer_tx):
         signed_transfer_tx.inputs[0].fulfills = None
-        with pytest.raises(ValueError) as excinfo:
+        with pytest.raises(ValidationError) as excinfo:
             b.validate_transaction(signed_transfer_tx)
 
         assert excinfo.value.args[0] == 'Only `CREATE` transactions can have null inputs'
@@ -741,7 +743,7 @@ class TestBlockValidation(object):
             b.validate_block(block)
 
     def test_invalid_node_pubkey(self, b):
-        from bigchaindb.common.exceptions import OperationError
+        from bigchaindb.common.exceptions import SybilError
         from bigchaindb.common import crypto
 
         # blocks can only be created by a federation node
@@ -758,8 +760,8 @@ class TestBlockValidation(object):
         # from a non federation node
         block = block.sign(tmp_sk)
 
-        # check that validate_block raises an OperationError
-        with pytest.raises(OperationError):
+        # check that validate_block raises an SybilError
+        with pytest.raises(SybilError):
             b.validate_block(block)
 
 
@@ -778,7 +780,7 @@ class TestMultipleInputs(object):
         tx = tx.sign([user_sk])
 
         # validate transaction
-        assert b.is_valid_transaction(tx) == tx
+        tx.validate(b)
         assert len(tx.inputs) == 1
         assert len(tx.outputs) == 1
 
@@ -800,7 +802,7 @@ class TestMultipleInputs(object):
                                   asset_id=input_tx.id)
         tx = tx.sign([user_sk])
 
-        assert b.is_valid_transaction(tx) == tx
+        tx.validate(b)
         assert len(tx.inputs) == 1
         assert len(tx.outputs) == 1
 
@@ -832,7 +834,7 @@ class TestMultipleInputs(object):
         transfer_tx = transfer_tx.sign([user_sk, user2_sk])
 
         # validate transaction
-        assert b.is_valid_transaction(transfer_tx) == transfer_tx
+        transfer_tx.validate(b)
         assert len(transfer_tx.inputs) == 1
         assert len(transfer_tx.outputs) == 1
 
@@ -865,7 +867,7 @@ class TestMultipleInputs(object):
                                   asset_id=tx_input.id)
         tx = tx.sign([user_sk, user2_sk])
 
-        assert b.is_valid_transaction(tx) == tx
+        tx.validate(b)
         assert len(tx.inputs) == 1
         assert len(tx.outputs) == 1
 
@@ -1219,7 +1221,6 @@ def test_cant_spend_same_input_twice_in_tx(b, genesis_block):
     tx_transfer = Transaction.transfer(dup_inputs, [([b.me], 200)],
                                        asset_id=tx_create.id)
     tx_transfer_signed = tx_transfer.sign([b.me_private])
-    assert b.is_valid_transaction(tx_transfer_signed) is False
     with pytest.raises(DoubleSpend):
         tx_transfer_signed.validate(b)
 

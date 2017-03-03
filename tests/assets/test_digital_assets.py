@@ -1,3 +1,4 @@
+from bigchaindb.common.exceptions import ValidationError
 import pytest
 import random
 
@@ -26,7 +27,7 @@ def test_validate_bad_asset_creation(b, user_pk):
     tx.asset['data'] = 'a'
     tx_signed = tx.sign([b.me_private])
 
-    with pytest.raises(TypeError):
+    with pytest.raises(ValidationError):
         b.validate_transaction(tx_signed)
 
 
@@ -108,4 +109,4 @@ def test_create_valid_divisible_asset(b, user_pk, user_sk):
 
     tx = Transaction.create([user_pk], [([user_pk], 2)])
     tx_signed = tx.sign([user_sk])
-    assert b.is_valid_transaction(tx_signed)
+    tx_signed.validate(b)

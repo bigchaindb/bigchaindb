@@ -162,31 +162,6 @@ class Bigchain(object):
 
         return self.consensus.validate_transaction(self, transaction)
 
-    def is_valid_transaction(self, transaction):
-        """Check whether a transaction is valid or invalid.
-
-        Similar to :meth:`~bigchaindb.Bigchain.validate_transaction`
-        but never raises an exception. It returns :obj:`False` if
-        the transaction is invalid.
-
-        Args:
-            transaction (:Class:`~bigchaindb.models.Transaction`): transaction
-                to check.
-
-        Returns:
-            The :class:`~bigchaindb.models.Transaction` instance if valid,
-            otherwise :obj:`False`.
-        """
-
-        try:
-            return self.validate_transaction(transaction)
-        except (ValueError, exceptions.OperationError,
-                exceptions.TransactionDoesNotExist,
-                exceptions.TransactionOwnerError, exceptions.DoubleSpend,
-                exceptions.InvalidHash, exceptions.InvalidSignature,
-                exceptions.TransactionNotInValidBlock, exceptions.AmountError):
-            return False
-
     def is_new_transaction(self, txid, exclude_block_id=None):
         """
         Return True if the transaction does not exist in any
@@ -386,10 +361,9 @@ class Bigchain(object):
                 if self.get_transaction(transaction['id']):
                     num_valid_transactions += 1
                 if num_valid_transactions > 1:
-                    raise exceptions.DoubleSpend(('`{}` was spent more than'
-                                                  ' once. There is a problem'
-                                                  ' with the chain')
-                                                 .format(txid))
+                    raise exceptions.BigchainDBCritical(
+                        '`{}` was spent more than once. There is a problem'
+                        ' with the chain'.format(txid))
 
             if num_valid_transactions:
                 return Transaction.from_dict(transactions[0])

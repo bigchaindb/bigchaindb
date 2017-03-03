@@ -13,8 +13,7 @@ import bigchaindb
 from bigchaindb import backend
 from bigchaindb.backend.changefeed import ChangeFeed
 from bigchaindb.models import Transaction
-from bigchaindb.common.exceptions import (SchemaValidationError, InvalidHash,
-                                          InvalidSignature, AmountError)
+from bigchaindb.common.exceptions import ValidationError
 from bigchaindb import Bigchain
 
 
@@ -63,8 +62,7 @@ class BlockPipeline:
         """
         try:
             tx = Transaction.from_dict(tx)
-        except (SchemaValidationError, InvalidHash, InvalidSignature,
-                AmountError):
+        except ValidationError:
             return None
 
         # If transaction is in any VALID or UNDECIDED block we
@@ -74,11 +72,13 @@ class BlockPipeline:
             return None
 
         # If transaction is not valid it should not be included
-        if not self.bigchain.is_valid_transaction(tx):
+        try:
+            tx.validate(self.bigchain)
+            return tx
+        except ValidationError as e:
+            # todo: log
             self.bigchain.delete_transaction(tx.id)
             return None
-
-        return tx
 
     def create(self, tx, timeout=False):
         """Create a block.
