@@ -50,10 +50,10 @@ spec:
           value: ""
         - name: BIGCHAINDB_DATABASE_BACKEND
           value: rethinkdb
-        - name: BIGCHAINDB_DATABASE_PORT
-          value: "28015"
         - name: BIGCHAINDB_DATABASE_HOST
           value: localhost
+        - name: BIGCHAINDB_DATABASE_PORT
+          value: "28015"
         - name: BIGCHAINDB_SERVER_BIND
           value: "0.0.0.0:9984"
         imagePullPolicy: IfNotPresent
