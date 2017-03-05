@@ -169,12 +169,17 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
         'host': DATABASE_HOST,
         'port': DATABASE_PORT,
         'name': DATABASE_NAME,
+        'connection_timeout': 5000,
+        'max_tries': 3
     }
+
     database_mongodb = {
         'backend': 'mongodb',
         'host': DATABASE_HOST,
         'port': DATABASE_PORT,
         'name': DATABASE_NAME,
+        'connection_timeout': 5000,
+        'max_tries': 3,
         'replicaset': 'bigchain-rs',
     }
 

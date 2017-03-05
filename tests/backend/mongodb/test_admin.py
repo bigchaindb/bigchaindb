@@ -40,7 +40,7 @@ def connection():
     # executed to make sure that the replica set is correctly initialized.
     # Here we force the the connection setup so that all required
     # `Database.command` are executed before we mock them it in the tests.
-    connection._connect()
+    connection.connect()
     return connection
 
 
