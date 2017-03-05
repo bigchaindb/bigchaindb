@@ -154,6 +154,6 @@ but it should become "Bound" fairly quickly.
    Status:          Bound
    Volume:          pvc-ebed81f1-fdca-11e6-abf0-000d3a27ab21
    Labels:          <none>
-   Capacity:        2Gi
+   Capacity:        20Gi
    Access Modes:    RWO
    No events.
