@@ -1,6 +1,8 @@
-##################################################################
-# This config file uses bdb:latest with a spearate mongodb:3.4.1 #
-##################################################################
+#################################################################
+# This YAML file desribes a StatefulSet with two containers:    #
+# bigchaindb/bigchaindb:latest and mongo:3.4.1                  #
+# It also describes a Service to expose BigchainDB and MongoDB. #
+#################################################################
 
 apiVersion: v1
 kind: Service
@@ -18,7 +20,7 @@ spec:
     name: bdb-http-api
   - port: 27017
     targetPort: 27017
-    name: bdb-mdb-port
+    name: mongodb-port
   type: LoadBalancer
 ---
 apiVersion: apps/v1beta1

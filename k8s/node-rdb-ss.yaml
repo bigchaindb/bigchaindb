@@ -1,6 +1,10 @@
-##################################################################
-# This config file uses bdb:latest with a spearate rethinkdb:2.3 #
-##################################################################
+##############################################################
+# This YAML file desribes a StatefulSet with two containers: #
+# bigchaindb/bigchaindb:latest and rethinkdb:2.3             #
+# It also describes a Service to expose BigchainDB,          #
+# the RethinkDB intracluster communications port, and        #
+# the RethinkDB web interface port.                          #
+##############################################################
 
 apiVersion: v1
 kind: Service
@@ -16,9 +20,12 @@ spec:
   - port: 9984
     targetPort: 9984
     name: bdb-http-api
+  - port: 29015
+    targetPort: 29015
+    name: rdb-intracluster-comm-port
   - port: 8080
     targetPort: 8080
-    name: bdb-rethinkdb-api
+    name: rdb-web-interface-port
   type: LoadBalancer
 ---
 apiVersion: apps/v1beta1
@@ -56,6 +63,10 @@ spec:
           value: "28015"
         - name: BIGCHAINDB_SERVER_BIND
           value: "0.0.0.0:9984"
+        - name: BIGCHAINDB_DATABASE_NAME
+          value: bigchain
+        - name: BIGCHAINDB_BACKLOG_REASSIGN_DELAY
+          value: "120"
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 9984
@@ -84,7 +95,11 @@ spec:
         ports:
         - containerPort: 8080
           hostPort: 8080
-          name: rdb-http-port
+          name: rdb-web-interface-port
+          protocol: TCP
+        - containerPort: 29015
+          hostPort: 29015
+          name: rdb-intra-port
           protocol: TCP
         - containerPort: 28015
           hostPort: 28015
