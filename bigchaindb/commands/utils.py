@@ -3,16 +3,44 @@ for ``argparse.ArgumentParser``.
 """
 
 import argparse
+import builtins
+import functools
 import multiprocessing as mp
 import subprocess
+import sys
 
 import rethinkdb as r
 from pymongo import uri_parser
 
 import bigchaindb
+import bigchaindb.config_utils
 from bigchaindb import backend
 from bigchaindb.common.exceptions import StartupError
+from bigchaindb.log.setup import setup_logging
 from bigchaindb.version import __version__
+
+
+def configure_bigchaindb(command):
+    @functools.wraps(command)
+    def configure(args):
+        bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
+
+        logging_config = bigchaindb.config['logging'] or {}
+        if 'log_level' in args and args.log_level:
+            logging_config['level'] = args.log_level
+        setup_logging(logging_config)
+
+        command(args)
+
+    return configure
+
+
+# We need this because `input` always prints on stdout, while it should print
+# to stderr. It's a very old bug, check it out here:
+# - https://bugs.python.org/issue1927
+def input_on_stderr(prompt=''):
+    print(prompt, end='', file=sys.stderr)
+    return builtins.input()
 
 
 def start_rethinkdb():
@@ -129,6 +157,10 @@ base_parser = argparse.ArgumentParser(add_help=False, prog='bigchaindb')
 base_parser.add_argument('-c', '--config',
                          help='Specify the location of the configuration file '
                               '(use "-" for stdout)')
+
+base_parser.add_argument('-l', '--log-level',
+                         choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+                         help='Log level')
 
 base_parser.add_argument('-y', '--yes', '--yes-please',
                          action='store_true',

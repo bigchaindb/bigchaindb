@@ -202,7 +202,10 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
             'private': None,
         },
         'keyring': KEYRING.split(':'),
-        'backlog_reassign_delay': 5
+        'backlog_reassign_delay': 5,
+        'logging': {
+            'level': 'INFO',
+        },
     }
 
 

@@ -45,7 +45,15 @@ config = {
         'private': None,
     },
     'keyring': [],
-    'backlog_reassign_delay': 120
+    'backlog_reassign_delay': 120,
+    'logging': {
+        'level': 'INFO',
+        # granular levels can be set via a dict, e.g.:
+        # 'granular_levels': {
+        #     'bichaindb.backend': 'INFO',
+        #     'bichaindb.core': 'INFO',
+        # },
+    },
 }
 
 # We need to maintain a backup copy of the original config dict in case
