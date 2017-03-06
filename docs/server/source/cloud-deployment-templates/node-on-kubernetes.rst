@@ -154,6 +154,41 @@ but it should become "Bound" fairly quickly.
    Status:          Bound
    Volume:          pvc-ebed81f1-fdca-11e6-abf0-000d3a27ab21
    Labels:          <none>
-   Capacity:        2Gi
+   Capacity:        20Gi
    Access Modes:    RWO
    No events.
+
+
+Step 5: Deploy MongoDB & BigchainDB
+-----------------------------------
+
+Now you can deploy MongoDB and BigchainDB to your Kubernetes cluster.
+Currently, the way we do that is we create a StatefulSet with two
+containers: BigchainDB and MongoDB. (In the future, we'll put them
+in separate pods, and we'll ensure those pods are in different nodes.)
+We expose BigchainDB's port 9984 (the HTTP API port)
+and MongoDB's port 27017 using a Kubernetes Service.
+
+Get the file ``node-mdb-ss.yaml`` from GitHub using:
+
+.. code:: bash
+
+   $ wget https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/k8s/node-mdb-ss.yaml
+
+Take a look inside that file to see how it defines the Service
+and the StatefulSet.
+Note how the MongoDB container uses the ``mongoclaim`` PersistentVolumeClaim
+for its ``/data`` diretory (mount path).
+
+Create the StatefulSet and Service in your cluster using:
+
+.. code:: bash
+
+   $ kubectl apply -f node-mdb-ss.yaml
+
+You can check that they're working using:
+
+.. code:: bash
+
+   $ kubectl get services
+   $ kubectl get statefulsets
