@@ -19,7 +19,7 @@ For reference, the possible headings are:
 Tag name: v0.9.3
 
 ### Fixed
-Fixed HTTP API 500 error on `GET /outputs: issues #1200 and #1231.
+Fixed HTTP API 500 error on `GET /outputs`: issues #1200 and #1231.
 
 ## [0.9.2] - 2017-03-02
 Tag name: v0.9.2
