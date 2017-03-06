@@ -46,7 +46,7 @@ def test_raise_exception_when_max_tries():
         conn.run(MockQuery())
 
 
-def test_reconnect_when_connection_lost():
+def test_reconnect_when_connection_lost(db_host, db_port):
     from bigchaindb.backend import connect
 
     original_connect = r.connect
@@ -54,7 +54,7 @@ def test_reconnect_when_connection_lost():
     with patch('rethinkdb.connect') as mock_connect:
         mock_connect.side_effect = [
             r.ReqlDriverError('mock'),
-            original_connect()
+            original_connect(host=db_host, port=db_port)
         ]
 
         conn = connect()
