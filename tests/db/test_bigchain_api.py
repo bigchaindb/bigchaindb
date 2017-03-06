@@ -1313,3 +1313,10 @@ def test_is_new_transaction(b, genesis_block):
     # Tx is new because it's only found in an invalid block
     assert b.is_new_transaction(tx.id)
     assert b.is_new_transaction(tx.id, exclude_block_id=block.id)
+
+
+def test_validate_asset_id_string(signed_transfer_tx):
+    from bigchaindb.common.exceptions import ValidationError
+    signed_transfer_tx.asset['id'] = 1
+    with pytest.raises(ValidationError):
+        signed_transfer_tx.validate(None)
