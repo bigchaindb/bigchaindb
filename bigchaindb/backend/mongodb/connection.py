@@ -128,7 +128,6 @@ def _check_replica_set(conn):
             replSet option.
     """
     options = conn.admin.command('getCmdLineOpts')
-    print(options)
     try:
         repl_opts = options['parsed']['replication']
         repl_set_name = repl_opts.get('replSetName', repl_opts.get('replSet'))
