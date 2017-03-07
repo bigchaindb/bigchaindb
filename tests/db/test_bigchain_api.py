@@ -411,23 +411,6 @@ class TestBigchainApi(object):
         b.write_vote(b.vote(block_3.id, b.get_last_voted_block().id, True))
         assert b.get_last_voted_block().id == block_3.id
 
-    def test_no_vote_written_if_block_already_has_vote(self, b, genesis_block):
-        from bigchaindb.models import Block
-
-        block_1 = dummy_block()
-        b.write_block(block_1)
-
-        b.write_vote(b.vote(block_1.id, genesis_block.id, True))
-        retrieved_block_1 = b.get_block(block_1.id)
-        retrieved_block_1 = Block.from_dict(retrieved_block_1)
-
-        # try to vote again on the retrieved block, should do nothing
-        b.write_vote(b.vote(retrieved_block_1.id, genesis_block.id, True))
-        retrieved_block_2 = b.get_block(block_1.id)
-        retrieved_block_2 = Block.from_dict(retrieved_block_2)
-
-        assert retrieved_block_1 == retrieved_block_2
-
     @pytest.mark.genesis
     def test_more_votes_than_voters(self, b):
         from bigchaindb.common.exceptions import MultipleVotesError
@@ -445,25 +428,6 @@ class TestBigchainApi(object):
             b.block_election_status(block_1.id, block_1.voters)
         assert excinfo.value.args[0] == 'Block {block_id} has {n_votes} votes cast, but only {n_voters} voters'\
             .format(block_id=block_1.id, n_votes=str(2), n_voters=str(1))
-
-    def test_multiple_votes_single_node(self, b, genesis_block):
-        from bigchaindb.common.exceptions import MultipleVotesError
-
-        block_1 = dummy_block()
-        b.write_block(block_1)
-        # insert duplicate votes
-        for i in range(2):
-            b.write_vote(b.vote(block_1.id, genesis_block.id, True))
-
-        with pytest.raises(MultipleVotesError) as excinfo:
-            b.block_election_status(block_1.id, block_1.voters)
-        assert excinfo.value.args[0] == 'Block {block_id} has multiple votes ({n_votes}) from voting node {node_id}'\
-            .format(block_id=block_1.id, n_votes=str(2), node_id=b.me)
-
-        with pytest.raises(MultipleVotesError) as excinfo:
-            b.has_previous_vote(block_1.id, block_1.voters)
-        assert excinfo.value.args[0] == 'Block {block_id} has {n_votes} votes from public key {me}'\
-            .format(block_id=block_1.id, n_votes=str(2), me=b.me)
 
     @pytest.mark.genesis
     def test_improper_vote_error(selfs, b):
