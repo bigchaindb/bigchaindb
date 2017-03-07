@@ -32,8 +32,6 @@ def test_validate_fails_metadata_empty_dict(create_tx):
 
 
 def test_transfer_asset_schema(signed_transfer_tx):
-    from bigchaindb.common.schema import (SchemaValidationError,
-                                          validate_transaction_schema)
     tx = signed_transfer_tx.to_dict()
     validate_transaction_schema(tx)
     tx['asset']['data'] = {}
@@ -41,5 +39,22 @@ def test_transfer_asset_schema(signed_transfer_tx):
         validate_transaction_schema(tx)
     del tx['asset']['data']
     tx['asset']['id'] = 'b' * 63
+    with raises(SchemaValidationError):
+        validate_transaction_schema(tx)
+
+
+def test_create_single_input(create_tx):
+    tx = create_tx.to_dict()
+    tx['inputs'] += tx['inputs']
+    with raises(SchemaValidationError):
+        validate_transaction_schema(tx)
+    tx['inputs'] = []
+    with raises(SchemaValidationError):
+        validate_transaction_schema(tx)
+
+
+def test_create_tx_no_fulfills(create_tx):
+    tx = create_tx.to_dict()
+    tx['inputs'][0]['fulfills'] = {'tx': 'a' * 64, 'output': 0}
     with raises(SchemaValidationError):
         validate_transaction_schema(tx)
