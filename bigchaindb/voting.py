@@ -68,6 +68,12 @@ class Voting:
         * Detect if there are multiple votes from a single node and return them
           in a separate "cheat" dictionary.
         * Votes must agree on previous block, otherwise they become invalid.
+
+        note:
+            The sum of votes returned by this function does not neccesarily
+            equal the length of the list of votes fed in. It may differ for
+            example if there are found to be multiple votes submitted by a
+            single voter.
         """
         prev_blocks = collections.Counter()
         cheat = []
