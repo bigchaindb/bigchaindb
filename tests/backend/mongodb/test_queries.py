@@ -288,6 +288,19 @@ def test_write_vote(structurally_valid_vote):
     assert vote_db == structurally_valid_vote
 
 
+def test_duplicate_vote_raises_duplicate_key(structurally_valid_vote):
+    from bigchaindb.backend import connect, query
+    from bigchaindb.backend.exceptions import DuplicateKeyError
+    conn = connect()
+
+    # write a vote
+    query.write_vote(conn, structurally_valid_vote)
+
+    # write the same vote a second time
+    with pytest.raises(DuplicateKeyError):
+        query.write_vote(conn, structurally_valid_vote)
+
+
 def test_get_genesis_block(genesis_block):
     from bigchaindb.backend import connect, query
     conn = connect()
