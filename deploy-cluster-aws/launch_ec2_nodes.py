@@ -298,7 +298,7 @@ print('Writing hostlist.py')
 with open('hostlist.py', 'w') as f:
     f.write('# -*- coding: utf-8 -*-\n')
     f.write('"""A list of the public DNS names of all the nodes in this\n')
-    f.write('BigchainDB cluster/federation.\n')
+    f.write('BigchainDB cluster.\n')
     f.write('"""\n')
     f.write('\n')
     f.write('from __future__ import unicode_literals\n')

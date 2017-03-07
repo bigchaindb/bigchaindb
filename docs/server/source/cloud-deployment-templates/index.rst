@@ -5,7 +5,7 @@ We have some "templates" to deploy a basic, working, but bare-bones BigchainDB n
 
 You don't have to use the tools we use in the templates. You can use whatever tools you prefer.
 
-If you find the cloud deployment templates for nodes helpful, then you may also be interested in our scripts for :doc:`deploying a testing cluster on AWS <../clusters-feds/aws-testing-cluster>` (documented in the Clusters & Federations section).
+If you find the cloud deployment templates for nodes helpful, then you may also be interested in our scripts for :doc:`deploying a testing cluster on AWS <../clusters-feds/aws-testing-cluster>` (documented in the Clusters section).
 
 .. toctree::
    :maxdepth: 1
