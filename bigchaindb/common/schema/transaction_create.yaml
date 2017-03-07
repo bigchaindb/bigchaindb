@@ -1,0 +1,17 @@
+---
+"$schema": "http://json-schema.org/draft-04/schema#"
+type: object
+title: Transaction Schema - CREATE/GENESIS specific properties
+required:
+- asset
+properties:
+  asset:
+    additionalProperties: false
+    properties:
+      data:
+        description: |
+          User provided metadata associated with the asset. May also be ``null``.
+        anyOf:
+        - type: object
+          additionalProperties: true
+        - type: 'null'

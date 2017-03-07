@@ -999,7 +999,8 @@ class Transaction(object):
             transactions = [transactions]
 
         # create a set of the transactions' asset ids
-        asset_ids = {tx.id if tx.operation == Transaction.CREATE else tx.asset['id']
+        asset_ids = {tx.id if tx.operation == Transaction.CREATE
+                     else tx.asset['id']
                      for tx in transactions}
 
         # check that all the transasctions have the same asset id
