@@ -93,7 +93,7 @@ class TestBigchainApi(object):
 
     @pytest.mark.genesis
     def test_get_spent_with_double_inclusion_detected(self, b, monkeypatch):
-        from bigchaindb.backend.exceptions import CriticalDoubleInclusion
+        from bigchaindb.exceptions import CriticalDoubleInclusion
         from bigchaindb.models import Transaction
 
         tx = Transaction.create([b.me], [([b.me], 1)])
@@ -128,7 +128,7 @@ class TestBigchainApi(object):
 
     @pytest.mark.genesis
     def test_get_spent_with_double_spend_detected(self, b, monkeypatch):
-        from bigchaindb.backend.exceptions import CriticalDoubleSpend
+        from bigchaindb.exceptions import CriticalDoubleSpend
         from bigchaindb.models import Transaction
 
         tx = Transaction.create([b.me], [([b.me], 1)])
@@ -163,7 +163,7 @@ class TestBigchainApi(object):
 
     @pytest.mark.genesis
     def test_get_block_status_for_tx_with_double_inclusion(self, b, monkeypatch):
-        from bigchaindb.backend.exceptions import CriticalDoubleInclusion
+        from bigchaindb.exceptions import CriticalDoubleInclusion
         from bigchaindb.models import Transaction
 
         tx = Transaction.create([b.me], [([b.me], 1)])

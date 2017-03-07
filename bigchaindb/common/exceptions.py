@@ -92,8 +92,8 @@ class AmountError(ValidationError):
     """Raised when there is a problem with a transaction's output amounts"""
 
 
-class TransactionDoesNotExist(ValidationError):
-    """Raised if the transaction is not in the database"""
+class InputDoesNotExist(ValidationError):
+    """Raised if a transaction input does not exist"""
 
 
 class TransactionOwnerError(ValidationError):

@@ -15,11 +15,3 @@ class OperationError(BackendError):
 
 class DuplicateKeyError(OperationError):
     """Exception raised when an insert fails because the key is not unique"""
-
-
-class CriticalDoubleSpend(BigchainDBError):
-    """Data integrity error that requires attention"""
-
-
-class CriticalDoubleInclusion(BigchainDBError):
-    """Data integrity error that requires attention"""

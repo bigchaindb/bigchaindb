@@ -4,6 +4,7 @@ import collections
 from time import time
 
 from itertools import compress
+from bigchaindb import exceptions as core_exceptions
 from bigchaindb.common import crypto, exceptions
 from bigchaindb.common.utils import gen_timestamp, serialize
 from bigchaindb.common.transaction import TransactionLink
@@ -11,7 +12,6 @@ from bigchaindb.common.transaction import TransactionLink
 import bigchaindb
 
 from bigchaindb import backend, config_utils, utils
-from bigchaindb.backend import exceptions as backend_exceptions
 from bigchaindb.consensus import BaseConsensusRules
 from bigchaindb.models import Block, Transaction
 
@@ -308,7 +308,7 @@ class Bigchain(object):
             if list(validity.values()).count(Bigchain.BLOCK_VALID) > 1:
                 block_ids = str([block for block in validity
                                  if validity[block] == Bigchain.BLOCK_VALID])
-                raise backend_exceptions.CriticalDoubleInclusion(
+                raise core_exceptions.CriticalDoubleInclusion(
                     'Transaction {tx} is present in '
                     'multiple valid blocks: {block_ids}'
                     .format(tx=txid, block_ids=block_ids))
@@ -361,7 +361,7 @@ class Bigchain(object):
                 if self.get_transaction(transaction['id']):
                     num_valid_transactions += 1
                 if num_valid_transactions > 1:
-                    raise backend_exceptions.CriticalDoubleSpend(
+                    raise core_exceptions.CriticalDoubleSpend(
                         '`{}` was spent more than once. There is a problem'
                         ' with the chain'.format(txid))
 

@@ -1,6 +1,6 @@
 from bigchaindb.common.crypto import hash_data, PublicKey, PrivateKey
 from bigchaindb.common.exceptions import (InvalidHash, InvalidSignature,
-                                          DoubleSpend, TransactionDoesNotExist,
+                                          DoubleSpend, InputDoesNotExist,
                                           TransactionNotInValidBlock,
                                           AssetIdMismatch, AmountError,
                                           SybilError, ValidationError)
@@ -60,8 +60,8 @@ class Transaction(Transaction):
                     get_transaction(input_txid, include_status=True)
 
                 if input_tx is None:
-                    raise TransactionDoesNotExist("input `{}` doesn't exist"
-                                                  .format(input_txid))
+                    raise InputDoesNotExist("input `{}` doesn't exist"
+                                            .format(input_txid))
 
                 if status != bigchain.TX_VALID:
                     raise TransactionNotInValidBlock(
