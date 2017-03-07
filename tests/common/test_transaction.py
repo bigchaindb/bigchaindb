@@ -352,6 +352,17 @@ def test_tx_serialization_with_incorrect_hash(utx):
     utx_dict.pop('id')
 
 
+def test_tx_serialization_hash_function(tx):
+    import sha3
+    import json
+    tx_dict = tx.to_dict()
+    tx_dict['inputs'][0]['fulfillment'] = None
+    del tx_dict['id']
+    payload = json.dumps(tx_dict, skipkeys=False, sort_keys=True,
+                         separators=(',', ':'))
+    assert sha3.sha3_256(payload.encode()).hexdigest() == tx.id
+
+
 def test_invalid_input_initialization(user_input, user_pub):
     from bigchaindb.common.transaction import Input
 
