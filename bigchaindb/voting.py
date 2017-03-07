@@ -70,7 +70,7 @@ class Voting:
         * Votes must agree on previous block, otherwise they become invalid.
 
         note:
-            The sum of votes returned by this function does not neccesarily
+            The sum of votes returned by this function does not necessarily
             equal the length of the list of votes fed in. It may differ for
             example if there are found to be multiple votes submitted by a
             single voter.
