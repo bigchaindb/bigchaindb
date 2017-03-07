@@ -23,10 +23,6 @@ NUM_NODES=3
 # It's where to get the BigchainDB code to be deployed on the nodes
 BRANCH="master"
 
-# WHAT_TO_DEPLOY is either "servers" or "clients"
-# What do you want to deploy?
-WHAT_TO_DEPLOY="servers"
-
 # SSH_KEY_NAME is the name of the SSH private key file
 # in $HOME/.ssh/
 # It is used for SSH communications with AWS instances.
