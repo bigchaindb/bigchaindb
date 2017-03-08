@@ -4,6 +4,7 @@ import collections
 from time import time
 
 from itertools import compress
+from bigchaindb import exceptions as core_exceptions
 from bigchaindb.common import crypto, exceptions
 from bigchaindb.common.utils import gen_timestamp, serialize
 from bigchaindb.common.transaction import TransactionLink
@@ -11,7 +12,6 @@ from bigchaindb.common.transaction import TransactionLink
 import bigchaindb
 
 from bigchaindb import backend, config_utils, utils
-from bigchaindb.backend import exceptions as backend_exceptions
 from bigchaindb.consensus import BaseConsensusRules
 from bigchaindb.models import Block, Transaction
 
@@ -162,31 +162,6 @@ class Bigchain(object):
 
         return self.consensus.validate_transaction(self, transaction)
 
-    def is_valid_transaction(self, transaction):
-        """Check whether a transaction is valid or invalid.
-
-        Similar to :meth:`~bigchaindb.Bigchain.validate_transaction`
-        but never raises an exception. It returns :obj:`False` if
-        the transaction is invalid.
-
-        Args:
-            transaction (:Class:`~bigchaindb.models.Transaction`): transaction
-                to check.
-
-        Returns:
-            The :class:`~bigchaindb.models.Transaction` instance if valid,
-            otherwise :obj:`False`.
-        """
-
-        try:
-            return self.validate_transaction(transaction)
-        except (ValueError, exceptions.OperationError,
-                exceptions.TransactionDoesNotExist,
-                exceptions.TransactionOwnerError, exceptions.DoubleSpend,
-                exceptions.InvalidHash, exceptions.InvalidSignature,
-                exceptions.TransactionNotInValidBlock, exceptions.AmountError):
-            return False
-
     def is_new_transaction(self, txid, exclude_block_id=None):
         """
         Return True if the transaction does not exist in any
@@ -333,7 +308,7 @@ class Bigchain(object):
             if list(validity.values()).count(Bigchain.BLOCK_VALID) > 1:
                 block_ids = str([block for block in validity
                                  if validity[block] == Bigchain.BLOCK_VALID])
-                raise backend_exceptions.BigchainDBCritical(
+                raise core_exceptions.CriticalDoubleInclusion(
                     'Transaction {tx} is present in '
                     'multiple valid blocks: {block_ids}'
                     .format(tx=txid, block_ids=block_ids))
@@ -386,10 +361,9 @@ class Bigchain(object):
                 if self.get_transaction(transaction['id']):
                     num_valid_transactions += 1
                 if num_valid_transactions > 1:
-                    raise exceptions.DoubleSpend(('`{}` was spent more than'
-                                                  ' once. There is a problem'
-                                                  ' with the chain')
-                                                 .format(txid))
+                    raise core_exceptions.CriticalDoubleSpend(
+                        '`{}` was spent more than once. There is a problem'
+                        ' with the chain'.format(txid))
 
             if num_valid_transactions:
                 return Transaction.from_dict(transactions[0])

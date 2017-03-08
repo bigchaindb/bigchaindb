@@ -1,4 +1,5 @@
 from pytest import raises
+from bigchaindb.common.exceptions import ValidationError
 
 
 class TestTransactionModel(object):
@@ -8,12 +9,12 @@ class TestTransactionModel(object):
         tx = Transaction.create([b.me], [([b.me], 1)])
         tx.operation = 'something invalid'
 
-        with raises(TypeError):
+        with raises(ValidationError):
             tx.validate(b)
 
         tx.operation = 'CREATE'
         tx.inputs = []
-        with raises(ValueError):
+        with raises(ValidationError):
             tx.validate(b)
 
 
@@ -61,11 +62,10 @@ class TestBlockModel(object):
         assert block.to_dict() == expected
 
     def test_block_invalid_serializaton(self):
-        from bigchaindb.common.exceptions import OperationError
         from bigchaindb.models import Block
 
         block = Block([])
-        with raises(OperationError):
+        with raises(ValueError):
             block.to_dict()
 
     def test_block_deserialization(self, b):
