@@ -49,6 +49,9 @@ def test_count_votes():
         'counts': {
             'n_valid': 9,    # 9 kosher votes
             'n_invalid': 4,  # 1 cheat, 1 invalid, 1 malformed, 1 rogue prev block
+            # One of the cheat votes counts towards n_invalid, the other is
+            # not counted here.
+            # len(cheat) + n_valid + n_invalid == len(votes)
         },
         'cheat': [votes[:2]],
         'malformed': [votes[3]],
@@ -83,18 +86,15 @@ def test_must_agree_prev_block():
 # Tests for vote decision making
 
 
-DECISION_TESTS = [dict(
-    zip(['n_voters', 'n_valid', 'n_invalid'], t))
-    for t in [
-         (1,          1,         1),
-         (2,          2,         1),
-         (3,          2,         2),
-         (4,          3,         2),
-         (5,          3,         3),
-         (6,          4,         3),
-         (7,          4,         4),
-         (8,          5,         4),
-    ]
+DECISION_TESTS = [
+    {'n_voters': 1, 'n_valid': 1, 'n_invalid': 1},
+    {'n_voters': 2, 'n_valid': 2, 'n_invalid': 1},
+    {'n_voters': 3, 'n_valid': 2, 'n_invalid': 2},
+    {'n_voters': 4, 'n_valid': 3, 'n_invalid': 2},
+    {'n_voters': 5, 'n_valid': 3, 'n_invalid': 3},
+    {'n_voters': 6, 'n_valid': 4, 'n_invalid': 3},
+    {'n_voters': 7, 'n_valid': 4, 'n_invalid': 4},
+    {'n_voters': 8, 'n_valid': 5, 'n_invalid': 4}
 ]
 
 

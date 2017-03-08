@@ -10,6 +10,8 @@ _database_rethinkdb = {
     'host': os.environ.get('BIGCHAINDB_DATABASE_HOST', 'localhost'),
     'port': int(os.environ.get('BIGCHAINDB_DATABASE_PORT', 28015)),
     'name': os.environ.get('BIGCHAINDB_DATABASE_NAME', 'bigchain'),
+    'connection_timeout': 5000,
+    'max_tries': 3,
 }
 
 _database_mongodb = {
@@ -18,6 +20,8 @@ _database_mongodb = {
     'port': int(os.environ.get('BIGCHAINDB_DATABASE_PORT', 27017)),
     'name': os.environ.get('BIGCHAINDB_DATABASE_NAME', 'bigchain'),
     'replicaset': os.environ.get('BIGCHAINDB_DATABASE_REPLICASET', 'bigchain-rs'),
+    'connection_timeout': 5000,
+    'max_tries': 3,
 }
 
 _database_map = {

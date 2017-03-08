@@ -67,27 +67,18 @@ class BlockPipeline:
                 AmountError):
             return None
 
-        if self.bigchain.transaction_exists(tx.id):
-            # if the transaction already exists, we must check whether
-            # it's in a valid or undecided block
-            tx, status = self.bigchain.get_transaction(tx.id,
-                                                       include_status=True)
-            if status == self.bigchain.TX_VALID \
-               or status == self.bigchain.TX_UNDECIDED:
-                # if the tx is already in a valid or undecided block,
-                # then it no longer should be in the backlog, or added
-                # to a new block. We can delete and drop it.
-                self.bigchain.delete_transaction(tx.id)
-                return None
-
-        tx_validated = self.bigchain.is_valid_transaction(tx)
-        if tx_validated:
-            return tx
-        else:
-            # if the transaction is not valid, remove it from the
-            # backlog
+        # If transaction is in any VALID or UNDECIDED block we
+        # should not include it again
+        if not self.bigchain.is_new_transaction(tx.id):
             self.bigchain.delete_transaction(tx.id)
             return None
+
+        # If transaction is not valid it should not be included
+        if not self.bigchain.is_valid_transaction(tx):
+            self.bigchain.delete_transaction(tx.id)
+            return None
+
+        return tx
 
     def create(self, tx, timeout=False):
         """Create a block.

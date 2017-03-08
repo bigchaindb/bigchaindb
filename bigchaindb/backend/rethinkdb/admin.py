@@ -96,7 +96,7 @@ def reconfigure(connection, *, table, shards, replicas,
     try:
         return connection.run(r.table(table).reconfigure(**params))
     except (r.ReqlOpFailedError, r.ReqlQueryLogicError) as e:
-        raise OperationError from e
+        raise OperationError('Failed to reconfigure tables.') from e
 
 
 @register_admin(RethinkDBConnection)

@@ -2,6 +2,8 @@
 
 There are many ways you can contribute to the BigchainDB project, some very easy and others more involved. We want to be friendly and welcoming to all potential contributors, so we ask that everyone involved abide by some simple guidelines outlined in our [Code of Conduct](./CODE_OF_CONDUCT.md).
 
+Or, are you interested in contributing full-time? BigchainDB is hiring. See [here](https://github.com/bigchaindb/org/blob/master/engjob.md).
+
 ## Easy Ways to Contribute
 
 The BigchainDB community has a Google Group and a Gitter chatroom. Our [Community page](https://www.bigchaindb.com/community) has more information about those.
