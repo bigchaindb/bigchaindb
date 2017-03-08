@@ -163,3 +163,11 @@ class TestBlockModel(object):
 
         public_key = PublicKey(b.me)
         assert public_key.verify(expected_block_serialized, block.signature)
+
+    def test_block_dupe_tx(self, b):
+        from bigchaindb.models import Transaction
+        from bigchaindb.common.exceptions import DuplicateTransaction
+        tx = Transaction.create([b.me], [([b.me], 1)])
+        block = b.create_block([tx, tx])
+        with raises(DuplicateTransaction):
+            block._validate_block_transactions(b)
