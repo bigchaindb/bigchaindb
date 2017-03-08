@@ -15,6 +15,12 @@ For reference, the possible headings are:
 * **External Contributors** to list contributors outside of BigchainDB GmbH.
 * **Notes**
 
+## [0.9.3] - 2017-03-06
+Tag name: v0.9.3
+
+### Fixed
+Fixed HTTP API 500 error on `GET /outputs`: issues #1200 and #1231.
+
 ## [0.9.2] - 2017-03-02
 Tag name: v0.9.2
 

@@ -34,6 +34,7 @@ def test_run_a_simple_query():
 
 def test_raise_exception_when_max_tries():
     from bigchaindb.backend import connect
+    from bigchaindb.backend.exceptions import OperationError
 
     class MockQuery:
         def run(self, conn):
@@ -41,28 +42,41 @@ def test_raise_exception_when_max_tries():
 
     conn = connect()
 
-    with pytest.raises(r.ReqlDriverError):
+    with pytest.raises(OperationError):
         conn.run(MockQuery())
 
 
-def test_reconnect_when_connection_lost():
+def test_reconnect_when_connection_lost(db_host, db_port):
     from bigchaindb.backend import connect
 
-    def raise_exception(*args, **kwargs):
-        raise r.ReqlDriverError('mock')
-
-    conn = connect()
     original_connect = r.connect
-    r.connect = raise_exception
 
-    def delayed_start():
-        time.sleep(1)
-        r.connect = original_connect
+    with patch('rethinkdb.connect') as mock_connect:
+        mock_connect.side_effect = [
+            r.ReqlDriverError('mock'),
+            original_connect(host=db_host, port=db_port)
+        ]
 
-    thread = Thread(target=delayed_start)
-    query = r.expr('1')
-    thread.start()
-    assert conn.run(query) == '1'
+        conn = connect()
+        query = r.expr('1')
+        assert conn.run(query) == '1'
+
+
+def test_reconnect_when_connection_lost_tries_n_times():
+    from bigchaindb.backend import connect
+    from bigchaindb.backend.exceptions import ConnectionError
+
+    with patch('rethinkdb.connect') as mock_connect:
+        mock_connect.side_effect = [
+            r.ReqlDriverError('mock'),
+            r.ReqlDriverError('mock'),
+            r.ReqlDriverError('mock')
+        ]
+
+        conn = connect(max_tries=3)
+        query = r.expr('1')
+        with pytest.raises(ConnectionError):
+            assert conn.run(query) == '1'
 
 
 def test_changefeed_reconnects_when_connection_lost(monkeypatch):

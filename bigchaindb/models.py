@@ -3,7 +3,8 @@ from bigchaindb.common.exceptions import (InvalidHash, InvalidSignature,
                                           DoubleSpend, InputDoesNotExist,
                                           TransactionNotInValidBlock,
                                           AssetIdMismatch, AmountError,
-                                          SybilError, ValidationError)
+                                          SybilError, ValidationError,
+                                          DuplicateTransaction)
 from bigchaindb.common.transaction import Transaction
 from bigchaindb.common.utils import gen_timestamp, serialize
 from bigchaindb.common.schema import validate_transaction_schema
@@ -233,6 +234,10 @@ class Block(object):
         Raises:
             ValidationError: If an invalid transaction is found
         """
+        txids = [tx.id for tx in self.transactions]
+        if len(txids) != len(set(txids)):
+            raise DuplicateTransaction('Block has duplicate transaction')
+
         for tx in self.transactions:
             # If a transaction is not valid, `validate_transactions` will
             # throw an an exception and block validation will be canceled.

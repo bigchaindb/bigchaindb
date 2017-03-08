@@ -102,3 +102,7 @@ class TransactionOwnerError(ValidationError):
 
 class SybilError(ValidationError):
     """If a block or vote comes from an unidentifiable node"""
+
+
+class DuplicateTransaction(ValidationError):
+    """Raised if a duplicated transaction is found"""

@@ -45,6 +45,12 @@ on most common operating systems
 <https://docs.microsoft.com/en-us/cli/azure/install-az-cli2>`_.
 Do that.
 
+First, update the Azure CLI to the latest version:
+
+.. code:: bash
+
+   $ az component update
+
 Next, login to your account using:
 
 .. code:: bash

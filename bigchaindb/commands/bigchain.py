@@ -3,12 +3,11 @@ the command-line interface (CLI) for BigchainDB Server.
 """
 
 import os
-import sys
 import logging
 import argparse
 import copy
 import json
-import builtins
+import sys
 
 import logstats
 
@@ -17,36 +16,37 @@ from bigchaindb.common.exceptions import (StartupError,
                                           DatabaseAlreadyExists,
                                           KeypairNotFoundException)
 import bigchaindb
-import bigchaindb.config_utils
 from bigchaindb.models import Transaction
 from bigchaindb.utils import ProcessGroup
-from bigchaindb import backend
+from bigchaindb import backend, processes
 from bigchaindb.backend import schema
 from bigchaindb.backend.admin import (set_replicas, set_shards, add_replicas,
                                       remove_replicas)
 from bigchaindb.backend.exceptions import OperationError
 from bigchaindb.commands import utils
-from bigchaindb import processes
+from bigchaindb.commands.messages import (
+    CANNOT_START_KEYPAIR_NOT_FOUND,
+    RETHINKDB_STARTUP_ERROR,
+)
+from bigchaindb.commands.utils import configure_bigchaindb, input_on_stderr
 
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-# We need this because `input` always prints on stdout, while it should print
-# to stderr. It's a very old bug, check it out here:
-# - https://bugs.python.org/issue1927
-def input_on_stderr(prompt=''):
-    print(prompt, end='', file=sys.stderr)
-    return builtins.input()
+# Note about printing:
+#   We try to print to stdout for results of a command that may be useful to
+#   someone (or another program). Strictly informational text, or errors,
+#   should be printed to stderr.
 
 
+@configure_bigchaindb
 def run_show_config(args):
     """Show the current configuration"""
     # TODO Proposal: remove the "hidden" configuration. Only show config. If
     # the system needs to be configured, then display information on how to
     # configure the system.
-    bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
     config = copy.deepcopy(bigchaindb.config)
     del config['CONFIGURED']
     private_key = config['keypair']['private']
@@ -89,7 +89,7 @@ def run_configure(args, skip_if_exists=False):
 
     # select the correct config defaults based on the backend
     print('Generating default configuration for backend {}'
-          .format(args.backend))
+          .format(args.backend), file=sys.stderr)
     conf['database'] = bigchaindb._database_map[args.backend]
 
     if not args.yes:
@@ -119,11 +119,10 @@ def run_configure(args, skip_if_exists=False):
     print('Ready to go!', file=sys.stderr)
 
 
+@configure_bigchaindb
 def run_export_my_pubkey(args):
     """Export this node's public key to standard output
     """
-    logger.debug('bigchaindb args = {}'.format(args))
-    bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
     pubkey = bigchaindb.config['keypair']['public']
     if pubkey is not None:
         print(pubkey)
@@ -141,14 +140,13 @@ def _run_init():
 
     schema.init_database(connection=b.connection)
 
-    logger.info('Create genesis block.')
     b.create_genesis_block()
-    logger.info('Done, have fun!')
+    logger.info('Genesis block created.')
 
 
+@configure_bigchaindb
 def run_init(args):
     """Initialize the database"""
-    bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
     # TODO Provide mechanism to:
     # 1. prompt the user to inquire whether they wish to drop the db
     # 2. force the init, (e.g., via -f flag)
@@ -159,9 +157,9 @@ def run_init(args):
         print('If you wish to re-initialize it, first drop it.', file=sys.stderr)
 
 
+@configure_bigchaindb
 def run_drop(args):
     """Drop the database"""
-    bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
     dbname = bigchaindb.config['database']['name']
 
     if not args.yes:
@@ -174,11 +172,10 @@ def run_drop(args):
     schema.drop_database(conn, dbname)
 
 
+@configure_bigchaindb
 def run_start(args):
     """Start the processes to run the node"""
-    logger.info('BigchainDB Version {}'.format(bigchaindb.__version__))
-
-    bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
+    logger.info('BigchainDB Version %s', bigchaindb.__version__)
 
     if args.allow_temp_keypair:
         if not (bigchaindb.config['keypair']['private'] or
@@ -194,7 +191,7 @@ def run_start(args):
         try:
             proc = utils.start_rethinkdb()
         except StartupError as e:
-            sys.exit('Error starting RethinkDB, reason is: {}'.format(e))
+            sys.exit(RETHINKDB_STARTUP_ERROR.format(e))
         logger.info('RethinkDB started with PID %s' % proc.pid)
 
     try:
@@ -202,8 +199,7 @@ def run_start(args):
     except DatabaseAlreadyExists:
         pass
     except KeypairNotFoundException:
-        sys.exit("Can't start BigchainDB, no keypair found. "
-                 'Did you run `bigchaindb configure`?')
+        sys.exit(CANNOT_START_KEYPAIR_NOT_FOUND)
 
     logger.info('Starting BigchainDB main process with public key %s',
                 bigchaindb.config['keypair']['public'])
@@ -227,8 +223,8 @@ def _run_load(tx_left, stats):
                 break
 
 
+@configure_bigchaindb
 def run_load(args):
-    bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
     logger.info('Starting %s processes', args.multiprocess)
     stats = logstats.Logstats()
     logstats.thread.start(stats)
@@ -243,62 +239,54 @@ def run_load(args):
     workers.start()
 
 
+@configure_bigchaindb
 def run_set_shards(args):
     conn = backend.connect()
     try:
         set_shards(conn, shards=args.num_shards)
     except OperationError as e:
-        logger.warn(e)
+        sys.exit(str(e))
 
 
+@configure_bigchaindb
 def run_set_replicas(args):
     conn = backend.connect()
     try:
         set_replicas(conn, replicas=args.num_replicas)
     except OperationError as e:
-        logger.warn(e)
+        sys.exit(str(e))
 
 
+@configure_bigchaindb
 def run_add_replicas(args):
     # Note: This command is specific to MongoDB
-    bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
     conn = backend.connect()
 
     try:
         add_replicas(conn, args.replicas)
     except (OperationError, NotImplementedError) as e:
-        logger.warn(e)
+        sys.exit(str(e))
     else:
-        logger.info('Added {} to the replicaset.'.format(args.replicas))
+        print('Added {} to the replicaset.'.format(args.replicas))
 
 
+@configure_bigchaindb
 def run_remove_replicas(args):
     # Note: This command is specific to MongoDB
-    bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
     conn = backend.connect()
 
     try:
         remove_replicas(conn, args.replicas)
     except (OperationError, NotImplementedError) as e:
-        logger.warn(e)
+        sys.exit(str(e))
     else:
-        logger.info('Removed {} from the replicaset.'.format(args.replicas))
+        print('Removed {} from the replicaset.'.format(args.replicas))
 
 
 def create_parser():
     parser = argparse.ArgumentParser(
         description='Control your BigchainDB node.',
         parents=[utils.base_parser])
-
-    parser.add_argument('--dev-start-rethinkdb',
-                        dest='start_rethinkdb',
-                        action='store_true',
-                        help='Run RethinkDB on start')
-
-    parser.add_argument('--dev-allow-temp-keypair',
-                        dest='allow_temp_keypair',
-                        action='store_true',
-                        help='Generate a random keypair on start')
 
     # all the commands are contained in the subparsers object,
     # the command selected by the user will be stored in `args.command`
@@ -331,8 +319,18 @@ def create_parser():
                           help='Drop the database')
 
     # parser for starting BigchainDB
-    subparsers.add_parser('start',
-                          help='Start BigchainDB')
+    start_parser = subparsers.add_parser('start',
+                                         help='Start BigchainDB')
+
+    start_parser.add_argument('--dev-allow-temp-keypair',
+                              dest='allow_temp_keypair',
+                              action='store_true',
+                              help='Generate a random keypair on start')
+
+    start_parser.add_argument('--dev-start-rethinkdb',
+                              dest='start_rethinkdb',
+                              action='store_true',
+                              help='Run RethinkDB on start')
 
     # parser for configuring the number of shards
     sharding_parser = subparsers.add_parser('set-shards',
