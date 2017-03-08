@@ -41,6 +41,10 @@ class InvalidSignature(BigchainDBError):
     operation"""
 
 
+class DuplicateTransaction(ValidationError):
+    """Raised if a duplicated transaction is found"""
+
+
 class DatabaseAlreadyExists(BigchainDBError):
     """Raised when trying to create the database but the db is already there"""
 

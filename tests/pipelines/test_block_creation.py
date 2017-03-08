@@ -226,3 +226,12 @@ def test_full_pipeline(b, user_pk):
     block_len = len(block_doc.transactions)
     assert chained_block == block_doc
     assert number_assigned_to_others == 100 - block_len
+
+
+def test_block_snowflake(create_tx, signed_transfer_tx):
+    from bigchaindb.pipelines.block import tx_collector
+    snowflake = tx_collector()
+    assert snowflake.send(create_tx) == [create_tx]
+    snowflake.send(signed_transfer_tx)
+    snowflake.send(create_tx)
+    assert snowflake.send(None) == [create_tx, signed_transfer_tx]
