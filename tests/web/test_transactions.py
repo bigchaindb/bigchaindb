@@ -113,7 +113,7 @@ def test_post_create_transaction_with_invalid_schema(client, caplog):
     ('InvalidHash', 'Do not smoke that!'),
     ('InvalidSignature', 'Falsche Unterschrift!'),
     ('ValidationError', 'Create and transfer!'),
-    ('TransactionDoesNotExist', 'Hallucinations?'),
+    ('InputDoesNotExist', 'Hallucinations?'),
     ('TransactionOwnerError', 'Not yours!'),
     ('TransactionNotInValidBlock', 'Wait, maybe?'),
     ('ValidationError', '?'),

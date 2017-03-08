@@ -567,7 +567,7 @@ class TestBigchainApi(object):
     @pytest.mark.usefixtures('inputs')
     def test_non_create_input_not_found(self, b, user_pk):
         from cryptoconditions import Ed25519Fulfillment
-        from bigchaindb.common.exceptions import TransactionDoesNotExist
+        from bigchaindb.common.exceptions import InputDoesNotExist
         from bigchaindb.common.transaction import Input, TransactionLink
         from bigchaindb.models import Transaction
         from bigchaindb import Bigchain
@@ -579,7 +579,7 @@ class TestBigchainApi(object):
         tx = Transaction.transfer([input], [([user_pk], 1)],
                                   asset_id='mock_asset_link')
 
-        with pytest.raises(TransactionDoesNotExist):
+        with pytest.raises(InputDoesNotExist):
             tx.validate(Bigchain())
 
     def test_count_backlog(self, b, user_pk):
@@ -615,11 +615,11 @@ class TestTransactionValidation(object):
         assert excinfo.value.args[0] == 'Only `CREATE` transactions can have null inputs'
 
     def test_non_create_input_not_found(self, b, user_pk, signed_transfer_tx):
-        from bigchaindb.common.exceptions import TransactionDoesNotExist
+        from bigchaindb.common.exceptions import InputDoesNotExist
         from bigchaindb.common.transaction import TransactionLink
 
         signed_transfer_tx.inputs[0].fulfills = TransactionLink('c', 0)
-        with pytest.raises(TransactionDoesNotExist):
+        with pytest.raises(InputDoesNotExist):
             b.validate_transaction(signed_transfer_tx)
 
     @pytest.mark.usefixtures('inputs')
