@@ -11,7 +11,8 @@ metadata:
 spec:
   accessModes:
   - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
+  # FIXME(Uncomment when ACS supports this!)
+  # persistentVolumeReclaimPolicy: Retain
   resources:
     requests:
       storage: 20Gi

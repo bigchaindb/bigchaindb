@@ -5,22 +5,14 @@ Assuming you already have a `Kubernetes <https://kubernetes.io/>`_
 cluster up and running, this page describes how to run a
 BigchainDB node in it.
 
-In a nutshell, kubernetes consists of ``basic kubernetes objects`` - Pod,
-Service, Volume, Namespace - and ``controllers`` that are built using basic
-objects - ReplicaSet, Deployment, StatefulSet, DaemonSet, Job
-
 
 Step 1: Install kubectl
 -----------------------
 
 kubectl is the Kubernetes CLI.
-
-.. code:: bash
-
-   $ curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
-   $ chmod +x ./kubectl
-   $ sudo mv ./kubectl /usr/local/bin/kubectl
-   $ . <(kubectl completion bash) # auto-completion
+If you don't already have it installed,
+then see the `Kubernetes docs to install it
+<https://kubernetes.io/docs/user-guide/prereqs/>`_.
 
 
 Step 2: Configure kubectl
@@ -40,18 +32,34 @@ then you can get the ``~/.kube/config`` file using:
    --name <ACS cluster name>
 
 
-Step 3: Create a StorageClass
------------------------------
+Step 3: Create Storage Classes
+------------------------------
 
 MongoDB needs somewhere to store its data persistently,
 outside the container where MongoDB is running.
+
+The official MongoDB Docker container exports two volume mounts with correct
+permissions from inside the container:
+
+
+* The directory where the mongod instance stores its data - ``/data/db``,
+  described at `storage.dbpath <https://docs.mongodb.com/manual/reference/configuration-options/#storage.dbPath>`_.
+
+* The directory where mongodb instance stores the metadata for a sharded
+  cluster - ``/data/configdb/``, described at
+  `sharding.configDB <https://docs.mongodb.com/manual/reference/configuration-options/#sharding.configDB>`_.
+
+
 Explaining how Kubernetes handles persistent volumes,
 and the associated terminology,
 is beyond the scope of this documentation;
 see `the Kubernetes docs about persistent volumes
 <https://kubernetes.io/docs/user-guide/persistent-volumes>`_.
 
-The first thing to do is create a Kubernetes StorageClass.
+The first thing to do is create the Kubernetes storage classes.
+We will accordingly create two storage classes and persistent volume claims in
+Kubernetes.
+
 
 **Azure.** First, you need an Azure storage account.
 If you deployed your Kubernetes cluster on Azure
@@ -75,10 +83,6 @@ the PersistentVolumeClaim would get stuck in a "Pending" state.
 For future reference, the command to create a storage account is
 `az storage account create <https://docs.microsoft.com/en-us/cli/azure/storage/account#create>`_.
 
-
-MongoDB exports two volume mounts with correct permissions from inside the
-container to the outside world. We will accordingly create two storage classes
-and persistent volume claims in kubernetes.
 
 Get the files ``mongo-data-db-sc.yaml`` and ``mongo-data-configdb-sc.yaml``
 from GitHub using:
@@ -112,8 +116,8 @@ Kubernetes just looks for a storageAccount
 with the specified skuName and location.
 
 
-Step 4: Create a PersistentVolumeClaim
---------------------------------------
+Step 4: Create Persistent Volume Claims
+---------------------------------------
 
 Next, we'll create two PersistentVolumeClaim objects ``mongo-db-claim`` and
 ``mongo-configdb-claim``.
@@ -178,10 +182,9 @@ Get the file ``mongo-ss.yaml`` from GitHub using:
 
 Note how the MongoDB container uses the ``mongo-db-claim`` and the
 ``mongo-configdb-claim`` PersistentVolumeClaims for its ``/data/db`` and
-``/data/configdb`` diretories (mount path).
-
-Note also that we use the pod's ``securityContext.capabilities.add`` specification
-to add the ``FOWNER`` capability to the container.
+``/data/configdb`` diretories (mount path). Note also that we use the pod's
+``securityContext.capabilities.add`` specification to add the ``FOWNER``
+capability to the container.
 
 That is because MongoDB container has the user ``mongodb``, with uid ``999``
 and group ``mongodb``, with gid ``999``.
@@ -196,7 +199,7 @@ Refer to the
 for details.
 
 As we gain more experience running MongoDB in testing and production, we will
-tweak the ``resources.limits`` values for cpu and memory.
+tweak the ``resources.limits.cpu`` and ``resources.limits.memory``.
 We will also stop exposing port ``27017`` globally and/or allow only certain
 hosts to connect to the MongoDB instance in the future.
 
@@ -226,7 +229,7 @@ We also hardcode the ``BIGCHAINDB_KEYPAIR_PUBLIC``,
 ``BIGCHAINDB_KEYPAIR_PRIVATE`` and ``BIGCHAINDB_KEYRING`` for now.
 
 As we gain more experience running BigchainDB in testing and production, we
-will tweak the ``resources.limits`` values for cpu and memory, and as richer
+will tweak the ``resources.limits`` values for CPU and memory, and as richer
 monitoring and probing becomes available in BigchainDB, we will tweak the
 ``livenessProbe`` and ``readinessProbe`` parameters.
 
@@ -243,10 +246,10 @@ Create the required Deployment using:
 You can check its status using the command ``kubectl get deploy -w``
 
 
-Step 7: Verifying our node is setup correctly
----------------------------------------------
+Step 7: Verify the BigchainDB Node Setup
+----------------------------------------
 
-Step 7.1: Testing externally
+Step 7.1: Testing Externally
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Try to access the ``<dns/ip of your exposed service endpoint>:9984`` on your
@@ -258,8 +261,33 @@ browser. You must receive a message from MongoDB stating that it doesn't allow
 HTTP connections to the port anymore.
 
 
-Step 7.2: Testing internally
+Step 7.2: Testing Internally
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO: Note on testing services internally
+Run a container that provides utilities like ``nslookup``, ``curl`` and ``dig``
+on the cluster and query the internal DNS and IP endpoints.
+
+.. code:: bash
+
+   $ kubectl run -it toolbox -- image <docker image to run> --restart=Never --rm
+
+It will drop you to the shell prompt.
+Now we can query for the ``mdb`` and ``bdb`` service details.
+
+.. code:: bash
+
+   $ nslookup mdb
+   $ dig +noall +answer _mdb_port._tcp.mdb.default.svc.cluster.local SRV
+   $ curl -X GET http://mdb:27017
+   $ curl -X GET http://bdb:9984
+
+There is a generic image based on alpine:3.5 with the required utilities
+hosted at Docker Hub under ``bigchaindb/toolbox``.
+The corresponding Dockerfile is `here
+<https://github.com/bigchaindb/bigchaindb/k8s/toolbox/Dockerfile>`_.
+You can use it as below to get started immediately:
+
+.. code:: bash
+
+   $ kubectl run -it toolbox --image bigchaindb/toolbox --restart=Never --rm
 

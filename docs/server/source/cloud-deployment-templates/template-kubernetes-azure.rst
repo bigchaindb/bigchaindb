@@ -116,27 +116,6 @@ and click on the one you created
 to see all the resources in it.
 
 
-Step 3: (Optional) Delete the managed k8s cluster
--------------------------------------------------
-
-.. code:: bash
-
-   $ az acs delete \
-   --name <ACS cluster name> \
-   --resource-group <name of resource group containing the cluster> 
-
-
-Step 4: (Optional) Delete the resource group
---------------------------------------------
-
-CAUTION: You might end up deleting resources other than the ACS cluster.
-
-.. code:: bash
-
-   $ az group delete \
-   --name <name of resource group containing the cluster> 
-
-
 Optional: SSH to Your New Kubernetes Cluster Nodes
 --------------------------------------------------
 
@@ -179,9 +158,30 @@ machines and run
 
    $ echo "$SSH_AUTH_SOCK"
 
-If you get an empty response, SSH forwarding hasn't been set up correctlt.
+If you get an empty response, SSH forwarding hasn't been set up correctly.
 If you get a non-empty response, SSH forwarding should work fine and you can
 try to login to one of the k8s nodes from the master.
+
+
+Optional: Delete the Kubernetes Cluster
+---------------------------------------
+
+.. code:: bash
+
+   $ az acs delete \
+   --name <ACS cluster name> \
+   --resource-group <name of resource group containing the cluster>
+
+
+Optional: Delete the Resource Group
+-----------------------------------
+
+CAUTION: You might end up deleting resources other than the ACS cluster.
+
+.. code:: bash
+
+   $ az group delete \
+   --name <name of resource group containing the cluster>
 
 
 Next, you can :doc:`run a BigchainDB node on your new
