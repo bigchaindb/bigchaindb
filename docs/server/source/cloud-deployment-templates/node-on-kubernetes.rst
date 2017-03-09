@@ -23,7 +23,6 @@ kubectl is the Kubernetes CLI.
    $ . <(kubectl completion bash) # auto-completion
 
 
-
 Step 2: Configure kubectl
 -------------------------
 
@@ -76,25 +75,30 @@ the PersistentVolumeClaim would get stuck in a "Pending" state.
 For future reference, the command to create a storage account is
 `az storage account create <https://docs.microsoft.com/en-us/cli/azure/storage/account#create>`_.
 
-Create a Kubernetes Storage Class named ``slow``
-by writing a file named ``azureStorageClass.yml`` containing:
 
-.. code:: yaml
+MongoDB exports two volume mounts with correct permissions from inside the
+container to the outside world. We will accordingly create two storage classes
+and persistent volume claims in kubernetes.
 
-   kind: StorageClass
-   apiVersion: storage.k8s.io/v1beta1
-   metadata:
-     name: slow
-   provisioner: kubernetes.io/azure-disk
-   parameters:
-     skuName: Standard_LRS
-     location: <region where your cluster is located>
-
-and then:
+Get the files ``mongo-data-db-sc.yaml`` and ``mongo-data-configdb-sc.yaml``
+from GitHub using:
 
 .. code:: bash
 
-   $ kubectl apply -f azureStorageClass.yml
+   $ wget https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/k8s/mongodb/mongo-data-db-sc.yaml
+   $ wget https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/k8s/mongodb/mongo-data-configdb-sc.yaml
+
+You may want to update the ``parameters.location`` field in both the files to
+specify the location you are using in Azure.
+
+
+Create the required StorageClass using
+
+.. code:: bash
+
+   $ kubectl apply -f mongo-data-db-sc.yaml
+   $ kubectl apply -f mongo-data-configdb-sc.yaml
+
 
 You can check if it worked using ``kubectl get storageclasses``.
 
@@ -111,24 +115,16 @@ with the specified skuName and location.
 Step 4: Create a PersistentVolumeClaim
 --------------------------------------
 
-Next, you'll create a PersistentVolumeClaim named ``mongoclaim``.
-Create a file named ``mongoclaim.yml``
-with the following contents:
+Next, we'll create two PersistentVolumeClaim objects ``mongo-db-claim`` and
+``mongo-configdb-claim``.
 
-.. code:: yaml
+Get the files ``mongo-data-db-sc.yaml`` and ``mongo-data-configdb-sc.yaml``
+from GitHub using:
 
-   kind: PersistentVolumeClaim
-   apiVersion: v1
-   metadata:
-     name: mongoclaim
-     annotations:
-       volume.beta.kubernetes.io/storage-class: slow
-   spec:
-     accessModes:
-       - ReadWriteOnce
-     resources:
-       requests:
-         storage: 20Gi
+.. code:: bash
+
+   $ wget https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/k8s/mongodb/mongo-data-db-pvc.yaml
+   $ wget https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/k8s/mongodb/mongo-data-configdb-pvc.yaml
 
 Note how there's no explicit mention of Azure, AWS or whatever.
 ``ReadWriteOnce`` (RWO) means the volume can be mounted as
@@ -137,21 +133,21 @@ read-write by a single Kubernetes node.
 by AzureDisk.)
 ``storage: 20Gi`` means the volume has a size of 20
 `gibibytes <https://en.wikipedia.org/wiki/Gibibyte>`_.
-(You can change that if you like.)
 
-Create ``mongoclaim`` in your Kubernetes cluster:
+You may want to update the ``spec.resources.requests.storage`` field in both
+the files to specify a different disk size.
 
-.. code:: bash
-
-   $ kubectl apply -f mongoclaim.yml
-
-You can check its status using:
+Create the required PersistentVolumeClaim using:
 
 .. code:: bash
 
-   $ kubectl get pvc
+   $ kubectl apply -f mongo-data-db-pvc.yaml
+   $ kubectl apply -f mongo-data-configdb-pvc.yaml
 
-Initially, the status of ``mongoclaim`` might be "Pending"
+
+You can check its status using: ``kubectl get pvc -w``
+
+Initially, the status of persistent volume claims might be "Pending"
 but it should become "Bound" fairly quickly.
 
 .. code:: bash
@@ -168,36 +164,102 @@ but it should become "Bound" fairly quickly.
    No events.
 
 
-Step 5: Deploy MongoDB & BigchainDB
------------------------------------
+Now we are ready to run MongoDB and BigchainDB on our Kubernetes cluster.
 
-Now you can deploy MongoDB and BigchainDB to your Kubernetes cluster.
-Currently, the way we do that is we create a StatefulSet with two
-containers: BigchainDB and MongoDB. (In the future, we'll put them
-in separate pods, and we'll ensure those pods are in different nodes.)
-We expose BigchainDB's port 9984 (the HTTP API port)
-and MongoDB's port 27017 using a Kubernetes Service.
+Step 5: Run MongoDB as a StatefulSet
+------------------------------------
 
-Get the file ``node-mdb-ss.yaml`` from GitHub using:
+Get the file ``mongo-ss.yaml`` from GitHub using:
 
 .. code:: bash
 
-   $ wget https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/k8s/node-mdb-ss.yaml
+   $ wget https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/k8s/mongodb/mongo-ss.yaml
 
-Take a look inside that file to see how it defines the Service
-and the StatefulSet.
-Note how the MongoDB container uses the ``mongoclaim`` PersistentVolumeClaim
-for its ``/data`` diretory (mount path).
 
-Create the StatefulSet and Service in your cluster using:
+Note how the MongoDB container uses the ``mongo-db-claim`` and the
+``mongo-configdb-claim`` PersistentVolumeClaims for its ``/data/db`` and
+``/data/configdb`` diretories (mount path).
+
+Note also that we use the pod's ``securityContext.capabilities.add`` specification
+to add the ``FOWNER`` capability to the container.
+
+That is because MongoDB container has the user ``mongodb``, with uid ``999``
+and group ``mongodb``, with gid ``999``.
+When this container runs on a host with a mounted disk, the writes fail when
+there is no user with uid ``999``.
+
+To avoid this, we use the Docker feature of ``--cap-add=FOWNER``.
+This bypasses the uid and gid permission checks during writes and allows data
+to be persisted to disk.
+Refer to the
+`Docker doc <https://docs.docker.com/engine/reference/run/#runtime-privilege-and-linux-capabilities>`_
+for details.
+
+As we gain more experience running MongoDB in testing and production, we will
+tweak the ``resources.limits`` values for cpu and memory.
+We will also stop exposing port ``27017`` globally and/or allow only certain
+hosts to connect to the MongoDB instance in the future.
+
+Create the required StatefulSet using:
 
 .. code:: bash
 
-   $ kubectl apply -f node-mdb-ss.yaml
+   $ kubectl apply -f mongo-ss.yaml
 
-You can check that they're working using:
+You can check its status using the commands ``kubectl get statefulsets -w``
+and ``kubectl get svc -w``
+
+ 
+Step 6: Run BigchainDB as a Deployment
+--------------------------------------
+
+Get the file ``bigchaindb-dep.yaml`` from GitHub using:
 
 .. code:: bash
 
-   $ kubectl get services
-   $ kubectl get statefulsets
+   $ wget https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/k8s/bigchaindb/bigchaindb-dep.yaml
+
+Note that we set the ``BIGCHAINDB_DATABASE_HOST`` to ``mdb`` which is the name
+of the MongoDB service defined earlier.
+
+We also hardcode the ``BIGCHAINDB_KEYPAIR_PUBLIC``,
+``BIGCHAINDB_KEYPAIR_PRIVATE`` and ``BIGCHAINDB_KEYRING`` for now.
+
+As we gain more experience running BigchainDB in testing and production, we
+will tweak the ``resources.limits`` values for cpu and memory, and as richer
+monitoring and probing becomes available in BigchainDB, we will tweak the
+``livenessProbe`` and ``readinessProbe`` parameters.
+
+We also plan to specify scheduling policies for the BigchainDB deployment so
+that we ensure that BigchainDB and MongoDB are running in separate nodes, and
+build security around the globally exposed port ``9984``.
+
+Create the required Deployment using:
+
+.. code:: bash
+
+   $ kubectl apply -f bigchaindb-dep.yaml
+
+You can check its status using the command ``kubectl get deploy -w``
+
+
+Step 7: Verifying our node is setup correctly
+---------------------------------------------
+
+Step 7.1: Testing externally
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Try to access the ``<dns/ip of your exposed service endpoint>:9984`` on your
+browser. You must receive a json output that shows the BigchainDB server
+version among other things.
+
+Try to access the ``<dns/ip of your exposed service endpoint>:27017`` on your
+browser. You must receive a message from MongoDB stating that it doesn't allow
+HTTP connections to the port anymore.
+
+
+Step 7.2: Testing internally
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+TODO: Note on testing services internally
+
