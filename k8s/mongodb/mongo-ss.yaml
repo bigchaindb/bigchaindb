@@ -1,0 +1,76 @@
+########################################################################
+# This YAML file desribes a StatefulSet with a service for running and #
+# exposing a MongoDB service.                                          #
+# It depends on the configdb and db k8s pvc.                           #
+########################################################################
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mdb
+  namespace: default
+  labels:
+    name: mdb
+spec:
+  selector:
+    app: mdb
+  ports:
+  - port: 27017
+    targetPort: 27017
+    name: mdb-port
+  type: LoadBalancer
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet 
+metadata:
+  name: mdb
+  namespace: default
+spec:
+  serviceName: mdb
+  replicas: 1
+  template:
+    metadata:
+      name: mdb
+      labels:
+        app: mdb
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: mongodb
+        image: mongo:3.4.1
+        args:
+        - --replSet=bigchain-rs
+        securityContext:
+          capabilities:
+            add:
+            - FOWNER
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 27017
+          hostPort: 27017
+          name: mdb-port
+          protocol: TCP
+        volumeMounts:
+        - name: mdb-db
+          mountPath: /data/db
+        - name: mdb-configdb
+          mountPath: /data/configdb
+        resources:
+          limits:
+            cpu: 200m
+            memory: 768Mi
+        livenessProbe:
+          tcpSocket:
+            port: mdb-port
+          successThreshold: 1
+          failureThreshold: 3
+          periodSeconds: 15
+          timeoutSeconds: 1
+      restartPolicy: Always
+      volumes:
+      - name: mdb-db
+        persistentVolumeClaim:
+          claimName: mongo-db-claim
+      - name: mdb-configdb
+        persistentVolumeClaim:
+          claimName: mongo-configdb-claim

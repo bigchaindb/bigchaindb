@@ -1,0 +1,131 @@
+##############################################################
+# This YAML file desribes a StatefulSet with two containers: #
+# bigchaindb/bigchaindb:latest and rethinkdb:2.3             #
+# It also describes a Service to expose BigchainDB,          #
+# the RethinkDB intracluster communications port, and        #
+# the RethinkDB web interface port.                          #
+##############################################################
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: bdb-service
+  namespace: default
+  labels:
+    name: bdb-service
+spec:
+  selector:
+    app: bdb
+  ports:
+  - port: 9984
+    targetPort: 9984
+    name: bdb-http-api
+  - port: 29015
+    targetPort: 29015
+    name: rdb-intracluster-comm-port
+  - port: 8080
+    targetPort: 8080
+    name: rdb-web-interface-port
+  type: LoadBalancer
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet 
+metadata:
+  name: bdb
+  namespace: default
+spec:
+  serviceName: bdb
+  replicas: 1
+  template:
+    metadata:
+      name: bdb
+      labels:
+        app: bdb
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: bdb-server
+        image: bigchaindb/bigchaindb:latest
+        args:
+        - start
+        env:
+        - name: BIGCHAINDB_KEYPAIR_PRIVATE
+          value: 56mEvwwVxcYsFQ3Y8UTFB8DVBv38yoUhxzDW3DAdLVd2
+        - name: BIGCHAINDB_KEYPAIR_PUBLIC
+          value: 9DsHwiEtvk51UHmNM2eV66czFha69j3CdtNrCj1RcZWR
+        - name: BIGCHAINDB_KEYRING
+          value: ""
+        - name: BIGCHAINDB_DATABASE_BACKEND
+          value: rethinkdb
+        - name: BIGCHAINDB_DATABASE_HOST
+          value: localhost
+        - name: BIGCHAINDB_DATABASE_PORT
+          value: "28015"
+        - name: BIGCHAINDB_SERVER_BIND
+          value: "0.0.0.0:9984"
+        - name: BIGCHAINDB_DATABASE_NAME
+          value: bigchain
+        - name: BIGCHAINDB_BACKLOG_REASSIGN_DELAY
+          value: "120"
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9984
+          hostPort: 9984
+          name: bdb-port
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 200m
+            memory: 768Mi
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 9984
+          initialDelaySeconds: 15
+          timeoutSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 9984
+          initialDelaySeconds: 15
+          timeoutSeconds: 10
+      - name: rethinkdb
+        image: rethinkdb:2.3
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+          hostPort: 8080
+          name: rdb-web-interface-port
+          protocol: TCP
+        - containerPort: 29015
+          hostPort: 29015
+          name: rdb-intra-port
+          protocol: TCP
+        - containerPort: 28015
+          hostPort: 28015
+          name: rdb-client-port
+          protocol: TCP
+        volumeMounts:
+        - name: rdb-data
+          mountPath: /data
+        resources:
+          limits:
+            cpu: 200m
+            memory: 768Mi
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 15
+          timeoutSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 15
+          timeoutSeconds: 10
+      restartPolicy: Always
+      volumes:
+      - name: rdb-data
+        persistentVolumeClaim:
+          claimName: mongoclaim
