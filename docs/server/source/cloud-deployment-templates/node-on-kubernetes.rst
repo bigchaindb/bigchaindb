@@ -5,14 +5,23 @@ Assuming you already have a `Kubernetes <https://kubernetes.io/>`_
 cluster up and running, this page describes how to run a
 BigchainDB node in it.
 
+In a nutshell, kubernetes consists of ``basic kubernetes objects`` - Pod,
+Service, Volume, Namespace - and ``controllers`` that are built using basic
+objects - ReplicaSet, Deployment, StatefulSet, DaemonSet, Job
+
 
 Step 1: Install kubectl
 -----------------------
 
 kubectl is the Kubernetes CLI.
-If you don't already have it installed,
-then see the `Kubernetes docs to install it
-<https://kubernetes.io/docs/user-guide/prereqs/>`_.
+
+.. code:: bash
+
+   $ curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+   $ chmod +x ./kubectl
+   $ sudo mv ./kubectl /usr/local/bin/kubectl
+   $ . <(kubectl completion bash) # auto-completion
+
 
 
 Step 2: Configure kubectl
