@@ -140,10 +140,8 @@ or use something like
 `SSH agent forwarding <https://yakking.branchable.com/posts/ssh-A/>`_ (better).
 
 
-Optional: Set up SSH Forwarding to login to nodes without copying private keys
-------------------------------------------------------------------------------
-to the remote master
---------------------
+Optional: Set up SSH Forwarding
+-------------------------------
 
 On the system you will use to access the cluster, run
 
@@ -184,7 +182,5 @@ CAUTION: You might end up deleting resources other than the ACS cluster.
    --name <name of resource group containing the cluster>
 
 
-Next, you can :doc:`run a BigchainDB node on your new
-Kubernetes cluster <node-on-kubernetes>`.
 Next, you can :doc:`run a BigchainDB node on your new
 Kubernetes cluster <node-on-kubernetes>`.
