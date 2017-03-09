@@ -154,19 +154,6 @@ You can check its status using: ``kubectl get pvc -w``
 Initially, the status of persistent volume claims might be "Pending"
 but it should become "Bound" fairly quickly.
 
-.. code:: bash
-
-   $ kubectl describe pvc
-   Name:            mongoclaim
-   Namespace:       default
-   StorageClass:    slow
-   Status:          Bound
-   Volume:          pvc-ebed81f1-fdca-11e6-abf0-000d3a27ab21
-   Labels:          <none>
-   Capacity:        20Gi
-   Access Modes:    RWO
-   No events.
-
 
 Now we are ready to run MongoDB and BigchainDB on our Kubernetes cluster.
 
