@@ -186,5 +186,5 @@ try to login to one of the k8s nodes from the master.
 
 Next, you can :doc:`run a BigchainDB node on your new
 Kubernetes cluster <node-on-kubernetes>`.
-=======
->>>>>>> Delete redundant k8s files, add cluster deletion steps.
+Next, you can :doc:`run a BigchainDB node on your new
+Kubernetes cluster <node-on-kubernetes>`.
