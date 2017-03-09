@@ -79,7 +79,9 @@ Finally, you can deploy an ACS using something like:
 
    $ az acs create --name <a made-up cluster name> \
    --resource-group <name of resource group created earlier> \
+   --master-count 3 \
    --agent-count 3 \
+   --admin-username ubuntu \
    --agent-vm-size Standard_D2_v2 \
    --dns-prefix <make up a name> \
    --generate-ssh-keys \
@@ -98,6 +100,28 @@ You can watch the progress in the `Azure Portal
 go to **Resource groups** (with the blue cube icon)
 and click on the one you created
 to see all the resources in it.
+
+
+Step 3: (Optional) Delete the managed k8s cluster
+-------------------------------------------------
+
+.. code:: bash
+
+   $ az acs delete \
+   --name <ACS cluster name> \
+   --resource-group <name of resource group containing the cluster> 
+
+
+Step 4: (Optional) Delete the resource group
+--------------------------------------------
+
+CAUTION: You might end up deleting resources other than the ACS cluster.
+
+.. code:: bash
+
+   $ az group delete \
+   --name <name of resource group containing the cluster> 
+
 
 Next, you can :doc:`run a BigchainDB node on your new
 Kubernetes cluster <node-on-kubernetes>`.
