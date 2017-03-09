@@ -2,9 +2,22 @@
 
 **NOT for Production Use**
 
-Those hacking on Mac can follow this document to run BigchainDB.
-Running BigchainDB on Mac(Docker or otherwise) is not officially supported
-currently.
+Those developing on Mac can follow this document to run BigchainDB in docker
+containers for a quick dev setup.
+Running BigchainDB on Mac (Docker or otherwise) is not officially supported.
+
+Support is very much limited as there are certain things that work differently
+in Docker for Mac than Docker for other platforms.
+Also, we do not use mac for our development and testing. :)
+
+This page may not be up to date woth various settings and docker updates at
+all the times.
+
+These steps work as of this writing (2017.Mar.09) and might break in the
+future with updates to docker on mac.
+Community contribution to make BigchainDB run on Docker for Mac will always be
+welcome.
+
 
 ## Prerequisite
 
