@@ -127,38 +127,53 @@ You can SSH to one of the just-deployed Kubernetes "master" nodes
    $ ssh -i ~/.ssh/<name>.pub ubuntu@<master-ip-address-or-hostname>
 
 where you can get the IP address or hostname
-of a master node from the Azure Portal.
+of a master node from the Azure Portal. For example:
 
-The "agent" nodes don't get public IP addresses or hostnames,
+.. code:: bash
+
+   $ ssh -i ~/.ssh/mykey123.pub ubuntu@mydnsprefix.westeurope.cloudapp.azure.com
+
+.. note::
+
+   All the master nodes should have the *same* IP address and hostname
+   (also called the Master FQDN).
+
+The "agent" nodes shouldn't get public IP addresses or hostnames,
 so you can't SSH to them *directly*,
 but you can first SSH to the master
-and then SSH to an agent from there 
-(using the *private* IP address or hostname of the agent node).
-To do that, you either need to copy your SSH key pair to
-the master (a bad idea),
-or use something like
-`SSH agent forwarding <https://yakking.branchable.com/posts/ssh-A/>`_ (better).
-
-
-Optional: Set up SSH Forwarding
--------------------------------
-
-On the system you will use to access the cluster, run
+and then SSH to an agent from there.
+To do that, you could
+copy your SSH key pair to the master (a bad idea),
+or use SSH agent forwarding (better).
+To do the latter, do the following on the machine you used
+to SSH to the master:
 
 .. code:: bash
 
    $ echo -e "Host <FQDN of the cluster from Azure Portal>\n  ForwardAgent yes" >> ~/.ssh/config
 
-To verify whether SSH Forwarding works properly, login to the one of the master
-machines and run
+To verify that SSH agent forwarding works properly,
+SSH to the one of the master nodes and do:
 
 .. code:: bash
 
    $ echo "$SSH_AUTH_SOCK"
 
-If you get an empty response, SSH forwarding hasn't been set up correctly.
-If you get a non-empty response, SSH forwarding should work fine and you can
-try to login to one of the k8s nodes from the master.
+If you get an empty response,
+then SSH agent forwarding hasn't been set up correctly.
+If you get a non-empty response,
+then SSH agent forwarding should work fine
+and you can SSH to one of the agent nodes (from a master)
+using something like:
+
+.. code:: bash
+
+   $ ssh ssh ubuntu@k8s-agent-4AC80E97-0
+
+where ``k8s-agent-4AC80E97-0`` is the name
+of a Kubernetes agent node in your Kubernetes cluster. 
+You will have to replace it by the name
+of an agent node in your cluster.
 
 
 Optional: Delete the Kubernetes Cluster
