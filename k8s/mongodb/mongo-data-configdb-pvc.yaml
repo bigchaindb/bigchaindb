@@ -1,0 +1,18 @@
+##########################################################
+# This YAML file desribes a k8s pvc for mongodb configDB #
+##########################################################
+
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: mongo-configdb-claim
+  annotations:
+    volume.beta.kubernetes.io/storage-class: slow-configdb
+spec:
+  accessModes:
+  - ReadWriteOnce
+  # FIXME(Uncomment when ACS supports this!)
+  # persistentVolumeReclaimPolicy: Retain
+  resources:
+    requests:
+      storage: 20Gi

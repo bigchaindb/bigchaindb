@@ -1,0 +1,89 @@
+#####################################################
+# This config file uses bdb v0.9.1 with bundled rdb #
+#####################################################
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: bdb-service
+  namespace: default
+  labels:
+    name: bdb-service
+spec:
+  selector:
+    app: bdb
+  ports:
+  - port: 9984
+    targetPort: 9984
+    name: bdb-http-api
+  - port: 8080
+    targetPort: 8080
+    name: bdb-rethinkdb-api
+  type: LoadBalancer
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet 
+metadata:
+  name: bdb
+  namespace: default
+spec:
+  serviceName: bdb
+  replicas: 1
+  template:
+    metadata:
+      name: bdb
+      labels:
+        app: bdb
+      annotations:
+        pod.beta.kubernetes.io/init-containers: '[
+            {
+                "name": "bdb091-configure",
+                "image": "bigchaindb/bigchaindb:0.9.1",
+                "command": ["bigchaindb", "-y", "configure", "rethinkdb"],
+                "volumeMounts": [
+                    {
+                        "name": "bigchaindb-data",
+                        "mountPath": "/data"
+                    }
+                ]
+            }
+        ]'
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: bdb091-server
+        image: bigchaindb/bigchaindb:0.9.1
+        args:
+        - -c
+        - /data/.bigchaindb
+        - start
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9984
+          hostPort: 9984
+          name: bdb-port
+          protocol: TCP 
+        volumeMounts:
+        - name: bigchaindb-data
+          mountPath: /data
+        resources:
+          limits:
+            cpu: 200m
+            memory: 768Mi
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 9984
+          initialDelaySeconds: 15
+          timeoutSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 9984
+          initialDelaySeconds: 15
+          timeoutSeconds: 10
+      restartPolicy: Always
+      volumes:
+      - name: bigchaindb-data
+        hostPath:
+          path: /disk/bigchaindb-data

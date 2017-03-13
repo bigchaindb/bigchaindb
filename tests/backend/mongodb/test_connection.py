@@ -32,15 +32,15 @@ def mongodb_connection():
                        port=bigchaindb.config['database']['port'])
 
 
-def test_get_connection_returns_the_correct_instance():
+def test_get_connection_returns_the_correct_instance(db_host, db_port):
     from bigchaindb.backend import connect
     from bigchaindb.backend.connection import Connection
     from bigchaindb.backend.mongodb.connection import MongoDBConnection
 
     config = {
         'backend': 'mongodb',
-        'host': 'localhost',
-        'port': 27017,
+        'host': db_host,
+        'port': db_port,
         'name': 'test',
         'replicaset': 'bigchain-rs'
     }
