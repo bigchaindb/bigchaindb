@@ -241,6 +241,11 @@ specifying that the timeout for disk mount has exceeded.
 Step 7: Initialize a MongoDB Replica Set
 ----------------------------------------
 
+This step is only required if you are planning to set up a cross datacenter
+MongoDB cluster replica set. If you are planning to run multiple instances of
+BigchainDB and MongoDB in the same datacenter, you may skip this step and move
+to :doc:`Step 9 <Step 9: Run BigchainDB as a Deployment>`.
+
 Login to the running MongoDB instance and access the mongo shell using:
 
 .. code:: bash
@@ -276,6 +281,11 @@ detailed replica set configuration now.
 Step 8: Create a DNS record - Optional
 --------------------------------------
 
+This step is only required if you are planning to set up a cross datacenter
+MongoDB cluster replica set. If you are planning to run multiple instances of
+BigchainDB and MongoDB in the same datacenter, you may skip this step and move
+to :doc:`Step 9 <Step 9: Run BigchainDB as a Deployment>`.
+
 Since we currently rely on Azure to provide us with a public IP and manage the
 DNS entries of MongoDB instances, we detail only the steps required for ACS
 here.
@@ -284,7 +294,10 @@ Select the current Azure resource group and look for the ``Public IP``
 resource. You should see at least 2 entries there - one for the Kubernetes
 master and the other for the MongoDB instance.
 
-Select the ``Public IP`` resource that is attached to your service (it should have the Kubernetes cluster name alongwith a random string), select ``Configuration`` and add the DNS name that you added in the ConfigMap earlier.
+Select the ``Public IP`` resource that is attached to your service (it should
+have the Kubernetes cluster name alongwith a random string),
+select ``Configuration`` and add the DNS name that you added in the
+ConfigMap earlier.
 
 
 This will ensure that when you scale the replica set later, other MongoDB
