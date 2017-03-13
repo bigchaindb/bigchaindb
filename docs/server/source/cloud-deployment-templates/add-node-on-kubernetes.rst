@@ -152,6 +152,10 @@ existing instances and update the BigchainDB instances using:
 
    $ kubectl --context ctx-1 replace -f bigchaindb-dep.yaml 
 
+This will create a ``rolling deployment`` in Kubernetes where a new instance of
+BigchainDB will be created and if the health check on the new instance is
+successful, the earlier one will be terminated. This assures that there are
+zero downtime updates to services.
 
 You can login to an existing BigchainDB instance and run the ``bigchaindb
 show-config`` command to see the configuration updates.
