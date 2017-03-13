@@ -1,6 +1,12 @@
-Run a BigchainDB Node in a Kubernetes Cluster
-=============================================
+Bootstrap a BigchainDB Node in a Kubernetes Cluster
+===================================================
 
+**Refer this document if you are starting your first BigchainDB instance in
+a BigchainDB cluster**
+
+**If you want to add a new BigchainDB node to an existing cluster, refer**
+:doc:`this <add-node-on-kubernetes>`
+ 
 Assuming you already have a `Kubernetes <https://kubernetes.io/>`_
 cluster up and running, this page describes how to run a
 BigchainDB node in it.
@@ -149,13 +155,13 @@ Initially, the status of persistent volume claims might be "Pending"
 but it should become "Bound" fairly quickly.
 
 
-Step 5: Create the ConfigMap - Optional
----------------------------------------
+Step 5: Create the Config Map - Optional
+----------------------------------------
 
 This step is only required if you are planning to set up a cross datacenter
-MongoDB cluster replica set. If you are planning to run multiple instances of
+MongoDB replica set cluster. If you are planning to run multiple instances of
 BigchainDB and MongoDB in the same datacenter, you may skip this step and move
-to :doc:`Step 6 <Step 6: Run MongoDB as a StatefulSet>`.
+to the :ref:`next step <Step 6: Run MongoDB as a StatefulSet>`.
 
 
 MongoDB reads the local hosts file while bootstrapping a replica set.
@@ -169,13 +175,14 @@ Get the file ``mongo-cm.yaml`` from GitHub using:
 
    $ wget https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/k8s/mongodb/mongo-cm.yaml
 
-You may want to update the ``data.fqdn`` field in the file before applying it.
+You may want to update the ``data.fqdn`` field in the file before creating it.
 This name should resolve to the load balancer (or a HA instance) in you cluster
 which is going to frontend your MongoDB instance.
 
 If you are using Kubernetes on ACS, you can select a unique name here and we
 can create the DNS A record for this in a later step as given below.
-You can also use other DNS providers to supply the A record.
+You can also use other DNS providers to map the public IP of the load balancer
+to an A record.
 
 
 Create the required ConfigMap using:
@@ -216,7 +223,7 @@ To avoid this, we use the Docker feature of ``--cap-add=FOWNER``.
 This bypasses the uid and gid permission checks during writes and allows data
 to be persisted to disk.
 Refer to the
-`Docker doc <https://docs.docker.com/engine/reference/run/#runtime-privilege-and-linux-capabilities>`_
+`Docker docs <https://docs.docker.com/engine/reference/run/#runtime-privilege-and-linux-capabilities>`_
 for details.
 
 As we gain more experience running MongoDB in testing and production, we will
@@ -233,18 +240,18 @@ Create the required StatefulSet using:
 You can check its status using the commands ``kubectl get statefulsets -w``
 and ``kubectl get svc -w``
 
-Note that you may have to wait for upto 10 minutes wait for disk to be created
-and attached on the first run. The pod can fail several time with the message
-specifying that the timeout for disk mount has exceeded.
+You may have to wait for upto 10 minutes wait for disk to be created
+and attached on the first run. The pod can fail several times with the message
+specifying that the timeout for mounting the disk has exceeded.
 
 
-Step 7: Initialize a MongoDB Replica Set
-----------------------------------------
+Step 7: Initialize a MongoDB Replica Set - Optional
+---------------------------------------------------
 
 This step is only required if you are planning to set up a cross datacenter
 MongoDB cluster replica set. If you are planning to run multiple instances of
 BigchainDB and MongoDB in the same datacenter, you may skip this step and move
-to :doc:`Step 9 <Step 9: Run BigchainDB as a Deployment>`.
+to :ref:`step 9 <Step 9: Run BigchainDB as a Deployment>`.
 
 Login to the running MongoDB instance and access the mongo shell using:
 
@@ -254,25 +261,28 @@ Login to the running MongoDB instance and access the mongo shell using:
    $ mongo --port 27017
 
 We initialize the replica set by using the ``rs.initialize()`` command from the
-mongo shell, the syntax for which is:
+mongo shell. Its syntax is:
 
-.. code-block:: text
+.. code:: bash
+
     rs.initiate({ 
-        _id : "<replica-set-name", members: [
-        { 
-            _id : 0,
-            host : "<fqdn of this instance>:<port number>"
+        _id : "<replica-set-name",
+        members: [ { 
+          _id : 0,
+          host : "<fqdn of this instance>:<port number>"
         } ]
     })
 
-For example, an init command might look like:
+An example init command might look like:
 
 .. code:: bash
    
    > rs.initiate({ _id : "bigchain-rs", members: [ { _id : 0, host : "bdb-cluster-0.westeurope.cloudapp.azure.com:27017" } ] })
 
 
-You should see changes in the mongo shell prompt from ``>`` to``bigchain-rs:OTHER>` to `bigchain-rs:SECONDARY>` to finally ``bigchain-rs:PRIMARY>``.
+You should see changes in the mongo shell prompt from ``>``
+to ``bigchain-rs:OTHER>`` to ``bigchain-rs:SECONDARY>`` and finally
+to ``bigchain-rs:PRIMARY>``.
 
 You can use the ``rs.conf()`` and the ``rs.status()`` commands to check the
 detailed replica set configuration now.
@@ -284,7 +294,7 @@ Step 8: Create a DNS record - Optional
 This step is only required if you are planning to set up a cross datacenter
 MongoDB cluster replica set. If you are planning to run multiple instances of
 BigchainDB and MongoDB in the same datacenter, you may skip this step and move
-to :doc:`Step 9 <Step 9: Run BigchainDB as a Deployment>`.
+to the :ref:`next step <Step 9: Run BigchainDB as a Deployment>`.
 
 Since we currently rely on Azure to provide us with a public IP and manage the
 DNS entries of MongoDB instances, we detail only the steps required for ACS
@@ -296,7 +306,7 @@ master and the other for the MongoDB instance.
 
 Select the ``Public IP`` resource that is attached to your service (it should
 have the Kubernetes cluster name alongwith a random string),
-select ``Configuration`` and add the DNS name that you added in the
+select ``Configuration`` and add the DNS name that you configured in the
 ConfigMap earlier.
 
 
@@ -338,22 +348,22 @@ You can check its status using the command ``kubectl get deploy -w``
 
 
 Step 10: Verify the BigchainDB Node Setup
-----------------------------------------
+-----------------------------------------
 
 Step 10.1: Testing Externally
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Try to access the ``<dns/ip of your exposed service endpoint>:9984`` on your
-browser. You must receive a json output that shows the BigchainDB server
-version among other things.
+Try to access the ``<dns/ip of your exposed bigchaindb service endpoint>:9984``
+on your browser. You must receive a json output that shows the BigchainDB
+server version among other things.
 
-Try to access the ``<dns/ip of your exposed service endpoint>:27017`` on your
-browser. You must receive a message from MongoDB stating that it doesn't allow
-HTTP connections to the port anymore.
+Try to access the ``<dns/ip of your exposed mongodb service endpoint>:27017``
+on your browser. You must receive a message from MongoDB stating that it
+doesn't allow HTTP connections to the port anymore.
 
 
 Step 10.2: Testing Internally
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Run a container that provides utilities like ``nslookup``, ``curl`` and ``dig``
 on the cluster and query the internal DNS and IP endpoints.

@@ -5,7 +5,8 @@ Add a BigchainDB Node in a Kubernetes Cluster
 cluster**
 
 **If you want to start your first BigchainDB node in the BigchiainDB cluster,
-refer `here<bootstrap??template-kubernetes-azure>`**
+refer**
+:doc:`this <node-on-kubernetes>`
 
 
 Terminology Used
@@ -14,18 +15,22 @@ Terminology Used
 ``existing cluster`` will refer to the existing (or any one of the existing)
 Kubernetes cluster that already hosts a BigchainDB instance with a MongoDB
 backend.
+
 ``ctx-1`` will refer to the kubectl context of the existing cluster.
 
 ``new cluster`` will refer to the new Kubernetes cluster that will run a new
 BigchainDB instance with a MongoDB backend.
+
 ``ctx-2`` will refer to the kubectl context of the new cluster.
 
 ``new MongoDB instance`` will refer to the MongoDB instance in the new cluster.
+
 ``existing MongoDB instance`` will refer to the MongoDB instance in the
 existing cluster.
 
 ``new BigchainDB instance`` will refer to the BigchainDB instance in the new
 cluster.
+
 ``existing BigchainDB instance`` will refer to the BigchainDB instance in the
 existing cluster.
 
@@ -48,7 +53,7 @@ Step 1: Prerequisites
   our documentation `here <template-kubernetes-azure>` for the set up.
 
 If you haven't read our guide to set up a
-`node on Kubernetes <node-on-kubernetes>`, now is a good time to jump in
+:doc:`node on Kubernetes <node-on-kubernetes>`, now is a good time to jump in
 there and then come back here as these instructions build up from there.
 
 
@@ -70,10 +75,11 @@ Step 2: Prepare the New Kubernetes cluster
 ------------------------------------------
 Follow the steps in the sections to set up Storage Classes and Persisten Volume
 Claims, and to run MongoDB in the new cluster:
-1. :ref:`Add Storage Classes <Create Storage Classes>`
-2. :ref:`Add Persistent Volume Claims <Create Persistent Volume Claims>`
-3. :ref:`Create the ConfigMap <Create the ConfigMap>`
-4. :ref:`Run MongoDB instance <Run MongoDB as a StatefulSet>`
+
+1. :ref:`Add Storage Classes <Step 3: Create Storage Classes>`
+2. :ref:`Add Persistent Volume Claims <Step 4: Create Persistent Volume Claims>`
+3. :ref:`Create the Config Map <Step 5: Create the Config Map - Optional>`
+4. :ref:`Run MongoDB instance <Step 6: Run MongoDB as a StatefulSet>`
 
 
 Step 3: Add the New MongoDB Instance to the Existing Replica Set
@@ -94,13 +100,13 @@ Add the new instance of MongoDB from an existing instance by accessing the
    $ kubectl --context ctx-1 exec -it mdb-0 -c mongodb -- /bin/bash
    $ mongo --port 27017
 
-We can only add members to a replica set from the PRIMARY instance.
+We can only add members to a replica set from the ``PRIMARY`` instance.
 The ``mongo`` shell prompt should state that this is the primary member in the
 replica set.
 If not, then you can use the ``rs.status()`` command to find out who the
 primary is and login to the ``mongo`` shell in the primary.
 
-Run the rs.add() command with the FQDN and port number of the other instances:
+Run the ``rs.add()`` command with the FQDN and port number of the other instances:
 
 .. code:: bash
 
@@ -131,8 +137,8 @@ of the MongoDB service defined earlier.
 
 Edit the ``BIGCHAINDB_KEYPAIR_PUBLIC`` with the public key of this instance,
 the ``BIGCHAINDB_KEYPAIR_PRIVATE`` with the private key of this instance and
-the ``BIGCHAINDB_KEYRING`` with the list of all the public keys in the
-BigchainDB cluster separated by ``:``.
+the ``BIGCHAINDB_KEYRING`` with a ``:`` delimited list of all the public keys
+in the BigchainDB cluster.
 
 Create the required Deployment using:
 
@@ -153,10 +159,10 @@ existing instances and update the BigchainDB instances using:
    $ kubectl --context ctx-1 replace -f bigchaindb-dep.yaml 
 
 This will create a ``rolling deployment`` in Kubernetes where a new instance of
-BigchainDB will be created and if the health check on the new instance is
-successful, the earlier one will be terminated. This assures that there are
-zero downtime updates to services.
+BigchainDB will be created, and if the health check on the new instance is
+successful, the earlier one will be terminated. This ensures that there is
+zero downtime during updates.
 
 You can login to an existing BigchainDB instance and run the ``bigchaindb
-show-config`` command to see the configuration updates.
+show-config`` command to see the configuration update to the keyring.
 
