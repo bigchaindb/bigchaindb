@@ -220,9 +220,6 @@ class Block(object):
         if self.node_pubkey not in bigchain.federation:
             raise SybilError('Only federation nodes can create blocks')
 
-        if set(self.voters) != bigchain.federation:
-            raise SybilError('Block voters differs from server keyring')
-
         # Check that the signature is valid
         if not self.is_signature_valid():
             raise InvalidSignature('Invalid block signature')
