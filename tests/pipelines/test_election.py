@@ -114,6 +114,13 @@ def test_check_for_quorum_valid(b, user_pk):
     assert e.check_for_quorum(votes[-1]) is None
 
 
+@patch('bigchaindb.core.Bigchain.get_block')
+def test_invalid_vote(get_block, b):
+    e = election.Election()
+    assert e.check_for_quorum({}) is None
+    get_block.assert_not_called()
+
+
 @pytest.mark.bdb
 def test_check_requeue_transaction(b, user_pk):
     from bigchaindb.models import Transaction

@@ -36,7 +36,7 @@ class Election:
         try:
             block_id = next_vote['vote']['voting_for_block']
             node = next_vote['node_pubkey']
-        except IndexError:
+        except KeyError:
             return
 
         next_block = self.bigchain.get_block(block_id)
