@@ -84,24 +84,21 @@ For future reference, the command to create a storage account is
 `az storage account create <https://docs.microsoft.com/en-us/cli/azure/storage/account#create>`_.
 
 
-Get the files ``mongo-data-db-sc.yaml`` and ``mongo-data-configdb-sc.yaml``
-from GitHub using:
+Get the file ``mongo-sc.yaml`` from GitHub using:
 
 .. code:: bash
 
-   $ wget https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/k8s/mongodb/mongo-data-db-sc.yaml
-   $ wget https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/k8s/mongodb/mongo-data-configdb-sc.yaml
+   $ wget https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/k8s/mongodb/mongo-sc.yaml
 
 You may want to update the ``parameters.location`` field in both the files to
 specify the location you are using in Azure.
 
 
-Create the required StorageClass using
+Create the required storage classes using
 
 .. code:: bash
 
-   $ kubectl apply -f mongo-data-db-sc.yaml
-   $ kubectl apply -f mongo-data-configdb-sc.yaml
+   $ kubectl apply -f mongo-sc.yaml
 
 
 You can check if it worked using ``kubectl get storageclasses``.
@@ -122,13 +119,11 @@ Step 4: Create Persistent Volume Claims
 Next, we'll create two PersistentVolumeClaim objects ``mongo-db-claim`` and
 ``mongo-configdb-claim``.
 
-Get the files ``mongo-data-db-sc.yaml`` and ``mongo-data-configdb-sc.yaml``
-from GitHub using:
+Get the files ``mongo-pvc.yaml`` from GitHub using:
 
 .. code:: bash
 
-   $ wget https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/k8s/mongodb/mongo-data-db-pvc.yaml
-   $ wget https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/k8s/mongodb/mongo-data-configdb-pvc.yaml
+   $ wget https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/k8s/mongodb/mongo-pvc.yaml
 
 Note how there's no explicit mention of Azure, AWS or whatever.
 ``ReadWriteOnce`` (RWO) means the volume can be mounted as
@@ -141,12 +136,11 @@ by AzureDisk.)
 You may want to update the ``spec.resources.requests.storage`` field in both
 the files to specify a different disk size.
 
-Create the required PersistentVolumeClaim using:
+Create the required Persistent Volume Claims using:
 
 .. code:: bash
 
-   $ kubectl apply -f mongo-data-db-pvc.yaml
-   $ kubectl apply -f mongo-data-configdb-pvc.yaml
+   $ kubectl apply -f mongo-pvc.yaml
 
 
 You can check its status using: ``kubectl get pvc -w``
@@ -198,6 +192,10 @@ Create the required StatefulSet using:
 
 You can check its status using the commands ``kubectl get statefulsets -w``
 and ``kubectl get svc -w``
+
+Note that you may have to wait for upto 10 minutes wait for disk to be created
+and attached on the first run. The pod can fail several time with the message
+specifying that the timeout for disk mount has exceeded.
 
  
 Step 6: Run BigchainDB as a Deployment
@@ -264,7 +262,7 @@ Now we can query for the ``mdb`` and ``bdb`` service details.
 .. code:: bash
 
    $ nslookup mdb
-   $ dig +noall +answer _mdb_port._tcp.mdb.default.svc.cluster.local SRV
+   $ dig +noall +answer _mdb-port._tcp.mdb.default.svc.cluster.local SRV
    $ curl -X GET http://mdb:27017
    $ curl -X GET http://bdb:9984
 
