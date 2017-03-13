@@ -3,6 +3,8 @@ from time import sleep
 import pytest
 from unittest.mock import patch
 
+from bigchaindb.common.exceptions import ValidationError
+
 pytestmark = pytest.mark.bdb
 
 
@@ -91,7 +93,7 @@ class TestBigchainApi(object):
 
     @pytest.mark.genesis
     def test_get_spent_with_double_inclusion_detected(self, b, monkeypatch):
-        from bigchaindb.backend.exceptions import BigchainDBCritical
+        from bigchaindb.exceptions import CriticalDoubleInclusion
         from bigchaindb.models import Transaction
 
         tx = Transaction.create([b.me], [([b.me], 1)])
@@ -121,12 +123,47 @@ class TestBigchainApi(object):
         vote = b.vote(block3.id, b.get_last_voted_block().id, True)
         b.write_vote(vote)
 
-        with pytest.raises(BigchainDBCritical):
+        with pytest.raises(CriticalDoubleInclusion):
+            b.get_spent(tx.id, 0)
+
+    @pytest.mark.genesis
+    def test_get_spent_with_double_spend_detected(self, b, monkeypatch):
+        from bigchaindb.exceptions import CriticalDoubleSpend
+        from bigchaindb.models import Transaction
+
+        tx = Transaction.create([b.me], [([b.me], 1)])
+        tx = tx.sign([b.me_private])
+
+        monkeypatch.setattr('time.time', lambda: 1000000000)
+        block1 = b.create_block([tx])
+        b.write_block(block1)
+
+        monkeypatch.setattr('time.time', lambda: 1000000020)
+        transfer_tx = Transaction.transfer(tx.to_inputs(), [([b.me], 1)],
+                                           asset_id=tx.id)
+        transfer_tx = transfer_tx.sign([b.me_private])
+        block2 = b.create_block([transfer_tx])
+        b.write_block(block2)
+
+        monkeypatch.setattr('time.time', lambda: 1000000030)
+        transfer_tx2 = Transaction.transfer(tx.to_inputs(), [([b.me], 2)],
+                                            asset_id=tx.id)
+        transfer_tx2 = transfer_tx2.sign([b.me_private])
+        block3 = b.create_block([transfer_tx2])
+        b.write_block(block3)
+
+        # Vote both block2 and block3 valid
+        vote = b.vote(block2.id, b.get_last_voted_block().id, True)
+        b.write_vote(vote)
+        vote = b.vote(block3.id, b.get_last_voted_block().id, True)
+        b.write_vote(vote)
+
+        with pytest.raises(CriticalDoubleSpend):
             b.get_spent(tx.id, 0)
 
     @pytest.mark.genesis
     def test_get_block_status_for_tx_with_double_inclusion(self, b, monkeypatch):
-        from bigchaindb.backend.exceptions import BigchainDBCritical
+        from bigchaindb.exceptions import CriticalDoubleInclusion
         from bigchaindb.models import Transaction
 
         tx = Transaction.create([b.me], [([b.me], 1)])
@@ -146,7 +183,7 @@ class TestBigchainApi(object):
         vote = b.vote(block2.id, b.get_last_voted_block().id, True)
         b.write_vote(vote)
 
-        with pytest.raises(BigchainDBCritical):
+        with pytest.raises(CriticalDoubleInclusion):
             b.get_blocks_status_containing_tx(tx.id)
 
     @pytest.mark.genesis
@@ -478,7 +515,7 @@ class TestBigchainApi(object):
     @pytest.mark.usefixtures('inputs')
     def test_non_create_input_not_found(self, b, user_pk):
         from cryptoconditions import Ed25519Fulfillment
-        from bigchaindb.common.exceptions import TransactionDoesNotExist
+        from bigchaindb.common.exceptions import InputDoesNotExist
         from bigchaindb.common.transaction import Input, TransactionLink
         from bigchaindb.models import Transaction
         from bigchaindb import Bigchain
@@ -490,7 +527,7 @@ class TestBigchainApi(object):
         tx = Transaction.transfer([input], [([user_pk], 1)],
                                   asset_id='mock_asset_link')
 
-        with pytest.raises(TransactionDoesNotExist):
+        with pytest.raises(InputDoesNotExist):
             tx.validate(Bigchain())
 
     def test_count_backlog(self, b, user_pk):
@@ -513,24 +550,24 @@ class TestTransactionValidation(object):
         # Manipulate input so that it has a `fulfills` defined even
         # though it shouldn't have one
         create_tx.inputs[0].fulfills = TransactionLink('abc', 0)
-        with pytest.raises(ValueError) as excinfo:
+        with pytest.raises(ValidationError) as excinfo:
             b.validate_transaction(create_tx)
         assert excinfo.value.args[0] == 'A CREATE operation has no inputs'
 
     def test_transfer_operation_no_inputs(self, b, user_pk,
                                           signed_transfer_tx):
         signed_transfer_tx.inputs[0].fulfills = None
-        with pytest.raises(ValueError) as excinfo:
+        with pytest.raises(ValidationError) as excinfo:
             b.validate_transaction(signed_transfer_tx)
 
         assert excinfo.value.args[0] == 'Only `CREATE` transactions can have null inputs'
 
     def test_non_create_input_not_found(self, b, user_pk, signed_transfer_tx):
-        from bigchaindb.common.exceptions import TransactionDoesNotExist
+        from bigchaindb.common.exceptions import InputDoesNotExist
         from bigchaindb.common.transaction import TransactionLink
 
         signed_transfer_tx.inputs[0].fulfills = TransactionLink('c', 0)
-        with pytest.raises(TransactionDoesNotExist):
+        with pytest.raises(InputDoesNotExist):
             b.validate_transaction(signed_transfer_tx)
 
     @pytest.mark.usefixtures('inputs')
@@ -689,7 +726,7 @@ class TestBlockValidation(object):
             b.validate_block(block)
 
     def test_invalid_node_pubkey(self, b):
-        from bigchaindb.common.exceptions import OperationError
+        from bigchaindb.common.exceptions import SybilError
         from bigchaindb.common import crypto
 
         # blocks can only be created by a federation node
@@ -706,8 +743,8 @@ class TestBlockValidation(object):
         # from a non federation node
         block = block.sign(tmp_sk)
 
-        # check that validate_block raises an OperationError
-        with pytest.raises(OperationError):
+        # check that validate_block raises an SybilError
+        with pytest.raises(SybilError):
             b.validate_block(block)
 
 
@@ -726,7 +763,7 @@ class TestMultipleInputs(object):
         tx = tx.sign([user_sk])
 
         # validate transaction
-        assert b.is_valid_transaction(tx) == tx
+        tx.validate(b)
         assert len(tx.inputs) == 1
         assert len(tx.outputs) == 1
 
@@ -748,7 +785,7 @@ class TestMultipleInputs(object):
                                   asset_id=input_tx.id)
         tx = tx.sign([user_sk])
 
-        assert b.is_valid_transaction(tx) == tx
+        tx.validate(b)
         assert len(tx.inputs) == 1
         assert len(tx.outputs) == 1
 
@@ -780,7 +817,7 @@ class TestMultipleInputs(object):
         transfer_tx = transfer_tx.sign([user_sk, user2_sk])
 
         # validate transaction
-        assert b.is_valid_transaction(transfer_tx) == transfer_tx
+        transfer_tx.validate(b)
         assert len(transfer_tx.inputs) == 1
         assert len(transfer_tx.outputs) == 1
 
@@ -813,7 +850,7 @@ class TestMultipleInputs(object):
                                   asset_id=tx_input.id)
         tx = tx.sign([user_sk, user2_sk])
 
-        assert b.is_valid_transaction(tx) == tx
+        tx.validate(b)
         assert len(tx.inputs) == 1
         assert len(tx.outputs) == 1
 
@@ -1167,7 +1204,6 @@ def test_cant_spend_same_input_twice_in_tx(b, genesis_block):
     tx_transfer = Transaction.transfer(dup_inputs, [([b.me], 200)],
                                        asset_id=tx_create.id)
     tx_transfer_signed = tx_transfer.sign([b.me_private])
-    assert b.is_valid_transaction(tx_transfer_signed) is False
     with pytest.raises(DoubleSpend):
         tx_transfer_signed.validate(b)
 
@@ -1225,3 +1261,10 @@ def test_is_new_transaction(b, genesis_block):
     # Tx is new because it's only found in an invalid block
     assert b.is_new_transaction(tx.id)
     assert b.is_new_transaction(tx.id, exclude_block_id=block.id)
+
+
+def test_validate_asset_id_string(signed_transfer_tx):
+    from bigchaindb.common.exceptions import ValidationError
+    signed_transfer_tx.asset['id'] = 1
+    with pytest.raises(ValidationError):
+        signed_transfer_tx.validate(None)

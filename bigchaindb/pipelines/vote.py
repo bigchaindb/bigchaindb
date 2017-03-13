@@ -60,7 +60,7 @@ class Vote:
                 return block['id'], [self.invalid_dummy_tx]
             try:
                 block._validate_block(self.bigchain)
-            except (exceptions.OperationError, exceptions.InvalidSignature):
+            except exceptions.ValidationError:
                 # XXX: if a block is invalid we should skip the `validate_tx`
                 # step, but since we are in a pipeline we cannot just jump to
                 # another function. Hackish solution: generate an invalid
@@ -104,7 +104,13 @@ class Vote:
         if not new:
             return False, block_id, num_tx
 
-        valid = bool(self.bigchain.is_valid_transaction(tx))
+        try:
+            tx.validate(self.bigchain)
+            valid = True
+        except exceptions.ValidationError as e:
+            logger.warning('Invalid tx: %s', e)
+            valid = False
+
         return valid, block_id, num_tx
 
     def vote(self, tx_validity, block_id, num_tx):

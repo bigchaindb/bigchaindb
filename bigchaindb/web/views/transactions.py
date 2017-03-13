@@ -9,20 +9,7 @@ import logging
 from flask import current_app, request
 from flask_restful import Resource, reqparse
 
-
-from bigchaindb.common.exceptions import (
-    AmountError,
-    DoubleSpend,
-    InvalidHash,
-    InvalidSignature,
-    SchemaValidationError,
-    OperationError,
-    TransactionDoesNotExist,
-    TransactionOwnerError,
-    TransactionNotInValidBlock,
-    ValidationError,
-)
-
+from bigchaindb.common.exceptions import SchemaValidationError, ValidationError
 from bigchaindb.models import Transaction
 from bigchaindb.web.views.base import make_error
 from bigchaindb.web.views import parameters
@@ -84,7 +71,7 @@ class TransactionListApi(Resource):
                 message='Invalid transaction schema: {}'.format(
                     e.__cause__.message)
             )
-        except (ValidationError, InvalidSignature) as e:
+        except ValidationError as e:
             return make_error(
                 400,
                 'Invalid transaction ({}): {}'.format(type(e).__name__, e)
@@ -93,15 +80,7 @@ class TransactionListApi(Resource):
         with pool() as bigchain:
             try:
                 bigchain.validate_transaction(tx_obj)
-            except (ValueError,
-                    OperationError,
-                    TransactionDoesNotExist,
-                    TransactionOwnerError,
-                    DoubleSpend,
-                    InvalidHash,
-                    InvalidSignature,
-                    TransactionNotInValidBlock,
-                    AmountError) as e:
+            except ValidationError as e:
                 return make_error(
                     400,
                     'Invalid transaction ({}): {}'.format(type(e).__name__, e)
