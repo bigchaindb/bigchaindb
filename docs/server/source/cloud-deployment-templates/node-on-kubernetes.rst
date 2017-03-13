@@ -119,7 +119,7 @@ Step 4: Create Persistent Volume Claims
 Next, we'll create two PersistentVolumeClaim objects ``mongo-db-claim`` and
 ``mongo-configdb-claim``.
 
-Get the files ``mongo-pvc.yaml`` from GitHub using:
+Get the file ``mongo-pvc.yaml`` from GitHub using:
 
 .. code:: bash
 
@@ -149,9 +149,49 @@ Initially, the status of persistent volume claims might be "Pending"
 but it should become "Bound" fairly quickly.
 
 
+Step 5: Create the ConfigMap - Optional
+---------------------------------------
+
+This step is only required if you are planning to set up a cross datacenter
+MongoDB cluster replica set. If you are planning to run multiple instances of
+BigchainDB and MongoDB in the same datacenter, you may skip this step and move
+to :doc:`Step 6 <Step 6: Run MongoDB as a StatefulSet>`.
+
+
+MongoDB reads the local hosts file while bootstrapping a replica set.
+We create a ConfigMap with the FQDN of the MongoDB instance and populate the
+local hosts file with this value so that a replica set can be created
+seamlessly.
+
+Get the file ``mongo-cm.yaml`` from GitHub using:
+
+.. code:: bash
+
+   $ wget https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/k8s/mongodb/mongo-cm.yaml
+
+You may want to update the ``data.fqdn`` field in the file before applying it.
+This name should resolve to the load balancer (or a HA instance) in you cluster
+which is going to frontend your MongoDB instance.
+
+If you are using Kubernetes on ACS, you can select a unique name here and we
+can create the DNS A record for this in a later step as given below.
+You can also use other DNS providers to supply the A record.
+
+
+Create the required ConfigMap using:
+
+.. code:: bash
+
+   $ kubectl apply -f mongo-cm.yaml
+
+
+You can check its status using: ``kubectl get cm``
+
+
+
 Now we are ready to run MongoDB and BigchainDB on our Kubernetes cluster.
 
-Step 5: Run MongoDB as a StatefulSet
+Step 6: Run MongoDB as a StatefulSet
 ------------------------------------
 
 Get the file ``mongo-ss.yaml`` from GitHub using:
@@ -198,7 +238,7 @@ and attached on the first run. The pod can fail several time with the message
 specifying that the timeout for disk mount has exceeded.
 
  
-Step 6: Run BigchainDB as a Deployment
+Step 7: Run BigchainDB as a Deployment
 --------------------------------------
 
 Get the file ``bigchaindb-dep.yaml`` from GitHub using:
@@ -231,10 +271,10 @@ Create the required Deployment using:
 You can check its status using the command ``kubectl get deploy -w``
 
 
-Step 7: Verify the BigchainDB Node Setup
+Step 8: Verify the BigchainDB Node Setup
 ----------------------------------------
 
-Step 7.1: Testing Externally
+Step 8.1: Testing Externally
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Try to access the ``<dns/ip of your exposed service endpoint>:9984`` on your
@@ -246,7 +286,7 @@ browser. You must receive a message from MongoDB stating that it doesn't allow
 HTTP connections to the port anymore.
 
 
-Step 7.2: Testing Internally
+Step 8.2: Testing Internally
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Run a container that provides utilities like ``nslookup``, ``curl`` and ``dig``
