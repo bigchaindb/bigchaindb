@@ -966,13 +966,9 @@ def test_validate_version(utx):
         validate_transaction_model(utx)
 
 
-def test_create_tx_no_asset_id(b):
+def test_create_tx_no_asset_id(b, utx):
     from bigchaindb.common.exceptions import SchemaValidationError
-    from bigchaindb.models import Transaction
-    tx = Transaction.create([b.me], [([b.me], 1)])
-    # works
-    Transaction.validate_structure(tx.to_dict())
-    # broken
-    tx.asset['id'] = 'b' * 64
+    from .utils import validate_transaction_model
+    utx.asset['id'] = 'b' * 64
     with raises(SchemaValidationError):
-        Transaction.validate_structure(tx.to_dict())
+        validate_transaction_model(utx)

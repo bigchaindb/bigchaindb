@@ -114,12 +114,8 @@ class Transaction(Transaction):
         return self
 
     @classmethod
-    def validate_structure(cls, tx_body):
-        validate_transaction_schema(tx_body)
-
-    @classmethod
     def from_dict(cls, tx_body):
-        cls.validate_structure(tx_body)
+        validate_transaction_schema(tx_body)
         return super().from_dict(tx_body)
 
 
