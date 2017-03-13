@@ -6,7 +6,7 @@
 # where to write logging data.
 systemLog:
   verbosity: 0
-  #traceAllExceptions: true
+  #TODO traceAllExceptions: true
   timeStampFormat: iso8601-utc
   component:
     accessControl:
@@ -58,8 +58,8 @@ net:
 #security: TODO
 
 #setParameter:
-  #notablescan: 1 /?? TODO
-  #logUserIds: 1 /??
+  #notablescan: 1 TODO
+  #logUserIds: 1 TODO
 
 storage:
   dbPath: /data/db
@@ -75,7 +75,7 @@ storage:
     collectionConfig:
       blockCompressor: snappy
     indexConfig:
-      prefixCompression: true #?? TODO  false?
+      prefixCompression: true # TODO  false may affect performance?
 
 operationProfiling:
   mode: slowOp
@@ -86,10 +86,4 @@ replication:
   enableMajorityReadConcern: true
 
 #sharding:
-
-## Enterprise-Only Options:
-
-#auditLog:
-
-#snmp:
 

@@ -237,8 +237,61 @@ Note that you may have to wait for upto 10 minutes wait for disk to be created
 and attached on the first run. The pod can fail several time with the message
 specifying that the timeout for disk mount has exceeded.
 
- 
-Step 7: Run BigchainDB as a Deployment
+
+Step 7: Initialize a MongoDB Replica Set
+----------------------------------------
+
+Login to the running MongoDB instance and access the mongo shell using:
+
+.. code:: bash
+   
+   $ kubectl exec -it mdb-0 -c mongodb -- /bin/bash
+   $ mongo --port 27017
+
+We initialize the replica set by using the ``rs.initialize()`` command from the
+mongo shell, the syntax for which is:
+
+.. code-block:: text
+    rs.initiate({ 
+        _id : "<replica-set-name", members: [
+        { 
+            _id : 0,
+            host : "<fqdn of this instance>:<port number>"
+        } ]
+    })
+
+For example, an init command might look like:
+
+.. code:: bash
+   
+   > rs.initiate({ _id : "bigchain-rs", members: [ { _id : 0, host : "bdb-cluster-0.westeurope.cloudapp.azure.com:27017" } ] })
+
+
+You should see changes in the mongo shell prompt from ``>`` to``bigchain-rs:OTHER>` to `bigchain-rs:SECONDARY>` to finally ``bigchain-rs:PRIMARY>``.
+
+You can use the ``rs.conf()`` and the ``rs.status()`` commands to check the
+detailed replica set configuration now.
+
+
+Step 8: Create a DNS record - Optional
+--------------------------------------
+
+Since we currently rely on Azure to provide us with a public IP and manage the
+DNS entries of MongoDB instances, we detail only the steps required for ACS
+here.
+
+Select the current Azure resource group and look for the ``Public IP``
+resource. You should see at least 2 entries there - one for the Kubernetes
+master and the other for the MongoDB instance.
+
+Select the ``Public IP`` resource that is attached to your service (it should have the Kubernetes cluster name alongwith a random string), select ``Configuration`` and add the DNS name that you added in the ConfigMap earlier.
+
+
+This will ensure that when you scale the replica set later, other MongoDB
+members in the replica set can reach this instance.
+
+
+Step 9: Run BigchainDB as a Deployment
 --------------------------------------
 
 Get the file ``bigchaindb-dep.yaml`` from GitHub using:
@@ -271,10 +324,10 @@ Create the required Deployment using:
 You can check its status using the command ``kubectl get deploy -w``
 
 
-Step 8: Verify the BigchainDB Node Setup
+Step 10: Verify the BigchainDB Node Setup
 ----------------------------------------
 
-Step 8.1: Testing Externally
+Step 10.1: Testing Externally
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Try to access the ``<dns/ip of your exposed service endpoint>:9984`` on your
@@ -286,7 +339,7 @@ browser. You must receive a message from MongoDB stating that it doesn't allow
 HTTP connections to the port anymore.
 
 
-Step 8.2: Testing Internally
+Step 10.2: Testing Internally
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Run a container that provides utilities like ``nslookup``, ``curl`` and ``dig``
