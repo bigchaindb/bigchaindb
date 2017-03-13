@@ -9,12 +9,14 @@ from argparse import Namespace
 def test_bigchain_run_start_with_rethinkdb(mock_start_rethinkdb,
                                            mock_run_configure,
                                            mock_processes_start,
-                                           mock_db_init_with_existing_db):
+                                           mock_db_init_with_existing_db,
+                                           mocked_setup_logging):
     from bigchaindb.commands.bigchain import run_start
     args = Namespace(start_rethinkdb=True, allow_temp_keypair=False, config=None, yes=True)
     run_start(args)
 
     mock_start_rethinkdb.assert_called_with()
+    mocked_setup_logging.assert_called_once_with()
 
 
 @patch('subprocess.Popen')

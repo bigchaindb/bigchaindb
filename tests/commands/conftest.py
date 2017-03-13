@@ -50,3 +50,12 @@ def run_start_args(request):
         start_rethinkdb=param.get('start_rethinkdb', False),
         allow_temp_keypair=param.get('allow_temp_keypair', False),
     )
+
+
+@pytest.fixture
+def mocked_setup_logging(mocker):
+    return mocker.patch(
+        'bigchaindb.commands.bigchain.setup_logging',
+        autospec=True,
+        spec_set=True,
+    )

@@ -44,7 +44,8 @@ def test_post_create_transaction_endpoint(b, client):
     assert res.json['outputs'][0]['public_keys'][0] == user_pub
 
 
-def test_post_create_transaction_with_invalid_id(b, client, caplog):
+@patch('bigchaindb.web.views.base.logger')
+def test_post_create_transaction_with_invalid_id(mock_logger, b, client):
     from bigchaindb.common.exceptions import InvalidHash
     from bigchaindb.models import Transaction
     user_priv, user_pub = crypto.generate_key_pair()
@@ -56,16 +57,29 @@ def test_post_create_transaction_with_invalid_id(b, client, caplog):
     res = client.post(TX_ENDPOINT, data=json.dumps(tx))
     expected_status_code = 400
     expected_error_message = (
-        'Invalid transaction ({}): The transaction\'s id \'{}\' isn\'t equal to '
-        'the hash of its body, i.e. it\'s not valid.'
+        "Invalid transaction ({}): The transaction's id '{}' isn't equal to "
+        "the hash of its body, i.e. it's not valid."
     ).format(InvalidHash.__name__, tx['id'])
     assert res.status_code == expected_status_code
     assert res.json['message'] == expected_error_message
-    assert caplog.records[0].args['status'] == expected_status_code
-    assert caplog.records[0].args['message'] == expected_error_message
+    assert mock_logger.error.called
+    assert (
+        'HTTP API error: %(status)s - %(message)s' in
+        mock_logger.error.call_args[0]
+    )
+    assert (
+        {'message': expected_error_message, 'status': expected_status_code} in
+        mock_logger.error.call_args[0]
+    )
+    # TODO put back caplog based asserts once possible
+    # assert caplog.records[0].args['status'] == expected_status_code
+    # assert caplog.records[0].args['message'] == expected_error_message
 
 
-def test_post_create_transaction_with_invalid_signature(b, client, caplog):
+@patch('bigchaindb.web.views.base.logger')
+def test_post_create_transaction_with_invalid_signature(mock_logger,
+                                                        b,
+                                                        client):
     from bigchaindb.common.exceptions import InvalidSignature
     from bigchaindb.models import Transaction
     user_priv, user_pub = crypto.generate_key_pair()
@@ -82,8 +96,18 @@ def test_post_create_transaction_with_invalid_signature(b, client, caplog):
     ).format(InvalidSignature.__name__)
     assert res.status_code == expected_status_code
     assert res.json['message'] == expected_error_message
-    assert caplog.records[0].args['status'] == expected_status_code
-    assert caplog.records[0].args['message'] == expected_error_message
+    assert mock_logger.error.called
+    assert (
+        'HTTP API error: %(status)s - %(message)s' in
+        mock_logger.error.call_args[0]
+    )
+    assert (
+        {'message': expected_error_message, 'status': expected_status_code} in
+        mock_logger.error.call_args[0]
+    )
+    # TODO put back caplog based asserts once possible
+    # assert caplog.records[0].args['status'] == expected_status_code
+    # assert caplog.records[0].args['message'] == expected_error_message
 
 
 def test_post_create_transaction_with_invalid_structure(client):
@@ -91,7 +115,8 @@ def test_post_create_transaction_with_invalid_structure(client):
     assert res.status_code == 400
 
 
-def test_post_create_transaction_with_invalid_schema(client, caplog):
+@patch('bigchaindb.web.views.base.logger')
+def test_post_create_transaction_with_invalid_schema(mock_logger, client):
     from bigchaindb.models import Transaction
     user_priv, user_pub = crypto.generate_key_pair()
     tx = Transaction.create(
@@ -103,8 +128,18 @@ def test_post_create_transaction_with_invalid_schema(client, caplog):
         "Invalid transaction schema: 'version' is a required property")
     assert res.status_code == expected_status_code
     assert res.json['message'] == expected_error_message
-    assert caplog.records[0].args['status'] == expected_status_code
-    assert caplog.records[0].args['message'] == expected_error_message
+    assert mock_logger.error.called
+    assert (
+        'HTTP API error: %(status)s - %(message)s' in
+        mock_logger.error.call_args[0]
+    )
+    assert (
+        {'message': expected_error_message, 'status': expected_status_code} in
+        mock_logger.error.call_args[0]
+    )
+    # TODO put back caplog based asserts once possible
+    # assert caplog.records[0].args['status'] == expected_status_code
+    # assert caplog.records[0].args['message'] == expected_error_message
 
 
 @pytest.mark.parametrize('exc,msg', (
@@ -118,7 +153,8 @@ def test_post_create_transaction_with_invalid_schema(client, caplog):
     ('TransactionNotInValidBlock', 'Wait, maybe?'),
     ('ValidationError', '?'),
 ))
-def test_post_invalid_transaction(client, exc, msg, monkeypatch, caplog):
+@patch('bigchaindb.web.views.base.logger')
+def test_post_invalid_transaction(mock_logger, client, exc, msg, monkeypatch,):
     from bigchaindb.common import exceptions
     exc_cls = getattr(exceptions, exc)
 
@@ -135,8 +171,18 @@ def test_post_invalid_transaction(client, exc, msg, monkeypatch, caplog):
     assert res.status_code == expected_status_code
     assert (res.json['message'] ==
             'Invalid transaction ({}): {}'.format(exc, msg))
-    assert caplog.records[2].args['status'] == expected_status_code
-    assert caplog.records[2].args['message'] == expected_error_message
+    assert mock_logger.error.called
+    assert (
+        'HTTP API error: %(status)s - %(message)s' in
+        mock_logger.error.call_args[0]
+    )
+    assert (
+        {'message': expected_error_message, 'status': expected_status_code} in
+        mock_logger.error.call_args[0]
+    )
+    # TODO put back caplog based asserts once possible
+    # assert caplog.records[2].args['status'] == expected_status_code
+    # assert caplog.records[2].args['message'] == expected_error_message
 
 
 @pytest.mark.bdb

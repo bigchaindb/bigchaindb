@@ -45,7 +45,22 @@ config = {
         'private': None,
     },
     'keyring': [],
-    'backlog_reassign_delay': 120
+    'backlog_reassign_delay': 120,
+    'log': {
+        # TODO Document here or elsewhere.
+        # Example of config:
+        # 'file': '/var/log/bigchaindb.log',
+        # 'level_console': 'info',
+        # 'level_logfile': 'info',
+        # 'datefmt_console': '%Y-%m-%d %H:%M:%S',
+        # 'datefmt_logfile': '%Y-%m-%d %H:%M:%S',
+        # 'fmt_console': '%(asctime)s [%(levelname)s] (%(name)s) %(message)s',
+        # 'fmt_logfile': '%(asctime)s [%(levelname)s] (%(name)s) %(message)s',
+        # 'granular_levels': {
+        #     'bichaindb.backend': 'info',
+        #     'bichaindb.core': 'info',
+        # },
+    },
 }
 
 # We need to maintain a backup copy of the original config dict in case

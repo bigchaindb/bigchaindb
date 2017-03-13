@@ -31,6 +31,7 @@ dev_require = [
     'ipdb',
     'ipython',
     'watchdog',
+    'logging_tree',
 ]
 
 docs_require = [
