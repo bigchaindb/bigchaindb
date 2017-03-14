@@ -31,6 +31,12 @@ then you can get the ``~/.kube/config`` file using:
    --resource-group <name of resource group containing the cluster> \
    --name <ACS cluster name>
 
+If it asks for a password (to unlock the SSH key)
+and you enter the correct password,
+but you get an error message,
+then try adding ``--ssh-key-file ~/.ssh/<name>``
+to the above command (i.e. the path to the private key).
+
 
 Step 3: Create Storage Classes
 ------------------------------
