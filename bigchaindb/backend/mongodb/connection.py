@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 class MongoDBConnection(Connection):
 
-    def __init__(self, replicaset=None, **kwargs):
+    def __init__(self, replicaset=None, ssl=False, **kwargs):
         """Create a new Connection instance.
 
         Args:
@@ -28,6 +28,8 @@ class MongoDBConnection(Connection):
 
         super().__init__(**kwargs)
         self.replicaset = replicaset or bigchaindb.config['database']['replicaset']
+        self.ssl = bigchaindb.config['database'].get('ssl') if bigchaindb.config['database'].get('ssl') is not None \
+            else ssl
 
     @property
     def db(self):
@@ -71,14 +73,15 @@ class MongoDBConnection(Connection):
             # we should only return a connection if the replica set is
             # initialized. initialize_replica_set will check if the
             # replica set is initialized else it will initialize it.
-            initialize_replica_set(self.host, self.port, self.connection_timeout)
+            initialize_replica_set(self.host, self.port, self.connection_timeout, self.ssl)
 
             # FYI: this might raise a `ServerSelectionTimeoutError`,
             # that is a subclass of `ConnectionFailure`.
             return pymongo.MongoClient(self.host,
                                        self.port,
                                        replicaset=self.replicaset,
-                                       serverselectiontimeoutms=self.connection_timeout)
+                                       serverselectiontimeoutms=self.connection_timeout,
+                                       ssl=self.ssl)
 
         # `initialize_replica_set` might raise `ConnectionFailure` or `OperationFailure`.
         except (pymongo.errors.ConnectionFailure,
@@ -86,7 +89,7 @@ class MongoDBConnection(Connection):
             raise ConnectionError() from exc
 
 
-def initialize_replica_set(host, port, connection_timeout):
+def initialize_replica_set(host, port, connection_timeout, ssl):
     """Initialize a replica set. If already initialized skip."""
 
     # Setup a MongoDB connection
@@ -95,7 +98,8 @@ def initialize_replica_set(host, port, connection_timeout):
     # you try to connect to a replica set that is not yet initialized
     conn = pymongo.MongoClient(host=host,
                                port=port,
-                               serverselectiontimeoutms=connection_timeout)
+                               serverselectiontimeoutms=connection_timeout,
+                               ssl=ssl)
     _check_replica_set(conn)
     host = '{}:{}'.format(bigchaindb.config['database']['host'],
                           bigchaindb.config['database']['port'])

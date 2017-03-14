@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 def connect(backend=None, host=None, port=None, name=None, max_tries=None,
-            connection_timeout=None, replicaset=None):
+            connection_timeout=None, replicaset=None, ssl=False):
     """Create a new connection to the database backend.
 
     All arguments default to the current configuration's values if not
@@ -50,6 +50,8 @@ def connect(backend=None, host=None, port=None, name=None, max_tries=None,
     # to handle these these additional args. In case of RethinkDBConnection
     # it just does not do anything with it.
     replicaset = replicaset or bigchaindb.config['database'].get('replicaset')
+    ssl = bigchaindb.config['database'].get('ssl') if bigchaindb.config['database'].get('ssl') is not None \
+        else ssl
 
     try:
         module_name, _, class_name = BACKENDS[backend].rpartition('.')
@@ -63,7 +65,7 @@ def connect(backend=None, host=None, port=None, name=None, max_tries=None,
     logger.debug('Connection: {}'.format(Class))
     return Class(host=host, port=port, dbname=dbname,
                  max_tries=max_tries, connection_timeout=connection_timeout,
-                 replicaset=replicaset)
+                 replicaset=replicaset, ssl=ssl)
 
 
 class Connection:
