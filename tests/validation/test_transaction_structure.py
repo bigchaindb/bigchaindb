@@ -26,6 +26,14 @@ def validate_raises(tx):
 
 
 ################################################################################
+# Operation
+
+def test_validate_invalid_operation(create_tx):
+    create_tx.operation = 'something invalid'
+    validate_raises(create_tx)
+
+
+################################################################################
 # Metadata
 
 def test_validate_fails_metadata_empty_dict(create_tx):
@@ -57,6 +65,11 @@ def test_create_tx_no_asset_id(create_tx):
 
 ################################################################################
 # Inputs
+
+def test_no_inputs(create_tx):
+    create_tx.inputs = []
+    validate_raises(create_tx)
+
 
 def test_create_single_input(create_tx):
     tx = create_tx.to_dict()
