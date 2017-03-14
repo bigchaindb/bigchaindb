@@ -21,7 +21,6 @@ def test_make_sure_we_dont_remove_any_command():
     assert parser.parse_args(['start']).command
     assert parser.parse_args(['set-shards', '1']).command
     assert parser.parse_args(['set-replicas', '1']).command
-    assert parser.parse_args(['load']).command
     assert parser.parse_args(['add-replicas', 'localhost:27017']).command
     assert parser.parse_args(['remove-replicas', 'localhost:27017']).command
 
@@ -382,27 +381,6 @@ def test_calling_main(start_mock, base_parser_mock, parse_args_mock,
                                                help='Number of replicas (i.e. '
                                                'the replication factor)')
 
-    subparsers.add_parser.assert_any_call('load',
-                                          help='Write transactions to the '
-                                          'backlog')
-
-    subsubparsers.add_argument.assert_any_call('-m', '--multiprocess',
-                                               nargs='?', type=int,
-                                               default=False,
-                                               help='Spawn multiple processes '
-                                               'to run the command, if no '
-                                               'value is provided, the number '
-                                               'of processes is equal to the '
-                                               'number of cores of the host '
-                                               'machine')
-    subsubparsers.add_argument.assert_any_call('-c', '--count',
-                                               default=0,
-                                               type=int,
-                                               help='Number of transactions '
-                                               'to push. If the parameter -m '
-                                               'is set, the count is '
-                                               'distributed equally to all '
-                                               'the processes')
     assert start_mock.called is True
 
 
