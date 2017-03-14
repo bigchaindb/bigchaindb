@@ -5,9 +5,8 @@ structural / schematic issues are caught when reading a transaction
 """
 
 import pytest
-import re
 
-from bigchaindb.common.exceptions import SchemaValidationError
+from bigchaindb.common.exceptions import AmountError, SchemaValidationError
 from bigchaindb.models import Transaction
 
 
@@ -20,9 +19,14 @@ def validate(tx):
     Transaction.from_dict(tx)
 
 
-def validate_raises(tx):
-    with pytest.raises(SchemaValidationError):
+def validate_raises(tx, exc=SchemaValidationError):
+    with pytest.raises(exc):
         validate(tx)
+
+
+# We should test that validation works when we expect it to
+def test_validation_passes(create_tx):
+    validate(create_tx)
 
 
 ################################################################################
@@ -63,6 +67,11 @@ def test_create_tx_no_asset_id(create_tx):
     validate_raises(create_tx)
 
 
+def test_create_tx_asset_type(create_tx):
+    create_tx.asset['data'] = 'a'
+    validate_raises(create_tx)
+
+
 ################################################################################
 # Inputs
 
@@ -83,6 +92,18 @@ def test_create_tx_no_fulfills(create_tx):
     tx = create_tx.to_dict()
     tx['inputs'][0]['fulfills'] = {'tx': 'a' * 64, 'output': 0}
     validate_raises(tx)
+
+
+################################################################################
+# Outputs
+
+
+def test_bad_amounts(create_tx, signed_transfer_tx):
+    for tx in [create_tx, signed_transfer_tx]:
+        tx.outputs[0].amount = 0
+        validate_raises(tx, AmountError)
+        tx.outputs[0].amount = -1
+        validate_raises(tx, AmountError)
 
 
 ################################################################################
