@@ -1,7 +1,7 @@
 # Toolbox container for debugging
 # Run as:
-# docker run -it --rm --entrypoint sh krish7919/toolbox
-# kubectl run -it toolbox --image krish7919/toolbox --restart=Never --rm
+# docker run -it --rm --entrypoint sh bigchaindb/toolbox
+# kubectl run -it toolbox --image bigchaindb/toolbox --restart=Never --rm
 
 FROM alpine:3.5
 MAINTAINER github.com/krish7919

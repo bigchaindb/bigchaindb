@@ -180,8 +180,7 @@ class Block(object):
             ValidationError: If there is a problem with the block
         """
         # Check if the block was created by a federation node
-        possible_voters = (bigchain.nodes_except_me + [bigchain.me])
-        if self.node_pubkey not in possible_voters:
+        if self.node_pubkey not in bigchain.federation:
             raise SybilError('Only federation nodes can create blocks')
 
         # Check that the signature is valid

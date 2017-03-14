@@ -30,7 +30,7 @@ def test_get_block_status_endpoint_undecided(b, client):
     block = b.create_block([tx])
     b.write_block(block)
 
-    status = b.block_election_status(block.id, block.voters)
+    status = b.block_election_status(block)
 
     res = client.get(STATUSES_ENDPOINT + '?block_id=' + block.id)
     assert status == res.json['status']
@@ -51,7 +51,7 @@ def test_get_block_status_endpoint_valid(b, client):
     vote = b.vote(block.id, b.get_last_voted_block().id, True)
     b.write_vote(vote)
 
-    status = b.block_election_status(block.id, block.voters)
+    status = b.block_election_status(block)
 
     res = client.get(STATUSES_ENDPOINT + '?block_id=' + block.id)
     assert status == res.json['status']
@@ -72,7 +72,7 @@ def test_get_block_status_endpoint_invalid(b, client):
     vote = b.vote(block.id, b.get_last_voted_block().id, False)
     b.write_vote(vote)
 
-    status = b.block_election_status(block.id, block.voters)
+    status = b.block_election_status(block)
 
     res = client.get(STATUSES_ENDPOINT + '?block_id=' + block.id)
     assert status == res.json['status']
