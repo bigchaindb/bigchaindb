@@ -115,13 +115,12 @@ class TestBlockModel(object):
 
         transactions = [Transaction.create([b.me], [([b.me], 1)])]
         timestamp = gen_timestamp()
-        voters = ['Qaaa', 'Qbbb']
 
         block = {
             'timestamp': timestamp,
             'transactions': [tx.to_dict() for tx in transactions],
             'node_pubkey': b.me,
-            'voters': voters,
+            'voters': list(b.federation),
         }
 
         block_body = {

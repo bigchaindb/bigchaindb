@@ -201,3 +201,37 @@ def test_verify_vote_schema(b):
     assert not Voting.verify_vote_schema(vote)
     vote = b.vote('b', 'a' * 64, True)
     assert not Voting.verify_vote_schema(vote)
+
+
+################################################################################
+# block_election tests
+
+
+def test_block_election(b):
+
+    class TestVoting(Voting):
+        @classmethod
+        def verify_vote_signature(cls, vote):
+            return True
+
+        @classmethod
+        def verify_vote_schema(cls, vote):
+            return True
+
+    keyring = 'abc'
+    block = {'id': 'xyz', 'block': {'voters': 'ab'}}
+    votes = [{
+        'node_pubkey': c,
+        'vote': {'is_block_valid': True, 'previous_block': 'a'}
+    } for c in 'abc']
+
+    assert TestVoting.block_election(block, votes, keyring) == {
+        'status': VALID,
+        'block_id': 'xyz',
+        'counts': {'n_valid': 2, 'n_invalid': 0},
+        'ineligible': [votes[-1]],
+        'cheat': [],
+        'malformed': [],
+        'previous_block': 'a',
+        'other_previous_block': {},
+    }

@@ -36,7 +36,11 @@ def test_reassign_transactions(b, user_pk):
 
     stm = stale.StaleTransactionMonitor(timeout=0.001,
                                         backlog_reassign_delay=0.001)
-    stm.reassign_transactions(tx.to_dict())
+    # This worked previously because transaction['assignee'] was only used if
+    # bigchain.nodes_except_me was not empty.
+    tx_dict = tx.to_dict()
+    tx_dict['assignee'] = b.me
+    stm.reassign_transactions(tx_dict)
 
     # test with federation
     tx = Transaction.create([b.me], [([user_pk], 1)])
@@ -58,7 +62,7 @@ def test_reassign_transactions(b, user_pk):
     tx = tx.sign([b.me_private])
     stm.bigchain.nodes_except_me = ['lol']
     b.write_transaction(tx)
-    stm.bigchain.nodes_except_me = None
+    stm.bigchain.nodes_except_me = []
 
     tx = list(query.get_stale_transactions(b.connection, 0))[0]
     stm.reassign_transactions(tx)
