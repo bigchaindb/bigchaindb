@@ -6,7 +6,8 @@ structural / schematic issues are caught when reading a transaction
 
 import pytest
 
-from bigchaindb.common.exceptions import AmountError, SchemaValidationError
+from bigchaindb.common.exceptions import (AmountError, InvalidHash,
+                                          SchemaValidationError)
 from bigchaindb.models import Transaction
 
 
@@ -27,6 +28,27 @@ def validate_raises(tx, exc=SchemaValidationError):
 # We should test that validation works when we expect it to
 def test_validation_passes(create_tx):
     validate(create_tx)
+
+
+################################################################################
+# ID
+
+
+def test_tx_serialization_hash_function(create_tx):
+    import sha3
+    import json
+    tx = create_tx.to_dict()
+    tx['inputs'][0]['fulfillment'] = None
+    del tx['id']
+    payload = json.dumps(tx, skipkeys=False, sort_keys=True,
+                         separators=(',', ':'))
+    assert sha3.sha3_256(payload.encode()).hexdigest() == create_tx.id
+
+
+def test_tx_serialization_with_incorrect_hash(create_tx):
+    tx = create_tx.to_dict()
+    tx['id'] = 'a' * 64
+    validate_raises(tx, InvalidHash)
 
 
 ################################################################################

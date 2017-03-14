@@ -1,3 +1,8 @@
+"""
+These are tests of the API of the Transaction class and associated classes.
+Tests for transaction validation are separate.
+"""
+
 from pytest import raises
 
 
@@ -339,28 +344,6 @@ def test_transaction_deserialization(user_input, user_output, data):
     assert tx == expected
 
     validate_transaction_model(tx)
-
-
-def test_tx_serialization_with_incorrect_hash(utx):
-    from bigchaindb.common.transaction import Transaction
-    from bigchaindb.common.exceptions import InvalidHash
-
-    utx_dict = utx.to_dict()
-    utx_dict['id'] = 'a' * 64
-    with raises(InvalidHash):
-        Transaction.from_dict(utx_dict)
-    utx_dict.pop('id')
-
-
-def test_tx_serialization_hash_function(tx):
-    import sha3
-    import json
-    tx_dict = tx.to_dict()
-    tx_dict['inputs'][0]['fulfillment'] = None
-    del tx_dict['id']
-    payload = json.dumps(tx_dict, skipkeys=False, sort_keys=True,
-                         separators=(',', ':'))
-    assert sha3.sha3_256(payload.encode()).hexdigest() == tx.id
 
 
 def test_invalid_input_initialization(user_input, user_pub):
