@@ -2,7 +2,7 @@ Bootstrap a BigchainDB Node in a Kubernetes Cluster
 ===================================================
 
 **Refer this document if you are starting your first BigchainDB instance in
-a BigchainDB cluster**
+a BigchainDB cluster or starting a stand-alone BigchainDB instance**
 
 **If you want to add a new BigchainDB node to an existing cluster, refer**
 :doc:`this <add-node-on-kubernetes>`
@@ -158,16 +158,19 @@ but it should become "Bound" fairly quickly.
 Step 5: Create the Config Map - Optional
 ----------------------------------------
 
-This step is only required if you are planning to set up a cross datacenter
-MongoDB replica set cluster. If you are planning to run multiple instances of
-BigchainDB and MongoDB in the same datacenter, you may skip this step and move
-to the :ref:`next step <Step 6: Run MongoDB as a StatefulSet>`.
+This step is required only if you are planning to set up multiple
+`BigchainDB nodes
+<https://docs.bigchaindb.com/en/latest/terminology.html#node>`_, else you can
+skip to the :ref:`next step <Step 6: Run MongoDB as a StatefulSet>`.
 
+MongoDB reads the local ``/etc/hosts`` file while bootstrapping a replica set
+to resolve the hostname provided to the ``rs.initialize()``
+command. It needs to ensure that the replica set is being initialized in the
+same instance where the MongoDB instance is running.
 
-MongoDB reads the local hosts file while bootstrapping a replica set.
-We create a ConfigMap with the FQDN of the MongoDB instance and populate the
-local hosts file with this value so that a replica set can be created
-seamlessly.
+To achieve this, we create a ConfigMap with the FQDN of the MongoDB instance
+and populate the ``/etc/hosts`` file with this value so that a replica set can
+be created seamlessly.
 
 Get the file ``mongo-cm.yaml`` from GitHub using:
 
@@ -175,9 +178,9 @@ Get the file ``mongo-cm.yaml`` from GitHub using:
 
    $ wget https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/k8s/mongodb/mongo-cm.yaml
 
-You may want to update the ``data.fqdn`` field in the file before creating it.
-This name should resolve to the load balancer (or a HA instance) in you cluster
-which is going to frontend your MongoDB instance.
+You may want to update the ``data.fqdn`` field in the file before creating the
+ConfigMap.
+This name should resolve to the MongoDB instance in your cluster.
 
 If you are using Kubernetes on ACS, you can select a unique name here and we
 can create the DNS A record for this in a later step as given below.
@@ -248,10 +251,11 @@ specifying that the timeout for mounting the disk has exceeded.
 Step 7: Initialize a MongoDB Replica Set - Optional
 ---------------------------------------------------
 
-This step is only required if you are planning to set up a cross datacenter
-MongoDB cluster replica set. If you are planning to run multiple instances of
-BigchainDB and MongoDB in the same datacenter, you may skip this step and move
-to :ref:`step 9 <Step 9: Run BigchainDB as a Deployment>`.
+This step is required only if you are planning to set up multiple
+`BigchainDB nodes
+<https://docs.bigchaindb.com/en/latest/terminology.html#node>`_, else you can
+skip to the :ref:`step 9 <Step 9: Run BigchainDB as a Deployment>`.
+
 
 Login to the running MongoDB instance and access the mongo shell using:
 
@@ -291,10 +295,10 @@ detailed replica set configuration now.
 Step 8: Create a DNS record - Optional
 --------------------------------------
 
-This step is only required if you are planning to set up a cross datacenter
-MongoDB cluster replica set. If you are planning to run multiple instances of
-BigchainDB and MongoDB in the same datacenter, you may skip this step and move
-to the :ref:`next step <Step 9: Run BigchainDB as a Deployment>`.
+This step is required only if you are planning to set up multiple
+`BigchainDB nodes
+<https://docs.bigchaindb.com/en/latest/terminology.html#node>`_, else you can
+skip to the :ref:`next step <Step 9: Run BigchainDB as a Deployment>`.
 
 Since we currently rely on Azure to provide us with a public IP and manage the
 DNS entries of MongoDB instances, we detail only the steps required for ACS

@@ -4,7 +4,7 @@ Add a BigchainDB Node in a Kubernetes Cluster
 **Refer this document if you want to add a new BigchainDB node to an existing
 cluster**
 
-**If you want to start your first BigchainDB node in the BigchiainDB cluster,
+**If you want to start your first BigchainDB node in the BigchainDB cluster,
 refer**
 :doc:`this <node-on-kubernetes>`
 
