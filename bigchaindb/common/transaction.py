@@ -999,7 +999,8 @@ class Transaction(object):
             transactions = [transactions]
 
         # create a set of the transactions' asset ids
-        asset_ids = {tx.id if tx.operation == Transaction.CREATE else tx.asset['id']
+        asset_ids = {tx.id if tx.operation == Transaction.CREATE
+                     else tx.asset['id']
                      for tx in transactions}
 
         # check that all the transasctions have the same asset id
@@ -1009,7 +1010,7 @@ class Transaction(object):
         return asset_ids.pop()
 
     @staticmethod
-    def validate_structure(tx_body):
+    def validate_id(tx_body):
         """Validate the transaction ID of a transaction
 
             Args:
@@ -1041,7 +1042,7 @@ class Transaction(object):
             Returns:
                 :class:`~bigchaindb.common.transaction.Transaction`
         """
-        cls.validate_structure(tx)
+        cls.validate_id(tx)
         inputs = [Input.from_dict(input_) for input_ in tx['inputs']]
         outputs = [Output.from_dict(output) for output in tx['outputs']]
         return cls(tx['operation'], tx['asset'], inputs, outputs,

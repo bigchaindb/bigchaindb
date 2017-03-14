@@ -1,21 +1,4 @@
 from pytest import raises
-from bigchaindb.common.exceptions import ValidationError
-
-
-class TestTransactionModel(object):
-    def test_validating_an_invalid_transaction(self, b):
-        from bigchaindb.models import Transaction
-
-        tx = Transaction.create([b.me], [([b.me], 1)])
-        tx.operation = 'something invalid'
-
-        with raises(ValidationError):
-            tx.validate(b)
-
-        tx.operation = 'CREATE'
-        tx.inputs = []
-        with raises(ValidationError):
-            tx.validate(b)
 
 
 class TestBlockModel(object):

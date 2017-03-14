@@ -3,7 +3,7 @@ from bigchaindb.common.exceptions import (InvalidHash, InvalidSignature,
                                           DoubleSpend, InputDoesNotExist,
                                           TransactionNotInValidBlock,
                                           AssetIdMismatch, AmountError,
-                                          SybilError, ValidationError,
+                                          SybilError,
                                           DuplicateTransaction)
 from bigchaindb.common.transaction import Transaction
 from bigchaindb.common.utils import gen_timestamp, serialize
@@ -12,7 +12,7 @@ from bigchaindb.common.schema import validate_transaction_schema
 
 class Transaction(Transaction):
     def validate(self, bigchain):
-        """Validate a transaction.
+        """Validate transaction spend
 
         Args:
             bigchain (Bigchain): an instantiated bigchaindb.Bigchain object.
@@ -25,34 +25,9 @@ class Transaction(Transaction):
         Raises:
             ValidationError: If the transaction is invalid
         """
-        if len(self.inputs) == 0:
-            raise ValidationError('Transaction contains no inputs')
-
         input_conditions = []
-        inputs_defined = all([input_.fulfills for input_ in self.inputs])
 
-        # validate amounts
-        if any(output.amount < 1 for output in self.outputs):
-            raise AmountError('`amount` needs to be greater than zero')
-
-        if self.operation in (Transaction.CREATE, Transaction.GENESIS):
-            # validate asset
-            if self.asset['data'] is not None and not isinstance(self.asset['data'], dict):
-                raise ValidationError(('`asset.data` must be a dict instance or '
-                                      'None for `CREATE` transactions'))
-            # validate inputs
-            if inputs_defined:
-                raise ValidationError('A CREATE operation has no inputs')
-        elif self.operation == Transaction.TRANSFER:
-            # validate asset
-            if not isinstance(self.asset['id'], str):
-                raise ValidationError('`asset.id` must be a string for '
-                                      '`TRANSFER` transations')
-            # check inputs
-            if not inputs_defined:
-                raise ValidationError('Only `CREATE` transactions can have '
-                                      'null inputs')
-
+        if self.operation == Transaction.TRANSFER:
             # store the inputs so that we can check if the asset ids match
             input_txs = []
             for input_ in self.inputs:
@@ -77,8 +52,6 @@ class Transaction(Transaction):
                 output = input_tx.outputs[input_.fulfills.output]
                 input_conditions.append(output)
                 input_txs.append(input_tx)
-                if output.amount < 1:
-                    raise AmountError('`amount` needs to be greater than zero')
 
             # Validate that all inputs are distinct
             links = [i.fulfills.to_uri() for i in self.inputs]
@@ -92,11 +65,6 @@ class Transaction(Transaction):
                                        ' match the asset id of the'
                                        ' transaction'))
 
-            # validate the amounts
-            for output in self.outputs:
-                if output.amount < 1:
-                    raise AmountError('`amount` needs to be greater than zero')
-
             input_amount = sum([input_condition.amount for input_condition in input_conditions])
             output_amount = sum([output_condition.amount for output_condition in self.outputs])
 
@@ -105,11 +73,6 @@ class Transaction(Transaction):
                                    ' needs to be same as the amount used'
                                    ' in the outputs `{}`')
                                   .format(input_amount, output_amount))
-
-        else:
-            allowed_operations = ', '.join(Transaction.ALLOWED_OPERATIONS)
-            raise ValidationError('`operation`: `{}` must be either {}.'
-                                  .format(self.operation, allowed_operations))
 
         if not self.inputs_valid(input_conditions):
             raise InvalidSignature('Transaction signature is invalid.')

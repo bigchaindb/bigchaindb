@@ -352,6 +352,17 @@ def test_tx_serialization_with_incorrect_hash(utx):
     utx_dict.pop('id')
 
 
+def test_tx_serialization_hash_function(tx):
+    import sha3
+    import json
+    tx_dict = tx.to_dict()
+    tx_dict['inputs'][0]['fulfillment'] = None
+    del tx_dict['id']
+    payload = json.dumps(tx_dict, skipkeys=False, sort_keys=True,
+                         separators=(',', ':'))
+    assert sha3.sha3_256(payload.encode()).hexdigest() == tx.id
+
+
 def test_invalid_input_initialization(user_input, user_pub):
     from bigchaindb.common.transaction import Input
 
@@ -445,11 +456,14 @@ def test_transaction_link_eq():
 
 def test_add_input_to_tx(user_input, asset_definition):
     from bigchaindb.common.transaction import Transaction
+    from .utils import validate_transaction_model
 
     tx = Transaction(Transaction.CREATE, asset_definition, [], [])
     tx.add_input(user_input)
 
     assert len(tx.inputs) == 1
+
+    validate_transaction_model(tx)
 
 
 def test_add_input_to_tx_with_invalid_parameters(asset_definition):
@@ -460,11 +474,11 @@ def test_add_input_to_tx_with_invalid_parameters(asset_definition):
         tx.add_input('somewronginput')
 
 
-def test_add_output_to_tx(user_output, asset_definition):
+def test_add_output_to_tx(user_output, user_input, asset_definition):
     from bigchaindb.common.transaction import Transaction
     from .utils import validate_transaction_model
 
-    tx = Transaction(Transaction.CREATE, asset_definition)
+    tx = Transaction(Transaction.CREATE, asset_definition, [user_input])
     tx.add_output(user_output)
 
     assert len(tx.outputs) == 1
@@ -546,40 +560,6 @@ def test_validate_input_with_invalid_parameters(utx):
     assert not valid
 
 
-def test_validate_multiple_inputs(user_input, user_output, user_priv,
-                                  asset_definition):
-    from copy import deepcopy
-
-    from bigchaindb.common.crypto import PrivateKey
-    from bigchaindb.common.transaction import Transaction
-    from .utils import validate_transaction_model
-
-    tx = Transaction(Transaction.CREATE, asset_definition,
-                     [user_input, deepcopy(user_input)],
-                     [user_output, deepcopy(user_output)])
-
-    expected_first = deepcopy(tx)
-    expected_second = deepcopy(tx)
-    expected_first.inputs = [expected_first.inputs[0]]
-    expected_second.inputs = [expected_second.inputs[1]]
-
-    expected_first_bytes = str(expected_first).encode()
-    expected_first.inputs[0].fulfillment.sign(expected_first_bytes,
-                                              PrivateKey(user_priv))
-    expected_second_bytes = str(expected_second).encode()
-    expected_second.inputs[0].fulfillment.sign(expected_second_bytes,
-                                               PrivateKey(user_priv))
-    tx.sign([user_priv])
-
-    assert tx.inputs[0].to_dict()['fulfillment'] == \
-        expected_first.inputs[0].fulfillment.serialize_uri()
-    assert tx.inputs[1].to_dict()['fulfillment'] == \
-        expected_second.inputs[0].fulfillment.serialize_uri()
-    assert tx.inputs_valid() is True
-
-    validate_transaction_model(tx)
-
-
 def test_validate_tx_threshold_create_signature(user_user2_threshold_input,
                                                 user_user2_threshold_output,
                                                 user_pub,
@@ -621,8 +601,7 @@ def test_multiple_input_validation_of_transfer_tx(user_input, user_output,
     from cryptoconditions import Ed25519Fulfillment
     from .utils import validate_transaction_model
 
-    tx = Transaction(Transaction.CREATE, asset_definition,
-                     [user_input, deepcopy(user_input)],
+    tx = Transaction(Transaction.CREATE, asset_definition, [user_input],
                      [user_output, deepcopy(user_output)])
     tx.sign([user_priv])
 
@@ -985,3 +964,20 @@ def test_validate_version(utx):
     utx.version = '1.0.0'
     with raises(SchemaValidationError):
         validate_transaction_model(utx)
+
+
+def test_create_tx_no_asset_id(b, utx):
+    from bigchaindb.common.exceptions import SchemaValidationError
+    from .utils import validate_transaction_model
+    utx.asset['id'] = 'b' * 64
+    with raises(SchemaValidationError):
+        validate_transaction_model(utx)
+
+
+def test_transfer_tx_asset_schema(transfer_utx):
+    from bigchaindb.common.exceptions import SchemaValidationError
+    from .utils import validate_transaction_model
+    tx = transfer_utx
+    tx.asset['data'] = {}
+    with raises(SchemaValidationError):
+        validate_transaction_model(tx)
