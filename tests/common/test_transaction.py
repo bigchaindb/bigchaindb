@@ -947,37 +947,3 @@ def test_cant_add_empty_input():
 
     with raises(TypeError):
         tx.add_input(None)
-
-
-def test_validate_version(utx):
-    import re
-    import bigchaindb.version
-    from .utils import validate_transaction_model
-    from bigchaindb.common.exceptions import SchemaValidationError
-
-    short_ver = bigchaindb.version.__short_version__
-    assert utx.version == re.match(r'^(.*\d)', short_ver).group(1)
-
-    validate_transaction_model(utx)
-
-    # At version 1, transaction version will break step with server version.
-    utx.version = '1.0.0'
-    with raises(SchemaValidationError):
-        validate_transaction_model(utx)
-
-
-def test_create_tx_no_asset_id(b, utx):
-    from bigchaindb.common.exceptions import SchemaValidationError
-    from .utils import validate_transaction_model
-    utx.asset['id'] = 'b' * 64
-    with raises(SchemaValidationError):
-        validate_transaction_model(utx)
-
-
-def test_transfer_tx_asset_schema(transfer_utx):
-    from bigchaindb.common.exceptions import SchemaValidationError
-    from .utils import validate_transaction_model
-    tx = transfer_utx
-    tx.asset['data'] = {}
-    with raises(SchemaValidationError):
-        validate_transaction_model(tx)
