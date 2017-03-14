@@ -972,3 +972,12 @@ def test_create_tx_no_asset_id(b, utx):
     utx.asset['id'] = 'b' * 64
     with raises(SchemaValidationError):
         validate_transaction_model(utx)
+
+
+def test_transfer_tx_asset_schema(transfer_utx):
+    from bigchaindb.common.exceptions import SchemaValidationError
+    from .utils import validate_transaction_model
+    tx = transfer_utx
+    tx.asset['data'] = {}
+    with raises(SchemaValidationError):
+        validate_transaction_model(tx)

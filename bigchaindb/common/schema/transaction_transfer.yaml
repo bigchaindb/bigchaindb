@@ -12,6 +12,17 @@ properties:
         "$ref": "#/definitions/sha3_hexdigest"
         description: |
           ID of the transaction that created the asset.
+  inputs:
+    type: array
+    title: "Transaction inputs"
+    minItems: 1
+    items:
+      type: "object"
+      required:
+      - fulfills
+      properties:
+        fulfills:
+            type: "object"
 definitions:
   sha3_hexdigest:
     pattern: "[0-9a-f]{64}"

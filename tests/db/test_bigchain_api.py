@@ -3,8 +3,6 @@ from time import sleep
 import pytest
 from unittest.mock import patch
 
-from bigchaindb.common.exceptions import ValidationError
-
 pytestmark = pytest.mark.bdb
 
 
@@ -596,24 +594,6 @@ class TestBigchainApi(object):
 
 
 class TestTransactionValidation(object):
-    def test_create_operation_with_inputs(self, b, user_pk, create_tx):
-        from bigchaindb.common.transaction import TransactionLink
-
-        # Manipulate input so that it has a `fulfills` defined even
-        # though it shouldn't have one
-        create_tx.inputs[0].fulfills = TransactionLink('abc', 0)
-        with pytest.raises(ValidationError) as excinfo:
-            b.validate_transaction(create_tx)
-        assert excinfo.value.args[0] == 'A CREATE operation has no inputs'
-
-    def test_transfer_operation_no_inputs(self, b, user_pk,
-                                          signed_transfer_tx):
-        signed_transfer_tx.inputs[0].fulfills = None
-        with pytest.raises(ValidationError) as excinfo:
-            b.validate_transaction(signed_transfer_tx)
-
-        assert excinfo.value.args[0] == 'Only `CREATE` transactions can have null inputs'
-
     def test_non_create_input_not_found(self, b, user_pk, signed_transfer_tx):
         from bigchaindb.common.exceptions import InputDoesNotExist
         from bigchaindb.common.transaction import TransactionLink
@@ -1313,10 +1293,3 @@ def test_is_new_transaction(b, genesis_block):
     # Tx is new because it's only found in an invalid block
     assert b.is_new_transaction(tx.id)
     assert b.is_new_transaction(tx.id, exclude_block_id=block.id)
-
-
-def test_validate_asset_id_string(signed_transfer_tx):
-    from bigchaindb.common.exceptions import ValidationError
-    signed_transfer_tx.asset['id'] = 1
-    with pytest.raises(ValidationError):
-        signed_transfer_tx.validate(None)
