@@ -69,16 +69,6 @@ e.g. `bigchaindb --dev-start-rethinkdb start`. Note that this will also shutdown
 The option `--dev-allow-temp-keypair` will generate a keypair on the fly if no keypair is found, this is useful when you want to run a temporary instance of BigchainDB in a Docker container, for example.
 
 
-## bigchaindb load
-
-Write transactions to the backlog (for benchmarking tests). You can learn more about it using:
-```text
-$ bigchaindb load -h
-```
-
-Note: This command uses the Python Server API to write transactions to the database. It _doesn't_ use the HTTP API or a driver that wraps the HTTP API.
-
-
 ## bigchaindb set-shards
 
 This command is specific to RethinkDB so it will only run if BigchainDB is
