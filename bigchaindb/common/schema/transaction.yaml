@@ -132,7 +132,7 @@ definitions:
     - public_keys
     properties:
       amount:
-        type: integer
+        type: string
         description: |
             Integral amount of the asset represented by this output.
             In the case of a non divisible asset, this will always be 1.
@@ -158,10 +158,6 @@ definitions:
         "$ref": "#/definitions/public_keys"
         description: |
             List of public keys associated with the conditions on an output.
-      amount:
-        type: integer
-        description: |
-            Integral amount of the asset represented by this condition.
   input:
     type: "object"
     description:
