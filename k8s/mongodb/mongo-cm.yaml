@@ -10,4 +10,4 @@ metadata:
   name: mdb-fqdn
   namespace: default
 data:
-  fqdn: bigchain-mongodb-0.westeurope.cloudapp.azure.com
+  fqdn: mdb-instance-0.westeurope.cloudapp.azure.com
