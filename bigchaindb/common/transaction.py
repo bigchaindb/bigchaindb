@@ -209,6 +209,8 @@ class Output(object):
                 owners before a Transaction was confirmed.
     """
 
+    MAX_AMOUNT = 9 * 10 ** 18
+
     def __init__(self, fulfillment, public_keys=None, amount=1):
         """Create an instance of a :class:`~.Output`.
 
@@ -229,8 +231,8 @@ class Output(object):
             raise TypeError('`amount` must be an int')
         if amount < 1:
             raise AmountError('`amount` must be greater than 0')
-        if amount > 9 * 10 ** 18:
-            raise AmountError('`amount` must be <= 9000000000000000000')
+        if amount > self.MAX_AMOUNT:
+            raise AmountError('`amount` must be <= %s' % self.MAX_AMOUNT)
 
         self.fulfillment = fulfillment
         self.amount = amount
