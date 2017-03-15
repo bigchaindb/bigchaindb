@@ -119,7 +119,6 @@ def test_create_tx_no_fulfills(create_tx):
 ################################################################################
 # Outputs
 
-
 def test_bad_amounts(create_tx, signed_transfer_tx):
     for tx in [create_tx, signed_transfer_tx]:
         tx.outputs[0].amount = 0
