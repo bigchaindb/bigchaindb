@@ -164,9 +164,9 @@ This step is required only if you are planning to set up multiple
 skip to the :ref:`next step <Step 6: Run MongoDB as a StatefulSet>`.
 
 MongoDB reads the local ``/etc/hosts`` file while bootstrapping a replica set
-to resolve the hostname provided to the ``rs.initialize()``
-command. It needs to ensure that the replica set is being initialized in the
-same instance where the MongoDB instance is running.
+to resolve the hostname provided to the ``rs.initiate()`` command. It needs to
+ensure that the replica set is being initialized in the same instance where
+the MongoDB instance is running.
 
 To achieve this, we create a ConfigMap with the FQDN of the MongoDB instance
 and populate the ``/etc/hosts`` file with this value so that a replica set can
@@ -179,13 +179,42 @@ Get the file ``mongo-cm.yaml`` from GitHub using:
    $ wget https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/k8s/mongodb/mongo-cm.yaml
 
 You may want to update the ``data.fqdn`` field in the file before creating the
-ConfigMap.
-This name should resolve to the MongoDB instance in your cluster.
+ConfigMap. ``data.fqdn`` field will be the DNS name of your MongoDB instance.
+This will be used by other MongoDB instances when forming a MongoDB
+replica set. It should resolve to the MongoDB instance in your cluster when
+you are done with the setup. This will help when we are adding more MongoDB
+instances to the replica set in the future.
 
-If you are using Kubernetes on ACS, you can select a unique name here and we
-can create the DNS A record for this in a later step as given below.
-You can also use other DNS providers to map the public IP of the load balancer
-to an A record.
+
+For ACS:
+::
+   
+    In Kubernetes on ACS, the name you populate in the ``data.fqdn`` field
+    will be used to configure a DNS name for the public IP assigned to the
+    Kubernetes Service that is the frontend for the MongoDB instance.
+
+    We suggest using a name that will already be available in Azure.
+    We use ``bdb-cluster-0``, ``bdb-cluster-1`` and so on in this document,
+    which gives us ``bdb-cluster-0.<azure location>.cloudapp.azure.com``,
+    ``bdb-cluster-1.<azure location>.cloudapp.azure.com``, etc. as the FQDNs.
+    The ``<azure location>`` is the Azure datacenter location you are using,
+    which can also be obtained using the ``az account list-locations`` command.
+
+    You can also try to assign a name to an Public IP in Azure before starting
+    the process, or use ``nslookup`` with the name you have in mind to check
+    if it's available for use.
+
+    In the rare chance that name in the ``data.fqdn`` field is not available,
+    we will need to create a ConfigMap with a unique name and restart the
+    MongoDB instance.
+
+For Kubernetes on bare-metal or other cloud providers:
+::
+    
+    On other environments, you need to provide the name resolution function
+    by other means (using DNS providers like GoDaddy, CloudFlare or your own
+    private DNS server). The DNS set up for other environments is currently
+    beyond the scope of this document.
 
 
 Create the required ConfigMap using:
@@ -262,9 +291,9 @@ Login to the running MongoDB instance and access the mongo shell using:
 .. code:: bash
    
    $ kubectl exec -it mdb-0 -c mongodb -- /bin/bash
-   $ mongo --port 27017
+   root@mdb-0:/# mongo --port 27017
 
-We initialize the replica set by using the ``rs.initialize()`` command from the
+We initialize the replica set by using the ``rs.initiate()`` command from the
 mongo shell. Its syntax is:
 
 .. code:: bash
@@ -277,11 +306,15 @@ mongo shell. Its syntax is:
         } ]
     })
 
-An example init command might look like:
+An example command might look like:
 
 .. code:: bash
    
    > rs.initiate({ _id : "bigchain-rs", members: [ { _id : 0, host : "bdb-cluster-0.westeurope.cloudapp.azure.com:27017" } ] })
+
+
+where ``bdb-cluster-0.westeurope.cloudapp.azure.com`` is the value stored in
+the ``data.fqdn`` field in the ConfigMap created using ``mongo-cm.yaml``.
 
 
 You should see changes in the mongo shell prompt from ``>``
@@ -306,12 +339,17 @@ here.
 
 Select the current Azure resource group and look for the ``Public IP``
 resource. You should see at least 2 entries there - one for the Kubernetes
-master and the other for the MongoDB instance.
+master and the other for the MongoDB instance. You may have to ``Refresh`` the
+Azure web page listing the resources in a resource group for the latest
+changes to be reflected.
 
 Select the ``Public IP`` resource that is attached to your service (it should
 have the Kubernetes cluster name alongwith a random string),
-select ``Configuration`` and add the DNS name that you configured in the
-ConfigMap earlier.
+select ``Configuration``, add the DNS name that was added in the
+ConfigMap earlier, click ``Save``, and wait for the changes to be applied.
+
+To verify the DNS setting is operational, you can run ``nslookup <dns
+name added in ConfigMap>`` from your local Linux shell.
 
 
 This will ensure that when you scale the replica set later, other MongoDB
