@@ -83,7 +83,7 @@ def test_output_serialization(user_Ed25519, user_pub):
             'details': user_Ed25519.to_dict(),
         },
         'public_keys': [user_pub],
-        'amount': 1,
+        'amount': '1',
     }
 
     cond = Output(user_Ed25519, [user_pub], 1)
@@ -101,7 +101,7 @@ def test_output_deserialization(user_Ed25519, user_pub):
             'details': user_Ed25519.to_dict()
         },
         'public_keys': [user_pub],
-        'amount': 1,
+        'amount': '1',
     }
     cond = Output.from_dict(cond)
 
@@ -120,7 +120,7 @@ def test_output_hashlock_serialization():
             'uri': hashlock,
         },
         'public_keys': None,
-        'amount': 1,
+        'amount': '1',
     }
     cond = Output(hashlock, amount=1)
 
@@ -140,7 +140,7 @@ def test_output_hashlock_deserialization():
             'uri': hashlock
         },
         'public_keys': None,
-        'amount': 1,
+        'amount': '1',
     }
     cond = Output.from_dict(cond)
 

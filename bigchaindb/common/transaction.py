@@ -264,7 +264,7 @@ class Output(object):
         output = {
             'public_keys': self.public_keys,
             'condition': condition,
-            'amount': self.amount
+            'amount': str(self.amount),
         }
         return output
 
@@ -381,7 +381,11 @@ class Output(object):
         except KeyError:
             # NOTE: Hashlock condition case
             fulfillment = data['condition']['uri']
-        return cls(fulfillment, data['public_keys'], data['amount'])
+        try:
+            amount = int(data['amount'])
+        except ValueError:
+            raise AmountError('Invalid amount: %s' % amount)
+        return cls(fulfillment, data['public_keys'], amount)
 
 
 class Transaction(object):
