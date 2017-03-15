@@ -126,7 +126,7 @@ def test_low_amounts(create_tx, signed_transfer_tx):
         tx.outputs[0].amount = 0
         validate_raises(tx, AmountError)
         tx.outputs[0].amount = -1
-        validate_raises(tx, AmountError)
+        validate_raises(tx)
 
 
 def test_high_amounts(create_tx):
