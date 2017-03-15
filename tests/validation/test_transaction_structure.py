@@ -51,6 +51,12 @@ def test_tx_serialization_with_incorrect_hash(create_tx):
     validate_raises(tx, InvalidHash)
 
 
+def test_tx_serialization_with_no_hash(create_tx):
+    tx = create_tx.to_dict()
+    del tx['id']
+    validate_raises(tx)
+
+
 ################################################################################
 # Operation
 
