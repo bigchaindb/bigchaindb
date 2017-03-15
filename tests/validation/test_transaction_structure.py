@@ -122,6 +122,11 @@ def test_create_tx_no_fulfills(create_tx):
     validate_raises(tx)
 
 
+def test_transfer_has_inputs(signed_transfer_tx):
+    signed_transfer_tx.inputs = []
+    validate_raises(signed_transfer_tx)
+
+
 ################################################################################
 # Outputs
 
