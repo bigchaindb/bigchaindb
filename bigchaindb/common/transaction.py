@@ -386,7 +386,7 @@ class Output(object):
         try:
             amount = int(data['amount'])
         except ValueError:
-            raise AmountError('Invalid amount: %s' % amount)
+            raise AmountError('Invalid amount: %s' % data['amount'])
         return cls(fulfillment, data['public_keys'], amount)
 
 

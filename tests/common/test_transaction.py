@@ -930,3 +930,13 @@ def test_cant_add_empty_input():
 
     with raises(TypeError):
         tx.add_input(None)
+
+
+def test_output_from_dict_invalid_amount(user_output):
+    from bigchaindb.common.transaction import Output
+    from bigchaindb.common.exceptions import AmountError
+
+    out = user_output.to_dict()
+    out['amount'] = 'a'
+    with raises(AmountError):
+        Output.from_dict(out)
