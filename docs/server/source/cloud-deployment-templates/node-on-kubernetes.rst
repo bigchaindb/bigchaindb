@@ -186,35 +186,34 @@ you are done with the setup. This will help when we are adding more MongoDB
 instances to the replica set in the future.
 
 
-For ACS:
-::
-   
-    In Kubernetes on ACS, the name you populate in the ``data.fqdn`` field
-    will be used to configure a DNS name for the public IP assigned to the
-    Kubernetes Service that is the frontend for the MongoDB instance.
+For ACS
+^^^^^^^
+In Kubernetes on ACS, the name you populate in the ``data.fqdn`` field
+will be used to configure a DNS name for the public IP assigned to the
+Kubernetes Service that is the frontend for the MongoDB instance.
 
-    We suggest using a name that will already be available in Azure.
-    We use ``mdb-instance-0``, ``bdb-cluster-1`` and so on in this document,
-    which gives us ``mdb-instance-0.<azure location>.cloudapp.azure.com``,
-    ``bdb-cluster-1.<azure location>.cloudapp.azure.com``, etc. as the FQDNs.
-    The ``<azure location>`` is the Azure datacenter location you are using,
-    which can also be obtained using the ``az account list-locations`` command.
+We suggest using a name that will already be available in Azure.
+We use ``mdb-instance-0``, ``mdb-instance-1`` and so on in this document,
+which gives us ``mdb-instance-0.<azure location>.cloudapp.azure.com``,
+``mdb-instance-1.<azure location>.cloudapp.azure.com``, etc. as the FQDNs.
+The ``<azure location>`` is the Azure datacenter location you are using,
+which can also be obtained using the ``az account list-locations`` command.
 
-    You can also try to assign a name to an Public IP in Azure before starting
-    the process, or use ``nslookup`` with the name you have in mind to check
-    if it's available for use.
+You can also try to assign a name to an Public IP in Azure before starting
+the process, or use ``nslookup`` with the name you have in mind to check
+if it's available for use.
 
-    In the rare chance that name in the ``data.fqdn`` field is not available,
-    we will need to create a ConfigMap with a unique name and restart the
-    MongoDB instance.
+In the rare chance that name in the ``data.fqdn`` field is not available,
+we will need to create a ConfigMap with a unique name and restart the
+MongoDB instance.
 
-For Kubernetes on bare-metal or other cloud providers:
-::
+For Kubernetes on bare-metal or other cloud providers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     
-    On other environments, you need to provide the name resolution function
-    by other means (using DNS providers like GoDaddy, CloudFlare or your own
-    private DNS server). The DNS set up for other environments is currently
-    beyond the scope of this document.
+On other environments, you need to provide the name resolution function
+by other means (using DNS providers like GoDaddy, CloudFlare or your own
+private DNS server). The DNS set up for other environments is currently
+beyond the scope of this document.
 
 
 Create the required ConfigMap using:
