@@ -194,8 +194,8 @@ For ACS:
     Kubernetes Service that is the frontend for the MongoDB instance.
 
     We suggest using a name that will already be available in Azure.
-    We use ``bdb-cluster-0``, ``bdb-cluster-1`` and so on in this document,
-    which gives us ``bdb-cluster-0.<azure location>.cloudapp.azure.com``,
+    We use ``mdb-instance-0``, ``bdb-cluster-1`` and so on in this document,
+    which gives us ``mdb-instance-0.<azure location>.cloudapp.azure.com``,
     ``bdb-cluster-1.<azure location>.cloudapp.azure.com``, etc. as the FQDNs.
     The ``<azure location>`` is the Azure datacenter location you are using,
     which can also be obtained using the ``az account list-locations`` command.
@@ -310,10 +310,10 @@ An example command might look like:
 
 .. code:: bash
    
-   > rs.initiate({ _id : "bigchain-rs", members: [ { _id : 0, host : "bdb-cluster-0.westeurope.cloudapp.azure.com:27017" } ] })
+   > rs.initiate({ _id : "bigchain-rs", members: [ { _id : 0, host :"mdb-instance-0.westeurope.cloudapp.azure.com:27017" } ] })
 
 
-where ``bdb-cluster-0.westeurope.cloudapp.azure.com`` is the value stored in
+where ``mdb-instance-0.westeurope.cloudapp.azure.com`` is the value stored in
 the ``data.fqdn`` field in the ConfigMap created using ``mongo-cm.yaml``.
 
 

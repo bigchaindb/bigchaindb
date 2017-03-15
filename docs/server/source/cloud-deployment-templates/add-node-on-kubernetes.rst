@@ -98,7 +98,7 @@ Add the new instance of MongoDB from an existing instance by accessing the
 .. code:: bash
    
    $ kubectl --context ctx-1 exec -it mdb-0 -c mongodb -- /bin/bash
-   $ mongo --port 27017
+   root@mdb-0# mongo --port 27017
 
 We can only add members to a replica set from the ``PRIMARY`` instance.
 The ``mongo`` shell prompt should state that this is the primary member in the

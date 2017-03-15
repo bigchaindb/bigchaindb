@@ -53,7 +53,7 @@ For example:
 
 ```
 rs.initiate({ _id : "test-repl-set", members: [ { _id : 0, host :
-"bdb-cluster-0.westeurope.cloudapp.azure.com:27017" } ] })
+"mdb-instance-0.westeurope.cloudapp.azure.com:27017" } ] })
 ```
 
 You should also see changes in the mongo shell prompt from `>` to
