@@ -1,0 +1,23 @@
+####################################################################
+# This YAML section desribes a StorageClass for the mongodb dbPath # 
+####################################################################
+kind: StorageClass
+apiVersion: storage.k8s.io/v1beta1
+metadata:
+  name: slow-db
+provisioner: kubernetes.io/azure-disk
+parameters:
+  skuName: Standard_LRS
+  location: westeurope
+---
+######################################################################
+# This YAML section desribes a StorageClass for the mongodb configDB # 
+######################################################################
+kind: StorageClass
+apiVersion: storage.k8s.io/v1beta1
+metadata:
+  name: slow-configdb
+provisioner: kubernetes.io/azure-disk
+parameters:
+  skuName: Standard_LRS
+  location: westeurope

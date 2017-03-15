@@ -1,6 +1,12 @@
-Run a BigchainDB Node in a Kubernetes Cluster
-=============================================
+Bootstrap a BigchainDB Node in a Kubernetes Cluster
+===================================================
 
+**Refer this document if you are starting your first BigchainDB instance in
+a BigchainDB cluster or starting a stand-alone BigchainDB instance**
+
+**If you want to add a new BigchainDB node to an existing cluster, refer**
+:doc:`this <add-node-on-kubernetes>`
+ 
 Assuming you already have a `Kubernetes <https://kubernetes.io/>`_
 cluster up and running, this page describes how to run a
 BigchainDB node in it.
@@ -90,24 +96,21 @@ For future reference, the command to create a storage account is
 `az storage account create <https://docs.microsoft.com/en-us/cli/azure/storage/account#create>`_.
 
 
-Get the files ``mongo-data-db-sc.yaml`` and ``mongo-data-configdb-sc.yaml``
-from GitHub using:
+Get the file ``mongo-sc.yaml`` from GitHub using:
 
 .. code:: bash
 
-   $ wget https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/k8s/mongodb/mongo-data-db-sc.yaml
-   $ wget https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/k8s/mongodb/mongo-data-configdb-sc.yaml
+   $ wget https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/k8s/mongodb/mongo-sc.yaml
 
 You may want to update the ``parameters.location`` field in both the files to
 specify the location you are using in Azure.
 
 
-Create the required StorageClass using
+Create the required storage classes using
 
 .. code:: bash
 
-   $ kubectl apply -f mongo-data-db-sc.yaml
-   $ kubectl apply -f mongo-data-configdb-sc.yaml
+   $ kubectl apply -f mongo-sc.yaml
 
 
 You can check if it worked using ``kubectl get storageclasses``.
@@ -128,13 +131,11 @@ Step 4: Create Persistent Volume Claims
 Next, we'll create two PersistentVolumeClaim objects ``mongo-db-claim`` and
 ``mongo-configdb-claim``.
 
-Get the files ``mongo-data-db-sc.yaml`` and ``mongo-data-configdb-sc.yaml``
-from GitHub using:
+Get the file ``mongo-pvc.yaml`` from GitHub using:
 
 .. code:: bash
 
-   $ wget https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/k8s/mongodb/mongo-data-db-pvc.yaml
-   $ wget https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/k8s/mongodb/mongo-data-configdb-pvc.yaml
+   $ wget https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/k8s/mongodb/mongo-pvc.yaml
 
 Note how there's no explicit mention of Azure, AWS or whatever.
 ``ReadWriteOnce`` (RWO) means the volume can be mounted as
@@ -147,12 +148,11 @@ by AzureDisk.)
 You may want to update the ``spec.resources.requests.storage`` field in both
 the files to specify a different disk size.
 
-Create the required PersistentVolumeClaim using:
+Create the required Persistent Volume Claims using:
 
 .. code:: bash
 
-   $ kubectl apply -f mongo-data-db-pvc.yaml
-   $ kubectl apply -f mongo-data-configdb-pvc.yaml
+   $ kubectl apply -f mongo-pvc.yaml
 
 
 You can check its status using: ``kubectl get pvc -w``
@@ -161,9 +161,81 @@ Initially, the status of persistent volume claims might be "Pending"
 but it should become "Bound" fairly quickly.
 
 
+Step 5: Create the Config Map - Optional
+----------------------------------------
+
+This step is required only if you are planning to set up multiple
+`BigchainDB nodes
+<https://docs.bigchaindb.com/en/latest/terminology.html#node>`_, else you can
+skip to the :ref:`next step <Step 6: Run MongoDB as a StatefulSet>`.
+
+MongoDB reads the local ``/etc/hosts`` file while bootstrapping a replica set
+to resolve the hostname provided to the ``rs.initiate()`` command. It needs to
+ensure that the replica set is being initialized in the same instance where
+the MongoDB instance is running.
+
+To achieve this, we create a ConfigMap with the FQDN of the MongoDB instance
+and populate the ``/etc/hosts`` file with this value so that a replica set can
+be created seamlessly.
+
+Get the file ``mongo-cm.yaml`` from GitHub using:
+
+.. code:: bash
+
+   $ wget https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/k8s/mongodb/mongo-cm.yaml
+
+You may want to update the ``data.fqdn`` field in the file before creating the
+ConfigMap. ``data.fqdn`` field will be the DNS name of your MongoDB instance.
+This will be used by other MongoDB instances when forming a MongoDB
+replica set. It should resolve to the MongoDB instance in your cluster when
+you are done with the setup. This will help when we are adding more MongoDB
+instances to the replica set in the future.
+
+
+For ACS
+^^^^^^^
+In Kubernetes on ACS, the name you populate in the ``data.fqdn`` field
+will be used to configure a DNS name for the public IP assigned to the
+Kubernetes Service that is the frontend for the MongoDB instance.
+
+We suggest using a name that will already be available in Azure.
+We use ``mdb-instance-0``, ``mdb-instance-1`` and so on in this document,
+which gives us ``mdb-instance-0.<azure location>.cloudapp.azure.com``,
+``mdb-instance-1.<azure location>.cloudapp.azure.com``, etc. as the FQDNs.
+The ``<azure location>`` is the Azure datacenter location you are using,
+which can also be obtained using the ``az account list-locations`` command.
+
+You can also try to assign a name to an Public IP in Azure before starting
+the process, or use ``nslookup`` with the name you have in mind to check
+if it's available for use.
+
+In the rare chance that name in the ``data.fqdn`` field is not available,
+we will need to create a ConfigMap with a unique name and restart the
+MongoDB instance.
+
+For Kubernetes on bare-metal or other cloud providers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    
+On other environments, you need to provide the name resolution function
+by other means (using DNS providers like GoDaddy, CloudFlare or your own
+private DNS server). The DNS set up for other environments is currently
+beyond the scope of this document.
+
+
+Create the required ConfigMap using:
+
+.. code:: bash
+
+   $ kubectl apply -f mongo-cm.yaml
+
+
+You can check its status using: ``kubectl get cm``
+
+
+
 Now we are ready to run MongoDB and BigchainDB on our Kubernetes cluster.
 
-Step 5: Run MongoDB as a StatefulSet
+Step 6: Run MongoDB as a StatefulSet
 ------------------------------------
 
 Get the file ``mongo-ss.yaml`` from GitHub using:
@@ -188,7 +260,7 @@ To avoid this, we use the Docker feature of ``--cap-add=FOWNER``.
 This bypasses the uid and gid permission checks during writes and allows data
 to be persisted to disk.
 Refer to the
-`Docker doc <https://docs.docker.com/engine/reference/run/#runtime-privilege-and-linux-capabilities>`_
+`Docker docs <https://docs.docker.com/engine/reference/run/#runtime-privilege-and-linux-capabilities>`_
 for details.
 
 As we gain more experience running MongoDB in testing and production, we will
@@ -205,8 +277,91 @@ Create the required StatefulSet using:
 You can check its status using the commands ``kubectl get statefulsets -w``
 and ``kubectl get svc -w``
 
- 
-Step 6: Run BigchainDB as a Deployment
+You may have to wait for upto 10 minutes wait for disk to be created
+and attached on the first run. The pod can fail several times with the message
+specifying that the timeout for mounting the disk has exceeded.
+
+
+Step 7: Initialize a MongoDB Replica Set - Optional
+---------------------------------------------------
+
+This step is required only if you are planning to set up multiple
+`BigchainDB nodes
+<https://docs.bigchaindb.com/en/latest/terminology.html#node>`_, else you can
+skip to the :ref:`step 9 <Step 9: Run BigchainDB as a Deployment>`.
+
+
+Login to the running MongoDB instance and access the mongo shell using:
+
+.. code:: bash
+   
+   $ kubectl exec -it mdb-0 -c mongodb -- /bin/bash
+   root@mdb-0:/# mongo --port 27017
+
+We initialize the replica set by using the ``rs.initiate()`` command from the
+mongo shell. Its syntax is:
+
+.. code:: bash
+
+    rs.initiate({ 
+        _id : "<replica-set-name",
+        members: [ { 
+          _id : 0,
+          host : "<fqdn of this instance>:<port number>"
+        } ]
+    })
+
+An example command might look like:
+
+.. code:: bash
+   
+   > rs.initiate({ _id : "bigchain-rs", members: [ { _id : 0, host :"mdb-instance-0.westeurope.cloudapp.azure.com:27017" } ] })
+
+
+where ``mdb-instance-0.westeurope.cloudapp.azure.com`` is the value stored in
+the ``data.fqdn`` field in the ConfigMap created using ``mongo-cm.yaml``.
+
+
+You should see changes in the mongo shell prompt from ``>``
+to ``bigchain-rs:OTHER>`` to ``bigchain-rs:SECONDARY>`` and finally
+to ``bigchain-rs:PRIMARY>``.
+
+You can use the ``rs.conf()`` and the ``rs.status()`` commands to check the
+detailed replica set configuration now.
+
+
+Step 8: Create a DNS record - Optional
+--------------------------------------
+
+This step is required only if you are planning to set up multiple
+`BigchainDB nodes
+<https://docs.bigchaindb.com/en/latest/terminology.html#node>`_, else you can
+skip to the :ref:`next step <Step 9: Run BigchainDB as a Deployment>`.
+
+Since we currently rely on Azure to provide us with a public IP and manage the
+DNS entries of MongoDB instances, we detail only the steps required for ACS
+here.
+
+Select the current Azure resource group and look for the ``Public IP``
+resource. You should see at least 2 entries there - one for the Kubernetes
+master and the other for the MongoDB instance. You may have to ``Refresh`` the
+Azure web page listing the resources in a resource group for the latest
+changes to be reflected.
+
+Select the ``Public IP`` resource that is attached to your service (it should
+have the Kubernetes cluster name alongwith a random string),
+select ``Configuration``, add the DNS name that was added in the
+ConfigMap earlier, click ``Save``, and wait for the changes to be applied.
+
+To verify the DNS setting is operational, you can run ``nslookup <dns
+name added in ConfigMap>`` from your local Linux shell.
+
+
+This will ensure that when you scale the replica set later, other MongoDB
+members in the replica set can reach this instance.
+
+
+Step 9: Run BigchainDB as a Deployment
 --------------------------------------
 
 Get the file ``bigchaindb-dep.yaml`` from GitHub using:
@@ -239,23 +394,23 @@ Create the required Deployment using:
 You can check its status using the command ``kubectl get deploy -w``
 
 
-Step 7: Verify the BigchainDB Node Setup
-----------------------------------------
+Step 10: Verify the BigchainDB Node Setup
+-----------------------------------------
 
-Step 7.1: Testing Externally
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Step 10.1: Testing Externally
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Try to access the ``<dns/ip of your exposed service endpoint>:9984`` on your
-browser. You must receive a json output that shows the BigchainDB server
-version among other things.
+Try to access the ``<dns/ip of your exposed bigchaindb service endpoint>:9984``
+on your browser. You must receive a json output that shows the BigchainDB
+server version among other things.
 
-Try to access the ``<dns/ip of your exposed service endpoint>:27017`` on your
-browser. You must receive a message from MongoDB stating that it doesn't allow
-HTTP connections to the port anymore.
+Try to access the ``<dns/ip of your exposed mongodb service endpoint>:27017``
+on your browser. You must receive a message from MongoDB stating that it
+doesn't allow HTTP connections to the port anymore.
 
 
-Step 7.2: Testing Internally
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Step 10.2: Testing Internally
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Run a container that provides utilities like ``nslookup``, ``curl`` and ``dig``
 on the cluster and query the internal DNS and IP endpoints.
@@ -270,7 +425,7 @@ Now we can query for the ``mdb`` and ``bdb`` service details.
 .. code:: bash
 
    $ nslookup mdb
-   $ dig +noall +answer _mdb_port._tcp.mdb.default.svc.cluster.local SRV
+   $ dig +noall +answer _mdb-port._tcp.mdb.default.svc.cluster.local SRV
    $ curl -X GET http://mdb:27017
    $ curl -X GET http://bdb:9984
 
