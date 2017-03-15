@@ -229,6 +229,8 @@ class Output(object):
             raise TypeError('`amount` must be an int')
         if amount < 1:
             raise AmountError('`amount` must be greater than 0')
+        if amount > 9 * 10 ** 18:
+            raise AmountError('`amount` must be <= 9000000000000000000')
 
         self.fulfillment = fulfillment
         self.amount = amount

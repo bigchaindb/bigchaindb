@@ -133,6 +133,7 @@ definitions:
     properties:
       amount:
         type: string
+        pattern: "^[0-9]{1,20}$"
         description: |
             Integral amount of the asset represented by this output.
             In the case of a non divisible asset, this will always be 1.

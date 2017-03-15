@@ -14,6 +14,7 @@ from bigchaindb.models import Transaction
 ################################################################################
 # Helper functions
 
+
 def validate(tx):
     if isinstance(tx, Transaction):
         tx = tx.to_dict()
@@ -120,12 +121,25 @@ def test_create_tx_no_fulfills(create_tx):
 # Outputs
 
 
-def test_bad_amounts(create_tx, signed_transfer_tx):
+def test_low_amounts(create_tx, signed_transfer_tx):
     for tx in [create_tx, signed_transfer_tx]:
         tx.outputs[0].amount = 0
         validate_raises(tx, AmountError)
         tx.outputs[0].amount = -1
         validate_raises(tx, AmountError)
+
+
+def test_high_amounts(create_tx):
+    # Should raise a SchemaValidationError - don't want to allow ridiculously
+    # large numbers to get converted to int
+    create_tx.outputs[0].amount = 10 ** 21
+    validate_raises(create_tx)
+    # Should raise AmountError
+    create_tx.outputs[0].amount = 9 * 10 ** 18 + 1
+    validate_raises(create_tx, AmountError)
+    # Should pass
+    create_tx.outputs[0].amount -= 1
+    validate(create_tx)
 
 
 ################################################################################
