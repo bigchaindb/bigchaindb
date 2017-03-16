@@ -1,8 +1,7 @@
-#####################################################################
-# TODO This YAML file desribes a ConfigMap with the FQDN of the mongo    #
-# instance to be started. MongoDB instance uses the value from this #
-# ConfigMap to bootstrap itself during startup.                     #
-#####################################################################
+#########################################################################
+# This YAML file desribes a ConfigMap with a valid list of IP addresses #
+# that can connect to the MongoDB instance.                             #
+#########################################################################
 
 apiVersion: v1
 kind: ConfigMap
@@ -11,4 +10,4 @@ metadata:
   namespace: default
 data:
   # ':' separated list of allowed hosts
-  allowed-hosts: 95.91.241.60/16:192.168.0.1/16
+  allowed-hosts: 192.168.0.0/16:10.0.2.0/24

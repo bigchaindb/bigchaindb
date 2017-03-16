@@ -1,7 +1,8 @@
-#########################################################################
-# This YAML file desribes a StatefulSet for running a MongoDB instance. #
-# It depends on the configdb and db k8s pvc.                            #
-#########################################################################
+########################################################################
+# This YAML file desribes a StatefulSet with a service for running and #
+# exposing a MongoDB instance.                                         #
+# It depends on the configdb and db k8s pvc.                           #
+########################################################################
 
 apiVersion: v1
 kind: Service
@@ -66,11 +67,11 @@ spec:
           hostPort: 27017
           name: mdb-port
           protocol: TCP
-          #volumeMounts:
-          #- name: mdb-db
-          #mountPath: /data/db
-          #- name: mdb-configdb
-          #mountPath: /data/configdb
+        volumeMounts:
+        - name: mdb-db
+          mountPath: /data/db
+        - name: mdb-configdb
+          mountPath: /data/configdb
         resources:
           limits:
             cpu: 200m
@@ -83,10 +84,10 @@ spec:
           periodSeconds: 15
           timeoutSeconds: 1
       restartPolicy: Always
-      #volumes:
-      #- name: mdb-db
-      #  persistentVolumeClaim:
-      #    claimName: mongo-db-claim
-      #- name: mdb-configdb
-      #  persistentVolumeClaim:
-      #    claimName: mongo-configdb-claim
+      volumes:
+      - name: mdb-db
+        persistentVolumeClaim:
+          claimName: mongo-db-claim
+      - name: mdb-configdb
+        persistentVolumeClaim:
+          claimName: mongo-configdb-claim
