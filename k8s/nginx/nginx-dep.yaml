@@ -12,6 +12,10 @@ metadata:
   namespace: default
   labels:
     name: ngx-svc
+  annotations:
+    # NOTE: the following annotation is a beta feature and
+    # only available in GCE/GKE and Azure as of now
+    service.beta.kubernetes.io/external-traffic: OnlyLocal
 spec:
   selector:
     app: ngx-dep 
