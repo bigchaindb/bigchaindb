@@ -15,6 +15,13 @@ For reference, the possible headings are:
 * **External Contributors** to list contributors outside of BigchainDB GmbH.
 * **Notes**
 
+## [0.9.4] - 2017-03-16
+Tag name: v0.9.4
+
+### Fixed
+Fixed #1271 (false double spend error). Thanks to @jmduque for reporting the
+problem along with a very detailed diagnosis and useful recommendations.
+
 ## [0.9.3] - 2017-03-06
 Tag name: v0.9.3
 
