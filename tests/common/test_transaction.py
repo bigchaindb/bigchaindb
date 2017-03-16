@@ -617,12 +617,12 @@ def test_validate_tx_threshold_duplicated_pk(user_pub, user_priv,
     subconditions = tx.inputs[0].fulfillment.subconditions
     expected_subconditions = expected.fulfillment.subconditions
     assert subconditions[0]['body'].to_dict()['signature'] == \
-            expected_subconditions[0]['body'].to_dict()['signature']
+        expected_subconditions[0]['body'].to_dict()['signature']
     assert subconditions[1]['body'].to_dict()['signature'] == \
-            expected_subconditions[1]['body'].to_dict()['signature']
+        expected_subconditions[1]['body'].to_dict()['signature']
 
     assert tx.inputs[0].to_dict()['fulfillment'] == \
-            expected.fulfillment.serialize_uri()
+        expected.fulfillment.serialize_uri()
     assert tx.inputs_valid() is True
 
 
