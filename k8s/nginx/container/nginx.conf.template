@@ -70,11 +70,11 @@ http {
 }
 
 stream {
-  log_format mdb_log '$realip_remote_addr $remote_addr [$time_local] '
-                   '$protocol $status $bytes_sent $bytes_received '
-                   '$session_time "$upstream_addr" '
-                   '"$upstream_bytes_sent" "$upstream_bytes_received" "$upstream_connect_time" '
-                   '$proxy_protocol_addr $proxy_protocol_port $remote_addr';
+  log_format mdb_log '[$time_iso8601] $realip_remote_addr $remote_addr '
+                     '$proxy_protocol_addr $proxy_protocol_port '
+                     '$protocol $status $session_time $bytes_sent '
+                     '$bytes_received "$upstream_addr" "$upstream_bytes_sent" '
+                     '"$upstream_bytes_received" "$upstream_connect_time" ';
 
   access_log /etc/nginx/nginx.stream.access.log mdb_log buffer=16k flush=5s;
 

@@ -20,8 +20,8 @@ spec:
   selector:
     app: ngx-dep 
   ports:
-  - port: 17017
-    targetPort: 17017
+  - port: 27017
+    targetPort: 27017
     name: ngx-public-mdb-port
     protocol: TCP
   - port: 80
@@ -48,7 +48,7 @@ spec:
         imagePullPolicy: Always
         env:
         - name: MONGODB_FRONTEND_PORT
-          value: "17017"
+          value: "27017"
         - name: MONGODB_BACKEND_HOST
           value: mdb-svc
         - name: MONGODB_BACKEND_PORT
@@ -65,8 +65,8 @@ spec:
               name: mongodb-whitelist
               key: allowed-hosts
         ports:
-        - containerPort: 17017
-          hostPort: 17017
+        - containerPort: 27017
+          hostPort: 27017
           name: public-mdb-port
           protocol: TCP 
         - containerPort: 80
@@ -77,6 +77,6 @@ spec:
           limits:
             cpu: 200m
             memory: 768Mi
-        #livenessProbe:
-        #readinessProbe:
+        #livenessProbe: TODO(Krish)
+        #readinessProbe: TODO(Krish)
       restartPolicy: Always
