@@ -1,25 +1,26 @@
-Add a BigchainDB Node in a Kubernetes Cluster
-=============================================
+Kubernetes Template: Add a BigchainDB Node to an Existing BigchainDB Cluster
+============================================================================
 
-**Refer this document if you want to add a new BigchainDB node to an existing
-cluster**
+This page describes how to deploy a BigchainDB node using Kubernetes,
+and how to add that node to an existing BigchainDB cluster.
+It assumes you already have a running Kubernetes cluster
+where you can deploy the new BigchainDB node.
 
-**If you want to start your first BigchainDB node in the BigchainDB cluster,
-refer**
-:doc:`this <node-on-kubernetes>`
+If you want to deploy the first BigchainDB node in a BigchainDB cluster,
+or a stand-alone BigchainDB node,
+then see :doc:`the page about that <node-on-kubernetes>`.
 
 
 Terminology Used
 ----------------
 
-``existing cluster`` will refer to the existing (or any one of the existing)
-Kubernetes cluster that already hosts a BigchainDB instance with a MongoDB
-backend.
+``existing cluster`` will refer to one of the existing Kubernetes clusters
+hosting one of the existing BigchainDB nodes.
 
 ``ctx-1`` will refer to the kubectl context of the existing cluster.
 
 ``new cluster`` will refer to the new Kubernetes cluster that will run a new
-BigchainDB instance with a MongoDB backend.
+BigchainDB node (including a BigchainDB instance and a MongoDB instance).
 
 ``ctx-2`` will refer to the kubectl context of the new cluster.
 
@@ -38,26 +39,19 @@ existing cluster.
 Step 1: Prerequisites
 ---------------------
 
-* You will need to have a public and private key for the new BigchainDB
-  instance you will set up.
+* A public/private key pair for the new BigchainDB instance.
 
 * The public key should be shared offline with the other existing BigchainDB
-  instances. The means to achieve this requirement is beyond the scope of this
-  document.
+  nodes in the existing BigchainDB cluster.
 
-* You will need the public keys of all the existing BigchainDB instances. The
-  means to achieve this requirement is beyond the scope of this document.
+* You will need the public keys of all the existing BigchainDB nodes.
 
 * A new Kubernetes cluster setup with kubectl configured to access it.
-  If you are using Kubernetes on Azure Container Server (ACS), please refer
-  our documentation `here <template-kubernetes-azure>` for the set up.
 
-If you haven't read our guide to set up a
-:doc:`node on Kubernetes <node-on-kubernetes>`, now is a good time to jump in
-there and then come back here as these instructions build up from there.
+* Some familiarity with deploying a BigchainDB node on Kubernetes.
+  See our :doc:`other docs about that <node-on-kubernetes>`.
 
-
-NOTE: If you are managing multiple kubernetes clusters, from your local
+Note: If you are managing multiple Kubernetes clusters, from your local
 system, you can run ``kubectl config view`` to list all the contexts that
 are available for the local kubectl.
 To target a specific cluster, add a ``--context`` flag to the kubectl CLI. For
@@ -71,9 +65,10 @@ example:
    $ kubectl --context ctx-2 proxy --port 8002
 
 
-Step 2: Prepare the New Kubernetes cluster
+Step 2: Prepare the New Kubernetes Cluster
 ------------------------------------------
-Follow the steps in the sections to set up Storage Classes and Persisten Volume
+
+Follow the steps in the sections to set up Storage Classes and Persistent Volume
 Claims, and to run MongoDB in the new cluster:
 
 1. :ref:`Add Storage Classes <Step 3: Create Storage Classes>`
@@ -84,13 +79,13 @@ Claims, and to run MongoDB in the new cluster:
 
 Step 3: Add the New MongoDB Instance to the Existing Replica Set
 ----------------------------------------------------------------
-Note that by ``replica set`` we are referring to the MongoDB replica set, and not
-to Kubernetes' ``ReplicaSet``.
 
-If you are not the administrator of an existing MongoDB/BigchainDB instance, you
-will have to coordinate offline with an existing administrator so that s/he can
-add the new MongoDB instance to the replica set. The means to achieve this is
-beyond the scope of this document.
+Note that by ``replica set``, we are referring to the MongoDB replica set,
+not a Kubernetes' ``ReplicaSet``.
+
+If you are not the administrator of an existing BigchainDB node, you
+will have to coordinate offline with an existing administrator so that they can
+add the new MongoDB instance to the replica set.
 
 Add the new instance of MongoDB from an existing instance by accessing the
 ``mongo`` shell.
@@ -100,7 +95,7 @@ Add the new instance of MongoDB from an existing instance by accessing the
    $ kubectl --context ctx-1 exec -it mdb-0 -c mongodb -- /bin/bash
    root@mdb-0# mongo --port 27017
 
-We can only add members to a replica set from the ``PRIMARY`` instance.
+One can only add members to a replica set from the ``PRIMARY`` instance.
 The ``mongo`` shell prompt should state that this is the primary member in the
 replica set.
 If not, then you can use the ``rs.status()`` command to find out who the
@@ -113,7 +108,7 @@ Run the ``rs.add()`` command with the FQDN and port number of the other instance
    PRIMARY> rs.add("<fqdn>:<port>")
 
 
-Step 4: Verify the replica set membership
+Step 4: Verify the Replica Set Membership
 -----------------------------------------
 
 You can use the ``rs.conf()`` and the ``rs.status()`` commands available in the
@@ -123,7 +118,7 @@ The new MongoDB instance should be listed in the membership information
 displayed.
 
 
-Step 5: Start the new BigchainDB instance
+Step 5: Start the New BigchainDB Instance
 -----------------------------------------
 
 Get the file ``bigchaindb-dep.yaml`` from GitHub using:
@@ -149,20 +144,20 @@ Create the required Deployment using:
 You can check its status using the command ``kubectl get deploy -w``
 
 
-Step 6: Restart the existing BigchainDB instance(s)
+Step 6: Restart the Existing BigchainDB Instance(s)
 ---------------------------------------------------
-Add public key of the new BigchainDB instance to the keyring of all the
-existing instances and update the BigchainDB instances using:
+
+Add the public key of the new BigchainDB instance to the keyring of all the
+existing BigchainDB instances and update the BigchainDB instances using:
 
 .. code:: bash
 
    $ kubectl --context ctx-1 replace -f bigchaindb-dep.yaml 
 
-This will create a ``rolling deployment`` in Kubernetes where a new instance of
+This will create a "rolling deployment" in Kubernetes where a new instance of
 BigchainDB will be created, and if the health check on the new instance is
 successful, the earlier one will be terminated. This ensures that there is
 zero downtime during updates.
 
-You can login to an existing BigchainDB instance and run the ``bigchaindb
-show-config`` command to see the configuration update to the keyring.
-
+You can SSH to an existing BigchainDB instance and run the ``bigchaindb
+show-config`` command to check that the keyring is updated.
