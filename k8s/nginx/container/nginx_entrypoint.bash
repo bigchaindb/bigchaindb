@@ -21,5 +21,4 @@ sed -i "s|MONGODB_WHITELIST||g" $NGINX_CONF_FILE
 
 # start nginx
 echo "INFO: starting nginx..."
-nginx -c /etc/nginx/nginx.conf
-echo "ERR: nginx dead!"
+exec nginx -c /etc/nginx/nginx.conf
