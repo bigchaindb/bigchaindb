@@ -153,14 +153,22 @@ def get_spent(conn, transaction_id, output):
     cursor = conn.run(
         conn.collection('bigchain').aggregate([
             {'$match': {
-                'block.transactions.inputs.fulfills.txid': transaction_id,
-                'block.transactions.inputs.fulfills.output': output
+                'block.transactions.inputs': {
+                    '$elemMatch': {
+                        'fulfills.txid': transaction_id,
+                        'fulfills.output': output,
+                    },
+                },
             }},
             {'$unwind': '$block.transactions'},
             {'$match': {
-                'block.transactions.inputs.fulfills.txid': transaction_id,
-                'block.transactions.inputs.fulfills.output': output
-            }}
+                'block.transactions.inputs': {
+                    '$elemMatch': {
+                        'fulfills.txid': transaction_id,
+                        'fulfills.output': output,
+                    },
+                },
+            }},
         ]))
     # we need to access some nested fields before returning so lets use a
     # generator to avoid having to read all records on the cursor at this point
