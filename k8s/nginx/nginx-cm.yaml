@@ -1,5 +1,5 @@
 #####################################################################
-# This YAML file desribes a ConfigMap with the FQDN of the mongo    #
+# TODO This YAML file desribes a ConfigMap with the FQDN of the mongo    #
 # instance to be started. MongoDB instance uses the value from this #
 # ConfigMap to bootstrap itself during startup.                     #
 #####################################################################
@@ -7,7 +7,8 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: mdb-fqdn
+  name: mongodb-whitelist
   namespace: default
 data:
-  fqdn: krish-node-0.westeurope.cloudapp.azure.com
+  # ':' separated list of allowed hosts
+  allowed-hosts: 95.91.241.60/16:192.168.0.1/16
