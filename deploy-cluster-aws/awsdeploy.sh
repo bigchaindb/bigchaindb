@@ -39,7 +39,6 @@ fi
 
 echo "NUM_NODES = "$NUM_NODES
 echo "BRANCH = "$BRANCH
-echo "WHAT_TO_DEPLOY = "$WHAT_TO_DEPLOY
 echo "SSH_KEY_NAME" = $SSH_KEY_NAME
 echo "USE_KEYPAIRS_FILE = "$USE_KEYPAIRS_FILE
 echo "IMAGE_ID = "$IMAGE_ID
@@ -85,7 +84,7 @@ if [[ $CONFILES_COUNT != $NUM_NODES ]]; then
 fi
 
 # Auto-generate the tag to apply to all nodes in the cluster
-TAG="BDB-"$WHAT_TO_DEPLOY"-"`date +%m-%d@%H:%M`
+TAG="BDB-Server-"`date +%m-%d@%H:%M`
 echo "TAG = "$TAG
 
 # Change the file permissions on the SSH private key file
@@ -121,24 +120,23 @@ fab install_base_software
 fab get_pip3
 fab upgrade_setuptools
 
-if [ "$WHAT_TO_DEPLOY" == "servers" ]; then
-    # (Re)create the RethinkDB configuration file conf/rethinkdb.conf
-    if [ "$ENABLE_WEB_ADMIN" == "True" ]; then
-        if [ "$BIND_HTTP_TO_LOCALHOST" == "True" ]; then
-            python create_rethinkdb_conf.py --enable-web-admin --bind-http-to-localhost
-        else
-            python create_rethinkdb_conf.py --enable-web-admin
-        fi
+# (Re)create the RethinkDB configuration file conf/rethinkdb.conf
+if [ "$ENABLE_WEB_ADMIN" == "True" ]; then
+    if [ "$BIND_HTTP_TO_LOCALHOST" == "True" ]; then
+        python create_rethinkdb_conf.py --enable-web-admin --bind-http-to-localhost
     else
-        python create_rethinkdb_conf.py
+        python create_rethinkdb_conf.py --enable-web-admin
     fi
-    # Rollout RethinkDB and start it
-    fab prep_rethinkdb_storage:$USING_EBS
-    fab install_rethinkdb
-    fab configure_rethinkdb
-    fab delete_rethinkdb_data
-    fab start_rethinkdb
+else
+    python create_rethinkdb_conf.py
 fi
+
+# Rollout RethinkDB and start it
+fab prep_rethinkdb_storage:$USING_EBS
+fab install_rethinkdb
+fab configure_rethinkdb
+fab delete_rethinkdb_data
+fab start_rethinkdb
 
 # Rollout BigchainDB (but don't start it yet)
 if [ "$BRANCH" == "pypi" ]; then
@@ -156,48 +154,40 @@ fi
 
 # Configure BigchainDB on all nodes
 
-if [ "$WHAT_TO_DEPLOY" == "servers" ]; then
-    # The idea is to send a bunch of locally-created configuration
-    # files out to each of the instances / nodes.
+# The idea is to send a bunch of locally-created configuration
+# files out to each of the instances / nodes.
 
-    # Assume a set of $NUM_NODES BigchaindB config files
-    # already exists in the confiles directory.
-    # One can create a set using a command like
-    # ./make_confiles.sh confiles $NUM_NODES
-    # (We can't do that here now because this virtual environment
-    # is a Python 2 environment that may not even have
-    # bigchaindb installed, so bigchaindb configure can't be called)
+# Assume a set of $NUM_NODES BigchaindB config files
+# already exists in the confiles directory.
+# One can create a set using a command like
+# ./make_confiles.sh confiles $NUM_NODES
+# (We can't do that here now because this virtual environment
+# is a Python 2 environment that may not even have
+# bigchaindb installed, so bigchaindb configure can't be called)
 
-    # Transform the config files in the confiles directory
-    # to have proper keyrings etc.
-    if [ "$USE_KEYPAIRS_FILE" == "True" ]; then
-        python clusterize_confiles.py -k confiles $NUM_NODES
-    else
-        python clusterize_confiles.py confiles $NUM_NODES
-    fi
-
-    # Send one of the config files to each instance
-    for (( HOST=0 ; HOST<$NUM_NODES ; HOST++ )); do
-        CONFILE="bcdb_conf"$HOST
-        echo "Sending "$CONFILE
-        fab set_host:$HOST send_confile:$CONFILE
-    done
-
-    # Initialize BigchainDB (i.e. Create the RethinkDB database,
-    # the tables, the indexes, and genesis glock). Note that
-    # this will only be sent to one of the nodes, see the
-    # definition of init_bigchaindb() in fabfile.py to see why.
-    fab init_bigchaindb
-    fab set_shards:$NUM_NODES
-    echo "To set the replication factor to 3, do: fab set_replicas:3"
-    echo "To start BigchainDB on all the nodes, do: fab start_bigchaindb"
+# Transform the config files in the confiles directory
+# to have proper keyrings etc.
+if [ "$USE_KEYPAIRS_FILE" == "True" ]; then
+    python clusterize_confiles.py -k confiles $NUM_NODES
 else
-    # Deploying clients
-    fab send_client_confile:client_confile
-
-    # Start sending load from the clients to the servers
-    fab start_bigchaindb_load
+    python clusterize_confiles.py confiles $NUM_NODES
 fi
+
+# Send one of the config files to each instance
+for (( HOST=0 ; HOST<$NUM_NODES ; HOST++ )); do
+    CONFILE="bcdb_conf"$HOST
+    echo "Sending "$CONFILE
+    fab set_host:$HOST send_confile:$CONFILE
+done
+
+# Initialize BigchainDB (i.e. Create the RethinkDB database,
+# the tables, the indexes, and genesis glock). Note that
+# this will only be sent to one of the nodes, see the
+# definition of init_bigchaindb() in fabfile.py to see why.
+fab init_bigchaindb
+fab set_shards:$NUM_NODES
+echo "To set the replication factor to 3, do: fab set_replicas:3"
+echo "To start BigchainDB on all the nodes, do: fab start_bigchaindb"
 
 # cleanup
 rm add2known_hosts.sh

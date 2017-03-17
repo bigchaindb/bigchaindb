@@ -1,5 +1,5 @@
 from bigchaindb.common.schema import (
-    TX_SCHEMA, VOTE_SCHEMA, drop_schema_descriptions)
+    TX_SCHEMA_COMMON, VOTE_SCHEMA, drop_schema_descriptions)
 
 
 def _test_additionalproperties(node, path=''):
@@ -19,7 +19,7 @@ def _test_additionalproperties(node, path=''):
 
 
 def test_transaction_schema_additionalproperties():
-    _test_additionalproperties(TX_SCHEMA)
+    _test_additionalproperties(TX_SCHEMA_COMMON)
 
 
 def test_vote_schema_additionalproperties():

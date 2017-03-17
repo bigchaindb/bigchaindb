@@ -1,4 +1,3 @@
-import builtins
 import json
 from unittest.mock import patch
 
@@ -113,18 +112,15 @@ def test_post_create_transaction_with_invalid_schema(client, caplog):
     ('DoubleSpend', 'Nope! It is gone now!'),
     ('InvalidHash', 'Do not smoke that!'),
     ('InvalidSignature', 'Falsche Unterschrift!'),
-    ('OperationError', 'Create and transfer!'),
-    ('TransactionDoesNotExist', 'Hallucinations?'),
+    ('ValidationError', 'Create and transfer!'),
+    ('InputDoesNotExist', 'Hallucinations?'),
     ('TransactionOwnerError', 'Not yours!'),
     ('TransactionNotInValidBlock', 'Wait, maybe?'),
-    ('ValueError', '?'),
+    ('ValidationError', '?'),
 ))
 def test_post_invalid_transaction(client, exc, msg, monkeypatch, caplog):
     from bigchaindb.common import exceptions
-    try:
-        exc_cls = getattr(exceptions, exc)
-    except AttributeError:
-        exc_cls = getattr(builtins, 'ValueError')
+    exc_cls = getattr(exceptions, exc)
 
     def mock_validation(self_, tx):
         raise exc_cls(msg)

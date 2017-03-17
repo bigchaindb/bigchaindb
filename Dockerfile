@@ -1,33 +1,32 @@
 FROM ubuntu:xenial
 
-# From http://stackoverflow.com/a/38553499
-
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y locales
-
-RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
-    echo 'LANG="en_US.UTF-8"'>/etc/default/locale && \
-    dpkg-reconfigure --frontend=noninteractive locales && \
-    update-locale LANG=en_US.UTF-8
-
 ENV LANG en_US.UTF-8
-
-# The `apt-get update` command executed with the install instructions should
-# not use a locally cached storage layer. Force update the cache again.
-# https://docs.docker.com/engine/userguide/eng-image/dockerfile_best-practices/#run
-RUN apt-get update && apt-get -y install python3 python3-pip libffi-dev \
-    && pip3 install --upgrade pip \
-    && pip3 install --upgrade setuptools
+ENV DEBIAN_FRONTEND noninteractive
 
 RUN mkdir -p /usr/src/app
-
 COPY . /usr/src/app/
-
 WORKDIR /usr/src/app
 
-RUN pip3 install --no-cache-dir -e .
+RUN locale-gen en_US.UTF-8 && \
+    apt-get -q update && \
+    apt-get install -qy --no-install-recommends \
+        python3 \
+        python3-pip \
+        libffi-dev \
+        python3-dev \
+        build-essential && \
+    \
+    pip3 install --upgrade --no-cache-dir pip setuptools && \
+    \
+    pip3 install --no-cache-dir -e . && \
+    \
+    apt-get remove -qy --purge gcc cpp binutils perl && \
+    apt-get -qy autoremove && \
+    apt-get -q clean all && \
+    rm -rf /usr/share/perl /usr/share/perl5 /usr/share/man /usr/share/info /usr/share/doc && \
+    rm -rf /var/lib/apt/lists/*
 
 VOLUME ["/data"]
-
 WORKDIR /data
 
 ENV BIGCHAINDB_CONFIG_PATH /data/.bigchaindb

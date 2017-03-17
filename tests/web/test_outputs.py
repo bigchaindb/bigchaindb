@@ -100,7 +100,7 @@ def test_get_divisble_transactions_returns_500(b, client):
 
     asset_id = create_tx.id
 
-    url = TX_ENDPOINT + "?asset_id=" + asset_id
+    url = TX_ENDPOINT + '?asset_id=' + asset_id
     assert client.get(url).status_code == 200
     assert len(client.get(url).json) == 3
 

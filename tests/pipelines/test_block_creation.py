@@ -46,28 +46,19 @@ def test_validate_transaction_handles_exceptions(b, signed_create_tx):
     """
     from bigchaindb.pipelines.block import BlockPipeline
     block_maker = BlockPipeline()
+    from bigchaindb.common.exceptions import ValidationError
 
-    # Test SchemaValidationError
     tx_dict = signed_create_tx.to_dict()
-    tx_dict['invalid_key'] = 'schema validation gonna getcha!'
-    assert block_maker.validate_tx(tx_dict) is None
 
-    # Test InvalidHash
-    tx_dict = signed_create_tx.to_dict()
-    tx_dict['id'] = 'a' * 64
-    assert block_maker.validate_tx(tx_dict) is None
+    with patch('bigchaindb.models.Transaction.validate') as validate:
+        # Assert that validationerror gets caught
+        validate.side_effect = ValidationError()
+        assert block_maker.validate_tx(tx_dict) is None
 
-    # Test InvalidSignature when we pass a bad fulfillment
-    tx_dict = signed_create_tx.to_dict()
-    tx_dict['inputs'][0]['fulfillment'] = 'cf:0:aaaaaaaaaaaaaaaaaaaaaaaaa'
-    assert block_maker.validate_tx(tx_dict) is None
-
-    # Test AmountError
-    signed_create_tx.outputs[0].amount = 0
-    tx_dict = signed_create_tx.to_dict()
-    # set the correct value back so that we can continue using it
-    signed_create_tx.outputs[0].amount = 1
-    assert block_maker.validate_tx(tx_dict) is None
+        # Assert that another error doesnt
+        validate.side_effect = IOError()
+        with pytest.raises(IOError):
+            block_maker.validate_tx(tx_dict)
 
 
 def test_create_block(b, user_pk):
@@ -226,3 +217,12 @@ def test_full_pipeline(b, user_pk):
     block_len = len(block_doc.transactions)
     assert chained_block == block_doc
     assert number_assigned_to_others == 100 - block_len
+
+
+def test_block_snowflake(create_tx, signed_transfer_tx):
+    from bigchaindb.pipelines.block import tx_collector
+    snowflake = tx_collector()
+    assert snowflake.send(create_tx) == [create_tx]
+    snowflake.send(signed_transfer_tx)
+    snowflake.send(create_tx)
+    assert snowflake.send(None) == [create_tx, signed_transfer_tx]

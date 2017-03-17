@@ -1,0 +1,13 @@
+#####################################################################
+# This YAML file desribes a ConfigMap with the FQDN of the mongo    #
+# instance to be started. MongoDB instance uses the value from this #
+# ConfigMap to bootstrap itself during startup.                     #
+#####################################################################
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mdb-fqdn
+  namespace: default
+data:
+  fqdn: mdb-instance-0.westeurope.cloudapp.azure.com

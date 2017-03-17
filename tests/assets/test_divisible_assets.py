@@ -638,6 +638,7 @@ def test_divide(b, user_pk, user_sk):
 
 
 # Check that negative inputs are caught when creating a TRANSFER transaction
+@pytest.mark.skip(reason='part of tx structural tests')
 @pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_non_positive_amounts_on_transfer(b, user_pk):
@@ -662,6 +663,7 @@ def test_non_positive_amounts_on_transfer(b, user_pk):
 
 
 # Check that negative inputs are caught when validating a TRANSFER transaction
+@pytest.mark.skip(reason='part of tx structural tests')
 @pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_non_positive_amounts_on_transfer_validate(b, user_pk, user_sk):
@@ -704,6 +706,7 @@ def test_non_positive_amounts_on_create(b, user_pk):
 
 
 # Check that negative inputs are caught when validating a CREATE transaction
+@pytest.mark.skip(reason='part of tx structural tests')
 @pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_non_positive_amounts_on_create_validate(b, user_pk):
