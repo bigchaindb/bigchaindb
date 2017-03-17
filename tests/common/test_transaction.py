@@ -590,6 +590,42 @@ def test_validate_tx_threshold_create_signature(user_user2_threshold_input,
     validate_transaction_model(tx)
 
 
+def test_validate_tx_threshold_duplicated_pk(user_pub, user_priv,
+                                             asset_definition):
+    from copy import deepcopy
+    from cryptoconditions import Ed25519Fulfillment, ThresholdSha256Fulfillment
+    from bigchaindb.common.transaction import Input, Output, Transaction
+    from bigchaindb.common.crypto import PrivateKey
+
+    threshold = ThresholdSha256Fulfillment(threshold=2)
+    threshold.add_subfulfillment(Ed25519Fulfillment(public_key=user_pub))
+    threshold.add_subfulfillment(Ed25519Fulfillment(public_key=user_pub))
+
+    threshold_input = Input(threshold, [user_pub, user_pub])
+    threshold_output = Output(threshold, [user_pub, user_pub])
+
+    tx = Transaction(Transaction.CREATE, asset_definition,
+                     [threshold_input], [threshold_output])
+    expected = deepcopy(threshold_input)
+    expected.fulfillment.subconditions[0]['body'].sign(str(tx).encode(),
+                                                       PrivateKey(user_priv))
+    expected.fulfillment.subconditions[1]['body'].sign(str(tx).encode(),
+                                                       PrivateKey(user_priv))
+
+    tx.sign([user_priv, user_priv])
+
+    subconditions = tx.inputs[0].fulfillment.subconditions
+    expected_subconditions = expected.fulfillment.subconditions
+    assert subconditions[0]['body'].to_dict()['signature'] == \
+        expected_subconditions[0]['body'].to_dict()['signature']
+    assert subconditions[1]['body'].to_dict()['signature'] == \
+        expected_subconditions[1]['body'].to_dict()['signature']
+
+    assert tx.inputs[0].to_dict()['fulfillment'] == \
+        expected.fulfillment.serialize_uri()
+    assert tx.inputs_valid() is True
+
+
 def test_multiple_input_validation_of_transfer_tx(user_input, user_output,
                                                   user_priv, user2_pub,
                                                   user2_priv, user3_pub,
