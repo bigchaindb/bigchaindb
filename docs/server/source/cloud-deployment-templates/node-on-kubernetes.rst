@@ -209,9 +209,9 @@ You can also try to assign a name to an Public IP in Azure before starting
 the process, or use ``nslookup`` with the name you have in mind to check
 if it's available for use.
 
-In the rare chance that name in the ``data.fqdn`` field is not available,
-we will need to create a ConfigMap with a unique name and restart the
-MongoDB instance.
+In the rare chance that the name apecified in the ``data.fqdn`` field is not
+available, we will need to create a ConfigMap with a unique name and
+restart the MongoDB instance.
 
 For Kubernetes on bare-metal or other cloud providers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
