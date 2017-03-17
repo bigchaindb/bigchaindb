@@ -75,16 +75,17 @@ class MongoDBConnection(Connection):
             # we should only return a connection if the replica set is
             # initialized. initialize_replica_set will check if the
             # replica set is initialized else it will initialize it.
-            initialize_replica_set(self.host, self.port, self.connection_timeout, self.dbname, self.ssl, self.login, self.password)
+            initialize_replica_set(self.host, self.port, self.connection_timeout,
+                                   self.dbname, self.ssl, self.login, self.password)
 
             # FYI: this might raise a `ServerSelectionTimeoutError`,
             # that is a subclass of `ConnectionFailure`.
-            client =  pymongo.MongoClient(self.host,
-                                          self.port,
-                                          replicaset=self.replicaset,
-                                          serverselectiontimeoutms=self.connection_timeout,
-                                          ssl=self.ssl)
-            
+            client = pymongo.MongoClient(self.host,
+                                         self.port,
+                                         replicaset=self.replicaset,
+                                         serverselectiontimeoutms=self.connection_timeout,
+                                         ssl=self.ssl)
+
             if self.login is not None and self.password is not None:
                 client[self.dbname].authenticate(self.login, self.password)
 
