@@ -106,7 +106,7 @@ class MultipipesStepper:
         for item in items:
             if type(item) != tuple:
                 item = (item,)
-            queue.append(item)
+            queue.append(list(item))
 
     def step(self, name, **kwargs):
         """ Advance pipeline stage. Throws Empty if no data to consume. """
