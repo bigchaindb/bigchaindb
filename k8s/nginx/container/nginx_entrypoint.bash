@@ -1,4 +1,16 @@
 #!/bin/bash
+set -eo pipefail
+
+# sanity checks
+if [[ -z "${MONGODB_FRONTEND_PORT}" || \
+    -z "${MONGODB_BACKEND_HOST}" || \
+    -z "${MONGODB_BACKEND_PORT}" || \
+    -z "${BIGCHAINDB_FRONTEND_PORT}" || \
+    -z "${BIGCHAINDB_BACKEND_HOST}" || \
+    -z "${BIGCHAINDB_BACKEND_PORT}" ]] ; then
+  echo "Invalid environment settings detected. Exiting!"
+  exit 1
+fi
 
 NGINX_CONF_FILE=/etc/nginx/nginx.conf
 
