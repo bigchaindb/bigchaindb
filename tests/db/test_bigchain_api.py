@@ -446,7 +446,6 @@ class TestBigchainApi(object):
         b.write_vote(b.vote(block_3.id, b.get_last_voted_block().id, True))
         assert b.get_last_voted_block().id == block_3.id
 
-
     @pytest.mark.usefixtures('inputs')
     def test_assign_transaction_one_node(self, b, user_pk, user_sk):
         from bigchaindb.backend import query
