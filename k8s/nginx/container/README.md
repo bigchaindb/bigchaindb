@@ -7,7 +7,7 @@
    strategy to ensure that we can provide proper uptime and security these
    core services.
 
-*  We can have a proxy like nginx/haproxy) in every node that listens to
+*  We can have a proxy like nginx/haproxy in every node that listens to
    global connections and applies cluster level entry policy.
 
 ### Implementation
@@ -17,7 +17,7 @@
    allow connections from the whitelist and avoid a DDoS.
 
 *  For BigchainDB connections, nginx needs to have rules to throttle
-   connections that are throttle connections using resources over a threshold.
+   connections that are using resources over a threshold.
 
 
 ### Step 1: Build the Latest Container
@@ -29,8 +29,8 @@ Optional: Upload container to Docker Hub:
 
 ### Step 2: Run the Container
 
-Note that the whilelist IPs must be specified with the subnet in the address
-prefix length format, eg: `1.2.3.4/16` format
+Note that the whilelist IPs must be specified with the subnet in the CIDR
+format, eg: `1.2.3.4/16` 
 
 ```
 docker run \

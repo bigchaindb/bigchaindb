@@ -69,6 +69,7 @@ http {
   }
 }
 
+# NGINX stream block for TCP and UDP proxies
 stream {
   log_format mdb_log '[$time_iso8601] $realip_remote_addr $remote_addr '
                      '$proxy_protocol_addr $proxy_protocol_port '

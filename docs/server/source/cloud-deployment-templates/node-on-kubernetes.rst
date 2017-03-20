@@ -196,7 +196,7 @@ You can also try to assign a name to an Public IP in Azure before starting
 the process, or use ``nslookup`` with the name you have in mind to check
 if it's available for use.
 
-In the rare chance that the name apecified in the ``data.fqdn`` field is not
+In the rare chance that the name specified in the ``data.fqdn`` field is not
 available, we will need to create a ConfigMap with a unique name and
 restart the MongoDB instance.
 
@@ -439,7 +439,12 @@ Get the file ``nginx-cm.yaml`` from GitHub using:
    $ wget https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/k8s/nginx/nginx-cm.yaml
 
 The IP address whitelist can be explicitly configured in ``nginx-cm.yaml``
-file.
+file. You will need a list of the IP addresses of all the other MongoDB 
+instances in the cluster. If the MongoDB intances specify a hostname, then this
+needs to be resolved to the corresponding IP addresses. If the IP address of
+any MongoDB instance changes, we can start a 'rolling upgrade' of NGINX after
+updating the corresponding ConfigMap without affecting availabilty.
+
 
 Create the ConfigMap for the whitelist using:
 
@@ -468,5 +473,5 @@ You can test nginx by using the "toolbox" container as:
    # dig +noall +answer _ngx-public-mdb-port._tcp.ngx-svc.default.svc.cluster.local SRV
    # dig +noall +answer _ngx-public-bdb-port._tcp.ngx-svc.default.svc.cluster.local SRV
    # curl -X GET http://ngx-svc:80
-   # curl -X GET http://ngx-svc:17017
+   # curl -X GET http://ngx-svc:27017
 
