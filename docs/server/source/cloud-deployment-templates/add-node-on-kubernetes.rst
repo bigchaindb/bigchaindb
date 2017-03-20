@@ -161,3 +161,14 @@ zero downtime during updates.
 
 You can SSH to an existing BigchainDB instance and run the ``bigchaindb
 show-config`` command to check that the keyring is updated.
+
+
+Step 7: Run NGINX as a Deployment - Optional
+--------------------------------------------
+
+This step is required only if you are want to control access to the BigchainDB
+node.
+
+Please refer :ref:`this <Step 11: Run NGINX as a Deployment - Optional>` to
+set up NGINX in your new node.
+

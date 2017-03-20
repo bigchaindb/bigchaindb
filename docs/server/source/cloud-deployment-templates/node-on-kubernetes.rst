@@ -398,10 +398,13 @@ Now you can query for the ``mdb`` and ``bdb`` service details.
 
 .. code:: bash
 
-   $ nslookup mdb
-   $ dig +noall +answer _mdb-port._tcp.mdb.default.svc.cluster.local SRV
-   $ curl -X GET http://mdb:27017
-   $ curl -X GET http://bdb:9984
+   $ nslookup mdb-svc
+   $ nslookup bdb-svc
+   $ dig +noall +answer _mdb-port._tcp.mdb-svc.default.svc.cluster.local SRV
+   $ dig +noall +answer _bdb-port._tcp.bdb-svc.default.svc.cluster.local SRV
+   $ curl -X GET http://mdb-svc:27017
+   $ curl -X GET http://bdb-svc:9984
+
 
 There is a generic image based on alpine:3.5 with the required utilities
 hosted at Docker Hub under ``bigchaindb/toolbox``.
@@ -412,4 +415,58 @@ You can use it as below to get started immediately:
 .. code:: bash
 
    $ kubectl run -it toolbox --image bigchaindb/toolbox --restart=Never --rm
+
+
+Step 11: Run NGINX as a Deployment - Optional
+---------------------------------------------
+
+This step is required only if you are want to control access to the BigchainDB
+node.
+
+NGINX is used as a proxy to both the BigchainDB and MongoDB instances in the
+node.
+It proxies HTTP requests on port 80 to the BigchainDB backend, and TCP
+connections on port 27017 to the MongoDB backend.
+
+You can also configure a whitelist in NGINX to allow only connections from
+other instances in the MongoDB replica set to access the backend MongoDB
+instance.
+
+Get the file ``nginx-cm.yaml`` from GitHub using:
+
+.. code:: bash
+   
+   $ wget https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/k8s/nginx/nginx-cm.yaml
+
+The IP address whitelist can be explicitly configured in ``nginx-cm.yaml``
+file.
+
+Create the ConfigMap for the whitelist using:
+
+.. code:: bash
+   
+   $ kubectl apply -f nginx-cm.yaml
+
+Get the file ``nginx-dep.yaml`` from GitHub using:
+
+.. code:: bash
+   
+   $ wget https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/k8s/nginx/nginx-dep.yaml
+
+Create the NGINX deployment using:
+
+.. code:: bash
+   
+   $ kubectl apply -f nginx-dep.yaml
+
+You can test nginx by using the "toolbox" container as:
+
+.. code:: bash
+   
+   $ kubectl run -it toolbox --image bigchaindb/toolbox --restart=Never --rm
+   # nslookup ngx-svc
+   # dig +noall +answer _ngx-public-mdb-port._tcp.ngx-svc.default.svc.cluster.local SRV
+   # dig +noall +answer _ngx-public-bdb-port._tcp.ngx-svc.default.svc.cluster.local SRV
+   # curl -X GET http://ngx-svc:80
+   # curl -X GET http://ngx-svc:17017
 
