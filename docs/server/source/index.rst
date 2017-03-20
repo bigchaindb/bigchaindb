@@ -13,7 +13,6 @@ BigchainDB Server Documentation
    server-reference/index
    drivers-clients/index
    clusters-feds/index
-   topic-guides/index
    data-models/index
    schema/transaction
    schema/vote

@@ -64,7 +64,7 @@ In the future, it will be possible for clients to query for the blocks containin
 
 **How could we be sure blocks and votes from a client are valid?**
 
-All blocks and votes are signed by federation nodes. Only federation nodes can produce valid signatures because only federation nodes have the necessary private keys. A client can't produce a valid signature for a block or vote.
+All blocks and votes are signed by cluster nodes (owned and operated by consortium members). Only cluster nodes can produce valid signatures because only cluster nodes have the necessary private keys. A client can't produce a valid signature for a block or vote.
 
 **Could we restore an entire BigchainDB database using client-saved blocks and votes?**
 
@@ -109,7 +109,7 @@ Considerations for BigchainDB:
 Although it's not advertised as such, RethinkDB's built-in replication feature is similar to continous backup, except the "backup" (i.e. the set of replica shards) is spread across all the nodes. One could take that idea a bit farther by creating a set of backup-only servers with one full backup:
 
 * Give all the original BigchainDB nodes (RethinkDB nodes) the server tag `original`. This is the default if you used the RethinkDB config file suggested in the section titled [Configure RethinkDB Server](../dev-and-test/setup-run-node.html#configure-rethinkdb-server).
-* Set up a group of servers running RethinkDB only, and give them the server tag `backup`. The `backup` servers could be geographically separated from all the `original` nodes (or not; it's up to the federation).
+* Set up a group of servers running RethinkDB only, and give them the server tag `backup`. The `backup` servers could be geographically separated from all the `original` nodes (or not; it's up to the consortium to decide).
 * Clients shouldn't be able to read from or write to servers in the `backup` set.
 * Send a RethinkDB reconfigure command to the RethinkDB cluster to make it so that the `original` set has the same number of replicas as before (or maybe one less), and the `backup` set has one replica. Also, make sure the `primary_replica_tag='original'` so that all primary shards live on the `original` nodes.
 

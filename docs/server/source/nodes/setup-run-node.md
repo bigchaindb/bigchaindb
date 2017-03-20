@@ -19,7 +19,7 @@ There are some [notes on BigchainDB-specific firewall setup](../appendices/firew
 
 A BigchainDB node uses its system clock to generate timestamps for blocks and votes, so that clock should be kept in sync with some standard clock(s). The standard way to do that is to run an NTP daemon (Network Time Protocol daemon) on the node. (You could also use tlsdate, which uses TLS timestamps rather than NTP, but don't: it's not very accurate and it will break with TLS 1.3, which removes the timestamp.)
 
-NTP is a standard protocol. There are many NTP daemons implementing it. We don't recommend a particular one. On the contrary, we recommend that different nodes in a federation run different NTP daemons, so that a problem with one daemon won't affect all nodes.
+NTP is a standard protocol. There are many NTP daemons implementing it. We don't recommend a particular one. On the contrary, we recommend that different nodes in a cluster run different NTP daemons, so that a problem with one daemon won't affect all nodes.
 
 Please see the [notes on NTP daemon setup](../appendices/ntp-notes.html) in the Appendices.
 
@@ -72,7 +72,7 @@ direct-io
 join=node0_hostname:29015
 join=node1_hostname:29015
 join=node2_hostname:29015
-# continue until there's a join= line for each node in the federation
+# continue until there's a join= line for each node in the cluster
 ```
 
 * `directory=/data` tells the RethinkDB node to store its share of the database data in `/data`.
@@ -153,7 +153,7 @@ Edit the created config file:
 
 * Open `$HOME/.bigchaindb` (the created config file) in your text editor.
 * Change `"server": {"bind": "localhost:9984", ... }` to `"server": {"bind": "0.0.0.0:9984", ... }`. This makes it so traffic can come from any IP address to port 9984 (the HTTP Client-Server API port).
-* Change `"keyring": []` to `"keyring": ["public_key_of_other_node_A", "public_key_of_other_node_B", "..."]` i.e. a list of the public keys of all the other nodes in the federation. The keyring should _not_ include your node's public key.
+* Change `"keyring": []` to `"keyring": ["public_key_of_other_node_A", "public_key_of_other_node_B", "..."]` i.e. a list of the public keys of all the other nodes in the cluster. The keyring should _not_ include your node's public key.
 
 For more information about the BigchainDB config file, see [Configuring a BigchainDB Node](configuration.html).
 
@@ -185,7 +185,7 @@ where:
 
 * `bigchaindb init` creates the database within RethinkDB, the tables, the indexes, and the genesis block.
 * `numshards` should be set to the number of nodes in the initial cluster.
-* `numreplicas` should be set to the database replication factor decided by the federation. It must be 3 or more for [RethinkDB failover](https://rethinkdb.com/docs/failover/) to work.
+* `numreplicas` should be set to the database replication factor decided by the consortium. It must be 3 or more for [RethinkDB failover](https://rethinkdb.com/docs/failover/) to work.
 
 Once the RethinkDB database is configured, every node operator can start BigchainDB using:
 ```text

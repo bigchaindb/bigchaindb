@@ -86,7 +86,6 @@ Step 2 is to make an AWS deployment configuration file, if necessary. There's an
 ```text
 NUM_NODES=3
 BRANCH="master"
-WHAT_TO_DEPLOY="servers"
 SSH_KEY_NAME="not-set-yet"
 USE_KEYPAIRS_FILE=False
 IMAGE_ID="ami-8504fdea"

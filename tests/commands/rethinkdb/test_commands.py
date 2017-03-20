@@ -45,7 +45,7 @@ def test_set_shards(mock_reconfigure, monkeypatch, b):
         return {'shards': [{'replicas': [1]}]}
 
     monkeypatch.setattr(rethinkdb.RqlQuery, 'run', mockreturn_one_replica)
-    args = Namespace(num_shards=3)
+    args = Namespace(num_shards=3, config=None)
     run_set_shards(args)
     mock_reconfigure.assert_called_with(replicas=1, shards=3, dry_run=False)
 
@@ -72,7 +72,7 @@ def test_set_shards_raises_exception(monkeypatch, b):
     monkeypatch.setattr(rethinkdb.RqlQuery, 'run', mockreturn_one_replica)
     monkeypatch.setattr(rethinkdb.ast.Table, 'reconfigure', mock_raise)
 
-    args = Namespace(num_shards=3)
+    args = Namespace(num_shards=3, config=None)
     with pytest.raises(SystemExit) as exc:
         run_set_shards(args)
     assert exc.value.args == ('Failed to reconfigure tables.',)
@@ -88,7 +88,7 @@ def test_set_replicas(mock_reconfigure, monkeypatch, b):
         return {'shards': [1, 2]}
 
     monkeypatch.setattr(rethinkdb.RqlQuery, 'run', mockreturn_two_shards)
-    args = Namespace(num_replicas=2)
+    args = Namespace(num_replicas=2, config=None)
     run_set_replicas(args)
     mock_reconfigure.assert_called_with(replicas=2, shards=2, dry_run=False)
 
@@ -115,7 +115,7 @@ def test_set_replicas_raises_exception(monkeypatch, b):
     monkeypatch.setattr(rethinkdb.RqlQuery, 'run', mockreturn_two_shards)
     monkeypatch.setattr(rethinkdb.ast.Table, 'reconfigure', mock_raise)
 
-    args = Namespace(num_replicas=2)
+    args = Namespace(num_replicas=2, config=None)
     with pytest.raises(SystemExit) as exc:
         run_set_replicas(args)
     assert exc.value.args == ('Failed to reconfigure tables.',)

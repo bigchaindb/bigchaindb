@@ -159,6 +159,43 @@ def test_get_spent(signed_create_tx, signed_transfer_tx):
     assert spents[0] == signed_transfer_tx.to_dict()
 
 
+def test_get_spent_for_tx_with_multiple_inputs(carol):
+    from bigchaindb.backend import connect, query
+    from bigchaindb.models import Block, Transaction
+    conn = connect()
+    tx_0 = Transaction.create(
+        [carol.public_key],
+        [([carol.public_key], 1),
+         ([carol.public_key], 1),
+         ([carol.public_key], 2)],
+    ).sign([carol.private_key])
+    block = Block(transactions=[tx_0])
+    conn.db.bigchain.insert_one(block.to_dict())
+    spents = list(query.get_spent(conn, tx_0.id, 0))
+    assert not spents
+
+    tx_1 = Transaction.transfer(
+        tx_0.to_inputs()[2:3],
+        [([carol.public_key], 1),
+         ([carol.public_key], 1)],
+        asset_id=tx_0.id,
+    ).sign([carol.private_key])
+    block = Block(transactions=[tx_1])
+    conn.db.bigchain.insert_one(block.to_dict())
+    spents = list(query.get_spent(conn, tx_0.id, 0))
+    assert not spents
+
+    tx_2 = Transaction.transfer(
+        tx_0.to_inputs()[0:1] + tx_1.to_inputs()[1:2],
+        [([carol.public_key], 2)],
+        asset_id=tx_0.id,
+    ).sign([carol.private_key])
+    block = Block(transactions=[tx_2])
+    conn.db.bigchain.insert_one(block.to_dict())
+    spents = list(query.get_spent(conn, tx_0.id, 1))
+    assert not spents
+
+
 def test_get_owned_ids(signed_create_tx, user_pk):
     from bigchaindb.backend import connect, query
     from bigchaindb.models import Block

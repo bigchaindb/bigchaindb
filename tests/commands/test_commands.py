@@ -1,6 +1,6 @@
 import json
 from unittest.mock import Mock, patch
-from argparse import Namespace, ArgumentTypeError
+from argparse import Namespace
 import copy
 
 import pytest
@@ -21,45 +21,8 @@ def test_make_sure_we_dont_remove_any_command():
     assert parser.parse_args(['start']).command
     assert parser.parse_args(['set-shards', '1']).command
     assert parser.parse_args(['set-replicas', '1']).command
-    assert parser.parse_args(['load']).command
     assert parser.parse_args(['add-replicas', 'localhost:27017']).command
     assert parser.parse_args(['remove-replicas', 'localhost:27017']).command
-
-
-def test_start_raises_if_command_not_implemented():
-    from bigchaindb.commands.bigchain import utils
-    from bigchaindb.commands.bigchain import create_parser
-
-    parser = create_parser()
-
-    with pytest.raises(NotImplementedError):
-        # Will raise because `scope`, the third parameter,
-        # doesn't contain the function `run_start`
-        utils.start(parser, ['start'], {})
-
-
-def test_start_raises_if_no_arguments_given():
-    from bigchaindb.commands.bigchain import utils
-    from bigchaindb.commands.bigchain import create_parser
-
-    parser = create_parser()
-
-    with pytest.raises(SystemExit):
-        utils.start(parser, [], {})
-
-
-@patch('multiprocessing.cpu_count', return_value=42)
-def test_start_sets_multiprocess_var_based_on_cli_args(mock_cpu_count):
-    from bigchaindb.commands.bigchain import utils
-    from bigchaindb.commands.bigchain import create_parser
-
-    def run_load(args):
-        return args
-
-    parser = create_parser()
-
-    assert utils.start(parser, ['load'], {'run_load': run_load}).multiprocess == 1
-    assert utils.start(parser, ['load', '--multiprocess'], {'run_load': run_load}).multiprocess == 42
 
 
 @patch('bigchaindb.commands.utils.start')
@@ -131,7 +94,7 @@ def test_bigchain_export_my_pubkey_when_pubkey_set(capsys, monkeypatch):
     monkeypatch.setitem(config['keypair'], 'public', 'Charlie_Bucket')
     _, _ = capsys.readouterr()  # has the effect of clearing capsys
     run_export_my_pubkey(args)
-    out, err = capsys.readouterr()
+    out, _ = capsys.readouterr()
     lines = out.splitlines()
     assert config['keypair']['public'] in lines
     assert 'Charlie_Bucket' in lines
@@ -379,11 +342,6 @@ def test_calling_main(start_mock, base_parser_mock, parse_args_mock,
     main()
 
     assert argparser_mock.called is True
-    assert parser.add_argument.called is True
-    parser.add_argument.assert_any_call('--dev-start-rethinkdb',
-                                        dest='start_rethinkdb',
-                                        action='store_true',
-                                        help='Run RethinkDB on start')
     parser.add_subparsers.assert_called_with(title='Commands',
                                              dest='command')
     subparsers.add_parser.assert_any_call('configure',
@@ -397,11 +355,19 @@ def test_calling_main(start_mock, base_parser_mock, parse_args_mock,
                                          'key')
     subparsers.add_parser.assert_any_call('init', help='Init the database')
     subparsers.add_parser.assert_any_call('drop', help='Drop the database')
+
     subparsers.add_parser.assert_any_call('start', help='Start BigchainDB')
+    subsubparsers.add_argument.assert_any_call('--dev-start-rethinkdb',
+                                               dest='start_rethinkdb',
+                                               action='store_true',
+                                               help='Run RethinkDB on start')
+    subsubparsers.add_argument.assert_any_call('--dev-allow-temp-keypair',
+                                               dest='allow_temp_keypair',
+                                               action='store_true',
+                                               help='Generate a random keypair on start')
 
     subparsers.add_parser.assert_any_call('set-shards',
                                           help='Configure number of shards')
-
     subsubparsers.add_argument.assert_any_call('num_shards',
                                                metavar='num_shards',
                                                type=int, default=1,
@@ -415,27 +381,6 @@ def test_calling_main(start_mock, base_parser_mock, parse_args_mock,
                                                help='Number of replicas (i.e. '
                                                'the replication factor)')
 
-    subparsers.add_parser.assert_any_call('load',
-                                          help='Write transactions to the '
-                                          'backlog')
-
-    subsubparsers.add_argument.assert_any_call('-m', '--multiprocess',
-                                               nargs='?', type=int,
-                                               default=False,
-                                               help='Spawn multiple processes '
-                                               'to run the command, if no '
-                                               'value is provided, the number '
-                                               'of processes is equal to the '
-                                               'number of cores of the host '
-                                               'machine')
-    subsubparsers.add_argument.assert_any_call('-c', '--count',
-                                               default=0,
-                                               type=int,
-                                               help='Number of transactions '
-                                               'to push. If the parameter -m '
-                                               'is set, the count is '
-                                               'distributed equally to all '
-                                               'the processes')
     assert start_mock.called is True
 
 
@@ -499,19 +444,3 @@ def test_run_remove_replicas(mock_remove_replicas):
     assert exc.value.args == ('err',)
     assert mock_remove_replicas.call_count == 1
     mock_remove_replicas.reset_mock()
-
-
-def test_mongodb_host_type():
-    from bigchaindb.commands.utils import mongodb_host
-
-    # bad port provided
-    with pytest.raises(ArgumentTypeError):
-        mongodb_host('localhost:11111111111')
-
-    # no port information provided
-    with pytest.raises(ArgumentTypeError):
-        mongodb_host('localhost')
-
-    # bad host provided
-    with pytest.raises(ArgumentTypeError):
-        mongodb_host(':27017')

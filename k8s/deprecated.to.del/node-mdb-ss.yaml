@@ -42,8 +42,8 @@ spec:
     spec:
       terminationGracePeriodSeconds: 10
       containers:
-      - name: bdb-server
-        image: bigchaindb/bigchaindb:latest
+      - name: bigchaindb
+        image: bigchaindb/bigchaindb:master
         args:
         - start
         env:
