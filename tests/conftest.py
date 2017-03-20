@@ -442,3 +442,15 @@ def db_name(db_config):
 def db_conn():
     from bigchaindb.backend import connect
     return connect()
+
+
+@pytest.fixture
+def mocked_setup_pub_logger(mocker):
+    return mocker.patch(
+        'bigchaindb.log.setup.setup_pub_logger', autospec=True, spec_set=True)
+
+
+@pytest.fixture
+def mocked_setup_sub_logger(mocker):
+    return mocker.patch(
+        'bigchaindb.log.setup.setup_sub_logger', autospec=True, spec_set=True)

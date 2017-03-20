@@ -12,7 +12,7 @@ def reset_bigchaindb_config(monkeypatch):
 
 
 @pytest.mark.usefixtures('ignore_local_config_file', 'reset_bigchaindb_config')
-def test_configure_bigchaindb_configures_bigchaindb():
+def test_configure_bigchaindb_configures_bigchaindb(mocked_setup_logging):
     from bigchaindb.commands.utils import configure_bigchaindb
     from bigchaindb.config_utils import is_configured
     assert not is_configured()
@@ -23,26 +23,31 @@ def test_configure_bigchaindb_configures_bigchaindb():
 
     args = Namespace(config=None)
     test_configure(args)
+    mocked_setup_logging.assert_called_once_with(user_log_config={})
 
 
 @pytest.mark.usefixtures('ignore_local_config_file',
                          'reset_bigchaindb_config',
                          'reset_logging_config')
 @pytest.mark.parametrize('log_level', ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'))
-def test_configure_bigchaindb_configures_logging(log_level):
+def test_configure_bigchaindb_configures_logging(log_level,
+                                                 mocked_setup_sub_logger):
     import logging
     from logging import getLogger
     from bigchaindb.commands.utils import configure_bigchaindb
+    from bigchaindb.log.configs import PUBLISHER_LOGGING_CONFIG
     root_logger = getLogger()
     assert root_logger.level == 0
 
     @configure_bigchaindb
     def test_configure_logger(args):
         root_logger = getLogger()
-        assert root_logger.level == getattr(logging, log_level)
+        assert root_logger.level == PUBLISHER_LOGGING_CONFIG['root']['level']
 
     args = Namespace(config=None, log_level=log_level)
     test_configure_logger(args)
+    mocked_setup_sub_logger.assert_called_once_with(
+        user_log_config={'level_console': log_level})
 
 
 def test_start_raises_if_command_not_implemented():
