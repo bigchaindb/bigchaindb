@@ -417,11 +417,8 @@ You can use it as below to get started immediately:
    $ kubectl run -it toolbox --image bigchaindb/toolbox --restart=Never --rm
 
 
-Step 11: Run NGINX as a Deployment - Optional
----------------------------------------------
-
-This step is required only if you are want to control access to the BigchainDB
-node.
+Step 11: Run NGINX as a Deployment
+----------------------------------
 
 NGINX is used as a proxy to both the BigchainDB and MongoDB instances in the
 node.
@@ -464,7 +461,7 @@ Create the NGINX deployment using:
    
    $ kubectl apply -f nginx-dep.yaml
 
-You can test nginx by using the "toolbox" container as:
+You can test the NGINX deployment using the "toolbox" container as:
 
 .. code:: bash
    
