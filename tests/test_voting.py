@@ -2,6 +2,7 @@ import pytest
 from collections import Counter
 
 from bigchaindb.core import Bigchain
+from bigchaindb.exceptions import CriticalDuplicateVote
 from bigchaindb.voting import Voting, INVALID, VALID, UNDECIDED
 
 
@@ -37,24 +38,22 @@ def test_count_votes():
         def verify_vote_schema(cls, vote):
             return vote['node_pubkey'] != 'malformed'
 
-    voters = (['cheat', 'cheat', 'says invalid', 'malformed'] +
+    voters = (['says invalid', 'malformed'] +
               ['kosher' + str(i) for i in range(10)])
 
     votes = [Bigchain(v).vote('block', 'a', True) for v in voters]
-    votes[2]['vote']['is_block_valid'] = False
+    votes[0]['vote']['is_block_valid'] = False
     # Incorrect previous block subtracts from n_valid and adds to n_invalid
     votes[-1]['vote']['previous_block'] = 'z'
 
-    assert TestVoting.count_votes(votes) == {
+    by_voter = dict(enumerate(votes))
+
+    assert TestVoting.count_votes(by_voter) == {
         'counts': {
             'n_valid': 9,    # 9 kosher votes
-            'n_invalid': 4,  # 1 cheat, 1 invalid, 1 malformed, 1 rogue prev block
-            # One of the cheat votes counts towards n_invalid, the other is
-            # not counted here.
-            # len(cheat) + n_valid + n_invalid == len(votes)
+            'n_invalid': 3,  # 1 invalid, 1 malformed, 1 rogue prev block
         },
-        'cheat': [votes[:2]],
-        'malformed': [votes[3]],
+        'malformed': [votes[1]],
         'previous_block': 'a',
         'other_previous_block': {'z': 1},
     }
@@ -70,7 +69,8 @@ def test_must_agree_prev_block():
     votes = [Bigchain(v).vote('block', 'a', True) for v in voters]
     votes[0]['vote']['previous_block'] = 'b'
     votes[1]['vote']['previous_block'] = 'c'
-    assert TestVoting.count_votes(votes) == {
+    by_voter = dict(enumerate(votes))
+    assert TestVoting.count_votes(by_voter) == {
         'counts': {
             'n_valid': 2,
             'n_invalid': 2,
@@ -78,7 +78,6 @@ def test_must_agree_prev_block():
         'previous_block': 'a',
         'other_previous_block': {'b': 1, 'c': 1},
         'malformed': [],
-        'cheat': [],
     }
 
 
@@ -230,8 +229,22 @@ def test_block_election(b):
         'block_id': 'xyz',
         'counts': {'n_valid': 2, 'n_invalid': 0},
         'ineligible': [votes[-1]],
-        'cheat': [],
         'malformed': [],
         'previous_block': 'a',
         'other_previous_block': {},
     }
+
+
+def test_duplicate_vote_throws_critical_error(b):
+    class TestVoting(Voting):
+        @classmethod
+        def verify_vote_signature(cls, vote):
+            return True
+    keyring = 'abc'
+    block = {'id': 'xyz', 'block': {'voters': 'ab'}}
+    votes = [{
+        'node_pubkey': c,
+        'vote': {'is_block_valid': True, 'previous_block': 'a'}
+    } for c in 'aabc']
+    with pytest.raises(CriticalDuplicateVote):
+        TestVoting.block_election(block, votes, keyring)
