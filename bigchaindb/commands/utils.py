@@ -25,10 +25,10 @@ def configure_bigchaindb(command):
     def configure(args):
         bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
 
-        logging_config = bigchaindb.config['logging'] or {}
+        logging_config = bigchaindb.config['log'] or {}
         if 'log_level' in args and args.log_level:
-            logging_config['level'] = args.log_level
-        setup_logging(logging_config)
+            logging_config['level_console'] = args.log_level
+        setup_logging(user_log_config=logging_config)
 
         command(args)
 
