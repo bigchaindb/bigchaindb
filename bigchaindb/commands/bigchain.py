@@ -173,9 +173,6 @@ def run_start(args):
     """Start the processes to run the node"""
     logger.info('BigchainDB Version %s', bigchaindb.__version__)
 
-    # TODO setup logging -- pass logging config, extracted out from main config
-    setup_logging()
-
     if args.allow_temp_keypair:
         if not (bigchaindb.config['keypair']['private'] or
                 bigchaindb.config['keypair']['public']):
