@@ -166,6 +166,13 @@ show-config`` command to check that the keyring is updated.
 Step 7: Run NGINX as a Deployment
 ---------------------------------
 
-Please refer :ref:`this <Step 11: Run NGINX as a Deployment>` to
+Please refer :ref:`this <Step 10: Run NGINX as a Deployment>` to
 set up NGINX in your new node.
+
+
+Step 8: Test Your New BigchainDB Node
+-------------------------------------
+
+Please refer to the testing steps :ref:`here <Step 11: Verify the BigchainDB
+Node Setup>` to verify that your new BigchainDB node is working as expected.
 

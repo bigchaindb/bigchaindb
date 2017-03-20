@@ -367,56 +367,7 @@ Create the required Deployment using:
 You can check its status using the command ``kubectl get deploy -w``
 
 
-Step 10: Verify the BigchainDB Node Setup
------------------------------------------
-
-Step 10.1: Testing Externally
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Try to access the ``<dns/ip of your exposed bigchaindb service endpoint>:9984``
-on your browser. You must receive a json output that shows the BigchainDB
-server version among other things.
-
-Try to access the ``<dns/ip of your exposed mongodb service endpoint>:27017``
-on your browser. You must receive a message from MongoDB stating that it
-doesn't allow HTTP connections to the port anymore.
-
-
-Step 10.2: Testing Internally
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Run a container that provides utilities like ``nslookup``, ``curl`` and ``dig``
-on the cluster and query the internal DNS and IP endpoints.
-
-.. code:: bash
-
-   $ kubectl run -it toolbox -- image <docker image to run> --restart=Never --rm
-
-It will drop you to the shell prompt.
-Now you can query for the ``mdb`` and ``bdb`` service details.
-
-.. code:: bash
-
-   $ nslookup mdb-svc
-   $ nslookup bdb-svc
-   $ dig +noall +answer _mdb-port._tcp.mdb-svc.default.svc.cluster.local SRV
-   $ dig +noall +answer _bdb-port._tcp.bdb-svc.default.svc.cluster.local SRV
-   $ curl -X GET http://mdb-svc:27017
-   $ curl -X GET http://bdb-svc:9984
-
-
-There is a generic image based on alpine:3.5 with the required utilities
-hosted at Docker Hub under ``bigchaindb/toolbox``.
-The corresponding Dockerfile is `here
-<https://github.com/bigchaindb/bigchaindb/k8s/toolbox/Dockerfile>`_.
-You can use it as below to get started immediately:
-
-.. code:: bash
-
-   $ kubectl run -it toolbox --image bigchaindb/toolbox --restart=Never --rm
-
-
-Step 11: Run NGINX as a Deployment
+Step 10: Run NGINX as a Deployment
 ----------------------------------
 
 NGINX is used as a proxy to both the BigchainDB and MongoDB instances in the
@@ -460,14 +411,65 @@ Create the NGINX deployment using:
    
    $ kubectl apply -f nginx-dep.yaml
 
-You can test the NGINX deployment using the "toolbox" container as:
+
+Step 11: Verify the BigchainDB Node Setup
+-----------------------------------------
+
+Step 11.1: Testing Internally
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Run a container that provides utilities like ``nslookup``, ``curl`` and ``dig``
+on the cluster and query the internal DNS and IP endpoints.
 
 .. code:: bash
-   
+
+   $ kubectl run -it toolbox -- image <docker image to run> --restart=Never --rm
+
+There is a generic image based on alpine:3.5 with the required utilities
+hosted at Docker Hub under ``bigchaindb/toolbox``.
+The corresponding Dockerfile is `here
+<https://github.com/bigchaindb/bigchaindb/k8s/toolbox/Dockerfile>`_.
+
+You can use it as below to get started immediately:
+
+.. code:: bash
+
    $ kubectl run -it toolbox --image bigchaindb/toolbox --restart=Never --rm
+
+It will drop you to the shell prompt.
+Now you can query for the ``mdb`` and ``bdb`` service details.
+
+.. code:: bash
+
+   # nslookup mdb-svc
+   # nslookup bdb-svc
    # nslookup ngx-svc
+   # dig +noall +answer _mdb-port._tcp.mdb-svc.default.svc.cluster.local SRV
+   # dig +noall +answer _bdb-port._tcp.bdb-svc.default.svc.cluster.local SRV
    # dig +noall +answer _ngx-public-mdb-port._tcp.ngx-svc.default.svc.cluster.local SRV
    # dig +noall +answer _ngx-public-bdb-port._tcp.ngx-svc.default.svc.cluster.local SRV
+   # curl -X GET http://mdb-svc:27017
+   # curl -X GET http://bdb-svc:9984
    # curl -X GET http://ngx-svc:80
    # curl -X GET http://ngx-svc:27017
+
+The ``nslookup`` commands should output the configured IP addresses of the
+services in the cluster
+
+The ``dig`` commands should return the port numbers configured for the
+various services in the cluster.
+
+Finally, the ``curl`` commands test the availability of the services
+themselves.
+
+Step 11.2: Testing Externally
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Try to access the ``<dns/ip of your exposed bigchaindb service endpoint>:80``
+on your browser. You must receive a json output that shows the BigchainDB
+server version among other things.
+
+Try to access the ``<dns/ip of your exposed mongodb service endpoint>:27017``
+on your browser. You must receive a message from MongoDB stating that it
+doesn't allow HTTP connections to the port anymore.
 
