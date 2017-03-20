@@ -168,7 +168,7 @@ using something like:
 
 .. code:: bash
 
-   $ ssh ssh ubuntu@k8s-agent-4AC80E97-0
+   $ ssh ubuntu@k8s-agent-4AC80E97-0
 
 where ``k8s-agent-4AC80E97-0`` is the name
 of a Kubernetes agent node in your Kubernetes cluster. 
