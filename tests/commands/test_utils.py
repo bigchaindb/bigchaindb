@@ -1,7 +1,10 @@
 import argparse
+from argparse import ArgumentTypeError, Namespace
+import logging
+from logging import getLogger
+
 import pytest
 
-from argparse import ArgumentTypeError, Namespace
 from unittest.mock import patch
 
 
@@ -32,8 +35,6 @@ def test_configure_bigchaindb_configures_bigchaindb(mocked_setup_logging):
 @pytest.mark.parametrize('log_level', ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'))
 def test_configure_bigchaindb_configures_logging(log_level,
                                                  mocked_setup_sub_logger):
-    import logging
-    from logging import getLogger
     from bigchaindb.commands.utils import configure_bigchaindb
     from bigchaindb.log.configs import PUBLISHER_LOGGING_CONFIG
     root_logger = getLogger()
