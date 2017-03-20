@@ -166,6 +166,6 @@ show-config`` command to check that the keyring is updated.
 Step 7: Run NGINX as a Deployment
 ---------------------------------
 
-Please refer :ref:`this <Step 11: Run NGINX as a Deployment - Optional>` to
+Please refer :ref:`this <Step 11: Run NGINX as a Deployment>` to
 set up NGINX in your new node.
 
