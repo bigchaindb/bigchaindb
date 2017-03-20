@@ -196,9 +196,8 @@ You can also try to assign a name to an Public IP in Azure before starting
 the process, or use ``nslookup`` with the name you have in mind to check
 if it's available for use.
 
-In the rare chance that the name specified in the ``data.fqdn`` field is not
-available, you will need to create a ConfigMap with a unique name and
-restart the MongoDB instance.
+You should ensure that the the name specified in the ``data.fqdn`` field is
+a unique one.
 
 **Kubernetes on bare-metal or other cloud providers.**
 You need to provide the name resolution function
@@ -344,8 +343,8 @@ Get the file ``bigchaindb-dep.yaml`` from GitHub using:
 
    $ wget https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/k8s/bigchaindb/bigchaindb-dep.yaml
 
-Note that we set the ``BIGCHAINDB_DATABASE_HOST`` to ``mdb`` which is the name
-of the MongoDB service defined earlier.
+Note that we set the ``BIGCHAINDB_DATABASE_HOST`` to ``mdb-svc`` which is the
+name of the MongoDB service defined earlier.
 
 We also hardcode the ``BIGCHAINDB_KEYPAIR_PUBLIC``,
 ``BIGCHAINDB_KEYPAIR_PRIVATE`` and ``BIGCHAINDB_KEYRING`` for now.
