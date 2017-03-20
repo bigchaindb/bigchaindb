@@ -32,13 +32,19 @@ def test_configure_bigchaindb_configures_bigchaindb(mocked_setup_logging):
 @pytest.mark.usefixtures('ignore_local_config_file',
                          'reset_bigchaindb_config',
                          'reset_logging_config')
-@pytest.mark.parametrize('log_level', ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'))
+@pytest.mark.parametrize('log_level', (
+    logging.DEBUG,
+    logging.INFO,
+    logging.WARNING,
+    logging.ERROR,
+    logging.CRITICAL,
+))
 def test_configure_bigchaindb_configures_logging(log_level,
                                                  mocked_setup_sub_logger):
     from bigchaindb.commands.utils import configure_bigchaindb
     from bigchaindb.log.configs import PUBLISHER_LOGGING_CONFIG
     root_logger = getLogger()
-    assert root_logger.level == 0
+    assert root_logger.level == logging.NOTSET
 
     @configure_bigchaindb
     def test_configure_logger(args):
