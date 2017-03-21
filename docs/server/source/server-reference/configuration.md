@@ -373,8 +373,8 @@ documentation on
 ### log.granular_levels
 Log levels for BigchainDB's modules. This can be useful to control the log
 level of specific parts of the application. As an example, if you wanted the
-`core.py` to be more verbose, you would set the configuration shown in the
-example below.
+logging of the `core.py` module to be more verbose, you would set the
+ configuration shown in the example below.
 
 **Example**:
 
