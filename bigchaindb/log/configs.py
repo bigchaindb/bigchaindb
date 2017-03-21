@@ -18,9 +18,8 @@ SUBSCRIBER_LOGGING_CONFIG = {
     'formatters': {
         'console': {
             'class': 'logging.Formatter',
-            'format': (
-                '%(name)-15s %(levelname)-8s %(processName)-10s %(message)s'
-            ),
+            'format': ('[%(asctime)s] [%(levelname)s] (%(name)s) '
+                       '%(message)s (%(processName)-10s - pid: %(process)d)'),
             'datefmt': '%Y-%m-%d %H:%M:%S',
         },
         'file': {
