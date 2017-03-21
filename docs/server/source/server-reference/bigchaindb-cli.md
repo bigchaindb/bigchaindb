@@ -76,6 +76,11 @@ abbreviation `-l`. Example:
 $ bigchaindb --log-level INFO start
 ```
 
+The allowed levels are `DEBUG`, `INFO` , `WARNING`, `ERROR`, and `CRITICAL`.
+For an explanation regarding these levels please consult the 
+[Logging Levels](https://docs.python.org/3.6/library/logging.html#levels)
+section of Python's documentation.
+
 
 ## bigchaindb set-shards
 
