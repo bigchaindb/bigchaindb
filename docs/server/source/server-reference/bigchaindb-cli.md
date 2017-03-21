@@ -81,6 +81,9 @@ For an explanation regarding these levels please consult the
 [Logging Levels](https://docs.python.org/3.6/library/logging.html#levels)
 section of Python's documentation.
 
+For a more fine-grained control over the logging configuration you can use the
+configuration file as documented under
+[Configuration Settings](configuration.html).
 
 ## bigchaindb set-shards
 
