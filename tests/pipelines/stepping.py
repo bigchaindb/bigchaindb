@@ -163,6 +163,8 @@ def _update_stepper(stepper, prefix, pipeline):
         n1 = (nodes + [None])[i+1]
         f = stepper.add_input if i == 0 else stepper.add_stage
         f(prefix, n0, n1)
+    # Expose pipeline state
+    setattr(stepper, prefix, nodes[-1].target.__self__)
 
 
 def create_stepper():
