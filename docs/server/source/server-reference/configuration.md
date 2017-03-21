@@ -249,10 +249,11 @@ location.
 
 ### log.level_console
 The log level used to log to the console. Possible allowed values are the ones
-defined by [Python](https://docs.python.org/3.6/library/logging.html#levels):
+defined by [Python](https://docs.python.org/3.6/library/logging.html#levels),
+but case insensitive for convenience's sake:
 
 ```
-"CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET"
+"critical", "error", "warning", "info", "debug", "notset"
 ```
 
 **Example**:
@@ -270,10 +271,11 @@ defined by [Python](https://docs.python.org/3.6/library/logging.html#levels):
 
 ### log.level_logfile
 The log level used to log to the log file. Possible allowed values are the ones
-defined by [Python](https://docs.python.org/3.6/library/logging.html#levels):
+defined by [Python](https://docs.python.org/3.6/library/logging.html#levels),
+but case insensitive for convenience's sake:
 
 ```
-"CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET"
+"critical", "error", "warning", "info", "debug", "notset"
 ```
 
 **Example**:
