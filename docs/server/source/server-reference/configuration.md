@@ -22,6 +22,15 @@ For convenience, here's a list of all the relevant environment variables (docume
 `BIGCHAINDB_CONFIG_PATH`<br>
 `BIGCHAINDB_BACKLOG_REASSIGN_DELAY`<br>
 `BIGCHAINDB_CONSENSUS_PLUGIN`<br>
+`BIGCHAINDB_LOG`<br>
+`BIGCHAINDB_LOG_FILE`<br>
+`BIGCHAINDB_LOG_LEVEL_CONSOLE`<br>
+`BIGCHAINDB_LOG_LEVEL_LOGFILE`<br>
+`BIGCHAINDB_LOG_DATEFMT_CONSOLE`<br>
+`BIGCHAINDB_LOG_DATEFMT_LOGFILE`<br>
+`BIGCHAINDB_LOG_FMT_CONSOLE`<br>
+`BIGCHAINDB_LOG_FMT_LOGFILE`<br>
+`BIGCHAINDB_LOG_GRANULAR_LEVELS`<br>
 
 The local config file is `$HOME/.bigchaindb` by default (a file which might not even exist), but you can tell BigchainDB to use a different file by using the `-c` command-line option, e.g. `bigchaindb -c path/to/config_file.json start`
 or using the `BIGCHAINDB_CONFIG_PATH` environment variable, e.g. `BIGHAINDB_CONFIG_PATH=.my_bigchaindb_config bigchaindb start`.
@@ -173,3 +182,209 @@ export BIGCHAINDB_CONSENSUS_PLUGIN=default
 ```js
 "consensus_plugin": "default"
 ```
+
+## log
+The `log` key is expected to point to a mapping (set of key/value pairs)
+holding the logging configuration.
+
+**Example**:
+
+```
+{
+    "log": {
+        "file": "/var/log/bigchaindb.log",
+        "level_console": "info",
+        "level_logfile": "info",
+        "datefmt_console": "%Y-%m-%d %H:%M:%S",
+        "datefmt_logfile": "%Y-%m-%d %H:%M:%S",
+        "fmt_console": "%(asctime)s [%(levelname)s] (%(name)s) %(message)s",
+        "fmt_logfile": "%(asctime)s [%(levelname)s] (%(name)s) %(message)s",
+        "granular_levels": {
+            "bichaindb.backend": "info",
+            "bichaindb.core": "info"
+        }
+}
+```
+
+**Defaults to**: `"{}"`.
+
+Please note that although the default is `"{}"` as per the configuration file,
+internal defaults are used, such that the actual operational default is:
+
+```
+{
+    "log": {
+        "file": "~/bigchaindb.log",
+        "level_console": "info",
+        "level_logfile": "info",
+        "datefmt_console": "%Y-%m-%d %H:%M:%S",
+        "datefmt_logfile": "%Y-%m-%d %H:%M:%S",
+        "fmt_console": "%(asctime)s [%(levelname)s] (%(name)s) %(message)s",
+        "fmt_logfile": "%(asctime)s [%(levelname)s] (%(name)s) %(message)s",
+        "granular_levels": {}
+}
+```
+
+The next subsections explain each field of the `log` configuration.
+
+
+### log.file
+The full path to the file where logs should be written to.
+
+**Example**:
+
+```
+{
+    "log": {
+        "file": "/var/log/bigchaindb/bigchaindb.log"
+    }
+}
+```
+
+**Defaults to**:  `"~/bigchaindb.log"`.
+
+Please note that the user running `bigchaindb` must have write access to the
+location.
+        
+
+### log.level_console
+The log level used to log to the console. Possible allowed values are the ones
+defined by [Python](https://docs.python.org/3.6/library/logging.html#levels):
+
+```
+"CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET"
+```
+
+**Example**:
+
+```
+{
+    "log": {
+        "level_console": "info"
+    }
+}
+```
+
+**Defaults to**: `"info"`.
+
+
+### log.level_logfile
+The log level used to log to the log file. Possible allowed values are the ones
+defined by [Python](https://docs.python.org/3.6/library/logging.html#levels):
+
+```
+"CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET"
+```
+
+**Example**:
+
+```
+{
+    "log": {
+        "level_file": "info"
+    }
+}
+```
+
+**Defaults to**: `"info"`.
+
+
+### log.datefmt_console
+The format string for the date/time portion of a message, when logged to the
+console.
+
+**Example**:
+
+```
+{
+    "log": {
+        "datefmt_console": "%x %X %Z"
+    }
+}
+```
+
+**Defaults to**: `"%Y-%m-%d %H:%M:%S"`.
+
+For more information on how to construct the format string please consult the
+table under Python's documentation of
+ [`time.strftime(format[, t])`](https://docs.python.org/3.6/library/time.html#time.strftime)
+
+### log.datefmt_logfile
+The format string for the date/time portion of a message, when logged to a log
+ file.
+
+**Example**:
+
+```
+{
+    "log": {
+        "datefmt_logfile": "%c %z"
+    }
+}
+```
+
+**Defaults to**: `"%Y-%m-%d %H:%M:%S"`.
+
+For more information on how to construct the format string please consult the
+table under Python's documentation of
+ [`time.strftime(format[, t])`](https://docs.python.org/3.6/library/time.html#time.strftime)
+
+
+### log.fmt_console
+A string used to format the log messages when logged to the console.
+
+**Example**:
+
+```
+{
+    "log": {
+        "fmt_console": "%(asctime)s [%(levelname)s] %(message)s %(process)d"
+    }
+}
+```
+
+**Defaults to**: `"[%(asctime)s] [%(levelname)s] (%(name)s) %(message)s (%(processName)-10s - pid: %(process)d)"`
+
+For more information on possible formatting options please consult Python's
+documentation on
+[LogRecord attributes](https://docs.python.org/3.6/library/logging.html#logrecord-attributes)
+
+
+### log.fmt_logfile
+A string used to format the log messages when logged to a log file.
+
+**Example**:
+
+```
+{
+    "log": {
+        "fmt_logfile": "%(asctime)s [%(levelname)s] %(message)s %(process)d"
+    }
+}
+```
+
+**Defaults to**: `"[%(asctime)s] [%(levelname)s] (%(name)s) %(message)s (%(processName)-10s - pid: %(process)d)"`
+
+For more information on possible formatting options please consult Python's
+documentation on
+[LogRecord attributes](https://docs.python.org/3.6/library/logging.html#logrecord-attributes)
+
+
+### log.granular_levels
+Log levels for BigchainDB's modules. This can be useful to control the log
+level of specific parts of the application. As an example, if you wanted the
+`core.py` to be more verbose, you would set the configuration shown in the
+example below.
+
+**Example**:
+
+```
+{
+    "log": {
+        "granular_levels": {
+            "bichaindb.core": "debug"
+        }
+}
+```
+
+**Defaults to**: `"{}"`
