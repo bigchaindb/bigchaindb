@@ -68,6 +68,14 @@ You can also use the `--dev-start-rethinkdb` command line option to automaticall
 e.g. `bigchaindb --dev-start-rethinkdb start`. Note that this will also shutdown rethinkdb when the bigchaindb process stops.
 The option `--dev-allow-temp-keypair` will generate a keypair on the fly if no keypair is found, this is useful when you want to run a temporary instance of BigchainDB in a Docker container, for example.
 
+### Options
+The log level for the console can be set via the option `--log-level` or its
+abbreviation `-l`. Example:
+
+```bash
+$ bigchaindb --log-level INFO start
+```
+
 
 ## bigchaindb set-shards
 
