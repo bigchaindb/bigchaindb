@@ -8,22 +8,25 @@
 
 FROM ubuntu:16.04
 LABEL maintainer "dev@bigchaindb.com"
-ENV REFRESHED_AT 2017-03-13
 # Using ARG, one can set DEBIAN_FRONTEND=noninteractive and others
 # just for the duration of the build:
 ARG DEBIAN_FRONTEND=noninteractive
 ARG DEB_FILE=mongodb-mms-monitoring-agent_latest_amd64.ubuntu1604.deb
-ARG FILE_URL="https://cloud.mongodb.com/download/agent/"$DEB_FILE
+ARG FILE_URL="https://cloud.mongodb.com/download/agent/monitoring/"$DEB_FILE
 
 # Download the Monitoring Agent as a .deb package and install it
 WORKDIR /
-RUN apt update && \
-    apt upgrade && \
-    apt autoremove && \
-    curl -OLsS $FILE_URL && \
-    dpkg -i $DEB_FILE && \
-    rm -f $DEB_FILE && \
-    apt clean
+RUN apt update \
+    && apt -y install --no-install-recommends curl ca-certificates logrotate \
+      libsasl2-2 \
+    && echo $FILE_URL \
+    && curl -OL $FILE_URL \
+    && dpkg -i $DEB_FILE \
+    && rm -f $DEB_FILE \
+    && apt -y purge curl \
+    && apt -y autoremove \
+    && apt clean
+    #&& apt -y upgrade \
 
 # The above installation puts a default config file in
 # /etc/mongodb-mms/monitoring-agent.config
@@ -47,7 +50,6 @@ RUN apt update && \
 # https://docs.cloudmanager.mongodb.com/reference/monitoring-agent/
 
 # ?? USER mongodb-mms-agent
-COPY mon-agent-entrypoint.sh /
-RUN chmod +x /mon-agent-entrypoint.sh
-ENTRYPOINT ["/mon-agent-entrypoint.sh"]
- 
+COPY mongodb_mon_agent_entrypoint.bash /
+RUN chmod +x /mongodb_mon_agent_entrypoint.bash
+ENTRYPOINT ["/mongodb_mon_agent_entrypoint.bash"]
