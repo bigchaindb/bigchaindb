@@ -470,6 +470,8 @@ on your browser. You must receive a json output that shows the BigchainDB
 server version among other things.
 
 Try to access the ``<dns/ip of your exposed mongodb service endpoint>:27017``
-on your browser. You must receive a message from MongoDB stating that it
-doesn't allow HTTP connections to the port anymore.
+on your browser. If your IP is in the whitelist, you will receive a message
+from the MongoDB instance stating that it doesn't allow HTTP connections to
+the port anymore. If your IP is not in the whitelist, your access will be
+blocked and you will not see any response from the MongoDB instance.
 
