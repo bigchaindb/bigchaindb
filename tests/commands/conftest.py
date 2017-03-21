@@ -55,7 +55,7 @@ def run_start_args(request):
 @pytest.fixture
 def mocked_setup_logging(mocker):
     return mocker.patch(
-        'bigchaindb.commands.bigchain.setup_logging',
+        'bigchaindb.commands.utils.setup_logging',
         autospec=True,
         spec_set=True,
     )

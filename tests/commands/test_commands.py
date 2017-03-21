@@ -40,7 +40,7 @@ def test_bigchain_run_start(mock_run_configure,
     from bigchaindb.commands.bigchain import run_start
     args = Namespace(start_rethinkdb=False, allow_temp_keypair=False, config=None, yes=True)
     run_start(args)
-    mocked_setup_logging.assert_called_once_with()
+    mocked_setup_logging.assert_called_once_with(user_log_config={})
 
 
 @pytest.mark.skipif(reason="BigchainDB doesn't support the automatic creation of a config file anymore")
@@ -74,7 +74,7 @@ def test_bigchain_run_start_assume_yes_create_default_config(
 # interfere with capsys.
 # See related issue: https://github.com/pytest-dev/pytest/issues/128
 @pytest.mark.usefixtures('ignore_local_config_file')
-def test_bigchain_show_config(capsys):
+def test_bigchain_show_config(capsys, mocked_setup_logging):
     from bigchaindb import config
     from bigchaindb.commands.bigchain import run_show_config
 
@@ -85,9 +85,11 @@ def test_bigchain_show_config(capsys):
     del config['CONFIGURED']
     config['keypair']['private'] = 'x' * 45
     assert output_config == config
+    mocked_setup_logging.assert_called_once_with(user_log_config={})
 
 
-def test_bigchain_export_my_pubkey_when_pubkey_set(capsys, monkeypatch):
+def test_bigchain_export_my_pubkey_when_pubkey_set(capsys, monkeypatch,
+                                                   mocked_setup_logging):
     from bigchaindb import config
     from bigchaindb.commands.bigchain import run_export_my_pubkey
 
@@ -104,9 +106,11 @@ def test_bigchain_export_my_pubkey_when_pubkey_set(capsys, monkeypatch):
     lines = out.splitlines()
     assert config['keypair']['public'] in lines
     assert 'Charlie_Bucket' in lines
+    mocked_setup_logging.assert_called_once_with(user_log_config={})
 
 
-def test_bigchain_export_my_pubkey_when_pubkey_not_set(monkeypatch):
+def test_bigchain_export_my_pubkey_when_pubkey_not_set(monkeypatch,
+                                                       mocked_setup_logging):
     from bigchaindb import config
     from bigchaindb.commands.bigchain import run_export_my_pubkey
 
@@ -122,41 +126,49 @@ def test_bigchain_export_my_pubkey_when_pubkey_not_set(monkeypatch):
     # https://docs.python.org/3/library/exceptions.html#SystemExit
     assert exc_info.value.code == \
         "This node's public key wasn't set anywhere so it can't be exported"
+    mocked_setup_logging.assert_called_once_with(user_log_config={})
 
 
-def test_bigchain_run_init_when_db_exists(mock_db_init_with_existing_db):
+def test_bigchain_run_init_when_db_exists(mocked_setup_logging,
+                                          mock_db_init_with_existing_db):
     from bigchaindb.commands.bigchain import run_init
     args = Namespace(config=None)
     run_init(args)
+    mocked_setup_logging.assert_called_once_with(user_log_config={})
 
 
 @patch('bigchaindb.backend.schema.drop_database')
-def test_drop_db_when_assumed_yes(mock_db_drop):
+def test_drop_db_when_assumed_yes(mock_db_drop, mocked_setup_logging):
     from bigchaindb.commands.bigchain import run_drop
     args = Namespace(config=None, yes=True)
 
     run_drop(args)
     assert mock_db_drop.called
+    mocked_setup_logging.assert_called_once_with(user_log_config={})
 
 
 @patch('bigchaindb.backend.schema.drop_database')
-def test_drop_db_when_interactive_yes(mock_db_drop, monkeypatch):
+def test_drop_db_when_interactive_yes(mock_db_drop, monkeypatch,
+                                      mocked_setup_logging):
     from bigchaindb.commands.bigchain import run_drop
     args = Namespace(config=None, yes=False)
     monkeypatch.setattr('bigchaindb.commands.bigchain.input_on_stderr', lambda x: 'y')
 
     run_drop(args)
     assert mock_db_drop.called
+    mocked_setup_logging.assert_called_once_with(user_log_config={})
 
 
 @patch('bigchaindb.backend.schema.drop_database')
-def test_drop_db_does_not_drop_when_interactive_no(mock_db_drop, monkeypatch):
+def test_drop_db_does_not_drop_when_interactive_no(mock_db_drop, monkeypatch,
+                                                   mocked_setup_logging):
     from bigchaindb.commands.bigchain import run_drop
     args = Namespace(config=None, yes=False)
     monkeypatch.setattr('bigchaindb.commands.bigchain.input_on_stderr', lambda x: 'n')
 
     run_drop(args)
     assert not mock_db_drop.called
+    mocked_setup_logging.assert_called_once_with(user_log_config={})
 
 
 def test_run_configure_when_config_exists_and_skipping(monkeypatch):
@@ -245,7 +257,7 @@ def test_allow_temp_keypair_generates_one_on_the_fly(
     args = Namespace(allow_temp_keypair=True, start_rethinkdb=False, config=None, yes=True)
     run_start(args)
 
-    mocked_setup_logging.assert_called_once_with()
+    mocked_setup_logging.assert_called_once_with(user_log_config={})
     assert bigchaindb.config['keypair']['private'] == 'private_key'
     assert bigchaindb.config['keypair']['public'] == 'public_key'
 
@@ -270,7 +282,7 @@ def test_allow_temp_keypair_doesnt_override_if_keypair_found(mock_gen_keypair,
     args = Namespace(allow_temp_keypair=True, start_rethinkdb=False, config=None, yes=True)
     run_start(args)
 
-    mocked_setup_logging.assert_called_once_with()
+    mocked_setup_logging.assert_called_once_with(user_log_config={})
     assert bigchaindb.config['keypair']['private'] == original_private_key
     assert bigchaindb.config['keypair']['public'] == original_public_key
 
@@ -289,7 +301,7 @@ def test_run_start_when_db_already_exists(mocker,
     monkeypatch.setattr(
         'bigchaindb.commands.bigchain._run_init', mock_run_init)
     run_start(run_start_args)
-    mocked_setup_logging.assert_called_once_with()
+    mocked_setup_logging.assert_called_once_with(user_log_config={})
     assert mocked_start.called
 
 
@@ -311,7 +323,7 @@ def test_run_start_when_keypair_not_found(mocker,
     with pytest.raises(SystemExit) as exc:
         run_start(run_start_args)
 
-    mocked_setup_logging.assert_called_once_with()
+    mocked_setup_logging.assert_called_once_with(user_log_config={})
     assert len(exc.value.args) == 1
     assert exc.value.args[0] == CANNOT_START_KEYPAIR_NOT_FOUND
     assert not mocked_start.called
@@ -337,7 +349,7 @@ def test_run_start_when_start_rethinkdb_fails(mocker,
     with pytest.raises(SystemExit) as exc:
         run_start(run_start_args)
 
-    mocked_setup_logging.assert_called_once_with()
+    mocked_setup_logging.assert_called_once_with(user_log_config={})
     assert len(exc.value.args) == 1
     assert exc.value.args[0] == RETHINKDB_STARTUP_ERROR.format(err_msg)
     assert not mocked_start.called
@@ -405,7 +417,7 @@ def test_calling_main(start_mock, base_parser_mock, parse_args_mock,
 
 @pytest.mark.usefixtures('ignore_local_config_file')
 @patch('bigchaindb.commands.bigchain.add_replicas')
-def test_run_add_replicas(mock_add_replicas):
+def test_run_add_replicas(mock_add_replicas, mocked_setup_logging):
     from bigchaindb.commands.bigchain import run_add_replicas
     from bigchaindb.backend.exceptions import OperationError
 
@@ -415,7 +427,9 @@ def test_run_add_replicas(mock_add_replicas):
     mock_add_replicas.return_value = None
     assert run_add_replicas(args) is None
     assert mock_add_replicas.call_count == 1
+    mocked_setup_logging.assert_called_once_with(user_log_config={})
     mock_add_replicas.reset_mock()
+    mocked_setup_logging.reset_mock()
 
     # test add_replicas with `OperationError`
     mock_add_replicas.side_effect = OperationError('err')
@@ -423,7 +437,9 @@ def test_run_add_replicas(mock_add_replicas):
         run_add_replicas(args)
     assert exc.value.args == ('err',)
     assert mock_add_replicas.call_count == 1
+    mocked_setup_logging.assert_called_once_with(user_log_config={})
     mock_add_replicas.reset_mock()
+    mocked_setup_logging.reset_mock()
 
     # test add_replicas with `NotImplementedError`
     mock_add_replicas.side_effect = NotImplementedError('err')
@@ -431,12 +447,14 @@ def test_run_add_replicas(mock_add_replicas):
         run_add_replicas(args)
     assert exc.value.args == ('err',)
     assert mock_add_replicas.call_count == 1
+    mocked_setup_logging.assert_called_once_with(user_log_config={})
     mock_add_replicas.reset_mock()
+    mocked_setup_logging.reset_mock()
 
 
 @pytest.mark.usefixtures('ignore_local_config_file')
 @patch('bigchaindb.commands.bigchain.remove_replicas')
-def test_run_remove_replicas(mock_remove_replicas):
+def test_run_remove_replicas(mock_remove_replicas, mocked_setup_logging):
     from bigchaindb.commands.bigchain import run_remove_replicas
     from bigchaindb.backend.exceptions import OperationError
 
@@ -446,6 +464,8 @@ def test_run_remove_replicas(mock_remove_replicas):
     mock_remove_replicas.return_value = None
     assert run_remove_replicas(args) is None
     assert mock_remove_replicas.call_count == 1
+    mocked_setup_logging.assert_called_once_with(user_log_config={})
+    mocked_setup_logging.reset_mock()
     mock_remove_replicas.reset_mock()
 
     # test add_replicas with `OperationError`
@@ -454,6 +474,8 @@ def test_run_remove_replicas(mock_remove_replicas):
         run_remove_replicas(args)
     assert exc.value.args == ('err',)
     assert mock_remove_replicas.call_count == 1
+    mocked_setup_logging.assert_called_once_with(user_log_config={})
+    mocked_setup_logging.reset_mock()
     mock_remove_replicas.reset_mock()
 
     # test add_replicas with `NotImplementedError`
@@ -462,4 +484,6 @@ def test_run_remove_replicas(mock_remove_replicas):
         run_remove_replicas(args)
     assert exc.value.args == ('err',)
     assert mock_remove_replicas.call_count == 1
+    mocked_setup_logging.assert_called_once_with(user_log_config={})
+    mocked_setup_logging.reset_mock()
     mock_remove_replicas.reset_mock()

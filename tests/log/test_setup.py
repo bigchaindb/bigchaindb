@@ -31,18 +31,6 @@ def mocked_socket_server(mocker):
 
 
 @fixture
-def mocked_setup_pub_logger(mocker):
-    return mocker.patch(
-        'bigchaindb.log.setup.setup_pub_logger', autospec=True, spec_set=True)
-
-
-@fixture
-def mocked_setup_sub_logger(mocker):
-    return mocker.patch(
-        'bigchaindb.log.setup.setup_sub_logger', autospec=True, spec_set=True)
-
-
-@fixture
 def log_record_dict():
     return {
         'args': None,
@@ -225,6 +213,7 @@ class TestLogRecordSocketServer:
         assert server.server_address == (
             '127.0.0.1', logging.handlers.DEFAULT_TCP_LOGGING_PORT)
         assert server.RequestHandlerClass == LogRecordStreamHandler
+        server.server_close()
 
     @mark.parametrize('side_effect', (None, KeyboardInterrupt))
     def test_server_forever(self, mocker, side_effect):
