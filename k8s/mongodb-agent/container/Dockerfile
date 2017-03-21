@@ -17,6 +17,7 @@ ARG FILE_URL="https://cloud.mongodb.com/download/agent/monitoring/"$DEB_FILE
 # Download the Monitoring Agent as a .deb package and install it
 WORKDIR /
 RUN apt update \
+    && apt -y upgrade \
     && apt -y install --no-install-recommends curl ca-certificates logrotate \
       libsasl2-2 \
     && echo $FILE_URL \
@@ -26,7 +27,6 @@ RUN apt update \
     && apt -y purge curl \
     && apt -y autoremove \
     && apt clean
-    #&& apt -y upgrade \
 
 # The above installation puts a default config file in
 # /etc/mongodb-mms/monitoring-agent.config
@@ -49,7 +49,7 @@ RUN apt update \
 # but it's the only one that *must* be set. See:
 # https://docs.cloudmanager.mongodb.com/reference/monitoring-agent/
 
-# ?? USER mongodb-mms-agent
 COPY mongodb_mon_agent_entrypoint.bash /
-RUN chmod +x /mongodb_mon_agent_entrypoint.bash
+RUN chown -R mongodb-mms-agent:mongodb-mms-agent /etc/mongodb-mms/
+USER mongodb-mms-agent
 ENTRYPOINT ["/mongodb_mon_agent_entrypoint.bash"]
