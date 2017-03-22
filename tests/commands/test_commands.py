@@ -74,7 +74,7 @@ def test_bigchain_run_start_assume_yes_create_default_config(
 # interfere with capsys.
 # See related issue: https://github.com/pytest-dev/pytest/issues/128
 @pytest.mark.usefixtures('ignore_local_config_file')
-def test_bigchain_show_config(capsys, mocked_setup_logging):
+def test_bigchain_show_config(capsys):
     from bigchaindb import config
     from bigchaindb.commands.bigchain import run_show_config
 
@@ -85,11 +85,9 @@ def test_bigchain_show_config(capsys, mocked_setup_logging):
     del config['CONFIGURED']
     config['keypair']['private'] = 'x' * 45
     assert output_config == config
-    mocked_setup_logging.assert_called_once_with(user_log_config={})
 
 
-def test_bigchain_export_my_pubkey_when_pubkey_set(capsys, monkeypatch,
-                                                   mocked_setup_logging):
+def test_bigchain_export_my_pubkey_when_pubkey_set(capsys, monkeypatch):
     from bigchaindb import config
     from bigchaindb.commands.bigchain import run_export_my_pubkey
 
@@ -106,11 +104,9 @@ def test_bigchain_export_my_pubkey_when_pubkey_set(capsys, monkeypatch,
     lines = out.splitlines()
     assert config['keypair']['public'] in lines
     assert 'Charlie_Bucket' in lines
-    mocked_setup_logging.assert_called_once_with(user_log_config={})
 
 
-def test_bigchain_export_my_pubkey_when_pubkey_not_set(monkeypatch,
-                                                       mocked_setup_logging):
+def test_bigchain_export_my_pubkey_when_pubkey_not_set(monkeypatch):
     from bigchaindb import config
     from bigchaindb.commands.bigchain import run_export_my_pubkey
 
@@ -126,49 +122,41 @@ def test_bigchain_export_my_pubkey_when_pubkey_not_set(monkeypatch,
     # https://docs.python.org/3/library/exceptions.html#SystemExit
     assert exc_info.value.code == \
         "This node's public key wasn't set anywhere so it can't be exported"
-    mocked_setup_logging.assert_called_once_with(user_log_config={})
 
 
-def test_bigchain_run_init_when_db_exists(mocked_setup_logging,
-                                          mock_db_init_with_existing_db):
+def test_bigchain_run_init_when_db_exists(mock_db_init_with_existing_db):
     from bigchaindb.commands.bigchain import run_init
     args = Namespace(config=None)
     run_init(args)
-    mocked_setup_logging.assert_called_once_with(user_log_config={})
 
 
 @patch('bigchaindb.backend.schema.drop_database')
-def test_drop_db_when_assumed_yes(mock_db_drop, mocked_setup_logging):
+def test_drop_db_when_assumed_yes(mock_db_drop):
     from bigchaindb.commands.bigchain import run_drop
     args = Namespace(config=None, yes=True)
 
     run_drop(args)
     assert mock_db_drop.called
-    mocked_setup_logging.assert_called_once_with(user_log_config={})
 
 
 @patch('bigchaindb.backend.schema.drop_database')
-def test_drop_db_when_interactive_yes(mock_db_drop, monkeypatch,
-                                      mocked_setup_logging):
+def test_drop_db_when_interactive_yes(mock_db_drop, monkeypatch):
     from bigchaindb.commands.bigchain import run_drop
     args = Namespace(config=None, yes=False)
     monkeypatch.setattr('bigchaindb.commands.bigchain.input_on_stderr', lambda x: 'y')
 
     run_drop(args)
     assert mock_db_drop.called
-    mocked_setup_logging.assert_called_once_with(user_log_config={})
 
 
 @patch('bigchaindb.backend.schema.drop_database')
-def test_drop_db_does_not_drop_when_interactive_no(mock_db_drop, monkeypatch,
-                                                   mocked_setup_logging):
+def test_drop_db_does_not_drop_when_interactive_no(mock_db_drop, monkeypatch):
     from bigchaindb.commands.bigchain import run_drop
     args = Namespace(config=None, yes=False)
     monkeypatch.setattr('bigchaindb.commands.bigchain.input_on_stderr', lambda x: 'n')
 
     run_drop(args)
     assert not mock_db_drop.called
-    mocked_setup_logging.assert_called_once_with(user_log_config={})
 
 
 def test_run_configure_when_config_exists_and_skipping(monkeypatch):
@@ -417,7 +405,7 @@ def test_calling_main(start_mock, base_parser_mock, parse_args_mock,
 
 @pytest.mark.usefixtures('ignore_local_config_file')
 @patch('bigchaindb.commands.bigchain.add_replicas')
-def test_run_add_replicas(mock_add_replicas, mocked_setup_logging):
+def test_run_add_replicas(mock_add_replicas):
     from bigchaindb.commands.bigchain import run_add_replicas
     from bigchaindb.backend.exceptions import OperationError
 
@@ -427,9 +415,7 @@ def test_run_add_replicas(mock_add_replicas, mocked_setup_logging):
     mock_add_replicas.return_value = None
     assert run_add_replicas(args) is None
     assert mock_add_replicas.call_count == 1
-    mocked_setup_logging.assert_called_once_with(user_log_config={})
     mock_add_replicas.reset_mock()
-    mocked_setup_logging.reset_mock()
 
     # test add_replicas with `OperationError`
     mock_add_replicas.side_effect = OperationError('err')
@@ -437,9 +423,7 @@ def test_run_add_replicas(mock_add_replicas, mocked_setup_logging):
         run_add_replicas(args)
     assert exc.value.args == ('err',)
     assert mock_add_replicas.call_count == 1
-    mocked_setup_logging.assert_called_once_with(user_log_config={})
     mock_add_replicas.reset_mock()
-    mocked_setup_logging.reset_mock()
 
     # test add_replicas with `NotImplementedError`
     mock_add_replicas.side_effect = NotImplementedError('err')
@@ -447,14 +431,12 @@ def test_run_add_replicas(mock_add_replicas, mocked_setup_logging):
         run_add_replicas(args)
     assert exc.value.args == ('err',)
     assert mock_add_replicas.call_count == 1
-    mocked_setup_logging.assert_called_once_with(user_log_config={})
     mock_add_replicas.reset_mock()
-    mocked_setup_logging.reset_mock()
 
 
 @pytest.mark.usefixtures('ignore_local_config_file')
 @patch('bigchaindb.commands.bigchain.remove_replicas')
-def test_run_remove_replicas(mock_remove_replicas, mocked_setup_logging):
+def test_run_remove_replicas(mock_remove_replicas):
     from bigchaindb.commands.bigchain import run_remove_replicas
     from bigchaindb.backend.exceptions import OperationError
 
@@ -464,8 +446,6 @@ def test_run_remove_replicas(mock_remove_replicas, mocked_setup_logging):
     mock_remove_replicas.return_value = None
     assert run_remove_replicas(args) is None
     assert mock_remove_replicas.call_count == 1
-    mocked_setup_logging.assert_called_once_with(user_log_config={})
-    mocked_setup_logging.reset_mock()
     mock_remove_replicas.reset_mock()
 
     # test add_replicas with `OperationError`
@@ -474,8 +454,6 @@ def test_run_remove_replicas(mock_remove_replicas, mocked_setup_logging):
         run_remove_replicas(args)
     assert exc.value.args == ('err',)
     assert mock_remove_replicas.call_count == 1
-    mocked_setup_logging.assert_called_once_with(user_log_config={})
-    mocked_setup_logging.reset_mock()
     mock_remove_replicas.reset_mock()
 
     # test add_replicas with `NotImplementedError`
@@ -484,6 +462,4 @@ def test_run_remove_replicas(mock_remove_replicas, mocked_setup_logging):
         run_remove_replicas(args)
     assert exc.value.args == ('err',)
     assert mock_remove_replicas.call_count == 1
-    mocked_setup_logging.assert_called_once_with(user_log_config={})
-    mocked_setup_logging.reset_mock()
     mock_remove_replicas.reset_mock()
