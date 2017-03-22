@@ -196,6 +196,7 @@ base_parser.add_argument('-c', '--config',
 
 base_parser.add_argument('-l', '--log-level',
                          choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+                         default='INFO',
                          help='Log level')
 
 base_parser.add_argument('-y', '--yes', '--yes-please',
