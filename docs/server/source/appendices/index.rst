@@ -16,6 +16,7 @@ Appendices
    consensus
    pipelines
    backend
+   commands
    aws-setup
    generate-key-pair-for-ssh
    firewall-notes
