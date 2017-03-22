@@ -259,7 +259,7 @@ def get_genesis_block(connection):
 
 
 @singledispatch
-def get_last_voted_block(connection, node_pubkey):
+def get_votes_by_pubkey(connection, node_pubkey):
     """Get the last voted block for a specific node.
 
     Args:

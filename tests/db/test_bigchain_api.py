@@ -38,19 +38,12 @@ class TestBigchainApi(object):
         from bigchaindb.common.crypto import PrivateKey
         from bigchaindb.common.exceptions import CyclicBlockchainError
         from bigchaindb.common.utils import serialize
-        from bigchaindb.models import Transaction
-
-        tx = Transaction.create([b.me], [([b.me], 1)])
-        tx = tx.sign([b.me_private])
-        monkeypatch.setattr('time.time', lambda: 1)
-        block1 = b.create_block([tx])
-        b.write_block(block1)
 
         # Manipulate vote to create a cyclic Blockchain
-        vote = b.vote(block1.id, b.get_last_voted_block().id, True)
-        vote['vote']['previous_block'] = block1.id
+        vote = b.vote('a' * 64, 'b', True)
+        vote['vote']['previous_block'] = 'a' * 64
         vote_data = serialize(vote['vote'])
-        vote['signature'] = PrivateKey(b.me_private).sign(vote_data.encode())
+        vote['signature'] = PrivateKey(b.me_private).sign(vote_data.encode()).decode()
         b.write_vote(vote)
 
         with pytest.raises(CyclicBlockchainError):
@@ -406,7 +399,7 @@ class TestBigchainApi(object):
         b.write_block(block_3)
 
         # make sure all the votes are written with the same timestamps
-        monkeypatch.setattr('time.time', lambda: 4)
+        monkeypatch.setattr('time.time', lambda: 1444444444)
         b.write_vote(b.vote(block_1.id, b.get_last_voted_block().id, True))
         assert b.get_last_voted_block().id == block_1.id
 
@@ -434,17 +427,42 @@ class TestBigchainApi(object):
         b.write_block(block_3)
 
         # make sure all the votes are written with different timestamps
-        monkeypatch.setattr('time.time', lambda: 4)
+        monkeypatch.setattr('time.time', lambda: 1111111114)
         b.write_vote(b.vote(block_1.id, b.get_last_voted_block().id, True))
         assert b.get_last_voted_block().id == block_1.id
 
-        monkeypatch.setattr('time.time', lambda: 5)
+        monkeypatch.setattr('time.time', lambda: 1111111115)
         b.write_vote(b.vote(block_2.id, b.get_last_voted_block().id, True))
         assert b.get_last_voted_block().id == block_2.id
 
-        monkeypatch.setattr('time.time', lambda: 6)
+        monkeypatch.setattr('time.time', lambda: 1111111116)
         b.write_vote(b.vote(block_3.id, b.get_last_voted_block().id, True))
         assert b.get_last_voted_block().id == block_3.id
+
+    def test_get_last_voted_block_returns_the_correct_block_bad_sig(self,
+                                                                    b,
+                                                                    monkeypatch,
+                                                                    genesis_block):
+        monkeypatch.setattr('time.time', lambda: 1)
+        block_1 = dummy_block()
+        monkeypatch.setattr('time.time', lambda: 2)
+        block_2 = dummy_block()
+
+        b.write_block(block_1)
+        b.write_block(block_2)
+
+        # Write good vote with lower timestamp
+        monkeypatch.setattr('time.time', lambda: 1111111114)
+        b.write_vote(b.vote(block_1.id, b.get_last_voted_block().id, True))
+        assert b.get_last_voted_block().id == block_1.id
+
+        # Bad vote with higher timestamp
+        monkeypatch.setattr('time.time', lambda: 1111111115)
+        bad_vote = b.vote(block_2.id, b.get_last_voted_block().id, True)
+        bad_vote['signature'] = 'A' * 88
+        b.write_vote(bad_vote)
+        # Still the same
+        assert b.get_last_voted_block().id == block_1.id
 
     @pytest.mark.usefixtures('inputs')
     def test_assign_transaction_one_node(self, b, user_pk, user_sk):

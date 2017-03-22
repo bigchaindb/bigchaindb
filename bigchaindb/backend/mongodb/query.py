@@ -5,7 +5,6 @@ from time import time
 from pymongo import ReturnDocument
 
 from bigchaindb import backend
-from bigchaindb.common.exceptions import CyclicBlockchainError
 from bigchaindb.common.transaction import Transaction
 from bigchaindb.backend.exceptions import DuplicateKeyError
 from bigchaindb.backend.utils import module_dispatch_registrar
@@ -252,34 +251,12 @@ def get_genesis_block(conn):
 
 
 @register_query(MongoDBConnection)
-def get_last_voted_block(conn, node_pubkey):
-    last_voted = conn.run(
+def get_votes_by_pubkey(conn, node_pubkey):
+    return conn.run(
             conn.collection('votes')
             .find({'node_pubkey': node_pubkey},
-                  sort=[('vote.timestamp', -1)]))
-
-    # pymongo seems to return a cursor even if there are no results
-    # so we actually need to check the count
-    if last_voted.count() == 0:
-        return get_genesis_block(conn)
-
-    mapping = {v['vote']['previous_block']: v['vote']['voting_for_block']
-               for v in last_voted}
-
-    last_block_id = list(mapping.values())[0]
-
-    explored = set()
-
-    while True:
-        try:
-            if last_block_id in explored:
-                raise CyclicBlockchainError()
-            explored.add(last_block_id)
-            last_block_id = mapping[last_block_id]
-        except KeyError:
-            break
-
-    return get_block(conn, last_block_id)
+                  sort=[('vote.timestamp', -1)],
+                  projection={'_id': False}))
 
 
 @register_query(MongoDBConnection)
