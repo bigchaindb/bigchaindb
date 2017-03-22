@@ -2,11 +2,12 @@
 
 The application is implemented in Flask and runs using Gunicorn.
 """
-
+import os
 import copy
 import multiprocessing
 
 from flask import Flask
+from flask_cors import CORS
 import gunicorn.app.base
 
 from bigchaindb import utils
@@ -59,6 +60,21 @@ def create_app(*, debug=False, threads=4):
     """
 
     app = Flask(__name__)
+
+    CORS(app,
+         headers=(
+             'x-requested-with',
+             'content-type',
+             'accept',
+             'origin',
+             'authorization',
+             'x-csrftoken',
+             'withcredentials',
+             'cache-control',
+             'cookie',
+             'session-id',
+         ),
+         supports_credentials=True)
 
     app.debug = debug
 
