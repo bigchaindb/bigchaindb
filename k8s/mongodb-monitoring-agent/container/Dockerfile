@@ -51,5 +51,5 @@ RUN apt update \
 
 COPY mongodb_mon_agent_entrypoint.bash /
 RUN chown -R mongodb-mms-agent:mongodb-mms-agent /etc/mongodb-mms/
-USER mongodb-mms-agent
+#USER mongodb-mms-agent - BUG(Krish) Uncomment after tests are complete
 ENTRYPOINT ["/mongodb_mon_agent_entrypoint.bash"]

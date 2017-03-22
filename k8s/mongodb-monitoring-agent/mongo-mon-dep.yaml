@@ -8,20 +8,6 @@
 # Notes:                                                   #
 # MongoDB agents connect to Cloud Manager on port 443.     #
 ############################################################
-
-apiVersion: v1
-kind: Service
-metadata:
-  name: mdb-mon-svc
-  namespace: default
-  labels:
-    name: mdb-mon-svc
-spec:
-  selector:
-    app: mdb-mon-dep
-  type: ClusterIP
-  clusterIP: None
----
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -37,15 +23,13 @@ spec:
       containers:
       - name: mdb-mon
         image: bigchaindb/mongodb-monitoring-agent:latest
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         env:
         - name: MMS_API_KEY
           valueFrom:
             configMapKeyRef:
-             name: mdb-mon
-             key: api-key
-        - name: MONGO_HOST:
-          value: mdb-svc
+              name: mdb-mon
+              key: api-key
         resources:
           limits:
             cpu: 200m
