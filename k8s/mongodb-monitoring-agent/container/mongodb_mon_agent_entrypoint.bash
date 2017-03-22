@@ -9,9 +9,8 @@ set -euo pipefail
 MONGODB_MON_CONF_FILE=/etc/mongodb-mms/monitoring-agent.config
 
 mms_api_key=`printenv MMS_API_KEY`
-mongo_host=`printenv MONGO_HOST`
 
-if [[ -z "${mms_api_key}" || -z "${mongo_host}" ]]; then
+if [[ -z "${mms_api_key}" ]]; then
   echo "Invalid environment settings detected. Exiting!"
   exit 1
 fi
@@ -26,4 +25,6 @@ echo "mmsApiKey="${mms_api_key} >> $MONGODB_MON_CONF_FILE
 
 # start mdb monitoring agent
 echo "INFO: starting mdb monitor..."
-exec mongodb-mms-monitoring-agent --conf /etc/mongodb-mms/monitoring-agent.config 
+exec mongodb-mms-monitoring-agent \
+    --conf /etc/mongodb-mms/monitoring-agent.config \
+    --loglevel debug
