@@ -61,15 +61,7 @@ def create_app(*, debug=False, threads=4):
 
     app = Flask(__name__)
 
-    hostname = os.environ.get('DOCKER_MACHINE_IP', 'localhost')
-
-    if not hostname:
-        hostname = 'localhost'
-
-    origins = ('^(https?://)?(www\.)?({}|0|0.0.0.0|'
-               'localhost|127.0.0.1)(\.com)?:\d{{1,5}}$').format(hostname),
     CORS(app,
-         origins=origins,
          headers=(
              'x-requested-with',
              'content-type',
@@ -82,8 +74,7 @@ def create_app(*, debug=False, threads=4):
              'cookie',
              'session-id',
          ),
-         supports_credentials=True,
-         )
+         supports_credentials=True)
 
     app.debug = debug
 
