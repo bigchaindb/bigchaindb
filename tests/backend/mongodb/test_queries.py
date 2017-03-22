@@ -212,6 +212,7 @@ def test_get_owned_ids(signed_create_tx, user_pk):
 
 
 def test_get_votes_by_block_id(signed_create_tx, structurally_valid_vote):
+    from bigchaindb.common.crypto import generate_key_pair
     from bigchaindb.backend import connect, query
     from bigchaindb.models import Block
     conn = connect()
@@ -219,10 +220,14 @@ def test_get_votes_by_block_id(signed_create_tx, structurally_valid_vote):
     # create and insert a block
     block = Block(transactions=[signed_create_tx])
     conn.db.bigchain.insert_one(block.to_dict())
+
     # create and insert some votes
     structurally_valid_vote['vote']['voting_for_block'] = block.id
     conn.db.votes.insert_one(structurally_valid_vote)
+    # create a second vote under a different key
+    _, pk = generate_key_pair()
     structurally_valid_vote['vote']['voting_for_block'] = block.id
+    structurally_valid_vote['node_pubkey'] = pk
     structurally_valid_vote.pop('_id')
     conn.db.votes.insert_one(structurally_valid_vote)
 
@@ -323,6 +328,19 @@ def test_write_vote(structurally_valid_vote):
     )
 
     assert vote_db == structurally_valid_vote
+
+
+def test_duplicate_vote_raises_duplicate_key(structurally_valid_vote):
+    from bigchaindb.backend import connect, query
+    from bigchaindb.backend.exceptions import DuplicateKeyError
+    conn = connect()
+
+    # write a vote
+    query.write_vote(conn, structurally_valid_vote)
+
+    # write the same vote a second time
+    with pytest.raises(DuplicateKeyError):
+        query.write_vote(conn, structurally_valid_vote)
 
 
 def test_get_genesis_block(genesis_block):
