@@ -35,7 +35,10 @@ def configure_bigchaindb(command):
     @functools.wraps(command)
     def configure(args):
         try:
-            config_from_cmdline = {'log': {'level_console': args.log_level}}
+            config_from_cmdline = {
+                'log': {'level_console': args.log_level},
+                'server': {'loglevel': args.log_level},
+            }
         except AttributeError:
             config_from_cmdline = None
         bigchaindb.config_utils.autoconfigure(
