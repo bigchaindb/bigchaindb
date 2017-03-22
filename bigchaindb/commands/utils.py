@@ -21,18 +21,54 @@ from bigchaindb.version import __version__
 
 
 def configure_bigchaindb(command):
+    """Decorator to be used by command line functions, such that the
+    configuration of bigchaindb is performed before the execution of
+    the command.
+
+    Args:
+        command: The command to decorate.
+
+    Returns:
+        The command wrapper function.
+
+    """
     @functools.wraps(command)
     def configure(args):
-        bigchaindb.config_utils.autoconfigure(filename=args.config, force=True)
-
-        logging_config = bigchaindb.config['log'] or {}
-        if 'log_level' in args and args.log_level:
-            logging_config['level_console'] = args.log_level
-        setup_logging(user_log_config=logging_config)
-
+        try:
+            config_from_cmdline = {'log': {'level_console': args.log_level}}
+        except AttributeError:
+            config_from_cmdline = None
+        bigchaindb.config_utils.autoconfigure(
+            filename=args.config, config=config_from_cmdline, force=True)
         command(args)
 
     return configure
+
+
+def start_logging_process(command):
+    """Decorator to start the logging subscriber process.
+
+    Args:
+        command: The command to decorate.
+
+    Returns:
+        The command wrapper function.
+
+    .. important::
+
+        Configuration, if needed, should be applied before invoking this
+        decorator, as starting the subscriber process for logging will
+        configure the root logger for the child process based on the
+        state of :obj:`bigchaindb.config` at the moment this decorator
+        is invoked.
+
+    """
+    @functools.wraps(command)
+    def start_logging(args):
+        from bigchaindb import config
+        setup_logging(user_log_config=config.get('log'))
+        command(args)
+    return start_logging
 
 
 # We need this because `input` always prints on stdout, while it should print
