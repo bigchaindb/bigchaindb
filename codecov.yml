@@ -32,6 +32,7 @@ coverage:
     - "benchmarking-tests/*"
     - "speed-tests/*"
     - "ntools/*"
+    - "k8s/*"
 
 comment:
   # @stevepeak (from codecov.io) suggested we change 'suggestions' to 'uncovered'
