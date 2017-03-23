@@ -16,6 +16,7 @@ import copy
 import json
 import logging
 import collections
+import importlib.util
 from functools import lru_cache
 
 from pkg_resources import iter_entry_points, ResolutionError
@@ -249,6 +250,16 @@ def autoconfigure(filename=None, config=None, force=False):
     set_config(newconfig)  # sets bigchaindb.config
 
 
+def load_from_path(path):
+    module_path, object_name = path.split(':')
+    module_name = os.path.basename(module_path).split('.').pop(0)
+
+    spec = importlib.util.spec_from_file_location(module_name, module_path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return getattr(module, object_name)
+
+
 @lru_cache()
 def load_consensus_plugin(name=None):
     """Find and load the chosen consensus plugin.
@@ -270,6 +281,12 @@ def load_consensus_plugin(name=None):
     plugin = None
     for entry_point in iter_entry_points('bigchaindb.consensus', name):
         plugin = entry_point.load()
+
+    if not plugin and name:
+        try:
+            plugin = load_from_path(name)
+        except:
+            raise ResolutionError('Invalid consensus plugin {}'.format(name))
 
     # No matching entry_point found
     if not plugin:

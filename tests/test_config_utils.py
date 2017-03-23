@@ -204,6 +204,7 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
         'keyring': KEYRING.split(':'),
         'backlog_reassign_delay': 5,
         'log': {},
+        'consensus_plugin': None
     }
 
 

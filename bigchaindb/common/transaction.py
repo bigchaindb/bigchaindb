@@ -975,6 +975,21 @@ class Transaction(object):
         return Transaction._to_str(tx)
 
     @staticmethod
+    def get_asset_ids(transactions):
+        if not isinstance(transactions, list):
+            transactions = [transactions]
+
+        if not len(transactions):
+            return []
+
+        # create a set of the transactions' asset ids
+        asset_ids = {tx.id if tx.operation == Transaction.CREATE
+                     else tx.asset['id']
+                     for tx in transactions}
+
+        return asset_ids
+
+    @staticmethod
     def get_asset_id(transactions):
         """Get the asset id from a list of :class:`~.Transactions`.
 
@@ -994,14 +1009,10 @@ class Transaction(object):
             :exc:`AssetIdMismatch`: If the inputs are related to different
                 assets.
         """
+        asset_ids = Transaction.get_asset_ids(transactions)
 
-        if not isinstance(transactions, list):
-            transactions = [transactions]
-
-        # create a set of the transactions' asset ids
-        asset_ids = {tx.id if tx.operation == Transaction.CREATE
-                     else tx.asset['id']
-                     for tx in transactions}
+        if len(asset_ids) == 0:
+            return None
 
         # check that all the transasctions have the same asset id
         if len(asset_ids) > 1:
