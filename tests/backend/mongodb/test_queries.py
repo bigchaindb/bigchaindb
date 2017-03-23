@@ -366,7 +366,7 @@ def test_get_votes_by_pubkey(genesis_block, signed_create_tx, b):
     votes = []
 
     for i in times:
-        vote = b.vote('A', '0', True)
+        vote = b.vote('A' + str(i), '0', True)
         vote['vote']['timestamp'] = str(i)
         votes.append(vote.copy())
         conn.db.votes.insert_one(vote)
