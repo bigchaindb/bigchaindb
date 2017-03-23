@@ -56,13 +56,13 @@ class AssetCompositionConsensusRules(BaseConsensusRules):
 
     @staticmethod
     def validate_pure(bigchain, transaction, input_txs):
-        transaction.validate_asset(
-            bigchain,
-            [input_tx
-             for (input_, input_tx, status)
-             in input_txs if input_tx is not None])
-
         if transaction.operation == Transaction.TRANSFER:
+            transaction.validate_asset(
+                bigchain,
+                [input_tx
+                 for (input_, input_tx, status)
+                 in input_txs if input_tx is not None])
+
             AssetCompositionConsensusRules\
                 .validate_amount_conservation(transaction, input_txs)
 
