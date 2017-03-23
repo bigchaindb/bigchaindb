@@ -32,11 +32,12 @@ class AssetCompositionConsensusRules(BaseConsensusRules):
         assets = AssetCompositionConsensusRules\
             .resolve_asset(bigchain, transaction, input_txs)
 
-        asset_types = set([asset['data']['type']
-                           for asset in assets
-                           if 'data' in asset
-                           and 'type' in asset['data']
-                           and asset['data']['type'] in ASSET_TYPES])
+        asset_types = set(
+            [asset['data']['type']
+             for asset in assets
+             if 'data' in asset and asset['data'] is not None
+             and 'type' in asset['data'] and asset['data']['type'] is not None
+             and asset['data']['type'] in ASSET_TYPES])
 
         asset_type = ASSET_TYPE_PURE
         if len(asset_types) == 1:
