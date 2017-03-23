@@ -9,7 +9,12 @@ import struct
 import sys
 from multiprocessing import Process
 
-from .configs import PUBLISHER_LOGGING_CONFIG, SUBSCRIBER_LOGGING_CONFIG
+from .configs import (
+    DEFAULT_SOCKET_LOGGING_HOST,
+    DEFAULT_SOCKET_LOGGING_PORT,
+    PUBLISHER_LOGGING_CONFIG,
+    SUBSCRIBER_LOGGING_CONFIG,
+)
 from bigchaindb.common.exceptions import ConfigurationError
 
 
@@ -23,7 +28,7 @@ def _normalize_log_level(level):
 def setup_pub_logger():
     dictConfig(PUBLISHER_LOGGING_CONFIG)
     socket_handler = logging.handlers.SocketHandler(
-        'localhost', logging.handlers.DEFAULT_TCP_LOGGING_PORT)
+        DEFAULT_SOCKET_LOGGING_HOST, DEFAULT_SOCKET_LOGGING_PORT)
     socket_handler.setLevel(logging.DEBUG)
     logger = logging.getLogger()
     logger.addHandler(socket_handler)
