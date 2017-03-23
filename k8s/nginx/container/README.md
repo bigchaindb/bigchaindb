@@ -22,7 +22,7 @@
 
 ### Step 1: Build the Latest Container
 
-Run `docker build -t bigchaindb/nginx .` from this folder.
+Run `docker build -t bigchaindb/nginx:<tag> .` from this folder.
 
 Optional: Upload container to Docker Hub:
 `docker push bigchaindb/nginx:<tag>`
@@ -60,7 +60,7 @@ docker run \
 --env "BIGCHAINDB_FRONTEND_PORT=80" \
 --env "BIGCHAINDB_BACKEND_HOST=localhost" \
 --env "BIGCHAINDB_BACKEND_PORT=9984" \
---env "MONGODB_WHITELIST="192.168.0.0/16:10.0.2.0/24" \
+--env "MONGODB_WHITELIST=192.168.0.0/16:10.0.2.0/24" \
 --name=ngx \
 --publish=80:80 \
 --publish=17017:17017 \
