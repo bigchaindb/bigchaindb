@@ -191,7 +191,8 @@ def get_votes_by_pubkey(connection, node_pubkey):
     return connection.run(
         r.table('votes', read_mode=READ_MODE)
         .filter(r.row['node_pubkey'] == node_pubkey)
-        .order_by(r.desc(r.row['vote']['timestamp'])))
+        .order_by(r.desc(r.row['vote']['timestamp']))
+        .without('id'))
 
 
 @register_query(RethinkDBConnection)
