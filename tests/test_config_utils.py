@@ -195,7 +195,6 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
             'bind': SERVER_BIND,
             'workers': None,
             'threads': None,
-            'logger_class': 'bigchaindb.log.loggers.HttpServerLogger',
         },
         'database': database,
         'keypair': {
