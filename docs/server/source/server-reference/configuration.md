@@ -16,6 +16,8 @@ For convenience, here's a list of all the relevant environment variables (docume
 `BIGCHAINDB_DATABASE_PORT`<br>
 `BIGCHAINDB_DATABASE_NAME`<br>
 `BIGCHAINDB_DATABASE_REPLICASET`<br>
+`BIGCHAINDB_DATABASE_CONNECTION_TIMEOUT`<br>
+`BIGCHAINDB_DATABASE_MAX_TRIES`<br>
 `BIGCHAINDB_SERVER_BIND`<br>
 `BIGCHAINDB_SERVER_WORKERS`<br>
 `BIGCHAINDB_SERVER_THREADS`<br>
@@ -85,9 +87,18 @@ Note how the keys in the list are separated by colons.
 ```
 
 
-## database.backend, database.host, database.port, database.name & database.replicaset
+## database.*
 
-The database backend to use (`rethinkdb` or `mongodb`) and its hostname, port and name. If the database backend is `mongodb`, then there's a fifth setting: the name of the replica set. If the database backend is `rethinkdb`, you *can* set the name of the replica set, but it won't be used for anything.
+The settings with names of the form `database.*` are for the database backend
+(currently either RethinkDB or MongoDB). They are:
+
+* `database.backend` is either `rethinkdb` or `mongodb`.
+* `database.host` is the hostname (FQDN) of the backend database.
+* `database.port` is self-explanatory.
+* `database.name` is a user-chosen name for the database inside RethinkDB or MongoDB, e.g. `bigchain`.
+* `database.replicaset` is only relevant if using MongoDB; it's the name of the MongoDB replica set, e.g. `bigchain-rs`.
+* `database.connection_timeout` is the maximum number of milliseconds that BigchainDB will wait before giving up on one attempt to connect to the database backend.
+* `database.max_tries` is the maximum number of times that BigchainDB will try to establish a connection with the database backend. If 0, then it will try forever.
 
 **Example using environment variables**
 ```text
@@ -96,6 +107,8 @@ export BIGCHAINDB_DATABASE_HOST=localhost
 export BIGCHAINDB_DATABASE_PORT=27017
 export BIGCHAINDB_DATABASE_NAME=bigchain
 export BIGCHAINDB_DATABASE_REPLICASET=bigchain-rs
+export BIGCHAINDB_DATABASE_CONNECTION_TIMEOUT=5000
+export BIGCHAINDB_DATABASE_MAX_TRIES=3
 ```
 
 **Default values**
@@ -105,8 +118,10 @@ If (no environment variables were set and there's no local config file), or you 
 "database": {
     "backend": "rethinkdb",
     "host": "localhost",
+    "port": 28015,
     "name": "bigchain",
-    "port": 28015
+    "connection_timeout": 5000,
+    "max_tries": 3
 }
 ```
 
@@ -115,9 +130,11 @@ If you used `bigchaindb -y configure mongodb` to create a default local config f
 "database": {
     "backend": "mongodb",
     "host": "localhost",
-    "name": "bigchain",
     "port": 27017,
-    "replicaset": "bigchain-rs"
+    "name": "bigchain",
+    "replicaset": "bigchain-rs",
+    "connection_timeout": 5000,
+    "max_tries": 3
 }
 ```
 
