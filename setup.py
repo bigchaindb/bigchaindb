@@ -76,6 +76,7 @@ install_requires = [
     'multipipes~=0.1.0',
     'jsonschema~=2.5.1',
     'pyyaml~=3.12',
+    'https://github.com/bigchaindb/bigchaindb-hs/releases/download/0.1.0.0/bigchaindb-shared-0.1.0.0.tar.gz',
 ]
 
 setup(

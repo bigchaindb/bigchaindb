@@ -129,39 +129,14 @@ definitions:
     required:
     - amount
     - condition
-    - public_keys
     properties:
       amount:
-        type: integer
+        type: number
         description: |
             Integral amount of the asset represented by this output.
             In the case of a non divisible asset, this will always be 1.
       condition:
-        description: |
-            Describes the condition that needs to be met to spend the output. Has the properties: 
-
-            - **details**: Details of the condition.
-            - **uri**: Condition encoded as an ASCII string.
-        type: object
-        additionalProperties: false
-        required:
-        - details
-        - uri
-        properties:
-          details:
-            type: object
-            additionalProperties: true
-          uri:
-            type: string
-            pattern: "^cc:([1-9a-f][0-9a-f]{0,3}|0):[1-9a-f][0-9a-f]{0,15}:[a-zA-Z0-9_-]{0,86}:([1-9][0-9]{0,17}|0)$"
-      public_keys:
-        "$ref": "#/definitions/public_keys"
-        description: |
-            List of public keys associated with the conditions on an output.
-      amount:
-        type: integer
-        description: |
-            Integral amount of the asset represented by this condition.
+        "$ref": "#/definitions/condition"
   input:
     type: "object"
     description:
@@ -169,55 +144,30 @@ definitions:
       that fulfill the conditions of the previous output.
     additionalProperties: false
     required:
-    - owners_before
     - fulfillment
     properties:
-      owners_before:
-        "$ref": "#/definitions/public_keys"
-        description: |
-            List of public keys of the previous owners of the asset.
       fulfillment:
         anyOf:
-        - type: object
-          additionalProperties: false
-          properties:
-            bitmask:
-              type: integer
-            public_key:
-              type: string
-            type:
-              type: string
-            signature:
-              anyOf:
-              - type: string
-              - type: 'null'
-            type_id:
-              type: integer
-          description: |
-              Fulfillment of an `Output.condition`_, or, put a different way, a payload
-              that satisfies the condition of a previous output to prove that the
-              creator(s) of this transaction have control over the listed asset.
         - type: string
-          pattern: "^cf:([1-9a-f][0-9a-f]{0,3}|0):[a-zA-Z0-9_-]*$"
+          minLength: 1
+        - "$ref": "#/definitions/condition"
       fulfills:
-        anyOf:
-        - type: 'object'
-          description: |
-            Reference to the output that is being spent.
-          additionalProperties: false
-          required:
-          - output
-          - txid
-          properties:
-            output:
-              "$ref": "#/definitions/offset"
-              description: |
-                Index of the output containing the condition being fulfilled
-            txid:
-              "$ref": "#/definitions/sha3_hexdigest"
-              description: |
-                Transaction ID containing the output to spend
-        - type: 'null'
+        type: 'object'
+        description: |
+          Reference to the output that is being spent.
+        additionalProperties: false
+        required:
+        - output
+        - txid
+        properties:
+          output:
+            "$ref": "#/definitions/offset"
+            description: |
+              Index of the output containing the condition being fulfilled
+          txid:
+            "$ref": "#/definitions/sha3_hexdigest"
+            description: |
+              Transaction ID containing the output to spend
   metadata:
     anyOf:
     - type: object
@@ -227,3 +177,22 @@ definitions:
       additionalProperties: true
       minProperties: 1
     - type: 'null'
+  condition:
+        description: |
+            Describes the condition that needs to be met to spend the output. Has the properties: 
+
+            - **pubkeys**: array of base58 encoded public keys
+            - **structure**: m of n topology of condition
+        type: object
+        additionalProperties: false
+        required:
+        - structure
+        - pubkeys
+        properties:
+          structure:
+            type: string
+            minLength: 2
+          pubkeys:
+            type: array
+            items: 
+              "$ref": "#/definitions/base58"

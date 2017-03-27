@@ -21,8 +21,11 @@ properties:
     minItems: 1
     items:
       type: "object"
+      additionalProperties: false
       required:
-      - fulfills
+      - fulfillment
       properties:
-        fulfills:
-            type: "null"
+        fulfillment:
+          anyOf:
+          - type: string
+          - type: object

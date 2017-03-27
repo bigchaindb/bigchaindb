@@ -1,19 +1,16 @@
 from copy import deepcopy
-from functools import reduce
+from collections import namedtuple
 
-from cryptoconditions import (Fulfillment, ThresholdSha256Fulfillment,
-                              Ed25519Fulfillment)
-from cryptoconditions.exceptions import ParsingError
-
-from bigchaindb.common.crypto import PrivateKey, hash_data
-from bigchaindb.common.exceptions import (KeypairMismatchException,
-                                          InvalidHash, InvalidSignature,
-                                          AmountError, AssetIdMismatch)
-from bigchaindb.common.utils import serialize, gen_timestamp
+from bigchaindb.common.crypto import hash_data
+from bigchaindb.common.exceptions import (InvalidHash, AmountError,
+                                          AssetIdMismatch, ValidationError,
+                                          InvalidSignature)
+from bigchaindb_shared import BDBError, call_json_rpc
+from bigchaindb.common.utils import serialize
 import bigchaindb.version
 
 
-class Input(object):
+class Input(namedtuple('_', 'fulfillment,fulfills')):
     """A Input is used to spend assets locked by an Output.
 
     Wraps around a Crypto-condition Fulfillment.
@@ -28,7 +25,7 @@ class Input(object):
                 Transaction.
     """
 
-    def __init__(self, fulfillment, owners_before, fulfills=None):
+    def __new__(self, fulfillment, fulfills=None):
         """Create an instance of an :class:`~.Input`.
 
             Args:
@@ -42,16 +39,29 @@ class Input(object):
         """
         if fulfills is not None and not isinstance(fulfills, TransactionLink):
             raise TypeError('`fulfills` must be a TransactionLink instance')
-        if not isinstance(owners_before, list):
-            raise TypeError('`owners_after` must be a list instance')
 
-        self.fulfillment = fulfillment
-        self.fulfills = fulfills
-        self.owners_before = owners_before
+        return super().__new__(self, fulfillment, fulfills)
 
     def __eq__(self, other):
         # TODO: If `other !== Fulfillment` return `False`
         return self.to_dict() == other.to_dict()
+
+    @property
+    def condition(self):
+        if isinstance(self.fulfillment, dict):
+            return self.fulfillment
+        return call_shared('readFulfillment', {
+            'fulfillment': self.fulfillment,
+        })
+
+    def sign(self, private_keys, msg):
+        request = {
+            'condition': self.condition,
+            'keys': private_keys,
+            'msg': msg
+        }
+        out = call_shared('signCondition', request)
+        return self._replace(fulfillment=out)
 
     def to_dict(self):
         """Transforms the object to a Python dictionary.
@@ -63,39 +73,17 @@ class Input(object):
             Returns:
                 dict: The Input as an alternative serialization format.
         """
-        try:
-            fulfillment = self.fulfillment.serialize_uri()
-        except (TypeError, AttributeError):
-            # NOTE: When a non-signed transaction is casted to a dict,
-            #       `self.inputs` value is lost, as in the node's
-            #       transaction model that is saved to the database, does not
-            #       account for its dictionary form but just for its signed uri
-            #       form.
-            #       Hence, when a non-signed fulfillment is to be cast to a
-            #       dict, we just call its internal `to_dict` method here and
-            #       its `from_dict` method in `Fulfillment.from_dict`.
-            fulfillment = self.fulfillment.to_dict()
-
-        try:
-            # NOTE: `self.fulfills` can be `None` and that's fine
-            fulfills = self.fulfills.to_dict()
-        except AttributeError:
-            fulfills = None
 
         input_ = {
-            'owners_before': self.owners_before,
-            'fulfills': fulfills,
-            'fulfillment': fulfillment,
+            'fulfillment': self.fulfillment,
         }
+        if self.fulfills:
+            input_['fulfills'] = self.fulfills.to_dict()
         return input_
 
     @classmethod
     def generate(cls, public_keys):
-        # TODO: write docstring
-        # The amount here does not really matter. It is only use on the
-        # output data model but here we only care about the fulfillment
-        output = Output.generate(public_keys, 1)
-        return cls(output.fulfillment, public_keys)
+        return cls(generate_condition(public_keys))
 
     @classmethod
     def from_dict(cls, data):
@@ -114,17 +102,10 @@ class Input(object):
             Raises:
                 InvalidSignature: If an Input's URI couldn't be parsed.
         """
-        try:
-            fulfillment = Fulfillment.from_uri(data['fulfillment'])
-        except ValueError:
-            # TODO FOR CC: Throw an `InvalidSignature` error in this case.
-            raise InvalidSignature("Fulfillment URI couldn't been parsed")
-        except TypeError:
-            # NOTE: See comment about this special case in
-            #       `Input.to_dict`
-            fulfillment = Fulfillment.from_dict(data['fulfillment'])
-        fulfills = TransactionLink.from_dict(data['fulfills'])
-        return cls(fulfillment, data['owners_before'], fulfills)
+        fulfills = None
+        if 'fulfills' in data:
+            fulfills = TransactionLink.from_dict(data['fulfills'])
+        return cls(data['fulfillment'], fulfills)
 
 
 class TransactionLink(object):
@@ -195,193 +176,6 @@ class TransactionLink(object):
             return None
         return '{}/transactions/{}/outputs/{}'.format(path, self.txid,
                                                       self.output)
-
-
-class Output(object):
-    """An Output is used to lock an asset.
-
-    Wraps around a Crypto-condition Condition.
-
-        Attributes:
-            fulfillment (:class:`cryptoconditions.Fulfillment`): A Fulfillment
-                to extract a Condition from.
-            public_keys (:obj:`list` of :obj:`str`, optional): A list of
-                owners before a Transaction was confirmed.
-    """
-
-    def __init__(self, fulfillment, public_keys=None, amount=1):
-        """Create an instance of a :class:`~.Output`.
-
-            Args:
-                fulfillment (:class:`cryptoconditions.Fulfillment`): A
-                    Fulfillment to extract a Condition from.
-                public_keys (:obj:`list` of :obj:`str`, optional): A list of
-                    owners before a Transaction was confirmed.
-                amount (int): The amount of Assets to be locked with this
-                    Output.
-
-            Raises:
-                TypeError: if `public_keys` is not instance of `list`.
-        """
-        if not isinstance(public_keys, list) and public_keys is not None:
-            raise TypeError('`public_keys` must be a list instance or None')
-        if not isinstance(amount, int):
-            raise TypeError('`amount` must be an int')
-        if amount < 1:
-            raise AmountError('`amount` must be greater than 0')
-
-        self.fulfillment = fulfillment
-        self.amount = amount
-        self.public_keys = public_keys
-
-    def __eq__(self, other):
-        # TODO: If `other !== Condition` return `False`
-        return self.to_dict() == other.to_dict()
-
-    def to_dict(self):
-        """Transforms the object to a Python dictionary.
-
-            Note:
-                A dictionary serialization of the Input the Output was
-                derived from is always provided.
-
-            Returns:
-                dict: The Output as an alternative serialization format.
-        """
-        # TODO FOR CC: It must be able to recognize a hashlock condition
-        #              and fulfillment!
-        condition = {}
-        try:
-            condition['details'] = self.fulfillment.to_dict()
-        except AttributeError:
-            pass
-
-        try:
-            condition['uri'] = self.fulfillment.condition_uri
-        except AttributeError:
-            condition['uri'] = self.fulfillment
-
-        output = {
-            'public_keys': self.public_keys,
-            'condition': condition,
-            'amount': self.amount
-        }
-        return output
-
-    @classmethod
-    def generate(cls, public_keys, amount):
-        """Generates a Output from a specifically formed tuple or list.
-
-            Note:
-                If a ThresholdCondition has to be generated where the threshold
-                is always the number of subconditions it is split between, a
-                list of the following structure is sufficient:
-
-                [(address|condition)*, [(address|condition)*, ...], ...]
-
-            Args:
-                public_keys (:obj:`list` of :obj:`str`): The public key of
-                    the users that should be able to fulfill the Condition
-                    that is being created.
-                amount (:obj:`int`): The amount locked by the Output.
-
-            Returns:
-                An Output that can be used in a Transaction.
-
-            Raises:
-                TypeError: If `public_keys` is not an instance of `list`.
-                ValueError: If `public_keys` is an empty list.
-        """
-        threshold = len(public_keys)
-        if not isinstance(amount, int):
-            raise TypeError('`amount` must be a int')
-        if amount < 1:
-            raise AmountError('`amount` needs to be greater than zero')
-        if not isinstance(public_keys, list):
-            raise TypeError('`public_keys` must be an instance of list')
-        if len(public_keys) == 0:
-            raise ValueError('`public_keys` needs to contain at least one'
-                             'owner')
-        elif len(public_keys) == 1 and not isinstance(public_keys[0], list):
-            try:
-                ffill = Ed25519Fulfillment(public_key=public_keys[0])
-            except TypeError:
-                ffill = public_keys[0]
-            return cls(ffill, public_keys, amount=amount)
-        else:
-            initial_cond = ThresholdSha256Fulfillment(threshold=threshold)
-            threshold_cond = reduce(cls._gen_condition, public_keys,
-                                    initial_cond)
-            return cls(threshold_cond, public_keys, amount=amount)
-
-    @classmethod
-    def _gen_condition(cls, initial, new_public_keys):
-        """Generates ThresholdSha256 conditions from a list of new owners.
-
-            Note:
-                This method is intended only to be used with a reduce function.
-                For a description on how to use this method, see
-                :meth:`~.Output.generate`.
-
-            Args:
-                initial (:class:`cryptoconditions.ThresholdSha256Fulfillment`):
-                    A Condition representing the overall root.
-                new_public_keys (:obj:`list` of :obj:`str`|str): A list of new
-                    owners or a single new owner.
-
-            Returns:
-                :class:`cryptoconditions.ThresholdSha256Fulfillment`:
-        """
-        try:
-            threshold = len(new_public_keys)
-        except TypeError:
-            threshold = None
-
-        if isinstance(new_public_keys, list) and len(new_public_keys) > 1:
-            ffill = ThresholdSha256Fulfillment(threshold=threshold)
-            reduce(cls._gen_condition, new_public_keys, ffill)
-        elif isinstance(new_public_keys, list) and len(new_public_keys) <= 1:
-            raise ValueError('Sublist cannot contain single owner')
-        else:
-            try:
-                new_public_keys = new_public_keys.pop()
-            except AttributeError:
-                pass
-            try:
-                ffill = Ed25519Fulfillment(public_key=new_public_keys)
-            except TypeError:
-                # NOTE: Instead of submitting base58 encoded addresses, a user
-                #       of this class can also submit fully instantiated
-                #       Cryptoconditions. In the case of casting
-                #       `new_public_keys` to a Ed25519Fulfillment with the
-                #       result of a `TypeError`, we're assuming that
-                #       `new_public_keys` is a Cryptocondition then.
-                ffill = new_public_keys
-        initial.add_subfulfillment(ffill)
-        return initial
-
-    @classmethod
-    def from_dict(cls, data):
-        """Transforms a Python dictionary to an Output object.
-
-            Note:
-                To pass a serialization cycle multiple times, a
-                Cryptoconditions Fulfillment needs to be present in the
-                passed-in dictionary, as Condition URIs are not serializable
-                anymore.
-
-            Args:
-                data (dict): The dict to be transformed.
-
-            Returns:
-                :class:`~bigchaindb.common.transaction.Output`
-        """
-        try:
-            fulfillment = Fulfillment.from_dict(data['condition']['details'])
-        except KeyError:
-            # NOTE: Hashlock condition case
-            fulfillment = data['condition']['uri']
-        return cls(fulfillment, data['public_keys'], data['amount'])
 
 
 class Transaction(object):
@@ -614,8 +408,7 @@ class Transaction(object):
         #       as inputs.
         indices = indices or range(len(self.outputs))
         return [
-            Input(self.outputs[idx].fulfillment,
-                  self.outputs[idx].public_keys,
+            Input(self.outputs[idx].condition,
                   TransactionLink(self.id, idx))
             for idx in indices
         ]
@@ -668,246 +461,40 @@ class Transaction(object):
         if private_keys is None or not isinstance(private_keys, list):
             raise TypeError('`private_keys` must be a list instance')
 
-        # NOTE: Generate public keys from private keys and match them in a
-        #       dictionary:
-        #                   key:     public_key
-        #                   value:   private_key
-        def gen_public_key(private_key):
-            # TODO FOR CC: Adjust interface so that this function becomes
-            #              unnecessary
-
-            # cc now provides a single method `encode` to return the key
-            # in several different encodings.
-            public_key = private_key.get_verifying_key().encode()
-            # Returned values from cc are always bytestrings so here we need
-            # to decode to convert the bytestring into a python str
-            return public_key.decode()
-
-        key_pairs = {gen_public_key(PrivateKey(private_key)):
-                     PrivateKey(private_key) for private_key in private_keys}
-
-        for index, input_ in enumerate(self.inputs):
-            # NOTE: We clone the current transaction but only add the output
-            #       and input we're currently working on plus all
-            #       previously signed ones.
-            tx_partial = Transaction(self.operation, self.asset, [input_],
-                                     self.outputs, self.metadata,
-                                     self.version)
-
-            tx_partial_dict = tx_partial.to_dict()
-            tx_partial_dict = Transaction._remove_signatures(tx_partial_dict)
-            tx_serialized = Transaction._to_str(tx_partial_dict)
-            self._sign_input(input_, index, tx_serialized, key_pairs)
+        for i, input_ in enumerate(self.inputs):
+            msg = '%s:%s' % (i, str(self))
+            self.inputs[i] = input_.sign(private_keys, msg)
         return self
 
-    def _sign_input(self, input_, index, tx_serialized, key_pairs):
-        """Signs a single Input with a partial Transaction as message.
-
-            Note:
-                This method works only for the following Cryptoconditions
-                currently:
-                    - Ed25519Fulfillment
-                    - ThresholdSha256Fulfillment.
-
-            Args:
-                input_ (:class:`~bigchaindb.common.transaction.
-                    Input`) The Input to be signed.
-                index (int): The index of the input to be signed.
-                tx_serialized (str): The Transaction to be used as message.
-                key_pairs (dict): The keys to sign the Transaction with.
-        """
-        if isinstance(input_.fulfillment, Ed25519Fulfillment):
-            self._sign_simple_signature_fulfillment(input_, index,
-                                                    tx_serialized, key_pairs)
-        elif isinstance(input_.fulfillment, ThresholdSha256Fulfillment):
-            self._sign_threshold_signature_fulfillment(input_, index,
-                                                       tx_serialized,
-                                                       key_pairs)
-        else:
-            raise ValueError("Fulfillment couldn't be matched to "
-                             'Cryptocondition fulfillment type.')
-
-    def _sign_simple_signature_fulfillment(self, input_, index,
-                                           tx_serialized, key_pairs):
-        """Signs a Ed25519Fulfillment.
-
-            Args:
-                input_ (:class:`~bigchaindb.common.transaction.
-                    Input`) The input to be signed.
-                index (int): The index of the input to be
-                    signed.
-                tx_serialized (str): The Transaction to be used as message.
-                key_pairs (dict): The keys to sign the Transaction with.
-        """
-        # NOTE: To eliminate the dangers of accidentally signing a condition by
-        #       reference, we remove the reference of input_ here
-        #       intentionally. If the user of this class knows how to use it,
-        #       this should never happen, but then again, never say never.
-        input_ = deepcopy(input_)
-        public_key = input_.owners_before[0]
-        try:
-            # cryptoconditions makes no assumptions of the encoding of the
-            # message to sign or verify. It only accepts bytestrings
-            input_.fulfillment.sign(tx_serialized.encode(), key_pairs[public_key])
-        except KeyError:
-            raise KeypairMismatchException('Public key {} is not a pair to '
-                                           'any of the private keys'
-                                           .format(public_key))
-        self.inputs[index] = input_
-
-    def _sign_threshold_signature_fulfillment(self, input_, index,
-                                              tx_serialized, key_pairs):
-        """Signs a ThresholdSha256Fulfillment.
-
-            Args:
-                input_ (:class:`~bigchaindb.common.transaction.
-                    Input`) The Input to be signed.
-                index (int): The index of the Input to be
-                    signed.
-                tx_serialized (str): The Transaction to be used as message.
-                key_pairs (dict): The keys to sign the Transaction with.
-        """
-        input_ = deepcopy(input_)
-        for owner_before in set(input_.owners_before):
-            # TODO: CC should throw a KeypairMismatchException, instead of
-            #       our manual mapping here
-
-            # TODO FOR CC: Naming wise this is not so smart,
-            #              `get_subcondition` in fact doesn't return a
-            #              condition but a fulfillment
-
-            # TODO FOR CC: `get_subcondition` is singular. One would not
-            #              expect to get a list back.
-            ccffill = input_.fulfillment
-            subffills = ccffill.get_subcondition_from_vk(owner_before)
-            if not subffills:
-                raise KeypairMismatchException('Public key {} cannot be found '
-                                               'in the fulfillment'
-                                               .format(owner_before))
-            try:
-                private_key = key_pairs[owner_before]
-            except KeyError:
-                raise KeypairMismatchException('Public key {} is not a pair '
-                                               'to any of the private keys'
-                                               .format(owner_before))
-
-            # cryptoconditions makes no assumptions of the encoding of the
-            # message to sign or verify. It only accepts bytestrings
-            for subffill in subffills:
-                subffill.sign(tx_serialized.encode(), private_key)
-        self.inputs[index] = input_
-
     def inputs_valid(self, outputs=None):
-        """Validates the Inputs in the Transaction against given
-        Outputs.
+        def verify(i, condition):
+            fulfillment = self.inputs[i].fulfillment
+            if type(fulfillment) == dict:
+                return False
+            request = {
+                'msg': ('%s:%s' % (i, str(self))),
+                'fulfillment': self.inputs[i].fulfillment,
+                'condition': condition
+            }
+            out = call_shared('verifyFulfillment', request)
+            return out['valid']
 
-            Note:
-                Given a `CREATE` or `GENESIS` Transaction is passed,
-                dummy values for Outputs are submitted for validation that
-                evaluate parts of the validation-checks to `True`.
-
-            Args:
-                outputs (:obj:`list` of :class:`~bigchaindb.common.
-                    transaction.Output`): A list of Outputs to check the
-                    Inputs against.
-
-            Returns:
-                bool: If all Inputs are valid.
-        """
-        if self.operation in (Transaction.CREATE, Transaction.GENESIS):
-            # NOTE: Since in the case of a `CREATE`-transaction we do not have
-            #       to check for outputs, we're just submitting dummy
-            #       values to the actual method. This simplifies it's logic
-            #       greatly, as we do not have to check against `None` values.
-            return self._inputs_valid(['dummyvalue'
-                                       for _ in self.inputs])
-        elif self.operation == Transaction.TRANSFER:
-            return self._inputs_valid([output.fulfillment.condition_uri
-                                       for output in outputs])
+        if self.operation == Transaction.TRANSFER:
+            for i, input_ in enumerate(self.inputs):
+                if not verify(i, outputs[i].condition):
+                    return False
+            return True
         else:
-            allowed_ops = ', '.join(self.__class__.ALLOWED_OPERATIONS)
-            raise TypeError('`operation` must be one of {}'
-                            .format(allowed_ops))
-
-    def _inputs_valid(self, output_condition_uris):
-        """Validates an Input against a given set of Outputs.
-
-            Note:
-                The number of `output_condition_uris` must be equal to the
-                number of Inputs a Transaction has.
-
-            Args:
-                output_condition_uris (:obj:`list` of :obj:`str`): A list of
-                    Outputs to check the Inputs against.
-
-            Returns:
-                bool: If all Outputs are valid.
-        """
-
-        if len(self.inputs) != len(output_condition_uris):
-            raise ValueError('Inputs and '
-                             'output_condition_uris must have the same count')
-
-        def gen_tx(input_, output, output_condition_uri=None):
-            """Splits multiple IO Transactions into partial single IO
-            Transactions.
-            """
-            tx = Transaction(self.operation, self.asset, [input_],
-                             self.outputs, self.metadata, self.version)
-            tx_dict = tx.to_dict()
-            tx_dict = Transaction._remove_signatures(tx_dict)
-            tx_serialized = Transaction._to_str(tx_dict)
-
-            return self.__class__._input_valid(input_,
-                                               self.operation,
-                                               tx_serialized,
-                                               output_condition_uri)
-
-        partial_transactions = map(gen_tx, self.inputs,
-                                   self.outputs, output_condition_uris)
-        return all(partial_transactions)
-
-    @staticmethod
-    def _input_valid(input_, operation, tx_serialized, output_condition_uri=None):
-        """Validates a single Input against a single Output.
-
-            Note:
-                In case of a `CREATE` or `GENESIS` Transaction, this method
-                does not validate against `output_condition_uri`.
-
-            Args:
-                input_ (:class:`~bigchaindb.common.transaction.
-                    Input`) The Input to be signed.
-                operation (str): The type of Transaction.
-                tx_serialized (str): The Transaction used as a message when
-                    initially signing it.
-                output_condition_uri (str, optional): An Output to check the
-                    Input against.
-
-            Returns:
-                bool: If the Input is valid.
-        """
-        ccffill = input_.fulfillment
-        try:
-            parsed_ffill = Fulfillment.from_uri(ccffill.serialize_uri())
-        except (TypeError, ValueError, ParsingError):
-            return False
-
-        if operation in (Transaction.CREATE, Transaction.GENESIS):
-            # NOTE: In the case of a `CREATE` or `GENESIS` transaction, the
-            #       output is always valid.
-            output_valid = True
-        else:
-            output_valid = output_condition_uri == ccffill.condition_uri
-
-        # NOTE: We pass a timestamp to `.validate`, as in case of a timeout
-        #       condition we'll have to validate against it
-
-        # cryptoconditions makes no assumptions of the encoding of the
-        # message to sign or verify. It only accepts bytestrings
-        ffill_valid = parsed_ffill.validate(message=tx_serialized.encode(),
-                                            now=gen_timestamp())
-        return output_valid and ffill_valid
+            ffill = self.inputs[0].fulfillment
+            if not isinstance(ffill, str):
+                return False
+            try:
+                call_shared('readFulfillment', {
+                    'fulfillment': ffill
+                })
+            except InvalidSignature:
+                return False
+            return True
 
     def to_dict(self):
         """Transforms the object to a Python dictionary.
@@ -1047,3 +634,55 @@ class Transaction(object):
         outputs = [Output.from_dict(output) for output in tx['outputs']]
         return cls(tx['operation'], tx['asset'], inputs, outputs,
                    tx['metadata'], tx['version'])
+
+
+def generate_condition(public_keys):
+    if not isinstance(public_keys, list):
+        raise TypeError('`public_keys` must be an instance of list')
+    if not all(map(lambda pk: isinstance(pk, str), public_keys)):
+        raise ValueError('`public_keys` items must all be str')
+    if len(public_keys) == 0:
+        raise ValueError('`public_keys` needs to contain at least one'
+                         'owner')
+    if len(public_keys) == 1 and not isinstance(public_keys[0], list):
+        expr = public_keys[0]
+    else:
+        expr = '(%s of %s)' % (len(public_keys), ','.join(public_keys))
+    return call_shared('parseConditionDSL', {'expr': expr})
+
+
+class Output(namedtuple('_', 'condition,amount')):
+    def __new__(self, condition, amount):
+        if not isinstance(amount, int):
+            raise TypeError('`amount` must be a int')
+        if amount < 1:
+            raise AmountError('`amount` needs to be greater than zero')
+        return super().__new__(self, condition, amount)
+
+    @classmethod
+    def generate(cls, public_keys, amount):
+        condition = generate_condition(public_keys)
+        return Output(condition, amount)
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(data['condition'], int(data['amount']))
+
+    def to_dict(self):
+        return {
+            'amount': self.amount,
+            'condition': self.condition,
+        }
+
+
+def call_shared(method, params):
+    exception_map = {
+        100: ValidationError,
+        102: InvalidSignature,
+        -32601: AttributeError,  # Method not found
+        -32602: ValueError,  # Invalid Params
+    }
+    try:
+        return call_json_rpc(method, params)
+    except BDBError as e:
+        raise exception_map[e.args[0]](*e.args[1:]) from e

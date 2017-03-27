@@ -313,7 +313,7 @@ class TestBigchainApi(object):
 
         assert len(block['block']['transactions']) == 1
         assert block['block']['transactions'][0]['operation'] == 'GENESIS'
-        assert block['block']['transactions'][0]['inputs'][0]['fulfills'] is None
+        assert 'fulfills' not in block['block']['transactions'][0]['inputs'][0]
 
     @pytest.mark.genesis
     def test_create_genesis_block_fails_if_table_not_empty(self, b):
@@ -495,16 +495,15 @@ class TestBigchainApi(object):
 
     @pytest.mark.usefixtures('inputs')
     def test_non_create_input_not_found(self, b, user_pk):
-        from cryptoconditions import Ed25519Fulfillment
         from bigchaindb.common.exceptions import InputDoesNotExist
         from bigchaindb.common.transaction import Input, TransactionLink
         from bigchaindb.models import Transaction
         from bigchaindb import Bigchain
 
         # Create an input for a non existing transaction
-        input = Input(Ed25519Fulfillment(public_key=user_pk),
-                      [user_pk],
-                      TransactionLink('somethingsomething', 0))
+        fulfills = TransactionLink('somethingsomething', 0)
+        input = (Input.generate([user_pk])
+                 ._replace(fulfills=fulfills))
         tx = Transaction.transfer([input], [([user_pk], 1)],
                                   asset_id='mock_asset_link')
 
@@ -529,7 +528,8 @@ class TestTransactionValidation(object):
         from bigchaindb.common.exceptions import InputDoesNotExist
         from bigchaindb.common.transaction import TransactionLink
 
-        signed_transfer_tx.inputs[0].fulfills = TransactionLink('c', 0)
+        signed_transfer_tx.inputs[0] = \
+            signed_transfer_tx.inputs[0]._replace(fulfills=TransactionLink('c', 0))
         with pytest.raises(InputDoesNotExist):
             b.validate_transaction(signed_transfer_tx)
 
@@ -545,7 +545,7 @@ class TestTransactionValidation(object):
         tx = Transaction.create([pk], [([user_pk], 1)])
         tx.operation = 'TRANSFER'
         tx.asset = {'id': input_transaction.id}
-        tx.inputs[0].fulfills = input_tx
+        tx.inputs[0] = tx.inputs[0]._replace(fulfills=input_tx)
 
         with pytest.raises(InvalidSignature):
             b.validate_transaction(tx)

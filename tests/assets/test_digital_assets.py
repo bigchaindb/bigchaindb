@@ -97,7 +97,7 @@ def test_create_invalid_divisible_asset(b, user_pk, user_sk):
 
     # Asset amount must be more than 0
     tx = Transaction.create([user_pk], [([user_pk], 1)])
-    tx.outputs[0].amount = 0
+    tx.outputs[0] = tx.outputs[0]._replace(amount=0)
     tx.sign([user_sk])
 
     with pytest.raises(ValidationError):
