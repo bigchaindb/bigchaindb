@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 class MongoDBConnection(Connection):
 
-    def __init__(self, replicaset=None, ssl=False, login=None, password=None, **kwargs):
+    def __init__(self, replicaset=None, ssl=None, login=None, password=None, **kwargs):
         """Create a new Connection instance.
 
         Args:
@@ -28,8 +28,7 @@ class MongoDBConnection(Connection):
 
         super().__init__(**kwargs)
         self.replicaset = replicaset or bigchaindb.config['database']['replicaset']
-        self.ssl = bigchaindb.config['database'].get('ssl') if bigchaindb.config['database'].get('ssl') is not None \
-            else ssl
+        self.ssl = ssl if ssl is not None else bigchaindb.config['database'].get('ssl', False)
         self.login = login or bigchaindb.config['database'].get('login')
         self.password = password or bigchaindb.config['database'].get('password')
 
