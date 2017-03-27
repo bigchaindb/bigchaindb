@@ -154,6 +154,7 @@ def ordered_load_yaml(path):
     OrderedLoader.add_constructor(
         yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
         construct_mapping)
+    print(open(path).read())
     with open(path) as handle:
         return yaml.load(handle, OrderedLoader)
 
