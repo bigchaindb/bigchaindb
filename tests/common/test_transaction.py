@@ -650,9 +650,7 @@ def test_transfer_tx_asset_schema(transfer_utx):
 
 
 # TODO
-import pytest
-@pytest.mark.skip('TODO')
-def test_write_new_sign_verify_tests():
+def _write_new_sign_verify_tests():
     # include tests for condition dsl and parse errors
     raise NotImplementedError
 
