@@ -5,31 +5,6 @@
 # and MongoDB.                                                #
 ###############################################################
 
-apiVersion: v1
-kind: Service
-metadata:
-  name: ngx-svc
-  namespace: default
-  labels:
-    name: ngx-svc
-  annotations:
-    # NOTE: the following annotation is a beta feature and
-    # only available in GCE/GKE and Azure as of now
-    service.beta.kubernetes.io/external-traffic: OnlyLocal
-spec:
-  selector:
-    app: ngx-dep 
-  ports:
-  - port: 27017
-    targetPort: 27017
-    name: ngx-public-mdb-port
-    protocol: TCP
-  - port: 80
-    targetPort: 80
-    name: ngx-public-bdb-port
-    protocol: TCP
-  type: LoadBalancer
----
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -48,17 +23,17 @@ spec:
         imagePullPolicy: Always
         env:
         - name: MONGODB_FRONTEND_PORT
-          value: "27017"
+          value: $(NGX_SVC_SERVICE_PORT_NGX_PUBLIC_MDB_PORT)
         - name: MONGODB_BACKEND_HOST
-          value: mdb-svc
+          value: $(MDB_INSTANCE_0_SERVICE_HOST)
         - name: MONGODB_BACKEND_PORT
-          value: "27017"
+          value: $(MDB_INSTANCE_0_SERVICE_PORT)
         - name: BIGCHAINDB_FRONTEND_PORT
-          value: "80"
+          value: $(NGX_SVC_SERVICE_PORT_NGX_PUBLIC_BDB_PORT)
         - name: BIGCHAINDB_BACKEND_HOST
-          value: bdb-svc
+          value: $(BDB_INSTANCE_0_SERVICE_HOST)
         - name: BIGCHAINDB_BACKEND_PORT
-          value: "9984"
+          value: $(BDB_INSTANCE_0_SERVICE_PORT)
         - name: MONGODB_WHITELIST
           valueFrom:
             configMapKeyRef:

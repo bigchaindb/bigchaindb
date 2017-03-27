@@ -26,5 +26,5 @@ echo "mmsApiKey="${mms_api_key} >> $MONGODB_MON_CONF_FILE
 # start mdb monitoring agent
 echo "INFO: starting mdb monitor..."
 exec mongodb-mms-monitoring-agent \
-    --conf /etc/mongodb-mms/monitoring-agent.config \
+    --conf $MONGODB_MON_CONF_FILE \
     --loglevel debug

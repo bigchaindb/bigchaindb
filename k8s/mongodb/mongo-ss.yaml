@@ -4,30 +4,13 @@
 # It depends on the configdb and db k8s pvc.                           #
 ########################################################################
 
-apiVersion: v1
-kind: Service
-metadata:
-  name: mdb-svc
-  namespace: default
-  labels:
-    name: mdb-svc
-spec:
-  selector:
-    app: mdb-ss
-  ports:
-  - port: 27017
-    targetPort: 27017
-    name: mdb-port
-  type: ClusterIP
-  clusterIP: None
----
 apiVersion: apps/v1beta1
 kind: StatefulSet 
 metadata:
   name: mdb-ss
   namespace: default
 spec:
-  serviceName: mdb-svc
+  serviceName: mdb-instance-0
   replicas: 1
   template:
     metadata:
@@ -36,6 +19,7 @@ spec:
         app: mdb-ss
     spec:
       terminationGracePeriodSeconds: 10
+      hostNetwork: true
       containers:
       - name: mongodb
         # TODO(FIXME): Do not use latest in production as it is harder to track

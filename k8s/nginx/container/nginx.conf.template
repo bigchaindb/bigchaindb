@@ -54,9 +54,7 @@ http {
       # threshold.
       limit_req zone=one burst=20 nodelay;
 
-      resolver 127.0.0.1 valid=300s;
-      set $bdb_backend "http://BIGCHAINDB_BACKEND_HOST:BIGCHAINDB_BACKEND_PORT";
-      proxy_pass $bdb_backend;
+      proxy_pass http://BIGCHAINDB_BACKEND_HOST:BIGCHAINDB_BACKEND_PORT;
     }
   }
 }
@@ -78,10 +76,6 @@ stream {
   # enable logging when connections are being throttled
   limit_conn_log_level notice;
   
-  upstream mdb_backend {
-    server MONGODB_BACKEND_HOST:MONGODB_BACKEND_PORT max_fails=5 fail_timeout=30 max_conns=1024;
-  }
-  
   server {
     listen MONGODB_FRONTEND_PORT so_keepalive=10m:1m:5;
     preread_timeout 30s;
@@ -95,6 +89,6 @@ stream {
     # allow 512 connections from the same IP address
     limit_conn two 512;
     
-    proxy_pass     mdb_backend;
+    proxy_pass MONGODB_BACKEND_HOST:MONGODB_BACKEND_PORT;
   }
 }
