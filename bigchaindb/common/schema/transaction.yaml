@@ -150,6 +150,9 @@ definitions:
         anyOf:
         - type: string
           minLength: 1
+          description: |
+            Fulfillment string containing signatures or condition if transaction
+            is unsigned.
         - "$ref": "#/definitions/condition"
       fulfills:
         type: 'object'
