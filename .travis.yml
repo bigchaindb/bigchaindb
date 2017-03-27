@@ -4,7 +4,8 @@ cache: pip
 python:
   - 3.4
   - 3.5
-
+  - 3.6
+  
 env:
   - TOXENV=flake8
   - TOXENV=docsroot
@@ -29,6 +30,12 @@ matrix:
       rethinkdb: '2.3.5'
     env: BIGCHAINDB_DATABASE_BACKEND=rethinkdb
   - python: 3.5
+    env: BIGCHAINDB_DATABASE_BACKEND=mongodb
+  - python: 3.6
+    addons: 
+      rethinkdb: '2.3.5'
+    env: BIGCHAINDB_DATABASE_BACKEND=rethinkdb
+  - python: 3.6
     env: BIGCHAINDB_DATABASE_BACKEND=mongodb
 
 before_install: sudo .ci/travis-before-install.sh
