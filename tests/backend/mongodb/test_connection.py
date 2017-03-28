@@ -99,6 +99,18 @@ def test_connection_run_errors(mock_client, mock_init_repl_set):
     assert query.run.call_count == 1
 
 
+@mock.patch('pymongo.database.Database.authenticate')
+def test_connection_with_credentials(mock_authenticate):
+    import bigchaindb
+    from bigchaindb.backend.mongodb.connection import MongoDBConnection
+    conn = MongoDBConnection(host=bigchaindb.config['database']['host'],
+                             port=bigchaindb.config['database']['port'],
+                             login='theplague',
+                             password='secret')
+    conn.connect()
+    assert mock_authenticate.call_count == 2
+
+
 def test_check_replica_set_not_enabled(mongodb_connection):
     from bigchaindb.backend.mongodb.connection import _check_replica_set
     from bigchaindb.common.exceptions import ConfigurationError
