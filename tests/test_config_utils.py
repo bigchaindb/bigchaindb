@@ -19,15 +19,6 @@ def clean_config(monkeypatch, request):
     monkeypatch.setattr('bigchaindb.config', original_config)
 
 
-def test_ordered_keys_match_database_config():
-    import bigchaindb
-
-    assert set(bigchaindb._base_database_rethinkdb.keys()) ==\
-        set(bigchaindb._base_database_rethinkdb_keys)
-    assert set(bigchaindb._base_database_mongodb.keys()) ==\
-        set(bigchaindb._base_database_mongodb_keys)
-
-
 def test_bigchain_instance_is_initialized_when_conf_provided(request):
     import bigchaindb
     from bigchaindb import config_utils
@@ -190,9 +181,6 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
         'connection_timeout': 5000,
         'max_tries': 3,
         'replicaset': 'bigchain-rs',
-        'ssl': False,
-        'login': None,
-        'password': None
     }
 
     database = {}

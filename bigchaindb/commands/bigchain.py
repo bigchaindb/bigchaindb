@@ -90,7 +90,6 @@ def run_configure(args, skip_if_exists=False):
     # select the correct config defaults based on the backend
     print('Generating default configuration for backend {}'
           .format(args.backend), file=sys.stderr)
-    database_keys = bigchaindb._database_keys_map[args.backend]
     conf['database'] = bigchaindb._database_map[args.backend]
 
     if not args.yes:
@@ -100,7 +99,7 @@ def run_configure(args, skip_if_exists=False):
                 input_on_stderr('API Server {}? (default `{}`): '.format(key, val)) \
                 or val
 
-        for key in database_keys:
+        for key in ('host', 'port', 'name'):
             val = conf['database'][key]
             conf['database'][key] = \
                 input_on_stderr('Database {}? (default `{}`): '.format(key, val)) \
