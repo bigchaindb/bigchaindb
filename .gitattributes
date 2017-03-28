@@ -1,3 +1,4 @@
+azure export-ignore
 benchmarking-tests export-ignore
 deploy-cluster-aws export-ignore
 docs export-ignore
