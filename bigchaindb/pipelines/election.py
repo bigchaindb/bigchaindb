@@ -13,6 +13,7 @@ from bigchaindb import backend
 from bigchaindb.backend.changefeed import ChangeFeed
 from bigchaindb.models import Block
 from bigchaindb import Bigchain
+from bigchaindb.events import EventHandler, Event, EventTypes
 
 
 logger = logging.getLogger(__name__)
@@ -22,8 +23,9 @@ logger_results = logging.getLogger('pipeline.election.results')
 class Election:
     """Election class."""
 
-    def __init__(self):
+    def __init__(self, events_queue):
         self.bigchain = Bigchain()
+        self.event_handler = EventHandler(events_queue)
 
     def check_for_quorum(self, next_vote):
         """
@@ -42,6 +44,7 @@ class Election:
         next_block = self.bigchain.get_block(block_id)
 
         result = self.bigchain.block_election(next_block)
+        self.handle_block_events(result, block_id)
         if result['status'] == self.bigchain.BLOCK_INVALID:
             return Block.from_dict(next_block)
 
@@ -67,9 +70,20 @@ class Election:
             self.bigchain.write_transaction(tx)
         return invalid_block
 
+    def handle_block_events(self, result, block_id):
+        if result['status'] == self.bigchain.BLOCK_UNDECIDED:
+            return
+        elif result['status'] == self.bigchain.BLOCK_INVALID:
+            event_type = EventTypes.BLOCK_INVALID
+        elif result['status'] == self.bigchain.BLOCK_VALID:
+            event_type = EventTypes.BLOCK_VALID
 
-def create_pipeline():
-    election = Election()
+        event = Event(event_type, {'block_id': block_id})
+        self.event_handler.put_event(event)
+
+
+def create_pipeline(events_queue):
+    election = Election(events_queue)
 
     election_pipeline = Pipeline([
         Node(election.check_for_quorum),
@@ -84,8 +98,8 @@ def get_changefeed():
     return backend.get_changefeed(connection, 'votes', ChangeFeed.INSERT)
 
 
-def start():
-    pipeline = create_pipeline()
+def start(events_queue):
+    pipeline = create_pipeline(events_queue)
     pipeline.setup(indata=get_changefeed())
     pipeline.start()
     return pipeline
