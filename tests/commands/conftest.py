@@ -5,8 +5,8 @@ import pytest
 
 @pytest.fixture
 def mock_run_configure(monkeypatch):
-    from bigchaindb.commands import bigchain
-    monkeypatch.setattr(bigchain, 'run_configure', lambda *args, **kwargs: None)
+    from bigchaindb.commands import bigchaindb
+    monkeypatch.setattr(bigchaindb, 'run_configure', lambda *args, **kwargs: None)
 
 
 @pytest.fixture
@@ -17,8 +17,8 @@ def mock_write_config(monkeypatch):
 
 @pytest.fixture
 def mock_db_init_with_existing_db(monkeypatch):
-    from bigchaindb.commands import bigchain
-    monkeypatch.setattr(bigchain, '_run_init', lambda: None)
+    from bigchaindb.commands import bigchaindb
+    monkeypatch.setattr(bigchaindb, '_run_init', lambda: None)
 
 
 @pytest.fixture
