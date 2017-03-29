@@ -21,3 +21,8 @@ def make_error(status_code, message=None):
 def base_url():
     return '%s://%s/' % (request.environ['wsgi.url_scheme'],
                          request.environ['HTTP_HOST'])
+
+
+def base_ws_uri():
+    """Base websocket uri."""
+    return '%s://%s/' % ('ws', request.environ['HTTP_HOST'])
