@@ -31,5 +31,6 @@ def test_api_v1_endpoint(client):
             'self': 'http://localhost/api/v1/',
             'statuses': 'http://localhost/api/v1/statuses/',
             'transactions': 'http://localhost/api/v1/transactions/',
+            'streams_v1': 'ws://localhost/api/v1/streams/',
         }
     }
