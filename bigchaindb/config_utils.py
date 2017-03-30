@@ -271,8 +271,11 @@ def load_consensus_plugin(name=None):
     Returns:
         an uninstantiated subclass of ``bigchaindb.consensus.AbstractConsensusRules``
     """
-    if not name:
+    if not name or name == 'default':
         return BaseConsensusRules
+
+    if not isinstance(name, str) and issubclass(name, (BaseConsensusRules,)):
+        return name
 
     # TODO: This will return the first plugin with group `bigchaindb.consensus`
     #       and name `name` in the active WorkingSet.
