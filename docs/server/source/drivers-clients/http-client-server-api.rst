@@ -46,8 +46,10 @@ Transactions
 
    Get the transaction with the ID ``tx_id``.
 
-   This endpoint returns a transaction only if a ``VALID`` block on
-   ``bigchain`` exists.
+   This endpoint returns a transaction if it was included in a ``VALID`` block,
+   if it is still waiting to be processed ``BACKLOG`` or is still in an
+   undecided block ``UNDECIDED``. BigchainDB does not keep state about invalid
+   transactions. A request to an invalid transaction will return a ``404 Not Found``.
 
    :param tx_id: transaction ID
    :type tx_id: hex string
