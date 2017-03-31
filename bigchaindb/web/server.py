@@ -2,7 +2,6 @@
 
 The application is implemented in Flask and runs using Gunicorn.
 """
-import os
 import copy
 import multiprocessing
 
