@@ -195,9 +195,9 @@ which can also be obtained using the ``az account list-locations`` command.
 You can also try to assign a name to an Public IP in Azure before starting
 the process, or use ``nslookup`` with the name you have in mind to check
 if it's available for use.
-In the rare chance that name in the ``data.fqdn`` field is not available,
-you must create a ConfigMap with a unique name and restart the
-MongoDB instance.
+
+You should ensure that the the name specified in the ``data.fqdn`` field is
+a unique one.
 
 **Kubernetes on bare-metal or other cloud providers.**
 You need to provide the name resolution function
@@ -343,8 +343,8 @@ Get the file ``bigchaindb-dep.yaml`` from GitHub using:
 
    $ wget https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/k8s/bigchaindb/bigchaindb-dep.yaml
 
-Note that we set the ``BIGCHAINDB_DATABASE_HOST`` to ``mdb`` which is the name
-of the MongoDB service defined earlier.
+Note that we set the ``BIGCHAINDB_DATABASE_HOST`` to ``mdb-svc`` which is the
+name of the MongoDB service defined earlier.
 
 We also hardcode the ``BIGCHAINDB_KEYPAIR_PUBLIC``,
 ``BIGCHAINDB_KEYPAIR_PRIVATE`` and ``BIGCHAINDB_KEYRING`` for now.
@@ -367,22 +367,55 @@ Create the required Deployment using:
 You can check its status using the command ``kubectl get deploy -w``
 
 
-Step 10: Verify the BigchainDB Node Setup
+Step 10: Run NGINX as a Deployment
+----------------------------------
+
+NGINX is used as a proxy to both the BigchainDB and MongoDB instances in the
+node.
+It proxies HTTP requests on port 80 to the BigchainDB backend, and TCP
+connections on port 27017 to the MongoDB backend.
+
+You can also configure a whitelist in NGINX to allow only connections from
+other instances in the MongoDB replica set to access the backend MongoDB
+instance.
+
+Get the file ``nginx-cm.yaml`` from GitHub using:
+
+.. code:: bash
+   
+   $ wget https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/k8s/nginx/nginx-cm.yaml
+
+The IP address whitelist can be explicitly configured in ``nginx-cm.yaml``
+file. You will need a list of the IP addresses of all the other MongoDB 
+instances in the cluster. If the MongoDB intances specify a hostname, then this
+needs to be resolved to the corresponding IP addresses. If the IP address of
+any MongoDB instance changes, we can start a 'rolling upgrade' of NGINX after
+updating the corresponding ConfigMap without affecting availabilty.
+
+
+Create the ConfigMap for the whitelist using:
+
+.. code:: bash
+   
+   $ kubectl apply -f nginx-cm.yaml
+
+Get the file ``nginx-dep.yaml`` from GitHub using:
+
+.. code:: bash
+   
+   $ wget https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/k8s/nginx/nginx-dep.yaml
+
+Create the NGINX deployment using:
+
+.. code:: bash
+   
+   $ kubectl apply -f nginx-dep.yaml
+
+
+Step 11: Verify the BigchainDB Node Setup
 -----------------------------------------
 
-Step 10.1: Testing Externally
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Try to access the ``<dns/ip of your exposed bigchaindb service endpoint>:9984``
-on your browser. You must receive a json output that shows the BigchainDB
-server version among other things.
-
-Try to access the ``<dns/ip of your exposed mongodb service endpoint>:27017``
-on your browser. You must receive a message from MongoDB stating that it
-doesn't allow HTTP connections to the port anymore.
-
-
-Step 10.2: Testing Internally
+Step 11.1: Testing Internally
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Run a container that provides utilities like ``nslookup``, ``curl`` and ``dig``
@@ -392,23 +425,53 @@ on the cluster and query the internal DNS and IP endpoints.
 
    $ kubectl run -it toolbox -- image <docker image to run> --restart=Never --rm
 
-It will drop you to the shell prompt.
-Now you can query for the ``mdb`` and ``bdb`` service details.
-
-.. code:: bash
-
-   $ nslookup mdb
-   $ dig +noall +answer _mdb-port._tcp.mdb.default.svc.cluster.local SRV
-   $ curl -X GET http://mdb:27017
-   $ curl -X GET http://bdb:9984
-
 There is a generic image based on alpine:3.5 with the required utilities
 hosted at Docker Hub under ``bigchaindb/toolbox``.
 The corresponding Dockerfile is `here
 <https://github.com/bigchaindb/bigchaindb/k8s/toolbox/Dockerfile>`_.
+
 You can use it as below to get started immediately:
 
 .. code:: bash
 
    $ kubectl run -it toolbox --image bigchaindb/toolbox --restart=Never --rm
+
+It will drop you to the shell prompt.
+Now you can query for the ``mdb`` and ``bdb`` service details.
+
+.. code:: bash
+
+   # nslookup mdb-svc
+   # nslookup bdb-svc
+   # nslookup ngx-svc
+   # dig +noall +answer _mdb-port._tcp.mdb-svc.default.svc.cluster.local SRV
+   # dig +noall +answer _bdb-port._tcp.bdb-svc.default.svc.cluster.local SRV
+   # dig +noall +answer _ngx-public-mdb-port._tcp.ngx-svc.default.svc.cluster.local SRV
+   # dig +noall +answer _ngx-public-bdb-port._tcp.ngx-svc.default.svc.cluster.local SRV
+   # curl -X GET http://mdb-svc:27017
+   # curl -X GET http://bdb-svc:9984
+   # curl -X GET http://ngx-svc:80
+   # curl -X GET http://ngx-svc:27017
+
+The ``nslookup`` commands should output the configured IP addresses of the
+services in the cluster
+
+The ``dig`` commands should return the port numbers configured for the
+various services in the cluster.
+
+Finally, the ``curl`` commands test the availability of the services
+themselves.
+
+Step 11.2: Testing Externally
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Try to access the ``<dns/ip of your exposed bigchaindb service endpoint>:80``
+on your browser. You must receive a json output that shows the BigchainDB
+server version among other things.
+
+Try to access the ``<dns/ip of your exposed mongodb service endpoint>:27017``
+on your browser. If your IP is in the whitelist, you will receive a message
+from the MongoDB instance stating that it doesn't allow HTTP connections to
+the port anymore. If your IP is not in the whitelist, your access will be
+blocked and you will not see any response from the MongoDB instance.
 

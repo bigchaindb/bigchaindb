@@ -40,7 +40,7 @@ def test_bigchain_run_start(mock_run_configure,
     from bigchaindb.commands.bigchain import run_start
     args = Namespace(start_rethinkdb=False, allow_temp_keypair=False, config=None, yes=True)
     run_start(args)
-    mocked_setup_logging.assert_called_once_with()
+    mocked_setup_logging.assert_called_once_with(user_log_config={})
 
 
 @pytest.mark.skipif(reason="BigchainDB doesn't support the automatic creation of a config file anymore")
@@ -245,7 +245,7 @@ def test_allow_temp_keypair_generates_one_on_the_fly(
     args = Namespace(allow_temp_keypair=True, start_rethinkdb=False, config=None, yes=True)
     run_start(args)
 
-    mocked_setup_logging.assert_called_once_with()
+    mocked_setup_logging.assert_called_once_with(user_log_config={})
     assert bigchaindb.config['keypair']['private'] == 'private_key'
     assert bigchaindb.config['keypair']['public'] == 'public_key'
 
@@ -270,7 +270,7 @@ def test_allow_temp_keypair_doesnt_override_if_keypair_found(mock_gen_keypair,
     args = Namespace(allow_temp_keypair=True, start_rethinkdb=False, config=None, yes=True)
     run_start(args)
 
-    mocked_setup_logging.assert_called_once_with()
+    mocked_setup_logging.assert_called_once_with(user_log_config={})
     assert bigchaindb.config['keypair']['private'] == original_private_key
     assert bigchaindb.config['keypair']['public'] == original_public_key
 
@@ -289,7 +289,7 @@ def test_run_start_when_db_already_exists(mocker,
     monkeypatch.setattr(
         'bigchaindb.commands.bigchain._run_init', mock_run_init)
     run_start(run_start_args)
-    mocked_setup_logging.assert_called_once_with()
+    mocked_setup_logging.assert_called_once_with(user_log_config={})
     assert mocked_start.called
 
 
@@ -311,7 +311,7 @@ def test_run_start_when_keypair_not_found(mocker,
     with pytest.raises(SystemExit) as exc:
         run_start(run_start_args)
 
-    mocked_setup_logging.assert_called_once_with()
+    mocked_setup_logging.assert_called_once_with(user_log_config={})
     assert len(exc.value.args) == 1
     assert exc.value.args[0] == CANNOT_START_KEYPAIR_NOT_FOUND
     assert not mocked_start.called
@@ -337,7 +337,7 @@ def test_run_start_when_start_rethinkdb_fails(mocker,
     with pytest.raises(SystemExit) as exc:
         run_start(run_start_args)
 
-    mocked_setup_logging.assert_called_once_with()
+    mocked_setup_logging.assert_called_once_with(user_log_config={})
     assert len(exc.value.args) == 1
     assert exc.value.args[0] == RETHINKDB_STARTUP_ERROR.format(err_msg)
     assert not mocked_start.called

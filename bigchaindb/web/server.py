@@ -103,6 +103,7 @@ def create_server(settings):
     if not settings.get('threads'):
         settings['threads'] = (multiprocessing.cpu_count() * 2) + 1
 
+    settings['logger_class'] = 'bigchaindb.log.loggers.HttpServerLogger'
     app = create_app(debug=settings.get('debug', False),
                      threads=settings['threads'])
     standalone = StandaloneApplication(app, settings)

@@ -16,7 +16,7 @@ def test_bigchain_run_start_with_rethinkdb(mock_start_rethinkdb,
     run_start(args)
 
     mock_start_rethinkdb.assert_called_with()
-    mocked_setup_logging.assert_called_once_with()
+    mocked_setup_logging.assert_called_once_with(user_log_config={})
 
 
 @patch('subprocess.Popen')
