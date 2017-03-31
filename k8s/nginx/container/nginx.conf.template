@@ -26,6 +26,12 @@ http {
   # ref. RFC 6585
   limit_req_status 429;
 
+  resolver DNS_SERVER valid=20s;
+  
+  map $remote_addr $bdb_backend {
+    default BIGCHAINDB_BACKEND_HOST;
+  }
+  
   server {
     listen BIGCHAINDB_FRONTEND_PORT;
     # server_name "FRONTEND_DNS_NAME";
@@ -54,7 +60,7 @@ http {
       # threshold.
       limit_req zone=one burst=20 nodelay;
 
-      proxy_pass http://BIGCHAINDB_BACKEND_HOST:BIGCHAINDB_BACKEND_PORT;
+      proxy_pass http://$bdb_backend:BIGCHAINDB_BACKEND_PORT;
     }
   }
 }
@@ -76,6 +82,12 @@ stream {
   # enable logging when connections are being throttled
   limit_conn_log_level notice;
   
+  resolver DNS_SERVER valid=20s;
+
+  map $remote_addr $mdb_backend {
+    default MONGODB_BACKEND_HOST;
+  }
+  
   server {
     listen MONGODB_FRONTEND_PORT so_keepalive=10m:1m:5;
     preread_timeout 30s;
@@ -86,9 +98,9 @@ stream {
     # deny access to everyone else
     deny all;
     
-    # allow 512 connections from the same IP address
-    limit_conn two 512;
+    # allow 16 connections from the same IP address
+    limit_conn two 16;
     
-    proxy_pass MONGODB_BACKEND_HOST:MONGODB_BACKEND_PORT;
+    proxy_pass $mdb_backend:MONGODB_BACKEND_PORT;
   }
 }

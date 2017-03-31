@@ -13,3 +13,4 @@ spec:
     targetPort: 27017
     name: mdb-port
   type: ClusterIP
+  clusterIP: None

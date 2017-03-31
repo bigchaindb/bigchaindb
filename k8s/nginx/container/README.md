@@ -38,11 +38,10 @@ docker run \
 --env "MONGODB_BACKEND_HOST=<ip/hostname of instance where MongoDB is running>" \
 --env "MONGODB_BACKEND_PORT=<port where MongoDB is listening for connections>" \
 --env "BIGCHAINDB_FRONTEND_PORT=<port where nginx listens for BigchainDB connections>" \
---env "BIGCHAINDB_BACKEND_HOST=<ip/hostname of instance where BigchainDB is
-running>" \
---env "BIGCHAINDB_BACKEND_PORT=<port where BigchainDB is listening for
-connections>" \
+--env "BIGCHAINDB_BACKEND_HOST=<ip/hostname of instance where BigchainDB is running>" \
+--env "BIGCHAINDB_BACKEND_PORT=<port where BigchainDB is listening for connections>" \
 --env "MONGODB_WHITELIST=<a ':' separated list of IPs that can connect to MongoDB>" \
+--env "DNS_SERVER=<ip of the dns server>" \
 --name=ngx \
 --publish=<port where nginx listens for MongoDB connections as specified above>:<correcponding host port> \
 --publish=<port where nginx listens for BigchainDB connections as specified

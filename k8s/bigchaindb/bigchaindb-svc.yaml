@@ -13,3 +13,4 @@ spec:
     targetPort: 9984
     name: bdb-port
   type: ClusterIP
+  clusterIP: None
