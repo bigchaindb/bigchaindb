@@ -40,4 +40,3 @@ class BaseConsensusRules():
     def validate_block(bigchain, block):
         """See :meth:`bigchaindb.models.Block.validate` for documentation."""
         return block.validate(bigchain)
-
