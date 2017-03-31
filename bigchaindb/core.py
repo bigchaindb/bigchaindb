@@ -28,7 +28,8 @@ class Bigchain(object):
     # return if transaction is in backlog
     TX_IN_BACKLOG = 'backlog'
 
-    def __init__(self, public_key=None, private_key=None, keyring=[], connection=None, backlog_reassign_delay=None, consensusPlugin=None):
+    def __init__(self, public_key=None, private_key=None, keyring=[], connection=None, backlog_reassign_delay=None,
+                 consensus_plugin=None):
         """Initialize the Bigchain instance
 
         A Bigchain instance has several configuration parameters (e.g. host).
@@ -58,11 +59,11 @@ class Bigchain(object):
             backlog_reassign_delay = bigchaindb.config['backlog_reassign_delay']
         self.backlog_reassign_delay = backlog_reassign_delay
 
-        if consensusPlugin is None:
-            consensusPlugin = bigchaindb.config.get('consensus_plugin')
+        if consensus_plugin is None:
+            consensus_plugin = bigchaindb.config.get('consensus_plugin')
 
-        if consensusPlugin:
-            self.consensus = config_utils.load_consensus_plugin(consensusPlugin)
+        if consensus_plugin:
+            self.consensus = config_utils.load_consensus_plugin(consensus_plugin)
         else:
             self.consensus = BaseConsensusRules
 
