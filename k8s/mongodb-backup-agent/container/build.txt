@@ -1,0 +1,2 @@
+docker build -t bigchaindb/mongodb-backup-agent:latest .
+docker push bigchaindb/mongodb-backup-agent:latest

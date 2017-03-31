@@ -1,0 +1,12 @@
+################################################################
+# This YAML file desribes a ConfigMap with the API key for the #
+# Mongo Cloud Manager service                                  #
+################################################################
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mdb-backup
+  namespace: default
+data:
+  api-key: ""

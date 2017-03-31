@@ -20,7 +20,6 @@ RUN apt update \
     && apt -y upgrade \
     && apt -y install --no-install-recommends curl ca-certificates logrotate \
       libsasl2-2 \
-    && echo $FILE_URL \
     && curl -OL $FILE_URL \
     && dpkg -i $DEB_FILE \
     && rm -f $DEB_FILE \
