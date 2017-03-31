@@ -7,7 +7,7 @@ Command Line Interface
 
 
 :mod:`bigchaindb.commands.bigchaindb`
------------------------------------
+-------------------------------------
 
 .. automodule:: bigchaindb.commands.bigchaindb
 
