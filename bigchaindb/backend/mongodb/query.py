@@ -179,9 +179,9 @@ def get_spent(conn, transaction_id, output):
 def get_owned_ids(conn, owner):
     cursor = conn.run(
         conn.collection('bigchain').aggregate([
-            {'$match': {'block.transactions.outputs.public_keys': owner}},
+            {'$match': {'block.transactions.outputs.condition.pubkeys': owner}},
             {'$unwind': '$block.transactions'},
-            {'$match': {'block.transactions.outputs.public_keys': owner}}
+            {'$match': {'block.transactions.outputs.condition.pubkeys': owner}}
         ]))
     # we need to access some nested fields before returning so lets use a
     # generator to avoid having to read all records on the cursor at this point

@@ -76,7 +76,7 @@ def create_bigchain_secondary_index(connection, dbname):
          .table('bigchain')
          .index_create('outputs',
                        r.row['block']['transactions']
-                        .concat_map(lambda tx: tx['outputs']['public_keys'])
+                        .concat_map(lambda tx: tx['outputs']['condition']['pubkeys'])
                         .reduce(lambda l, r: l + r), multi=True))
 
     # secondary index on inputs/transaction links (txid, output)

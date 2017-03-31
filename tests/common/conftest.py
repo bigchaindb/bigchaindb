@@ -77,55 +77,49 @@ def user_Ed25519(user_pub):
 
 @pytest.fixture
 def user_user2_threshold(user_pub, user2_pub):
-    from cryptoconditions import (ThresholdSha256Fulfillment,
-                                  Ed25519Fulfillment)
-    user_pub_keys = [user_pub, user2_pub]
-    threshold = ThresholdSha256Fulfillment(threshold=len(user_pub_keys))
-    for user_pub in user_pub_keys:
-        threshold.add_subfulfillment(Ed25519Fulfillment(public_key=user_pub))
-    return threshold
+    return {
+        'structure': '(2 of %0, %1)',
+        'pubkeys': [user_pub, user2_pub],
+    }
 
 
 @pytest.fixture
-def user2_Ed25519(user2_pub):
-    from cryptoconditions import Ed25519Fulfillment
-    return Ed25519Fulfillment(public_key=user2_pub)
-
-
-@pytest.fixture
-def user_input(user_Ed25519, user_pub):
+def user_input(user_pub):
     from bigchaindb.common.transaction import Input
-    return Input(user_Ed25519, [user_pub])
+    return Input({
+        'structure': '%0',
+        'pubkeys': [user_pub],
+    })
 
 
 @pytest.fixture
-def user2_input(user2_Ed25519, user2_pub):
+def user2_input(user2_pub):
     from bigchaindb.common.transaction import Input
-    return Input(user2_Ed25519, [user2_pub])
+    return Input.generate([user2_pub])
 
 
 @pytest.fixture
 def user_user2_threshold_output(user_user2_threshold, user_pub, user2_pub):
     from bigchaindb.common.transaction import Output
-    return Output(user_user2_threshold, [user_pub, user2_pub])
+    return Output(user_user2_threshold, 1)
 
 
 @pytest.fixture
 def user_user2_threshold_input(user_user2_threshold, user_pub, user2_pub):
     from bigchaindb.common.transaction import Input
-    return Input(user_user2_threshold, [user_pub, user2_pub])
+    return Input(user_user2_threshold)
 
 
 @pytest.fixture
 def user_output(user_Ed25519, user_pub):
     from bigchaindb.common.transaction import Output
-    return Output(user_Ed25519, [user_pub])
+    return Output.generate([user_pub], 1)
 
 
 @pytest.fixture
-def user2_output(user2_Ed25519, user2_pub):
+def user2_output(user2_pub):
     from bigchaindb.common.transaction import Output
-    return Output(user2_Ed25519, [user2_pub])
+    return Output.generate([user2_pub], 1)
 
 
 @pytest.fixture
@@ -160,8 +154,7 @@ def transfer_utx(user_output, user2_output, utx):
     from bigchaindb.common.transaction import (Input, TransactionLink,
                                                Transaction)
     user_output = user_output.to_dict()
-    input = Input(utx.outputs[0].fulfillment,
-                  user_output['public_keys'],
+    input = Input(utx.outputs[0].condition,
                   TransactionLink(utx.id, 0))
     return Transaction('TRANSFER', {'id': utx.id}, [input], [user2_output])
 

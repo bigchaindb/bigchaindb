@@ -8,7 +8,7 @@ from bigchaindb.common.transaction import TransactionLink
 
 import bigchaindb
 
-from bigchaindb import backend, config_utils, utils
+from bigchaindb import backend, config_utils
 from bigchaindb.consensus import BaseConsensusRules
 from bigchaindb.models import Block, Transaction
 
@@ -386,17 +386,8 @@ class Bigchain(object):
             # a transaction can contain multiple outputs so we need to iterate over all of them
             # to get a list of outputs available to spend
             for index, output in enumerate(tx['outputs']):
-                # for simple signature conditions there are no subfulfillments
-                # check if the owner is in the condition `owners_after`
-                if len(output['public_keys']) == 1:
-                    if output['condition']['details']['public_key'] == owner:
-                        links.append(TransactionLink(tx['id'], index))
-                else:
-                    # for transactions with multiple `public_keys` there will be several subfulfillments nested
-                    # in the condition. We need to iterate the subfulfillments to make sure there is a
-                    # subfulfillment for `owner`
-                    if utils.condition_details_has_owner(output['condition']['details'], owner):
-                        links.append(TransactionLink(tx['id'], index))
+                if owner in output['condition']['pubkeys']:
+                    links.append(TransactionLink(tx['id'], index))
         return links
 
     def get_owned_ids(self, owner):

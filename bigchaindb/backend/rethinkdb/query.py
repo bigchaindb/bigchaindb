@@ -127,7 +127,7 @@ def get_owned_ids(connection, owner):
              .distinct()
              .concat_map(lambda doc: doc['block']['transactions'])
              .filter(lambda tx: tx['outputs'].contains(
-                lambda c: c['public_keys'].contains(owner))))
+                lambda c: c['condition']['pubkeys'].contains(owner))))
 
 
 @register_query(RethinkDBConnection)

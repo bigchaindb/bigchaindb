@@ -52,8 +52,7 @@ def test_single_in_single_own_single_out_multiple_own_create(b, user_pk):
     assert tx_signed.outputs[0].amount == 100
 
     output = tx_signed.outputs[0].to_dict()
-    assert 'subfulfillments' in output['condition']['details']
-    assert len(output['condition']['details']['subfulfillments']) == 2
+    assert output['condition']['structure'] == '(2 of %0, %0)'
 
     assert len(tx_signed.inputs) == 1
 
@@ -76,8 +75,7 @@ def test_single_in_single_own_multiple_out_mix_own_create(b, user_pk):
     assert tx_signed.outputs[1].amount == 50
 
     output_cid1 = tx_signed.outputs[1].to_dict()
-    assert 'subfulfillments' in output_cid1['condition']['details']
-    assert len(output_cid1['condition']['details']['subfulfillments']) == 2
+    assert output_cid1['condition']['structure'] == '(2 of %0, %0)'
 
     assert len(tx_signed.inputs) == 1
 
@@ -97,9 +95,8 @@ def test_single_in_multiple_own_single_out_single_own_create(b, user_pk,
     assert tx_signed.outputs[0].amount == 100
     assert len(tx_signed.inputs) == 1
 
-    ffill = tx_signed.inputs[0].fulfillment.to_dict()
-    assert 'subfulfillments' in ffill
-    assert len(ffill['subfulfillments']) == 2
+    assert_condition(tx_signed.inputs[0].condition,
+                     [b.me, user_pk])
 
 
 # TRANSFER divisible asset
@@ -207,8 +204,7 @@ def test_single_in_single_own_single_out_multiple_own_transfer(b, user_pk,
     assert tx_transfer_signed.outputs[0].amount == 100
 
     condition = tx_transfer_signed.outputs[0].to_dict()
-    assert 'subfulfillments' in condition['condition']['details']
-    assert len(condition['condition']['details']['subfulfillments']) == 2
+    assert condition['condition']['structure'] == '(2 of %0, %0)'
 
     assert len(tx_transfer_signed.inputs) == 1
 
@@ -248,8 +244,7 @@ def test_single_in_single_own_multiple_out_mix_own_transfer(b, user_pk,
     assert tx_transfer_signed.outputs[1].amount == 50
 
     output_cid1 = tx_transfer_signed.outputs[1].to_dict()
-    assert 'subfulfillments' in output_cid1['condition']['details']
-    assert len(output_cid1['condition']['details']['subfulfillments']) == 2
+    assert output_cid1['condition']['structure'] == '(2 of %0, %0)'
 
     assert len(tx_transfer_signed.inputs) == 1
 
@@ -286,9 +281,8 @@ def test_single_in_multiple_own_single_out_single_own_transfer(b, user_pk,
     assert tx_transfer_signed.outputs[0].amount == 100
     assert len(tx_transfer_signed.inputs) == 1
 
-    ffill = tx_transfer_signed.inputs[0].fulfillment.to_dict()
-    assert 'subfulfillments' in ffill
-    assert len(ffill['subfulfillments']) == 2
+    assert_condition(tx_transfer_signed.inputs[0].condition,
+                     tx_create.outputs[0].condition['pubkeys'])
 
 
 # TRANSFER divisible asset
@@ -356,12 +350,10 @@ def test_multiple_in_multiple_own_single_out_single_own_transfer(b, user_pk,
     assert tx_transfer_signed.outputs[0].amount == 100
     assert len(tx_transfer_signed.inputs) == 2
 
-    ffill_fid0 = tx_transfer_signed.inputs[0].fulfillment.to_dict()
-    ffill_fid1 = tx_transfer_signed.inputs[1].fulfillment.to_dict()
-    assert 'subfulfillments' in ffill_fid0
-    assert 'subfulfillments' in ffill_fid1
-    assert len(ffill_fid0['subfulfillments']) == 2
-    assert len(ffill_fid1['subfulfillments']) == 2
+    assert_condition(tx_transfer_signed.inputs[0].condition,
+                     tx_create.outputs[0].condition['pubkeys'])
+    assert_condition(tx_transfer_signed.inputs[1].condition,
+                     tx_create.outputs[1].condition['pubkeys'])
 
 
 # TRANSFER divisible asset
@@ -397,11 +389,10 @@ def test_muiltiple_in_mix_own_multiple_out_single_own_transfer(b, user_pk,
     assert tx_transfer_signed.outputs[0].amount == 100
     assert len(tx_transfer_signed.inputs) == 2
 
-    ffill_fid0 = tx_transfer_signed.inputs[0].fulfillment.to_dict()
-    ffill_fid1 = tx_transfer_signed.inputs[1].fulfillment.to_dict()
-    assert 'subfulfillments' not in ffill_fid0
-    assert 'subfulfillments' in ffill_fid1
-    assert len(ffill_fid1['subfulfillments']) == 2
+    assert_condition(tx_transfer_signed.inputs[0].condition,
+                     tx_create.outputs[0].condition['pubkeys'])
+    assert_condition(tx_transfer_signed.inputs[1].condition,
+                     tx_create.outputs[1].condition['pubkeys'])
 
 
 # TRANSFER divisible asset
@@ -442,15 +433,13 @@ def test_muiltiple_in_mix_own_multiple_out_mix_own_transfer(b, user_pk,
 
     cond_cid0 = tx_transfer_signed.outputs[0].to_dict()
     cond_cid1 = tx_transfer_signed.outputs[1].to_dict()
-    assert 'subfulfillments' not in cond_cid0['condition']['details']
-    assert 'subfulfillments' in cond_cid1['condition']['details']
-    assert len(cond_cid1['condition']['details']['subfulfillments']) == 2
+    assert len(cond_cid0['condition']['pubkeys']) == 1
+    assert len(cond_cid1['condition']['pubkeys']) == 2
 
-    ffill_fid0 = tx_transfer_signed.inputs[0].fulfillment.to_dict()
-    ffill_fid1 = tx_transfer_signed.inputs[1].fulfillment.to_dict()
-    assert 'subfulfillments' not in ffill_fid0
-    assert 'subfulfillments' in ffill_fid1
-    assert len(ffill_fid1['subfulfillments']) == 2
+    assert_condition(tx_transfer_signed.inputs[0].condition,
+                     tx_create.outputs[0].condition['pubkeys'])
+    assert_condition(tx_transfer_signed.inputs[1].condition,
+                     tx_create.outputs[1].condition['pubkeys'])
 
 
 # TRANSFER divisible asset
@@ -720,3 +709,15 @@ def test_non_positive_amounts_on_create_validate(b, user_pk):
 
     with pytest.raises(AmountError):
         tx_create_signed.validate(b)
+
+
+def assert_condition(condition, pubkeys):
+    """ Assert that a condition is well formed """
+    if len(pubkeys) == 1:
+        structure = '%0'
+    elif len(pubkeys) == 2:
+        structure = '(2 of %0, %1)'
+    assert condition == {
+        'structure': structure,
+        'pubkeys': pubkeys,
+    }

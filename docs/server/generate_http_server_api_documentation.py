@@ -212,7 +212,7 @@ def main():
     tx = Transaction.create([pubkey], [([pubkey], 1)], asset=asset, metadata={'sequence': 0})
     tx = tx.sign([privkey])
     ctx['tx'] = pretty_json(tx.to_dict())
-    ctx['public_keys'] = tx.outputs[0].public_keys[0]
+    ctx['public_keys'] = tx.outputs[0].condition['pubkeys'][0]
     ctx['txid'] = tx.id
 
     # tx transfer
@@ -220,28 +220,26 @@ def main():
     pubkey_transfer = '3yfQPHeWAa1MxTX9Zf9176QqcpcnWcanVZZbaHb8B3h9'
 
     cid = 0
-    input_ = Input(fulfillment=tx.outputs[cid].fulfillment,
-                   fulfills=TransactionLink(txid=tx.id, output=cid),
-                   owners_before=tx.outputs[cid].public_keys)
+    input_ = Input(fulfillment=tx.outputs[cid].condition,
+                   fulfills=TransactionLink(txid=tx.id, output=cid))
     tx_transfer = Transaction.transfer([input_], [([pubkey_transfer], 1)], asset_id=tx.id, metadata={'sequence': 1})
     tx_transfer = tx_transfer.sign([privkey])
     ctx['tx_transfer'] = pretty_json(tx_transfer.to_dict())
-    ctx['public_keys_transfer'] = tx_transfer.outputs[0].public_keys[0]
+    ctx['public_keys_transfer'] = tx_transfer.outputs[0].condition['pubkeys'][0]
     ctx['tx_transfer_id'] = tx_transfer.id
 
     # privkey_transfer_last = 'sG3jWDtdTXUidBJK53ucSTrosktG616U3tQHBk81eQe'
     pubkey_transfer_last = '3Af3fhhjU6d9WecEM9Uw5hfom9kNEwE7YuDWdqAUssqm'
 
     cid = 0
-    input_ = Input(fulfillment=tx_transfer.outputs[cid].fulfillment,
-                   fulfills=TransactionLink(txid=tx_transfer.id, output=cid),
-                   owners_before=tx_transfer.outputs[cid].public_keys)
+    input_ = Input(fulfillment=tx_transfer.outputs[cid].condition,
+                   fulfills=TransactionLink(txid=tx_transfer.id, output=cid))
     tx_transfer_last = Transaction.transfer([input_], [([pubkey_transfer_last], 1)],
                                             asset_id=tx.id, metadata={'sequence': 2})
     tx_transfer_last = tx_transfer_last.sign([privkey_transfer])
     ctx['tx_transfer_last'] = pretty_json(tx_transfer_last.to_dict())
     ctx['tx_transfer_last_id'] = tx_transfer_last.id
-    ctx['public_keys_transfer_last'] = tx_transfer_last.outputs[0].public_keys[0]
+    ctx['public_keys_transfer_last'] = tx_transfer_last.outputs[0].condition['pubkeys'][0]
 
     # block
     node_private = "5G2kE1zJAgTajkVSbPAQWo4c2izvtwqaNHYsaNpbbvxX"
