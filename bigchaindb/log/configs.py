@@ -1,7 +1,12 @@
 import logging
+from logging.handlers import DEFAULT_TCP_LOGGING_PORT
 from os.path import expanduser, join
 
 
+DEFAULT_SOCKET_LOGGING_HOST = 'localhost'
+DEFAULT_SOCKET_LOGGING_PORT = DEFAULT_TCP_LOGGING_PORT
+DEFAULT_SOCKET_LOGGING_ADDR = (DEFAULT_SOCKET_LOGGING_HOST,
+                               DEFAULT_SOCKET_LOGGING_PORT)
 DEFAULT_LOG_DIR = expanduser('~')
 
 PUBLISHER_LOGGING_CONFIG = {
@@ -18,9 +23,8 @@ SUBSCRIBER_LOGGING_CONFIG = {
     'formatters': {
         'console': {
             'class': 'logging.Formatter',
-            'format': (
-                '%(name)-15s %(levelname)-8s %(processName)-10s %(message)s'
-            ),
+            'format': ('[%(asctime)s] [%(levelname)s] (%(name)s) '
+                       '%(message)s (%(processName)-10s - pid: %(process)d)'),
             'datefmt': '%Y-%m-%d %H:%M:%S',
         },
         'file': {

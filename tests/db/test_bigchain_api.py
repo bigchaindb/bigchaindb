@@ -446,23 +446,6 @@ class TestBigchainApi(object):
         b.write_vote(b.vote(block_3.id, b.get_last_voted_block().id, True))
         assert b.get_last_voted_block().id == block_3.id
 
-    def test_no_vote_written_if_block_already_has_vote(self, b, genesis_block):
-        from bigchaindb.models import Block
-
-        block_1 = dummy_block()
-        b.write_block(block_1)
-
-        b.write_vote(b.vote(block_1.id, genesis_block.id, True))
-        retrieved_block_1 = b.get_block(block_1.id)
-        retrieved_block_1 = Block.from_dict(retrieved_block_1)
-
-        # try to vote again on the retrieved block, should do nothing
-        b.write_vote(b.vote(retrieved_block_1.id, genesis_block.id, True))
-        retrieved_block_2 = b.get_block(block_1.id)
-        retrieved_block_2 = Block.from_dict(retrieved_block_2)
-
-        assert retrieved_block_1 == retrieved_block_2
-
     @pytest.mark.usefixtures('inputs')
     def test_assign_transaction_one_node(self, b, user_pk, user_sk):
         from bigchaindb.backend import query

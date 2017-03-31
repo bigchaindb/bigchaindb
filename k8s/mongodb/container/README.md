@@ -19,7 +19,7 @@
 ```
 docker run \
 --name=mdb1 \
---publish=17017:17017 \
+--publish=<mongo port number for external connections>:<corresponding host port> \
 --rm=true \
 bigchaindb/mongodb \
 --replica-set-name <replica set name> \

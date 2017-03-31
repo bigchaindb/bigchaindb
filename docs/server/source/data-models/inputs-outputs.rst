@@ -22,7 +22,12 @@ One can also put different weights on the inputs to a threshold condition, along
 
 The (single) output of a threshold condition can be used as one of the inputs of other threshold conditions. This means that one can combine threshold conditions to build complex logical expressions, e.g. (x OR y) AND (u OR v).
 
-When one creates a condition, one can calculate its fulfillment length (e.g. 96). The more complex the condition, the larger its fulfillment length will be. A BigchainDB federation can put an upper limit on the allowed fulfillment length, as a way of capping the complexity of conditions (and the computing time required to validate them).
+When one creates a condition, one can calculate its fulfillment length (e.g.
+96). The more complex the condition, the larger its fulfillment length will be.
+A BigchainDB federation can put an upper limit on the complexity of the
+conditions, either directly by setting an allowed maximum fulfillment length,
+or indirectly by setting a maximum allowed transaction size which would limit
+the overall complexity accross all inputs and outputs of a transaction.
 
 If someone tries to make a condition where the output of a threshold condition feeds into the input of another “earlier” threshold condition (i.e. in a closed logical circuit), then their computer will take forever to calculate the (infinite) “condition URI”, at least in theory. In practice, their computer will run out of memory or their client software will timeout after a while.
 

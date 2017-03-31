@@ -24,7 +24,8 @@ from bigchaindb.commands.messages import (
     CANNOT_START_KEYPAIR_NOT_FOUND,
     RETHINKDB_STARTUP_ERROR,
 )
-from bigchaindb.commands.utils import configure_bigchaindb, input_on_stderr
+from bigchaindb.commands.utils import (
+    configure_bigchaindb, start_logging_process, input_on_stderr)
 
 
 logging.basicConfig(level=logging.INFO)
@@ -169,6 +170,7 @@ def run_drop(args):
 
 
 @configure_bigchaindb
+@start_logging_process
 def run_start(args):
     """Start the processes to run the node"""
     logger.info('BigchainDB Version %s', bigchaindb.__version__)

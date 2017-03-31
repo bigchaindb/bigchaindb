@@ -1,0 +1,82 @@
+###############################################################
+# This config file runs nginx as a k8s deployment and exposes #
+# it using an external load balancer.                         #
+# This deployment is used as a front end to both BigchainDB   #
+# and MongoDB.                                                #
+###############################################################
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: ngx-svc
+  namespace: default
+  labels:
+    name: ngx-svc
+  annotations:
+    # NOTE: the following annotation is a beta feature and
+    # only available in GCE/GKE and Azure as of now
+    service.beta.kubernetes.io/external-traffic: OnlyLocal
+spec:
+  selector:
+    app: ngx-dep 
+  ports:
+  - port: 27017
+    targetPort: 27017
+    name: ngx-public-mdb-port
+    protocol: TCP
+  - port: 80
+    targetPort: 80
+    name: ngx-public-bdb-port
+    protocol: TCP
+  type: LoadBalancer
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ngx-dep
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ngx-dep
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: nginx
+        image: bigchaindb/nginx:latest
+        imagePullPolicy: Always
+        env:
+        - name: MONGODB_FRONTEND_PORT
+          value: "27017"
+        - name: MONGODB_BACKEND_HOST
+          value: mdb-svc
+        - name: MONGODB_BACKEND_PORT
+          value: "27017"
+        - name: BIGCHAINDB_FRONTEND_PORT
+          value: "80"
+        - name: BIGCHAINDB_BACKEND_HOST
+          value: bdb-svc
+        - name: BIGCHAINDB_BACKEND_PORT
+          value: "9984"
+        - name: MONGODB_WHITELIST
+          valueFrom:
+            configMapKeyRef:
+              name: mongodb-whitelist
+              key: allowed-hosts
+        ports:
+        - containerPort: 27017
+          hostPort: 27017
+          name: public-mdb-port
+          protocol: TCP 
+        - containerPort: 80
+          hostPort: 80
+          name: public-bdb-port
+          protocol: TCP 
+        resources:
+          limits:
+            cpu: 200m
+            memory: 768Mi
+        #livenessProbe: TODO(Krish)
+        #readinessProbe: TODO(Krish)
+      restartPolicy: Always

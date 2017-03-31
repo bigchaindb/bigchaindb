@@ -27,6 +27,8 @@ def test_get_votes_endpoint(b, client):
 @pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
 def test_get_votes_endpoint_multiple_votes(b, client):
+    from bigchaindb.common.crypto import generate_key_pair
+
     tx = Transaction.create([b.me], [([b.me], 1)])
     tx = tx.sign([b.me_private])
 
@@ -37,8 +39,12 @@ def test_get_votes_endpoint_multiple_votes(b, client):
     vote_valid = b.vote(block.id, last_block, True)
     b.write_vote(vote_valid)
 
-    # vote the block valid
+    # vote the block invalid
+    # a note can only vote once so we need a new node_pubkey for the second
+    # vote
+    _, pk = generate_key_pair()
     vote_invalid = b.vote(block.id, last_block, False)
+    vote_invalid['node_pubkey'] = pk
     b.write_vote(vote_invalid)
 
     res = client.get(VOTES_ENDPOINT + '?block_id=' + block.id)
