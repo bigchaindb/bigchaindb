@@ -61,6 +61,7 @@ config = {
         #     'bichaindb.core': 'info',
         # },
     },
+    'consensus_plugin': None
 }
 
 # We need to maintain a backup copy of the original config dict in case

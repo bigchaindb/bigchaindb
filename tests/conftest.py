@@ -35,6 +35,12 @@ def pytest_addoption(parser):
         default=os.environ.get('BIGCHAINDB_DATABASE_BACKEND', 'rethinkdb'),
         help='Defines the backend to use (available: {})'.format(backends),
     )
+    parser.addoption(
+        '--consensus-plugin',
+        action='store',
+        default='default',
+        help='Defines the consensus plugin to use',
+    )
 
 
 def pytest_ignore_collect(path, config):
@@ -128,6 +134,9 @@ def _configure_bigchaindb(request):
         }
     }
     config['database']['name'] = test_db_name
+
+    consensus_plugin = request.config.getoption('--consensus-plugin')
+    config['consensus_plugin'] = consensus_plugin
     config_utils.set_config(config)
 
 
