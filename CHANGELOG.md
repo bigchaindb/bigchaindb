@@ -15,6 +15,13 @@ For reference, the possible headings are:
 * **External Contributors** to list contributors outside of BigchainDB GmbH.
 * **Notes**
 
+## [0.9.5] - 2017-03-29
+Tag name: v0.9.5
+
+### Fixed
+Upgrade `python-rapidjson` to `0.0.11`(fixes #1350 - thanks to @ferOnti for
+reporting).
+
 ## [0.9.4] - 2017-03-16
 Tag name: v0.9.4
 

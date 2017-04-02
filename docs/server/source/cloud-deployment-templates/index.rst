@@ -16,3 +16,5 @@ If you find the cloud deployment templates for nodes helpful, then you may also 
    template-kubernetes-azure
    node-on-kubernetes
    add-node-on-kubernetes
+   upgrade-on-kubernetes
+   
