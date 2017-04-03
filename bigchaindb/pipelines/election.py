@@ -23,9 +23,11 @@ logger_results = logging.getLogger('pipeline.election.results')
 class Election:
     """Election class."""
 
-    def __init__(self, events_queue):
+    def __init__(self, events_queue=None):
         self.bigchain = Bigchain()
-        self.event_handler = EventHandler(events_queue)
+        self.event_handler = None
+        if events_queue:
+            self.event_handler = EventHandler(events_queue)
 
     def check_for_quorum(self, next_vote):
         """
@@ -71,19 +73,20 @@ class Election:
         return invalid_block
 
     def handle_block_events(self, result, block_id):
-        if result['status'] == self.bigchain.BLOCK_UNDECIDED:
-            return
-        elif result['status'] == self.bigchain.BLOCK_INVALID:
-            event_type = EventTypes.BLOCK_INVALID
-        elif result['status'] == self.bigchain.BLOCK_VALID:
-            event_type = EventTypes.BLOCK_VALID
+        if self.event_handler:
+            if result['status'] == self.bigchain.BLOCK_UNDECIDED:
+                return
+            elif result['status'] == self.bigchain.BLOCK_INVALID:
+                event_type = EventTypes.BLOCK_INVALID
+            elif result['status'] == self.bigchain.BLOCK_VALID:
+                event_type = EventTypes.BLOCK_VALID
 
-        event = Event(event_type, {'block_id': block_id})
-        self.event_handler.put_event(event)
+            event = Event(event_type, {'block_id': block_id})
+            self.event_handler.put_event(event)
 
 
-def create_pipeline(events_queue):
-    election = Election(events_queue)
+def create_pipeline(events_queue=None):
+    election = Election(events_queue=events_queue)
 
     election_pipeline = Pipeline([
         Node(election.check_for_quorum),
@@ -98,8 +101,8 @@ def get_changefeed():
     return backend.get_changefeed(connection, 'votes', ChangeFeed.INSERT)
 
 
-def start(events_queue):
-    pipeline = create_pipeline(events_queue)
+def start(events_queue=None):
+    pipeline = create_pipeline(events_queue=events_queue)
     pipeline.setup(indata=get_changefeed())
     pipeline.start()
     return pipeline
