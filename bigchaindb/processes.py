@@ -45,7 +45,7 @@ def start():
     stale.start()
 
     logger.info('Starting election')
-    election.start(events_queue)
+    election.start(events_queue=events_queue)
 
     # start the web api
     app_server = server.create_server(bigchaindb.config['server'])
