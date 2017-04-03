@@ -51,3 +51,15 @@ END BLOCK
 (END OF EMAIL)
 
 The next step is to wait for them to copy that comment into the comments of the indicated pull request. Once they do so, it's safe to merge the pull request.
+
+## How to Handle CLA Agreement Emails with No Associated Pull Request
+
+Reply with an email like this:
+
+Hi [First Name],
+
+Today I got an email (copied below) to tell me that you agreed to the BigchainDB Contributor License Agreement. Did you intend to do that?
+
+If no, then you can ignore this email.
+
+If yes, then there's another step to connect your email address with your GitHub account. To do that, you must first create a pull request in one of the BigchainDB repositories on GitHub. Once you've done that, please reply to this email with a link to the pull request. Then I'll send you a special block of text to paste into the comments on that pull request.
