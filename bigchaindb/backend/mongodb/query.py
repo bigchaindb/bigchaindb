@@ -301,3 +301,20 @@ def get_unvoted_blocks(conn, node_pubkey):
                 'votes': False, '_id': False
             }}
         ]))
+
+
+@register_query(MongoDBConnection)
+def get_last_cached_block_result(conn):
+    return (conn.get_local_collection('block_results')
+            .find_one(sort=[('height', -1)], projection={'_id': False}))
+
+
+@register_query(MongoDBConnection)
+def insert_cached_block_result(conn, result):
+    return conn.get_local_collection('block_results').insert_one(result.copy())
+
+
+@register_query(MongoDBConnection)
+def get_cached_block_result(conn, block_id):
+    return (conn.get_local_collection('block_results')
+            .find_one({'block_id': block_id}, projection={'_id': False}))

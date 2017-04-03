@@ -23,7 +23,7 @@ def create_database(connection, dbname):
 
 @register_schema(RethinkDBConnection)
 def create_tables(connection, dbname):
-    for table_name in ['bigchain', 'backlog', 'votes']:
+    for table_name in ['bigchain', 'backlog', 'votes', 'block_results']:
         logger.info('Create `%s` table.', table_name)
         connection.run(r.db(dbname).table_create(table_name))
 
@@ -33,6 +33,7 @@ def create_indexes(connection, dbname):
     create_bigchain_secondary_index(connection, dbname)
     create_backlog_secondary_index(connection, dbname)
     create_votes_secondary_index(connection, dbname)
+    create_block_results_secondary_indexes(connection, dbname)
 
 
 @register_schema(RethinkDBConnection)
@@ -127,4 +128,24 @@ def create_votes_secondary_index(connection, dbname):
     connection.run(
         r.db(dbname)
         .table('votes')
+        .index_wait())
+
+
+def create_block_results_secondary_indexes(connection, dbname):
+    logger.info('Create `block_results` secondary indexes.')
+
+    connection.run(
+        r.db(dbname)
+        .table('block_results')
+        .index_create('block_id', r.row['block_id']))
+
+    connection.run(
+        r.db(dbname)
+        .table('block_results')
+        .index_create('height', r.row['height']))
+
+    # wait for rethinkdb to finish creating secondary indexes
+    connection.run(
+        r.db(dbname)
+        .table('block_results')
         .index_wait())

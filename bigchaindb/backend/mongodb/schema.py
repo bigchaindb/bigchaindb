@@ -33,17 +33,22 @@ def create_tables(conn, dbname):
         # TODO: read and write concerns can be declared here
         conn.conn[dbname].create_collection(table_name)
 
+    # Create local table namespaced to current db name
+    conn.conn.local.create_collection(dbname + '_block_results')
+
 
 @register_schema(MongoDBConnection)
 def create_indexes(conn, dbname):
     create_bigchain_secondary_index(conn, dbname)
     create_backlog_secondary_index(conn, dbname)
     create_votes_secondary_index(conn, dbname)
+    create_block_results_secondary_indexes(conn, dbname)
 
 
 @register_schema(MongoDBConnection)
 def drop_database(conn, dbname):
     conn.conn.drop_database(dbname)
+    conn.conn.local[dbname + '_block_results'].drop()
 
 
 def create_bigchain_secondary_index(conn, dbname):
@@ -102,3 +107,10 @@ def create_votes_secondary_index(conn, dbname):
                                               ASCENDING)],
                                             name='block_and_voter',
                                             unique=True)
+
+
+def create_block_results_secondary_indexes(conn, dbname):
+    logger.info('create `block_results` secondary index.')
+    collection = conn.get_local_collection('block_results')
+    collection.create_index('block_id', name='block_id', unique=True)
+    collection.create_index([('height', DESCENDING)], name='height', unique=True)

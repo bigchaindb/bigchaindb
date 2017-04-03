@@ -253,3 +253,33 @@ def get_unvoted_blocks(connection, node_pubkey):
     #        database level. Solving issue #444 can help untangling the situation
     unvoted_blocks = filter(lambda block: not utils.is_genesis_block(block), unvoted)
     return unvoted_blocks
+
+
+@register_query(RethinkDBConnection)
+def get_last_cached_block_result(connection):
+    try:
+        return connection.run(
+                r.table('block_results', read_mode=READ_MODE)
+                .order_by(r.desc(r.row['height']))
+                .without('id')
+                .nth(0))
+    except r.ReqlNonExistenceError:
+        pass
+
+
+@register_query(RethinkDBConnection)
+def insert_cached_block_result(connection, result):
+    return connection.run(
+            r.table('block_results').insert(result.copy()))
+
+
+@register_query(RethinkDBConnection)
+def get_cached_block_result(connection, block_id):
+    try:
+        return connection.run(
+                r.table('block_results')
+                .get_all(block_id, index='block_id')
+                .without('id')
+                .nth(0))
+    except r.ReqlNonExistenceError:
+        pass

@@ -60,10 +60,8 @@ def test_create_tables():
     schema.create_database(conn, dbname)
     schema.create_tables(conn, dbname)
 
-    assert conn.run(r.db(dbname).table_list().contains('bigchain')) is True
-    assert conn.run(r.db(dbname).table_list().contains('backlog')) is True
-    assert conn.run(r.db(dbname).table_list().contains('votes')) is True
-    assert len(conn.run(r.db(dbname).table_list())) == 3
+    assert (set(conn.run(r.db(dbname).table_list())) ==
+            {'backlog', 'bigchain', 'block_results', 'votes'})
 
 
 @pytest.mark.bdb
@@ -97,6 +95,10 @@ def test_create_secondary_indexes():
     # Votes table
     assert conn.run(r.db(dbname).table('votes').index_list().contains(
         'block_and_voter')) is True
+
+    # Block results table
+    assert (set(conn.run(r.db(dbname).table('block_results').index_list())) ==
+            {'height', 'block_id'})
 
 
 def test_drop(dummy_db):

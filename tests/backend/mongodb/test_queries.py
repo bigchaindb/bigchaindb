@@ -417,3 +417,15 @@ def test_get_txids_filtered(signed_create_tx, signed_transfer_tx):
     # Test get by asset and TRANSFER
     txids = set(query.get_txids_filtered(conn, asset_id, Transaction.TRANSFER))
     assert txids == {signed_transfer_tx.id}
+
+
+def test_block_result_queries():
+    from bigchaindb.backend import connect, query
+    conn = connect()
+    a = {'block_id': 'xa', 'height': 1}
+    b = {'block_id': 'xb', 'height': 0}
+    query.insert_cached_block_result(conn, a)
+    query.insert_cached_block_result(conn, b)
+    assert query.get_cached_block_result(conn, 'xc') is None
+    assert query.get_cached_block_result(conn, 'xb') == b
+    assert query.get_last_cached_block_result(conn) == a
