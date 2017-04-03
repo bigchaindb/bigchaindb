@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-from multiprocessing import Process, Queue
+from multiprocessing import Process
 from bigchaindb.pipelines import vote, block, election, stale
 
 
