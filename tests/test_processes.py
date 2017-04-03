@@ -19,6 +19,5 @@ def test_processes_start(mock_process, mock_vote, mock_block, mock_election,
     mock_block.assert_called_with()
     mock_stale.assert_called_with()
     mock_process.assert_called_with()
-    assert mock_election.call_count == 1
     # the events queue is declared inside processes.start()
-    assert type(mock_election.call_args[1]['events_queue']) == type(Queue())
+    assert mock_election.call_count == 1
