@@ -12,7 +12,8 @@ import sys
 from bigchaindb.common import crypto
 from bigchaindb.common.exceptions import (StartupError,
                                           DatabaseAlreadyExists,
-                                          KeypairNotFoundException)
+                                          KeypairNotFoundException,
+                                          DatabaseDoesNotExist)
 import bigchaindb
 from bigchaindb import backend, processes
 from bigchaindb.backend import schema
@@ -166,7 +167,10 @@ def run_drop(args):
 
     conn = backend.connect()
     dbname = bigchaindb.config['database']['name']
-    schema.drop_database(conn, dbname)
+    try:
+        schema.drop_database(conn, dbname)
+    except DatabaseDoesNotExist:
+        print("Cannot drop '{name}'. The database does not exist.".format(name=dbname), file=sys.stderr)
 
 
 @configure_bigchaindb
