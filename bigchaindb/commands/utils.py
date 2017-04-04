@@ -198,6 +198,7 @@ base_parser.add_argument('-c', '--config',
                               '(use "-" for stdout)')
 
 base_parser.add_argument('-l', '--log-level',
+                         type=str.upper,  # convert to uppercase for comparison to choices
                          choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
                          default='INFO',
                          help='Log level')
