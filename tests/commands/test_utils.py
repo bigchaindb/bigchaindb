@@ -54,7 +54,7 @@ def test_configure_bigchaindb_logging(log_level):
 
 def test_start_raises_if_command_not_implemented():
     from bigchaindb.commands import utils
-    from bigchaindb.commands.bigchain import create_parser
+    from bigchaindb.commands.bigchaindb import create_parser
 
     parser = create_parser()
 
@@ -66,7 +66,7 @@ def test_start_raises_if_command_not_implemented():
 
 def test_start_raises_if_no_arguments_given():
     from bigchaindb.commands import utils
-    from bigchaindb.commands.bigchain import create_parser
+    from bigchaindb.commands.bigchaindb import create_parser
 
     parser = create_parser()
 
