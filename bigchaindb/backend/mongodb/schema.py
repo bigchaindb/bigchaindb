@@ -112,5 +112,4 @@ def create_votes_secondary_index(conn, dbname):
 def create_block_results_secondary_indexes(conn, dbname):
     logger.info('create `block_results` secondary index.')
     collection = conn.get_local_collection('block_results')
-    collection.create_index('block_id', name='block_id', unique=True)
     collection.create_index([('height', DESCENDING)], name='height', unique=True)

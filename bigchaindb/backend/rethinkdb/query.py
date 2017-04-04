@@ -261,7 +261,6 @@ def get_last_cached_block_result(connection):
         return connection.run(
                 r.table('block_results', read_mode=READ_MODE)
                 .order_by(r.desc(r.row['height']))
-                .without('id')
                 .nth(0))
     except r.ReqlNonExistenceError:
         pass
@@ -278,8 +277,6 @@ def get_cached_block_result(connection, block_id):
     try:
         return connection.run(
                 r.table('block_results')
-                .get_all(block_id, index='block_id')
-                .without('id')
-                .nth(0))
+                .get(block_id))
     except r.ReqlNonExistenceError:
         pass
