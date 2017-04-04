@@ -97,8 +97,8 @@ def test_create_secondary_indexes():
         'block_and_voter')) is True
 
     # Block results table
-    assert (set(conn.run(r.db(dbname).table('block_results').index_list())) ==
-            {'height', 'block_id'})
+    assert (conn.run(r.db(dbname).table('block_results').index_list()) ==
+            ['height'])
 
 
 def test_drop(dummy_db):
