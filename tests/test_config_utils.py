@@ -11,21 +11,11 @@ ORIGINAL_CONFIG = copy.deepcopy(bigchaindb._config)
 
 @pytest.fixture(scope='function', autouse=True)
 def clean_config(monkeypatch, request):
-
     import bigchaindb
     original_config = copy.deepcopy(ORIGINAL_CONFIG)
     backend = request.config.getoption('--database-backend')
     original_config['database'] = bigchaindb._database_map[backend]
     monkeypatch.setattr('bigchaindb.config', original_config)
-
-
-def test_ordered_keys_match_database_config():
-    import bigchaindb
-
-    assert set(bigchaindb._base_database_rethinkdb.keys()) ==\
-        set(bigchaindb._base_database_rethinkdb_keys)
-    assert set(bigchaindb._base_database_mongodb.keys()) ==\
-        set(bigchaindb._base_database_mongodb_keys)
 
 
 def test_bigchain_instance_is_initialized_when_conf_provided(request):

@@ -17,7 +17,10 @@ _base_database_rethinkdb = {
 # _base_database_rethinkdb.keys() or _base_database_mongodb.keys()
 # because dicts are unordered. I tried to configure
 
-_base_database_rethinkdb_keys = ('host', 'port', 'name')
+_database_keys_map = {
+    'mongodb': ('host', 'port', 'name', 'replicaset'),
+    'rethinkdb': ('host', 'port', 'name')
+}
 
 _base_database_mongodb = {
     'host': os.environ.get('BIGCHAINDB_DATABASE_HOST', 'localhost'),
@@ -28,9 +31,6 @@ _base_database_mongodb = {
     'login': os.environ.get('BIGCHAINDB_DATABASE_LOGIN'),
     'password': os.environ.get('BIGCHAINDB_DATABASE_PASSWORD')
 }
-
-_base_database_mongodb_keys = ('host', 'port', 'name', 'replicaset',
-                               'ssl', 'login', 'password')
 
 _database_rethinkdb = {
     'backend': os.environ.get('BIGCHAINDB_DATABASE_BACKEND', 'rethinkdb'),
@@ -45,11 +45,6 @@ _database_mongodb = {
     'max_tries': 3,
 }
 _database_mongodb.update(_base_database_mongodb)
-
-_database_keys_map = {
-    'mongodb': _base_database_mongodb_keys,
-    'rethinkdb': _base_database_rethinkdb_keys
-}
 
 _database_map = {
     'mongodb': _database_mongodb,
