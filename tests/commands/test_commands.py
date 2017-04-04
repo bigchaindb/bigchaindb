@@ -152,7 +152,7 @@ def test_drop_db_when_interactive_yes(mock_db_drop, monkeypatch):
 @patch('bigchaindb.backend.schema.drop_database')
 def test_drop_db_when_db_does_not_exist(mock_db_drop, capsys):
     from bigchaindb import config
-    from bigchaindb.commands.bigchain import run_drop
+    from bigchaindb.commands.bigchaindb import run_drop
     from bigchaindb.common.exceptions import DatabaseDoesNotExist
     args = Namespace(config=None, yes=True)
     mock_db_drop.side_effect = DatabaseDoesNotExist
