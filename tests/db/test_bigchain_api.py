@@ -1228,6 +1228,7 @@ def test_is_new_transaction(b, genesis_block):
 
 @pytest.mark.bdb
 def test_block_order_genesis(b):
+    """ Test block order when its the first block """
     from bigchaindb.backend import query
     genesis_block = b.prepare_genesis_block()
     assert query.get_last_block_order(b.connection) is None
@@ -1240,6 +1241,7 @@ def test_block_order_genesis(b):
 
 @pytest.mark.bdb
 def test_block_order_next(b, genesis_block):
+    """ Test block order on a subsequent block """
     from bigchaindb.models import Block
     from bigchaindb.backend import query
     assert query.get_last_block_order(b.connection) == {
@@ -1258,6 +1260,7 @@ def test_block_order_next(b, genesis_block):
 
 @pytest.mark.bdb
 def test_block_order_contended(b, genesis_block):
+    """ Test block order when writing is contended """
     from bigchaindb.models import Block
     from bigchaindb.backend.exceptions import DuplicateKeyError
     block2 = Block.from_dict(genesis_block.to_dict())

@@ -150,7 +150,7 @@ def get_votes_by_block_id_and_voter(connection, block_id, node_pubkey):
 def write_block(connection, block):
     return connection.run(
             r.table('bigchain')
-            .insert(r.json(block.to_str()), durability=WRITE_DURABILITY))
+            .insert(block, durability=WRITE_DURABILITY))
 
 
 @register_query(RethinkDBConnection)
@@ -253,3 +253,17 @@ def get_unvoted_blocks(connection, node_pubkey):
     #        database level. Solving issue #444 can help untangling the situation
     unvoted_blocks = filter(lambda block: not utils.is_genesis_block(block), unvoted)
     return unvoted_blocks
+
+
+@register_query(RethinkDBConnection)
+def write_block_order(connection, link):
+    return connection.run(r.table('block_order').insert(link))
+
+
+@register_query(RethinkDBConnection)
+def get_last_block_order(connection):
+    try:
+        query = r.table('block_order').order_by(r.desc(r.row['id'])).nth(0)
+        return connection.run(query)
+    except r.ReqlNonExistenceError:
+        pass
