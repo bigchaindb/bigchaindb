@@ -59,7 +59,7 @@ def test_create_tables():
     schema.create_tables(conn, dbname)
 
     collection_names = set(conn.run(r.db(dbname).table_list()))
-    assert collection_names == {'bigchain', 'backlog', 'votes', 'block_height'}
+    assert collection_names == {'bigchain', 'backlog', 'votes', 'block_order'}
 
 
 @pytest.mark.bdb
