@@ -298,3 +298,19 @@ def get_txids_filtered(connection, asset_id, operation=None):
     """
 
     raise NotImplementedError
+
+
+@singledispatch
+def get_last_block_order(connection):
+    """
+    Return the latest block order link
+    """
+    raise NotImplementedError
+
+
+@singledispatch
+def write_block_order(connection, link):
+    """
+    Write a block order where the primary key is a contended block height
+    """
+    raise NotImplementedError

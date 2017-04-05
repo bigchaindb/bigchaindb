@@ -1,5 +1,6 @@
 import random
 from time import time
+import logging as logger
 
 from bigchaindb import exceptions as core_exceptions
 from bigchaindb.common import crypto, exceptions
@@ -11,6 +12,9 @@ import bigchaindb
 from bigchaindb import backend, config_utils, utils
 from bigchaindb.consensus import BaseConsensusRules
 from bigchaindb.models import Block, Transaction
+
+
+logger = logger.getLogger('core')
 
 
 class Bigchain(object):
@@ -498,8 +502,20 @@ class Bigchain(object):
         Args:
             block (Block): block to write to bigchain.
         """
+        block = block.to_dict()
+        backend.query.write_block(self.connection, block)
 
-        return backend.query.write_block(self.connection, block)
+        while True:
+            link = {'id': 0, 'block_id': block['id']}
+            prev = backend.query.get_last_block_order(self.connection)
+            if prev:
+                link['prev_block'] = prev['block_id']
+                link['id'] = prev['id'] + 1
+            try:
+                backend.query.write_block_order(self.connection, link)
+                break
+            except backend.exceptions.DuplicateKeyError:
+                logger.info('Contention writing block order')
 
     def prepare_genesis_block(self):
         """Prepare a genesis block."""
