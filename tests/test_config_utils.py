@@ -11,7 +11,6 @@ ORIGINAL_CONFIG = copy.deepcopy(bigchaindb._config)
 
 @pytest.fixture(scope='function', autouse=True)
 def clean_config(monkeypatch, request):
-
     import bigchaindb
     original_config = copy.deepcopy(ORIGINAL_CONFIG)
     backend = request.config.getoption('--database-backend')
@@ -181,6 +180,9 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
         'connection_timeout': 5000,
         'max_tries': 3,
         'replicaset': 'bigchain-rs',
+        'ssl': False,
+        'login': None,
+        'password': None
     }
 
     database = {}

@@ -5,24 +5,46 @@ import os
 # PORT_NUMBER = reduce(lambda x, y: x * y, map(ord, 'BigchainDB')) % 2**16
 # basically, the port number is 9984
 
-_database_rethinkdb = {
-    'backend': os.environ.get('BIGCHAINDB_DATABASE_BACKEND', 'rethinkdb'),
+
+_base_database_rethinkdb = {
     'host': os.environ.get('BIGCHAINDB_DATABASE_HOST', 'localhost'),
     'port': int(os.environ.get('BIGCHAINDB_DATABASE_PORT', 28015)),
     'name': os.environ.get('BIGCHAINDB_DATABASE_NAME', 'bigchain'),
-    'connection_timeout': 5000,
-    'max_tries': 3,
 }
 
-_database_mongodb = {
-    'backend': os.environ.get('BIGCHAINDB_DATABASE_BACKEND', 'mongodb'),
+# The following variable is used by `bigchaindb configure` to
+# prompt the user for database values. We cannot rely on
+# _base_database_rethinkdb.keys() or _base_database_mongodb.keys()
+# because dicts are unordered. I tried to configure
+
+_database_keys_map = {
+    'mongodb': ('host', 'port', 'name', 'replicaset'),
+    'rethinkdb': ('host', 'port', 'name')
+}
+
+_base_database_mongodb = {
     'host': os.environ.get('BIGCHAINDB_DATABASE_HOST', 'localhost'),
     'port': int(os.environ.get('BIGCHAINDB_DATABASE_PORT', 27017)),
     'name': os.environ.get('BIGCHAINDB_DATABASE_NAME', 'bigchain'),
     'replicaset': os.environ.get('BIGCHAINDB_DATABASE_REPLICASET', 'bigchain-rs'),
+    'ssl': bool(os.environ.get('BIGCHAINDB_DATABASE_SSL', False)),
+    'login': os.environ.get('BIGCHAINDB_DATABASE_LOGIN'),
+    'password': os.environ.get('BIGCHAINDB_DATABASE_PASSWORD')
+}
+
+_database_rethinkdb = {
+    'backend': os.environ.get('BIGCHAINDB_DATABASE_BACKEND', 'rethinkdb'),
     'connection_timeout': 5000,
     'max_tries': 3,
 }
+_database_rethinkdb.update(_base_database_rethinkdb)
+
+_database_mongodb = {
+    'backend': os.environ.get('BIGCHAINDB_DATABASE_BACKEND', 'mongodb'),
+    'connection_timeout': 5000,
+    'max_tries': 3,
+}
+_database_mongodb.update(_base_database_mongodb)
 
 _database_map = {
     'mongodb': _database_mongodb,
