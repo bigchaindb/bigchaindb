@@ -324,8 +324,12 @@ class Bigchain(object):
     def get_spent(self, txid, output):
         """Check if a `txid` was already used as an input.
 
-        A transaction can be used as an input for another transaction. Bigchain needs to make sure that a
-        given `txid` is only used once.
+        A transaction can be used as an input for another transaction. Bigchain
+        needs to make sure that a given `txid` is only used once.
+
+        This method will check if the `txid` and `output` has already been
+        spent in a transaction that is in either the `VALID`, `UNDECIDED` or
+        `BACKLOG` state.
 
         Args:
             txid (str): The id of the transaction
@@ -334,32 +338,43 @@ class Bigchain(object):
         Returns:
             The transaction (Transaction) that used the `txid` as an input else
             `None`
+
+        Raises:
+            CriticalDoubleSpend: If the given `txid` and `output` was spent in
+            more than one valid transaction.
         """
         # checks if an input was already spent
         # checks if the bigchain has any transaction with input {'txid': ...,
         # 'output': ...}
-        transactions = list(backend.query.get_spent(self.connection, txid, output))
+        transactions = list(backend.query.get_spent(self.connection, txid,
+                                                    output))
 
         # a transaction_id should have been spent at most one time
-        if transactions:
-            # determine if these valid transactions appear in more than one valid block
-            num_valid_transactions = 0
-            for transaction in transactions:
-                # ignore invalid blocks
-                # FIXME: Isn't there a faster solution than doing I/O again?
-                if self.get_transaction(transaction['id']):
-                    num_valid_transactions += 1
-                if num_valid_transactions > 1:
-                    raise core_exceptions.CriticalDoubleSpend(
-                        '`{}` was spent more than once. There is a problem'
-                        ' with the chain'.format(txid))
+        # determine if these valid transactions appear in more than one valid
+        # block
+        num_valid_transactions = 0
+        non_invalid_transactions = []
+        for transaction in transactions:
+            # ignore transactions in invalid blocks
+            # FIXME: Isn't there a faster solution than doing I/O again?
+            _, status = self.get_transaction(transaction['id'],
+                                             include_status=True)
+            if status == self.TX_VALID:
+                num_valid_transactions += 1
+            # `txid` can only have been spent in at most on valid block.
+            if num_valid_transactions > 1:
+                raise core_exceptions.CriticalDoubleSpend(
+                    '`{}` was spent more than once. There is a problem'
+                    ' with the chain'.format(txid))
+            # if its not and invalid transaction
+            if status is not None:
+                non_invalid_transactions.append(transaction)
 
-            if num_valid_transactions:
-                return Transaction.from_dict(transactions[0])
-            else:
-                # all queried transactions were invalid
-                return None
+        if non_invalid_transactions:
+            return Transaction.from_dict(non_invalid_transactions[0])
         else:
+            # Either no transaction was returned spending the `txid` as
+            # input or the returned transactions are not valid.
             return None
 
     def get_outputs(self, owner):
