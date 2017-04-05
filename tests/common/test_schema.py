@@ -1,6 +1,18 @@
-from bigchaindb.common.schema import (
-    TX_SCHEMA_COMMON, VOTE_SCHEMA, drop_schema_descriptions)
+"""
+This module is tests related to schema checking, but _not_ of granular schematic
+properties related to validation.
+"""
 
+from pytest import raises
+
+from bigchaindb.common.exceptions import SchemaValidationError
+from bigchaindb.common.schema import (
+    TX_SCHEMA_COMMON, VOTE_SCHEMA, drop_schema_descriptions,
+    validate_transaction_schema, validate_vote_schema)
+
+
+################################################################################
+# Test of schema utils
 
 def _test_additionalproperties(node, path=''):
     """
@@ -67,3 +79,37 @@ def test_drop_descriptions():
     }
     drop_schema_descriptions(node)
     assert node == expected
+
+
+################################################################################
+# Test call transaction schema
+
+
+def test_validate_transaction_create(create_tx):
+    validate_transaction_schema(create_tx.to_dict())
+
+
+def test_validate_transaction_signed_create(signed_create_tx):
+    validate_transaction_schema(signed_create_tx.to_dict())
+
+
+def test_validate_transaction_signed_transfer(signed_transfer_tx):
+    validate_transaction_schema(signed_transfer_tx.to_dict())
+
+
+def test_validate_transaction_fails():
+    with raises(SchemaValidationError):
+        validate_transaction_schema({})
+
+
+################################################################################
+# Test call vote schema
+
+
+def test_validate_vote(structurally_valid_vote):
+    validate_vote_schema(structurally_valid_vote)
+
+
+def test_validate_vote_fails():
+    with raises(SchemaValidationError):
+        validate_vote_schema({})
