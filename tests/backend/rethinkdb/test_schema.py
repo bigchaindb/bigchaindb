@@ -61,7 +61,8 @@ def test_create_tables():
     schema.create_tables(conn, dbname)
 
     assert (set(conn.run(r.db(dbname).table_list())) ==
-            {'backlog', 'bigchain', 'block_results', 'votes'})
+            {'backlog', 'bigchain', 'votes',
+             conn.local_table('block_results')})
 
 
 @pytest.mark.bdb
@@ -95,10 +96,6 @@ def test_create_secondary_indexes():
     # Votes table
     assert conn.run(r.db(dbname).table('votes').index_list().contains(
         'block_and_voter')) is True
-
-    # Block results table
-    assert (conn.run(r.db(dbname).table('block_results').index_list()) ==
-            ['height'])
 
 
 def test_drop(dummy_db):

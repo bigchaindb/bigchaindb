@@ -32,7 +32,8 @@ def flush_rethink_db(connection, dbname):
         connection.run(r.db(dbname).table('bigchain').delete())
         connection.run(r.db(dbname).table('backlog').delete())
         connection.run(r.db(dbname).table('votes').delete())
-        connection.run(r.db(dbname).table('block_results').delete())
+        block_results = connection.local_table('block_results')
+        connection.run(r.db(dbname).table(block_results).delete())
     except r.ReqlOpFailedError:
         pass
 
