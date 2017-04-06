@@ -505,6 +505,7 @@ class Bigchain(object):
         block = block.to_dict()
         backend.query.write_block(self.connection, block)
 
+        i = 0
         while True:
             link = {'id': 0, 'block_id': block['id']}
             prev = backend.query.get_last_block_order(self.connection)
@@ -515,7 +516,11 @@ class Bigchain(object):
                 backend.query.write_block_order(self.connection, link)
                 break
             except backend.exceptions.DuplicateKeyError:
-                logger.info('Contention writing block order')
+                if i == 0:
+                    logger.info('Block order contention')
+                i += 1
+        if i > 0:
+            logger.info('Wrote block order after %s tries', i)
 
     def prepare_genesis_block(self):
         """Prepare a genesis block."""
