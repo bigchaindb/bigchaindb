@@ -9,4 +9,4 @@ metadata:
   name: mongodb-whitelist
   namespace: default
 data:
-  allowed-hosts: "all"
+  allowed-hosts: ""

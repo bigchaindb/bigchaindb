@@ -2,6 +2,8 @@
 
 *  curl
 *  bind-utils - provides nslookup, dig
+*  python3
+*  make
 
 ## Build
 

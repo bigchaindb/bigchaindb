@@ -19,7 +19,7 @@ spec:
       containers:
       - name: bigchaindb
         # TODO(Krish): Change post 0.10 release
-        image: bigchaindb/bigchaindb:d213eacd57c18cd7b8ecaabd896bbfbd7c66421d
+        image: bigchaindb/bigchaindb:master
         imagePullPolicy: Always
         args:
         - start
@@ -42,8 +42,15 @@ spec:
           value: 3CjmRhu718gT1Wkba3LfdqX5pfYuBdaMPLd7ENUga5dm
         - name: BIGCHAINDB_BACKLOG_REASSIGN_DELAY
           value: "120"
-        - name: BIGCHAINDB_KEYRING
-          value: ""
+        - name: BIGCHAINDB_DATABASE_MAXTRIES
+          value: "3"
+        - name: BIGCHAINDB_DATABASE_CONNECTION_TIMEOUT
+          value: "120"
+        - name: BIGCHAINDB_LOG_LEVEL_CONSOLE
+          value: debug
+        # The following env var is not required for the bootstrap/first node
+        #- name: BIGCHAINDB_KEYRING
+        #  value: ""
         ports:
         - containerPort: 9984
           hostPort: 9984

@@ -19,7 +19,6 @@ spec:
         app: mdb-ss
     spec:
       terminationGracePeriodSeconds: 10
-      hostNetwork: true
       containers:
       - name: mongodb
         # TODO(FIXME): Do not use latest in production as it is harder to track
