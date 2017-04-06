@@ -595,24 +595,15 @@ class Bigchain(object):
            valid, invalid, or undecided."""
         return self.block_election(block)['status']
 
-    def get_cached_block_result(self, block_id):
+    def get_block_result(self, block_id):
         """ Get a cached block result """
-        return backend.query.get_cached_block_result(self.connection, block_id)
+        return backend.query.get_block_result(self.connection, block_id)
 
-    def insert_cached_block_result(self, block_id, result):
+    def insert_block_result(self, block_id, result):
         """ Insert a block result """
-        last = backend.query.get_last_cached_block_result(self.connection)
-        height = 0
-        last_chain = ''
-        if last:
-            height = last['height'] + 1
-            last_chain = last['chain_hash']
-        chain = crypto.hash_data(last_chain + block_id)
         result = {
             'block_id': block_id,
-            'height': height,
-            'chain_hash': chain,
             'timestamp': gen_timestamp(),
             'result': result,
         }
-        backend.query.insert_cached_block_result(self.connection, result)
+        backend.query.insert_block_result(self.connection, result)

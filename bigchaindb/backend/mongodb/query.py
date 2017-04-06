@@ -304,20 +304,13 @@ def get_unvoted_blocks(conn, node_pubkey):
 
 
 @register_query(MongoDBConnection)
-def get_last_cached_block_result(conn):
-    return _unid('block_id',
-                 conn.get_local_collection('block_results')
-                 .find_one(sort=[('height', -1)]))
-
-
-@register_query(MongoDBConnection)
-def insert_cached_block_result(conn, result):
+def insert_block_result(conn, result):
     return (conn.get_local_collection('block_results')
             .insert_one(_id('block_id', result)))
 
 
 @register_query(MongoDBConnection)
-def get_cached_block_result(conn, block_id):
+def get_block_result(conn, block_id):
     return _unid('block_id',
                  conn.get_local_collection('block_results')
                  .find_one({'_id': block_id}))

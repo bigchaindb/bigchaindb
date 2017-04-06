@@ -301,7 +301,7 @@ def get_txids_filtered(connection, asset_id, operation=None):
 
 
 @singledispatch
-def get_cached_block_result(connection, block_id):
+def get_block_result(connection, block_id):
     """
     Return cached block result, if it's there.
 
@@ -313,10 +313,8 @@ def get_cached_block_result(connection, block_id):
 
 
 @singledispatch
-def get_last_cached_block_result(connection):
-    raise NotImplementedError
-
-
-@singledispatch
-def insert_cached_block_result(connection, result):
+def insert_block_result(connection, result):
+    """
+    Insert a block validation result
+    """
     raise NotImplementedError

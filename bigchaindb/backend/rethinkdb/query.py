@@ -256,27 +256,13 @@ def get_unvoted_blocks(connection, node_pubkey):
 
 
 @register_query(RethinkDBConnection)
-def get_last_cached_block_result(connection):
-    try:
-        return connection.run(
-                r.table('block_results', read_mode=READ_MODE)
-                .order_by(r.desc(r.row['height']))
-                .nth(0))
-    except r.ReqlNonExistenceError:
-        pass
+def insert_block_result(connection, result):
+    return connection.run(r.table('block_results').insert(result.copy()))
 
 
 @register_query(RethinkDBConnection)
-def insert_cached_block_result(connection, result):
-    return connection.run(
-            r.table('block_results').insert(result.copy()))
-
-
-@register_query(RethinkDBConnection)
-def get_cached_block_result(connection, block_id):
+def get_block_result(connection, block_id):
     try:
-        return connection.run(
-                r.table('block_results')
-                .get(block_id))
+        return connection.run(r.table('block_results').get(block_id))
     except r.ReqlNonExistenceError:
         pass

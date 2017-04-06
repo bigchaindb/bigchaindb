@@ -42,7 +42,6 @@ def create_indexes(conn, dbname):
     create_bigchain_secondary_index(conn, dbname)
     create_backlog_secondary_index(conn, dbname)
     create_votes_secondary_index(conn, dbname)
-    create_block_results_secondary_indexes(conn, dbname)
 
 
 @register_schema(MongoDBConnection)
@@ -107,9 +106,3 @@ def create_votes_secondary_index(conn, dbname):
                                               ASCENDING)],
                                             name='block_and_voter',
                                             unique=True)
-
-
-def create_block_results_secondary_indexes(conn, dbname):
-    logger.info('create `block_results` secondary index.')
-    collection = conn.get_local_collection('block_results')
-    collection.create_index([('height', DESCENDING)], name='height', unique=True)
