@@ -583,8 +583,6 @@ class Bigchain(object):
         return backend.query.get_unvoted_blocks(self.connection, self.me)
 
     def block_election(self, block):
-        if type(block) != dict:
-            block = block.to_dict()
         votes = list(backend.query.get_votes_by_block_id(self.connection,
                                                          block['id']))
         return self.consensus.voting.block_election(block, votes,
@@ -593,7 +591,15 @@ class Bigchain(object):
     def block_election_status(self, block):
         """Tally the votes on a block, and return the status:
            valid, invalid, or undecided."""
-        return self.block_election(block)['status']
+        if type(block) != dict:
+            block = block.to_dict()
+        result = self.get_block_result(block['id'])
+        if result is not None:
+            return self.BLOCK_VALID if result['result'] else self.BLOCK_INVALID
+        status = self.block_election(block)['status']
+        if status != self.BLOCK_UNDECIDED:
+            self.insert_block_result(block['id'], status == self.BLOCK_VALID)
+        return status
 
     def get_block_result(self, block_id):
         """ Get a cached block result """
