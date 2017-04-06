@@ -325,9 +325,9 @@ class Bigchain(object):
         """Check if a `txid` was already used as an input.
 
         A transaction can be used as an input for another transaction. Bigchain
-        needs to make sure that a given `txid` is only used once.
+        needs to make sure that a given `(txid, output)` is only used once.
 
-        This method will check if the `txid` and `output` has already been
+        This method will check if the `(txid, output)` has already been
         spent in a transaction that is in either the `VALID`, `UNDECIDED` or
         `BACKLOG` state.
 
@@ -336,11 +336,11 @@ class Bigchain(object):
             output (num): the index of the output in the respective transaction
 
         Returns:
-            The transaction (Transaction) that used the `txid` as an input else
-            `None`
+            The transaction (Transaction) that used the `(txid, output)` as an
+            input else `None`
 
         Raises:
-            CriticalDoubleSpend: If the given `txid` and `output` was spent in
+            CriticalDoubleSpend: If the given `(txid, output)` was spent in
             more than one valid transaction.
         """
         # checks if an input was already spent
@@ -372,10 +372,9 @@ class Bigchain(object):
 
         if non_invalid_transactions:
             return Transaction.from_dict(non_invalid_transactions[0])
-        else:
-            # Either no transaction was returned spending the `txid` as
-            # input or the returned transactions are not valid.
-            return None
+
+        # Either no transaction was returned spending the `(txid, output)` as
+        # input or the returned transactions are not valid.
 
     def get_outputs(self, owner):
         """Retrieve a list of links to transaction outputs for a given public
