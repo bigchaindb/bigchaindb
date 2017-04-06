@@ -22,7 +22,7 @@ class StandaloneApplication(gunicorn.app.base.BaseApplication):
      - http://docs.gunicorn.org/en/latest/custom.html
     """
 
-    def __init__(self, app, options=None):
+    def __init__(self, app, *, options=None):
         '''Initialize a new standalone application.
 
         Args:
@@ -91,5 +91,5 @@ def create_server(settings):
     settings['logger_class'] = 'bigchaindb.log.loggers.HttpServerLogger'
     app = create_app(debug=settings.get('debug', False),
                      threads=settings['threads'])
-    standalone = StandaloneApplication(app, settings)
+    standalone = StandaloneApplication(app, options=settings)
     return standalone
