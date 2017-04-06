@@ -504,10 +504,17 @@ class Bigchain(object):
         """
         block = block.to_dict()
         backend.query.write_block(self.connection, block)
+        self._write_block_order(block['id'])
 
+    def _write_block_order(self, block_id):
+        """Write block order information
+
+        Args:
+            block_id (str): ID of the block
+        """
         i = 0
         while True:
-            link = {'id': 0, 'block_id': block['id']}
+            link = {'id': 0, 'block_id': block_id}
             prev = backend.query.get_last_block_order(self.connection)
             if prev:
                 link['prev_block'] = prev['block_id']
@@ -517,7 +524,7 @@ class Bigchain(object):
                 break
             except backend.exceptions.DuplicateKeyError:
                 if i == 0:
-                    logger.info('Block order contention')
+                    logger.info('Block order contention at height %s', link['id'])
                 i += 1
         if i > 0:
             logger.info('Wrote block order after %s tries', i)
