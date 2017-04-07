@@ -20,6 +20,7 @@ from uuid import uuid4
 import aiohttp
 from aiohttp import web
 
+from bigchaindb import config
 from bigchaindb.events import EventTypes
 
 
@@ -167,4 +168,6 @@ def start(sync_event_source, loop=None):
     bridge.start()
 
     app = init_app(event_source, loop=loop)
-    aiohttp.web.run_app(app, port=9985)
+    aiohttp.web.run_app(app,
+                        host=config['wsserver']['host'],
+                        port=config['wsserver']['port'])
