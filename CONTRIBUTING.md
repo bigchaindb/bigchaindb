@@ -145,6 +145,13 @@ Once you accept and submit the CLA, we'll email you with further instructions. (
 
 Someone will then merge your branch or suggest changes. If we suggest changes, you won't have to open a new pull request, you can just push new code to the same branch (on `origin`) as you did before creating the pull request.
 
+### Tip: Upgrading All BigchainDB Dependencies
+
+Over time, your versions of the Python packages used by BigchainDB will get out of date. You can upgrade them using:
+```text
+pip install --upgrade -e .[dev]
+```
+
 ## Quick Links
 
 * [BigchainDB Community links](https://www.bigchaindb.com/community)
