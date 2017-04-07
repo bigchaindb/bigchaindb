@@ -264,7 +264,4 @@ def insert_block_result(connection, result):
 @register_query(RethinkDBConnection)
 def get_block_result(connection, block_id):
     table = connection.local_table('block_results')
-    try:
-        return connection.run(r.table(table).get(block_id))
-    except r.ReqlNonExistenceError:
-        pass
+    return connection.run(r.table(table).get(block_id))

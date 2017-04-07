@@ -80,3 +80,10 @@ def test_admin(admin_func_name, kwargs):
     admin_func = getattr(admin, admin_func_name)
     with raises(NotImplementedError):
         admin_func(None, **kwargs)
+
+
+def test_connection():
+    from bigchaindb.backend.connection import Connection
+
+    with raises(NotImplementedError):
+        Connection().run(None)
