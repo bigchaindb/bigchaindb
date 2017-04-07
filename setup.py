@@ -77,6 +77,7 @@ install_requires = [
     'multipipes~=0.1.0',
     'jsonschema~=2.5.1',
     'pyyaml~=3.12',
+    'aiohttp~=2.0',
 ]
 
 setup(

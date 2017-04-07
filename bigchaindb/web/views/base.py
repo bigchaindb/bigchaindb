@@ -25,4 +25,4 @@ def base_url():
 
 def base_ws_uri():
     """Base websocket uri."""
-    return '%s://%s/' % ('ws', request.environ['HTTP_HOST'])
+    return 'ws://localhost:9985/'
