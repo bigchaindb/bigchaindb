@@ -59,6 +59,10 @@ config = {
         'workers': None,  # if none, the value will be cpu_count * 2 + 1
         'threads': None,  # if none, the value will be cpu_count * 2 + 1
     },
+    'wsserver': {
+        'host': os.environ.get('BIGCHAINDB_WSSERVER_HOST') or 'localhost',
+        'port': int(os.environ.get('BIGCHAINDB_WSSERVER_PORT', 9985)),
+    },
     'database': _database_map[
         os.environ.get('BIGCHAINDB_DATABASE_BACKEND', 'rethinkdb')
     ],

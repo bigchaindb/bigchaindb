@@ -5,6 +5,9 @@ import logging
 
 from flask import jsonify, request
 
+from bigchaindb import config
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -25,4 +28,4 @@ def base_url():
 
 def base_ws_uri():
     """Base websocket uri."""
-    return 'ws://localhost:9985/'
+    return 'ws://{host}:{port}/'.format(**config['wsserver'])
