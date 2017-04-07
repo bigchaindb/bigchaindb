@@ -43,9 +43,10 @@ def _put_into_capped_queue(queue, value):
     while True:
         try:
             queue.put_nowait(value)
-            return
         except asyncio.QueueFull:
             queue.get_nowait()
+        else:
+            return
 
 
 def _multiprocessing_to_asyncio(in_queue, out_queue, loop):
