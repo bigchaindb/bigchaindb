@@ -26,7 +26,7 @@ from bigchaindb.events import EventTypes
 
 logger = logging.getLogger(__name__)
 POISON_PILL = 'POISON_PILL'
-EVENTS_ENDPOINT = '/api/v1/streams/'
+EVENTS_ENDPOINT = '/api/v1/streams/valid_tx'
 
 
 def _put_into_capped_queue(queue, value):

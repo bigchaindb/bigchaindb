@@ -28,4 +28,4 @@ def base_url():
 
 def base_ws_uri():
     """Base websocket uri."""
-    return 'ws://{host}:{port}/'.format(**config['wsserver'])
+    return 'ws://{host}:{port}'.format(**config['wsserver'])
