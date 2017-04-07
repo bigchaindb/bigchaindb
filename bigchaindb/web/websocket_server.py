@@ -1,15 +1,64 @@
 """WebSocket server for the BigchainDB Event Stream API."""
 
+# NOTE
+#
+# This module contains some functions and utilities that might belong to other
+# modules. For now, I prefer to keep everything in this module. Why? Because
+# those functions are needed only here.
+#
+# When we will extend this part of the project and we find that we need those
+# functionalities elsewhere, we can start creating new modules and organizing
+# things in a better way.
+
+
+import json
 import asyncio
 import logging
+import threading
 from uuid import uuid4
 
 import aiohttp
 from aiohttp import web
 
+from bigchaindb.events import EventTypes
+
 
 logger = logging.getLogger(__name__)
 POISON_PILL = 'POISON_PILL'
+EVENTS_ENDPOINT = '/api/v1/streams/'
+
+
+def _put_into_capped_queue(queue, value):
+    """Put a new item in a capped queue.
+
+    If the queue reached its limit, get the first element
+    ready and put the new one. Note that the first element
+    will be lost (that's the purpose of a capped queue).
+
+    Args:
+        queue: a queue
+        value: the value to put
+    """
+    while True:
+        try:
+            queue.put_nowait(value)
+            return
+        except asyncio.QueueFull:
+            queue.get_nowait()
+
+
+def _multiprocessing_to_asyncio(in_queue, out_queue, loop):
+    """Bridge between a synchronous multiprocessing queue
+    and an asynchronous asyncio queue.
+
+    Args:
+        in_queue (multiprocessing.Queue): input queue
+        out_queue (asyncio.Queue): output queue
+    """
+
+    while True:
+        value = in_queue.get()
+        loop.call_soon_threadsafe(_put_into_capped_queue, out_queue, value)
 
 
 class Dispatcher:
@@ -45,10 +94,27 @@ class Dispatcher:
 
         while True:
             event = yield from self.event_source.get()
+            str_buffer = []
+
             if event == POISON_PILL:
                 return
-            for uuid, websocket in self.subscribers.items():
-                websocket.send_str(event)
+
+            if isinstance(event, str):
+                str_buffer.append(event)
+
+            elif event.type == EventTypes.BLOCK_VALID:
+                block = event.data
+
+                for tx in block['block']['transactions']:
+                    asset_id = tx['id'] if tx['operation'] == 'CREATE' else tx['asset']['id']
+                    data = {'blockid': block['id'],
+                            'assetid': asset_id,
+                            'txid': tx['id']}
+                    str_buffer.append(json.dumps(data))
+
+            for _, websocket in self.subscribers.items():
+                for str_item in str_buffer:
+                    websocket.send_str(str_item)
 
 
 @asyncio.coroutine
@@ -83,37 +149,22 @@ def init_app(event_source, *, loop=None):
 
     app = web.Application(loop=loop)
     app['dispatcher'] = dispatcher
-    app.router.add_get('/', websocket_handler)
+    app.router.add_get(EVENTS_ENDPOINT, websocket_handler)
     return app
 
 
-def start(event_source, *, loop=None):
+def start(sync_event_source, loop=None):
     """Create and start the WebSocket server."""
 
     if not loop:
         loop = asyncio.get_event_loop()
 
+    event_source = asyncio.Queue(maxsize=1024, loop=loop)
+
+    bridge = threading.Thread(target=_multiprocessing_to_asyncio,
+                              args=(sync_event_source, event_source, loop),
+                              daemon=True)
+    bridge.start()
+
     app = init_app(event_source, loop=loop)
     aiohttp.web.run_app(app, port=9985)
-
-
-def test_websocket_server():
-    """Set up a server and output a message every second.
-    Used for testing purposes."""
-
-    @asyncio.coroutine
-    def constant_event_source(event_source):
-        """Put a message in ``event_source`` every second."""
-
-        while True:
-            yield from asyncio.sleep(1)
-            yield from event_source.put('meow')
-
-    loop = asyncio.get_event_loop()
-    event_source = asyncio.Queue()
-    loop.create_task(constant_event_source(event_source))
-    start(event_source, loop=loop)
-
-
-if __name__ == '__main__':
-    test_websocket_server()

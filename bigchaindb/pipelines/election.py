@@ -81,7 +81,7 @@ class Election:
             elif result['status'] == self.bigchain.BLOCK_VALID:
                 event_type = EventTypes.BLOCK_VALID
 
-            event = Event(event_type, {'block_id': block_id})
+            event = Event(event_type, self.bigchain.get_block(block_id))
             self.event_handler.put_event(event)
 
 
