@@ -8,6 +8,7 @@ Tasks:
 
 import os
 import copy
+import json
 import random
 
 import pytest
@@ -454,3 +455,34 @@ def mocked_setup_pub_logger(mocker):
 def mocked_setup_sub_logger(mocker):
     return mocker.patch(
         'bigchaindb.log.setup.setup_sub_logger', autospec=True, spec_set=True)
+
+
+@pytest.fixture
+def bigchaindb_blackbox():
+    def wait_for_connection(url):
+        while True:
+            try:
+                requests.get(url)
+            except requests.exceptions.ConnectionError:
+                sleep(0.1)
+            else:
+                break
+
+    import tempfile
+    import requests
+    from time import sleep
+    from subprocess import Popen, PIPE
+    from bigchaindb import config
+
+    with tempfile.NamedTemporaryFile(mode='w') as config_file:
+        json.dump(config, config_file)
+        config_file.flush()
+
+        proc = Popen(['bigchaindb', '-c', config_file.name, 'start'],
+                     stdin=PIPE)
+
+        wait_for_connection('http://{bind}'.format(**config['server']))
+
+        yield config
+
+        proc.kill()
