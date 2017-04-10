@@ -22,7 +22,7 @@ or ``https://example.com:9984``
 then you should get an HTTP response
 with something like the following in the body:
 
-.. literalinclude:: samples/index-response.http
+.. literalinclude:: http-samples/index-response.http
     :language: http
 
 
@@ -35,7 +35,7 @@ or ``https://example.com:9984/api/v1/``,
 then you should get an HTTP response
 that allows you to discover the BigchainDB API endpoints:
 
-.. literalinclude:: samples/api-index-response.http
+.. literalinclude:: http-samples/api-index-response.http
     :language: http
 
 
@@ -58,12 +58,12 @@ Transactions
 
    **Example request**:
 
-   .. literalinclude:: samples/get-tx-id-request.http
+   .. literalinclude:: http-samples/get-tx-id-request.http
       :language: http
 
    **Example response**:
 
-   .. literalinclude:: samples/get-tx-id-response.http
+   .. literalinclude:: http-samples/get-tx-id-response.http
       :language: http
 
    :resheader Content-Type: ``application/json``
@@ -110,12 +110,12 @@ Transactions
 
    **Example request**:
 
-   .. literalinclude:: samples/get-tx-by-asset-request.http
+   .. literalinclude:: http-samples/get-tx-by-asset-request.http
       :language: http
 
    **Example response**:
 
-   .. literalinclude:: samples/get-tx-by-asset-response.http
+   .. literalinclude:: http-samples/get-tx-by-asset-response.http
       :language: http
 
    :resheader Content-Type: ``application/json``
@@ -139,12 +139,12 @@ Transactions
 
    **Example request**:
 
-   .. literalinclude:: samples/post-tx-request.http
+   .. literalinclude:: http-samples/post-tx-request.http
       :language: http
 
    **Example response**:
 
-   .. literalinclude:: samples/post-tx-response.http
+   .. literalinclude:: http-samples/post-tx-response.http
       :language: http
 
    :resheader Content-Type: ``application/json``
@@ -227,12 +227,12 @@ Statuses
 
    **Example request**:
 
-   .. literalinclude:: samples/get-statuses-tx-request.http
+   .. literalinclude:: http-samples/get-statuses-tx-request.http
       :language: http
 
    **Example response**:
 
-   .. literalinclude:: samples/get-statuses-tx-valid-response.http
+   .. literalinclude:: http-samples/get-statuses-tx-valid-response.http
       :language: http
 
    :resheader Content-Type: ``application/json``
@@ -250,17 +250,17 @@ Statuses
 
    **Example request**:
 
-   .. literalinclude:: samples/get-statuses-block-request.http
+   .. literalinclude:: http-samples/get-statuses-block-request.http
       :language: http
 
    **Example response**:
 
-   .. literalinclude:: samples/get-statuses-block-invalid-response.http
+   .. literalinclude:: http-samples/get-statuses-block-invalid-response.http
       :language: http
 
    **Example response**:
 
-   .. literalinclude:: samples/get-statuses-block-valid-response.http
+   .. literalinclude:: http-samples/get-statuses-block-valid-response.http
       :language: http
 
    :resheader Content-Type: ``application/json``
@@ -298,12 +298,12 @@ Blocks
 
    **Example request**:
 
-   .. literalinclude:: samples/get-block-request.http
+   .. literalinclude:: http-samples/get-block-request.http
       :language: http
 
    **Example response**:
 
-   .. literalinclude:: samples/get-block-response.http
+   .. literalinclude:: http-samples/get-block-response.http
       :language: http
 
 
@@ -353,12 +353,12 @@ Blocks
 
    **Example request**:
 
-   .. literalinclude:: samples/get-block-txid-request.http
+   .. literalinclude:: http-samples/get-block-txid-request.http
       :language: http
 
    **Example response**:
 
-   .. literalinclude:: samples/get-block-txid-response.http
+   .. literalinclude:: http-samples/get-block-txid-response.http
       :language: http
 
    :resheader Content-Type: ``application/json``
@@ -384,12 +384,12 @@ Votes
 
    **Example request**:
 
-   .. literalinclude:: samples/get-vote-request.http
+   .. literalinclude:: http-samples/get-vote-request.http
       :language: http
 
    **Example response**:
 
-   .. literalinclude:: samples/get-vote-response.http
+   .. literalinclude:: http-samples/get-vote-response.http
       :language: http
 
    :resheader Content-Type: ``application/json``

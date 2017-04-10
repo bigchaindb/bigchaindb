@@ -11,6 +11,7 @@ BigchainDB Server Documentation
    nodes/index
    dev-and-test/index
    server-reference/index
+   http-client-server-api
    drivers-clients/index
    clusters-feds/index
    data-models/index
