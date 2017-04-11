@@ -1,5 +1,6 @@
 import json
 import random
+from unittest.mock import patch
 
 import pytest
 import asyncio
@@ -112,6 +113,19 @@ def test_capped_queue(loop):
     assert result == 'robots'
 
     assert async_queue.qsize() == 0
+
+
+@patch('threading.Thread.start')
+@patch('aiohttp.web.run_app')
+@patch('bigchaindb.web.websocket_server.init_app')
+@patch('asyncio.get_event_loop', return_value='event-loop')
+@patch('asyncio.Queue', return_value='event-queue')
+def test_start_creates_an_event_loop(queue_mock, get_event_loop_mock, init_app_mock, run_app_mock, thread_start_mock):
+    from bigchaindb.web.websocket_server import start
+
+    start(None)
+
+    init_app_mock.assert_called_with('event-queue', loop='event-loop')
 
 
 @asyncio.coroutine
