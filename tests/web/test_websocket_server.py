@@ -1,9 +1,9 @@
+import asyncio
 import json
 import random
 from unittest.mock import patch
 
 import pytest
-import asyncio
 
 from bigchaindb.models import Transaction
 
