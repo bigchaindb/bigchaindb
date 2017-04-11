@@ -1,23 +1,16 @@
 # Production Node Components
 
-A BigchainDB node must include, at least:
+A production BigchainDB node must include BigchainDB Server, MongoDB Server (mongod), and scalable storage for MongoDB, but it could include several other components, including:
 
-* BigchainDB Server and
-* RethinkDB Server.
-
-When doing development and testing, it's common to install both on the same machine, but in a production environment, it may make more sense to install them on separate machines.
-
-In a production environment, a BigchainDB node should have several other components, including:
-
-* nginx or similar, as a reverse proxy and/or load balancer for the Gunicorn server(s) inside the node
-* An NTP daemon running on all machines running BigchainDB code, and possibly other machines
-* A RethinkDB proxy server
-* A RethinkDB "wire protocol firewall" (in the future: this component doesn't exist yet)
-* Scalable storage for RethinkDB (e.g. using RAID)
-* Monitoring software, to monitor all the machines in the node
-* Configuration management agents (if you're using a configuration managment system that uses agents)
+* NGINX or similar, to provide authentication, rate limiting, etc.
+* An NTP daemon running on all machines running BigchainDB Server or mongod, and possibly other machines
+* **Not** MongoDB Automation Agent. It's for automating the deployment of an entire MongoDB cluster, not just one MongoDB node within a cluster.
+* MongoDB Monitoring Agent
+* MongoDB Backup Agent
+* Log aggregation software
+* Monitoring software
 * Maybe more
 
-The relationship between these components is illustrated below.
+The relationship between the main components is illustrated below. Note that BigchainDB Server must be able to communicate with all other mongod instances in the BigchainDB cluster (i.e. in other BigchainDB nodes).
 
-![Components of a node](../_static/Node-components.png)
+![Components of a production node](../_static/Node-components.png)
