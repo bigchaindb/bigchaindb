@@ -16,6 +16,20 @@ For RethinkDB's failover mechanisms to work, [every RethinkDB table must have at
 
 As for the read & write rates, what do you expect those to be for your situation? It's not enough for the storage system alone to handle those rates: the interconnects between the nodes must also be able to handle them.
 
+**Storage Notes Specific to RethinkDB**
+
+* The RethinkDB storage engine has a number of SSD optimizations, so you _can_ benefit from using SSDs. ([source](https://www.rethinkdb.com/docs/architecture/))
+
+* If you want a RethinkDB cluster to store an amount of data D, with a replication factor of R (on every table), and the cluster has N nodes, then each node will need to be able to store R×D/N data.
+
+* RethinkDB tables can have [at most 64 shards](https://rethinkdb.com/limitations/). For example, if you have only one table and more than 64 nodes, some nodes won't have the primary of any shard, i.e. they will have replicas only. In other words, once you pass 64 nodes, adding more nodes won't provide more storage space for new data. If the biggest single-node storage available is d, then the most you can store in a RethinkDB cluster is < 64×d: accomplished by putting one primary shard in each of 64 nodes, with all replica shards on other nodes. (This is assuming one table. If there are T tables, then the most you can store is < 64×d×T.)
+
+* When you set up storage for your RethinkDB data, you may have to select a filesystem. (Sometimes, the filesystem is already decided by the choice of storage.) We recommend using a filesystem that supports direct I/O (Input/Output). Many compressed or encrypted file systems don't support direct I/O. The ext4 filesystem supports direct I/O (but be careful: if you enable the data=journal mode, then direct I/O support will be disabled; the default is data=ordered). If your chosen filesystem supports direct I/O and you're using Linux, then you don't need to do anything to request or enable direct I/O. RethinkDB does that.
+
+<p style="background-color: lightgrey;">What is direct I/O? It allows RethinkDB to write directly to the storage device (or use its own in-memory caching mechanisms), rather than relying on the operating system's file read and write caching mechanisms. (If you're using Linux, a write-to-file normally writes to the in-memory Page Cache first; only later does that Page Cache get flushed to disk. The Page Cache is also used when reading files.)</p>
+
+* RethinkDB stores its data in a specific directory. You can tell RethinkDB _which_ directory using the RethinkDB config file, as explained below. In this documentation, we assume the directory is `/data`. If you set up a separate device (partition, RAID array, or logical volume) to store the RethinkDB data, then mount that device on `/data`.
+
 
 ## Memory (RAM) Requirements
 
