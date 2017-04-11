@@ -152,4 +152,4 @@ class TestBlockModel(object):
         tx = Transaction.create([b.me], [([b.me], 1)])
         block = b.create_block([tx, tx])
         with raises(DuplicateTransaction):
-            block._validate_block_transactions(b)
+            block._validate_block(b)

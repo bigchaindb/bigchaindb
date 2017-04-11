@@ -1,50 +1,67 @@
 ########################################################################
 # This YAML file desribes a StatefulSet with a service for running and #
-# exposing a MongoDB service.                                          #
+# exposing a MongoDB instance.                                         #
 # It depends on the configdb and db k8s pvc.                           #
 ########################################################################
 
 apiVersion: v1
 kind: Service
 metadata:
-  name: mdb
+  name: mdb-svc
   namespace: default
   labels:
-    name: mdb
+    name: mdb-svc
 spec:
   selector:
-    app: mdb
+    app: mdb-ss
   ports:
   - port: 27017
     targetPort: 27017
     name: mdb-port
-  type: LoadBalancer
+  type: ClusterIP
+  clusterIP: None
 ---
 apiVersion: apps/v1beta1
 kind: StatefulSet 
 metadata:
-  name: mdb
+  name: mdb-ss
   namespace: default
 spec:
-  serviceName: mdb
+  serviceName: mdb-svc
   replicas: 1
   template:
     metadata:
-      name: mdb
+      name: mdb-ss
       labels:
-        app: mdb
+        app: mdb-ss
     spec:
       terminationGracePeriodSeconds: 10
       containers:
       - name: mongodb
-        image: mongo:3.4.1
+        # TODO(FIXME): Do not use latest in production as it is harder to track
+        # versions during updates and rollbacks. Also, once fixed, change the
+        # imagePullPolicy to IfNotPresent for faster bootup
+        image: bigchaindb/mongodb:latest
+        imagePullPolicy: Always
+        env:
+        - name: MONGODB_FQDN
+          valueFrom:
+            configMapKeyRef:
+             name: mdb-fqdn
+             key: fqdn
+        - name: MONGODB_POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
         args:
-        - --replSet=bigchain-rs
+        - --replica-set-name=bigchain-rs
+        - --fqdn=$(MONGODB_FQDN)
+        - --port=27017
+        - --ip=$(MONGODB_POD_IP)
         securityContext:
           capabilities:
             add:
             - FOWNER
-        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 27017
           hostPort: 27017

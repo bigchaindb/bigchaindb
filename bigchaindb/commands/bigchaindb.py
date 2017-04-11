@@ -12,7 +12,8 @@ import sys
 from bigchaindb.common import crypto
 from bigchaindb.common.exceptions import (StartupError,
                                           DatabaseAlreadyExists,
-                                          KeypairNotFoundException)
+                                          KeypairNotFoundException,
+                                          DatabaseDoesNotExist)
 import bigchaindb
 from bigchaindb import backend, processes
 from bigchaindb.backend import schema
@@ -24,7 +25,8 @@ from bigchaindb.commands.messages import (
     CANNOT_START_KEYPAIR_NOT_FOUND,
     RETHINKDB_STARTUP_ERROR,
 )
-from bigchaindb.commands.utils import configure_bigchaindb, input_on_stderr
+from bigchaindb.commands.utils import (
+    configure_bigchaindb, start_logging_process, input_on_stderr)
 
 
 logging.basicConfig(level=logging.INFO)
@@ -86,26 +88,21 @@ def run_configure(args, skip_if_exists=False):
     # select the correct config defaults based on the backend
     print('Generating default configuration for backend {}'
           .format(args.backend), file=sys.stderr)
+    database_keys = bigchaindb._database_keys_map[args.backend]
     conf['database'] = bigchaindb._database_map[args.backend]
 
     if not args.yes:
         for key in ('bind', ):
             val = conf['server'][key]
-            conf['server'][key] = \
-                input_on_stderr('API Server {}? (default `{}`): '.format(key, val)) \
-                or val
+            conf['server'][key] = input_on_stderr('API Server {}? (default `{}`): '.format(key, val), val)
 
-        for key in ('host', 'port', 'name'):
+        for key in database_keys:
             val = conf['database'][key]
-            conf['database'][key] = \
-                input_on_stderr('Database {}? (default `{}`): '.format(key, val)) \
-                or val
+            conf['database'][key] = input_on_stderr('Database {}? (default `{}`): '.format(key, val), val)
 
         val = conf['backlog_reassign_delay']
-        conf['backlog_reassign_delay'] = \
-            input_on_stderr(('Stale transaction reassignment delay (in '
-                             'seconds)? (default `{}`): '.format(val))) \
-            or val
+        conf['backlog_reassign_delay'] = input_on_stderr(
+            'Stale transaction reassignment delay (in seconds)? (default `{}`): '.format(val), val)
 
     if config_path != '-':
         bigchaindb.config_utils.write_config(conf, config_path)
@@ -165,10 +162,14 @@ def run_drop(args):
 
     conn = backend.connect()
     dbname = bigchaindb.config['database']['name']
-    schema.drop_database(conn, dbname)
+    try:
+        schema.drop_database(conn, dbname)
+    except DatabaseDoesNotExist:
+        print("Cannot drop '{name}'. The database does not exist.".format(name=dbname), file=sys.stderr)
 
 
 @configure_bigchaindb
+@start_logging_process
 def run_start(args):
     """Start the processes to run the node"""
     logger.info('BigchainDB Version %s', bigchaindb.__version__)

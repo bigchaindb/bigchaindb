@@ -140,38 +140,6 @@ machine running the Docker engine. If you are running docker-machine (e.g. on
 Mac OS X) this will be the IP of the Docker machine (`docker-machine ip
 machine_name`).
 
-### Load Testing with Docker
-
-Now that we have BigchainDB running in the Docker container named `bigchaindb`, we can
-start another BigchainDB container to generate a load test for it.
-
-First, make sure the container named `bigchaindb` is still running. You can check that using:
-```text
-docker ps
-```
-
-You should see a container named `bigchaindb` in the list.
-
-You can load test the BigchainDB running in that container by running the `bigchaindb load` command in a second container:
-
-```text
-docker run \
-  --env BIGCHAINDB_DATABASE_HOST=bigchaindb \
-  --link bigchaindb \
-  --rm \
-  --volume "$HOME/bigchaindb_docker:/data" \
-  bigchaindb/bigchaindb \
-  load
-```
-
-Note the `--link` option to link to the first container (named `bigchaindb`).
-
-Aside: The `bigchaindb load` command has several options (e.g. `-m`). You can read more about it in [the documentation about the BigchainDB command line interface](../server-reference/bigchaindb-cli.html).
-
-If you look at the RethinkDB dashboard (in your web browser), you should see the effects of the load test. You can also see some effects in the Docker logs using:
-```text
-docker logs -f bigchaindb
-```
 
 ## Building Your Own Image
 
