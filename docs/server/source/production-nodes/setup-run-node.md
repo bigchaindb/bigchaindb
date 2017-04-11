@@ -1,8 +1,8 @@
 # Set Up and Run a Cluster Node
 
-This is a page of general guidelines for setting up a production BigchainDB node. Before continuing, please review the pages about production node [assumptions](node-assumptions.html), [components](node-components.html) and [requirements](node-requirements.html).
+This is a page of general guidelines for setting up a production BigchainDB node. Before continuing, make sure you've read the pages about production node [assumptions](node-assumptions.html), [components](node-components.html) and [requirements](node-requirements.html).
 
-Note: These are just guidelines. You can modify them to suit your needs. For example, if you want to initialize the MongoDB replica set before installing BigchainDB, you _can_ do that. We don't cover all possible setup procedures here.
+Note: These are just guidelines. You can modify them to suit your needs. For example, if you want to initialize the MongoDB replica set before installing BigchainDB, you _can_ do that. If you'd prefer to use Docker and Kubernetes, you can (and [we have a template](../cloud-deployment-templates/node-on-kubernetes.html)). We don't cover all possible setup procedures here.
 
 
 ## Security Guidelines
@@ -13,7 +13,9 @@ There are some [notes on BigchainDB-specific firewall setup](../appendices/firew
 
 ## Sync Your System Clock
 
-A BigchainDB node uses its system clock to generate timestamps for blocks and votes, so that clock should be kept in sync with some standard clock(s). The standard way to do that is to run an NTP daemon (Network Time Protocol daemon) on the node. (You could also use tlsdate, which uses TLS timestamps rather than NTP, but don't: it's not very accurate and it will break with TLS 1.3, which removes the timestamp.)
+A BigchainDB node uses its system clock to generate timestamps for blocks and votes, so that clock should be kept in sync with some standard clock(s). The standard way to do that is to run an NTP daemon (Network Time Protocol daemon) on the node.
+
+MongoDB also recommends having an NTP daemon running on all MongoDB nodes.
 
 NTP is a standard protocol. There are many NTP daemons implementing it. We don't recommend a particular one. On the contrary, we recommend that different nodes in a cluster run different NTP daemons, so that a problem with one daemon won't affect all nodes.
 
@@ -35,6 +37,8 @@ We suggest you set up a separate storage device (partition, RAID array, or logic
 
 There are many options and tradeoffs.
 
+Consult the MongoDB documentation for its recommendations regarding storage hardware, software and settings, e.g. in the [MongoDB Production Notes](https://docs.mongodb.com/manual/administration/production-notes/).
+
 
 ## Install and Run MongoDB
 
@@ -46,8 +50,7 @@ There are many options and tradeoffs.
 
 ### Install BigchainDB Server Dependencies
 
-* [Install OS-level dependencies](../appendices/install-os-level-deps.html)
-* [Install Python 3.4+](https://www.python.org/downloads/)
+Before you can install BigchainDB Server, you must [install its OS-level dependencies](../appendices/install-os-level-deps.html) and you may have to [install Python 3.4+](https://www.python.org/downloads/).
 
 ### How to Install BigchainDB Server with pip
 
