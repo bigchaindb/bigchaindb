@@ -81,4 +81,4 @@ where, as before, `<key-name>` must be replaced.
 
 ## Next Steps
 
-You could make changes to the Ansible playbook (and the resources it uses) to make the node more production-worthy. See [the section on production node assumptions, components and requirements](../nodes/index.html).
+You could make changes to the Ansible playbook (and the resources it uses) to make the node more production-worthy. See [the section on production node assumptions, components and requirements](../production-nodes/index.html).
