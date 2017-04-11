@@ -1,6 +1,12 @@
 # Production Node Components
 
-A production BigchainDB node must include BigchainDB Server, MongoDB Server (mongod), and scalable storage for MongoDB, but it could include several other components, including:
+A production BigchainDB node must include:
+
+* BigchainDB Server
+* MongoDB Server (mongod)
+* Scalable storage for MongoDB
+
+It could also include several other components, including:
 
 * NGINX or similar, to provide authentication, rate limiting, etc.
 * An NTP daemon running on all machines running BigchainDB Server or mongod, and possibly other machines
