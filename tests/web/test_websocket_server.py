@@ -8,7 +8,9 @@ import pytest
 from bigchaindb.models import Transaction
 
 
-def create_block(b, total=1):
+@pytest.fixture
+def _block(b, request):
+    total = getattr(request, 'param', 1)
     transactions = [
         Transaction.create(
             [b.me],
@@ -154,7 +156,8 @@ def test_websocket_string_event(test_client, loop):
 
 
 @asyncio.coroutine
-def test_websocket_block_event(b, test_client, loop):
+@pytest.mark.parametrize('_block', (10,), indirect=('_block',), ids=('block',))
+def test_websocket_block_event(b, _block, test_client, loop):
     from bigchaindb import events
     from bigchaindb.web.websocket_server import init_app, POISON_PILL, EVENTS_ENDPOINT
 
@@ -162,7 +165,7 @@ def test_websocket_block_event(b, test_client, loop):
     app = init_app(event_source, loop=loop)
     client = yield from test_client(app)
     ws = yield from client.ws_connect(EVENTS_ENDPOINT)
-    block = create_block(b, 10).to_dict()
+    block = _block.to_dict()
     block_event = events.Event(events.EventTypes.BLOCK_VALID, block)
 
     yield from event_source.put(block_event)
