@@ -19,14 +19,10 @@ The consortium must decide some things before setting up the initial cluster (in
 
 1. Who will operate each node in the initial cluster?
 2. What will the replication factor be? (It should be 3 or more.)
-3. Who will deploy the first node?
-4. Who will add subsequent nodes? (It must be one of the existing nodes.)
+3. Who will deploy the first node, second node, etc.?
 
-Once those things have been decided, the cluster deployment process can begin. The process for deploying a production node is outlined in the section on production nodes.
+Once those things have been decided, the cluster deployment process can begin. The process for deploying a production node is outlined in [the section on production nodes](../production-nodes/index.html).
 
-Each BigchainDB node operator will eventually need some information from all other nodes:
+Every time a new BigchainDB node is added, every other node must update their [BigchainDB keyring](../server-reference/configuration.html#keyring) (one of the BigchainDB configuration settings): they must add the public key of the new node.
 
-1. Their BigchainDB public key, e.g. `Eky3nkbxDTMgkmiJC8i5hKyVFiAQNmPP4a2G4JdDxJCK`
-1. Their MongoDB hostname and port, e.g. `mdb.farm2.organization.org:27017`
-
-To secure communications, more information will be needed.
+To secure communications between BigchainDB nodes, each BigchainDB node can use a firewall or similar, and doing that will require additional coordination.
