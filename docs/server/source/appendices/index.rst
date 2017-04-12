@@ -22,5 +22,6 @@ Appendices
    firewall-notes
    ntp-notes
    example-rethinkdb-storage-setups
+   rethinkdb-backup
    licenses
    install-with-lxd

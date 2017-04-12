@@ -1,6 +1,6 @@
-# Backing Up & Restoring Data
+# Backing Up and Restoring Data
 
-There are several ways to backup and restore the data in a BigchainDB cluster.
+This page was written when BigchainDB only worked with RethinkDB, so its focus is on RethinkDB-based backup. BigchainDB now supports MongoDB as a backend database and we recommend that you use MongoDB in production. Nevertheless, some of the following backup ideas are still relevant regardless of the backend database being used, so we moved this page to the Appendices.
 
 
 ## RethinkDB's Replication as a form of Backup
