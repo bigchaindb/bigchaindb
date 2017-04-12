@@ -114,17 +114,30 @@ def test_capped_queue(loop):
     assert async_queue.qsize() == 0
 
 
-@patch('threading.Thread.start')
+@patch('threading.Thread')
 @patch('aiohttp.web.run_app')
 @patch('bigchaindb.web.websocket_server.init_app')
 @patch('asyncio.get_event_loop', return_value='event-loop')
 @patch('asyncio.Queue', return_value='event-queue')
-def test_start_creates_an_event_loop(queue_mock, get_event_loop_mock, init_app_mock, run_app_mock, thread_start_mock):
-    from bigchaindb.web.websocket_server import start
+def test_start_creates_an_event_loop(queue_mock, get_event_loop_mock,
+                                     init_app_mock, run_app_mock,
+                                     thread_mock):
+    from bigchaindb import config
+    from bigchaindb.web.websocket_server import start, _multiprocessing_to_asyncio
 
     start(None)
-
+    thread_mock.assert_called_once_with(
+        target=_multiprocessing_to_asyncio,
+        args=(None, queue_mock.return_value, get_event_loop_mock.return_value),
+        daemon=True,
+    )
+    thread_mock.return_value.start.assert_called_once_with()
     init_app_mock.assert_called_with('event-queue', loop='event-loop')
+    run_app_mock.assert_called_once_with(
+        init_app_mock.return_value,
+        host=config['wsserver']['host'],
+        port=config['wsserver']['port'],
+    )
 
 
 @asyncio.coroutine
