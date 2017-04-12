@@ -89,6 +89,7 @@ Note: You can use `pip3` to upgrade the `bigchaindb` package to the latest versi
 If you want to install BitchainDB from source because you want to use the very latest bleeding-edge code, clone the public repository:
 ```text
 git clone git@github.com:bigchaindb/bigchaindb.git
+cd bigchaindb
 python setup.py install
 ```
 
@@ -113,16 +114,19 @@ For more information about the BigchainDB config file, see the page about the [B
 
 ## Maybe Update the MongoDB Replica Set
 
-**If this isn't the first node in the BigchainDB cluster**, then you must add your MongoDB instance to the MongoDB replica set. You can do so using:
+**If this isn't the first node in the BigchainDB cluster**, then someone with an existing BigchainDB node (not you) must add your MongoDB instance to the MongoDB replica set. They can do so (on their node) using:
 ```text
 bigchaindb add-replicas your-mongod-hostname:27017
 ```
 
-where you must replace `your-mongod-hostname` with the actual hostname of your MongoDB instance, and you may have to replace `27017` with the actual port.
+where they must replace `your-mongod-hostname` with the actual hostname of your MongoDB instance, and they may have to replace `27017` with the actual port.
 
 
 ## Start BigchainDB
 
+**Warning: If you're not deploying the first node in the BigchainDB cluster, then don't start BigchainDB before your MongoDB instance has been added to the MongoDB replica set (as outlined above).**
+
 ```text
+# See warning above
 bigchaindb start
 ```
