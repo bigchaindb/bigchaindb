@@ -114,7 +114,7 @@ For more information about the BigchainDB config file, see the page about the [B
 
 ## Get All Other Nodes to Update Their Keyring
 
-All other BigchainDB nodes in the cluster must add your new node's public key to their BigchainDB keyring. Currently, that means they must shut down BigchainDB Server and start it again.
+All other BigchainDB nodes in the cluster must add your new node's public key to their BigchainDB keyring. Currently, the only way to get BigchainDB Server to "notice" a changed keyring is to shut it down and start it back up again (with the new keyring).
 
 
 ## Maybe Update the MongoDB Replica Set
