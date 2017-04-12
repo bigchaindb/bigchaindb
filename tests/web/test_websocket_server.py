@@ -8,11 +8,10 @@ from unittest.mock import patch
 
 import pytest
 
-from bigchaindb.models import Transaction
-
 
 @pytest.fixture
 def _block(b, request):
+    from bigchaindb.models import Transaction
     total = getattr(request, 'param', 1)
     transactions = [
         Transaction.create(
