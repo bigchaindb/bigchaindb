@@ -24,15 +24,26 @@ def federation(n):
 
     @contextmanager
     def make_nodes(i):
+        """
+        make_nodes is a recursive context manager. Essentially it is doing:
+
+        with f(a[0]) as b0:
+            with f(a[1]) as b1:
+                with f(a[2]) as b2:
+                    yield [b0, b1, b2]
+
+        with an arbitrary depth. It is also temporarily patching global
+        configuration to simulate nodes with separate identities.
+        """
         nonlocal keys
         if i == 0:
             yield []
         else:
             config = deepcopy(config_orig)
-            keys = [keys[-1]] + keys[:-1]
+            keys = [keys[-1]] + keys[:-1]  # Rotate keys
+            config['keyring'] = [pub for _, pub in keys[1:]]
             config['keypair']['private'] = keys[0][0]
             config['keypair']['public'] = keys[0][1]
-            config['keyring'] = list(list(zip(*keys[1:]))[1])
             bigchaindb.config = config
             stepper = create_stepper()
             with stepper.start():
@@ -143,26 +154,6 @@ def test_elect_disagree_prev_block(federation_3):
         assert bx[i].get_transaction(tx.id, True)[1] is None
 
 
-@pytest.mark.skip()  # TODO: wait for #1309
-@pytest.mark.bdb
-@pytest.mark.genesis
-def test_elect_dupe_vote(federation_3):
-    from bigchaindb.exceptions import CriticalDuplicateVote
-    [bx, (s0, s1, s2)] = federation_3
-    tx = input_single_create(bx[0])
-    process_tx(s0)
-    process_tx(s1)
-    process_tx(s2)
-    vote = process_vote(s0, True)
-    # Drop the unique index and write the vote again
-    bx[0].connection.db.votes.drop_index('block_and_voter')
-    s0.queues['vote_write_vote'].append([vote])
-    s0.vote_write_vote()
-    for i in range(3):
-        with pytest.raises(CriticalDuplicateVote):
-            bx[i].get_transaction(tx.id, True)[1]
-
-
 @pytest.mark.bdb
 @pytest.mark.genesis
 def test_elect_sybill(federation_3):
@@ -172,6 +163,7 @@ def test_elect_sybill(federation_3):
     process_tx(s1)
     process_tx(s2)
     # What we need is some votes from unknown nodes!
+    # Incorrectly signed votes are ineligible.
     for s in [s0, s1, s2]:
         s.vote.bigchain.me_private = generate_key_pair()[0]
     process_vote(s0, True)
