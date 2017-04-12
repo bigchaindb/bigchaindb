@@ -54,7 +54,7 @@ Before you can install BigchainDB Server, you must [install its OS-level depende
 
 ### How to Install BigchainDB Server with pip
 
-BigchainDB (i.e. both the Server and the officially-supported drivers) is distributed as a Python package on PyPI so you can install it using `pip`. First, make sure you have an up-to-date Python 3.4+ version of `pip` installed:
+BigchainDB is distributed as a Python package on PyPI so you can install it using `pip`. First, make sure you have an up-to-date Python 3.4+ version of `pip` installed:
 ```text
 pip -V
 ```
@@ -74,7 +74,7 @@ pip3 install --upgrade pip setuptools
 pip3 -V
 ```
 
-Now you can install BigchainDB Server (and officially-supported BigchainDB drivers) using:
+Now you can install BigchainDB Server using:
 ```text
 pip3 install bigchaindb
 ```
