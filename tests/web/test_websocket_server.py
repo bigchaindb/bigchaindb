@@ -1,6 +1,9 @@
 import asyncio
 import json
+import queue
 import random
+import threading
+import time
 from unittest.mock import patch
 
 import pytest
@@ -32,8 +35,6 @@ class MockWebSocket:
 
 @asyncio.coroutine
 def test_bridge_sync_async_queue(loop):
-    import queue
-    import threading
     from bigchaindb.web.websocket_server import _multiprocessing_to_asyncio
 
     sync_queue = queue.Queue()
@@ -87,9 +88,6 @@ def test_put_into_capped_queue(loop):
 
 @asyncio.coroutine
 def test_capped_queue(loop):
-    import queue
-    import threading
-    import time
     from bigchaindb.web.websocket_server import _multiprocessing_to_asyncio
 
     sync_queue = queue.Queue()
