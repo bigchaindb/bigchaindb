@@ -43,7 +43,6 @@ class ApiV1Index(Resource):
                 'self': api_root,
                 'statuses': api_root + 'statuses/',
                 'transactions': api_root + 'transactions/',
-                # TODO: The version should probably not be hardcoded
                 'streams_v1': websocket_root,
             },
         })
