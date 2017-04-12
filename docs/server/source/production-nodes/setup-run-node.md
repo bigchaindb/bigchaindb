@@ -112,6 +112,11 @@ Edit the created config file by opening `$HOME/.bigchaindb` (the created config 
 For more information about the BigchainDB config file, see the page about the [BigchainDB configuration settings](../server-reference/configuration.html).
 
 
+## Get All Other Nodes to Update Their Keyring
+
+All other BigchainDB nodes in the cluster must add your new node's public key to their BigchainDB keyring. Currently, that means they must shut down BigchainDB Server and start it again.
+
+
 ## Maybe Update the MongoDB Replica Set
 
 **If this isn't the first node in the BigchainDB cluster**, then someone with an existing BigchainDB node (not you) must add your MongoDB instance to the MongoDB replica set. They can do so (on their node) using:
