@@ -42,7 +42,7 @@ Consult the MongoDB documentation for its recommendations regarding storage hard
 
 ## Install and Run MongoDB
 
-* [Install MongoDB](https://docs.mongodb.com/manual/installation/)
+* [Install MongoDB 3.4+](https://docs.mongodb.com/manual/installation/). (BigchainDB only works with MongoDB 3.4+.)
 * [Run MongoDB (mongod)](https://docs.mongodb.com/manual/reference/program/mongod/)
 
 

@@ -3,7 +3,7 @@
 A production BigchainDB node must include:
 
 * BigchainDB Server
-* MongoDB Server (mongod)
+* MongoDB Server 3.4+ (mongod)
 * Scalable storage for MongoDB
 
 It could also include several other components, including:
