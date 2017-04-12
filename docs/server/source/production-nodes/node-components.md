@@ -17,6 +17,6 @@ It could also include several other components, including:
 * Monitoring software
 * Maybe more
 
-The relationship between the main components is illustrated below. Note that BigchainDB Server must be able to communicate with all other mongod instances in the BigchainDB cluster (i.e. in other BigchainDB nodes).
+The relationship between the main components is illustrated below. Note that BigchainDB Server must be able to communicate with the _primary_ MongoDB instance, and any of the MongoDB instances might be the primary, so BigchainDB Server must be able to communicate with all the MongoDB instances. Also, all MongoDB instances must be able to communicate with each other.
 
 ![Components of a production node](../_static/Node-components.png)
