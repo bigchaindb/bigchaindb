@@ -210,7 +210,7 @@ def test_handle_block_events():
 
     assert events_queue.qsize() == 0
 
-    # no event should be emited in case a block is undecided
+    # no event should be emitted in case a block is undecided
     e.handle_block_events({'status': Bigchain.BLOCK_UNDECIDED}, block_id)
     assert events_queue.qsize() == 0
 
@@ -219,7 +219,7 @@ def test_handle_block_events():
     event = e.event_handler.get_event()
     assert event.type == EventTypes.BLOCK_INVALID
 
-    # put an valid block event in the queue
+    # put a valid block event in the queue
     e.handle_block_events({'status': Bigchain.BLOCK_VALID}, block_id)
     event = e.event_handler.get_event()
     assert event.type == EventTypes.BLOCK_VALID
