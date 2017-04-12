@@ -5,6 +5,7 @@ from time import time
 from pymongo import ReturnDocument
 
 from bigchaindb import backend
+from bigchaindb.backend.mongodb.changefeed import run_changefeed
 from bigchaindb.common.exceptions import CyclicBlockchainError
 from bigchaindb.common.transaction import Transaction
 from bigchaindb.backend.exceptions import DuplicateKeyError
@@ -283,21 +284,10 @@ def get_last_voted_block(conn, node_pubkey):
 
 
 @register_query(MongoDBConnection)
-def get_unvoted_blocks(conn, node_pubkey):
-    return conn.run(
-        conn.collection('bigchain')
-        .aggregate([
-            {'$lookup': {
-                'from': 'votes',
-                'localField': 'id',
-                'foreignField': 'vote.voting_for_block',
-                'as': 'votes'
-            }},
-            {'$match': {
-                'votes.node_pubkey': {'$ne': node_pubkey},
-                'block.transactions.operation': {'$ne': 'GENESIS'}
-            }},
-            {'$project': {
-                'votes': False, '_id': False
-            }}
-        ]))
+def get_new_blocks_feed(conn, start_block_id):
+    namespace = conn.dbname + '.bigchain'
+    query = {'o.id': start_block_id, 'op': 'i', 'ns': namespace}
+    # Neccesary to find in descending order since tests may write same block id several times
+    last_ts = conn.conn.local.oplog.rs.find(query).sort('$natural', -1).next()['ts']
+    feed = run_changefeed(conn, 'bigchain', last_ts)
+    return (evt['o'] for evt in feed if evt['op'] == 'i')

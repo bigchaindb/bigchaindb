@@ -1,4 +1,5 @@
 import pytest
+from unittest import mock
 
 pytestmark = pytest.mark.bdb
 
@@ -377,21 +378,6 @@ def test_get_last_voted_block(genesis_block, signed_create_tx, b):
         query.get_last_voted_block(conn, b.me)
 
 
-def test_get_unvoted_blocks(signed_create_tx):
-    from bigchaindb.backend import connect, query
-    from bigchaindb.models import Block
-    conn = connect()
-
-    # create and insert a block
-    block = Block(transactions=[signed_create_tx], node_pubkey='aaa')
-    conn.db.bigchain.insert_one(block.to_dict())
-
-    unvoted_blocks = list(query.get_unvoted_blocks(conn, 'aaa'))
-
-    assert len(unvoted_blocks) == 1
-    assert unvoted_blocks[0] == block.to_dict()
-
-
 def test_get_txids_filtered(signed_create_tx, signed_transfer_tx):
     from bigchaindb.backend import connect, query
     from bigchaindb.models import Block, Transaction
@@ -417,3 +403,28 @@ def test_get_txids_filtered(signed_create_tx, signed_transfer_tx):
     # Test get by asset and TRANSFER
     txids = set(query.get_txids_filtered(conn, asset_id, Transaction.TRANSFER))
     assert txids == {signed_transfer_tx.id}
+
+
+@mock.patch('bigchaindb.backend.mongodb.changefeed._FEED_STOP', True)
+def test_get_new_blocks_feed(b, create_tx):
+    from bigchaindb.backend import query
+    from bigchaindb.models import Block
+    import random
+
+    def create_block():
+        ts = str(random.random())
+        block = Block(transactions=[create_tx], timestamp=ts)
+        b.write_block(block)
+        return block.to_dict()
+
+    create_block()
+    b1 = create_block()
+    b2 = create_block()
+
+    feed = query.get_new_blocks_feed(b.connection, b1['id'])
+
+    assert feed.__next__() == b2
+
+    b3 = create_block()
+    
+    assert list(feed) == [b3]

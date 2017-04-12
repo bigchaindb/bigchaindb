@@ -594,16 +594,6 @@ class Bigchain(object):
 
         return Block.from_dict(backend.query.get_last_voted_block(self.connection, self.me))
 
-    def get_unvoted_blocks(self):
-        """Return all the blocks that have not been voted on by this node.
-
-        Returns:
-            :obj:`list` of :obj:`dict`: a list of unvoted blocks
-        """
-
-        # XXX: should this return instaces of Block?
-        return backend.query.get_unvoted_blocks(self.connection, self.me)
-
     def block_election(self, block):
         if type(block) != dict:
             block = block.to_dict()

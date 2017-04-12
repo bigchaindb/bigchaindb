@@ -274,20 +274,6 @@ def get_last_voted_block(connection, node_pubkey):
 
 
 @singledispatch
-def get_unvoted_blocks(connection, node_pubkey):
-    """Return all the blocks that have not been voted by the specified node.
-
-    Args:
-        node_pubkey (str): base58 encoded public key
-
-    Returns:
-        :obj:`list` of :obj:`dict`: a list of unvoted blocks
-    """
-
-    raise NotImplementedError
-
-
-@singledispatch
 def get_txids_filtered(connection, asset_id, operation=None):
     """
     Return all transactions for a particular asset id and optional operation.
@@ -297,4 +283,9 @@ def get_txids_filtered(connection, asset_id, operation=None):
         operation (str) (optional): Operation to filter on
     """
 
+    raise NotImplementedError
+
+
+@singledispatch
+def get_new_blocks_feed(connection, start_block_id):
     raise NotImplementedError

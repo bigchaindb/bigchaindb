@@ -238,18 +238,3 @@ def get_last_voted_block(connection, node_pubkey):
     return connection.run(
             r.table('bigchain', read_mode=READ_MODE)
             .get(last_block_id))
-
-
-@register_query(RethinkDBConnection)
-def get_unvoted_blocks(connection, node_pubkey):
-    unvoted = connection.run(
-            r.table('bigchain', read_mode=READ_MODE)
-            .filter(lambda block: r.table('votes', read_mode=READ_MODE)
-                                   .get_all([block['id'], node_pubkey], index='block_and_voter')
-                                   .is_empty())
-            .order_by(r.asc(r.row['block']['timestamp'])))
-
-    # FIXME: I (@vrde) don't like this solution. Filtering should be done at a
-    #        database level. Solving issue #444 can help untangling the situation
-    unvoted_blocks = filter(lambda block: not utils.is_genesis_block(block), unvoted)
-    return unvoted_blocks
