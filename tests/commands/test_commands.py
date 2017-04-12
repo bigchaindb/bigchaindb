@@ -130,6 +130,22 @@ def test_bigchain_run_init_when_db_exists(mock_db_init_with_existing_db):
     run_init(args)
 
 
+def test__run_init(mocker):
+    from bigchaindb.commands.bigchaindb import _run_init
+    bigchain_mock = mocker.patch(
+        'bigchaindb.commands.bigchaindb.bigchaindb.Bigchain')
+    init_db_mock = mocker.patch(
+        'bigchaindb.commands.bigchaindb.schema.init_database',
+        autospec=True,
+        spec_set=True,
+    )
+    _run_init()
+    bigchain_mock.assert_called_once_with()
+    init_db_mock.assert_called_once_with(
+        connection=bigchain_mock.return_value.connection)
+    bigchain_mock.return_value.create_genesis_block.assert_called_once_with()
+
+
 @patch('bigchaindb.backend.schema.drop_database')
 def test_drop_db_when_assumed_yes(mock_db_drop):
     from bigchaindb.commands.bigchaindb import run_drop
