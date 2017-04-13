@@ -72,6 +72,7 @@ class MultipipesStepper:
             r = f(**kwargs)
             if r is not None:
                 self._enqueue(next_name, r)
+            return r
 
         self.tasks[name] = functools.wraps(f)(inner)
         self.input_tasks.add(name)
@@ -90,6 +91,7 @@ class MultipipesStepper:
             out = f(*args, **kwargs)
             if out is not None and next:
                 self._enqueue(next_name, out)
+            return out
 
         task = functools.wraps(f)(inner)
         self.tasks[name] = task
@@ -111,12 +113,12 @@ class MultipipesStepper:
         logging.debug('Stepping %s', name)
         task = self.tasks[name]
         if name in self.input_tasks:
-            task(**kwargs)
+            return task(**kwargs)
         else:
             queue = self.queues.get(name, [])
             if not queue:
                 raise Empty(name)
-            task(*queue.pop(0), **kwargs)
+            return task(*queue.pop(0), **kwargs)
         logging.debug('Stepped %s', name)
 
     @property

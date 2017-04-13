@@ -11,7 +11,7 @@ A block has the following structure:
         "timestamp": "<block-creation timestamp>",
         "transactions": ["<list of transactions>"],
         "node_pubkey": "<public key of the node creating the block>",
-        "voters": ["<list of federation nodes public keys>"]
+        "voters": ["<list of public keys of all nodes in the cluster>"]
       },
       "signature": "<signature of block>"
     }
@@ -23,9 +23,9 @@ A block has the following structure:
     - ``timestamp``: The Unix time when the block was created. It's provided by the node that created the block.
     - ``transactions``: A list of the transactions included in the block.
     - ``node_pubkey``: The public key of the node that created the block.
-    - ``voters``: A list of the public keys of federation nodes at the time the block was created.
-      It's the list of federation nodes which can cast a vote on this block.
-      This list can change from block to block, as nodes join and leave the federation.
+    - ``voters``: A list of the public keys of all cluster nodes at the time the block was created.
+      It's the list of nodes which can cast a vote on this block.
+      This list can change from block to block, as nodes join and leave the cluster.
 
 - ``signature``: :ref:`Cryptographic signature <Signature Algorithm and Keys>` of the block by the node that created the block (i.e. the node with public key ``node_pubkey``). To generate the signature, the node signs the serialized inner ``block`` (the same thing that was hashed to determine the ``id``) using the private key corresponding to ``node_pubkey``.
 

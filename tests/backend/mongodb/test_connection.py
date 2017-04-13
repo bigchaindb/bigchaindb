@@ -32,15 +32,15 @@ def mongodb_connection():
                        port=bigchaindb.config['database']['port'])
 
 
-def test_get_connection_returns_the_correct_instance():
+def test_get_connection_returns_the_correct_instance(db_host, db_port):
     from bigchaindb.backend import connect
     from bigchaindb.backend.connection import Connection
     from bigchaindb.backend.mongodb.connection import MongoDBConnection
 
     config = {
         'backend': 'mongodb',
-        'host': 'localhost',
-        'port': 27017,
+        'host': db_host,
+        'port': db_port,
         'name': 'test',
         'replicaset': 'bigchain-rs'
     }
@@ -97,6 +97,18 @@ def test_connection_run_errors(mock_client, mock_init_repl_set):
     with pytest.raises(OperationError):
         conn.run(query)
     assert query.run.call_count == 1
+
+
+@mock.patch('pymongo.database.Database.authenticate')
+def test_connection_with_credentials(mock_authenticate):
+    import bigchaindb
+    from bigchaindb.backend.mongodb.connection import MongoDBConnection
+    conn = MongoDBConnection(host=bigchaindb.config['database']['host'],
+                             port=bigchaindb.config['database']['port'],
+                             login='theplague',
+                             password='secret')
+    conn.connect()
+    assert mock_authenticate.call_count == 2
 
 
 def test_check_replica_set_not_enabled(mongodb_connection):
@@ -168,7 +180,7 @@ def test_initialize_replica_set(mock_cmd_line_opts):
         ]
 
         # check that it returns
-        assert initialize_replica_set('host', 1337, 1000) is None
+        assert initialize_replica_set('host', 1337, 1000, 'dbname', False, None, None) is None
 
     # test it raises OperationError if anything wrong
     with mock.patch.object(Database, 'command') as mock_command:
@@ -178,4 +190,4 @@ def test_initialize_replica_set(mock_cmd_line_opts):
         ]
 
         with pytest.raises(pymongo.errors.OperationFailure):
-            initialize_replica_set('host', 1337, 1000)
+            initialize_replica_set('host', 1337, 1000, 'dbname', False, None, None)

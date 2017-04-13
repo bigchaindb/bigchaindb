@@ -82,11 +82,44 @@ def test_get_blocks_status_containing_tx(monkeypatch):
         bigchain.get_blocks_status_containing_tx('txid')
 
 
-def test_has_previous_vote(monkeypatch):
-    from bigchaindb.core import Bigchain
-    monkeypatch.setattr(
-        'bigchaindb.utils.verify_vote_signature', lambda voters, vote: False)
-    bigchain = Bigchain(public_key='pubkey', private_key='privkey')
-    block = {'votes': ({'node_pubkey': 'pubkey'},)}
-    with pytest.raises(Exception):
-        bigchain.has_previous_vote(block)
+@pytest.mark.genesis
+def test_get_spent_issue_1271(b, alice, bob, carol):
+    from bigchaindb.models import Transaction
+
+    tx_1 = Transaction.create(
+        [carol.public_key],
+        [([carol.public_key], 8)],
+    ).sign([carol.private_key])
+
+    tx_2 = Transaction.transfer(
+        tx_1.to_inputs(),
+        [([bob.public_key], 2),
+         ([alice.public_key], 2),
+         ([carol.public_key], 4)],
+        asset_id=tx_1.id,
+    ).sign([carol.private_key])
+
+    tx_3 = Transaction.transfer(
+        tx_2.to_inputs()[2:3],
+        [([alice.public_key], 1),
+         ([carol.public_key], 3)],
+        asset_id=tx_1.id,
+    ).sign([carol.private_key])
+
+    tx_4 = Transaction.transfer(
+        tx_2.to_inputs()[1:2] + tx_3.to_inputs()[0:1],
+        [([bob.public_key], 3)],
+        asset_id=tx_1.id,
+    ).sign([alice.private_key])
+
+    tx_5 = Transaction.transfer(
+        tx_2.to_inputs()[0:1],
+        [([alice.public_key], 2)],
+        asset_id=tx_1.id,
+    ).sign([bob.private_key])
+    block_5 = b.create_block([tx_1, tx_2, tx_3, tx_4, tx_5])
+    b.write_block(block_5)
+    assert b.get_spent(tx_2.id, 0) == tx_5
+    assert not b.get_spent(tx_5.id, 0)
+    assert b.get_outputs_filtered(alice.public_key)
+    assert b.get_outputs_filtered(alice.public_key, include_spent=False)

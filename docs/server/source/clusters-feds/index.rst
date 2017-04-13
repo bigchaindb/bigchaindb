@@ -1,10 +1,9 @@
-Clusters & Federations
-======================
+Clusters
+========
 
 .. toctree::
    :maxdepth: 1
 
-   set-up-a-federation
-   backup
+   set-up-a-cluster
    aws-testing-cluster
    

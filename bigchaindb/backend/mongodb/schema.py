@@ -100,4 +100,5 @@ def create_votes_secondary_index(conn, dbname):
                                               ASCENDING),
                                              ('node_pubkey',
                                               ASCENDING)],
-                                            name='block_and_voter')
+                                            name='block_and_voter',
+                                            unique=True)

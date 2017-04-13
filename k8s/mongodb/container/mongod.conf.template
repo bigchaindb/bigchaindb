@@ -1,0 +1,89 @@
+# mongod.conf
+
+# for documentation of all options, see:
+#   http://docs.mongodb.org/manual/reference/configuration-options/
+
+# where to write logging data.
+systemLog:
+  verbosity: 0
+  #TODO traceAllExceptions: true
+  timeStampFormat: iso8601-utc
+  component:
+    accessControl:
+      verbosity: 0
+    command:
+      verbosity: 0
+    control:
+      verbosity: 0
+    ftdc:
+      verbosity: 0
+    geo:
+      verbosity: 0
+    index:
+      verbosity: 0
+    network:
+      verbosity: 0
+    query:
+      verbosity: 0
+    replication:
+      verbosity: 0
+    sharding:
+      verbosity: 0
+    storage:
+      verbosity: 0
+      journal:
+       verbosity: 0
+    write:
+      verbosity: 0
+
+processManagement:
+  fork: false
+  pidFilePath: /tmp/mongod.pid
+
+net:
+  port: PORT
+  bindIp: 0.0.0.0
+  maxIncomingConnections: 8192
+  wireObjectCheck: false
+  unixDomainSocket:
+    enabled: false
+    pathPrefix: /tmp
+    filePermissions: 0700
+  http:
+    enabled: false
+  compression:
+    compressors: snappy
+  #ssl: TODO
+
+#security: TODO
+
+#setParameter:
+  #notablescan: 1 TODO
+  #logUserIds: 1 TODO
+
+storage:
+  dbPath: /data/db
+  indexBuildRetry: true
+  journal:
+    enabled: true
+    commitIntervalMs: 100
+  directoryPerDB: true
+  engine: wiredTiger
+  wiredTiger:
+    engineConfig:
+      journalCompressor: snappy
+    collectionConfig:
+      blockCompressor: snappy
+    indexConfig:
+      prefixCompression: true # TODO  false may affect performance?
+
+operationProfiling:
+  mode: slowOp
+  slowOpThresholdMs: 100
+
+replication:
+  replSetName: REPLICA_SET_NAME
+  enableMajorityReadConcern: true
+
+#sharding:
+

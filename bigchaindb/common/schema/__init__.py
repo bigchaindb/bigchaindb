@@ -28,7 +28,9 @@ def _load_schema(name):
     return path, schema
 
 
-TX_SCHEMA_PATH, TX_SCHEMA = _load_schema('transaction')
+TX_SCHEMA_PATH, TX_SCHEMA_COMMON = _load_schema('transaction')
+_, TX_SCHEMA_CREATE = _load_schema('transaction_create')
+_, TX_SCHEMA_TRANSFER = _load_schema('transaction_transfer')
 VOTE_SCHEMA_PATH, VOTE_SCHEMA = _load_schema('vote')
 
 
@@ -41,8 +43,17 @@ def _validate_schema(schema, body):
 
 
 def validate_transaction_schema(tx):
-    """ Validate a transaction dict """
-    _validate_schema(TX_SCHEMA, tx)
+    """
+    Validate a transaction dict.
+
+    TX_SCHEMA_COMMON contains properties that are common to all types of
+    transaction. TX_SCHEMA_[TRANSFER|CREATE] add additional constraints on top.
+    """
+    _validate_schema(TX_SCHEMA_COMMON, tx)
+    if tx['operation'] == 'TRANSFER':
+        _validate_schema(TX_SCHEMA_TRANSFER, tx)
+    else:
+        _validate_schema(TX_SCHEMA_CREATE, tx)
 
 
 def validate_vote_schema(vote):

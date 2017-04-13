@@ -1,22 +1,6 @@
 from pytest import raises
 
 
-class TestTransactionModel(object):
-    def test_validating_an_invalid_transaction(self, b):
-        from bigchaindb.models import Transaction
-
-        tx = Transaction.create([b.me], [([b.me], 1)])
-        tx.operation = 'something invalid'
-
-        with raises(TypeError):
-            tx.validate(b)
-
-        tx.operation = 'CREATE'
-        tx.inputs = []
-        with raises(ValueError):
-            tx.validate(b)
-
-
 class TestBlockModel(object):
     def test_block_initialization(self, monkeypatch):
         from bigchaindb.models import Block
@@ -61,11 +45,10 @@ class TestBlockModel(object):
         assert block.to_dict() == expected
 
     def test_block_invalid_serializaton(self):
-        from bigchaindb.common.exceptions import OperationError
         from bigchaindb.models import Block
 
         block = Block([])
-        with raises(OperationError):
+        with raises(ValueError):
             block.to_dict()
 
     def test_block_deserialization(self, b):
@@ -115,13 +98,12 @@ class TestBlockModel(object):
 
         transactions = [Transaction.create([b.me], [([b.me], 1)])]
         timestamp = gen_timestamp()
-        voters = ['Qaaa', 'Qbbb']
 
         block = {
             'timestamp': timestamp,
             'transactions': [tx.to_dict() for tx in transactions],
             'node_pubkey': b.me,
-            'voters': voters,
+            'voters': list(b.federation),
         }
 
         block_body = {
@@ -163,3 +145,11 @@ class TestBlockModel(object):
 
         public_key = PublicKey(b.me)
         assert public_key.verify(expected_block_serialized, block.signature)
+
+    def test_block_dupe_tx(self, b):
+        from bigchaindb.models import Transaction
+        from bigchaindb.common.exceptions import DuplicateTransaction
+        tx = Transaction.create([b.me], [([b.me], 1)])
+        block = b.create_block([tx, tx])
+        with raises(DuplicateTransaction):
+            block._validate_block(b)

@@ -8,12 +8,11 @@ BigchainDB Server Documentation
    introduction
    quickstart
    cloud-deployment-templates/index
-   nodes/index
+   production-nodes/index
    dev-and-test/index
    server-reference/index
    drivers-clients/index
    clusters-feds/index
-   topic-guides/index
    data-models/index
    schema/transaction
    schema/vote

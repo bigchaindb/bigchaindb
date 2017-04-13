@@ -1,9 +1,10 @@
 from bigchaindb.common.crypto import hash_data, PublicKey, PrivateKey
 from bigchaindb.common.exceptions import (InvalidHash, InvalidSignature,
-                                          OperationError, DoubleSpend,
-                                          TransactionDoesNotExist,
+                                          DoubleSpend, InputDoesNotExist,
                                           TransactionNotInValidBlock,
-                                          AssetIdMismatch, AmountError)
+                                          AssetIdMismatch, AmountError,
+                                          SybilError,
+                                          DuplicateTransaction)
 from bigchaindb.common.transaction import Transaction
 from bigchaindb.common.utils import gen_timestamp, serialize
 from bigchaindb.common.schema import validate_transaction_schema
@@ -11,7 +12,7 @@ from bigchaindb.common.schema import validate_transaction_schema
 
 class Transaction(Transaction):
     def validate(self, bigchain):
-        """Validate a transaction.
+        """Validate transaction spend
 
         Args:
             bigchain (Bigchain): an instantiated bigchaindb.Bigchain object.
@@ -22,45 +23,11 @@ class Transaction(Transaction):
             invalid.
 
         Raises:
-            OperationError: if the transaction operation is not supported
-            TransactionDoesNotExist: if the input of the transaction is not
-                                     found
-            TransactionNotInValidBlock: if the input of the transaction is not
-                                        in a valid block
-            TransactionOwnerError: if the new transaction is using an input it
-                                   doesn't own
-            DoubleSpend: if the transaction is a double spend
-            InvalidHash: if the hash of the transaction is wrong
-            InvalidSignature: if the signature of the transaction is wrong
+            ValidationError: If the transaction is invalid
         """
-        if len(self.inputs) == 0:
-            raise ValueError('Transaction contains no inputs')
-
         input_conditions = []
-        inputs_defined = all([input_.fulfills for input_ in self.inputs])
 
-        # validate amounts
-        if any(output.amount < 1 for output in self.outputs):
-            raise AmountError('`amount` needs to be greater than zero')
-
-        if self.operation in (Transaction.CREATE, Transaction.GENESIS):
-            # validate asset
-            if self.asset['data'] is not None and not isinstance(self.asset['data'], dict):
-                raise TypeError(('`asset.data` must be a dict instance or '
-                                 'None for `CREATE` transactions'))
-            # validate inputs
-            if inputs_defined:
-                raise ValueError('A CREATE operation has no inputs')
-        elif self.operation == Transaction.TRANSFER:
-            # validate asset
-            if not isinstance(self.asset['id'], str):
-                raise ValueError(('`asset.id` must be a string for '
-                                  '`TRANSFER` transations'))
-            # check inputs
-            if not inputs_defined:
-                raise ValueError('Only `CREATE` transactions can have null '
-                                 'inputs')
-
+        if self.operation == Transaction.TRANSFER:
             # store the inputs so that we can check if the asset ids match
             input_txs = []
             for input_ in self.inputs:
@@ -69,8 +36,8 @@ class Transaction(Transaction):
                     get_transaction(input_txid, include_status=True)
 
                 if input_tx is None:
-                    raise TransactionDoesNotExist("input `{}` doesn't exist"
-                                                  .format(input_txid))
+                    raise InputDoesNotExist("input `{}` doesn't exist"
+                                            .format(input_txid))
 
                 if status != bigchain.TX_VALID:
                     raise TransactionNotInValidBlock(
@@ -85,8 +52,6 @@ class Transaction(Transaction):
                 output = input_tx.outputs[input_.fulfills.output]
                 input_conditions.append(output)
                 input_txs.append(input_tx)
-                if output.amount < 1:
-                    raise AmountError('`amount` needs to be greater than zero')
 
             # Validate that all inputs are distinct
             links = [i.fulfills.to_uri() for i in self.inputs]
@@ -100,11 +65,6 @@ class Transaction(Transaction):
                                        ' match the asset id of the'
                                        ' transaction'))
 
-            # validate the amounts
-            for output in self.outputs:
-                if output.amount < 1:
-                    raise AmountError('`amount` needs to be greater than zero')
-
             input_amount = sum([input_condition.amount for input_condition in input_conditions])
             output_amount = sum([output_condition.amount for output_condition in self.outputs])
 
@@ -113,11 +73,6 @@ class Transaction(Transaction):
                                    ' needs to be same as the amount used'
                                    ' in the outputs `{}`')
                                   .format(input_amount, output_amount))
-
-        else:
-            allowed_operations = ', '.join(Transaction.ALLOWED_OPERATIONS)
-            raise TypeError('`operation`: `{}` must be either {}.'
-                            .format(self.operation, allowed_operations))
 
         if not self.inputs_valid(input_conditions):
             raise InvalidSignature('Transaction signature is invalid.')
@@ -205,18 +160,8 @@ class Block(object):
             raised.
 
         Raises:
-            OperationError: If a non-federation node signed the Block.
-            InvalidSignature: If a Block's signature is invalid or if the
-                block contains a transaction with an invalid signature.
-            OperationError: if the transaction operation is not supported
-            TransactionDoesNotExist: if the input of the transaction is not
-                                     found
-            TransactionNotInValidBlock: if the input of the transaction is not
-                                        in a valid block
-            TransactionOwnerError: if the new transaction is using an input it
-                                   doesn't own
-            DoubleSpend: if the transaction is a double spend
-            InvalidHash: if the hash of the transaction is wrong
+            ValidationError: If the block or any transaction in the block does
+                             not validate
         """
 
         self._validate_block(bigchain)
@@ -232,17 +177,20 @@ class Block(object):
                 object.
 
         Raises:
-            OperationError: If a non-federation node signed the Block.
-            InvalidSignature: If a Block's signature is invalid.
+            ValidationError: If there is a problem with the block
         """
         # Check if the block was created by a federation node
-        possible_voters = (bigchain.nodes_except_me + [bigchain.me])
-        if self.node_pubkey not in possible_voters:
-            raise OperationError('Only federation nodes can create blocks')
+        if self.node_pubkey not in bigchain.federation:
+            raise SybilError('Only federation nodes can create blocks')
 
         # Check that the signature is valid
         if not self.is_signature_valid():
             raise InvalidSignature('Invalid block signature')
+
+        # Check that the block contains no duplicated transactions
+        txids = [tx.id for tx in self.transactions]
+        if len(txids) != len(set(txids)):
+            raise DuplicateTransaction('Block has duplicate transaction')
 
     def _validate_block_transactions(self, bigchain):
         """Validate Block transactions.
@@ -251,16 +199,7 @@ class Block(object):
             bigchain (Bigchain): an instantiated bigchaindb.Bigchain object.
 
         Raises:
-            OperationError: if the transaction operation is not supported
-            TransactionDoesNotExist: if the input of the transaction is not
-                                     found
-            TransactionNotInValidBlock: if the input of the transaction is not
-                                        in a valid block
-            TransactionOwnerError: if the new transaction is using an input it
-                                   doesn't own
-            DoubleSpend: if the transaction is a double spend
-            InvalidHash: if the hash of the transaction is wrong
-            InvalidSignature: if the signature of the transaction is wrong
+            ValidationError: If an invalid transaction is found
         """
         for tx in self.transactions:
             # If a transaction is not valid, `validate_transactions` will
@@ -341,10 +280,10 @@ class Block(object):
             dict: The Block as a dict.
 
         Raises:
-            OperationError: If the Block doesn't contain any transactions.
+            ValueError: If the Block doesn't contain any transactions.
         """
         if len(self.transactions) == 0:
-            raise OperationError('Empty block creation is not allowed')
+            raise ValueError('Empty block creation is not allowed')
 
         block = {
             'timestamp': self.timestamp,

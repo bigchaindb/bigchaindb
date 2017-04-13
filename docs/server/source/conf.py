@@ -82,7 +82,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'BigchainDB Server'
-copyright = '2016'
+copyright = '2017, BigchainDB Contributors'
 author = 'BigchainDB Contributors'
 
 # The version info for the project you're documenting, acts as replacement for
