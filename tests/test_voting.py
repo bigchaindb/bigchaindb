@@ -1,4 +1,5 @@
 import pytest
+from unittest.mock import patch
 from collections import Counter
 
 from bigchaindb.core import Bigchain
@@ -235,11 +236,8 @@ def test_block_election(b):
     }
 
 
+@patch('bigchaindb.voting.Voting.verify_vote_signature', return_value=True)
 def test_duplicate_vote_throws_critical_error(b):
-    class TestVoting(Voting):
-        @classmethod
-        def verify_vote_signature(cls, vote):
-            return True
     keyring = 'abc'
     block = {'id': 'xyz', 'block': {'voters': 'ab'}}
     votes = [{
@@ -247,4 +245,4 @@ def test_duplicate_vote_throws_critical_error(b):
         'vote': {'is_block_valid': True, 'previous_block': 'a'}
     } for c in 'aabc']
     with pytest.raises(CriticalDuplicateVote):
-        TestVoting.block_election(block, votes, keyring)
+        Voting.block_election(block, votes, keyring)
