@@ -8,6 +8,7 @@ metadata:
   annotations:
     # NOTE: the following annotation is a beta feature and
     # only available in GCE/GKE and Azure as of now
+    # Ref: https://kubernetes.io/docs/tutorials/services/source-ip/
     service.beta.kubernetes.io/external-traffic: OnlyLocal
 spec:
   selector:
