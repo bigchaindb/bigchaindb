@@ -28,7 +28,7 @@ services:
       - /data
     command: "true"
 
-  bdb:
+  bdb-rdb:
     build:
       context: .
       dockerfile: Dockerfile-dev
@@ -50,7 +50,7 @@ services:
       - "9984"
     command: bigchaindb start
   
-  bdb-mdb:
+  bdb:
     build:
       context: .
       dockerfile: Dockerfile-dev

@@ -98,19 +98,19 @@ web interface at: http://0.0.0.0:58080/.
 Start a BigchainDB node:
 
 ```bash
-docker-compose up -d bdb
+docker-compose up -d bdb-rdb
 ```
 
 You can monitor the logs:
 
 ```bash
-docker-compose logs -f bdb
+docker-compose logs -f bdb-rdb
 ```
 
 If you wish to run the tests:
 
 ```bash
-docker-compose run --rm bdb py.test -v -n auto
+docker-compose run --rm bdb-rdb py.test -v -n auto
 ```
 
 ### Docker with MongoDB
@@ -130,19 +130,19 @@ $ docker-compose port mdb 27017
 Start a BigchainDB node:
 
 ```bash
-docker-compose up -d bdb-mdb
+docker-compose up -d bdb
 ```
 
 You can monitor the logs:
 
 ```bash
-docker-compose logs -f bdb-mdb
+docker-compose logs -f bdb
 ```
 
 If you wish to run the tests:
 
 ```bash
-docker-compose run --rm bdb-mdb py.test -v --database-backend=mongodb
+docker-compose run --rm bdb py.test -v --database-backend=mongodb
 ```
 
 ### Accessing the HTTP API
