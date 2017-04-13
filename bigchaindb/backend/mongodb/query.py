@@ -286,8 +286,9 @@ def get_last_voted_block(conn, node_pubkey):
 @register_query(MongoDBConnection)
 def get_new_blocks_feed(conn, start_block_id):
     namespace = conn.dbname + '.bigchain'
-    query = {'o.id': start_block_id, 'op': 'i', 'ns': namespace}
+    match = {'o.id': start_block_id, 'op': 'i', 'ns': namespace}
     # Neccesary to find in descending order since tests may write same block id several times
-    last_ts = conn.conn.local.oplog.rs.find(query).sort('$natural', -1).next()['ts']
+    query = conn.query().local.oplog.rs.find(match).sort('$natural', -1).next()['ts']
+    last_ts = conn.run(query)
     feed = run_changefeed(conn, 'bigchain', last_ts)
     return (evt['o'] for evt in feed if evt['op'] == 'i')

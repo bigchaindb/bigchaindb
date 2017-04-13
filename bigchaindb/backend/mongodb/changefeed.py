@@ -89,13 +89,14 @@ def run_changefeed(conn, table, last_ts):
         try:
             # XXX: hack to force reconnection, in case the connection
             # is lost while waiting on the cursor. See #1154.
-            conn.connection = 1
+            conn._conn = None
             namespace = conn.dbname + '.' + table
-            cursor = conn.conn.local.oplog.rs.find(
+            query = conn.query().local.oplog.rs.find(
                 {'ns': namespace, 'ts': {'$gt': last_ts}},
                 {'o._id': False},
                 cursor_type=pymongo.CursorType.TAILABLE_AWAIT
             )
+            cursor = conn.run(query)
             logging.debug('Tailing oplog at %s/%s', namespace, last_ts)
             while cursor.alive:
                 try:

@@ -142,8 +142,7 @@ def test_connection_failure():
     from bigchaindb.backend.mongodb.changefeed import run_changefeed
 
     conn = mock.MagicMock()
-    find = conn.conn.local.oplog.rs.find
-    find.side_effect = [ConnectionError(), RuntimeError()]
+    conn.run.side_effect = [ConnectionError(), RuntimeError()]
     changefeed = run_changefeed(conn, 'backlog', -1)
     with pytest.raises(RuntimeError):
         for record in changefeed:
