@@ -144,6 +144,8 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
     DATABASE_PORT = 4242
     DATABASE_BACKEND = request.config.getoption('--database-backend')
     SERVER_BIND = '1.2.3.4:56'
+    WSSERVER_HOST = '1.2.3.4'
+    WSSERVER_PORT = 57
     KEYRING = 'pubkey_0:pubkey_1:pubkey_2'
 
     file_config = {
@@ -157,6 +159,8 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
                                        'BIGCHAINDB_DATABASE_PORT': str(DATABASE_PORT),
                                        'BIGCHAINDB_DATABASE_BACKEND': DATABASE_BACKEND,
                                        'BIGCHAINDB_SERVER_BIND': SERVER_BIND,
+                                       'BIGCHAINDB_WSSERVER_HOST': WSSERVER_HOST,
+                                       'BIGCHAINDB_WSSERVER_PORT': WSSERVER_PORT,
                                        'BIGCHAINDB_KEYRING': KEYRING})
 
     import bigchaindb
@@ -197,6 +201,10 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
             'bind': SERVER_BIND,
             'workers': None,
             'threads': None,
+        },
+        'wsserver': {
+            'host': WSSERVER_HOST,
+            'port': WSSERVER_PORT,
         },
         'database': database,
         'keypair': {

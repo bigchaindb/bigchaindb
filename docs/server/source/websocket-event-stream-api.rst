@@ -2,7 +2,9 @@ The WebSocket Event Stream API
 ==============================
 
 .. important::
-    This is currently scheduled to be implemented in BigchainDB Server 0.10.
+    The WebSocket Event Stream runs on a different port than the Web API. The
+    default port for the Web API is `9984`, while the one for the Event Stream
+    is `9985`.
 
 BigchainDB provides real-time event streams over the WebSocket protocol with
 the Event Stream API.
@@ -28,7 +30,7 @@ response contains a ``streams_<version>`` property in ``_links``::
 
     {
       "_links": {
-         "streams_v1": "ws://example.com:9984/api/v1/streams/"
+         "streams_v1": "ws://example.com:9985/api/v1/streams/"
       }
     }
 
