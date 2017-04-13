@@ -41,7 +41,7 @@ SUBSCRIBER_LOGGING_CONFIG = {
             'level': logging.INFO,
         },
         'file': {
-            'class': 'logging.RotatingFileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': join(DEFAULT_LOG_DIR, 'bigchaindb.log'),
             'mode': 'w',
             'maxBytes':  209715200,
