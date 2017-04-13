@@ -510,45 +510,6 @@ def test_invalid_block_voting(monkeypatch, b, user_pk, genesis_block):
 
 
 @pytest.mark.genesis
-def test_voter_chains_blocks_with_the_previous_ones(monkeypatch, b):
-    from bigchaindb.backend import query
-    from bigchaindb.pipelines import vote
-
-    outpipe = Pipe()
-
-    block_ids = []
-    block_1 = dummy_block(b)
-    block_1.timestamp = str(random.random())
-    block_ids.append(block_1.id)
-    b.write_block(block_1)
-
-    block_2 = dummy_block(b)
-    block_2.timestamp = str(random.random())
-    block_ids.append(block_2.id)
-    b.write_block(block_2)
-
-    vote_pipeline = vote.create_pipeline()
-    vote_pipeline.setup(indata=vote.get_changefeed(), outdata=outpipe)
-    vote_pipeline.start()
-
-    # We expects two votes, so instead of waiting an arbitrary amount
-    # of time, we can do two blocking calls to `get`
-    outpipe.get()
-    outpipe.get()
-    vote_pipeline.terminate()
-
-    # retrive blocks from bigchain
-    blocks = [b.get_block(_id) for _id in block_ids]
-
-    # retrieve votes
-    votes = [list(query.get_votes_by_block_id(b.connection, _id))[0]
-             for _id in block_ids]
-
-    assert ({v['vote']['voting_for_block'] for v in votes} ==
-            {block['id'] for block in blocks})
-
-
-@pytest.mark.genesis
 def test_voter_checks_for_previous_vote(monkeypatch, b):
     from bigchaindb.backend import query
     from bigchaindb.pipelines import vote

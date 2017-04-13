@@ -426,5 +426,5 @@ def test_get_new_blocks_feed(b, create_tx):
     assert feed.__next__() == b2
 
     b3 = create_block()
-    
+
     assert list(feed) == [b3]

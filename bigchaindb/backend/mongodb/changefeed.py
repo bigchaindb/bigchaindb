@@ -15,7 +15,7 @@ register_changefeed = module_dispatch_registrar(backend.changefeed)
 
 
 class MongoDBChangeFeed(ChangeFeed):
-    """This class implements a MongoDB changefeed.
+    """This class implements a MongoDB changefeed as a multipipes Node.
 
     We emulate the behaviour of the RethinkDB changefeed by using a tailable
     cursor that listens for events on the oplog.
@@ -65,8 +65,7 @@ class MongoDBChangeFeed(ChangeFeed):
 
 
 @register_changefeed(MongoDBConnection)
-def get_changefeed(connection, table, operation, *, prefeed=None,
-                   get_resumption_pointer=None):
+def get_changefeed(connection, table, operation, *, prefeed=None):
     """Return a MongoDB changefeed.
 
     Returns:
@@ -75,8 +74,7 @@ def get_changefeed(connection, table, operation, *, prefeed=None,
     """
 
     return MongoDBChangeFeed(table, operation, prefeed=prefeed,
-                             connection=connection,
-                             get_resumption_pointer=get_resumption_pointer)
+                             connection=connection)
 
 
 _FEED_STOP = False

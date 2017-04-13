@@ -1,13 +1,18 @@
 from itertools import chain
+import logging as logger
 from time import time
 
 import rethinkdb as r
 
 from bigchaindb import backend, utils
+from bigchaindb.backend.rethinkdb import changefeed
 from bigchaindb.common import exceptions
 from bigchaindb.common.transaction import Transaction
 from bigchaindb.backend.utils import module_dispatch_registrar
 from bigchaindb.backend.rethinkdb.connection import RethinkDBConnection
+
+
+logger = logger.getLogger(__name__)
 
 
 READ_MODE = 'majority'
@@ -238,3 +243,12 @@ def get_last_voted_block(connection, node_pubkey):
     return connection.run(
             r.table('bigchain', read_mode=READ_MODE)
             .get(last_block_id))
+
+
+@register_query(RethinkDBConnection)
+def get_new_blocks_feed(connection, start_block_id):
+    logger.warning('RethinkDB changefeed unable to resume from given block: %s',
+                   start_block_id)
+    # In order to get blocks in the correct order, it may be acceptable to
+    # look in the votes table to see what order other nodes have used.
+    return changefeed.run_changefeed(connection, 'bigchain')
