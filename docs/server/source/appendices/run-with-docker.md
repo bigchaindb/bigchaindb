@@ -25,7 +25,7 @@ docker run \
   --interactive \
   --rm \
   --tty \
-  --volume "$HOME/bigchaindb_docker:/data" \
+  --volume $HOME/bigchaindb_docker:/data \
   bigchaindb/bigchaindb \
   -y configure \
   [mongodb|rethinkdb]
@@ -76,7 +76,7 @@ docker run \
   --publish=172.17.0.1:28015:28015 \
   --publish=172.17.0.1:58080:8080 \
   --restart=always \
-  --volume "$HOME/bigchaindb_docker:/data" \
+  --volume $HOME/bigchaindb_docker:/data \
   rethinkdb:2.3
 ```
 
@@ -95,7 +95,7 @@ be owned by this user in the host.
 If there is no owner with UID 999, you can create the corresponding user and
 group.
 
-`groupadd -r --gid 999 mongodb && useradd -r --uid 999 -g mongodb mongodb`
+`useradd -r --uid 999 mongodb` OR `groupadd -r --gid 999 mongodb && useradd -r --uid 999 -g mongodb mongodb` should work.
 
 
 ```text
@@ -156,3 +156,4 @@ docker build --tag local-bigchaindb .
 ```
 
 Now you can use your own image to run BigchainDB containers.
+
