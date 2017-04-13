@@ -21,6 +21,6 @@ Appendices
    generate-key-pair-for-ssh
    firewall-notes
    ntp-notes
-   example-rethinkdb-storage-setups
+   rethinkdb-reqs
    licenses
    install-with-lxd
