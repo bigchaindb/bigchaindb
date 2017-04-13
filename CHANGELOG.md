@@ -67,8 +67,8 @@ Tag name: v0.10.0
 * @morrme - [Pull Request #1340](https://github.com/bigchaindb/bigchaindb/pull/1340)
 
 ### Notes
-* We now recommend the used of MongoDB in production, not RethinkDB.
-* Initial docs about how to deploy a BigchainDB node on Kubernetes (work in progress).
+* MongoDB is now the recommended database backend (not RethinkDB).
+* There are some initial docs about how to deploy a BigchainDB node on Kubernetes. It's work in progress.
 
 
 ## [0.9.5] - 2017-03-29
