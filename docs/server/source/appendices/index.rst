@@ -13,7 +13,6 @@ Appendices
    json-serialization
    cryptography
    the-Bigchain-class
-   consensus
    pipelines
    backend
    commands
