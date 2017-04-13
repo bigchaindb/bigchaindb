@@ -109,9 +109,9 @@ class Dispatcher:
 
                 for tx in block['block']['transactions']:
                     asset_id = tx['id'] if tx['operation'] == 'CREATE' else tx['asset']['id']
-                    data = {'blockid': block['id'],
-                            'assetid': asset_id,
-                            'txid': tx['id']}
+                    data = {'block_id': block['id'],
+                            'asset_id': asset_id,
+                            'tx_id': tx['id']}
                     str_buffer.append(json.dumps(data))
 
             for _, websocket in self.subscribers.items():

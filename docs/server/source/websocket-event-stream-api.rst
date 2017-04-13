@@ -82,9 +82,9 @@ the transaction's ID, associated asset ID, and containing block's ID.
 Example message::
 
     {
-        "txid": "<sha3-256 hash>",
-        "assetid": "<sha3-256 hash>",
-        "blockid": "<sha3-256 hash>"
+        "tx_id": "<sha3-256 hash>",
+        "asset_id": "<sha3-256 hash>",
+        "block_id": "<sha3-256 hash>"
     }
 
 

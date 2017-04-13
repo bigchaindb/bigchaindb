@@ -183,10 +183,10 @@ def test_websocket_block_event(b, _block, test_client, loop):
     for tx in block['block']['transactions']:
         result = yield from ws.receive()
         json_result = json.loads(result.data)
-        assert json_result['txid'] == tx['id']
+        assert json_result['tx_id'] == tx['id']
         # Since the transactions are all CREATEs, asset id == transaction id
-        assert json_result['assetid'] == tx['id']
-        assert json_result['blockid'] == block['id']
+        assert json_result['asset_id'] == tx['id']
+        assert json_result['block_id'] == block['id']
 
     yield from event_source.put(POISON_PILL)
 
@@ -235,4 +235,4 @@ def test_integration_from_webapi_to_websocket(monkeypatch, client, loop):
 
     result = loop.run_until_complete(ws.receive())
     json_result = json.loads(result.data)
-    assert json_result['txid'] == tx.id
+    assert json_result['tx_id'] == tx.id
