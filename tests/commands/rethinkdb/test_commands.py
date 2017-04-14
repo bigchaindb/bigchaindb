@@ -11,7 +11,7 @@ def test_bigchain_run_start_with_rethinkdb(mock_start_rethinkdb,
                                            mock_processes_start,
                                            mock_db_init_with_existing_db,
                                            mocked_setup_logging):
-    from bigchaindb.commands.bigchain import run_start
+    from bigchaindb.commands.bigchaindb import run_start
     args = Namespace(start_rethinkdb=True, allow_temp_keypair=False, config=None, yes=True)
     run_start(args)
 
@@ -39,7 +39,7 @@ def test_start_rethinkdb_exits_when_cannot_start(mock_popen):
 
 @patch('rethinkdb.ast.Table.reconfigure')
 def test_set_shards(mock_reconfigure, monkeypatch, b):
-    from bigchaindb.commands.bigchain import run_set_shards
+    from bigchaindb.commands.bigchaindb import run_set_shards
 
     # this will mock the call to retrieve the database config
     # we will set it to return one replica
@@ -62,7 +62,7 @@ def test_set_shards(mock_reconfigure, monkeypatch, b):
 
 
 def test_set_shards_raises_exception(monkeypatch, b):
-    from bigchaindb.commands.bigchain import run_set_shards
+    from bigchaindb.commands.bigchaindb import run_set_shards
 
     # test that we are correctly catching the exception
     def mock_raise(*args, **kwargs):
@@ -82,7 +82,7 @@ def test_set_shards_raises_exception(monkeypatch, b):
 
 @patch('rethinkdb.ast.Table.reconfigure')
 def test_set_replicas(mock_reconfigure, monkeypatch, b):
-    from bigchaindb.commands.bigchain import run_set_replicas
+    from bigchaindb.commands.bigchaindb import run_set_replicas
 
     # this will mock the call to retrieve the database config
     # we will set it to return two shards
@@ -105,7 +105,7 @@ def test_set_replicas(mock_reconfigure, monkeypatch, b):
 
 
 def test_set_replicas_raises_exception(monkeypatch, b):
-    from bigchaindb.commands.bigchain import run_set_replicas
+    from bigchaindb.commands.bigchaindb import run_set_replicas
 
     # test that we are correctly catching the exception
     def mock_raise(*args, **kwargs):

@@ -199,6 +199,11 @@ class Block(object):
         if not self.is_signature_valid():
             raise InvalidSignature('Invalid block signature')
 
+        # Check that the block contains no duplicated transactions
+        txids = [tx.id for tx in self.transactions]
+        if len(txids) != len(set(txids)):
+            raise DuplicateTransaction('Block has duplicate transaction')
+
     def _validate_block_transactions(self, bigchain):
         """Validate Block transactions.
 
@@ -208,10 +213,6 @@ class Block(object):
         Raises:
             ValidationError: If an invalid transaction is found
         """
-        txids = [tx.id for tx in self.transactions]
-        if len(txids) != len(set(txids)):
-            raise DuplicateTransaction('Block has duplicate transaction')
-
         for tx in self.transactions:
             # If a transaction is not valid, `validate_transactions` will
             # throw an an exception and block validation will be canceled.

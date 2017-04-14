@@ -1,5 +1,0 @@
-#########
-Consensus
-#########
-
-.. automodule:: bigchaindb.consensus

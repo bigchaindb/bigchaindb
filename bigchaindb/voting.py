@@ -1,6 +1,7 @@
 import collections
 
 from bigchaindb.common.schema import SchemaValidationError, validate_vote_schema
+from bigchaindb.exceptions import CriticalDuplicateVote
 from bigchaindb.common.utils import serialize
 from bigchaindb.common.crypto import PublicKey
 
@@ -33,7 +34,8 @@ class Voting:
         n_voters = len(eligible_voters)
         eligible_votes, ineligible_votes = \
             cls.partition_eligible_votes(votes, eligible_voters)
-        results = cls.count_votes(eligible_votes)
+        by_voter = cls.dedupe_by_voter(eligible_votes)
+        results = cls.count_votes(by_voter)
         results['block_id'] = block['id']
         results['status'] = cls.decide_votes(n_voters, **results['counts'])
         results['ineligible'] = ineligible_votes
@@ -60,38 +62,29 @@ class Voting:
         return eligible, ineligible
 
     @classmethod
-    def count_votes(cls, eligible_votes):
+    def dedupe_by_voter(cls, eligible_votes):
+        """
+        Throw a critical error if there is a duplicate vote
+        """
+        by_voter = {}
+        for vote in eligible_votes:
+            pubkey = vote['node_pubkey']
+            if pubkey in by_voter:
+                raise CriticalDuplicateVote(pubkey)
+            by_voter[pubkey] = vote
+        return by_voter
+
+    @classmethod
+    def count_votes(cls, by_voter):
         """
         Given a list of eligible votes, (votes from known nodes that are listed
         as voters), produce the number that say valid and the number that say
-        invalid.
-
-        * Detect if there are multiple votes from a single node and return them
-          in a separate "cheat" dictionary.
-        * Votes must agree on previous block, otherwise they become invalid.
-
-        note:
-            The sum of votes returned by this function does not necessarily
-            equal the length of the list of votes fed in. It may differ for
-            example if there are found to be multiple votes submitted by a
-            single voter.
+        invalid. Votes must agree on previous block, otherwise they become invalid.
         """
         prev_blocks = collections.Counter()
-        cheat = []
         malformed = []
 
-        # Group by pubkey to detect duplicate voting
-        by_voter = collections.defaultdict(list)
-        for vote in eligible_votes:
-            by_voter[vote['node_pubkey']].append(vote)
-
-        for pubkey, votes in by_voter.items():
-            if len(votes) > 1:
-                cheat.append(votes)
-                continue
-
-            vote = votes[0]
-
+        for vote in by_voter.values():
             if not cls.verify_vote_schema(vote):
                 malformed.append(vote)
                 continue
@@ -111,7 +104,6 @@ class Voting:
                 'n_valid': n_valid,
                 'n_invalid': len(by_voter) - n_valid,
             },
-            'cheat': cheat,
             'malformed': malformed,
             'previous_block': prev_block,
             'other_previous_block': dict(prev_blocks),

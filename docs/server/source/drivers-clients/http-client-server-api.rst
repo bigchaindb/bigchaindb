@@ -46,8 +46,12 @@ Transactions
 
    Get the transaction with the ID ``tx_id``.
 
-   This endpoint returns a transaction only if a ``VALID`` block on
-   ``bigchain`` exists.
+   This endpoint returns a transaction if it was included in a ``VALID`` block,
+   if it is still waiting to be processed (``BACKLOG``) or is still in an
+   undecided block (``UNDECIDED``). All instances of a transaction in invalid
+   blocks are ignored and treated as if they don't exist. If a request is made
+   for a transaction and instances of that transaction are found only in
+   invalid blocks, then the response will be ``404 Not Found``.
 
    :param tx_id: transaction ID
    :type tx_id: hex string
@@ -402,7 +406,7 @@ Determining the API Root URL
 When you start BigchainDB Server using ``bigchaindb start``,
 an HTTP API is exposed at some address. The default is:
 
-`http://localhost:9984/api/v1/ <http://localhost:9984/api/v1/>`_
+``http://localhost:9984/api/v1/``
 
 It's bound to ``localhost``,
 so you can access it from the same machine,

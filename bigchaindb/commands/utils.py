@@ -74,12 +74,50 @@ def start_logging_process(command):
     return start_logging
 
 
+def _convert(value, default=None, convert=None):
+    def convert_bool(value):
+        if value.lower() in ('true', 't', 'yes', 'y'):
+            return True
+        if value.lower() in ('false', 'f', 'no', 'n'):
+            return False
+        raise ValueError('{} cannot be converted to bool'.format(value))
+
+    if value == '':
+        value = None
+
+    if convert is None:
+        if default is not None:
+            convert = type(default)
+        else:
+            convert = str
+
+    if convert == bool:
+        convert = convert_bool
+
+    if value is None:
+        return default
+    else:
+        return convert(value)
+
+
 # We need this because `input` always prints on stdout, while it should print
 # to stderr. It's a very old bug, check it out here:
 # - https://bugs.python.org/issue1927
-def input_on_stderr(prompt=''):
+def input_on_stderr(prompt='', default=None, convert=None):
+    """Output a string to stderr and wait for input.
+
+    Args:
+        prompt (str): the message to display.
+        default: the default value to return if the user
+            leaves the field empty
+        convert (callable): a callable to be used to convert
+            the value the user inserted. If None, the type of
+            ``default`` will be used.
+    """
+
     print(prompt, end='', file=sys.stderr)
-    return builtins.input()
+    value = builtins.input()
+    return _convert(value, default, convert)
 
 
 def start_rethinkdb():
@@ -198,6 +236,7 @@ base_parser.add_argument('-c', '--config',
                               '(use "-" for stdout)')
 
 base_parser.add_argument('-l', '--log-level',
+                         type=str.upper,  # convert to uppercase for comparison to choices
                          choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
                          default='INFO',
                          help='Log level')
