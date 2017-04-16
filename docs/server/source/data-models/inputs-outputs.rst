@@ -26,7 +26,10 @@ When one creates a condition, one can calculate its fulfillment length (e.g.
 96). The more complex the condition, the larger its fulfillment length will be.
 A BigchainDB federation can put an upper limit on the complexity of the
 conditions, either directly by setting an allowed maximum fulfillment length,
-or indirectly by setting a maximum allowed transaction size which would limit
+or
+`indirectly <https://github.com/bigchaindb/bigchaindb/issues/356#issuecomment-288085251>`_
+by :ref:`setting a maximum allowed transaction size <Enforcing a Max Transaction Size>`
+which would limit
 the overall complexity accross all inputs and outputs of a transaction.
 
 If someone tries to make a condition where the output of a threshold condition feeds into the input of another “earlier” threshold condition (i.e. in a closed logical circuit), then their computer will take forever to calculate the (infinite) “condition URI”, at least in theory. In practice, their computer will run out of memory or their client software will timeout after a while.
