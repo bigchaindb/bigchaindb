@@ -220,21 +220,19 @@ holding the logging configuration.
 }
 ```
 
-**Defaults to**: `"{}"`.
-
-Please note that although the default is `"{}"` as per the configuration file,
-internal defaults are used, such that the actual operational default is:
+**Defaults to**:
 
 ```
 {
     "log": {
         "file": "~/bigchaindb.log",
+        "error_file": "~/bigchaindb-errors.log",
         "level_console": "info",
         "level_logfile": "info",
         "datefmt_console": "%Y-%m-%d %H:%M:%S",
         "datefmt_logfile": "%Y-%m-%d %H:%M:%S",
-        "fmt_console": "%(asctime)s [%(levelname)s] (%(name)s) %(message)s",
-        "fmt_logfile": "%(asctime)s [%(levelname)s] (%(name)s) %(message)s",
+        "fmt_logfile": "[%(asctime)s] [%(levelname)s] (%(name)s) %(message)s (%(processName)-10s - pid: %(process)d)",
+        "fmt_console": "[%(asctime)s] [%(levelname)s] (%(name)s) %(message)s (%(processName)-10s - pid: %(process)d)",
         "granular_levels": {}
 }
 ```
