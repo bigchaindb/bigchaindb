@@ -59,6 +59,8 @@ config = {
         # Note: this section supports all the Gunicorn settings:
         #       - http://docs.gunicorn.org/en/stable/settings.html
         'bind': os.environ.get('BIGCHAINDB_SERVER_BIND') or 'localhost:9984',
+        'loglevel': logging.getLevelName(
+            log_config['handlers']['console']['level']).lower(),
         'workers': None,  # if none, the value will be cpu_count * 2 + 1
         'threads': None,  # if none, the value will be cpu_count * 2 + 1
     },
@@ -86,6 +88,7 @@ config = {
         'datefmt_logfile': log_config['formatters']['file']['datefmt'],
         'fmt_console': log_config['formatters']['console']['format'],
         'fmt_logfile': log_config['formatters']['file']['format'],
+        'granular_levels': {},
     },
 }
 
