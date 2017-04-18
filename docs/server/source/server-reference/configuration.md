@@ -26,6 +26,7 @@ For convenience, here's a list of all the relevant environment variables (docume
 `BIGCHAINDB_BACKLOG_REASSIGN_DELAY`<br>
 `BIGCHAINDB_LOG`<br>
 `BIGCHAINDB_LOG_FILE`<br>
+`BIGCHAINDB_LOG_ERROR_FILE`<br>
 `BIGCHAINDB_LOG_LEVEL_CONSOLE`<br>
 `BIGCHAINDB_LOG_LEVEL_LOGFILE`<br>
 `BIGCHAINDB_LOG_DATEFMT_CONSOLE`<br>
@@ -205,6 +206,7 @@ holding the logging configuration.
 {
     "log": {
         "file": "/var/log/bigchaindb.log",
+        "error_file": "/var/log/bigchaindb-errors.log",
         "level_console": "info",
         "level_logfile": "info",
         "datefmt_console": "%Y-%m-%d %H:%M:%S",
@@ -240,8 +242,8 @@ internal defaults are used, such that the actual operational default is:
 The next subsections explain each field of the `log` configuration.
 
 
-### log.file
-The full path to the file where logs should be written to.
+### log.file & log.error_file
+The full paths to the files where logs and error logs should be written to.
 
 **Example**:
 
@@ -249,15 +251,41 @@ The full path to the file where logs should be written to.
 {
     "log": {
         "file": "/var/log/bigchaindb/bigchaindb.log"
+        "error_file": "/var/log/bigchaindb/bigchaindb-errors.log"
     }
 }
 ```
 
-**Defaults to**:  `"~/bigchaindb.log"`.
+**Defaults to**:  
+    
+    * `"~/bigchaindb.log"`
+    * `"~/bigchaindb-errors.log"`
 
 Please note that the user running `bigchaindb` must have write access to the
-location.
-        
+locations.
+
+#### Log rotation
+
+Log files have a size limit of 200 MB and will be rotated up to five times.
+
+For example if we consider the log file setting:
+
+```
+{
+    "log": {
+        "file": "~/bigchain.log"
+    }
+}
+```
+
+logs would always be written to `bigchain.log`. Each time the file
+`bigchain.log` reaches 200 MB it would be closed and renamed 
+`bigchain.log.1`. If `bigchain.log.1` and `bigchain.log.2` already exist they
+would be renamed `bigchain.log.2` and `bigchain.log.3`. This pattern would be
+applied up to `bigchain.log.5` after which `bigchain.log.5` would be
+overwritten by `bigchain.log.4`, thus ending the rotation cycle of whatever
+logs were in `bigchain.log.5`.
+
 
 ### log.level_console
 The log level used to log to the console. Possible allowed values are the ones
