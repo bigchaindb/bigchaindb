@@ -1,5 +1,8 @@
 import copy
+import logging
 import os
+
+from bigchaindb.log.configs import SUBSCRIBER_LOGGING_CONFIG as log_config
 
 # from functools import reduce
 # PORT_NUMBER = reduce(lambda x, y: x * y, map(ord, 'BigchainDB')) % 2**16
@@ -73,19 +76,16 @@ config = {
     'keyring': [],
     'backlog_reassign_delay': 120,
     'log': {
-        # TODO Document here or elsewhere.
-        # Example of config:
-        # 'file': '/var/log/bigchaindb.log',
-        # 'level_console': 'info',
-        # 'level_logfile': 'info',
-        # 'datefmt_console': '%Y-%m-%d %H:%M:%S',
-        # 'datefmt_logfile': '%Y-%m-%d %H:%M:%S',
-        # 'fmt_console': '%(asctime)s [%(levelname)s] (%(name)s) %(message)s',
-        # 'fmt_logfile': '%(asctime)s [%(levelname)s] (%(name)s) %(message)s',
-        # 'granular_levels': {
-        #     'bichaindb.backend': 'info',
-        #     'bichaindb.core': 'info',
-        # },
+        'file': log_config['handlers']['file']['filename'],
+        'error_file': log_config['handlers']['errors']['filename'],
+        'level_console': logging.getLevelName(
+            log_config['handlers']['console']['level']),
+        'level_logfile': logging.getLevelName(
+            log_config['handlers']['file']['level']),
+        'datefmt_console': log_config['formatters']['console']['datefmt'],
+        'datefmt_logfile': log_config['formatters']['file']['datefmt'],
+        'fmt_console': log_config['formatters']['console']['format'],
+        'fmt_logfile': log_config['formatters']['file']['format'],
     },
 }
 
