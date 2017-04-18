@@ -29,26 +29,6 @@ POISON_PILL = 'POISON_PILL'
 EVENTS_ENDPOINT = '/api/v1/streams/valid_tx'
 
 
-def _put_into_capped_queue(queue, value):
-    """Put a new item in a capped queue.
-
-    If the queue reached its limit, get the first element
-    ready and put the new one. Note that the first element
-    will be lost (that's the purpose of a capped queue).
-
-    Args:
-        queue: a queue
-        value: the value to put
-    """
-    while True:
-        try:
-            queue.put_nowait(value)
-        except asyncio.QueueFull:
-            queue.get_nowait()
-        else:
-            return
-
-
 def _multiprocessing_to_asyncio(in_queue, out_queue, loop):
     """Bridge between a synchronous multiprocessing queue
     and an asynchronous asyncio queue.
@@ -60,7 +40,7 @@ def _multiprocessing_to_asyncio(in_queue, out_queue, loop):
 
     while True:
         value = in_queue.get()
-        loop.call_soon_threadsafe(_put_into_capped_queue, out_queue, value)
+        loop.call_soon_threadsafe(out_queue.put_nowait, value)
 
 
 class Dispatcher:
@@ -161,7 +141,7 @@ def start(sync_event_source, loop=None):
     if not loop:
         loop = asyncio.get_event_loop()
 
-    event_source = asyncio.Queue(maxsize=1024, loop=loop)
+    event_source = asyncio.Queue(loop=loop)
 
     bridge = threading.Thread(target=_multiprocessing_to_asyncio,
                               args=(sync_event_source, event_source, loop),
