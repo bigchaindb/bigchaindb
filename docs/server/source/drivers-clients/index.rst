@@ -14,7 +14,6 @@ community projects listed below.
 .. toctree::
    :maxdepth: 1
 
-   websocket-event-stream-api
    The Python Driver <https://docs.bigchaindb.com/projects/py-driver/en/latest/index.html>
    Transaction CLI <https://docs.bigchaindb.com/projects/cli/en/latest/>
 
