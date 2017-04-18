@@ -53,7 +53,7 @@ on the node and mark it as unscheduleable
 
    kubectl drain $NODENAME
 
-There are `more details in the Kubernetes docs <https://kubernetes.io/docs/admin/cluster-management/#maintenance-on-a-node>`_,
+There are `more details in the Kubernetes docs <https://kubernetes.io/docs/concepts/cluster-administration/cluster-management/#maintenance-on-a-node>`_,
 including instructions to make the node scheduleable again.
 
 To manually upgrade the host OS,
@@ -82,13 +82,13 @@ A typical upgrade workflow for a single Deployment would be:
 
    $ KUBE_EDITOR=nano kubectl edit deployment/<name of Deployment>
 
-The `kubectl edit <https://kubernetes.io/docs/user-guide/kubectl/kubectl_edit/>`_ 
-command opens the specified editor (nano in the above example),
+The ``kubectl edit`` command
+opens the specified editor (nano in the above example),
 allowing you to edit the specified Deployment *in the Kubernetes cluster*.
 You can change the version tag on the Docker image, for example. 
 Don't forget to save your edits before exiting the editor.
 The Kubernetes docs have more information about
-`updating a Deployment <https://kubernetes.io/docs/user-guide/deployments/#updating-a-deployment>`_.
+`Deployments <https://kubernetes.io/docs/concepts/workloads/controllers/deployment/>`_ (including updating them).
 
 
 The upgrade story for the MongoDB StatefulSet is *different*.

@@ -24,7 +24,7 @@ deserialize(serialize(data)) == data
 True
 ```
 
-Since BigchainDB performs a lot of serialization we decided to use [python-rapidjson](https://github.com/kenrobbins/python-rapidjson)
+Since BigchainDB performs a lot of serialization we decided to use [python-rapidjson](https://github.com/python-rapidjson/python-rapidjson)
 which is a python wrapper for [rapidjson](https://github.com/miloyip/rapidjson) a fast and fully RFC complient JSON parser.
 
 ```python

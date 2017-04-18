@@ -124,10 +124,39 @@ def test_bigchain_export_my_pubkey_when_pubkey_not_set(monkeypatch):
         "This node's public key wasn't set anywhere so it can't be exported"
 
 
-def test_bigchain_run_init_when_db_exists(mock_db_init_with_existing_db):
+def test_bigchain_run_init_when_db_exists(mocker, capsys):
     from bigchaindb.commands.bigchaindb import run_init
+    from bigchaindb.common.exceptions import DatabaseAlreadyExists
+    init_db_mock = mocker.patch(
+        'bigchaindb.commands.bigchaindb.schema.init_database',
+        autospec=True,
+        spec_set=True,
+    )
+    init_db_mock.side_effect = DatabaseAlreadyExists
     args = Namespace(config=None)
     run_init(args)
+    output_message = capsys.readouterr()[1]
+    print(output_message)
+    assert output_message == (
+        'The database already exists.\n'
+        'If you wish to re-initialize it, first drop it.\n'
+    )
+
+
+def test__run_init(mocker):
+    from bigchaindb.commands.bigchaindb import _run_init
+    bigchain_mock = mocker.patch(
+        'bigchaindb.commands.bigchaindb.bigchaindb.Bigchain')
+    init_db_mock = mocker.patch(
+        'bigchaindb.commands.bigchaindb.schema.init_database',
+        autospec=True,
+        spec_set=True,
+    )
+    _run_init()
+    bigchain_mock.assert_called_once_with()
+    init_db_mock.assert_called_once_with(
+        connection=bigchain_mock.return_value.connection)
+    bigchain_mock.return_value.create_genesis_block.assert_called_once_with()
 
 
 @patch('bigchaindb.backend.schema.drop_database')

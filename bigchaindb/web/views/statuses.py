@@ -1,8 +1,6 @@
 """This module provides the blueprint for the statuses API endpoints.
 
-For more information please refer to the documentation on ReadTheDocs:
- - https://docs.bigchaindb.com/projects/server/en/latest/drivers-clients/
-   http-client-server-api.html
+For more information please refer to the documentation: http://bigchaindb.com/http-api
 """
 from flask import current_app
 from flask_restful import Resource, reqparse

@@ -1,20 +1,8 @@
-# Production Node Requirements
+# RethinkDB Requirements
 
-Note: This section will be broken apart into several pages, e.g. NTP requirements, RethinkDB requirements, BigchainDB requirements, etc. and those pages will add more details.
+[The RethinkDB documentation](https://rethinkdb.com/docs/) should be your first source of information about its requirements. This page serves mostly to document some of its more obscure requirements.
 
-
-## OS Requirements
-
-* RethinkDB Server [will run on any modern OS](https://www.rethinkdb.com/docs/install/). Note that the Fedora package isn't officially supported. Also, official support for Windows is fairly recent ([April 2016](https://rethinkdb.com/blog/2.3-release/)).
-* BigchainDB Server requires Python 3.4+ and Python 3.4+ [will run on any modern OS](https://docs.python.org/3.4/using/index.html).
-* BigchaindB Server uses the Python `multiprocessing` package and [some functionality in the `multiprocessing` package doesn't work on OS X](https://docs.python.org/3.4/library/multiprocessing.html#multiprocessing.Queue.qsize). You can still use Mac OS X if you use Docker or a virtual machine.
-
-The BigchainDB core dev team uses recent LTS versions of Ubuntu and recent versions of Fedora.
-
-We don't test BigchainDB on Windows or Mac OS X, but you can try.
-
-* If you run into problems on Windows, then you may want to try using Vagrant. One of our community members ([@Mec-Is](https://github.com/Mec-iS)) wrote [a page about how to install BigchainDB on a VM with Vagrant](https://gist.github.com/Mec-iS/b84758397f1b21f21700).
-* If you have Mac OS X and want to experiment with BigchainDB, then you could do that [using Docker](../appendices/run-with-docker.html).
+RethinkDB Server [will run on any modern OS](https://www.rethinkdb.com/docs/install/). Note that the Fedora package isn't officially supported. Also, official support for Windows is fairly recent ([April 2016](https://rethinkdb.com/blog/2.3-release/)).
 
 
 ## Storage Requirements
@@ -27,6 +15,20 @@ When it comes to storage for RethinkDB, there are many things that are nice to h
 For RethinkDB's failover mechanisms to work, [every RethinkDB table must have at least three replicas](https://rethinkdb.com/docs/failover/) (i.e. a primary replica and two others). For example, if you want to store 10 GB of unique data, then you need at least 30 GB of storage. (Indexes and internal metadata are stored in RAM.)
 
 As for the read & write rates, what do you expect those to be for your situation? It's not enough for the storage system alone to handle those rates: the interconnects between the nodes must also be able to handle them.
+
+**Storage Notes Specific to RethinkDB**
+
+* The RethinkDB storage engine has a number of SSD optimizations, so you _can_ benefit from using SSDs. ([source](https://www.rethinkdb.com/docs/architecture/))
+
+* If you have an N-node RethinkDB cluster and 1) you want to use it to store an amount of data D (unique records, before replication), 2) you want the replication factor to be R (all tables), and 3) you want N shards (all tables), then each BigchainDB node must have storage space of at least R×D/N.
+
+* RethinkDB tables can have [at most 64 shards](https://rethinkdb.com/limitations/). What does that imply? Suppose you only have one table, with 64 shards. How big could that table be? It depends on how much data can be stored in each node. If the maximum amount of data that a node can store is d, then the biggest-possible shard is d, and the biggest-possible table size is 64 times that. (All shard replicas would have to be stored on other nodes beyond the initial 64.) If there are two tables, the second table could also have 64 shards, stored on 64 other maxed-out nodes, so the total amount of unique data in the database would be (64 shards/table)×(2 tables)×d. In general, if you have T tables, the maximum amount of unique data that can be stored in the database (i.e. the amount of data before replication) is 64×T×d.
+
+* When you set up storage for your RethinkDB data, you may have to select a filesystem. (Sometimes, the filesystem is already decided by the choice of storage.) We recommend using a filesystem that supports direct I/O (Input/Output). Many compressed or encrypted file systems don't support direct I/O. The ext4 filesystem supports direct I/O (but be careful: if you enable the data=journal mode, then direct I/O support will be disabled; the default is data=ordered). If your chosen filesystem supports direct I/O and you're using Linux, then you don't need to do anything to request or enable direct I/O. RethinkDB does that.
+
+<p style="background-color: lightgrey;">What is direct I/O? It allows RethinkDB to write directly to the storage device (or use its own in-memory caching mechanisms), rather than relying on the operating system's file read and write caching mechanisms. (If you're using Linux, a write-to-file normally writes to the in-memory Page Cache first; only later does that Page Cache get flushed to disk. The Page Cache is also used when reading files.)</p>
+
+* RethinkDB stores its data in a specific directory. You can tell RethinkDB _which_ directory using the RethinkDB config file, as explained below. In this documentation, we assume the directory is `/data`. If you set up a separate device (partition, RAID array, or logical volume) to store the RethinkDB data, then mount that device on `/data`.
 
 
 ## Memory (RAM) Requirements
