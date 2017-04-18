@@ -13,6 +13,33 @@ def reset_bigchaindb_config(monkeypatch):
     monkeypatch.setattr('bigchaindb.config', bigchaindb._config)
 
 
+def test_input_on_stderr():
+    from bigchaindb.commands.utils import input_on_stderr, _convert
+
+    with patch('builtins.input', return_value='I love cats'):
+        assert input_on_stderr() == 'I love cats'
+
+    # input_on_stderr uses `_convert` internally, from now on we will
+    # just use that function
+
+    assert _convert('hack the planet') == 'hack the planet'
+    assert _convert('42') == '42'
+    assert _convert('42', default=10) == 42
+    assert _convert('', default=10) == 10
+    assert _convert('42', convert=int) == 42
+    assert _convert('True', convert=bool) is True
+    assert _convert('False', convert=bool) is False
+    assert _convert('t', convert=bool) is True
+    assert _convert('3.14', default=1.0) == 3.14
+    assert _convert('TrUe', default=False) is True
+
+    with pytest.raises(ValueError):
+        assert _convert('TRVE', default=False)
+
+    with pytest.raises(ValueError):
+        assert _convert('ಠ_ಠ', convert=int)
+
+
 @pytest.mark.usefixtures('ignore_local_config_file', 'reset_bigchaindb_config')
 def test_configure_bigchaindb_configures_bigchaindb():
     from bigchaindb.commands.utils import configure_bigchaindb
@@ -54,7 +81,7 @@ def test_configure_bigchaindb_logging(log_level):
 
 def test_start_raises_if_command_not_implemented():
     from bigchaindb.commands import utils
-    from bigchaindb.commands.bigchain import create_parser
+    from bigchaindb.commands.bigchaindb import create_parser
 
     parser = create_parser()
 
@@ -66,7 +93,7 @@ def test_start_raises_if_command_not_implemented():
 
 def test_start_raises_if_no_arguments_given():
     from bigchaindb.commands import utils
-    from bigchaindb.commands.bigchain import create_parser
+    from bigchaindb.commands.bigchaindb import create_parser
 
     parser = create_parser()
 

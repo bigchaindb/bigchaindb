@@ -1,0 +1,13 @@
+############################################################################
+# This YAML file desribes a ConfigMap with a valid list of ':' separated   #
+# IP addresses (or 'all' for all IP addresses) that can connect to the     #
+# MongoDB instance. We only support the value 'all' currently.             #
+############################################################################
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mongodb-whitelist
+  namespace: default
+data:
+  allowed-hosts: "all"

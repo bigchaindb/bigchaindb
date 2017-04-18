@@ -29,8 +29,6 @@ coverage:
     - "docs/*"
     - "tests/*"
     - "bigchaindb/version.py"
-    - "benchmarking-tests/*"
-    - "speed-tests/*"
     - "ntools/*"
     - "k8s/*"
 
