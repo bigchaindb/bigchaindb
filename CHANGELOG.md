@@ -25,14 +25,20 @@ Tag name: v0.10.0
 [#1324](https://github.com/bigchaindb/bigchaindb/pull/1324),
 [#1326](https://github.com/bigchaindb/bigchaindb/pull/1326),
 [#1327](https://github.com/bigchaindb/bigchaindb/pull/1327),
-[#1330](https://github.com/bigchaindb/bigchaindb/pull/1330) and
-[#1365](https://github.com/bigchaindb/bigchaindb/pull/1365)
+[#1330](https://github.com/bigchaindb/bigchaindb/pull/1330),
+[#1365](https://github.com/bigchaindb/bigchaindb/pull/1365),
+[#1394](https://github.com/bigchaindb/bigchaindb/pull/1394),
+[#1396](https://github.com/bigchaindb/bigchaindb/pull/1396),
+[#1398](https://github.com/bigchaindb/bigchaindb/pull/1398) and
+[#1402](https://github.com/bigchaindb/bigchaindb/pull/1402)
 * Events API using WebSocket protocol. Pull Requests
 [#1086](https://github.com/bigchaindb/bigchaindb/pull/1086),
 [#1347](https://github.com/bigchaindb/bigchaindb/pull/1347),
 [#1349](https://github.com/bigchaindb/bigchaindb/pull/1349),
-[#1356](https://github.com/bigchaindb/bigchaindb/pull/1356) and
-[#1368](https://github.com/bigchaindb/bigchaindb/pull/1368)
+[#1356](https://github.com/bigchaindb/bigchaindb/pull/1356),
+[#1368](https://github.com/bigchaindb/bigchaindb/pull/1368),
+[#1401](https://github.com/bigchaindb/bigchaindb/pull/1401) and
+[#1403](https://github.com/bigchaindb/bigchaindb/pull/1403)
 * Initial support for using SSL with MongoDB (work in progress). Pull Requests
 [#1299](https://github.com/bigchaindb/bigchaindb/pull/1299) and
 [#1348](https://github.com/bigchaindb/bigchaindb/pull/1348)
