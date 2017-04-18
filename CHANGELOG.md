@@ -58,13 +58,14 @@ Tag name: v0.10.0
     * the block-under-construction. Pull Requests [#1237](https://github.com/bigchaindb/bigchaindb/issues/1237) and [#1377](https://github.com/bigchaindb/bigchaindb/issues/1377)
 
 ### External Contributors
-* @tymlez - Pull Requests [#1108](https://github.com/bigchaindb/bigchaindb/pull/1108) & [#1209](https://github.com/bigchaindb/bigchaindb/pull/1209)
+In alphabetical order by GitHub username:
 * @anryko - [Pull Request #1277](https://github.com/bigchaindb/bigchaindb/pull/1277)
-* @lavinasachdev3 - [Pull Request #1358](https://github.com/bigchaindb/bigchaindb/pull/1358)
-* @jackric - [Pull Request #1365](https://github.com/bigchaindb/bigchaindb/pull/1365)
 * @anujism - [Pull Request #1366](https://github.com/bigchaindb/bigchaindb/pull/1366)
-* @tomconte - [Pull Request #1299](https://github.com/bigchaindb/bigchaindb/pull/1299)
+* @jackric - [Pull Request #1365](https://github.com/bigchaindb/bigchaindb/pull/1365)
+* @lavinasachdev3 - [Pull Request #1358](https://github.com/bigchaindb/bigchaindb/pull/1358)
 * @morrme - [Pull Request #1340](https://github.com/bigchaindb/bigchaindb/pull/1340)
+* @tomconte - [Pull Request #1299](https://github.com/bigchaindb/bigchaindb/pull/1299)
+* @tymlez - Pull Requests [#1108](https://github.com/bigchaindb/bigchaindb/pull/1108) & [#1209](https://github.com/bigchaindb/bigchaindb/pull/1209)
 
 ### Notes
 * MongoDB is now the recommended database backend (not RethinkDB).
