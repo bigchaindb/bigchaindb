@@ -1,4 +1,5 @@
 import copy
+import logging
 from unittest.mock import mock_open, patch
 
 import pytest
@@ -147,12 +148,16 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
     WSSERVER_HOST = '1.2.3.4'
     WSSERVER_PORT = 57
     KEYRING = 'pubkey_0:pubkey_1:pubkey_2'
+    LOG_FILE = '/somewhere/something.log'
 
     file_config = {
         'database': {
             'host': DATABASE_HOST
         },
-        'backlog_reassign_delay': 5
+        'backlog_reassign_delay': 5,
+        'log': {
+            'level_console': 'debug',
+        },
     }
     monkeypatch.setattr('bigchaindb.config_utils.file_config', lambda *args, **kwargs: file_config)
     monkeypatch.setattr('os.environ', {'BIGCHAINDB_DATABASE_NAME': DATABASE_NAME,
@@ -161,10 +166,12 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
                                        'BIGCHAINDB_SERVER_BIND': SERVER_BIND,
                                        'BIGCHAINDB_WSSERVER_HOST': WSSERVER_HOST,
                                        'BIGCHAINDB_WSSERVER_PORT': WSSERVER_PORT,
-                                       'BIGCHAINDB_KEYRING': KEYRING})
+                                       'BIGCHAINDB_KEYRING': KEYRING,
+                                       'BIGCHAINDB_LOG_FILE': LOG_FILE})
 
     import bigchaindb
     from bigchaindb import config_utils
+    from bigchaindb.log.configs import SUBSCRIBER_LOGGING_CONFIG as log_config
     config_utils.autoconfigure()
 
     database_rethinkdb = {
@@ -199,6 +206,8 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
         'CONFIGURED': True,
         'server': {
             'bind': SERVER_BIND,
+            'loglevel': logging.getLevelName(
+                log_config['handlers']['console']['level']).lower(),
             'workers': None,
             'threads': None,
         },
@@ -213,7 +222,18 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
         },
         'keyring': KEYRING.split(':'),
         'backlog_reassign_delay': 5,
-        'log': {},
+        'log': {
+            'file': LOG_FILE,
+            'error_file': log_config['handlers']['errors']['filename'],
+            'level_console': 'debug',
+            'level_logfile': logging.getLevelName(
+                log_config['handlers']['file']['level']),
+            'datefmt_console': log_config['formatters']['console']['datefmt'],
+            'datefmt_logfile': log_config['formatters']['file']['datefmt'],
+            'fmt_console': log_config['formatters']['console']['format'],
+            'fmt_logfile': log_config['formatters']['file']['format'],
+            'granular_levels': {},
+        },
     }
 
 
