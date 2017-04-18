@@ -1,10 +1,6 @@
 import copy
 import os
 
-# from functools import reduce
-# PORT_NUMBER = reduce(lambda x, y: x * y, map(ord, 'BigchainDB')) % 2**16
-# basically, the port number is 9984
-
 
 _base_database_rethinkdb = {
     'host': os.environ.get('BIGCHAINDB_DATABASE_HOST', 'localhost'),
