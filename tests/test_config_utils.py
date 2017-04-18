@@ -227,7 +227,7 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
             'error_file': log_config['handlers']['errors']['filename'],
             'level_console': 'debug',
             'level_logfile': logging.getLevelName(
-                log_config['handlers']['file']['level']),
+                log_config['handlers']['file']['level']).lower(),
             'datefmt_console': log_config['formatters']['console']['datefmt'],
             'datefmt_logfile': log_config['formatters']['file']['datefmt'],
             'fmt_console': log_config['formatters']['console']['format'],
