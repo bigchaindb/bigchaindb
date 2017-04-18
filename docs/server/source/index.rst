@@ -8,7 +8,7 @@ BigchainDB Server Documentation
    introduction
    quickstart
    cloud-deployment-templates/index
-   nodes/index
+   production-nodes/index
    dev-and-test/index
    server-reference/index
    http-client-server-api

@@ -8,3 +8,7 @@ class CriticalDoubleSpend(BigchainDBError):
 
 class CriticalDoubleInclusion(BigchainDBError):
     """Data integrity error that requires attention"""
+
+
+class CriticalDuplicateVote(BigchainDBError):
+    """Data integrity error that requires attention"""

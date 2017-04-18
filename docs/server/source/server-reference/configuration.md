@@ -21,7 +21,6 @@ For convenience, here's a list of all the relevant environment variables (docume
 `BIGCHAINDB_SERVER_THREADS`<br>
 `BIGCHAINDB_CONFIG_PATH`<br>
 `BIGCHAINDB_BACKLOG_REASSIGN_DELAY`<br>
-`BIGCHAINDB_CONSENSUS_PLUGIN`<br>
 `BIGCHAINDB_LOG`<br>
 `BIGCHAINDB_LOG_FILE`<br>
 `BIGCHAINDB_LOG_LEVEL_CONSOLE`<br>
@@ -169,21 +168,9 @@ export BIGCHAINDB_BACKLOG_REASSIGN_DELAY=30
 "backlog_reassign_delay": 120
 ```
 
-## consensus_plugin
-
-The [consensus plugin](../appendices/consensus.html) to use.
-
-**Example using an environment variable**
-```text
-export BIGCHAINDB_CONSENSUS_PLUGIN=default
-```
-
-**Example config file snippet: the default**
-```js
-"consensus_plugin": "default"
-```
 
 ## log
+
 The `log` key is expected to point to a mapping (set of key/value pairs)
 holding the logging configuration.
 

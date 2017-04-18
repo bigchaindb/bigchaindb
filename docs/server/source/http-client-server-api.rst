@@ -406,7 +406,7 @@ Determining the API Root URL
 When you start BigchainDB Server using ``bigchaindb start``,
 an HTTP API is exposed at some address. The default is:
 
-`http://localhost:9984/api/v1/ <http://localhost:9984/api/v1/>`_
+``http://localhost:9984/api/v1/``
 
 It's bound to ``localhost``,
 so you can access it from the same machine,
