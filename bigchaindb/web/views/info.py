@@ -35,7 +35,7 @@ class ApiV1Index(Resource):
         docs_url = [
             'https://docs.bigchaindb.com/projects/server/en/v',
             version.__version__,
-            '/drivers-clients/http-client-server-api.html',
+            '/http-client-server-api.html',
         ]
         return flask.jsonify({
             '_links': {

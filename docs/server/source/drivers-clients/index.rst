@@ -14,12 +14,11 @@ community projects listed below.
 .. toctree::
    :maxdepth: 1
 
-   http-client-server-api
    The Python Driver <https://docs.bigchaindb.com/projects/py-driver/en/latest/index.html>
    Transaction CLI <https://docs.bigchaindb.com/projects/cli/en/latest/>
 
 
-Community Driven Libraries and Tools
+Community-Driven Libraries and Tools
 ------------------------------------
 Please note that some of these projects may be work in progress, but may
 nevertheless be very useful.

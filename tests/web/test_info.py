@@ -23,7 +23,7 @@ def test_api_root_endpoint(client):
 def test_api_v1_endpoint(client):
     res = client.get('/api/v1')
     docs_url = ['https://docs.bigchaindb.com/projects/server/en/vtsttst',
-                '/drivers-clients/http-client-server-api.html',
+                '/http-client-server-api.html',
                 ]
     assert res.json == {
         '_links': {
