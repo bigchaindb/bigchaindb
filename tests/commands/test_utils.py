@@ -76,7 +76,8 @@ def test_configure_bigchaindb_logging(log_level):
     args = Namespace(config=None, log_level=log_level)
     test_configure_logger(args)
     from bigchaindb import config
-    assert config['log'] == {'level_console': log_level}
+    assert config['log']['level_console'] == log_level
+    assert config['log']['level_logfile'] == log_level
 
 
 def test_start_raises_if_command_not_implemented():
