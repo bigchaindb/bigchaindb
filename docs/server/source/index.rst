@@ -11,6 +11,7 @@ BigchainDB Server Documentation
    production-nodes/index
    dev-and-test/index
    server-reference/index
+   websocket-event-stream-api
    drivers-clients/index
    clusters-feds/index
    data-models/index
