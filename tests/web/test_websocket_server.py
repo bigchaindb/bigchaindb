@@ -3,7 +3,6 @@ import json
 import queue
 import random
 import threading
-import time
 from unittest.mock import patch
 
 import pytest
@@ -60,56 +59,6 @@ def test_bridge_sync_async_queue(loop):
 
     result = yield from async_queue.get()
     assert result == 'Autobahn'
-
-    assert async_queue.qsize() == 0
-
-
-@asyncio.coroutine
-def test_put_into_capped_queue(loop):
-    from bigchaindb.web.websocket_server import _put_into_capped_queue
-    q = asyncio.Queue(maxsize=2, loop=loop)
-
-    _put_into_capped_queue(q, 'Friday')
-    assert q._queue[0] == 'Friday'
-
-    _put_into_capped_queue(q, "I'm")
-    assert q._queue[0] == 'Friday'
-    assert q._queue[1] == "I'm"
-
-    _put_into_capped_queue(q, 'in')
-    assert q._queue[0] == "I'm"
-    assert q._queue[1] == 'in'
-
-    _put_into_capped_queue(q, 'love')
-    assert q._queue[0] == 'in'
-    assert q._queue[1] == 'love'
-
-
-@asyncio.coroutine
-def test_capped_queue(loop):
-    from bigchaindb.web.websocket_server import _multiprocessing_to_asyncio
-
-    sync_queue = queue.Queue()
-    async_queue = asyncio.Queue(maxsize=2, loop=loop)
-
-    bridge = threading.Thread(target=_multiprocessing_to_asyncio,
-                              args=(sync_queue, async_queue, loop),
-                              daemon=True)
-    bridge.start()
-
-    sync_queue.put('we')
-    sync_queue.put('are')
-    sync_queue.put('the')
-    sync_queue.put('robots')
-
-    # Wait until the thread processes all the items
-    time.sleep(1)
-
-    result = yield from async_queue.get()
-    assert result == 'the'
-
-    result = yield from async_queue.get()
-    assert result == 'robots'
 
     assert async_queue.qsize() == 0
 
