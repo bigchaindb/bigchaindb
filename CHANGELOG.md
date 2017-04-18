@@ -19,7 +19,7 @@ For reference, the possible headings are:
 Tag name: v0.10.0
 
 ### Added
-* More logging. Added `--log-level` option to `bigchaindb start` command. Added new logging configuration settings. Pull Requests
+* Improved logging. Added logging to file. Added `--log-level` option to `bigchaindb start` command. Added new logging configuration settings. Pull Requests
 [#1285](https://github.com/bigchaindb/bigchaindb/pull/1285),
 [#1307](https://github.com/bigchaindb/bigchaindb/pull/1307),
 [#1324](https://github.com/bigchaindb/bigchaindb/pull/1324),
