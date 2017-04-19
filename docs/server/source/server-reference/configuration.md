@@ -22,6 +22,8 @@ For convenience, here's a list of all the relevant environment variables (docume
 `BIGCHAINDB_SERVER_LOGLEVEL`<br>
 `BIGCHAINDB_SERVER_WORKERS`<br>
 `BIGCHAINDB_SERVER_THREADS`<br>
+`BIGCHAINDB_WSSERVER_HOST`<br>
+`BIGCHAINDB_WSSERVER_PORT`<br>
 `BIGCHAINDB_CONFIG_PATH`<br>
 `BIGCHAINDB_BACKLOG_REASSIGN_DELAY`<br>
 `BIGCHAINDB_LOG`<br>
@@ -177,6 +179,40 @@ export BIGCHAINDB_SERVER_THREADS=5
     "loglevel": "info",
     "workers": null,
     "threads": null
+}
+```
+
+
+## wsserver.host and wsserver.port
+
+These settings are for the
+[aiohttp server](https://aiohttp.readthedocs.io/en/stable/index.html), 
+which is used to serve the
+[WebSocket Event Stream API](../websocket-event-stream-api.html).
+`wsserver.host` is where to bind the aiohttp server socket and
+`wsserver.port` is the corresponding port.
+If you want to allow connections from anyone, on port 9985,
+set `wsserver.host` to 0.0.0.0 and `wsserver.port` to 9985.
+
+**Example using environment variables**
+```text
+export BIGCHAINDB_WSSERVER_HOST=0.0.0.0
+export BIGCHAINDB_WSSERVER_PORT=9985
+```
+
+**Example config file snippet**
+```js
+"wsserver": {
+    "host": "0.0.0.0",
+    "port": 65000
+}
+```
+
+**Default values (from a config file)**
+```js
+"wsserver": {
+    "host": "localhost",
+    "port": 9985
 }
 ```
 
