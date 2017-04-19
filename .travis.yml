@@ -1,3 +1,4 @@
+dist: trusty
 sudo: required
 
 language: python
@@ -59,6 +60,6 @@ before_script: .ci/travis-before-script.sh
 script:
   - .ci/travis_script.sh
   - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "master"; else echo $TRAVIS_BRANCH ; fi`
-  - docker build -t bigchaindb/bigchaindb-travis-test:$TAG -f Dockerfile .
+  - docker build -t bigchaindb/bigchaindb-travis-test:$TAG .
 
 after_success: .ci/travis-after-success.sh
