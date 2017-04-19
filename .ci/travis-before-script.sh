@@ -10,3 +10,5 @@ elif [[ "${BIGCHAINDB_DATABASE_BACKEND}" == mongodb ]]; then
     mkdir /tmp/mongodb-data
     ${PWD}/mongodb-linux-x86_64-3.4.1/bin/mongod --dbpath=/tmp/mongodb-data --replSet=bigchain-rs &> /dev/null &
 fi
+
+docker build -t bigchaindb/bigchaindb-travis-test:$TRAVIS_BRANCH .
