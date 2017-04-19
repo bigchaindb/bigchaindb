@@ -176,13 +176,33 @@ def get_spent(conn, transaction_id, output):
 
 
 @register_query(MongoDBConnection)
-def get_owned_ids(conn, owner):
+def get_spending_transactions(conn, inputs):
+    return conn.run(
+        conn.collection('bigchain').aggregate([
+            {'$match': {
+                'block.transactions.inputs.fulfills': {
+                    '$in': inputs,
+                },
+            }},
+            {'$unwind': '$block.transactions'},
+            {'$match': {
+                'block.transactions.inputs.fulfills': {
+                    '$in': inputs,
+                },
+            }},
+        ]))
+
+
+@register_query(MongoDBConnection)
+def get_owned_ids(conn, owner, unwrap=True):
     cursor = conn.run(
         conn.collection('bigchain').aggregate([
             {'$match': {'block.transactions.outputs.public_keys': owner}},
             {'$unwind': '$block.transactions'},
             {'$match': {'block.transactions.outputs.public_keys': owner}}
         ]))
+    if not unwrap:
+        return cursor
     # we need to access some nested fields before returning so lets use a
     # generator to avoid having to read all records on the cursor at this point
     return (elem['block']['transactions'] for elem in cursor)
@@ -193,6 +213,15 @@ def get_votes_by_block_id(conn, block_id):
     return conn.run(
         conn.collection('votes')
         .find({'vote.voting_for_block': block_id},
+              projection={'_id': False}))
+
+
+@register_query(MongoDBConnection)
+def get_votes_for_blocks_by_voter(conn, block_ids, node_pubkey):
+    return conn.run(
+        conn.collection('votes')
+        .find({'vote.voting_for_block': {'$in': block_ids},
+               'node_pubkey': node_pubkey},
               projection={'_id': False}))
 
 

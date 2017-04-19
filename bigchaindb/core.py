@@ -8,7 +8,7 @@ from bigchaindb.common.transaction import TransactionLink
 
 import bigchaindb
 
-from bigchaindb import backend, config_utils, utils
+from bigchaindb import backend, config_utils, utils, fastquery
 from bigchaindb.consensus import BaseConsensusRules
 from bigchaindb.models import Block, Transaction
 
@@ -433,14 +433,17 @@ class Bigchain(object):
         """
         return self.get_outputs_filtered(owner, include_spent=False)
 
+    @property
+    def fastquery(self):
+        return fastquery.FastQuery(self.connection, self.me)
+
     def get_outputs_filtered(self, owner, include_spent=True):
         """
         Get a list of output links filtered on some criteria
         """
-        outputs = self.get_outputs(owner)
+        outputs = self.fastquery.get_outputs_by_pubkey(owner)
         if not include_spent:
-            outputs = [o for o in outputs
-                       if not self.get_spent(o.txid, o.output)]
+            outputs = self.fastquery.filter_spent_outputs(outputs)
         return outputs
 
     def get_transactions_filtered(self, asset_id, operation=None):
