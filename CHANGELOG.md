@@ -15,6 +15,16 @@ For reference, the possible headings are:
 * **External Contributors** to list contributors outside of BigchainDB GmbH.
 * **Notes**
 
+## [0.10.1] - 2017-04-19
+Tag name: v0.10.1
+
+## Added
+* Documentation for the BigchainDB settings `wsserver.host` and `wsserver.port`. [Pull Request #1408](https://github.com/bigchaindb/bigchaindb/pull/1408)
+
+## Fixed
+* Fixed `Dockerfile`, which was failing to build. It now starts `FROM python:3.6` (instead of `FROM ubuntu:xenial`). [Pull Request #1410](https://github.com/bigchaindb/bigchaindb/pull/1410)
+* Fixed the `Makefile` so that `release` depends on `dist`. [Pull Request #1405](https://github.com/bigchaindb/bigchaindb/pull/1405)
+
 ## [0.10.0] - 2017-04-18
 Tag name: v0.10.0
 
