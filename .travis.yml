@@ -1,4 +1,10 @@
+sudo: required
+
 language: python
+
+services:
+  - docker
+
 cache: pip
 
 python:
