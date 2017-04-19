@@ -1,8 +1,6 @@
 """This module provides the blueprint for some basic API endpoints.
 
-For more information please refer to the documentation on ReadTheDocs:
- - https://docs.bigchaindb.com/projects/server/en/latest/drivers-clients/
-   http-client-server-api.html
+For more information please refer to the documentation: http://bigchaindb.com/http-api
 """
 import logging
 

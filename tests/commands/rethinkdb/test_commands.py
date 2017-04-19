@@ -11,12 +11,13 @@ def test_bigchain_run_start_with_rethinkdb(mock_start_rethinkdb,
                                            mock_processes_start,
                                            mock_db_init_with_existing_db,
                                            mocked_setup_logging):
+    from bigchaindb import config
     from bigchaindb.commands.bigchaindb import run_start
     args = Namespace(start_rethinkdb=True, allow_temp_keypair=False, config=None, yes=True)
     run_start(args)
 
     mock_start_rethinkdb.assert_called_with()
-    mocked_setup_logging.assert_called_once_with(user_log_config={})
+    mocked_setup_logging.assert_called_once_with(user_log_config=config['log'])
 
 
 @patch('subprocess.Popen')

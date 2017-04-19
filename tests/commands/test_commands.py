@@ -37,10 +37,11 @@ def test_bigchain_run_start(mock_run_configure,
                             mock_processes_start,
                             mock_db_init_with_existing_db,
                             mocked_setup_logging):
+    from bigchaindb import config
     from bigchaindb.commands.bigchaindb import run_start
     args = Namespace(start_rethinkdb=False, allow_temp_keypair=False, config=None, yes=True)
     run_start(args)
-    mocked_setup_logging.assert_called_once_with(user_log_config={})
+    mocked_setup_logging.assert_called_once_with(user_log_config=config['log'])
 
 
 @pytest.mark.skipif(reason="BigchainDB doesn't support the automatic creation of a config file anymore")
@@ -124,10 +125,39 @@ def test_bigchain_export_my_pubkey_when_pubkey_not_set(monkeypatch):
         "This node's public key wasn't set anywhere so it can't be exported"
 
 
-def test_bigchain_run_init_when_db_exists(mock_db_init_with_existing_db):
+def test_bigchain_run_init_when_db_exists(mocker, capsys):
     from bigchaindb.commands.bigchaindb import run_init
+    from bigchaindb.common.exceptions import DatabaseAlreadyExists
+    init_db_mock = mocker.patch(
+        'bigchaindb.commands.bigchaindb.schema.init_database',
+        autospec=True,
+        spec_set=True,
+    )
+    init_db_mock.side_effect = DatabaseAlreadyExists
     args = Namespace(config=None)
     run_init(args)
+    output_message = capsys.readouterr()[1]
+    print(output_message)
+    assert output_message == (
+        'The database already exists.\n'
+        'If you wish to re-initialize it, first drop it.\n'
+    )
+
+
+def test__run_init(mocker):
+    from bigchaindb.commands.bigchaindb import _run_init
+    bigchain_mock = mocker.patch(
+        'bigchaindb.commands.bigchaindb.bigchaindb.Bigchain')
+    init_db_mock = mocker.patch(
+        'bigchaindb.commands.bigchaindb.schema.init_database',
+        autospec=True,
+        spec_set=True,
+    )
+    _run_init()
+    bigchain_mock.assert_called_once_with()
+    init_db_mock.assert_called_once_with(
+        connection=bigchain_mock.return_value.connection)
+    bigchain_mock.return_value.create_genesis_block.assert_called_once_with()
 
 
 @patch('bigchaindb.backend.schema.drop_database')
@@ -259,7 +289,8 @@ def test_allow_temp_keypair_generates_one_on_the_fly(
     args = Namespace(allow_temp_keypair=True, start_rethinkdb=False, config=None, yes=True)
     run_start(args)
 
-    mocked_setup_logging.assert_called_once_with(user_log_config={})
+    mocked_setup_logging.assert_called_once_with(
+        user_log_config=bigchaindb.config['log'])
     assert bigchaindb.config['keypair']['private'] == 'private_key'
     assert bigchaindb.config['keypair']['public'] == 'public_key'
 
@@ -284,7 +315,8 @@ def test_allow_temp_keypair_doesnt_override_if_keypair_found(mock_gen_keypair,
     args = Namespace(allow_temp_keypair=True, start_rethinkdb=False, config=None, yes=True)
     run_start(args)
 
-    mocked_setup_logging.assert_called_once_with(user_log_config={})
+    mocked_setup_logging.assert_called_once_with(
+        user_log_config=bigchaindb.config['log'])
     assert bigchaindb.config['keypair']['private'] == original_private_key
     assert bigchaindb.config['keypair']['public'] == original_public_key
 
@@ -293,6 +325,7 @@ def test_run_start_when_db_already_exists(mocker,
                                           monkeypatch,
                                           run_start_args,
                                           mocked_setup_logging):
+    from bigchaindb import config
     from bigchaindb.commands.bigchaindb import run_start
     from bigchaindb.common.exceptions import DatabaseAlreadyExists
     mocked_start = mocker.patch('bigchaindb.processes.start')
@@ -303,7 +336,7 @@ def test_run_start_when_db_already_exists(mocker,
     monkeypatch.setattr(
         'bigchaindb.commands.bigchaindb._run_init', mock_run_init)
     run_start(run_start_args)
-    mocked_setup_logging.assert_called_once_with(user_log_config={})
+    mocked_setup_logging.assert_called_once_with(user_log_config=config['log'])
     assert mocked_start.called
 
 
@@ -311,6 +344,7 @@ def test_run_start_when_keypair_not_found(mocker,
                                           monkeypatch,
                                           run_start_args,
                                           mocked_setup_logging):
+    from bigchaindb import config
     from bigchaindb.commands.bigchaindb import run_start
     from bigchaindb.commands.messages import CANNOT_START_KEYPAIR_NOT_FOUND
     from bigchaindb.common.exceptions import KeypairNotFoundException
@@ -325,7 +359,7 @@ def test_run_start_when_keypair_not_found(mocker,
     with pytest.raises(SystemExit) as exc:
         run_start(run_start_args)
 
-    mocked_setup_logging.assert_called_once_with(user_log_config={})
+    mocked_setup_logging.assert_called_once_with(user_log_config=config['log'])
     assert len(exc.value.args) == 1
     assert exc.value.args[0] == CANNOT_START_KEYPAIR_NOT_FOUND
     assert not mocked_start.called
@@ -335,6 +369,7 @@ def test_run_start_when_start_rethinkdb_fails(mocker,
                                               monkeypatch,
                                               run_start_args,
                                               mocked_setup_logging):
+    from bigchaindb import config
     from bigchaindb.commands.bigchaindb import run_start
     from bigchaindb.commands.messages import RETHINKDB_STARTUP_ERROR
     from bigchaindb.common.exceptions import StartupError
@@ -351,7 +386,7 @@ def test_run_start_when_start_rethinkdb_fails(mocker,
     with pytest.raises(SystemExit) as exc:
         run_start(run_start_args)
 
-    mocked_setup_logging.assert_called_once_with(user_log_config={})
+    mocked_setup_logging.assert_called_once_with(user_log_config=config['log'])
     assert len(exc.value.args) == 1
     assert exc.value.args[0] == RETHINKDB_STARTUP_ERROR.format(err_msg)
     assert not mocked_start.called

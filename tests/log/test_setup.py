@@ -137,6 +137,7 @@ def test_create_subscriber_logging_config_with_user_given_config():
         SUBSCRIBER_LOGGING_CONFIG as expected_log_config)
     user_log_config = {
         'file': '/var/log/bigchaindb/bdb.log',
+        'error_file': '/var/log/bigchaindb/bdb-err.log',
         'level_console': 'warning',
         'level_logfile': 'info',
         'fmt_console': '[%(levelname)s] (%(name)s) %(message)s',
@@ -167,7 +168,10 @@ def test_create_subscriber_logging_config_with_user_given_config():
             user_log_config['level_console'].upper())
     assert (config['handlers']['file']['level'] ==
             user_log_config['level_logfile'].upper())
+    assert config['handlers']['errors']['level'] == logging.ERROR
     assert config['handlers']['file']['filename'] == user_log_config['file']
+    assert (config['handlers']['errors']['filename'] ==
+            user_log_config['error_file'])
     del config['handlers']['console']['level']
     del config['handlers']['file']['level']
     del config['handlers']['file']['filename']
