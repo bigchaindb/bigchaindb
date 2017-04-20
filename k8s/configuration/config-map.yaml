@@ -9,4 +9,12 @@ metadata:
   namespace: default
 data:
   api-key: "<api key here>"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mdb-fqdn
+  namespace: default
+data:
+  fqdn: mdb-instance-0
 
