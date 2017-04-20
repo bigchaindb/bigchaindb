@@ -16,8 +16,8 @@ def blockdata(b, user_pk, user2_pk):
         block = Block([txs[i]])
         b.write_block(block)
         blocks.append(block.to_dict())
-        if i > 0:
-            b.write_vote(b.vote(block.id, '', i % 2 == 1))
+    b.write_vote(b.vote(blocks[1]['id'], '', True))
+    b.write_vote(b.vote(blocks[2]['id'], '', False))
     return blocks, [b['id'] for b in blocks]
 
 
