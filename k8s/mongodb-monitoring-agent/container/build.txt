@@ -1,0 +1,2 @@
+docker build -t bigchaindb/mongodb-monitoring-agent:latest .
+docker push bigchaindb/mongodb-monitoring-agent:latest
