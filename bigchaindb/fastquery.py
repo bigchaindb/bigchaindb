@@ -48,8 +48,8 @@ class FastQuery:
             outputs: list of TransactionLink
         """
         links = [o.to_dict() for o in outputs]
-        wrapped = self.filter_valid_blocks(
-                list(query.get_spending_transactions(self.connection, links)))
+        spending_txs = query.get_spending_transactions(self.connection, links)
+        wrapped = self.filter_valid_blocks(list(spending_txs))
         spends = {TransactionLink.from_dict(input_['fulfills'])
                   for block in wrapped
                   for input_ in block['block']['transactions']['inputs']}
