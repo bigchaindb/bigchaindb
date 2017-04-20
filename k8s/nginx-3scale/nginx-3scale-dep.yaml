@@ -19,7 +19,7 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
       - name: nginx-3scale
-        image: bigchaindb/nginx_3scale:0.1
+        image: bigchaindb/nginx_3scale:1.0
         # TODO(Krish): Change later to IfNotPresent
         imagePullPolicy: Always
         env:
