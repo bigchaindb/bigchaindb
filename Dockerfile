@@ -5,7 +5,7 @@ COPY . /usr/src/app/
 WORKDIR /usr/src/app
 RUN apt-get -qq update \
     && apt-get -y upgrade \
-    && pip install --no-cache-dir -e . \
+    && pip install --no-cache-dir . \
     && apt-get autoremove \
     && apt-get clean
 VOLUME ["/data"]
