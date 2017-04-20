@@ -1,0 +1,23 @@
+name: bigchaindb
+version: master
+summary: a scalable blockchain database
+description: |
+  With high throughput, sub-second latency and powerful functionality to
+  automate business processes, BigchainDB looks, acts and feels like a database
+  with added blockchain characteristics.
+
+# grade must be 'stable' to release into candidate/stable channels
+grade: devel
+# strict confinement requires https://github.com/snapcore/snapd/pull/2749
+confinement: devmode
+
+apps:
+  bigchaindb:
+    command: bigchaindb
+    plugs: [network, network-bind]
+
+parts:
+  bigchaindb:
+    source: .
+    plugin: python
+    build-packages: [g++, libffi-dev]
