@@ -1,0 +1,12 @@
+#######################################################
+# This YAML file desribes a ConfigMap for the cluster #
+#######################################################
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mdb-mon
+  namespace: default
+data:
+  api-key: "<api key here>"
+
