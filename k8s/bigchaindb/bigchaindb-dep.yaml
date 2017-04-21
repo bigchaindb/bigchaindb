@@ -1,5 +1,5 @@
 ###############################################################
-# This config file runs bigchaindb:master as a k8s Deployment #
+# This config file runs bigchaindb:0.10.1 as a k8s Deployment #
 # and it connects to the mongodb backend running as a         #
 # separate pod                                                #
 ###############################################################
@@ -36,9 +36,9 @@ spec:
         - name: BIGCHAINDB_SERVER_BIND
           value: 0.0.0.0:9984
         - name: BIGCHAINDB_KEYPAIR_PUBLIC
-          value: EEWUAhsk94ZUHhVw7qx9oZiXYDAWc9cRz93eMrsTG4kZ
+          value: "<public key here>"
         - name: BIGCHAINDB_KEYPAIR_PRIVATE
-          value: 3CjmRhu718gT1Wkba3LfdqX5pfYuBdaMPLd7ENUga5dm
+          value: "<private key here>"
         - name: BIGCHAINDB_BACKLOG_REASSIGN_DELAY
           value: "120"
         - name: BIGCHAINDB_DATABASE_MAXTRIES
