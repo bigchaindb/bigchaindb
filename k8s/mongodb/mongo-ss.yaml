@@ -4,45 +4,25 @@
 # It depends on the configdb and db k8s pvc.                           #
 ########################################################################
 
-apiVersion: v1
-kind: Service
-metadata:
-  name: mdb-svc
-  namespace: default
-  labels:
-    name: mdb-svc
-spec:
-  selector:
-    app: mdb-ss
-  ports:
-  - port: 27017
-    targetPort: 27017
-    name: mdb-port
-  type: ClusterIP
-  clusterIP: None
----
 apiVersion: apps/v1beta1
 kind: StatefulSet 
 metadata:
-  name: mdb-ss
+  name: mdb-instance-0-ss
   namespace: default
 spec:
-  serviceName: mdb-svc
+  serviceName: mdb-instance-0
   replicas: 1
   template:
     metadata:
-      name: mdb-ss
+      name: mdb-instance-0-ss
       labels:
-        app: mdb-ss
+        app: mdb-instance-0-ss
     spec:
       terminationGracePeriodSeconds: 10
       containers:
       - name: mongodb
-        # TODO(FIXME): Do not use latest in production as it is harder to track
-        # versions during updates and rollbacks. Also, once fixed, change the
-        # imagePullPolicy to IfNotPresent for faster bootup
-        image: bigchaindb/mongodb:latest
-        imagePullPolicy: Always
+        image: bigchaindb/mongodb:3.4.3
+        imagePullPolicy: IfNotPresent
         env:
         - name: MONGODB_FQDN
           valueFrom:

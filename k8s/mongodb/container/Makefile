@@ -12,7 +12,7 @@ GOINSTALL=$(GOCMD) install
 GOFMT=gofmt -s -w
 
 DOCKER_IMAGE_NAME?=bigchaindb/mongodb
-DOCKER_IMAGE_TAG?=latest
+DOCKER_IMAGE_TAG?=3.4.3
 
 PWD=$(shell pwd)
 BINARY_PATH=$(PWD)/mongod_entrypoint/
