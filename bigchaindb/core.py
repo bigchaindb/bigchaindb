@@ -4,11 +4,10 @@ from time import time
 from bigchaindb import exceptions as core_exceptions
 from bigchaindb.common import crypto, exceptions
 from bigchaindb.common.utils import gen_timestamp, serialize
-from bigchaindb.common.transaction import TransactionLink
 
 import bigchaindb
 
-from bigchaindb import backend, config_utils, utils, fastquery
+from bigchaindb import backend, config_utils, fastquery
 from bigchaindb.consensus import BaseConsensusRules
 from bigchaindb.models import Block, Transaction
 
@@ -375,51 +374,6 @@ class Bigchain(object):
 
         # Either no transaction was returned spending the `(txid, output)` as
         # input or the returned transactions are not valid.
-
-    def get_outputs(self, owner):
-        """Retrieve a list of links to transaction outputs for a given public
-           key.
-
-        Args:
-            owner (str): base58 encoded public key.
-
-        Returns:
-            :obj:`list` of TransactionLink: list of ``txid`` s and ``output`` s
-            pointing to another transaction's condition
-        """
-        # get all transactions in which owner is in the `owners_after` list
-        response = backend.query.get_owned_ids(self.connection, owner)
-        return [
-            TransactionLink(tx['id'], index)
-            for tx in response
-            if not self.is_tx_strictly_in_invalid_block(tx['id'])
-            for index, output in enumerate(tx['outputs'])
-            if utils.output_has_owner(output, owner)
-        ]
-
-    def is_tx_strictly_in_invalid_block(self, txid):
-        """
-        Checks whether the transaction with the given ``txid``
-        *strictly* belongs to an invalid block.
-
-        Args:
-            txid (str): Transaction id.
-
-        Returns:
-            bool: ``True`` if the transaction *strictly* belongs to a
-            block that is invalid. ``False`` otherwise.
-
-        Note:
-            Since a transaction may be in multiple blocks, with
-            different statuses, the term "strictly" is used to
-            emphasize that if a transaction is said to be in an invalid
-            block, it means that it is not in any other block that is
-            either valid or undecided.
-
-        """
-        validity = self.get_blocks_status_containing_tx(txid)
-        return (Bigchain.BLOCK_VALID not in validity.values() and
-                Bigchain.BLOCK_UNDECIDED not in validity.values())
 
     def get_owned_ids(self, owner):
         """Retrieve a list of ``txid`` s that can be used as inputs.

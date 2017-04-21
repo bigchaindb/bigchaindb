@@ -120,16 +120,15 @@ def get_spent(connection, transaction_id, output):
 
 
 @register_query(RethinkDBConnection)
-def get_owned_ids(connection, owner, unwrap=True):
+def get_owned_ids(connection, owner):
     query = (r.table('bigchain', read_mode=READ_MODE)
              .get_all(owner, index='outputs')
              .distinct()
              .concat_map(unroll_block_transactions)
-             .filter(lambda doc: doc['block']['transactions']['outputs'].contains(
+             .filter(lambda doc: doc['tx']['outputs'].contains(
                 lambda c: c['public_keys'].contains(owner))))
-    if unwrap:
-        query = query.map(lambda doc: doc['block']['transactions'])
-    return connection.run(query)
+    cursor = connection.run(query)
+    return ((b['id'], b['tx']) for b in cursor)
 
 
 @register_query(RethinkDBConnection)
@@ -266,9 +265,8 @@ def get_votes_for_blocks_by_voter(connection, block_ids, node_pubkey):
 
 
 def unroll_block_transactions(block):
-    """ Simulate unrolling a transaction into block in MongoDB """
-    return block['block']['transactions'].map(
-             lambda tx: block.merge({'block': {'transactions': tx}}))
+    """ Unroll block transactions """
+    return block['block']['transactions'].map(lambda tx: block.merge({'tx': tx}))
 
 
 @register_query(RethinkDBConnection)
@@ -278,6 +276,7 @@ def get_spending_transactions(connection, links):
         .get_all(*[(l['txid'], l['output']) for l in links], index='inputs')
         .concat_map(unroll_block_transactions)
         .filter(lambda doc: r.expr(links).set_intersection(
-            doc['block']['transactions']['inputs'].map(lambda i: i['fulfills'])))
+            doc['tx']['inputs'].map(lambda i: i['fulfills'])))
     )
-    return connection.run(query)
+    cursor = connection.run(query)
+    return ((b['id'], b['tx']) for b in cursor)

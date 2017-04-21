@@ -35,7 +35,8 @@ def test_filter_block_ids_only_valid(b, blockdata):
 
 def test_filter_valid_blocks(b, blockdata):
     blocks, _ = blockdata
-    assert b.fastquery.filter_valid_blocks(blocks) == [blocks[0], blocks[1]]
+    assert (b.fastquery.filter_valid_blocks(blocks, key=lambda b: b['id'])
+            == [blocks[0], blocks[1]])
 
 
 def test_get_outputs_by_pubkey(b, user_pk, user2_pk, blockdata):

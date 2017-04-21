@@ -177,7 +177,7 @@ def get_spent(conn, transaction_id, output):
 
 @register_query(MongoDBConnection)
 def get_spending_transactions(conn, inputs):
-    return conn.run(
+    cursor = conn.run(
         conn.collection('bigchain').aggregate([
             {'$match': {
                 'block.transactions.inputs.fulfills': {
@@ -191,21 +191,18 @@ def get_spending_transactions(conn, inputs):
                 },
             }},
         ]))
+    return ((b['id'], b['block']['transactions']) for b in cursor)
 
 
 @register_query(MongoDBConnection)
-def get_owned_ids(conn, owner, unwrap=True):
+def get_owned_ids(conn, owner):
     cursor = conn.run(
         conn.collection('bigchain').aggregate([
             {'$match': {'block.transactions.outputs.public_keys': owner}},
             {'$unwind': '$block.transactions'},
             {'$match': {'block.transactions.outputs.public_keys': owner}}
         ]))
-    if not unwrap:
-        return cursor
-    # we need to access some nested fields before returning so lets use a
-    # generator to avoid having to read all records on the cursor at this point
-    return (elem['block']['transactions'] for elem in cursor)
+    return ((b['id'], b['block']['transactions']) for b in cursor)
 
 
 @register_query(MongoDBConnection)

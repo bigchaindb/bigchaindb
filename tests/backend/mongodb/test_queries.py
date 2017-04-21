@@ -205,10 +205,10 @@ def test_get_owned_ids(signed_create_tx, user_pk):
     block = Block(transactions=[signed_create_tx])
     conn.db.bigchain.insert_one(block.to_dict())
 
-    owned_ids = list(query.get_owned_ids(conn, user_pk))
+    [(block_id, tx)] = list(query.get_owned_ids(conn, user_pk))
 
-    assert len(owned_ids) == 1
-    assert owned_ids[0] == signed_create_tx.to_dict()
+    assert block_id == block.id
+    assert tx == signed_create_tx.to_dict()
 
 
 def test_get_votes_by_block_id(signed_create_tx, structurally_valid_vote):
@@ -435,8 +435,7 @@ def test_get_spending_transactions(user_pk):
 
     links = [inputs[0].fulfills.to_dict(), inputs[2].fulfills.to_dict()]
     # discard block noise
-    res = [(r['id'], r['block']['transactions'])
-           for r in list(query.get_spending_transactions(conn, links))]
+    res = list(query.get_spending_transactions(conn, links))
 
     # tx3 not a member because input 1 not asked for
     assert res == [(block.id, tx2.to_dict()), (block.id, tx4.to_dict())]
