@@ -161,6 +161,9 @@ class TransactionLink(object):
         # TODO: If `other !== TransactionLink` return `False`
         return self.to_dict() == other.to_dict()
 
+    def __hash__(self):
+        return hash((self.txid, self.output))
+
     @classmethod
     def from_dict(cls, link):
         """Transforms a Python dictionary to a TransactionLink object.
