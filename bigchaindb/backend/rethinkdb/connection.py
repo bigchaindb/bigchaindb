@@ -40,6 +40,9 @@ class RethinkDBConnection(Connection):
             :exc:`rethinkdb.ReqlDriverError`: After
                 :attr:`~.RethinkDBConnection.max_tries`.
         """
+        # NOTE: fix for timeout not initialized on rethinkdb connection
+        #       https://github.com/bigchaindb/bigchaindb/issues/1337
+
         connected=False
         dbconf = bigchaindb.config['database']
         timeout = dbconf['connection_timeout']
