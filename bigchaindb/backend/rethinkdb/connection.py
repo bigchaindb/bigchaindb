@@ -43,14 +43,14 @@ class RethinkDBConnection(Connection):
         # NOTE: fix for timeout not initialized on rethinkdb connection
         #       https://github.com/bigchaindb/bigchaindb/issues/1337
 
-        connected=False
+        connected = False
         dbconf = bigchaindb.config['database']
         timeout = dbconf['connection_timeout']
         end_time = time.time()*1000 + timeout
         while not connected:
             try:
-                rconn=r.connect(host=self.host, port=self.port, db=self.dbname)
-                connected=True
+                rconn = r.connect(host=self.host, port=self.port, db=self.dbname)
+                connected = True
             except r.ReqlDriverError as exc:
                 if time.time()*1000 > end_time:
                     raise ConnectionError from exc
