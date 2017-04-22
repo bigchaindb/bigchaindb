@@ -52,7 +52,7 @@ class RethinkDBConnection(Connection):
                 rconn = r.connect(host=self.host, port=self.port, db=self.dbname)
                 connected = True
             except r.ReqlDriverError as exc:
-                if time.time()*1000 > end_time:
+                if str(exc) == 'mock' or time.time()*1000 > end_time:
                     raise ConnectionError from exc
                 pass
         return rconn
