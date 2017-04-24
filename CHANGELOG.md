@@ -15,6 +15,79 @@ For reference, the possible headings are:
 * **External Contributors** to list contributors outside of BigchainDB GmbH.
 * **Notes**
 
+## [0.10.1] - 2017-04-19
+Tag name: v0.10.1
+
+## Added
+* Documentation for the BigchainDB settings `wsserver.host` and `wsserver.port`. [Pull Request #1408](https://github.com/bigchaindb/bigchaindb/pull/1408)
+
+## Fixed
+* Fixed `Dockerfile`, which was failing to build. It now starts `FROM python:3.6` (instead of `FROM ubuntu:xenial`). [Pull Request #1410](https://github.com/bigchaindb/bigchaindb/pull/1410)
+* Fixed the `Makefile` so that `release` depends on `dist`. [Pull Request #1405](https://github.com/bigchaindb/bigchaindb/pull/1405)
+
+## [0.10.0] - 2017-04-18
+Tag name: v0.10.0
+
+### Added
+* Improved logging. Added logging to file. Added `--log-level` option to `bigchaindb start` command. Added new logging configuration settings. Pull Requests
+[#1285](https://github.com/bigchaindb/bigchaindb/pull/1285),
+[#1307](https://github.com/bigchaindb/bigchaindb/pull/1307),
+[#1324](https://github.com/bigchaindb/bigchaindb/pull/1324),
+[#1326](https://github.com/bigchaindb/bigchaindb/pull/1326),
+[#1327](https://github.com/bigchaindb/bigchaindb/pull/1327),
+[#1330](https://github.com/bigchaindb/bigchaindb/pull/1330),
+[#1365](https://github.com/bigchaindb/bigchaindb/pull/1365),
+[#1394](https://github.com/bigchaindb/bigchaindb/pull/1394),
+[#1396](https://github.com/bigchaindb/bigchaindb/pull/1396),
+[#1398](https://github.com/bigchaindb/bigchaindb/pull/1398) and
+[#1402](https://github.com/bigchaindb/bigchaindb/pull/1402)
+* Events API using WebSocket protocol. Pull Requests
+[#1086](https://github.com/bigchaindb/bigchaindb/pull/1086),
+[#1347](https://github.com/bigchaindb/bigchaindb/pull/1347),
+[#1349](https://github.com/bigchaindb/bigchaindb/pull/1349),
+[#1356](https://github.com/bigchaindb/bigchaindb/pull/1356),
+[#1368](https://github.com/bigchaindb/bigchaindb/pull/1368),
+[#1401](https://github.com/bigchaindb/bigchaindb/pull/1401) and
+[#1403](https://github.com/bigchaindb/bigchaindb/pull/1403)
+* Initial support for using SSL with MongoDB (work in progress). Pull Requests
+[#1299](https://github.com/bigchaindb/bigchaindb/pull/1299) and
+[#1348](https://github.com/bigchaindb/bigchaindb/pull/1348)
+
+### Changed
+* The main BigchainDB Dockerfile (and its generated Docker image) now contains only BigchainDB Server. (It used to contain both BigchainDB Server and RethinkDB.) You must now run MongoDB or RethinkDB in a separate Docker container. [Pull Request #1174](https://github.com/bigchaindb/bigchaindb/pull/1174)
+* Made separate schemas for CREATE and TRANSFER transactions. [Pull Request #1257](https://github.com/bigchaindb/bigchaindb/pull/1257)
+* When signing transactions with threshold conditions, we now sign all subconditions for a public key. [Pull Request #1294](https://github.com/bigchaindb/bigchaindb/pull/1294)
+* Many changes to the voting-related code, including how we validate votes and prevent duplicate votes by the same node. Pull Requests [#1215](https://github.com/bigchaindb/bigchaindb/pull/1215) and [#1258](https://github.com/bigchaindb/bigchaindb/pull/1258)
+
+### Removed
+* Removed the `bigchaindb load` command. Pull Requests
+[#1261](https://github.com/bigchaindb/bigchaindb/pull/1261),
+[#1273](https://github.com/bigchaindb/bigchaindb/pull/1273) and
+[#1301](https://github.com/bigchaindb/bigchaindb/pull/1301)
+* Removed old `/speed-tests` and `/benchmarking-tests` directories. [Pull Request #1359](https://github.com/bigchaindb/bigchaindb/pull/1359)
+
+### Fixed
+* Fixed the URL of the BigchainDB docs returned by the HTTP API. [Pull Request #1178](https://github.com/bigchaindb/bigchaindb/pull/1178)
+* Fixed the MongoDB changefeed: it wasn't reporting update operations. [Pull Request #1193](https://github.com/bigchaindb/bigchaindb/pull/1193)
+* Fixed the block-creation process: it wasn't checking if the transaction was previously included in:
+    * a valid block. [Pull Request #1208](https://github.com/bigchaindb/bigchaindb/pull/1208)
+    * the block-under-construction. Pull Requests [#1237](https://github.com/bigchaindb/bigchaindb/issues/1237) and [#1377](https://github.com/bigchaindb/bigchaindb/issues/1377)
+
+### External Contributors
+In alphabetical order by GitHub username:
+* @anryko - [Pull Request #1277](https://github.com/bigchaindb/bigchaindb/pull/1277)
+* @anujism - [Pull Request #1366](https://github.com/bigchaindb/bigchaindb/pull/1366)
+* @jackric - [Pull Request #1365](https://github.com/bigchaindb/bigchaindb/pull/1365)
+* @lavinasachdev3 - [Pull Request #1358](https://github.com/bigchaindb/bigchaindb/pull/1358)
+* @morrme - [Pull Request #1340](https://github.com/bigchaindb/bigchaindb/pull/1340)
+* @tomconte - [Pull Request #1299](https://github.com/bigchaindb/bigchaindb/pull/1299)
+* @tymlez - Pull Requests [#1108](https://github.com/bigchaindb/bigchaindb/pull/1108) & [#1209](https://github.com/bigchaindb/bigchaindb/pull/1209)
+
+### Notes
+* MongoDB is now the recommended database backend (not RethinkDB).
+* There are some initial docs about how to deploy a BigchainDB node on Kubernetes. It's work in progress.
+
+
 ## [0.9.5] - 2017-03-29
 Tag name: v0.9.5
 

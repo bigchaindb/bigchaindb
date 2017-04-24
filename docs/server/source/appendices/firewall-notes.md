@@ -8,9 +8,10 @@ This is a page of notes on the ports potentially used by BigchainDB nodes and th
 Assuming you aren't exposing the RethinkDB web interface on port 8080 (or any other port, because [there are more secure ways to access it](https://www.rethinkdb.com/docs/security/#binding-the-web-interface-port)), there are only three ports that should expect unsolicited inbound traffic:
 
 1. **Port 22** can expect inbound SSH (TCP) traffic from the node administrator (i.e. a small set of IP addresses).
-2. **Port 9984** can expect inbound HTTP (TCP) traffic from BigchainDB clients sending transactions to the BigchainDB HTTP API.
-3. If you're using RethinkDB, **Port 29015** can expect inbound TCP traffic from other RethinkDB nodes in the RethinkDB cluster (for RethinkDB intracluster communications).
-4. If you're using MongoDB, **Port 27017** can expect inbound TCP traffic from other nodes.
+1. **Port 9984** can expect inbound HTTP (TCP) traffic from BigchainDB clients sending transactions to the BigchainDB HTTP API.
+1. **Port 9985** can expect inbount WebSocket traffic from BigchainDB clients.
+1. If you're using RethinkDB, **Port 29015** can expect inbound TCP traffic from other RethinkDB nodes in the RethinkDB cluster (for RethinkDB intracluster communications).
+1. If you're using MongoDB, **Port 27017** can expect inbound TCP traffic from other nodes.
 
 All other ports should only get inbound traffic in response to specific requests from inside the node.
 
@@ -57,6 +58,11 @@ Port 9984 is the default port for the BigchainDB client-server HTTP API (TCP), w
 If Gunicorn and the reverse proxy are running on the same server, then you'll have to tell Gunicorn to listen on some port other than 9984 (so that the reverse proxy can listen on port 9984). You can do that by setting `server.bind` to 'localhost:PORT' in the [BigchainDB Configuration Settings](../server-reference/configuration.html), where PORT is whatever port you chose (e.g. 9983).
 
 You may want to have Gunicorn and the reverse proxy running on different servers, so that both can listen on port 9984. That would also help isolate the effects of a denial-of-service attack.
+
+
+## Port 9985
+
+Port 9985 is the default port for the [BigchainDB WebSocket Event Stream API](../websocket-event-stream-api.html).
 
 
 ## Port 28015

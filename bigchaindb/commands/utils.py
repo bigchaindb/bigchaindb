@@ -36,7 +36,10 @@ def configure_bigchaindb(command):
     def configure(args):
         try:
             config_from_cmdline = {
-                'log': {'level_console': args.log_level},
+                'log': {
+                    'level_console': args.log_level,
+                    'level_logfile': args.log_level,
+                },
                 'server': {'loglevel': args.log_level},
             }
         except AttributeError:

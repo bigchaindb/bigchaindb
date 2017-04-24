@@ -5,60 +5,39 @@
 # and MongoDB.                                                #
 ###############################################################
 
-apiVersion: v1
-kind: Service
-metadata:
-  name: ngx-svc
-  namespace: default
-  labels:
-    name: ngx-svc
-  annotations:
-    # NOTE: the following annotation is a beta feature and
-    # only available in GCE/GKE and Azure as of now
-    service.beta.kubernetes.io/external-traffic: OnlyLocal
-spec:
-  selector:
-    app: ngx-dep 
-  ports:
-  - port: 27017
-    targetPort: 27017
-    name: ngx-public-mdb-port
-    protocol: TCP
-  - port: 80
-    targetPort: 80
-    name: ngx-public-bdb-port
-    protocol: TCP
-  type: LoadBalancer
----
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: ngx-dep
+  name: ngx-instance-0-dep
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: ngx-dep
+        app: ngx-instance-0-dep
     spec:
       terminationGracePeriodSeconds: 10
       containers:
       - name: nginx
-        image: bigchaindb/nginx:latest
-        imagePullPolicy: Always
+        image: bigchaindb/nginx:1.0
+        imagePullPolicy: IfNotPresent
         env:
         - name: MONGODB_FRONTEND_PORT
-          value: "27017"
+          value: $(NGX_INSTANCE_0_SERVICE_PORT_NGX_PUBLIC_MDB_PORT)
         - name: MONGODB_BACKEND_HOST
-          value: mdb-svc
+          # NGINX requires FQDN to resolve names
+          value: mdb-instance-0.default.svc.cluster.local
         - name: MONGODB_BACKEND_PORT
           value: "27017"
         - name: BIGCHAINDB_FRONTEND_PORT
-          value: "80"
+          value: $(NGX_INSTANCE_0_SERVICE_PORT_NGX_PUBLIC_BDB_PORT)
         - name: BIGCHAINDB_BACKEND_HOST
-          value: bdb-svc
+          # NGINX requires FQDN to resolve names
+          value: bdb-instance-0.default.svc.cluster.local
         - name: BIGCHAINDB_BACKEND_PORT
           value: "9984"
+        - name: DNS_SERVER
+          value: "10.0.0.10"
         - name: MONGODB_WHITELIST
           valueFrom:
             configMapKeyRef:
