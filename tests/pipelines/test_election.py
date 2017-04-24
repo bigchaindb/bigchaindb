@@ -199,3 +199,27 @@ def test_full_pipeline(b, user_pk):
     tx_from_block = set([tx.id for tx in invalid_block.transactions])
     tx_from_backlog = set([tx['id'] for tx in list(query.get_stale_transactions(b.connection, 0))])
     assert tx_from_block == tx_from_backlog
+
+
+def test_handle_block_events():
+    from bigchaindb.events import setup_events_queue, EventTypes
+
+    events_queue = setup_events_queue()
+    e = election.Election(events_queue=events_queue)
+    block_id = 'a' * 64
+
+    assert events_queue.qsize() == 0
+
+    # no event should be emitted in case a block is undecided
+    e.handle_block_events({'status': Bigchain.BLOCK_UNDECIDED}, block_id)
+    assert events_queue.qsize() == 0
+
+    # put an invalid block event in the queue
+    e.handle_block_events({'status': Bigchain.BLOCK_INVALID}, block_id)
+    event = e.event_handler.get_event()
+    assert event.type == EventTypes.BLOCK_INVALID
+
+    # put a valid block event in the queue
+    e.handle_block_events({'status': Bigchain.BLOCK_VALID}, block_id)
+    event = e.event_handler.get_event()
+    assert event.type == EventTypes.BLOCK_VALID

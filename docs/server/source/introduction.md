@@ -10,7 +10,7 @@ Note that there are a few kinds of nodes:
 
 - A **bare-bones node** is a node deployed in the cloud, either as part of a testing cluster or as a starting point before upgrading the node to be production-ready. Our cloud deployment templates deploy a bare-bones node, as do our scripts for deploying a testing cluster on AWS.
 
-- A **production node** is a node that is part of a federation's BigchainDB cluster. A production node has the most components and requirements.
+- A **production node** is a node that is part of a consortium's BigchainDB cluster. A production node has the most components and requirements.
 
 
 ## Setup Instructions for Various Cases
@@ -19,7 +19,7 @@ Note that there are a few kinds of nodes:
 * [Set up and run a bare-bones node in the cloud](cloud-deployment-templates/index.html)
 * [Set up and run a local dev/test node for developing and testing BigchainDB Server](dev-and-test/setup-run-node.html)
 * [Deploy a testing cluster on AWS](clusters-feds/aws-testing-cluster.html)
-* [Set up and run a federation (including production nodes)](clusters-feds/set-up-a-federation.html)
+* [Set up and run a cluster (including production nodes)](clusters-feds/set-up-a-cluster.html)
 
 Instructions for setting up a client will be provided once there's a public test net.
 

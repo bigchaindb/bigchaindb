@@ -2,7 +2,7 @@ version: '2'
 
 services:
   mdb:
-    image: mongo:3.4.1
+    image: mongo:3.4.3
     ports:
       - "27017"
     command: mongod --replSet=bigchain-rs
@@ -28,7 +28,7 @@ services:
       - /data
     command: "true"
 
-  bdb:
+  bdb-rdb:
     build:
       context: .
       dockerfile: Dockerfile-dev
@@ -50,7 +50,7 @@ services:
       - "9984"
     command: bigchaindb start
   
-  bdb-mdb:
+  bdb:
     build:
       context: .
       dockerfile: Dockerfile-dev

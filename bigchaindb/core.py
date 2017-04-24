@@ -19,14 +19,17 @@ class Bigchain(object):
     Create, read, sign, write transactions to the database
     """
 
-    # return if a block has been voted invalid
     BLOCK_INVALID = 'invalid'
-    # return if a block is valid, or tx is in valid block
+    """return if a block has been voted invalid"""
+
     BLOCK_VALID = TX_VALID = 'valid'
-    # return if block is undecided, or tx is in undecided block
+    """return if a block is valid, or tx is in valid block"""
+
     BLOCK_UNDECIDED = TX_UNDECIDED = 'undecided'
-    # return if transaction is in backlog
+    """return if block is undecided, or tx is in undecided block"""
+
     TX_IN_BACKLOG = 'backlog'
+    """return if transaction is in backlog"""
 
     def __init__(self, public_key=None, private_key=None, keyring=[], connection=None, backlog_reassign_delay=None):
         """Initialize the Bigchain instance
@@ -321,43 +324,57 @@ class Bigchain(object):
     def get_spent(self, txid, output):
         """Check if a `txid` was already used as an input.
 
-        A transaction can be used as an input for another transaction. Bigchain needs to make sure that a
-        given `txid` is only used once.
+        A transaction can be used as an input for another transaction. Bigchain
+        needs to make sure that a given `(txid, output)` is only used once.
+
+        This method will check if the `(txid, output)` has already been
+        spent in a transaction that is in either the `VALID`, `UNDECIDED` or
+        `BACKLOG` state.
 
         Args:
             txid (str): The id of the transaction
             output (num): the index of the output in the respective transaction
 
         Returns:
-            The transaction (Transaction) that used the `txid` as an input else
-            `None`
+            The transaction (Transaction) that used the `(txid, output)` as an
+            input else `None`
+
+        Raises:
+            CriticalDoubleSpend: If the given `(txid, output)` was spent in
+            more than one valid transaction.
         """
         # checks if an input was already spent
         # checks if the bigchain has any transaction with input {'txid': ...,
         # 'output': ...}
-        transactions = list(backend.query.get_spent(self.connection, txid, output))
+        transactions = list(backend.query.get_spent(self.connection, txid,
+                                                    output))
 
         # a transaction_id should have been spent at most one time
-        if transactions:
-            # determine if these valid transactions appear in more than one valid block
-            num_valid_transactions = 0
-            for transaction in transactions:
-                # ignore invalid blocks
-                # FIXME: Isn't there a faster solution than doing I/O again?
-                if self.get_transaction(transaction['id']):
-                    num_valid_transactions += 1
-                if num_valid_transactions > 1:
-                    raise core_exceptions.CriticalDoubleSpend(
-                        '`{}` was spent more than once. There is a problem'
-                        ' with the chain'.format(txid))
+        # determine if these valid transactions appear in more than one valid
+        # block
+        num_valid_transactions = 0
+        non_invalid_transactions = []
+        for transaction in transactions:
+            # ignore transactions in invalid blocks
+            # FIXME: Isn't there a faster solution than doing I/O again?
+            _, status = self.get_transaction(transaction['id'],
+                                             include_status=True)
+            if status == self.TX_VALID:
+                num_valid_transactions += 1
+            # `txid` can only have been spent in at most on valid block.
+            if num_valid_transactions > 1:
+                raise core_exceptions.CriticalDoubleSpend(
+                    '`{}` was spent more than once. There is a problem'
+                    ' with the chain'.format(txid))
+            # if its not and invalid transaction
+            if status is not None:
+                non_invalid_transactions.append(transaction)
 
-            if num_valid_transactions:
-                return Transaction.from_dict(transactions[0])
-            else:
-                # all queried transactions were invalid
-                return None
-        else:
-            return None
+        if non_invalid_transactions:
+            return Transaction.from_dict(non_invalid_transactions[0])
+
+        # Either no transaction was returned spending the `(txid, output)` as
+        # input or the returned transactions are not valid.
 
     def get_outputs(self, owner):
         """Retrieve a list of links to transaction outputs for a given public
@@ -372,32 +389,37 @@ class Bigchain(object):
         """
         # get all transactions in which owner is in the `owners_after` list
         response = backend.query.get_owned_ids(self.connection, owner)
-        links = []
+        return [
+            TransactionLink(tx['id'], index)
+            for tx in response
+            if not self.is_tx_strictly_in_invalid_block(tx['id'])
+            for index, output in enumerate(tx['outputs'])
+            if utils.output_has_owner(output, owner)
+        ]
 
-        for tx in response:
-            # disregard transactions from invalid blocks
-            validity = self.get_blocks_status_containing_tx(tx['id'])
-            if Bigchain.BLOCK_VALID not in validity.values():
-                if Bigchain.BLOCK_UNDECIDED not in validity.values():
-                    continue
+    def is_tx_strictly_in_invalid_block(self, txid):
+        """
+        Checks whether the transaction with the given ``txid``
+        *strictly* belongs to an invalid block.
 
-            # NOTE: It's OK to not serialize the transaction here, as we do not
-            # use it after the execution of this function.
-            # a transaction can contain multiple outputs so we need to iterate over all of them
-            # to get a list of outputs available to spend
-            for index, output in enumerate(tx['outputs']):
-                # for simple signature conditions there are no subfulfillments
-                # check if the owner is in the condition `owners_after`
-                if len(output['public_keys']) == 1:
-                    if output['condition']['details']['public_key'] == owner:
-                        links.append(TransactionLink(tx['id'], index))
-                else:
-                    # for transactions with multiple `public_keys` there will be several subfulfillments nested
-                    # in the condition. We need to iterate the subfulfillments to make sure there is a
-                    # subfulfillment for `owner`
-                    if utils.condition_details_has_owner(output['condition']['details'], owner):
-                        links.append(TransactionLink(tx['id'], index))
-        return links
+        Args:
+            txid (str): Transaction id.
+
+        Returns:
+            bool: ``True`` if the transaction *strictly* belongs to a
+            block that is invalid. ``False`` otherwise.
+
+        Note:
+            Since a transaction may be in multiple blocks, with
+            different statuses, the term "strictly" is used to
+            emphasize that if a transaction is said to be in an invalid
+            block, it means that it is not in any other block that is
+            either valid or undecided.
+
+        """
+        validity = self.get_blocks_status_containing_tx(txid)
+        return (Bigchain.BLOCK_VALID not in validity.values() and
+                Bigchain.BLOCK_UNDECIDED not in validity.values())
 
     def get_owned_ids(self, owner):
         """Retrieve a list of ``txid`` s that can be used as inputs.

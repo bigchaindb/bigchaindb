@@ -51,18 +51,14 @@ lint: ## check style with flake8
 	flake8 bigchaindb tests
 
 test: ## run tests quickly with the default Python
-	py.test
-	
+	pytest -v -n auto
 
 test-all: ## run tests on every Python version with tox
 	tox
 
 coverage: ## check code coverage quickly with the default Python
-	coverage run --source bigchaindb py.test
-	
-		coverage report -m
-		coverage html
-		$(BROWSER) htmlcov/index.html
+	pytest -v -n auto --cov=bigchaindb --cov-report term --cov-report html
+	$(BROWSER) htmlcov/index.html
 
 docs: ## generate Sphinx HTML documentation, including API docs
 	$(MAKE) -C docs/root clean
@@ -74,7 +70,7 @@ docs: ## generate Sphinx HTML documentation, including API docs
 servedocs: docs ## compile the docs watching for changes
 	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
 
-release: clean ## package and upload a release
+release: dist ## package and upload a release
 	twine upload dist/*
 
 dist: clean ## builds source (and not for now, wheel package)

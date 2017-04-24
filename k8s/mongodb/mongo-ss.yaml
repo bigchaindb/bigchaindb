@@ -1,50 +1,47 @@
 ########################################################################
 # This YAML file desribes a StatefulSet with a service for running and #
-# exposing a MongoDB service.                                          #
+# exposing a MongoDB instance.                                         #
 # It depends on the configdb and db k8s pvc.                           #
 ########################################################################
 
-apiVersion: v1
-kind: Service
-metadata:
-  name: mdb
-  namespace: default
-  labels:
-    name: mdb
-spec:
-  selector:
-    app: mdb
-  ports:
-  - port: 27017
-    targetPort: 27017
-    name: mdb-port
-  type: LoadBalancer
----
 apiVersion: apps/v1beta1
 kind: StatefulSet 
 metadata:
-  name: mdb
+  name: mdb-instance-0-ss
   namespace: default
 spec:
-  serviceName: mdb
+  serviceName: mdb-instance-0
   replicas: 1
   template:
     metadata:
-      name: mdb
+      name: mdb-instance-0-ss
       labels:
-        app: mdb
+        app: mdb-instance-0-ss
     spec:
       terminationGracePeriodSeconds: 10
       containers:
       - name: mongodb
-        image: mongo:3.4.1
+        image: bigchaindb/mongodb:3.4.3
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: MONGODB_FQDN
+          valueFrom:
+            configMapKeyRef:
+             name: mdb-fqdn
+             key: fqdn
+        - name: MONGODB_POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
         args:
-        - --replSet=bigchain-rs
+        - --replica-set-name=bigchain-rs
+        - --fqdn=$(MONGODB_FQDN)
+        - --port=27017
+        - --ip=$(MONGODB_POD_IP)
         securityContext:
           capabilities:
             add:
             - FOWNER
-        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 27017
           hostPort: 27017

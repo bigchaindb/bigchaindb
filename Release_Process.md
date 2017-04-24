@@ -27,6 +27,7 @@ A patch release is similar to a minor release, but piggybacks on an existing min
 1. Apply the changes you want, e.g. using `git cherry-pick`.
 1. Update the `CHANGELOG.md` file
 1. Increment the patch version in `bigchaindb/version.py`, e.g. "0.9.1"
+1. Commit that change, and push the updated branch to GitHub
 1. Follow steps outlined in [Common Steps](#common-steps)
 1. Cherry-pick the `CHANGELOG.md` update commit (made above) to the `master` branch
 
@@ -45,10 +46,16 @@ These steps are common between minor and patch releases:
 1. Make sure your local Git is in the same state as the release: e.g. `git fetch <remote-name>` and `git checkout v0.9.1`
 1. Make sure you have a `~/.pypirc` file containing credentials for PyPI
 1. Do a `make release` to build and publish the new `bigchaindb` package on PyPI
-1. Login to readthedocs.org as a maintainer of the BigchainDB Server docs.
-   Go to Admin --> Versions and under **Choose Active Versions**, make sure that the new version's tag is
-   "Active" and "Public", and make sure the new version's branch
-   (without the 'v' in front) is _not_ active
-1. Also in readthedocs.org, go to Admin --> Advanced Settings
-   and make sure that "Default branch:" (i.e. what "latest" points to)
-   is set to the new release's tag, e.g. `v0.9.1`. (Don't miss the 'v' in front.)
+1. [Login to readthedocs.org](https://readthedocs.org/accounts/login/)
+   as a maintainer of the BigchainDB Server docs, and:
+   - Go to Admin --> Advanced Settings
+     and make sure that "Default branch:" (i.e. what "latest" points to)
+     is set to the new release's tag, e.g. `v0.9.1`.
+     (Don't miss the 'v' in front.)
+   - Go to Admin --> Versions
+     and under **Choose Active Versions**, do these things:
+     1. Make sure that the new version's tag is "Active" and "Public"
+     2. Make sure the new version's branch
+        (without the 'v' in front) is _not_ active.
+     3. Make sure the **stable** branch is _not_ active.
+     4. Scroll to the bottom of the page and click the Submit button.

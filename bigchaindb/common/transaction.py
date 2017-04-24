@@ -776,20 +776,19 @@ class Transaction(object):
                 key_pairs (dict): The keys to sign the Transaction with.
         """
         input_ = deepcopy(input_)
-        for owner_before in input_.owners_before:
-            try:
-                # TODO: CC should throw a KeypairMismatchException, instead of
-                #       our manual mapping here
+        for owner_before in set(input_.owners_before):
+            # TODO: CC should throw a KeypairMismatchException, instead of
+            #       our manual mapping here
 
-                # TODO FOR CC: Naming wise this is not so smart,
-                #              `get_subcondition` in fact doesn't return a
-                #              condition but a fulfillment
+            # TODO FOR CC: Naming wise this is not so smart,
+            #              `get_subcondition` in fact doesn't return a
+            #              condition but a fulfillment
 
-                # TODO FOR CC: `get_subcondition` is singular. One would not
-                #              expect to get a list back.
-                ccffill = input_.fulfillment
-                subffill = ccffill.get_subcondition_from_vk(owner_before)[0]
-            except IndexError:
+            # TODO FOR CC: `get_subcondition` is singular. One would not
+            #              expect to get a list back.
+            ccffill = input_.fulfillment
+            subffills = ccffill.get_subcondition_from_vk(owner_before)
+            if not subffills:
                 raise KeypairMismatchException('Public key {} cannot be found '
                                                'in the fulfillment'
                                                .format(owner_before))
@@ -802,7 +801,8 @@ class Transaction(object):
 
             # cryptoconditions makes no assumptions of the encoding of the
             # message to sign or verify. It only accepts bytestrings
-            subffill.sign(tx_serialized.encode(), private_key)
+            for subffill in subffills:
+                subffill.sign(tx_serialized.encode(), private_key)
         self.inputs[index] = input_
 
     def inputs_valid(self, outputs=None):
