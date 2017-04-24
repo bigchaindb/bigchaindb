@@ -207,7 +207,6 @@ def get_votes_for_blocks_by_voter(connection, block_ids, pubkey):
     Returns:
         A cursor of votes matching given votes.
     """
-
     raise NotImplementedError
 
 

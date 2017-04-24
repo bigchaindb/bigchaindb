@@ -434,7 +434,6 @@ def test_get_spending_transactions(user_pk):
     conn.db.bigchain.insert_one(block.to_dict())
 
     links = [inputs[0].fulfills.to_dict(), inputs[2].fulfills.to_dict()]
-    # discard block noise
     res = list(query.get_spending_transactions(conn, links))
 
     # tx3 not a member because input 1 not asked for

@@ -124,7 +124,7 @@ def get_owned_ids(connection, owner):
     query = (r.table('bigchain', read_mode=READ_MODE)
              .get_all(owner, index='outputs')
              .distinct()
-             .concat_map(unroll_block_transactions)
+             .concat_map(unwind_block_transactions)
              .filter(lambda doc: doc['tx']['outputs'].contains(
                 lambda c: c['public_keys'].contains(owner))))
     cursor = connection.run(query)
@@ -264,8 +264,8 @@ def get_votes_for_blocks_by_voter(connection, block_ids, node_pubkey):
         .filter(lambda row: row['node_pubkey'] == node_pubkey))
 
 
-def unroll_block_transactions(block):
-    """ Unroll block transactions """
+def unwind_block_transactions(block):
+    """ Yield a block for each transaction in given block """
     return block['block']['transactions'].map(lambda tx: block.merge({'tx': tx}))
 
 
@@ -274,7 +274,8 @@ def get_spending_transactions(connection, links):
     query = (
         r.table('bigchain')
         .get_all(*[(l['txid'], l['output']) for l in links], index='inputs')
-        .concat_map(unroll_block_transactions)
+        .concat_map(unwind_block_transactions)
+        # filter transactions spending output
         .filter(lambda doc: r.expr(links).set_intersection(
             doc['tx']['inputs'].map(lambda i: i['fulfills'])))
     )
