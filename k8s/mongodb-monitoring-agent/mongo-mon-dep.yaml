@@ -1,0 +1,38 @@
+############################################################
+# This config file defines a k8s Deployment for the        #
+# bigchaindb/mongodb-monitoring-agent:latest Docker image  #
+#                                                          #
+# It connects to a MongoDB instance in a separate pod,     #
+# all remote MongoDB instances in the cluster,             #
+# and also to MongoDB Cloud Manager (an external service). #
+# Notes:                                                   #
+# MongoDB agents connect to Cloud Manager on port 443.     #
+############################################################
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mdb-mon-instance-0-dep
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mdb-mon-instance-0-dep
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: mdb-mon
+        image: bigchaindb/mongodb-monitoring-agent:1.0
+        imagePullPolicy: Always
+        env:
+        - name: MMS_API_KEY
+          valueFrom:
+            configMapKeyRef:
+              name: mdb-mon
+              key: api-key
+        resources:
+          limits:
+            cpu: 200m
+            memory: 768Mi
+      restartPolicy: Always

@@ -12,7 +12,6 @@ events {
 
 http {
   server_names_hash_bucket_size 128;
-  resolver 8.8.8.8 8.8.4.4;
   access_log /etc/nginx/nginx.access.log combined buffer=16k flush=5s;
 
   # allow 10 req/sec from the same IP address, and store the counters in a
@@ -27,8 +26,10 @@ http {
   # ref. RFC 6585
   limit_req_status 429;
 
-  upstream bdb_backend {
-    server BIGCHAINDB_BACKEND_HOST:BIGCHAINDB_BACKEND_PORT max_fails=5 fail_timeout=30;
+  resolver DNS_SERVER valid=20s;
+  
+  map $remote_addr $bdb_backend {
+    default BIGCHAINDB_BACKEND_HOST;
   }
   
   server {
@@ -59,12 +60,7 @@ http {
       # threshold.
       limit_req zone=one burst=20 nodelay;
 
-      proxy_pass http://bdb_backend;
-    }
-
-    error_page 500 502 503 504 /50x.html;
-    location = /50x.html {
-      root /etc/nginx/50x.html;
+      proxy_pass http://$bdb_backend:BIGCHAINDB_BACKEND_PORT;
     }
   }
 }
@@ -86,8 +82,10 @@ stream {
   # enable logging when connections are being throttled
   limit_conn_log_level notice;
   
-  upstream mdb_backend {
-    server MONGODB_BACKEND_HOST:MONGODB_BACKEND_PORT max_fails=5 fail_timeout=30 max_conns=1024;
+  resolver DNS_SERVER valid=20s;
+
+  map $remote_addr $mdb_backend {
+    default MONGODB_BACKEND_HOST;
   }
   
   server {
@@ -96,13 +94,14 @@ stream {
     tcp_nodelay on;
     
     # whitelist
-    MONGODB_WHITELIST
+    #MONGODB_WHITELIST
+    allow all;
     # deny access to everyone else
     deny all;
     
-    # allow 512 connections from the same IP address
-    limit_conn two 512;
+    # allow 16 connections from the same IP address
+    limit_conn two 16;
     
-    proxy_pass     mdb_backend;
+    proxy_pass $mdb_backend:MONGODB_BACKEND_PORT;
   }
 }
