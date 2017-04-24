@@ -27,11 +27,21 @@ that you have the Kubernetes command line ``kubectl`` installed.
 
 Creating a workspace and adding a containers solution
 -----------------------------------------------------
+For the sake of this document and example, we'll assume an existing resource
+group named:
+
+* ``resource_group``
+
+and the workspace we'll create will be named:
+
+* ``work_space``
+
+If you feel creative you may replace these names by more interesting ones.
 
 .. code-block:: bash
 
     $ az group deployment create --debug \
-        --resource-group rg \
+        --resource-group resource_group \
         --name "Microsoft.LogAnalyticsOMS" \
         --template-file log_analytics_oms.json \
         --parameters @log_analytics_oms.parameters.json
@@ -102,7 +112,7 @@ An example of the associated parameter file (``--parameters``):
     	    "value": "Free"
     	},
     	"workspaceName": {
-    	    "value": "rg-abc-logs"
+    	    "value": "work_space"
     	},
     	"solutionType": {
     	    "value": "Containers"
@@ -122,14 +132,21 @@ Obtaining the workspace id:
 .. code-block:: bash
 
     $ az resource show \
-        --resource-group rg 
+        --resource-group resource_group
         --resource-type Microsoft.OperationalInsights/workspaces 
-        --name rg-abc-logs \
+        --name work_space \
         | grep customerId
     "customerId": "12345678-1234-1234-1234-123456789012",
 
 Obtaining the workspace key:
 
+Until we figure out a way to this via the command line please see instructions
+under `Obtain your workspace ID and key
+<https://docs.microsoft.com/en-us/azure/container-service/container-service-kubernetes-oms#obtain-your-workspace-id-and-key>`_.
+
+Once you have the workspace id and key you can include them in the following
+YAML file (:download:`oms-daemonset.yaml
+<../../../../k8s/logging-and-monitoring/oms-daemonset.yaml>`):
 
 .. code-block:: yaml
 
@@ -165,6 +182,7 @@ Obtaining the workspace key:
             hostPath:
               path: /var/run/docker.sock
 
+To deploy the agent simply run the following command:
 
 .. code-block:: bash
 
@@ -178,7 +196,7 @@ List workspaces:
 .. code-block:: bash
     
     $ az resource list \
-        --resource-group rg \
+        --resource-group resource_group \
         --resource-type Microsoft.OperationalInsights/workspaces
 
 List solutions:
@@ -186,7 +204,7 @@ List solutions:
 .. code-block:: bash
 
     $ az resource list \
-        --resource-group rg \
+        --resource-group resource_group \
         --resource-type Microsoft.OperationsManagement/solutions
 
 Deleting the containers solution:
@@ -194,30 +212,30 @@ Deleting the containers solution:
 .. code-block:: bash
 
     $ az group deployment delete --debug \
-        --resource-group rg \
+        --resource-group resource_group \
         --name Microsoft.ContainersOMS
 
 .. code-block:: bash
 
     $ az resource delete \
-        --resource-group rg \
+        --resource-group resource_group \
         --resource-type Microsoft.OperationsManagement/solutions \
-        --name "Containers(rglogs)"
+        --name "Containers(work_space)"
 
 Deleting the workspace:
 
 .. code-block:: bash
     
     $ az group deployment delete --debug \
-        --resource-group rg \
+        --resource-group resource_group \
         --name Microsoft.LogAnalyticsOMS
 
 .. code-block:: bash
 
     $ az resource delete \
-        --resource-group rg \
+        --resource-group resource_group \
         --resource-type Microsoft.OperationalInsights/workspaces \
-        --name rglogs
+        --name work_space
 
 
 .. _oms-k8s-references:
