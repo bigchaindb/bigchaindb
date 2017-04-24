@@ -9,7 +9,9 @@ Step 1: Set Up the Cluster
 
     .. code:: bash
 
-        az group create --name bdb-test-cluster-0 --location westeurope --debug --   output json
+        az group create --name bdb-test-cluster-0 --location westeurope --debug --output json
+
+        ssh-keygen -t rsa -C "k8s-bdb-test-cluster-0" -f ~/.ssh/k8s-bdb-test-cluster-0
 
         az acs create --name k8s-bdb-test-cluster-0 \
           --resource-group bdb-test-cluster-0 \
@@ -18,7 +20,7 @@ Step 1: Set Up the Cluster
           --admin-username ubuntu \
           --agent-vm-size Standard_D2_v2 \
           --dns-prefix k8s-bdb-test-cluster-0 \
-          --ssh-key-value ~/.ssh/<ssh key> \
+          --ssh-key-value ~/.ssh/k8s-bdb-test-cluster-0.pub \
           --orchestrator-type kubernetes \
           --debug --output json
 
@@ -28,8 +30,6 @@ Step 1: Set Up the Cluster
           --debug --output json
 
         echo -e "Host k8s-bdb-test-cluster-0.westeurope.cloudapp.azure.com\n  ForwardAgent yes" >> ~/.ssh/config
-
-        ssh ubuntu@k8s-bdb-test-cluster-0.westeurope.cloudapp.azure.com
 
 
 Step 2: Connect to the Cluster UI - (optional)
@@ -380,8 +380,7 @@ Step 16. Configure MongoDB Cloud Manager for Backup
      
    * Click ``Backup`` tab.
    
-   * Click on the ``Begin Setup`` after the replica set name at the bottom of
-     the page.
+   * Click on the ``Begin Setup``.
  
    * Click on ``Next``, select the replica set from the dropdown menu.
    
@@ -447,7 +446,7 @@ Step 17. Verify that the Cluster is Correctly Set Up
 
     .. code:: bash
 
-        curl -X GET http://ngx-instance-0:443
+        curl -X GET https://ngx-instance-0
   
   * Check the MongoDB monitoring and backup agent on the MOngoDB Coud Manager portal to verify they are working fine.
   
