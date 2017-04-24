@@ -690,8 +690,7 @@ class Transaction(object):
         tx_dict = Transaction._remove_signatures(tx_dict)
         tx_serialized = Transaction._to_str(tx_dict)
         for i, input_ in enumerate(self.inputs):
-            message = '%s:%s' % (i, tx_serialized)
-            self.inputs[i] = self._sign_input(input_, message, key_pairs)
+            self.inputs[i] = self._sign_input(input_, tx_serialized, key_pairs)
         return self
 
     @classmethod
@@ -843,10 +842,8 @@ class Transaction(object):
 
         def validate(i, output_condition_uri=None):
             """ Validate input against output condition URI """
-            message = '%s:%s' % (i, tx_serialized)
-
-            return self._input_valid(self.inputs[i], self.operation, message,
-                                     output_condition_uri)
+            return self._input_valid(self.inputs[i], self.operation,
+                                     tx_serialized, output_condition_uri)
 
         return all(validate(i, cond)
                    for i, cond in enumerate(output_condition_uris))
