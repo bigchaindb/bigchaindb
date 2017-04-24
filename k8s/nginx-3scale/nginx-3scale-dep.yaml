@@ -1,0 +1,98 @@
+###############################################################
+# This config file runs nginx as a k8s deployment and exposes #
+# it using an external load balancer.                         #
+# This deployment is used as a front end to both BigchainDB   #
+# and MongoDB.                                                #
+###############################################################
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ngx-instance-0-dep
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ngx-instance-0-dep
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: nginx-3scale
+        image: bigchaindb/nginx_3scale:1.0
+        # TODO(Krish): Change later to IfNotPresent
+        imagePullPolicy: Always
+        env:
+        - name: MONGODB_FRONTEND_PORT
+          value: $(NGX_INSTANCE_0_SERVICE_PORT_NGX_PUBLIC_MDB_PORT)
+        - name: MONGODB_BACKEND_HOST
+          # NGINX requires FQDN to resolve names
+          value: mdb-instance-0.default.svc.cluster.local
+        - name: MONGODB_BACKEND_PORT
+          value: "27017"
+        - name: BIGCHAINDB_FRONTEND_PORT
+          value: $(NGX_INSTANCE_0_SERVICE_PORT_NGX_PUBLIC_BDB_PORT)
+        - name: BIGCHAINDB_BACKEND_HOST
+          # NGINX requires FQDN to resolve names
+          value: bdb-instance-0.default.svc.cluster.local
+        - name: BIGCHAINDB_BACKEND_PORT
+          value: "9984"
+        - name: MONGODB_WHITELIST
+          valueFrom:
+            configMapKeyRef:
+              name: mongodb-whitelist
+              key: allowed-hosts
+        - name: DNS_SERVER
+          value: "10.0.0.10"
+        - name: NGINX_HEALTH_CHECK_PORT
+          value: "8888"
+        # TODO(Krish): use secrets for sensitive info
+        - name: THREESCALE_SECRET_TOKEN
+          value: "<Secret Token Here>"
+        - name: THREESCALE_SERVICE_ID
+          value: "<Service ID Here>"
+        - name: THREESCALE_VERSION_HEADER
+          value: "<Version Header Here>"
+        - name: THREESCALE_PROVIDER_KEY
+          value: "<Provider Key Here>"
+        - name: THREESCALE_FRONTEND_API_DNS_NAME
+          value: "<Frontend API FQDN Here>"
+        - name: THREESCALE_UPSTREAM_API_PORT
+          value: "<Upstream API Port Here>"
+        ports:
+        - containerPort: 27017
+          hostPort: 27017
+          name: public-mdb-port
+          protocol: TCP
+        - containerPort: 443
+          hostPort: 443
+          name: public-bdb-port
+          protocol: TCP
+        - containerPort: 8888
+          hostPort: 8888
+          name: health-check
+          protocol: TCP
+        - containerPort: 8080
+          hostPort: 8080
+          name: public-api-port
+          protocol: TCP
+        volumeMounts:
+        - name: https
+          mountPath: /usr/local/openresty/nginx/conf/ssl/
+          readOnly: true
+        resources:
+          limits:
+            cpu: 200m
+            memory: 768Mi
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8888
+          initialDelaySeconds: 15
+          timeoutSeconds: 10
+      restartPolicy: Always
+      volumes:
+      - name: https
+        secret:
+          secretName: certs
+          defaultMode: 0400

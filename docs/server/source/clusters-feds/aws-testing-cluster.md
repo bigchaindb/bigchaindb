@@ -1,6 +1,6 @@
-# Deploy a Testing Cluster on AWS
+# Deploy a RethinkDB-Based Testing Cluster on AWS
 
-This section explains a way to deploy a cluster of BigchainDB nodes on Amazon Web Services (AWS) for testing purposes.
+This section explains a way to deploy a _RethinkDB-based_ cluster of BigchainDB nodes on Amazon Web Services (AWS) for testing purposes.
 
 ## Why?
 
@@ -86,7 +86,6 @@ Step 2 is to make an AWS deployment configuration file, if necessary. There's an
 ```text
 NUM_NODES=3
 BRANCH="master"
-WHAT_TO_DEPLOY="servers"
 SSH_KEY_NAME="not-set-yet"
 USE_KEYPAIRS_FILE=False
 IMAGE_ID="ami-8504fdea"

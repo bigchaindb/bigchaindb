@@ -2,6 +2,8 @@
 
 There are many ways you can contribute to the BigchainDB project, some very easy and others more involved. We want to be friendly and welcoming to all potential contributors, so we ask that everyone involved abide by some simple guidelines outlined in our [Code of Conduct](./CODE_OF_CONDUCT.md).
 
+Or, are you interested in contributing full-time? BigchainDB is hiring. See [here](https://github.com/bigchaindb/org/blob/master/engjob.md).
+
 ## Easy Ways to Contribute
 
 The BigchainDB community has a Google Group and a Gitter chatroom. Our [Community page](https://www.bigchaindb.com/community) has more information about those.
@@ -142,6 +144,13 @@ If this is the first time you've submitted a pull request to BigchainDB, then yo
 Once you accept and submit the CLA, we'll email you with further instructions. (We will send you a long random string to put in the comments section of your pull request, along with the text, "I have read and agree to the terms of the BigchainDB Contributor License Agreement.")
 
 Someone will then merge your branch or suggest changes. If we suggest changes, you won't have to open a new pull request, you can just push new code to the same branch (on `origin`) as you did before creating the pull request.
+
+### Tip: Upgrading All BigchainDB Dependencies
+
+Over time, your versions of the Python packages used by BigchainDB will get out of date. You can upgrade them using:
+```text
+pip install --upgrade -e .[dev]
+```
 
 ## Quick Links
 

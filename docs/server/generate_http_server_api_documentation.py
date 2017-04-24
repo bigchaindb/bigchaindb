@@ -269,7 +269,7 @@ def main():
     ctx['block_list'] = pretty_json(block_list)
 
     base_path = os.path.join(os.path.dirname(__file__),
-                             'source/drivers-clients/samples')
+                             'source/http-samples')
     if not os.path.exists(base_path):
         os.makedirs(base_path)
 

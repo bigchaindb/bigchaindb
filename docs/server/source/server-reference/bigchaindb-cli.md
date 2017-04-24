@@ -68,16 +68,22 @@ You can also use the `--dev-start-rethinkdb` command line option to automaticall
 e.g. `bigchaindb --dev-start-rethinkdb start`. Note that this will also shutdown rethinkdb when the bigchaindb process stops.
 The option `--dev-allow-temp-keypair` will generate a keypair on the fly if no keypair is found, this is useful when you want to run a temporary instance of BigchainDB in a Docker container, for example.
 
+### Options
+The log level for the console can be set via the option `--log-level` or its
+abbreviation `-l`. Example:
 
-## bigchaindb load
-
-Write transactions to the backlog (for benchmarking tests). You can learn more about it using:
-```text
-$ bigchaindb load -h
+```bash
+$ bigchaindb --log-level INFO start
 ```
 
-Note: This command uses the Python Server API to write transactions to the database. It _doesn't_ use the HTTP API or a driver that wraps the HTTP API.
+The allowed levels are `DEBUG`, `INFO` , `WARNING`, `ERROR`, and `CRITICAL`.
+For an explanation regarding these levels please consult the 
+[Logging Levels](https://docs.python.org/3.6/library/logging.html#levels)
+section of Python's documentation.
 
+For a more fine-grained control over the logging configuration you can use the
+configuration file as documented under
+[Configuration Settings](configuration.html).
 
 ## bigchaindb set-shards
 

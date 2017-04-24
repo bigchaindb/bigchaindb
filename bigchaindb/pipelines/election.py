@@ -13,16 +13,21 @@ from bigchaindb import backend
 from bigchaindb.backend.changefeed import ChangeFeed
 from bigchaindb.models import Block
 from bigchaindb import Bigchain
+from bigchaindb.events import EventHandler, Event, EventTypes
 
 
 logger = logging.getLogger(__name__)
+logger_results = logging.getLogger('pipeline.election.results')
 
 
 class Election:
     """Election class."""
 
-    def __init__(self):
+    def __init__(self, events_queue=None):
         self.bigchain = Bigchain()
+        self.event_handler = None
+        if events_queue:
+            self.event_handler = EventHandler(events_queue)
 
     def check_for_quorum(self, next_vote):
         """
@@ -32,13 +37,29 @@ class Election:
             next_vote: The next vote.
 
         """
-        next_block = self.bigchain.get_block(
-            next_vote['vote']['voting_for_block'])
+        try:
+            block_id = next_vote['vote']['voting_for_block']
+            node = next_vote['node_pubkey']
+        except KeyError:
+            return
 
-        block_status = self.bigchain.block_election_status(next_block['id'],
-                                                           next_block['block']['voters'])
-        if block_status == self.bigchain.BLOCK_INVALID:
+        next_block = self.bigchain.get_block(block_id)
+
+        result = self.bigchain.block_election(next_block)
+        self.handle_block_events(result, block_id)
+        if result['status'] == self.bigchain.BLOCK_INVALID:
             return Block.from_dict(next_block)
+
+        # Log the result
+        if result['status'] != self.bigchain.BLOCK_UNDECIDED:
+            msg = 'node:%s block:%s status:%s' % \
+                (node, block_id, result['status'])
+            # Extra data can be accessed via the log formatter.
+            # See logging.dictConfig.
+            logger_results.debug(msg, extra={
+                'current_vote': next_vote,
+                'election_result': result,
+            })
 
     def requeue_transactions(self, invalid_block):
         """
@@ -51,9 +72,21 @@ class Election:
             self.bigchain.write_transaction(tx)
         return invalid_block
 
+    def handle_block_events(self, result, block_id):
+        if self.event_handler:
+            if result['status'] == self.bigchain.BLOCK_UNDECIDED:
+                return
+            elif result['status'] == self.bigchain.BLOCK_INVALID:
+                event_type = EventTypes.BLOCK_INVALID
+            elif result['status'] == self.bigchain.BLOCK_VALID:
+                event_type = EventTypes.BLOCK_VALID
 
-def create_pipeline():
-    election = Election()
+            event = Event(event_type, self.bigchain.get_block(block_id))
+            self.event_handler.put_event(event)
+
+
+def create_pipeline(events_queue=None):
+    election = Election(events_queue=events_queue)
 
     election_pipeline = Pipeline([
         Node(election.check_for_quorum),
@@ -68,8 +101,8 @@ def get_changefeed():
     return backend.get_changefeed(connection, 'votes', ChangeFeed.INSERT)
 
 
-def start():
-    pipeline = create_pipeline()
+def start(events_queue=None):
+    pipeline = create_pipeline(events_queue=events_queue)
     pipeline.setup(indata=get_changefeed())
     pipeline.start()
     return pipeline

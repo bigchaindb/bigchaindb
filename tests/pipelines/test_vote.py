@@ -112,6 +112,18 @@ def test_validate_block_with_invalid_id(b):
 
 
 @pytest.mark.genesis
+def test_validate_block_with_duplicated_transactions(b):
+    from bigchaindb.pipelines import vote
+
+    tx = dummy_tx(b)
+    block = b.create_block([tx, tx]).to_dict()
+
+    vote_obj = vote.Vote()
+    block_id, invalid_dummy_tx = vote_obj.validate_block(block)
+    assert invalid_dummy_tx == [vote_obj.invalid_dummy_tx]
+
+
+@pytest.mark.genesis
 def test_validate_block_with_invalid_signature(b):
     from bigchaindb.pipelines import vote
 
@@ -128,17 +140,23 @@ def test_validate_block_with_invalid_signature(b):
 @pytest.mark.genesis
 def test_vote_validate_transaction(b):
     from bigchaindb.pipelines import vote
-    from bigchaindb.models import Transaction
+    from bigchaindb.common.exceptions import ValidationError
 
     tx = dummy_tx(b)
     vote_obj = vote.Vote()
     validation = vote_obj.validate_tx(tx, 123, 1)
     assert validation == (True, 123, 1)
 
-    # NOTE: Submit unsigned transaction to `validate_tx` yields `False`.
-    tx = Transaction.create([b.me], [([b.me], 1)])
-    validation = vote_obj.validate_tx(tx, 456, 10)
-    assert validation == (False, 456, 10)
+    with patch('bigchaindb.models.Transaction.validate') as validate:
+        # Assert that validationerror gets caught
+        validate.side_effect = ValidationError()
+        validation = vote_obj.validate_tx(tx, 456, 10)
+        assert validation == (False, 456, 10)
+
+        # Assert that another error doesnt
+        validate.side_effect = IOError()
+        with pytest.raises(IOError):
+            validation = vote_obj.validate_tx(tx, 456, 10)
 
 
 @pytest.mark.genesis

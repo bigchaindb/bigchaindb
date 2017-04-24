@@ -31,6 +31,7 @@ dev_require = [
     'ipdb',
     'ipython',
     'watchdog',
+    'logging_tree',
 ]
 
 docs_require = [
@@ -50,8 +51,10 @@ tests_require = [
     'pytest>=3.0.0',
     'pytest-catchlog>=1.2.2',
     'pytest-cov>=2.2.1',
+    'pytest-mock',
     'pytest-xdist',
     'pytest-flask',
+    'pytest-aiohttp',
     'tox',
 ] + docs_require
 
@@ -65,7 +68,7 @@ install_requires = [
     'pymongo~=3.4',
     'pysha3~=1.0.2',
     'cryptoconditions>=0.5.0',
-    'python-rapidjson>=0.0.8',
+    'python-rapidjson==0.0.11',
     'logstats>=0.2.1',
     'flask>=0.10.1',
     'flask-restful~=0.3.0',
@@ -74,6 +77,7 @@ install_requires = [
     'multipipes~=0.1.0',
     'jsonschema~=2.5.1',
     'pyyaml~=3.12',
+    'aiohttp~=2.0',
 ]
 
 setup(
@@ -115,7 +119,7 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'bigchaindb=bigchaindb.commands.bigchain:main'
+            'bigchaindb=bigchaindb.commands.bigchaindb:main'
         ],
     },
     install_requires=install_requires,

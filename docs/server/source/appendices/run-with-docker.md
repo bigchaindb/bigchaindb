@@ -25,7 +25,7 @@ docker run \
   --interactive \
   --rm \
   --tty \
-  --volume "$HOME/bigchaindb_docker:/data" \
+  --volume $HOME/bigchaindb_docker:/data \
   bigchaindb/bigchaindb \
   -y configure \
   [mongodb|rethinkdb]
@@ -45,7 +45,7 @@ Let's analyze that command:
  `$HOME/bigchaindb_docker` to the container directory `/data`;
  this allows us to have the data persisted on the host machine,
  you can read more in the [official Docker
- documentation](https://docs.docker.com/engine/tutorials/dockervolumes/#/mount-a-host-directory-as-a-data-volume)
+ documentation](https://docs.docker.com/engine/tutorials/dockervolumes)
 * `bigchaindb/bigchaindb` the image to use. All the options after the container name are passed on to the entrypoint inside the container.
 * `-y configure` execute the `configure` sub-command (of the `bigchaindb`
  command) inside the container, with the `-y` option to automatically use all the default config values
@@ -75,21 +75,37 @@ docker run \
   --name=rethinkdb \
   --publish=172.17.0.1:28015:28015 \
   --publish=172.17.0.1:58080:8080 \
+  --restart=always \
+  --volume $HOME/bigchaindb_docker:/data \
   rethinkdb:2.3
 ```
 
+<!-- Don't hyperlink http://172.17.0.1:58080/ because Sphinx will fail when you do "make linkcheck" -->
 
-You can also access the RethinkDB dashboard at
-[http://172.17.0.1:58080/](http://172.17.0.1:58080/)
+You can also access the RethinkDB dashboard at http://172.17.0.1:58080/
 
 
 #### For MongoDB
+
+Note: MongoDB runs as user `mongodb` which had the UID `999` and GID `999`
+inside the container. For the volume to be mounted properly, as user `mongodb`
+in your host, you should have a `mongodb` user with UID and GID `999`.
+If you have another user on the host with UID `999`, the mapped files will
+be owned by this user in the host.
+If there is no owner with UID 999, you can create the corresponding user and
+group.
+
+`useradd -r --uid 999 mongodb` OR `groupadd -r --gid 999 mongodb && useradd -r --uid 999 -g mongodb mongodb` should work.
+
 
 ```text
 docker run \
   --detach \
   --name=mongodb \
   --publish=172.17.0.1:27017:27017 \
+  --restart=always \
+  --volume=/tmp/mongodb_docker/db:/data/db \
+  --volume=/tmp/mongodb_docker/configdb:/data/configdb \
   mongo:3.4.1 --replSet=bigchain-rs
 ```
 
@@ -100,6 +116,7 @@ docker run \
   --detach \
   --name=bigchaindb \
   --publish=59984:9984 \
+  --restart=always \
   --volume=$HOME/bigchaindb_docker:/data \
   bigchaindb/bigchaindb \
   start
@@ -123,38 +140,6 @@ machine running the Docker engine. If you are running docker-machine (e.g. on
 Mac OS X) this will be the IP of the Docker machine (`docker-machine ip
 machine_name`).
 
-### Load Testing with Docker
-
-Now that we have BigchainDB running in the Docker container named `bigchaindb`, we can
-start another BigchainDB container to generate a load test for it.
-
-First, make sure the container named `bigchaindb` is still running. You can check that using:
-```text
-docker ps
-```
-
-You should see a container named `bigchaindb` in the list.
-
-You can load test the BigchainDB running in that container by running the `bigchaindb load` command in a second container:
-
-```text
-docker run \
-  --env BIGCHAINDB_DATABASE_HOST=bigchaindb \
-  --link bigchaindb \
-  --rm \
-  --volume "$HOME/bigchaindb_docker:/data" \
-  bigchaindb/bigchaindb \
-  load
-```
-
-Note the `--link` option to link to the first container (named `bigchaindb`).
-
-Aside: The `bigchaindb load` command has several options (e.g. `-m`). You can read more about it in [the documentation about the BigchainDB command line interface](../server-reference/bigchaindb-cli.html).
-
-If you look at the RethinkDB dashboard (in your web browser), you should see the effects of the load test. You can also see some effects in the Docker logs using:
-```text
-docker logs -f bigchaindb
-```
 
 ## Building Your Own Image
 
@@ -171,3 +156,4 @@ docker build --tag local-bigchaindb .
 ```
 
 Now you can use your own image to run BigchainDB containers.
+

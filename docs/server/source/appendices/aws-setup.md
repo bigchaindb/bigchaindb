@@ -18,7 +18,7 @@ pip install awscli
 
 ## Create an AWS Access Key
 
-The next thing you'll need is an AWS access key. If you don't have one, you can create one using the [instructions in the AWS documentation](http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSGettingStartedGuide/AWSCredentials.html). You should get an access key ID (e.g. AKIAIOSFODNN7EXAMPLE) and a secret access key (e.g. wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY).
+The next thing you'll need is AWS access keys (access key ID and secret access key). If you don't have those, see [the AWS documentation about access keys](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys).
 
 You should also pick a default AWS region name (e.g. `eu-central-1`). That's where your cluster will run. The AWS documentation has [a list of them](http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region).
 
@@ -42,23 +42,10 @@ This writes two files: `~/.aws/credentials` and `~/.aws/config`. AWS tools and p
 
 Eventually, you'll have one or more instances (virtual machines) running on AWS and you'll want to SSH to them. To do that, you need a public/private key pair. The public key will be sent to AWS, and you can tell AWS to put it in any instances you provision there. You'll keep the private key on your local workstation.
 
-First you need to make up a key name. Some ideas:
+See the [page about how to generate a key pair for SSH](generate-key-pair-for-ssh.html).
 
-* `bcdb-troy-1`
-* `bigchaindb-7`
-* `bcdb-jupiter`
 
-If you already have key pairs on AWS (Amazon EC2), you have to pick a name that's not already being used.
-Below, replace every instance of `<key-name>` with your actual key name.
-To generate a public/private RSA key pair with that name:
-```text
-ssh-keygen -t rsa -C "<key-name>" -f ~/.ssh/<key-name>
-```
-
-It will ask you for a passphrase. You can use whatever passphrase you like, but don't lose it. Two keys (files) will be created in `~/.ssh/`:
-
-1. `~/.ssh/<key-name>.pub` is the public key
-2. `~/.ssh/<key-name>` is the private key
+## Send the Public Key to AWS
 
 To send the public key to AWS, use the AWS Command-Line Interface:
 ```text

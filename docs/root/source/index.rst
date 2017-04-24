@@ -53,7 +53,7 @@ At a high level, one can communicate with a BigchainDB cluster (set of nodes) us
    </style>
 
    <div class="buttondiv">
-     <a class="button" href="http://docs.bigchaindb.com/projects/server/en/latest/drivers-clients/http-client-server-api.html">HTTP API Docs</a>
+     <a class="button" href="http://bigchaindb.com/http-api">HTTP API Docs</a>
    </div>
    <div class="buttondiv">
      <a class="button" href="http://docs.bigchaindb.com/projects/py-driver/en/latest/index.html">Python Driver Docs</a>

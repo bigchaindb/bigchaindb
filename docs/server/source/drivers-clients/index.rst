@@ -14,18 +14,16 @@ community projects listed below.
 .. toctree::
    :maxdepth: 1
 
-   http-client-server-api
-   websocket-event-stream-api
    The Python Driver <https://docs.bigchaindb.com/projects/py-driver/en/latest/index.html>
    Transaction CLI <https://docs.bigchaindb.com/projects/cli/en/latest/>
 
 
-Community Driven Libraries and Tools
+Community-Driven Libraries and Tools
 ------------------------------------
 Please note that some of these projects may be work in progress, but may
 nevertheless be very useful.
 
 * `Javascript transaction builder <https://github.com/sohkai/js-bigchaindb-quickstart>`_
-* `Haskell transaction builder <https://github.com/libscott/bigchaindb-hs>`_
+* `Haskell transaction builder <https://github.com/bigchaindb/bigchaindb-hs>`_
 * `Go driver <https://github.com/zbo14/envoke/blob/master/bigchain/bigchain.go>`_
 * `Java driver <https://github.com/mgrand/bigchaindb-java-driver>`_

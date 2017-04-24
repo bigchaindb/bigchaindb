@@ -1,0 +1,74 @@
+###############################################################
+# This config file runs bigchaindb:0.10.1 as a k8s Deployment #
+# and it connects to the mongodb backend running as a         #
+# separate pod                                                #
+###############################################################
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: bdb-instance-0-dep
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: bdb-instance-0-dep
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: bigchaindb
+        image: bigchaindb/bigchaindb:0.10.1
+        imagePullPolicy: IfNotPresent
+        args:
+        - start
+        env:
+        - name: BIGCHAINDB_DATABASE_HOST
+          value: mdb-instance-0
+        - name: BIGCHAINDB_DATABASE_PORT
+          value: "27017"
+        - name: BIGCHAINDB_DATABASE_REPLICASET
+          value: bigchain-rs
+        - name: BIGCHAINDB_DATABASE_BACKEND
+          value: mongodb
+        - name: BIGCHAINDB_DATABASE_NAME
+          value: bigchain
+        - name: BIGCHAINDB_SERVER_BIND
+          value: 0.0.0.0:9984
+        - name: BIGCHAINDB_KEYPAIR_PUBLIC
+          value: "<public key here>"
+        - name: BIGCHAINDB_KEYPAIR_PRIVATE
+          value: "<private key here>"
+        - name: BIGCHAINDB_BACKLOG_REASSIGN_DELAY
+          value: "120"
+        - name: BIGCHAINDB_DATABASE_MAXTRIES
+          value: "3"
+        - name: BIGCHAINDB_DATABASE_CONNECTION_TIMEOUT
+          value: "120"
+        - name: BIGCHAINDB_LOG_LEVEL_CONSOLE
+          value: debug
+        # The following env var is not required for the bootstrap/first node
+        #- name: BIGCHAINDB_KEYRING
+        #  value: ""
+        ports:
+        - containerPort: 9984
+          hostPort: 9984
+          name: bdb-port
+          protocol: TCP 
+        resources:
+          limits:
+            cpu: 200m
+            memory: 768Mi
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 9984
+          initialDelaySeconds: 15
+          timeoutSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 9984
+          initialDelaySeconds: 15
+          timeoutSeconds: 10
+      restartPolicy: Always

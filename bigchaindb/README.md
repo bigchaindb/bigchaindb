@@ -12,7 +12,7 @@ The `Bigchain` class is defined here.  Most operations outlined in the [whitepap
 
 ### [`models.py`](./models.py)
 
-`Block`, `Transaction`, and `Asset` classes are defined here.  The classes mirror the block and transaction structure from the [documentation](https://docs.bigchaindb.com/projects/server/en/latest/topic-guides/models.html), but also include methods for validation and signing.
+`Block`, `Transaction`, and `Asset` classes are defined here.  The classes mirror the block and transaction structure from the [documentation](https://docs.bigchaindb.com/projects/server/en/latest/data-models/index.html), but also include methods for validation and signing.
 
 ### [`consensus.py`](./consensus.py)
 

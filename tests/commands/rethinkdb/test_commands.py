@@ -9,12 +9,15 @@ from argparse import Namespace
 def test_bigchain_run_start_with_rethinkdb(mock_start_rethinkdb,
                                            mock_run_configure,
                                            mock_processes_start,
-                                           mock_db_init_with_existing_db):
-    from bigchaindb.commands.bigchain import run_start
+                                           mock_db_init_with_existing_db,
+                                           mocked_setup_logging):
+    from bigchaindb import config
+    from bigchaindb.commands.bigchaindb import run_start
     args = Namespace(start_rethinkdb=True, allow_temp_keypair=False, config=None, yes=True)
     run_start(args)
 
     mock_start_rethinkdb.assert_called_with()
+    mocked_setup_logging.assert_called_once_with(user_log_config=config['log'])
 
 
 @patch('subprocess.Popen')
@@ -37,7 +40,7 @@ def test_start_rethinkdb_exits_when_cannot_start(mock_popen):
 
 @patch('rethinkdb.ast.Table.reconfigure')
 def test_set_shards(mock_reconfigure, monkeypatch, b):
-    from bigchaindb.commands.bigchain import run_set_shards
+    from bigchaindb.commands.bigchaindb import run_set_shards
 
     # this will mock the call to retrieve the database config
     # we will set it to return one replica
@@ -45,7 +48,7 @@ def test_set_shards(mock_reconfigure, monkeypatch, b):
         return {'shards': [{'replicas': [1]}]}
 
     monkeypatch.setattr(rethinkdb.RqlQuery, 'run', mockreturn_one_replica)
-    args = Namespace(num_shards=3)
+    args = Namespace(num_shards=3, config=None)
     run_set_shards(args)
     mock_reconfigure.assert_called_with(replicas=1, shards=3, dry_run=False)
 
@@ -59,9 +62,8 @@ def test_set_shards(mock_reconfigure, monkeypatch, b):
     mock_reconfigure.assert_called_with(replicas=3, shards=3, dry_run=False)
 
 
-@patch('logging.Logger.warn')
-def test_set_shards_raises_exception(mock_log, monkeypatch, b):
-    from bigchaindb.commands.bigchain import run_set_shards
+def test_set_shards_raises_exception(monkeypatch, b):
+    from bigchaindb.commands.bigchaindb import run_set_shards
 
     # test that we are correctly catching the exception
     def mock_raise(*args, **kwargs):
@@ -73,15 +75,15 @@ def test_set_shards_raises_exception(mock_log, monkeypatch, b):
     monkeypatch.setattr(rethinkdb.RqlQuery, 'run', mockreturn_one_replica)
     monkeypatch.setattr(rethinkdb.ast.Table, 'reconfigure', mock_raise)
 
-    args = Namespace(num_shards=3)
-    run_set_shards(args)
-
-    assert mock_log.called
+    args = Namespace(num_shards=3, config=None)
+    with pytest.raises(SystemExit) as exc:
+        run_set_shards(args)
+    assert exc.value.args == ('Failed to reconfigure tables.',)
 
 
 @patch('rethinkdb.ast.Table.reconfigure')
 def test_set_replicas(mock_reconfigure, monkeypatch, b):
-    from bigchaindb.commands.bigchain import run_set_replicas
+    from bigchaindb.commands.bigchaindb import run_set_replicas
 
     # this will mock the call to retrieve the database config
     # we will set it to return two shards
@@ -89,7 +91,7 @@ def test_set_replicas(mock_reconfigure, monkeypatch, b):
         return {'shards': [1, 2]}
 
     monkeypatch.setattr(rethinkdb.RqlQuery, 'run', mockreturn_two_shards)
-    args = Namespace(num_replicas=2)
+    args = Namespace(num_replicas=2, config=None)
     run_set_replicas(args)
     mock_reconfigure.assert_called_with(replicas=2, shards=2, dry_run=False)
 
@@ -103,9 +105,8 @@ def test_set_replicas(mock_reconfigure, monkeypatch, b):
     mock_reconfigure.assert_called_with(replicas=2, shards=3, dry_run=False)
 
 
-@patch('logging.Logger.warn')
-def test_set_replicas_raises_exception(mock_log, monkeypatch, b):
-    from bigchaindb.commands.bigchain import run_set_replicas
+def test_set_replicas_raises_exception(monkeypatch, b):
+    from bigchaindb.commands.bigchaindb import run_set_replicas
 
     # test that we are correctly catching the exception
     def mock_raise(*args, **kwargs):
@@ -117,7 +118,7 @@ def test_set_replicas_raises_exception(mock_log, monkeypatch, b):
     monkeypatch.setattr(rethinkdb.RqlQuery, 'run', mockreturn_two_shards)
     monkeypatch.setattr(rethinkdb.ast.Table, 'reconfigure', mock_raise)
 
-    args = Namespace(num_replicas=2)
-    run_set_replicas(args)
-
-    assert mock_log.called
+    args = Namespace(num_replicas=2, config=None)
+    with pytest.raises(SystemExit) as exc:
+        run_set_replicas(args)
+    assert exc.value.args == ('Failed to reconfigure tables.',)

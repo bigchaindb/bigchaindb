@@ -13,9 +13,7 @@ from multipipes import Pipeline, Node
 import bigchaindb
 from bigchaindb import Bigchain
 from bigchaindb import backend
-from bigchaindb import config_utils
 from bigchaindb.backend.changefeed import ChangeFeed
-from bigchaindb.consensus import BaseConsensusRules
 from bigchaindb.models import Transaction, Block
 from bigchaindb.common import exceptions
 
@@ -37,13 +35,6 @@ class Vote:
         # we need to create a temporary instance of BigchainDB that we use
         # only to query RethinkDB
 
-        consensusPlugin = bigchaindb.config.get('consensus_plugin')
-
-        if consensusPlugin:
-            self.consensus = config_utils.load_consensus_plugin(consensusPlugin)
-        else:
-            self.consensus = BaseConsensusRules
-
         # This is the Bigchain instance that will be "shared" (aka: copied)
         # by all the subprocesses
 
@@ -57,8 +48,7 @@ class Vote:
                                                    [([self.bigchain.me], 1)])
 
     def validate_block(self, block):
-        if not self.bigchain.has_previous_vote(block['id'],
-                                               block['block']['voters']):
+        if not self.bigchain.has_previous_vote(block['id']):
             try:
                 block = Block.from_dict(block)
             except (exceptions.InvalidHash):
@@ -70,7 +60,7 @@ class Vote:
                 return block['id'], [self.invalid_dummy_tx]
             try:
                 block._validate_block(self.bigchain)
-            except (exceptions.OperationError, exceptions.InvalidSignature):
+            except exceptions.ValidationError:
                 # XXX: if a block is invalid we should skip the `validate_tx`
                 # step, but since we are in a pipeline we cannot just jump to
                 # another function. Hackish solution: generate an invalid
@@ -114,7 +104,13 @@ class Vote:
         if not new:
             return False, block_id, num_tx
 
-        valid = bool(self.bigchain.is_valid_transaction(tx))
+        try:
+            tx.validate(self.bigchain)
+            valid = True
+        except exceptions.ValidationError as e:
+            logger.warning('Invalid tx: %s', e)
+            valid = False
+
         return valid, block_id, num_tx
 
     def vote(self, tx_validity, block_id, num_tx):

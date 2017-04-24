@@ -12,6 +12,8 @@ import random
 
 import pytest
 
+from logging import getLogger
+from logging.config import dictConfig
 from bigchaindb.common import crypto
 
 TEST_DB_NAME = 'bigchain_test'
@@ -204,6 +206,15 @@ def ignore_local_config_file(monkeypatch):
 
 
 @pytest.fixture
+def reset_logging_config():
+    # root_logger_level = getLogger().level
+    root_logger_level = 'DEBUG'
+    dictConfig({'version': 1, 'root': {'level': 'NOTSET'}})
+    yield
+    getLogger().setLevel(root_logger_level)
+
+
+@pytest.fixture
 def user_sk():
     return USER_PRIVATE_KEY
 
@@ -221,6 +232,54 @@ def user2_sk():
 @pytest.fixture
 def user2_pk():
     return USER2_PK
+
+
+@pytest.fixture
+def alice():
+    from bigchaindb.common.crypto import generate_key_pair
+    return generate_key_pair()
+
+
+@pytest.fixture
+def alice_privkey(alice):
+    return alice.private_key
+
+
+@pytest.fixture
+def alice_pubkey(alice):
+    return alice.public_key
+
+
+@pytest.fixture
+def bob():
+    from bigchaindb.common.crypto import generate_key_pair
+    return generate_key_pair()
+
+
+@pytest.fixture
+def bob_privkey(bob):
+    return bob.private_key
+
+
+@pytest.fixture
+def bob_pubkey(carol):
+    return bob.public_key
+
+
+@pytest.fixture
+def carol():
+    from bigchaindb.common.crypto import generate_key_pair
+    return generate_key_pair()
+
+
+@pytest.fixture
+def carol_privkey(carol):
+    return carol.private_key
+
+
+@pytest.fixture
+def carol_pubkey(carol):
+    return carol.public_key
 
 
 @pytest.fixture
@@ -383,3 +442,15 @@ def db_name(db_config):
 def db_conn():
     from bigchaindb.backend import connect
     return connect()
+
+
+@pytest.fixture
+def mocked_setup_pub_logger(mocker):
+    return mocker.patch(
+        'bigchaindb.log.setup.setup_pub_logger', autospec=True, spec_set=True)
+
+
+@pytest.fixture
+def mocked_setup_sub_logger(mocker):
+    return mocker.patch(
+        'bigchaindb.log.setup.setup_sub_logger', autospec=True, spec_set=True)

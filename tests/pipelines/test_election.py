@@ -83,12 +83,6 @@ def test_check_for_quorum_invalid_prev_node(b, user_pk):
 def test_check_for_quorum_valid(b, user_pk):
     from bigchaindb.models import Transaction
 
-    e = election.Election()
-
-    # create blocks with transactions
-    tx1 = Transaction.create([b.me], [([user_pk], 1)])
-    test_block = b.create_block([tx1])
-
     # simulate a federation with four voters
     key_pairs = [crypto.generate_key_pair() for _ in range(4)]
     test_federation = [
@@ -96,8 +90,13 @@ def test_check_for_quorum_valid(b, user_pk):
         for key_pair in key_pairs
     ]
 
+    b.nodes_except_me = [key_pair[1] for key_pair in key_pairs]
+
+    # create blocks with transactions
+    tx1 = Transaction.create([b.me], [([user_pk], 1)])
+    test_block = b.create_block([tx1])
+
     # add voters to block and write
-    test_block.voters = [key_pair[1] for key_pair in key_pairs]
     test_block = test_block.sign(b.me_private)
     b.write_block(test_block)
 
@@ -108,8 +107,18 @@ def test_check_for_quorum_valid(b, user_pk):
     for vote in votes:
         b.write_vote(vote)
 
+    e = election.Election()
+    e.bigchain = b
+
     # since this block is valid, should go nowhere
     assert e.check_for_quorum(votes[-1]) is None
+
+
+@patch('bigchaindb.core.Bigchain.get_block')
+def test_invalid_vote(get_block, b):
+    e = election.Election()
+    assert e.check_for_quorum({}) is None
+    get_block.assert_not_called()
 
 
 @pytest.mark.bdb
@@ -190,3 +199,27 @@ def test_full_pipeline(b, user_pk):
     tx_from_block = set([tx.id for tx in invalid_block.transactions])
     tx_from_backlog = set([tx['id'] for tx in list(query.get_stale_transactions(b.connection, 0))])
     assert tx_from_block == tx_from_backlog
+
+
+def test_handle_block_events():
+    from bigchaindb.events import setup_events_queue, EventTypes
+
+    events_queue = setup_events_queue()
+    e = election.Election(events_queue=events_queue)
+    block_id = 'a' * 64
+
+    assert events_queue.qsize() == 0
+
+    # no event should be emitted in case a block is undecided
+    e.handle_block_events({'status': Bigchain.BLOCK_UNDECIDED}, block_id)
+    assert events_queue.qsize() == 0
+
+    # put an invalid block event in the queue
+    e.handle_block_events({'status': Bigchain.BLOCK_INVALID}, block_id)
+    event = e.event_handler.get_event()
+    assert event.type == EventTypes.BLOCK_INVALID
+
+    # put a valid block event in the queue
+    e.handle_block_events({'status': Bigchain.BLOCK_VALID}, block_id)
+    event = e.event_handler.get_event()
+    assert event.type == EventTypes.BLOCK_VALID

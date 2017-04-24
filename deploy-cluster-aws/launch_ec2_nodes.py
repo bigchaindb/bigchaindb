@@ -26,7 +26,7 @@ import boto3
 from awscommon import get_naeips
 
 
-SETTINGS = ['NUM_NODES', 'BRANCH', 'WHAT_TO_DEPLOY', 'SSH_KEY_NAME',
+SETTINGS = ['NUM_NODES', 'BRANCH', 'SSH_KEY_NAME',
             'USE_KEYPAIRS_FILE', 'IMAGE_ID', 'INSTANCE_TYPE', 'SECURITY_GROUP',
             'USING_EBS', 'EBS_VOLUME_SIZE', 'EBS_OPTIMIZED',
             'ENABLE_WEB_ADMIN', 'BIND_HTTP_TO_LOCALHOST']
@@ -77,9 +77,6 @@ if not isinstance(NUM_NODES, int):
 if not isinstance(BRANCH, str):
     raise SettingsTypeError('BRANCH should be a string')
 
-if not isinstance(WHAT_TO_DEPLOY, str):
-    raise SettingsTypeError('WHAT_TO_DEPLOY should be a string')
-
 if not isinstance(SSH_KEY_NAME, str):
     raise SettingsTypeError('SSH_KEY_NAME should be a string')
 
@@ -116,11 +113,6 @@ if NUM_NODES > 64:
     raise ValueError('NUM_NODES should be less than or equal to 64. '
                      'The AWS deployment configuration file sets it to {}'.
                      format(NUM_NODES))
-
-if WHAT_TO_DEPLOY not in ['servers', 'clients']:
-    raise ValueError('WHAT_TO_DEPLOY should be either "servers" or "clients". '
-                     'The AWS deployment configuration file sets it to {}'.
-                     format(WHAT_TO_DEPLOY))
 
 if SSH_KEY_NAME in ['not-set-yet', '', None]:
     raise ValueError('SSH_KEY_NAME should be set. '
@@ -298,7 +290,7 @@ print('Writing hostlist.py')
 with open('hostlist.py', 'w') as f:
     f.write('# -*- coding: utf-8 -*-\n')
     f.write('"""A list of the public DNS names of all the nodes in this\n')
-    f.write('BigchainDB cluster/federation.\n')
+    f.write('BigchainDB cluster.\n')
     f.write('"""\n')
     f.write('\n')
     f.write('from __future__ import unicode_literals\n')

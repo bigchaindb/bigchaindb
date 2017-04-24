@@ -3,6 +3,7 @@ import logging
 import rethinkdb as r
 
 from bigchaindb import backend
+from bigchaindb.backend.exceptions import BackendError
 from bigchaindb.backend.changefeed import ChangeFeed
 from bigchaindb.backend.utils import module_dispatch_registrar
 from bigchaindb.backend.rethinkdb.connection import RethinkDBConnection
@@ -23,8 +24,8 @@ class RethinkDBChangeFeed(ChangeFeed):
             try:
                 self.run_changefeed()
                 break
-            except (r.ReqlDriverError, r.ReqlOpFailedError) as exc:
-                logger.exception(exc)
+            except (BackendError, r.ReqlDriverError) as exc:
+                logger.exception('Error connecting to the database, retrying')
                 time.sleep(1)
 
     def run_changefeed(self):

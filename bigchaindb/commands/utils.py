@@ -3,16 +3,124 @@ for ``argparse.ArgumentParser``.
 """
 
 import argparse
+import builtins
+import functools
 import multiprocessing as mp
 import subprocess
+import sys
 
 import rethinkdb as r
 from pymongo import uri_parser
 
 import bigchaindb
+import bigchaindb.config_utils
 from bigchaindb import backend
 from bigchaindb.common.exceptions import StartupError
+from bigchaindb.log.setup import setup_logging
 from bigchaindb.version import __version__
+
+
+def configure_bigchaindb(command):
+    """Decorator to be used by command line functions, such that the
+    configuration of bigchaindb is performed before the execution of
+    the command.
+
+    Args:
+        command: The command to decorate.
+
+    Returns:
+        The command wrapper function.
+
+    """
+    @functools.wraps(command)
+    def configure(args):
+        try:
+            config_from_cmdline = {
+                'log': {
+                    'level_console': args.log_level,
+                    'level_logfile': args.log_level,
+                },
+                'server': {'loglevel': args.log_level},
+            }
+        except AttributeError:
+            config_from_cmdline = None
+        bigchaindb.config_utils.autoconfigure(
+            filename=args.config, config=config_from_cmdline, force=True)
+        command(args)
+
+    return configure
+
+
+def start_logging_process(command):
+    """Decorator to start the logging subscriber process.
+
+    Args:
+        command: The command to decorate.
+
+    Returns:
+        The command wrapper function.
+
+    .. important::
+
+        Configuration, if needed, should be applied before invoking this
+        decorator, as starting the subscriber process for logging will
+        configure the root logger for the child process based on the
+        state of :obj:`bigchaindb.config` at the moment this decorator
+        is invoked.
+
+    """
+    @functools.wraps(command)
+    def start_logging(args):
+        from bigchaindb import config
+        setup_logging(user_log_config=config.get('log'))
+        command(args)
+    return start_logging
+
+
+def _convert(value, default=None, convert=None):
+    def convert_bool(value):
+        if value.lower() in ('true', 't', 'yes', 'y'):
+            return True
+        if value.lower() in ('false', 'f', 'no', 'n'):
+            return False
+        raise ValueError('{} cannot be converted to bool'.format(value))
+
+    if value == '':
+        value = None
+
+    if convert is None:
+        if default is not None:
+            convert = type(default)
+        else:
+            convert = str
+
+    if convert == bool:
+        convert = convert_bool
+
+    if value is None:
+        return default
+    else:
+        return convert(value)
+
+
+# We need this because `input` always prints on stdout, while it should print
+# to stderr. It's a very old bug, check it out here:
+# - https://bugs.python.org/issue1927
+def input_on_stderr(prompt='', default=None, convert=None):
+    """Output a string to stderr and wait for input.
+
+    Args:
+        prompt (str): the message to display.
+        default: the default value to return if the user
+            leaves the field empty
+        convert (callable): a callable to be used to convert
+            the value the user inserted. If None, the type of
+            ``default`` will be used.
+    """
+
+    print(prompt, end='', file=sys.stderr)
+    value = builtins.input()
+    return _convert(value, default, convert)
 
 
 def start_rethinkdb():
@@ -129,6 +237,12 @@ base_parser = argparse.ArgumentParser(add_help=False, prog='bigchaindb')
 base_parser.add_argument('-c', '--config',
                          help='Specify the location of the configuration file '
                               '(use "-" for stdout)')
+
+base_parser.add_argument('-l', '--log-level',
+                         type=str.upper,  # convert to uppercase for comparison to choices
+                         choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+                         default='INFO',
+                         help='Log level')
 
 base_parser.add_argument('-y', '--yes', '--yes-please',
                          action='store_true',

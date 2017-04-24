@@ -1,9 +1,7 @@
 import random
-import math
-import collections
 from time import time
 
-from itertools import compress
+from bigchaindb import exceptions as core_exceptions
 from bigchaindb.common import crypto, exceptions
 from bigchaindb.common.utils import gen_timestamp, serialize
 from bigchaindb.common.transaction import TransactionLink
@@ -11,7 +9,6 @@ from bigchaindb.common.transaction import TransactionLink
 import bigchaindb
 
 from bigchaindb import backend, config_utils, utils
-from bigchaindb.backend import exceptions as backend_exceptions
 from bigchaindb.consensus import BaseConsensusRules
 from bigchaindb.models import Block, Transaction
 
@@ -22,14 +19,17 @@ class Bigchain(object):
     Create, read, sign, write transactions to the database
     """
 
-    # return if a block has been voted invalid
     BLOCK_INVALID = 'invalid'
-    # return if a block is valid, or tx is in valid block
+    """return if a block has been voted invalid"""
+
     BLOCK_VALID = TX_VALID = 'valid'
-    # return if block is undecided, or tx is in undecided block
+    """return if a block is valid, or tx is in valid block"""
+
     BLOCK_UNDECIDED = TX_UNDECIDED = 'undecided'
-    # return if transaction is in backlog
+    """return if block is undecided, or tx is in undecided block"""
+
     TX_IN_BACKLOG = 'backlog'
+    """return if transaction is in backlog"""
 
     def __init__(self, public_key=None, private_key=None, keyring=[], connection=None, backlog_reassign_delay=None):
         """Initialize the Bigchain instance
@@ -72,6 +72,9 @@ class Bigchain(object):
         if not self.me or not self.me_private:
             raise exceptions.KeypairNotFoundException()
 
+    federation = property(lambda self: set(self.nodes_except_me + [self.me]))
+    """ Set of federation member public keys """
+
     def write_transaction(self, signed_transaction):
         """Write the transaction to bigchain.
 
@@ -110,19 +113,10 @@ class Bigchain(object):
             dict: database response or None if no reassignment is possible
         """
 
-        if self.nodes_except_me:
-            try:
-                federation_nodes = self.nodes_except_me + [self.me]
-                index_current_assignee = federation_nodes.index(transaction['assignee'])
-                new_assignee = random.choice(federation_nodes[:index_current_assignee] +
-                                             federation_nodes[index_current_assignee + 1:])
-            except ValueError:
-                # current assignee not in federation
-                new_assignee = random.choice(self.nodes_except_me)
-
-        else:
-            # There is no other node to assign to
-            new_assignee = self.me
+        other_nodes = tuple(
+            self.federation.difference([transaction['assignee']])
+        )
+        new_assignee = random.choice(other_nodes) if other_nodes else self.me
 
         return backend.query.update_transaction(
                 self.connection, transaction['id'],
@@ -162,31 +156,6 @@ class Bigchain(object):
 
         return self.consensus.validate_transaction(self, transaction)
 
-    def is_valid_transaction(self, transaction):
-        """Check whether a transaction is valid or invalid.
-
-        Similar to :meth:`~bigchaindb.Bigchain.validate_transaction`
-        but never raises an exception. It returns :obj:`False` if
-        the transaction is invalid.
-
-        Args:
-            transaction (:Class:`~bigchaindb.models.Transaction`): transaction
-                to check.
-
-        Returns:
-            The :class:`~bigchaindb.models.Transaction` instance if valid,
-            otherwise :obj:`False`.
-        """
-
-        try:
-            return self.validate_transaction(transaction)
-        except (ValueError, exceptions.OperationError,
-                exceptions.TransactionDoesNotExist,
-                exceptions.TransactionOwnerError, exceptions.DoubleSpend,
-                exceptions.InvalidHash, exceptions.InvalidSignature,
-                exceptions.TransactionNotInValidBlock, exceptions.AmountError):
-            return False
-
     def is_new_transaction(self, txid, exclude_block_id=None):
         """
         Return True if the transaction does not exist in any
@@ -219,8 +188,7 @@ class Bigchain(object):
 
         if include_status:
             if block:
-                status = self.block_election_status(block_id,
-                                                    block['block']['voters'])
+                status = self.block_election_status(block)
             return block, status
         else:
             return block
@@ -321,19 +289,15 @@ class Bigchain(object):
         blocks = backend.query.get_blocks_status_from_transaction(self.connection, txid)
         if blocks:
             # Determine the election status of each block
-            validity = {
-                block['id']: self.block_election_status(
-                    block['id'],
-                    block['block']['voters']
-                ) for block in blocks
-            }
+            validity = {block['id']: self.block_election_status(block)
+                        for block in blocks}
 
             # NOTE: If there are multiple valid blocks with this transaction,
             # something has gone wrong
             if list(validity.values()).count(Bigchain.BLOCK_VALID) > 1:
                 block_ids = str([block for block in validity
                                  if validity[block] == Bigchain.BLOCK_VALID])
-                raise backend_exceptions.BigchainDBCritical(
+                raise core_exceptions.CriticalDoubleInclusion(
                     'Transaction {tx} is present in '
                     'multiple valid blocks: {block_ids}'
                     .format(tx=txid, block_ids=block_ids))
@@ -360,44 +324,57 @@ class Bigchain(object):
     def get_spent(self, txid, output):
         """Check if a `txid` was already used as an input.
 
-        A transaction can be used as an input for another transaction. Bigchain needs to make sure that a
-        given `txid` is only used once.
+        A transaction can be used as an input for another transaction. Bigchain
+        needs to make sure that a given `(txid, output)` is only used once.
+
+        This method will check if the `(txid, output)` has already been
+        spent in a transaction that is in either the `VALID`, `UNDECIDED` or
+        `BACKLOG` state.
 
         Args:
             txid (str): The id of the transaction
             output (num): the index of the output in the respective transaction
 
         Returns:
-            The transaction (Transaction) that used the `txid` as an input else
-            `None`
+            The transaction (Transaction) that used the `(txid, output)` as an
+            input else `None`
+
+        Raises:
+            CriticalDoubleSpend: If the given `(txid, output)` was spent in
+            more than one valid transaction.
         """
         # checks if an input was already spent
         # checks if the bigchain has any transaction with input {'txid': ...,
         # 'output': ...}
-        transactions = list(backend.query.get_spent(self.connection, txid, output))
+        transactions = list(backend.query.get_spent(self.connection, txid,
+                                                    output))
 
         # a transaction_id should have been spent at most one time
-        if transactions:
-            # determine if these valid transactions appear in more than one valid block
-            num_valid_transactions = 0
-            for transaction in transactions:
-                # ignore invalid blocks
-                # FIXME: Isn't there a faster solution than doing I/O again?
-                if self.get_transaction(transaction['id']):
-                    num_valid_transactions += 1
-                if num_valid_transactions > 1:
-                    raise exceptions.DoubleSpend(('`{}` was spent more than'
-                                                  ' once. There is a problem'
-                                                  ' with the chain')
-                                                 .format(txid))
+        # determine if these valid transactions appear in more than one valid
+        # block
+        num_valid_transactions = 0
+        non_invalid_transactions = []
+        for transaction in transactions:
+            # ignore transactions in invalid blocks
+            # FIXME: Isn't there a faster solution than doing I/O again?
+            _, status = self.get_transaction(transaction['id'],
+                                             include_status=True)
+            if status == self.TX_VALID:
+                num_valid_transactions += 1
+            # `txid` can only have been spent in at most on valid block.
+            if num_valid_transactions > 1:
+                raise core_exceptions.CriticalDoubleSpend(
+                    '`{}` was spent more than once. There is a problem'
+                    ' with the chain'.format(txid))
+            # if its not and invalid transaction
+            if status is not None:
+                non_invalid_transactions.append(transaction)
 
-            if num_valid_transactions:
-                return Transaction.from_dict(transactions[0])
-            else:
-                # all queried transactions were invalid
-                return None
-        else:
-            return None
+        if non_invalid_transactions:
+            return Transaction.from_dict(non_invalid_transactions[0])
+
+        # Either no transaction was returned spending the `(txid, output)` as
+        # input or the returned transactions are not valid.
 
     def get_outputs(self, owner):
         """Retrieve a list of links to transaction outputs for a given public
@@ -412,33 +389,37 @@ class Bigchain(object):
         """
         # get all transactions in which owner is in the `owners_after` list
         response = backend.query.get_owned_ids(self.connection, owner)
-        links = []
+        return [
+            TransactionLink(tx['id'], index)
+            for tx in response
+            if not self.is_tx_strictly_in_invalid_block(tx['id'])
+            for index, output in enumerate(tx['outputs'])
+            if utils.output_has_owner(output, owner)
+        ]
 
-        for tx in response:
-            # disregard transactions from invalid blocks
-            validity = self.get_blocks_status_containing_tx(tx['id'])
-            if Bigchain.BLOCK_VALID not in validity.values():
-                if Bigchain.BLOCK_UNDECIDED not in validity.values():
-                    continue
+    def is_tx_strictly_in_invalid_block(self, txid):
+        """
+        Checks whether the transaction with the given ``txid``
+        *strictly* belongs to an invalid block.
 
-            # NOTE: It's OK to not serialize the transaction here, as we do not
-            # use it after the execution of this function.
-            # a transaction can contain multiple outputs so we need to iterate over all of them
-            # to get a list of outputs available to spend
-            for index, output in enumerate(tx['outputs']):
-                # for simple signature conditions there are no subfulfillments
-                # check if the owner is in the condition `owners_after`
-                if len(output['public_keys']) == 1:
-                    if output['condition']['details']['public_key'] == owner:
-                        tx_link = TransactionLink(tx['id'], index)
-                else:
-                    # for transactions with multiple `public_keys` there will be several subfulfillments nested
-                    # in the condition. We need to iterate the subfulfillments to make sure there is a
-                    # subfulfillment for `owner`
-                    if utils.condition_details_has_owner(output['condition']['details'], owner):
-                        tx_link = TransactionLink(tx['id'], index)
-                links.append(tx_link)
-        return links
+        Args:
+            txid (str): Transaction id.
+
+        Returns:
+            bool: ``True`` if the transaction *strictly* belongs to a
+            block that is invalid. ``False`` otherwise.
+
+        Note:
+            Since a transaction may be in multiple blocks, with
+            different statuses, the term "strictly" is used to
+            emphasize that if a transaction is said to be in an invalid
+            block, it means that it is not in any other block that is
+            either valid or undecided.
+
+        """
+        validity = self.get_blocks_status_containing_tx(txid)
+        return (Bigchain.BLOCK_VALID not in validity.values() and
+                Bigchain.BLOCK_UNDECIDED not in validity.values())
 
     def get_owned_ids(self, owner):
         """Retrieve a list of ``txid`` s that can be used as inputs.
@@ -491,7 +472,7 @@ class Bigchain(object):
             raise exceptions.OperationError('Empty block creation is not '
                                             'allowed')
 
-        voters = self.nodes_except_me + [self.me]
+        voters = list(self.federation)
         block = Block(validated_transactions, self.me, gen_timestamp(), voters)
         block = block.sign(self.me_private)
 
@@ -510,36 +491,20 @@ class Bigchain(object):
         """
         return self.consensus.validate_block(self, block)
 
-    def has_previous_vote(self, block_id, voters):
+    def has_previous_vote(self, block_id):
         """Check for previous votes from this node
 
         Args:
             block_id (str): the id of the block to check
-            voters (list(str)): the voters of the block to check
 
         Returns:
             bool: :const:`True` if this block already has a
             valid vote from this node, :const:`False` otherwise.
 
-        Raises:
-            ImproperVoteError: If there is already a vote,
-                but the vote is invalid.
-
         """
         votes = list(backend.query.get_votes_by_block_id_and_voter(self.connection, block_id, self.me))
-
-        if len(votes) > 1:
-            raise exceptions.MultipleVotesError('Block {block_id} has {n_votes} votes from public key {me}'
-                                                .format(block_id=block_id, n_votes=str(len(votes)), me=self.me))
-        has_previous_vote = False
-        if votes:
-            if utils.verify_vote_signature(voters, votes[0]):
-                has_previous_vote = True
-            else:
-                raise exceptions.ImproperVoteError('Block {block_id} already has an incorrectly signed vote '
-                                                   'from public key {me}'.format(block_id=block_id, me=self.me))
-
-        return has_previous_vote
+        el, _ = self.consensus.voting.partition_eligible_votes(votes, [self.me])
+        return bool(el)
 
     def write_block(self, block):
         """Write a block to bigchain.
@@ -639,69 +604,15 @@ class Bigchain(object):
         # XXX: should this return instaces of Block?
         return backend.query.get_unvoted_blocks(self.connection, self.me)
 
-    def block_election_status(self, block_id, voters):
-        """Tally the votes on a block, and return the status: valid, invalid, or undecided."""
+    def block_election(self, block):
+        if type(block) != dict:
+            block = block.to_dict()
+        votes = list(backend.query.get_votes_by_block_id(self.connection,
+                                                         block['id']))
+        return self.consensus.voting.block_election(block, votes,
+                                                    self.federation)
 
-        votes = list(backend.query.get_votes_by_block_id(self.connection, block_id))
-        n_voters = len(voters)
-
-        voter_counts = collections.Counter([vote['node_pubkey'] for vote in votes])
-        for node in voter_counts:
-            if voter_counts[node] > 1:
-                raise exceptions.MultipleVotesError(
-                    'Block {block_id} has multiple votes ({n_votes}) from voting node {node_id}'
-                    .format(block_id=block_id, n_votes=str(voter_counts[node]), node_id=node))
-
-        if len(votes) > n_voters:
-            raise exceptions.MultipleVotesError('Block {block_id} has {n_votes} votes cast, but only {n_voters} voters'
-                                                .format(block_id=block_id, n_votes=str(len(votes)),
-                                                        n_voters=str(n_voters)))
-
-        # vote_cast is the list of votes e.g. [True, True, False]
-        vote_cast = [vote['vote']['is_block_valid'] for vote in votes]
-        # prev_block are the ids of the nominal prev blocks e.g.
-        # ['block1_id', 'block1_id', 'block2_id']
-        prev_block = [vote['vote']['previous_block'] for vote in votes]
-        # vote_validity checks whether a vote is valid
-        # or invalid, e.g. [False, True, True]
-        vote_validity = [self.consensus.verify_vote(voters, vote) for vote in votes]
-
-        # element-wise product of stated vote and validity of vote
-        # vote_cast = [True, True, False] and
-        # vote_validity = [False, True, True] gives
-        # [True, False]
-        # Only the correctly signed votes are tallied.
-        vote_list = list(compress(vote_cast, vote_validity))
-
-        # Total the votes. Here, valid and invalid refer
-        # to the vote cast, not whether the vote itself
-        # is valid or invalid.
-        n_valid_votes = sum(vote_list)
-        n_invalid_votes = len(vote_cast) - n_valid_votes
-
-        # The use of ceiling and floor is to account for the case of an
-        # even number of voters where half the voters have voted 'invalid'
-        # and half 'valid'. In this case, the block should be marked invalid
-        # to avoid a tie. In the case of an odd number of voters this is not
-        # relevant, since one side must be a majority.
-        if n_invalid_votes >= math.ceil(n_voters / 2):
-            return Bigchain.BLOCK_INVALID
-        elif n_valid_votes > math.floor(n_voters / 2):
-            # The block could be valid, but we still need to check if votes
-            # agree on the previous block.
-            #
-            # First, only consider blocks with legitimate votes
-            prev_block_list = list(compress(prev_block, vote_validity))
-            # Next, only consider the blocks with 'yes' votes
-            prev_block_valid_list = list(compress(prev_block_list, vote_list))
-            counts = collections.Counter(prev_block_valid_list)
-            # Make sure the majority vote agrees on previous node.
-            # The majority vote must be the most common, by definition.
-            # If it's not, there is no majority agreement on the previous
-            # block.
-            if counts.most_common()[0][1] > math.floor(n_voters / 2):
-                return Bigchain.BLOCK_VALID
-            else:
-                return Bigchain.BLOCK_INVALID
-        else:
-            return Bigchain.BLOCK_UNDECIDED
+    def block_election_status(self, block):
+        """Tally the votes on a block, and return the status:
+           valid, invalid, or undecided."""
+        return self.block_election(block)['status']

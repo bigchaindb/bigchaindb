@@ -3,9 +3,6 @@ import threading
 import queue
 import multiprocessing as mp
 
-from bigchaindb.common import crypto
-from bigchaindb.common.utils import serialize
-
 
 class ProcessGroup(object):
 
@@ -116,28 +113,17 @@ def condition_details_has_owner(condition_details, owner):
     return False
 
 
-def verify_vote_signature(voters, signed_vote):
-    """Verify the signature of a vote
-
-    A valid vote should have been signed by a voter's private key.
-
-    Args:
-        voters (list): voters of the block that is under election
-        signed_vote (dict): a vote with the `signature` included.
-
-    Returns:
-        bool: True if the signature is correct, False otherwise.
-    """
-
-    signature = signed_vote['signature']
-    pk_base58 = signed_vote['node_pubkey']
-
-    # immediately return False if the voter is not in the block voter list
-    if pk_base58 not in voters:
-        return False
-
-    public_key = crypto.PublicKey(pk_base58)
-    return public_key.verify(serialize(signed_vote['vote']).encode(), signature)
+def output_has_owner(output, owner):
+    # TODO
+    # Check whether it is really necessary to treat the single key case
+    # differently from the multiple keys case, and why not just use the same
+    # function for both cases.
+    if len(output['public_keys']) > 1:
+        return condition_details_has_owner(
+            output['condition']['details'], owner)
+    elif len(output['public_keys']) == 1:
+        return output['condition']['details']['public_key'] == owner
+    # TODO raise proper exception, e.g. invalid tx payload?
 
 
 def is_genesis_block(block):

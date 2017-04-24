@@ -1,3 +1,4 @@
+from bigchaindb.common.exceptions import ValidationError
 import pytest
 import random
 
@@ -26,8 +27,8 @@ def test_validate_bad_asset_creation(b, user_pk):
     tx.asset['data'] = 'a'
     tx_signed = tx.sign([b.me_private])
 
-    with pytest.raises(TypeError):
-        b.validate_transaction(tx_signed)
+    with pytest.raises(ValidationError):
+        Transaction.from_dict(tx_signed.to_dict())
 
 
 @pytest.mark.bdb
@@ -92,15 +93,15 @@ def test_asset_id_mismatch(b, user_pk):
 
 def test_create_invalid_divisible_asset(b, user_pk, user_sk):
     from bigchaindb.models import Transaction
-    from bigchaindb.common.exceptions import AmountError
+    from bigchaindb.common.exceptions import ValidationError
 
     # Asset amount must be more than 0
     tx = Transaction.create([user_pk], [([user_pk], 1)])
     tx.outputs[0].amount = 0
     tx.sign([user_sk])
 
-    with pytest.raises(AmountError):
-        b.validate_transaction(tx)
+    with pytest.raises(ValidationError):
+        Transaction.from_dict(tx.to_dict())
 
 
 def test_create_valid_divisible_asset(b, user_pk, user_sk):
@@ -108,4 +109,4 @@ def test_create_valid_divisible_asset(b, user_pk, user_sk):
 
     tx = Transaction.create([user_pk], [([user_pk], 2)])
     tx_signed = tx.sign([user_sk])
-    assert b.is_valid_transaction(tx_signed)
+    tx_signed.validate(b)

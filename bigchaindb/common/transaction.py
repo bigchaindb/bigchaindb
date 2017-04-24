@@ -757,20 +757,19 @@ class Transaction(object):
                 key_pairs (dict): The keys to sign the Transaction with.
         """
         input_ = deepcopy(input_)
-        for owner_before in input_.owners_before:
-            try:
-                # TODO: CC should throw a KeypairMismatchException, instead of
-                #       our manual mapping here
+        for owner_before in set(input_.owners_before):
+            # TODO: CC should throw a KeypairMismatchException, instead of
+            #       our manual mapping here
 
-                # TODO FOR CC: Naming wise this is not so smart,
-                #              `get_subcondition` in fact doesn't return a
-                #              condition but a fulfillment
+            # TODO FOR CC: Naming wise this is not so smart,
+            #              `get_subcondition` in fact doesn't return a
+            #              condition but a fulfillment
 
-                # TODO FOR CC: `get_subcondition` is singular. One would not
-                #              expect to get a list back.
-                ccffill = input_.fulfillment
-                subffill = ccffill.get_subcondition_from_vk(owner_before)[0]
-            except IndexError:
+            # TODO FOR CC: `get_subcondition` is singular. One would not
+            #              expect to get a list back.
+            ccffill = input_.fulfillment
+            subffills = ccffill.get_subcondition_from_vk(owner_before)
+            if not subffills:
                 raise KeypairMismatchException('Public key {} cannot be found '
                                                'in the fulfillment'
                                                .format(owner_before))
@@ -783,7 +782,8 @@ class Transaction(object):
 
             # cryptoconditions makes no assumptions of the encoding of the
             # message to sign or verify. It only accepts bytestrings
-            subffill.sign(message.encode(), private_key)
+            for subffill in subffills:
+                subffill.sign(message.encode(), private_key)
         return input_
 
     def inputs_valid(self, outputs=None):
@@ -983,7 +983,8 @@ class Transaction(object):
             transactions = [transactions]
 
         # create a set of the transactions' asset ids
-        asset_ids = {tx.id if tx.operation == Transaction.CREATE else tx.asset['id']
+        asset_ids = {tx.id if tx.operation == Transaction.CREATE
+                     else tx.asset['id']
                      for tx in transactions}
 
         # check that all the transasctions have the same asset id
@@ -993,7 +994,7 @@ class Transaction(object):
         return asset_ids.pop()
 
     @staticmethod
-    def validate_structure(tx_body):
+    def validate_id(tx_body):
         """Validate the transaction ID of a transaction
 
             Args:
@@ -1025,7 +1026,7 @@ class Transaction(object):
             Returns:
                 :class:`~bigchaindb.common.transaction.Transaction`
         """
-        cls.validate_structure(tx)
+        cls.validate_id(tx)
         inputs = [Input.from_dict(input_) for input_ in tx['inputs']]
         outputs = [Output.from_dict(output) for output in tx['outputs']]
         return cls(tx['operation'], tx['asset'], inputs, outputs,
