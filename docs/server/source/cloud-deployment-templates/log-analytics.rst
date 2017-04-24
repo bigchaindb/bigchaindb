@@ -121,7 +121,7 @@ Obtaining the workspace id:
 
 .. code-block:: bash
 
-    $ az resource show 
+    $ az resource show \
         --resource-group rg 
         --resource-type Microsoft.OperationalInsights/workspaces 
         --name rg-abc-logs \
