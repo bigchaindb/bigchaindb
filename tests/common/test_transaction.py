@@ -510,7 +510,8 @@ def test_validate_tx_simple_create_signature(user_input, user_output, user_priv,
 
     tx = Transaction(Transaction.CREATE, asset_definition, [user_input], [user_output])
     expected = deepcopy(user_output)
-    expected.fulfillment.sign(str(tx).encode(), PrivateKey(user_priv))
+    message = str(tx).encode()
+    expected.fulfillment.sign(message, PrivateKey(user_priv))
     tx.sign([user_priv])
 
     assert tx.inputs[0].to_dict()['fulfillment'] == \
@@ -527,7 +528,6 @@ def test_invoke_simple_signature_fulfillment_with_invalid_params(utx,
     with raises(KeypairMismatchException):
         invalid_key_pair = {'wrong_pub_key': 'wrong_priv_key'}
         utx._sign_simple_signature_fulfillment(user_input,
-                                               0,
                                                'somemessage',
                                                invalid_key_pair)
 
@@ -538,13 +538,11 @@ def test_sign_threshold_with_invalid_params(utx, user_user2_threshold_input,
 
     with raises(KeypairMismatchException):
         utx._sign_threshold_signature_fulfillment(user_user2_threshold_input,
-                                                  0,
                                                   'somemessage',
                                                   {user3_pub: user3_priv})
     with raises(KeypairMismatchException):
         user_user2_threshold_input.owners_before = ['somewrongvalue']
         utx._sign_threshold_signature_fulfillment(user_user2_threshold_input,
-                                                  0,
                                                   'somemessage',
                                                   None)
 
@@ -576,10 +574,11 @@ def test_validate_tx_threshold_create_signature(user_user2_threshold_input,
     tx = Transaction(Transaction.CREATE, asset_definition,
                      [user_user2_threshold_input],
                      [user_user2_threshold_output])
+    message = str(tx).encode()
     expected = deepcopy(user_user2_threshold_output)
-    expected.fulfillment.subconditions[0]['body'].sign(str(tx).encode(),
+    expected.fulfillment.subconditions[0]['body'].sign(message,
                                                        PrivateKey(user_priv))
-    expected.fulfillment.subconditions[1]['body'].sign(str(tx).encode(),
+    expected.fulfillment.subconditions[1]['body'].sign(message,
                                                        PrivateKey(user2_priv))
     tx.sign([user_priv, user2_priv])
 
