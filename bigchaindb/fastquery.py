@@ -4,24 +4,27 @@ from bigchaindb.common.transaction import TransactionLink
 
 
 class FastQuery:
-
     """
     Database queries that join on block results from a single node.
 
-    * Votes are not validated for security (security is replication concern)
-    * Votes come from only one node, and as such, fault tolerance is reduced
+    * Votes are not validated for security (security is a replication concern)
+    * Votes come from only one node, and as such, non-byzantine fault tolerance
+      is reduced.
 
-    In return, these queries offer good performance, as it is not neccesary to validate
-    each result separately.
+    Previously, to consider the status of a block, all votes for that block
+    were retrieved and the election results were counted. This meant that a
+    faulty node may still have been able to obtain a correct election result.
+    However, from the point of view of a client, it is still neccesary to
+    query multiple nodes to insure against getting an incorrect response from
+    a byzantine node.
     """
-
     def __init__(self, connection, me):
         self.connection = connection
         self.me = me
 
     def filter_block_ids(self, block_ids, include_undecided=True):
         """
-        Given block ids, filter the invalid blocks
+        Given block ids, filter the invalid blocks.
         """
         block_ids = list(set(block_ids))
         votes = query.get_votes_for_blocks_by_voter(

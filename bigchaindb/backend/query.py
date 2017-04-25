@@ -148,7 +148,8 @@ def get_spending_transactions(connection, inputs):
         inputs (list): list of {txid, output}
 
     Returns:
-        List of transactions that spend given inputs
+        Iterator of (block_ids, transaction) for transactions that
+        spend given inputs.
     """
     raise NotImplementedError
 
@@ -161,9 +162,9 @@ def get_owned_ids(connection, owner):
         owner (str): base58 encoded public key.
 
     Returns:
-        A cursor for the matching transactions.
+        Iterator of (block_id, transaction) for transactions
+        that list given owner in conditions.
     """
-
     raise NotImplementedError
 
 
@@ -205,7 +206,7 @@ def get_votes_for_blocks_by_voter(connection, block_ids, pubkey):
         pubkey (str): public key of voting node
 
     Returns:
-        A cursor of votes matching given votes.
+        A cursor of votes matching given block_ids and public key
     """
     raise NotImplementedError
 
