@@ -237,6 +237,7 @@ def test_generate_output_single_owner_with_output(user_pub):
 
 def test_generate_output_invalid_parameters(user_pub, user2_pub, user3_pub):
     from bigchaindb.common.transaction import Output
+    from bigchaindb.common.exceptions import AmountError
 
     with raises(ValueError):
         Output.generate([], 1)
@@ -246,6 +247,8 @@ def test_generate_output_invalid_parameters(user_pub, user2_pub, user3_pub):
         Output.generate([[user_pub, [user2_pub, [user3_pub]]]], 1)
     with raises(ValueError):
         Output.generate([[user_pub]], 1)
+    with raises(AmountError):
+        Output.generate([[user_pub]], -1)
 
 
 def test_invalid_transaction_initialization(asset_definition):

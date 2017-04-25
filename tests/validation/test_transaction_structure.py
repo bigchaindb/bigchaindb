@@ -52,6 +52,12 @@ def test_tx_serialization_with_incorrect_hash(create_tx):
     validate_raises(tx, InvalidHash)
 
 
+def test_tx_serialization_with_no_hash(create_tx):
+    tx = create_tx.to_dict()
+    del tx['id']
+    validate_raises(tx)
+
+
 ################################################################################
 # Operation
 
@@ -117,9 +123,13 @@ def test_create_tx_no_fulfills(create_tx):
     validate_raises(tx)
 
 
+def test_transfer_has_inputs(signed_transfer_tx):
+    signed_transfer_tx.inputs = []
+    validate_raises(signed_transfer_tx)
+
+
 ################################################################################
 # Outputs
-
 
 def test_low_amounts(create_tx, signed_transfer_tx):
     for tx in [create_tx, signed_transfer_tx]:
