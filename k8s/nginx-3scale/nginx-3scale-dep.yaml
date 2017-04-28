@@ -19,7 +19,7 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
       - name: nginx-3scale
-        image: bigchaindb/nginx_3scale:1.0
+        image: bigchaindb/nginx_3scale:1.1
         # TODO(Krish): Change later to IfNotPresent
         imagePullPolicy: Always
         env:
@@ -67,6 +67,10 @@ spec:
         - containerPort: 443
           hostPort: 443
           name: public-bdb-port
+          protocol: TCP
+        - containerPort: 80
+          hostPort: 80
+          name: https-msg-port
           protocol: TCP
         - containerPort: 8888
           hostPort: 8888
