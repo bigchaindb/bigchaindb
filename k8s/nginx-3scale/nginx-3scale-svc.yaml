@@ -14,6 +14,10 @@ spec:
   selector:
     app: ngx-instance-0-dep
   ports:
+  - port: 80
+    targetPort: 80
+    name: ngx-public-bdb-port-http
+    protocol: TCP
   - port: 443
     targetPort: 443
     name: ngx-public-bdb-port

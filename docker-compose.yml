@@ -37,6 +37,7 @@ services:
       - ./bigchaindb:/usr/src/app/bigchaindb
       - ./tests:/usr/src/app/tests
       - ./docs:/usr/src/app/docs
+      - ./k8s:/usr/src/app/k8s
       - ./setup.py:/usr/src/app/setup.py
       - ./setup.cfg:/usr/src/app/setup.cfg
       - ./pytest.ini:/usr/src/app/pytest.ini
@@ -58,6 +59,7 @@ services:
       - ./bigchaindb:/usr/src/app/bigchaindb
       - ./tests:/usr/src/app/tests
       - ./docs:/usr/src/app/docs
+      - ./k8s:/usr/src/app/k8s
       - ./setup.py:/usr/src/app/setup.py
       - ./setup.cfg:/usr/src/app/setup.cfg
       - ./pytest.ini:/usr/src/app/pytest.ini

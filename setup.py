@@ -101,7 +101,7 @@ setup(
     zip_safe=False,
 
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'Topic :: Database',
         'Topic :: Database :: Database Engines/Servers',
