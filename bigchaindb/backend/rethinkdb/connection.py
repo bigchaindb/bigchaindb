@@ -49,10 +49,12 @@ class RethinkDBConnection(Connection):
         end_time = time.time()*1000 + timeout
         while not connected:
             try:
+                print("connecting")
                 rconn = r.connect(host=self.host, port=self.port, db=self.dbname)
                 connected = True
             except r.ReqlDriverError as exc:
                 if str(exc) == 'mock' or time.time()*1000 > end_time:
                     raise ConnectionError from exc
+                time.sleep(timeout/1000)
                 pass
         return rconn
