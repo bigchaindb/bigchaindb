@@ -17,4 +17,5 @@ If you find the cloud deployment templates for nodes helpful, then you may also 
    node-on-kubernetes
    add-node-on-kubernetes
    upgrade-on-kubernetes
-   
+   first-node
+   log-analytics

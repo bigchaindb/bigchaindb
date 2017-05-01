@@ -54,6 +54,7 @@ tests_require = [
     'pytest-mock',
     'pytest-xdist',
     'pytest-flask',
+    'pytest-aiohttp',
     'tox',
 ] + docs_require
 
@@ -77,6 +78,7 @@ install_requires = [
     'multipipes~=0.1.0',
     'jsonschema~=2.5.1',
     'pyyaml~=3.12',
+    'aiohttp~=2.0',
 ]
 
 setup(
@@ -100,7 +102,7 @@ setup(
     zip_safe=False,
 
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'Topic :: Database',
         'Topic :: Database :: Database Engines/Servers',
@@ -118,7 +120,7 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'bigchaindb=bigchaindb.commands.bigchain:main'
+            'bigchaindb=bigchaindb.commands.bigchaindb:main'
         ],
     },
     install_requires=install_requires,

@@ -6,10 +6,10 @@ Command Line Interface
     :special-members: __init__
 
 
-:mod:`bigchaindb.commands.bigchain`
------------------------------------
+:mod:`bigchaindb.commands.bigchaindb`
+-------------------------------------
 
-.. automodule:: bigchaindb.commands.bigchain
+.. automodule:: bigchaindb.commands.bigchaindb
 
 
 :mod:`bigchaindb.commands.utils`

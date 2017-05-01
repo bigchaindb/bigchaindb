@@ -1,49 +1,31 @@
 ###############################################################
-# This config file runs bigchaindb:master as a k8s Deployment #
+# This config file runs bigchaindb:0.10.1 as a k8s Deployment #
 # and it connects to the mongodb backend running as a         #
 # separate pod                                                #
 ###############################################################
 
-apiVersion: v1
-kind: Service
-metadata:
-  name: bdb-svc
-  namespace: default
-  labels:
-    name: bdb-svc
-spec:
-  selector:
-    app: bdb-dep
-  ports:
-  - port: 9984
-    targetPort: 9984
-    name: bdb-port
-  type: ClusterIP
-  clusterIP: None
----
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: bdb-dep
+  name: bdb-instance-0-dep
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: bdb-dep
+        app: bdb-instance-0-dep
     spec:
       terminationGracePeriodSeconds: 10
       containers:
       - name: bigchaindb
-        image: bigchaindb/bigchaindb:master
+        image: bigchaindb/bigchaindb:0.10.1
         imagePullPolicy: IfNotPresent
         args:
         - start
         env:
         - name: BIGCHAINDB_DATABASE_HOST
-          value: mdb-svc
+          value: mdb-instance-0
         - name: BIGCHAINDB_DATABASE_PORT
-          # TODO(Krish): remove hardcoded port
           value: "27017"
         - name: BIGCHAINDB_DATABASE_REPLICASET
           value: bigchain-rs
@@ -54,13 +36,20 @@ spec:
         - name: BIGCHAINDB_SERVER_BIND
           value: 0.0.0.0:9984
         - name: BIGCHAINDB_KEYPAIR_PUBLIC
-          value: EEWUAhsk94ZUHhVw7qx9oZiXYDAWc9cRz93eMrsTG4kZ
+          value: "<public key here>"
         - name: BIGCHAINDB_KEYPAIR_PRIVATE
-          value: 3CjmRhu718gT1Wkba3LfdqX5pfYuBdaMPLd7ENUga5dm
+          value: "<private key here>"
         - name: BIGCHAINDB_BACKLOG_REASSIGN_DELAY
           value: "120"
-        - name: BIGCHAINDB_KEYRING
-          value: ""
+        - name: BIGCHAINDB_DATABASE_MAXTRIES
+          value: "3"
+        - name: BIGCHAINDB_DATABASE_CONNECTION_TIMEOUT
+          value: "120"
+        - name: BIGCHAINDB_LOG_LEVEL_CONSOLE
+          value: debug
+        # The following env var is not required for the bootstrap/first node
+        #- name: BIGCHAINDB_KEYRING
+        #  value: ""
         ports:
         - containerPort: 9984
           hostPort: 9984

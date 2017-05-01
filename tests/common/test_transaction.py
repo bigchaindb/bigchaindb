@@ -1,3 +1,8 @@
+"""
+These are tests of the API of the Transaction class and associated classes.
+Tests for transaction validation are separate.
+"""
+
 from pytest import raises
 
 
@@ -78,7 +83,7 @@ def test_output_serialization(user_Ed25519, user_pub):
             'details': user_Ed25519.to_dict(),
         },
         'public_keys': [user_pub],
-        'amount': 1,
+        'amount': '1',
     }
 
     cond = Output(user_Ed25519, [user_pub], 1)
@@ -96,7 +101,7 @@ def test_output_deserialization(user_Ed25519, user_pub):
             'details': user_Ed25519.to_dict()
         },
         'public_keys': [user_pub],
-        'amount': 1,
+        'amount': '1',
     }
     cond = Output.from_dict(cond)
 
@@ -115,7 +120,7 @@ def test_output_hashlock_serialization():
             'uri': hashlock,
         },
         'public_keys': None,
-        'amount': 1,
+        'amount': '1',
     }
     cond = Output(hashlock, amount=1)
 
@@ -135,7 +140,7 @@ def test_output_hashlock_deserialization():
             'uri': hashlock
         },
         'public_keys': None,
-        'amount': 1,
+        'amount': '1',
     }
     cond = Output.from_dict(cond)
 
@@ -232,6 +237,7 @@ def test_generate_output_single_owner_with_output(user_pub):
 
 def test_generate_output_invalid_parameters(user_pub, user2_pub, user3_pub):
     from bigchaindb.common.transaction import Output
+    from bigchaindb.common.exceptions import AmountError
 
     with raises(ValueError):
         Output.generate([], 1)
@@ -241,6 +247,8 @@ def test_generate_output_invalid_parameters(user_pub, user2_pub, user3_pub):
         Output.generate([[user_pub, [user2_pub, [user3_pub]]]], 1)
     with raises(ValueError):
         Output.generate([[user_pub]], 1)
+    with raises(AmountError):
+        Output.generate([[user_pub]], -1)
 
 
 def test_invalid_transaction_initialization(asset_definition):
@@ -339,28 +347,6 @@ def test_transaction_deserialization(user_input, user_output, data):
     assert tx == expected
 
     validate_transaction_model(tx)
-
-
-def test_tx_serialization_with_incorrect_hash(utx):
-    from bigchaindb.common.transaction import Transaction
-    from bigchaindb.common.exceptions import InvalidHash
-
-    utx_dict = utx.to_dict()
-    utx_dict['id'] = 'a' * 64
-    with raises(InvalidHash):
-        Transaction.from_dict(utx_dict)
-    utx_dict.pop('id')
-
-
-def test_tx_serialization_hash_function(tx):
-    import sha3
-    import json
-    tx_dict = tx.to_dict()
-    tx_dict['inputs'][0]['fulfillment'] = None
-    del tx_dict['id']
-    payload = json.dumps(tx_dict, skipkeys=False, sort_keys=True,
-                         separators=(',', ':'))
-    assert sha3.sha3_256(payload.encode()).hexdigest() == tx.id
 
 
 def test_invalid_input_initialization(user_input, user_pub):
@@ -510,7 +496,8 @@ def test_validate_tx_simple_create_signature(user_input, user_output, user_priv,
 
     tx = Transaction(Transaction.CREATE, asset_definition, [user_input], [user_output])
     expected = deepcopy(user_output)
-    expected.fulfillment.sign(str(tx).encode(), PrivateKey(user_priv))
+    message = str(tx).encode()
+    expected.fulfillment.sign(message, PrivateKey(user_priv))
     tx.sign([user_priv])
 
     assert tx.inputs[0].to_dict()['fulfillment'] == \
@@ -527,7 +514,6 @@ def test_invoke_simple_signature_fulfillment_with_invalid_params(utx,
     with raises(KeypairMismatchException):
         invalid_key_pair = {'wrong_pub_key': 'wrong_priv_key'}
         utx._sign_simple_signature_fulfillment(user_input,
-                                               0,
                                                'somemessage',
                                                invalid_key_pair)
 
@@ -538,13 +524,11 @@ def test_sign_threshold_with_invalid_params(utx, user_user2_threshold_input,
 
     with raises(KeypairMismatchException):
         utx._sign_threshold_signature_fulfillment(user_user2_threshold_input,
-                                                  0,
                                                   'somemessage',
                                                   {user3_pub: user3_priv})
     with raises(KeypairMismatchException):
         user_user2_threshold_input.owners_before = ['somewrongvalue']
         utx._sign_threshold_signature_fulfillment(user_user2_threshold_input,
-                                                  0,
                                                   'somemessage',
                                                   None)
 
@@ -576,10 +560,11 @@ def test_validate_tx_threshold_create_signature(user_user2_threshold_input,
     tx = Transaction(Transaction.CREATE, asset_definition,
                      [user_user2_threshold_input],
                      [user_user2_threshold_output])
+    message = str(tx).encode()
     expected = deepcopy(user_user2_threshold_output)
-    expected.fulfillment.subconditions[0]['body'].sign(str(tx).encode(),
+    expected.fulfillment.subconditions[0]['body'].sign(message,
                                                        PrivateKey(user_priv))
-    expected.fulfillment.subconditions[1]['body'].sign(str(tx).encode(),
+    expected.fulfillment.subconditions[1]['body'].sign(message,
                                                        PrivateKey(user2_priv))
     tx.sign([user_priv, user2_priv])
 
@@ -985,35 +970,11 @@ def test_cant_add_empty_input():
         tx.add_input(None)
 
 
-def test_validate_version(utx):
-    import re
-    import bigchaindb.version
-    from .utils import validate_transaction_model
-    from bigchaindb.common.exceptions import SchemaValidationError
+def test_output_from_dict_invalid_amount(user_output):
+    from bigchaindb.common.transaction import Output
+    from bigchaindb.common.exceptions import AmountError
 
-    short_ver = bigchaindb.version.__short_version__
-    assert utx.version == re.match(r'^(.*\d)', short_ver).group(1)
-
-    validate_transaction_model(utx)
-
-    # At version 1, transaction version will break step with server version.
-    utx.version = '1.0.0'
-    with raises(SchemaValidationError):
-        validate_transaction_model(utx)
-
-
-def test_create_tx_no_asset_id(b, utx):
-    from bigchaindb.common.exceptions import SchemaValidationError
-    from .utils import validate_transaction_model
-    utx.asset['id'] = 'b' * 64
-    with raises(SchemaValidationError):
-        validate_transaction_model(utx)
-
-
-def test_transfer_tx_asset_schema(transfer_utx):
-    from bigchaindb.common.exceptions import SchemaValidationError
-    from .utils import validate_transaction_model
-    tx = transfer_utx
-    tx.asset['data'] = {}
-    with raises(SchemaValidationError):
-        validate_transaction_model(tx)
+    out = user_output.to_dict()
+    out['amount'] = 'a'
+    with raises(AmountError):
+        Output.from_dict(out)

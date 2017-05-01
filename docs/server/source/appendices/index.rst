@@ -10,10 +10,10 @@ Appendices
    install-os-level-deps
    install-latest-pip
    run-with-docker
+   docker-on-mac
    json-serialization
    cryptography
    the-Bigchain-class
-   consensus
    pipelines
    backend
    commands
@@ -21,6 +21,7 @@ Appendices
    generate-key-pair-for-ssh
    firewall-notes
    ntp-notes
-   example-rethinkdb-storage-setups
+   rethinkdb-reqs
+   rethinkdb-backup
    licenses
    install-with-lxd

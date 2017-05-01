@@ -27,6 +27,7 @@ A patch release is similar to a minor release, but piggybacks on an existing min
 1. Apply the changes you want, e.g. using `git cherry-pick`.
 1. Update the `CHANGELOG.md` file
 1. Increment the patch version in `bigchaindb/version.py`, e.g. "0.9.1"
+1. Commit that change, and push the updated branch to GitHub
 1. Follow steps outlined in [Common Steps](#common-steps)
 1. Cherry-pick the `CHANGELOG.md` update commit (made above) to the `master` branch
 

@@ -112,6 +112,18 @@ def test_validate_block_with_invalid_id(b):
 
 
 @pytest.mark.genesis
+def test_validate_block_with_duplicated_transactions(b):
+    from bigchaindb.pipelines import vote
+
+    tx = dummy_tx(b)
+    block = b.create_block([tx, tx]).to_dict()
+
+    vote_obj = vote.Vote()
+    block_id, invalid_dummy_tx = vote_obj.validate_block(block)
+    assert invalid_dummy_tx == [vote_obj.invalid_dummy_tx]
+
+
+@pytest.mark.genesis
 def test_validate_block_with_invalid_signature(b):
     from bigchaindb.pipelines import vote
 
