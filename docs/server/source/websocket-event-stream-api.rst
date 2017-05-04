@@ -8,9 +8,8 @@ The WebSocket Event Stream API
 
 BigchainDB provides real-time event streams over the WebSocket protocol with
 the Event Stream API.
-
 Connecting to an event stream from your application enables a BigchainDB node
-to notify you as events are processed, such as new `validated transactions <#valid-transactions>`_.
+to notify you as events occur, such as new `validated transactions <#valid-transactions>`_.
 
 
 Demoing the API
@@ -23,25 +22,31 @@ to familiarize yourself before attempting an integration.
 Determining Support for the Event Stream API
 --------------------------------------------
 
-In practice, it's a good idea to make sure that the node you're connecting with
+It's a good idea to make sure that the node you're connecting with
 has advertised support for the Event Stream API. To do so, send a HTTP GET
-request to the node's :ref:`Root URL <bigchaindb-root-url>` and check that the
-response contains a ``streams_<version>`` property in ``_links``::
+request to the node's :ref:`API Root Endpoint` 
+(e.g. ``http://localhost:9984/api/v1/``) and check that the
+response contains a ``streams_<version>`` property in ``_links``:
+
+.. code:: JSON
 
     {
       "_links": {
-         "streams_v1": "ws://example.com:9985/api/v1/streams/"
+         ...,
+         "streams_v1": "ws://example.com:9985/api/v1/streams/valid_tx",
+         ...
       }
     }
 
 
-Connection Keep Alive
-~~~~~~~~~~~~~~~~~~~~~
+Connection Keep-Alive
+---------------------
 
 The Event Stream API initially does not provide any mechanisms for connection
-keep alive other than enabling TCP keepalive on each open WebSocket connection.
+keep-alive other than enabling TCP keepalive on each open WebSocket connection.
 In the future, we may add additional functionality to handle ping/pong frames
-or payloads designed for keep alive.
+or payloads designed for keep-alive.
+
 
 Streams
 -------
@@ -54,8 +59,8 @@ Streams will always be under the WebSocket protocol (so ``ws://`` or
 ``wss://``) and accessible as extensions to the ``/api/v<version>/streams/``
 API root URL (for example, `validated transactions <#valid-transactions>`_
 would be accessible under ``/api/v1/streams/valid_tx``). If you're running your
-own BigchainDB instance and need help determining its root URL, you can find
-more :ref:`here <determining-the-api-root-url>`.
+own BigchainDB instance and need help determining its root URL,
+then see the page titled :ref:`Determining the API Root URL`.
 
 All messages sent in a stream are in the JSON format.
 
@@ -68,7 +73,7 @@ All messages sent in a stream are in the JSON format.
     as a specific ``output``'s ``public_key``.
 
     If you have specific use cases that you think would fit as part of this
-    API, feel free to reach out via `gitter <https://gitter.im/bigchaindb/bigchaindb>`_
+    API, feel free to reach out via `Gitter <https://gitter.im/bigchaindb/bigchaindb>`_
     or `email <mailto:product@bigchaindb.com>`_.
 
 Valid Transactions
@@ -79,7 +84,9 @@ Valid Transactions
 Streams an event for any newly validated transactions. Message bodies contain
 the transaction's ID, associated asset ID, and containing block's ID.
 
-Example message::
+Example message:
+
+.. code:: JSON
 
     {
         "tx_id": "<sha3-256 hash>",
