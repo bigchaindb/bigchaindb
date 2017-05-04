@@ -8,3 +8,4 @@ CANNOT_START_KEYPAIR_NOT_FOUND = (
 )
 
 RETHINKDB_STARTUP_ERROR = 'Error starting RethinkDB, reason is: {}'
+MONGODB_STARTUP_ERROR = 'Error starting MongoDB, reason is: {}'

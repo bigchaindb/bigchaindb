@@ -24,6 +24,7 @@ from bigchaindb.commands import utils
 from bigchaindb.commands.messages import (
     CANNOT_START_KEYPAIR_NOT_FOUND,
     RETHINKDB_STARTUP_ERROR,
+    MONGODB_STARTUP_ERROR,
 )
 from bigchaindb.commands.utils import (
     configure_bigchaindb, start_logging_process, input_on_stderr)
@@ -195,6 +196,13 @@ def run_start(args):
             sys.exit(RETHINKDB_STARTUP_ERROR.format(e))
         logger.info('RethinkDB started with PID %s' % proc.pid)
 
+    if args.start_mongodb:
+        try:
+            proc = utils.start_mongodb()
+        except StartupError as e:
+            sys.exit(MONGODB_STARTUP_ERROR.format(e))
+        logger.info('MongoDB started with PID %s ' % proc.pid)
+
     try:
         _run_init()
     except DatabaseAlreadyExists:
@@ -300,6 +308,10 @@ def create_parser():
                               action='store_true',
                               help='Run RethinkDB on start')
 
+    start_parser.add_argument('--dev-start-mongodb',
+                              dest='start_mongodb',
+                              action='store_true',
+                              help='Run MongoDB on start')
     # parser for configuring the number of shards
     sharding_parser = subparsers.add_parser('set-shards',
                                             help='Configure number of shards')

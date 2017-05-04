@@ -123,6 +123,55 @@ def input_on_stderr(prompt='', default=None, convert=None):
     return _convert(value, default, convert)
 
 
+def start_mongodb():
+    """Start mongo shell as a process and check if mongodb server is started
+    with replicaSet. If yes it checks if database is ready.
+    If yes it prints out the indexes in each of the collections of database
+
+    Raises:
+        :class:`~bigchaindb.common.exceptions.StartupError` if
+            mongo shell cannot be started.
+    """
+    import pymongo
+    import logging
+
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+    host = str(bigchaindb.config['database']['host'])
+    port = str(bigchaindb.config['database']['port'])
+    hostport = host + ':' + port
+    dbname = bigchaindb.config['database']['name']
+    replname = bigchaindb.config['database']['replicaset']
+    proc = subprocess.Popen(['mongo', '--host', host, '--port', port],
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT,
+                            universal_newlines=True)
+    line = ''
+
+    for line in proc.stdout:
+        if "MongoDB server version" in line:
+                logger.info(line)
+                try:
+                    mongoclient = pymongo.MongoClient(host=[hostport], document_class=dict,
+                                                      tz_aware=False, connect=True)
+                    mongoreplicaset = pymongo.mongo_client.MongoClient(hostport, replicaSet=replname)
+                    if mongoclient.server_info()['ok'] == 1.0 and \
+                       mongoreplicaset.admin.command('replSetGetStatus')['ok'] == 1.0:
+                        try:
+                            conn = backend.connect()
+                            if mongoclient.database_names().__contains__(dbname):
+                                for coll_name in conn.conn[dbname].collection_names():
+                                    print(coll_name, ":", conn.conn[dbname][coll_name].index_information())
+                        except (r.ReqlOpFailedError, r.ReqlDriverError) as exc:
+                            raise StartupError('Error waiting for the database `{}` '
+                                               'to be ready'.format(dbname)) from exc
+                        return proc
+
+                except pymongo.errors.ServerSelectionTimeoutError as err:
+                    raise err
+    raise StartupError(line)
+
+
 def start_rethinkdb():
     """Start RethinkDB as a child process and wait for it to be
     available.
