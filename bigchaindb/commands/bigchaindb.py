@@ -17,8 +17,8 @@ from bigchaindb.common.exceptions import (StartupError,
 import bigchaindb
 from bigchaindb import backend, processes
 from bigchaindb.backend import schema
-from bigchaindb.backend.admin import (set_replicas, set_shards, add_replicas,
-                                      remove_replicas)
+from bigchaindb.backend.rethinkdb.admin import (set_replicas, set_shards)
+from bigchaindb.backend.mongodb.admin import (add_replicas, remove_replicas)
 from bigchaindb.backend.exceptions import OperationError
 from bigchaindb.commands import utils
 from bigchaindb.commands.messages import (
