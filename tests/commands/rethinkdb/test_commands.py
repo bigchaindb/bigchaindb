@@ -13,7 +13,7 @@ def test_bigchain_run_start_with_rethinkdb(mock_start_rethinkdb,
                                            mocked_setup_logging):
     from bigchaindb import config
     from bigchaindb.commands.bigchaindb import run_start
-    args = Namespace(start_rethinkdb=True, start_mongodb=True, allow_temp_keypair=False, config=None, yes=True)
+    args = Namespace(start_rethinkdb=True, start_mongodb=False, allow_temp_keypair=False, config=None, yes=True)
     run_start(args)
 
     mock_start_rethinkdb.assert_called_with()
