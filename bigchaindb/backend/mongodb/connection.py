@@ -69,6 +69,7 @@ class MongoDBConnection(Connection):
             :exc:`~ConnectionError`: If the connection to the database
                 fails.
         """
+        import inspect
 
         try:
             # we should only return a connection if the replica set is
@@ -84,6 +85,13 @@ class MongoDBConnection(Connection):
                                          replicaset=self.replicaset,
                                          serverselectiontimeoutms=self.connection_timeout,
                                          ssl=self.ssl)
+
+            # check if the call traces back to start and only then check the db,collections and indexes
+            if inspect.stack()[-1].filename.rpartition('/')[-1] == 'bigchaindb' and \
+               inspect.stack()[-3].function == 'start':
+                if client.database_names().__contains__(self.dbname):
+                    for coll_name in client[self.dbname].collection_names():
+                        print(coll_name, ':', client[self.dbname][coll_name].index_information())
 
             if self.login is not None and self.password is not None:
                 client[self.dbname].authenticate(self.login, self.password)
