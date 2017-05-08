@@ -1119,7 +1119,7 @@ def test_get_owned_ids_calls_get_outputs_filtered():
 def test_get_outputs_filtered_only_unspent():
     from bigchaindb.common.transaction import TransactionLink
     from bigchaindb.core import Bigchain
-    with patch('bigchaindb.fastquery.FastQuery.get_outputs_by_pubkey') as get_outputs:
+    with patch('bigchaindb.fastquery.FastQuery.get_outputs_by_public_key') as get_outputs:
         get_outputs.return_value = [TransactionLink('a', 1),
                                     TransactionLink('b', 2)]
         with patch('bigchaindb.fastquery.FastQuery.filter_spent_outputs') as filter_spent:
@@ -1132,7 +1132,7 @@ def test_get_outputs_filtered_only_unspent():
 def test_get_outputs_filtered():
     from bigchaindb.common.transaction import TransactionLink
     from bigchaindb.core import Bigchain
-    with patch('bigchaindb.fastquery.FastQuery.get_outputs_by_pubkey') as get_outputs:
+    with patch('bigchaindb.fastquery.FastQuery.get_outputs_by_public_key') as get_outputs:
         get_outputs.return_value = [TransactionLink('a', 1),
                                     TransactionLink('b', 2)]
         with patch('bigchaindb.fastquery.FastQuery.filter_spent_outputs') as filter_spent:

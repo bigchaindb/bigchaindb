@@ -21,30 +21,30 @@ def blockdata(b, user_pk, user2_pk):
     return blocks, [b['id'] for b in blocks]
 
 
-def test_filter_block_ids_with_undecided(b, blockdata):
+def test_filter_valid_block_ids_with_undecided(b, blockdata):
     blocks, block_ids = blockdata
-    valid_ids = b.fastquery.filter_block_ids(block_ids)
+    valid_ids = b.fastquery.filter_valid_block_ids(block_ids, include_undecided=True)
     assert set(valid_ids) == {blocks[0]['id'], blocks[1]['id']}
 
 
-def test_filter_block_ids_only_valid(b, blockdata):
+def test_filter_valid_block_ids_only_valid(b, blockdata):
     blocks, block_ids = blockdata
-    valid_ids = b.fastquery.filter_block_ids(block_ids, include_undecided=False)
+    valid_ids = b.fastquery.filter_valid_block_ids(block_ids)
     assert set(valid_ids) == {blocks[1]['id']}
 
 
-def test_filter_valid_blocks(b, blockdata):
+def test_filter_valid_items(b, blockdata):
     blocks, _ = blockdata
-    assert (b.fastquery.filter_valid_blocks(blocks, key=lambda b: b['id'])
+    assert (b.fastquery.filter_valid_items(blocks, block_id_key=lambda b: b['id'])
             == [blocks[0], blocks[1]])
 
 
-def test_get_outputs_by_pubkey(b, user_pk, user2_pk, blockdata):
+def test_get_outputs_by_public_key(b, user_pk, user2_pk, blockdata):
     blocks, _ = blockdata
-    assert b.fastquery.get_outputs_by_pubkey(user_pk) == [
+    assert b.fastquery.get_outputs_by_public_key(user_pk) == [
             TransactionLink(blocks[1]['block']['transactions'][0]['id'], 0)
     ]
-    assert b.fastquery.get_outputs_by_pubkey(user2_pk) == [
+    assert b.fastquery.get_outputs_by_public_key(user2_pk) == [
             TransactionLink(blocks[0]['block']['transactions'][0]['id'], 0)
     ]
 
@@ -76,7 +76,7 @@ def test_filter_spent_outputs(b, user_pk):
     block = Block([tx4])
     b.write_block(block)
 
-    outputs = b.fastquery.get_outputs_by_pubkey(user_pk)
+    outputs = b.fastquery.get_outputs_by_public_key(user_pk)
     unspents = b.fastquery.filter_spent_outputs(outputs)
 
     assert set(unspents) == {

@@ -395,7 +395,7 @@ class Bigchain(object):
         """
         Get a list of output links filtered on some criteria
         """
-        outputs = self.fastquery.get_outputs_by_pubkey(owner)
+        outputs = self.fastquery.get_outputs_by_public_key(owner)
         if not include_spent:
             outputs = self.fastquery.filter_spent_outputs(outputs)
         return outputs
