@@ -4,7 +4,7 @@ We have Byzantine fault tolerance (BFT) in our roadmap, as a switch that people 
 
 Among the big, industry-used distributed databases in production today (e.g. DynamoDB, Bigtable, MongoDB, Cassandra, Elasticsearch), none of them are BFT. Indeed, almost all wide-area distributed systems in production are not BFT, including military, banking, healthcare, and other security-sensitive systems.
 
-The are many more practical things that nodes can do to increase security (e.g. firewalls, key management, access controls).
+There are many more practical things that nodes can do to increase security (e.g. firewalls, key management, access controls).
 
 From a [recent essay by Ken Birman](http://sigops.org/sosp/sosp15/history/05-birman.pdf) (of Cornell):
 
