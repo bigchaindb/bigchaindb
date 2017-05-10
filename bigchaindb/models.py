@@ -90,7 +90,8 @@ class Transaction(Transaction):
     def from_db(cls, bigchain, tx_dict):
         # TODO: write docstring
         if tx_dict['operation'] in [Transaction.CREATE, Transaction.CREATE]:
-            asset = bigchain.get_assets([tx_dict['id']])[0]
+            # TODO: Maybe replace this call to a call to get_asset_by_id
+            asset = list(bigchain.get_assets([tx_dict['id']]))[0]
             asset.pop('id')
             tx_dict.update({'asset': asset})
 
