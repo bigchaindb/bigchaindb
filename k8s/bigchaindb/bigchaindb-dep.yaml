@@ -35,6 +35,10 @@ spec:
           value: bigchain
         - name: BIGCHAINDB_SERVER_BIND
           value: 0.0.0.0:9984
+        - name: BIGCHAINDB_WSSERVER_HOST
+          value: 0.0.0.0
+        - name: BIGCHAINDB_WSSERVER_PORT
+          value: "9985"
         - name: BIGCHAINDB_KEYPAIR_PUBLIC
           value: "<public key here>"
         - name: BIGCHAINDB_KEYPAIR_PRIVATE
@@ -54,7 +58,11 @@ spec:
         - containerPort: 9984
           hostPort: 9984
           name: bdb-port
-          protocol: TCP 
+          protocol: TCP
+        - containerPort: 9985
+          hostPort: 9985
+          name: bdb-ws-port
+          protocol: TCP
         resources:
           limits:
             cpu: 200m
