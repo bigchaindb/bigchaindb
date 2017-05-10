@@ -6,6 +6,7 @@ import rethinkdb as r
 from bigchaindb import backend, utils
 from bigchaindb.common import exceptions
 from bigchaindb.common.transaction import Transaction
+from bigchaindb.common.utils import serialize
 from bigchaindb.backend.utils import module_dispatch_registrar
 from bigchaindb.backend.rethinkdb.connection import RethinkDBConnection
 
@@ -147,15 +148,29 @@ def get_votes_by_block_id_and_voter(connection, block_id, node_pubkey):
 
 
 @register_query(RethinkDBConnection)
-def write_block(connection, block):
+def write_block(connection, block_dict):
     return connection.run(
             r.table('bigchain')
-            .insert(r.json(block.to_str()), durability=WRITE_DURABILITY))
+            .insert(r.json(serialize(block_dict)), durability=WRITE_DURABILITY))
 
 
 @register_query(RethinkDBConnection)
 def get_block(connection, block_id):
     return connection.run(r.table('bigchain').get(block_id))
+
+
+@register_query(RethinkDBConnection)
+def write_assets(connection, assets):
+    return connection.run(
+            r.table('assets')
+            .insert(assets, durability=WRITE_DURABILITY))
+
+
+@register_query(RethinkDBConnection)
+def get_assets(connection, asset_ids):
+    return connection.run(
+            r.table('assets', read_mode=READ_MODE)
+            .get_all(*asset_ids))
 
 
 @register_query(RethinkDBConnection)
@@ -203,7 +218,7 @@ def get_last_voted_block_id(connection, node_pubkey):
 
     except r.ReqlNonExistenceError:
         # return last vote if last vote exists else return Genesis block
-        return get_genesis_block(connection)
+        return get_genesis_block(connection)['id']
 
     # Now the fun starts. Since the resolution of timestamp is a second,
     # we might have more than one vote per timestamp. If this is the case
@@ -235,9 +250,7 @@ def get_last_voted_block_id(connection, node_pubkey):
         except KeyError:
             break
 
-    return connection.run(
-            r.table('bigchain', read_mode=READ_MODE)
-            .get(last_block_id))
+    return last_block_id
 
 
 @register_query(RethinkDBConnection)
