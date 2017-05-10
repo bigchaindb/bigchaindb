@@ -183,15 +183,23 @@ class Bigchain(object):
             include_status (bool): also return the status of the block
                        the return value is then a tuple: (block, status)
         """
-        block = backend.query.get_block(self.connection, block_id)
-        status = None
+        # get block from database
+        block_dict = backend.query.get_block(self.connection, block_id)
+        # get the asset ids from the block
+        if block_dict:
+            asset_ids = Block.get_asset_ids(block_dict)
+            # get the assets from the database
+            assets = self.get_assets(asset_ids)
+            # add the assets to the block transactions
+            block_dict = Block.couple_assets(block_dict, assets)
 
+        status = None
         if include_status:
-            if block:
-                status = self.block_election_status(block)
-            return block, status
+            if block_dict:
+                status = self.block_election_status(block_dict)
+            return block_dict, status
         else:
-            return block
+            return block_dict
 
     def get_transaction(self, txid, include_status=False):
         """Get the transaction with the specified `txid` (and optionally its status)
@@ -251,7 +259,13 @@ class Bigchain(object):
                 tx_status = self.TX_IN_BACKLOG
 
         if response:
-            response = Transaction.from_dict(response)
+            if tx_status == self.TX_IN_BACKLOG:
+                response = Transaction.from_dict(response)
+            else:
+                # If we are reading from the bigchain collection the asset is
+                # not in the transaction so we need to fetch the asset and
+                # reconstruct the transaction.
+                response = Transaction.from_db(self, response)
 
         if include_status:
             return response, tx_status
@@ -513,7 +527,14 @@ class Bigchain(object):
             block (Block): block to write to bigchain.
         """
 
-        return backend.query.write_block(self.connection, block)
+        # Decouple assets from block
+        assets, block_dict = block.decouple_assets()
+        # write the assets
+        if assets:
+            self.write_assets(assets)
+
+        # write the block
+        return backend.query.write_block(self.connection, block_dict)
 
     def prepare_genesis_block(self):
         """Prepare a genesis block."""
@@ -592,7 +613,9 @@ class Bigchain(object):
     def get_last_voted_block(self):
         """Returns the last block that this node voted on."""
 
-        return Block.from_dict(backend.query.get_last_voted_block(self.connection, self.me))
+        last_block_id = backend.query.get_last_voted_block_id(self.connection,
+                                                              self.me)
+        return Block.from_dict(self.get_block(last_block_id))
 
     def get_unvoted_blocks(self):
         """Return all the blocks that have not been voted on by this node.
@@ -616,3 +639,10 @@ class Bigchain(object):
         """Tally the votes on a block, and return the status:
            valid, invalid, or undecided."""
         return self.block_election(block)['status']
+
+    def get_assets(self, asset_ids):
+        # TODO: write docstrings
+        return backend.query.get_assets(self.connection, asset_ids)
+
+    def write_assets(self, assets):
+        return backend.query.write_assets(self.connection, assets)

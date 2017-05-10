@@ -383,7 +383,7 @@ class TestBigchainApi(object):
         from bigchaindb.backend import query
 
         genesis = query.get_genesis_block(b.connection)
-        genesis = Block.from_dict(genesis)
+        genesis = Block.from_db(b, genesis)
         gb = b.get_last_voted_block()
         assert gb == genesis
         assert b.validate_block(gb) == gb

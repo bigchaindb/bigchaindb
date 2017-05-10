@@ -212,6 +212,18 @@ def get_block(connection, block_id):
 
 
 @singledispatch
+def write_assets(connection, assets):
+    # TODO: write docstring
+    raise NotImplementedError
+
+
+@singledispatch
+def get_assets(connection, assets):
+    # TODO: write docstring
+    raise NotImplementedError
+
+
+@singledispatch
 def count_blocks(connection):
     """Count the number of blocks in the bigchain table.
 
@@ -259,7 +271,7 @@ def get_genesis_block(connection):
 
 
 @singledispatch
-def get_last_voted_block(connection, node_pubkey):
+def get_last_voted_block_id(connection, node_pubkey):
     """Get the last voted block for a specific node.
 
     Args:
