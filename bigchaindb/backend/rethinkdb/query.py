@@ -188,7 +188,7 @@ def get_genesis_block(connection):
 
 
 @register_query(RethinkDBConnection)
-def get_last_voted_block(connection, node_pubkey):
+def get_last_voted_block_id(connection, node_pubkey):
     try:
         # get the latest value for the vote timestamp (over all votes)
         max_timestamp = connection.run(

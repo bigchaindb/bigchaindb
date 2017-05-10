@@ -18,7 +18,8 @@ def test_init_creates_db_tables_and_indexes():
     init_database()
 
     collection_names = conn.conn[dbname].collection_names()
-    assert sorted(collection_names) == ['backlog', 'bigchain', 'votes']
+    assert sorted(collection_names) == ['assets', 'backlog', 'bigchain',
+                                        'votes']
 
     indexes = conn.conn[dbname]['bigchain'].index_information().keys()
     assert sorted(indexes) == ['_id_', 'asset_id', 'block_timestamp', 'inputs',
@@ -30,6 +31,9 @@ def test_init_creates_db_tables_and_indexes():
 
     indexes = conn.conn[dbname]['votes'].index_information().keys()
     assert sorted(indexes) == ['_id_', 'block_and_voter']
+
+    indexes = conn.conn[dbname]['assets'].index_information().keys()
+    assert sorted(indexes) == ['_id_', 'asset_id']
 
 
 def test_init_database_fails_if_db_exists():
@@ -62,7 +66,8 @@ def test_create_tables():
     schema.create_tables(conn, dbname)
 
     collection_names = conn.conn[dbname].collection_names()
-    assert sorted(collection_names) == ['backlog', 'bigchain', 'votes']
+    assert sorted(collection_names) == ['assets', 'backlog', 'bigchain',
+                                        'votes']
 
 
 def test_create_secondary_indexes():

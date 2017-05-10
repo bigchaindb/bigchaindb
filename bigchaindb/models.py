@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from bigchaindb.common.crypto import hash_data, PublicKey, PrivateKey
 from bigchaindb.common.exceptions import (InvalidHash, InvalidSignature,
                                           DoubleSpend, InputDoesNotExist,
@@ -83,6 +85,16 @@ class Transaction(Transaction):
     def from_dict(cls, tx_body):
         validate_transaction_schema(tx_body)
         return super().from_dict(tx_body)
+
+    @classmethod
+    def from_db(cls, bigchain, tx_dict):
+        # TODO: write docstring
+        if tx_dict['operation'] in [Transaction.CREATE, Transaction.CREATE]:
+            asset = bigchain.get_assets([tx_dict['id']])[0]
+            asset.pop('id')
+            tx_dict.update({'asset': asset})
+
+        return cls.from_dict(tx_dict)
 
 
 class Block(object):
@@ -299,6 +311,50 @@ class Block(object):
             'block': block,
             'signature': self.signature,
         }
+
+    @classmethod
+    def from_db(cls, bigchain, block_dict):
+        asset_ids = cls.get_asset_ids(block_dict)
+        assets = bigchain.get_assets(asset_ids)
+        block_dict = cls.couple_assets(block_dict, assets)
+        return cls.from_dict(block_dict)
+
+    def decouple_assets(self):
+        # TODO: Write documentation
+        block_dict = deepcopy(self.to_dict())
+        assets = []
+        for transaction in block_dict['block']['transactions']:
+            if transaction['operation'] in [Transaction.CREATE,
+                                            Transaction.GENESIS]:
+                asset = transaction.pop('asset')
+                asset.update({'id': transaction['id']})
+                assets.append(asset)
+
+        return (assets, block_dict)
+
+    @staticmethod
+    def couple_assets(block_dict, assets):
+        # TODO: Write docstring
+        # create a dict with {'<txid>': asset}
+        assets = {asset.pop('id'): asset for asset in assets}
+        # add the assets to the block transactions
+        for transaction in block_dict['block']['transactions']:
+            if transaction['operation'] in [Transaction.CREATE,
+                                            Transaction.GENESIS]:
+                transaction.update({'asset': assets.get(transaction['id'],
+                                                        None)})
+        return block_dict
+
+    @staticmethod
+    def get_asset_ids(block_dict):
+        # TODO: Write docstring
+        asset_ids = []
+        for transaction in block_dict['block']['transactions']:
+            if transaction['operation'] in [Transaction.CREATE,
+                                            Transaction.GENESIS]:
+                asset_ids.append(transaction['id'])
+
+        return asset_ids
 
     def to_str(self):
         return serialize(self.to_dict())
