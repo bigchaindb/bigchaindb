@@ -7,9 +7,10 @@ FROM alpine:3.5
 LABEL maintainer "dev@bigchaindb.com"
 WORKDIR /
 RUN apk add --no-cache --update curl bind-tools python3-dev g++ \
-        libffi-dev make vim git \
+        libffi-dev make vim git nodejs \
     && pip3 install ipython \
     && git clone https://github.com/bigchaindb/bigchaindb-driver \
     && cd bigchaindb-driver \
-    && pip3 install -e .
+    && pip3 install -e . \
+    && npm install -g wsc
 ENTRYPOINT ["/bin/sh"]
