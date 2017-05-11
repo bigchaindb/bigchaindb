@@ -641,8 +641,24 @@ class Bigchain(object):
         return self.block_election(block)['status']
 
     def get_assets(self, asset_ids):
-        # TODO: write docstrings
+        """
+        Return a list of assets that match the asset_ids
+
+        Args:
+            asset_ids (:obj:`list` of :obj:`str`): A list of asset_ids to
+                retrieve from the database.
+
+        Returs:
+            list: The list of assets returned from the database.
+        """
         return backend.query.get_assets(self.connection, asset_ids)
 
     def write_assets(self, assets):
+        """
+        Writes a list of assets into the database.
+
+        Args:
+            assets (:obj:`list` of :obj:`dict`): A list of assets to write to
+                the database.
+        """
         return backend.query.write_assets(self.connection, assets)

@@ -293,8 +293,8 @@ def get_last_voted_block_id(connection, node_pubkey):
         node_pubkey (str): base58 encoded public key.
 
     Returns:
-        The last block the node has voted on. If the node didn't cast
-        any vote then the genesis block is returned.
+        The last block id the node has voted on. If the node didn't cast
+        any vote then the genesis block id is returned.
     """
 
     raise NotImplementedError

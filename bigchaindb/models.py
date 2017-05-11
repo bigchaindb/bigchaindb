@@ -88,8 +88,22 @@ class Transaction(Transaction):
 
     @classmethod
     def from_db(cls, bigchain, tx_dict):
-        # TODO: write docstring
-        if tx_dict['operation'] in [Transaction.CREATE, Transaction.CREATE]:
+        """
+        Helper method that reconstructs a transaction dict that was returned
+        from the database. It checks what asset_id to retrieve, retrieves the
+        asset from the asset table and reconstructs the transaction.
+
+        Args:
+            bigchain (:class:`~bigchaindb.Bigchain`): An instance of Bigchain
+                used to perform database queries.
+            tx_dict (:obj:`dict`): The transaction dict as returned from the
+                database.
+
+        Returns:
+            :class:`~Transaction`
+
+        """
+        if tx_dict['operation'] in [Transaction.CREATE, Transaction.GENESIS]:
             # TODO: Maybe replace this call to a call to get_asset_by_id
             asset = list(bigchain.get_assets([tx_dict['id']]))[0]
             asset.pop('id')
@@ -317,12 +331,14 @@ class Block(object):
     def from_db(cls, bigchain, block_dict):
         """
         Helper method that reconstructs a block_dict that was returned from
-        the database. If checks what asset_ids to retrieve, retrieves the
+        the database. It checks what asset_ids to retrieve, retrieves the
         assets from the assets table and reconstructs the block.
 
         Args:
             bigchain (:class:`~bigchaindb.Bigchain`): An instance of Bigchain
                 used to perform database queries.
+            block_dict(:obj:`dict`): The block dict as returned from the
+                database.
 
         Returns:
             :class:`~Block`
