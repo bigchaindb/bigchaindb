@@ -1,3 +1,4 @@
+import pytest
 from pytest import raises
 
 
@@ -253,6 +254,7 @@ class TestBlockModel(object):
         asset_ids = Block.get_asset_ids(block_dict)
         assert asset_ids == [tx.id for tx in txs[:-1]]
 
+    @pytest.mark.bdb
     def test_from_db(self, b):
         from bigchaindb.models import Block, Transaction
 
