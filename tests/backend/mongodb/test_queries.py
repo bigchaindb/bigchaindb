@@ -1,4 +1,7 @@
+from copy import deepcopy
+
 import pytest
+import pymongo
 
 pytestmark = pytest.mark.bdb
 
@@ -418,3 +421,46 @@ def test_get_txids_filtered(signed_create_tx, signed_transfer_tx):
     # Test get by asset and TRANSFER
     txids = set(query.get_txids_filtered(conn, asset_id, Transaction.TRANSFER))
     assert txids == {signed_transfer_tx.id}
+
+
+def test_write_assets():
+    from bigchaindb.backend import connect, query
+    conn = connect()
+
+    assets = [
+        {'id': 1, 'data': '1'},
+        {'id': 2, 'data': '2'},
+        {'id': 3, 'data': '3'},
+        # Duplicated id. Should not be written to the database
+        {'id': 1, 'data': '1'},
+    ]
+
+    # write the assets
+    query.write_assets(conn, deepcopy(assets))
+
+    # check that 3 assets were written to the database
+    cursor = conn.db.assets.find({}, projection={'_id': False})\
+                           .sort('id', pymongo.ASCENDING)
+
+    assert cursor.count() == 3
+    assert list(cursor) == assets[:-1]
+
+
+def test_get_assets():
+    from bigchaindb.backend import connect, query
+    conn = connect()
+
+    assets = [
+        {'id': 1, 'data': '1'},
+        {'id': 2, 'data': '2'},
+        {'id': 3, 'data': '3'},
+    ]
+
+    # write the assets
+    conn.db.assets.insert_many(deepcopy(assets), ordered=False)
+
+    # read only 2 assets
+    cursor = query.get_assets(conn, [1, 3])
+
+    assert cursor.count() == 2
+    assert list(cursor.sort('id', pymongo.ASCENDING)) == assets[::2]
