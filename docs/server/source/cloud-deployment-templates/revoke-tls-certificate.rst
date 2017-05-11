@@ -6,7 +6,7 @@ This document enumerates the steps needs to revoke a certificate in your PKI
 infrastructure.
 
 Since, we had used ``easy-rsa version 3`` to
-:ref:`setup the CA <Setup a Self-Signed Certificate Authority>`, we will use it
+:ref:`setup the CA <Set Up a Self-Signed Certificate Authority>`, we will use it
 to revoke certificates too.
 
 

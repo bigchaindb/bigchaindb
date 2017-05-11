@@ -89,7 +89,7 @@ commands in ``pki/reqs/bdb-instance-0.req``.
 
 You would then need to send this across to the organization which will sign
 this request. This will be the self-signed CA that
-:ref:`was created earlier <Setup a Self-Signed Certificate Authority>`.
+:ref:`was created earlier <Set Up a Self-Signed Certificate Authority>`.
 
 If you are the federation admin, you can import the csr and sign the
 certificate using your easyrsa setup:

@@ -1,5 +1,5 @@
-Setup a Self-Signed Certificate Authority
-=========================================
+Set Up a Self-Signed Certificate Authority
+==========================================
 
 This document enumerates the steps we recommend to set up a self-hosted or a
 self-signed CA.

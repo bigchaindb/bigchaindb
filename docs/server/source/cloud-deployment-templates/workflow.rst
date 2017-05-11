@@ -1,22 +1,25 @@
-Setup a Production Node
-=======================
+Overview
+========
+
+This page summarizes the steps *we* go through
+to set up a production BigchainDB cluster.
+We are constantly improving them.
+You can modify them to suit your needs.
 
 
-Step 1: One Off Setup - Done by the Federation
-----------------------------------------------
+Step 1: Set Up a Self-Signed Certificate Authority
+--------------------------------------------------
 
-This step is usually done by a central authority before deciding to set up a
-federation.
-
-This involves setting up a self-signed CA for signing certificates used for
-securing the MongoDB cluster.
-
-
-Step 1.1: Setup a Self-Signed CA
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-See the page on how to
-:ref:`set up a self-signed CA <Setup a Self-Signed Certificate Authority>`.
+We use SSL/TLS and self-signed certificates
+for authentication and message encryption
+within the cluster.
+The certificates are created by the organization managing the cluster.
+If your organization already has a process
+for creating certificates
+(i.e. an internal self-signed certificate authority),
+then you can skip this step.
+Otherwise, your organization must
+:ref:`set up its own self-signed certificate authority <Set Up a Self-Signed Certificate Authority>`.
 
 
 Step 2: Setup a Federation Node
