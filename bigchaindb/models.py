@@ -315,13 +315,33 @@ class Block(object):
 
     @classmethod
     def from_db(cls, bigchain, block_dict):
+        """
+        Helper method that reconstructs a block_dict that was returned from
+        the database. If checks what asset_ids to retrieve, retrieves the
+        assets from the assets table and reconstructs the block.
+
+        Args:
+            bigchain (:class:`~bigchaindb.Bigchain`): An instance of Bigchain
+                used to perform database queries.
+
+        Returns:
+            :class:`~Block`
+
+        """
         asset_ids = cls.get_asset_ids(block_dict)
         assets = bigchain.get_assets(asset_ids)
         block_dict = cls.couple_assets(block_dict, assets)
         return cls.from_dict(block_dict)
 
     def decouple_assets(self):
-        # TODO: Write documentation
+        """
+        Extracts the assets from the `CREATE` transactions in the block.
+
+        Returns:
+            tuple: (assets, block) with the assets being a list of dicts and
+            the block being the dict of the block with no assets in the CREATE
+            transactions.
+        """
         block_dict = deepcopy(self.to_dict())
         assets = []
         for transaction in block_dict['block']['transactions']:
@@ -335,7 +355,20 @@ class Block(object):
 
     @staticmethod
     def couple_assets(block_dict, assets):
-        # TODO: Write docstring
+        """
+        Give a block_dict with not assets (as returned from a database call)
+        and a list of assets, reconstruct the original block by puting the
+        assets back into the `CREATE` transactions in the block.
+
+        Args:
+            block_dict (:obj:`dict`): The block dict as returned from a
+                database call.
+            assets (:obj:`list` of :obj:`dict`): A list of assets returned from
+                a database call.
+
+        Returns:
+            dict: The dict of the reconstructed block.
+        """
         # create a dict with {'<txid>': asset}
         assets = {asset.pop('id'): asset for asset in assets}
         # add the assets to the block transactions
@@ -348,7 +381,19 @@ class Block(object):
 
     @staticmethod
     def get_asset_ids(block_dict):
-        # TODO: Write docstring
+        """
+        Given a block_dict return all the asset_ids for that block (the txid
+        of CREATE transactions). Usefull to know which assets to retrieve
+        from the database to reconstruct the block.
+
+        Args:
+            block_dict (:obj:`dict`): The block dict as returned from a
+                database call.
+
+        Returns:
+            list: The list of asset_ids in the block.
+
+        """
         asset_ids = []
         for transaction in block_dict['block']['transactions']:
             if transaction['operation'] in [Transaction.CREATE,

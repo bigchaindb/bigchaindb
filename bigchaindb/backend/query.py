@@ -213,13 +213,28 @@ def get_block(connection, block_id):
 
 @singledispatch
 def write_assets(connection, assets):
-    # TODO: write docstring
+    """Write a list of assets to the assets table.
+
+    Args:
+        assets (list): a list of assets to write.
+
+    Returns:
+        The database response.
+    """
     raise NotImplementedError
 
 
 @singledispatch
-def get_assets(connection, assets):
-    # TODO: write docstring
+def get_assets(connection, asset_ids):
+    """Get a list of assets from the assets table.
+
+    Args:
+        asset_ids (list): a of list of ids for the assets to be retrieved from
+        the database.
+
+    Returns:
+        assets (list): the list of returned assets.
+    """
     raise NotImplementedError
 
 

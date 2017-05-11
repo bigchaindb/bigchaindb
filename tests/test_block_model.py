@@ -153,3 +153,136 @@ class TestBlockModel(object):
         block = b.create_block([tx, tx])
         with raises(DuplicateTransaction):
             block._validate_block(b)
+
+    def test_decouple_assets(self, b):
+        from bigchaindb.models import Block, Transaction
+
+        assets = [
+            {'msg': '1'},
+            {'msg': '2'},
+            {'msg': '3'},
+        ]
+
+        txs = []
+        # create 3 assets
+        for asset in assets:
+            tx = Transaction.create([b.me], [([b.me], 1)], asset=asset)
+            txs.append(tx)
+
+        # create a `TRANSFER` transaction.
+        # the asset in `TRANSFER` transactions is not extracted
+        tx = Transaction.transfer(txs[0].to_inputs(), [([b.me], 1)],
+                                  asset_id=txs[0].id)
+        txs.append(tx)
+
+        # create the block
+        block = Block(txs)
+        # decouple assets
+        assets_from_block, block_dict = block.decouple_assets()
+
+        assert len(assets_from_block) == 3
+        for i in range(3):
+            assert assets_from_block[i]['data'] == assets[i]
+            assert assets_from_block[i]['id'] == txs[i].id
+
+        # check the `TRANSFER` transaction was not changed
+        assert block.transactions[3].to_dict() == \
+            block_dict['block']['transactions'][3]
+
+    def test_couple_assets(self, b):
+        from bigchaindb.models import Block, Transaction
+
+        assets = [
+            {'msg': '1'},
+            {'msg': '2'},
+            {'msg': '3'},
+        ]
+
+        txs = []
+        # create 3 assets
+        for asset in assets:
+            tx = Transaction.create([b.me], [([b.me], 1)], asset=asset)
+            txs.append(tx)
+
+        # create a `TRANSFER` transaction.
+        # the asset in `TRANSFER` transactions is not extracted
+        tx = Transaction.transfer(txs[0].to_inputs(), [([b.me], 1)],
+                                  asset_id=txs[0].id)
+        txs.append(tx)
+
+        # create the block
+        block = Block(txs)
+        # decouple assets
+        assets_from_block, block_dict = block.decouple_assets()
+
+        # reconstruct the block
+        block_dict_reconstructed = Block.couple_assets(block_dict,
+                                                       assets_from_block)
+
+        # check that the reconstructed block is the as the original block
+        assert block == Block.from_dict(block_dict_reconstructed)
+
+    def test_get_asset_ids(self, b):
+        from bigchaindb.models import Block, Transaction
+
+        assets = [
+            {'msg': '1'},
+            {'msg': '2'},
+            {'msg': '3'},
+        ]
+
+        txs = []
+        # create 3 assets
+        for asset in assets:
+            tx = Transaction.create([b.me], [([b.me], 1)], asset=asset)
+            txs.append(tx)
+
+        # create a `TRANSFER` transaction.
+        # the asset in `TRANSFER` transactions is not extracted
+        tx = Transaction.transfer(txs[0].to_inputs(), [([b.me], 1)],
+                                  asset_id=txs[0].id)
+        txs.append(tx)
+
+        # create the block
+        block = Block(txs)
+        # decouple assets
+        assets_from_block, block_dict = block.decouple_assets()
+
+        # get the asset_ids and check that they are the same as the `CREATE`
+        # transactions
+        asset_ids = Block.get_asset_ids(block_dict)
+        assert asset_ids == [tx.id for tx in txs[:-1]]
+
+    def test_from_db(self, b):
+        from bigchaindb.models import Block, Transaction
+
+        assets = [
+            {'msg': '1'},
+            {'msg': '2'},
+            {'msg': '3'},
+        ]
+
+        txs = []
+        # create 3 assets
+        for asset in assets:
+            tx = Transaction.create([b.me], [([b.me], 1)], asset=asset)
+            txs.append(tx)
+
+        # create a `TRANSFER` transaction.
+        # the asset in `TRANSFER` transactions is not extracted
+        tx = Transaction.transfer(txs[0].to_inputs(), [([b.me], 1)],
+                                  asset_id=txs[0].id)
+        txs.append(tx)
+
+        # create the block
+        block = Block(txs)
+        # decouple assets
+        assets_from_block, block_dict = block.decouple_assets()
+
+        # write the assets and block separatedly
+        b.write_assets(assets_from_block)
+        b.write_block(block)
+
+        # check the reconstructed block is the same as the original block
+        block_from_db = Block.from_db(b, block_dict)
+        assert block == block_from_db

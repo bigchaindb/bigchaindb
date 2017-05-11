@@ -108,8 +108,8 @@ def create_votes_secondary_index(conn, dbname):
 def create_assets_secondary_index(conn, dbname):
     logger.info('Create `assets` secondary index.')
 
-    # is the first index redundant then?
-    # compound index to order votes by block id and node
+    # unique index on the id of the asset.
+    # the id is the txid of the transaction that created the asset
     conn.conn[dbname]['assets'].create_index('id',
                                              name='asset_id',
                                              unique=True)
