@@ -281,7 +281,7 @@ class TestBlockModel(object):
         # decouple assets
         assets_from_block, block_dict = block.decouple_assets()
 
-        # write the assets and block separatedly
+        # write the assets and block separately
         b.write_assets(assets_from_block)
         b.write_block(block)
 
