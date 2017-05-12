@@ -325,3 +325,11 @@ def get_txids_filtered(connection, asset_id, operation=None):
     """
 
     raise NotImplementedError
+
+
+@singledispatch
+def text_search(conn, search, language='english', case_sensitive=False,
+                diacritic_sensitive=False, text_score=False, limit=0):
+    # TODO: docstring
+
+    raise NotImplementedError

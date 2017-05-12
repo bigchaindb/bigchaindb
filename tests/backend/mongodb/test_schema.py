@@ -33,7 +33,7 @@ def test_init_creates_db_tables_and_indexes():
     assert sorted(indexes) == ['_id_', 'block_and_voter']
 
     indexes = conn.conn[dbname]['assets'].index_information().keys()
-    assert sorted(indexes) == ['_id_', 'asset_id']
+    assert sorted(indexes) == ['_id_', 'asset_id', 'text']
 
 
 def test_init_database_fails_if_db_exists():
