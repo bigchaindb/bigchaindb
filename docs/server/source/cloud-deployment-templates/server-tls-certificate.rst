@@ -11,7 +11,7 @@ We use Easy-RSA.
 Step 1: Install & Configure Easy–RSA
 ------------------------------------
 
-First create a directory for the CA and go into it:
+First create a directory for the server certificate (member cert) and cd into it:
 
 .. code:: bash
 

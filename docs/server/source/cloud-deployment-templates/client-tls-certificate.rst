@@ -10,7 +10,7 @@ We use Easy-RSA.
 Step 1: Install and Configure Easy-RSA
 --------------------------------------
 
-First create a directory for the CA and go into it:
+First create a directory for the client certificate and cd into it:
 
 .. code:: bash
 
