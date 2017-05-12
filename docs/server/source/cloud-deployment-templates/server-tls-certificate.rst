@@ -45,8 +45,8 @@ All certificates can have this attribute without compromising security as the
 ``localhost exception`` works only the first time.
 
 
-Step 3: Sign the Server Certificate
------------------------------------
+Step 3: Get the Server Certificate Signed
+-----------------------------------------
 
 The CSR file (created in the last step)
 should be located in ``pki/reqs/mdb-instance-0.req``.

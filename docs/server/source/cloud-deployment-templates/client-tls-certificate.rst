@@ -24,38 +24,42 @@ Then :ref:`install and configure Easy-RSA in that directory <How to Install & Co
 Step 2: Create the Client Private Key and CSR
 ---------------------------------------------
 
-You can create the key and the CSR using:
+You can create the client private key and certificate signing request (CSR)
+by going into the directory ``client-cert/easy-rsa-3.0.1/easyrsa``
+and using:
 
-    .. code:: bash
+.. code:: bash
         
-        ./easyrsa init-pki
+   ./easyrsa init-pki
 
-        ./easyrsa gen-req bdb-instance-0 nopass
+   ./easyrsa gen-req bdb-instance-0 nopass
 
 
-Step 3: Sign the Client Certificate
------------------------------------
+You should change ``bdb-instance-0`` to a value based on the client
+the certificate is for.
 
-The csr file is located in the instance where you ran the above
-commands in ``pki/reqs/bdb-instance-0.req``.
 
-You would then need to send this across to the organization which will sign
-this request. This will be the self-signed CA that
-:ref:`was created earlier <Set Up a Self-Signed Certificate Authority>`.
+Step 3: Get the Client Certificate Signed
+-----------------------------------------
 
-If you are the federation admin, you can import the csr and sign the
-certificate using your easyrsa setup:
+The CSR file (created in the last step)
+should be located in ``pki/reqs/bdb-instance-0.req``.
+You need to send it to the organization managing the cluster
+so that they can use their CA
+to sign the request.
+(The managing organization should already have a self-signed CA.)
 
-    .. code:: bash
+If you are the admin of the managing organization's self-signed CA,
+then you can import the CSR and use Easy-RSA to sign it. For example:
+
+.. code:: bash
         
-        ./easyrsa import-req bdb-instance-0.req bdb-instance-0
+   ./easyrsa import-req bdb-instance-0.req bdb-instance-0
 
-        ./easyrsa sign-req client bdb-instance-0
+   ./easyrsa sign-req client bdb-instance-0
         
-
-Once you have signed it, you can send the signed certificate and the CA 
-certificate back to the requestor.
-
+Once you have signed it, you can send the signed certificate
+and the CA certificate back to the requestor.
 The files are ``pki/issued/bdb-instance-0.crt`` and ``pki/ca.crt``.
 
 
@@ -65,6 +69,6 @@ Step 4: Generate the Consolidated Client PEM File
 MongoDB requires a single, consolidated file containing both the public and
 private keys.
 
-    .. code:: bash
+.. code:: bash
         
-        cat bdb-instance-0.crt bdb-instance-0.key > bdb-instance-0.pem
+   cat bdb-instance-0.crt bdb-instance-0.key > bdb-instance-0.pem
