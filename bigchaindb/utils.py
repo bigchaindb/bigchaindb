@@ -114,11 +114,16 @@ def condition_details_has_owner(condition_details, owner):
 
 
 def output_has_owner(output, owner):
-    if len(output['public_keys']) > 0:
+    # TODO
+    # Check whether it is really necessary to treat the single key case
+    # differently from the multiple keys case, and why not just use the same
+    # function for both cases.
+    if len(output['public_keys']) > 1:
         return condition_details_has_owner(
             output['condition']['details'], owner)
-    return False
-    # # TODO raise proper exception, e.g. invalid tx payload?
+    elif len(output['public_keys']) == 1:
+        return output['condition']['details']['public_key'] == owner
+    # TODO raise proper exception, e.g. invalid tx payload?
 
 
 def is_genesis_block(block):
