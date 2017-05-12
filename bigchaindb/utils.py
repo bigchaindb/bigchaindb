@@ -117,6 +117,7 @@ def output_has_owner(output, owner):
     if len(output['public_keys']) > 0:
         return condition_details_has_owner(
             output['condition']['details'], owner)
+    return False
     # TODO raise proper exception, e.g. invalid tx payload?
 
 
