@@ -91,8 +91,8 @@ Ask the managing organization to use its self-signed CA to sign those certificat
 
 For help, see the pages:
 
-* :ref:`Generate Cluster Member Certificate for MongoDB`
-* :ref:`Generate Client Certificate for MongoDB`
+* :ref:`How to Generate a Server Certificate for MongoDB`
+* :ref:`How to Generate a Client Certificate for MongoDB`
 
 
 ☐ :doc:`Deploy a Kubernetes cluster on Azure <template-kubernetes-azure>`.
