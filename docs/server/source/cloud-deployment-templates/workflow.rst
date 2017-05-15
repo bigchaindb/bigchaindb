@@ -22,7 +22,7 @@ for signing certificates
 (i.e. an internal self-signed certificate authority [CA]),
 then you can skip this step.
 Otherwise, your organization must
-:ref:`set up its own self-signed certificate authority <Set Up a Self-Signed Certificate Authority>`.
+:ref:`set up its own self-signed certificate authority <How to Set Up a Self-Signed Certificate Authority>`.
 
 
 2. Register a Domain and Get an SSL Certificate for It

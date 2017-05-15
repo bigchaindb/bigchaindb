@@ -1,5 +1,5 @@
-Set Up a Self-Signed Certificate Authority
-==========================================
+How to Set Up a Self-Signed Certificate Authority
+=================================================
 
 This page enumerates the steps *we* use to set up a self-signed certificate authority (CA).
 This is something that only needs to be done once per cluster,
