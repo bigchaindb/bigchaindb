@@ -169,3 +169,10 @@ def transfer_utx(user_output, user2_output, utx):
 @pytest.fixture
 def transfer_tx(transfer_utx, user_priv):
     return transfer_utx.sign([user_priv])
+
+
+@pytest.fixture
+def app(request):
+    from bigchaindb.web import server
+    app = server.create_app(debug=True)
+    return app

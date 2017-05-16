@@ -1,3 +1,4 @@
+from bigchaindb.common.asset.policy import validate_asset
 from bigchaindb.voting import Voting
 
 
@@ -15,7 +16,9 @@ class BaseConsensusRules():
     def validate_transaction(bigchain, transaction):
         """See :meth:`bigchaindb.models.Transaction.validate`
         for documentation."""
-        return transaction.validate(bigchain)
+        valid_tx = transaction.validate(bigchain)
+        validate_asset(transaction, bigchain)
+        return valid_tx
 
     @staticmethod
     def validate_block(bigchain, block):
