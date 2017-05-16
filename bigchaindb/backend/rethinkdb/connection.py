@@ -43,3 +43,17 @@ class RethinkDBConnection(Connection):
             return r.connect(host=self.host, port=self.port, db=self.dbname)
         except r.ReqlDriverError as exc:
             raise ConnectionError from exc
+
+    @property
+    def local_table_suffix(self):
+        """Get local table suffix"""
+        if not RethinkDBConnection._LOCAL_TABLE_SUFFIX:
+            suffix = self.conn.server()['id'].replace('-', '_')
+            RethinkDBConnection._LOCAL_TABLE_SUFFIX = suffix
+        return RethinkDBConnection._LOCAL_TABLE_SUFFIX
+
+    _LOCAL_TABLE_SUFFIX = None
+
+    def local_table(self, name):
+        """Namespace a table to local db server"""
+        return '%s_%s' % (name, self.local_table_suffix)

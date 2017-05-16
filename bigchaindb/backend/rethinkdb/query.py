@@ -253,3 +253,15 @@ def get_unvoted_blocks(connection, node_pubkey):
     #        database level. Solving issue #444 can help untangling the situation
     unvoted_blocks = filter(lambda block: not utils.is_genesis_block(block), unvoted)
     return unvoted_blocks
+
+
+@register_query(RethinkDBConnection)
+def insert_block_result(connection, result):
+    table = connection.local_table('block_results')
+    return connection.run(r.table(table).insert(result.copy()))
+
+
+@register_query(RethinkDBConnection)
+def get_block_result(connection, block_id):
+    table = connection.local_table('block_results')
+    return connection.run(r.table(table).get(block_id))

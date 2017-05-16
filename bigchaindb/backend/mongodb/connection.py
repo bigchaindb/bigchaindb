@@ -95,6 +95,10 @@ class MongoDBConnection(Connection):
                 pymongo.errors.OperationFailure) as exc:
             raise ConnectionError() from exc
 
+    def get_local_collection(self, name):
+        """Return a namespaced local collection"""
+        return self.conn.local[self.dbname + '_' + name]
+
 
 def initialize_replica_set(host, port, connection_timeout, dbname, ssl, login, password):
     """Initialize a replica set. If already initialized skip."""

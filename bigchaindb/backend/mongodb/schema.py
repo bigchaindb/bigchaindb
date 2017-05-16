@@ -33,6 +33,9 @@ def create_tables(conn, dbname):
         # TODO: read and write concerns can be declared here
         conn.conn[dbname].create_collection(table_name)
 
+    # Create local table namespaced to current db name
+    conn.conn.local.create_collection(dbname + '_block_results')
+
 
 @register_schema(MongoDBConnection)
 def create_indexes(conn, dbname):
@@ -44,6 +47,7 @@ def create_indexes(conn, dbname):
 @register_schema(MongoDBConnection)
 def drop_database(conn, dbname):
     conn.conn.drop_database(dbname)
+    conn.conn.local[dbname + '_block_results'].drop()
 
 
 def create_bigchain_secondary_index(conn, dbname):

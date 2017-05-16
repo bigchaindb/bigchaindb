@@ -298,3 +298,23 @@ def get_txids_filtered(connection, asset_id, operation=None):
     """
 
     raise NotImplementedError
+
+
+@singledispatch
+def get_block_result(connection, block_id):
+    """
+    Return cached block result, if it's there.
+
+    Args:
+        block_id (str): ID of block
+    """
+
+    raise NotImplementedError
+
+
+@singledispatch
+def insert_block_result(connection, result):
+    """
+    Insert a block validation result
+    """
+    raise NotImplementedError

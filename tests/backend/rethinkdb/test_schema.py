@@ -60,10 +60,9 @@ def test_create_tables():
     schema.create_database(conn, dbname)
     schema.create_tables(conn, dbname)
 
-    assert conn.run(r.db(dbname).table_list().contains('bigchain')) is True
-    assert conn.run(r.db(dbname).table_list().contains('backlog')) is True
-    assert conn.run(r.db(dbname).table_list().contains('votes')) is True
-    assert len(conn.run(r.db(dbname).table_list())) == 3
+    assert (set(conn.run(r.db(dbname).table_list())) ==
+            {'backlog', 'bigchain', 'votes',
+             conn.local_table('block_results')})
 
 
 @pytest.mark.bdb

@@ -301,3 +301,30 @@ def get_unvoted_blocks(conn, node_pubkey):
                 'votes': False, '_id': False
             }}
         ]))
+
+
+@register_query(MongoDBConnection)
+def insert_block_result(conn, result):
+    return (conn.get_local_collection('block_results')
+            .insert_one(_id('block_id', result)))
+
+
+@register_query(MongoDBConnection)
+def get_block_result(conn, block_id):
+    return _unid('block_id',
+                 conn.get_local_collection('block_results')
+                 .find_one({'_id': block_id}))
+
+
+def _id(key, record):
+    r = record.copy()
+    r['_id'] = r[key]
+    del r[key]
+    return r
+
+
+def _unid(key, record):
+    if record:
+        record[key] = record['_id']
+        del record['_id']
+        return record

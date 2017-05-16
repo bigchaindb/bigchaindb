@@ -27,6 +27,10 @@ def create_tables(connection, dbname):
         logger.info('Create `%s` table.', table_name)
         connection.run(r.db(dbname).table_create(table_name))
 
+    table_name = connection.local_table('block_results')
+    connection.run(r.db(dbname).table_create(table_name,
+                                             primary_key='block_id'))
+
 
 @register_schema(RethinkDBConnection)
 def create_indexes(connection, dbname):

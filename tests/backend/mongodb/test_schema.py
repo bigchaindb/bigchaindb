@@ -13,7 +13,7 @@ def test_init_creates_db_tables_and_indexes():
     dbname = bigchaindb.config['database']['name']
 
     # the db is set up by the fixture so we need to remove it
-    conn.conn.drop_database(dbname)
+    _drop(conn, dbname)
 
     init_database()
 
@@ -57,12 +57,14 @@ def test_create_tables():
     dbname = bigchaindb.config['database']['name']
 
     # The db is set up by the fixtures so we need to remove it
-    conn.conn.drop_database(dbname)
+    _drop(conn, dbname)
     schema.create_database(conn, dbname)
     schema.create_tables(conn, dbname)
 
     collection_names = conn.conn[dbname].collection_names()
     assert sorted(collection_names) == ['backlog', 'bigchain', 'votes']
+
+    assert (dbname + '_block_results') in conn.conn.local.collection_names()
 
 
 def test_create_secondary_indexes():
@@ -74,7 +76,7 @@ def test_create_secondary_indexes():
     dbname = bigchaindb.config['database']['name']
 
     # The db is set up by the fixtures so we need to remove it
-    conn.conn.drop_database(dbname)
+    _drop(conn, dbname)
     schema.create_database(conn, dbname)
     schema.create_tables(conn, dbname)
     schema.create_indexes(conn, dbname)
@@ -92,6 +94,11 @@ def test_create_secondary_indexes():
     # Votes table
     indexes = conn.conn[dbname]['votes'].index_information().keys()
     assert sorted(indexes) == ['_id_', 'block_and_voter']
+
+
+def _drop(conn, dbname):
+    conn.conn.drop_database(dbname)
+    conn.get_local_collection('block_results').drop()
 
 
 def test_drop(dummy_db):
