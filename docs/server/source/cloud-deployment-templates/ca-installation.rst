@@ -38,6 +38,12 @@ You will be asked to enter a PEM pass phrase for encrypting the ``ca.key`` file.
 Make sure to securely store that PEM pass phrase.
 If you lose it, you won't be able to add or remove entities in the future.
 
+It will ask several other questions.
+You can accept all the defaults [in brackets] by pressing Enter.
+While ``Easy-RSA CA`` *is* a valid and acceptable Common Name,
+you should probably enter a name based on the name of the managing organization,
+e.g. ``Omega Ledger CA``.
+
 
 Step 3: Create an Intermediate CA
 ---------------------------------
