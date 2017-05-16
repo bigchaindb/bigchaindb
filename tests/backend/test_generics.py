@@ -36,6 +36,8 @@ def test_schema(schema_func_name, args_qty):
     ('get_votes_by_block_id_and_voter', 2),
     ('update_transaction', 2),
     ('get_transaction_from_block', 2),
+    ('get_last_block_order', 0),
+    ('write_block_order', 1),
 ))
 def test_query(query_func_name, args_qty):
     from bigchaindb.backend import query

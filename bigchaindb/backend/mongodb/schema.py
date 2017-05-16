@@ -27,7 +27,7 @@ def create_database(conn, dbname):
 
 @register_schema(MongoDBConnection)
 def create_tables(conn, dbname):
-    for table_name in ['bigchain', 'backlog', 'votes']:
+    for table_name in ['bigchain', 'backlog', 'votes', 'block_order']:
         logger.info('Create `%s` table.', table_name)
         # create the table
         # TODO: read and write concerns can be declared here

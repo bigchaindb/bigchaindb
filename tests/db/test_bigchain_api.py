@@ -1,7 +1,7 @@
 from time import sleep
 
 import pytest
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 pytestmark = pytest.mark.bdb
 
@@ -1224,3 +1224,55 @@ def test_is_new_transaction(b, genesis_block):
     # Tx is new because it's only found in an invalid block
     assert b.is_new_transaction(tx.id)
     assert b.is_new_transaction(tx.id, exclude_block_id=block.id)
+
+
+@pytest.mark.bdb
+def test_block_order_genesis(b):
+    """ Test block order when its the first block """
+    from bigchaindb.backend import query
+    genesis_block = b.prepare_genesis_block()
+    assert query.get_last_block_order(b.connection) is None
+    b.write_block(genesis_block)
+    assert query.get_last_block_order(b.connection) == {
+        'id': 0,
+        'block_id': genesis_block.id,
+    }
+
+
+@pytest.mark.bdb
+def test_block_order_next(b, genesis_block):
+    """ Test block order on a subsequent block """
+    from bigchaindb.models import Block
+    from bigchaindb.backend import query
+    assert query.get_last_block_order(b.connection) == {
+        'id': 0,
+        'block_id': genesis_block.id,
+    }
+    block2 = Block.from_dict(genesis_block.to_dict())
+    block2.transactions[0].operation = 'CREATE'
+    b.write_block(block2)
+    assert query.get_last_block_order(b.connection) == {
+        'id': 1,
+        'block_id': block2.id,
+        'prev_block': genesis_block.id,
+    }
+
+
+@pytest.mark.bdb
+def test_block_order_contended(b, genesis_block):
+    """ Test block order when writing is contended """
+    from bigchaindb.models import Block
+    from bigchaindb.backend.exceptions import DuplicateKeyError
+    block2 = Block.from_dict(genesis_block.to_dict())
+    block2.transactions[0].operation = 'CREATE'
+    with patch('bigchaindb.core.backend.query') as query_:
+        query_.get_last_block_order.side_effect = (
+                [{'block_id': i, 'id': i} for i in range(9)])
+        query_.write_block_order.side_effect = (
+                [DuplicateKeyError(), DuplicateKeyError(), None])
+        b.write_block(block2)
+    assert query_.write_block_order.mock_calls == [
+        call(b.connection, {'id': 1, 'prev_block': 0, 'block_id': block2.id}),
+        call(b.connection, {'id': 2, 'prev_block': 1, 'block_id': block2.id}),
+        call(b.connection, {'id': 3, 'prev_block': 2, 'block_id': block2.id}),
+    ]

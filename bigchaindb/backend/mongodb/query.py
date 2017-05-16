@@ -207,9 +207,7 @@ def get_votes_by_block_id_and_voter(conn, block_id, node_pubkey):
 
 @register_query(MongoDBConnection)
 def write_block(conn, block):
-    return conn.run(
-        conn.collection('bigchain')
-        .insert_one(block.to_dict()))
+    return conn.run(conn.collection('bigchain').insert_one(block.copy()))
 
 
 @register_query(MongoDBConnection)
@@ -301,3 +299,21 @@ def get_unvoted_blocks(conn, node_pubkey):
                 'votes': False, '_id': False
             }}
         ]))
+
+
+@register_query(MongoDBConnection)
+def write_block_order(conn, link):
+    link = link.copy()
+    link['_id'] = link['id']
+    del link['id']
+    return conn.run(conn.collection('block_order').insert_one(link))
+
+
+@register_query(MongoDBConnection)
+def get_last_block_order(conn):
+    res = conn.run(conn.collection('block_order').find(sort=[('_id', -1)]).limit(1))
+    if res.count() > 0:
+        link = res.next()
+        link['id'] = link['_id']
+        del link['_id']
+        return link

@@ -19,8 +19,6 @@ def test_init_creates_db_tables_and_indexes():
 
     assert conn.run(r.db_list().contains(dbname)) is True
 
-    assert conn.run(r.db(dbname).table_list().contains('backlog', 'bigchain')) is True
-
     assert conn.run(r.db(dbname).table('bigchain').index_list().contains(
         'block_timestamp')) is True
 
@@ -60,10 +58,8 @@ def test_create_tables():
     schema.create_database(conn, dbname)
     schema.create_tables(conn, dbname)
 
-    assert conn.run(r.db(dbname).table_list().contains('bigchain')) is True
-    assert conn.run(r.db(dbname).table_list().contains('backlog')) is True
-    assert conn.run(r.db(dbname).table_list().contains('votes')) is True
-    assert len(conn.run(r.db(dbname).table_list())) == 3
+    collection_names = set(conn.run(r.db(dbname).table_list()))
+    assert collection_names == {'bigchain', 'backlog', 'votes', 'block_order'}
 
 
 @pytest.mark.bdb

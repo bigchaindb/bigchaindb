@@ -268,12 +268,12 @@ def test_write_block(signed_create_tx):
     conn = connect()
 
     # create and write block
-    block = Block(transactions=[signed_create_tx])
+    block = Block(transactions=[signed_create_tx]).to_dict()
     query.write_block(conn, block)
 
-    block_db = conn.db.bigchain.find_one({'id': block.id}, {'_id': False})
+    block_db = conn.db.bigchain.find_one({'id': block['id']}, {'_id': False})
 
-    assert block_db == block.to_dict()
+    assert block_db == block
 
 
 def test_get_block(signed_create_tx):

@@ -17,8 +17,8 @@ def test_init_creates_db_tables_and_indexes():
 
     init_database()
 
-    collection_names = conn.conn[dbname].collection_names()
-    assert sorted(collection_names) == ['backlog', 'bigchain', 'votes']
+    collection_names = set(conn.conn[dbname].collection_names())
+    assert set(collection_names) == {'backlog', 'bigchain', 'votes', 'block_order'}
 
     indexes = conn.conn[dbname]['bigchain'].index_information().keys()
     assert sorted(indexes) == ['_id_', 'asset_id', 'block_timestamp', 'inputs',
@@ -61,8 +61,8 @@ def test_create_tables():
     schema.create_database(conn, dbname)
     schema.create_tables(conn, dbname)
 
-    collection_names = conn.conn[dbname].collection_names()
-    assert sorted(collection_names) == ['backlog', 'bigchain', 'votes']
+    collection_names = set(conn.conn[dbname].collection_names())
+    assert collection_names == {'backlog', 'bigchain', 'votes', 'block_order'}
 
 
 def test_create_secondary_indexes():
