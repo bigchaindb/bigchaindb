@@ -38,8 +38,14 @@ and buy an SSL/TLS certificate for the FQDN.
 Things Each Node Operator Must Do
 ---------------------------------
 
-☐ Decide on, or find out some names of the things in your node:
-
+☐ Every MongoDB instance in the cluster must have a unique (one-of-a-kind) name.
+Ask the organization managing your cluster if they have a standard
+way of naming instances in the cluster.
+For example, maybe they assign a unique number to each node,
+so that if you're operating node 12, your MongoDB instance would be named
+``mdb-instance-12``.
+Similarly, other instances must also have unique names in the cluster.
+ 
 #. Name of the MongoDB instance (``mdb-instance-*``)
 #. Name of the BigchainDB instance (``bdb-instance-*``)
 #. Name of the NGINX instance (``ngx-instance-*``)
