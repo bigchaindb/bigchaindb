@@ -27,7 +27,7 @@ Step 2: Create the Server Private Key and CSR
 
 You can create the server private key and certificate signing request (CSR)
 by going into the directory ``member-cert/easy-rsa-3.0.1/easyrsa``
-and using:
+and using something like:
 
 .. code:: bash
         
@@ -35,8 +35,9 @@ and using:
 
    ./easyrsa --req-cn=mdb-instance-0 --subject-alt-name=DNS:localhost,DNS:mdb-instance-0 gen-req mdb-instance-0 nopass
 
-You can replace the common name (``mdb-instance-0`` above) with any other name
-so long as the instance can verify that it is the hostname.
+You must replace the common name (``mdb-instance-0`` above)
+with the common name of *your* MongoDB instance
+(which should be the same as the hostname of your MongoDB instance).
 
 You need to provide the ``DNS:localhost`` SAN during certificate generation for
 using the ``localhost exception`` in the MongoDB instance.
