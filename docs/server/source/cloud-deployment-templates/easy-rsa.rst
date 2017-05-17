@@ -62,8 +62,7 @@ The comments in the file explain what the variables mean.
    echo 'set_var EASYRSA_DN "org"' >> vars
    echo 'set_var EASYRSA_REQ_OU "IT"' >> vars
    echo 'set_var EASYRSA_KEY_SIZE 4096' >> vars
-   echo 'set_var EASYRSA_EXT_DIR "$EASYRSA/x509-types"' >> vars
-        
+
    echo 'set_var EASYRSA_REQ_COUNTRY "DE"' >> vars
    echo 'set_var EASYRSA_REQ_PROVINCE "Berlin"' >> vars
    echo 'set_var EASYRSA_REQ_CITY "Berlin"' >> vars
