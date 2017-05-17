@@ -36,7 +36,7 @@ by going to the ``bdb-cluster-ca/easy-rsa-3.0.1/easyrsa3`` directory and using:
 
 You will be asked to enter a PEM pass phrase for encrypting the ``ca.key`` file.
 Make sure to securely store that PEM pass phrase.
-If you lose it, you won't be able to add or remove entities in the future.
+If you lose it, you won't be able to add or remove entities from your PKI infrastructure in the future.
 
 It will ask several other questions.
 You can accept all the defaults [in brackets] by pressing Enter.
