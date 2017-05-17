@@ -49,6 +49,8 @@ and then editing it.
 You should change the 
 country, province, city, org and email
 to the correct values for you.
+(Note: The country, province, city, org and email are part of
+the `Distinguished Name <https://en.wikipedia.org/wiki/X.509#Certificates>`_ (DN).)
 The comments in the file explain what the variables mean.
 
 .. code:: bash
