@@ -75,7 +75,13 @@ That list of public keys is known as the BigchainDB "keyring."
 
 ☐ Ask the managing organization
 for the FQDN used to serve the BigchainDB APIs
-and for a copy of the associated SSL/TLS certificate.
+(e.g. ``api.orgname.net`` or ``bdb.clustername.com``).
+
+
+☐ Make up an FQDN for your BigchainDB node (e.g. ``mynode.mycorp.com``).
+Make sure you've registered the associated domain name (e.g. ``mycorp.com``),
+and have an SSL certificate for the FQDN.
+(You can get an SSL certificate from any SSL certificate provider).
 
 
 ☐ If the cluster uses 3scale for API authentication, monitoring and billing,
