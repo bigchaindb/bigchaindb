@@ -44,6 +44,9 @@ While ``Easy-RSA CA`` *is* a valid and acceptable Common Name,
 you should probably enter a name based on the name of the managing organization,
 e.g. ``Omega Ledger CA``.
 
+Tip: You can get help with the ``easyrsa`` command (and its subcommands)
+by using the subcommand ``./easyrsa help``
+
 
 Step 3: Create an Intermediate CA
 ---------------------------------

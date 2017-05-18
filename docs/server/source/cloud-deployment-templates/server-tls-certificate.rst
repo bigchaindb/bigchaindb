@@ -45,6 +45,9 @@ using the ``localhost exception`` in the MongoDB instance.
 All certificates can have this attribute without compromising security as the
 ``localhost exception`` works only the first time.
 
+Tip: You can get help with the ``easyrsa`` command (and its subcommands)
+by using the subcommand ``./easyrsa help``
+
 
 Step 3: Get the Server Certificate Signed
 -----------------------------------------

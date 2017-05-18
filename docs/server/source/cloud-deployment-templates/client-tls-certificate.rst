@@ -38,6 +38,9 @@ and using:
 You should change ``bdb-instance-0`` to a value based on the client
 the certificate is for.
 
+Tip: You can get help with the ``easyrsa`` command (and its subcommands)
+by using the subcommand ``./easyrsa help``
+
 
 Step 3: Get the Client Certificate Signed
 -----------------------------------------
