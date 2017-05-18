@@ -199,7 +199,7 @@ def _genesis(_bdb, genesis_block):
 @pytest.fixture
 def ignore_local_config_file(monkeypatch):
     def mock_file_config(filename=None):
-        raise FileNotFoundError()
+        return {}
 
     monkeypatch.setattr('bigchaindb.config_utils.file_config',
                         mock_file_config)
