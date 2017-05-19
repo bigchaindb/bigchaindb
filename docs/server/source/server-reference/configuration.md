@@ -142,7 +142,7 @@ If you used `bigchaindb -y configure mongodb` to create a default local config f
 ```
 
 
-## server.bind, server.loglevel, server.workers & server.threads
+## server.bind, server.loglevel & server.workers
 
 These settings are for the [Gunicorn HTTP server](http://gunicorn.org/), which is used to serve the [HTTP client-server API](../http-client-server-api.html).
 
@@ -152,7 +152,7 @@ These settings are for the [Gunicorn HTTP server](http://gunicorn.org/), which i
 [Gunicorn's documentation](http://docs.gunicorn.org/en/latest/settings.html#loglevel)
 for more information.
 
-`server.workers` is [the number of worker processes](http://docs.gunicorn.org/en/stable/settings.html#workers) for handling requests. If `None` (the default), the value will be (cpu_count * 2 + 1). `server.threads` is [the number of threads-per-worker](http://docs.gunicorn.org/en/stable/settings.html#threads) for handling requests. If `None` (the default), the value will be (cpu_count * 2 + 1). The HTTP server will be able to handle `server.workers` * `server.threads` requests simultaneously.
+`server.workers` is [the number of worker processes](http://docs.gunicorn.org/en/stable/settings.html#workers) for handling requests. If `None` (the default), the value will be (cpu_count * 2 + 1). If `None` (the default), the value will be 1. The HTTP server will be able to handle `server.workers` requests simultaneously.
 
 **Example using environment variables**
 ```text
@@ -168,7 +168,6 @@ export BIGCHAINDB_SERVER_THREADS=5
     "bind": "0.0.0.0:9984",
     "loglevel": "debug",
     "workers": 5,
-    "threads": 5
 }
 ```
 
@@ -178,7 +177,6 @@ export BIGCHAINDB_SERVER_THREADS=5
     "bind": "localhost:9984",
     "loglevel": "info",
     "workers": null,
-    "threads": null
 }
 ```
 
