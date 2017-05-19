@@ -62,7 +62,7 @@ def create_app(*, debug=False, threads=4):
     app = Flask(__name__)
 
     CORS(app,
-         headers=(
+         allow_headers=(
              'x-requested-with',
              'content-type',
              'accept',

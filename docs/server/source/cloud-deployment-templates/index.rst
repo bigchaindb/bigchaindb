@@ -13,9 +13,15 @@ Feel free change things to suit your needs or preferences.
 .. toctree::
    :maxdepth: 1
 
+   workflow
+   ca-installation
+   server-tls-certificate
+   client-tls-certificate
+   revoke-tls-certificate
    template-kubernetes-azure
    node-on-kubernetes
    add-node-on-kubernetes
    upgrade-on-kubernetes
    first-node
    log-analytics
+   easy-rsa

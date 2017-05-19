@@ -4,6 +4,7 @@ First Node or Bootstrap Node Setup
 This document is a work in progress and will evolve over time to include 
 security, websocket and other settings.
 
+
 Step 1: Set Up the Cluster
 --------------------------
 
@@ -421,8 +422,12 @@ Step 17. Verify that the Cluster is Correctly Set Up
         nslookup bdb-instance-0
         
         dig +noall +answer _bdb-port._tcp.bdb-instance-0.default.svc.cluster.local SRV
+
+        dig +noall +answer _bdb-ws-port._tcp.bdb-instance-0.default.svc.cluster.local SRV
         
         curl -X GET http://bdb-instance-0:9984
+
+        wsc ws://bdb-instance-0:9985/api/v1/streams/valid_tx
   
   * Verify NGINX instance
     
@@ -435,12 +440,16 @@ Step 17. Verify that the Cluster is Correctly Set Up
         curl -X GET http://ngx-instance-0:27017 # results in curl: (56) Recv failure: Connection reset by peer
         
         dig +noall +answer _ngx-public-bdb-port._tcp.ngx-instance-0.default.svc.cluster.local SRV
+
+        dig +noall +answer _ngx-public-ws-port._tcp.ngx-instance-0.default.svc.cluster.local SRV
   
   * If you have run the vanilla NGINX instance, run
 
     .. code:: bash
 
         curl -X GET http://ngx-instance-0:80
+
+        wsc ws://ngx-instance-0:81/api/v1/streams/valid_tx
   
   * If you have the OpenResty NGINX + 3scale instance, run
 
@@ -448,7 +457,7 @@ Step 17. Verify that the Cluster is Correctly Set Up
 
         curl -X GET https://ngx-instance-0
   
-  * Check the MongoDB monitoring and backup agent on the MOngoDB Coud Manager portal to verify they are working fine.
+  * Check the MongoDB monitoring and backup agent on the MongoDB Coud Manager portal to verify they are working fine.
   
   * Send some transactions to BigchainDB and verify it's up and running!
 
