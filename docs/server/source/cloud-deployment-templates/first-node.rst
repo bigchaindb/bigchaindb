@@ -457,7 +457,7 @@ Step 17. Verify that the Cluster is Correctly Set Up
 
         curl -X GET https://ngx-instance-0
   
-  * Check the MongoDB monitoring and backup agent on the MOngoDB Coud Manager portal to verify they are working fine.
+  * Check the MongoDB monitoring and backup agent on the MongoDB Coud Manager portal to verify they are working fine.
   
   * Send some transactions to BigchainDB and verify it's up and running!
 

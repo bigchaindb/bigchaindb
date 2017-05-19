@@ -10,6 +10,11 @@ If you find the cloud deployment templates for nodes helpful, then you may also 
 .. toctree::
    :maxdepth: 1
 
+   workflow
+   ca-installation
+   server-tls-certificate
+   client-tls-certificate
+   revoke-tls-certificate
    template-terraform-aws
    template-ansible
    azure-quickstart-template
@@ -19,3 +24,4 @@ If you find the cloud deployment templates for nodes helpful, then you may also 
    upgrade-on-kubernetes
    first-node
    log-analytics
+   easy-rsa
