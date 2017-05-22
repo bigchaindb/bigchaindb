@@ -152,7 +152,7 @@ These settings are for the [Gunicorn HTTP server](http://gunicorn.org/), which i
 [Gunicorn's documentation](http://docs.gunicorn.org/en/latest/settings.html#loglevel)
 for more information.
 
-`server.workers` is [the number of worker processes](http://docs.gunicorn.org/en/stable/settings.html#workers) for handling requests. If `None` (the default), the value will be (cpu_count * 2 + 1). If `None` (the default), the value will be 1. The HTTP server will be able to handle `server.workers` requests simultaneously.
+`server.workers` is [the number of worker processes](http://docs.gunicorn.org/en/stable/settings.html#workers) for handling requests. If `None` (the default), the value will be (cpu_count * 2 + 1). Each worker process has a single thread. The HTTP server will be able to handle `server.workers` requests simultaneously.
 
 **Example using environment variables**
 ```text
