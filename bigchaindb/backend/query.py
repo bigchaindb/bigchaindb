@@ -288,4 +288,14 @@ def get_txids_filtered(connection, asset_id, operation=None):
 
 @singledispatch
 def get_new_blocks_feed(connection, start_block_id):
+    """
+    Return a generator that yields change events of the blocks feed
+
+    Args:
+        start_block_id (str): ID of block to resume from
+
+    Returns:
+        Generator of change events
+    """
+
     raise NotImplementedError
