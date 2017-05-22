@@ -245,7 +245,7 @@ class Block(object):
 
         Args:
             block_body (dict): A block dictionary to be transformed.
-            tx_class (class): Transaction class to use
+            tx_construct (functions): Function to instantiate Transaction instance
 
         Returns:
             :class:`~Block`
