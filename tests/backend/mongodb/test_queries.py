@@ -205,10 +205,10 @@ def test_get_owned_ids(signed_create_tx, user_pk):
     block = Block(transactions=[signed_create_tx])
     conn.db.bigchain.insert_one(block.to_dict())
 
-    owned_ids = list(query.get_owned_ids(conn, user_pk))
+    [(block_id, tx)] = list(query.get_owned_ids(conn, user_pk))
 
-    assert len(owned_ids) == 1
-    assert owned_ids[0] == signed_create_tx.to_dict()
+    assert block_id == block.id
+    assert tx == signed_create_tx.to_dict()
 
 
 def test_get_votes_by_block_id(signed_create_tx, structurally_valid_vote):
@@ -417,3 +417,52 @@ def test_get_txids_filtered(signed_create_tx, signed_transfer_tx):
     # Test get by asset and TRANSFER
     txids = set(query.get_txids_filtered(conn, asset_id, Transaction.TRANSFER))
     assert txids == {signed_transfer_tx.id}
+
+
+def test_get_spending_transactions(user_pk):
+    from bigchaindb.backend import connect, query
+    from bigchaindb.models import Block, Transaction
+    conn = connect()
+
+    out = [([user_pk], 1)]
+    tx1 = Transaction.create([user_pk], out * 3)
+    inputs = tx1.to_inputs()
+    tx2 = Transaction.transfer([inputs[0]], out, tx1.id)
+    tx3 = Transaction.transfer([inputs[1]], out, tx1.id)
+    tx4 = Transaction.transfer([inputs[2]], out, tx1.id)
+    block = Block([tx1, tx2, tx3, tx4])
+    conn.db.bigchain.insert_one(block.to_dict())
+
+    links = [inputs[0].fulfills.to_dict(), inputs[2].fulfills.to_dict()]
+    res = list(query.get_spending_transactions(conn, links))
+
+    # tx3 not a member because input 1 not asked for
+    assert res == [(block.id, tx2.to_dict()), (block.id, tx4.to_dict())]
+
+
+def test_get_votes_for_blocks_by_voter():
+    from bigchaindb.backend import connect, query
+
+    conn = connect()
+    votes = [
+        {
+            'node_pubkey': 'a',
+            'vote': {'voting_for_block': 'block1'},
+        },
+        {
+            'node_pubkey': 'b',
+            'vote': {'voting_for_block': 'block1'},
+        },
+        {
+            'node_pubkey': 'a',
+            'vote': {'voting_for_block': 'block2'},
+        },
+        {
+            'node_pubkey': 'a',
+            'vote': {'voting_for_block': 'block3'},
+        }
+    ]
+    for vote in votes:
+        conn.db.votes.insert_one(vote.copy())
+    res = query.get_votes_for_blocks_by_voter(conn, ['block1', 'block2'], 'a')
+    assert list(res) == [votes[0], votes[2]]
