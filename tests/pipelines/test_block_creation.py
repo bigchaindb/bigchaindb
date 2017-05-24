@@ -28,14 +28,15 @@ def test_filter_by_assignee(b, signed_create_tx):
 
 
 @pytest.mark.bdb
-def test_validate_transaction(b):
+def test_validate_transaction(b, create_tx):
     from bigchaindb.pipelines.block import BlockPipeline
 
-    # validate_tx doesn't actually validate schema anymore.
-    tx = {'id': 'a'}
-
     block_maker = BlockPipeline()
-    assert block_maker.validate_tx(tx).data == tx
+
+    assert block_maker.validate_tx(create_tx.to_dict()) is None
+
+    valid_tx = create_tx.sign([b.me_private])
+    assert block_maker.validate_tx(valid_tx.to_dict()) == valid_tx
 
 
 def test_validate_transaction_handles_exceptions(b, signed_create_tx):
@@ -49,7 +50,7 @@ def test_validate_transaction_handles_exceptions(b, signed_create_tx):
 
     tx_dict = signed_create_tx.to_dict()
 
-    with patch('bigchaindb.models.FastTransaction.__init__') as validate:
+    with patch('bigchaindb.models.Transaction.validate') as validate:
         # Assert that validationerror gets caught
         validate.side_effect = ValidationError()
         assert block_maker.validate_tx(tx_dict) is None
