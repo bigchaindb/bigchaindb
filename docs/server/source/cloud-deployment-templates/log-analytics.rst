@@ -3,11 +3,10 @@ Log Analytics on Azure
 
 This section documents how to create and configure a Log Analytics workspace on
 Azure, for a Kubernetes-based deployment.
-
 The documented approach is based on an integration of Microsoft's Operations
 Management Suite (OMS) with a Kubernetes-based Azure Container Service cluster.
 
-The :ref:`oms-k8s-references` contains links to more detailed documentation on
+The :ref:`oms-k8s-references` section (below) contains links to more detailed documentation on
 Azure, and Kubernetes.
 
 There are three main steps involved:
@@ -23,9 +22,9 @@ one template so we'll cover them together. Step 3 relies on a
 Minimum Requirements
 --------------------
 This document assumes that you have already deployed a Kubernetes cluster, and
-that you have the Kubernetes command line ``kubectl`` installed.
+that you have the Kubernetes command line interface ``kubectl`` installed.
 
-Creating a workspace and adding a containers solution
+Creating a Workspace and Adding a Containers Solution
 -----------------------------------------------------
 For the sake of this document and example, we'll assume an existing resource
 group named:
@@ -46,7 +45,7 @@ If you feel creative you may replace these names by more interesting ones.
         --template-file log_analytics_oms.json \
         --parameters @log_analytics_oms.parameters.json
 
-An example of a simple tenplate file (``--template-file``):
+An example of a simple template file (``--template-file``):
 
 .. code-block:: json
 
@@ -120,14 +119,14 @@ An example of the associated parameter file (``--parameters``):
         }
     }
 
-Deploying the OMS agent(s)
---------------------------
-In order to deploy an OMS agent two important pieces of information are needed:
+Deploy the OMS Agents
+---------------------
+To deploy an OMS agent, two important pieces of information are needed:
 
 * workspace id
 * workspace key
 
-Obtaining the workspace id:
+You can obtain the workspace id using:
 
 .. code-block:: bash
 
@@ -138,13 +137,17 @@ Obtaining the workspace id:
         | grep customerId
     "customerId": "12345678-1234-1234-1234-123456789012",
 
-Obtaining the workspace key:
+Until we figure out a way to obtain the *workspace key* via the command line,
+you can get it via the OMS Portal.
+To get to the OMS Portal, go to the Azure Portal and click on:
 
-Until we figure out a way to this via the command line please see instructions
-under `Obtain your workspace ID and key
-<https://docs.microsoft.com/en-us/azure/container-service/container-service-kubernetes-oms#obtain-your-workspace-id-and-key>`_.
+Resource Groups > (Your k8s cluster's resource group) > Log analytics (OMS) > (Name of the only item listed) > OMS Workspace > OMS Portal
 
-Once you have the workspace id and key you can include them in the following
+(Let us know if you find a faster way.)
+Then see `Microsoft's instructions to obtain your workspace ID and key
+<https://docs.microsoft.com/en-us/azure/container-service/container-service-kubernetes-oms#obtain-your-workspace-id-and-key>`_ (via the OMS Portal).
+
+Once you have the workspace id and key, you can include them in the following
 YAML file (:download:`oms-daemonset.yaml
 <../../../../k8s/logging-and-monitoring/oms-daemonset.yaml>`):
 
@@ -182,14 +185,44 @@ YAML file (:download:`oms-daemonset.yaml
             hostPath:
               path: /var/run/docker.sock
 
-To deploy the agent simply run the following command:
+To deploy the OMS agents (one per Kubernetes node, i.e. one per computer),
+simply run the following command:
 
 .. code-block:: bash
 
     $ kubectl create -f oms-daemonset.yaml
 
 
-Some useful management tasks
+Create an Email Alert
+---------------------
+
+Suppose you want to get an email whenever there's a logging message
+with the CRITICAL or ERROR logging level from any container.
+At the time of writing, it wasn't possible to create email alerts
+using the Azure Portal (as far as we could tell),
+but it *was* possible using the OMS Portal.
+(There are instructions to get to the OMS Portal
+in the section titled :ref:`Deploy the OMS Agents` above.)
+Once you're in the OMS Portal, click on **Log Search**
+and enter the query string:
+
+``Type=ContainerLog (critical OR error)``
+
+If you don't see any query results,
+try experimenting with the query string and time range
+to convince yourself that it's working.
+For query syntax help, see the
+`Log Analytics search reference <https://docs.microsoft.com/en-us/azure/log-analytics/log-analytics-search-reference>`_.
+If you want to exclude the "404 Not Found" errors,
+use the query string
+"Type=ContainerLog (critical OR error) NOT(404)".
+Once you're satisfied with the query string,
+click the **🔔 Alert** icon in the top menu,
+fill in the form,
+and click **Save** when you're done.
+
+
+Some Useful Management Tasks
 ----------------------------
 List workspaces:
 
@@ -207,7 +240,7 @@ List solutions:
         --resource-group resource_group \
         --resource-type Microsoft.OperationsManagement/solutions
 
-Deleting the containers solution:
+Delete the containers solution:
 
 .. code-block:: bash
 
@@ -222,7 +255,7 @@ Deleting the containers solution:
         --resource-type Microsoft.OperationsManagement/solutions \
         --name "Containers(work_space)"
 
-Deleting the workspace:
+Delete the workspace:
 
 .. code-block:: bash
     

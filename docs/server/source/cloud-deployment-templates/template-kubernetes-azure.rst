@@ -86,6 +86,7 @@ confuse some software.
 
    $ az group create --name <resource group name> --location <location name>
 
+
 Example location names are ``koreacentral`` and ``westeurope``.
 
 Finally, you can deploy an ACS using something like:
@@ -95,12 +96,14 @@ Finally, you can deploy an ACS using something like:
    $ az acs create --name <a made-up cluster name> \
    --resource-group <name of resource group created earlier> \
    --master-count 3 \
-   --agent-count 3 \
+   --agent-count 2 \
    --admin-username ubuntu \
    --agent-vm-size Standard_D2_v2 \
    --dns-prefix <make up a name> \
    --ssh-key-value ~/.ssh/<name>.pub \
    --orchestrator-type kubernetes
+   --debug --output json
+
 
 There are more options. For help understanding all the options, use the built-in help:
 

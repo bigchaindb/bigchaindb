@@ -18,6 +18,9 @@ Appendices
    backend
    commands
    aws-setup
+   template-terraform-aws
+   template-ansible
+   azure-quickstart-template
    generate-key-pair-for-ssh
    firewall-notes
    ntp-notes

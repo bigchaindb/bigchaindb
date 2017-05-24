@@ -36,6 +36,8 @@ def test_schema(schema_func_name, args_qty):
     ('get_votes_by_block_id_and_voter', 2),
     ('update_transaction', 2),
     ('get_transaction_from_block', 2),
+    ('get_votes_for_blocks_by_voter', 2),
+    ('get_spending_transactions', 1),
     ('write_assets', 1),
     ('get_assets', 1),
 ))
