@@ -169,7 +169,7 @@ def get_changefeed():
     b = Bigchain()
     last_block_id = b.get_last_voted_block().id
     feed = backend.query.get_new_blocks_feed(b.connection, last_block_id)
-    return Node(feed.__next__)
+    return Node(feed.__next__, name='changefeed')
 
 
 def start():
