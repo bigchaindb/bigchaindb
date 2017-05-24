@@ -57,17 +57,16 @@ def test_configure_bigchaindb_configures_bigchaindb():
 @pytest.mark.usefixtures('ignore_local_config_file',
                          'reset_bigchaindb_config',
                          'reset_logging_config')
-@pytest.mark.parametrize('log_level', (
-    logging.DEBUG,
-    logging.INFO,
-    logging.WARNING,
-    logging.ERROR,
-    logging.CRITICAL,
-))
+@pytest.mark.parametrize('log_level', tuple(map(
+    logging.getLevelName,
+    (logging.DEBUG,
+     logging.INFO,
+     logging.WARNING,
+     logging.ERROR,
+     logging.CRITICAL)
+)))
 def test_configure_bigchaindb_logging(log_level):
     from bigchaindb.commands.utils import configure_bigchaindb
-    from bigchaindb import config
-    assert not config['log']
 
     @configure_bigchaindb
     def test_configure_logger(args):
@@ -76,7 +75,8 @@ def test_configure_bigchaindb_logging(log_level):
     args = Namespace(config=None, log_level=log_level)
     test_configure_logger(args)
     from bigchaindb import config
-    assert config['log'] == {'level_console': log_level}
+    assert config['log']['level_console'] == log_level
+    assert config['log']['level_logfile'] == log_level
 
 
 def test_start_raises_if_command_not_implemented():

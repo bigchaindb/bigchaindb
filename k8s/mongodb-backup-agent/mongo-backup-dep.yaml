@@ -1,0 +1,27 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mdb-backup-instance-0-dep
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mdb-backup-instance-0-dep
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: mdb-backup
+        image: bigchaindb/mongodb-backup-agent:1.0
+        imagePullPolicy: Always
+        env:
+        - name: MMS_API_KEY
+          valueFrom:
+            configMapKeyRef:
+              name: mdb-backup
+              key: api-key
+        resources:
+          limits:
+            cpu: 200m
+            memory: 768Mi
+      restartPolicy: Always

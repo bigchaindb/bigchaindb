@@ -54,6 +54,7 @@ tests_require = [
     'pytest-mock',
     'pytest-xdist',
     'pytest-flask',
+    'pytest-aiohttp',
     'tox',
 ] + docs_require
 
@@ -70,12 +71,14 @@ install_requires = [
     'python-rapidjson==0.0.11',
     'logstats>=0.2.1',
     'flask>=0.10.1',
+    'flask-cors~=3.0.0',
     'flask-restful~=0.3.0',
     'requests~=2.9',
     'gunicorn~=19.0',
     'multipipes~=0.1.0',
     'jsonschema~=2.5.1',
     'pyyaml~=3.12',
+    'aiohttp~=2.0',
 ]
 
 setup(
@@ -99,7 +102,7 @@ setup(
     zip_safe=False,
 
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'Topic :: Database',
         'Topic :: Database :: Database Engines/Servers',

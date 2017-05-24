@@ -157,7 +157,7 @@ Step 5: Create the Config Map - Optional
 
 This step is required only if you are planning to set up multiple
 `BigchainDB nodes
-<https://docs.bigchaindb.com/en/latest/terminology.html#node>`_.
+<https://docs.bigchaindb.com/en/latest/terminology.html>`_.
 
 MongoDB reads the local ``/etc/hosts`` file while bootstrapping a replica set
 to resolve the hostname provided to the ``rs.initiate()`` command. It needs to
@@ -268,7 +268,7 @@ Step 7: Initialize a MongoDB Replica Set - Optional
 
 This step is required only if you are planning to set up multiple
 `BigchainDB nodes
-<https://docs.bigchaindb.com/en/latest/terminology.html#node>`_.
+<https://docs.bigchaindb.com/en/latest/terminology.html>`_.
 
 
 Login to the running MongoDB instance and access the mongo shell using:
@@ -315,7 +315,7 @@ Step 8: Create a DNS record - Optional
 
 This step is required only if you are planning to set up multiple
 `BigchainDB nodes
-<https://docs.bigchaindb.com/en/latest/terminology.html#node>`_.
+<https://docs.bigchaindb.com/en/latest/terminology.html>`_.
 
 **Azure.** Select the current Azure resource group and look for the ``Public IP``
 resource. You should see at least 2 entries there - one for the Kubernetes
@@ -426,9 +426,8 @@ on the cluster and query the internal DNS and IP endpoints.
    $ kubectl run -it toolbox -- image <docker image to run> --restart=Never --rm
 
 There is a generic image based on alpine:3.5 with the required utilities
-hosted at Docker Hub under ``bigchaindb/toolbox``.
-The corresponding Dockerfile is `here
-<https://github.com/bigchaindb/bigchaindb/k8s/toolbox/Dockerfile>`_.
+hosted at Docker Hub under `bigchaindb/toolbox <https://hub.docker.com/r/bigchaindb/toolbox/>`_.
+The corresponding Dockerfile is in the bigchaindb/bigchaindb repository on GitHub, at `https://github.com/bigchaindb/bigchaindb/blob/master/k8s/toolbox/Dockerfile <https://github.com/bigchaindb/bigchaindb/blob/master/k8s/toolbox/Dockerfile>`_.
 
 You can use it as below to get started immediately:
 

@@ -27,8 +27,7 @@ BigchainDB from source. The [`CONTRIBUTING.md` file](../CONTRIBUTING.md) has
 instructions for how to do that.
 
 Next, make sure you have RethinkDB or MongoDB running in the background. You
-can run RethinkDB using `rethinkdb --daemon` or MongoDB using `mongod
---replSet=rs0`.
+can run RethinkDB using `rethinkdb --daemon` or MongoDB using `mongod --replSet=bigchain-rs`.
 
 The `pytest` command has many options. If you want to learn about all the
 things you can do with pytest, see [the pytest
@@ -68,20 +67,6 @@ The `pytest` command has many options. If you want to learn about all the things
 
 You can also use [Docker Compose](https://docs.docker.com/compose/) to run all the tests.
 
-#### With RethinkDB as the backend
-
-First, start `RethinkDB` in the background:
-
-```text
-$ docker-compose up -d rdb
-```
-
-then run the tests using:
-
-```text
-$ docker-compose run --rm bdb py.test -v
-```
-
 #### With MongoDB as the backend
 
 First, start `MongoDB` in the background:
@@ -93,7 +78,7 @@ $ docker-compose up -d mdb
 then run the tests using:
 
 ```text
-$ docker-compose run --rm bdb-mdb py.test -v
+$ docker-compose run --rm bdb py.test -v
 ```
 
 If you've upgraded to a newer version of BigchainDB, you might have to rebuild
@@ -103,8 +88,22 @@ the images before being able to run the tests. Run:
 $ docker-compose build
 ```
 
+#### With RethinkDB as the backend
+
+First, start `RethinkDB` in the background:
+
+```text
+$ docker-compose up -d rdb
+```
+
+then run the tests using:
+
+```text
+$ docker-compose run --rm bdb-rdb py.test -v
+```
+
 to rebuild all the images (usually you only need to rebuild the `bdb` and
- `bdb-mdb` images).
+ `bdb-rdb` images).
 
 ## Automated Testing of All Pull Requests
 

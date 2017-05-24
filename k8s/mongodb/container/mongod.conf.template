@@ -6,7 +6,7 @@
 # where to write logging data.
 systemLog:
   verbosity: 0
-  #TODO traceAllExceptions: true
+  # traceAllExceptions: true
   timeStampFormat: iso8601-utc
   component:
     accessControl:
@@ -41,7 +41,7 @@ processManagement:
   pidFilePath: /tmp/mongod.pid
 
 net:
-  port: PORT
+  port: MONGODB_PORT
   bindIp: 0.0.0.0
   maxIncomingConnections: 8192
   wireObjectCheck: false
@@ -53,11 +53,24 @@ net:
     enabled: false
   compression:
     compressors: snappy
-  #ssl: TODO
+  ssl:
+    mode: requireSSL
+    PEMKeyFile: MONGODB_KEY_FILE_PATH
+    #PEMKeyPassword: MONGODB_KEY_FILE_PASSWORD
+    CAFile: MONGODB_CA_FILE_PATH
+    CRLFile: MONGODB_CRL_FILE_PATH
+
+    #allowConnectionsWithoutCertificates: false
+    #allowInvalidHostnames: false
+    #weakCertificateValidation: false
+    #allowInvalidCertificates: false
 
 #security: TODO
+#  authorization: enabled
+#  clusterAuthMode: x509
 
-#setParameter:
+setParameter:
+  enableLocalhostAuthBypass: true
   #notablescan: 1 TODO
   #logUserIds: 1 TODO
 
@@ -84,6 +97,4 @@ operationProfiling:
 replication:
   replSetName: REPLICA_SET_NAME
   enableMajorityReadConcern: true
-
-#sharding:
 

@@ -1,8 +1,6 @@
 """This module provides the blueprint for the blocks API endpoints.
 
-For more information please refer to the documentation on ReadTheDocs:
- - https://docs.bigchaindb.com/projects/server/en/latest/drivers-clients/
-   http-client-server-api.html
+For more information please refer to the documentation: http://bigchaindb.com/http-api
 """
 from flask import current_app
 from flask_restful import Resource, reqparse
@@ -44,7 +42,7 @@ class BlockListApi(Resource):
         """
         parser = reqparse.RequestParser()
         parser.add_argument('tx_id', type=str, required=True)
-        parser.add_argument('status', type=str,
+        parser.add_argument('status', type=str, case_sensitive=False,
                             choices=[Bigchain.BLOCK_VALID, Bigchain.BLOCK_INVALID, Bigchain.BLOCK_UNDECIDED])
 
         args = parser.parse_args(strict=True)

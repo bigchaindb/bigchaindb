@@ -5,6 +5,9 @@ import logging
 
 from flask import jsonify, request
 
+from bigchaindb import config
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -21,3 +24,11 @@ def make_error(status_code, message=None):
 def base_url():
     return '%s://%s/' % (request.environ['wsgi.url_scheme'],
                          request.environ['HTTP_HOST'])
+
+
+def base_ws_uri():
+    """Base websocket uri."""
+    # TODO Revisit as this is a workaround to address issue
+    # https://github.com/bigchaindb/bigchaindb/issues/1465.
+    host = request.environ['HTTP_HOST'].split(':')[0]
+    return 'ws://{}:{}'.format(host, config['wsserver']['port'])

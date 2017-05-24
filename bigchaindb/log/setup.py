@@ -49,7 +49,7 @@ def setup_logging(*, user_log_config=None):
     setup_sub_logger(user_log_config=user_log_config)
 
 
-def create_subscriber_logging_config(*, user_log_config=None):
+def create_subscriber_logging_config(*, user_log_config=None):  # noqa: C901
     sub_log_config = deepcopy(SUBSCRIBER_LOGGING_CONFIG)
 
     if not user_log_config:
@@ -58,6 +58,10 @@ def create_subscriber_logging_config(*, user_log_config=None):
     if 'file' in user_log_config:
         filename = user_log_config['file']
         sub_log_config['handlers']['file']['filename'] = filename
+
+    if 'error_file' in user_log_config:
+        error_filename = user_log_config['error_file']
+        sub_log_config['handlers']['errors']['filename'] = error_filename
 
     if 'level_console' in user_log_config:
         level = _normalize_log_level(user_log_config['level_console'])
