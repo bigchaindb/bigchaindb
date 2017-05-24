@@ -351,7 +351,7 @@ class Block(object):
 
     def decouple_assets(self):
         """
-        Extracts the assets from the `CREATE` transactions in the block.
+        Extracts the assets from the ``CREATE`` transactions in the block.
 
         Returns:
             tuple: (assets, block) with the assets being a list of dicts and
@@ -372,9 +372,9 @@ class Block(object):
     @staticmethod
     def couple_assets(block_dict, assets):
         """
-        Give a block_dict with not assets (as returned from a database call)
-        and a list of assets, reconstruct the original block by puting the
-        assets back into the `CREATE` transactions in the block.
+        Given a block_dict with no assets (as returned from a database call)
+        and a list of assets, reconstruct the original block by putting the
+        assets back into the ``CREATE`` transactions in the block.
 
         Args:
             block_dict (:obj:`dict`): The block dict as returned from a
@@ -391,15 +391,14 @@ class Block(object):
         for transaction in block_dict['block']['transactions']:
             if transaction['operation'] in [Transaction.CREATE,
                                             Transaction.GENESIS]:
-                transaction.update({'asset': assets.get(transaction['id'],
-                                                        None)})
+                transaction.update({'asset': assets.get(transaction['id'])})
         return block_dict
 
     @staticmethod
     def get_asset_ids(block_dict):
         """
         Given a block_dict return all the asset_ids for that block (the txid
-        of CREATE transactions). Usefull to know which assets to retrieve
+        of CREATE transactions). Useful to know which assets to retrieve
         from the database to reconstruct the block.
 
         Args:

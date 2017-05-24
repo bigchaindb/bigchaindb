@@ -220,7 +220,7 @@ class TestBlockModel(object):
         block_dict_reconstructed = Block.couple_assets(block_dict,
                                                        assets_from_block)
 
-        # check that the reconstructed block is the as the original block
+        # check that the reconstructed block is the same as the original block
         assert block == Block.from_dict(block_dict_reconstructed)
 
     def test_get_asset_ids(self, b):
