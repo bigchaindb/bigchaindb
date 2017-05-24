@@ -5,8 +5,9 @@ For more information please refer to the documentation: http://bigchaindb.com/ht
 import logging
 
 from flask_restful import reqparse, Resource
+from flask import current_app
 
-from bigchaindb.backend import connect, query
+from bigchaindb.backend.exceptions import OperationError
 from bigchaindb.web.views.base import make_error
 
 logger = logging.getLogger(__name__)
@@ -15,12 +16,26 @@ logger = logging.getLogger(__name__)
 class AssetListApi(Resource):
     def get(self):
         parser = reqparse.RequestParser()
-        parser.add_argument('text_search', type=str, required=True)
+        parser.add_argument('search', type=str, required=True)
+        parser.add_argument('limit', type=int)
         args = parser.parse_args()
 
-        text_query = args['text_search']
-        if text_query:
-            assets = query.text_search(connect(), text_query)
-            return list(assets)
-        else:
+        if not args['search']:
             return make_error(400, 'text_search cannot be empty')
+        if not args['limit']:
+            # if the limit is not specified do not pass None to `text_search`
+            del args['limit']
+
+        pool = current_app.config['bigchain_pool']
+
+        with pool() as bigchain:
+            assets = bigchain.text_search(**args)
+
+        try:
+            # This only works with MongoDB as the backend
+            return list(assets)
+        except OperationError as e:
+            return make_error(
+                400,
+                '({}): {}'.format(type(e).__name__, e)
+            )
