@@ -213,6 +213,89 @@ class TestBigchainApi(object):
         assert b.get_transaction(tx1.id) is None
         assert b.get_transaction(tx2.id) == tx2
 
+    @pytest.mark.genesis
+    def test_text_search(self, b):
+        from bigchaindb.models import Transaction
+        from bigchaindb.backend.exceptions import OperationError
+        from bigchaindb.backend.mongodb.connection import MongoDBConnection
+
+        # define the assets
+        asset1 = {'msg': 'BigchainDB 1'}
+        asset2 = {'msg': 'BigchainDB 2'}
+        asset3 = {'msg': 'BigchainDB 3'}
+
+        # create the transactions
+        tx1 = Transaction.create([b.me], [([b.me], 1)],
+                                 asset=asset1).sign([b.me_private])
+        tx2 = Transaction.create([b.me], [([b.me], 1)],
+                                 asset=asset2).sign([b.me_private])
+        tx3 = Transaction.create([b.me], [([b.me], 1)],
+                                 asset=asset3).sign([b.me_private])
+
+        # create the block
+        block = b.create_block([tx1, tx2, tx3])
+        b.write_block(block)
+
+        # vote valid
+        vote = b.vote(block.id, b.get_last_voted_block().id, True)
+        b.write_vote(vote)
+
+        # get the assets through text search
+        # this query only works with MongoDB
+        try:
+            assets = list(b.text_search('bigchaindb'))
+        except OperationError as exc:
+            assert not isinstance(b.connection, MongoDBConnection)
+            return
+
+        assert len(assets) == 3
+
+    @pytest.mark.genesis
+    def test_text_search_returns_valid_only(self, monkeypatch, b):
+        from bigchaindb.models import Transaction
+        from bigchaindb.backend.exceptions import OperationError
+        from bigchaindb.backend.mongodb.connection import MongoDBConnection
+
+        asset_valid = {'msg': 'Hello BigchainDB!'}
+        asset_invalid = {'msg': 'Goodbye BigchainDB!'}
+
+        monkeypatch.setattr('time.time', lambda: 1000000000)
+        tx1 = Transaction.create([b.me], [([b.me], 1)],
+                                 asset=asset_valid)
+        tx1 = tx1.sign([b.me_private])
+        block1 = b.create_block([tx1])
+        b.write_block(block1)
+
+        monkeypatch.setattr('time.time', lambda: 1000000020)
+        tx2 = Transaction.create([b.me], [([b.me], 1)],
+                                 asset=asset_invalid)
+        tx2 = tx2.sign([b.me_private])
+        block2 = b.create_block([tx2])
+        b.write_block(block2)
+
+        # vote the first block valid
+        vote = b.vote(block1.id, b.get_last_voted_block().id, True)
+        b.write_vote(vote)
+
+        # vote the second block invalid
+        vote = b.vote(block2.id, b.get_last_voted_block().id, False)
+        b.write_vote(vote)
+
+        # get assets with text search
+        try:
+            assets = list(b.text_search('bigchaindb'))
+        except OperationError:
+            assert not isinstance(b.connection, MongoDBConnection)
+            return
+
+        # should only return one asset
+        assert len(assets) == 1
+        # should return the asset created by tx1
+        assert assets[0] == {
+            'data': {'msg': 'Hello BigchainDB!'},
+            'id': tx1.id
+        }
+
     @pytest.mark.usefixtures('inputs')
     def test_write_transaction(self, b, user_pk, user_sk):
         from bigchaindb import Bigchain

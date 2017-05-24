@@ -330,7 +330,7 @@ def get_unvoted_blocks(conn, node_pubkey):
 
 
 @register_query(MongoDBConnection)
-def text_search(conn, search, language='english', case_sensitive=False,
+def text_search(conn, search, *, language='english', case_sensitive=False,
                 diacritic_sensitive=False, text_score=False, limit=0):
     cursor = conn.run(
         conn.collection('assets')

@@ -662,3 +662,14 @@ class Bigchain(object):
                 the database.
         """
         return backend.query.write_assets(self.connection, assets)
+
+    def text_search(self, search, *, limit=0):
+        assets = backend.query.text_search(self.connection, search, limit=limit)
+
+        # TODO: This is not efficient. There may be a more efficient way to
+        #       query by storing block ids with the assets and using fastquery.
+        #       See https://github.com/bigchaindb/bigchaindb/issues/1496
+        for asset in assets:
+            tx, status = self.get_transaction(asset['id'], True)
+            if status == self.TX_VALID:
+                yield asset
