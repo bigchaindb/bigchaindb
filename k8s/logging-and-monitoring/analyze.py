@@ -7,9 +7,13 @@ To get the relevant NGINX logs:
 
 Type=ContainerLog Image="bigchaindb/nginx_3scale:1.3" GET NOT("Go-http-client") NOT(runscope)
 
-(This gets all logs from the NGINX container, only those with the word "GET", excluding those with the string "Go-http-client" [internal Kubernetes traffic], excluding those with the string "runscope" [Runscope tests].)
+(This gets all logs from the NGINX container, only those with the word "GET",
+excluding those with the string "Go-http-client" [internal Kubernetes traffic],
+excluding those with the string "runscope" [Runscope tests].)
 
-4. In the left sidebar, at the top, use the dropdown menu to select the time range, e.g. "Data based on last 7 days". Pay attention to the number of results and the time series chart in the left sidebar. Are there any spikes?
+4. In the left sidebar, at the top, use the dropdown menu to select the time range,
+e.g. "Data based on last 7 days". Pay attention to the number of results and
+the time series chart in the left sidebar. Are there any spikes?
 5. Export the search results. A CSV file will be saved on your local machine.
 6. $ python3 analyze.py logs.csv
 
@@ -19,11 +23,17 @@ Thanks to https://gist.github.com/hreeder/f1ffe1408d296ce0591d
 import sys
 import csv
 import re
-import datetime
 from dateutil.parser import parse
 
 
-lineformat = re.compile(r"""(?P<ipaddress>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}) - - \[(?P<dateandtime>\d{2}\/[a-z]{3}\/\d{4}:\d{2}:\d{2}:\d{2} (\+|\-)\d{4})\] ((\"(GET|POST) )(?P<url>.+)(http\/1\.1")) (?P<statuscode>\d{3}) (?P<bytessent>\d+) (["](?P<refferer>(\-)|(.+))["]) (["](?P<useragent>.+)["])""", re.IGNORECASE)
+lineformat = re.compile(r'(?P<ipaddress>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}) - - '
+                        r'\[(?P<dateandtime>\d{2}\/[a-z]{3}\/\d{4}:\d{2}:\d{2}:\d{2} '
+                        r'(\+|\-)\d{4})\] ((\"(GET|POST) )(?P<url>.+)(http\/1\.1")) '
+                        r'(?P<statuscode>\d{3}) '
+                        r'(?P<bytessent>\d+) '
+                        r'(["](?P<refferer>(\-)|(.+))["]) '
+                        r'(["](?P<useragent>.+)["])',
+                        re.IGNORECASE)
 
 filepath = sys.argv[1]
 
@@ -42,14 +52,6 @@ with open(filepath) as csvfile:
                 # so logline_list is a list of dicts
                 # print('{}'.format(logline_dict))
 
-# Example logline:
-
-# 95.91.211.240 - - [22/May/2017:13:23:21 +0000] "GET /api/v1/statuses?tx_id=2306f34f6a98f1754e1048e8a71cc6b2d01ff594b08f6def88e15931caaaca98 HTTP/1.1" 200 120 "-" "python-requests/2.13.0" 
-
-# Example logline_dict:
-
-# {'statuscode': '200', 'url': '/api/v1/statuses?tx_id=2306f34f6a98f1754e1048e8a71cc6b2d01ff594b08f6def88e15931caaaca98 ', 'dateandtime': '22/May/2017:13:23:21 +0000', 'useragent': 'python-requests/2.13.0', 'refferer': '-', 'bytessent': '120', 'ipaddress': '95.91.211.240'}
-
 # Analysis
 
 total_bytes_sent = 0
@@ -67,8 +69,9 @@ print('Number of log lines seen: {}'.format(len(logline_list)))
 # Time range
 trange_sec = max(tstamp_list) - min(tstamp_list)
 trange_days = trange_sec / 60.0 / 60.0 / 24.0
-print("Time range seen (days): {}".format(trange_days))
+print('Time range seen (days): {}'.format(trange_days))
 
-print("Total bytes sent: {}".format(total_bytes_sent))
+print('Total bytes sent: {}'.format(total_bytes_sent))
 
-print("Average bytes sent per day (out via GET): {}".format(total_bytes_sent / trange_days))
+print('Average bytes sent per day (out via GET): {}'.
+      format(total_bytes_sent / trange_days))
