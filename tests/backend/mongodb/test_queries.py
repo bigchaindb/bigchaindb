@@ -350,31 +350,29 @@ def test_get_genesis_block(genesis_block):
     assert query.get_genesis_block(conn) == genesis_block.to_dict()
 
 
-def test_get_last_voted_block(genesis_block, signed_create_tx, b):
+def test_get_votes_by_pubkey(genesis_block, signed_create_tx, b):
     from bigchaindb.backend import connect, query
-    from bigchaindb.models import Block
-    from bigchaindb.common.exceptions import CyclicBlockchainError
     conn = connect()
 
-    # check that the last voted block is the genesis block
-    assert query.get_last_voted_block(conn, b.me) == genesis_block.to_dict()
+    def get_votes():
+        return list(query.get_votes_by_pubkey(conn, b.me))
 
-    # create and insert a new vote and block
-    block = Block(transactions=[signed_create_tx])
-    conn.db.bigchain.insert_one(block.to_dict())
-    vote = b.vote(block.id, genesis_block.id, True)
-    conn.db.votes.insert_one(vote)
+    assert get_votes() == []
 
-    assert query.get_last_voted_block(conn, b.me) == block.to_dict()
+    # Check that sort order is correct
+    # This relies on the timestamps being the same length,
+    # even though they are numbers.
+    times = [34, 24, 50, 42, 99]
+    votes = []
 
-    # force a bad chain
-    vote.pop('_id')
-    vote['vote']['voting_for_block'] = genesis_block.id
-    vote['vote']['previous_block'] = block.id
-    conn.db.votes.insert_one(vote)
+    for i in times:
+        vote = b.vote('A' + str(i), '0', True)
+        vote['vote']['timestamp'] = str(i)
+        votes.append(vote.copy())
+        conn.db.votes.insert_one(vote)
 
-    with pytest.raises(CyclicBlockchainError):
-        query.get_last_voted_block(conn, b.me)
+    sorted_votes = [votes[times.index(i)] for i in sorted(times, reverse=True)]
+    assert get_votes() == sorted_votes
 
 
 def test_get_unvoted_blocks(signed_create_tx):

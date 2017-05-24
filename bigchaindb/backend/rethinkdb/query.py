@@ -4,7 +4,6 @@ from time import time
 import rethinkdb as r
 
 from bigchaindb import backend, utils
-from bigchaindb.common import exceptions
 from bigchaindb.common.transaction import Transaction
 from bigchaindb.backend.utils import module_dispatch_registrar
 from bigchaindb.backend.rethinkdb.connection import RethinkDBConnection
@@ -189,56 +188,12 @@ def get_genesis_block(connection):
 
 
 @register_query(RethinkDBConnection)
-def get_last_voted_block(connection, node_pubkey):
-    try:
-        # get the latest value for the vote timestamp (over all votes)
-        max_timestamp = connection.run(
-            r.table('votes', read_mode=READ_MODE)
-            .filter(r.row['node_pubkey'] == node_pubkey)
-            .max(r.row['vote']['timestamp']))['vote']['timestamp']
-
-        last_voted = list(connection.run(
-            r.table('votes', read_mode=READ_MODE)
-            .filter(r.row['vote']['timestamp'] == max_timestamp)
-            .filter(r.row['node_pubkey'] == node_pubkey)))
-
-    except r.ReqlNonExistenceError:
-        # return last vote if last vote exists else return Genesis block
-        return get_genesis_block(connection)
-
-    # Now the fun starts. Since the resolution of timestamp is a second,
-    # we might have more than one vote per timestamp. If this is the case
-    # then we need to rebuild the chain for the blocks that have been retrieved
-    # to get the last one.
-
-    # Given a block_id, mapping returns the id of the block pointing at it.
-    mapping = {v['vote']['previous_block']: v['vote']['voting_for_block']
-               for v in last_voted}
-
-    # Since we follow the chain backwards, we can start from a random
-    # point of the chain and "move up" from it.
-    last_block_id = list(mapping.values())[0]
-
-    # We must be sure to break the infinite loop. This happens when:
-    # - the block we are currenty iterating is the one we are looking for.
-    #   This will trigger a KeyError, breaking the loop
-    # - we are visiting again a node we already explored, hence there is
-    #   a loop. This might happen if a vote points both `previous_block`
-    #   and `voting_for_block` to the same `block_id`
-    explored = set()
-
-    while True:
-        try:
-            if last_block_id in explored:
-                raise exceptions.CyclicBlockchainError()
-            explored.add(last_block_id)
-            last_block_id = mapping[last_block_id]
-        except KeyError:
-            break
-
+def get_votes_by_pubkey(connection, node_pubkey):
     return connection.run(
-            r.table('bigchain', read_mode=READ_MODE)
-            .get(last_block_id))
+        r.table('votes', read_mode=READ_MODE)
+        .filter(r.row['node_pubkey'] == node_pubkey)
+        .order_by(r.desc(r.row['vote']['timestamp']))
+        .without('id'))
 
 
 @register_query(RethinkDBConnection)

@@ -1,3 +1,4 @@
+import itertools
 import random
 from time import time
 
@@ -547,9 +548,45 @@ class Bigchain(object):
         return backend.query.write_vote(self.connection, vote)
 
     def get_last_voted_block(self):
-        """Returns the last block that this node voted on."""
-
-        return Block.from_dict(backend.query.get_last_voted_block(self.connection, self.me))
+        """
+        Returns the last block that this node voted on,
+        or the GENESIS block if this node hasn't voted on anything yet.
+        """
+        # Get all votes with my PK ordered by timestamp in descending order
+        all_votes = backend.query.get_votes_by_pubkey(self.connection, self.me)
+        safe_votes = filter(self.consensus.voting.verify_vote_schema, all_votes)
+        # Now the fun starts. Since the resolution of timestamp is a second,
+        # we might have more than one vote per timestamp. If this is the case
+        # then we need to rebuild the chain for the blocks that have been retrieved
+        # to get the last one.
+        votes_by_ts = itertools.groupby(safe_votes, lambda v: v['vote']['timestamp'])
+        for _, votes in votes_by_ts:
+            votes = list(votes)
+            # Given a block_id, mapping returns the id of the block pointing at it.
+            mapping = {}
+            seen = set()
+            for vote in votes:
+                if self.consensus.voting.verify_vote_signature(vote):
+                    block_id = vote['vote']['voting_for_block']
+                    mapping[vote['vote']['previous_block']] = block_id
+            if mapping:
+                # Since we follow the chain backwards, we can start from a random
+                # point of the chain and "move up" from it.
+                while block_id in mapping:
+                    block_id = mapping[block_id]
+                    # We must be sure to break the infinite loop. This happens when:
+                    # - the block we are currenty iterating is the one we are looking for.
+                    #   This will trigger a KeyError, breaking the loop
+                    # - we are visiting again a node we already explored, hence there is
+                    #   a loop. This might happen if a vote points both `previous_block`
+                    #   and `voting_for_block` to the same `block_id`
+                    if block_id in seen:
+                        raise exceptions.CyclicBlockchainError()
+                    seen.add(block_id)
+                block = backend.query.get_block(self.connection, block_id)
+                return Block.from_dict(block)
+        # Didn't find a vote - return GENESIS block
+        return Block.from_dict(backend.query.get_genesis_block(self.connection))
 
     def get_unvoted_blocks(self):
         """Return all the blocks that have not been voted on by this node.
