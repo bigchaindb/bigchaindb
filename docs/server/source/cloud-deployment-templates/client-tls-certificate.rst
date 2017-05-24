@@ -34,7 +34,6 @@ and using:
 
    ./easyrsa gen-req bdb-instance-0 nopass
 
-
 You should change ``bdb-instance-0`` to a value based on the client
 the certificate is for.
 
