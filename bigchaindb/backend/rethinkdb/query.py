@@ -122,13 +122,14 @@ def get_spent(connection, transaction_id, output):
 
 @register_query(RethinkDBConnection)
 def get_owned_ids(connection, owner):
-    return connection.run(
-            r.table('bigchain', read_mode=READ_MODE)
+    query = (r.table('bigchain', read_mode=READ_MODE)
              .get_all(owner, index='outputs')
              .distinct()
-             .concat_map(lambda doc: doc['block']['transactions'])
-             .filter(lambda tx: tx['outputs'].contains(
+             .concat_map(unwind_block_transactions)
+             .filter(lambda doc: doc['tx']['outputs'].contains(
                 lambda c: c['public_keys'].contains(owner))))
+    cursor = connection.run(query)
+    return ((b['id'], b['tx']) for b in cursor)
 
 
 @register_query(RethinkDBConnection)
@@ -266,3 +267,30 @@ def get_unvoted_blocks(connection, node_pubkey):
     #        database level. Solving issue #444 can help untangling the situation
     unvoted_blocks = filter(lambda block: not utils.is_genesis_block(block), unvoted)
     return unvoted_blocks
+
+
+@register_query(RethinkDBConnection)
+def get_votes_for_blocks_by_voter(connection, block_ids, node_pubkey):
+    return connection.run(
+        r.table('votes')
+        .filter(lambda row: r.expr(block_ids).contains(row['vote']['voting_for_block']))
+        .filter(lambda row: row['node_pubkey'] == node_pubkey))
+
+
+def unwind_block_transactions(block):
+    """ Yield a block for each transaction in given block """
+    return block['block']['transactions'].map(lambda tx: block.merge({'tx': tx}))
+
+
+@register_query(RethinkDBConnection)
+def get_spending_transactions(connection, links):
+    query = (
+        r.table('bigchain')
+        .get_all(*[(l['txid'], l['output']) for l in links], index='inputs')
+        .concat_map(unwind_block_transactions)
+        # filter transactions spending output
+        .filter(lambda doc: r.expr(links).set_intersection(
+            doc['tx']['inputs'].map(lambda i: i['fulfills'])))
+    )
+    cursor = connection.run(query)
+    return ((b['id'], b['tx']) for b in cursor)

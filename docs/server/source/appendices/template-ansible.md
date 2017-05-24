@@ -1,8 +1,8 @@
 # Template: Ansible Playbook to Run a BigchainDB Node on an Ubuntu Machine
 
-If you didn't read the introduction to the [cloud deployment templates](index.html), please do that now. The main point is that they're not for deploying a production node; they can be used as a starting point.
-
 This page explains how to use [Ansible](https://www.ansible.com/) to install, configure and run all the software needed to run a one-machine BigchainDB node on a server running Ubuntu 16.04.
+
+**Note: We're not actively maintaining the associated Ansible files (e.g. playbooks). They are RethinkDB-specific, even though we now recommend using MongoDB. You may find the old Ansible stuff useful nevertheless, which is why we moved this page to the Appendices rather than deleting it.**
 
 
 ## Install Ansible

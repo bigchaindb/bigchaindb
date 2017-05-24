@@ -28,4 +28,7 @@ def base_url():
 
 def base_ws_uri():
     """Base websocket uri."""
-    return 'ws://{host}:{port}'.format(**config['wsserver'])
+    # TODO Revisit as this is a workaround to address issue
+    # https://github.com/bigchaindb/bigchaindb/issues/1465.
+    host = request.environ['HTTP_HOST'].split(':')[0]
+    return 'ws://{}:{}'.format(host, config['wsserver']['port'])
