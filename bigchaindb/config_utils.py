@@ -238,7 +238,10 @@ def autoconfigure(filename=None, config=None, force=False):
     try:
         newconfig = update(newconfig, file_config(filename=filename))
     except FileNotFoundError as e:
-        logger.warning('Cannot find config file `%s`.' % e.filename)
+        if filename:
+            raise
+        else:
+            logger.info('Cannot find config file `%s`.' % e.filename)
 
     # override configuration with env variables
     newconfig = env_config(newconfig)

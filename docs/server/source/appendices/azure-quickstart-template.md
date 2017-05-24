@@ -1,6 +1,6 @@
 # Azure Quickstart Template
 
-If you didn't read the introduction to the [cloud deployment templates](index.html), please do that now. The main point is that they're not for deploying a production node; they can be used as a starting point.
+This page outlines how to run a single BigchainDB node on the Microsoft Azure public cloud, with RethinkDB as the database backend. It uses an Azure Quickstart Template. That template is dated because we now recommend using MongoDB instead of RethinkDB. That's why we moved this page to the Appendices.
 
 Note: There was an Azure quickstart template in the `blockchain` directory of Microsoft's `Azure/azure-quickstart-templates` repository on GitHub. It's gone now; it was replaced by the one described here.
 

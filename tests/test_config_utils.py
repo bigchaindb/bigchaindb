@@ -257,6 +257,18 @@ def test_autoconfigure_env_precedence(monkeypatch):
     assert bigchaindb.config['server']['bind'] == 'localhost:9985'
 
 
+def test_autoconfigure_explicit_file(monkeypatch):
+    from bigchaindb import config_utils
+
+    def file_config(*args, **kwargs):
+        raise FileNotFoundError()
+
+    monkeypatch.setattr('bigchaindb.config_utils.file_config', file_config)
+
+    with pytest.raises(FileNotFoundError):
+        config_utils.autoconfigure(filename='autoexec.bat')
+
+
 def test_update_config(monkeypatch):
     import bigchaindb
     from bigchaindb import config_utils
