@@ -8,11 +8,11 @@ set -euo pipefail
 
 MONGODB_MON_CONF_FILE=/etc/mongodb-mms/monitoring-agent.config
 
-mms_api_key=`printenv MMS_API_KEY`
+mms_api_keyfile_path=`printenv MMS_API_KEYFILE_PATH`
 ca_crt_path=`printenv CA_CRT_PATH`
 monitoring_crt_path=`printenv MONITORING_PEM_PATH`
 
-if [[ -z "${mms_api_key}" || \
+if [[ -z "${mms_api_keyfile_path}" || \
     -z "${ca_crt_path}" || \
     -z "${monitoring_crt_path}" ]]; then
   echo "Invalid environment settings detected. Exiting!"
@@ -22,6 +22,9 @@ fi
 # Delete all lines containing "mmsApiKey" in the MongoDB Monitoring Agent
 # config file /etc/mongodb-mms/monitoring-agent.config
 sed -i '/mmsApiKey/d'  $MONGODB_MON_CONF_FILE
+
+# Get the api key from file
+mms_api_key=`cat ${MMS_API_KEYFILE_PATH}`
 
 # Append a new line of the form
 # mmsApiKey=value_of_MMS_API_KEY
