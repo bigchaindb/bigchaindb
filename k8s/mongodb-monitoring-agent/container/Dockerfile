@@ -18,7 +18,10 @@ ARG FILE_URL="https://cloud.mongodb.com/download/agent/monitoring/"$DEB_FILE
 WORKDIR /
 RUN apt update \
     && apt -y upgrade \
-    && apt -y install --no-install-recommends curl ca-certificates logrotate \
+    && apt -y install --no-install-recommends \
+      curl \
+      ca-certificates \
+      logrotate \
       libsasl2-2 \
     && curl -OL $FILE_URL \
     && dpkg -i $DEB_FILE \
@@ -50,5 +53,6 @@ RUN apt update \
 
 COPY mongodb_mon_agent_entrypoint.bash /
 RUN chown -R mongodb-mms-agent:mongodb-mms-agent /etc/mongodb-mms/
+VOLUME /etc/mongod/ssl
 #USER mongodb-mms-agent - BUG(Krish) Uncomment after tests are complete
 ENTRYPOINT ["/mongodb_mon_agent_entrypoint.bash"]
