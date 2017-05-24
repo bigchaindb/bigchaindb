@@ -2,29 +2,18 @@
 # This YAML file desribes a ConfigMap for the cluster #
 #######################################################
 
+## Common Env Variables For This Node
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: mdb-mon
+  name: vars
   namespace: default
 data:
-  api-key: "<api key here>"
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: mdb-backup
-  namespace: default
-data:
-  api-key: "<api key here>"
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: mdb-fqdn
-  namespace: default
-data:
-  fqdn: mdb-instance-0
+  mdb-instance-name: "<name of the mdb instance>"
+  bdb-instance-name: "<name of the bdb instance>"
+  ngx-instance-name: "<name of the ngx instance>"
+  mdb-mon-instance-name: "<name of the mdb monitoring agent instance>"
+  mdb-bak-instance-name: "<name of the mdb backup agent instance>"
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -32,5 +21,21 @@ metadata:
   name: mongodb-whitelist
   namespace: default
 data:
+  # We support only 'all' currently
   allowed-hosts: "all"
-
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bdb-keyring
+  namespace: default
+data:
+  bdb-keyring: "<b64 encoded, ':' separated list of public keys>"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bdb-public-key
+  namespace: default
+data:
+  bdb-public-key: "<b64 encoded public key>"
