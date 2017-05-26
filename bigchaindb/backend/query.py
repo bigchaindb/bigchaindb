@@ -363,17 +363,19 @@ def text_search(conn, search, *, language='english', case_sensitive=False,
     """Return all the assets that match the text search.
 
     The results are sorted by text score.
+    For more information about the behavior of text search on MongoDB see
+    https://docs.mongodb.com/manual/reference/operator/query/text/#behavior
 
     Args:
         search (str): Text search string to query the text index
         language (str, optional): The language for the search and the rules for
-            stemmer and tokenizer. If the language is `None` text search uses
+            stemmer and tokenizer. If the language is ``None`` text search uses
             simple tokenization and no stemming.
         case_sensitive (bool, optional): Enable or disable case sensitive
             search.
         diacritic_sensitive (bool, optional): Enable or disable case sensitive
             diacritic search.
-        text_score (bool, optional): If `True` returns the text score with
+        text_score (bool, optional): If ``True`` returns the text score with
             each document.
         limit (int, optional): Limit the number of returned documents.
 

@@ -246,9 +246,8 @@ class TestBigchainApi(object):
             assets = list(b.text_search('bigchaindb'))
         except OperationError as exc:
             assert not isinstance(b.connection, MongoDBConnection)
-            return
-
-        assert len(assets) == 3
+        else:
+            assert len(assets) == 3
 
     @pytest.mark.genesis
     def test_text_search_returns_valid_only(self, monkeypatch, b):
