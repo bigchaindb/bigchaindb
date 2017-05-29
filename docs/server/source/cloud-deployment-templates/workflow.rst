@@ -135,4 +135,11 @@ gathered above.
 
 ☐ Deploy your BigchainDB node on your Kubernetes cluster.
 
-TODO: Links to instructions for first-node-in-cluster or second-or-later-node-in-cluster
+Next Steps To Set Up a Node
+---------------------------
+
+You can now proceed to set up your BigchainDB node based on whether it is the
+:ref:`first node in you cluster
+<Kubernetes Template: Deploy a Single BigchainDB Node>` or a
+:ref:`node that will be added to an existing cluster
+<Kubernetes Template: Add a BigchainDB Node to an Existing BigchainDB Cluster>`.
