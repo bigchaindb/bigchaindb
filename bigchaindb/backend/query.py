@@ -259,7 +259,7 @@ def get_assets(connection, asset_ids):
     """Get a list of assets from the assets table.
 
     Args:
-        asset_ids (list): a of list of ids for the assets to be retrieved from
+        asset_ids (list): a list of ids for the assets to be retrieved from
         the database.
 
     Returns:
@@ -323,7 +323,7 @@ def get_last_voted_block_id(connection, node_pubkey):
         node_pubkey (str): base58 encoded public key.
 
     Returns:
-        The last block id the node has voted on. If the node didn't cast
+        The id of the last block the node has voted on. If the node didn't cast
         any vote then the genesis block id is returned.
     """
 

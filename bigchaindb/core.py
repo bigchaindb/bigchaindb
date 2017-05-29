@@ -605,7 +605,7 @@ class Bigchain(object):
             asset_ids (:obj:`list` of :obj:`str`): A list of asset_ids to
                 retrieve from the database.
 
-        Returs:
+        Returns:
             list: The list of assets returned from the database.
         """
         return backend.query.get_assets(self.connection, asset_ids)
