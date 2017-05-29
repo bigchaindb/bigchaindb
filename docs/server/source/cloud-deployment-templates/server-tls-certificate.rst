@@ -82,10 +82,3 @@ private keys.
         
    cat mdb-instance-0.crt mdb-instance-0.key > mdb-instance-0.pem
 
-
-Step 5: Update the MongoDB Config File
---------------------------------------
-
-In the MongoDB configuration file, set the ``net.ssl.PEMKeyFile`` parameter to
-the path of the ``mdb-instance-0.pem`` file, and the ``net.ssl.CAFile``
-parameter to the ``ca.crt`` file.
