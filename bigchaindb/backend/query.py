@@ -2,6 +2,8 @@
 
 from functools import singledispatch
 
+from bigchaindb.backend.exceptions import OperationError
+
 
 @singledispatch
 def write_transaction(connection, signed_transaction):
@@ -353,3 +355,33 @@ def get_txids_filtered(connection, asset_id, operation=None):
     """
 
     raise NotImplementedError
+
+
+@singledispatch
+def text_search(conn, search, *, language='english', case_sensitive=False,
+                diacritic_sensitive=False, text_score=False, limit=0):
+    """Return all the assets that match the text search.
+
+    The results are sorted by text score.
+    For more information about the behavior of text search on MongoDB see
+    https://docs.mongodb.com/manual/reference/operator/query/text/#behavior
+
+    Args:
+        search (str): Text search string to query the text index
+        language (str, optional): The language for the search and the rules for
+            stemmer and tokenizer. If the language is ``None`` text search uses
+            simple tokenization and no stemming.
+        case_sensitive (bool, optional): Enable or disable case sensitive
+            search.
+        diacritic_sensitive (bool, optional): Enable or disable case sensitive
+            diacritic search.
+        text_score (bool, optional): If ``True`` returns the text score with
+            each document.
+        limit (int, optional): Limit the number of returned documents.
+
+    Returns:
+        :obj:`list` of :obj:`dict`: a list of assets
+    """
+
+    raise OperationError('This query is only supported when running '
+                         'BigchainDB with MongoDB as the backend.')

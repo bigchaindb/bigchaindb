@@ -2,7 +2,7 @@
 
 import logging
 
-from pymongo import ASCENDING, DESCENDING
+from pymongo import ASCENDING, DESCENDING, TEXT
 
 from bigchaindb import backend
 from bigchaindb.common import exceptions
@@ -113,3 +113,6 @@ def create_assets_secondary_index(conn, dbname):
     conn.conn[dbname]['assets'].create_index('id',
                                              name='asset_id',
                                              unique=True)
+
+    # full text search index
+    conn.conn[dbname]['assets'].create_index([('$**', TEXT)], name='text')

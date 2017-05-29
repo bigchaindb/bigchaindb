@@ -513,3 +513,87 @@ def test_get_assets():
 
     assert cursor.count() == 2
     assert list(cursor.sort('id', pymongo.ASCENDING)) == assets[::2]
+
+
+def test_text_search():
+    from bigchaindb.backend import connect, query
+    conn = connect()
+
+    # Example data and tests cases taken from the mongodb documentation
+    # https://docs.mongodb.com/manual/reference/operator/query/text/
+    assets = [
+        {'id': 1, 'subject': 'coffee', 'author': 'xyz', 'views': 50},
+        {'id': 2, 'subject': 'Coffee Shopping', 'author': 'efg', 'views': 5},
+        {'id': 3, 'subject': 'Baking a cake', 'author': 'abc', 'views': 90},
+        {'id': 4, 'subject': 'baking', 'author': 'xyz', 'views': 100},
+        {'id': 5, 'subject': 'Café Con Leche', 'author': 'abc', 'views': 200},
+        {'id': 6, 'subject': 'Сырники', 'author': 'jkl', 'views': 80},
+        {'id': 7, 'subject': 'coffee and cream', 'author': 'efg', 'views': 10},
+        {'id': 8, 'subject': 'Cafe con Leche', 'author': 'xyz', 'views': 10}
+    ]
+
+    # insert the assets
+    conn.db.assets.insert_many(deepcopy(assets), ordered=False)
+
+    # test search single word
+    assert list(query.text_search(conn, 'coffee')) == [
+        {'id': 1, 'subject': 'coffee', 'author': 'xyz', 'views': 50},
+        {'id': 2, 'subject': 'Coffee Shopping', 'author': 'efg', 'views': 5},
+        {'id': 7, 'subject': 'coffee and cream', 'author': 'efg', 'views': 10},
+    ]
+
+    # match any of the search terms
+    assert list(query.text_search(conn, 'bake coffee cake')) == [
+        {'author': 'abc', 'id': 3, 'subject': 'Baking a cake', 'views': 90},
+        {'author': 'xyz', 'id': 1, 'subject': 'coffee', 'views': 50},
+        {'author': 'xyz', 'id': 4, 'subject': 'baking', 'views': 100},
+        {'author': 'efg', 'id': 2, 'subject': 'Coffee Shopping', 'views': 5},
+        {'author': 'efg', 'id': 7, 'subject': 'coffee and cream', 'views': 10}
+    ]
+
+    # search for a phrase
+    assert list(query.text_search(conn, '\"coffee shop\"')) == [
+        {'id': 2, 'subject': 'Coffee Shopping', 'author': 'efg', 'views': 5},
+    ]
+
+    # exclude documents that contain a term
+    assert list(query.text_search(conn, 'coffee -shop')) == [
+        {'id': 1, 'subject': 'coffee', 'author': 'xyz', 'views': 50},
+        {'id': 7, 'subject': 'coffee and cream', 'author': 'efg', 'views': 10},
+    ]
+
+    # search different language
+    assert list(query.text_search(conn, 'leche', language='es')) == [
+        {'id': 5, 'subject': 'Café Con Leche', 'author': 'abc', 'views': 200},
+        {'id': 8, 'subject': 'Cafe con Leche', 'author': 'xyz', 'views': 10}
+    ]
+
+    # case and diacritic insensitive search
+    assert list(query.text_search(conn, 'сы́рники CAFÉS')) == [
+        {'id': 6, 'subject': 'Сырники', 'author': 'jkl', 'views': 80},
+        {'id': 5, 'subject': 'Café Con Leche', 'author': 'abc', 'views': 200},
+        {'id': 8, 'subject': 'Cafe con Leche', 'author': 'xyz', 'views': 10}
+    ]
+
+    # case sensitive search
+    assert list(query.text_search(conn, 'Coffee', case_sensitive=True)) == [
+        {'id': 2, 'subject': 'Coffee Shopping', 'author': 'efg', 'views': 5},
+    ]
+
+    # diacritic sensitive search
+    assert list(query.text_search(conn, 'CAFÉ', diacritic_sensitive=True)) == [
+        {'id': 5, 'subject': 'Café Con Leche', 'author': 'abc', 'views': 200},
+    ]
+
+    # return text score
+    assert list(query.text_search(conn, 'coffee', text_score=True)) == [
+        {'id': 1, 'subject': 'coffee', 'author': 'xyz', 'views': 50, 'score': 1.0},
+        {'id': 2, 'subject': 'Coffee Shopping', 'author': 'efg', 'views': 5, 'score': 0.75},
+        {'id': 7, 'subject': 'coffee and cream', 'author': 'efg', 'views': 10, 'score': 0.75},
+    ]
+
+    # limit search result
+    assert list(query.text_search(conn, 'coffee', limit=2)) == [
+        {'id': 1, 'subject': 'coffee', 'author': 'xyz', 'views': 50},
+        {'id': 2, 'subject': 'Coffee Shopping', 'author': 'efg', 'views': 5},
+    ]
