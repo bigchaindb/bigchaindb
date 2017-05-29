@@ -240,6 +240,33 @@ def get_block(connection, block_id):
 
 
 @singledispatch
+def write_assets(connection, assets):
+    """Write a list of assets to the assets table.
+
+    Args:
+        assets (list): a list of assets to write.
+
+    Returns:
+        The database response.
+    """
+    raise NotImplementedError
+
+
+@singledispatch
+def get_assets(connection, asset_ids):
+    """Get a list of assets from the assets table.
+
+    Args:
+        asset_ids (list): a list of ids for the assets to be retrieved from
+        the database.
+
+    Returns:
+        assets (list): the list of returned assets.
+    """
+    raise NotImplementedError
+
+
+@singledispatch
 def count_blocks(connection):
     """Count the number of blocks in the bigchain table.
 
@@ -287,15 +314,15 @@ def get_genesis_block(connection):
 
 
 @singledispatch
-def get_last_voted_block(connection, node_pubkey):
+def get_last_voted_block_id(connection, node_pubkey):
     """Get the last voted block for a specific node.
 
     Args:
         node_pubkey (str): base58 encoded public key.
 
     Returns:
-        The last block the node has voted on. If the node didn't cast
-        any vote then the genesis block is returned.
+        The id of the last block the node has voted on. If the node didn't cast
+        any vote then the genesis block id is returned.
     """
 
     raise NotImplementedError

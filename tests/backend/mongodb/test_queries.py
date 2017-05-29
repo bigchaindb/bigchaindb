@@ -1,4 +1,7 @@
+from copy import deepcopy
+
 import pytest
+import pymongo
 
 pytestmark = pytest.mark.bdb
 
@@ -269,7 +272,7 @@ def test_write_block(signed_create_tx):
 
     # create and write block
     block = Block(transactions=[signed_create_tx])
-    query.write_block(conn, block)
+    query.write_block(conn, block.to_dict())
 
     block_db = conn.db.bigchain.find_one({'id': block.id}, {'_id': False})
 
@@ -347,17 +350,18 @@ def test_get_genesis_block(genesis_block):
     from bigchaindb.backend import connect, query
     conn = connect()
 
-    assert query.get_genesis_block(conn) == genesis_block.to_dict()
+    assets, genesis_block_dict = genesis_block.decouple_assets()
+    assert query.get_genesis_block(conn) == genesis_block_dict
 
 
-def test_get_last_voted_block(genesis_block, signed_create_tx, b):
+def test_get_last_voted_block_id(genesis_block, signed_create_tx, b):
     from bigchaindb.backend import connect, query
     from bigchaindb.models import Block
     from bigchaindb.common.exceptions import CyclicBlockchainError
     conn = connect()
 
     # check that the last voted block is the genesis block
-    assert query.get_last_voted_block(conn, b.me) == genesis_block.to_dict()
+    assert query.get_last_voted_block_id(conn, b.me) == genesis_block.id
 
     # create and insert a new vote and block
     block = Block(transactions=[signed_create_tx])
@@ -365,7 +369,7 @@ def test_get_last_voted_block(genesis_block, signed_create_tx, b):
     vote = b.vote(block.id, genesis_block.id, True)
     conn.db.votes.insert_one(vote)
 
-    assert query.get_last_voted_block(conn, b.me) == block.to_dict()
+    assert query.get_last_voted_block_id(conn, b.me) == block.id
 
     # force a bad chain
     vote.pop('_id')
@@ -374,7 +378,7 @@ def test_get_last_voted_block(genesis_block, signed_create_tx, b):
     conn.db.votes.insert_one(vote)
 
     with pytest.raises(CyclicBlockchainError):
-        query.get_last_voted_block(conn, b.me)
+        query.get_last_voted_block_id(conn, b.me)
 
 
 def test_get_unvoted_blocks(signed_create_tx):
@@ -466,3 +470,46 @@ def test_get_votes_for_blocks_by_voter():
         conn.db.votes.insert_one(vote.copy())
     res = query.get_votes_for_blocks_by_voter(conn, ['block1', 'block2'], 'a')
     assert list(res) == [votes[0], votes[2]]
+
+
+def test_write_assets():
+    from bigchaindb.backend import connect, query
+    conn = connect()
+
+    assets = [
+        {'id': 1, 'data': '1'},
+        {'id': 2, 'data': '2'},
+        {'id': 3, 'data': '3'},
+        # Duplicated id. Should not be written to the database
+        {'id': 1, 'data': '1'},
+    ]
+
+    # write the assets
+    query.write_assets(conn, deepcopy(assets))
+
+    # check that 3 assets were written to the database
+    cursor = conn.db.assets.find({}, projection={'_id': False})\
+                           .sort('id', pymongo.ASCENDING)
+
+    assert cursor.count() == 3
+    assert list(cursor) == assets[:-1]
+
+
+def test_get_assets():
+    from bigchaindb.backend import connect, query
+    conn = connect()
+
+    assets = [
+        {'id': 1, 'data': '1'},
+        {'id': 2, 'data': '2'},
+        {'id': 3, 'data': '3'},
+    ]
+
+    # write the assets
+    conn.db.assets.insert_many(deepcopy(assets), ordered=False)
+
+    # read only 2 assets
+    cursor = query.get_assets(conn, [1, 3])
+
+    assert cursor.count() == 2
+    assert list(cursor.sort('id', pymongo.ASCENDING)) == assets[::2]

@@ -27,7 +27,7 @@ def create_database(conn, dbname):
 
 @register_schema(MongoDBConnection)
 def create_tables(conn, dbname):
-    for table_name in ['bigchain', 'backlog', 'votes']:
+    for table_name in ['bigchain', 'backlog', 'votes', 'assets']:
         logger.info('Create `%s` table.', table_name)
         # create the table
         # TODO: read and write concerns can be declared here
@@ -39,6 +39,7 @@ def create_indexes(conn, dbname):
     create_bigchain_secondary_index(conn, dbname)
     create_backlog_secondary_index(conn, dbname)
     create_votes_secondary_index(conn, dbname)
+    create_assets_secondary_index(conn, dbname)
 
 
 @register_schema(MongoDBConnection)
@@ -102,3 +103,13 @@ def create_votes_secondary_index(conn, dbname):
                                               ASCENDING)],
                                             name='block_and_voter',
                                             unique=True)
+
+
+def create_assets_secondary_index(conn, dbname):
+    logger.info('Create `assets` secondary index.')
+
+    # unique index on the id of the asset.
+    # the id is the txid of the transaction that created the asset
+    conn.conn[dbname]['assets'].create_index('id',
+                                             name='asset_id',
+                                             unique=True)
