@@ -20,6 +20,15 @@ def dummy_block(b):
     return block
 
 
+def decouple_assets(b, block):
+    # the block comming from the database does not contain the assets
+    # so we need to pass the block without the assets and store the assets
+    # so that the voting pipeline can reconstruct it
+    assets, block_dict = block.decouple_assets()
+    b.write_assets(assets)
+    return block_dict
+
+
 DUMMY_SHA3 = '0123456789abcdef' * 4
 
 
@@ -79,9 +88,10 @@ def test_vote_validate_block(b):
 
     tx = dummy_tx(b)
     block = b.create_block([tx])
+    block_dict = decouple_assets(b, block)
 
     vote_obj = vote.Vote()
-    validation = vote_obj.validate_block(block.to_dict())
+    validation = vote_obj.validate_block(block_dict)
     assert validation[0] == block.id
     for tx1, tx2 in zip(validation[1], block.transactions):
         assert tx1 == tx2
@@ -220,8 +230,9 @@ def test_valid_block_voting_multiprocessing(b, genesis_block, monkeypatch):
     vote_pipeline.setup(indata=inpipe, outdata=outpipe)
 
     block = dummy_block(b)
+    block_dict = decouple_assets(b, block)
 
-    inpipe.put(block.to_dict())
+    inpipe.put(block_dict)
     vote_pipeline.start()
     vote_out = outpipe.get()
     vote_pipeline.terminate()
@@ -257,6 +268,7 @@ def test_valid_block_voting_with_create_transaction(b,
 
     monkeypatch.setattr('time.time', lambda: 1111111111)
     block = b.create_block([tx])
+    block_dict = decouple_assets(b, block)
 
     inpipe = Pipe()
     outpipe = Pipe()
@@ -264,7 +276,7 @@ def test_valid_block_voting_with_create_transaction(b,
     vote_pipeline = vote.create_pipeline()
     vote_pipeline.setup(indata=inpipe, outdata=outpipe)
 
-    inpipe.put(block.to_dict())
+    inpipe.put(block_dict)
     vote_pipeline.start()
     vote_out = outpipe.get()
     vote_pipeline.terminate()

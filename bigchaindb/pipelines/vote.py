@@ -47,7 +47,7 @@ class Vote:
     def validate_block(self, block):
         if not self.bigchain.has_previous_vote(block['id']):
             try:
-                block = Block.from_dict(block)
+                block = Block.from_db(self.bigchain, block)
             except (exceptions.InvalidHash):
                 # XXX: if a block is invalid we should skip the `validate_tx`
                 # step, but since we are in a pipeline we cannot just jump to

@@ -4,11 +4,10 @@ from time import time
 from bigchaindb import exceptions as core_exceptions
 from bigchaindb.common import crypto, exceptions
 from bigchaindb.common.utils import gen_timestamp, serialize
-from bigchaindb.common.transaction import TransactionLink
 
 import bigchaindb
 
-from bigchaindb import backend, config_utils, utils
+from bigchaindb import backend, config_utils, fastquery
 from bigchaindb.consensus import BaseConsensusRules
 from bigchaindb.models import Block, Transaction
 
@@ -183,15 +182,23 @@ class Bigchain(object):
             include_status (bool): also return the status of the block
                        the return value is then a tuple: (block, status)
         """
-        block = backend.query.get_block(self.connection, block_id)
-        status = None
+        # get block from database
+        block_dict = backend.query.get_block(self.connection, block_id)
+        # get the asset ids from the block
+        if block_dict:
+            asset_ids = Block.get_asset_ids(block_dict)
+            # get the assets from the database
+            assets = self.get_assets(asset_ids)
+            # add the assets to the block transactions
+            block_dict = Block.couple_assets(block_dict, assets)
 
+        status = None
         if include_status:
-            if block:
-                status = self.block_election_status(block)
-            return block, status
+            if block_dict:
+                status = self.block_election_status(block_dict)
+            return block_dict, status
         else:
-            return block
+            return block_dict
 
     def get_transaction(self, txid, include_status=False):
         """Get the transaction with the specified `txid` (and optionally its status)
@@ -251,7 +258,13 @@ class Bigchain(object):
                 tx_status = self.TX_IN_BACKLOG
 
         if response:
-            response = Transaction.from_dict(response)
+            if tx_status == self.TX_IN_BACKLOG:
+                response = Transaction.from_dict(response)
+            else:
+                # If we are reading from the bigchain collection the asset is
+                # not in the transaction so we need to fetch the asset and
+                # reconstruct the transaction.
+                response = Transaction.from_db(self, response)
 
         if include_status:
             return response, tx_status
@@ -376,51 +389,6 @@ class Bigchain(object):
         # Either no transaction was returned spending the `(txid, output)` as
         # input or the returned transactions are not valid.
 
-    def get_outputs(self, owner):
-        """Retrieve a list of links to transaction outputs for a given public
-           key.
-
-        Args:
-            owner (str): base58 encoded public key.
-
-        Returns:
-            :obj:`list` of TransactionLink: list of ``txid`` s and ``output`` s
-            pointing to another transaction's condition
-        """
-        # get all transactions in which owner is in the `owners_after` list
-        response = backend.query.get_owned_ids(self.connection, owner)
-        return [
-            TransactionLink(tx['id'], index)
-            for tx in response
-            if not self.is_tx_strictly_in_invalid_block(tx['id'])
-            for index, output in enumerate(tx['outputs'])
-            if utils.output_has_owner(output, owner)
-        ]
-
-    def is_tx_strictly_in_invalid_block(self, txid):
-        """
-        Checks whether the transaction with the given ``txid``
-        *strictly* belongs to an invalid block.
-
-        Args:
-            txid (str): Transaction id.
-
-        Returns:
-            bool: ``True`` if the transaction *strictly* belongs to a
-            block that is invalid. ``False`` otherwise.
-
-        Note:
-            Since a transaction may be in multiple blocks, with
-            different statuses, the term "strictly" is used to
-            emphasize that if a transaction is said to be in an invalid
-            block, it means that it is not in any other block that is
-            either valid or undecided.
-
-        """
-        validity = self.get_blocks_status_containing_tx(txid)
-        return (Bigchain.BLOCK_VALID not in validity.values() and
-                Bigchain.BLOCK_UNDECIDED not in validity.values())
-
     def get_owned_ids(self, owner):
         """Retrieve a list of ``txid`` s that can be used as inputs.
 
@@ -433,14 +401,17 @@ class Bigchain(object):
         """
         return self.get_outputs_filtered(owner, include_spent=False)
 
+    @property
+    def fastquery(self):
+        return fastquery.FastQuery(self.connection, self.me)
+
     def get_outputs_filtered(self, owner, include_spent=True):
         """
         Get a list of output links filtered on some criteria
         """
-        outputs = self.get_outputs(owner)
+        outputs = self.fastquery.get_outputs_by_public_key(owner)
         if not include_spent:
-            outputs = [o for o in outputs
-                       if not self.get_spent(o.txid, o.output)]
+            outputs = self.fastquery.filter_spent_outputs(outputs)
         return outputs
 
     def get_transactions_filtered(self, asset_id, operation=None):
@@ -513,7 +484,14 @@ class Bigchain(object):
             block (Block): block to write to bigchain.
         """
 
-        return backend.query.write_block(self.connection, block)
+        # Decouple assets from block
+        assets, block_dict = block.decouple_assets()
+        # write the assets
+        if assets:
+            self.write_assets(assets)
+
+        # write the block
+        return backend.query.write_block(self.connection, block_dict)
 
     def prepare_genesis_block(self):
         """Prepare a genesis block."""
@@ -592,7 +570,9 @@ class Bigchain(object):
     def get_last_voted_block(self):
         """Returns the last block that this node voted on."""
 
-        return Block.from_dict(backend.query.get_last_voted_block(self.connection, self.me))
+        last_block_id = backend.query.get_last_voted_block_id(self.connection,
+                                                              self.me)
+        return Block.from_dict(self.get_block(last_block_id))
 
     def block_election(self, block):
         if type(block) != dict:
@@ -606,3 +586,37 @@ class Bigchain(object):
         """Tally the votes on a block, and return the status:
            valid, invalid, or undecided."""
         return self.block_election(block)['status']
+
+    def get_assets(self, asset_ids):
+        """
+        Return a list of assets that match the asset_ids
+
+        Args:
+            asset_ids (:obj:`list` of :obj:`str`): A list of asset_ids to
+                retrieve from the database.
+
+        Returns:
+            list: The list of assets returned from the database.
+        """
+        return backend.query.get_assets(self.connection, asset_ids)
+
+    def write_assets(self, assets):
+        """
+        Writes a list of assets into the database.
+
+        Args:
+            assets (:obj:`list` of :obj:`dict`): A list of assets to write to
+                the database.
+        """
+        return backend.query.write_assets(self.connection, assets)
+
+    def text_search(self, search, *, limit=0):
+        assets = backend.query.text_search(self.connection, search, limit=limit)
+
+        # TODO: This is not efficient. There may be a more efficient way to
+        #       query by storing block ids with the assets and using fastquery.
+        #       See https://github.com/bigchaindb/bigchaindb/issues/1496
+        for asset in assets:
+            tx, status = self.get_transaction(asset['id'], True)
+            if status == self.TX_VALID:
+                yield asset

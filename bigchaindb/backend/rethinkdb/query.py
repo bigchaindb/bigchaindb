@@ -8,6 +8,7 @@ from bigchaindb import backend, utils
 from bigchaindb.backend.rethinkdb import changefeed
 from bigchaindb.common import exceptions
 from bigchaindb.common.transaction import Transaction
+from bigchaindb.common.utils import serialize
 from bigchaindb.backend.utils import module_dispatch_registrar
 from bigchaindb.backend.rethinkdb.connection import RethinkDBConnection
 
@@ -126,13 +127,14 @@ def get_spent(connection, transaction_id, output):
 
 @register_query(RethinkDBConnection)
 def get_owned_ids(connection, owner):
-    return connection.run(
-            r.table('bigchain', read_mode=READ_MODE)
+    query = (r.table('bigchain', read_mode=READ_MODE)
              .get_all(owner, index='outputs')
              .distinct()
-             .concat_map(lambda doc: doc['block']['transactions'])
-             .filter(lambda tx: tx['outputs'].contains(
+             .concat_map(unwind_block_transactions)
+             .filter(lambda doc: doc['tx']['outputs'].contains(
                 lambda c: c['public_keys'].contains(owner))))
+    cursor = connection.run(query)
+    return ((b['id'], b['tx']) for b in cursor)
 
 
 @register_query(RethinkDBConnection)
@@ -152,15 +154,29 @@ def get_votes_by_block_id_and_voter(connection, block_id, node_pubkey):
 
 
 @register_query(RethinkDBConnection)
-def write_block(connection, block):
+def write_block(connection, block_dict):
     return connection.run(
             r.table('bigchain')
-            .insert(r.json(block.to_str()), durability=WRITE_DURABILITY))
+            .insert(r.json(serialize(block_dict)), durability=WRITE_DURABILITY))
 
 
 @register_query(RethinkDBConnection)
 def get_block(connection, block_id):
     return connection.run(r.table('bigchain').get(block_id))
+
+
+@register_query(RethinkDBConnection)
+def write_assets(connection, assets):
+    return connection.run(
+            r.table('assets')
+            .insert(assets, durability=WRITE_DURABILITY))
+
+
+@register_query(RethinkDBConnection)
+def get_assets(connection, asset_ids):
+    return connection.run(
+            r.table('assets', read_mode=READ_MODE)
+            .get_all(*asset_ids))
 
 
 @register_query(RethinkDBConnection)
@@ -193,7 +209,7 @@ def get_genesis_block(connection):
 
 
 @register_query(RethinkDBConnection)
-def get_last_voted_block(connection, node_pubkey):
+def get_last_voted_block_id(connection, node_pubkey):
     try:
         # get the latest value for the vote timestamp (over all votes)
         max_timestamp = connection.run(
@@ -208,7 +224,7 @@ def get_last_voted_block(connection, node_pubkey):
 
     except r.ReqlNonExistenceError:
         # return last vote if last vote exists else return Genesis block
-        return get_genesis_block(connection)
+        return get_genesis_block(connection)['id']
 
     # Now the fun starts. Since the resolution of timestamp is a second,
     # we might have more than one vote per timestamp. If this is the case
@@ -240,9 +256,7 @@ def get_last_voted_block(connection, node_pubkey):
         except KeyError:
             break
 
-    return connection.run(
-            r.table('bigchain', read_mode=READ_MODE)
-            .get(last_block_id))
+    return last_block_id
 
 
 @register_query(RethinkDBConnection)
@@ -253,3 +267,30 @@ def get_new_blocks_feed(connection, start_block_id):
     # look in the votes table to see what order other nodes have used.
     for change in changefeed.run_changefeed(connection, 'bigchain'):
         yield change['new_val']
+
+
+@register_query(RethinkDBConnection)
+def get_votes_for_blocks_by_voter(connection, block_ids, node_pubkey):
+    return connection.run(
+        r.table('votes')
+        .filter(lambda row: r.expr(block_ids).contains(row['vote']['voting_for_block']))
+        .filter(lambda row: row['node_pubkey'] == node_pubkey))
+
+
+def unwind_block_transactions(block):
+    """ Yield a block for each transaction in given block """
+    return block['block']['transactions'].map(lambda tx: block.merge({'tx': tx}))
+
+
+@register_query(RethinkDBConnection)
+def get_spending_transactions(connection, links):
+    query = (
+        r.table('bigchain')
+        .get_all(*[(l['txid'], l['output']) for l in links], index='inputs')
+        .concat_map(unwind_block_transactions)
+        # filter transactions spending output
+        .filter(lambda doc: r.expr(links).set_intersection(
+            doc['tx']['inputs'].map(lambda i: i['fulfills'])))
+    )
+    cursor = connection.run(query)
+    return ((b['id'], b['tx']) for b in cursor)
