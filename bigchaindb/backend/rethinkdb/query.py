@@ -251,4 +251,5 @@ def get_new_blocks_feed(connection, start_block_id):
                    start_block_id)
     # In order to get blocks in the correct order, it may be acceptable to
     # look in the votes table to see what order other nodes have used.
-    return changefeed.run_changefeed(connection, 'bigchain')
+    for change in changefeed.run_changefeed(connection, 'bigchain'):
+        yield change['new_val']
