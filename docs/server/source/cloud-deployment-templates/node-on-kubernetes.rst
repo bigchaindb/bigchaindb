@@ -576,12 +576,11 @@ You can use it as below to get started immediately:
 
 .. code:: bash
 
-   $ kubectl run -it toolbox --image bigchaindb/toolbox --restart=Never --rm
-        kubectl --context k8s-bdb-test-cluster-0 \
-          run -it toolbox \
-          --image bigchaindb/toolbox \
-          --image-pull-policy=Always \
-          --restart=Never --rm
+   $ kubectl --context k8s-bdb-test-cluster-0 \
+      run -it toolbox \
+      --image bigchaindb/toolbox \
+      --image-pull-policy=Always \
+      --restart=Never --rm
 
 It will drop you to the shell prompt.
 Now you can query for the ``mdb`` and ``bdb`` service details.
@@ -651,4 +650,7 @@ Step 18.2: Testing Externally
 Try to access the ``<dns/ip of your exposed bigchaindb service endpoint>:80``
 on your browser. You must receive a json output that shows the BigchainDB
 server version among other things.
+
+Use the Python Driver to send some transactions to the BigchainDB node and
+verify that your node or cluster works as expected.
 
