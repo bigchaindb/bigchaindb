@@ -371,8 +371,8 @@ def text_search(conn, search, *, language='english', case_sensitive=False,
 
     if text_score:
         return cursor
-    else:
-        return (_remove_text_score(asset) for asset in cursor)
+
+    return (_remove_text_score(asset) for asset in cursor)
 
 
 def _remove_text_score(asset):

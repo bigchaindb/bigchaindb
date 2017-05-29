@@ -259,7 +259,7 @@ def get_assets(connection, asset_ids):
     """Get a list of assets from the assets table.
 
     Args:
-        asset_ids (list): a of list of ids for the assets to be retrieved from
+        asset_ids (list): a list of ids for the assets to be retrieved from
         the database.
 
     Returns:
@@ -323,7 +323,7 @@ def get_last_voted_block_id(connection, node_pubkey):
         node_pubkey (str): base58 encoded public key.
 
     Returns:
-        The last block id the node has voted on. If the node didn't cast
+        The id of the last block the node has voted on. If the node didn't cast
         any vote then the genesis block id is returned.
     """
 
@@ -363,17 +363,19 @@ def text_search(conn, search, *, language='english', case_sensitive=False,
     """Return all the assets that match the text search.
 
     The results are sorted by text score.
+    For more information about the behavior of text search on MongoDB see
+    https://docs.mongodb.com/manual/reference/operator/query/text/#behavior
 
     Args:
         search (str): Text search string to query the text index
         language (str, optional): The language for the search and the rules for
-            stemmer and tokenizer. If the language is `None` text search uses
+            stemmer and tokenizer. If the language is ``None`` text search uses
             simple tokenization and no stemming.
         case_sensitive (bool, optional): Enable or disable case sensitive
             search.
         diacritic_sensitive (bool, optional): Enable or disable case sensitive
             diacritic search.
-        text_score (bool, optional): If `True` returns the text score with
+        text_score (bool, optional): If ``True`` returns the text score with
             each document.
         limit (int, optional): Limit the number of returned documents.
 
