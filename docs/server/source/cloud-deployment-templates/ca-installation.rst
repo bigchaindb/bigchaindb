@@ -53,7 +53,7 @@ by using the subcommand ``./easyrsa help``
 Step 3: Create an Intermediate CA
 ---------------------------------
 
-TODO(Krish)
+TODO
 
 Step 4: Generate a Certificate Revocation List
 ----------------------------------------------
@@ -64,9 +64,9 @@ You can generate a Certificate Revocation List (CRL) using:
         
    ./easyrsa gen-crl
 
-You will need to run this command every time you revoke a certificate and the
-generated ``crl.pem`` needs to be uploaded to your infrastructure to prevent
-the revoked certificate from being used again.
+You will need to run this command every time you revoke a certificate.
+The generated ``crl.pem`` needs to be uploaded to your infrastructure to
+prevent the revoked certificate from being used again.
 
 
 Step 5: Secure the CA

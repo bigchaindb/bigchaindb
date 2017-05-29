@@ -35,18 +35,17 @@ and using something like:
 
    ./easyrsa --req-cn=mdb-instance-0 --subject-alt-name=DNS:localhost,DNS:mdb-instance-0 gen-req mdb-instance-0 nopass
 
-You must replace the common name (``mdb-instance-0`` above)
-with the common name of *your* MongoDB instance
-(which should be the same as the hostname of your MongoDB instance).
+You will be prompted to enter the Distinguished Name for this certificate. You
+can hit enter to accept the default values or change them at each prompt.
 
-You need to provide the ``DNS:localhost`` SAN during certificate generation for
-using the ``localhost exception`` in the MongoDB instance.
+You can replace the common name (``mdb-instance-0`` above) with any other name
+so long as the instance can verify that it is the hostname.
+
+You need to provide the ``DNS:localhost`` SAN during certificate generation
+for using the ``localhost exception`` in the MongoDB instance.
 
 All certificates can have this attribute without compromising security as the
 ``localhost exception`` works only the first time.
-
-Tip: You can get help with the ``easyrsa`` command (and its subcommands)
-by using the subcommand ``./easyrsa help``
 
 
 Step 3: Get the Server Certificate Signed
@@ -87,6 +86,6 @@ private keys.
 Step 5: Update the MongoDB Config File
 --------------------------------------
 
-In the MongoDB configuration file,
-set the ``net.ssl.PEMKeyFile`` parameter to the path of the ``mdb-instance-0.pem`` file,
-and the ``net.ssl.CAFile`` parameter to the ``ca.crt`` file.
+In the MongoDB configuration file, set the ``net.ssl.PEMKeyFile`` parameter to
+the path of the ``mdb-instance-0.pem`` file, and the ``net.ssl.CAFile``
+parameter to the ``ca.crt`` file.
