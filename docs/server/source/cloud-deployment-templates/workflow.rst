@@ -84,6 +84,20 @@ and have an SSL certificate for the FQDN.
 (You can get an SSL certificate from any SSL certificate provider).
 
 
+☐ Share your BigchaindB *public* key with all the other nodes
+in the BigchainDB cluster.
+Don't share your private key.
+
+
+☐ Get the BigchainDB public keys of all the other nodes in the cluster.
+That list of public keys is known as the BigchainDB "keyring."
+
+
+☐ Ask the managing organization
+for the FQDN used to serve the BigchainDB APIs
+and for a copy of the associated SSL/TLS certificate.
+
+
 ☐ If the cluster uses 3scale for API authentication, monitoring and billing,
 you must ask the managing organization for all relevant 3scale credentials.
 

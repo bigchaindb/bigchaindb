@@ -138,7 +138,7 @@ of a master node from the Azure Portal. For example:
 
 .. note::
 
-   All the master nodes should have the *same* IP address and hostname
+   All the master nodes should have the *same* public IP address and hostname
    (also called the Master FQDN).
 
 The "agent" nodes shouldn't get public IP addresses or hostnames,

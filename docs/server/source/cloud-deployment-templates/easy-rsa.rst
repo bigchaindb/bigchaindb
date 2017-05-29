@@ -48,10 +48,10 @@ by copying the existing ``vars.example`` file
 and then editing it.
 You should change the 
 country, province, city, org and email
-to the correct values for you.
+to the correct values for your organisation.
 (Note: The country, province, city, org and email are part of
 the `Distinguished Name <https://en.wikipedia.org/wiki/X.509#Certificates>`_ (DN).)
-The comments in the file explain what the variables mean.
+The comments in the file explain what each of the variables mean.
 
 .. code:: bash
         
@@ -61,7 +61,7 @@ The comments in the file explain what the variables mean.
 
    echo 'set_var EASYRSA_DN "org"' >> vars
    echo 'set_var EASYRSA_KEY_SIZE 4096' >> vars
-
+        
    echo 'set_var EASYRSA_REQ_COUNTRY "DE"' >> vars
    echo 'set_var EASYRSA_REQ_PROVINCE "Berlin"' >> vars
    echo 'set_var EASYRSA_REQ_CITY "Berlin"' >> vars

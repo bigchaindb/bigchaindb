@@ -1,9 +1,8 @@
 How to Generate a Client Certificate for MongoDB
 ================================================
 
-This page enumerates the steps *we* use
-to generate a client certificate
-to be used by clients who want to connect to a TLS-secured MongoDB cluster.
+This page enumerates the steps *we* use to generate a client certificate to be
+used by clients who want to connect to a TLS-secured MongoDB cluster.
 We use Easy-RSA.
 
 
@@ -34,8 +33,8 @@ and using:
 
    ./easyrsa gen-req bdb-instance-0 nopass
 
-You should change ``bdb-instance-0`` to a value based on the client
-the certificate is for.
+You should change ``bdb-instance-0`` to a value that reflects what the 
+client certificate is being used for.
 
 Tip: You can get help with the ``easyrsa`` command (and its subcommands)
 by using the subcommand ``./easyrsa help``
@@ -44,7 +43,7 @@ by using the subcommand ``./easyrsa help``
 Step 3: Get the Client Certificate Signed
 -----------------------------------------
 
-The CSR file (created in the last step)
+The CSR file (created in the previous step)
 should be located in ``pki/reqs/bdb-instance-0.req``.
 You need to send it to the organization managing the cluster
 so that they can use their CA
