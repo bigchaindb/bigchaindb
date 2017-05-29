@@ -381,6 +381,9 @@ def text_search(conn, search, *, language='english', case_sensitive=False,
 
     Returns:
         :obj:`list` of :obj:`dict`: a list of assets
+
+    Raises:
+        OperationError: If the backend does not support text search
     """
 
     raise OperationError('This query is only supported when running '

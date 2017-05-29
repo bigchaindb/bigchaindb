@@ -15,6 +15,15 @@ logger = logging.getLogger(__name__)
 
 class AssetListApi(Resource):
     def get(self):
+        """API endpoint to perform a text search on the assets.
+
+        Args:
+            search (str): Text search string to query the text index
+            limit (int, optional): Limit the number of returned documents.
+
+        Return:
+            A list of assets that match the query.
+        """
         parser = reqparse.RequestParser()
         parser.add_argument('search', type=str, required=True)
         parser.add_argument('limit', type=int)
