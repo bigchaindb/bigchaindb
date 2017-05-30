@@ -3,7 +3,7 @@ Configure the Node
 
 Use the ConfigMap template in ``configuration/config-map.yaml`` file to
 configure the node. Update all the values for the keys in the
-ConfigMaps ``vars``, ``mdb-fqdn``, ``bdb-public-key``, ``bdb-keyring`` and
+ConfigMaps ``vars``, ``bdb-public-key``, ``bdb-keyring`` and
 ``mongodb-whitelist``.
 
 
