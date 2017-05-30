@@ -16,7 +16,9 @@ logger = logging.getLogger(__name__)
 
 
 def connect(backend=None, host=None, port=None, name=None, max_tries=None,
-            connection_timeout=None, replicaset=None, ssl=None, login=None, password=None):
+            connection_timeout=None, replicaset=None, ssl=None, login=None, password=None,
+            ca_cert=None, certfile=None, keyfile=None, keyfile_passphrase=None,
+            crlfile=None):
     """Create a new connection to the database backend.
 
     All arguments default to the current configuration's values if not
@@ -53,6 +55,11 @@ def connect(backend=None, host=None, port=None, name=None, max_tries=None,
     ssl = ssl if ssl is not None else bigchaindb.config['database'].get('ssl', False)
     login = login or bigchaindb.config['database'].get('login')
     password = password or bigchaindb.config['database'].get('password')
+    ca_cert = ca_cert or bigchaindb.config['database'].get('ca_cert', None)
+    certfile = certfile or bigchaindb.config['database'].get('certfile', None)
+    keyfile  = keyfile or bigchaindb.config['database'].get('keyfile', None)
+    keyfile_passphrase = keyfile_passphrase or bigchaindb.config['database'].get('keyfile_passphrase', None)
+    crlfile = crlfile or bigchaindb.config['database'].get('crlfile', None)
 
     try:
         module_name, _, class_name = BACKENDS[backend].rpartition('.')
@@ -72,7 +79,7 @@ def connect(backend=None, host=None, port=None, name=None, max_tries=None,
 class Connection:
     """Connection class interface.
 
-    All backend implementations should provide a connection class that
+    All backend implementations should provide a connection class that inherits
     from and implements this class.
     """
 
