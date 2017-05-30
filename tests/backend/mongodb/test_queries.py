@@ -1,4 +1,7 @@
+from copy import deepcopy
+
 import pytest
+import pymongo
 
 pytestmark = pytest.mark.bdb
 
@@ -205,10 +208,10 @@ def test_get_owned_ids(signed_create_tx, user_pk):
     block = Block(transactions=[signed_create_tx])
     conn.db.bigchain.insert_one(block.to_dict())
 
-    owned_ids = list(query.get_owned_ids(conn, user_pk))
+    [(block_id, tx)] = list(query.get_owned_ids(conn, user_pk))
 
-    assert len(owned_ids) == 1
-    assert owned_ids[0] == signed_create_tx.to_dict()
+    assert block_id == block.id
+    assert tx == signed_create_tx.to_dict()
 
 
 def test_get_votes_by_block_id(signed_create_tx, structurally_valid_vote):
@@ -269,7 +272,7 @@ def test_write_block(signed_create_tx):
 
     # create and write block
     block = Block(transactions=[signed_create_tx])
-    query.write_block(conn, block)
+    query.write_block(conn, block.to_dict())
 
     block_db = conn.db.bigchain.find_one({'id': block.id}, {'_id': False})
 
@@ -347,17 +350,18 @@ def test_get_genesis_block(genesis_block):
     from bigchaindb.backend import connect, query
     conn = connect()
 
-    assert query.get_genesis_block(conn) == genesis_block.to_dict()
+    assets, genesis_block_dict = genesis_block.decouple_assets()
+    assert query.get_genesis_block(conn) == genesis_block_dict
 
 
-def test_get_last_voted_block(genesis_block, signed_create_tx, b):
+def test_get_last_voted_block_id(genesis_block, signed_create_tx, b):
     from bigchaindb.backend import connect, query
     from bigchaindb.models import Block
     from bigchaindb.common.exceptions import CyclicBlockchainError
     conn = connect()
 
     # check that the last voted block is the genesis block
-    assert query.get_last_voted_block(conn, b.me) == genesis_block.to_dict()
+    assert query.get_last_voted_block_id(conn, b.me) == genesis_block.id
 
     # create and insert a new vote and block
     block = Block(transactions=[signed_create_tx])
@@ -365,7 +369,7 @@ def test_get_last_voted_block(genesis_block, signed_create_tx, b):
     vote = b.vote(block.id, genesis_block.id, True)
     conn.db.votes.insert_one(vote)
 
-    assert query.get_last_voted_block(conn, b.me) == block.to_dict()
+    assert query.get_last_voted_block_id(conn, b.me) == block.id
 
     # force a bad chain
     vote.pop('_id')
@@ -374,7 +378,7 @@ def test_get_last_voted_block(genesis_block, signed_create_tx, b):
     conn.db.votes.insert_one(vote)
 
     with pytest.raises(CyclicBlockchainError):
-        query.get_last_voted_block(conn, b.me)
+        query.get_last_voted_block_id(conn, b.me)
 
 
 def test_get_unvoted_blocks(signed_create_tx):
@@ -417,3 +421,179 @@ def test_get_txids_filtered(signed_create_tx, signed_transfer_tx):
     # Test get by asset and TRANSFER
     txids = set(query.get_txids_filtered(conn, asset_id, Transaction.TRANSFER))
     assert txids == {signed_transfer_tx.id}
+
+
+def test_get_spending_transactions(user_pk):
+    from bigchaindb.backend import connect, query
+    from bigchaindb.models import Block, Transaction
+    conn = connect()
+
+    out = [([user_pk], 1)]
+    tx1 = Transaction.create([user_pk], out * 3)
+    inputs = tx1.to_inputs()
+    tx2 = Transaction.transfer([inputs[0]], out, tx1.id)
+    tx3 = Transaction.transfer([inputs[1]], out, tx1.id)
+    tx4 = Transaction.transfer([inputs[2]], out, tx1.id)
+    block = Block([tx1, tx2, tx3, tx4])
+    conn.db.bigchain.insert_one(block.to_dict())
+
+    links = [inputs[0].fulfills.to_dict(), inputs[2].fulfills.to_dict()]
+    res = list(query.get_spending_transactions(conn, links))
+
+    # tx3 not a member because input 1 not asked for
+    assert res == [(block.id, tx2.to_dict()), (block.id, tx4.to_dict())]
+
+
+def test_get_votes_for_blocks_by_voter():
+    from bigchaindb.backend import connect, query
+
+    conn = connect()
+    votes = [
+        {
+            'node_pubkey': 'a',
+            'vote': {'voting_for_block': 'block1'},
+        },
+        {
+            'node_pubkey': 'b',
+            'vote': {'voting_for_block': 'block1'},
+        },
+        {
+            'node_pubkey': 'a',
+            'vote': {'voting_for_block': 'block2'},
+        },
+        {
+            'node_pubkey': 'a',
+            'vote': {'voting_for_block': 'block3'},
+        }
+    ]
+    for vote in votes:
+        conn.db.votes.insert_one(vote.copy())
+    res = query.get_votes_for_blocks_by_voter(conn, ['block1', 'block2'], 'a')
+    assert list(res) == [votes[0], votes[2]]
+
+
+def test_write_assets():
+    from bigchaindb.backend import connect, query
+    conn = connect()
+
+    assets = [
+        {'id': 1, 'data': '1'},
+        {'id': 2, 'data': '2'},
+        {'id': 3, 'data': '3'},
+        # Duplicated id. Should not be written to the database
+        {'id': 1, 'data': '1'},
+    ]
+
+    # write the assets
+    query.write_assets(conn, deepcopy(assets))
+
+    # check that 3 assets were written to the database
+    cursor = conn.db.assets.find({}, projection={'_id': False})\
+                           .sort('id', pymongo.ASCENDING)
+
+    assert cursor.count() == 3
+    assert list(cursor) == assets[:-1]
+
+
+def test_get_assets():
+    from bigchaindb.backend import connect, query
+    conn = connect()
+
+    assets = [
+        {'id': 1, 'data': '1'},
+        {'id': 2, 'data': '2'},
+        {'id': 3, 'data': '3'},
+    ]
+
+    # write the assets
+    conn.db.assets.insert_many(deepcopy(assets), ordered=False)
+
+    # read only 2 assets
+    cursor = query.get_assets(conn, [1, 3])
+
+    assert cursor.count() == 2
+    assert list(cursor.sort('id', pymongo.ASCENDING)) == assets[::2]
+
+
+def test_text_search():
+    from bigchaindb.backend import connect, query
+    conn = connect()
+
+    # Example data and tests cases taken from the mongodb documentation
+    # https://docs.mongodb.com/manual/reference/operator/query/text/
+    assets = [
+        {'id': 1, 'subject': 'coffee', 'author': 'xyz', 'views': 50},
+        {'id': 2, 'subject': 'Coffee Shopping', 'author': 'efg', 'views': 5},
+        {'id': 3, 'subject': 'Baking a cake', 'author': 'abc', 'views': 90},
+        {'id': 4, 'subject': 'baking', 'author': 'xyz', 'views': 100},
+        {'id': 5, 'subject': 'Café Con Leche', 'author': 'abc', 'views': 200},
+        {'id': 6, 'subject': 'Сырники', 'author': 'jkl', 'views': 80},
+        {'id': 7, 'subject': 'coffee and cream', 'author': 'efg', 'views': 10},
+        {'id': 8, 'subject': 'Cafe con Leche', 'author': 'xyz', 'views': 10}
+    ]
+
+    # insert the assets
+    conn.db.assets.insert_many(deepcopy(assets), ordered=False)
+
+    # test search single word
+    assert list(query.text_search(conn, 'coffee')) == [
+        {'id': 1, 'subject': 'coffee', 'author': 'xyz', 'views': 50},
+        {'id': 2, 'subject': 'Coffee Shopping', 'author': 'efg', 'views': 5},
+        {'id': 7, 'subject': 'coffee and cream', 'author': 'efg', 'views': 10},
+    ]
+
+    # match any of the search terms
+    assert list(query.text_search(conn, 'bake coffee cake')) == [
+        {'author': 'abc', 'id': 3, 'subject': 'Baking a cake', 'views': 90},
+        {'author': 'xyz', 'id': 1, 'subject': 'coffee', 'views': 50},
+        {'author': 'xyz', 'id': 4, 'subject': 'baking', 'views': 100},
+        {'author': 'efg', 'id': 2, 'subject': 'Coffee Shopping', 'views': 5},
+        {'author': 'efg', 'id': 7, 'subject': 'coffee and cream', 'views': 10}
+    ]
+
+    # search for a phrase
+    assert list(query.text_search(conn, '\"coffee shop\"')) == [
+        {'id': 2, 'subject': 'Coffee Shopping', 'author': 'efg', 'views': 5},
+    ]
+
+    # exclude documents that contain a term
+    assert list(query.text_search(conn, 'coffee -shop')) == [
+        {'id': 1, 'subject': 'coffee', 'author': 'xyz', 'views': 50},
+        {'id': 7, 'subject': 'coffee and cream', 'author': 'efg', 'views': 10},
+    ]
+
+    # search different language
+    assert list(query.text_search(conn, 'leche', language='es')) == [
+        {'id': 5, 'subject': 'Café Con Leche', 'author': 'abc', 'views': 200},
+        {'id': 8, 'subject': 'Cafe con Leche', 'author': 'xyz', 'views': 10}
+    ]
+
+    # case and diacritic insensitive search
+    assert list(query.text_search(conn, 'сы́рники CAFÉS')) == [
+        {'id': 6, 'subject': 'Сырники', 'author': 'jkl', 'views': 80},
+        {'id': 5, 'subject': 'Café Con Leche', 'author': 'abc', 'views': 200},
+        {'id': 8, 'subject': 'Cafe con Leche', 'author': 'xyz', 'views': 10}
+    ]
+
+    # case sensitive search
+    assert list(query.text_search(conn, 'Coffee', case_sensitive=True)) == [
+        {'id': 2, 'subject': 'Coffee Shopping', 'author': 'efg', 'views': 5},
+    ]
+
+    # diacritic sensitive search
+    assert list(query.text_search(conn, 'CAFÉ', diacritic_sensitive=True)) == [
+        {'id': 5, 'subject': 'Café Con Leche', 'author': 'abc', 'views': 200},
+    ]
+
+    # return text score
+    assert list(query.text_search(conn, 'coffee', text_score=True)) == [
+        {'id': 1, 'subject': 'coffee', 'author': 'xyz', 'views': 50, 'score': 1.0},
+        {'id': 2, 'subject': 'Coffee Shopping', 'author': 'efg', 'views': 5, 'score': 0.75},
+        {'id': 7, 'subject': 'coffee and cream', 'author': 'efg', 'views': 10, 'score': 0.75},
+    ]
+
+    # limit search result
+    assert list(query.text_search(conn, 'coffee', limit=2)) == [
+        {'id': 1, 'subject': 'coffee', 'author': 'xyz', 'views': 50},
+        {'id': 2, 'subject': 'Coffee Shopping', 'author': 'efg', 'views': 5},
+    ]
