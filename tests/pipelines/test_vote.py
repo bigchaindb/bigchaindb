@@ -584,3 +584,14 @@ def test_vote_no_double_inclusion(b):
     b.write_block(block)
     r = vote.Vote().validate_tx(tx, 'other_block_id', 1)
     assert r == (False, 'other_block_id', 1)
+
+
+@pytest.mark.genesis
+def test_vote_changefeed(b):
+    from bigchaindb.pipelines import vote
+
+    changefeed = vote.get_changefeed()
+    tx = dummy_tx(b)
+    block = b.create_block([tx])
+    b.write_block(block)
+    assert changefeed.target() == block.decouple_assets()[1]
