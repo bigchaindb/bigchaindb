@@ -672,3 +672,14 @@ def test_vote_no_double_inclusion(b):
     b.write_block(block)
     r = vote.Vote().validate_tx(tx, 'other_block_id', 1)
     assert r == (False, 'other_block_id', 1)
+
+
+@pytest.mark.genesis
+def test_duplicate_transaction(signed_create_tx):
+    from bigchaindb.pipelines import vote
+
+    with patch('bigchaindb.core.Bigchain.is_new_transaction') as is_new:
+        is_new.return_value = False
+        res = vote.Vote().validate_tx(signed_create_tx.to_dict(), 'a', 1)
+    assert res == (False, 'a', 1)
+    assert is_new.call_count == 1
