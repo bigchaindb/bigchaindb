@@ -15,7 +15,6 @@ def test_get_assets_with_missing_text_search(client):
     assert res.status_code == 400
 
 
-@pytest.mark.bdb
 @pytest.mark.genesis
 def test_get_assets(client, b):
     from bigchaindb.models import Transaction
@@ -53,7 +52,6 @@ def test_get_assets(client, b):
         assert res.json['message'].startswith('(OperationError)')
 
 
-@pytest.mark.bdb
 @pytest.mark.genesis
 def test_get_assets_limit(client, b):
     from bigchaindb.models import Transaction
