@@ -589,9 +589,13 @@ def test_vote_no_double_inclusion(b):
 @pytest.mark.genesis
 def test_vote_changefeed(b):
     from bigchaindb.pipelines import vote
+    from multiprocessing import Queue
 
     changefeed = vote.get_changefeed()
+    changefeed.outqueue = Queue()
+    changefeed.start()
     tx = dummy_tx(b)
     block = b.create_block([tx])
     b.write_block(block)
-    assert changefeed.target() == block.decouple_assets()[1]
+    assert changefeed.outqueue.get() == block.decouple_assets()[1]
+    changefeed.terminate()
