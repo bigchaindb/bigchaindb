@@ -30,7 +30,7 @@ metadata:
   name: bdb-keyring
   namespace: default
 data:
-  bdb-keyring: "<b64 encoded, ':' separated list of public keys>"
+  bdb-keyring: "':' separated list of public keys>"
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -38,4 +38,4 @@ metadata:
   name: bdb-public-key
   namespace: default
 data:
-  bdb-public-key: "<b64 encoded public key>"
+  bdb-public-key: "<public key>"
