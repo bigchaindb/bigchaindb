@@ -18,17 +18,14 @@ GitHub, i.e. the branch for the version of BigchainDB that your BigchainDB
 cluster is using.
 
 
-Step 1: Install kubectl
------------------------
+Step 1: Install and Configure kubectl
+-------------------------------------
 
 kubectl is the Kubernetes CLI.
 If you don't already have it installed,
 then see the `Kubernetes docs to install it
 <https://kubernetes.io/docs/user-guide/prereqs/>`_.
 
-
-Step 2: Configure kubectl
--------------------------
 
 The default location of the kubectl configuration file is ``~/.kube/config``.
 If you don't have that file, then you need to get it.
@@ -63,7 +60,7 @@ then try adding ``--ssh-key-file ~/.ssh/<name>``
 to the above command (i.e. the path to the private key).
 
 
-Step 3: Connect to the Cluster UI - (optional)
+Step 2: Connect to the Cluster UI - (optional)
 ----------------------------------------------
 
 * Get the kubectl context for this cluster using ``kubectl config view``.
@@ -75,7 +72,7 @@ Step 3: Connect to the Cluster UI - (optional)
      $ kubectl --context k8s-bdb-test-cluster-0 proxy -p 8001
 
 
-Step 4: Configure the Node
+Step 3: Configure the Node
 --------------------------
    
   * You need to have all the information :ref:`listed here <Things Each Node Operator Must Do>`.
@@ -172,10 +169,12 @@ resource. You should see at least 2 entries there - one for the Kubernetes
 master and the other for the MongoDB instance. You may have to ``Refresh`` the
 Azure web page listing the resources in a resource group for the latest
 changes to be reflected.
+
 Select the ``Public IP`` resource that is attached to your service (it should
-have the Kubernetes cluster name along with a random string),
-select ``Configuration``, add the DNS name that was added in the
-ConfigMap earlier, click ``Save``, and wait for the changes to be applied.
+have the Azure DNS prefix name along with a long random string, without the
+``master-ip`` string), select ``Configuration``, add the DNS assigned above
+(for example, ``bdb-test-cluster-0``), click ``Save``, and wait for the
+changes to be applied.
 
 To verify the DNS setting is operational, you can run ``nslookup <dns
 name added in ConfigMap>`` from your local Linux shell.
@@ -469,7 +468,7 @@ Step 11: Start a Kubernetes StatefulSet for MongoDB
        $ kubectl --context k8s-bdb-test-cluster-0 apply -f mongodb/mongo-ss.yaml
    
 
-Step 13: Start a Kubernetes Deployment for MongoDB Monitoring Agent
+Step 12: Start a Kubernetes Deployment for MongoDB Monitoring Agent
 -------------------------------------------------------------------
 
   * This configuration is located in the file
@@ -490,7 +489,7 @@ Step 13: Start a Kubernetes Deployment for MongoDB Monitoring Agent
        $ kubectl --context k8s-bdb-test-cluster-0 apply -f mongodb-monitoring-agent/mongo-mon-dep.yaml
 
 
-Step 15: Start a Kubernetes Deployment for MongoDB Backup Agent
+Step 13: Start a Kubernetes Deployment for MongoDB Backup Agent
 ---------------------------------------------------------------
 
   * This configuration is located in the file
@@ -511,7 +510,7 @@ Step 15: Start a Kubernetes Deployment for MongoDB Backup Agent
        $ kubectl --context k8s-bdb-test-cluster-0 apply -f mongodb-backup-agent/mongo-backup-dep.yaml
 
 
-Step 16: Configure the MongoDB Cloud Manager
+Step 14: Configure the MongoDB Cloud Manager
 --------------------------------------------
 
   * Refer the
@@ -520,7 +519,7 @@ Step 16: Configure the MongoDB Cloud Manager
     monitoring and backup.
 
 
-Step 17: Start a Kubernetes Deployment for Bigchaindb
+Step 15: Start a Kubernetes Deployment for Bigchaindb
 -----------------------------------------------------
 
   * This configuration is located in the file
@@ -560,10 +559,10 @@ Step 17: Start a Kubernetes Deployment for Bigchaindb
   * You can check its status using the command ``kubectl get deploy -w``
 
 
-Step 18: Verify the BigchainDB Node Setup
+Step 16: Verify the BigchainDB Node Setup
 -----------------------------------------
 
-Step 18.1: Testing Internally
+Step 16.1: Testing Internally
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Run a container that provides utilities like ``nslookup``, ``curl`` and ``dig``
@@ -652,7 +651,7 @@ themselves.
   * Send some transactions to BigchainDB and verify it's up and running!
 
 
-Step 18.2: Testing Externally
+Step 16.2: Testing Externally
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Try to access the ``<dns/ip of your exposed bigchaindb service endpoint>:80``
