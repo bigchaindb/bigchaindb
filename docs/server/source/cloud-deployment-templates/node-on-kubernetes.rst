@@ -9,6 +9,14 @@ It assumes you already have a running Kubernetes cluster.
 If you want to add a new BigchainDB node to an existing BigchainDB cluster,
 refer to :doc:`the page about that <add-node-on-kubernetes>`.
 
+We refer to many files by their directory and filename in the documentation
+below, such as ``configuration/config-map.yaml``. Those files are files in the
+`bigchaindb/bigchaindb repository on GitHub
+<https://github.com/bigchaindb/bigchaindb/>`_ in the ``k8s/`` directory.
+Make sure you're getting those files from the appropriate Git branch on
+GitHub, i.e. the branch for the version of BigchainDB that your BigchainDB
+cluster is using.
+
 
 Step 1: Install kubectl
 -----------------------
