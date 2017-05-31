@@ -117,6 +117,8 @@ class BlockPipeline:
         logger.info('Write new block %s with %s transactions',
                     block.id, len(block.transactions))
         self.bigchain.write_block(block)
+        self.bigchain.statsd.incr('pipelines.block.throughput',
+                                  len(block.transactions))
         return block
 
     def delete_tx(self, block):

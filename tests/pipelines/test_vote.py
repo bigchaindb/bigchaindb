@@ -199,7 +199,7 @@ def test_valid_block_voting_sequential(b, genesis_block, monkeypatch):
     for tx, block_id, num_tx in vote_obj.ungroup(block['id'], txs):
         last_vote = vote_obj.vote(*vote_obj.validate_tx(tx, block_id, num_tx))
 
-    vote_obj.write_vote(last_vote)
+    vote_obj.write_vote(*last_vote)
     vote_rs = query.get_votes_by_block_id_and_voter(b.connection, block_id, b.me)
     vote_doc = vote_rs.next()
 

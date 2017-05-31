@@ -137,9 +137,9 @@ class Vote:
             self.last_voted_id = block_id
             del self.counters[block_id]
             del self.validity[block_id]
-            return vote
+            return vote, num_tx
 
-    def write_vote(self, vote):
+    def write_vote(self, vote, num_tx):
         """Write vote to the database.
 
         Args:
@@ -149,6 +149,7 @@ class Vote:
         logger.info("Voting '%s' for block %s", validity,
                     vote['vote']['voting_for_block'])
         self.bigchain.write_vote(vote)
+        self.bigchain.statsd.incr('pipelines.vote.throughput', num_tx)
         return vote
 
 
