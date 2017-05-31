@@ -260,7 +260,7 @@ def get_last_voted_block_id(connection, node_pubkey):
 
 
 @register_query(RethinkDBConnection)
-def get_new_blocks_feed(connection, start_block_id):
+def get_new_blocks_feed(connection, start_block_id):  # pragma: no cover
     logger.warning('RethinkDB changefeed unable to resume from given block: %s',
                    start_block_id)
     # In order to get blocks in the correct order, it may be acceptable to
