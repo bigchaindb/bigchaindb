@@ -1,5 +1,6 @@
 """ Schema validation related functions and data """
 import os.path
+import logging
 
 import jsonschema
 import yaml
@@ -7,6 +8,9 @@ import rapidjson
 import rapidjson_schema
 
 from bigchaindb.common.exceptions import SchemaValidationError
+
+
+logger = logging.getLogger(__name__)
 
 
 def drop_schema_descriptions(node):
@@ -58,8 +62,8 @@ def _validate_schema(schema, body):
             jsonschema.validate(body, schema[0])
         except jsonschema.ValidationError as exc2:
             raise SchemaValidationError(str(exc2)) from exc2
-        raise Exception('jsonschema did not raise an exception, wheras rapidjson raised',
-                        exc)
+        logger.warning('code problem: jsonschema did not raise an exception, wheras rapidjson raised %s', exc)
+        raise SchemaValidationError(str(exc)) from exc
 
 
 def validate_transaction_schema(tx):
