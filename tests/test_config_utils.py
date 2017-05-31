@@ -209,7 +209,6 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
             'loglevel': logging.getLevelName(
                 log_config['handlers']['console']['level']).lower(),
             'workers': None,
-            'threads': None,
         },
         'wsserver': {
             'host': WSSERVER_HOST,
