@@ -159,7 +159,7 @@ Step 5: Assign DNS Name to the NGINX Public IP
   * Once a public IP is assigned, you can log in to the Azure portal and map it to
     a DNS name.
    
-  * We usually assign ``bdb-test-cluster-0``, ``bdb-test-cluster-0`` and
+  * We usually assign ``bdb-test-cluster-0``, ``bdb-test-cluster-1`` and
     so on in our documentation.
    
   * Let us assume that we assigned the unique name of ``bdb-test-cluster-0`` here.
