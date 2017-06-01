@@ -48,6 +48,7 @@ def run_start_args(request):
     return Namespace(
         config=param.get('config'),
         start_rethinkdb=param.get('start_rethinkdb', False),
+        start_mongodb=param.get('start_mongodb', False),
         allow_temp_keypair=param.get('allow_temp_keypair', False),
     )
 

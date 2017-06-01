@@ -39,7 +39,7 @@ def test_bigchain_run_start(mock_run_configure,
                             mocked_setup_logging):
     from bigchaindb import config
     from bigchaindb.commands.bigchaindb import run_start
-    args = Namespace(start_rethinkdb=False, allow_temp_keypair=False, config=None, yes=True)
+    args = Namespace(start_rethinkdb=False, start_mongodb=False, allow_temp_keypair=False, config=None, yes=True)
     run_start(args)
     mocked_setup_logging.assert_called_once_with(user_log_config=config['log'])
 
@@ -288,7 +288,7 @@ def test_allow_temp_keypair_generates_one_on_the_fly(
 
     bigchaindb.config['keypair'] = {'private': None, 'public': None}
 
-    args = Namespace(allow_temp_keypair=True, start_rethinkdb=False, config=None, yes=True)
+    args = Namespace(allow_temp_keypair=True, start_rethinkdb=False, start_mongodb=False, config=None, yes=True)
     run_start(args)
 
     mocked_setup_logging.assert_called_once_with(
@@ -314,7 +314,7 @@ def test_allow_temp_keypair_doesnt_override_if_keypair_found(mock_gen_keypair,
     assert isinstance(original_public_key, str)
     assert isinstance(original_private_key, str)
 
-    args = Namespace(allow_temp_keypair=True, start_rethinkdb=False, config=None, yes=True)
+    args = Namespace(allow_temp_keypair=True, start_rethinkdb=False, start_mongodb=False, config=None, yes=True)
     run_start(args)
 
     mocked_setup_logging.assert_called_once_with(
@@ -394,6 +394,33 @@ def test_run_start_when_start_rethinkdb_fails(mocker,
     assert not mocked_start.called
 
 
+def test_run_start_when_start_mongodb_fails(mocker,
+                                            monkeypatch,
+                                            run_start_args,
+                                            mocked_setup_logging):
+    from bigchaindb import config
+    from bigchaindb.commands.bigchaindb import run_start
+    from bigchaindb.commands.messages import MONGODB_STARTUP_ERROR
+    from bigchaindb.common.exceptions import StartupError
+    run_start_args.start_mongodb = True
+    mocked_start = mocker.patch('bigchaindb.processes.start')
+    err_msg = 'Error starting mongodb.'
+
+    def mock_start_mongodb():
+        raise StartupError(err_msg)
+
+    monkeypatch.setattr(
+        'bigchaindb.commands.utils.start_mongodb', mock_start_mongodb)
+
+    with pytest.raises(SystemExit) as exc:
+        run_start(run_start_args)
+
+    mocked_setup_logging.assert_called_once_with(user_log_config=config['log'])
+    assert len(exc.value.args) == 1
+    assert exc.value.args[0] == MONGODB_STARTUP_ERROR.format(err_msg)
+    assert not mocked_start.called
+
+
 @patch('argparse.ArgumentParser.parse_args')
 @patch('bigchaindb.commands.utils.base_parser')
 @patch('bigchaindb.commands.utils.start')
@@ -431,6 +458,10 @@ def test_calling_main(start_mock, base_parser_mock, parse_args_mock,
                                                dest='start_rethinkdb',
                                                action='store_true',
                                                help='Run RethinkDB on start')
+    subsubparsers.add_argument.assert_any_call('--dev-start-mongodb',
+                                               dest='start_mongodb',
+                                               action='store_true',
+                                               help='Run MongoDB on start')
     subsubparsers.add_argument.assert_any_call('--dev-allow-temp-keypair',
                                                dest='allow_temp_keypair',
                                                action='store_true',
