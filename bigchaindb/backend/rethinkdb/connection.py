@@ -1,5 +1,4 @@
 import rethinkdb as r
-
 from bigchaindb.backend.connection import Connection
 from bigchaindb.backend.exceptions import ConnectionError, OperationError
 
@@ -40,6 +39,9 @@ class RethinkDBConnection(Connection):
         """
 
         try:
-            return r.connect(host=self.host, port=self.port, db=self.dbname)
-        except r.ReqlDriverError as exc:
+            return r.connect(host=self.host,
+                             port=self.port,
+                             db=self.dbname,
+                             timeout=self.connection_timeout)
+        except (r.ReqlDriverError, r.ReqlTimeoutError) as exc:
             raise ConnectionError from exc

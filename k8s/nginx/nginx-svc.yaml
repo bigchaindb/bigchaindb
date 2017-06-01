@@ -21,4 +21,8 @@ spec:
     targetPort: 80
     name: ngx-public-bdb-port
     protocol: TCP
+  - port: 81
+    targetPort: 81
+    name: ngx-public-ws-port
+    protocol: TCP
   type: LoadBalancer

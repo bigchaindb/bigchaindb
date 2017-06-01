@@ -1,6 +1,7 @@
 """ API routes definition """
 from flask_restful import Api
 from bigchaindb.web.views import (
+    assets,
     blocks,
     info,
     statuses,
@@ -25,6 +26,7 @@ def r(*args, **kwargs):
 
 ROUTES_API_V1 = [
     r('/', info.ApiV1Index),
+    r('assets/', assets.AssetListApi),
     r('blocks/<string:block_id>', blocks.BlockApi),
     r('blocks/', blocks.BlockListApi),
     r('statuses/', statuses.StatusApi),

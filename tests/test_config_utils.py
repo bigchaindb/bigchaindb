@@ -209,7 +209,6 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
             'loglevel': logging.getLevelName(
                 log_config['handlers']['console']['level']).lower(),
             'workers': None,
-            'threads': None,
         },
         'wsserver': {
             'host': WSSERVER_HOST,
@@ -255,6 +254,18 @@ def test_autoconfigure_env_precedence(monkeypatch):
     assert bigchaindb.config['database']['name'] == 'test-dbname'
     assert bigchaindb.config['database']['port'] == 4242
     assert bigchaindb.config['server']['bind'] == 'localhost:9985'
+
+
+def test_autoconfigure_explicit_file(monkeypatch):
+    from bigchaindb import config_utils
+
+    def file_config(*args, **kwargs):
+        raise FileNotFoundError()
+
+    monkeypatch.setattr('bigchaindb.config_utils.file_config', file_config)
+
+    with pytest.raises(FileNotFoundError):
+        config_utils.autoconfigure(filename='autoexec.bat')
 
 
 def test_update_config(monkeypatch):
