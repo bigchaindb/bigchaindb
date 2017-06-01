@@ -80,7 +80,8 @@ Step 3: Configure the Node
   * The information needs to be populated in ``configuration/config-map.yaml``
     and ``configuration/secret.yaml``.
 
-  * For more details, refer the document on how to :ref:`configure a node <Configure the Node>`.
+  * For more details, refer to the document on how to
+    :ref:`configure a node <Configure the Node>`.
    
 
 Step 4: Start the NGINX Service
@@ -514,7 +515,7 @@ Step 13: Start a Kubernetes Deployment for MongoDB Backup Agent
 Step 14: Configure the MongoDB Cloud Manager
 --------------------------------------------
 
-  * Refer the
+  * Refer to the
     :ref:`documentation <Configure MongoDB Cloud Manager for Monitoring and Backup>`
     for details on how to configure the MongoDB Cloud Manager to enable
     monitoring and backup.
