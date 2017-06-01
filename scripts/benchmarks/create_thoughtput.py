@@ -1,30 +1,3 @@
-"""
-Benchmark Bigchain throughput of CREATE transactions.
-
-The throughput of BigchainDB cannot be measured just by posting transactions
-via the web interface, because the process whereby they are validated is
-asynchronous.
-
-For this reason, this benchmark also monitors the size of the backlog, so that
-transactions do not become stale, which can result in thrashing.
-
-The benchmark runs for a fixed period of time and makes metrics available via
-a graphite instance.
-
-It should work in any environment as long as Docker Compose is available.
-
-To start:
-
-    $ python3 scripts/bench_create.py
-
-To start using a separate namespace for docker-compose:
-
-    $ COMPOSE_PROJECT_NAME=somename python3 scripts/bench_create.py
-
-Happy benchmarking!
-"""
-
-
 import sys
 import math
 import time
