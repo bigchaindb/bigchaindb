@@ -71,6 +71,7 @@ install_requires = [
     'python-rapidjson==0.0.11',
     'logstats>=0.2.1',
     'flask>=0.10.1',
+    'flask-cors~=3.0.0',
     'flask-restful~=0.3.0',
     'requests~=2.9',
     'gunicorn~=19.0',
@@ -78,6 +79,7 @@ install_requires = [
     'jsonschema~=2.5.1',
     'pyyaml~=3.12',
     'aiohttp~=2.0',
+    'python-rapidjson-schema==0.1.1',
 ]
 
 setup(

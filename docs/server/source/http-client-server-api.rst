@@ -270,6 +270,118 @@ Statuses
    :statuscode 404: A block with that ID was not found.
 
 
+Assets
+--------------------------------
+
+.. http:get:: /api/v1/assets
+
+   Return all the assets that match a given text search.
+
+   :query string text search: Text search string to query.
+   :query int limit: (Optional) Limit the number of returned assets. Defaults
+                     to ``0`` meaning return all matching assets.
+
+   .. note::
+
+        Currently this enpoint is only supported if the server is running
+        MongoDB as the backend.
+
+.. http:get:: /api/v1/assets?search={text_search}
+
+    Return all assets that match a given text search. The asset is returned
+    with the ``id`` of the transaction that created the asset.
+
+    If no assets match the text search it returns an empty list.
+
+    If the text string is empty or the server does not support text search,
+    a ``400`` is returned.
+
+    The results are sorted by text score.
+    For more information about the behavior of text search see `MongoDB text
+    search behavior <https://docs.mongodb.com/manual/reference/operator/query/text/#behavior>`_
+
+   **Example request**:
+
+   .. sourcecode:: http
+
+        GET /api/v1/assets/?search=bigchaindb HTTP/1.1
+        Host: example.com
+
+   **Example response**:
+
+   .. sourcecode:: http
+
+        HTTP/1.1 200 OK
+        Content-type: application/json
+
+        [
+            {
+                "data": {"msg": "Hello BigchainDB 1!"},
+                "id": "51ce82a14ca274d43e4992bbce41f6fdeb755f846e48e710a3bbb3b0cf8e4204"
+            },
+            {
+                "data": {"msg": "Hello BigchainDB 2!"},
+                "id": "b4e9005fa494d20e503d916fa87b74fe61c079afccd6e084260674159795ee31"
+            },
+            {
+                "data": {"msg": "Hello BigchainDB 3!"},
+                "id": "fa6bcb6a8fdea3dc2a860fcdc0e0c63c9cf5b25da8b02a4db4fb6a2d36d27791"
+            }
+        ]
+
+   :resheader Content-Type: ``application/json``
+
+   :statuscode 200: The query was executed successfully.
+   :statuscode 400: The query was not executed successfully. Returned if the
+                    text string is empty or the server does not support
+                    text search.
+
+.. http:get:: /api/v1/assets?search={text_search}&limit={n_documents}
+
+    Return at most ``n`` assets that match a given text search.
+
+    If no assets match the text search it returns an empty list.
+
+    If the text string is empty or the server does not support text search,
+    a ``400`` is returned.
+
+    The results are sorted by text score.
+    For more information about the behavior of text search see `MongoDB text
+    search behavior <https://docs.mongodb.com/manual/reference/operator/query/text/#behavior>`_
+
+   **Example request**:
+
+   .. sourcecode:: http
+
+    GET /api/v1/assets/?search=bigchaindb&limit=2 HTTP/1.1
+    Host: example.com
+
+   **Example response**:
+
+   .. sourcecode:: http
+
+    HTTP/1.1 200 OK
+    Content-type: application/json
+
+    [
+        {
+            "data": {"msg": "Hello BigchainDB 1!"},
+            "id": "51ce82a14ca274d43e4992bbce41f6fdeb755f846e48e710a3bbb3b0cf8e4204"
+        },
+        {
+            "data": {"msg": "Hello BigchainDB 2!"},
+            "id": "b4e9005fa494d20e503d916fa87b74fe61c079afccd6e084260674159795ee31"
+        },
+    ]
+
+   :resheader Content-Type: ``application/json``
+
+   :statuscode 200: The query was executed successfully.
+   :statuscode 400: The query was not executed successfully. Returned if the
+                    text string is empty or the server does not support
+                    text search.
+
+
 Advanced Usage
 --------------------------------
 

@@ -7,6 +7,7 @@ import copy
 import multiprocessing
 
 from flask import Flask
+from flask_cors import CORS
 import gunicorn.app.base
 
 from bigchaindb import utils
@@ -47,7 +48,7 @@ class StandaloneApplication(gunicorn.app.base.BaseApplication):
         return self.application
 
 
-def create_app(*, debug=False, threads=4):
+def create_app(*, debug=False, threads=1):
     """Return an instance of the Flask application.
 
     Args:
@@ -59,6 +60,21 @@ def create_app(*, debug=False, threads=4):
     """
 
     app = Flask(__name__)
+
+    CORS(app,
+         allow_headers=(
+             'x-requested-with',
+             'content-type',
+             'accept',
+             'origin',
+             'authorization',
+             'x-csrftoken',
+             'withcredentials',
+             'cache-control',
+             'cookie',
+             'session-id',
+         ),
+         supports_credentials=True)
 
     app.debug = debug
 
@@ -86,7 +102,10 @@ def create_server(settings):
         settings['workers'] = (multiprocessing.cpu_count() * 2) + 1
 
     if not settings.get('threads'):
-        settings['threads'] = (multiprocessing.cpu_count() * 2) + 1
+        # Note: Threading is not recommended currently, as the frontend workload
+        # is largely CPU bound and parallisation across Python threads makes it
+        # slower.
+        settings['threads'] = 1
 
     settings['logger_class'] = 'bigchaindb.log.loggers.HttpServerLogger'
     app = create_app(debug=settings.get('debug', False),

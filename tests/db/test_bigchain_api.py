@@ -213,6 +213,88 @@ class TestBigchainApi(object):
         assert b.get_transaction(tx1.id) is None
         assert b.get_transaction(tx2.id) == tx2
 
+    @pytest.mark.genesis
+    def test_text_search(self, b):
+        from bigchaindb.models import Transaction
+        from bigchaindb.backend.exceptions import OperationError
+        from bigchaindb.backend.mongodb.connection import MongoDBConnection
+
+        # define the assets
+        asset1 = {'msg': 'BigchainDB 1'}
+        asset2 = {'msg': 'BigchainDB 2'}
+        asset3 = {'msg': 'BigchainDB 3'}
+
+        # create the transactions
+        tx1 = Transaction.create([b.me], [([b.me], 1)],
+                                 asset=asset1).sign([b.me_private])
+        tx2 = Transaction.create([b.me], [([b.me], 1)],
+                                 asset=asset2).sign([b.me_private])
+        tx3 = Transaction.create([b.me], [([b.me], 1)],
+                                 asset=asset3).sign([b.me_private])
+
+        # create the block
+        block = b.create_block([tx1, tx2, tx3])
+        b.write_block(block)
+
+        # vote valid
+        vote = b.vote(block.id, b.get_last_voted_block().id, True)
+        b.write_vote(vote)
+
+        # get the assets through text search
+        # this query only works with MongoDB
+        try:
+            assets = list(b.text_search('bigchaindb'))
+        except OperationError as exc:
+            assert not isinstance(b.connection, MongoDBConnection)
+        else:
+            assert len(assets) == 3
+
+    @pytest.mark.genesis
+    def test_text_search_returns_valid_only(self, monkeypatch, b):
+        from bigchaindb.models import Transaction
+        from bigchaindb.backend.exceptions import OperationError
+        from bigchaindb.backend.mongodb.connection import MongoDBConnection
+
+        asset_valid = {'msg': 'Hello BigchainDB!'}
+        asset_invalid = {'msg': 'Goodbye BigchainDB!'}
+
+        monkeypatch.setattr('time.time', lambda: 1000000000)
+        tx1 = Transaction.create([b.me], [([b.me], 1)],
+                                 asset=asset_valid)
+        tx1 = tx1.sign([b.me_private])
+        block1 = b.create_block([tx1])
+        b.write_block(block1)
+
+        monkeypatch.setattr('time.time', lambda: 1000000020)
+        tx2 = Transaction.create([b.me], [([b.me], 1)],
+                                 asset=asset_invalid)
+        tx2 = tx2.sign([b.me_private])
+        block2 = b.create_block([tx2])
+        b.write_block(block2)
+
+        # vote the first block valid
+        vote = b.vote(block1.id, b.get_last_voted_block().id, True)
+        b.write_vote(vote)
+
+        # vote the second block invalid
+        vote = b.vote(block2.id, b.get_last_voted_block().id, False)
+        b.write_vote(vote)
+
+        # get assets with text search
+        try:
+            assets = list(b.text_search('bigchaindb'))
+        except OperationError:
+            assert not isinstance(b.connection, MongoDBConnection)
+            return
+
+        # should only return one asset
+        assert len(assets) == 1
+        # should return the asset created by tx1
+        assert assets[0] == {
+            'data': {'msg': 'Hello BigchainDB!'},
+            'id': tx1.id
+        }
+
     @pytest.mark.usefixtures('inputs')
     def test_write_transaction(self, b, user_pk, user_sk):
         from bigchaindb import Bigchain
@@ -383,7 +465,7 @@ class TestBigchainApi(object):
         from bigchaindb.backend import query
 
         genesis = query.get_genesis_block(b.connection)
-        genesis = Block.from_dict(genesis)
+        genesis = Block.from_db(b, genesis)
         gb = b.get_last_voted_block()
         assert gb == genesis
         assert b.validate_block(gb) == gb
@@ -1119,11 +1201,11 @@ def test_get_owned_ids_calls_get_outputs_filtered():
 def test_get_outputs_filtered_only_unspent():
     from bigchaindb.common.transaction import TransactionLink
     from bigchaindb.core import Bigchain
-    with patch('bigchaindb.core.Bigchain.get_outputs') as get_outputs:
+    with patch('bigchaindb.fastquery.FastQuery.get_outputs_by_public_key') as get_outputs:
         get_outputs.return_value = [TransactionLink('a', 1),
                                     TransactionLink('b', 2)]
-        with patch('bigchaindb.core.Bigchain.get_spent') as get_spent:
-            get_spent.side_effect = [True, False]
+        with patch('bigchaindb.fastquery.FastQuery.filter_spent_outputs') as filter_spent:
+            filter_spent.return_value = [TransactionLink('b', 2)]
             out = Bigchain().get_outputs_filtered('abc', include_spent=False)
     get_outputs.assert_called_once_with('abc')
     assert out == [TransactionLink('b', 2)]
@@ -1132,13 +1214,13 @@ def test_get_outputs_filtered_only_unspent():
 def test_get_outputs_filtered():
     from bigchaindb.common.transaction import TransactionLink
     from bigchaindb.core import Bigchain
-    with patch('bigchaindb.core.Bigchain.get_outputs') as get_outputs:
+    with patch('bigchaindb.fastquery.FastQuery.get_outputs_by_public_key') as get_outputs:
         get_outputs.return_value = [TransactionLink('a', 1),
                                     TransactionLink('b', 2)]
-        with patch('bigchaindb.core.Bigchain.get_spent') as get_spent:
+        with patch('bigchaindb.fastquery.FastQuery.filter_spent_outputs') as filter_spent:
             out = Bigchain().get_outputs_filtered('abc')
     get_outputs.assert_called_once_with('abc')
-    get_spent.assert_not_called()
+    filter_spent.assert_not_called()
     assert out == get_outputs.return_value
 
 

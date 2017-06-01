@@ -88,11 +88,12 @@ def test_bigchain_show_config(capsys):
     assert output_config == config
 
 
+@pytest.mark.usefixtures('ignore_local_config_file')
 def test_bigchain_export_my_pubkey_when_pubkey_set(capsys, monkeypatch):
     from bigchaindb import config
     from bigchaindb.commands.bigchaindb import run_export_my_pubkey
 
-    args = Namespace(config='dummy')
+    args = Namespace(config=None)
     # so in run_export_my_pubkey(args) below,
     # filename=args.config='dummy' is passed to autoconfigure().
     # We just assume autoconfigure() works and sets
@@ -107,11 +108,12 @@ def test_bigchain_export_my_pubkey_when_pubkey_set(capsys, monkeypatch):
     assert 'Charlie_Bucket' in lines
 
 
+@pytest.mark.usefixtures('ignore_local_config_file')
 def test_bigchain_export_my_pubkey_when_pubkey_not_set(monkeypatch):
     from bigchaindb import config
     from bigchaindb.commands.bigchaindb import run_export_my_pubkey
 
-    args = Namespace(config='dummy')
+    args = Namespace(config=None)
     monkeypatch.setitem(config['keypair'], 'public', None)
     # assert that run_export_my_pubkey(args) raises SystemExit:
     with pytest.raises(SystemExit) as exc_info:
