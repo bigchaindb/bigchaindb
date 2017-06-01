@@ -100,7 +100,7 @@ The settings with names of the form `database.*` are for the database backend
 * `database.port` is self-explanatory.
 * `database.name` is a user-chosen name for the database inside RethinkDB or MongoDB, e.g. `bigchain`.
 * `database.replicaset` is only relevant if using MongoDB; it's the name of the MongoDB replica set, e.g. `bigchain-rs`.
-* `database.connection_timeout` is the maximum number of milliseconds that BigchainDB will wait before giving up on one attempt to connect to the database backend. Note: At the time of writing, this setting was only used by MongoDB; there was an open [issue to make RethinkDB use it as well](https://github.com/bigchaindb/bigchaindb/issues/1337).
+* `database.connection_timeout` is the maximum number of milliseconds that BigchainDB will wait before giving up on one attempt to connect to the database backend.
 * `database.max_tries` is the maximum number of times that BigchainDB will try to establish a connection with the database backend. If 0, then it will try forever.
 
 **Example using environment variables**
