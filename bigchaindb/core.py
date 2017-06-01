@@ -574,16 +574,6 @@ class Bigchain(object):
                                                               self.me)
         return Block.from_dict(self.get_block(last_block_id))
 
-    def get_unvoted_blocks(self):
-        """Return all the blocks that have not been voted on by this node.
-
-        Returns:
-            :obj:`list` of :obj:`dict`: a list of unvoted blocks
-        """
-
-        # XXX: should this return instaces of Block?
-        return backend.query.get_unvoted_blocks(self.connection, self.me)
-
     def block_election(self, block):
         if type(block) != dict:
             block = block.to_dict()
@@ -621,6 +611,16 @@ class Bigchain(object):
         return backend.query.write_assets(self.connection, assets)
 
     def text_search(self, search, *, limit=0):
+        """
+        Return an iterator of assets that match the text search
+
+        Args:
+            search (str): Text search string to query the text index
+            limit (int, optional): Limit the number of returned documents.
+
+        Returns:
+            iter: An iterator of assets that match the text search.
+        """
         assets = backend.query.text_search(self.connection, search, limit=limit)
 
         # TODO: This is not efficient. There may be a more efficient way to

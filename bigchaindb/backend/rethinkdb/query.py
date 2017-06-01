@@ -1,14 +1,19 @@
 from itertools import chain
+import logging as logger
 from time import time
 
 import rethinkdb as r
 
 from bigchaindb import backend, utils
+from bigchaindb.backend.rethinkdb import changefeed
 from bigchaindb.common import exceptions
 from bigchaindb.common.transaction import Transaction
 from bigchaindb.common.utils import serialize
 from bigchaindb.backend.utils import module_dispatch_registrar
 from bigchaindb.backend.rethinkdb.connection import RethinkDBConnection
+
+
+logger = logger.getLogger(__name__)
 
 
 READ_MODE = 'majority'
@@ -255,18 +260,13 @@ def get_last_voted_block_id(connection, node_pubkey):
 
 
 @register_query(RethinkDBConnection)
-def get_unvoted_blocks(connection, node_pubkey):
-    unvoted = connection.run(
-            r.table('bigchain', read_mode=READ_MODE)
-            .filter(lambda block: r.table('votes', read_mode=READ_MODE)
-                                   .get_all([block['id'], node_pubkey], index='block_and_voter')
-                                   .is_empty())
-            .order_by(r.asc(r.row['block']['timestamp'])))
-
-    # FIXME: I (@vrde) don't like this solution. Filtering should be done at a
-    #        database level. Solving issue #444 can help untangling the situation
-    unvoted_blocks = filter(lambda block: not utils.is_genesis_block(block), unvoted)
-    return unvoted_blocks
+def get_new_blocks_feed(connection, start_block_id):  # pragma: no cover
+    logger.warning('RethinkDB changefeed unable to resume from given block: %s',
+                   start_block_id)
+    # In order to get blocks in the correct order, it may be acceptable to
+    # look in the votes table to see what order other nodes have used.
+    for change in changefeed.run_changefeed(connection, 'bigchain'):
+        yield change['new_val']
 
 
 @register_query(RethinkDBConnection)
