@@ -512,16 +512,7 @@ Step 13: Start a Kubernetes Deployment for MongoDB Backup Agent
        $ kubectl --context k8s-bdb-test-cluster-0 apply -f mongodb-backup-agent/mongo-backup-dep.yaml
 
 
-Step 14: Configure the MongoDB Cloud Manager
---------------------------------------------
-
-  * Refer to the
-    :ref:`documentation <Configure MongoDB Cloud Manager for Monitoring and Backup>`
-    for details on how to configure the MongoDB Cloud Manager to enable
-    monitoring and backup.
-
-
-Step 15: Start a Kubernetes Deployment for Bigchaindb
+Step 14: Start a Kubernetes Deployment for Bigchaindb
 -----------------------------------------------------
 
   * This configuration is located in the file
@@ -559,6 +550,15 @@ Step 15: Start a Kubernetes Deployment for Bigchaindb
 
 
   * You can check its status using the command ``kubectl get deploy -w``
+
+
+Step 15: Configure the MongoDB Cloud Manager
+--------------------------------------------
+
+  * Refer to the
+    :ref:`documentation <Configure MongoDB Cloud Manager for Monitoring and Backup>`
+    for details on how to configure the MongoDB Cloud Manager to enable
+    monitoring and backup.
 
 
 Step 16: Verify the BigchainDB Node Setup
