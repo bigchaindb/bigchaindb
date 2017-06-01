@@ -166,7 +166,7 @@ show-config`` command to check that the keyring is updated.
 Step 7: Run NGINX as a Deployment
 ---------------------------------
 
-Please refer :ref:`this <Step 8: Start the NGINX Kubernetes Deployment>` to
+Please see :ref:`this page <Step 8: Start the NGINX Kubernetes Deployment>` to
 set up NGINX in your new node.
 
 
