@@ -451,22 +451,23 @@ Step 11: Start a Kubernetes StatefulSet for MongoDB
   * As we gain more experience running MongoDB in testing and production, we
     will tweak the ``resources.limits.cpu`` and ``resources.limits.memory``.
 
-  * It might take up to 10 minutes for the disks to be created and attached to
-    the pod. The UI might show that the pod has errored with the
-    message "timeout expired waiting for volumes to attach/mount". Use the CLI
-    below to check the status of the pod in this case, instead of the UI. This
-    happens due to a bug in Azure ACS.
-   
-    .. code:: bash
-
-       $ kubectl --context k8s-bdb-test-cluster-0 get po -w
-  
   * Create the MongoDB StatefulSet using:
 
     .. code:: bash
 
        $ kubectl --context k8s-bdb-test-cluster-0 apply -f mongodb/mongo-ss.yaml
    
+  * It might take up to 10 minutes for the disks, specified in the Persistent
+    Volume Claims above, to be created and attached to the pod.
+    The UI might show that the pod has errored with the message
+    "timeout expired waiting for volumes to attach/mount". Use the CLI below
+    to check the status of the pod in this case, instead of the UI.
+    This happens due to a bug in Azure ACS.
+   
+    .. code:: bash
+
+       $ kubectl --context k8s-bdb-test-cluster-0 get po -w
+  
 
 Step 12: Start a Kubernetes Deployment for MongoDB Monitoring Agent
 -------------------------------------------------------------------
