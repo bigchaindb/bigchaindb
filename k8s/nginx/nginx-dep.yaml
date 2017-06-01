@@ -45,10 +45,6 @@ spec:
             configMapKeyRef:
               name: mongodb-whitelist
               key: allowed-hosts
-        - name: BIGCHAINDB_WS_FRONTEND_PORT
-          value: "81"
-        - name: BIGCHAINDB_WS_BACKEND_PORT
-          value: "9985"
         ports:
         - containerPort: 27017
           hostPort: 27017
