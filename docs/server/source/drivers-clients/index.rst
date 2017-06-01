@@ -4,7 +4,8 @@ Drivers & Clients
 Libraries and Tools Maintained by the BigchainDB Team
 -----------------------------------------------------
 
-* `The Python Driver <https://docs.bigchaindb.com/projects/py-driver/en/latest/index.html>`_
+* `Python Driver <https://docs.bigchaindb.com/projects/py-driver/en/latest/index.html>`_
+* `JavaScript / Node.js Driver <https://github.com/bigchaindb/js-bigchaindb-driver>`_
 * `The Transaction CLI <https://docs.bigchaindb.com/projects/cli/en/latest/>`_ is
   a command-line interface for building BigchainDB transactions.
   You may be able to call it from inside the language of
@@ -20,7 +21,6 @@ Community-Driven Libraries and Tools
    Some of these projects are a work in progress,
    but may still be useful.
 
-* `JavaScript / Node.js driver <https://github.com/bigchaindb/js-bigchaindb-driver>`_
 * `Haskell transaction builder <https://github.com/bigchaindb/bigchaindb-hs>`_
 * `Go driver <https://github.com/zbo14/envoke/blob/master/bigchain/bigchain.go>`_
 * `Java driver <https://github.com/mgrand/bigchaindb-java-driver>`_
