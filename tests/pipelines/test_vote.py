@@ -94,7 +94,7 @@ def test_vote_validate_block(b):
     validation = vote_obj.validate_block(block_dict)
     assert validation[0] == block.id
     for tx1, tx2 in zip(validation[1], block.transactions):
-        assert tx1 == tx2
+        assert tx1 == tx2.to_dict()
 
     block = b.create_block([tx])
     # NOTE: Setting a blocks signature to `None` invalidates it.
@@ -152,7 +152,7 @@ def test_vote_validate_transaction(b):
     from bigchaindb.pipelines import vote
     from bigchaindb.common.exceptions import ValidationError
 
-    tx = dummy_tx(b)
+    tx = dummy_tx(b).to_dict()
     vote_obj = vote.Vote()
     validation = vote_obj.validate_tx(tx, 123, 1)
     assert validation == (True, 123, 1)
@@ -175,15 +175,13 @@ def test_vote_accumulates_transactions(b):
 
     vote_obj = vote.Vote()
 
-    for _ in range(10):
-        tx = dummy_tx(b)
+    tx = dummy_tx(b)
 
-    tx = tx
-    validation = vote_obj.validate_tx(tx, 123, 1)
+    validation = vote_obj.validate_tx(tx.to_dict(), 123, 1)
     assert validation == (True, 123, 1)
 
     tx.inputs[0].fulfillment.signature = None
-    validation = vote_obj.validate_tx(tx, 456, 10)
+    validation = vote_obj.validate_tx(tx.to_dict(), 456, 10)
     assert validation == (False, 456, 10)
 
 
@@ -195,16 +193,17 @@ def test_valid_block_voting_sequential(b, genesis_block, monkeypatch):
 
     monkeypatch.setattr('time.time', lambda: 1111111111)
     vote_obj = vote.Vote()
-    block = dummy_block(b)
+    block = dummy_block(b).to_dict()
+    txs = block['block']['transactions']
 
-    for tx, block_id, num_tx in vote_obj.ungroup(block.id, block.transactions):
+    for tx, block_id, num_tx in vote_obj.ungroup(block['id'], txs):
         last_vote = vote_obj.vote(*vote_obj.validate_tx(tx, block_id, num_tx))
 
     vote_obj.write_vote(last_vote)
     vote_rs = query.get_votes_by_block_id_and_voter(b.connection, block_id, b.me)
     vote_doc = vote_rs.next()
 
-    assert vote_doc['vote'] == {'voting_for_block': block.id,
+    assert vote_doc['vote'] == {'voting_for_block': block['id'],
                                 'previous_block': genesis_block.id,
                                 'is_block_valid': True,
                                 'invalid_reason': None,
@@ -578,9 +577,20 @@ def test_vote_no_double_inclusion(b):
 
     tx = dummy_tx(b)
     block = b.create_block([tx])
-    r = vote.Vote().validate_tx(tx, block.id, 1)
+    r = vote.Vote().validate_tx(tx.to_dict(), block.id, 1)
     assert r == (True, block.id, 1)
 
     b.write_block(block)
-    r = vote.Vote().validate_tx(tx, 'other_block_id', 1)
+    r = vote.Vote().validate_tx(tx.to_dict(), 'other_block_id', 1)
     assert r == (False, 'other_block_id', 1)
+
+
+@pytest.mark.genesis
+def test_duplicate_transaction(signed_create_tx):
+    from bigchaindb.pipelines import vote
+
+    with patch('bigchaindb.core.Bigchain.is_new_transaction') as is_new:
+        is_new.return_value = False
+        res = vote.Vote().validate_tx(signed_create_tx.to_dict(), 'a', 1)
+    assert res == (False, 'a', 1)
+    assert is_new.call_count == 1

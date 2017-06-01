@@ -10,8 +10,8 @@ from collections import Counter
 
 from multipipes import Pipeline, Node
 
-from bigchaindb import Bigchain, backend
-from bigchaindb.models import Transaction, Block
+from bigchaindb import backend, Bigchain
+from bigchaindb.models import Transaction, Block, FastTransaction
 from bigchaindb.common import exceptions
 
 
@@ -41,20 +41,23 @@ class Vote:
         self.counters = Counter()
         self.validity = {}
 
-        self.invalid_dummy_tx = Transaction.create([self.bigchain.me],
-                                                   [([self.bigchain.me], 1)])
+        dummy_tx = Transaction.create([self.bigchain.me],
+                                      [([self.bigchain.me], 1)]).to_dict()
+        self.invalid_dummy_tx = dummy_tx
 
-    def validate_block(self, block):
-        if not self.bigchain.has_previous_vote(block['id']):
+    def validate_block(self, block_dict):
+        if not self.bigchain.has_previous_vote(block_dict['id']):
             try:
-                block = Block.from_db(self.bigchain, block)
+                block = Block.from_db(self.bigchain, block_dict, from_dict_kwargs={
+                    'tx_construct': FastTransaction
+                })
             except (exceptions.InvalidHash):
                 # XXX: if a block is invalid we should skip the `validate_tx`
                 # step, but since we are in a pipeline we cannot just jump to
                 # another function. Hackish solution: generate an invalid
                 # transaction and propagate it to the next steps of the
                 # pipeline.
-                return block['id'], [self.invalid_dummy_tx]
+                return block_dict['id'], [self.invalid_dummy_tx]
             try:
                 block._validate_block(self.bigchain)
             except exceptions.ValidationError:
@@ -64,14 +67,14 @@ class Vote:
                 # transaction and propagate it to the next steps of the
                 # pipeline.
                 return block.id, [self.invalid_dummy_tx]
-            return block.id, block.transactions
+            return block.id, block_dict['block']['transactions']
 
     def ungroup(self, block_id, transactions):
         """Given a block, ungroup the transactions in it.
 
         Args:
             block_id (str): the id of the block in progress.
-            transactions (list(Transaction)): transactions of the block in
+            transactions (list(dict)): transactions of the block in
                 progress.
 
         Returns:
@@ -84,12 +87,12 @@ class Vote:
         for tx in transactions:
             yield tx, block_id, num_tx
 
-    def validate_tx(self, tx, block_id, num_tx):
+    def validate_tx(self, tx_dict, block_id, num_tx):
         """Validate a transaction. Transaction must also not be in any VALID
            block.
 
         Args:
-            tx (dict): the transaction to validate
+            tx_dict (dict): the transaction to validate
             block_id (str): the id of block containing the transaction
             num_tx (int): the total number of transactions to process
 
@@ -97,16 +100,17 @@ class Vote:
             Three values are returned, the validity of the transaction,
             ``block_id``, ``num_tx``.
         """
-        new = self.bigchain.is_new_transaction(tx.id, exclude_block_id=block_id)
-        if not new:
-            return False, block_id, num_tx
 
         try:
+            tx = Transaction.from_dict(tx_dict)
+            new = self.bigchain.is_new_transaction(tx.id, exclude_block_id=block_id)
+            if not new:
+                raise exceptions.ValidationError('Tx already exists, %s', tx.id)
             tx.validate(self.bigchain)
             valid = True
         except exceptions.ValidationError as e:
-            logger.warning('Invalid tx: %s', e)
             valid = False
+            logger.warning('Invalid tx: %s', e)
 
         return valid, block_id, num_tx
 

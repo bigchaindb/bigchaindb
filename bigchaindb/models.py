@@ -267,11 +267,12 @@ class Block(object):
             return False
 
     @classmethod
-    def from_dict(cls, block_body):
+    def from_dict(cls, block_body, tx_construct=Transaction.from_dict):
         """Transform a Python dictionary to a Block object.
 
         Args:
             block_body (dict): A block dictionary to be transformed.
+            tx_construct (functions): Function to instantiate Transaction instance
 
         Returns:
             :class:`~Block`
@@ -288,8 +289,7 @@ class Block(object):
         if block_id != block_body['id']:
             raise InvalidHash()
 
-        transactions = [Transaction.from_dict(tx) for tx
-                        in block['transactions']]
+        transactions = [tx_construct(tx) for tx in block['transactions']]
 
         signature = block_body.get('signature')
 
@@ -328,7 +328,7 @@ class Block(object):
         }
 
     @classmethod
-    def from_db(cls, bigchain, block_dict):
+    def from_db(cls, bigchain, block_dict, from_dict_kwargs=None):
         """
         Helper method that reconstructs a block_dict that was returned from
         the database. It checks what asset_ids to retrieve, retrieves the
@@ -339,6 +339,7 @@ class Block(object):
                 used to perform database queries.
             block_dict(:obj:`dict`): The block dict as returned from the
                 database.
+            from_dict_kwargs (:obj:`dict`): additional kwargs to pass to from_dict
 
         Returns:
             :class:`~Block`
@@ -347,7 +348,8 @@ class Block(object):
         asset_ids = cls.get_asset_ids(block_dict)
         assets = bigchain.get_assets(asset_ids)
         block_dict = cls.couple_assets(block_dict, assets)
-        return cls.from_dict(block_dict)
+        kwargs = from_dict_kwargs or {}
+        return cls.from_dict(block_dict, **kwargs)
 
     def decouple_assets(self):
         """
@@ -419,3 +421,22 @@ class Block(object):
 
     def to_str(self):
         return serialize(self.to_dict())
+
+
+class FastTransaction:
+    """
+    A minimal wrapper around a transaction dictionary. This is useful for
+    when validation is not required but a routine expects something that looks
+    like a transaction, for example during block creation.
+
+    Note: immutability could also be provided
+    """
+    def __init__(self, tx_dict):
+        self.data = tx_dict
+
+    @property
+    def id(self):
+        return self.data['id']
+
+    def to_dict(self):
+        return self.data
