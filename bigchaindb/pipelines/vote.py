@@ -10,10 +10,7 @@ from collections import Counter
 
 from multipipes import Pipeline, Node
 
-import bigchaindb
-from bigchaindb import Bigchain
-from bigchaindb import backend
-from bigchaindb.backend.changefeed import ChangeFeed
+from bigchaindb import Bigchain, backend
 from bigchaindb.models import Transaction, Block
 from bigchaindb.common import exceptions
 
@@ -151,20 +148,13 @@ class Vote:
         return vote
 
 
-def initial():
-    """Return unvoted blocks."""
-    b = Bigchain()
-    rs = b.get_unvoted_blocks()
-    return rs
-
-
 def create_pipeline():
     """Create and return the pipeline of operations to be distributed
     on different processes."""
 
     voter = Vote()
 
-    vote_pipeline = Pipeline([
+    return Pipeline([
         Node(voter.validate_block),
         Node(voter.ungroup),
         Node(voter.validate_tx, fraction_of_cores=1),
@@ -172,13 +162,14 @@ def create_pipeline():
         Node(voter.write_vote)
     ])
 
-    return vote_pipeline
-
 
 def get_changefeed():
-    connection = backend.connect(**bigchaindb.config['database'])
-    return backend.get_changefeed(connection, 'bigchain', ChangeFeed.INSERT,
-                                  prefeed=initial())
+    """Create and return ordered changefeed of blocks starting from
+       last voted block"""
+    b = Bigchain()
+    last_block_id = b.get_last_voted_block().id
+    feed = backend.query.get_new_blocks_feed(b.connection, last_block_id)
+    return Node(feed.__next__, name='changefeed')
 
 
 def start():
