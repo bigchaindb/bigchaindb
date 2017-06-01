@@ -1,7 +1,4 @@
 import rethinkdb as r
-import time
-import bigchaindb
-
 from bigchaindb.backend.connection import Connection
 from bigchaindb.backend.exceptions import ConnectionError, OperationError
 
@@ -40,20 +37,11 @@ class RethinkDBConnection(Connection):
             :exc:`rethinkdb.ReqlDriverError`: After
                 :attr:`~.RethinkDBConnection.max_tries`.
         """
-        # NOTE: fix for timeout not initialized on rethinkdb connection
-        #       https://github.com/bigchaindb/bigchaindb/issues/1337
 
-        connected = False
-        dbconf = bigchaindb.config['database']
-        timeout = dbconf['connection_timeout']
-        end_time = time.time()*1000 + timeout
-        while not connected:
-            try:
-                rconn = r.connect(host=self.host, port=self.port, db=self.dbname)
-                connected = True
-            except (r.ReqlDriverError, r.ReqlTimeoutError) as exc:
-                if str(exc) == 'mock' or time.time()*1000 > end_time:
-                    raise ConnectionError from exc
-                time.sleep(timeout/1000)
-                pass
-        return rconn
+        try:
+            return r.connect(host=self.host,
+                             port=self.port,
+                             db=self.dbname,
+                             timeout=self.connection_timeout)
+        except (r.ReqlDriverError, r.ReqlTimeoutError) as exc:
+            raise ConnectionError from exc
