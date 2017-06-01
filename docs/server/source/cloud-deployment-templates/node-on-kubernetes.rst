@@ -481,7 +481,7 @@ Step 12: Start a Kubernetes Deployment for MongoDB Monitoring Agent
     ``-dep``.
     For example, if the value set in the
     ``mdb-mon-instance-name`` is ``mdb-mon-instance-0``, set the fields to the
-    value ``mdb-mon-insance-0-ss``.
+    value ``mdb-mon-instance-0-dep``.
 
   * Start the Kubernetes Deployment using:
 
@@ -502,7 +502,7 @@ Step 13: Start a Kubernetes Deployment for MongoDB Backup Agent
     ``-dep``.
     For example, if the value set in the
     ``mdb-bak-instance-name`` is ``mdb-bak-instance-0``, set the fields to the
-    value ``mdb-bak-insance-0-ss``.
+    value ``mdb-bak-instance-0-dep``.
 
   * Start the Kubernetes Deployment using:
 
