@@ -70,6 +70,10 @@ class MongoDBConnection(Connection):
             :exc:`~ConnectionError`: If the connection to the database
                 fails.
         """
+        import inspect
+        import logging
+        from bigchaindb.common import exceptions
+        logger = logging.getLogger(__name__)
 
         try:
             # we should only return a connection if the replica set is
@@ -85,6 +89,20 @@ class MongoDBConnection(Connection):
                                          replicaset=self.replicaset,
                                          serverselectiontimeoutms=self.connection_timeout,
                                          ssl=self.ssl)
+
+            # check if the call traces back to start and only then check the db,collections and indexes
+            if inspect.stack()[-1].filename.rpartition('/')[-1] == 'bigchaindb' and \
+               inspect.stack()[-3].function == 'start':
+                if client.database_names().__contains__(self.dbname):
+                    logger.info('database ' + self.dbname + ' found with following collection:')
+                    if len(client[self.dbname].collection_names()) > 0:
+                        for coll_name in client[self.dbname].collection_names():
+                            logger.info(coll_name + ':' + str(client[self.dbname][coll_name].index_information()))
+                    else:
+                        logger.info('no collections/tables in ' + self.dbname)
+                else:
+                    raise exceptions.DatabaseDoesNotExist('Database `{}` does not exist'.format(self.dbname))
+                    logger.info('database ' + self.dbname + ' not found')
 
             if self.login is not None and self.password is not None:
                 client[self.dbname].authenticate(self.login, self.password)
