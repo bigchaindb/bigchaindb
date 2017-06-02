@@ -2,8 +2,8 @@
 
 For all code in this repository, BigchainDB GmbH ("We") either:
 
-1. owns the copyright, or
-2. owns the right to sublicense it (because all external contributors must agree to a Contributor License Agreement).
+1. own the copyright, or
+2. own the right to sublicense it (because all external contributors must agree to a Contributor License Agreement).
 
 Therefore We can choose how to license all the code in this repository. We can license it to Joe Xname under one license and Company Yname under a different license.
 
