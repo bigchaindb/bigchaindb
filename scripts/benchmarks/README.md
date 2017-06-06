@@ -23,7 +23,7 @@ To start:
 
 To start using a separate namespace for docker-compose:
 
-    $ COMPOSE_PROJECT_NAME=somename scripts/benchmarks/create_thoughtput.py
+    $ COMPOSE_PROJECT_NAME=somename python3 scripts/benchmarks/create_thoughtput.py
 
 ### Results
 
