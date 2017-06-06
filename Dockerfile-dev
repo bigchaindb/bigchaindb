@@ -14,8 +14,10 @@ ENV BIGCHAINDB_CONFIG_PATH /data/.bigchaindb
 ENV BIGCHAINDB_SERVER_BIND 0.0.0.0:9984
 ENV BIGCHAINDB_WSSERVER_HOST 0.0.0.0
 
+ARG backend
+
 RUN mkdir -p /usr/src/app
 COPY . /usr/src/app/
 WORKDIR /usr/src/app
 RUN pip install --no-cache-dir -e .[dev]
-RUN bigchaindb -y configure mongodb
+RUN bigchaindb -y configure "$backend"
