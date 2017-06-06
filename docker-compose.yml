@@ -32,6 +32,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-dev
+      args:
+        backend: rethinkdb
     container_name: docker-bigchaindb
     volumes:
       - ./bigchaindb:/usr/src/app/bigchaindb
@@ -55,6 +57,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-dev
+      args:
+        backend: mongodb
     volumes:
       - ./bigchaindb:/usr/src/app/bigchaindb
       - ./tests:/usr/src/app/tests
