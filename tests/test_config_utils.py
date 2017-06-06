@@ -138,7 +138,7 @@ def test_env_config(monkeypatch):
     assert result == expected
 
 
-def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
+def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request, certs_dir):
     # constants
     DATABASE_HOST = 'test-host'
     DATABASE_NAME = 'test-dbname'
@@ -159,10 +159,16 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
             'level_console': 'debug',
         },
     }
+
+    if DATABASE_BACKEND == 'mongodb-ssl':
+        backend = 'mongodb'
+    else:
+        backend = DATABASE_BACKEND
+
     monkeypatch.setattr('bigchaindb.config_utils.file_config', lambda *args, **kwargs: file_config)
     monkeypatch.setattr('os.environ', {'BIGCHAINDB_DATABASE_NAME': DATABASE_NAME,
                                        'BIGCHAINDB_DATABASE_PORT': str(DATABASE_PORT),
-                                       'BIGCHAINDB_DATABASE_BACKEND': DATABASE_BACKEND,
+                                       'BIGCHAINDB_DATABASE_BACKEND': backend,
                                        'BIGCHAINDB_SERVER_BIND': SERVER_BIND,
                                        'BIGCHAINDB_WSSERVER_HOST': WSSERVER_HOST,
                                        'BIGCHAINDB_WSSERVER_PORT': WSSERVER_PORT,
@@ -193,7 +199,30 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
         'replicaset': 'bigchain-rs',
         'ssl': False,
         'login': None,
-        'password': None
+        'password': None,
+        'ca_cert': None,
+        'certfile': None,
+        'keyfile': None,
+        'keyfile_passphrase': None,
+        'crlfile': None
+    }
+
+    database_mongodb_ssl = {
+        'backend': 'mongodb',
+        'host': DATABASE_HOST,
+        'port': DATABASE_PORT,
+        'name': DATABASE_NAME,
+        'connection_timeout': 5000,
+        'max_tries': 3,
+        'replicaset': 'bigchain-rs',
+        'ssl': True,
+        'login': None,
+        'password': None,
+        'ca_cert': certs_dir + '/ca.crt',
+        'crlfile': certs_dir + '/crl.pem',
+        'certfile': certs_dir + '/test_bdb_ssl.crt',
+        'keyfile': certs_dir + '/test_bdb_ssl.key',
+        'keyfile_passphrase': ''
     }
 
     database = {}
@@ -201,6 +230,8 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
         database = database_mongodb
     elif DATABASE_BACKEND == 'rethinkdb':
         database = database_rethinkdb
+    elif DATABASE_BACKEND == 'mongodb-ssl':
+        database = database_mongodb_ssl
 
     assert bigchaindb.config == {
         'CONFIGURED': True,

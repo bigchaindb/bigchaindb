@@ -57,7 +57,7 @@ def connect(backend=None, host=None, port=None, name=None, max_tries=None,
     password = password or bigchaindb.config['database'].get('password')
     ca_cert = ca_cert or bigchaindb.config['database'].get('ca_cert', None)
     certfile = certfile or bigchaindb.config['database'].get('certfile', None)
-    keyfile  = keyfile or bigchaindb.config['database'].get('keyfile', None)
+    keyfile = keyfile or bigchaindb.config['database'].get('keyfile', None)
     keyfile_passphrase = keyfile_passphrase or bigchaindb.config['database'].get('keyfile_passphrase', None)
     crlfile = crlfile or bigchaindb.config['database'].get('crlfile', None)
 
@@ -73,7 +73,9 @@ def connect(backend=None, host=None, port=None, name=None, max_tries=None,
     logger.debug('Connection: {}'.format(Class))
     return Class(host=host, port=port, dbname=dbname,
                  max_tries=max_tries, connection_timeout=connection_timeout,
-                 replicaset=replicaset, ssl=ssl, login=login, password=password)
+                 replicaset=replicaset, ssl=ssl, login=login, password=password,
+                 ca_cert=ca_cert, certfile=certfile, keyfile=keyfile,
+                 keyfile_passphrase=keyfile_passphrase, crlfile=crlfile)
 
 
 class Connection:

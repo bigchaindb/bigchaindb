@@ -1,0 +1,132 @@
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 2 (0x2)
+    Signature Algorithm: sha256WithRSAEncryption
+        Issuer: C=DE, ST=Berlin, L=Berlin, O=BigchainDB GmbH, OU=ENG, CN=TEST-CA/emailAddress=dev@bigchaindb.com
+        Validity
+            Not Before: Jun  2 07:13:16 2017 GMT
+            Not After : May 31 07:13:16 2027 GMT
+        Subject: C=DE, ST=Berlin, L=Berlin, O=BigchainDB GmbH, OU=ENG, CN=test-bdb-ssl/emailAddress=dev@bigchaindb.com
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (4096 bit)
+                Modulus:
+                    00:cb:59:21:c4:6e:b7:93:c7:d1:87:e1:8f:06:07:
+                    c6:4f:31:35:4d:cc:43:8e:25:bf:4a:08:3e:df:3a:
+                    b0:d8:3c:b5:45:39:49:aa:ef:17:53:2c:fa:74:73:
+                    4e:f6:36:ae:ad:9a:88:3c:1a:ad:c2:ac:1c:b3:14:
+                    39:18:8a:33:54:54:59:11:31:b8:8a:1a:0f:d5:79:
+                    dd:6d:8d:63:a0:8f:0a:a3:5e:b2:40:d0:67:84:b7:
+                    b6:4b:66:43:85:8a:18:a0:51:08:c9:b0:09:0b:8d:
+                    bc:89:6c:47:a1:b2:bb:b8:1e:04:77:cb:7e:f4:ae:
+                    c7:50:43:0b:49:48:90:4c:7d:72:17:0b:bb:57:72:
+                    dd:ad:62:ba:8d:b4:80:c4:b8:83:a2:c9:08:f7:11:
+                    44:0b:67:7f:d4:df:b8:59:5b:c0:32:26:04:95:bc:
+                    c2:eb:92:7b:e9:5d:99:d7:d9:86:be:f0:a7:c5:e5:
+                    1e:95:f3:86:21:74:3d:03:ca:4a:c0:4d:59:75:b5:
+                    62:24:04:09:8a:47:0f:a6:c3:ee:99:82:dc:02:53:
+                    70:f1:77:61:58:2e:9b:db:20:40:9f:15:08:de:3d:
+                    c4:11:29:2f:6f:51:1b:36:19:b2:27:03:b8:15:ec:
+                    3e:56:65:77:97:46:58:07:0b:85:87:a1:f4:ee:4f:
+                    fc:bc:22:10:da:3c:83:dd:80:26:d7:3e:23:f6:0e:
+                    3f:4d:f9:1a:eb:2f:ca:60:ea:97:40:23:d4:14:c3:
+                    b5:c1:46:f2:15:2a:7e:18:56:3a:58:51:fb:a7:42:
+                    14:19:0d:79:1e:25:b4:1a:51:74:7b:93:e0:9e:a9:
+                    41:83:ab:94:6f:3c:6f:23:0c:7e:bc:14:31:54:ca:
+                    8a:47:0e:a8:01:bd:f6:e9:bd:54:dd:10:84:5f:3f:
+                    54:05:47:ae:4e:5d:e1:10:9d:a1:7b:08:b5:96:c6:
+                    ba:fc:97:e0:22:c7:07:23:a2:ad:be:e2:7a:a8:8c:
+                    e9:8a:e4:8e:64:4a:e9:45:b9:2b:55:e0:5c:3a:e8:
+                    92:fd:48:54:6b:1e:14:d9:98:72:53:6e:0b:bd:e8:
+                    ea:a9:c1:b2:29:ac:35:7b:0d:a8:22:13:83:d7:af:
+                    90:ec:4a:74:41:3c:fd:32:f6:46:a7:96:02:a3:23:
+                    a2:f1:6f:0f:55:e6:aa:8b:47:17:74:a8:c9:5f:ab:
+                    46:68:6e:d8:11:dc:bd:83:96:3a:a9:04:e0:4c:d2:
+                    03:a8:9e:fd:00:c8:09:f9:71:69:92:10:75:8e:8f:
+                    9e:e4:d6:1c:bd:fd:3f:32:fb:ce:a4:af:cf:9c:f6:
+                    29:6e:15:ed:c7:df:2d:27:8f:03:b9:fc:ac:3f:23:
+                    ac:2a:f3
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Basic Constraints: 
+                CA:FALSE
+            X509v3 Subject Key Identifier: 
+                56:19:A1:BA:91:22:9C:E0:84:71:47:64:A2:CD:F9:28:C0:C0:EB:67
+            X509v3 Authority Key Identifier: 
+                keyid:97:C8:DC:C8:EE:AF:E2:70:C4:09:9B:19:50:8F:86:1D:2C:FF:6E:26
+                DirName:/C=DE/ST=Berlin/L=Berlin/O=BigchainDB GmbH/OU=ENG/CN=TEST-CA/emailAddress=dev@bigchaindb.com
+                serial:A4:C4:DF:DB:1A:DB:83:C7
+
+            X509v3 Extended Key Usage: 
+                TLS Web Client Authentication
+            X509v3 Key Usage: 
+                Digital Signature
+    Signature Algorithm: sha256WithRSAEncryption
+         18:50:cd:6d:2b:0f:aa:e4:25:1e:b9:16:1f:b5:39:17:b7:5c:
+         d8:c0:a6:97:17:3d:0b:39:6f:5f:d2:2c:42:c1:6f:06:e8:72:
+         a1:f6:ee:40:47:6c:d6:f0:84:dc:4d:67:07:e9:4b:dc:fe:5c:
+         05:a4:af:54:ac:92:f3:14:48:4a:e1:28:b0:cb:7e:3b:68:da:
+         98:b7:08:44:16:30:a8:94:32:1c:f8:2b:6a:ab:01:95:e9:10:
+         a1:b6:bd:08:ee:0d:27:be:95:ed:9b:ce:e0:70:e8:b2:7d:9b:
+         c9:4b:18:33:09:1b:91:78:29:f5:22:2f:59:18:40:95:ea:6b:
+         3c:e9:e6:30:ab:f1:e2:ab:a2:0b:97:30:a1:39:f5:5f:4b:97:
+         f2:7d:54:e8:51:85:19:8e:09:69:93:5e:96:40:79:74:45:6f:
+         93:dd:47:55:1e:7d:76:8d:ad:84:3d:d6:f4:4e:a0:62:59:e3:
+         62:98:2c:c7:44:21:aa:5c:77:71:ef:8a:25:16:d9:dc:ab:32:
+         d1:da:aa:86:40:a4:2f:07:4a:bf:f0:45:83:8d:fe:0b:89:e6:
+         c9:88:42:0a:5c:ea:ba:b1:e2:e5:22:e0:17:74:7e:ae:ec:d4:
+         2c:0d:4e:35:69:7b:a5:89:c6:a6:b0:44:24:b4:12:02:5c:ad:
+         40:ae:ae:e2:8f:e1:aa:25:89:32:d8:ab:1e:37:00:a3:2c:43:
+         e2:cd:ad:8e:91:97:14:61:ff:dd:48:6f:8e:0f:07:8c:9d:c0:
+         dd:bc:c8:c6:4f:eb:33:d8:40:64:bb:82:56:75:78:0c:d7:40:
+         9b:12:ea:2a:82:ef:70:cf:75:3e:75:45:80:18:70:c1:10:41:
+         5b:7f:32:fe:f0:cc:e7:98:56:c7:7e:b3:99:a7:6a:37:1d:80:
+         0d:0f:26:56:12:b9:9e:64:8b:90:39:5e:2b:f4:01:c2:9b:fc:
+         34:4d:c1:be:c4:44:54:3b:f9:b9:0b:2c:ad:ac:04:f1:be:6a:
+         74:70:0f:a4:fb:86:1f:81:a6:3f:69:ed:96:52:0e:1f:32:5e:
+         49:8a:9d:26:2c:15:62:3a:9a:bf:da:2d:4c:31:36:7f:93:5e:
+         27:b0:f4:dd:13:44:18:70:f2:97:0a:a6:69:ed:63:34:f1:fc:
+         94:a1:1f:3f:1c:e2:a1:fa:4a:8d:a2:9c:46:5b:8f:d8:e6:d9:
+         9f:34:d8:97:84:3f:09:be:66:74:1a:51:96:73:52:80:9c:51:
+         ad:78:18:15:54:90:3a:1c:18:61:90:77:b0:10:b3:18:5b:77:
+         11:f3:1e:18:12:08:dd:95:22:d4:41:06:96:2a:b5:11:8c:3f:
+         33:71:32:99:12:de:42:29
+-----BEGIN CERTIFICATE-----
+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
+-----END CERTIFICATE-----

@@ -43,7 +43,6 @@ class MongoDBConnection(Connection):
         self.keyfile_passphrase = keyfile_passphrase or bigchaindb.config['database'].get('keyfile_passphrase', None)
         self.crlfile = crlfile or bigchaindb.config['database'].get('crlfile', None)
 
-
     @property
     def db(self):
         return self.conn[self.dbname]
@@ -74,7 +73,6 @@ class MongoDBConnection(Connection):
         except pymongo.errors.OperationFailure as exc:
             raise OperationError from exc
 
-
     def _secure_connect(self):
         """
         _secure_connect() checks if the implied ssl=True parameter is not False,
@@ -90,8 +88,8 @@ class MongoDBConnection(Connection):
         # We verify if this is true in our config too.
         if self.ssl is not True:
             raise ConfigurationError('The ca_cert ({}) parameter is '
-                    'specified without ssl=True '
-                    'parameter'.format(self.ca_cert))
+                                     'specified without ssl (true) '
+                                     'parameter'.format(self.ca_cert))
 
         logger.info('Connecting to MongoDB over TLS/SSL...')
         # TODO(Krish)
@@ -110,7 +108,6 @@ class MongoDBConnection(Connection):
                                      ssl_cert_reqs=CERT_REQUIRED)
         return client
 
-
     def _connect(self):
         """Try to connect to the database.
         This method reads the configuration options and calls
@@ -122,7 +119,8 @@ class MongoDBConnection(Connection):
         """
 
         # TODO(Krish): Why do these logs do not appear even when all loglevels
-        # are set to 'debug' in the .bigchaindb file?
+        # are set to 'debug' in the .bigchaindb file? But they do appear during
+        # testing!?
         logger.debug('ssl: {}'.format(self.ssl))
         logger.debug('ca_cert: {}'.format(self.ca_cert))
         logger.debug('certfile: {}'.format(self.certfile))
@@ -155,10 +153,10 @@ class MongoDBConnection(Connection):
             if self.ca_cert is None or self.certfile is None or \
                     self.keyfile is None or self.crlfile is None:
                 client = pymongo.MongoClient(self.host,
-                                            self.port,
-                                            replicaset=self.replicaset,
-                                            serverselectiontimeoutms=self.connection_timeout,
-                                            ssl=self.ssl)
+                                             self.port,
+                                             replicaset=self.replicaset,
+                                             serverselectiontimeoutms=self.connection_timeout,
+                                             ssl=self.ssl)
             else:
                 client = self._secure_connect()
 
@@ -171,6 +169,7 @@ class MongoDBConnection(Connection):
         # `initialize_replica_set` might raise `ConnectionFailure` or `OperationFailure`.
         except (pymongo.errors.ConnectionFailure,
                 pymongo.errors.OperationFailure) as exc:
+            logger.info('Exception in _connect(): {}'.format(exc))
             if "Authentication fail" in str(exc):
                 raise AuthenticationError() from exc
             raise ConnectionError() from exc
