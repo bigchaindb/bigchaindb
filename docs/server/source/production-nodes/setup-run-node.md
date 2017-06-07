@@ -2,7 +2,7 @@
 
 This is a page of general guidelines for setting up a production BigchainDB node. Before continuing, make sure you've read the pages about production node [assumptions](node-assumptions.html), [components](node-components.html) and [requirements](node-requirements.html).
 
-Note: These are just guidelines. You can modify them to suit your needs. For example, if you want to initialize the MongoDB replica set before installing BigchainDB, you _can_ do that. If you'd prefer to use Docker and Kubernetes, you can (and [we have a template](../cloud-deployment-templates/node-on-kubernetes.html)). We don't cover all possible setup procedures here.
+Note: These are just guidelines. You can modify them to suit your needs. For example, if you want to initialize the MongoDB replica set before installing BigchainDB, you _can_ do that. If you'd prefer to use Docker and Kubernetes, you can (and [we have a template](../production-deployment-template/index.html)). We don't cover all possible setup procedures here.
 
 
 ## Security Guidelines
