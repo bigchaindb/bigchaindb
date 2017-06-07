@@ -10,34 +10,32 @@ def mock_changefeed_data():
     return [
         {
             'op': 'i',
-            'o': {'_id': '', 'msg': 'seems like we have an insert here'}
+            'o': {'_id': '', 'msg': 'seems like we have an insert here'},
+            'ts': 1,
         },
         {
             'op': 'd',
-            'o': {'msg': 'seems like we have a delete here'}
+            'o': {'msg': 'seems like we have a delete here'},
+            'ts': 2,
         },
         {
             'op': 'u',
             'o': {'msg': 'seems like we have an update here'},
-            'o2': {'_id': 'some-id'}
+            'o2': {'_id': 'some-id'},
+            'ts': 3,
         },
     ]
 
 
 @pytest.mark.bdb
-@mock.patch('pymongo.cursor.Cursor.alive', new_callable=mock.PropertyMock)
+@mock.patch('bigchaindb.backend.mongodb.changefeed._FEED_STOP', True)
 @mock.patch('pymongo.cursor.Cursor.next')
-def test_changefeed_insert(mock_cursor_next, mock_cursor_alive,
-                           mock_changefeed_data):
+def test_changefeed_insert(mock_cursor_next, mock_changefeed_data):
     from bigchaindb.backend import get_changefeed, connect
     from bigchaindb.backend.changefeed import ChangeFeed
 
     # setup connection and mocks
     conn = connect()
-    # changefeed.run_forever only returns when the cursor is closed
-    # so we mock `alive` to be False it finishes reading the mocked data
-    mock_cursor_alive.side_effect = [mock.DEFAULT, mock.DEFAULT,
-                                     mock.DEFAULT, mock.DEFAULT, False]
     # mock the `next` method of the cursor to return the mocked data
     mock_cursor_next.side_effect = [mock.DEFAULT] + mock_changefeed_data
 
@@ -51,16 +49,13 @@ def test_changefeed_insert(mock_cursor_next, mock_cursor_alive,
 
 
 @pytest.mark.bdb
-@mock.patch('pymongo.cursor.Cursor.alive', new_callable=mock.PropertyMock)
+@mock.patch('bigchaindb.backend.mongodb.changefeed._FEED_STOP', True)
 @mock.patch('pymongo.cursor.Cursor.next')
-def test_changefeed_delete(mock_cursor_next, mock_cursor_alive,
-                           mock_changefeed_data):
+def test_changefeed_delete(mock_cursor_next, mock_changefeed_data):
     from bigchaindb.backend import get_changefeed, connect
     from bigchaindb.backend.changefeed import ChangeFeed
 
     conn = connect()
-    mock_cursor_alive.side_effect = [mock.DEFAULT, mock.DEFAULT,
-                                     mock.DEFAULT, mock.DEFAULT, False]
     mock_cursor_next.side_effect = [mock.DEFAULT] + mock_changefeed_data
 
     outpipe = Pipe()
@@ -73,17 +68,15 @@ def test_changefeed_delete(mock_cursor_next, mock_cursor_alive,
 
 
 @pytest.mark.bdb
+@mock.patch('bigchaindb.backend.mongodb.changefeed._FEED_STOP', True)
 @mock.patch('pymongo.collection.Collection.find_one')
-@mock.patch('pymongo.cursor.Cursor.alive', new_callable=mock.PropertyMock)
 @mock.patch('pymongo.cursor.Cursor.next')
-def test_changefeed_update(mock_cursor_next, mock_cursor_alive,
-                           mock_cursor_find_one, mock_changefeed_data):
+def test_changefeed_update(mock_cursor_next, mock_cursor_find_one,
+                           mock_changefeed_data):
     from bigchaindb.backend import get_changefeed, connect
     from bigchaindb.backend.changefeed import ChangeFeed
 
     conn = connect()
-    mock_cursor_alive.side_effect = [mock.DEFAULT, mock.DEFAULT,
-                                     mock.DEFAULT, mock.DEFAULT, False]
     mock_cursor_next.side_effect = [mock.DEFAULT] + mock_changefeed_data
     mock_cursor_find_one.return_value = mock_changefeed_data[2]['o']
 
@@ -101,18 +94,15 @@ def test_changefeed_update(mock_cursor_next, mock_cursor_alive,
 
 
 @pytest.mark.bdb
+@mock.patch('bigchaindb.backend.mongodb.changefeed._FEED_STOP', True)
 @mock.patch('pymongo.collection.Collection.find_one')
-@mock.patch('pymongo.cursor.Cursor.alive', new_callable=mock.PropertyMock)
 @mock.patch('pymongo.cursor.Cursor.next')
-def test_changefeed_multiple_operations(mock_cursor_next, mock_cursor_alive,
-                                        mock_cursor_find_one,
+def test_changefeed_multiple_operations(mock_cursor_next, mock_cursor_find_one,
                                         mock_changefeed_data):
     from bigchaindb.backend import get_changefeed, connect
     from bigchaindb.backend.changefeed import ChangeFeed
 
     conn = connect()
-    mock_cursor_alive.side_effect = [mock.DEFAULT, mock.DEFAULT,
-                                     mock.DEFAULT, mock.DEFAULT, False]
     mock_cursor_next.side_effect = [mock.DEFAULT] + mock_changefeed_data
     mock_cursor_find_one.return_value = mock_changefeed_data[2]['o']
 
@@ -128,16 +118,13 @@ def test_changefeed_multiple_operations(mock_cursor_next, mock_cursor_alive,
 
 
 @pytest.mark.bdb
-@mock.patch('pymongo.cursor.Cursor.alive', new_callable=mock.PropertyMock)
+@mock.patch('bigchaindb.backend.mongodb.changefeed._FEED_STOP', True)
 @mock.patch('pymongo.cursor.Cursor.next')
-def test_changefeed_prefeed(mock_cursor_next, mock_cursor_alive,
-                            mock_changefeed_data):
+def test_changefeed_prefeed(mock_cursor_next, mock_changefeed_data):
     from bigchaindb.backend import get_changefeed, connect
     from bigchaindb.backend.changefeed import ChangeFeed
 
     conn = connect()
-    mock_cursor_alive.side_effect = [mock.DEFAULT, mock.DEFAULT,
-                                     mock.DEFAULT, mock.DEFAULT, False]
     mock_cursor_next.side_effect = [mock.DEFAULT] + mock_changefeed_data
 
     outpipe = Pipe()
@@ -150,19 +137,13 @@ def test_changefeed_prefeed(mock_cursor_next, mock_cursor_alive,
 
 
 @pytest.mark.bdb
-@mock.patch('bigchaindb.backend.mongodb.changefeed.MongoDBChangeFeed.run_changefeed')  # noqa
-def test_connection_failure(mock_run_changefeed):
-    from bigchaindb.backend import get_changefeed, connect
+def test_connection_failure():
     from bigchaindb.backend.exceptions import ConnectionError
-    from bigchaindb.backend.changefeed import ChangeFeed
+    from bigchaindb.backend.mongodb.changefeed import run_changefeed
 
-    conn = connect()
-    mock_run_changefeed.side_effect = [ConnectionError(),
-                                       mock.DEFAULT]
-
-    changefeed = get_changefeed(conn, 'backlog', ChangeFeed.INSERT)
-    changefeed.run_forever()
-
-    # run_changefeed raises an exception the first time its called and then
-    # it's called again
-    assert mock_run_changefeed.call_count == 2
+    conn = mock.MagicMock()
+    conn.run.side_effect = [ConnectionError(), RuntimeError()]
+    changefeed = run_changefeed(conn, 'backlog', -1)
+    with pytest.raises(RuntimeError):
+        for record in changefeed:
+            assert False, 'Shouldn\'t get here'

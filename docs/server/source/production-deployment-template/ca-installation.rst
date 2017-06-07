@@ -33,8 +33,10 @@ by going to the ``bdb-cluster-ca/easy-rsa-3.0.1/easyrsa3`` directory and using:
         
    ./easyrsa build-ca
 
+You will be prompted to enter the Distinguished Name for this CA. You can hit
+enter to accept the default values or change it at each prompt.
 
-You will be asked to enter a PEM pass phrase for encrypting the ``ca.key`` file.
+You will also be asked to enter a PEM pass phrase for encrypting the ``ca.key`` file.
 Make sure to securely store that PEM pass phrase.
 If you lose it, you won't be able to add or remove entities from your PKI infrastructure in the future.
 
@@ -51,7 +53,7 @@ by using the subcommand ``./easyrsa help``
 Step 3: Create an Intermediate CA
 ---------------------------------
 
-TODO(Krish)
+TODO
 
 Step 4: Generate a Certificate Revocation List
 ----------------------------------------------
@@ -62,9 +64,9 @@ You can generate a Certificate Revocation List (CRL) using:
         
    ./easyrsa gen-crl
 
-You will need to run this command every time you revoke a certificate and the
-generated ``crl.pem`` needs to be uploaded to your infrastructure to prevent
-the revoked certificate from being used again.
+You will need to run this command every time you revoke a certificate.
+The generated ``crl.pem`` needs to be uploaded to your infrastructure to
+prevent the revoked certificate from being used again.
 
 
 Step 5: Secure the CA

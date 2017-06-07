@@ -79,6 +79,7 @@ install_requires = [
     'jsonschema~=2.5.1',
     'pyyaml~=3.12',
     'aiohttp~=2.0',
+    'python-rapidjson-schema==0.1.1',
 ]
 
 setup(

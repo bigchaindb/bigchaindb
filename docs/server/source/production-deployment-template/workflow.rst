@@ -84,6 +84,20 @@ and have an SSL certificate for the FQDN.
 (You can get an SSL certificate from any SSL certificate provider).
 
 
+☐ Share your BigchaindB *public* key with all the other nodes
+in the BigchainDB cluster.
+Don't share your private key.
+
+
+☐ Get the BigchainDB public keys of all the other nodes in the cluster.
+That list of public keys is known as the BigchainDB "keyring."
+
+
+☐ Ask the managing organization
+for the FQDN used to serve the BigchainDB APIs
+and for a copy of the associated SSL/TLS certificate.
+
+
 ☐ If the cluster uses 3scale for API authentication, monitoring and billing,
 you must ask the managing organization for all relevant 3scale credentials.
 
@@ -101,6 +115,7 @@ there will be one ``Agent Api Key`` for the whole cluster.)
 #. Client Certificate for BigchainDB Server to identify itself to MongoDB
 #. Client Certificate for MongoDB Monitoring Agent to identify itself to MongoDB
 #. Client Certificate for MongoDB Backup Agent to identify itself to MongoDB
+#. CRL for the infrastructure to not accept revoked certificates.
 
 Ask the managing organization to use its self-signed CA to sign those certificates.
 
@@ -120,4 +135,11 @@ gathered above.
 
 ☐ Deploy your BigchainDB node on your Kubernetes cluster.
 
-TODO: Links to instructions for first-node-in-cluster or second-or-later-node-in-cluster
+Next Steps To Set Up a Node
+---------------------------
+
+You can now proceed to set up your BigchainDB node based on whether it is the
+:ref:`first node in you cluster
+<Kubernetes Template: Deploy a Single BigchainDB Node>` or a
+:ref:`node that will be added to an existing cluster
+<Kubernetes Template: Add a BigchainDB Node to an Existing BigchainDB Cluster>`.
