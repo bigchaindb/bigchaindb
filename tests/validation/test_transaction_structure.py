@@ -101,6 +101,15 @@ def test_create_tx_asset_type(create_tx):
     validate_raises(create_tx)
 
 
+def test_create_tx_no_asset_data(create_tx):
+    tx_body = create_tx.to_dict()
+    del tx_body['asset']['data']
+    tx_body_no_signatures = Transaction._remove_signatures(tx_body)
+    tx_body_serialized = Transaction._to_str(tx_body_no_signatures)
+    tx_body['id'] = Transaction._to_hash(tx_body_serialized)
+    validate_raises(tx_body)
+
+
 ################################################################################
 # Inputs
 
