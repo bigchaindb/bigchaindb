@@ -284,3 +284,24 @@ def test_ssl_invalid_configuration(db_host, db_port, certs_dir):
     with pytest.raises(pymongo.errors.ConfigurationError):
         conn = connect(**config)
         assert conn.conn._topology_settings.replica_set_name == config['replicaset']
+
+
+def test_ssl_connection_with_wrong_credentials():
+    import bigchaindb
+    from bigchaindb.backend.mongodb.connection import MongoDBConnection
+    from bigchaindb.backend.exceptions import AuthenticationError
+
+    conn = MongoDBConnection(host=bigchaindb.config['database']['host'],
+                             port=bigchaindb.config['database']['port'],
+                             login='my_login',
+                             password='my_super_secret_password',
+                             ssl=bigchaindb.config['database']['ssl'],
+                             ssl_ca_certs=bigchaindb.config['database']['ca_cert'],
+                             ssl_certfile=bigchaindb.config['database']['certfile'],
+                             ssl_keyfile=bigchaindb.config['database']['keyfile'],
+                             ssl_pem_passphrase=bigchaindb.config['database']['keyfile_passphrase'],
+                             ssl_crlfile=bigchaindb.config['database']['crlfile'],
+                             ssl_cert_reqs=CERT_REQUIRED)
+
+    with pytest.raises(AuthenticationError):
+        conn._connect()

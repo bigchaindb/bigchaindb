@@ -85,9 +85,6 @@ class MongoDBConnection(Connection):
         """
 
         logger.info('Connecting to MongoDB over TLS/SSL...')
-        # TODO(Krish)
-        # Add some sanity check here for all the param values, permissions
-        # and ownership before init-ing the connection
         client = pymongo.MongoClient(self.host,
                                      self.port,
                                      replicaset=self.replicaset,
