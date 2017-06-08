@@ -56,9 +56,7 @@ _database_mongodb.update(_base_database_mongodb)
 
 _database_map = {
     'mongodb': _database_mongodb,
-    'rethinkdb': _database_rethinkdb,
-    # TODO rethink this approach later
-    'mongodb-ssl': _database_mongodb
+    'rethinkdb': _database_rethinkdb
 }
 
 config = {
