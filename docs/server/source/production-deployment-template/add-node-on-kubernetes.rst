@@ -73,7 +73,7 @@ Claims, and to run MongoDB in the new cluster:
 
 1. :ref:`Add Storage Classes <Step 9: Create Kubernetes Storage Classes for MongoDB>`.
 2. :ref:`Add Persistent Volume Claims <Step 10: Create Kubernetes Persistent Volume Claims>`.
-3. :ref:`Create the Config Map <Step 3: Configure the Node>`.
+3. :ref:`Create the Config Map <Step 3: Configure Your BigchainDB Node>`.
 4. :ref:`Run MongoDB instance <Step 11: Start a Kubernetes StatefulSet for MongoDB>`.
 
 
