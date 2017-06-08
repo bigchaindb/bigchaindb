@@ -1,18 +1,19 @@
-#######################################################
-# This YAML file desribes a ConfigMap for the cluster #
-#######################################################
-
-## Common Env Variables For This Node
+## vars is common environment variables for this BigchaindB node
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: vars
   namespace: default
 data:
+  # MongoDB
   mdb-instance-name: "<name of the mdb instance>"
+  # BigchainDB
   bdb-instance-name: "<name of the bdb instance>"
+  # NGINX
   ngx-instance-name: "<name of the ngx instance>"
+  # MongoDB Monitoring Agent
   mdb-mon-instance-name: "<name of the mdb monitoring agent instance>"
+  # MongoDB Backup Agent
   mdb-bak-instance-name: "<name of the mdb backup agent instance>"
 ---
 apiVersion: v1
@@ -21,7 +22,7 @@ metadata:
   name: mongodb-whitelist
   namespace: default
 data:
-  # We support only 'all' currently
+  # We only support "all"" currently
   allowed-hosts: "all"
 ---
 apiVersion: v1
@@ -30,7 +31,9 @@ metadata:
   name: bdb-keyring
   namespace: default
 data:
-  bdb-keyring: "':' separated list of public keys>"
+  # Colon-separated list of all *other* nodes' BigchainDB public keys
+  # with no base64 encoding anywhere
+  bdb-keyring: "<':' separated list of public keys>"
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -38,4 +41,6 @@ metadata:
   name: bdb-public-key
   namespace: default
 data:
+  # BigchainDB public key of *this* node, not base64-encoded.
+  # Example: "EPQk5i5yYpoUwGVM8VKZRjM8CYxB6j8Lu8i8SG7kGGce"
   bdb-public-key: "<public key>"
