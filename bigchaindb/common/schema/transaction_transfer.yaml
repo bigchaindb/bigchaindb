@@ -12,6 +12,8 @@ properties:
         "$ref": "#/definitions/sha3_hexdigest"
         description: |
           ID of the transaction that created the asset.
+    required:
+    - id
   inputs:
     type: array
     title: "Transaction inputs"

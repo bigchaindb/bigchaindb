@@ -14,6 +14,8 @@ properties:
         - type: object
           additionalProperties: true
         - type: 'null'
+    required:
+    - data
   inputs:
     type: array
     title: "Transaction inputs"
