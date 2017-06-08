@@ -262,3 +262,25 @@ def test_ssl_initialize_replica_set(mock_ssl_cmd_line_opts, certs_dir):
                                    certs_dir + '/test_bdb_ssl.key',
                                    '',
                                    certs_dir + '/crl.pem') is None
+
+
+def test_ssl_invalid_configuration(db_host, db_port, certs_dir):
+    from bigchaindb.backend import connect
+
+    config = {
+        'backend': 'mongodb',
+        'host': db_host,
+        'port': db_port,
+        'name': 'test',
+        'replicaset': 'bigchain-rs',
+        'ssl': False,
+        'ca_cert':   certs_dir + '/ca.crt',
+        'crlfile':   certs_dir + '/crl.pem',
+        'certfile':  certs_dir + '/test_bdb_ssl.crt',
+        'keyfile':   certs_dir + '/test_bdb_ssl.key',
+        'keyfile_passphrase': ''
+    }
+
+    with pytest.raises(pymongo.errors.ConfigurationError):
+        conn = connect(**config)
+        assert conn.conn._topology_settings.replica_set_name == config['replicaset']

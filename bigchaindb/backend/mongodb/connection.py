@@ -84,13 +84,6 @@ class MongoDBConnection(Connection):
             :exc:`~ConfigurationError`: If the ssl=false in the configuration.
         """
 
-        # As per MongoClient() docs, self.ca_cert implies ssl=True.
-        # We verify if this is true in our config too.
-        if self.ssl is not True:
-            raise ConfigurationError('The ca_cert ({}) parameter is '
-                                     'specified without ssl (true) '
-                                     'parameter'.format(self.ca_cert))
-
         logger.info('Connecting to MongoDB over TLS/SSL...')
         # TODO(Krish)
         # Add some sanity check here for all the param values, permissions
@@ -117,16 +110,6 @@ class MongoDBConnection(Connection):
             :exc:`~ConnectionError`: If the connection to the database
                 fails.
         """
-
-        # TODO(Krish): Why do these logs do not appear even when all loglevels
-        # are set to 'debug' in the .bigchaindb file? But they do appear during
-        # testing!?
-        logger.debug('ssl: {}'.format(self.ssl))
-        logger.debug('ca_cert: {}'.format(self.ca_cert))
-        logger.debug('certfile: {}'.format(self.certfile))
-        logger.debug('keyfile: {}'.format(self.keyfile))
-        logger.debug('keyfile_passphrase: {}'.format(self.keyfile_passphrase))
-        logger.debug('crlfile: {}'.format(self.crlfile))
 
         try:
             # we should only return a connection if the replica set is

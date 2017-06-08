@@ -7,7 +7,7 @@ if [[ -n ${TOXENV} ]]; then
 elif [[ "${BIGCHAINDB_DATABASE_BACKEND}" == mongodb ]]; then
   pytest -v --database-backend=mongodb --cov=bigchaindb
 elif [[ "${BIGCHAINDB_DATABASE_BACKEND}" == mongodb-ssl ]]; then
-  pytest -v --database-backend=mongodb-ssl --cov=bigchaindb -m bdb_ssl
+  pytest -v --database-backend=mongodb-ssl --cov=bigchaindb
 else
   pytest -v -n auto --cov=bigchaindb
 fi
