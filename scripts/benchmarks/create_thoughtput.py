@@ -78,11 +78,18 @@ def load():
 
     print('Sending transactions')
     while time.time() - start_time < test_time:
+        # Post 500 transactions to the server
         for i in range(500):
             tx_queue.put(txn)
             txn += 1
         print(txn)
         while True:
+            # Wait for the server to reduce the backlog to below
+            # 10000 transactions. The expectation is that 10000 transactions
+            # will not be processed faster than a further 500 transactions can
+            # be posted, but nonetheless will be processed within a few seconds.
+            # This keeps the test from running on and keeps the transactions from
+            # being considered stale.
             count = b.connection.db.backlog.count()
             if count > 10000:
                 time.sleep(0.2)
