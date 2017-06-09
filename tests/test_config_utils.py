@@ -15,6 +15,8 @@ def clean_config(monkeypatch, request):
     import bigchaindb
     original_config = copy.deepcopy(ORIGINAL_CONFIG)
     backend = request.config.getoption('--database-backend')
+    if backend == 'mongodb-ssl':
+        backend = 'mongodb'
     original_config['database'] = bigchaindb._database_map[backend]
     monkeypatch.setattr('bigchaindb.config', original_config)
 

@@ -38,7 +38,7 @@ matrix:
   - python: 3.5
     env:
     - BIGCHAINDB_DATABASE_BACKEND=mongodb
-    - SSL_ENABLED=false
+    - BIGCHAINDB_DATABASE_SSL=
   - python: 3.6
     addons: 
       rethinkdb: '2.3.5'
@@ -46,15 +46,25 @@ matrix:
   - python: 3.6
     env:
     - BIGCHAINDB_DATABASE_BACKEND=mongodb
-    - SSL_ENABLED=false
+    - BIGCHAINDB_DATABASE_SSL=
   - python: 3.5
     env:
     - BIGCHAINDB_DATABASE_BACKEND=mongodb
-    - SSL_ENABLED=true
+    - BIGCHAINDB_DATABASE_SSL=true
+    - BIGCHAINDB_DATABASE_CA_CERT=${TRAVIS_BUILD_DIR}/tests/backend/mongodb-ssl/certs/ca.crt
+    - BIGCHAINDB_DATABASE_CRLFILE=${TRAVIS_BUILD_DIR}/tests/backend/mongodb-ssl/certs/crl.pem
+    - BIGCHIANDB_DATABASE_CERTFILE=${TRAVIS_BUILD_DIR}/tests/backend/mongodb-ssl/certs/test_bdb_ssl.crt
+    - BIGCHAINDB_DATABASE_KEYFILE=${TRAVIS_BUILD_DIR}/tests/backend/mongodb-ssl/certs/test_bdb_ssl.key
+    - BIGCHAINDB_DATABASE_KEYFILE_PASSPHRASE=
   - python: 3.6
     env:
     - BIGCHAINDB_DATABASE_BACKEND=mongodb
-    - SSL_ENABLED=true
+    - BIGCHAINDB_DATABASE_SSL=true
+    - BIGCHAINDB_DATABASE_CA_CERT=${TRAVIS_BUILD_DIR}/tests/backend/mongodb-ssl/certs/ca.crt
+    - BIGCHAINDB_DATABASE_CRLFILE=${TRAVIS_BUILD_DIR}/tests/backend/mongodb-ssl/certs/crl.pem
+    - BIGCHIANDB_DATABASE_CERTFILE=${TRAVIS_BUILD_DIR}/tests/backend/mongodb-ssl/certs/test_bdb_ssl.crt
+    - BIGCHAINDB_DATABASE_KEYFILE=${TRAVIS_BUILD_DIR}/tests/backend/mongodb-ssl/certs/test_bdb_ssl.key
+    - BIGCHAINDB_DATABASE_KEYFILE_PASSPHRASE=
 
 before_install: sudo .ci/travis-before-install.sh
 

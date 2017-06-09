@@ -31,7 +31,6 @@ def mock_ssl_cmd_line_opts(certs_dir):
 
 @pytest.fixture
 def mock_ssl_config_opts(certs_dir):
-    # TODO It doesn't matter if this is ssl-enabled or not?!
     return {'argv': [
         'mongod',
         '--dbpath=/data',

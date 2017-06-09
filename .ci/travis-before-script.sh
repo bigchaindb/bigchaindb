@@ -5,14 +5,14 @@ set -e -x
 if [[ "${TOXENV}" == *-rdb ]]; then
     rethinkdb --daemon
 elif [[ "${BIGCHAINDB_DATABASE_BACKEND}" == mongodb && \
-        "${SSL_ENABLED}" == false ]]; then
+        -z "${BIGCHAINDB_DATABASE_SSL}" ]]; then
     wget https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1404-3.4.4.tgz -O /tmp/mongodb.tgz
     tar -xvf /tmp/mongodb.tgz
     mkdir /tmp/mongodb-data
     ${PWD}/mongodb-linux-x86_64-ubuntu1404-3.4.4/bin/mongod \
         --dbpath=/tmp/mongodb-data --replSet=bigchain-rs &> /dev/null &
 elif [[ "${BIGCHAINDB_DATABASE_BACKEND}" == mongodb && \
-        "${SSL_ENABLED}" == true ]]; then
+        "${BIGCHAINDB_DATABASE_SSL}" == true ]]; then
     wget https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1404-3.4.4.tgz -O /tmp/mongodb-ssl.tgz
     tar -xvf /tmp/mongodb-ssl.tgz
     mkdir /tmp/mongodb-ssl-data

@@ -125,20 +125,8 @@ def _configure_bigchaindb(request, certs_dir):
 
     backend = request.config.getoption('--database-backend')
 
-    # set the default value for the monigdb-ssl backend
     if backend == 'mongodb-ssl':
-        bigchaindb._database_map[backend] = {
-                'backend': 'mongodb',
-                'connection_timeout': 5000,
-                'max_tries': 3,
-                'ssl': True,
-                'ca_cert': os.environ.get('BIGCHAINDB_DATABASE_CA_CERT', certs_dir + '/ca.crt'),
-                'crlfile': os.environ.get('BIGCHAINDB_DATABASE_CRLFILE', certs_dir + '/crl.pem'),
-                'certfile': os.environ.get('BIGCHIANDB_DATABASE_CERTFILE', certs_dir + '/test_bdb_ssl.crt'),
-                'keyfile': os.environ.get('BIGCHAINDB_DATABASE_KEYFILE', certs_dir + '/test_bdb_ssl.key'),
-                'keyfile_passphrase': os.environ.get('BIGCHAINDB_DATABASE_KEYFILE_PASSPHRASE', '')
-                }
-        bigchaindb._database_map['mongodb'].update(bigchaindb._base_database_mongodb)
+        backend = 'mongodb'
 
     config = {
         'database': bigchaindb._database_map[backend],
