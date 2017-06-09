@@ -15,55 +15,26 @@ register_changefeed = module_dispatch_registrar(backend.changefeed)
 
 
 class MongoDBChangeFeed(ChangeFeed):
-    """This class implements a MongoDB changefeed.
+    """This class implements a MongoDB changefeed as a multipipes Node.
 
     We emulate the behaviour of the RethinkDB changefeed by using a tailable
     cursor that listens for events on the oplog.
     """
-
     def run_forever(self):
         for element in self.prefeed:
             self.outqueue.put(element)
 
-        while True:
-            try:
-                # XXX: hack to force reconnection. Why? Because the cursor
-                # in `run_changefeed` does not run in the context of a
-                # Connection object, so if the connection is lost we need
-                # to manually reset the connection to None.
-                # See #1154
-                self.connection.connection = None
-                self.run_changefeed()
-                break
-            except (BackendError, pymongo.errors.ConnectionFailure):
-                logger.exception('Error connecting to the database, retrying')
-                time.sleep(1)
-
-    def run_changefeed(self):
-        dbname = self.connection.dbname
         table = self.table
-        namespace = '{}.{}'.format(dbname, table)
+        dbname = self.connection.dbname
+
         # last timestamp in the oplog. We only care for operations happening
         # in the future.
         last_ts = self.connection.run(
             self.connection.query().local.oplog.rs.find()
             .sort('$natural', pymongo.DESCENDING).limit(1)
             .next()['ts'])
-        # tailable cursor. A tailable cursor will remain open even after the
-        # last result was returned. ``TAILABLE_AWAIT`` will block for some
-        # timeout after the last result was returned. If no result is received
-        # in the meantime it will raise a StopIteration excetiption.
-        cursor = self.connection.run(
-            self.connection.query().local.oplog.rs.find(
-                {'ns': namespace, 'ts': {'$gt': last_ts}},
-                cursor_type=pymongo.CursorType.TAILABLE_AWAIT
-            ))
 
-        while cursor.alive:
-            try:
-                record = cursor.next()
-            except StopIteration:
-                continue
+        for record in run_changefeed(self.connection, table, last_ts):
 
             is_insert = record['op'] == 'i'
             is_delete = record['op'] == 'd'
@@ -104,3 +75,37 @@ def get_changefeed(connection, table, operation, *, prefeed=None):
 
     return MongoDBChangeFeed(table, operation, prefeed=prefeed,
                              connection=connection)
+
+
+_FEED_STOP = False
+"""If it's True then the changefeed will return when there are no more items.
+"""
+
+
+def run_changefeed(conn, table, last_ts):
+    """Encapsulate operational logic of tailing changefeed from MongoDB
+    """
+    while True:
+        try:
+            # XXX: hack to force reconnection, in case the connection
+            # is lost while waiting on the cursor. See #1154.
+            conn._conn = None
+            namespace = conn.dbname + '.' + table
+            query = conn.query().local.oplog.rs.find(
+                {'ns': namespace, 'ts': {'$gt': last_ts}},
+                {'o._id': False},
+                cursor_type=pymongo.CursorType.TAILABLE_AWAIT
+            )
+            cursor = conn.run(query)
+            logging.debug('Tailing oplog at %s/%s', namespace, last_ts)
+            while cursor.alive:
+                try:
+                    record = cursor.next()
+                    yield record
+                    last_ts = record['ts']
+                except StopIteration:
+                    if _FEED_STOP:
+                        return
+        except (BackendError, pymongo.errors.ConnectionFailure):
+            logger.exception('Lost connection while tailing oplog, retrying')
+            time.sleep(1)

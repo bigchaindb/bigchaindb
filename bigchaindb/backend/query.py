@@ -2,6 +2,8 @@
 
 from functools import singledispatch
 
+from bigchaindb.backend.exceptions import OperationError
+
 
 @singledispatch
 def write_transaction(connection, signed_transaction):
@@ -148,7 +150,8 @@ def get_spending_transactions(connection, inputs):
         inputs (list): list of {txid, output}
 
     Returns:
-        List of transactions that spend given inputs
+        Iterator of (block_ids, transaction) for transactions that
+        spend given inputs.
     """
     raise NotImplementedError
 
@@ -161,9 +164,9 @@ def get_owned_ids(connection, owner):
         owner (str): base58 encoded public key.
 
     Returns:
-        A cursor for the matching transactions.
+        Iterator of (block_id, transaction) for transactions
+        that list given owner in conditions.
     """
-
     raise NotImplementedError
 
 
@@ -205,9 +208,8 @@ def get_votes_for_blocks_by_voter(connection, block_ids, pubkey):
         pubkey (str): public key of voting node
 
     Returns:
-        A cursor of votes matching given votes.
+        A cursor of votes matching given block_ids and public key
     """
-
     raise NotImplementedError
 
 
@@ -236,6 +238,33 @@ def get_block(connection, block_id):
         block (dict): the block or `None`
     """
 
+    raise NotImplementedError
+
+
+@singledispatch
+def write_assets(connection, assets):
+    """Write a list of assets to the assets table.
+
+    Args:
+        assets (list): a list of assets to write.
+
+    Returns:
+        The database response.
+    """
+    raise NotImplementedError
+
+
+@singledispatch
+def get_assets(connection, asset_ids):
+    """Get a list of assets from the assets table.
+
+    Args:
+        asset_ids (list): a list of ids for the assets to be retrieved from
+        the database.
+
+    Returns:
+        assets (list): the list of returned assets.
+    """
     raise NotImplementedError
 
 
@@ -287,29 +316,15 @@ def get_genesis_block(connection):
 
 
 @singledispatch
-def get_last_voted_block(connection, node_pubkey):
+def get_last_voted_block_id(connection, node_pubkey):
     """Get the last voted block for a specific node.
 
     Args:
         node_pubkey (str): base58 encoded public key.
 
     Returns:
-        The last block the node has voted on. If the node didn't cast
-        any vote then the genesis block is returned.
-    """
-
-    raise NotImplementedError
-
-
-@singledispatch
-def get_unvoted_blocks(connection, node_pubkey):
-    """Return all the blocks that have not been voted by the specified node.
-
-    Args:
-        node_pubkey (str): base58 encoded public key
-
-    Returns:
-        :obj:`list` of :obj:`dict`: a list of unvoted blocks
+        The id of the last block the node has voted on. If the node didn't cast
+        any vote then the genesis block id is returned.
     """
 
     raise NotImplementedError
@@ -326,3 +341,51 @@ def get_txids_filtered(connection, asset_id, operation=None):
     """
 
     raise NotImplementedError
+
+
+@singledispatch
+def get_new_blocks_feed(connection, start_block_id):
+    """
+    Return a generator that yields change events of the blocks feed
+
+    Args:
+        start_block_id (str): ID of block to resume from
+
+    Returns:
+        Generator of change events
+    """
+
+    raise NotImplementedError
+
+
+@singledispatch
+def text_search(conn, search, *, language='english', case_sensitive=False,
+                diacritic_sensitive=False, text_score=False, limit=0):
+    """Return all the assets that match the text search.
+
+    The results are sorted by text score.
+    For more information about the behavior of text search on MongoDB see
+    https://docs.mongodb.com/manual/reference/operator/query/text/#behavior
+
+    Args:
+        search (str): Text search string to query the text index
+        language (str, optional): The language for the search and the rules for
+            stemmer and tokenizer. If the language is ``None`` text search uses
+            simple tokenization and no stemming.
+        case_sensitive (bool, optional): Enable or disable case sensitive
+            search.
+        diacritic_sensitive (bool, optional): Enable or disable case sensitive
+            diacritic search.
+        text_score (bool, optional): If ``True`` returns the text score with
+            each document.
+        limit (int, optional): Limit the number of returned documents.
+
+    Returns:
+        :obj:`list` of :obj:`dict`: a list of assets
+
+    Raises:
+        OperationError: If the backend does not support text search
+    """
+
+    raise OperationError('This query is only supported when running '
+                         'BigchainDB with MongoDB as the backend.')

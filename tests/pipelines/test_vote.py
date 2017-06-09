@@ -20,6 +20,15 @@ def dummy_block(b):
     return block
 
 
+def decouple_assets(b, block):
+    # the block comming from the database does not contain the assets
+    # so we need to pass the block without the assets and store the assets
+    # so that the voting pipeline can reconstruct it
+    assets, block_dict = block.decouple_assets()
+    b.write_assets(assets)
+    return block_dict
+
+
 DUMMY_SHA3 = '0123456789abcdef' * 4
 
 
@@ -79,12 +88,13 @@ def test_vote_validate_block(b):
 
     tx = dummy_tx(b)
     block = b.create_block([tx])
+    block_dict = decouple_assets(b, block)
 
     vote_obj = vote.Vote()
-    validation = vote_obj.validate_block(block.to_dict())
+    validation = vote_obj.validate_block(block_dict)
     assert validation[0] == block.id
     for tx1, tx2 in zip(validation[1], block.transactions):
-        assert tx1 == tx2
+        assert tx1 == tx2.to_dict()
 
     block = b.create_block([tx])
     # NOTE: Setting a blocks signature to `None` invalidates it.
@@ -142,7 +152,7 @@ def test_vote_validate_transaction(b):
     from bigchaindb.pipelines import vote
     from bigchaindb.common.exceptions import ValidationError
 
-    tx = dummy_tx(b)
+    tx = dummy_tx(b).to_dict()
     vote_obj = vote.Vote()
     validation = vote_obj.validate_tx(tx, 123, 1)
     assert validation == (True, 123, 1)
@@ -165,15 +175,13 @@ def test_vote_accumulates_transactions(b):
 
     vote_obj = vote.Vote()
 
-    for _ in range(10):
-        tx = dummy_tx(b)
+    tx = dummy_tx(b)
 
-    tx = tx
-    validation = vote_obj.validate_tx(tx, 123, 1)
+    validation = vote_obj.validate_tx(tx.to_dict(), 123, 1)
     assert validation == (True, 123, 1)
 
     tx.inputs[0].fulfillment.signature = None
-    validation = vote_obj.validate_tx(tx, 456, 10)
+    validation = vote_obj.validate_tx(tx.to_dict(), 456, 10)
     assert validation == (False, 456, 10)
 
 
@@ -185,16 +193,17 @@ def test_valid_block_voting_sequential(b, genesis_block, monkeypatch):
 
     monkeypatch.setattr('time.time', lambda: 1111111111)
     vote_obj = vote.Vote()
-    block = dummy_block(b)
+    block = dummy_block(b).to_dict()
+    txs = block['block']['transactions']
 
-    for tx, block_id, num_tx in vote_obj.ungroup(block.id, block.transactions):
+    for tx, block_id, num_tx in vote_obj.ungroup(block['id'], txs):
         last_vote = vote_obj.vote(*vote_obj.validate_tx(tx, block_id, num_tx))
 
     vote_obj.write_vote(last_vote)
     vote_rs = query.get_votes_by_block_id_and_voter(b.connection, block_id, b.me)
     vote_doc = vote_rs.next()
 
-    assert vote_doc['vote'] == {'voting_for_block': block.id,
+    assert vote_doc['vote'] == {'voting_for_block': block['id'],
                                 'previous_block': genesis_block.id,
                                 'is_block_valid': True,
                                 'invalid_reason': None,
@@ -220,8 +229,9 @@ def test_valid_block_voting_multiprocessing(b, genesis_block, monkeypatch):
     vote_pipeline.setup(indata=inpipe, outdata=outpipe)
 
     block = dummy_block(b)
+    block_dict = decouple_assets(b, block)
 
-    inpipe.put(block.to_dict())
+    inpipe.put(block_dict)
     vote_pipeline.start()
     vote_out = outpipe.get()
     vote_pipeline.terminate()
@@ -257,6 +267,7 @@ def test_valid_block_voting_with_create_transaction(b,
 
     monkeypatch.setattr('time.time', lambda: 1111111111)
     block = b.create_block([tx])
+    block_dict = decouple_assets(b, block)
 
     inpipe = Pipe()
     outpipe = Pipe()
@@ -264,7 +275,7 @@ def test_valid_block_voting_with_create_transaction(b,
     vote_pipeline = vote.create_pipeline()
     vote_pipeline.setup(indata=inpipe, outdata=outpipe)
 
-    inpipe.put(block.to_dict())
+    inpipe.put(block_dict)
     vote_pipeline.start()
     vote_out = outpipe.get()
     vote_pipeline.terminate()
@@ -510,95 +521,6 @@ def test_invalid_block_voting(monkeypatch, b, user_pk, genesis_block):
 
 
 @pytest.mark.genesis
-def test_voter_considers_unvoted_blocks_when_single_node(monkeypatch, b):
-    from bigchaindb.backend import query
-    from bigchaindb.pipelines import vote
-
-    outpipe = Pipe()
-
-    monkeypatch.setattr('time.time', lambda: 1000000000)
-
-    block_ids = []
-    # insert blocks in the database while the voter process is not listening
-    # (these blocks won't appear in the changefeed)
-    monkeypatch.setattr('time.time', lambda: 1000000020)
-    block_1 = dummy_block(b)
-    block_ids.append(block_1.id)
-    monkeypatch.setattr('time.time', lambda: 1000000030)
-    b.write_block(block_1)
-    block_2 = dummy_block(b)
-    block_ids.append(block_2.id)
-    b.write_block(block_2)
-
-    vote_pipeline = vote.create_pipeline()
-    vote_pipeline.setup(indata=vote.get_changefeed(), outdata=outpipe)
-    vote_pipeline.start()
-
-    # We expects two votes, so instead of waiting an arbitrary amount
-    # of time, we can do two blocking calls to `get`
-    outpipe.get()
-    outpipe.get()
-
-    # create a new block that will appear in the changefeed
-    monkeypatch.setattr('time.time', lambda: 1000000040)
-    block_3 = dummy_block(b)
-    block_ids.append(block_3.id)
-    b.write_block(block_3)
-
-    # Same as before with the two `get`s
-    outpipe.get()
-
-    vote_pipeline.terminate()
-
-    # retrieve vote
-    votes = [list(query.get_votes_by_block_id(b.connection, _id))[0]
-             for _id in block_ids]
-
-    assert all(vote['node_pubkey'] == b.me for vote in votes)
-
-
-@pytest.mark.genesis
-def test_voter_chains_blocks_with_the_previous_ones(monkeypatch, b):
-    from bigchaindb.backend import query
-    from bigchaindb.pipelines import vote
-
-    outpipe = Pipe()
-
-    monkeypatch.setattr('time.time', lambda: 1000000000)
-
-    block_ids = []
-    monkeypatch.setattr('time.time', lambda: 1000000020)
-    block_1 = dummy_block(b)
-    block_ids.append(block_1.id)
-    b.write_block(block_1)
-
-    monkeypatch.setattr('time.time', lambda: 1000000030)
-    block_2 = dummy_block(b)
-    block_ids.append(block_2.id)
-    b.write_block(block_2)
-
-    vote_pipeline = vote.create_pipeline()
-    vote_pipeline.setup(indata=vote.get_changefeed(), outdata=outpipe)
-    vote_pipeline.start()
-
-    # We expects two votes, so instead of waiting an arbitrary amount
-    # of time, we can do two blocking calls to `get`
-    outpipe.get()
-    outpipe.get()
-    vote_pipeline.terminate()
-
-    # retrive blocks from bigchain
-    blocks = [b.get_block(_id) for _id in block_ids]
-
-    # retrieve votes
-    votes = [list(query.get_votes_by_block_id(b.connection, _id))[0]
-             for _id in block_ids]
-
-    assert ({v['vote']['voting_for_block'] for v in votes} ==
-            {block['id'] for block in blocks})
-
-
-@pytest.mark.genesis
 def test_voter_checks_for_previous_vote(monkeypatch, b):
     from bigchaindb.backend import query
     from bigchaindb.pipelines import vote
@@ -655,9 +577,20 @@ def test_vote_no_double_inclusion(b):
 
     tx = dummy_tx(b)
     block = b.create_block([tx])
-    r = vote.Vote().validate_tx(tx, block.id, 1)
+    r = vote.Vote().validate_tx(tx.to_dict(), block.id, 1)
     assert r == (True, block.id, 1)
 
     b.write_block(block)
-    r = vote.Vote().validate_tx(tx, 'other_block_id', 1)
+    r = vote.Vote().validate_tx(tx.to_dict(), 'other_block_id', 1)
     assert r == (False, 'other_block_id', 1)
+
+
+@pytest.mark.genesis
+def test_duplicate_transaction(signed_create_tx):
+    from bigchaindb.pipelines import vote
+
+    with patch('bigchaindb.core.Bigchain.is_new_transaction') as is_new:
+        is_new.return_value = False
+        res = vote.Vote().validate_tx(signed_create_tx.to_dict(), 'a', 1)
+    assert res == (False, 'a', 1)
+    assert is_new.call_count == 1

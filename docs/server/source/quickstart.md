@@ -8,7 +8,7 @@ A. Install MongoDB as the database backend. (There are other options but you can
 
 B. Run MongoDB. Open a Terminal and run the command:
 ```text
-$ mongod --replSet=bigchain-rs
+$ sudo mongod --replSet=bigchain-rs
 ```
 
 C. Ubuntu 16.04 already has Python 3.5, so you don't need to install it, but you do need to install some other things:

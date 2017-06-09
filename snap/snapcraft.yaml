@@ -1,5 +1,5 @@
 name: bigchaindb
-version: master
+version: git
 summary: a scalable blockchain database
 description: |
   With high throughput, sub-second latency and powerful functionality to

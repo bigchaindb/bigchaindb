@@ -3,11 +3,10 @@ Log Analytics on Azure
 
 This section documents how to create and configure a Log Analytics workspace on
 Azure, for a Kubernetes-based deployment.
-
 The documented approach is based on an integration of Microsoft's Operations
 Management Suite (OMS) with a Kubernetes-based Azure Container Service cluster.
 
-The :ref:`oms-k8s-references` contains links to more detailed documentation on
+The :ref:`oms-k8s-references` section (below) contains links to more detailed documentation on
 Azure, and Kubernetes.
 
 There are three main steps involved:
@@ -23,9 +22,9 @@ one template so we'll cover them together. Step 3 relies on a
 Minimum Requirements
 --------------------
 This document assumes that you have already deployed a Kubernetes cluster, and
-that you have the Kubernetes command line ``kubectl`` installed.
+that you have the Kubernetes command line interface ``kubectl`` installed.
 
-Creating a workspace and adding a containers solution
+Creating a Workspace and Adding a Containers Solution
 -----------------------------------------------------
 For the sake of this document and example, we'll assume an existing resource
 group named:
@@ -46,7 +45,7 @@ If you feel creative you may replace these names by more interesting ones.
         --template-file log_analytics_oms.json \
         --parameters @log_analytics_oms.parameters.json
 
-An example of a simple tenplate file (``--template-file``):
+An example of a simple template file (``--template-file``):
 
 .. code-block:: json
 
@@ -120,14 +119,14 @@ An example of the associated parameter file (``--parameters``):
         }
     }
 
-Deploying the OMS agent(s)
---------------------------
-In order to deploy an OMS agent two important pieces of information are needed:
+Deploy the OMS Agents
+---------------------
+To deploy an OMS agent, two important pieces of information are needed:
 
 * workspace id
 * workspace key
 
-Obtaining the workspace id:
+You can obtain the workspace id using:
 
 .. code-block:: bash
 
@@ -138,13 +137,17 @@ Obtaining the workspace id:
         | grep customerId
     "customerId": "12345678-1234-1234-1234-123456789012",
 
-Obtaining the workspace key:
+Until we figure out a way to obtain the *workspace key* via the command line,
+you can get it via the OMS Portal.
+To get to the OMS Portal, go to the Azure Portal and click on:
 
-Until we figure out a way to this via the command line please see instructions
-under `Obtain your workspace ID and key
-<https://docs.microsoft.com/en-us/azure/container-service/container-service-kubernetes-oms#obtain-your-workspace-id-and-key>`_.
+Resource Groups > (Your k8s cluster's resource group) > Log analytics (OMS) > (Name of the only item listed) > OMS Workspace > OMS Portal
 
-Once you have the workspace id and key you can include them in the following
+(Let us know if you find a faster way.)
+Then see `Microsoft's instructions to obtain your workspace ID and key
+<https://docs.microsoft.com/en-us/azure/container-service/container-service-kubernetes-oms#obtain-your-workspace-id-and-key>`_ (via the OMS Portal).
+
+Once you have the workspace id and key, you can include them in the following
 YAML file (:download:`oms-daemonset.yaml
 <../../../../k8s/logging-and-monitoring/oms-daemonset.yaml>`):
 
@@ -182,14 +185,69 @@ YAML file (:download:`oms-daemonset.yaml
             hostPath:
               path: /var/run/docker.sock
 
-To deploy the agent simply run the following command:
+To deploy the OMS agents (one per Kubernetes node, i.e. one per computer),
+simply run the following command:
 
 .. code-block:: bash
 
     $ kubectl create -f oms-daemonset.yaml
 
 
-Some useful management tasks
+Search the OMS Logs
+-------------------
+
+OMS should now be getting, storing and indexing all the logs
+from all the containers in your Kubernetes cluster.
+You can search the OMS logs from the Azure Portal
+or the OMS Portal, but at the time of writing,
+there was more functionality in the OMS Portal
+(e.g. the ability to create an Alert based on a search).
+
+There are instructions to get to the OMS Portal
+in the section titled :ref:`Deploy the OMS Agents` above.
+Once you're in the OMS Portal, click on **Log Search**
+and enter a query.
+Here are some example queries:
+
+All logging messages containing the strings "critical" or "error" (not case-sensitive):
+
+``Type=ContainerLog (critical OR error)``
+
+.. note::
+
+   You can filter the results even more by clicking on things in the left sidebar.
+   For OMS Log Search syntax help, see the
+   `Log Analytics search reference <https://docs.microsoft.com/en-us/azure/log-analytics/log-analytics-search-reference>`_.
+
+All logging messages containing the string "error" but not "404":
+
+``Type=ContainerLog error NOT(404)``
+
+All logging messages containing the string "critical" but not "CriticalAddonsOnly":
+
+``Type=ContainerLog critical NOT(CriticalAddonsOnly)``
+
+All logging messages from containers running the Docker image bigchaindb/nginx_3scale:1.3, containing the string "GET" but not the strings "Go-http-client" or "runscope" (where those exclusions filter out tests by Kubernetes and Runscope):
+
+``Type=ContainerLog Image="bigchaindb/nginx_3scale:1.3" GET NOT("Go-http-client") NOT(runscope)``
+
+.. note::
+
+   We wrote a small Python 3 script to analyze the logs found by the above NGINX search.
+   It's in ``k8s/logging-and-monitoring/analyze.py``. The docsting at the top
+   of the script explains how to use it.
+
+
+Create an Email Alert
+---------------------
+
+Once you're satisfied with an OMS Log Search query string,
+click the **🔔 Alert** icon in the top menu,
+fill in the form,
+and click **Save** when you're done.
+
+
+Some Useful Management Tasks
 ----------------------------
 List workspaces:
 
@@ -207,7 +265,7 @@ List solutions:
         --resource-group resource_group \
         --resource-type Microsoft.OperationsManagement/solutions
 
-Deleting the containers solution:
+Delete the containers solution:
 
 .. code-block:: bash
 
@@ -222,7 +280,7 @@ Deleting the containers solution:
         --resource-type Microsoft.OperationsManagement/solutions \
         --name "Containers(work_space)"
 
-Deleting the workspace:
+Delete the workspace:
 
 .. code-block:: bash
     

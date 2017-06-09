@@ -25,14 +25,16 @@ A transaction has the following structure:
         "inputs": ["<list of inputs>"],
         "outputs": ["<list of outputs>"],
         "operation": "<string>",
-        "asset": "<digital asset description (explained in the next section)>",
+        "asset": "<asset model; see below>",
         "metadata": "<any JSON document>"
     }
 
 Here's some explanation of the contents of a :ref:`transaction <transaction>`:
 
-- id: The :ref:`id <transaction.id>` of the transaction, and also the database primary key.
-- version: :ref:`Version <transaction.version>` number of the transaction model, so that software can support different transaction models.
+- **id**: The :ref:`id <transaction.id>` of the transaction, and also the database primary key.
+
+- **version**: :ref:`Version <transaction.version>` number of the transaction model, so that software can support different transaction models.
+
 - **inputs**: List of inputs. Each :ref:`input <Input>` contains a pointer to an unspent output
   and a *crypto fulfillment* that satisfies the conditions of that output. A *fulfillment*
   is usually a signature proving the ownership of the asset.
@@ -43,7 +45,7 @@ Here's some explanation of the contents of a :ref:`transaction <transaction>`:
 
 - **operation**: String representation of the :ref:`operation <transaction.operation>` being performed (currently either "CREATE", "TRANSFER" or "GENESIS"). It determines how the transaction should be validated.
 
-- **asset**: Definition of the digital :ref:`asset <Asset>`. See next section.
+- **asset**: Definition of the :ref:`asset <Asset>`. See :ref:`the page about the asset model <The Asset Model>`.
 
 - **metadata**: User-provided transaction :ref:`metadata <metadata>`: Can be any JSON document, or `NULL`.
 

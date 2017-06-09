@@ -40,7 +40,6 @@ from contextlib import contextmanager
 from unittest.mock import patch
 
 import bigchaindb.core
-from bigchaindb.backend.changefeed import ChangeFeed
 import bigchaindb.pipelines.block
 import bigchaindb.pipelines.stale
 import bigchaindb.pipelines.vote
@@ -58,7 +57,7 @@ class MultipipesStepper:
         name = '%s_%s' % (prefix, node.name)
         next_name = '%s_%s' % (prefix, next.name)
 
-        if isinstance(node, ChangeFeed):
+        if node.name == 'changefeed':
             self.processes.append(node)
 
             def f(*args, **kwargs):

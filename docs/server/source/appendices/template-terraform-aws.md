@@ -1,8 +1,8 @@
 # Template: Using Terraform to Provision an Ubuntu Machine on AWS
 
-If you didn't read the introduction to the [cloud deployment templates](index.html), please do that now. The main point is that they're not for deploying a production node; they can be used as a starting point.
+This page explains a way to use [Terraform](https://www.terraform.io/) to provision an Ubuntu machine (i.e. an EC2 instance with Ubuntu 16.04) and other resources on [AWS](https://aws.amazon.com/). That machine can then be used to host a one-machine BigchainDB node, for example.
 
-This page explains a way to use [Terraform](https://www.terraform.io/) to provision an Ubuntu machine (i.e. an EC2 instance with Ubuntu 16.04) and other resources on [AWS](https://aws.amazon.com/). That machine can then be used to host a one-machine BigchainDB node.
+**Note: We're not actively maintaining the associated Terraform files. You may find them useful nevertheless, which is why we moved this page to the Appendices rather than deleting it.**
 
 
 ## Install Terraform

@@ -21,23 +21,37 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
       - name: mongodb
-        image: bigchaindb/mongodb:3.4.3
-        imagePullPolicy: IfNotPresent
+        image: bigchaindb/mongodb:3.4.4
+        imagePullPolicy: Always
         env:
         - name: MONGODB_FQDN
           valueFrom:
             configMapKeyRef:
-             name: mdb-fqdn
-             key: fqdn
+             name: vars
+             key: mdb-instance-name
         - name: MONGODB_POD_IP
           valueFrom:
             fieldRef:
               fieldPath: status.podIP
+        - name: MONGODB_REPLICA_SET_NAME
+          value: bigchain-rs
+        - name: MONGODB_PORT
+          value: "27017"
         args:
-        - --replica-set-name=bigchain-rs
-        - --fqdn=$(MONGODB_FQDN)
-        - --port=27017
-        - --ip=$(MONGODB_POD_IP)
+        - --mongodb-port
+        - $(MONGODB_PORT)
+        - --mongodb-key-file-path
+        - /etc/mongod/ssl/mdb-instance.pem
+        - --mongodb-ca-file-path
+        - /etc/mongod/ssl/ca.pem
+        - --mongodb-crl-file-path
+        - /etc/mongod/ssl/mdb-crl.pem
+        - --replica-set-name
+        - $(MONGODB_REPLICA_SET_NAME)
+        - --mongodb-fqdn
+        - $(MONGODB_FQDN)
+        - --mongodb-ip
+        - $(MONGODB_POD_IP)
         securityContext:
           capabilities:
             add:
@@ -52,6 +66,9 @@ spec:
           mountPath: /data/db
         - name: mdb-configdb
           mountPath: /data/configdb
+        - name: mdb-certs
+          mountPath: /etc/mongod/ssl/
+          readOnly: true
         resources:
           limits:
             cpu: 200m
@@ -71,3 +88,7 @@ spec:
       - name: mdb-configdb
         persistentVolumeClaim:
           claimName: mongo-configdb-claim
+      - name: mdb-certs
+        secret:
+          secretName: mdb-certs
+          defaultMode: 0400

@@ -27,8 +27,7 @@ BigchainDB from source. The [`CONTRIBUTING.md` file](../CONTRIBUTING.md) has
 instructions for how to do that.
 
 Next, make sure you have RethinkDB or MongoDB running in the background. You
-can run RethinkDB using `rethinkdb --daemon` or MongoDB using `mongod
---replSet=rs0`.
+can run RethinkDB using `rethinkdb --daemon` or MongoDB using `mongod --replSet=bigchain-rs`.
 
 The `pytest` command has many options. If you want to learn about all the
 things you can do with pytest, see [the pytest

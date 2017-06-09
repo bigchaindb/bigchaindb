@@ -12,5 +12,8 @@ spec:
   - port: 9984
     targetPort: 9984
     name: bdb-port
+  - port: 9985
+    targetPort: 9985
+    name: bdb-ws-port
   type: ClusterIP
   clusterIP: None

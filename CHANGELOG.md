@@ -15,6 +15,20 @@ For reference, the possible headings are:
 * **External Contributors** to list contributors outside of BigchainDB GmbH.
 * **Notes**
 
+## [0.10.2] - 2017-05-16
+Tag name: v0.10.2
+
+## Added
+* Add Cross Origin Resource Sharing (CORS) support for the HTTP API. 
+ [Commit 6cb7596](https://github.com/bigchaindb/bigchaindb/commit/6cb75960b05403c77bdae0fd327612482589efcb)
+
+## Fixed
+* Fixed `streams_v1` API link in response to `GET /api/v1`.
+ [Pull Request #1466](https://github.com/bigchaindb/bigchaindb/pull/1466)
+* Fixed mismatch between docs and implementation for `GET /blocks?status=`
+  endpoint. The `status` query parameter is now case insensitive.
+ [Pull Request #1464](https://github.com/bigchaindb/bigchaindb/pull/1464)
+
 ## [0.10.1] - 2017-04-19
 Tag name: v0.10.1
 

@@ -137,11 +137,28 @@ def test_changefeed_reconnects_when_connection_lost(monkeypatch):
 
 @patch('rethinkdb.connect')
 def test_connection_happens_one_time_if_successful(mock_connect):
+    import bigchaindb
     from bigchaindb.backend import connect
 
+    timeout = bigchaindb.config['database']['connection_timeout']
     query = r.expr('1')
     conn = connect('rethinkdb', 'localhost', 1337, 'whatev')
     conn.run(query)
     mock_connect.assert_called_once_with(host='localhost',
                                          port=1337,
-                                         db='whatev')
+                                         db='whatev',
+                                         timeout=timeout)
+
+
+@patch('rethinkdb.connect', side_effect=r.ReqlTimeoutError())
+def test_connection_timeout(mock_connect):
+    from bigchaindb.backend import connect
+    from bigchaindb.backend.exceptions import ConnectionError
+
+    query = r.expr('1')
+    conn = connect()
+
+    # connection should raise a ConnectionError after 3 tries
+    with pytest.raises(ConnectionError):
+        conn.run(query)
+    assert mock_connect.call_count == 3

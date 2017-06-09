@@ -2,7 +2,7 @@
 
 ### Need
 
-*  MongoDB needs the hostname provided in the rs.initiate() command to be
+*  MongoDB needs the hostname provided in the `rs.initiate()` command to be
    resolvable through the hosts file locally.
 *  In the future, with the introduction of TLS for inter-cluster MongoDB
    communications, we will need a way to specify detailed configuration.
@@ -11,32 +11,52 @@
 
 ### Step 1: Build the Latest Container
 
-`make` from the root of this project.
+`docker build -t bigchaindb/mongodb:3.4.4 .` from the root of this project.
 
 
 ### Step 2: Run the Container
 
 ```
 docker run \
---name=mdb1 \
---publish=<mongo port number for external connections>:<corresponding host port> \
---rm=true \
-bigchaindb/mongodb \
---replica-set-name <replica set name> \
---fqdn <fully qualified domain name of this instance> \
---port <mongod port number for external connections>
+  --cap-add=FOWNER \
+  --name=mdb1 \
+  --publish=<mongo port number for external connections>:<corresponding host port> \
+  --rm=true \
+  --volume=<host dir for mongodb data files>:/data/db \
+  --volume=<host dir for mongodb config data files>:/data/configdb \
+  --volume=<host dir with the required TLS certificates>:/mongo-ssl:ro \
+  bigchaindb/mongodb:3.4.4 \
+  --mongodb-port <mongod port number for external connections> \
+  --mongodb-key-file-path /mongo-ssl/<private key file name>.pem \
+  --mongodb-key-file-password <password for the private key file> \
+  --mongodb-ca-file-path /mongo-ssl/<ca certificate file name>.crt \
+  --mongodb-crl-file-path /mongo-ssl/<crl certificate file name>.pem \
+  --replica-set-name <replica set name> \
+  --mongodb-fqdn <fully qualified domain name of this instance> \
+  --mongodb-ip <ip address of the mongodb container>
 ```
 
 #### Step 3: Initialize the Replica Set
 
 Login to one of the MongoDB containers, say mdb1:
 
-`docker exec -it mdb1 bash`
+`docker exec -it mongodb bash`
+
+Since we need TLS certificates to use the mongo shell now, copy them using:
+
+```
+docker cp bdb-instance-0.pem mongodb:/
+docker cp ca.crt mongodb:/
+```
 
 Start the `mongo` shell:
 
-`mongo --port 27017`
-
+```
+mongo --host mdb1-fqdn --port mdb1-port --verbose --ssl \
+  --sslCAFile /ca.crt \
+  --sslPEMKeyFile /bdb-instance-0.pem \
+  --sslPEMKeyPassword password
+```
 
 Run the rs.initiate() command:
 ```

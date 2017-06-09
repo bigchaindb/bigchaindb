@@ -8,7 +8,8 @@ from bigchaindb.utils import Lazy
 from bigchaindb.common.exceptions import ConfigurationError
 from bigchaindb.backend.exceptions import (DuplicateKeyError,
                                            OperationError,
-                                           ConnectionError)
+                                           ConnectionError,
+                                           AuthenticationError)
 from bigchaindb.backend.connection import Connection
 
 logger = logging.getLogger(__name__)
@@ -93,6 +94,8 @@ class MongoDBConnection(Connection):
         # `initialize_replica_set` might raise `ConnectionFailure` or `OperationFailure`.
         except (pymongo.errors.ConnectionFailure,
                 pymongo.errors.OperationFailure) as exc:
+            if "Authentication fail" in str(exc):
+                raise AuthenticationError() from exc
             raise ConnectionError() from exc
 
 

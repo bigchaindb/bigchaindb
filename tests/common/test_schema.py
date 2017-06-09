@@ -4,6 +4,7 @@ properties related to validation.
 """
 
 from pytest import raises
+from unittest.mock import patch
 
 from bigchaindb.common.exceptions import SchemaValidationError
 from bigchaindb.common.schema import (
@@ -100,6 +101,12 @@ def test_validate_transaction_signed_transfer(signed_transfer_tx):
 def test_validate_transaction_fails():
     with raises(SchemaValidationError):
         validate_transaction_schema({})
+
+
+def test_validate_failure_inconsistent():
+    with patch('jsonschema.validate'):
+        with raises(SchemaValidationError):
+            validate_transaction_schema({})
 
 
 ################################################################################

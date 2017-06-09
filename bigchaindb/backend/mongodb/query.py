@@ -5,9 +5,10 @@ from time import time
 from pymongo import ReturnDocument
 
 from bigchaindb import backend
+from bigchaindb.backend.mongodb.changefeed import run_changefeed
 from bigchaindb.common.exceptions import CyclicBlockchainError
 from bigchaindb.common.transaction import Transaction
-from bigchaindb.backend.exceptions import DuplicateKeyError
+from bigchaindb.backend.exceptions import DuplicateKeyError, OperationError
 from bigchaindb.backend.utils import module_dispatch_registrar
 from bigchaindb.backend.mongodb.connection import MongoDBConnection
 
@@ -127,6 +128,7 @@ def get_txids_filtered(conn, asset_id, operation=None):
     return (elem['block']['transactions']['id'] for elem in cursor)
 
 
+# TODO: This doesn't seem to be used anywhere
 @register_query(MongoDBConnection)
 def get_asset_by_id(conn, asset_id):
     cursor = conn.run(
@@ -232,10 +234,10 @@ def get_votes_by_block_id_and_voter(conn, block_id, node_pubkey):
 
 
 @register_query(MongoDBConnection)
-def write_block(conn, block):
+def write_block(conn, block_dict):
     return conn.run(
         conn.collection('bigchain')
-        .insert_one(block.to_dict()))
+        .insert_one(block_dict))
 
 
 @register_query(MongoDBConnection)
@@ -244,6 +246,31 @@ def get_block(conn, block_id):
         conn.collection('bigchain')
         .find_one({'id': block_id},
                   projection={'_id': False}))
+
+
+@register_query(MongoDBConnection)
+def write_assets(conn, assets):
+    try:
+        # unordered means that all the inserts will be attempted instead of
+        # stopping after the first error.
+        return conn.run(
+            conn.collection('assets')
+            .insert_many(assets, ordered=False))
+    # This can happen if we try to write the same asset multiple times.
+    # One case is when we write the same transaction into multiple blocks due
+    # to invalid blocks.
+    # The actual mongodb exception is a BulkWriteError due to a duplicated key
+    # in one of the inserts.
+    except OperationError:
+        return
+
+
+@register_query(MongoDBConnection)
+def get_assets(conn, asset_ids):
+    return conn.run(
+        conn.collection('assets')
+        .find({'id': {'$in': asset_ids}},
+              projection={'_id': False}))
 
 
 @register_query(MongoDBConnection)
@@ -278,7 +305,7 @@ def get_genesis_block(conn):
 
 
 @register_query(MongoDBConnection)
-def get_last_voted_block(conn, node_pubkey):
+def get_last_voted_block_id(conn, node_pubkey):
     last_voted = conn.run(
             conn.collection('votes')
             .find({'node_pubkey': node_pubkey},
@@ -287,7 +314,7 @@ def get_last_voted_block(conn, node_pubkey):
     # pymongo seems to return a cursor even if there are no results
     # so we actually need to check the count
     if last_voted.count() == 0:
-        return get_genesis_block(conn)
+        return get_genesis_block(conn)['id']
 
     mapping = {v['vote']['previous_block']: v['vote']['voting_for_block']
                for v in last_voted}
@@ -305,25 +332,40 @@ def get_last_voted_block(conn, node_pubkey):
         except KeyError:
             break
 
-    return get_block(conn, last_block_id)
+    return last_block_id
 
 
 @register_query(MongoDBConnection)
-def get_unvoted_blocks(conn, node_pubkey):
-    return conn.run(
-        conn.collection('bigchain')
-        .aggregate([
-            {'$lookup': {
-                'from': 'votes',
-                'localField': 'id',
-                'foreignField': 'vote.voting_for_block',
-                'as': 'votes'
-            }},
-            {'$match': {
-                'votes.node_pubkey': {'$ne': node_pubkey},
-                'block.transactions.operation': {'$ne': 'GENESIS'}
-            }},
-            {'$project': {
-                'votes': False, '_id': False
-            }}
-        ]))
+def get_new_blocks_feed(conn, start_block_id):
+    namespace = conn.dbname + '.bigchain'
+    match = {'o.id': start_block_id, 'op': 'i', 'ns': namespace}
+    # Neccesary to find in descending order since tests may write same block id several times
+    query = conn.query().local.oplog.rs.find(match).sort('$natural', -1).next()['ts']
+    last_ts = conn.run(query)
+    feed = run_changefeed(conn, 'bigchain', last_ts)
+    return (evt['o'] for evt in feed if evt['op'] == 'i')
+
+
+@register_query(MongoDBConnection)
+def text_search(conn, search, *, language='english', case_sensitive=False,
+                diacritic_sensitive=False, text_score=False, limit=0):
+    cursor = conn.run(
+        conn.collection('assets')
+        .find({'$text': {
+                '$search': search,
+                '$language': language,
+                '$caseSensitive': case_sensitive,
+                '$diacriticSensitive': diacritic_sensitive}},
+              {'score': {'$meta': 'textScore'}, '_id': False})
+        .sort([('score', {'$meta': 'textScore'})])
+        .limit(limit))
+
+    if text_score:
+        return cursor
+
+    return (_remove_text_score(asset) for asset in cursor)
+
+
+def _remove_text_score(asset):
+    asset.pop('score', None)
+    return asset

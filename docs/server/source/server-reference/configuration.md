@@ -100,7 +100,7 @@ The settings with names of the form `database.*` are for the database backend
 * `database.port` is self-explanatory.
 * `database.name` is a user-chosen name for the database inside RethinkDB or MongoDB, e.g. `bigchain`.
 * `database.replicaset` is only relevant if using MongoDB; it's the name of the MongoDB replica set, e.g. `bigchain-rs`.
-* `database.connection_timeout` is the maximum number of milliseconds that BigchainDB will wait before giving up on one attempt to connect to the database backend. Note: At the time of writing, this setting was only used by MongoDB; there was an open [issue to make RethinkDB use it as well](https://github.com/bigchaindb/bigchaindb/issues/1337).
+* `database.connection_timeout` is the maximum number of milliseconds that BigchainDB will wait before giving up on one attempt to connect to the database backend.
 * `database.max_tries` is the maximum number of times that BigchainDB will try to establish a connection with the database backend. If 0, then it will try forever.
 
 **Example using environment variables**
@@ -142,7 +142,7 @@ If you used `bigchaindb -y configure mongodb` to create a default local config f
 ```
 
 
-## server.bind, server.loglevel, server.workers & server.threads
+## server.bind, server.loglevel & server.workers
 
 These settings are for the [Gunicorn HTTP server](http://gunicorn.org/), which is used to serve the [HTTP client-server API](../http-client-server-api.html).
 
@@ -152,7 +152,7 @@ These settings are for the [Gunicorn HTTP server](http://gunicorn.org/), which i
 [Gunicorn's documentation](http://docs.gunicorn.org/en/latest/settings.html#loglevel)
 for more information.
 
-`server.workers` is [the number of worker processes](http://docs.gunicorn.org/en/stable/settings.html#workers) for handling requests. If `None` (the default), the value will be (cpu_count * 2 + 1). `server.threads` is [the number of threads-per-worker](http://docs.gunicorn.org/en/stable/settings.html#threads) for handling requests. If `None` (the default), the value will be (cpu_count * 2 + 1). The HTTP server will be able to handle `server.workers` * `server.threads` requests simultaneously.
+`server.workers` is [the number of worker processes](http://docs.gunicorn.org/en/stable/settings.html#workers) for handling requests. If `None` (the default), the value will be (cpu_count * 2 + 1). Each worker process has a single thread. The HTTP server will be able to handle `server.workers` requests simultaneously.
 
 **Example using environment variables**
 ```text
@@ -168,7 +168,6 @@ export BIGCHAINDB_SERVER_THREADS=5
     "bind": "0.0.0.0:9984",
     "loglevel": "debug",
     "workers": 5,
-    "threads": 5
 }
 ```
 
@@ -178,7 +177,6 @@ export BIGCHAINDB_SERVER_THREADS=5
     "bind": "localhost:9984",
     "loglevel": "info",
     "workers": null,
-    "threads": null
 }
 ```
 

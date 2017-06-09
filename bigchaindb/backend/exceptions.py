@@ -9,6 +9,10 @@ class ConnectionError(BackendError):
     """Exception raised when the connection to the backend fails."""
 
 
+class AuthenticationError(ConnectionError):
+    """Exception raised when MongoDB Authentication fails"""
+
+
 class OperationError(BackendError):
     """Exception raised when a backend operation fails."""
 

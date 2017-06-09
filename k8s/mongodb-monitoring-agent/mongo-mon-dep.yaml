@@ -1,6 +1,6 @@
 ############################################################
 # This config file defines a k8s Deployment for the        #
-# bigchaindb/mongodb-monitoring-agent:latest Docker image  #
+# bigchaindb/mongodb-monitoring-agent Docker image         #
 #                                                          #
 # It connects to a MongoDB instance in a separate pod,     #
 # all remote MongoDB instances in the cluster,             #
@@ -17,22 +17,40 @@ spec:
   replicas: 1
   template:
     metadata:
+      name: mdb-mon-instance-0-dep
       labels:
         app: mdb-mon-instance-0-dep
     spec:
       terminationGracePeriodSeconds: 10
       containers:
       - name: mdb-mon
-        image: bigchaindb/mongodb-monitoring-agent:1.0
+        image: bigchaindb/mongodb-monitoring-agent:2.0
         imagePullPolicy: Always
         env:
-        - name: MMS_API_KEY
-          valueFrom:
-            configMapKeyRef:
-              name: mdb-mon
-              key: api-key
+        - name: MMS_API_KEYFILE_PATH
+          value: /etc/mongod/cloud/api-key
+        - name: CA_CRT_PATH
+          value: /etc/mongod/ssl/ca.pem
+        - name: MONITORING_PEM_PATH
+          value: /etc/mongod/ssl/mdb-mon-instance.pem
         resources:
           limits:
             cpu: 200m
             memory: 768Mi
+        volumeMounts:
+        - name: mdb-mon-certs
+          mountPath: /etc/mongod/ssl/
+          readOnly: true
+        - name: mdb-agent-api-key
+          mountPath: /etc/mongod/cloud/
+          readOnly: true
       restartPolicy: Always
+      volumes:
+      - name: mdb-mon-certs
+        secret:
+          secretName: mdb-mon-certs
+          defaultMode: 0400
+      - name: mdb-agent-api-key
+        secret:
+          secretName: mdb-agent-api-key
+          defaultMode: 0400

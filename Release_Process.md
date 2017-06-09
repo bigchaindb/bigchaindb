@@ -10,6 +10,7 @@ that [major version 0.x does not export a stable API](http://semver.org/#spec-it
 A minor release is preceeded by a feature freeze and created from the 'master' branch. This is a summary of the steps we go through to release a new minor version of BigchainDB Server.
 
 1. Update the `CHANGELOG.md` file in master
+1. In `k8s/bigchaindb/bigchaindb-dep.yaml`, find the line of the form `image: bigchaindb/bigchaindb:0.8.1` and change the version number to the new version number, e.g. `0.9.0`. (This is the Docker image that Kubernetes should pull from Docker Hub.) Commit that change to master
 1. Create and checkout a new branch for the minor release, named after the minor version, without a preceeding 'v', e.g. `git checkout -b 0.9` (*not* 0.9.0, this new branch will be for e.g. 0.9.0, 0.9.1, 0.9.2, etc. each of which will be identified by a tagged commit)
 1. In `bigchaindb/version.py`, update `__version__` and `__short_version__`, e.g. to `0.9` and `0.9.0` (with no `.dev` on the end)
 1. Commit that change, and push the new branch to GitHub
@@ -26,8 +27,11 @@ A patch release is similar to a minor release, but piggybacks on an existing min
 1. Check out the minor release branch, e.g. `0.9`
 1. Apply the changes you want, e.g. using `git cherry-pick`.
 1. Update the `CHANGELOG.md` file
-1. Increment the patch version in `bigchaindb/version.py`, e.g. "0.9.1"
-1. Commit that change, and push the updated branch to GitHub
+1. Increment the patch version in `bigchaindb/version.py`, e.g. `0.9.1`
+1. Commit that change
+1. In `k8s/bigchaindb/bigchaindb-dep.yaml`, find the line of the form `image: bigchaindb/bigchaindb:0.9.0` and change the version number to the new version number, e.g. `0.9.1`. (This is the Docker image that Kubernetes should pull from Docker Hub.)
+1. Commit that change
+1. Push the updated minor release branch to GitHub
 1. Follow steps outlined in [Common Steps](#common-steps)
 1. Cherry-pick the `CHANGELOG.md` update commit (made above) to the `master` branch
 

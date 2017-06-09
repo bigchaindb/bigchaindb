@@ -1,27 +1,56 @@
+############################################################
+# This config file defines a k8s Deployment for the        #
+# bigchaindb/mongodb-backup-agent Docker image             #
+#                                                          #
+# It connects to a MongoDB instance in a separate pod,     #
+# all remote MongoDB instances in the cluster,             #
+# and also to MongoDB Cloud Manager (an external service). #
+# Notes:                                                   #
+# MongoDB agents connect to Cloud Manager on port 443.     #
+############################################################
+
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: mdb-backup-instance-0-dep
+  name: mdb-bak-instance-0-dep
 spec:
   replicas: 1
   template:
     metadata:
+      name: mdb-bak-instance-0-dep
       labels:
-        app: mdb-backup-instance-0-dep
+        app: mdb-bak-instance-0-dep
     spec:
       terminationGracePeriodSeconds: 10
       containers:
       - name: mdb-backup
-        image: bigchaindb/mongodb-backup-agent:1.0
+        image: bigchaindb/mongodb-backup-agent:2.0
         imagePullPolicy: Always
         env:
-        - name: MMS_API_KEY
-          valueFrom:
-            configMapKeyRef:
-              name: mdb-backup
-              key: api-key
+        - name: MMS_API_KEYFILE_PATH
+          value: /etc/mongod/cloud/api-key
+        - name: CA_CRT_PATH
+          value: /etc/mongod/ssl/ca.pem
+        - name: MONITORING_PEM_PATH
+          value: /etc/mongod/ssl/mdb-bak-instance.pem
         resources:
           limits:
             cpu: 200m
             memory: 768Mi
+        volumeMounts:
+        - name: mdb-bak-certs
+          mountPath: /etc/mongod/ssl/
+          readOnly: true
+        - name: mdb-agent-api-key
+          mountPath: /etc/mongod/cloud/
+          readOnly: true
       restartPolicy: Always
+      volumes:
+      - name: mdb-bak-certs
+        secret:
+          secretName: mdb-bak-certs
+          defaultMode: 0400
+      - name: mdb-agent-api-key
+        secret:
+          secretName: mdb-agent-api-key
+          defaultMode: 0400
