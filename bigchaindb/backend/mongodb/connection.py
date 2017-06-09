@@ -81,7 +81,7 @@ class MongoDBConnection(Connection):
         If not, it raises a ConfigurationError.
 
         Raises:
-            :exc:`~ConfigurationError`: If the ssl=false in the configuration.
+            :exc:`~ConfigurationError`: If ssl=false in the specified configuration.
         """
 
         logger.info('Connecting to MongoDB over TLS/SSL...')
