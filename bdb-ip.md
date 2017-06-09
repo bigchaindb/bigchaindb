@@ -122,8 +122,6 @@ and the [Websocket Event Stream API
     - `asset_id` in query parameters and Event Stream API
     - `id` in `transaction.asset` payload
     - `id` in `/assets?search={text_search}` (this is also the transaction's id!)
-- Fulfillment id:
-    - `type_id` in `transaction.outputs.condition.details`
 - Block id:
     - `block_id` in query parameters and Event Stream API
     - `id` in the block payload
@@ -131,12 +129,17 @@ and the [Websocket Event Stream API
 General inconsistency: `block_id`, `asset_id` and `tx_id` instead of
 `transaction_id`.
 
+[As pointed out by
+@r-marques](https://github.com/bigchaindb/bigchaindb/pull/1522#discussion_r120815083),
+we'll ignore `type_id` in a Crypto-condition fulfillment for the scope of this
+discussion.
+
 
 Even though, this shouldn't be an argument (as we see the HTTP API descoped
 from the underlying implementation):
 
-- [`txid` usage in bdb-server](https://docs.bigchaindb.com/projects/server/en/master/websocket-event-stream-api.html)
-- [`txid` usage in bdb-server](https://docs.bigchaindb.com/projects/server/en/master/websocket-event-stream-api.html)
+- [`txid` usage in bdb-server](https://github.com/bigchaindb/bigchaindb/search?utf8=%E2%9C%93&q=txid&type=)
+- [`tx_id` usage in bdb-server](https://github.com/bigchaindb/bigchaindb/search?utf8=%E2%9C%93&q=tx_id&type=)
 
 
 #### Proposal 1
@@ -176,8 +179,6 @@ above) (even though it's not a showstopper)
 Changes include:
 
 - All query parameters become `id`
-- `transaction.outputs.condition.details.type_id` ==>
-  `transaction.outputs.condition.details.id` (hard to achieve fix)
 - `asset_id`, `tx_id` and `block_id` couldn't be told apart in Websocket Event
   Stream API anymore unless message becomes `{block: {id: "abc"}, asset: {id:
   "def"}, ...}` (which would be OK IMO)
@@ -206,8 +207,6 @@ Contra:
 
 
 #### Personal favorite: Proposal 1 then Proposal 2
-
-
 
 
 ### [2. Inconsistency in using relative links](https://github.com/bigchaindb/bigchaindb/issues/1525)
