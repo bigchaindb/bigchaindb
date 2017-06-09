@@ -2,7 +2,7 @@ Configure MongoDB Cloud Manager for Monitoring and Backup
 =========================================================
 
 This document details the steps required to configure MongoDB Cloud Manager to
-enable monitoring and back up of data in a MongoDB Replica Set.
+enable monitoring and backup of data in a MongoDB Replica Set.
 
 
 Configure MongoDB Cloud Manager for Monitoring

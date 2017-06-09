@@ -9,8 +9,8 @@ It assumes you already have a running Kubernetes cluster.
 If you want to add a new BigchainDB node to an existing BigchainDB cluster,
 refer to :doc:`the page about that <add-node-on-kubernetes>`.
 
-We refer to many files by their directory and filename in the documentation
-below, such as ``configuration/config-map.yaml``. Those files are files in the
+Below, we refer to many files by their directory and filename,
+such as ``configuration/config-map.yaml``. Those files are files in the
 `bigchaindb/bigchaindb repository on GitHub
 <https://github.com/bigchaindb/bigchaindb/>`_ in the ``k8s/`` directory.
 Make sure you're getting those files from the appropriate Git branch on
@@ -26,22 +26,8 @@ If you don't already have it installed,
 then see the `Kubernetes docs to install it
 <https://kubernetes.io/docs/user-guide/prereqs/>`_.
 
-
 The default location of the kubectl configuration file is ``~/.kube/config``.
 If you don't have that file, then you need to get it.
-
-Find out the ``kubectl context`` of your Kubernetes cluster using the command:
-
-.. code:: bash
-  
-  $ kubectl config view
-
-The context will be one of the entries in ``context.cluster`` under the
-``contexts`` list in the output.
-
-Assuming that the current context for your cluster is
-``k8s-bdb-test-cluster-0``, you will always specify the context in the
-following commands as ``kubectl --context k8s-bdb-test-cluster-0``.
 
 **Azure.** If you deployed your Kubernetes cluster on Azure
 using the Azure CLI 2.0 (as per :doc:`our template <template-kubernetes-azure>`),
@@ -59,29 +45,63 @@ but you get an error message,
 then try adding ``--ssh-key-file ~/.ssh/<name>``
 to the above command (i.e. the path to the private key).
 
+.. note::
 
-Step 2: Connect to the Cluster UI - (optional)
-----------------------------------------------
+    **About kubectl contexts.** You might manage several
+    Kubernetes clusters. To make it easy to switch from one to another,
+    kubectl has a notion of "contexts," e.g. the context for cluster 1 or
+    the context for cluster 2. To find out the current context, do:
 
-* Get the kubectl context for this cluster using ``kubectl config view``.
- 
-* For the above commands, the context would be ``k8s-bdb-test-cluster-0``.
- 
-  .. code:: bash
+    .. code:: bash
+      
+      $ kubectl config view
 
-     $ kubectl --context k8s-bdb-test-cluster-0 proxy -p 8001
+    and then look for the ``current-context`` in the output.
+    The output also lists all clusters, contexts and users.
+    (You might have only one of each.)
+    You can switch to a different context using:
+
+    .. code:: bash
+
+      $ kubectl config use-context <new-context-name>
+
+    You can also switch to a different context for just one command
+    by inserting ``--context <context-name>`` into any kubectl command.
+    For example:
+
+    .. code:: bash
+
+      $ kubectl --context k8s-bdb-test-cluster-0 get pods
+
+    will get a list of the pods in the Kubernetes cluster associated
+    with the context named ``k8s-bdb-test-cluster-0``.
+
+Step 2: Connect to Your Cluster's Web UI (Optional)
+---------------------------------------------------
+
+You can connect to your cluster's
+`Kubernetes Dashboard <https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/>`_
+(also called the Web UI) using:
+
+.. code:: bash
+
+   $ kubectl proxy -p 8001
+
+or, if you prefer to be explicit about the context (explained above):
+
+.. code:: bash
+
+   $ kubectl --context k8s-bdb-test-cluster-0 proxy -p 8001
+
+The output should be something like ``Starting to serve on 127.0.0.1:8001``.
+That means you can visit the dashboard in your web browser at
+`http://127.0.0.1:8001/ui <http://127.0.0.1:8001/ui>`_.
 
 
-Step 3: Configure the Node
---------------------------
-   
-  * You need to have all the information :ref:`listed here <Things Each Node Operator Must Do>`.
+Step 3: Configure Your BigchainDB Node
+--------------------------------------
 
-  * The information needs to be populated in ``configuration/config-map.yaml``
-    and ``configuration/secret.yaml``.
-
-  * For more details, refer to the document on how to
-    :ref:`configure a node <Configure the Node>`.
+See the page titled :ref:`How to Configure a BigchainDB Node`.
    
 
 Step 4: Start the NGINX Service
@@ -164,13 +184,11 @@ Step 5: Assign DNS Name to the NGINX Public IP
 
 
 **Set up DNS mapping in Azure.**
-
 Select the current Azure resource group and look for the ``Public IP``
 resource. You should see at least 2 entries there - one for the Kubernetes
 master and the other for the MongoDB instance. You may have to ``Refresh`` the
 Azure web page listing the resources in a resource group for the latest
 changes to be reflected.
-
 Select the ``Public IP`` resource that is attached to your service (it should
 have the Azure DNS prefix name along with a long random string, without the
 ``master-ip`` string), select ``Configuration``, add the DNS assigned above
@@ -335,7 +353,6 @@ see `the Kubernetes docs about persistent volumes
 The first thing to do is create the Kubernetes storage classes.
 
 **Set up Storage Classes in Azure.**
-
 First, you need an Azure storage account.
 If you deployed your Kubernetes cluster on Azure
 using the Azure CLI 2.0
@@ -467,7 +484,7 @@ Step 11: Start a Kubernetes StatefulSet for MongoDB
    
     .. code:: bash
 
-       $ kubectl --context k8s-bdb-test-cluster-0 get po -w
+       $ kubectl --context k8s-bdb-test-cluster-0 get pods -w
   
 
 Step 12: Start a Kubernetes Deployment for MongoDB Monitoring Agent
