@@ -1,5 +1,5 @@
-How to Configure Your BigchainDB Node
-=====================================
+How to Configure a BigchainDB Node
+==================================
 
 This page outlines the steps to set a bunch of configuration settings
 in your BigchainDB node.
@@ -22,6 +22,12 @@ and edit the data values in the various ConfigMaps.
 That file already contains many comments to help you
 understand each data value, but we make some additional
 remarks on some of the values below.
+
+Note: None of the data values in ``config-map.yaml`` need
+to be base64-encoded. (This is unlike ``secret.yaml``,
+where all data values must be base64-encoded.
+This is true of all Kubernetes ConfigMaps and Secrets.)
+
 
 vars
 ~~~~
@@ -53,12 +59,12 @@ of all *other* nodes in your BigchainDB cluster
 * If you're deploying the first node in the cluster,
   the value should be ``""`` (an empty string).
 * If you're deploying the second node in the cluster,
-  the value should be one public key inside double quotes
-  (*not* base64-encoded). For example,
+  the value should be one public key inside double quotes.
+  For example,
   ``"EPQk5i5yYpoUwGVM8VKZRjM8CYxB6j8Lu8i8SG7kGGce"``
 * If there are two or more other nodes already in the cluster,
   the value should be a colon-separated list of public keys
-  inside double quotes (with no base64 encoding anywhere).
+  inside double quotes.
   For example,
   ``"DPjpKbmbPYPKVAuf6VSkqGCf5jzrEh69Ldef6TrLwsEQ:EPQk5i5yYpoUwGVM8VKZRjM8CYxB6j8Lu8i8SG7kGGce"``
 

@@ -101,7 +101,7 @@ That means you can visit the dashboard in your web browser at
 Step 3: Configure Your BigchainDB Node
 --------------------------------------
 
-See the page titled :ref:`How to Configure Your BigchainDB Node`.
+See the page titled :ref:`How to Configure a BigchainDB Node`.
    
 
 Step 4: Start the NGINX Service

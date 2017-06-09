@@ -1,3 +1,5 @@
+## Note: data values do NOT have to be base64-encoded in this file. 
+
 ## vars is common environment variables for this BigchaindB node
 apiVersion: v1
 kind: ConfigMap
@@ -31,8 +33,7 @@ metadata:
   name: bdb-keyring
   namespace: default
 data:
-  # Colon-separated list of all *other* nodes' BigchainDB public keys
-  # with no base64 encoding anywhere
+  # Colon-separated list of all *other* nodes' BigchainDB public keys.
   bdb-keyring: "<':' separated list of public keys>"
 ---
 apiVersion: v1
@@ -41,6 +42,6 @@ metadata:
   name: bdb-public-key
   namespace: default
 data:
-  # BigchainDB public key of *this* node, not base64-encoded.
+  # BigchainDB public key of *this* node.
   # Example: "EPQk5i5yYpoUwGVM8VKZRjM8CYxB6j8Lu8i8SG7kGGce"
   bdb-public-key: "<public key>"
