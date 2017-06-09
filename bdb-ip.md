@@ -776,13 +776,17 @@ Notes:
 ```
 [{
     "tx_id": "abc",
-    "output": 0
+    "output": 0,
+    "asset_id: "e.g. abc - depending on what transaction operation",
+    "amount": 1 // for divisible assets
 }, ...]
 ```
 
-Note: The intention here is to "force" the user to do a second request to
-download the transaction from 2/3 of the network and check validate their
-hashes.
+Notes:
+- We include `asset_id` and `amount` to allow for easier decision making
+which transactions to download
+- We do **not** include the full output, as for security reasons we want the
+user to download the full transaction payload from 2/3 of the network
 
 
 2. `safe=false` returns the following data structure:
