@@ -36,14 +36,14 @@ There were several goals:
 
 ### Node Operator Responsibilities
 
-1. Register a domain (or uses one that you already have) for your BigchainDB node. You can use a subdomain if you like. For example, you might opt to use `abc-org73.net`, `api.dynabob8.io` or `figmentdb3.ninja`.
+1. Register a domain (or use one that you already have) for your BigchainDB node. You can use a subdomain if you like. For example, you might opt to use `abc-org73.net`, `api.dynabob8.io` or `figmentdb3.ninja`.
 2. Get an SSL certificate for your domain or subdomain, and properly install it in your node (e.g. in your NGINX instance).
 3. Create a DNS A Record mapping your domain or subdomain to the public IP address of your node (i.e. the one that serves the BigchainDB HTTP API).
 
 
 ### Consortium Responsibilities
 
-Optional: The consortium managing the BigchainDB cluster could register a domain name and set up CNAME records mapping that domain name (or one of its subdomains) to each of the nodes in the cluster. For example, if the organization registered `bdbcluster.io`, they could set up CNAME records like the following:
+Optional: The consortium managing the BigchainDB cluster could register a domain name and set up CNAME records mapping that domain name (or one of its subdomains) to each of the nodes in the cluster. For example, if the consortium registered `bdbcluster.io`, they could set up CNAME records like the following:
 
 * CNAME record mapping `api.bdbcluster.io` to `abc-org73.net`
 * CNAME record mapping `api.bdbcluster.io` to `api.dynabob8.io`
