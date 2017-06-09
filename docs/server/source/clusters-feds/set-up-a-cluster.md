@@ -1,6 +1,6 @@
 # Set Up a Cluster
 
-This section is about how to set up a BigchainDB cluster where each node is operated by a different operator. If you want to set up and run a testing cluster on AWS (where all nodes are operated by you), then see [the section about that](aws-testing-cluster.html).
+This section is about how to set up a BigchainDB cluster where each node is operated by a different operator.
 
 
 ## Initial Questions
