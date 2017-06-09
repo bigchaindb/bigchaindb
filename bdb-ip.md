@@ -39,12 +39,12 @@ making and merge conflicts in implementation (root nodes do not have
 dependencies):
 
 - 0. What does "breaking change" mean
-    - 1. Inconsistency in using relative links
-        - 2. Consolidate / and /api/v1
-            - 3. Remove host and port from URLs in API and root endpoint
-        - 4. /outputs?unspents= returns unexpected results
-            - 5. A new /outputs endpoint
-    - 6. Inconsistent naming of short-hand ids
+    - 1. Inconsistent naming of short-hand ids
+    - 2. Inconsistency in using relative links
+        - 3. Consolidate / and /api/v1
+            - 4. Remove host and port from URLs in API and root endpoint
+        - 5. /outputs?unspents= returns unexpected results
+            - 6. A new /outputs endpoint
 - 7. /statuses?tx_id needs to return status invalid
 - 8. /transaction/ID needs status flag
 - 9. /transaction/id and /transaction?asset_id?operation=CREATE return same content
@@ -99,13 +99,118 @@ drivers that update according to the breaking changes in the HTTP and Events
 API.
 
 
-#### Favorite Proposal
+#### Favorite Proposal: Proposal 1
 
 Proposal 1, as we only have two official driver and several users are in the
 process of building drivers.
 
 
-### [1. Inconsistency in using relative links](https://github.com/bigchaindb/bigchaindb/issues/1525)
+### [1. Inconsistent naming of short-hand ids](https://github.com/bigchaindb/bigchaindb/issues/1134)
+
+Current naming of ids according to [HTTP API documentation
+(master)](https://docs.bigchaindb.com/projects/server/en/master/http-client-server-api.html)
+and the [Websocket Event Stream API
+(master)](https://docs.bigchaindb.com/projects/server/en/master/websocket-event-stream-api.html):
+
+- Transaction id:
+    - `tx_id` in query parameters and Event Stream API
+    - `txid` in `transaction.inputs.fulfills`
+    - `id` in transaction payload
+    - `id` in `/assets?search={text_search}` (this is also the asset's id!)
+    - `ID` in prose text
+- Asset id:
+    - `asset_id` in query parameters and Event Stream API
+    - `id` in `transaction.asset` payload
+    - `id` in `/assets?search={text_search}` (this is also the transaction's id!)
+- Fulfillment id:
+    - `type_id` in `transaction.outputs.condition.details`
+- Block id:
+    - `block_id` in query parameters and Event Stream API
+    - `id` in the block payload
+
+General inconsistency: `block_id`, `asset_id` and `tx_id` instead of
+`transaction_id`.
+
+
+Even though, this shouldn't be an argument (as we see the HTTP API descoped
+from the underlying implementation):
+
+- [`txid` usage in bdb-server](https://docs.bigchaindb.com/projects/server/en/master/websocket-event-stream-api.html)
+- [`txid` usage in bdb-server](https://docs.bigchaindb.com/projects/server/en/master/websocket-event-stream-api.html)
+
+
+#### Proposal 1
+
+- Call any identifier that points to an object externally is a `object_id`
+    - e.g. `transaction.inputs.fulfills.tx_id` points to an external tx, hence
+      `_`
+- Call any identifier within the data (describing the data) an `id`
+    - `transaction.id`, points to itself, hence no need for redundancy in it's
+      name
+
+Unfortunately, these rules still leave inconsistencies that are hard to
+resolve. Assuming we could agree on `asset_id` and `tx_id` easily, they could
+be a nice way forward, as it would mean that we don't have to change a lot of
+code:
+- `transaction.inputs.fulfills.txid` ==> `transaction.inputs.fulfills.tx_id`
+- `id` in /assets?search={text_search} ==> `tx_id` or `asset_id`, as it's the
+  /asset endpoint, `asset_id` seems more logical
+- In a TRANSFER transaction `transaction.asset.id` would become
+`transaction.asset.tx_id` or `transaction.asset.asset_id`
+
+Pros:
+
+- Little changes to code
+
+Contra:
+
+- `asset_id` and `tx_id` need to be resolved for specific cases (mentioned
+above) (even though it's not a showstopper)
+- Doesn't resolve `tx_id` and `transaction_id` (but can potentially)
+
+
+#### Proposal 2
+
+- Everything becomes an `id`.
+
+Changes include:
+
+- All query parameters become `id`
+- `transaction.outputs.condition.details.type_id` ==>
+  `transaction.outputs.condition.details.id` (hard to achieve fix)
+- `asset_id`, `tx_id` and `block_id` couldn't be told apart in Websocket Event
+  Stream API anymore unless message becomes `{block: {id: "abc"}, asset: {id:
+  "def"}, ...}` (which would be OK IMO)
+
+Pros:
+
+- Clean approach
+- Easy to apply (also for the future
+- Does resolve `tx_id` and `transaction_id`
+- `id` is usually clear from context
+
+Contra:
+
+- Lots of changes to be applied to core, drivers, etc.
+
+
+#### Proposal 3
+
+- Everything becomes `object_id` *or* everything becomes `objectid`
+
+Contra:
+
+- There is huge redundancy in naming e.g. `transaction.tx_id`, etc.
+- Lots of changes to be applied
+- Doesn't resolve `tx_id` and `transaction_id` (but can potentially)
+
+
+#### Personal favorite: Proposal 1 then Proposal 2
+
+
+
+
+### [2. Inconsistency in using relative links](https://github.com/bigchaindb/bigchaindb/issues/1525)
 
 See [/outputs endpoint](https://docs.bigchaindb.com/projects/server/en/master/http-client-server-api.html#get--api-v1-outputs?public_key=public_key)
 
@@ -163,7 +268,7 @@ An example for `/` (assuming we don't do anything with issue 6.):
     "docs": "https://docs.bigchaindb.com/projects/server/en/v0.11.0.dev/"
     "keyring": [
         "6qHyZew94NMmUTYyHnkZsB8cxJYuRNEiEpXHe1ih9QX3",
-    "AdDuyrTyjrDt935YnFu4VBCVDhHtY2Y6rcy7x2TFeiRi"
+        "AdDuyrTyjrDt935YnFu4VBCVDhHtY2Y6rcy7x2TFeiRi"
     ],
     "public_key": "NC8c8rYcAhyKVpx1PCV65CBmyq4YUbLysy3Rqrg8L8mz",
     "software": "BigchainDB",
@@ -219,7 +324,7 @@ Contra:
 #### Favorite proposal: Proposal 2
 
 
-### [2. Consolidate / and /api/v1](https://github.com/bigchaindb/bigchaindb/issues/1147)
+### [3. Consolidate / and /api/v1](https://github.com/bigchaindb/bigchaindb/issues/1147)
 
 
 #### Proposal 1
@@ -329,7 +434,7 @@ Now that's weird.
 #### Personal favorite: Proposal 1
 
 
-### [3. Remove host and port from URLs in API and root endpoint](https://github.com/bigchaindb/bigchaindb/issues/1141)
+### [4. Remove host and port from URLs in API and root endpoint](https://github.com/bigchaindb/bigchaindb/issues/1141)
 
 
 Root and API endpoint contains redundant information (host and port).
@@ -389,7 +494,7 @@ Contra:
 #### Personal favorite: Proposal 1
 
 
-### [4. /outputs?unspents= returns unexpected results](https://github.com/bigchaindb/bigchaindb/issues/1214)
+### [5. /outputs?unspents= returns unexpected results](https://github.com/bigchaindb/bigchaindb/issues/1214)
 
 `/outputs?unspent=false` and `/outputs?unspent=true` return same result when no
 outputs have been spent on a transaction. [@r-marques's
@@ -475,8 +580,7 @@ Contra:
 #### Personal favorite: Proposal 1
 
 
-
-### 5. A new /outputs endpoint
+### 6. A new /outputs endpoint
 
 It was put forth many times that the /outputs endpoint is currently flawed due
 to it's query limitations. A few examples include:
@@ -736,109 +840,6 @@ Notes:
 returned separately in two objects (see that second output's public key doesn't
 match first ones, but both have same `tx_id`)
 - Note that `amount` is included in `output`
-
-
-### [6. Inconsistent naming of short-hand ids](https://github.com/bigchaindb/bigchaindb/issues/1134)
-
-Current naming of ids according to [HTTP API documentation
-(master)](https://docs.bigchaindb.com/projects/server/en/master/http-client-server-api.html)
-and the [Websocket Event Stream API
-(master)](https://docs.bigchaindb.com/projects/server/en/master/websocket-event-stream-api.html):
-
-- Transaction id:
-    - `tx_id` in query parameters and Event Stream API
-    - `txid` in `transaction.inputs.fulfills`
-    - `id` in transaction payload
-    - `id` in `/assets?search={text_search}` (this is also the asset's id!)
-    - `ID` in prose text
-- Asset id:
-    - `asset_id` in query parameters and Event Stream API
-    - `id` in `transaction.asset` payload
-    - `id` in `/assets?search={text_search}` (this is also the transaction's id!)
-- Fulfillment id:
-    - `type_id` in `transaction.outputs.condition.details`
-- Block id:
-    - `block_id` in query parameters and Event Stream API
-    - `id` in the block payload
-
-General inconsistency: `block_id`, `asset_id` and `tx_id` instead of
-`transaction_id`.
-
-
-Even though, this shouldn't be an argument (as we see the HTTP API descoped
-from the underlying implementation):
-
-- [`txid` usage in bdb-server](https://docs.bigchaindb.com/projects/server/en/master/websocket-event-stream-api.html)
-- [`txid` usage in bdb-server](https://docs.bigchaindb.com/projects/server/en/master/websocket-event-stream-api.html)
-
-
-#### Proposal 1
-
-- Call any identifier that points to an object externally is a `object_id`
-    - e.g. `transaction.inputs.fulfills.tx_id` points to an external tx, hence
-      `_`
-- Call any identifier within the data (describing the data) an `id`
-    - `transaction.id`, points to itself, hence no need for redundancy in it's
-      name
-
-Unfortunately, these rules still leave inconsistencies that are hard to
-resolve. Assuming we could agree on `asset_id` and `tx_id` easily, they could
-be a nice way forward, as it would mean that we don't have to change a lot of
-code:
-- `transaction.inputs.fulfills.txid` ==> `transaction.inputs.fulfills.tx_id`
-- `id` in /assets?search={text_search} ==> `tx_id` or `asset_id`, as it's the
-  /asset endpoint, `asset_id` seems more logical
-- In a TRANSFER transaction `transaction.asset.id` would become
-`transaction.asset.tx_id` or `transaction.asset.asset_id`
-
-Pros:
-
-- Little changes to code
-
-Contra:
-
-- `asset_id` and `tx_id` need to be resolved for specific cases (mentioned
-above) (even though it's not a showstopper)
-- Doesn't resolve `tx_id` and `transaction_id` (but can potentially)
-
-
-#### Proposal 2
-
-- Everything becomes an `id`.
-
-Changes include:
-
-- All query parameters become `id`
-- `transaction.outputs.condition.details.type_id` ==>
-  `transaction.outputs.condition.details.id` (hard to achieve fix)
-- `asset_id`, `tx_id` and `block_id` couldn't be told apart in Websocket Event
-  Stream API anymore unless message becomes `{block: {id: "abc"}, asset: {id:
-  "def"}, ...}` (which would be OK IMO)
-
-Pros:
-
-- Clean approach
-- Easy to apply (also for the future
-- Does resolve `tx_id` and `transaction_id`
-- `id` is usually clear from context
-
-Contra:
-
-- Lots of changes to be applied to core, drivers, etc.
-
-
-#### Proposal 3
-
-- Everything becomes `object_id` *or* everything becomes `objectid`
-
-Contra:
-
-- There is huge redundancy in naming e.g. `transaction.tx_id`, etc.
-- Lots of changes to be applied
-- Doesn't resolve `tx_id` and `transaction_id` (but can potentially)
-
-
-#### Personal favorite: Proposal 1 then Proposal 2
 
 
 ### [7. /statuses?tx_id needs to return status invalid](https://github.com/bigchaindb/bigchaindb/issues/1039)
