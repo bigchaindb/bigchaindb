@@ -8,7 +8,7 @@ BigchainDB Server Documentation
    introduction
    quickstart
    production-nodes/index
-   clusters-feds/index
+   clusters
    production-deployment-template/index
    dev-and-test/index
    server-reference/index

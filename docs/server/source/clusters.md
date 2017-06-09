@@ -1,4 +1,4 @@
-# Set Up a Cluster
+# Clusters
 
 This section is about how to set up a BigchainDB cluster where each node is operated by a different operator.
 
