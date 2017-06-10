@@ -233,6 +233,7 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
             'fmt_logfile': log_config['formatters']['file']['format'],
             'granular_levels': {},
         },
+        'graphite': {'host': 'localhost'},
     }
 
 

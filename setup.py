@@ -80,6 +80,7 @@ install_requires = [
     'pyyaml~=3.12',
     'aiohttp~=2.0',
     'python-rapidjson-schema==0.1.1',
+    'statsd==3.2.1',
 ]
 
 setup(
