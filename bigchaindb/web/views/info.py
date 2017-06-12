@@ -15,12 +15,11 @@ class RootIndex(Resource):
             'https://docs.bigchaindb.com/projects/server/en/v',
             version.__version__ + '/'
         ]
-        api_v1_url = base_url() + 'api/v1/'
         return flask.jsonify({
-            '_links': {
-                'docs': ''.join(docs_url),
-                'api_v1': api_v1_url,
+            'api': {
+                'v1': get_api_v1_info()
             },
+            'docs': ''.join(docs_url),
             'software': 'BigchainDB',
             'version': version.__version__,
             'public_key': bigchaindb.config['keypair']['public'],
@@ -30,19 +29,27 @@ class RootIndex(Resource):
 
 class ApiV1Index(Resource):
     def get(self):
-        api_root = base_url() + 'api/v1/'
-        websocket_root = base_ws_uri() + EVENTS_ENDPOINT
-        docs_url = [
-            'https://docs.bigchaindb.com/projects/server/en/v',
-            version.__version__,
-            '/http-client-server-api.html',
-        ]
-        return flask.jsonify({
-            '_links': {
-                'docs': ''.join(docs_url),
-                'self': api_root,
-                'statuses': api_root + 'statuses/',
-                'transactions': api_root + 'transactions/',
-                'streams_v1': websocket_root,
-            },
-        })
+        return flask.jsonify(get_api_v1_info())
+
+
+def get_api_v1_info():
+    """
+    Return a dict with all the information specific for the v1 of the
+    api.
+    """
+    api_root = base_url() + 'api/v1/'
+    websocket_root = base_ws_uri() + EVENTS_ENDPOINT
+    docs_url = [
+        'https://docs.bigchaindb.com/projects/server/en/v',
+        version.__version__,
+        '/http-client-server-api.html',
+    ]
+
+    return {
+        'docs': ''.join(docs_url),
+        'transactions': api_root + 'transactions/',
+        'statuses': api_root + 'statuses/',
+        'assets': api_root + 'assets/',
+        'outputs': api_root + 'outputs/',
+        'streams_v1': websocket_root
+    }
