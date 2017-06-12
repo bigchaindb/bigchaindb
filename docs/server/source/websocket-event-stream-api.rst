@@ -26,16 +26,14 @@ It's a good idea to make sure that the node you're connecting with
 has advertised support for the Event Stream API. To do so, send a HTTP GET
 request to the node's :ref:`API Root Endpoint` 
 (e.g. ``http://localhost:9984/api/v1/``) and check that the
-response contains a ``streams_<version>`` property in ``_links``:
+response contains a ``streams`` property:
 
 .. code:: JSON
 
     {
-      "_links": {
-         ...,
-         "streams_v1": "ws://example.com:9985/api/v1/streams/valid_tx",
-         ...
-      }
+     ...,
+     "streams": "ws://example.com:9985/api/v1/streams/valid_tx",
+     ...
     }
 
 

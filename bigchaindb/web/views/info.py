@@ -51,5 +51,5 @@ def get_api_v1_info():
         'statuses': api_root + 'statuses/',
         'assets': api_root + 'assets/',
         'outputs': api_root + 'outputs/',
-        'streams_v1': websocket_root
+        'streams': websocket_root
     }
