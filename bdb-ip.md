@@ -487,6 +487,7 @@ Contra:
 
 
 #### Personal favorite: Proposal 1
+#### Alberto: No configuration
 
 
 ### [5. /outputs?unspents= returns unexpected results](https://github.com/bigchaindb/bigchaindb/issues/1214)
@@ -841,6 +842,9 @@ match first ones, but both have same `tx_id`)
 - Note that `amount` is included in `output`
 
 
+#### Alberto: key and value is good, expand endpoint with queryparams later, safe=false also later
+
+
 ### [7. /statuses?tx_id needs to return status invalid](https://github.com/bigchaindb/bigchaindb/issues/1039)
 
 Contra:
@@ -860,6 +864,7 @@ transactions and since only blocks are marked invalid, transactions are not](htt
 
 
 #### Personal favorite: Proposal 1 lol
+#### Alberto: return 404, create a general use case: Proposal 1
 
 
 ### [8. /transaction/ID needs status flag](https://github.com/bigchaindb/bigchaindb/issues/1038)
@@ -959,6 +964,7 @@ Contra:
 
 
 #### Personal favorite: Proposal 2
+#### Alberto: Proposal 2
 
 
 ### [9. /transaction/id and /transaction?asset_id?operation=CREATE return same content](https://github.com/bigchaindb/bigchaindb/issues/1129)
@@ -994,3 +1000,4 @@ Notice the functionality described is [anyways included in the HTTP API
 already.](https://docs.bigchaindb.com/projects/server/en/latest/http-client-server-api.html#get--api-v1-blocks?tx_id=tx_id&status=UNDECIDED|VALID|INVALID)
 
 #### Favorite Proposal: Proposal 1
+#### Alberto: Proposal 1
