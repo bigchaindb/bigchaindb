@@ -265,6 +265,7 @@ def test_ssl_initialize_replica_set(mock_ssl_cmd_line_opts, certs_dir):
 
 def test_ssl_invalid_configuration(db_host, db_port, certs_dir):
     from bigchaindb.backend import connect
+    from bigchaindb.common.exceptions import ConfigurationError
 
     config = {
         'backend': 'mongodb',
@@ -280,7 +281,7 @@ def test_ssl_invalid_configuration(db_host, db_port, certs_dir):
         'keyfile_passphrase': ''
     }
 
-    with pytest.raises(pymongo.errors.ConfigurationError):
+    with pytest.raises(ConfigurationError):
         conn = connect(**config)
         assert conn.conn._topology_settings.replica_set_name == config['replicaset']
 

@@ -40,6 +40,8 @@ def connect(backend=None, host=None, port=None, name=None, max_tries=None,
         :exc:`~ConnectionError`: If the connection to the database fails.
         :exc:`~ConfigurationError`: If the given (or defaulted) :attr:`backend`
             is not supported or could not be loaded.
+        :exc:`~AuthenticationError`: If there is a OperationFailure due to
+            Authentication failure after connecting to the database.
     """
 
     backend = backend or bigchaindb.config['database']['backend']

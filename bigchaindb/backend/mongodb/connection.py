@@ -1,5 +1,6 @@
 import time
 import logging
+from ssl import CERT_REQUIRED
 
 import pymongo
 
@@ -11,8 +12,6 @@ from bigchaindb.backend.exceptions import (DuplicateKeyError,
                                            ConnectionError,
                                            AuthenticationError)
 from bigchaindb.backend.connection import Connection
-
-from ssl import CERT_REQUIRED
 
 logger = logging.getLogger(__name__)
 
@@ -73,39 +72,14 @@ class MongoDBConnection(Connection):
         except pymongo.errors.OperationFailure as exc:
             raise OperationError from exc
 
-    def _secure_connect(self):
-        """
-        _secure_connect() checks if the implied ssl=True parameter is not False,
-        that is, if the configuration specifies ca_cert, certfile, keyfile and
-        crl, then the ssl parameter needs to be set to True.
-        If not, it raises a ConfigurationError.
-
-        Raises:
-            :exc:`~ConfigurationError`: If ssl=false in the specified configuration.
-        """
-
-        logger.info('Connecting to MongoDB over TLS/SSL...')
-        client = pymongo.MongoClient(self.host,
-                                     self.port,
-                                     replicaset=self.replicaset,
-                                     serverselectiontimeoutms=self.connection_timeout,
-                                     ssl=self.ssl,
-                                     ssl_ca_certs=self.ca_cert,
-                                     ssl_certfile=self.certfile,
-                                     ssl_keyfile=self.keyfile,
-                                     ssl_pem_passphrase=self.keyfile_passphrase,
-                                     ssl_crlfile=self.crlfile,
-                                     ssl_cert_reqs=CERT_REQUIRED)
-        return client
-
     def _connect(self):
         """Try to connect to the database.
-        This method reads the configuration options and calls
-        _secure_connect(), if required
 
         Raises:
             :exc:`~ConnectionError`: If the connection to the database
                 fails.
+            :exc:`~AuthenticationError`: If there is a OperationFailure due to
+                Authentication failure after connecting to the database.
         """
 
         try:
@@ -125,11 +99,11 @@ class MongoDBConnection(Connection):
                                    self.keyfile_passphrase,
                                    self.crlfile)
 
-            # The presence of ca_cert, certfile, keyfile, crlfile implies the
-            # use of certificates for TLS connectivity.
             # FYI: the connection process might raise a
             # `ServerSelectionTimeoutError`, that is a subclass of
             # `ConnectionFailure`.
+            # The presence of ca_cert, certfile, keyfile, crlfile implies the
+            # use of certificates for TLS connectivity.
             if self.ca_cert is None or self.certfile is None or \
                     self.keyfile is None or self.crlfile is None:
                 client = pymongo.MongoClient(self.host,
@@ -138,7 +112,18 @@ class MongoDBConnection(Connection):
                                              serverselectiontimeoutms=self.connection_timeout,
                                              ssl=self.ssl)
             else:
-                client = self._secure_connect()
+                logger.info('Connecting to MongoDB over TLS/SSL...')
+                client = pymongo.MongoClient(self.host,
+                                             self.port,
+                                             replicaset=self.replicaset,
+                                             serverselectiontimeoutms=self.connection_timeout,
+                                             ssl=self.ssl,
+                                             ssl_ca_certs=self.ca_cert,
+                                             ssl_certfile=self.certfile,
+                                             ssl_keyfile=self.keyfile,
+                                             ssl_pem_passphrase=self.keyfile_passphrase,
+                                             ssl_crlfile=self.crlfile,
+                                             ssl_cert_reqs=CERT_REQUIRED)
 
             # authenticate with the specified user if the connection succeeds
             if self.login is not None and self.password is not None:
@@ -146,13 +131,16 @@ class MongoDBConnection(Connection):
 
             return client
 
-        # `initialize_replica_set` might raise `ConnectionFailure` or `OperationFailure`.
+        # `initialize_replica_set` might raise `ConnectionFailure`,
+        # `OperationFailure` or `ConfigurationError`.
         except (pymongo.errors.ConnectionFailure,
                 pymongo.errors.OperationFailure) as exc:
             logger.info('Exception in _connect(): {}'.format(exc))
             if "Authentication fail" in str(exc):
                 raise AuthenticationError() from exc
             raise ConnectionError() from exc
+        except pymongo.errors.ConfigurationError as exc:
+            raise ConfigurationError from exc
 
 
 def initialize_replica_set(host, port, connection_timeout, dbname, ssl, login,
@@ -165,6 +153,8 @@ def initialize_replica_set(host, port, connection_timeout, dbname, ssl, login,
     # `backend.connect` will connect you to a replica set but this fails if
     # you try to connect to a replica set that is not yet initialized
     try:
+        # The presence of ca_cert, certfile, keyfile, crlfile implies the
+        # use of certificates for TLS connectivity.
         if ca_cert is None or certfile is None or keyfile is None or \
                 crlfile is None:
             conn = pymongo.MongoClient(host,
@@ -187,6 +177,8 @@ def initialize_replica_set(host, port, connection_timeout, dbname, ssl, login,
     except (pymongo.errors.ConnectionFailure,
             pymongo.errors.OperationFailure) as exc:
         raise ConnectionError() from exc
+    except pymongo.errors.ConfigurationError as exc:
+        raise ConfigurationError from exc
 
     if login is not None and password is not None:
         conn[dbname].authenticate(login, password)

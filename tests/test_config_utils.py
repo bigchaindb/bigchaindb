@@ -162,20 +162,31 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request, certs_d
         },
     }
 
-    if DATABASE_BACKEND == 'mongodb-ssl':
-        backend = 'mongodb'
-    else:
-        backend = DATABASE_BACKEND
-
     monkeypatch.setattr('bigchaindb.config_utils.file_config', lambda *args, **kwargs: file_config)
-    monkeypatch.setattr('os.environ', {'BIGCHAINDB_DATABASE_NAME': DATABASE_NAME,
-                                       'BIGCHAINDB_DATABASE_PORT': str(DATABASE_PORT),
-                                       'BIGCHAINDB_DATABASE_BACKEND': backend,
-                                       'BIGCHAINDB_SERVER_BIND': SERVER_BIND,
-                                       'BIGCHAINDB_WSSERVER_HOST': WSSERVER_HOST,
-                                       'BIGCHAINDB_WSSERVER_PORT': WSSERVER_PORT,
-                                       'BIGCHAINDB_KEYRING': KEYRING,
-                                       'BIGCHAINDB_LOG_FILE': LOG_FILE})
+
+    if DATABASE_BACKEND == 'mongodb-ssl':
+        monkeypatch.setattr('os.environ', {'BIGCHAINDB_DATABASE_NAME': DATABASE_NAME,
+                                           'BIGCHAINDB_DATABASE_PORT': str(DATABASE_PORT),
+                                           'BIGCHAINDB_DATABASE_BACKEND': 'mongodb',
+                                           'BIGCHAINDB_SERVER_BIND': SERVER_BIND,
+                                           'BIGCHAINDB_WSSERVER_HOST': WSSERVER_HOST,
+                                           'BIGCHAINDB_WSSERVER_PORT': WSSERVER_PORT,
+                                           'BIGCHAINDB_KEYRING': KEYRING,
+                                           'BIGCHAINDB_LOG_FILE': LOG_FILE,
+                                           'BIGCHAINDB_DATABASE_CA_CERT': certs_dir + '/ca.crt',
+                                           'BIGCHAINDB_DATABASE_CRLFILE': certs_dir + '/crl.pem',
+                                           'BIGCHAINDB_DATABASE_CERTFILE': certs_dir + '/test_bdb_ssl.crt',
+                                           'BIGCHAINDB_DATABASE_KEYFILE': certs_dir + '/test_bdb_ssl.key',
+                                           'BIGCHAINDB_DATABASE_KEYFILE_PASSPHRASE': None})
+    else:
+        monkeypatch.setattr('os.environ', {'BIGCHAINDB_DATABASE_NAME': DATABASE_NAME,
+                                           'BIGCHAINDB_DATABASE_PORT': str(DATABASE_PORT),
+                                           'BIGCHAINDB_DATABASE_BACKEND': DATABASE_BACKEND,
+                                           'BIGCHAINDB_SERVER_BIND': SERVER_BIND,
+                                           'BIGCHAINDB_WSSERVER_HOST': WSSERVER_HOST,
+                                           'BIGCHAINDB_WSSERVER_PORT': WSSERVER_PORT,
+                                           'BIGCHAINDB_KEYRING': KEYRING,
+                                           'BIGCHAINDB_LOG_FILE': LOG_FILE})
 
     import bigchaindb
     from bigchaindb import config_utils
@@ -224,7 +235,7 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request, certs_d
         'crlfile': certs_dir + '/crl.pem',
         'certfile': certs_dir + '/test_bdb_ssl.crt',
         'keyfile': certs_dir + '/test_bdb_ssl.key',
-        'keyfile_passphrase': ''
+        'keyfile_passphrase': None
     }
 
     database = {}

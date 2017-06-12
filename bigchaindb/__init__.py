@@ -47,7 +47,7 @@ _database_mongodb = {
     'max_tries': 3,
     'ssl': bool(os.environ.get('BIGCHAINDB_DATABASE_SSL', False)),
     'ca_cert': os.environ.get('BIGCHAINDB_DATABASE_CA_CERT'),
-    'certfile': os.environ.get('BIGCHIANDB_DATABASE_CERTFILE'),
+    'certfile': os.environ.get('BIGCHAINDB_DATABASE_CERTFILE'),
     'keyfile': os.environ.get('BIGCHAINDB_DATABASE_KEYFILE'),
     'keyfile_passphrase': os.environ.get('BIGCHAINDB_DATABASE_KEYFILE_PASSPHRASE'),
     'crlfile': os.environ.get('BIGCHAINDB_DATABASE_CRLFILE')
