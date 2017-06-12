@@ -38,17 +38,18 @@ All issues are ordered in a dependency graph to avoid backtracking in decision
 making and merge conflicts in implementation (root nodes do not have
 dependencies):
 
-- 0. What does "breaking change" mean
-    - 1. Inconsistent naming of short-hand ids
-    - 2. Inconsistency in using relative links
-        - 3. Consolidate / and /api/v1
-            - 4. Remove host and port from URLs in API and root endpoint
-        - 5. /outputs?unspents= returns unexpected results
-            - 6. A new /outputs endpoint
-- 7. /statuses?tx_id needs to return status invalid
-- 8. /transaction/ID needs status flag
-- 9. /transaction/id and /transaction?asset_id?operation=CREATE return same content
-- 10. Include block_id and transaction status in /transactions/id
+0. What does "breaking change" mean
+    0.5 tx_id or transaction_id
+    1. Inconsistent naming of short-hand ids
+    2. Inconsistency in using relative links
+        3. Consolidate / and /api/v1
+            4. Remove host and port from URLs in API and root endpoint
+        5. /outputs?unspents= returns unexpected results
+            6. A new /outputs endpoint
+7. /statuses?tx_id needs to return status invalid
+8. /transaction/ID needs status flag
+9. /transaction/id and /transaction?asset_id?operation=CREATE return same content
+10. Include block_id and transaction status in /transactions/id
 
 
 ## Second task
@@ -105,6 +106,56 @@ Proposal 1, as we only have two official driver and several users are in the
 process of building drivers.
 
 
+### 0.5 tx_id/txid or transaction_id
+
+General inconsistency: `block_id`, `asset_id` and `tx_id` instead of
+`transaction_id`.
+
+
+#### Proposal 1
+
+- Leave everything as is and tolerate inconsistency
+
+Pro:
+
+- no work
+
+Contra:
+
+- inconsistency
+
+
+#### Proposal 2
+
+- Rename all occurrences of `txid` and `tx_id` to `transaction_id`
+
+Pro:
+
+- remove inconsistency
+
+Contra:
+
+- work
+- long word to write
+
+
+#### Proposal 3
+
+- Rename all occurrences to `tx_id`
+
+Pro:
+
+- practical solution to inconsistency
+
+
+Contra:
+
+- inconsistency between `tx_id` and `api/v1/transactions`
+
+
+#### Favorite Proposal: 3
+
+
 ### [1. Inconsistent naming of short-hand ids](https://github.com/bigchaindb/bigchaindb/issues/1134)
 
 Current naming of ids according to [HTTP API documentation
@@ -117,7 +168,6 @@ and the [Websocket Event Stream API
     - `txid` in `transaction.inputs.fulfills`
     - `id` in transaction payload
     - `id` in `/assets?search={text_search}` (this is also the asset's id!)
-    - `ID` in prose text
 - Asset id:
     - `asset_id` in query parameters and Event Stream API
     - `id` in `transaction.asset` payload
@@ -126,20 +176,11 @@ and the [Websocket Event Stream API
     - `block_id` in query parameters and Event Stream API
     - `id` in the block payload
 
-General inconsistency: `block_id`, `asset_id` and `tx_id` instead of
-`transaction_id`.
 
 [As pointed out by
 @r-marques](https://github.com/bigchaindb/bigchaindb/pull/1522#discussion_r120815083),
 we'll ignore `type_id` in a Crypto-condition fulfillment for the scope of this
 discussion.
-
-
-Even though, this shouldn't be an argument (as we see the HTTP API descoped
-from the underlying implementation):
-
-- [`txid` usage in bdb-server](https://github.com/bigchaindb/bigchaindb/search?utf8=%E2%9C%93&q=txid&type=)
-- [`tx_id` usage in bdb-server](https://github.com/bigchaindb/bigchaindb/search?utf8=%E2%9C%93&q=tx_id&type=)
 
 
 #### Proposal 1
@@ -236,7 +277,7 @@ notice `_links` being used here (both blocks and transactions).
 This pattern is not repeated in `/assets`, the events API, `/blocks?tx_id`
 
 
-#### Proposal 1
+#### Proposal 1 (with `_links`)
 
 - Remove all relative links and usage of `_links` when linking to specific
   resources (doesn't count for `_links` in `/` and `/api/v1` endpoint.
@@ -248,7 +289,7 @@ This pattern is not repeated in `/assets`, the events API, `/blocks?tx_id`
   "abc", "output": 0, ...}`
 
 
-#### Proposal 2
+#### Proposal 2 (without `_links`)
 
 - Remove *ALL* `_links` and just point (links would still stay, but extra
   nesting via `_links` would be removed)
@@ -258,37 +299,6 @@ This pattern is not repeated in `/assets`, the events API, `/blocks?tx_id`
 - In `/outputs` instead of relatively linking to `../transactions/...`, return
   list of objects like (syntax not for debate here, see issue 8.): `{"tx_id":
   "abc", "output": 0, ...}`
-
-An example for `/` (assuming we don't do anything with issue 6.):
-
-```
-{
-    "api_v1": "http://example.com:9984/api/v1/",
-    "docs": "https://docs.bigchaindb.com/projects/server/en/v0.11.0.dev/"
-    "keyring": [
-        "6qHyZew94NMmUTYyHnkZsB8cxJYuRNEiEpXHe1ih9QX3",
-        "AdDuyrTyjrDt935YnFu4VBCVDhHtY2Y6rcy7x2TFeiRi"
-    ],
-    "public_key": "NC8c8rYcAhyKVpx1PCV65CBmyq4YUbLysy3Rqrg8L8mz",
-    "software": "BigchainDB",
-    "version": "0.11.0.dev"
-}
-```
-
-An example for `/api/v1` (assuming we don't do anything with issue 6.):
-
-
-```
-{
-    "docs": "https://docs.bigchaindb.com/projects/server/en/v0.11.0.dev/http-client-server-api.html",
-    "self": "http://example.com:9984/api/v1/",
-    "statuses": "http://example.com:9984/api/v1/statuses/",
-    "streams_v1": "ws://example.com:9985/api/v1/streams/valid_tx",
-    "transactions": "http://example.com:9984/api/v1/transactions/"
-}
-```
-
-You get the idea.
 
 
 Pro:
@@ -320,7 +330,7 @@ Contra:
   with JSON-LD on the rise
 
 
-#### Favorite proposal: Proposal 2
+#### Favorite proposal: Proposal 1
 
 
 ### [3. Consolidate / and /api/v1](https://github.com/bigchaindb/bigchaindb/issues/1147)
@@ -374,26 +384,26 @@ instead.
 ```
 
 
-#### Proposal X
+#### Proposal 3 (by team)
 
-I tried other proposals, but they all looked weird to me:
-
+- `/` becomes:
 
 ```
 {
-    "_links": {
-        "api_v1": {
+    "api": {
+        "v1": {
             "docs": "https://docs.bigchaindb.com/projects/server/en/v0.11.0.dev/http-client-server-api.html",
-            "self": "http://example.com:9984/api/v1/",
             "statuses": "http://example.com:9984/api/v1/statuses/",
             "streams_v1": "ws://example.com:9985/api/v1/streams/valid_tx",
-            "transactions": "http://example.com:9984/api/v1/transactions/"
+            "transactions": "http://example.com:9984/api/v1/transactions/",
+            "assets": "http://example.com:9984/api/v1/assets/",
+            "outputs": "http://example.com:9984/api/v1/outputs/"
         }
-        "docs": "https://docs.bigchaindb.com/projects/server/en/v0.11.0.dev/",
     },
+    "docs": "https://docs.bigchaindb.com/projects/server/en/v0.11.0.dev/",
     "keyring": [
         "6qHyZew94NMmUTYyHnkZsB8cxJYuRNEiEpXHe1ih9QX3",
-    "AdDuyrTyjrDt935YnFu4VBCVDhHtY2Y6rcy7x2TFeiRi"
+        "AdDuyrTyjrDt935YnFu4VBCVDhHtY2Y6rcy7x2TFeiRi"
     ],
     "public_key": "NC8c8rYcAhyKVpx1PCV65CBmyq4YUbLysy3Rqrg8L8mz",
     "software": "BigchainDB",
@@ -401,36 +411,22 @@ I tried other proposals, but they all looked weird to me:
 }
 ```
 
-In this one, `_links.api_v1`, we forgot another nested `_links`. To fix:
+- and `/api/v1`:
+
 
 ```
 {
-    "_links": {
-        "api_v1": {
-            "_links": {
-                "docs": "https://docs.bigchaindb.com/projects/server/en/v0.11.0.dev/http-client-server-api.html",
-                "self": "http://example.com:9984/api/v1/",
-                "statuses": "http://example.com:9984/api/v1/statuses/",
-                "streams_v1": "ws://example.com:9985/api/v1/streams/valid_tx",
-                "transactions": "http://example.com:9984/api/v1/transactions/"
-            }
-        }
-        "docs": "https://docs.bigchaindb.com/projects/server/en/v0.11.0.dev/",
-    },
-    "keyring": [
-        "6qHyZew94NMmUTYyHnkZsB8cxJYuRNEiEpXHe1ih9QX3",
-    "AdDuyrTyjrDt935YnFu4VBCVDhHtY2Y6rcy7x2TFeiRi"
-    ],
-    "public_key": "NC8c8rYcAhyKVpx1PCV65CBmyq4YUbLysy3Rqrg8L8mz",
-    "software": "BigchainDB",
-    "version": "0.11.0.dev"
+    "docs": "https://docs.bigchaindb.com/projects/server/en/v0.11.0.dev/http-client-server-api.html",
+    "statuses": "http://example.com:9984/api/v1/statuses/",
+    "streams_v1": "ws://example.com:9985/api/v1/streams/valid_tx",
+    "transactions": "http://example.com:9984/api/v1/transactions/",
+    "assets": "http://example.com:9984/api/v1/assets/",
+    "outputs": "http://example.com:9984/api/v1/outputs/"
 }
+
 ```
 
-Now that's weird.
-
-
-#### Personal favorite: Proposal 1
+#### Personal favorite: Proposal 3
 
 
 ### [4. Remove host and port from URLs in API and root endpoint](https://github.com/bigchaindb/bigchaindb/issues/1141)
