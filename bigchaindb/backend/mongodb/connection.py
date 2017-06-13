@@ -1,5 +1,6 @@
 import time
 import logging
+from ssl import CERT_REQUIRED
 
 import pymongo
 
@@ -17,7 +18,10 @@ logger = logging.getLogger(__name__)
 
 class MongoDBConnection(Connection):
 
-    def __init__(self, replicaset=None, ssl=None, login=None, password=None, **kwargs):
+    def __init__(self, replicaset=None, ssl=None, login=None, password=None,
+                 ca_cert=None, certfile=None, keyfile=None,
+                 keyfile_passphrase=None, crlfile=None, **kwargs):
+
         """Create a new Connection instance.
 
         Args:
@@ -32,6 +36,11 @@ class MongoDBConnection(Connection):
         self.ssl = ssl if ssl is not None else bigchaindb.config['database'].get('ssl', False)
         self.login = login or bigchaindb.config['database'].get('login')
         self.password = password or bigchaindb.config['database'].get('password')
+        self.ca_cert = ca_cert or bigchaindb.config['database'].get('ca_cert', None)
+        self.certfile = certfile or bigchaindb.config['database'].get('certfile', None)
+        self.keyfile = keyfile or bigchaindb.config['database'].get('keyfile', None)
+        self.keyfile_passphrase = keyfile_passphrase or bigchaindb.config['database'].get('keyfile_passphrase', None)
+        self.crlfile = crlfile or bigchaindb.config['database'].get('crlfile', None)
 
     @property
     def db(self):
@@ -69,47 +78,109 @@ class MongoDBConnection(Connection):
         Raises:
             :exc:`~ConnectionError`: If the connection to the database
                 fails.
+            :exc:`~AuthenticationError`: If there is a OperationFailure due to
+                Authentication failure after connecting to the database.
+            :exc:`~ConfigurationError`: If there is a ConfigurationError while
+                connecting to the database.
         """
 
         try:
             # we should only return a connection if the replica set is
             # initialized. initialize_replica_set will check if the
             # replica set is initialized else it will initialize it.
-            initialize_replica_set(self.host, self.port, self.connection_timeout,
-                                   self.dbname, self.ssl, self.login, self.password)
+            initialize_replica_set(self.host,
+                                   self.port,
+                                   self.connection_timeout,
+                                   self.dbname,
+                                   self.ssl,
+                                   self.login,
+                                   self.password,
+                                   self.ca_cert,
+                                   self.certfile,
+                                   self.keyfile,
+                                   self.keyfile_passphrase,
+                                   self.crlfile)
 
-            # FYI: this might raise a `ServerSelectionTimeoutError`,
-            # that is a subclass of `ConnectionFailure`.
-            client = pymongo.MongoClient(self.host,
-                                         self.port,
-                                         replicaset=self.replicaset,
-                                         serverselectiontimeoutms=self.connection_timeout,
-                                         ssl=self.ssl)
+            # FYI: the connection process might raise a
+            # `ServerSelectionTimeoutError`, that is a subclass of
+            # `ConnectionFailure`.
+            # The presence of ca_cert, certfile, keyfile, crlfile implies the
+            # use of certificates for TLS connectivity.
+            if self.ca_cert is None or self.certfile is None or \
+                    self.keyfile is None or self.crlfile is None:
+                client = pymongo.MongoClient(self.host,
+                                             self.port,
+                                             replicaset=self.replicaset,
+                                             serverselectiontimeoutms=self.connection_timeout,
+                                             ssl=self.ssl)
+            else:
+                logger.info('Connecting to MongoDB over TLS/SSL...')
+                client = pymongo.MongoClient(self.host,
+                                             self.port,
+                                             replicaset=self.replicaset,
+                                             serverselectiontimeoutms=self.connection_timeout,
+                                             ssl=self.ssl,
+                                             ssl_ca_certs=self.ca_cert,
+                                             ssl_certfile=self.certfile,
+                                             ssl_keyfile=self.keyfile,
+                                             ssl_pem_passphrase=self.keyfile_passphrase,
+                                             ssl_crlfile=self.crlfile,
+                                             ssl_cert_reqs=CERT_REQUIRED)
 
+            # authenticate with the specified user if the connection succeeds
             if self.login is not None and self.password is not None:
                 client[self.dbname].authenticate(self.login, self.password)
 
             return client
 
-        # `initialize_replica_set` might raise `ConnectionFailure` or `OperationFailure`.
+        # `initialize_replica_set` might raise `ConnectionFailure`,
+        # `OperationFailure` or `ConfigurationError`.
         except (pymongo.errors.ConnectionFailure,
                 pymongo.errors.OperationFailure) as exc:
+            logger.info('Exception in _connect(): {}'.format(exc))
             if "Authentication fail" in str(exc):
                 raise AuthenticationError() from exc
             raise ConnectionError() from exc
+        except pymongo.errors.ConfigurationError as exc:
+            raise ConfigurationError from exc
 
 
-def initialize_replica_set(host, port, connection_timeout, dbname, ssl, login, password):
+def initialize_replica_set(host, port, connection_timeout, dbname, ssl, login,
+                           password, ca_cert, certfile, keyfile,
+                           keyfile_passphrase, crlfile):
     """Initialize a replica set. If already initialized skip."""
 
     # Setup a MongoDB connection
     # The reason we do this instead of `backend.connect` is that
     # `backend.connect` will connect you to a replica set but this fails if
     # you try to connect to a replica set that is not yet initialized
-    conn = pymongo.MongoClient(host=host,
-                               port=port,
-                               serverselectiontimeoutms=connection_timeout,
-                               ssl=ssl)
+    try:
+        # The presence of ca_cert, certfile, keyfile, crlfile implies the
+        # use of certificates for TLS connectivity.
+        if ca_cert is None or certfile is None or keyfile is None or \
+                crlfile is None:
+            conn = pymongo.MongoClient(host,
+                                       port,
+                                       serverselectiontimeoutms=connection_timeout,
+                                       ssl=ssl)
+        else:
+            logger.info('Connecting to MongoDB over TLS/SSL...')
+            conn = pymongo.MongoClient(host,
+                                       port,
+                                       serverselectiontimeoutms=connection_timeout,
+                                       ssl=ssl,
+                                       ssl_ca_certs=ca_cert,
+                                       ssl_certfile=certfile,
+                                       ssl_keyfile=keyfile,
+                                       ssl_pem_passphrase=keyfile_passphrase,
+                                       ssl_crlfile=crlfile,
+                                       ssl_cert_reqs=CERT_REQUIRED)
+
+    except (pymongo.errors.ConnectionFailure,
+            pymongo.errors.OperationFailure) as exc:
+        raise ConnectionError() from exc
+    except pymongo.errors.ConfigurationError as exc:
+        raise ConfigurationError from exc
 
     if login is not None and password is not None:
         conn[dbname].authenticate(login, password)
@@ -129,6 +200,10 @@ def initialize_replica_set(host, port, connection_timeout, dbname, ssl, login, p
     else:
         _wait_for_replica_set_initialization(conn)
         logger.info('Initialized replica set')
+    finally:
+        if conn is not None:
+            logger.info('Closing initial connection to MongoDB')
+            conn.close()
 
 
 def _check_replica_set(conn):

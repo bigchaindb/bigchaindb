@@ -28,6 +28,13 @@ instructions for how to do that.
 
 Next, make sure you have RethinkDB or MongoDB running in the background. You
 can run RethinkDB using `rethinkdb --daemon` or MongoDB using `mongod --replSet=bigchain-rs`.
+If you wish to test with a TLS/SSL enabled MongoDB, use the command
+```text
+mongod --replSet=bigchain-rs --sslAllowInvalidHostnames --sslMode=requireSSL \
+-sslCAFile=bigchaindb/tests/backend/mongodb-ssl/certs/ca.crt \
+--sslCRLFile=bigchaindb/tests/backend/mongodb-ssl/certs/crl.pem \
+--sslPEMKeyFile=bigchaindb/tests/backend/mongodb-ssl/certs/test_mdb_ssl_cert_and_key.pem
+```
 
 The `pytest` command has many options. If you want to learn about all the
 things you can do with pytest, see [the pytest
@@ -56,7 +63,12 @@ python setup.py test
 
 **Note**: the above pytest commands default to use RethinkDB as the backend. If
 you wish to run the tests against MongoDB add the `--database-backend=mongodb`
-to the `pytest` command.
+to the `pytest` command. If you wish to run tests against a TLS/SSL enabled
+MongoDB instance (as mentioned above), use the command
+```text
+pytest -v --database-backend=mongodb-ssl -m bdb_ssl
+```
+
 
 How does `python setup.py test` work? The documentation for [pytest-runner](https://pypi.python.org/pypi/pytest-runner) explains.
 

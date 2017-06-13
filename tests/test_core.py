@@ -3,9 +3,13 @@ import pytest
 
 @pytest.fixture
 def config(request, monkeypatch):
+    backend = request.config.getoption('--database-backend')
+    if backend == 'mongodb-ssl':
+        backend = 'mongodb'
+
     config = {
         'database': {
-            'backend': request.config.getoption('--database-backend'),
+            'backend': backend,
             'host': 'host',
             'port': 28015,
             'name': 'bigchain',
