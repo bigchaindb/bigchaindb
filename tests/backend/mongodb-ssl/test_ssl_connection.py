@@ -110,6 +110,7 @@ def test_ssl_connection_with_credentials(mock_authenticate):
 
 def test_ssl_initialize_replica_set(mock_ssl_cmd_line_opts, certs_dir):
     from bigchaindb.backend.mongodb.connection import initialize_replica_set
+    from bigchaindb.common.exceptions import ConfigurationError
 
     with mock.patch.object(Database, 'command') as mock_command:
         mock_command.side_effect = [
@@ -145,6 +146,22 @@ def test_ssl_initialize_replica_set(mock_ssl_cmd_line_opts, certs_dir):
                                    1000,
                                    'dbname',
                                    True,
+                                   None,
+                                   None,
+                                   certs_dir + '/ca.crt',
+                                   certs_dir + '/test_bdb_ssl.crt',
+                                   certs_dir + '/test_bdb_ssl.key',
+                                   '',
+                                   certs_dir + '/crl.pem') is None
+
+        # pass an explicit ssl=False so that pymongo throws a
+        # ConfigurationError
+        with pytest.raises(ConfigurationError):
+            initialize_replica_set('host',
+                                   1337,
+                                   1000,
+                                   'dbname',
+                                   False,
                                    None,
                                    None,
                                    certs_dir + '/ca.crt',
