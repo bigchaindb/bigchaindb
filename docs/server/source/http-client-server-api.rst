@@ -42,9 +42,9 @@ that allows you to discover the BigchainDB API endpoints:
 Transactions
 -------------------
 
-.. http:get:: /api/v1/transactions/{tx_id}
+.. http:get:: /api/v1/transactions/{transaction_id}
 
-   Get the transaction with the ID ``tx_id``.
+   Get the transaction with the ID ``transaction_id``.
 
    This endpoint returns a transaction if it was included in a ``VALID`` block,
    if it is still waiting to be processed (``BACKLOG``) or is still in an
@@ -53,8 +53,8 @@ Transactions
    for a transaction and instances of that transaction are found only in
    invalid blocks, then the response will be ``404 Not Found``.
 
-   :param tx_id: transaction ID
-   :type tx_id: hex string
+   :param transaction_id: transaction ID
+   :type transaction_id: hex string
 
    **Example request**:
 
@@ -206,18 +206,18 @@ Statuses
    A link to the resource is also provided in the returned payload under
    ``_links``.
 
-   :query string tx_id: transaction ID
+   :query string transaction_id: transaction ID
    :query string block_id: block ID
 
    .. note::
 
-        Exactly one of the ``tx_id`` or ``block_id`` query parameters must be
+        Exactly one of the ``transaction_id`` or ``block_id`` query parameters must be
         used together with this endpoint (see below for getting `transaction
         statuses <#get--statuses?tx_id=tx_id>`_ and `block statuses
         <#get--statuses?block_id=block_id>`_).
 
 
-.. http:get:: /api/v1/statuses?tx_id={tx_id}
+.. http:get:: /api/v1/statuses?transaction_id={transaction_id}
 
     Get the status of a transaction.
 
@@ -288,8 +288,8 @@ Assets
 
 .. http:get:: /api/v1/assets?search={text_search}
 
-    Return all assets that match a given text search. The asset is returned
-    with the ``id`` of the transaction that created the asset.
+    Return all assets that match a given text search. The ``id`` of the asset
+    is the same ``id`` of the transaction that created the asset.
 
     If no assets match the text search it returns an empty list.
 
@@ -388,12 +388,12 @@ Advanced Usage
 The following endpoints are more advanced and meant for debugging and transparency purposes.
 
 More precisely, the `blocks endpoint <#blocks>`_ allows you to retrieve a block by ``block_id`` as well the list of blocks that
-a certain transaction with ``tx_id`` occured in (a transaction can occur in multiple ``invalid`` blocks until it
+a certain transaction with ``transaction_id`` occured in (a transaction can occur in multiple ``invalid`` blocks until it
 either gets rejected or validated by the system). This endpoint gives the ability to drill down on the lifecycle of a
 transaction
 
 The `votes endpoint <#votes>`_ contains all the voting information for a specific block. So after retrieving the
-``block_id`` for a given ``tx_id``, one can now simply inspect the votes that happened at a specific time on that block.
+``block_id`` for a given ``transaction_id``, one can now simply inspect the votes that happened at a specific time on that block.
 
 
 Blocks
@@ -429,8 +429,8 @@ Blocks
 .. http:get:: /api/v1/blocks
 
    The unfiltered ``/blocks`` endpoint without any query parameters returns a `400` status code.
-   The list endpoint should be filtered with a ``tx_id`` query parameter,
-   see the ``/blocks?tx_id={tx_id}&status={UNDECIDED|VALID|INVALID}``
+   The list endpoint should be filtered with a ``transaction_id`` query parameter,
+   see the ``/blocks?transaction_id={transaction_id}&status={UNDECIDED|VALID|INVALID}``
    `endpoint <#get--blocks?tx_id=tx_id&status=UNDECIDED|VALID|INVALID>`_.
 
 
@@ -449,9 +449,9 @@ Blocks
 
    :statuscode 400: The request wasn't understood by the server, e.g. just requesting ``/blocks`` without the ``block_id``.
 
-.. http:get:: /api/v1/blocks?tx_id={tx_id}&status={UNDECIDED|VALID|INVALID}
+.. http:get:: /api/v1/blocks?transaction_id={transaction_id}&status={UNDECIDED|VALID|INVALID}
 
-   Retrieve a list of ``block_id`` with their corresponding status that contain a transaction with the ID ``tx_id``.
+   Retrieve a list of ``block_id`` with their corresponding status that contain a transaction with the ID ``transaction_id``.
 
    Any blocks, be they ``UNDECIDED``, ``VALID`` or ``INVALID`` will be
    returned if no status filter is provided.
@@ -460,7 +460,7 @@ Blocks
        In case no block was found, an empty list and an HTTP status code
        ``200 OK`` is returned, as the request was still successful.
 
-   :query string tx_id: transaction ID *(required)*
+   :query string transaction_id: transaction ID *(required)*
    :query string status: Filter blocks by their status. One of ``VALID``, ``UNDECIDED`` or ``INVALID``.
 
    **Example request**:
@@ -475,8 +475,8 @@ Blocks
 
    :resheader Content-Type: ``application/json``
 
-   :statuscode 200: A list of blocks containing a transaction with ID ``tx_id`` was found and returned.
-   :statuscode 400: The request wasn't understood by the server, e.g. just requesting ``/blocks``, without defining ``tx_id``.
+   :statuscode 200: A list of blocks containing a transaction with ID ``transaction_id`` was found and returned.
+   :statuscode 400: The request wasn't understood by the server, e.g. just requesting ``/blocks``, without defining ``transaction_id``.
 
 
 Votes
