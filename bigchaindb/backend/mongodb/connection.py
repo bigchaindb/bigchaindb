@@ -80,6 +80,8 @@ class MongoDBConnection(Connection):
                 fails.
             :exc:`~AuthenticationError`: If there is a OperationFailure due to
                 Authentication failure after connecting to the database.
+            :exc:`~ConfigurationError`: If there is a ConfigurationError while
+                connecting to the database.
         """
 
         try:

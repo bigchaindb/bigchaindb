@@ -88,54 +88,6 @@ def test_ssl_get_connection_returns_the_correct_instance(db_host, db_port, certs
     assert conn.conn._topology_settings.replica_set_name == config['replicaset']
 
 
-@mock.patch('bigchaindb.backend.mongodb.connection.initialize_replica_set')
-@mock.patch('pymongo.MongoClient.__init__')
-@mock.patch('time.sleep')
-def test_ssl_connection_error(mock_sleep, mock_client, mock_init_repl_set):
-    from bigchaindb.backend import connect
-    from bigchaindb.backend.exceptions import ConnectionError
-
-    # force the driver to throw ConnectionFailure
-    # the mock on time.sleep is to prevent the actual sleep when running
-    # the tests
-    mock_client.side_effect = pymongo.errors.ConnectionFailure()
-
-    with pytest.raises(ConnectionError):
-        conn = connect()
-        conn.db
-
-    assert mock_client.call_count == 3
-
-
-@mock.patch('bigchaindb.backend.mongodb.connection.initialize_replica_set')
-@mock.patch('pymongo.MongoClient')
-def test_ssl_connection_run_errors(mock_client, mock_init_repl_set):
-    from bigchaindb.backend import connect
-    from bigchaindb.backend.exceptions import (DuplicateKeyError,
-                                               OperationError,
-                                               ConnectionError)
-
-    conn = connect()
-
-    query = mock.Mock()
-    query.run.side_effect = pymongo.errors.AutoReconnect('foo')
-    with pytest.raises(ConnectionError):
-        conn.run(query)
-    assert query.run.call_count == 2
-
-    query = mock.Mock()
-    query.run.side_effect = pymongo.errors.DuplicateKeyError('foo')
-    with pytest.raises(DuplicateKeyError):
-        conn.run(query)
-    assert query.run.call_count == 1
-
-    query = mock.Mock()
-    query.run.side_effect = pymongo.errors.OperationFailure('foo')
-    with pytest.raises(OperationError):
-        conn.run(query)
-    assert query.run.call_count == 1
-
-
 @mock.patch('pymongo.database.Database.authenticate')
 def test_ssl_connection_with_credentials(mock_authenticate):
     import bigchaindb
@@ -154,67 +106,6 @@ def test_ssl_connection_with_credentials(mock_authenticate):
                              ssl_cert_reqs=CERT_REQUIRED)
     conn.connect()
     assert mock_authenticate.call_count == 2
-
-
-def test_ssl_check_replica_set_not_enabled(mongodb_ssl_connection):
-    from bigchaindb.backend.mongodb.connection import _check_replica_set
-    from bigchaindb.common.exceptions import ConfigurationError
-
-    # no replSet option set
-    cmd_line_opts = {'argv': ['mongod', '--dbpath=/data'],
-                     'ok': 1.0,
-                     'parsed': {'storage': {'dbPath': '/data'}}}
-    with mock.patch.object(Database, 'command', return_value=cmd_line_opts):
-        with pytest.raises(ConfigurationError):
-            _check_replica_set(mongodb_ssl_connection)
-
-
-def test_ssl_check_replica_set_command_line(mongodb_ssl_connection,
-                                            mock_ssl_cmd_line_opts):
-    from bigchaindb.backend.mongodb.connection import _check_replica_set
-
-    # replSet option set through the command line
-    with mock.patch.object(Database, 'command',
-                           return_value=mock_ssl_cmd_line_opts):
-        assert _check_replica_set(mongodb_ssl_connection) is None
-
-
-def test_ssl_check_replica_set_config_file(mongodb_ssl_connection,
-                                           mock_ssl_config_opts):
-    from bigchaindb.backend.mongodb.connection import _check_replica_set
-
-    # replSet option set through the config file
-    with mock.patch.object(Database,
-                           'command',
-                           return_value=mock_ssl_config_opts):
-        assert _check_replica_set(mongodb_ssl_connection) is None
-
-
-def test_ssl_check_replica_set_name_mismatch(mongodb_ssl_connection,
-                                             mock_ssl_cmd_line_opts):
-    from bigchaindb.backend.mongodb.connection import _check_replica_set
-    from bigchaindb.common.exceptions import ConfigurationError
-
-    # change the replica set name so it does not match the bigchaindb config
-    mock_ssl_cmd_line_opts['parsed']['replication']['replSet'] = 'rs0'
-
-    with mock.patch.object(Database, 'command',
-                           return_value=mock_ssl_cmd_line_opts):
-        with pytest.raises(ConfigurationError):
-            _check_replica_set(mongodb_ssl_connection)
-
-
-def test_ssl_wait_for_replica_set_initialization(mongodb_ssl_connection):
-    from bigchaindb.backend.mongodb.connection import _wait_for_replica_set_initialization  # noqa
-
-    with mock.patch.object(Database, 'command') as mock_command:
-        mock_command.side_effect = [
-            {'log': ['a line']},
-            {'log': ['database writes are now permitted']},
-        ]
-
-        # check that it returns
-        assert _wait_for_replica_set_initialization(mongodb_ssl_connection) is None
 
 
 def test_ssl_initialize_replica_set(mock_ssl_cmd_line_opts, certs_dir):
