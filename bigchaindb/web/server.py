@@ -61,20 +61,7 @@ def create_app(*, debug=False, threads=1):
 
     app = Flask(__name__)
 
-    CORS(app,
-         allow_headers=(
-             'x-requested-with',
-             'content-type',
-             'accept',
-             'origin',
-             'authorization',
-             'x-csrftoken',
-             'withcredentials',
-             'cache-control',
-             'cookie',
-             'session-id',
-         ),
-         supports_credentials=True)
+    CORS(app)
 
     app.debug = debug
 
