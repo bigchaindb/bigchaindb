@@ -363,7 +363,7 @@ def test_transaction_link_serialization():
 
     tx_id = 'a transaction id'
     expected = {
-        'txid': tx_id,
+        'transaction_id': tx_id,
         'output': 0,
     }
     tx_link = TransactionLink(tx_id, 0)
@@ -386,7 +386,7 @@ def test_transaction_link_deserialization():
     tx_id = 'a transaction id'
     expected = TransactionLink(tx_id, 0)
     tx_link = {
-        'txid': tx_id,
+        'transaction_id': tx_id,
         'output': 0,
     }
     tx_link = TransactionLink.from_dict(tx_link)
@@ -845,7 +845,7 @@ def test_create_transfer_transaction_single_io(tx, user_pub, user2_pub,
                 ],
                 'fulfillment': None,
                 'fulfills': {
-                    'txid': tx.id,
+                    'transaction_id': tx.id,
                     'output': 0
                 }
             }
@@ -894,7 +894,7 @@ def test_create_transfer_transaction_multiple_io(user_pub, user_priv,
                 ],
                 'fulfillment': None,
                 'fulfills': {
-                    'txid': tx.id,
+                    'transaction_id': tx.id,
                     'output': 0
                 }
             }, {
@@ -903,7 +903,7 @@ def test_create_transfer_transaction_multiple_io(user_pub, user_priv,
                 ],
                 'fulfillment': None,
                 'fulfills': {
-                    'txid': tx.id,
+                    'transaction_id': tx.id,
                     'output': 1
                 }
             }

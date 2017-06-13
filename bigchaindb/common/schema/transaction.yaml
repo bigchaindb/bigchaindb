@@ -204,13 +204,13 @@ definitions:
           additionalProperties: false
           required:
           - output
-          - txid
+          - transaction_id
           properties:
             output:
               "$ref": "#/definitions/offset"
               description: |
                 Index of the output containing the condition being fulfilled
-            txid:
+            transaction_id:
               "$ref": "#/definitions/sha3_hexdigest"
               description: |
                 Transaction ID containing the output to spend
