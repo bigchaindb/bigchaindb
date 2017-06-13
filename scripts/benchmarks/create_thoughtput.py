@@ -7,17 +7,17 @@ import multiprocessing
 
 
 def main():
-    cmd('docker-compose up -d mdb')
-    cmd('docker-compose up -d bdb')
-    cmd('docker-compose up -d graphite')
+    cmd('docker-compose -f docker-compose.yml -f benchmark.yml up -d mdb')
+    cmd('docker-compose -f docker-compose.yml -f benchmark.yml up -d bdb')
+    cmd('docker-compose -f docker-compose.yml -f benchmark.yml up -d graphite')
 
-    out = cmd('docker-compose port graphite 80', capture=True)
+    out = cmd('docker-compose -f benchmark.yml port graphite 80', capture=True)
     graphite_web = 'http://localhost:%s/' % out.strip().split(':')[1]
     print('Graphite web interface at: ' + graphite_web)
 
     start = time.time()
 
-    cmd('docker-compose exec bdb python %s load' % sys.argv[0])
+    cmd('docker-compose -f docker-compose.yml -f benchmark.yml exec bdb python %s load' % sys.argv[0])
 
     mins = math.ceil((time.time() - start) / 60) + 1
 
