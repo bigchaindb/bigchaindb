@@ -40,6 +40,9 @@ def test_post_create_transaction_endpoint(b, client):
 
     assert res.status_code == 202
 
+    assert '../statuses?transaction_id={}'.format(tx.id) in \
+        res.headers['Location']
+
     assert res.json['inputs'][0]['owners_before'][0] == user_pub
     assert res.json['outputs'][0]['public_keys'][0] == user_pub
 

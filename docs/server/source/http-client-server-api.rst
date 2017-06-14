@@ -148,6 +148,7 @@ Transactions
       :language: http
 
    :resheader Content-Type: ``application/json``
+   :resheader Location: Relative link to a status monitor for the submitted transaction.
 
    :statuscode 202: The pushed transaction was accepted in the ``BACKLOG``, but the processing has not been completed.
    :statuscode 400: The transaction was malformed and not accepted in the ``BACKLOG``.
