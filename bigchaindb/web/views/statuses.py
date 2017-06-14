@@ -29,32 +29,17 @@ class StatusApi(Resource):
             return make_error(400, 'Provide exactly one query parameter. Choices are: block_id, tx_id')
 
         pool = current_app.config['bigchain_pool']
-        status, links = None, None
+        status = None
 
         with pool() as bigchain:
             if tx_id:
                 status = bigchain.get_status(tx_id)
-                links = {
-                    'tx': '/transactions/{}'.format(tx_id)
-                }
-
             elif block_id:
                 _, status = bigchain.get_block(block_id=block_id, include_status=True)
-                # TODO: enable once blocks endpoint is available
-                # links = {
-                #     "block": "/blocks/{}".format(args['block_id'])
-                # }
 
         if not status:
             return make_error(404)
 
-        response = {
+        return {
             'status': status
         }
-
-        if links:
-            response.update({
-                '_links': links
-            })
-
-        return response

@@ -218,9 +218,6 @@ Statuses
 
    Get the status of an asynchronously written transaction or block by their id.
 
-   A link to the resource is also provided in the returned payload under
-   ``_links``.
-
    :query string transaction_id: transaction ID
    :query string block_id: block ID
 
@@ -252,7 +249,6 @@ Statuses
       :language: http
 
    :resheader Content-Type: ``application/json``
-   :resheader Location: Once the transaction has been persisted, this header will link to the actual resource.
 
    :statuscode 200: A transaction with that ID was found.
    :statuscode 404: A transaction with that ID was not found.
@@ -271,16 +267,10 @@ Statuses
 
    **Example response**:
 
-   .. literalinclude:: http-samples/get-statuses-block-invalid-response.http
-      :language: http
-
-   **Example response**:
-
    .. literalinclude:: http-samples/get-statuses-block-valid-response.http
       :language: http
 
    :resheader Content-Type: ``application/json``
-   :resheader Location: Once the block has been persisted, this header will link to the actual resource.
 
    :statuscode 200: A block with that ID was found.
    :statuscode 404: A block with that ID was not found.
