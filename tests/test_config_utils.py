@@ -147,6 +147,7 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request, certs_d
     DATABASE_PORT = 4242
     DATABASE_BACKEND = request.config.getoption('--database-backend')
     SERVER_BIND = '1.2.3.4:56'
+    WSSERVER_SCHEME = 'ws'
     WSSERVER_HOST = '1.2.3.4'
     WSSERVER_PORT = 57
     KEYRING = 'pubkey_0:pubkey_1:pubkey_2'
@@ -169,6 +170,7 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request, certs_d
                                            'BIGCHAINDB_DATABASE_PORT': str(DATABASE_PORT),
                                            'BIGCHAINDB_DATABASE_BACKEND': 'mongodb',
                                            'BIGCHAINDB_SERVER_BIND': SERVER_BIND,
+                                           'BIGCHAINDB_WSSERVER_SCHEME': WSSERVER_SCHEME,
                                            'BIGCHAINDB_WSSERVER_HOST': WSSERVER_HOST,
                                            'BIGCHAINDB_WSSERVER_PORT': WSSERVER_PORT,
                                            'BIGCHAINDB_KEYRING': KEYRING,
@@ -183,6 +185,7 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request, certs_d
                                            'BIGCHAINDB_DATABASE_PORT': str(DATABASE_PORT),
                                            'BIGCHAINDB_DATABASE_BACKEND': DATABASE_BACKEND,
                                            'BIGCHAINDB_SERVER_BIND': SERVER_BIND,
+                                           'BIGCHAINDB_WSSERVER_SCHEME': WSSERVER_SCHEME,
                                            'BIGCHAINDB_WSSERVER_HOST': WSSERVER_HOST,
                                            'BIGCHAINDB_WSSERVER_PORT': WSSERVER_PORT,
                                            'BIGCHAINDB_KEYRING': KEYRING,
@@ -255,6 +258,7 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request, certs_d
             'workers': None,
         },
         'wsserver': {
+            'scheme': WSSERVER_SCHEME,
             'host': WSSERVER_HOST,
             'port': WSSERVER_PORT,
         },

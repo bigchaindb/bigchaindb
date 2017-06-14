@@ -3,7 +3,7 @@ Common classes and methods for API handlers
 """
 import logging
 
-from flask import jsonify, request
+from flask import jsonify
 
 from bigchaindb import config
 
@@ -25,7 +25,7 @@ def base_ws_uri():
     """Base websocket uri."""
     # TODO Revisit as this is a workaround to address issue
     # https://github.com/bigchaindb/bigchaindb/issues/1465.
-    # NOTE: This is now only for the WS API. Env-variable should be renamed to
-    # e.g. WS_HOST or WEBSOCKET_HOST
-    host = request.environ['HTTP_HOST'].split(':')[0]
-    return 'ws://{}:{}'.format(host, config['wsserver']['port'])
+    scheme = config['wsserver']['scheme']
+    host = config['wsserver']['host']
+    port = config['wsserver']['port']
+    return '{}://{}:{}'.format(scheme, host, port)
