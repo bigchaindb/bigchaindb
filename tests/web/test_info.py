@@ -14,7 +14,7 @@ def api_v1_info():
         'statuses': 'http://localhost/api/v1/statuses/',
         'assets': 'http://localhost/api/v1/assets/',
         'outputs': 'http://localhost/api/v1/outputs/',
-        'streams': 'ws://localhost:9985/api/v1/streams/valid_tx',
+        'streams': 'ws://localhost:9985/api/v1/streams/valid_transactions',
     }
 
 
