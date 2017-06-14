@@ -46,12 +46,12 @@ Transactions
 
    Get the transaction with the ID ``tx_id``.
 
-   This endpoint returns a transaction if it was included in a ``VALID`` block,
-   if it is still waiting to be processed (``BACKLOG``) or is still in an
-   undecided block (``UNDECIDED``). All instances of a transaction in invalid
-   blocks are ignored and treated as if they don't exist. If a request is made
-   for a transaction and instances of that transaction are found only in
-   invalid blocks, then the response will be ``404 Not Found``.
+   This endpoint returns a transaction if it was included in a ``VALID`` block.
+   All instances of a transaction in invalid/undecided blocks or the backlog
+   are ignored and treated as if they don't exist. If a request is made for a
+   transaction and instances of that transaction are found only in
+   invalid/undecided blocks or the backlog, then the response will be ``404 Not
+   Found``.
 
    :param tx_id: transaction ID
    :type tx_id: hex string

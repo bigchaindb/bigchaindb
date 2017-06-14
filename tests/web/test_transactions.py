@@ -270,3 +270,26 @@ def test_transactions_get_list_bad(client):
         # Test asset ID required
         url = TX_ENDPOINT + '?operation=CREATE'
         assert client.get(url).status_code == 400
+
+
+def test_return_only_valid_transaction(client):
+    from bigchaindb import Bigchain
+
+    def get_transaction_patched(status):
+        def inner(self, tx_id, include_status):
+            return {}, status
+        return inner
+
+    # NOTE: `get_transaction` only returns a transaction if it's included in an
+    #       UNDECIDED or VALID block, as well as transactions from the backlog.
+    #       As the endpoint uses `get_transaction`, we don't have to test
+    #       against invalid transactions here.
+    with patch('bigchaindb.core.Bigchain.get_transaction',
+               get_transaction_patched(Bigchain.TX_UNDECIDED)):
+        url = '{}{}'.format(TX_ENDPOINT, '123')
+        assert client.get(url).status_code == 404
+
+    with patch('bigchaindb.core.Bigchain.get_transaction',
+               get_transaction_patched(Bigchain.TX_IN_BACKLOG)):
+        url = '{}{}'.format(TX_ENDPOINT, '123')
+        assert client.get(url).status_code == 404
