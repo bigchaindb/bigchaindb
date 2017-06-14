@@ -8,23 +8,28 @@ OUTPUTS_ENDPOINT = '/api/v1/outputs/'
 
 def test_get_outputs_endpoint(client, user_pk):
     m = MagicMock()
-    m.to_uri.side_effect = lambda s: 'a%sb' % s
+    m.txid = 'a'
+    m.output = 0
     with patch('bigchaindb.core.Bigchain.get_outputs_filtered') as gof:
         gof.return_value = [m, m]
         res = client.get(OUTPUTS_ENDPOINT + '?public_key={}'.format(user_pk))
-    assert res.json == ['a..b', 'a..b']
+        assert res.json == [
+            {'transaction_id': 'a', 'output': 0},
+            {'transaction_id': 'a', 'output': 0}
+        ]
     assert res.status_code == 200
     gof.assert_called_once_with(user_pk, True)
 
 
 def test_get_outputs_endpoint_unspent(client, user_pk):
     m = MagicMock()
-    m.to_uri.side_effect = lambda s: 'a%sb' % s
+    m.txid = 'a'
+    m.output = 0
     with patch('bigchaindb.core.Bigchain.get_outputs_filtered') as gof:
         gof.return_value = [m]
         params = '?unspent=true&public_key={}'.format(user_pk)
         res = client.get(OUTPUTS_ENDPOINT + params)
-    assert res.json == ['a..b']
+    assert res.json == [{'transaction_id': 'a', 'output': 0}]
     assert res.status_code == 200
     gof.assert_called_once_with(user_pk, False)
 
