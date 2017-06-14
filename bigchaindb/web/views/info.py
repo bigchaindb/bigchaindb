@@ -4,7 +4,7 @@ import flask
 from flask_restful import Resource
 
 import bigchaindb
-from bigchaindb.web.views.base import base_url, base_ws_uri
+from bigchaindb.web.views.base import base_ws_uri
 from bigchaindb import version
 from bigchaindb.web.websocket_server import EVENTS_ENDPOINT
 
@@ -17,7 +17,7 @@ class RootIndex(Resource):
         ]
         return flask.jsonify({
             'api': {
-                'v1': get_api_v1_info()
+                'v1': get_api_v1_info('/api/v1/')
             },
             'docs': ''.join(docs_url),
             'software': 'BigchainDB',
@@ -29,15 +29,14 @@ class RootIndex(Resource):
 
 class ApiV1Index(Resource):
     def get(self):
-        return flask.jsonify(get_api_v1_info())
+        return flask.jsonify(get_api_v1_info('/'))
 
 
-def get_api_v1_info():
+def get_api_v1_info(api_prefix):
     """
     Return a dict with all the information specific for the v1 of the
     api.
     """
-    api_root = base_url() + 'api/v1/'
     websocket_root = base_ws_uri() + EVENTS_ENDPOINT
     docs_url = [
         'https://docs.bigchaindb.com/projects/server/en/v',
@@ -47,9 +46,9 @@ def get_api_v1_info():
 
     return {
         'docs': ''.join(docs_url),
-        'transactions': api_root + 'transactions/',
-        'statuses': api_root + 'statuses/',
-        'assets': api_root + 'assets/',
-        'outputs': api_root + 'outputs/',
+        'transactions': '{}transactions/'.format(api_prefix),
+        'statuses': '{}statuses/'.format(api_prefix),
+        'assets': '{}assets/'.format(api_prefix),
+        'outputs': '{}outputs/'.format(api_prefix),
         'streams': websocket_root
     }

@@ -21,14 +21,11 @@ def make_error(status_code, message=None):
     return response
 
 
-def base_url():
-    return '%s://%s/' % (request.environ['wsgi.url_scheme'],
-                         request.environ['HTTP_HOST'])
-
-
 def base_ws_uri():
     """Base websocket uri."""
     # TODO Revisit as this is a workaround to address issue
     # https://github.com/bigchaindb/bigchaindb/issues/1465.
+    # NOTE: This is now only for the WS API. Env-variable should be renamed to
+    # e.g. WS_HOST or WEBSOCKET_HOST
     host = request.environ['HTTP_HOST'].split(':')[0]
     return 'ws://{}:{}'.format(host, config['wsserver']['port'])
