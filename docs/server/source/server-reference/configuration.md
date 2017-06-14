@@ -36,6 +36,11 @@ For convenience, here's a list of all the relevant environment variables (docume
 `BIGCHAINDB_LOG_FMT_CONSOLE`<br>
 `BIGCHAINDB_LOG_FMT_LOGFILE`<br>
 `BIGCHAINDB_LOG_GRANULAR_LEVELS`<br>
+`BIGCHAINDB_DATABASE_CA_CERT`<br>
+`BIGCHAINDB_DATABASE_CERTFILE`<br>
+`BIGCHAINDB_DATABASE_KEYFILE`<br>
+`BIGCHAINDB_DATABASE_KEYFILE_PASSPHRASE`<br>
+`BIGCHAINDB_DATABASE_CRLFILE`<br>
 
 The local config file is `$HOME/.bigchaindb` by default (a file which might not even exist), but you can tell BigchainDB to use a different file by using the `-c` command-line option, e.g. `bigchaindb -c path/to/config_file.json start`
 or using the `BIGCHAINDB_CONFIG_PATH` environment variable, e.g. `BIGHAINDB_CONFIG_PATH=.my_bigchaindb_config bigchaindb start`.
@@ -102,6 +107,8 @@ The settings with names of the form `database.*` are for the database backend
 * `database.replicaset` is only relevant if using MongoDB; it's the name of the MongoDB replica set, e.g. `bigchain-rs`.
 * `database.connection_timeout` is the maximum number of milliseconds that BigchainDB will wait before giving up on one attempt to connect to the database backend.
 * `database.max_tries` is the maximum number of times that BigchainDB will try to establish a connection with the database backend. If 0, then it will try forever.
+* `database.ca_cert`, `database.certfile`, `database.keyfile` and `database.crlfile` are the paths to the CA, signed certificate, private key and certificate revocation list files respectively.
+* `database.keyfile_passphrase` is the private key decryption passphrase, specified in plaintext.
 
 **Example using environment variables**
 ```text
