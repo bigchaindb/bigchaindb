@@ -147,6 +147,14 @@ Transactions
    .. literalinclude:: http-samples/post-tx-response.http
       :language: http
 
+   .. note::
+       If the server is returning a ``202`` HTTP status code, then the
+       transaction has been accepted for processing. To check the status of the
+       transaction, poll the link to the `status monitor
+       <https://docs.bigchaindb.com/projects/server/en/latest/http-client-server-api.html#get--api-v1-statuses?tx_id=tx_id>`_
+       provided in the ``Location`` header or listen to server's
+       :ref:`WebSocket Event Stream API <The WebSocket Event Stream API>`.
+
    :resheader Content-Type: ``application/json``
    :resheader Location: Relative link to a status monitor for the submitted transaction.
 
