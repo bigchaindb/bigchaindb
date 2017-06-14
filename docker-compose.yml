@@ -22,6 +22,7 @@ services:
       - ./setup.cfg:/usr/src/app/setup.cfg
       - ./pytest.ini:/usr/src/app/pytest.ini
       - ./tox.ini:/usr/src/app/tox.ini
+      - ../cryptoconditions:/usr/src/app/cryptoconditions
     environment:
       BIGCHAINDB_DATABASE_BACKEND: mongodb
       BIGCHAINDB_DATABASE_HOST: mdb

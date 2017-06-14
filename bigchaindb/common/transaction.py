@@ -1,15 +1,16 @@
 from copy import deepcopy
 from functools import reduce
 
-from cryptoconditions import (Fulfillment, ThresholdSha256Fulfillment,
-                              Ed25519Fulfillment)
-from cryptoconditions.exceptions import ParsingError
+import base58
+from cryptoconditions import Fulfillment, ThresholdSha256, Ed25519Sha256
+from cryptoconditions.exceptions import (
+    ParsingError, ASN1DecodeError, ASN1EncodeError)
 
 from bigchaindb.common.crypto import PrivateKey, hash_data
 from bigchaindb.common.exceptions import (KeypairMismatchException,
                                           InvalidHash, InvalidSignature,
                                           AmountError, AssetIdMismatch)
-from bigchaindb.common.utils import serialize, gen_timestamp
+from bigchaindb.common.utils import serialize
 import bigchaindb.version
 
 
@@ -65,7 +66,7 @@ class Input(object):
         """
         try:
             fulfillment = self.fulfillment.serialize_uri()
-        except (TypeError, AttributeError):
+        except (TypeError, AttributeError, ASN1EncodeError):
             # NOTE: When a non-signed transaction is casted to a dict,
             #       `self.inputs` value is lost, as in the node's
             #       transaction model that is saved to the database, does not
@@ -114,15 +115,18 @@ class Input(object):
             Raises:
                 InvalidSignature: If an Input's URI couldn't be parsed.
         """
-        try:
-            fulfillment = Fulfillment.from_uri(data['fulfillment'])
-        except ValueError:
-            # TODO FOR CC: Throw an `InvalidSignature` error in this case.
-            raise InvalidSignature("Fulfillment URI couldn't been parsed")
-        except TypeError:
-            # NOTE: See comment about this special case in
-            #       `Input.to_dict`
-            fulfillment = Fulfillment.from_dict(data['fulfillment'])
+        fulfillment = data['fulfillment']
+        if not isinstance(fulfillment, Fulfillment):
+            try:
+                fulfillment = Fulfillment.from_uri(data['fulfillment'])
+            except ASN1DecodeError:
+                # TODO Remove as it is legacy code, and simply fall back on
+                # ASN1DecodeError
+                raise InvalidSignature("Fulfillment URI couldn't been parsed")
+            except TypeError:
+                # NOTE: See comment about this special case in
+                #       `Input.to_dict`
+                fulfillment = Fulfillment.from_dict(data['fulfillment'])
         fulfills = TransactionLink.from_dict(data['fulfills'])
         return cls(fulfillment, data['owners_before'], fulfills)
 
@@ -310,13 +314,14 @@ class Output(object):
             raise ValueError('`public_keys` needs to contain at least one'
                              'owner')
         elif len(public_keys) == 1 and not isinstance(public_keys[0], list):
-            try:
-                ffill = Ed25519Fulfillment(public_key=public_keys[0])
-            except TypeError:
+            if isinstance(public_keys[0], Fulfillment):
                 ffill = public_keys[0]
+            else:
+                ffill = Ed25519Sha256(
+                    public_key=base58.b58decode(public_keys[0]))
             return cls(ffill, public_keys, amount=amount)
         else:
-            initial_cond = ThresholdSha256Fulfillment(threshold=threshold)
+            initial_cond = ThresholdSha256(threshold=threshold)
             threshold_cond = reduce(cls._gen_condition, public_keys,
                                     initial_cond)
             return cls(threshold_cond, public_keys, amount=amount)
@@ -331,13 +336,13 @@ class Output(object):
                 :meth:`~.Output.generate`.
 
             Args:
-                initial (:class:`cryptoconditions.ThresholdSha256Fulfillment`):
+                initial (:class:`cryptoconditions.ThresholdSha256`):
                     A Condition representing the overall root.
                 new_public_keys (:obj:`list` of :obj:`str`|str): A list of new
                     owners or a single new owner.
 
             Returns:
-                :class:`cryptoconditions.ThresholdSha256Fulfillment`:
+                :class:`cryptoconditions.ThresholdSha256`:
         """
         try:
             threshold = len(new_public_keys)
@@ -345,7 +350,7 @@ class Output(object):
             threshold = None
 
         if isinstance(new_public_keys, list) and len(new_public_keys) > 1:
-            ffill = ThresholdSha256Fulfillment(threshold=threshold)
+            ffill = ThresholdSha256(threshold=threshold)
             reduce(cls._gen_condition, new_public_keys, ffill)
         elif isinstance(new_public_keys, list) and len(new_public_keys) <= 1:
             raise ValueError('Sublist cannot contain single owner')
@@ -354,16 +359,17 @@ class Output(object):
                 new_public_keys = new_public_keys.pop()
             except AttributeError:
                 pass
-            try:
-                ffill = Ed25519Fulfillment(public_key=new_public_keys)
-            except TypeError:
-                # NOTE: Instead of submitting base58 encoded addresses, a user
-                #       of this class can also submit fully instantiated
-                #       Cryptoconditions. In the case of casting
-                #       `new_public_keys` to a Ed25519Fulfillment with the
-                #       result of a `TypeError`, we're assuming that
-                #       `new_public_keys` is a Cryptocondition then.
+            # NOTE: Instead of submitting base58 encoded addresses, a user
+            #       of this class can also submit fully instantiated
+            #       Cryptoconditions. In the case of casting
+            #       `new_public_keys` to a Ed25519Fulfillment with the
+            #       result of a `TypeError`, we're assuming that
+            #       `new_public_keys` is a Cryptocondition then.
+            if isinstance(new_public_keys, Fulfillment):
                 ffill = new_public_keys
+            else:
+                ffill = Ed25519Sha256(
+                    public_key=base58.b58decode(new_public_keys))
         initial.add_subfulfillment(ffill)
         return initial
 
@@ -661,7 +667,7 @@ class Transaction(object):
                 This method works only for the following Cryptoconditions
                 currently:
                     - Ed25519Fulfillment
-                    - ThresholdSha256Fulfillment
+                    - ThresholdSha256
                 Furthermore, note that all keys required to fully sign the
                 Transaction have to be passed to this method. A subset of all
                 will cause this method to fail.
@@ -712,7 +718,7 @@ class Transaction(object):
                 This method works only for the following Cryptoconditions
                 currently:
                     - Ed25519Fulfillment
-                    - ThresholdSha256Fulfillment.
+                    - ThresholdSha256.
 
             Args:
                 input_ (:class:`~bigchaindb.common.transaction.
@@ -720,10 +726,10 @@ class Transaction(object):
                 message (str): The message to be signed
                 key_pairs (dict): The keys to sign the Transaction with.
         """
-        if isinstance(input_.fulfillment, Ed25519Fulfillment):
+        if isinstance(input_.fulfillment, Ed25519Sha256):
             return cls._sign_simple_signature_fulfillment(input_, message,
                                                           key_pairs)
-        elif isinstance(input_.fulfillment, ThresholdSha256Fulfillment):
+        elif isinstance(input_.fulfillment, ThresholdSha256):
             return cls._sign_threshold_signature_fulfillment(input_, message,
                                                              key_pairs)
         else:
@@ -749,7 +755,10 @@ class Transaction(object):
         try:
             # cryptoconditions makes no assumptions of the encoding of the
             # message to sign or verify. It only accepts bytestrings
-            input_.fulfillment.sign(message.encode(), key_pairs[public_key])
+            input_.fulfillment.sign(
+                message.encode(),
+                base58.b58decode(key_pairs[public_key].encode()),
+            )
         except KeyError:
             raise KeypairMismatchException('Public key {} is not a pair to '
                                            'any of the private keys'
@@ -758,7 +767,7 @@ class Transaction(object):
 
     @classmethod
     def _sign_threshold_signature_fulfillment(cls, input_, message, key_pairs):
-        """Signs a ThresholdSha256Fulfillment.
+        """Signs a ThresholdSha256.
 
             Args:
                 input_ (:class:`~bigchaindb.common.transaction.
@@ -778,7 +787,8 @@ class Transaction(object):
             # TODO FOR CC: `get_subcondition` is singular. One would not
             #              expect to get a list back.
             ccffill = input_.fulfillment
-            subffills = ccffill.get_subcondition_from_vk(owner_before)
+            subffills = ccffill.get_subcondition_from_vk(
+                base58.b58decode(owner_before))
             if not subffills:
                 raise KeypairMismatchException('Public key {} cannot be found '
                                                'in the fulfillment'
@@ -793,7 +803,7 @@ class Transaction(object):
             # cryptoconditions makes no assumptions of the encoding of the
             # message to sign or verify. It only accepts bytestrings
             for subffill in subffills:
-                subffill.sign(message.encode(), private_key)
+                subffill.sign(message.encode(), base58.b58decode(private_key.encode()))
         return input_
 
     def inputs_valid(self, outputs=None):
@@ -882,7 +892,8 @@ class Transaction(object):
         ccffill = input_.fulfillment
         try:
             parsed_ffill = Fulfillment.from_uri(ccffill.serialize_uri())
-        except (TypeError, ValueError, ParsingError):
+        except (TypeError, ValueError,
+                ParsingError, ASN1DecodeError, ASN1EncodeError):
             return False
 
         if operation in (Transaction.CREATE, Transaction.GENESIS):
@@ -897,8 +908,7 @@ class Transaction(object):
 
         # cryptoconditions makes no assumptions of the encoding of the
         # message to sign or verify. It only accepts bytestrings
-        ffill_valid = parsed_ffill.validate(message=tx_serialized.encode(),
-                                            now=gen_timestamp())
+        ffill_valid = parsed_ffill.validate(message=tx_serialized.encode())
         return output_valid and ffill_valid
 
     def to_dict(self):
@@ -940,7 +950,7 @@ class Transaction(object):
         tx_dict = deepcopy(tx_dict)
         for input_ in tx_dict['inputs']:
             # NOTE: Not all Cryptoconditions return a `signature` key (e.g.
-            #       ThresholdSha256Fulfillment), so setting it to `None` in any
+            #       ThresholdSha256), so setting it to `None` in any
             #       case could yield incorrect signatures. This is why we only
             #       set it to `None` if it's set in the dict.
             input_['fulfillment'] = None

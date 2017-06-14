@@ -2,7 +2,9 @@
 These are tests of the API of the Transaction class and associated classes.
 Tests for transaction validation are separate.
 """
+from copy import deepcopy
 
+from base58 import b58decode
 from pytest import raises
 
 
@@ -110,10 +112,10 @@ def test_output_deserialization(user_Ed25519, user_pub):
 
 def test_output_hashlock_serialization():
     from bigchaindb.common.transaction import Output
-    from cryptoconditions import PreimageSha256Fulfillment
+    from cryptoconditions import PreimageSha256
 
     secret = b'wow much secret'
-    hashlock = PreimageSha256Fulfillment(preimage=secret).condition_uri
+    hashlock = PreimageSha256(preimage=secret).condition_uri
 
     expected = {
         'condition': {
@@ -129,10 +131,10 @@ def test_output_hashlock_serialization():
 
 def test_output_hashlock_deserialization():
     from bigchaindb.common.transaction import Output
-    from cryptoconditions import PreimageSha256Fulfillment
+    from cryptoconditions import PreimageSha256
 
     secret = b'wow much secret'
-    hashlock = PreimageSha256Fulfillment(preimage=secret).condition_uri
+    hashlock = PreimageSha256(preimage=secret).condition_uri
     expected = Output(hashlock, amount=1)
 
     cond = {
@@ -161,15 +163,15 @@ def test_invalid_output_initialization(cond_uri, user_pub):
 
 def test_generate_output_split_half_recursive(user_pub, user2_pub, user3_pub):
     from bigchaindb.common.transaction import Output
-    from cryptoconditions import Ed25519Fulfillment, ThresholdSha256Fulfillment
+    from cryptoconditions import Ed25519Sha256, ThresholdSha256
 
-    expected_simple1 = Ed25519Fulfillment(public_key=user_pub)
-    expected_simple2 = Ed25519Fulfillment(public_key=user2_pub)
-    expected_simple3 = Ed25519Fulfillment(public_key=user3_pub)
+    expected_simple1 = Ed25519Sha256(public_key=b58decode(user_pub))
+    expected_simple2 = Ed25519Sha256(public_key=b58decode(user2_pub))
+    expected_simple3 = Ed25519Sha256(public_key=b58decode(user3_pub))
 
-    expected = ThresholdSha256Fulfillment(threshold=2)
+    expected = ThresholdSha256(threshold=2)
     expected.add_subfulfillment(expected_simple1)
-    expected_threshold = ThresholdSha256Fulfillment(threshold=2)
+    expected_threshold = ThresholdSha256(threshold=2)
     expected_threshold.add_subfulfillment(expected_simple2)
     expected_threshold.add_subfulfillment(expected_simple3)
     expected.add_subfulfillment(expected_threshold)
@@ -181,14 +183,14 @@ def test_generate_output_split_half_recursive(user_pub, user2_pub, user3_pub):
 def test_generate_outputs_split_half_single_owner(user_pub,
                                                   user2_pub, user3_pub):
     from bigchaindb.common.transaction import Output
-    from cryptoconditions import Ed25519Fulfillment, ThresholdSha256Fulfillment
+    from cryptoconditions import Ed25519Sha256, ThresholdSha256
 
-    expected_simple1 = Ed25519Fulfillment(public_key=user_pub)
-    expected_simple2 = Ed25519Fulfillment(public_key=user2_pub)
-    expected_simple3 = Ed25519Fulfillment(public_key=user3_pub)
+    expected_simple1 = Ed25519Sha256(public_key=b58decode(user_pub))
+    expected_simple2 = Ed25519Sha256(public_key=b58decode(user2_pub))
+    expected_simple3 = Ed25519Sha256(public_key=b58decode(user3_pub))
 
-    expected = ThresholdSha256Fulfillment(threshold=2)
-    expected_threshold = ThresholdSha256Fulfillment(threshold=2)
+    expected = ThresholdSha256(threshold=2)
+    expected_threshold = ThresholdSha256(threshold=2)
     expected_threshold.add_subfulfillment(expected_simple2)
     expected_threshold.add_subfulfillment(expected_simple3)
     expected.add_subfulfillment(expected_threshold)
@@ -200,13 +202,13 @@ def test_generate_outputs_split_half_single_owner(user_pub,
 
 def test_generate_outputs_flat_ownage(user_pub, user2_pub, user3_pub):
     from bigchaindb.common.transaction import Output
-    from cryptoconditions import Ed25519Fulfillment, ThresholdSha256Fulfillment
+    from cryptoconditions import Ed25519Sha256, ThresholdSha256
 
-    expected_simple1 = Ed25519Fulfillment(public_key=user_pub)
-    expected_simple2 = Ed25519Fulfillment(public_key=user2_pub)
-    expected_simple3 = Ed25519Fulfillment(public_key=user3_pub)
+    expected_simple1 = Ed25519Sha256(public_key=b58decode(user_pub))
+    expected_simple2 = Ed25519Sha256(public_key=b58decode(user2_pub))
+    expected_simple3 = Ed25519Sha256(public_key=b58decode(user3_pub))
 
-    expected = ThresholdSha256Fulfillment(threshold=3)
+    expected = ThresholdSha256(threshold=3)
     expected.add_subfulfillment(expected_simple1)
     expected.add_subfulfillment(expected_simple2)
     expected.add_subfulfillment(expected_simple3)
@@ -217,9 +219,9 @@ def test_generate_outputs_flat_ownage(user_pub, user2_pub, user3_pub):
 
 def test_generate_output_single_owner(user_pub):
     from bigchaindb.common.transaction import Output
-    from cryptoconditions import Ed25519Fulfillment
+    from cryptoconditions import Ed25519Sha256
 
-    expected = Ed25519Fulfillment(public_key=user_pub)
+    expected = Ed25519Sha256(public_key=b58decode(user_pub))
     cond = Output.generate([user_pub], 1)
 
     assert cond.fulfillment.to_dict() == expected.to_dict()
@@ -227,9 +229,9 @@ def test_generate_output_single_owner(user_pub):
 
 def test_generate_output_single_owner_with_output(user_pub):
     from bigchaindb.common.transaction import Output
-    from cryptoconditions import Ed25519Fulfillment
+    from cryptoconditions import Ed25519Sha256
 
-    expected = Ed25519Fulfillment(public_key=user_pub)
+    expected = Ed25519Sha256(public_key=b58decode(user_pub))
     cond = Output.generate([expected], 1)
 
     assert cond.fulfillment.to_dict() == expected.to_dict()
@@ -489,15 +491,13 @@ def test_sign_with_invalid_parameters(utx, user_priv):
 
 def test_validate_tx_simple_create_signature(user_input, user_output, user_priv,
                                              asset_definition):
-    from copy import deepcopy
-    from bigchaindb.common.crypto import PrivateKey
     from bigchaindb.common.transaction import Transaction
     from .utils import validate_transaction_model
 
     tx = Transaction(Transaction.CREATE, asset_definition, [user_input], [user_output])
     expected = deepcopy(user_output)
     message = str(tx).encode()
-    expected.fulfillment.sign(message, PrivateKey(user_priv))
+    expected.fulfillment.sign(message, b58decode(user_priv))
     tx.sign([user_priv])
 
     assert tx.inputs[0].to_dict()['fulfillment'] == \
@@ -527,7 +527,7 @@ def test_sign_threshold_with_invalid_params(utx, user_user2_threshold_input,
                                                   'somemessage',
                                                   {user3_pub: user3_priv})
     with raises(KeypairMismatchException):
-        user_user2_threshold_input.owners_before = ['somewrongvalue']
+        user_user2_threshold_input.owners_before = [58 * 'a']
         utx._sign_threshold_signature_fulfillment(user_user2_threshold_input,
                                                   'somemessage',
                                                   None)
@@ -551,9 +551,6 @@ def test_validate_tx_threshold_create_signature(user_user2_threshold_input,
                                                 user_priv,
                                                 user2_priv,
                                                 asset_definition):
-    from copy import deepcopy
-
-    from bigchaindb.common.crypto import PrivateKey
     from bigchaindb.common.transaction import Transaction
     from .utils import validate_transaction_model
 
@@ -562,10 +559,10 @@ def test_validate_tx_threshold_create_signature(user_user2_threshold_input,
                      [user_user2_threshold_output])
     message = str(tx).encode()
     expected = deepcopy(user_user2_threshold_output)
-    expected.fulfillment.subconditions[0]['body'].sign(message,
-                                                       PrivateKey(user_priv))
-    expected.fulfillment.subconditions[1]['body'].sign(message,
-                                                       PrivateKey(user2_priv))
+    expected.fulfillment.subconditions[0]['body'].sign(
+        message, b58decode(user_priv))
+    expected.fulfillment.subconditions[1]['body'].sign(
+        message, b58decode(user2_priv))
     tx.sign([user_priv, user2_priv])
 
     assert tx.inputs[0].to_dict()['fulfillment'] == \
@@ -577,14 +574,14 @@ def test_validate_tx_threshold_create_signature(user_user2_threshold_input,
 
 def test_validate_tx_threshold_duplicated_pk(user_pub, user_priv,
                                              asset_definition):
-    from copy import deepcopy
-    from cryptoconditions import Ed25519Fulfillment, ThresholdSha256Fulfillment
+    from cryptoconditions import Ed25519Sha256, ThresholdSha256
     from bigchaindb.common.transaction import Input, Output, Transaction
-    from bigchaindb.common.crypto import PrivateKey
 
-    threshold = ThresholdSha256Fulfillment(threshold=2)
-    threshold.add_subfulfillment(Ed25519Fulfillment(public_key=user_pub))
-    threshold.add_subfulfillment(Ed25519Fulfillment(public_key=user_pub))
+    threshold = ThresholdSha256(threshold=2)
+    threshold.add_subfulfillment(
+        Ed25519Sha256(public_key=b58decode(user_pub)))
+    threshold.add_subfulfillment(
+        Ed25519Sha256(public_key=b58decode(user_pub)))
 
     threshold_input = Input(threshold, [user_pub, user_pub])
     threshold_output = Output(threshold, [user_pub, user_pub])
@@ -592,10 +589,10 @@ def test_validate_tx_threshold_duplicated_pk(user_pub, user_priv,
     tx = Transaction(Transaction.CREATE, asset_definition,
                      [threshold_input], [threshold_output])
     expected = deepcopy(threshold_input)
-    expected.fulfillment.subconditions[0]['body'].sign(str(tx).encode(),
-                                                       PrivateKey(user_priv))
-    expected.fulfillment.subconditions[1]['body'].sign(str(tx).encode(),
-                                                       PrivateKey(user_priv))
+    expected.fulfillment.subconditions[0]['body'].sign(
+        str(tx).encode(), b58decode(user_priv))
+    expected.fulfillment.subconditions[1]['body'].sign(
+        str(tx).encode(), b58decode(user_priv))
 
     tx.sign([user_priv, user_priv])
 
@@ -616,10 +613,9 @@ def test_multiple_input_validation_of_transfer_tx(user_input, user_output,
                                                   user2_priv, user3_pub,
                                                   user3_priv,
                                                   asset_definition):
-    from copy import deepcopy
     from bigchaindb.common.transaction import (Transaction, TransactionLink,
                                                Input, Output)
-    from cryptoconditions import Ed25519Fulfillment
+    from cryptoconditions import Ed25519Sha256
     from .utils import validate_transaction_model
 
     tx = Transaction(Transaction.CREATE, asset_definition, [user_input],
@@ -629,8 +625,10 @@ def test_multiple_input_validation_of_transfer_tx(user_input, user_output,
     inputs = [Input(cond.fulfillment, cond.public_keys,
                     TransactionLink(tx.id, index))
               for index, cond in enumerate(tx.outputs)]
-    outputs = [Output(Ed25519Fulfillment(public_key=user3_pub), [user3_pub]),
-               Output(Ed25519Fulfillment(public_key=user3_pub), [user3_pub])]
+    outputs = [Output(Ed25519Sha256(public_key=b58decode(user3_pub)),
+                      [user3_pub]),
+               Output(Ed25519Sha256(public_key=b58decode(user3_pub)),
+                      [user3_pub])]
     transfer_tx = Transaction('TRANSFER', {'id': tx.id}, inputs, outputs)
     transfer_tx = transfer_tx.sign([user_priv])
 
@@ -640,11 +638,11 @@ def test_multiple_input_validation_of_transfer_tx(user_input, user_output,
 
 
 def test_validate_inputs_of_transfer_tx_with_invalid_params(
-        transfer_tx, cond_uri, utx, user2_pub, user_priv):
+        transfer_tx, cond_uri, utx, user2_pub, user_priv, ffill_uri):
     from bigchaindb.common.transaction import Output
-    from cryptoconditions import Ed25519Fulfillment
+    from cryptoconditions import Ed25519Sha256
 
-    invalid_out = Output(Ed25519Fulfillment.from_uri('cf:0:'), ['invalid'])
+    invalid_out = Output(Ed25519Sha256.from_uri(ffill_uri), ['invalid'])
     assert transfer_tx.inputs_valid([invalid_out]) is False
     invalid_out = utx.outputs[0]
     invalid_out.public_key = 'invalid'
@@ -826,8 +824,6 @@ def test_outputs_to_inputs(tx):
 
 def test_create_transfer_transaction_single_io(tx, user_pub, user2_pub,
                                                user2_output, user_priv):
-    from copy import deepcopy
-    from bigchaindb.common.crypto import PrivateKey
     from bigchaindb.common.transaction import Transaction
     from bigchaindb.common.utils import serialize
     from .utils import validate_transaction_model
@@ -861,8 +857,8 @@ def test_create_transfer_transaction_single_io(tx, user_pub, user2_pub,
 
     expected_input = deepcopy(inputs[0])
     expected['id'] = transfer_tx['id']
-    expected_input.fulfillment.sign(serialize(expected).encode(),
-                                    PrivateKey(user_priv))
+    expected_input.fulfillment.sign(
+        serialize(expected).encode(), b58decode(user_priv))
     expected_ffill = expected_input.fulfillment.serialize_uri()
     transfer_ffill = transfer_tx['inputs'][0]['fulfillment']
 

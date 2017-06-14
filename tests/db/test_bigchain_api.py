@@ -1,7 +1,8 @@
 from time import sleep
+from unittest.mock import patch
 
 import pytest
-from unittest.mock import patch
+from base58 import b58decode
 
 pytestmark = pytest.mark.bdb
 
@@ -577,14 +578,14 @@ class TestBigchainApi(object):
 
     @pytest.mark.usefixtures('inputs')
     def test_non_create_input_not_found(self, b, user_pk):
-        from cryptoconditions import Ed25519Fulfillment
+        from cryptoconditions import Ed25519Sha256
         from bigchaindb.common.exceptions import InputDoesNotExist
         from bigchaindb.common.transaction import Input, TransactionLink
         from bigchaindb.models import Transaction
         from bigchaindb import Bigchain
 
         # Create an input for a non existing transaction
-        input = Input(Ed25519Fulfillment(public_key=user_pk),
+        input = Input(Ed25519Sha256(public_key=b58decode(user_pk)),
                       [user_pk],
                       TransactionLink('somethingsomething', 0))
         tx = Transaction.transfer([input], [([user_pk], 1)],
