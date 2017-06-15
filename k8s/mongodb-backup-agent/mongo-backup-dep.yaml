@@ -29,9 +29,11 @@ spec:
         env:
         - name: MMS_API_KEYFILE_PATH
           value: /etc/mongod/cloud/api-key
+        - name: MMS_GROUPID_KEYFILE_PATH
+          value: /etc/mongod/cloud/group-key
         - name: CA_CRT_PATH
           value: /etc/mongod/ssl/ca.pem
-        - name: MONITORING_PEM_PATH
+        - name: BACKUP_PEM_PATH
           value: /etc/mongod/ssl/mdb-bak-instance.pem
         resources:
           limits:
