@@ -150,8 +150,8 @@ Transactions
    .. note::
        If the server is returning a ``202`` HTTP status code, then the
        transaction has been accepted for processing. To check the status of the
-       transaction, poll the link to the `status monitor
-       <https://docs.bigchaindb.com/projects/server/en/latest/http-client-server-api.html#get--api-v1-statuses?tx_id=tx_id>`_
+       transaction, poll the link to the
+       :ref:`status monitor <get_status_of_transaction>`
        provided in the ``Location`` header or listen to server's
        :ref:`WebSocket Event Stream API <The WebSocket Event Stream API>`.
 
@@ -225,6 +225,7 @@ Statuses
         statuses <#get--statuses?tx_id=tx_id>`_ and `block statuses
         <#get--statuses?block_id=block_id>`_).
 
+.. _get_status_of_transaction:
 
 .. http:get:: /api/v1/statuses?tx_id={tx_id}
 
