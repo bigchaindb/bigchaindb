@@ -402,20 +402,33 @@ class Bigchain(object):
             :obj:`list` of TransactionLink: list of ``txid`` s and ``output`` s
             pointing to another transaction's condition
         """
-        return self.get_outputs_filtered(owner, include_spent=False)
+        return self.get_outputs_filtered(owner, spent=False)
 
     @property
     def fastquery(self):
         return fastquery.FastQuery(self.connection, self.me)
 
-    def get_outputs_filtered(self, owner, include_spent=True):
+    def get_outputs_filtered(self, owner, spent=None):
         """
         Get a list of output links filtered on some criteria
+
+        Args:
+            owner (str): base58 encoded public_key.
+            spent (bool): If ``True`` return only the spent outputs. If
+                          ``False`` return only unspent outputs. If spent is
+                          not specified (``None``) return all outputs.
+
+        Returns:
+            :obj:`list` of TransactionLink: list of ``txid`` s and ``output`` s
+            pointing to another transaction's condition
         """
         outputs = self.fastquery.get_outputs_by_public_key(owner)
-        if not include_spent:
-            outputs = self.fastquery.filter_spent_outputs(outputs)
-        return outputs
+        if spent is None:
+            return outputs
+        elif spent is True:
+            return self.fastquery.filter_unspent_outputs(outputs)
+        elif spent is False:
+            return self.fastquery.filter_spent_outputs(outputs)
 
     def get_transactions_filtered(self, asset_id, operation=None):
         """

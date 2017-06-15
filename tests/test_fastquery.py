@@ -84,3 +84,39 @@ def test_filter_spent_outputs(b, user_pk):
         tx2.to_inputs()[0].fulfills,
         tx4.to_inputs()[0].fulfills
     }
+
+
+def test_filter_unspent_outputs(b, user_pk):
+    out = [([user_pk], 1)]
+    tx1 = Transaction.create([user_pk], out * 3)
+
+    # There are 3 inputs
+    inputs = tx1.to_inputs()
+
+    # Each spent individually
+    tx2 = Transaction.transfer([inputs[0]], out, tx1.id)
+    tx3 = Transaction.transfer([inputs[1]], out, tx1.id)
+    tx4 = Transaction.transfer([inputs[2]], out, tx1.id)
+
+    # The CREATE and first TRANSFER are valid. tx2 produces a new unspent.
+    for tx in [tx1, tx2]:
+        block = Block([tx])
+        b.write_block(block)
+        b.write_vote(b.vote(block.id, '', True))
+
+    # The second TRANSFER is invalid. inputs[1] remains unspent.
+    block = Block([tx3])
+    b.write_block(block)
+    b.write_vote(b.vote(block.id, '', False))
+
+    # The third TRANSFER is undecided. It procuces a new unspent.
+    block = Block([tx4])
+    b.write_block(block)
+
+    outputs = b.fastquery.get_outputs_by_public_key(user_pk)
+    spents = b.fastquery.filter_unspent_outputs(outputs)
+
+    assert set(spents) == {
+        inputs[0].fulfills,
+        inputs[2].fulfills
+    }

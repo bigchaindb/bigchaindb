@@ -68,3 +68,18 @@ class FastQuery:
                   for tx in txs
                   for input_ in tx['inputs']}
         return [ff for ff in outputs if ff not in spends]
+
+    def filter_unspent_outputs(self, outputs):
+        """
+        Remove outputs that have not been spent
+
+        Args:
+            outputs: list of TransactionLink
+        """
+        links = [o.to_dict() for o in outputs]
+        res = query.get_spending_transactions(self.connection, links)
+        txs = [tx for _, tx in self.filter_valid_items(res)]
+        spends = {TransactionLink.from_dict(input_['fulfills'])
+                  for tx in txs
+                  for input_ in tx['inputs']}
+        return [ff for ff in outputs if ff in spends]

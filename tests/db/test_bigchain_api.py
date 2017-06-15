@@ -1194,7 +1194,7 @@ def test_get_owned_ids_calls_get_outputs_filtered():
     with patch('bigchaindb.core.Bigchain.get_outputs_filtered') as gof:
         b = Bigchain()
         res = b.get_owned_ids('abc')
-    gof.assert_called_once_with('abc', include_spent=False)
+    gof.assert_called_once_with('abc', spent=False)
     assert res == gof()
 
 
@@ -1206,21 +1206,36 @@ def test_get_outputs_filtered_only_unspent():
                                     TransactionLink('b', 2)]
         with patch('bigchaindb.fastquery.FastQuery.filter_spent_outputs') as filter_spent:
             filter_spent.return_value = [TransactionLink('b', 2)]
-            out = Bigchain().get_outputs_filtered('abc', include_spent=False)
+            out = Bigchain().get_outputs_filtered('abc', spent=False)
     get_outputs.assert_called_once_with('abc')
     assert out == [TransactionLink('b', 2)]
 
 
-def test_get_outputs_filtered():
+def test_get_outputs_filtered_only_spent():
     from bigchaindb.common.transaction import TransactionLink
     from bigchaindb.core import Bigchain
     with patch('bigchaindb.fastquery.FastQuery.get_outputs_by_public_key') as get_outputs:
         get_outputs.return_value = [TransactionLink('a', 1),
                                     TransactionLink('b', 2)]
-        with patch('bigchaindb.fastquery.FastQuery.filter_spent_outputs') as filter_spent:
-            out = Bigchain().get_outputs_filtered('abc')
+        with patch('bigchaindb.fastquery.FastQuery.filter_unspent_outputs') as filter_spent:
+            filter_spent.return_value = [TransactionLink('b', 2)]
+            out = Bigchain().get_outputs_filtered('abc', spent=True)
+    get_outputs.assert_called_once_with('abc')
+    assert out == [TransactionLink('b', 2)]
+
+
+@patch('bigchaindb.fastquery.FastQuery.filter_unspent_outputs')
+@patch('bigchaindb.fastquery.FastQuery.filter_spent_outputs')
+def test_get_outputs_filtered(filter_spent, filter_unspent):
+    from bigchaindb.common.transaction import TransactionLink
+    from bigchaindb.core import Bigchain
+    with patch('bigchaindb.fastquery.FastQuery.get_outputs_by_public_key') as get_outputs:
+        get_outputs.return_value = [TransactionLink('a', 1),
+                                    TransactionLink('b', 2)]
+        out = Bigchain().get_outputs_filtered('abc')
     get_outputs.assert_called_once_with('abc')
     filter_spent.assert_not_called()
+    filter_unspent.assert_not_called()
     assert out == get_outputs.return_value
 
 

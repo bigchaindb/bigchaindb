@@ -127,4 +127,4 @@ def test_get_spent_issue_1271(b, alice, bob, carol):
     assert b.get_spent(tx_2.id, 0) == tx_5
     assert not b.get_spent(tx_5.id, 0)
     assert b.get_outputs_filtered(alice.public_key)
-    assert b.get_outputs_filtered(alice.public_key, include_spent=False)
+    assert b.get_outputs_filtered(alice.public_key, spent=False)
