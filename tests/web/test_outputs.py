@@ -59,7 +59,7 @@ def test_get_outputs_endpoint_with_invalid_public_key(client):
     assert res.status_code == 400
 
 
-def test_get_outputs_endpoint_with_invalid_unspent(client, user_pk):
+def test_get_outputs_endpoint_with_invalid_spent(client, user_pk):
     expected = {'message': {'spent': 'Boolean value must be "true" or "false" (lowercase)'}}
     params = '?spent=tru&public_key={}'.format(user_pk)
     res = client.get(OUTPUTS_ENDPOINT + params)

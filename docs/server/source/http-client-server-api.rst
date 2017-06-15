@@ -184,7 +184,7 @@ unspent outputs.
    :param spent: Boolean value ("true" or "false") indicating if the result set
                  should include only spent or only unspent outputs. If not
                  specified the result includes all the outputs (both spent
-                 and unspent).
+                 and unspent) associated with the ``public_key``.
 
 .. http:get:: /api/v1/outputs?public_key={public_key}
 
