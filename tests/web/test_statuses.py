@@ -10,7 +10,7 @@ STATUSES_ENDPOINT = '/api/v1/statuses'
 def test_get_transaction_status_endpoint(b, client, user_pk):
     input_tx = b.get_owned_ids(user_pk).pop()
     tx, status = b.get_transaction(input_tx.txid, include_status=True)
-    res = client.get(STATUSES_ENDPOINT + '?tx_id=' + input_tx.txid)
+    res = client.get(STATUSES_ENDPOINT + '?transaction_id=' + input_tx.txid)
     assert status == res.json['status']
     assert res.json['_links']['tx'] == '/transactions/{}'.format(input_tx.txid)
     assert res.status_code == 200
@@ -18,7 +18,7 @@ def test_get_transaction_status_endpoint(b, client, user_pk):
 
 @pytest.mark.bdb
 def test_get_transaction_status_endpoint_returns_404_if_not_found(client):
-    res = client.get(STATUSES_ENDPOINT + '?tx_id=123')
+    res = client.get(STATUSES_ENDPOINT + '?transaction_id=123')
     assert res.status_code == 404
 
 
@@ -94,5 +94,5 @@ def test_get_status_endpoint_returns_400_bad_query_params(client):
     res = client.get(STATUSES_ENDPOINT + '?ts_id=123')
     assert res.status_code == 400
 
-    res = client.get(STATUSES_ENDPOINT + '?tx_id=123&block_id=123')
+    res = client.get(STATUSES_ENDPOINT + '?transaction_id=123&block_id=123')
     assert res.status_code == 400

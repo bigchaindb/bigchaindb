@@ -76,7 +76,7 @@ Content-Type: application/json
 
 
 TPLS['get-statuses-tx-request'] = """\
-GET /statuses?tx_id=%(txid)s HTTP/1.1
+GET /statuses?transaction_id=%(txid)s HTTP/1.1
 Host: example.com
 
 """
@@ -151,7 +151,7 @@ Content-Type: application/json
 
 
 TPLS['get-block-txid-request'] = """\
-GET /api/v1/blocks?tx_id=%(txid)s HTTP/1.1
+GET /api/v1/blocks?transaction_id=%(txid)s HTTP/1.1
 Host: example.com
 
 """

@@ -17,11 +17,11 @@ class StatusApi(Resource):
             ``<status>`` is one of "valid", "invalid", "undecided", "backlog".
         """
         parser = reqparse.RequestParser()
-        parser.add_argument('tx_id', type=str)
+        parser.add_argument('transaction_id', type=str)
         parser.add_argument('block_id', type=str)
 
         args = parser.parse_args(strict=True)
-        tx_id = args['tx_id']
+        tx_id = args['transaction_id']
         block_id = args['block_id']
 
         # logical xor - exactly one query argument required

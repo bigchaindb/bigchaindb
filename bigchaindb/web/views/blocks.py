@@ -41,12 +41,12 @@ class BlockListApi(Resource):
             "valid", "invalid", "undecided".
         """
         parser = reqparse.RequestParser()
-        parser.add_argument('tx_id', type=str, required=True)
+        parser.add_argument('transaction_id', type=str, required=True)
         parser.add_argument('status', type=str, case_sensitive=False,
                             choices=[Bigchain.BLOCK_VALID, Bigchain.BLOCK_INVALID, Bigchain.BLOCK_UNDECIDED])
 
         args = parser.parse_args(strict=True)
-        tx_id = args['tx_id']
+        tx_id = args['transaction_id']
         status = args['status']
 
         pool = current_app.config['bigchain_pool']
