@@ -166,21 +166,29 @@ Transaction Outputs
 -------------------
 
 The ``/api/v1/outputs`` endpoint returns transactions outputs filtered by a
-given public key, and optionally filtered to only include outputs that have
-not already been spent.
+given public key, and optionally filtered to only include either spent or
+unspent outputs.
 
 
-.. http:get:: /api/v1/outputs?public_key={public_key}
+.. http:get:: /api/v1/outputs
 
-   Get transaction outputs by public key. The `public_key` parameter must be
+   Get transaction outputs by public key. The ``public_key`` parameter must be
    a base58 encoded ed25519 public key associated with transaction output
    ownership.
 
    Returns a list of transaction outputs.
 
-   :param public_key: Base58 encoded public key associated with output ownership. This parameter is mandatory and without it the endpoint will return a ``400`` response code.
-   :param unspent: Boolean value ("true" or "false") indicating if the result set should be limited to outputs that are available to spend. Defaults to "false".
+   :param public_key: Base58 encoded public key associated with output
+                      ownership. This parameter is mandatory and without it
+                      the endpoint will return a ``400`` response code.
+   :param spent: Boolean value ("true" or "false") indicating if the result set
+                 should include only spent or only unspent outputs. If not
+                 specified the result includes all the outputs (both spent
+                 and unspent) associated with the ``public_key``.
 
+.. http:get:: /api/v1/outputs?public_key={public_key}
+
+    Return all outputs, both spent and unspent, for the ``public_key``.
 
    **Example request**:
 
@@ -201,6 +209,62 @@ not already been spent.
          "output": 0,
          "transaction_id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e"
        },
+       {
+         "output": 1,
+         "transaction_id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e"
+       }
+     ]
+
+   :statuscode 200: A list of outputs were found and returned in the body of the response.
+   :statuscode 400: The request wasn't understood by the server, e.g. the ``public_key`` querystring was not included in the request.
+
+.. http:get:: /api/v1/outputs?public_key={public_key}&spent=true
+
+    Return all **spent** outputs for ``public_key``.
+
+   **Example request**:
+
+   .. sourcecode:: http
+
+     GET /api/v1/outputs?public_key=1AAAbbb...ccc&spent=true HTTP/1.1
+     Host: example.com
+
+   **Example response**:
+
+   .. sourcecode:: http
+
+     HTTP/1.1 200 OK
+     Content-Type: application/json
+
+     [
+       {
+         "output": 0,
+         "transaction_id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e"
+       }
+     ]
+
+   :statuscode 200: A list of outputs were found and returned in the body of the response.
+   :statuscode 400: The request wasn't understood by the server, e.g. the ``public_key`` querystring was not included in the request.
+
+.. http:get:: /api/v1/outputs?public_key={public_key}&spent=false
+
+    Return all **unspent** outputs for ``public_key``.
+
+   **Example request**:
+
+   .. sourcecode:: http
+
+     GET /api/v1/outputs?public_key=1AAAbbb...ccc&spent=false HTTP/1.1
+     Host: example.com
+
+   **Example response**:
+
+   .. sourcecode:: http
+
+     HTTP/1.1 200 OK
+     Content-Type: application/json
+
+     [
        {
          "output": 1,
          "transaction_id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e"
