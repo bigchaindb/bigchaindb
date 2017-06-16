@@ -28,10 +28,12 @@ spec:
         imagePullPolicy: Always
         env:
         - name: MMS_API_KEYFILE_PATH
-          value: /etc/mongod/cloud/api-key
+          value: /etc/mongod/cloud/agent-api-key
+        - name: MMS_GROUPID_KEYFILE_PATH
+          value: /etc/mongod/cloud/group-id
         - name: CA_CRT_PATH
           value: /etc/mongod/ssl/ca.pem
-        - name: MONITORING_PEM_PATH
+        - name: BACKUP_PEM_PATH
           value: /etc/mongod/ssl/mdb-bak-instance.pem
         resources:
           limits:
@@ -41,7 +43,7 @@ spec:
         - name: mdb-bak-certs
           mountPath: /etc/mongod/ssl/
           readOnly: true
-        - name: mdb-agent-api-key
+        - name: cloud-manager-credentials
           mountPath: /etc/mongod/cloud/
           readOnly: true
       restartPolicy: Always
@@ -50,7 +52,7 @@ spec:
         secret:
           secretName: mdb-bak-certs
           defaultMode: 0400
-      - name: mdb-agent-api-key
+      - name: cloud-manager-credentials
         secret:
-          secretName: mdb-agent-api-key
+          secretName: cloud-manager-credentials
           defaultMode: 0400

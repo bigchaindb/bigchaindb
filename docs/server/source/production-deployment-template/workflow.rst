@@ -103,9 +103,13 @@ you must ask the managing organization for all relevant 3scale credentials.
 
 
 ☐ If the cluster uses MongoDB Cloud Manager for monitoring and backup,
-you must ask the managing organization for the ``Agent API Key``.
-(Each Cloud Manager "group" has its own ``Agent API Key``.
-It can be found under **Settings - Group Settings**.)
+you must ask the managing organization for the ``Group ID`` and the
+``Agent API Key``.
+(Each Cloud Manager "group" has its own ``Group ID``. A ``Group ID`` can
+contain a number of ``Agent API Key`` s. It can be found under
+**Settings - Group Settings**. It was recently added to the Cloud Manager to
+allow easier periodic rotation of the ``Agent API Key`` with a constant
+``Group ID``)
 
 
 ☐ Generate four keys and corresponding certificate signing requests (CSRs):
