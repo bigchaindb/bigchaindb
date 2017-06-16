@@ -46,12 +46,12 @@ Transactions
 
    Get the transaction with the ID ``tx_id``.
 
-   This endpoint returns a transaction if it was included in a ``VALID`` block,
-   if it is still waiting to be processed (``BACKLOG``) or is still in an
-   undecided block (``UNDECIDED``). All instances of a transaction in invalid
-   blocks are ignored and treated as if they don't exist. If a request is made
-   for a transaction and instances of that transaction are found only in
-   invalid blocks, then the response will be ``404 Not Found``.
+   This endpoint returns a transaction if it was included in a ``VALID`` block.
+   All instances of a transaction in invalid/undecided blocks or the backlog
+   are ignored and treated as if they don't exist. If a request is made for a
+   transaction and instances of that transaction are found only in
+   invalid/undecided blocks or the backlog, then the response will be ``404 Not
+   Found``.
 
    :param tx_id: transaction ID
    :type tx_id: hex string
@@ -147,7 +147,16 @@ Transactions
    .. literalinclude:: http-samples/post-tx-response.http
       :language: http
 
+   .. note::
+       If the server is returning a ``202`` HTTP status code, then the
+       transaction has been accepted for processing. To check the status of the
+       transaction, poll the link to the
+       :ref:`status monitor <get_status_of_transaction>`
+       provided in the ``Location`` header or listen to server's
+       :ref:`WebSocket Event Stream API <The WebSocket Event Stream API>`.
+
    :resheader Content-Type: ``application/json``
+   :resheader Location: Relative link to a status monitor for the submitted transaction.
 
    :statuscode 202: The pushed transaction was accepted in the ``BACKLOG``, but the processing has not been completed.
    :statuscode 400: The transaction was malformed and not accepted in the ``BACKLOG``.
@@ -216,6 +225,7 @@ Statuses
         statuses <#get--statuses?tx_id=tx_id>`_ and `block statuses
         <#get--statuses?block_id=block_id>`_).
 
+.. _get_status_of_transaction:
 
 .. http:get:: /api/v1/statuses?tx_id={tx_id}
 

@@ -4,7 +4,7 @@ For more information please refer to the documentation: http://bigchaindb.com/ht
 """
 import logging
 
-from flask import current_app, request
+from flask import current_app, request, jsonify
 from flask_restful import Resource, reqparse
 
 from bigchaindb.common.exceptions import SchemaValidationError, ValidationError
@@ -28,9 +28,9 @@ class TransactionApi(Resource):
         pool = current_app.config['bigchain_pool']
 
         with pool() as bigchain:
-            tx = bigchain.get_transaction(tx_id)
+            tx, status = bigchain.get_transaction(tx_id, include_status=True)
 
-        if not tx:
+        if not tx or status is not bigchain.TX_VALID:
             return make_error(404)
 
         return tx.to_dict()
@@ -87,4 +87,16 @@ class TransactionListApi(Resource):
             else:
                 bigchain.write_transaction(tx_obj)
 
-        return tx, 202
+        response = jsonify(tx)
+        response.status_code = 202
+
+        # NOTE: According to W3C, sending a relative URI is not allowed in the
+        # Location Header:
+        #   - https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
+        #
+        # Flask is autocorrecting relative URIs. With the following command,
+        # we're able to prevent this.
+        response.autocorrect_location_header = False
+        status_monitor = '../statuses?transaction_id={}'.format(tx_obj.id)
+        response.headers['Location'] = status_monitor
+        return response
