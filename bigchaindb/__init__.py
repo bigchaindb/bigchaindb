@@ -69,6 +69,7 @@ config = {
         'workers': None,  # if none, the value will be cpu_count * 2 + 1
     },
     'wsserver': {
+        'scheme': os.environ.get('BIGCHAINDB_WSSERVER_SCHEME') or 'ws',
         'host': os.environ.get('BIGCHAINDB_WSSERVER_HOST') or 'localhost',
         'port': int(os.environ.get('BIGCHAINDB_WSSERVER_PORT', 9985)),
     },
