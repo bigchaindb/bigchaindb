@@ -23,8 +23,6 @@ def make_error(status_code, message=None):
 
 def base_ws_uri():
     """Base websocket uri."""
-    # TODO Revisit as this is a workaround to address issue
-    # https://github.com/bigchaindb/bigchaindb/issues/1465.
     scheme = config['wsserver']['scheme']
     host = config['wsserver']['host']
     port = config['wsserver']['port']
