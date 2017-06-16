@@ -37,6 +37,14 @@ For convenience, here's a list of all the relevant environment variables (docume
 `BIGCHAINDB_LOG_FMT_CONSOLE`<br>
 `BIGCHAINDB_LOG_FMT_LOGFILE`<br>
 `BIGCHAINDB_LOG_GRANULAR_LEVELS`<br>
+`BIGCHAINDB_DATABASE_SSL`<br>
+`BIGCHIANDB_DATABASE_LOGIN`<br>
+`BIGCHAINDB_DATABASE_PASSWORD`<br>
+`BIGCHAINDB_DATABASE_CA_CERT`<br>
+`BIGCHAINDB_DATABASE_CERTFILE`<br>
+`BIGCHAINDB_DATABASE_KEYFILE`<br>
+`BIGCHAINDB_DATABASE_KEYFILE_PASSPHRASE`<br>
+`BIGCHAINDB_DATABASE_CRLFILE`<br>
 
 The local config file is `$HOME/.bigchaindb` by default (a file which might not even exist), but you can tell BigchainDB to use a different file by using the `-c` command-line option, e.g. `bigchaindb -c path/to/config_file.json start`
 or using the `BIGCHAINDB_CONFIG_PATH` environment variable, e.g. `BIGHAINDB_CONFIG_PATH=.my_bigchaindb_config bigchaindb start`.
@@ -103,6 +111,19 @@ The settings with names of the form `database.*` are for the database backend
 * `database.replicaset` is only relevant if using MongoDB; it's the name of the MongoDB replica set, e.g. `bigchain-rs`.
 * `database.connection_timeout` is the maximum number of milliseconds that BigchainDB will wait before giving up on one attempt to connect to the database backend.
 * `database.max_tries` is the maximum number of times that BigchainDB will try to establish a connection with the database backend. If 0, then it will try forever.
+* `database.ssl` is a flag that determines if BigchainDB connects to the
+  backend database over TLS/SSL or not. This can be set to either `true` or
+  `false` (the default).
+  Note: This parameter is only supported for the MongoDB backend currently.
+* `database.login` and `database.password` are the login and password used to
+  authenticate to the database before performing any operations, specified in
+  plaintext. The default values for both are currently `null`, which means that
+  BigchainDB will not authenticate with the backend database.
+  Note: These parameters are only supported for the MongoDB backend currently.
+* `database.ca_cert`, `database.certfile`, `database.keyfile` and `database.crlfile` are the paths to the CA, signed certificate, private key and certificate revocation list files respectively.
+  Note: These parameters are only supported for the MongoDB backend currently.
+* `database.keyfile_passphrase` is the private key decryption passphrase, specified in plaintext.
+  Note: This parameter is only supported for the MongoDB backend currently.
 
 **Example using environment variables**
 ```text
@@ -138,7 +159,15 @@ If you used `bigchaindb -y configure mongodb` to create a default local config f
     "name": "bigchain",
     "replicaset": "bigchain-rs",
     "connection_timeout": 5000,
-    "max_tries": 3
+    "max_tries": 3,
+    "login": null,
+    "password": null
+    "ssl": false,
+    "ca_cert": null,
+    "crlfile": null,
+    "certfile": null,
+    "keyfile": null,
+    "keyfile_passphrase": null,
 }
 ```
 
