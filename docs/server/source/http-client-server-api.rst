@@ -176,7 +176,7 @@ not already been spent.
    a base58 encoded ed25519 public key associated with transaction output
    ownership.
 
-   Returns a list of links to transaction outputs.
+   Returns a list of transaction outputs.
 
    :param public_key: Base58 encoded public key associated with output ownership. This parameter is mandatory and without it the endpoint will return a ``400`` response code.
    :param unspent: Boolean value ("true" or "false") indicating if the result set should be limited to outputs that are available to spend. Defaults to "false".
@@ -197,8 +197,14 @@ not already been spent.
      Content-Type: application/json
 
      [
-       "../transactions/2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e/outputs/0",
-       "../transactions/2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e/outputs/1"
+       {
+         "output": 0,
+         "transaction_id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e"
+       },
+       {
+         "output": 1,
+         "transaction_id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e"
+       }
      ]
 
    :statuscode 200: A list of outputs were found and returned in the body of the response.
@@ -211,9 +217,6 @@ Statuses
 .. http:get:: /api/v1/statuses
 
    Get the status of an asynchronously written transaction or block by their id.
-
-   A link to the resource is also provided in the returned payload under
-   ``_links``.
 
    :query string transaction_id: transaction ID
    :query string block_id: block ID
@@ -246,7 +249,6 @@ Statuses
       :language: http
 
    :resheader Content-Type: ``application/json``
-   :resheader Location: Once the transaction has been persisted, this header will link to the actual resource.
 
    :statuscode 200: A transaction with that ID was found.
    :statuscode 404: A transaction with that ID was not found.
@@ -265,16 +267,10 @@ Statuses
 
    **Example response**:
 
-   .. literalinclude:: http-samples/get-statuses-block-invalid-response.http
-      :language: http
-
-   **Example response**:
-
    .. literalinclude:: http-samples/get-statuses-block-valid-response.http
       :language: http
 
    :resheader Content-Type: ``application/json``
-   :resheader Location: Once the block has been persisted, this header will link to the actual resource.
 
    :statuscode 200: A block with that ID was found.
    :statuscode 404: A block with that ID was not found.

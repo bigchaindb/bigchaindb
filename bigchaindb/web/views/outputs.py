@@ -24,5 +24,5 @@ class OutputListApi(Resource):
         with pool() as bigchain:
             outputs = bigchain.get_outputs_filtered(args['public_key'],
                                                     include_spent)
-            # NOTE: We pass '..' as a path to create a valid relative URI
-            return [u.to_uri('..') for u in outputs]
+            return [{'transaction_id': output.txid, 'output': output.output}
+                    for output in outputs]

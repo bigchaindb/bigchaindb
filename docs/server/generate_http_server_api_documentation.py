@@ -97,10 +97,7 @@ HTTP/1.1 200 OK
 Content-Type: application/json
 
 {
-  "status": "valid",
-  "_links": {
-    "tx": "/transactions/%(txid)s"
-  }
+  "status": "valid"
 }
 """
 
@@ -127,10 +124,7 @@ HTTP/1.1 200 OK
 Content-Type: application/json
 
 {
-  "status": "valid",
-  "_links": {
-    "block": "/blocks/%(blockid)s"
-  }
+  "status": "valid"
 }
 """
 
