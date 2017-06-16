@@ -139,8 +139,7 @@ class MongoDBConnection(Connection):
         except (pymongo.errors.ConnectionFailure,
                 pymongo.errors.OperationFailure) as exc:
             logger.info('Exception in _connect(): {}'.format(exc))
-            # if "Authentication fail" in str(exc): TODO @vrde to confirm this
-            if "auth failed" in str(exc):
+            if 'auth failed' in str(exc):
                 raise AuthenticationError() from exc
             raise ConnectionError() from exc
         except pymongo.errors.ConfigurationError as exc:
@@ -186,8 +185,7 @@ def initialize_replica_set(host, port, connection_timeout, dbname, ssl, login,
     except (pymongo.errors.ConnectionFailure,
             pymongo.errors.OperationFailure) as exc:
         logger.info('Exception in _connect(): {}'.format(exc))
-        # if "Authentication fail" in str(exc): TODO @vrde
-        if "auth failed" in str(exc):
+        if 'auth failed' in str(exc):
             raise AuthenticationError() from exc
         raise ConnectionError() from exc
     except pymongo.errors.ConfigurationError as exc:
