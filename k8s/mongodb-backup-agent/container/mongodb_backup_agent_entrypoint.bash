@@ -18,6 +18,7 @@ if [[ -z "${mms_api_keyfile_path}" || \
 fi
 
 sed -i '/mmsApiKey/d'  ${MONGODB_BACKUP_CONF_FILE}
+sed -i '/mmsGroupId/d'  ${MONGODB_BACKUP_CONF_FILE}
 sed -i '/mothership/d'  ${MONGODB_BACKUP_CONF_FILE}
 
 # Get the api key from file

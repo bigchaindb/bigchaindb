@@ -21,9 +21,11 @@ if [[ -z "${mms_api_keyfile_path}" || \
   exit 1
 fi
 
-# Delete all lines containing "mmsApiKey" in the MongoDB Monitoring Agent
-# config file /etc/mongodb-mms/monitoring-agent.config
+# Delete the line containing "mmsApiKey" and the line containing "mmsGroupId"
+# in the MongoDB Monitoring Agent config file
+# /etc/mongodb-mms/monitoring-agent.config
 sed -i '/mmsApiKey/d'  $MONGODB_MON_CONF_FILE
+sed -i '/mmsGroupId/d'  $MONGODB_MON_CONF_FILE
 
 # Get the api key from file
 mms_api_key=`cat ${mms_api_keyfile_path}`
