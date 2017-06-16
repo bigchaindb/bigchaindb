@@ -111,13 +111,14 @@ The settings with names of the form `database.*` are for the database backend
 * `database.connection_timeout` is the maximum number of milliseconds that BigchainDB will wait before giving up on one attempt to connect to the database backend.
 * `database.max_tries` is the maximum number of times that BigchainDB will try to establish a connection with the database backend. If 0, then it will try forever.
 * `database.ssl` is a flag that determines if BigchainDB connects to the
-  backend database over SSL or not. This can be set to any value (the presence of a value
-  qualifies as set or true in this case) to enable SSL connections. Do not
-  specify this parameter to connect over plaintext connection.
+  backend database over TLS/SSL or not. This can be set to either `true` or
+  `false` (the default).
   Note: This parameter is only supported for the MongoDB backend currently.
 * `database.login` and `database.password` are the login and password used to
   authenticate to the database before performing any operations, specified in
-  plaintext.
+  plaintext. The default values for both are currently `null`, which means that
+  BigchainDB will not authenticate with the backend database.
+  Note: These parameters are only supported for the MongoDB backend currently.
 * `database.ca_cert`, `database.certfile`, `database.keyfile` and `database.crlfile` are the paths to the CA, signed certificate, private key and certificate revocation list files respectively.
   Note: These parameters are only supported for the MongoDB backend currently.
 * `database.keyfile_passphrase` is the private key decryption passphrase, specified in plaintext.
@@ -157,7 +158,15 @@ If you used `bigchaindb -y configure mongodb` to create a default local config f
     "name": "bigchain",
     "replicaset": "bigchain-rs",
     "connection_timeout": 5000,
-    "max_tries": 3
+    "max_tries": 3,
+    "login": null,
+    "password": null
+    "ssl": false,
+    "ca_cert": null,
+    "crlfile": null,
+    "certfile": null,
+    "keyfile": null,
+    "keyfile_passphrase": null,
 }
 ```
 
