@@ -5,7 +5,7 @@ set -e -x
 if [[ -n ${TOXENV} ]]; then
   tox -e ${TOXENV}
 elif [[ "${BIGCHAINDB_DATABASE_BACKEND}" == mongodb && \
-    "${BIGCHAINDB_DATABASE_SSL}" == false ]]; then
+    -z "${BIGCHAINDB_DATABASE_SSL}" ]]; then
     # Run the full suite of tests for MongoDB over an unsecure connection
   pytest -sv --database-backend=mongodb --cov=bigchaindb
 elif [[ "${BIGCHAINDB_DATABASE_BACKEND}" == mongodb && \
