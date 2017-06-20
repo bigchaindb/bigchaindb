@@ -19,7 +19,7 @@ For reference, the possible headings are:
 Tag name: v1.0.0rc1
 
 ### Added
-* Support for SSL/TLS auth and communications between MongoDB and BigchainDB, MongoDB Backup Agent, MongoDB Monitoring Agent, and MongoDB Cloud Manager. Pull Requests
+* Support for secure TLS/SSL communication between MongoDB and {BigchainDB, MongoDB Backup Agent, MongoDB Monitoring Agent}. Pull Requests
 [#1456](https://github.com/bigchaindb/bigchaindb/pull/1456),
 [#1497](https://github.com/bigchaindb/bigchaindb/pull/1497),
 [#1510](https://github.com/bigchaindb/bigchaindb/pull/1510),
