@@ -1,10 +1,11 @@
 # Transaction Concepts
 
-In BigchainDB, _Transactions_ are used to register, issue, create or transfer
+In BigchainDB, _transactions_ are used to register, issue, create or transfer
 things (e.g. assets).
 
 Transactions are the most basic kind of record stored by BigchainDB. There are
 two kinds: CREATE transactions and TRANSFER transactions.
+
 
 ## CREATE Transactions
 
@@ -26,6 +27,7 @@ transfer must be signed (cryptographically) by the private key associated with a
 given public key. More sophisticated conditions are possible. BigchainDB's
 conditions are based on the crypto-conditions of the [Interledger Protocol
 (ILP)](https://interledger.org/).
+
 
 ## TRANSFER Transactions
 
@@ -53,9 +55,10 @@ transferred if both Jack and Kelly sign.
 Note how the sum of the incoming paperclips must equal the sum
 of the outgoing paperclips (100).
 
+
 ## Transaction Validity
 
 When a node is asked to check if a transaction is valid, it checks several
-things. We documented those things in a post on the BigchainDB Blog.
-
-TODO (Troy): Hyperlink to the actual post, once it's published.
+things. We documented those things in a post on *The BigchainDB Blog*:
+["What is a Valid Transaction in BigchainDB?"](https://blog.bigchaindb.com/what-is-a-valid-transaction-in-bigchaindb-9a1a075a9598)
+(Note: That post was about BigchainDB Server v1.0.0.)
