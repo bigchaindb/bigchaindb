@@ -66,6 +66,7 @@ Tag name: v1.0.0rc1
 
 
 ### Notes
+* We dropped support for Python 3.4. [Pull Request #1564](https://github.com/bigchaindb/bigchaindb/pull/1564)
 * There were many improvements to our Kubernetes-based production deployment template (and the associated documentaiton).
 * There is now a [BigchainDB Ruby driver](https://github.com/LicenseRocks/bigchaindb_ruby), created by @addywaddy at [license.rocks](https://github.com/bigchaindb/bigchaindb/pull/1437).
 * The [BigchainDB JavaScript driver](https://github.com/bigchaindb/js-bigchaindb-driver) was moved to a different GitHub repo and is now officially maintained by the BigchainDB team.
