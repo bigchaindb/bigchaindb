@@ -32,3 +32,5 @@ elif [[ "${BIGCHAINDB_DATABASE_BACKEND}" == mongodb && \
         --sslCRLFile=$TRAVIS_BUILD_DIR/tests/backend/mongodb-ssl/certs/crl.pem \
         --sslPEMKeyFile=$TRAVIS_BUILD_DIR/tests/backend/mongodb-ssl/certs/test_mdb_ssl_cert_and_key.pem &> /dev/null &
 fi
+
+docker build -t bigchaindb/bigchaindb-travis-test:$TRAVIS_BRANCH .
