@@ -21,7 +21,6 @@ For convenience, here's a list of all the relevant environment variables (docume
 `BIGCHAINDB_SERVER_BIND`<br>
 `BIGCHAINDB_SERVER_LOGLEVEL`<br>
 `BIGCHAINDB_SERVER_WORKERS`<br>
-`BIGCHAINDB_SERVER_THREADS`<br>
 `BIGCHAINDB_WSSERVER_SCHEME`<br>
 `BIGCHAINDB_WSSERVER_HOST`<br>
 `BIGCHAINDB_WSSERVER_PORT`<br>
@@ -189,7 +188,6 @@ for more information.
 export BIGCHAINDB_SERVER_BIND=0.0.0.0:9984
 export BIGCHAINDB_SERVER_LOGLEVEL=debug
 export BIGCHAINDB_SERVER_WORKERS=5
-export BIGCHAINDB_SERVER_THREADS=5
 ```
 
 **Example config file snippet**
