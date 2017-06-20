@@ -51,7 +51,7 @@ Note that the `-c` command line option will always take precedence if both the `
 
 You can read the current default values in the file [bigchaindb/\_\_init\_\_.py](https://github.com/bigchaindb/bigchaindb/blob/master/bigchaindb/__init__.py). (The link is to the latest version.)
 
-Running `bigchaindb -y configure rethinkdb` will generate a local config file in `$HOME/.bigchaindb` with all the default values, with two exceptions: It will generate a valid private/public keypair, rather than using the default keypair (`None` and `None`).
+Running `bigchaindb -y configure mongodb` will generate a local config file in `$HOME/.bigchaindb` with all the default values (for using MongoDB as the database backend), with two exceptions: it will generate a valid private/public keypair, rather than using the default keypair (`None` and `None`).
 
 
 ## keypair.public & keypair.private
@@ -72,7 +72,7 @@ export BIGCHAINDB_KEYPAIR_PRIVATE=5C5Cknco7YxBRP9AgB1cbUVTL4FAcooxErLygw1DeG2D
 }
 ```
 
-Internally (i.e. in the Python code), both keys have a default value of `None`, but that's not a valid key. Therefore you can't rely on the defaults for the keypair. If you want to run BigchainDB, you must provide a valid keypair, either in the environment variables or in the local config file. You can generate a local config file with a valid keypair (and default everything else) using `bigchaindb -y configure rethinkdb`.
+Internally (i.e. in the Python code), both keys have a default value of `None`, but that's not a valid key. Therefore you can't rely on the defaults for the keypair. If you want to run BigchainDB, you must provide a valid keypair, either in the environment variables or in the local config file. You can generate a local config file with a valid keypair (and default everything else) using `bigchaindb -y configure mongodb`.
 
 
 ## keyring
@@ -101,12 +101,12 @@ Note how the keys in the list are separated by colons.
 ## database.*
 
 The settings with names of the form `database.*` are for the database backend
-(currently either RethinkDB or MongoDB). They are:
+(currently either MongoDB or RethinkDB). They are:
 
-* `database.backend` is either `rethinkdb` or `mongodb`.
+* `database.backend` is either `mongodb` or `rethinkdb`.
 * `database.host` is the hostname (FQDN) of the backend database.
 * `database.port` is self-explanatory.
-* `database.name` is a user-chosen name for the database inside RethinkDB or MongoDB, e.g. `bigchain`.
+* `database.name` is a user-chosen name for the database inside MongoDB or RethinkDB, e.g. `bigchain`.
 * `database.replicaset` is only relevant if using MongoDB; it's the name of the MongoDB replica set, e.g. `bigchain-rs`.
 * `database.connection_timeout` is the maximum number of milliseconds that BigchainDB will wait before giving up on one attempt to connect to the database backend.
 * `database.max_tries` is the maximum number of times that BigchainDB will try to establish a connection with the database backend. If 0, then it will try forever.
