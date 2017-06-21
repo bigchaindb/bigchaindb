@@ -73,6 +73,7 @@ setParameter:
   enableLocalhostAuthBypass: true
   #notablescan: 1
   logUserIds: 1
+  authenticationMechanisms: MONGODB-X509,SCRAM-SHA-1
 
 storage:
   dbPath: /data/db
