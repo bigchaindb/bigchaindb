@@ -23,8 +23,9 @@ Tag name: v1.0.0rc1
 [#1456](https://github.com/bigchaindb/bigchaindb/pull/1456),
 [#1497](https://github.com/bigchaindb/bigchaindb/pull/1497),
 [#1510](https://github.com/bigchaindb/bigchaindb/pull/1510),
-[#1536](https://github.com/bigchaindb/bigchaindb/pull/1536), and
-[#1551](https://github.com/bigchaindb/bigchaindb/pull/1551).
+[#1536](https://github.com/bigchaindb/bigchaindb/pull/1536),
+[#1551](https://github.com/bigchaindb/bigchaindb/pull/1551) and
+[#1552](https://github.com/bigchaindb/bigchaindb/pull/1552).
 * Text search support (only if using MongoDB). Pull Requests [#1469](https://github.com/bigchaindb/bigchaindb/pull/1469) and [#1471](https://github.com/bigchaindb/bigchaindb/pull/1471) 
 * The `database.connection_timeout` configuration setting now works with RethinkDB too. [#1512](https://github.com/bigchaindb/bigchaindb/pull/1512)
 * New code and tools for benchmarking CREATE transactions. [Pull Request #1511](https://github.com/bigchaindb/bigchaindb/pull/1511)
