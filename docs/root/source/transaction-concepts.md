@@ -1,10 +1,11 @@
 # Transaction Concepts
 
-In BigchainDB, _Transactions_ are used to register, issue, create or transfer
+In BigchainDB, _transactions_ are used to register, issue, create or transfer
 things (e.g. assets).
 
 Transactions are the most basic kind of record stored by BigchainDB. There are
 two kinds: CREATE transactions and TRANSFER transactions.
+
 
 ## CREATE Transactions
 
@@ -26,6 +27,7 @@ transfer must be signed (cryptographically) by the private key associated with a
 given public key. More sophisticated conditions are possible. BigchainDB's
 conditions are based on the crypto-conditions of the [Interledger Protocol
 (ILP)](https://interledger.org/).
+
 
 ## TRANSFER Transactions
 
@@ -53,33 +55,10 @@ transferred if both Jack and Kelly sign.
 Note how the sum of the incoming paperclips must equal the sum
 of the outgoing paperclips (100).
 
+
 ## Transaction Validity
 
 When a node is asked to check if a transaction is valid, it checks several
-things. Some things it checks are:
-
-* Are all the fulfillments valid? (Do they correctly satisfy the conditions
-  they claim to satisfy?)
-* If it's a creation transaction, is the asset valid?
-* If it's a transfer transaction:
-   * Is it trying to fulfill a condition in a nonexistent transaction?
-   * Is it trying to fulfill a condition that's not in a valid transaction?
-     (It's okay if the condition is in a transaction in an invalid block; those
-     transactions are ignored. Transactions in the backlog or undecided blocks
-     are not ignored.)
-   * Is it trying to fulfill a condition that has already been fulfilled, or
-     that some other pending transaction (in the backlog or an undecided block)
-     also aims to fulfill?
-   * Is the asset ID in the transaction the same as the asset ID in all
-     transactions whose conditions are being fulfilled?
-   * Is the sum of the amounts in the fulfillments equal
-     to the sum of the amounts in the new conditions?
-
-If you're curious about the details of transaction validation, the code is in
-the `validate` method of the `Transaction` class, in `bigchaindb/models.py` (at
-the time of writing).
-
-Note: The check to see if the transaction ID is equal to the hash of the
-transaction body is actually done whenever the transaction is converted from a
-Python dict to a Transaction object, which must be done before the `validate`
-method can be called (since it's called on a Transaction object).
+things. We documented those things in a post on *The BigchainDB Blog*:
+["What is a Valid Transaction in BigchainDB?"](https://blog.bigchaindb.com/what-is-a-valid-transaction-in-bigchaindb-9a1a075a9598)
+(Note: That post was about BigchainDB Server v1.0.0.)

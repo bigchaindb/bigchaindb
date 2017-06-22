@@ -96,6 +96,7 @@ That list of public keys is known as the BigchainDB "keyring."
 ☐ Ask the managing organization
 for the FQDN used to serve the BigchainDB APIs
 and for a copy of the associated SSL/TLS certificate.
+Also, ask for the user name to use for authenticating to MongoDB.
 
 
 ☐ If the cluster uses 3scale for API authentication, monitoring and billing,
@@ -103,10 +104,13 @@ you must ask the managing organization for all relevant 3scale credentials.
 
 
 ☐ If the cluster uses MongoDB Cloud Manager for monitoring and backup,
-you must ask the managing organization for the ``Agent Api Key``.
-(Each Cloud Manager backup will have its own ``Agent Api Key``.
-If there's one Cloud Manager backup,
-there will be one ``Agent Api Key`` for the whole cluster.)
+you must ask the managing organization for the ``Group ID`` and the
+``Agent API Key``.
+(Each Cloud Manager "group" has its own ``Group ID``. A ``Group ID`` can
+contain a number of ``Agent API Key`` s. It can be found under
+**Settings - Group Settings**. It was recently added to the Cloud Manager to
+allow easier periodic rotation of the ``Agent API Key`` with a constant
+``Group ID``)
 
 
 ☐ Generate four keys and corresponding certificate signing requests (CSRs):

@@ -165,14 +165,9 @@ def test_high_amounts(create_tx):
 # Version
 
 def test_validate_version(create_tx):
-    import re
-    import bigchaindb.version
-
-    short_ver = bigchaindb.version.__short_version__
-    assert create_tx.version == re.match(r'^(.*\d)', short_ver).group(1)
-
+    create_tx.version = '1.0'
     validate(create_tx)
-
-    # At version 1, transaction version will break step with server version.
-    create_tx.version = '1.0.0'
+    create_tx.version = '0.10'
+    validate_raises(create_tx)
+    create_tx.version = '110'
     validate_raises(create_tx)

@@ -3,9 +3,13 @@ import pytest
 
 @pytest.fixture
 def config(request, monkeypatch):
+    backend = request.config.getoption('--database-backend')
+    if backend == 'mongodb-ssl':
+        backend = 'mongodb'
+
     config = {
         'database': {
-            'backend': request.config.getoption('--database-backend'),
+            'backend': backend,
             'host': 'host',
             'port': 28015,
             'name': 'bigchain',
@@ -19,7 +23,8 @@ def config(request, monkeypatch):
         },
         'keyring': [],
         'CONFIGURED': True,
-        'backlog_reassign_delay': 30
+        'backlog_reassign_delay': 30,
+        'graphite': {'host': 'localhost'},
     }
 
     monkeypatch.setattr('bigchaindb.config', config)
@@ -122,4 +127,4 @@ def test_get_spent_issue_1271(b, alice, bob, carol):
     assert b.get_spent(tx_2.id, 0) == tx_5
     assert not b.get_spent(tx_5.id, 0)
     assert b.get_outputs_filtered(alice.public_key)
-    assert b.get_outputs_filtered(alice.public_key, include_spent=False)
+    assert b.get_outputs_filtered(alice.public_key, spent=False)

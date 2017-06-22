@@ -2,7 +2,6 @@ language: python
 cache: pip
 
 python:
-  - 3.4
   - 3.5
   - 3.6
   
@@ -14,12 +13,6 @@ env:
 matrix:
   fast_finish: true
   exclude:
-  - python: 3.4
-    env: TOXENV=flake8 
-  - python: 3.4
-    env: TOXENV=docsroot
-  - python: 3.4
-    env: TOXENV=docsserver
   - python: 3.5
     env: TOXENV=flake8 
   - python: 3.5 
@@ -27,22 +20,30 @@ matrix:
   - python: 3.5 
     env: TOXENV=docsserver
   include:
-  - python: 3.4
-    addons: 
-      rethinkdb: '2.3.5'
-    env: BIGCHAINDB_DATABASE_BACKEND=rethinkdb
   - python: 3.5
     addons: 
       rethinkdb: '2.3.5'
     env: BIGCHAINDB_DATABASE_BACKEND=rethinkdb
   - python: 3.5
-    env: BIGCHAINDB_DATABASE_BACKEND=mongodb
+    env:
+    - BIGCHAINDB_DATABASE_BACKEND=mongodb
+    - BIGCHAINDB_DATABASE_SSL=
   - python: 3.6
     addons: 
       rethinkdb: '2.3.5'
     env: BIGCHAINDB_DATABASE_BACKEND=rethinkdb
   - python: 3.6
-    env: BIGCHAINDB_DATABASE_BACKEND=mongodb
+    env:
+    - BIGCHAINDB_DATABASE_BACKEND=mongodb
+    - BIGCHAINDB_DATABASE_SSL=
+  - python: 3.5
+    env:
+    - BIGCHAINDB_DATABASE_BACKEND=mongodb
+    - BIGCHAINDB_DATABASE_SSL=true
+  - python: 3.6
+    env:
+    - BIGCHAINDB_DATABASE_BACKEND=mongodb
+    - BIGCHAINDB_DATABASE_SSL=true
 
 before_install: sudo .ci/travis-before-install.sh
 

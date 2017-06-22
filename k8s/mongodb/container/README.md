@@ -9,9 +9,11 @@
 *  We also need a way to overwrite certain parameters to suit our use case.
 
 
-### Step 1: Build the Latest Container
-
-`docker build -t bigchaindb/mongodb:3.4.4 .` from the root of this project.
+### Step 1: Build and Push the Latest Container
+Use the `docker_build_and_push.bash` script to build the latest docker image
+and upload it to Docker Hub.
+Ensure that the image tag is updated to a new version number to properly
+reflect any changes made to the container.
 
 
 ### Step 2: Run the Container
@@ -25,7 +27,7 @@ docker run \
   --volume=<host dir for mongodb data files>:/data/db \
   --volume=<host dir for mongodb config data files>:/data/configdb \
   --volume=<host dir with the required TLS certificates>:/mongo-ssl:ro \
-  bigchaindb/mongodb:3.4.4 \
+  bigchaindb/mongodb:3.0 \
   --mongodb-port <mongod port number for external connections> \
   --mongodb-key-file-path /mongo-ssl/<private key file name>.pem \
   --mongodb-key-file-password <password for the private key file> \

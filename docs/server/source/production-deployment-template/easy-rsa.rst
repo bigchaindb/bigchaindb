@@ -69,14 +69,17 @@ The comments in the file explain what each of the variables mean.
    echo 'set_var EASYRSA_REQ_OU "IT"' >> vars
    echo 'set_var EASYRSA_REQ_EMAIL "dev@bigchaindb.com"' >> vars
 
+We follow the convention of modifying the OU to ``ROOT-CA``,
+``MongoDB-Instance``, ``BigchainDB-Instance``, ``MongoDB-Mon-Instance`` and
+``MongoDB-Backup-Instance`` while issuing certificates.
+
 
 Step 4: Maybe Edit x509-types/server
 ------------------------------------
 
 .. warning::
 
-   Only do this step if you are setting up a self-signed CA
-   or creating a server/member certificate.
+   Only do this step if you are setting up a self-signed CA.
 
 Edit the file ``x509-types/server`` and change
 ``extendedKeyUsage = serverAuth`` to 

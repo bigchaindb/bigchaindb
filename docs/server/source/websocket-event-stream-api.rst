@@ -26,16 +26,14 @@ It's a good idea to make sure that the node you're connecting with
 has advertised support for the Event Stream API. To do so, send a HTTP GET
 request to the node's :ref:`API Root Endpoint` 
 (e.g. ``http://localhost:9984/api/v1/``) and check that the
-response contains a ``streams_<version>`` property in ``_links``:
+response contains a ``streams`` property:
 
 .. code:: JSON
 
     {
-      "_links": {
-         ...,
-         "streams_v1": "ws://example.com:9985/api/v1/streams/valid_tx",
-         ...
-      }
+     ...,
+     "streams": "ws://example.com:9985/api/v1/streams/valid_transactions",
+     ...
     }
 
 
@@ -58,8 +56,8 @@ BigchainDB node will be ignored.
 Streams will always be under the WebSocket protocol (so ``ws://`` or
 ``wss://``) and accessible as extensions to the ``/api/v<version>/streams/``
 API root URL (for example, `validated transactions <#valid-transactions>`_
-would be accessible under ``/api/v1/streams/valid_tx``). If you're running your
-own BigchainDB instance and need help determining its root URL,
+would be accessible under ``/api/v1/streams/valid_transactions``). If you're
+running your own BigchainDB instance and need help determining its root URL,
 then see the page titled :ref:`Determining the API Root URL`.
 
 All messages sent in a stream are in the JSON format.
@@ -79,7 +77,7 @@ All messages sent in a stream are in the JSON format.
 Valid Transactions
 ~~~~~~~~~~~~~~~~~~
 
-``/valid_tx``
+``/valid_transactions``
 
 Streams an event for any newly validated transactions. Message bodies contain
 the transaction's ID, associated asset ID, and containing block's ID.
@@ -89,7 +87,7 @@ Example message:
 .. code:: JSON
 
     {
-        "tx_id": "<sha3-256 hash>",
+        "transaction_id": "<sha3-256 hash>",
         "asset_id": "<sha3-256 hash>",
         "block_id": "<sha3-256 hash>"
     }
@@ -100,6 +98,6 @@ Example message:
     Transactions in BigchainDB are validated in batches ("blocks") and will,
     therefore, be streamed in batches. Each block can contain up to a 1000
     transactions, ordered by the time at which they were included in the block.
-    The ``/valid_tx`` stream will send these transactions in the same order
-    that the block stored them in, but this does **NOT** guarantee that you
-    will recieve the events in that same order.
+    The ``/valid_transactions`` stream will send these transactions in the same
+    order that the block stored them in, but this does **NOT** guarantee that
+    you will recieve the events in that same order.

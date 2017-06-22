@@ -40,6 +40,9 @@ def test_post_create_transaction_endpoint(b, client):
 
     assert res.status_code == 202
 
+    assert '../statuses?transaction_id={}'.format(tx.id) in \
+        res.headers['Location']
+
     assert res.json['inputs'][0]['owners_before'][0] == user_pub
     assert res.json['outputs'][0]['public_keys'][0] == user_pub
 
@@ -86,7 +89,7 @@ def test_post_create_transaction_with_invalid_signature(mock_logger,
 
     tx = Transaction.create([user_pub], [([user_pub], 1)])
     tx = tx.sign([user_priv]).to_dict()
-    tx['inputs'][0]['fulfillment'] = 'cf:0:0'
+    tx['inputs'][0]['fulfillment'] = 64 * '0'
 
     res = client.post(TX_ENDPOINT, data=json.dumps(tx))
     expected_status_code = 400
@@ -270,3 +273,26 @@ def test_transactions_get_list_bad(client):
         # Test asset ID required
         url = TX_ENDPOINT + '?operation=CREATE'
         assert client.get(url).status_code == 400
+
+
+def test_return_only_valid_transaction(client):
+    from bigchaindb import Bigchain
+
+    def get_transaction_patched(status):
+        def inner(self, tx_id, include_status):
+            return {}, status
+        return inner
+
+    # NOTE: `get_transaction` only returns a transaction if it's included in an
+    #       UNDECIDED or VALID block, as well as transactions from the backlog.
+    #       As the endpoint uses `get_transaction`, we don't have to test
+    #       against invalid transactions here.
+    with patch('bigchaindb.core.Bigchain.get_transaction',
+               get_transaction_patched(Bigchain.TX_UNDECIDED)):
+        url = '{}{}'.format(TX_ENDPOINT, '123')
+        assert client.get(url).status_code == 404
+
+    with patch('bigchaindb.core.Bigchain.get_transaction',
+               get_transaction_patched(Bigchain.TX_IN_BACKLOG)):
+        url = '{}{}'.format(TX_ENDPOINT, '123')
+        assert client.get(url).status_code == 404

@@ -41,7 +41,7 @@ Familiarize yourself with how we do coding and documentation in the BigchainDB p
 ### Step 2 - Install some Dependencies
 
 * [Install RethinkDB Server](https://rethinkdb.com/docs/install/)
-* Make sure you have Python 3.4+ (preferably in a virtualenv)
+* Make sure you have Python 3.5+ (preferably in a virtualenv)
 * [Install BigchaindB Server's OS-level dependencies](https://docs.bigchaindb.com/projects/server/en/latest/appendices/install-os-level-deps.html)
 * [Make sure you have the latest Python 3 version of pip and setuptools](https://docs.bigchaindb.com/projects/server/en/latest/appendices/install-latest-pip.html)
 

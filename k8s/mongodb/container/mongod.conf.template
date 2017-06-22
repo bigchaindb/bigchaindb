@@ -65,14 +65,15 @@ net:
     #weakCertificateValidation: false
     #allowInvalidCertificates: false
 
-#security: TODO
-#  authorization: enabled
-#  clusterAuthMode: x509
+security:
+  authorization: enabled
+  clusterAuthMode: x509
 
 setParameter:
   enableLocalhostAuthBypass: true
-  #notablescan: 1 TODO
-  #logUserIds: 1 TODO
+  #notablescan: 1
+  logUserIds: 1
+  authenticationMechanisms: MONGODB-X509,SCRAM-SHA-1
 
 storage:
   dbPath: /data/db
