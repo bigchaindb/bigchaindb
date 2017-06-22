@@ -8,7 +8,7 @@ RUN apt-get -qq update \
     && pip install --no-cache-dir . \
     && apt-get autoremove \
     && apt-get clean
-VOLUME ["/data"]
+VOLUME ["/data", "/certs"]
 WORKDIR /data
 ENV BIGCHAINDB_CONFIG_PATH /data/.bigchaindb
 ENV BIGCHAINDB_SERVER_BIND 0.0.0.0:9984

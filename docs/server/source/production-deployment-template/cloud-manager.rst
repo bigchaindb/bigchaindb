@@ -37,8 +37,14 @@ Configure MongoDB Cloud Manager for Monitoring
 
   * Enter the port number as ``27017``, with no authentication.
     
+  * If you have authentication enabled, select the option to enable
+    authentication and specify the authentication mechanism as per your
+    deployment. The default BigchainDB production deployment currently
+    supports ``X.509 Client Certificate`` as the authentication mechanism.
+    
   * If you have TLS enabled, select the option to enable TLS/SSL for MongoDB
-    connections, and click ``Continue``.
+    connections, and click ``Continue``. This should already be selected for
+    you in case you selected ``X.509 Client Certificate`` above.
 
   * Once the deployment is found, click the ``Continue`` button again.
     This may take about a minute or two.
@@ -66,8 +72,17 @@ Configure MongoDB Cloud Manager for Backup
   * Hover over the ``Status`` column of your backup and click ``Start``
     to start the backup.
 
-  * Select the replica set on the side pane and check the box to allow TLS/SSL
-    connections.
+  * Select the replica set on the side pane.
+    
+  * If you have authentication enabled, select the authentication mechanism as
+    per your deployment. The default BigchainDB production deployment currently
+    supports ``X.509 Client Certificate`` as the authentication mechanism.
+    
+  * If you have TLS enabled, select the checkbox ``Replica set allows TLS/SSL
+    connections``. This should be selected by default in case you selected
+    ``X.509 Client Certificate`` as the auth mechanism above.
+
+  * Choose the ``WiredTiger`` storage engine.
 
   * Verify the details of your MongoDB instance and click on ``Start``.
 
@@ -75,4 +90,3 @@ Configure MongoDB Cloud Manager for Backup
     During this process, the UI will show the status of the backup process.
 
   * Verify that data is being backed up on the UI.
-

@@ -487,7 +487,121 @@ Step 11: Start a Kubernetes StatefulSet for MongoDB
        $ kubectl --context k8s-bdb-test-cluster-0 get pods -w
   
 
-Step 12: Start a Kubernetes Deployment for MongoDB Monitoring Agent
+Step 12: Configure Users and Access Control for MongoDB
+-------------------------------------------------------
+
+  * Create a user on MongoDB with authorization to create more users and assign
+    roles to them.
+    Note: You need to do this only when setting up the first MongoDB node of
+    the cluster.
+
+    Log in to the MongoDB instance and open a mongo shell using the certificates
+    already present at ``/etc/mongod/ssl/``
+
+    .. code:: bash
+     
+       $ mongo --host localhost --port 27017 --verbose --ssl \
+         --sslCAFile /etc/mongod/ssl/ca.pem \
+         --sslPEMKeyFile /etc/mongod/ssl/mdb-instance.pem
+
+  * Initialize the replica set using:
+    
+    .. code:: bash
+    
+       > rs.initiate( {
+           _id : "bigchain-rs",
+           members: [ {
+             _id : 0,
+             host  :"<hostname>:27017"
+           } ]
+         } )
+
+    The ``hostname`` in this case will be the value set in
+    ``mdb-instance-name`` in the ConfigMap.
+    For example, if the value set in the ``mdb-instance-name`` is
+    ``mdb-instance-0``, set the ``hostname`` above to the value ``mdb-instance-0``.
+  
+  * The instance should be voted as the ``PRIMARY`` in the replica set (since
+    this is the only instance in the replica set till now).
+    This can be observed from the mongo shell prompt,
+    which will read ``PRIMARY>``.
+
+  * Create a user ``adminUser`` on the ``admin`` database with the
+    authorization to create other users. This will only work the first time you
+    log in to the mongo shell. For further details, see `localhost
+    exception <https://docs.mongodb.com/manual/core/security-users/#localhost-exception>`_
+    in MongoDB.
+    
+    .. code:: bash
+    
+       PRIMARY> use admin
+       PRIMARY> db.createUser( {
+                  user: "adminUser",
+                  pwd: "superstrongpassword",
+                  roles: [ { role: "userAdminAnyDatabase", db: "admin" } ]
+                } )
+
+  * Exit and restart the mongo shell using the above command.
+    Authenticate as the ``adminUser`` we created earlier:
+
+    .. code:: bash
+
+       PRIMARY> use admin
+       PRIMARY> db.auth("adminUser", "superstrongpassword")
+
+  * We need to specify the user name *as seen in the certificate* issued to
+    the BigchainDB instance in order to authenticate correctly. Use
+    the following ``openssl`` command to extract the user name from the
+    certificate:
+
+    .. code:: bash
+
+       $ openssl x509 -in <path to the bigchaindb certificate> \
+         -inform PEM -subject -nameopt RFC2253
+
+    You should see an output line that resembles:
+    
+    .. code:: bash
+    
+       subject= emailAddress=dev@bigchaindb.com,CN=test-bdb-ssl,OU=BigchainDB-Instance,O=BigchainDB GmbH,L=Berlin,ST=Berlin,C=DE
+
+    The ``subject`` line states the complete user name we need to use for
+    creating the user on the mongo shell as follows:
+
+    .. code:: bash
+    
+       PRIMARY> db.getSiblingDB("$external").runCommand( {
+                  createUser: 'emailAddress=dev@bigchaindb.com,CN=test-bdb-ssl,OU=BigchainDB-Instance,O=BigchainDB GmbH,L=Berlin,ST=Berlin,C=DE',
+                  writeConcern: { w: 'majority' , wtimeout: 5000 },
+                  roles: [
+                    { role: 'clusterAdmin', db: 'admin' },
+                    { role: 'readWriteAnyDatabase', db: 'admin' }
+                  ]
+                } )
+
+  * You can similarly create users for MongoDB Monitoring Agent and MongoDB
+    Backup Agent. For example:
+
+    .. code:: bash
+
+       PRIMARY> db.getSiblingDB("$external").runCommand( {
+                  createUser: 'emailAddress=dev@bigchaindb.com,CN=test-mdb-mon-ssl,OU=MongoDB-Mon-Instance,O=BigchainDB GmbH,L=Berlin,ST=Berlin,C=DE',
+                  writeConcern: { w: 'majority' , wtimeout: 5000 },
+                  roles: [
+                    { role: 'clusterMonitor', db: 'admin' }
+                  ]
+                } )
+
+       PRIMARY> db.getSiblingDB("$external").runCommand( {
+                  createUser: 'emailAddress=dev@bigchaindb.com,CN=test-mdb-bak-ssl,OU=MongoDB-Bak-Instance,O=BigchainDB GmbH,L=Berlin,ST=Berlin,C=DE',
+                  writeConcern: { w: 'majority' , wtimeout: 5000 },
+                  roles: [
+                    { role: 'backup',    db: 'admin' }
+                  ]
+                } )
+
+
+Step 13: Start a Kubernetes Deployment for MongoDB Monitoring Agent
 -------------------------------------------------------------------
 
   * This configuration is located in the file
@@ -508,7 +622,7 @@ Step 12: Start a Kubernetes Deployment for MongoDB Monitoring Agent
        $ kubectl --context k8s-bdb-test-cluster-0 apply -f mongodb-monitoring-agent/mongo-mon-dep.yaml
 
 
-Step 13: Start a Kubernetes Deployment for MongoDB Backup Agent
+Step 14: Start a Kubernetes Deployment for MongoDB Backup Agent
 ---------------------------------------------------------------
 
   * This configuration is located in the file
@@ -529,7 +643,7 @@ Step 13: Start a Kubernetes Deployment for MongoDB Backup Agent
        $ kubectl --context k8s-bdb-test-cluster-0 apply -f mongodb-backup-agent/mongo-backup-dep.yaml
 
 
-Step 14: Start a Kubernetes Deployment for Bigchaindb
+Step 15: Start a Kubernetes Deployment for Bigchaindb
 -----------------------------------------------------
 
   * This configuration is located in the file
@@ -569,7 +683,7 @@ Step 14: Start a Kubernetes Deployment for Bigchaindb
   * You can check its status using the command ``kubectl get deploy -w``
 
 
-Step 15: Configure the MongoDB Cloud Manager
+Step 16: Configure the MongoDB Cloud Manager
 --------------------------------------------
 
   * Refer to the
@@ -578,10 +692,10 @@ Step 15: Configure the MongoDB Cloud Manager
     monitoring and backup.
 
 
-Step 16: Verify the BigchainDB Node Setup
+Step 17: Verify the BigchainDB Node Setup
 -----------------------------------------
 
-Step 16.1: Testing Internally
+Step 17.1: Testing Internally
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Run a container that provides utilities like ``nslookup``, ``curl`` and ``dig``
@@ -670,7 +784,7 @@ themselves.
   * Send some transactions to BigchainDB and verify it's up and running!
 
 
-Step 16.2: Testing Externally
+Step 17.2: Testing Externally
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Try to access the ``<dns/ip of your exposed bigchaindb service endpoint>:80``

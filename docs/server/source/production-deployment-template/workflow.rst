@@ -96,6 +96,7 @@ That list of public keys is known as the BigchainDB "keyring."
 ☐ Ask the managing organization
 for the FQDN used to serve the BigchainDB APIs
 and for a copy of the associated SSL/TLS certificate.
+Also, ask for the user name to use for authenticating to MongoDB.
 
 
 ☐ If the cluster uses 3scale for API authentication, monitoring and billing,
