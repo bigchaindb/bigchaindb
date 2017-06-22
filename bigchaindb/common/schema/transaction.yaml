@@ -56,7 +56,7 @@ properties:
       See: `Metadata`_.
   version:
     type: string
-    pattern: "^0\\."
+    pattern: "^1\\.0$"
     description: |
         BigchainDB transaction schema version.
 definitions:

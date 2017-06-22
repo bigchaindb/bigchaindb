@@ -11,7 +11,6 @@ from bigchaindb.common.exceptions import (KeypairMismatchException,
                                           InvalidHash, InvalidSignature,
                                           AmountError, AssetIdMismatch)
 from bigchaindb.common.utils import serialize
-import bigchaindb.version
 
 
 class Input(object):
@@ -421,13 +420,13 @@ class Transaction(object):
                 ``id`` property.
             metadata (dict):
                 Metadata to be stored along with the Transaction.
-            version (int): Defines the version number of a Transaction.
+            version (string): Defines the version number of a Transaction.
     """
     CREATE = 'CREATE'
     TRANSFER = 'TRANSFER'
     GENESIS = 'GENESIS'
     ALLOWED_OPERATIONS = (CREATE, TRANSFER, GENESIS)
-    VERSION = '.'.join(bigchaindb.version.__short_version__.split('.')[:2])
+    VERSION = '1.0'
 
     def __init__(self, operation, asset, inputs=None, outputs=None,
                  metadata=None, version=None):
@@ -447,7 +446,7 @@ class Transaction(object):
                     lock.
                 metadata (dict): Metadata to be stored along with the
                     Transaction.
-                version (int): Defines the version number of a Transaction.
+                version (string): Defines the version number of a Transaction.
         """
         if operation not in Transaction.ALLOWED_OPERATIONS:
             allowed_ops = ', '.join(self.__class__.ALLOWED_OPERATIONS)
