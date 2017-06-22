@@ -414,7 +414,7 @@ class Transaction(object):
                 ``id`` property.
             metadata (dict):
                 Metadata to be stored along with the Transaction.
-            version (int): Defines the version number of a Transaction.
+            version (string): Defines the version number of a Transaction.
     """
     CREATE = 'CREATE'
     TRANSFER = 'TRANSFER'
@@ -440,6 +440,7 @@ class Transaction(object):
                     lock.
                 metadata (dict): Metadata to be stored along with the
                     Transaction.
+                version (string): Defines the version number of a Transaction.
         """
         if operation not in Transaction.ALLOWED_OPERATIONS:
             allowed_ops = ', '.join(self.__class__.ALLOWED_OPERATIONS)
