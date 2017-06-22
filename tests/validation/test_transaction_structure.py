@@ -167,3 +167,5 @@ def test_high_amounts(create_tx):
 def test_validate_version(create_tx):
     create_tx.version = '0.10'
     validate_raises(create_tx)
+    create_tx.version = '110'
+    validate_raises(create_tx)
