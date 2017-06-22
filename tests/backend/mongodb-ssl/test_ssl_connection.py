@@ -197,7 +197,7 @@ def test_ssl_invalid_configuration(db_host, db_port, certs_dir):
 def test_ssl_connection_with_wrong_credentials():
     import bigchaindb
     from bigchaindb.backend.mongodb.connection import MongoDBConnection
-    from bigchaindb.backend.exceptions import AuthenticationError
+    from bigchaindb.backend.exceptions import ConnectionError
 
     conn = MongoDBConnection(host=bigchaindb.config['database']['host'],
                              port=bigchaindb.config['database']['port'],
@@ -211,5 +211,5 @@ def test_ssl_connection_with_wrong_credentials():
                              ssl_crlfile=bigchaindb.config['database']['crlfile'],
                              ssl_cert_reqs=CERT_REQUIRED)
 
-    with pytest.raises(AuthenticationError):
+    with pytest.raises(ConnectionError):
         conn._connect()

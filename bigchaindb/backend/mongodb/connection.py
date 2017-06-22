@@ -9,8 +9,7 @@ from bigchaindb.utils import Lazy
 from bigchaindb.common.exceptions import ConfigurationError
 from bigchaindb.backend.exceptions import (DuplicateKeyError,
                                            OperationError,
-                                           ConnectionError,
-                                           AuthenticationError)
+                                           ConnectionError)
 from bigchaindb.backend.connection import Connection
 
 logger = logging.getLogger(__name__)
@@ -130,7 +129,7 @@ class MongoDBConnection(Connection):
                                              ssl_cert_reqs=CERT_REQUIRED)
                 if self.login is not None:
                     client[self.dbname].authenticate(self.login,
-                                                     mechanism="MONGODB-X509")
+                                                     mechanism='MONGODB-X509')
 
             return client
 
@@ -139,9 +138,7 @@ class MongoDBConnection(Connection):
         except (pymongo.errors.ConnectionFailure,
                 pymongo.errors.OperationFailure) as exc:
             logger.info('Exception in _connect(): {}'.format(exc))
-            if 'auth failed' in str(exc):
-                raise AuthenticationError() from exc
-            raise ConnectionError() from exc
+            raise ConnectionError(str(exc)) from exc
         except pymongo.errors.ConfigurationError as exc:
             raise ConfigurationError from exc
 
@@ -180,14 +177,12 @@ def initialize_replica_set(host, port, connection_timeout, dbname, ssl, login,
                                        ssl_cert_reqs=CERT_REQUIRED)
             if login is not None:
                 logger.info('Authenticating to the database...')
-                conn[dbname].authenticate(login, mechanism="MONGODB-X509")
+                conn[dbname].authenticate(login, mechanism='MONGODB-X509')
 
     except (pymongo.errors.ConnectionFailure,
             pymongo.errors.OperationFailure) as exc:
         logger.info('Exception in _connect(): {}'.format(exc))
-        if 'auth failed' in str(exc):
-            raise AuthenticationError() from exc
-        raise ConnectionError() from exc
+        raise ConnectionError(str(exc)) from exc
     except pymongo.errors.ConfigurationError as exc:
         raise ConfigurationError from exc
 

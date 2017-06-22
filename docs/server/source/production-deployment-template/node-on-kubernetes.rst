@@ -494,6 +494,7 @@ Step 12: Configure Users and Access Control for MongoDB
     roles to them.
     Note: You need to do this only when setting up the first MongoDB node of
     the cluster.
+
     Log in to the MongoDB instance and open a mongo shell using the certificates
     already present at ``/etc/mongod/ssl/``
 
@@ -520,9 +521,10 @@ Step 12: Configure Users and Access Control for MongoDB
     For example, if the value set in the ``mdb-instance-name`` is
     ``mdb-instance-0``, set the ``hostname`` above to the value ``mdb-instance-0``.
   
-  * The instance should be voted as the ``PRIMARY`` in the replica set as this
-    is the only instance in the replica set. This can bbe observed by observing
-    the mongo shell prompt, which will read ``PRIMARY>``.
+  * The instance should be voted as the ``PRIMARY`` in the replica set (since
+    this is the only instance in the replica set till now).
+    This can be observed from the mongo shell prompt,
+    which will read ``PRIMARY>``.
 
   * Create a user ``adminUser`` on the ``admin`` database with the
     authorization to create other users. This will only work the first time you
