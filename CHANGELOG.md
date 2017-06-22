@@ -29,7 +29,6 @@ Tag name: v1.0.0rc1
 * The `database.connection_timeout` configuration setting now works with RethinkDB too. [#1512](https://github.com/bigchaindb/bigchaindb/pull/1512)
 * New code and tools for benchmarking CREATE transactions. [Pull Request #1511](https://github.com/bigchaindb/bigchaindb/pull/1511)
 
-
 ### Changed
 * There's an upgrade guide in `docs/upgrade-guides/v0.10-->v1.0.md`. It only covers changes to the transaction model and HTTP API. If that file hasn't been merged yet, see [Pull Request #1547](https://github.com/bigchaindb/bigchaindb/pull/1547)
 * Cryptographic signatures now sign the whole (serialized) transaction body, including the transaction ID, but with all `"fulfillment"` values changed to `None`. [Pull Request #1225](https://github.com/bigchaindb/bigchaindb/pull/1225)
@@ -49,21 +48,17 @@ Tag name: v1.0.0rc1
 * Relative links were replaced with JSON objects in HTTP API responses. [Pull Request #1541](https://github.com/bigchaindb/bigchaindb/pull/1541)
 * In the outputs endpoint of the HTTP API, the query parameter `unspent` was changed to `spent` (so no more double negatives). If that query parameter isn't included, then all outputs matching the specificed public key will be returned. If `spent=true`, then only the spent outputs will be returned. If `spent=false`, then only the unspent outputs will be returned. [Pull Request #1545](https://github.com/bigchaindb/bigchaindb/pull/1545)
 
-
 ### Removed
 * The `server.threads` configuration setting (for the Gunicorn HTTP server) was removed from the default set of BigchainDB configuration settings. [Pull Request #1488](https://github.com/bigchaindb/bigchaindb/pull/1488)
 
-
 ### Fixed
-* TODO: Pull Request #1450 fixed a bug but then it came back later? See [pull request #1470](https://github.com/bigchaindb/bigchaindb/pull/1470) ("#1450 unrevert")
-
+* The `GET /api/v1/outputs` endpoint was failing for some transactions with threshold conditions. Fixed in [Pull Request #1450](https://github.com/bigchaindb/bigchaindb/pull/1450)
 
 ### External Contributors
 * @elopio - Pull Requests [#1415](https://github.com/bigchaindb/bigchaindb/pull/1415) and [#1491](https://github.com/bigchaindb/bigchaindb/pull/1491)
 * @CsterKuroi - [Pull Request #1447](https://github.com/bigchaindb/bigchaindb/pull/1447)
 * @tdsgit - [Pull Request #1512](https://github.com/bigchaindb/bigchaindb/pull/1512)
 * @lavinasachdev3 - [Pull Request #1357](https://github.com/bigchaindb/bigchaindb/pull/1357)
-
 
 ### Notes
 * We dropped support for Python 3.4. [Pull Request #1564](https://github.com/bigchaindb/bigchaindb/pull/1564)
