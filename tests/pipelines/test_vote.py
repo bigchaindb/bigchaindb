@@ -180,7 +180,7 @@ def test_vote_accumulates_transactions(b):
     validation = vote_obj.validate_tx(tx.to_dict(), 123, 1)
     assert validation == (True, 123, 1)
 
-    tx.inputs[0].fulfillment.signature = None
+    tx.inputs[0].fulfillment.signature = 64*b'z'
     validation = vote_obj.validate_tx(tx.to_dict(), 456, 10)
     assert validation == (False, 456, 10)
 

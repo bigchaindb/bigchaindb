@@ -154,7 +154,7 @@ definitions:
             additionalProperties: true
           uri:
             type: string
-            pattern: "^cc:([1-9a-f][0-9a-f]{0,3}|0):[1-9a-f][0-9a-f]{0,15}:[a-zA-Z0-9_-]{0,86}:([1-9][0-9]{0,17}|0)$"
+            pattern: "^ni:///sha-256;([a-zA-Z0-9_-]{0,86})?(.+)$"
       public_keys:
         "$ref": "#/definitions/public_keys"
         description: |
@@ -195,7 +195,7 @@ definitions:
               that satisfies the condition of a previous output to prove that the
               creator(s) of this transaction have control over the listed asset.
         - type: string
-          pattern: "^cf:([1-9a-f][0-9a-f]{0,3}|0):[a-zA-Z0-9_-]*$"
+          pattern: "^[a-zA-Z0-9_-]*$"
       fulfills:
         anyOf:
         - type: 'object'

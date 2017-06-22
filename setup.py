@@ -67,7 +67,7 @@ install_requires = [
     'rethinkdb~=2.3',  # i.e. a version between 2.3 and 3.0
     'pymongo~=3.4',
     'pysha3~=1.0.2',
-    'cryptoconditions>=0.5.0',
+    'cryptoconditions>=0.6.0.dev',
     'python-rapidjson==0.0.11',
     'logstats>=0.2.1',
     'flask>=0.10.1',
@@ -126,7 +126,7 @@ setup(
         ],
     },
     install_requires=install_requires,
-    setup_requires=['pytest-runner'],
+    setup_requires=['pytest-runner', 'cryptoconditions'],
     tests_require=tests_require,
     extras_require={
         'test': tests_require,
