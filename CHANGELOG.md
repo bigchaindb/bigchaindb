@@ -47,6 +47,7 @@ Tag name: v1.0.0rc1
 * The hostname and port were removed from all URLs in all HTTP API responses. [Pull Request #1538](https://github.com/bigchaindb/bigchaindb/pull/1538)
 * Relative links were replaced with JSON objects in HTTP API responses. [Pull Request #1541](https://github.com/bigchaindb/bigchaindb/pull/1541)
 * In the outputs endpoint of the HTTP API, the query parameter `unspent` was changed to `spent` (so no more double negatives). If that query parameter isn't included, then all outputs matching the specificed public key will be returned. If `spent=true`, then only the spent outputs will be returned. If `spent=false`, then only the unspent outputs will be returned. [Pull Request #1545](https://github.com/bigchaindb/bigchaindb/pull/1545)
+* The supported crypto-conditions changed from version 01 of the crypto-conditions spec to version 02. [Pull Request #1562](https://github.com/bigchaindb/bigchaindb/pull/1562)
 
 ### Removed
 * The `server.threads` configuration setting (for the Gunicorn HTTP server) was removed from the default set of BigchainDB configuration settings. [Pull Request #1488](https://github.com/bigchaindb/bigchaindb/pull/1488)
