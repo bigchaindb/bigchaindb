@@ -19,7 +19,7 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
       - name: nginx-3scale
-        image: bigchaindb/nginx_3scale:1.4
+        image: bigchaindb/nginx_3scale:1.5
         imagePullPolicy: Always
         env:
         - name: MONGODB_FRONTEND_PORT
