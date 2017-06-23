@@ -24,6 +24,8 @@ Here's some explanation of the contents:
 - **inputs**: List of inputs.
   Each input spends/transfers a previous output by satisfying/fulfilling
   the crypto-conditions on that output.
+  A CREATE transaction should have exactly one input.
+  A TRANSFER transaction should have at least one input (i.e. ≥1).
   For more details, see the subsection about :ref:`inputs <Inputs>`.
 
 - **outputs**: List of outputs.
