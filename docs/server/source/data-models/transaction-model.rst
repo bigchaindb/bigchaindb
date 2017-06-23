@@ -1,17 +1,3 @@
-.. raw:: html
-
-   <style>
-    .rst-content a.internal[href*='/schema/'] {
-        border: solid 1px #e1e4e5;
-        font-family: monospace;
-        font-size: 12px;
-        color: blue;
-        padding: 2px 4px;
-        background-color: white;
-    }
-   </style>
-
-=====================
 The Transaction Model
 =====================
 
@@ -20,35 +6,55 @@ A transaction has the following structure:
 .. code-block:: json
 
     {
-        "id": "<hash of transaction, excluding signatures (see explanation)>",
-        "version": "<version number of the transaction model>",
-        "inputs": ["<list of inputs>"],
-        "outputs": ["<list of outputs>"],
-        "operation": "<string>",
-        "asset": "<asset model; see below>",
-        "metadata": "<any JSON document>"
+        "id": "<ID of the transaction>",
+        "version": "<Transaction schema version number>",
+        "inputs": ["<List of inputs>"],
+        "outputs": ["<List of outputs>"],
+        "operation": "<String>",
+        "asset": {"<Asset model; see below>"},
+        "metadata": {"<Arbitrary transaction metadata>"}
     }
 
-Here's some explanation of the contents of a :ref:`transaction <transaction>`:
+Here's some explanation of the contents:
 
-- **id**: The :ref:`id <transaction.id>` of the transaction, and also the database primary key.
+- **id**: The ID of the transaction and also the hash of the transaction (loosely speaking). See below for an explanation of how it's computed. It's also the database primary key.
 
-- **version**: :ref:`Version <transaction.version>` number of the transaction model, so that software can support different transaction models.
+- **version**: The version-number of :ref:`the transaction schema <Transaction Schema>`. As of BigchainDB Server 1.0.0, the only allowed value is ``"1.0"``.
 
-- **inputs**: List of inputs. Each :ref:`input <Input>` contains a pointer to an unspent output
-  and a *crypto fulfillment* that satisfies the conditions of that output. A *fulfillment*
-  is usually a signature proving the ownership of the asset.
-  See :doc:`./inputs-outputs`.
+- **inputs**: List of inputs.
+  Each input spends/transfers a previous output by satisfying/fulfilling
+  the crypto-conditions on that output.
+  For more details, see the subsection about :ref:`inputs <Inputs>`.
 
-- **outputs**: List of outputs. Each :ref:`output <Output>` contains *crypto-conditions* that need to be fulfilled by a transfer transaction in order to transfer ownership to new owners.
-  See :doc:`./inputs-outputs`.
+- **outputs**: List of outputs.
+  Each output indicates the crypto-conditions which must be satisfied
+  by anyone wishing to spend/transfer that output.
+  It also indicates the number of shares of the asset tied to that output.
+  For more details, see the subsection about :ref:`outputs <Outputs>`.
 
-- **operation**: String representation of the :ref:`operation <transaction.operation>` being performed (currently either "CREATE", "TRANSFER" or "GENESIS"). It determines how the transaction should be validated.
+- **operation**: A string indicating what kind of transaction this is,
+  and how it should be validated.
+  It can only be ``"CREATE"``, ``"TRANSFER"`` or ``"GENESIS"``
+  (but there should only be one transaction whose operation is ``"GENESIS"``:
+  the one in the GENESIS block).
 
-- **asset**: Definition of the :ref:`asset <Asset>`. See :ref:`the page about the asset model <The Asset Model>`.
+- **asset**: A JSON document for the asset associated with the transaction.
+  (A transaction can only be associated with one asset.)
+  See :ref:`the page about the asset model <The Asset Model>`.
 
-- **metadata**: User-provided transaction :ref:`metadata <metadata>`: Can be any JSON document, or `NULL`.
+- **metadata**: User-provided transaction metadata.
+  It can be any valid JSON document, or ``null``.
 
-Later, when we get to the models for the block and the vote, we'll see that both include a signature (from the node which created it). You may wonder why transactions don't have signatures... The answer is that they do! They're just hidden inside the ``fulfillment`` string of each input. A creation transaction is signed by whoever created it. A transfer transaction is signed by whoever currently controls or owns it.
+**How the transaction ID is computed.**
+1) Build a Python dictionary containing ``version``, ``inputs``, ``outputs``, ``operation``, ``asset``, ``metadata`` and their values, 
+2) In each of the inputs, replace the value of each ``fulfillment`` with ``null``,
+3) :ref:`Serialize <JSON Serialization>` that dictionary,
+4) The transaction ID is just :ref:`the SHA3-256 hash <Hashes>` of the serialized dictionary.
 
-What gets signed? For each input in the transaction, the "fullfillment message" that gets signed includes the JSON serialized body of the transaction, minus any fulfillment strings. The computed signature goes into creating the ``fulfillment`` string of the input.
+**About signing the transaction.**
+Later, when we get to the models for the block and the vote, we'll see that both include a signature (from the node which created it). You may wonder why transactions don't have signatures… The answer is that they do! They're just hidden inside the ``fulfillment`` string of each input. What gets signed (as of version 1.0.0) is everything inside the transaction, including the ``id``, but the value of each ``fulfillment`` is replaced with ``null``.
+
+There are example BigchainDB transactions in
+:ref:`the HTTP API documentation <The HTTP Client-Server API>`
+and
+`the Python Driver documentation <https://docs.bigchaindb.com/projects/py-driver/en/latest/usage.html>`_.
