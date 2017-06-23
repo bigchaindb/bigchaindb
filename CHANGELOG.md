@@ -1,7 +1,7 @@
 # Change Log (Release Notes)
 
 All _notable_ changes to this project will be documented in this file (`CHANGELOG.md`).
-This project adheres to [Semantic Versioning](http://semver.org/) (or at least we try).
+This project adheres to [the Python form of Semantic Versioning](https://packaging.python.org/tutorials/distributing-packages/#choosing-a-versioning-scheme) (or at least we try).
 Contributors to this file, please follow the guidelines on [keepachangelog.com](http://keepachangelog.com/).
 Note that each version (or "release") is the name of a [Git _tag_](https://git-scm.com/book/en/v2/Git-Basics-Tagging) of a particular commit, so the associated date and time are the date and time of that commit (as reported by GitHub), _not_ the "Uploaded on" date listed on PyPI (which may differ).
 For reference, the possible headings are:
@@ -15,14 +15,70 @@ For reference, the possible headings are:
 * **External Contributors** to list contributors outside of BigchainDB GmbH.
 * **Notes**
 
+## [1.0.0rc1] - 2017-06-23
+Tag name: v1.0.0rc1
+
+### Added
+* Support for secure TLS/SSL communication between MongoDB and {BigchainDB, MongoDB Backup Agent, MongoDB Monitoring Agent}. Pull Requests
+[#1456](https://github.com/bigchaindb/bigchaindb/pull/1456),
+[#1497](https://github.com/bigchaindb/bigchaindb/pull/1497),
+[#1510](https://github.com/bigchaindb/bigchaindb/pull/1510),
+[#1536](https://github.com/bigchaindb/bigchaindb/pull/1536),
+[#1551](https://github.com/bigchaindb/bigchaindb/pull/1551) and
+[#1552](https://github.com/bigchaindb/bigchaindb/pull/1552).
+* Text search support (only if using MongoDB). Pull Requests [#1469](https://github.com/bigchaindb/bigchaindb/pull/1469) and [#1471](https://github.com/bigchaindb/bigchaindb/pull/1471) 
+* The `database.connection_timeout` configuration setting now works with RethinkDB too. [#1512](https://github.com/bigchaindb/bigchaindb/pull/1512)
+* New code and tools for benchmarking CREATE transactions. [Pull Request #1511](https://github.com/bigchaindb/bigchaindb/pull/1511)
+
+### Changed
+* There's an upgrade guide in `docs/upgrade-guides/v0.10-->v1.0.md`. It only covers changes to the transaction model and HTTP API. If that file hasn't been merged yet, see [Pull Request #1547](https://github.com/bigchaindb/bigchaindb/pull/1547)
+* Cryptographic signatures now sign the whole (serialized) transaction body, including the transaction ID, but with all `"fulfillment"` values changed to `None`. [Pull Request #1225](https://github.com/bigchaindb/bigchaindb/pull/1225)
+* In transactions, the value of `"amount"` must be a string. (Before, it was supposed to be a number.) [Pull Request #1286](https://github.com/bigchaindb/bigchaindb/pull/1286)
+* In `setup.py`, the  "Development Status" (as reported on PyPI) was changed from Alpha to Beta. [Pull Request #1437](https://github.com/bigchaindb/bigchaindb/pull/1437)
+* If you explicitly specify a config file, e.g. `bigchaindb -c path/to/config start` and that file can't be found, then BigchainDB Server will fail with a helpful error message. [Pull Request #1486](https://github.com/bigchaindb/bigchaindb/pull/1486)
+* Reduced the response time on the HTTP API endpoint to get all the unspent outputs associated with a given public key (a.k.a. "fast unspents"). [Pull Request #1411](https://github.com/bigchaindb/bigchaindb/pull/1411)
+* Internally, the value of an asset's `"data"` is now stored in a separate assets table. This enabled the new text search. Each asset data is stored along with the associated CREATE transaction ID (asset ID). That data gets written when the containing block gets written to the bigchain table. [Pull Request #1460](https://github.com/bigchaindb/bigchaindb/pull/1460)
+* Schema validation was sped up by switching to `rapidjson-schema`. [Pull Request #1494](https://github.com/bigchaindb/bigchaindb/pull/1494)
+* If a node comes back from being down for a while, it will resume voting on blocks in the order determined by the MongoDB oplog, in the case of MongoDB. (In the case of RethinkDB, blocks missed in the changefeed will not be voted on.) [Pull Request #1389](https://github.com/bigchaindb/bigchaindb/pull/1389)
+* Parallelized transaction schema validation in the vote pipeline. [Pull Request #1492](https://github.com/bigchaindb/bigchaindb/pull/1492)
+* `asset.data` or `asset.id` are now *required* in a CREATE or TRANSFER transaction, respectively. [Pull Request #1518](https://github.com/bigchaindb/bigchaindb/pull/1518)
+* The HTTP response body, in the response to the `GET /` and the `GET /api/v1` endpoints, was changed substantially. [Pull Request #1529](https://github.com/bigchaindb/bigchaindb/pull/1529) 
+* Changed the HTTP `GET /api/v1/transactions/{transaction_id}` endpoint. It now only returns the transaction if it's in a valid block. It also returns a new header with a relative link to a status monitor. [Pull Request #1543](https://github.com/bigchaindb/bigchaindb/pull/1543)
+* All instances of `txid` and `tx_id` were replaced with `transaction_id`, in the transaction model and the HTTP API. [Pull Request #1532](https://github.com/bigchaindb/bigchaindb/pull/1532)
+* The hostname and port were removed from all URLs in all HTTP API responses. [Pull Request #1538](https://github.com/bigchaindb/bigchaindb/pull/1538)
+* Relative links were replaced with JSON objects in HTTP API responses. [Pull Request #1541](https://github.com/bigchaindb/bigchaindb/pull/1541)
+* In the outputs endpoint of the HTTP API, the query parameter `unspent` was changed to `spent` (so no more double negatives). If that query parameter isn't included, then all outputs matching the specificed public key will be returned. If `spent=true`, then only the spent outputs will be returned. If `spent=false`, then only the unspent outputs will be returned. [Pull Request #1545](https://github.com/bigchaindb/bigchaindb/pull/1545)
+* The supported crypto-conditions changed from version 01 of the crypto-conditions spec to version 02. [Pull Request #1562](https://github.com/bigchaindb/bigchaindb/pull/1562)
+* The value of "version" inside a transaction must now be "1.0". (Before, it could be "0.anything".) [Pull Request #1574](https://github.com/bigchaindb/bigchaindb/pull/1574)
+
+### Removed
+* The `server.threads` configuration setting (for the Gunicorn HTTP server) was removed from the default set of BigchainDB configuration settings. [Pull Request #1488](https://github.com/bigchaindb/bigchaindb/pull/1488)
+
+### Fixed
+* The `GET /api/v1/outputs` endpoint was failing for some transactions with threshold conditions. Fixed in [Pull Request #1450](https://github.com/bigchaindb/bigchaindb/pull/1450)
+
+### External Contributors
+* @elopio - Pull Requests [#1415](https://github.com/bigchaindb/bigchaindb/pull/1415) and [#1491](https://github.com/bigchaindb/bigchaindb/pull/1491)
+* @CsterKuroi - [Pull Request #1447](https://github.com/bigchaindb/bigchaindb/pull/1447)
+* @tdsgit - [Pull Request #1512](https://github.com/bigchaindb/bigchaindb/pull/1512)
+* @lavinasachdev3 - [Pull Request #1357](https://github.com/bigchaindb/bigchaindb/pull/1357)
+
+### Notes
+* We dropped support for Python 3.4. [Pull Request #1564](https://github.com/bigchaindb/bigchaindb/pull/1564)
+* There were many improvements to our Kubernetes-based production deployment template (and the associated documentaiton).
+* There is now a [BigchainDB Ruby driver](https://github.com/LicenseRocks/bigchaindb_ruby), created by @addywaddy at [license.rocks](https://github.com/bigchaindb/bigchaindb/pull/1437).
+* The [BigchainDB JavaScript driver](https://github.com/bigchaindb/js-bigchaindb-driver) was moved to a different GitHub repo and is now officially maintained by the BigchainDB team.
+* We continue to recommend using MongoDB.
+
+
 ## [0.10.2] - 2017-05-16
 Tag name: v0.10.2
 
-## Added
+### Added
 * Add Cross Origin Resource Sharing (CORS) support for the HTTP API. 
  [Commit 6cb7596](https://github.com/bigchaindb/bigchaindb/commit/6cb75960b05403c77bdae0fd327612482589efcb)
 
-## Fixed
+### Fixed
 * Fixed `streams_v1` API link in response to `GET /api/v1`.
  [Pull Request #1466](https://github.com/bigchaindb/bigchaindb/pull/1466)
 * Fixed mismatch between docs and implementation for `GET /blocks?status=`
@@ -32,10 +88,10 @@ Tag name: v0.10.2
 ## [0.10.1] - 2017-04-19
 Tag name: v0.10.1
 
-## Added
+### Added
 * Documentation for the BigchainDB settings `wsserver.host` and `wsserver.port`. [Pull Request #1408](https://github.com/bigchaindb/bigchaindb/pull/1408)
 
-## Fixed
+### Fixed
 * Fixed `Dockerfile`, which was failing to build. It now starts `FROM python:3.6` (instead of `FROM ubuntu:xenial`). [Pull Request #1410](https://github.com/bigchaindb/bigchaindb/pull/1410)
 * Fixed the `Makefile` so that `release` depends on `dist`. [Pull Request #1405](https://github.com/bigchaindb/bigchaindb/pull/1405)
 
