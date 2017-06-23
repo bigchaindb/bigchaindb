@@ -15,7 +15,7 @@ For reference, the possible headings are:
 * **External Contributors** to list contributors outside of BigchainDB GmbH.
 * **Notes**
 
-## [1.0.0rc1] - 2017-06-??
+## [1.0.0rc1] - 2017-06-23
 Tag name: v1.0.0rc1
 
 ### Added
