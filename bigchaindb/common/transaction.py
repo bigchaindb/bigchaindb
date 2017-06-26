@@ -10,7 +10,7 @@ from bigchaindb.common.crypto import PrivateKey, hash_data
 from bigchaindb.common.exceptions import (KeypairMismatchException,
                                           InvalidHash, InvalidSignature,
                                           AmountError, AssetIdMismatch,
-                                          ThresholdDepthOverflow)
+                                          ThresholdTooDeep)
 from bigchaindb.common.utils import serialize
 
 
@@ -151,29 +151,26 @@ def _fulfillment_to_details(fulfillment):
     raise UnsupportedTypeError(fulfillment.type_name)
 
 
-def _fulfillment_from_details(data, limit=10, depth=0):
+def _fulfillment_from_details(data):
     """
     Load a fulfillment for a signing spec dictionary
 
     Args:
         data: tx.output[].condition.details dictionary
-        limit: maximum nesting depth for threshold conditions
-        depth: current depth (no need to pass this)
     """
     if data['type'] == 'ed25519-sha-256':
         public_key = base58.b58decode(data['public_key'])
         return Ed25519Sha256(public_key)
 
-    if depth == limit:
-        raise ThresholdDepthOverflow('Threshold condition is too deeply nested, '
-                                     'limit is %s' % limit)
-
     if data['type'] == 'threshold-sha-256':
-        threshold = ThresholdSha256(data['threshold'])
-        for cond in data['subconditions']:
-            cond = _fulfillment_from_details(cond, depth=depth+1)
-            threshold.add_subfulfillment(cond)
-        return threshold
+        try:
+            threshold = ThresholdSha256(data['threshold'])
+            for cond in data['subconditions']:
+                cond = _fulfillment_from_details(cond)
+                threshold.add_subfulfillment(cond)
+            return threshold
+        except RecursionError:
+            raise ThresholdTooDeep()
 
     raise UnsupportedTypeError(data.get('type'))
 

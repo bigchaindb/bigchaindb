@@ -9,7 +9,7 @@ from unittest.mock import MagicMock
 
 from bigchaindb.common.exceptions import (AmountError, InvalidHash,
                                           SchemaValidationError,
-                                          ThresholdDepthOverflow)
+                                          ThresholdTooDeep)
 from bigchaindb.models import Transaction
 
 
@@ -166,20 +166,20 @@ def test_high_amounts(create_tx):
 ################################################################################
 # Conditions
 
-def test_validate_threshold_depth():
+def test_handle_threshold_overflow():
     from bigchaindb.common import transaction
 
     cond = {
         'type': 'ed25519-sha-256',
         'public_key': 'a' * 43,
     }
-    for i in range(11):
+    for i in range(1000):
         cond = {
             'type': 'threshold-sha-256',
             'threshold': 1,
             'subconditions': [cond],
         }
-    with pytest.raises(ThresholdDepthOverflow):
+    with pytest.raises(ThresholdTooDeep):
         transaction._fulfillment_from_details(cond)
 
 

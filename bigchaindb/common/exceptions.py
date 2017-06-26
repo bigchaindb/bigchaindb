@@ -108,5 +108,5 @@ class DuplicateTransaction(ValidationError):
     """Raised if a duplicated transaction is found"""
 
 
-class ThresholdDepthOverflow(ValidationError):
+class ThresholdTooDeep(ValidationError):
     """Raised if threshold condition is too deep"""
