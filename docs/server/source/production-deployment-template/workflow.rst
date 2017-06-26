@@ -119,9 +119,13 @@ allow easier periodic rotation of the ``Agent API Key`` with a constant
 #. Client Certificate for BigchainDB Server to identify itself to MongoDB
 #. Client Certificate for MongoDB Monitoring Agent to identify itself to MongoDB
 #. Client Certificate for MongoDB Backup Agent to identify itself to MongoDB
-#. CRL for the infrastructure to not accept revoked certificates.
 
-Ask the managing organization to use its self-signed CA to sign those certificates.
+Ask the managing organization to use its self-signed CA to sign those four certificates.
+They should send you:
+
+* Signed versions of your four certificates.
+* One ``ca.crt`` file: their CA certificate.
+* One ``crl.pem`` file: a certificate revocation list.
 
 For help, see the pages:
 
