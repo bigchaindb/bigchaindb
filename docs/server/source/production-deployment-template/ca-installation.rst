@@ -33,15 +33,12 @@ by going to the ``bdb-cluster-ca/easy-rsa-3.0.1/easyrsa3`` directory and using:
         
    ./easyrsa build-ca
 
-You will be prompted to enter the Distinguished Name for this CA. You can hit
-enter to accept the default values or change it at each prompt.
-
-You will also be asked to enter a PEM pass phrase for encrypting the ``ca.key`` file.
+You will also be asked to enter a PEM pass phrase (for encrypting the ``ca.key`` file).
 Make sure to securely store that PEM pass phrase.
 If you lose it, you won't be able to add or remove entities from your PKI infrastructure in the future.
 
-It will ask several other questions.
-You can accept all the defaults [in brackets] by pressing Enter.
+You will be prompted to enter the Distinguished Name (DN) information for this CA.
+For each field, you can accept the default value [in brackets] by pressing Enter.
 While ``Easy-RSA CA`` *is* a valid and acceptable Common Name,
 you should probably enter a name based on the name of the managing organization,
 e.g. ``Omega Ledger CA``.
