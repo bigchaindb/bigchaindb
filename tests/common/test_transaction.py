@@ -77,12 +77,16 @@ def test_input_deserialization_with_unsigned_fulfillment(ffill_uri, user_pub):
 
 
 def test_output_serialization(user_Ed25519, user_pub):
+    import base58
     from bigchaindb.common.transaction import Output
 
     expected = {
         'condition': {
             'uri': user_Ed25519.condition_uri,
-            'details': user_Ed25519.to_dict(),
+            'details': {
+                'type': 'ed25519-sha-256',
+                'public_key': base58.b58encode(user_Ed25519.public_key),
+            },
         },
         'public_keys': [user_pub],
         'amount': '1',
@@ -94,13 +98,17 @@ def test_output_serialization(user_Ed25519, user_pub):
 
 
 def test_output_deserialization(user_Ed25519, user_pub):
+    import base58
     from bigchaindb.common.transaction import Output
 
     expected = Output(user_Ed25519, [user_pub], 1)
     cond = {
         'condition': {
             'uri': user_Ed25519.condition_uri,
-            'details': user_Ed25519.to_dict()
+            'details': {
+                'type': 'ed25519-sha-256',
+                'public_key': base58.b58encode(user_Ed25519.public_key),
+            },
         },
         'public_keys': [user_pub],
         'amount': '1',
