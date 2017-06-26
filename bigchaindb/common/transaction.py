@@ -138,14 +138,14 @@ def _fulfillment_to_details(fulfillment):
         }
 
     if fulfillment.type_name == 'threshold-sha-256':
-        subfulfillments = [
+        subconditions = [
             _fulfillment_to_details(cond['body'])
             for cond in fulfillment.subconditions
         ]
         return {
             'type': 'threshold-sha-256',
             'threshold': fulfillment.threshold,
-            'subfulfillments': subfulfillments,
+            'subconditions': subconditions,
         }
 
     raise UnsupportedTypeError(fulfillment.type_name)
@@ -170,7 +170,7 @@ def _fulfillment_from_details(data, limit=10, depth=0):
 
     if data['type'] == 'threshold-sha-256':
         threshold = ThresholdSha256(data['threshold'])
-        for cond in data['subfulfillments']:
+        for cond in data['subconditions']:
             cond = _fulfillment_from_details(cond, depth=depth+1)
             threshold.add_subfulfillment(cond)
         return threshold

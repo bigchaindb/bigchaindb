@@ -177,7 +177,7 @@ def test_validate_threshold_depth():
         cond = {
             'type': 'threshold-sha-256',
             'threshold': 1,
-            'subfulfillments': [cond],
+            'subconditions': [cond],
         }
     with pytest.raises(ThresholdDepthOverflow):
         transaction._fulfillment_from_details(cond)

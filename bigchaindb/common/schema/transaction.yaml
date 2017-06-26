@@ -230,7 +230,7 @@ definitions:
       required:
       - type
       - threshold
-      - subfulfillments
+      - subconditions
       properties:
         type:
           type: "string"
@@ -239,7 +239,7 @@ definitions:
           type: integer
           minimum: 1
           maximum: 100
-        subfulfillments:
+        subconditions:
           type: array
           items:
             "$ref": "#/definitions/condition_details"
