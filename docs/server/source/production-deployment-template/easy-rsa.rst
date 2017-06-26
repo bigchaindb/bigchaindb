@@ -66,12 +66,17 @@ The comments in the file explain what each of the variables mean.
    echo 'set_var EASYRSA_REQ_PROVINCE "Berlin"' >> vars
    echo 'set_var EASYRSA_REQ_CITY "Berlin"' >> vars
    echo 'set_var EASYRSA_REQ_ORG "BigchainDB GmbH"' >> vars
-   echo 'set_var EASYRSA_REQ_OU "IT"' >> vars
    echo 'set_var EASYRSA_REQ_EMAIL "dev@bigchaindb.com"' >> vars
 
-We follow the convention of modifying the OU to ``ROOT-CA``,
-``MongoDB-Instance``, ``BigchainDB-Instance``, ``MongoDB-Mon-Instance`` and
-``MongoDB-Backup-Instance`` while issuing certificates.
+We follow the convention of setting the OU to ``ROOT-CA``,
+``MongoDB-Instance``, ``BigchainDB-Instance``, ``MongoDB-Mon-Instance`` or
+``MongoDB-Backup-Instance`` as appropriate.
+Replace ``insert-name-here`` with the appropriate name
+(e.g. ``ROOT-CA``) in:
+
+.. code:: bash
+
+   echo 'set_var EASYRSA_REQ_OU "insert-name-here"' >> vars
 
 
 Step 4: Maybe Edit x509-types/server
@@ -81,7 +86,7 @@ Step 4: Maybe Edit x509-types/server
 
    Only do this step if you are setting up a self-signed CA.
 
-Edit the file ``x509-types/server`` and change
-``extendedKeyUsage = serverAuth`` to 
-``extendedKeyUsage = serverAuth,clientAuth``.
-See `the MongoDB documentation about x.509 authentication <https://docs.mongodb.com/manual/core/security-x.509/>`_ to understand why.
+   Edit the file ``x509-types/server`` and change
+   ``extendedKeyUsage = serverAuth`` to
+   ``extendedKeyUsage = serverAuth,clientAuth``.
+   See `the MongoDB documentation about x.509 authentication <https://docs.mongodb.com/manual/core/security-x.509/>`_ to understand why.
