@@ -94,7 +94,7 @@ to spend the asset. For example:
                     }
                 ],
             },
-            "uri": "cc:2:29:ytNK3X6-bZsbF-nCGDTuopUIMi1HCyCkyPewm6oLI3o:206"},
+            "uri": "ni:///sha-256;PNYwdxaRaNw60N6LDFzOWO97b8tJeragczakL8PrAPc?fpt=ed25519-sha-256&cost=131072"},
             "public_keys": [
                 "<owner 1 public key>",
                 "<owner 2 public key>"
