@@ -47,6 +47,8 @@ tests_require = [
     'pep8',
     'flake8',
     'flake8-quotes==0.8.1',
+    'hypothesis',
+    'hypothesis-regex',
     'pylint',
     'pytest>=3.0.0',
     'pytest-catchlog>=1.2.2',
