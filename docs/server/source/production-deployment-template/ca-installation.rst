@@ -39,6 +39,11 @@ If you lose it, you won't be able to add or remove entities from your PKI infras
 
 You will be prompted to enter the Distinguished Name (DN) information for this CA.
 For each field, you can accept the default value [in brackets] by pressing Enter.
+
+.. warning::
+
+   Don't accept the default value of OU (``IT``). Instead, enter the value ``ROOT-CA``.
+
 While ``Easy-RSA CA`` *is* a valid and acceptable Common Name,
 you should probably enter a name based on the name of the managing organization,
 e.g. ``Omega Ledger CA``.

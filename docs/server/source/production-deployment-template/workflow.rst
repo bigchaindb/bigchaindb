@@ -53,6 +53,26 @@ Similarly, other instances must also have unique names in the cluster.
 #. Name of the MongoDB backup agent instance (``mdb-bak-instance-*``)
 
 
+☐ Generate four keys and corresponding certificate signing requests (CSRs):
+
+#. Server Certificate (a.k.a. Member Certificate) for the MongoDB instance
+#. Client Certificate for BigchainDB Server to identify itself to MongoDB
+#. Client Certificate for MongoDB Monitoring Agent to identify itself to MongoDB
+#. Client Certificate for MongoDB Backup Agent to identify itself to MongoDB
+
+Ask the managing organization to use its self-signed CA to sign those four CSRs.
+They should send you:
+
+* Four certificates (one for each CSR you sent them).
+* One ``ca.crt`` file: their CA certificate.
+* One ``crl.pem`` file: a certificate revocation list.
+
+For help, see the pages:
+
+* :ref:`How to Generate a Server Certificate for MongoDB`
+* :ref:`How to Generate a Client Certificate for MongoDB`
+
+
 ☐ Every node in a BigchainDB cluster needs its own
 BigchainDB keypair (i.e. a public key and corresponding private key).
 You can generate a BigchainDB keypair for your node, for example,
@@ -73,28 +93,15 @@ Don't share your private key.
 That list of public keys is known as the BigchainDB "keyring."
 
 
-☐ Ask the managing organization
-for the FQDN used to serve the BigchainDB APIs
-(e.g. ``api.orgname.net`` or ``bdb.clustername.com``).
-
-
 ☐ Make up an FQDN for your BigchainDB node (e.g. ``mynode.mycorp.com``).
 Make sure you've registered the associated domain name (e.g. ``mycorp.com``),
 and have an SSL certificate for the FQDN.
-(You can get an SSL certificate from any SSL certificate provider).
-
-
-☐ Share your BigchaindB *public* key with all the other nodes
-in the BigchainDB cluster.
-Don't share your private key.
-
-
-☐ Get the BigchainDB public keys of all the other nodes in the cluster.
-That list of public keys is known as the BigchainDB "keyring."
+(You can get an SSL certificate from any SSL certificate provider.)
 
 
 ☐ Ask the managing organization
 for the FQDN used to serve the BigchainDB APIs
+(e.g. ``api.orgname.net`` or ``bdb.clustername.com``)
 and for a copy of the associated SSL/TLS certificate.
 Also, ask for the user name to use for authenticating to MongoDB.
 
@@ -113,41 +120,11 @@ allow easier periodic rotation of the ``Agent API Key`` with a constant
 ``Group ID``)
 
 
-☐ Generate four keys and corresponding certificate signing requests (CSRs):
-
-#. Server Certificate (a.k.a. Member Certificate) for the MongoDB instance
-#. Client Certificate for BigchainDB Server to identify itself to MongoDB
-#. Client Certificate for MongoDB Monitoring Agent to identify itself to MongoDB
-#. Client Certificate for MongoDB Backup Agent to identify itself to MongoDB
-
-Ask the managing organization to use its self-signed CA to sign those four certificates.
-They should send you:
-
-* Signed versions of your four certificates.
-* One ``ca.crt`` file: their CA certificate.
-* One ``crl.pem`` file: a certificate revocation list.
-
-For help, see the pages:
-
-* :ref:`How to Generate a Server Certificate for MongoDB`
-* :ref:`How to Generate a Client Certificate for MongoDB`
-
-
 ☐ :doc:`Deploy a Kubernetes cluster on Azure <template-kubernetes-azure>`.
 
 
-☐ Create the Kubernetes Configuration for this node. 
-We will use Kubernetes ConfigMaps and Secrets to hold all the information
-gathered above.
-
-
-☐ Deploy your BigchainDB node on your Kubernetes cluster.
-
-Next Steps To Set Up a Node
----------------------------
-
-You can now proceed to set up your BigchainDB node based on whether it is the
-:ref:`first node in you cluster
+☐ You can now proceed to set up your BigchainDB node based on whether it is the
+:ref:`first node in a new cluster
 <Kubernetes Template: Deploy a Single BigchainDB Node>` or a
 :ref:`node that will be added to an existing cluster
 <Kubernetes Template: Add a BigchainDB Node to an Existing BigchainDB Cluster>`.

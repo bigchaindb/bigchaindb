@@ -66,17 +66,15 @@ The comments in the file explain what each of the variables mean.
    echo 'set_var EASYRSA_REQ_PROVINCE "Berlin"' >> vars
    echo 'set_var EASYRSA_REQ_CITY "Berlin"' >> vars
    echo 'set_var EASYRSA_REQ_ORG "BigchainDB GmbH"' >> vars
+   echo 'set_var EASYRSA_REQ_OU "IT"' >> vars
    echo 'set_var EASYRSA_REQ_EMAIL "dev@bigchaindb.com"' >> vars
 
-We follow the convention of setting the OU to ``ROOT-CA``,
+Note: Later, when building a CA or generating a certificate signing request, you will be prompted to enter a value for the OU (or to accept the default). You should change the default OU from ``IT`` to one of the following, as appropriate:
+``ROOT-CA``,
 ``MongoDB-Instance``, ``BigchainDB-Instance``, ``MongoDB-Mon-Instance`` or
-``MongoDB-Backup-Instance`` as appropriate.
-Replace ``insert-name-here`` with the appropriate name
-(e.g. ``ROOT-CA``) in:
-
-.. code:: bash
-
-   echo 'set_var EASYRSA_REQ_OU "insert-name-here"' >> vars
+``MongoDB-Backup-Instance``.
+To understand why, see `the MongoDB Manual <https://docs.mongodb.com/manual/tutorial/configure-x509-client-authentication/>`_.
+There are reminders to do this in the relevant docs.
 
 
 Step 4: Maybe Edit x509-types/server
