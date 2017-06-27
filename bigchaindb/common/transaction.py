@@ -160,7 +160,7 @@ def _fulfillment_from_details(data):
     """
     if data['type'] == 'ed25519-sha-256':
         public_key = base58.b58decode(data['public_key'])
-        return Ed25519Sha256(public_key)
+        return Ed25519Sha256(public_key=public_key)
 
     if data['type'] == 'threshold-sha-256':
         try:
