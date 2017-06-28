@@ -89,6 +89,36 @@ Note that ``ca.pem`` is just another name for ``ca.crt``
 (the certificate of your BigchainDB cluster's self-signed CA).
 
 
+bdb-certs.bdb-user
+~~~~~~~~~~~~~~~~~~
+
+This is the user name that BigchainDB uses to authenticate itself to the
+backend MongoDB database.
+
+We need to specify the user name *as seen in the certificate* issued to
+the BigchainDB instance in order to authenticate correctly. Use
+the following ``openssl`` command to extract the user name from the
+certificate:
+  
+.. code:: bash
+
+   $ openssl x509 -in <path to the bigchaindb certificate> \
+     -inform PEM -subject -nameopt RFC2253
+         
+You should see an output line that resembles:
+  
+.. code:: bash
+  
+   subject= emailAddress=dev@bigchaindb.com,CN=test-bdb-ssl,OU=BigchainDB-Instance,O=BigchainDB GmbH,L=Berlin,ST=Berlin,C=DE
+
+The ``subject`` line states the complete user name we need to use for this
+field (``bdb-certs.bdb-user``), i.e.
+
+.. code:: bash
+
+   emailAddress=dev@bigchaindb.com,CN=test-bdb-ssl,OU=BigchainDB-Instance,O=BigchainDB GmbH,L=Berlin,ST=Berlin,C=DE
+
+
 Deploy Your config-map.yaml and secret.yaml
 -------------------------------------------
 
