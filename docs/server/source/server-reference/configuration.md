@@ -508,18 +508,14 @@ export BIGCHAINDB_GRAPHITE_HOST=10.0.0.5
 
 **Example config file snippet**
 ```js
-{
-    "graphite": {
-        "host": "10.0.0.5"
-    }
+"graphite": {
+    "host": "10.0.0.5"
 }
 ```
 
 **Default values (from a config file)**
 ```js
-{
-    "graphite": {
-        "host": "localhost"
-    }
+"graphite": {
+    "host": "localhost"
 }
 ```
