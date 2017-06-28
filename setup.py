@@ -67,9 +67,9 @@ install_requires = [
     'rethinkdb~=2.3',  # i.e. a version between 2.3 and 3.0
     'pymongo~=3.4',
     'pysha3~=1.0.2',
-    'cryptoconditions>=0.5.0',
+    'cryptoconditions~=0.5.0',
     'python-rapidjson==0.0.11',
-    'logstats>=0.2.1',
+    'logstats~=0.2.1',
     'flask>=0.10.1',
     'flask-cors~=2.1.2',
     'flask-restful~=0.3.0',
