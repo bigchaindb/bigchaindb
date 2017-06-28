@@ -506,3 +506,15 @@ from BigchainDB.
 The host name of a machine listening for statsd events on UDP port 8125. This
 defaults to `localhost`, and if no statsd collector is running, the events are
 simply dropped by the operating system.
+
+**Example**:
+
+```
+{
+    "graphite": {
+        "host": "localhost"
+    }
+}
+```
+
+**Defaults to**: `"localhost"`
