@@ -495,26 +495,31 @@ logging of the `core.py` module to be more verbose, you would set the
 **Defaults to**: `"{}"`
 
 
-## Graphite
+## graphite.host
 
-The `graphite` key contains configuration of parameters for using the
-[Graphite monitoring](https://graphiteapp.org/) protocol to collect metrics
-from BigchainDB.
+The host name or IP address of a server listening for statsd events on UDP
+port 8125. This defaults to `localhost`, and if no statsd collector is running,
+the events are simply dropped by the operating system.
 
-### graphite.host
-
-The host name of a machine listening for statsd events on UDP port 8125. This
-defaults to `localhost`, and if no statsd collector is running, the events are
-simply dropped by the operating system.
-
-**Example**:
-
+**Example using environment variables**
+```text
+export BIGCHAINDB_GRAPHITE_HOST=10.0.0.5
 ```
+
+**Example config file snippet**
+```js
+{
+    "graphite": {
+        "host": "10.0.0.5"
+    }
+}
+```
+
+**Default values (from a config file)**
+```js
 {
     "graphite": {
         "host": "localhost"
     }
 }
 ```
-
-**Defaults to**: `"localhost"`
