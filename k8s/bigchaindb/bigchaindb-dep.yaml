@@ -59,8 +59,6 @@ spec:
           value: /etc/bigchaindb/ssl/bdb-instance.pem
         - name: BIGCHAINDB_DATABASE_KEYFILE
           value: /etc/bigchaindb/ssl/bdb-instance.key
-        - name: BIGCHAINDB_DATABASE_KEYFILE_PASSPHRASE
-          value: /etc/bigchaindb/ssl/bdb-keyfile-passphrase
         - name: BIGCHAINDB_DATABASE_LOGIN
           value: /etc/bigchaindb/ssl/bdb-user
         # The following env var is not required for the bootstrap/first node
