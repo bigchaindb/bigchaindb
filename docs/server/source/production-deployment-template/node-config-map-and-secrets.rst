@@ -122,6 +122,31 @@ field (``bdb-certs.bdb-user``), i.e.
    emailAddress=dev@bigchaindb.com,CN=test-bdb-ssl,OU=BigchainDB-Instance,O=BigchainDB GmbH,L=Berlin,ST=Berlin,C=DE
 
 
+threescale-credentials.*
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can delete the ``threescale-credentials`` Secret if you're not using 3scale.
+
+If you *are* using 3scale, you can get the value for ``frontend-api-dns-name``
+using something like ``echo "your.nodesubdomain.net" | base64 -w 0``
+
+To get the values for ``secret-token``, ``service-id``,
+``version-header`` and ``provider-key``, login to your 3scale admin,
+then click **APIs** and click on **Integration** for the relevant API.
+Scroll to the bottom of the page and click the small link
+in the lower right corner, labelled **Download the NGINX Config files**.
+You'll get a ``.zip`` file.
+Unzip it, then open the ``.conf`` file and the ``.lua`` file.
+You should be able to find all the values in those files.
+You have to be careful because it will have values for *all* your APIs,
+and some values vary from API to API.
+The ``version-header`` is the timestamp in a line that looks like:
+
+.. code::
+
+    proxy_set_header  X-3scale-Version "2017-06-28T14:57:34Z";
+
+
 Deploy Your config-map.yaml and secret.yaml
 -------------------------------------------
 
