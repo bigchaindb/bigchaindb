@@ -29,8 +29,8 @@ where all data values must be base64-encoded.
 This is true of all Kubernetes ConfigMaps and Secrets.)
 
 
-vars
-~~~~
+vars.mdb-instance-name and Similar
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Your BigchainDB cluster organization should have a standard way
 of naming instances, so the instances in your BigchainDB node
@@ -59,11 +59,14 @@ of all *other* nodes in your BigchainDB cluster
 * If you're deploying the first node in the cluster,
   the value should be ``""`` (an empty string).
 * If you're deploying the second node in the cluster,
-  the value should be one public key inside double quotes.
+  the value should be the BigchainDB public key of the first/original
+  node in the cluster, inside double quotes.
   For example,
   ``"EPQk5i5yYpoUwGVM8VKZRjM8CYxB6j8Lu8i8SG7kGGce"``
 * If there are two or more other nodes already in the cluster,
-  the value should be a colon-separated list of public keys
+  the value should be a colon-separated list
+  of the BigchainDB public keys
+  of those other nodes,
   inside double quotes.
   For example,
   ``"DPjpKbmbPYPKVAuf6VSkqGCf5jzrEh69Ldef6TrLwsEQ:EPQk5i5yYpoUwGVM8VKZRjM8CYxB6j8Lu8i8SG7kGGce"``
