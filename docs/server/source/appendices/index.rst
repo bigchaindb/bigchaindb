@@ -17,6 +17,7 @@ Appendices
    pipelines
    backend
    commands
+   common
    aws-setup
    aws-testing-cluster
    template-terraform-aws
