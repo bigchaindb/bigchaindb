@@ -13,7 +13,8 @@ import bigchaindb
 from bigchaindb import backend
 from bigchaindb.backend.changefeed import ChangeFeed
 from bigchaindb.models import Transaction
-from bigchaindb.common.exceptions import ValidationError
+from bigchaindb.common.exceptions import (ValidationError,
+                                          GenesisBlockAlreadyExistsError)
 from bigchaindb import Bigchain
 
 
@@ -73,6 +74,11 @@ class BlockPipeline:
 
         # If transaction is not valid it should not be included
         try:
+            if tx.operation == Transaction.GENESIS:
+                blocks_count = backend.query.count_blocks(self.bigchain.connection)
+                if blocks_count:
+                    raise GenesisBlockAlreadyExistsError('Duplicate GENESIS transaction')
+
             tx.validate(self.bigchain)
             return tx
         except ValidationError as e:
