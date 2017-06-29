@@ -45,6 +45,7 @@ For convenience, here's a list of all the relevant environment variables (docume
 `BIGCHAINDB_DATABASE_KEYFILE`<br>
 `BIGCHAINDB_DATABASE_KEYFILE_PASSPHRASE`<br>
 `BIGCHAINDB_DATABASE_CRLFILE`<br>
+`BIGCHAINDB_GRAPHITE_HOST`<br>
 
 The local config file is `$HOME/.bigchaindb` by default (a file which might not even exist), but you can tell BigchainDB to use a different file by using the `-c` command-line option, e.g. `bigchaindb -c path/to/config_file.json start`
 or using the `BIGCHAINDB_CONFIG_PATH` environment variable, e.g. `BIGHAINDB_CONFIG_PATH=.my_bigchaindb_config bigchaindb start`.
@@ -497,3 +498,29 @@ logging of the `core.py` module to be more verbose, you would set the
 ```
 
 **Defaults to**: `"{}"`
+
+
+## graphite.host
+
+The host name or IP address of a server listening for statsd events on UDP
+port 8125. This defaults to `localhost`, and if no statsd collector is running,
+the events are simply dropped by the operating system.
+
+**Example using environment variables**
+```text
+export BIGCHAINDB_GRAPHITE_HOST=10.0.0.5
+```
+
+**Example config file snippet**
+```js
+"graphite": {
+    "host": "10.0.0.5"
+}
+```
+
+**Default values (from a config file)**
+```js
+"graphite": {
+    "host": "localhost"
+}
+```
