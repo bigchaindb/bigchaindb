@@ -70,6 +70,13 @@ Tag name: v1.0.0rc1
 * The [BigchainDB JavaScript driver](https://github.com/bigchaindb/js-bigchaindb-driver) was moved to a different GitHub repo and is now officially maintained by the BigchainDB team.
 * We continue to recommend using MongoDB.
 
+## [0.10.3] - 2017-06-29
+Tag name: v0.10.3
+
+## Fixed
+* Pin minor+ version of `cryptoconditions` to avoid upgrading to a non
+ compatible version.
+[commit 97268a5](https://github.com/bigchaindb/bigchaindb/commit/97268a577bf27942a87d8eb838f4816165c84fd5)
 
 ## [0.10.2] - 2017-05-16
 Tag name: v0.10.2
