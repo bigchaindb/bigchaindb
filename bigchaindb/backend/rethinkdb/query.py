@@ -123,7 +123,7 @@ def get_spent(connection, transaction_id, output):
              .concat_map(lambda doc: doc['block']['transactions'])
              .filter(lambda transaction: transaction['inputs'].contains(
                 lambda input_: input_['fulfills'] == {
-                    'transaction_id': transaction_id, 'output': output})))
+                    'transaction_id': transaction_id, 'output_index': output})))
 
 
 @register_query(RethinkDBConnection)

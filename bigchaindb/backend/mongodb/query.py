@@ -158,7 +158,7 @@ def get_spent(conn, transaction_id, output):
                 'block.transactions.inputs': {
                     '$elemMatch': {
                         'fulfills.transaction_id': transaction_id,
-                        'fulfills.output': output,
+                        'fulfills.output_index': output,
                     },
                 },
             }},
@@ -167,7 +167,7 @@ def get_spent(conn, transaction_id, output):
                 'block.transactions.inputs': {
                     '$elemMatch': {
                         'fulfills.transaction_id': transaction_id,
-                        'fulfills.output': output,
+                        'fulfills.output_index': output,
                     },
                 },
             }},

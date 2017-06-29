@@ -132,7 +132,7 @@ If there is only one *current owner*, the fulfillment will be a simple signature
         "owners_before": ["<public key of the owner before the transaction happened>"],
         "fulfillment": "cf:4:RxFzIE679tFBk8zwEgizhmTuciAylvTUwy6EL6ehddHFJOhK5F4IjwQ1xLu2oQK9iyRCZJdfWAefZVjTt3DeG5j2exqxpGliOPYseNkRAWEakqJ_UrCwgnj92dnFRAEE",
         "fulfills": {
-            "output": 0,
+            "output_index": 0,
             "transaction_id": "11b3e7d893cc5fdfcf1a1706809c7def290a3b10b0bef6525d10b024649c42d3"
         }
     }
@@ -151,7 +151,7 @@ If there are multiple *current owners*, the fulfillment will be a little differe
         "owners_before": ["<public key of the first owner before the transaction happened>","<public key of the second owner before the transaction happened>"],
         "fulfillment": "cf:2:AQIBAgEBYwAEYEv6O5HjHGl7OWo2Tu5mWcWQcL_OGrFuUjyej-dK3LM99TbZsRd8c9luQhU30xCH5AdNaupxg-pLHuk8DoSaDA1MHQGXUZ80a_cV-4UaaaCpdey8K0CEcJxre0X96hTHCwABAWMABGBnsuHExhuSj5Mdm-q0KoPgX4nAt0s00k1WTMCzuUpQIp6aStLoTSMlsvS4fmDtOSv9gubekKLuHTMAk-LQFSKF1JdzwaVWAA2UOv0v_OS2gY3A-r0kRq8HtzjYdcmVswUA",
         "fulfills": {
-            "output": 0,
+            "output_index": 0,
             "transaction_id": "e4805f1bfc999d6409b38e3a4c3b2fafad7c1280eb0d441da7083e945dd89eb8"
         }
     }
@@ -160,5 +160,5 @@ If there are multiple *current owners*, the fulfillment will be a little differe
 - ``owners_before``: A list of public keys of the owners before the transaction; in this case it has two owners, hence two public keys.
 - ``fulfillment``: A crypto-conditions URI that encodes the cryptographic fulfillments like signatures and others;'cf' indicates this is a fulfillment, '2' indicates the condition type is THRESHOLD-SHA-256 (while '4' in `One Current Owner`_ indicates its condition type is ED25519).
 - ``fulfills``: Pointer to an output from a previous transaction that is being spent
-    - ``output``: The index of the output in a previous transaction
+    - ``output_index``: The index of the output in a previous transaction
     - ``transaction_id``: ID of the transaction

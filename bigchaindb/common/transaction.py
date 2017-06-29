@@ -178,7 +178,7 @@ class TransactionLink(object):
                 :class:`~bigchaindb.common.transaction.TransactionLink`
         """
         try:
-            return cls(link['transaction_id'], link['output'])
+            return cls(link['transaction_id'], link['output_index'])
         except TypeError:
             return cls()
 
@@ -193,7 +193,7 @@ class TransactionLink(object):
         else:
             return {
                 'transaction_id': self.txid,
-                'output': self.output,
+                'output_index': self.output,
             }
 
     def to_uri(self, path=''):

@@ -203,10 +203,10 @@ definitions:
             Reference to the output that is being spent.
           additionalProperties: false
           required:
-          - output
+          - output_index
           - transaction_id
           properties:
-            output:
+            output_index:
               "$ref": "#/definitions/offset"
               description: |
                 Index of the output containing the condition being fulfilled
