@@ -124,7 +124,9 @@ field (``bdb-certs.bdb-user``), i.e.
 threescale-credentials.*
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can delete the ``threescale-credentials`` Secret if you're not using 3scale.
+If you're not using 3scale,
+you can delete the ``threescale-credentials`` Secret
+or leave all the values blank (``""``).
 
 If you *are* using 3scale, you can get the value for ``frontend-api-dns-name``
 using something like ``echo "your.nodesubdomain.net" | base64 -w 0``
