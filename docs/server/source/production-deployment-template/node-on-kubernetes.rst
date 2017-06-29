@@ -128,7 +128,16 @@ Step 4.1: Vanilla NGINX
      the ConfigMap followed by ``-dep``. For example, if the value set in the
      ``ngx-instance-name`` is ``ngx-instance-0``, set  the
      ``spec.selector.app`` to ``ngx-instance-0-dep``.
-   
+     
+   * Set ``ngx-public-mdb-port`` to 27017, or the port number on which you
+     want to expose MongoDB service.
+
+   * Set ``ngx-public-api-port`` to 80, or the port number on which you want to
+     expose BigchainDB API service.
+
+   * Set ``ngx-public-ws-port`` to 81, or the port number on which you want to
+     expose BigchainDB Websocket service.
+     
    * Start the Kubernetes Service:
 
      .. code:: bash
@@ -152,6 +161,18 @@ Step 4.2: OpenResty NGINX + 3scale
      ``ngx-instance-name`` is ``ngx-instance-0``, set  the
      ``spec.selector.app`` to ``ngx-instance-0-dep``.
    
+   * Set ``ngx-public-mdb-port`` to 27017, or the port number on which you
+     want to expose MongoDB service.
+
+   * Set ``ngx-public-3scale-port`` to 8080, or the port number on which you
+     want to let 3scale communicate with Openresty NGINX for authenctication.
+
+   * Set ``ngx-public-bdb-port`` to 443, or the port number on which you want
+     to expose BigchainDB API service.
+
+   * Set ``ngx-public-bdb-port-http`` to 80, or the port number on which you
+     want to expose BigchainDB Websocket service.
+     
    * Start the Kubernetes Service:
    
      .. code:: bash
@@ -276,12 +297,6 @@ Step 8.1: Vanilla NGINX
     ``BIGCHAINDB_BACKEND_HOST`` env var to
     ``bdb-instance-0.default.svc.cluster.local``.
     
-  * Set ``MONGODB_FRONTEND_PORT`` to 27017, or the port number on which you
-    want to expose MongoDB service.
-    
-  * Set ``BIGCHAINDB_FRONTEND_PORT`` to 80, or the port number on which you
-    want to expose BigchainDB service.
-    
   * Start the Kubernetes Deployment:
 
     .. code:: bash
@@ -314,12 +329,6 @@ Step 8.2: OpenResty NGINX + 3scale
      ``BIGCHAINDB_BACKEND_HOST`` env var to
      ``bdb-instance-0.default.svc.cluster.local``.
      
-   * Set ``MONGODB_FRONTEND_PORT`` to 27017, or the port number on which you
-     want to expose the MongoDB service.
-     
-   * Set ``BIGCHAINDB_FRONTEND_PORT`` to 443, or the port number on which you
-     want to expose the BigchainDB service over HTTPS.
-
    * Start the Kubernetes Deployment:
 
      .. code:: bash
