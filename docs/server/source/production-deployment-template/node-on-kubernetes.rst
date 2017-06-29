@@ -170,20 +170,18 @@ Step 5: Assign DNS Name to the NGINX Public IP
     <https://docs.bigchaindb.com/en/latest/terminology.html>`_ or are using
     HTTPS certificates tied to a domain.
 
-  * The following command can help you find out if the nginx service started
+  * The following command can help you find out if the NGINX service started
     above has been assigned a public IP or external IP address:
    
     .. code:: bash
 
        $ kubectl --context k8s-bdb-test-cluster-0 get svc -w
    
-  * Once a public IP is assigned, you can log in to the Azure portal and map it to
+  * Once a public IP is assigned, you can map it to
     a DNS name.
-   
-  * We usually assign ``bdb-test-cluster-0``, ``bdb-test-cluster-1`` and
+    We usually assign ``bdb-test-cluster-0``, ``bdb-test-cluster-1`` and
     so on in our documentation.
-   
-  * Let us assume that we assigned the unique name of ``bdb-test-cluster-0`` here.
+    Let's assume that we assign the unique name of ``bdb-test-cluster-0`` here.
 
 
 **Set up DNS mapping in Azure.**
@@ -198,7 +196,7 @@ have the Azure DNS prefix name along with a long random string, without the
 (for example, ``bdb-test-cluster-0``), click ``Save``, and wait for the
 changes to be applied.
 
-To verify the DNS setting is operational, you can run ``nslookup <dns
+To verify the DNS setting is operational, you can run ``nslookup <DNS
 name added in ConfigMap>`` from your local Linux shell.
 
 This will ensure that when you scale the replica set later, other MongoDB
