@@ -138,14 +138,17 @@ Step 4.1: Vanilla NGINX
 
 Step 4.2: OpenResty NGINX + 3scale
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   
-   * This configuration is located in the file ``nginx/nginx-3scale-svc.yaml``.
 
    * You have to enable HTTPS for this one and will need an HTTPS certificate
-     for your domain
+     for your domain.
       
-   * You should have already created the Kubernetes Secret in the previous
-     step.
+   * You should have already created the necessary Kubernetes Secrets in the previous
+     step (e.g. ``https-certs`` and ``threescale-credentials``).
+
+   * This configuration is located in the file ``nginx-3scale/nginx-3scale-svc.yaml``.
+
+   * Set the ``metadata.name`` and ``metadata.labels.name`` to the value
+     set in ``ngx-instance-name`` in the ConfigMap above.
 
    * Set the ``spec.selector.app`` to the value set in ``ngx-instance-name`` in
      the ConfigMap followed by ``-dep``. For example, if the value set in the
