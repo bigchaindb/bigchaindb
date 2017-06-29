@@ -60,14 +60,13 @@ of all *other* nodes in your BigchainDB cluster
   the value should be ``""`` (an empty string).
 * If you're deploying the second node in the cluster,
   the value should be the BigchainDB public key of the first/original
-  node in the cluster, inside double quotes.
+  node in the cluster.
   For example,
   ``"EPQk5i5yYpoUwGVM8VKZRjM8CYxB6j8Lu8i8SG7kGGce"``
 * If there are two or more other nodes already in the cluster,
   the value should be a colon-separated list
   of the BigchainDB public keys
-  of those other nodes,
-  inside double quotes.
+  of those other nodes.
   For example,
   ``"DPjpKbmbPYPKVAuf6VSkqGCf5jzrEh69Ldef6TrLwsEQ:EPQk5i5yYpoUwGVM8VKZRjM8CYxB6j8Lu8i8SG7kGGce"``
 
