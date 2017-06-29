@@ -20,6 +20,19 @@ def test_get_transaction_endpoint(b, client, user_pk):
 
 @pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
+def test_get_transactions_for_asset_id(b, client, user_pk):
+    input_tx = b.get_owned_ids(user_pk).pop()
+    tx = b.get_transaction(input_tx.txid)
+    # tx.id of CREATE tx is asset_id
+    res = client.get('{}?asset_id={}'.format(TX_ENDPOINT, tx.id),
+                     headers=[('Content-Type', 'application/json')])
+    # endpoint is returning a list
+    assert tx.to_dict() == [res.json]
+    assert res.status_code == 200
+
+
+@pytest.mark.bdb
+@pytest.mark.usefixtures('inputs')
 def test_get_transaction_returns_404_if_not_found(client):
     res = client.get(TX_ENDPOINT + '123')
     assert res.status_code == 404
