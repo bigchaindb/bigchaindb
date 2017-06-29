@@ -491,12 +491,23 @@ Step 11: Start a Kubernetes StatefulSet for MongoDB
 Step 12: Configure Users and Access Control for MongoDB
 -------------------------------------------------------
 
-  * Create a user on MongoDB with authorization to create more users and assign
+  * In this step, you will create a user on MongoDB with authorization
+    to create more users and assign
     roles to them.
     Note: You need to do this only when setting up the first MongoDB node of
     the cluster.
 
-    Log in to the MongoDB instance and open a mongo shell using the certificates
+  * Find out the name of your MongoDB pod by reading the output
+    of the ``kubectl ... get pods`` command at the end of the last step.
+    It should be something like ``mdb-instance-0-ss-0``.
+  
+  * Log in to the MongoDB pod using:
+
+    .. code:: bash
+
+       $ kubectl --context k8s-bdb-test-cluster-0 exec -it <name of your MongoDB pod> bash
+  
+  * Open a mongo shell using the certificates
     already present at ``/etc/mongod/ssl/``
 
     .. code:: bash
