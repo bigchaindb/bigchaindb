@@ -29,8 +29,8 @@ where all data values must be base64-encoded.
 This is true of all Kubernetes ConfigMaps and Secrets.)
 
 
-vars
-~~~~
+vars.mdb-instance-name and Similar
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Your BigchainDB cluster organization should have a standard way
 of naming instances, so the instances in your BigchainDB node
@@ -59,12 +59,14 @@ of all *other* nodes in your BigchainDB cluster
 * If you're deploying the first node in the cluster,
   the value should be ``""`` (an empty string).
 * If you're deploying the second node in the cluster,
-  the value should be one public key inside double quotes.
+  the value should be the BigchainDB public key of the first/original
+  node in the cluster.
   For example,
   ``"EPQk5i5yYpoUwGVM8VKZRjM8CYxB6j8Lu8i8SG7kGGce"``
 * If there are two or more other nodes already in the cluster,
-  the value should be a colon-separated list of public keys
-  inside double quotes.
+  the value should be a colon-separated list
+  of the BigchainDB public keys
+  of those other nodes.
   For example,
   ``"DPjpKbmbPYPKVAuf6VSkqGCf5jzrEh69Ldef6TrLwsEQ:EPQk5i5yYpoUwGVM8VKZRjM8CYxB6j8Lu8i8SG7kGGce"``
 
@@ -117,6 +119,33 @@ field (``bdb-certs.bdb-user``), i.e.
 .. code:: bash
 
    emailAddress=dev@bigchaindb.com,CN=test-bdb-ssl,OU=BigchainDB-Instance,O=BigchainDB GmbH,L=Berlin,ST=Berlin,C=DE
+
+
+threescale-credentials.*
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you're not using 3scale,
+you can delete the ``threescale-credentials`` Secret
+or leave all the values blank (``""``).
+
+If you *are* using 3scale, you can get the value for ``frontend-api-dns-name``
+using something like ``echo "your.nodesubdomain.net" | base64 -w 0``
+
+To get the values for ``secret-token``, ``service-id``,
+``version-header`` and ``provider-key``, login to your 3scale admin,
+then click **APIs** and click on **Integration** for the relevant API.
+Scroll to the bottom of the page and click the small link
+in the lower right corner, labelled **Download the NGINX Config files**.
+You'll get a ``.zip`` file.
+Unzip it, then open the ``.conf`` file and the ``.lua`` file.
+You should be able to find all the values in those files.
+You have to be careful because it will have values for *all* your APIs,
+and some values vary from API to API.
+The ``version-header`` is the timestamp in a line that looks like:
+
+.. code::
+
+    proxy_set_header  X-3scale-Version "2017-06-28T14:57:34Z";
 
 
 Deploy Your config-map.yaml and secret.yaml

@@ -102,7 +102,7 @@ Finally, you can deploy an ACS using something like:
    --agent-vm-size Standard_D2_v2 \
    --dns-prefix <make up a name> \
    --ssh-key-value ~/.ssh/<name>.pub \
-   --orchestrator-type kubernetes
+   --orchestrator-type kubernetes \
    --debug --output json
 
 
