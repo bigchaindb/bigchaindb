@@ -561,6 +561,9 @@ Step 12: Configure Users and Access Control for MongoDB
        PRIMARY> use admin
        PRIMARY> db.auth("adminUser", "superstrongpassword")
 
+    ``db.auth()`` returns 0 when authentication is not successful,
+    and 1 when successful.
+
   * We need to specify the user name *as seen in the certificate* issued to
     the BigchainDB instance in order to authenticate correctly. Use
     the following ``openssl`` command to extract the user name from the
