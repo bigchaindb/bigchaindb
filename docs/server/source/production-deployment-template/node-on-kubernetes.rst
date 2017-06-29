@@ -453,11 +453,11 @@ Step 11: Start a Kubernetes StatefulSet for MongoDB
 
   * Note how the MongoDB container uses the ``mongo-db-claim`` and the
     ``mongo-configdb-claim`` PersistentVolumeClaims for its ``/data/db`` and
-    ``/data/configdb`` diretories (mount path).
+    ``/data/configdb`` directories (mount paths).
     
   * Note also that we use the pod's ``securityContext.capabilities.add``
     specification to add the ``FOWNER`` capability to the container. That is
-    because MongoDB container has the user ``mongodb``, with uid ``999`` and
+    because the MongoDB container has the user ``mongodb``, with uid ``999`` and
     group ``mongodb``, with gid ``999``.
     When this container runs on a host with a mounted disk, the writes fail
     when there is no user with uid ``999``. To avoid this, we use the Docker
