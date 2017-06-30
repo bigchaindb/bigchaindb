@@ -37,7 +37,7 @@ Each output also has a list of all the public keys associated
 with the conditions on that output.
 Loosely speaking, that list might be interpreted as the list of "owners."
 A more accurate word might be fulfillers, signers, controllers,
-or tranfer-enablers.
+or transfer-enablers.
 See BigchainDB Server [issue #626](https://github.com/bigchaindb/bigchaindb/issues/626).
 
 A CREATE transaction must be signed by all the owners.
