@@ -86,9 +86,9 @@ def create_bigchain_secondary_index(connection, dbname):
          .index_create('inputs',
                        r.row['block']['transactions']
                         .concat_map(lambda tx: tx['inputs']['fulfills'])
-                        .with_fields('transaction_id', 'output')
+                        .with_fields('transaction_id', 'output_index')
                         .map(lambda fulfills: [fulfills['transaction_id'],
-                                               fulfills['output']]),
+                                               fulfills['output_index']]),
                        multi=True))
 
     # wait for rethinkdb to finish creating secondary indexes

@@ -14,8 +14,8 @@ def test_get_outputs_endpoint(client, user_pk):
         gof.return_value = [m, m]
         res = client.get(OUTPUTS_ENDPOINT + '?public_key={}'.format(user_pk))
         assert res.json == [
-            {'transaction_id': 'a', 'output': 0},
-            {'transaction_id': 'a', 'output': 0}
+            {'transaction_id': 'a', 'output_index': 0},
+            {'transaction_id': 'a', 'output_index': 0}
         ]
     assert res.status_code == 200
     gof.assert_called_once_with(user_pk, None)
@@ -29,7 +29,7 @@ def test_get_outputs_endpoint_unspent(client, user_pk):
         gof.return_value = [m]
         params = '?spent=False&public_key={}'.format(user_pk)
         res = client.get(OUTPUTS_ENDPOINT + params)
-    assert res.json == [{'transaction_id': 'a', 'output': 0}]
+    assert res.json == [{'transaction_id': 'a', 'output_index': 0}]
     assert res.status_code == 200
     gof.assert_called_once_with(user_pk, False)
 
@@ -42,7 +42,7 @@ def test_get_outputs_endpoint_spent(client, user_pk):
         gof.return_value = [m]
         params = '?spent=true&public_key={}'.format(user_pk)
         res = client.get(OUTPUTS_ENDPOINT + params)
-    assert res.json == [{'transaction_id': 'a', 'output': 0}]
+    assert res.json == [{'transaction_id': 'a', 'output_index': 0}]
     assert res.status_code == 200
     gof.assert_called_once_with(user_pk, True)
 

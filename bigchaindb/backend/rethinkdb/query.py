@@ -123,7 +123,7 @@ def get_spent(connection, transaction_id, output):
              .concat_map(lambda doc: doc['block']['transactions'])
              .filter(lambda transaction: transaction['inputs'].contains(
                 lambda input_: input_['fulfills'] == {
-                    'transaction_id': transaction_id, 'output': output})))
+                    'transaction_id': transaction_id, 'output_index': output})))
 
 
 @register_query(RethinkDBConnection)
@@ -287,7 +287,7 @@ def unwind_block_transactions(block):
 def get_spending_transactions(connection, links):
     query = (
         r.table('bigchain')
-        .get_all(*[(l['transaction_id'], l['output']) for l in links],
+        .get_all(*[(l['transaction_id'], l['output_index']) for l in links],
                  index='inputs')
         .concat_map(unwind_block_transactions)
         # filter transactions spending output
