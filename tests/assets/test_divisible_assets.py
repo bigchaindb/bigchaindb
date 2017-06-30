@@ -52,8 +52,8 @@ def test_single_in_single_own_single_out_multiple_own_create(b, user_pk):
     assert tx_signed.outputs[0].amount == 100
 
     output = tx_signed.outputs[0].to_dict()
-    assert 'subfulfillments' in output['condition']['details']
-    assert len(output['condition']['details']['subfulfillments']) == 2
+    assert 'subconditions' in output['condition']['details']
+    assert len(output['condition']['details']['subconditions']) == 2
 
     assert len(tx_signed.inputs) == 1
 
@@ -76,8 +76,8 @@ def test_single_in_single_own_multiple_out_mix_own_create(b, user_pk):
     assert tx_signed.outputs[1].amount == 50
 
     output_cid1 = tx_signed.outputs[1].to_dict()
-    assert 'subfulfillments' in output_cid1['condition']['details']
-    assert len(output_cid1['condition']['details']['subfulfillments']) == 2
+    assert 'subconditions' in output_cid1['condition']['details']
+    assert len(output_cid1['condition']['details']['subconditions']) == 2
 
     assert len(tx_signed.inputs) == 1
 
@@ -89,6 +89,7 @@ def test_single_in_single_own_multiple_out_mix_own_create(b, user_pk):
 def test_single_in_multiple_own_single_out_single_own_create(b, user_pk,
                                                              user_sk):
     from bigchaindb.models import Transaction
+    from bigchaindb.common.transaction import _fulfillment_to_details
 
     tx = Transaction.create([b.me, user_pk], [([user_pk], 100)])
     tx_signed = tx.sign([b.me_private, user_sk])
@@ -97,9 +98,9 @@ def test_single_in_multiple_own_single_out_single_own_create(b, user_pk,
     assert tx_signed.outputs[0].amount == 100
     assert len(tx_signed.inputs) == 1
 
-    ffill = tx_signed.inputs[0].fulfillment.to_dict()
-    assert 'subfulfillments' in ffill
-    assert len(ffill['subfulfillments']) == 2
+    ffill = _fulfillment_to_details(tx_signed.inputs[0].fulfillment)
+    assert 'subconditions' in ffill
+    assert len(ffill['subconditions']) == 2
 
 
 # TRANSFER divisible asset
@@ -207,8 +208,8 @@ def test_single_in_single_own_single_out_multiple_own_transfer(b, user_pk,
     assert tx_transfer_signed.outputs[0].amount == 100
 
     condition = tx_transfer_signed.outputs[0].to_dict()
-    assert 'subfulfillments' in condition['condition']['details']
-    assert len(condition['condition']['details']['subfulfillments']) == 2
+    assert 'subconditions' in condition['condition']['details']
+    assert len(condition['condition']['details']['subconditions']) == 2
 
     assert len(tx_transfer_signed.inputs) == 1
 
@@ -248,8 +249,8 @@ def test_single_in_single_own_multiple_out_mix_own_transfer(b, user_pk,
     assert tx_transfer_signed.outputs[1].amount == 50
 
     output_cid1 = tx_transfer_signed.outputs[1].to_dict()
-    assert 'subfulfillments' in output_cid1['condition']['details']
-    assert len(output_cid1['condition']['details']['subfulfillments']) == 2
+    assert 'subconditions' in output_cid1['condition']['details']
+    assert len(output_cid1['condition']['details']['subconditions']) == 2
 
     assert len(tx_transfer_signed.inputs) == 1
 
@@ -264,6 +265,7 @@ def test_single_in_single_own_multiple_out_mix_own_transfer(b, user_pk,
 def test_single_in_multiple_own_single_out_single_own_transfer(b, user_pk,
                                                                user_sk):
     from bigchaindb.models import Transaction
+    from bigchaindb.common.transaction import _fulfillment_to_details
 
     # CREATE divisible asset
     tx_create = Transaction.create([b.me], [([b.me, user_pk], 100)])
@@ -286,9 +288,9 @@ def test_single_in_multiple_own_single_out_single_own_transfer(b, user_pk,
     assert tx_transfer_signed.outputs[0].amount == 100
     assert len(tx_transfer_signed.inputs) == 1
 
-    ffill = tx_transfer_signed.inputs[0].fulfillment.to_dict()
-    assert 'subfulfillments' in ffill
-    assert len(ffill['subfulfillments']) == 2
+    ffill = _fulfillment_to_details(tx_transfer_signed.inputs[0].fulfillment)
+    assert 'subconditions' in ffill
+    assert len(ffill['subconditions']) == 2
 
 
 # TRANSFER divisible asset
@@ -334,6 +336,7 @@ def test_multiple_in_single_own_single_out_single_own_transfer(b, user_pk,
 def test_multiple_in_multiple_own_single_out_single_own_transfer(b, user_pk,
                                                                  user_sk):
     from bigchaindb.models import Transaction
+    from bigchaindb.common.transaction import _fulfillment_to_details
 
     # CREATE divisible asset
     tx_create = Transaction.create([b.me], [([user_pk, b.me], 50), ([user_pk, b.me], 50)])
@@ -356,12 +359,12 @@ def test_multiple_in_multiple_own_single_out_single_own_transfer(b, user_pk,
     assert tx_transfer_signed.outputs[0].amount == 100
     assert len(tx_transfer_signed.inputs) == 2
 
-    ffill_fid0 = tx_transfer_signed.inputs[0].fulfillment.to_dict()
-    ffill_fid1 = tx_transfer_signed.inputs[1].fulfillment.to_dict()
-    assert 'subfulfillments' in ffill_fid0
-    assert 'subfulfillments' in ffill_fid1
-    assert len(ffill_fid0['subfulfillments']) == 2
-    assert len(ffill_fid1['subfulfillments']) == 2
+    ffill_fid0 = _fulfillment_to_details(tx_transfer_signed.inputs[0].fulfillment)
+    ffill_fid1 = _fulfillment_to_details(tx_transfer_signed.inputs[1].fulfillment)
+    assert 'subconditions' in ffill_fid0
+    assert 'subconditions' in ffill_fid1
+    assert len(ffill_fid0['subconditions']) == 2
+    assert len(ffill_fid1['subconditions']) == 2
 
 
 # TRANSFER divisible asset
@@ -375,6 +378,7 @@ def test_multiple_in_multiple_own_single_out_single_own_transfer(b, user_pk,
 def test_muiltiple_in_mix_own_multiple_out_single_own_transfer(b, user_pk,
                                                                user_sk):
     from bigchaindb.models import Transaction
+    from bigchaindb.common.transaction import _fulfillment_to_details
 
     # CREATE divisible asset
     tx_create = Transaction.create([b.me], [([user_pk], 50), ([user_pk, b.me], 50)])
@@ -397,11 +401,11 @@ def test_muiltiple_in_mix_own_multiple_out_single_own_transfer(b, user_pk,
     assert tx_transfer_signed.outputs[0].amount == 100
     assert len(tx_transfer_signed.inputs) == 2
 
-    ffill_fid0 = tx_transfer_signed.inputs[0].fulfillment.to_dict()
-    ffill_fid1 = tx_transfer_signed.inputs[1].fulfillment.to_dict()
-    assert 'subfulfillments' not in ffill_fid0
-    assert 'subfulfillments' in ffill_fid1
-    assert len(ffill_fid1['subfulfillments']) == 2
+    ffill_fid0 = _fulfillment_to_details(tx_transfer_signed.inputs[0].fulfillment)
+    ffill_fid1 = _fulfillment_to_details(tx_transfer_signed.inputs[1].fulfillment)
+    assert 'subconditions' not in ffill_fid0
+    assert 'subconditions' in ffill_fid1
+    assert len(ffill_fid1['subconditions']) == 2
 
 
 # TRANSFER divisible asset
@@ -416,6 +420,7 @@ def test_muiltiple_in_mix_own_multiple_out_single_own_transfer(b, user_pk,
 def test_muiltiple_in_mix_own_multiple_out_mix_own_transfer(b, user_pk,
                                                             user_sk):
     from bigchaindb.models import Transaction
+    from bigchaindb.common.transaction import _fulfillment_to_details
 
     # CREATE divisible asset
     tx_create = Transaction.create([b.me], [([user_pk], 50), ([user_pk, b.me], 50)])
@@ -442,15 +447,15 @@ def test_muiltiple_in_mix_own_multiple_out_mix_own_transfer(b, user_pk,
 
     cond_cid0 = tx_transfer_signed.outputs[0].to_dict()
     cond_cid1 = tx_transfer_signed.outputs[1].to_dict()
-    assert 'subfulfillments' not in cond_cid0['condition']['details']
-    assert 'subfulfillments' in cond_cid1['condition']['details']
-    assert len(cond_cid1['condition']['details']['subfulfillments']) == 2
+    assert 'subconditions' not in cond_cid0['condition']['details']
+    assert 'subconditions' in cond_cid1['condition']['details']
+    assert len(cond_cid1['condition']['details']['subconditions']) == 2
 
-    ffill_fid0 = tx_transfer_signed.inputs[0].fulfillment.to_dict()
-    ffill_fid1 = tx_transfer_signed.inputs[1].fulfillment.to_dict()
-    assert 'subfulfillments' not in ffill_fid0
-    assert 'subfulfillments' in ffill_fid1
-    assert len(ffill_fid1['subfulfillments']) == 2
+    ffill_fid0 = _fulfillment_to_details(tx_transfer_signed.inputs[0].fulfillment)
+    ffill_fid1 = _fulfillment_to_details(tx_transfer_signed.inputs[1].fulfillment)
+    assert 'subconditions' not in ffill_fid0
+    assert 'subconditions' in ffill_fid1
+    assert len(ffill_fid1['subconditions']) == 2
 
 
 # TRANSFER divisible asset

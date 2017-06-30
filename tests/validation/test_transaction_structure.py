@@ -5,9 +5,11 @@ structural / schematic issues are caught when reading a transaction
 """
 
 import pytest
+from unittest.mock import MagicMock
 
 from bigchaindb.common.exceptions import (AmountError, InvalidHash,
-                                          SchemaValidationError)
+                                          SchemaValidationError,
+                                          ThresholdTooDeep)
 from bigchaindb.models import Transaction
 
 
@@ -159,6 +161,37 @@ def test_high_amounts(create_tx):
     # Should pass
     create_tx.outputs[0].amount -= 1
     validate(create_tx)
+
+
+################################################################################
+# Conditions
+
+def test_handle_threshold_overflow():
+    from bigchaindb.common import transaction
+
+    cond = {
+        'type': 'ed25519-sha-256',
+        'public_key': 'a' * 43,
+    }
+    for i in range(1000):
+        cond = {
+            'type': 'threshold-sha-256',
+            'threshold': 1,
+            'subconditions': [cond],
+        }
+    with pytest.raises(ThresholdTooDeep):
+        transaction._fulfillment_from_details(cond)
+
+
+def test_unsupported_condition_type():
+    from bigchaindb.common import transaction
+    from cryptoconditions.exceptions import UnsupportedTypeError
+
+    with pytest.raises(UnsupportedTypeError):
+        transaction._fulfillment_from_details({'type': 'a'})
+
+    with pytest.raises(UnsupportedTypeError):
+        transaction._fulfillment_to_details(MagicMock(type_name='a'))
 
 
 ################################################################################

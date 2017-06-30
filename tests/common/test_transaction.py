@@ -4,7 +4,7 @@ Tests for transaction validation are separate.
 """
 from copy import deepcopy
 
-from base58 import b58decode
+from base58 import b58encode, b58decode
 from pytest import raises
 
 
@@ -82,7 +82,10 @@ def test_output_serialization(user_Ed25519, user_pub):
     expected = {
         'condition': {
             'uri': user_Ed25519.condition_uri,
-            'details': user_Ed25519.to_dict(),
+            'details': {
+                'type': 'ed25519-sha-256',
+                'public_key': b58encode(user_Ed25519.public_key),
+            },
         },
         'public_keys': [user_pub],
         'amount': '1',
@@ -100,7 +103,10 @@ def test_output_deserialization(user_Ed25519, user_pub):
     cond = {
         'condition': {
             'uri': user_Ed25519.condition_uri,
-            'details': user_Ed25519.to_dict()
+            'details': {
+                'type': 'ed25519-sha-256',
+                'public_key': b58encode(user_Ed25519.public_key),
+            },
         },
         'public_keys': [user_pub],
         'amount': '1',
@@ -366,7 +372,7 @@ def test_transaction_link_serialization():
     tx_id = 'a transaction id'
     expected = {
         'transaction_id': tx_id,
-        'output': 0,
+        'output_index': 0,
     }
     tx_link = TransactionLink(tx_id, 0)
 
@@ -389,7 +395,7 @@ def test_transaction_link_deserialization():
     expected = TransactionLink(tx_id, 0)
     tx_link = {
         'transaction_id': tx_id,
-        'output': 0,
+        'output_index': 0,
     }
     tx_link = TransactionLink.from_dict(tx_link)
 
@@ -842,7 +848,7 @@ def test_create_transfer_transaction_single_io(tx, user_pub, user2_pub,
                 'fulfillment': None,
                 'fulfills': {
                     'transaction_id': tx.id,
-                    'output': 0
+                    'output_index': 0
                 }
             }
         ],
@@ -891,7 +897,7 @@ def test_create_transfer_transaction_multiple_io(user_pub, user_priv,
                 'fulfillment': None,
                 'fulfills': {
                     'transaction_id': tx.id,
-                    'output': 0
+                    'output_index': 0
                 }
             }, {
                 'owners_before': [
@@ -900,7 +906,7 @@ def test_create_transfer_transaction_multiple_io(user_pub, user_priv,
                 'fulfillment': None,
                 'fulfills': {
                     'transaction_id': tx.id,
-                    'output': 1
+                    'output_index': 1
                 }
             }
         ],
