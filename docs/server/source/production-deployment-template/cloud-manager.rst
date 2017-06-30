@@ -46,11 +46,15 @@ Configure MongoDB Cloud Manager for Monitoring
     connections, and click ``Continue``. This should already be selected for
     you in case you selected ``X.509 Client Certificate`` above.
 
-  * Once the deployment is found, click the ``Continue`` button again.
-    This may take about a minute or two.
+  * Wait a minute or two for the deployment to be found and then
+    click the ``Continue`` button again.
 
-  * Verify that you see your process on the Cloud Manager UI, and click
-    ``Continue`` for the third time.
+  * Verify that you see your process on the Cloud Manager UI.
+    It should look something like this:
+
+    .. image:: /_static/mongodb_cloud_manager_1.png
+  
+  * Click ``Continue``.
 
   * Verify on the UI that data is being sent by the monitoring agent to the
     Cloud Manager. It may take upto 5 minutes for data to appear on the UI.
