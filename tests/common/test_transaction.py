@@ -4,7 +4,7 @@ Tests for transaction validation are separate.
 """
 from copy import deepcopy
 
-from base58 import b58decode
+from base58 import b58encode, b58decode
 from pytest import raises
 
 
@@ -77,7 +77,6 @@ def test_input_deserialization_with_unsigned_fulfillment(ffill_uri, user_pub):
 
 
 def test_output_serialization(user_Ed25519, user_pub):
-    import base58
     from bigchaindb.common.transaction import Output
 
     expected = {
@@ -85,7 +84,7 @@ def test_output_serialization(user_Ed25519, user_pub):
             'uri': user_Ed25519.condition_uri,
             'details': {
                 'type': 'ed25519-sha-256',
-                'public_key': base58.b58encode(user_Ed25519.public_key),
+                'public_key': b58encode(user_Ed25519.public_key),
             },
         },
         'public_keys': [user_pub],
@@ -98,7 +97,6 @@ def test_output_serialization(user_Ed25519, user_pub):
 
 
 def test_output_deserialization(user_Ed25519, user_pub):
-    import base58
     from bigchaindb.common.transaction import Output
 
     expected = Output(user_Ed25519, [user_pub], 1)
@@ -107,7 +105,7 @@ def test_output_deserialization(user_Ed25519, user_pub):
             'uri': user_Ed25519.condition_uri,
             'details': {
                 'type': 'ed25519-sha-256',
-                'public_key': base58.b58encode(user_Ed25519.public_key),
+                'public_key': b58encode(user_Ed25519.public_key),
             },
         },
         'public_keys': [user_pub],
