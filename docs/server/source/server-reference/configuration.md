@@ -21,7 +21,6 @@ For convenience, here's a list of all the relevant environment variables (docume
 `BIGCHAINDB_SERVER_BIND`<br>
 `BIGCHAINDB_SERVER_LOGLEVEL`<br>
 `BIGCHAINDB_SERVER_WORKERS`<br>
-`BIGCHAINDB_SERVER_THREADS`<br>
 `BIGCHAINDB_WSSERVER_SCHEME`<br>
 `BIGCHAINDB_WSSERVER_HOST`<br>
 `BIGCHAINDB_WSSERVER_PORT`<br>
@@ -53,7 +52,7 @@ Note that the `-c` command line option will always take precedence if both the `
 
 You can read the current default values in the file [bigchaindb/\_\_init\_\_.py](https://github.com/bigchaindb/bigchaindb/blob/master/bigchaindb/__init__.py). (The link is to the latest version.)
 
-Running `bigchaindb -y configure rethinkdb` will generate a local config file in `$HOME/.bigchaindb` with all the default values, with two exceptions: It will generate a valid private/public keypair, rather than using the default keypair (`None` and `None`).
+Running `bigchaindb -y configure mongodb` will generate a local config file in `$HOME/.bigchaindb` with all the default values (for using MongoDB as the database backend), with two exceptions: it will generate a valid private/public keypair, rather than using the default keypair (`None` and `None`).
 
 
 ## keypair.public & keypair.private
@@ -74,7 +73,7 @@ export BIGCHAINDB_KEYPAIR_PRIVATE=5C5Cknco7YxBRP9AgB1cbUVTL4FAcooxErLygw1DeG2D
 }
 ```
 
-Internally (i.e. in the Python code), both keys have a default value of `None`, but that's not a valid key. Therefore you can't rely on the defaults for the keypair. If you want to run BigchainDB, you must provide a valid keypair, either in the environment variables or in the local config file. You can generate a local config file with a valid keypair (and default everything else) using `bigchaindb -y configure rethinkdb`.
+Internally (i.e. in the Python code), both keys have a default value of `None`, but that's not a valid key. Therefore you can't rely on the defaults for the keypair. If you want to run BigchainDB, you must provide a valid keypair, either in the environment variables or in the local config file. You can generate a local config file with a valid keypair (and default everything else) using `bigchaindb -y configure mongodb`.
 
 
 ## keyring
@@ -103,12 +102,12 @@ Note how the keys in the list are separated by colons.
 ## database.*
 
 The settings with names of the form `database.*` are for the database backend
-(currently either RethinkDB or MongoDB). They are:
+(currently either MongoDB or RethinkDB). They are:
 
-* `database.backend` is either `rethinkdb` or `mongodb`.
+* `database.backend` is either `mongodb` or `rethinkdb`.
 * `database.host` is the hostname (FQDN) of the backend database.
 * `database.port` is self-explanatory.
-* `database.name` is a user-chosen name for the database inside RethinkDB or MongoDB, e.g. `bigchain`.
+* `database.name` is a user-chosen name for the database inside MongoDB or RethinkDB, e.g. `bigchain`.
 * `database.replicaset` is only relevant if using MongoDB; it's the name of the MongoDB replica set, e.g. `bigchain-rs`.
 * `database.connection_timeout` is the maximum number of milliseconds that BigchainDB will wait before giving up on one attempt to connect to the database backend.
 * `database.max_tries` is the maximum number of times that BigchainDB will try to establish a connection with the database backend. If 0, then it will try forever.
@@ -177,20 +176,19 @@ If you used `bigchaindb -y configure mongodb` to create a default local config f
 
 These settings are for the [Gunicorn HTTP server](http://gunicorn.org/), which is used to serve the [HTTP client-server API](../http-client-server-api.html).
 
-`server.bind` is where to bind the Gunicorn HTTP server socket. It's a string. It can be any valid value for [Gunicorn's bind setting](http://docs.gunicorn.org/en/stable/settings.html#bind). If you want to allow IPv4 connections from anyone, on port 9984, use '0.0.0.0:9984'. In a production setting, we recommend you use Gunicorn behind a reverse proxy server. If Gunicorn and the reverse proxy are running on the same machine, then use 'localhost:PORT' where PORT is _not_ 9984 (because the reverse proxy needs to listen on port 9984). Maybe use PORT=9983 in that case because we know 9983 isn't used. If Gunicorn and the reverse proxy are running on different machines, then use 'A.B.C.D:9984' where A.B.C.D is the IP address of the reverse proxy. There's [more information about deploying behind a reverse proxy in the Gunicorn documentation](http://docs.gunicorn.org/en/stable/deploy.html). (They call it a proxy.)
+`server.bind` is where to bind the Gunicorn HTTP server socket. It's a string. It can be any valid value for [Gunicorn's bind setting](http://docs.gunicorn.org/en/stable/settings.html#bind). If you want to allow IPv4 connections from anyone, on port 9984, use `0.0.0.0:9984`. In a production setting, we recommend you use Gunicorn behind a reverse proxy server. If Gunicorn and the reverse proxy are running on the same machine, then use `localhost:PORT` where PORT is _not_ 9984 (because the reverse proxy needs to listen on port 9984). Maybe use PORT=9983 in that case because we know 9983 isn't used. If Gunicorn and the reverse proxy are running on different machines, then use `A.B.C.D:9984` where A.B.C.D is the IP address of the reverse proxy. There's [more information about deploying behind a reverse proxy in the Gunicorn documentation](http://docs.gunicorn.org/en/stable/deploy.html). (They call it a proxy.)
 
 `server.loglevel` sets the log level of Gunicorn's Error log outputs. See
 [Gunicorn's documentation](http://docs.gunicorn.org/en/latest/settings.html#loglevel)
 for more information.
 
-`server.workers` is [the number of worker processes](http://docs.gunicorn.org/en/stable/settings.html#workers) for handling requests. If `None` (the default), the value will be (cpu_count * 2 + 1). Each worker process has a single thread. The HTTP server will be able to handle `server.workers` requests simultaneously.
+`server.workers` is [the number of worker processes](http://docs.gunicorn.org/en/stable/settings.html#workers) for handling requests. If `None` (the default), the value will be (2 × cpu_count + 1). Each worker process has a single thread. The HTTP server will be able to handle `server.workers` requests simultaneously.
 
 **Example using environment variables**
 ```text
 export BIGCHAINDB_SERVER_BIND=0.0.0.0:9984
 export BIGCHAINDB_SERVER_LOGLEVEL=debug
 export BIGCHAINDB_SERVER_WORKERS=5
-export BIGCHAINDB_SERVER_THREADS=5
 ```
 
 **Example config file snippet**
