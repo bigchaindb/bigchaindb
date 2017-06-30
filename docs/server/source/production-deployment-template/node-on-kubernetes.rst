@@ -682,7 +682,7 @@ Step 14: Start a Kubernetes Deployment for MongoDB Backup Agent
        $ kubectl --context k8s-bdb-test-cluster-0 apply -f mongodb-backup-agent/mongo-backup-dep.yaml
 
 
-Step 15: Start a Kubernetes Deployment for Bigchaindb
+Step 15: Start a Kubernetes Deployment for BigchainDB
 -----------------------------------------------------
 
   * This configuration is located in the file
@@ -694,18 +694,13 @@ Step 15: Start a Kubernetes Deployment for Bigchaindb
     For example, if the value set in the
     ``bdb-instance-name`` is ``bdb-instance-0``, set the fields to the
     value ``bdb-insance-0-dep``.
-
-  * Set ``BIGCHAINDB_DATABASE_HOST`` to the value set in ``mdb-instance-name``
-    in the ConfigMap.
-    For example, if the value set in the ``mdb-instance-name`` is
-    ``mdb-instance-0``, set the field to the value ``mdb-instance-0``.
    
-  * Set the appropriate ``BIGCHAINDB_KEYPAIR_PUBLIC``,
-    ``BIGCHAINDB_KEYPAIR_PRIVATE`` values.
-   
-  * One way to generate BigchainDB keypair is to run a Python shell with
-    the command
-    ``from bigchaindb_driver import crypto; crypto.generate_keypair()``.
+  * Set the value of ``BIGCHAINDB_KEYPAIR_PRIVATE`` (not base64-encoded).
+    (In the future, we'd like to pull the BigchainDB private key from
+    the Secret named ``bdb-private-key``,
+    but a Secret can only be mounted as a file,
+    so BigchainDB Server would have to be modified to look for it
+    in a file.)
    
   * As we gain more experience running BigchainDB in testing and production,
     we will tweak the ``resources.limits`` values for CPU and memory, and as
@@ -719,7 +714,7 @@ Step 15: Start a Kubernetes Deployment for Bigchaindb
        $ kubectl --context k8s-bdb-test-cluster-0 apply -f bigchaindb/bigchaindb-dep.yaml
 
 
-  * You can check its status using the command ``kubectl get deploy -w``
+  * You can check its status using the command ``kubectl get deployments -w``
 
 
 Step 16: Configure the MongoDB Cloud Manager
