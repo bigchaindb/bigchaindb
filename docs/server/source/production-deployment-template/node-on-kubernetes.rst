@@ -129,14 +129,20 @@ Step 4.1: Vanilla NGINX
      ``ngx-instance-name`` is ``ngx-instance-0``, set  the
      ``spec.selector.app`` to ``ngx-instance-0-dep``.
      
-   * Set ``ngx-public-mdb-port`` to 27017, or the port number on which you
+   * Set ``ngx-public-mdb-port.port`` to 27017, or the port number on which you
      want to expose MongoDB service.
+     Set the ``ngx-public-mdb-port.targetPort`` to the port number on which the
+     Kubernetes MongoDB service will be present.
 
-   * Set ``ngx-public-api-port`` to 80, or the port number on which you want to
+   * Set ``ngx-public-api-port.port`` to 80, or the port number on which you want to
      expose BigchainDB API service.
+     Set the ``ngx-public-api-port.targetPort`` to the port number on which the
+     Kubernetes BigchainDB API service will present.
 
-   * Set ``ngx-public-ws-port`` to 81, or the port number on which you want to
+   * Set ``ngx-public-ws-port.port`` to 81, or the port number on which you want to
      expose BigchainDB Websocket service.
+     Set the ``ngx-public-ws-port.targetPort`` to the port number on which the
+     BigchainDB Websocket service will be present.
      
    * Start the Kubernetes Service:
 
@@ -161,17 +167,26 @@ Step 4.2: OpenResty NGINX + 3scale
      ``ngx-instance-name`` is ``ngx-instance-0``, set  the
      ``spec.selector.app`` to ``ngx-instance-0-dep``.
    
-   * Set ``ngx-public-mdb-port`` to 27017, or the port number on which you
+   * Set ``ngx-public-mdb-port.port`` to 27017, or the port number on which you
      want to expose MongoDB service.
+     Set the ``ngx-public-mdb-port.targetPort`` to the port number on which the
+     Kubernetes MongoDB service will be present.
 
-   * Set ``ngx-public-3scale-port`` to 8080, or the port number on which you
-     want to let 3scale communicate with Openresty NGINX for authenctication.
+   * Set ``ngx-public-3scale-port.port`` to 8080, or the port number on which
+     you want to let 3scale communicate with Openresty NGINX for authenctication.
+     Set the ``ngx-public-3scale-port.targetPort`` to the port number on which
+     this Openresty NGINX service will be listening to for communication with
+     3scale.
 
-   * Set ``ngx-public-bdb-port`` to 443, or the port number on which you want
+   * Set ``ngx-public-bdb-port.port`` to 443, or the port number on which you want
      to expose BigchainDB API service.
+     Set the ``ngx-public-api-port.targetPort`` to the port number on which the
+     Kubernetes BigchainDB API service will present.
 
-   * Set ``ngx-public-bdb-port-http`` to 80, or the port number on which you
+   * Set ``ngx-public-bdb-port-http.port`` to 80, or the port number on which you
      want to expose BigchainDB Websocket service.
+     Set the ``ngx-public-bdb-port-http.targetPort`` to the port number on which the
+     BigchainDB Websocket service will be present.
      
    * Start the Kubernetes Service:
    
