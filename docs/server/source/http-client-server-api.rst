@@ -206,11 +206,11 @@ unspent outputs.
 
      [
        {
-         "output": 0,
+         "output_index": 0,
          "transaction_id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e"
        },
        {
-         "output": 1,
+         "output_index": 1,
          "transaction_id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e"
        }
      ]
@@ -238,7 +238,7 @@ unspent outputs.
 
      [
        {
-         "output": 0,
+         "output_index": 0,
          "transaction_id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e"
        }
      ]
@@ -266,7 +266,7 @@ unspent outputs.
 
      [
        {
-         "output": 1,
+         "output_index": 1,
          "transaction_id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e"
        }
      ]

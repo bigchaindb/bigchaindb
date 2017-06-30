@@ -39,3 +39,5 @@ Generate a new CRL for your infrastructure using:
 
 The generated ``crl.pem`` file needs to be uploaded to your infrastructure to
 prevent the revoked certificate from being used again.
+
+In particlar, the generated ``crl.pem`` file should be sent to all BigchainDB node operators in your BigchainDB cluster, so that they can update it in their MongoDB instance and their BigchainDB Server instance.

@@ -50,16 +50,16 @@ Consult the MongoDB documentation for its recommendations regarding storage hard
 
 ### Install BigchainDB Server Dependencies
 
-Before you can install BigchainDB Server, you must [install its OS-level dependencies](../appendices/install-os-level-deps.html) and you may have to [install Python 3.4+](https://www.python.org/downloads/).
+Before you can install BigchainDB Server, you must [install its OS-level dependencies](../appendices/install-os-level-deps.html) and you may have to [install Python 3.5+](https://www.python.org/downloads/).
 
 ### How to Install BigchainDB Server with pip
 
-BigchainDB is distributed as a Python package on PyPI so you can install it using `pip`. First, make sure you have an up-to-date Python 3.4+ version of `pip` installed:
+BigchainDB is distributed as a Python package on PyPI so you can install it using `pip`. First, make sure you have an up-to-date Python 3.5+ version of `pip` installed:
 ```text
 pip -V
 ```
 
-If it says that `pip` isn't installed, or it says `pip` is associated with a Python version less than 3.4, then you must install a `pip` version associated with Python 3.4+. In the following instructions, we call it `pip3` but you may be able to use `pip` if that refers to the same thing. See [the `pip` installation instructions](https://pip.pypa.io/en/stable/installing/).
+If it says that `pip` isn't installed, or it says `pip` is associated with a Python version less than 3.5, then you must install a `pip` version associated with Python 3.5+. In the following instructions, we call it `pip3` but you may be able to use `pip` if that refers to the same thing. See [the `pip` installation instructions](https://pip.pypa.io/en/stable/installing/).
 
 On Ubuntu 16.04, we found that this works:
 ```text

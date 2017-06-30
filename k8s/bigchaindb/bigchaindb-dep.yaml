@@ -18,7 +18,7 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
       - name: bigchaindb
-        image: bigchaindb/bigchaindb:0.10.2
+        image: bigchaindb/bigchaindb:1.0.0rc1
         imagePullPolicy: IfNotPresent
         args:
         - start
@@ -51,6 +51,16 @@ spec:
           value: "120"
         - name: BIGCHAINDB_LOG_LEVEL_CONSOLE
           value: debug
+        - name: BIGCHAINDB_DATABASE_CA_CERT
+          value: /etc/bigchaindb/ssl/ca.pem
+        - name: BIGCHAINDB_DATABASE_CRLFILE
+          value: /etc/bigchaindb/ssl/crlfile
+        - name: BIGCHAINDB_DATABASE_CERTFILE
+          value: /etc/bigchaindb/ssl/bdb-instance.pem
+        - name: BIGCHAINDB_DATABASE_KEYFILE
+          value: /etc/bigchaindb/ssl/bdb-instance.key
+        - name: BIGCHAINDB_DATABASE_LOGIN
+          value: /etc/bigchaindb/ssl/bdb-user
         # The following env var is not required for the bootstrap/first node
         #- name: BIGCHAINDB_KEYRING
         #  value: ""
@@ -63,6 +73,10 @@ spec:
           hostPort: 9985
           name: bdb-ws-port
           protocol: TCP
+        volumeMounts:
+        - name: bdb-certs
+          mountPath: /etc/bigchaindb/ssl/
+          readOnly: true
         resources:
           limits:
             cpu: 200m
@@ -80,3 +94,8 @@ spec:
           initialDelaySeconds: 15
           timeoutSeconds: 10
       restartPolicy: Always
+      volumes:
+      - name: bdb-certs
+        secret:
+          secretName: bdb-certs
+          defaultMode: 0400

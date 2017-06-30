@@ -26,7 +26,7 @@ class StatusApi(Resource):
 
         # logical xor - exactly one query argument required
         if bool(tx_id) == bool(block_id):
-            return make_error(400, 'Provide exactly one query parameter. Choices are: block_id, tx_id')
+            return make_error(400, 'Provide exactly one query parameter. Choices are: block_id, transaction_id')
 
         pool = current_app.config['bigchain_pool']
         status = None

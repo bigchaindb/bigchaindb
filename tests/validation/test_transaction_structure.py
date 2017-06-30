@@ -5,9 +5,11 @@ structural / schematic issues are caught when reading a transaction
 """
 
 import pytest
+from unittest.mock import MagicMock
 
 from bigchaindb.common.exceptions import (AmountError, InvalidHash,
-                                          SchemaValidationError)
+                                          SchemaValidationError,
+                                          ThresholdTooDeep)
 from bigchaindb.models import Transaction
 
 
@@ -162,17 +164,43 @@ def test_high_amounts(create_tx):
 
 
 ################################################################################
+# Conditions
+
+def test_handle_threshold_overflow():
+    from bigchaindb.common import transaction
+
+    cond = {
+        'type': 'ed25519-sha-256',
+        'public_key': 'a' * 43,
+    }
+    for i in range(1000):
+        cond = {
+            'type': 'threshold-sha-256',
+            'threshold': 1,
+            'subconditions': [cond],
+        }
+    with pytest.raises(ThresholdTooDeep):
+        transaction._fulfillment_from_details(cond)
+
+
+def test_unsupported_condition_type():
+    from bigchaindb.common import transaction
+    from cryptoconditions.exceptions import UnsupportedTypeError
+
+    with pytest.raises(UnsupportedTypeError):
+        transaction._fulfillment_from_details({'type': 'a'})
+
+    with pytest.raises(UnsupportedTypeError):
+        transaction._fulfillment_to_details(MagicMock(type_name='a'))
+
+
+################################################################################
 # Version
 
 def test_validate_version(create_tx):
-    import re
-    import bigchaindb.version
-
-    short_ver = bigchaindb.version.__short_version__
-    assert create_tx.version == re.match(r'^(.*\d)', short_ver).group(1)
-
+    create_tx.version = '1.0'
     validate(create_tx)
-
-    # At version 1, transaction version will break step with server version.
-    create_tx.version = '1.0.0'
+    create_tx.version = '0.10'
+    validate_raises(create_tx)
+    create_tx.version = '110'
     validate_raises(create_tx)

@@ -89,7 +89,7 @@ def test_post_create_transaction_with_invalid_signature(mock_logger,
 
     tx = Transaction.create([user_pub], [([user_pub], 1)])
     tx = tx.sign([user_priv]).to_dict()
-    tx['inputs'][0]['fulfillment'] = 'cf:0:0'
+    tx['inputs'][0]['fulfillment'] = 64 * '0'
 
     res = client.post(TX_ENDPOINT, data=json.dumps(tx))
     expected_status_code = 400

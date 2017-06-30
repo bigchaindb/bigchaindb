@@ -6,7 +6,7 @@ This guide starts out with our general Python coding style guidelines and ends w
 
 Our starting point is [PEP8](https://www.python.org/dev/peps/pep-0008/), the standard "Style Guide for Python Code." Many Python IDEs will check your code against PEP8. (Note that PEP8 isn't frozen; it actually changes over time, but slowly.)
 
-BigchainDB uses Python 3.4+, so you can ignore all PEP8 guidelines specific to Python 2.
+BigchainDB uses Python 3.5+, so you can ignore all PEP8 guidelines specific to Python 2.
 
 ### Python Docstrings
 
