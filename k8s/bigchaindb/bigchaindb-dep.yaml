@@ -1,9 +1,3 @@
-###############################################################
-# This config file runs bigchaindb:0.10.1 as a k8s Deployment #
-# and it connects to the mongodb backend running as a         #
-# separate pod                                                #
-###############################################################
-
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -24,7 +18,10 @@ spec:
         - start
         env:
         - name: BIGCHAINDB_DATABASE_HOST
-          value: mdb-instance-0
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: mdb-instance-name
         - name: BIGCHAINDB_DATABASE_PORT
           value: "27017"
         - name: BIGCHAINDB_DATABASE_REPLICASET
@@ -40,7 +37,10 @@ spec:
         - name: BIGCHAINDB_WSSERVER_PORT
           value: "9985"
         - name: BIGCHAINDB_KEYPAIR_PUBLIC
-          value: "<public key here>"
+           valueFrom:
+             configMapKeyRef:
+               name: bdb-public-key
+               key: bdb-public-key
         - name: BIGCHAINDB_KEYPAIR_PRIVATE
           value: "<private key here>"
         - name: BIGCHAINDB_BACKLOG_REASSIGN_DELAY
@@ -63,7 +63,10 @@ spec:
           value: /etc/bigchaindb/ssl/bdb-user
         # The following env var is not required for the bootstrap/first node
         #- name: BIGCHAINDB_KEYRING
-        #  value: ""
+        #   valueFrom:
+        #     configMapKeyRef:
+        #       name: bdb-keyring
+        #       key: bdb-keyring
         ports:
         - containerPort: 9984
           hostPort: 9984
