@@ -4,12 +4,13 @@ from functools import reduce
 import base58
 from cryptoconditions import Fulfillment, ThresholdSha256, Ed25519Sha256
 from cryptoconditions.exceptions import (
-    ParsingError, ASN1DecodeError, ASN1EncodeError)
+    ParsingError, ASN1DecodeError, ASN1EncodeError, UnsupportedTypeError)
 
 from bigchaindb.common.crypto import PrivateKey, hash_data
 from bigchaindb.common.exceptions import (KeypairMismatchException,
                                           InvalidHash, InvalidSignature,
-                                          AmountError, AssetIdMismatch)
+                                          AmountError, AssetIdMismatch,
+                                          ThresholdTooDeep)
 from bigchaindb.common.utils import serialize
 
 
@@ -66,15 +67,7 @@ class Input(object):
         try:
             fulfillment = self.fulfillment.serialize_uri()
         except (TypeError, AttributeError, ASN1EncodeError):
-            # NOTE: When a non-signed transaction is casted to a dict,
-            #       `self.inputs` value is lost, as in the node's
-            #       transaction model that is saved to the database, does not
-            #       account for its dictionary form but just for its signed uri
-            #       form.
-            #       Hence, when a non-signed fulfillment is to be cast to a
-            #       dict, we just call its internal `to_dict` method here and
-            #       its `from_dict` method in `Fulfillment.from_dict`.
-            fulfillment = self.fulfillment.to_dict()
+            fulfillment = _fulfillment_to_details(self.fulfillment)
 
         try:
             # NOTE: `self.fulfills` can be `None` and that's fine
@@ -125,9 +118,61 @@ class Input(object):
             except TypeError:
                 # NOTE: See comment about this special case in
                 #       `Input.to_dict`
-                fulfillment = Fulfillment.from_dict(data['fulfillment'])
+                fulfillment = _fulfillment_from_details(data['fulfillment'])
         fulfills = TransactionLink.from_dict(data['fulfills'])
         return cls(fulfillment, data['owners_before'], fulfills)
+
+
+def _fulfillment_to_details(fulfillment):
+    """
+    Encode a fulfillment as a details dictionary
+
+    Args:
+        fulfillment: Crypto-conditions Fulfillment object
+    """
+
+    if fulfillment.type_name == 'ed25519-sha-256':
+        return {
+            'type': 'ed25519-sha-256',
+            'public_key': base58.b58encode(fulfillment.public_key),
+        }
+
+    if fulfillment.type_name == 'threshold-sha-256':
+        subconditions = [
+            _fulfillment_to_details(cond['body'])
+            for cond in fulfillment.subconditions
+        ]
+        return {
+            'type': 'threshold-sha-256',
+            'threshold': fulfillment.threshold,
+            'subconditions': subconditions,
+        }
+
+    raise UnsupportedTypeError(fulfillment.type_name)
+
+
+def _fulfillment_from_details(data):
+    """
+    Load a fulfillment for a signing spec dictionary
+
+    Args:
+        data: tx.output[].condition.details dictionary
+    """
+    if data['type'] == 'ed25519-sha-256':
+        public_key = base58.b58decode(data['public_key'])
+        return Ed25519Sha256(public_key=public_key)
+
+    if data['type'] == 'threshold-sha-256':
+        try:
+            threshold = ThresholdSha256(data['threshold'])
+            for cond in data['subconditions']:
+                cond = _fulfillment_from_details(cond)
+                threshold.add_subfulfillment(cond)
+            return threshold
+        except RecursionError:
+            raise ThresholdTooDeep()
+
+    raise UnsupportedTypeError(data.get('type'))
 
 
 class TransactionLink(object):
@@ -262,7 +307,7 @@ class Output(object):
         #              and fulfillment!
         condition = {}
         try:
-            condition['details'] = self.fulfillment.to_dict()
+            condition['details'] = _fulfillment_to_details(self.fulfillment)
         except AttributeError:
             pass
 
@@ -389,7 +434,7 @@ class Output(object):
                 :class:`~bigchaindb.common.transaction.Output`
         """
         try:
-            fulfillment = Fulfillment.from_dict(data['condition']['details'])
+            fulfillment = _fulfillment_from_details(data['condition']['details'])
         except KeyError:
             # NOTE: Hashlock condition case
             fulfillment = data['condition']['uri']

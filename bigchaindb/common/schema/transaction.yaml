@@ -150,8 +150,7 @@ definitions:
         - uri
         properties:
           details:
-            type: object
-            additionalProperties: true
+            "$ref": "#/definitions/condition_details"
           uri:
             type: string
             pattern: "^ni:///sha-256;([a-zA-Z0-9_-]{0,86})?(.+)$"
@@ -174,28 +173,14 @@ definitions:
         description: |
             List of public keys of the previous owners of the asset.
       fulfillment:
+        description: |
+          Fulfillment of an `Output.condition`_, or, put a different way, a payload
+          that satisfies the condition of a previous output to prove that the
+          creator(s) of this transaction have control over the listed asset.
         anyOf:
-        - type: object
-          additionalProperties: false
-          properties:
-            bitmask:
-              type: integer
-            public_key:
-              type: string
-            type:
-              type: string
-            signature:
-              anyOf:
-              - type: string
-              - type: 'null'
-            type_id:
-              type: integer
-          description: |
-              Fulfillment of an `Output.condition`_, or, put a different way, a payload
-              that satisfies the condition of a previous output to prove that the
-              creator(s) of this transaction have control over the listed asset.
         - type: string
           pattern: "^[a-zA-Z0-9_-]*$"
+        - "$ref": "#/definitions/condition_details"
       fulfills:
         anyOf:
         - type: 'object'
@@ -224,3 +209,37 @@ definitions:
       additionalProperties: true
       minProperties: 1
     - type: 'null'
+  condition_details:
+    description: |
+      Details needed to reconstruct the condition associated with an output.
+      Currently, BigchainDB only supports ed25519 and threshold condition types.
+    anyOf:
+    - type: object
+      additionalProperties: false
+      required:
+      - type
+      - public_key
+      properties:
+        type:
+          type: string
+          pattern: "^ed25519-sha-256$"
+        public_key:
+          "$ref": "#/definitions/base58"
+    - type: object
+      additionalProperties: false
+      required:
+      - type
+      - threshold
+      - subconditions
+      properties:
+        type:
+          type: "string"
+          pattern: "^threshold-sha-256$"
+        threshold:
+          type: integer
+          minimum: 1
+          maximum: 100
+        subconditions:
+          type: array
+          items:
+            "$ref": "#/definitions/condition_details"

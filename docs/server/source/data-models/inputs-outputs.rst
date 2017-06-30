@@ -81,30 +81,20 @@ to spend the asset. For example:
     {
         "condition": {
             "details": {
-                "bitmask": 41,
-                "subfulfillments": [
+                "type": "threshold-sha-256",
+                "threshold": 2,
+                "subconditions": [
                     {
-                        "bitmask": 32,
                         "public_key": "<new owner 1 public key>",
-                        "signature": null,
-                        "type": "fulfillment",
-                        "type_id": 4,
-                        "weight": 1
+                        "type": "ed25519-sha-256",
                     },
                     {
-                        "bitmask": 32,
                         "public_key": "<new owner 2 public key>",
-                        "signature": null,
-                        "type": "fulfillment",
-                        "type_id": 4,
-                        "weight": 1
+                        "type": "ed25519-sha-256",
                     }
                 ],
-                "threshold": 2,
-                "type": "fulfillment",
-                "type_id": 2
             },
-            "uri": "cc:2:29:ytNK3X6-bZsbF-nCGDTuopUIMi1HCyCkyPewm6oLI3o:206"},
+            "uri": "ni:///sha-256;PNYwdxaRaNw60N6LDFzOWO97b8tJeragczakL8PrAPc?fpt=ed25519-sha-256&cost=131072"},
             "public_keys": [
                 "<owner 1 public key>",
                 "<owner 2 public key>"
@@ -112,11 +102,10 @@ to spend the asset. For example:
     }
 
 
-- ``subfulfillments``: a list of fulfillments
-    - ``weight``: integer weight for each subfulfillment's contribution to the threshold
-- ``threshold``: threshold to reach for the subfulfillments to reach a valid fulfillment
+- ``subconditions``: a list of condition specs
+- ``threshold``: threshold to reach for the subconditions to reach a valid fulfillment
 
-The ``weight``s and ``threshold`` could be adjusted. For example, if the ``threshold`` was changed to 1 above, then only one of the new owners would have to provide a signature to spend the asset.
+The ``threshold`` can be adjusted. For example, if the ``threshold`` was changed to 1 above, then only one of the new owners would have to provide a signature to spend the asset. If it is desired to give a different weight to a subcondition, it should be specified multiple times.
 
 Inputs
 ------
