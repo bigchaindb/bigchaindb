@@ -42,7 +42,7 @@ See BigchainDB Server [issue #626](https://github.com/bigchaindb/bigchaindb/issu
 
 A CREATE transaction must be signed by all the owners.
 (If you're looking for that signature,
-it's in the one "fulfillment" of the one input.)
+it's in the one "fulfillment" of the one input, albeit encoded.)
 
 
 ## TRANSFER Transactions
