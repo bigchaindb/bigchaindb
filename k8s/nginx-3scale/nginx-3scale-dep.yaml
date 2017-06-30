@@ -84,7 +84,7 @@ spec:
           timeoutSeconds: 10
       restartPolicy: Always
       volumes:
-      - name: https
+      - name: https-certs
         secret:
           secretName: https-certs
           defaultMode: 0400
