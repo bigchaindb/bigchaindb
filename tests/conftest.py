@@ -513,4 +513,5 @@ def genesis_tx(b, user_pk):
     from bigchaindb.models import Transaction
     tx = Transaction.create([b.me], [([user_pk], 1)])
     tx.operation = Transaction.GENESIS
-    return tx
+    genesis_tx = tx.sign([b.me_private])
+    return genesis_tx
