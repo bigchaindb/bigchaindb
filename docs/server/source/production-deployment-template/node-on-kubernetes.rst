@@ -720,10 +720,10 @@ Step 15: Start a Kubernetes Deployment for BigchainDB
 Step 16: Configure the MongoDB Cloud Manager
 --------------------------------------------
 
-  * Refer to the
-    :ref:`documentation <Configure MongoDB Cloud Manager for Monitoring and Backup>`
-    for details on how to configure the MongoDB Cloud Manager to enable
-    monitoring and backup.
+Refer to the
+:ref:`documentation <Configure MongoDB Cloud Manager for Monitoring and Backup>`
+for details on how to configure the MongoDB Cloud Manager to enable
+monitoring and backup.
 
 
 Step 17: Verify the BigchainDB Node Setup
@@ -732,20 +732,13 @@ Step 17: Verify the BigchainDB Node Setup
 Step 17.1: Testing Internally
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Run a container that provides utilities like ``nslookup``, ``curl`` and ``dig``
-on the cluster and query the internal DNS and IP endpoints.
-
-.. code:: bash
-
-   $ kubectl run -it toolbox -- image <docker image to run> --restart=Never --rm
-
-There is a generic image based on alpine:3.5 with the required utilities
-hosted at Docker Hub under
-`bigchaindb/toolbox <https://hub.docker.com/r/bigchaindb/toolbox/>`_.
-The corresponding
+To test the setup of your BigchainDB node, you could use a Docker container
+that provides utilities like ``nslookup``, ``curl`` and ``dig``.
+For example, you could use a container based on our
+`bigchaindb/toolbox <https://hub.docker.com/r/bigchaindb/toolbox/>`_ image.
+(The corresponding
 `Dockerfile <https://github.com/bigchaindb/bigchaindb/blob/master/k8s/toolbox/Dockerfile>`_
-is in the ``bigchaindb/bigchaindb`` repository on GitHub.
-
+is in the ``bigchaindb/bigchaindb`` repository on GitHub.)
 You can use it as below to get started immediately:
 
 .. code:: bash
@@ -757,74 +750,69 @@ You can use it as below to get started immediately:
       --restart=Never --rm
 
 It will drop you to the shell prompt.
-Now you can query for the ``mdb`` and ``bdb`` service details.
 
-The ``nslookup`` commands should output the configured IP addresses of the
-services in the cluster
-
-The ``dig`` commands should return the port numbers configured for the
-various services in the cluster.
-
-Finally, the ``curl`` commands test the availability of the services
-themselves.
-
-  * Verify MongoDB instance
+To test the MongoDB instance:
     
-    .. code:: bash
+.. code:: bash
 
-       $ nslookup mdb-instance-0
+   $ nslookup mdb-instance-0
         
-       $ dig +noall +answer _mdb-port._tcp.mdb-instance-0.default.svc.cluster.local SRV
+   $ dig +noall +answer _mdb-port._tcp.mdb-instance-0.default.svc.cluster.local SRV
         
-       $ curl -X GET http://mdb-instance-0:27017
+   $ curl -X GET http://mdb-instance-0:27017
+
+The ``nslookup`` command should output the configured IP address of the service
+(in the cluster).
+The ``dig`` command should return the configured port numbers.
+The ``curl`` command tests the availability of the service.
+
+To test the BigchainDB instance:
     
-  * Verify BigchainDB instance
+.. code:: bash
+
+   $ nslookup bdb-instance-0
+        
+   $ dig +noall +answer _bdb-port._tcp.bdb-instance-0.default.svc.cluster.local SRV
+        
+   $ curl -X GET http://bdb-instance-0:9984
+  
+To test the NGINX instance:
     
-    .. code:: bash
+.. code:: bash
 
-       $ nslookup bdb-instance-0
+   $ nslookup ngx-instance-0
         
-       $ dig +noall +answer _bdb-port._tcp.bdb-instance-0.default.svc.cluster.local SRV
-        
-       $ curl -X GET http://bdb-instance-0:9984
-  
-  * Verify NGINX instance
-    
-    .. code:: bash
+   $ dig +noall +answer _ngx-public-mdb-port._tcp.ngx-instance-0.default.svc.cluster.local SRV
 
-       $ nslookup ngx-instance-0
-        
-       $ dig +noall +answer _ngx-public-mdb-port._tcp.ngx-instance-0.default.svc.cluster.local SRV
-        
-       $ curl -X GET http://ngx-instance-0:27017 # results in curl: (56) Recv failure: Connection reset by peer
-        
-       $ dig +noall +answer _ngx-public-bdb-port._tcp.ngx-instance-0.default.svc.cluster.local SRV
-  
-  * If you have run the vanilla NGINX instance, run
+   $ dig +noall +answer _ngx-public-bdb-port._tcp.ngx-instance-0.default.svc.cluster.local SRV
 
-    .. code:: bash
+   $ curl -X GET http://ngx-instance-0:27017
 
-       $ curl -X GET http://ngx-instance-0:80
-  
-  * If you have the OpenResty NGINX + 3scale instance, run
+The curl command should result get the response
+``curl: (7) Failed to connect to ngx-instance-0 port 27017: Connection refused``.
 
-    .. code:: bash
+If you ran the vanilla NGINX instance, run:
 
-       $ curl -X GET https://ngx-instance-0
+.. code:: bash
+
+   $ curl -X GET http://ngx-instance-0:80
   
-  * Check the MongoDB monitoring and backup agent on the MongoDB Cloud Manager
-    portal to verify they are working fine.
-  
-  * Send some transactions to BigchainDB and verify it's up and running!
+If you ran the OpenResty NGINX + 3scale instance, run:
+
+.. code:: bash
+
+   $ curl -X GET https://ngx-instance-0
 
 
 Step 17.2: Testing Externally
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Try to access the ``<dns/ip of your exposed bigchaindb service endpoint>:80``
-on your browser. You must receive a json output that shows the BigchainDB
-server version among other things.
+Check the MongoDB monitoring and backup agent on the MongoDB Cloud Manager
+portal to verify they are working fine.
+
+Try to access the ``<DNS/IP of your exposed BigchainDB service endpoint>:80``
+on your browser. You should receive a JSON response that shows the BigchainDB
+server version, among other things.
 
 Use the Python Driver to send some transactions to the BigchainDB node and
 verify that your node or cluster works as expected.
-
