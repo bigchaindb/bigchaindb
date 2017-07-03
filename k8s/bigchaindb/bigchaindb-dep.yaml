@@ -37,10 +37,10 @@ spec:
         - name: BIGCHAINDB_WSSERVER_PORT
           value: "9985"
         - name: BIGCHAINDB_KEYPAIR_PUBLIC
-           valueFrom:
-             configMapKeyRef:
-               name: bdb-public-key
-               key: bdb-public-key
+          valueFrom:
+            configMapKeyRef:
+              name: bdb-public-key
+              key: bdb-public-key
         - name: BIGCHAINDB_KEYPAIR_PRIVATE
           value: "<private key here>"
         - name: BIGCHAINDB_BACKLOG_REASSIGN_DELAY
