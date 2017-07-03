@@ -39,7 +39,7 @@ spec:
         - name: BIGCHAINDB_KEYPAIR_PUBLIC
           valueFrom:
             configMapKeyRef:
-              name: bdb-public-key
+              name: bdb-config
               key: bdb-public-key
         - name: BIGCHAINDB_KEYPAIR_PRIVATE
           value: "<private key here>"
@@ -51,6 +51,8 @@ spec:
           value: "120"
         - name: BIGCHAINDB_LOG_LEVEL_CONSOLE
           value: debug
+        - name: BIGCHAINDB_DATABASE_SSL
+          value: "true"
         - name: BIGCHAINDB_DATABASE_CA_CERT
           value: /etc/bigchaindb/ssl/ca.pem
         - name: BIGCHAINDB_DATABASE_CRLFILE
@@ -60,12 +62,15 @@ spec:
         - name: BIGCHAINDB_DATABASE_KEYFILE
           value: /etc/bigchaindb/ssl/bdb-instance.key
         - name: BIGCHAINDB_DATABASE_LOGIN
-          value: /etc/bigchaindb/ssl/bdb-user
+          valueFrom:
+            configMapKeyRef:
+              name: bdb-config
+              key: bdb-user
         # The following env var is not required for the bootstrap/first node
         #- name: BIGCHAINDB_KEYRING
         #   valueFrom:
         #     configMapKeyRef:
-        #       name: bdb-keyring
+        #       name: bdb-config
         #       key: bdb-keyring
         ports:
         - containerPort: 9984

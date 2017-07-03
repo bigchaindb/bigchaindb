@@ -30,18 +30,13 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: bdb-keyring
+  name: bdb-config
   namespace: default
 data:
   # Colon-separated list of all *other* nodes' BigchainDB public keys.
   bdb-keyring: "<':' separated list of public keys>"
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: bdb-public-key
-  namespace: default
-data:
+  # BigchainDB instance authentication user name
+  bdb-user: "<user name>"
   # BigchainDB public key of *this* node.
   # Example: "EPQk5i5yYpoUwGVM8VKZRjM8CYxB6j8Lu8i8SG7kGGce"
   bdb-public-key: "<public key>"
