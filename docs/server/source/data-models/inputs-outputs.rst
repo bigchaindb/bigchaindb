@@ -82,17 +82,18 @@ For example, one could create a condition requiring m (of n) signatures before t
 
 The (single) output of a threshold condition can be used as one of the inputs of other threshold conditions. This means that one can combine threshold conditions to build complex logical expressions, e.g. (x OR y) AND (u OR v).
 
-When one creates a condition, one can calculate its fulfillment length (e.g.
-96). The more complex the condition, the larger its fulfillment length will be.
-A BigchainDB federation can put an upper limit on the complexity of the
-conditions, either directly by setting a maximum allowed fulfillment length,
+When one creates a condition, one can calculate its
+`cost <https://tools.ietf.org/html/draft-thomas-crypto-conditions-02#section-7.2.2>`_,
+an estimate of the resources that would be required to validate the fulfillment.
+A BigchainDB federation can put an upper limit on the complexity of each
+condition, either directly by setting a maximum allowed cost,
 or
 `indirectly <https://github.com/bigchaindb/bigchaindb/issues/356#issuecomment-288085251>`_
 by :ref:`setting a maximum allowed transaction size <Enforcing a Max Transaction Size>`
 which would limit
 the overall complexity accross all inputs and outputs of a transaction.
 Note: At the time of writing, there was no configuration setting
-to set a maximum allowed fulfillment length,
+to set a maximum allowed cost,
 so the only real option was to
 :ref:`set a maximum allowed transaction size <Enforcing a Max Transaction Size>`.
 
