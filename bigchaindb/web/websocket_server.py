@@ -111,10 +111,15 @@ def websocket_handler(request):
 
     while True:
         # Consume input buffer
-        msg = yield from websocket.receive()
+        try:
+            msg = yield from websocket.receive()
+        except RuntimeError as e:
+            logger.debug('Websocket exception: %s', str(e))
+            return websocket
+
         if msg.type == aiohttp.WSMsgType.ERROR:
             logger.debug('Websocket exception: %s', websocket.exception())
-            return
+            return websocket
 
 
 def init_app(event_source, *, loop=None):

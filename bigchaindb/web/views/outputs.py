@@ -22,5 +22,5 @@ class OutputListApi(Resource):
         with pool() as bigchain:
             outputs = bigchain.get_outputs_filtered(args['public_key'],
                                                     args['spent'])
-            return [{'transaction_id': output.txid, 'output': output.output}
+            return [{'transaction_id': output.txid, 'output_index': output.output}
                     for output in outputs]

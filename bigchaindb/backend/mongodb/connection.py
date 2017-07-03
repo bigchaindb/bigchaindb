@@ -9,8 +9,7 @@ from bigchaindb.utils import Lazy
 from bigchaindb.common.exceptions import ConfigurationError
 from bigchaindb.backend.exceptions import (DuplicateKeyError,
                                            OperationError,
-                                           ConnectionError,
-                                           AuthenticationError)
+                                           ConnectionError)
 from bigchaindb.backend.connection import Connection
 
 logger = logging.getLogger(__name__)
@@ -113,6 +112,8 @@ class MongoDBConnection(Connection):
                                              replicaset=self.replicaset,
                                              serverselectiontimeoutms=self.connection_timeout,
                                              ssl=self.ssl)
+                if self.login is not None and self.password is not None:
+                    client[self.dbname].authenticate(self.login, self.password)
             else:
                 logger.info('Connecting to MongoDB over TLS/SSL...')
                 client = pymongo.MongoClient(self.host,
@@ -126,10 +127,9 @@ class MongoDBConnection(Connection):
                                              ssl_pem_passphrase=self.keyfile_passphrase,
                                              ssl_crlfile=self.crlfile,
                                              ssl_cert_reqs=CERT_REQUIRED)
-
-            # authenticate with the specified user if the connection succeeds
-            if self.login is not None and self.password is not None:
-                client[self.dbname].authenticate(self.login, self.password)
+                if self.login is not None:
+                    client[self.dbname].authenticate(self.login,
+                                                     mechanism='MONGODB-X509')
 
             return client
 
@@ -138,9 +138,7 @@ class MongoDBConnection(Connection):
         except (pymongo.errors.ConnectionFailure,
                 pymongo.errors.OperationFailure) as exc:
             logger.info('Exception in _connect(): {}'.format(exc))
-            if "Authentication fail" in str(exc):
-                raise AuthenticationError() from exc
-            raise ConnectionError() from exc
+            raise ConnectionError(str(exc)) from exc
         except pymongo.errors.ConfigurationError as exc:
             raise ConfigurationError from exc
 
@@ -163,6 +161,8 @@ def initialize_replica_set(host, port, connection_timeout, dbname, ssl, login,
                                        port,
                                        serverselectiontimeoutms=connection_timeout,
                                        ssl=ssl)
+            if login is not None and password is not None:
+                conn[dbname].authenticate(login, password)
         else:
             logger.info('Connecting to MongoDB over TLS/SSL...')
             conn = pymongo.MongoClient(host,
@@ -175,15 +175,16 @@ def initialize_replica_set(host, port, connection_timeout, dbname, ssl, login,
                                        ssl_pem_passphrase=keyfile_passphrase,
                                        ssl_crlfile=crlfile,
                                        ssl_cert_reqs=CERT_REQUIRED)
+            if login is not None:
+                logger.info('Authenticating to the database...')
+                conn[dbname].authenticate(login, mechanism='MONGODB-X509')
 
     except (pymongo.errors.ConnectionFailure,
             pymongo.errors.OperationFailure) as exc:
-        raise ConnectionError() from exc
+        logger.info('Exception in _connect(): {}'.format(exc))
+        raise ConnectionError(str(exc)) from exc
     except pymongo.errors.ConfigurationError as exc:
         raise ConfigurationError from exc
-
-    if login is not None and password is not None:
-        conn[dbname].authenticate(login, password)
 
     _check_replica_set(conn)
     host = '{}:{}'.format(bigchaindb.config['database']['host'],

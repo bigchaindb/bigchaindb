@@ -1,9 +1,3 @@
-###############################################################
-# This config file runs bigchaindb:0.10.1 as a k8s Deployment #
-# and it connects to the mongodb backend running as a         #
-# separate pod                                                #
-###############################################################
-
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -18,13 +12,16 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
       - name: bigchaindb
-        image: bigchaindb/bigchaindb:0.10.2
+        image: bigchaindb/bigchaindb:1.0.0rc1
         imagePullPolicy: IfNotPresent
         args:
         - start
         env:
         - name: BIGCHAINDB_DATABASE_HOST
-          value: mdb-instance-0
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: mdb-instance-name
         - name: BIGCHAINDB_DATABASE_PORT
           value: "27017"
         - name: BIGCHAINDB_DATABASE_REPLICASET
@@ -40,7 +37,10 @@ spec:
         - name: BIGCHAINDB_WSSERVER_PORT
           value: "9985"
         - name: BIGCHAINDB_KEYPAIR_PUBLIC
-          value: "<public key here>"
+           valueFrom:
+             configMapKeyRef:
+               name: bdb-public-key
+               key: bdb-public-key
         - name: BIGCHAINDB_KEYPAIR_PRIVATE
           value: "<private key here>"
         - name: BIGCHAINDB_BACKLOG_REASSIGN_DELAY
@@ -51,9 +51,22 @@ spec:
           value: "120"
         - name: BIGCHAINDB_LOG_LEVEL_CONSOLE
           value: debug
+        - name: BIGCHAINDB_DATABASE_CA_CERT
+          value: /etc/bigchaindb/ssl/ca.pem
+        - name: BIGCHAINDB_DATABASE_CRLFILE
+          value: /etc/bigchaindb/ssl/crlfile
+        - name: BIGCHAINDB_DATABASE_CERTFILE
+          value: /etc/bigchaindb/ssl/bdb-instance.pem
+        - name: BIGCHAINDB_DATABASE_KEYFILE
+          value: /etc/bigchaindb/ssl/bdb-instance.key
+        - name: BIGCHAINDB_DATABASE_LOGIN
+          value: /etc/bigchaindb/ssl/bdb-user
         # The following env var is not required for the bootstrap/first node
         #- name: BIGCHAINDB_KEYRING
-        #  value: ""
+        #   valueFrom:
+        #     configMapKeyRef:
+        #       name: bdb-keyring
+        #       key: bdb-keyring
         ports:
         - containerPort: 9984
           hostPort: 9984
@@ -63,6 +76,10 @@ spec:
           hostPort: 9985
           name: bdb-ws-port
           protocol: TCP
+        volumeMounts:
+        - name: bdb-certs
+          mountPath: /etc/bigchaindb/ssl/
+          readOnly: true
         resources:
           limits:
             cpu: 200m
@@ -80,3 +97,8 @@ spec:
           initialDelaySeconds: 15
           timeoutSeconds: 10
       restartPolicy: Always
+      volumes:
+      - name: bdb-certs
+        secret:
+          secretName: bdb-certs
+          defaultMode: 0400

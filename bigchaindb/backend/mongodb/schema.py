@@ -72,7 +72,7 @@ def create_bigchain_secondary_index(conn, dbname):
     conn.conn[dbname]['bigchain']\
         .create_index([
             ('block.transactions.inputs.fulfills.transaction_id', ASCENDING),
-            ('block.transactions.inputs.fulfills.output', ASCENDING),
+            ('block.transactions.inputs.fulfills.output_index', ASCENDING),
         ], name='inputs')
 
 

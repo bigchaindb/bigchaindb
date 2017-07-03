@@ -1,3 +1,4 @@
+from base58 import b58decode
 import pytest
 
 
@@ -11,8 +12,13 @@ USER3_PRIVATE_KEY = '4rNQFzWQbVwuTiDVxwuFMvLG5zd8AhrQKCtVovBvcYsB'
 USER3_PUBLIC_KEY = 'Gbrg7JtxdjedQRmr81ZZbh1BozS7fBW88ZyxNDy7WLNC'
 
 
-CC_FULFILLMENT_URI = 'cf:0:'
-CC_CONDITION_URI = 'cc:0:3:47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU:0'
+CC_FULFILLMENT_URI = (
+    'pGSAINdamAGCsQq31Uv-08lkBzoO4XLz2qYjJa8CGmj3B1EagUDlVkMAw2CscpCG4syAboKKh'
+    'Id_Hrjl2XTYc-BlIkkBVV-4ghWQozusxh45cBz5tGvSW_XwWVu-JGVRQUOOehAL'
+)
+CC_CONDITION_URI = ('ni:///sha-256;'
+                    'eZI5q6j8T_fqv7xMROaei9_tmTMk4S7WR5Kr4onPHV8'
+                    '?fpt=ed25519-sha-256&cost=131072')
 
 ASSET_DEFINITION = {
     'data': {
@@ -71,25 +77,25 @@ def cond_uri():
 
 @pytest.fixture
 def user_Ed25519(user_pub):
-    from cryptoconditions import Ed25519Fulfillment
-    return Ed25519Fulfillment(public_key=user_pub)
+    from cryptoconditions import Ed25519Sha256
+    return Ed25519Sha256(public_key=b58decode(user_pub))
 
 
 @pytest.fixture
 def user_user2_threshold(user_pub, user2_pub):
-    from cryptoconditions import (ThresholdSha256Fulfillment,
-                                  Ed25519Fulfillment)
+    from cryptoconditions import ThresholdSha256, Ed25519Sha256
     user_pub_keys = [user_pub, user2_pub]
-    threshold = ThresholdSha256Fulfillment(threshold=len(user_pub_keys))
+    threshold = ThresholdSha256(threshold=len(user_pub_keys))
     for user_pub in user_pub_keys:
-        threshold.add_subfulfillment(Ed25519Fulfillment(public_key=user_pub))
+        threshold.add_subfulfillment(
+            Ed25519Sha256(public_key=b58decode(user_pub)))
     return threshold
 
 
 @pytest.fixture
 def user2_Ed25519(user2_pub):
-    from cryptoconditions import Ed25519Fulfillment
-    return Ed25519Fulfillment(public_key=user2_pub)
+    from cryptoconditions import Ed25519Sha256
+    return Ed25519Sha256(public_key=b58decode(user2_pub))
 
 
 @pytest.fixture

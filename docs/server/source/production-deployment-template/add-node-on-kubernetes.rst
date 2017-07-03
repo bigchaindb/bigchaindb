@@ -173,6 +173,6 @@ set up NGINX in your new node.
 Step 8: Test Your New BigchainDB Node
 -------------------------------------
 
-Please refer to the testing steps :ref:`here <Step 16: Verify the BigchainDB
+Please refer to the testing steps :ref:`here <Step 17: Verify the BigchainDB
 Node Setup>` to verify that your new BigchainDB node is working as expected.
 
