@@ -13,7 +13,8 @@ import bigchaindb
 from bigchaindb import backend
 from bigchaindb.backend.changefeed import ChangeFeed
 from bigchaindb.models import Transaction
-from bigchaindb.common.exceptions import ValidationError
+from bigchaindb.common.exceptions import (ValidationError,
+                                          GenesisBlockAlreadyExistsError)
 from bigchaindb import Bigchain
 
 
@@ -73,6 +74,14 @@ class BlockPipeline:
 
         # If transaction is not valid it should not be included
         try:
+            # Do not allow an externally submitted GENESIS transaction.
+            # A simple check is enough as a pipeline is started only after the
+            # creation of GENESIS block, or after the verification of a GENESIS
+            # block. Voting will fail at a later stage if the GENESIS block is
+            # absent.
+            if tx.operation == Transaction.GENESIS:
+                raise GenesisBlockAlreadyExistsError('Duplicate GENESIS transaction')
+
             tx.validate(self.bigchain)
             return tx
         except ValidationError as e:

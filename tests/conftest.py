@@ -506,3 +506,12 @@ def wsserver_port(wsserver_config):
 @pytest.fixture
 def wsserver_base_url(wsserver_scheme, wsserver_host, wsserver_port):
     return '{}://{}:{}'.format(wsserver_scheme, wsserver_host, wsserver_port)
+
+
+@pytest.fixture
+def genesis_tx(b, user_pk):
+    from bigchaindb.models import Transaction
+    tx = Transaction.create([b.me], [([user_pk], 1)])
+    tx.operation = Transaction.GENESIS
+    genesis_tx = tx.sign([b.me_private])
+    return genesis_tx

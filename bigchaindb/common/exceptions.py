@@ -19,10 +19,6 @@ class StartupError(BigchainDBError):
     """Raised when there is an error starting up the system"""
 
 
-class GenesisBlockAlreadyExistsError(BigchainDBError):
-    """Raised when trying to create the already existing genesis block"""
-
-
 class CyclicBlockchainError(BigchainDBError):
     """Raised when there is a cycle in the blockchain"""
 
@@ -110,3 +106,7 @@ class DuplicateTransaction(ValidationError):
 
 class ThresholdTooDeep(ValidationError):
     """Raised if threshold condition is too deep"""
+
+
+class GenesisBlockAlreadyExistsError(ValidationError):
+    """Raised when trying to create the already existing genesis block"""
