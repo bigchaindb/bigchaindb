@@ -49,7 +49,7 @@ There are some things worth noting about the ``mdb-instance-name``:
 * We use ``mdb-instance-0``, ``mdb-instance-1`` and so on in our
   documentation. Your BigchainDB cluster may use a different naming convention.
 
-bdb-keyring.bdb-keyring
+bdb-config.bdb-keyring
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 This lists the BigchainDB public keys
@@ -70,29 +70,8 @@ of all *other* nodes in your BigchainDB cluster
   For example,
   ``"DPjpKbmbPYPKVAuf6VSkqGCf5jzrEh69Ldef6TrLwsEQ:EPQk5i5yYpoUwGVM8VKZRjM8CYxB6j8Lu8i8SG7kGGce"``
 
-
-Edit secret.yaml
-----------------
-
-Make a copy of the file ``k8s/configuration/secret.yaml``
-and edit the data values in the various Secrets.
-That file includes many comments to explain the required values.
-**In particular, note that all values must be base64-encoded.**
-There are tips at the top of the file
-explaining how to convert values into base64-encoded values.
-
-Your BigchainDB node might not need all the Secrets.
-For example, if you plan to access the BigchainDB API over HTTP, you
-don't need the ``https-certs`` Secret.
-You can delete the Secrets you don't need,
-or set their data values to ``""``.
-
-Note that ``ca.pem`` is just another name for ``ca.crt``
-(the certificate of your BigchainDB cluster's self-signed CA).
-
-
-bdb-certs.bdb-user
-~~~~~~~~~~~~~~~~~~
+bdb-config.bdb-user
+~~~~~~~~~~~~~~~~~~~
 
 This is the user name that BigchainDB uses to authenticate itself to the
 backend MongoDB database.
@@ -114,11 +93,31 @@ You should see an output line that resembles:
    subject= emailAddress=dev@bigchaindb.com,CN=test-bdb-ssl,OU=BigchainDB-Instance,O=BigchainDB GmbH,L=Berlin,ST=Berlin,C=DE
 
 The ``subject`` line states the complete user name we need to use for this
-field (``bdb-certs.bdb-user``), i.e.
+field (``bdb-config.bdb-user``), i.e.
 
 .. code:: bash
 
    emailAddress=dev@bigchaindb.com,CN=test-bdb-ssl,OU=BigchainDB-Instance,O=BigchainDB GmbH,L=Berlin,ST=Berlin,C=DE
+
+
+Edit secret.yaml
+----------------
+
+Make a copy of the file ``k8s/configuration/secret.yaml``
+and edit the data values in the various Secrets.
+That file includes many comments to explain the required values.
+**In particular, note that all values must be base64-encoded.**
+There are tips at the top of the file
+explaining how to convert values into base64-encoded values.
+
+Your BigchainDB node might not need all the Secrets.
+For example, if you plan to access the BigchainDB API over HTTP, you
+don't need the ``https-certs`` Secret.
+You can delete the Secrets you don't need,
+or set their data values to ``""``.
+
+Note that ``ca.pem`` is just another name for ``ca.crt``
+(the certificate of your BigchainDB cluster's self-signed CA).
 
 
 threescale-credentials.*
