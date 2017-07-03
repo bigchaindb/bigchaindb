@@ -113,11 +113,6 @@ def condition_details_has_owner(condition_details, owner):
     return False
 
 
-def output_has_owner(output, owner):
-    return condition_details_has_owner(output['condition']['details'], owner)
-    # TODO raise proper exception, e.g. invalid tx payload?
-
-
 def is_genesis_block(block):
     """Check if the block is the genesis block.
 
