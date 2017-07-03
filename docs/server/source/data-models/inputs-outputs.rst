@@ -19,7 +19,7 @@ An input has the following structure:
        "owners_before": ["<The public_keys list in the output being spent>"],
        "fulfillment": "<Fulfillment URI fulfilling the condition of the output being spent>",
        "fulfills": {
-           "output": "<Index of the output being spent (an integer)>",
+           "output_index": "<Index of the output being spent (an integer)>",
            "transaction_id": "<ID of the transaction containing the output being spent>"
        }
    }
@@ -95,9 +95,6 @@ Note: At the time of writing, there was no configuration setting
 to set a maximum allowed fulfillment length,
 so the only real option was to
 :ref:`set a maximum allowed transaction size <Enforcing a Max Transaction Size>`.
-
-If someone tries to make a condition where the output of a threshold condition feeds into the input of another “earlier” threshold condition (i.e. in a closed logical circuit), then their computer will take forever to calculate the (infinite) “condition URI”, at least in theory. In practice, their computer will run out of memory or their client software will timeout after a while.
-
 
 
 .. note::
