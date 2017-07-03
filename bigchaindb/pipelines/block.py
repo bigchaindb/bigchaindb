@@ -74,10 +74,13 @@ class BlockPipeline:
 
         # If transaction is not valid it should not be included
         try:
+            # Do not allow an externally submitted GENESIS transaction.
+            # A simple check is enough as a pipeline is started only after the
+            # creation of GENESIS block, or after the verification of a GENESIS
+            # block. Voting will fail at a later stage if the GENESIS block is
+            # absent.
             if tx.operation == Transaction.GENESIS:
-                blocks_count = backend.query.count_blocks(self.bigchain.connection)
-                if blocks_count:
-                    raise GenesisBlockAlreadyExistsError('Duplicate GENESIS transaction')
+                raise GenesisBlockAlreadyExistsError('Duplicate GENESIS transaction')
 
             tx.validate(self.bigchain)
             return tx
