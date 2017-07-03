@@ -26,9 +26,10 @@ USER_PUBLIC_KEY = 'JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE'
 
 
 def pytest_addoption(parser):
-    from bigchaindb.backend import connection
+    from bigchaindb.backend.connection import BACKENDS
 
-    backends = ', '.join(connection.BACKENDS.keys())
+    BACKENDS['mongodb-ssl'] = 'bigchaindb.backend.mongodb.connection.MongoDBConnection'
+    backends = ', '.join(BACKENDS.keys())
     parser.addoption(
         '--database-backend',
         action='store',
@@ -41,9 +42,12 @@ def pytest_ignore_collect(path, config):
     from bigchaindb.backend.connection import BACKENDS
     path = str(path)
 
+    BACKENDS['mongodb-ssl'] = 'bigchaindb.backend.mongodb.connection.MongoDBConnection'
+    supported_backends = BACKENDS.keys()
+
     if os.path.isdir(path):
         dirname = os.path.split(path)[1]
-        if dirname in BACKENDS.keys() and dirname != config.getoption('--database-backend'):
+        if dirname in supported_backends and dirname != config.getoption('--database-backend'):
             print('Ignoring unrequested backend test dir: ', path)
             return True
 
@@ -110,7 +114,7 @@ def _restore_dbs(request):
 
 
 @pytest.fixture(scope='session')
-def _configure_bigchaindb(request):
+def _configure_bigchaindb(request, certs_dir):
     import bigchaindb
     from bigchaindb import config_utils
     test_db_name = TEST_DB_NAME
@@ -120,6 +124,22 @@ def _configure_bigchaindb(request):
         test_db_name = '{}_{}'.format(TEST_DB_NAME, xdist_suffix)
 
     backend = request.config.getoption('--database-backend')
+
+    if backend == 'mongodb-ssl':
+        bigchaindb._database_map[backend] = {
+            # we use mongodb as the backend for mongodb-ssl
+            'backend': 'mongodb',
+            'connection_timeout': 5000,
+            'max_tries': 3,
+            'ssl': True,
+            'ca_cert': os.environ.get('BIGCHAINDB_DATABASE_CA_CERT', certs_dir + '/ca.crt'),
+            'crlfile': os.environ.get('BIGCHAINDB_DATABASE_CRLFILE', certs_dir + '/crl.pem'),
+            'certfile': os.environ.get('BIGCHAINDB_DATABASE_CERTFILE', certs_dir + '/test_bdb_ssl.crt'),
+            'keyfile': os.environ.get('BIGCHAINDB_DATABASE_KEYFILE', certs_dir + '/test_bdb_ssl.key'),
+            'keyfile_passphrase': os.environ.get('BIGCHAINDB_DATABASE_KEYFILE_PASSPHRASE', None)
+        }
+        bigchaindb._database_map[backend].update(bigchaindb._base_database_mongodb)
+
     config = {
         'database': bigchaindb._database_map[backend],
         'keypair': {
@@ -454,3 +474,9 @@ def mocked_setup_pub_logger(mocker):
 def mocked_setup_sub_logger(mocker):
     return mocker.patch(
         'bigchaindb.log.setup.setup_sub_logger', autospec=True, spec_set=True)
+
+
+@pytest.fixture(scope='session')
+def certs_dir():
+    cwd = os.environ.get('TRAVIS_BUILD_DIR', os.getcwd())
+    return cwd + '/tests/backend/mongodb-ssl/certs'

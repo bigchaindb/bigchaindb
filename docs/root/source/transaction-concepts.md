@@ -1,10 +1,11 @@
 # Transaction Concepts
 
-In BigchainDB, _Transactions_ are used to register, issue, create or transfer
+In BigchainDB, _transactions_ are used to register, issue, create or transfer
 things (e.g. assets).
 
 Transactions are the most basic kind of record stored by BigchainDB. There are
 two kinds: CREATE transactions and TRANSFER transactions.
+
 
 ## CREATE Transactions
 
@@ -14,29 +15,57 @@ one might register an identity or a creative work. The things are often called
 "assets" but they might not be literal assets.
 
 BigchainDB supports divisible assets as of BigchainDB Server v0.8.0.
-That means you can create/register an asset with an initial quantity,
-e.g. 700 oak trees. Divisible assets can be split apart or recombined
-by transfer transactions (described more below).
+That means you can create/register an asset with an initial number of "shares."
+For example, A CREATE transaction could register a truckload of 50 oak trees.
+Each share of a divisible asset must be interchangeable with each other share;
+the shares must be fungible.
 
-A CREATE transaction also establishes, in its outputs, the conditions that must
-be met to transfer the asset(s). The conditions may also be associated with a
-list of public keys that, depending on the condition, may have full or partial
-control over the asset(s). For example, there may be a condition that any
-transfer must be signed (cryptographically) by the private key associated with a
-given public key. More sophisticated conditions are possible. BigchainDB's
-conditions are based on the crypto-conditions of the [Interledger Protocol
-(ILP)](https://interledger.org/).
+A CREATE transaction can have one or more outputs.
+Each output has an associated amount: the number of shares tied to that output.
+For example, if the asset consists of 50 oak trees,
+one output might have 35 oak trees for one set of owners,
+and the other output might have 15 oak trees for another set of owners.
+
+Each output also has an associated condition: the condition that must be met
+(by a TRANSFER transaction) to transfer/spend the output.
+BigchainDB supports a variety of conditions,
+a subset of the [Interledger Protocol (ILP)](https://interledger.org/)
+crypto-conditions. For details, see
+[the documentation about Inputs and Outputs](https://docs.bigchaindb.com/projects/server/en/latest/data-models/inputs-outputs.html).
+
+Each output also has a list of all the public keys associated
+with the conditions on that output.
+Loosely speaking, that list might be interpreted as the list of "owners."
+A more accurate word might be fulfillers, signers, controllers,
+or transfer-enablers.
+See BigchainDB Server [issue #626](https://github.com/bigchaindb/bigchaindb/issues/626).
+
+A CREATE transaction must be signed by all the owners.
+(If you're looking for that signature,
+it's in the one "fulfillment" of the one input, albeit encoded.)
+
 
 ## TRANSFER Transactions
 
-A TRANSFER transaction can transfer an asset
-by providing inputs which fulfill the current output conditions on the asset.
-It must also specify new transfer conditions.
+A TRANSFER transaction can transfer/spend one or more outputs
+on other transactions (CREATE transactions or other TRANSFER transactions).
+Those outputs must all be associated with the same asset;
+a TRANSFER transaction can only transfer shares of one asset at a time.
+
+Each input on a TRANSFER transaction connects to one output
+on another transaction.
+Each input must satisfy the condition on the output it's trying
+to transfer/spend.
+
+A TRANSFER transaction can have one or more outputs,
+just like a CREATE transaction (described above).
+The total number of shares coming in on the inputs must equal
+the total number of shares going out on the outputs.
 
 **Example 1:** Suppose a red car is owned and controlled by Joe.
 Suppose the current transfer condition on the car says
 that any valid transfer must be signed by Joe.
-Joe and a buyer named Rae could build a TRANSFER transaction containing
+Joe could build a TRANSFER transaction containing
 an input with Joe's signature (to fulfill the current output condition)
 plus a new output condition saying that any valid transfer
 must be signed by Rae.
@@ -53,33 +82,18 @@ transferred if both Jack and Kelly sign.
 Note how the sum of the incoming paperclips must equal the sum
 of the outgoing paperclips (100).
 
+
 ## Transaction Validity
 
 When a node is asked to check if a transaction is valid, it checks several
-things. Some things it checks are:
+things. We documented those things in a post on *The BigchainDB Blog*:
+["What is a Valid Transaction in BigchainDB?"](https://blog.bigchaindb.com/what-is-a-valid-transaction-in-bigchaindb-9a1a075a9598)
+(Note: That post was about BigchainDB Server v1.0.0.)
 
-* Are all the fulfillments valid? (Do they correctly satisfy the conditions
-  they claim to satisfy?)
-* If it's a creation transaction, is the asset valid?
-* If it's a transfer transaction:
-   * Is it trying to fulfill a condition in a nonexistent transaction?
-   * Is it trying to fulfill a condition that's not in a valid transaction?
-     (It's okay if the condition is in a transaction in an invalid block; those
-     transactions are ignored. Transactions in the backlog or undecided blocks
-     are not ignored.)
-   * Is it trying to fulfill a condition that has already been fulfilled, or
-     that some other pending transaction (in the backlog or an undecided block)
-     also aims to fulfill?
-   * Is the asset ID in the transaction the same as the asset ID in all
-     transactions whose conditions are being fulfilled?
-   * Is the sum of the amounts in the fulfillments equal
-     to the sum of the amounts in the new conditions?
 
-If you're curious about the details of transaction validation, the code is in
-the `validate` method of the `Transaction` class, in `bigchaindb/models.py` (at
-the time of writing).
+## Example Transactions
 
-Note: The check to see if the transaction ID is equal to the hash of the
-transaction body is actually done whenever the transaction is converted from a
-Python dict to a Transaction object, which must be done before the `validate`
-method can be called (since it's called on a Transaction object).
+There are example BigchainDB transactions in
+[the HTTP API documentation](https://docs.bigchaindb.com/projects/server/en/latest/http-client-server-api.html)
+and
+[the Python Driver documentation](https://docs.bigchaindb.com/projects/py-driver/en/latest/usage.html).

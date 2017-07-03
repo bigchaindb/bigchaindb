@@ -4,7 +4,7 @@ This page has instructions to set up a single stand-alone BigchainDB node for le
 
 A. Install MongoDB as the database backend. (There are other options but you can ignore them for now.)
 
-[Install MongoDB Server 3.4+](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/)
+[Install MongoDB Server 3.5+](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/)
 
 B. Run MongoDB. Open a Terminal and run the command:
 ```text

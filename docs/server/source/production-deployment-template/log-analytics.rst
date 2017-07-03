@@ -193,30 +193,55 @@ simply run the following command:
     $ kubectl create -f oms-daemonset.yaml
 
 
-Create an Email Alert
----------------------
+Search the OMS Logs
+-------------------
 
-Suppose you want to get an email whenever there's a logging message
-with the CRITICAL or ERROR logging level from any container.
-At the time of writing, it wasn't possible to create email alerts
-using the Azure Portal (as far as we could tell),
-but it *was* possible using the OMS Portal.
-(There are instructions to get to the OMS Portal
-in the section titled :ref:`Deploy the OMS Agents` above.)
+OMS should now be getting, storing and indexing all the logs
+from all the containers in your Kubernetes cluster.
+You can search the OMS logs from the Azure Portal
+or the OMS Portal, but at the time of writing,
+there was more functionality in the OMS Portal
+(e.g. the ability to create an Alert based on a search).
+
+There are instructions to get to the OMS Portal
+in the section titled :ref:`Deploy the OMS Agents` above.
 Once you're in the OMS Portal, click on **Log Search**
-and enter the query string:
+and enter a query.
+Here are some example queries:
+
+All logging messages containing the strings "critical" or "error" (not case-sensitive):
 
 ``Type=ContainerLog (critical OR error)``
 
-If you don't see any query results,
-try experimenting with the query string and time range
-to convince yourself that it's working.
-For query syntax help, see the
-`Log Analytics search reference <https://docs.microsoft.com/en-us/azure/log-analytics/log-analytics-search-reference>`_.
-If you want to exclude the "404 Not Found" errors,
-use the query string
-"Type=ContainerLog (critical OR error) NOT(404)".
-Once you're satisfied with the query string,
+.. note::
+
+   You can filter the results even more by clicking on things in the left sidebar.
+   For OMS Log Search syntax help, see the
+   `Log Analytics search reference <https://docs.microsoft.com/en-us/azure/log-analytics/log-analytics-search-reference>`_.
+
+All logging messages containing the string "error" but not "404":
+
+``Type=ContainerLog error NOT(404)``
+
+All logging messages containing the string "critical" but not "CriticalAddonsOnly":
+
+``Type=ContainerLog critical NOT(CriticalAddonsOnly)``
+
+All logging messages from containers running the Docker image bigchaindb/nginx_3scale:1.3, containing the string "GET" but not the strings "Go-http-client" or "runscope" (where those exclusions filter out tests by Kubernetes and Runscope):
+
+``Type=ContainerLog Image="bigchaindb/nginx_3scale:1.3" GET NOT("Go-http-client") NOT(runscope)``
+
+.. note::
+
+   We wrote a small Python 3 script to analyze the logs found by the above NGINX search.
+   It's in ``k8s/logging-and-monitoring/analyze.py``. The docsting at the top
+   of the script explains how to use it.
+
+
+Create an Email Alert
+---------------------
+
+Once you're satisfied with an OMS Log Search query string,
 click the **🔔 Alert** icon in the top menu,
 fill in the form,
 and click **Save** when you're done.

@@ -1,0 +1,37 @@
+version: '2'
+
+services:
+  bdb:
+    build:
+      context: .
+      dockerfile: Dockerfile-dev
+      args:
+        backend: mongodb
+    volumes:
+      - ./bigchaindb:/usr/src/app/bigchaindb
+      - ./tests:/usr/src/app/tests
+      - ./docs:/usr/src/app/docs
+      - ./k8s:/usr/src/app/k8s
+      - ./setup.py:/usr/src/app/setup.py
+      - ./setup.cfg:/usr/src/app/setup.cfg
+      - ./pytest.ini:/usr/src/app/pytest.ini
+      - ./tox.ini:/usr/src/app/tox.ini
+      - ./scripts:/usr/src/app/scripts
+    environment:
+      BIGCHAINDB_DATABASE_BACKEND: mongodb
+      BIGCHAINDB_DATABASE_HOST: mdb
+      BIGCHAINDB_DATABASE_PORT: 27017
+      BIGCHAINDB_SERVER_BIND: 0.0.0.0:9984
+      BIGCHAINDB_GRAPHITE_HOST: graphite
+    ports:
+      - "9984"
+    command: bigchaindb start
+
+  graphite:
+    image: hopsoft/graphite-statsd
+    ports:
+      - "2003-2004"
+      - "2023-2024"
+      - "8125/udp"
+      - "8126"
+      - "80"

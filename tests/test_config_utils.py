@@ -15,6 +15,8 @@ def clean_config(monkeypatch, request):
     import bigchaindb
     original_config = copy.deepcopy(ORIGINAL_CONFIG)
     backend = request.config.getoption('--database-backend')
+    if backend == 'mongodb-ssl':
+        backend = 'mongodb'
     original_config['database'] = bigchaindb._database_map[backend]
     monkeypatch.setattr('bigchaindb.config', original_config)
 
@@ -138,13 +140,14 @@ def test_env_config(monkeypatch):
     assert result == expected
 
 
-def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
+def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request, certs_dir):
     # constants
     DATABASE_HOST = 'test-host'
     DATABASE_NAME = 'test-dbname'
     DATABASE_PORT = 4242
     DATABASE_BACKEND = request.config.getoption('--database-backend')
     SERVER_BIND = '1.2.3.4:56'
+    WSSERVER_SCHEME = 'ws'
     WSSERVER_HOST = '1.2.3.4'
     WSSERVER_PORT = 57
     KEYRING = 'pubkey_0:pubkey_1:pubkey_2'
@@ -159,15 +162,34 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
             'level_console': 'debug',
         },
     }
+
     monkeypatch.setattr('bigchaindb.config_utils.file_config', lambda *args, **kwargs: file_config)
-    monkeypatch.setattr('os.environ', {'BIGCHAINDB_DATABASE_NAME': DATABASE_NAME,
-                                       'BIGCHAINDB_DATABASE_PORT': str(DATABASE_PORT),
-                                       'BIGCHAINDB_DATABASE_BACKEND': DATABASE_BACKEND,
-                                       'BIGCHAINDB_SERVER_BIND': SERVER_BIND,
-                                       'BIGCHAINDB_WSSERVER_HOST': WSSERVER_HOST,
-                                       'BIGCHAINDB_WSSERVER_PORT': WSSERVER_PORT,
-                                       'BIGCHAINDB_KEYRING': KEYRING,
-                                       'BIGCHAINDB_LOG_FILE': LOG_FILE})
+
+    if DATABASE_BACKEND == 'mongodb-ssl':
+        monkeypatch.setattr('os.environ', {'BIGCHAINDB_DATABASE_NAME': DATABASE_NAME,
+                                           'BIGCHAINDB_DATABASE_PORT': str(DATABASE_PORT),
+                                           'BIGCHAINDB_DATABASE_BACKEND': 'mongodb',
+                                           'BIGCHAINDB_SERVER_BIND': SERVER_BIND,
+                                           'BIGCHAINDB_WSSERVER_SCHEME': WSSERVER_SCHEME,
+                                           'BIGCHAINDB_WSSERVER_HOST': WSSERVER_HOST,
+                                           'BIGCHAINDB_WSSERVER_PORT': WSSERVER_PORT,
+                                           'BIGCHAINDB_KEYRING': KEYRING,
+                                           'BIGCHAINDB_LOG_FILE': LOG_FILE,
+                                           'BIGCHAINDB_DATABASE_CA_CERT': certs_dir + '/ca.crt',
+                                           'BIGCHAINDB_DATABASE_CRLFILE': certs_dir + '/crl.pem',
+                                           'BIGCHAINDB_DATABASE_CERTFILE': certs_dir + '/test_bdb_ssl.crt',
+                                           'BIGCHAINDB_DATABASE_KEYFILE': certs_dir + '/test_bdb_ssl.key',
+                                           'BIGCHAINDB_DATABASE_KEYFILE_PASSPHRASE': None})
+    else:
+        monkeypatch.setattr('os.environ', {'BIGCHAINDB_DATABASE_NAME': DATABASE_NAME,
+                                           'BIGCHAINDB_DATABASE_PORT': str(DATABASE_PORT),
+                                           'BIGCHAINDB_DATABASE_BACKEND': DATABASE_BACKEND,
+                                           'BIGCHAINDB_SERVER_BIND': SERVER_BIND,
+                                           'BIGCHAINDB_WSSERVER_SCHEME': WSSERVER_SCHEME,
+                                           'BIGCHAINDB_WSSERVER_HOST': WSSERVER_HOST,
+                                           'BIGCHAINDB_WSSERVER_PORT': WSSERVER_PORT,
+                                           'BIGCHAINDB_KEYRING': KEYRING,
+                                           'BIGCHAINDB_LOG_FILE': LOG_FILE})
 
     import bigchaindb
     from bigchaindb import config_utils
@@ -193,7 +215,30 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
         'replicaset': 'bigchain-rs',
         'ssl': False,
         'login': None,
-        'password': None
+        'password': None,
+        'ca_cert': None,
+        'certfile': None,
+        'keyfile': None,
+        'keyfile_passphrase': None,
+        'crlfile': None
+    }
+
+    database_mongodb_ssl = {
+        'backend': 'mongodb',
+        'host': DATABASE_HOST,
+        'port': DATABASE_PORT,
+        'name': DATABASE_NAME,
+        'connection_timeout': 5000,
+        'max_tries': 3,
+        'replicaset': 'bigchain-rs',
+        'ssl': True,
+        'login': None,
+        'password': None,
+        'ca_cert': certs_dir + '/ca.crt',
+        'crlfile': certs_dir + '/crl.pem',
+        'certfile': certs_dir + '/test_bdb_ssl.crt',
+        'keyfile': certs_dir + '/test_bdb_ssl.key',
+        'keyfile_passphrase': None
     }
 
     database = {}
@@ -201,6 +246,8 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
         database = database_mongodb
     elif DATABASE_BACKEND == 'rethinkdb':
         database = database_rethinkdb
+    elif DATABASE_BACKEND == 'mongodb-ssl':
+        database = database_mongodb_ssl
 
     assert bigchaindb.config == {
         'CONFIGURED': True,
@@ -211,6 +258,7 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
             'workers': None,
         },
         'wsserver': {
+            'scheme': WSSERVER_SCHEME,
             'host': WSSERVER_HOST,
             'port': WSSERVER_PORT,
         },
@@ -233,6 +281,7 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
             'fmt_logfile': log_config['formatters']['file']['format'],
             'granular_levels': {},
         },
+        'graphite': {'host': 'localhost'},
     }
 
 

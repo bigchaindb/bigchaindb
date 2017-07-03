@@ -20,22 +20,24 @@ spec:
       containers:
       - name: nginx
         image: bigchaindb/nginx:1.0
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         env:
         - name: MONGODB_FRONTEND_PORT
-          value: $(NGX_INSTANCE_0_SERVICE_PORT_NGX_PUBLIC_MDB_PORT)
+          value: "27017"
         - name: MONGODB_BACKEND_HOST
-          # NGINX requires FQDN to resolve names
           value: mdb-instance-0.default.svc.cluster.local
         - name: MONGODB_BACKEND_PORT
           value: "27017"
         - name: BIGCHAINDB_FRONTEND_PORT
-          value: $(NGX_INSTANCE_0_SERVICE_PORT_NGX_PUBLIC_BDB_PORT)
+          value: "80"
         - name: BIGCHAINDB_BACKEND_HOST
-          # NGINX requires FQDN to resolve names
           value: bdb-instance-0.default.svc.cluster.local
         - name: BIGCHAINDB_BACKEND_PORT
           value: "9984"
+        - name: BIGCHAINDB_WS_FRONTEND_PORT
+          value: "81"
+        - name: BIGCHAINDB_WS_BACKEND_PORT
+          value: "9985"
         - name: DNS_SERVER
           value: "10.0.0.10"
         - name: MONGODB_WHITELIST
@@ -43,10 +45,6 @@ spec:
             configMapKeyRef:
               name: mongodb-whitelist
               key: allowed-hosts
-        - name: BIGCHAINDB_WS_FRONTEND_PORT
-          value: "81"
-        - name: BIGCHAINDB_WS_BACKEND_PORT
-          value: "9985"
         ports:
         - containerPort: 27017
           hostPort: 27017

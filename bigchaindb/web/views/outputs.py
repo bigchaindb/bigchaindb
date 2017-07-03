@@ -15,14 +15,12 @@ class OutputListApi(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('public_key', type=parameters.valid_ed25519,
                             required=True)
-        parser.add_argument('unspent', type=parameters.valid_bool)
-        args = parser.parse_args()
+        parser.add_argument('spent', type=parameters.valid_bool)
+        args = parser.parse_args(strict=True)
 
         pool = current_app.config['bigchain_pool']
-        include_spent = not args['unspent']
-
         with pool() as bigchain:
             outputs = bigchain.get_outputs_filtered(args['public_key'],
-                                                    include_spent)
-            # NOTE: We pass '..' as a path to create a valid relative URI
-            return [u.to_uri('..') for u in outputs]
+                                                    args['spent'])
+            return [{'transaction_id': output.txid, 'output_index': output.output}
+                    for output in outputs]

@@ -4,10 +4,9 @@ WORKDIR /
 RUN apt-get update \
     && apt-get -y upgrade \
     && apt-get autoremove \
-    && apt-get clean \
-    && mkdir /mongo-ssl
+    && apt-get clean
 COPY mongod.conf.template /etc/mongod.conf
 COPY mongod_entrypoint.bash /
-VOLUME /data/db /data/configdb /mongo-ssl
+VOLUME /data/db /data/configdb /etc/mongod/ssl
 EXPOSE 27017
 ENTRYPOINT ["/mongod_entrypoint.bash"]

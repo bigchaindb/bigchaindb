@@ -68,6 +68,7 @@ Content-Type: application/json
 
 TPLS['post-tx-response'] = """\
 HTTP/1.1 202 Accepted
+Location: ../statuses?transaction_id=%(txid)s
 Content-Type: application/json
 
 %(tx)s
@@ -75,7 +76,7 @@ Content-Type: application/json
 
 
 TPLS['get-statuses-tx-request'] = """\
-GET /statuses?tx_id=%(txid)s HTTP/1.1
+GET /statuses?transaction_id=%(txid)s HTTP/1.1
 Host: example.com
 
 """
@@ -96,10 +97,7 @@ HTTP/1.1 200 OK
 Content-Type: application/json
 
 {
-  "status": "valid",
-  "_links": {
-    "tx": "/transactions/%(txid)s"
-  }
+  "status": "valid"
 }
 """
 
@@ -126,10 +124,7 @@ HTTP/1.1 200 OK
 Content-Type: application/json
 
 {
-  "status": "valid",
-  "_links": {
-    "block": "/blocks/%(blockid)s"
-  }
+  "status": "valid"
 }
 """
 
@@ -150,7 +145,7 @@ Content-Type: application/json
 
 
 TPLS['get-block-txid-request'] = """\
-GET /api/v1/blocks?tx_id=%(txid)s HTTP/1.1
+GET /api/v1/blocks?transaction_id=%(txid)s HTTP/1.1
 Host: example.com
 
 """

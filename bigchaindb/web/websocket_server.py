@@ -26,7 +26,7 @@ from bigchaindb.events import EventTypes
 
 logger = logging.getLogger(__name__)
 POISON_PILL = 'POISON_PILL'
-EVENTS_ENDPOINT = '/api/v1/streams/valid_tx'
+EVENTS_ENDPOINT = '/api/v1/streams/valid_transactions'
 
 
 def _multiprocessing_to_asyncio(in_queue, out_queue, loop):
@@ -91,7 +91,7 @@ class Dispatcher:
                     asset_id = tx['id'] if tx['operation'] == 'CREATE' else tx['asset']['id']
                     data = {'block_id': block['id'],
                             'asset_id': asset_id,
-                            'tx_id': tx['id']}
+                            'transaction_id': tx['id']}
                     str_buffer.append(json.dumps(data))
 
             for _, websocket in self.subscribers.items():
@@ -111,10 +111,15 @@ def websocket_handler(request):
 
     while True:
         # Consume input buffer
-        msg = yield from websocket.receive()
+        try:
+            msg = yield from websocket.receive()
+        except RuntimeError as e:
+            logger.debug('Websocket exception: %s', str(e))
+            return websocket
+
         if msg.type == aiohttp.WSMsgType.ERROR:
             logger.debug('Websocket exception: %s', websocket.exception())
-            return
+            return websocket
 
 
 def init_app(event_source, *, loop=None):

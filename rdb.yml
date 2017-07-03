@@ -1,0 +1,48 @@
+version: '2'
+
+services:
+  rdb:
+    image: rethinkdb
+    ports:
+      - "58080:8080"
+      - "28015"
+    volumes_from:
+      - rdb-data
+
+  rdb-2:
+    image: rethinkdb
+    ports:
+      - "8080"
+      - "29015"
+    command: rethinkdb --join rdb:29015 --bind all
+
+  rdb-data:
+    image: rethinkdb:2.3.5
+    volumes:
+      - /data
+    command: "true"
+
+  bdb-rdb:
+    build:
+      context: .
+      dockerfile: Dockerfile-dev
+      args:
+        backend: rethinkdb
+    container_name: docker-bigchaindb
+    volumes:
+      - ./bigchaindb:/usr/src/app/bigchaindb
+      - ./tests:/usr/src/app/tests
+      - ./docs:/usr/src/app/docs
+      - ./k8s:/usr/src/app/k8s
+      - ./setup.py:/usr/src/app/setup.py
+      - ./setup.cfg:/usr/src/app/setup.cfg
+      - ./pytest.ini:/usr/src/app/pytest.ini
+      - ./tox.ini:/usr/src/app/tox.ini
+      - ./Makefile:/usr/src/app/Makefile
+    environment:
+      BIGCHAINDB_DATABASE_BACKEND: rethinkdb
+      BIGCHAINDB_DATABASE_HOST: rdb
+      BIGCHAINDB_SERVER_BIND: 0.0.0.0:9984
+    ports:
+      - "9984"
+    command: bigchaindb start

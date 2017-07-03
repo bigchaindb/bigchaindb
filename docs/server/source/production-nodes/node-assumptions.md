@@ -13,4 +13,4 @@ We make some assumptions about production nodes:
 
 You can use RethinkDB when building prototypes, but we don't advise or support using it in production.
 
-We don't provide a detailed cookbook explaining how to secure a server, or other things that a sysadmin should know. (We do provide some [templates](../cloud-deployment-templates/index.html), but those are just a starting point.)
+We don't provide a detailed cookbook explaining how to secure a server, or other things that a sysadmin should know. We do provide some templates, but those are just starting points.

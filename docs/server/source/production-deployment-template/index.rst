@@ -22,6 +22,7 @@ Feel free change things to suit your needs or preferences.
    node-on-kubernetes
    add-node-on-kubernetes
    upgrade-on-kubernetes
-   first-node
    log-analytics
    easy-rsa
+   cloud-manager
+   node-config-map-and-secrets

@@ -122,7 +122,8 @@ def get_spent(connection, transaction_id, output):
              .get_all([transaction_id, output], index='inputs')
              .concat_map(lambda doc: doc['block']['transactions'])
              .filter(lambda transaction: transaction['inputs'].contains(
-                lambda input_: input_['fulfills'] == {'txid': transaction_id, 'output': output})))
+                lambda input_: input_['fulfills'] == {
+                    'transaction_id': transaction_id, 'output_index': output})))
 
 
 @register_query(RethinkDBConnection)
@@ -286,7 +287,8 @@ def unwind_block_transactions(block):
 def get_spending_transactions(connection, links):
     query = (
         r.table('bigchain')
-        .get_all(*[(l['txid'], l['output']) for l in links], index='inputs')
+        .get_all(*[(l['transaction_id'], l['output_index']) for l in links],
+                 index='inputs')
         .concat_map(unwind_block_transactions)
         # filter transactions spending output
         .filter(lambda doc: r.expr(links).set_intersection(

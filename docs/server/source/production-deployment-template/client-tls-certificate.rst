@@ -1,9 +1,8 @@
 How to Generate a Client Certificate for MongoDB
 ================================================
 
-This page enumerates the steps *we* use
-to generate a client certificate
-to be used by clients who want to connect to a TLS-secured MongoDB cluster.
+This page enumerates the steps *we* use to generate a client certificate to be
+used by clients who want to connect to a TLS-secured MongoDB cluster.
 We use Easy-RSA.
 
 
@@ -25,7 +24,7 @@ Step 2: Create the Client Private Key and CSR
 ---------------------------------------------
 
 You can create the client private key and certificate signing request (CSR)
-by going into the directory ``client-cert/easy-rsa-3.0.1/easyrsa``
+by going into the directory ``client-cert/easy-rsa-3.0.1/easyrsa3``
 and using:
 
 .. code:: bash
@@ -34,26 +33,37 @@ and using:
 
    ./easyrsa gen-req bdb-instance-0 nopass
 
+You should change the Common Name (e.g. ``bdb-instance-0``)
+to a value that reflects what the 
+client certificate is being used for, e.g. ``mdb-mon-instance-3`` or ``mdb-bak-instance-4``. (The final integer is specific to your BigchainDB node in the BigchainDB cluster.)
 
-You should change ``bdb-instance-0`` to a value based on the client
-the certificate is for.
+You will be prompted to enter the Distinguished Name (DN) information for this certificate. For each field, you can accept the default value [in brackets] by pressing Enter.
 
-Tip: You can get help with the ``easyrsa`` command (and its subcommands)
-by using the subcommand ``./easyrsa help``
+.. warning::
+
+   Don't accept the default value of OU (``IT``). Instead, enter the value
+   ``BigchainDB-Instance``, ``MongoDB-Mon-Instance`` or ``MongoDB-Backup-Instance``
+   as appropriate.
+
+Aside: The ``nopass`` option means "do not encrypt the private key (default is encrypted)". You can get help with the ``easyrsa`` command (and its subcommands)
+by using the subcommand ``./easyrsa help``.
 
 
 Step 3: Get the Client Certificate Signed
 -----------------------------------------
 
-The CSR file (created in the last step)
-should be located in ``pki/reqs/bdb-instance-0.req``.
+The CSR file created in the previous step
+should be located in ``pki/reqs/bdb-instance-0.req``
+(or whatever Common Name you used in the ``gen-req`` command above).
 You need to send it to the organization managing the cluster
 so that they can use their CA
 to sign the request.
 (The managing organization should already have a self-signed CA.)
 
 If you are the admin of the managing organization's self-signed CA,
-then you can import the CSR and use Easy-RSA to sign it. For example:
+then you can import the CSR and use Easy-RSA to sign it.
+Go to your ``bdb-cluster-ca/easy-rsa-3.0.1/easyrsa3/``
+directory and do something like:
 
 .. code:: bash
         

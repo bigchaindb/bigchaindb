@@ -135,27 +135,6 @@ def test_elect_invalid(federation_3):
 
 @pytest.mark.bdb
 @pytest.mark.genesis
-def test_elect_disagree_prev_block(federation_3):
-    [bx, (s0, s1, s2)] = federation_3
-    tx = input_single_create(bx[0])
-    process_tx(s0)
-    process_tx(s1)
-    process_tx(s2)
-    process_vote(s0, True)
-    for i in range(3):
-        assert bx[i].get_transaction(tx.id, True)[1] == 'undecided'
-    s1.vote.last_voted_id = '5' * 64
-    process_vote(s1, True)
-    for i in range(3):
-        assert bx[i].get_transaction(tx.id, True)[1] == 'undecided'
-    s2.vote.last_voted_id = '6' * 64
-    process_vote(s2, True)
-    for i in range(3):
-        assert bx[i].get_transaction(tx.id, True)[1] is None
-
-
-@pytest.mark.bdb
-@pytest.mark.genesis
 def test_elect_sybill(federation_3):
     [bx, (s0, s1, s2)] = federation_3
     tx = input_single_create(bx[0])

@@ -68,11 +68,11 @@ def create_bigchain_secondary_index(conn, dbname):
         .create_index('block.transactions.outputs.public_keys',
                       name='outputs')
 
-    # secondary index on inputs/transaction links (txid, output)
+    # secondary index on inputs/transaction links (transaction_id, output)
     conn.conn[dbname]['bigchain']\
         .create_index([
-            ('block.transactions.inputs.fulfills.txid', ASCENDING),
-            ('block.transactions.inputs.fulfills.output', ASCENDING),
+            ('block.transactions.inputs.fulfills.transaction_id', ASCENDING),
+            ('block.transactions.inputs.fulfills.output_index', ASCENDING),
         ], name='inputs')
 
 

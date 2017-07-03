@@ -106,3 +106,7 @@ class SybilError(ValidationError):
 
 class DuplicateTransaction(ValidationError):
     """Raised if a duplicated transaction is found"""
+
+
+class ThresholdTooDeep(ValidationError):
+    """Raised if threshold condition is too deep"""

@@ -26,7 +26,7 @@ Step 2: Create the Server Private Key and CSR
 ---------------------------------------------
 
 You can create the server private key and certificate signing request (CSR)
-by going into the directory ``member-cert/easy-rsa-3.0.1/easyrsa``
+by going into the directory ``member-cert/easy-rsa-3.0.1/easyrsa3``
 and using something like:
 
 .. code:: bash
@@ -35,32 +35,36 @@ and using something like:
 
    ./easyrsa --req-cn=mdb-instance-0 --subject-alt-name=DNS:localhost,DNS:mdb-instance-0 gen-req mdb-instance-0 nopass
 
-You must replace the common name (``mdb-instance-0`` above)
-with the common name of *your* MongoDB instance
-(which should be the same as the hostname of your MongoDB instance).
+You should replace the Common Name (``mdb-instance-0`` above) with the correct name for *your* MongoDB instance in the cluster, e.g. ``mdb-instance-5`` or ``mdb-instance-12``. (This name is decided by the organization managing the cluster.)
 
-You need to provide the ``DNS:localhost`` SAN during certificate generation for
-using the ``localhost exception`` in the MongoDB instance.
+You will be prompted to enter the Distinguished Name (DN) information for this certificate.
+For each field, you can accept the default value [in brackets] by pressing Enter.
 
+.. warning::
+
+   Don't accept the default value of OU (``IT``). Instead, enter the value ``MongoDB-Instance``.
+
+Aside: You need to provide the ``DNS:localhost`` SAN during certificate generation
+for using the ``localhost exception`` in the MongoDB instance.
 All certificates can have this attribute without compromising security as the
 ``localhost exception`` works only the first time.
-
-Tip: You can get help with the ``easyrsa`` command (and its subcommands)
-by using the subcommand ``./easyrsa help``
 
 
 Step 3: Get the Server Certificate Signed
 -----------------------------------------
 
-The CSR file (created in the last step)
-should be located in ``pki/reqs/mdb-instance-0.req``.
+The CSR file created in the last step
+should be located in ``pki/reqs/mdb-instance-0.req``
+(where the integer ``0`` may be different for you).
 You need to send it to the organization managing the cluster
 so that they can use their CA
 to sign the request.
 (The managing organization should already have a self-signed CA.)
 
 If you are the admin of the managing organization's self-signed CA,
-then you can import the CSR and use Easy-RSA to sign it. For example:
+then you can import the CSR and use Easy-RSA to sign it.
+Go to your ``bdb-cluster-ca/easy-rsa-3.0.1/easyrsa3/``
+directory and do something like:
 
 .. code:: bash
         
@@ -83,10 +87,3 @@ private keys.
         
    cat mdb-instance-0.crt mdb-instance-0.key > mdb-instance-0.pem
 
-
-Step 5: Update the MongoDB Config File
---------------------------------------
-
-In the MongoDB configuration file,
-set the ``net.ssl.PEMKeyFile`` parameter to the path of the ``mdb-instance-0.pem`` file,
-and the ``net.ssl.CAFile`` parameter to the ``ca.crt`` file.

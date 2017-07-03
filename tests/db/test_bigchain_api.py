@@ -1,7 +1,8 @@
 from time import sleep
+from unittest.mock import patch
 
 import pytest
-from unittest.mock import patch
+from base58 import b58decode
 
 pytestmark = pytest.mark.bdb
 
@@ -577,14 +578,14 @@ class TestBigchainApi(object):
 
     @pytest.mark.usefixtures('inputs')
     def test_non_create_input_not_found(self, b, user_pk):
-        from cryptoconditions import Ed25519Fulfillment
+        from cryptoconditions import Ed25519Sha256
         from bigchaindb.common.exceptions import InputDoesNotExist
         from bigchaindb.common.transaction import Input, TransactionLink
         from bigchaindb.models import Transaction
         from bigchaindb import Bigchain
 
         # Create an input for a non existing transaction
-        input = Input(Ed25519Fulfillment(public_key=user_pk),
+        input = Input(Ed25519Sha256(public_key=b58decode(user_pk)),
                       [user_pk],
                       TransactionLink('somethingsomething', 0))
         tx = Transaction.transfer([input], [([user_pk], 1)],
@@ -1194,7 +1195,7 @@ def test_get_owned_ids_calls_get_outputs_filtered():
     with patch('bigchaindb.core.Bigchain.get_outputs_filtered') as gof:
         b = Bigchain()
         res = b.get_owned_ids('abc')
-    gof.assert_called_once_with('abc', include_spent=False)
+    gof.assert_called_once_with('abc', spent=False)
     assert res == gof()
 
 
@@ -1206,21 +1207,36 @@ def test_get_outputs_filtered_only_unspent():
                                     TransactionLink('b', 2)]
         with patch('bigchaindb.fastquery.FastQuery.filter_spent_outputs') as filter_spent:
             filter_spent.return_value = [TransactionLink('b', 2)]
-            out = Bigchain().get_outputs_filtered('abc', include_spent=False)
+            out = Bigchain().get_outputs_filtered('abc', spent=False)
     get_outputs.assert_called_once_with('abc')
     assert out == [TransactionLink('b', 2)]
 
 
-def test_get_outputs_filtered():
+def test_get_outputs_filtered_only_spent():
     from bigchaindb.common.transaction import TransactionLink
     from bigchaindb.core import Bigchain
     with patch('bigchaindb.fastquery.FastQuery.get_outputs_by_public_key') as get_outputs:
         get_outputs.return_value = [TransactionLink('a', 1),
                                     TransactionLink('b', 2)]
-        with patch('bigchaindb.fastquery.FastQuery.filter_spent_outputs') as filter_spent:
-            out = Bigchain().get_outputs_filtered('abc')
+        with patch('bigchaindb.fastquery.FastQuery.filter_unspent_outputs') as filter_spent:
+            filter_spent.return_value = [TransactionLink('b', 2)]
+            out = Bigchain().get_outputs_filtered('abc', spent=True)
+    get_outputs.assert_called_once_with('abc')
+    assert out == [TransactionLink('b', 2)]
+
+
+@patch('bigchaindb.fastquery.FastQuery.filter_unspent_outputs')
+@patch('bigchaindb.fastquery.FastQuery.filter_spent_outputs')
+def test_get_outputs_filtered(filter_spent, filter_unspent):
+    from bigchaindb.common.transaction import TransactionLink
+    from bigchaindb.core import Bigchain
+    with patch('bigchaindb.fastquery.FastQuery.get_outputs_by_public_key') as get_outputs:
+        get_outputs.return_value = [TransactionLink('a', 1),
+                                    TransactionLink('b', 2)]
+        out = Bigchain().get_outputs_filtered('abc')
     get_outputs.assert_called_once_with('abc')
     filter_spent.assert_not_called()
+    filter_unspent.assert_not_called()
     assert out == get_outputs.return_value
 
 

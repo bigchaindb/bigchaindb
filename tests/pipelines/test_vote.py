@@ -180,7 +180,7 @@ def test_vote_accumulates_transactions(b):
     validation = vote_obj.validate_tx(tx.to_dict(), 123, 1)
     assert validation == (True, 123, 1)
 
-    tx.inputs[0].fulfillment.signature = None
+    tx.inputs[0].fulfillment.signature = 64*b'z'
     validation = vote_obj.validate_tx(tx.to_dict(), 456, 10)
     assert validation == (False, 456, 10)
 
@@ -199,7 +199,7 @@ def test_valid_block_voting_sequential(b, genesis_block, monkeypatch):
     for tx, block_id, num_tx in vote_obj.ungroup(block['id'], txs):
         last_vote = vote_obj.vote(*vote_obj.validate_tx(tx, block_id, num_tx))
 
-    vote_obj.write_vote(last_vote)
+    vote_obj.write_vote(*last_vote)
     vote_rs = query.get_votes_by_block_id_and_voter(b.connection, block_id, b.me)
     vote_doc = vote_rs.next()
 

@@ -96,8 +96,8 @@ def condition_details_has_owner(condition_details, owner):
         bool: True if the public key is found in the condition details, False otherwise
 
     """
-    if 'subfulfillments' in condition_details:
-        result = condition_details_has_owner(condition_details['subfulfillments'], owner)
+    if 'subconditions' in condition_details:
+        result = condition_details_has_owner(condition_details['subconditions'], owner)
         if result:
             return True
 

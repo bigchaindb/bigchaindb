@@ -9,7 +9,7 @@ BigchainDB can store data of any kind (within reason), but it's designed to be p
 * The owners of an asset can specify (crypto-)conditions which must be satisified by anyone wishing transfer the asset to new owners. For example, a condition might be that at least 3 of the 5 current owners must cryptographically sign a transfer transaction.
 * BigchainDB verifies that the conditions have been satisified as part of checking the validity of transfer transactions. (Moreover, anyone can check that they were satisfied.)
 * BigchainDB prevents double-spending of an asset.
-* Validated transactions are strongly tamper-resistant; see [the section about immutability / tamper-resistance](immutable.html).
+* Validated transactions are strongly tamper-resistant; see :doc:`the page about immutability / tamper-resistance <immutable>`.
 
 
 BigchainDB Integration with Other Blockchains
@@ -21,4 +21,4 @@ We’re actively exploring ways that BigchainDB can be used with other blockchai
 
 .. note::
 
-   We used the word "owners" somewhat loosely above. A more accurate word might be fulfillers, signers, controllers, or tranfer-enablers. See BigchainDB Server `issue #626 <https://github.com/bigchaindb/bigchaindb/issues/626>`_.
+   We used the word "owners" somewhat loosely above. A more accurate word might be fulfillers, signers, controllers, or transfer-enablers. See BigchainDB Server `issue #626 <https://github.com/bigchaindb/bigchaindb/issues/626>`_.

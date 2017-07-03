@@ -42,19 +42,19 @@ that allows you to discover the BigchainDB API endpoints:
 Transactions
 -------------------
 
-.. http:get:: /api/v1/transactions/{tx_id}
+.. http:get:: /api/v1/transactions/{transaction_id}
 
-   Get the transaction with the ID ``tx_id``.
+   Get the transaction with the ID ``transaction_id``.
 
-   This endpoint returns a transaction if it was included in a ``VALID`` block,
-   if it is still waiting to be processed (``BACKLOG``) or is still in an
-   undecided block (``UNDECIDED``). All instances of a transaction in invalid
-   blocks are ignored and treated as if they don't exist. If a request is made
-   for a transaction and instances of that transaction are found only in
-   invalid blocks, then the response will be ``404 Not Found``.
+   This endpoint returns a transaction if it was included in a ``VALID`` block.
+   All instances of a transaction in invalid/undecided blocks or the backlog
+   are ignored and treated as if they don't exist. If a request is made for a
+   transaction and instances of that transaction are found only in
+   invalid/undecided blocks or the backlog, then the response will be ``404 Not
+   Found``.
 
-   :param tx_id: transaction ID
-   :type tx_id: hex string
+   :param transaction_id: transaction ID
+   :type transaction_id: hex string
 
    **Example request**:
 
@@ -147,7 +147,16 @@ Transactions
    .. literalinclude:: http-samples/post-tx-response.http
       :language: http
 
+   .. note::
+       If the server is returning a ``202`` HTTP status code, then the
+       transaction has been accepted for processing. To check the status of the
+       transaction, poll the link to the
+       :ref:`status monitor <get_status_of_transaction>`
+       provided in the ``Location`` header or listen to server's
+       :ref:`WebSocket Event Stream API <The WebSocket Event Stream API>`.
+
    :resheader Content-Type: ``application/json``
+   :resheader Location: Relative link to a status monitor for the submitted transaction.
 
    :statuscode 202: The pushed transaction was accepted in the ``BACKLOG``, but the processing has not been completed.
    :statuscode 400: The transaction was malformed and not accepted in the ``BACKLOG``.
@@ -157,21 +166,29 @@ Transaction Outputs
 -------------------
 
 The ``/api/v1/outputs`` endpoint returns transactions outputs filtered by a
-given public key, and optionally filtered to only include outputs that have
-not already been spent.
+given public key, and optionally filtered to only include either spent or
+unspent outputs.
 
 
-.. http:get:: /api/v1/outputs?public_key={public_key}
+.. http:get:: /api/v1/outputs
 
-   Get transaction outputs by public key. The `public_key` parameter must be
+   Get transaction outputs by public key. The ``public_key`` parameter must be
    a base58 encoded ed25519 public key associated with transaction output
    ownership.
 
-   Returns a list of links to transaction outputs.
+   Returns a list of transaction outputs.
 
-   :param public_key: Base58 encoded public key associated with output ownership. This parameter is mandatory and without it the endpoint will return a ``400`` response code.
-   :param unspent: Boolean value ("true" or "false") indicating if the result set should be limited to outputs that are available to spend. Defaults to "false".
+   :param public_key: Base58 encoded public key associated with output
+                      ownership. This parameter is mandatory and without it
+                      the endpoint will return a ``400`` response code.
+   :param spent: Boolean value ("true" or "false") indicating if the result set
+                 should include only spent or only unspent outputs. If not
+                 specified the result includes all the outputs (both spent
+                 and unspent) associated with the ``public_key``.
 
+.. http:get:: /api/v1/outputs?public_key={public_key}
+
+    Return all outputs, both spent and unspent, for the ``public_key``.
 
    **Example request**:
 
@@ -188,8 +205,70 @@ not already been spent.
      Content-Type: application/json
 
      [
-       "../transactions/2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e/outputs/0",
-       "../transactions/2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e/outputs/1"
+       {
+         "output_index": 0,
+         "transaction_id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e"
+       },
+       {
+         "output_index": 1,
+         "transaction_id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e"
+       }
+     ]
+
+   :statuscode 200: A list of outputs were found and returned in the body of the response.
+   :statuscode 400: The request wasn't understood by the server, e.g. the ``public_key`` querystring was not included in the request.
+
+.. http:get:: /api/v1/outputs?public_key={public_key}&spent=true
+
+    Return all **spent** outputs for ``public_key``.
+
+   **Example request**:
+
+   .. sourcecode:: http
+
+     GET /api/v1/outputs?public_key=1AAAbbb...ccc&spent=true HTTP/1.1
+     Host: example.com
+
+   **Example response**:
+
+   .. sourcecode:: http
+
+     HTTP/1.1 200 OK
+     Content-Type: application/json
+
+     [
+       {
+         "output_index": 0,
+         "transaction_id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e"
+       }
+     ]
+
+   :statuscode 200: A list of outputs were found and returned in the body of the response.
+   :statuscode 400: The request wasn't understood by the server, e.g. the ``public_key`` querystring was not included in the request.
+
+.. http:get:: /api/v1/outputs?public_key={public_key}&spent=false
+
+    Return all **unspent** outputs for ``public_key``.
+
+   **Example request**:
+
+   .. sourcecode:: http
+
+     GET /api/v1/outputs?public_key=1AAAbbb...ccc&spent=false HTTP/1.1
+     Host: example.com
+
+   **Example response**:
+
+   .. sourcecode:: http
+
+     HTTP/1.1 200 OK
+     Content-Type: application/json
+
+     [
+       {
+         "output_index": 1,
+         "transaction_id": "2d431073e1477f3073a4693ac7ff9be5634751de1b8abaa1f4e19548ef0b4b0e"
+       }
      ]
 
    :statuscode 200: A list of outputs were found and returned in the body of the response.
@@ -203,21 +282,19 @@ Statuses
 
    Get the status of an asynchronously written transaction or block by their id.
 
-   A link to the resource is also provided in the returned payload under
-   ``_links``.
-
-   :query string tx_id: transaction ID
+   :query string transaction_id: transaction ID
    :query string block_id: block ID
 
    .. note::
 
-        Exactly one of the ``tx_id`` or ``block_id`` query parameters must be
+        Exactly one of the ``transaction_id`` or ``block_id`` query parameters must be
         used together with this endpoint (see below for getting `transaction
         statuses <#get--statuses?tx_id=tx_id>`_ and `block statuses
         <#get--statuses?block_id=block_id>`_).
 
+.. _get_status_of_transaction:
 
-.. http:get:: /api/v1/statuses?tx_id={tx_id}
+.. http:get:: /api/v1/statuses?transaction_id={transaction_id}
 
     Get the status of a transaction.
 
@@ -236,7 +313,6 @@ Statuses
       :language: http
 
    :resheader Content-Type: ``application/json``
-   :resheader Location: Once the transaction has been persisted, this header will link to the actual resource.
 
    :statuscode 200: A transaction with that ID was found.
    :statuscode 404: A transaction with that ID was not found.
@@ -255,16 +331,10 @@ Statuses
 
    **Example response**:
 
-   .. literalinclude:: http-samples/get-statuses-block-invalid-response.http
-      :language: http
-
-   **Example response**:
-
    .. literalinclude:: http-samples/get-statuses-block-valid-response.http
       :language: http
 
    :resheader Content-Type: ``application/json``
-   :resheader Location: Once the block has been persisted, this header will link to the actual resource.
 
    :statuscode 200: A block with that ID was found.
    :statuscode 404: A block with that ID was not found.
@@ -288,8 +358,8 @@ Assets
 
 .. http:get:: /api/v1/assets?search={text_search}
 
-    Return all assets that match a given text search. The asset is returned
-    with the ``id`` of the transaction that created the asset.
+    Return all assets that match a given text search. The ``id`` of the asset
+    is the same ``id`` of the transaction that created the asset.
 
     If no assets match the text search it returns an empty list.
 
@@ -388,12 +458,12 @@ Advanced Usage
 The following endpoints are more advanced and meant for debugging and transparency purposes.
 
 More precisely, the `blocks endpoint <#blocks>`_ allows you to retrieve a block by ``block_id`` as well the list of blocks that
-a certain transaction with ``tx_id`` occured in (a transaction can occur in multiple ``invalid`` blocks until it
+a certain transaction with ``transaction_id`` occured in (a transaction can occur in multiple ``invalid`` blocks until it
 either gets rejected or validated by the system). This endpoint gives the ability to drill down on the lifecycle of a
 transaction
 
 The `votes endpoint <#votes>`_ contains all the voting information for a specific block. So after retrieving the
-``block_id`` for a given ``tx_id``, one can now simply inspect the votes that happened at a specific time on that block.
+``block_id`` for a given ``transaction_id``, one can now simply inspect the votes that happened at a specific time on that block.
 
 
 Blocks
@@ -429,8 +499,8 @@ Blocks
 .. http:get:: /api/v1/blocks
 
    The unfiltered ``/blocks`` endpoint without any query parameters returns a `400` status code.
-   The list endpoint should be filtered with a ``tx_id`` query parameter,
-   see the ``/blocks?tx_id={tx_id}&status={UNDECIDED|VALID|INVALID}``
+   The list endpoint should be filtered with a ``transaction_id`` query parameter,
+   see the ``/blocks?transaction_id={transaction_id}&status={UNDECIDED|VALID|INVALID}``
    `endpoint <#get--blocks?tx_id=tx_id&status=UNDECIDED|VALID|INVALID>`_.
 
 
@@ -449,9 +519,9 @@ Blocks
 
    :statuscode 400: The request wasn't understood by the server, e.g. just requesting ``/blocks`` without the ``block_id``.
 
-.. http:get:: /api/v1/blocks?tx_id={tx_id}&status={UNDECIDED|VALID|INVALID}
+.. http:get:: /api/v1/blocks?transaction_id={transaction_id}&status={UNDECIDED|VALID|INVALID}
 
-   Retrieve a list of ``block_id`` with their corresponding status that contain a transaction with the ID ``tx_id``.
+   Retrieve a list of ``block_id`` with their corresponding status that contain a transaction with the ID ``transaction_id``.
 
    Any blocks, be they ``UNDECIDED``, ``VALID`` or ``INVALID`` will be
    returned if no status filter is provided.
@@ -460,7 +530,7 @@ Blocks
        In case no block was found, an empty list and an HTTP status code
        ``200 OK`` is returned, as the request was still successful.
 
-   :query string tx_id: transaction ID *(required)*
+   :query string transaction_id: transaction ID *(required)*
    :query string status: Filter blocks by their status. One of ``VALID``, ``UNDECIDED`` or ``INVALID``.
 
    **Example request**:
@@ -475,8 +545,8 @@ Blocks
 
    :resheader Content-Type: ``application/json``
 
-   :statuscode 200: A list of blocks containing a transaction with ID ``tx_id`` was found and returned.
-   :statuscode 400: The request wasn't understood by the server, e.g. just requesting ``/blocks``, without defining ``tx_id``.
+   :statuscode 200: A list of blocks containing a transaction with ID ``transaction_id`` was found and returned.
+   :statuscode 400: The request wasn't understood by the server, e.g. just requesting ``/blocks``, without defining ``transaction_id``.
 
 
 Votes

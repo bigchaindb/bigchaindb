@@ -30,7 +30,6 @@ _base_database_mongodb = {
     'port': int(os.environ.get('BIGCHAINDB_DATABASE_PORT', 27017)),
     'name': os.environ.get('BIGCHAINDB_DATABASE_NAME', 'bigchain'),
     'replicaset': os.environ.get('BIGCHAINDB_DATABASE_REPLICASET', 'bigchain-rs'),
-    'ssl': bool(os.environ.get('BIGCHAINDB_DATABASE_SSL', False)),
     'login': os.environ.get('BIGCHAINDB_DATABASE_LOGIN'),
     'password': os.environ.get('BIGCHAINDB_DATABASE_PASSWORD')
 }
@@ -46,6 +45,12 @@ _database_mongodb = {
     'backend': os.environ.get('BIGCHAINDB_DATABASE_BACKEND', 'mongodb'),
     'connection_timeout': 5000,
     'max_tries': 3,
+    'ssl': bool(os.environ.get('BIGCHAINDB_DATABASE_SSL', False)),
+    'ca_cert': os.environ.get('BIGCHAINDB_DATABASE_CA_CERT'),
+    'certfile': os.environ.get('BIGCHAINDB_DATABASE_CERTFILE'),
+    'keyfile': os.environ.get('BIGCHAINDB_DATABASE_KEYFILE'),
+    'keyfile_passphrase': os.environ.get('BIGCHAINDB_DATABASE_KEYFILE_PASSPHRASE'),
+    'crlfile': os.environ.get('BIGCHAINDB_DATABASE_CRLFILE')
 }
 _database_mongodb.update(_base_database_mongodb)
 
@@ -64,6 +69,7 @@ config = {
         'workers': None,  # if none, the value will be cpu_count * 2 + 1
     },
     'wsserver': {
+        'scheme': os.environ.get('BIGCHAINDB_WSSERVER_SCHEME') or 'ws',
         'host': os.environ.get('BIGCHAINDB_WSSERVER_HOST') or 'localhost',
         'port': int(os.environ.get('BIGCHAINDB_WSSERVER_PORT', 9985)),
     },
@@ -88,6 +94,9 @@ config = {
         'fmt_console': log_config['formatters']['console']['format'],
         'fmt_logfile': log_config['formatters']['file']['format'],
         'granular_levels': {},
+    },
+    'graphite': {
+        'host': os.environ.get('BIGCHAINDB_GRAPHITE_HOST', 'localhost'),
     },
 }
 

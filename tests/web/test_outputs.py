@@ -8,25 +8,43 @@ OUTPUTS_ENDPOINT = '/api/v1/outputs/'
 
 def test_get_outputs_endpoint(client, user_pk):
     m = MagicMock()
-    m.to_uri.side_effect = lambda s: 'a%sb' % s
+    m.txid = 'a'
+    m.output = 0
     with patch('bigchaindb.core.Bigchain.get_outputs_filtered') as gof:
         gof.return_value = [m, m]
         res = client.get(OUTPUTS_ENDPOINT + '?public_key={}'.format(user_pk))
-    assert res.json == ['a..b', 'a..b']
+        assert res.json == [
+            {'transaction_id': 'a', 'output_index': 0},
+            {'transaction_id': 'a', 'output_index': 0}
+        ]
     assert res.status_code == 200
-    gof.assert_called_once_with(user_pk, True)
+    gof.assert_called_once_with(user_pk, None)
 
 
 def test_get_outputs_endpoint_unspent(client, user_pk):
     m = MagicMock()
-    m.to_uri.side_effect = lambda s: 'a%sb' % s
+    m.txid = 'a'
+    m.output = 0
     with patch('bigchaindb.core.Bigchain.get_outputs_filtered') as gof:
         gof.return_value = [m]
-        params = '?unspent=true&public_key={}'.format(user_pk)
+        params = '?spent=False&public_key={}'.format(user_pk)
         res = client.get(OUTPUTS_ENDPOINT + params)
-    assert res.json == ['a..b']
+    assert res.json == [{'transaction_id': 'a', 'output_index': 0}]
     assert res.status_code == 200
     gof.assert_called_once_with(user_pk, False)
+
+
+def test_get_outputs_endpoint_spent(client, user_pk):
+    m = MagicMock()
+    m.txid = 'a'
+    m.output = 0
+    with patch('bigchaindb.core.Bigchain.get_outputs_filtered') as gof:
+        gof.return_value = [m]
+        params = '?spent=true&public_key={}'.format(user_pk)
+        res = client.get(OUTPUTS_ENDPOINT + params)
+    assert res.json == [{'transaction_id': 'a', 'output_index': 0}]
+    assert res.status_code == 200
+    gof.assert_called_once_with(user_pk, True)
 
 
 def test_get_outputs_endpoint_without_public_key(client):
@@ -41,9 +59,9 @@ def test_get_outputs_endpoint_with_invalid_public_key(client):
     assert res.status_code == 400
 
 
-def test_get_outputs_endpoint_with_invalid_unspent(client, user_pk):
-    expected = {'message': {'unspent': 'Boolean value must be "true" or "false" (lowercase)'}}
-    params = '?unspent=tru&public_key={}'.format(user_pk)
+def test_get_outputs_endpoint_with_invalid_spent(client, user_pk):
+    expected = {'message': {'spent': 'Boolean value must be "true" or "false" (lowercase)'}}
+    params = '?spent=tru&public_key={}'.format(user_pk)
     res = client.get(OUTPUTS_ENDPOINT + params)
     assert expected == res.json
     assert res.status_code == 400

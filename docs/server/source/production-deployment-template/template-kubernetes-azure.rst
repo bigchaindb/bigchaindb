@@ -45,11 +45,12 @@ on most common operating systems
 <https://docs.microsoft.com/en-us/cli/azure/install-az-cli2>`_.
 Do that.
 
-First, update the Azure CLI to the latest version:
+If you already *have* the Azure CLI installed, you may want to update it.
 
-.. code:: bash
+.. warning::
 
-   $ az component update
+   ``az component update`` isn't supported if you installed the CLI using some of Microsoft's provided installation instructions. See `the Microsoft docs for update instructions <https://docs.microsoft.com/en-us/cli/azure/install-az-cli2>`_. 
+
 
 Next, login to your account using:
 
@@ -101,7 +102,7 @@ Finally, you can deploy an ACS using something like:
    --agent-vm-size Standard_D2_v2 \
    --dns-prefix <make up a name> \
    --ssh-key-value ~/.ssh/<name>.pub \
-   --orchestrator-type kubernetes
+   --orchestrator-type kubernetes \
    --debug --output json
 
 
@@ -138,7 +139,7 @@ of a master node from the Azure Portal. For example:
 
 .. note::
 
-   All the master nodes should have the *same* IP address and hostname
+   All the master nodes should have the *same* public IP address and hostname
    (also called the Master FQDN).
 
 The "agent" nodes shouldn't get public IP addresses or hostnames,

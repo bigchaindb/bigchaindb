@@ -96,7 +96,7 @@ def run_configure(args, skip_if_exists=False):
             val = conf['server'][key]
             conf['server'][key] = input_on_stderr('API Server {}? (default `{}`): '.format(key, val), val)
 
-        for key in ('host', 'port'):
+        for key in ('scheme', 'host', 'port'):
             val = conf['wsserver'][key]
             conf['wsserver'][key] = input_on_stderr('WebSocket Server {}? (default `{}`): '.format(key, val), val)
 
