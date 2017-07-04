@@ -15,6 +15,28 @@ For reference, the possible headings are:
 * **External Contributors** to list contributors outside of BigchainDB GmbH.
 * **Notes**
 
+## [1.0.0] - 2017-07-TODO:daynumber
+Tag name: v1.0.0
+
+**This just reports the changes since the release of 1.0.0rc1. If you want the full picture of all changes since 0.10, then read the 1.0.0rc1 change log below as well as the upgrade guide.**
+
+### Changed
+* The file name of the upgrade guide changed from `docs/upgrade-guides/v0.10-->v1.0.md` to `docs/upgrade-guides/v0.10-v1.0.md`.
+* In `transaction.inputs[n].fulfills`, `output` was renamed to `output_index`. [Pull Request #1596](https://github.com/bigchaindb/bigchaindb/pull/1596)
+* In `transaction.outputs[n].condition.details`, 1) `signature` was removed (from signature conditions) and 2) `subfulfillments` was renamed to `subconditions` (in threshold conditions). [Pull Request #1589](https://github.com/bigchaindb/bigchaindb/pull/1589)
+* Refined transaction schema validation to check that the `transaction.outputs[n].condition.uri` corresponds to a condition that BigchainDB Server 1.0.0 actually supports. [Pull Request #1597](https://github.com/bigchaindb/bigchaindb/pull/1597)
+
+### Fixed
+* If an end user sends a transaction with `operation` equal to `GENESIS`, it will be rejected as invalid. [Pull Request #1612](https://github.com/bigchaindb/bigchaindb/pull/1612)
+
+TODO: re Issue #1576
+
+* All GET requests with query parameters, when sent to the HTTP API with header `Content-Type: 'application/json'`, would result in a response with a message, "The browser (or proxy) sent a request that this server could not understand."
+
+TODO: How fixed? Which pull request?
+
+
+
 ## [1.0.0rc1] - 2017-06-23
 Tag name: v1.0.0rc1
 
