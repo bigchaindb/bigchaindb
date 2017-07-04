@@ -13,6 +13,7 @@ import gunicorn.app.base
 from bigchaindb import utils
 from bigchaindb import Bigchain
 from bigchaindb.web.routes import add_routes
+from bigchaindb.web.strip_content_type_middleware import StripContentTypeMiddleware
 
 
 # TODO: Figure out if we do we need all this boilerplate.
@@ -60,6 +61,7 @@ def create_app(*, debug=False, threads=1):
     """
 
     app = Flask(__name__)
+    app.wsgi_app = StripContentTypeMiddleware(app.wsgi_app)
 
     CORS(app)
 
