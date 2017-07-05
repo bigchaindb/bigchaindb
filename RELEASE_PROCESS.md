@@ -22,7 +22,7 @@ A minor release is preceeded by a feature freeze and created from the 'master' b
 1. Commit that change, and push the new branch to GitHub
 1. On GitHub, use the new branch to create a new pull request and wait for all the tests to pass
 1. Follow steps outlined in [Common Steps](#common-steps)
-1. In 'master' branch, Edit `bigchaindb/version.py`, increment the minor version to the next planned release, e.g. `0.10.0.dev`. This is so people reading the latest docs will know that they're for the latest (master branch) version of BigchainDB Server, not the docs at the time of the most recent release (which are also available).
+1. In 'master' branch, Edit `bigchaindb/version.py`, increment the minor version to the next planned release, e.g. `0.10.0.dev`. (Exception: If you just released `X.Y.Zrc1` then increment the minor version to `X.Y.Zrc2`.) This step is so people reading the latest docs will know that they're for the latest (master branch) version of BigchainDB Server, not the docs at the time of the most recent release (which are also available).
 1. Go to [Docker Hub](https://hub.docker.com/), sign in, go to Settings - Build Settings, and under the build with Docker Tag Name equal to `latest`, change the Name to the number of the new release, e.g. `0.9`
 
 Congratulations, you have released BigchainDB!
