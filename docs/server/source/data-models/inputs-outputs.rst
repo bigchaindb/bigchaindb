@@ -29,7 +29,7 @@ A CREATE transaction should have exactly one input. That input can contain one o
 See the reference on :ref:`inputs <Input>` for more description about the meaning of each field.
 
 To calculate a fulfillment URI, you can use one of the
-:ref:`BigchainDB drivers or transaction-builders <Drivers & Clients>`,
+:ref:`BigchainDB drivers or transaction-builders <Drivers & Tools>`,
 or use a low-level crypto-conditions library as illustrated
 in the page about `Handcrafting Transactions <https://docs.bigchaindb.com/projects/py-driver/en/latest/handcraft.html>`_.
 
@@ -52,7 +52,7 @@ See the reference on :ref:`outputs <Output>` for more description about the mean
 
 Below is a high-level description of what goes into building a ``condition`` object.
 To construct an actual ``condition`` object, you can use one of the
-:ref:`BigchainDB drivers or transaction-builders <Drivers & Clients>`,
+:ref:`BigchainDB drivers or transaction-builders <Drivers & Tools>`,
 or use a low-level crypto-conditions library as illustrated
 in the page about `Handcrafting Transactions <https://docs.bigchaindb.com/projects/py-driver/en/latest/handcraft.html>`_.
 
