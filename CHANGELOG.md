@@ -15,7 +15,7 @@ For reference, the possible headings are:
 * **External Contributors** to list contributors outside of BigchainDB GmbH.
 * **Notes**
 
-## [1.0.0] - 2017-07-TODO:daynumber
+## [1.0.0] - 2017-07-05
 Tag name: v1.0.0
 
 **This just reports the changes since the release of 1.0.0rc1. If you want the full picture of all changes since 0.10, then read the 1.0.0rc1 change log below as well as the upgrade guide.**
