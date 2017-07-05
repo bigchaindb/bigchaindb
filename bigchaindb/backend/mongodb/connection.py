@@ -111,7 +111,8 @@ class MongoDBConnection(Connection):
                                              self.port,
                                              replicaset=self.replicaset,
                                              serverselectiontimeoutms=self.connection_timeout,
-                                             ssl=self.ssl)
+                                             ssl=self.ssl,
+                                             **MONGO_OPTS)
                 if self.login is not None and self.password is not None:
                     client[self.dbname].authenticate(self.login, self.password)
             else:
@@ -126,7 +127,8 @@ class MongoDBConnection(Connection):
                                              ssl_keyfile=self.keyfile,
                                              ssl_pem_passphrase=self.keyfile_passphrase,
                                              ssl_crlfile=self.crlfile,
-                                             ssl_cert_reqs=CERT_REQUIRED)
+                                             ssl_cert_reqs=CERT_REQUIRED,
+                                             **MONGO_OPTS)
                 if self.login is not None:
                     client[self.dbname].authenticate(self.login,
                                                      mechanism='MONGODB-X509')
@@ -141,6 +143,11 @@ class MongoDBConnection(Connection):
             raise ConnectionError(str(exc)) from exc
         except pymongo.errors.ConfigurationError as exc:
             raise ConfigurationError from exc
+
+
+MONGO_OPTS = {
+    'socketTimeoutMS': 20000,
+}
 
 
 def initialize_replica_set(host, port, connection_timeout, dbname, ssl, login,
@@ -160,7 +167,8 @@ def initialize_replica_set(host, port, connection_timeout, dbname, ssl, login,
             conn = pymongo.MongoClient(host,
                                        port,
                                        serverselectiontimeoutms=connection_timeout,
-                                       ssl=ssl)
+                                       ssl=ssl,
+                                       **MONGO_OPTS)
             if login is not None and password is not None:
                 conn[dbname].authenticate(login, password)
         else:
@@ -174,7 +182,8 @@ def initialize_replica_set(host, port, connection_timeout, dbname, ssl, login,
                                        ssl_keyfile=keyfile,
                                        ssl_pem_passphrase=keyfile_passphrase,
                                        ssl_crlfile=crlfile,
-                                       ssl_cert_reqs=CERT_REQUIRED)
+                                       ssl_cert_reqs=CERT_REQUIRED,
+                                       **MONGO_OPTS)
             if login is not None:
                 logger.info('Authenticating to the database...')
                 conn[dbname].authenticate(login, mechanism='MONGODB-X509')
