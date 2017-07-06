@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mdb
+  namespace: default
+  labels:
+    name: mdb
+spec:
+  selector:
+    app: mdb-ss
+  ports:
+  - port: 27017
+    targetPort: 27017
+    protocol: TCP
+    name: mdb-svc-port
+  type: ClusterIP
+  clusterIP: None

@@ -1,0 +1,35 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ngx-events-dep
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ngx-events-dep
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: nginx-events
+        image: bigchaindb/nginx_ws:1.0
+        imagePullPolicy: Always
+        env:
+        - name: BIGCHAINDB_BACKEND_HOST
+          value: bdb.default.svc.cluster.local
+        - name: BIGCHAINDB_WS_FRONTEND_PORT
+          value: $(NGX_EVENTS_SERVICE_PORT_BDB_EVENTS_PORT)
+        - name: BIGCHAINDB_WS_BACKEND_PORT
+          value: "9985"
+        - name: DNS_SERVER
+          value: "10.0.0.10"
+        ports:
+        - containerPort: 81
+          hostPort: 81
+          name: bdb-events-port-dep
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 200m
+            memory: 768Mi
+      restartPolicy: Always

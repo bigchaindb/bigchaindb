@@ -1,0 +1,38 @@
+apiVersion: apps/v1beta1
+kind: StatefulSet 
+metadata:
+  name: mdb-ss
+  namespace: default
+spec:
+  serviceName: mdb
+  replicas: 1
+  template:
+    metadata:
+      name: mdb-ss
+      labels:
+        app: mdb-ss
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: mongodb
+        image: mongo:3.4.4
+        imagePullPolicy: Always
+        args:
+        - --replSet
+        - bigchain-rs
+        ports:
+        - containerPort: 27017
+          hostPort: 27017
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 200m
+            memory: 768Mi
+        livenessProbe:
+          tcpSocket:
+            port: 27017
+          successThreshold: 1
+          failureThreshold: 3
+          periodSeconds: 15
+          timeoutSeconds: 1
+      restartPolicy: Always

@@ -1,0 +1,44 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ngx-api-dep
+  namespace: default
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ngx-api-dep
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: nginx-api
+        image: bigchaindb/nginx_api:1.0
+        imagePullPolicy: Always
+        env:
+        - name: MONGODB_BACKEND_HOST
+          value: mdb.default.svc.cluster.local
+        - name: MONGODB_FRONTEND_PORT
+          value: "27017"
+        - name: MONGODB_BACKEND_PORT
+          value: "27017"
+        - name: BIGCHAINDB_BACKEND_HOST
+          value: bdb.default.svc.cluster.local
+        - name: BIGCHAINDB_FRONTEND_PORT
+          value: "80"
+        - name: BIGCHAINDB_BACKEND_PORT
+          value: "9984"
+        - name: DNS_SERVER
+          value: 10.0.0.10
+        ports:
+        - containerPort: 27017
+          hostPort: 27017
+          protocol: TCP
+        - containerPort: 80
+          hostPort: 80
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 200m
+            memory: 768Mi
+      restartPolicy: Always

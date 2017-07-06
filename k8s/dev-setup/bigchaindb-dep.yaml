@@ -1,0 +1,73 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: bdb-dep
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: bdb-dep
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: bigchaindb
+        image: bigchaindb/bigchaindb:1.0.0rc1
+        imagePullPolicy: Always
+        args:
+        - start
+        env:
+        - name: BIGCHAINDB_DATABASE_HOST
+          value: mdb
+        - name: BIGCHAINDB_DATABASE_PORT
+          value: "27017"
+        - name: BIGCHAINDB_DATABASE_REPLICASET
+          value: bigchain-rs
+        - name: BIGCHAINDB_DATABASE_BACKEND
+          value: mongodb
+        - name: BIGCHAINDB_DATABASE_NAME
+          value: bigchain
+        - name: BIGCHAINDB_SERVER_BIND
+          value: "0.0.0.0:9984"
+        - name: BIGCHAINDB_WSSERVER_HOST
+          value: "0.0.0.0"
+        - name: BIGCHAINDB_WSSERVER_PORT
+          value: "9985"
+        - name: BIGCHAINDB_KEYPAIR_PUBLIC
+          value: "EEWUAhsk94ZUHhVw7qx9oZiXYDAWc9cRz93eMrsTG4kZ"
+        - name: BIGCHAINDB_KEYPAIR_PRIVATE
+          value: "3CjmRhu718gT1Wkba3LfdqX5pfYuBdaMPLd7ENUga5dm"
+        - name: BIGCHAINDB_BACKLOG_REASSIGN_DELAY
+          value: "120"
+        - name: BIGCHAINDB_DATABASE_MAXTRIES
+          value: "3"
+        - name: BIGCHAINDB_DATABASE_CONNECTION_TIMEOUT
+          value: "120"
+        - name: BIGCHAINDB_LOG_LEVEL_CONSOLE
+          value: debug
+        ports:
+        - containerPort: 9984
+          hostPort: 9984
+          name: bdb-port
+          protocol: TCP
+        - containerPort: 9985
+          hostPort: 9985
+          name: bdb-ws-port
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 200m
+            memory: 768Mi
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 9984
+          initialDelaySeconds: 15
+          timeoutSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 9984
+          initialDelaySeconds: 15
+          timeoutSeconds: 10
+      restartPolicy: Always
