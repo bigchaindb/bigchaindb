@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: ngx-instance-0
+  name: ngx-api-instance-0
   namespace: default
   labels:
-    name: ngx-instance-0
+    name: ngx-api-instance-0
   annotations:
     # NOTE: the following annotation is a beta feature and
     # only available in GCE/GKE and Azure as of now
@@ -12,7 +12,7 @@ metadata:
     service.beta.kubernetes.io/external-traffic: OnlyLocal
 spec:
   selector:
-    app: ngx-instance-0-dep
+    app: ngx-api-instance-0-dep
   ports:
   - port: 80
     targetPort: 80
