@@ -155,26 +155,26 @@ def _fulfillment_to_details(fulfillment):
     raise UnsupportedTypeError(fulfillment.type_name)
 
 
-def _fulfillment_from_details(data):
+def _fulfillment_from_details(data, _depth=0):
     """
     Load a fulfillment for a signing spec dictionary
 
     Args:
         data: tx.output[].condition.details dictionary
     """
+    if _depth == 100:
+        raise ThresholdTooDeep()
+
     if data['type'] == 'ed25519-sha-256':
         public_key = base58.b58decode(data['public_key'])
         return Ed25519Sha256(public_key=public_key)
 
     if data['type'] == 'threshold-sha-256':
-        try:
-            threshold = ThresholdSha256(data['threshold'])
-            for cond in data['subconditions']:
-                cond = _fulfillment_from_details(cond)
-                threshold.add_subfulfillment(cond)
-            return threshold
-        except RecursionError:
-            raise ThresholdTooDeep()
+        threshold = ThresholdSha256(data['threshold'])
+        for cond in data['subconditions']:
+            cond = _fulfillment_from_details(cond, _depth+1)
+            threshold.add_subfulfillment(cond)
+        return threshold
 
     raise UnsupportedTypeError(data.get('type'))
 
