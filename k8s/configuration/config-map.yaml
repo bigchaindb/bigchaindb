@@ -11,8 +11,10 @@ data:
   mdb-instance-name: "<name of the mdb instance>"
   # BigchainDB
   bdb-instance-name: "<name of the bdb instance>"
-  # NGINX
-  ngx-instance-name: "<name of the ngx instance>"
+  # NGINX API
+  ngx-api-instance-name: "<name of the ngx api instance>"
+  # NGINX Events
+  ngx-events-instance-name: "<name of the ngx events instance>"
   # MongoDB Monitoring Agent
   mdb-mon-instance-name: "<name of the mdb monitoring agent instance>"
   # MongoDB Backup Agent

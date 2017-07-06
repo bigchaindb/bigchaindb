@@ -8,18 +8,18 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: ngx-instance-0-dep
+  name: ngx-api-instance-0-dep
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: ngx-instance-0-dep
+        app: ngx-api-instance-0-dep
     spec:
       terminationGracePeriodSeconds: 10
       containers:
-      - name: nginx
-        image: bigchaindb/nginx:1.0
+      - name: nginx-api
+        image: bigchaindb/nginx_api:1.0
         imagePullPolicy: Always
         env:
         - name: MONGODB_FRONTEND_PORT
@@ -29,15 +29,11 @@ spec:
         - name: MONGODB_BACKEND_PORT
           value: "27017"
         - name: BIGCHAINDB_FRONTEND_PORT
-          value: "80"
+          value: $(NGX_INSTANCE_0_SERVICE_PORT_BDB_PORT_HTTP)
         - name: BIGCHAINDB_BACKEND_HOST
           value: bdb-instance-0.default.svc.cluster.local
         - name: BIGCHAINDB_BACKEND_PORT
           value: "9984"
-        - name: BIGCHAINDB_WS_FRONTEND_PORT
-          value: "81"
-        - name: BIGCHAINDB_WS_BACKEND_PORT
-          value: "9985"
         - name: DNS_SERVER
           value: "10.0.0.10"
         ports:
@@ -49,14 +45,8 @@ spec:
           hostPort: 80
           name: public-bdb-port
           protocol: TCP
-        - containerPort: 81
-          hostPort: 81
-          name: public-ws-port
-          protocol: TCP
         resources:
           limits:
             cpu: 200m
             memory: 768Mi
-        #livenessProbe: TODO(Krish)
-        #readinessProbe: TODO(Krish)
       restartPolicy: Always
