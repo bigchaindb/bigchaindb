@@ -35,14 +35,12 @@ docker run \
     --env "BIGCHAINDB_FRONTEND_PORT=<port where nginx listens for BigchainDB connections>" \
     --env "BIGCHAINDB_BACKEND_HOST=<ip/hostname of instance where BigchainDB is running>" \
     --env "BIGCHAINDB_BACKEND_PORT=<port where BigchainDB is listening for connections>" \
-    --env "BIGCHAINDB_WS_BACKEND_PORT=<port where BigchainDB is listening for websocket connections>" \
-    --env "BIGCHAINDB_WS_FRONTEND_PORT=<port where nginx listens for BigchainDB WebSocket connections>" \
     --env "DNS_SERVER=<ip of the dns server>" \
     --name=ngx \
     --publish=<port where nginx listens for MongoDB connections as specified above>:<correcponding host port> \
     --publish=<port where nginx listens for BigchainDB connections as specified above>:<corresponding host port> \
     --rm=true \
-    bigchaindb/nginx:1.0
+    bigchaindb/nginx_api:1.0 
 ```
 
 For example:
@@ -54,18 +52,10 @@ docker run \
   --env="BIGCHAINDB_FRONTEND_PORT=80" \
   --env="BIGCHAINDB_BACKEND_HOST=localhost" \
   --env="BIGCHAINDB_BACKEND_PORT=9984" \
-  --env="BIGCHAINDB_WS_FRONTEND_PORT=81" \
-  --env="BIGCHAINDB_WS_BACKEND_PORT=9985" \
   --env="DNS_SERVER=127.0.0.1" \
   --name=ngx \
   --publish=80:80 \
   --publish=17017:17017 \
   --rm=true \
-  bigchaindb/nginx:1.0
+  bigchaindb/nginx_api:1.0 
 ```
-
-### Note:
-You can test the WebSocket server by using 
-[wsc](https://slack-redir.net/link?url=https%3A%2F%2Fwww.npmjs.com%2Fpackage%2Fwsc) tool with a command like:
-`wsc -er ws://localhost:9985/api/v1/streams/valid_tx`.
-
