@@ -1,3 +1,7 @@
+"""Transaction related models to parse and construct transaction
+payloads.
+
+"""
 from copy import deepcopy
 from functools import reduce
 

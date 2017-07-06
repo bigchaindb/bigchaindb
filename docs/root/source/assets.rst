@@ -21,4 +21,4 @@ We’re actively exploring ways that BigchainDB can be used with other blockchai
 
 .. note::
 
-   We used the word "owners" somewhat loosely above. A more accurate word might be fulfillers, signers, controllers, or tranfer-enablers. See BigchainDB Server `issue #626 <https://github.com/bigchaindb/bigchaindb/issues/626>`_.
+   We used the word "owners" somewhat loosely above. A more accurate word might be fulfillers, signers, controllers, or transfer-enablers. See BigchainDB Server `issue #626 <https://github.com/bigchaindb/bigchaindb/issues/626>`_.

@@ -1,4 +1,4 @@
-from bigchaindb.utils import output_has_owner
+from bigchaindb.utils import condition_details_has_owner
 from bigchaindb.backend import query
 from bigchaindb.common.transaction import TransactionLink
 
@@ -52,7 +52,8 @@ class FastQuery:
         return [TransactionLink(tx['id'], index)
                 for tx in txs
                 for index, output in enumerate(tx['outputs'])
-                if output_has_owner(output, public_key)]
+                if condition_details_has_owner(output['condition']['details'],
+                                               public_key)]
 
     def filter_spent_outputs(self, outputs):
         """

@@ -226,3 +226,14 @@ def test_block_snowflake(create_tx, signed_transfer_tx):
     snowflake.send(signed_transfer_tx)
     snowflake.send(create_tx)
     assert snowflake.send(None) == [create_tx, signed_transfer_tx]
+
+
+@pytest.mark.bdb
+@pytest.mark.genesis
+def test_duplicate_genesis_transaction(b, genesis_block, genesis_tx):
+    # Try to create a duplicate GENESIS transaction
+    # Expect None as it will be rejected during validation
+
+    from bigchaindb.pipelines import block
+    block_maker = block.BlockPipeline()
+    assert block_maker.validate_tx(genesis_tx.to_dict()) is None

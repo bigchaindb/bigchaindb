@@ -23,7 +23,6 @@ BigchainDB is a scalable blockchain database. [The whitepaper](https://www.bigch
 * [Roadmap](https://github.com/bigchaindb/org/blob/master/ROADMAP.md)
 * [Blog](https://medium.com/the-bigchaindb-blog)
 * [Twitter](https://twitter.com/BigchainDB)
-* [Google Group](https://groups.google.com/forum/#!forum/bigchaindb)
 
 ## Links for Developers
 

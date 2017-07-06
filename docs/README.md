@@ -1,4 +1,5 @@
-[Documentation on ReadTheDocs](http://bigchaindb.readthedocs.org/)
+- [Documentation on ReadTheDocs](http://bigchaindb.readthedocs.org/)
+- [BigchainDB Upgrade Guides](upgrade-guides/)
 
 # The BigchainDB Documentation Strategy
 

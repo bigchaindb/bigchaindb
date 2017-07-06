@@ -175,3 +175,30 @@ def transfer_utx(user_output, user2_output, utx):
 @pytest.fixture
 def transfer_tx(transfer_utx, user_priv):
     return transfer_utx.sign([user_priv])
+
+
+@pytest.fixture
+def dummy_transaction():
+    return {
+        'asset': {'data': None},
+        'id': 64 * 'a',
+        'inputs': [{
+            'fulfillment': 'dummy',
+            'fulfills': None,
+            'owners_before': [58 * 'a'],
+        }],
+        'metadata': None,
+        'operation': 'CREATE',
+        'outputs': [{
+            'amount': '1',
+            'condition': {
+                'details': {
+                    'public_key': 58 * 'b',
+                    'type': 'ed25519-sha-256'
+                },
+                'uri': 'dummy',
+            },
+            'public_keys': [58 * 'b']
+        }],
+        'version': '1.0'
+    }

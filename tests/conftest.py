@@ -489,3 +489,38 @@ def mocked_setup_sub_logger(mocker):
 def certs_dir():
     cwd = os.environ.get('TRAVIS_BUILD_DIR', os.getcwd())
     return cwd + '/tests/backend/mongodb-ssl/certs'
+
+
+@pytest.fixture
+def wsserver_config():
+    from bigchaindb import config
+    return config['wsserver']
+
+
+@pytest.fixture
+def wsserver_scheme(wsserver_config):
+    return wsserver_config['scheme']
+
+
+@pytest.fixture
+def wsserver_host(wsserver_config):
+    return wsserver_config['host']
+
+
+@pytest.fixture
+def wsserver_port(wsserver_config):
+    return wsserver_config['port']
+
+
+@pytest.fixture
+def wsserver_base_url(wsserver_scheme, wsserver_host, wsserver_port):
+    return '{}://{}:{}'.format(wsserver_scheme, wsserver_host, wsserver_port)
+
+
+@pytest.fixture
+def genesis_tx(b, user_pk):
+    from bigchaindb.models import Transaction
+    tx = Transaction.create([b.me], [([user_pk], 1)])
+    tx.operation = Transaction.GENESIS
+    genesis_tx = tx.sign([b.me_private])
+    return genesis_tx
