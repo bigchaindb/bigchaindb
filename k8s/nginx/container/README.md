@@ -11,11 +11,6 @@
    global connections and applies cluster level entry policy.
 
 ### Implementation
-*  For MongoDB cluster communication, we will use nginx with an environment
-   variable specifying a ":" separated list of IPs in the whitelist. This list
-   contains the IPs of exising instances in the MongoDB replica set so as to
-   allow connections from the whitelist and avoid a DDoS.
-
 *  For BigchainDB connections, nginx needs to have rules to throttle
    connections that are using resources over a threshold.
 
@@ -42,7 +37,6 @@ docker run \
     --env "BIGCHAINDB_BACKEND_PORT=<port where BigchainDB is listening for connections>" \
     --env "BIGCHAINDB_WS_BACKEND_PORT=<port where BigchainDB is listening for websocket connections>" \
     --env "BIGCHAINDB_WS_FRONTEND_PORT=<port where nginx listens for BigchainDB WebSocket connections>" \
-    --env "MONGODB_WHITELIST=<a ':' separated list of IPs that can connect to MongoDB>" \
     --env "DNS_SERVER=<ip of the dns server>" \
     --name=ngx \
     --publish=<port where nginx listens for MongoDB connections as specified above>:<correcponding host port> \
@@ -62,7 +56,6 @@ docker run \
   --env="BIGCHAINDB_BACKEND_PORT=9984" \
   --env="BIGCHAINDB_WS_FRONTEND_PORT=81" \
   --env="BIGCHAINDB_WS_BACKEND_PORT=9985" \
-  --env="MONGODB_WHITELIST=192.168.0.0/16:10.0.2.0/24" \
   --env="DNS_SERVER=127.0.0.1" \
   --name=ngx \
   --publish=80:80 \

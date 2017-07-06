@@ -113,12 +113,6 @@ stream {
     preread_timeout 30s;
     tcp_nodelay on;
     
-    # whitelist
-    #MONGODB_WHITELIST
-    allow all;
-    # deny access to everyone else
-    deny all;
-    
     # allow 16 connections from the same IP address
     limit_conn two 16;
     

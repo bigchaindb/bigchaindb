@@ -21,15 +21,6 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: mongodb-whitelist
-  namespace: default
-data:
-  # We only support "all"" currently
-  allowed-hosts: "all"
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
   name: bdb-config
   namespace: default
 data:

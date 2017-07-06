@@ -19,7 +19,7 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
       - name: nginx-3scale
-        image: bigchaindb/nginx_3scale:1.5
+        image: bigchaindb/nginx_3scale:1.6
         imagePullPolicy: Always
         env:
         - name: MONGODB_FRONTEND_PORT
@@ -35,11 +35,6 @@ spec:
           value: bdb-instance-0.default.svc.cluster.local
         - name: BIGCHAINDB_BACKEND_PORT
           value: "9984"
-        - name: MONGODB_WHITELIST
-          valueFrom:
-            configMapKeyRef:
-              name: mongodb-whitelist
-              key: allowed-hosts
         - name: DNS_SERVER
           value: "10.0.0.10"
         - name: NGINX_HEALTH_CHECK_PORT

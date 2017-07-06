@@ -9,7 +9,6 @@ bdb_backend_host=`printenv BIGCHAINDB_BACKEND_HOST`
 bdb_backend_port=`printenv BIGCHAINDB_BACKEND_PORT`
 bdb_ws_frontend_port=`printenv BIGCHAINDB_WS_FRONTEND_PORT`
 bdb_ws_backend_port=`printenv BIGCHAINDB_WS_BACKEND_PORT`
-mongo_whitelist=`printenv MONGODB_WHITELIST`
 dns_server=`printenv DNS_SERVER`
 
 # sanity checks
@@ -38,15 +37,6 @@ sed -i "s|BIGCHAINDB_BACKEND_PORT|${bdb_backend_port}|g" $NGINX_CONF_FILE
 sed -i "s|BIGCHAINDB_WS_FRONTEND_PORT|${bdb_ws_frontend_port}|g" $NGINX_CONF_FILE
 sed -i "s|BIGCHAINDB_WS_BACKEND_PORT|${bdb_ws_backend_port}|g" $NGINX_CONF_FILE
 sed -i "s|DNS_SERVER|${dns_server}|g" $NGINX_CONF_FILE
-
-# populate the whitelist in the conf file as per MONGODB_WHITELIST env var
-hosts=$(echo ${mongo_whitelist} | tr ":" "\n")
-for host in $hosts; do
-  sed -i "s|MONGODB_WHITELIST|allow ${host};\n    MONGODB_WHITELIST|g" $NGINX_CONF_FILE
-done
-
-# remove the MONGODB_WHITELIST marker string from template
-sed -i "s|MONGODB_WHITELIST||g" $NGINX_CONF_FILE
 
 # start nginx
 echo "INFO: starting nginx..."

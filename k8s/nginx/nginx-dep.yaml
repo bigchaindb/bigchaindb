@@ -40,11 +40,6 @@ spec:
           value: "9985"
         - name: DNS_SERVER
           value: "10.0.0.10"
-        - name: MONGODB_WHITELIST
-          valueFrom:
-            configMapKeyRef:
-              name: mongodb-whitelist
-              key: allowed-hosts
         ports:
         - containerPort: 27017
           hostPort: 27017
