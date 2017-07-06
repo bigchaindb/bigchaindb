@@ -15,12 +15,12 @@
    connections that are using resources over a threshold.
 
 
-### Step 1: Build the Latest Container
+### Step 1: Build and Push the Latest Container
+Use the `docker_build_and_push.bash` script to build the latest docker image
+and upload it to Docker Hub.
+Ensure that the image tag is updated to a new version number to properly
+reflect any changes made to the container.
 
-Run `docker build -t bigchaindb/nginx:1.0 .` from this folder.
-
-Optional: Upload container to Docker Hub:
-`docker push bigchaindb/nginx:1.0`
 
 ### Step 2: Run the Container
 

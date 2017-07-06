@@ -2,7 +2,7 @@ worker_processes 2;
 daemon off;
 user nobody nogroup;
 pid /tmp/nginx.pid;
-error_log /etc/nginx/nginx.error.log;
+error_log /dev/stderr;
 
 events {
   worker_connections 256;
@@ -12,7 +12,7 @@ events {
 
 http {
   server_names_hash_bucket_size 128;
-  access_log /etc/nginx/nginx.access.log combined buffer=16k flush=5s;
+  access_log /dev/stdout combined buffer=16k flush=5s;
 
   # allow 10 req/sec from the same IP address, and store the counters in a
   # `zone` or shared memory location tagged as 'one'.
@@ -53,34 +53,12 @@ http {
       proxy_set_header Host $http_host;
       proxy_redirect off;
 
-      # TODO proxy_set_header X-Forwarded-Proto https;
-
       # limit requests from the same client, allow `burst` to 20 r/s,
       # `nodelay` or drop connection immediately in case it exceeds this
       # threshold.
       limit_req zone=one burst=20 nodelay;
 
       proxy_pass http://$bdb_backend:BIGCHAINDB_BACKEND_PORT;
-    }
-  }
-
-  server {
-    listen BIGCHAINDB_WS_FRONTEND_PORT;
-    underscores_in_headers on;
-
-    # keepalive connection settings
-    keepalive_timeout 20s;
-
-    # `slowloris` attack mitigation settings
-    client_body_timeout 10s;
-    client_header_timeout 10s;
-
-    location /api/v1/streams/ {
-      proxy_read_timeout 300s;
-      proxy_pass http://$bdb_backend:BIGCHAINDB_WS_BACKEND_PORT;
-      proxy_http_version 1.1;
-      proxy_set_header Upgrade $http_upgrade;
-      proxy_set_header Connection "upgrade";
     }
   }
 }
@@ -93,7 +71,7 @@ stream {
                      '$bytes_received "$upstream_addr" "$upstream_bytes_sent" '
                      '"$upstream_bytes_received" "$upstream_connect_time" ';
 
-  access_log /etc/nginx/nginx.stream.access.log mdb_log buffer=16k flush=5s;
+  access_log /dev/stdout mdb_log buffer=16k flush=5s;
 
   # define a zone 'two' of size 10 megabytes to store the counters
   # that hold number of TCP connections from a specific IP address

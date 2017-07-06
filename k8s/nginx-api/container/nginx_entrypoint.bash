@@ -7,8 +7,6 @@ mongo_backend_port=`printenv MONGODB_BACKEND_PORT`
 bdb_frontend_port=`printenv BIGCHAINDB_FRONTEND_PORT`
 bdb_backend_host=`printenv BIGCHAINDB_BACKEND_HOST`
 bdb_backend_port=`printenv BIGCHAINDB_BACKEND_PORT`
-bdb_ws_frontend_port=`printenv BIGCHAINDB_WS_FRONTEND_PORT`
-bdb_ws_backend_port=`printenv BIGCHAINDB_WS_BACKEND_PORT`
 dns_server=`printenv DNS_SERVER`
 
 # sanity checks
@@ -18,8 +16,6 @@ if [[ -z "${mongo_frontend_port}" || \
     -z "${bdb_frontend_port}" || \
     -z "${bdb_backend_host}" || \
     -z "${bdb_backend_port}" || \
-    -z "${bdb_ws_backend_port}" || \
-    -z "${bdb_ws_frontend_port}" || \
     -z "${dns_server}" ]] ; then
   echo "Invalid environment settings detected. Exiting!"
   exit 1
@@ -34,8 +30,6 @@ sed -i "s|MONGODB_BACKEND_PORT|${mongo_backend_port}|g" $NGINX_CONF_FILE
 sed -i "s|BIGCHAINDB_FRONTEND_PORT|${bdb_frontend_port}|g" $NGINX_CONF_FILE
 sed -i "s|BIGCHAINDB_BACKEND_HOST|${bdb_backend_host}|g" $NGINX_CONF_FILE
 sed -i "s|BIGCHAINDB_BACKEND_PORT|${bdb_backend_port}|g" $NGINX_CONF_FILE
-sed -i "s|BIGCHAINDB_WS_FRONTEND_PORT|${bdb_ws_frontend_port}|g" $NGINX_CONF_FILE
-sed -i "s|BIGCHAINDB_WS_BACKEND_PORT|${bdb_ws_backend_port}|g" $NGINX_CONF_FILE
 sed -i "s|DNS_SERVER|${dns_server}|g" $NGINX_CONF_FILE
 
 # start nginx
