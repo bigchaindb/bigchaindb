@@ -229,14 +229,16 @@ class Bigchain(object):
 
         response, tx_status = None, None
 
-        validity = self.get_blocks_status_containing_tx(txid)
+        blocks_validity_status = self.get_blocks_status_containing_tx(txid)
         check_backlog = True
 
-        if validity:
+        if blocks_validity_status:
             # Disregard invalid blocks, and return if there are no valid or undecided blocks
-            validity = {_id: status for _id, status in validity.items()
-                        if status != Bigchain.BLOCK_INVALID}
-            if validity:
+            blocks_validity_status = {
+                _id: status for _id, status in blocks_validity_status.items()
+                if status != Bigchain.BLOCK_INVALID
+            }
+            if blocks_validity_status:
 
                 # The transaction _was_ found in an undecided or valid block,
                 # so there's no need to look in the backlog table
@@ -246,8 +248,8 @@ class Bigchain(object):
                 # If the transaction is in a valid or any undecided block, return it. Does not check
                 # if transactions in undecided blocks are consistent, but selects the valid block
                 # before undecided ones
-                for target_block_id in validity:
-                    if validity[target_block_id] == Bigchain.BLOCK_VALID:
+                for target_block_id in blocks_validity_status:
+                    if blocks_validity_status[target_block_id] == Bigchain.BLOCK_VALID:
                         tx_status = self.TX_VALID
                         break
 
@@ -305,20 +307,24 @@ class Bigchain(object):
         blocks = backend.query.get_blocks_status_from_transaction(self.connection, txid)
         if blocks:
             # Determine the election status of each block
-            validity = {block['id']: self.block_election_status(block)
-                        for block in blocks}
+            blocks_validity_status = {
+                block['id']: self.block_election_status(block)
+                for block in blocks
+            }
 
             # NOTE: If there are multiple valid blocks with this transaction,
             # something has gone wrong
-            if list(validity.values()).count(Bigchain.BLOCK_VALID) > 1:
-                block_ids = str([block for block in validity
-                                 if validity[block] == Bigchain.BLOCK_VALID])
+            if list(blocks_validity_status.values()).count(Bigchain.BLOCK_VALID) > 1:
+                block_ids = str([
+                    block for block in blocks_validity_status
+                    if blocks_validity_status[block] == Bigchain.BLOCK_VALID
+                ])
                 raise core_exceptions.CriticalDoubleInclusion(
                     'Transaction {tx} is present in '
                     'multiple valid blocks: {block_ids}'
                     .format(tx=txid, block_ids=block_ids))
 
-            return validity
+            return blocks_validity_status
 
         else:
             return None
