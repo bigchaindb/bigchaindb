@@ -5,7 +5,7 @@ BigchainDB Server has some OS-level dependencies that must be installed.
 On Ubuntu 16.04, we found that the following was enough:
 ```text
 sudo apt-get update
-sudo apt-get install g++ python3-dev libffi-dev
+sudo apt-get install g++ python3-dev libffi-dev build-essential libssl-dev
 ```
 
 On Fedora 23–25, we found that the following was enough:
