@@ -6,34 +6,53 @@ A. Install MongoDB as the database backend. (There are other options but you can
 
 [Install MongoDB Server 3.4+](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/)
 
-B. Run MongoDB. Open a Terminal and run the command:
+B. To run MongoDB with default database path i.e. /data/db, open a Terminal and run the following command:
+```text
+$ sudo mkdir -p /data/db
+```
+
+C. Assign rwx(read/write/execute) permissions to the user for default database directory:
+```text
+$ sudo chmod -R 700 /data/db
+```
+
+D. Run MongoDB:
 ```text
 $ sudo mongod --replSet=bigchain-rs
 ```
 
-C. Ubuntu 16.04 already has Python 3.5, so you don't need to install it, but you do need to install some other things:
+E. Ubuntu 16.04 already has Python 3.5, so you don't need to install it, but you do need to install some other things:
 ```text
 $ sudo apt-get update
-$ sudo apt-get install g++ python3-dev libffi-dev
+$ sudo apt-get install g++ python3-dev libffi-dev build-essential libssl-dev
 ```
 
-D. Get the latest version of pip and setuptools:
+F. Get the latest version of pip and setuptools:
 ```text
 $ sudo apt-get install python3-pip
 $ sudo pip3 install --upgrade pip setuptools
 ```
 
-E. Install the `bigchaindb` Python package from PyPI:
+G. Install the `bigchaindb` Python package from PyPI:
 ```text
 $ sudo pip3 install bigchaindb
 ```
 
-F. Configure BigchainDB Server:
+In case you are having problems with installation or package/module versioning, please upgrade the relevant packages on your host by running one the following commands:
+```text
+$ sudo pip3 install [packageName]==[packageVersion]
+
+OR
+
+$ sudo pip3 install [packageName] --upgrade
+```
+
+H. Configure BigchainDB Server:
 ```text
 $ bigchaindb -y configure mongodb
 ```
 
-G. Run BigchainDB Server:
+I. Run BigchainDB Server:
 ```text
 $ bigchaindb start
 ```
