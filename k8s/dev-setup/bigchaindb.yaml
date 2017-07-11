@@ -1,3 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: bdb
+  namespace: default
+  labels:
+    name: bdb
+spec:
+  selector:
+    app: bdb-dep
+  ports:
+  - port: 9984
+    targetPort: 9984
+    name: bdb-api-port
+    protocol: TCP
+  - port: 9985
+    targetPort: 9985
+    name: bdb-ws-port
+    protocol: TCP
+  type: ClusterIP
+  clusterIP: None
+---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:

@@ -1,24 +1,43 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ngx-ws
+  namespace: default
+  labels:
+    name: ngx-ws
+  annotations:
+    service.beta.kubernetes.io/external-traffic: OnlyLocal
+spec:
+  selector:
+    app: ngx-ws-dep
+  ports:
+  - port: 81
+    targetPort: 81
+    name: bdb-events-port
+    protocol: TCP
+  type: LoadBalancer
+---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: ngx-events-dep
+  name: ngx-ws-dep
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: ngx-events-dep
+        app: ngx-ws-dep
     spec:
       terminationGracePeriodSeconds: 10
       containers:
-      - name: nginx-events
+      - name: nginx-ws
         image: bigchaindb/nginx_ws:1.0
         imagePullPolicy: Always
         env:
         - name: BIGCHAINDB_BACKEND_HOST
           value: bdb.default.svc.cluster.local
         - name: BIGCHAINDB_WS_FRONTEND_PORT
-          value: $(NGX_EVENTS_SERVICE_PORT_BDB_EVENTS_PORT)
+          value: "81"
         - name: BIGCHAINDB_WS_BACKEND_PORT
           value: "9985"
         - name: DNS_SERVER
@@ -26,7 +45,7 @@ spec:
         ports:
         - containerPort: 81
           hostPort: 81
-          name: bdb-events-port-dep
+          name: bdb-ws-port
           protocol: TCP
         resources:
           limits:
