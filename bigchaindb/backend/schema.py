@@ -19,7 +19,7 @@ from bigchaindb.backend.connection import connect
 
 logger = logging.getLogger(__name__)
 
-TABLES = ('bigchain', 'backlog', 'votes')
+TABLES = ('bigchain', 'backlog', 'votes', 'assets')
 
 
 @singledispatch
