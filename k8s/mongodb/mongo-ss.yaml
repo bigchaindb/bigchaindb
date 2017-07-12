@@ -72,7 +72,7 @@ spec:
         resources:
           limits:
             cpu: 200m
-            memory: 768Mi
+            memory: 3.5G
         livenessProbe:
           tcpSocket:
             port: mdb-port
