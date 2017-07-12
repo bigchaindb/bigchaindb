@@ -1,0 +1,100 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ngx-https-instance-0-dep
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ngx-https-instance-0-dep
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: nginx-https
+        image: bigchaindb/nginx_https:1.0
+        imagePullPolicy: Always
+        env:
+        - name: CLUSTER_FRONTEND_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: cluster-frontend-port
+        - name: HEALTH_CHECK_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: cluster-health-check-port
+        - name: CLUSTER_FQDN
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: cluster-fqdn
+        - name: DNS_SERVER
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: cluster-dns-server-ip
+        - name: MONGODB_FRONTEND_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: mongodb-frontend-port
+        - name: MONGODB_BACKEND_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: ngx-mdb-instance-name
+        - name: MONGODB_BACKEND_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: mongodb-backend-port
+        - name: OPENRESTY_BACKEND_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: openresty-backend-port
+        - name: OPENRESTY_BACKEND_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: openresty-backend-host
+        - name: THREESCALE_API_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: threescale-api-port
+        - name: BIGCHAINDB_BACKEND_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: ngx-bdb-instance-name
+        - name: BIGCHAINDB_API_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: bigchaindb-api-port
+        - name: BIGCHAINDB_WS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: bigchaindb-ws-port
+        ports:
+        # return a pretty error message on port 80, since we are expecting
+        # HTTPS traffic.
+        - containerPort: 80
+          protocol: TCP
+        - containerPort: "<mongodb-frontend-port from ConfigMap>"
+          protocol: TCP
+        - containerPort: "<cluster-health-check-port from ConfigMap>"
+          protocol: TCP
+        - containerPort: "<cluster-frontend-port from ConfigMap>"
+          protocol: TCP
+        - containerPort: "<threescale-api-port from ConfigMap>"
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 200m
+            memory: 768Mi
+      restartPolicy: Always
