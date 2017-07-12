@@ -128,7 +128,7 @@ setup(
         ],
     },
     install_requires=install_requires,
-    setup_requires=['pytest-runner', 'cryptoconditions'],
+    setup_requires=['pytest-runner'],
     tests_require=tests_require,
     extras_require={
         'test': tests_require,
