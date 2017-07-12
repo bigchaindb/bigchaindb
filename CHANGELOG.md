@@ -15,6 +15,18 @@ For reference, the possible headings are:
 * **External Contributors** to list contributors outside of BigchainDB GmbH.
 * **Notes**
 
+
+## [1.0.1] - 2017-07-12
+Tag name: v1.0.1
+
+### Fixed
+* Mistakenly changed MongoDB version via PR [#1641](https://github.com/bigchaindb/bigchaindb/pull/1641).
+* Quickstart guide via PR [#1648](https://github.com/bigchaindb/bigchaindb/pull/1648).
+* Issue [#1627](https://github.com/bigchaindb/bigchaindb/issues/1627).
+* Issue [#1645](https://github.com/bigchaindb/bigchaindb/issues/1645).
+* Issue [#1657](https://github.com/bigchaindb/bigchaindb/issues/1657).
+
+
 ## [1.0.0] - 2017-07-05
 Tag name: v1.0.0
 
