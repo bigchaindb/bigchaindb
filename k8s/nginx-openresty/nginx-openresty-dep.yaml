@@ -1,0 +1,69 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ngx-openresty-instance-0-dep
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ngx-openresty-instance-0-dep
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: nginx-openresty
+        image: bigchaindb/nginx_3scale:2.0
+        imagePullPolicy: Always
+        env:
+        - name: DNS_SERVER
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: cluster-dns-server-ip
+        - name: OPENRESTY_FRONTEND_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: openresty-backend-port
+        - name: LOCAL_UPSTREAM_API_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: local-upstream-api-port
+        - name: BIGCHAINDB_BACKEND_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: ngx-bdb-instance-name
+        - name: BIGCHAINDB_API_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: bigchaindb-api-port
+        ports:
+        - containerPort: "<openresty-backend-port from ConfigMap>"
+          protocol: TCP
+          name: openresty-port
+        volumeMounts:
+        - name: threescale-credentials
+          mountPath: /usr/local/openresty/nginx/conf/threescale
+          readOnly: true
+        livenessProbe:
+          httpGet:
+            path: /
+            port: openresty-port
+          initialDelaySeconds: 15
+          periodSeconds: 15
+          successThreshold: 3
+          failureThreshold: 3
+          timeoutSeconds: 10
+        resources:
+          limits:
+            cpu: 200m
+            memory: 768Mi
+      restartPolicy: Always
+      volumes:
+      - name: threescale-credentials
+        secret:
+          secretName: threescale-credentials
+          defaultMode: 0400

@@ -44,8 +44,15 @@ data:
   ngx-openresty-instance-name: "<name of the openresty instance>.default.svc.cluster.local"
 
   # openresty-backend-port is the port number on which Openresty is listening
-  # for requests.
+  # for requests. This is used by the NGINX instance to forward the requests to
+  # the right port, and by Openresty instance to bind to the correct port to
+  # receive requests from NGINX instance.
   openresty-backend-port: "80"
+
+  # local-upstream-api-port can be any free port in the Openresty instance.
+  # Ignore this config if you are not using 3scale in your deployment.
+  # We hardcode the unused port '9999' here.
+  local-upstream-api-port: "9999"
 
   # mdb-instance-name is the name of the MongoDB instance in this cluster.
   mdb-instance-name: "<name of the mdb instance>"
@@ -73,13 +80,10 @@ data:
   # for HTTP requests.
   bigchaindb-api-port: "9984"
 
-  # ibigchaindb-ws-port is the port number on which BigchainDB is listening
+  # bigchaindb-ws-port is the port number on which BigchainDB is listening
   # for Websocket requests.
   bigchaindb-ws-port: "9985"
 
-  # The upstream-api-port can be set to any port other than 9984, 9985, 443,
-  # 8888 and 27017. We usually use port '9999', which is 'OTk5OQo=' in base 64.
-  #upstream-api-port: "OTk5OQo=" TODO Remove this? Used by Openresty?
 ---
 apiVersion: v1
 kind: ConfigMap
