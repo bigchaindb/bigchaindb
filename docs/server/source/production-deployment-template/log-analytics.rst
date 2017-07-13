@@ -1,32 +1,54 @@
 Log Analytics on Azure
 ======================
 
-This section documents how to create and configure a Log Analytics workspace on
-Azure, for a Kubernetes-based deployment.
-The documented approach is based on an integration of Microsoft's Operations
-Management Suite (OMS) with a Kubernetes-based Azure Container Service cluster.
+This page describes how we use Microsoft Operations Management Suite (OMS)
+to collect all logs from a Kubernetes cluster,
+to search those logs,
+and to set up email alerts based on log messages.
+The :ref:`oms-k8s-references` section (below) contains links
+to more detailed documentation.
 
-The :ref:`oms-k8s-references` section (below) contains links to more detailed documentation on
-Azure, and Kubernetes.
+There are two steps:
 
-There are three main steps involved:
+1. Setup: Create a log analytics OMS workspace
+   and a Containers solution under that workspace.
+2. Deploy OMS agents to your Kubernetes cluster.
 
-1. Create a workspace (``LogAnalyticsOMS``).
-2. Create a ``ContainersOMS`` solution under the workspace.
-3. Deploy the OMS agent(s).
 
-Steps 1 and 2 rely on `Azure Resource Manager templates`_ and can be done with
-one template so we'll cover them together. Step 3 relies on a
-`Kubernetes DaemonSet`_ and will be covered separately.
+Step 1: Setup
+-------------
 
-Minimum Requirements
---------------------
-This document assumes that you have already deployed a Kubernetes cluster, and
-that you have the Kubernetes command line interface ``kubectl`` installed.
+Step 1 can be done the web browser way or the command-line way.
 
-Creating a Workspace and Adding a Containers Solution
------------------------------------------------------
-For the sake of this document and example, we'll assume an existing resource
+
+The Web Browser Way
+~~~~~~~~~~~~~~~~~~~
+
+To create a new log analytics OMS workspace:
+
+1. Go to the Azure Portal in your web browser.
+2. Click on **More services >** in the lower left corner of the Azure Portal.
+3. Type "log analytics" or similar.
+4. Select **Log Analytics** from the list of options.
+5. Click on **+ Add** to add a new log analytics OMS workspace.
+6. Give answers to the questions. You can call the OMS workspace anything,
+   but use the same resource group and location as your Kubernetes cluster.
+   The free option will suffice, but of course you can also use a paid one.
+
+To add a "Containers solution" to that new workspace:
+
+1. In Azure Portal, in the Log Analytics section, click the name of the new workspace
+2. Click **OMS Workspace**.
+3. Click **OMS Portal**. It should launch the OMS Portal in a new tab.
+4. Click the **Solutions Gallery** tile.
+5. Click the **Containers** tile.
+6. Click **Add**.
+
+
+The Command-Line Way
+~~~~~~~~~~~~~~~~~~~~
+
+We'll assume your Kubernetes cluster has a resource
 group named:
 
 * ``resource_group``
@@ -119,12 +141,14 @@ An example of the associated parameter file (``--parameters``):
         }
     }
 
-Deploy the OMS Agents
----------------------
+
+Step 2: Deploy the OMS Agents
+-----------------------------
+
 To deploy an OMS agent, two important pieces of information are needed:
 
-* workspace id
-* workspace key
+1. workspace id
+2. workspace key
 
 You can obtain the workspace id using:
 
@@ -203,8 +227,7 @@ or the OMS Portal, but at the time of writing,
 there was more functionality in the OMS Portal
 (e.g. the ability to create an Alert based on a search).
 
-There are instructions to get to the OMS Portal
-in the section titled :ref:`Deploy the OMS Agents` above.
+There are instructions to get to the OMS Portal above.
 Once you're in the OMS Portal, click on **Log Search**
 and enter a query.
 Here are some example queries:
