@@ -1,7 +1,7 @@
 # Frontend API server that:
 # 1. Forwards BDB HTTP & WS requests to BDB backend.
 # 2. Forwards MDB TCP connections to MDB backend.
-# 3. Does health check with LB.
+# 3. Does health check with LB (optional).
 
 worker_processes 2;
 daemon off;
@@ -103,14 +103,14 @@ http {
     }
   }
 
-  # Frontend server for the load balancer to respond to health checks.
-  server {
-    listen HEALTH_CHECK_PORT;
-
-    location = /health {
-      return 200;
-    }
-  }
+#  # Frontend server for the load balancer to respond to health checks.
+#  server {
+#    listen HEALTH_CHECK_PORT;
+#
+#    location = /health {
+#      return 200;
+#    }
+#  }
 }
 
 # NGINX stream block for TCP and UDP proxies. Used to proxy MDB TCP

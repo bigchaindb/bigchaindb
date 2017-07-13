@@ -31,8 +31,7 @@ if [[ -z "${cluster_frontend_port}" || \
       -z "${bdb_api_port}" || \
       -z "${bdb_ws_port}" || \
       -z "${dns_server}" || \
-      -z "${health_check_port}" || \
-      -z "${cluster_fqdn}" ]]; then
+      -z "${health_check_port}" ]]; then
   echo "Invalid environment settings detected. Exiting!"
   exit 1
 fi
@@ -40,7 +39,6 @@ fi
 NGINX_CONF_FILE=/etc/nginx/nginx.conf
 
 # configure the nginx.conf file with env variables
-sed -i "s|CLUSTER_FQDN|${cluster_fqdn}|g" ${NGINX_CONF_FILE}
 sed -i "s|CLUSTER_FRONTEND_PORT|${cluster_frontend_port}|g" ${NGINX_CONF_FILE}
 sed -i "s|MONGODB_FRONTEND_PORT|${mongo_frontend_port}|g" ${NGINX_CONF_FILE}
 sed -i "s|MONGODB_BACKEND_HOST|${mongo_backend_host}|g" ${NGINX_CONF_FILE}
