@@ -25,11 +25,6 @@ spec:
             configMapKeyRef:
               name: vars
               key: openresty-backend-port
-        - name: LOCAL_UPSTREAM_API_PORT
-          valueFrom:
-            configMapKeyRef:
-              name: vars
-              key: local-upstream-api-port
         - name: BIGCHAINDB_BACKEND_HOST
           valueFrom:
             configMapKeyRef:

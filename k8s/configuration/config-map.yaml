@@ -49,11 +49,6 @@ data:
   # receive requests from NGINX instance.
   openresty-backend-port: "80"
 
-  # local-upstream-api-port can be any free port in the Openresty instance.
-  # Ignore this config if you are not using 3scale in your deployment.
-  # We hardcode the unused port '9999' here.
-  local-upstream-api-port: "9999"
-
   # mdb-instance-name is the name of the MongoDB instance in this cluster.
   mdb-instance-name: "<name of the mdb instance>"
 
