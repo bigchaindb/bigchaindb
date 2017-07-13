@@ -20,7 +20,7 @@ mongo_backend_port=`printenv MONGODB_BACKEND_PORT`
 # Openresty vars
 openresty_backend_host=`printenv OPENRESTY_BACKEND_HOST`
 openresty_backend_port=`printenv OPENRESTY_BACKEND_PORT`
-threescale_api_port=`THREESCALE_API_PORT`
+threescale_api_port=`printenv THREESCALE_API_PORT`
 
 
 # BigchainDB vars

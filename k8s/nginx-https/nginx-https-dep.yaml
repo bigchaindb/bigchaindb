@@ -89,12 +89,30 @@ spec:
           protocol: TCP
         - containerPort: "<cluster-health-check-port from ConfigMap>"
           protocol: TCP
+          name: ngx-port
         - containerPort: "<cluster-frontend-port from ConfigMap>"
           protocol: TCP
         - containerPort: "<threescale-api-port from ConfigMap>"
           protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: ngx-port
+          initialDelaySeconds: 15
+          periodSeconds: 15
+          failureThreshold: 3
+          timeoutSeconds: 10
         resources:
           limits:
             cpu: 200m
             memory: 768Mi
+        volumeMounts:
+        - name: https-certs
+          mountPath: /etc/nginx/ssl/
+          readOnly: true
       restartPolicy: Always
+      volumes:
+      - name: https-certs
+        secret:
+          secretName: https-certs
+          defaultMode: 0400

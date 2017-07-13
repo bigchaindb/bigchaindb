@@ -21,10 +21,6 @@ spec:
     targetPort: 80
     name: public-insecure-cluster-port
     protocol: TCP
-  - port: "<cluster-health-check-port from ConfigMap>"
-    targetPort: "<cluster-health-check-port from ConfigMap>"
-    name: public-health-check-port
-    protocol: TCP
   - port: "<mongodb-frontend-port from ConfigMap>"
     targetPort: "<mongodb-frontend-port from ConfigMap>"
     name: public-mdb-port

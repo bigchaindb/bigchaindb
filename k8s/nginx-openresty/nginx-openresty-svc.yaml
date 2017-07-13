@@ -18,4 +18,5 @@ spec:
     targetPort: "<openresty-backend-port from ConfigMap>"
     name: openresty-svc-port
     protocol: TCP
-  type: LoadBalancer
+  type: ClusterIP
+  clusterIP: None

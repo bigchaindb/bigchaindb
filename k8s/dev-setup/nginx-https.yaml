@@ -1,54 +1,127 @@
 apiVersion: v1
+kind: Secret
+metadata:
+  name: https-certs
+  namespace: default
+type: Opaque
+data:
+  # Base64-encoded HTTPS private key
+  cert.key: "<b64 encoded HTTPS private key>"
+  # Base64-encoded HTTPS certificate chain
+  # starting with your primary SSL cert (e.g. your_domain.crt)
+  # followed by all intermediate certs.
+  # If cert if from DigiCert, download "Best format for nginx".
+  cert.pem: "<b64 encoded HTTPS certificate chain"
+  # Base64-encoded HTTPS private key
+---
+apiVersion: v1
 kind: Service
 metadata:
-  name: ngx-ws
+  name: ngx-https
   namespace: default
   labels:
-    name: ngx-ws
+    name: ngx-https
   annotations:
     service.beta.kubernetes.io/external-traffic: OnlyLocal
 spec:
   selector:
-    app: ngx-ws-dep
+    app: ngx-https-dep
   ports:
-  - port: 81
-    targetPort: 81
-    name: bdb-events-port
+  - port: 443
+    targetPort: 443
+    name: public-secure-cluster-port
+    protocol: TCP
+  - port: 80
+    targetPort: 80
+    name: public-insecure-cluster-port
+    protocol: TCP
+  - port: 27017
+    targetPort: 27017
+    name: public-mdb-port
+    protocol: TCP
+  - port: 44433
+    targetPort: 44433
+    name: public-threescale-port
     protocol: TCP
   type: LoadBalancer
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: ngx-ws-dep
+  name: ngx-https-dep
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: ngx-ws-dep
+        app: ngx-https-dep
     spec:
       terminationGracePeriodSeconds: 10
       containers:
-      - name: nginx-ws
-        image: bigchaindb/nginx_ws:1.0
+      - name: nginx-https
+        image: bigchaindb/nginx_https:1.0
         imagePullPolicy: Always
         env:
-        - name: BIGCHAINDB_BACKEND_HOST
-          value: bdb.default.svc.cluster.local
-        - name: BIGCHAINDB_WS_FRONTEND_PORT
-          value: "81"
-        - name: BIGCHAINDB_WS_BACKEND_PORT
-          value: "9985"
+        - name: CLUSTER_FRONTEND_PORT
+          value: "443"
+        - name: HEALTH_CHECK_PORT
+          value: "8888"
+        - name: CLUSTER_FQDN
+          value: "unfake.io"
         - name: DNS_SERVER
           value: "10.0.0.10"
+        - name: MONGODB_FRONTEND_PORT
+          value: "27017"
+        - name: MONGODB_BACKEND_HOST
+          value: "mdb.default.svc.cluster.local"
+        - name: MONGODB_BACKEND_PORT
+          value: "27017"
+        - name: OPENRESTY_BACKEND_PORT
+          value: "80"
+        - name: OPENRESTY_BACKEND_HOST
+          value: "openresty.default.svc.cluster.local"
+        - name: THREESCALE_API_PORT
+          value: "44433"
+        - name: BIGCHAINDB_BACKEND_HOST
+          value: "bdb.default.svc.cluster.local"
+        - name: BIGCHAINDB_API_PORT
+          value: "9984"
+        - name: BIGCHAINDB_WS_PORT
+          value: "9985"
         ports:
-        - containerPort: 81
-          hostPort: 81
-          name: bdb-ws-port
+        - containerPort: 80
+          protocol: TCP
+        - containerPort: 27017
+          protocol: TCP
+        - containerPort: 8888
+          protocol: TCP
+        - containerPort: 443
+          protocol: TCP
+        - containerPort: 44433
           protocol: TCP
         resources:
           limits:
             cpu: 200m
             memory: 768Mi
+        volumeMounts:
+        - name: https-certs
+          mountPath: /etc/nginx/ssl/
+          readOnly: true
+        resources:
+          limits:
+            cpu: 200m
+            memory: 768Mi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8888
+          initialDelaySeconds: 15
+          periodSeconds: 15
+          failureThreshold: 3
+          timeoutSeconds: 10
       restartPolicy: Always
+      volumes:
+      - name: https-certs
+        secret:
+          secretName: https-certs
+          defaultMode: 0400

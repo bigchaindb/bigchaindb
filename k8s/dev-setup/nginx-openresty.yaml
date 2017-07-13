@@ -1,13 +1,49 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: threescale-credentials
+  namespace: default
+type: Opaque
+data:
+    #  secret-token: "<b64 encoded 3scale secret-token>"
+    #  service-id: "<b64 encoded 3scale service-id>"
+    #  version-header: "<b64 encoded 3scale version-header>"
+    #  provider-key: "<b64 encoded 3scale provider-key>"
+  secret-token: d3VxUUc4NlVRdFJkaFBTN0V2RXcK
+  service-id: MjU1NTQxNzc0MTExNQo=
+  version-header: MjAxNy0wNC0yN1QxMzo0MTowNVoK
+  provider-key: ZmFjNWU5MDE0NDdlNDMzNjBiNGY2ZDlmNWJkNTY0NjQK
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: openresty
+  namespace: default
+  labels:
+    name: openresty
+  annotations:
+    service.beta.kubernetes.io/external-traffic: OnlyLocal
+spec:
+  selector:
+    app: openresty-dep
+  ports:
+  - port: 80
+    targetPort: 80
+    name: openresty-svc-port
+    protocol: TCP
+  type: ClusterIP
+  clusterIP: None
+---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: ngx-openresty-instance-0-dep
+  name: openresty-dep
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: ngx-openresty-instance-0-dep
+        app: openresty-dep
     spec:
       terminationGracePeriodSeconds: 10
       containers:
@@ -16,27 +52,15 @@ spec:
         imagePullPolicy: Always
         env:
         - name: DNS_SERVER
-          valueFrom:
-            configMapKeyRef:
-              name: vars
-              key: cluster-dns-server-ip
+          value: "10.0.0.10"
         - name: OPENRESTY_FRONTEND_PORT
-          valueFrom:
-            configMapKeyRef:
-              name: vars
-              key: openresty-backend-port
+          value: "80"
         - name: BIGCHAINDB_BACKEND_HOST
-          valueFrom:
-            configMapKeyRef:
-              name: vars
-              key: ngx-bdb-instance-name
+          value: "bdb.default.svc.cluster.local"
         - name: BIGCHAINDB_API_PORT
-          valueFrom:
-            configMapKeyRef:
-              name: vars
-              key: bigchaindb-api-port
+          value: "9984"
         ports:
-        - containerPort: "<openresty-backend-port from ConfigMap>"
+        - containerPort: 80
           protocol: TCP
           name: openresty-port
         volumeMounts:
@@ -49,7 +73,6 @@ spec:
             port: openresty-port
           initialDelaySeconds: 15
           periodSeconds: 15
-          successThreshold: 1
           failureThreshold: 3
           timeoutSeconds: 10
         resources:
