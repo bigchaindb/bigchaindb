@@ -47,55 +47,13 @@ An output has the following structure:
        "amount": "<Number of shares of the asset (an integer in a string)>"
    }
 
+The :ref:`page about conditions <Conditions>` explains the contents of a ``condition``.
+
 The list of ``public_keys`` is always the "owners" of the asset at the time the transaction completed, but before the next transaction started.
 See the reference on :ref:`outputs <Output>` for more description about the meaning of each field.
 
-Below is a high-level description of what goes into building a ``condition`` object.
-To construct an actual ``condition`` object, you can use one of the
-:ref:`BigchainDB drivers or transaction-builders <Drivers & Tools>`,
-or use a low-level crypto-conditions library as illustrated
-in the page about `Handcrafting Transactions <https://docs.bigchaindb.com/projects/py-driver/en/latest/handcraft.html>`_.
-
-
-Conditions
-----------
-
-At a high level, a condition is like a lock on an output.
-If can you satisfy the condition, you can unlock the output and transfer/spend it.
-BigchainDB Server v1.0 supports a subset of the ILP Crypto-Conditions
-(`version 02 of Crypto-Conditions <https://tools.ietf.org/html/draft-thomas-crypto-conditions-02>`_).
-
-The simplest supported condition is a simple signature condition.
-Such a condition could be stated as,
-"You can satisfy this condition
-if you send me a message and a cryptographic signature of that message,
-produced using the private key corresponding to this public key."
-The public key is put in the output.
-BigchainDB currently only supports ED25519 signatures.
-
-A more complex condition can be composed by using n simple signature conditions as inputs to an m-of-n threshold condition (a logic gate which outputs TRUE if and only if m or more inputs are TRUE). If there are n inputs to a threshold condition:
-
-* 1-of-n is the same as a logical OR of all the inputs
-* n-of-n is the same as a logical AND of all the inputs
-
-For example, one could create a condition requiring m (of n) signatures before their asset can be transferred.
-
-The (single) output of a threshold condition can be used as one of the inputs of other threshold conditions. This means that one can combine threshold conditions to build complex logical expressions, e.g. (x OR y) AND (u OR v).
-
-When one creates a condition, one can calculate its
-`cost <https://tools.ietf.org/html/draft-thomas-crypto-conditions-02#section-7.2.2>`_,
-an estimate of the resources that would be required to validate the fulfillment.
-A BigchainDB federation can put an upper limit on the complexity of each
-condition, either directly by setting a maximum allowed cost,
-or
-`indirectly <https://github.com/bigchaindb/bigchaindb/issues/356#issuecomment-288085251>`_
-by :ref:`setting a maximum allowed transaction size <Enforcing a Max Transaction Size>`
-which would limit
-the overall complexity accross all inputs and outputs of a transaction.
-Note: At the time of writing, there was no configuration setting
-to set a maximum allowed cost,
-so the only real option was to
-:ref:`set a maximum allowed transaction size <Enforcing a Max Transaction Size>`.
+Note that ``amount`` must be a string (e.g. ``"7"``).
+In a TRANSFER transaction, the sum of the output amounts must be the same as the sum of the outputs that it transfers (i.e. the sum of the input amounts). For example, if a TRANSFER transaction has two outputs, one with ``"amount": "2"`` and one with ``"amount": "3"``, then the sum of the outputs is 5 and so the sum of the outputs-being-transferred must also be 5.
 
 
 .. note::
