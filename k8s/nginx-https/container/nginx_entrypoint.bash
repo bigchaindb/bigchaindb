@@ -17,7 +17,7 @@ mongo_backend_host=`printenv MONGODB_BACKEND_HOST`
 mongo_backend_port=`printenv MONGODB_BACKEND_PORT`
 
 
-# Openresty vars
+# OpenResty vars
 openresty_backend_host=`printenv OPENRESTY_BACKEND_HOST`
 openresty_backend_port=`printenv OPENRESTY_BACKEND_PORT`
 threescale_api_port=`printenv THREESCALE_API_PORT`

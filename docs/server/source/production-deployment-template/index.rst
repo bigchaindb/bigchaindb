@@ -20,9 +20,9 @@ Feel free change things to suit your needs or preferences.
    revoke-tls-certificate
    template-kubernetes-azure
    node-on-kubernetes
-   add-node-on-kubernetes
-   upgrade-on-kubernetes
-   log-analytics
-   easy-rsa
-   cloud-manager
    node-config-map-and-secrets
+   log-analytics
+   cloud-manager
+   easy-rsa
+   upgrade-on-kubernetes
+   add-node-on-kubernetes

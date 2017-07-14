@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: ngx-openresty-instance-0
+  name: openresty-instance-0
   namespace: default
   labels:
-    name: ngx-openresty-instance-0
+    name: openresty-instance-0
   annotations:
     # NOTE: the following annotation is a beta feature and
     # only available in GCE/GKE and Azure as of now
@@ -12,7 +12,7 @@ metadata:
     service.beta.kubernetes.io/external-traffic: OnlyLocal
 spec:
   selector:
-    app: ngx-openresty-instance-0-dep
+    app: openresty-instance-0-dep
   ports:
   - port: "<openresty-backend-port from ConfigMap>"
     targetPort: "<openresty-backend-port from ConfigMap>"

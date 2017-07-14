@@ -87,13 +87,13 @@ spec:
           protocol: TCP
         - containerPort: "<mongodb-frontend-port from ConfigMap>"
           protocol: TCP
-        - containerPort: "<cluster-health-check-port from ConfigMap>"
-          protocol: TCP
-          name: ngx-port
         - containerPort: "<cluster-frontend-port from ConfigMap>"
           protocol: TCP
         - containerPort: "<threescale-api-port from ConfigMap>"
           protocol: TCP
+        - containerPort: "<cluster-health-check-port from ConfigMap>"
+          protocol: TCP
+          name: ngx-port
         livenessProbe:
           httpGet:
             path: /health

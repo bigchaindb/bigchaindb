@@ -17,10 +17,6 @@ spec:
     targetPort: "<cluster-frontend-port from ConfigMap>"
     name: public-secure-cluster-port
     protocol: TCP
-  - port: 80
-    targetPort: 80
-    name: public-insecure-cluster-port
-    protocol: TCP
   - port: "<mongodb-frontend-port from ConfigMap>"
     targetPort: "<mongodb-frontend-port from ConfigMap>"
     name: public-mdb-port
@@ -28,5 +24,9 @@ spec:
   - port: "<threescale-api-port from ConfigMap>"
     targetPort: "<threescale-api-port from ConfigMap>"
     name: public-threescale-port
+    protocol: TCP
+  - port: 80
+    targetPort: 80
+    name: public-insecure-cluster-port
     protocol: TCP
   type: LoadBalancer

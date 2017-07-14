@@ -5,14 +5,10 @@ metadata:
   namespace: default
 type: Opaque
 data:
-    #  secret-token: "<b64 encoded 3scale secret-token>"
-    #  service-id: "<b64 encoded 3scale service-id>"
-    #  version-header: "<b64 encoded 3scale version-header>"
-    #  provider-key: "<b64 encoded 3scale provider-key>"
-  secret-token: d3VxUUc4NlVRdFJkaFBTN0V2RXcK
-  service-id: MjU1NTQxNzc0MTExNQo=
-  version-header: MjAxNy0wNC0yN1QxMzo0MTowNVoK
-  provider-key: ZmFjNWU5MDE0NDdlNDMzNjBiNGY2ZDlmNWJkNTY0NjQK
+  secret-token: "<b64 encoded 3scale secret-token>"
+  service-id: "<b64 encoded 3scale service-id>"
+  version-header: "<b64 encoded 3scale version-header>"
+  provider-key: "<b64 encoded 3scale provider-key>"
 ---
 apiVersion: v1
 kind: Service

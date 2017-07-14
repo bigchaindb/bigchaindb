@@ -80,7 +80,7 @@ http {
         proxy_pass http://$bdb_backend:BIGCHAINDB_API_PORT;
       }
 
-      # POST requests get forwarded to Openresty instance. Enable CORS too.
+      # POST requests get forwarded to OpenResty instance. Enable CORS too.
       if ($request_method = POST ) {
         add_header 'Access-Control-Allow-Origin' '*';
         add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';

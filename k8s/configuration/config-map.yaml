@@ -8,7 +8,7 @@ metadata:
   namespace: default
 data:
   # cluster-fqdn is the DNS name registered for your HTTPS certificate.
-  cluster-fqdn: "unfake.io"
+  cluster-fqdn: "bdb.example.com"
 
   # cluster-frontend-port is the port number on which this node's services
   # are available to external clients.
@@ -22,46 +22,18 @@ data:
   # always has a DNS server (kube-dns) running at 10.0.0.10
   cluster-dns-server-ip: "10.0.0.10"
 
-  # mongodb-frontend-port is the port number on which external clients can
-  # access MongoDB. This needs to be restricted to only other MongoDB instances
-  # by enabling an authentication mechanism on MongoDB.
-  mongodb-frontend-port: "27017"
-
-  # mongodb-backend-port is the port on which MongoDB is actually
-  # available/listening for requests.
-  mongodb-backend-port: "27017"
-
-  # threescale-api-port is the port number on which 3scale can communicate with
-  # Openresty backend.
-  threescale-api-port: "44433"
-
-  # openresty-instance-name is the name of the Openresty instance in this
-  # cluster.
-  openresty-instance-name: "<name of the openresty instance>"
-
-  # ngx-openresty-instance-name is the FQDN of the MongoDB instance in this
-  # Kubernetes cluster.
-  ngx-openresty-instance-name: "<name of the openresty instance>.default.svc.cluster.local"
-
-  # openresty-backend-port is the port number on which Openresty is listening
-  # for requests. This is used by the NGINX instance to forward the requests to
-  # the right port, and by Openresty instance to bind to the correct port to
-  # receive requests from NGINX instance.
-  openresty-backend-port: "80"
-
   # mdb-instance-name is the name of the MongoDB instance in this cluster.
   mdb-instance-name: "<name of the mdb instance>"
 
-  # ngx-mdb-instance-name is the FQDN of the MongoDB instance in this
-  # Kubernetes cluster.
-  ngx-mdb-instance-name: "<name of the mdb instance>.default.svc.cluster.local"
+  # ngx-instance-name is the name of the NGINX instance in this cluster.
+  ngx-instance-name: "<name of the nginx instance>"
+
+  # openresty-instance-name is the name of the OpenResty instance in this
+  # cluster.
+  openresty-instance-name: "<name of the openresty instance>"
 
   # bdb-instance-name is the name of the BigchainDB instance in this cluster.
   bdb-instance-name: "<name of the bdb instance>"
-
-  # ngx-bdb-instance-name is the FQDN of the BigchainDB instance in this
-  # Kubernetes cluster.
-  ngx-bdb-instance-name: "<name of the bdb instance>.default.svc.cluster.local"
 
   # mdb-mon-instance-name is the name of the MongoDB Monitoring Agent instance
   # in this cluster.
@@ -71,6 +43,33 @@ data:
   # in this cluster.
   mdb-bak-instance-name: "<name of the mdb backup agent instance>"
 
+  # ngx-mdb-instance-name is the FQDN of the MongoDB instance in this
+  # Kubernetes cluster.
+  ngx-mdb-instance-name: "<name of the mdb instance>.default.svc.cluster.local"
+
+  # ngx-openresty-instance-name is the FQDN of the MongoDB instance in this
+  # Kubernetes cluster.
+  ngx-openresty-instance-name: "<name of the openresty instance>.default.svc.cluster.local"
+
+  # ngx-bdb-instance-name is the FQDN of the BigchainDB instance in this
+  # Kubernetes cluster.
+  ngx-bdb-instance-name: "<name of the bdb instance>.default.svc.cluster.local"
+
+  # mongodb-frontend-port is the port number on which external clients can
+  # access MongoDB. This needs to be restricted to only other MongoDB instances
+  # by enabling an authentication mechanism on MongoDB.
+  mongodb-frontend-port: "27017"
+
+  # mongodb-backend-port is the port on which MongoDB is actually
+  # available/listening for requests.
+  mongodb-backend-port: "27017"
+
+  # openresty-backend-port is the port number on which OpenResty is listening
+  # for requests. This is used by the NGINX instance to forward the requests to
+  # the right port, and by OpenResty instance to bind to the correct port to
+  # receive requests from NGINX instance.
+  openresty-backend-port: "80"
+
   # bigchaindb-api-port is the port number on which BigchainDB is listening
   # for HTTP requests.
   bigchaindb-api-port: "9984"
@@ -78,6 +77,10 @@ data:
   # bigchaindb-ws-port is the port number on which BigchainDB is listening
   # for Websocket requests.
   bigchaindb-ws-port: "9985"
+
+  # threescale-api-port is the port number on which 3scale can communicate with
+  # OpenResty backend.
+  threescale-api-port: "44433"
 
 ---
 apiVersion: v1

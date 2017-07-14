@@ -1,13 +1,13 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: ngx-openresty-instance-0-dep
+  name: openresty-instance-0-dep
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: ngx-openresty-instance-0-dep
+        app: openresty-instance-0-dep
     spec:
       terminationGracePeriodSeconds: 10
       containers:
