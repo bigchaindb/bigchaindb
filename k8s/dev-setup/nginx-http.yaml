@@ -18,10 +18,6 @@ spec:
     targetPort: 80
     name: ngx-public-bdb-port-http
     protocol: TCP
-  - port: 8080
-    targetPort: 8080
-    name: public-health-check-port
-    protocol: TCP
   - port: 27017
     targetPort: 27017
     name: ngx-public-mdb-port
@@ -68,10 +64,18 @@ spec:
         ports:
         - containerPort: 27017
           protocol: TCP
-        - containerPort: 8080
-          protocol: TCP
         - containerPort: 80
           protocol: TCP
+        - containerPort: 8080
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 15
+          failureThreshold: 3
+          timeoutSeconds: 10
         resources:
           limits:
             cpu: 200m

@@ -17,8 +17,4 @@ spec:
     targetPort: "<cluster-frontend-port from ConfigMap>"
     name: public-cluster-port
     protocol: TCP
-  - port: "<cluster-health-check-port from ConfigMap>"
-    targetPort: "<cluster-health-check-port from ConfigMap>"
-    name: public-health-check-port
-    protocol: TCP
   type: LoadBalancer
