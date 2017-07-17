@@ -233,6 +233,11 @@ Step 6: Start the MongoDB Kubernetes Service
     the ConfigMap followed by ``-ss``. For example, if the value set in the
     ``mdb-instance-name`` is ``mdb-instance-0``, set  the
     ``spec.selector.app`` to ``mdb-instance-0-ss``.
+
+  * Set ``ports[0].port`` and ``ports[0].targetPort`` to the value set in the
+    ``mongodb-backend-port`` in the ConfigMap above.
+    This is the ``mdb-port`` in the file which specifies where MongoDB listens
+    for API requests.
   
   * Start the Kubernetes Service:
 
@@ -490,6 +495,11 @@ Step 12: Start a Kubernetes StatefulSet for MongoDB
 
   * As we gain more experience running MongoDB in testing and production, we
     will tweak the ``resources.limits.cpu`` and ``resources.limits.memory``.
+
+  * Set the ports to be exposed from the pod in the
+    ``spec.containers[0].ports`` section. We currently only expose the MongoDB
+    backend port. Set it to the value specified for ``mongodb-backend-port``
+    in the ConfigMap.
 
   * Create the MongoDB StatefulSet using:
 
