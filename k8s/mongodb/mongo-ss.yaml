@@ -39,7 +39,10 @@ spec:
              name: vars
              key: mongodb-replicaset-name
         - name: MONGODB_PORT
-          value: "27017"
+          valueFrom:
+            configMapKeyRef:
+             name: vars
+             key: mongodb-backend-port
         args:
         - --mongodb-port
         - $(MONGODB_PORT)
@@ -60,10 +63,9 @@ spec:
             add:
             - FOWNER
         ports:
-        - containerPort: 27017
-          hostPort: 27017
-          name: mdb-port
+        - containerPort: "<mongodb-backend-port from ConfigMap>"
           protocol: TCP
+          name: mdb-api-port
         volumeMounts:
         - name: mdb-db
           mountPath: /data/db
@@ -78,11 +80,12 @@ spec:
             memory: 3.5G
         livenessProbe:
           tcpSocket:
-            port: mdb-port
+            port: mdb-api-port
+          initialDelaySeconds: 15
           successThreshold: 1
           failureThreshold: 3
           periodSeconds: 15
-          timeoutSeconds: 1
+          timeoutSeconds: 10
       restartPolicy: Always
       volumes:
       - name: mdb-db
