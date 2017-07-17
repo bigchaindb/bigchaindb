@@ -1,0 +1,24 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ipdb-proxy-instance-0-dep
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ipdb-proxy-instance-0-dep
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: ipdb-proxy
+        image: bigchaindb/ipdb-proxy:1.0.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9984
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 200m
+            memory: 256Mi
+      restartPolicy: Always
