@@ -173,18 +173,6 @@ Step 4.2: NGINX with HTTPS + 3scale
      ``public-mdb-port`` in the file which specifies where MongoDB is
      available.
 
-   * Set ``ports[2].port`` and ``ports[2].targetPort`` to the value set in the
-     ``threescale-api-port`` in the ConfigMap above. This is the
-     ``public-threescale-port`` in the file which specifies where OpenResty is
-     available.
-
-   * Set ``threescale-api-port`` to 27017, or the port number on which you
-     want to expose MongoDB service.
-     Set the ``ngx-public-mdb-port.targetPort`` to the port number on which the
-     Kubernetes MongoDB service will be present.
-     Note: This is only used for testing with 3scale, and will be removed in
-     the future.
-
    * Start the Kubernetes Service:
    
      .. code:: bash
@@ -340,9 +328,9 @@ Step 9.2: NGINX with HTTPS + 3scale
 
    * Set the ports to be exposed from the pod in the
      ``spec.containers[0].ports`` section. We currently expose 4 ports -
-     ``mongodb-frontend-port``, ``cluster-frontend-port``,
-     ``threescale-api-port`` and ``cluster-health-check-port``. Set them to
-     the values specified in the ConfigMap.
+     ``mongodb-frontend-port``, ``cluster-frontend-port`` and
+     ``cluster-health-check-port``. Set them to the values specified in the
+     ConfigMap.
 
    * Start the Kubernetes Deployment:
 
@@ -849,8 +837,6 @@ To test the NGINX instance with HTTPS and 3scale integration:
    $ dig +noall +answer _public-secure-cluster-port._.tcp.ngx-https-instance-0.default.svc.cluster.local SRV
 
    $ dig +noall +answer _public-mdb-port._.tcp.ngx-https-instance-0.default.svc.cluster.local SRV
-
-   $ dig +noall +answer _public-threescale-port._.tcp.ngx-https-instance-0.default.svc.cluster.local SRV
 
    $ dig +noall +answer _public-insecure-cluster-port._.tcp.ngx-https-instance-0.default.svc.cluster.local SRV
 
