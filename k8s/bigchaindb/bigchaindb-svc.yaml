@@ -12,8 +12,10 @@ spec:
   - port: "<bigchaindb-api-port from ConfigMap>"
     targetPort: "<bigchaindb-api-port from ConfigMap>"
     name: bdb-api-port
+    protocol: TCP
   - port: "<bigchaindb-ws-port from ConfigMap>"
     targetPort: "<bigchaindb-ws-port from ConfigMap>"
     name: bdb-ws-port
+    protocol: TCP
   type: ClusterIP
   clusterIP: None
