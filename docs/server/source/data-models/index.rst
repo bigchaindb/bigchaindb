@@ -15,5 +15,6 @@ This section unpacks each one in turn.
    transaction-model 
    asset-model
    inputs-outputs
+   conditions
    block-model
    vote-model
