@@ -11,7 +11,7 @@ spec:
   ports:
   - port: "<bigchaindb-api-port from ConfigMap>"
     targetPort: "<bigchaindb-api-port from ConfigMap>"
-    name: bdb-port
+    name: bdb-api-port
   - port: "<bigchaindb-ws-port from ConfigMap>"
     targetPort: "<bigchaindb-ws-port from ConfigMap>"
     name: bdb-ws-port

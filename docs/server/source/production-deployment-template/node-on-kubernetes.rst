@@ -254,6 +254,16 @@ Step 7: Start the BigchainDB Kubernetes Service
     ``bdb-instance-name`` is ``bdb-instance-0``, set  the
     ``spec.selector.app`` to ``bdb-instance-0-dep``.
 
+   * Set ``ports[0].port`` and ``ports[0].targetPort`` to the value set in the
+     ``bigchaindb-api-port`` in the ConfigMap above.
+     This is the ``bdb-api-port`` in the file which specifies where BigchainDB
+     listens for HTTP API requests.
+
+   * Set ``ports[1].port`` and ``ports[1].targetPort`` to the value set in the
+     ``bigchaindb-ws-port`` in the ConfigMap above.
+     This is the ``bdb-ws-port`` in the file which specifies where BigchainDB
+     listens for Websocket connections.
+
   * Start the Kubernetes Service:
 
     .. code:: bash
@@ -694,6 +704,11 @@ Step 16: Start a Kubernetes Deployment for BigchainDB
     richer monitoring and probing becomes available in BigchainDB, we will
     tweak the ``livenessProbe`` and ``readinessProbe`` parameters.
   
+   * Set the ports to be exposed from the pod in the
+     ``spec.containers[0].ports`` section. We currently expose 2 ports -
+     ``bigchaindb-api-port`` and ``bigchaindb-ws-port``. Set them to the
+     values specified in the ConfigMap.
+
   * Create the BigchainDB Deployment using:
 
     .. code:: bash
@@ -787,7 +802,7 @@ To test the BigchainDB instance:
 
    $ nslookup bdb-instance-0
         
-   $ dig +noall +answer _bdb-port._tcp.bdb-instance-0.default.svc.cluster.local SRV
+   $ dig +noall +answer _bdb-api-port._tcp.bdb-instance-0.default.svc.cluster.local SRV
 
    $ dig +noall +answer _bdb-ws-port._tcp.bdb-instance-0.default.svc.cluster.local SRV
         
@@ -854,9 +869,12 @@ Step 19.2: Testing Externally
 Check the MongoDB monitoring and backup agent on the MongoDB Cloud Manager
 portal to verify they are working fine.
 
-Try to access the ``<DNS/IP of your exposed BigchainDB service endpoint>:80``
-on your browser. You should receive a JSON response that shows the BigchainDB
+If you are using the NGINX with HTTP support, accessing the URL
+``http://<DNS/IP of your exposed BigchainDB service endpoint>:cluster-frontend-port``
+on your browser should result in a JSON response that shows the BigchainDB
 server version, among other things.
+If you are using the NGINX with HTTPS support, use ``https`` instead of
+``http`` above.
 
 Use the Python Driver to send some transactions to the BigchainDB node and
 verify that your node or cluster works as expected.
