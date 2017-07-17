@@ -327,7 +327,7 @@ Step 9.2: NGINX with HTTPS + 3scale
      ``ngx-https-instance-0``, set the fields to ``ngx-https-instance-0-dep``.
 
    * Set the ports to be exposed from the pod in the
-     ``spec.containers[0].ports`` section. We currently expose 4 ports -
+     ``spec.containers[0].ports`` section. We currently expose 3 ports -
      ``mongodb-frontend-port``, ``cluster-frontend-port`` and
      ``cluster-health-check-port``. Set them to the values specified in the
      ConfigMap.
