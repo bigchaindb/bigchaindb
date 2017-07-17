@@ -9,6 +9,7 @@ elif [[ "${BIGCHAINDB_DATABASE_BACKEND}" == mongodb && \
     # Connect to MongoDB on port 27017 via a normal, unsecure connection if
     # BIGCHAINDB_DATABASE_SSL is unset.
     # It is unset in this case in .travis.yml.
+    apt-get update -qq
     wget https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1404-3.4.4.tgz -O /tmp/mongodb.tgz
     tar -xvf /tmp/mongodb.tgz
     mkdir /tmp/mongodb-data
@@ -20,6 +21,7 @@ elif [[ "${BIGCHAINDB_DATABASE_BACKEND}" == mongodb && \
     # BIGCHAINDB_DATABASE_SSL is set.
     # It is set to 'true' here in .travis.yml. Dummy certificates for testing
     # are stored under bigchaindb/tests/backend/mongodb-ssl/certs/ directory.
+    apt-get update -qq
     wget https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1404-3.4.4.tgz -O /tmp/mongodb-ssl.tgz
     tar -xvf /tmp/mongodb-ssl.tgz
     mkdir /tmp/mongodb-ssl-data
