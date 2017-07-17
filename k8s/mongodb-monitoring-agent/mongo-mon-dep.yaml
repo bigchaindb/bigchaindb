@@ -25,7 +25,7 @@ spec:
       containers:
       - name: mdb-mon
         image: bigchaindb/mongodb-monitoring-agent:3.0
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         env:
         - name: MMS_API_KEYFILE_PATH
           value: /etc/mongod/cloud/agent-api-key
