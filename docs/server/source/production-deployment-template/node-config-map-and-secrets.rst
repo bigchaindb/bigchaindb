@@ -132,8 +132,8 @@ listening for HTTP requests. Currently set to ``9984`` by default.
 The ``bigchaindb-ws-port`` is the port number on which BigchainDB is
 listening for Websocket requests. Currently set to ``9985`` by default.
 
-Other ``bigchaindb-*`` parameters are used to configure BigchainDB instance.
-The complete list can be found `here <https://docs.bigchaindb.com/projects/server/en/latest/server-reference/configuration.html>`_.
+There's another :ref:`page with a complete listing of all the BigchainDB Server
+configuration settings <Configuration Settings>`.
 
 
 bdb-config.bdb-keyring
