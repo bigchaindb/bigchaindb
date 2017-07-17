@@ -78,10 +78,6 @@ data:
   # for Websocket requests.
   bigchaindb-ws-port: "9985"
 
-  # threescale-api-port is the port number on which 3scale can communicate with
-  # OpenResty backend.
-  threescale-api-port: "44433"
-
 ---
 apiVersion: v1
 kind: ConfigMap

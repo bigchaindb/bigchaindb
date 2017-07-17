@@ -39,10 +39,6 @@ spec:
     targetPort: 27017
     name: public-mdb-port
     protocol: TCP
-  - port: 44433
-    targetPort: 44433
-    name: public-threescale-port
-    protocol: TCP
   type: LoadBalancer
 ---
 apiVersion: extensions/v1beta1
@@ -80,8 +76,6 @@ spec:
           value: "80"
         - name: OPENRESTY_BACKEND_HOST
           value: "openresty.default.svc.cluster.local"
-        - name: THREESCALE_API_PORT
-          value: "44433"
         - name: BIGCHAINDB_BACKEND_HOST
           value: "bdb.default.svc.cluster.local"
         - name: BIGCHAINDB_API_PORT
