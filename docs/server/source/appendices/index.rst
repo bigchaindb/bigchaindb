@@ -19,8 +19,6 @@ Appendices
    commands
    aws-setup
    aws-testing-cluster
-   template-terraform-aws
-   template-ansible
    azure-quickstart-template
    generate-key-pair-for-ssh
    firewall-notes
