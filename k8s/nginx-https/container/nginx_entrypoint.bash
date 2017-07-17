@@ -20,7 +20,6 @@ mongo_backend_port=`printenv MONGODB_BACKEND_PORT`
 # OpenResty vars
 openresty_backend_host=`printenv OPENRESTY_BACKEND_HOST`
 openresty_backend_port=`printenv OPENRESTY_BACKEND_PORT`
-threescale_api_port=`printenv THREESCALE_API_PORT`
 
 
 # BigchainDB vars
@@ -36,7 +35,6 @@ if [[ -z "${cluster_frontend_port}" || \
       -z "${mongo_backend_port}" || \
       -z "${openresty_backend_port}" || \
       -z "${openresty_backend_host}" || \
-      -z "${threescale_api_port}" || \
       -z "${bdb_backend_host}" || \
       -z "${bdb_api_port}" || \
       -z "${bdb_ws_port}" || \
@@ -57,7 +55,6 @@ sed -i "s|MONGODB_BACKEND_HOST|${mongo_backend_host}|g" ${NGINX_CONF_FILE}
 sed -i "s|MONGODB_BACKEND_PORT|${mongo_backend_port}|g" ${NGINX_CONF_FILE}
 sed -i "s|OPENRESTY_BACKEND_PORT|${openresty_backend_port}|g" ${NGINX_CONF_FILE}
 sed -i "s|OPENRESTY_BACKEND_HOST|${openresty_backend_host}|g" ${NGINX_CONF_FILE}
-sed -i "s|THREESCALE_API_PORT|${threescale_api_port}|g" ${NGINX_CONF_FILE}
 sed -i "s|BIGCHAINDB_BACKEND_HOST|${bdb_backend_host}|g" ${NGINX_CONF_FILE}
 sed -i "s|BIGCHAINDB_API_PORT|${bdb_api_port}|g" ${NGINX_CONF_FILE}
 sed -i "s|BIGCHAINDB_WS_PORT|${bdb_ws_port}|g" ${NGINX_CONF_FILE}

@@ -60,11 +60,6 @@ spec:
             configMapKeyRef:
               name: vars
               key: openresty-backend-host
-        - name: THREESCALE_API_PORT
-          valueFrom:
-            configMapKeyRef:
-              name: vars
-              key: threescale-api-port
         - name: BIGCHAINDB_BACKEND_HOST
           valueFrom:
             configMapKeyRef:
@@ -88,8 +83,6 @@ spec:
         - containerPort: "<mongodb-frontend-port from ConfigMap>"
           protocol: TCP
         - containerPort: "<cluster-frontend-port from ConfigMap>"
-          protocol: TCP
-        - containerPort: "<threescale-api-port from ConfigMap>"
           protocol: TCP
         - containerPort: "<cluster-health-check-port from ConfigMap>"
           protocol: TCP

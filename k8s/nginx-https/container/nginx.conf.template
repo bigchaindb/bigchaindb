@@ -139,17 +139,6 @@ http {
         return 426 'Consider using the HTTPS protocol next time!';
     }
   }
-
-  # Frontend server to respond to requests from 3scale; forward directly to
-  # OpenResty instance.
-  server {
-    sendfile on;
-    listen THREESCALE_API_PORT;
-
-    location / {
-      proxy_pass http://$openresty_backend:OPENRESTY_BACKEND_PORT;
-    }
-  }
 }
 
 # NGINX stream block for TCP and UDP proxies. Used to proxy MDB TCP

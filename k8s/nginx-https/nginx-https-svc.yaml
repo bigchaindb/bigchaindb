@@ -21,10 +21,6 @@ spec:
     targetPort: "<mongodb-frontend-port from ConfigMap>"
     name: public-mdb-port
     protocol: TCP
-  - port: "<threescale-api-port from ConfigMap>"
-    targetPort: "<threescale-api-port from ConfigMap>"
-    name: public-threescale-port
-    protocol: TCP
   - port: 80
     targetPort: 80
     name: public-insecure-cluster-port
