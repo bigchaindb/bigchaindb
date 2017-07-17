@@ -70,13 +70,45 @@ data:
   # receive requests from NGINX instance.
   openresty-backend-port: "80"
 
+  # BigchainDB configuration parameters
+  # Refer https://docs.bigchaindb.com/projects/server/en/latest/server-reference/configuration.html
+
   # bigchaindb-api-port is the port number on which BigchainDB is listening
   # for HTTP requests.
   bigchaindb-api-port: "9984"
 
-  # bigchaindb-ws-port is the port number on which BigchainDB is listening
-  # for Websocket requests.
+  # bigchaindb-server-bind is the socket where BigchainDB binds for API
+  # requests.
+  bigchaindb-server-bind: "0.0.0.0:9984"
+
+  # bigchaindb-ws-port and bigchaindb-ws-interface form the socket where
+  # BigchainDB binds for Websocket connections.
   bigchaindb-ws-port: "9985"
+  bigchaindb-ws-interface: "0.0.0.0"
+
+  # mongodb-replicaset-name is the MongoDB replica set name
+  mongodb-replicaset-name: "bigchain-rs"
+
+  # bigchaindb-database-name is the database collection used by BigchainDB with
+  # the MongoDB backend.
+  bigchaindb-database-name: "bigchain"
+
+  # bigchaindb-backlog-reassign-delay is the number of seconds a transaction
+  # can remain in the backlog before being reassigned.
+  bigchaindb-backlog-reassign-delay: "120"
+
+  # bigchaindb-database-maxtries is the maximum number of times that BigchainDB
+  # will try to establish a connection with the database backend.
+  # If it is set to 0, then it will try forever.
+  bigchaindb-database-maxtries: "3"
+
+  # bigchaindb-database-connection-timeout is the maximum number of
+  # milliseconds that BigchainDB will wait before closing the connection while
+  # connecting to the database backend.
+  bigchaindb-database-connection-timeout: "5000"
+
+  # bigchaindb-log-level is the log level used to log to the console.
+  bigchaindb-log-level: "debug"
 
 ---
 apiVersion: v1
