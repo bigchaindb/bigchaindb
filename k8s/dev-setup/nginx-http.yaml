@@ -1,0 +1,79 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ngx-http
+  namespace: default
+  labels:
+    name: ngx-http
+  annotations:
+    # NOTE: the following annotation is a beta feature and
+    # only available in GCE/GKE and Azure as of now
+    # Ref: https://kubernetes.io/docs/tutorials/services/source-ip/
+    service.beta.kubernetes.io/external-traffic: OnlyLocal
+spec:
+  selector:
+    app: ngx-http-dep
+  ports:
+  - port: 80
+    targetPort: 80
+    name: ngx-public-bdb-port-http
+    protocol: TCP
+  - port: 8080
+    targetPort: 8080
+    name: public-health-check-port
+    protocol: TCP
+  - port: 27017
+    targetPort: 27017
+    name: ngx-public-mdb-port
+    protocol: TCP
+  type: LoadBalancer
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ngx-http-dep
+  namespace: default
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: ngx-http-dep
+      labels:
+        app: ngx-http-dep
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: nginx-http
+        image: bigchaindb/nginx_http:1.0
+        imagePullPolicy: Always
+        env:
+        - name: CLUSTER_FRONTEND_PORT
+          value: "80"
+        - name: HEALTH_CHECK_PORT
+          value: "8080"
+        - name: DNS_SERVER
+          value: "10.0.0.10"
+        - name: MONGODB_FRONTEND_PORT
+          value: "27017"
+        - name: MONGODB_BACKEND_HOST
+          value: "mdb.default.svc.cluster.local"
+        - name: MONGODB_BACKEND_PORT
+          value: "27017"
+        - name: BIGCHAINDB_BACKEND_HOST
+          value: "bdb.default.svc.cluster.local"
+        - name: BIGCHAINDB_API_PORT
+          value: "9984"
+        - name: BIGCHAINDB_WS_PORT
+          value: "9985"
+        ports:
+        - containerPort: 27017
+          protocol: TCP
+        - containerPort: 8080
+          protocol: TCP
+        - containerPort: 80
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 200m
+            memory: 768Mi
+      restartPolicy: Always

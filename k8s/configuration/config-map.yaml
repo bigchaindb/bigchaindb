@@ -7,25 +7,81 @@ metadata:
   name: vars
   namespace: default
 data:
-  # MongoDB
+  # cluster-fqdn is the DNS name registered for your HTTPS certificate.
+  cluster-fqdn: "bdb.example.com"
+
+  # cluster-frontend-port is the port number on which this node's services
+  # are available to external clients.
+  cluster-frontend-port: "443" 
+
+  # cluster-health-check-port is the port number on which an external load
+  # balancer can check the status/liveness of the external/public server.
+  cluster-health-check-port: "8888"
+
+  # cluster-dns-server-ip is the IP of the DNS server. A Kubernetes deployment
+  # always has a DNS server (kube-dns) running at 10.0.0.10
+  cluster-dns-server-ip: "10.0.0.10"
+
+  # mdb-instance-name is the name of the MongoDB instance in this cluster.
   mdb-instance-name: "<name of the mdb instance>"
-  # BigchainDB
+
+  # ngx-instance-name is the name of the NGINX instance in this cluster.
+  ngx-instance-name: "<name of the nginx instance>"
+
+  # openresty-instance-name is the name of the OpenResty instance in this
+  # cluster.
+  openresty-instance-name: "<name of the openresty instance>"
+
+  # bdb-instance-name is the name of the BigchainDB instance in this cluster.
   bdb-instance-name: "<name of the bdb instance>"
-  # NGINX
-  ngx-instance-name: "<name of the ngx instance>"
-  # MongoDB Monitoring Agent
+
+  # mdb-mon-instance-name is the name of the MongoDB Monitoring Agent instance
+  # in this cluster.
   mdb-mon-instance-name: "<name of the mdb monitoring agent instance>"
-  # MongoDB Backup Agent
+
+  # mdb-bak-instance-name is the name of the MongoDB Backup Agent instance
+  # in this cluster.
   mdb-bak-instance-name: "<name of the mdb backup agent instance>"
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: mongodb-whitelist
-  namespace: default
-data:
-  # We only support "all"" currently
-  allowed-hosts: "all"
+
+  # ngx-mdb-instance-name is the FQDN of the MongoDB instance in this
+  # Kubernetes cluster.
+  ngx-mdb-instance-name: "<name of the mdb instance>.default.svc.cluster.local"
+
+  # ngx-openresty-instance-name is the FQDN of the MongoDB instance in this
+  # Kubernetes cluster.
+  ngx-openresty-instance-name: "<name of the openresty instance>.default.svc.cluster.local"
+
+  # ngx-bdb-instance-name is the FQDN of the BigchainDB instance in this
+  # Kubernetes cluster.
+  ngx-bdb-instance-name: "<name of the bdb instance>.default.svc.cluster.local"
+
+  # mongodb-frontend-port is the port number on which external clients can
+  # access MongoDB. This needs to be restricted to only other MongoDB instances
+  # by enabling an authentication mechanism on MongoDB.
+  mongodb-frontend-port: "27017"
+
+  # mongodb-backend-port is the port on which MongoDB is actually
+  # available/listening for requests.
+  mongodb-backend-port: "27017"
+
+  # openresty-backend-port is the port number on which OpenResty is listening
+  # for requests. This is used by the NGINX instance to forward the requests to
+  # the right port, and by OpenResty instance to bind to the correct port to
+  # receive requests from NGINX instance.
+  openresty-backend-port: "80"
+
+  # bigchaindb-api-port is the port number on which BigchainDB is listening
+  # for HTTP requests.
+  bigchaindb-api-port: "9984"
+
+  # bigchaindb-ws-port is the port number on which BigchainDB is listening
+  # for Websocket requests.
+  bigchaindb-ws-port: "9985"
+
+  # threescale-api-port is the port number on which 3scale can communicate with
+  # OpenResty backend.
+  threescale-api-port: "44433"
+
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -35,8 +91,10 @@ metadata:
 data:
   # Colon-separated list of all *other* nodes' BigchainDB public keys.
   bdb-keyring: "<':' separated list of public keys>"
+
   # BigchainDB instance authentication user name
   bdb-user: "<user name>"
+
   # BigchainDB public key of *this* node.
   # Example: "EPQk5i5yYpoUwGVM8VKZRjM8CYxB6j8Lu8i8SG7kGGce"
   bdb-public-key: "<public key>"

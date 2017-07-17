@@ -48,7 +48,8 @@ Similarly, other instances must also have unique names in the cluster.
  
 #. Name of the MongoDB instance (``mdb-instance-*``)
 #. Name of the BigchainDB instance (``bdb-instance-*``)
-#. Name of the NGINX instance (``ngx-instance-*``)
+#. Name of the NGINX instance (``ngx-http-instance-*`` or ``ngx-https-instance-*``)
+#. Name of the OpenResty instance (``openresty-instance-*``)
 #. Name of the MongoDB monitoring agent instance (``mdb-mon-instance-*``)
 #. Name of the MongoDB backup agent instance (``mdb-bak-instance-*``)
 

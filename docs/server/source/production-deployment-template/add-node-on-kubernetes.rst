@@ -71,10 +71,10 @@ Step 2: Prepare the New Kubernetes Cluster
 Follow the steps in the sections to set up Storage Classes and Persistent Volume
 Claims, and to run MongoDB in the new cluster:
 
-1. :ref:`Add Storage Classes <Step 9: Create Kubernetes Storage Classes for MongoDB>`.
-2. :ref:`Add Persistent Volume Claims <Step 10: Create Kubernetes Persistent Volume Claims>`.
+1. :ref:`Add Storage Classes <Step 10: Create Kubernetes Storage Classes for MongoDB>`.
+2. :ref:`Add Persistent Volume Claims <Step 11: Create Kubernetes Persistent Volume Claims>`.
 3. :ref:`Create the Config Map <Step 3: Configure Your BigchainDB Node>`.
-4. :ref:`Run MongoDB instance <Step 11: Start a Kubernetes StatefulSet for MongoDB>`.
+4. :ref:`Run MongoDB instance <Step 12: Start a Kubernetes StatefulSet for MongoDB>`.
 
 
 Step 3: Add the New MongoDB Instance to the Existing Replica Set
@@ -166,13 +166,13 @@ show-config`` command to check that the keyring is updated.
 Step 7: Run NGINX as a Deployment
 ---------------------------------
 
-Please see :ref:`this page <Step 8: Start the NGINX Kubernetes Deployment>` to
+Please see :ref:`this page <Step 9: Start the NGINX Kubernetes Deployment>` to
 set up NGINX in your new node.
 
 
 Step 8: Test Your New BigchainDB Node
 -------------------------------------
 
-Please refer to the testing steps :ref:`here <Step 17: Verify the BigchainDB
+Please refer to the testing steps :ref:`here <Step 19: Verify the BigchainDB
 Node Setup>` to verify that your new BigchainDB node is working as expected.
 

@@ -1,4 +1,4 @@
-FROM nginx:1.11.10
+FROM nginx:1.13.1
 LABEL maintainer "dev@bigchaindb.com"
 WORKDIR /
 RUN apt-get update \
@@ -7,5 +7,5 @@ RUN apt-get update \
     && apt-get clean
 COPY nginx.conf.template /etc/nginx/nginx.conf
 COPY nginx_entrypoint.bash /
-EXPOSE 80 81 443 444 27017
+EXPOSE 80 443 27017
 ENTRYPOINT ["/nginx_entrypoint.bash"]

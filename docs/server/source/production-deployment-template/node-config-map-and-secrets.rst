@@ -29,6 +29,39 @@ where all data values must be base64-encoded.
 This is true of all Kubernetes ConfigMaps and Secrets.)
 
 
+
+vars.cluster-fqdn
+~~~~~~~~~~~~~~~~~
+
+The ``cluster-fqdn`` field specifies the domain you would have
+:ref:`registered before <2. Register a Domain and Get an SSL Certificate for It>`.
+
+
+vars.cluster-frontend-port
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``cluster-frontend-port`` field specifies the port on which your cluster
+will be available to all external clients.
+It is set to the HTTPS port ``443`` by default.
+
+
+vars.cluster-health-check-port
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``cluster-healthcheck-port`` is the port number on which health check
+probes are sent to the main NGINX instance.
+It is set to ``8888`` by default.
+
+
+vars.cluster-dns-server-ip
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``cluster-dns-server-ip`` is the IP of the DNS server for a node.
+We use DNS for service discovery. A Kubernetes deployment always has a DNS
+server (``kube-dns``) running at 10.0.0.10, and since we use Kubernetes, this is
+set to ``10.0.0.10`` by default, which is the default ``kube-dns`` IP address.
+
+
 vars.mdb-instance-name and Similar
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -48,6 +81,57 @@ There are some things worth noting about the ``mdb-instance-name``:
   MongoDB replica set.
 * We use ``mdb-instance-0``, ``mdb-instance-1`` and so on in our
   documentation. Your BigchainDB cluster may use a different naming convention.
+
+
+vars.ngx-ndb-instance-name and Similar
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+NGINX needs the FQDN of the servers inside the cluster to be able to forward
+traffic.
+The ``ngx-openresty-instance-name``, ``ngx-mdb-instance-name`` and
+``ngx-bdb-instance-name`` are the FQDNs of the OpenResty instance, the MongoDB
+instance, and the BigchainDB instance in this Kubernetes cluster respectively.
+In Kubernetes, this is usually the name of the module specified in the
+corresponding ``vars.*-instance-name`` followed by the
+``<namespace name>.svc.cluster.local``. For example, if you run OpenResty in
+the default Kubernetes namespace, this will be
+``<vars.openresty-instance-name>.default.svc.cluster.local``
+
+
+vars.mongodb-frontend-port and vars.mongodb-backend-port
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``mongodb-frontend-port`` is the port number on which external clients can
+access MongoDB. This needs to be restricted to only other MongoDB instances
+by enabling an authentication mechanism on MongoDB cluster.
+It is set to ``27017`` by default.
+
+The ``mongodb-backend-port`` is the port number on which MongoDB is actually
+available/listening for requests in your cluster.
+It is also set to ``27017`` by default.
+
+
+vars.openresty-backend-port
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``openresty-backend-port`` is the port number on which OpenResty is
+listening for requests.
+This is used by the NGINX instance to forward requests
+destined for the OpenResty instance to the right port.
+This is also used by OpenResty instance to bind to the correct port to
+receive requests from NGINX instance.
+It is set to ``80`` by default.
+
+
+vars.bigchaindb-api-port and vars.bigchaindb-ws-port
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``bigchaindb-api-port`` is the port number on which BigchainDB is
+listening for HTTP requests. Currently set to ``9984`` by default.
+
+The ``bigchaindb-ws-port`` is the port number on which BigchainDB is
+listening for Websocket requests. Currently set to ``9985`` by default.
+
 
 bdb-config.bdb-keyring
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -127,12 +211,10 @@ If you're not using 3scale,
 you can delete the ``threescale-credentials`` Secret
 or leave all the values blank (``""``).
 
-If you *are* using 3scale, you can get the value for ``frontend-api-dns-name``
-using something like ``echo "your.nodesubdomain.net" | base64 -w 0``
-
-To get the values for ``secret-token``, ``service-id``,
-``version-header`` and ``provider-key``, login to your 3scale admin,
-then click **APIs** and click on **Integration** for the relevant API.
+If you *are* using 3scale, get the values for ``secret-token``,
+``service-id``, ``version-header`` and ``provider-key`` by logging in to 3scale
+portal using your admin account, click **APIs** and click on **Integration**
+for the relevant API.
 Scroll to the bottom of the page and click the small link
 in the lower right corner, labelled **Download the NGINX Config files**.
 You'll get a ``.zip`` file.
