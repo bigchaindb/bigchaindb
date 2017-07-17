@@ -34,7 +34,10 @@ spec:
             fieldRef:
               fieldPath: status.podIP
         - name: MONGODB_REPLICA_SET_NAME
-          value: bigchain-rs
+          valueFrom:
+            configMapKeyRef:
+             name: vars
+             key: mongodb-replicaset-name
         - name: MONGODB_PORT
           value: "27017"
         args:

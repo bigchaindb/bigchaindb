@@ -23,19 +23,37 @@ spec:
               name: vars
               key: mdb-instance-name
         - name: BIGCHAINDB_DATABASE_PORT
-          value: "27017"
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: mongodb-backend-port
         - name: BIGCHAINDB_DATABASE_REPLICASET
-          value: bigchain-rs
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: mongodb-replicaset-name
         - name: BIGCHAINDB_DATABASE_BACKEND
           value: mongodb
         - name: BIGCHAINDB_DATABASE_NAME
-          value: bigchain
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: bigchaindb-database-name
         - name: BIGCHAINDB_SERVER_BIND
-          value: 0.0.0.0:9984
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: bigchaindb-server-bind
         - name: BIGCHAINDB_WSSERVER_HOST
-          value: 0.0.0.0
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: bigchaindb-ws-interface
         - name: BIGCHAINDB_WSSERVER_PORT
-          value: "9985"
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: bigchaindb-ws-port
         - name: BIGCHAINDB_KEYPAIR_PUBLIC
           valueFrom:
             configMapKeyRef:
@@ -44,13 +62,25 @@ spec:
         - name: BIGCHAINDB_KEYPAIR_PRIVATE
           value: "<private key here>"
         - name: BIGCHAINDB_BACKLOG_REASSIGN_DELAY
-          value: "120"
+          valueFrom:
+            configMapKeyRef:
+              name: bdb-config
+              key: bigchaindb-backlog-reassign-delay
         - name: BIGCHAINDB_DATABASE_MAXTRIES
-          value: "3"
+          valueFrom:
+            configMapKeyRef:
+              name: bdb-config
+              key: bigchaindb-database-maxtries
         - name: BIGCHAINDB_DATABASE_CONNECTION_TIMEOUT
-          value: "120"
+          valueFrom:
+            configMapKeyRef:
+              name: bdb-config
+              key: bigchaindb-database-connection-timeout
         - name: BIGCHAINDB_LOG_LEVEL_CONSOLE
-          value: debug
+          valueFrom:
+            configMapKeyRef:
+              name: bdb-config
+              key: bigchaindb-log-level
         - name: BIGCHAINDB_DATABASE_SSL
           value: "true"
         - name: BIGCHAINDB_DATABASE_CA_CERT
@@ -73,14 +103,12 @@ spec:
         #       name: bdb-config
         #       key: bdb-keyring
         ports:
-        - containerPort: 9984
-          hostPort: 9984
-          name: bdb-port
+        - containerPort: "<bigchaindb-api-port from ConfigMap>"
           protocol: TCP
-        - containerPort: 9985
-          hostPort: 9985
+          name: bdb-api-port
+        - containerPort: "<bigchaindb-ws-port from ConfigMap>"
+          protocol: TCP
           name: bdb-ws-port
-          protocol: TCP
         volumeMounts:
         - name: bdb-certs
           mountPath: /etc/bigchaindb/ssl/
@@ -92,13 +120,15 @@ spec:
         livenessProbe:
           httpGet:
             path: /
-            port: 9984
+            port: bdb-api-port
           initialDelaySeconds: 15
+          periodSeconds: 15
+          failureThreshold: 3
           timeoutSeconds: 10
         readinessProbe:
           httpGet:
             path: /
-            port: 9984
+            port: bdb-api-port
           initialDelaySeconds: 15
           timeoutSeconds: 10
       restartPolicy: Always

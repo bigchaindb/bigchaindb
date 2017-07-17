@@ -123,14 +123,17 @@ receive requests from NGINX instance.
 It is set to ``80`` by default.
 
 
-vars.bigchaindb-api-port and vars.bigchaindb-ws-port
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+vars.bigchaindb-api-port, vars.bigchaindb-ws-port and Similar
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The ``bigchaindb-api-port`` is the port number on which BigchainDB is
 listening for HTTP requests. Currently set to ``9984`` by default.
 
 The ``bigchaindb-ws-port`` is the port number on which BigchainDB is
 listening for Websocket requests. Currently set to ``9985`` by default.
+
+Other ``bigchaindb-*`` parameters are used to configure BigchainDB instance.
+The complete list can be found `here <https://docs.bigchaindb.com/projects/server/en/latest/server-reference/configuration.html>`_.
 
 
 bdb-config.bdb-keyring
