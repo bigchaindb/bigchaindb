@@ -133,11 +133,6 @@ Step 4.1: Vanilla NGINX
      ``cluster-frontend-port`` in the ConfigMap above. This is the
      ``public-cluster-port`` in the file which is the ingress in to the cluster.
 
-   * Set ``ports[1].port`` and ``ports[1].targetPort`` to the value set in the
-     ``cluster-health-check-port`` in the ConfigMap above. This is the
-     ``public-health-check-port`` in the file which is the health check port.
-     Note: This will be removed in the future.
-
    * Start the Kubernetes Service:
 
      .. code:: bash

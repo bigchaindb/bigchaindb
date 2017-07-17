@@ -65,8 +65,17 @@ spec:
           protocol: TCP
         - containerPort: "<cluster-health-check-port from ConfigMap>"
           protocol: TCP
+          name: ngx-health
         - containerPort: "<cluster-frontend-port from ConfigMap>"
           protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: ngx-health
+          initialDelaySeconds: 15
+          periodSeconds: 15
+          failureThreshold: 3
+          timeoutSeconds: 10
         resources:
           limits:
             cpu: 200m

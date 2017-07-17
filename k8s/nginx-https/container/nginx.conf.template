@@ -3,8 +3,7 @@
 # 2. Forwards BDB HTTP requests to OpenResty backend.
 # 3. Forwards BDB WS requests to BDB backend.
 # 4. Forwards MDB TCP connections to MDB backend.
-# 5. Forwards requests from 3scale to OpenResty backend.
-# 6. Does health check with LB.
+# 5. Does health check with LB.
 
 worker_processes 2;
 daemon off;

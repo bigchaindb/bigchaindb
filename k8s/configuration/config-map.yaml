@@ -16,6 +16,8 @@ data:
 
   # cluster-health-check-port is the port number on which an external load
   # balancer can check the status/liveness of the external/public server.
+  # In our deployment, Kubernetes sends 'livenessProbes' to this port and
+  # interprets a successful response as a 'healthy' service.
   cluster-health-check-port: "8888"
 
   # cluster-dns-server-ip is the IP of the DNS server. A Kubernetes deployment
