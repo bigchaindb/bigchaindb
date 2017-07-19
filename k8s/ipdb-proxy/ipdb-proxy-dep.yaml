@@ -14,8 +14,19 @@ spec:
       - name: ipdb-proxy
         image: bigchaindb/ipdb-proxy:1.0.0
         imagePullPolicy: IfNotPresent
+        env:
+        - name: IPDB_APP_ID
+          value: "<app_id>"
+        - name: IPDB_APP_KEY
+          value: "<app_key>"
+          # TODODODODODOODOD remove creds
+        - name: IPDB_TARGET
+          value: https://test.ipdb.io
+        - name: IPDB_PORT
+          value: "9984"
         ports:
         - containerPort: 9984
+          hostPort: 9984
           protocol: TCP
         resources:
           limits:
