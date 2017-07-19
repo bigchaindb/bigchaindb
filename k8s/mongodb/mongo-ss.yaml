@@ -22,7 +22,7 @@ spec:
       containers:
       - name: mongodb
         image: bigchaindb/mongodb:3.0
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         env:
         - name: MONGODB_FQDN
           valueFrom:

@@ -13,7 +13,7 @@ spec:
       containers:
       - name: nginx-https
         image: bigchaindb/nginx_https:1.0
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         env:
         - name: CLUSTER_FRONTEND_PORT
           valueFrom:

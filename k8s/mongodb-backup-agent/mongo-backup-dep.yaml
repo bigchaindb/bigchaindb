@@ -25,7 +25,7 @@ spec:
       containers:
       - name: mdb-backup
         image: bigchaindb/mongodb-backup-agent:3.1
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         env:
         - name: MMS_API_KEYFILE_PATH
           value: /etc/mongod/cloud/agent-api-key

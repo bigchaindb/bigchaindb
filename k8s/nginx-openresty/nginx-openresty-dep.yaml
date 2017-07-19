@@ -13,7 +13,7 @@ spec:
       containers:
       - name: nginx-openresty
         image: bigchaindb/nginx_3scale:2.0
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         env:
         - name: DNS_SERVER
           valueFrom:
