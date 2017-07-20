@@ -16,12 +16,12 @@ C. Assign rwx(read/write/execute) permissions to the user for default database d
 $ sudo chmod -R 700 /data/db
 ```
 
-D. Run MongoDB:
+D. Run MongoDB (do not close this terminal):
 ```text
 $ sudo mongod --replSet=bigchain-rs
 ```
 
-E. Ubuntu 16.04 already has Python 3.5, so you don't need to install it, but you do need to install some other things:
+E. Ubuntu 16.04 already has Python 3.5, so you don't need to install it, but you do need to install some other things within a new terminal:
 ```text
 $ sudo apt-get update
 $ sudo apt-get install g++ python3-dev libffi-dev build-essential libssl-dev
@@ -56,6 +56,13 @@ I. Run BigchainDB Server:
 ```text
 $ bigchaindb start
 ```
+
+J. Verify BigchainDB Server setup by visiting the BigchainDB Root Url in your browser (if not changed during installation):
+```text
+$ http://127.0.0.1:9984/
+```
+
+A correctly installed installation will show you a JSON object with information about the API, docs, version and your public key.
 
 You now have a running BigchainDB Server and can post transactions to it.
 One way to do that is to use the BigchainDB Python Driver.
