@@ -50,53 +50,53 @@ An example of a simple template file (``--template-file``):
 .. code-block:: json
 
     {
-        "$schema": "http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json#", 
-        "contentVersion": "1.0.0.0", 
-        "parameters": {
-    	"sku": {
-    	    "type": "String"
-    	}, 
-    	"workspaceName": {
-    	    "type": "String"
-    	},
-    	"solutionType": {
-    	    "type": "String"
-    	}, 
-        }, 
+      "$schema": "http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "sku": {
+          "type": "String"
+        },
+        "workspaceName": {
+          "type": "String"
+        },
+        "solutionType": {
+          "type": "String"
+        },
         "resources": [
-    	{
-    	    "apiVersion": "2015-03-20", 
-    	    "type": "Microsoft.OperationalInsights/workspaces", 
-    	    "name": "[parameters('workspaceName')]",
-    	    "location": "[resourceGroup().location]", 
-    	    "properties": {
-    		"sku": {
-    		    "name": "[parameters('sku')]"
-    		}
-    	    },
-    	    "resources": [
-    		{
-    		    "apiVersion": "2015-11-01-preview", 
-    		    "location": "[resourceGroup().location]", 
-    		    "name": "[Concat(parameters('solutionType'), '(', parameters('workspaceName'), ')')]", 
-    		    "type": "Microsoft.OperationsManagement/solutions", 
-    		    "id": "[Concat(resourceGroup().id, '/providers/Microsoft.OperationsManagement/solutions/', parameters('solutionType'), '(', parameters('workspaceName'), ')')]", 
-    		    "dependsOn": [
-    			"[concat('Microsoft.OperationalInsights/workspaces/', parameters('workspaceName'))]"
-    		    ],
-    		    "properties": {
-    			"workspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces/', parameters('workspaceName'))]"
-    		    },
-    		    "plan": {
-    			"publisher": "Microsoft", 
-    			"product": "[Concat('OMSGallery/', parameters('solutionType'))]", 
-    			"name": "[Concat(parameters('solutionType'), '(', parameters('workspaceName'), ')')]", 
-    			"promotionCode": ""
-    		    }
-    		}
-    	    ]
-    	}
+          {
+            "apiVersion": "2015-03-20",
+            "type": "Microsoft.OperationalInsights/workspaces",
+            "name": "[parameters('workspaceName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+              "sku": {
+                "name": "[parameters('sku')]"
+              }
+            },
+            "resources": [
+              {
+                "apiVersion": "2015-11-01-preview",
+                "location": "[resourceGroup().location]",
+                "name": "[Concat(parameters('solutionType'), '(', parameters('workspaceName'), ')')]",
+                "type": "Microsoft.OperationsManagement/solutions",
+                "id": "[Concat(resourceGroup().id, '/providers/Microsoft.OperationsManagement/solutions/', parameters('solutionType'), '(', parameters('workspaceName'), ')')]",
+                "dependsOn": [
+                  "[concat('Microsoft.OperationalInsights/workspaces/', parameters('workspaceName'))]"
+                ],
+                "properties": {
+                  "workspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces/', parameters('workspaceName'))]"
+                },
+                "plan": {
+                  "publisher": "Microsoft",
+                  "product": "[Concat('OMSGallery/', parameters('solutionType'))]",
+                  "name": "[Concat(parameters('solutionType'), '(', parameters('workspaceName'), ')')]",
+                  "promotionCode": ""
+                }
+              }
+            ]
+          }
         ]
+      }
     }
 
 An example of the associated parameter file (``--parameters``):
@@ -104,19 +104,19 @@ An example of the associated parameter file (``--parameters``):
 .. code-block:: json
     
     {
-        "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
-        "contentVersion": "1.0.0.0",
-        "parameters": {
-    	"sku": {
-    	    "value": "Free"
-    	},
-    	"workspaceName": {
-    	    "value": "work_space"
-    	},
-    	"solutionType": {
-    	    "value": "Containers"
-    	},
+      "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "sku": {
+          "value": "Free"
+        },
+        "workspaceName": {
+          "value": "work_space"
+        },
+        "solutionType": {
+          "value": "Containers"
         }
+      }
     }
 
 Deploy the OMS Agents

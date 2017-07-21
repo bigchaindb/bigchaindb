@@ -49,7 +49,7 @@ data:
   # Kubernetes cluster.
   ngx-mdb-instance-name: "<name of the mdb instance>.default.svc.cluster.local"
 
-  # ngx-openresty-instance-name is the FQDN of the MongoDB instance in this
+  # ngx-openresty-instance-name is the FQDN of the OpenResty instance in this
   # Kubernetes cluster.
   ngx-openresty-instance-name: "<name of the openresty instance>.default.svc.cluster.local"
 
@@ -95,6 +95,24 @@ data:
   # the MongoDB backend.
   bigchaindb-database-name: "bigchain"
 
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bdb-config
+  namespace: default
+data:
+  # Colon-separated list of all *other* nodes' BigchainDB public keys.
+  bdb-keyring: "<':' separated list of public keys>"
+
+  # BigchainDB instance authentication user name
+  bdb-user: "<user name>"
+
+  # BigchainDB public key of *this* node.
+  # Generated using bigchaindb_driver in the docs
+  # Example: "EPQk5i5yYpoUwGVM8VKZRjM8CYxB6j8Lu8i8SG7kGGce"
+  bdb-public-key: "<public key>"
+
   # bigchaindb-backlog-reassign-delay is the number of seconds a transaction
   # can remain in the backlog before being reassigned.
   bigchaindb-backlog-reassign-delay: "120"
@@ -111,20 +129,3 @@ data:
 
   # bigchaindb-log-level is the log level used to log to the console.
   bigchaindb-log-level: "debug"
-
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: bdb-config
-  namespace: default
-data:
-  # Colon-separated list of all *other* nodes' BigchainDB public keys.
-  bdb-keyring: "<':' separated list of public keys>"
-
-  # BigchainDB instance authentication user name
-  bdb-user: "<user name>"
-
-  # BigchainDB public key of *this* node.
-  # Example: "EPQk5i5yYpoUwGVM8VKZRjM8CYxB6j8Lu8i8SG7kGGce"
-  bdb-public-key: "<public key>"

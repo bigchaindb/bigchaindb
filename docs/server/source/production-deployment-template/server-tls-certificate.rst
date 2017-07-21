@@ -68,7 +68,7 @@ directory and do something like:
 
 .. code:: bash
         
-   ./easyrsa import-req mdb-instance-0.req mdb-instance-0
+   ./easyrsa import-req /path/to/mdb-instance-0.req mdb-instance-0
 
    ./easyrsa --subject-alt-name=DNS:localhost,DNS:mdb-instance-0 sign-req server mdb-instance-0
         
@@ -85,5 +85,5 @@ private keys.
 
 .. code:: bash
         
-   cat mdb-instance-0.crt mdb-instance-0.key > mdb-instance-0.pem
+   cat /path/to/mdb-instance-0.crt /path/to/mdb-instance-0.key > mdb-instance-0.pem
 

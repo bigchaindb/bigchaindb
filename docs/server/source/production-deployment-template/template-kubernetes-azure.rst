@@ -128,14 +128,14 @@ You can SSH to one of the just-deployed Kubernetes "master" nodes
 
 .. code:: bash
 
-   $ ssh -i ~/.ssh/<name>.pub ubuntu@<master-ip-address-or-hostname>
+   $ ssh -i ~/.ssh/<name> ubuntu@<master-ip-address-or-hostname>
 
 where you can get the IP address or hostname
 of a master node from the Azure Portal. For example:
 
 .. code:: bash
 
-   $ ssh -i ~/.ssh/mykey123.pub ubuntu@mydnsprefix.westeurope.cloudapp.azure.com
+   $ ssh -i ~/.ssh/mykey123 ubuntu@mydnsprefix.westeurope.cloudapp.azure.com
 
 .. note::
 

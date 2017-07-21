@@ -220,10 +220,9 @@ portal using your admin account, click **APIs** and click on **Integration**
 for the relevant API.
 Scroll to the bottom of the page and click the small link
 in the lower right corner, labelled **Download the NGINX Config files**.
-You'll get a ``.zip`` file.
-Unzip it, then open the ``.conf`` file and the ``.lua`` file.
+Unzip it(if it is a ``zip`` file). Open the ``.conf`` and the ``.lua`` file.
 You should be able to find all the values in those files.
-You have to be careful because it will have values for *all* your APIs,
+You have to be careful because it will have values for **all** your APIs,
 and some values vary from API to API.
 The ``version-header`` is the timestamp in a line that looks like:
 
