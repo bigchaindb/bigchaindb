@@ -147,22 +147,16 @@ docker-compose run --rm bdb py.test -v --database-backend=mongodb
 
 ### Accessing the HTTP API
 
-A quick check to make sure that the BigchainDB server API is operational:
+You can do quick check to make sure that the BigchainDB server API is operational:
 
 ```bash
 curl $(docker-compose port bdb 9984)
 ```
 
-should give you something like:
+The result should be a JSON object (inside braces like { })
+containing the name of the software ("BigchainDB"),
+the version of BigchainDB, the node's public key, and other information.
 
-```bash
-{
-  "keyring": [],
-  "public_key": "Brx8g4DdtEhccsENzNNV6yvQHR8s9ebhKyXPFkWUXh5e",
-  "software": "BigchainDB",
-  "version": "0.6.0"
-}
-```
 How does the above curl command work? Inside the Docker container, BigchainDB
 exposes the HTTP API on port `9984`. First we get the public port where that
 port is bound:
