@@ -18,9 +18,11 @@ A minor release is preceeded by a feature freeze and created from the 'master' b
 1. Update the `CHANGELOG.md` file in master
 1. In `k8s/bigchaindb/bigchaindb-dep.yaml`, find the line of the form `image: bigchaindb/bigchaindb:0.8.1` and change the version number to the new version number, e.g. `0.9.0`. (This is the Docker image that Kubernetes should pull from Docker Hub.) Commit that change to master
 1. Create and checkout a new branch for the minor release, named after the minor version, without a preceeding 'v', e.g. `git checkout -b 0.9` (*not* 0.9.0, this new branch will be for e.g. 0.9.0, 0.9.1, 0.9.2, etc. each of which will be identified by a tagged commit)
+1. Push the new branch to GitHub, e.g. `git push origin 0.9`
+1. Create and checkout a new branch off of the 0.9 branch. Let's call it branch T for now
 1. In `bigchaindb/version.py`, update `__version__` and `__short_version__`, e.g. to `0.9` and `0.9.0` (with no `.dev` on the end)
-1. Commit that change, and push the new branch to GitHub
-1. On GitHub, use the new branch to create a new pull request and wait for all the tests to pass
+1. Commit that change, push the new branch T to GitHub, and use the pushed branch T to create a new pull request merging the T branch into the 0.9 branch.
+1. Wait for all the tests to pass!
 1. Follow steps outlined in [Common Steps](#common-steps)
 1. In 'master' branch, Edit `bigchaindb/version.py`, increment the minor version to the next planned release, e.g. `0.10.0.dev`. (Exception: If you just released `X.Y.Zrc1` then increment the minor version to `X.Y.Zrc2`.) This step is so people reading the latest docs will know that they're for the latest (master branch) version of BigchainDB Server, not the docs at the time of the most recent release (which are also available).
 1. Go to [Docker Hub](https://hub.docker.com/), sign in, go to Settings - Build Settings, and under the build with Docker Tag Name equal to `latest`, change the Name to the number of the new release, e.g. `0.9`
