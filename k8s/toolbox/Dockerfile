@@ -7,7 +7,7 @@ FROM alpine:3.5
 LABEL maintainer "dev@bigchaindb.com"
 WORKDIR /
 RUN apk add --no-cache --update curl bind-tools python3-dev g++ \
-        libffi-dev make vim git nodejs \
+        libffi-dev make vim git nodejs openssl-dev \
     && pip3 install ipython \
     && git clone https://github.com/bigchaindb/bigchaindb-driver \
     && cd bigchaindb-driver \
