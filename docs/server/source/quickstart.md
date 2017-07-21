@@ -24,7 +24,7 @@ $ sudo mongod --replSet=bigchain-rs
 E. Ubuntu 16.04 already has Python 3.5, so you don't need to install it, but you do need to install some other things:
 ```text
 $ sudo apt-get update
-$ sudo apt-get install g++ python3-dev libffi-dev build-essential libssl-dev
+$ sudo apt-get install libffi-dev libssl-dev
 ```
 
 F. Get the latest version of pip and setuptools:
