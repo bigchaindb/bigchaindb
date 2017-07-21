@@ -87,6 +87,10 @@ You can connect to your cluster's
 
    $ kubectl proxy -p 8001
 
+   or
+
+   $ az acs kubernetes browse -g [Resource Group] -n [Container service instance name] --ssh-key-file /path/to/privateKey
+
 or, if you prefer to be explicit about the context (explained above):
 
 .. code:: bash
@@ -210,7 +214,7 @@ have the Azure DNS prefix name along with a long random string, without the
 changes to be applied.
 
 To verify the DNS setting is operational, you can run ``nslookup <DNS
-name added in ConfigMap>`` from your local Linux shell.
+name added in Azure configuration>`` from your local Linux shell.
 
 This will ensure that when you scale the replica set later, other MongoDB
 members in the replica set can reach this instance.
@@ -295,7 +299,7 @@ Step 9: Start the NGINX Kubernetes Deployment
 ---------------------------------------------
 
   * NGINX is used as a proxy to OpenResty, BigchainDB and MongoDB instances in
-    the node. It proxies HTTP/HTTPS requests on the ``clusted-frontend-port``
+    the node. It proxies HTTP/HTTPS requests on the ``cluster-frontend-port``
     to the corresponding OpenResty or BigchainDB backend, and TCP connections
     on ``mongodb-frontend-port`` to the MongoDB backend.
 
@@ -346,7 +350,7 @@ Step 9.2: NGINX with HTTPS + 3scale
 
      .. code:: bash
 
-        $ kubectl --context k8s-bdb-test-cluster-0 apply -f nginx-3scale/nginx-3scale-dep.yaml
+        $ kubectl --context k8s-bdb-test-cluster-0 apply -f nginx-https/nginx-https-dep.yaml
 
 
 Step 10: Create Kubernetes Storage Classes for MongoDB
@@ -854,15 +858,15 @@ To test the NGINX instance with HTTPS and 3scale integration:
    
    $ nslookup ngx-https-instance-0
 
-   $ dig +noall +answer _public-secure-cluster-port._.tcp.ngx-https-instance-0.default.svc.cluster.local SRV
+   $ dig +noall +answer _public-secure-cluster-port._tcp.ngx-https-instance-0.default.svc.cluster.local SRV
 
-   $ dig +noall +answer _public-mdb-port._.tcp.ngx-https-instance-0.default.svc.cluster.local SRV
+   $ dig +noall +answer _public-mdb-port._tcp.ngx-https-instance-0.default.svc.cluster.local SRV
 
-   $ dig +noall +answer _public-insecure-cluster-port._.tcp.ngx-https-instance-0.default.svc.cluster.local SRV
+   $ dig +noall +answer _public-insecure-cluster-port._tcp.ngx-https-instance-0.default.svc.cluster.local SRV
 
-   $ wsc -er wss://ngx-https-instance-0/api/v1/streams/valid_transactions
+   $ wsc -er wss://<cluster-fqdn>/api/v1/streams/valid_transactions
 
-   $ curl -X GET http://ngx-https-instance-0:27017
+   $ curl -X GET https://<cluster-fqdn>
 
 The above curl command should result in the response
 ``It looks like you are trying to access MongoDB over HTTP on the native driver port.``

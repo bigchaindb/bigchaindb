@@ -67,7 +67,7 @@ directory and do something like:
 
 .. code:: bash
         
-   ./easyrsa import-req bdb-instance-0.req bdb-instance-0
+   ./easyrsa import-req /path/to/bdb-instance-0.req bdb-instance-0
 
    ./easyrsa sign-req client bdb-instance-0
         
@@ -84,4 +84,4 @@ private keys.
 
 .. code:: bash
         
-   cat bdb-instance-0.crt bdb-instance-0.key > bdb-instance-0.pem
+   cat /path/to/bdb-instance-0.crt /path/to/bdb-instance-0.key > bdb-instance-0.pem
