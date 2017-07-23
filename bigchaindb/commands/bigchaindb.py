@@ -8,7 +8,7 @@ import argparse
 import copy
 import json
 import sys
-
+import signal
 from bigchaindb.common import crypto
 from bigchaindb.common.exceptions import (StartupError,
                                           DatabaseAlreadyExists,
@@ -19,7 +19,7 @@ from bigchaindb import backend, processes
 from bigchaindb.backend import schema
 from bigchaindb.backend.admin import (set_replicas, set_shards, add_replicas,
                                       remove_replicas)
-from bigchaindb.backend.exceptions import OperationError
+from bigchaindb.backend.exceptions import ConnectionError, OperationError
 from bigchaindb.commands import utils
 from bigchaindb.commands.messages import (
     CANNOT_START_KEYPAIR_NOT_FOUND,
@@ -135,8 +135,11 @@ def _run_init():
     # Try to access the keypair, throws an exception if it does not exist
     b = bigchaindb.Bigchain()
 
-    schema.init_database(connection=b.connection)
-
+    try:
+        schema.init_database(connection=b.connection)
+    except ConnectionError:
+        logger.error("Cannot connect to the backend")
+        sys.exit(1); 
     b.create_genesis_block()
     logger.info('Genesis block created.')
 
@@ -152,7 +155,6 @@ def run_init(args):
     except DatabaseAlreadyExists:
         print('The database already exists.', file=sys.stderr)
         print('If you wish to re-initialize it, first drop it.', file=sys.stderr)
-
 
 @configure_bigchaindb
 def run_drop(args):
@@ -343,6 +345,7 @@ def create_parser():
                                          'should be in the form `host:port`.')
     return parser
 
-
 def main():
     utils.start(create_parser(), sys.argv[1:], globals())
+    
+       
