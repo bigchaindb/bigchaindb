@@ -17,7 +17,7 @@ An input has the following structure:
 
    {
        "owners_before": ["<The public_keys list in the output being spent>"],
-       "fulfillment": "<Fulfillment URI fulfilling the condition of the output being spent>",
+       "fulfillment": "<String that fulfills the condition in the output being spent>",
        "fulfills": {
            "output_index": "<Index of the output being spent (an integer)>",
            "transaction_id": "<ID of the transaction containing the output being spent>"
@@ -28,10 +28,22 @@ You can think of the ``fulfills`` object as a pointer to an output on another tr
 A CREATE transaction should have exactly one input. That input can contain one or more ``owners_before``, a ``fulfillment`` (with one signature from each of the owners-before), and the value of ``fulfills`` should be ``null``). A TRANSFER transaction should have at least one input, and the value of ``fulfills`` should not be ``null``.
 See the reference on :ref:`inputs <Input>` for more description about the meaning of each field.
 
-To calculate a fulfillment URI, you can use one of the
+The ``fulfillment`` string fulfills the condition in the output that is being spent (transferred).
+To calculate it:
+
+1. Determine the fulfillment as per the `Crypto-Conditions spec (version 02) <https://tools.ietf.org/html/draft-thomas-crypto-conditions-02>`_.
+2. Encode the fulfillment using the `ASN.1 Distinguished Encoding Rules (DER) <http://www.itu.int/ITU-T/recommendations/rec.aspx?rec=12483&lang=en>`_.
+3. Encode the resulting bytes using "base64url" (*not* typical base64) as per `RFC 4648, Section 5 <https://tools.ietf.org/html/rfc4648#section-5>`_.
+
+To do those calculations, you can use one of the
 :ref:`BigchainDB drivers or transaction-builders <Drivers & Tools>`,
 or use a low-level crypto-conditions library as illustrated
 in the page about `Handcrafting Transactions <https://docs.bigchaindb.com/projects/py-driver/en/latest/handcraft.html>`_.
+A ``fulfillment`` string should look something like:
+
+.. code::
+
+   "pGSAIDgbT-nnN57wgI4Cx17gFHv3UB_pIeAzwZCk10rAjs9bgUDxyNnXMl-5PFgSIOrN7br2Tz59MiWe2XY0zlC7LcN52PKhpmdRtcr7GR1PXuTfQ9dE3vGhv7LHn6QqDD6qYHYM"
 
 
 Outputs
