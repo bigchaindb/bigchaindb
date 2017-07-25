@@ -866,7 +866,7 @@ To test the NGINX instance with HTTPS and 3scale integration:
 
    $ wsc -er wss://<cluster-fqdn>/api/v1/streams/valid_transactions
 
-   $ curl -X GET https://<cluster-fqdn>
+   $ curl -X GET http://<cluster-fqdn>:27017
 
 The above curl command should result in the response
 ``It looks like you are trying to access MongoDB over HTTP on the native driver port.``
