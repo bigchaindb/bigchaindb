@@ -9,6 +9,7 @@ This project adheres to [Semantic Versioning 2](http://semver.org/spec/v2.0.0.ht
   * The Command Line Interface.
   * The transaction schema.
   * All the endpoints exposed by the HTTP API (including payloads sent to and received from them).
+  * The WebSocket Event Stream API.
   * The docker setup.
 * Excludes:
   * **Everything** marked as `experimental` (even if the feature is part of the **public API**).
