@@ -44,7 +44,7 @@ You can look at many timestamps to get a statistical sense of when something hap
 
 ## How BigchainDB Uses Timestamps
 
-BigchainDB _doesn't_ use timestamps to determine the order of transactions or blocks. In particular, the order of blocks is determined by RethinkDB's changefeed on the bigchain table.
+BigchainDB _doesn't_ use timestamps to determine the order of transactions or blocks. In particular, the order of blocks is determined by MongoDB's oplog (or RethinkDB's changefeed) on the bigchain table.
 
 BigchainDB does use timestamps for some things. When a Transaction is written to the backlog, a timestamp is assigned called the `assignment_timestamp`, to determine if it has been waiting in the backlog for too long (i.e. because the node assigned to it hasn't handled it yet).
 
