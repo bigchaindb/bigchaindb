@@ -5,7 +5,7 @@ All _notable_ changes to this project will be documented in this file (`CHANGELO
 This project adheres to [Semantic Versioning 2](http://semver.org/spec/v2.0.0.html), the BigchainDB **public API**:
 * Includes:
   * This definition of **public API**.
-  * The configuration schema, and the path where the configuration is stored.
+  * The configuration defaults, schemas, and paths where configuration files are stored.
   * The Command Line Interface.
   * The transaction schema.
   * All the endpoints exposed by the HTTP API (including payloads sent to and received from them).
