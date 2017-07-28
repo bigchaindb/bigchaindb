@@ -23,7 +23,7 @@ def make_error(status_code, message=None):
 
 def base_ws_uri():
     """Base websocket uri."""
-    scheme = config['wsserver']['scheme']
-    host = config['wsserver']['host']
-    port = config['wsserver']['port']
+    scheme = config['wsserver']['advertised_scheme']
+    host = config['wsserver']['advertised_host']
+    port = config['wsserver']['advertised_port']
     return '{}://{}:{}'.format(scheme, host, port)

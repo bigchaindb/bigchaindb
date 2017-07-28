@@ -490,17 +490,17 @@ def wsserver_config():
 
 @pytest.fixture
 def wsserver_scheme(wsserver_config):
-    return wsserver_config['scheme']
+    return wsserver_config['advertised_scheme']
 
 
 @pytest.fixture
 def wsserver_host(wsserver_config):
-    return wsserver_config['host']
+    return wsserver_config['advertised_host']
 
 
 @pytest.fixture
 def wsserver_port(wsserver_config):
-    return wsserver_config['port']
+    return wsserver_config['advertised_port']
 
 
 @pytest.fixture
