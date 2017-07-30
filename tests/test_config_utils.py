@@ -72,12 +72,22 @@ def test_load_consensus_plugin_raises_with_invalid_subclass(monkeypatch):
     import time
     monkeypatch.setattr(config_utils,
                         'iter_entry_points',
-                        lambda *args: [type('entry_point', (object), {'load': lambda: object})])
+                        lambda *args: [type('entry_point', (object, ), {'load': lambda: object})])
 
     with pytest.raises(TypeError):
         # Since the function is decorated with `lru_cache`, we need to
         # "miss" the cache using a name that has not been used previously
         config_utils.load_consensus_plugin(str(time.time()))
+
+
+def test_load_block_publisher(monkeypatch):
+    from bigchaindb import config_utils
+    monkeypatch.setattr(config_utils,
+                        'iter_entry_points',
+                        lambda *args: [type('entry_point', (object, ), {'load': lambda: object})])
+
+    plugins = config_utils.load_block_publisher_plugins(['one', 'two'])
+    assert len(plugins) == 2
 
 
 def test_map_leafs_iterator():

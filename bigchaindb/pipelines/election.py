@@ -13,7 +13,7 @@ from bigchaindb import backend
 from bigchaindb.backend.changefeed import ChangeFeed
 from bigchaindb.models import Block
 from bigchaindb import Bigchain
-from bigchaindb.events import EventHandler, Event, EventTypes
+from bigchaindb.events import Event, EventTypes
 
 
 logger = logging.getLogger(__name__)
@@ -25,9 +25,7 @@ class Election:
 
     def __init__(self, events_queue=None):
         self.bigchain = Bigchain()
-        self.event_handler = None
-        if events_queue:
-            self.event_handler = EventHandler(events_queue)
+        self.events_queue = events_queue
 
     def check_for_quorum(self, next_vote):
         """
@@ -73,7 +71,7 @@ class Election:
         return invalid_block
 
     def handle_block_events(self, result, block_id):
-        if self.event_handler:
+        if self.events_queue:
             if result['status'] == self.bigchain.BLOCK_UNDECIDED:
                 return
             elif result['status'] == self.bigchain.BLOCK_INVALID:
@@ -82,7 +80,7 @@ class Election:
                 event_type = EventTypes.BLOCK_VALID
 
             event = Event(event_type, self.bigchain.get_block(block_id))
-            self.event_handler.put_event(event)
+            self.events_queue.put(event)
 
 
 def create_pipeline(events_queue=None):

@@ -2,6 +2,9 @@ from enum import Enum
 from multiprocessing import Queue
 
 
+POISON_PILL = 'POISON_PILL'
+
+
 class EventTypes(Enum):
     BLOCK_VALID = 1
     BLOCK_INVALID = 2
@@ -14,20 +17,28 @@ class Event:
         self.data = event_data
 
 
-class EventHandler:
+class PubSub:
 
-    def __init__(self, events_queue):
-        self.events_queue = events_queue
+    def __init__(self):
+        self.publisher_queue = Queue()
+        self.queues = []
 
-    def put_event(self, event, timeout=None):
-        # TODO: handle timeouts
-        self.events_queue.put(event, timeout=None)
+    def get_publisher_queue(self):
+        return self.publisher_queue
 
-    def get_event(self, timeout=None):
-        # TODO: handle timeouts
-        return self.events_queue.get(timeout=None)
+    def get_subscriber_queue(self):
+        queue = Queue()
+        self.queues.append(queue)
+        return queue
 
+    def publish(self, event):
+        for queue in self.queues:
+            queue.put(event)
 
-def setup_events_queue():
-    # TODO: set bounds to the queue
-    return Queue()
+    def run(self):
+        while True:
+            event = self.publisher_queue.get()
+            if event is POISON_PILL:
+                return
+            else:
+                self.publish(event)
