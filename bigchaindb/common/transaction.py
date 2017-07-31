@@ -638,6 +638,7 @@ class Transaction(object):
         for recipient in recipients:
             if not isinstance(recipient, tuple) or len(recipient) != 2:
                 raise ValueError(('Each `recipient` in the list must be a'
+                                  ' tuple of `([<list of public keys>],'
                                   ' <amount>)`'))
             pub_keys, amount = recipient
             outputs.append(Output.generate(pub_keys, amount))
