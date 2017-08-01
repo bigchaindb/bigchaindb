@@ -16,7 +16,7 @@ C. Assign rwx(read/write/execute) permissions to the user for default database d
 $ sudo chmod -R 700 /data/db
 ```
 
-D. Run MongoDB (do not close this terminal):
+D. Run MongoDB (but do not close this terminal):
 ```text
 $ sudo mongod --replSet=bigchain-rs
 ```
@@ -57,7 +57,7 @@ I. Run BigchainDB Server:
 $ bigchaindb start
 ```
 
-J. Verify BigchainDB Server setup by visiting the BigchainDB Root Url in your browser (if not changed during installation):
+J. Verify BigchainDB Server setup by visiting the BigchainDB Root URL in your browser:
 ```text
 $ http://127.0.0.1:9984/
 ```
