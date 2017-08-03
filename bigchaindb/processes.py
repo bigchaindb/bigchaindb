@@ -2,7 +2,7 @@ import logging
 import multiprocessing as mp
 
 import bigchaindb
-from bigchaindb.config_utils import load_block_publisher_plugins
+from bigchaindb.config_utils import load_events_plugins
 from bigchaindb.pipelines import vote, block, election, stale
 from bigchaindb.events import PubSub
 from bigchaindb.web import server, websocket_server
@@ -22,6 +22,20 @@ BANNER = """
 *                                                                          *
 ****************************************************************************
 """
+
+
+def start_events_plugins(pubsub):
+    plugins = load_events_plugins(bigchaindb.config.get('events_plugins'))
+
+    for name, plugin in plugins:
+        logger.info('Loading events plugin %s', name)
+
+        event_types = getattr(plugin, 'event_types', None)
+        queue = pubsub.get_subscriber_queue(event_types)
+
+        mp.Process(name='events_plugin_{}'.format(name),
+                   target=plugin.run,
+                   args=(queue, )).start()
 
 
 def start():
@@ -61,10 +75,6 @@ def start():
     # start message
     logger.info(BANNER.format(bigchaindb.config['server']['bind']))
 
-    for name, plugin in load_block_publisher_plugins(bigchaindb.config.get('block_publishers', [])):
-        logger.info('Loading block publisher plugin %s', name)
-        mp.Process(name='block_publisher_{}'.format(name),
-                   target=plugin.run,
-                   args=(pubsub.get_subscriber_queue(),)).start()
+    start_events_plugins(pubsub)
 
     pubsub.run()

@@ -289,14 +289,14 @@ def load_consensus_plugin(name=None):
     return plugin
 
 
-def load_block_publisher_plugins(names):
+def load_events_plugins(names=None):
     plugins = []
 
     if names is None:
-        return
+        return plugins
 
     for name in names:
-        for entry_point in iter_entry_points('bigchaindb.block_publisher', name):
+        for entry_point in iter_entry_points('bigchaindb.events', name):
             plugins.append((name, entry_point.load()))
 
     return plugins

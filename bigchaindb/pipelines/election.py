@@ -13,7 +13,7 @@ from bigchaindb import backend
 from bigchaindb.backend.changefeed import ChangeFeed
 from bigchaindb.models import Block
 from bigchaindb import Bigchain
-from bigchaindb.events import Event, EventTypes
+from bigchaindb.events import EventTypes, Event
 
 
 logger = logging.getLogger(__name__)
