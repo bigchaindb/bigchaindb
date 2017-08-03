@@ -14,8 +14,8 @@ A consortium can increase its decentralization (and its resilience) by increasin
 
 There’s no node that has a long-term special position in the cluster. All nodes run the same software and perform the same duties.
 
-RethinkDB and MongoDB have an “admin” user which can’t be deleted and which can make big changes to the database, such as dropping a table. Right now, that’s a big security vulnerability, but we have plans to mitigate it by:
+MongoDB and RethinkDB have an “admin” user which can’t be deleted and which can make big changes to the database, such as dropping a table. Right now, that’s a big security vulnerability, but we have plans to mitigate it by:
 1. Locking down the admin user as much as possible.
 2. Having all nodes inspect admin-type requests before acting on them. Requests can be checked against an evolving whitelist of allowed actions. Nodes requesing non-allowed requests can be removed from the list of cluster nodes.
 
-It’s worth noting that the RethinkDB admin user can’t transfer assets, even today. The only way to create a valid transfer transaction is to fulfill the current (crypto) conditions on the asset, and the admin user can’t do that because the admin user doesn’t have the necessary private keys (or preimages, in the case of hashlock conditions). They’re not stored in the database.
+It’s worth noting that the admin user can’t transfer assets, even today. The only way to create a valid transfer transaction is to fulfill the current (crypto) conditions on the asset, and the admin user can’t do that because the admin user doesn’t have the necessary private keys (or preimages, in the case of hashlock conditions). They’re not stored in the database.
