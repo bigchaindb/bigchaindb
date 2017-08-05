@@ -3,7 +3,7 @@
 BigchainDB is not production-ready. You can use it to build a prototype or proof-of-concept (POC); many people are already doing that.
 Once BigchainDB is production-ready, we'll make an announcement.
 
-BigchainDB version numbers follow the conventions of *Semantic Versioning* as documented at [semver.org](http://semver.org/). This means, among other things:
+BigchainDB version numbers follow the conventions of *Semantic Versioning* as documented at [semver.org](http://semver.org/). (For Python stuff, we use [Python's version of Semantic Versioning](https://packaging.python.org/tutorials/distributing-packages/#choosing-a-versioning-scheme).) This means, among other things:
 
 * Before version 1.0, breaking API changes could happen in any new version, even in a change from version 0.Y.4 to 0.Y.5.
 
