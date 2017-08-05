@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  # Name of mongodb instance you are trying to connect to
+  # e.g. mdb-instance-0
+  name: "<remote-mongodb-host>"
+  namespace: default
+spec:
+  ports:
+  - port: "<mongodb-backend-port from ConfigMap>"
+  type: ExternalName
+  # FQDN of remote cluster/NGINX instance
+  externalName: "<dns-name-remote-nginx>"

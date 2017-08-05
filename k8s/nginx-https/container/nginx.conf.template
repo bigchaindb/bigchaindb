@@ -100,7 +100,7 @@ http {
         add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
         add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Range,Range';
         add_header 'Access-Control-Expose-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Range,Range';
-        
+
         proxy_pass http://$openresty_backend:OPENRESTY_BACKEND_PORT;
       }
 
@@ -157,10 +157,14 @@ stream {
 
   # Enable logging when connections are being throttled.
   limit_conn_log_level notice;
-  
-  # Allow 16 connections from the same IP address.
-  limit_conn two 16;
-    
+
+  # For a multi node BigchainDB deployment we need around 2^5 connections
+  # (for inter-node communication)per node via NGINX, we can bump this up in case
+  # there is a requirement to scale up. But we should not remove this
+  # for security reasons.
+  # Allow 256 connections from the same IP address.
+  limit_conn two 256;
+
   # DNS resolver to use for all the backend names specified in this configuration.
   resolver DNS_SERVER valid=30s ipv6=off;
 
@@ -169,10 +173,10 @@ stream {
   map $remote_addr $mdb_backend {
     default MONGODB_BACKEND_HOST;
   }
-  
+
   # Frontend server to forward connections to MDB instance.
   server {
-    listen MONGODB_FRONTEND_PORT so_keepalive=10m:1m:5;
+    listen MONGODB_FRONTEND_PORT so_keepalive=3m:1m:5;
     preread_timeout 30s;
     tcp_nodelay on;
     proxy_pass $mdb_backend:MONGODB_BACKEND_PORT;

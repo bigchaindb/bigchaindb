@@ -59,7 +59,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: vars
-              key: openresty-instance-name
+              key: ngx-openresty-instance-name
         - name: BIGCHAINDB_BACKEND_HOST
           valueFrom:
             configMapKeyRef:
