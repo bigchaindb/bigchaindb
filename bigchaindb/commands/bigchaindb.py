@@ -8,7 +8,7 @@ import argparse
 import copy
 import json
 import sys
-import signal
+
 from bigchaindb.common import crypto
 from bigchaindb.common.exceptions import (StartupError,
                                           DatabaseAlreadyExists,
@@ -134,14 +134,14 @@ def run_export_my_pubkey(args):
 def _run_init():
     # Try to access the keypair, throws an exception if it does not exist
     b = bigchaindb.Bigchain()
-
     try:
         schema.init_database(connection=b.connection)
     except ConnectionError:
-        logger.error("Cannot connect to the backend")
-        sys.exit(1); 
-    b.create_genesis_block()
-    logger.info('Genesis block created.')
+        logger.error("Cannot connect to Backend")
+        sys.exit(1)
+    else:
+        b.create_genesis_block()
+        logger.info('Genesis block created.')
 
 
 @configure_bigchaindb
