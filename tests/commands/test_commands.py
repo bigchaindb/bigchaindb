@@ -152,8 +152,8 @@ def test__run_init(mocker):
         'bigchaindb.commands.bigchaindb.bigchaindb.Bigchain')
     init_db_mock = mocker.patch(
         'bigchaindb.commands.bigchaindb.schema.init_database',
-        autospec=False,
-        spec_set=False
+        autospec=True,
+        spec_set=True
     )
     _run_init()
     bigchain_mock.assert_called_once_with()
@@ -169,8 +169,8 @@ def test__run_init_when_db_not_configured(mocker,capsys):
         'bigchaindb.commands.bigchaindb.bigchaindb.Bigchain')
     init_db_mock = mocker.patch(
         'bigchaindb.commands.bigchaindb.schema.init_database',
-        autospec=True,
-        spec_set=True
+        autospec=False,
+        spec_set=False
     )
     with pytest.raises(ConnectionError):
         _run_init()
