@@ -27,8 +27,13 @@ def make_error(status_code, message=None):
 
 
 def base_ws_uri():
-    """Base websocket uri."""
-    scheme = config['wsserver']['scheme']
-    host = config['wsserver']['host']
-    port = config['wsserver']['port']
+    """Base websocket URL that is advertised to external clients.
+
+    Useful when the websocket URL advertised to the clients needs to be
+    customized (typically when running behind NAT, firewall, etc.)
+    """
+
+    scheme = config['wsserver']['advertised_scheme']
+    host = config['wsserver']['advertised_host']
+    port = config['wsserver']['advertised_port']
     return '{}://{}:{}'.format(scheme, host, port)
