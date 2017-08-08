@@ -127,7 +127,8 @@ vars.bigchaindb-wsserver-advertised-scheme
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The ``bigchaindb-wsserver-advertised-scheme`` is the protocol used to access
-the WebSocket API in BigchainDB. This can be set to 'wss' (default) or 'ws'.
+the WebSocket API in BigchainDB. This can be set to ``wss`` or ``ws``.
+It is set to ``wss`` by default.
 
 
 vars.bigchaindb-api-port, vars.bigchaindb-ws-port and Similar
