@@ -80,13 +80,13 @@ def test_load_consensus_plugin_raises_with_invalid_subclass(monkeypatch):
         config_utils.load_consensus_plugin(str(time.time()))
 
 
-def test_load_block_publisher(monkeypatch):
+def test_load_events_plugins(monkeypatch):
     from bigchaindb import config_utils
     monkeypatch.setattr(config_utils,
                         'iter_entry_points',
                         lambda *args: [type('entry_point', (object, ), {'load': lambda: object})])
 
-    plugins = config_utils.load_block_publisher_plugins(['one', 'two'])
+    plugins = config_utils.load_events_plugins(['one', 'two'])
     assert len(plugins) == 2
 
 

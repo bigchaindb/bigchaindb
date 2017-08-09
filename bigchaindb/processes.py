@@ -2,9 +2,9 @@ import logging
 import multiprocessing as mp
 
 import bigchaindb
-from bigchaindb.config_utils import load_events_plugins
+from bigchaindb import config_utils
 from bigchaindb.pipelines import vote, block, election, stale
-from bigchaindb.events import PubSub
+from bigchaindb.events import Exchange
 from bigchaindb.web import server, websocket_server
 
 
@@ -24,14 +24,15 @@ BANNER = """
 """
 
 
-def start_events_plugins(pubsub):
-    plugins = load_events_plugins(bigchaindb.config.get('events_plugins'))
+def start_events_plugins(exchange):
+    plugins = config_utils.load_events_plugins(
+        bigchaindb.config.get('events_plugins'))
 
     for name, plugin in plugins:
         logger.info('Loading events plugin %s', name)
 
         event_types = getattr(plugin, 'event_types', None)
-        queue = pubsub.get_subscriber_queue(event_types)
+        queue = exchange.get_subscriber_queue(event_types)
 
         mp.Process(name='events_plugin_{}'.format(name),
                    target=plugin.run,
@@ -41,12 +42,12 @@ def start_events_plugins(pubsub):
 def start():
     logger.info('Initializing BigchainDB...')
 
-    # Create a PubSub object.
+    # Create a Exchange object.
     # The events queue needs to be initialized once and shared between
     # processes. This seems the best way to do it
     # At this point only the election processs and the event consumer require
     # this queue.
-    pubsub = PubSub()
+    exchange = Exchange()
 
     # start the processes
     logger.info('Starting block')
@@ -59,7 +60,7 @@ def start():
     stale.start()
 
     logger.info('Starting election')
-    election.start(events_queue=pubsub.get_publisher_queue())
+    election.start(events_queue=exchange.get_publisher_queue())
 
     # start the web api
     app_server = server.create_server(bigchaindb.config['server'])
@@ -69,12 +70,12 @@ def start():
     logger.info('WebSocket server started')
     p_websocket_server = mp.Process(name='ws',
                                     target=websocket_server.start,
-                                    args=(pubsub.get_subscriber_queue(),))
+                                    args=(exchange.get_subscriber_queue(),))
     p_websocket_server.start()
 
     # start message
     logger.info(BANNER.format(bigchaindb.config['server']['bind']))
 
-    start_events_plugins(pubsub)
+    start_events_plugins(exchange)
 
-    pubsub.run()
+    exchange.run()

@@ -6,6 +6,8 @@ POISON_PILL = 'POISON_PILL'
 
 
 class EventTypes:
+    """Container class that holds all the possible
+    events BigchainDB manages."""
 
     ALL = ~0
     BLOCK_VALID = 1
@@ -16,37 +18,69 @@ class EventTypes:
 
 
 class Event:
+    """An Event."""
 
     def __init__(self, event_type, event_data):
+        """Creates a new event.
+
+        Args:
+            event_type (int): the type of the event, see
+                :class:`~bigchaindb.events.EventTypes`
+            event_data (obj): the data of the event.
+        """
+
         self.type = event_type
         self.data = event_data
 
 
-class PubSub:
+class Exchange:
+    """Dispatch events to subscribers."""
 
     def __init__(self):
         self.publisher_queue = Queue()
+
         # Map <event_types -> queues>
         self.queues = defaultdict(list)
 
     def get_publisher_queue(self):
+        """Get the queue used by the publisher.
+
+        Returns:
+            a :class:`multiprocessing.Queue`.
+        """
+
         return self.publisher_queue
 
     def get_subscriber_queue(self, event_types=EventTypes.ALL):
+        """Create a new queue for a specific combination of event types
+        and return it.
+
+        Returns:
+            a :class:`multiprocessing.Queue`.
+        """
         queue = Queue()
         self.queues[event_types].append(queue)
         return queue
 
-    def publish(self, event):
+    def dispatch(self, event):
+        """Given an event, send it to all the subscribers.
+
+        Args
+            event (:class:`~bigchaindb.events.EventTypes`): the event to
+                dispatch to all the subscribers.
+        """
+
         for event_types, queues in self.queues.items():
             if event.type & event_types:
                 for queue in queues:
                     queue.put(event)
 
     def run(self):
+        """Start the exchange"""
+
         while True:
             event = self.publisher_queue.get()
             if event is POISON_PILL:
                 return
             else:
-                self.publish(event)
+                self.dispatch(event)

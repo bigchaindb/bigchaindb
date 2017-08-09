@@ -1,22 +1,22 @@
 def test_event_handler():
-    from bigchaindb.events import EventTypes, Event, PubSub
+    from bigchaindb.events import EventTypes, Event, Exchange
 
     # create and event
     event_data = {'msg': 'some data'}
     event = Event(EventTypes.BLOCK_VALID, event_data)
 
     # create the events pub sub
-    pubsub = PubSub()
+    exchange = Exchange()
 
-    sub0 = pubsub.get_subscriber_queue(EventTypes.BLOCK_VALID)
-    sub1 = pubsub.get_subscriber_queue(EventTypes.BLOCK_VALID |
-                                       EventTypes.BLOCK_INVALID)
+    sub0 = exchange.get_subscriber_queue(EventTypes.BLOCK_VALID)
+    sub1 = exchange.get_subscriber_queue(EventTypes.BLOCK_VALID |
+                                         EventTypes.BLOCK_INVALID)
     # Subscribe to all events
-    sub2 = pubsub.get_subscriber_queue()
-    sub3 = pubsub.get_subscriber_queue(EventTypes.BLOCK_INVALID)
+    sub2 = exchange.get_subscriber_queue()
+    sub3 = exchange.get_subscriber_queue(EventTypes.BLOCK_INVALID)
 
     # push and event to the queue
-    pubsub.publish(event)
+    exchange.dispatch(event)
 
     # get the event from the queue
     event_sub0 = sub0.get()

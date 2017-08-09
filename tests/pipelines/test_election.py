@@ -202,10 +202,10 @@ def test_full_pipeline(b, user_pk):
 
 
 def test_handle_block_events():
-    from bigchaindb.events import PubSub, EventTypes
+    from bigchaindb.events import Exchange, EventTypes
 
-    pubsub = PubSub()
-    events_queue = pubsub.get_publisher_queue()
+    exchange = Exchange()
+    events_queue = exchange.get_publisher_queue()
     e = election.Election(events_queue=events_queue)
     block_id = 'a' * 64
 
