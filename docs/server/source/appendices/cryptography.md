@@ -15,7 +15,7 @@ algorithm provided by the
 which is a wrapper around the optimized reference implementation
 from [http://keccak.noekeon.org](http://keccak.noekeon.org).
 
-**Important**: Since selecting the Keccak hashing algorithm for SHA-3 in 2012, NIST [released a new version](https://en.wikipedia.org/wiki/SHA-3#cite_note-14) of the hash using the same algorithm but slightly different parameters. As of version 0.9, BigchainDB is using the latest version, supported by pysha3 1.0b1. See below for an example output of the hash function.
+**Important**: Since selecting the Keccak hashing algorithm for SHA-3 in 2012, NIST released a new version of the hash using the same algorithm but slightly different parameters. As of version 0.9, BigchainDB is using the latest version, supported by pysha3 1.0b1. See below for an example output of the hash function.
 
 Here's the relevant code from `bigchaindb/bigchaindb/common/crypto.py:
 
