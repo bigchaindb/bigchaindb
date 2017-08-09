@@ -5,12 +5,12 @@ There is some specialized terminology associated with BigchainDB. To get started
 
 ## BigchainDB Node
 
-A **BigchainDB node** is a machine or set of closely-linked machines running RethinkDB/MongoDB Server, BigchainDB Server, and related software. Each node is controlled by one person or organization.
+A **BigchainDB node** is a machine or set of closely-linked machines running MongoDB Server (or RethinkDB Server), BigchainDB Server, and related software. Each node is controlled by one person or organization.
 
 
 ## BigchainDB Cluster
 
-A set of BigchainDB nodes can connect to each other to form a **BigchainDB cluster**. Each node in the cluster runs the same software. A cluster contains one logical RethinkDB/MongoDB datastore. A cluster may have additional machines to do things such as cluster monitoring.
+A set of BigchainDB nodes can connect to each other to form a **BigchainDB cluster**. Each node in the cluster runs the same software. A cluster contains one logical MongoDB/RethinkDB datastore. A cluster may have additional machines to do things such as cluster monitoring.
 
 
 ## BigchainDB Consortium
