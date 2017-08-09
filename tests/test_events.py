@@ -33,3 +33,23 @@ def test_event_handler():
     assert event_sub2.data == event.data
 
     assert sub3.qsize() == 0
+
+
+def test_exchange_stops_with_poison_pill():
+    from bigchaindb.events import EventTypes, Event, Exchange, POISON_PILL
+
+    # create and event
+    event_data = {'msg': 'some data'}
+    event = Event(EventTypes.BLOCK_VALID, event_data)
+
+    # create the events pub sub
+    exchange = Exchange()
+
+    publisher_queue = exchange.get_publisher_queue()
+
+    # push and event to the queue
+    publisher_queue.put(event)
+    publisher_queue.put(POISON_PILL)
+    exchange.run()
+
+    assert publisher_queue.qsize() == 0

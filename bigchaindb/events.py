@@ -82,7 +82,7 @@ class Exchange:
 
         while True:
             event = self.publisher_queue.get()
-            if event is POISON_PILL:
+            if event == POISON_PILL:
                 return
             else:
                 self.dispatch(event)
