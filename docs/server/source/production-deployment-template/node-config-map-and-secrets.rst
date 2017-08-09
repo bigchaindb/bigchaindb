@@ -223,7 +223,7 @@ you can delete the ``threescale-credentials`` Secret
 or leave all the values blank (``""``).
 
 If you *are* using 3scale, get the values for ``secret-token``,
-``service-id``, ``version-header`` and ``provider-key`` by logging in to 3scale
+``service-id``, ``version-header`` and ``service-token`` by logging in to 3scale
 portal using your admin account, click **APIs** and click on **Integration**
 for the relevant API.
 Scroll to the bottom of the page and click the small link
