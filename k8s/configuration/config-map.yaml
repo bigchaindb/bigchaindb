@@ -95,6 +95,10 @@ data:
   # the MongoDB backend.
   bigchaindb-database-name: "bigchain"
 
+  # bigchaindb-wsserver-advertised-scheme is the protocol used to access the
+  # WebSocket API in BigchainDB; can be 'ws' or 'wss' (default).
+  bigchaindb-wsserver-advertised-scheme: "wss"
+
 ---
 apiVersion: v1
 kind: ConfigMap

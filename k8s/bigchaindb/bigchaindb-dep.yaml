@@ -49,11 +49,26 @@ spec:
             configMapKeyRef:
               name: vars
               key: bigchaindb-ws-interface
+        - name: BIGCHAINDB_WSSERVER_ADVERTISED_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: cluster-fqdn
         - name: BIGCHAINDB_WSSERVER_PORT
           valueFrom:
             configMapKeyRef:
               name: vars
               key: bigchaindb-ws-port
+        - name: BIGCHAINDB_WSSERVER_ADVERTISED_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: cluster-frontend-port
+        - name: BIGCHAINDB_WSSERVER_ADVERTISED_SCHEME
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: bigchaindb-wsserver-advertised-scheme
         - name: BIGCHAINDB_KEYPAIR_PUBLIC
           valueFrom:
             configMapKeyRef:
