@@ -11,6 +11,7 @@ Blockchain data can achieve immutability in several ways:
 1. **Replication.** All data is replicated (copied) to several different places. The replication factor can be set by the consortium. The higher the replication factor, the more difficult it becomes to change or delete all replicas.
 1. **Internal watchdogs.** All nodes monitor all changes and if some unallowed change happens, then appropriate action can be taken.
 1. **External watchdogs.** A consortium may opt to have trusted third-parties to monitor and audit their data, looking for irregularities. For a consortium with publicly-readable data, the public can act as an auditor.
+1. **Economic incentives.** Some blockchain systems make it very expensive to change old stored data. Examples include proof-of-work and proof-of-stake systems. BigchainDB doesn't use explicit incentives like those.
 1. Data can be stored using fancy techniques, such as error-correction codes, to make some kinds of changes easier to undo.
 1. **Cryptographic signatures** are often used as a way to check if messages (e.g. transactions, blocks or votes) have been tampered with enroute, and as a way to verify who signed the messages. In BigchainDB, each transaction must be signed (by one or more parties), each block is signed by the node that created it, and each vote is signed by the node that cast it.
 1. **Full or partial backups** may be recorded from time to time, possibly on magnetic tape storage, other blockchains, printouts, etc.
