@@ -53,13 +53,16 @@ class Exchange:
 
         return self.publisher_queue
 
-    def get_subscriber_queue(self, event_types=EventTypes.ALL):
+    def get_subscriber_queue(self, event_types=None):
         """Create a new queue for a specific combination of event types
         and return it.
 
         Returns:
             a :class:`multiprocessing.Queue`.
         """
+        if event_types is None:
+            event_types = EventTypes.ALL
+
         queue = Queue()
         self.queues[event_types].append(queue)
         return queue

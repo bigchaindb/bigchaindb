@@ -52,7 +52,7 @@ Creating your own plugin is really easy, and can be summarized in few steps:
 1. Create a new Python package that defines the entry point ``bigchaindb.events`` in its ``setup.py``.
 2. In your entry point, define two properties:
 
-   - ``events_types``: a variable to tell BigchainDB to which events your plugin is interested.
+   - ``event_types``: a variable to tell BigchainDB to which events your plugin is interested.
    - ``run``: a function that will process the events coming from BigchainDB.
 3. Install the newly created Python in the current environment.
 4. Add the plugin name to your BigchainDB configuration.
@@ -64,4 +64,4 @@ object. Remember: it's your plugin responsibility to consume that queue.
 
 A plugin can subscribe to more than one events by combining them using the
 **binary or** operator, e.g. in case you want to subscribe to both valid and
-invalid blocks your ``events_types`` can be ``1 | 2``.
+invalid blocks your ``event_types`` can be ``1 | 2``.
