@@ -4,7 +4,7 @@ import multiprocessing as mp
 import bigchaindb
 from bigchaindb import config_utils
 from bigchaindb.pipelines import vote, block, election, stale
-from bigchaindb.events import Exchange
+from bigchaindb.events import Exchange, EventTypes
 from bigchaindb.web import server, websocket_server
 
 
@@ -70,7 +70,7 @@ def start():
     logger.info('WebSocket server started')
     p_websocket_server = mp.Process(name='ws',
                                     target=websocket_server.start,
-                                    args=(exchange.get_subscriber_queue(),))
+                                    args=(exchange.get_subscriber_queue(EventTypes.BLOCK_VALID),))
     p_websocket_server.start()
 
     # start message

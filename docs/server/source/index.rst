@@ -13,7 +13,7 @@ BigchainDB Server Documentation
    dev-and-test/index
    server-reference/index
    http-client-server-api
-   websocket-event-stream-api
+   events/index
    drivers-clients/index
    data-models/index
    schema/transaction

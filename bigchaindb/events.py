@@ -9,6 +9,8 @@ class EventTypes:
     """Container class that holds all the possible
     events BigchainDB manages."""
 
+    # If you add a new Event Type, make sure to add it
+    # to the docs in docs/server/source/event-plugin-api.rst
     ALL = ~0
     BLOCK_VALID = 1
     BLOCK_INVALID = 2
