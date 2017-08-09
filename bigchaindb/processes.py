@@ -4,8 +4,8 @@ import multiprocessing as mp
 import bigchaindb
 from bigchaindb.pipelines import vote, block, election, stale
 from bigchaindb.events import setup_events_queue
-from bigchaindb.web import server, websocket_server
-
+from bigchaindb.web import server
+from bigchaindb import events_api
 
 logger = logging.getLogger(__name__)
 
@@ -51,9 +51,9 @@ def start():
     p_webapi = mp.Process(name='webapi', target=app_server.run)
     p_webapi.start()
 
-    logger.info('WebSocket server started')
+    logger.info('Events api started')
     p_websocket_server = mp.Process(name='ws',
-                                    target=websocket_server.start,
+                                    target=events_api.start,
                                     args=(events_queue,))
     p_websocket_server.start()
 
