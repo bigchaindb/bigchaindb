@@ -39,7 +39,7 @@ Plugin Example
 
 We developed a minimal plugin that listens to new valid blocks and prints them
 to the console:
-https://github.com/bigchaindb/bigchaindb_events_plugin_example
+https://github.com/bigchaindb/events-plugin-example
 
 
 Architecture of an Event Plugin
