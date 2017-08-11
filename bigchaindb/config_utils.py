@@ -287,3 +287,16 @@ def load_consensus_plugin(name=None):
                         'consensus.BaseConsensusRules`'.format(type(plugin)))
 
     return plugin
+
+
+def load_events_plugins(names=None):
+    plugins = []
+
+    if names is None:
+        return plugins
+
+    for name in names:
+        for entry_point in iter_entry_points('bigchaindb.events', name):
+            plugins.append((name, entry_point.load()))
+
+    return plugins

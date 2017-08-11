@@ -202,9 +202,10 @@ def test_full_pipeline(b, user_pk):
 
 
 def test_handle_block_events():
-    from bigchaindb.events import setup_events_queue, EventTypes
+    from bigchaindb.events import Exchange, EventTypes
 
-    events_queue = setup_events_queue()
+    exchange = Exchange()
+    events_queue = exchange.get_publisher_queue()
     e = election.Election(events_queue=events_queue)
     block_id = 'a' * 64
 
@@ -216,10 +217,10 @@ def test_handle_block_events():
 
     # put an invalid block event in the queue
     e.handle_block_events({'status': Bigchain.BLOCK_INVALID}, block_id)
-    event = e.event_handler.get_event()
+    event = events_queue.get()
     assert event.type == EventTypes.BLOCK_INVALID
 
     # put a valid block event in the queue
     e.handle_block_events({'status': Bigchain.BLOCK_VALID}, block_id)
-    event = e.event_handler.get_event()
+    event = events_queue.get()
     assert event.type == EventTypes.BLOCK_VALID
