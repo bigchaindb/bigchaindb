@@ -5,7 +5,7 @@
 ########################################################################
 
 apiVersion: apps/v1beta1
-kind: StatefulSet 
+kind: StatefulSet
 metadata:
   name: mdb-instance-0-ss
   namespace: default
@@ -49,9 +49,9 @@ spec:
         - --mongodb-key-file-path
         - /etc/mongod/ssl/mdb-instance.pem
         - --mongodb-ca-file-path
-        - /etc/mongod/ssl/ca.pem
+        - /etc/mongod/ca/ca.pem
         - --mongodb-crl-file-path
-        - /etc/mongod/ssl/mdb-crl.pem
+        - /etc/mongod/ca/crl.pem
         - --replica-set-name
         - $(MONGODB_REPLICA_SET_NAME)
         - --mongodb-fqdn
@@ -73,6 +73,9 @@ spec:
           mountPath: /data/configdb
         - name: mdb-certs
           mountPath: /etc/mongod/ssl/
+          readOnly: true
+        - name: ca-auth
+          mountPath: /etc/mongod/ca/
           readOnly: true
         resources:
           limits:
@@ -97,4 +100,8 @@ spec:
       - name: mdb-certs
         secret:
           secretName: mdb-certs
+          defaultMode: 0400
+      - name: ca-auth
+        secret:
+          secretName: ca-auth
           defaultMode: 0400
