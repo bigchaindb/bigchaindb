@@ -128,9 +128,9 @@ You can SSH to one of the just-deployed Kubernetes "master" nodes
 
 .. code:: bash
 
-   $ ssh -i ~/.ssh/<name> ubuntu@<master-ip-address-or-hostname>
+   $ ssh -i ~/.ssh/<name> ubuntu@<master-ip-address-or-fqdn>
 
-where you can get the IP address or hostname
+where you can get the IP address or FQDN
 of a master node from the Azure Portal. For example:
 
 .. code:: bash
@@ -139,13 +139,14 @@ of a master node from the Azure Portal. For example:
 
 .. note::
 
-   All the master nodes should have the *same* public IP address and hostname
-   (also called the Master FQDN).
+   All the master nodes are accessible behind the *same* public IP address and
+   FQDN. You connect to one of the masters randomly based on the load balancing
+   policy.
 
-The "agent" nodes shouldn't get public IP addresses or hostnames,
-so you can't SSH to them *directly*,
+The "agent" nodes shouldn't get public IP addresses or externally accessible
+FQDNs, so you can't SSH to them *directly*,
 but you can first SSH to the master
-and then SSH to an agent from there.
+and then SSH to an agent from there using their hostname.
 To do that, you could
 copy your SSH key pair to the master (a bad idea),
 or use SSH agent forwarding (better).
