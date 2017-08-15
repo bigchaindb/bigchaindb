@@ -51,8 +51,8 @@ spec:
       - name: mdb-bak-certs
         secret:
           secretName: mdb-bak-certs
-          defaultMode: 0400
+          defaultMode: 0404
       - name: cloud-manager-credentials
         secret:
           secretName: cloud-manager-credentials
-          defaultMode: 0400
+          defaultMode: 0404
