@@ -83,7 +83,7 @@ There are some things worth noting about the ``mdb-instance-name``:
   documentation. Your BigchainDB cluster may use a different naming convention.
 
 
-vars.ngx-ndb-instance-name and Similar
+vars.ngx-mdb-instance-name and Similar
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 NGINX needs the FQDN of the servers inside the cluster to be able to forward
