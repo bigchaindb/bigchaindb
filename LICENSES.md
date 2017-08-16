@@ -4,6 +4,7 @@ For all code in this repository, BigchainDB GmbH ("We") either:
 
 1. owns the copyright, or
 2. owns the right to sublicense it (because all external contributors must agree to a Contributor License Agreement).
+3. The licensing of things in the k8s/nginx-openresty/ directory is described by a separate LICENSE.md file in that directory.
 
 Therefore We can choose how to license all the code in this repository. We can license it to Joe Xname under one license and Company Yname under a different license.
 
