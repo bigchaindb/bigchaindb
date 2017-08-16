@@ -83,9 +83,21 @@ The files are ``pki/issued/bdb-instance-0.crt`` and ``pki/ca.crt``.
 Step 4: Generate the Consolidated Client PEM File
 -------------------------------------------------
 
-MongoDB requires a single, consolidated file containing both the public and
-private keys.
+.. note::
+    This step can be skipped for BigchainDB client certificate as BigchainDB
+    uses the PyMongo driver, which accepts separate certificate and key files.
+
+MongoDB, MongoDB Backup Agent and MongoDB Monitoring Agent require a single,
+consolidated file containing both the public and private keys.
 
 .. code:: bash
 
-   cat /path/to/bdb-instance-0.crt /path/to/bdb-instance-0.key > bdb-instance-0.pem
+   cat /path/to/mdb-instance-0.crt /path/to/mdb-instance-0.key > mdb-instance-0.pem
+
+    OR
+
+   cat /path/to/mdb-mon-instance-0.crt /path/to/mdb-mon-instance-0.key > mdb-mon-instance-0.pem
+
+    OR
+
+   cat /path/to/mdb-bak-instance-0.crt /path/to/mdb-bak-instance-0.key > mdb-bak-instance-0.pem

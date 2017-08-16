@@ -117,7 +117,7 @@ Step 4: Start the NGINX Service
     public IP to be assigned.
 
   * You have the option to use vanilla NGINX without HTTPS support or an
-    NGINX with HTTPS support integrated with 3scale API Gateway.
+    NGINX with HTTPS support.
 
 
 Step 4.1: Vanilla NGINX
@@ -144,14 +144,14 @@ Step 4.1: Vanilla NGINX
         $ kubectl --context k8s-bdb-test-cluster-0 apply -f nginx-http/nginx-http-svc.yaml
 
 
-Step 4.2: NGINX with HTTPS + 3scale
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Step 4.2: NGINX with HTTPS
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
    * You have to enable HTTPS for this one and will need an HTTPS certificate
      for your domain.
 
    * You should have already created the necessary Kubernetes Secrets in the previous
-     step (e.g. ``https-certs`` and ``threescale-credentials``).
+     step (i.e. ``https-certs``).
 
    * This configuration is located in the file ``nginx-https/nginx-https-svc.yaml``.
 
@@ -304,7 +304,7 @@ Step 9: Start the NGINX Kubernetes Deployment
     on ``mongodb-frontend-port`` to the MongoDB backend.
 
   * As in step 4, you have the option to use vanilla NGINX without HTTPS or
-    NGINX with HTTPS support integrated with 3scale API Gateway.
+    NGINX with HTTPS support.
 
 Step 9.1: Vanilla NGINX
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -329,8 +329,8 @@ Step 9.1: Vanilla NGINX
        $ kubectl --context k8s-bdb-test-cluster-0 apply -f nginx-http/nginx-http-dep.yaml
 
 
-Step 9.2: NGINX with HTTPS + 3scale
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Step 9.2: NGINX with HTTPS
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
    * This configuration is located in the file
      ``nginx-https/nginx-https-dep.yaml``.
@@ -742,10 +742,10 @@ Step 17: Start a Kubernetes Deployment for OpenResty
     ``openresty-instance-name`` is ``openresty-instance-0``, set the fields to
     the value ``openresty-instance-0-dep``.
 
-   * Set the port to be exposed from the pod in the
-     ``spec.containers[0].ports`` section. We currently expose the port at
-     which OpenResty is listening for requests, ``openresty-backend-port`` in
-     the above ConfigMap.
+  * Set the port to be exposed from the pod in the
+    ``spec.containers[0].ports`` section. We currently expose the port at
+    which OpenResty is listening for requests, ``openresty-backend-port`` in
+    the above ConfigMap.
 
   * Create the OpenResty Deployment using:
 
@@ -888,4 +888,3 @@ If you are using the NGINX with HTTPS support, use ``https`` instead of
 
 Use the Python Driver to send some transactions to the BigchainDB node and
 verify that your node or cluster works as expected.
-

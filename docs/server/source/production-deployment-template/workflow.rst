@@ -45,7 +45,7 @@ For example, maybe they assign a unique number to each node,
 so that if you're operating node 12, your MongoDB instance would be named
 ``mdb-instance-12``.
 Similarly, other instances must also have unique names in the cluster.
- 
+
 #. Name of the MongoDB instance (``mdb-instance-*``)
 #. Name of the BigchainDB instance (``bdb-instance-*``)
 #. Name of the NGINX instance (``ngx-http-instance-*`` or ``ngx-https-instance-*``)
@@ -80,7 +80,7 @@ You can generate a BigchainDB keypair for your node, for example,
 using the `BigchainDB Python Driver <http://docs.bigchaindb.com/projects/py-driver/en/latest/index.html>`_.
 
 .. code:: python
-        
+
    from bigchaindb_driver.crypto import generate_keypair
    print(generate_keypair())
 
@@ -100,15 +100,13 @@ and have an SSL certificate for the FQDN.
 (You can get an SSL certificate from any SSL certificate provider.)
 
 
-☐ Ask the managing organization
-for the FQDN used to serve the BigchainDB APIs
-(e.g. ``api.orgname.net`` or ``bdb.clustername.com``)
-and for a copy of the associated SSL/TLS certificate.
-Also, ask for the user name to use for authenticating to MongoDB.
+☐ Ask the managing organization for the user name to use for authenticating to
+MongoDB.
 
 
 ☐ If the cluster uses 3scale for API authentication, monitoring and billing,
-you must ask the managing organization for all relevant 3scale credentials.
+you must ask the managing organization for all relevant 3scale credentials -
+secret token, service ID, version header and API service token.
 
 
 ☐ If the cluster uses MongoDB Cloud Manager for monitoring and backup,
