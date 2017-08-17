@@ -1,4 +1,4 @@
-## Note: data values do NOT have to be base64-encoded in this file. 
+## Note: data values do NOT have to be base64-encoded in this file.
 
 ## vars is common environment variables for this BigchaindB node
 apiVersion: v1
@@ -12,7 +12,7 @@ data:
 
   # cluster-frontend-port is the port number on which this node's services
   # are available to external clients.
-  cluster-frontend-port: "443" 
+  cluster-frontend-port: "443"
 
   # cluster-health-check-port is the port number on which an external load
   # balancer can check the status/liveness of the external/public server.

@@ -1,17 +1,17 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: ngx-https-instance-0-dep
+  name: ngx-instance-0-dep
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: ngx-https-instance-0-dep
+        app: ngx-instance-0-dep
     spec:
       terminationGracePeriodSeconds: 10
       containers:
-      - name: nginx-https
+      - name: nginx
         image: bigchaindb/nginx_https:1.0
         imagePullPolicy: IfNotPresent
         env:
@@ -59,7 +59,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: vars
-              key: openresty-instance-name
+              key: ngx-openresty-instance-name
         - name: BIGCHAINDB_BACKEND_HOST
           valueFrom:
             configMapKeyRef:
