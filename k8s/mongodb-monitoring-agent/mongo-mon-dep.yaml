@@ -41,10 +41,10 @@ spec:
             memory: 768Mi
         volumeMounts:
         - name: mdb-mon-certs
-          mountPath: /etc/mongod/ca/
+          mountPath: /etc/mongod/ssl/
           readOnly: true
         - name: ca-auth
-          mountPath: /etc/mongod/ssl/
+          mountPath: /etc/mongod/ca/
           readOnly: true
         - name: cloud-manager-credentials
           mountPath: /etc/mongod/cloud/
