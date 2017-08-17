@@ -55,16 +55,23 @@ while [[ $# -gt 1 ]]; do
 done
 
 # sanity checks
-if [[ -z "${REPLICA_SET_NAME}" || \
-    -z "${MONGODB_PORT}" || \
-    -z "${MONGODB_FQDN}" || \
-    -z "${MONGODB_IP}" || \
-    -z "${MONGODB_KEY_FILE_PATH}" || \
-    -z "${MONGODB_CA_FILE_PATH}" || \
-    -z "${MONGODB_CRL_FILE_PATH}" ]] ; then
-    #-z "${MONGODB_KEY_FILE_PASSWORD}" || \
-  echo "Empty parameters detected. Exiting!"
-  exit 2
+if [[ -z "${REPLICA_SET_NAME:?REPLICA_SET_NAME not specified. Exiting!}" || \
+    -z "${MONGODB_PORT:?MONGODB_PORT not specified. Exiting!}" || \
+    -z "${MONGODB_FQDN:?MONGODB_FQDN not specified. Exiting!}" || \
+    -z "${MONGODB_IP:?MONGODB_IP not specified. Exiting!}" || \
+    -z "${MONGODB_KEY_FILE_PATH:?MONGODB_KEY_FILE_PATH not specified. Exiting!}" || \
+    -z "${MONGODB_CA_FILE_PATH:?MONGODB_CA_FILE_PATH not specified. Exiting!}" || \
+    -z "${MONGODB_CRL_FILE_PATH:?MONGODB_CRL_FILE_PATH not specified. Exiting!}" ]] ; then
+    #-z "${MONGODB_KEY_FILE_PASSWORD:?MongoDB Key File Password not specified. Exiting!}" || \
+  exit 1
+else
+  echo REPLICA_SET_NAME="$REPLICA_SET_NAME"
+  echo MONGODB_PORT="$MONGODB_PORT"
+  echo MONGODB_FQDN="$MONGODB_FQDN"
+  echo MONGODB_IP="$MONGODB_IP"
+  echo MONGODB_KEY_FILE_PATH="$MONGODB_KEY_FILE_PATH"
+  echo MONGODB_CA_FILE_PATH="$MONGODB_CA_FILE_PATH"
+  echo MONGODB_CRL_FILE_PATH="$MONGODB_CRL_FILE_PATH"
 fi
 
 MONGODB_CONF_FILE_PATH=/etc/mongod.conf
