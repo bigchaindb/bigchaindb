@@ -54,12 +54,12 @@ spec:
       - name: mdb-mon-certs
         secret:
           secretName: mdb-mon-certs
-          defaultMode: 0400
+          defaultMode: 0404
       - name: ca-auth
         secret:
           secretName: ca-auth
-          defaultMode: 0400
+          defaultMode: 0404
       - name: cloud-manager-credentials
         secret:
           secretName: cloud-manager-credentials
-          defaultMode: 0400
+          defaultMode: 0404
