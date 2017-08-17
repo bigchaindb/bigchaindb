@@ -49,7 +49,7 @@ If you already *have* the Azure CLI installed, you may want to update it.
 
 .. warning::
 
-   ``az component update`` isn't supported if you installed the CLI using some of Microsoft's provided installation instructions. See `the Microsoft docs for update instructions <https://docs.microsoft.com/en-us/cli/azure/install-az-cli2>`_. 
+   ``az component update`` isn't supported if you installed the CLI using some of Microsoft's provided installation instructions. See `the Microsoft docs for update instructions <https://docs.microsoft.com/en-us/cli/azure/install-az-cli2>`_.
 
 
 Next, login to your account using:
@@ -128,9 +128,9 @@ You can SSH to one of the just-deployed Kubernetes "master" nodes
 
 .. code:: bash
 
-   $ ssh -i ~/.ssh/<name> ubuntu@<master-ip-address-or-hostname>
+   $ ssh -i ~/.ssh/<name> ubuntu@<master-ip-address-or-fqdn>
 
-where you can get the IP address or hostname
+where you can get the IP address or FQDN
 of a master node from the Azure Portal. For example:
 
 .. code:: bash
@@ -139,13 +139,14 @@ of a master node from the Azure Portal. For example:
 
 .. note::
 
-   All the master nodes should have the *same* public IP address and hostname
-   (also called the Master FQDN).
+   All the master nodes are accessible behind the *same* public IP address and
+   FQDN. You connect to one of the masters randomly based on the load balancing
+   policy.
 
-The "agent" nodes shouldn't get public IP addresses or hostnames,
-so you can't SSH to them *directly*,
+The "agent" nodes shouldn't get public IP addresses or externally accessible
+FQDNs, so you can't SSH to them *directly*,
 but you can first SSH to the master
-and then SSH to an agent from there.
+and then SSH to an agent from there using their hostname.
 To do that, you could
 copy your SSH key pair to the master (a bad idea),
 or use SSH agent forwarding (better).
@@ -168,14 +169,14 @@ then SSH agent forwarding hasn't been set up correctly.
 If you get a non-empty response,
 then SSH agent forwarding should work fine
 and you can SSH to one of the agent nodes (from a master)
-using something like:
+using:
 
 .. code:: bash
 
    $ ssh ubuntu@k8s-agent-4AC80E97-0
 
 where ``k8s-agent-4AC80E97-0`` is the name
-of a Kubernetes agent node in your Kubernetes cluster. 
+of a Kubernetes agent node in your Kubernetes cluster.
 You will have to replace it by the name
 of an agent node in your cluster.
 

@@ -99,9 +99,9 @@ spec:
         - name: BIGCHAINDB_DATABASE_SSL
           value: "true"
         - name: BIGCHAINDB_DATABASE_CA_CERT
-          value: /etc/bigchaindb/ssl/ca.pem
+          value: /etc/bigchaindb/ca/ca.pem
         - name: BIGCHAINDB_DATABASE_CRLFILE
-          value: /etc/bigchaindb/ssl/crlfile
+          value: /etc/bigchaindb/ca/crl.pem
         - name: BIGCHAINDB_DATABASE_CERTFILE
           value: /etc/bigchaindb/ssl/bdb-instance.pem
         - name: BIGCHAINDB_DATABASE_KEYFILE
@@ -128,6 +128,9 @@ spec:
         - name: bdb-certs
           mountPath: /etc/bigchaindb/ssl/
           readOnly: true
+        - name: ca-auth
+          mountPath: /etc/bigchaindb/ca/
+          readOnly: true
         resources:
           limits:
             cpu: 200m
@@ -151,4 +154,8 @@ spec:
       - name: bdb-certs
         secret:
           secretName: bdb-certs
+          defaultMode: 0400
+      - name: ca-auth
+        secret:
+          secretName: ca-auth
           defaultMode: 0400

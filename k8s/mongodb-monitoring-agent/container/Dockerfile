@@ -53,6 +53,6 @@ RUN apt update \
 
 COPY mongodb_mon_agent_entrypoint.bash /
 RUN chown -R mongodb-mms-agent:mongodb-mms-agent /etc/mongodb-mms/
-VOLUME /etc/mongod/ssl
+VOLUME /etc/mongod/ssl /etc/mongod/ca
 USER mongodb-mms-agent
 ENTRYPOINT ["/mongodb_mon_agent_entrypoint.bash"]

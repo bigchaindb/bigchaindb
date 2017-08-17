@@ -1,17 +1,17 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: ngx-http-instance-0-dep
+  name: ngx-instance-0-dep
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: ngx-http-instance-0-dep
+        app: ngx-instance-0-dep
     spec:
       terminationGracePeriodSeconds: 10
       containers:
-      - name: nginx-http
+      - name: nginx
         image: bigchaindb/nginx_http:1.0
         imagePullPolicy: IfNotPresent
         env:
