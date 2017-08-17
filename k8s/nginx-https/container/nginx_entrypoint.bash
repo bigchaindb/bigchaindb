@@ -29,18 +29,18 @@ bdb_ws_port=`printenv BIGCHAINDB_WS_PORT`
 
 
 # sanity check
-if [[ -z "${cluster_frontend_port:?Cluster frontend port not specified. Exiting!}" || \
-      -z "${mongo_frontend_port:?MongoDB frontend port not specified. Exiting!}" || \
-      -z "${mongo_backend_host:?MongoDB backend host not specified. Exiting!}" || \
-      -z "${mongo_backend_port:?MongoDB backend port not specified. Exiting!}" || \
-      -z "${openresty_backend_port:?OpenResty backend port not specified. Exiting!}" || \
-      -z "${openresty_backend_host:?OpenResty backend host not specified. Exiting!}" || \
-      -z "${bdb_backend_host:?BigchainDB backend host not specified. Exiting!}" || \
-      -z "${bdb_api_port:?BigchainDB API port not specified. Exiting!}" || \
-      -z "${bdb_ws_port:?BigchainDB WS port not specified. Exiting!}" || \
-      -z "${dns_server:?DNS server not specified. Exiting!}" || \
-      -z "${health_check_port:?Health check port not specified. Exiting!}" || \
-      -z "${cluster_fqdn:?Cluster FQDN not specified. Exiting!}" ]]; then
+if [[ -z "${cluster_frontend_port:?CLUSTER_FRONTEND_PORT not specified. Exiting!}" || \
+      -z "${mongo_frontend_port:?MONGODB_FRONTEND_PORT not specified. Exiting!}" || \
+      -z "${mongo_backend_host:?MONGODB_BACKEND_HOST not specified. Exiting!}" || \
+      -z "${mongo_backend_port:?MONGODB_BACKEND_PORT not specified. Exiting!}" || \
+      -z "${openresty_backend_port:?OPENRESTY_BACKEND_PORT not specified. Exiting!}" || \
+      -z "${openresty_backend_host:?OPENRESTY_BACKEND_HOST not specified. Exiting!}" || \
+      -z "${bdb_backend_host:?BIGCHAINDB_BACKEND_HOST not specified. Exiting!}" || \
+      -z "${bdb_api_port:?BIGCHAINDB_API_PORT not specified. Exiting!}" || \
+      -z "${bdb_ws_port:?BIGCHAINDB_WS_PORT not specified. Exiting!}" || \
+      -z "${dns_server:?DNS_SERVER not specified. Exiting!}" || \
+      -z "${health_check_port:?HEALTH_CHECK_PORT not specified. Exiting!}" || \
+      -z "${cluster_fqdn:?CLUSTER_FQDN not specified. Exiting!}" ]]; then
   exit 1
 else
   echo CLUSTER_FQDN="$cluster_fqdn"

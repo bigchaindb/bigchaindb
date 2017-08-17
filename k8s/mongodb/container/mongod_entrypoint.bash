@@ -55,13 +55,13 @@ while [[ $# -gt 1 ]]; do
 done
 
 # sanity checks
-if [[ -z "${REPLICA_SET_NAME:?MongoDB Replica Set name not specified. Exiting!}" || \
-    -z "${MONGODB_PORT:?MongoDB Port not specified. Exiting!}" || \
-    -z "${MONGODB_FQDN:?MongoDB FQDN not specified. Exiting!}" || \
-    -z "${MONGODB_IP:?MongoDB IP not specified. Exiting!}" || \
-    -z "${MONGODB_KEY_FILE_PATH:?MongoDB Key File path not specified. Exiting!}" || \
-    -z "${MONGODB_CA_FILE_PATH:?MongoDB CA File path not specified. Exiting!}" || \
-    -z "${MONGODB_CRL_FILE_PATH:?MongoDB CRL File path not specified. Exiting!}" ]] ; then
+if [[ -z "${REPLICA_SET_NAME:?REPLICA_SET_NAME not specified. Exiting!}" || \
+    -z "${MONGODB_PORT:?MONGODB_PORT not specified. Exiting!}" || \
+    -z "${MONGODB_FQDN:?MONGODB_FQDN not specified. Exiting!}" || \
+    -z "${MONGODB_IP:?MONGODB_IP not specified. Exiting!}" || \
+    -z "${MONGODB_KEY_FILE_PATH:?MONGODB_KEY_FILE_PATH not specified. Exiting!}" || \
+    -z "${MONGODB_CA_FILE_PATH:?MONGODB_CA_FILE_PATH not specified. Exiting!}" || \
+    -z "${MONGODB_CRL_FILE_PATH:?MONGODB_CRL_FILE_PATH not specified. Exiting!}" ]] ; then
     #-z "${MONGODB_KEY_FILE_PASSWORD:?MongoDB Key File Password not specified. Exiting!}" || \
   exit 1
 else

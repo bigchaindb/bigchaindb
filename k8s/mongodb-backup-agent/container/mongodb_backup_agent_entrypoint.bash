@@ -9,10 +9,10 @@ mms_groupid_keyfile_path=`printenv MMS_GROUPID_KEYFILE_PATH`
 ca_crt_path=`printenv CA_CRT_PATH`
 backup_pem_path=`printenv BACKUP_PEM_PATH`
 
-if [[ -z "${mms_api_keyfile_path:?MMS API Keyfile path not specified. Exiting!}" || \
-    -z "${ca_crt_path:?CA CRT path not specified. Exiting!}" || \
-    -z "${backup_pem_path:?Backup PEM path not specified. Exiting!}" || \
-    -z "${mms_groupid_keyfile_path:?MMS GroupID keyfile path not specified. Exiting!}" ]]; then
+if [[ -z "${mms_api_keyfile_path:?MMS_API_KEYFILE_PATH not specified. Exiting!}" || \
+    -z "${ca_crt_path:?CA_CRT_PATH not specified. Exiting!}" || \
+    -z "${backup_pem_path:?BACKUP_PEM_PATH not specified. Exiting!}" || \
+    -z "${mms_groupid_keyfile_path:?MMS_GROUPID_KEYFILE_PATH not specified. Exiting!}" ]]; then
   exit 1
 else
   echo MMS_API_KEYFILE_PATH="$mms_api_key"
