@@ -83,6 +83,7 @@ install_requires = [
     'aiohttp~=2.0',
     'python-rapidjson-schema==0.1.1',
     'statsd==3.2.1',
+    'coloredlogs~=7.3.0',
 ]
 
 setup(
@@ -124,7 +125,8 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'bigchaindb=bigchaindb.commands.bigchaindb:main'
+            'bigchaindb=bigchaindb.commands.bigchaindb:main',
+            'bigchaindb-benchmark=bigchaindb.commands.benchmark:main',
         ],
     },
     install_requires=install_requires,

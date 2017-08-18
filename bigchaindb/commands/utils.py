@@ -163,7 +163,7 @@ def start_rethinkdb():
     raise StartupError(line)
 
 
-def start(parser, argv, scope):
+def start(parser, argv, scope, callback_before=None):
     """Utility function to execute a subcommand.
 
     The function will look up in the ``scope``
@@ -200,6 +200,9 @@ def start(parser, argv, scope):
         args.multiprocess = 1
     elif args.multiprocess is None:
         args.multiprocess = mp.cpu_count()
+
+    if callback_before:
+        callback_before(args)
 
     return func(args)
 
