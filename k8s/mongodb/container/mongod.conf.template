@@ -76,7 +76,7 @@ setParameter:
   authenticationMechanisms: MONGODB-X509,SCRAM-SHA-1
 
 storage:
-  dbPath: /data/db
+  dbPath: /data/db/main
   indexBuildRetry: true
   journal:
     enabled: true

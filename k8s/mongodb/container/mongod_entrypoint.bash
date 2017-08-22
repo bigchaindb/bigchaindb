@@ -88,6 +88,11 @@ sed -i "s|REPLICA_SET_NAME|${REPLICA_SET_NAME}|g" ${MONGODB_CONF_FILE_PATH}
 # add the hostname and ip to hosts file
 echo "${MONGODB_IP} ${MONGODB_FQDN}" >> $HOSTS_FILE_PATH
 
+# create the directory if it does not exist, where MongoDB can store the data
+# and config files; this assumes that the data directory is mounted at
+# /data/db/main and the config directory is mounted at /data/configdb
+mkdir -p /data/db/main /data/configdb/main
+
 # start mongod
 echo "INFO: starting mongod..."
 
