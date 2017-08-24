@@ -26,3 +26,4 @@ Feel free change things to suit your needs or preferences.
    easy-rsa
    upgrade-on-kubernetes
    add-node-on-kubernetes
+   restore-from-mongodb-cloud-manager
