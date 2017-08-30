@@ -204,7 +204,7 @@ Step 5: Assign DNS Name to the NGINX Public IP
 **Set up DNS mapping in Azure.**
 Select the current Azure resource group and look for the ``Public IP``
 resource. You should see at least 2 entries there - one for the Kubernetes
-master and the other for the MongoDB instance. You may have to ``Refresh`` the
+master and the other for the NGINX instance. You may have to ``Refresh`` the
 Azure web page listing the resources in a resource group for the latest
 changes to be reflected.
 Select the ``Public IP`` resource that is attached to your service (it should
