@@ -15,7 +15,7 @@ if [[ -z "${mms_api_keyfile_path:?MMS_API_KEYFILE_PATH not specified. Exiting!}"
     -z "${mms_groupid_keyfile_path:?MMS_GROUPID_KEYFILE_PATH not specified. Exiting!}" ]]; then
   exit 1
 else
-  echo MMS_API_KEYFILE_PATH="$mms_api_key"
+  echo MMS_API_KEYFILE_PATH="$mms_api_keyfile_path"
   echo MMS_GROUPID_KEYFILE_PATH="$mms_groupid_keyfile_path"
   echo CA_CRT_PATH="$ca_crt_path"
   echo BACKUP_PEM_PATH="$backup_pem_path"
