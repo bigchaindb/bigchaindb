@@ -1,9 +1,6 @@
-# Licenses on the Software in This Git Repository
+# Licenses on the Stuff in this Directory
 
-This Git repository can be found at
-[https://github.com/bigchaindb/nginx_3scale](https://github.com/bigchaindb/nginx_3scale)
-
-All code in this repository is copyright 2016-2017 BigchainDB GmbH,
+All _code_ in this directory is copyright BigchainDB GmbH,
 except for the configuration files obtained from 3scale (NGINX configuration
 file and NGINX Lua script).
 
@@ -15,13 +12,13 @@ The original files (from 3scale) were licensed under an MIT License,
 the text of which can be found below.
 
 The derived files (`nginx.conf.template` and `nginx.lua.template`), along with
-the other files in this repository, are also licensed under an MIT License,
+the other files in this directory, are _also_ licensed under an MIT License,
 the text of which can be found below.
 
 
 # Documentation Licenses
 
-The documentation is licensed under a Creative Commons Attribution-ShareAlike
+The documentation in this directory is licensed under a Creative Commons Attribution-ShareAlike
 4.0 International license, the full text of which can be found at 
 [http://creativecommons.org/licenses/by-sa/4.0/legalcode](http://creativecommons.org/licenses/by-sa/4.0/legalcode).
 
