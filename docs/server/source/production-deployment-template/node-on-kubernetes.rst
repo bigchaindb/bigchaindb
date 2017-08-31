@@ -543,7 +543,7 @@ Step 13: Configure Users and Access Control for MongoDB
     .. code:: bash
 
        $ mongo --host localhost --port 27017 --verbose --ssl \
-         --sslCAFile /etc/mongod/ssl/ca.pem \
+         --sslCAFile /etc/mongod/ca/ca.pem \
          --sslPEMKeyFile /etc/mongod/ssl/mdb-instance.pem
 
   * Initialize the replica set using:
@@ -857,13 +857,13 @@ To test the NGINX instance with HTTPS and 3scale integration:
 
 .. code:: bash
 
-   $ nslookup ngx-https-instance-0
+   $ nslookup ngx-instance-0
 
-   $ dig +noall +answer _public-secure-cluster-port._tcp.ngx-https-instance-0.default.svc.cluster.local SRV
+   $ dig +noall +answer _public-secure-cluster-port._tcp.ngx-instance-0.default.svc.cluster.local SRV
 
-   $ dig +noall +answer _public-mdb-port._tcp.ngx-https-instance-0.default.svc.cluster.local SRV
+   $ dig +noall +answer _public-mdb-port._tcp.ngx-instance-0.default.svc.cluster.local SRV
 
-   $ dig +noall +answer _public-insecure-cluster-port._tcp.ngx-https-instance-0.default.svc.cluster.local SRV
+   $ dig +noall +answer _public-insecure-cluster-port._tcp.ngx-instance-0.default.svc.cluster.local SRV
 
    $ wsc -er wss://<cluster-fqdn>/api/v1/streams/valid_transactions
 
