@@ -235,14 +235,41 @@ def test_block_election(b):
         'other_previous_block': {},
     }
 
+# TODO: Check all other tests in this class for similar mistakes
+
 
 @patch('bigchaindb.voting.Voting.verify_vote_signature', return_value=True)
 def test_duplicate_vote_throws_critical_error(b):
     keyring = 'abc'
+
+    # block_election calls count_votes that calls `cls.verify_vote_schema`.
     block = {'id': 'xyz', 'block': {'voters': 'ab'}}
+    # As `vote` has a required property `signature`, the vote here should
+    # technically be counted as `malformed` (or invalid), rendering this test
+    # incorrect as `CriticalDuplicateVote` could be trigger elsewhere.
     votes = [{
+        # according to the vote's schema a public key needs to have up to 43
+        # chars, making the keyring in this test to not pass
+        # `verify_vote_schema`.
         'node_pubkey': c,
         'vote': {'is_block_valid': True, 'previous_block': 'a'}
     } for c in 'aabc']
     with pytest.raises(CriticalDuplicateVote):
         Voting.block_election(block, votes, keyring)
+    # TODO: Fix this test
+    assert False
+
+
+@patch('bigchaindb.voting.Voting.verify_vote_signature', return_value=True)
+@patch('bigchaindb.voting.Voting.verify_vote_schema', return_value=True)
+def test_malicious_block_election(b, x):
+    keyring = ['a', 'b']
+    # assume node creating the block is malicious and only puts one node
+    # (themselves or a colluding node in the block's `voters` list
+    block = {'id': 'xyz', 'block': {'voters': 'a'}}
+    votes = [{
+        'node_pubkey': node,
+        'vote': {'is_block_valid': True, 'previous_block': 'a'}
+    } for node in 'ab']
+    res = Voting.block_election(block, votes, keyring)
+    assert res['counts']['n_valid'] == 0
