@@ -1,0 +1,92 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: web-proxy-instance-0-dep
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: web-proxy-instance-0-dep
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: web-proxy
+        image: bigchaindb/nginx-https-web-proxy:0.10
+        imagePullPolicy: Always
+        env:
+        - name: PROXY_FQDN
+          valueFrom:
+            configMapKeyRef:
+              name: proxy-vars
+              key: proxy-fqdn
+        - name: PROXY_FRONTEND_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: proxy-vars
+              key: proxy-frontend-port
+        - name: PROXY_EXPECTED_REFERER_HEADER
+          valueFrom:
+            configMapKeyRef:
+              name: proxy-vars
+              key: expected-http-referer
+        - name: PROXY_EXPECTED_ORIGIN_HEADER
+          valueFrom:
+            configMapKeyRef:
+              name: proxy-vars
+              key: expected-http-origin
+        - name: OPENRESTY_BACKEND_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: ngx-openresty-instance-name
+        - name: OPENRESTY_BACKEND_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: openresty-backend-port
+        - name: DNS_SERVER
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: cluster-dns-server-ip
+        - name: HEALTH_CHECK_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: cluster-health-check-port
+        - name: BIGCHAINDB_BACKEND_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: ngx-bdb-instance-name
+        - name: BIGCHAINDB_API_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: bigchaindb-api-port
+        ports:
+        - containerPort: <port where the proxy is listening for requests>
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 200m
+            memory: 256Mi
+        volumeMounts:
+        - name: proxy-https-certs
+          mountPath: /etc/nginx/ssl/
+          readOnly: true
+        - name: proxy-credentials
+          mountPath: /etc/nginx/proxy/credentials/
+          readOnly: true
+          # TODO probes!!??
+      restartPolicy: Always
+      volumes:
+      - name: proxy-https-certs
+        secret:
+          secretName: proxy-https-certs
+          defaultMode: 0400
+      - name: proxy-credentials
+        secret:
+          secretName: proxy-credentials
+          defaultMode: 0400
