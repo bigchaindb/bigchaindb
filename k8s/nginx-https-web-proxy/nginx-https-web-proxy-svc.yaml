@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-proxy-instance-0
+  namespace: default
+  labels:
+    name: web-proxy-instance-0
+spec:
+  selector:
+    app: web-proxy-instance-0-dep
+  ports:
+  - port: <port where the proxy is listening for requests>
+    targetPort: <port where the proxy is listening for requests>
+    name: public-web-proxy-port
+    protocol: TCP
+  type: LoadBalancer
