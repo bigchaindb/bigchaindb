@@ -68,6 +68,15 @@ spec:
         ports:
         - containerPort: <port where the proxy is listening for requests>
           protocol: TCP
+          name: proxy-health
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: proxy-health
+          initialDelaySeconds: 15
+          periodSeconds: 15
+          failureThreshold: 3
+          timeoutSeconds: 10
         resources:
           limits:
             cpu: 200m
@@ -79,7 +88,6 @@ spec:
         - name: proxy-credentials
           mountPath: /etc/nginx/proxy/credentials/
           readOnly: true
-          # TODO probes!!??
       restartPolicy: Always
       volumes:
       - name: proxy-https-certs
