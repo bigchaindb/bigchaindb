@@ -68,11 +68,10 @@ spec:
         ports:
         - containerPort: <port where the proxy is listening for requests>
           protocol: TCP
-          name: proxy-health
         livenessProbe:
           httpGet:
             path: /health
-            port: proxy-health
+            port: <cluster-health-check-port from the ConfigMap>
           initialDelaySeconds: 15
           periodSeconds: 15
           failureThreshold: 3
