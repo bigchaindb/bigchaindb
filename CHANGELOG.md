@@ -33,6 +33,29 @@ For reference, the possible headings are:
 * **Notes**
 
 
+## [1.1] - 2017-09-??????
+Tag name: v1.1.0
+
+### Added
+* Support for server-side plugins that can add support for alternate event consumers (other than the WebSocket API). [Pull request #1707](https://github.com/bigchaindb/bigchaindb/pull/1707)
+* New configuration settings to set the *advertised* wsserver scheme, host and port. (The *advertised* ones are the ones that external users use to connect to the WebSocket API.) [Pull request #1703](https://github.com/bigchaindb/bigchaindb/pull/1703)
+* Support for secure (TLS) WebSocket connections. [Pull request #1619](https://github.com/bigchaindb/bigchaindb/pull/1619)
+* A new page of documentation about the contents of a condition (inside a transaction). [Pull request #1668](https://github.com/bigchaindb/bigchaindb/pull/1668)
+
+### Changed
+* We updated our definition of the **public API** (at the top of this document). [Pull request #1700](https://github.com/bigchaindb/bigchaindb/pull/1700)
+* The HTTP API Logger now logs the request path and method as well. [Pull request #1644](https://github.com/bigchaindb/bigchaindb/pull/1644)
+
+### External Contributors
+* @carchrae - [Pull request #1731](https://github.com/bigchaindb/bigchaindb/pull/1731)
+* @ivanbakel - [Pull request #1706](https://github.com/bigchaindb/bigchaindb/pull/1706)
+* @ketanbhatt - Pull requests [#1643](https://github.com/bigchaindb/bigchaindb/pull/1643) and [#1644](https://github.com/bigchaindb/bigchaindb/pull/1644)
+
+### Notes
+* Many improvements to our production deployment template (which uses Kubernetes).
+* The production deployment template for the multi-node case was out of date. We updated that and verified it. [Pull request #1713](https://github.com/bigchaindb/bigchaindb/pull/1713)
+
+
 ## [1.0.1] - 2017-07-13
 Tag name: v1.0.1
 
