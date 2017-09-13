@@ -86,8 +86,8 @@ when following the steps above:
    console will be available at ``test-cluster.westeurope.cloudapp.azure.com``.
 
 
-Step 4: Start MongoDB
----------------------
+Step 4: Configure kubectl
+-------------------------
 
 #. Refer to `this tutorial
    <https://coreos.com/tectonic/docs/latest/tutorials/azure/first-app.html>`__
@@ -99,11 +99,14 @@ Step 4: Start MongoDB
 
 .. code:: bash
 
-    $ export KUBECONFIG=$HOME/.kube/config:/home/krish/Downloads/kubectl-config
+    $ export KUBECONFIG=$HOME/.kube/config:/path/to/config/kubectl-config
     
     # OR to only use the new configuration, try
 
-    $ export KUBECONFIG=/home/krish/Downloads/kubectl-config
+    $ export KUBECONFIG=/path/to/config/kubectl-config
+
+Next, you can :doc:`run a BigchainDB node on your new
+Kubernetes cluster <node-on-kubernetes>`.
 
 
 Tectonic References
