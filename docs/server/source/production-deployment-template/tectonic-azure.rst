@@ -1,0 +1,115 @@
+Walkthrough: Deploy a Kubernetes Cluster on Azure using Tectonic by CoreOS
+==========================================================================
+
+A BigchainDB node can be run inside a `Kubernetes <https://kubernetes.io/>`_
+cluster.
+This page describes one way to deploy a Kubernetes cluster on Azure using Tectonic.
+Tectonic helps in easier cluster management of Kubernetes clusters.
+
+If you would rather use Azure Container Service to manage Kubernetes Clusters,
+please read :doc:`our guide for that <template-kubernetes-azure>`.
+
+
+Step 1: Prerequisites for Deploying Tectonic Cluster
+----------------------------------------------------
+
+Get an Azure account. Refer to
+:ref:`this step in our docs <Step 1: Get a Pay-As-You-Go Azure Subscription>`.
+
+Create an SSH Key pair for the new Tectonic cluster. Refer to
+:ref:`this step in our docs <Step 2: Create an SSH Key Pair>`.
+
+
+Step 2: Get a Tectonic Subscription
+-----------------------------------
+
+CoreOS offers Tectonic for free for up to 10 nodes.
+
+Sign up for an account `here <https://coreos.com/tectonic>`__ if you do not
+have one already and get a license for 10 nodes.
+
+Login to your account, go to Overview > Your Account and save the
+``CoreOS License`` and the ``Pull Secret`` to your local machine.
+
+
+Step 3: Deploy the cluster on Azure
+-----------------------------------
+
+The latest instructions for deployment can be found
+`here <https://coreos.com/tectonic/docs/latest/tutorials/azure/install.html>`__.
+
+The following points suggests some customizations for a BigchainDB deployment
+when following the steps above:
+
+
+#. Set the ``CLUSTER`` variable to the name of the cluster. Also note that the
+   cluster will be deployed in a resource group named 
+   ``tectonic-cluster-CLUSTER``.
+
+#. Set the ``tectonic_base_domain`` to ``""`` if you want to use Azure managed
+   DNS. You will be assigned a ``cloudapp.azure.com`` sub-domain by default.
+   
+#. Set the ``tectonic_cl_channel`` to ``"stable"`` unless you want to
+   experiment or test with the latest release.
+
+#. Set the ``tectonic_cluster_name`` to the ``CLUSTER`` variable defined in
+   the step above.
+
+#. Set the ``tectonic_license_path`` and ``tectonic_pull_secret_path`` to the
+   location where you have stored the ``tectonic-license.txt`` and the 
+   ``config.json`` files downloaded in the previous step.
+
+#. Set the ``tectonic_etcd_count`` to ``"3"``, so that you have a multi-node
+   etcd cluster that can tolerate a single node failure.
+
+#. Set the ``tectonic_etcd_tls_enabled`` to ``"true"`` as this will enable TLS
+   connectivity between the etcd nodes and their clients.
+
+#. Set the ``tectonic_master_count`` to ``"3"`` so that you cane tolerate a
+   single master failure.
+
+#. Set the ``tectonic_worker_count`` to ``"2"``.
+
+#. Set the ``tectonic_azure_location`` to ``"westeurope"`` if you want to host
+   the cluster in Azure's ``westeurope`` datacenter.
+
+#. Set the ``tectonic_azure_ssh_key`` to the path of the public key created in
+   the previous step.
+
+#. Note that the ``tectonic_azure_client_secret`` is the same as the
+   ``ARM_CLIENT_SECRET``.
+
+#. Note that the URL for the Tectonic console using these settings will be the
+   cluster name set in the configutation file, the datacenter name and
+   ``cloudapp.azure.com``. For example, if you named your cluster as 
+   ``test-cluster`` and specified the datacenter as ``westeurope``, the Tectonic
+   console will be available at ``test-cluster.westeurope.cloudapp.azure.com``.
+
+
+Step 4: Start MongoDB
+---------------------
+
+#. Refer to `this tutorial
+   <https://coreos.com/tectonic/docs/latest/tutorials/azure/first-app.html>`__
+   for instructions on how to download the kubectl configuration files for
+   your cluster.
+
+#. Set the ``KUBECONFIG`` environment variable to make ``kubectl`` use the new
+   config file along with the existing configuration.
+
+.. code:: bash
+
+    $ export KUBECONFIG=$HOME/.kube/config:/home/krish/Downloads/kubectl-config
+    
+    # OR to only use the new configuration, try
+
+    $ export KUBECONFIG=/home/krish/Downloads/kubectl-config
+
+
+Tectonic References
+-------------------
+
+#. https://coreos.com/tectonic/docs/latest/tutorials/azure/install.html
+#. https://coreos.com/tectonic/docs/latest/troubleshooting/installer-terraform.html
+#. https://coreos.com/tectonic/docs/latest/tutorials/azure/first-app.html
+

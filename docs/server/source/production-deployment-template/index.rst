@@ -27,3 +27,4 @@ Feel free change things to suit your needs or preferences.
    upgrade-on-kubernetes
    add-node-on-kubernetes
    restore-from-mongodb-cloud-manager
+   tectonic-azure
