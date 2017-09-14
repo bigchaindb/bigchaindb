@@ -1,0 +1,10 @@
+- hosts: localhost
+  remote_user: vagrant
+  vars:
+    with_docker: "{{ deploy_docker | default(false) }}"
+  roles:
+    - { role: docker, when: with_docker|bool }
+    - { role: docker-compose, when: with_docker|bool }
+    - mongodb
+    - bigchaindb
+    - bigchaindb-driver

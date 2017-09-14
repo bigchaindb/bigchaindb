@@ -1,0 +1,52 @@
+--- 
+- name: Uninstall older versions of Docker | Debian
+  apt:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - docker
+    - docker-engine
+    - docker.io
+  when: uninstall_old_version
+  tags: [docker]
+
+- name: Install dependencies | Debian
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - apt-transport-https
+    - ca-certificates
+    - curl
+    - software-properties-common
+    - python-pip
+  tags: [docker]
+
+- name: Add APT Key | Debian
+  apt_key:
+    url: "{{ apt_key_url }}"
+    id: "{{ apt_key_fingerprint }}"
+    state: present
+  register: add_repository_key
+  ignore_errors: true
+  tags: [docker]
+
+- name: Use curl if apt_key fails | Debian
+  shell: "curl -sSl {{ apt_key_url }} | sudo apt-key add -"
+  args:
+    warn: no
+  when: add_repository_key|failed
+  tags: [docker]
+
+- name: Add Docker repo and update cache | Debian
+  apt_repository:
+    repo: "{{ docker_apt_repo }}"
+    update_cache: yes
+    state: present
+  tags: [docker]
+
+- name: Install Docker | Debian
+  apt:
+    name: "{{ docker_pkg }}"
+    state: present
+  tags: [docker]

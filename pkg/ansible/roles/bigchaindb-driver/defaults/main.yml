@@ -1,0 +1,25 @@
+---
+dependencies_deb:
+  - python3-dev
+  - libffi-dev
+  - libssl-dev
+  - python3-pip
+
+dependencies_yum:
+  - gcc-c++
+  - "@Development Tools"
+  - python34-devel
+  - libffi-devel
+  - openssl-devel
+  - python34-setuptools
+
+dependencies_dnf:
+  - gcc-c++
+  - redhat-rpm-config
+  - "@Development Tools"
+  - python3-devel
+  - libffi-devel
+  - openssl-devel
+
+python_pip_upgrade: true
+python_setuptools_upgrade: true

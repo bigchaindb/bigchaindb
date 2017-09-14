@@ -1,0 +1,12 @@
+---
+- name: Install dependencies
+  yum:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  with_items: "{{ dependencies_yum }}"
+  tags: [bigchaindb-driver]
+
+- name: Install pip
+  shell: "easy_install-3.4 pip"
+  tags: [bigchaindb-driver]

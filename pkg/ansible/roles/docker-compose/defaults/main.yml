@@ -1,0 +1,7 @@
+---
+# TODO: (muawiakh) Install docker-compose using pip
+# docker_compose_pip_install: false #[true, false]
+docker_compose_install: true #[true, false]
+docker_compose_version: "1.15.0"
+docker_compose_binary: /usr/local/bin/docker-compose
+docker_compose_base_url: "https://github.com/docker/compose/releases/download/"

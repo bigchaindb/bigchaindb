@@ -1,0 +1,20 @@
+---
+- name: Check Docker Service
+  systemd:
+    name: docker
+    enabled: yes
+    state: started
+  tags: [docker]
+
+- name: Running MongoDB Docker
+  docker_container:
+    name: "{{ mongodb_docker_name }}"
+    image: "{{ mongodb_docker_image }}"
+    detach: True
+    published_ports: "{{ mongodb_docker_published_ports }}"
+    restart_policy: always
+    volumes: "{{ mongodb_docker_volumes }}"
+    state: started
+    pull: false
+    entrypoint: /entrypoint.sh --replSet=bigchain-rs
+  tags: [mongodb]

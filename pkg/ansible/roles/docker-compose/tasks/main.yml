@@ -1,0 +1,9 @@
+---
+- name: Get docker-compose
+  become: yes
+  get_url:
+    url: "{{ docker_compose_base_url }}{{ docker_compose_version }}/docker-compose-{{ ansible_system }}-{{ ansible_machine}}"
+    dest: "{{docker_compose_binary}}"
+    mode: 0755
+  when: docker_compose_install
+  tags: [docker-compose]
