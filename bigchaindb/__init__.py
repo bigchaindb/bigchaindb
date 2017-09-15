@@ -72,6 +72,9 @@ config = {
         'scheme': os.environ.get('BIGCHAINDB_WSSERVER_SCHEME') or 'ws',
         'host': os.environ.get('BIGCHAINDB_WSSERVER_HOST') or 'localhost',
         'port': int(os.environ.get('BIGCHAINDB_WSSERVER_PORT', 9985)),
+        'advertised_scheme': os.environ.get('BIGCHAINDB_WSSERVER_ADVERTISED_SCHEME') or 'ws',
+        'advertised_host': os.environ.get('BIGCHAINDB_WSSERVER_ADVERTISED_HOST') or 'localhost',
+        'advertised_port': int(os.environ.get('BIGCHAINDB_WSSERVER_ADVERTISED_PORT', 9985)),
     },
     'database': _database_map[
         os.environ.get('BIGCHAINDB_DATABASE_BACKEND', 'rethinkdb')

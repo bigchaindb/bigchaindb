@@ -11,14 +11,18 @@ MONGODB_MON_CONF_FILE=/etc/mongodb-mms/monitoring-agent.config
 mms_api_keyfile_path=`printenv MMS_API_KEYFILE_PATH`
 mms_groupid_keyfile_path=`printenv MMS_GROUPID_KEYFILE_PATH`
 ca_crt_path=`printenv CA_CRT_PATH`
-monitoring_crt_path=`printenv MONITORING_PEM_PATH`
+monitoring_pem_path=`printenv MONITORING_PEM_PATH`
 
-if [[ -z "${mms_api_keyfile_path}" || \
-    -z "${ca_crt_path}" || \
-    -z "${monitoring_crt_path}" || \
-    -z "${mms_groupid_keyfile_path}" ]]; then
-  echo "Invalid environment settings detected. Exiting!"
+if [[ -z "${mms_api_keyfile_path:?MMS_API_KEYFILE_PATH not specified. Exiting!}" || \
+    -z "${ca_crt_path:?CA_CRT_PATH not specified. Exiting!}" || \
+    -z "${monitoring_pem_path:?MONITORING_PEM_PATH not specified. Exiting!}" || \
+    -z "${mms_groupid_keyfile_path:?MMS_GROUPID_KEYFILE_PATH not specified. Exiting!}" ]];then
   exit 1
+else
+  echo MMS_API_KEYFILE_PATH="$mms_api_keyfile_path"
+  echo MMS_GROUPID_KEYFILE_PATH="$mms_groupid_keyfile_path"
+  echo CA_CRT_PATH="$ca_crt_path"
+  echo MONITORING_PEM_PATH="$monitoring_pem_path"
 fi
 
 # Delete the line containing "mmsApiKey" and the line containing "mmsGroupId"
@@ -40,7 +44,7 @@ echo "mmsGroupId="${mms_groupid_key} >> ${MONGODB_MON_CONF_FILE}
 echo "useSslForAllConnections=true" >> ${MONGODB_MON_CONF_FILE}
 echo "sslRequireValidServerCertificates=true" >> ${MONGODB_MON_CONF_FILE}
 echo "sslTrustedServerCertificates="${ca_crt_path} >> ${MONGODB_MON_CONF_FILE}
-echo "sslClientCertificate="${monitoring_crt_path} >> ${MONGODB_MON_CONF_FILE}
+echo "sslClientCertificate="${monitoring_pem_path} >> ${MONGODB_MON_CONF_FILE}
 echo "#sslClientCertificatePassword=<password>" >> ${MONGODB_MON_CONF_FILE}
 
 # start mdb monitoring agent

@@ -1,0 +1,60 @@
+# All secret data should be base64 encoded before embedding them in the Secret.
+# Short strings can be encoded using, e.g.
+# echo "secret string" | base64 -w 0 > secret.string.b64
+# Files (e.g. certificates) can be encoded using, e.g.
+# cat cert.pem | base64 -w 0 > cert.pem.b64
+# then copy the contents of cert.pem.b64 (for example) below.
+# Ref: https://kubernetes.io/docs/concepts/configuration/secret/
+# Unused values can be set to ""
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: proxy-credentials
+  namespace: default
+type: Opaque
+data:
+  # app_id is the app id that the proxy adds to requests going to the backend
+  app_id: "<b64 encoded app_id>"
+  # app_key is the app key that the proxy adds to requests going to the backend
+  app_key: "<b64 encoded app_key>"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: proxy-https-certs
+  namespace: default
+type: Opaque
+data:
+  # Base64-encoded HTTPS private key
+  cert.key: "<b64 encoded HTTPS private key>"
+  # Base64-encoded HTTPS certificate chain
+  # starting with your primary SSL cert (e.g. your_domain.crt)
+  # followed by all intermediate certs.
+  # If cert is from DigiCert, download "Best format for nginx".
+  cert.pem: "<b64 encoded HTTPS certificate chain"
+---
+## Note: data values do NOT have to be base64-encoded for ConfigMap.
+# proxy-vars is common environment variables for the Web Proxy.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: proxy-vars
+  namespace: default
+data:
+  # proxy-fqdn is the DNS name registered for your HTTPS certificate.
+  proxy-fqdn: "proxy-bdb.example.com"
+
+  # proxy-frontend-port is the port number on which this web proxy's services
+  # are available to external clients.
+  proxy-frontend-port: "4443"
+
+  # expected-http-referer is the expected regex expression of the Referer
+  # header in the HTTP requests to the proxy.
+  # The default below accepts the referrer value to be *.bigchaindb.com
+  expected-http-referer: "^https://(.*)bigchaindb\\.com/(.*)"
+
+  # expected-http-origin is the expected regex expression of the Origin
+  # header in the HTTP requests to the proxy.
+  # The default below accepts the origin value to be *.bigchaindb.com
+  expected-http-origin: "^https://(.*)bigchaindb\\.com"

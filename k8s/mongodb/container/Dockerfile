@@ -7,6 +7,6 @@ RUN apt-get update \
     && apt-get clean
 COPY mongod.conf.template /etc/mongod.conf
 COPY mongod_entrypoint.bash /
-VOLUME /data/db /data/configdb /etc/mongod/ssl
+VOLUME /data/db /data/configdb /etc/mongod/ssl /etc/mongod/ca
 EXPOSE 27017
 ENTRYPOINT ["/mongod_entrypoint.bash"]

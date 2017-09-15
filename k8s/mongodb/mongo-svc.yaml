@@ -9,8 +9,9 @@ spec:
   selector:
     app: mdb-instance-0-ss
   ports:
-  - port: 27017
-    targetPort: 27017
+  - port: "<mongodb-backend-port from ConfigMap>"
+    targetPort: "<mongodb-backend-port from ConfigMap>"
     name: mdb-port
+    protocol: TCP
   type: ClusterIP
   clusterIP: None

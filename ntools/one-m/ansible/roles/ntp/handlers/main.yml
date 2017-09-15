@@ -1,5 +1,0 @@
----
-# ansible/roles/ntp/handlers/main.yml
-
-- name: restart ntp
-  service: name=ntp state=restarted

@@ -4,39 +4,65 @@ This page has instructions to set up a single stand-alone BigchainDB node for le
 
 A. Install MongoDB as the database backend. (There are other options but you can ignore them for now.)
 
-[Install MongoDB Server 3.5+](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/)
+[Install MongoDB Server 3.4+](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/)
 
-B. Run MongoDB. Open a Terminal and run the command:
+B. To run MongoDB with default database path i.e. /data/db, open a Terminal and run the following command:
+```text
+$ sudo mkdir -p /data/db
+```
+
+C. Assign rwx(read/write/execute) permissions to the user for default database directory:
+```text
+$ sudo chmod -R 700 /data/db
+```
+
+D. Run MongoDB (but do not close this terminal):
 ```text
 $ sudo mongod --replSet=bigchain-rs
 ```
 
-C. Ubuntu 16.04 already has Python 3.5, so you don't need to install it, but you do need to install some other things:
+E. Ubuntu 16.04 already has Python 3.5, so you don't need to install it, but you do need to install some other things within a new terminal:
 ```text
 $ sudo apt-get update
-$ sudo apt-get install g++ python3-dev libffi-dev
+$ sudo apt-get install libffi-dev libssl-dev
 ```
 
-D. Get the latest version of pip and setuptools:
+F. Get the latest version of pip and setuptools:
 ```text
 $ sudo apt-get install python3-pip
 $ sudo pip3 install --upgrade pip setuptools
 ```
 
-E. Install the `bigchaindb` Python package from PyPI:
+G. Install the `bigchaindb` Python package from PyPI:
 ```text
 $ sudo pip3 install bigchaindb
 ```
 
-F. Configure BigchainDB Server:
+In case you are having problems with installation or package/module versioning, please upgrade the relevant packages on your host by running one the following commands:
+```text
+$ sudo pip3 install [packageName]==[packageVersion]
+
+OR
+
+$ sudo pip3 install [packageName] --upgrade
+```
+
+H. Configure BigchainDB Server:
 ```text
 $ bigchaindb -y configure mongodb
 ```
 
-G. Run BigchainDB Server:
+I. Run BigchainDB Server:
 ```text
 $ bigchaindb start
 ```
+
+J. Verify BigchainDB Server setup by visiting the BigchainDB Root URL in your browser:
+```text
+$ http://127.0.0.1:9984/
+```
+
+A correctly installed installation will show you a JSON object with information about the API, docs, version and your public key.
 
 You now have a running BigchainDB Server and can post transactions to it.
 One way to do that is to use the BigchainDB Python Driver.

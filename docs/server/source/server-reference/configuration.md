@@ -24,6 +24,9 @@ For convenience, here's a list of all the relevant environment variables (docume
 `BIGCHAINDB_WSSERVER_SCHEME`<br>
 `BIGCHAINDB_WSSERVER_HOST`<br>
 `BIGCHAINDB_WSSERVER_PORT`<br>
+`BIGCHAINDB_WSSERVER_ADVERTISED_SCHEME`<br>
+`BIGCHAINDB_WSSERVER_ADVERTISED_HOST`<br>
+`BIGCHAINDB_WSSERVER_ADVERTISED_PORT`<br>
 `BIGCHAINDB_CONFIG_PATH`<br>
 `BIGCHAINDB_BACKLOG_REASSIGN_DELAY`<br>
 `BIGCHAINDB_LOG`<br>
@@ -245,6 +248,38 @@ export BIGCHAINDB_WSSERVER_PORT=9985
     "scheme": "ws",
     "host": "localhost",
     "port": 9985
+}
+```
+
+## wsserver.advertised_scheme, wsserver.advertised_host and wsserver.advertised_port
+
+These settings are for the advertising the Websocket URL to external clients in
+the root API endpoint. These configurations might be useful if your deployment
+is hosted behind a firewall, NAT, etc. where the exposed public IP or domain is
+different from where BigchainDB is running.
+
+**Example using environment variables**
+```text
+export BIGCHAINDB_WSSERVER_ADVERTISED_SCHEME=wss
+export BIGCHAINDB_WSSERVER_ADVERTISED_HOST=mybigchaindb.com
+export BIGCHAINDB_WSSERVER_ADVERTISED_PORT=443
+```
+
+**Example config file snippet**
+```js
+"wsserver": {
+    "advertised_scheme": "wss",
+    "advertised_host": "mybigchaindb.com",
+    "advertised_port": 443
+}
+```
+
+**Default values (from a config file)**
+```js
+"wsserver": {
+    "advertised_scheme": "ws",
+    "advertised_host": "localhost",
+    "advertised_port": 9985
 }
 ```
 

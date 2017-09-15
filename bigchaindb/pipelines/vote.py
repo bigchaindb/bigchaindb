@@ -39,7 +39,7 @@ class Vote:
         self.last_voted_id = Bigchain().get_last_voted_block().id
 
         self.counters = Counter()
-        self.validity = {}
+        self.blocks_validity_status = {}
 
         dummy_tx = Transaction.create([self.bigchain.me],
                                       [([self.bigchain.me], 1)]).to_dict()
@@ -127,16 +127,16 @@ class Vote:
         """
 
         self.counters[block_id] += 1
-        self.validity[block_id] = tx_validity and self.validity.get(block_id,
-                                                                    True)
+        self.blocks_validity_status[block_id] = tx_validity and self.blocks_validity_status.get(block_id,
+                                                                                                True)
 
         if self.counters[block_id] == num_tx:
             vote = self.bigchain.vote(block_id,
                                       self.last_voted_id,
-                                      self.validity[block_id])
+                                      self.blocks_validity_status[block_id])
             self.last_voted_id = block_id
             del self.counters[block_id]
-            del self.validity[block_id]
+            del self.blocks_validity_status[block_id]
             return vote, num_tx
 
     def write_vote(self, vote, num_tx):

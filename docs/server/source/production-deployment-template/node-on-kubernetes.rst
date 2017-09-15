@@ -53,7 +53,7 @@ to the above command (i.e. the path to the private key).
     the context for cluster 2. To find out the current context, do:
 
     .. code:: bash
-      
+
       $ kubectl config view
 
     and then look for the ``current-context`` in the output.
@@ -87,6 +87,10 @@ You can connect to your cluster's
 
    $ kubectl proxy -p 8001
 
+   or
+
+   $ az acs kubernetes browse -g [Resource Group] -n [Container service instance name] --ssh-key-file /path/to/privateKey
+
 or, if you prefer to be explicit about the context (explained above):
 
 .. code:: bash
@@ -102,7 +106,7 @@ Step 3: Configure Your BigchainDB Node
 --------------------------------------
 
 See the page titled :ref:`How to Configure a BigchainDB Node`.
-   
+
 
 Step 4: Start the NGINX Service
 -------------------------------
@@ -113,89 +117,66 @@ Step 4: Start the NGINX Service
     public IP to be assigned.
 
   * You have the option to use vanilla NGINX without HTTPS support or an
-    OpenResty NGINX integrated with 3scale API Gateway.
+    NGINX with HTTPS support.
 
 
 Step 4.1: Vanilla NGINX
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-   * This configuration is located in the file ``nginx/nginx-svc.yaml``.
-    
+   * This configuration is located in the file ``nginx-http/nginx-http-svc.yaml``.
+
    * Set the ``metadata.name`` and ``metadata.labels.name`` to the value
      set in ``ngx-instance-name`` in the ConfigMap above.
-   
+
    * Set the ``spec.selector.app`` to the value set in ``ngx-instance-name`` in
      the ConfigMap followed by ``-dep``. For example, if the value set in the
-     ``ngx-instance-name`` is ``ngx-instance-0``, set  the
-     ``spec.selector.app`` to ``ngx-instance-0-dep``.
-     
-   * Set ``ngx-public-mdb-port.port`` to 27017, or the port number on which you
-     want to expose MongoDB service.
-     Set the ``ngx-public-mdb-port.targetPort`` to the port number on which the
-     Kubernetes MongoDB service will be present.
+     ``ngx-instance-name`` is ``ngx-http-instance-0``, set  the
+     ``spec.selector.app`` to ``ngx-http-instance-0-dep``.
 
-   * Set ``ngx-public-api-port.port`` to 80, or the port number on which you want to
-     expose BigchainDB API service.
-     Set the ``ngx-public-api-port.targetPort`` to the port number on which the
-     Kubernetes BigchainDB API service will present.
+   * Set ``ports[0].port`` and ``ports[0].targetPort`` to the value set in the
+     ``cluster-frontend-port`` in the ConfigMap above. This is the
+     ``public-cluster-port`` in the file which is the ingress in to the cluster.
 
-   * Set ``ngx-public-ws-port.port`` to 81, or the port number on which you want to
-     expose BigchainDB Websocket service.
-     Set the ``ngx-public-ws-port.targetPort`` to the port number on which the
-     BigchainDB Websocket service will be present.
-     
    * Start the Kubernetes Service:
 
      .. code:: bash
-     
-        $ kubectl --context k8s-bdb-test-cluster-0 apply -f nginx/nginx-svc.yaml
+
+        $ kubectl --context k8s-bdb-test-cluster-0 apply -f nginx-http/nginx-http-svc.yaml
 
 
-Step 4.2: OpenResty NGINX + 3scale
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Step 4.2: NGINX with HTTPS
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
    * You have to enable HTTPS for this one and will need an HTTPS certificate
      for your domain.
-      
-   * You should have already created the necessary Kubernetes Secrets in the previous
-     step (e.g. ``https-certs`` and ``threescale-credentials``).
 
-   * This configuration is located in the file ``nginx-3scale/nginx-3scale-svc.yaml``.
+   * You should have already created the necessary Kubernetes Secrets in the previous
+     step (i.e. ``https-certs``).
+
+   * This configuration is located in the file ``nginx-https/nginx-https-svc.yaml``.
 
    * Set the ``metadata.name`` and ``metadata.labels.name`` to the value
      set in ``ngx-instance-name`` in the ConfigMap above.
 
    * Set the ``spec.selector.app`` to the value set in ``ngx-instance-name`` in
      the ConfigMap followed by ``-dep``. For example, if the value set in the
-     ``ngx-instance-name`` is ``ngx-instance-0``, set  the
-     ``spec.selector.app`` to ``ngx-instance-0-dep``.
-   
-   * Set ``ngx-public-mdb-port.port`` to 27017, or the port number on which you
-     want to expose MongoDB service.
-     Set the ``ngx-public-mdb-port.targetPort`` to the port number on which the
-     Kubernetes MongoDB service will be present.
+     ``ngx-instance-name`` is ``ngx-https-instance-0``, set  the
+     ``spec.selector.app`` to ``ngx-https-instance-0-dep``.
 
-   * Set ``ngx-public-3scale-port.port`` to 8080, or the port number on which
-     you want to let 3scale communicate with Openresty NGINX for authenctication.
-     Set the ``ngx-public-3scale-port.targetPort`` to the port number on which
-     this Openresty NGINX service will be listening to for communication with
-     3scale.
+   * Set ``ports[0].port`` and ``ports[0].targetPort`` to the value set in the
+     ``cluster-frontend-port`` in the ConfigMap above. This is the
+     ``public-secure-cluster-port`` in the file which is the ingress in to the cluster.
 
-   * Set ``ngx-public-bdb-port.port`` to 443, or the port number on which you want
-     to expose BigchainDB API service.
-     Set the ``ngx-public-api-port.targetPort`` to the port number on which the
-     Kubernetes BigchainDB API service will present.
+   * Set ``ports[1].port`` and ``ports[1].targetPort`` to the value set in the
+     ``mongodb-frontend-port`` in the ConfigMap above. This is the
+     ``public-mdb-port`` in the file which specifies where MongoDB is
+     available.
 
-   * Set ``ngx-public-bdb-port-http.port`` to 80, or the port number on which you
-     want to expose BigchainDB Websocket service.
-     Set the ``ngx-public-bdb-port-http.targetPort`` to the port number on which the
-     BigchainDB Websocket service will be present.
-     
    * Start the Kubernetes Service:
-   
+
      .. code:: bash
 
-        $ kubectl --context k8s-bdb-test-cluster-0 apply -f nginx-3scale/nginx-3scale-svc.yaml
+        $ kubectl --context k8s-bdb-test-cluster-0 apply -f nginx-https/nginx-https-svc.yaml
 
 
 Step 5: Assign DNS Name to the NGINX Public IP
@@ -208,11 +189,11 @@ Step 5: Assign DNS Name to the NGINX Public IP
 
   * The following command can help you find out if the NGINX service started
     above has been assigned a public IP or external IP address:
-   
+
     .. code:: bash
 
        $ kubectl --context k8s-bdb-test-cluster-0 get svc -w
-   
+
   * Once a public IP is assigned, you can map it to
     a DNS name.
     We usually assign ``bdb-test-cluster-0``, ``bdb-test-cluster-1`` and
@@ -223,7 +204,7 @@ Step 5: Assign DNS Name to the NGINX Public IP
 **Set up DNS mapping in Azure.**
 Select the current Azure resource group and look for the ``Public IP``
 resource. You should see at least 2 entries there - one for the Kubernetes
-master and the other for the MongoDB instance. You may have to ``Refresh`` the
+master and the other for the NGINX instance. You may have to ``Refresh`` the
 Azure web page listing the resources in a resource group for the latest
 changes to be reflected.
 Select the ``Public IP`` resource that is attached to your service (it should
@@ -233,7 +214,7 @@ have the Azure DNS prefix name along with a long random string, without the
 changes to be applied.
 
 To verify the DNS setting is operational, you can run ``nslookup <DNS
-name added in ConfigMap>`` from your local Linux shell.
+name added in Azure configuration>`` from your local Linux shell.
 
 This will ensure that when you scale the replica set later, other MongoDB
 members in the replica set can reach this instance.
@@ -246,12 +227,17 @@ Step 6: Start the MongoDB Kubernetes Service
 
   * Set the ``metadata.name`` and ``metadata.labels.name`` to the value
     set in ``mdb-instance-name`` in the ConfigMap above.
-  
+
   * Set the ``spec.selector.app`` to the value set in ``mdb-instance-name`` in
     the ConfigMap followed by ``-ss``. For example, if the value set in the
     ``mdb-instance-name`` is ``mdb-instance-0``, set  the
     ``spec.selector.app`` to ``mdb-instance-0-ss``.
-  
+
+  * Set ``ports[0].port`` and ``ports[0].targetPort`` to the value set in the
+    ``mongodb-backend-port`` in the ConfigMap above.
+    This is the ``mdb-port`` in the file which specifies where MongoDB listens
+    for API requests.
+
   * Start the Kubernetes Service:
 
     .. code:: bash
@@ -266,11 +252,21 @@ Step 7: Start the BigchainDB Kubernetes Service
 
   * Set the ``metadata.name`` and ``metadata.labels.name`` to the value
     set in ``bdb-instance-name`` in the ConfigMap above.
-  
+
   * Set the ``spec.selector.app`` to the value set in ``bdb-instance-name`` in
     the ConfigMap followed by ``-dep``. For example, if the value set in the
     ``bdb-instance-name`` is ``bdb-instance-0``, set  the
     ``spec.selector.app`` to ``bdb-instance-0-dep``.
+
+   * Set ``ports[0].port`` and ``ports[0].targetPort`` to the value set in the
+     ``bigchaindb-api-port`` in the ConfigMap above.
+     This is the ``bdb-api-port`` in the file which specifies where BigchainDB
+     listens for HTTP API requests.
+
+   * Set ``ports[1].port`` and ``ports[1].targetPort`` to the value set in the
+     ``bigchaindb-ws-port`` in the ConfigMap above.
+     This is the ``bdb-ws-port`` in the file which specifies where BigchainDB
+     listens for Websocket connections.
 
   * Start the Kubernetes Service:
 
@@ -279,81 +275,86 @@ Step 7: Start the BigchainDB Kubernetes Service
        $ kubectl --context k8s-bdb-test-cluster-0 apply -f bigchaindb/bigchaindb-svc.yaml
 
 
-Step 8: Start the NGINX Kubernetes Deployment
+Step 8: Start the OpenResty Kubernetes Service
+----------------------------------------------
+
+  * This configuration is located in the file ``nginx-openresty/nginx-openresty-svc.yaml``.
+
+  * Set the ``metadata.name`` and ``metadata.labels.name`` to the value
+    set in ``openresty-instance-name`` in the ConfigMap above.
+
+  * Set the ``spec.selector.app`` to the value set in ``openresty-instance-name`` in
+    the ConfigMap followed by ``-dep``. For example, if the value set in the
+    ``openresty-instance-name`` is ``openresty-instance-0``, set  the
+    ``spec.selector.app`` to ``openresty-instance-0-dep``.
+
+  * Start the Kubernetes Service:
+
+    .. code:: bash
+
+       $ kubectl --context k8s-bdb-test-cluster-0 apply -f nginx-openresty/nginx-openresty-svc.yaml
+
+
+Step 9: Start the NGINX Kubernetes Deployment
 ---------------------------------------------
 
-  * NGINX is used as a proxy to both the BigchainDB and MongoDB instances in
-    the node. It proxies HTTP requests on port 80 to the BigchainDB backend,
-    and TCP connections on port 27017 to the MongoDB backend.
+  * NGINX is used as a proxy to OpenResty, BigchainDB and MongoDB instances in
+    the node. It proxies HTTP/HTTPS requests on the ``cluster-frontend-port``
+    to the corresponding OpenResty or BigchainDB backend, and TCP connections
+    on ``mongodb-frontend-port`` to the MongoDB backend.
 
-  * As in step 4, you have the option to use vanilla NGINX or an OpenResty
-    NGINX integrated with 3scale API Gateway.
+  * As in step 4, you have the option to use vanilla NGINX without HTTPS or
+    NGINX with HTTPS support.
 
-Step 8.1: Vanilla NGINX
+Step 9.1: Vanilla NGINX
 ^^^^^^^^^^^^^^^^^^^^^^^
-  
-  * This configuration is located in the file ``nginx/nginx-dep.yaml``.
-    
+
+  * This configuration is located in the file ``nginx-http/nginx-http-dep.yaml``.
+
   * Set the ``metadata.name`` and ``spec.template.metadata.labels.app``
     to the value set in ``ngx-instance-name`` in the ConfigMap followed by a
     ``-dep``. For example, if the value set in the ``ngx-instance-name`` is
-    ``ngx-instance-0``, set the fields to ``ngx-instance-0-dep``.
+    ``ngx-http-instance-0``, set the fields to ``ngx-http-instance-0-dep``.
 
-  * Set ``MONGODB_BACKEND_HOST`` env var to
-    the value set in ``mdb-instance-name`` in the ConfigMap, followed by
-    ``.default.svc.cluster.local``. For example, if the value set in the
-    ``mdb-instance-name`` is ``mdb-instance-0``, set the
-    ``MONGODB_BACKEND_HOST`` env var to
-    ``mdb-instance-0.default.svc.cluster.local``.
-    
-  * Set ``BIGCHAINDB_BACKEND_HOST`` env var to
-    the value set in ``bdb-instance-name`` in the ConfigMap, followed by
-    ``.default.svc.cluster.local``. For example, if the value set in the
-    ``bdb-instance-name`` is ``bdb-instance-0``, set the
-    ``BIGCHAINDB_BACKEND_HOST`` env var to
-    ``bdb-instance-0.default.svc.cluster.local``.
-    
+   * Set the ports to be exposed from the pod in the
+     ``spec.containers[0].ports`` section. We currently expose 3 ports -
+     ``mongodb-frontend-port``, ``cluster-frontend-port`` and
+     ``cluster-health-check-port``. Set them to the values specified in the
+     ConfigMap.
+
   * Start the Kubernetes Deployment:
 
     .. code:: bash
 
-       $ kubectl --context k8s-bdb-test-cluster-0 apply -f nginx/nginx-dep.yaml
+       $ kubectl --context k8s-bdb-test-cluster-0 apply -f nginx-http/nginx-http-dep.yaml
 
 
-Step 8.2: OpenResty NGINX + 3scale
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   
+Step 9.2: NGINX with HTTPS
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
    * This configuration is located in the file
-     ``nginx-3scale/nginx-3scale-dep.yaml``.
+     ``nginx-https/nginx-https-dep.yaml``.
 
    * Set the ``metadata.name`` and ``spec.template.metadata.labels.app``
      to the value set in ``ngx-instance-name`` in the ConfigMap followed by a
      ``-dep``. For example, if the value set in the ``ngx-instance-name`` is
-     ``ngx-instance-0``, set the fields to ``ngx-instance-0-dep``.
+     ``ngx-https-instance-0``, set the fields to ``ngx-https-instance-0-dep``.
 
-   * Set ``MONGODB_BACKEND_HOST`` env var to
-     the value set in ``mdb-instance-name`` in the ConfigMap, followed by
-     ``.default.svc.cluster.local``. For example, if the value set in the
-     ``mdb-instance-name`` is ``mdb-instance-0``, set the
-     ``MONGODB_BACKEND_HOST`` env var to
-     ``mdb-instance-0.default.svc.cluster.local``.
-     
-   * Set ``BIGCHAINDB_BACKEND_HOST`` env var to
-     the value set in ``bdb-instance-name`` in the ConfigMap, followed by
-     ``.default.svc.cluster.local``. For example, if the value set in the
-     ``bdb-instance-name`` is ``bdb-instance-0``, set the
-     ``BIGCHAINDB_BACKEND_HOST`` env var to
-     ``bdb-instance-0.default.svc.cluster.local``.
-     
+   * Set the ports to be exposed from the pod in the
+     ``spec.containers[0].ports`` section. We currently expose 3 ports -
+     ``mongodb-frontend-port``, ``cluster-frontend-port`` and
+     ``cluster-health-check-port``. Set them to the values specified in the
+     ConfigMap.
+
    * Start the Kubernetes Deployment:
 
      .. code:: bash
 
-        $ kubectl --context k8s-bdb-test-cluster-0 apply -f nginx-3scale/nginx-3scale-dep.yaml
+        $ kubectl --context k8s-bdb-test-cluster-0 apply -f nginx-https/nginx-https-dep.yaml
 
 
-Step 9: Create Kubernetes Storage Classes for MongoDB
------------------------------------------------------
+Step 10: Create Kubernetes Storage Classes for MongoDB
+------------------------------------------------------
 
 MongoDB needs somewhere to store its data persistently,
 outside the container where MongoDB is running.
@@ -425,7 +426,7 @@ Kubernetes just looks for a storageAccount
 with the specified skuName and location.
 
 
-Step 10: Create Kubernetes Persistent Volume Claims
+Step 11: Create Kubernetes Persistent Volume Claims
 ---------------------------------------------------
 
 Next, you will create two PersistentVolumeClaim objects ``mongo-db-claim`` and
@@ -457,7 +458,7 @@ Initially, the status of persistent volume claims might be "Pending"
 but it should become "Bound" fairly quickly.
 
 
-Step 11: Start a Kubernetes StatefulSet for MongoDB
+Step 12: Start a Kubernetes StatefulSet for MongoDB
 ---------------------------------------------------
 
   * This configuration is located in the file ``mongodb/mongo-ss.yaml``.
@@ -466,7 +467,7 @@ Step 11: Start a Kubernetes StatefulSet for MongoDB
     the ConfigMap.
     For example, if the value set in the ``mdb-instance-name``
     is ``mdb-instance-0``, set the field to ``mdb-instance-0``.
-  
+
   * Set ``metadata.name``, ``spec.template.metadata.name`` and
     ``spec.template.metadata.labels.app`` to the value set in
     ``mdb-instance-name`` in the ConfigMap, followed by
@@ -478,7 +479,7 @@ Step 11: Start a Kubernetes StatefulSet for MongoDB
   * Note how the MongoDB container uses the ``mongo-db-claim`` and the
     ``mongo-configdb-claim`` PersistentVolumeClaims for its ``/data/db`` and
     ``/data/configdb`` directories (mount paths).
-    
+
   * Note also that we use the pod's ``securityContext.capabilities.add``
     specification to add the ``FOWNER`` capability to the container. That is
     because the MongoDB container has the user ``mongodb``, with uid ``999`` and
@@ -494,25 +495,30 @@ Step 11: Start a Kubernetes StatefulSet for MongoDB
   * As we gain more experience running MongoDB in testing and production, we
     will tweak the ``resources.limits.cpu`` and ``resources.limits.memory``.
 
+  * Set the ports to be exposed from the pod in the
+    ``spec.containers[0].ports`` section. We currently only expose the MongoDB
+    backend port. Set it to the value specified for ``mongodb-backend-port``
+    in the ConfigMap.
+
   * Create the MongoDB StatefulSet using:
 
     .. code:: bash
 
        $ kubectl --context k8s-bdb-test-cluster-0 apply -f mongodb/mongo-ss.yaml
-   
+
   * It might take up to 10 minutes for the disks, specified in the Persistent
     Volume Claims above, to be created and attached to the pod.
     The UI might show that the pod has errored with the message
     "timeout expired waiting for volumes to attach/mount". Use the CLI below
     to check the status of the pod in this case, instead of the UI.
     This happens due to a bug in Azure ACS.
-   
+
     .. code:: bash
 
        $ kubectl --context k8s-bdb-test-cluster-0 get pods -w
-  
 
-Step 12: Configure Users and Access Control for MongoDB
+
+Step 13: Configure Users and Access Control for MongoDB
 -------------------------------------------------------
 
   * In this step, you will create a user on MongoDB with authorization
@@ -524,26 +530,26 @@ Step 12: Configure Users and Access Control for MongoDB
   * Find out the name of your MongoDB pod by reading the output
     of the ``kubectl ... get pods`` command at the end of the last step.
     It should be something like ``mdb-instance-0-ss-0``.
-  
+
   * Log in to the MongoDB pod using:
 
     .. code:: bash
 
        $ kubectl --context k8s-bdb-test-cluster-0 exec -it <name of your MongoDB pod> bash
-  
+
   * Open a mongo shell using the certificates
     already present at ``/etc/mongod/ssl/``
 
     .. code:: bash
-     
+
        $ mongo --host localhost --port 27017 --verbose --ssl \
-         --sslCAFile /etc/mongod/ssl/ca.pem \
+         --sslCAFile /etc/mongod/ca/ca.pem \
          --sslPEMKeyFile /etc/mongod/ssl/mdb-instance.pem
 
   * Initialize the replica set using:
-    
+
     .. code:: bash
-    
+
        > rs.initiate( {
            _id : "bigchain-rs",
            members: [ {
@@ -556,7 +562,7 @@ Step 12: Configure Users and Access Control for MongoDB
     ``mdb-instance-name`` in the ConfigMap.
     For example, if the value set in the ``mdb-instance-name`` is
     ``mdb-instance-0``, set the ``hostname`` above to the value ``mdb-instance-0``.
-  
+
   * The instance should be voted as the ``PRIMARY`` in the replica set (since
     this is the only instance in the replica set till now).
     This can be observed from the mongo shell prompt,
@@ -567,14 +573,15 @@ Step 12: Configure Users and Access Control for MongoDB
     log in to the mongo shell. For further details, see `localhost
     exception <https://docs.mongodb.com/manual/core/security-users/#localhost-exception>`_
     in MongoDB.
-    
+
     .. code:: bash
-    
+
        PRIMARY> use admin
        PRIMARY> db.createUser( {
                   user: "adminUser",
                   pwd: "superstrongpassword",
-                  roles: [ { role: "userAdminAnyDatabase", db: "admin" } ]
+                  roles: [ { role: "userAdminAnyDatabase", db: "admin" },
+                           { role: "clusterManager", db: "admin"} ]
                 } )
 
   * Exit and restart the mongo shell using the above command.
@@ -599,16 +606,16 @@ Step 12: Configure Users and Access Control for MongoDB
          -inform PEM -subject -nameopt RFC2253
 
     You should see an output line that resembles:
-    
+
     .. code:: bash
-    
+
        subject= emailAddress=dev@bigchaindb.com,CN=test-bdb-ssl,OU=BigchainDB-Instance,O=BigchainDB GmbH,L=Berlin,ST=Berlin,C=DE
 
     The ``subject`` line states the complete user name we need to use for
     creating the user on the mongo shell as follows:
 
     .. code:: bash
-    
+
        PRIMARY> db.getSiblingDB("$external").runCommand( {
                   createUser: 'emailAddress=dev@bigchaindb.com,CN=test-bdb-ssl,OU=BigchainDB-Instance,O=BigchainDB GmbH,L=Berlin,ST=Berlin,C=DE',
                   writeConcern: { w: 'majority' , wtimeout: 5000 },
@@ -640,7 +647,7 @@ Step 12: Configure Users and Access Control for MongoDB
                 } )
 
 
-Step 13: Start a Kubernetes Deployment for MongoDB Monitoring Agent
+Step 14: Start a Kubernetes Deployment for MongoDB Monitoring Agent
 -------------------------------------------------------------------
 
   * This configuration is located in the file
@@ -661,7 +668,7 @@ Step 13: Start a Kubernetes Deployment for MongoDB Monitoring Agent
        $ kubectl --context k8s-bdb-test-cluster-0 apply -f mongodb-monitoring-agent/mongo-mon-dep.yaml
 
 
-Step 14: Start a Kubernetes Deployment for MongoDB Backup Agent
+Step 15: Start a Kubernetes Deployment for MongoDB Backup Agent
 ---------------------------------------------------------------
 
   * This configuration is located in the file
@@ -682,7 +689,7 @@ Step 14: Start a Kubernetes Deployment for MongoDB Backup Agent
        $ kubectl --context k8s-bdb-test-cluster-0 apply -f mongodb-backup-agent/mongo-backup-dep.yaml
 
 
-Step 15: Start a Kubernetes Deployment for BigchainDB
+Step 16: Start a Kubernetes Deployment for BigchainDB
 -----------------------------------------------------
 
   * This configuration is located in the file
@@ -694,19 +701,24 @@ Step 15: Start a Kubernetes Deployment for BigchainDB
     For example, if the value set in the
     ``bdb-instance-name`` is ``bdb-instance-0``, set the fields to the
     value ``bdb-insance-0-dep``.
-   
+
   * Set the value of ``BIGCHAINDB_KEYPAIR_PRIVATE`` (not base64-encoded).
     (In the future, we'd like to pull the BigchainDB private key from
     the Secret named ``bdb-private-key``,
     but a Secret can only be mounted as a file,
     so BigchainDB Server would have to be modified to look for it
     in a file.)
-   
+
   * As we gain more experience running BigchainDB in testing and production,
     we will tweak the ``resources.limits`` values for CPU and memory, and as
     richer monitoring and probing becomes available in BigchainDB, we will
     tweak the ``livenessProbe`` and ``readinessProbe`` parameters.
-  
+
+   * Set the ports to be exposed from the pod in the
+     ``spec.containers[0].ports`` section. We currently expose 2 ports -
+     ``bigchaindb-api-port`` and ``bigchaindb-ws-port``. Set them to the
+     values specified in the ConfigMap.
+
   * Create the BigchainDB Deployment using:
 
     .. code:: bash
@@ -717,7 +729,35 @@ Step 15: Start a Kubernetes Deployment for BigchainDB
   * You can check its status using the command ``kubectl get deployments -w``
 
 
-Step 16: Configure the MongoDB Cloud Manager
+Step 17: Start a Kubernetes Deployment for OpenResty
+----------------------------------------------------
+
+  * This configuration is located in the file
+    ``nginx-openresty/nginx-openresty-dep.yaml``.
+
+  * Set ``metadata.name`` and ``spec.template.metadata.labels.app`` to the
+    value set in ``openresty-instance-name`` in the ConfigMap, followed by
+    ``-dep``.
+    For example, if the value set in the
+    ``openresty-instance-name`` is ``openresty-instance-0``, set the fields to
+    the value ``openresty-instance-0-dep``.
+
+  * Set the port to be exposed from the pod in the
+    ``spec.containers[0].ports`` section. We currently expose the port at
+    which OpenResty is listening for requests, ``openresty-backend-port`` in
+    the above ConfigMap.
+
+  * Create the OpenResty Deployment using:
+
+    .. code:: bash
+
+       $ kubectl --context k8s-bdb-test-cluster-0 apply -f nginx-openresty/nginx-openresty-dep.yaml
+
+
+  * You can check its status using the command ``kubectl get deployments -w``
+
+
+Step 18: Configure the MongoDB Cloud Manager
 --------------------------------------------
 
 Refer to the
@@ -726,10 +766,10 @@ for details on how to configure the MongoDB Cloud Manager to enable
 monitoring and backup.
 
 
-Step 17: Verify the BigchainDB Node Setup
+Step 19: Verify the BigchainDB Node Setup
 -----------------------------------------
 
-Step 17.1: Testing Internally
+Step 19.1: Testing Internally
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To test the setup of your BigchainDB node, you could use a Docker container
@@ -752,13 +792,13 @@ You can use it as below to get started immediately:
 It will drop you to the shell prompt.
 
 To test the MongoDB instance:
-    
+
 .. code:: bash
 
    $ nslookup mdb-instance-0
-        
+
    $ dig +noall +answer _mdb-port._tcp.mdb-instance-0.default.svc.cluster.local SRV
-        
+
    $ curl -X GET http://mdb-instance-0:27017
 
 The ``nslookup`` command should output the configured IP address of the service
@@ -767,52 +807,84 @@ The ``dig`` command should return the configured port numbers.
 The ``curl`` command tests the availability of the service.
 
 To test the BigchainDB instance:
-    
+
 .. code:: bash
 
    $ nslookup bdb-instance-0
-        
-   $ dig +noall +answer _bdb-port._tcp.bdb-instance-0.default.svc.cluster.local SRV
-        
+
+   $ dig +noall +answer _bdb-api-port._tcp.bdb-instance-0.default.svc.cluster.local SRV
+
+   $ dig +noall +answer _bdb-ws-port._tcp.bdb-instance-0.default.svc.cluster.local SRV
+
    $ curl -X GET http://bdb-instance-0:9984
-  
-To test the NGINX instance:
-    
+
+   $ wsc -er ws://bdb-instance-0:9985/api/v1/streams/valid_transactions
+
+
+To test the OpenResty instance:
+
+.. code:: bash
+
+   $ nslookup openresty-instance-0
+
+   $ dig +noall +answer _openresty-svc-port._tcp.openresty-instance-0.default.svc.cluster.local SRV
+
+To verify if OpenResty instance forwards the requests properly, send a ``POST``
+transaction to OpenResty at post ``80`` and check the response from the backend
+BigchainDB instance.
+
+
+To test the vanilla NGINX instance:
+
+.. code:: bash
+
+   $ nslookup ngx-http-instance-0
+
+   $ dig +noall +answer _public-cluster-port._tcp.ngx-http-instance-0.default.svc.cluster.local SRV
+
+   $ dig +noall +answer _public-health-check-port._tcp.ngx-http-instance-0.default.svc.cluster.local SRV
+
+   $ wsc -er ws://ngx-http-instance-0/api/v1/streams/valid_transactions
+
+   $ curl -X GET http://ngx-http-instance-0:27017
+
+The above curl command should result in the response
+``It looks like you are trying to access MongoDB over HTTP on the native driver port.``
+
+
+
+To test the NGINX instance with HTTPS and 3scale integration:
+
 .. code:: bash
 
    $ nslookup ngx-instance-0
-        
-   $ dig +noall +answer _ngx-public-mdb-port._tcp.ngx-instance-0.default.svc.cluster.local SRV
 
-   $ dig +noall +answer _ngx-public-bdb-port._tcp.ngx-instance-0.default.svc.cluster.local SRV
+   $ dig +noall +answer _public-secure-cluster-port._tcp.ngx-instance-0.default.svc.cluster.local SRV
 
-   $ curl -X GET http://ngx-instance-0:27017
+   $ dig +noall +answer _public-mdb-port._tcp.ngx-instance-0.default.svc.cluster.local SRV
 
-The curl command should result get the response
-``curl: (7) Failed to connect to ngx-instance-0 port 27017: Connection refused``.
+   $ dig +noall +answer _public-insecure-cluster-port._tcp.ngx-instance-0.default.svc.cluster.local SRV
 
-If you ran the vanilla NGINX instance, run:
+   $ wsc -er wss://<cluster-fqdn>/api/v1/streams/valid_transactions
 
-.. code:: bash
+   $ curl -X GET http://<cluster-fqdn>:27017
 
-   $ curl -X GET http://ngx-instance-0:80
-  
-If you ran the OpenResty NGINX + 3scale instance, run:
-
-.. code:: bash
-
-   $ curl -X GET https://ngx-instance-0
+The above curl command should result in the response
+``It looks like you are trying to access MongoDB over HTTP on the native driver port.``
 
 
-Step 17.2: Testing Externally
+Step 19.2: Testing Externally
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Check the MongoDB monitoring and backup agent on the MongoDB Cloud Manager
 portal to verify they are working fine.
 
-Try to access the ``<DNS/IP of your exposed BigchainDB service endpoint>:80``
-on your browser. You should receive a JSON response that shows the BigchainDB
+If you are using the NGINX with HTTP support, accessing the URL
+``http://<DNS/IP of your exposed BigchainDB service endpoint>:cluster-frontend-port``
+on your browser should result in a JSON response that shows the BigchainDB
 server version, among other things.
+If you are using the NGINX with HTTPS support, use ``https`` instead of
+``http`` above.
 
 Use the Python Driver to send some transactions to the BigchainDB node and
 verify that your node or cluster works as expected.

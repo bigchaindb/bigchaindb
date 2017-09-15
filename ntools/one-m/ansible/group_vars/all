@@ -1,5 +1,0 @@
----
-# ansible/group_vars/all
-# Variables in this file are for *all* host groups (i.e. all hosts)
-
-example_var: 23

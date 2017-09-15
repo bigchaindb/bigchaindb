@@ -25,3 +25,4 @@ Community-Driven Libraries and Tools
 * `Go driver <https://github.com/zbo14/envoke/blob/master/bigchain/bigchain.go>`_
 * `Java driver <https://github.com/mgrand/bigchaindb-java-driver>`_
 * `Ruby driver <https://github.com/LicenseRocks/bigchaindb_ruby>`_
+* `Ruby library for preparing/signing transactions and submitting them or querying a BigchainDB/IPDB node (MIT licensed) <https://rubygems.org/gems/bigchaindb>`_

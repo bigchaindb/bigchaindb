@@ -72,12 +72,22 @@ def test_load_consensus_plugin_raises_with_invalid_subclass(monkeypatch):
     import time
     monkeypatch.setattr(config_utils,
                         'iter_entry_points',
-                        lambda *args: [type('entry_point', (object), {'load': lambda: object})])
+                        lambda *args: [type('entry_point', (object, ), {'load': lambda: object})])
 
     with pytest.raises(TypeError):
         # Since the function is decorated with `lru_cache`, we need to
         # "miss" the cache using a name that has not been used previously
         config_utils.load_consensus_plugin(str(time.time()))
+
+
+def test_load_events_plugins(monkeypatch):
+    from bigchaindb import config_utils
+    monkeypatch.setattr(config_utils,
+                        'iter_entry_points',
+                        lambda *args: [type('entry_point', (object, ), {'load': lambda: object})])
+
+    plugins = config_utils.load_events_plugins(['one', 'two'])
+    assert len(plugins) == 2
 
 
 def test_map_leafs_iterator():
@@ -150,6 +160,9 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request, certs_d
     WSSERVER_SCHEME = 'ws'
     WSSERVER_HOST = '1.2.3.4'
     WSSERVER_PORT = 57
+    WSSERVER_ADVERTISED_SCHEME = 'wss'
+    WSSERVER_ADVERTISED_HOST = 'a.b.c.d'
+    WSSERVER_ADVERTISED_PORT = 89
     KEYRING = 'pubkey_0:pubkey_1:pubkey_2'
     LOG_FILE = '/somewhere/something.log'
 
@@ -173,6 +186,9 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request, certs_d
                                            'BIGCHAINDB_WSSERVER_SCHEME': WSSERVER_SCHEME,
                                            'BIGCHAINDB_WSSERVER_HOST': WSSERVER_HOST,
                                            'BIGCHAINDB_WSSERVER_PORT': WSSERVER_PORT,
+                                           'BIGCHAINDB_WSSERVER_ADVERTISED_SCHEME': WSSERVER_ADVERTISED_SCHEME,
+                                           'BIGCHAINDB_WSSERVER_ADVERTISED_HOST': WSSERVER_ADVERTISED_HOST,
+                                           'BIGCHAINDB_WSSERVER_ADVERTISED_PORT': WSSERVER_ADVERTISED_PORT,
                                            'BIGCHAINDB_KEYRING': KEYRING,
                                            'BIGCHAINDB_LOG_FILE': LOG_FILE,
                                            'BIGCHAINDB_DATABASE_CA_CERT': certs_dir + '/ca.crt',
@@ -188,6 +204,9 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request, certs_d
                                            'BIGCHAINDB_WSSERVER_SCHEME': WSSERVER_SCHEME,
                                            'BIGCHAINDB_WSSERVER_HOST': WSSERVER_HOST,
                                            'BIGCHAINDB_WSSERVER_PORT': WSSERVER_PORT,
+                                           'BIGCHAINDB_WSSERVER_ADVERTISED_SCHEME': WSSERVER_ADVERTISED_SCHEME,
+                                           'BIGCHAINDB_WSSERVER_ADVERTISED_HOST': WSSERVER_ADVERTISED_HOST,
+                                           'BIGCHAINDB_WSSERVER_ADVERTISED_PORT': WSSERVER_ADVERTISED_PORT,
                                            'BIGCHAINDB_KEYRING': KEYRING,
                                            'BIGCHAINDB_LOG_FILE': LOG_FILE})
 
@@ -261,6 +280,9 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request, certs_d
             'scheme': WSSERVER_SCHEME,
             'host': WSSERVER_HOST,
             'port': WSSERVER_PORT,
+            'advertised_scheme': WSSERVER_ADVERTISED_SCHEME,
+            'advertised_host': WSSERVER_ADVERTISED_HOST,
+            'advertised_port': WSSERVER_ADVERTISED_PORT,
         },
         'database': database,
         'keypair': {

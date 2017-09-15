@@ -86,7 +86,7 @@ to rebuild them after the upgrade to install any new dependencies.
 Start RethinkDB:
 
 ```bash
-docker-compose up -d rdb
+docker-compose -f docker-compose.rdb.yml up -d rdb
 ```
 
 The RethinkDB web interface should be accessible at http://localhost:58080/.
@@ -98,19 +98,19 @@ web interface at: http://0.0.0.0:58080/.
 Start a BigchainDB node:
 
 ```bash
-docker-compose up -d bdb-rdb
+docker-compose -f docker-compose.rdb.yml up -d bdb-rdb
 ```
 
 You can monitor the logs:
 
 ```bash
-docker-compose logs -f bdb-rdb
+docker-compose -f docker-compose.rdb.yml logs -f bdb-rdb
 ```
 
 If you wish to run the tests:
 
 ```bash
-docker-compose run --rm bdb-rdb py.test -v -n auto
+docker-compose -f docker-compose.rdb.yml run --rm bdb-rdb pytest -v -n auto
 ```
 
 ### Docker with MongoDB
@@ -147,22 +147,16 @@ docker-compose run --rm bdb py.test -v --database-backend=mongodb
 
 ### Accessing the HTTP API
 
-A quick check to make sure that the BigchainDB server API is operational:
+You can do quick check to make sure that the BigchainDB server API is operational:
 
 ```bash
 curl $(docker-compose port bdb 9984)
 ```
 
-should give you something like:
+The result should be a JSON object (inside braces like { })
+containing the name of the software ("BigchainDB"),
+the version of BigchainDB, the node's public key, and other information.
 
-```bash
-{
-  "keyring": [],
-  "public_key": "Brx8g4DdtEhccsENzNNV6yvQHR8s9ebhKyXPFkWUXh5e",
-  "software": "BigchainDB",
-  "version": "0.6.0"
-}
-```
 How does the above curl command work? Inside the Docker container, BigchainDB
 exposes the HTTP API on port `9984`. First we get the public port where that
 port is bound:
