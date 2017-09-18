@@ -14,7 +14,7 @@ mongodb_yum_base_url: "https://repo.mongodb.org/yum/{{ ansible_os_family|lower }
 mongodb_dnf_base_url: "https://repo.mongodb.org/yum/{{ ansible_os_family|lower }}/7/{{ mongodb_package }}/{{ mongodb_version }}/{{ ansible_architecture }}"
 
 # MongoDB running config
-mongodb_storage_path: /data/db
+mongodb_storage_path: /data/db/main
 mongodb_log_path: /var/log/mongodb
 mongodb_config_path: /data/configdb
 se_linux: "TODO: (muawiakh)"
@@ -25,10 +25,12 @@ directories:
 
 # Docker configuration
 mongodb_default_port: 27017
-mongodb_docker_image: "mongo:3.4.1"
+mongodb_docker_image: "mongo:3.4.4"
 mongodb_docker_name: "mongodb"
 mongodb_docker_published_ports:
   - 172.17.0.1:27017:27017
+mongodb_host_mount_dir_db: /tmp/mongodb_docker/db
+mongodb_host_mount_dir_config: /tmp/mongodb_docker/configdb
 mongodb_docker_volumes:
-  - "/tmp/mongodb_docker/db:{{ mongodb_storage_path }}"
-  - "/tmp/mongodb_docker/configdb:{{ mongodb_config_path }}"
+  - "{{ mongodb_host_mount_dir_db }}:{{ mongodb_storage_path }}"
+  - "{{ mongodb_host_mount_dir_config }}:{{ mongodb_config_path }}"

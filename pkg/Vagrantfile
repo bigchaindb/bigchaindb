@@ -33,7 +33,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         end
       end
       bdb.vm.hostname = instance["name"]
-      bdb.vm.network instance["network"]["type"], ip: instance["network"]["ip"]
+      if instance["network"]["type"] == "private_network"
+        bdb.vm.network instance["network"]["type"], ip: instance["network"]["ip"]
+      elsif instance["network"]["type"] == "public_network"
+        bdb.vm.network instance["network"]["type"], use_dhcp_assigned_default_route: true, bridge: instance["network"]["bridge"]
+      else
+        raise "Invalid network type: Please specify one of the following: [private_network, public_network]"
+      end
       bdb.vm.box = instance["box"]["name"]
       bdb.vm.synced_folder ".", "/bigchaindb"
       bdb.vm.provision :shell, inline: "cd /bigchaindb/scripts;/bin/bash #{instance["upstart"]}"

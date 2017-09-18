@@ -14,3 +14,7 @@
     update_cache: yes
   with_items: "{{ dependencies_yum }}"
   tags: [bigchaindb]
+
+- name: Install pip
+  shell: "easy_install-3.5 pip"
+  tags: [bigchaindb-driver]

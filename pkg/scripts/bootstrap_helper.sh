@@ -79,6 +79,7 @@ install_deps_deb() {
 install_deps_centos() {
     echo "Installing Dependencies..."
     yum install epel-release -y
+    yum install -y https://centos7.iuscommunity.org/ius-release.rpm
     yum install ansible -y
 }
 install_deps_fedora() {

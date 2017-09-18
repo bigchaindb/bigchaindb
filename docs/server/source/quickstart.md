@@ -1,12 +1,6 @@
 # Quickstart
 
-This page has instructions to set up a single stand-alone BigchainDB node manually for learning or experimenting. Instructions for other cases are [elsewhere](introduction.html). You might try one of the following deployment methods
-as well, depending on your choice:
-- [BigchainDB with Docker](appendices/run-with-docker.html).
-- [BigchainDB with Vagrant](appendices/run-with-vagrant.html).
-- [BigchainDB with Ansible](appendices/run-with-ansible.html).
-
-For manual installation, We will assume you're using Ubuntu 16.04 or similar.
+This page has instructions to set up a single stand-alone BigchainDB node for learning or experimenting. Instructions for other cases are [elsewhere](introduction.html). We will assume you're using Ubuntu 16.04 or similar. If you're not using Linux, then you might try [running BigchainDB with Docker](appendices/run-with-docker.html).
 
 A. Install MongoDB as the database backend. (There are other options but you can ignore them for now.)
 

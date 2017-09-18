@@ -8,10 +8,10 @@ dependencies_deb:
 dependencies_yum:
   - gcc-c++
   - "@Development Tools"
-  - python34-devel
+  - python35u-devel
   - libffi-devel
   - openssl-devel
-  - python34-setuptools
+  - python35u-setuptools
 
 dependencies_dnf:
   - gcc-c++
@@ -20,6 +20,7 @@ dependencies_dnf:
   - python3-devel
   - libffi-devel
   - openssl-devel
+  - python3-pip
 
 python_pip_upgrade: true
 python_setuptools_upgrade: true
