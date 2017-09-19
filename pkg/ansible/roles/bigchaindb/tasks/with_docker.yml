@@ -1,0 +1,25 @@
+---
+- name: Configuring BigchainDB Docker
+  docker_container:
+    name: "{{ bigchaindb_docker_name }}"
+    image: "{{ bigchaindb_image_name }}"
+    volumes: "{{ bigchaindb_docker_volumes }}"
+    pull: false
+    env:
+      BIGCHAINDB_SERVER_BIND: "{{ bigchaindb_server_bind }}"
+      BIGCHAINDB_DATABASE_HOST: "{{ bigchaindb_database_host }}"
+    entrypoint: "bigchaindb -y configure mongodb"
+  register: result
+  tags: [bigchaindb]
+
+- name: Start BigchainDB Docker
+  docker_container:
+    name: "{{ bigchaindb_docker_name }}"
+    image: "{{ bigchaindb_image_name }}"
+    published_ports: "{{ bigchaindb_docker_published_ports }}"
+    restart_policy: always
+    volumes: "{{ bigchaindb_docker_volumes }}"
+    state: started
+    pull: false
+  when: result|succeeded
+  tags: [bigchaindb]

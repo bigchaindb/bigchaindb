@@ -1,0 +1,47 @@
+---
+dependencies_deb:
+  - g++
+  - python3-dev
+  - libffi-dev
+  - build-essential
+  - libssl-dev
+  - python3-pip
+
+dependencies_yum:
+  - gcc-c++
+  - "@Development Tools"
+  - python35u-devel
+  - libffi-devel
+  - openssl-devel
+  - python35u-setuptools
+
+dependencies_dnf:
+  - gcc-c++
+  - redhat-rpm-config
+  - "@Development Tools"
+  - python3-devel
+  - libffi-devel
+  - openssl-devel
+  - python3-pip
+
+python_pip_upgrade: true
+python_setuptools_upgrade: true
+
+directories:
+  - /data
+
+backend_db: mongodb #[rethinkdb, mongodb]
+
+bigchaindb_server_bind: "0.0.0.0:9984"
+bigchaindb_database_host: "172.17.0.1"
+bigchaindb_log_file: "{{ ansible_env.HOME }}/bigchaindb.log"
+
+# Docker configuration
+backend_db_image: "mongo:3.4.1"
+backend_db_name: "mongodb"
+bigchaindb_image_name: "bigchaindb/bigchaindb"
+bigchaindb_docker_name: "bigchaindb"
+bigchaindb_docker_published_ports:
+  - 59984:9984
+bigchaindb_docker_volumes:
+  - "{{ ansible_env.HOME }}/bigchaindb_docker:/data"

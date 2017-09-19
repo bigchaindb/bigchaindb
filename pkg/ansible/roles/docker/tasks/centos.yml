@@ -1,0 +1,42 @@
+---
+- name: Uninstall older versions of Docker | CentOS
+  yum:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - docker
+    - docker-common
+    - docker-engine
+    - docker-selinux
+  when: uninstall_old_version
+  tags: [docker]
+
+- name: Setup Pre-reqs | CentOS
+  yum:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  with_items:
+    - yum-utils
+    - device-mapper-persistent-data
+    - lvm2
+    - python-pip
+  tags: [docker]
+
+- name: Add Docker Repo | CentOS
+  yum_repository:
+    name: "{{ docker_pkg }}"
+    gpgcheck: yes
+    gpgkey: https://download.docker.com/linux/centos/gpg
+    baseurl: "{{ docker_yum_repo }}"
+    file: "{{ docker_pkg }}"
+    description: "Docker Repo"
+    enabled: yes
+  tags: [docker]
+
+- name: Install Docker | CentOS
+  yum:
+    name: "{{ docker_pkg }}"
+    state: present
+    update_cache: yes
+  tags: [docker]

@@ -1,0 +1,34 @@
+---
+- name: Uninstall older versions of Docker | Fedora
+  dnf:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - docker-engine-selinux
+    - docker-common
+    - docker-engine
+    - docker-selinux
+  when: uninstall_old_version
+  tags: [docker]
+
+- name: Setup Pre-reqs | Fedora
+  dnf:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - dnf-plugins-core
+  tags: [docker]
+
+- name: Add Docker repo | Fedora
+  shell: "dnf config-manager --add-repo {{ docker_dnf_repo }}"
+  tags: [docker]
+
+- name: Update Cache | Fedora
+  shell: "dnf makecache fast"
+  tags: [docker]
+
+- name: Install Docker | Fedora
+  dnf:
+    name: "{{ docker_pkg }}"
+    state: present
+  tags: [docker]

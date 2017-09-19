@@ -1,0 +1,62 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Required modules
+require 'yaml'
+
+# Minimum Requirements
+Vagrant.require_version '>= 1.6.0'
+VAGRANTFILE_API_VERSION = '2'
+
+# Configuration files
+CONFIGURATION_FILE = 'config/bdb-config.yaml'
+
+# Validate if all the required plugins are present
+required_plugins = ["vagrant-cachier"]
+required_plugins.each do |plugin|
+  if not Vagrant.has_plugin?(plugin)
+    raise "Required vagrant plugin #{plugin} not found. Please run `vagrant plugin install #{plugin}`"
+  end
+end
+
+# Read configuration file(s)
+instances_config = YAML.load_file(File.join(File.dirname(__FILE__), CONFIGURATION_FILE))
+
+#TODO: (muawiakh) Add support for Docker, AWS, Azure
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  instances_config.each do |instance|
+    config.vm.define instance['name'] do |bdb|
+      # Workaround until vagrant cachier plugin supports dnf
+      if !(instance["box"]["name"].include? "fedora")
+        if Vagrant.has_plugin?("vagrant-cachier")
+          config.cache.scope = :box
+        end
+      end
+      bdb.vm.hostname = instance["name"]
+      if instance["network"]["type"] == "private_network"
+        bdb.vm.network instance["network"]["type"], ip: instance["network"]["ip"]
+      elsif instance["network"]["type"] == "public_network"
+        bdb.vm.network instance["network"]["type"], use_dhcp_assigned_default_route: true, bridge: instance["network"]["bridge"]
+      else
+        raise "Invalid network type: Please specify one of the following: [private_network, public_network]"
+      end
+      bdb.vm.box = instance["box"]["name"]
+      bdb.vm.synced_folder ".", "/bigchaindb"
+      bdb.vm.provision :shell, inline: "cd /bigchaindb/scripts;/bin/bash #{instance["upstart"]}"
+      if instance["setup_type"] == "quickstart"
+        bdb.vm.provision :shell, inline: "PYTHONBUFFERED=1 ansible-playbook \
+          /bigchaindb/ansible/quickstart.yml --extra-vars \"with_docker=#{instance["deploy_docker"]}\" -c local"
+      end
+
+      bdb.vm.provider 'vmware_fusion' do |vmwf, override|
+        vmwf.vmx['memsize'] = instance["ram"]
+        vmwf.vmx['numvcpus'] = instance['vcpus']
+      end
+
+      bdb.vm.provider 'virtualbox' do |vb, override|
+        vb.memory = instance["ram"]
+        vb.cpus = instance['vcpus']
+      end
+    end
+  end
+end

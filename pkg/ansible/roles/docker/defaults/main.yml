@@ -1,0 +1,18 @@
+---
+uninstall_old_version: false #[true, false]
+docker_edition: 'ce' #[ce, ee] Currently, onlt CE is supported
+docker_pkg: "docker-{{ docker_edition }}" #[docker-ce, docker-ee]
+docker_update_channel: "stable" #[stable, edge]
+
+# Host configuration
+distribution_name: "{{ ansible_distribution|lower }}"
+distribution_codename: "{{ ansible_distribution_release|lower }}"
+distribution_major: "{{ ansible_distribution_major_version }}"
+server_arch: "amd64" #[amd64, armhf, s390x]
+
+# Docker Repositories
+docker_apt_repo: "deb [arch={{ server_arch }}] https://download.docker.com/linux/{{ distribution_name }} {{ distribution_codename }} {{ docker_update_channel }}"
+apt_key_fingerprint: "9DC858229FC7DD38854AE2D88D81803C0EBFCD88"
+apt_key_url: "https://download.docker.com/linux/{{ distribution_name }}/gpg"
+docker_yum_repo: "https://download.docker.com/linux/{{ distribution_name }}/{{ distribution_major }}/$basearch/{{ docker_update_channel }}"
+docker_dnf_repo: "https://download.docker.com/linux/{{ distribution_name }}/{{ docker_pkg }}.repo"

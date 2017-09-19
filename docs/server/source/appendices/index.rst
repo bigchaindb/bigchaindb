@@ -27,3 +27,5 @@ Appendices
    rethinkdb-backup
    licenses
    install-with-lxd
+   run-with-vagrant
+   run-with-ansible

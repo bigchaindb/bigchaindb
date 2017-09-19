@@ -1,0 +1,31 @@
+---
+- name: Creating directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0700
+  with_items: "{{ directories }}"
+  tags: [mongodb]
+
+- include: with_docker.yml
+  when: with_docker|bool
+
+- name: Verify logfiles exist | Debian
+  file:
+    path: "{{ mongodb_log_path }}/mongod.log"
+    state: touch
+    mode: 0755
+  when: not with_docker|bool
+  tags: [mongodb]
+
+- include: debian.yml
+  when: not with_docker|bool and (distribution_name == "debian" or distribution_name == "ubuntu")
+
+- include: centos.yml
+  when: not with_docker|bool and (distribution_name == "centos" or distribution_name == "red hat enterprise linux")
+
+- include: fedora.yml
+  when: not with_docker|bool and (distribution_name == "fedora")
+
+- include: common.yml
+  when: not with_docker|bool
