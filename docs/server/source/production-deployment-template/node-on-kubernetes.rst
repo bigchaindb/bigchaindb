@@ -322,6 +322,18 @@ Step 9.1: Vanilla NGINX
      ``cluster-health-check-port``. Set them to the values specified in the
      ConfigMap.
 
+  * The configuration uses the following values set in the ConfigMap:
+
+    - ``cluster-frontend-port``
+    - ``cluster-health-check-port``
+    - ``cluster-dns-server-ip``
+    - ``mongodb-frontend-port``
+    - ``ngx-mdb-instance-name``
+    - ``mongodb-backend-port``
+    - ``ngx-bdb-instance-name``
+    - ``bigchaindb-api-port``
+    - ``bigchaindb-ws-port``
+
   * Start the Kubernetes Deployment:
 
     .. code:: bash
@@ -345,6 +357,25 @@ Step 9.2: NGINX with HTTPS
      ``mongodb-frontend-port``, ``cluster-frontend-port`` and
      ``cluster-health-check-port``. Set them to the values specified in the
      ConfigMap.
+
+  * The configuration uses the following values set in the ConfigMap:
+
+    - ``cluster-frontend-port``
+    - ``cluster-health-check-port``
+    - ``cluster-fqdn``
+    - ``cluster-dns-server-ip``
+    - ``mongodb-frontend-port``
+    - ``ngx-mdb-instance-name``
+    - ``mongodb-backend-port``
+    - ``openresty-backend-port``
+    - ``ngx-openresty-instance-name``
+    - ``ngx-bdb-instance-name``
+    - ``bigchaindb-api-port``
+    - ``bigchaindb-ws-port``
+
+  * The configuration uses the following values set in the Secret:
+
+    - ``https-certs``
 
    * Start the Kubernetes Deployment:
 
@@ -499,6 +530,17 @@ Step 12: Start a Kubernetes StatefulSet for MongoDB
     ``spec.containers[0].ports`` section. We currently only expose the MongoDB
     backend port. Set it to the value specified for ``mongodb-backend-port``
     in the ConfigMap.
+
+  * The configuration uses the following values set in the ConfigMap:
+
+    - ``mdb-instance-name``
+    - ``mongodb-replicaset-name``
+    - ``mongodb-backend-port``
+  
+  * The configuration uses the following values set in the Secret:
+
+    - ``mdb-certs``
+    - ``ca-auth``
 
   * Create the MongoDB StatefulSet using:
 
@@ -661,6 +703,12 @@ Step 14: Start a Kubernetes Deployment for MongoDB Monitoring Agent
     ``mdb-mon-instance-name`` is ``mdb-mon-instance-0``, set the fields to the
     value ``mdb-mon-instance-0-dep``.
 
+  * The configuration uses the following values set in the Secret:
+
+    - ``mdb-mon-certs``
+    - ``ca-auth``
+    - ``cloud-manager-credentials``
+
   * Start the Kubernetes Deployment using:
 
     .. code:: bash
@@ -681,6 +729,12 @@ Step 15: Start a Kubernetes Deployment for MongoDB Backup Agent
     For example, if the value set in the
     ``mdb-bak-instance-name`` is ``mdb-bak-instance-0``, set the fields to the
     value ``mdb-bak-instance-0-dep``.
+
+  * The configuration uses the following values set in the Secret:
+
+    - ``mdb-bak-certs``
+    - ``ca-auth``
+    - ``cloud-manager-credentials``
 
   * Start the Kubernetes Deployment using:
 
@@ -714,10 +768,34 @@ Step 16: Start a Kubernetes Deployment for BigchainDB
     richer monitoring and probing becomes available in BigchainDB, we will
     tweak the ``livenessProbe`` and ``readinessProbe`` parameters.
 
-   * Set the ports to be exposed from the pod in the
-     ``spec.containers[0].ports`` section. We currently expose 2 ports -
-     ``bigchaindb-api-port`` and ``bigchaindb-ws-port``. Set them to the
-     values specified in the ConfigMap.
+  * Set the ports to be exposed from the pod in the
+    ``spec.containers[0].ports`` section. We currently expose 2 ports -
+    ``bigchaindb-api-port`` and ``bigchaindb-ws-port``. Set them to the
+    values specified in the ConfigMap.
+
+  * The configuration uses the following values set in the ConfigMap:
+
+    - ``mdb-instance-name``
+    - ``mongodb-backend-port``
+    - ``mongodb-replicaset-name``
+    - ``bigchaindb-database-name``
+    - ``bigchaindb-server-bind``
+    - ``bigchaindb-ws-interface``
+    - ``cluster-fqdn``
+    - ``bigchaindb-ws-port``
+    - ``cluster-frontend-port``
+    - ``bigchaindb-wsserver-advertised-scheme``
+    - ``bdb-public-key``
+    - ``bigchaindb-backlog-reassign-delay``
+    - ``bigchaindb-database-maxtries``
+    - ``bigchaindb-database-connection-timeout``
+    - ``bigchaindb-log-level``
+    - ``bdb-user``
+
+  * The configuration uses the following values set in the Secret:
+
+    - ``bdb-certs``
+    - ``ca-auth``
 
   * Create the BigchainDB Deployment using:
 
@@ -746,6 +824,17 @@ Step 17: Start a Kubernetes Deployment for OpenResty
     ``spec.containers[0].ports`` section. We currently expose the port at
     which OpenResty is listening for requests, ``openresty-backend-port`` in
     the above ConfigMap.
+
+  * The configuration uses the following values set in the Secret:
+
+    - ``threescale-credentials``
+
+  * The configuration uses the following values set in the ConfigMap:
+
+    - ``cluster-dns-server-ip``
+    - ``openresty-backend-port``
+    - ``ngx-bdb-instance-name``
+    - ``bigchaindb-api-port``
 
   * Create the OpenResty Deployment using:
 
