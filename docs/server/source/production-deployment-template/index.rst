@@ -28,4 +28,5 @@ Feel free change things to suit your needs or preferences.
    add-node-on-kubernetes
    restore-from-mongodb-cloud-manager
    tectonic-azure
+   troubleshoot
    architecture
