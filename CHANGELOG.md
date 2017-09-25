@@ -52,6 +52,9 @@ Tag name: v1.1.0
 * @ketanbhatt - Pull requests [#1643](https://github.com/bigchaindb/bigchaindb/pull/1643) and [#1644](https://github.com/bigchaindb/bigchaindb/pull/1644)
 
 ### Notes
+* New drivers & tools from our community:
+    * [Java driver](https://github.com/authenteq/java-bigchaindb-driver), by [Authenteq](https://authenteq.com/)
+    * [Ruby library](https://rubygems.org/gems/bigchaindb), by @nileshtrivedi
 * Many improvements to our production deployment template (which uses Kubernetes).
 * The production deployment template for the multi-node case was out of date. We updated that and verified it. [Pull request #1713](https://github.com/bigchaindb/bigchaindb/pull/1713)
 
