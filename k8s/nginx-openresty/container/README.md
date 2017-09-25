@@ -58,39 +58,3 @@ reflect any changes made to the container.
   corresponding private key to the folder
   `/usr/local/openresty/nginx/conf/ssl/`. Name the pem-encoded certificate as
   `cert.pem` and the private key as `cert.key`.
-
-
-## Deployment terminology
-We currently use the terms `frontend`, `backend`, `upstream` in our code and
-configuration. This diagram should help understand the various terms.
-
-The final goal is to have a deployment that looks like this:
-
-```
-                              +------------+                                                   +------------+
-                              |            |                                                   |            |
-+-----------------------------+----+    N  |                             +---------------------+------+     |
-|      BigchainDB Frontend Port    |    G  |                             |   BigchainDB Backend Port  |     |
-|                                  |    I  |                             |                            |     |
-|[port number exposed globally     |    N  |                  +--------> |[port where BDB instance    |     |
-| for backend BDB cluster services]|    X  |                  |          | listens/waits for requests]|     |
-+-----------------------------+----+       |                  |          +---------------------+------+     |
-                              |         G  |                  |                                |            |
-+-----------------------------+----+    A  |                  |                                | BigchainDB |
-|        Health Check Port         |    T  |                  |                                | Backend    |
-|                                  |    E  |                  |                                | Host       |
-|   [port number exposed to the LB |    W  |                  |                                +------------+
-|    for health checks]            |    A  |                  |
-+-----------------------------+----+    Y  |                  |                                +------------+
-                              |            |                  |                                | MongoDB    |
-                              |         +--+------------------+-------+                        | Backend    |
-+-----------------------------+----+    |     Upstream API Port       |                        | Host       |
-|      MongoDB Frontend Port       |    |                             |                        |            |
-|                                  |    |[internal port where we can  |   +--------------------+--------+   |
-|  [port number for MongoDB        |    |access backend BDB cluster   |   |  MongoDB Backend Port       |   |
-|  instances to communicate        |    +--+--------------------------+   |                             |   |
-|  with each other                 +-------+----------------------------->|[port where MongoDB instance |   |
-+-----------------------------+----+       |                              | listens/waits for requests] |   |
-                              |            |                              +--------------------+--------+   |
-                              +------------+                                                   +------------+
-```
