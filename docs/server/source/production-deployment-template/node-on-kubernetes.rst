@@ -542,6 +542,19 @@ Step 12: Start a Kubernetes StatefulSet for MongoDB
     - ``mdb-certs``
     - ``ca-auth``
 
+  * **Optional**: You can also change the value for ``STORAGE_ENGINE_CACHE_SIZE``, for more information
+    regarding this configuration, please consult the `MongoDB Official
+    Documentation <https://docs.mongodb.com/manual/reference/configuration-options/#storage.wiredTiger.engineConfig.cacheSizeGB>`_.
+
+  * **Optional**: If you are not using the **Standard_D2_v2** virtual machines for Kubernetes agents as per the guide,
+    please update the ``resources`` for ``mongo-ss``. We suggest allocating ``memory`` using the following scheme
+    for a MongoDB StatefulSet:
+
+    .. code:: bash
+
+      memory = (Total_Memory_Agent_VM_GB - 2GB)
+      STORAGE_ENGINE_CACHE_SIZE = memory / 2
+
   * Create the MongoDB StatefulSet using:
 
     .. code:: bash

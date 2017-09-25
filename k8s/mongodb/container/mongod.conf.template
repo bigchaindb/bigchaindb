@@ -86,6 +86,7 @@ storage:
   wiredTiger:
     engineConfig:
       journalCompressor: snappy
+      configString: cache_size=STORAGE_ENGINE_CACHE_SIZE
     collectionConfig:
       blockCompressor: snappy
     indexConfig:
@@ -98,4 +99,3 @@ operationProfiling:
 replication:
   replSetName: REPLICA_SET_NAME
   enableMajorityReadConcern: true
-

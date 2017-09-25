@@ -43,6 +43,10 @@ spec:
             configMapKeyRef:
              name: vars
              key: mongodb-backend-port
+        # Optional: Optimize storage engine(wired tiger)
+        # cache size. e.g. (2048MB, 2GB, 1TB)
+        - name: STORAGE_ENGINE_CACHE_SIZE
+          value: ""
         args:
         - --mongodb-port
         - $(MONGODB_PORT)
@@ -58,6 +62,8 @@ spec:
         - $(MONGODB_FQDN)
         - --mongodb-ip
         - $(MONGODB_POD_IP)
+        - --storage-engine-cache-size
+        - $(STORAGE_ENGINE_CACHE_SIZE)
         securityContext:
           capabilities:
             add:
@@ -80,7 +86,7 @@ spec:
         resources:
           limits:
             cpu: 200m
-            memory: 3.5G
+            memory: 5G
         livenessProbe:
           tcpSocket:
             port: mdb-api-port

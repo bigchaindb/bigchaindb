@@ -92,7 +92,7 @@ consolidated file containing both the public and private keys.
 
 .. code:: bash
 
-   cat /path/to/mdb-instance-0.crt /path/to/mdb-instance-0.key > mdb-instance-0.pem
+   cat /path/to/bdb-instance-0.crt /path/to/bdb-instance-0.key > bdb-instance-0.pem
 
     OR
 
