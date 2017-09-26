@@ -33,7 +33,7 @@ For reference, the possible headings are:
 * **Notes**
 
 
-## [1.1] - 2017-09-??????
+## [1.1] - 2017-09-26
 Tag name: v1.1.0
 
 ### Added
