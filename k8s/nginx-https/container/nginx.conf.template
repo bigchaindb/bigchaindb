@@ -65,7 +65,6 @@ http {
   # Frontend server for the external clients; acts as HTTPS termination point.
   server {
     listen CLUSTER_FRONTEND_PORT ssl;
-    add_header X-XSS-Protection "1; mode=block";
     server_name "CLUSTER_FQDN";
 
     ssl_certificate /etc/nginx/ssl/cert.pem;
