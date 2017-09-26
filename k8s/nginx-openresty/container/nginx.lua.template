@@ -1,0 +1,416 @@
+-- -*- mode: lua; -*-
+-- Generated on: 2017-04-10 14:41:18 +0000 --
+-- Version:
+-- Error Messages per service
+
+-- Ref: https://github.com/openresty/lua-nginx-module
+-- Ref: https://ipdbtestnet-admin.3scale.net/p/admin/api_docs
+-- Ref: http://nginx.org/en/docs/debugging_log.html
+
+local custom_config = false
+
+local _M = {
+  ['services'] = {
+  ['SERVICE_ID'] = {
+  error_auth_failed = 'Authentication failed',
+  error_auth_missing = 'Authentication parameters missing',
+  auth_failed_headers = 'text/plain; charset=us-ascii',
+  auth_missing_headers = 'text/plain; charset=us-ascii',
+  error_no_match = 'No Mapping Rule matched',
+  no_match_headers = 'text/plain; charset=us-ascii',
+  no_match_status = 404,
+  auth_failed_status = 403,
+  auth_missing_status = 403,
+  secret_token = 'THREESCALE_RESPONSE_SECRET_TOKEN',
+  get_credentials = function(service, params)
+    return (
+        (params.app_id and params.app_key)
+    ) or error_no_credentials(service)
+  end,
+  extract_usage = function (service, request)
+    local method, url = unpack(string.split(request," "))
+    local path, querystring = unpack(string.split(url, "?"))
+    local usage_t =  {}
+    local matched_rules = {}
+
+    local args = get_auth_params(nil, method)
+
+    for i,r in ipairs(service.rules) do
+      check_rule({path=path, method=method, args=args}, r, usage_t, matched_rules)
+    end
+
+    -- if there was no match, usage is set to nil and it will respond a 404, this behavior can be changed
+    return usage_t, table.concat(matched_rules, ", ")
+  end,
+  rules = {
+    {
+      method = 'POST',
+      pattern = '/api/{version}/transactions$',
+      parameters = { 'version' },
+      querystring_params = function(args)
+        return true
+      end,
+      system_name = 'hits',
+      delta = 1
+    },
+    {
+      method = 'POST',
+      pattern = '/api/{version}/transactions$',
+      parameters = { 'version' },
+      querystring_params = function(args)
+        return true
+      end,
+      system_name = 'request_body_size',
+      delta = 1
+    },
+    {
+      method = 'POST',
+      pattern = '/api/{version}/transactions$',
+      parameters = { 'version' },
+      querystring_params = function(args)
+        return true
+      end,
+      system_name = 'response_body_size',
+      delta = 1
+    },
+    {
+      method = 'POST',
+      pattern = '/api/{version}/transactions$',
+      parameters = { 'version' },
+      querystring_params = function(args)
+        return true
+      end,
+      system_name = 'post_transactions',
+      delta = 1
+    },
+    {
+      method = 'POST',
+      pattern = '/api/{version}/transactions$',
+      parameters = { 'version' },
+      querystring_params = function(args)
+        return true
+      end,
+      system_name = 'total_body_size',
+      delta = 1
+    },
+  }
+},
+  }
+}
+
+-- Error Codes
+function error_no_credentials(service)
+  ngx.status = service.auth_missing_status
+  ngx.header.content_type = service.auth_missing_headers
+  ngx.print(service.error_auth_missing)
+  ngx.exit(ngx.HTTP_OK)
+end
+
+function error_authorization_failed(service)
+  ngx.status = service.auth_failed_status
+  ngx.header.content_type = service.auth_failed_headers
+  ngx.print(service.error_auth_failed)
+  ngx.exit(ngx.HTTP_OK)
+end
+
+function error_no_match(service)
+  ngx.status = service.no_match_status
+  ngx.header.content_type = service.no_match_headers
+  ngx.print(service.error_no_match)
+  ngx.exit(ngx.HTTP_OK)
+end
+-- End Error Codes
+
+-- Aux function to split a string
+
+function string:split(delimiter)
+  local result = { }
+  local from = 1
+  local delim_from, delim_to = string.find( self, delimiter, from )
+  if delim_from == nil then return {self} end
+  while delim_from do
+    table.insert( result, string.sub( self, from , delim_from-1 ) )
+    from = delim_to + 1
+    delim_from, delim_to = string.find( self, delimiter, from )
+  end
+  table.insert( result, string.sub( self, from ) )
+  return result
+end
+
+function first_values(a)
+  r = {}
+  for k,v in pairs(a) do
+    if type(v) == "table" then
+      r[k] = v[1]
+    else
+      r[k] = v
+    end
+  end
+  return r
+end
+
+function set_or_inc(t, name, delta)
+  return (t[name] or 0) + delta
+end
+
+function build_querystring_formatter(fmt)
+  return function (query)
+    local function kvmap(f, t)
+      local res = {}
+      for k, v in pairs(t) do
+        table.insert(res, f(k, v))
+      end
+      return res
+    end
+
+    return table.concat(kvmap(function(k,v) return string.format(fmt, k, v) end, query or {}), "&")
+  end
+end
+
+local build_querystring = build_querystring_formatter("usage[%s]=%s")
+local build_query = build_querystring_formatter("%s=%s")
+
+function regexpify(path)
+  return path:gsub('?.*', ''):gsub("{.-}", '([\\w_.-]+)'):gsub("%.", "\\.")
+end
+
+function check_rule(req, rule, usage_t, matched_rules)
+  local param = {}
+  local p = regexpify(rule.pattern)
+  local m = ngx.re.match(req.path,
+                         string.format("^%s",p))
+  if m and req.method == rule.method then
+    local args = req.args
+    if rule.querystring_params(args) then -- may return an empty table
+                                          -- when no querystringparams
+                                          -- in the rule. it's fine
+      for i,p in ipairs(rule.parameters) do
+        param[p] = m[i]
+      end
+
+    table.insert(matched_rules, rule.pattern)
+    usage_t[rule.system_name] = set_or_inc(usage_t, rule.system_name, rule.delta)
+    end
+  end
+end
+
+--[[
+  Authorization logic
+  NOTE: We do not use any of the authorization logic defined in the template.
+  We use custom authentication and authorization logic defined in the
+  custom_app_id_authorize() function.
+]]--
+
+function get_auth_params(where, method)
+  local params = {}
+  if where == "headers" then
+    params = ngx.req.get_headers()
+  elseif method == "GET" then
+    params = ngx.req.get_uri_args()
+  else
+    ngx.req.read_body()
+    params = ngx.req.get_post_args()
+  end
+  return first_values(params)
+end
+
+function get_debug_value()
+  local h = ngx.req.get_headers()
+  if h["X-3scale-debug"] == 'SERVICE_TOKEN' then
+    return true
+  else
+    return false
+  end
+end
+
+function _M.authorize(auth_strat, params, service)
+  if auth_strat == 'oauth' then
+    oauth(params, service)
+  else
+    authrep(params, service)
+  end
+end
+
+function oauth(params, service)
+  ngx.var.cached_key = ngx.var.cached_key .. ":" .. ngx.var.usage
+  local access_tokens = ngx.shared.api_keys
+  local is_known = access_tokens:get(ngx.var.cached_key)
+
+  if is_known ~= 200 then
+    local res = ngx.location.capture("/threescale_oauth_authrep", { share_all_vars = true })
+
+    -- IN HERE YOU DEFINE THE ERROR IF CREDENTIALS ARE PASSED, BUT THEY ARE NOT VALID
+    if res.status ~= 200   then
+      access_tokens:delete(ngx.var.cached_key)
+      ngx.status = res.status
+      ngx.header.content_type = "application/json"
+      ngx.var.cached_key = nil
+      error_authorization_failed(service)
+    else
+      access_tokens:set(ngx.var.cached_key,200)
+    end
+
+    ngx.var.cached_key = nil
+  end
+end
+
+function authrep(params, service)
+  ngx.var.cached_key = ngx.var.cached_key .. ":" .. ngx.var.usage
+  local api_keys = ngx.shared.api_keys
+  local is_known = api_keys:get(ngx.var.cached_key)
+
+  if is_known ~= 200 then
+    local res = ngx.location.capture("/threescale_authrep", { share_all_vars = true })
+
+    -- IN HERE YOU DEFINE THE ERROR IF CREDENTIALS ARE PASSED, BUT THEY ARE NOT VALID
+    if res.status ~= 200 then
+      -- remove the key, if it's not 200 let's go the slow route, to 3scale's backend
+      api_keys:delete(ngx.var.cached_key)
+      ngx.status = res.status
+      ngx.header.content_type = "application/json"
+      ngx.var.cached_key = nil
+      error_authorization_failed(service)
+    else
+      api_keys:set(ngx.var.cached_key,200)
+    end
+    ngx.var.cached_key = nil
+  end
+end
+
+function _M.access()
+  local params = {}
+  local host = ngx.req.get_headers()["Host"]
+  local auth_strat = ""
+  local service = {}
+  local usage = {}
+  local matched_patterns = ''
+
+  if ngx.status == 403  then
+    ngx.say("Throttling due to too many requests")
+    ngx.exit(403)
+  end
+
+  if ngx.var.service_id == 'SERVICE_ID' then
+    local parameters = get_auth_params("headers", string.split(ngx.var.request, " ")[1] )
+    service = _M.services['SERVICE_ID'] --
+    ngx.var.secret_token = service.secret_token
+    params.app_id = parameters["app_id"]
+    params.app_key = parameters["app_key"]  -- or ""  -- Uncoment the first part if you want to allow not passing app_key
+    service.get_credentials(service, params)
+    ngx.var.cached_key = "SERVICE_ID" .. ":" .. params.app_id ..":".. params.app_key
+    auth_strat = "2"
+    ngx.var.service_id = "SERVICE_ID"
+    ngx.var.proxy_pass = "http://backend_SERVICE_ID"
+    usage, matched_patterns = service:extract_usage(ngx.var.request)
+  end
+
+  usage['post_transactions'] = 0 
+  usage['request_body_size'] = 0
+  usage['total_body_size'] = 0
+  usage['response_body_size'] = 0 
+  ngx.var.credentials = build_query(params)
+  ngx.var.usage = build_querystring(usage)
+
+  -- WHAT TO DO IF NO USAGE CAN BE DERIVED FROM THE REQUEST.
+  if ngx.var.usage == '' then
+    ngx.header["X-3scale-matched-rules"] = ''
+    error_no_match(service)
+  end
+
+  if get_debug_value() then
+    ngx.header["X-3scale-matched-rules"] = matched_patterns
+    ngx.header["X-3scale-credentials"]   = ngx.var.credentials
+    ngx.header["X-3scale-usage"]         = ngx.var.usage
+    ngx.header["X-3scale-hostname"]      = ngx.var.hostname
+  end
+  _M.custom_app_id_authorize(params, service)
+end
+
+function _M.custom_app_id_authorize(params, service)
+  ngx.var.cached_key = ngx.var.cached_key .. ":" .. ngx.var.usage
+  local api_keys = ngx.shared.api_keys
+  local res = ngx.location.capture("/threescale_auth", { share_all_vars = true })
+  if res.status ~= 200 then
+    ngx.status = res.status
+    ngx.header.content_type = "application/json"
+    ngx.var.cached_key = nil
+    error_authorization_failed(service)
+  end
+  ngx.var.cached_key = nil
+end
+
+function _M.post_action_content()
+  local report_data = {}
+
+  -- increment POST count
+  report_data['post_transactions'] = 1 
+  
+  -- NOTE: When we are querying for the length of the request here, we already
+  -- have the complete request data with us and hence can just use the len()
+  -- function to get the size of the payload in bytes.
+  -- However, we might not have a complete response from the backend at this
+  -- stage (esp. if it's a large response size). So, we decipher the payload
+  -- size by peeking into the content length header of the response.
+  -- Otherwise, nginx will have to buffer every response and then calculate
+  -- response payload size.
+
+  -- req data size
+  local req_data = ngx.req.get_body_data()
+  if req_data then
+    report_data['request_body_size'] = req_data:len()
+  else
+    report_data['request_body_size'] = 0
+  end
+  
+  -- res data size
+  local all_headers = cjson.decode(ngx.var.resp_headers)
+  local variable_header = "content-length"  --<-- case sensitive
+  if all_headers[variable_header] then
+    report_data['response_body_size'] = all_headers[variable_header]
+  else
+    report_data['response_body_size'] = 0
+  end
+  
+  -- total data size
+  report_data['total_body_size'] = report_data['request_body_size'] + report_data['response_body_size']
+  
+  -- get the app_id
+  local app_id = ""
+  local credentials = ngx.var.credentials:split("&")
+  for i in pairs(credentials) do
+    if credentials[i]:match('app_id') then
+      local temp = credentials[i]:split("=")
+      app_id = temp[2]
+    end
+  end
+  
+  -- form the payload to report to 3scale
+  local report = {}
+  report['service_id'] = ngx.var.service_id
+  report['service_token'] = ngx.var.service_token
+  report['transactions[0][app_id]'] = app_id
+  report['transactions[0][usage][post_transactions]'] = report_data['post_transactions']
+  report['transactions[0][usage][request_body_size]'] = report_data['request_body_size']
+  report['transactions[0][usage][response_body_size]'] = report_data['response_body_size']
+  report['transactions[0][usage][total_body_size]'] = report_data['total_body_size']
+  local res1 = ngx.location.capture("/threescale_report", {method = ngx.HTTP_POST, body = ngx.encode_args(report), share_all_vars = true })
+  --ngx.log(0, ngx.encode_args(report))
+  ngx.log(0, "Status: "..res1.status)
+  ngx.log(0, "Body: "..res1.body)
+  --if res1.status ~= 200 then
+  --  local api_keys = ngx.shared.api_keys
+  --  api_keys:delete(cached_key)
+  --end
+  ngx.exit(ngx.HTTP_OK)
+end
+
+if custom_config then
+  local ok, c = pcall(function() return require(custom_config) end)
+  if ok and type(c) == 'table' and type(c.setup) == 'function' then
+    c.setup(_M)
+  end
+end
+
+return _M
+
+-- END OF SCRIPT

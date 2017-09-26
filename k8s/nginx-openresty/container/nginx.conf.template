@@ -1,0 +1,197 @@
+worker_processes 2;
+daemon off;
+user nobody nogroup;
+pid /tmp/nginx.pid;
+error_log /usr/local/openresty/nginx/logs/error.log;
+env THREESCALE_DEPLOYMENT_ENV;
+
+events {
+  worker_connections 256;
+  accept_mutex on;
+  use epoll;
+}
+
+http {
+  lua_shared_dict api_keys 10m;
+  server_names_hash_bucket_size 128;
+  lua_package_path ";;$prefix/?.lua;$prefix/conf/?.lua";
+  init_by_lua 'math.randomseed(ngx.time()) ; cjson = require("cjson")';
+  access_log /usr/local/openresty/nginx/logs/access.log combined buffer=16k flush=5s;
+
+  # allow 10 req/sec from the same IP address, and store the counters in a
+  # `zone` or shared memory location tagged as 'one'.
+  limit_req_zone $binary_remote_addr zone=one:10m rate=10r/s;
+  # enable logging when requests are being throttled
+  limit_req_log_level notice;
+
+  # the http status code to return to the client; 429 is for TooManyRequests,
+  # ref. RFC 6585
+  limit_req_status 429;
+
+  resolver DNS_SERVER valid=30s ipv6=off;
+
+  map $remote_addr $bdb_backend {
+    default BIGCHAINDB_BACKEND_HOST;
+  }
+
+  upstream backend_SERVICE_ID {
+    server localhost:9999 max_fails=5 fail_timeout=30;
+  }
+
+  # Our frontend API server that accepts requests from the external world and
+  # takes care of authentication and authorization. If auth is successful, it
+  # forwards the request to the backend_SERVICE_ID upstream where a consortium
+  # can run a BDB cluster.
+  server {
+    lua_code_cache on;
+    listen OPENRESTY_FRONTEND_PORT;
+    keepalive_timeout 60s;
+
+    underscores_in_headers on;
+    set_by_lua $deployment 'return os.getenv("THREESCALE_DEPLOYMENT_ENV")';
+    set $threescale_backend "https://su1.3scale.net";
+    #set $threescale_backend "http://su1.3scale.net";
+    #set $threescale_backend "https://su1.3scale.net:443";
+    #set $threescale_backend "https://echo-api.3scale.net";
+    
+    # `slowloris` attack mitigation settings
+    client_body_timeout 10s;
+    client_header_timeout 10s;
+    
+    location = /out_of_band_authrep_action {
+      internal;
+      proxy_pass_request_headers off;
+      set $service_token "SERVICE_TOKEN";
+      content_by_lua "require('nginx').post_action_content()";
+    }
+
+    # 3scale auth api that takes the auth credentials and metrics as input,
+    # and returns 200 OK if both the credentials match and the user has not
+    # exceeded the limits in his application plan.
+    location = /threescale_auth {
+      internal;
+      set $service_token "SERVICE_TOKEN";
+      proxy_pass $threescale_backend/transactions/authorize.xml?service_token=$service_token&service_id=$service_id&$usage&$credentials&log%5Bcode%5D=$arg_code&log%5Brequest%5D=$arg_req&log%5Bresponse%5D=$arg_resp;
+      proxy_set_header  Host  "su1.3scale.net";
+      #proxy_set_header  Host  "echo-api.3scale.net";
+      proxy_set_header  X-3scale-User-Agent "nginx$deployment";
+      proxy_set_header  X-3scale-Version  "THREESCALE_VERSION_HEADER";
+    }
+
+    # 3scale reporting api that takes the metrics data and persists the metrics
+    # in the 3scale backend.
+    location = /threescale_report {
+      internal;
+      set $service_token "SERVICE_TOKEN";
+      proxy_pass $threescale_backend/transactions.xml;
+      proxy_set_header  Host  "su1.3scale.net";
+      #proxy_set_header  Host  "echo-api.3scale.net";
+      # We have a bug in lua-nginx module that does not set
+      # Content-Type from lua script
+      proxy_pass_request_headers off;
+      proxy_set_header  Content-Type "application/x-www-form-urlencoded";
+      proxy_set_header  X-3scale-User-Agent "nginx$deployment";
+      proxy_set_header  X-3scale-Version  "THREESCALE_VERSION_HEADER";
+    }
+
+    location / {
+      proxy_ignore_client_abort on;
+      proxy_set_header X-Real-IP  $remote_addr;
+      proxy_set_header X-3scale-proxy-secret-token $secret_token;
+
+      # limit requests from the same client, allow `burst` to 20 r/s,
+      # `nodelay` or drop connection immediately in case it exceeds this
+      # threshold.
+      limit_req zone=one burst=20 nodelay;
+
+      # We do not need the GET handling here as it's done in the other NGINX
+      # module
+      #if ($request_method = GET ) {
+      #  proxy_pass http://$bdb_backend:BIGCHAINDB_API_PORT;
+      #}
+
+      if ($request_method = POST ) {
+        set $service_token null;
+        set $cached_key null;
+        set $credentials null;
+        set $usage null;
+        set $service_id SERVICE_ID;
+        set $proxy_pass null;
+        set $secret_token null;
+        set $resp_body null;
+        set $resp_headers null;
+        access_by_lua "require('nginx').access()";
+        body_filter_by_lua  'ngx.ctx.buffered = (ngx.ctx.buffered or "") .. string.sub(ngx.arg[1], 1, 1000)
+                            if ngx.arg[2] then ngx.var.resp_body = ngx.ctx.buffered end';
+        header_filter_by_lua 'ngx.var.resp_headers = cjson.encode(ngx.resp.get_headers())';
+
+        add_header 'Access-Control-Allow-Origin' '*';
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+        add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Range,Range';
+        add_header 'Access-Control-Expose-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Range,Range';
+        
+        proxy_pass $proxy_pass ;
+        post_action /out_of_band_authrep_action;
+      }
+
+      if ($request_method = 'OPTIONS') {
+        add_header 'Access-Control-Allow-Origin' '*';
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+        add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Range,Range,app_key,app_id';
+        add_header 'Access-Control-Max-Age' 43200;
+        add_header 'Content-Type' 'text/plain charset=UTF-8';
+        add_header 'Content-Length' 0;
+        return 204;
+      }
+    }
+  }
+
+  # Our backend server block that accepts requests from the nginx proxy and
+  # forwards it to instances of BDB cluster. We currently run only a single
+  # instance.
+  server {
+    sendfile on;
+
+    listen 9999;
+
+    # max client request body size: avg transaction size
+    client_max_body_size 15k;
+
+    # keepalive connection settings
+    keepalive_timeout 60s;
+
+    # `slowloris` attack mitigation settings
+    client_body_timeout 10s;
+    client_header_timeout 10s;
+
+    if ( $http_x_3scale_proxy_secret_token != "THREESCALE_RESPONSE_SECRET_TOKEN" ) {
+      return 403;
+    }
+
+    location / {
+      try_files $uri @proxy_to_app;
+    }
+
+    location @proxy_to_app {
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      # enable the following line if and only if you use HTTPS
+      proxy_set_header X-Forwarded-Proto https;
+      proxy_set_header Host $http_host;
+
+      # we don't want nginx trying to do something clever with
+      # redirects, we set the Host: header above already.
+      proxy_redirect off;
+      proxy_pass http://$bdb_backend:BIGCHAINDB_API_PORT;
+
+      # limit requests from the same client, allow `burst` to 20 r/s on avg,
+      # `nodelay` or drop connection immediately in case it exceeds this
+      # threshold.
+      limit_req zone=one burst=20 nodelay;
+    }
+
+    error_page 500 502 503 504 /50x.html;
+    location = /50x.html {
+      root /usr/local/openresty/nginx/html/50x.html;
+    }
+  }
+}
