@@ -16,10 +16,11 @@ Tell us what happened, what went wrong, and what you expected to happen.
 
 ### Steps to Reproduce
 If you have the precise steps to reproduce, please specify. If you can reproduce
-ocassionaly, please provide addition information e.g. screenshots, commands, logs etc.
+ocassionally, please provide additional information; e.g. screenshots, commands, logs, etc.
 
 ### What I Did
 
 ```
 Paste the command(s) you ran and the output.
 If there was a crash, please include the traceback/error message here.
+```
