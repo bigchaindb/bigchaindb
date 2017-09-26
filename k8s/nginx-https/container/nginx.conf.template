@@ -97,10 +97,6 @@ http {
       # max client request body size: avg transaction size.
       client_max_body_size 15k;
 
-      if ($request_method !~ ^(GET|OPTIONS|POST)$) {
-        return 444;
-      }
-
       # No auth for GETs, forward directly to BDB.
       if ($request_method = GET) {
         proxy_pass http://$bdb_backend:BIGCHAINDB_API_PORT;
@@ -126,6 +122,11 @@ http {
         add_header 'Content-Length' 0;
         return 204;
       }
+
+      # Only return this reponse if request_method is neither POST|GET|OPTIONS
+      if ($request_method !~ ^(GET|OPTIONS|POST)$) {
+        return 444;
+      }
     }
   }
 
@@ -147,7 +148,7 @@ http {
     location / {
         add_header Upgrade "TLS/1.2, HTTP/1.1" always;
         default_type text/plain;
-        return 301 'Consider using the HTTPS protocol next time!';
+        return 426 'Consider using the HTTPS protocol next time!';
     }
   }
 }

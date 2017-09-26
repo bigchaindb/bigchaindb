@@ -80,10 +80,6 @@ http {
       # max client request body size: avg transaction size.
       client_max_body_size 15k;
 
-      if ($request_method !~ ^(GET|OPTIONS|POST)$) {
-        return 444;
-      }
-
       # No auth for GETs, forward directly to BDB.
       if ($request_method = GET) {
         proxy_pass http://$bdb_backend:BIGCHAINDB_API_PORT;
@@ -91,6 +87,7 @@ http {
 
       # POST requests get forwarded to OpenResty instance. Enable CORS too.
       if ($request_method = POST ) {
+        add_header 'Access-Control-Allow-Origin' '*';
         add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
         add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Range,Range';
         add_header 'Access-Control-Expose-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Range,Range';
@@ -107,6 +104,11 @@ http {
         add_header 'Content-Type' 'text/plain charset=UTF-8';
         add_header 'Content-Length' 0;
         return 204;
+      }
+
+      # Only return this reponse if request_method is neither POST|GET|OPTIONS
+      if ($request_method !~ ^(GET|OPTIONS|POST)$) {
+        return 444;
       }
     }
   }
