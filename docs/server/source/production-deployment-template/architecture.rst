@@ -8,20 +8,20 @@ An IPDB Production deployment is hosted on a Kubernetes cluster and includes:
 * NGINX, OpenResty, BigchainDB, Monitoring Agent and Backup Agent
   `Kubernetes Deployments <https://kubernetes.io/docs/concepts/workloads/controllers/deployment/>`_.
 * MongoDB `Kubernetes StatefulSet <https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/>`_.
-* External systems like `3scale <https://3scale.net>`_,
+* Third party systems like `3scale <https://3scale.net>`_,
   `MongoDB Cloud Manager <https://cloud.mongodb.com>`_ and the
   `Azure Operations Management Suite
   <https://docs.microsoft.com/en-us/azure/operations-management-suite/>`_.
 
-.. image:: ../_static/arch.svg
+.. image:: ../_static/arch.jpg
 
 
-We describe the role of each of these modules here.
 
 NGINX
 -----
 
-We use an NGINX as HTTP proxy on port 443 at the cloud entrypoint for:
+We use an NGINX as HTTP proxy on port 443 (configurable) at the cloud
+entrypoint for:
 
 #. Rate Limiting: We configure NGINX to allow only a certain number of requests
    (configurable) which prevents DoS attacks.
@@ -36,7 +36,8 @@ We use an NGINX as HTTP proxy on port 443 at the cloud entrypoint for:
    #. BigchainDB Service if it is a GET request.
 
 
-We use an NGINX TCP proxy on port 27017 at the cloud entrypoint for:
+We use an NGINX TCP proxy on port 27017 (configurable) at the cloud
+entrypoint for:
 
 #. Rate Limiting: We configure NGINX to allow only a certain number of requests
    (configurable) which prevents DoS attacks.
