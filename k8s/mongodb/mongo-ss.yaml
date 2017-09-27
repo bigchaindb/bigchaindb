@@ -43,10 +43,11 @@ spec:
             configMapKeyRef:
              name: vars
              key: mongodb-backend-port
-        # Optional: Optimize storage engine(wired tiger)
-        # cache size. e.g. (2048MB, 2GB, 1TB)
         - name: STORAGE_ENGINE_CACHE_SIZE
-          value: ""
+          valueFrom:
+            configMapKeyRef:
+             name: vars
+             key: storage-engine-cache-size
         args:
         - --mongodb-port
         - $(MONGODB_PORT)

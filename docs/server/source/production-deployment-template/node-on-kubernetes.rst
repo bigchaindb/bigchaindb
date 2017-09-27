@@ -542,7 +542,7 @@ Step 12: Start a Kubernetes StatefulSet for MongoDB
     - ``mdb-certs``
     - ``ca-auth``
 
-  * **Optional**: You can also change the value for ``STORAGE_ENGINE_CACHE_SIZE``, for more information
+  * **Optional**: You can change the value for ``STORAGE_ENGINE_CACHE_SIZE`` in the ConfigMap ``storage-engine-cache-size``, for more information
     regarding this configuration, please consult the `MongoDB Official
     Documentation <https://docs.mongodb.com/manual/reference/configuration-options/#storage.wiredTiger.engineConfig.cacheSizeGB>`_.
 
