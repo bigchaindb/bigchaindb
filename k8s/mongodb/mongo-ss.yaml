@@ -43,6 +43,11 @@ spec:
             configMapKeyRef:
              name: vars
              key: mongodb-backend-port
+        - name: STORAGE_ENGINE_CACHE_SIZE
+          valueFrom:
+            configMapKeyRef:
+             name: vars
+             key: storage-engine-cache-size
         args:
         - --mongodb-port
         - $(MONGODB_PORT)
@@ -58,6 +63,8 @@ spec:
         - $(MONGODB_FQDN)
         - --mongodb-ip
         - $(MONGODB_POD_IP)
+        - --storage-engine-cache-size
+        - $(STORAGE_ENGINE_CACHE_SIZE)
         securityContext:
           capabilities:
             add:
@@ -80,7 +87,7 @@ spec:
         resources:
           limits:
             cpu: 200m
-            memory: 3.5G
+            memory: 5G
         livenessProbe:
           tcpSocket:
             port: mdb-api-port

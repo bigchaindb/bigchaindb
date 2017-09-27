@@ -99,6 +99,11 @@ data:
   # WebSocket API in BigchainDB; can be 'ws' or 'wss' (default).
   bigchaindb-wsserver-advertised-scheme: "wss"
 
+  # Optional: Optimize storage engine(wired tiger)
+  # cache size. e.g. (2048MB, 2GB, 1TB), otherwise
+  # it will use the default cache size; i.e. max((50% RAM - 1GB), 256MB)
+  storage-engine-cache-size: ""
+
 ---
 apiVersion: v1
 kind: ConfigMap
