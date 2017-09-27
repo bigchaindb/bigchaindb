@@ -29,9 +29,16 @@ TODO: paste the error message the next time this error happens!
 ------------------------------------------
 
 It means that NGINX could not find the appropriate backed to forward the
-requests to. This typically happens when MongoDB goes down (as described above)
-and BigchainDB, after trying for ``BIGCHAINDB_DATABASE_MAXTRIES`` times, gives
-up. The Kubernetes BigchainDB Deployment then restarts the BigchainDB pod.
+requests to. This typically happens when:
+
+#. MongoDB goes down (as described above) and BigchainDB, after trying for
+   ``BIGCHAINDB_DATABASE_MAXTRIES`` times, gives up. The Kubernetes BigchainDB
+   Deployment then restarts the BigchainDB pod.
+
+#. BigchainDB crashes for some reason. We have seen this happen when updating
+   BigchainDB from one version to the next. This usually means the older
+   connections to the service gets disconnected; retrying the request one more
+   time, forwards the connection to the new instance and succeed.
 
 
 3. Service Unreachable
