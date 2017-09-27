@@ -42,6 +42,12 @@ http {
   client_body_timeout 10s;
   client_header_timeout 10s;
 
+  # Do not expose nginx data/version number in error response and header
+  server_tokens off;
+
+  # To prevent cross-site scripting
+  add_header X-XSS-Protection "1; mode=block";
+
   # DNS resolver to use for all the backend names specified in this configuration.
   resolver DNS_SERVER valid=30s ipv6=off;
 
@@ -60,10 +66,11 @@ http {
   server {
     listen CLUSTER_FRONTEND_PORT ssl;
     server_name "CLUSTER_FQDN";
-    ssl_certificate        /etc/nginx/ssl/cert.pem;
-    ssl_certificate_key    /etc/nginx/ssl/cert.key;
-    ssl_protocols          TLSv1 TLSv1.1 TLSv1.2;
-    ssl_ciphers            HIGH:!aNULL:!MD5;
+
+    ssl_certificate /etc/nginx/ssl/cert.pem;
+    ssl_certificate_key /etc/nginx/ssl/cert.key;
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+    ssl_ciphers HIGH:!aNULL:!MD5;
 
     underscores_in_headers on;
 
@@ -113,6 +120,11 @@ http {
         add_header 'Content-Type' 'text/plain charset=UTF-8';
         add_header 'Content-Length' 0;
         return 204;
+      }
+
+      # Only return this reponse if request_method is neither POST|GET|OPTIONS
+      if ($request_method !~ ^(GET|OPTIONS|POST)$) {
+        return 444;
       }
     }
   }
