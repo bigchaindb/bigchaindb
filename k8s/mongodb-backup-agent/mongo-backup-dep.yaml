@@ -24,7 +24,7 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
       - name: mdb-backup
-        image: bigchaindb/mongodb-backup-agent:3.4
+        image: bigchaindb/mongodb-backup-agent:3.5
         imagePullPolicy: IfNotPresent
         env:
         - name: MMS_API_KEYFILE_PATH
