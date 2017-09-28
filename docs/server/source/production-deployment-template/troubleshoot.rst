@@ -75,3 +75,32 @@ logged in the `Azure/acs-engine repo on GitHub <https://github.com/Azure/acs-eng
 This is apparently fixed in Kubernetes v1.7.2 which include a new disk driver,
 but is yet to tested by us.
 
+
+5. MongoDB Monitoring Agent throws a dial error while connecting to MongoDB
+---------------------------------------------------------------------------
+
+You might see something similar to this in the MongoDB Monitoring Agent logs:
+
+.. code:: bash
+
+    Failure dialing host without auth. Err: `no reachable servers`
+        at monitoring-agent/components/dialing.go:278
+        at monitoring-agent/components/dialing.go:116
+        at monitoring-agent/components/dialing.go:213
+        at src/runtime/asm_amd64.s:2086
+
+
+The first thing to check is if the networking is set up correctly. You can use
+the (maybe using the `toolbox` container).
+
+If everything looks fine, it might be a problem with the ``Preferred
+Hostnames`` setting in MongoDB Cloud Manager. If you do need to change the
+regular expression, ensure that it is correct and saved properly (maybe try
+refreshing the MongoDB Cloud Manager web page to see if the setting sticks).
+
+Once you update the regular expression, you will need to remove the deployment
+and add it again for the Monitoring Agent to discover and connect to the
+MongoDB instance correctly.
+
+More information about this configuration is provided in
+:doc:`this document <cloud-manager>`.
