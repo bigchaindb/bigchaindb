@@ -14,16 +14,16 @@ We define the following in the ``mongo-ss.yaml`` file:
     resources:
       limits:
         cpu: 200m
-        memory: 3.5G
+        memory: 5G
 
-So, when the MongoDB cache occupies a memory greater than 3.5GB, it is
+When the MongoDB cache occupies a memory greater than 5GB, it is
 terminated by the ``kubelet``.
 This can usually be verified by logging in to the worker node running MongoDB
 container and looking at the syslog (the ``journalctl`` command should usually
-work). It should show an error message as:
+work).
 
-TODO: paste the error message the next time this error happens!
-
+This issue is resolved in
+`PR #1757 <https://github.com/bigchaindb/bigchaindb/pull/1757>`_.
 
 2. 502 Bad Gateway Error on Runscope Tests
 ------------------------------------------
@@ -59,7 +59,8 @@ worker/agent node. Login to the worker node and run:
     
     docker logs -f `docker ps | grep k8s_kube-proxy | cut -d" " -f1`
 
-This issue is fixed in Kubernetes v1.7.
+`This issue <https://github.com/kubernetes/kubernetes/issues/48705>`_ is
+`fixed in Kubernetes v1.7 <https://github.com/kubernetes/kubernetes/commit/41c4e965c353187889f9b86c3e541b775656dc18>`_.
 
 
 4. Single Disk Attached to Multiple Mountpoints in a Container
@@ -68,10 +69,9 @@ This issue is fixed in Kubernetes v1.7.
 This is currently the issue faced in one of the clusters and being debugged by
 the support team at Microsoft.
 
-An issue has been logged `here
-<https://github.com/Azure/acs-engine/issues/1364>`_.
+The issue was first seen on August 29, 2017 on the Test Network and has been
+logged in the `Azure/acs-engine repo on GitHub <https://github.com/Azure/acs-engine/issues/1364>`_.
 
 This is apparently fixed in Kubernetes v1.7.2 which include a new disk driver,
 but is yet to tested by us.
-
 
