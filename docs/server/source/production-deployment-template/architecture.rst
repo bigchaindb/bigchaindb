@@ -8,13 +8,18 @@ An IPDB Production deployment is hosted on a Kubernetes cluster and includes:
 * NGINX, OpenResty, BigchainDB, Monitoring Agent and Backup Agent
   `Kubernetes Deployments <https://kubernetes.io/docs/concepts/workloads/controllers/deployment/>`_.
 * MongoDB `Kubernetes StatefulSet <https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/>`_.
-* Third party systems like `3scale <https://3scale.net>`_,
+* Third party services like `3scale <https://3scale.net>`_,
   `MongoDB Cloud Manager <https://cloud.mongodb.com>`_ and the
   `Azure Operations Management Suite
   <https://docs.microsoft.com/en-us/azure/operations-management-suite/>`_.
 
 .. image:: ../_static/arch.jpg
 
+.. note::
+  The arrows in the diagram represent the client-server communication. For
+  example, A-->B implies that A initiates the connection to B.
+  It does not represent the flow of data; the communication channel is always
+  fully duplex.
 
 
 NGINX
