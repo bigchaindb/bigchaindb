@@ -21,15 +21,14 @@ threescale_version_header=`cat ${THREESCALE_CREDENTIALS_DIR}/version-header`
 threescale_service_token=`cat ${THREESCALE_CREDENTIALS_DIR}/service-token`
 
 
-# sanity checks TODO(Krish): hardening
-if [[ -z "${dns_server}" || \
-    -z "${openresty_frontend_port}" || \
-    -z "${bdb_backend_host}" || \
-    -z "${bdb_api_port}" || \
-    -z "${threescale_secret_token}" || \
-    -z "${threescale_service_id}" || \
-    -z "${threescale_version_header}" || \
-    -z "${threescale_service_token}" ]]; then
+if [[ -z "${dns_server:?DNS_SERVER not specified. Exiting!}" || \
+    -z "${openresty_frontend_port:?OPENRESTY_FRONTEND_PORT not specified. Exiting!}" || \
+    -z "${bdb_backend_host:?BIGCHAINDB_BACKEND_HOST not specified. Exiting!}" || \
+    -z "${bdb_api_port:?BIGCHAINDB_API_PORT not specified. Exiting!}" || \
+    -z "${threescale_secret_token:?3scale secret token not specified. Exiting!}" || \
+    -z "${threescale_service_id:?3scale service id not specified. Exiting!}" || \
+    -z "${threescale_version_header:?3scale version header not specified. Exiting!}" || \
+    -z "${threescale_service_token:?3scale service token not specified. Exiting!}" ]]; then
   echo "Invalid environment settings detected. Exiting!"
   exit 1
 fi
