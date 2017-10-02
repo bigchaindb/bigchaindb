@@ -6,3 +6,6 @@ Develop & Test BigchainDB Server
 
    setup-run-node
    running-all-tests
+   setup-bdb-host
+   setup-bdb-docker
+   setup-bdb-cloud9
