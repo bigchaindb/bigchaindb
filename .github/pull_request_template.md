@@ -1,8 +1,9 @@
 ## Description
 A few sentences describing the overall goals of the pull request's commits.
 
-## Feature Status
-**READY/IN DEVELOPMENT**
+## Issues This PR Fixes
+Fixes #NNNN
+Fixes #NNNN
 
 ## Related PRs
 List related PRs against other branches e.g. for backporting features/bugfixes
@@ -16,8 +17,7 @@ some_other_PR | [link]()
 ## Todos
 - [ ] Tested and working on development environment
 - [ ] Unit tests (if appropriate)
-- [ ] New API endpoints documented. Add [link]() if different from this PR 
-- [ ] Reviewed and approved by a senior dev
+- [ ] Added/Updated all related documentation. Add [link]() if different from this PR
 - [ ] DevOps Support needed e.g. create Runscope API test if new endpoint added or
       update deployment docs. Create a ticket and add [link]()
 
