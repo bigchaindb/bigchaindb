@@ -153,13 +153,28 @@ def test__run_init(mocker):
     init_db_mock = mocker.patch(
         'bigchaindb.commands.bigchaindb.schema.init_database',
         autospec=True,
-        spec_set=True,
+        spec_set=True
     )
     _run_init()
     bigchain_mock.assert_called_once_with()
     init_db_mock.assert_called_once_with(
         connection=bigchain_mock.return_value.connection)
     bigchain_mock.return_value.create_genesis_block.assert_called_once_with()
+
+
+def test__run_init_when_db_not_configured(mocker,capsys):
+    from bigchaindb.commands.bigchaindb import _run_init
+    from bigchaindb.backend.exceptions import ConnectionError
+    bigchain_mock = mocker.patch(
+        'bigchaindb.commands.bigchaindb.bigchaindb.Bigchain')
+    init_db_mock = mocker.patch(
+        'bigchaindb.commands.bigchaindb.schema.init_database',
+        autospec=False,
+        spec_set=False
+    )
+    with pytest.raises(ConnectionError):
+        _run_init()
+    init_db_mock.assert_called_once_with(connection=bigchain_mock.return_value.connection)
 
 
 @patch('bigchaindb.backend.schema.drop_database')
