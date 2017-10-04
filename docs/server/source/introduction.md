@@ -15,8 +15,8 @@ Note that there are a few kinds of nodes:
 
 ## Setup Instructions for Various Cases
 
-* [Set up a local stand-alone BigchainDB node for learning and experimenting: Quickstart](quickstart.html)
-* [Set up and run a local dev/test node for developing and testing BigchainDB Server](dev-and-test/setup-run-node.html)
+* [Quickstart](quickstart.html)
+* [Set up a local BigchainDB node for development, experimenting and testing](dev-and-test/setup-run-node.html)
 * [Set up and run a BigchainDB cluster](clusters.html)
 
 There are some old RethinkDB-based deployment instructions as well:
