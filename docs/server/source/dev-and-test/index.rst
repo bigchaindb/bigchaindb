@@ -5,7 +5,8 @@ Develop & Test BigchainDB Server
    :maxdepth: 1
 
    setup-run-node
-   running-all-tests
    setup-bdb-host
    setup-bdb-docker
-   setup-bdb-cloud9
+   ../appendices/run-with-vagrant
+   ../appendices/run-with-ansible
+   running-all-tests
