@@ -59,7 +59,7 @@ $ bigchaindb start
 
 J. Verify BigchainDB Server setup by visiting the BigchainDB Root URL in your browser:
 
-http://127.0.0.1:9984/
+[http://127.0.0.1:9984/](http://127.0.0.1:9984/)
 
 A correctly installed installation will show you a JSON object with information about the API, docs, version and your public key.
 
