@@ -414,8 +414,8 @@ First, you need an Azure storage account.
 If you deployed your Kubernetes cluster on Azure
 using the Azure CLI 2.0
 (as per :doc:`our template <template-kubernetes-azure>`),
-then the `az acs create` command already created two
-storage accounts in the same location and resource group
+then the `az acs create` command already created a
+storage account in the same location and resource group
 as your Kubernetes cluster.
 Both should have the same "storage account SKU": ``Standard_LRS``.
 Standard storage is lower-cost and lower-performance.
@@ -488,6 +488,23 @@ You can check its status using: ``kubectl get pvc -w``
 Initially, the status of persistent volume claims might be "Pending"
 but it should become "Bound" fairly quickly.
 
+.. Note::
+    Persistent Volume Claim will dynamically create requested persistent volume
+    if no matching persistent voluem is available. Defualt reclaim policy for
+    dynamically created persistent volumes is **Delete** which means PV and its
+    associated Azure storage resource will be automatically deleted on deletion
+    of PVC. In order to prevent this from happeining do the following steps to
+    change defalt reclaim policy of dyanmically created PVs
+
+    * Run the following command to list existing PVs
+    .. Code:: bash
+
+        $ kubectl --context k8s-bdb-test-cluster-0 get pv
+
+    * Run the following command to update a PV's reclaim policy
+    .. Code:: bash
+    
+        $ kubectl --context k8s-bdb-test-cluster-0patch pv <PV_Name> -p '{"spec":{"persistentVolumeReclaimPolicy":"Retain"}}'
 
 Step 12: Start a Kubernetes StatefulSet for MongoDB
 ---------------------------------------------------
