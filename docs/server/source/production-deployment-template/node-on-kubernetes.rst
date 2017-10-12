@@ -506,6 +506,9 @@ but it should become "Bound" fairly quickly.
     
         $ kubectl --context k8s-bdb-test-cluster-0patch pv <PV_Name> -p '{"spec":{"persistentVolumeReclaimPolicy":"Retain"}}'
 
+    For notes on recreating a private volume form a released azure disk resource consult
+    the trouble shooting guide 
+
 Step 12: Start a Kubernetes StatefulSet for MongoDB
 ---------------------------------------------------
 
