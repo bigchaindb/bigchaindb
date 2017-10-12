@@ -493,21 +493,21 @@ but it should become "Bound" fairly quickly.
     if no matching persistent voluem is available. Defualt reclaim policy for
     dynamically created persistent volumes is **Delete** which means PV and its
     associated Azure storage resource will be automatically deleted on deletion
-    of PVC. In order to prevent this from happeining do the following steps to
-    change defalt reclaim policy of dyanmically created PVs
+    of PVC. In order to prevent this from happening do the following steps to
+    change default reclaim policy of dyanmically created PVs
 
     * Run the following command to list existing PVs
     .. Code:: bash
 
         $ kubectl --context k8s-bdb-test-cluster-0 get pv
 
-    * Run the following command to update a PV's reclaim policy
+    * Run the following command to update a PV's reclaim policy to <Retain>
     .. Code:: bash
     
-        $ kubectl --context k8s-bdb-test-cluster-0patch pv <PV_Name> -p '{"spec":{"persistentVolumeReclaimPolicy":"Retain"}}'
+        $ kubectl --context k8s-bdb-test-cluster-0patch pv <pv-name> -p '{"spec":{"persistentVolumeReclaimPolicy":"Retain"}}'
 
     For notes on recreating a private volume form a released azure disk resource consult
-    the trouble shooting guide 
+    the trouble shooting guide at page titled :ref: `Cluster Troubleshooting`
 
 Step 12: Start a Kubernetes StatefulSet for MongoDB
 ---------------------------------------------------

@@ -104,3 +104,22 @@ MongoDB instance correctly.
 
 More information about this configuration is provided in
 :doc:`this document <cloud-manager>`.
+
+6. Create a Persistent Volume from existing Azure disk storage Resource
+---------------------------------------------------------------------------
+  * The configuration file to create PV for Mongo Stateful Set is located at
+  ``mongo/mongo-pv.yaml``.
+  * Set the ``name``, ``diskName`` and ``diskURI`` values. You can get the ``diskName``
+  and ``diskURI`` values by logging into your Azure portal and going to
+  ``Resource Groups`` and click on your relevant resource group. From the list of resources
+  click on the storage account resource and click the container that contains storage blobs
+  that are available for PVs usually named as ``vhds``. Click on the storage blob that you
+  wish to use for your PV and you will be able to see ``NAME`` and ``URL`` parameters which
+  you can use for ``diskName`` and ``diskURI`` values in your template respectively.
+
+  **Note: ** Please make sure the blob storage you are using is not already being used by any
+  other PVs and to check the blobs being used in existing PVs in your cluster run the following
+  command and you will be able to see all the PVs and their respective storage disk blobs
+
+  .. code:: bash
+    $ kubectl --context <context-name> get pv --output yaml
