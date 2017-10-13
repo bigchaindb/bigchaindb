@@ -121,7 +121,7 @@ relevant resource group. From the list of resources click on the storage account
 click the container (usually named as ``vhds``) that contains storage disk blobs that are available
 for PVs. Click on the storage disk file that you wish to use for your PV and you will be able to
 see ``NAME`` and ``URL`` parameters which you can use for ``diskName`` and ``diskURI`` values in
-your template respectively and run the following command to create PVs
+your template respectively and run the following command to create PVs:
 
 .. code:: bash
 
