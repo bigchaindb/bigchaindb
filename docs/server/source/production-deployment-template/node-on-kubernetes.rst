@@ -489,8 +489,8 @@ Initially, the status of persistent volume claims might be "Pending"
 but it should become "Bound" fairly quickly.
 
 .. Note::
-    Defualt Reclaim Policy for dynamically created persistent volumes is ``Delete``
-    which means PV and its associated Azure storage resource will be automatically
+    The default Reclaim Policy for dynamically created persistent volumes is ``Delete``
+    which means the PV and its associated Azure storage resource will be automatically
     deleted on deletion of PVC or PV. In order to prevent this from happening do
     the following steps to change default reclaim policy of dyanmically created PVs
     from ``Delete`` to ``Retain``
@@ -507,8 +507,8 @@ but it should become "Bound" fairly quickly.
     
         $ kubectl --context k8s-bdb-test-cluster-0 patch pv <pv-name> -p '{"spec":{"persistentVolumeReclaimPolicy":"Retain"}}'
 
-    For notes on recreating a private volume form a released azure disk resource consult
-    the trouble shooting guide at :ref:`Cluster Troubleshooting`.
+    For notes on recreating a private volume form a released Azure disk resource consult
+    :ref:`the page about cluster troubleshooting <Cluster Troubleshooting>`.
 
 Step 12: Start a Kubernetes StatefulSet for MongoDB
 ---------------------------------------------------

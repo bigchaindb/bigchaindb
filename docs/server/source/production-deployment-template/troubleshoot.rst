@@ -107,24 +107,35 @@ More information about this configuration is provided in
 
 6. Create a Persistent Volume from existing Azure disk storage Resource
 ---------------------------------------------------------------------------
-The configuration file to create PV for Mongo Stateful Set is located at ``mongodb/mongo-pv.yaml``.
-Set the ``name``, ``diskName`` and ``diskURI`` values and run the following command to create PVs
-required for MongoDB Stateful Set.
+While disintegrating k8s cluster dynamically created PVs and the underlying Azure storage 
+resources are also deleted thus cannot be used in a new cluster. This workflow will preserve
+the azure storage disk while delete k8s cluster and re-use the same disks on new cluster for
+MongoDB persistent storage without loosing any data.
+
+The configuration file to create the two PVs (One for data store and the other for config store)
+for MongoDB Stateful Set is located at ``mongodb/mongo-pv.yaml``.
+
+You need to configure ``diskName`` and ``diskURI`` in ``mongodb/mongo-pv.yaml`` file. You can get
+these values by logging into your Azure portal and going to ``Resource Groups`` and click on your
+relevant resource group. From the list of resources click on the storage account resource and
+click the container that contains storage blobs that are available for PVs usually named as ``vhds``.
+Click on the storage disk file that you wish to use for your PV and you will be able to see ``NAME``
+and ``URL`` parameters which you can use for ``diskName`` and ``diskURI`` values in your template
+respectively and run the following command to create PVs
 
 .. code:: bash
 
     $ kubectl --context <context-name> apply -f mongodb/mongo-pv.yaml
 
-You can get the ``diskName`` and ``diskURI`` values by logging into your Azure portal and going
-to ``Resource Groups`` and click on your relevant resource group. From the list of resources
-click on the storage account resource and click the container that contains storage blobs that
-are available for PVs usually named as ``vhds``. Click on the storage blob that you wish to use
-for your PV and you will be able to see ``NAME`` and ``URL`` parameters which you can use for
-``diskName`` and ``diskURI`` values in your template respectively.
+.. code:: bash
 
-**Note:** Please make sure the storage disk you are using is not already being used by any
-other PVs and to check the existing PVs in your cluster run the following command and you
-will be able to see all the PVs and their respective storage disk blobs.
+    $ kubectl --context <context-name> apply -f mongodb/mongo-pv.yaml
+
+.. note:: 
+
+   Please make sure the storage disk you are using is not already being used by any
+   other PVs and to check the existing PVs in your cluster run the following command and you
+   will be able to see all the PVs and their respective storage disk blobs.
 
 .. code:: bash
 

@@ -84,9 +84,3 @@ docs/server/source/http-samples
 # See https://stackoverflow.com/a/41482391
 terraform.tfstate
 terraform.tfstate.backup
-
-# Mac Desktop Service Store files
-.DS_Store
-
-# vim swap files
-*.swp
