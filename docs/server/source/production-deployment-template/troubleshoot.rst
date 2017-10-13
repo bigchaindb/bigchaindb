@@ -130,8 +130,8 @@ your template respectively and run the following command to create PVs
 .. note:: 
 
    Please make sure the storage disks you are using is not already being used by any
-   other PVs and to check the existing PVs in your cluster run the following command and you
-   will be able to see all the PVs and their respective storage disks files.
+   other PVs and to check the existing PVs in your cluster, run the following command
+   to get PVs and Storage disk file mapping.
 
    .. code:: bash
 
