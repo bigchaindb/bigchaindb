@@ -1,0 +1,41 @@
+#############################################################
+# This YAML section desribes a k8s PV for mongodb dbPath    #
+#############################################################
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-mongo-db
+spec:
+  accessModes:
+  - ReadWriteOnce
+  azureDisk:
+    cachingMode: None
+    diskName: <Azure Disk Name>
+    diskURI: <Azure Disk URL>
+    fsType: ext4
+    readOnly: false
+  capacity:
+    storage: 50Gi
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: slow-db
+---
+#############################################################
+# This YAML section desribes a k8s PV  for mongodb configDB #
+#############################################################
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-mongdo-configdb
+spec:
+  accessModes:
+  - ReadWriteOnce
+  azureDisk:
+    cachingMode: None
+    diskName: <Azure Disk Name>
+    diskURI: <Azure Disk URL>
+    fsType: ext4
+    readOnly: false
+  capacity:
+    storage: 2Gi
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: slow-configdb

@@ -104,3 +104,36 @@ MongoDB instance correctly.
 
 More information about this configuration is provided in
 :doc:`this document <cloud-manager>`.
+
+6. Create a Persistent Volume from existing Azure disk storage Resource
+---------------------------------------------------------------------------
+When deleting a k8s cluster, all dynamically-created PVs are deleted, along with the
+underlying Azure storage disks (so those can't be used in a new cluster). resources
+are also deleted thus cannot be used in a new cluster. This workflow will preserve
+the Azure storage disks while deleting the k8s cluster and re-use the same disks on a new
+cluster for MongoDB persistent storage without losing any data.
+
+The template to create two PVs for MongoDB Stateful Set (One for MongoDB data store and
+the other for MongoDB config store) is located at ``mongodb/mongo-pv.yaml``.
+
+You need to configure ``diskName`` and ``diskURI`` in ``mongodb/mongo-pv.yaml`` file. You can get
+these values by logging into your Azure portal and going to ``Resource Groups`` and click on your
+relevant resource group. From the list of resources click on the storage account resource and
+click the container (usually named as ``vhds``) that contains storage disk blobs that are available
+for PVs. Click on the storage disk file that you wish to use for your PV and you will be able to
+see ``NAME`` and ``URL`` parameters which you can use for ``diskName`` and ``diskURI`` values in
+your template respectively and run the following command to create PVs:
+
+.. code:: bash
+
+    $ kubectl --context <context-name> apply -f mongodb/mongo-pv.yaml
+
+.. note:: 
+
+   Please make sure the storage disks you are using are not already being used by any
+   other PVs. To check the existing PVs in your cluster, run the following command
+   to get PVs and Storage disk file mapping.
+
+   .. code:: bash
+
+       $ kubectl --context <context-name> get pv --output yaml
