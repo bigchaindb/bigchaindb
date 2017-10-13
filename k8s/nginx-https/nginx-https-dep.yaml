@@ -80,11 +80,11 @@ spec:
         # HTTPS traffic.
         - containerPort: 80
           protocol: TCP
-        - containerPort: 27017
+        - containerPort: "<mongodb-frontend-port from ConfigMap>"
           protocol: TCP
-        - containerPort: 443
+        - containerPort: "<cluster-frontend-port from ConfigMap>"
           protocol: TCP
-        - containerPort: 443
+        - containerPort: "<cluster-health-check-port from ConfigMap>"
           protocol: TCP
           name: ngx-port
         livenessProbe:
