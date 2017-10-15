@@ -122,7 +122,13 @@ Verify BigchainDB Docker:
 $ docker ps | grep bigchaindb
 ```
 
-BigchainDB python driver is pre-installed in the instance, so you can instantly make transactions and verify the functionality. The `bdb_root_url` can be one of the following:
+The BigchainDB Python Driver is pre-installed in the instance,
+so you can use it to make transactions
+and verify the functionality of your BigchainDB node.
+See the [BigchainDB Python Driver documentation](https://docs.bigchaindb.com/projects/py-driver/en/latest/index.html)
+for details on how to use it.
+
+Note 1: The `bdb_root_url` can be one of the following:
 ```text
 # BigchainDB is running as a process
 bdb_root_url = http://<HOST-IP>:9984
@@ -132,6 +138,5 @@ OR
 # BigchainDB is running inside a docker container
 bdb_root_url = http://<HOST-IP>:<DOCKER-PUBLISHED-HOST-PORT>
 ```
-For more details on *how to make a transaction?* Please refer to [Basic Usage Examples](https://docs.bigchaindb.com/projects/py-driver/en/latest/connect.html).
 
-*Note*: If you want to make transactions remotely, you need to install the `bigchaindb-driver`. For detailed instructions on how to install the driver and make your first transaction. Please refer to [Quickstart/Installation](https://docs.bigchaindb.com/projects/py-driver/en/latest/quickstart.html) of BigchainDB driver.
+Note 2: BigchainDB has [other drivers as well](../drivers-clients/index.html).
