@@ -1,6 +1,11 @@
 # Set Up BigchainDB Node on Local Dev Machine
 
+The BigchainDB core dev team develops BigchainDB on recent Ubuntu, Fedora and CentOS distributions, so we recommend you use one of those. BigchainDB Server doesn't work on Windows or macOS (unless you use a VM or containers).
+
+
 ## With MongoDB
+
+First read the BigchainDB [CONTRIBUTING.md file](https://github.com/bigchaindb/bigchaindb/blob/master/CONTRIBUTING.md). It outlines the steps to set up a machine for developing and testing BigchainDB.
 
 Create a default BigchainDB config file (in `$HOME/.bigchaindb`):
 ```text
@@ -25,10 +30,12 @@ To run BigchainDB Server, do:
 $ bigchaindb start
 ```
 
-You can [run all the unit tests](running-unit-tests.html) to test your installation.
+You can [run all the unit tests](running-all-tests.html) to test your installation.
 
-The BigchainDB [CONTRIBUTING.md file](https://github.com/bigchaindb/bigchaindb/blob/master/CONTRIBUTING.md) has more details about how to contribute.
+
 ## With RethinkDB
+
+First read the BigchainDB [CONTRIBUTING.md file](https://github.com/bigchaindb/bigchaindb/blob/master/CONTRIBUTING.md). It outlines the steps to set up a machine for developing and testing BigchainDB.
 
 Create a default BigchainDB config file (in `$HOME/.bigchaindb`):
 ```text
@@ -52,5 +59,3 @@ $ bigchaindb start
 ```
 
 You can [run all the unit tests](running-all-tests.html) to test your installation.
-
-The BigchainDB [CONTRIBUTING.md file](https://github.com/bigchaindb/bigchaindb/blob/master/CONTRIBUTING.md) has more details about how to contribute.
