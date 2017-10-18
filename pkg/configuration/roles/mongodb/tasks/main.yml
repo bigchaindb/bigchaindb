@@ -1,0 +1,31 @@
+---
+- name: Creating directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0700
+  with_items: "{{ directories }}"
+  when: not deploy_docker|bool
+  tags: [mongodb]
+
+- import_tasks: deploy_docker.yml
+  when: deploy_docker|bool
+  tags: [mongodb]
+
+- import_tasks: debian.yml
+  when: not deploy_docker|bool and (distribution_name == "debian" or distribution_name == "ubuntu")
+  tags: [mongodb]
+
+- import_tasks: centos.yml
+  when: not deploy_docker|bool and (distribution_name == "centos" or distribution_name == "red hat enterprise linux")
+  tags: [mongodb]
+
+- import_tasks: fedora.yml
+  when: not deploy_docker|bool and (distribution_name == "fedora")
+  tags: [mongodb]
+
+- import_tasks: common.yml
+  when: not deploy_docker|bool
+  tags: [mongodb]
+
+- import_tasks: initiate_repl_set.yml

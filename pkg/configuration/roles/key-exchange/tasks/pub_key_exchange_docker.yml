@@ -1,0 +1,31 @@
+---
+- name: Creating files for key exchange
+  template: src=exchange_keyring_docker.j2 dest="{{ keyring_script_docker }}"
+  tags: [keyex]
+
+- name: Setting permissions
+  file:
+    path: "{{ keyring_script_docker }}"
+    mode: "0777"
+  tags: [keyex]
+
+- name: Update Keyring Configuration
+  shell: "python {{ keyring_script_docker }}"
+  tags: [keyex]
+
+- name: Restart BigchainDB Docker after keyring update
+  docker_container:
+    name: "{{ bigchaindb_docker_name }}{{ item }}"
+    image: "{{ bigchaindb_image_name }}"
+    detach: true
+    published_ports:
+      - "{{ bigchandb_host_port|int + item|int }}:{{ bigchaindb_default_port }}"
+    restart_policy: always
+    volumes:
+      - "{{ bigchaindb_host_mount_dir }}{{ item|string }}:/data"
+    state: started
+    restart: true
+    networks:
+      - name: "{{ bdb_docker_net_name }}"
+  with_sequence: start=0 end="{{ docker_replset_size|int - 1 }}" stride=1
+  tags: [bigchaindb]

@@ -1,0 +1,20 @@
+---
+- import_tasks: deploy_docker.yml
+  when: deploy_docker|bool
+  tags: [bigchaindb]
+
+- import_tasks: debian.yml
+  when: not deploy_docker|bool and (distribution_name == "debian" or distribution_name == "ubuntu")
+  tags: [bigchaindb]
+
+- import_tasks: centos.yml
+  when: not deploy_docker|bool and (distribution_name == "centos" or distribution_name == "red hat enterprise linux")
+  tags: [bigchaindb]
+
+- import_tasks: fedora.yml
+  when: not deploy_docker|bool and (distribution_name == "fedora")
+  tags: [bigchaindb]
+
+- import_tasks: common.yml
+  when: not deploy_docker|bool
+  tags: [bigchaindb]

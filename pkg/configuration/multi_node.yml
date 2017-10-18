@@ -1,0 +1,5 @@
+- hosts: all
+  vars_files:
+    - vars/bdb-config.yml
+  roles:
+    - key-exchange

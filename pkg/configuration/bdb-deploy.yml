@@ -1,0 +1,12 @@
+- import_playbook: pre_req.yml
+
+- hosts: all
+  vars_files:
+    - vars/bdb-config.yml
+  serial: 1
+  roles:
+    - bigchaindb
+    - bigchaindb-driver
+
+- import_playbook: multi_node.yml
+  when: (bdb_hosts|length > 1) or docker_replset_size|int > 1
