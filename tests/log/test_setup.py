@@ -70,7 +70,7 @@ def log_record_bytes(log_record_dict):
 def test_setup_logging(mocked_setup_pub_logger, mocked_setup_sub_logger):
     from bigchaindb.log.setup import setup_logging
     setup_logging()
-    mocked_setup_pub_logger.assert_called_once_with()
+    mocked_setup_pub_logger.assert_called_once_with(logging_port=None)
     mocked_setup_sub_logger.assert_called_once_with(user_log_config=None)
 
 

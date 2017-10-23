@@ -37,6 +37,11 @@ class StandaloneApplication(gunicorn.app.base.BaseApplication):
         super().__init__()
 
     def load_config(self):
+        # find a better way to pass this such that
+        # the custom logger class can access it.
+        custom_log_config = self.options.get('custom_log_config')
+        self.cfg.env_orig['custom_log_config'] = custom_log_config
+
         config = dict((key, value) for key, value in self.options.items()
                       if key in self.cfg.settings and value is not None)
 
@@ -74,7 +79,7 @@ def create_app(*, debug=False, threads=1):
     return app
 
 
-def create_server(settings):
+def create_server(settings, log_config=None):
     """Wrap and return an application ready to be run.
 
     Args:
@@ -97,6 +102,7 @@ def create_server(settings):
         settings['threads'] = 1
 
     settings['logger_class'] = 'bigchaindb.log.loggers.HttpServerLogger'
+    settings['custom_log_config'] = log_config
     app = create_app(debug=settings.get('debug', False),
                      threads=settings['threads'])
     standalone = StandaloneApplication(app, options=settings)

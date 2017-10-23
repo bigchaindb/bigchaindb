@@ -25,17 +25,29 @@ def _normalize_log_level(level):
         raise ConfigurationError('Log level must be a string!') from exc
 
 
-def setup_pub_logger():
+def setup_pub_logger(logging_port=None):
+    if logging_port is None:
+        logging_port = DEFAULT_SOCKET_LOGGING_PORT
+
     dictConfig(PUBLISHER_LOGGING_CONFIG)
     socket_handler = logging.handlers.SocketHandler(
-        DEFAULT_SOCKET_LOGGING_HOST, DEFAULT_SOCKET_LOGGING_PORT)
+        DEFAULT_SOCKET_LOGGING_HOST, logging_port)
     socket_handler.setLevel(logging.DEBUG)
     logger = logging.getLogger()
     logger.addHandler(socket_handler)
 
 
 def setup_sub_logger(*, user_log_config=None):
-    server = LogRecordSocketServer()
+    kwargs = {}
+    logging_port = None
+
+    if user_log_config is not None:
+        logging_port = user_log_config.get('port')
+
+    if logging_port is not None:
+        kwargs['port'] = logging_port
+
+    server = LogRecordSocketServer(**kwargs)
     with server:
         server_proc = Process(
             target=server.serve_forever,
@@ -45,7 +57,8 @@ def setup_sub_logger(*, user_log_config=None):
 
 
 def setup_logging(*, user_log_config=None):
-    setup_pub_logger()
+    port = user_log_config.get('port') if user_log_config is not None else None
+    setup_pub_logger(logging_port=port)
     setup_sub_logger(user_log_config=user_log_config)
 
 

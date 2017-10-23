@@ -22,11 +22,14 @@ class HttpServerLogger(Logger):
                 object. *Ignored*.
 
         """
+        log_cfg = self.cfg.env_orig.get('custom_log_config', {})
+        self.log_port = log_cfg.get('port', DEFAULT_SOCKET_LOGGING_PORT)
+
         self._set_socklog_handler(self.error_log)
         self._set_socklog_handler(self.access_log)
 
     def _set_socklog_handler(self, log):
         socket_handler = logging.handlers.SocketHandler(
-            DEFAULT_SOCKET_LOGGING_HOST, DEFAULT_SOCKET_LOGGING_PORT)
+            DEFAULT_SOCKET_LOGGING_HOST, self.log_port)
         socket_handler._gunicorn = True
         log.addHandler(socket_handler)
