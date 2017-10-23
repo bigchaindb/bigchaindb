@@ -112,11 +112,12 @@ def test_setup_sub_logger_with_config(mocked_socket_server, mocked_process):
         'granular_levels': {
             'bigchaindb.core': 'debug',
         },
+        'port': 9020
     }
     root_logger = getLogger()
     setup_sub_logger(user_log_config=user_log_config)
     assert root_logger.level == logging.NOTSET
-    mocked_socket_server.assert_called_once_with()
+    mocked_socket_server.assert_called_once_with(port=9020)
     mocked_process.assert_called_once_with(
             target=mocked_socket_server.return_value.serve_forever,
             kwargs={'log_config': user_log_config},
