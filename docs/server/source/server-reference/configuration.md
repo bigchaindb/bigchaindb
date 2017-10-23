@@ -39,6 +39,7 @@ For convenience, here's a list of all the relevant environment variables (docume
 `BIGCHAINDB_LOG_FMT_CONSOLE`<br>
 `BIGCHAINDB_LOG_FMT_LOGFILE`<br>
 `BIGCHAINDB_LOG_GRANULAR_LEVELS`<br>
+`BIGCHAINDB_LOG_PORT`<br>
 `BIGCHAINDB_DATABASE_SSL`<br>
 `BIGCHAINDB_DATABASE_LOGIN`<br>
 `BIGCHAINDB_DATABASE_PASSWORD`<br>
@@ -532,7 +533,7 @@ logging of the `core.py` module to be more verbose, you would set the
 }
 ```
 
-**Defaults to**: `"{}"`
+**Defaults to**: `{}`
 
 
 ### log.port
