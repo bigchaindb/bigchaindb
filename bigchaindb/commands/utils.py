@@ -34,16 +34,18 @@ def configure_bigchaindb(command):
     """
     @functools.wraps(command)
     def configure(args):
+        config_from_cmdline = None
         try:
-            config_from_cmdline = {
-                'log': {
-                    'level_console': args.log_level,
-                    'level_logfile': args.log_level,
-                },
-                'server': {'loglevel': args.log_level},
-            }
+            if args.log_level is not None:
+                config_from_cmdline = {
+                    'log': {
+                        'level_console': args.log_level,
+                        'level_logfile': args.log_level,
+                    },
+                    'server': {'loglevel': args.log_level},
+                }
         except AttributeError:
-            config_from_cmdline = None
+            pass
         bigchaindb.config_utils.autoconfigure(
             filename=args.config, config=config_from_cmdline, force=True)
         command(args)
@@ -238,10 +240,11 @@ base_parser.add_argument('-c', '--config',
                          help='Specify the location of the configuration file '
                               '(use "-" for stdout)')
 
+# NOTE: this flag should not have any default value because that will override
+# the environment variables provided to configure the logger.
 base_parser.add_argument('-l', '--log-level',
                          type=str.upper,  # convert to uppercase for comparison to choices
                          choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
-                         default='INFO',
                          help='Log level')
 
 base_parser.add_argument('-y', '--yes', '--yes-please',
