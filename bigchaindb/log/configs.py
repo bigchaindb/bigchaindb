@@ -63,6 +63,6 @@ SUBSCRIBER_LOGGING_CONFIG = {
     'root': {
         'level': logging.DEBUG,
         'handlers': ['console', 'file', 'errors'],
-        'port': 9020
+        'port': DEFAULT_SOCKET_LOGGING_PORT
     },
 }

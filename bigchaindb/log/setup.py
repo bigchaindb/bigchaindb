@@ -26,8 +26,7 @@ def _normalize_log_level(level):
 
 
 def setup_pub_logger(logging_port=None):
-    if logging_port is None:
-        logging_port = DEFAULT_SOCKET_LOGGING_PORT
+    logging_port = logging_port or DEFAULT_SOCKET_LOGGING_PORT
 
     dictConfig(PUBLISHER_LOGGING_CONFIG)
     socket_handler = logging.handlers.SocketHandler(
@@ -39,13 +38,10 @@ def setup_pub_logger(logging_port=None):
 
 def setup_sub_logger(*, user_log_config=None):
     kwargs = {}
-    logging_port = None
+    log_port = user_log_config.get('port') if user_log_config is not None else None
 
-    if user_log_config is not None:
-        logging_port = user_log_config.get('port')
-
-    if logging_port is not None:
-        kwargs['port'] = logging_port
+    if log_port is not None:
+        kwargs['port'] = log_port
 
     server = LogRecordSocketServer(**kwargs)
     with server:
