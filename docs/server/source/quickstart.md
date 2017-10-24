@@ -54,7 +54,7 @@ $ bigchaindb -y configure mongodb
 
 I. Run BigchainDB Server:
 ```text
-$ bigchaindb start
+$ bigchaindb start --init
 ```
 
 J. Verify BigchainDB Server setup by visiting the BigchainDB Root URL in your browser:

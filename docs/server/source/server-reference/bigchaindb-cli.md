@@ -51,8 +51,6 @@ all database tables/collections,
 various backend database indexes,
 and the genesis block.
 
-Note: The `bigchaindb start` command (see below) always starts by trying a `bigchaindb init` first. If it sees that the backend database already exists, then it doesn't re-initialize the database. One doesn't have to do `bigchaindb init` before `bigchaindb start`. `bigchaindb init` is useful if you only want to initialize (but not start).
-
 
 ## bigchaindb drop
 
@@ -63,7 +61,7 @@ If you want to force-drop the database (i.e. skipping the yes/no prompt), then u
 
 ## bigchaindb start
 
-Start BigchainDB. It always begins by trying a `bigchaindb init` first. See the note in the documentation for `bigchaindb init`.
+Start BigchainDB assuming that the database has already been initialized using `bigchaindb init`. If that is not the case then passing the flag `--init` will initialize the database and start BigchainDB.
 You can also use the `--dev-start-rethinkdb` command line option to automatically start rethinkdb with bigchaindb if rethinkdb is not already running,
 e.g. `bigchaindb --dev-start-rethinkdb start`. Note that this will also shutdown rethinkdb when the bigchaindb process stops.
 The option `--dev-allow-temp-keypair` will generate a keypair on the fly if no keypair is found, this is useful when you want to run a temporary instance of BigchainDB in a Docker container, for example.
