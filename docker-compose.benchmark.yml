@@ -25,7 +25,7 @@ services:
       BIGCHAINDB_GRAPHITE_HOST: graphite
     ports:
       - "9984"
-    command: bigchaindb start
+    command: bigchaindb start --init
 
   graphite:
     image: hopsoft/graphite-statsd
