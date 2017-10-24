@@ -302,6 +302,7 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request, certs_d
             'fmt_console': log_config['formatters']['console']['format'],
             'fmt_logfile': log_config['formatters']['file']['format'],
             'granular_levels': {},
+            'port': 9020
         },
         'graphite': {'host': 'localhost'},
     }
