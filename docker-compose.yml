@@ -30,4 +30,4 @@ services:
       BIGCHAINDB_WSSERVER_HOST: 0.0.0.0
     ports:
       - "9984"
-    command: bigchaindb start
+    command: bigchaindb start --init
