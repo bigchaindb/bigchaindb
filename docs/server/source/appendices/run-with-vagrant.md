@@ -21,9 +21,9 @@ can also tweak the following configurations for the BigchainDB node(s).
   - IP Address
 - Deploy node with Docker
   - Deploy all the services in Docker containers or as processes.
-- Size of Replica Set(Number of cluster member)
+- Number of BigchainDB nodes
   - If you want to deploy the services inside Docker containers, you
-  can specify number of member(s) in the MongoDB/BigchainDB cluster.
+  can specify number of member(s) in the BigchainDB cluster.
 - Upstart Script
 - Vagrant Provider
   - Virtualbox

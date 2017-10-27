@@ -68,7 +68,7 @@ Edit `bdb-config.yml` configuration file as per your requirements, sample config
 deploy_docker: false #[true, false]
 docker_cluster_size: 1 # Only needed if `deploy_docker` is true
 bdb_hosts:
-  - name: "HOSTNAME>" # Hostname of dev machine
+  - name: "<HOSTNAME>" # Hostname of dev machine
 ```
 **Note**: You can also orchestrate a multi-node BigchainDB cluster on a local dev host using Docker containers.
 Here is a sample `bdb-config.yml`
