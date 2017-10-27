@@ -50,6 +50,11 @@ def drop_database(conn, dbname):
 def create_bigchain_secondary_index(conn, dbname):
     logger.info('Create `bigchain` secondary index.')
 
+    # secondary index on block id which is should be unique
+    conn.conn[dbname]['bigchain'].create_index('id',
+                                               name='block_id',
+                                               unique=True)
+
     # to order blocks by timestamp
     conn.conn[dbname]['bigchain'].create_index([('block.timestamp',
                                                  ASCENDING)],
