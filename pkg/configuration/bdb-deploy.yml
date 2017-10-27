@@ -9,4 +9,4 @@
     - bigchaindb-driver
 
 - import_playbook: multi_node.yml
-  when: (bdb_hosts|length > 1) or docker_replset_size|int > 1
+  when: (bdb_hosts|length > 1) or docker_cluster_size|int > 1

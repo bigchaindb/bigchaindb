@@ -7,7 +7,7 @@
   run_once: true
   shell:
     cmd:
-      "docker exec {{ mongodb_docker_name }}{{ docker_replset_size|int - 1 }} bash -l -c
-      '/usr/bin/mongo --host {{ mongodb_docker_name }}{{ docker_replset_size|int - 1 }}
+      "docker exec {{ mongodb_docker_name }}{{ docker_cluster_size|int - 1 }} bash -l -c
+      '/usr/bin/mongo --host {{ mongodb_docker_name }}{{ docker_cluster_size|int - 1 }}
       --port {{ mongodb_port }} < /bdb_config/replSet_init.js'"
   tags: [mongodb]

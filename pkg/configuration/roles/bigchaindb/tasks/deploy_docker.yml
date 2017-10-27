@@ -2,7 +2,7 @@
 - name: Check if BigchainDB Dockers are already configured
   stat:
     path: "{{ bigchaindb_host_mount_dir }}{{ item|string }}/.bigchaindb"
-  with_sequence: start=0 end="{{ docker_replset_size|int - 1 }}" stride=1
+  with_sequence: start=0 end="{{ docker_cluster_size|int - 1 }}" stride=1
   register: stat_result
 
 - name: Configuring BigchainDB Docker
@@ -19,7 +19,7 @@
     networks:
       - name: "{{ bdb_docker_net_name }}"
   when: stat_result.results[item|int].stat.exists == False
-  with_sequence: start=0 end="{{ docker_replset_size|int - 1 }}" stride=1
+  with_sequence: start=0 end="{{ docker_cluster_size|int - 1 }}" stride=1
   tags: [bigchaindb]
 
 - name: Start BigchainDB Docker
@@ -35,17 +35,17 @@
     networks:
       - name: "{{ bdb_docker_net_name }}"
     state: started
-  with_sequence: start=0 end="{{ docker_replset_size|int - 1 }}" stride=1
+  with_sequence: start=0 end="{{ docker_cluster_size|int - 1 }}" stride=1
   tags: [bigchaindb]
 
 - name: Get BigchainDB node public key
   shell: "cat {{ bigchaindb_host_mount_dir + item|string }}/.bigchaindb"
   register: bdb_node_config
-  with_sequence: start=0 end="{{ docker_replset_size|int - 1 }}" stride=1
+  with_sequence: start=0 end="{{ docker_cluster_size|int - 1 }}" stride=1
   tags: [bigchaindb]
 
 - name: Set facts for BigchainDB containers
   set_fact:
     pub_key_{{ bigchaindb_docker_name }}{{ item }}="{{ (bdb_node_config.results[item|int].stdout|from_json).keypair.public }}"
-  with_sequence: start=0 end="{{ docker_replset_size|int - 1 }}" stride=1
+  with_sequence: start=0 end="{{ docker_cluster_size|int - 1 }}" stride=1
   tags: [mongodb]

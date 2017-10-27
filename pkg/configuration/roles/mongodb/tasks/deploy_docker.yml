@@ -38,11 +38,11 @@
     networks:
       - name: "{{ bdb_docker_net_name }}"
   register: mongo_container_info
-  with_sequence: start=0 end="{{ docker_replset_size|int - 1 }}" stride=1
+  with_sequence: start=0 end="{{ docker_cluster_size|int - 1 }}" stride=1
   tags: [mongodb]
 
 - name: Set facts for MongoDB containers
   set_fact:
     mongodb{{ item }}={{ mongo_container_info.results[item|int].ansible_facts.docker_container.NetworkSettings.IPAddress }}
-  with_sequence: start=0 end="{{ docker_replset_size|int - 1 }}" stride=1
+  with_sequence: start=0 end="{{ docker_cluster_size|int - 1 }}" stride=1
   tags: [mongodb]

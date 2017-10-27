@@ -29,6 +29,11 @@ can also tweak the following configurations for the BigchainDB node(s).
   - Virtualbox
   - VMware
 
+## Minimum Requirements
+Minimum resource requirements for a single node BigchainDB dev setup. **The more the better**:
+- Memory >= 512MB
+- VCPUs >= 1
+
 ## Install dependencies | Vagrant
 1. [VirtualBox](https://www.virtualbox.org/wiki/Downloads) >= 5.0.0
 2. [Vagrant](https://www.vagrantup.com/downloads.html) >= 1.16.0
@@ -39,9 +44,9 @@ $ git clone https://github.com/bigchaindb/bigchaindb.git
 ```
 
 ## Configuration | Vagrant
-Navigate to `bigchaindb/pkg/config/` inside the BigchainDB repository.
+Navigate to `bigchaindb/pkg/configuration/vars/` inside the BigchainDB repository.
 ```text
-$ cd bigchaindb/pkg/config/
+$ cd bigchaindb/pkg/configuration/vars/
 ```
 
 Edit `bdb-config.yml` as per your requirements. Sample `bdb-config.yml`:
@@ -49,7 +54,7 @@ Edit `bdb-config.yml` as per your requirements. Sample `bdb-config.yml`:
 ```text
 ---
 deploy_docker: false #[true, false]
-docker_replset_size: 1
+docker_cluster_size: 1
 upstart: "/bigchaindb/scripts/bootstrap.sh"
 bdb_hosts:
   - name: "bdb-node-01"
@@ -67,7 +72,7 @@ Here is a sample `bdb-config.yml`:
 ```text
 ---
 deploy_docker: false #[true, false]
-docker_replset_size: 1
+docker_cluster_size: 1
 upstart: "/bigchaindb/scripts/bootstrap.sh"
 bdb_hosts:
   - name: "bdb-node-01"
@@ -92,7 +97,7 @@ Here is a sample `bdb-config.yml`
 ```text
 ---
 deploy_docker: true #[true, false]
-docker_replset_size: 3
+docker_cluster_size: 3
 upstart: "/bigchaindb/scripts/bootstrap.sh"
 bdb_hosts:
   - name: "bdb-node-01"
@@ -115,7 +120,7 @@ $ vagrant up
 ```
 
 **Note**: There are some vagrant plugins required for the installation,
-user will be prompted to install them if they are not present. Instructions 
+user will be prompted to install them if they are not present. Instructions
 to install the plugins can be extracted from the message.
 
 ```text

@@ -12,6 +12,10 @@ Currently, this workflow is only supported for the following distributions:
 - CentOS >= 7
 - Fedora >= 24
 
+## Minimum Requirements
+Minimum resource requirements for a single node BigchainDB dev setup. **The more the better**:
+- Memory >= 512MB
+- VCPUs >= 1
 ## Clone the BigchainDB repository | Ansible
 ```text
 $ git clone https://github.com/bigchaindb/bigchaindb.git
@@ -49,7 +53,8 @@ $ cd bigchaindb/pkg/configuration/hosts
 Edit `all` configuration file:
 ```text
 # Delete any existing configuration in this file and insert
-localhost ansible_connection=local
+# Hostname of dev machine
+<HOSTNAME> ansible_connection=local
 ```
 ##### Update Configuration | Local
 Navigate to `bigchaindb/pkg/configuration/vars` inside the BigchainDB repository.
@@ -61,16 +66,16 @@ Edit `bdb-config.yml` configuration file as per your requirements, sample config
 ```text
 ---
 deploy_docker: false #[true, false]
-docker_replset_size: 1 # Only needed if `deploy_docker` is true
+docker_cluster_size: 1 # Only needed if `deploy_docker` is true
 bdb_hosts:
-  - name: "<LOCAL_DEV_HOST_HOSTNAME>"
+  - name: "HOSTNAME>" # Hostname of dev machine
 ```
 **Note**: You can also orchestrate a multi-node BigchainDB cluster on a local dev host using Docker containers.
 Here is a sample `bdb-config.yml`
 ```text
 ---
 deploy_docker: true #[true, false]
-docker_replset_size: 3
+docker_cluster_size: 3
 bdb_hosts:
   - name: "<LOCAL_DEV_HOST_HOSTNAME>"
 ```
@@ -109,7 +114,7 @@ Edit `bdb-config.yml` configuration file as per your requirements, sample config
 ```text
 ---
 deploy_docker: false #[true, false]
-docker_replset_size: 1 # Only needed if `deploy_docker` is true
+docker_cluster_size: 1 # Only needed if `deploy_docker` is true
 bdb_hosts:
   - name: "<REMOTE_MACHINE_HOSTNAME>"
 ```
@@ -120,7 +125,7 @@ Now, You can safely run the `bdb-deploy.yml` playbook and everything will be tak
 ```text
 $ cd bigchaindb/pkg/configuration/
 
-$ sudo ansible-playbook bdb-deploy.yml -i /bigchaindb/configuration/hosts/all
+$ sudo ansible-playbook bdb-deploy.yml -i hosts/all
 ```
 
 After successfull execution of the playbook, you can verify that BigchainDB docker(s)/process(es) is(are) running.
@@ -137,7 +142,7 @@ Verify BigchainDB Docker(s):
 $ docker ps | grep bigchaindb
 ```
 
-The playbook also installs the BigchainDB Python Driver, 
+The playbook also installs the BigchainDB Python Driver,
 so you can use it to make transactions
 and verify the functionality of your BigchainDB node.
 See the [BigchainDB Python Driver documentation](https://docs.bigchaindb.com/projects/py-driver/en/latest/index.html)
