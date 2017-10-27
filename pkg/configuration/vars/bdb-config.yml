@@ -7,23 +7,7 @@ bdb_hosts:
     box:
       name: "ubuntu/xenial64"
     ram: "2048"
-    vcpus: "1"
+    vcpus: "2"
     network:
       ip: "10.20.30.20"
-      type: "private_network"
-  - name: "bdb-node-02"
-    box:
-      name: "centos/7"
-    ram: "2048"
-    vcpus: "1"
-    network:
-      ip: "10.20.30.30"
-      type: "private_network"
-  - name: "bdb-node-03"
-    box:
-      name: "bento/fedora-24"
-    ram: "2048"
-    vcpus: "1"
-    network:
-      ip: "10.20.30.40"
       type: "private_network"
