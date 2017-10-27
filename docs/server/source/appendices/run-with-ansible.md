@@ -12,7 +12,7 @@ Currently, this workflow is only supported for the following distributions:
 - CentOS >= 7
 - Fedora >= 24
 
-## Minimum Requirements
+## Minimum Requirements | Ansible
 Minimum resource requirements for a single node BigchainDB dev setup. **The more the better**:
 - Memory >= 512MB
 - VCPUs >= 1

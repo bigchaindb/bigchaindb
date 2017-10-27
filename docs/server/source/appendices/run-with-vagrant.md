@@ -29,7 +29,7 @@ can also tweak the following configurations for the BigchainDB node(s).
   - Virtualbox
   - VMware
 
-## Minimum Requirements
+## Minimum Requirements | Vagrant
 Minimum resource requirements for a single node BigchainDB dev setup. **The more the better**:
 - Memory >= 512MB
 - VCPUs >= 1
