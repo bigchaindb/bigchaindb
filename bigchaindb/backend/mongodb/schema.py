@@ -52,8 +52,7 @@ def create_bigchain_secondary_index(conn, dbname):
 
     # secondary index on block id which is should be unique
     conn.conn[dbname]['bigchain'].create_index('id',
-                                               name='block_id',
-                                               unique=True)
+                                               name='block_id')
 
     # to order blocks by timestamp
     conn.conn[dbname]['bigchain'].create_index([('block.timestamp',
