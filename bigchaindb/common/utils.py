@@ -1,6 +1,9 @@
 import time
-
+import re
 import rapidjson
+
+import bigchaindb
+from bigchaindb.common.exceptions import ValidationError
 
 
 def gen_timestamp():
@@ -46,3 +49,17 @@ def deserialize(data):
             string.
     """
     return rapidjson.loads(data)
+
+
+def validate_asset_data_keys(tx_body):
+    backend = bigchaindb.config['database']['backend']
+
+    if backend == 'mongodb':
+        data = tx_body['asset'].get('data', {})
+        keys = data.keys() if data else []
+        for key in keys:
+            if re.search(r'^[$]|\.', key):
+                error_str = ('Invalid key name "{}" in asset object. The '
+                             'key name cannot contain characters '
+                             '"." and "$"').format(key)
+                raise ValidationError(error_str) from ValueError()
