@@ -48,22 +48,14 @@ def test_post_create_transaction_endpoint(b, client):
 
 
 @pytest.mark.parametrize("language,expected_status_code", [
-    ('danish', 202),
-    ('dutch', 202),
-    ('english', 202),
-    ('finnish', 202),
-    ('french', 202),
-    ('german', 202),
-    ('hungarian', 202),
-    ('italian', 202),
-    ('norwegian', 202),
-    ('portuguese', 202),
-    ('romanian', 202),
-    ('russian', 202),
-    ('spanish', 202),
-    ('swedish', 202),
-    ('turkish', 202),
-    ('any', 400),
+    ('danish', 202), ('dutch', 202), ('english', 202), ('finnish', 202),
+    ('french', 202), ('german', 202), ('hungarian', 202), ('italian', 202),
+    ('norwegian', 202), ('portuguese', 202), ('romanian', 202),
+    ('russian', 202), ('spanish', 202), ('swedish', 202), ('turkish', 202),
+    ('da', 202), ('nl', 202), ('en', 202), ('fi', 202), ('fr', 202),
+    ('de', 202), ('hu', 202), ('it', 202), ('nb', 202), ('pt', 202),
+    ('ro', 202), ('ru', 202), ('es', 202), ('sv', 202), ('tr', 202),
+    ('any', 400)
 ])
 @pytest.mark.language
 @pytest.mark.bdb
