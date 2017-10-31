@@ -10,6 +10,7 @@ from bigchaindb.common.exceptions import (InvalidHash, InvalidSignature,
 from bigchaindb.common.transaction import Transaction
 from bigchaindb.common.utils import gen_timestamp, serialize
 from bigchaindb.common.schema import validate_transaction_schema
+from bigchaindb.backend.schema import validate_if_exists_asset_language
 
 
 class Transaction(Transaction):
@@ -84,6 +85,7 @@ class Transaction(Transaction):
     @classmethod
     def from_dict(cls, tx_body):
         validate_transaction_schema(tx_body)
+        validate_if_exists_asset_language(tx_body)
         return super().from_dict(tx_body)
 
     @classmethod
