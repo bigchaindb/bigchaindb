@@ -366,6 +366,21 @@ def text_search(conn, search, *, language='english', case_sensitive=False,
     return (_remove_text_score(asset) for asset in cursor)
 
 
+@register_query(MongoDBConnection)
+def text_search_object(conn, search, text_score=False, limit=0):
+    cursor = conn.run(
+        conn.collection('assets')
+        .find(search,
+              {'score': {'$meta': 'textScore'}, '_id': False})
+        .sort([('score', {'$meta': 'textScore'})])
+        .limit(limit))
+
+    if text_score:
+        return cursor
+
+    return (_remove_text_score(asset) for asset in cursor)
+
+
 def _remove_text_score(asset):
     asset.pop('score', None)
     return asset

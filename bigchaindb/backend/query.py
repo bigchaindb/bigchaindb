@@ -389,3 +389,28 @@ def text_search(conn, search, *, language='english', case_sensitive=False,
 
     raise OperationError('This query is only supported when running '
                          'BigchainDB with MongoDB as the backend.')
+
+
+@singledispatch
+def text_search_object(conn, search, text_score=False, limit=0):
+    """Return all the assets that match the text search.
+
+    The results are sorted by text score.
+    For more information about the behavior of text search on MongoDB see
+    https://docs.mongodb.com/manual/reference/operator/query/text/#behavior
+
+    Args:
+        search (str): Text search string to query the text index
+        text_score (bool, optional): If ``True`` returns the text score with
+            each document.
+        limit (int, optional): Limit the number of returned documents.
+
+    Returns:
+        :obj:`list` of :obj:`dict`: a list of assets
+
+    Raises:
+        OperationError: If the backend does not support text search
+    """
+
+    raise OperationError('This query is only supported when running '
+                         'BigchainDB with MongoDB as the backend.')
