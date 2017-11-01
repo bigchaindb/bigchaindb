@@ -74,7 +74,7 @@ class SearchApi(Resource):
             # if the limit is not specified do not pass None to `text_search_object`
             del args['limit']
 
-        args['search'] = json.load(args['search'])
+        args['search'] = json.loads(args['search'])
 
         pool = current_app.config['bigchain_pool']
 
