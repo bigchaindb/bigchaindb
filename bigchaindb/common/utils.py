@@ -51,15 +51,25 @@ def deserialize(data):
     return rapidjson.loads(data)
 
 
-def validate_asset_data_keys(tx_body):
+def validate_txn_obj(obj_name, obj, key, validation_fun):
     backend = bigchaindb.config['database']['backend']
 
     if backend == 'mongodb':
-        data = tx_body['asset'].get('data', {})
-        keys = data.keys() if data else []
-        for key in keys:
-            if re.search(r'^[$]|\.', key):
-                error_str = ('Invalid key name "{}" in asset object. The '
-                             'key name cannot contain characters '
-                             '"." and "$"').format(key)
-                raise ValidationError(error_str) from ValueError()
+        data = obj.get(key, {}) or {}
+        validate_all_keys(obj_name, data, validation_fun)
+
+
+def validate_all_keys(obj_name, obj, validation_fun):
+    for key, value in obj.items():
+        validation_fun(obj_name, key)
+        if type(value) is dict:
+            validate_all_keys(obj_name, value, validation_fun)
+    return
+
+
+def validate_key(obj_name, key):
+    if re.search(r'^[$]|\.|\x00', key):
+        error_str = ('Invalid key name "{}" in {} object. The '
+                     'key name cannot contain characters '
+                     '".", "$" or null characters').format(key, obj_name)
+        raise ValidationError(error_str) from ValueError()

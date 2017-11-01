@@ -9,7 +9,7 @@ from bigchaindb.common.exceptions import (InvalidHash, InvalidSignature,
                                           DuplicateTransaction)
 from bigchaindb.common.transaction import Transaction
 from bigchaindb.common.utils import (gen_timestamp, serialize,
-                                     validate_asset_data_keys)
+                                     validate_txn_obj, validate_key)
 from bigchaindb.common.schema import validate_transaction_schema
 
 
@@ -85,7 +85,8 @@ class Transaction(Transaction):
     @classmethod
     def from_dict(cls, tx_body):
         validate_transaction_schema(tx_body)
-        validate_asset_data_keys(tx_body)
+        validate_txn_obj('asset', tx_body['asset'], 'data', validate_key)
+        validate_txn_obj('metadata', tx_body, 'metadata', validate_key)
         return super().from_dict(tx_body)
 
     @classmethod

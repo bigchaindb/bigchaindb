@@ -47,22 +47,29 @@ def test_post_create_transaction_endpoint(b, client):
     assert res.json['outputs'][0]['public_keys'][0] == user_pub
 
 
-@pytest.mark.parametrize("key,expected_status_code", [
-    ('bad.key', 400),
-    ('$bad.key', 400),
-    ('$badkey', 400),
-    ('good_key', 202)
+@pytest.mark.parametrize("field", ['asset', 'metadata'])
+@pytest.mark.parametrize("value,err_key,expected_status_code", [
+    ({'bad.key': 'v'}, 'bad.key', 400),
+    ({'$bad.key': 'v'}, '$bad.key', 400),
+    ({'$badkey': 'v'}, '$badkey', 400),
+    ({'bad\x00key': 'v'}, 'bad\x00key', 400),
+    ({'good_key': {'bad.key': 'v'}}, 'bad.key', 400),
+    ({'good_key': 'v'}, 'good_key', 202)
 ])
-@pytest.mark.assetkey
 @pytest.mark.bdb
-def test_post_create_transaction_with_invalid_asset_key(b, client, key, expected_status_code):
+def test_post_create_transaction_with_invalid_key(b, client, field, value,
+                                                  err_key, expected_status_code):
     from bigchaindb.models import Transaction
     from bigchaindb.backend.mongodb.connection import MongoDBConnection
     user_priv, user_pub = crypto.generate_key_pair()
 
     if isinstance(b.connection, MongoDBConnection):
-        tx = Transaction.create([user_pub], [([user_pub], 1)],
-                                asset={key: 'random_value'})
+        if field == 'asset':
+            tx = Transaction.create([user_pub], [([user_pub], 1)],
+                                    asset=value)
+        elif field == 'metadata':
+            tx = Transaction.create([user_pub], [([user_pub], 1)],
+                                    metadata=value)
         tx = tx.sign([user_priv])
         res = client.post(TX_ENDPOINT, data=json.dumps(tx.to_dict()))
 
@@ -70,8 +77,8 @@ def test_post_create_transaction_with_invalid_asset_key(b, client, key, expected
         if res.status_code == 400:
             expected_error_message = (
                 'Invalid transaction (ValidationError): Invalid key name "{}" '
-                'in asset object. The key name cannot contain characters '
-                '"." and "$"').format(key)
+                'in {} object. The key name cannot contain characters '
+                '".", "$" or null characters').format(err_key, field)
             assert res.json['message'] == expected_error_message
 
 
