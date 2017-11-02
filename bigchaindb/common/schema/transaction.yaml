@@ -117,6 +117,25 @@ definitions:
         anyOf:
         - type: object
           additionalProperties: true
+          patternProperties:
+            language:
+              type: string
+              enum:
+                - danish
+                - dutch
+                - english
+                - finnish
+                - french
+                - german
+                - hungarian
+                - italian
+                - norwegian
+                - portuguese
+                - romanian
+                - russian
+                - spanish
+                - swedish
+                - turkish
         - type: 'null'
   output:
     type: object
