@@ -47,6 +47,41 @@ def test_post_create_transaction_endpoint(b, client):
     assert res.json['outputs'][0]['public_keys'][0] == user_pub
 
 
+@pytest.mark.parametrize("field", ['asset', 'metadata'])
+@pytest.mark.parametrize("value,err_key,expected_status_code", [
+    ({'bad.key': 'v'}, 'bad.key', 400),
+    ({'$bad.key': 'v'}, '$bad.key', 400),
+    ({'$badkey': 'v'}, '$badkey', 400),
+    ({'bad\x00key': 'v'}, 'bad\x00key', 400),
+    ({'good_key': {'bad.key': 'v'}}, 'bad.key', 400),
+    ({'good_key': 'v'}, 'good_key', 202)
+])
+@pytest.mark.bdb
+def test_post_create_transaction_with_invalid_key(b, client, field, value,
+                                                  err_key, expected_status_code):
+    from bigchaindb.models import Transaction
+    from bigchaindb.backend.mongodb.connection import MongoDBConnection
+    user_priv, user_pub = crypto.generate_key_pair()
+
+    if isinstance(b.connection, MongoDBConnection):
+        if field == 'asset':
+            tx = Transaction.create([user_pub], [([user_pub], 1)],
+                                    asset=value)
+        elif field == 'metadata':
+            tx = Transaction.create([user_pub], [([user_pub], 1)],
+                                    metadata=value)
+        tx = tx.sign([user_priv])
+        res = client.post(TX_ENDPOINT, data=json.dumps(tx.to_dict()))
+
+        assert res.status_code == expected_status_code
+        if res.status_code == 400:
+            expected_error_message = (
+                'Invalid transaction (ValidationError): Invalid key name "{}" '
+                'in {} object. The key name cannot contain characters '
+                '".", "$" or null characters').format(err_key, field)
+            assert res.json['message'] == expected_error_message
+
+
 @patch('bigchaindb.web.views.base.logger')
 def test_post_create_transaction_with_invalid_id(mock_logger, b, client):
     from bigchaindb.common.exceptions import InvalidHash
