@@ -299,12 +299,13 @@ def test_count_blocks(signed_create_tx):
     from bigchaindb.models import Block
     conn = connect()
 
+    assert query.count_blocks(conn) == 0
+
     # create and insert some blocks
     block = Block(transactions=[signed_create_tx])
     conn.db.bigchain.insert_one(block.to_dict())
-    conn.db.bigchain.insert_one(block.to_dict())
 
-    assert query.count_blocks(conn) == 2
+    assert query.count_blocks(conn) == 1
 
 
 def test_count_backlog(signed_create_tx):
