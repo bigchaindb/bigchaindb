@@ -11,7 +11,7 @@ from bigchaindb.common.transaction import Transaction
 from bigchaindb.common.utils import (gen_timestamp, serialize,
                                      validate_txn_obj, validate_key)
 from bigchaindb.common.schema import validate_transaction_schema
-from bigchaindb.backend.schema import validate_if_exists_language
+from bigchaindb.backend.schema import validate_language_key
 
 
 class Transaction(Transaction):
@@ -88,7 +88,7 @@ class Transaction(Transaction):
         validate_transaction_schema(tx_body)
         validate_txn_obj('asset', tx_body['asset'], 'data', validate_key)
         validate_txn_obj('metadata', tx_body, 'metadata', validate_key)
-        validate_if_exists_language(tx_body['asset'], 'data')
+        validate_language_key(tx_body['asset'], 'data')
         return super().from_dict(tx_body)
 
     @classmethod

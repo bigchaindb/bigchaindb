@@ -92,9 +92,8 @@ def validate_all_keys(obj_name, obj, validation_fun):
     """
     for key, value in obj.items():
         validation_fun(obj_name, key)
-        if type(value) is dict:
+        if isinstance(value, dict):
             validate_all_keys(obj_name, value, validation_fun)
-    return
 
 
 def validate_all_value_for_key(obj, key, validation_fun):
@@ -107,18 +106,14 @@ def validate_all_value_for_key(obj, key, validation_fun):
             validation_fun (function): function used to validate the value
             of `key`.
 
-        Returns:
-            None: indicates validation successfull
-
         Raises:
             ValidationError: `validation_fun` will raise this error on failure
     """
     for vkey, value in obj.items():
         if vkey == key:
             validation_fun(value)
-        elif type(value) is dict:
+        elif isinstance(value, dict):
             validate_all_value_for_key(value, key, validation_fun)
-    return
 
 
 def validate_key(obj_name, key):
@@ -139,4 +134,4 @@ def validate_key(obj_name, key):
         error_str = ('Invalid key name "{}" in {} object. The '
                      'key name cannot contain characters '
                      '".", "$" or null characters').format(key, obj_name)
-        raise ValidationError(error_str) from ValueError()
+        raise ValidationError(error_str)

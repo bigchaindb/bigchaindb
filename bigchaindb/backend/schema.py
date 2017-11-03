@@ -108,14 +108,14 @@ def init_database(connection=None, dbname=None):
     create_indexes(connection, dbname)
 
 
-def validate_if_exists_language(obj, key):
+def validate_language_key(obj, key):
     """Validate all nested "language" key in `obj`.
 
        Args:
            obj (dict): dictonary whose "language" key is to be validated.
 
        Returns:
-           None: validation successfull
+           None: validation successful
 
         Raises:
             ValidationError: raises execption incase language is not valid.
@@ -135,7 +135,7 @@ def validate_language(value):
             value (str): language to validated
 
         Returns:
-            None: validation successfull
+            None: validation successful
 
         Raises:
             ValidationError: raises execption incase language is not valid.
@@ -145,4 +145,4 @@ def validate_language(value):
                      'language "{}". If you do not understand this error '
                      'message then please rename key/field "language" to '
                      'something else like "lang".').format(value)
-        raise ValidationError(error_str) from ValueError()
+        raise ValidationError(error_str)
