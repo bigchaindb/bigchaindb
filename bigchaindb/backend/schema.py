@@ -17,13 +17,14 @@ import logging
 import bigchaindb
 from bigchaindb.backend.connection import connect
 from bigchaindb.common.exceptions import ValidationError
+from bigchaindb.common.utils import validate_all_value_for_key
 
 logger = logging.getLogger(__name__)
 
 TABLES = ('bigchain', 'backlog', 'votes', 'assets')
 VALID_LANGUAGES = ('danish', 'dutch', 'english', 'finnish', 'french', 'german',
                    'hungarian', 'italian', 'norwegian', 'portuguese', 'romanian',
-                   'russian', 'spanish', 'swedish', 'turkish',
+                   'russian', 'spanish', 'swedish', 'turkish', 'none',
                    'da', 'nl', 'en', 'fi', 'fr', 'de', 'hu', 'it', 'nb', 'pt',
                    'ro', 'ru', 'es', 'sv', 'tr')
 
@@ -107,19 +108,41 @@ def init_database(connection=None, dbname=None):
     create_indexes(connection, dbname)
 
 
-def validate_if_exists_asset_language(tx_body):
-    data = tx_body['asset'].get('data', {})
+def validate_if_exists_language(obj, key):
+    """Validate all nested "language" key in `obj`.
 
-    if data and ('language' in data):
+       Args:
+           obj (dict): dictonary whose "language" key is to be validated.
 
-        language = data.get('language')
-        backend = bigchaindb.config['database']['backend']
+       Returns:
+           None: validation successfull
 
-        if (backend == 'mongodb') and (language not in VALID_LANGUAGES):
-            error_str = ('MongoDB does not support text search for the '
-                         'language "{}". If you do not understand this error '
-                         'message then please rename key/field "language" to '
-                         'something else like "lang".').format(language)
-            raise ValidationError(error_str) from ValueError()
+        Raises:
+            ValidationError: raises execption incase language is not valid.
+    """
+    backend = bigchaindb.config['database']['backend']
 
-    return
+    if backend == 'mongodb':
+        data = obj.get(key, {}) or {}
+        validate_all_value_for_key(data, 'language', validate_language)
+
+
+def validate_language(value):
+    """Check if `value` is a valid language
+       https://docs.mongodb.com/manual/reference/text-search-languages/
+
+        Args:
+            value (str): language to validated
+
+        Returns:
+            None: validation successfull
+
+        Raises:
+            ValidationError: raises execption incase language is not valid.
+    """
+    if value not in VALID_LANGUAGES:
+        error_str = ('MongoDB does not support text search for the '
+                     'language "{}". If you do not understand this error '
+                     'message then please rename key/field "language" to '
+                     'something else like "lang".').format(value)
+        raise ValidationError(error_str) from ValueError()
