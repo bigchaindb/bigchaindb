@@ -47,10 +47,11 @@ def test_post_create_transaction_endpoint(b, client):
     assert res.json['outputs'][0]['public_keys'][0] == user_pub
 
 
+@pytest.mark.parametrize("nested", [False, True])
 @pytest.mark.parametrize("language,expected_status_code", [
     ('danish', 202), ('dutch', 202), ('english', 202), ('finnish', 202),
     ('french', 202), ('german', 202), ('hungarian', 202), ('italian', 202),
-    ('norwegian', 202), ('portuguese', 202), ('romanian', 202),
+    ('norwegian', 202), ('portuguese', 202), ('romanian', 202), ('none', 202),
     ('russian', 202), ('spanish', 202), ('swedish', 202), ('turkish', 202),
     ('da', 202), ('nl', 202), ('en', 202), ('fi', 202), ('fr', 202),
     ('de', 202), ('hu', 202), ('it', 202), ('nb', 202), ('pt', 202),
@@ -59,24 +60,66 @@ def test_post_create_transaction_endpoint(b, client):
 ])
 @pytest.mark.language
 @pytest.mark.bdb
-def test_post_create_transaction_with_language(b, client, language, expected_status_code):
+def test_post_create_transaction_with_language(b, client, nested, language,
+                                               expected_status_code):
     from bigchaindb.models import Transaction
     from bigchaindb.backend.mongodb.connection import MongoDBConnection
 
     if isinstance(b.connection, MongoDBConnection):
         user_priv, user_pub = crypto.generate_key_pair()
+        lang_obj = {'language': language}
+
+        if nested:
+            asset = {'root': lang_obj}
+        else:
+            asset = lang_obj
 
         tx = Transaction.create([user_pub], [([user_pub], 1)],
-                                asset={'language': language})
+                                asset=asset)
         tx = tx.sign([user_priv])
         res = client.post(TX_ENDPOINT, data=json.dumps(tx.to_dict()))
         assert res.status_code == expected_status_code
         if res.status_code == 400:
             expected_error_message = (
-                "Invalid transaction (ValidationError): MongoDB does not support "
-                "text search for the language \"{}\". If you do not understand this "
-                "error message then please rename key/field \"language\" to something "
-                "else like \"lang\".").format(language)
+                'Invalid transaction (ValidationError): MongoDB does not support '
+                'text search for the language "{}". If you do not understand this '
+                'error message then please rename key/field "language" to something '
+                'else like "lang".').format(language)
+            assert res.json['message'] == expected_error_message
+
+
+@pytest.mark.parametrize("field", ['asset', 'metadata'])
+@pytest.mark.parametrize("value,err_key,expected_status_code", [
+    ({'bad.key': 'v'}, 'bad.key', 400),
+    ({'$bad.key': 'v'}, '$bad.key', 400),
+    ({'$badkey': 'v'}, '$badkey', 400),
+    ({'bad\x00key': 'v'}, 'bad\x00key', 400),
+    ({'good_key': {'bad.key': 'v'}}, 'bad.key', 400),
+    ({'good_key': 'v'}, 'good_key', 202)
+])
+@pytest.mark.bdb
+def test_post_create_transaction_with_invalid_key(b, client, field, value,
+                                                  err_key, expected_status_code):
+    from bigchaindb.models import Transaction
+    from bigchaindb.backend.mongodb.connection import MongoDBConnection
+    user_priv, user_pub = crypto.generate_key_pair()
+
+    if isinstance(b.connection, MongoDBConnection):
+        if field == 'asset':
+            tx = Transaction.create([user_pub], [([user_pub], 1)],
+                                    asset=value)
+        elif field == 'metadata':
+            tx = Transaction.create([user_pub], [([user_pub], 1)],
+                                    metadata=value)
+        tx = tx.sign([user_priv])
+        res = client.post(TX_ENDPOINT, data=json.dumps(tx.to_dict()))
+
+        assert res.status_code == expected_status_code
+        if res.status_code == 400:
+            expected_error_message = (
+                'Invalid transaction (ValidationError): Invalid key name "{}" '
+                'in {} object. The key name cannot contain characters '
+                '".", "$" or null characters').format(err_key, field)
             assert res.json['message'] == expected_error_message
 
 
