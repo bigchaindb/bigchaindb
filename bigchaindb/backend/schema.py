@@ -17,7 +17,7 @@ import logging
 import bigchaindb
 from bigchaindb.backend.connection import connect
 from bigchaindb.common.exceptions import ValidationError
-from bigchaindb.common.utils import validate_all_value_for_key
+from bigchaindb.common.utils import validate_all_values_for_key
 
 logger = logging.getLogger(__name__)
 
@@ -112,23 +112,23 @@ def validate_language_key(obj, key):
     """Validate all nested "language" key in `obj`.
 
        Args:
-           obj (dict): dictonary whose "language" key is to be validated.
+           obj (dict): dictionary whose "language" key is to be validated.
 
        Returns:
            None: validation successful
 
         Raises:
-            ValidationError: raises execption incase language is not valid.
+            ValidationError: will raise exception in case language is not valid.
     """
     backend = bigchaindb.config['database']['backend']
 
     if backend == 'mongodb':
         data = obj.get(key, {}) or {}
-        validate_all_value_for_key(data, 'language', validate_language)
+        validate_all_values_for_key(data, 'language', validate_language)
 
 
 def validate_language(value):
-    """Check if `value` is a valid language
+    """Check if `value` is a valid language.
        https://docs.mongodb.com/manual/reference/text-search-languages/
 
         Args:
@@ -138,7 +138,7 @@ def validate_language(value):
             None: validation successful
 
         Raises:
-            ValidationError: raises execption incase language is not valid.
+            ValidationError: will raise exception in case language is not valid.
     """
     if value not in VALID_LANGUAGES:
         error_str = ('MongoDB does not support text search for the '

@@ -52,21 +52,20 @@ def deserialize(data):
 
 
 def validate_txn_obj(obj_name, obj, key, validation_fun):
-    """Validates value associated to `key` in `obj` by applying
-       `validation_fun`.
+    """Validate value of `key` in `obj` using `validation_fun`.
 
         Args:
             obj_name (str): name for `obj` being validated.
-            obj (dict): dictonary object.
+            obj (dict): dictionary object.
             key (str): key to be validated in `obj`.
             validation_fun (function): function used to validate the value
             of `key`.
 
         Returns:
-            None: indicates validation successfull
+            None: indicates validation successful
 
         Raises:
-            ValidationError: `validation_fun` will raise this error on failure
+            ValidationError: `validation_fun` will raise exception on failure
     """
     backend = bigchaindb.config['database']['backend']
 
@@ -76,16 +75,16 @@ def validate_txn_obj(obj_name, obj, key, validation_fun):
 
 
 def validate_all_keys(obj_name, obj, validation_fun):
-    """Validates all (nested) keys in `obj` by using `validation_fun`
+    """Validate all (nested) keys in `obj` by using `validation_fun`.
 
         Args:
             obj_name (str): name for `obj` being validated.
-            obj (dict): dictonary object.
+            obj (dict): dictionary object.
             validation_fun (function): function used to validate the value
             of `key`.
 
         Returns:
-            None: indicates validation successfull
+            None: indicates validation successful
 
         Raises:
             ValidationError: `validation_fun` will raise this error on failure
@@ -96,12 +95,12 @@ def validate_all_keys(obj_name, obj, validation_fun):
             validate_all_keys(obj_name, value, validation_fun)
 
 
-def validate_all_value_for_key(obj, key, validation_fun):
-    """Validates value for all (nested) occurences of `key` in `obj`
-       using `validation_fun`
+def validate_all_values_for_key(obj, key, validation_fun):
+    """Validate value for all (nested) occurrence  of `key` in `obj`
+       using `validation_fun`.
 
         Args:
-            obj (dict): dictonary object.
+            obj (dict): dictionary object.
             key (str): key whose value is to be validated.
             validation_fun (function): function used to validate the value
             of `key`.
@@ -113,11 +112,12 @@ def validate_all_value_for_key(obj, key, validation_fun):
         if vkey == key:
             validation_fun(value)
         elif isinstance(value, dict):
-            validate_all_value_for_key(value, key, validation_fun)
+            validate_all_values_for_key(value, key, validation_fun)
 
 
 def validate_key(obj_name, key):
-    """Check if `key` contains ".", "$" or null characters
+    """Check if `key` contains ".", "$" or null characters.
+
        https://docs.mongodb.com/manual/reference/limits/#Restrictions-on-Field-Names
 
         Args:
@@ -125,10 +125,10 @@ def validate_key(obj_name, key):
             key (str): key to validated
 
         Returns:
-            None: indicates validation successfull
+            None: validation successful
 
         Raises:
-            ValidationError: raise execption incase of regex match.
+            ValidationError: will raise exception in case of regex match.
     """
     if re.search(r'^[$]|\.|\x00', key):
         error_str = ('Invalid key name "{}" in {} object. The '
