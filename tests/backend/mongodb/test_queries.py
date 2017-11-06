@@ -353,6 +353,7 @@ def test_get_genesis_block(genesis_block):
     conn = connect()
 
     assets, genesis_block_dict = genesis_block.decouple_assets()
+    metadata, genesis_block_dict = genesis_block.decouple_metadata(genesis_block_dict)
     assert query.get_genesis_block(conn) == genesis_block_dict
 
 

@@ -190,10 +190,15 @@ class Bigchain(object):
         # get the asset ids from the block
         if block_dict:
             asset_ids = Block.get_asset_ids(block_dict)
+            txn_ids = Block.get_txn_ids(block_dict)
             # get the assets from the database
             assets = self.get_assets(asset_ids)
+            # get the metadata from the database
+            metadata = self.get_metadata(txn_ids)
             # add the assets to the block transactions
             block_dict = Block.couple_assets(block_dict, assets)
+            # add the metadata to the block transactions
+            block_dict = Block.couple_metadata(block_dict, metadata)
 
         status = None
         if include_status:
@@ -508,9 +513,14 @@ class Bigchain(object):
 
         # Decouple assets from block
         assets, block_dict = block.decouple_assets()
+        metadatas, block_dict = block.decouple_metadata(block_dict)
+
         # write the assets
         if assets:
             self.write_assets(assets)
+
+        if metadatas:
+            self.write_metadata(metadatas)
 
         # write the block
         return backend.query.write_block(self.connection, block_dict)
@@ -622,6 +632,19 @@ class Bigchain(object):
         """
         return backend.query.get_assets(self.connection, asset_ids)
 
+    def get_metadata(self, txn_ids):
+        """
+        Return a list of metadata that match the transaction ids (txn_ids)
+
+        Args:
+            txn_ids (:obj:`list` of :obj:`str`): A list of txn_ids to
+                retrieve from the database.
+
+        Returns:
+            list: The list of metadata returned from the database.
+        """
+        return backend.query.get_metadata(self.connection, txn_ids)
+
     def write_assets(self, assets):
         """
         Writes a list of assets into the database.
@@ -631,6 +654,16 @@ class Bigchain(object):
                 the database.
         """
         return backend.query.write_assets(self.connection, assets)
+
+    def write_metadata(self, metadata):
+        """
+        Writes a list of metadata into the database.
+
+        Args:
+            metadata (:obj:`list` of :obj:`dict`): A list of metadata to write to
+                the database.
+        """
+        return backend.query.write_metadata(self.connection, metadata)
 
     def text_search(self, search, *, limit=0):
         """

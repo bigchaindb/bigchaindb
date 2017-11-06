@@ -266,10 +266,28 @@ def write_assets(conn, assets):
 
 
 @register_query(MongoDBConnection)
+def write_metadata(conn, metadata):
+    try:
+        return conn.run(
+            conn.collection('metadata')
+            .insert_many(metadata, ordered=False))
+    except OperationError:
+        return
+
+
+@register_query(MongoDBConnection)
 def get_assets(conn, asset_ids):
     return conn.run(
         conn.collection('assets')
         .find({'id': {'$in': asset_ids}},
+              projection={'_id': False}))
+
+
+@register_query(MongoDBConnection)
+def get_metadata(conn, txn_ids):
+    return conn.run(
+        conn.collection('metadata')
+        .find({'id': {'$in': txn_ids}},
               projection={'_id': False}))
 
 

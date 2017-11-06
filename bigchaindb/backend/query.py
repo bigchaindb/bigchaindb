@@ -255,6 +255,19 @@ def write_assets(connection, assets):
 
 
 @singledispatch
+def write_metadata(connection, metadata):
+    """Write a list of metadata to the metadata table.
+
+    Args:
+        metadata (list): a list of metadata to write.
+
+    Returns:
+        The database response.
+    """
+    raise NotImplementedError
+
+
+@singledispatch
 def get_assets(connection, asset_ids):
     """Get a list of assets from the assets table.
 
@@ -264,6 +277,20 @@ def get_assets(connection, asset_ids):
 
     Returns:
         assets (list): the list of returned assets.
+    """
+    raise NotImplementedError
+
+
+@singledispatch
+def get_metadata(connection, txn_ids):
+    """Get a list of metadata from the metadata table.
+
+    Args:
+        txn_ids (list): a list of ids for the metadata to be retrieved from
+        the database.
+
+    Returns:
+        metadata (list): the list of returned metadata.
     """
     raise NotImplementedError
 
