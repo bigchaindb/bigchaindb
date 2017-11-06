@@ -123,8 +123,9 @@ def validate_language_key(obj, key):
     backend = bigchaindb.config['database']['backend']
 
     if backend == 'mongodb':
-        data = obj.get(key, {}) or {}
-        validate_all_values_for_key(data, 'language', validate_language)
+        data = obj.get(key, {})
+        if isinstance(data, dict):
+            validate_all_values_for_key(data, 'language', validate_language)
 
 
 def validate_language(value):
