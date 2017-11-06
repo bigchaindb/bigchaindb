@@ -46,10 +46,10 @@ Here's some explanation of the contents:
 
 - **metadata**: User-provided transaction metadata.
   It can be any valid JSON document, or ``null``.
-  **NOTE** when using MongoDB for storage certain restriction apply to all
-  (including nested) keys of ``"metadata"`` JSON document  i.e. valid keys
-  should **not** begin with ``$`` character and cannot contain ``.`` or
-  null character (Unicode code point 0000).
+  **NOTE:** When using MongoDB for storage, certain restriction apply
+  to all (including nested) keys of the ``"data"`` JSON document:
+  1) keys (i.e. key names, not values) must **not** begin with the ``$`` character, and
+  2) keys must not contain ``.`` or the null character (Unicode code point 0000).
 
 **How the transaction ID is computed.**
 1) Build a Python dictionary containing ``version``, ``inputs``, ``outputs``, ``operation``, ``asset``, ``metadata`` and their values, 
