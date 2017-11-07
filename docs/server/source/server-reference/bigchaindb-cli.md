@@ -61,7 +61,7 @@ If you want to force-drop the database (i.e. skipping the yes/no prompt), then u
 
 ## bigchaindb start
 
-Start BigchainDB assuming that the database has already been initialized using `bigchaindb init`. If that is not the case then passing the flag `--init` will initialize the database and start BigchainDB.
+Start BigchainDB. It always begins by trying a `bigchaindb init` first. See the note in the documentation for `bigchaindb init`. The database initialization step is optional and can be skipped by passing the `--no-init` flag i.e. `bigchaindb start --no-init`.
 You can also use the `--dev-start-rethinkdb` command line option to automatically start rethinkdb with bigchaindb if rethinkdb is not already running,
 e.g. `bigchaindb --dev-start-rethinkdb start`. Note that this will also shutdown rethinkdb when the bigchaindb process stops.
 The option `--dev-allow-temp-keypair` will generate a keypair on the fly if no keypair is found, this is useful when you want to run a temporary instance of BigchainDB in a Docker container, for example.

@@ -33,7 +33,7 @@ API Server bind? (default `localhost:9984`): 0.0.0.0:9984
 
 Finally, run BigchainDB Server by doing:
 ```text
-bigchaindb start --init
+bigchaindb start
 ```
 
 BigchainDB Server should now be running on the Azure virtual machine.
