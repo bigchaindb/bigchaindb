@@ -421,7 +421,8 @@ def test_get_new_blocks_feed(b, create_tx):
         ts = str(random.random())
         block = Block(transactions=[create_tx], timestamp=ts)
         b.write_block(block)
-        return block.decouple_assets()[1]
+        block_dict = block.decouple_assets()[1]
+        return block.decouple_metadata(block_dict)[1]
 
     create_block()
     b1 = create_block()

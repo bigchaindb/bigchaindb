@@ -5,7 +5,7 @@ from bigchaindb.common.exceptions import (InvalidHash, InvalidSignature,
                                           DoubleSpend, InputDoesNotExist,
                                           TransactionNotInValidBlock,
                                           AssetIdMismatch, AmountError,
-                                          SybilError,
+                                          SybilError, ValidationError,
                                           DuplicateTransaction)
 from bigchaindb.common.transaction import Transaction
 from bigchaindb.common.utils import (gen_timestamp, serialize,
@@ -47,9 +47,7 @@ class Transaction(Transaction):
                         'input `{}` does not exist in a valid block'.format(
                             input_txid))
 
-                print(input_txid, self.id)
                 spent = bigchain.get_spent(input_txid, input_.fulfills.output)
-                print(spent)
                 if spent and spent.id != self.id:
                     raise DoubleSpend('input `{}` was already spent'
                                       .format(input_txid))
@@ -116,9 +114,11 @@ class Transaction(Transaction):
 
         # get metadata of the transaction
         metadata = list(bigchain.get_metadata([tx_dict['id']]))
-        if metadata:
-            metadata = metadata[0]
-            del metadata['id']
+        if 'metadata' not in tx_dict:
+            metadata = metadata[0] if metadata else None
+            if metadata:
+                metadata.pop('id', None)
+
             tx_dict.update({'metadata': metadata})
 
         return cls.from_dict(tx_dict)
@@ -407,8 +407,8 @@ class Block(object):
             if isinstance(metadata, dict):
                 metadata.update({'id': transaction['id']})
                 metadatas.append(metadata)
-            else:
-                transaction.update({'metadata': metadata})
+            elif metadata:
+                raise ValidationError('Invalid value for metadata')
 
         return (metadatas, block_dict)
 
@@ -444,6 +444,10 @@ class Block(object):
         and a list of metadata, reconstruct the original block by putting the
         metadata of each transaction back into its original transaction.
 
+        NOTE: Till a transaction gets accepted the `metadata` of the transaction
+        is not moved outside of the transaction. So, if a transaction is found to
+        have metadata then it should not be overridden.
+
         Args:
             block_dict (:obj:`dict`): The block dict as returned from a
                 database call.
@@ -457,9 +461,13 @@ class Block(object):
         metadatal = {m.pop('id'): m for m in metadatal}
         # add the metadata to their corresponding transactions
         for transaction in block_dict['block']['transactions']:
-            metadata = metadatal.get(transaction['id'])
-            if metadata:
-                transaction.update({'metadata': metadata})
+            if 'metadata' not in transaction:
+                metadata = metadatal.get(transaction['id'])
+                if metadata:
+                    metadata.pop('id', None)
+                    transaction.update({'metadata': metadata})
+                else:
+                    transaction.update({'metadata': None})
         return block_dict
 
     @staticmethod

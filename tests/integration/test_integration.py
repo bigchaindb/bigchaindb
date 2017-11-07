@@ -38,7 +38,6 @@ def test_get_owned_ids_works_after_double_spend(b, user_pk, user_sk):
                                     input_valid.id,
                                     {'1': 1}).sign([user_sk])
 
-    print(tx_valid)
     # write the valid tx and wait for voting/block to catch up
     b.write_transaction(tx_valid)
     time.sleep(5)

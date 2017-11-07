@@ -395,6 +395,13 @@ class Bigchain(object):
                     ' with the chain'.format(txid))
             # if its not and invalid transaction
             if status is not None:
+                if 'metadata' not in transaction:
+                    metadata = list(self.get_metadata([transaction['id']]))
+                    metadata = metadata[0] if metadata else None
+                    if metadata:
+                        metadata.pop('id', None)
+                    transaction.update({'metadata': metadata})
+
                 non_invalid_transactions.append(transaction)
 
         if non_invalid_transactions:
