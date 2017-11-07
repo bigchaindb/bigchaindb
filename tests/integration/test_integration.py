@@ -12,9 +12,9 @@ def test_double_create(b, user_pk):
                             metadata={'test': 'test'}).sign([b.me_private])
 
     b.write_transaction(tx)
-    time.sleep(2)
+    time.sleep(5)
     b.write_transaction(tx)
-    time.sleep(2)
+    time.sleep(5)
     tx_returned = b.get_transaction(tx.id)
 
     # test that the tx can be queried
