@@ -105,7 +105,7 @@ $ docker-compose build
 First, start `RethinkDB` in the background:
 
 ```text
-$ docker-compose up -d rdb
+$ docker-compose -f docker-compose.rdb.yml up -d rdb
 ```
 
 then run the tests using:
