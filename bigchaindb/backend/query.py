@@ -387,7 +387,7 @@ def get_new_blocks_feed(connection, start_block_id):
 
 @singledispatch
 def text_search(conn, search, *, language='english', case_sensitive=False,
-                diacritic_sensitive=False, text_score=False, limit=0):
+                diacritic_sensitive=False, text_score=False, limit=0, table=None):
     """Return all the assets that match the text search.
 
     The results are sorted by text score.

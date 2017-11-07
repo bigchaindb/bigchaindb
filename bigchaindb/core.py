@@ -672,7 +672,7 @@ class Bigchain(object):
         """
         return backend.query.write_metadata(self.connection, metadata)
 
-    def text_search(self, search, *, limit=0):
+    def text_search(self, search, *, limit=0, table=None):
         """
         Return an iterator of assets that match the text search
 
@@ -683,12 +683,16 @@ class Bigchain(object):
         Returns:
             iter: An iterator of assets that match the text search.
         """
-        assets = backend.query.text_search(self.connection, search, limit=limit)
+        if table is None:
+            table = 'assets'
+
+        objects = backend.query.text_search(self.connection, search, limit=limit,
+                                            table=table)
 
         # TODO: This is not efficient. There may be a more efficient way to
         #       query by storing block ids with the assets and using fastquery.
         #       See https://github.com/bigchaindb/bigchaindb/issues/1496
-        for asset in assets:
-            tx, status = self.get_transaction(asset['id'], True)
+        for obj in objects:
+            tx, status = self.get_transaction(obj['id'], True)
             if status == self.TX_VALID:
-                yield asset
+                yield obj
