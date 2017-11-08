@@ -25,6 +25,14 @@ USER_PRIVATE_KEY = '8eJ8q9ZQpReWyQT5aFCiwtZ5wDZC4eDnCen88p3tQ6ie'
 USER_PUBLIC_KEY = 'JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE'
 
 
+# create a fixture to skip tests when using rethinkdb
+TRAVIS_CI = os.getenv('TRAVIS_CI', 'false')
+BACKEND = os.getenv('BIGCHAINDB_DATABASE_BACKEND', 'false')
+IS_TRAVIS_RDB = ((TRAVIS_CI == 'true') and (BACKEND == 'rethinkdb'))
+skip_travis_rdb = pytest.mark.skipif(IS_TRAVIS_RDB,
+                                     reason="Skip test during Travis CI build when using rethinkdb")
+
+
 def pytest_addoption(parser):
     from bigchaindb.backend.connection import BACKENDS
 
