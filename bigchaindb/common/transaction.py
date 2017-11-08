@@ -23,14 +23,14 @@ class Input(object):
 
     Wraps around a Crypto-condition Fulfillment.
 
-        Attributes:
-            fulfillment (:class:`cryptoconditions.Fulfillment`): A Fulfillment
-                to be signed with a private key.
-            owners_before (:obj:`list` of :obj:`str`): A list of owners after a
-                Transaction was confirmed.
-            fulfills (:class:`~bigchaindb.common.transaction. TransactionLink`,
-                optional): A link representing the input of a `TRANSFER`
-                Transaction.
+    Attributes:
+        fulfillment (:class:`cryptoconditions.Fulfillment`): A Fulfillment
+            to be signed with a private key.
+        owners_before (:obj:`list` of :obj:`str`): A list of owners after a
+            Transaction was confirmed.
+        fulfills (:class:`~bigchaindb.common.transaction.TransactionLink`,
+            optional): A link representing the input of a `TRANSFER`
+            Transaction.
     """
 
     def __init__(self, fulfillment, owners_before, fulfills=None):
@@ -488,10 +488,8 @@ class Transaction(object):
             Args:
                 operation (str): Defines the operation of the Transaction.
                 asset (dict): Asset payload for this Transaction.
-                inputs (:obj:`list` of :class:`~bigchaindb.common.
-                    transaction.Input`, optional): Define the assets to
-                outputs (:obj:`list` of :class:`~bigchaindb.common.
-                    transaction.Output`, optional): Define the assets to
+                inputs (:obj:`list` of :class:`~bigchaindb.common.transaction.Input`, optional): Define the assets to
+                outputs (:obj:`list` of :class:`~bigchaindb.common.transaction.Output`, optional): Define the assets to
                     lock.
                 metadata (dict): Metadata to be stored along with the
                     Transaction.
@@ -537,11 +535,13 @@ class Transaction(object):
             Note:
                 This method currently supports the following Cryptoconditions
                 use cases:
+
                     - Ed25519
                     - ThresholdSha256
 
                 Additionally, it provides support for the following BigchainDB
                 use cases:
+
                     - Multiple inputs and outputs.
 
             Args:
@@ -599,21 +599,19 @@ class Transaction(object):
                 notation is proposed:
 
                 1. The index of a `recipient` corresponds to the index of
-                   an input:
-                   e.g. `transfer([input1], [a])`, means `input1` would now be
-                        owned by user `a`.
+                   an input: e.g. `transfer([input1], [a])`, means
+                   `input1` would now be owned by user `a`.
 
                 2. `recipients` can (almost) get arbitrary deeply nested,
-                   creating various complex threshold conditions:
-                   e.g. `transfer([inp1, inp2], [[a, [b, c]], d])`, means
-                        `a`'s signature would have a 50% weight on `inp1`
-                        compared to `b` and `c` that share 25% of the leftover
-                        weight respectively. `inp2` is owned completely by `d`.
+                   creating various complex threshold conditions: e.g.
+                   `transfer([inp1, inp2], [[a, [b, c]], d])`, means
+                   `a`'s signature would have a 50% weight on `inp1`
+                   compared to `b` and `c` that share 25% of the leftover
+                   weight respectively. `inp2` is owned completely by `d`.
 
             Args:
-                inputs (:obj:`list` of :class:`~bigchaindb.common.transaction.
-                    Input`): Converted `Output`s, intended to
-                    be used as inputs in the transfer to generate.
+                inputs (:obj:`list` of :class:`~bigchaindb.common.transaction.Input`):
+                    Converted ``Output`` s, intended to be used as inputs in the transfer to generate.
                 recipients (:obj:`list` of :obj:`tuple`): A list of
                     ([keys],amount) that represent the recipients of this
                     Transaction.
@@ -673,8 +671,7 @@ class Transaction(object):
                     outputs should be returned as inputs.
 
             Returns:
-                :obj:`list` of :class:`~bigchaindb.common.transaction.
-                    Input`
+                :obj:`list` of :class:`~bigchaindb.common.transaction.Input`
         """
         # NOTE: If no indices are passed, we just assume to take all outputs
         #       as inputs.
@@ -715,8 +712,10 @@ class Transaction(object):
             Note:
                 This method works only for the following Cryptoconditions
                 currently:
+
                     - Ed25519Fulfillment
                     - ThresholdSha256
+
                 Furthermore, note that all keys required to fully sign the
                 Transaction have to be passed to this method. A subset of all
                 will cause this method to fail.
@@ -865,8 +864,7 @@ class Transaction(object):
                 evaluate parts of the validation-checks to `True`.
 
             Args:
-                outputs (:obj:`list` of :class:`~bigchaindb.common.
-                    transaction.Output`): A list of Outputs to check the
+                outputs (:obj:`list` of :class:`~bigchaindb.common.transaction.Output`): A list of Outputs to check the
                     Inputs against.
 
             Returns:
@@ -1033,8 +1031,7 @@ class Transaction(object):
         transaction are related to the same asset id.
 
         Args:
-            transactions (:obj:`list` of :class:`~bigchaindb.common.
-                transaction.Transaction`): A list of Transactions.
+            transactions (:obj:`list` of :class:`~bigchaindb.common.transaction.Transaction`): A list of Transactions.
                 Usually input Transactions that should have a matching
                 asset ID.
 
