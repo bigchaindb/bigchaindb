@@ -28,13 +28,10 @@ def flush_db(connection, dbname):
 
 @flush_db.register(RethinkDBConnection)
 def flush_rethink_db(connection, dbname):
-    try:
-        connection.run(r.db(dbname).table('bigchain').delete())
-        connection.run(r.db(dbname).table('backlog').delete())
-        connection.run(r.db(dbname).table('votes').delete())
-        connection.run(r.db(dbname).table('assets').delete())
-    except r.ReqlOpFailedError:
-        pass
+    connection.run(r.db(dbname).table('bigchain').delete())
+    connection.run(r.db(dbname).table('backlog').delete())
+    connection.run(r.db(dbname).table('votes').delete())
+    connection.run(r.db(dbname).table('assets').delete())
 
 
 @flush_db.register(MongoDBConnection)
