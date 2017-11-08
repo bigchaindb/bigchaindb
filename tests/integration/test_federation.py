@@ -7,7 +7,6 @@ from bigchaindb.core import Bigchain
 from contextlib import contextmanager
 from bigchaindb.common.crypto import generate_key_pair
 from tests.pipelines.stepping import create_stepper
-from tests.conftest import skip_travis_rdb
 
 
 ################################################################################
@@ -98,7 +97,7 @@ def process_vote(steps, result=None):
 
 @pytest.mark.bdb
 @pytest.mark.genesis
-@skip_travis_rdb
+@pytest.mark.skip_travis_rdb
 def test_elect_valid(federation_3):
     [bx, (s0, s1, s2)] = federation_3
     tx = input_single_create(bx[0])
@@ -117,7 +116,7 @@ def test_elect_valid(federation_3):
 
 
 @pytest.mark.bdb
-@skip_travis_rdb
+@pytest.mark.skip_travis_rdb
 @pytest.mark.genesis
 def test_elect_invalid(federation_3):
     [bx, (s0, s1, s2)] = federation_3
@@ -138,7 +137,7 @@ def test_elect_invalid(federation_3):
 
 @pytest.mark.bdb
 @pytest.mark.genesis
-@skip_travis_rdb
+@pytest.mark.skip_travis_rdb
 def test_elect_sybill(federation_3):
     [bx, (s0, s1, s2)] = federation_3
     tx = input_single_create(bx[0])
