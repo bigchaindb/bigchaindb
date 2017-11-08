@@ -13,5 +13,5 @@ elif [[ "${BIGCHAINDB_DATABASE_BACKEND}" == mongodb && \
     # Run a sub-set of tests over SSL; those marked as 'pytest.mark.bdb_ssl'.
   pytest -sv --database-backend=mongodb-ssl --cov=bigchaindb -m bdb_ssl
 else
-  pytest -sv -n auto --cov=bigchaindb
+  pytest -sv --cov=bigchaindb
 fi
