@@ -35,7 +35,7 @@ Install Docker for Mac.
 Pull the bigchaindb and other required docker images from docker hub.
 
 ```text
-docker pull bigchaindb/bigchaindb:master
+docker pull bigchaindb/bigchaindb:latest
 docker pull [rethinkdb:2.3|mongo:3.4.1]
 ```
 
@@ -44,7 +44,7 @@ docker pull [rethinkdb:2.3|mongo:3.4.1]
 docker run \
   --rm \
   --volume $HOME/bigchaindb_docker:/data \
-  bigchaindb/bigchaindb:master \
+  bigchaindb/bigchaindb \
   -y configure \
   [mongodb|rethinkdb]
 ```
@@ -93,6 +93,7 @@ docker run \
 docker run \
   --name=bigchaindb \
   --publish=9984:9984 \
+  --publish=9985:9985 \
   --restart=always \
   --volume=$HOME/bigchaindb_docker:/data \
   bigchaindb/bigchaindb \
