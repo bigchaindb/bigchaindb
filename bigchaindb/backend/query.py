@@ -20,6 +20,13 @@ def write_transaction(connection, signed_transaction):
 
 
 @singledispatch
+def store_transaction(connection, signed_transaction):
+    """Same as write_transaction."""
+
+    raise NotImplementedError
+
+
+@singledispatch
 def get_transaction(connection, signed_transaction):
     """Get a transaction from the transactions table.
 
