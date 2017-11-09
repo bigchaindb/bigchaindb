@@ -45,4 +45,4 @@ services:
       BIGCHAINDB_SERVER_BIND: 0.0.0.0:9984
     ports:
       - "9984"
-    command: bigchaindb start --init
+    command: bigchaindb start
