@@ -171,15 +171,3 @@ def start(sync_event_source, loop=None):
     aiohttp.web.run_app(app,
                         host=config['wsserver']['host'],
                         port=config['wsserver']['port'])
-
-
-if __name__ == '__main__':
-    def meow(queue):
-        while True:
-            yield from asyncio.sleep(1)
-            yield from queue.put('meow')
-    loop = asyncio.get_event_loop()
-    event_source = asyncio.Queue(loop=loop)
-    # loop.create_task(meow(event_source))
-    app = init_app(event_source, loop=loop)
-    aiohttp.web.run_app(app)
