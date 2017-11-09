@@ -30,6 +30,7 @@ _base_database_localmongodb = {
     'host': os.environ.get('BIGCHAINDB_DATABASE_HOST', 'localhost'),
     'port': int(os.environ.get('BIGCHAINDB_DATABASE_PORT', 27017)),
     'name': os.environ.get('BIGCHAINDB_DATABASE_NAME', 'bigchain'),
+    'replicaset': os.environ.get('BIGCHAINDB_DATABASE_REPLICASET'),
     'login': os.environ.get('BIGCHAINDB_DATABASE_LOGIN'),
     'password': os.environ.get('BIGCHAINDB_DATABASE_PASSWORD')
 }
@@ -74,7 +75,7 @@ _database_localmongodb = {
     'keyfile_passphrase': os.environ.get('BIGCHAINDB_DATABASE_KEYFILE_PASSPHRASE'),
     'crlfile': os.environ.get('BIGCHAINDB_DATABASE_CRLFILE')
 }
-_database_localmongodb.update(_base_database_mongodb)
+_database_localmongodb.update(_base_database_localmongodb)
 
 _database_map = {
     'localmongodb': _database_localmongodb,
