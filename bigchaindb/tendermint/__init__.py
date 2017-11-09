@@ -1,2 +1,5 @@
-from .core import App  # noqa
-from .lib import BigchainDB  # noqa
+# Order is important!
+# If we import core first, core will try to load BigchainDB from
+# __init__ itself, causing a loop.
+from bigchaindb.tendermint.lib import BigchainDB  # noqa
+from bigchaindb.tendermint.core import App  # noqa

@@ -2,15 +2,10 @@
 with Tendermint."""
 
 
-from abci import (
-    ABCIServer,
-    BaseApplication,
-    ResponseInfo,
-    ResponseQuery,
-    Result
-)
+from abci import BaseApplication, Result
 
-from .utils import decode_transaction
+from bigchaindb.tendermint import BigchainDB
+from bigchaindb.tendermint.utils import decode_transaction
 
 
 class App(BaseApplication):
@@ -20,8 +15,9 @@ class App(BaseApplication):
     transactional logic to the Tendermint Consensus
     State Machine."""
 
-
-    def __init__(self, bigchaindb):
+    def __init__(self, bigchaindb=None):
+        if not bigchaindb:
+            bigchaindb = BigchainDB()
         self.bigchaindb = bigchaindb
 
     def check_tx(self, raw_transaction):
