@@ -20,6 +20,20 @@ def write_transaction(connection, signed_transaction):
 
 
 @singledispatch
+def get_transaction(connection, signed_transaction):
+    """Get a transaction from the transactions table.
+
+    Args:
+        signed_transaction (dict): a signed transaction.
+
+    Returns:
+        The result of the operation.
+    """
+
+    raise NotImplementedError
+
+
+@singledispatch
 def update_transaction(connection, transaction_id, doc):
     """Update a transaction in the backlog table.
 

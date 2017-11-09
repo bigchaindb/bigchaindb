@@ -11,7 +11,6 @@ from abci import (
 )
 
 from .utils import decode_transaction
-from .lib import validate_transaction, write_transaction
 
 
 class App(BaseApplication):
@@ -33,7 +32,7 @@ class App(BaseApplication):
             raw_tx: an encoded transaction."""
 
         transaction = decode_transaction(raw_transaction)
-        if validate_transaction(self.bigchaindb, transaction):
+        if self.bigchaindb.validate_transaction(transaction):
             return Result.ok()
         else:
             return Result.error()
@@ -44,12 +43,11 @@ class App(BaseApplication):
         Args:
             raw_tx: an encoded transaction."""
 
-        transaction = validate_transaction(
-                self.bigchaindb,
+        transaction = self.bigchaindb.validate_transaction(
                 decode_transaction(raw_transaction))
 
         if not transaction:
             return Result.error(log='Invalid transaction')
         else:
-            write_transaction(self.bigchaindb, transaction)
+            self.bigchaindb.write_transaction(transaction)
             return Result.ok()
