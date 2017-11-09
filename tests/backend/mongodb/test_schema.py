@@ -35,6 +35,9 @@ def test_init_creates_db_tables_and_indexes():
     indexes = conn.conn[dbname]['assets'].index_information().keys()
     assert sorted(indexes) == ['_id_', 'asset_id', 'text']
 
+    indexes = conn.conn[dbname]['metadata'].index_information().keys()
+    assert sorted(indexes) == ['_id_', 'text', 'transaction_id']
+
 
 def test_init_database_fails_if_db_exists():
     import bigchaindb
