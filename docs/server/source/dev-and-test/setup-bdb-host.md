@@ -27,7 +27,7 @@ waiting for connections on port 27017
 
 To run BigchainDB Server, do:
 ```text
-$ bigchaindb start --init
+$ bigchaindb start
 ```
 
 You can [run all the unit tests](running-all-tests.html) to test your installation.
@@ -55,7 +55,7 @@ You can verify that RethinkDB is running by opening the RethinkDB web interface 
 
 To run BigchainDB Server, do:
 ```text
-$ bigchaindb start --init
+$ bigchaindb start
 ```
 
 You can [run all the unit tests](running-all-tests.html) to test your installation.

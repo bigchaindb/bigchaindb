@@ -5,6 +5,7 @@ import pytest
 pytestmark = [pytest.mark.bdb, pytest.mark.usefixtures('processes')]
 
 
+@pytest.mark.skip_travis_rdb
 def test_double_create(b, user_pk):
     from bigchaindb.models import Transaction
     from bigchaindb.backend.query import count_blocks
@@ -12,9 +13,9 @@ def test_double_create(b, user_pk):
                             metadata={'test': 'test'}).sign([b.me_private])
 
     b.write_transaction(tx)
-    time.sleep(2)
+    time.sleep(5)
     b.write_transaction(tx)
-    time.sleep(2)
+    time.sleep(5)
     tx_returned = b.get_transaction(tx.id)
 
     # test that the tx can be queried
