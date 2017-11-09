@@ -30,6 +30,17 @@ docker run \
   -y configure \
   [mongodb|rethinkdb]
 
+# For Docker for Mac users
+docker run \
+  --interactive \
+  --rm \
+  --tty \
+  --volume $HOME/bigchaindb_docker:/data \
+  --env BIGCHAINDB_DATABASE_HOST=172.17.0.1 \
+  bigchaindb/bigchaindb \
+  -y configure \
+  [mongodb|rethinkdb]
+
 Generating keypair
 Configuration written to /data/.bigchaindb
 Ready to go!
@@ -78,6 +89,16 @@ docker run \
   --restart=always \
   --volume $HOME/bigchaindb_docker:/data \
   rethinkdb:2.3
+
+# For Docker for Mac users
+docker run \
+  --detach \
+  --name=rethinkdb \
+  --publish=28015:28015 \
+  --publish=58080:8080 \
+  --restart=always \
+  --volume $HOME/bigchaindb_docker:/data \
+  rethinkdb:2.3
 ```
 
 <!-- Don't hyperlink http://172.17.0.1:58080/ because Sphinx will fail when you do "make linkcheck" -->
@@ -106,7 +127,17 @@ docker run \
   --restart=always \
   --volume=$HOME/mongodb_docker/db:/data/db \
   --volume=$HOME/mongodb_docker/configdb:/data/configdb \
-  mongo:3.4.1 --replSet=bigchain-rs
+  mongo:3.4.9 --replSet=bigchain-rs
+
+# For Docker for Mac users
+docker run \
+  --detach \
+  --name=mongodb \
+  --publish=27017:27017 \
+  --restart=always \
+  --volume=$HOME/mongodb_docker/db:/data/db \
+  --volume=$HOME/mongodb_docker/configdb:/data/configdb \
+  mongo:3.4.9 --replSet=bigchain-rs
 ```
 
 ### Run BigchainDB
