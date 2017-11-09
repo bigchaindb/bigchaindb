@@ -5,6 +5,7 @@ import pytest
 pytestmark = [pytest.mark.bdb, pytest.mark.usefixtures('processes')]
 
 
+@pytest.mark.skip_travis_rdb
 def test_double_create(b, user_pk):
     from bigchaindb.models import Transaction
     from bigchaindb.backend.query import count_blocks

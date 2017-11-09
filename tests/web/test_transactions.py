@@ -47,6 +47,47 @@ def test_post_create_transaction_endpoint(b, client):
     assert res.json['outputs'][0]['public_keys'][0] == user_pub
 
 
+@pytest.mark.parametrize("nested", [False, True])
+@pytest.mark.parametrize("language,expected_status_code", [
+    ('danish', 202), ('dutch', 202), ('english', 202), ('finnish', 202),
+    ('french', 202), ('german', 202), ('hungarian', 202), ('italian', 202),
+    ('norwegian', 202), ('portuguese', 202), ('romanian', 202), ('none', 202),
+    ('russian', 202), ('spanish', 202), ('swedish', 202), ('turkish', 202),
+    ('da', 202), ('nl', 202), ('en', 202), ('fi', 202), ('fr', 202),
+    ('de', 202), ('hu', 202), ('it', 202), ('nb', 202), ('pt', 202),
+    ('ro', 202), ('ru', 202), ('es', 202), ('sv', 202), ('tr', 202),
+    ('any', 400)
+])
+@pytest.mark.language
+@pytest.mark.bdb
+def test_post_create_transaction_with_language(b, client, nested, language,
+                                               expected_status_code):
+    from bigchaindb.models import Transaction
+    from bigchaindb.backend.mongodb.connection import MongoDBConnection
+
+    if isinstance(b.connection, MongoDBConnection):
+        user_priv, user_pub = crypto.generate_key_pair()
+        lang_obj = {'language': language}
+
+        if nested:
+            asset = {'root': lang_obj}
+        else:
+            asset = lang_obj
+
+        tx = Transaction.create([user_pub], [([user_pub], 1)],
+                                asset=asset)
+        tx = tx.sign([user_priv])
+        res = client.post(TX_ENDPOINT, data=json.dumps(tx.to_dict()))
+        assert res.status_code == expected_status_code
+        if res.status_code == 400:
+            expected_error_message = (
+                'Invalid transaction (ValidationError): MongoDB does not support '
+                'text search for the language "{}". If you do not understand this '
+                'error message then please rename key/field "language" to something '
+                'else like "lang".').format(language)
+            assert res.json['message'] == expected_error_message
+
+
 @pytest.mark.parametrize("field", ['asset', 'metadata'])
 @pytest.mark.parametrize("value,err_key,expected_status_code", [
     ({'bad.key': 'v'}, 'bad.key', 400),
