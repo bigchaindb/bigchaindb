@@ -7,7 +7,7 @@ metadata:
   name: slow-db
 provisioner: kubernetes.io/azure-disk
 parameters:
-  skuName: Standard_LRS #[Standard_LRS, Premium_LRS]
+  skuName: Premium_LRS #[Premium_LRS, Standard_LRS]
   location: westeurope
   # If you have created a different storage account e.g. for Premium Storage
   #storageAccount: <Storage account name>
@@ -23,7 +23,7 @@ metadata:
   name: slow-configdb
 provisioner: kubernetes.io/azure-disk
 parameters:
-  skuName: Standard_LRS #[Standard_LRS, Premium_LRS]
+  skuName: Premium_LRS #[Premium_LRS, Standard_LRS]
   location: westeurope
   # If you have created a different storage account e.g. for Premium Storage
   #storageAccount: <Storage account name>
