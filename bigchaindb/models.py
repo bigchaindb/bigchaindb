@@ -32,8 +32,8 @@ class Transaction(Transaction):
 
         if self.operation == Transaction.CREATE:
             if bigchain.get_transaction(self.to_dict()['id']):
-                raise DoubleSpend('transaction `{}` already exists'
-                                  .format(self.id))
+                raise DuplicateTransaction('transaction `{}` already exists'
+                                           .format(self.id))
         elif self.operation == Transaction.TRANSFER:
             # store the inputs so that we can check if the asset ids match
             input_txs = []
