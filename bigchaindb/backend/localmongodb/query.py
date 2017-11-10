@@ -1,14 +1,7 @@
 """Query implementation for MongoDB"""
 
-from time import time
-
-from pymongo import ReturnDocument
-
 from bigchaindb import backend
-from bigchaindb.backend.mongodb.changefeed import run_changefeed
-from bigchaindb.common.exceptions import CyclicBlockchainError
-from bigchaindb.common.transaction import Transaction
-from bigchaindb.backend.exceptions import DuplicateKeyError, OperationError
+from bigchaindb.backend.exceptions import DuplicateKeyError
 from bigchaindb.backend.utils import module_dispatch_registrar
 from bigchaindb.backend.localmongodb.connection import LocalMongoDBConnection
 

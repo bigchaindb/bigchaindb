@@ -8,8 +8,7 @@ if [[ "${BIGCHAINDB_DATABASE_BACKEND}" == localmongodb && \
     # BIGCHAINDB_DATABASE_SSL is unset.
     # It is unset in this case in .travis.yml.
     docker pull mongo:3.4
-    docker run -d --publish=27017:27017 --name mdb-without-ssl mongo:3.4 \
-        --replSet=bigchain-rs
+    docker run -d --publish=27017:27017 --name mdb-without-ssl mongo:3.4 # --replSet=bigchain-rs
 elif [[ "${BIGCHAINDB_DATABASE_BACKEND}" == localmongodb && \
         "${BIGCHAINDB_DATABASE_SSL}" == true ]]; then
     # Connect to MongoDB on port 27017 via TLS/SSL connection if
@@ -22,7 +21,7 @@ elif [[ "${BIGCHAINDB_DATABASE_BACKEND}" == localmongodb && \
         --publish=27017:27017 \
         --volume=${TRAVIS_BUILD_DIR}/tests/backend/mongodb-ssl/certs:/certs \
         mongo:3.4 \
-        --replSet=bigchain-rs \
+        # --replSet=bigchain-rs \
         --sslAllowInvalidHostnames \
         --sslMode=requireSSL \
         --sslCAFile=/certs/ca.crt \

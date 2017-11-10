@@ -28,12 +28,13 @@ class BigchainDB(Bigchain):
             return result
 
     def get_spent(self, txid, output):
-        transaction = backend.query.get_spent(self.connection, txid,
-                                                    output)
+        transaction = backend.query.get_spent(self.connection, txid, output)
         return Transaction.from_dict(transaction)
 
     def validate_transaction(self, tx):
-        """Validate a transaction against the current status of the database."""
+        """Validate a transaction against the current status
+        of the database."""
+
         try:
             tx_obj = Transaction.from_dict(tx)
         except SchemaValidationError as e:
