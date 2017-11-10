@@ -21,8 +21,18 @@ _base_database_rethinkdb = {
 # because dicts are unordered. I tried to configure
 
 _database_keys_map = {
+    'localmongodb': ('host', 'port', 'name'),
     'mongodb': ('host', 'port', 'name', 'replicaset'),
     'rethinkdb': ('host', 'port', 'name')
+}
+
+_base_database_localmongodb = {
+    'host': os.environ.get('BIGCHAINDB_DATABASE_HOST', 'localhost'),
+    'port': int(os.environ.get('BIGCHAINDB_DATABASE_PORT', 27017)),
+    'name': os.environ.get('BIGCHAINDB_DATABASE_NAME', 'bigchain'),
+    'replicaset': os.environ.get('BIGCHAINDB_DATABASE_REPLICASET'),
+    'login': os.environ.get('BIGCHAINDB_DATABASE_LOGIN'),
+    'password': os.environ.get('BIGCHAINDB_DATABASE_PASSWORD')
 }
 
 _base_database_mongodb = {
@@ -54,7 +64,21 @@ _database_mongodb = {
 }
 _database_mongodb.update(_base_database_mongodb)
 
+_database_localmongodb = {
+    'backend': os.environ.get('BIGCHAINDB_DATABASE_BACKEND', 'localmongodb'),
+    'connection_timeout': 5000,
+    'max_tries': 3,
+    'ssl': bool(os.environ.get('BIGCHAINDB_DATABASE_SSL', False)),
+    'ca_cert': os.environ.get('BIGCHAINDB_DATABASE_CA_CERT'),
+    'certfile': os.environ.get('BIGCHAINDB_DATABASE_CERTFILE'),
+    'keyfile': os.environ.get('BIGCHAINDB_DATABASE_KEYFILE'),
+    'keyfile_passphrase': os.environ.get('BIGCHAINDB_DATABASE_KEYFILE_PASSPHRASE'),
+    'crlfile': os.environ.get('BIGCHAINDB_DATABASE_CRLFILE')
+}
+_database_localmongodb.update(_base_database_localmongodb)
+
 _database_map = {
+    'localmongodb': _database_localmongodb,
     'mongodb': _database_mongodb,
     'rethinkdb': _database_rethinkdb
 }
