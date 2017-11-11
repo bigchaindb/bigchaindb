@@ -10,7 +10,7 @@ register_query = module_dispatch_registrar(backend.query)
 
 
 @register_query(LocalMongoDBConnection)
-def write_transaction(conn, signed_transaction):
+def store_transaction(conn, signed_transaction):
     try:
         return conn.run(
             conn.collection('transactions')

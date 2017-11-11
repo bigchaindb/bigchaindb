@@ -1,6 +1,12 @@
+import json
+
+
+def encode_tx_to_bytes(transaction):
+    return json.dumps(transaction.to_dict()).encode('utf8')
+
+
 def test_check_tx__signed_create_is_ok(b):
     from bigchaindb.tendermint import App
-    from bigchaindb.tendermint.utils import encode_transaction
     from bigchaindb.models import Transaction
     from bigchaindb.common.crypto import generate_key_pair
 
@@ -12,13 +18,12 @@ def test_check_tx__signed_create_is_ok(b):
                     .sign([alice.private_key])
 
     app = App(b)
-    result = app.check_tx(encode_transaction(tx.to_dict()))
+    result = app.check_tx(encode_tx_to_bytes(tx))
     assert result.is_ok()
 
 
 def test_check_tx__unsigned_create_is_error(b):
     from bigchaindb.tendermint import App
-    from bigchaindb.tendermint.utils import encode_transaction
     from bigchaindb.models import Transaction
     from bigchaindb.common.crypto import generate_key_pair
 
@@ -29,13 +34,12 @@ def test_check_tx__unsigned_create_is_error(b):
                             [([bob.public_key], 1)])
 
     app = App(b)
-    result = app.check_tx(encode_transaction(tx.to_dict()))
+    result = app.check_tx(encode_tx_to_bytes(tx))
     assert result.is_error()
 
 
 def test_deliver_tx__valid_create_updates_db(b):
     from bigchaindb.tendermint import App
-    from bigchaindb.tendermint.utils import encode_transaction
     from bigchaindb.models import Transaction
     from bigchaindb.common.crypto import generate_key_pair
 
@@ -47,14 +51,13 @@ def test_deliver_tx__valid_create_updates_db(b):
                     .sign([alice.private_key])
 
     app = App(b)
-    result = app.deliver_tx(encode_transaction(tx.to_dict()))
+    result = app.deliver_tx(encode_tx_to_bytes(tx))
     assert result.is_ok()
     assert b.get_transaction(tx.id).id == tx.id
 
 
 def test_deliver_tx__double_spend_fails(b):
     from bigchaindb.tendermint import App
-    from bigchaindb.tendermint.utils import encode_transaction
     from bigchaindb.models import Transaction
     from bigchaindb.common.crypto import generate_key_pair
 
@@ -66,8 +69,8 @@ def test_deliver_tx__double_spend_fails(b):
                     .sign([alice.private_key])
 
     app = App(b)
-    result = app.deliver_tx(encode_transaction(tx.to_dict()))
+    result = app.deliver_tx(encode_tx_to_bytes(tx))
     assert result.is_ok()
     assert b.get_transaction(tx.id).id == tx.id
-    result = app.deliver_tx(encode_transaction(tx.to_dict()))
+    result = app.deliver_tx(encode_tx_to_bytes(tx))
     assert result.is_error()

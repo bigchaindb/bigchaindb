@@ -31,7 +31,7 @@ class MongoDBConnection(Connection):
         """
 
         super().__init__(**kwargs)
-        self.replicaset = replicaset or bigchaindb.config['database']['replicaset']
+        self.replicaset = replicaset or bigchaindb.config['database'].get('replicaset')
         self.ssl = ssl if ssl is not None else bigchaindb.config['database'].get('ssl', False)
         self.login = login or bigchaindb.config['database'].get('login')
         self.password = password or bigchaindb.config['database'].get('password')

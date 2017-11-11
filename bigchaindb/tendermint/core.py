@@ -25,7 +25,7 @@ class App(BaseApplication):
         the mempool.
 
         Args:
-            raw_tx: an encoded transaction."""
+            raw_tx: a raw string (in bytes) transaction."""
 
         transaction = decode_transaction(raw_transaction)
         if self.bigchaindb.validate_transaction(transaction):
@@ -37,7 +37,7 @@ class App(BaseApplication):
         """Validate the transaction before mutating the state.
 
         Args:
-            raw_tx: an encoded transaction."""
+            raw_tx: a raw string (in bytes) transaction."""
 
         transaction = self.bigchaindb.validate_transaction(
                 decode_transaction(raw_transaction))
@@ -45,5 +45,5 @@ class App(BaseApplication):
         if not transaction:
             return Result.error(log='Invalid transaction')
         else:
-            self.bigchaindb.write_transaction(transaction)
+            self.bigchaindb.store_transaction(transaction)
             return Result.ok()

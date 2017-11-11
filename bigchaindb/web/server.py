@@ -54,7 +54,7 @@ class StandaloneApplication(gunicorn.app.base.BaseApplication):
         return self.application
 
 
-def create_app(*, debug=False, threads=1):
+def create_app(*, debug=False, threads=1, bigchaindb_factory=None):
     """Return an instance of the Flask application.
 
     Args:
@@ -65,6 +65,9 @@ def create_app(*, debug=False, threads=1):
         an instance of the Flask application.
     """
 
+    if not bigchaindb_factory:
+        bigchaindb_factory = Bigchain
+
     app = Flask(__name__)
     app.wsgi_app = StripContentTypeMiddleware(app.wsgi_app)
 
@@ -72,14 +75,14 @@ def create_app(*, debug=False, threads=1):
 
     app.debug = debug
 
-    app.config['bigchain_pool'] = utils.pool(Bigchain, size=threads)
+    app.config['bigchain_pool'] = utils.pool(bigchaindb_factory, size=threads)
 
     add_routes(app)
 
     return app
 
 
-def create_server(settings, log_config=None):
+def create_server(settings, log_config=None, bigchaindb_factory=None):
     """Wrap and return an application ready to be run.
 
     Args:
@@ -104,6 +107,7 @@ def create_server(settings, log_config=None):
     settings['logger_class'] = 'bigchaindb.log.loggers.HttpServerLogger'
     settings['custom_log_config'] = log_config
     app = create_app(debug=settings.get('debug', False),
-                     threads=settings['threads'])
+                     threads=settings['threads'],
+                     bigchaindb_factory=bigchaindb_factory)
     standalone = StandaloneApplication(app, options=settings)
     return standalone
