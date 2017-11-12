@@ -30,6 +30,7 @@ class BigchainDB(Bigchain):
         requests.post(ENDPOINT, json=payload)
 
     def write_transaction(self, transaction):
+        # This method offers backward compatibility with the Web API.
         """Submit a valid transaction to the mempool."""
 
         self.post_transaction(transaction)

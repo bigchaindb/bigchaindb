@@ -1,16 +1,15 @@
 """MongoDB backend implementation.
 
 Contains a MongoDB-specific implementation of the
-:mod:`~bigchaindb.backend.changefeed`, :mod:`~bigchaindb.backend.query`, and
-:mod:`~bigchaindb.backend.schema` interfaces.
+:mod:`~bigchaindb.backend.schema` interface.
 
 You can specify BigchainDB to use MongoDB as its database backend by either
-setting ``database.backend`` to ``'rethinkdb'`` in your configuration file, or
+setting ``database.backend`` to ``'localmongodb'`` in your configuration file, or
 setting the ``BIGCHAINDB_DATABASE_BACKEND`` environment variable to
-``'rethinkdb'``.
+``'localmongodb'``.
 
 If configured to use MongoDB, BigchainDB will automatically return instances
-of :class:`~bigchaindb.backend.rethinkdb.MongoDBConnection` for
+of :class:`~bigchaindb.backend.localmongodb.LocalMongoDBConnection` for
 :func:`~bigchaindb.backend.connection.connect` and dispatch calls of the
 generic backend interfaces to the implementations in this module.
 """
