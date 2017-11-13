@@ -32,6 +32,26 @@ For reference, the possible headings are:
 * **External Contributors** to list contributors outside of BigchainDB GmbH.
 * **Notes**
 
+## [1.2] - 2017-11-13
+Tag name: v1.2.0
+
+### Added
+* New and improved installation setup docs and code. Pull requests [#1775](https://github.com/bigchaindb/bigchaindb/pull/1775) and [#1785](https://github.com/bigchaindb/bigchaindb/pull/1785)
+* New BigchainDB configuration setting to set the port number of the log server: `log.port`. [Pull request #1796](https://github.com/bigchaindb/bigchaindb/pull/1796)
+* New secondary index on `id` in the bigchain table. That will make some queries execute faster. [Pull request #1803](https://github.com/bigchaindb/bigchaindb/pull/1803)
+* When using MongoDB, there are some restrictions on allowed names for keys (JSON keys). Those restrictions were always there but now BigchainDB checks key names explicitly, rather than leaving that to MongoDB. Pull requests [#1807](https://github.com/bigchaindb/bigchaindb/pull/1807) and [#1811](https://github.com/bigchaindb/bigchaindb/pull/1811)
+* When using MongoDB, there are some restrictions on the allowed values of "language" (if that key is used in the values of `metadata` or `asset.data`). Those restrictions were always there but now BigchainDB checks the values explicitly, rather than leaving that to MongoDB. Pull requests [#1806](https://github.com/bigchaindb/bigchaindb/pull/1806) and [#1811](https://github.com/bigchaindb/bigchaindb/pull/1811)
+* There's a new page in the root docs about permissions in BigchainDB. [Pull request #1788](https://github.com/bigchaindb/bigchaindb/pull/1788)
+* There's a new option in the `bigchaindb start` command: `bigchaindb start --no-init` will avoid doing `bigchaindb init` if it wasn't done already. [Pull request #1814](https://github.com/bigchaindb/bigchaindb/pull/1814)
+
+### Fixed
+* Fixed a bug where setting the log level in a BigchainDB config file didn't have any effect. It does now. [Pull request #1797](https://github.com/bigchaindb/bigchaindb/pull/1797)
+* The docs were wrong about there being no Ping/Pong support in the Events API. There is, so the docs were fixed. [Pull request #1799](https://github.com/bigchaindb/bigchaindb/pull/1799)
+* Fixed an issue with closing WebSocket connections properly. [Pull request #1819](https://github.com/bigchaindb/bigchaindb/pull/1819)
+
+### Notes
+* Many changes were made to the Kubernetes-based production deployment template and code.
+
 
 ## [1.1] - 2017-09-26
 Tag name: v1.1.0
