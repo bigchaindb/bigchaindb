@@ -384,8 +384,8 @@ class Bigchain(object):
         for transaction in transactions:
             # ignore transactions in invalid blocks
             # FIXME: Isn't there a faster solution than doing I/O again?
-            _, status = self.get_transaction(transaction['id'],
-                                             include_status=True)
+            txn, status = self.get_transaction(transaction['id'],
+                                               include_status=True)
             if status == self.TX_VALID:
                 num_valid_transactions += 1
             # `txid` can only have been spent in at most on valid block.
@@ -395,13 +395,7 @@ class Bigchain(object):
                     ' with the chain'.format(txid))
             # if its not and invalid transaction
             if status is not None:
-                if 'metadata' not in transaction:
-                    metadata = list(self.get_metadata([transaction['id']]))
-                    metadata = metadata[0] if metadata else None
-                    if metadata:
-                        metadata.pop('id', None)
-                    transaction.update({'metadata': metadata})
-
+                transaction.update({'metadata': txn.metadata})
                 non_invalid_transactions.append(transaction)
 
         if non_invalid_transactions:
@@ -672,7 +666,7 @@ class Bigchain(object):
         """
         return backend.query.write_metadata(self.connection, metadata)
 
-    def text_search(self, search, *, limit=0, table=None):
+    def text_search(self, search, *, limit=0, table='assets'):
         """
         Return an iterator of assets that match the text search
 
@@ -683,9 +677,6 @@ class Bigchain(object):
         Returns:
             iter: An iterator of assets that match the text search.
         """
-        if table is None:
-            table = 'assets'
-
         objects = backend.query.text_search(self.connection, search, limit=limit,
                                             table=table)
 

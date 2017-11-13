@@ -5,8 +5,7 @@ from bigchaindb.common.exceptions import (InvalidHash, InvalidSignature,
                                           DoubleSpend, InputDoesNotExist,
                                           TransactionNotInValidBlock,
                                           AssetIdMismatch, AmountError,
-                                          SybilError, ValidationError,
-                                          DuplicateTransaction)
+                                          SybilError, DuplicateTransaction)
 from bigchaindb.common.transaction import Transaction
 from bigchaindb.common.utils import (gen_timestamp, serialize,
                                      validate_txn_obj, validate_key)
@@ -119,7 +118,7 @@ class Transaction(Transaction):
         if 'metadata' not in tx_dict:
             metadata = metadata[0] if metadata else None
             if metadata:
-                metadata.pop('id', None)
+                metadata = metadata.get('metadata')
 
             tx_dict.update({'metadata': metadata})
 
@@ -406,11 +405,10 @@ class Block(object):
         metadatas = []
         for transaction in block_dict['block']['transactions']:
             metadata = transaction.pop('metadata')
-            if isinstance(metadata, dict):
-                metadata.update({'id': transaction['id']})
-                metadatas.append(metadata)
-            elif metadata:
-                raise ValidationError('Invalid value for metadata')
+            if metadata:
+                metadata_new = {'id': transaction['id'],
+                                'metadata': metadata}
+                metadatas.append(metadata_new)
 
         return (metadatas, block_dict)
 
@@ -460,16 +458,11 @@ class Block(object):
             dict: The dict of the reconstructed block.
         """
         # create a dict with {'<txid>': metadata}
-        metadatal = {m.pop('id'): m for m in metadatal}
+        metadatal = {m.pop('id'): m.pop('metadata') for m in metadatal}
         # add the metadata to their corresponding transactions
         for transaction in block_dict['block']['transactions']:
-            if 'metadata' not in transaction:
-                metadata = metadatal.get(transaction['id'])
-                if metadata:
-                    metadata.pop('id', None)
-                    transaction.update({'metadata': metadata})
-                else:
-                    transaction.update({'metadata': None})
+            metadata = metadatal.get(transaction['id'], None)
+            transaction.update({'metadata': metadata})
         return block_dict
 
     @staticmethod

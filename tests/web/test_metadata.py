@@ -43,7 +43,7 @@ def test_get_metadata(client, b):
         assert res.status_code == 200
         assert len(res.json) == 1
         assert res.json[0] == {
-            'key': 'my_meta',
+            'metadata': {'key': 'my_meta'},
             'id': tx.id
         }
     else:

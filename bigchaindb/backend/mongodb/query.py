@@ -366,10 +366,7 @@ def get_new_blocks_feed(conn, start_block_id):
 
 @register_query(MongoDBConnection)
 def text_search(conn, search, *, language='english', case_sensitive=False,
-                diacritic_sensitive=False, text_score=False, limit=0, table=None):
-    if table is None:
-        table = 'assets'
-
+                diacritic_sensitive=False, text_score=False, limit=0, table='assets'):
     cursor = conn.run(
         conn.collection(table)
         .find({'$text': {
