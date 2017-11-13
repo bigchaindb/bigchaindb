@@ -19,20 +19,18 @@ Here's some explanation of the contents:
 
 - **id**: The ID of the transaction and also the hash of the transaction (loosely speaking). See below for an explanation of how it's computed. It's also the database primary key.
 
-- **version**: The version-number of :ref:`the transaction schema <Transaction Schema>`. As of BigchainDB Server 1.0.0, the only allowed value is ``"1.0"``.
+- **version**: The version-number of the transaction schema. As of BigchainDB Server 1.0.0, the only allowed value is ``"1.0"``.
 
 - **inputs**: List of inputs.
   Each input spends/transfers a previous output by satisfying/fulfilling
   the crypto-conditions on that output.
   A CREATE transaction should have exactly one input.
   A TRANSFER transaction should have at least one input (i.e. ≥1).
-  For more details, see the subsection about :ref:`inputs <Inputs>`.
 
 - **outputs**: List of outputs.
   Each output indicates the crypto-conditions which must be satisfied
   by anyone wishing to spend/transfer that output.
   It also indicates the number of shares of the asset tied to that output.
-  For more details, see the subsection about :ref:`outputs <Outputs>`.
 
 - **operation**: A string indicating what kind of transaction this is,
   and how it should be validated.
