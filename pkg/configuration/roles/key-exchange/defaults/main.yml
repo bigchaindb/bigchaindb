@@ -10,4 +10,3 @@ bigchaindb_default_port: 9984
 bigchandb_host_port: 59984
 bigchaindb_host_mount_dir: "{{ ansible_env.HOME }}/bigchaindb_docker"
 bigchaindb_image_name: "bigchaindb/bigchaindb"
-bdb_docker_net_name: "bdb_network"

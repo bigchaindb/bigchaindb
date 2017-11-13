@@ -4,6 +4,7 @@
     path: "{{ bigchaindb_host_mount_dir }}{{ item|string }}/.bigchaindb"
   with_sequence: start=0 end="{{ docker_cluster_size|int - 1 }}" stride=1
   register: stat_result
+  tags: [bigchaindb]
 
 - name: Configuring BigchainDB Docker
   docker_container:
@@ -16,8 +17,6 @@
       BIGCHAINDB_SERVER_BIND: "{{ bigchaindb_server_bind }}"
       BIGCHAINDB_DATABASE_HOST: "{{ hostvars[ansible_hostname]['mongodb' + item|string] }}"
     entrypoint: "bigchaindb -y configure mongodb"
-    networks:
-      - name: "{{ bdb_docker_net_name }}"
   when: stat_result.results[item|int].stat.exists == False
   with_sequence: start=0 end="{{ docker_cluster_size|int - 1 }}" stride=1
   tags: [bigchaindb]
@@ -32,8 +31,6 @@
     restart_policy: always
     volumes:
       - "{{ bigchaindb_host_mount_dir }}{{ item|string }}:/data"
-    networks:
-      - name: "{{ bdb_docker_net_name }}"
     state: started
   with_sequence: start=0 end="{{ docker_cluster_size|int - 1 }}" stride=1
   tags: [bigchaindb]
@@ -48,4 +45,4 @@
   set_fact:
     pub_key_{{ bigchaindb_docker_name }}{{ item }}="{{ (bdb_node_config.results[item|int].stdout|from_json).keypair.public }}"
   with_sequence: start=0 end="{{ docker_cluster_size|int - 1 }}" stride=1
-  tags: [mongodb]
+  tags: [bigchaindb]

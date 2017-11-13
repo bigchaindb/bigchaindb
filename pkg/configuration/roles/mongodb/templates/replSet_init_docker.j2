@@ -3,14 +3,14 @@ rs.initiate({
   "members": [
     {
       "_id": 0,
-      "host": "{{ mongodb_docker_name }}{{ docker_cluster_size|int - 1 }}:{{ mongodb_port }}"
+      "host": "{{ hostvars[ansible_hostname][mongodb_docker_name + (docker_cluster_size|int - 1)|string] }}:{{ mongodb_port }}"
     }
   ]
 });
 sleep(5000);
 {% for docker in range(0, docker_cluster_size|int, 1) %}
 {%- if docker != (docker_cluster_size|int - 1) -%}
-rs.add("{{ mongodb_docker_name }}{{ docker }}:{{ mongodb_port }}");
+rs.add("{{ hostvars[ansible_hostname][mongodb_docker_name + docker|string] }}:{{ mongodb_port }}");
 {% endif %}
 {%- endfor -%}
 use admin;

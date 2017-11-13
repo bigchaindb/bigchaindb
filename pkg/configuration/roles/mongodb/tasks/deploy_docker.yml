@@ -6,19 +6,6 @@
     state: started
   tags: [mongodb]
 
-- name: Creating BDB Docker network
-  docker_network:
-    name: "{{ bdb_docker_net_name }}"
-    ipam_options:
-      subnet: "{{ bdb_docker_default_subnet }}"
-    driver_options:
-      com.docker.network.bridge.enable_icc": "true"
-      com.docker.network.bridge.enable_ip_masquerade": "true"
-      com.docker.network.bridge.host_binding_ipv4": "0.0.0.0"
-      com.docker.network.driver.mtu: "1500"
-    state: present
-  tags: [mongodb]
-
 - name: Running MongoDB Docker
   docker_container:
     name: "{{ mongodb_docker_name }}{{ item }}"
@@ -26,7 +13,7 @@
     image: "{{ mongodb_docker_image }}"
     detach: true
     published_ports:
-      - "{{ bdb_docker_default_gw }}:{{ (mongodb_port|int + item|int)|string }}:{{ mongodb_port }}"
+      - "{{ (mongodb_port|int + item|int)|string }}:{{ mongodb_port }}"
     restart_policy: always
     volumes:
       - "{{ mongodb_host_mount_dir }}{{ item|string }}/db:{{ mongodb_storage_path }}"
@@ -35,8 +22,6 @@
     state: started
     keep_volumes: true
     entrypoint: /entrypoint.sh --replSet=bigchain-rs
-    networks:
-      - name: "{{ bdb_docker_net_name }}"
   register: mongo_container_info
   with_sequence: start=0 end="{{ docker_cluster_size|int - 1 }}" stride=1
   tags: [mongodb]
