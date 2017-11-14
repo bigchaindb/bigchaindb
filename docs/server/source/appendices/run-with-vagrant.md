@@ -113,21 +113,22 @@ The above mentioned configuration will deploy a 3 node BigchainDB cluster with D
 on your specified host.
 
 ## BigchainDB Setup | Vagrant
+
+**Note**: There are some vagrant plugins required for the installation,
+user will be prompted to install them if they are not present. To install
+the required plugins, run the following command:
+
+```text
+$ vagrant plugin install vagrant-cachier vagrant-vbguest vagrant-hosts
+```
+
 To bring up the BigchainDB node(s), run the following command:
 
 ```text
 $ vagrant up
 ```
 
-**Note**: There are some vagrant plugins required for the installation,
-user will be prompted to install them if they are not present. Instructions
-to install the plugins can be extracted from the message.
-
-```text
-$ vagrant plugin install <plugin-name>
-```
-
-After successfull execution of Vagrant, you can log in to your fresh BigchainDB node.
+After successful execution of Vagrant, you can log in to your fresh BigchainDB node.
 
 ```text
 $ vagrant ssh <instance-name>
