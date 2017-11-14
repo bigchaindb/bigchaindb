@@ -380,7 +380,6 @@ class Block(object):
         if block_dict is None:
             block_dict = deepcopy(self.to_dict())
 
-        block_dict = deepcopy(self.to_dict())
         assets = []
         for transaction in block_dict['block']['transactions']:
             if transaction['operation'] in [Transaction.CREATE,
