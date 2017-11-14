@@ -1,5 +1,6 @@
-import logging
+from copy import deepcopy
 from uuid import uuid4
+import logging
 
 import requests
 
@@ -38,18 +39,31 @@ class BigchainDB(Bigchain):
     def store_transaction(self, transaction):
         """Store a valid transaction to the transactions collection."""
 
-        return backend.query.store_transaction(self.connection, transaction.to_dict())
+        transaction = deepcopy(transaction.to_dict())
+        if transaction['operation'] == 'CREATE':
+            asset = transaction.pop('asset')
+            asset['id'] = transaction['id']
+            if asset['data']:
+                backend.query.store_asset(self.connection, asset)
 
-    def get_transaction(self, transaction, include_status=False):
-        result = backend.query.get_transaction(self.connection, transaction)
+        return backend.query.store_transaction(self.connection, transaction)
 
-        if result:
-            result = Transaction.from_dict(result)
+    def get_transaction(self, transaction_id, include_status=False):
+        transaction = backend.query.get_transaction(self.connection, transaction_id)
+        asset = backend.query.get_asset(self.connection, transaction_id)
+
+        if transaction:
+            if asset:
+                transaction['asset'] = asset
+            else:
+                transaction['asset'] = {'data': None}
+
+            transaction = Transaction.from_dict(transaction)
 
         if include_status:
-            return result, self.TX_VALID if result else None
+            return transaction, self.TX_VALID if transaction else None
         else:
-            return result
+            return transaction
 
     def get_spent(self, txid, output):
         transaction = backend.query.get_spent(self.connection, txid,
