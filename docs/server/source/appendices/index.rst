@@ -29,3 +29,4 @@ Appendices
    install-with-lxd
    run-with-vagrant
    run-with-ansible
+   vote-yaml
