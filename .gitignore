@@ -84,3 +84,6 @@ docs/server/source/http-samples
 # See https://stackoverflow.com/a/41482391
 terraform.tfstate
 terraform.tfstate.backup
+
+# tendermint data
+tmdata/data
