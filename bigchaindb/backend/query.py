@@ -420,7 +420,7 @@ def get_latest_block(conn):
 
 
 @singledispatch
-def create_new_block(conn, block):
+def store_block(conn, block):
     """Write a new block to the `blocks` table
 
     Args:

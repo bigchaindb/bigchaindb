@@ -27,9 +27,9 @@ class App(BaseApplication):
 
     def init_chain(self, validators):
         """Initialize chain with block of height 0"""
-        print("\ninit_chain::\n")
+
         block = Block(hash='', height=0)
-        self.bigchaindb.create_new_block(block.to_dict())
+        self.bigchaindb.store_block(block.to_dict())
 
     def info(self):
         """Return height of the latest committed block."""
@@ -101,7 +101,7 @@ class App(BaseApplication):
         # register a new block only when new transactions are received
         if self.block_txn_ids:
             block = Block(hash=self.block_txn_hash, height=self.new_height)
-            self.bigchaindb.create_new_block(block.to_dict())
+            self.bigchaindb.store_block(block.to_dict())
 
         data = self.block_txn_hash.encode('utf-8')
         return Result.ok(data=data)

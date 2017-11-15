@@ -56,10 +56,10 @@ class BigchainDB(Bigchain):
                                               output)
         return Transaction.from_dict(transaction)
 
-    def create_new_block(self, block):
+    def store_block(self, block):
         """Create a new block."""
 
-        return backend.query.create_new_block(self.connection, block)
+        return backend.query.store_block(self.connection, block)
 
     def get_latest_block(self):
         """Get the block with largest height."""

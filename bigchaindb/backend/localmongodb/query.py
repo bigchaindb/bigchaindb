@@ -50,7 +50,7 @@ def get_latest_block(conn):
 
 
 @register_query(LocalMongoDBConnection)
-def create_new_block(conn, block):
+def store_block(conn, block):
     try:
         return conn.run(
             conn.collection('blocks')
