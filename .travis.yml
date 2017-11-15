@@ -9,9 +9,8 @@ language: python
 cache: pip
 
 python:
-  - 3.5
   - 3.6
-  
+
 env:
   - TOXENV=flake8
   - TOXENV=docsroot
@@ -19,34 +18,11 @@ env:
 
 matrix:
   fast_finish: true
-  exclude:
-  - python: 3.5
-    env: TOXENV=flake8 
-  - python: 3.5 
-    env: TOXENV=docsroot
-  - python: 3.5 
-    env: TOXENV=docsserver
   include:
-  - python: 3.5
-    env: BIGCHAINDB_DATABASE_BACKEND=rethinkdb
-  - python: 3.5
+  - python: 3.6
     env:
-    - BIGCHAINDB_DATABASE_BACKEND=mongodb
+    - BIGCHAINDB_DATABASE_BACKEND=localmongodb
     - BIGCHAINDB_DATABASE_SSL=
-  - python: 3.6
-    env: BIGCHAINDB_DATABASE_BACKEND=rethinkdb
-  - python: 3.6
-    env:
-    - BIGCHAINDB_DATABASE_BACKEND=mongodb
-    - BIGCHAINDB_DATABASE_SSL=
-  - python: 3.5
-    env:
-    - BIGCHAINDB_DATABASE_BACKEND=mongodb
-    - BIGCHAINDB_DATABASE_SSL=true
-  - python: 3.6
-    env:
-    - BIGCHAINDB_DATABASE_BACKEND=mongodb
-    - BIGCHAINDB_DATABASE_SSL=true
 
 before_install: sudo .ci/travis-before-install.sh
 

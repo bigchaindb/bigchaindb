@@ -57,7 +57,7 @@ test-all: ## run tests on every Python version with tox
 	tox
 
 coverage: ## check code coverage quickly with the default Python
-	pytest -v -n auto --cov=bigchaindb --cov-report term --cov-report html
+	pytest -v -n auto --database-backend=localmongodb --cov=bigchaindb --cov-report term --cov-report html
 	$(BROWSER) htmlcov/index.html
 
 docs: ## generate Sphinx HTML documentation, including API docs
