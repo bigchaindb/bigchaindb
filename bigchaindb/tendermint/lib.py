@@ -66,9 +66,22 @@ class BigchainDB(Bigchain):
             return transaction
 
     def get_spent(self, txid, output):
+
         transaction = backend.query.get_spent(self.connection, txid,
                                               output)
-        return Transaction.from_dict(transaction)
+        if transaction and transaction['operation'] == 'CREATE':
+            asset = backend.query.get_asset(self.connection, transaction['id'])
+
+            if asset:
+                transaction['asset'] = asset
+            else:
+                transaction['asset'] = {'data': None}
+
+            return Transaction.from_dict(transaction)
+        elif transaction and transaction['operation'] == 'TRANSFER':
+            return Transaction.from_dict(transaction)
+        else:
+            return None
 
     def validate_transaction(self, tx):
         """Validate a transaction against the current status of the database."""
