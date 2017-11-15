@@ -5,7 +5,7 @@ services:
     image: mongo:3.4.3
     ports:
       - "27017"
-    command: mongod --replSet=bigchain-rs
+    command: mongod
 
   bdb:
     build:
