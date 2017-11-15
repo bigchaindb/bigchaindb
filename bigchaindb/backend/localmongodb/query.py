@@ -30,6 +30,26 @@ def get_transaction(conn, transaction_id):
 
 
 @register_query(LocalMongoDBConnection)
+def store_asset(conn, asset):
+    try:
+        return conn.run(
+            conn.collection('assets')
+            .insert_one(asset))
+    except DuplicateKeyError:
+        pass
+
+
+@register_query(LocalMongoDBConnection)
+def get_asset(conn, asset_id):
+    try:
+        return conn.run(
+            conn.collection('assets')
+            .find_one({'id': asset_id}, {'_id': 0, 'id': 0}))
+    except IndexError:
+        pass
+
+
+@register_query(LocalMongoDBConnection)
 def get_spent(conn, transaction_id, output):
     try:
         return conn.run(
