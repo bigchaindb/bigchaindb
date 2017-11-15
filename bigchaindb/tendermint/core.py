@@ -1,5 +1,6 @@
 """This module contains all the goodness to integrate BigchainDB
 with Tendermint."""
+import logging
 
 from abci import BaseApplication, Result
 from abci.types_pb2 import ResponseEndBlock, ResponseInfo
@@ -7,6 +8,8 @@ from abci.types_pb2 import ResponseEndBlock, ResponseInfo
 from bigchaindb.tendermint import BigchainDB
 from bigchaindb.tendermint.utils import decode_transaction, calculate_hash
 from bigchaindb.tendermint.lib import Block
+
+logger = logging.getLogger(__name__)
 
 
 class App(BaseApplication):
@@ -50,11 +53,13 @@ class App(BaseApplication):
 
         Args:
             raw_tx: a raw string (in bytes) transaction."""
-
+        logger.debug('check_tx: %s', raw_transaction)
         transaction = decode_transaction(raw_transaction)
         if self.bigchaindb.validate_transaction(transaction):
+            logger.debug('check_tx: VALID')
             return Result.ok()
         else:
+            logger.debug('check_tx: INVALID')
             return Result.error()
 
     def begin_block(self, block_hash, header):
@@ -67,12 +72,15 @@ class App(BaseApplication):
 
         Args:
             raw_tx: a raw string (in bytes) transaction."""
+        logger.debug('deliver_tx: %s', raw_transaction)
         transaction = self.bigchaindb.validate_transaction(
                 decode_transaction(raw_transaction))
 
         if not transaction:
+            logger.debug('deliver_tx: INVALID')
             return Result.error(log='Invalid transaction')
         else:
+            logger.debug('storing tx')
             self.bigchaindb.store_transaction(transaction)
             self.block_txn_ids.append(transaction.id)
             return Result.ok()
