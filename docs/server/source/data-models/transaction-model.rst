@@ -62,3 +62,13 @@ There are example BigchainDB transactions in
 :ref:`the HTTP API documentation <The HTTP Client-Server API>`
 and
 `the Python Driver documentation <https://docs.bigchaindb.com/projects/py-driver/en/latest/usage.html>`_.
+
+
+The Transaction Schema
+----------------------
+
+BigchainDB checks all transactions (JSON documents)
+against a formal schema defined in :ref:`some JSON Schema files named
+transaction.yaml,
+transaction_create.yaml and
+transaction_transfer.yaml <The Transaction Schema Files>`.
