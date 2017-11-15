@@ -16,7 +16,5 @@ BigchainDB Server Documentation
    events/index
    drivers-clients/index
    data-models/index
-   schema/transaction
-   schema/vote
    release-notes
    appendices/index
