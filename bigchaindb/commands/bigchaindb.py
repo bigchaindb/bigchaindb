@@ -15,7 +15,7 @@ from bigchaindb.common.exceptions import (StartupError,
                                           KeypairNotFoundException,
                                           DatabaseDoesNotExist)
 import bigchaindb
-from bigchaindb import backend, processes
+from bigchaindb import backend
 from bigchaindb.backend import schema
 from bigchaindb.backend.admin import (set_replicas, set_shards, add_replicas,
                                       remove_replicas)
@@ -206,7 +206,8 @@ def run_start(args):
 
     logger.info('Starting BigchainDB main process with public key %s',
                 bigchaindb.config['keypair']['public'])
-    processes.start()
+    from bigchaindb.tendermint.commands import start
+    start()
 
 
 @configure_bigchaindb
