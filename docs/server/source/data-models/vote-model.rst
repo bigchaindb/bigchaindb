@@ -100,7 +100,7 @@ The Vote Schema
 ---------------
 
 BigchainDB checks all votes (JSON documents) against a formal schema
-defined in a JSON Schema file named :ref:`vote.yaml <The vote.yaml File>`.
+defined in a :ref:`JSON Schema file named vote.yaml <The Vote Schema File>`.
 
 
 An Example Vote

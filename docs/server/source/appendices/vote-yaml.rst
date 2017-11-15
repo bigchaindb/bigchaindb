@@ -1,5 +1,5 @@
-The vote.yaml File
-==================
+The Vote Schema File
+====================
 
 BigchainDB checks all :ref:`votes <The Vote Model>`
 (JSON documents) against a formal schema
@@ -11,6 +11,10 @@ To understand those contents
 <https://spacetelescope.github.io/understanding-json-schema/index.html>`_
 by Michael Droettboom or
 `json-schema.org <http://json-schema.org/>`_.
+
+
+vote.yaml
+---------
 
 .. literalinclude:: ../../../../bigchaindb/common/schema/vote.yaml
    :language: yaml
