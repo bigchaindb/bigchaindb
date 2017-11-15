@@ -2,7 +2,7 @@
 
 import logging
 
-from pymongo import ASCENDING, TEXT
+from pymongo import ASCENDING, DESCENDING, TEXT
 
 from bigchaindb import backend
 from bigchaindb.common import exceptions
@@ -27,7 +27,7 @@ def create_database(conn, dbname):
 
 @register_schema(LocalMongoDBConnection)
 def create_tables(conn, dbname):
-    for table_name in ['transactions', 'assets']:
+    for table_name in ['transactions', 'assets', 'blocks']:
         logger.info('Create `%s` table.', table_name)
         # create the table
         # TODO: read and write concerns can be declared here
@@ -38,6 +38,7 @@ def create_tables(conn, dbname):
 def create_indexes(conn, dbname):
     create_transactions_secondary_index(conn, dbname)
     create_assets_secondary_index(conn, dbname)
+    create_blocks_secondary_index(conn, dbname)
 
 
 @register_schema(LocalMongoDBConnection)
@@ -80,3 +81,8 @@ def create_assets_secondary_index(conn, dbname):
 
     # full text search index
     conn.conn[dbname]['assets'].create_index([('$**', TEXT)], name='text')
+
+
+def create_blocks_secondary_index(conn, dbname):
+    conn.conn[dbname]['blocks']\
+        .create_index([('height', DESCENDING)], name='height')

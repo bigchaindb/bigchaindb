@@ -1,6 +1,6 @@
 import base64
 import json
-import hashlib
+import sha3
 
 
 def encode_transaction(value):
@@ -16,8 +16,11 @@ def decode_transaction(raw):
 
 
 def calculate_hash(key_list):
-    full_hash = hashlib.sha256()
+    if not key_list:
+        return ''
+
+    full_hash = sha3.sha3_256()
     for key in key_list:
-        full_hash.update(key)
+        full_hash.update(key.encode('utf8'))
 
     return full_hash.hexdigest()
