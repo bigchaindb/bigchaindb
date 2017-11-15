@@ -5,7 +5,7 @@ services:
     image: mongo:3.4.3
     ports:
       - "27017"
-    command: mongod --replSet=bigchain-rs
+    command: mongod
 
   bdb:
     build:
@@ -23,7 +23,7 @@ services:
       - ./pytest.ini:/usr/src/app/pytest.ini
       - ./tox.ini:/usr/src/app/tox.ini
     environment:
-      BIGCHAINDB_DATABASE_BACKEND: mongodb
+      BIGCHAINDB_DATABASE_BACKEND: localmongodb
       BIGCHAINDB_DATABASE_HOST: mdb
       BIGCHAINDB_DATABASE_PORT: 27017
       BIGCHAINDB_SERVER_BIND: 0.0.0.0:9984
