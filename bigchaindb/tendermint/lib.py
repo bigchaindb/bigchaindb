@@ -70,6 +70,16 @@ class BigchainDB(Bigchain):
                                               output)
         return Transaction.from_dict(transaction)
 
+    def store_block(self, block):
+        """Create a new block."""
+
+        return backend.query.store_block(self.connection, block)
+
+    def get_latest_block(self):
+        """Get the block with largest height."""
+
+        return backend.query.get_latest_block(self.connection)
+
     def validate_transaction(self, tx):
         """Validate a transaction against the current status of the database."""
 
@@ -90,3 +100,15 @@ class BigchainDB(Bigchain):
             logger.warning('Invalid transaction (%s): %s', type(e).__name__, e)
             return False
         return transaction
+
+
+class Block(object):
+
+    def __init__(self, hash='', height=0):
+        self.hash = hash
+        self.height = height
+
+    def to_dict(self):
+        block = {'hash': self.hash,
+                 'height': self.height}
+        return block

@@ -438,3 +438,24 @@ def text_search(conn, search, *, language='english', case_sensitive=False,
 
     raise OperationError('This query is only supported when running '
                          'BigchainDB with MongoDB as the backend.')
+
+
+@singledispatch
+def get_latest_block(conn):
+    """Get the latest commited block i.e. block with largest height """
+
+    raise NotImplementedError
+
+
+@singledispatch
+def store_block(conn, block):
+    """Write a new block to the `blocks` table
+
+    Args:
+        block (dict): block with current height and block hash.
+
+    Returns:
+        The result of the operation.
+    """
+
+    raise NotImplementedError

@@ -4,6 +4,7 @@ from bigchaindb import backend
 from bigchaindb.backend.exceptions import DuplicateKeyError
 from bigchaindb.backend.utils import module_dispatch_registrar
 from bigchaindb.backend.localmongodb.connection import LocalMongoDBConnection
+from pymongo import DESCENDING
 
 
 register_query = module_dispatch_registrar(backend.query)
@@ -58,4 +59,21 @@ def get_spent(conn, transaction_id, output):
                        'inputs.fulfills.output_index': output},
                       {'_id': 0}))
     except IndexError:
+        pass
+
+
+@register_query(LocalMongoDBConnection)
+def get_latest_block(conn):
+    return conn.run(
+        conn.collection('blocks')
+        .find_one(sort=[('height', DESCENDING)]))
+
+
+@register_query(LocalMongoDBConnection)
+def store_block(conn, block):
+    try:
+        return conn.run(
+            conn.collection('blocks')
+            .insert_one(block))
+    except DuplicateKeyError:
         pass
