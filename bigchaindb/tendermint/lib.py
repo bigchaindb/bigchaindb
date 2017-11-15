@@ -1,7 +1,8 @@
-from copy import deepcopy
-from uuid import uuid4
 import logging
 from collections import namedtuple
+from copy import deepcopy
+from os import getenv
+from uuid import uuid4
 
 import requests
 
@@ -14,7 +15,9 @@ from bigchaindb.tendermint.utils import encode_transaction
 
 logger = logging.getLogger(__name__)
 
-ENDPOINT = 'http://localhost:46657/'
+TENDERMINT_HOST = getenv('TENDERMINT_HOST', 'localhost')
+TENDERMINT_PORT = getenv('TENDERMINT_PORT', '46657')
+ENDPOINT = 'http://{}:{}/'.format(TENDERMINT_HOST, TENDERMINT_PORT)
 
 
 class BigchainDB(Bigchain):
