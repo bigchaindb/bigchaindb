@@ -105,6 +105,21 @@ Finally, you can deploy an ACS using something like:
    --orchestrator-type kubernetes \
    --debug --output json
 
+.. Note::
+    Please refer to `Azure documentation <https://docs.microsoft.com/en-us/cli/azure/acs?view=azure-cli-latest#az_acs_create>`_
+    for a comprehensive list of options available for `az acs create`. 
+    Please tune the following parameters as per your requirement:
+
+    * Master count.
+
+    * Agent count.
+
+    * Agent VM size.
+
+    * **Optional**: Master storage profile.
+
+    * **Optional**: Agent storage profile.
+
 
 There are more options. For help understanding all the options, use the built-in help:
 

@@ -47,7 +47,9 @@ when following the steps above:
    ``tectonic-cluster-CLUSTER``.
 
 #. Set the ``tectonic_base_domain`` to ``""`` if you want to use Azure managed
-   DNS. You will be assigned a ``cloudapp.azure.com`` sub-domain by default.
+   DNS. You will be assigned a ``cloudapp.azure.com`` sub-domain by default and
+   you can skip the ``Configuring Azure DNS`` section from the Tectonic installation
+   guide.
    
 #. Set the ``tectonic_cl_channel`` to ``"stable"`` unless you want to
    experiment or test with the latest release.
@@ -76,6 +78,14 @@ when following the steps above:
 #. Set the ``tectonic_azure_ssh_key`` to the path of the public key created in
    the previous step.
 
+#. We recommend setting up or using a CA(Certificate Authority) to generate Tectonic
+   Console's server certificate(s) and adding it to your trusted authorities on the client side,
+   accessing the Tectonic Console i.e. Browser. If you already have a CA(self-signed or otherwise),
+   Set the ``tectonic_ca_cert`` and ``tectonic_ca_key`` configurations with the content
+   of PEM-encoded certificate and key files, respectively. For more information about, how to set
+   up a self-signed CA, Please refer to
+   :doc:`How to Set up self-signed CA <ca-installation>`.
+
 #. Note that the ``tectonic_azure_client_secret`` is the same as the
    ``ARM_CLIENT_SECRET``.
 
@@ -84,6 +94,10 @@ when following the steps above:
    ``cloudapp.azure.com``. For example, if you named your cluster as 
    ``test-cluster`` and specified the datacenter as ``westeurope``, the Tectonic
    console will be available at ``test-cluster.westeurope.cloudapp.azure.com``.
+
+#. Note that, if you do not specify ``tectonic_ca_cert``, a CA certificate will
+   be generated automatically and you will encounter the untrusted certificate
+   message on your client(Browser), when accessing the Tectonic Console.
 
 
 Step 4: Configure kubectl

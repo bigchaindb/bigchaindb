@@ -13,24 +13,11 @@ from bigchaindb.common.exceptions import SchemaValidationError
 logger = logging.getLogger(__name__)
 
 
-def drop_schema_descriptions(node):
-    """ Drop descriptions from schema, since they clutter log output """
-    if 'description' in node:
-        del node['description']
-    for n in node.get('properties', {}).values():
-        drop_schema_descriptions(n)
-    for n in node.get('definitions', {}).values():
-        drop_schema_descriptions(n)
-    for n in node.get('anyOf', []):
-        drop_schema_descriptions(n)
-
-
 def _load_schema(name):
     """ Load a schema from disk """
     path = os.path.join(os.path.dirname(__file__), name + '.yaml')
     with open(path) as handle:
         schema = yaml.safe_load(handle)
-    drop_schema_descriptions(schema)
     fast_schema = rapidjson_schema.loads(rapidjson.dumps(schema))
     return path, (schema, fast_schema)
 
