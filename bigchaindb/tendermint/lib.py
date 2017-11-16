@@ -68,7 +68,19 @@ class BigchainDB(Bigchain):
     def get_spent(self, txid, output):
         transaction = backend.query.get_spent(self.connection, txid,
                                               output)
-        return Transaction.from_dict(transaction)
+        if transaction and transaction['operation'] == 'CREATE':
+            asset = backend.query.get_asset(self.connection, transaction['id'])
+
+            if asset:
+                transaction['asset'] = asset
+            else:
+                transaction['asset'] = {'data': None}
+
+            return Transaction.from_dict(transaction)
+        elif transaction and transaction['operation'] == 'TRANSFER':
+            return Transaction.from_dict(transaction)
+        else:
+            return None
 
     def store_block(self, block):
         """Create a new block."""

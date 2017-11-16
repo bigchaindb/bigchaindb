@@ -55,7 +55,7 @@ def get_spent(conn, transaction_id, output):
     try:
         return conn.run(
             conn.collection('transactions')
-            .find_one({'id': transaction_id,
+            .find_one({'inputs.fulfills.transaction_id': transaction_id,
                        'inputs.fulfills.output_index': output},
                       {'_id': 0}))
     except IndexError:
