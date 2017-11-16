@@ -7,7 +7,7 @@ if [[ -n ${TOXENV} ]]; then
 elif [[ "${BIGCHAINDB_DATABASE_BACKEND}" == localmongodb && \
     -z "${BIGCHAINDB_DATABASE_SSL}" ]]; then
     # Run the full suite of tests for MongoDB over an unsecure connection
-  pytest -sv --database-backend=localmongodb --cov=bigchaindb
+  pytest -sv --database-backend=localmongodb --cov=bigchaindb -m tendermint
 elif [[ "${BIGCHAINDB_DATABASE_BACKEND}" == localmongodb && \
     "${BIGCHAINDB_DATABASE_SSL}" == true ]]; then
     # Run a sub-set of tests over SSL; those marked as 'pytest.mark.bdb_ssl'.
