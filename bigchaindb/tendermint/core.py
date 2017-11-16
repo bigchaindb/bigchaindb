@@ -89,7 +89,8 @@ class App(BaseApplication):
         block = self.bigchaindb.get_latest_block()
 
         if self.block_txn_ids:
-            self.block_txn_hash = calculate_hash([block['hash'], block_txn_hash])
+            self.block_txn_hash = calculate_hash([block['hash'],
+                                                 block_txn_hash])
         else:
             self.block_txn_hash = block['hash']
 
