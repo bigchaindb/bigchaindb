@@ -28,7 +28,7 @@ validate_os_version_and_deps(){
                 fi
             ;;
             fedora)
-                dnf install bc -y > /dev/null 2>&1
+                dnf install bc python2-dnf libselinux-python -y > /dev/null 2>&1
                 if [[ ($(echo $3 | bc) > $MINIMUM_FEDORA_VERSION)
                     || ($(echo $3 | bc) == $MINIMUM_FEDORA_VERSION) ]]; then
                     rpm -q "${OS_DEPENDENCIES[@]}" > /dev/null 2>&1
@@ -71,20 +71,22 @@ install_dependencies() {
 # multiple dependencies)
 install_deps_deb() {
     echo "Installing Dependencies..."
+    apt-get update -y
     apt-get install -y software-properties-common
     apt-add-repository ppa:ansible/ansible
-    apt-get update
-    apt-get install -y --force-yes ansible
+    apt-get update -y
+    apt-get install -y "${OS_DEPENDENCIES[@]}"
 }
 install_deps_centos() {
     echo "Installing Dependencies..."
     yum install epel-release -y
     yum install -y https://centos7.iuscommunity.org/ius-release.rpm
-    yum install ansible -y
+    yum install "${OS_DEPENDENCIES[@]}" -y
 }
 install_deps_fedora() {
     echo "Installing Dependencies..."
     export LC_ALL=C
     dnf makecache
-    dnf -y install ansible python2-dnf
+    echo "${OS_DEPENDENCIES[@]}"
+    dnf -y install "${OS_DEPENDENCIES[@]}"
 }

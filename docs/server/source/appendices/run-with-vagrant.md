@@ -2,10 +2,10 @@
 
 **NOT for Production Use**
 
-You can use the following instructions to deploy a BigchainDB node
-for dev/test using Vagrant. Vagrant will setup a BigchainDB node with
-all the dependencies along with MongoDB, BigchainDB Python driver. You
-can also tweak the following configurations for the BigchainDB node.
+You can use the following instructions to deploy a single or multi node
+BigchainDB setup for dev/test using Vagrant. Vagrant will set up the BigchainDB node(s)
+with all the dependencies along with MongoDB and BigchainDB Python driver. You
+can also tweak the following configurations for the BigchainDB node(s).
 - Vagrant Box
   - Currently, we support the following boxes:
     - `ubuntu/xenial64 # >=16.04`
@@ -19,14 +19,20 @@ can also tweak the following configurations for the BigchainDB node.
   - Network Type
     - Currently, only `private_network` is supported.
   - IP Address
-- Setup type
-  - `quickstart`
 - Deploy node with Docker
   - Deploy all the services in Docker containers or as processes.
+- Number of BigchainDB nodes
+  - If you want to deploy the services inside Docker containers, you
+  can specify number of member(s) in the BigchainDB cluster.
 - Upstart Script
 - Vagrant Provider
   - Virtualbox
   - VMware
+
+## Minimum Requirements | Vagrant
+Minimum resource requirements for a single node BigchainDB dev setup. **The more the better**:
+- Memory >= 512MB
+- VCPUs >= 1
 
 ## Install dependencies | Vagrant
 1. [VirtualBox](https://www.virtualbox.org/wiki/Downloads) >= 5.0.0
@@ -38,86 +44,108 @@ $ git clone https://github.com/bigchaindb/bigchaindb.git
 ```
 
 ## Configuration | Vagrant
-Navigate to `bigchaindb/pkg/config/` inside the repository.
+Navigate to `bigchaindb/pkg/configuration/vars/` inside the BigchainDB repository.
 ```text
-$ cd bigchaindb/pkg/config/
+$ cd bigchaindb/pkg/configuration/vars/
 ```
 
-Edit the `bdb-config.yaml` as per your requirements. Sample `bdb-config.yaml`:
+Edit `bdb-config.yml` as per your requirements. Sample `bdb-config.yml`:
 
-```text
----
-- name: "bdb-node-01"
-  box:
-    name: "ubuntu/xenial64"
-  ram: "2048"
-  vcpus: "2"
-  setup_type: "quickstart"
-  deploy_docker: false
-  network:
-    ip: "10.20.30.40"
-    type: "private_network"
-  upstart: "/bigchaindb/scripts/bootstrap.sh"
-```
-
-**Note**: You can spawn multiple instances as well using `bdb-config.yaml`. Here is a sample `bdb-config.yaml`:
 ```text
 ---
-- name: "bdb-node-01"
-  box:
-    name: "ubuntu/xenial64"
-  ram: "2048"
-  vcpus: "2"
-  setup_type: "quickstart"
-  deploy_docker: false
-  network:
-    ip: "10.20.30.40"
-    type: "private_network"
-  upstart: "/bigchaindb/scripts/bootstrap.sh"
-- name: "bdb-node-02"
-  box:
-    name: "ubuntu/xenial64"
-  ram: "4096"
-  vcpus: "3"
-  setup_type: "quickstart"
-  deploy_docker: false
-  network:
-    ip: "10.20.30.50"
-    type: "private_network"
-  upstart: "/bigchaindb/scripts/bootstrap.sh"
+deploy_docker: false #[true, false]
+docker_cluster_size: 1
+upstart: "/bigchaindb/scripts/bootstrap.sh"
+bdb_hosts:
+  - name: "bdb-node-01"
+    box:
+      name: "ubuntu/xenial64"
+    ram: "2048"
+    vcpus: "2"
+    network:
+      ip: "10.20.30.40"
+      type: "private_network"
 ```
 
+**Note**: You can spawn multiple instances to orchestrate a multi-node BigchainDB cluster.
+Here is a sample `bdb-config.yml`:
+```text
+---
+deploy_docker: false #[true, false]
+docker_cluster_size: 1
+upstart: "/bigchaindb/scripts/bootstrap.sh"
+bdb_hosts:
+  - name: "bdb-node-01"
+    box:
+      name: "ubuntu/xenial64"
+    ram: "2048"
+    vcpus: "2"
+    network:
+      ip: "10.20.30.40"
+      type: "private_network"
+  - name: "bdb-node-02"
+    box:
+      name: "ubuntu/xenial64"
+    ram: "2048"
+    vcpus: "2"
+    network:
+      ip: "10.20.30.50"
+      type: "private_network"
+```
+**Note**: You can also orchestrate a multi-node BigchainDB cluster on a single dev host using Docker containers.
+Here is a sample `bdb-config.yml`
+```text
+---
+deploy_docker: true #[true, false]
+docker_cluster_size: 3
+upstart: "/bigchaindb/scripts/bootstrap.sh"
+bdb_hosts:
+  - name: "bdb-node-01"
+    box:
+      name: "ubuntu/xenial64"
+    ram: "8192"
+    vcpus: "4"
+    network:
+      ip: "10.20.30.40"
+      type: "private_network"
+```
+The above mentioned configuration will deploy a 3 node BigchainDB cluster with Docker containers
+on your specified host.
 
-## Local Setup | Vagrant
-To bring up the BigchainDB node, run the following command:
+## BigchainDB Setup | Vagrant
+
+**Note**: There are some vagrant plugins required for the installation,
+user will be prompted to install them if they are not present. To install
+the required plugins, run the following command:
+
+```text
+$ vagrant plugin install vagrant-cachier vagrant-vbguest vagrant-hosts
+```
+
+To bring up the BigchainDB node(s), run the following command:
 
 ```text
 $ vagrant up
 ```
 
-*Note*: There are some vagrant plugins required for the installation, user will be prompted to install them if they are not present. Instructions to install the plugins can be extracted from the message.
-
-```text
-$ vagrant plugin install <plugin-name>
-```
-
-After successfull execution of Vagrant, you can log in to your fresh BigchainDB node.
+After successful execution of Vagrant, you can log in to your fresh BigchainDB node.
 
 ```text
 $ vagrant ssh <instance-name>
 ```
 
 ## Make your first transaction
-Once you are inside the BigchainDB node, you can verify that BigchainDB docker/process is running.
+Once you are inside the BigchainDB node, you can verify that BigchainDB
+docker(s)/process(es) is(are) running.
 
-Verify BigchainDB process:
+Verify BigchainDB process(es):
 ```text
 $ ps -ef | grep bigchaindb
 ```
 
 OR
 
-Verify BigchainDB Docker:
+Verify BigchainDB Docker(s):
 ```text
 $ docker ps | grep bigchaindb
 ```

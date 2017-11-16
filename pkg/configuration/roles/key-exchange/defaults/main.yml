@@ -1,0 +1,12 @@
+keyring_script_host: /tmp/keyring.py
+bigchaindb_log_file_host: "{{ ansible_env.HOME }}/bigchaindb.log"
+bigchaindb_config_path_host: /data/.bigchaindb
+
+# Docker configuration
+keyring_script_docker: "{{ ansible_env.HOME }}/config/keyring.py"
+bigchaindb_config_path_docker: "{{ ansible_env.HOME }}/bigchaindb_docker"
+bigchaindb_docker_name: bigchaindb
+bigchaindb_default_port: 9984
+bigchandb_host_port: 59984
+bigchaindb_host_mount_dir: "{{ ansible_env.HOME }}/bigchaindb_docker"
+bigchaindb_image_name: "bigchaindb/bigchaindb"
