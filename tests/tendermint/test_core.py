@@ -106,3 +106,12 @@ def test_deliver_transfer_tx__double_spend_fails(b):
     app = App(b)
     result = app.deliver_tx(encode_tx_to_bytes(tx_transfer))
     assert result.is_ok()
+
+    double_spend = Transaction.transfer(tx.to_inputs(),
+                            [([carly.public_key], 1)],
+                            asset_id = tx.id)\
+                    .sign([alice.private_key])
+
+    app = App(b)
+    result = app.deliver_tx(encode_tx_to_bytes(double_spend))
+    assert result.is_error()
