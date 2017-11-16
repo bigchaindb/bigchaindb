@@ -1,10 +1,12 @@
 """Query implementation for MongoDB"""
 
+from pymongo import DESCENDING
+
 from bigchaindb import backend
 from bigchaindb.backend.exceptions import DuplicateKeyError
 from bigchaindb.backend.utils import module_dispatch_registrar
 from bigchaindb.backend.localmongodb.connection import LocalMongoDBConnection
-from pymongo import DESCENDING
+from bigchaindb.common.transaction import Transaction
 
 
 register_query = module_dispatch_registrar(backend.query)
@@ -77,3 +79,30 @@ def store_block(conn, block):
             .insert_one(block))
     except DuplicateKeyError:
         pass
+
+
+@register_query(LocalMongoDBConnection)
+def get_txids_filtered(conn, asset_id, operation=None):
+    match_create = {
+        'operation': 'CREATE',
+        'id': asset_id
+    }
+    match_transfer = {
+        'operation': 'TRANSFER',
+        'id': asset_id
+    }
+
+    if operation == Transaction.CREATE:
+        match = match_create
+    elif operation == Transaction.TRANSFER:
+        match = match_transfer
+    else:
+        match = {'$or': [match_create, match_transfer]}
+
+    pipeline = [
+        {'$match': match}
+    ]
+    cursor = conn.run(
+        conn.collection('transactions')
+        .aggregate(pipeline))
+    return (elem['id'] for elem in cursor)

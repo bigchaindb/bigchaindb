@@ -7,6 +7,8 @@ from abci.wire import read_message
 from abci.messages import to_request_deliver_tx, to_request_check_tx
 
 
+@pytest.mark.bdb
+@pytest.mark.tendermint
 def test_app(b):
     from bigchaindb.tendermint import App
     from bigchaindb.tendermint.utils import calculate_hash
