@@ -1,0 +1,28 @@
+---
+- name: Creating files for key exchange
+  template: src=exchange_keyring_host.j2 dest="{{ keyring_script_host }}"
+  tags: [keyex]
+
+- name: Setting permissions
+  file:
+    path: "{{ keyring_script_host }}"
+    mode: "0777"
+  tags: [keyex]
+
+- name: Update Keyring Configuration
+  shell: "python {{ keyring_script_host }}"
+  tags: [keyex]
+
+- name: Stop BigchainDB
+  shell: pkill bigchaindb
+  register: bdb_stop
+  tags: [keyex]
+
+- name: Start BigchainDB
+  shell: "bigchaindb start > {{ bigchaindb_log_file_host }} 2>&1 &"
+  environment:
+    BIGCHAINDB_CONFIG_PATH: "{{ bigchaindb_config_path_host }}"
+  async: 10
+  poll: 0
+  when: bdb_stop|succeeded
+  tags: [bigchaindb]
