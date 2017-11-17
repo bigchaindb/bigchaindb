@@ -17,4 +17,5 @@ BigchainDB Server Documentation
    drivers-clients/index
    data-models/index
    release-notes
+   glossary
    appendices/index
