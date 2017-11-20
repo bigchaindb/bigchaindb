@@ -3,6 +3,7 @@ import os
 import pytest
 
 from bigchaindb import backend
+from unittest.mock import patch
 
 
 pytestmark = pytest.mark.tendermint
@@ -36,13 +37,38 @@ def test_asset_is_separated_from_transaciton(b):
     assert b.get_transaction(tx.id) == tx
 
 
-def test_get_latest_block(b):
-    from bigchaindb.tendermint.lib import Block
+def test_validation_error(b):
+    from bigchaindb.models import Transaction
+    from bigchaindb.common.crypto import generate_key_pair
 
-    for i in range(10):
-        app_hash = os.urandom(16).hex()
-        block = Block(app_hash=app_hash, height=i)._asdict()
-        b.store_block(block)
+    alice = generate_key_pair()
+    asset = {'': ''}
+    tx = Transaction.create([alice.public_key],
+                            [([alice.public_key], 1)],
+                            asset=asset)\
+                    .sign([alice.private_key]).to_dict()
 
-    block = b.get_latest_block()
-    assert block['height'] == 9
+    tx['metadata'] = ''
+    assert not b.validate_transaction(tx)
+
+
+@patch('requests.post')
+def test_write_and_post_transaction(mock_post, b):
+    from bigchaindb.models import Transaction
+    from bigchaindb.common.crypto import generate_key_pair
+    from bigchaindb.tendermint.utils import encode_transaction
+
+    alice = generate_key_pair()
+    asset = {'': ''}
+    tx = Transaction.create([alice.public_key],
+                            [([alice.public_key], 1)],
+                            asset=asset)\
+                    .sign([alice.private_key]).to_dict()
+
+    tx = b.validate_transaction(tx)
+    b.write_transaction(tx)
+
+    assert mock_post.called
+    assert 'broadcast_tx_async' in str(mock_post.call_args)
+    encoded_tx = encode_transaction(tx.to_dict())
+    assert encoded_tx in str(mock_post.call_args)
