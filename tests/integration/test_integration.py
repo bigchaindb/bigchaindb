@@ -26,6 +26,7 @@ def test_double_create(b, user_pk):
     assert count_blocks(b.connection) == 2
 
 
+@pytest.mark.dspend
 @pytest.mark.usefixtures('inputs')
 def test_get_owned_ids_works_after_double_spend(b, user_pk, user_sk):
     """ Test for #633 https://github.com/bigchaindb/bigchaindb/issues/633 """
@@ -40,7 +41,7 @@ def test_get_owned_ids_works_after_double_spend(b, user_pk, user_sk):
 
     # write the valid tx and wait for voting/block to catch up
     b.write_transaction(tx_valid)
-    time.sleep(2)
+    time.sleep(5)
 
     # doesn't throw an exception
     b.get_owned_ids(user_pk)

@@ -190,10 +190,15 @@ class Bigchain(object):
         # get the asset ids from the block
         if block_dict:
             asset_ids = Block.get_asset_ids(block_dict)
+            txn_ids = Block.get_txn_ids(block_dict)
             # get the assets from the database
             assets = self.get_assets(asset_ids)
+            # get the metadata from the database
+            metadata = self.get_metadata(txn_ids)
             # add the assets to the block transactions
             block_dict = Block.couple_assets(block_dict, assets)
+            # add the metadata to the block transactions
+            block_dict = Block.couple_metadata(block_dict, metadata)
 
         status = None
         if include_status:
@@ -379,8 +384,8 @@ class Bigchain(object):
         for transaction in transactions:
             # ignore transactions in invalid blocks
             # FIXME: Isn't there a faster solution than doing I/O again?
-            _, status = self.get_transaction(transaction['id'],
-                                             include_status=True)
+            txn, status = self.get_transaction(transaction['id'],
+                                               include_status=True)
             if status == self.TX_VALID:
                 num_valid_transactions += 1
             # `txid` can only have been spent in at most on valid block.
@@ -390,6 +395,7 @@ class Bigchain(object):
                     ' with the chain'.format(txid))
             # if its not and invalid transaction
             if status is not None:
+                transaction.update({'metadata': txn.metadata})
                 non_invalid_transactions.append(transaction)
 
         if non_invalid_transactions:
@@ -508,9 +514,14 @@ class Bigchain(object):
 
         # Decouple assets from block
         assets, block_dict = block.decouple_assets()
+        metadatas, block_dict = block.decouple_metadata(block_dict)
+
         # write the assets
         if assets:
             self.write_assets(assets)
+
+        if metadatas:
+            self.write_metadata(metadatas)
 
         # write the block
         return backend.query.write_block(self.connection, block_dict)
@@ -622,6 +633,19 @@ class Bigchain(object):
         """
         return backend.query.get_assets(self.connection, asset_ids)
 
+    def get_metadata(self, txn_ids):
+        """
+        Return a list of metadata that match the transaction ids (txn_ids)
+
+        Args:
+            txn_ids (:obj:`list` of :obj:`str`): A list of txn_ids to
+                retrieve from the database.
+
+        Returns:
+            list: The list of metadata returned from the database.
+        """
+        return backend.query.get_metadata(self.connection, txn_ids)
+
     def write_assets(self, assets):
         """
         Writes a list of assets into the database.
@@ -632,7 +656,17 @@ class Bigchain(object):
         """
         return backend.query.write_assets(self.connection, assets)
 
-    def text_search(self, search, *, limit=0):
+    def write_metadata(self, metadata):
+        """
+        Writes a list of metadata into the database.
+
+        Args:
+            metadata (:obj:`list` of :obj:`dict`): A list of metadata to write to
+                the database.
+        """
+        return backend.query.write_metadata(self.connection, metadata)
+
+    def text_search(self, search, *, limit=0, table='assets'):
         """
         Return an iterator of assets that match the text search
 
@@ -643,12 +677,13 @@ class Bigchain(object):
         Returns:
             iter: An iterator of assets that match the text search.
         """
-        assets = backend.query.text_search(self.connection, search, limit=limit)
+        objects = backend.query.text_search(self.connection, search, limit=limit,
+                                            table=table)
 
         # TODO: This is not efficient. There may be a more efficient way to
         #       query by storing block ids with the assets and using fastquery.
         #       See https://github.com/bigchaindb/bigchaindb/issues/1496
-        for asset in assets:
-            tx, status = self.get_transaction(asset['id'], True)
+        for obj in objects:
+            tx, status = self.get_transaction(obj['id'], True)
             if status == self.TX_VALID:
-                yield asset
+                yield obj

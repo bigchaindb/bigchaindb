@@ -40,6 +40,8 @@ def test_schema(schema_func_name, args_qty):
     ('get_spending_transactions', 1),
     ('write_assets', 1),
     ('get_assets', 1),
+    ('write_metadata', 1),
+    ('get_metadata', 1),
 ))
 def test_query(query_func_name, args_qty):
     from bigchaindb.backend import query
