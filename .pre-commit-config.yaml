@@ -1,0 +1,18 @@
+repos:
+-   repo: git://github.com/pre-commit/pre-commit-hooks
+    sha: v1.1.1
+    hooks:
+    -   id: trailing-whitespace
+        args: ['--no-markdown-linebreak-ext']
+    -   id: check-merge-conflict
+    -   id: debug-statements
+    -   id: check-added-large-files
+    -   id: flake8
+
+-   repo: git://github.com/chewse/pre-commit-mirrors-pydocstyle
+    sha: v2.1.1
+    hooks:
+    -   id: pydocstyle
+        args: ['--select=D204,D201,D209,D210,D212,D300,D403']
+
+exclude: '^(?!bigchaindb/)(?!tests/)'
