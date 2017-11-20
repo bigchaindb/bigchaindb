@@ -145,6 +145,20 @@ Once you accept and submit the CLA, we'll email you with further instructions. (
 
 Someone will then merge your branch or suggest changes. If we suggest changes, you won't have to open a new pull request, you can just push new code to the same branch (on `origin`) as you did before creating the pull request.
 
+### Pull Request Guidelines
+
+Before you submit a pull request, check that it meets these guidelines:
+
+1. The pull request should include tests.
+2. If the pull request adds functionality, the docs should be updated. Put
+   your new functionality into a function with a docstring, and add the
+   feature to the list in README.rst.
+3. The pull request should work for Python 3.5, and pass the flake8 check.
+   Check https://travis-ci.org/bigchaindb/bigchaindb-driver/pull_requests
+   and make sure that the tests pass for all supported Python versions.
+4. Follow the pull request template while creating new PRs, the template will
+   be visible to you when you create a new pull request.
+
 ### Tip: Upgrading All BigchainDB Dependencies
 
 Over time, your versions of the Python packages used by BigchainDB will get out of date. You can upgrade them using:

@@ -9,10 +9,12 @@ Vagrant.require_version '>= 1.6.0'
 VAGRANTFILE_API_VERSION = '2'
 
 # Configuration files
-CONFIGURATION_FILE = 'config/bdb-config.yaml'
+CONFIGURATION_FILE = 'configuration/vars/bdb-config.yml'
+HOSTS_FILE = 'configuration/hosts/all'
+HOST_VARS_PATH = 'configuration/host_vars'
 
 # Validate if all the required plugins are present
-required_plugins = ["vagrant-cachier"]
+required_plugins = ["vagrant-cachier", "vagrant-vbguest", "vagrant-hosts"]
 required_plugins.each do |plugin|
   if not Vagrant.has_plugin?(plugin)
     raise "Required vagrant plugin #{plugin} not found. Please run `vagrant plugin install #{plugin}`"
@@ -21,15 +23,28 @@ end
 
 # Read configuration file(s)
 instances_config = YAML.load_file(File.join(File.dirname(__FILE__), CONFIGURATION_FILE))
-
-#TODO: (muawiakh) Add support for Docker, AWS, Azure
+hosts_config = File.open(HOSTS_FILE, 'w+')
+# TODO: (muawiakh) Add support for Docker, AWS, Azure
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-  instances_config.each do |instance|
+  instances_config["bdb_hosts"].each do |instance|
+    # Workaround till canonical fixes https://bugs.launchpad.net/cloud-images/+bug/1569237
+    # using -u ubuntu as remote user, conventionally vagrant boxes use `vagrant` user
+    if instance["box"]["name"] == "ubuntu/xenial64"
+      hosts_config.puts("#{instance["name"]} ansible_user=ubuntu")
+    else
+      hosts_config.puts("#{instance["name"]} ansible_user=vagrant")
+    end
     config.vm.define instance['name'] do |bdb|
       # Workaround until vagrant cachier plugin supports dnf
       if !(instance["box"]["name"].include? "fedora")
         if Vagrant.has_plugin?("vagrant-cachier")
-          config.cache.scope = :box
+          bdb.cache.scope = :box
+        end
+      elsif instance["box"]["name"] == "ubuntu/xenial64"
+        if Vagrant.has_plugin?("vagrant-vbguest")
+          bdb.vbguest.auto_update = false
+          bdb.vbguest.no_install = true
+          bdb.vbguest.no_remote = true
         end
       end
       bdb.vm.hostname = instance["name"]
@@ -40,14 +55,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       else
         raise "Invalid network type: Please specify one of the following: [private_network, public_network]"
       end
+      bdb.vm.provision :hosts, :sync_hosts => true
       bdb.vm.box = instance["box"]["name"]
       bdb.vm.synced_folder ".", "/bigchaindb"
-      bdb.vm.provision :shell, inline: "cd /bigchaindb/scripts;/bin/bash #{instance["upstart"]}"
-      if instance["setup_type"] == "quickstart"
-        bdb.vm.provision :shell, inline: "PYTHONBUFFERED=1 ansible-playbook \
-          /bigchaindb/ansible/quickstart.yml --extra-vars \"with_docker=#{instance["deploy_docker"]}\" -c local"
-      end
-
+      File.open("#{HOST_VARS_PATH}/#{instance["name"]}", "w+") {|f| \
+        f.write("ansible_ssh_private_key_file: /bigchaindb/.vagrant/machines/#{instance["name"]}/virtualbox/private_key") }
+      bdb.vm.provision :shell, inline: "cd /bigchaindb/scripts;/bin/bash #{instances_config["upstart"]}"
       bdb.vm.provider 'vmware_fusion' do |vmwf, override|
         vmwf.vmx['memsize'] = instance["ram"]
         vmwf.vmx['numvcpus'] = instance['vcpus']
@@ -57,6 +70,34 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         vb.memory = instance["ram"]
         vb.cpus = instance['vcpus']
       end
+    end
+  end
+  hosts_config.close
+  config.vm.define "config-node" do |bdb|
+    bdb.vm.box = "ubuntu/xenial64"
+    bdb.vm.hostname = "config-node"
+    bdb.vm.provision :hosts, :sync_hosts => true
+    bdb.vm.synced_folder ".", "/bigchaindb"
+    bdb.vm.network "private_network", ip: "192.168.100.200"
+    bdb.vm.provision :shell, inline: "cd /bigchaindb/scripts;/bin/bash #{instances_config["upstart"]}"
+    bdb.vm.provision :shell, inline: "PYTHONUNBUFFERED=1 ansible-playbook /bigchaindb/configuration/bdb-deploy.yml \
+        -i /bigchaindb/configuration/hosts/all"
+    bdb.vm.provider "virtualbox" do |vb|
+      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      vb.memory = 2048
+      vb.cpus = 2
+    end
+    bdb.vm.provider 'vmware_fusion' do |vmwf|
+      vmwf.vmx['memsize'] = 2048
+      vmwf.vmx['numvcpus'] = 2
+    end
+    if Vagrant.has_plugin?("vagrant-vbguest")
+      config.vbguest.auto_update = false
+      config.vbguest.no_install = true
+      config.vbguest.no_remote = true
+    end
+    if Vagrant.has_plugin?("vagrant-cachier")
+      config.cache.scope = :box
     end
   end
 end

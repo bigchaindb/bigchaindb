@@ -26,7 +26,6 @@ An input has the following structure:
 
 You can think of the ``fulfills`` object as a pointer to an output on another transaction: the output that this input is spending/transferring.
 A CREATE transaction should have exactly one input. That input can contain one or more ``owners_before``, a ``fulfillment`` (with one signature from each of the owners-before), and the value of ``fulfills`` should be ``null``). A TRANSFER transaction should have at least one input, and the value of ``fulfills`` should not be ``null``.
-See the reference on :ref:`inputs <Input>` for more description about the meaning of each field.
 
 The ``fulfillment`` string fulfills the condition in the output that is being spent (transferred).
 To calculate it:
@@ -62,7 +61,6 @@ An output has the following structure:
 The :ref:`page about conditions <Conditions>` explains the contents of a ``condition``.
 
 The list of ``public_keys`` is always the "owners" of the asset at the time the transaction completed, but before the next transaction started.
-See the reference on :ref:`outputs <Output>` for more description about the meaning of each field.
 
 Note that ``amount`` must be a string (e.g. ``"7"``).
 In a TRANSFER transaction, the sum of the output amounts must be the same as the sum of the outputs that it transfers (i.e. the sum of the input amounts). For example, if a TRANSFER transaction has two outputs, one with ``"amount": "2"`` and one with ``"amount": "3"``, then the sum of the outputs is 5 and so the sum of the outputs-being-transferred must also be 5.

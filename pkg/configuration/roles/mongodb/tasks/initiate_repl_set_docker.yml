@@ -1,0 +1,13 @@
+---
+- name: Creating files to initialize MongoDB Replica Set | Docker
+  template: src=replSet_init_docker.j2 dest="{{ mongodb_host_config }}/replSet_init.js"
+  tags: [mongodb]
+
+- name: Initializing Replica Set and Adding AdminUser | Docker
+  run_once: true
+  shell:
+    cmd:
+      "docker exec {{ mongodb_docker_name }}{{ docker_cluster_size|int - 1 }} bash -l -c
+      '/usr/bin/mongo --host {{ mongodb_docker_name }}{{ docker_cluster_size|int - 1 }}
+      --port {{ mongodb_port }} < /bdb_config/replSet_init.js'"
+  tags: [mongodb]

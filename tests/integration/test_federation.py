@@ -116,8 +116,8 @@ def test_elect_valid(federation_3):
 
 
 @pytest.mark.bdb
-@pytest.mark.skip_travis_rdb
 @pytest.mark.genesis
+@pytest.mark.skip_travis_rdb
 def test_elect_invalid(federation_3):
     [bx, (s0, s1, s2)] = federation_3
     tx = input_single_create(bx[0])

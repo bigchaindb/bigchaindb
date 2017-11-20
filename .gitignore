@@ -77,7 +77,6 @@ ntools/one-m/ansible/hosts
 ntools/one-m/ansible/ansible.cfg
 
 # Just in time documentation
-docs/server/source/schema
 docs/server/source/http-samples
 
 # Terraform state files

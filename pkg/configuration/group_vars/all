@@ -1,0 +1,5 @@
+---
+ansible_connection: ssh
+ansible_ssh_port: 22
+ansible_become: yes
+ansible_ssh_common_args: '-o StrictHostKeyChecking=no'

@@ -11,7 +11,7 @@ from pytest import raises
 
 from bigchaindb.common.exceptions import SchemaValidationError
 from bigchaindb.common.schema import (
-    TX_SCHEMA_COMMON, VOTE_SCHEMA, drop_schema_descriptions,
+    TX_SCHEMA_COMMON, VOTE_SCHEMA,
     validate_transaction_schema, validate_vote_schema)
 
 SUPPORTED_CRYPTOCONDITION_TYPES = ('threshold-sha-256', 'ed25519-sha-256')
@@ -44,49 +44,6 @@ def test_transaction_schema_additionalproperties():
 
 def test_vote_schema_additionalproperties():
     _test_additionalproperties(VOTE_SCHEMA)
-
-
-def test_drop_descriptions():
-    node = {
-        'description': 'abc',
-        'properties': {
-            'description': {
-                'description': ('The property named "description" should stay'
-                                'but description meta field goes'),
-            },
-            'properties': {
-                'description': 'this must go'
-            },
-            'any': {
-                'anyOf': [
-                    {
-                        'description': 'must go'
-                    }
-                ]
-            }
-        },
-        'definitions': {
-            'wat': {
-                'description': 'go'
-            }
-        }
-    }
-    expected = {
-        'properties': {
-            'description': {},
-            'properties': {},
-            'any': {
-                'anyOf': [
-                    {}
-                ]
-            }
-        },
-        'definitions': {
-            'wat': {},
-        }
-    }
-    drop_schema_descriptions(node)
-    assert node == expected
 
 
 ################################################################################
