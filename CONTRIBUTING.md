@@ -22,7 +22,10 @@ To prevent that situation, we ask that all pull requests should resolve, address
 
 When you submit a pull request, please mention the issue (or issues) that it resolves, e.g. "Resolves #123".
 
-Exception: hotfixes and minor changes don't require a pre-existing issue, but please write a thorough pull request description.
+**Note:** For feature request(s) or new feature(s), please consult our [feature contribution guidelines](./docs/specs/README.md).
+
+**Exception(s):**
+- Hotfixes and minor changes don't require a pre-existing issue, but please write a thorough pull request description.
 
 ### Step 1 - Prepare and Familiarize Yourself
 
@@ -133,9 +136,9 @@ Make sure you've commited all the additions or changes you want to include in yo
 git push origin new-branch-name
 ```
 
-### Step 10 - Create a Pull Request 
+### Step 10 - Create a Pull Request
 
-Go to the GitHub website and to _your_ remote bigchaindb repository (i.e. something like https://github.com/your-user-name/bigchaindb). 
+Go to the GitHub website and to _your_ remote bigchaindb repository (i.e. something like https://github.com/your-user-name/bigchaindb).
 
 See [GitHub's documentation on how to initiate and send a pull request](https://help.github.com/articles/using-pull-requests/). Note that the destination repository should be `bigchaindb/bigchaindb` and the destination branch will be `master` (usually, and if it's not, then we can change that if necessary).
 

@@ -1,3 +1,5 @@
+**For new feature(s) or feature request(s) please refer to our guidelines about [contribution](https://github.com/bigchaindb/bigchaindb/blob/master/CONTRIBUTING.md)**
+
 * BigchainDB version:
 * Operating System:
 * Deployment Type: `[Docker|Host|IPDB|Other]`
