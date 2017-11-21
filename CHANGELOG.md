@@ -32,6 +32,16 @@ For reference, the possible headings are:
 * **External Contributors** to list contributors outside of BigchainDB GmbH.
 * **Notes**
 
+## [1.3] - 2017-11-21
+Tag name: v1.3.0
+
+### Added
+* Metadata full-text search. [Pull request #1812](https://github.com/bigchaindb/bigchaindb/pull/1812)
+
+### Notes
+* Improved documentation about blocks and votes. [Pull request #1855](https://github.com/bigchaindb/bigchaindb/pull/1855)
+
+
 ## [1.2] - 2017-11-13
 Tag name: v1.2.0
 
