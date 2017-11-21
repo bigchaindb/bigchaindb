@@ -45,7 +45,8 @@ $ /path/to/repo/bigchaindb/docs/specs/features/release-<latest-release>
 ``` 
 
 The PR for the specification document should be
-[linked](https://help.github.com/articles/autolinked-references-and-urls/) to the GitHub issue with you created.
+[linked](https://help.github.com/articles/autolinked-references-and-urls/) to the GitHub issue you created and
+marked with `Spec` label.
 
 **Note:** Feature(s) cannot be backported. Hence, only commit your proposal to the latest release.
 
