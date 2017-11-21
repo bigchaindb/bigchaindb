@@ -12,7 +12,7 @@ Here are some baseline criterion that can help you classify your idea, as a feat
 
 - Requires significant effort/changes to the current BigchainDB implementation and it is not self
  contained (e.g. API changes,  introducing a new component, takes more than 20 Wrigleys
- (Wrigley is a `man day` @ BigchainDB))
+ (Wrigley is a `dev day` @ BigchainDB))
 - Impacts the clients and drivers.
 - Can we write a blog post about it?
 - Requires collaboration with multiple teams in terms of development, operations and testing.
