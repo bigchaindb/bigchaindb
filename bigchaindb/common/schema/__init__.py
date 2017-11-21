@@ -21,6 +21,7 @@ def _load_schema(name):
     fast_schema = rapidjson_schema.loads(rapidjson.dumps(schema))
     return path, (schema, fast_schema)
 
+
 TX_SCHEMA_VERSION = 'v1.0'
 
 TX_SCHEMA_PATH, TX_SCHEMA_COMMON = _load_schema('transaction_' +
