@@ -1,6 +1,7 @@
 from copy import deepcopy
 from uuid import uuid4
 import logging
+from collections import namedtuple
 
 import requests
 
@@ -102,13 +103,4 @@ class BigchainDB(Bigchain):
         return transaction
 
 
-class Block(object):
-
-    def __init__(self, hash='', height=0):
-        self.hash = hash
-        self.height = height
-
-    def to_dict(self):
-        block = {'hash': self.hash,
-                 'height': self.height}
-        return block
+Block = namedtuple('Block', ('app_hash', 'height'))

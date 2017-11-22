@@ -28,8 +28,8 @@ class App(BaseApplication):
     def init_chain(self, validators):
         """Initialize chain with block of height 0"""
 
-        block = Block(hash='', height=0)
-        self.bigchaindb.store_block(block.to_dict())
+        block = Block(app_hash='', height=0)
+        self.bigchaindb.store_block(block._asdict())
 
     def info(self):
         """Return height of the latest committed block."""
@@ -38,7 +38,7 @@ class App(BaseApplication):
         block = self.bigchaindb.get_latest_block()
         if block:
             r.last_block_height = block['height']
-            r.last_block_app_hash = block['hash'].encode('utf-8')
+            r.last_block_app_hash = block['app_hash'].encode('utf-8')
         else:
             r.last_block_height = 0
             r.last_block_app_hash = b''
@@ -89,9 +89,9 @@ class App(BaseApplication):
         block = self.bigchaindb.get_latest_block()
 
         if self.block_txn_ids:
-            self.block_txn_hash = calculate_hash([block['hash'], block_txn_hash])
+            self.block_txn_hash = calculate_hash([block['app_hash'], block_txn_hash])
         else:
-            self.block_txn_hash = block['hash']
+            self.block_txn_hash = block['app_hash']
 
         return ResponseEndBlock()
 
@@ -100,8 +100,8 @@ class App(BaseApplication):
 
         # register a new block only when new transactions are received
         if self.block_txn_ids:
-            block = Block(hash=self.block_txn_hash, height=self.new_height)
-            self.bigchaindb.store_block(block.to_dict())
+            block = Block(app_hash=self.block_txn_hash, height=self.new_height)
+            self.bigchaindb.store_block(block._asdict())
 
         data = self.block_txn_hash.encode('utf-8')
         return Result.ok(data=data)
