@@ -36,7 +36,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.ssh.insert_key = true
 
-  config.vm.synced_folder  ".", "/vagrant", disabled: true
+  config.vm.synced_folder  "bigchaindb", "/opt/stack/bigchaindb"
 
 
   config.vm.provider :virtualbox do |vb|
