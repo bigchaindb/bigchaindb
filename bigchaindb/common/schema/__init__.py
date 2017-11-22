@@ -22,9 +22,14 @@ def _load_schema(name):
     return path, (schema, fast_schema)
 
 
-TX_SCHEMA_PATH, TX_SCHEMA_COMMON = _load_schema('transaction')
-_, TX_SCHEMA_CREATE = _load_schema('transaction_create')
-_, TX_SCHEMA_TRANSFER = _load_schema('transaction_transfer')
+TX_SCHEMA_VERSION = 'v1.0'
+
+TX_SCHEMA_PATH, TX_SCHEMA_COMMON = _load_schema('transaction_' +
+                                                TX_SCHEMA_VERSION)
+_, TX_SCHEMA_CREATE = _load_schema('transaction_create_' +
+                                   TX_SCHEMA_VERSION)
+_, TX_SCHEMA_TRANSFER = _load_schema('transaction_transfer_' +
+                                     TX_SCHEMA_VERSION)
 VOTE_SCHEMA_PATH, VOTE_SCHEMA = _load_schema('vote')
 
 

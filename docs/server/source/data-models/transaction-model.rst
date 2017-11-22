@@ -68,7 +68,6 @@ The Transaction Schema
 ----------------------
 
 BigchainDB checks all transactions (JSON documents)
-against a formal schema defined in :ref:`some JSON Schema files named
-transaction.yaml,
-transaction_create.yaml and
-transaction_transfer.yaml <The Transaction Schema Files>`.
+against a formal schema defined in :ref:`some JSON Schema files
+(copied verbatim into the Appendices) 
+<The Transaction Schema Files>`.
