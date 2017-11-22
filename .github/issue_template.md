@@ -1,6 +1,6 @@
-**Please use the template below for bug reports and minor features/improvements.** 
+**Please use the template below for bug reports or minor feature requests.** 
 
-**For new feature(s) or feature request(s) please refer to our guidelines about**
+**For relatively bigger/significant feature requests please refer to our guidelines about**
 **[feature contribution](https://github.com/bigchaindb/bigchaindb/blob/master/docs/specs/README.md)**
 **and remove the existing template.**
 

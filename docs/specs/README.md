@@ -39,7 +39,7 @@ Create a new issue on our [GitHub repository](https://github.com/bigchaindb/bigc
 Submit a design specification document (Pull Request) of your feature. The spec needs to be submitted at:
 
 ```text
-/path/to/repo/bigchaindb/docs/specs/features/release-<latest-release>/
+/path/to/repo/bigchaindb/docs/specs/release-<latest-release>/
 ``` 
 
 The PR for the specification document should be
