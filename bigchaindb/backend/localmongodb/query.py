@@ -89,7 +89,7 @@ def get_txids_filtered(conn, asset_id, operation=None):
     }
     match_transfer = {
         'operation': 'TRANSFER',
-        'id': asset_id
+        'asset.id': asset_id
     }
 
     if operation == Transaction.CREATE:
