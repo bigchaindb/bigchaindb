@@ -1,5 +1,6 @@
 import json
 
+import pytest
 from abci.server import ProtocolHandler
 from io import BytesIO
 import abci.types_pb2 as types
@@ -7,8 +8,10 @@ from abci.wire import read_message
 from abci.messages import to_request_deliver_tx, to_request_check_tx
 
 
+pytestmark = pytest.mark.tendermint
+
+
 @pytest.mark.bdb
-@pytest.mark.tendermint
 def test_app(b):
     from bigchaindb.tendermint import App
     from bigchaindb.tendermint.utils import calculate_hash

@@ -5,7 +5,9 @@ import pytest
 from bigchaindb import backend
 
 
-@pytest.mark.tendermint
+pytestmark = pytest.mark.tendermint
+
+
 def test_asset_is_separated_from_transaciton(b):
     from bigchaindb.models import Transaction
     from bigchaindb.common.crypto import generate_key_pair
