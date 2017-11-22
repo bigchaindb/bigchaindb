@@ -89,7 +89,7 @@ else
 fi
 
 if [[ ! $release ]]; then
-    echo "You must specify RELEASE, or define OPENEDX_RELEASE before running."
+    echo "You must specify BRANCH, or set BDB_BRANCH before running."
     exit 1
 fi
 
@@ -122,7 +122,7 @@ fi
 git clone https://github.com/bigchaindb/bigchaindb.git -b $BRANCH
 
 if [[ $stack == "devstack" ]]; then # Install devstack
-    vagrant plugin install vagrant-vbguest
+    curl -fOL# https://raw.githubusercontent.com/bigchaindb/bigchaindb/4137ca626d094152889cba43196a0ed2d2a96cd0/pkg/scripts/Vagrantfile
 elif [[ $stack == "fullstack" ]]; then # Install fullstack
     exit
 else # Throw error
