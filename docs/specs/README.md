@@ -24,7 +24,6 @@ It is not a feature if:
   - Test case fixes
   - Fixing typos/grammar in documentation.
   - Refactoring code
-  - Adding error or log messages.
 
 ## Classified as a Feature?
 Create a new issue on our [GitHub repository](https://github.com/bigchaindb/bigchaindb/issues/new) with a
@@ -37,11 +36,10 @@ Create a new issue on our [GitHub repository](https://github.com/bigchaindb/bigc
 - Worked out the resources and people, who can contribute towards this feature.
 
 ## Submit Spec
-After creating an issue with an appropriate problem statement and details, submit a design specification document
-of your feature. The spec needs to be submitted at:
+Submit a design specification document (Pull Request) of your feature. The spec needs to be submitted at:
 
-```bash
-$ /path/to/repo/bigchaindb/docs/specs/features/release-<latest-release>
+```text
+/path/to/repo/bigchaindb/docs/specs/features/release-<latest-release>/
 ``` 
 
 The PR for the specification document should be
@@ -59,7 +57,6 @@ Once, you have submitted the design specification document:
 - Discuss.
 - Address comments(if any).
 - Get it merged.
-- Start implementing.
 
-Once your spec is merged, you can start with the implementation. Voila!
+Once, your specification document is merged, it will be tracked for an upcoming release.
 

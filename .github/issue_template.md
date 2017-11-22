@@ -1,8 +1,8 @@
-** For Bug Reports please use the template below.
+**Please use the template below for bug reports and minor features/improvements.** 
 
-** For new feature(s) or feature request(s) please refer to our guidelines about
-   [contribution](https://github.com/bigchaindb/bigchaindb/blob/master/CONTRIBUTING.md)** and remove the
-   existing template.
+**For new feature(s) or feature request(s) please refer to our guidelines about**
+**[feature contribution](https://github.com/bigchaindb/bigchaindb/blob/master/docs/specs/README.md)**
+**and remove the existing template.**
 
 * BigchainDB version:
 * Operating System:
