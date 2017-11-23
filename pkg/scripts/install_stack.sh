@@ -122,14 +122,13 @@ fi
 git clone https://github.com/bigchaindb/bigchaindb.git -b $BRANCH
 
 if [[ $stack == "devstack" ]]; then # Install devstack
-    curl -fOL# https://raw.githubusercontent.com/bigchaindb/bigchaindb/4137ca626d094152889cba43196a0ed2d2a96cd0/pkg/scripts/Vagrantfile
-elif [[ $stack == "fullstack" ]]; then # Install fullstack
+    curl -fOL# https://raw.githubusercontent.com/bigchaindb/bigchaindb/${BRANCH}/pkg/scripts/Vagrantfile
+    vagrant up --provider virtualbox
+elif [[ $stack == "network" ]]; then # Install fullstack
     exit
 else # Throw error
     echo -e "${ERROR}Unrecognized stack name, must be either devstack or network${NC}"
     exit 1
 fi
-
-vagrant up --provider virtualbox
 
 echo -e "${SUCCESS}Finished installing! You may now log in using 'vagrant ssh'"

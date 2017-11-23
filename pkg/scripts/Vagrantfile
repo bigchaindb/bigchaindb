@@ -16,7 +16,7 @@ openedx_release = ENV['OPENEDX_RELEASE']
 boxname = ENV['OPENEDX_BOXNAME']
 
 $script = <<SCRIPT
-if [ ! -d /opt/stack/bigchaindb/pkg/scrips ]; then
+if [ ! -d /opt/stack/bigchaindb/pkg/scripts ]; then
     echo "Error: Base box is missing provisioning scripts." 1>&2
     exit 1
 fi
