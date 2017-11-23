@@ -12,8 +12,7 @@ MOUNT_DIRS = {
   :bigchaindb => {:repo => "bigchaindb", :local => "/opt/stack/bigchaindb", :owner => "edxapp"},
 }
 
-openedx_release = ENV['OPENEDX_RELEASE']
-boxname = ENV['OPENEDX_BOXNAME']
+boxname = ENV['BOXNAME']
 
 $script = <<SCRIPT
 if [ ! -d /opt/stack/bigchaindb/pkg/scripts ]; then
