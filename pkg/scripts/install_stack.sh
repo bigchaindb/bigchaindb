@@ -17,7 +17,7 @@ function usage
 {
     cat << EOM
 
-    Usage: $ bash ${0##*/} [-v] [-h] STACK [BRANCH]
+    Usage: $ bash ${0##*/} [-v] [-h] [STACK] [GIT_BRANCH]
 
     Installs the BigchainDB devstack or network.
 
@@ -25,13 +25,14 @@ function usage
     it in a .log file within the current directory.
 
     STACK
-        Either'devstack' or 'network'. Network mimics a production network
+        Either 'devstack' or 'network'. Network mimics a production network
         environment with multiple BDB nodes, whereas devstack is useful if 
         you plan on modifying the bigchaindb code.
-        You must specify this.
+        Defualts to STACK environment variable
 
-    BRANCH
-        The bigchaindb repo branch to use.
+    GIT_BRANCH
+        The bigchaindb repo branch to use. defaults to GIT_BRANCH environment
+        variable
 
     -v
         Verbose output from ansible playbooks.
@@ -72,23 +73,22 @@ done
 shift "$((OPTIND-1))" # Shift off the options we've already parsed
 
 # STACK is a required positional argument.
-if [[ ! $1 ]]; then
-    echo "STACK is required"
-    usage
-    exit 1
+if [[ $1 ]]; then
+    stack=$1
+else
+    stack=$STACK
 fi
-stack=$1
 shift
 
 # RELEASE is an optional positional argument, defaulting to BRANCH.
 if [[ $1 ]]; then
-    release=$1
-    shift
+    git_branch=$1
 else
-    release=$BRANCH
+    git_branch=$GIT_BRANCH
 fi
 
-if [[ ! $release ]]; then
+
+if [[ ! $git_branch ]]; then
     echo "You must specify BRANCH, or set BDB_BRANCH before running."
     exit 1
 fi
@@ -124,7 +124,8 @@ git clone https://github.com/bigchaindb/bigchaindb.git -b $BRANCH
 if [[ $stack == "devstack" ]]; then # Install devstack
     curl -fOL# https://raw.githubusercontent.com/bigchaindb/bigchaindb/${BRANCH}/pkg/scripts/Vagrantfile
     vagrant up --provider virtualbox
-elif [[ $stack == "network" ]]; then # Install fullstack
+elif [[ $stack == "network" ]]; then # Install network
+    echo -e "${WARN}Network support is not yet available"
     exit
 else # Throw error
     echo -e "${ERROR}Unrecognized stack name, must be either devstack or network${NC}"
