@@ -45,9 +45,10 @@ Here's some explanation of the contents:
 - **metadata**: User-provided transaction metadata.
   It can be any valid JSON document, or ``null``.
   **NOTE:** When using MongoDB for storage, certain restriction apply
-  to all (including nested) keys of the ``"data"`` JSON document:
+  to all (including nested) keys of the JSON document:
   1) keys (i.e. key names, not values) must **not** begin with the ``$`` character, and
   2) keys must not contain ``.`` or the null character (Unicode code point 0000).
+  3) The key `"language"` (at any level in the hierarchy) is a special key and used for specifying text search language. Its value must be one of the allowed values; see the valid `Text Search Languages <https://docs.mongodb.com/manual/reference/text-search-languages/>`_ in the MongoDB Docs. In BigchainDB, only the languages supported by *MongoDB community edition* are allowed.
 
 **How the transaction ID is computed.**
 1) Build a Python dictionary containing ``version``, ``inputs``, ``outputs``, ``operation``, ``asset``, ``metadata`` and their values, 
