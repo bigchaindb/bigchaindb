@@ -81,6 +81,7 @@ def test_deliver_transfer_tx__double_spend_fails(b):
     from bigchaindb.models import Transaction
     from bigchaindb.common.crypto import generate_key_pair
 
+    app = App(b)
     alice = generate_key_pair()
     bob = generate_key_pair()
     carly = generate_key_pair()
@@ -94,7 +95,6 @@ def test_deliver_transfer_tx__double_spend_fails(b):
                             asset=asset)\
                     .sign([alice.private_key])
 
-    app = App(b)
     result = app.deliver_tx(encode_tx_to_bytes(tx))
     assert result.is_ok()
 
@@ -103,7 +103,6 @@ def test_deliver_transfer_tx__double_spend_fails(b):
                                        asset_id=tx.id)\
                              .sign([alice.private_key])
 
-    app = App(b)
     result = app.deliver_tx(encode_tx_to_bytes(tx_transfer))
     assert result.is_ok()
 
@@ -112,6 +111,5 @@ def test_deliver_transfer_tx__double_spend_fails(b):
                                         asset_id=tx.id)\
                               .sign([alice.private_key])
 
-    app = App(b)
     result = app.deliver_tx(encode_tx_to_bytes(double_spend))
     assert result.is_error()
