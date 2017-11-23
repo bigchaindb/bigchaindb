@@ -1,3 +1,5 @@
+import os
+
 from bigchaindb import backend
 
 
@@ -27,3 +29,15 @@ def test_asset_is_separated_from_transaciton(b):
     assert 'asset' not in backend.query.get_transaction(b.connection, tx.id)
     assert backend.query.get_asset(b.connection, tx.id)['data'] == asset
     assert b.get_transaction(tx.id) == tx
+
+
+def test_get_latest_block(b):
+    from bigchaindb.tendermint.lib import Block
+
+    for i in range(10):
+        app_hash = os.urandom(16).hex()
+        block = Block(app_hash=app_hash, height=i)._asdict()
+        b.store_block(block)
+
+    block = b.get_latest_block()
+    assert block['height'] == 9
