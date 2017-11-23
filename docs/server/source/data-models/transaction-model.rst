@@ -69,6 +69,14 @@ The Transaction Schema
 ----------------------
 
 BigchainDB checks all transactions (JSON documents)
-against a formal schema defined in :ref:`some JSON Schema files
-(copied verbatim into the Appendices) 
-<The Transaction Schema Files>`.
+against a formal schema defined
+in some `JSON Schema <http://json-schema.org/>`_ files.
+Those files are part of the IPDB Protocol.
+Their official source is the ``tx_schema/`` directory
+in the `ipdb/ipdb-protocol repository on GitHub
+<https://github.com/ipdb/ipdb-protocol>`_,
+but BigchainDB Server uses copies of those files;
+those copies can be found
+in the ``bigchaindb/common/schema/`` directory
+in the `bigchaindb/bigchaindb repository on GitHub
+<https://github.com/bigchaindb/bigchaindb>`_.
