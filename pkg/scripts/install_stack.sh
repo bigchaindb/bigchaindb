@@ -17,21 +17,18 @@ function usage
 {
     cat << EOM
 
-    Usage: $ bash ${0##*/} [-v] [-h] [STACK] [GIT_BRANCH]
+    Usage: $ bash ${0##*/} [-v] [-h]
 
     Installs the BigchainDB devstack or network.
 
-    This script captures a log of all output produced during runtime, and saves
-    it in a .log file within the current directory.
+    ENV[STACK]
+        Set STACK environment variable to Either 'devstack' or 'network'.
+        Network mimics a production network environment with multiple BDB
+        nodes, whereas devstack is useful if you plan on modifying the
+        bigchaindb code.
 
-    STACK
-        Either 'devstack' or 'network'. Network mimics a production network
-        environment with multiple BDB nodes, whereas devstack is useful if 
-        you plan on modifying the bigchaindb code.
-        Defualts to STACK environment variable
-
-    GIT_BRANCH
-        The bigchaindb repo branch to use. defaults to GIT_BRANCH environment
+    ENV[GIT_BRANCH]
+        To configure bigchaindb repo branch to use set GIT_BRANCH environment
         variable
 
     -v
@@ -49,16 +46,11 @@ WARN='\033[1;33m' # Yellow
 SUCCESS='\033[0;32m' # Green
 NC='\033[0m' # No Color
 
-# Output verbosity
-verbosity=0
-# BRANCH
-branch=""
+# GIT_BRANCH
+git_branch=""
 
-while getopts "vh" opt; do
+while getopts "h" opt; do
     case "$opt" in
-        v)
-            verbosity=1
-            ;;
         h)
             usage
             exit
@@ -70,26 +62,25 @@ while getopts "vh" opt; do
     esac
 done
 
-shift "$((OPTIND-1))" # Shift off the options we've already parsed
 
-# STACK is a required positional argument.
-if [[ $1 ]]; then
-    stack=$1
-else
-    stack=$STACK
-fi
-shift
+# STACK is a required variable.
+stack=$STACK
 
-# RELEASE is an optional positional argument, defaulting to BRANCH.
-if [[ $1 ]]; then
-    git_branch=$1
-else
-    git_branch=$GIT_BRANCH
+if [[ ! $stack ]]; then
+    echo "STACK environment variable not defined"
+    echo
+    usage
+    exit 1
 fi
+
+
+git_branch=$GIT_BRANCH
 
 
 if [[ ! $git_branch ]]; then
-    echo "You must specify BRANCH, or set BDB_BRANCH before running."
+    echo "You must specify GIT_BRANCH before running."
+    echo
+    echo usage
     exit 1
 fi
 
@@ -111,18 +102,18 @@ function finish {
 }
 trap finish EXIT
 
-export BRANCH=$release
-echo "Using bigchaindb branch '$BRANCH'"
+export GIT_BRANCH=$git_branch
+echo "Using bigchaindb branch '$GIT_BRANCH'"
 
 if [[ -d .vagrant ]]; then
     echo -e "${ERROR}A .vagrant directory already exists here. If you already tried installing $stack, make sure to vagrant destroy the $stack machine and 'rm -rf .vagrant' before trying to reinstall. If you would like to install a separate $stack, change to a different directory and try running the script again.${NC}"
     exit 1
 fi
 
-git clone https://github.com/bigchaindb/bigchaindb.git -b $BRANCH
+git clone https://github.com/bigchaindb/bigchaindb.git -b $GIT_BRANCH
 
 if [[ $stack == "devstack" ]]; then # Install devstack
-    curl -fOL# https://raw.githubusercontent.com/bigchaindb/bigchaindb/${BRANCH}/pkg/scripts/Vagrantfile
+    curl -fOL# https://raw.githubusercontent.com/bigchaindb/bigchaindb/${GIT_BRANCH}/pkg/scripts/Vagrantfile
     vagrant up --provider virtualbox
 elif [[ $stack == "network" ]]; then # Install network
     echo -e "${WARN}Network support is not yet available"

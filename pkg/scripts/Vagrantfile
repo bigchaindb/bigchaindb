@@ -20,7 +20,7 @@ if [ ! -d /opt/stack/bigchaindb/pkg/scripts ]; then
     exit 1
 fi
 
-bash /opt/stack/bigchaindb/bigchaindb/pkg/scrips/stack.sh
+bash /opt/stack/bigchaindb/pkg/scripts/stack.sh
 
 SCRIPT
 

@@ -24,7 +24,7 @@ fi
 # =============
 
 # Source utility functions
-source functions-common
+source ${TOP_DIR}/functions-common
 
 # Determine what system we are running on.  This provides ``os_VENDOR``,
 # ``os_RELEASE``, ``os_PACKAGE``, ``os_CODENAME``
@@ -53,8 +53,6 @@ is_package_installed tmux || install_package tmux
 # Kill background processes on exit
 trap exit_trap EXIT
 function exit_trap {
-    # Kill the last spinner process
-    kill_spinner
     exit $?
 }
 
