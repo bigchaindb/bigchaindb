@@ -3,6 +3,10 @@ unless Vagrant.has_plugin?("vagrant-vbguest")
   raise "Please install the vagrant-vbguest plugin by running `vagrant plugin install vagrant-vbguest`"
 end
 
+unless Vagrant.has_plugin?("vagrant-cachier")
+  raise "Please install the vagrant-cachier plugin by running `vagrant plugin install vagrant-cachier`"
+end
+
 VAGRANTFILE_API_VERSION = "2"
 
 MEMORY = 4096

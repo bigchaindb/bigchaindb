@@ -34,18 +34,24 @@ GetDistro
 # Configure Distro Repositories
 # -----------------------------
 
-# For Debian/Ubuntu make apt attempt to retry network ops on it's own
+# For Debian/Ubuntu make apt attempt to retry network ops on it's own and mongodb pub key
+# source repo
 if is_ubuntu; then
     echo 'APT::Acquire::Retries "20";' | sudo tee /etc/apt/apt.conf.d/80retry  >/dev/null
+    sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 0C49F3730359A14518585931BC711F9BA15703C6
+    echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.4 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.4.list
 fi
 
 # Ensure required packages are installed
 # --------------------------------------
+
 is_package_installed python3 || install_package python3
 is_package_installed python3-pip || install_package python3-pip
 is_package_installed libffi-dev || install_package libffi-dev
 is_package_installed libssl-dev || install_package libssl-dev
 is_package_installed tmux || install_package tmux
+is_package_installed mongodb-org || install_package mongodb-org
+
 
 # Configure Error Traps
 # ---------------------
