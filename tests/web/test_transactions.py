@@ -47,8 +47,8 @@ def test_post_create_transaction_endpoint(b, client):
     assert res.json['outputs'][0]['public_keys'][0] == user_pub
 
 
-@pytest.mark.parametrize("field", ['asset', 'metadata'])
-@pytest.mark.parametrize("value,err_key,expected_status_code", [
+@pytest.mark.parametrize('field', ['asset', 'metadata'])
+@pytest.mark.parametrize('value,err_key,expected_status_code', [
     ({'bad.key': 'v'}, 'bad.key', 400),
     ({'$bad.key': 'v'}, '$bad.key', 400),
     ({'$badkey': 'v'}, '$badkey', 400),

@@ -7,7 +7,7 @@ from bigchaindb.backend.exceptions import DuplicateKeyError
 from bigchaindb.backend.utils import module_dispatch_registrar
 from bigchaindb.backend.localmongodb.connection import LocalMongoDBConnection
 from bigchaindb.common.transaction import Transaction
-
+from bigchaindb.backend import mongodb
 
 register_query = module_dispatch_registrar(backend.query)
 
@@ -106,3 +106,8 @@ def get_txids_filtered(conn, asset_id, operation=None):
         conn.collection('transactions')
         .aggregate(pipeline))
     return (elem['id'] for elem in cursor)
+
+
+@register_query(LocalMongoDBConnection)
+def text_search(*args, **kwargs):
+    return mongodb.query.text_search(*args, **kwargs)

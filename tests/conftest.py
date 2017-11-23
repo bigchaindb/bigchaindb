@@ -309,6 +309,12 @@ def b():
 
 
 @pytest.fixture
+def tb():
+    from bigchaindb.tendermint import BigchainDB
+    return BigchainDB()
+
+
+@pytest.fixture
 def create_tx(b, user_pk):
     from bigchaindb.models import Transaction
     return Transaction.create([b.me], [([user_pk], 1)])

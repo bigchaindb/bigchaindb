@@ -72,3 +72,11 @@ def test_get_assets():
 
     for asset in assets:
         assert query.get_asset(conn, asset['id'])
+
+
+@pytest.mark.bdb
+@pytest.mark.tendermint
+def test_text_search():
+    from ..mongodb.test_queries import test_text_search
+
+    test_text_search()
