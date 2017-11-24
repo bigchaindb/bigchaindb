@@ -3,7 +3,7 @@ from copy import deepcopy
 import pytest
 import pymongo
 
-pytestmark = pytest.mark.tendermint
+pytestmark = [pytest.mark.tendermint, pytest.mark.localmongodb]
 
 
 @pytest.mark.bdb
@@ -72,3 +72,10 @@ def test_get_assets():
 
     for asset in assets:
         assert query.get_asset(conn, asset['id'])
+
+
+@pytest.mark.bdb
+def test_text_search():
+    from ..mongodb.test_queries import test_text_search
+
+    test_text_search()

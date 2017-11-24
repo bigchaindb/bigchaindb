@@ -25,6 +25,13 @@ USER_PRIVATE_KEY = '8eJ8q9ZQpReWyQT5aFCiwtZ5wDZC4eDnCen88p3tQ6ie'
 USER_PUBLIC_KEY = 'JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE'
 
 
+def pytest_runtest_setup(item):
+    if isinstance(item, item.Function):
+        backend = item.session.config.getoption('--database-backend')
+        if (item.get_marker('localmongodb') and backend != 'localmongodb'):
+            pytest.skip('Skip tendermint specific tests if not using localmongodb')
+
+
 def pytest_addoption(parser):
     from bigchaindb.backend.connection import BACKENDS
 
@@ -306,6 +313,12 @@ def carol_pubkey(carol):
 def b():
     from bigchaindb import Bigchain
     return Bigchain()
+
+
+@pytest.fixture
+def tb():
+    from bigchaindb.tendermint import BigchainDB
+    return BigchainDB()
 
 
 @pytest.fixture

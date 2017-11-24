@@ -65,7 +65,7 @@ def test_app(b):
     data = p.process('end_block', r)
     res, err = read_message(BytesIO(data), types.Response)
     assert res
-    assert 'end_block' == res.WhichOneof("value")
+    assert 'end_block' == res.WhichOneof('value')
 
     new_block_hash = calculate_hash([block0['app_hash'], new_block_txn_hash])
 
