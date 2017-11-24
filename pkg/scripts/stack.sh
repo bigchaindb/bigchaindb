@@ -13,6 +13,7 @@ umask 022
 
 # Keep track of the stack.sh directory
 TOP_DIR=$(cd $(dirname "$0") && pwd)
+BASE_DIR=${TOP_DIR}/../..
 
 # Check for uninitialized variables, a big cause of bugs
 NOUNSET=${NOUNSET:-}
@@ -51,7 +52,51 @@ is_package_installed libffi-dev || install_package libffi-dev
 is_package_installed libssl-dev || install_package libssl-dev
 is_package_installed tmux || install_package tmux
 is_package_installed mongodb-org || install_package mongodb-org
+is_package_installed unzip || install_package unzip
 
+# Install tendermint
+curl -fOL# https://s3-us-west-2.amazonaws.com/tendermint/binaries/tendermint/v0.12.0/tendermint_0.12.0_linux_amd64.zip
+unzip tendermint_0.12.0_linux_amd64.zip
+sudo mv tendermint /usr/local/bin
+
+
+# Create data dir for mongod
+sudo mkdir -p /data/db
+sudo chmod -R 700 /data/db
+
+# Configure tendermint
+tendermint init
+touch ~/.tendermint/genesis.json
+cat << 'EOF' >> ~/.tendermint/genesis.json
+{
+  "genesis_time": "0001-01-01T00:00:00Z",
+  "chain_id": "test-chain-EhS6zg",
+  "validators": [
+    {
+      "pub_key": {
+        "type": "ed25519",
+        "data": "C3E96823EB67401C5B794F4100CEA04B745C29A0707979485EAE4F3C1A7D8583"
+      },
+      "power": 10,
+      "name": ""
+    }
+  ],
+  "app_hash": ""
+}
+EOF
+
+# Configure tmux
+tmux new-session -s bdb-dev -n bdb
+tmux new-window -n mdb
+tmux new-window -n tendermint
+
+# 
+
+# Start services
+cd BASE_DIR
+tmux send-keys -t bdb-dev:mdb 'sudo mongod --replSet=bigchain-rs' C-m
+tmux send-keys -t bdb-dev:bdb 'sudo python3 setup.py install && bigchaindb -l DEBUG start --init' C-m
+tmux send-key -t bdb-dev:tendermint 'tendermint unsafe_reset_all && tendermint node' C-m
 
 # Configure Error Traps
 # ---------------------
