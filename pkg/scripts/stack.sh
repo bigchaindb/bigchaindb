@@ -86,7 +86,7 @@ cat << 'EOF' >> ~/.tendermint/genesis.json
 EOF
 
 # Configure tmux
-tmux new-session -s bdb-dev -n bdb
+tmux new-session -s bdb-dev -n bdb -d
 tmux new-window -n mdb
 tmux new-window -n tendermint
 
