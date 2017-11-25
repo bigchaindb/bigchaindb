@@ -308,14 +308,13 @@ def test_count_blocks(signed_create_tx):
     assert query.count_blocks(conn) == 1
 
 
-def test_count_backlog(signed_create_tx):
+def test_count_backlog(signed_create_tx, signed_transfer_tx):
     from bigchaindb.backend import connect, query
     conn = connect()
 
     # create and insert some transations
     conn.db.backlog.insert_one(signed_create_tx.to_dict())
-    signed_create_tx.metadata = {'msg': 'aaa'}
-    conn.db.backlog.insert_one(signed_create_tx.to_dict())
+    conn.db.backlog.insert_one(signed_transfer_tx.to_dict())
 
     assert query.count_backlog(conn) == 2
 
@@ -437,17 +436,21 @@ def test_get_new_blocks_feed(b, create_tx):
     assert list(feed) == [b3]
 
 
-def test_get_spending_transactions(user_pk):
+def test_get_spending_transactions(user_pk, user_sk):
     from bigchaindb.backend import connect, query
     from bigchaindb.models import Block, Transaction
     conn = connect()
 
     out = [([user_pk], 1)]
     tx1 = Transaction.create([user_pk], out * 3)
+    tx1.sign([user_sk])
     inputs = tx1.to_inputs()
     tx2 = Transaction.transfer([inputs[0]], out, tx1.id)
+    tx2.sign([user_sk])
     tx3 = Transaction.transfer([inputs[1]], out, tx1.id)
+    tx3.sign([user_sk])
     tx4 = Transaction.transfer([inputs[2]], out, tx1.id)
+    tx4.sign([user_sk])
     block = Block([tx1, tx2, tx3, tx4])
     conn.db.bigchain.insert_one(block.to_dict())
 

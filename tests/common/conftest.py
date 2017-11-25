@@ -202,3 +202,149 @@ def dummy_transaction():
         }],
         'version': '1.0'
     }
+
+
+@pytest.fixture
+def unfulfilled_transaction():
+    return {
+        'asset': {
+            'data': {
+                'msg': 'Hello BigchainDB!',
+            }
+        },
+        'id': None,
+        'inputs': [{
+            # XXX This could be None, see #1925
+            # https://github.com/bigchaindb/bigchaindb/issues/1925
+            'fulfillment': {
+                'public_key': 'JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE',
+                'type': 'ed25519-sha-256'
+            },
+            'fulfills': None,
+            'owners_before': ['JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE']
+        }],
+        'metadata': None,
+        'operation': 'CREATE',
+        'outputs': [{
+            'amount': '1',
+            'condition': {
+                'details': {
+                    'public_key': 'JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE',
+                    'type': 'ed25519-sha-256'
+                },
+                'uri': 'ni:///sha-256;49C5UWNODwtcINxLgLc90bMCFqCymFYONGEmV4a0sG4?fpt=ed25519-sha-256&cost=131072'},
+            'public_keys': ['JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE']
+        }],
+        'version': '1.0'
+    }
+
+
+@pytest.fixture
+def fulfilled_transaction():
+    return {
+        'asset': {
+            'data': {
+                'msg': 'Hello BigchainDB!',
+            }
+        },
+        'id': None,
+        'inputs': [{
+            'fulfillment': ('pGSAIP_2P1Juh-94sD3uno1lxMPd9EkIalRo7QB014pT6dD9g'
+                            'UANRNxasDy1Dfg9C2Fk4UgHdYFsJzItVYi5JJ_vWc6rKltn0k'
+                            'jagynI0xfyR6X9NhzccTt5oiNH9mThEb4QmagN'),
+            'fulfills': None,
+            'owners_before': ['JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE']
+        }],
+        'metadata': None,
+        'operation': 'CREATE',
+        'outputs': [{
+            'amount': '1',
+            'condition': {
+                'details': {
+                    'public_key': 'JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE',
+                    'type': 'ed25519-sha-256'
+                },
+                'uri': 'ni:///sha-256;49C5UWNODwtcINxLgLc90bMCFqCymFYONGEmV4a0sG4?fpt=ed25519-sha-256&cost=131072'},
+            'public_keys': ['JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE']
+        }],
+        'version': '1.0'
+    }
+
+
+@pytest.fixture
+def fulfilled_and_hashed_transaction():
+    return {
+        'asset': {
+            'data': {
+                'msg': 'Hello BigchainDB!',
+            }
+        },
+        'id': '7a7c827cf4ef7985f08f4e9d16f5ffc58ca4e82271921dfbed32e70cb462485f',
+        'inputs': [{
+            'fulfillment': ('pGSAIP_2P1Juh-94sD3uno1lxMPd9EkIalRo7QB014pT6dD9g'
+                            'UANRNxasDy1Dfg9C2Fk4UgHdYFsJzItVYi5JJ_vWc6rKltn0k'
+                            'jagynI0xfyR6X9NhzccTt5oiNH9mThEb4QmagN'),
+            'fulfills': None,
+            'owners_before': ['JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE']
+        }],
+        'metadata': None,
+        'operation': 'CREATE',
+        'outputs': [{
+            'amount': '1',
+            'condition': {
+                'details': {
+                    'public_key': 'JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE',
+                    'type': 'ed25519-sha-256'
+                },
+                'uri': 'ni:///sha-256;49C5UWNODwtcINxLgLc90bMCFqCymFYONGEmV4a0sG4?fpt=ed25519-sha-256&cost=131072'},
+            'public_keys': ['JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE']
+        }],
+        'version': '1.0'
+    }
+
+
+# TODO For reviewers: Pick which approach you like best: parametrized or not?
+@pytest.fixture(params=(
+    {'id': None,
+     'fulfillment': {
+         'public_key': 'JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE',
+         'type': 'ed25519-sha-256'}},
+    {'id': None,
+     'fulfillment': ('pGSAIP_2P1Juh-94sD3uno1lxMPd9EkIalRo7QB014pT6dD9g'
+                     'UANRNxasDy1Dfg9C2Fk4UgHdYFsJzItVYi5JJ_vWc6rKltn0k'
+                     'jagynI0xfyR6X9NhzccTt5oiNH9mThEb4QmagN')},
+    {'id': '7a7c827cf4ef7985f08f4e9d16f5ffc58ca4e82271921dfbed32e70cb462485f',
+     'fulfillment': ('pGSAIP_2P1Juh-94sD3uno1lxMPd9EkIalRo7QB014pT6dD9g'
+                     'UANRNxasDy1Dfg9C2Fk4UgHdYFsJzItVYi5JJ_vWc6rKltn0k'
+                     'jagynI0xfyR6X9NhzccTt5oiNH9mThEb4QmagN')},
+))
+def tri_state_transaction(request):
+    tx = {
+        'asset': {
+            'data': {
+                'msg': 'Hello BigchainDB!',
+            }
+        },
+        'id': None,
+        'inputs': [{
+            'fulfillment': None,
+            'fulfills': None,
+            'owners_before': ['JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE']
+        }],
+        'metadata': None,
+        'operation': 'CREATE',
+        'outputs': [{
+            'amount': '1',
+            'condition': {
+                'details': {
+                    'public_key': 'JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE',
+                    'type': 'ed25519-sha-256'
+                },
+                'uri': 'ni:///sha-256;49C5UWNODwtcINxLgLc90bMCFqCymFYONGEmV4a0sG4?fpt=ed25519-sha-256&cost=131072'},
+            'public_keys': ['JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE']
+        }],
+        'version': '1.0'
+    }
+    tx['id'] = request.param['id']
+    tx['inputs'][0]['fulfillment'] = request.param['fulfillment']
+    return tx
