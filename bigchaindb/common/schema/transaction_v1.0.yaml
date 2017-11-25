@@ -13,7 +13,9 @@ required:
 - version
 properties:
   id:
-    "$ref": "#/definitions/sha3_hexdigest"
+    anyOf:
+    - "$ref": "#/definitions/sha3_hexdigest"
+    - type: 'null'
   operation:
     "$ref": "#/definitions/operation"
   asset:
