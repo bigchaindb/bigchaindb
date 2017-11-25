@@ -1,0 +1,161 @@
+---
+"$schema": "http://json-schema.org/draft-04/schema#"
+type: object
+additionalProperties: false
+title: Transaction Schema
+required:
+- id
+- inputs
+- outputs
+- operation
+- metadata
+- asset
+- version
+properties:
+  id:
+    "$ref": "#/definitions/sha3_hexdigest"
+  operation:
+    "$ref": "#/definitions/operation"
+  asset:
+    "$ref": "#/definitions/asset"
+  inputs:
+    type: array
+    title: "Transaction inputs"
+    items:
+      "$ref": "#/definitions/input"
+  outputs:
+    type: array
+    items:
+      "$ref": "#/definitions/output"
+  metadata:
+    "$ref": "#/definitions/metadata"
+  version:
+    type: string
+    pattern: "^1\\.0$"
+definitions:
+  offset:
+    type: integer
+    minimum: 0
+  base58:
+    pattern: "[1-9a-zA-Z^OIl]{43,44}"
+    type: string
+  public_keys:
+    anyOf:
+    - type: array
+      items:
+        "$ref": "#/definitions/base58"
+    - type: 'null'
+  sha3_hexdigest:
+    pattern: "[0-9a-f]{64}"
+    type: string
+  uuid4:
+    pattern: "[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}"
+    type: string
+  operation:
+    type: string
+    enum:
+    - CREATE
+    - TRANSFER
+    - GENESIS
+  asset:
+    type: object
+    additionalProperties: false
+    properties:
+      id:
+        "$ref": "#/definitions/sha3_hexdigest"
+      data:
+        anyOf:
+        - type: object
+          additionalProperties: true
+        - type: 'null'
+  output:
+    type: object
+    additionalProperties: false
+    required:
+    - amount
+    - condition
+    - public_keys
+    properties:
+      amount:
+        type: string
+        pattern: "^[0-9]{1,20}$"
+      condition:
+        type: object
+        additionalProperties: false
+        required:
+        - details
+        - uri
+        properties:
+          details:
+            "$ref": "#/definitions/condition_details"
+          uri:
+            type: string
+            pattern: "^ni:///sha-256;([a-zA-Z0-9_-]{0,86})[?]\
+              (fpt=(ed25519|threshold)-sha-256(&)?|cost=[0-9]+(&)?|\
+              subtypes=ed25519-sha-256(&)?){2,3}$"
+      public_keys:
+        "$ref": "#/definitions/public_keys"
+  input:
+    type: "object"
+    additionalProperties: false
+    required:
+    - owners_before
+    - fulfillment
+    properties:
+      owners_before:
+        "$ref": "#/definitions/public_keys"
+      fulfillment:
+        anyOf:
+        - type: string
+          pattern: "^[a-zA-Z0-9_-]*$"
+        - "$ref": "#/definitions/condition_details"
+      fulfills:
+        anyOf:
+        - type: 'object'
+          additionalProperties: false
+          required:
+          - output_index
+          - transaction_id
+          properties:
+            output_index:
+              "$ref": "#/definitions/offset"
+            transaction_id:
+              "$ref": "#/definitions/sha3_hexdigest"
+        - type: 'null'
+  metadata:
+    anyOf:
+    - type: object
+      additionalProperties: true
+      minProperties: 1
+    - type: 'null'
+  condition_details:
+    anyOf:
+    - type: object
+      additionalProperties: false
+      required:
+      - type
+      - public_key
+      properties:
+        type:
+          type: string
+          pattern: "^ed25519-sha-256$"
+        public_key:
+          "$ref": "#/definitions/base58"
+    - type: object
+      additionalProperties: false
+      required:
+      - type
+      - threshold
+      - subconditions
+      properties:
+        type:
+          type: "string"
+          pattern: "^threshold-sha-256$"
+        threshold:
+          type: integer
+          minimum: 1
+          maximum: 100
+        subconditions:
+          type: array
+          items:
+            "$ref": "#/definitions/condition_details"

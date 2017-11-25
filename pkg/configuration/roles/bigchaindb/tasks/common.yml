@@ -1,0 +1,59 @@
+---
+- name: Upgrade pip
+  shell: "pip3 install --upgrade pip"
+  when: python_pip_upgrade
+  tags: [bigchaindb]
+
+- name: Upgade setuptools
+  shell: "pip3 install --upgrade setuptools"
+  when: python_setuptools_upgrade
+  tags: [bigchaindb]
+
+- name: Install BigchainDB
+  shell: "pip3 install bigchaindb"
+  tags: [bigchaindb]
+
+- name: Check if BigchainDB node is already configured
+  stat:
+    path: "{{ bigchaindb_config_path }}"
+  register: stat_result
+
+- name: Configure BigchainDB
+  shell: "bigchaindb -y configure {{ backend_db }}"
+  environment:
+    BIGCHAINDB_SERVER_BIND:  "{{ bigchaindb_server_bind }}"
+    BIGCHAINDB_CONFIG_PATH: "{{ bigchaindb_config_path }}"
+    BIGCHAINDB_DATABASE_HOST: "{{ ansible_hostname }}"
+  when: stat_result.stat.exists == False 
+  tags: [bigchaindb]
+
+- name: MongoDB Process Check
+  shell: pgrep mongod | wc -l
+  register: mdb_pchk
+  tags: [bigchaindb]
+
+- name: BigchainDB Process Check
+  shell: pgrep bigchaindb | wc -l
+  register: bdb_pchk
+  tags: [bigchaindb]
+
+- name: Start BigchainDB
+  shell: "bigchaindb start > {{ bigchaindb_log_file }} 2>&1 &"
+  environment:
+    BIGCHAINDB_CONFIG_PATH: "{{ bigchaindb_config_path }}"
+  when: mdb_pchk.stdout| int >= 1 and bdb_pchk.stdout| int == 0
+  async: 10
+  poll: 0
+  tags: [bigchaindb]
+
+- name: Get BigchainDB node public key
+  shell: "cat {{ bigchaindb_config_path }}"
+  register: bdb_node_config
+  tags: [bigchaindb]
+
+- name: Set Facts BigchainDB
+  set_fact: 
+    pub_key="{{ ( bdb_node_config.stdout|from_json).keypair.public }}"
+    hostname="{{ ansible_hostname }}"
+    bdb_config="{{ bigchaindb_config_path }}"
+  tags: [bigchaindb]

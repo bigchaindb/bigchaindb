@@ -105,17 +105,17 @@ $ docker-compose build
 First, start `RethinkDB` in the background:
 
 ```text
-$ docker-compose up -d rdb
+$ docker-compose -f docker-compose.rdb.yml up -d rdb
 ```
 
 then run the tests using:
 
 ```text
-$ docker-compose run --rm bdb-rdb py.test -v
+$ docker-compose -f docker-compose.rdb.yml run --rm bdb-rdb py.test -v
 ```
 
 to rebuild all the images (usually you only need to rebuild the `bdb` and
- `bdb-rdb` images).
+ `bdb-rdb` images). If that fails, then do `make clean-pyc` and try again.
 
 ## Automated Testing of All Pull Requests
 

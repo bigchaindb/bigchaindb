@@ -19,20 +19,18 @@ Here's some explanation of the contents:
 
 - **id**: The ID of the transaction and also the hash of the transaction (loosely speaking). See below for an explanation of how it's computed. It's also the database primary key.
 
-- **version**: The version-number of :ref:`the transaction schema <Transaction Schema>`. As of BigchainDB Server 1.0.0, the only allowed value is ``"1.0"``.
+- **version**: The version-number of the transaction schema. As of BigchainDB Server 1.0.0, the only allowed value is ``"1.0"``.
 
 - **inputs**: List of inputs.
   Each input spends/transfers a previous output by satisfying/fulfilling
   the crypto-conditions on that output.
   A CREATE transaction should have exactly one input.
   A TRANSFER transaction should have at least one input (i.e. ≥1).
-  For more details, see the subsection about :ref:`inputs <Inputs>`.
 
 - **outputs**: List of outputs.
   Each output indicates the crypto-conditions which must be satisfied
   by anyone wishing to spend/transfer that output.
   It also indicates the number of shares of the asset tied to that output.
-  For more details, see the subsection about :ref:`outputs <Outputs>`.
 
 - **operation**: A string indicating what kind of transaction this is,
   and how it should be validated.
@@ -46,6 +44,11 @@ Here's some explanation of the contents:
 
 - **metadata**: User-provided transaction metadata.
   It can be any valid JSON document, or ``null``.
+  **NOTE:** When using MongoDB for storage, certain restriction apply
+  to all (including nested) keys of the JSON document:
+  1) keys (i.e. key names, not values) must **not** begin with the ``$`` character, and
+  2) keys must not contain ``.`` or the null character (Unicode code point 0000).
+  3) The key `"language"` (at any level in the hierarchy) is a special key and used for specifying text search language. Its value must be one of the allowed values; see the valid `Text Search Languages <https://docs.mongodb.com/manual/reference/text-search-languages/>`_ in the MongoDB Docs. In BigchainDB, only the languages supported by *MongoDB community edition* are allowed.
 
 **How the transaction ID is computed.**
 1) Build a Python dictionary containing ``version``, ``inputs``, ``outputs``, ``operation``, ``asset``, ``metadata`` and their values, 
@@ -60,3 +63,20 @@ There are example BigchainDB transactions in
 :ref:`the HTTP API documentation <The HTTP Client-Server API>`
 and
 `the Python Driver documentation <https://docs.bigchaindb.com/projects/py-driver/en/latest/usage.html>`_.
+
+
+The Transaction Schema
+----------------------
+
+BigchainDB checks all transactions (JSON documents)
+against a formal schema defined
+in some `JSON Schema <http://json-schema.org/>`_ files.
+Those files are part of the IPDB Protocol.
+Their official source is the ``tx_schema/`` directory
+in the `ipdb/ipdb-protocol repository on GitHub
+<https://github.com/ipdb/ipdb-protocol>`_,
+but BigchainDB Server uses copies of those files;
+those copies can be found
+in the ``bigchaindb/common/schema/`` directory
+in the `bigchaindb/bigchaindb repository on GitHub
+<https://github.com/bigchaindb/bigchaindb>`_.

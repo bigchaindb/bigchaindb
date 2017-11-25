@@ -13,7 +13,7 @@ BigchainDB is a scalable blockchain database. [The whitepaper](https://www.bigch
 ## Get Started with BigchainDB Server
 
 ### [Quickstart](https://docs.bigchaindb.com/projects/server/en/latest/quickstart.html)
-### [Set Up & Run a Dev/Test Node](https://docs.bigchaindb.com/projects/server/en/latest/dev-and-test/setup-run-node.html)
+### [Set Up & Run a Dev/Test Node](https://docs.bigchaindb.com/projects/server/en/latest/dev-and-test/index.html)
 ### [Run BigchainDB Server with Docker](https://docs.bigchaindb.com/projects/server/en/latest/appendices/run-with-docker.html)
 ### [Run BigchainDB Server with Vagrant](https://docs.bigchaindb.com/projects/server/en/latest/appendices/run-with-vagrant.html)
 ### [Run BigchainDB Server with Ansible](https://docs.bigchaindb.com/projects/server/en/latest/appendices/run-with-ansible.html)

@@ -2,6 +2,7 @@
 from flask_restful import Api
 from bigchaindb.web.views import (
     assets,
+    metadata,
     blocks,
     info,
     statuses,
@@ -28,6 +29,7 @@ ROUTES_API_V1 = [
     r('/', info.ApiV1Index),
     r('assets/', assets.AssetListApi),
     r('assets/search', assets.SearchApi),
+    r('metadata/', metadata.MetadataApi),
     r('blocks/<string:block_id>', blocks.BlockApi),
     r('blocks/', blocks.BlockListApi),
     r('statuses/', statuses.StatusApi),

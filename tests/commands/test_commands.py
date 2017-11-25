@@ -40,7 +40,7 @@ def test_bigchain_run_start(mock_run_configure,
     from bigchaindb import config
     from bigchaindb.commands.bigchaindb import run_start
     args = Namespace(start_rethinkdb=False, allow_temp_keypair=False, config=None, yes=True,
-                     initialize_database=True)
+                     skip_initialize_database=False)
     run_start(args)
     mocked_setup_logging.assert_called_once_with(user_log_config=config['log'])
 
@@ -290,7 +290,7 @@ def test_allow_temp_keypair_generates_one_on_the_fly(
     bigchaindb.config['keypair'] = {'private': None, 'public': None}
 
     args = Namespace(allow_temp_keypair=True, start_rethinkdb=False, config=None, yes=True,
-                     initialize_database=True)
+                     skip_initialize_database=False)
     run_start(args)
 
     mocked_setup_logging.assert_called_once_with(
@@ -317,7 +317,7 @@ def test_allow_temp_keypair_doesnt_override_if_keypair_found(mock_gen_keypair,
     assert isinstance(original_private_key, str)
 
     args = Namespace(allow_temp_keypair=True, start_rethinkdb=False, config=None, yes=True,
-                     initialize_database=True)
+                     skip_initialize_database=False)
     run_start(args)
 
     mocked_setup_logging.assert_called_once_with(

@@ -49,7 +49,7 @@ def run_start_args(request):
         config=param.get('config'),
         start_rethinkdb=param.get('start_rethinkdb', False),
         allow_temp_keypair=param.get('allow_temp_keypair', False),
-        initialize_database=param.get('initialize_database', True),
+        skip_initialize_database=param.get('skip_initialize_database', False),
     )
 
 

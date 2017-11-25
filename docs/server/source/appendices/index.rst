@@ -10,7 +10,6 @@ Appendices
    install-os-level-deps
    install-latest-pip
    run-with-docker
-   docker-on-mac
    json-serialization
    cryptography
    the-Bigchain-class
@@ -29,3 +28,4 @@ Appendices
    install-with-lxd
    run-with-vagrant
    run-with-ansible
+   vote-yaml
