@@ -686,8 +686,7 @@ class Bigchain(object):
         for obj in objects:
             tx, status = self.get_transaction(obj['id'], True)
             if status == self.TX_VALID:
-<<<<<<< HEAD
-                yield asset
+                yield obj
 
     def text_search_object(self, search, *, limit=0):
         """
@@ -706,6 +705,3 @@ class Bigchain(object):
         #       query by storing block ids with the assets and using fastquery.
         #       See https://github.com/bigchaindb/bigchaindb/issues/1496
         return assets
-=======
-                yield obj
->>>>>>> upstream/master
