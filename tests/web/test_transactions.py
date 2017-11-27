@@ -47,8 +47,8 @@ def test_post_create_transaction_endpoint(b, client):
     assert res.json['outputs'][0]['public_keys'][0] == user_pub
 
 
-@pytest.mark.parametrize("nested", [False, True])
-@pytest.mark.parametrize("language,expected_status_code", [
+@pytest.mark.parametrize('nested', [False, True])
+@pytest.mark.parametrize('language,expected_status_code', [
     ('danish', 202), ('dutch', 202), ('english', 202), ('finnish', 202),
     ('french', 202), ('german', 202), ('hungarian', 202), ('italian', 202),
     ('norwegian', 202), ('portuguese', 202), ('romanian', 202), ('none', 202),
@@ -88,8 +88,8 @@ def test_post_create_transaction_with_language(b, client, nested, language,
             assert res.json['message'] == expected_error_message
 
 
-@pytest.mark.parametrize("field", ['asset', 'metadata'])
-@pytest.mark.parametrize("value,err_key,expected_status_code", [
+@pytest.mark.parametrize('field', ['asset', 'metadata'])
+@pytest.mark.parametrize('value,err_key,expected_status_code', [
     ({'bad.key': 'v'}, 'bad.key', 400),
     ({'$bad.key': 'v'}, '$bad.key', 400),
     ({'$badkey': 'v'}, '$badkey', 400),
