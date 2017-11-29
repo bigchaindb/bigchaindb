@@ -66,37 +66,19 @@ sudo chmod -R 700 /data/db
 
 # Configure tendermint
 tendermint init
-touch ~/.tendermint/genesis.json
-cat << 'EOF' >> ~/.tendermint/genesis.json
-{
-  "genesis_time": "0001-01-01T00:00:00Z",
-  "chain_id": "test-chain-EhS6zg",
-  "validators": [
-    {
-      "pub_key": {
-        "type": "ed25519",
-        "data": "C3E96823EB67401C5B794F4100CEA04B745C29A0707979485EAE4F3C1A7D8583"
-      },
-      "power": 10,
-      "name": ""
-    }
-  ],
-  "app_hash": ""
-}
-EOF
 
 # Configure tmux
 tmux new-session -s bdb-dev -n bdb -d
 tmux new-window -n mdb
 tmux new-window -n tendermint
 
-# 
-
 # Start services
-cd BASE_DIR
 tmux send-keys -t bdb-dev:mdb 'sudo mongod --replSet=bigchain-rs' C-m
-tmux send-keys -t bdb-dev:bdb 'sudo python3 setup.py install && bigchaindb -l DEBUG start --init' C-m
-tmux send-key -t bdb-dev:tendermint 'tendermint unsafe_reset_all && tendermint node' C-m
+tmux send-keys -t bdb-dev:bdb 'export BIGCHAINDB_START_TENDERMINT=0 && export TENDERMINT_HOST=localhost && export TENDERMINT_PORT=46657' C-m
+tmux send-keys -t bdb-dev:bdb 'cd /opt/stack/bigchaindb' C-m
+tmux send-keys -t bdb-dev:bdb 'sudo python3 setup.py install && bigchaindb -y configure mongodb && bigchaindb -l DEBUG start --init' C-m
+
+tmux send-key -t bdb-dev:tendermint 'tendermint init && tendermint unsafe_reset_all && tendermint node' C-m
 
 # Configure Error Traps
 # ---------------------

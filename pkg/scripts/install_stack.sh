@@ -40,12 +40,6 @@ function usage
 EOM
 }
 
-
-ERROR='\033[0;31m' # Red
-WARN='\033[1;33m' # Yellow
-SUCCESS='\033[0;32m' # Green
-NC='\033[0m' # No Color
-
 # GIT_BRANCH
 git_branch=""
 
@@ -106,7 +100,7 @@ export GIT_BRANCH=$git_branch
 echo "Using bigchaindb branch '$GIT_BRANCH'"
 
 if [[ -d .vagrant ]]; then
-    echo -e "${ERROR}A .vagrant directory already exists here. If you already tried installing $stack, make sure to vagrant destroy the $stack machine and 'rm -rf .vagrant' before trying to reinstall. If you would like to install a separate $stack, change to a different directory and try running the script again.${NC}"
+    echo -e "A .vagrant directory already exists here. If you already tried installing $stack, make sure to vagrant destroy the $stack machine and 'rm -rf .vagrant' before trying to reinstall. If you would like to install a separate $stack, change to a different directory and try running the script again."
     exit 1
 fi
 
@@ -116,11 +110,11 @@ if [[ $stack == "devstack" ]]; then # Install devstack
     curl -fOL# https://raw.githubusercontent.com/bigchaindb/bigchaindb/${GIT_BRANCH}/pkg/scripts/Vagrantfile
     vagrant up --provider virtualbox
 elif [[ $stack == "network" ]]; then # Install network
-    echo -e "${WARN}Network support is not yet available"
+    echo -e "Network support is not yet available"
     exit
 else # Throw error
-    echo -e "${ERROR}Unrecognized stack name, must be either devstack or network${NC}"
+    echo -e "Unrecognized stack name, must be either devstack or network"
     exit 1
 fi
 
-echo -e "${SUCCESS}Finished installing! You may now log in using 'vagrant ssh'"
+echo -e "Finished installing! You may now log in using 'vagrant ssh'"
