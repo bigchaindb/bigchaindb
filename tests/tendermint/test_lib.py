@@ -70,10 +70,9 @@ def test_write_and_post_transaction(mock_post, b):
     from bigchaindb.tendermint.utils import encode_transaction
 
     alice = generate_key_pair()
-    asset = {'': ''}
     tx = Transaction.create([alice.public_key],
                             [([alice.public_key], 1)],
-                            asset=asset)\
+                            asset=None)\
                     .sign([alice.private_key]).to_dict()
 
     tx = b.validate_transaction(tx)
