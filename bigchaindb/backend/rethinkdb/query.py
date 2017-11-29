@@ -174,10 +174,24 @@ def write_assets(connection, assets):
 
 
 @register_query(RethinkDBConnection)
+def write_metadata(connection, metadata):
+    return connection.run(
+            r.table('metadata')
+            .insert(metadata, durability=WRITE_DURABILITY))
+
+
+@register_query(RethinkDBConnection)
 def get_assets(connection, asset_ids):
     return connection.run(
             r.table('assets', read_mode=READ_MODE)
             .get_all(*asset_ids))
+
+
+@register_query(RethinkDBConnection)
+def get_metadata(connection, txn_ids):
+    return connection.run(
+            r.table('metadata', read_mode=READ_MODE)
+            .get_all(*txn_ids))
 
 
 @register_query(RethinkDBConnection)

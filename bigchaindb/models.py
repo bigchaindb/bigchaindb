@@ -5,12 +5,12 @@ from bigchaindb.common.exceptions import (InvalidHash, InvalidSignature,
                                           DoubleSpend, InputDoesNotExist,
                                           TransactionNotInValidBlock,
                                           AssetIdMismatch, AmountError,
-                                          SybilError,
-                                          DuplicateTransaction)
+                                          SybilError, DuplicateTransaction)
 from bigchaindb.common.transaction import Transaction
 from bigchaindb.common.utils import (gen_timestamp, serialize,
                                      validate_txn_obj, validate_key)
 from bigchaindb.common.schema import validate_transaction_schema
+from bigchaindb.backend.schema import validate_language_key
 
 
 class Transaction(Transaction):
@@ -91,6 +91,7 @@ class Transaction(Transaction):
         validate_transaction_schema(tx_body)
         validate_txn_obj('asset', tx_body['asset'], 'data', validate_key)
         validate_txn_obj('metadata', tx_body, 'metadata', validate_key)
+        validate_language_key(tx_body['asset'], 'data')
         return super().from_dict(tx_body)
 
     @classmethod
@@ -115,6 +116,15 @@ class Transaction(Transaction):
             asset = list(bigchain.get_assets([tx_dict['id']]))[0]
             del asset['id']
             tx_dict.update({'asset': asset})
+
+        # get metadata of the transaction
+        metadata = list(bigchain.get_metadata([tx_dict['id']]))
+        if 'metadata' not in tx_dict:
+            metadata = metadata[0] if metadata else None
+            if metadata:
+                metadata = metadata.get('metadata')
+
+            tx_dict.update({'metadata': metadata})
 
         return cls.from_dict(tx_dict)
 
@@ -354,11 +364,15 @@ class Block(object):
         """
         asset_ids = cls.get_asset_ids(block_dict)
         assets = bigchain.get_assets(asset_ids)
+        txn_ids = cls.get_txn_ids(block_dict)
+        metadata = bigchain.get_metadata(txn_ids)
+        # reconstruct block
         block_dict = cls.couple_assets(block_dict, assets)
+        block_dict = cls.couple_metadata(block_dict, metadata)
         kwargs = from_dict_kwargs or {}
         return cls.from_dict(block_dict, **kwargs)
 
-    def decouple_assets(self):
+    def decouple_assets(self, block_dict=None):
         """
         Extracts the assets from the ``CREATE`` transactions in the block.
 
@@ -367,7 +381,9 @@ class Block(object):
             the block being the dict of the block with no assets in the CREATE
             transactions.
         """
-        block_dict = deepcopy(self.to_dict())
+        if block_dict is None:
+            block_dict = deepcopy(self.to_dict())
+
         assets = []
         for transaction in block_dict['block']['transactions']:
             if transaction['operation'] in [Transaction.CREATE,
@@ -377,6 +393,27 @@ class Block(object):
                 assets.append(asset)
 
         return (assets, block_dict)
+
+    def decouple_metadata(self, block_dict=None):
+        """
+        Extracts the metadata from transactions in the block.
+
+        Returns:
+            tuple: (metadatas, block) with the metadatas being a list of dict/null and
+            the block being the dict of the block with no metadata in any transaction.
+        """
+        if block_dict is None:
+            block_dict = deepcopy(self.to_dict())
+
+        metadatas = []
+        for transaction in block_dict['block']['transactions']:
+            metadata = transaction.pop('metadata')
+            if metadata:
+                metadata_new = {'id': transaction['id'],
+                                'metadata': metadata}
+                metadatas.append(metadata_new)
+
+        return (metadatas, block_dict)
 
     @staticmethod
     def couple_assets(block_dict, assets):
@@ -404,6 +441,34 @@ class Block(object):
         return block_dict
 
     @staticmethod
+    def couple_metadata(block_dict, metadatal):
+        """
+        Given a block_dict with no metadata (as returned from a database call)
+        and a list of metadata, reconstruct the original block by putting the
+        metadata of each transaction back into its original transaction.
+
+        NOTE: Till a transaction gets accepted the `metadata` of the transaction
+        is not moved outside of the transaction. So, if a transaction is found to
+        have metadata then it should not be overridden.
+
+        Args:
+            block_dict (:obj:`dict`): The block dict as returned from a
+                database call.
+            metadata (:obj:`list` of :obj:`dict`): A list of metadata returned from
+                a database call.
+
+        Returns:
+            dict: The dict of the reconstructed block.
+        """
+        # create a dict with {'<txid>': metadata}
+        metadatal = {m.pop('id'): m.pop('metadata') for m in metadatal}
+        # add the metadata to their corresponding transactions
+        for transaction in block_dict['block']['transactions']:
+            metadata = metadatal.get(transaction['id'], None)
+            transaction.update({'metadata': metadata})
+        return block_dict
+
+    @staticmethod
     def get_asset_ids(block_dict):
         """
         Given a block_dict return all the asset_ids for that block (the txid
@@ -425,6 +490,25 @@ class Block(object):
                 asset_ids.append(transaction['id'])
 
         return asset_ids
+
+    @staticmethod
+    def get_txn_ids(block_dict):
+        """
+        Given a block_dict return all the transaction ids.
+
+        Args:
+            block_dict (:obj:`dict`): The block dict as returned from a
+                database call.
+
+        Returns:
+            list: The list of txn_ids in the block.
+
+        """
+        txn_ids = []
+        for transaction in block_dict['block']['transactions']:
+            txn_ids.append(transaction['id'])
+
+        return txn_ids
 
     def to_str(self):
         return serialize(self.to_dict())

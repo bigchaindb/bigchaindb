@@ -25,6 +25,11 @@ spec:
             configMapKeyRef:
               name: proxy-vars
               key: proxy-frontend-port
+        - name: PROXY_REFERRER_POLICY
+          valueFrom:
+            configMapKeyRef:
+              name: proxy-vars
+              key: proxy-referrer-policy
         - name: PROXY_EXPECTED_REFERER_HEADER
           valueFrom:
             configMapKeyRef:

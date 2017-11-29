@@ -3,11 +3,22 @@
 This directory contains the schemas for the different JSON documents BigchainDB uses.
 
 The aim is to provide:
- - a strict definition/documentation of the data structures used in BigchainDB
- - a language independent tool to validate the structure of incoming/outcoming
-   data (there are several ready to use
-   [implementations](http://json-schema.org/implementations.html) written in
-   different languages)
+
+- a strict definition of the data structures used in BigchainDB
+- a language independent tool to validate the structure of incoming/outcoming
+  data (there are several ready to use
+  [implementations](http://json-schema.org/implementations.html) written in
+  different languages)
+
+## Sources
+
+The file defining the JSON Schema for votes (`vote.yaml`) is BigchainDB-specific.
+
+The files defining the JSON Schema for transactions (`transaction_*.yaml`)
+are copied from the [IPDB Protocol](https://github.com/ipdb/ipdb-protocol).
+If you want to add a new version, you must add it to the IPDB Protocol first.
+(You can't change existing versions. Those were used to validate old transactions
+and are needed to re-check those transactions.)
 
 ## Learn about JSON Schema
 

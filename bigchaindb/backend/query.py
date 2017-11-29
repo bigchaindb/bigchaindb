@@ -304,6 +304,19 @@ def write_assets(connection, assets):
 
 
 @singledispatch
+def write_metadata(connection, metadata):
+    """Write a list of metadata to the metadata table.
+
+    Args:
+        metadata (list): a list of metadata to write.
+
+    Returns:
+        The database response.
+    """
+    raise NotImplementedError
+
+
+@singledispatch
 def get_assets(connection, asset_ids):
     """Get a list of assets from the assets table.
 
@@ -313,6 +326,20 @@ def get_assets(connection, asset_ids):
 
     Returns:
         assets (list): the list of returned assets.
+    """
+    raise NotImplementedError
+
+
+@singledispatch
+def get_metadata(connection, txn_ids):
+    """Get a list of metadata from the metadata table.
+
+    Args:
+        txn_ids (list): a list of ids for the metadata to be retrieved from
+        the database.
+
+    Returns:
+        metadata (list): the list of returned metadata.
     """
     raise NotImplementedError
 
@@ -409,7 +436,7 @@ def get_new_blocks_feed(connection, start_block_id):
 
 @singledispatch
 def text_search(conn, search, *, language='english', case_sensitive=False,
-                diacritic_sensitive=False, text_score=False, limit=0):
+                diacritic_sensitive=False, text_score=False, limit=0, table=None):
     """Return all the assets that match the text search.
 
     The results are sorted by text score.

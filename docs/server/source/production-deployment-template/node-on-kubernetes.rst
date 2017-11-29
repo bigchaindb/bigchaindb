@@ -424,19 +424,24 @@ LRS means locally-redundant storage: three replicas
 in the same data center.
 Premium storage is higher-cost and higher-performance.
 It uses solid state drives (SSD).
-At the time of writing,
-when we created a storage account with SKU ``Premium_LRS``
-and tried to use that,
-the PersistentVolumeClaim would get stuck in a "Pending" state.
+You can create a `storage account <https://docs.microsoft.com/en-us/azure/storage/common/storage-create-storage-account>`_
+for Premium storage and associate it with your Azure resource group. 
 For future reference, the command to create a storage account is
 `az storage account create <https://docs.microsoft.com/en-us/cli/azure/storage/account#create>`_.
 
+.. Note::
+    Please refer to `Azure documentation <https://docs.microsoft.com/en-us/azure/virtual-machines/windows/premium-storage>`_
+    for the list of VMs that are supported by Premium Storage.
 
 The Kubernetes template for configuration of Storage Class is located in the
 file ``mongodb/mongo-sc.yaml``.
 
 You may have to update the ``parameters.location`` field in the file to
 specify the location you are using in Azure.
+
+If you want to use a custom storage account with the Storage Class, you
+can also update `parameters.storageAccount` and provide the Azure storage
+account name. 
 
 Create the required storage classes using:
 
@@ -446,15 +451,6 @@ Create the required storage classes using:
 
 
 You can check if it worked using ``kubectl get storageclasses``.
-
-**Azure.** Note that there is no line of the form
-``storageAccount: <azure storage account name>``
-under ``parameters:``. When we included one
-and then created a PersistentVolumeClaim based on it,
-the PersistentVolumeClaim would get stuck
-in a "Pending" state.
-Kubernetes just looks for a storageAccount
-with the specified skuName and location.
 
 
 Step 11: Create Kubernetes Persistent Volume Claims

@@ -51,7 +51,6 @@ extensions = [
     'sphinx.ext.autosectionlabel',
     # Below are actually build steps made to look like sphinx extensions.
     # It was the easiest way to get it running with ReadTheDocs.
-    'generate_schema_documentation',
     'generate_http_server_api_documentation',
 ]
 

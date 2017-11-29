@@ -1,0 +1,12 @@
+---
+
+- import_tasks: debian.yml
+  when: distribution_name == "debian" or distribution_name == "ubuntu"
+
+- import_tasks: centos.yml
+  when: distribution_name == "centos" or distribution_name == "red hat enterprise linux"
+
+- import_tasks: fedora.yml
+  when: distribution_name == "fedora"
+
+- import_tasks: common.yml

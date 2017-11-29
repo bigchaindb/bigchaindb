@@ -1,6 +1,6 @@
 # Quickstart
 
-This page has instructions to set up a single stand-alone BigchainDB node for learning or experimenting. Instructions for other cases are [elsewhere](introduction.html). We will assume you're using Ubuntu 16.04 or similar. If you're not using Linux, then you might try [running BigchainDB with Docker](appendices/run-with-docker.html).
+This page has instructions to set up a single stand-alone BigchainDB node for learning or experimenting. Instructions for other cases are [elsewhere](introduction.html). We will assume you're using Ubuntu 16.04 or similar. You can also try, [running BigchainDB with Docker](appendices/run-with-docker.html).
 
 A. Install MongoDB as the database backend. (There are other options but you can ignore them for now.)
 
@@ -54,7 +54,7 @@ $ bigchaindb -y configure mongodb
 
 I. Run BigchainDB Server:
 ```text
-$ bigchaindb start --init
+$ bigchaindb start
 ```
 
 J. Verify BigchainDB Server setup by visiting the BigchainDB Root URL in your browser:

@@ -78,4 +78,4 @@ def test_get_assets():
 def test_text_search():
     from ..mongodb.test_queries import test_text_search
 
-    test_text_search()
+    test_text_search('assets')

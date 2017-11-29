@@ -196,7 +196,7 @@ def run_start(args):
         logger.info('RethinkDB started with PID %s' % proc.pid)
 
     try:
-        if args.initialize_database:
+        if not args.skip_initialize_database:
             logger.info('Initializing database')
             _run_init()
     except DatabaseAlreadyExists:
@@ -303,10 +303,11 @@ def create_parser():
                               action='store_true',
                               help='Run RethinkDB on start')
 
-    start_parser.add_argument('--init',
-                              dest='initialize_database',
+    start_parser.add_argument('--no-init',
+                              dest='skip_initialize_database',
+                              default=False,
                               action='store_true',
-                              help='Force initialize database')
+                              help='Skip database initialization')
 
     # parser for configuring the number of shards
     sharding_parser = subparsers.add_parser('set-shards',

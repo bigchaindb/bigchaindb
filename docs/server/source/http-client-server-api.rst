@@ -452,6 +452,118 @@ Assets
                     text search.
 
 
+Transaction Metadata
+--------------------------------
+
+.. http:get:: /api/v1/metadata
+
+   Return all the metadata that match a given text search.
+
+   :query string text search: Text search string to query.
+   :query int limit: (Optional) Limit the number of returned metadata objects. Defaults
+                     to ``0`` meaning return all matching objects.
+
+   .. note::
+
+        Currently this enpoint is only supported if the server is running
+        MongoDB as the backend.
+
+.. http:get:: /api/v1/metadata/?search={text_search}
+
+    Return all metadata that match a given text search. The ``id`` of the metadata
+    is the same ``id`` of the transaction where it was defined.
+
+    If no metadata match the text search it returns an empty list.
+
+    If the text string is empty or the server does not support text search,
+    a ``400`` is returned.
+
+    The results are sorted by text score.
+    For more information about the behavior of text search see `MongoDB text
+    search behavior <https://docs.mongodb.com/manual/reference/operator/query/text/#behavior>`_
+
+   **Example request**:
+
+   .. sourcecode:: http
+
+        GET /api/v1/metadata/?search=bigchaindb HTTP/1.1
+        Host: example.com
+
+   **Example response**:
+
+   .. sourcecode:: http
+
+        HTTP/1.1 200 OK
+        Content-type: application/json
+
+        [
+            {
+                "metadata": {"metakey1": "Hello BigchainDB 1!"},
+                "id": "51ce82a14ca274d43e4992bbce41f6fdeb755f846e48e710a3bbb3b0cf8e4204"
+            },
+            {
+                "metadata": {"metakey2": "Hello BigchainDB 2!"},
+                "id": "b4e9005fa494d20e503d916fa87b74fe61c079afccd6e084260674159795ee31"
+            },
+            {
+                "metadata": {"metakey3": "Hello BigchainDB 3!"},
+                "id": "fa6bcb6a8fdea3dc2a860fcdc0e0c63c9cf5b25da8b02a4db4fb6a2d36d27791"
+            }
+        ]
+
+   :resheader Content-Type: ``application/json``
+
+   :statuscode 200: The query was executed successfully.
+   :statuscode 400: The query was not executed successfully. Returned if the
+                    text string is empty or the server does not support
+                    text search.
+
+.. http:get:: /api/v1/metadata/?search={text_search}&limit={n_documents}
+
+    Return at most ``n`` metadata objects that match a given text search.
+
+    If no metadata match the text search it returns an empty list.
+
+    If the text string is empty or the server does not support text search,
+    a ``400`` is returned.
+
+    The results are sorted by text score.
+    For more information about the behavior of text search see `MongoDB text
+    search behavior <https://docs.mongodb.com/manual/reference/operator/query/text/#behavior>`_
+
+   **Example request**:
+
+   .. sourcecode:: http
+
+    GET /api/v1/metadata/?search=bigchaindb&limit=2 HTTP/1.1
+    Host: example.com
+
+   **Example response**:
+
+   .. sourcecode:: http
+
+    HTTP/1.1 200 OK
+    Content-type: application/json
+
+    [
+        {
+            "metadata": {"msg": "Hello BigchainDB 1!"},
+            "id": "51ce82a14ca274d43e4992bbce41f6fdeb755f846e48e710a3bbb3b0cf8e4204"
+        },
+        {
+            "metadata": {"msg": "Hello BigchainDB 2!"},
+            "id": "b4e9005fa494d20e503d916fa87b74fe61c079afccd6e084260674159795ee31"
+        },
+    ]
+
+   :resheader Content-Type: ``application/json``
+
+   :statuscode 200: The query was executed successfully.
+   :statuscode 400: The query was not executed successfully. Returned if the
+                    text string is empty or the server does not support
+                    text search.
+
+
 Advanced Usage
 --------------------------------
 

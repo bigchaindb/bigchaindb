@@ -13,5 +13,7 @@ elif [[ "${BIGCHAINDB_DATABASE_BACKEND}" == localmongodb && \
     # Run a sub-set of tests over SSL; those marked as 'pytest.mark.bdb_ssl'.
   pytest -sv --database-backend=localmongodb-ssl --cov=bigchaindb -m bdb_ssl
 else
-  pytest -sv -n auto --cov=bigchaindb
+  # Run the full suite of tests for RethinkDB (the default backend when testing)
+  pytest -sv -m "serial"
+  pytest -sv --cov=bigchaindb -m "not serial"
 fi

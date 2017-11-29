@@ -1,36 +1,90 @@
 The Block Model
 ===============
 
-A block has the following structure:
+A block is a JSON object with a particular schema,
+as outlined in this page.
+A block must contain the following JSON keys
+(also called names or fields):
 
 .. code-block:: json
 
     {
-      "id": "<hash of block>",
+      "id": "<ID of the block>",
       "block": {
-        "timestamp": "<block-creation timestamp>",
-        "transactions": ["<list of transactions>"],
-        "node_pubkey": "<public key of the node creating the block>",
-        "voters": ["<list of public keys of all nodes in the cluster>"]
+        "timestamp": "<Block-creation timestamp>",
+        "transactions": ["<List of transactions>"],
+        "node_pubkey": "<Public key of the node which created the block>",
+        "voters": ["<List of public keys of all nodes in the cluster>"]
       },
-      "signature": "<signature of block>"
+      "signature": "<Signature of inner block object>"
     }
 
 
-- ``id``: The :ref:`hash <Hashes>` of the serialized inner ``block`` (i.e. the ``timestamp``, ``transactions``, ``node_pubkey``, and ``voters``). It's used as a unique index in the database backend (e.g. RethinkDB or MongoDB).
+The JSON Keys in a Block
+------------------------
 
-- ``block``:
-    - ``timestamp``: The Unix time when the block was created. It's provided by the node that created the block.
-    - ``transactions``: A list of the transactions included in the block.
-    - ``node_pubkey``: The public key of the node that created the block.
-    - ``voters``: A list of the public keys of all cluster nodes at the time the block was created.
-      It's the list of nodes which can cast a vote on this block.
-      This list can change from block to block, as nodes join and leave the cluster.
+**id**
 
-- ``signature``: :ref:`Cryptographic signature <Signature Algorithm and Keys>` of the block by the node that created the block (i.e. the node with public key ``node_pubkey``). To generate the signature, the node signs the serialized inner ``block`` (the same thing that was hashed to determine the ``id``) using the private key corresponding to ``node_pubkey``.
+The transaction ID and also the SHA3-256 hash
+of the inner ``block`` object, loosely speaking.
+It's a string.
+To compute it, 1) construct an :term:`associative array` ``d`` containing
+``block.timestamp``, ``block.transactions``, ``block.node_pubkey``,
+``block.voters``, and their values. 2) compute ``id = hash_of_aa(d)``.
+There's pseudocode for the ``hash_of_aa()`` function
+in the `IPDB Protocol documentation page about cryptographic hashes
+<https://the-ipdb-protocol.readthedocs.io/en/latest/crypto-hashes.html#computing-the-hash-of-an-associative-array>`_.
+The result (``id``) is a string: the block ID.
+An example is ``"b60adf655932bf47ef58c0bfb2dd276d4795b94346b36cbb477e10d7eb02cea8"``
 
 
-Working with Blocks
--------------------
+**block.timestamp**
 
-There's a **Block** class for creating and working with Block objects; look in `/bigchaindb/models.py <https://github.com/bigchaindb/bigchaindb/blob/master/bigchaindb/models.py>`_. (The link is to the latest version on the master branch on GitHub.)
+The `Unix time <https://en.wikipedia.org/wiki/Unix_time>`_
+when the block was created, according to the node which created it.
+It's a string representation of an integer.
+An example is ``"1507294217"``.
+
+
+**block.transactions**
+
+A list of the :ref:`transactions <The Transaction Model>` included in the block.
+(Each transaction is a JSON object.)
+
+
+**block.node_pubkey**
+
+The public key of the node that created the block.
+It's a string.
+See the `IPDB Protocol documentation page about cryptographic keys & signatures
+<https://the-ipdb-protocol.readthedocs.io/en/latest/crypto-keys-and-sigs.html>`_.
+
+
+**block.voters**
+
+A list of the public keys of all cluster nodes at the time the block was created.
+It's a list of strings.
+This list can change from block to block, as nodes join and leave the cluster.
+
+
+**signature**
+
+The cryptographic signature of the inner ``block``
+by the node that created the block
+(i.e. the node with public key ``node_pubkey``).
+To compute that:
+
+#. Construct an :term:`associative array` ``d`` containing the contents
+   of the inner ``block``
+   (i.e. ``block.timestamp``, ``block.transactions``, ``block.node_pubkey``,
+   ``block.voters``, and their values).
+#. Compute ``signature = sig_of_aa(d, private_key)``,
+   where ``private_key`` is the node's private key
+   (i.e. ``node_pubkey`` and ``private_key`` are a key pair). There's pseudocode
+   for the ``sig_of_aa()`` function
+   on `the IPDB Protocol documentation page about cryptographic keys and signatures 
+   <https://the-ipdb-protocol.readthedocs.io/en/latest/crypto-keys-and-sigs.html#computing-the-signature-of-an-associative-array>`_.
+
+.. note::
+
+   The ``d_bytes`` computed when computing the block ID will be the *same* as the ``d_bytes`` computed when computing the block signature. This can be used to avoid redundant calculations.

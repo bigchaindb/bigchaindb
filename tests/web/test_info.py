@@ -18,6 +18,7 @@ def test_api_root_endpoint(client, wsserver_base_url):
                 'outputs': '/api/v1/outputs/',
                 'streams': '{}/api/v1/streams/valid_transactions'.format(
                     wsserver_base_url),
+                "metadata": "/api/v1/metadata/"
             }
         },
         'docs': 'https://docs.bigchaindb.com/projects/server/en/vtsttst/',
@@ -41,6 +42,7 @@ def test_api_v1_endpoint(client, wsserver_base_url):
         'outputs': '/outputs/',
                 'streams': '{}/api/v1/streams/valid_transactions'.format(
                     wsserver_base_url),
+        "metadata": "/metadata/"
     }
     res = client.get('/api/v1')
     assert res.json == api_v1_info
