@@ -47,7 +47,7 @@ def test_get_latest_block(b):
 
     block = b.get_latest_block()
     assert block['height'] == 9
-    
+
 
 def test_validation_error(b):
     from bigchaindb.models import Transaction
@@ -84,5 +84,4 @@ def test_write_and_post_transaction(mock_post, b):
     assert 'broadcast_tx_async' in kwargs['json']['method']
     encoded_tx = encode_transaction(tx.to_dict())
     assert encoded_tx in kwargs['json']['params']
-    import pdb; pdb.set_trace()
     assert kwargs['json']['id']
