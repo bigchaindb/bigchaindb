@@ -37,6 +37,18 @@ def test_asset_is_separated_from_transaciton(b):
     assert b.get_transaction(tx.id) == tx
 
 
+def test_get_latest_block(b):
+    from bigchaindb.tendermint.lib import Block
+
+    for i in range(10):
+        app_hash = os.urandom(16).hex()
+        block = Block(app_hash=app_hash, height=i)._asdict()
+        b.store_block(block)
+
+    block = b.get_latest_block()
+    assert block['height'] == 9
+    
+
 def test_validation_error(b):
     from bigchaindb.models import Transaction
     from bigchaindb.common.crypto import generate_key_pair
