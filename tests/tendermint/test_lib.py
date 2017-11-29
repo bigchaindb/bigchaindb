@@ -80,7 +80,6 @@ def test_write_and_post_transaction(mock_post, b):
 
     assert mock_post.called
     args, kwargs = mock_post.call_args
-    assert 'broadcast_tx_async' in kwargs['json']['method']
+    assert 'broadcast_tx_async' == kwargs['json']['method']
     encoded_tx = encode_transaction(tx.to_dict())
-    assert encoded_tx in kwargs['json']['params']
-    assert kwargs['json']['id']
+    assert encoded_tx == kwargs['json']['params']
