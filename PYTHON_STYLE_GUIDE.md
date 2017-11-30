@@ -9,7 +9,7 @@ Our starting point is [PEP8](https://www.python.org/dev/peps/pep-0008/), the sta
 BigchainDB uses Python 3.5+, so you can ignore all PEP8 guidelines specific to Python 2.
 
 We use [pre-commit](http://pre-commit.com/) to check some of the rules below before every commit but not everything is realized yet.
-The hooks we use can be found [here](https://github.com/bigchaindb/bigchaindb/blob/master/.pre-commit-config.yaml)
+The hooks we use can be found in the [.pre-commit-config.yaml](https://github.com/bigchaindb/bigchaindb/blob/master/.pre-commit-config.yaml) file.
 
 ### Python Docstrings
 
