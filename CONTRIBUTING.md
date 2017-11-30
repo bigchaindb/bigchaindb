@@ -115,6 +115,9 @@ git add new-or-changed-file-1
 git add new-or-changed-file-2
 git commit -m "Short description of new or changed things"
 ```
+We use [pre-commit](http://pre-commit.com/) which should be triggered with every commit. Some hooks will change files but others will give errors that needs to be fixed. Every time a hook is failing you need to add the changed files again.
+The hooks we use can be found [here](https://github.com/bigchaindb/bigchaindb/blob/master/.pre-commit-config.yaml)
+
 
 You will want to merge changes from upstream (i.e. the original repository) into your new branch from time to time, using something like:
 ```text
