@@ -1,5 +1,4 @@
-"""
-Fixtures and setup / teardown functions
+"""Fixtures and setup / teardown functions
 
 Tasks:
 1. setup test database before starting the tests

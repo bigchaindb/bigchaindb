@@ -1,5 +1,4 @@
-"""
-Pipeline stepping is a way to advance the asynchronous data pipeline
+"""Pipeline stepping is a way to advance the asynchronous data pipeline
 deterministically by exposing each step separately and advancing the states
 manually.
 
@@ -53,7 +52,7 @@ class MultipipesStepper:
         self.processes = []
 
     def add_input(self, prefix, node, next):
-        """ Add an input task; Reads from the outqueue of the Node """
+        """Add an input task; Reads from the outqueue of the Node"""
         name = '%s_%s' % (prefix, node.name)
         next_name = '%s_%s' % (prefix, next.name)
 
@@ -77,8 +76,7 @@ class MultipipesStepper:
         self.input_tasks.add(name)
 
     def add_stage(self, prefix, node, next):
-        """
-        Add a stage task, popping from own queue and appending to the queue
+        """Add a stage task, popping from own queue and appending to the queue
         of the next node
         """
         f = node.target
@@ -96,7 +94,7 @@ class MultipipesStepper:
         self.tasks[name] = task
 
     def _enqueue(self, name, item):
-        """ internal function; add item(s) to queue) """
+        """Internal function; add item(s) to queue)"""
         queue = self.queues.setdefault(name, [])
         if isinstance(item, types.GeneratorType):
             items = list(item)
@@ -108,7 +106,7 @@ class MultipipesStepper:
             queue.append(list(item))
 
     def step(self, name, **kwargs):
-        """ Advance pipeline stage. Throws Empty if no data to consume. """
+        """Advance pipeline stage. Throws Empty if no data to consume."""
         logging.debug('Stepping %s', name)
         task = self.tasks[name]
         if name in self.input_tasks:
@@ -122,7 +120,7 @@ class MultipipesStepper:
 
     @property
     def counts(self):
-        """ Get sizes of non empty queues """
+        """Get sizes of non empty queues"""
         counts = {}
         for name in self.queues:
             n = len(self.queues[name])
@@ -131,12 +129,12 @@ class MultipipesStepper:
         return counts
 
     def __getattr__(self, name):
-        """ Shortcut to get a queue """
+        """Shortcut to get a queue"""
         return lambda **kwargs: self.step(name, **kwargs)
 
     @contextmanager
     def start(self):
-        """ Start async inputs; changefeeds etc """
+        """Start async inputs; changefeeds etc"""
         for p in self.processes:
             p.start()
         # It would be nice to have a better way to wait for changefeeds here.

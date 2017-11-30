@@ -20,7 +20,6 @@ class MongoDBConnection(Connection):
     def __init__(self, replicaset=None, ssl=None, login=None, password=None,
                  ca_cert=None, certfile=None, keyfile=None,
                  keyfile_passphrase=None, crlfile=None, **kwargs):
-
         """Create a new Connection instance.
 
         Args:

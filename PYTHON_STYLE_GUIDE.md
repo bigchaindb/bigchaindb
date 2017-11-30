@@ -8,6 +8,9 @@ Our starting point is [PEP8](https://www.python.org/dev/peps/pep-0008/), the sta
 
 BigchainDB uses Python 3.5+, so you can ignore all PEP8 guidelines specific to Python 2.
 
+We use [pre-commit](http://pre-commit.com/) to check some of the rules below before every commit but not everything is realized yet.
+The hooks we use can be found in the [.pre-commit-config.yaml](https://github.com/bigchaindb/bigchaindb/blob/master/.pre-commit-config.yaml) file.
+
 ### Python Docstrings
 
 PEP8 says some things about docstrings, but not what to put in them or how to structure them. [PEP257](https://www.python.org/dev/peps/pep-0257/) was one proposal for docstring conventions, but we prefer [Google-style docstrings](https://google.github.io/styleguide/pyguide.html?showone=Comments#Comments) instead: they're easier to read and the [napoleon extension](http://www.sphinx-doc.org/en/stable/ext/napoleon.html) for Sphinx lets us turn them into nice-looking documentation. Here are some references on Google-style docstrings:

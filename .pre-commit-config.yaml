@@ -13,6 +13,8 @@ repos:
     sha: v2.1.1
     hooks:
     -   id: pydocstyle
+        # list of error codes to check, see: http://www.pydocstyle.org/en/latest/error_codes.html
         args: ['--select=D204,D201,D209,D210,D212,D300,D403']
 
+# negate the exclude to only apply the hooks to 'bigchaindb' and 'tests' folder
 exclude: '^(?!bigchaindb/)(?!tests/)'

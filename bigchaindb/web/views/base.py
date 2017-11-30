@@ -1,5 +1,4 @@
-"""
-Common classes and methods for API handlers
+"""Common classes and methods for API handlers
 """
 import logging
 

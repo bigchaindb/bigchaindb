@@ -321,7 +321,7 @@ def test_transactions_get_list_good(client):
     from functools import partial
 
     def get_txs_patched(conn, **args):
-        """ Patch `get_transactions_filtered` so that rather than return an array
+        """Patch `get_transactions_filtered` so that rather than return an array
             of transactions it returns an array of shims with a to_dict() method
             that reports one of the arguments passed to `get_transactions_filtered`.
             """

@@ -135,7 +135,8 @@ def env_config(config):
 
 def update_types(config, reference, list_sep=':'):
     """Return a new configuration where all the values types
-    are aligned with the ones in the default configuration"""
+    are aligned with the ones in the default configuration
+    """
 
     def _coerce(current, value):
         # Coerce a value to the `current` type.
@@ -226,7 +227,8 @@ def is_configured():
 
 def autoconfigure(filename=None, config=None, force=False):
     """Run ``file_config`` and ``env_config`` if the module has not
-    been initialized."""
+    been initialized.
+    """
     if not force and is_configured():
         logger.debug('System already configured, skipping autoconfiguration')
         return

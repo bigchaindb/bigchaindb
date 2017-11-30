@@ -155,7 +155,8 @@ class Vote:
 
 def create_pipeline():
     """Create and return the pipeline of operations to be distributed
-    on different processes."""
+    on different processes.
+    """
 
     voter = Vote()
 
@@ -170,7 +171,8 @@ def create_pipeline():
 
 def get_changefeed():
     """Create and return ordered changefeed of blocks starting from
-       last voted block"""
+       last voted block
+    """
     b = Bigchain()
     last_block_id = b.get_last_voted_block().id
     feed = backend.query.get_new_blocks_feed(b.connection, last_block_id)

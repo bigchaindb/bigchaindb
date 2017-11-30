@@ -116,8 +116,7 @@ class LogRecordStreamHandler(StreamRequestHandler):
     """
 
     def handle(self):
-        """
-        Handle multiple requests - each expected to be a 4-byte length,
+        """Handle multiple requests - each expected to be a 4-byte length,
         followed by the LogRecord in pickle format. Logs the record
         according to whatever policy is configured locally.
         """
@@ -152,10 +151,10 @@ class LogRecordStreamHandler(StreamRequestHandler):
 
 
 class LogRecordSocketServer(ThreadingTCPServer):
-    """
-    Simple TCP socket-based logging server.
+    """Simple TCP socket-based logging server.
 
     """
+
     allow_reuse_address = True
 
     def __init__(self,
