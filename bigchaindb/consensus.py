@@ -9,12 +9,14 @@ class BaseConsensusRules():
     All methods listed below must be implemented.
 
     """
+
     voting = Voting
 
     @staticmethod
     def validate_transaction(bigchain, transaction):
         """See :meth:`bigchaindb.models.Transaction.validate`
-        for documentation."""
+        for documentation.
+        """
         return transaction.validate(bigchain)
 
     @staticmethod

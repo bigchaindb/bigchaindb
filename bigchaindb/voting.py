@@ -12,8 +12,7 @@ UNDECIDED = 'undecided'
 
 
 class Voting:
-    """
-    Everything to do with verifying and counting votes for block election.
+    """Everything to do with verifying and counting votes for block election.
 
     All functions in this class should be referentially transparent, that is,
     they always give the same output for a given input. This makes it easier
@@ -27,9 +26,7 @@ class Voting:
 
     @classmethod
     def block_election(cls, block, votes, keyring):
-        """
-        Calculate the election status of a block.
-        """
+        """Calculate the election status of a block."""
         eligible_voters = set(block['block']['voters']) & set(keyring)
         n_voters = len(eligible_voters)
         eligible_votes, ineligible_votes = \
@@ -43,8 +40,7 @@ class Voting:
 
     @classmethod
     def partition_eligible_votes(cls, votes, eligible_voters):
-        """
-        Filter votes from unknown nodes or nodes that are not listed on
+        """Filter votes from unknown nodes or nodes that are not listed on
         block. This is the primary Sybill protection.
         """
         eligible, ineligible = ([], [])
@@ -63,8 +59,7 @@ class Voting:
 
     @classmethod
     def dedupe_by_voter(cls, eligible_votes):
-        """
-        Throw a critical error if there is a duplicate vote
+        """Throw a critical error if there is a duplicate vote
         """
         by_voter = {}
         for vote in eligible_votes:
@@ -76,8 +71,7 @@ class Voting:
 
     @classmethod
     def count_votes(cls, by_voter):
-        """
-        Given a list of eligible votes, (votes from known nodes that are listed
+        """Given a list of eligible votes, (votes from known nodes that are listed
         as voters), produce the number that say valid and the number that say
         invalid. Votes must agree on previous block, otherwise they become invalid.
         """
@@ -111,8 +105,7 @@ class Voting:
 
     @classmethod
     def decide_votes(cls, n_voters, n_valid, n_invalid):
-        """
-        Decide on votes.
+        """Decide on votes.
 
         To return VALID there must be a clear majority that say VALID
         and also agree on the previous block.
@@ -127,8 +120,7 @@ class Voting:
 
     @classmethod
     def verify_vote_signature(cls, vote):
-        """
-        Verify the signature of a vote
+        """Verify the signature of a vote
         """
         signature = vote.get('signature')
         pk_base58 = vote.get('node_pubkey')

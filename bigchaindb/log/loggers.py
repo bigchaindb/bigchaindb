@@ -12,6 +12,7 @@ class HttpServerLogger(Logger):
     configuration setting on gunicorn.
 
     """
+
     def setup(self, cfg):
         """Setup the gunicorn access and error loggers. This overrides
         the parent method. Its main goal is to simply pipe all the logs to

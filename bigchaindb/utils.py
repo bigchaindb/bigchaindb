@@ -83,9 +83,7 @@ def pool(builder, size, timeout=None):
 
 # TODO: Rename this function, it's handling fulfillments not conditions
 def condition_details_has_owner(condition_details, owner):
-    """
-
-    Check if the public_key of owner is in the condition details
+    """Check if the public_key of owner is in the condition details
     as an Ed25519Fulfillment.public_key
 
     Args:

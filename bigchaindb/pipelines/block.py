@@ -145,7 +145,7 @@ class BlockPipeline:
 
 
 def tx_collector():
-    """ A helper to deduplicate transactions """
+    """A helper to deduplicate transactions"""
 
     def snowflake():
         txids = set()
@@ -167,7 +167,8 @@ def tx_collector():
 
 def create_pipeline():
     """Create and return the pipeline of operations to be distributed
-    on different processes."""
+    on different processes.
+    """
 
     block_pipeline = BlockPipeline()
 

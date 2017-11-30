@@ -1,5 +1,4 @@
-"""
-All tests of transaction structure. The concern here is that transaction
+"""All tests of transaction structure. The concern here is that transaction
 structural / schematic issues are caught when reading a transaction
 (ie going from dict -> transaction).
 """

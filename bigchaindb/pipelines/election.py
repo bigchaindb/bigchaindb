@@ -28,8 +28,7 @@ class Election:
         self.events_queue = events_queue
 
     def check_for_quorum(self, next_vote):
-        """
-        Checks if block has enough invalid votes to make a decision
+        """Checks if block has enough invalid votes to make a decision
 
         Args:
             next_vote: The next vote.
@@ -60,8 +59,7 @@ class Election:
             })
 
     def requeue_transactions(self, invalid_block):
-        """
-        Liquidates transactions from invalid blocks so they can be processed again
+        """Liquidates transactions from invalid blocks so they can be processed again
         """
         logger.info('Rewriting %s transactions from invalid block %s',
                     len(invalid_block.transactions),

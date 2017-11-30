@@ -1,4 +1,4 @@
-""" API routes definition """
+"""API routes definition"""
 from flask_restful import Api
 from bigchaindb.web.views import (
     assets,
@@ -13,7 +13,7 @@ from bigchaindb.web.views import (
 
 
 def add_routes(app):
-    """ Add the routes to an app """
+    """Add the routes to an app"""
     for (prefix, routes) in API_SECTIONS:
         api = Api(app, prefix=prefix)
         for ((pattern, resource, *args), kwargs) in routes:
