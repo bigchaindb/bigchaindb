@@ -6,11 +6,12 @@ pytestmark = [pytest.mark.bdb, pytest.mark.usefixtures('inputs')]
 OUTPUTS_ENDPOINT = '/api/v1/outputs/'
 
 
+@pytest.mark.tendermint
 def test_get_outputs_endpoint(client, user_pk):
     m = MagicMock()
     m.txid = 'a'
     m.output = 0
-    with patch('bigchaindb.core.Bigchain.get_outputs_filtered') as gof:
+    with patch('bigchaindb.tendermint.lib.BigchainDB.get_outputs_filtered') as gof:
         gof.return_value = [m, m]
         res = client.get(OUTPUTS_ENDPOINT + '?public_key={}'.format(user_pk))
         assert res.json == [
@@ -21,11 +22,12 @@ def test_get_outputs_endpoint(client, user_pk):
     gof.assert_called_once_with(user_pk, None)
 
 
+@pytest.mark.tendermint
 def test_get_outputs_endpoint_unspent(client, user_pk):
     m = MagicMock()
     m.txid = 'a'
     m.output = 0
-    with patch('bigchaindb.core.Bigchain.get_outputs_filtered') as gof:
+    with patch('bigchaindb.tendermint.lib.BigchainDB.get_outputs_filtered') as gof:
         gof.return_value = [m]
         params = '?spent=False&public_key={}'.format(user_pk)
         res = client.get(OUTPUTS_ENDPOINT + params)
@@ -34,11 +36,12 @@ def test_get_outputs_endpoint_unspent(client, user_pk):
     gof.assert_called_once_with(user_pk, False)
 
 
+@pytest.mark.tendermint
 def test_get_outputs_endpoint_spent(client, user_pk):
     m = MagicMock()
     m.txid = 'a'
     m.output = 0
-    with patch('bigchaindb.core.Bigchain.get_outputs_filtered') as gof:
+    with patch('bigchaindb.tendermint.lib.BigchainDB.get_outputs_filtered') as gof:
         gof.return_value = [m]
         params = '?spent=true&public_key={}'.format(user_pk)
         res = client.get(OUTPUTS_ENDPOINT + params)
@@ -47,11 +50,13 @@ def test_get_outputs_endpoint_spent(client, user_pk):
     gof.assert_called_once_with(user_pk, True)
 
 
+@pytest.mark.tendermint
 def test_get_outputs_endpoint_without_public_key(client):
     res = client.get(OUTPUTS_ENDPOINT)
     assert res.status_code == 400
 
 
+@pytest.mark.tendermint
 def test_get_outputs_endpoint_with_invalid_public_key(client):
     expected = {'message': {'public_key': 'Invalid base58 ed25519 key'}}
     res = client.get(OUTPUTS_ENDPOINT + '?public_key=abc')
@@ -59,6 +64,7 @@ def test_get_outputs_endpoint_with_invalid_public_key(client):
     assert res.status_code == 400
 
 
+@pytest.mark.tendermint
 def test_get_outputs_endpoint_with_invalid_spent(client, user_pk):
     expected = {'message': {'spent': 'Boolean value must be "true" or "false" (lowercase)'}}
     params = '?spent=tru&public_key={}'.format(user_pk)
