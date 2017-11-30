@@ -96,8 +96,7 @@ class Transaction(Transaction):
 
     @classmethod
     def from_db(cls, bigchain, tx_dict):
-        """
-        Helper method that reconstructs a transaction dict that was returned
+        """Helper method that reconstructs a transaction dict that was returned
         from the database. It checks what asset_id to retrieve, retrieves the
         asset from the asset table and reconstructs the transaction.
 
@@ -346,8 +345,7 @@ class Block(object):
 
     @classmethod
     def from_db(cls, bigchain, block_dict, from_dict_kwargs=None):
-        """
-        Helper method that reconstructs a block_dict that was returned from
+        """Helper method that reconstructs a block_dict that was returned from
         the database. It checks what asset_ids to retrieve, retrieves the
         assets from the assets table and reconstructs the block.
 
@@ -373,8 +371,7 @@ class Block(object):
         return cls.from_dict(block_dict, **kwargs)
 
     def decouple_assets(self, block_dict=None):
-        """
-        Extracts the assets from the ``CREATE`` transactions in the block.
+        """Extracts the assets from the ``CREATE`` transactions in the block.
 
         Returns:
             tuple: (assets, block) with the assets being a list of dicts and
@@ -395,8 +392,7 @@ class Block(object):
         return (assets, block_dict)
 
     def decouple_metadata(self, block_dict=None):
-        """
-        Extracts the metadata from transactions in the block.
+        """Extracts the metadata from transactions in the block.
 
         Returns:
             tuple: (metadatas, block) with the metadatas being a list of dict/null and
@@ -417,8 +413,7 @@ class Block(object):
 
     @staticmethod
     def couple_assets(block_dict, assets):
-        """
-        Given a block_dict with no assets (as returned from a database call)
+        """Given a block_dict with no assets (as returned from a database call)
         and a list of assets, reconstruct the original block by putting the
         assets back into the ``CREATE`` transactions in the block.
 
@@ -442,8 +437,7 @@ class Block(object):
 
     @staticmethod
     def couple_metadata(block_dict, metadatal):
-        """
-        Given a block_dict with no metadata (as returned from a database call)
+        """Given a block_dict with no metadata (as returned from a database call)
         and a list of metadata, reconstruct the original block by putting the
         metadata of each transaction back into its original transaction.
 
@@ -470,8 +464,7 @@ class Block(object):
 
     @staticmethod
     def get_asset_ids(block_dict):
-        """
-        Given a block_dict return all the asset_ids for that block (the txid
+        """Given a block_dict return all the asset_ids for that block (the txid
         of CREATE transactions). Useful to know which assets to retrieve
         from the database to reconstruct the block.
 
@@ -493,8 +486,7 @@ class Block(object):
 
     @staticmethod
     def get_txn_ids(block_dict):
-        """
-        Given a block_dict return all the transaction ids.
+        """Given a block_dict return all the transaction ids.
 
         Args:
             block_dict (:obj:`dict`): The block dict as returned from a
@@ -515,13 +507,13 @@ class Block(object):
 
 
 class FastTransaction:
-    """
-    A minimal wrapper around a transaction dictionary. This is useful for
+    """A minimal wrapper around a transaction dictionary. This is useful for
     when validation is not required but a routine expects something that looks
     like a transaction, for example during block creation.
 
     Note: immutability could also be provided
     """
+
     def __init__(self, tx_dict):
         self.data = tx_dict
 

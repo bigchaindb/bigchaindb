@@ -15,8 +15,7 @@ from tests.pipelines.stepping import create_stepper
 
 @contextmanager
 def federation(n):
-    """
-    Return a list of Bigchain objects and pipeline steppers to represent
+    """Return a list of Bigchain objects and pipeline steppers to represent
     a BigchainDB federation
     """
     keys = [generate_key_pair() for _ in range(n)]
@@ -24,8 +23,7 @@ def federation(n):
 
     @contextmanager
     def make_nodes(i):
-        """
-        make_nodes is a recursive context manager. Essentially it is doing:
+        """make_nodes is a recursive context manager. Essentially it is doing:
 
         with f(a[0]) as b0:
             with f(a[1]) as b1:
@@ -159,8 +157,7 @@ def test_elect_sybill(federation_3):
 @pytest.mark.bdb
 @pytest.mark.genesis
 def test_elect_dos(federation_3):
-    """
-    https://github.com/bigchaindb/bigchaindb/issues/1314
+    """https://github.com/bigchaindb/bigchaindb/issues/1314
     Test that a node cannot block another node's opportunity to vote
     on a block by writing an incorrectly signed vote
     """
@@ -171,9 +168,7 @@ def test_elect_dos(federation_3):
 @pytest.mark.bdb
 @pytest.mark.genesis
 def test_elect_bad_block_voters_list(federation_3):
-    """
-    See https://github.com/bigchaindb/bigchaindb/issues/1224
-    """
+    """See https://github.com/bigchaindb/bigchaindb/issues/1224"""
     [bx, (s0, s1, s2)] = federation_3
     b = s0.block.bigchain
     # First remove other nodes from node 0 so that it self assigns the tx

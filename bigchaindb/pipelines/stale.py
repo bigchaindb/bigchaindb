@@ -56,7 +56,8 @@ class StaleTransactionMonitor:
 
 def create_pipeline(timeout=5, backlog_reassign_delay=5):
     """Create and return the pipeline of operations to be distributed
-    on different processes."""
+    on different processes.
+    """
 
     stm = StaleTransactionMonitor(timeout=timeout,
                                   backlog_reassign_delay=backlog_reassign_delay)

@@ -408,8 +408,7 @@ def get_last_voted_block_id(connection, node_pubkey):
 
 @singledispatch
 def get_txids_filtered(connection, asset_id, operation=None):
-    """
-    Return all transactions for a particular asset id and optional operation.
+    """Return all transactions for a particular asset id and optional operation.
 
     Args:
         asset_id (str): ID of transaction that defined the asset
@@ -421,8 +420,7 @@ def get_txids_filtered(connection, asset_id, operation=None):
 
 @singledispatch
 def get_new_blocks_feed(connection, start_block_id):
-    """
-    Return a generator that yields change events of the blocks feed
+    """Return a generator that yields change events of the blocks feed
 
     Args:
         start_block_id (str): ID of block to resume from

@@ -1,5 +1,4 @@
-"""
-These are tests of the API of the Transaction class and associated classes.
+"""These are tests of the API of the Transaction class and associated classes.
 Tests for transaction validation are separate.
 """
 from copy import deepcopy

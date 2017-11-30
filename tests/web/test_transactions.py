@@ -47,8 +47,8 @@ def test_post_create_transaction_endpoint(b, client):
     assert res.json['outputs'][0]['public_keys'][0] == user_pub
 
 
-@pytest.mark.parametrize("nested", [False, True])
-@pytest.mark.parametrize("language,expected_status_code", [
+@pytest.mark.parametrize('nested', [False, True])
+@pytest.mark.parametrize('language,expected_status_code', [
     ('danish', 202), ('dutch', 202), ('english', 202), ('finnish', 202),
     ('french', 202), ('german', 202), ('hungarian', 202), ('italian', 202),
     ('norwegian', 202), ('portuguese', 202), ('romanian', 202), ('none', 202),
@@ -322,7 +322,7 @@ def test_transactions_get_list_good(client):
     from functools import partial
 
     def get_txs_patched(conn, **args):
-        """ Patch `get_transactions_filtered` so that rather than return an array
+        """Patch `get_transactions_filtered` so that rather than return an array
             of transactions it returns an array of shims with a to_dict() method
             that reports one of the arguments passed to `get_transactions_filtered`.
             """

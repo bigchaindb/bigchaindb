@@ -128,8 +128,7 @@ class Input(object):
 
 
 def _fulfillment_to_details(fulfillment):
-    """
-    Encode a fulfillment as a details dictionary
+    """Encode a fulfillment as a details dictionary
 
     Args:
         fulfillment: Crypto-conditions Fulfillment object
@@ -156,8 +155,7 @@ def _fulfillment_to_details(fulfillment):
 
 
 def _fulfillment_from_details(data, _depth=0):
-    """
-    Load a fulfillment for a signing spec dictionary
+    """Load a fulfillment for a signing spec dictionary
 
     Args:
         data: tx.output[].condition.details dictionary
@@ -471,6 +469,7 @@ class Transaction(object):
                 Metadata to be stored along with the Transaction.
             version (string): Defines the version number of a Transaction.
     """
+
     CREATE = 'CREATE'
     TRANSFER = 'TRANSFER'
     GENESIS = 'GENESIS'
@@ -911,7 +910,7 @@ class Transaction(object):
         tx_serialized = Transaction._to_str(tx_dict)
 
         def validate(i, output_condition_uri=None):
-            """ Validate input against output condition URI """
+            """Validate input against output condition URI"""
             return self._input_valid(self.inputs[i], self.operation,
                                      tx_serialized, output_condition_uri)
 

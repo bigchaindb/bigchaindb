@@ -40,8 +40,7 @@ def test_validate_transaction(b, create_tx):
 
 
 def test_validate_transaction_handles_exceptions(b, signed_create_tx):
-    """
-    This test makes sure that `BlockPipeline.validate_tx` handles possible
+    """This test makes sure that `BlockPipeline.validate_tx` handles possible
     exceptions from `Transaction.from_dict`.
     """
     from bigchaindb.pipelines.block import BlockPipeline
