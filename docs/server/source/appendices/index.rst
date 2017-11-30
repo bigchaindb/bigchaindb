@@ -17,7 +17,6 @@ Appendices
    backend
    commands
    aws-setup
-   aws-testing-cluster
    azure-quickstart-template
    generate-key-pair-for-ssh
    firewall-notes
