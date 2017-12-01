@@ -6,19 +6,11 @@ BigchainDB can store data of any kind (within reason), but it's designed to be p
 * The fundamental thing that one sends to a BigchainDB cluster, to be checked and stored (if valid), is a *transaction*, and there are two kinds: CREATE transactions and TRANSFER transactions.
 * A CREATE transaction can be use to register any kind of asset (divisible or indivisible), along with arbitrary metadata.
 * An asset can have zero, one, or several owners.
-* The owners of an asset can specify (crypto-)conditions which must be satisfied by anyone wishing transfer the asset to new owners. For example, a condition might be that at least 3 of the 5 current owners must cryptographically sign a transfer transaction.
-* BigchainDB verifies that the conditions have been satisfied as part of checking the validity of transfer transactions. (Moreover, anyone can check that they were satisfied.)
+* The owners of an asset can specify (crypto-)conditions which must be satisfied by anyone wishing transfer the asset to new owners. For example, a condition might be that at least 3 of the 5 current owners must cryptographically sign a TRANSFER transaction.
+* BigchainDB verifies that the conditions have been satisfied as part of checking the validity of TRANSFER transactions. (Moreover, anyone can check that they were satisfied.)
 * BigchainDB prevents double-spending of an asset.
-* Validated transactions are strongly tamper-resistant; see :doc:`the page about immutability <immutable>`.
-
-
-BigchainDB Integration with Other Blockchains
----------------------------------------------
-
-BigchainDB works with the `Interledger protocol <https://interledger.org/>`_, enabling the transfer of assets between BigchainDB and other blockchains, ledgers, and payment systems.
-
-We’re actively exploring ways that BigchainDB can be used with other blockchains and platforms.
+* Validated transactions are :doc:`"immutable" <immutable>`.
 
 .. note::
 
-   We used the word "owners" somewhat loosely above. A more accurate word might be fulfillers, signers, controllers, or transfer-enablers. See BigchainDB Server `issue #626 <https://github.com/bigchaindb/bigchaindb/issues/626>`_.
+   We used the word "owners" somewhat loosely above. A more accurate word might be fulfillers, signers, controllers, or transfer-enablers. See the `note about "owners" in the IPDB Transaction Spec <https://the-ipdb-transaction-spec.readthedocs.io/en/latest/ownership.html>`_.
