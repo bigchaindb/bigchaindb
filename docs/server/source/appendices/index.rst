@@ -1,6 +1,3 @@
-.. You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Appendices
 ==========
 
@@ -21,7 +18,6 @@ Appendices
    generate-key-pair-for-ssh
    firewall-notes
    ntp-notes
-   rethinkdb-backup
    licenses
    run-with-vagrant
    run-with-ansible
