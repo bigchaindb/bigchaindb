@@ -92,7 +92,7 @@ def test_deliver_transfer_tx__double_spend_fails(b):
     carly = generate_key_pair()
 
     asset = {
-        "msg": "live long and prosper"
+        'msg': 'live long and prosper'
     }
 
     tx = Transaction.create([alice.public_key],
