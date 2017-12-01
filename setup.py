@@ -84,7 +84,7 @@ install_requires = [
     'aiohttp~=2.0',
     'python-rapidjson-schema==0.1.1',
     'statsd==3.2.1',
-    'abci~=0.2.0',
+    'abci~=0.3.0',
 ]
 
 setup(
