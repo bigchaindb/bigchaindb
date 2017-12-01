@@ -6,7 +6,6 @@ things (e.g. assets).
 Transactions are the most basic kind of record stored by BigchainDB. There are
 two kinds: CREATE transactions and TRANSFER transactions.
 
-
 ## CREATE Transactions
 
 A CREATE transaction can be used to register, issue, create or otherwise
@@ -31,19 +30,18 @@ Each output also has an associated condition: the condition that must be met
 BigchainDB supports a variety of conditions,
 a subset of the [Interledger Protocol (ILP)](https://interledger.org/)
 crypto-conditions. For details, see
-[the documentation about Inputs and Outputs](https://docs.bigchaindb.com/projects/server/en/latest/data-models/inputs-outputs.html).
+[the documentation about conditions in the IPDB Transaction Spec](https://the-ipdb-transaction-spec.readthedocs.io/en/latest/transaction-components/conditions.html).
 
 Each output also has a list of all the public keys associated
 with the conditions on that output.
 Loosely speaking, that list might be interpreted as the list of "owners."
 A more accurate word might be fulfillers, signers, controllers,
 or transfer-enablers.
-See BigchainDB Server [issue #626](https://github.com/bigchaindb/bigchaindb/issues/626).
+See the [note about "owners" in the IPDB Transaction Spec](https://the-ipdb-transaction-spec.readthedocs.io/en/latest/ownership.html).
 
 A CREATE transaction must be signed by all the owners.
 (If you're looking for that signature,
 it's in the one "fulfillment" of the one input, albeit encoded.)
-
 
 ## TRANSFER Transactions
 
@@ -82,7 +80,6 @@ transferred if both Jack and Kelly sign.
 Note how the sum of the incoming paperclips must equal the sum
 of the outgoing paperclips (100).
 
-
 ## Transaction Validity
 
 When a node is asked to check if a transaction is valid, it checks several
@@ -90,6 +87,7 @@ things. We documented those things in a post on *The BigchainDB Blog*:
 ["What is a Valid Transaction in BigchainDB?"](https://blog.bigchaindb.com/what-is-a-valid-transaction-in-bigchaindb-9a1a075a9598)
 (Note: That post was about BigchainDB Server v1.0.0.)
 
+The [IPDB Transaction Spec documents the conditions for a transaction to be valid](https://the-ipdb-transaction-spec.readthedocs.io/en/latest/transaction-validation.html).
 
 ## Example Transactions
 

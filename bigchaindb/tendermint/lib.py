@@ -11,6 +11,7 @@ from bigchaindb import Bigchain
 from bigchaindb.models import Transaction
 from bigchaindb.common.exceptions import SchemaValidationError, ValidationError
 from bigchaindb.tendermint.utils import encode_transaction
+from bigchaindb.tendermint import fastquery
 
 
 logger = logging.getLogger(__name__)
@@ -116,6 +117,10 @@ class BigchainDB(Bigchain):
             logger.warning('Invalid transaction (%s): %s', type(e).__name__, e)
             return False
         return transaction
+
+    @property
+    def fastquery(self):
+        return fastquery.FastQuery(self.connection, self.me)
 
 
 Block = namedtuple('Block', ('app_hash', 'height'))
