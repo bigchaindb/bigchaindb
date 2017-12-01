@@ -13,7 +13,6 @@ Appendices
    json-serialization
    cryptography
    the-Bigchain-class
-   pipelines
    backend
    commands
    aws-setup
@@ -22,10 +21,8 @@ Appendices
    generate-key-pair-for-ssh
    firewall-notes
    ntp-notes
-   rethinkdb-reqs
    rethinkdb-backup
    licenses
-   install-with-lxd
    run-with-vagrant
    run-with-ansible
    vote-yaml
