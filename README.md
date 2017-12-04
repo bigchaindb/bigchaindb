@@ -41,3 +41,4 @@ BigchainDB is a scalable blockchain database. [The whitepaper](https://www.bigch
 * [Licenses](LICENSES.md) - open source & open content
 * [Imprint](https://www.bigchaindb.com/imprint/)
 * [Contact Us](https://www.bigchaindb.com/contact/)
+
