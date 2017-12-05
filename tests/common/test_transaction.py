@@ -479,7 +479,11 @@ def test_validate_tx_simple_create_signature(user_input, user_output, user_priv,
 
     tx = Transaction(Transaction.CREATE, asset_definition, [user_input], [user_output])
     expected = deepcopy(user_output)
-    message = str(tx).encode()
+    tx_dict = tx.to_dict()
+    tx_dict['inputs'][0]['fulfillment'] = None
+    serialized_tx = json.dumps(tx_dict, sort_keys=True,
+                               separators=(',', ':'), ensure_ascii=True)
+    message = sha3_256(serialized_tx.encode()).digest()
     expected.fulfillment.sign(message, b58decode(user_priv))
     tx.sign([user_priv])
 
@@ -539,7 +543,11 @@ def test_validate_tx_threshold_create_signature(user_user2_threshold_input,
     tx = Transaction(Transaction.CREATE, asset_definition,
                      [user_user2_threshold_input],
                      [user_user2_threshold_output])
-    message = str(tx).encode()
+    tx_dict = tx.to_dict()
+    tx_dict['inputs'][0]['fulfillment'] = None
+    serialized_tx = json.dumps(tx_dict, sort_keys=True,
+                               separators=(',', ':'), ensure_ascii=True)
+    message = sha3_256(serialized_tx.encode()).digest()
     expected = deepcopy(user_user2_threshold_output)
     expected.fulfillment.subconditions[0]['body'].sign(
         message, b58decode(user_priv))
@@ -570,11 +578,18 @@ def test_validate_tx_threshold_duplicated_pk(user_pub, user_priv,
 
     tx = Transaction(Transaction.CREATE, asset_definition,
                      [threshold_input], [threshold_output])
+
+    tx_dict = tx.to_dict()
+    tx_dict['inputs'][0]['fulfillment'] = None
+    serialized_tx = json.dumps(tx_dict, sort_keys=True,
+                               separators=(',', ':'), ensure_ascii=True)
+    message = sha3_256(serialized_tx.encode()).digest()
+
     expected = deepcopy(threshold_input)
     expected.fulfillment.subconditions[0]['body'].sign(
-        str(tx).encode(), b58decode(user_priv))
+        message, b58decode(user_priv))
     expected.fulfillment.subconditions[1]['body'].sign(
-        str(tx).encode(), b58decode(user_priv))
+        message, b58decode(user_priv))
 
     tx.sign([user_priv, user_priv])
 
@@ -807,7 +822,6 @@ def test_outputs_to_inputs(tx):
 def test_create_transfer_transaction_single_io(tx, user_pub, user2_pub,
                                                user2_output, user_priv):
     from bigchaindb.common.transaction import Transaction
-    from bigchaindb.common.utils import serialize
     from .utils import validate_transaction_model
 
     expected = {
@@ -839,8 +853,14 @@ def test_create_transfer_transaction_single_io(tx, user_pub, user2_pub,
     transfer_tx = transfer_tx.to_dict()
 
     expected_input = deepcopy(inputs[0])
-    expected_input.fulfillment.sign(
-        serialize(expected).encode(), b58decode(user_priv))
+    json_serialized_tx = json.dumps(expected, sort_keys=True,
+                                    separators=(',', ':'), ensure_ascii=True)
+    message = sha3_256(json_serialized_tx.encode())
+    message.update('{}{}'.format(
+        expected['inputs'][0]['fulfills']['transaction_id'],
+        expected['inputs'][0]['fulfills']['output_index'],
+    ).encode())
+    expected_input.fulfillment.sign(message.digest(), b58decode(user_priv))
     expected_ffill = expected_input.fulfillment.serialize_uri()
     transfer_ffill = transfer_tx['inputs'][0]['fulfillment']
 
