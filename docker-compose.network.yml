@@ -30,7 +30,7 @@ services:
       TENDERMINT_HOST: tendermint-one
     ports:
       - "9984"
-    command: bigchaindb -l DEBUG start --init
+    command: bigchaindb -l DEBUG start
   tendermint-one:
     image: tendermint/tendermint
     volumes:
@@ -67,7 +67,7 @@ services:
       TENDERMINT_HOST: tendermint-two
     ports:
       - "9984"
-    command: bigchaindb -l DEBUG start --init
+    command: bigchaindb -l DEBUG start
   tendermint-two:
     image: tendermint/tendermint
     volumes:
@@ -104,7 +104,7 @@ services:
       TENDERMINT_HOST: tendermint-three
     ports:
       - "9984"
-    command: bigchaindb -l DEBUG start --init
+    command: bigchaindb -l DEBUG start
   tendermint-three:
     image: tendermint/tendermint
     volumes:
@@ -141,7 +141,7 @@ services:
       TENDERMINT_HOST: tendermint-four
     ports:
       - "9984"
-    command: bigchaindb -l DEBUG start --init
+    command: bigchaindb -l DEBUG start
   tendermint-four:
     image: tendermint/tendermint
     volumes:

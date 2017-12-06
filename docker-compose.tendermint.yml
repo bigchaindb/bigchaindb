@@ -29,7 +29,7 @@ services:
       TENDERMINT_PORT: 46657
     ports:
       - "9984"
-    command: bigchaindb -l DEBUG start --init
+    command: bigchaindb -l DEBUG start
   tendermint:
     image: tendermint/tendermint
     volumes:
