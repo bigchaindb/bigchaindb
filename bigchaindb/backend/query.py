@@ -34,6 +34,20 @@ def store_asset(connection, asset):
 
 
 @singledispatch
+def store_metadata(connection, metadata):
+    """Write an asset to the asset table.
+
+    Args:
+        asset (dict): the asset.
+
+    Returns:
+        The result of the operation.
+    """
+
+    raise NotImplementedError
+
+
+@singledispatch
 def store_transaction(connection, signed_transaction):
     """Same as write_transaction."""
 

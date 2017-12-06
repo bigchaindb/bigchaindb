@@ -77,6 +77,49 @@ def test_text_search():
     test_text_search('assets')
 
 
+def test_write_metadata():
+    from bigchaindb.backend import connect, query
+    conn = connect()
+
+    metadata = [
+        {'id': 1, 'data': '1'},
+        {'id': 2, 'data': '2'},
+        {'id': 3, 'data': '3'}
+    ]
+
+    # write the assets
+    query.store_metadata(conn, deepcopy(metadata))
+
+    # check that 3 assets were written to the database
+    cursor = conn.db.metadata.find({}, projection={'_id': False})\
+                             .sort('id', pymongo.ASCENDING)
+
+    assert cursor.count() == 3
+    assert list(cursor) == metadata
+
+
+def test_get_metadata():
+    from bigchaindb.backend import connect, query
+    conn = connect()
+
+    metadata = [
+        {'id': 1, 'metadata': None},
+        {'id': 2, 'metadata': {'key': 'value'}},
+        {'id': 3, 'metadata': '3'},
+    ]
+
+    conn.db.metadata.insert_many(deepcopy(metadata), ordered=False)
+
+    for meta in metadata:
+        assert query.get_metadata(conn, [meta['id']])
+
+
+def test_text_metadata():
+    from ..mongodb.test_queries import test_text_search
+
+    test_text_search('metadata')
+
+
 def test_get_owned_ids(signed_create_tx, user_pk):
     from bigchaindb.backend import connect, query
     conn = connect()

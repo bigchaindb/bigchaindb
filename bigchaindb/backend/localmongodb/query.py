@@ -33,6 +33,24 @@ def get_transaction(conn, transaction_id):
 
 
 @register_query(LocalMongoDBConnection)
+def store_metadata(conn, metadata):
+    try:
+        return conn.run(
+            conn.collection('metadata')
+            .insert_many(metadata, ordered=False))
+    except DuplicateKeyError:
+        pass
+
+
+@register_query(LocalMongoDBConnection)
+def get_metadata(conn, txn_ids):
+    return conn.run(
+        conn.collection('metadata')
+        .find({'id': {'$in': txn_ids}},
+              projection={'_id': False}))
+
+
+@register_query(LocalMongoDBConnection)
 def store_asset(conn, asset):
     try:
         return conn.run(
