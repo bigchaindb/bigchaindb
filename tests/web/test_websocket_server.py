@@ -7,6 +7,8 @@ from unittest.mock import patch
 
 import pytest
 
+pytestmark = pytest.mark.tendermint
+
 
 @pytest.fixture
 def _block(b, request):
