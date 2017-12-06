@@ -340,6 +340,15 @@ def signed_transfer_tx(signed_create_tx, user_pk, user_sk):
 
 
 @pytest.fixture
+def double_spend_tx(signed_create_tx, carol_pubkey, user_sk):
+    from bigchaindb.models import Transaction
+    inputs = signed_create_tx.to_inputs()
+    tx = Transaction.transfer(
+        inputs, [([carol_pubkey], 1)], asset_id=signed_create_tx.id)
+    return tx.sign([user_sk])
+
+
+@pytest.fixture
 def structurally_valid_vote():
     return {
         'node_pubkey': 'c' * 44,

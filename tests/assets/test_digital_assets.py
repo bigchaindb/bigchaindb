@@ -71,8 +71,10 @@ def test_asset_id_mismatch(b, user_pk):
 
     tx1 = Transaction.create([b.me], [([user_pk], 1)],
                              metadata={'msg': random.random()})
+    tx1.sign([b.me_private])
     tx2 = Transaction.create([b.me], [([user_pk], 1)],
                              metadata={'msg': random.random()})
+    tx2.sign([b.me_private])
 
     with pytest.raises(AssetIdMismatch):
         Transaction.get_asset_id([tx1, tx2])

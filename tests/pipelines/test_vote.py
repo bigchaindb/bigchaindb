@@ -378,6 +378,10 @@ def test_valid_block_voting_with_transfer_transactions(monkeypatch,
                                          vote2_doc['signature']) is True
 
 
+@pytest.mark.skip(
+    reason=('Needs important modification following issue #1891:'
+            'https://github.com/bigchaindb/bigchaindb/issues/1891')
+)
 @pytest.mark.bdb
 def test_unsigned_tx_in_block_voting(monkeypatch, b, user_pk, genesis_block):
     from bigchaindb.backend import query
