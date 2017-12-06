@@ -115,6 +115,9 @@ git add new-or-changed-file-1
 git add new-or-changed-file-2
 git commit -m "Short description of new or changed things"
 ```
+We use [pre-commit](http://pre-commit.com/) which should be triggered with every commit. Some hooks will change files but others will give errors that needs to be fixed. Every time a hook is failing you need to add the changed files again.
+The hooks we use can be found in the [.pre-commit-config.yaml](https://github.com/bigchaindb/bigchaindb/blob/master/.pre-commit-config.yaml) file.
+
 
 You will want to merge changes from upstream (i.e. the original repository) into your new branch from time to time, using something like:
 ```text
@@ -133,7 +136,7 @@ Make sure you've commited all the additions or changes you want to include in yo
 git push origin new-branch-name
 ```
 
-### Step 10 - Create a Pull Request 
+### Step 10 - Create a Pull Request
 
 Go to the GitHub website and to _your_ remote bigchaindb repository (i.e. something like https://github.com/your-user-name/bigchaindb). 
 

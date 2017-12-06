@@ -3,10 +3,9 @@ from copy import deepcopy
 import pytest
 import pymongo
 
-pytestmark = [pytest.mark.tendermint, pytest.mark.localmongodb]
+pytestmark = [pytest.mark.tendermint, pytest.mark.localmongodb, pytest.mark.bdb]
 
 
-@pytest.mark.bdb
 def test_get_txids_filtered(signed_create_tx, signed_transfer_tx):
     from bigchaindb.backend import connect, query
     from bigchaindb.models import Transaction
@@ -32,7 +31,6 @@ def test_get_txids_filtered(signed_create_tx, signed_transfer_tx):
     assert txids == {signed_transfer_tx.id}
 
 
-@pytest.mark.bdb
 def test_write_assets():
     from bigchaindb.backend import connect, query
     conn = connect()
@@ -57,7 +55,6 @@ def test_write_assets():
     assert list(cursor) == assets[:-1]
 
 
-@pytest.mark.bdb
 def test_get_assets():
     from bigchaindb.backend import connect, query
     conn = connect()
@@ -74,8 +71,40 @@ def test_get_assets():
         assert query.get_asset(conn, asset['id'])
 
 
-@pytest.mark.bdb
 def test_text_search():
     from ..mongodb.test_queries import test_text_search
 
     test_text_search('assets')
+
+
+def test_get_owned_ids(signed_create_tx, user_pk):
+    from bigchaindb.backend import connect, query
+    conn = connect()
+
+    # insert a transaction
+    conn.db.transactions.insert_one(signed_create_tx.to_dict())
+
+    txns = list(query.get_owned_ids(conn, user_pk))
+
+    assert txns[0] == signed_create_tx.to_dict()
+
+
+def test_get_spending_transactions(user_pk):
+    from bigchaindb.backend import connect, query
+    from bigchaindb.models import Transaction
+    conn = connect()
+
+    out = [([user_pk], 1)]
+    tx1 = Transaction.create([user_pk], out * 3)
+    inputs = tx1.to_inputs()
+    tx2 = Transaction.transfer([inputs[0]], out, tx1.id)
+    tx3 = Transaction.transfer([inputs[1]], out, tx1.id)
+    tx4 = Transaction.transfer([inputs[2]], out, tx1.id)
+    txns = [tx.to_dict() for tx in [tx1, tx2, tx3, tx4]]
+    conn.db.transactions.insert_many(txns)
+
+    links = [inputs[0].fulfills.to_dict(), inputs[2].fulfills.to_dict()]
+    txns = list(query.get_spending_transactions(conn, links))
+
+    # tx3 not a member because input 1 not asked for
+    assert txns == [tx2.to_dict(), tx4.to_dict()]

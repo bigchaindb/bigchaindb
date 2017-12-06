@@ -293,7 +293,7 @@ def get_votes_for_blocks_by_voter(connection, block_ids, node_pubkey):
 
 
 def unwind_block_transactions(block):
-    """ Yield a block for each transaction in given block """
+    """Yield a block for each transaction in given block"""
     return block['block']['transactions'].map(lambda tx: block.merge({'tx': tx}))
 
 

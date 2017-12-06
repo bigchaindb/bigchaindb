@@ -1,4 +1,4 @@
-""" API Index endpoint """
+"""API Index endpoint"""
 
 import flask
 from flask_restful import Resource
@@ -33,8 +33,7 @@ class ApiV1Index(Resource):
 
 
 def get_api_v1_info(api_prefix):
-    """
-    Return a dict with all the information specific for the v1 of the
+    """Return a dict with all the information specific for the v1 of the
     api.
     """
     websocket_root = base_ws_uri() + EVENTS_ENDPOINT

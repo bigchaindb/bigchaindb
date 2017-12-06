@@ -1242,8 +1242,7 @@ def test_get_outputs_filtered(filter_spent, filter_unspent):
 
 @pytest.mark.bdb
 def test_cant_spend_same_input_twice_in_tx(b, genesis_block):
-    """
-    Recreate duplicated fulfillments bug
+    """Recreate duplicated fulfillments bug
     https://github.com/bigchaindb/bigchaindb/issues/1099
     """
     from bigchaindb.models import Transaction

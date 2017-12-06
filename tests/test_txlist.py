@@ -1,5 +1,4 @@
-"""
-Test getting a list of transactions from the backend.
+"""Test getting a list of transactions from the backend.
 
 This test module defines it's own fixture which is used by all the tests.
 """

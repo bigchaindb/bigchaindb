@@ -62,8 +62,12 @@ class App(BaseApplication):
             logger.debug('check_tx: INVALID')
             return Result.error()
 
-    def begin_block(self, block_hash, header):
-        """Initialize list of transaction."""
+    def begin_block(self, req_begin_block):
+        """Initialize list of transaction.
+        Args:
+            req_begin_block: block object which contains block header
+            and block hash.
+        """
 
         self.block_txn_ids = []
 

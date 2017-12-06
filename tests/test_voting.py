@@ -122,8 +122,7 @@ def test_decide_votes_invalid(kwargs):
 
 @pytest.mark.parametrize('n_voters', range(8))
 def test_vote_actions(n_voters):
-    """
-    * Legal transitions are UNDECIDED -> [VALID|INVALID] only
+    """* Legal transitions are UNDECIDED -> [VALID|INVALID] only
     * Block is never left UNDECIDED after voting
     * Accomodates rogues on previous block / invalid schema
     """

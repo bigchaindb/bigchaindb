@@ -529,7 +529,7 @@ def test_get_assets():
     assert list(cursor.sort('id', pymongo.ASCENDING)) == assets[::2]
 
 
-@pytest.mark.parametrize("table", ['assets', 'metadata'])
+@pytest.mark.parametrize('table', ['assets', 'metadata'])
 def test_text_search(table):
     from bigchaindb.backend import connect, query
     conn = connect()

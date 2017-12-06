@@ -20,6 +20,7 @@ class MongoDBChangeFeed(ChangeFeed):
     We emulate the behaviour of the RethinkDB changefeed by using a tailable
     cursor that listens for events on the oplog.
     """
+
     def run_forever(self):
         for element in self.prefeed:
             self.outqueue.put(element)

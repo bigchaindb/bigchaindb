@@ -111,3 +111,27 @@ def get_txids_filtered(conn, asset_id, operation=None):
 @register_query(LocalMongoDBConnection)
 def text_search(*args, **kwargs):
     return mongodb.query.text_search(*args, **kwargs)
+
+
+@register_query(LocalMongoDBConnection)
+def get_owned_ids(conn, owner):
+    cursor = conn.run(
+        conn.collection('transactions').aggregate([
+            {'$match': {'outputs.public_keys': owner}},
+            {'$project': {'_id': False}}
+        ]))
+    return cursor
+
+
+@register_query(LocalMongoDBConnection)
+def get_spending_transactions(conn, inputs):
+    cursor = conn.run(
+        conn.collection('transactions').aggregate([
+            {'$match': {
+                'inputs.fulfills': {
+                    '$in': inputs,
+                },
+            }},
+            {'$project': {'_id': False}}
+        ]))
+    return cursor

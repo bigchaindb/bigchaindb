@@ -19,12 +19,6 @@ Note that there are a few kinds of nodes:
 * [Set up a local BigchainDB node for development, experimenting and testing](dev-and-test/index.html)
 * [Set up and run a BigchainDB cluster](clusters.html)
 
-There are some old RethinkDB-based deployment instructions as well:
-
-* [Deploy a bare-bones RethinkDB-based node on Azure](appendices/azure-quickstart-template.html)
-
-Instructions for setting up a client will be provided once there's a public test net.
-
 
 ## Can I Help?
 

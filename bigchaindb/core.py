@@ -159,8 +159,7 @@ class Bigchain(object):
         return self.consensus.validate_transaction(self, transaction)
 
     def is_new_transaction(self, txid, exclude_block_id=None):
-        """
-        Return True if the transaction does not exist in any
+        """Return True if the transaction does not exist in any
         VALID or UNDECIDED block. Return False otherwise.
 
         Args:
@@ -421,8 +420,7 @@ class Bigchain(object):
         return fastquery.FastQuery(self.connection, self.me)
 
     def get_outputs_filtered(self, owner, spent=None):
-        """
-        Get a list of output links filtered on some criteria
+        """Get a list of output links filtered on some criteria
 
         Args:
             owner (str): base58 encoded public_key.
@@ -443,8 +441,7 @@ class Bigchain(object):
             return self.fastquery.filter_spent_outputs(outputs)
 
     def get_transactions_filtered(self, asset_id, operation=None):
-        """
-        Get a list of transactions filtered on some criteria
+        """Get a list of transactions filtered on some criteria
         """
         txids = backend.query.get_txids_filtered(self.connection, asset_id,
                                                  operation)
@@ -617,12 +614,12 @@ class Bigchain(object):
 
     def block_election_status(self, block):
         """Tally the votes on a block, and return the status:
-           valid, invalid, or undecided."""
+           valid, invalid, or undecided.
+        """
         return self.block_election(block)['status']
 
     def get_assets(self, asset_ids):
-        """
-        Return a list of assets that match the asset_ids
+        """Return a list of assets that match the asset_ids
 
         Args:
             asset_ids (:obj:`list` of :obj:`str`): A list of asset_ids to
@@ -634,8 +631,7 @@ class Bigchain(object):
         return backend.query.get_assets(self.connection, asset_ids)
 
     def get_metadata(self, txn_ids):
-        """
-        Return a list of metadata that match the transaction ids (txn_ids)
+        """Return a list of metadata that match the transaction ids (txn_ids)
 
         Args:
             txn_ids (:obj:`list` of :obj:`str`): A list of txn_ids to
@@ -647,8 +643,7 @@ class Bigchain(object):
         return backend.query.get_metadata(self.connection, txn_ids)
 
     def write_assets(self, assets):
-        """
-        Writes a list of assets into the database.
+        """Writes a list of assets into the database.
 
         Args:
             assets (:obj:`list` of :obj:`dict`): A list of assets to write to
@@ -657,8 +652,7 @@ class Bigchain(object):
         return backend.query.write_assets(self.connection, assets)
 
     def write_metadata(self, metadata):
-        """
-        Writes a list of metadata into the database.
+        """Writes a list of metadata into the database.
 
         Args:
             metadata (:obj:`list` of :obj:`dict`): A list of metadata to write to
@@ -667,8 +661,7 @@ class Bigchain(object):
         return backend.query.write_metadata(self.connection, metadata)
 
     def text_search(self, search, *, limit=0, table='assets'):
-        """
-        Return an iterator of assets that match the text search
+        """Return an iterator of assets that match the text search
 
         Args:
             search (str): Text search string to query the text index
