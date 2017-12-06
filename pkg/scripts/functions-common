@@ -185,26 +185,6 @@ function is_ubuntu {
 # Package Functions
 # =================
 
-# _get_package_dir
-function _get_package_dir {
-    local base_dir=$1
-    local pkg_dir
-
-    if [[ -z "$base_dir" ]]; then
-        base_dir=$FILES
-    fi
-    if is_ubuntu; then
-        pkg_dir=$base_dir/debs
-    elif is_fedora; then
-        pkg_dir=$base_dir/rpms
-    elif is_suse; then
-        pkg_dir=$base_dir/rpms-suse
-    else
-        exit_distro_not_supported "list of packages"
-    fi
-    echo "$pkg_dir"
-}
-
 # Wrapper for ``apt-get update`` to try multiple times on the update
 # to address bad package mirrors (which happen all the time).
 function apt_get_update {
@@ -339,9 +319,6 @@ function uninstall_package {
 # yum_install package [package ...]
 function yum_install {
     local result parse_yum_result
-
-    [[ "$OFFLINE" = "True" ]] && return
-
     time_start "yum_install"
 
     # This is a bit tricky, because yum -y assumes missing or failed
@@ -387,12 +364,17 @@ function yum_install {
 # Uses globals ``OFFLINE``, ``*_proxy``
 # zypper_install package [package ...]
 function zypper_install {
-    [[ "$OFFLINE" = "True" ]] && return
     local sudo="sudo"
     [[ "$(id -u)" = "0" ]] && sudo="env"
     $sudo http_proxy="${http_proxy:-}" https_proxy="${https_proxy:-}" \
         no_proxy="${no_proxy:-}" \
         zypper --non-interactive install --auto-agree-with-licenses "$@"
+}
+
+function install_tendermint_bin {
+    wget https://s3-us-west-2.amazonaws.com/tendermint/binaries/tendermint/v${TM_VERSION}/tendermint_${TM_VERSION}_linux_amd64.zip
+    unzip tendermint_0.12.0_linux_amd64.zip
+    sudo mv tendermint /usr/local/bin
 }
 
 # Find out if a process exists by partial name.
@@ -401,7 +383,6 @@ function is_running {
     local name=$1
     ps auxw | grep -v grep | grep ${name} > /dev/null
     local exitcode=$?
-    # some times I really hate bash reverse binary logic
     return $exitcode
 }
 

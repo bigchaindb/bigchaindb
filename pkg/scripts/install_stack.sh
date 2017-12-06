@@ -1,17 +1,7 @@
 #!/usr/bin/env bash
 
-
-set -x
-set -o xtrace
-
-# Check for uninitialized variables, a big cause of bugs
-NOUNSET=${NOUNSET:-}
-if [[ -n "$NOUNSET" ]]; then
-    set -o nounset
-fi
-
-# Stop if any command fails.
-set -e
+set -o nounset
+set -o errexit
 
 function usage
 {
@@ -31,6 +21,12 @@ function usage
         To configure bigchaindb repo branch to use set GIT_BRANCH environment
         variable
 
+    ENV[TM_VERSION]
+        Tendermint version to use for the devstack setup
+
+    ENV[MONGO_VERSION]
+        MongoDB version to use with the devstack setup
+
     -v
         Verbose output from ansible playbooks.
 
@@ -41,7 +37,7 @@ EOM
 }
 
 # GIT_BRANCH
-git_branch=""
+git_branch=$GIT_BRANCH
 
 while getopts "h" opt; do
     case "$opt" in
@@ -55,21 +51,6 @@ while getopts "h" opt; do
             ;;
     esac
 done
-
-
-# STACK is a required variable.
-stack=$STACK
-
-if [[ ! $stack ]]; then
-    echo "STACK environment variable not defined"
-    echo
-    usage
-    exit 1
-fi
-
-
-git_branch=$GIT_BRANCH
-
 
 if [[ ! $git_branch ]]; then
     echo "You must specify GIT_BRANCH before running."
@@ -100,21 +81,13 @@ export GIT_BRANCH=$git_branch
 echo "Using bigchaindb branch '$GIT_BRANCH'"
 
 if [[ -d .vagrant ]]; then
-    echo -e "A .vagrant directory already exists here. If you already tried installing $stack, make sure to vagrant destroy the $stack machine and 'rm -rf .vagrant' before trying to reinstall. If you would like to install a separate $stack, change to a different directory and try running the script again."
+    echo -e "A .vagrant directory already exists here. If you already tried installing devstack, make sure to vagrant destroy the devstack machine and 'rm -rf .vagrant' before trying to reinstall. If you would like to install a separate devstack, change to a different directory and try running the script again."
     exit 1
 fi
 
 git clone https://github.com/bigchaindb/bigchaindb.git -b $GIT_BRANCH
-
-if [[ $stack == "devstack" ]]; then # Install devstack
-    curl -fOL# https://raw.githubusercontent.com/bigchaindb/bigchaindb/${GIT_BRANCH}/pkg/scripts/Vagrantfile
-    vagrant up --provider virtualbox
-elif [[ $stack == "network" ]]; then # Install network
-    echo -e "Network support is not yet available"
-    exit
-else # Throw error
-    echo -e "Unrecognized stack name, must be either devstack or network"
-    exit 1
-fi
+curl -fOL# https://raw.githubusercontent.com/bigchaindb/bigchaindb/${GIT_BRANCH}/pkg/scripts/Vagrantfile
+vagrant up --provider virtualbox
 
 echo -e "Finished installing! You may now log in using 'vagrant ssh'"
+echo -e "Once inside the VM do 'tmux attach' to attach to tmux session running all services"

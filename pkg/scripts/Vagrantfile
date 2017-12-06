@@ -16,7 +16,8 @@ MOUNT_DIRS = {
   :bigchaindb => {:repo => "bigchaindb", :local => "/opt/stack/bigchaindb", :owner => "edxapp"},
 }
 
-boxname = ENV['BOXNAME']
+boxname = ENV['BOXNAME'] || "ubuntu/xenial64"
+tm_version = ENV['TM_VERSION']
 
 $script = <<SCRIPT
 if [ ! -d /opt/stack/bigchaindb/pkg/scripts ]; then
@@ -29,7 +30,7 @@ bash /opt/stack/bigchaindb/pkg/scripts/stack.sh
 SCRIPT
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-  config.vm.box     = "ubuntu/xenial64"
+  config.vm.box = "ubuntu/xenial64"
   config.vm.box_check_update = false
 
   config.vm.network :private_network, ip: "192.168.33.10"
@@ -51,5 +52,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vbguest.auto_reboot = true
   config.vbguest.auto_update = true
 
-  config.vm.provision "shell", inline: $script, privileged: false
+  config.vm.provision "shell", inline: $script,
+    privileged: false,
+    env: {
+      :TM_VERSION => ENV['TM_VERSION'], 
+      :MONGO_VERSION => ENV['MONGO_VERSION']
+    }
 end
