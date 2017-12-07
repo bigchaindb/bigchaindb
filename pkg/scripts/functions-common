@@ -373,7 +373,7 @@ function zypper_install {
 
 function install_tendermint_bin {
     wget https://s3-us-west-2.amazonaws.com/tendermint/binaries/tendermint/v${TM_VERSION}/tendermint_${TM_VERSION}_linux_amd64.zip
-    unzip tendermint_0.12.0_linux_amd64.zip
+    unzip tendermint_${TM_VERSION}_linux_amd64.zip
     sudo mv tendermint /usr/local/bin
 }
 

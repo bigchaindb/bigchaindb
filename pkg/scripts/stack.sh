@@ -28,7 +28,7 @@ fi
 
 # Set default tendermint version
 if [[ "$TM_VERSION" = "" ]]; then
-    MONGO_VERSION="0.12.1"
+    TM_VERSION="0.12.1"
 fi
 
 # Configuration

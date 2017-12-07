@@ -59,13 +59,6 @@ if [[ ! $git_branch ]]; then
     exit 1
 fi
 
-# If there are positional arguments left, something is wrong.
-if [[ $1 ]]; then
-    echo "Don't understand extra arguments: $*"
-    usage
-    exit 1
-fi
-
 mkdir -p logs
 log_file=logs/install-$(date +%Y%m%d-%H%M%S).log
 exec > >(tee $log_file) 2>&1
@@ -80,12 +73,7 @@ trap finish EXIT
 export GIT_BRANCH=$git_branch
 echo "Using bigchaindb branch '$GIT_BRANCH'"
 
-if [[ -d .vagrant ]]; then
-    echo -e "A .vagrant directory already exists here. If you already tried installing devstack, make sure to vagrant destroy the devstack machine and 'rm -rf .vagrant' before trying to reinstall. If you would like to install a separate devstack, change to a different directory and try running the script again."
-    exit 1
-fi
-
-git clone https://github.com/bigchaindb/bigchaindb.git -b $GIT_BRANCH
+git clone https://github.com/bigchaindb/bigchaindb.git -b $GIT_BRANCH || true
 curl -fOL# https://raw.githubusercontent.com/bigchaindb/bigchaindb/${GIT_BRANCH}/pkg/scripts/Vagrantfile
 vagrant up --provider virtualbox
 
