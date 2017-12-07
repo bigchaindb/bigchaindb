@@ -12,7 +12,6 @@ Appendices
    backend
    commands
    aws-setup
-   aws-testing-cluster
    generate-key-pair-for-ssh
    firewall-notes
    ntp-notes

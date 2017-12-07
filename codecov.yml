@@ -25,11 +25,9 @@ coverage:
         if_no_uploads: error
 
   ignore:          # files and folders that will be removed during processing
-    - "deploy-cluster-aws/*"
     - "docs/*"
     - "tests/*"
     - "bigchaindb/version.py"
-    - "ntools/*"
     - "k8s/*"
 
 comment:
