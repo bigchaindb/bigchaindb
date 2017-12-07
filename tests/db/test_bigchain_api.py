@@ -635,7 +635,7 @@ class TestTransactionValidation(object):
 
     @pytest.mark.usefixtures('inputs')
     def test_non_create_double_spend(self, b, signed_create_tx,
-                                     signed_transfer_tx):
+                                     signed_transfer_tx, double_spend_tx):
         from bigchaindb.common.exceptions import DoubleSpend
 
         block1 = b.create_block([signed_create_tx])
@@ -655,10 +655,8 @@ class TestTransactionValidation(object):
 
         sleep(1)
 
-        signed_transfer_tx.metadata = {'different': 1}
-        # FIXME: https://github.com/bigchaindb/bigchaindb/issues/592
         with pytest.raises(DoubleSpend):
-            b.validate_transaction(signed_transfer_tx)
+            b.validate_transaction(double_spend_tx)
 
     @pytest.mark.usefixtures('inputs')
     def test_valid_non_create_transaction_after_block_creation(self, b,

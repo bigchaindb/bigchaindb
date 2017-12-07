@@ -19,12 +19,6 @@ Note that there are a few kinds of nodes:
 * [Set up a local BigchainDB node for development, experimenting and testing](dev-and-test/index.html)
 * [Set up and run a BigchainDB cluster](clusters.html)
 
-There are some old RethinkDB-based deployment instructions as well:
-
-* [Deploy a RethinkDB-based testing cluster on AWS](appendices/aws-testing-cluster.html)
-
-Instructions for setting up a client will be provided once there's a public test net.
-
 
 ## Can I Help?
 

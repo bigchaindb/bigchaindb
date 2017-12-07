@@ -57,14 +57,15 @@ class TestBlockModel(object):
         from bigchaindb.common.utils import gen_timestamp, serialize
         from bigchaindb.models import Block, Transaction
 
-        transactions = [Transaction.create([b.me], [([b.me], 1)])]
+        transaction = Transaction.create([b.me], [([b.me], 1)])
+        transaction.sign([b.me_private])
         timestamp = gen_timestamp()
         voters = ['Qaaa', 'Qbbb']
-        expected = Block(transactions, b.me, timestamp, voters)
+        expected = Block([transaction], b.me, timestamp, voters)
 
         block = {
             'timestamp': timestamp,
-            'transactions': [tx.to_dict() for tx in transactions],
+            'transactions': [transaction.to_dict()],
             'node_pubkey': b.me,
             'voters': voters,
         }
@@ -97,12 +98,13 @@ class TestBlockModel(object):
         from bigchaindb.common.utils import gen_timestamp, serialize
         from bigchaindb.models import Block, Transaction
 
-        transactions = [Transaction.create([b.me], [([b.me], 1)])]
+        transaction = Transaction.create([b.me], [([b.me], 1)])
+        transaction.sign([b.me_private])
         timestamp = gen_timestamp()
 
         block = {
             'timestamp': timestamp,
-            'transactions': [tx.to_dict() for tx in transactions],
+            'transactions': [transaction.to_dict()],
             'node_pubkey': b.me,
             'voters': list(b.federation),
         }
@@ -168,12 +170,14 @@ class TestBlockModel(object):
         # create 3 assets
         for asset in assets:
             tx = Transaction.create([b.me], [([b.me], 1)], asset=asset)
+            tx.sign([b.me_private])
             txs.append(tx)
 
         # create a `TRANSFER` transaction.
         # the asset in `TRANSFER` transactions is not extracted
         tx = Transaction.transfer(txs[0].to_inputs(), [([b.me], 1)],
                                   asset_id=txs[0].id)
+        tx.sign([b.me_private])
         txs.append(tx)
 
         # create the block
@@ -203,12 +207,14 @@ class TestBlockModel(object):
         # create 3 assets
         for asset in assets:
             tx = Transaction.create([b.me], [([b.me], 1)], asset=asset)
+            tx.sign([b.me_private])
             txs.append(tx)
 
         # create a `TRANSFER` transaction.
         # the asset in `TRANSFER` transactions is not extracted
         tx = Transaction.transfer(txs[0].to_inputs(), [([b.me], 1)],
                                   asset_id=txs[0].id)
+        tx.sign([b.me_private])
         txs.append(tx)
 
         # create the block
@@ -236,12 +242,14 @@ class TestBlockModel(object):
         # create 3 assets
         for asset in assets:
             tx = Transaction.create([b.me], [([b.me], 1)], asset=asset)
+            tx.sign([b.me_private])
             txs.append(tx)
 
         # create a `TRANSFER` transaction.
         # the asset in `TRANSFER` transactions is not extracted
         tx = Transaction.transfer(txs[0].to_inputs(), [([b.me], 1)],
                                   asset_id=txs[0].id)
+        tx.sign([b.me_private])
         txs.append(tx)
 
         # create the block
@@ -268,12 +276,14 @@ class TestBlockModel(object):
         # create 3 assets
         for asset in assets:
             tx = Transaction.create([b.me], [([b.me], 1)], asset=asset)
+            tx.sign([b.me_private])
             txs.append(tx)
 
         # create a `TRANSFER` transaction.
         # the asset in `TRANSFER` transactions is not extracted
         tx = Transaction.transfer(txs[0].to_inputs(), [([b.me], 1)],
                                   asset_id=txs[0].id)
+        tx.sign([b.me_private])
         txs.append(tx)
 
         # create the block

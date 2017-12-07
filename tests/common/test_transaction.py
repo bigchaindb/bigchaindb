@@ -1,10 +1,12 @@
 """These are tests of the API of the Transaction class and associated classes.
 Tests for transaction validation are separate.
 """
+import json
 from copy import deepcopy
 
 from base58 import b58encode, b58decode
-from pytest import raises
+from pytest import mark, raises
+from sha3 import sha3_256
 
 
 def test_input_serialization(ffill_uri, user_pub):
@@ -35,6 +37,7 @@ def test_input_deserialization_with_uri(ffill_uri, user_pub):
     assert input == expected
 
 
+@mark.skip(reason='None is tolerated because it is None before fulfilling.')
 def test_input_deserialization_with_invalid_input(user_pub):
     from bigchaindb.common.transaction import Input
 
@@ -303,10 +306,8 @@ def test_create_default_asset_on_tx_initialization(asset_definition):
 def test_transaction_serialization(user_input, user_output, data):
     from bigchaindb.common.transaction import Transaction
 
-    tx_id = 'l0l'
-
     expected = {
-        'id': tx_id,
+        'id': None,
         'version': Transaction.VERSION,
         # NOTE: This test assumes that Inputs and Outputs can
         #       successfully be serialized
@@ -322,37 +323,14 @@ def test_transaction_serialization(user_input, user_output, data):
     tx = Transaction(Transaction.CREATE, {'data': data}, [user_input],
                      [user_output])
     tx_dict = tx.to_dict()
-    tx_dict['id'] = tx_id
 
     assert tx_dict == expected
 
 
-def test_transaction_deserialization(user_input, user_output, data):
+def test_transaction_deserialization(tri_state_transaction):
     from bigchaindb.common.transaction import Transaction
     from .utils import validate_transaction_model
-
-    expected_asset = {'data': data}
-    expected = Transaction(Transaction.CREATE, expected_asset, [user_input],
-                           [user_output], None, Transaction.VERSION)
-
-    tx = {
-        'version': Transaction.VERSION,
-        # NOTE: This test assumes that Inputs and Outputs can
-        #       successfully be serialized
-        'inputs': [user_input.to_dict()],
-        'outputs': [user_output.to_dict()],
-        'operation': Transaction.CREATE,
-        'metadata': None,
-        'asset': {
-            'data': data,
-        }
-    }
-    tx_no_signatures = Transaction._remove_signatures(tx)
-    tx['id'] = Transaction._to_hash(Transaction._to_str(tx_no_signatures))
-    tx = Transaction.from_dict(tx)
-
-    assert tx == expected
-
+    tx = Transaction.from_dict(tri_state_transaction)
     validate_transaction_model(tx)
 
 
@@ -543,7 +521,6 @@ def test_validate_input_with_invalid_parameters(utx):
 
     input_conditions = [out.fulfillment.condition_uri for out in utx.outputs]
     tx_dict = utx.to_dict()
-    tx_dict = Transaction._remove_signatures(tx_dict)
     tx_serialized = Transaction._to_str(tx_dict)
     valid = utx._input_valid(utx.inputs[0], tx_serialized, input_conditions)
     assert not valid
@@ -834,6 +811,7 @@ def test_create_transfer_transaction_single_io(tx, user_pub, user2_pub,
     from .utils import validate_transaction_model
 
     expected = {
+        'id': None,
         'outputs': [user2_output.to_dict()],
         'metadata': None,
         'asset': {
@@ -861,7 +839,6 @@ def test_create_transfer_transaction_single_io(tx, user_pub, user2_pub,
     transfer_tx = transfer_tx.to_dict()
 
     expected_input = deepcopy(inputs[0])
-    expected['id'] = transfer_tx['id']
     expected_input.fulfillment.sign(
         serialize(expected).encode(), b58decode(user_priv))
     expected_ffill = expected_input.fulfillment.serialize_uri()
@@ -969,6 +946,35 @@ def test_cant_add_empty_input():
 
     with raises(TypeError):
         tx.add_input(None)
+
+
+def test_unfulfilled_transaction_serialized(unfulfilled_transaction):
+    from bigchaindb.common.transaction import Transaction
+    tx_obj = Transaction.from_dict(unfulfilled_transaction)
+    expected = json.dumps(unfulfilled_transaction, sort_keys=True,
+                          separators=(',', ':'), ensure_ascii=True)
+    assert tx_obj.serialized == expected
+
+
+def test_fulfilled_transaction_serialized(fulfilled_transaction):
+    from bigchaindb.common.transaction import Transaction
+    tx_obj = Transaction.from_dict(fulfilled_transaction)
+    expected = json.dumps(fulfilled_transaction, sort_keys=True,
+                          separators=(',', ':'), ensure_ascii=True)
+    assert tx_obj.serialized == expected
+
+
+def test_transaction_hash(fulfilled_transaction):
+    from bigchaindb.common.transaction import Transaction
+    tx_obj = Transaction.from_dict(fulfilled_transaction)
+    assert tx_obj._id is None
+    assert tx_obj.id is None
+    thing_to_hash = json.dumps(fulfilled_transaction, sort_keys=True,
+                               separators=(',', ':'), ensure_ascii=True)
+    expected_hash_id = sha3_256(thing_to_hash.encode()).hexdigest()
+    tx_obj._hash()
+    assert tx_obj._id == expected_hash_id
+    assert tx_obj.id == expected_hash_id
 
 
 def test_output_from_dict_invalid_amount(user_output):

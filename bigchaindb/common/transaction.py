@@ -112,7 +112,7 @@ class Input(object):
                 InvalidSignature: If an Input's URI couldn't be parsed.
         """
         fulfillment = data['fulfillment']
-        if not isinstance(fulfillment, Fulfillment):
+        if not isinstance(fulfillment, (Fulfillment, type(None))):
             try:
                 fulfillment = Fulfillment.from_uri(data['fulfillment'])
             except ASN1DecodeError:
@@ -477,7 +477,7 @@ class Transaction(object):
     VERSION = '1.0'
 
     def __init__(self, operation, asset, inputs=None, outputs=None,
-                 metadata=None, version=None):
+                 metadata=None, version=None, hash_id=None):
         """The constructor allows to create a customizable Transaction.
 
             Note:
@@ -495,6 +495,7 @@ class Transaction(object):
                 metadata (dict): Metadata to be stored along with the
                     Transaction.
                 version (string): Defines the version number of a Transaction.
+                hash_id (string): Hash id of the transaction.
         """
         if operation not in Transaction.ALLOWED_OPERATIONS:
             allowed_ops = ', '.join(self.__class__.ALLOWED_OPERATIONS)
@@ -528,6 +529,14 @@ class Transaction(object):
         self.inputs = inputs or []
         self.outputs = outputs or []
         self.metadata = metadata
+        self._id = hash_id
+
+    @property
+    def serialized(self):
+        return Transaction._to_str(self.to_dict())
+
+    def _hash(self):
+        self._id = hash_data(self.serialized)
 
     @classmethod
     def create(cls, tx_signers, recipients, metadata=None, asset=None):
@@ -756,6 +765,9 @@ class Transaction(object):
         tx_serialized = Transaction._to_str(tx_dict)
         for i, input_ in enumerate(self.inputs):
             self.inputs[i] = self._sign_input(input_, tx_serialized, key_pairs)
+
+        self._hash()
+
         return self
 
     @classmethod
@@ -907,6 +919,7 @@ class Transaction(object):
 
         tx_dict = self.to_dict()
         tx_dict = Transaction._remove_signatures(tx_dict)
+        tx_dict['id'] = None
         tx_serialized = Transaction._to_str(tx_dict)
 
         def validate(i, output_condition_uri=None):
@@ -965,21 +978,15 @@ class Transaction(object):
             Returns:
                 dict: The Transaction as an alternative serialization format.
         """
-        tx = {
+        return {
             'inputs': [input_.to_dict() for input_ in self.inputs],
             'outputs': [output.to_dict() for output in self.outputs],
             'operation': str(self.operation),
             'metadata': self.metadata,
             'asset': self.asset,
             'version': self.version,
+            'id': self._id,
         }
-
-        tx_no_signatures = Transaction._remove_signatures(tx)
-        tx_serialized = Transaction._to_str(tx_no_signatures)
-        tx_id = Transaction._to_hash(tx_serialized)
-
-        tx['id'] = tx_id
-        return tx
 
     @staticmethod
     # TODO: Remove `_dict` prefix of variable.
@@ -1010,7 +1017,7 @@ class Transaction(object):
 
     @property
     def id(self):
-        return self.to_hash()
+        return self._id
 
     def to_hash(self):
         return self.to_dict()['id']
@@ -1069,12 +1076,13 @@ class Transaction(object):
         # NOTE: Remove reference to avoid side effects
         tx_body = deepcopy(tx_body)
         try:
-            proposed_tx_id = tx_body.pop('id')
+            proposed_tx_id = tx_body['id']
         except KeyError:
             raise InvalidHash('No transaction id found!')
 
-        tx_body_no_signatures = Transaction._remove_signatures(tx_body)
-        tx_body_serialized = Transaction._to_str(tx_body_no_signatures)
+        tx_body['id'] = None
+
+        tx_body_serialized = Transaction._to_str(tx_body)
         valid_tx_id = Transaction._to_hash(tx_body_serialized)
 
         if proposed_tx_id != valid_tx_id:
@@ -1092,8 +1100,7 @@ class Transaction(object):
             Returns:
                 :class:`~bigchaindb.common.transaction.Transaction`
         """
-        cls.validate_id(tx)
         inputs = [Input.from_dict(input_) for input_ in tx['inputs']]
         outputs = [Output.from_dict(output) for output in tx['outputs']]
         return cls(tx['operation'], tx['asset'], inputs, outputs,
-                   tx['metadata'], tx['version'])
+                   tx['metadata'], tx['version'], hash_id=tx['id'])

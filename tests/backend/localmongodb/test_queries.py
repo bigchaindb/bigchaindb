@@ -89,13 +89,14 @@ def test_get_owned_ids(signed_create_tx, user_pk):
     assert txns[0] == signed_create_tx.to_dict()
 
 
-def test_get_spending_transactions(user_pk):
+def test_get_spending_transactions(user_pk, user_sk):
     from bigchaindb.backend import connect, query
     from bigchaindb.models import Transaction
     conn = connect()
 
     out = [([user_pk], 1)]
     tx1 = Transaction.create([user_pk], out * 3)
+    tx1.sign([user_sk])
     inputs = tx1.to_inputs()
     tx2 = Transaction.transfer([inputs[0]], out, tx1.id)
     tx3 = Transaction.transfer([inputs[1]], out, tx1.id)
