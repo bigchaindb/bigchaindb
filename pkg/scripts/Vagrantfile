@@ -1,0 +1,61 @@
+Vagrant.require_version ">= 1.8.7"
+unless Vagrant.has_plugin?("vagrant-vbguest")
+  raise "Please install the vagrant-vbguest plugin by running `vagrant plugin install vagrant-vbguest`"
+end
+
+unless Vagrant.has_plugin?("vagrant-cachier")
+  raise "Please install the vagrant-cachier plugin by running `vagrant plugin install vagrant-cachier`"
+end
+
+VAGRANTFILE_API_VERSION = "2"
+
+MEMORY = 4096
+CPU_COUNT = 2
+
+MOUNT_DIRS = {
+  :bigchaindb => {:repo => "bigchaindb", :local => "/opt/stack/bigchaindb", :owner => "edxapp"},
+}
+
+boxname = ENV['BOXNAME'] || "ubuntu/xenial64"
+tm_version = ENV['TM_VERSION']
+
+$script = <<SCRIPT
+if [ ! -d /opt/stack/bigchaindb/pkg/scripts ]; then
+    echo "Error: Base box is missing provisioning scripts." 1>&2
+    exit 1
+fi
+
+bash /opt/stack/bigchaindb/pkg/scripts/stack.sh
+
+SCRIPT
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.box = "ubuntu/xenial64"
+  config.vm.box_check_update = false
+
+  config.vm.network :private_network, ip: "192.168.33.10"
+
+
+  config.vm.network :forwarded_port, guest: 9984, host: 9984  # BDB
+
+  config.ssh.insert_key = true
+
+  config.vm.synced_folder  "bigchaindb", "/opt/stack/bigchaindb"
+
+
+  config.vm.provider :virtualbox do |vb|
+    vb.customize ["modifyvm", :id, "--memory", MEMORY.to_s]
+    vb.customize ["modifyvm", :id, "--cpus", CPU_COUNT.to_s]
+  end
+
+  # Use vagrant-vbguest plugin to make sure Guest Additions are in sync
+  config.vbguest.auto_reboot = true
+  config.vbguest.auto_update = true
+
+  config.vm.provision "shell", inline: $script,
+    privileged: false,
+    env: {
+      :TM_VERSION => ENV['TM_VERSION'], 
+      :MONGO_VERSION => ENV['MONGO_VERSION']
+    }
+end
