@@ -57,7 +57,7 @@ def start():
     p_websocket_server.start()
 
     # connect to tendermint event stream
-    p_websocket_client = mp.Process(name='ws_client',
+    p_websocket_client = mp.Process(name='ws_to_tendermint',
                                     target=event_stream.start,
                                     args=(exchange.get_publisher_queue(),))
     p_websocket_client.start()

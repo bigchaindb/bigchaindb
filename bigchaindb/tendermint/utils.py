@@ -15,10 +15,10 @@ def decode_transaction(raw):
     return json.loads(raw.decode('utf8'))
 
 
-def decode_txn_base64(value):
+def decode_transaction_base64(value):
     """Decode a transaction from Base64."""
 
-    return base64.b64decode(value.encode('utf8')).decode('utf8')
+    return json.loads(base64.b64decode(value.encode('utf8')).decode('utf8'))
 
 
 def calculate_hash(key_list):

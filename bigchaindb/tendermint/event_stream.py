@@ -7,39 +7,34 @@ import aiohttp
 
 from bigchaindb.common.utils import gen_timestamp
 from bigchaindb.events import EventTypes, Event
-from bigchaindb.tendermint.utils import decode_txn_base64
+from bigchaindb.tendermint.utils import decode_transaction_base64
 
 
 HOST = 'localhost'
 PORT = 46657
 URL = f'ws://{HOST}:{PORT}/websocket'
 
-PAYLOAD = {
-    "method": "subscribe",
-    "jsonrpc": "2.0",
-    "params": ["NewBlock"],
-    "id": "bigchaindb_stream"
-}
-
-
 logger = logging.getLogger(__name__)
 
 
-async def connect_and_recv(event_queue):
+@asyncio.coroutine
+def connect_and_recv(event_queue):
     session = aiohttp.ClientSession()
-    async with session.ws_connect(URL) as ws:
-        logger.info('Connected to tendermint ws server')
+    ws = yield from session.ws_connect(URL)
 
-        stream_id = "bigchaindb_stream_{}".format(gen_timestamp())
-        await subscribe_events(ws, stream_id)
+    logger.info('Connected to tendermint ws server')
 
-        async for msg in ws:
-            process_event(event_queue, msg.data, stream_id)
+    stream_id = "bigchaindb_stream_{}".format(gen_timestamp())
+    yield from subscribe_events(ws, stream_id)
 
-            if msg.type in (aiohttp.WSMsgType.CLOSED,
-                            aiohttp.WSMsgType.ERROR):
-                session.close()
-                raise aiohttp.ClientConnectionError()
+    while True:
+        msg = yield from ws.receive()
+        process_event(event_queue, msg.data, stream_id)
+
+        if msg.type in (aiohttp.WSMsgType.CLOSED,
+                        aiohttp.WSMsgType.ERROR):
+            session.close()
+            raise aiohttp.ClientConnectionError()
 
 
 def process_event(event_queue, event, stream_id):
@@ -53,26 +48,35 @@ def process_event(event_queue, event, stream_id):
 
         # Only push non empty blocks
         if block_txs:
-            block_txs = [json.loads(decode_txn_base64(txn)) for txn in block_txs]
+            block_txs = [decode_transaction_base64(txn) for txn in block_txs]
             new_block = {'id': str(block_id), 'transactions': block_txs}
             event = Event(EventTypes.BLOCK_VALID, new_block)
             event_queue.put(event)
 
 
-async def subscribe_events(ws, stream_id):
-    PAYLOAD["id"] = stream_id
-    await ws.send_str(json.dumps(PAYLOAD))
+@asyncio.coroutine
+def subscribe_events(ws, stream_id):
+    payload = {
+        "method": "subscribe",
+        "jsonrpc": "2.0",
+        "params": ["NewBlock"],
+        "id": stream_id
+    }
+    yield from ws.send_str(json.dumps(payload))
 
 
-async def try_connect_and_recv(event_queue, gas):
+@asyncio.coroutine
+def try_connect_and_recv(event_queue, max_tries):
     try:
-        await connect_and_recv(event_queue)
+        yield from connect_and_recv(event_queue)
 
     except Exception as e:
-        logger.error('WebSocket connection failed with exception: {}'.format(e))
-        if gas:
+        if max_tries:
+            logger.warning('WebSocket connection failed with exception %s', e)
             time.sleep(2)
-            await try_connect_and_recv(event_queue, gas-1)
+            yield from try_connect_and_recv(event_queue, max_tries-1)
+        else:
+            logger.exception('WebSocket connection failed with exception %s', e)
 
 
 def start(event_queue):
@@ -80,5 +84,4 @@ def start(event_queue):
     try:
         loop.run_until_complete(try_connect_and_recv(event_queue, 5))
     except (KeyboardInterrupt, SystemExit):
-        logger.info('Shutting down tendermint event stream connection')
-        return
+        logger.info('Shutting down Tendermint event stream connection')
