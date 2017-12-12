@@ -8,8 +8,8 @@ The following ports should expect unsolicited inbound traffic:
 
 1. **Port 22** can expect inbound SSH (TCP) traffic from the node administrator (i.e. a small set of IP addresses).
 1. **Port 9984** can expect inbound HTTP (TCP) traffic from BigchainDB clients sending transactions to the BigchainDB HTTP API.
-1. **Port 9985** can expect inbount WebSocket traffic from BigchainDB clients.
-1. **Port 46656** can expect inbount Tendermint P2P traffic from other Tendermint peers.
+1. **Port 9985** can expect inbound WebSocket traffic from BigchainDB clients.
+1. **Port 46656** can expect inbound Tendermint P2P traffic from other Tendermint peers.
 
 All other ports should only get inbound traffic in response to specific requests from inside the node.
 
