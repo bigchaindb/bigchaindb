@@ -52,10 +52,10 @@ class BigchainDB(Bigchain):
                 backend.query.store_asset(self.connection, asset)
 
         metadata = transaction.pop('metadata')
-        txn_metadata = {'id': transaction['id'],
-                        'metadata': metadata}
+        transaction_metadata = {'id': transaction['id'],
+                                'metadata': metadata}
 
-        backend.query.store_metadata(self.connection, [txn_metadata])
+        backend.query.store_metadata(self.connection, [transaction_metadata])
 
         return backend.query.store_transaction(self.connection, transaction)
 

@@ -94,7 +94,7 @@ def create_metadata_secondary_index(conn, dbname):
 
     # the id is the txid of the transaction where metadata was defined
     conn.conn[dbname]['metadata'].create_index('id',
-                                               name='txn_id',
+                                               name='transaction_id',
                                                unique=True)
 
     # full text search index

@@ -35,10 +35,10 @@ def store_asset(connection, asset):
 
 @singledispatch
 def store_metadata(connection, metadata):
-    """Write an asset to the asset table.
+    """Write metadata to the metadata table.
 
     Args:
-        asset (dict): the asset.
+        metadata (dict): transaction metadata.
 
     Returns:
         The result of the operation.
@@ -345,11 +345,11 @@ def get_assets(connection, asset_ids):
 
 
 @singledispatch
-def get_metadata(connection, txn_ids):
+def get_metadata(connection, transaction_ids):
     """Get a list of metadata from the metadata table.
 
     Args:
-        txn_ids (list): a list of ids for the metadata to be retrieved from
+        transaction_ids (list): a list of ids for the metadata to be retrieved from
         the database.
 
     Returns:

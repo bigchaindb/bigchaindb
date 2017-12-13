@@ -43,10 +43,10 @@ def store_metadata(conn, metadata):
 
 
 @register_query(LocalMongoDBConnection)
-def get_metadata(conn, txn_ids):
+def get_metadata(conn, transaction_ids):
     return conn.run(
         conn.collection('metadata')
-        .find({'id': {'$in': txn_ids}},
+        .find({'id': {'$in': transaction_ids}},
               projection={'_id': False}))
 
 
