@@ -6,20 +6,27 @@ services:
     ports:
       - "27017"
     command: mongod
+  bdb-base:
+    image: bigchaindb
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        backend: localmongodb
+    volumes:
+      - ./bigchaindb:/usr/src/app/bigchaindb
+      - ./tests:/usr/src/app/tests
   bdb:
     depends_on:
       - mdb
       - tendermint
     build:
       context: .
-      dockerfile: ./Dockerfile
-      args:
-        backend: localmongodb
+      dockerfile: Dockerfile-dev
     volumes:
       - ./bigchaindb:/usr/src/app/bigchaindb
       - ./tests:/usr/src/app/tests
     environment:
-      BIGCHAINDB_DATABASE_BACKEND: localmongodb
       BIGCHAINDB_DATABASE_HOST: mdb
       BIGCHAINDB_DATABASE_PORT: 27017
       BIGCHAINDB_SERVER_BIND: 0.0.0.0:9984
@@ -28,7 +35,7 @@ services:
       TENDERMINT_HOST: tendermint
       TENDERMINT_PORT: 46657
     ports:
-      - "9984"
+      - 9984:9984
     command: bigchaindb -l DEBUG start
   tendermint:
     image: tendermint/tendermint
@@ -36,6 +43,3 @@ services:
       - ./tmdata:/tendermint
     entrypoint: ''
     command: bash -c "tendermint unsafe_reset_all && tendermint node"
-  curl-client:
-    image: appropriate/curl
-    command: /bin/sh -c "curl http://tendermint:46657/abci_query && curl http://bdb:9984/"
