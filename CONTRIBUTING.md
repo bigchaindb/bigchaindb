@@ -76,7 +76,7 @@ Now you can run the `bdb` service (i.e. BigchainDB Server) you built above with 
 docker-compose -f docker-compose.yml up bdb
 ```
 
-Above command will start thee containerized services i.e. mongodb, tendermint and bigchaindb. It will also detach to `bdb` service logs on your terminal. Now you will be able to access your bigchaindb server at `localhost:9984`
+The above command will start three containerized services i.e. mongodb, tendermint and bigchaindb. It will also detach to `bdb` service logs on your terminal. Now you will be able to access your bigchaindb server at `localhost:9984`
 
 Now you can detach the bigchaindb container with `Ctrl+C` and use the above two commands to re-build and run bigchaindb server again with latest code changes in your forked repo.
 
