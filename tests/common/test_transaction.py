@@ -3,10 +3,12 @@ Tests for transaction validation are separate.
 """
 import json
 from copy import deepcopy
-
 from base58 import b58encode, b58decode
-from pytest import mark, raises
+
+from pytest import raises, mark
 from sha3 import sha3_256
+
+pytestmark = mark.tendermint
 
 
 def test_input_serialization(ffill_uri, user_pub):

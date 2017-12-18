@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 from hypothesis import given
 from hypothesis_regex import regex
-from pytest import raises
+from pytest import raises, mark
 
 from bigchaindb.common.exceptions import SchemaValidationError
 from bigchaindb.common.schema import (
@@ -16,6 +16,9 @@ from bigchaindb.common.schema import (
 SUPPORTED_CRYPTOCONDITION_TYPES = ('threshold-sha-256', 'ed25519-sha-256')
 UNSUPPORTED_CRYPTOCONDITION_TYPES = (
     'preimage-sha-256', 'prefix-sha-256', 'rsa-sha-256')
+
+
+pytestmark = mark.tendermint
 
 
 ################################################################################

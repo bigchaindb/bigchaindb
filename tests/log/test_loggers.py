@@ -1,5 +1,9 @@
 from logging.handlers import SocketHandler
 
+import pytest
+
+pytestmark = pytest.mark.tendermint
+
 
 class TestHttpServerLogger:
 
