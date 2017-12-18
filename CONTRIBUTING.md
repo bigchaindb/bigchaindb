@@ -156,14 +156,6 @@ Before you submit a pull request, check that it meets these guidelines:
 1. Follow the pull request template when creating new PRs. The template will
    be inserted when you create a new pull request.
 
-### Tip: Upgrading All BigchainDB Dependencies
-
-Over time, your versions of the Python packages used by BigchainDB will get out of date. You can upgrade them using:
-
-```text
-pip install --upgrade -e .[dev]
-```
-
 ## Quick Links
 
 * [BigchainDB chatroom on Gitter](https://gitter.im/bigchaindb/bigchaindb)
