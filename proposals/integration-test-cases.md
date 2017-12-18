@@ -98,6 +98,5 @@ def test_node_count(some_args):
 - query tx
 ### Malicious nodes
 - start n nodes, one manipulates the blockchain
-### events
+### Events
 - start n nodes, let one check for event stream of another
-### Metadata API
