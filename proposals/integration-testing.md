@@ -3,7 +3,7 @@
 ## Problem Description
 We need a proper way to describe, code, and run integration tests. While we have unit tests to verify the correct behavior of functions and methods, we need a way to easily test a network of BigchainDB nodes.
 
-As an example, we want to make sure that if a valid transaction is pushed to the network, after some time that transaction is stored by at least 2/3 of the nodes; an invalid transaction (malformed, double spent, etc.) pushed to the network must be rejected. This must be true also in different scenarios such as not all nodes are up, or there is latency between the nodes. Note that some of those problems has already been addressed by the Tendermint team.
+As an example, we want to make sure that if a valid transaction is pushed to the network, after some time that transaction is stored by more than 2/3 of the nodes; an invalid transaction (malformed, double spent, etc.) pushed to the network must be rejected. This must be true also in different scenarios such as not all nodes are up, or there is latency between the nodes. Note that some of those problems have already been addressed by the Tendermint team.
 
 ### Use cases
 - Verify we don't break the contract with the user.
@@ -35,7 +35,7 @@ The `ND` module implements two main functions:
 - network setup, using `docker-compose`
 - basic transaction management
 
-In the next sections we will use `ND` to refer to the Python class, and `network` to refer to an instance of it. For now, `network` will be likely to be a singleton, since it will control `docker` in the current host. This **will not** be the final name of the module.
+In the next sections we will use `ND` to refer to the Python class, and `network` to refer to an instance of it. For now, `network` will most likely be a singleton, since it will control `docker` in the current host. This **will not** be the final name of the module.
 
 ### Usage example
 The following code is just a suggestion on how the new module shuold be used. It may contain syntax errors or other kind of errors.
