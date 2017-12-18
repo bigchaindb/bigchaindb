@@ -78,6 +78,7 @@ More About BigchainDB
    :maxdepth: 1
 
    BigchainDB Docs Home <self>
+   production-ready
    terminology
    decentralized
    diversity
