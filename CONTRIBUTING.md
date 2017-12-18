@@ -34,7 +34,7 @@ Familiarize yourself with how we do coding and documentation in the BigchainDB p
 
 ### Step 2 - Install some Dependencies
 
-Install MongoDB, Tendermint, and all of BigchainDB Server's dependencies. The [Quickstart page](https://docs.bigchaindb.com/projects/server/en/latest/quickstart.html) has some pointers. In fact, you could do everything in the Quickstart page short of installing BigchainDB with pip (since you will install from the source on GitHub), and you shouldn't run MongoDB or Tendermint yet.
+We recommend using `Docker` and `Docker Compose` based workflow for testing and development of bigchaindb. So the only dependencies you need to install are [Docker](https://docs.docker.com/engine/installation/) and [docker-compose](https://docs.docker.com/compose/install/) and [Docker Compose](https://docs.docker.com/compose/install/).
 
 ### Step 3 - Fork the bigchaindb/bigchaindb GitHub Repository
 
@@ -62,25 +62,25 @@ git merge upstream/master
 
 ### Step 6 - Build and Run
 
-We recommend using [docker](https://docs.docker.com/engine/installation/) and [docker-compose](https://docs.docker.com/compose/install/) to use and run the source code you just cloned from your fork for local development and testing. Once you have installed `docker` and `docker-compose` on your system you can run the following command to build a docker image from your cloned fork
+To use and run the source code you just cloned from your fork for local development and testing. Run the following command to build a docker image from your cloned fork
 
 ```text
 docker-compose -f docker-compose.yml build
 ```
 
-NOTE: If you have already ran the above command once you can just run `docker-compose -f docker-compose.yml build` to speed up the build process for any subsequent builds
+NOTE: If you already ran the above command once you can just run `docker-compose -f docker-compose.yml build bdb` to speed up the build process for any subsequent builds
 
-Now you can run the bigchaindb server you built above with the following command
+Now you can run the `bdb` service (i.e. BigchainDB Server) you built above with the following command:
 
 ```text
 docker-compose -f docker-compose.yml up bdb
 ```
 
-Above command will start thee containerized services i.e. mongodb, tendermint and bigchaindb. Now you will be able to access your bigchaindb server at `localhost:9984`
+Above command will start thee containerized services i.e. mongodb, tendermint and bigchaindb. It will also detach to `bdb` service logs on your terminal. Now you will be able to access your bigchaindb server at `localhost:9984`
 
-Now you can kill the bigchaindb server with `Ctrl+C`. Use the above two commands to re-build and run bigchaindb server again with latest code changes in your forked repo.
+Now you can detach the bigchaindb container with `Ctrl+C` and use the above two commands to re-build and run bigchaindb server again with latest code changes in your forked repo.
 
-NOTE: Pressing `Ctrl+C` will kill `bigchaindb` container only and you will need to kill `mongodb` and `tendermint` containers seperately if you wish to clean the system.
+NOTE: Once done with development you can stop and remove all running docker containers with `docker-compose -f docker-compose.yml rm -f -s`
 
 ### Step 7 - Create a New Branch for Each Bug/Feature
 

@@ -1,3 +1,9 @@
+# Main Dockerfile used to build production
+# deployment image.
+#
+# This file is also used to build a base image
+# for Dockerfile-dev to setup a dev environment
+
 FROM python:3.6
 LABEL maintainer "dev@bigchaindb.com"
 RUN mkdir -p /usr/src/app

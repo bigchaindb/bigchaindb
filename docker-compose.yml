@@ -1,3 +1,13 @@
+# This file is used to bring up a single node
+# development and test environment with Bigchain,
+# MongoDB and Tendermint
+#
+# 'bdb-base' service is only used to build the 'bigchaindb'
+# base image which is then used by 'bdb' service to build a
+# development image. Having a base image with all dependencies
+# already installed helps reduce build time of development image
+# significantly
+
 version: '3'
 
 services:

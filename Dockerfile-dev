@@ -1,3 +1,11 @@
+# This file builds a bigchaindb development
+# image and expects 'bigchaindb:latest' image
+# to be built from main 'Dockerfile' in this repo.
+# By building on top of the base image we avoid re-installing
+# all dependecies and doing things like 'apt-get update'
+# for each development build, this significantly speeds up
+# the build time in a dev environment.
+
 FROM bigchaindb:latest
 LABEL maintainer "dev@bigchaindb.com"
 RUN mkdir -p /usr/src/app
