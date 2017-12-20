@@ -12,12 +12,13 @@ pytestmark = pytest.mark.tendermint
 
 
 @pytest.mark.bdb
-def test_app(b):
+def test_app(tb):
     from bigchaindb.tendermint import App
     from bigchaindb.tendermint.utils import calculate_hash
     from bigchaindb.common.crypto import generate_key_pair
     from bigchaindb.models import Transaction
 
+    b = tb
     app = App(b)
     p = ProtocolHandler(app)
 
