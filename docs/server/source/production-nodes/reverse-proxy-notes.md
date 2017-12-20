@@ -30,7 +30,7 @@ You may also be interested in
 The BigchainDB HTTP API has several endpoints,
 but only one of them, the `POST /transactions` endpoint,
 expects a non-empty HTTP request body:
-the transaction (JSON) being submitted by the user.
+the transaction being submitted by the user.
 
 If you want to enforce a maximum-allowed transaction size
 (discarding any that are larger),
@@ -49,24 +49,3 @@ For more information, see
 
 Note: By enforcing a maximum transaction size, you
 [indirectly enforce a maximum crypto-conditions complexity](https://github.com/bigchaindb/bigchaindb/issues/356#issuecomment-288085251).
-
-
-**Aside: Why 15 kB?**
-
-Both [RethinkDB](https://rethinkdb.com/limitations/) and
-[MongoDB have a maximum document size of 16 MB](https://docs.mongodb.com/manual/reference/limits/#limit-bson-document-size).
-In BigchainDB, the biggest documents are the blocks.
-A BigchainDB block can contain up to 1000 transactions,
-plus some other data (e.g. the timestamp).
-If we ignore the other data as negligible relative to all the transactions,
-then a block of size 16 MB
-will have an average transaction size of (16 MB)/1000 = 16 kB.
-Therefore by limiting the max transaction size to 15 kB,
-you can be fairly sure that no blocks will ever be
-bigger than 16 MB.
-
-Note: Technically, the documents that MongoDB stores aren't the JSON
-that BigchainDB users think of; they're JSON converted to BSON.
-Moreover, [one can use GridFS with MongoDB to store larger documents](https://docs.mongodb.com/manual/core/gridfs/).
-Therefore the above calculation shoud be seen as a rough guide,
-not the last word.

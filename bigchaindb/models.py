@@ -88,6 +88,7 @@ class Transaction(Transaction):
 
     @classmethod
     def from_dict(cls, tx_body):
+        super().validate_id(tx_body)
         validate_transaction_schema(tx_body)
         validate_txn_obj('asset', tx_body['asset'], 'data', validate_key)
         validate_txn_obj('metadata', tx_body, 'metadata', validate_key)

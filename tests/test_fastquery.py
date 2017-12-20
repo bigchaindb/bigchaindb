@@ -49,17 +49,20 @@ def test_get_outputs_by_public_key(b, user_pk, user2_pk, blockdata):
     ]
 
 
-def test_filter_spent_outputs(b, user_pk):
+def test_filter_spent_outputs(b, user_pk, user_sk):
     out = [([user_pk], 1)]
     tx1 = Transaction.create([user_pk], out * 3)
-
+    tx1.sign([user_sk])
     # There are 3 inputs
     inputs = tx1.to_inputs()
 
     # Each spent individually
     tx2 = Transaction.transfer([inputs[0]], out, tx1.id)
+    tx2.sign([user_sk])
     tx3 = Transaction.transfer([inputs[1]], out, tx1.id)
+    tx3.sign([user_sk])
     tx4 = Transaction.transfer([inputs[2]], out, tx1.id)
+    tx4.sign([user_sk])
 
     # The CREATE and first TRANSFER are valid. tx2 produces a new unspent.
     for tx in [tx1, tx2]:
@@ -86,17 +89,21 @@ def test_filter_spent_outputs(b, user_pk):
     }
 
 
-def test_filter_unspent_outputs(b, user_pk):
+def test_filter_unspent_outputs(b, user_pk, user_sk):
     out = [([user_pk], 1)]
     tx1 = Transaction.create([user_pk], out * 3)
+    tx1.sign([user_sk])
 
     # There are 3 inputs
     inputs = tx1.to_inputs()
 
     # Each spent individually
     tx2 = Transaction.transfer([inputs[0]], out, tx1.id)
+    tx2.sign([user_sk])
     tx3 = Transaction.transfer([inputs[1]], out, tx1.id)
+    tx3.sign([user_sk])
     tx4 = Transaction.transfer([inputs[2]], out, tx1.id)
+    tx4.sign([user_sk])
 
     # The CREATE and first TRANSFER are valid. tx2 produces a new unspent.
     for tx in [tx1, tx2]:

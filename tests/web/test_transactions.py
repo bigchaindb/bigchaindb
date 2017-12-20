@@ -1,7 +1,11 @@
 import json
 from unittest.mock import patch
 
+import base58
 import pytest
+from cryptoconditions import Ed25519Sha256
+from sha3 import sha3_256
+
 from bigchaindb.common import crypto
 
 
@@ -165,9 +169,16 @@ def test_post_create_transaction_with_invalid_signature(mock_logger,
     from bigchaindb.models import Transaction
     user_priv, user_pub = crypto.generate_key_pair()
 
-    tx = Transaction.create([user_pub], [([user_pub], 1)])
-    tx = tx.sign([user_priv]).to_dict()
+    tx = Transaction.create([user_pub], [([user_pub], 1)]).to_dict()
     tx['inputs'][0]['fulfillment'] = 64 * '0'
+    tx['id'] = sha3_256(
+        json.dumps(
+            tx,
+            sort_keys=True,
+            separators=(',', ':'),
+            ensure_ascii=False,
+        ).encode(),
+    ).hexdigest()
 
     res = client.post(TX_ENDPOINT, data=json.dumps(tx))
     expected_status_code = 400
@@ -202,9 +213,25 @@ def test_post_create_transaction_with_invalid_structure(client):
 def test_post_create_transaction_with_invalid_schema(mock_logger, client):
     from bigchaindb.models import Transaction
     user_priv, user_pub = crypto.generate_key_pair()
-    tx = Transaction.create(
-        [user_pub], [([user_pub], 1)]).sign([user_priv]).to_dict()
+    tx = Transaction.create([user_pub], [([user_pub], 1)]).to_dict()
     del tx['version']
+    ed25519 = Ed25519Sha256(public_key=base58.b58decode(user_pub))
+    message = json.dumps(
+        tx,
+        sort_keys=True,
+        separators=(',', ':'),
+        ensure_ascii=False,
+    ).encode()
+    ed25519.sign(message, base58.b58decode(user_priv))
+    tx['inputs'][0]['fulfillment'] = ed25519.serialize_uri()
+    tx['id'] = sha3_256(
+        json.dumps(
+            tx,
+            sort_keys=True,
+            separators=(',', ':'),
+            ensure_ascii=False,
+        ).encode(),
+    ).hexdigest()
     res = client.post(TX_ENDPOINT, data=json.dumps(tx))
     expected_status_code = 400
     expected_error_message = (
@@ -308,6 +335,7 @@ def test_post_invalid_transfer_transaction_returns_400(b, client, user_pk):
     transfer_tx = Transaction.transfer(create_tx.to_inputs(),
                                        [([user_pub], 1)],
                                        asset_id=create_tx.id)
+    transfer_tx._hash()
 
     res = client.post(TX_ENDPOINT, data=json.dumps(transfer_tx.to_dict()))
     expected_status_code = 400
