@@ -34,6 +34,20 @@ def store_asset(connection, asset):
 
 
 @singledispatch
+def store_metadata(connection, metadata):
+    """Write metadata to the metadata table.
+
+    Args:
+        metadata (dict): transaction metadata.
+
+    Returns:
+        The result of the operation.
+    """
+
+    raise NotImplementedError
+
+
+@singledispatch
 def store_transaction(connection, signed_transaction):
     """Same as write_transaction."""
 
@@ -331,11 +345,11 @@ def get_assets(connection, asset_ids):
 
 
 @singledispatch
-def get_metadata(connection, txn_ids):
+def get_metadata(connection, transaction_ids):
     """Get a list of metadata from the metadata table.
 
     Args:
-        txn_ids (list): a list of ids for the metadata to be retrieved from
+        transaction_ids (list): a list of ids for the metadata to be retrieved from
         the database.
 
     Returns:

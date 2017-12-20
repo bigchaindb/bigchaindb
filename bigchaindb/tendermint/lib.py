@@ -51,17 +51,31 @@ class BigchainDB(Bigchain):
             if asset['data']:
                 backend.query.store_asset(self.connection, asset)
 
+        metadata = transaction.pop('metadata')
+        transaction_metadata = {'id': transaction['id'],
+                                'metadata': metadata}
+
+        backend.query.store_metadata(self.connection, [transaction_metadata])
+
         return backend.query.store_transaction(self.connection, transaction)
 
     def get_transaction(self, transaction_id, include_status=False):
         transaction = backend.query.get_transaction(self.connection, transaction_id)
         asset = backend.query.get_asset(self.connection, transaction_id)
+        metadata = backend.query.get_metadata(self.connection, [transaction_id])
 
         if transaction:
             if asset:
                 transaction['asset'] = asset
             else:
                 transaction['asset'] = {'data': None}
+
+            if 'metadata' not in transaction:
+                metadata = metadata[0] if metadata else None
+                if metadata:
+                    metadata = metadata.get('metadata')
+
+                transaction.update({'metadata': metadata})
 
             transaction = Transaction.from_dict(transaction)
 

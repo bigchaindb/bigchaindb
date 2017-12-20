@@ -27,7 +27,7 @@ def create_database(conn, dbname):
 
 @register_schema(LocalMongoDBConnection)
 def create_tables(conn, dbname):
-    for table_name in ['transactions', 'assets', 'blocks']:
+    for table_name in ['transactions', 'assets', 'blocks', 'metadata']:
         logger.info('Create `%s` table.', table_name)
         # create the table
         # TODO: read and write concerns can be declared here
@@ -39,6 +39,7 @@ def create_indexes(conn, dbname):
     create_transactions_secondary_index(conn, dbname)
     create_assets_secondary_index(conn, dbname)
     create_blocks_secondary_index(conn, dbname)
+    create_metadata_secondary_index(conn, dbname)
 
 
 @register_schema(LocalMongoDBConnection)
@@ -86,3 +87,15 @@ def create_assets_secondary_index(conn, dbname):
 def create_blocks_secondary_index(conn, dbname):
     conn.conn[dbname]['blocks']\
         .create_index([('height', DESCENDING)], name='height')
+
+
+def create_metadata_secondary_index(conn, dbname):
+    logger.info('Create `assets` secondary index.')
+
+    # the id is the txid of the transaction where metadata was defined
+    conn.conn[dbname]['metadata'].create_index('id',
+                                               name='transaction_id',
+                                               unique=True)
+
+    # full text search index
+    conn.conn[dbname]['metadata'].create_index([('$**', TEXT)], name='text')
