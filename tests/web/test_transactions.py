@@ -345,6 +345,7 @@ def test_post_invalid_transfer_transaction_returns_400(b, client, user_pk):
     assert res.json['message'] == expected_error_message
 
 
+@pytest.mark.tendermint
 def test_transactions_get_list_good(client):
     from functools import partial
 
@@ -371,6 +372,7 @@ def test_transactions_get_list_good(client):
         ]
 
 
+@pytest.mark.tendermint
 def test_transactions_get_list_bad(client):
     def should_not_be_called():
         assert False

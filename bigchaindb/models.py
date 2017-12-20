@@ -30,7 +30,11 @@ class Transaction(Transaction):
         """
         input_conditions = []
 
-        if self.operation == Transaction.TRANSFER:
+        if self.operation == Transaction.CREATE:
+            if bigchain.get_transaction(self.to_dict()['id']):
+                raise DuplicateTransaction('transaction `{}` already exists'
+                                           .format(self.id))
+        elif self.operation == Transaction.TRANSFER:
             # store the inputs so that we can check if the asset ids match
             input_txs = []
             for input_ in self.inputs:

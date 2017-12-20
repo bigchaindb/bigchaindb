@@ -1,0 +1,170 @@
+version: '3'
+
+services:
+
+  #############################################################################
+  #                                                                           #
+  #                                 NODE 1                                    #
+  #                                                                           #
+  #############################################################################
+  mdb-one:
+    image: mongo:3.4.3
+    ports:
+      - "27017"
+    command: mongod
+  bdb-one:
+    depends_on:
+      - mdb-one
+      - tendermint-one
+    build:
+      context: .
+      dockerfile: ./compose/bigchaindb-server/Dockerfile
+      args:
+        backend: localmongodb
+    volumes:
+      - ./bigchaindb:/usr/src/app/bigchaindb
+      - ./tests:/usr/src/app/tests
+    environment:
+      BIGCHAINDB_DATABASE_BACKEND: localmongodb
+      BIGCHAINDB_DATABASE_HOST: mdb-one
+      TENDERMINT_HOST: tendermint-one
+    ports:
+      - "9984"
+    command: bigchaindb -l DEBUG start
+  tendermint-one:
+    image: tendermint/tendermint
+    volumes:
+      - ./network/node1:/tendermint
+    entrypoint: ''
+    command: bash -c "tendermint unsafe_reset_all && tendermint --log_level debug node"
+
+
+  #############################################################################
+  #                                                                           #
+  #                                 NODE 2                                    #
+  #                                                                           #
+  #############################################################################
+  mdb-two:
+    image: mongo:3.4.3
+    ports:
+      - "27017"
+    command: mongod
+  bdb-two:
+    depends_on:
+      - mdb-two
+      - tendermint-two
+    build:
+      context: .
+      dockerfile: ./compose/bigchaindb-server/Dockerfile
+      args:
+        backend: localmongodb
+    volumes:
+      - ./bigchaindb:/usr/src/app/bigchaindb
+      - ./tests:/usr/src/app/tests
+    environment:
+      BIGCHAINDB_DATABASE_BACKEND: localmongodb
+      BIGCHAINDB_DATABASE_HOST: mdb-two
+      TENDERMINT_HOST: tendermint-two
+    ports:
+      - "9984"
+    command: bigchaindb -l DEBUG start
+  tendermint-two:
+    image: tendermint/tendermint
+    volumes:
+      - ./network/node2:/tendermint
+    entrypoint: ''
+    command: bash -c "tendermint unsafe_reset_all && tendermint --log_level debug node"
+
+
+  #############################################################################
+  #                                                                           #
+  #                                 NODE 3                                    #
+  #                                                                           #
+  #############################################################################
+  mdb-three:
+    image: mongo:3.4.3
+    ports:
+      - "27017"
+    command: mongod
+  bdb-three:
+    depends_on:
+      - mdb-three
+      - tendermint-three
+    build:
+      context: .
+      dockerfile: ./compose/bigchaindb-server/Dockerfile
+      args:
+        backend: localmongodb
+    volumes:
+      - ./bigchaindb:/usr/src/app/bigchaindb
+      - ./tests:/usr/src/app/tests
+    environment:
+      BIGCHAINDB_DATABASE_BACKEND: localmongodb
+      BIGCHAINDB_DATABASE_HOST: mdb-three
+      TENDERMINT_HOST: tendermint-three
+    ports:
+      - "9984"
+    command: bigchaindb -l DEBUG start
+  tendermint-three:
+    image: tendermint/tendermint
+    volumes:
+      - ./network/node3:/tendermint
+    entrypoint: ''
+    command: bash -c "tendermint unsafe_reset_all && tendermint --log_level debug node"
+
+
+  #############################################################################
+  #                                                                           #
+  #                                 NODE 4                                    #
+  #                                                                           #
+  #############################################################################
+  mdb-four:
+    image: mongo:3.4.3
+    ports:
+      - "27017"
+    command: mongod
+  bdb-four:
+    depends_on:
+      - mdb-four
+      - tendermint-four
+    build:
+      context: .
+      dockerfile: ./compose/bigchaindb-server/Dockerfile
+      args:
+        backend: localmongodb
+    volumes:
+      - ./bigchaindb:/usr/src/app/bigchaindb
+      - ./tests:/usr/src/app/tests
+    environment:
+      BIGCHAINDB_DATABASE_BACKEND: localmongodb
+      BIGCHAINDB_DATABASE_HOST: mdb-four
+      TENDERMINT_HOST: tendermint-four
+    ports:
+      - "9984"
+    command: bigchaindb -l DEBUG start
+  tendermint-four:
+    image: tendermint/tendermint
+    volumes:
+      - ./network/node4:/tendermint
+    entrypoint: ''
+    command: bash -c "tendermint unsafe_reset_all && tendermint --log_level debug node"
+
+
+  #############################################################################
+  #############################################################################
+  #############################################################################
+  #
+  # clients
+  #
+  #############################################################################
+  #############################################################################
+  #############################################################################
+  curl-client:
+    image: appropriate/curl
+    volumes:
+      - ./network/health-check.sh:/health-check.sh
+    command: /bin/sh health-check.sh
+  driver:
+    build:
+      context: .
+      dockerfile: ./compose/bigchaindb-driver/Dockerfile

@@ -20,6 +20,55 @@ def write_transaction(connection, signed_transaction):
 
 
 @singledispatch
+def store_asset(connection, asset):
+    """Write an asset to the asset table.
+
+    Args:
+        asset (dict): the asset.
+
+    Returns:
+        The result of the operation.
+    """
+
+    raise NotImplementedError
+
+
+@singledispatch
+def store_transaction(connection, signed_transaction):
+    """Same as write_transaction."""
+
+    raise NotImplementedError
+
+
+@singledispatch
+def get_transaction(connection, transaction_id):
+    """Get a transaction from the transactions table.
+
+    Args:
+        transaction_id (str): the id of the transaction.
+
+    Returns:
+        The result of the operation.
+    """
+
+    raise NotImplementedError
+
+
+@singledispatch
+def get_asset(connection, asset_id):
+    """Get a transaction from the transactions table.
+
+    Args:
+        asset_id (str): the id of the asset
+
+    Returns:
+        The result of the operation.
+    """
+
+    raise NotImplementedError
+
+
+@singledispatch
 def update_transaction(connection, transaction_id, doc):
     """Update a transaction in the backlog table.
 
@@ -414,3 +463,24 @@ def text_search(conn, search, *, language='english', case_sensitive=False,
 
     raise OperationError('This query is only supported when running '
                          'BigchainDB with MongoDB as the backend.')
+
+
+@singledispatch
+def get_latest_block(conn):
+    """Get the latest commited block i.e. block with largest height """
+
+    raise NotImplementedError
+
+
+@singledispatch
+def store_block(conn, block):
+    """Write a new block to the `blocks` table
+
+    Args:
+        block (dict): block with current height and block hash.
+
+    Returns:
+        The result of the operation.
+    """
+
+    raise NotImplementedError

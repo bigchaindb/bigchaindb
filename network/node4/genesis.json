@@ -1,0 +1,39 @@
+{
+    "genesis_time": "0001-01-01T00:00:00Z",
+    "chain_id": "test-chain-KPI1Ud",
+    "validators": [
+	{
+	    "pub_key": {
+		"type":"ed25519",
+		"data":"60C55D531F87D9AA0DFA3AE2DC1842FBFB531DA2161BE3B8D6CC03948CFC39C8"
+	    },
+    	    "power": 10,
+	    "name": "node1"
+	},
+	{
+	    "pub_key": {
+		"type": "ed25519",
+		"data": "981B3879F24CAC4833AFC7EBB71AAEBE79C61E717D7791295B253E7A8E454518"
+	    },
+    	    "power": 10,
+	    "name": "node2"
+	},
+	{
+	    "pub_key": {
+		"type": "ed25519",
+		"data": "E8C4FEE10BA60982CBD9C41614CF42E31E3DF9FE50124BA4C0A5E3CEA897DA9F"
+	    },
+    	    "power": 10,
+	    "name": "node3"
+	},
+	{
+	    "pub_key": {
+		"type": "ed25519",
+		"data": "531248E1D7E35EDB26F0C19F3211FA5CFDA818B226F1F9206D0D2047B48B20B9"
+	    },
+    	    "power": 10,
+	    "name": "node4"
+	}
+    ],
+    "app_hash":""
+}

@@ -15,7 +15,7 @@ from bigchaindb.common.exceptions import (StartupError,
                                           KeypairNotFoundException,
                                           DatabaseDoesNotExist)
 import bigchaindb
-from bigchaindb import backend, processes
+from bigchaindb import backend
 from bigchaindb.backend import schema
 from bigchaindb.backend.admin import (set_replicas, set_shards, add_replicas,
                                       remove_replicas)
@@ -206,7 +206,8 @@ def run_start(args):
 
     logger.info('Starting BigchainDB main process with public key %s',
                 bigchaindb.config['keypair']['public'])
-    processes.start()
+    from bigchaindb.tendermint.commands import start
+    start()
 
 
 @configure_bigchaindb
@@ -270,7 +271,7 @@ def create_parser():
                                           help='Prepare the config file '
                                                'and create the node keypair')
     config_parser.add_argument('backend',
-                               choices=['rethinkdb', 'mongodb'],
+                               choices=['rethinkdb', 'mongodb', 'localmongodb'],
                                help='The backend to use. It can be either '
                                     'rethinkdb or mongodb.')
 

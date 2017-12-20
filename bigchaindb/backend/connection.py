@@ -8,6 +8,7 @@ from bigchaindb.backend.exceptions import ConnectionError
 
 
 BACKENDS = {
+    'localmongodb': 'bigchaindb.backend.localmongodb.connection.LocalMongoDBConnection',
     'mongodb': 'bigchaindb.backend.mongodb.connection.MongoDBConnection',
     'rethinkdb': 'bigchaindb.backend.rethinkdb.connection.RethinkDBConnection'
 }

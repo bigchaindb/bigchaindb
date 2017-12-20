@@ -15,7 +15,8 @@ To spend/transfer an unspent output, a user (or group of users) must fulfill the
 - "…three of these four people must sign."
 - "…either Bob must sign, or both Tom and Sylvia must sign."
 
-For details, see `the documentation about conditions in BigchainDB <https://docs.bigchaindb.com/projects/server/en/latest/data-models/conditions.html>`_.
+For details, see
+`the documentation about conditions in the IPDB Transaction Spec <https://the-ipdb-transaction-spec.readthedocs.io/en/latest/transaction-components/conditions.html>`_.
 
 Once an output has been spent, it can't be spent again: *nobody* has permission to do that. That is, BigchainDB doesn't permit anyone to "double spend" an output.
 

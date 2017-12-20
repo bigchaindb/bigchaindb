@@ -30,7 +30,7 @@ class MongoDBConnection(Connection):
         """
 
         super().__init__(**kwargs)
-        self.replicaset = replicaset or bigchaindb.config['database']['replicaset']
+        self.replicaset = replicaset or bigchaindb.config['database'].get('replicaset')
         self.ssl = ssl if ssl is not None else bigchaindb.config['database'].get('ssl', False)
         self.login = login or bigchaindb.config['database'].get('login')
         self.password = password or bigchaindb.config['database'].get('password')
@@ -83,21 +83,22 @@ class MongoDBConnection(Connection):
         """
 
         try:
-            # we should only return a connection if the replica set is
-            # initialized. initialize_replica_set will check if the
-            # replica set is initialized else it will initialize it.
-            initialize_replica_set(self.host,
-                                   self.port,
-                                   self.connection_timeout,
-                                   self.dbname,
-                                   self.ssl,
-                                   self.login,
-                                   self.password,
-                                   self.ca_cert,
-                                   self.certfile,
-                                   self.keyfile,
-                                   self.keyfile_passphrase,
-                                   self.crlfile)
+            if self.replicaset:
+                # we should only return a connection if the replica set is
+                # initialized. initialize_replica_set will check if the
+                # replica set is initialized else it will initialize it.
+                initialize_replica_set(self.host,
+                                       self.port,
+                                       self.connection_timeout,
+                                       self.dbname,
+                                       self.ssl,
+                                       self.login,
+                                       self.password,
+                                       self.ca_cert,
+                                       self.certfile,
+                                       self.keyfile,
+                                       self.keyfile_passphrase,
+                                       self.crlfile)
 
             # FYI: the connection process might raise a
             # `ServerSelectionTimeoutError`, that is a subclass of

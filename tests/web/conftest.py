@@ -4,5 +4,11 @@ import pytest
 @pytest.fixture
 def app(request):
     from bigchaindb.web import server
-    app = server.create_app(debug=True)
+    from bigchaindb.tendermint.lib import BigchainDB
+
+    if request.config.getoption('--database-backend') == 'localmongodb':
+        app = server.create_app(debug=True, bigchaindb_factory=BigchainDB)
+    else:
+        app = server.create_app(debug=True)
+
     return app
