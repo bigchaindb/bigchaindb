@@ -64,7 +64,8 @@ def test_create_tables():
     assert conn.run(r.db(dbname).table_list().contains('backlog')) is True
     assert conn.run(r.db(dbname).table_list().contains('votes')) is True
     assert conn.run(r.db(dbname).table_list().contains('assets')) is True
-    assert len(conn.run(r.db(dbname).table_list())) == 4
+    assert conn.run(r.db(dbname).table_list().contains('metadata')) is True
+    assert len(conn.run(r.db(dbname).table_list())) == 5
 
 
 @pytest.mark.bdb

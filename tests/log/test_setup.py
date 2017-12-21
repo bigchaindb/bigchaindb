@@ -70,7 +70,7 @@ def log_record_bytes(log_record_dict):
 def test_setup_logging(mocked_setup_pub_logger, mocked_setup_sub_logger):
     from bigchaindb.log.setup import setup_logging
     setup_logging()
-    mocked_setup_pub_logger.assert_called_once_with()
+    mocked_setup_pub_logger.assert_called_once_with(logging_port=None)
     mocked_setup_sub_logger.assert_called_once_with(user_log_config=None)
 
 
@@ -112,11 +112,12 @@ def test_setup_sub_logger_with_config(mocked_socket_server, mocked_process):
         'granular_levels': {
             'bigchaindb.core': 'debug',
         },
+        'port': 9020
     }
     root_logger = getLogger()
     setup_sub_logger(user_log_config=user_log_config)
     assert root_logger.level == logging.NOTSET
-    mocked_socket_server.assert_called_once_with()
+    mocked_socket_server.assert_called_once_with(port=9020)
     mocked_process.assert_called_once_with(
             target=mocked_socket_server.return_value.serve_forever,
             kwargs={'log_config': user_log_config},

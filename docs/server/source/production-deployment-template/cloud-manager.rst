@@ -16,7 +16,7 @@ Configure MongoDB Cloud Manager for Monitoring
 
   * Select the group from the dropdown box on the page.
 
-  * Go to Settings, Group Settings and add a ``Preferred Hostnames`` entry as
+  * Go to Settings and add a ``Preferred Hostnames`` entry as
     a regexp based on the ``mdb-instance-name`` of the nodes in your cluster.
     It may take up to 5 mins till this setting takes effect.
     You may refresh the browser window and verify whether the changes have

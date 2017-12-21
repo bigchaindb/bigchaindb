@@ -4,8 +4,6 @@ id: "http://www.bigchaindb.com/schema/transaction.json"
 type: object
 additionalProperties: false
 title: Transaction Schema
-description: |
-    A transaction represents the creation or transfer of assets in BigchainDB.
 required:
 - id
 - inputs
@@ -17,48 +15,24 @@ required:
 properties:
   id:
     "$ref": "#/definitions/sha3_hexdigest"
-    description: |
-        A sha3 digest of the transaction. The ID is calculated by removing all
-        derived hashes and signatures from the transaction, serializing it to
-        JSON with keys in sorted order and then hashing the resulting string
-        with sha3.
   operation:
     "$ref": "#/definitions/operation"
   asset:
     "$ref": "#/definitions/asset"
-    description: |
-      Description of the asset being transacted.
-
-      See: `Asset`_.
   inputs:
     type: array
     title: "Transaction inputs"
-    description: |
-        Array of the inputs of a transaction.
-
-        See: Input_.
     items:
       "$ref": "#/definitions/input"
   outputs:
     type: array
-    description: |
-        Array of outputs provided by this transaction.
-
-        See: Output_.
     items:
       "$ref": "#/definitions/output"
   metadata:
     "$ref": "#/definitions/metadata"
-    description: |
-      User provided transaction metadata. This field may be ``null`` or may
-      contain an id and an object with freeform metadata.
-
-      See: `Metadata`_.
   version:
     type: string
     pattern: "^1\\.0$"
-    description: |
-        BigchainDB transaction schema version.
 definitions:
   offset:
     type: integer
@@ -78,53 +52,25 @@ definitions:
   uuid4:
     pattern: "[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}"
     type: string
-    description: |
-        A `UUID <https://tools.ietf.org/html/rfc4122.html>`_
-        of type 4 (random).
   operation:
     type: string
-    description: |
-        Type of the transaction:
-
-        A ``CREATE`` transaction creates an asset in BigchainDB. This
-        transaction has outputs but no inputs, so a dummy input is created.
-
-        A ``TRANSFER`` transaction transfers ownership of an asset, by providing
-        an input that meets the conditions of an earlier transaction's outputs.
-
-        A ``GENESIS`` transaction is a special case transaction used as the
-        sole member of the first block in a BigchainDB ledger.
     enum:
     - CREATE
     - TRANSFER
     - GENESIS
   asset:
     type: object
-    description: |
-        Description of the asset being transacted. In the case of a ``TRANSFER``
-        transaction, this field contains only the ID of asset. In the case
-        of a ``CREATE`` transaction, this field contains only the user-defined
-        payload.
     additionalProperties: false
     properties:
       id:
         "$ref": "#/definitions/sha3_hexdigest"
-        description: |
-          ID of the transaction that created the asset.
       data:
-        description: |
-          User provided metadata associated with the asset. May also be ``null``.
         anyOf:
         - type: object
           additionalProperties: true
         - type: 'null'
   output:
     type: object
-    description: |
-        A transaction output. Describes the quantity of an asset and the
-        requirements that must be met to spend the output.
-
-        See also: Input_.
     additionalProperties: false
     required:
     - amount
@@ -134,15 +80,7 @@ definitions:
       amount:
         type: string
         pattern: "^[0-9]{1,20}$"
-        description: |
-            Integral amount of the asset represented by this output.
-            In the case of a non divisible asset, this will always be 1.
       condition:
-        description: |
-            Describes the condition that needs to be met to spend the output. Has the properties: 
-
-            - **details**: Details of the condition.
-            - **uri**: Condition encoded as an ASCII string.
         type: object
         additionalProperties: false
         required:
@@ -158,13 +96,8 @@ definitions:
               subtypes=ed25519-sha-256(&)?){2,3}$"
       public_keys:
         "$ref": "#/definitions/public_keys"
-        description: |
-            List of public keys associated with the conditions on an output.
   input:
     type: "object"
-    description:
-      An input spends a previous output, by providing one or more fulfillments
-      that fulfill the conditions of the previous output.
     additionalProperties: false
     required:
     - owners_before
@@ -172,13 +105,7 @@ definitions:
     properties:
       owners_before:
         "$ref": "#/definitions/public_keys"
-        description: |
-            List of public keys of the previous owners of the asset.
       fulfillment:
-        description: |
-          Fulfillment of an `Output.condition`_, or, put a different way, a payload
-          that satisfies the condition of a previous output to prove that the
-          creator(s) of this transaction have control over the listed asset.
         anyOf:
         - type: string
           pattern: "^[a-zA-Z0-9_-]*$"
@@ -186,8 +113,6 @@ definitions:
       fulfills:
         anyOf:
         - type: 'object'
-          description: |
-            Reference to the output that is being spent.
           additionalProperties: false
           required:
           - output_index
@@ -195,26 +120,16 @@ definitions:
           properties:
             output_index:
               "$ref": "#/definitions/offset"
-              description: |
-                Index of the output containing the condition being fulfilled
             transaction_id:
               "$ref": "#/definitions/sha3_hexdigest"
-              description: |
-                Transaction ID containing the output to spend
         - type: 'null'
   metadata:
     anyOf:
     - type: object
-      description: |
-        User provided transaction metadata. This field may be ``null`` or may
-        contain an non empty object with freeform metadata.
       additionalProperties: true
       minProperties: 1
     - type: 'null'
   condition_details:
-    description: |
-      Details needed to reconstruct the condition associated with an output.
-      Currently, BigchainDB only supports ed25519 and threshold condition types.
     anyOf:
     - type: object
       additionalProperties: false

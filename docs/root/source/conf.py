@@ -34,7 +34,9 @@ from recommonmark.parser import CommonMarkParser
 # ones.
 import sphinx_rtd_theme
 
-extensions = []
+extensions = [
+    'sphinx.ext.autosectionlabel',
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

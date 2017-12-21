@@ -1,0 +1,14 @@
+---
+- name: Upgrade pip
+  shell: "pip3 install --upgrade pip"
+  when: python_pip_upgrade
+  tags: [bigchaindb-driver]
+
+- name: Upgade setuptools
+  shell: "pip3 install --upgrade setuptools"
+  when: python_setuptools_upgrade
+  tags: [bigchaindb-driver]
+
+- name: Install BigchainDB Driver
+  shell: "pip3 install bigchaindb-driver"
+  tags: [bigchaindb-driver]

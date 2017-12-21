@@ -49,6 +49,11 @@ data:
   # are available to external clients.
   proxy-frontend-port: "4443"
 
+  # proxy-referrer-policy defines the expected behaviour from
+  # browser while setting the referer header in  the HTTP requests to the
+  # proxy service.
+  proxy-referrer-policy: "origin-when-cross-origin"
+
   # expected-http-referer is the expected regex expression of the Referer
   # header in the HTTP requests to the proxy.
   # The default below accepts the referrer value to be *.bigchaindb.com

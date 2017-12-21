@@ -15,14 +15,13 @@ Note that there are a few kinds of nodes:
 
 ## Setup Instructions for Various Cases
 
-* [Set up a local stand-alone BigchainDB node for learning and experimenting: Quickstart](quickstart.html)
-* [Set up and run a local dev/test node for developing and testing BigchainDB Server](dev-and-test/setup-run-node.html)
+* [Quickstart](quickstart.html)
+* [Set up a local BigchainDB node for development, experimenting and testing](dev-and-test/index.html)
 * [Set up and run a BigchainDB cluster](clusters.html)
 
 There are some old RethinkDB-based deployment instructions as well:
 
 * [Deploy a bare-bones RethinkDB-based node on Azure](appendices/azure-quickstart-template.html)
-* [Deploy a bare-bones RethinkDB-based node on any Ubuntu machine with Ansible](appendices/template-ansible.html)
 * [Deploy a RethinkDB-based testing cluster on AWS](appendices/aws-testing-cluster.html)
 
 Instructions for setting up a client will be provided once there's a public test net.

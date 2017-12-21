@@ -90,12 +90,6 @@ http {
         end
       }
 
-      # check if the request originated from the required web page
-      # use referer header.
-      if ($http_referer !~ "PROXY_EXPECTED_REFERER_HEADER" ) {
-        return 403 'Unknown referer';
-      }
-
       # check if the request has the expected origin header
       if ($http_origin !~ "PROXY_EXPECTED_ORIGIN_HEADER" ) {
         return 403 'Unknown origin';
@@ -108,7 +102,14 @@ http {
         add_header 'Access-Control-Max-Age' 43200;
         add_header 'Content-Type' 'text/plain charset=UTF-8';
         add_header 'Content-Length' 0;
+        add_header 'Referrer-Policy' "PROXY_REFERRER_POLICY";
         return 204;
+      }
+
+      # check if the request originated from the required web page
+      # use referer header.
+      if ($http_referer !~ "PROXY_EXPECTED_REFERER_HEADER" ) {
+        return 403 'Unknown referer';
       }
 
       # No auth for GETs, forward directly to BDB.

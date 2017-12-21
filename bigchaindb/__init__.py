@@ -97,6 +97,7 @@ config = {
         'fmt_console': log_config['formatters']['console']['format'],
         'fmt_logfile': log_config['formatters']['file']['format'],
         'granular_levels': {},
+        'port': log_config['root']['port']
     },
     'graphite': {
         'host': os.environ.get('BIGCHAINDB_GRAPHITE_HOST', 'localhost'),

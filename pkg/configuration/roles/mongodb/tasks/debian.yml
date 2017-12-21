@@ -1,0 +1,22 @@
+---
+- name: Add APT Key | Debian
+  apt_key:
+    keyserver: "{{ apt_keyserver }}"
+    id: "{{ apt_key_fingerprint }}"
+  tags: [mongodb]
+
+- name: Add MongoDB repo and update cache | Debian
+  apt_repository:
+    repo: "{{ mongodb_apt_repo }}"
+    update_cache: yes
+    state: present
+  tags: [mongodb]
+
+- name: Install MongoDB | Debian
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "{{ mongodb_package }}"
+    - python-pip
+  tags: [mongodb]

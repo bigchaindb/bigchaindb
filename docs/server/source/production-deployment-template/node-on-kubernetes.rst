@@ -322,6 +322,18 @@ Step 9.1: Vanilla NGINX
      ``cluster-health-check-port``. Set them to the values specified in the
      ConfigMap.
 
+  * The configuration uses the following values set in the ConfigMap:
+
+    - ``cluster-frontend-port``
+    - ``cluster-health-check-port``
+    - ``cluster-dns-server-ip``
+    - ``mongodb-frontend-port``
+    - ``ngx-mdb-instance-name``
+    - ``mongodb-backend-port``
+    - ``ngx-bdb-instance-name``
+    - ``bigchaindb-api-port``
+    - ``bigchaindb-ws-port``
+
   * Start the Kubernetes Deployment:
 
     .. code:: bash
@@ -345,6 +357,25 @@ Step 9.2: NGINX with HTTPS
      ``mongodb-frontend-port``, ``cluster-frontend-port`` and
      ``cluster-health-check-port``. Set them to the values specified in the
      ConfigMap.
+
+  * The configuration uses the following values set in the ConfigMap:
+
+    - ``cluster-frontend-port``
+    - ``cluster-health-check-port``
+    - ``cluster-fqdn``
+    - ``cluster-dns-server-ip``
+    - ``mongodb-frontend-port``
+    - ``ngx-mdb-instance-name``
+    - ``mongodb-backend-port``
+    - ``openresty-backend-port``
+    - ``ngx-openresty-instance-name``
+    - ``ngx-bdb-instance-name``
+    - ``bigchaindb-api-port``
+    - ``bigchaindb-ws-port``
+
+  * The configuration uses the following values set in the Secret:
+
+    - ``https-certs``
 
    * Start the Kubernetes Deployment:
 
@@ -383,8 +414,8 @@ First, you need an Azure storage account.
 If you deployed your Kubernetes cluster on Azure
 using the Azure CLI 2.0
 (as per :doc:`our template <template-kubernetes-azure>`),
-then the `az acs create` command already created two
-storage accounts in the same location and resource group
+then the `az acs create` command already created a
+storage account in the same location and resource group
 as your Kubernetes cluster.
 Both should have the same "storage account SKU": ``Standard_LRS``.
 Standard storage is lower-cost and lower-performance.
@@ -393,19 +424,24 @@ LRS means locally-redundant storage: three replicas
 in the same data center.
 Premium storage is higher-cost and higher-performance.
 It uses solid state drives (SSD).
-At the time of writing,
-when we created a storage account with SKU ``Premium_LRS``
-and tried to use that,
-the PersistentVolumeClaim would get stuck in a "Pending" state.
+You can create a `storage account <https://docs.microsoft.com/en-us/azure/storage/common/storage-create-storage-account>`_
+for Premium storage and associate it with your Azure resource group. 
 For future reference, the command to create a storage account is
 `az storage account create <https://docs.microsoft.com/en-us/cli/azure/storage/account#create>`_.
 
+.. Note::
+    Please refer to `Azure documentation <https://docs.microsoft.com/en-us/azure/virtual-machines/windows/premium-storage>`_
+    for the list of VMs that are supported by Premium Storage.
 
 The Kubernetes template for configuration of Storage Class is located in the
 file ``mongodb/mongo-sc.yaml``.
 
 You may have to update the ``parameters.location`` field in the file to
 specify the location you are using in Azure.
+
+If you want to use a custom storage account with the Storage Class, you
+can also update `parameters.storageAccount` and provide the Azure storage
+account name. 
 
 Create the required storage classes using:
 
@@ -415,15 +451,6 @@ Create the required storage classes using:
 
 
 You can check if it worked using ``kubectl get storageclasses``.
-
-**Azure.** Note that there is no line of the form
-``storageAccount: <azure storage account name>``
-under ``parameters:``. When we included one
-and then created a PersistentVolumeClaim based on it,
-the PersistentVolumeClaim would get stuck
-in a "Pending" state.
-Kubernetes just looks for a storageAccount
-with the specified skuName and location.
 
 
 Step 11: Create Kubernetes Persistent Volume Claims
@@ -457,6 +484,27 @@ You can check its status using: ``kubectl get pvc -w``
 Initially, the status of persistent volume claims might be "Pending"
 but it should become "Bound" fairly quickly.
 
+.. Note::
+    The default Reclaim Policy for dynamically created persistent volumes is ``Delete``
+    which means the PV and its associated Azure storage resource will be automatically
+    deleted on deletion of PVC or PV. In order to prevent this from happening do
+    the following steps to change default reclaim policy of dyanmically created PVs
+    from ``Delete`` to ``Retain``
+
+    * Run the following command to list existing PVs
+
+    .. Code:: bash
+
+        $ kubectl --context k8s-bdb-test-cluster-0 get pv
+
+    * Run the following command to update a PV's reclaim policy to <Retain>
+
+    .. Code:: bash
+    
+        $ kubectl --context k8s-bdb-test-cluster-0 patch pv <pv-name> -p '{"spec":{"persistentVolumeReclaimPolicy":"Retain"}}'
+
+    For notes on recreating a private volume form a released Azure disk resource consult
+    :ref:`the page about cluster troubleshooting <Cluster Troubleshooting>`.
 
 Step 12: Start a Kubernetes StatefulSet for MongoDB
 ---------------------------------------------------
@@ -499,6 +547,30 @@ Step 12: Start a Kubernetes StatefulSet for MongoDB
     ``spec.containers[0].ports`` section. We currently only expose the MongoDB
     backend port. Set it to the value specified for ``mongodb-backend-port``
     in the ConfigMap.
+
+  * The configuration uses the following values set in the ConfigMap:
+
+    - ``mdb-instance-name``
+    - ``mongodb-replicaset-name``
+    - ``mongodb-backend-port``
+  
+  * The configuration uses the following values set in the Secret:
+
+    - ``mdb-certs``
+    - ``ca-auth``
+
+  * **Optional**: You can change the value for ``STORAGE_ENGINE_CACHE_SIZE`` in the ConfigMap ``storage-engine-cache-size``, for more information
+    regarding this configuration, please consult the `MongoDB Official
+    Documentation <https://docs.mongodb.com/manual/reference/configuration-options/#storage.wiredTiger.engineConfig.cacheSizeGB>`_.
+
+  * **Optional**: If you are not using the **Standard_D2_v2** virtual machines for Kubernetes agents as per the guide,
+    please update the ``resources`` for ``mongo-ss``. We suggest allocating ``memory`` using the following scheme
+    for a MongoDB StatefulSet:
+
+    .. code:: bash
+
+      memory = (Total_Memory_Agent_VM_GB - 2GB)
+      STORAGE_ENGINE_CACHE_SIZE = memory / 2
 
   * Create the MongoDB StatefulSet using:
 
@@ -661,6 +733,12 @@ Step 14: Start a Kubernetes Deployment for MongoDB Monitoring Agent
     ``mdb-mon-instance-name`` is ``mdb-mon-instance-0``, set the fields to the
     value ``mdb-mon-instance-0-dep``.
 
+  * The configuration uses the following values set in the Secret:
+
+    - ``mdb-mon-certs``
+    - ``ca-auth``
+    - ``cloud-manager-credentials``
+
   * Start the Kubernetes Deployment using:
 
     .. code:: bash
@@ -681,6 +759,12 @@ Step 15: Start a Kubernetes Deployment for MongoDB Backup Agent
     For example, if the value set in the
     ``mdb-bak-instance-name`` is ``mdb-bak-instance-0``, set the fields to the
     value ``mdb-bak-instance-0-dep``.
+
+  * The configuration uses the following values set in the Secret:
+
+    - ``mdb-bak-certs``
+    - ``ca-auth``
+    - ``cloud-manager-credentials``
 
   * Start the Kubernetes Deployment using:
 
@@ -714,10 +798,34 @@ Step 16: Start a Kubernetes Deployment for BigchainDB
     richer monitoring and probing becomes available in BigchainDB, we will
     tweak the ``livenessProbe`` and ``readinessProbe`` parameters.
 
-   * Set the ports to be exposed from the pod in the
-     ``spec.containers[0].ports`` section. We currently expose 2 ports -
-     ``bigchaindb-api-port`` and ``bigchaindb-ws-port``. Set them to the
-     values specified in the ConfigMap.
+  * Set the ports to be exposed from the pod in the
+    ``spec.containers[0].ports`` section. We currently expose 2 ports -
+    ``bigchaindb-api-port`` and ``bigchaindb-ws-port``. Set them to the
+    values specified in the ConfigMap.
+
+  * The configuration uses the following values set in the ConfigMap:
+
+    - ``mdb-instance-name``
+    - ``mongodb-backend-port``
+    - ``mongodb-replicaset-name``
+    - ``bigchaindb-database-name``
+    - ``bigchaindb-server-bind``
+    - ``bigchaindb-ws-interface``
+    - ``cluster-fqdn``
+    - ``bigchaindb-ws-port``
+    - ``cluster-frontend-port``
+    - ``bigchaindb-wsserver-advertised-scheme``
+    - ``bdb-public-key``
+    - ``bigchaindb-backlog-reassign-delay``
+    - ``bigchaindb-database-maxtries``
+    - ``bigchaindb-database-connection-timeout``
+    - ``bigchaindb-log-level``
+    - ``bdb-user``
+
+  * The configuration uses the following values set in the Secret:
+
+    - ``bdb-certs``
+    - ``ca-auth``
 
   * Create the BigchainDB Deployment using:
 
@@ -746,6 +854,17 @@ Step 17: Start a Kubernetes Deployment for OpenResty
     ``spec.containers[0].ports`` section. We currently expose the port at
     which OpenResty is listening for requests, ``openresty-backend-port`` in
     the above ConfigMap.
+
+  * The configuration uses the following values set in the Secret:
+
+    - ``threescale-credentials``
+
+  * The configuration uses the following values set in the ConfigMap:
+
+    - ``cluster-dns-server-ip``
+    - ``openresty-backend-port``
+    - ``ngx-bdb-instance-name``
+    - ``bigchaindb-api-port``
 
   * Create the OpenResty Deployment using:
 

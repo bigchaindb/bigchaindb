@@ -39,6 +39,7 @@ For convenience, here's a list of all the relevant environment variables (docume
 `BIGCHAINDB_LOG_FMT_CONSOLE`<br>
 `BIGCHAINDB_LOG_FMT_LOGFILE`<br>
 `BIGCHAINDB_LOG_GRANULAR_LEVELS`<br>
+`BIGCHAINDB_LOG_PORT`<br>
 `BIGCHAINDB_DATABASE_SSL`<br>
 `BIGCHAINDB_DATABASE_LOGIN`<br>
 `BIGCHAINDB_DATABASE_PASSWORD`<br>
@@ -319,7 +320,8 @@ holding the logging configuration.
         "granular_levels": {
             "bichaindb.backend": "info",
             "bichaindb.core": "info"
-        }
+        },
+        "port": 7070
 }
 ```
 
@@ -336,7 +338,8 @@ holding the logging configuration.
         "datefmt_logfile": "%Y-%m-%d %H:%M:%S",
         "fmt_logfile": "[%(asctime)s] [%(levelname)s] (%(name)s) %(message)s (%(processName)-10s - pid: %(process)d)",
         "fmt_console": "[%(asctime)s] [%(levelname)s] (%(name)s) %(message)s (%(processName)-10s - pid: %(process)d)",
-        "granular_levels": {}
+        "granular_levels": {},
+        "port": 9020
 }
 ```
 
@@ -530,7 +533,23 @@ logging of the `core.py` module to be more verbose, you would set the
 }
 ```
 
-**Defaults to**: `"{}"`
+**Defaults to**: `{}`
+
+
+### log.port
+The port number at which the logging server should listen.
+
+**Example**:
+
+```
+{
+    "log": {
+        "port": 7070
+        }
+}
+```
+
+**Defaults to**: `9020`
 
 
 ## graphite.host

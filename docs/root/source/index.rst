@@ -59,6 +59,9 @@ At a high level, one can communicate with a BigchainDB cluster (set of nodes) us
      <a class="button" href="http://docs.bigchaindb.com/projects/py-driver/en/latest/index.html">Python Driver Docs</a>
    </div>
    <div class="buttondiv">
+     <a class="button" href="https://docs.bigchaindb.com/projects/js-driver/en/latest/index.html">JavaScript Driver Docs</a>
+   </div>
+   <div class="buttondiv">
      <a class="button" href="https://docs.bigchaindb.com/projects/cli/en/latest/">Command Line Transaction Tool</a>
    </div>
    <div class="buttondiv">
@@ -85,5 +88,6 @@ More About BigchainDB
    assets
    smart-contracts
    transaction-concepts
+   permissions
    timestamps
    Data Models <https://docs.bigchaindb.com/projects/server/en/latest/data-models/index.html>

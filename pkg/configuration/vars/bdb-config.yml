@@ -1,0 +1,13 @@
+---
+deploy_docker: false #[true, false]
+docker_cluster_size: 1
+upstart: "/bigchaindb/scripts/bootstrap.sh"
+bdb_hosts:
+  - name: "bdb-node-01"
+    box:
+      name: "ubuntu/xenial64"
+    ram: "2048"
+    vcpus: "2"
+    network:
+      ip: "10.20.30.20"
+      type: "private_network"

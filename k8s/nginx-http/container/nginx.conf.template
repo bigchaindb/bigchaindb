@@ -45,6 +45,12 @@ http {
 
   keepalive_timeout 60s;
 
+  # Do not expose nginx data/version number in error response and header
+  server_tokens off;
+
+  # To prevent cross-site scripting
+  add_header X-XSS-Protection "1; mode=block";
+
   # The following map blocks enable lazy-binding to the backend at runtime,
   # rather than binding as soon as NGINX starts.
   map $remote_addr $bdb_backend {
@@ -54,7 +60,6 @@ http {
   # Frontend server for the external clients
   server {
     listen CLUSTER_FRONTEND_PORT;
-
     underscores_in_headers on;
 
     # Forward websockets to backend BDB at 9985.
@@ -86,7 +91,7 @@ http {
         add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
         add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Range,Range';
         add_header 'Access-Control-Expose-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Range,Range';
-        
+
         proxy_pass http://$bdb_backend:BIGCHAINDB_API_PORT;
       }
 
@@ -99,6 +104,11 @@ http {
         add_header 'Content-Type' 'text/plain charset=UTF-8';
         add_header 'Content-Length' 0;
         return 204;
+      }
+
+      # Only return this reponse if request_method is neither POST|GET|OPTIONS
+      if ($request_method !~ ^(GET|OPTIONS|POST)$) {
+        return 444;
       }
     }
   }
@@ -130,10 +140,10 @@ stream {
 
   # Enable logging when connections are being throttled.
   limit_conn_log_level notice;
-  
+
   # Allow 16 connections from the same IP address.
   limit_conn two 16;
-  
+
   # DNS resolver to use for all the backend names specified in this configuration.
   resolver DNS_SERVER valid=30s ipv6=off;
 
@@ -142,7 +152,7 @@ stream {
   map $remote_addr $mdb_backend {
     default MONGODB_BACKEND_HOST;
   }
-  
+
   # Frontend server to forward connections to MDB instance.
   server {
     listen MONGODB_FRONTEND_PORT so_keepalive=10m:1m:5;

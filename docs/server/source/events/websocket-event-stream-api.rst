@@ -40,11 +40,14 @@ response contains a ``streams`` property:
 Connection Keep-Alive
 ---------------------
 
-The Event Stream API initially does not provide any mechanisms for connection
-keep-alive other than enabling TCP keepalive on each open WebSocket connection.
-In the future, we may add additional functionality to handle ping/pong frames
-or payloads designed for keep-alive.
+The Event Stream API supports Ping/Pong frames as descibed in
+`RFC 6455  <https://tools.ietf.org/html/rfc6455#section-5.5.2>`_.
 
+.. note::
+
+    It might not be possible to send PING/PONG frames via web browsers because
+    of non availability of Javascript API on different browsers to achieve the
+    same.
 
 Streams
 -------

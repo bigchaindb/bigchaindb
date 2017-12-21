@@ -63,7 +63,8 @@ def start():
     election.start(events_queue=exchange.get_publisher_queue())
 
     # start the web api
-    app_server = server.create_server(bigchaindb.config['server'])
+    app_server = server.create_server(settings=bigchaindb.config['server'],
+                                      log_config=bigchaindb.config['log'])
     p_webapi = mp.Process(name='webapi', target=app_server.run)
     p_webapi.start()
 
