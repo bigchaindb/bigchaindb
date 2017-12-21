@@ -104,8 +104,8 @@ class Transaction(Transaction):
         Args:
             bigchain (:class:`~bigchaindb.Bigchain`): An instance of Bigchain
                 used to perform database queries.
-            tx_dict (:obj:`dict`): The transaction dict as returned from the
-                database.
+            tx_dict_list (:list:`dict` or :obj:`dict`): The transaction dict or
+                list of transaction dict as returned from the database.
 
         Returns:
             :class:`~Transaction`

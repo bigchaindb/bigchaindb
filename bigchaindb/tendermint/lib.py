@@ -118,7 +118,7 @@ class BigchainDB(Bigchain):
         found.
 
         Args:
-            block_id (str): transaction id of the transaction to get
+            block_id (str): block id of the block to get
             include_status (bool): also return the status of the block
                        the return value is then a tuple: (block, status)
         """

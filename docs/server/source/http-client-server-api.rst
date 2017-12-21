@@ -583,12 +583,10 @@ Blocks
 
 .. http:get:: /api/v1/blocks/{block_id}
 
-   Get the block with the ID ``block_id``. Any blocks, be they ``VALID``, ``UNDECIDED`` or ``INVALID`` will be
-   returned. To check a block's status independently, use the `Statuses endpoint <#status>`_.
-   To check the votes on a block, have a look at the `votes endpoint <#votes>`_.
+   Get the block with the ID ``block_id``.
 
    :param block_id: block ID
-   :type block_id: hex string
+   :type block_id: string
 
    **Example request**:
 
