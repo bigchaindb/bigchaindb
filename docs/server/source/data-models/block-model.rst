@@ -9,7 +9,7 @@ A block must contain the following JSON keys
 .. code-block:: json
 
     {
-      "id": "<ID of the block>",
+      "height": "<Height of the block>",
       "transactions": ["<List of transactions>"]
     }
 
@@ -17,9 +17,12 @@ A block must contain the following JSON keys
 The JSON Keys in a Block
 ------------------------
 
-**id**
+**height**
 
-The block ID denotes the height of the blockchain when the given block was committed.
+The block ``"height"`` (``integer``) denotes the height of the blockchain when the given block was committed.
+Since the blockchain height increases monotonically the height of block can be regarding as its id.
+
+**NOTE**: The genesis block has height ``0``
 
 
 **transactions**

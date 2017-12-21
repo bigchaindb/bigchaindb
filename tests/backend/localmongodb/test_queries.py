@@ -161,7 +161,7 @@ def test_store_block():
 
     block = Block(app_hash='random_utxo',
                   height=3,
-                  transaction_ids=[])
+                  transactions=[])
     query.store_block(conn, block._asdict())
     cursor = conn.db.blocks.find({}, projection={'_id': False})
     assert cursor.count() == 1
@@ -174,7 +174,7 @@ def test_get_block():
 
     block = Block(app_hash='random_utxo',
                   height=3,
-                  transaction_ids=[])
+                  transactions=[])
 
     conn.db.blocks.insert_one(block._asdict())
 

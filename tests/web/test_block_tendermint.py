@@ -18,7 +18,7 @@ def test_get_block_endpoint(tb, client):
 
     block = Block(app_hash='random_utxo',
                   height=31,
-                  transaction_ids=[tx.id])
+                  transactions=[tx.id])
     b.store_block(block._asdict())
 
     res = client.get(BLOCKS_ENDPOINT + str(block.height))

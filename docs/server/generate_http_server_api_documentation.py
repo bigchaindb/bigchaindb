@@ -7,6 +7,7 @@ import os.path
 from bigchaindb.common.transaction import Transaction, Input, TransactionLink
 from bigchaindb.core import Bigchain
 from bigchaindb.models import Block
+from bigchaindb.tendermint import lib
 from bigchaindb.web import server
 
 
@@ -242,18 +243,24 @@ def main():
     node_private = "5G2kE1zJAgTajkVSbPAQWo4c2izvtwqaNHYsaNpbbvxX"
     node_public = "DngBurxfeNVKZWCEcDnLj1eMPAS7focUZTE5FndFGuHT"
     signature = "53wxrEQDYk1dXzmvNSytbCfmNVnPqPkDQaTnAe8Jf43s6ssejPxezkCvUnGTnduNUmaLjhaan1iRLi3peu6s5DzA"
-    block = Block(transactions=[tx], node_pubkey=node_public, voters=[node_public], signature=signature)
-    ctx['block'] = pretty_json(block.to_dict())
-    ctx['blockid'] = block.id
 
+    app_hash = 'f6e0c49c6d94d6924351f25bb334cf2a99af4206339bf784e741d1a5ab599056'
+    block = lib.Block(height=1, transactions=[tx.to_dict()], app_hash=app_hash)
+    block_dict = block._asdict()
+    block_dict.pop('app_hash')
+    ctx['block'] = pretty_json(block_dict)
+    ctx['blockid'] = block.height
+
+    block = Block(transactions=[tx], node_pubkey=node_public, voters=[node_public], signature=signature)
     block_transfer = Block(transactions=[tx_transfer], node_pubkey=node_public,
                            voters=[node_public], signature=signature)
-    ctx['block_transfer'] = pretty_json(block.to_dict())
+    ctx['block_transfer'] = pretty_json(block_transfer.to_dict())
 
     # vote
+    vblock = Block(transactions=[tx], node_pubkey=node_public, voters=[node_public], signature=signature)
     DUMMY_SHA3 = '0123456789abcdef' * 4
     b = Bigchain(public_key=node_public, private_key=node_private)
-    vote = b.vote(block.id, DUMMY_SHA3, True)
+    vote = b.vote(vblock.id, DUMMY_SHA3, True)
     ctx['vote'] = pretty_json(vote)
 
     # block status

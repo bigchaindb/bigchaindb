@@ -128,7 +128,7 @@ class BigchainDB(Bigchain):
 
         block = backend.query.get_block(self.connection, block_id)
         if block:
-            transactions = backend.query.get_transactions(self.connection, block['transaction_ids'])
+            transactions = backend.query.get_transactions(self.connection, block['transactions'])
             transactions = Transaction.from_db(self, transactions)
 
             block = {'id': block['height'],
@@ -178,4 +178,4 @@ class BigchainDB(Bigchain):
         return fastquery.FastQuery(self.connection, self.me)
 
 
-Block = namedtuple('Block', ('app_hash', 'height', 'transaction_ids'))
+Block = namedtuple('Block', ('app_hash', 'height', 'transactions'))

@@ -31,7 +31,7 @@ class App(BaseApplication):
     def init_chain(self, validators):
         """Initialize chain with block of height 0"""
 
-        block = Block(app_hash='', height=0, transaction_ids=[])
+        block = Block(app_hash='', height=0, transactions=[])
         self.bigchaindb.store_block(block._asdict())
 
     def info(self):
@@ -114,7 +114,7 @@ class App(BaseApplication):
         if self.block_txn_ids:
             block = Block(app_hash=self.block_txn_hash,
                           height=self.new_height,
-                          transaction_ids=self.block_txn_ids)
+                          transactions=self.block_txn_ids)
             self.bigchaindb.store_block(block._asdict())
 
         data = self.block_txn_hash.encode('utf-8')

@@ -45,7 +45,7 @@ def test_get_latest_block(tb):
         app_hash = os.urandom(16).hex()
         txn_id = os.urandom(16).hex()
         block = Block(app_hash=app_hash, height=i,
-                      transaction_ids=[txn_id])._asdict()
+                      transactions=[txn_id])._asdict()
         b.store_block(block)
 
     block = b.get_latest_block()
