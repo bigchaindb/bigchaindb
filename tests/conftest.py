@@ -8,6 +8,7 @@ Tasks:
 import os
 import copy
 import random
+from collections import namedtuple
 
 import pytest
 
@@ -122,7 +123,7 @@ def _restore_dbs(request):
 
 
 @pytest.fixture(scope='session')
-def _configure_bigchaindb(request, certs_dir):
+def _configure_bigchaindb(request, ssl_context):
     import bigchaindb
     from bigchaindb import config_utils
     test_db_name = TEST_DB_NAME
@@ -140,10 +141,10 @@ def _configure_bigchaindb(request, certs_dir):
             'connection_timeout': 5000,
             'max_tries': 3,
             'ssl': True,
-            'ca_cert': os.environ.get('BIGCHAINDB_DATABASE_CA_CERT', certs_dir + '/ca.crt'),
-            'crlfile': os.environ.get('BIGCHAINDB_DATABASE_CRLFILE', certs_dir + '/crl.pem'),
-            'certfile': os.environ.get('BIGCHAINDB_DATABASE_CERTFILE', certs_dir + '/test_bdb_ssl.crt'),
-            'keyfile': os.environ.get('BIGCHAINDB_DATABASE_KEYFILE', certs_dir + '/test_bdb_ssl.key'),
+            'ca_cert': ssl_context.ca,
+            'crlfile': ssl_context.crl,
+            'certfile': ssl_context.cert,
+            'keyfile': ssl_context.key,
             'keyfile_passphrase': os.environ.get('BIGCHAINDB_DATABASE_KEYFILE_PASSPHRASE', None)
         }
         bigchaindb._database_map[backend].update(bigchaindb._base_database_mongodb)
@@ -495,8 +496,49 @@ def mocked_setup_sub_logger(mocker):
 
 @pytest.fixture(scope='session')
 def certs_dir():
-    cwd = os.environ.get('TRAVIS_BUILD_DIR', os.getcwd())
-    return cwd + '/tests/backend/mongodb-ssl/certs'
+    return os.path.abspath('tests/backend/mongodb-ssl/certs')
+
+
+@pytest.fixture(scope='session')
+def ca_chain_cert(certs_dir):
+    return os.environ.get(
+        'BIGCHAINDB_DATABASE_CA_CERT',
+        os.path.join(certs_dir, 'ca-chain.cert.pem'))
+
+
+@pytest.fixture(scope='session')
+def ssl_crl(certs_dir):
+    return os.environ.get(
+        'BIGCHAINDB_DATABASE_CRLFILE',
+        os.path.join(certs_dir, 'crl.pem'))
+
+
+@pytest.fixture(scope='session')
+def ssl_cert(certs_dir):
+    return os.environ.get(
+        'BIGCHAINDB_DATABASE_CERTFILE',
+        os.path.join(certs_dir, 'bigchaindb.cert.pem'))
+
+
+@pytest.fixture(scope='session')
+def ssl_key(certs_dir):
+    return os.environ.get(
+        'BIGCHAINDB_DATABASE_KEYFILE',
+        os.path.join(certs_dir, 'bigchaindb.key.pem'))
+
+
+@pytest.fixture
+def mdb_ssl_pem_key(certs_dir):
+    return os.environ.get(
+        'BIGCHAINDB_MDB_PEM_KEY_TEST',
+        os.path.join(certs_dir, 'local-mongo.pem'))
+
+
+@pytest.fixture(scope='session')
+def ssl_context(ca_chain_cert, ssl_crl, ssl_cert, ssl_key):
+    SSLContext = namedtuple('SSLContext', ('ca', 'crl', 'cert', 'key'))
+    return SSLContext(
+        ca=ca_chain_cert, crl=ssl_crl, cert=ssl_cert, key=ssl_key)
 
 
 @pytest.fixture
