@@ -1,3 +1,7 @@
+"""Module containing main contact points with Tendermint and
+MongoDB.
+
+"""
 import logging
 from collections import namedtuple
 from copy import deepcopy
