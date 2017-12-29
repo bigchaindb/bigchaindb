@@ -32,8 +32,8 @@ The `Node` class shall have the following methods:
 
 
 The network driver implementation could be achieved using the following libraries
-- https://github.com/kubernetes-incubator/client-python
-- https://github.com/docker/docker-py
+- Kubernetes Client: https://github.com/kubernetes-incubator/client-python
+- Docker Client: https://github.com/docker/docker-py
 
 
 ### Usage example
@@ -56,6 +56,14 @@ def test_valid_transaction_is_synced_nodes(network):
 
     network.stop()
 ```
+
+### Kubernetes Client resources
+
+- [Create Pod](https://github.com/kubernetes-incubator/client-python/blob/master/kubernetes/docs/CoreV1Api.md#create_namespaced_pod)
+- [Delete Pod](https://github.com/kubernetes-incubator/client-python/blob/master/kubernetes/docs/CoreV1Api.md#delete_namespaced_pod)
+- [Create Node](https://github.com/kubernetes-incubator/client-python/blob/master/kubernetes/docs/CoreV1Api.md#create_node)
+- [Delete Node](https://github.com/kubernetes-incubator/client-python/blob/master/kubernetes/docs/CoreV1Api.md#delete_node)
+- [Exec Command post](https://github.com/kubernetes-incubator/client-python/blob/master/kubernetes/docs/CoreV1Api.md#connect_post_namespaced_pod_exec), [Exec Command get](https://github.com/kubernetes-incubator/client-python/blob/master/kubernetes/docs/CoreV1Api.md#connect_get_namespaced_pod_exec)
 
 
 ### Data model impact
