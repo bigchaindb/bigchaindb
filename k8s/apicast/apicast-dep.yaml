@@ -1,0 +1,36 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: openresty-instance-1-dep
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: openresty-instance-1-dep
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: nginx-openresty
+        image: bigchaindb/nginx_3scale:unstable
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: DNS_SERVER
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: cluster-dns-server-ip
+        - name: THREESCALE_PORTAL_ENDPOINT
+          valueFrom:
+            secretKeyRef:
+              name: 3scale-credentials
+              key: conf-url
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+          name: openresty-port
+        resources:
+          limits:
+            cpu: 200m
+            memory: 768Mi
+      restartPolicy: Always
