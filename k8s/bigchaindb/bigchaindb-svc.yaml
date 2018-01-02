@@ -17,5 +17,9 @@ spec:
     targetPort: "<bigchaindb-ws-port from ConfigMap>"
     name: bdb-ws-port
     protocol: TCP
+  - port: "<tm-abci-port from ConfigMap>"
+    targetPort: "<tm-abci-port from ConfigMap>"
+    name: tm-abci-port
+    protocol: TCP
   type: ClusterIP
   clusterIP: None

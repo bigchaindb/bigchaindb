@@ -60,6 +60,21 @@ spec:
             configMapKeyRef:
               name: vars
               key: bigchaindb-ws-port
+        - name: TM_PUB_KEY_ACCESS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: tendermint-config
+              key: tm-pub-key-access
+        - name: TM_BACKEND_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: tendermint-config
+              key: ngx-tendermint-instance-name
+        - name: TM_P2P_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: tendermint-config
+              key: tm-p2p-port
         ports:
         - containerPort: "<mongodb-frontend-port from ConfigMap>"
           protocol: TCP
@@ -68,6 +83,12 @@ spec:
           name: ngx-health
         - containerPort: "<cluster-frontend-port from ConfigMap>"
           protocol: TCP
+        - containerPort: "<tm-pub-key-access from ConfigMap>"
+          protocol: TCP
+          name: tm-pub-key
+        - containerPort: "<tm-p2p-port from ConfigMap>"
+          protocol: TCP
+          name: tm-p2p-port
         livenessProbe:
           httpGet:
             path: /health

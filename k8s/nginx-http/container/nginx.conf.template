@@ -126,13 +126,13 @@ http {
 # NGINX stream block for TCP and UDP proxies. Used to proxy MDB TCP
 # connection.
 stream {
-  log_format mdb_log '[$time_iso8601] $realip_remote_addr $remote_addr '
+  log_format bdb_log '[$time_iso8601] $realip_remote_addr $remote_addr '
                      '$proxy_protocol_addr $proxy_protocol_port '
                      '$protocol $status $session_time $bytes_sent '
                      '$bytes_received "$upstream_addr" "$upstream_bytes_sent" '
                      '"$upstream_bytes_received" "$upstream_connect_time" ';
 
-  access_log /dev/stdout mdb_log buffer=16k flush=5s;
+  access_log /dev/stdout bdb_log buffer=16k flush=5s;
 
   # Define a zone 'two' of size 10 megabytes to store the counters
   # that hold number of TCP connections from a specific IP address.
@@ -153,12 +153,33 @@ stream {
     default MONGODB_BACKEND_HOST;
   }
 
+  # The following map block enables lazy-binding to the backend at runtime,
+  # rather than binding as soon as NGINX starts.
+  map $remote_addr $tm_backend {
+    default TM_BACKEND_HOST;
+  }
+
   # Frontend server to forward connections to MDB instance.
   server {
     listen MONGODB_FRONTEND_PORT so_keepalive=10m:1m:5;
     preread_timeout 30s;
     tcp_nodelay on;
     proxy_pass $mdb_backend:MONGODB_BACKEND_PORT;
+  }
+
+  # Server to forward connection to nginx instance hosting
+  # tendermint node public key.
+  server {
+    listen TM_PUB_KEY_ACCESS_PORT;
+    proxy_pass $tm_backend:TM_PUB_KEY_ACCESS_PORT;
+  }
+
+  # Server to forward p2p connections to Tendermint instance.
+  server {
+    listen TM_P2P_PORT so_keepalive=3m:1m:5;
+    preread_timeout 60s;
+    tcp_nodelay on;
+    proxy_pass $tm_backend:TM_P2P_PORT;
   }
 }
 

@@ -1,0 +1,10 @@
+# Serve the public key for a tendermint instance
+
+server {
+    listen PUBLIC_KEY_ACCESS_PORT default_server;
+    listen [::]:PUBLIC_KEY_ACCESS_PORT default_server ipv6only=on;
+    location / {
+        root /usr/share/nginx/;
+        autoindex on;
+    }
+}

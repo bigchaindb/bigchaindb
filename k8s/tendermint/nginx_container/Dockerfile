@@ -5,7 +5,8 @@ RUN apt-get update \
     && apt-get -y upgrade \
     && apt-get autoremove \
     && apt-get clean
-COPY nginx.conf.template /etc/nginx/nginx.conf
+COPY nginx.conf.template /etc/nginx/conf.d/access_pub_key.conf
 COPY nginx_entrypoint.bash /
-EXPOSE 80 27017 9986 46656
+VOLUME /usr/share/nginx
+EXPOSE 9986
 ENTRYPOINT ["/nginx_entrypoint.bash"]

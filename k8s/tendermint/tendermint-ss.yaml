@@ -1,0 +1,115 @@
+#################################################################################
+# This YAML file desribes a StatefulSet with a service for running and exposing #
+# a Tendermint instance. It depends on the tendermint-config-db-claim           #
+# and tendermint-db-claim k8s pvc.                                              #
+#################################################################################
+
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: tendermint-instance-0-ss
+  namespace: default
+spec:
+  serviceName: tendermint-instance-0
+  replicas: 1
+  template:
+    metadata:
+      name: tendermint-instance-0-ss
+      labels:
+        app: tendermint-instance-0-ss
+    spec:
+      restartPolicy: Always
+      volumes:
+      - name: tm-data
+        persistentVolumeClaim:
+          claimName: tendermint-db-claim
+      - name: tm-config-data
+        persistentVolumeClaim:
+          claimName: tendermint-config-db-claim
+      containers:
+      # Treating nginx + tendermint as a POD because they should not
+      # exist without each other
+      # Nginx container for hosting public key of this ndoe
+      - name: nginx
+        imagePullPolicy: Always
+        image: bigchaindb/nginx_pub_key_access:unstable-tmt
+        env:
+        - name: TM_PUB_KEY_ACCESS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: tendermint-config
+              key: tm-pub-key-access
+        ports:
+        - containerPort: "<tm-pub-key-access from ConfigMap>"
+          name: tm-pk-access
+        volumeMounts:
+        - name: tm-config-data
+          mountPath: /usr/share/nginx
+          readOnly: true
+      #Tendermint container
+      - name: tendermint
+        imagePullPolicy: Always
+        image: bigchaindb/tendermint:unstable-tmt
+        env:
+        - name: TM_SEEDS
+          valueFrom:
+            configMapKeyRef:
+              name: tendermint-config
+              key: tm-seeds
+        - name: TM_VALIDATOR_POWER
+          valueFrom:
+            configMapKeyRef:
+              name: tendermint-config
+              key: tm-validator-power
+        - name: TM_VALIDATORS
+          valueFrom:
+            configMapKeyRef:
+              name: tendermint-config
+              key: tm-validators
+        - name: TM_PUB_KEY_ACCESS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: tendermint-config
+              key: tm-pub-key-access
+        - name: TM_GENESIS_TIME
+          valueFrom:
+            configMapKeyRef:
+              name: tendermint-config
+              key: tm-genesis-time
+        - name: TM_CHAIN_ID
+          valueFrom:
+            configMapKeyRef:
+              name: tendermint-config
+              key: tm-chain-id
+        - name: TM_P2P_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: tendermint-config
+              key: tm-p2p-port
+        - name: TMHOME
+          value: /tendermint
+        - name: TM_PROXY_APP
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: bdb-instance-name
+        - name: TM_ABCI_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: tendermint-config
+              key: tm-abci-port
+        # Resource constraint on the pod, can be changed
+        resources:
+          limits:
+            cpu: 200m
+            memory: 5G
+        volumeMounts:
+        - name: tm-data
+          mountPath: /tendermint
+        - name: tm-config-data
+          mountPath: /tendermint_node_data
+        ports:
+        - containerPort: "<tm-p2p-port from ConfigMap>"
+          name: p2p
+        - containerPort: "<tm-rpc-port from ConfigMap>"
+          name: rpc
