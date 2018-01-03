@@ -1,9 +1,9 @@
 import os
+from unittest.mock import patch
 
 import pytest
 
 from bigchaindb import backend
-from unittest.mock import patch
 
 
 pytestmark = pytest.mark.tendermint
