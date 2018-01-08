@@ -84,7 +84,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: tendermint-config
-              key: ngx-tendermint-instance-name
+              key: ngx-tm-instance-name
         - name: TM_P2P_PORT
           valueFrom:
             configMapKeyRef:

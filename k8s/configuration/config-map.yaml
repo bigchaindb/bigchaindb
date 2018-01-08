@@ -157,8 +157,8 @@ data:
   # in the cluster
   tm-instance-name: "<name of tendermint instance>"
 
-  # ngx-tendermint-instance-name is the FQDN of the tendermint instance in this cluster
-  ngx-tendermint-instance-name: "<name of tendermint instance>.default.svc.cluster.local"
+  # ngx-tm-instance-name is the FQDN of the tendermint instance in this cluster
+  ngx-tm-instance-name: "<name of tendermint instance>.default.svc.cluster.local"
 
   # tm-abci-port is used by Tendermint Core for ABCI traffic. BigchainDB nodes
   # use that internally.
