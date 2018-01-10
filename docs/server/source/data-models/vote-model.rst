@@ -35,8 +35,8 @@ The JSON Keys in a Vote
 The public key of the node which cast this vote.
 It's a string.
 For more information about public keys,
-see the `IPDB Transaction Spec page about cryptographic keys and signatures
-<https://the-ipdb-transaction-spec.readthedocs.io/en/latest/common-operations/crypto-keys-and-sigs.html>`_.
+see the `IPDB Transaction Spec <https://github.com/ipdb/ipdb-tx-spec>`_
+section about cryptographic keys and signatures.
 
 
 **vote.voting_for_block**
@@ -92,9 +92,8 @@ To compute that:
 #. Compute ``signature = sig_of_aa(d, private_key)``, where ``private_key``
    is the node's private key (i.e. ``node_pubkey`` and ``private_key`` are a key pair).
    There's pseudocode for the ``sig_of_aa()`` function
-   on `the IPDB Transaction Spec page about cryptographic keys and signatures
-   <https://the-ipdb-transaction-spec.readthedocs.io/en/latest/common-operations/crypto-keys-and-sigs.html#computing-the-signature-of-an-associative-array>`_.
-
+   on the `IPDB Transaction Spec <https://github.com/ipdb/ipdb-tx-spec>`_
+   section about cryptographic keys and signatures.
 
 The Vote Schema
 ---------------

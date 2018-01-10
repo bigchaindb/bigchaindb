@@ -1,8 +1,7 @@
 The Transaction Model
 =====================
 
-See `the IPDB Transaction Spec
-<https://the-ipdb-transaction-spec.readthedocs.io/en/latest/>`_.
+See the `IPDB Transaction Spec <https://github.com/ipdb/ipdb-tx-spec>`_.
 
 
 The Transaction Schema
@@ -11,7 +10,8 @@ The Transaction Schema
 BigchainDB checks all transactions (JSON documents)
 against a formal schema defined
 in some `JSON Schema <http://json-schema.org/>`_ files.
-Those files are part of the IPDB Transaction Spec.
+Those files are part of the 
+`IPDB Transaction Spec <https://github.com/ipdb/ipdb-tx-spec>`_.
 Their official source is the ``tx_schema/`` directory
 in the `ipdb/ipdb-tx-spec repository on GitHub
 <https://github.com/ipdb/ipdb-tx-spec>`_,
