@@ -1,3 +1,5 @@
+.. _configure-mongodb-cloud-manager-for-monitoring-and-backup:
+
 Configure MongoDB Cloud Manager for Monitoring and Backup
 =========================================================
 

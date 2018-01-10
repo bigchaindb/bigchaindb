@@ -1,3 +1,5 @@
+.. _how-to-generate-a-server-certificate-for-mongodb:
+
 How to Generate a Server Certificate for MongoDB
 ================================================
 
@@ -19,7 +21,7 @@ First create a directory for the server certificate (member cert) and cd into it
 
    cd member-cert
 
-Then :ref:`install and configure Easy-RSA in that directory <How to Install & Configure Easy-RSA>`.
+Then :ref:`install and configure Easy-RSA in that directory <how-to-install-and-configure-easyrsa>`.
 
 
 Step 2: Create the Server Private Key and CSR

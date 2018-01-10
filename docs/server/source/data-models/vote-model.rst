@@ -1,3 +1,5 @@
+.. _the-vote-model:
+
 The Vote Model
 ==============
 
@@ -44,7 +46,7 @@ see the `IPDB Transaction Spec page about cryptographic keys and signatures
 The block ID that this vote is for.
 It's a string.
 For more information about block IDs,
-see the page about :ref:`blocks <The Block Model>`.
+see the page about :ref:`blocks <the-block-model>`.
 
 
 **vote.previous_block**
@@ -54,7 +56,7 @@ according to the node which cast this vote.
 It's a string.
 (It's possible for different nodes to see different block orders.)
 For more information about block IDs,
-see the page about :ref:`blocks <The Block Model>`.
+see the page about :ref:`blocks <the-block-model>`.
 
 
 **vote.is_block_valid**
@@ -100,7 +102,7 @@ The Vote Schema
 ---------------
 
 BigchainDB checks all votes (JSON documents) against a formal schema
-defined in a :ref:`JSON Schema file named vote.yaml <The Vote Schema File>`.
+defined in a :ref:`JSON Schema file named vote.yaml <the-vote-schema-file>`.
 
 
 An Example Vote

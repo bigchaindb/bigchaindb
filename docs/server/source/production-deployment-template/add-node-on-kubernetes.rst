@@ -1,3 +1,5 @@
+.. _kubernetes-template-add-a-bigchaindb-node-to-an-existing-cluster:
+
 Kubernetes Template: Add a BigchainDB Node to an Existing BigchainDB Cluster
 ============================================================================
 
@@ -47,7 +49,7 @@ cluster is using.
 Step 1: Prerequisites
 ---------------------
 
-* :ref:`List of all the things to be done by each node operator <Things Each Node Operator Must Do>`.
+* :ref:`List of all the things to be done by each node operator <things-each-node-operator-must-do>`.
 
 * The public key should be shared offline with the other existing BigchainDB
   nodes in the existing BigchainDB cluster.
@@ -76,7 +78,7 @@ example:
 Step 2: Configure the BigchainDB Node
 -------------------------------------
 
-See the section on how to :ref:`configure your BigchainDB node <How to Configure a BigchainDB Node>`.
+See the section on how to :ref:`how-to-configure-a-bigchaindb-node`.
 
 
 Step 3:  Start the NGINX Service
@@ -84,7 +86,7 @@ Step 3:  Start the NGINX Service
 
 Please see the following section:
 
-* :ref:`Start NGINX service <Step 4: Start the NGINX Service>`.
+* :ref:`start-the-nginx-service`.
 
 
 Step 4: Assign DNS Name to the NGINX Public IP
@@ -92,7 +94,7 @@ Step 4: Assign DNS Name to the NGINX Public IP
 
 Please see the following section:
 
-* :ref:`Assign DNS to NGINX Public IP <Step 5: Assign DNS Name to the NGINX Public IP>`.
+* :ref:`assign-dns-name-to-the-nginx-public-ip`.
 
 
 Step 5: Start the MongoDB Kubernetes Service
@@ -100,7 +102,7 @@ Step 5: Start the MongoDB Kubernetes Service
 
 Please see the following section:
 
-* :ref:`Start the MongoDB Kubernetes Service <Step 6: Start the MongoDB Kubernetes Service>`.
+* :ref:`start-the-mongodb-kubernetes-service`.
 
 
 Step 6: Start the BigchainDB Kubernetes Service
@@ -108,7 +110,7 @@ Step 6: Start the BigchainDB Kubernetes Service
 
 Please see the following section:
 
-* :ref:`Start the BigchainDB Kubernetes Service <Step 7: Start the BigchainDB Kubernetes Service>`.
+* :ref:`start-the-bigchaindb-kubernetes-service`.
 
 
 Step 7: Start the OpenResty Kubernetes Service
@@ -116,7 +118,7 @@ Step 7: Start the OpenResty Kubernetes Service
 
 Please see the following section:
 
-* :ref:`Start the OpenResty Kubernetes Service <Step 8: Start the OpenResty Kubernetes Service>`.
+* :ref:`start-the-openresty-kubernetes-service`.
 
 
 Step 8: Start the NGINX Kubernetes Deployment
@@ -124,7 +126,7 @@ Step 8: Start the NGINX Kubernetes Deployment
 
 Please see the following section:
 
-* :ref:`Run NGINX deployment <Step 9: Start the NGINX Kubernetes Deployment>`.
+* :ref:`start-the-nginx-kubernetes-deployment`.
 
 
 Step 9: Create Kubernetes Storage Classes for MongoDB
@@ -132,7 +134,7 @@ Step 9: Create Kubernetes Storage Classes for MongoDB
 
 Please see the following section:
 
-* :ref:`Step 10: Create Kubernetes Storage Classes for MongoDB`.
+* :ref:`create-kubernetes-storage-classes-for-mongodb`.
 
 
 Step 10: Create Kubernetes Persistent Volume Claims
@@ -140,7 +142,7 @@ Step 10: Create Kubernetes Persistent Volume Claims
 
 Please see the following section:
 
-* :ref:`Step 11: Create Kubernetes Persistent Volume Claims`.
+* :ref:`create-kubernetes-persistent-volume-claims`.
 
 
 Step 11: Start a Kubernetes StatefulSet for MongoDB
@@ -148,7 +150,7 @@ Step 11: Start a Kubernetes StatefulSet for MongoDB
 
 Please see the following section:
 
-* :ref:`Step 12: Start a Kubernetes StatefulSet for MongoDB`.
+* :ref:`start-a-kubernetes-statefulset-for-mongodb`.
 
 
 Step 12: Verify network connectivity between the MongoDB instances
@@ -178,8 +180,7 @@ We can do this in Kubernetes using a Kubernetes Service of ``type``
 * Set ``spec.ports.port[0]`` to the ``mongodb-backend-port`` from the ConfigMap for the other cluster.
 
 * Set ``spec.externalName`` to the FQDN mapped to NGINX Public IP of the cluster you are trying to connect to.
-  For more information about the FQDN please refer to: :ref:`Assign DNS Name to the NGINX Public
-  IP <Step 5: Assign DNS Name to the NGINX Public IP>`
+  For more information about the FQDN please refer to: :ref:`assign-dns-name-to-the-nginx-public-ip`.
 
 .. note::
    This operation needs to be replicated ``n-1`` times per node for a ``n`` node cluster, with the respective FQDNs
@@ -246,10 +247,9 @@ Step 15: Configure Users and Access Control for MongoDB
   instance and the new MongoDB Backup Agent instance to function correctly.
 
 * Please refer to
-  :ref:`Configure Users and Access Control for MongoDB <Step 13: Configure
-  Users and Access Control for MongoDB>` to create and configure the new
-  BigchainDB, MongoDB Monitoring Agent and MongoDB Backup Agent users on the
-  cluster.
+  :ref:`configure-users-and-access-control-for-mongodb` to create and
+  configure the new BigchainDB, MongoDB Monitoring Agent and MongoDB Backup
+  Agent users on the cluster.
 
 .. note::
    You will not have to create the MongoDB replica set or create the admin user, as they already exist.
@@ -265,7 +265,7 @@ Step 16: Start a Kubernetes Deployment for MongoDB Monitoring Agent
 
 Please see the following section:
 
-* :ref:`Step 14: Start a Kubernetes Deployment for MongoDB Monitoring Agent`.
+* :ref:`start-a-kubernetes-deployment-for-mongodb-monitoring-agent`.
 
 .. note::
    Every MMS group has only one active Monitoring and Backup Agent and having
@@ -280,7 +280,7 @@ Step 17: Start a Kubernetes Deployment for MongoDB Backup Agent
 
 Please see the following section:
 
-* :ref:`Step 15: Start a Kubernetes Deployment for MongoDB Backup Agent`.
+* :ref:`start-a-kubernetes-deployment-for-mongodb-backup-agent`.
 
 .. note::
    Every MMS group has only one active Monitoring and Backup Agent and having
@@ -350,8 +350,8 @@ Step 19: Restart the Existing BigchainDB Instance(s)
    $ kubectl --context ctx-1 apply -f bigchaindb/bigchaindb-dep.yaml
 
 
-See the page titled :ref:`How to Configure a BigchainDB Node` for more information about
-ConfigMap configuration.
+See the page titled :ref:`how-to-configure-a-bigchaindb-node`
+for more information about ConfigMap configuration.
 
 You can SSH to an existing BigchainDB instance and run the ``bigchaindb
 show-config`` command to check that the keyring is updated.
@@ -362,7 +362,7 @@ Step 20: Start a Kubernetes Deployment for OpenResty
 
 Please see the following section:
 
-* :ref:`Step 17: Start a Kubernetes Deployment for OpenResty`.
+* :ref:`start-a-kubernetes-deployment-for-openresty`.
 
 
 Step 21: Configure the MongoDB Cloud Manager
@@ -378,6 +378,7 @@ Step 21: Configure the MongoDB Cloud Manager
 Step 22: Test Your New BigchainDB Node
 --------------------------------------
 
-* Please refer to the testing steps :ref:`here <Step 19: Verify the BigchainDB
-  Node Setup>` to verify that your new BigchainDB node is working as expected.
+* Please refer to the testing steps :ref:`here
+  <verify-the-bigchaindb-node-setup>` to verify that your new BigchainDB
+  node is working as expected.
 

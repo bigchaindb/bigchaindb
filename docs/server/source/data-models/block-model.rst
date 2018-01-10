@@ -1,3 +1,5 @@
+.. _the-block-model:
+
 The Block Model
 ===============
 
@@ -48,7 +50,7 @@ An example is ``"1507294217"``.
 
 **block.transactions**
 
-A list of the :ref:`transactions <The Transaction Model>` included in the block.
+A list of the :ref:`transactions <the-transaction-model>` included in the block.
 (Each transaction is a JSON object.)
 
 

@@ -9,7 +9,7 @@ Libraries and Tools Maintained by the BigchainDB Team
 * `The Transaction CLI <https://docs.bigchaindb.com/projects/cli/en/latest/>`_ is
   a command-line interface for building BigchainDB transactions.
   You may be able to call it from inside the language of
-  your choice, and then use :ref:`the HTTP API <The HTTP Client-Server API>`
+  your choice, and then use :ref:`the HTTP API <the-http-client-server-api>`
   to post transactions.
 
 

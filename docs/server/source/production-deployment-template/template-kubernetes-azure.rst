@@ -6,6 +6,8 @@ cluster.
 This page describes one way to deploy a Kubernetes cluster on Azure.
 
 
+.. _get-a-pay-as-you-go-azure-subscription:
+
 Step 1: Get a Pay-As-You-Go Azure Subscription
 ----------------------------------------------
 
@@ -18,6 +20,8 @@ You may find that you have to sign up for a Free Trial subscription first.
 That's okay: you can have many subscriptions.
 
 
+.. _create-an-ssh-key-pair:
+
 Step 2: Create an SSH Key Pair
 ------------------------------
 
@@ -28,7 +32,8 @@ but it's probably a good idea to make a new SSH key pair
 for your Kubernetes VMs and nothing else.)
 
 See the
-:ref:`page about how to generate a key pair for SSH <Generate a Key Pair for SSH>`.
+:doc:`page about how to generate a key pair for SSH
+<../appendices/generate-key-pair-for-ssh>`.
 
 
 Step 3: Deploy an Azure Container Service (ACS)
@@ -135,6 +140,8 @@ and click on the one you created
 to see all the resources in it.
 
 
+.. _ssh-to-your-new-kubernetes-cluster-nodes:
+
 Optional: SSH to Your New Kubernetes Cluster Nodes
 --------------------------------------------------
 
@@ -217,5 +224,6 @@ CAUTION: You might end up deleting resources other than the ACS cluster.
    --name <name of resource group containing the cluster>
 
 
-Next, you can :doc:`run a BigchainDB node on your new
-Kubernetes cluster <node-on-kubernetes>`.
+Next, you can :doc:`run a BigchainDB node(Non-BFT) <node-on-kubernetes>` or :doc:`run a BigchainDB
+node/cluster(BFT) <../production-deployment-template-tendermint/node-on-kubernetes>`
+on your new Kubernetes cluster.

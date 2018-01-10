@@ -1,3 +1,5 @@
+.. _the-http-client-server-api:
+
 The HTTP Client-Server API
 ==========================
 
@@ -25,6 +27,8 @@ with something like the following in the body:
 .. literalinclude:: http-samples/index-response.http
     :language: http
 
+
+.. _api-root-endpoint:
 
 API Root Endpoint
 -------------------
@@ -153,7 +157,7 @@ Transactions
        transaction, poll the link to the
        :ref:`status monitor <get_status_of_transaction>`
        provided in the ``Location`` header or listen to server's
-       :ref:`WebSocket Event Stream API <The WebSocket Event Stream API>`.
+       :ref:`WebSocket Event Stream API <the-websocket-event-stream-api>`.
 
    :resheader Content-Type: ``application/json``
    :resheader Location: Relative link to a status monitor for the submitted transaction.
@@ -707,7 +711,7 @@ so you can access it from the same machine,
 but it won't be directly accessible from the outside world.
 (The outside world could connect via a SOCKS proxy or whatnot.)
 
-The documentation about BigchainDB Server :any:`Configuration Settings`
+The documentation about BigchainDB Server :doc:`Configuration Settings <server-reference/configuration>`
 has a section about how to set ``server.bind`` so as to make
 the HTTP API publicly accessible.
 

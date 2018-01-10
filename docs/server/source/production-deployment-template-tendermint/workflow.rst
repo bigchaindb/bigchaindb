@@ -2,13 +2,13 @@ Overview
 ========
 
 This page summarizes the steps *we* go through
-to set up a production BigchainDB cluster.
+to set up a production BigchainDB + Tendermint cluster.
 We are constantly improving them.
 You can modify them to suit your needs.
 
-
-Things the Managing Organization Must Do First
-----------------------------------------------
+.. Note::
+    With our BigchainDB + Tendermint deployment model, we use standalone MongoDB
+    (without Replica Set), BFT replication is handled by Tendermint.
 
 
 1. Set Up a Self-Signed Certificate Authority
@@ -25,7 +25,7 @@ Otherwise, your organization must
 :ref:`set up its own self-signed certificate authority <how-to-set-up-a-self-signed-certificate-authority>`.
 
 
-.. _register-a-domain-and-get-an-ssl-certificate-for-it:
+.. _register-a-domain-and-get-an-ssl-certificate-for-it-tmt:
 
 2. Register a Domain and Get an SSL Certificate for It
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -36,83 +36,48 @@ should choose an FQDN for their API (e.g. api.organization-x.com),
 register the domain name,
 and buy an SSL/TLS certificate for the FQDN.
 
-.. _things-each-node-operator-must-do:
+.. _things-each-node-operator-must-do-tmt:
 
 Things Each Node Operator Must Do
 ---------------------------------
-
-☐ Every MongoDB instance in the cluster must have a unique (one-of-a-kind) name.
-Ask the organization managing your cluster if they have a standard
-way of naming instances in the cluster.
-For example, maybe they assign a unique number to each node,
-so that if you're operating node 12, your MongoDB instance would be named
-``mdb-instance-12``.
-Similarly, other instances must also have unique names in the cluster.
 
 #. Name of the MongoDB instance (``mdb-instance-*``)
 #. Name of the BigchainDB instance (``bdb-instance-*``)
 #. Name of the NGINX instance (``ngx-http-instance-*`` or ``ngx-https-instance-*``)
 #. Name of the OpenResty instance (``openresty-instance-*``)
 #. Name of the MongoDB monitoring agent instance (``mdb-mon-instance-*``)
-#. Name of the MongoDB backup agent instance (``mdb-bak-instance-*``)
+#. Name of the Tendermint instance (``tendermint-instance-*``)
 
 
-☐ Generate four keys and corresponding certificate signing requests (CSRs):
+☐ Generate two keys and corresponding certificate signing requests (CSRs):
 
-#. Server Certificate (a.k.a. Member Certificate) for the MongoDB instance
 #. Client Certificate for BigchainDB Server to identify itself to MongoDB
 #. Client Certificate for MongoDB Monitoring Agent to identify itself to MongoDB
-#. Client Certificate for MongoDB Backup Agent to identify itself to MongoDB
 
 Ask the managing organization to use its self-signed CA to sign those four CSRs.
 They should send you:
 
-* Four certificates (one for each CSR you sent them).
+* Two certificates (one for each CSR you sent them).
 * One ``ca.crt`` file: their CA certificate.
 * One ``crl.pem`` file: a certificate revocation list.
 
 For help, see the pages:
 
-* :ref:`how-to-generate-a-server-certificate-for-mongodb`
-* :ref:`how-to-generate-a-client-certificate-for-mongodb`
-
-
-☐ Every node in a BigchainDB cluster needs its own
-BigchainDB keypair (i.e. a public key and corresponding private key).
-You can generate a BigchainDB keypair for your node, for example,
-using the `BigchainDB Python Driver <http://docs.bigchaindb.com/projects/py-driver/en/latest/index.html>`_.
-
-.. code:: python
-
-   from bigchaindb_driver.crypto import generate_keypair
-   print(generate_keypair())
-
-
-☐ Share your BigchaindB *public* key with all the other nodes
-in the BigchainDB cluster.
-Don't share your private key.
-
-
-☐ Get the BigchainDB public keys of all the other nodes in the cluster.
-That list of public keys is known as the BigchainDB "keyring."
-
+* :doc:`How to Generate a Client Certificate for MongoDB <../production-deployment-template/client-tls-certificate>`
 
 ☐ Make up an FQDN for your BigchainDB node (e.g. ``mynode.mycorp.com``).
 Make sure you've registered the associated domain name (e.g. ``mycorp.com``),
 and have an SSL certificate for the FQDN.
 (You can get an SSL certificate from any SSL certificate provider.)
 
-
 ☐ Ask the managing organization for the user name to use for authenticating to
 MongoDB.
-
 
 ☐ If the cluster uses 3scale for API authentication, monitoring and billing,
 you must ask the managing organization for all relevant 3scale credentials -
 secret token, service ID, version header and API service token.
 
-
-☐ If the cluster uses MongoDB Cloud Manager for monitoring and backup,
+☐ If the cluster uses MongoDB Cloud Manager for monitoring,
 you must ask the managing organization for the ``Project ID`` and the
 ``Agent API Key``.
 (Each Cloud Manager "Project" has its own ``Project ID``. A ``Project ID`` can
@@ -122,11 +87,52 @@ allow easier periodic rotation of the ``Agent API Key`` with a constant
 ``Project ID``)
 
 
-☐ :doc:`Deploy a Kubernetes cluster on Azure <template-kubernetes-azure>`.
+.. _generate-the-blockchain-id-and-genesis-time:
+
+3. Generate the Blockchain ID and Genesis Time
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Tendermint nodes require two parameters that need to be common and shared between all the
+participants in the network.
+
+* ``chain_id`` : ID of the blockchain. This must be unique for every blockchain.
+
+  * Example: ``0001-01-01T00:00:00Z``
+
+* ``genesis_time`` : Official time of blockchain start.
+
+  * Example: ``test-chain-9gHylg``
+
+The following parameters can be generated using the ``tendermint init`` command.
+To `initializae <https://tendermint.readthedocs.io/en/master/using-tendermint.html#initialize>`_.
+You will need to `install Tendermint <https://tendermint.readthedocs.io/en/master/install.html>`_
+and verify that a ``genesis.json`` file in created under the `Root Directory
+<https://tendermint.readthedocs.io/en/master/using-tendermint.html#directory-root>`_. You can use
+the ``genesis_time`` and ``chain_id`` from this ``genesis.json``.
+
+Sample ``genesis.json``:
+
+.. code:: json
+
+    {
+    "genesis_time": "0001-01-01T00:00:00Z",
+    "chain_id": "test-chain-9gHylg",
+    "validators": [
+        {
+        "pub_key": {
+            "type": "ed25519",
+            "data": "D12279E746D3724329E5DE33A5AC44D5910623AA6FB8CDDC63617C959383A468"
+        },
+        "power": 10,
+        "name": ""
+        }
+    ],
+    "app_hash": ""
+    }
 
 
-☐ You can now proceed to set up your BigchainDB node based on whether it is the
-:ref:`first node in a new cluster
-<kubernetes-template-deploy-a-single-node-bigchaindb>` or a
-:ref:`node that will be added to an existing cluster
-<kubernetes-template-add-a-bigchaindb-node-to-an-existing-cluster>`.
+
+☐ :doc:`Deploy a Kubernetes cluster on Azure <../production-deployment-template/template-kubernetes-azure>`.
+
+☐ You can now proceed to set up your :ref:`BigchainDB node
+<kubernetes-template-deploy-a-single-bigchaindb-node-with-tendermint>`.

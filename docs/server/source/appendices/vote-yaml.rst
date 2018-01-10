@@ -1,7 +1,9 @@
+.. _the-vote-schema-file:
+
 The Vote Schema File
 ====================
 
-BigchainDB checks all :ref:`votes <The Vote Model>`
+BigchainDB checks all :ref:`votes <the-vote-model>`
 (JSON documents) against a formal schema
 defined in a JSON Schema file named vote.yaml.
 The contents of that file are copied below.

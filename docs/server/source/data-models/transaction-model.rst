@@ -1,3 +1,5 @@
+.. _the-transaction-model:
+
 The Transaction Model
 =====================
 
