@@ -410,3 +410,39 @@ def test_return_only_valid_transaction(client):
                get_transaction_patched(Bigchain.TX_IN_BACKLOG)):
         url = '{}{}'.format(TX_ENDPOINT, '123')
         assert client.get(url).status_code == 404
+
+
+@pytest.mark.tendermint
+@patch('requests.post')
+@pytest.mark.parametrize('mode', [
+    ('', 'broadcast_tx_async'),
+    ('?mode=async', 'broadcast_tx_async'),
+    ('?mode=sync', 'broadcast_tx_sync'),
+    ('?mode=commit', 'broadcast_tx_commit'),
+])
+def test_post_transaction_valid_modes(mock_post, client, mode):
+    from bigchaindb.models import Transaction
+    from bigchaindb.common.crypto import generate_key_pair
+    alice = generate_key_pair()
+    tx = Transaction.create([alice.public_key],
+                            [([alice.public_key], 1)],
+                            asset=None) \
+        .sign([alice.private_key])
+    mode_endpoint = TX_ENDPOINT + mode[0]
+    client.post(mode_endpoint, data=json.dumps(tx.to_dict()))
+    args, kwargs = mock_post.call_args
+    assert mode[1] == kwargs['json']['method']
+
+
+@pytest.mark.tendermint
+def test_post_transaction_invalid_mode(client):
+    from bigchaindb.models import Transaction
+    from bigchaindb.common.crypto import generate_key_pair
+    alice = generate_key_pair()
+    tx = Transaction.create([alice.public_key],
+                            [([alice.public_key], 1)],
+                            asset=None) \
+        .sign([alice.private_key])
+    mode_endpoint = TX_ENDPOINT + '?mode=nope'
+    response = client.post(mode_endpoint, data=json.dumps(tx.to_dict()))
+    assert '400 BAD REQUEST' in response.status

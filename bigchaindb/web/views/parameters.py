@@ -29,4 +29,14 @@ def valid_operation(op):
         return 'CREATE'
     if op == 'TRANSFER':
         return 'TRANSFER'
-    raise ValueError('Operation must be "CREATE" or "TRANSFER')
+    raise ValueError('Operation must be "CREATE" or "TRANSFER"')
+
+
+def valid_mode(mode):
+    if mode == 'async':
+        return 'broadcast_tx_async'
+    if mode == 'sync':
+        return 'broadcast_tx_sync'
+    if mode == 'commit':
+        return 'broadcast_tx_commit'
+    raise ValueError('Mode must be "async", "sync" or "commit"')

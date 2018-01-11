@@ -55,6 +55,13 @@ class TransactionListApi(Resource):
         Return:
             A ``dict`` containing the data about the transaction.
         """
+        parser = reqparse.RequestParser()
+        parser.add_argument('mode', type=parameters.valid_mode,
+                            choices=['async', 'sync', 'commit'])
+        args = parser.parse_args()
+        if not str(args['mode']) or str(args['mode']) == 'None':
+            args['mode'] = 'broadcast_tx_async'
+
         pool = current_app.config['bigchain_pool']
 
         # `force` will try to format the body of the POST request even if the
@@ -85,7 +92,7 @@ class TransactionListApi(Resource):
                     'Invalid transaction ({}): {}'.format(type(e).__name__, e)
                 )
             else:
-                bigchain.write_transaction(tx_obj)
+                bigchain.write_transaction(tx_obj, **args)
 
         response = jsonify(tx)
         response.status_code = 202

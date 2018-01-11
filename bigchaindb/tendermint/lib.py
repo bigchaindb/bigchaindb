@@ -23,11 +23,17 @@ ENDPOINT = 'http://{}:{}/'.format(TENDERMINT_HOST, TENDERMINT_PORT)
 
 class BigchainDB(Bigchain):
 
-    def post_transaction(self, transaction):
+    def post_transaction(self, transaction, mode):
         """Submit a valid transaction to the mempool."""
+        mode_list = ('broadcast_tx_async',
+                     'broadcast_tx_sync',
+                     'broadcast_tx_commit')
+        if not mode or mode['mode'] not in mode_list:
+            raise ValidationError(('Mode must be one of the following {}.')
+                                  .format(', '.join(mode_list)))
 
         payload = {
-            'method': 'broadcast_tx_async',
+            'method': mode['mode'],
             'jsonrpc': '2.0',
             'params': [encode_transaction(transaction.to_dict())],
             'id': str(uuid4())
@@ -35,11 +41,11 @@ class BigchainDB(Bigchain):
         # TODO: handle connection errors!
         requests.post(ENDPOINT, json=payload)
 
-    def write_transaction(self, transaction):
+    def write_transaction(self, transaction, **kwargs):
         # This method offers backward compatibility with the Web API.
         """Submit a valid transaction to the mempool."""
-
-        self.post_transaction(transaction)
+        mode = kwargs
+        self.post_transaction(transaction, mode)
 
     def store_transaction(self, transaction):
         """Store a valid transaction to the transactions collection."""
