@@ -65,9 +65,11 @@ if [[ -z "${REPLICA_SET_NAME:?REPLICA_SET_NAME not specified. Exiting!}" || \
     -z "${MONGODB_IP:?MONGODB_IP not specified. Exiting!}" || \
     -z "${MONGODB_KEY_FILE_PATH:?MONGODB_KEY_FILE_PATH not specified. Exiting!}" || \
     -z "${MONGODB_CA_FILE_PATH:?MONGODB_CA_FILE_PATH not specified. Exiting!}" || \
-    -z "${MONGODB_CRL_FILE_PATH:?MONGODB_CRL_FILE_PATH not specified. Exiting!}" || \
-    -z ${STORAGE_ENGINE_CACHE_SIZE:=''} ]] ; then
-    #-z "${MONGODB_KEY_FILE_PASSWORD:?MongoDB Key File Password not specified. Exiting!}" || \
+    -z "${MONGODB_CRL_FILE_PATH:?MONGODB_CRL_FILE_PATH not specified. Exiting!}" ]] ; then
+  # Not handling the STORAGE_ENGINE_CACHE_SIZE because
+  # it is optional. If not specified the default cache
+  # size is: max((50% RAM - 1GB), 256MB)
+  echo "Missing required enviroment variable(s)."
   exit 1
 else
   echo REPLICA_SET_NAME="$REPLICA_SET_NAME"
