@@ -1,14 +1,13 @@
-import os
 import json
 import time
 import uuid
 
-import kubernetes.client
+import kubernetes
+# import kubernetes.client
 from kubernetes.client.rest import ApiException
+from kubernetes.stream import stream
 
 
-MINIKUBE_URI = 'https://127.0.0.1:8443'
-MINIKUBE_HOME = os.environ.get('MINIKUBE_HOME', os.environ['HOME'])
 # TODO: create a default pod spec of BDB
 BDB_POD_SPEC = {}
 
@@ -16,11 +15,11 @@ BDB_POD_SPEC = {}
 class Node():
 
     def __init__(self, namespace='itest-setup', name=None, spec=BDB_POD_SPEC):
+        kubernetes.config.load_kube_config()
         config = kubernetes.client.Configuration()
-        config.host = MINIKUBE_URI
-        config.key_file = os.path.join(MINIKUBE_HOME, '.minikube/client.key')
-        config.cert_file = os.path.join(MINIKUBE_HOME, '.minikube/client.crt')
-        config.verify_ssl = False
+        config.assert_hostname = False
+        kubernetes.client.Configuration.set_default(config)
+
         self.api_instance = kubernetes.client.CoreV1Api(kubernetes.client.ApiClient(config))
         self.namespace = namespace
         self.name = name or uuid.uuid4().hex
@@ -29,7 +28,10 @@ class Node():
         pod.version = 'v1'
         pod.kind = 'Pod'
         pod.metadata = {"name": self.name}
-        pod.spec = {"containers": [{"name": "myapp-container",
+        pod.spec = {"containers": [{"name": "tendermint",
+                                    "image": "busybox",
+                                    "command": ["sh", "-c", "echo Hello Kubernetes! && sleep 3600"]},
+                                   {"name": "bigchaindb",
                                     "image": "busybox",
                                     "command": ["sh", "-c", "echo Hello Kubernetes! && sleep 3600"]}]}
         self.pod = pod
@@ -48,15 +50,16 @@ class Node():
 
     def stop(self, return_after_stopping=True):
         """ Stop node."""
-        body = kubernetes.client.V1DeleteOptions()
-        body.api_version = 'v1'
-        body.grace_period_seconds = 0
-        self.api_instance.delete_namespaced_pod(self.name, self.namespace, body)
-        if return_after_stopping:
-            for i in range(1, 20):
-                if not self.is_running:
-                    break
-                time.sleep(1)
+        if self.is_running:
+            body = kubernetes.client.V1DeleteOptions()
+            body.api_version = 'v1'
+            body.grace_period_seconds = 0
+            self.api_instance.delete_namespaced_pod(self.name, self.namespace, body)
+            if return_after_stopping:
+                for i in range(1, 20):
+                    if not self.is_running:
+                        break
+                    time.sleep(1)
 
     @property
     def is_running(self):
@@ -77,6 +80,19 @@ class Node():
             return resp.status.pod_ip
         else:
             return False
+
+    def _exec_command(self, container, command):
+        try:
+            exec_command = ['/bin/sh', '-c', command]
+            resp = stream(self.api_instance.connect_get_namespaced_pod_exec,
+                          self.name,
+                          self.namespace,
+                          container=container,
+                          command=exec_command,
+                          stderr=True, stdin=False, stdout=True, tty=False)
+            return resp
+        except ApiException as e:
+            print("Exception when executing command: %s\n" % e)
 
     def _create_namespace(self, namespace):
         namespace_spec = kubernetes.client.V1Namespace()
