@@ -56,8 +56,7 @@ class TransactionListApi(Resource):
             A ``dict`` containing the data about the transaction.
         """
         parser = reqparse.RequestParser()
-        parser.add_argument('mode', type=parameters.valid_mode,
-                            choices=['async', 'sync', 'commit'])
+        parser.add_argument('mode', type=parameters.valid_mode)
         args = parser.parse_args()
         if not str(args['mode']) or str(args['mode']) == 'None':
             args['mode'] = 'broadcast_tx_async'
