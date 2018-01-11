@@ -15,16 +15,15 @@ BDB_POD_SPEC = {}
 
 class Node():
 
-    def __init__(self, namespace='itest-api', name=None, spec=BDB_POD_SPEC):
+    def __init__(self, namespace='itest-setup', name=None, spec=BDB_POD_SPEC):
         config = kubernetes.client.Configuration()
         config.host = MINIKUBE_URI
         config.key_file = os.path.join(MINIKUBE_HOME, '.minikube/client.key')
         config.cert_file = os.path.join(MINIKUBE_HOME, '.minikube/client.crt')
         config.verify_ssl = False
         self.api_instance = kubernetes.client.CoreV1Api(kubernetes.client.ApiClient(config))
-        self.namesapce = namespace
+        self.namespace = namespace
         self.name = name or uuid.uuid4().hex
-        self.uri = None
 
         pod = kubernetes.client.V1Pod()
         pod.version = 'v1'
@@ -38,40 +37,44 @@ class Node():
     def start(self, return_after_running=True):
         """ Start node."""
         try:
-            self.api_instance.create_namespaced_pod(self.namesapce, self.pod)
+            self.api_instance.create_namespaced_pod(self.namespace, self.pod)
             if return_after_running:
                 for i in range(1, 20):
                     if self.is_running:
                         break
                     time.sleep(1)
         except ApiException as e:
-            pass
+            raise e
 
     def stop(self, return_after_stopping=True):
         """ Stop node."""
         body = kubernetes.client.V1DeleteOptions()
         body.api_version = 'v1'
+        body.grace_period_seconds = 0
         self.api_instance.delete_namespaced_pod(self.name, self.namespace, body)
         if return_after_stopping:
             for i in range(1, 20):
-                if self.is_running:
+                if not self.is_running:
                     break
                 time.sleep(1)
 
     @property
     def is_running(self):
         """Get the current status of node"""
-        resp = self.api_instance.read_namespaced_pod(self.name, self.namespace, exact=True)
-        if resp['status']['phase'] == 'Running':
-            return True
-        else:
+        try:
+            resp = self.api_instance.read_namespaced_pod(self.name, self.namespace, exact=True)
+            if resp.status.phase == 'Running':
+                return True
+            else:
+                return False
+        except ApiException as e:
             return False
 
     @property
     def uri(self):
         if self.is_running:
             resp = self.api_instance.read_namespaced_pod(self.name, self.namespace, exact=True)
-            return resp['status']['pod_ip']
+            return resp.status.pod_ip
         else:
             return False
 
