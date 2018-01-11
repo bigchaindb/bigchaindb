@@ -5,7 +5,6 @@ MONGODB_PORT=""
 MONGODB_KEY_FILE_PATH=""
 MONGODB_CA_FILE_PATH=""
 MONGODB_CRL_FILE_PATH=""
-REPLICA_SET_NAME=""
 MONGODB_FQDN=""
 MONGODB_IP=""
 
@@ -26,10 +25,6 @@ while [[ $# -gt 1 ]]; do
           ;;
       --mongodb-crl-file-path)
           MONGODB_CRL_FILE_PATH="$2"
-          shift
-          ;;
-      --replica-set-name)
-          REPLICA_SET_NAME="$2"
           shift
           ;;
       --mongodb-fqdn)
@@ -53,17 +48,15 @@ while [[ $# -gt 1 ]]; do
 done
 
 # sanity checks
-if [[ -z "${REPLICA_SET_NAME:?REPLICA_SET_NAME not specified. Exiting!}" || \
-    -z "${MONGODB_PORT:?MONGODB_PORT not specified. Exiting!}" || \
+if [[ -z "${MONGODB_PORT:?MONGODB_PORT not specified. Exiting!}" || \
     -z "${MONGODB_FQDN:?MONGODB_FQDN not specified. Exiting!}" || \
     -z "${MONGODB_IP:?MONGODB_IP not specified. Exiting!}" || \
     -z "${MONGODB_KEY_FILE_PATH:?MONGODB_KEY_FILE_PATH not specified. Exiting!}" || \
     -z "${MONGODB_CA_FILE_PATH:?MONGODB_CA_FILE_PATH not specified. Exiting!}" || \
     -z "${MONGODB_CRL_FILE_PATH:?MONGODB_CRL_FILE_PATH not specified. Exiting!}" || \
-    -z ${STORAGE_ENGINE_CACHE_SIZE:=''} ]] ; then
+    -z "${STORAGE_ENGINE_CACHE_SIZE:=''}" ]] ; then
   exit 1
 else
-  echo REPLICA_SET_NAME="$REPLICA_SET_NAME"
   echo MONGODB_PORT="$MONGODB_PORT"
   echo MONGODB_FQDN="$MONGODB_FQDN"
   echo MONGODB_IP="$MONGODB_IP"
@@ -81,7 +74,6 @@ sed -i "s|MONGODB_PORT|${MONGODB_PORT}|g" ${MONGODB_CONF_FILE_PATH}
 sed -i "s|MONGODB_KEY_FILE_PATH|${MONGODB_KEY_FILE_PATH}|g" ${MONGODB_CONF_FILE_PATH}
 sed -i "s|MONGODB_CA_FILE_PATH|${MONGODB_CA_FILE_PATH}|g" ${MONGODB_CONF_FILE_PATH}
 sed -i "s|MONGODB_CRL_FILE_PATH|${MONGODB_CRL_FILE_PATH}|g" ${MONGODB_CONF_FILE_PATH}
-sed -i "s|REPLICA_SET_NAME|${REPLICA_SET_NAME}|g" ${MONGODB_CONF_FILE_PATH}
 if [ ! -z "$STORAGE_ENGINE_CACHE_SIZE" ]; then
   if [[ "$STORAGE_ENGINE_CACHE_SIZE" =~ ^[0-9]+(G|M|T)B$ ]]; then
     sed -i.bk "s|STORAGE_ENGINE_CACHE_SIZE|${STORAGE_ENGINE_CACHE_SIZE}|g" ${MONGODB_CONF_FILE_PATH}

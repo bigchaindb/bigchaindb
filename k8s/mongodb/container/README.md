@@ -21,7 +21,6 @@ docker run \
   bigchaindb/mongodb:<version of container> \
   --mongodb-port <mongod port number for external connections> \
   --mongodb-key-file-path /mongo-ssl/<private key file name>.pem \
-  --mongodb-key-file-password <password for the private key file> \
   --mongodb-ca-file-path /mongo-ssl/<ca certificate file name>.crt \
   --mongodb-crl-file-path /mongo-ssl/<crl certificate file name>.pem \
   --mongodb-fqdn <fully qualified domain name of this instance> \

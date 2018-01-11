@@ -15,14 +15,14 @@ spec:
   ports:
   - port: "<cluster-frontend-port from ConfigMap>"
     targetPort: "<cluster-frontend-port from ConfigMap>"
-    name: public-secure-cluster-port
+    name: public-cluster-port
     protocol: TCP
-  - port: "<mongodb-frontend-port from ConfigMap>"
-    targetPort: "<mongodb-frontend-port from ConfigMap>"
-    name: public-mdb-port
+  - port: "<tm-pub-key-access from ConfigMap>"
+    targetPort: "<tm-pub-key-access from ConfigMap>"
+    name: tm-pub-key-access
     protocol: TCP
-  - port: 80
-    targetPort: 80
-    name: public-insecure-cluster-port
+  - port: "<tm-p2p-port from ConfigMap>"
+    targetPort: "<tm-p2p-port from ConfigMap>"
     protocol: TCP
+    name: tm-p2p-port
   type: LoadBalancer

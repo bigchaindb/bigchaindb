@@ -17,12 +17,4 @@ spec:
     targetPort: "<cluster-frontend-port from ConfigMap>"
     name: public-cluster-port
     protocol: TCP
-  - port: "<tm-pub-key-access from ConfigMap>"
-    targetPort: "<tm-pub-key-access from ConfigMap>"
-    name: tm-pub-key-access
-    protocol: TCP
-  - port: "<tm-p2p-port from ConfigMap>"
-    targetPort: "<tm-p2p-port from ConfigMap>"
-    protocol: TCP
-    name: tm-p2p-port
   type: LoadBalancer
