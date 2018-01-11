@@ -1,4 +1,4 @@
-## Tendermint container used to consensus
+## Tendermint container used for BFT replication and consensus
 
 
 ### Step 1: Build and Push the Latest Container
