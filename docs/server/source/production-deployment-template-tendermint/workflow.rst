@@ -41,14 +41,19 @@ and buy an SSL/TLS certificate for the FQDN.
 Things Each Node Operator Must Do
 ---------------------------------
 
-- [ ] Use a standard and unique naming convention for all instances.
+Use a standard and unique naming convention for all instances.
 
-#. Name of the MongoDB instance (``mdb-instance-*``)
-#. Name of the BigchainDB instance (``bdb-instance-*``)
-#. Name of the NGINX instance (``ngx-http-instance-*`` or ``ngx-https-instance-*``)
-#. Name of the OpenResty instance (``openresty-instance-*``)
-#. Name of the MongoDB monitoring agent instance (``mdb-mon-instance-*``)
-#. Name of the Tendermint instance (``tendermint-instance-*``)
+☐ Name of the MongoDB instance (``mdb-instance-*``)
+
+☐ Name of the BigchainDB instance (``bdb-instance-*``)
+
+☐ Name of the NGINX instance (``ngx-http-instance-*`` or ``ngx-https-instance-*``)
+
+☐ Name of the OpenResty instance (``openresty-instance-*``)
+
+☐ Name of the MongoDB monitoring agent instance (``mdb-mon-instance-*``)
+
+☐ Name of the Tendermint instance (``tendermint-instance-*``)
 
 Example
 ^^^^^^^
