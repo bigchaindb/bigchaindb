@@ -16,7 +16,7 @@ You can modify them to suit your needs.
 
 We use SSL/TLS and self-signed certificates
 for MongoDB authentication (and message encryption).
-The certificates are signed by the organization managing the cluster.
+The certificates are signed by the organization managing the :ref:`bigchaindb-node`.
 If your organization already has a process
 for signing certificates
 (i.e. an internal self-signed certificate authority [CA]),
@@ -41,6 +41,8 @@ and buy an SSL/TLS certificate for the FQDN.
 Things Each Node Operator Must Do
 ---------------------------------
 
+- [ ] Use a standard and unique naming convention for all instances.
+
 #. Name of the MongoDB instance (``mdb-instance-*``)
 #. Name of the BigchainDB instance (``bdb-instance-*``)
 #. Name of the NGINX instance (``ngx-http-instance-*`` or ``ngx-https-instance-*``)
@@ -48,21 +50,64 @@ Things Each Node Operator Must Do
 #. Name of the MongoDB monitoring agent instance (``mdb-mon-instance-*``)
 #. Name of the Tendermint instance (``tendermint-instance-*``)
 
+Example
+^^^^^^^
 
-☐ Generate two keys and corresponding certificate signing requests (CSRs):
+.. code:: text
 
+  {
+    "MongoDB": [
+      "mdb-instance-1",
+      "mdb-instance-2",
+      "mdb-instance-3",
+      "mdb-instance-4"
+    ],
+    "BigchainDB": [
+      "bdb-instance-1",
+      "bdb-instance-2",
+      "bdb-instance-3",
+      "bdb-instance-4"
+    ],
+    "NGINX": [
+      "ngx-instance-1",
+      "ngx-instance-2",
+      "ngx-instance-3",
+      "ngx-instance-4"
+    ],
+    "OpenResty": [
+      "openresty-instance-1",
+      "openresty-instance-2",
+      "openresty-instance-3",
+      "openresty-instance-4"
+    ],
+    "MongoDB_Monitoring_Agent": [
+      "mdb-mon-instance-1",
+      "mdb-mon-instance-2",
+      "mdb-mon-instance-3",
+      "mdb-mon-instance-4"
+    ],
+    "Tendermint": [
+      "tendermint-instance-1",
+      "tendermint-instance-2",
+      "tendermint-instance-3",
+      "tendermint-instance-4"
+    ]
+  }
+
+
+☐ Generate three keys and corresponding certificate signing requests (CSRs):
+
+#. Server Certificate for the MongoDB instance
 #. Client Certificate for BigchainDB Server to identify itself to MongoDB
 #. Client Certificate for MongoDB Monitoring Agent to identify itself to MongoDB
 
-Ask the managing organization to use its self-signed CA to sign those four CSRs.
-They should send you:
+Use the self-signed CA to sign those three CSRs:
 
-* Two certificates (one for each CSR you sent them).
-* One ``ca.crt`` file: their CA certificate.
-* One ``crl.pem`` file: a certificate revocation list.
+* Three certificates (one for each CSR).
 
 For help, see the pages:
 
+* :doc:`How to Generate a Server Certificate for MongoDB <../production-deployment-template/server-tls-certificate>`
 * :doc:`How to Generate a Client Certificate for MongoDB <../production-deployment-template/client-tls-certificate>`
 
 ☐ Make up an FQDN for your BigchainDB node (e.g. ``mynode.mycorp.com``).

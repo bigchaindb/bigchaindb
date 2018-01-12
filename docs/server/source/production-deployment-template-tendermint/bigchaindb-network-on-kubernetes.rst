@@ -63,44 +63,44 @@ Lets assume we are deploying a 4 node cluster, your naming conventions could loo
 
 .. code::
 
-    {
+  {
     "MongoDB": [
-        "mdb-instance-1",
-        "mdb-instance-2",
-        "mdb-instance-3",
-        "mdb-instance-4"
+      "mdb-instance-1",
+      "mdb-instance-2",
+      "mdb-instance-3",
+      "mdb-instance-4"
     ],
     "BigchainDB": [
-        "bdb-instance-1",
-        "bdb-instance-2",
-        "bdb-instance-3",
-        "bdb-instance-4"
+      "bdb-instance-1",
+      "bdb-instance-2",
+      "bdb-instance-3",
+      "bdb-instance-4"
     ],
     "NGINX": [
-        "ngx-instance-1",
-        "ngx-instance-2",
-        "ngx-instance-3",
-        "ngx-instance-4"
+      "ngx-instance-1",
+      "ngx-instance-2",
+      "ngx-instance-3",
+      "ngx-instance-4"
     ],
     "OpenResty": [
-        "openresty-instance-1",
-        "openresty-instance-2",
-        "openresty-instance-3",
-        "openresty-instance-4"
+      "openresty-instance-1",
+      "openresty-instance-2",
+      "openresty-instance-3",
+      "openresty-instance-4"
     ],
     "MongoDB_Monitoring_Agent": [
-        "mdb-mon-instance-1",
-        "mdb-mon-instance-2",
-        "mdb-mon-instance-3",
-        "mdb-mon-instance-4"
+      "mdb-mon-instance-1",
+      "mdb-mon-instance-2",
+      "mdb-mon-instance-3",
+      "mdb-mon-instance-4"
     ],
     "Tendermint": [
-        "tendermint-instance-1",
-        "tendermint-instance-2",
-        "tendermint-instance-3",
-        "tendermint-instance-4"
+      "tendermint-instance-1",
+      "tendermint-instance-2",
+      "tendermint-instance-3",
+      "tendermint-instance-4"
     ]
-    }
+  }
 
 .. note::
 

@@ -48,7 +48,7 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.napoleon',
     'sphinxcontrib.httpdomain',
-    #'sphinx.ext.autosectionlabel',
+    'aafigure.sphinxext',
     # Below are actually build steps made to look like sphinx extensions.
     # It was the easiest way to get it running with ReadTheDocs.
     'generate_http_server_api_documentation',
