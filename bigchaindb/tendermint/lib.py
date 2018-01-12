@@ -41,10 +41,9 @@ class BigchainDB(Bigchain):
         # TODO: handle connection errors!
         requests.post(ENDPOINT, json=payload)
 
-    def write_transaction(self, transaction, **kwargs):
+    def write_transaction(self, transaction, **mode):
         # This method offers backward compatibility with the Web API.
         """Submit a valid transaction to the mempool."""
-        mode = kwargs
         self.post_transaction(transaction, mode)
 
     def store_transaction(self, transaction):

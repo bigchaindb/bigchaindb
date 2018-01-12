@@ -446,3 +446,5 @@ def test_post_transaction_invalid_mode(client):
     mode_endpoint = TX_ENDPOINT + '?mode=nope'
     response = client.post(mode_endpoint, data=json.dumps(tx.to_dict()))
     assert '400 BAD REQUEST' in response.status
+    assert 'Mode must be "async", "sync" or "commit"' ==\
+           json.loads(response.data.decode('utf8'))['message']['mode']
