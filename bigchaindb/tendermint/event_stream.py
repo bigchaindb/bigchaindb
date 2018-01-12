@@ -1,8 +1,8 @@
+import asyncio
 import json
 import logging
 import time
 
-import asyncio
 import aiohttp
 
 from bigchaindb.common.utils import gen_timestamp
