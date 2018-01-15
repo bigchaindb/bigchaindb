@@ -14,7 +14,7 @@ BDB_POD_SPEC = {}
 
 class Node():
 
-    def __init__(self, namespace='itest-setup', name=None, spec=BDB_POD_SPEC):
+    def __init__(self, namespace='default', name=None, spec=BDB_POD_SPEC):
         kubernetes.config.load_kube_config()
         config = kubernetes.client.Configuration()
         config.assert_hostname = False
@@ -29,8 +29,7 @@ class Node():
         pod.kind = 'Pod'
         pod.metadata = {"name": self.name}
         pod.spec = {"containers": [{"name": "tendermint",
-                                    "image": "busybox",
-                                    "command": ["sh", "-c", "echo Hello Kubernetes! && sleep 3600"]},
+                                    "image": "bdbt:v1"},
                                    {"name": "bigchaindb",
                                     "image": "busybox",
                                     "command": ["sh", "-c", "echo Hello Kubernetes! && sleep 3600"]}]}
@@ -81,15 +80,26 @@ class Node():
         else:
             return False
 
-    def _exec_command(self, container, command):
+    def stop_tendermint(self):
+        self._exec_command('tendermint', 'pkill tendermint')
+
+    def start_tendermint(self):
+        self._exec_command('tendermint', 'tendermint node --proxy_app=dummy', tty=True)
+
+    def reset_tendermint(self):
+        self.stop_tendermint()
+        self._exec_command('tendermint', 'tendermint unsafe_reset_all')
+        self.start_tendermint()
+
+    def _exec_command(self, container, command, stdout=True, tty=False):
         try:
-            exec_command = ['/bin/sh', '-c', command]
-            resp = stream(self.api_instance.connect_get_namespaced_pod_exec,
+            exec_command = ['/bin/bash', '-c', command]
+            resp = stream(self.api_instance.connect_post_namespaced_pod_exec,
                           self.name,
                           self.namespace,
                           container=container,
                           command=exec_command,
-                          stderr=True, stdin=False, stdout=True, tty=False)
+                          stderr=False, stdin=False, stdout=stdout, tty=tty)
             return resp
         except ApiException as e:
             print("Exception when executing command: %s\n" % e)
