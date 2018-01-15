@@ -76,7 +76,7 @@ def test_write_and_post_transaction(mock_post, b):
                     .sign([alice.private_key]).to_dict()
 
     tx = b.validate_transaction(tx)
-    b.write_transaction(tx, **{'mode': 'broadcast_tx_async'})
+    b.write_transaction(tx, 'broadcast_tx_async')
 
     assert mock_post.called
     args, kwargs = mock_post.call_args
@@ -87,9 +87,9 @@ def test_write_and_post_transaction(mock_post, b):
 
 @patch('requests.post')
 @pytest.mark.parametrize('mode', [
-    {'mode': 'broadcast_tx_async'},
-    {'mode': 'broadcast_tx_sync'},
-    {'mode': 'broadcast_tx_commit'}
+    'broadcast_tx_async',
+    'broadcast_tx_sync',
+    'broadcast_tx_commit'
 ])
 def test_post_transaction_valid_modes(mock_post, b, mode):
     from bigchaindb.models import Transaction
@@ -100,10 +100,10 @@ def test_post_transaction_valid_modes(mock_post, b, mode):
                             asset=None) \
         .sign([alice.private_key]).to_dict()
     tx = b.validate_transaction(tx)
-    b.write_transaction(tx, **mode)
+    b.write_transaction(tx, mode)
 
     args, kwargs = mock_post.call_args
-    assert mode['mode'] == kwargs['json']['method']
+    assert mode == kwargs['json']['method']
 
 
 def test_post_transaction_invalid_mode(b):
@@ -117,4 +117,4 @@ def test_post_transaction_invalid_mode(b):
         .sign([alice.private_key]).to_dict()
     tx = b.validate_transaction(tx)
     with pytest.raises(ValidationError):
-        b.write_transaction(tx, **{'mode': 'nope'})
+        b.write_transaction(tx, 'nope')

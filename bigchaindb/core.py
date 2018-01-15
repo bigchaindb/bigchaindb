@@ -77,7 +77,7 @@ class Bigchain(object):
     federation = property(lambda self: set(self.nodes_except_me + [self.me]))
     """ Set of federation member public keys """
 
-    def write_transaction(self, signed_transaction, **kwargs):
+    def write_transaction(self, signed_transaction):
         """Write the transaction to bigchain.
 
         When first writing a transaction to the bigchain the transaction will be kept in a backlog until
