@@ -84,6 +84,7 @@ install_requires = [
     'python-rapidjson-schema==0.1.1',
     'statsd==3.2.1',
     'abci~=0.3.0',
+    'yarl>=0.11,<1.0',
 ]
 
 setup(
