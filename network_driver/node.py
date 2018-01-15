@@ -28,8 +28,8 @@ class Node():
         pod.version = 'v1'
         pod.kind = 'Pod'
         pod.metadata = {"name": self.name}
-        pod.spec = {"containers": [{"name": "tendermint",
-                                    "image": "bdbt:v1"},
+        pod.spec = {"containers": [{"name": "tendermint", "image": "bdbt:v1"},
+                                   {"name": "mongodb", "image": "mongo:bdb"},
                                    {"name": "bigchaindb",
                                     "image": "busybox",
                                     "command": ["sh", "-c", "echo Hello Kubernetes! && sleep 3600"]}]}
@@ -90,6 +90,12 @@ class Node():
         self.stop_tendermint()
         self._exec_command('tendermint', 'tendermint unsafe_reset_all')
         self.start_tendermint()
+
+    def stop_db(self):
+        self._exec_command('mongodb', 'pkill mongod')
+
+    def start_db(self):
+        self._exec_command('mongodb', 'mongod', tty=True)
 
     def _exec_command(self, container, command, stdout=True, tty=False):
         try:

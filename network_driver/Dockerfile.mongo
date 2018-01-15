@@ -1,0 +1,6 @@
+FROM mongo:3.4.10
+WORKDIR /
+COPY mongo_entrypoint.sh mongo_entrypoint.sh
+VOLUME /tmp/bigchain/mongodb /data/db
+EXPOSE 27017
+ENTRYPOINT ["/bin/sh", "-c", "./mongo_entrypoint.sh"]
