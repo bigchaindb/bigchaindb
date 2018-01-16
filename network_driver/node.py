@@ -1,20 +1,32 @@
 import json
 import time
 import uuid
+import copy
 
 import kubernetes
-# import kubernetes.client
 from kubernetes.client.rest import ApiException
 from kubernetes.stream import stream
 
 
 # TODO: create a default pod spec of BDB
-BDB_POD_SPEC = {}
+MONGODB_SPEC = {"name": "mongodb",
+                "image": "mongodb:bdb-itest"}
+TENDERMINT_SPEC = {"name": "tendermint",
+                   "image": "tendermint:bdb-itest",
+                   "command": ["/bin/bash"],
+                   "args": ["-c",  "./tendermint_entrypoint.sh '{}' '{}'"],
+                   "ports": [{"containerPort": 46656},
+                             {"containerPort": 46657}]}
+BIGCHAINDB_SPEC = {"name": "bigchaindb",
+                   "image": "bigchaindb:bdb-itest",
+                   "ports": [{"containerPort": 9984}]}
 
 
 class Node():
 
-    def __init__(self, namespace='default', name=None, spec=BDB_POD_SPEC):
+    def __init__(self, tendermint_priv_validator=None, tendermint_genesis=None,
+                 namespace='default', name=None):
+
         kubernetes.config.load_kube_config()
         config = kubernetes.client.Configuration()
         config.assert_hostname = False
@@ -28,12 +40,16 @@ class Node():
         pod.version = 'v1'
         pod.kind = 'Pod'
         pod.metadata = {"name": self.name}
-        pod.spec = {"containers": [{"name": "mongodb",
-                                    "image": "mongodb:bdb-itest"},
-                                   {"name": "tendermint",
-                                    "image": "tendermint:bdb-itest"},
-                                   {"name": "bigchaindb",
-                                    "image": "bigchaindb:bdb-itest"}]}
+
+        tendermint_spec = copy.deepcopy(TENDERMINT_SPEC)
+        [arg, command] = tendermint_spec["args"]
+        command = command.format(json.dumps(tendermint_priv_validator),
+                                 json.dumps(tendermint_genesis))
+        tendermint_spec["args"] = [arg, command]
+
+        pod.spec = {"containers": [MONGODB_SPEC,
+                                   tendermint_spec,
+                                   BIGCHAINDB_SPEC]}
         self.pod = pod
 
     def start(self, return_after_running=True):
@@ -41,7 +57,7 @@ class Node():
         try:
             self.api_instance.create_namespaced_pod(self.namespace, self.pod)
             if return_after_running:
-                for i in range(1, 20):
+                for i in range(1, 3600):
                     if self.is_running:
                         break
                     time.sleep(1)
@@ -60,6 +76,14 @@ class Node():
                     if not self.is_running:
                         break
                     time.sleep(1)
+
+    def reset(self):
+        self.stop_tendermint()
+        self.stop_bigchaindb()
+        self._exec_command('tendermint', 'tendermint unsafe_reset_all')
+        self._exec_command('bigchaindb', 'bigchaindb -y drop')
+        self.start_tendermint()
+        self.start_bigchaindb()
 
     @property
     def is_running(self):
