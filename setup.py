@@ -80,10 +80,9 @@ install_requires = [
     'multipipes~=0.1.0',
     'jsonschema~=2.5.1',
     'pyyaml~=3.12',
-    'aiohttp~=2.0',
+    'aiohttp~=2.3',
     'python-rapidjson-schema==0.1.1',
     'statsd==3.2.1',
-    'yarl>=0.11,<1.0',
 ]
 
 setup(
