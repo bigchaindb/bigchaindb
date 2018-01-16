@@ -6,6 +6,8 @@ from logging.handlers import SocketHandler
 
 from pytest import fixture, mark, raises
 
+pytestmark = mark.tendermint
+
 
 @fixture
 def reset_logging_config():

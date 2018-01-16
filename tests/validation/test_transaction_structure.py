@@ -14,6 +14,8 @@ from bigchaindb.common.exceptions import (AmountError,
 from bigchaindb.models import Transaction
 
 
+pytestmark = pytest.mark.tendermint
+
 ################################################################################
 # Helper functions
 

@@ -6,6 +6,7 @@ import pytest
 
 import bigchaindb
 
+pytestmark = pytest.mark.tendermint
 
 ORIGINAL_CONFIG = copy.deepcopy(bigchaindb._config)
 
@@ -21,7 +22,7 @@ def clean_config(monkeypatch, request):
     monkeypatch.setattr('bigchaindb.config', original_config)
 
 
-def test_bigchain_instance_is_initialized_when_conf_provided(request):
+def test_bigchain_instance_is_initialized_when_conf_provided(request, bigchainClass):
     import bigchaindb
     from bigchaindb import config_utils
     assert 'CONFIGURED' not in bigchaindb.config
@@ -30,13 +31,13 @@ def test_bigchain_instance_is_initialized_when_conf_provided(request):
 
     assert bigchaindb.config['CONFIGURED'] is True
 
-    b = bigchaindb.Bigchain()
+    b = bigchainClass()
 
     assert b.me
     assert b.me_private
 
 
-def test_bigchain_instance_raises_when_not_configured(request, monkeypatch):
+def test_bigchain_instance_raises_when_not_configured(request, monkeypatch, bigchainClass):
     import bigchaindb
     from bigchaindb import config_utils
     from bigchaindb.common import exceptions
@@ -47,7 +48,7 @@ def test_bigchain_instance_raises_when_not_configured(request, monkeypatch):
     monkeypatch.setattr(config_utils, 'autoconfigure', lambda: 0)
 
     with pytest.raises(exceptions.KeypairNotFoundException):
-        bigchaindb.Bigchain()
+        bigchainClass()
 
 
 def test_load_consensus_plugin_loads_default_rules_without_name():
@@ -260,6 +261,24 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request, ssl_con
         'keyfile_passphrase': None
     }
 
+    database_localmongodb = {
+        'backend': 'localmongodb',
+        'host': DATABASE_HOST,
+        'port': DATABASE_PORT,
+        'name': DATABASE_NAME,
+        'connection_timeout': 5000,
+        'max_tries': 3,
+        'replicaset': None,
+        'ssl': False,
+        'login': None,
+        'password': None,
+        'ca_cert': None,
+        'certfile': None,
+        'keyfile': None,
+        'keyfile_passphrase': None,
+        'crlfile': None
+    }
+
     database = {}
     if DATABASE_BACKEND == 'mongodb':
         database = database_mongodb
@@ -267,6 +286,8 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request, ssl_con
         database = database_rethinkdb
     elif DATABASE_BACKEND == 'mongodb-ssl':
         database = database_mongodb_ssl
+    elif DATABASE_BACKEND == 'localmongodb':
+        database = database_localmongodb
 
     assert bigchaindb.config == {
         'CONFIGURED': True,

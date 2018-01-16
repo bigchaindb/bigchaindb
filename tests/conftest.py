@@ -310,9 +310,23 @@ def carol_pubkey(carol):
 
 
 @pytest.fixture
-def b():
-    from bigchaindb import Bigchain
-    return Bigchain()
+def bigchainClass(request):
+    if request.config.getoption('--database-backend') == 'localmongodb':
+        from bigchaindb.tendermint import BigchainDB
+        return BigchainDB
+    else:
+        from bigchaindb import Bigchain
+        return Bigchain
+
+
+@pytest.fixture
+def b(request):
+    if request.config.getoption('--database-backend') == 'localmongodb':
+        from bigchaindb.tendermint import BigchainDB
+        return BigchainDB()
+    else:
+        from bigchaindb import Bigchain
+        return Bigchain()
 
 
 @pytest.fixture
