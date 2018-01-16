@@ -31,7 +31,7 @@ services:
       - "9984"
     command: bigchaindb -l DEBUG start
   tendermint:
-    image: tendermint/tendermint
+    image: tendermint/tendermint:0.13
     volumes:
       - ./tmdata:/tendermint
     entrypoint: ''
