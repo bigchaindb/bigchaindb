@@ -28,11 +28,12 @@ class Node():
         pod.version = 'v1'
         pod.kind = 'Pod'
         pod.metadata = {"name": self.name}
-        pod.spec = {"containers": [{"name": "tendermint", "image": "bdbt:v1"},
-                                   {"name": "mongodb", "image": "mongo:bdb"},
+        pod.spec = {"containers": [{"name": "mongodb",
+                                    "image": "mongodb:bdb-itest"},
+                                   {"name": "tendermint",
+                                    "image": "tendermint:bdb-itest"},
                                    {"name": "bigchaindb",
-                                    "image": "busybox",
-                                    "command": ["sh", "-c", "echo Hello Kubernetes! && sleep 3600"]}]}
+                                    "image": "bigchaindb:bdb-itest"}]}
         self.pod = pod
 
     def start(self, return_after_running=True):
@@ -96,6 +97,17 @@ class Node():
 
     def start_db(self):
         self._exec_command('mongodb', 'mongod', tty=True)
+
+    def start_bigchaindb(self):
+        self._exec_command('bigchaindb', 'bigchaindb start', tty=True)
+
+    def stop_bigchaindb(self):
+        self._exec_command('bigchaindb', 'pkill bigchaindb')
+
+    def reset_bigchaindb(self):
+        self.stop_bigchaindb()
+        self._exec_command('bigchaindb', 'bigchaindb -y drop')
+        self.start_bigchaindb()
 
     def _exec_command(self, container, command, stdout=True, tty=False):
         try:

@@ -1,6 +1,7 @@
 #!/bin/sh
 echo "Starting Tendermint"
 
-/go/bin/tendermint node --proxy_app=dummy &
+pkill tendermint
+/go/bin/tendermint node &
 
 sleep 3600
