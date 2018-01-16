@@ -18,7 +18,7 @@ services:
       - tendermint-one
     build:
       context: .
-      dockerfile: ./compose/bigchaindb-server/Dockerfile
+      dockerfile: ./Dockerfile
       args:
         backend: localmongodb
     volumes:
@@ -55,7 +55,7 @@ services:
       - tendermint-two
     build:
       context: .
-      dockerfile: ./compose/bigchaindb-server/Dockerfile
+      dockerfile: ./Dockerfile
       args:
         backend: localmongodb
     volumes:
@@ -92,7 +92,7 @@ services:
       - tendermint-three
     build:
       context: .
-      dockerfile: ./compose/bigchaindb-server/Dockerfile
+      dockerfile: ./Dockerfile
       args:
         backend: localmongodb
     volumes:
@@ -129,7 +129,7 @@ services:
       - tendermint-four
     build:
       context: .
-      dockerfile: ./compose/bigchaindb-server/Dockerfile
+      dockerfile: ./Dockerfile
       args:
         backend: localmongodb
     volumes:
@@ -164,7 +164,3 @@ services:
     volumes:
       - ./network/health-check.sh:/health-check.sh
     command: /bin/sh health-check.sh
-  driver:
-    build:
-      context: .
-      dockerfile: ./compose/bigchaindb-driver/Dockerfile

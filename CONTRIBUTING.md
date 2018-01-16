@@ -34,7 +34,7 @@ Familiarize yourself with how we do coding and documentation in the BigchainDB p
 
 ### Step 2 - Install some Dependencies
 
-Install MongoDB, Tendermint, and all of BigchainDB Server's dependencies. The [Quickstart page](https://docs.bigchaindb.com/projects/server/en/latest/quickstart.html) has some pointers. In fact, you could do everything in the Quickstart page short of installing BigchainDB with pip (since you will install from the source on GitHub), and you shouldn't run MongoDB or Tendermint yet.
+We recommend using `Docker` and `Docker Compose` based workflow for testing and development of bigchaindb. So the only dependencies you need to install are [Docker](https://docs.docker.com/engine/installation/) and [docker-compose](https://docs.docker.com/compose/install/) and [Docker Compose](https://docs.docker.com/compose/install/).
 
 ### Step 3 - Fork the bigchaindb/bigchaindb GitHub Repository
 
@@ -60,29 +60,27 @@ git fetch upstream
 git merge upstream/master
 ```
 
-### Step 6 - Install the Python module and the CLI
+### Step 6 - Build and Run
 
-To use and run the source code you just cloned from your fork, you need to install BigchainDB on your computer.
-The core of BigchainDB is a Python module you can install using the standard [Python packaging tools](http://python-packaging-user-guide.readthedocs.org/en/latest/).
-We highly suggest you use `pip` and `virtualenv` to manage your local development.
-If you need more information on how to do that, refer to the *Python Packaging User Guide* to [install `pip`](http://python-packaging-user-guide.readthedocs.org/en/latest/installing/#requirements-for-installing-packages) and to [create your first `virtualenv`](http://python-packaging-user-guide.readthedocs.org/en/latest/installing/#creating-virtual-environments).
-
-Once you have `pip` installed and (optionally) you are in a virtualenv, go to the root of the repository (i.e. where the `setup.py` file is), and type:
+To use and run the source code you just cloned from your fork for local development and testing. Run the following command to build a docker image from your cloned fork
 
 ```text
-pip install -e .[dev]
+docker-compose -f docker-compose.yml build
 ```
 
-This will install the `bigchaindb` Python module, the BigchainDB Server CLI, and all the dependencies useful for contributing to the development of BigchainDB.
-How? Let's split the command down into its components:
+NOTE: If you already ran the above command once you can just run `docker-compose -f docker-compose.yml build bdb` to speed up the build process for any subsequent builds
 
-* `pip` is the Python command to install packages
-* `install` tells pip to use the *install* action
-* `-e` installs a project in [editable mode](https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs)
-* `.` installs what's in the current directory
-* `[dev]` adds some [extra requirements](https://setuptools.readthedocs.io/en/latest/setuptools.html#declaring-extras-optional-features-with-their-own-dependencies) to the installation. (If you are curious, open `setup.py` and look for `dev` in the `extras_require` section.)
+Now you can run the `bdb` service (i.e. BigchainDB Server) you built above with the following command:
 
-Aside: An alternative to `pip install -e .[dev]` is `python setup.py develop`.
+```text
+docker-compose -f docker-compose.yml up bdb
+```
+
+The above command will start three containerized services i.e. mongodb, tendermint and bigchaindb. It will also detach to `bdb` service logs on your terminal. Now you will be able to access your bigchaindb server at `localhost:9984`
+
+Now you can detach the bigchaindb container with `Ctrl+C` and use the above two commands to re-build and run bigchaindb server again with latest code changes in your forked repo.
+
+NOTE: Once done with development you can stop and remove all running docker containers with `docker-compose -f docker-compose.yml rm -f -s`
 
 ### Step 7 - Create a New Branch for Each Bug/Feature
 
@@ -157,14 +155,6 @@ Before you submit a pull request, check that it meets these guidelines:
 1. The pull request should work for Python 3.5, and pass the flake8 check.
 1. Follow the pull request template when creating new PRs. The template will
    be inserted when you create a new pull request.
-
-### Tip: Upgrading All BigchainDB Dependencies
-
-Over time, your versions of the Python packages used by BigchainDB will get out of date. You can upgrade them using:
-
-```text
-pip install --upgrade -e .[dev]
-```
 
 ## Quick Links
 
