@@ -386,18 +386,19 @@ def text_search(conn, search, *, language='english', case_sensitive=False,
 
 @register_query(MongoDBConnection)
 def text_search_object(conn, search, text_score=False, limit=0):
+    aggregate = [
+            {'$match': search},
+            {'$lookup': { 'from': 'bigchain', 'localField': 'id', 'foreignField': 'block.transactions.id', 'as': 'block' }},
+            {'$project': {'_id': False, 'data': 1, 'id': 1, 'voters': {'$size': '$block.block.voters'}}}]
+
+    if limit > 0:
+        aggregate.append({'$limit': limit})
+
     cursor = conn.run(
         conn.collection('assets')
-        .find(search,
-              {'score': {'$meta': 'textScore'}, '_id': False})
-        .sort([('score', {'$meta': 'textScore'})])
-        .limit(limit))
+        .aggregate(aggregate))
 
-    if text_score:
-        return cursor
-
-    return (_remove_text_score(asset) for asset in cursor)
-
+    return cursor
 
 def _remove_text_score(asset):
     asset.pop('score', None)
