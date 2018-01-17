@@ -32,8 +32,8 @@ To compute it, 1) construct an :term:`associative array` ``d`` containing
 ``block.timestamp``, ``block.transactions``, ``block.node_pubkey``,
 ``block.voters``, and their values. 2) compute ``id = hash_of_aa(d)``.
 There's pseudocode for the ``hash_of_aa()`` function
-in the `IPDB Protocol documentation page about cryptographic hashes
-<https://the-ipdb-protocol.readthedocs.io/en/latest/crypto-hashes.html#computing-the-hash-of-an-associative-array>`_.
+in the `IPDB Transaction Spec page about cryptographic hashes
+<https://the-ipdb-transaction-spec.readthedocs.io/en/latest/common-operations/crypto-hashes.html#computing-the-hash-of-an-associative-array>`_.
 The result (``id``) is a string: the block ID.
 An example is ``"b60adf655932bf47ef58c0bfb2dd276d4795b94346b36cbb477e10d7eb02cea8"``
 
@@ -56,8 +56,8 @@ A list of the :ref:`transactions <The Transaction Model>` included in the block.
 
 The public key of the node that created the block.
 It's a string.
-See the `IPDB Protocol documentation page about cryptographic keys & signatures
-<https://the-ipdb-protocol.readthedocs.io/en/latest/crypto-keys-and-sigs.html>`_.
+See the `IPDB Transaction Spec page about cryptographic keys & signatures
+<https://the-ipdb-transaction-spec.readthedocs.io/en/latest/common-operations/crypto-keys-and-sigs.html>`_.
 
 
 **block.voters**
@@ -82,8 +82,8 @@ To compute that:
    where ``private_key`` is the node's private key
    (i.e. ``node_pubkey`` and ``private_key`` are a key pair). There's pseudocode
    for the ``sig_of_aa()`` function
-   on `the IPDB Protocol documentation page about cryptographic keys and signatures 
-   <https://the-ipdb-protocol.readthedocs.io/en/latest/crypto-keys-and-sigs.html#computing-the-signature-of-an-associative-array>`_.
+   on `the IPDB Transaction Spec page about cryptographic keys and signatures 
+   <https://the-ipdb-transaction-spec.readthedocs.io/en/latest/common-operations/crypto-keys-and-sigs.html#computing-the-signature-of-an-associative-array>`_.
 
 .. note::
 

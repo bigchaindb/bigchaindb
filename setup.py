@@ -32,6 +32,7 @@ dev_require = [
     'ipython',
     'watchdog',
     'logging_tree',
+    'pre-commit'
 ]
 
 docs_require = [
@@ -51,7 +52,6 @@ tests_require = [
     'hypothesis-regex',
     'pylint',
     'pytest>=3.0.0',
-    'pytest-catchlog>=1.2.2',
     'pytest-cov>=2.2.1',
     'pytest-mock',
     'pytest-xdist',
@@ -80,7 +80,7 @@ install_requires = [
     'multipipes~=0.1.0',
     'jsonschema~=2.5.1',
     'pyyaml~=3.12',
-    'aiohttp~=2.0',
+    'aiohttp~=2.3',
     'python-rapidjson-schema==0.1.1',
     'statsd==3.2.1',
 ]

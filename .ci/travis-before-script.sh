@@ -26,9 +26,8 @@ elif [[ "${BIGCHAINDB_DATABASE_BACKEND}" == mongodb && \
         --volume=${TRAVIS_BUILD_DIR}/tests/backend/mongodb-ssl/certs:/certs \
         mongo:3.4.4 \
         --replSet=bigchain-rs \
-        --sslAllowInvalidHostnames \
         --sslMode=requireSSL \
-        --sslCAFile=/certs/ca.crt \
+        --sslCAFile=/certs/ca-chain.cert.pem \
         --sslCRLFile=/certs/crl.pem \
-        --sslPEMKeyFile=/certs/test_mdb_ssl_cert_and_key.pem
+        --sslPEMKeyFile=/certs/local-mongo.pem
 fi

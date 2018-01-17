@@ -7,7 +7,8 @@ POISON_PILL = 'POISON_PILL'
 
 class EventTypes:
     """Container class that holds all the possible
-    events BigchainDB manages."""
+    events BigchainDB manages.
+    """
 
     # If you add a new Event Type, make sure to add it
     # to the docs in docs/server/source/event-plugin-api.rst
