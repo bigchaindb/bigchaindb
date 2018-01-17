@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # build mongodb image
-docker build -t mongodb:bdb -f Dockerfile.mongo .
+docker build -t mongodb:bdb-itest -f Dockerfile.mongo .
 
 # build mongodb image
-docker build -t tendermint:bdb -f Dockerfile.tendermint .
+docker build -t tendermint:bdb-itest -f Dockerfile.tendermint .
 
-# build bigchaindb image
-docker build -t bigchaindb:itest -f ../Dockerfile.itest .
+# build bigchaindb image (execute in parent directory)
+cd .. && docker build -t bigchaindb:bdb-itest -f Dockerfile.itest .

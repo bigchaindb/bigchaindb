@@ -42,7 +42,8 @@ class Network():
 
         nodes_online = 0
         while concurrent:
-            if nodes_online == n:
+            print("Online nodes::", nodes_online)
+            if nodes_online >= n:
                 break
 
             for i in range(0, n):
@@ -52,11 +53,28 @@ class Network():
             time.sleep(1)
 
     def stop(self, n=None):
+        """ Stop n nodes are stopped """
         if n is None:
             n = self.max_size
 
+        n = min(n, self.max_size)
         for i in range(0, n):
             self.nodes[i].stop()
+
+    def ensure_connected(self):
+        """Ensure that running nodes are connected"""
+        online_nodes = []
+        for i in range(0, self.max_size):
+            if self.nodes[i].is_running:
+                online_nodes.append(self.nodes[i])
+
+        for i in range(0, len(online_nodes)):
+            seeds = []
+            for j in range(i+1, len(online_nodes)):
+                seeds.append(online_nodes[j].tendermint_uri)
+
+            if len(seeds):
+                online_nodes[i].dial_seeds(seeds)
 
 
 def load_validators(count):

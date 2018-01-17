@@ -7,6 +7,8 @@ import kubernetes
 from kubernetes.client.rest import ApiException
 from kubernetes.stream import stream
 
+TENDERMINT_PORT = 46656
+
 
 # TODO: create a default pod spec of BDB
 MONGODB_SPEC = {"name": "mongodb",
@@ -25,13 +27,14 @@ BIGCHAINDB_SPEC = {"name": "bigchaindb",
 class Node():
 
     def __init__(self, tendermint_priv_validator=None, tendermint_genesis=None,
-                 namespace='default', name=None):
+                 namespace='default', name=None, seeds=[]):
 
         kubernetes.config.load_kube_config()
         config = kubernetes.client.Configuration()
         config.assert_hostname = False
         kubernetes.client.Configuration.set_default(config)
 
+        self.seeds = seeds
         self.api_instance = kubernetes.client.CoreV1Api(kubernetes.client.ApiClient(config))
         self.namespace = namespace
         self.name = name or uuid.uuid4().hex
@@ -99,9 +102,21 @@ class Node():
 
     @property
     def uri(self):
+        self.ip
+
+    @property
+    def ip(self):
         if self.is_running:
             resp = self.api_instance.read_namespaced_pod(self.name, self.namespace, exact=True)
             return resp.status.pod_ip
+        else:
+            return False
+
+    @property
+    def tendermint_uri(self):
+        ip = self.ip
+        if ip:
+            return '{}:{}'.format(ip, TENDERMINT_PORT)
         else:
             return False
 
@@ -109,7 +124,9 @@ class Node():
         self._exec_command('tendermint', 'pkill tendermint')
 
     def start_tendermint(self):
-        self._exec_command('tendermint', 'tendermint node --proxy_app=dummy', tty=True)
+        seeds = ",".join(self.seeds)
+        command = 'tendermint node --p2p.seeds "{}"'.format(seeds)
+        self._exec_command('tendermint', command, tty=True)
 
     def reset_tendermint(self):
         self.stop_tendermint()
@@ -145,6 +162,11 @@ class Node():
             return resp
         except ApiException as e:
             print("Exception when executing command: %s\n" % e)
+
+    def dial_seeds(self, seeds):
+        self.seeds = seeds
+        self.stop_tendermint()
+        self.start_tendermint()
 
     def _create_namespace(self, namespace):
         namespace_spec = kubernetes.client.V1Namespace()

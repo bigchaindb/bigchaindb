@@ -1,6 +1,6 @@
 FROM tendermint/tendermint:develop
 WORKDIR /
-COPY ./tnode1 /tendermint
+COPY ./tnode /tendermint
 COPY tendermint_entrypoint.sh tendermint_entrypoint.sh
 VOLUME /tmp/bigchain/tendermint /tendermint_node_data
 EXPOSE 46656 46657
