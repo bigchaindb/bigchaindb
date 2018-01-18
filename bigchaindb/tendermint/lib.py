@@ -131,7 +131,7 @@ class BigchainDB(Bigchain):
             transactions = backend.query.get_transactions(self.connection, block['transactions'])
             transactions = Transaction.from_db(self, transactions)
 
-            block = {'id': block['height'],
+            block = {'height': block['height'],
                      'transactions': []}
             block_txns = block['transactions']
             for txn in transactions:
@@ -146,11 +146,6 @@ class BigchainDB(Bigchain):
             return block, status
         else:
             return block
-
-        # if include_status:
-        #     return block, self.BLOCK_VALID
-        # else:
-        #     return block
 
     def validate_transaction(self, tx):
         """Validate a transaction against the current status of the database."""

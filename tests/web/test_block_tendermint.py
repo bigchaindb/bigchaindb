@@ -22,7 +22,7 @@ def test_get_block_endpoint(tb, client):
     b.store_block(block._asdict())
 
     res = client.get(BLOCKS_ENDPOINT + str(block.height))
-    expected_response = {'id': block.height, 'transactions': [tx.to_dict()]}
+    expected_response = {'height': block.height, 'transactions': [tx.to_dict()]}
     assert res.json == expected_response
     assert res.status_code == 200
 

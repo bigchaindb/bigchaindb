@@ -581,12 +581,12 @@ The `votes endpoint <#votes>`_ contains all the voting information for a specifi
 Blocks
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. http:get:: /api/v1/blocks/{block_id}
+.. http:get:: /api/v1/blocks/{block_height}
 
-   Get the block with the ID ``block_id``.
+   Get the block with the height ``block_height``.
 
-   :param block_id: block ID
-   :type block_id: string
+   :param block_height: block ID
+   :type block_height: string
 
    **Example request**:
 
@@ -602,7 +602,7 @@ Blocks
    :resheader Content-Type: ``application/json``
 
    :statuscode 200: A block with that ID was found.
-   :statuscode 400: The request wasn't understood by the server, e.g. just requesting ``/blocks`` without the ``block_id``.
+   :statuscode 400: The request wasn't understood by the server, e.g. just requesting ``/blocks`` without the ``block_height``.
    :statuscode 404: A block with that ID was not found.
 
 
