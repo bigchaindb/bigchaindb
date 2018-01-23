@@ -4,7 +4,7 @@ import uuid
 import copy
 import time
 
-from node import Node
+from .node import Node
 
 CHAIN_GENESIS = {"genesis_time": "0001-01-01T00:00:00Z",
                  "chain_id": "",

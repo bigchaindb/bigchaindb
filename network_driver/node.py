@@ -2,13 +2,14 @@ import json
 import time
 import uuid
 import copy
+import requests
 
 import kubernetes
 from kubernetes.client.rest import ApiException
 from kubernetes.stream import stream
 
 TENDERMINT_PORT = 46656
-
+TENDERMINT_HTTP_PORT = 46657
 
 # TODO: create a default pod spec of BDB
 MONGODB_SPEC = {"name": "mongodb",
@@ -120,6 +121,14 @@ class Node():
         else:
             return False
 
+    @property
+    def tendermint_http_uri(self):
+        ip = self.ip
+        if ip:
+            return 'http://{}:{}'.format(ip, TENDERMINT_HTTP_PORT)
+        else:
+            return False
+
     def stop_tendermint(self):
         self._exec_command('tendermint', 'pkill tendermint')
 
@@ -167,6 +176,11 @@ class Node():
         self.seeds = seeds
         self.stop_tendermint()
         self.start_tendermint()
+
+    def get_peers(self):
+        uri = '{}/net_info'.format(self.tendermint_http_uri)
+        r = requests.get(uri)
+        return r.json()['result']['peers']
 
     def _create_namespace(self, namespace):
         namespace_spec = kubernetes.client.V1Namespace()

@@ -84,6 +84,7 @@ install_requires = [
     'python-rapidjson-schema==0.1.1',
     'statsd==3.2.1',
     'abci~=0.3.0',
+    'kubernetes~=4.0.0',
 ]
 
 setup(
