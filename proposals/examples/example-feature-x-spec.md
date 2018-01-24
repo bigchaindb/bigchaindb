@@ -1,8 +1,6 @@
-Example
-=======
+# Example
 
-Feature X: Design specification document
-----------------------------------------
+## Feature X: Design specification document
 
 Introduction paragraph - A simple explanation of what are we trying to accomplish with this feature.
 Should be simple enough that even novice users/developers can understand. Ideally, this paragraph
@@ -11,34 +9,29 @@ should be made part of the feature PR(Pull Request).
   * If you want to provide a diagram with your specification document, please use
     ascii diagrams (plain text).
     
-    * `asciiflow <http://asciiflow.com/>`_ is a good tool to get started.
+    * [asciiflow](http://asciiflow.com/) is a good tool to get started.
 
   * **TODO:** We will add more guidelines on the formatting later.
 
-.. note::
+>  **Note**  
+>  * If any of the sections mentioned in this example is not applicable to your feature.
+>  * Please add **None** under that section, instead of removing the heading/section.
 
-    If any of the sections mentioned in this example is not applicable to your feature.
-    Please add **None** under that section, instead of removing the heading/section.
-
-Problem Description
--------------------
+### Problem Description
 
 A detailed description of the problem that we are trying to solve.
 
-Use Cases
-^^^^^^^^^
+### Use Cases
 
 What use cases does this feature address? Impact on actors i.e. Developer, Consumer/User, Deployer etc.
 
-Proposed Change
----------------
+### Proposed Change
 
 A detailed description of how you are proposing to solve the problem statement and the scope of this effort.
 
 * You can also include the architecture diagram in this section.
 
-    .. code:: text
-
+```text
         Sample architecture diagram
 
         +------------+                 +----------------------+
@@ -51,12 +44,12 @@ A detailed description of how you are proposing to solve the problem statement a
         +------------+                 +----------------------+
 
         Old Architecture               New Architecture
+```
 
   
 
 
-Alternatives
-^^^^^^^^^^^^
+#### Alternatives
 
   * Are there any other ways in which you can address this problem statement? 
   * What are they?
@@ -64,8 +57,7 @@ Alternatives
 
 Try to keep this short and precise, no need for a deep comparative analysis.
 
-Data model impact
-^^^^^^^^^^^^^^^^^
+### Data model impact
 
 Will the feature modify the data model? If yes, how? Please cover all the details regarding the impact.
 
@@ -74,8 +66,8 @@ Will the feature modify the data model? If yes, how? Please cover all the detail
   * Database migrations? i.e. if there are existing deployments/instances, how will be modify/update
     them?
 
-API impact
-^^^^^^^^^^
+### API impact
+
 
 Details about the impacted APIs and covering each API method.
 
@@ -94,7 +86,7 @@ Sample request/reponses:
 
 Create Request:
 
-    .. code:: text
+```json
 
       POST /api/v1/newfeature/
       {
@@ -112,10 +104,10 @@ Create Request:
             "key-2": "value",
         }
       }
+```
 
 
-Security impact
-^^^^^^^^^^^^^^^
+### Security impact
 
 Does the feature have an impact on the existing system?
 
@@ -125,8 +117,7 @@ Does the feature have an impact on the existing system?
   * Crypto changes?
 
 
-Performance impact
-^^^^^^^^^^^^^^^^^^
+### Performance impact
 
 Does this feature have an impact on the performance of the existing system?
 
@@ -136,13 +127,11 @@ Things to consider:
   * Database queries. 
   * Locking? Concurrency? Change in the existing behavior?
 
-End user impact
-^^^^^^^^^^^^^^^
+### End user impact
 
 Besides the API, does this change impact any of the drivers? How?
 
-Deployment impact
-^^^^^^^^^^^^^^^^^
+### Deployment impact
 
 Does this feature affect how we deploy BigchainDB/IPDB clusters? 
 
@@ -153,13 +142,11 @@ Things to consider:
   * How to deploy?(working samples/documentation)
   * Will this impact CI, once this is merged? 
 
-Documentation impact
-^^^^^^^^^^^^^^^^^^^^
+### Documentation impact
 
 What is the impact of this feature on documentation? 
 
-Testing impact
-^^^^^^^^^^^^^^
+### Testing impact
 
 Please, discuss the impact on existing testing framework and how this feature should be tested.
 
@@ -169,42 +156,35 @@ Things to consider:
   * Any specific scenarios that need to be tested?
   * Any limitations in the current test infrastructure to test this feature?
 
-Implementation
---------------
+### Implementation
 
-Assignee(s)
-^^^^^^^^^^^
+#### Assignee(s)
+
 Resource(s) working on this feature and there roles e.g.
 
-Primary assignee(s):
-  <github-profile OR Name>
+Primary assignee(s): *github-profile OR Name*
 
-Other contributor(s):
-  <github-profile OR Name>
+Other contributor(s): *github-profile OR Name*
 
-Action Items
-^^^^^^^^^^^^
+#### Action Items
 
 Action items or tasks - breaking the feature into sprints or smaller tickets if possible.
 Add links to tickets if possible. Update the design specification if something pops up later
 in the development cycle.
 
-Targeted Release
-^^^^^^^^^^^^^^^^
+#### Targeted Release
 
 Targeted release version, if known. 
 
 e.g. **3.0**
 
-Dependencies
-------------
+### Dependencies
 
   * If any project(s)/effort(s) depend on this change or related to.
   * If this feature depends on functionality from another change/feature.
   * Any library dependencies? Or versioning?
 
-Reference(s)
-------------
+### Reference(s)
 
 Please add useful reference(s) here.
 
