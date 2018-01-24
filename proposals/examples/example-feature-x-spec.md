@@ -84,7 +84,7 @@ Following details about each method should be covered:
 
 Sample request/reponses:
 
-Create Request:
+**Create Request**
 
 ```json
 
