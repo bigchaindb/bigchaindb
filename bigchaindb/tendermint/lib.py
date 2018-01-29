@@ -19,15 +19,21 @@ logger = logging.getLogger(__name__)
 TENDERMINT_HOST = getenv('TENDERMINT_HOST', 'localhost')
 TENDERMINT_PORT = getenv('TENDERMINT_PORT', '46657')
 ENDPOINT = 'http://{}:{}/'.format(TENDERMINT_HOST, TENDERMINT_PORT)
+MODE_LIST = ('broadcast_tx_async',
+             'broadcast_tx_sync',
+             'broadcast_tx_commit')
 
 
 class BigchainDB(Bigchain):
 
-    def post_transaction(self, transaction):
+    def post_transaction(self, transaction, mode):
         """Submit a valid transaction to the mempool."""
+        if not mode or mode not in MODE_LIST:
+            raise ValidationError(('Mode must be one of the following {}.')
+                                  .format(', '.join(MODE_LIST)))
 
         payload = {
-            'method': 'broadcast_tx_async',
+            'method': mode,
             'jsonrpc': '2.0',
             'params': [encode_transaction(transaction.to_dict())],
             'id': str(uuid4())
@@ -35,11 +41,10 @@ class BigchainDB(Bigchain):
         # TODO: handle connection errors!
         requests.post(ENDPOINT, json=payload)
 
-    def write_transaction(self, transaction):
+    def write_transaction(self, transaction, mode):
         # This method offers backward compatibility with the Web API.
         """Submit a valid transaction to the mempool."""
-
-        self.post_transaction(transaction)
+        self.post_transaction(transaction, mode)
 
     def store_transaction(self, transaction):
         """Store a valid transaction to the transactions collection."""

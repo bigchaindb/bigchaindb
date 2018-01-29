@@ -124,11 +124,20 @@ Transactions
    :statuscode 400: The request wasn't understood by the server, e.g. the ``asset_id`` querystring was not included in the request.
 
 
-.. http:post:: /api/v1/transactions
+.. http:post:: /api/v1/transactions?mode={mode}
 
-   Push a new transaction.
+   Tendermint offers a `broadcast API
+   <http://tendermint.readthedocs.io/projects/tools/en/master/using-tendermint.html#broadcast-api>`_ with three different modes to post transactions.
+   By setting the mode, a new transaction can be pushed with a different mode than the default. The default mode is ``async``, which
+   will return immediately and not wait to see if the transaction is valid. The ``sync`` mode will return after the transaction is validated, while ``commit``
+   returns after the transaction is committed to a block.
 
    .. note::
+
+       This option is only available when using BigchainDB with Tendermint. 
+
+   .. note::
+   
        The posted `transaction
        <https://docs.bigchaindb.com/projects/server/en/latest/data-models/transaction-model.html>`_
        should be structurally valid and not spending an already spent output.
@@ -136,6 +145,8 @@ Transactions
        One would normally use a driver such as the `BigchainDB Python Driver
        <https://docs.bigchaindb.com/projects/py-driver/en/latest/index.html>`_
        to build a valid transaction.
+
+   :query string mode: (Optional) One of the three supported modes to send a transaction: ``async``, ``sync``, ``commit``.
 
    **Example request**:
 
@@ -160,6 +171,11 @@ Transactions
 
    :statuscode 202: The pushed transaction was accepted in the ``BACKLOG``, but the processing has not been completed.
    :statuscode 400: The transaction was malformed and not accepted in the ``BACKLOG``.
+
+
+.. http:post:: /api/v1/transactions
+
+   This endpoint (without any parameters) will push a new transaction. If BigchainDB is used with Tendermint, the default mode ``async`` is used.
 
 
 Transaction Outputs

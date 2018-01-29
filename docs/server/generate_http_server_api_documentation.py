@@ -58,7 +58,7 @@ Content-Type: application/json
 """
 
 TPLS['post-tx-request'] = """\
-POST /api/v1/transactions/ HTTP/1.1
+POST /api/v1/transactions?mode=async HTTP/1.1
 Host: example.com
 Content-Type: application/json
 
