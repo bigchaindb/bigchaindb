@@ -29,6 +29,16 @@ def decouple_assets(b, block):
     return block_dict
 
 
+def decouple_metadata(b, block, block_dict):
+    # the block comming from the database does not contain the metadata
+    # so we need to pass the block without the metadata and store the metadata
+    # so that the voting pipeline can reconstruct it
+    metadata, block_dict = block.decouple_metadata(block_dict)
+    if metadata:
+        b.write_metadata(metadata)
+    return block_dict
+
+
 DUMMY_SHA3 = '0123456789abcdef' * 4
 
 
@@ -89,6 +99,7 @@ def test_vote_validate_block(b):
     tx = dummy_tx(b)
     block = b.create_block([tx])
     block_dict = decouple_assets(b, block)
+    block_dict = decouple_metadata(b, block, block_dict)
 
     vote_obj = vote.Vote()
     validation = vote_obj.validate_block(block_dict)
@@ -230,6 +241,7 @@ def test_valid_block_voting_multiprocessing(b, genesis_block, monkeypatch):
 
     block = dummy_block(b)
     block_dict = decouple_assets(b, block)
+    block_dict = decouple_metadata(b, block, block_dict)
 
     inpipe.put(block_dict)
     vote_pipeline.start()
@@ -268,6 +280,7 @@ def test_valid_block_voting_with_create_transaction(b,
     monkeypatch.setattr('time.time', lambda: 1111111111)
     block = b.create_block([tx])
     block_dict = decouple_assets(b, block)
+    block_dict = decouple_metadata(b, block, block_dict)
 
     inpipe = Pipe()
     outpipe = Pipe()
@@ -365,6 +378,10 @@ def test_valid_block_voting_with_transfer_transactions(monkeypatch,
                                          vote2_doc['signature']) is True
 
 
+@pytest.mark.skip(
+    reason=('Needs important modification following issue #1891:'
+            'https://github.com/bigchaindb/bigchaindb/issues/1891')
+)
 @pytest.mark.bdb
 def test_unsigned_tx_in_block_voting(monkeypatch, b, user_pk, genesis_block):
     from bigchaindb.backend import query

@@ -29,7 +29,8 @@ class KeypairNotFoundException(BigchainDBError):
 
 class KeypairMismatchException(BigchainDBError):
     """Raised if the private key(s) provided for signing don't match any of the
-    current owner(s)"""
+    current owner(s)
+    """
 
 
 class OperationError(BigchainDBError):
@@ -55,7 +56,8 @@ class DoubleSpend(ValidationError):
 
 class InvalidHash(ValidationError):
     """Raised if there was an error checking the hash for a particular
-    operation"""
+    operation
+    """
 
 
 class SchemaValidationError(ValidationError):
@@ -64,7 +66,8 @@ class SchemaValidationError(ValidationError):
 
 class InvalidSignature(ValidationError):
     """Raised if there was an error checking the signature for a particular
-    operation"""
+    operation
+    """
 
 
 class ImproperVoteError(ValidationError):
@@ -77,7 +80,8 @@ class MultipleVotesError(ValidationError):
 
 class TransactionNotInValidBlock(ValidationError):
     """Raised when a transfer transaction is attempting to fulfill the
-    outputs of a transaction that is in an invalid or undecided block"""
+    outputs of a transaction that is in an invalid or undecided block
+    """
 
 
 class AssetIdMismatch(ValidationError):

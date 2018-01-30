@@ -10,6 +10,16 @@ The aim is to provide:
   [implementations](http://json-schema.org/implementations.html) written in
   different languages)
 
+## Sources
+
+The file defining the JSON Schema for votes (`vote.yaml`) is BigchainDB-specific.
+
+The files defining the JSON Schema for transactions (`transaction_*.yaml`)
+are copied from the [IPDB Protocol](https://github.com/ipdb/ipdb-protocol).
+If you want to add a new version, you must add it to the IPDB Protocol first.
+(You can't change existing versions. Those were used to validate old transactions
+and are needed to re-check those transactions.)
+
 ## Learn about JSON Schema
 
 A good resource is [Understanding JSON Schema](http://spacetelescope.github.io/understanding-json-schema/index.html).

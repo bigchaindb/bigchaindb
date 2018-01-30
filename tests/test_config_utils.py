@@ -150,7 +150,7 @@ def test_env_config(monkeypatch):
     assert result == expected
 
 
-def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request, certs_dir):
+def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request, ssl_context):
     # constants
     DATABASE_HOST = 'test-host'
     DATABASE_NAME = 'test-dbname'
@@ -191,10 +191,10 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request, certs_d
                                            'BIGCHAINDB_WSSERVER_ADVERTISED_PORT': WSSERVER_ADVERTISED_PORT,
                                            'BIGCHAINDB_KEYRING': KEYRING,
                                            'BIGCHAINDB_LOG_FILE': LOG_FILE,
-                                           'BIGCHAINDB_DATABASE_CA_CERT': certs_dir + '/ca.crt',
-                                           'BIGCHAINDB_DATABASE_CRLFILE': certs_dir + '/crl.pem',
-                                           'BIGCHAINDB_DATABASE_CERTFILE': certs_dir + '/test_bdb_ssl.crt',
-                                           'BIGCHAINDB_DATABASE_KEYFILE': certs_dir + '/test_bdb_ssl.key',
+                                           'BIGCHAINDB_DATABASE_CA_CERT': ssl_context.ca,
+                                           'BIGCHAINDB_DATABASE_CRLFILE': ssl_context.crl,
+                                           'BIGCHAINDB_DATABASE_CERTFILE': ssl_context.cert,
+                                           'BIGCHAINDB_DATABASE_KEYFILE': ssl_context.key,
                                            'BIGCHAINDB_DATABASE_KEYFILE_PASSPHRASE': None})
     else:
         monkeypatch.setattr('os.environ', {'BIGCHAINDB_DATABASE_NAME': DATABASE_NAME,
@@ -253,10 +253,10 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request, certs_d
         'ssl': True,
         'login': None,
         'password': None,
-        'ca_cert': certs_dir + '/ca.crt',
-        'crlfile': certs_dir + '/crl.pem',
-        'certfile': certs_dir + '/test_bdb_ssl.crt',
-        'keyfile': certs_dir + '/test_bdb_ssl.key',
+        'ca_cert': ssl_context.ca,
+        'crlfile': ssl_context.crl,
+        'certfile': ssl_context.cert,
+        'keyfile': ssl_context.key,
         'keyfile_passphrase': None
     }
 

@@ -25,13 +25,13 @@ class StandaloneApplication(gunicorn.app.base.BaseApplication):
     """
 
     def __init__(self, app, *, options=None):
-        '''Initialize a new standalone application.
+        """Initialize a new standalone application.
 
         Args:
             app: A wsgi Python application.
             options (dict): the configuration.
 
-        '''
+        """
         self.options = options or {}
         self.application = app
         super().__init__()

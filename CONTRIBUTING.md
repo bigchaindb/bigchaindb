@@ -118,6 +118,9 @@ git add new-or-changed-file-1
 git add new-or-changed-file-2
 git commit -m "Short description of new or changed things"
 ```
+We use [pre-commit](http://pre-commit.com/) which should be triggered with every commit. Some hooks will change files but others will give errors that needs to be fixed. Every time a hook is failing you need to add the changed files again.
+The hooks we use can be found in the [.pre-commit-config.yaml](https://github.com/bigchaindb/bigchaindb/blob/master/.pre-commit-config.yaml) file.
+
 
 You will want to merge changes from upstream (i.e. the original repository) into your new branch from time to time, using something like:
 ```text
@@ -147,6 +150,20 @@ If this is the first time you've submitted a pull request to BigchainDB, then yo
 Once you accept and submit the CLA, we'll email you with further instructions. (We will send you a long random string to put in the comments section of your pull request, along with the text, "I have read and agree to the terms of the BigchainDB Contributor License Agreement.")
 
 Someone will then merge your branch or suggest changes. If we suggest changes, you won't have to open a new pull request, you can just push new code to the same branch (on `origin`) as you did before creating the pull request.
+
+### Pull Request Guidelines
+
+Before you submit a pull request, check that it meets these guidelines:
+
+1. The pull request should include tests.
+2. If the pull request adds functionality, the docs should be updated. Put
+   your new functionality into a function with a docstring, and add the
+   feature to the list in README.rst.
+3. The pull request should work for Python 3.5, and pass the flake8 check.
+   Check https://travis-ci.org/bigchaindb/bigchaindb-driver/pull_requests
+   and make sure that the tests pass for all supported Python versions.
+4. Follow the pull request template while creating new PRs, the template will
+   be visible to you when you create a new pull request.
 
 ### Tip: Upgrading All BigchainDB Dependencies
 

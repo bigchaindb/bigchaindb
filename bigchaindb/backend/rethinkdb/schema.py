@@ -23,7 +23,7 @@ def create_database(connection, dbname):
 
 @register_schema(RethinkDBConnection)
 def create_tables(connection, dbname):
-    for table_name in ['bigchain', 'backlog', 'votes', 'assets']:
+    for table_name in ['bigchain', 'backlog', 'votes', 'assets', 'metadata']:
         logger.info('Create `%s` table.', table_name)
         connection.run(r.db(dbname).table_create(table_name))
 

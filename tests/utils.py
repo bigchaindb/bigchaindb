@@ -33,6 +33,7 @@ def flush_rethink_db(connection, dbname):
         connection.run(r.db(dbname).table('backlog').delete())
         connection.run(r.db(dbname).table('votes').delete())
         connection.run(r.db(dbname).table('assets').delete())
+        connection.run(r.db(dbname).table('metadata').delete())
     except r.ReqlOpFailedError:
         pass
 
@@ -43,6 +44,7 @@ def flush_mongo_db(connection, dbname):
     connection.conn[dbname].backlog.delete_many({})
     connection.conn[dbname].votes.delete_many({})
     connection.conn[dbname].assets.delete_many({})
+    connection.conn[dbname].metadata.delete_many({})
 
 
 @singledispatch

@@ -1,6 +1,5 @@
 ---
 "$schema": "http://json-schema.org/draft-04/schema#"
-id: "http://www.bigchaindb.com/schema/transaction.json"
 type: object
 additionalProperties: false
 title: Transaction Schema
@@ -14,7 +13,9 @@ required:
 - version
 properties:
   id:
-    "$ref": "#/definitions/sha3_hexdigest"
+    anyOf:
+    - "$ref": "#/definitions/sha3_hexdigest"
+    - type: 'null'
   operation:
     "$ref": "#/definitions/operation"
   asset:

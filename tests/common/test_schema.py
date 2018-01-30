@@ -1,5 +1,4 @@
-"""
-This module is tests related to schema checking, but _not_ of granular schematic
+"""This module is tests related to schema checking, but _not_ of granular schematic
 properties related to validation.
 """
 
@@ -23,8 +22,7 @@ UNSUPPORTED_CRYPTOCONDITION_TYPES = (
 # Test of schema utils
 
 def _test_additionalproperties(node, path=''):
-    """
-    Validate that each object node has additionalProperties set, so that
+    """Validate that each object node has additionalProperties set, so that
     objects with junk keys do not pass as valid.
     """
     if isinstance(node, list):

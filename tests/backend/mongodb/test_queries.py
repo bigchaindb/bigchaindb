@@ -308,14 +308,13 @@ def test_count_blocks(signed_create_tx):
     assert query.count_blocks(conn) == 1
 
 
-def test_count_backlog(signed_create_tx):
+def test_count_backlog(signed_create_tx, signed_transfer_tx):
     from bigchaindb.backend import connect, query
     conn = connect()
 
     # create and insert some transations
     conn.db.backlog.insert_one(signed_create_tx.to_dict())
-    signed_create_tx.metadata = {'msg': 'aaa'}
-    conn.db.backlog.insert_one(signed_create_tx.to_dict())
+    conn.db.backlog.insert_one(signed_transfer_tx.to_dict())
 
     assert query.count_backlog(conn) == 2
 
@@ -353,6 +352,7 @@ def test_get_genesis_block(genesis_block):
     conn = connect()
 
     assets, genesis_block_dict = genesis_block.decouple_assets()
+    metadata, genesis_block_dict = genesis_block.decouple_metadata(genesis_block_dict)
     assert query.get_genesis_block(conn) == genesis_block_dict
 
 
@@ -420,7 +420,8 @@ def test_get_new_blocks_feed(b, create_tx):
         ts = str(random.random())
         block = Block(transactions=[create_tx], timestamp=ts)
         b.write_block(block)
-        return block.decouple_assets()[1]
+        block_dict = block.decouple_assets()[1]
+        return block.decouple_metadata(block_dict)[1]
 
     create_block()
     b1 = create_block()
@@ -435,17 +436,21 @@ def test_get_new_blocks_feed(b, create_tx):
     assert list(feed) == [b3]
 
 
-def test_get_spending_transactions(user_pk):
+def test_get_spending_transactions(user_pk, user_sk):
     from bigchaindb.backend import connect, query
     from bigchaindb.models import Block, Transaction
     conn = connect()
 
     out = [([user_pk], 1)]
     tx1 = Transaction.create([user_pk], out * 3)
+    tx1.sign([user_sk])
     inputs = tx1.to_inputs()
     tx2 = Transaction.transfer([inputs[0]], out, tx1.id)
+    tx2.sign([user_sk])
     tx3 = Transaction.transfer([inputs[1]], out, tx1.id)
+    tx3.sign([user_sk])
     tx4 = Transaction.transfer([inputs[2]], out, tx1.id)
+    tx4.sign([user_sk])
     block = Block([tx1, tx2, tx3, tx4])
     conn.db.bigchain.insert_one(block.to_dict())
 
@@ -527,13 +532,14 @@ def test_get_assets():
     assert list(cursor.sort('id', pymongo.ASCENDING)) == assets[::2]
 
 
-def test_text_search():
+@pytest.mark.parametrize('table', ['assets', 'metadata'])
+def test_text_search(table):
     from bigchaindb.backend import connect, query
     conn = connect()
 
     # Example data and tests cases taken from the mongodb documentation
     # https://docs.mongodb.com/manual/reference/operator/query/text/
-    assets = [
+    objects = [
         {'id': 1, 'subject': 'coffee', 'author': 'xyz', 'views': 50},
         {'id': 2, 'subject': 'Coffee Shopping', 'author': 'efg', 'views': 5},
         {'id': 3, 'subject': 'Baking a cake', 'author': 'abc', 'views': 90},
@@ -545,17 +551,17 @@ def test_text_search():
     ]
 
     # insert the assets
-    conn.db.assets.insert_many(deepcopy(assets), ordered=False)
+    conn.db[table].insert_many(deepcopy(objects), ordered=False)
 
     # test search single word
-    assert list(query.text_search(conn, 'coffee')) == [
+    assert list(query.text_search(conn, 'coffee', table=table)) == [
         {'id': 1, 'subject': 'coffee', 'author': 'xyz', 'views': 50},
         {'id': 2, 'subject': 'Coffee Shopping', 'author': 'efg', 'views': 5},
         {'id': 7, 'subject': 'coffee and cream', 'author': 'efg', 'views': 10},
     ]
 
     # match any of the search terms
-    assert list(query.text_search(conn, 'bake coffee cake')) == [
+    assert list(query.text_search(conn, 'bake coffee cake', table=table)) == [
         {'author': 'abc', 'id': 3, 'subject': 'Baking a cake', 'views': 90},
         {'author': 'xyz', 'id': 1, 'subject': 'coffee', 'views': 50},
         {'author': 'xyz', 'id': 4, 'subject': 'baking', 'views': 100},
@@ -564,48 +570,48 @@ def test_text_search():
     ]
 
     # search for a phrase
-    assert list(query.text_search(conn, '\"coffee shop\"')) == [
+    assert list(query.text_search(conn, '\"coffee shop\"', table=table)) == [
         {'id': 2, 'subject': 'Coffee Shopping', 'author': 'efg', 'views': 5},
     ]
 
     # exclude documents that contain a term
-    assert list(query.text_search(conn, 'coffee -shop')) == [
+    assert list(query.text_search(conn, 'coffee -shop', table=table)) == [
         {'id': 1, 'subject': 'coffee', 'author': 'xyz', 'views': 50},
         {'id': 7, 'subject': 'coffee and cream', 'author': 'efg', 'views': 10},
     ]
 
     # search different language
-    assert list(query.text_search(conn, 'leche', language='es')) == [
+    assert list(query.text_search(conn, 'leche', language='es', table=table)) == [
         {'id': 5, 'subject': 'Café Con Leche', 'author': 'abc', 'views': 200},
         {'id': 8, 'subject': 'Cafe con Leche', 'author': 'xyz', 'views': 10}
     ]
 
     # case and diacritic insensitive search
-    assert list(query.text_search(conn, 'сы́рники CAFÉS')) == [
+    assert list(query.text_search(conn, 'сы́рники CAFÉS', table=table)) == [
         {'id': 6, 'subject': 'Сырники', 'author': 'jkl', 'views': 80},
         {'id': 5, 'subject': 'Café Con Leche', 'author': 'abc', 'views': 200},
         {'id': 8, 'subject': 'Cafe con Leche', 'author': 'xyz', 'views': 10}
     ]
 
     # case sensitive search
-    assert list(query.text_search(conn, 'Coffee', case_sensitive=True)) == [
+    assert list(query.text_search(conn, 'Coffee', case_sensitive=True, table=table)) == [
         {'id': 2, 'subject': 'Coffee Shopping', 'author': 'efg', 'views': 5},
     ]
 
     # diacritic sensitive search
-    assert list(query.text_search(conn, 'CAFÉ', diacritic_sensitive=True)) == [
+    assert list(query.text_search(conn, 'CAFÉ', diacritic_sensitive=True, table=table)) == [
         {'id': 5, 'subject': 'Café Con Leche', 'author': 'abc', 'views': 200},
     ]
 
     # return text score
-    assert list(query.text_search(conn, 'coffee', text_score=True)) == [
+    assert list(query.text_search(conn, 'coffee', text_score=True, table=table)) == [
         {'id': 1, 'subject': 'coffee', 'author': 'xyz', 'views': 50, 'score': 1.0},
         {'id': 2, 'subject': 'Coffee Shopping', 'author': 'efg', 'views': 5, 'score': 0.75},
         {'id': 7, 'subject': 'coffee and cream', 'author': 'efg', 'views': 10, 'score': 0.75},
     ]
 
     # limit search result
-    assert list(query.text_search(conn, 'coffee', limit=2)) == [
+    assert list(query.text_search(conn, 'coffee', limit=2, table=table)) == [
         {'id': 1, 'subject': 'coffee', 'author': 'xyz', 'views': 50},
         {'id': 2, 'subject': 'Coffee Shopping', 'author': 'efg', 'views': 5},
     ]

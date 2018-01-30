@@ -4,8 +4,7 @@ from bigchaindb.backend.exceptions import ConnectionError, OperationError
 
 
 class RethinkDBConnection(Connection):
-    """
-    This class is a proxy to run queries against the database, it is:
+    """This class is a proxy to run queries against the database, it is:
 
         - lazy, since it creates a connection only when needed
         - resilient, because before raising exceptions it tries

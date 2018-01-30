@@ -21,7 +21,7 @@ from bigchaindb.common.utils import validate_all_values_for_key
 
 logger = logging.getLogger(__name__)
 
-TABLES = ('bigchain', 'backlog', 'votes', 'assets')
+TABLES = ('bigchain', 'backlog', 'votes', 'assets', 'metadata')
 VALID_LANGUAGES = ('danish', 'dutch', 'english', 'finnish', 'french', 'german',
                    'hungarian', 'italian', 'norwegian', 'portuguese', 'romanian',
                    'russian', 'spanish', 'swedish', 'turkish', 'none',
