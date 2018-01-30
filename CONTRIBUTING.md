@@ -22,7 +22,7 @@ To prevent that situation, we ask that all pull requests should resolve, address
 
 When you submit a pull request, please mention the issue (or issues) that it resolves, e.g. "Resolves #123".
 
-**Note:** For feature request(s) or new feature(s), please consult our [feature contribution guidelines](./docs/specs/README.md).
+**Note:** For feature request(s) or new feature(s), please consult our [feature contribution guidelines](./proposals/README.md).
 
 **Exception(s):**
 - Hotfixes and minor changes don't require a pre-existing issue, but please write a thorough pull request description.

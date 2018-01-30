@@ -48,7 +48,7 @@ marked with `Spec` label.
 
 **Note:** Feature(s) cannot be backported. Hence, only commit your proposal to the latest release.
 
-[How do I write a design specification document?](examples/example-feature-x-spec.rst)
+[How do I write a design specification document?](examples/example-feature-x-spec.md)
 
 ## Almost there
 Once, you have submitted the design specification document:
