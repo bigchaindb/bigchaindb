@@ -37,6 +37,7 @@ def test_asset_is_separated_from_transaciton(b):
     assert b.get_transaction(tx.id) == tx
 
 
+@pytest.mark.bdb
 def test_get_latest_block(tb):
     from bigchaindb.tendermint.lib import Block
 

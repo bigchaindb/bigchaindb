@@ -3,7 +3,7 @@ import json
 import pytest
 
 
-pytestmark = pytest.mark.tendermint
+pytestmark = [pytest.mark.tendermint, pytest.mark.bdb]
 
 
 def encode_tx_to_bytes(transaction):
@@ -43,6 +43,7 @@ def test_check_tx__unsigned_create_is_error(b):
     assert result.is_error()
 
 
+@pytest.mark.bdb
 def test_deliver_tx__valid_create_updates_db(b):
     from bigchaindb.tendermint import App
     from bigchaindb.models import Transaction
@@ -56,8 +57,14 @@ def test_deliver_tx__valid_create_updates_db(b):
                     .sign([alice.private_key])
 
     app = App(b)
+    app.init_chain(["ignore"])
+    app.begin_block("ignore")
+
     result = app.deliver_tx(encode_tx_to_bytes(tx))
     assert result.is_ok()
+
+    app.end_block(99)
+    app.commit()
     assert b.get_transaction(tx.id).id == tx.id
 
 
@@ -74,8 +81,15 @@ def test_deliver_tx__double_spend_fails(b):
                     .sign([alice.private_key])
 
     app = App(b)
+    app.init_chain(["ignore"])
+    app.begin_block("ignore")
+
     result = app.deliver_tx(encode_tx_to_bytes(tx))
     assert result.is_ok()
+
+    app.end_block(99)
+    app.commit()
+
     assert b.get_transaction(tx.id).id == tx.id
     result = app.deliver_tx(encode_tx_to_bytes(tx))
     assert result.is_error()
@@ -87,6 +101,9 @@ def test_deliver_transfer_tx__double_spend_fails(b):
     from bigchaindb.common.crypto import generate_key_pair
 
     app = App(b)
+    app.init_chain(["ignore"])
+    app.begin_block("ignore")
+
     alice = generate_key_pair()
     bob = generate_key_pair()
     carly = generate_key_pair()
