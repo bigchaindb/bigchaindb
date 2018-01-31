@@ -586,7 +586,7 @@ Blocks
    Get the block with the height ``block_height``.
 
    :param block_height: block ID
-   :type block_height: string
+   :type block_height: integer
 
    **Example request**:
 

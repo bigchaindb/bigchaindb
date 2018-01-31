@@ -20,7 +20,7 @@ The JSON Keys in a Block
 **height**
 
 The block ``"height"`` (``integer``) denotes the height of the blockchain when the given block was committed.
-Since the blockchain height increases monotonically the height of block can be regarding as its id.
+Since the blockchain height increases monotonically the height of block can be regarded as its id.
 
 **NOTE**: The genesis block has height ``0``
 
