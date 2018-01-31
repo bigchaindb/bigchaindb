@@ -9,6 +9,7 @@ MONGODB_CRL_FILE_PATH=""
 REPLICA_SET_NAME=""
 MONGODB_FQDN=""
 MONGODB_IP=""
+STORAGE_ENGINE_CACHE_SIZE=""
 
 while [[ $# -gt 1 ]]; do
   arg="$1"
