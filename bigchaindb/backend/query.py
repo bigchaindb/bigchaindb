@@ -69,6 +69,20 @@ def get_transaction(connection, transaction_id):
 
 
 @singledispatch
+def get_transactions(connection, transaction_ids):
+    """Get transactions from the transactions table.
+
+    Args:
+        transaction_ids (list): list of transaction ids to fetch
+
+    Returns:
+        The result of the operation.
+    """
+
+    raise NotImplementedError
+
+
+@singledispatch
 def get_asset(connection, asset_id):
     """Get a transaction from the transactions table.
 

@@ -37,12 +37,15 @@ def test_asset_is_separated_from_transaciton(b):
     assert b.get_transaction(tx.id) == tx
 
 
-def test_get_latest_block(b):
+def test_get_latest_block(tb):
     from bigchaindb.tendermint.lib import Block
 
+    b = tb
     for i in range(10):
         app_hash = os.urandom(16).hex()
-        block = Block(app_hash=app_hash, height=i)._asdict()
+        txn_id = os.urandom(16).hex()
+        block = Block(app_hash=app_hash, height=i,
+                      transactions=[txn_id])._asdict()
         b.store_block(block)
 
     block = b.get_latest_block()

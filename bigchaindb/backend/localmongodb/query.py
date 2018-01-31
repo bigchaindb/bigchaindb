@@ -33,6 +33,17 @@ def get_transaction(conn, transaction_id):
 
 
 @register_query(LocalMongoDBConnection)
+def get_transactions(conn, transaction_ids):
+    try:
+        return conn.run(
+            conn.collection('transactions')
+            .find({'id': {'$in': transaction_ids}},
+                  projection={'_id': False}))
+    except IndexError:
+        pass
+
+
+@register_query(LocalMongoDBConnection)
 def store_metadata(conn, metadata):
     try:
         return conn.run(
@@ -153,3 +164,11 @@ def get_spending_transactions(conn, inputs):
             {'$project': {'_id': False}}
         ]))
     return cursor
+
+
+@register_query(LocalMongoDBConnection)
+def get_block(conn, block_id):
+    return conn.run(
+        conn.collection('blocks')
+        .find_one({'height': block_id},
+                  projection={'_id': False}))

@@ -116,6 +116,42 @@ class BigchainDB(Bigchain):
 
         return backend.query.get_latest_block(self.connection)
 
+    def get_block(self, block_id, include_status=False):
+        """Get the block with the specified `block_id` (and optionally its status)
+
+        Returns the block corresponding to `block_id` or None if no match is
+        found.
+
+        Args:
+            block_id (str): block id of the block to get
+            include_status (bool): also return the status of the block
+                       the return value is then a tuple: (block, status)
+        """
+        # get block from database
+        if isinstance(block_id, str):
+            block_id = int(block_id)
+
+        block = backend.query.get_block(self.connection, block_id)
+        if block:
+            transactions = backend.query.get_transactions(self.connection, block['transactions'])
+            transactions = Transaction.from_db(self, transactions)
+
+            block = {'height': block['height'],
+                     'transactions': []}
+            block_txns = block['transactions']
+            for txn in transactions:
+                block_txns.append(txn.to_dict())
+
+        status = None
+        if include_status:
+            # NOTE: (In Tendermint) a block is an abstract entity which
+            # exists only after it has been validated
+            if block:
+                status = self.BLOCK_VALID
+            return block, status
+        else:
+            return block
+
     def validate_transaction(self, tx):
         """Validate a transaction against the current status of the database."""
 
@@ -142,4 +178,4 @@ class BigchainDB(Bigchain):
         return fastquery.FastQuery(self.connection, self.me)
 
 
-Block = namedtuple('Block', ('app_hash', 'height'))
+Block = namedtuple('Block', ('app_hash', 'height', 'transactions'))
