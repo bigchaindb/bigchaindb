@@ -5,6 +5,8 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile-dev
+      args:
+        backend: mongodb
     volumes:
       - .:/usr/src/app/
     command: make -C docs/server html

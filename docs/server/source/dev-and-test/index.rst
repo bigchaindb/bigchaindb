@@ -11,3 +11,4 @@ This section outlines some ways that you could set up a minimal BigchainDB node 
    Using Vagrant <../appendices/run-with-vagrant>
    Using Ansible <../appendices/run-with-ansible>
    running-all-tests
+   troubleshooting
