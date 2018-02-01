@@ -7,16 +7,16 @@
 apiVersion: apps/v1beta1
 kind: StatefulSet
 metadata:
-  name: tendermint-instance-0-ss
+  name: tm-instance-0-ss
   namespace: default
 spec:
-  serviceName: tendermint-instance-0
+  serviceName: tm-instance-0
   replicas: 1
   template:
     metadata:
-      name: tendermint-instance-0-ss
+      name: tm-instance-0-ss
       labels:
-        app: tendermint-instance-0-ss
+        app: tm-instance-0-ss
     spec:
       restartPolicy: Always
       volumes:

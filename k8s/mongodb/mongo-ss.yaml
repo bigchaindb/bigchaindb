@@ -33,11 +33,6 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: status.podIP
-        - name: MONGODB_REPLICA_SET_NAME
-          valueFrom:
-            configMapKeyRef:
-             name: vars
-             key: mongodb-replicaset-name
         - name: MONGODB_PORT
           valueFrom:
             configMapKeyRef:
@@ -57,8 +52,6 @@ spec:
         - /etc/mongod/ca/ca.pem
         - --mongodb-crl-file-path
         - /etc/mongod/ca/crl.pem
-        - --replica-set-name
-        - $(MONGODB_REPLICA_SET_NAME)
         - --mongodb-fqdn
         - $(MONGODB_FQDN)
         - --mongodb-ip

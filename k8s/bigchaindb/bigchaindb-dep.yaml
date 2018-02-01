@@ -27,13 +27,11 @@ spec:
             configMapKeyRef:
               name: vars
               key: mongodb-backend-port
-        - name: BIGCHAINDB_DATABASE_REPLICASET
+        - name: BIGCHAINDB_DATABASE_BACKEND
           valueFrom:
             configMapKeyRef:
-              name: vars
-              key: mongodb-replicaset-name
-        - name: BIGCHAINDB_DATABASE_BACKEND
-          value: mongodb
+              name: bdb-config
+              key: bdb-db-backend
         - name: BIGCHAINDB_DATABASE_NAME
           valueFrom:
             configMapKeyRef:
@@ -69,13 +67,6 @@ spec:
             configMapKeyRef:
               name: vars
               key: bigchaindb-wsserver-advertised-scheme
-        - name: BIGCHAINDB_KEYPAIR_PUBLIC
-          valueFrom:
-            configMapKeyRef:
-              name: bdb-config
-              key: bdb-public-key
-        - name: BIGCHAINDB_KEYPAIR_PRIVATE
-          value: "<private key here>"
         - name: BIGCHAINDB_BACKLOG_REASSIGN_DELAY
           valueFrom:
             configMapKeyRef:
@@ -111,12 +102,23 @@ spec:
             configMapKeyRef:
               name: bdb-config
               key: bdb-user
-        # The following env var is not required for the bootstrap/first node
-        #- name: BIGCHAINDB_KEYRING
-        #   valueFrom:
-        #     configMapKeyRef:
-        #       name: bdb-config
-        #       key: bdb-keyring
+        - name: BIGCHAINDB_START_TENDERMINT
+          value: "0"
+        - name: TENDERMINT_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: tendermint-config
+              key: tm-instance-name
+        - name: TENDERMINT_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: tendermint-config
+              key: tm-rpc-port
+        command:
+        - bash
+        - "-c"
+        - |
+          bigchaindb -l DEBUG start
         ports:
         - containerPort: "<bigchaindb-api-port from ConfigMap>"
           protocol: TCP
@@ -124,6 +126,9 @@ spec:
         - containerPort: "<bigchaindb-ws-port from ConfigMap>"
           protocol: TCP
           name: bdb-ws-port
+        - containerPort: "<tm-abci-port from ConfigMap>"
+          protocol: TCP
+          name: tm-abci-port
         volumeMounts:
         - name: bdb-certs
           mountPath: /etc/bigchaindb/ssl/

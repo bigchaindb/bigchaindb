@@ -41,10 +41,6 @@ data:
   # in this cluster.
   mdb-mon-instance-name: "<name of the mdb monitoring agent instance>"
 
-  # mdb-bak-instance-name is the name of the MongoDB Backup Agent instance
-  # in this cluster.
-  mdb-bak-instance-name: "<name of the mdb backup agent instance>"
-
   # ngx-mdb-instance-name is the FQDN of the MongoDB instance in this
   # Kubernetes cluster.
   ngx-mdb-instance-name: "<name of the mdb instance>.default.svc.cluster.local"
@@ -56,11 +52,6 @@ data:
   # ngx-bdb-instance-name is the FQDN of the BigchainDB instance in this
   # Kubernetes cluster.
   ngx-bdb-instance-name: "<name of the bdb instance>.default.svc.cluster.local"
-
-  # mongodb-frontend-port is the port number on which external clients can
-  # access MongoDB. This needs to be restricted to only other MongoDB instances
-  # by enabling an authentication mechanism on MongoDB.
-  mongodb-frontend-port: "27017"
 
   # mongodb-backend-port is the port on which MongoDB is actually
   # available/listening for requests.

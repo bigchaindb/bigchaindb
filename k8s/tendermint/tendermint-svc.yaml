@@ -1,13 +1,13 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: tendermint-instance-1
+  name: tm-instance-1
   namespace: default
   labels:
-    name: tendermint-instance-1
+    name: tm-instance-1
 spec:
   selector:
-    app: tendermint-instance-1-ss
+    app: tm-instance-1-ss
   ports:
     - port: "<tm-p2p-port from ConfigMap>"
       targetPort: "<tm-p2p-port from ConfigMap>"
