@@ -11,7 +11,6 @@ from abci.messages import to_request_deliver_tx, to_request_check_tx
 pytestmark = pytest.mark.tendermint
 
 
-@pytest.mark.execute
 @pytest.mark.bdb
 def test_app(tb):
     from bigchaindb.tendermint import App

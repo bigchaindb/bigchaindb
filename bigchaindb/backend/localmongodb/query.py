@@ -53,7 +53,7 @@ def get_transactions(conn, transaction_ids):
 
 
 @register_query(LocalMongoDBConnection)
-def store_metadata(conn, metadata):
+def store_metadatas(conn, metadata):
     try:
         return conn.run(
             conn.collection('metadata')

@@ -61,7 +61,7 @@ class BigchainDB(Bigchain):
         transaction_metadata = {'id': transaction['id'],
                                 'metadata': metadata}
 
-        backend.query.store_metadata(self.connection, [transaction_metadata])
+        backend.query.store_metadatas(self.connection, [transaction_metadata])
 
         return backend.query.store_transaction(self.connection, transaction)
 
@@ -82,7 +82,7 @@ class BigchainDB(Bigchain):
                                   'metadata': metadata})
             txns.append(transaction)
 
-        backend.query.store_metadata(self.connection, txn_metadatas)
+        backend.query.store_metadatas(self.connection, txn_metadatas)
         if assets:
             backend.query.store_assets(self.connection, assets)
         return backend.query.store_transactions(self.connection, txns)
@@ -208,7 +208,7 @@ class BigchainDB(Bigchain):
         try:
             return transaction.validate(self, current_transactions)
         except ValidationError as e:
-            logger.warning('Invalided transaction (%s): %s', type(e).__name__, e)
+            logger.warning('Invalid transaction (%s): %s', type(e).__name__, e)
             return False
         return transaction
 

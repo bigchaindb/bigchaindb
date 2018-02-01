@@ -31,8 +31,8 @@ class Transaction(Transaction):
         input_conditions = []
 
         if self.operation == Transaction.CREATE:
-            existing_txns = [txn for txn in current_transactions if txn.id == self.id]
-            if bigchain.get_transaction(self.to_dict()['id']) or existing_txns:
+            duplicates = any(txn for txn in current_transactions if txn.id == self.id)
+            if bigchain.get_transaction(self.to_dict()['id']) or duplicates:
                 raise DuplicateTransaction('transaction `{}` already exists'
                                            .format(self.id))
         elif self.operation == Transaction.TRANSFER:
