@@ -153,7 +153,8 @@ class BigchainDB(Bigchain):
             return block
 
     def get_blocks_status_containing_tx(self, txid):
-        """Retrieve block id containing transaction id `txid`
+        """Retrieve the list of blocks (block ids) containing a
+           transaction with transaction id `txid`
 
         Args:
             txid (str): transaction id of the transaction to query
@@ -162,6 +163,9 @@ class BigchainDB(Bigchain):
             Block id list (list(int))
         """
         blocks = list(backend.query.get_block_with_transaction(self.connection, txid))
+        if len(blocks) > 1:
+            logger.critical('Transaction id %s exists in multiple blocks', txid)
+
         return [block['height'] for block in blocks]
 
     def validate_transaction(self, tx):

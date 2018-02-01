@@ -647,10 +647,10 @@ Blocks
 
 .. http:get:: /api/v1/blocks?transaction_id={transaction_id}
 
-   Retrieve a list of ``block_id`` with their corresponding status that contain a transaction with the ID ``transaction_id``.
+   Retrieve a list of block IDs (block heights), such that the blocks with those IDs contain a transaction with the ID ``transaction_id``.
 
    .. note::
-       The query parameter ``status`` has been depricated. The parameter allowed
+       The query parameter ``status`` has been deprecated. It allowed
        users to filter blocks based on their status i.e. only blocks with the specified
        status were included in the response. Since then this behavior has changed
        and now block are created only after the transactions are accepted by the
@@ -674,7 +674,7 @@ Blocks
 
    :resheader Content-Type: ``application/json``
 
-   :statuscode 200: A list containing atmost one block height where ``transaction_id`` was found and returned.
+   :statuscode 200: A list containing at most one block height where ``transaction_id`` was found and returned.
    :statuscode 400: The request wasn't understood by the server, e.g. just requesting ``/blocks``, without defining ``transaction_id``.
 
 
