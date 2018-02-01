@@ -251,7 +251,14 @@ def main():
     ctx['block'] = pretty_json(block_dict)
     ctx['blockid'] = block.height
 
-    block = Block(transactions=[tx], node_pubkey=node_public, voters=[node_public], signature=signature)
+    # block status
+    block_list = [
+        block.height
+    ]
+    ctx['block_list'] = pretty_json(block_list)
+
+
+    # block = Block(transactions=[tx], node_pubkey=node_public, voters=[node_public], signature=signature)
     block_transfer = Block(transactions=[tx_transfer], node_pubkey=node_public,
                            voters=[node_public], signature=signature)
     ctx['block_transfer'] = pretty_json(block_transfer.to_dict())
@@ -262,13 +269,6 @@ def main():
     b = Bigchain(public_key=node_public, private_key=node_private)
     vote = b.vote(vblock.id, DUMMY_SHA3, True)
     ctx['vote'] = pretty_json(vote)
-
-    # block status
-    block_list = [
-        block_transfer.id,
-        block.id
-    ]
-    ctx['block_list'] = pretty_json(block_list)
 
     base_path = os.path.join(os.path.dirname(__file__),
                              'source/http-samples')

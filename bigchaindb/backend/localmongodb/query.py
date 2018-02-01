@@ -172,3 +172,11 @@ def get_block(conn, block_id):
         conn.collection('blocks')
         .find_one({'height': block_id},
                   projection={'_id': False}))
+
+
+@register_query(LocalMongoDBConnection)
+def get_block_with_transaction(conn, txid):
+    return conn.run(
+        conn.collection('blocks')
+        .find({'transactions': {'$all': [txid]}},
+              projection={'_id': False, 'height': True}))
