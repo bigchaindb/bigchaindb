@@ -12,6 +12,7 @@ from bigchaindb.models import Transaction
 from bigchaindb.common.exceptions import SchemaValidationError, ValidationError
 from bigchaindb.tendermint.utils import encode_transaction
 from bigchaindb.tendermint import fastquery
+from bigchaindb import exceptions as core_exceptions
 
 
 logger = logging.getLogger(__name__)
@@ -60,9 +61,31 @@ class BigchainDB(Bigchain):
         transaction_metadata = {'id': transaction['id'],
                                 'metadata': metadata}
 
-        backend.query.store_metadata(self.connection, [transaction_metadata])
+        backend.query.store_metadatas(self.connection, [transaction_metadata])
 
         return backend.query.store_transaction(self.connection, transaction)
+
+    def store_bulk_transactions(self, transactions):
+        txns = []
+        assets = []
+        txn_metadatas = []
+        for transaction in transactions:
+            transaction = transaction.to_dict()
+            if transaction['operation'] == 'CREATE':
+                asset = transaction.pop('asset')
+                asset['id'] = transaction['id']
+                if asset['data'] is not None:
+                    assets.append(asset)
+
+            metadata = transaction.pop('metadata')
+            txn_metadatas.append({'id': transaction['id'],
+                                  'metadata': metadata})
+            txns.append(transaction)
+
+        backend.query.store_metadatas(self.connection, txn_metadatas)
+        if assets:
+            backend.query.store_assets(self.connection, assets)
+        return backend.query.store_transactions(self.connection, txns)
 
     def get_transaction(self, transaction_id, include_status=False):
         transaction = backend.query.get_transaction(self.connection, transaction_id)
@@ -89,9 +112,25 @@ class BigchainDB(Bigchain):
         else:
             return transaction
 
-    def get_spent(self, txid, output):
-        transaction = backend.query.get_spent(self.connection, txid,
-                                              output)
+    def get_spent(self, txid, output, current_transactions=[]):
+        transactions = backend.query.get_spent(self.connection, txid,
+                                               output)
+        transactions = list(transactions) if transactions else []
+
+        for ctxn in current_transactions:
+            for ctxn_input in ctxn.inputs:
+                if ctxn_input.fulfills.txid == txid and\
+                   ctxn_input.fulfills.output == output:
+                    transactions.append(ctxn.to_dict())
+
+        transaction = None
+        if len(transactions) > 1:
+            raise core_exceptions.CriticalDoubleSpend(
+                '`{}` was spent more than once. There is a problem'
+                ' with the chain'.format(txid))
+        elif transactions:
+            transaction = transactions[0]
+
         if transaction and transaction['operation'] == 'CREATE':
             asset = backend.query.get_asset(self.connection, transaction['id'])
 
@@ -152,7 +191,7 @@ class BigchainDB(Bigchain):
         else:
             return block
 
-    def validate_transaction(self, tx):
+    def validate_transaction(self, tx, current_transactions=[]):
         """Validate a transaction against the current status of the database."""
 
         transaction = tx
@@ -167,7 +206,7 @@ class BigchainDB(Bigchain):
                 logger.warning('Invalid transaction (%s): %s', type(e).__name__, e)
                 return False
         try:
-            return transaction.validate(self)
+            return transaction.validate(self, current_transactions)
         except ValidationError as e:
             logger.warning('Invalid transaction (%s): %s', type(e).__name__, e)
             return False
