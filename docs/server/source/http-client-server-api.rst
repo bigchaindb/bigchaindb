@@ -647,7 +647,7 @@ Blocks
 
 .. http:get:: /api/v1/blocks?transaction_id={transaction_id}
 
-   Retrieve a list of block IDs (block heights), such that the blocks with those IDs contain a transaction with the ID ``transaction_id``.
+   Retrieve a list of block IDs (block heights), such that the blocks with those IDs contain a transaction with the ID ``transaction_id``. A correct response may consist of an empty list or a list with one block ID.
 
    .. note::
        The query parameter ``status`` has been deprecated. It allowed
@@ -674,7 +674,7 @@ Blocks
 
    :resheader Content-Type: ``application/json``
 
-   :statuscode 200: A list containing at most one block height where ``transaction_id`` was found and returned.
+   :statuscode 200: The request was properly formed and zero or more blocks were found containing the specified ``transaction_id``.
    :statuscode 400: The request wasn't understood by the server, e.g. just requesting ``/blocks``, without defining ``transaction_id``.
 
 
