@@ -23,6 +23,15 @@ def store_transaction(conn, signed_transaction):
 
 
 @register_query(LocalMongoDBConnection)
+def store_transactions(conn, signed_transactions):
+    try:
+        return conn.run(conn.collection('transactions')
+                        .insert_many(signed_transactions))
+    except DuplicateKeyError:
+        pass
+
+
+@register_query(LocalMongoDBConnection)
 def get_transaction(conn, transaction_id):
     try:
         return conn.run(
@@ -44,7 +53,7 @@ def get_transactions(conn, transaction_ids):
 
 
 @register_query(LocalMongoDBConnection)
-def store_metadata(conn, metadata):
+def store_metadatas(conn, metadata):
     try:
         return conn.run(
             conn.collection('metadata')
@@ -67,6 +76,16 @@ def store_asset(conn, asset):
         return conn.run(
             conn.collection('assets')
             .insert_one(asset))
+    except DuplicateKeyError:
+        pass
+
+
+@register_query(LocalMongoDBConnection)
+def store_assets(conn, assets):
+    try:
+        return conn.run(
+            conn.collection('assets')
+            .insert_many(assets, ordered=False))
     except DuplicateKeyError:
         pass
 

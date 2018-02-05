@@ -88,7 +88,7 @@ def test_write_metadata():
     ]
 
     # write the assets
-    query.store_metadata(conn, deepcopy(metadata))
+    query.store_metadatas(conn, deepcopy(metadata))
 
     # check that 3 assets were written to the database
     cursor = conn.db.metadata.find({}, projection={'_id': False})\

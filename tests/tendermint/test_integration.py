@@ -57,7 +57,6 @@ def test_app(tb):
     res, err = read_message(BytesIO(data), types.Response)
     assert res
     assert res.deliver_tx.code == 0
-    assert b.get_transaction(tx.id).id == tx.id
 
     new_block_txn_hash = calculate_hash([tx.id])
 
@@ -75,6 +74,7 @@ def test_app(tb):
     assert res
     assert res.commit.code == 0
     assert res.commit.data == new_block_hash.encode('utf-8')
+    assert b.get_transaction(tx.id).id == tx.id
 
     block0 = b.get_latest_block()
     assert block0

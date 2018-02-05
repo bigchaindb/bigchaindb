@@ -14,7 +14,7 @@ from bigchaindb.backend.schema import validate_language_key
 
 
 class Transaction(Transaction):
-    def validate(self, bigchain):
+    def validate(self, bigchain, current_transactions=[]):
         """Validate transaction spend
 
         Args:
@@ -31,7 +31,8 @@ class Transaction(Transaction):
         input_conditions = []
 
         if self.operation == Transaction.CREATE:
-            if bigchain.get_transaction(self.to_dict()['id']):
+            duplicates = any(txn for txn in current_transactions if txn.id == self.id)
+            if bigchain.get_transaction(self.to_dict()['id']) or duplicates:
                 raise DuplicateTransaction('transaction `{}` already exists'
                                            .format(self.id))
         elif self.operation == Transaction.TRANSFER:
@@ -43,6 +44,14 @@ class Transaction(Transaction):
                     get_transaction(input_txid, include_status=True)
 
                 if input_tx is None:
+                    for ctxn in current_transactions:
+                        # assume that the status as valid for previously validated
+                        # transactions in current round
+                        if ctxn.id == input_txid:
+                            input_tx = ctxn
+                            status = bigchain.TX_VALID
+
+                if input_tx is None:
                     raise InputDoesNotExist("input `{}` doesn't exist"
                                             .format(input_txid))
 
@@ -51,7 +60,8 @@ class Transaction(Transaction):
                         'input `{}` does not exist in a valid block'.format(
                             input_txid))
 
-                spent = bigchain.get_spent(input_txid, input_.fulfills.output)
+                spent = bigchain.get_spent(input_txid, input_.fulfills.output,
+                                           current_transactions)
                 if spent and spent.id != self.id:
                     raise DoubleSpend('input `{}` was already spent'
                                       .format(input_txid))
