@@ -1,3 +1,9 @@
+**Please use the template below for bug reports or minor feature requests.** 
+
+**For relatively bigger/significant feature requests please refer to our guidelines about**
+**[feature contribution](https://github.com/bigchaindb/bigchaindb/blob/master/proposals/README.md)**
+**and remove the existing template.**
+
 * BigchainDB version:
 * Operating System:
 * Deployment Type: `[Docker|Host|IPDB|Other]`
