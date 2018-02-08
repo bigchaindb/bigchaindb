@@ -128,11 +128,20 @@ Transactions
    :statuscode 400: The request wasn't understood by the server, e.g. the ``asset_id`` querystring was not included in the request.
 
 
-.. http:post:: /api/v1/transactions
+.. http:post:: /api/v1/transactions?mode={mode}
 
-   Push a new transaction.
+   Tendermint offers a `broadcast API
+   <http://tendermint.readthedocs.io/projects/tools/en/master/using-tendermint.html#broadcast-api>`_ with three different modes to post transactions.
+   By setting the mode, a new transaction can be pushed with a different mode than the default. The default mode is ``async``, which
+   will return immediately and not wait to see if the transaction is valid. The ``sync`` mode will return after the transaction is validated, while ``commit``
+   returns after the transaction is committed to a block.
 
    .. note::
+
+       This option is only available when using BigchainDB with Tendermint. 
+
+   .. note::
+   
        The posted `transaction
        <https://docs.bigchaindb.com/projects/server/en/latest/data-models/transaction-model.html>`_
        should be structurally valid and not spending an already spent output.
@@ -140,6 +149,8 @@ Transactions
        One would normally use a driver such as the `BigchainDB Python Driver
        <https://docs.bigchaindb.com/projects/py-driver/en/latest/index.html>`_
        to build a valid transaction.
+
+   :query string mode: (Optional) One of the three supported modes to send a transaction: ``async``, ``sync``, ``commit``.
 
    **Example request**:
 
@@ -164,6 +175,11 @@ Transactions
 
    :statuscode 202: The pushed transaction was accepted in the ``BACKLOG``, but the processing has not been completed.
    :statuscode 400: The transaction was malformed and not accepted in the ``BACKLOG``.
+
+
+.. http:post:: /api/v1/transactions
+
+   This endpoint (without any parameters) will push a new transaction. If BigchainDB is used with Tendermint, the default mode ``async`` is used.
 
 
 Transaction Outputs
@@ -585,14 +601,12 @@ The `votes endpoint <#votes>`_ contains all the voting information for a specifi
 Blocks
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. http:get:: /api/v1/blocks/{block_id}
+.. http:get:: /api/v1/blocks/{block_height}
 
-   Get the block with the ID ``block_id``. Any blocks, be they ``VALID``, ``UNDECIDED`` or ``INVALID`` will be
-   returned. To check a block's status independently, use the `Statuses endpoint <#status>`_.
-   To check the votes on a block, have a look at the `votes endpoint <#votes>`_.
+   Get the block with the height ``block_height``.
 
-   :param block_id: block ID
-   :type block_id: hex string
+   :param block_height: block ID
+   :type block_height: integer
 
    **Example request**:
 
@@ -608,7 +622,7 @@ Blocks
    :resheader Content-Type: ``application/json``
 
    :statuscode 200: A block with that ID was found.
-   :statuscode 400: The request wasn't understood by the server, e.g. just requesting ``/blocks`` without the ``block_id``.
+   :statuscode 400: The request wasn't understood by the server, e.g. just requesting ``/blocks`` without the ``block_height``.
    :statuscode 404: A block with that ID was not found.
 
 
@@ -635,19 +649,22 @@ Blocks
 
    :statuscode 400: The request wasn't understood by the server, e.g. just requesting ``/blocks`` without the ``block_id``.
 
-.. http:get:: /api/v1/blocks?transaction_id={transaction_id}&status={UNDECIDED|VALID|INVALID}
+.. http:get:: /api/v1/blocks?transaction_id={transaction_id}
 
-   Retrieve a list of ``block_id`` with their corresponding status that contain a transaction with the ID ``transaction_id``.
+   Retrieve a list of block IDs (block heights), such that the blocks with those IDs contain a transaction with the ID ``transaction_id``. A correct response may consist of an empty list or a list with one block ID.
 
-   Any blocks, be they ``UNDECIDED``, ``VALID`` or ``INVALID`` will be
-   returned if no status filter is provided.
+   .. note::
+       The query parameter ``status`` has been deprecated. It allowed
+       users to filter blocks based on their status i.e. only blocks with the specified
+       status were included in the response. Since then this behavior has changed
+       and now block are created only after the transactions are accepted by the
+       network i.e. blocks have only one status ``VALID``
 
    .. note::
        In case no block was found, an empty list and an HTTP status code
        ``200 OK`` is returned, as the request was still successful.
 
    :query string transaction_id: transaction ID *(required)*
-   :query string status: Filter blocks by their status. One of ``VALID``, ``UNDECIDED`` or ``INVALID``.
 
    **Example request**:
 
@@ -661,7 +678,7 @@ Blocks
 
    :resheader Content-Type: ``application/json``
 
-   :statuscode 200: A list of blocks containing a transaction with ID ``transaction_id`` was found and returned.
+   :statuscode 200: The request was properly formed and zero or more blocks were found containing the specified ``transaction_id``.
    :statuscode 400: The request wasn't understood by the server, e.g. just requesting ``/blocks``, without defining ``transaction_id``.
 
 

@@ -50,10 +50,10 @@ Create a BigchainDB transaction and post it to a BigchainDB network in 20 second
 
 ## Develop an App
 
-To develop an app that talks to a BigchainDB network, you'll want a test network to test it against. IPDB is the Interplanetary Database. The IPDB Test Network is a free-to-use, publicly-available BigchainDB network that you can test against.
+To develop an app that talks to a BigchainDB network, you'll want a test network to test it against. The BigchainDB Testnet is a free-to-use, publicly-available BigchainDB network that you can test against.
 
 <div class="buttondiv">
-    <a class="button" href="https://ipdb.io/#getstarted">Get started with IPDB</a>
+    <a class="button" href="https://testnet.bigchaindb.com/">Get started with the BigchainDB Testnet</a>
 </div>
 
 Regardless of which BigchainDB network you use, you'll probably use one of the [BigchainDB drivers or tools](https://www.bigchaindb.com/getstarted/#drivers).

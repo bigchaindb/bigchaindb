@@ -71,5 +71,5 @@ Role-Based Access Control (RBAC)
 ================================
 
 In September 2017, we published a `blog post about how one can define an RBAC sub-system on top of BigchainDB <https://blog.bigchaindb.com/role-based-access-control-for-bigchaindb-assets-b7cada491997>`_.
-At the time of writing (October 2017), doing so required the use of a plugin, so it's not possible using standard BigchainDB (which is what's available on `IPDB <https://ipdb.io/>`_). That may change in the future.
+At the time of writing (January 2018), doing so required the use of a plugin, so it's not possible using standard BigchainDB (which is what's available on the `BigchainDB Testnet <https://testnet.bigchaindb.com/>`_). That may change in the future.
 If you're interested, `contact BigchainDB <https://www.bigchaindb.com/contact/>`_.

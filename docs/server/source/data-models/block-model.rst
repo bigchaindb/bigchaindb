@@ -11,82 +11,23 @@ A block must contain the following JSON keys
 .. code-block:: json
 
     {
-      "id": "<ID of the block>",
-      "block": {
-        "timestamp": "<Block-creation timestamp>",
-        "transactions": ["<List of transactions>"],
-        "node_pubkey": "<Public key of the node which created the block>",
-        "voters": ["<List of public keys of all nodes in the cluster>"]
-      },
-      "signature": "<Signature of inner block object>"
+      "height": "<Height of the block>",
+      "transactions": ["<List of transactions>"]
     }
 
 
 The JSON Keys in a Block
 ------------------------
 
-**id**
+**height**
 
-The transaction ID and also the SHA3-256 hash
-of the inner ``block`` object, loosely speaking.
-It's a string.
-To compute it, 1) construct an :term:`associative array` ``d`` containing
-``block.timestamp``, ``block.transactions``, ``block.node_pubkey``,
-``block.voters``, and their values. 2) compute ``id = hash_of_aa(d)``.
-There's pseudocode for the ``hash_of_aa()`` function
-in the `IPDB Transaction Spec page about cryptographic hashes
-<https://the-ipdb-transaction-spec.readthedocs.io/en/latest/common-operations/crypto-hashes.html#computing-the-hash-of-an-associative-array>`_.
-The result (``id``) is a string: the block ID.
-An example is ``"b60adf655932bf47ef58c0bfb2dd276d4795b94346b36cbb477e10d7eb02cea8"``
+The block ``"height"`` (``integer``) denotes the height of the blockchain when the given block was committed.
+Since the blockchain height increases monotonically the height of block can be regarded as its id.
+
+**NOTE**: The genesis block has height ``0``
 
 
-**block.timestamp**
-
-The `Unix time <https://en.wikipedia.org/wiki/Unix_time>`_
-when the block was created, according to the node which created it.
-It's a string representation of an integer.
-An example is ``"1507294217"``.
-
-
-**block.transactions**
+**transactions**
 
 A list of the :ref:`transactions <the-transaction-model>` included in the block.
 (Each transaction is a JSON object.)
-
-
-**block.node_pubkey**
-
-The public key of the node that created the block.
-It's a string.
-See the `IPDB Transaction Spec page about cryptographic keys & signatures
-<https://the-ipdb-transaction-spec.readthedocs.io/en/latest/common-operations/crypto-keys-and-sigs.html>`_.
-
-
-**block.voters**
-
-A list of the public keys of all cluster nodes at the time the block was created.
-It's a list of strings.
-This list can change from block to block, as nodes join and leave the cluster.
-
-
-**signature**
-
-The cryptographic signature of the inner ``block``
-by the node that created the block
-(i.e. the node with public key ``node_pubkey``).
-To compute that:
-
-#. Construct an :term:`associative array` ``d`` containing the contents
-   of the inner ``block``
-   (i.e. ``block.timestamp``, ``block.transactions``, ``block.node_pubkey``,
-   ``block.voters``, and their values).
-#. Compute ``signature = sig_of_aa(d, private_key)``,
-   where ``private_key`` is the node's private key
-   (i.e. ``node_pubkey`` and ``private_key`` are a key pair). There's pseudocode
-   for the ``sig_of_aa()`` function
-   on `the IPDB Transaction Spec page about cryptographic keys and signatures 
-   <https://the-ipdb-transaction-spec.readthedocs.io/en/latest/common-operations/crypto-keys-and-sigs.html#computing-the-signature-of-an-associative-array>`_.
-
-.. note::
-
-   The ``d_bytes`` computed when computing the block ID will be the *same* as the ``d_bytes`` computed when computing the block signature. This can be used to avoid redundant calculations.

@@ -25,13 +25,14 @@ class App(BaseApplication):
         self.bigchaindb = bigchaindb
         self.block_txn_ids = []
         self.block_txn_hash = ''
+        self.block_transactions = []
         self.validators = None
         self.new_height = None
 
     def init_chain(self, validators):
         """Initialize chain with block of height 0"""
 
-        block = Block(app_hash='', height=0)
+        block = Block(app_hash='', height=0, transactions=[])
         self.bigchaindb.store_block(block._asdict())
 
     def info(self):
@@ -70,6 +71,7 @@ class App(BaseApplication):
         """
 
         self.block_txn_ids = []
+        self.block_transactions = []
 
     def deliver_tx(self, raw_transaction):
         """Validate the transaction before mutating the state.
@@ -78,15 +80,16 @@ class App(BaseApplication):
             raw_tx: a raw string (in bytes) transaction."""
         logger.debug('deliver_tx: %s', raw_transaction)
         transaction = self.bigchaindb.validate_transaction(
-                decode_transaction(raw_transaction))
+            decode_transaction(raw_transaction), self.block_transactions)
 
         if not transaction:
             logger.debug('deliver_tx: INVALID')
             return Result.error(log='Invalid transaction')
         else:
             logger.debug('storing tx')
-            self.bigchaindb.store_transaction(transaction)
+            # self.bigchaindb.store_transaction(transaction)
             self.block_txn_ids.append(transaction.id)
+            self.block_transactions.append(transaction)
             return Result.ok()
 
     def end_block(self, height):
@@ -112,7 +115,10 @@ class App(BaseApplication):
 
         # register a new block only when new transactions are received
         if self.block_txn_ids:
-            block = Block(app_hash=self.block_txn_hash, height=self.new_height)
+            self.bigchaindb.store_bulk_transactions(self.block_transactions)
+            block = Block(app_hash=self.block_txn_hash,
+                          height=self.new_height,
+                          transactions=self.block_txn_ids)
             self.bigchaindb.store_block(block._asdict())
 
         data = self.block_txn_hash.encode('utf-8')

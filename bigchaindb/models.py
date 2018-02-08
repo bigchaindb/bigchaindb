@@ -14,7 +14,7 @@ from bigchaindb.backend.schema import validate_language_key
 
 
 class Transaction(Transaction):
-    def validate(self, bigchain):
+    def validate(self, bigchain, current_transactions=[]):
         """Validate transaction spend
 
         Args:
@@ -31,7 +31,8 @@ class Transaction(Transaction):
         input_conditions = []
 
         if self.operation == Transaction.CREATE:
-            if bigchain.get_transaction(self.to_dict()['id']):
+            duplicates = any(txn for txn in current_transactions if txn.id == self.id)
+            if bigchain.get_transaction(self.to_dict()['id']) or duplicates:
                 raise DuplicateTransaction('transaction `{}` already exists'
                                            .format(self.id))
         elif self.operation == Transaction.TRANSFER:
@@ -43,6 +44,14 @@ class Transaction(Transaction):
                     get_transaction(input_txid, include_status=True)
 
                 if input_tx is None:
+                    for ctxn in current_transactions:
+                        # assume that the status as valid for previously validated
+                        # transactions in current round
+                        if ctxn.id == input_txid:
+                            input_tx = ctxn
+                            status = bigchain.TX_VALID
+
+                if input_tx is None:
                     raise InputDoesNotExist("input `{}` doesn't exist"
                                             .format(input_txid))
 
@@ -51,7 +60,8 @@ class Transaction(Transaction):
                         'input `{}` does not exist in a valid block'.format(
                             input_txid))
 
-                spent = bigchain.get_spent(input_txid, input_.fulfills.output)
+                spent = bigchain.get_spent(input_txid, input_.fulfills.output,
+                                           current_transactions)
                 if spent and spent.id != self.id:
                     raise DoubleSpend('input `{}` was already spent'
                                       .format(input_txid))
@@ -96,7 +106,7 @@ class Transaction(Transaction):
         return super().from_dict(tx_body)
 
     @classmethod
-    def from_db(cls, bigchain, tx_dict):
+    def from_db(cls, bigchain, tx_dict_list):
         """Helper method that reconstructs a transaction dict that was returned
         from the database. It checks what asset_id to retrieve, retrieves the
         asset from the asset table and reconstructs the transaction.
@@ -104,29 +114,46 @@ class Transaction(Transaction):
         Args:
             bigchain (:class:`~bigchaindb.Bigchain`): An instance of Bigchain
                 used to perform database queries.
-            tx_dict (:obj:`dict`): The transaction dict as returned from the
-                database.
+            tx_dict_list (:list:`dict` or :obj:`dict`): The transaction dict or
+                list of transaction dict as returned from the database.
 
         Returns:
             :class:`~Transaction`
 
         """
-        if tx_dict['operation'] in [Transaction.CREATE, Transaction.GENESIS]:
-            # TODO: Maybe replace this call to a call to get_asset_by_id
-            asset = list(bigchain.get_assets([tx_dict['id']]))[0]
+        return_list = True
+        if isinstance(tx_dict_list, dict):
+            tx_dict_list = [tx_dict_list]
+            return_list = False
+
+        tx_map = {}
+        tx_ids = []
+        for tx in tx_dict_list:
+            tx.update({'metadata': None})
+            tx_map[tx['id']] = tx
+            if tx['operation'] in [Transaction.CREATE, Transaction.GENESIS]:
+                tx_ids.append(tx['id'])
+
+        assets = list(bigchain.get_assets(tx_ids))
+        for asset in assets:
+            tx = tx_map[asset['id']]
             del asset['id']
-            tx_dict.update({'asset': asset})
+            tx.update({'asset': asset})
 
-        # get metadata of the transaction
-        metadata = list(bigchain.get_metadata([tx_dict['id']]))
-        if 'metadata' not in tx_dict:
-            metadata = metadata[0] if metadata else None
-            if metadata:
-                metadata = metadata.get('metadata')
+        tx_ids = list(tx_map.keys())
+        metadata_list = list(bigchain.get_metadata(tx_ids))
+        for metadata in metadata_list:
+            tx = tx_map[metadata['id']]
+            tx.update({'metadata': metadata.get('metadata')})
 
-            tx_dict.update({'metadata': metadata})
-
-        return cls.from_dict(tx_dict)
+        if return_list:
+            tx_list = []
+            for tx_id, tx in tx_map.items():
+                tx_list.append(cls.from_dict(tx))
+            return tx_list
+        else:
+            tx = list(tx_map.values())[0]
+            return cls.from_dict(tx)
 
 
 class Block(object):
