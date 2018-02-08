@@ -147,7 +147,7 @@ def test_store_transaction(mocker, tb, signed_create_tx,
                            signed_transfer_tx, db_context):
     mocked_store_asset = mocker.patch('bigchaindb.backend.query.store_asset')
     mocked_store_metadata = mocker.patch(
-        'bigchaindb.backend.query.store_metadata')
+        'bigchaindb.backend.query.store_metadatas')
     mocked_store_transaction = mocker.patch(
         'bigchaindb.backend.query.store_transaction')
     mongo_client = MongoClient(host=db_context.host, port=db_context.port)
