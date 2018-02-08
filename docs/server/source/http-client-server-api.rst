@@ -645,19 +645,22 @@ Blocks
 
    :statuscode 400: The request wasn't understood by the server, e.g. just requesting ``/blocks`` without the ``block_id``.
 
-.. http:get:: /api/v1/blocks?transaction_id={transaction_id}&status={UNDECIDED|VALID|INVALID}
+.. http:get:: /api/v1/blocks?transaction_id={transaction_id}
 
-   Retrieve a list of ``block_id`` with their corresponding status that contain a transaction with the ID ``transaction_id``.
+   Retrieve a list of block IDs (block heights), such that the blocks with those IDs contain a transaction with the ID ``transaction_id``. A correct response may consist of an empty list or a list with one block ID.
 
-   Any blocks, be they ``UNDECIDED``, ``VALID`` or ``INVALID`` will be
-   returned if no status filter is provided.
+   .. note::
+       The query parameter ``status`` has been deprecated. It allowed
+       users to filter blocks based on their status i.e. only blocks with the specified
+       status were included in the response. Since then this behavior has changed
+       and now block are created only after the transactions are accepted by the
+       network i.e. blocks have only one status ``VALID``
 
    .. note::
        In case no block was found, an empty list and an HTTP status code
        ``200 OK`` is returned, as the request was still successful.
 
    :query string transaction_id: transaction ID *(required)*
-   :query string status: Filter blocks by their status. One of ``VALID``, ``UNDECIDED`` or ``INVALID``.
 
    **Example request**:
 
@@ -671,7 +674,7 @@ Blocks
 
    :resheader Content-Type: ``application/json``
 
-   :statuscode 200: A list of blocks containing a transaction with ID ``transaction_id`` was found and returned.
+   :statuscode 200: The request was properly formed and zero or more blocks were found containing the specified ``transaction_id``.
    :statuscode 400: The request wasn't understood by the server, e.g. just requesting ``/blocks``, without defining ``transaction_id``.
 
 

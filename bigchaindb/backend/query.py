@@ -340,6 +340,20 @@ def get_block(connection, block_id):
 
 
 @singledispatch
+def get_block_with_transaction(connection, txid):
+    """Get a block containing transaction id `txid`
+
+    Args:
+        txid (str): id of transaction to be searched.
+
+    Returns:
+        block_id (int): the block id or `None`
+    """
+
+    raise NotImplementedError
+
+
+@singledispatch
 def write_assets(connection, assets):
     """Write a list of assets to the assets table.
 
