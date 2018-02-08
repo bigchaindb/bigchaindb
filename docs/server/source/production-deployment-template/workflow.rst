@@ -135,10 +135,10 @@ Otherwise, your organization must
       "mdb-mon-instance-4"
     ],
     "Tendermint": [
-      "tendermint-instance-1",
-      "tendermint-instance-2",
-      "tendermint-instance-3",
-      "tendermint-instance-4"
+      "tm-instance-1",
+      "tm-instance-2",
+      "tm-instance-3",
+      "tm-instance-4"
     ]
   }
 
