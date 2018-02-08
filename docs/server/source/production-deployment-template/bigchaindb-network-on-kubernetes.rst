@@ -218,7 +218,7 @@ the :doc:`deployment steps for each node <node-on-kubernetes>` N number of times
 the number of participants in the network.
 
 In our Kubernetes deployment template for a single BigchainDB node, we covered the basic configurations
-settings :ref:`here <how-to-configure-a-bigchaindb-tendermint-node>`.
+settings :ref:`here <how-to-configure-a-bigchaindb-node>`.
 
 Since, we index the ConfigMap and Secret Keys for the single site deployment, we need to update
 all the Kubernetes components to reflect the corresponding changes i.e. For each Kubernetes Service,

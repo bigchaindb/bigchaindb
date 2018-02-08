@@ -10,7 +10,6 @@ BigchainDB Server Documentation
    production-nodes/index
    clusters
    production-deployment-template/index
-   production-deployment-template-tendermint/index
    dev-and-test/index
    server-reference/index
    http-client-server-api

@@ -123,8 +123,6 @@ Next, you can follow one of our following deployment templates:
 
 * :doc:`node-on-kubernetes`.
 
-* :doc:`../production-deployment-template-tendermint/node-on-kubernetes`
-
 
 Tectonic References
 -------------------

@@ -11,7 +11,7 @@ and ``secret.yaml`` (a set of Secrets).
 They are stored in the Kubernetes cluster's key-value store (etcd).
 
 Make sure you did all the things listed in the section titled
-:ref:`things-each-node-operator-must-do`
+:ref:`things-each-node-operator-must-do-tmt`
 (including generation of all the SSL certificates needed
 for MongoDB auth).
 
@@ -35,7 +35,7 @@ vars.cluster-fqdn
 ~~~~~~~~~~~~~~~~~
 
 The ``cluster-fqdn`` field specifies the domain you would have
-:ref:`registered before <register-a-domain-and-get-an-ssl-certificate-for-it>`.
+:ref:`registered before <register-a-domain-and-get-an-ssl-certificate-for-it-tmt>`.
 
 
 vars.cluster-frontend-port
@@ -71,15 +71,8 @@ of naming instances, so the instances in your BigchainDB node
 should conform to that standard (i.e. you can't just make up some names).
 There are some things worth noting about the ``mdb-instance-name``:
 
-* MongoDB reads the local ``/etc/hosts`` file while bootstrapping a replica
-  set to resolve the hostname provided to the ``rs.initiate()`` command.
-  It needs to ensure that the replica set is being initialized in the same
-  instance where the MongoDB instance is running.
-* We use the value in the ``mdb-instance-name`` field to achieve this.
 * This field will be the DNS name of your MongoDB instance, and Kubernetes
   maps this name to its internal DNS.
-* This field will also be used by other MongoDB instances when forming a
-  MongoDB replica set.
 * We use ``mdb-instance-0``, ``mdb-instance-1`` and so on in our
   documentation. Your BigchainDB cluster may use a different naming convention.
 
@@ -145,27 +138,6 @@ There's another :doc:`page with a complete listing of all the BigchainDB Server
 configuration settings <../server-reference/configuration>`.
 
 
-bdb-config.bdb-keyring
-~~~~~~~~~~~~~~~~~~~~~~~
-
-This lists the BigchainDB public keys
-of all *other* nodes in your BigchainDB cluster
-(not including the public key of your BigchainDB node). Cases:
-
-* If you're deploying the first node in the cluster,
-  the value should be ``""`` (an empty string).
-* If you're deploying the second node in the cluster,
-  the value should be the BigchainDB public key of the first/original
-  node in the cluster.
-  For example,
-  ``"EPQk5i5yYpoUwGVM8VKZRjM8CYxB6j8Lu8i8SG7kGGce"``
-* If there are two or more other nodes already in the cluster,
-  the value should be a colon-separated list
-  of the BigchainDB public keys
-  of those other nodes.
-  For example,
-  ``"DPjpKbmbPYPKVAuf6VSkqGCf5jzrEh69Ldef6TrLwsEQ:EPQk5i5yYpoUwGVM8VKZRjM8CYxB6j8Lu8i8SG7kGGce"``
-
 bdb-config.bdb-user
 ~~~~~~~~~~~~~~~~~~~
 
@@ -176,16 +148,16 @@ We need to specify the user name *as seen in the certificate* issued to
 the BigchainDB instance in order to authenticate correctly. Use
 the following ``openssl`` command to extract the user name from the
 certificate:
-  
+
 .. code:: bash
 
    $ openssl x509 -in <path to the bigchaindb certificate> \
      -inform PEM -subject -nameopt RFC2253
-         
+
 You should see an output line that resembles:
-  
+
 .. code:: bash
-  
+
    subject= emailAddress=dev@bigchaindb.com,CN=test-bdb-ssl,OU=BigchainDB-Instance,O=BigchainDB GmbH,L=Berlin,ST=Berlin,C=DE
 
 The ``subject`` line states the complete user name we need to use for this
@@ -194,6 +166,137 @@ field (``bdb-config.bdb-user``), i.e.
 .. code:: bash
 
    emailAddress=dev@bigchaindb.com,CN=test-bdb-ssl,OU=BigchainDB-Instance,O=BigchainDB GmbH,L=Berlin,ST=Berlin,C=DE
+
+
+tendermint-config.tm-instance-name
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Your BigchainDB cluster organization should have a standard way
+of naming instances, so the instances in your BigchainDB node
+should conform to that standard. There are some things worth noting
+about the ``tm-instance-name``:
+
+* This field will be the DNS name of your Tendermint instance, and Kubernetes
+  maps this name to its internal DNS, so all the peer to peer communication
+  depends on this, in case of a network/multi-node deployment.
+* This parameter is also used to access the public key of a particular node.
+* We use ``tm-instance-0``, ``tm-instance-1`` and so on in our
+  documentation. Your BigchainDB cluster may use a different naming convention.
+
+
+tendermint-config.ngx-tm-instance-name
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+NGINX needs the FQDN of the servers inside the cluster to be able to forward
+traffic.
+``ngx-tm-instance-name`` is the FQDN of the Tendermint
+instance in this Kubernetes cluster.
+In Kubernetes, this is usually the name of the module specified in the
+corresponding ``tendermint-config.*-instance-name`` followed by the
+``<namespace name>.svc.cluster.local``. For example, if you run Tendermint in
+the default Kubernetes namespace, this will be
+``<tendermint-config.tm-instance-name>.default.svc.cluster.local``
+
+
+tendermint-config.tm-seeds
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``tm-seeds`` is the initial set of peers to connect to. It is a comma separated
+list of all the peers part of the cluster.
+
+If you are deploying a stand-alone BigchainDB node the value should the same as
+``<tm-instance-name>``. If you are deploying a network this parameter will look
+like this:
+
+.. code::
+
+    <tm-instance-1>,<tm-instance-2>,<tm-instance-3>,<tm-instance-4>
+
+
+tendermint-config.tm-validators
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``tm-validators`` is the initial set of validators in the network. It is a comma separated list
+of all the participant validator nodes.
+
+If you are deploying a stand-alone BigchainDB node the value should be the same as
+``<tm-instance-name>``. If you are deploying a network this parameter will look like
+this:
+
+.. code::
+
+    <tm-instance-1>,<tm-instance-2>,<tm-instance-3>,<tm-instance-4>
+
+
+tendermint-config.tm-validator-power
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``tm-validator-power`` represents the voting power of each validator. It is a comma separated
+list of all the participants in the network.
+
+**Note**: The order of the validator power list should be the same as the ``tm-validators`` list.
+
+.. code::
+
+    tm-validators: <tm-instance-1>,<tm-instance-2>,<tm-instance-3>,<tm-instance-4>
+
+For the above list of validators the ``tm-validator-power`` list should look like this:
+
+.. code::
+
+    tm-validator-power: <tm-instance-1-power>,<tm-instance-2-power>,<tm-instance-3-power>,<tm-instance-4-power>
+
+
+tendermint-config.tm-genesis-time
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``tm-genesis-time`` represents the official time of blockchain start. Details regarding, how to generate
+this parameter are covered :ref:`here <generate-the-blockchain-id-and-genesis-time>`.
+
+
+tendermint-config.tm-chain-id
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``tm-chain-id`` represents the ID of the blockchain. This must be unique for every blockchain.
+Details regarding, how to generate this parameter are covered
+:ref:`here <generate-the-blockchain-id-and-genesis-time>`.
+
+
+tendermint-config.tm-abci-port
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``tm-abci-port`` has a default value ``46658`` which is used by Tendermint Core for
+ABCI(Application BlockChain Interface) traffic. BigchainDB nodes use this port
+internally to communicate with Tendermint Core.
+
+
+tendermint-config.tm-p2p-port
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``tm-p2p-port`` has a default value ``46656`` which is used by Tendermint Core for
+peer to peer communication.
+
+For a multi-node/zone deployment, this port needs to be available publicly for P2P
+communication between Tendermint nodes.
+
+
+tendermint-config.tm-rpc-port
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``tm-rpc-port`` has a default value ``46657`` which is used by Tendermint Core for RPC
+traffic. BigchainDB nodes use this port with RPC listen address.
+
+
+tendermint-config.tm-pub-key-access
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``tm-pub-key-access`` has a default value ``9986``, which is used to discover the public
+key of a tendermint node. Each Tendermint StatefulSet(Pod, Tendermint + NGINX) hosts its
+public key.
+
+.. code::
+
+  http://tendermint-instance-1:9986/pub_key.json
 
 
 Edit secret.yaml

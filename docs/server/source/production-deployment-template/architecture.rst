@@ -1,19 +1,144 @@
-Architecture of an IPDB Node
-============================
+Architecture of a BigchainDB Node
+==================================
 
-An IPDB Production deployment is hosted on a Kubernetes cluster and includes:
+A BigchainDB Production deployment is hosted on a Kubernetes cluster and includes:
 
-* NGINX, OpenResty, BigchainDB and MongoDB
+* NGINX, OpenResty, BigchainDB, MongoDB and Tendermint
   `Kubernetes Services <https://kubernetes.io/docs/concepts/services-networking/service/>`_.
-* NGINX, OpenResty, BigchainDB, Monitoring Agent and Backup Agent
+* NGINX, OpenResty, BigchainDB and MongoDB Monitoring Agent.
   `Kubernetes Deployments <https://kubernetes.io/docs/concepts/workloads/controllers/deployment/>`_.
-* MongoDB `Kubernetes StatefulSet <https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/>`_.
+* MongoDB and Tendermint `Kubernetes StatefulSet <https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/>`_.
 * Third party services like `3scale <https://3scale.net>`_,
   `MongoDB Cloud Manager <https://cloud.mongodb.com>`_ and the
   `Azure Operations Management Suite
   <https://docs.microsoft.com/en-us/azure/operations-management-suite/>`_.
 
-.. image:: ../_static/arch.jpg
+
+.. _bigchaindb-node:
+
+BigchainDB Node
+---------------
+
+.. aafig::
+  :aspect: 60
+  :scale: 100
+  :background: #rgb
+  :proportional:
+
+                                                              +            +
+  +--------------------------------------------------------------------------------------------------------------------------------------+
+  |                                                           |            |                                                             |
+  |                                                           |            |                                                             |
+  |                                                           |            |                                                             |
+  |                                                           |            |                                                             |
+  |                                                           |            |                                                             |
+  |                                                           |            |                                                             |
+  |                                         "BigchainDB API"  |            |  "Tendermint P2P"                                           |
+  |                                                           |            |  "Communication/"                                           |
+  |                                                           |            |  "Public Key Exchange"                                      |
+  |                                                           |            |                                                             |
+  |                                                           |            |                                                             |
+  |                                                           v            v                                                             |
+  |                                                                                                                                      |
+  |                                                          +------------------+                                                        |
+  |                                                          |"NGINX Service"   |                                                        |
+  |                                                          +-------+----------+                                                        |
+  |                                                                  |                                                                   |
+  |                                                                  v                                                                   |
+  |                                                                                                                                      |
+  |                                                          +------------------+                                                        |
+  |                                                          |   "NGINX"        |                                                        |
+  |                                                          |   "Deployment"   |                                                        |
+  |                                                          |                  |                                                        |
+  |                                                          +-------+----------+                                                        |
+  |                                                                  |                                                                   |
+  |                                                                  |                                                                   |
+  |                                                                  |                                                                   |
+  |                                                                  v                                                                   |
+  |                                                                                                                                      |
+  |                                      "443"                   +----------+         "46656/9986"                                       |
+  |                                                              | "Rate"   |                                                            |
+  |                                  +---------------------------+"Limiting"+-----------------------+                                    |
+  |                                  |                           | "Logic"  |                       |                                    |
+  |                                  |                           +----+-----+                       |                                    |
+  |                                  |                                |                             |                                    |
+  |                                  |                                |                             |                                    |
+  |                                  |                                |                             |                                    |
+  |                                  |                                |                             |                                    |
+  |                                  |                                |                             |                                    |
+  |                                  |                        "27017" |                             |                                    |
+  |                                  v                                |                             v                                    |
+  |                            +-------------+                        |                         +------------+                           |
+  |                            |"HTTPS"      |                        |    +------------------> |"Tendermint"|                           |
+  |                            |"Termination"|                        |    |            "9986"  |"Service"   |  "46656"                  |
+  |                            |             |                        |    |            +-------+            | <----+                    |
+  |                            +-----+-------+                        |    |            |       +------------+      |                    |
+  |                                  |                                |    |            |                           |                    |
+  |                                  |                                |    |            v                           v                    |
+  |                                  |                                |    |        +------------+              +------------+           |
+  |                                  |                                |    |        |"NGINX"     |              |"Tendermint"|           |
+  |                                  |                                |    |        |"Deployment"|              |"Stateful"  |           |
+  |                                  |                                |    |        |"Pub-Key-Ex"|              |"Set"       |           |
+  |                                  ^                                |    |        +------------+              +------------+           |
+  |                            +-----+-------+                        |    |                                                             |
+  |                  "POST"    |"Analyze"    |  "GET"                 |    |                                                             |
+  |                            |"Request"    |                        |    |                                                             |
+  |                +-----------+             +--------+               |    |                                                             |
+  |                |           +-------------+        |               |    |                                                             |
+  |                |                                  |               |    | "Bi+directional, communication between"                     |
+  |                |                                  |               |    | "BigchainDB(APP) and Tendermint"                            |
+  |                |                                  |               |    | "BFT consensus Engine"                                      |
+  |                |                                  |               |    |                                                             |
+  |                v                                  v               |    |                                                             |
+  |                                                                   |    |                                                             |
+  |         +-------------+                 +--------------+          +----+------------------->  +--------------+                       |
+  |         | "OpenResty" |                 | "BigchainDB" |               |                      |  "MongoDB"   |                       |
+  |         | "Service"   |                 | "Service"    |               |                      |  "Service"   |                       |
+  |         |             |          +----->|              |               |            +-------> |              |                       |
+  |         +------+------+          |      +------+-------+               |            |         +------+-------+                       |
+  |                |                 |             |                       |            |                 |                              |
+  |                |                 |             |                       |            |                 |                              |
+  |                v                 |             v                       |            |                 v                              |
+  |          +-------------+         |        +-------------+              |            |            +----------+                        |
+  |          |             |         |        |             | <------------+            |            |"MongoDB" |                        |
+  |          |"OpenResty"  |         |        | "BigchainDB"|                           |            |"Stateful"|                        |
+  |          |"Deployment" |         |        | "Deployment"|                           |            |"Set"     |                        |
+  |          |             |         |        |             |                           |            +-----+----+                        |
+  |          |             |         |        |             +---------------------------+                  |                             |
+  |          |             |         |        |             |                                              |                             |
+  |          +-----+-------+         |        +-------------+                                              |                             |
+  |                |                 |                                                                     |                             |
+  |                |                 |                                                                     |                             |
+  |                v                 |                                                                     |                             |
+  |           +-----------+          |                                                                     v                             |
+  |           | "Auth"    |          |                                                              +------------+                       |
+  |           | "Logic"   |----------+                                                              |"MongoDB"   |                       |
+  |           |           |                                                                         |"Monitoring"|                       |
+  |           |           |                                                                         |"Agent"     |                       |
+  |           +---+-------+                                                                         +-----+------+                       |
+  |               |                                                                                       |                              |
+  |               |                                                                                       |                              |
+  |               |                                                                                       |                              |
+  |               |                                                                                       |                              |
+  |               |                                                                                       |                              |
+  |               |                                                                                       |                              |
+  +---------------+---------------------------------------------------------------------------------------+------------------------------+
+                  |                                                                                       |
+                  |                                                                                       |
+                  |                                                                                       |
+                  v                                                                                       v
+  +------------------------------------+                                                +------------------------------------+
+  |                                    |                                                |                                    |
+  |                                    |                                                |                                    |
+  |                                    |                                                |                                    |
+  |     "3Scale"                       |                                                |   "MongoDB Cloud"                  |
+  |                                    |                                                |                                    |
+  |                                    |                                                |                                    |
+  |                                    |                                                |                                    |
+  +------------------------------------+                                                +------------------------------------+
+
+
+
 
 .. note::
   The arrows in the diagram represent the client-server communication. For
@@ -22,8 +147,8 @@ An IPDB Production deployment is hosted on a Kubernetes cluster and includes:
   fully duplex.
 
 
-NGINX
------
+NGINX: Entrypoint and Gateway
+-----------------------------
 
 We use an NGINX as HTTP proxy on port 443 (configurable) at the cloud
 entrypoint for:
@@ -51,8 +176,8 @@ entrypoint for:
    public api port), the connection is proxied to the MongoDB Service.
 
 
-OpenResty
----------
+OpenResty: API Management, Authentication and Authorization
+-----------------------------------------------------------
 
 We use `OpenResty <https://openresty.org/>`_ to perform authorization checks
 with 3scale using the ``app_id`` and ``app_key`` headers in the HTTP request.
@@ -63,13 +188,23 @@ on the LuaJIT compiler to execute the functions to authenticate the ``app_id``
 and ``app_key`` with the 3scale backend.
 
 
-MongoDB
--------
+MongoDB: Standalone
+-------------------
 
 We use MongoDB as the backend database for BigchainDB.
-In a multi-node deployment, MongoDB members communicate with each other via the
-public port exposed by the NGINX Service. 
 
 We achieve security by avoiding DoS attacks at the NGINX proxy layer and by
 ensuring that MongoDB has TLS enabled for all its connections.
+
+
+Tendermint: BFT consensus engine
+--------------------------------
+
+We use Tendermint as the backend consensus engine for BFT replication of BigchainDB.
+In a multi-node deployment, Tendermint nodes/peers communicate with each other via
+the public ports exposed by the NGINX gateway.
+
+We use port **9986** (configurable) to allow tendermint nodes to access the public keys
+of the peers and port **46656** (configurable) for the rest of the communications between
+the peers.
 
