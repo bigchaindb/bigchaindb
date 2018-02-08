@@ -6,23 +6,6 @@ import pymongo
 pytestmark = [pytest.mark.tendermint, pytest.mark.localmongodb, pytest.mark.bdb]
 
 
-@pytest.fixture
-def dummy_unspent_outputs():
-    return [
-        {'transaction_id': 'a', 'output_index': 0},
-        {'transaction_id': 'a', 'output_index': 1},
-        {'transaction_id': 'b', 'output_index': 0},
-    ]
-
-
-@pytest.fixture
-def utxoset(dummy_unspent_outputs, utxo_collection):
-    insert_res = utxo_collection.insert_many(deepcopy(dummy_unspent_outputs))
-    assert insert_res.acknowledged
-    assert len(insert_res.inserted_ids) == 3
-    return dummy_unspent_outputs, utxo_collection
-
-
 def test_get_txids_filtered(signed_create_tx, signed_transfer_tx):
     from bigchaindb.backend import connect, query
     from bigchaindb.models import Transaction
@@ -286,7 +269,6 @@ def test_get_unspent_outputs(db_context, utxoset):
     assert cursor.count() == 3
     retrieved_utxoset = list(cursor)
     unspent_outputs, utxo_collection = utxoset
-    assert retrieved_utxoset == list(utxo_collection.find())
-    for utxo in retrieved_utxoset:
-        del utxo['_id']
+    assert retrieved_utxoset == list(
+        utxo_collection.find(projection={'_id': False}))
     assert retrieved_utxoset == unspent_outputs

@@ -61,6 +61,7 @@ class BigchainDB(Bigchain):
     def store_transaction(self, transaction):
         """Store a valid transaction to the transactions collection."""
 
+        self.update_utxoset(transaction)
         transaction = deepcopy(transaction.to_dict())
         if transaction['operation'] == 'CREATE':
             asset = transaction.pop('asset')
@@ -81,6 +82,7 @@ class BigchainDB(Bigchain):
         assets = []
         txn_metadatas = []
         for transaction in transactions:
+            self.update_utxoset(transaction)
             transaction = transaction.to_dict()
             if transaction['operation'] == 'CREATE':
                 asset = transaction.pop('asset')
@@ -97,6 +99,56 @@ class BigchainDB(Bigchain):
         if assets:
             backend.query.store_assets(self.connection, assets)
         return backend.query.store_transactions(self.connection, txns)
+
+    def update_utxoset(self, transaction):
+        """Update the UTXO set given ``transaction``. That is, remove
+        the outputs that the given ``transaction`` spends, and add the
+        outputs that the given ``transaction`` creates.
+
+        Args:
+            transaction (:obj:`~bigchaindb.models.Transaction`): A new
+                transaction incoming into the system for which the UTXO
+                set needs to be updated.
+        """
+        spent_outputs = [
+            spent_output for spent_output in transaction.spent_outputs
+        ]
+        if spent_outputs:
+            self.delete_unspent_outputs(*spent_outputs)
+        self.store_unspent_outputs(
+            *[utxo._asdict() for utxo in transaction.unspent_outputs]
+        )
+
+    def store_unspent_outputs(self, *unspent_outputs):
+        """Store the given ``unspent_outputs`` (utxos).
+
+        Args:
+            *unspent_outputs (:obj:`tuple` of :obj:`dict`): Variable
+                length tuple or list of unspent outputs.
+        """
+        if unspent_outputs:
+            return backend.query.store_unspent_outputs(
+                                            self.connection, *unspent_outputs)
+
+    def get_unspent_outputs(self):
+        """Get the utxoset.
+
+        Returns:
+            generator of unspent_outputs.
+        """
+        cursor = backend.query.get_unspent_outputs(self.connection)
+        return (record for record in cursor)
+
+    def delete_unspent_outputs(self, *unspent_outputs):
+        """Deletes the given ``unspent_outputs`` (utxos).
+
+        Args:
+            *unspent_outputs (:obj:`tuple` of :obj:`dict`): Variable
+                length tuple or list of unspent outputs.
+        """
+        if unspent_outputs:
+            return backend.query.delete_unspent_outputs(
+                                        self.connection, *unspent_outputs)
 
     def get_transaction(self, transaction_id, include_status=False):
         transaction = backend.query.get_transaction(self.connection, transaction_id)
