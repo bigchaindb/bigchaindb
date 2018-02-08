@@ -197,5 +197,5 @@ def get_block(conn, block_id):
 def get_block_with_transaction(conn, txid):
     return conn.run(
         conn.collection('blocks')
-        .find({'transactions': {'$all': [txid]}},
+        .find({'transactions': txid},
               projection={'_id': False, 'height': True}))

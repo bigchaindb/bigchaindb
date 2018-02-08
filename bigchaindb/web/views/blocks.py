@@ -48,6 +48,6 @@ class BlockListApi(Resource):
         pool = current_app.config['bigchain_pool']
 
         with pool() as bigchain:
-            blocks = bigchain.get_blocks_status_containing_tx(tx_id)
+            blocks = bigchain.get_block_containing_tx(tx_id)
 
         return blocks

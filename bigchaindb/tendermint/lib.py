@@ -191,7 +191,7 @@ class BigchainDB(Bigchain):
         else:
             return block
 
-    def get_blocks_status_containing_tx(self, txid):
+    def get_block_containing_tx(self, txid):
         """Retrieve the list of blocks (block ids) containing a
            transaction with transaction id `txid`
 
