@@ -10,7 +10,7 @@ You can modify them to suit your needs.
     We use standalone MongoDB (without Replica Set), BFT replication is handled by Tendermint.
 
 
-.. _register-a-domain-and-get-an-ssl-certificate-for-it-tmt:
+.. _register-a-domain-and-get-an-ssl-certificate-for-it:
 
 1. Register a Domain and Get an SSL Certificate for It
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -63,7 +63,7 @@ the ``genesis_time`` and ``chain_id`` from this example ``genesis.json`` file:
     "app_hash": ""
     }
 
-.. _things-each-node-operator-must-do-tmt:
+.. _things-each-node-operator-must-do:
 
 Things Each Node Operator Must Do
 ---------------------------------

@@ -3,13 +3,12 @@
 Kubernetes Template: Deploy a Single BigchainDB Node
 ====================================================
 
-This page describes how to deploy a stand-alone BigchainDB + Tendermint node,
-or a static network of BigchainDB + Tendermint nodes.
+This page describes how to deploy a stand-alone BigchainDB + Tendermint node
 using `Kubernetes <https://kubernetes.io/>`_.
 It assumes you already have a running Kubernetes cluster.
 
 Below, we refer to many files by their directory and filename,
-such as ``configuration/config-map-tm.yaml``. Those files are files in the
+such as ``configuration/config-map.yaml``. Those files are files in the
 `bigchaindb/bigchaindb repository on GitHub <https://github.com/bigchaindb/bigchaindb/>`_
 in the ``k8s/`` directory.
 Make sure you're getting those files from the appropriate Git branch on
@@ -108,7 +107,7 @@ Step 3: Configure Your BigchainDB Node
 See the page titled :ref:`how-to-configure-a-bigchaindb-node`.
 
 
-.. _start-the-nginx-service-tmt:
+.. _start-the-nginx-service:
 
 Step 4: Start the NGINX Service
 -------------------------------
@@ -125,7 +124,7 @@ Step 4: Start the NGINX Service
 Step 4.1: Vanilla NGINX
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-   * This configuration is located in the file ``nginx-http/nginx-http-svc-tm.yaml``.
+   * This configuration is located in the file ``nginx-http/nginx-http-svc.yaml``.
 
    * Set the ``metadata.name`` and ``metadata.labels.name`` to the value
      set in ``ngx-instance-name`` in the ConfigMap above.
@@ -153,7 +152,7 @@ Step 4.1: Vanilla NGINX
 
      .. code:: bash
 
-        $ kubectl --context k8s-bdb-test-cluster-0 apply -f nginx-http/nginx-http-svc-tm.yaml
+        $ kubectl --context k8s-bdb-test-cluster-0 apply -f nginx-http/nginx-http-svc.yaml
 
 
 Step 4.2: NGINX with HTTPS
@@ -165,7 +164,7 @@ Step 4.2: NGINX with HTTPS
    * You should have already created the necessary Kubernetes Secrets in the previous
      step (i.e. ``https-certs``).
 
-   * This configuration is located in the file ``nginx-https/nginx-https-svc-tm.yaml``.
+   * This configuration is located in the file ``nginx-https/nginx-https-svc.yaml``.
 
    * Set the ``metadata.name`` and ``metadata.labels.name`` to the value
      set in ``ngx-instance-name`` in the ConfigMap above.
@@ -199,10 +198,10 @@ Step 4.2: NGINX with HTTPS
 
      .. code:: bash
 
-        $ kubectl --context k8s-bdb-test-cluster-0 apply -f nginx-https/nginx-https-svc-tm.yaml
+        $ kubectl --context k8s-bdb-test-cluster-0 apply -f nginx-https/nginx-https-svc.yaml
 
 
-.. _assign-dns-name-to-nginx-public-ip-tmt:
+.. _assign-dns-name-to-nginx-public-ip:
 
 Step 5: Assign DNS Name to the NGINX Public IP
 ----------------------------------------------
@@ -245,12 +244,12 @@ This will ensure that when you scale to different geographical zones, other Tend
 nodes in the network can reach this instance.
 
 
-.. _start-the-mongodb-kubernetes-service-tmt:
+.. _start-the-mongodb-kubernetes-service:
 
 Step 6: Start the MongoDB Kubernetes Service
 --------------------------------------------
 
-  * This configuration is located in the file ``mongodb/mongo-svc-tm.yaml``.
+  * This configuration is located in the file ``mongodb/mongo-svc.yaml``.
 
   * Set the ``metadata.name`` and ``metadata.labels.name`` to the value
     set in ``mdb-instance-name`` in the ConfigMap above.
@@ -269,15 +268,15 @@ Step 6: Start the MongoDB Kubernetes Service
 
     .. code:: bash
 
-       $ kubectl --context k8s-bdb-test-cluster-0 apply -f mongodb/mongo-svc-tm.yaml
+       $ kubectl --context k8s-bdb-test-cluster-0 apply -f mongodb/mongo-svc.yaml
 
 
-.. _start-the-bigchaindb-kubernetes-service-tmt:
+.. _start-the-bigchaindb-kubernetes-service:
 
 Step 7: Start the BigchainDB Kubernetes Service
 -----------------------------------------------
 
-  * This configuration is located in the file ``bigchaindb/bigchaindb-svc-tm.yaml``.
+  * This configuration is located in the file ``bigchaindb/bigchaindb-svc.yaml``.
 
   * Set the ``metadata.name`` and ``metadata.labels.name`` to the value
     set in ``bdb-instance-name`` in the ConfigMap above.
@@ -306,15 +305,15 @@ Step 7: Start the BigchainDB Kubernetes Service
 
     .. code:: bash
 
-       $ kubectl --context k8s-bdb-test-cluster-0 apply -f bigchaindb/bigchaindb-svc-tm.yaml
+       $ kubectl --context k8s-bdb-test-cluster-0 apply -f bigchaindb/bigchaindb-svc.yaml
 
 
-.. _start-the-openresty-kubernetes-service-tmt:
+.. _start-the-openresty-kubernetes-service:
 
 Step 8: Start the OpenResty Kubernetes Service
 ----------------------------------------------
 
-  * This configuration is located in the file ``nginx-openresty/nginx-openresty-svc-tm.yaml``.
+  * This configuration is located in the file ``nginx-openresty/nginx-openresty-svc.yaml``.
 
   * Set the ``metadata.name`` and ``metadata.labels.name`` to the value
     set in ``openresty-instance-name`` in the ConfigMap above.
@@ -328,10 +327,10 @@ Step 8: Start the OpenResty Kubernetes Service
 
     .. code:: bash
 
-       $ kubectl --context k8s-bdb-test-cluster-0 apply -f nginx-openresty/nginx-openresty-svc-tm.yaml
+       $ kubectl --context k8s-bdb-test-cluster-0 apply -f nginx-openresty/nginx-openresty-svc.yaml
 
 
-.. _start-the-tendermint-kubernetes-service-tmt:
+.. _start-the-tendermint-kubernetes-service:
 
 Step 9: Start the Tendermint Kubernetes Service
 -----------------------------------------------
@@ -368,7 +367,7 @@ Step 9: Start the Tendermint Kubernetes Service
        $ kubectl --context k8s-bdb-test-cluster-0 apply -f tendermint/tendermint-svc.yaml
 
 
-.. _start-the-nginx-deployment-tmt:
+.. _start-the-nginx-deployment:
 
 Step 10: Start the NGINX Kubernetes Deployment
 ----------------------------------------------
@@ -385,7 +384,7 @@ Step 10: Start the NGINX Kubernetes Deployment
 Step 10.1: Vanilla NGINX
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-  * This configuration is located in the file ``nginx-http/nginx-http-dep-tm.yaml``.
+  * This configuration is located in the file ``nginx-http/nginx-http-dep.yaml``.
 
   * Set the ``metadata.name`` and ``spec.template.metadata.labels.app``
     to the value set in ``ngx-instance-name`` in the ConfigMap followed by a
@@ -418,14 +417,14 @@ Step 10.1: Vanilla NGINX
 
     .. code:: bash
 
-       $ kubectl --context k8s-bdb-test-cluster-0 apply -f nginx-http/nginx-http-dep-tm.yaml
+       $ kubectl --context k8s-bdb-test-cluster-0 apply -f nginx-http/nginx-http-dep.yaml
 
 
 Step 10.2: NGINX with HTTPS
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
    * This configuration is located in the file
-     ``nginx-https/nginx-https-dep-tm.yaml``.
+     ``nginx-https/nginx-https-dep.yaml``.
 
    * Set the ``metadata.name`` and ``spec.template.metadata.labels.app``
      to the value set in ``ngx-instance-name`` in the ConfigMap followed by a
@@ -465,10 +464,10 @@ Step 10.2: NGINX with HTTPS
 
      .. code:: bash
 
-        $ kubectl --context k8s-bdb-test-cluster-0 apply -f nginx-https/nginx-https-dep-tm.yaml
+        $ kubectl --context k8s-bdb-test-cluster-0 apply -f nginx-https/nginx-https-dep.yaml
 
 
-.. _create-kubernetes-storage-class-mdb-tmt:
+.. _create-kubernetes-storage-class-mdb:
 
 Step 11: Create Kubernetes Storage Classes for MongoDB
 ------------------------------------------------------
@@ -539,7 +538,7 @@ Create the required storage classes using:
 You can check if it worked using ``kubectl get storageclasses``.
 
 
-.. _create-kubernetes-persistent-volume-claim-mdb-tmt:
+.. _create-kubernetes-persistent-volume-claim-mdb:
 
 Step 12: Create Kubernetes Persistent Volume Claims for MongoDB
 ---------------------------------------------------------------
@@ -594,12 +593,12 @@ but it should become "Bound" fairly quickly.
     For notes on recreating a private volume form a released Azure disk resource consult
     :doc:`the page about cluster troubleshooting <../production-deployment-template/troubleshoot>`.
 
-.. _start-kubernetes-stateful-set-mongodb-tmt:
+.. _start-kubernetes-stateful-set-mongodb:
 
 Step 13: Start a Kubernetes StatefulSet for MongoDB
 ---------------------------------------------------
 
-  * This configuration is located in the file ``mongodb/mongo-ss-tm.yaml``.
+  * This configuration is located in the file ``mongodb/mongo-ss.yaml``.
 
   * Set the ``spec.serviceName`` to the value set in ``mdb-instance-name`` in
     the ConfigMap.
@@ -665,7 +664,7 @@ Step 13: Start a Kubernetes StatefulSet for MongoDB
 
     .. code:: bash
 
-       $ kubectl --context k8s-bdb-test-cluster-0 apply -f mongodb/mongo-ss-tm.yaml
+       $ kubectl --context k8s-bdb-test-cluster-0 apply -f mongodb/mongo-ss.yaml
 
   * It might take up to 10 minutes for the disks, specified in the Persistent
     Volume Claims above, to be created and attached to the pod.
@@ -679,7 +678,7 @@ Step 13: Start a Kubernetes StatefulSet for MongoDB
        $ kubectl --context k8s-bdb-test-cluster-0 get pods -w
 
 
-.. _configure-users-and-access-control-mongodb-tmt:
+.. _configure-users-and-access-control-mongodb:
 
 Step 14: Configure Users and Access Control for MongoDB
 -------------------------------------------------------
@@ -779,7 +778,7 @@ Step 14: Configure Users and Access Control for MongoDB
                 } )
 
 
-.. _create-kubernetes-storage-class-tmt:
+.. _create-kubernetes-storage-class:
 
 Step 15: Create Kubernetes Storage Classes for Tendermint
 ----------------------------------------------------------
@@ -791,7 +790,7 @@ The Kubernetes template for configuration of Storage Class is located in the
 file ``tendermint/tendermint-sc.yaml``.
 
 Details about how to create a Azure Storage account and how Kubernetes Storage Class works
-are already covered in this document: :ref:`create-kubernetes-storage-class-mdb-tmt`.
+are already covered in this document: :ref:`create-kubernetes-storage-class-mdb`.
 
 Create the required storage classes using:
 
@@ -802,7 +801,7 @@ Create the required storage classes using:
 
 You can check if it worked using ``kubectl get storageclasses``.
 
-.. _create-kubernetes-persistent-volume-claim-tmt:
+.. _create-kubernetes-persistent-volume-claim:
 
 Step 16: Create Kubernetes Persistent Volume Claims for Tendermint
 ------------------------------------------------------------------
@@ -814,7 +813,7 @@ This configuration is located in the file ``tendermint/tendermint-pvc.yaml``.
 
 Details about Kubernetes Persistent Volumes, Persistent Volume Claims
 and how they work with Azure are already covered in this
-document: :ref:`create-kubernetes-persistent-volume-claim-mdb-tmt`.
+document: :ref:`create-kubernetes-persistent-volume-claim-mdb`.
 
 Create the required Persistent Volume Claims using:
 
@@ -829,7 +828,7 @@ You can check its status using:
     kubectl get pvc -w
 
 
-.. _create-kubernetes-stateful-set-tmt:
+.. _create-kubernetes-stateful-set:
 
 Step 17: Start a Kubernetes StatefulSet for Tendermint
 ------------------------------------------------------
@@ -896,7 +895,7 @@ engine while NGINX is used to serve the public key of the Tendermint instance.
 
        $ kubectl --context k8s-bdb-test-cluster-0 get pods -w
 
-.. _start-kubernetes-deployment-for-mdb-mon-agent-tmt:
+.. _start-kubernetes-deployment-for-mdb-mon-agent:
 
 Step 18: Start a Kubernetes Deployment for MongoDB Monitoring Agent
 -------------------------------------------------------------------
@@ -925,13 +924,13 @@ Step 18: Start a Kubernetes Deployment for MongoDB Monitoring Agent
        $ kubectl --context k8s-bdb-test-cluster-0 apply -f mongodb-monitoring-agent/mongo-mon-dep.yaml
 
 
-.. _start-kubernetes-deployment-bdb-tmt:
+.. _start-kubernetes-deployment-bdb:
 
 Step 19: Start a Kubernetes Deployment for BigchainDB
 -----------------------------------------------------
 
   * This configuration is located in the file
-    ``bigchaindb/bigchaindb-dep-tm.yaml``.
+    ``bigchaindb/bigchaindb-dep.yaml``.
 
   * Set ``metadata.name`` and ``spec.template.metadata.labels.app`` to the
     value set in ``bdb-instance-name`` in the ConfigMap, followed by
@@ -980,13 +979,13 @@ Step 19: Start a Kubernetes Deployment for BigchainDB
 
     .. code:: bash
 
-       $ kubectl --context k8s-bdb-test-cluster-0 apply -f bigchaindb/bigchaindb-dep-tm.yaml
+       $ kubectl --context k8s-bdb-test-cluster-0 apply -f bigchaindb/bigchaindb-dep.yaml
 
 
   * You can check its status using the command ``kubectl get deployments -w``
 
 
-.. _start-kubernetes-deployment-openresty-tmt:
+.. _start-kubernetes-deployment-openresty:
 
 Step 20: Start a Kubernetes Deployment for OpenResty
 ----------------------------------------------------
@@ -1036,7 +1035,7 @@ for details on how to configure the MongoDB Cloud Manager to enable
 monitoring and backup.
 
 
-.. _verify-and-test-bdb-tmt:
+.. _verify-and-test-bdb:
 
 Step 22: Verify the BigchainDB Node Setup
 -----------------------------------------

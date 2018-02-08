@@ -11,7 +11,7 @@ and ``secret.yaml`` (a set of Secrets).
 They are stored in the Kubernetes cluster's key-value store (etcd).
 
 Make sure you did all the things listed in the section titled
-:ref:`things-each-node-operator-must-do-tmt`
+:ref:`things-each-node-operator-must-do`
 (including generation of all the SSL certificates needed
 for MongoDB auth).
 
@@ -35,7 +35,7 @@ vars.cluster-fqdn
 ~~~~~~~~~~~~~~~~~
 
 The ``cluster-fqdn`` field specifies the domain you would have
-:ref:`registered before <register-a-domain-and-get-an-ssl-certificate-for-it-tmt>`.
+:ref:`registered before <register-a-domain-and-get-an-ssl-certificate-for-it>`.
 
 
 vars.cluster-frontend-port

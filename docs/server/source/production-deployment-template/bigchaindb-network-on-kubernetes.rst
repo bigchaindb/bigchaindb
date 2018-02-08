@@ -3,7 +3,7 @@
 Kubernetes Template: Deploying a BigchainDB network
 ===================================================
 
-This page describes how to deploy a BigchainDB + Tendermint network.
+This page describes how to deploy a static BigchainDB + Tendermint network.
 
 If you want to deploy a stand-alone BigchainDB node in a BigchainDB cluster,
 or a stand-alone BigchainDB node,
@@ -48,7 +48,7 @@ cluster is using.
   `github repository <https://github.com/bigchaindb/bigchaindb/milestones>`_.
 
 
-.. _pre-reqs-bdb-network-tmt:
+.. _pre-reqs-bdb-network:
 
 Prerequisites
 -------------
@@ -57,7 +57,7 @@ The deployment methodology is similar to one covered with :doc:`node-on-kubernet
 we need to tweak some configurations depending on your choice of deployment.
 
 The operator needs to follow some consistent naming convention for all the components
-covered :ref:`here <things-each-node-operator-must-do-tmt>`.
+covered :ref:`here <things-each-node-operator-must-do>`.
 
 Lets assume we are deploying a 4 node cluster, your naming conventions could look like this:
 
@@ -109,24 +109,24 @@ Lets assume we are deploying a 4 node cluster, your naming conventions could loo
 Edit config.yaml and secret.yaml
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Make N(number of nodes) copies of ``configuration/config-map-tm.yaml`` and ``configuration/secret-tm.yaml``.
+Make N(number of nodes) copies of ``configuration/config-map.yaml`` and ``configuration/secret.yaml``.
 
 .. code:: text
 
-  # For config-map-tm.yaml
+  # For config-map.yaml
   config-map-node-1.yaml
   config-map-node-2.yaml
   config-map-node-3.yaml
   config-map-node-4.yaml
 
-  # For secret-tm.yaml
+  # For secret.yaml
   secret-node-1.yaml
   secret-node-2.yaml
   secret-node-3.yaml
   secret-node-4.yaml
 
 Edit the data values as described in :doc:`this document <node-config-map-and-secrets>`, based
-on the naming convention described :ref:`above <pre-reqs-bdb-network-tmt>`.
+on the naming convention described :ref:`above <pre-reqs-bdb-network>`.
 
 **Only for single site deployments**: Since all the configuration files use the
 same ConfigMap and Secret Keys i.e.
@@ -136,7 +136,7 @@ same ConfigMap and Secret Keys i.e.
 will overwrite the configuration of the previously deployed one.
 We want each node to have its own unique configurations.
 One way to go about it is that, using the
-:ref:`naming convention above <pre-reqs-bdb-network-tmt>` we edit the ConfigMap and Secret keys.
+:ref:`naming convention above <pre-reqs-bdb-network>` we edit the ConfigMap and Secret keys.
 
 .. code:: text
 
@@ -208,7 +208,7 @@ Deploy all your configuration maps and secrets.
   *-node-4-dep.yaml
 
 
-.. _single-site-network-tmt:
+.. _single-site-network:
 
 Single Site: Single Azure Kubernetes Cluster
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -380,12 +380,12 @@ nodes, we need to replicate the :doc:`deployment steps for each node <node-on-ku
 N being the number of participants in the network.
 
 The operator needs to follow a consistent naming convention which has :ref:`already
-discussed in this document <pre-reqs-bdb-network-tmt>`.
+discussed in this document <pre-reqs-bdb-network>`.
 
 .. note::
 
   Assuming we are using independent Kubernetes clusters, the ConfigMap and Secret Keys
-  do not need to be updated unlike :ref:`single-site-network-tmt`, and we also do not
+  do not need to be updated unlike :ref:`single-site-network`, and we also do not
   need to update corresponding ConfigMap/Secret imports in the Kubernetes components.
 
 
@@ -393,19 +393,19 @@ Deploy Kubernetes Services
 --------------------------
 
 Deploy the following services for each node by following the naming convention
-described :ref:`above <pre-reqs-bdb-network-tmt>`:
+described :ref:`above <pre-reqs-bdb-network>`:
 
-* :ref:`Start the NGINX Service <start-the-nginx-service-tmt>`.
+* :ref:`Start the NGINX Service <start-the-nginx-service>`.
 
-* :ref:`Assign DNS Name to the NGINX Public IP <assign-dns-name-to-nginx-public-ip-tmt>`
+* :ref:`Assign DNS Name to the NGINX Public IP <assign-dns-name-to-nginx-public-ip>`
 
-* :ref:`Start the MongoDB Kubernetes Service <start-the-mongodb-kubernetes-service-tmt>`.
+* :ref:`Start the MongoDB Kubernetes Service <start-the-mongodb-kubernetes-service>`.
 
-* :ref:`Start the BigchainDB Kubernetes Service <start-the-bigchaindb-kubernetes-service-tmt>`.
+* :ref:`Start the BigchainDB Kubernetes Service <start-the-bigchaindb-kubernetes-service>`.
 
-* :ref:`Start the OpenResty Kubernetes Service <start-the-openresty-kubernetes-service-tmt>`.
+* :ref:`Start the OpenResty Kubernetes Service <start-the-openresty-kubernetes-service>`.
 
-* :ref:`Start the Tendermint Kubernetes Service <start-the-tendermint-kubernetes-service-tmt>`.
+* :ref:`Start the Tendermint Kubernetes Service <start-the-tendermint-kubernetes-service>`.
 
 
 Only for multi site deployments
@@ -439,7 +439,7 @@ We can do this in Kubernetes using a Kubernetes Service of ``type``
 
 * Set ``spec.externalName`` to the FQDN mapped to NGINX Public IP of the cluster you are trying to connect to.
   For more information about the FQDN please refer to: :ref:`Assign DNS name to NGINX Public
-  IP <assign-dns-name-to-nginx-public-ip-tmt>`.
+  IP <assign-dns-name-to-nginx-public-ip>`.
 
 .. note::
    This operation needs to be replicated ``n-1`` times per node for a ``n`` node cluster, with the respective FQDNs
@@ -449,47 +449,47 @@ We can do this in Kubernetes using a Kubernetes Service of ``type``
    touch with the system administrator/s of the other ``n-1`` clusters and
    share with them your instance name (``tendermint-instance-name`` in the ConfigMap)
    and the FQDN of the NGINX instance acting as Gateway(set in: :ref:`Assign DNS name to NGINX
-   Public IP <assign-dns-name-to-nginx-public-ip-tmt>`).
+   Public IP <assign-dns-name-to-nginx-public-ip>`).
 
 
 Start NGINX Kubernetes deployments
 ----------------------------------
 
 Start the NGINX deployment that serves as a Gateway for each node by following the
-naming convention described :ref:`above <pre-reqs-bdb-network-tmt>` and referring to the following instructions:
+naming convention described :ref:`above <pre-reqs-bdb-network>` and referring to the following instructions:
 
-* :ref:`Start the NGINX Kubernetes Deployment <start-the-nginx-deployment-tmt>`.
+* :ref:`Start the NGINX Kubernetes Deployment <start-the-nginx-deployment>`.
 
 
 Deploy Kubernetes StorageClasses for MongoDB and Tendermint
 -----------------------------------------------------------
 
 Deploy the following StorageClasses for each node by following the naming convention
-described :ref:`above <pre-reqs-bdb-network-tmt>`:
+described :ref:`above <pre-reqs-bdb-network>`:
 
-* :ref:`Create Kubernetes Storage Classes for MongoDB <create-kubernetes-storage-class-mdb-tmt>`.
+* :ref:`Create Kubernetes Storage Classes for MongoDB <create-kubernetes-storage-class-mdb>`.
 
-* :ref:`Create Kubernetes Storage Classes for Tendermint <create-kubernetes-storage-class-tmt>`.
+* :ref:`Create Kubernetes Storage Classes for Tendermint <create-kubernetes-storage-class>`.
 
 
 Deploy Kubernetes PersistentVolumeClaims for MongoDB and Tendermint
 --------------------------------------------------------------------
 
 Deploy the following services for each node by following the naming convention
-described :ref:`above <pre-reqs-bdb-network-tmt>`:
+described :ref:`above <pre-reqs-bdb-network>`:
 
-* :ref:`Create Kubernetes Persistent Volume Claims for MongoDB <create-kubernetes-persistent-volume-claim-mdb-tmt>`.
+* :ref:`Create Kubernetes Persistent Volume Claims for MongoDB <create-kubernetes-persistent-volume-claim-mdb>`.
 
-* :ref:`Create Kubernetes Persistent Volume Claims for Tendermint <create-kubernetes-persistent-volume-claim-tmt>`
+* :ref:`Create Kubernetes Persistent Volume Claims for Tendermint <create-kubernetes-persistent-volume-claim>`
 
 
 Deploy MongoDB Kubernetes StatefulSet
 --------------------------------------
 
 Deploy the MongoDB StatefulSet (standalone MongoDB) for each node by following the naming convention
-described :ref:`above <pre-reqs-bdb-network-tmt>`: and referring to the following section:
+described :ref:`above <pre-reqs-bdb-network>`: and referring to the following section:
 
-* :ref:`Start a Kubernetes StatefulSet for MongoDB <start-kubernetes-stateful-set-mongodb-tmt>`.
+* :ref:`Start a Kubernetes StatefulSet for MongoDB <start-kubernetes-stateful-set-mongodb>`.
 
 
 Configure Users and Access Control for MongoDB
@@ -498,43 +498,43 @@ Configure Users and Access Control for MongoDB
 Configure users and access control for each MongoDB instance
 in the network by referring to the following section:
 
-* :ref:`Configure Users and Access Control for MongoDB <configure-users-and-access-control-mongodb-tmt>`.
+* :ref:`Configure Users and Access Control for MongoDB <configure-users-and-access-control-mongodb>`.
 
 
 Deploy Tendermint Kubernetes StatefulSet
 ----------------------------------------
 
 Deploy the Tendermint Stateful for each node by following the
-naming convention described :ref:`above <pre-reqs-bdb-network-tmt>` and referring to the following instructions:
+naming convention described :ref:`above <pre-reqs-bdb-network>` and referring to the following instructions:
 
-* :ref:`create-kubernetes-stateful-set-tmt`.
+* :ref:`create-kubernetes-stateful-set`.
 
 
 Start Kubernetes Deployment for MongoDB Monitoring Agent
 ---------------------------------------------------------
 
 Start the MongoDB monitoring agent Kubernetes deployment for each node by following the
-naming convention described :ref:`above <pre-reqs-bdb-network-tmt>` and referring to the following instructions:
+naming convention described :ref:`above <pre-reqs-bdb-network>` and referring to the following instructions:
 
-* :ref:`Start a Kubernetes StatefulSet for Tendermint <start-kubernetes-deployment-for-mdb-mon-agent-tmt>`.
+* :ref:`Start a Kubernetes StatefulSet for Tendermint <start-kubernetes-deployment-for-mdb-mon-agent>`.
 
 
 Start Kubernetes Deployment for BigchainDB
 ------------------------------------------
 
 Start the BigchainDB Kubernetes deployment for each node by following the
-naming convention described :ref:`above <pre-reqs-bdb-network-tmt>` and referring to the following instructions:
+naming convention described :ref:`above <pre-reqs-bdb-network>` and referring to the following instructions:
 
-* :ref:`Start a Kubernetes Deployment for BigchainDB <start-kubernetes-deployment-bdb-tmt>`.
+* :ref:`Start a Kubernetes Deployment for BigchainDB <start-kubernetes-deployment-bdb>`.
 
 
 Start Kubernetes Deployment for OpenResty
 ------------------------------------------
 
 Start the OpenResty Kubernetes deployment for each node by following the
-naming convention described :ref:`above <pre-reqs-bdb-network-tmt>` and referring to the following instructions:
+naming convention described :ref:`above <pre-reqs-bdb-network>` and referring to the following instructions:
 
-* :ref:` Start a Kubernetes Deployment for OpenResty <start-kubernetes-deployment-openresty-tmt>`.
+* :ref:`Start a Kubernetes Deployment for OpenResty <start-kubernetes-deployment-openresty>`.
 
 
 Verify and Test
@@ -542,5 +542,5 @@ Verify and Test
 
 Verify and test your setup by referring to the following instructions:
 
-* :ref:`Verify the BigchainDB Node Setup <verify-and-test-bdb-tmt>`.
+* :ref:`Verify the BigchainDB Node Setup <verify-and-test-bdb>`.
 
