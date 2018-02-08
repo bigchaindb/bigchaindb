@@ -10,10 +10,13 @@ You can modify them to suit your needs.
     We use standalone MongoDB (without Replica Set), BFT replication is handled by Tendermint.
 
 
+Things to Do Before Deploying Any Nodes
+---------------------------------------
+
 .. _register-a-domain-and-get-an-ssl-certificate-for-it-tmt:
 
 1. Register a Domain and Get an SSL Certificate for It
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The BigchainDB APIs (HTTP API and WebSocket API) should be served using TLS,
 so the organization running the cluster
@@ -25,7 +28,7 @@ and buy an SSL/TLS certificate for the FQDN.
 .. _generate-the-blockchain-id-and-genesis-time:
 
 2. Generate the Blockchain ID and Genesis Time
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Tendermint nodes require two parameters that need to be common and shared between all the
 participants in the network.
