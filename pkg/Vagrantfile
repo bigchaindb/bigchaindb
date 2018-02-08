@@ -27,13 +27,7 @@ hosts_config = File.open(HOSTS_FILE, 'w+')
 # TODO: (muawiakh) Add support for Docker, AWS, Azure
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   instances_config["bdb_hosts"].each do |instance|
-    # Workaround till canonical fixes https://bugs.launchpad.net/cloud-images/+bug/1569237
-    # using -u ubuntu as remote user, conventionally vagrant boxes use `vagrant` user
-    if instance["box"]["name"] == "ubuntu/xenial64"
-      hosts_config.puts("#{instance["name"]} ansible_user=ubuntu")
-    else
-      hosts_config.puts("#{instance["name"]} ansible_user=vagrant")
-    end
+    hosts_config.puts("#{instance["name"]} ansible_user=vagrant")
     config.vm.define instance['name'] do |bdb|
       # Workaround until vagrant cachier plugin supports dnf
       if !(instance["box"]["name"].include? "fedora")
