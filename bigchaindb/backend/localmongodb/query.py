@@ -256,4 +256,5 @@ def delete_unspent_outputs(conn, *unspent_outputs):
 def get_unspent_outputs(conn, *, query=None):
     if query is None:
         query = {}
-    return conn.run(conn.collection('utxos').find(query))
+    return conn.run(conn.collection('utxos').find(query,
+                                                  projection={'_id': False}))

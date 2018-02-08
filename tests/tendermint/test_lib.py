@@ -2,6 +2,7 @@ import os
 from unittest.mock import patch
 
 import pytest
+from pymongo import MongoClient
 
 from bigchaindb import backend
 
@@ -9,6 +10,7 @@ from bigchaindb import backend
 pytestmark = pytest.mark.tendermint
 
 
+@pytest.mark.bdb
 def test_asset_is_separated_from_transaciton(b):
     from bigchaindb.models import Transaction
     from bigchaindb.common.crypto import generate_key_pair
@@ -122,3 +124,190 @@ def test_post_transaction_invalid_mode(b):
     tx = b.validate_transaction(tx)
     with pytest.raises(ValidationError):
         b.write_transaction(tx, 'nope')
+
+
+@pytest.mark.bdb
+def test_update_utxoset(tb, signed_create_tx, signed_transfer_tx, db_context):
+    mongo_client = MongoClient(host=db_context.host, port=db_context.port)
+    tb.update_utxoset(signed_create_tx)
+    utxoset = mongo_client[db_context.name]['utxos']
+    assert utxoset.count() == 1
+    utxo = utxoset.find_one()
+    assert utxo['transaction_id'] == signed_create_tx.id
+    assert utxo['output_index'] == 0
+    tb.update_utxoset(signed_transfer_tx)
+    assert utxoset.count() == 1
+    utxo = utxoset.find_one()
+    assert utxo['transaction_id'] == signed_transfer_tx.id
+    assert utxo['output_index'] == 0
+
+
+@pytest.mark.bdb
+def test_store_transaction(mocker, tb, signed_create_tx,
+                           signed_transfer_tx, db_context):
+    mocked_store_asset = mocker.patch('bigchaindb.backend.query.store_asset')
+    mocked_store_metadata = mocker.patch(
+        'bigchaindb.backend.query.store_metadata')
+    mocked_store_transaction = mocker.patch(
+        'bigchaindb.backend.query.store_transaction')
+    mongo_client = MongoClient(host=db_context.host, port=db_context.port)
+    tb.store_transaction(signed_create_tx)
+    utxoset = mongo_client[db_context.name]['utxos']
+    assert utxoset.count() == 1
+    utxo = utxoset.find_one()
+    assert utxo['transaction_id'] == signed_create_tx.id
+    assert utxo['output_index'] == 0
+    mocked_store_asset.assert_called_once_with(
+        tb.connection,
+        {'id': signed_create_tx.id, 'data': signed_create_tx.asset['data']},
+    )
+    mocked_store_metadata.assert_called_once_with(
+        tb.connection,
+        [{'id': signed_create_tx.id, 'metadata': signed_create_tx.metadata}],
+    )
+    mocked_store_transaction.assert_called_once_with(
+        tb.connection,
+        {k: v for k, v in signed_create_tx.to_dict().items()
+         if k not in ('asset', 'metadata')},
+    )
+    mocked_store_asset.reset_mock()
+    mocked_store_metadata.reset_mock()
+    mocked_store_transaction.reset_mock()
+    tb.store_transaction(signed_transfer_tx)
+    assert utxoset.count() == 1
+    utxo = utxoset.find_one()
+    assert utxo['transaction_id'] == signed_transfer_tx.id
+    assert utxo['output_index'] == 0
+    assert not mocked_store_asset.called
+    mocked_store_metadata.asser_called_once_with(
+        tb.connection,
+        {'id': signed_transfer_tx.id, 'metadata': signed_transfer_tx.metadata},
+    )
+    mocked_store_transaction.assert_called_once_with(
+        tb.connection,
+        {k: v for k, v in signed_transfer_tx.to_dict().items()
+         if k != 'metadata'},
+    )
+
+
+@pytest.mark.bdb
+def test_store_bulk_transaction(mocker, tb, signed_create_tx,
+                                signed_transfer_tx, db_context):
+    mocked_store_assets = mocker.patch(
+        'bigchaindb.backend.query.store_assets')
+    mocked_store_metadata = mocker.patch(
+        'bigchaindb.backend.query.store_metadatas')
+    mocked_store_transactions = mocker.patch(
+        'bigchaindb.backend.query.store_transactions')
+    mongo_client = MongoClient(host=db_context.host, port=db_context.port)
+    tb.store_bulk_transactions((signed_create_tx,))
+    utxoset = mongo_client[db_context.name]['utxos']
+    assert utxoset.count() == 1
+    utxo = utxoset.find_one()
+    assert utxo['transaction_id'] == signed_create_tx.id
+    assert utxo['output_index'] == 0
+    mocked_store_assets.assert_called_once_with(
+        tb.connection,
+        [{'id': signed_create_tx.id, 'data': signed_create_tx.asset['data']}],
+    )
+    mocked_store_metadata.assert_called_once_with(
+        tb.connection,
+        [{'id': signed_create_tx.id, 'metadata': signed_create_tx.metadata}],
+    )
+    mocked_store_transactions.assert_called_once_with(
+        tb.connection,
+        [{k: v for k, v in signed_create_tx.to_dict().items()
+         if k not in ('asset', 'metadata')}],
+    )
+    mocked_store_assets.reset_mock()
+    mocked_store_metadata.reset_mock()
+    mocked_store_transactions.reset_mock()
+    tb.store_bulk_transactions((signed_transfer_tx,))
+    assert utxoset.count() == 1
+    utxo = utxoset.find_one()
+    assert utxo['transaction_id'] == signed_transfer_tx.id
+    assert utxo['output_index'] == 0
+    assert not mocked_store_assets.called
+    mocked_store_metadata.asser_called_once_with(
+        tb.connection,
+        [{'id': signed_transfer_tx.id,
+          'metadata': signed_transfer_tx.metadata}],
+    )
+    mocked_store_transactions.assert_called_once_with(
+        tb.connection,
+        [{k: v for k, v in signed_transfer_tx.to_dict().items()
+          if k != 'metadata'}],
+    )
+
+
+@pytest.mark.bdb
+def test_delete_zero_unspent_outputs(b, utxoset):
+    unspent_outputs, utxo_collection = utxoset
+    delete_res = b.delete_unspent_outputs()
+    assert delete_res is None
+    assert utxo_collection.count() == 3
+    assert utxo_collection.find(
+        {'$or': [
+            {'transaction_id': 'a', 'output_index': 0},
+            {'transaction_id': 'b', 'output_index': 0},
+            {'transaction_id': 'a', 'output_index': 1},
+        ]}
+    ).count() == 3
+
+
+@pytest.mark.bdb
+def test_delete_one_unspent_outputs(b, utxoset):
+    unspent_outputs, utxo_collection = utxoset
+    delete_res = b.delete_unspent_outputs(unspent_outputs[0])
+    assert delete_res['n'] == 1
+    assert utxo_collection.find(
+        {'$or': [
+            {'transaction_id': 'a', 'output_index': 1},
+            {'transaction_id': 'b', 'output_index': 0},
+        ]}
+    ).count() == 2
+    assert utxo_collection.find(
+            {'transaction_id': 'a', 'output_index': 0}).count() == 0
+
+
+@pytest.mark.bdb
+def test_delete_many_unspent_outputs(b, utxoset):
+    unspent_outputs, utxo_collection = utxoset
+    delete_res = b.delete_unspent_outputs(*unspent_outputs[::2])
+    assert delete_res['n'] == 2
+    assert utxo_collection.find(
+        {'$or': [
+            {'transaction_id': 'a', 'output_index': 0},
+            {'transaction_id': 'b', 'output_index': 0},
+        ]}
+    ).count() == 0
+    assert utxo_collection.find(
+            {'transaction_id': 'a', 'output_index': 1}).count() == 1
+
+
+@pytest.mark.bdb
+def test_store_zero_unspent_output(b, utxo_collection):
+    res = b.store_unspent_outputs()
+    assert res is None
+    assert utxo_collection.count() == 0
+
+
+@pytest.mark.bdb
+def test_store_one_unspent_output(b, unspent_output_1, utxo_collection):
+    res = b.store_unspent_outputs(unspent_output_1)
+    assert res.acknowledged
+    assert len(res.inserted_ids) == 1
+    assert utxo_collection.find(
+        {'transaction_id': unspent_output_1['transaction_id'],
+         'output_index': unspent_output_1['output_index']}
+    ).count() == 1
+
+
+@pytest.mark.bdb
+def test_store_many_unspent_outputs(b, unspent_outputs, utxo_collection):
+    res = b.store_unspent_outputs(*unspent_outputs)
+    assert res.acknowledged
+    assert len(res.inserted_ids) == 3
+    assert utxo_collection.find(
+        {'transaction_id': unspent_outputs[0]['transaction_id']}
+    ).count() == 3

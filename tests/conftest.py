@@ -11,6 +11,7 @@ import random
 from collections import namedtuple
 
 import pytest
+from pymongo import MongoClient
 
 from logging import getLogger
 from logging.config import dictConfig
@@ -675,3 +676,30 @@ def unspent_output_2():
 @pytest.fixture
 def unspent_outputs(unspent_output_0, unspent_output_1, unspent_output_2):
     return unspent_output_0, unspent_output_1, unspent_output_2
+
+
+@pytest.fixture
+def mongo_client(db_context):
+    return MongoClient(host=db_context.host, port=db_context.port)
+
+
+@pytest.fixture
+def utxo_collection(db_context, mongo_client):
+    return mongo_client[db_context.name].utxos
+
+
+@pytest.fixture
+def dummy_unspent_outputs():
+    return [
+        {'transaction_id': 'a', 'output_index': 0},
+        {'transaction_id': 'a', 'output_index': 1},
+        {'transaction_id': 'b', 'output_index': 0},
+    ]
+
+
+@pytest.fixture
+def utxoset(dummy_unspent_outputs, utxo_collection):
+    res = utxo_collection.insert_many(copy.deepcopy(dummy_unspent_outputs))
+    assert res.acknowledged
+    assert len(res.inserted_ids) == 3
+    return dummy_unspent_outputs, utxo_collection
