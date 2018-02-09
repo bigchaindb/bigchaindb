@@ -5,7 +5,6 @@ For more information please refer to the documentation: http://bigchaindb.com/ht
 from flask import current_app
 from flask_restful import Resource, reqparse
 
-from bigchaindb import Bigchain
 from bigchaindb.web.views.base import make_error
 
 
@@ -42,18 +41,13 @@ class BlockListApi(Resource):
         """
         parser = reqparse.RequestParser()
         parser.add_argument('transaction_id', type=str, required=True)
-        parser.add_argument('status', type=str, case_sensitive=False,
-                            choices=[Bigchain.BLOCK_VALID, Bigchain.BLOCK_INVALID, Bigchain.BLOCK_UNDECIDED])
 
         args = parser.parse_args(strict=True)
         tx_id = args['transaction_id']
-        status = args['status']
 
         pool = current_app.config['bigchain_pool']
 
         with pool() as bigchain:
-            block_statuses = bigchain.get_blocks_status_containing_tx(tx_id)
-            blocks = [block_id for block_id, block_status in block_statuses.items()
-                      if not status or block_status == status]
+            blocks = bigchain.get_block_containing_tx(tx_id)
 
         return blocks

@@ -487,6 +487,19 @@ def db_conn():
 
 
 @pytest.fixture
+def db_context(db_config, db_host, db_port, db_name, db_conn):
+    DBContext = namedtuple(
+        'DBContext', ('config', 'host', 'port', 'name', 'conn'))
+    return DBContext(
+        config=db_config,
+        host=db_host,
+        port=db_port,
+        name=db_name,
+        conn=db_conn,
+    )
+
+
+@pytest.fixture
 def mocked_setup_pub_logger(mocker):
     return mocker.patch(
         'bigchaindb.log.setup.setup_pub_logger', autospec=True, spec_set=True)

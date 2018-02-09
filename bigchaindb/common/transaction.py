@@ -9,6 +9,7 @@ import base58
 from cryptoconditions import Fulfillment, ThresholdSha256, Ed25519Sha256
 from cryptoconditions.exceptions import (
     ParsingError, ASN1DecodeError, ASN1EncodeError, UnsupportedTypeError)
+from sha3 import sha3_256
 
 from bigchaindb.common.crypto import PrivateKey, hash_data
 from bigchaindb.common.exceptions import (KeypairMismatchException,
@@ -812,13 +813,16 @@ class Transaction(object):
         #       this should never happen, but then again, never say never.
         input_ = deepcopy(input_)
         public_key = input_.owners_before[0]
+        message = sha3_256(message.encode())
+        if input_.fulfills:
+            message.update('{}{}'.format(
+                input_.fulfills.txid, input_.fulfills.output).encode())
+
         try:
             # cryptoconditions makes no assumptions of the encoding of the
             # message to sign or verify. It only accepts bytestrings
             input_.fulfillment.sign(
-                message.encode(),
-                base58.b58decode(key_pairs[public_key].encode()),
-            )
+                message.digest(), base58.b58decode(key_pairs[public_key].encode()))
         except KeyError:
             raise KeypairMismatchException('Public key {} is not a pair to '
                                            'any of the private keys'
@@ -836,6 +840,11 @@ class Transaction(object):
                 key_pairs (dict): The keys to sign the Transaction with.
         """
         input_ = deepcopy(input_)
+        message = sha3_256(message.encode())
+        if input_.fulfills:
+            message.update('{}{}'.format(
+                input_.fulfills.txid, input_.fulfills.output).encode())
+
         for owner_before in set(input_.owners_before):
             # TODO: CC should throw a KeypairMismatchException, instead of
             #       our manual mapping here
@@ -863,7 +872,8 @@ class Transaction(object):
             # cryptoconditions makes no assumptions of the encoding of the
             # message to sign or verify. It only accepts bytestrings
             for subffill in subffills:
-                subffill.sign(message.encode(), base58.b58decode(private_key.encode()))
+                subffill.sign(
+                    message.digest(), base58.b58decode(private_key.encode()))
         return input_
 
     def inputs_valid(self, outputs=None):
@@ -931,7 +941,7 @@ class Transaction(object):
                    for i, cond in enumerate(output_condition_uris))
 
     @staticmethod
-    def _input_valid(input_, operation, tx_serialized, output_condition_uri=None):
+    def _input_valid(input_, operation, message, output_condition_uri=None):
         """Validates a single Input against a single Output.
 
             Note:
@@ -942,8 +952,7 @@ class Transaction(object):
                 input_ (:class:`~bigchaindb.common.transaction.
                     Input`) The Input to be signed.
                 operation (str): The type of Transaction.
-                tx_serialized (str): The Transaction used as a message when
-                    initially signing it.
+                message (str): The fulfillment message.
                 output_condition_uri (str, optional): An Output to check the
                     Input against.
 
@@ -964,12 +973,17 @@ class Transaction(object):
         else:
             output_valid = output_condition_uri == ccffill.condition_uri
 
+        message = sha3_256(message.encode())
+        if input_.fulfills:
+            message.update('{}{}'.format(
+                input_.fulfills.txid, input_.fulfills.output).encode())
+
         # NOTE: We pass a timestamp to `.validate`, as in case of a timeout
         #       condition we'll have to validate against it
 
         # cryptoconditions makes no assumptions of the encoding of the
         # message to sign or verify. It only accepts bytestrings
-        ffill_valid = parsed_ffill.validate(message=tx_serialized.encode())
+        ffill_valid = parsed_ffill.validate(message=message.digest())
         return output_valid and ffill_valid
 
     def to_dict(self):

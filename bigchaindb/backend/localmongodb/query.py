@@ -23,6 +23,15 @@ def store_transaction(conn, signed_transaction):
 
 
 @register_query(LocalMongoDBConnection)
+def store_transactions(conn, signed_transactions):
+    try:
+        return conn.run(conn.collection('transactions')
+                        .insert_many(signed_transactions))
+    except DuplicateKeyError:
+        pass
+
+
+@register_query(LocalMongoDBConnection)
 def get_transaction(conn, transaction_id):
     try:
         return conn.run(
@@ -33,7 +42,18 @@ def get_transaction(conn, transaction_id):
 
 
 @register_query(LocalMongoDBConnection)
-def store_metadata(conn, metadata):
+def get_transactions(conn, transaction_ids):
+    try:
+        return conn.run(
+            conn.collection('transactions')
+            .find({'id': {'$in': transaction_ids}},
+                  projection={'_id': False}))
+    except IndexError:
+        pass
+
+
+@register_query(LocalMongoDBConnection)
+def store_metadatas(conn, metadata):
     try:
         return conn.run(
             conn.collection('metadata')
@@ -56,6 +76,16 @@ def store_asset(conn, asset):
         return conn.run(
             conn.collection('assets')
             .insert_one(asset))
+    except DuplicateKeyError:
+        pass
+
+
+@register_query(LocalMongoDBConnection)
+def store_assets(conn, assets):
+    try:
+        return conn.run(
+            conn.collection('assets')
+            .insert_many(assets, ordered=False))
     except DuplicateKeyError:
         pass
 
@@ -153,3 +183,19 @@ def get_spending_transactions(conn, inputs):
             {'$project': {'_id': False}}
         ]))
     return cursor
+
+
+@register_query(LocalMongoDBConnection)
+def get_block(conn, block_id):
+    return conn.run(
+        conn.collection('blocks')
+        .find_one({'height': block_id},
+                  projection={'_id': False}))
+
+
+@register_query(LocalMongoDBConnection)
+def get_block_with_transaction(conn, txid):
+    return conn.run(
+        conn.collection('blocks')
+        .find({'transactions': txid},
+              projection={'_id': False, 'height': True}))

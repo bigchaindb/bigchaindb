@@ -88,7 +88,7 @@ def test_write_metadata():
     ]
 
     # write the assets
-    query.store_metadata(conn, deepcopy(metadata))
+    query.store_metadatas(conn, deepcopy(metadata))
 
     # check that 3 assets were written to the database
     cursor = conn.db.metadata.find({}, projection={'_id': False})\
@@ -152,3 +152,31 @@ def test_get_spending_transactions(user_pk, user_sk):
 
     # tx3 not a member because input 1 not asked for
     assert txns == [tx2.to_dict(), tx4.to_dict()]
+
+
+def test_store_block():
+    from bigchaindb.backend import connect, query
+    from bigchaindb.tendermint.lib import Block
+    conn = connect()
+
+    block = Block(app_hash='random_utxo',
+                  height=3,
+                  transactions=[])
+    query.store_block(conn, block._asdict())
+    cursor = conn.db.blocks.find({}, projection={'_id': False})
+    assert cursor.count() == 1
+
+
+def test_get_block():
+    from bigchaindb.backend import connect, query
+    from bigchaindb.tendermint.lib import Block
+    conn = connect()
+
+    block = Block(app_hash='random_utxo',
+                  height=3,
+                  transactions=[])
+
+    conn.db.blocks.insert_one(block._asdict())
+
+    block = dict(query.get_block(conn, 3))
+    assert block['height'] == 3

@@ -4,6 +4,7 @@ import rethinkdb as r
 
 from bigchaindb.backend.mongodb.connection import MongoDBConnection
 from bigchaindb.backend.rethinkdb.connection import RethinkDBConnection
+from bigchaindb.backend.localmongodb.connection import LocalMongoDBConnection
 
 
 @singledispatch
@@ -43,6 +44,15 @@ def flush_mongo_db(connection, dbname):
     connection.conn[dbname].bigchain.delete_many({})
     connection.conn[dbname].backlog.delete_many({})
     connection.conn[dbname].votes.delete_many({})
+    connection.conn[dbname].assets.delete_many({})
+    connection.conn[dbname].metadata.delete_many({})
+
+
+@flush_db.register(LocalMongoDBConnection)
+def flush_localmongo_db(connection, dbname):
+    connection.conn[dbname].bigchain.delete_many({})
+    connection.conn[dbname].blocks.delete_many({})
+    connection.conn[dbname].transactions.delete_many({})
     connection.conn[dbname].assets.delete_many({})
     connection.conn[dbname].metadata.delete_many({})
 
