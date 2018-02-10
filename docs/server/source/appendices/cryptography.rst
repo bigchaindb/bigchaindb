@@ -1,9 +1,8 @@
 Cryptography
 ============
 
-See `the IPDB Transaction Spec
-<https://the-ipdb-transaction-spec.readthedocs.io/en/latest/>`_,
-especially the pages about:
+See the `IPDB Transaction Spec <https://github.com/ipdb/ipdb-tx-spec>`_,
+especially the sections about:
 
 - Cryptographic Hashes
 - Cryptographic Keys & Signatures
