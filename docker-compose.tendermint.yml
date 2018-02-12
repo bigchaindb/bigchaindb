@@ -38,9 +38,9 @@ services:
   tendermint:
     image: tendermint/tendermint:0.13
     volumes:
-      - ./tmdata:/tendermint
+      - ./tmdata/config.toml:/tendermint/config.toml
     entrypoint: ''
-    command: bash -c "tendermint unsafe_reset_all && tendermint node"
+    command: bash -c "tendermint init && tendermint node"
   curl-client:
     image: appropriate/curl
     command: /bin/sh -c "curl http://tendermint:46657/abci_query && curl http://bdb:9984/"
