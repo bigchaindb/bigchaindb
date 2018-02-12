@@ -34,12 +34,16 @@ services:
       TENDERMINT_PORT: 46657
     ports:
       - "9984"
+      - "46658"
     command: bigchaindb -l DEBUG start
   tendermint:
     image: tendermint/tendermint:0.13
     volumes:
       - ./tmdata/config.toml:/tendermint/config.toml
     entrypoint: ''
+    ports:
+      - "46656"
+      - "46657"
     command: bash -c "tendermint init && tendermint node"
   curl-client:
     image: appropriate/curl
