@@ -104,7 +104,7 @@ Finally, you can deploy an ACS using something like:
    --master-count 3 \
    --agent-count 2 \
    --admin-username ubuntu \
-   --agent-vm-size Standard_D2_v2 \
+   --agent-vm-size Standard_L4s \
    --dns-prefix <make up a name> \
    --ssh-key-value ~/.ssh/<name>.pub \
    --orchestrator-type kubernetes \

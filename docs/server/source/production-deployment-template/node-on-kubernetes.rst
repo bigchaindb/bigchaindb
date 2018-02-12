@@ -323,6 +323,9 @@ Step 8: Start the OpenResty Kubernetes Service
     ``openresty-instance-name`` is ``openresty-instance-0``, set  the
     ``spec.selector.app`` to ``openresty-instance-0-dep``.
 
+  * Set ``ports[0].port`` and ``ports[0].targetPort`` to the value set in the
+    ``openresty-backend-port`` in the ConfigMap.
+
   * Start the Kubernetes Service:
 
     .. code:: bash
@@ -347,18 +350,15 @@ Step 9: Start the Tendermint Kubernetes Service
 
    * Set ``ports[0].port`` and ``ports[0].targetPort`` to the value set in the
      ``tm-p2p-port`` in the ConfigMap above.
-     This is the ``p2p`` in the file which specifies where Tendermint peers
-     communicate.
+     It specifies where Tendermint peers communicate.
 
    * Set ``ports[1].port`` and ``ports[1].targetPort`` to the value set in the
      ``tm-rpc-port`` in the ConfigMap above.
-     This is the ``rpc`` in the file which specifies the port used by Tendermint core
-     for RPC traffic.
+     It specifies the port used by Tendermint core for RPC traffic.
 
    * Set ``ports[2].port`` and ``ports[2].targetPort`` to the value set in the
      ``tm-pub-key-access`` in the ConfigMap above.
-     This is the ``pub-key-access`` in the file which specifies the port to host/distribute
-     the public key for the Tendermint node.
+     It specifies the port to host/distribute the public key for the Tendermint node.
 
   * Start the Kubernetes Service:
 
@@ -479,10 +479,10 @@ Our MongoDB Docker container
 exports two volume mounts with correct
 permissions from inside the container:
 
-* The directory where the mongod instance stores its data: ``/data/db``.
+* The directory where the MongoDB instance stores its data: ``/data/db``.
   There's more explanation in the MongoDB docs about `storage.dbpath <https://docs.mongodb.com/manual/reference/configuration-options/#storage.dbPath>`_.
 
-* The directory where the mongodb instance stores the metadata for a sharded
+* The directory where the MongoDB instance stores the metadata for a sharded
   cluster: ``/data/configdb/``.
   There's more explanation in the MongoDB docs about `sharding.configDB <https://docs.mongodb.com/manual/reference/configuration-options/#sharding.configDB>`_.
 
@@ -518,7 +518,7 @@ For future reference, the command to create a storage account is
     Please refer to `Azure documentation <https://docs.microsoft.com/en-us/azure/virtual-machines/windows/premium-storage>`_
     for the list of VMs that are supported by Premium Storage.
 
-The Kubernetes template for configuration of Storage Class is located in the
+The Kubernetes template for configuration of the MongoDB Storage Class is located in the
 file ``mongodb/mongo-sc.yaml``.
 
 You may have to update the ``parameters.location`` field in the file to
