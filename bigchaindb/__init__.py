@@ -123,9 +123,6 @@ config = {
         'granular_levels': {},
         'port': log_config['root']['port']
     },
-    'graphite': {
-        'host': os.environ.get('BIGCHAINDB_GRAPHITE_HOST', 'localhost'),
-    },
 }
 
 # We need to maintain a backup copy of the original config dict in case

@@ -304,7 +304,6 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request, ssl_con
             'granular_levels': {},
             'port': 9020
         },
-        'graphite': {'host': 'localhost'},
     }
 
 

@@ -48,7 +48,6 @@ For convenience, here's a list of all the relevant environment variables (docume
 `BIGCHAINDB_DATABASE_KEYFILE`<br>
 `BIGCHAINDB_DATABASE_KEYFILE_PASSPHRASE`<br>
 `BIGCHAINDB_DATABASE_CRLFILE`<br>
-`BIGCHAINDB_GRAPHITE_HOST`<br>
 
 The local config file is `$HOME/.bigchaindb` by default (a file which might not even exist), but you can tell BigchainDB to use a different file by using the `-c` command-line option, e.g. `bigchaindb -c path/to/config_file.json start`
 or using the `BIGCHAINDB_CONFIG_PATH` environment variable, e.g. `BIGHAINDB_CONFIG_PATH=.my_bigchaindb_config bigchaindb start`.
@@ -217,7 +216,7 @@ export BIGCHAINDB_SERVER_WORKERS=5
 ## wsserver.scheme, wsserver.host and wsserver.port
 
 These settings are for the
-[aiohttp server](https://aiohttp.readthedocs.io/en/stable/index.html), 
+[aiohttp server](https://aiohttp.readthedocs.io/en/stable/index.html),
 which is used to serve the
 [WebSocket Event Stream API](../websocket-event-stream-api.html).
 `wsserver.scheme` should be either `"ws"` or `"wss"`
@@ -360,8 +359,8 @@ The full paths to the files where logs and error logs should be written to.
 }
 ```
 
-**Defaults to**:  
-    
+**Defaults to**:
+
     * `"~/bigchaindb.log"`
     * `"~/bigchaindb-errors.log"`
 
@@ -383,7 +382,7 @@ For example if we consider the log file setting:
 ```
 
 logs would always be written to `bigchain.log`. Each time the file
-`bigchain.log` reaches 200 MB it would be closed and renamed 
+`bigchain.log` reaches 200 MB it would be closed and renamed
 `bigchain.log.1`. If `bigchain.log.1` and `bigchain.log.2` already exist they
 would be renamed `bigchain.log.2` and `bigchain.log.3`. This pattern would be
 applied up to `bigchain.log.5` after which `bigchain.log.5` would be
@@ -550,29 +549,3 @@ The port number at which the logging server should listen.
 ```
 
 **Defaults to**: `9020`
-
-
-## graphite.host
-
-The host name or IP address of a server listening for statsd events on UDP
-port 8125. This defaults to `localhost`, and if no statsd collector is running,
-the events are simply dropped by the operating system.
-
-**Example using environment variables**
-```text
-export BIGCHAINDB_GRAPHITE_HOST=10.0.0.5
-```
-
-**Example config file snippet**
-```js
-"graphite": {
-    "host": "10.0.0.5"
-}
-```
-
-**Default values (from a config file)**
-```js
-"graphite": {
-    "host": "localhost"
-}
-```

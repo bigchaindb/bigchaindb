@@ -22,16 +22,6 @@ services:
       BIGCHAINDB_DATABASE_HOST: mdb
       BIGCHAINDB_DATABASE_PORT: 27017
       BIGCHAINDB_SERVER_BIND: 0.0.0.0:9984
-      BIGCHAINDB_GRAPHITE_HOST: graphite
     ports:
       - "9984"
     command: bigchaindb start
-
-  graphite:
-    image: hopsoft/graphite-statsd
-    ports:
-      - "2003-2004"
-      - "2023-2024"
-      - "8125/udp"
-      - "8126"
-      - "80"
