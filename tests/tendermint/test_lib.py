@@ -144,7 +144,8 @@ def test_store_bulk_transactions_raise_asset_store_error(b, monkeypatch, backend
 
     monkeypatch.setattr(backend_query, mock_backend_query)
 
-    b.store_bulk_transactions([tx])
+    with pytest.raises(Exception):
+        b.store_bulk_transactions([tx])
 
     assert list(backend.query.get_metadata(b.connection, [tx.id])) == []
     assert not backend.query.get_asset(b.connection, tx.id)

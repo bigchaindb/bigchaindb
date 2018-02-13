@@ -90,7 +90,8 @@ class BigchainDB(Bigchain):
         except Exception as e:
             logger.critical('Failed to write transactions (%s): %s', type(e).__name__, e)
             txn_ids = [txn['id'] for txn in txns]
-            return backend.query.delete_transactions(self.connection, txn_ids)
+            backend.query.delete_transactions(self.connection, txn_ids)
+            raise e
 
     def get_transaction(self, transaction_id, include_status=False):
         transaction = backend.query.get_transaction(self.connection, transaction_id)
