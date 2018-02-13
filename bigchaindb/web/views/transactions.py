@@ -82,7 +82,6 @@ class TransactionListApi(Resource):
             )
 
         with pool() as bigchain:
-            bigchain.statsd.incr('web.tx.post')
             try:
                 bigchain.validate_transaction(tx_obj)
             except ValidationError as e:
