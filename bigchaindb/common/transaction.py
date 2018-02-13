@@ -475,7 +475,7 @@ class Transaction(object):
     TRANSFER = 'TRANSFER'
     GENESIS = 'GENESIS'
     ALLOWED_OPERATIONS = (CREATE, TRANSFER, GENESIS)
-    VERSION = '1.0'
+    VERSION = '2.0'
 
     def __init__(self, operation, asset, inputs=None, outputs=None,
                  metadata=None, version=None, hash_id=None):
