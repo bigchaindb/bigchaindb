@@ -122,3 +122,30 @@ def test_post_transaction_invalid_mode(b):
     tx = b.validate_transaction(tx)
     with pytest.raises(ValidationError):
         b.write_transaction(tx, 'nope')
+
+
+@pytest.mark.parametrize('backend_query', [
+    'bigchaindb.backend.query.store_assets',
+    'bigchaindb.backend.query.store_transactions',
+    'bigchaindb.backend.query.store_metadatas'
+])
+def test_store_bulk_transactions_raise_asset_store_error(b, monkeypatch, backend_query):
+    from bigchaindb.models import Transaction
+    from bigchaindb.common.crypto import generate_key_pair
+    alice = generate_key_pair()
+    tx = Transaction.create([alice.public_key],
+                            [([alice.public_key], 1)],
+                            asset={'cycle': 'hero'},
+                            metadata={'name': 'hohenheim'}) \
+        .sign([alice.private_key])
+
+    def mock_backend_query():
+        raise Exception('Some weird error occured')
+
+    monkeypatch.setattr(backend_query, mock_backend_query)
+
+    b.store_bulk_transactions([tx])
+
+    assert list(backend.query.get_metadata(b.connection, [tx.id])) == []
+    assert not backend.query.get_asset(b.connection, tx.id)
+    assert not b.get_transaction(tx.id)

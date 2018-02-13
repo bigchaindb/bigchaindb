@@ -6,6 +6,7 @@ import copy
 import pytest
 
 
+@pytest.mark.tendermint
 def test_make_sure_we_dont_remove_any_command():
     # thanks to: http://stackoverflow.com/a/18161115/597097
     from bigchaindb.commands.bigchaindb import create_parser
@@ -23,6 +24,7 @@ def test_make_sure_we_dont_remove_any_command():
     assert parser.parse_args(['set-replicas', '1']).command
     assert parser.parse_args(['add-replicas', 'localhost:27017']).command
     assert parser.parse_args(['remove-replicas', 'localhost:27017']).command
+    assert parser.parse_args(['recover']).command
 
 
 @patch('bigchaindb.commands.utils.start')
@@ -517,3 +519,15 @@ def test_run_remove_replicas(mock_remove_replicas):
     assert exc.value.args == ('err',)
     assert mock_remove_replicas.call_count == 1
     mock_remove_replicas.reset_mock()
+
+
+@pytest.mark.tendermint
+@patch('bigchaindb.backend.query.delete_zombie_transactions')
+@patch('bigchaindb.backend.query.delete_latest_block')
+def test_recover_db(mock_delete_zombie_transactions, mock_delete_latest_block):
+    from bigchaindb.commands.bigchaindb import run_recover
+    args = Namespace(config=None)
+
+    run_recover(args)
+    assert mock_delete_zombie_transactions.called
+    assert mock_delete_latest_block.called

@@ -82,10 +82,15 @@ class BigchainDB(Bigchain):
                                   'metadata': metadata})
             txns.append(transaction)
 
-        backend.query.store_metadatas(self.connection, txn_metadatas)
-        if assets:
-            backend.query.store_assets(self.connection, assets)
-        return backend.query.store_transactions(self.connection, txns)
+        try:
+            backend.query.store_metadatas(self.connection, txn_metadatas)
+            if assets:
+                backend.query.store_assets(self.connection, assets)
+            return backend.query.store_transactions(self.connection, txns)
+        except Exception as e:
+            logger.critical('Failed to write transactions (%s): %s', type(e).__name__, e)
+            txn_ids = [txn['id'] for txn in txns]
+            return backend.query.delete_transactions(self.connection, txn_ids)
 
     def get_transaction(self, transaction_id, include_status=False):
         transaction = backend.query.get_transaction(self.connection, transaction_id)

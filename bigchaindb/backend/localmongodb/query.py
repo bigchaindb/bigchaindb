@@ -24,11 +24,8 @@ def store_transaction(conn, signed_transaction):
 
 @register_query(LocalMongoDBConnection)
 def store_transactions(conn, signed_transactions):
-    try:
-        return conn.run(conn.collection('transactions')
-                        .insert_many(signed_transactions))
-    except DuplicateKeyError:
-        pass
+    return conn.run(conn.collection('transactions')
+                    .insert_many(signed_transactions))
 
 
 @register_query(LocalMongoDBConnection)
@@ -199,3 +196,37 @@ def get_block_with_transaction(conn, txid):
         conn.collection('blocks')
         .find({'transactions': txid},
               projection={'_id': False, 'height': True}))
+
+
+@register_query(LocalMongoDBConnection)
+def delete_zombie_transactions(conn):
+    txns = conn.run(conn.collection('transactions').find({}))
+    for txn in txns:
+        txn_id = txn['id']
+        block = list(get_block_with_transaction(conn, txn_id))
+        if len(block) == 0:
+            delete_transaction(conn, txn_id)
+
+
+def delete_transaction(conn, txn_id):
+    conn.run(
+        conn.collection('transactions').delete_one({'id': txn_id}))
+    conn.run(
+        conn.collection('assets').delete_one({'id': txn_id}))
+    conn.run(
+        conn.collection('metadata').delete_one({'id': txn_id}))
+
+
+@register_query(LocalMongoDBConnection)
+def delete_latest_block(conn):
+    block = get_latest_block(conn)
+    txn_ids = block['transactions']
+    delete_transactions(conn, txn_ids)
+    conn.run(conn.collection('blocks').delete_one({'height': block['height']}))
+
+
+@register_query(LocalMongoDBConnection)
+def delete_transactions(conn, txn_ids):
+    conn.run(conn.collection('assets').delete_many({'id': {'$in': txn_ids}}))
+    conn.run(conn.collection('metadata').delete_many({'id': {'$in': txn_ids}}))
+    conn.run(conn.collection('transactions').delete_many({'id': {'$in': txn_ids}}))

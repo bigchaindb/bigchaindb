@@ -17,6 +17,7 @@ from bigchaindb.common.exceptions import (StartupError,
 import bigchaindb
 from bigchaindb import backend
 from bigchaindb.backend import schema
+from bigchaindb.backend import query
 from bigchaindb.backend.admin import (set_replicas, set_shards, add_replicas,
                                       remove_replicas)
 from bigchaindb.backend.exceptions import OperationError
@@ -155,6 +156,13 @@ def run_init(args):
 
 
 @configure_bigchaindb
+def run_recover(args):
+    b = bigchaindb.Bigchain()
+    query.delete_zombie_transactions(b.connection)
+    query.delete_latest_block(b.connection)
+
+
+@configure_bigchaindb
 def run_drop(args):
     """Drop the database"""
     dbname = bigchaindb.config['database']['name']
@@ -288,6 +296,9 @@ def create_parser():
 
     subparsers.add_parser('drop',
                           help='Drop the database')
+
+    subparsers.add_parser('recover',
+                          help='Restore data to a consistant state after crash')
 
     # parser for starting BigchainDB
     start_parser = subparsers.add_parser('start',
