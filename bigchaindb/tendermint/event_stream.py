@@ -25,7 +25,7 @@ def connect_and_recv(event_queue):
 
     logger.info('Connected to tendermint ws server')
 
-    stream_id = "bigchaindb_stream_{}".format(gen_timestamp())
+    stream_id = 'bigchaindb_stream_{}'.format(gen_timestamp())
     yield from subscribe_events(ws, stream_id)
 
     while True:
@@ -58,10 +58,10 @@ def process_event(event_queue, event, stream_id):
 @asyncio.coroutine
 def subscribe_events(ws, stream_id):
     payload = {
-        "method": "subscribe",
-        "jsonrpc": "2.0",
-        "params": ["NewBlock"],
-        "id": stream_id
+        'method': 'subscribe',
+        'jsonrpc': '2.0',
+        'params': ['NewBlock'],
+        'id': stream_id
     }
     yield from ws.send_str(json.dumps(payload))
 

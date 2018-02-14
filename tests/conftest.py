@@ -500,6 +500,32 @@ def db_context(db_config, db_host, db_port, db_name, db_conn):
 
 
 @pytest.fixture
+def tendermint_host():
+    return os.getenv('TENDERMINT_HOST', 'localhost')
+
+
+@pytest.fixture
+def tendermint_port():
+    return int(os.getenv('TENDERMINT_PORT', 46657))
+
+
+@pytest.fixture
+def tendermint_ws_url(tendermint_host, tendermint_port):
+    return f'ws://{tendermint_host}:{tendermint_port}/websocket'
+
+
+@pytest.fixture
+def tendermint_context(tendermint_host, tendermint_port, tendermint_ws_url):
+    TendermintContext = namedtuple(
+        'TendermintContext', ('host', 'port', 'ws_url'))
+    return TendermintContext(
+        host=tendermint_host,
+        port=tendermint_port,
+        ws_url=tendermint_ws_url,
+    )
+
+
+@pytest.fixture
 def mocked_setup_pub_logger(mocker):
     return mocker.patch(
         'bigchaindb.log.setup.setup_pub_logger', autospec=True, spec_set=True)

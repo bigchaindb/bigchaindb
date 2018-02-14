@@ -57,6 +57,7 @@ tests_require = [
     'pytest-xdist',
     'pytest-flask',
     'pytest-aiohttp',
+    'pytest-asyncio',
     'tox',
 ] + docs_require
 
