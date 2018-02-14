@@ -153,8 +153,12 @@ class BigchainDB(Bigchain):
 
     def store_block(self, block):
         """Create a new block."""
-
-        return backend.query.store_block(self.connection, block)
+        try:
+            return backend.query.store_block(self.connection, block)
+        except Exception as e:
+            logger.critical('Failed to write block (%s): %s', type(e).__name__, e)
+            backend.query.delete_transactions(self.connection, block['transactions'])
+            raise e
 
     def get_latest_block(self):
         """Get the block with largest height."""
