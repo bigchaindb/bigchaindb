@@ -501,12 +501,12 @@ def db_context(db_config, db_host, db_port, db_name, db_conn):
 
 @pytest.fixture
 def tendermint_host():
-    return os.getenv('TENDERMINT_HOST', 'localhost')
+    return os.getenv('BIGCHAINDB_TENDERMINT_HOST', 'localhost')
 
 
 @pytest.fixture
 def tendermint_port():
-    return int(os.getenv('TENDERMINT_PORT', 46657))
+    return int(os.getenv('BIGCHAINDB_TENDERMINT_PORT', 46657))
 
 
 @pytest.fixture

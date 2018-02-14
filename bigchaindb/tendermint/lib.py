@@ -17,9 +17,12 @@ from bigchaindb import exceptions as core_exceptions
 
 logger = logging.getLogger(__name__)
 
-TENDERMINT_HOST = getenv('TENDERMINT_HOST', 'localhost')
-TENDERMINT_PORT = getenv('TENDERMINT_PORT', '46657')
-ENDPOINT = 'http://{}:{}/'.format(TENDERMINT_HOST, TENDERMINT_PORT)
+BIGCHAINDB_TENDERMINT_HOST = getenv('BIGCHAINDB_TENDERMINT_HOST',
+                                    'localhost')
+BIGCHAINDB_TENDERMINT_PORT = getenv('BIGCHAINDB_TENDERMINT_PORT',
+                                    '46657')
+ENDPOINT = 'http://{}:{}/'.format(BIGCHAINDB_TENDERMINT_HOST,
+                                  BIGCHAINDB_TENDERMINT_PORT)
 MODE_LIST = ('broadcast_tx_async',
              'broadcast_tx_sync',
              'broadcast_tx_commit')
