@@ -271,7 +271,10 @@ def create_parser():
                                           help='Prepare the config file '
                                                'and create the node keypair')
     config_parser.add_argument('backend',
-                               choices=['rethinkdb', 'mongodb', 'localmongodb'],
+                               choices=['localmongodb'],
+                               default='localmongodb',
+                               const='localmongodb',
+                               nargs='?',
                                help='The backend to use. It can be either '
                                     'rethinkdb or mongodb.')
 
