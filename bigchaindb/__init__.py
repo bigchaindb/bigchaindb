@@ -99,6 +99,7 @@ config = {
         'advertised_host': 'localhost',
         'advertised_port': 9985,
     },
+    # FIXME: hardcoding to localmongodb for now
     'database': _database_map['localmongodb'],
     'keypair': {
         'public': None,

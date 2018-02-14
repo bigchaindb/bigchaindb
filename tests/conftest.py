@@ -155,6 +155,7 @@ def _configure_bigchaindb(request, ssl_context):
         }
     }
     config['database']['name'] = test_db_name
+    config = config_utils.env_config(config)
     config_utils.set_config(config)
 
 
