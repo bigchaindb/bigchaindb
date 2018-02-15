@@ -62,9 +62,6 @@ At a high level, one can communicate with a BigchainDB cluster (set of nodes) us
      <a class="button" href="https://docs.bigchaindb.com/projects/js-driver/en/latest/index.html">JavaScript Driver Docs</a>
    </div>
    <div class="buttondiv">
-     <a class="button" href="https://docs.bigchaindb.com/projects/cli/en/latest/">Command Line Transaction Tool</a>
-   </div>
-   <div class="buttondiv">
      <a class="button" href="http://docs.bigchaindb.com/projects/server/en/latest/index.html">Server Docs</a>
    </div>
    <div class="buttondiv">
