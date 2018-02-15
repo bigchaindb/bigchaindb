@@ -9,12 +9,12 @@ import os
 import copy
 import random
 from collections import namedtuple
+from logging import getLogger
+from logging.config import dictConfig
 
 import pytest
 from pymongo import MongoClient
 
-from logging import getLogger
-from logging.config import dictConfig
 from bigchaindb.common import crypto
 
 TEST_DB_NAME = 'bigchain_test'
