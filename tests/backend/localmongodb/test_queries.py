@@ -199,7 +199,6 @@ def test_get_block():
     assert block['height'] == 3
 
 
-
 def test_delete_zombie_transactions(signed_create_tx, signed_transfer_tx):
     from bigchaindb.backend import connect, query
     from bigchaindb.tendermint.lib import Block

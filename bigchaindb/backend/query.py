@@ -555,6 +555,7 @@ def delete_zombie_transactions(conn):
 
     raise NotImplementedError
 
+
 @singledispatch
 def store_unspent_outputs(connection, unspent_outputs):
     """Store unspent outputs in ``utxo_set`` table."""
