@@ -230,3 +230,36 @@ def delete_transactions(conn, txn_ids):
     conn.run(conn.collection('assets').delete_many({'id': {'$in': txn_ids}}))
     conn.run(conn.collection('metadata').delete_many({'id': {'$in': txn_ids}}))
     conn.run(conn.collection('transactions').delete_many({'id': {'$in': txn_ids}}))
+
+
+@register_query(LocalMongoDBConnection)
+def store_unspent_outputs(conn, *unspent_outputs):
+    try:
+        return conn.run(
+            conn.collection('utxos')
+            .insert_many(unspent_outputs, ordered=False))
+    except DuplicateKeyError:
+        # TODO log warning at least
+        pass
+
+
+@register_query(LocalMongoDBConnection)
+def delete_unspent_outputs(conn, *unspent_outputs):
+    cursor = conn.run(
+            conn.collection('utxos').remove(
+                {'$or': [
+                    {'$and': [
+                        {'transaction_id': unspent_output['transaction_id']},
+                        {'output_index': unspent_output['output_index']}
+                    ]}
+                    for unspent_output in unspent_outputs
+                ]}
+                ))
+    return cursor
+
+
+@register_query(LocalMongoDBConnection)
+def get_unspent_outputs(conn, *, query=None):
+    if query is None:
+        query = {}
+    return conn.run(conn.collection('utxos').find(query))

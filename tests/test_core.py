@@ -24,7 +24,6 @@ def config(request, monkeypatch):
         'keyring': [],
         'CONFIGURED': True,
         'backlog_reassign_delay': 30,
-        'graphite': {'host': 'localhost'},
     }
 
     monkeypatch.setattr('bigchaindb.config', config)

@@ -149,7 +149,6 @@ class Vote:
         logger.info("Voting '%s' for block %s", validity,
                     vote['vote']['voting_for_block'])
         self.bigchain.write_vote(vote)
-        self.bigchain.statsd.incr('pipelines.vote.throughput', num_tx)
         return vote
 
 

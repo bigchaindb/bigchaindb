@@ -555,10 +555,23 @@ def delete_zombie_transactions(conn):
 
     raise NotImplementedError
 
+@singledispatch
+def store_unspent_outputs(connection, unspent_outputs):
+    """Store unspent outputs in ``utxo_set`` table."""
+
+    raise NotImplementedError
+
 
 @singledispatch
 def delete_latest_block(conn):
     """Delete the latest block along with its transactions"""
+
+    raise NotImplementedError
+
+
+@singledispatch
+def delete_unspent_outputs(connection, unspent_outputs):
+    """Delete unspent outputs in ``utxo_set`` table."""
 
     raise NotImplementedError
 
@@ -572,6 +585,23 @@ def delete_transactions(conn, txn_ids):
 
     Returns:
         The result of the operation.
+    """
+
+    raise NotImplementedError
+
+
+@singledispatch
+def get_unspent_outputs(connection, *, query=None):
+    """Retrieves unspent outputs.
+
+    Args:
+        query (dict): An optional parameter to filter the result set.
+            Defaults to ``None``, which means that all UTXO records
+            will be returned.
+
+    Returns:
+        Generator yielding unspent outputs (UTXO set) according to the
+        given query.
     """
 
     raise NotImplementedError
