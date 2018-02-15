@@ -343,7 +343,7 @@ def tri_state_transaction(request):
                 'uri': 'ni:///sha-256;49C5UWNODwtcINxLgLc90bMCFqCymFYONGEmV4a0sG4?fpt=ed25519-sha-256&cost=131072'},
             'public_keys': ['JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE']
         }],
-        'version': '1.0'
+        'version': '2.0'
     }
     tx['id'] = request.param['id']
     tx['inputs'][0]['fulfillment'] = request.param['fulfillment']
