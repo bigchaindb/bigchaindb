@@ -311,6 +311,22 @@ def carol_pubkey(carol):
 
 
 @pytest.fixture
+def merlin():
+    from bigchaindb.common.crypto import generate_key_pair
+    return generate_key_pair()
+
+
+@pytest.fixture
+def merlin_privkey(merlin):
+    return merlin.private_key
+
+
+@pytest.fixture
+def merlin_pubkey(merlin):
+    return merlin.public_key
+
+
+@pytest.fixture
 def b():
     from bigchaindb import Bigchain
     return Bigchain()
