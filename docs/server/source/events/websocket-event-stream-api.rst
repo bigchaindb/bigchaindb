@@ -69,7 +69,7 @@ All messages sent in a stream are in the JSON format.
 
     For simplicity, BigchainDB initially only provides a stream for all
     validated transactions. In the future, we may provide streams for other
-    information, such as new blocks, new votes, or invalid transactions. We may
+    information. We may
     also provide the ability to filter the stream for specific qualities, such
     as a specific ``output``'s ``public_key``.
 
@@ -99,8 +99,4 @@ Example message:
 .. note::
 
     Transactions in BigchainDB are validated in batches ("blocks") and will,
-    therefore, be streamed in batches. Each block can contain up to a 1000
-    transactions, ordered by the time at which they were included in the block.
-    The ``/valid_transactions`` stream will send these transactions in the same
-    order that the block stored them in, but this does **NOT** guarantee that
-    you will recieve the events in that same order.
+    therefore, be streamed in batches.

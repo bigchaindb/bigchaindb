@@ -518,9 +518,6 @@ a certain transaction with ``transaction_id`` occured in (a transaction can occu
 either gets rejected or validated by the system). This endpoint gives the ability to drill down on the lifecycle of a
 transaction
 
-The `votes endpoint <#votes>`_ contains all the voting information for a specific block. So after retrieving the
-``block_id`` for a given ``transaction_id``, one can now simply inspect the votes that happened at a specific time on that block.
-
 
 Blocks
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
