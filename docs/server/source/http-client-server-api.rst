@@ -130,11 +130,7 @@ Transactions
    <http://tendermint.readthedocs.io/projects/tools/en/master/using-tendermint.html#broadcast-api>`_ with three different modes to post transactions.
    By setting the mode, a new transaction can be pushed with a different mode than the default. The default mode is ``async``, which
    will return immediately and not wait to see if the transaction is valid. The ``sync`` mode will return after the transaction is validated, while ``commit``
-   returns after the transaction is committed to a block.
-
-   .. note::
-
-       This option is only available when using BigchainDB with Tendermint. 
+   returns after the transaction is committed to a block. 
 
    .. note::
    
@@ -160,8 +156,8 @@ Transactions
 
    .. note::
        If the server is returning a ``202`` HTTP status code when ``mode=aysnc`` or ``mode=sync``, then the
-       transaction has been accepted for processing. The client can subscribe to
-       :ref:`WebSocket Event Stream API <The WebSocket Event Stream API>` for listen for comitted transactions.
+       transaction has been accepted for processing. The client can subscribe to the
+       :ref:`WebSocket Event Stream API <The WebSocket Event Stream API>` to listen for comitted transactions.
 
    :resheader Content-Type: ``application/json``
 
@@ -171,7 +167,8 @@ Transactions
 
 .. http:post:: /api/v1/transactions
 
-   This endpoint (without any parameters) will push a new transaction. If BigchainDB is used with Tendermint, the default mode ``async`` is used.
+   This endpoint (without any parameters) will push a new transaction.
+   Since no ``mode`` parameter is included, the default mode is assumed: ``async``.
 
 
 Transaction Outputs
