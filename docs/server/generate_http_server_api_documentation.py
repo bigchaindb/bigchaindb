@@ -67,6 +67,14 @@ Content-Type: application/json
 """
 
 
+TPLS['post-tx-response'] = """\
+HTTP/1.1 202 Accepted
+Content-Type: application/json
+
+%(tx)s
+"""
+
+
 TPLS['get-block-request'] = """\
 GET /api/v1/blocks/%(blockid)s HTTP/1.1
 Host: example.com
