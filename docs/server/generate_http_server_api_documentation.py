@@ -69,7 +69,6 @@ Content-Type: application/json
 
 TPLS['post-tx-response'] = """\
 HTTP/1.1 202 Accepted
-Location: ../statuses?transaction_id=%(txid)s
 Content-Type: application/json
 
 %(tx)s

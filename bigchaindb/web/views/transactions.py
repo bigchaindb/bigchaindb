@@ -95,13 +95,4 @@ class TransactionListApi(Resource):
         response = jsonify(tx)
         response.status_code = 202
 
-        # NOTE: According to W3C, sending a relative URI is not allowed in the
-        # Location Header:
-        #   - https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
-        #
-        # Flask is autocorrecting relative URIs. With the following command,
-        # we're able to prevent this.
-        response.autocorrect_location_header = False
-        status_monitor = '../statuses?transaction_id={}'.format(tx_obj.id)
-        response.headers['Location'] = status_monitor
         return response

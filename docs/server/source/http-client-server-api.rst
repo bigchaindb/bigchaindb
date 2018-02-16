@@ -159,15 +159,11 @@ Transactions
       :language: http
 
    .. note::
-       If the server is returning a ``202`` HTTP status code, then the
-       transaction has been accepted for processing. To check the status of the
-       transaction, poll the link to the
-       :ref:`status monitor <get_status_of_transaction>`
-       provided in the ``Location`` header or listen to server's
-       :ref:`WebSocket Event Stream API <The WebSocket Event Stream API>`.
+       If the server is returning a ``202`` HTTP status code when ``mode=aysnc`` or ``mode=sync``, then the
+       transaction has been accepted for processing. The client can subscribe to
+       :ref:`WebSocket Event Stream API <The WebSocket Event Stream API>` for listen for comitted transactions.
 
    :resheader Content-Type: ``application/json``
-   :resheader Location: Relative link to a status monitor for the submitted transaction.
 
    :statuscode 202: The pushed transaction was accepted in the ``BACKLOG``, but the processing has not been completed.
    :statuscode 400: The transaction was malformed and not accepted in the ``BACKLOG``.
