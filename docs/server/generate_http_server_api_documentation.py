@@ -75,60 +75,6 @@ Content-Type: application/json
 """
 
 
-TPLS['get-statuses-tx-request'] = """\
-GET /statuses?transaction_id=%(txid)s HTTP/1.1
-Host: example.com
-
-"""
-
-
-TPLS['get-statuses-tx-invalid-response'] = """\
-HTTP/1.1 200 OK
-Content-Type: application/json
-
-{
-  "status": "invalid"
-}
-"""
-
-
-TPLS['get-statuses-tx-valid-response'] = """\
-HTTP/1.1 200 OK
-Content-Type: application/json
-
-{
-  "status": "valid"
-}
-"""
-
-
-TPLS['get-statuses-block-request'] = """\
-GET /api/v1/statuses?block_id=%(blockid)s HTTP/1.1
-Host: example.com
-
-"""
-
-
-TPLS['get-statuses-block-invalid-response'] = """\
-HTTP/1.1 200 OK
-Content-Type: application/json
-
-{
-  "status": "invalid"
-}
-"""
-
-
-TPLS['get-statuses-block-valid-response'] = """\
-HTTP/1.1 200 OK
-Content-Type: application/json
-
-{
-  "status": "valid"
-}
-"""
-
-
 TPLS['get-block-request'] = """\
 GET /api/v1/blocks/%(blockid)s HTTP/1.1
 Host: example.com
@@ -156,21 +102,6 @@ HTTP/1.1 200 OK
 Content-Type: application/json
 
 %(block_list)s
-"""
-
-
-TPLS['get-vote-request'] = """\
-GET /api/v1/votes?block_id=%(blockid)s HTTP/1.1
-Host: example.com
-
-"""
-
-
-TPLS['get-vote-response'] = """\
-HTTP/1.1 200 OK
-Content-Type: application/json
-
-[%(vote)s]
 """
 
 
@@ -256,18 +187,6 @@ def main():
     ]
     ctx['block_list'] = pretty_json(block_list)
 
-
-    # block = Block(transactions=[tx], node_pubkey=node_public, voters=[node_public], signature=signature)
-    block_transfer = Block(transactions=[tx_transfer], node_pubkey=node_public,
-                           voters=[node_public], signature=signature)
-    ctx['block_transfer'] = pretty_json(block_transfer.to_dict())
-
-    # vote
-    vblock = Block(transactions=[tx], node_pubkey=node_public, voters=[node_public], signature=signature)
-    DUMMY_SHA3 = '0123456789abcdef' * 4
-    b = Bigchain(public_key=node_public, private_key=node_private)
-    vote = b.vote(vblock.id, DUMMY_SHA3, True)
-    ctx['vote'] = pretty_json(vote)
 
     base_path = os.path.join(os.path.dirname(__file__),
                              'source/http-samples')
