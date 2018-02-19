@@ -1,0 +1,38 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: openresty-instance-1-dep
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: openresty-instance-1-dep
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: nginx-openresty
+        image: bigchaindb/nginx_3scale:unstable
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: RESOLVER
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: cluster-dns-server-ip
+        - name: THREESCALE_PORTAL_ENDPOINT
+          valueFrom:
+            secretKeyRef:
+              name: apicast-secret
+              key: portal-endpoint
+        - name: APICAST_LOG_LEVEL
+          value: "debug"
+        - name: APICAST_CONFIGURATION_LOADER
+          value: "boot"
+        - name: APICAST_MANAGEMENT_API
+          value: "debug"
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        - containerPort: 8090
+          protocol: TCP
