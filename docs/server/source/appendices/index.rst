@@ -18,4 +18,3 @@ Appendices
    licenses
    run-with-vagrant
    run-with-ansible
-   vote-yaml
