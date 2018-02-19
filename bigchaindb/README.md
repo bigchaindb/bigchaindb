@@ -2,13 +2,11 @@
 
 A high-level description of the files and subdirectories of BigchainDB.
 
-There are three database tables which underpin BigchainDB: `backlog`, where incoming transactions are held temporarily until they can be consumed; `bigchain`, where blocks of transactions are written permanently; and `votes`, where votes are written permanently.  It is the votes in the `votes` table which must be queried to determine block validity and order. For more in-depth explanation, see [the whitepaper](https://www.bigchaindb.com/whitepaper/).
-
 ## Files
 
 ### [`core.py`](./core.py)
 
-The `Bigchain` class is defined here.  Most operations outlined in the [whitepaper](https://www.bigchaindb.com/whitepaper/) as well as database interactions are found in this file.  This is the place to start if you are interested in implementing a server API, since many of these class methods concern BigchainDB interacting with the outside world.
+The `Bigchain` class is defined here.  Most node-level operations and database interactions are found in this file.  This is the place to start if you are interested in implementing a server API, since many of these class methods concern BigchainDB interacting with the outside world.
 
 ### [`models.py`](./models.py)
 
