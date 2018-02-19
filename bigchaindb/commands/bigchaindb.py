@@ -17,6 +17,7 @@ from bigchaindb.common.exceptions import (StartupError,
 import bigchaindb
 from bigchaindb import backend
 from bigchaindb.backend import schema
+from bigchaindb.backend import query
 from bigchaindb.backend.admin import (set_replicas, set_shards, add_replicas,
                                       remove_replicas)
 from bigchaindb.backend.exceptions import OperationError
@@ -114,6 +115,18 @@ def run_configure(args, skip_if_exists=False):
         print(json.dumps(conf, indent=4, sort_keys=True))
     print('Configuration written to {}'.format(config_path), file=sys.stderr)
     print('Ready to go!', file=sys.stderr)
+
+
+@configure_bigchaindb
+def run_upsert_validator(args):
+    """Store validators which should be synced with Tendermint"""
+
+    b = bigchaindb.Bigchain()
+    validator = [{'pub_key': {'type': 'ed25519',
+                              'data': args.public_key},
+                  'power': args.power}]
+    validator_update = {'validators': validator, 'sync': True}
+    query.store_validator_update(b.connection, validator_update)
 
 
 @configure_bigchaindb
@@ -270,6 +283,7 @@ def create_parser():
     config_parser = subparsers.add_parser('configure',
                                           help='Prepare the config file '
                                                'and create the node keypair')
+
     config_parser.add_argument('backend',
                                choices=['localmongodb'],
                                default='localmongodb',
@@ -277,6 +291,16 @@ def create_parser():
                                nargs='?',
                                help='The backend to use. It can be either '
                                     'rethinkdb or mongodb.')
+
+    validator_parser = subparsers.add_parser('upsert-validator',
+                                             help='Add/update/delete a validator')
+
+    validator_parser.add_argument('public_key',
+                                  help='Public key of the new validator.')
+
+    validator_parser.add_argument('power',
+                                  type=int,
+                                  help='Voting power of the validator.')
 
     # parsers for showing/exporting config values
     subparsers.add_parser('show-config',

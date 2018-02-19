@@ -1,6 +1,6 @@
 """Query implementation for MongoDB"""
 
-from pymongo import DESCENDING
+from pymongo import DESCENDING, ASCENDING
 
 from bigchaindb import backend
 from bigchaindb.backend.exceptions import DuplicateKeyError
@@ -232,3 +232,17 @@ def get_unspent_outputs(conn, *, query=None):
     if query is None:
         query = {}
     return conn.run(conn.collection('utxos').find(query))
+
+
+@register_query(LocalMongoDBConnection)
+def store_validator_update(conn, validator_update):
+    return conn.run(
+        conn.collection('validators')
+        .insert_one(validator_update))
+
+
+@register_query(LocalMongoDBConnection)
+def get_pending_validator_updates(conn):
+    return conn.run(
+        conn.collection('validators')
+        .find({'sync': True}, sort=[('_id', ASCENDING)]))

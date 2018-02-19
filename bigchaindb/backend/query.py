@@ -578,3 +578,17 @@ def get_unspent_outputs(connection, *, query=None):
     """
 
     raise NotImplementedError
+
+
+@singledispatch
+def store_validator_update(conn, validator_update):
+    """Store a update for the validator set """
+
+    raise NotImplementedError
+
+
+@singledispatch
+def get_pending_validator_updates(conn):
+    """Get validator updates which are not synced"""
+
+    raise NotImplementedError

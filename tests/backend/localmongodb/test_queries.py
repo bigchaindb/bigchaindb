@@ -1,4 +1,5 @@
 from copy import deepcopy
+import time
 
 import pytest
 import pymongo
@@ -248,3 +249,40 @@ def test_get_unspent_outputs(db_context, utxoset):
     for utxo in retrieved_utxoset:
         del utxo['_id']
     assert retrieved_utxoset == unspent_outputs
+
+
+def test_store_validator_update():
+    from bigchaindb.backend import connect, query
+
+    conn = connect()
+    validator_update = {'validators': [{'key': 'value'}],
+                        'sync': True}
+    resp = query.store_validator_update(conn, deepcopy(validator_update))
+    obj = conn.db.validators.find_one({'_id': resp.inserted_id}, projection={'_id': False})
+
+    assert obj == validator_update
+
+
+def test_get_pending_validator_update():
+    from bigchaindb.backend import connect, query
+
+    conn = connect()
+    u1 = gen_validator_update(conn)
+    time.sleep(1)
+    gen_validator_update(conn, sync=False)
+    time.sleep(1)
+    u3 = gen_validator_update(conn)
+
+    expected_ids = [str(u1.inserted_id), str(u3.inserted_id)]
+
+    resp = list(query.get_pending_validator_updates(conn))
+    resp_ids = [str(obj['_id']) for obj in resp]
+
+    assert len(resp) == 2
+    assert resp_ids == expected_ids
+
+
+def gen_validator_update(conn, sync=True):
+    validator_update = {'validators': [{'key': 'value'}],
+                        'sync': sync}
+    return conn.db.validators.insert_one(validator_update)
