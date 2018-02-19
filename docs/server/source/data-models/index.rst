@@ -9,4 +9,3 @@ Data Models
    inputs-outputs
    conditions
    block-model
-   vote-model
