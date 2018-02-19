@@ -15,7 +15,7 @@ spec:
         image: bigchaindb/nginx_3scale:unstable
         imagePullPolicy: IfNotPresent
         env:
-        - name: DNS_SERVER
+        - name: RESOLVER
           valueFrom:
             configMapKeyRef:
               name: vars
@@ -23,14 +23,16 @@ spec:
         - name: THREESCALE_PORTAL_ENDPOINT
           valueFrom:
             secretKeyRef:
-              name: 3scale-credentials
-              key: conf-url
+              name: apicast-secret
+              key: portal-endpoint
+        - name: APICAST_LOG_LEVEL
+          value: "debug"
+        - name: APICAST_CONFIGURATION_LOADER
+          value: "boot"
+        - name: APICAST_MANAGEMENT_API
+          value: "debug"
         ports:
         - containerPort: 8080
           protocol: TCP
-          name: openresty-port
-        resources:
-          limits:
-            cpu: 200m
-            memory: 768Mi
-      restartPolicy: Always
+        - containerPort: 8090
+          protocol: TCP

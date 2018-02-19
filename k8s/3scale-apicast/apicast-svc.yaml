@@ -16,11 +16,10 @@ spec:
   ports:
   - port: 8080
     targetPort: 8080
-    name: apicast-port
+    name: apicast-proxy
+  - port: 8090
+    targetPort: 8090
+    name: apicast-mgmt
     protocol: TCP
-  - port: 80
-    targetPort: 80
-    protocol: TCP
-    name: http-port
   type: ClusterIP
   clusterIP: None
