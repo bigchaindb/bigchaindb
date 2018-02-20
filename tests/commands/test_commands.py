@@ -590,9 +590,11 @@ def test_recover_db_from_zombie_block(b, monkeypatch):
 
 
 @pytest.mark.tendermint
+@patch('bigchaindb.config_utils.autoconfigure')
 @patch('bigchaindb.commands.bigchaindb.run_recover')
 @patch('bigchaindb.tendermint.commands.start')
-def test_recover_db_on_start(mock_run_recover,
+def test_recover_db_on_start(mock_autoconfigure,
+                             mock_run_recover,
                              mock_start,
                              mocked_setup_logging):
     from bigchaindb.commands.bigchaindb import run_start

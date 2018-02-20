@@ -25,5 +25,6 @@ ENV BIGCHAINDB_TENDERMINT_PORT 46657
 RUN mkdir -p /usr/src/app
 COPY . /usr/src/app/
 WORKDIR /usr/src/app
+RUN find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf
 RUN pip install --no-cache-dir .[test]
 RUN bigchaindb -y configure "$backend"
