@@ -59,11 +59,6 @@ You will be prompted to make sure.
 If you want to force-drop the database (i.e. skipping the yes/no prompt), then use `bigchaindb -y drop`
 
 
-## bigchaindb recover
-
-Recover Bigchaindb after a fatal crash. The command will try to restore the data to a previous consistant state.
-
-
 ## bigchaindb start
 
 Start BigchainDB. It always begins by trying a `bigchaindb init` first. See the note in the documentation for `bigchaindb init`. The database initialization step is optional and can be skipped by passing the `--no-init` flag i.e. `bigchaindb start --no-init`.
