@@ -1025,6 +1025,21 @@ class Transaction(object):
         tx = Transaction._remove_signatures(self.to_dict())
         return Transaction._to_str(tx)
 
+    @staticmethod 
+    def get_asset_ids(transactions): 
+        if not isinstance(transactions, list): 
+            transactions = [transactions] 
+ 
+        if not len(transactions): 
+            return [] 
+ 
+        # create a set of the transactions' asset ids 
+        asset_ids = {tx.id if tx.operation == Transaction.CREATE 
+                     else tx.asset['id'] 
+                     for tx in transactions} 
+ 
+        return asset_ids
+
     @staticmethod
     def get_asset_id(transactions):
         """Get the asset id from a list of :class:`~.Transactions`.
@@ -1045,14 +1060,9 @@ class Transaction(object):
             :exc:`AssetIdMismatch`: If the inputs are related to different
                 assets.
         """
-
-        if not isinstance(transactions, list):
-            transactions = [transactions]
-
-        # create a set of the transactions' asset ids
-        asset_ids = {tx.id if tx.operation == Transaction.CREATE
-                     else tx.asset['id']
-                     for tx in transactions}
+        asset_ids = Transaction.get_asset_ids(transactions)
+        if len(asset_ids) == 0: 
+            return None
 
         # check that all the transasctions have the same asset id
         if len(asset_ids) > 1:
@@ -1098,3 +1108,4 @@ class Transaction(object):
         outputs = [Output.from_dict(output) for output in tx['outputs']]
         return cls(tx['operation'], tx['asset'], inputs, outputs,
                    tx['metadata'], tx['version'])
+

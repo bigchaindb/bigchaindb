@@ -31,7 +31,7 @@ def test_validate_transfer_asset_id_mismatch(b, user_pk, user_sk):
     tx_transfer.asset['id'] = 'aaa'
     tx_transfer_signed = tx_transfer.sign([user_sk])
     with pytest.raises(AssetIdMismatch):
-        tx_transfer_signed.validate(b)
+        b.validate_transaction(tx_transfer_signed)
 
 
 def test_get_asset_id_create_transaction(b, user_pk):
@@ -84,3 +84,4 @@ def test_create_valid_divisible_asset(b, user_pk, user_sk):
     tx = Transaction.create([user_pk], [([user_pk], 2)])
     tx_signed = tx.sign([user_sk])
     tx_signed.validate(b)
+

@@ -102,6 +102,7 @@ config = {
     'graphite': {
         'host': os.environ.get('BIGCHAINDB_GRAPHITE_HOST', 'localhost'),
     },
+    'consensus_plugin': os.environ.get('BIGCHAINDB_CONSENSUS_PLUGIN') or None,
 }
 
 # We need to maintain a backup copy of the original config dict in case
@@ -110,3 +111,4 @@ config = {
 _config = copy.deepcopy(config)
 from bigchaindb.core import Bigchain  # noqa
 from bigchaindb.version import __version__  # noqa
+

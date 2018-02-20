@@ -14,11 +14,12 @@ from bigchaindb.backend.schema import validate_language_key
 
 
 class Transaction(Transaction):
-    def validate(self, bigchain):
+    def validate(self, bigchain, input_txs=None):
         """Validate transaction spend
 
         Args:
             bigchain (Bigchain): an instantiated bigchaindb.Bigchain object.
+            input_txs: input transactions
 
         Returns:
             The transaction (Transaction) if the transaction is valid else it
@@ -32,17 +33,16 @@ class Transaction(Transaction):
 
         if self.operation == Transaction.TRANSFER:
             # store the inputs so that we can check if the asset ids match
-            input_txs = []
-            for input_ in self.inputs:
+            if not input_txs:
+                input_txs = self.get_input_txs(bigchain)
+            for input_, input_tx, input_status in input_txs:
                 input_txid = input_.fulfills.txid
-                input_tx, status = bigchain.\
-                    get_transaction(input_txid, include_status=True)
 
                 if input_tx is None:
                     raise InputDoesNotExist("input `{}` doesn't exist"
                                             .format(input_txid))
 
-                if status != bigchain.TX_VALID:
+                if input_status != bigchain.TX_VALID:
                     raise TransactionNotInValidBlock(
                         'input `{}` does not exist in a valid block'.format(
                             input_txid))
@@ -54,32 +54,44 @@ class Transaction(Transaction):
 
                 output = input_tx.outputs[input_.fulfills.output]
                 input_conditions.append(output)
-                input_txs.append(input_tx)
 
             # Validate that all inputs are distinct
             links = [i.fulfills.to_uri() for i in self.inputs]
             if len(links) != len(set(links)):
                 raise DoubleSpend('tx "{}" spends inputs twice'.format(self.id))
 
-            # validate asset id
-            asset_id = Transaction.get_asset_id(input_txs)
-            if asset_id != self.asset['id']:
-                raise AssetIdMismatch(('The asset id of the input does not'
-                                       ' match the asset id of the'
-                                       ' transaction'))
-
-            input_amount = sum([input_condition.amount for input_condition in input_conditions])
-            output_amount = sum([output_condition.amount for output_condition in self.outputs])
-
-            if output_amount != input_amount:
-                raise AmountError(('The amount used in the inputs `{}`'
-                                   ' needs to be same as the amount used'
-                                   ' in the outputs `{}`')
-                                  .format(input_amount, output_amount))
-
         if not self.inputs_valid(input_conditions):
             raise InvalidSignature('Transaction signature is invalid.')
 
+        return self
+
+    def get_input_txs(self, bigchain): 
+        input_txs = [] 
+        for input_ in self.inputs: 
+            input_txid = input_.fulfills.txid 
+            input_tx, status = bigchain.get_transaction(input_txid,
+                                   include_status=True) 
+            input_txs.append((input_, input_tx, status)) 
+        return input_txs 
+ 
+    def validate_asset(self, bigchain, input_txs=None): 
+        # validate asset id 
+        asset_id = Transaction.get_asset_id(input_txs) 
+        if asset_id != self.asset['id']: 
+            raise AssetIdMismatch(('The asset id of the input does not' 
+                                   ' match the asset id of the' 
+                                   ' transaction')) 
+        return self 
+
+    def validate_amount(self, input_conditions):
+        input_amount = sum([input_condition.amount for input_condition in input_conditions])
+        output_amount = sum([output_condition.amount for output_condition in self.outputs])
+ 
+        if output_amount != input_amount:
+            raise AmountError(('The amount used in the inputs `{}`'
+                               ' needs to be same as the amount used'
+                               ' in the outputs `{}`')
+                              .format(input_amount, output_amount))
         return self
 
     @classmethod
@@ -527,3 +539,4 @@ class FastTransaction:
 
     def to_dict(self):
         return self.data
+

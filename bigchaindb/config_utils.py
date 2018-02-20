@@ -252,6 +252,16 @@ def autoconfigure(filename=None, config=None, force=False):
     set_config(newconfig)  # sets bigchaindb.config
 
 
+def load_from_path(path): 
+    module_path, object_name = path.split(':') 
+    module_name = os.path.basename(module_path).split('.').pop(0) 
+ 
+    spec = importlib.util.spec_from_file_location(module_name, module_path) 
+    module = importlib.util.module_from_spec(spec) 
+    spec.loader.exec_module(module) 
+    return getattr(module, object_name) 
+
+
 @lru_cache()
 def load_consensus_plugin(name=None):
     """Find and load the chosen consensus plugin.
@@ -263,9 +273,11 @@ def load_consensus_plugin(name=None):
     Returns:
         an uninstantiated subclass of ``bigchaindb.consensus.AbstractConsensusRules``
     """
-    if not name:
+    if not name or name == 'default':
         return BaseConsensusRules
 
+    if not isinstance(name, str) and issubclass(name, (BaseConsensusRules,)): 
+        return name
     # TODO: This will return the first plugin with group `bigchaindb.consensus`
     #       and name `name` in the active WorkingSet.
     #       We should probably support Requirements specs in the config, e.g.
@@ -275,7 +287,7 @@ def load_consensus_plugin(name=None):
         plugin = entry_point.load()
 
     # No matching entry_point found
-    if not plugin:
+    if not plugin and name:
         raise ResolutionError(
             'No plugin found in group `bigchaindb.consensus` with name `{}`'.
             format(name))
@@ -300,3 +312,4 @@ def load_events_plugins(names=None):
             plugins.append((name, entry_point.load()))
 
     return plugins
+

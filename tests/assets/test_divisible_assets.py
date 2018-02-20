@@ -543,7 +543,7 @@ def test_amount_error_transfer(b, user_pk, user_sk):
                                        asset_id=tx_create.id)
     tx_transfer_signed = tx_transfer.sign([user_sk])
     with pytest.raises(AmountError):
-        tx_transfer_signed.validate(b)
+        b.validate_transaction(tx_transfer_signed)
 
     # TRANSFER
     # output amount greater than input amount
@@ -551,7 +551,7 @@ def test_amount_error_transfer(b, user_pk, user_sk):
                                        asset_id=tx_create.id)
     tx_transfer_signed = tx_transfer.sign([user_sk])
     with pytest.raises(AmountError):
-        tx_transfer_signed.validate(b)
+        b.validate_transaction(tx_transfer_signed)
 
 
 @pytest.mark.skip(reason='Figure out how to handle this case')
