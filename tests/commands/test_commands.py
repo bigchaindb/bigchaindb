@@ -24,7 +24,6 @@ def test_make_sure_we_dont_remove_any_command():
     assert parser.parse_args(['set-replicas', '1']).command
     assert parser.parse_args(['add-replicas', 'localhost:27017']).command
     assert parser.parse_args(['remove-replicas', 'localhost:27017']).command
-    assert parser.parse_args(['recover']).command
 
 
 @patch('bigchaindb.commands.utils.start')
@@ -522,12 +521,94 @@ def test_run_remove_replicas(mock_remove_replicas):
 
 
 @pytest.mark.tendermint
-@patch('bigchaindb.backend.query.delete_zombie_transactions')
-@patch('bigchaindb.backend.query.delete_latest_block')
-def test_recover_db(mock_delete_zombie_transactions, mock_delete_latest_block):
+@pytest.mark.bdb
+def test_recover_db_from_zombie_txn(b, monkeypatch):
     from bigchaindb.commands.bigchaindb import run_recover
-    args = Namespace(config=None)
+    from bigchaindb.models import Transaction
+    from bigchaindb.common.crypto import generate_key_pair
+    from bigchaindb.tendermint.lib import Block
+    from bigchaindb import backend
 
-    run_recover(args)
-    assert mock_delete_zombie_transactions.called
-    assert mock_delete_latest_block.called
+    alice = generate_key_pair()
+    tx = Transaction.create([alice.public_key],
+                            [([alice.public_key], 1)],
+                            asset={'cycle': 'hero'},
+                            metadata={'name': 'hohenheim'}) \
+        .sign([alice.private_key])
+    b.store_bulk_transactions([tx])
+    block = Block(app_hash='random_app_hash', height=10,
+                  transactions=[])._asdict()
+    b.store_block(block)
+
+    def mock_get(uri):
+        return MockResponse(10)
+    monkeypatch.setattr('requests.get', mock_get)
+
+    run_recover(b)
+
+    assert list(backend.query.get_metadata(b.connection, [tx.id])) == []
+    assert not backend.query.get_asset(b.connection, tx.id)
+    assert not b.get_transaction(tx.id)
+
+
+@pytest.mark.tendermint
+@pytest.mark.bdb
+def test_recover_db_from_zombie_block(b, monkeypatch):
+    from bigchaindb.commands.bigchaindb import run_recover
+    from bigchaindb.models import Transaction
+    from bigchaindb.common.crypto import generate_key_pair
+    from bigchaindb.tendermint.lib import Block
+    from bigchaindb import backend
+
+    alice = generate_key_pair()
+    tx = Transaction.create([alice.public_key],
+                            [([alice.public_key], 1)],
+                            asset={'cycle': 'hero'},
+                            metadata={'name': 'hohenheim'}) \
+        .sign([alice.private_key])
+    b.store_bulk_transactions([tx])
+
+    block9 = Block(app_hash='random_app_hash', height=9,
+                   transactions=[])._asdict()
+    b.store_block(block9)
+    block10 = Block(app_hash='random_app_hash', height=10,
+                    transactions=[tx.id])._asdict()
+    b.store_block(block10)
+
+    def mock_get(uri):
+        return MockResponse(9)
+    monkeypatch.setattr('requests.get', mock_get)
+
+    run_recover(b)
+
+    assert list(backend.query.get_metadata(b.connection, [tx.id])) == []
+    assert not backend.query.get_asset(b.connection, tx.id)
+    assert not b.get_transaction(tx.id)
+
+    block = b.get_latest_block()
+    assert block['height'] == 9
+
+
+@pytest.mark.tendermint
+@patch('bigchaindb.commands.bigchaindb.run_recover')
+@patch('bigchaindb.tendermint.commands.start')
+def test_recover_db_on_start(mock_run_recover,
+                             mock_start,
+                             mocked_setup_logging):
+    from bigchaindb.commands.bigchaindb import run_start
+    args = Namespace(start_rethinkdb=False, allow_temp_keypair=False, config=None, yes=True,
+                     skip_initialize_database=False)
+    run_start(args)
+
+    assert mock_run_recover.called
+    assert mock_start.called
+
+
+# Helper
+class MockResponse():
+
+    def __init__(self, height):
+        self.height = height
+
+    def json(self):
+        return {'result': {'latest_block_height': self.height}}

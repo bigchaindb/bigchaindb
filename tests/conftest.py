@@ -312,8 +312,8 @@ def carol_pubkey(carol):
 
 @pytest.fixture
 def b():
-    from bigchaindb import Bigchain
-    return Bigchain()
+    from bigchaindb.tendermint import BigchainDB
+    return BigchainDB()
 
 
 @pytest.fixture

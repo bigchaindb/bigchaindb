@@ -51,12 +51,9 @@ def get_transactions(conn, transaction_ids):
 
 @register_query(LocalMongoDBConnection)
 def store_metadatas(conn, metadata):
-    try:
-        return conn.run(
-            conn.collection('metadata')
-            .insert_many(metadata, ordered=False))
-    except DuplicateKeyError:
-        pass
+    return conn.run(
+        conn.collection('metadata')
+        .insert_many(metadata, ordered=False))
 
 
 @register_query(LocalMongoDBConnection)
@@ -79,12 +76,9 @@ def store_asset(conn, asset):
 
 @register_query(LocalMongoDBConnection)
 def store_assets(conn, assets):
-    try:
-        return conn.run(
-            conn.collection('assets')
-            .insert_many(assets, ordered=False))
-    except DuplicateKeyError:
-        pass
+    return conn.run(
+        conn.collection('assets')
+        .insert_many(assets, ordered=False))
 
 
 @register_query(LocalMongoDBConnection)

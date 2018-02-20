@@ -50,6 +50,10 @@ class BigchainDB(Bigchain):
         """Submit a valid transaction to the mempool."""
         self.post_transaction(transaction, mode)
 
+    def get_latest_block_height_from_tendermint(self):
+        r = requests.get(ENDPOINT + 'status')
+        return r.json()['result']['latest_block_height']
+
     def store_transaction(self, transaction):
         """Store a valid transaction to the transactions collection."""
 
@@ -85,16 +89,10 @@ class BigchainDB(Bigchain):
                                   'metadata': metadata})
             txns.append(transaction)
 
-        try:
-            backend.query.store_metadatas(self.connection, txn_metadatas)
-            if assets:
-                backend.query.store_assets(self.connection, assets)
-            return backend.query.store_transactions(self.connection, txns)
-        except Exception as e:
-            logger.critical('Failed to write transactions (%s): %s', type(e).__name__, e)
-            txn_ids = [txn['id'] for txn in txns]
-            backend.query.delete_transactions(self.connection, txn_ids)
-            raise e
+        backend.query.store_metadatas(self.connection, txn_metadatas)
+        if assets:
+            backend.query.store_assets(self.connection, assets)
+        return backend.query.store_transactions(self.connection, txns)
 
     def get_transaction(self, transaction_id, include_status=False):
         transaction = backend.query.get_transaction(self.connection, transaction_id)
@@ -156,12 +154,8 @@ class BigchainDB(Bigchain):
 
     def store_block(self, block):
         """Create a new block."""
-        try:
-            return backend.query.store_block(self.connection, block)
-        except Exception as e:
-            logger.critical('Failed to write block (%s): %s', type(e).__name__, e)
-            backend.query.delete_transactions(self.connection, block['transactions'])
-            raise e
+
+        return backend.query.store_block(self.connection, block)
 
     def get_latest_block(self):
         """Get the block with largest height."""

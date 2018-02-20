@@ -15,6 +15,7 @@ from bigchaindb.common.exceptions import (StartupError,
                                           KeypairNotFoundException,
                                           DatabaseDoesNotExist)
 import bigchaindb
+from bigchaindb.tendermint.core import BigchainDB
 from bigchaindb import backend
 from bigchaindb.backend import schema
 from bigchaindb.backend import query
@@ -155,11 +156,17 @@ def run_init(args):
         print('If you wish to re-initialize it, first drop it.', file=sys.stderr)
 
 
-@configure_bigchaindb
-def run_recover(args):
-    b = bigchaindb.Bigchain()
+def run_recover(b):
     query.delete_zombie_transactions(b.connection)
-    query.delete_latest_block(b.connection)
+
+    tendermint_height = b.get_latest_block_height_from_tendermint()
+    block = b.get_latest_block()
+
+    if block:
+        while block['height'] > tendermint_height:
+            logger.info('BigchainDB is ahead of tendermint, removing block %s', block['height'])
+            query.delete_latest_block(b.connection)
+            block = b.get_latest_block()
 
 
 @configure_bigchaindb
@@ -185,6 +192,8 @@ def run_drop(args):
 def run_start(args):
     """Start the processes to run the node"""
     logger.info('BigchainDB Version %s', bigchaindb.__version__)
+
+    run_recover(BigchainDB())
 
     if args.allow_temp_keypair:
         if not (bigchaindb.config['keypair']['private'] or
@@ -299,9 +308,6 @@ def create_parser():
 
     subparsers.add_parser('drop',
                           help='Drop the database')
-
-    subparsers.add_parser('recover',
-                          help='Restore data to a consistant state after crash')
 
     # parser for starting BigchainDB
     start_parser = subparsers.add_parser('start',
