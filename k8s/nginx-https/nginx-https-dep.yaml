@@ -12,7 +12,7 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
       - name: nginx
-        image: bigchaindb/nginx_https:1.1
+        image: bigchaindb/nginx_https:unstable
         imagePullPolicy: IfNotPresent
         env:
         - name: CLUSTER_FRONTEND_PORT
