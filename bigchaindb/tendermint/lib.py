@@ -17,9 +17,12 @@ from bigchaindb import exceptions as core_exceptions
 
 logger = logging.getLogger(__name__)
 
-TENDERMINT_HOST = getenv('TENDERMINT_HOST', 'localhost')
-TENDERMINT_PORT = getenv('TENDERMINT_PORT', '46657')
-ENDPOINT = 'http://{}:{}/'.format(TENDERMINT_HOST, TENDERMINT_PORT)
+BIGCHAINDB_TENDERMINT_HOST = getenv('BIGCHAINDB_TENDERMINT_HOST',
+                                    'localhost')
+BIGCHAINDB_TENDERMINT_PORT = getenv('BIGCHAINDB_TENDERMINT_PORT',
+                                    '46657')
+ENDPOINT = 'http://{}:{}/'.format(BIGCHAINDB_TENDERMINT_HOST,
+                                  BIGCHAINDB_TENDERMINT_PORT)
 MODE_LIST = ('broadcast_tx_async',
              'broadcast_tx_sync',
              'broadcast_tx_commit')
@@ -46,6 +49,10 @@ class BigchainDB(Bigchain):
         # This method offers backward compatibility with the Web API.
         """Submit a valid transaction to the mempool."""
         self.post_transaction(transaction, mode)
+
+    def get_latest_block_height_from_tendermint(self):
+        r = requests.get(ENDPOINT + 'status')
+        return r.json()['result']['latest_block_height']
 
     def store_transaction(self, transaction):
         """Store a valid transaction to the transactions collection."""

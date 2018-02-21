@@ -5,8 +5,11 @@ import json
 from copy import deepcopy
 
 from base58 import b58encode, b58decode
+from cryptoconditions import Ed25519Sha256
 from pytest import mark, raises
 from sha3 import sha3_256
+
+pytestmark = mark.tendermint
 
 
 def test_input_serialization(ffill_uri, user_pub):
@@ -1005,3 +1008,42 @@ def test_output_from_dict_invalid_amount(user_output):
     out['amount'] = 'a'
     with raises(AmountError):
         Output.from_dict(out)
+
+
+def test_unspent_outputs_property(merlin, alice, bob, carol):
+    from bigchaindb.common.transaction import Transaction
+    tx = Transaction.create(
+        [merlin.public_key],
+        [([alice.public_key], 1),
+         ([bob.public_key], 2),
+         ([carol.public_key], 3)],
+        asset={'hash': '06e47bcf9084f7ecfd2a2a2ad275444a'},
+    ).sign([merlin.private_key])
+    unspent_outputs = list(tx.unspent_outputs)
+    assert len(unspent_outputs) == 3
+    assert all(utxo.transaction_id == tx.id for utxo in unspent_outputs)
+    assert all(utxo.asset_id == tx.id for utxo in unspent_outputs)
+    assert all(
+        utxo.output_index == i for i, utxo in enumerate(unspent_outputs))
+    unspent_output_0 = unspent_outputs[0]
+    assert unspent_output_0.amount == 1
+    assert unspent_output_0.condition_uri == Ed25519Sha256(
+        public_key=b58decode(alice.public_key)).condition_uri
+    unspent_output_1 = unspent_outputs[1]
+    assert unspent_output_1.amount == 2
+    assert unspent_output_1.condition_uri == Ed25519Sha256(
+        public_key=b58decode(bob.public_key)).condition_uri
+    unspent_output_2 = unspent_outputs[2]
+    assert unspent_output_2.amount == 3
+    assert unspent_output_2.condition_uri == Ed25519Sha256(
+        public_key=b58decode(carol.public_key)).condition_uri
+
+
+def test_spent_outputs_property(signed_transfer_tx):
+    spent_outputs = list(signed_transfer_tx.spent_outputs)
+    tx = signed_transfer_tx.to_dict()
+    assert len(spent_outputs) == 1
+    spent_output = spent_outputs[0]
+    assert spent_output['transaction_id'] == tx['inputs'][0]['fulfills']['transaction_id']
+    assert spent_output['output_index'] == tx['inputs'][0]['fulfills']['output_index']
+    # assert spent_output._asdict() == tx['inputs'][0]['fulfills']

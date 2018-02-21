@@ -1,7 +1,12 @@
 """Transaction related models to parse and construct transaction
 payloads.
 
+Attributes:
+    UnspentOutput (namedtuple): Object holding the information
+        representing an unspent output.
+
 """
+from collections import namedtuple
 from copy import deepcopy
 from functools import reduce
 
@@ -17,6 +22,17 @@ from bigchaindb.common.exceptions import (KeypairMismatchException,
                                           AmountError, AssetIdMismatch,
                                           ThresholdTooDeep)
 from bigchaindb.common.utils import serialize
+
+
+UnspentOutput = namedtuple(
+    'UnspentOutput', (
+        'transaction_id',
+        'output_index',
+        'amount',
+        'asset_id',
+        'condition_uri',
+    )
+)
 
 
 class Input(object):
@@ -475,7 +491,7 @@ class Transaction(object):
     TRANSFER = 'TRANSFER'
     GENESIS = 'GENESIS'
     ALLOWED_OPERATIONS = (CREATE, TRANSFER, GENESIS)
-    VERSION = '1.0'
+    VERSION = '2.0'
 
     def __init__(self, operation, asset, inputs=None, outputs=None,
                  metadata=None, version=None, hash_id=None):
@@ -531,6 +547,35 @@ class Transaction(object):
         self.outputs = outputs or []
         self.metadata = metadata
         self._id = hash_id
+
+    @property
+    def unspent_outputs(self):
+        """UnspentOutput: The outputs of this transaction, in a data
+        structure containing relevant information for storing them in
+        a UTXO set, and performing validation.
+        """
+        if self.operation == Transaction.CREATE:
+            self._asset_id = self._id
+        elif self.operation == Transaction.TRANSFER:
+            self._asset_id = self.asset['id']
+        return (UnspentOutput(
+            transaction_id=self._id,
+            output_index=output_index,
+            amount=output.amount,
+            asset_id=self._asset_id,
+            condition_uri=output.fulfillment.condition_uri,
+        ) for output_index, output in enumerate(self.outputs))
+
+    @property
+    def spent_outputs(self):
+        """tuple of :obj:`dict`: Inputs of this transaction. Each input
+        is represented as a dictionary containing a transaction id and
+        output index.
+        """
+        return (
+            input_.fulfills.to_dict()
+            for input_ in self.inputs if input_.fulfills
+        )
 
     @property
     def serialized(self):

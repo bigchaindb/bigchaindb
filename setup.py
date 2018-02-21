@@ -58,6 +58,7 @@ tests_require = [
     'pytest-xdist',
     'pytest-flask',
     'pytest-aiohttp',
+    'pytest-asyncio',
     'tox',
 ] + docs_require
 
@@ -83,7 +84,6 @@ install_requires = [
     'pyyaml~=3.12',
     'aiohttp~=2.3',
     'python-rapidjson-schema==0.1.1',
-    'statsd==3.2.1',
     'abci~=0.3.0',
 ]
 

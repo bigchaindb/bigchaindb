@@ -13,4 +13,4 @@ BigchainDB can store data of any kind (within reason), but it's designed to be p
 
 .. note::
 
-   We used the word "owners" somewhat loosely above. A more accurate word might be fulfillers, signers, controllers, or transfer-enablers. See the `note about "owners" in the IPDB Transaction Spec <https://the-ipdb-transaction-spec.readthedocs.io/en/latest/ownership.html>`_.
+   We used the word "owners" somewhat loosely above. A more accurate word might be fulfillers, signers, controllers, or transfer-enablers. See the note about "owners" in the `IPDB Transaction Spec <https://github.com/ipdb/ipdb-tx-spec>`_.

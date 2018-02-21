@@ -6,12 +6,6 @@ Libraries and Tools Maintained by the BigchainDB Team
 
 * `Python Driver <https://docs.bigchaindb.com/projects/py-driver/en/latest/index.html>`_
 * `JavaScript / Node.js Driver <https://github.com/bigchaindb/js-bigchaindb-driver>`_
-* `The Transaction CLI <https://docs.bigchaindb.com/projects/cli/en/latest/>`_ is
-  a command-line interface for building BigchainDB transactions.
-  You may be able to call it from inside the language of
-  your choice, and then use :ref:`the HTTP API <the-http-client-server-api>`
-  to post transactions.
-
 
 Community-Driven Libraries and Tools
 ------------------------------------

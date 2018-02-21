@@ -22,7 +22,7 @@ def _load_schema(name):
     return path, (schema, fast_schema)
 
 
-TX_SCHEMA_VERSION = 'v1.0'
+TX_SCHEMA_VERSION = 'v2.0'
 
 TX_SCHEMA_PATH, TX_SCHEMA_COMMON = _load_schema('transaction_' +
                                                 TX_SCHEMA_VERSION)

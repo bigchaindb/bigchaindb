@@ -12,9 +12,12 @@ python:
   - 3.6
 
 env:
-  - TOXENV=flake8
-  - TOXENV=docsroot
-  - TOXENV=docsserver
+  global:
+    - DOCKER_COMPOSE_VERSION=1.19.0
+  matrix:
+    - TOXENV=flake8
+    - TOXENV=docsroot
+    - TOXENV=docsserver
 
 matrix:
   fast_finish: true

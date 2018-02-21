@@ -1,0 +1,34 @@
+version: '3'
+
+services:
+  mdb:
+    image: mongo:3.4.3
+    command: mongod
+  bdb:
+    depends_on:
+      - mdb
+      - tendermint
+    build:
+      context: .
+      dockerfile: ./compose/travis/Dockerfile
+      args:
+        backend: localmongodb
+    volumes:
+      - .:/usr/src/app/
+    environment:
+      BIGCHAINDB_DATABASE_BACKEND: localmongodb
+      BIGCHAINDB_DATABASE_HOST: mdb
+      BIGCHAINDB_DATABASE_PORT: 27017
+      BIGCHAINDB_SERVER_BIND: 0.0.0.0:9984
+      BIGCHAINDB_WSSERVER_HOST: 0.0.0.0
+      BIGCHAINDB_START_TENDERMINT: 0
+      BIGCHAINDB_TENDERMINT_HOST: tendermint
+      BIGCHAINDB_TENDERMINT_PORT: 46657
+    command: bigchaindb start
+  tendermint:
+    image: tendermint/tendermint:0.13
+    volumes:
+      - ./tmdata/config.toml:/tendermint/config.toml
+      - ./tmdata/genesis.json:/tendermint/genesis.json
+      - ./tmdata/priv_validator.json:/tendermint/priv_validator.json
+    entrypoint: ["/bin/tendermint", "node", "--proxy_app=dummy"]

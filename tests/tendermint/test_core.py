@@ -57,8 +57,8 @@ def test_deliver_tx__valid_create_updates_db(b):
                     .sign([alice.private_key])
 
     app = App(b)
-    app.init_chain(["ignore"])
-    app.begin_block("ignore")
+    app.init_chain(['ignore'])
+    app.begin_block('ignore')
 
     result = app.deliver_tx(encode_tx_to_bytes(tx))
     assert result.is_ok()
@@ -81,8 +81,8 @@ def test_deliver_tx__double_spend_fails(b):
                     .sign([alice.private_key])
 
     app = App(b)
-    app.init_chain(["ignore"])
-    app.begin_block("ignore")
+    app.init_chain(['ignore'])
+    app.begin_block('ignore')
 
     result = app.deliver_tx(encode_tx_to_bytes(tx))
     assert result.is_ok()
@@ -101,8 +101,8 @@ def test_deliver_transfer_tx__double_spend_fails(b):
     from bigchaindb.common.crypto import generate_key_pair
 
     app = App(b)
-    app.init_chain(["ignore"])
-    app.begin_block("ignore")
+    app.init_chain(['ignore'])
+    app.begin_block('ignore')
 
     alice = generate_key_pair()
     bob = generate_key_pair()

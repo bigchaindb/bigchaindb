@@ -1,5 +1,4 @@
 Inputs and Outputs
 ==================
 
-See `the IPDB Transaction Spec
-<https://the-ipdb-transaction-spec.readthedocs.io/en/latest/>`_.
+See the `IPDB Transaction Spec <https://github.com/ipdb/ipdb-tx-spec>`_.
