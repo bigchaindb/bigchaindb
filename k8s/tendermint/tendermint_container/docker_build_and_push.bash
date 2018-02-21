@@ -1,5 +1,5 @@
 #!/bin/bash
 
-docker build -t bigchaindb/tendermint:unstable-tmt .
+docker build -t bigchaindb/tendermint:unstable .
 
-docker push bigchaindb/tendermint:unstable-tmt
+docker push bigchaindb/tendermint:unstable
