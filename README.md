@@ -8,7 +8,7 @@
 
 # BigchainDB Server
 
-BigchainDB is a scalable blockchain database. [The whitepaper](https://www.bigchaindb.com/whitepaper/) explains what that means.
+BigchainDB is a blockchain database.
 
 ## Get Started with BigchainDB Server
 
@@ -21,7 +21,6 @@ BigchainDB is a scalable blockchain database. [The whitepaper](https://www.bigch
 ## Links for Everyone
 
 * [BigchainDB.com](https://www.bigchaindb.com/) - the main BigchainDB website, including newsletter signup
-* [Whitepaper](https://www.bigchaindb.com/whitepaper/) - outlines the motivations, goals and core algorithms of BigchainDB
 * [Roadmap](https://github.com/bigchaindb/org/blob/master/ROADMAP.md)
 * [Blog](https://medium.com/the-bigchaindb-blog)
 * [Twitter](https://twitter.com/BigchainDB)
