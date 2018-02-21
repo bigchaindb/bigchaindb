@@ -1,5 +1,4 @@
 #!/bin/bash
 
-docker build -t bigchaindb/mongodb:3.3 .
-
-docker push bigchaindb/mongodb:3.3
+docker build -t bigchaindb/localmongodb:1.0 .
+docker push bigchaindb/localmongodb:1.0

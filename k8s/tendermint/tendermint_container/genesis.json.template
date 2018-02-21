@@ -1,0 +1,6 @@
+{
+  "genesis_time": TM_GENESIS_TIME,
+  "chain_id": TM_CHAIN_ID,
+  "validators": [],
+  "app_hash": ""
+}
