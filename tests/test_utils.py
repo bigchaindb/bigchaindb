@@ -3,6 +3,8 @@ from unittest.mock import patch, call
 
 import pytest
 
+pytestmark = pytest.mark.tendermint
+
 
 @pytest.fixture
 def mock_queue(monkeypatch):
@@ -157,3 +159,18 @@ def test_lazy_execution():
     lz.name.upper()
     result = lz.run(cat)
     assert result == 'SHMUI'
+
+
+def test_process_set_title():
+    from uuid import uuid4
+    from multiprocessing import Queue
+    from setproctitle import getproctitle
+    from bigchaindb.utils import Process
+
+    queue = Queue()
+    uuid = str(uuid4())
+
+    process = Process(target=lambda: queue.put(getproctitle()),
+                      name=uuid)
+    process.start()
+    assert queue.get() == uuid

@@ -7,7 +7,6 @@ import pickle
 from socketserver import StreamRequestHandler, ThreadingTCPServer
 import struct
 import sys
-from multiprocessing import Process
 
 from .configs import (
     DEFAULT_SOCKET_LOGGING_HOST,
@@ -15,6 +14,7 @@ from .configs import (
     PUBLISHER_LOGGING_CONFIG,
     SUBSCRIBER_LOGGING_CONFIG,
 )
+from bigchaindb.utils import Process
 from bigchaindb.common.exceptions import ConfigurationError
 
 
@@ -46,6 +46,7 @@ def setup_sub_logger(*, user_log_config=None):
     server = LogRecordSocketServer(**kwargs)
     with server:
         server_proc = Process(
+            name='logging_server',
             target=server.serve_forever,
             kwargs={'log_config': user_log_config},
         )
