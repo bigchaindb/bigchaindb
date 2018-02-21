@@ -13,24 +13,38 @@ spec:
       containers:
       - name: nginx-openresty
         image: bigchaindb/nginx_3scale:unstable
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         env:
-        - name: RESOLVER
-          valueFrom:
-            configMapKeyRef:
-              name: vars
-              key: cluster-dns-server-ip
         - name: THREESCALE_PORTAL_ENDPOINT
           valueFrom:
             secretKeyRef:
               name: apicast-secret
               key: portal-endpoint
+        - name: RESOLVER
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: cluster-dns-server-ip
         - name: APICAST_LOG_LEVEL
-          value: "debug"
-        - name: APICAST_CONFIGURATION_LOADER
-          value: "boot"
+          valueFrom:
+            configMapKeyRef:
+              name: apicast-config
+              key: api-log-level
         - name: APICAST_MANAGEMENT_API
-          value: "debug"
+          valueFrom:
+            configMapKeyRef:
+              name: apicast-config
+              key:  mgmt-api-mode
+        - name: BIGCHAINDB_BACKEND_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: bdb-instance-name
+        - name: BIGCHAINDB_API_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: bigchaindb-api-port
         ports:
         - containerPort: 8080
           protocol: TCP

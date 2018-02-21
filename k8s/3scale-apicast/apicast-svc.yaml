@@ -16,7 +16,7 @@ spec:
   ports:
   - port: 8080
     targetPort: 8080
-    name: apicast-proxy
+    name: apicast-svc
   - port: 8090
     targetPort: 8090
     name: apicast-mgmt

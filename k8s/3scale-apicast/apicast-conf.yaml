@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: Secret
-metadata:
-  name: apicast-secret
-  namespace: default
-type: Opaque
-data:
-  portal-endpoint: "aHR0cHM6Ly9jNzQzOTRhM2M1NzQ5OWE5ZWIxNGI4YzYzZWZjNmVkNUBiaWdjaGFpbmRiLWFkbWluLjNzY2FsZS5uZXQ"
