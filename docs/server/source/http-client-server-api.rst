@@ -1,3 +1,5 @@
+.. _the-http-client-server-api:
+
 The HTTP Client-Server API
 ==========================
 
@@ -26,8 +28,10 @@ with something like the following in the body:
     :language: http
 
 
+.. _api-root-endpoint:
+
 API Root Endpoint
--------------------
+-----------------
 
 If you send an HTTP GET request to the API Root Endpoint
 e.g. ``http://localhost:9984/api/v1/``
@@ -40,7 +44,7 @@ that allows you to discover the BigchainDB API endpoints:
 
 
 Transactions
--------------------
+------------
 
 .. http:get:: /api/v1/transactions/{transaction_id}
 
@@ -130,10 +134,10 @@ Transactions
    <http://tendermint.readthedocs.io/projects/tools/en/master/using-tendermint.html#broadcast-api>`_ with three different modes to post transactions.
    By setting the mode, a new transaction can be pushed with a different mode than the default. The default mode is ``async``, which
    will return immediately and not wait to see if the transaction is valid. The ``sync`` mode will return after the transaction is validated, while ``commit``
-   returns after the transaction is committed to a block. 
+   returns after the transaction is committed to a block.
 
    .. note::
-   
+
        The posted `transaction
        <https://docs.bigchaindb.com/projects/server/en/latest/data-models/transaction-model.html>`_
        should be structurally valid and not spending an already spent output.
@@ -155,9 +159,10 @@ Transactions
       :language: http
 
    .. note::
+
        If the server is returning a ``202`` HTTP status code when ``mode=aysnc`` or ``mode=sync``, then the
        transaction has been accepted for processing. The client can subscribe to the
-       :ref:`WebSocket Event Stream API <The WebSocket Event Stream API>` to listen for comitted transactions.
+       :ref:`WebSocket Event Stream API <the-websocket-event-stream-api>` to listen for comitted transactions.
 
    :resheader Content-Type: ``application/json``
 
@@ -618,7 +623,7 @@ so you can access it from the same machine,
 but it won't be directly accessible from the outside world.
 (The outside world could connect via a SOCKS proxy or whatnot.)
 
-The documentation about BigchainDB Server :any:`Configuration Settings`
+The documentation about BigchainDB Server :doc:`Configuration Settings <server-reference/configuration>`
 has a section about how to set ``server.bind`` so as to make
 the HTTP API publicly accessible.
 

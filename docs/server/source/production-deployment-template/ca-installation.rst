@@ -1,3 +1,5 @@
+.. _how-to-set-up-a-self-signed-certificate-authority:
+
 How to Set Up a Self-Signed Certificate Authority
 =================================================
 
@@ -18,7 +20,7 @@ First create a directory for the CA and cd into it:
 
    cd bdb-cluster-ca
 
-Then :ref:`install and configure Easy-RSA in that directory <How to Install & Configure Easy-RSA>`.
+Then :ref:`install and configure Easy-RSA in that directory <how-to-install-and-configure-easyrsa>`.
 
 
 Step 2: Create a Self-Signed CA

@@ -41,6 +41,7 @@ docs_require = [
     'sphinx-rtd-theme>=0.1.9',
     'sphinxcontrib-httpdomain>=1.5.0',
     'sphinxcontrib-napoleon>=0.4.4',
+    'aafigure>=0.6',
 ]
 
 tests_require = [
