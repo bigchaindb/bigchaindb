@@ -3,6 +3,8 @@ import threading
 import queue
 import multiprocessing as mp
 
+import setproctitle
+
 
 class ProcessGroup(object):
 
@@ -24,6 +26,16 @@ class ProcessGroup(object):
                               kwargs=self.kwargs, daemon=self.daemon)
             proc.start()
             self.processes.append(proc)
+
+
+class Process(mp.Process):
+    """Wrapper around multiprocessing.Process that uses
+    setproctitle to set the name of the process when running
+    the target task."""
+
+    def run(self):
+        setproctitle.setproctitle(self.name)
+        super().run()
 
 
 # Inspired by:
