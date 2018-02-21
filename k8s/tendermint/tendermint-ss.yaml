@@ -40,7 +40,7 @@ spec:
               name: tendermint-config
               key: tm-pub-key-access
         ports:
-        - containerPort: "<tm-pub-key-access from ConfigMap>"
+        - containerPort: 9986
           name: tm-pk-access
         volumeMounts:
         - name: tm-config-data
@@ -109,7 +109,7 @@ spec:
         - name: tm-config-data
           mountPath: /tendermint_node_data
         ports:
-        - containerPort: "<tm-p2p-port from ConfigMap>"
+        - containerPort: 46656
           name: p2p
-        - containerPort: "<tm-rpc-port from ConfigMap>"
+        - containerPort: 46657
           name: rpc

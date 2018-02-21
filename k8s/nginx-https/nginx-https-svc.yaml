@@ -13,20 +13,20 @@ spec:
   selector:
     app: ngx-instance-0-dep
   ports:
-  - port: "<cluster-frontend-port from ConfigMap>"
-    targetPort: "<cluster-frontend-port from ConfigMap>"
+  - port: 443
+    targetPort: 443
     name: public-secure-cluster-port
     protocol: TCP
-  - port: "<mongodb-frontend-port from ConfigMap>"
-    targetPort: "<mongodb-frontend-port from ConfigMap>"
+  - port: 27017
+    targetPort: 27017
     name: public-mdb-port
     protocol: TCP
-  - port: "<tm-pub-key-access from ConfigMap>"
-    targetPort: "<tm-pub-key-access from ConfigMap>"
+  - port: 9986
+    targetPort: 9986
     name: tm-pub-key-access
     protocol: TCP
-  - port: "<tm-p2p-port from ConfigMap>"
-    targetPort: "<tm-p2p-port from ConfigMap>"
+  - port: 46656
+    targetPort: 46656
     protocol: TCP
     name: tm-p2p-port
   - port: 80

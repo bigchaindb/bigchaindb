@@ -90,15 +90,15 @@ spec:
         # HTTPS traffic.
         - containerPort: 80
           protocol: TCP
-        - containerPort: "<cluster-frontend-port from ConfigMap>"
+        - containerPort: 443
           protocol: TCP
-        - containerPort: "<cluster-health-check-port from ConfigMap>"
+        - containerPort: 8888
           protocol: TCP
           name: ngx-port
-        - containerPort: "<tm-pub-key-access from ConfigMap>"
+        - containerPort: 9986
           protocol: TCP
           name: tm-pub-key
-        - containerPort: "<tm-p2p-port from ConfigMap>"
+        - containerPort: 46656
           protocol: TCP
           name: tm-p2p-port
         livenessProbe:

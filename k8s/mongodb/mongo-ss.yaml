@@ -63,7 +63,7 @@ spec:
             add:
             - FOWNER
         ports:
-        - containerPort: "<mongodb-backend-port from ConfigMap>"
+        - containerPort: 27017
           protocol: TCP
           name: mdb-api-port
         volumeMounts:

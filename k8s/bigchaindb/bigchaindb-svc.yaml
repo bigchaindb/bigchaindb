@@ -9,16 +9,16 @@ spec:
   selector:
     app: bdb-instance-0-dep
   ports:
-  - port: "<bigchaindb-api-port from ConfigMap>"
-    targetPort: "<bigchaindb-api-port from ConfigMap>"
+  - port: 9984
+    targetPort: 9984
     name: bdb-api-port
     protocol: TCP
-  - port: "<bigchaindb-ws-port from ConfigMap>"
-    targetPort: "<bigchaindb-ws-port from ConfigMap>"
+  - port: 9985
+    targetPort: 9985
     name: bdb-ws-port
     protocol: TCP
-  - port: "<tm-abci-port from ConfigMap>"
-    targetPort: "<tm-abci-port from ConfigMap>"
+  - port: 46658
+    targetPort: 46658
     name: tm-abci-port
     protocol: TCP
   type: ClusterIP

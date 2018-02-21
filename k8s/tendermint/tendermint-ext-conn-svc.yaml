@@ -9,9 +9,9 @@ spec:
   ports:
 spec:
   ports:
-  - port: "<tm-p2p-port from ConfigMap>"
+  - port: 46656
     name: p2p
-  - port: "<tm-rpc-port from ConfigMap>"
+  - port: 46657
     name: pubkey
   # FQDN of remote cluster/NGINX instance
   externalName: "<dns-name-remote-nginx>"
