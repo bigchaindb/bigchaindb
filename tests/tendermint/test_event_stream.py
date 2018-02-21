@@ -1,9 +1,13 @@
+import json
 from queue import Queue
 
+from aiohttp import ClientSession
 import pytest
 
 
-@pytest.mark.tendermint
+pytestmark = pytest.mark.tendermint
+
+
 def test_process_event_new_block():
     from bigchaindb.tendermint.event_stream import process_event
 
@@ -33,7 +37,6 @@ def test_process_event_new_block():
     assert not event_queue.empty()
 
 
-@pytest.mark.tendermint
 def test_process_event_empty_block():
     from bigchaindb.tendermint.event_stream import process_event
 
@@ -52,7 +55,6 @@ def test_process_event_empty_block():
     assert event_queue.empty()
 
 
-@pytest.mark.tendermint
 def test_process_unknown_event():
     from bigchaindb.tendermint.event_stream import process_event
 
@@ -62,3 +64,18 @@ def test_process_unknown_event():
     event_queue = Queue()
     process_event(event_queue, event, 'test_stream_id')
     assert event_queue.empty()
+
+
+@pytest.mark.asyncio
+async def test_subscribe_events(tendermint_ws_url):
+    from bigchaindb.tendermint.event_stream import subscribe_events
+    session = ClientSession()
+    ws = await session.ws_connect(tendermint_ws_url)
+    stream_id = 'bigchaindb_stream_01'
+    await subscribe_events(ws, stream_id)
+    msg = await ws.receive()
+    assert msg.data
+    msg_data_dict = json.loads(msg.data)
+    assert msg_data_dict['id'] == stream_id
+    assert msg_data_dict['jsonrpc'] == '2.0'
+    # TODO What else should be there? Right now, getting error.

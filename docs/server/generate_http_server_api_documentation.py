@@ -7,6 +7,7 @@ import os.path
 from bigchaindb.common.transaction import Transaction, Input, TransactionLink
 from bigchaindb.core import Bigchain
 from bigchaindb.models import Block
+from bigchaindb.tendermint import lib
 from bigchaindb.web import server
 
 
@@ -58,7 +59,7 @@ Content-Type: application/json
 """
 
 TPLS['post-tx-request'] = """\
-POST /api/v1/transactions/ HTTP/1.1
+POST /api/v1/transactions?mode=async HTTP/1.1
 Host: example.com
 Content-Type: application/json
 
@@ -68,64 +69,9 @@ Content-Type: application/json
 
 TPLS['post-tx-response'] = """\
 HTTP/1.1 202 Accepted
-Location: ../statuses?transaction_id=%(txid)s
 Content-Type: application/json
 
 %(tx)s
-"""
-
-
-TPLS['get-statuses-tx-request'] = """\
-GET /statuses?transaction_id=%(txid)s HTTP/1.1
-Host: example.com
-
-"""
-
-
-TPLS['get-statuses-tx-invalid-response'] = """\
-HTTP/1.1 200 OK
-Content-Type: application/json
-
-{
-  "status": "invalid"
-}
-"""
-
-
-TPLS['get-statuses-tx-valid-response'] = """\
-HTTP/1.1 200 OK
-Content-Type: application/json
-
-{
-  "status": "valid"
-}
-"""
-
-
-TPLS['get-statuses-block-request'] = """\
-GET /api/v1/statuses?block_id=%(blockid)s HTTP/1.1
-Host: example.com
-
-"""
-
-
-TPLS['get-statuses-block-invalid-response'] = """\
-HTTP/1.1 200 OK
-Content-Type: application/json
-
-{
-  "status": "invalid"
-}
-"""
-
-
-TPLS['get-statuses-block-valid-response'] = """\
-HTTP/1.1 200 OK
-Content-Type: application/json
-
-{
-  "status": "valid"
-}
 """
 
 
@@ -156,21 +102,6 @@ HTTP/1.1 200 OK
 Content-Type: application/json
 
 %(block_list)s
-"""
-
-
-TPLS['get-vote-request'] = """\
-GET /api/v1/votes?block_id=%(blockid)s HTTP/1.1
-Host: example.com
-
-"""
-
-
-TPLS['get-vote-response'] = """\
-HTTP/1.1 200 OK
-Content-Type: application/json
-
-[%(vote)s]
 """
 
 
@@ -242,26 +173,20 @@ def main():
     node_private = "5G2kE1zJAgTajkVSbPAQWo4c2izvtwqaNHYsaNpbbvxX"
     node_public = "DngBurxfeNVKZWCEcDnLj1eMPAS7focUZTE5FndFGuHT"
     signature = "53wxrEQDYk1dXzmvNSytbCfmNVnPqPkDQaTnAe8Jf43s6ssejPxezkCvUnGTnduNUmaLjhaan1iRLi3peu6s5DzA"
-    block = Block(transactions=[tx], node_pubkey=node_public, voters=[node_public], signature=signature)
-    ctx['block'] = pretty_json(block.to_dict())
-    ctx['blockid'] = block.id
 
-    block_transfer = Block(transactions=[tx_transfer], node_pubkey=node_public,
-                           voters=[node_public], signature=signature)
-    ctx['block_transfer'] = pretty_json(block.to_dict())
-
-    # vote
-    DUMMY_SHA3 = '0123456789abcdef' * 4
-    b = Bigchain(public_key=node_public, private_key=node_private)
-    vote = b.vote(block.id, DUMMY_SHA3, True)
-    ctx['vote'] = pretty_json(vote)
+    app_hash = 'f6e0c49c6d94d6924351f25bb334cf2a99af4206339bf784e741d1a5ab599056'
+    block = lib.Block(height=1, transactions=[tx.to_dict()], app_hash=app_hash)
+    block_dict = block._asdict()
+    block_dict.pop('app_hash')
+    ctx['block'] = pretty_json(block_dict)
+    ctx['blockid'] = block.height
 
     # block status
     block_list = [
-        block_transfer.id,
-        block.id
+        block.height
     ]
     ctx['block_list'] = pretty_json(block_list)
+
 
     base_path = os.path.join(os.path.dirname(__file__),
                              'source/http-samples')

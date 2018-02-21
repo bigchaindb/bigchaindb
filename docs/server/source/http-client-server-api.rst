@@ -124,11 +124,16 @@ Transactions
    :statuscode 400: The request wasn't understood by the server, e.g. the ``asset_id`` querystring was not included in the request.
 
 
-.. http:post:: /api/v1/transactions
+.. http:post:: /api/v1/transactions?mode={mode}
 
-   Push a new transaction.
+   Tendermint offers a `broadcast API
+   <http://tendermint.readthedocs.io/projects/tools/en/master/using-tendermint.html#broadcast-api>`_ with three different modes to post transactions.
+   By setting the mode, a new transaction can be pushed with a different mode than the default. The default mode is ``async``, which
+   will return immediately and not wait to see if the transaction is valid. The ``sync`` mode will return after the transaction is validated, while ``commit``
+   returns after the transaction is committed to a block. 
 
    .. note::
+   
        The posted `transaction
        <https://docs.bigchaindb.com/projects/server/en/latest/data-models/transaction-model.html>`_
        should be structurally valid and not spending an already spent output.
@@ -136,6 +141,8 @@ Transactions
        One would normally use a driver such as the `BigchainDB Python Driver
        <https://docs.bigchaindb.com/projects/py-driver/en/latest/index.html>`_
        to build a valid transaction.
+
+   :query string mode: (Optional) One of the three supported modes to send a transaction: ``async``, ``sync``, ``commit``.
 
    **Example request**:
 
@@ -148,18 +155,20 @@ Transactions
       :language: http
 
    .. note::
-       If the server is returning a ``202`` HTTP status code, then the
-       transaction has been accepted for processing. To check the status of the
-       transaction, poll the link to the
-       :ref:`status monitor <get_status_of_transaction>`
-       provided in the ``Location`` header or listen to server's
-       :ref:`WebSocket Event Stream API <The WebSocket Event Stream API>`.
+       If the server is returning a ``202`` HTTP status code when ``mode=aysnc`` or ``mode=sync``, then the
+       transaction has been accepted for processing. The client can subscribe to the
+       :ref:`WebSocket Event Stream API <The WebSocket Event Stream API>` to listen for comitted transactions.
 
    :resheader Content-Type: ``application/json``
-   :resheader Location: Relative link to a status monitor for the submitted transaction.
 
    :statuscode 202: The pushed transaction was accepted in the ``BACKLOG``, but the processing has not been completed.
    :statuscode 400: The transaction was malformed and not accepted in the ``BACKLOG``.
+
+
+.. http:post:: /api/v1/transactions
+
+   This endpoint (without any parameters) will push a new transaction.
+   Since no ``mode`` parameter is included, the default mode is assumed: ``async``.
 
 
 Transaction Outputs
@@ -273,71 +282,6 @@ unspent outputs.
 
    :statuscode 200: A list of outputs were found and returned in the body of the response.
    :statuscode 400: The request wasn't understood by the server, e.g. the ``public_key`` querystring was not included in the request.
-
-
-Statuses
---------------------------------
-
-.. http:get:: /api/v1/statuses
-
-   Get the status of an asynchronously written transaction or block by their id.
-
-   :query string transaction_id: transaction ID
-   :query string block_id: block ID
-
-   .. note::
-
-        Exactly one of the ``transaction_id`` or ``block_id`` query parameters must be
-        used together with this endpoint (see below for getting `transaction
-        statuses <#get--statuses?tx_id=tx_id>`_ and `block statuses
-        <#get--statuses?block_id=block_id>`_).
-
-.. _get_status_of_transaction:
-
-.. http:get:: /api/v1/statuses?transaction_id={transaction_id}
-
-    Get the status of a transaction.
-
-    The possible status values are ``undecided``, ``valid`` or ``backlog``.
-    If a transaction in neither of those states is found, a ``404 Not Found``
-    HTTP status code is returned. `We're currently looking into ways to unambigously let the user know about a transaction's status that was included in an invalid block. <https://github.com/bigchaindb/bigchaindb/issues/1039>`_
-
-   **Example request**:
-
-   .. literalinclude:: http-samples/get-statuses-tx-request.http
-      :language: http
-
-   **Example response**:
-
-   .. literalinclude:: http-samples/get-statuses-tx-valid-response.http
-      :language: http
-
-   :resheader Content-Type: ``application/json``
-
-   :statuscode 200: A transaction with that ID was found.
-   :statuscode 404: A transaction with that ID was not found.
-
-
-.. http:get:: /api/v1/statuses?block_id={block_id}
-
-    Get the status of a block.
-
-    The possible status values are ``undecided``, ``valid`` or ``invalid``.
-
-   **Example request**:
-
-   .. literalinclude:: http-samples/get-statuses-block-request.http
-      :language: http
-
-   **Example response**:
-
-   .. literalinclude:: http-samples/get-statuses-block-valid-response.http
-      :language: http
-
-   :resheader Content-Type: ``application/json``
-
-   :statuscode 200: A block with that ID was found.
-   :statuscode 404: A block with that ID was not found.
 
 
 Assets
@@ -574,21 +518,16 @@ a certain transaction with ``transaction_id`` occured in (a transaction can occu
 either gets rejected or validated by the system). This endpoint gives the ability to drill down on the lifecycle of a
 transaction
 
-The `votes endpoint <#votes>`_ contains all the voting information for a specific block. So after retrieving the
-``block_id`` for a given ``transaction_id``, one can now simply inspect the votes that happened at a specific time on that block.
-
 
 Blocks
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. http:get:: /api/v1/blocks/{block_id}
+.. http:get:: /api/v1/blocks/{block_height}
 
-   Get the block with the ID ``block_id``. Any blocks, be they ``VALID``, ``UNDECIDED`` or ``INVALID`` will be
-   returned. To check a block's status independently, use the `Statuses endpoint <#status>`_.
-   To check the votes on a block, have a look at the `votes endpoint <#votes>`_.
+   Get the block with the height ``block_height``.
 
-   :param block_id: block ID
-   :type block_id: hex string
+   :param block_height: block ID
+   :type block_height: integer
 
    **Example request**:
 
@@ -604,7 +543,7 @@ Blocks
    :resheader Content-Type: ``application/json``
 
    :statuscode 200: A block with that ID was found.
-   :statuscode 400: The request wasn't understood by the server, e.g. just requesting ``/blocks`` without the ``block_id``.
+   :statuscode 400: The request wasn't understood by the server, e.g. just requesting ``/blocks`` without the ``block_height``.
    :statuscode 404: A block with that ID was not found.
 
 
@@ -631,19 +570,22 @@ Blocks
 
    :statuscode 400: The request wasn't understood by the server, e.g. just requesting ``/blocks`` without the ``block_id``.
 
-.. http:get:: /api/v1/blocks?transaction_id={transaction_id}&status={UNDECIDED|VALID|INVALID}
+.. http:get:: /api/v1/blocks?transaction_id={transaction_id}
 
-   Retrieve a list of ``block_id`` with their corresponding status that contain a transaction with the ID ``transaction_id``.
+   Retrieve a list of block IDs (block heights), such that the blocks with those IDs contain a transaction with the ID ``transaction_id``. A correct response may consist of an empty list or a list with one block ID.
 
-   Any blocks, be they ``UNDECIDED``, ``VALID`` or ``INVALID`` will be
-   returned if no status filter is provided.
+   .. note::
+       The query parameter ``status`` has been deprecated. It allowed
+       users to filter blocks based on their status i.e. only blocks with the specified
+       status were included in the response. Since then this behavior has changed
+       and now block are created only after the transactions are accepted by the
+       network i.e. blocks have only one status ``VALID``
 
    .. note::
        In case no block was found, an empty list and an HTTP status code
        ``200 OK`` is returned, as the request was still successful.
 
    :query string transaction_id: transaction ID *(required)*
-   :query string status: Filter blocks by their status. One of ``VALID``, ``UNDECIDED`` or ``INVALID``.
 
    **Example request**:
 
@@ -657,39 +599,8 @@ Blocks
 
    :resheader Content-Type: ``application/json``
 
-   :statuscode 200: A list of blocks containing a transaction with ID ``transaction_id`` was found and returned.
+   :statuscode 200: The request was properly formed and zero or more blocks were found containing the specified ``transaction_id``.
    :statuscode 400: The request wasn't understood by the server, e.g. just requesting ``/blocks``, without defining ``transaction_id``.
-
-
-Votes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. http:get:: /api/v1/votes?block_id={block_id}
-
-   Retrieve a list of votes for a certain block with ID ``block_id``.
-   To check for the validity of a vote, a user of this endpoint needs to
-   perform the `following steps: <https://github.com/bigchaindb/bigchaindb/blob/8ebd93ed3273e983f5770b1617292aadf9f1462b/bigchaindb/util.py#L119>`_
-
-   1. Check if the vote's ``node_pubkey`` is allowed to vote.
-   2. Verify the vote's signature against the vote's body (``vote.vote``) and ``node_pubkey``.
-
-
-   :query string block_id: The block ID to filter the votes.
-
-   **Example request**:
-
-   .. literalinclude:: http-samples/get-vote-request.http
-      :language: http
-
-   **Example response**:
-
-   .. literalinclude:: http-samples/get-vote-response.http
-      :language: http
-
-   :resheader Content-Type: ``application/json``
-
-   :statuscode 200: A list of votes voting for a block with ID ``block_id`` was found and returned.
-   :statuscode 400: The request wasn't understood by the server, e.g. just requesting ``/votes``, without defining ``block_id``.
 
 
 .. _determining-the-api-root-url:

@@ -15,8 +15,10 @@ from bigchaindb.common.exceptions import (StartupError,
                                           KeypairNotFoundException,
                                           DatabaseDoesNotExist)
 import bigchaindb
+from bigchaindb.tendermint.core import BigchainDB
 from bigchaindb import backend
 from bigchaindb.backend import schema
+from bigchaindb.backend import query
 from bigchaindb.backend.admin import (set_replicas, set_shards, add_replicas,
                                       remove_replicas)
 from bigchaindb.backend.exceptions import OperationError
@@ -154,6 +156,19 @@ def run_init(args):
         print('If you wish to re-initialize it, first drop it.', file=sys.stderr)
 
 
+def run_recover(b):
+    query.delete_zombie_transactions(b.connection)
+
+    tendermint_height = b.get_latest_block_height_from_tendermint()
+    block = b.get_latest_block()
+
+    if block:
+        while block['height'] > tendermint_height:
+            logger.info('BigchainDB is ahead of tendermint, removing block %s', block['height'])
+            query.delete_latest_block(b.connection)
+            block = b.get_latest_block()
+
+
 @configure_bigchaindb
 def run_drop(args):
     """Drop the database"""
@@ -177,6 +192,8 @@ def run_drop(args):
 def run_start(args):
     """Start the processes to run the node"""
     logger.info('BigchainDB Version %s', bigchaindb.__version__)
+
+    run_recover(BigchainDB())
 
     if args.allow_temp_keypair:
         if not (bigchaindb.config['keypair']['private'] or
@@ -271,7 +288,10 @@ def create_parser():
                                           help='Prepare the config file '
                                                'and create the node keypair')
     config_parser.add_argument('backend',
-                               choices=['rethinkdb', 'mongodb', 'localmongodb'],
+                               choices=['localmongodb'],
+                               default='localmongodb',
+                               const='localmongodb',
+                               nargs='?',
                                help='The backend to use. It can be either '
                                     'rethinkdb or mongodb.')
 

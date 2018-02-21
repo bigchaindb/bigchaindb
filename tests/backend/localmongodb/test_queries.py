@@ -6,6 +6,23 @@ import pymongo
 pytestmark = [pytest.mark.tendermint, pytest.mark.localmongodb, pytest.mark.bdb]
 
 
+@pytest.fixture
+def dummy_unspent_outputs():
+    return [
+        {'transaction_id': 'a', 'output_index': 0},
+        {'transaction_id': 'a', 'output_index': 1},
+        {'transaction_id': 'b', 'output_index': 0},
+    ]
+
+
+@pytest.fixture
+def utxoset(dummy_unspent_outputs, utxo_collection):
+    insert_res = utxo_collection.insert_many(deepcopy(dummy_unspent_outputs))
+    assert insert_res.acknowledged
+    assert len(insert_res.inserted_ids) == 3
+    return dummy_unspent_outputs, utxo_collection
+
+
 def test_get_txids_filtered(signed_create_tx, signed_transfer_tx):
     from bigchaindb.backend import connect, query
     from bigchaindb.models import Transaction
@@ -88,7 +105,7 @@ def test_write_metadata():
     ]
 
     # write the assets
-    query.store_metadata(conn, deepcopy(metadata))
+    query.store_metadatas(conn, deepcopy(metadata))
 
     # check that 3 assets were written to the database
     cursor = conn.db.metadata.find({}, projection={'_id': False})\
@@ -152,3 +169,124 @@ def test_get_spending_transactions(user_pk, user_sk):
 
     # tx3 not a member because input 1 not asked for
     assert txns == [tx2.to_dict(), tx4.to_dict()]
+
+
+def test_store_block():
+    from bigchaindb.backend import connect, query
+    from bigchaindb.tendermint.lib import Block
+    conn = connect()
+
+    block = Block(app_hash='random_utxo',
+                  height=3,
+                  transactions=[])
+    query.store_block(conn, block._asdict())
+    cursor = conn.db.blocks.find({}, projection={'_id': False})
+    assert cursor.count() == 1
+
+
+def test_get_block():
+    from bigchaindb.backend import connect, query
+    from bigchaindb.tendermint.lib import Block
+    conn = connect()
+
+    block = Block(app_hash='random_utxo',
+                  height=3,
+                  transactions=[])
+
+    conn.db.blocks.insert_one(block._asdict())
+
+    block = dict(query.get_block(conn, 3))
+    assert block['height'] == 3
+
+
+def test_delete_zombie_transactions(signed_create_tx, signed_transfer_tx):
+    from bigchaindb.backend import connect, query
+    from bigchaindb.tendermint.lib import Block
+    conn = connect()
+
+    conn.db.transactions.insert_one(signed_create_tx.to_dict())
+    query.store_asset(conn, {'id': signed_create_tx.id})
+    block = Block(app_hash='random_utxo',
+                  height=3,
+                  transactions=[signed_create_tx.id])
+    query.store_block(conn, block._asdict())
+
+    conn.db.transactions.insert_one(signed_transfer_tx.to_dict())
+    query.store_metadatas(conn, [{'id': signed_transfer_tx.id}])
+
+    query.delete_zombie_transactions(conn)
+    assert query.get_transaction(conn, signed_transfer_tx.id) is None
+    assert query.get_asset(conn, signed_transfer_tx.id) is None
+    assert list(query.get_metadata(conn, [signed_transfer_tx.id])) == []
+
+    assert query.get_transaction(conn, signed_create_tx.id) is not None
+    assert query.get_asset(conn, signed_create_tx.id) is not None
+
+
+def test_delete_latest_block(signed_create_tx, signed_transfer_tx):
+    from bigchaindb.backend import connect, query
+    from bigchaindb.tendermint.lib import Block
+    conn = connect()
+
+    conn.db.transactions.insert_one(signed_create_tx.to_dict())
+    query.store_asset(conn, {'id': signed_create_tx.id})
+    block = Block(app_hash='random_utxo',
+                  height=51,
+                  transactions=[signed_create_tx.id])
+    query.store_block(conn, block._asdict())
+    query.delete_latest_block(conn)
+
+    assert query.get_transaction(conn, signed_create_tx.id) is None
+    assert query.get_asset(conn, signed_create_tx.id) is None
+    assert query.get_block(conn, 51) is None
+
+
+def test_delete_unspent_outputs(db_context, utxoset):
+    from bigchaindb.backend import query
+    unspent_outputs, utxo_collection = utxoset
+    delete_res = query.delete_unspent_outputs(db_context.conn,
+                                              *unspent_outputs[::2])
+    assert delete_res['n'] == 2
+    assert utxo_collection.find(
+        {'$or': [
+            {'transaction_id': 'a', 'output_index': 0},
+            {'transaction_id': 'b', 'output_index': 0},
+        ]}
+    ).count() == 0
+    assert utxo_collection.find(
+            {'transaction_id': 'a', 'output_index': 1}).count() == 1
+
+
+def test_store_one_unspent_output(db_context,
+                                  unspent_output_1, utxo_collection):
+    from bigchaindb.backend import query
+    res = query.store_unspent_outputs(db_context.conn, unspent_output_1)
+    assert res.acknowledged
+    assert len(res.inserted_ids) == 1
+    assert utxo_collection.find(
+        {'transaction_id': unspent_output_1['transaction_id'],
+         'output_index': unspent_output_1['output_index']}
+    ).count() == 1
+
+
+def test_store_many_unspent_outputs(db_context,
+                                    unspent_outputs, utxo_collection):
+    from bigchaindb.backend import query
+    res = query.store_unspent_outputs(db_context.conn, *unspent_outputs)
+    assert res.acknowledged
+    assert len(res.inserted_ids) == 3
+    assert utxo_collection.find(
+        {'transaction_id': unspent_outputs[0]['transaction_id']}
+    ).count() == 3
+
+
+def test_get_unspent_outputs(db_context, utxoset):
+    from bigchaindb.backend import query
+    cursor = query.get_unspent_outputs(db_context.conn)
+    assert cursor.count() == 3
+    retrieved_utxoset = list(cursor)
+    unspent_outputs, utxo_collection = utxoset
+    assert retrieved_utxoset == list(utxo_collection.find())
+    for utxo in retrieved_utxoset:
+        del utxo['_id']
+    assert retrieved_utxoset == unspent_outputs

@@ -2,9 +2,7 @@ FROM python:3.6
 LABEL maintainer "dev@bigchaindb.com"
 
 RUN apt-get update \
-    && apt-get install -y vim \
     && pip install -U pip \
-    && pip install pynacl \
     && apt-get autoremove \
     && apt-get clean
 
@@ -24,9 +22,9 @@ ENV BIGCHAINDB_WSSERVER_ADVERTISED_SCHEME ws
 ENV BIGCHAINDB_START_TENDERMINT 0
 ENV BIGCHAINDB_TENDERMINT_PORT 46657
 
-
 RUN mkdir -p /usr/src/app
 COPY . /usr/src/app/
 WORKDIR /usr/src/app
-RUN pip install --no-cache-dir -e .[dev]
+RUN find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf
+RUN pip install --no-cache-dir .[test]
 RUN bigchaindb -y configure "$backend"

@@ -1,7 +1,8 @@
-Architecture of an IPDB Node
-============================
+Architecture of a Testnet Node
+==============================
 
-An IPDB Production deployment is hosted on a Kubernetes cluster and includes:
+Each node in the `BigchainDB Testnet <https://testnet.bigchaindb.com/>`_ 
+is hosted on a Kubernetes cluster and includes:
 
 * NGINX, OpenResty, BigchainDB and MongoDB
   `Kubernetes Services <https://kubernetes.io/docs/concepts/services-networking/service/>`_.

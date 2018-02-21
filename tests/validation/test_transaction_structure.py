@@ -237,7 +237,7 @@ def test_unsupported_condition_type():
 # Version
 
 def test_validate_version(b, create_tx):
-    create_tx.version = '1.0'
+    create_tx.version = '2.0'
     create_tx.sign([b.me_private])
     validate(create_tx)
 

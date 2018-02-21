@@ -1,7 +1,12 @@
 """Transaction related models to parse and construct transaction
 payloads.
 
+Attributes:
+    UnspentOutput (namedtuple): Object holding the information
+        representing an unspent output.
+
 """
+from collections import namedtuple
 from copy import deepcopy
 from functools import reduce
 
@@ -9,6 +14,7 @@ import base58
 from cryptoconditions import Fulfillment, ThresholdSha256, Ed25519Sha256
 from cryptoconditions.exceptions import (
     ParsingError, ASN1DecodeError, ASN1EncodeError, UnsupportedTypeError)
+from sha3 import sha3_256
 
 from bigchaindb.common.crypto import PrivateKey, hash_data
 from bigchaindb.common.exceptions import (KeypairMismatchException,
@@ -16,6 +22,17 @@ from bigchaindb.common.exceptions import (KeypairMismatchException,
                                           AmountError, AssetIdMismatch,
                                           ThresholdTooDeep)
 from bigchaindb.common.utils import serialize
+
+
+UnspentOutput = namedtuple(
+    'UnspentOutput', (
+        'transaction_id',
+        'output_index',
+        'amount',
+        'asset_id',
+        'condition_uri',
+    )
+)
 
 
 class Input(object):
@@ -474,7 +491,7 @@ class Transaction(object):
     TRANSFER = 'TRANSFER'
     GENESIS = 'GENESIS'
     ALLOWED_OPERATIONS = (CREATE, TRANSFER, GENESIS)
-    VERSION = '1.0'
+    VERSION = '2.0'
 
     def __init__(self, operation, asset, inputs=None, outputs=None,
                  metadata=None, version=None, hash_id=None):
@@ -530,6 +547,35 @@ class Transaction(object):
         self.outputs = outputs or []
         self.metadata = metadata
         self._id = hash_id
+
+    @property
+    def unspent_outputs(self):
+        """UnspentOutput: The outputs of this transaction, in a data
+        structure containing relevant information for storing them in
+        a UTXO set, and performing validation.
+        """
+        if self.operation == Transaction.CREATE:
+            self._asset_id = self._id
+        elif self.operation == Transaction.TRANSFER:
+            self._asset_id = self.asset['id']
+        return (UnspentOutput(
+            transaction_id=self._id,
+            output_index=output_index,
+            amount=output.amount,
+            asset_id=self._asset_id,
+            condition_uri=output.fulfillment.condition_uri,
+        ) for output_index, output in enumerate(self.outputs))
+
+    @property
+    def spent_outputs(self):
+        """tuple of :obj:`dict`: Inputs of this transaction. Each input
+        is represented as a dictionary containing a transaction id and
+        output index.
+        """
+        return (
+            input_.fulfills.to_dict()
+            for input_ in self.inputs if input_.fulfills
+        )
 
     @property
     def serialized(self):
@@ -812,13 +858,16 @@ class Transaction(object):
         #       this should never happen, but then again, never say never.
         input_ = deepcopy(input_)
         public_key = input_.owners_before[0]
+        message = sha3_256(message.encode())
+        if input_.fulfills:
+            message.update('{}{}'.format(
+                input_.fulfills.txid, input_.fulfills.output).encode())
+
         try:
             # cryptoconditions makes no assumptions of the encoding of the
             # message to sign or verify. It only accepts bytestrings
             input_.fulfillment.sign(
-                message.encode(),
-                base58.b58decode(key_pairs[public_key].encode()),
-            )
+                message.digest(), base58.b58decode(key_pairs[public_key].encode()))
         except KeyError:
             raise KeypairMismatchException('Public key {} is not a pair to '
                                            'any of the private keys'
@@ -836,6 +885,11 @@ class Transaction(object):
                 key_pairs (dict): The keys to sign the Transaction with.
         """
         input_ = deepcopy(input_)
+        message = sha3_256(message.encode())
+        if input_.fulfills:
+            message.update('{}{}'.format(
+                input_.fulfills.txid, input_.fulfills.output).encode())
+
         for owner_before in set(input_.owners_before):
             # TODO: CC should throw a KeypairMismatchException, instead of
             #       our manual mapping here
@@ -863,7 +917,8 @@ class Transaction(object):
             # cryptoconditions makes no assumptions of the encoding of the
             # message to sign or verify. It only accepts bytestrings
             for subffill in subffills:
-                subffill.sign(message.encode(), base58.b58decode(private_key.encode()))
+                subffill.sign(
+                    message.digest(), base58.b58decode(private_key.encode()))
         return input_
 
     def inputs_valid(self, outputs=None):
@@ -931,7 +986,7 @@ class Transaction(object):
                    for i, cond in enumerate(output_condition_uris))
 
     @staticmethod
-    def _input_valid(input_, operation, tx_serialized, output_condition_uri=None):
+    def _input_valid(input_, operation, message, output_condition_uri=None):
         """Validates a single Input against a single Output.
 
             Note:
@@ -942,8 +997,7 @@ class Transaction(object):
                 input_ (:class:`~bigchaindb.common.transaction.
                     Input`) The Input to be signed.
                 operation (str): The type of Transaction.
-                tx_serialized (str): The Transaction used as a message when
-                    initially signing it.
+                message (str): The fulfillment message.
                 output_condition_uri (str, optional): An Output to check the
                     Input against.
 
@@ -964,12 +1018,17 @@ class Transaction(object):
         else:
             output_valid = output_condition_uri == ccffill.condition_uri
 
+        message = sha3_256(message.encode())
+        if input_.fulfills:
+            message.update('{}{}'.format(
+                input_.fulfills.txid, input_.fulfills.output).encode())
+
         # NOTE: We pass a timestamp to `.validate`, as in case of a timeout
         #       condition we'll have to validate against it
 
         # cryptoconditions makes no assumptions of the encoding of the
         # message to sign or verify. It only accepts bytestrings
-        ffill_valid = parsed_ffill.validate(message=tx_serialized.encode())
+        ffill_valid = parsed_ffill.validate(message=message.digest())
         return output_valid and ffill_valid
 
     def to_dict(self):

@@ -34,11 +34,25 @@ def store_asset(connection, asset):
 
 
 @singledispatch
-def store_metadata(connection, metadata):
-    """Write metadata to the metadata table.
+def store_assets(connection, assets):
+    """Write a list of assets to the assets table.
 
     Args:
-        metadata (dict): transaction metadata.
+        assets (list): a list of assets to write.
+
+    Returns:
+        The database response.
+    """
+
+    raise NotImplementedError
+
+
+@singledispatch
+def store_metadatas(connection, metadata):
+    """Write a list of metadata to metadata table.
+
+    Args:
+        metadata (list): list of metadata.
 
     Returns:
         The result of the operation.
@@ -55,11 +69,32 @@ def store_transaction(connection, signed_transaction):
 
 
 @singledispatch
+def store_transactions(connection, signed_transactions):
+    """Store list of  transactions."""
+
+    raise NotImplementedError
+
+
+@singledispatch
 def get_transaction(connection, transaction_id):
     """Get a transaction from the transactions table.
 
     Args:
         transaction_id (str): the id of the transaction.
+
+    Returns:
+        The result of the operation.
+    """
+
+    raise NotImplementedError
+
+
+@singledispatch
+def get_transactions(connection, transaction_ids):
+    """Get transactions from the transactions table.
+
+    Args:
+        transaction_ids (list): list of transaction ids to fetch
 
     Returns:
         The result of the operation.
@@ -305,6 +340,20 @@ def get_block(connection, block_id):
 
 
 @singledispatch
+def get_block_with_transaction(connection, txid):
+    """Get a block containing transaction id `txid`
+
+    Args:
+        txid (str): id of transaction to be searched.
+
+    Returns:
+        block_id (int): the block id or `None`
+    """
+
+    raise NotImplementedError
+
+
+@singledispatch
 def write_assets(connection, assets):
     """Write a list of assets to the assets table.
 
@@ -495,6 +544,65 @@ def store_block(conn, block):
 
     Returns:
         The result of the operation.
+    """
+
+    raise NotImplementedError
+
+
+@singledispatch
+def delete_zombie_transactions(conn):
+    """Delete transactions not included in any block"""
+
+    raise NotImplementedError
+
+
+@singledispatch
+def store_unspent_outputs(connection, unspent_outputs):
+    """Store unspent outputs in ``utxo_set`` table."""
+
+    raise NotImplementedError
+
+
+@singledispatch
+def delete_latest_block(conn):
+    """Delete the latest block along with its transactions"""
+
+    raise NotImplementedError
+
+
+@singledispatch
+def delete_unspent_outputs(connection, unspent_outputs):
+    """Delete unspent outputs in ``utxo_set`` table."""
+
+    raise NotImplementedError
+
+
+@singledispatch
+def delete_transactions(conn, txn_ids):
+    """Delete transactions from database
+
+    Args:
+        txn_ids (list): list of transaction ids
+
+    Returns:
+        The result of the operation.
+    """
+
+    raise NotImplementedError
+
+
+@singledispatch
+def get_unspent_outputs(connection, *, query=None):
+    """Retrieves unspent outputs.
+
+    Args:
+        query (dict): An optional parameter to filter the result set.
+            Defaults to ``None``, which means that all UTXO records
+            will be returned.
+
+    Returns:
+        Generator yielding unspent outputs (UTXO set) according to the
+        given query.
     """
 
     raise NotImplementedError

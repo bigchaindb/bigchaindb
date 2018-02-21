@@ -27,7 +27,7 @@ services:
     environment:
       BIGCHAINDB_DATABASE_BACKEND: localmongodb
       BIGCHAINDB_DATABASE_HOST: mdb-one
-      TENDERMINT_HOST: tendermint-one
+      BIGCHAINDB_TENDERMINT_HOST: tendermint-one
     ports:
       - "9984"
     command: bigchaindb -l DEBUG start
@@ -64,7 +64,7 @@ services:
     environment:
       BIGCHAINDB_DATABASE_BACKEND: localmongodb
       BIGCHAINDB_DATABASE_HOST: mdb-two
-      TENDERMINT_HOST: tendermint-two
+      BIGCHAINDB_TENDERMINT_HOST: tendermint-two
     ports:
       - "9984"
     command: bigchaindb -l DEBUG start
@@ -101,7 +101,7 @@ services:
     environment:
       BIGCHAINDB_DATABASE_BACKEND: localmongodb
       BIGCHAINDB_DATABASE_HOST: mdb-three
-      TENDERMINT_HOST: tendermint-three
+      BIGCHAINDB_TENDERMINT_HOST: tendermint-three
     ports:
       - "9984"
     command: bigchaindb -l DEBUG start
@@ -138,7 +138,7 @@ services:
     environment:
       BIGCHAINDB_DATABASE_BACKEND: localmongodb
       BIGCHAINDB_DATABASE_HOST: mdb-four
-      TENDERMINT_HOST: tendermint-four
+      BIGCHAINDB_TENDERMINT_HOST: tendermint-four
     ports:
       - "9984"
     command: bigchaindb -l DEBUG start

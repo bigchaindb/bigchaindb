@@ -1,8 +1,9 @@
+import asyncio
 import json
 import logging
 import time
+from os import getenv
 
-import asyncio
 import aiohttp
 
 from bigchaindb.common.utils import gen_timestamp
@@ -10,8 +11,8 @@ from bigchaindb.events import EventTypes, Event
 from bigchaindb.tendermint.utils import decode_transaction_base64
 
 
-HOST = 'localhost'
-PORT = 46657
+HOST = getenv('BIGCHAINDB_TENDERMINT_HOST', 'localhost')
+PORT = int(getenv('BIGCHAINDB_TENDERMINT_PORT', 46657))
 URL = f'ws://{HOST}:{PORT}/websocket'
 
 logger = logging.getLogger(__name__)
@@ -24,7 +25,7 @@ def connect_and_recv(event_queue):
 
     logger.info('Connected to tendermint ws server')
 
-    stream_id = "bigchaindb_stream_{}".format(gen_timestamp())
+    stream_id = 'bigchaindb_stream_{}'.format(gen_timestamp())
     yield from subscribe_events(ws, stream_id)
 
     while True:
@@ -57,10 +58,10 @@ def process_event(event_queue, event, stream_id):
 @asyncio.coroutine
 def subscribe_events(ws, stream_id):
     payload = {
-        "method": "subscribe",
-        "jsonrpc": "2.0",
-        "params": ["NewBlock"],
-        "id": stream_id
+        'method': 'subscribe',
+        'jsonrpc': '2.0',
+        'params': ['NewBlock'],
+        'id': stream_id
     }
     yield from ws.send_str(json.dumps(payload))
 
