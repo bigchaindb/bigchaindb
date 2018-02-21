@@ -135,3 +135,23 @@ def test_deliver_transfer_tx__double_spend_fails(b):
 
     result = app.deliver_tx(encode_tx_to_bytes(double_spend))
     assert result.is_error()
+
+
+def test_end_block_return_validator_updates(b):
+    from bigchaindb.tendermint import App
+    from bigchaindb.backend import query
+    from bigchaindb.tendermint.core import cast_validator
+
+    app = App(b)
+    app.init_chain(['ignore'])
+    app.begin_block('ignore')
+
+    validator = [{'pub_key': {'type': 'ed25519',
+                              'data': 'BOB_PUBLIC_KEY'},
+                  'power': 10}]
+    validator_update = {'validators': validator, 'sync': True}
+    query.store_validator_update(b.connection, validator_update)
+
+    resp = app.end_block(99)
+
+    assert resp.diffs[0] == cast_validator(validator[0])

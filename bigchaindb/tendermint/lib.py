@@ -235,5 +235,18 @@ class BigchainDB(Bigchain):
     def fastquery(self):
         return fastquery.FastQuery(self.connection, self.me)
 
+    def get_validator_updates(self):
+        updates = list(backend.query.get_pending_validator_updates(self.connection))
+
+        consolidated_updates = {}
+
+        for u in updates:
+            validators = u['validators']
+            for v in validators:
+                pub_key = v['pub_key']['data']
+                consolidated_updates[pub_key] = v
+
+        return list(consolidated_updates.values())
+
 
 Block = namedtuple('Block', ('app_hash', 'height', 'transactions'))

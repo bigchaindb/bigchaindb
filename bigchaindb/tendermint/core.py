@@ -3,7 +3,7 @@ with Tendermint."""
 import logging
 
 from abci import BaseApplication, Result
-from abci.types_pb2 import ResponseEndBlock, ResponseInfo
+from abci.types_pb2 import ResponseEndBlock, ResponseInfo, Validator
 
 from bigchaindb.tendermint import BigchainDB
 from bigchaindb.tendermint.utils import decode_transaction, calculate_hash
@@ -108,7 +108,13 @@ class App(BaseApplication):
         else:
             self.block_txn_hash = block['app_hash']
 
-        return ResponseEndBlock()
+        validator_updates = self.bigchaindb.get_validator_updates()
+        validator_updates = [cast_validator(v) for v in validator_updates]
+        # NOTE: interface for `ResponseEndBlock` has be changed in the latest
+        # version of py-abci i.e. the validator updates should be return
+        # as follows:
+        # ResponseEndBlock(validator_updates=validator_updates)
+        return ResponseEndBlock(diffs=validator_updates)
 
     def commit(self):
         """Store the new height and along with block hash."""
@@ -123,3 +129,8 @@ class App(BaseApplication):
 
         data = self.block_txn_hash.encode('utf-8')
         return Result.ok(data=data)
+
+
+def cast_validator(v):
+    return Validator(pubKey=bytes(v['pub_key']['data'], 'utf-8'),
+                     power=v['power'])

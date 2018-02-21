@@ -1,4 +1,5 @@
 import os
+import time
 from unittest.mock import patch
 
 import pytest
@@ -122,3 +123,34 @@ def test_post_transaction_invalid_mode(b):
     tx = b.validate_transaction(tx)
     with pytest.raises(ValidationError):
         b.write_transaction(tx, 'nope')
+
+
+def test_get_validator_updates(b):
+    from bigchaindb.backend import query
+
+    # create a validator update object
+    validator_update = gen_validator_update('ALICE_PUBLIC_KEY', 10)
+    query.store_validator_update(b.connection, validator_update)
+
+    assert b.get_validator_updates() == validator_update['validators']
+
+
+def test_get_multiple_validator_updates(b):
+    from bigchaindb.backend import query
+
+    # create a validator update object
+    v1 = gen_validator_update('ALICE_PUBLIC_KEY', 10)
+    query.store_validator_update(b.connection, v1)
+
+    time.sleep(1)
+    v2 = gen_validator_update('ALICE_PUBLIC_KEY', 20)
+    query.store_validator_update(b.connection, v2)
+
+    assert b.get_validator_updates() == v2['validators']
+
+
+def gen_validator_update(key, power):
+    validator = [{'pub_key': {'type': 'ed25519',
+                              'data': key},
+                  'power': power}]
+    return {'validators': validator, 'sync': True}
