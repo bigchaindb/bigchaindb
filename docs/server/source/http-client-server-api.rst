@@ -162,7 +162,7 @@ Transactions
 
        If the server is returning a ``202`` HTTP status code when ``mode=aysnc`` or ``mode=sync``, then the
        transaction has been accepted for processing. The client can subscribe to the
-       :ref:`WebSocket Event Stream API <The WebSocket Event Stream API>` to listen for comitted transactions.
+       :ref:`WebSocket Event Stream API <the-websocket-event-stream-api>` to listen for comitted transactions.
 
    :resheader Content-Type: ``application/json``
 
