@@ -1,6 +1,12 @@
 import os
 from unittest.mock import patch
 
+try:
+    from hashlib import sha3_256
+except ImportError:
+    # NOTE: neeeded for Python < 3.6
+    from sha3 import sha3_256
+
 import pytest
 from pymongo import MongoClient
 
@@ -311,3 +317,16 @@ def test_store_many_unspent_outputs(b, unspent_outputs, utxo_collection):
     assert utxo_collection.find(
         {'transaction_id': unspent_outputs[0]['transaction_id']}
     ).count() == 3
+
+
+def test_get_utxoset_merkle_root_when_no_utxo(b):
+    assert b.get_utxoset_merkle_root() == sha3_256(b'').hexdigest()
+
+
+@pytest.mark.bdb
+@pytest.mark.usefixture('utxoset')
+def test_get_utxoset_merkle_root(b, utxoset):
+    expected_merkle_root = (
+        '86d311c03115bf4d287f8449ca5828505432d69b82762d47077b1c00fe426eac')
+    merkle_root = b.get_utxoset_merkle_root()
+    assert merkle_root == expected_merkle_root

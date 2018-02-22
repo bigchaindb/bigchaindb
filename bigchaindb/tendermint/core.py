@@ -20,9 +20,7 @@ class App(BaseApplication):
     State Machine."""
 
     def __init__(self, bigchaindb=None):
-        if not bigchaindb:
-            bigchaindb = BigchainDB()
-        self.bigchaindb = bigchaindb
+        self.bigchaindb = bigchaindb or BigchainDB()
         self.block_txn_ids = []
         self.block_txn_hash = ''
         self.block_transactions = []
