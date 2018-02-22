@@ -1,10 +1,10 @@
 Production Deployment Template
 ==============================
 
-This section outlines how *we* deploy production BigchainDB nodes and clusters
-on Microsoft Azure
-using Kubernetes.
-We improve it constantly.
+This section outlines how *we* deploy production BigchainDB,
+integrated with Tendermint(backend for BFT consensus),
+clusters on Microsoft Azure using
+Kubernetes. We improve it constantly.
 You may choose to use it as a template or reference for your own deployment,
 but *we make no claim that it is suitable for your purposes*.
 Feel free change things to suit your needs or preferences.
@@ -25,8 +25,7 @@ Feel free change things to suit your needs or preferences.
    cloud-manager
    easy-rsa
    upgrade-on-kubernetes
-   add-node-on-kubernetes
-   restore-from-mongodb-cloud-manager
+   bigchaindb-network-on-kubernetes
    tectonic-azure
    troubleshoot
    architecture

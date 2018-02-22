@@ -1,3 +1,5 @@
+.. _the-http-client-server-api:
+
 The HTTP Client-Server API
 ==========================
 
@@ -26,8 +28,10 @@ with something like the following in the body:
     :language: http
 
 
+.. _api-root-endpoint:
+
 API Root Endpoint
--------------------
+-----------------
 
 If you send an HTTP GET request to the API Root Endpoint
 e.g. ``http://localhost:9984/api/v1/``
@@ -40,7 +44,7 @@ that allows you to discover the BigchainDB API endpoints:
 
 
 Transactions
--------------------
+------------
 
 .. http:get:: /api/v1/transactions/{transaction_id}
 
@@ -140,7 +144,7 @@ Transactions
    .. note::
 
        A client can subscribe to the
-       :ref:`WebSocket Event Stream API <The WebSocket Event Stream API>`
+       WebSocket Event Stream API
        to listen for committed transactions.
 
    **Example request**:
@@ -152,7 +156,6 @@ Transactions
 
    .. literalinclude:: http-samples/post-tx-response.http
       :language: http
-
 
    :resheader Content-Type: ``application/json``
 
@@ -608,7 +611,7 @@ so you can access it from the same machine,
 but it won't be directly accessible from the outside world.
 (The outside world could connect via a SOCKS proxy or whatnot.)
 
-The documentation about BigchainDB Server :any:`Configuration Settings`
+The documentation about BigchainDB Server :doc:`Configuration Settings <server-reference/configuration>`
 has a section about how to set ``server.bind`` so as to make
 the HTTP API publicly accessible.
 

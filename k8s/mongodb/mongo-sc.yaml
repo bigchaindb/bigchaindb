@@ -1,5 +1,5 @@
 ####################################################################
-# This YAML section desribes a StorageClass for the mongodb dbPath # 
+# This YAML section desribes a StorageClass for the mongodb dbPath #
 ####################################################################
 kind: StorageClass
 apiVersion: storage.k8s.io/v1beta1
@@ -15,7 +15,7 @@ parameters:
   #kind: Managed
 ---
 ######################################################################
-# This YAML section desribes a StorageClass for the mongodb configDB # 
+# This YAML section desribes a StorageClass for the mongodb configDB #
 ######################################################################
 kind: StorageClass
 apiVersion: storage.k8s.io/v1beta1

@@ -16,6 +16,14 @@ If you want to generate the HTML version of the long-form documentation on your 
 pip install -r requirements.txt
 ```
 
+If you're building the *Server* docs (in `docs/server`) then you must also do:
+```bash
+pip install -e ../../
+```
+
+Note: Don't put `-e ../../` in the `requirements.txt` file. That will work locally
+but not on ReadTheDocs.
+
 You can then generate the HTML documentation _in that subdirectory_ by doing:
 ```bash
 make html

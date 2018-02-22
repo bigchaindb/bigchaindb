@@ -10,6 +10,7 @@ The following ports should expect unsolicited inbound traffic:
 1. **Port 9984** can expect inbound HTTP (TCP) traffic from BigchainDB clients sending transactions to the BigchainDB HTTP API.
 1. **Port 9985** can expect inbound WebSocket traffic from BigchainDB clients.
 1. **Port 46656** can expect inbound Tendermint P2P traffic from other Tendermint peers.
+1. **Port 9986** can expect inbound HTTP (TCP) traffic from clients accessing the Public Key of a Tendermint instance.
 
 All other ports should only get inbound traffic in response to specific requests from inside the node.
 
@@ -48,6 +49,12 @@ You may want to have Gunicorn and the reverse proxy running on different servers
 ## Port 9985
 
 Port 9985 is the default port for the [BigchainDB WebSocket Event Stream API](../websocket-event-stream-api.html).
+
+
+## Port 9986
+
+Port 9986 is the default port to access the Public Key of a Tendermint instance, it is used by a NGINX instance
+that runs with Tendermint instance(Pod), and only hosts the Public Key.
 
 ## Port 46656
 

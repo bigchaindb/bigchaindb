@@ -328,8 +328,8 @@ def merlin_pubkey(merlin):
 
 @pytest.fixture
 def b():
-    from bigchaindb import Bigchain
-    return Bigchain()
+    from bigchaindb.tendermint import BigchainDB
+    return BigchainDB()
 
 
 @pytest.fixture

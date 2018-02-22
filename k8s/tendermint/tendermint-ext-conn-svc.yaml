@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  # Name of tendermint instance you are trying to connect to
+  # e.g. tm-instance-0
+  name: "<remote-tendermint-host>"
+  namespace: default
+spec:
+  ports:
+spec:
+  ports:
+  - port: 46656
+    name: p2p
+  - port: 46657
+    name: pubkey
+  # FQDN of remote cluster/NGINX instance
+  externalName: "<dns-name-remote-nginx>"
