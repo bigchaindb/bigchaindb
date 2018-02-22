@@ -28,6 +28,7 @@ class App(BaseApplication):
         self.block_transactions = []
         self.validators = None
         self.new_height = None
+        self.validator_update_ids = []
 
     def init_chain(self, validators):
         """Initialize chain with block of height 0"""
@@ -108,16 +109,21 @@ class App(BaseApplication):
         else:
             self.block_txn_hash = block['app_hash']
 
-        validator_updates = self.bigchaindb.get_validator_updates()
+        update_ids, validator_updates = self.bigchaindb.get_validator_updates()
         validator_updates = [cast_validator(v) for v in validator_updates]
         # NOTE: interface for `ResponseEndBlock` has be changed in the latest
         # version of py-abci i.e. the validator updates should be return
         # as follows:
         # ResponseEndBlock(validator_updates=validator_updates)
+        self.validator_update_ids = update_ids
         return ResponseEndBlock(diffs=validator_updates)
 
     def commit(self):
         """Store the new height and along with block hash."""
+
+        # set sync status to true
+        self.bigchaindb.mark_validator_updates(self.validator_update_ids)
+        self.validator_update_ids = []
 
         # register a new block only when new transactions are received
         if self.block_txn_ids:
@@ -132,5 +138,9 @@ class App(BaseApplication):
 
 
 def cast_validator(v):
-    return Validator(pubKey=bytes(v['pub_key']['data'], 'utf-8'),
+    pub_key = v['pub_key']['data']
+    # NOTE: tendermint expect public to be ecoded in go-wire format
+    # so `01` has to be append-ed with length of the arguments
+    pubKey = bytes.fromhex('01{}'.format(pub_key))
+    return Validator(pubKey=pubKey,
                      power=v['power'])

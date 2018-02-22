@@ -239,6 +239,7 @@ class BigchainDB(Bigchain):
         updates = list(backend.query.get_pending_validator_updates(self.connection))
 
         consolidated_updates = {}
+        update_doc_ids = []
 
         for u in updates:
             validators = u['validators']
@@ -246,7 +247,12 @@ class BigchainDB(Bigchain):
                 pub_key = v['pub_key']['data']
                 consolidated_updates[pub_key] = v
 
-        return list(consolidated_updates.values())
+            update_doc_ids.append(u['_id'])
+
+        return (update_doc_ids, list(consolidated_updates.values()))
+
+    def mark_validator_updates(self, ids, sync=False):
+        return backend.query.mark_validator_updates(self.connection, ids, sync)
 
 
 Block = namedtuple('Block', ('app_hash', 'height', 'transactions'))

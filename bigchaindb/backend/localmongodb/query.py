@@ -246,3 +246,11 @@ def get_pending_validator_updates(conn):
     return conn.run(
         conn.collection('validators')
         .find({'sync': True}, sort=[('_id', ASCENDING)]))
+
+
+@register_query(LocalMongoDBConnection)
+def mark_validator_updates(conn, ids, sync=False):
+    return conn.run(
+        conn.collection('validators')
+        .update_many({'_id': {'$in': ids}}, {'$set': {'sync': sync}}, upsert=False)
+    )

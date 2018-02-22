@@ -592,3 +592,10 @@ def get_pending_validator_updates(conn):
     """Get validator updates which are not synced"""
 
     raise NotImplementedError
+
+
+@singledispatch
+def mark_validator_updates(conn, ids, sync):
+    """Set the sync status for validator update documents"""
+
+    raise NotImplementedError

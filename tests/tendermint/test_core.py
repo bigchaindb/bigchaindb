@@ -147,7 +147,7 @@ def test_end_block_return_validator_updates(b):
     app.begin_block('ignore')
 
     validator = [{'pub_key': {'type': 'ed25519',
-                              'data': 'BOB_PUBLIC_KEY'},
+                              'data': 'B0E42D2589A455EAD339A035D6CE1C8C3E25863F268120AA0162AD7D003A4014'},
                   'power': 10}]
     validator_update = {'validators': validator, 'sync': True}
     query.store_validator_update(b.connection, validator_update)
@@ -155,3 +155,9 @@ def test_end_block_return_validator_updates(b):
     resp = app.end_block(99)
 
     assert resp.diffs[0] == cast_validator(validator[0])
+
+    app.commit()
+
+    ids, updates = b.get_validator_updates()
+
+    assert updates == []
