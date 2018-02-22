@@ -147,6 +147,7 @@ Following test cases should be added
 
 ### Assignee(s)
 Primary assignee(s): @muawiakh
+
 Secondary assignee(s): @kansi, @ttmc
 
 ### Targeted Release
