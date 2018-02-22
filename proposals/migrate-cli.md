@@ -54,7 +54,7 @@ optional arguments:
 
 Commands:
   {configure,show-config,export-my-pubkey,init,drop,start,set-shards,set-replicas,add-replicas,remove-replicas}
-    configure           Prepare the config file and create the node keypair
+    configure           Prepare the config file
     show-config         Show the current configuration
     init                Init the database
     drop                Drop the database
