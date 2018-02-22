@@ -1,6 +1,6 @@
 import pytest
 
-from bigchaindb.models import Transaction
+# from bigchaindb.models import Transaction
 
 VOTES_ENDPOINT = '/api/v1/votes'
 
