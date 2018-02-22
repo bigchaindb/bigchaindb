@@ -21,8 +21,8 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
       - name: mongodb
-        image: bigchaindb/localmongodb:1.0
-        imagePullPolicy: IfNotPresent
+        image: bigchaindb/localmongodb:unstable
+        imagePullPolicy: Always
         env:
         - name: MONGODB_FQDN
           valueFrom:
