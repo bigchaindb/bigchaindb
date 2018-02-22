@@ -120,13 +120,13 @@ spec:
         - |
           bigchaindb -l DEBUG start
         ports:
-        - containerPort: "<bigchaindb-api-port from ConfigMap>"
+        - containerPort: 9984
           protocol: TCP
           name: bdb-port
-        - containerPort: "<bigchaindb-ws-port from ConfigMap>"
+        - containerPort: 9985
           protocol: TCP
           name: bdb-ws-port
-        - containerPort: "<tm-abci-port from ConfigMap>"
+        - containerPort: 46658
           protocol: TCP
           name: tm-abci-port
         volumeMounts:

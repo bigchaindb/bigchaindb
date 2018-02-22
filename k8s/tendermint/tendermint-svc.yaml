@@ -9,16 +9,16 @@ spec:
   selector:
     app: tm-instance-1-ss
   ports:
-    - port: "<tm-p2p-port from ConfigMap>"
-      targetPort: "<tm-p2p-port from ConfigMap>"
+    - port: 46656
+      targetPort: 46656
       name: p2p
       protocol: TCP
-    - port: "<tm-rpc-port from ConfigMap>"
-      targetPort: "<tm-rpc-port from ConfigMap>"
+    - port: 46657
+      targetPort: 46657
       name: rpc
       protocol: TCP
-    - port: "<tm-pub-key-access from ConfigMap>"
-      targetPort: "<tm-pub-key-access from ConfigMap>"
+    - port: 9986
+      targetPort: 9986
       name: pub-key-access
       protocol: TCP
   clusterIP: None
