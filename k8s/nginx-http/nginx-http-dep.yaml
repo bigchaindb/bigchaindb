@@ -13,7 +13,7 @@ spec:
       containers:
       - name: nginx
         image: bigchaindb/nginx_http:unstable
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         env:
         - name: CLUSTER_FRONTEND_PORT
           valueFrom:

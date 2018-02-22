@@ -13,7 +13,7 @@ spec:
       containers:
       - name: bigchaindb
         image: bigchaindb/bigchaindb:unstable
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         args:
         - start
         env:

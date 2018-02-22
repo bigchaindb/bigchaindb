@@ -22,7 +22,7 @@ spec:
       containers:
       - name: mongodb
         image: bigchaindb/localmongodb:unstable
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         env:
         - name: MONGODB_FQDN
           valueFrom:
