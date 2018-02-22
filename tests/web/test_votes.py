@@ -1,9 +1,32 @@
 import pytest
 
-from bigchaindb.models import Transaction
+# from bigchaindb.models import Transaction
 
 VOTES_ENDPOINT = '/api/v1/votes'
 
+
+@pytest.mark.tendermint
+def test_get_votes_endpoint(client):
+    gone = 'The votes endpoint is gone now, but it might return in the future.'
+    response = {'message': gone}
+
+    res = client.get(VOTES_ENDPOINT)
+    assert response == res.json
+    assert res.status_code == 404
+
+    res = client.get(VOTES_ENDPOINT + '?block_id=')
+    assert response == res.json
+    assert res.status_code == 404
+
+    res = client.get(VOTES_ENDPOINT + '?block_id=123')
+    assert response == res.json
+    assert res.status_code == 404
+
+
+"""
+# Old tests are below. We're keeping their code in a long comment block for now,
+# because we might bring back a votes endpoint in the future.
+# https://github.com/bigchaindb/bigchaindb/issues/2037
 
 @pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
@@ -73,3 +96,4 @@ def test_get_votes_endpoint_returns_400_bad_query_params(client):
 
     res = client.get(VOTES_ENDPOINT + '?tx_id=123&block_id=123')
     assert res.status_code == 400
+"""
