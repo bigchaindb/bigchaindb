@@ -9,6 +9,7 @@ cluster_frontend_port=`printenv CLUSTER_FRONTEND_PORT`
 # NGINX vars
 dns_server=`printenv DNS_SERVER`
 health_check_port=`printenv HEALTH_CHECK_PORT`
+authorization_mode=`printenv AUTHORIZATION_MODE`
 
 
 # MongoDB vars
@@ -47,7 +48,8 @@ if [[ -z "${cluster_frontend_port:?CLUSTER_FRONTEND_PORT not specified. Exiting!
       -z "${cluster_fqdn:?CLUSTER_FQDN not specified. Exiting!}" || \
       -z "${tm_pub_key_access_port:?TM_PUB_KEY_ACCESS_PORT not specified. Exiting!}" || \
       -z "${tm_backend_host:?TM_BACKEND_HOST not specified. Exiting!}" || \
-      -z "${tm_p2p_port:?TM_P2P_PORT not specified. Exiting!}" ]]; then
+      -z "${tm_p2p_port:?TM_P2P_PORT not specified. Exiting!}" || \
+      -z "${authorization_mode:-threescale}" ]]; then
   echo "Missing required environment variables. Exiting!"
   exit 1
 else
@@ -68,7 +70,14 @@ else
   echo TM_P2P_PORT="$tm_p2p_port"
 fi
 
-NGINX_CONF_FILE=/etc/nginx/nginx.conf
+# Set Default nginx config file
+NGINX_CONF_FILE=/etc/nginx/nginx-threescale.conf
+
+if [[ ${authorization_mode} == "secret-header" ]]; then
+  NGINX_CONF_FILE=/etc/nginx/nginx.conf
+  secret_access_token=`printenv SECRET_ACCESS_TOKEN`
+  sed -i "s|SECRET_ACCESS_TOKEN|${secret_token_header}|g"
+fi
 
 # configure the nginx.conf file with env variables
 sed -i "s|CLUSTER_FQDN|${cluster_fqdn}|g" ${NGINX_CONF_FILE}
@@ -89,4 +98,4 @@ sed -i "s|TM_P2P_PORT|${tm_p2p_port}|g" ${NGINX_CONF_FILE}
 
 # start nginx
 echo "INFO: starting nginx..."
-exec nginx -c /etc/nginx/nginx.conf
+exec nginx -c ${NGINX_CONF_FILE}
