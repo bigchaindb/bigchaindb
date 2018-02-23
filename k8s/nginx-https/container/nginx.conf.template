@@ -1,6 +1,7 @@
 # Frontend API server that:
 # 1. Acts as the HTTPS termination point.
-# 2. Forwards BDB HTTP requests to OpenResty backend.
+# 2. Authorizes HTTP requests with secret token header
+#    and forwards to BDB backend.
 # 3. Forwards BDB WS requests to BDB backend.
 # 4. Does health check with LB.
 
