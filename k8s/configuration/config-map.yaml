@@ -92,6 +92,9 @@ data:
   # it will use the default cache size; i.e. max((50% RAM - 1GB), 256MB)
   storage-engine-cache-size: ""
 
+  # POST API authorization mode [threescale | secrete-token]
+  authorization-mode: "threescale"
+
 ---
 apiVersion: v1
 kind: ConfigMap
