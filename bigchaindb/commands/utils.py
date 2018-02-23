@@ -6,15 +6,10 @@ import argparse
 import builtins
 import functools
 import multiprocessing as mp
-import subprocess
 import sys
 
-import rethinkdb as r
-from pymongo import uri_parser
 import bigchaindb
 import bigchaindb.config_utils
-from bigchaindb import backend
-from bigchaindb.common.exceptions import StartupError
 from bigchaindb.log.setup import setup_logging
 from bigchaindb.version import __version__
 

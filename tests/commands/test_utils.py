@@ -1,5 +1,5 @@
 import argparse
-from argparse import ArgumentTypeError, Namespace
+from argparse import Namespace
 import logging
 
 import pytest

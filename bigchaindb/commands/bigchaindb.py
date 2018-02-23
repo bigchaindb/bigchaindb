@@ -10,8 +10,7 @@ import json
 import sys
 
 from bigchaindb.common import crypto
-from bigchaindb.common.exceptions import (StartupError,
-                                          DatabaseAlreadyExists,
+from bigchaindb.common.exceptions import (DatabaseAlreadyExists,
                                           KeypairNotFoundException,
                                           DatabaseDoesNotExist)
 import bigchaindb
@@ -19,11 +18,9 @@ from bigchaindb.tendermint.core import BigchainDB
 from bigchaindb import backend
 from bigchaindb.backend import schema
 from bigchaindb.backend import query
-from bigchaindb.backend.exceptions import OperationError
 from bigchaindb.commands import utils
 from bigchaindb.commands.messages import (
     CANNOT_START_KEYPAIR_NOT_FOUND,
-    RETHINKDB_STARTUP_ERROR,
 )
 from bigchaindb.commands.utils import (
     configure_bigchaindb, start_logging_process, input_on_stderr)
