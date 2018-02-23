@@ -15,7 +15,6 @@ from bigchaindb.common.exceptions import (StartupError,
                                           KeypairNotFoundException,
                                           DatabaseDoesNotExist)
 import bigchaindb
-from bigchaindb.tendermint.core import BigchainDB
 from bigchaindb import backend
 from bigchaindb.backend import schema
 from bigchaindb.backend import query
@@ -193,7 +192,7 @@ def run_start(args):
     """Start the processes to run the node"""
     logger.info('BigchainDB Version %s', bigchaindb.__version__)
 
-    run_recover(BigchainDB())
+    # run_recover(BigchainDB())
 
     if args.allow_temp_keypair:
         if not (bigchaindb.config['keypair']['private'] or

@@ -589,7 +589,6 @@ def test_recover_db_from_zombie_block(b, monkeypatch):
     assert block['height'] == 9
 
 
-@pytest.mark.tendermint
 @patch('bigchaindb.config_utils.autoconfigure')
 @patch('bigchaindb.commands.bigchaindb.run_recover')
 @patch('bigchaindb.tendermint.commands.start')
