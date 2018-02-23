@@ -1,6 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
+# Authorization Modes
+threescale_auth_mode="threescale"
+secret_token_auth_mode="secret-token"
+
 # Cluster vars
 cluster_fqdn=`printenv CLUSTER_FQDN`
 cluster_frontend_port=`printenv CLUSTER_FRONTEND_PORT`
@@ -9,6 +13,7 @@ cluster_frontend_port=`printenv CLUSTER_FRONTEND_PORT`
 # NGINX vars
 dns_server=`printenv DNS_SERVER`
 health_check_port=`printenv HEALTH_CHECK_PORT`
+authorization_mode=`printenv AUTHORIZATION_MODE`
 
 
 # MongoDB vars
@@ -47,7 +52,8 @@ if [[ -z "${cluster_frontend_port:?CLUSTER_FRONTEND_PORT not specified. Exiting!
       -z "${cluster_fqdn:?CLUSTER_FQDN not specified. Exiting!}" || \
       -z "${tm_pub_key_access_port:?TM_PUB_KEY_ACCESS_PORT not specified. Exiting!}" || \
       -z "${tm_backend_host:?TM_BACKEND_HOST not specified. Exiting!}" || \
-      -z "${tm_p2p_port:?TM_P2P_PORT not specified. Exiting!}" ]]; then
+      -z "${tm_p2p_port:?TM_P2P_PORT not specified. Exiting!}" || \
+      -z "${authorization_mode:-threescale_auth_mode}" ]]; then # Set the default authorization mode to threescale
   echo "Missing required environment variables. Exiting!"
   exit 1
 else
@@ -68,7 +74,18 @@ else
   echo TM_P2P_PORT="$tm_p2p_port"
 fi
 
-NGINX_CONF_FILE=/etc/nginx/nginx.conf
+if [[ ${authorization_mode} == ${secret_token_auth_mode} ]]; then
+  NGINX_CONF_FILE=/etc/nginx/nginx.conf
+  secret_access_token=`printenv SECRET_ACCESS_TOKEN`
+  sed -i "s|SECRET_ACCESS_TOKEN|${secret_token_header}|g"
+elif [[ ${authorization_mode} == ${threescale_auth_mode} ]]; then
+  NGINX_CONF_FILE=/etc/nginx/nginx-threescale.conf
+  sed -i "s|OPENRESTY_BACKEND_PORT|${openresty_backend_port}|g" ${NGINX_CONF_FILE}
+  sed -i "s|OPENRESTY_BACKEND_HOST|${openresty_backend_host}|g" ${NGINX_CONF_FILE}
+else
+  echo "Unrecognised authorization mode: ${authorization_mode}. Exiting!"
+  exit 1
+fi
 
 # configure the nginx.conf file with env variables
 sed -i "s|CLUSTER_FQDN|${cluster_fqdn}|g" ${NGINX_CONF_FILE}
@@ -76,8 +93,6 @@ sed -i "s|CLUSTER_FRONTEND_PORT|${cluster_frontend_port}|g" ${NGINX_CONF_FILE}
 sed -i "s|MONGODB_FRONTEND_PORT|${mongo_frontend_port}|g" ${NGINX_CONF_FILE}
 sed -i "s|MONGODB_BACKEND_HOST|${mongo_backend_host}|g" ${NGINX_CONF_FILE}
 sed -i "s|MONGODB_BACKEND_PORT|${mongo_backend_port}|g" ${NGINX_CONF_FILE}
-sed -i "s|OPENRESTY_BACKEND_PORT|${openresty_backend_port}|g" ${NGINX_CONF_FILE}
-sed -i "s|OPENRESTY_BACKEND_HOST|${openresty_backend_host}|g" ${NGINX_CONF_FILE}
 sed -i "s|BIGCHAINDB_BACKEND_HOST|${bdb_backend_host}|g" ${NGINX_CONF_FILE}
 sed -i "s|BIGCHAINDB_API_PORT|${bdb_api_port}|g" ${NGINX_CONF_FILE}
 sed -i "s|BIGCHAINDB_WS_PORT|${bdb_ws_port}|g" ${NGINX_CONF_FILE}
@@ -89,4 +104,4 @@ sed -i "s|TM_P2P_PORT|${tm_p2p_port}|g" ${NGINX_CONF_FILE}
 
 # start nginx
 echo "INFO: starting nginx..."
-exec nginx -c /etc/nginx/nginx.conf
+exec nginx -c ${NGINX_CONF_FILE}

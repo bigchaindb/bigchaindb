@@ -85,6 +85,11 @@ spec:
             configMapKeyRef:
               name: tendermint-config
               key: tm-p2p-port
+        - name: AUTHORIZATION_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: authorization-mode
         ports:
         # return a pretty error message on port 80, since we are expecting
         # HTTPS traffic.
