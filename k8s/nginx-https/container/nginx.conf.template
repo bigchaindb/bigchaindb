@@ -57,9 +57,6 @@ http {
   map $remote_addr $bdb_backend {
     default BIGCHAINDB_BACKEND_HOST;
   }
-  map $remote_addr $openresty_backend {
-    default OPENRESTY_BACKEND_HOST;
-  }
 
   # Frontend server for the external clients; acts as HTTPS termination point.
   server {
@@ -116,7 +113,7 @@ http {
         return 403;
       }
 
-      # POST requests get forwarded to OpenResty instance. Enable CORS too.
+      # POST requests get forwarded to BDB.
       if ($request_method = POST ) {}
         proxy_pass http://$bdb_backend:BIGCHAINDB_API_PORT;
       }
