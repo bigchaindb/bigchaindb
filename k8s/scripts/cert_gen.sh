@@ -25,7 +25,7 @@ OPTIONAL ARGS:
 --mdb-cn - Common name of MongoDB instance:- default ${MDB_CN}
 --bdb-cn - Common name of BigchainDB instance:- default ${BDB_CN}
 --mdb-mon-cn - Common name of MongoDB monitoring agent:- default ${MDB_MON_CN}
---dir - Absolute path of base directory:- default ${pwd}
+--dir - Absolute path of base directory:- default ${BASE_DIR}
 --help - show help
 EXAMPLES
 - "Generate Certificates for first node(index=1) in the cluster i.e. MongoDB instance: mdb-instance,"
