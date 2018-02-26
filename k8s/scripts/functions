@@ -110,7 +110,7 @@ function configure_common(){
 
 function get_users(){
     mkdir $1
-    
+
     openssl x509 -in $BASE_CA_DIR/$BASE_EASY_RSA_PATH/pki/issued/"$MDB_CN"-"$INDEX".crt -inform PEM -subject \
       -nameopt RFC2253 | head -n 1 | sed -r 's/^subject= //' > $1/"$MDB_CN"-"$INDEX".user
     openssl x509 -in $BASE_CA_DIR/$BASE_EASY_RSA_PATH/pki/issued/"$BDB_CN"-"$INDEX".crt -inform PEM -subject \
@@ -136,6 +136,8 @@ function generate_secretes_no_threescale(){
     secrete_token=`echo $2 | base64 -w 0`
     https_cert_key=`cat $3 | base64 -w 0`
     https_cert_chain_pem=`cat $4 | base64 -w 0`
+
+    mdb_admin_password=`cat $5 | base64 -w 0`
 
 
     cat > secret.yaml << EOF
@@ -197,6 +199,16 @@ data:
   # Base64-encoded CA certificate (ca.crt)
   ca.pem: "${root_ca_pem}"
   crl.pem: "${root_crl_pem}"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mdb-config
+  namespace: default
+type: Opaque
+data:
+  # Password for for MongoDB adminuser
+  mdb-admin-password: "${mdb-admin-password}"
 EOF
 }
 
@@ -208,12 +220,13 @@ function generate_config_map(){
     ngx_instance_name="mdb-instance-$INDEX"
 
     bdb_user=`cat $1/"$BDB_CN"-"${INDEX}".user`
-    cluster_fqdn=$2
-    tm_seeds=$3
-    tm_validators=$4
-    tm_validators_power=$5
-    tm_genesis_time=$6
-    tm_chain_id=$7
+    mdb_admin_user=$2
+    cluster_fqdn=$3
+    tm_seeds=$4
+    tm_validators=$5
+    tm_validators_power=$6
+    tm_genesis_time=$7
+    tm_chain_id=$8
 
     cat > config-map.yaml << EOF
 apiVersion: v1
@@ -372,5 +385,15 @@ data:
   # tm-pub-key-access is the port number used to host/publish the
   # public key of the tendemrint node in this cluster.
   tm-pub-key-access: "9986"
+
+  ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mdb-config
+  namespace: default
+data:
+  # User name for MongoDB adminuser
+  mdb-admin-username: "${mdb-admin-username}"
 EOF
 }
