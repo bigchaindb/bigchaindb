@@ -169,3 +169,16 @@ data:
   # tm-pub-key-access is the port number used to host/publish the
   # public key of the tendemrint node in this cluster.
   tm-pub-key-access: "9986"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mdb-config
+  namespace: default
+data:
+  # User name for MongoDB adminuser
+  mdb-admin-username: "<mongodb admin username>"
+
+  # MongoDB monitoring agent authentication user name
+  mdb-mon-user: "<mongodb monitoring agent username>"
