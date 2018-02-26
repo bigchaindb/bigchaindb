@@ -75,28 +75,28 @@ if [[ -z "${INDEX}" ]] ; then
     exit 1
 fi
 
-# # Configure Root CA
-# mkdir $BASE_CA_DIR
-# configure_common $BASE_CA_DIR
-# configure_root_ca $BASE_CA_DIR/$BASE_EASY_RSA_PATH
+# Configure Root CA
+mkdir $BASE_CA_DIR
+configure_common $BASE_CA_DIR
+configure_root_ca $BASE_CA_DIR/$BASE_EASY_RSA_PATH
 
 
-# # Configure Member Request/Key generation
-# mkdir $BASE_MEMBER_CERT_DIR
-# configure_common $BASE_MEMBER_CERT_DIR
-# configure_member_cert_gen $BASE_MEMBER_CERT_DIR/$BASE_EASY_RSA_PATH
+# Configure Member Request/Key generation
+mkdir $BASE_MEMBER_CERT_DIR
+configure_common $BASE_MEMBER_CERT_DIR
+configure_member_cert_gen $BASE_MEMBER_CERT_DIR/$BASE_EASY_RSA_PATH
 
-# # Configure Client Request/Key generation
-# mkdir $BASE_CLIENT_CERT_DIR
-# configure_common $BASE_CLIENT_CERT_DIR
-# configure_client_cert_gen $BASE_CLIENT_CERT_DIR/$BASE_EASY_RSA_PATH
+# Configure Client Request/Key generation
+mkdir $BASE_CLIENT_CERT_DIR
+configure_common $BASE_CLIENT_CERT_DIR
+configure_client_cert_gen $BASE_CLIENT_CERT_DIR/$BASE_EASY_RSA_PATH
 
-# import_requests $BASE_CA_DIR/$BASE_EASY_RSA_PATH
-# sign_requests $BASE_CA_DIR/$BASE_EASY_RSA_PATH
-# make_pem_files $BASE_CA_DIR/$BASE_EASY_RSA_PATH $BASE_K8S_DIR
-# convert_b64 $BASE_K8S_DIR $BASE_CA_DIR/$BASE_EASY_RSA_PATH $BASE_CLIENT_CERT_DIR/$BASE_EASY_RSA_PATH
+import_requests $BASE_CA_DIR/$BASE_EASY_RSA_PATH
+sign_requests $BASE_CA_DIR/$BASE_EASY_RSA_PATH
+make_pem_files $BASE_CA_DIR/$BASE_EASY_RSA_PATH $BASE_K8S_DIR
+convert_b64 $BASE_K8S_DIR $BASE_CA_DIR/$BASE_EASY_RSA_PATH $BASE_CLIENT_CERT_DIR/$BASE_EASY_RSA_PATH
 
-# get_users $BASE_USERS_DIR $BASE_CA_DIR/$BASE_EASY_RSA_PATH
+get_users $BASE_USERS_DIR $BASE_CA_DIR/$BASE_EASY_RSA_PATH
 generate_secretes_no_threescale $BASE_K8S_DIR $SECRET_TOKEN $HTTPS_CERT_KEY_FILE_NAME $HTTPS_CERT_CHAIN_FILE_NAME
 
-# generate_config_map $BASE_USERS_DIR $CLUSTER_FQDN $TM_SEEDS $TM_VALIDATORS $TM_VALIDATOR_POWERS $TM_GENESIS_TIME $TM_CHAIN_ID
+generate_config_map $BASE_USERS_DIR $CLUSTER_FQDN $TM_SEEDS $TM_VALIDATORS $TM_VALIDATOR_POWERS $TM_GENESIS_TIME $TM_CHAIN_ID
