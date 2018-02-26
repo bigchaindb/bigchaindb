@@ -137,7 +137,7 @@ function generate_secretes_no_threescale(){
     https_cert_key=`cat $3 | base64 -w 0`
     https_cert_chain_pem=`cat $4 | base64 -w 0`
 
-    mdb_admin_password=`cat $5 | base64 -w 0`
+    mdb_admin_password=`echo $5 | base64 -w 0`
 
 
     cat > secret.yaml << EOF
@@ -208,7 +208,7 @@ metadata:
 type: Opaque
 data:
   # Password for for MongoDB adminuser
-  mdb-admin-password: "${mdb-admin-password}"
+  mdb-admin-password: "${mdb_admin_password}"
 EOF
 }
 
@@ -220,7 +220,7 @@ function generate_config_map(){
     ngx_instance_name="mdb-instance-$INDEX"
 
     bdb_user=`cat $1/"$BDB_CN"-"${INDEX}".user`
-    mdb_admin_user=$2
+    mdb_admin_username=$2
     cluster_fqdn=$3
     tm_seeds=$4
     tm_validators=$5
@@ -394,6 +394,6 @@ metadata:
   namespace: default
 data:
   # User name for MongoDB adminuser
-  mdb-admin-username: "${mdb-admin-username}"
+  mdb-admin-username: "${mdb_admin_username}"
 EOF
 }
