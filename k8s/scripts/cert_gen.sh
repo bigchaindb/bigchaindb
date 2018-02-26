@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -e
+set -o xtrace
 
 
 # base directories for operations
@@ -132,11 +133,19 @@ function convert_b64(){
     cat $2/pki/crl.pem | base64 -w 0 > $1/crl.pem.b64
 }
 
+function get_users(){
+    openssl x509 -in $BASE_CA_DIR/$BASE_EASY_RSA_PATH/pki/issued/"$MDB_CN"-"$INDEX".crt -inform PEM -subject \
+      -nameopt RFC2253 | head -n 1 | sed -r 's/^subject= //' > $1/"$MDB_CN"-"$INDEX".user
+    openssl x509 -in $BASE_CA_DIR/$BASE_EASY_RSA_PATH/pki/issued/"$BDB_CN"-"$INDEX".crt -inform PEM -subject \
+      -nameopt RFC2253 | head -n 1 | sed -r 's/^subject= //' > $1/"$BDB_CN"-"$INDEX".user
+    openssl x509 -in $BASE_CA_DIR/$BASE_EASY_RSA_PATH/pki/issued/"$MDB_MON_CN"-"$INDEX".crt -inform PEM -subject \
+      -nameopt RFC2253 | head -n 1 | sed -r 's/^subject= //' > $1/"$MDB_MON_CN"-"$INDEX".user
+
+}
+
 function configure_common(){
     sudo apt-get update -y
     sudo apt-get install openssl -y
-    wget https://github.com/OpenVPN/easy-rsa/archive/3.0.1.tar.gz -P $1
-    wget https://github.com/OpenVPN/easy-rsa/archive/3.0.1.tar.gz -P $1
     wget https://github.com/OpenVPN/easy-rsa/archive/3.0.1.tar.gz -P $1
     tar xzvf $1/3.0.1.tar.gz -C $1/
     rm $1/3.0.1.tar.gz
@@ -183,6 +192,7 @@ BASE_MEMBER_CERT_DIR="${BASE_DIR}"/member-cert
 BASE_CLIENT_CERT_DIR="${BASE_DIR}"/client-cert
 BASE_EASY_RSA_PATH='easy-rsa-3.0.1/easyrsa3'
 BASE_K8S_DIR="${BASE_DIR}"/k8s
+BASE_USERS_DIR="{$BASE_DIR}"/users
 
 # sanity checks
 if [[ -z "${INDEX}" ]] ; then
@@ -210,3 +220,4 @@ import_requests $BASE_CA_DIR/$BASE_EASY_RSA_PATH
 sign_requests $BASE_CA_DIR/$BASE_EASY_RSA_PATH
 make_pem_files $BASE_CA_DIR/$BASE_EASY_RSA_PATH $BASE_K8S_DIR
 convert_b64 $BASE_K8S_DIR $BASE_CA_DIR/$BASE_EASY_RSA_PATH $BASE_CLIENT_CERT_DIR/$BASE_EASY_RSA_PATH
+get_users $BASE_USERS_DIR $BASE_CA_DIR/$BASE_EASY_RSA_PATH
