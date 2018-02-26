@@ -67,7 +67,7 @@ BASE_MEMBER_CERT_DIR="${BASE_DIR}"/member-cert
 BASE_CLIENT_CERT_DIR="${BASE_DIR}"/client-cert
 BASE_EASY_RSA_PATH='easy-rsa-3.0.1/easyrsa3'
 BASE_K8S_DIR="${BASE_DIR}"/k8s
-BASE_USERS_DIR="{$BASE_DIR}"/users
+BASE_USERS_DIR="$BASE_DIR"/users
 
 # sanity checks
 if [[ -z "${INDEX}" ]] ; then
