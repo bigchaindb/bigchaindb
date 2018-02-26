@@ -261,6 +261,10 @@ data:
   # bdb-instance-name is the name of the BigchainDB instance in this cluster.
   bdb-instance-name: "${bdb_instance_name}"
 
+  # openresty-instance-name is the name of the OpenResty instance in this
+  # cluster.
+  openresty-instance-name: "openresty-instance-0"
+
   # ngx-mdb-instance-name is the FQDN of the MongoDB instance in this
   # Kubernetes cluster.
   ngx-mdb-instance-name: "${mdb_instance_name}.default.svc.cluster.local"
@@ -268,6 +272,10 @@ data:
   # ngx-bdb-instance-name is the FQDN of the BigchainDB instance in this
   # Kubernetes cluster.
   ngx-bdb-instance-name: "${bdb_instance_name}.default.svc.cluster.local"
+
+  # ngx-openresty-instance-name is the FQDN of the OpenResty instance in this
+  # Kubernetes cluster.
+  ngx-openresty-instance-name: "openresty-instance-0.default.svc.cluster.local"
 
   # mongodb-backend-port is the port on which MongoDB is actually
   # available/listening for requests.
@@ -386,7 +394,7 @@ data:
   # public key of the tendemrint node in this cluster.
   tm-pub-key-access: "9986"
 
-  ---
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
