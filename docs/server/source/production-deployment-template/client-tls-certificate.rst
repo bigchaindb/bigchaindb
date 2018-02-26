@@ -1,3 +1,5 @@
+.. _how-to-generate-a-client-certificate-for-mongodb:
+
 How to Generate a Client Certificate for MongoDB
 ================================================
 
@@ -17,7 +19,7 @@ First create a directory for the client certificate and cd into it:
 
    cd client-cert
 
-Then :ref:`install and configure Easy-RSA in that directory <How to Install & Configure Easy-RSA>`.
+Then :ref:`install and configure Easy-RSA in that directory <how-to-install-and-configure-easyrsa>`.
 
 
 Step 2: Create the Client Private Key and CSR

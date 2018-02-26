@@ -21,8 +21,8 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
       - name: mongodb
-        image: bigchaindb/mongodb:3.2
-        imagePullPolicy: IfNotPresent
+        image: bigchaindb/localmongodb:unstable
+        imagePullPolicy: Always
         env:
         - name: MONGODB_FQDN
           valueFrom:
@@ -33,11 +33,6 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: status.podIP
-        - name: MONGODB_REPLICA_SET_NAME
-          valueFrom:
-            configMapKeyRef:
-             name: vars
-             key: mongodb-replicaset-name
         - name: MONGODB_PORT
           valueFrom:
             configMapKeyRef:
@@ -57,8 +52,6 @@ spec:
         - /etc/mongod/ca/ca.pem
         - --mongodb-crl-file-path
         - /etc/mongod/ca/crl.pem
-        - --replica-set-name
-        - $(MONGODB_REPLICA_SET_NAME)
         - --mongodb-fqdn
         - $(MONGODB_FQDN)
         - --mongodb-ip
@@ -70,7 +63,7 @@ spec:
             add:
             - FOWNER
         ports:
-        - containerPort: "<mongodb-backend-port from ConfigMap>"
+        - containerPort: 27017
           protocol: TCP
           name: mdb-api-port
         volumeMounts:

@@ -1,3 +1,5 @@
+.. _the-websocket-event-stream-api:
+
 The WebSocket Event Stream API
 ==============================
 
@@ -24,7 +26,7 @@ Determining Support for the Event Stream API
 
 It's a good idea to make sure that the node you're connecting with
 has advertised support for the Event Stream API. To do so, send a HTTP GET
-request to the node's :ref:`API Root Endpoint` 
+request to the node's :ref:`api-root-endpoint` 
 (e.g. ``http://localhost:9984/api/v1/``) and check that the
 response contains a ``streams`` property:
 
@@ -61,7 +63,7 @@ Streams will always be under the WebSocket protocol (so ``ws://`` or
 API root URL (for example, `validated transactions <#valid-transactions>`_
 would be accessible under ``/api/v1/streams/valid_transactions``). If you're
 running your own BigchainDB instance and need help determining its root URL,
-then see the page titled :ref:`Determining the API Root URL`.
+then see the page titled :ref:`determining-the-api-root-url`.
 
 All messages sent in a stream are in the JSON format.
 
@@ -69,7 +71,7 @@ All messages sent in a stream are in the JSON format.
 
     For simplicity, BigchainDB initially only provides a stream for all
     validated transactions. In the future, we may provide streams for other
-    information, such as new blocks, new votes, or invalid transactions. We may
+    information. We may
     also provide the ability to filter the stream for specific qualities, such
     as a specific ``output``'s ``public_key``.
 
@@ -99,8 +101,4 @@ Example message:
 .. note::
 
     Transactions in BigchainDB are validated in batches ("blocks") and will,
-    therefore, be streamed in batches. Each block can contain up to a 1000
-    transactions, ordered by the time at which they were included in the block.
-    The ``/valid_transactions`` stream will send these transactions in the same
-    order that the block stored them in, but this does **NOT** guarantee that
-    you will recieve the events in that same order.
+    therefore, be streamed in batches.

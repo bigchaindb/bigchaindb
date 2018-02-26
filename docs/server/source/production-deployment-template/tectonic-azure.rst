@@ -14,10 +14,10 @@ Step 1: Prerequisites for Deploying Tectonic Cluster
 ----------------------------------------------------
 
 Get an Azure account. Refer to
-:ref:`this step in our docs <Step 1: Get a Pay-As-You-Go Azure Subscription>`.
+:ref:`this step in our docs <get-a-pay-as-you-go-azure-subscription>`.
 
 Create an SSH Key pair for the new Tectonic cluster. Refer to
-:ref:`this step in our docs <Step 2: Create an SSH Key Pair>`.
+:ref:`this step in our docs <create-an-ssh-key-pair>`.
 
 
 Step 2: Get a Tectonic Subscription
@@ -119,8 +119,9 @@ Step 4: Configure kubectl
 
     $ export KUBECONFIG=/path/to/config/kubectl-config
 
-Next, you can :doc:`run a BigchainDB node on your new
-Kubernetes cluster <node-on-kubernetes>`.
+Next, you can follow one of our following deployment templates:
+
+* :doc:`node-on-kubernetes`.
 
 
 Tectonic References
@@ -129,4 +130,3 @@ Tectonic References
 #. https://coreos.com/tectonic/docs/latest/tutorials/azure/install.html
 #. https://coreos.com/tectonic/docs/latest/troubleshooting/installer-terraform.html
 #. https://coreos.com/tectonic/docs/latest/tutorials/azure/first-app.html
-

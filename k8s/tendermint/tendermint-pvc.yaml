@@ -1,0 +1,32 @@
+##########################################################
+# This section file desribes a k8s pvc for tendermint db #
+##########################################################
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: tendermint-db-claim
+  annotations:
+    volume.beta.kubernetes.io/storage-class: tendermint-db
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+################################################################
+# This YAML section desribes a k8s pvc for tendermint configdb #
+################################################################
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: tendermint-config-db-claim
+  annotations:
+    volume.beta.kubernetes.io/storage-class: tendermint-config-db
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+

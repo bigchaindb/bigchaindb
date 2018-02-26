@@ -174,6 +174,19 @@ def run_init(args):
         print('If you wish to re-initialize it, first drop it.', file=sys.stderr)
 
 
+def run_recover(b):
+    query.delete_zombie_transactions(b.connection)
+
+    tendermint_height = b.get_latest_block_height_from_tendermint()
+    block = b.get_latest_block()
+
+    if block:
+        while block['height'] > tendermint_height:
+            logger.info('BigchainDB is ahead of tendermint, removing block %s', block['height'])
+            query.delete_latest_block(b.connection)
+            block = b.get_latest_block()
+
+
 @configure_bigchaindb
 def run_drop(args):
     """Drop the database"""
@@ -197,6 +210,8 @@ def run_drop(args):
 def run_start(args):
     """Start the processes to run the node"""
     logger.info('BigchainDB Version %s', bigchaindb.__version__)
+
+    # run_recover(BigchainDB())
 
     if args.allow_temp_keypair:
         if not (bigchaindb.config['keypair']['private'] or

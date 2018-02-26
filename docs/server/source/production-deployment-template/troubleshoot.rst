@@ -1,3 +1,5 @@
+.. _cluster-troubleshooting:
+
 Cluster Troubleshooting
 =======================
 

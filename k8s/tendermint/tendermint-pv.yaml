@@ -1,0 +1,41 @@
+#########################################################
+# This YAML section desribes a k8s PV for tendermint db #
+#########################################################
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-tm-db
+spec:
+  accessModes:
+  - ReadWriteOnce
+  azureDisk:
+    cachingMode: None
+    diskName: <Azure Disk Name>
+    diskURI: <Azure Disk URL>
+    fsType: ext4
+    readOnly: false
+  capacity:
+    storage: 20Gi
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: tendermint-db
+---
+##############################################################
+# This YAML section desribes a k8s PV  for Tendermint config #
+##############################################################
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-tm-configdb
+spec:
+  accessModes:
+  - ReadWriteOnce
+  azureDisk:
+    cachingMode: None
+    diskName: <Azure Disk Name>
+    diskURI: <Azure Disk URL>
+    fsType: ext4
+    readOnly: false
+  capacity:
+    storage: 1Gi
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: tendermint-config-db
