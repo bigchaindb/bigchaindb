@@ -199,20 +199,19 @@ EOF
 }
 
 function generate_config_map(){
-    # $1:- BASE_DIR
-    # $2:- List of tendermint data [tm_seeds, tm_validators]
-    mdb-instance-name="${MDB_CN}-${INDEX}"
-    bdb-instance-name="${BDB_CN}-${INDEX}"
-    tm_instance_name=="tm-instance-${INDEX}"
-    ngx-instance-name="mdb-instance-${INDEX}"
 
-    bdb_user=`cat $1/"$BDB_CN"-"$INDEX".user`
-    tm_seeds=''
-    tm_validators=''
-    tm_validators_power=''
-    tm_genesis_time=''
-    tm_chain_id=''
+    mdb_instance_name="$MDB_CN-$INDEX"
+    bdb_instance_name="$BDB_CN-$INDEX"
+    tm_instance_name="tm-instance-$INDEX"
+    ngx_instance_name="mdb-instance-$INDEX"
 
+    bdb_user=`cat $1/"$BDB_CN"-"${INDEX}".user`
+    cluster_fqdn=$2
+    tm_seeds=$3
+    tm_validators=$4
+    tm_validators_power=$5
+    tm_genesis_time=$6
+    tm_chain_id=$7
 
     cat > config-map.yaml << EOF
 apiVersion: v1
@@ -239,21 +238,21 @@ data:
   cluster-dns-server-ip: "10.0.0.10"
 
   # mdb-instance-name is the name of the MongoDB instance in this cluster.
-  mdb-instance-name: "${MDB_CN}-${INDEX}}"
+  mdb-instance-name: "${mdb_instance_name}"
 
   # ngx-instance-name is the name of the NGINX instance in this cluster.
-  ngx-instance-name: "<name of the nginx instance>"
+  ngx-instance-name: "${ngx_instance_name}"
 
   # bdb-instance-name is the name of the BigchainDB instance in this cluster.
-  bdb-instance-name: "<name of the bdb instance>"
+  bdb-instance-name: "${bdb_instance_name}"
 
   # ngx-mdb-instance-name is the FQDN of the MongoDB instance in this
   # Kubernetes cluster.
-  ngx-mdb-instance-name: "<name of the mdb instance>.default.svc.cluster.local"
+  ngx-mdb-instance-name: "${mdb_instance_name}.default.svc.cluster.local"
 
   # ngx-bdb-instance-name is the FQDN of the BigchainDB instance in this
   # Kubernetes cluster.
-  ngx-bdb-instance-name: "<name of the bdb instance>.default.svc.cluster.local"
+  ngx-bdb-instance-name: "${bdb_instance_name}.default.svc.cluster.local"
 
   # mongodb-backend-port is the port on which MongoDB is actually
   # available/listening for requests.
@@ -351,7 +350,7 @@ data:
   tm-instance-name: "${tm_instance_name}"
 
   # ngx-tm-instance-name is the FQDN of the tendermint instance in this cluster
-  ngx-tm-instance-name: "<name of tendermint instance>.default.svc.cluster.local"
+  ngx-tm-instance-name: "${tm_instance_name}.default.svc.cluster.local"
 
   # tm-abci-port is used by Tendermint Core for ABCI traffic. BigchainDB nodes
   # use that internally.

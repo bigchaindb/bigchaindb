@@ -15,12 +15,17 @@ CONFIGURE_CA=''
 CONFIGURE_MEMBER=''
 CONFIGURE_CLIENT=''
 
+cluster_fqdn="test.bigchaindb.com"
+secrete_token="test" 
+https_key="https_key"
+https_cert_chain_pem="https_cert_chain"
+
 # Tendermint data
-tm_seeds=''
-tm_validators=''
-tm_validators_power=''
-tm_genesis_time=''
-tm_chain_id=''
+tm_seeds='123,4565'
+tm_validators='11234,1234'
+tm_validators_power='1,2'
+tm_genesis_time='1234'
+tm_chain_id='12341234'
 
 
 function show_help(){
@@ -90,26 +95,28 @@ if [[ -z "${INDEX}" ]] ; then
     exit 1
 fi
 
-# Configure Root CA
-mkdir $BASE_CA_DIR
-configure_common $BASE_CA_DIR
-configure_root_ca $BASE_CA_DIR/$BASE_EASY_RSA_PATH
+# # Configure Root CA
+# mkdir $BASE_CA_DIR
+# configure_common $BASE_CA_DIR
+# configure_root_ca $BASE_CA_DIR/$BASE_EASY_RSA_PATH
 
 
-# Configure Member Request/Key generation
-mkdir $BASE_MEMBER_CERT_DIR
-configure_common $BASE_MEMBER_CERT_DIR
-configure_member_cert_gen $BASE_MEMBER_CERT_DIR/$BASE_EASY_RSA_PATH
+# # Configure Member Request/Key generation
+# mkdir $BASE_MEMBER_CERT_DIR
+# configure_common $BASE_MEMBER_CERT_DIR
+# configure_member_cert_gen $BASE_MEMBER_CERT_DIR/$BASE_EASY_RSA_PATH
 
-# Configure Client Request/Key generation
-mkdir $BASE_CLIENT_CERT_DIR
-configure_common $BASE_CLIENT_CERT_DIR
-configure_client_cert_gen $BASE_CLIENT_CERT_DIR/$BASE_EASY_RSA_PATH
+# # Configure Client Request/Key generation
+# mkdir $BASE_CLIENT_CERT_DIR
+# configure_common $BASE_CLIENT_CERT_DIR
+# configure_client_cert_gen $BASE_CLIENT_CERT_DIR/$BASE_EASY_RSA_PATH
 
-import_requests $BASE_CA_DIR/$BASE_EASY_RSA_PATH
-sign_requests $BASE_CA_DIR/$BASE_EASY_RSA_PATH
-make_pem_files $BASE_CA_DIR/$BASE_EASY_RSA_PATH $BASE_K8S_DIR
-convert_b64 $BASE_K8S_DIR $BASE_CA_DIR/$BASE_EASY_RSA_PATH $BASE_CLIENT_CERT_DIR/$BASE_EASY_RSA_PATH
+# import_requests $BASE_CA_DIR/$BASE_EASY_RSA_PATH
+# sign_requests $BASE_CA_DIR/$BASE_EASY_RSA_PATH
+# make_pem_files $BASE_CA_DIR/$BASE_EASY_RSA_PATH $BASE_K8S_DIR
+# convert_b64 $BASE_K8S_DIR $BASE_CA_DIR/$BASE_EASY_RSA_PATH $BASE_CLIENT_CERT_DIR/$BASE_EASY_RSA_PATH
 
-get_users $BASE_USERS_DIR $BASE_CA_DIR/$BASE_EASY_RSA_PATH
-generate_secretes_no_threescale $BASE_K8S_DIR "test" "https_key" "https_cert_chain"
+get_users $BASE_K8S_DIR $BASE_CA_DIR/$BASE_EASY_RSA_PATH
+generate_secretes_no_threescale $BASE_K8S_DIR $secrete_token $https_key $https_cert_chain_pem
+
+generate_config_map $BASE_K8S_DIR $cluster_fqdn $tm_seeds $tm_validators $tm_validators_power $tm_genesis_time $tm_chain_id
