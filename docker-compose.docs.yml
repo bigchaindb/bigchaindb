@@ -4,7 +4,9 @@ services:
   bdocs:
     build:
       context: .
-      dockerfile: ./Dockerfile-dev
+      dockerfile: ./compose/bigchaindb-server/Dockerfile
+      args:
+        backend: localmongodb
     volumes:
       - .:/usr/src/app/
     command: make -C docs/server html
