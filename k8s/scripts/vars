@@ -1,5 +1,5 @@
 CLUSTER_FQDN="test.bigchaindb.com"
-SECRETE_TOKEN="test" 
+SECRET_TOKEN="test" 
 HTTPS_CERT_KEY_FILE_NAME="https_key"
 HTTPS_CERT_CHAIN_FILE_NAME="https_cert_chain"
 
