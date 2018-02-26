@@ -13,7 +13,7 @@ configure_mongo=true
 MONGODB_CREDENTIALS_DIR=/tmp/mongodb
 mongodb_admin_password=""
 mongodb_admin_username=`printenv MONGODB_ADMIN_USERNAME || true`
-mongodb_admin_password=`printenv MONGODB_ADMIN_PASSWORD || true`
+mongodb_admin_password=""
 bdb_username=`printenv BDB_USERNAME || true`
 mdb_mon_username=`printenv MDB_MON_USERNAME || true`
 
@@ -102,10 +102,10 @@ if [ -f ${MONGODB_CREDENTIALS_DIR}/mdb-admin-password ]; then
 fi
 
 # Only configure if all variables are set
-if [[ -z "${mongodb_admin_username}" && \
-        -z "${mongodb_admin_password}" && \
-        -z "${bdb_username}" && \
-    -z "${mdb_mon_username}" ]]; then
+if [[ -n "${mongodb_admin_username}" && \
+        -n "${mongodb_admin_password}" && \
+        -n "${bdb_username}" && \
+    -n "${mdb_mon_username}" ]]; then
     sed -i "s|MONGODB_ADMIN_USERNAME|${mongodb_admin_username}|g" ${MONGODB_CONFIGURE_USERS_PATH}
     sed -i "s|MONGODB_ADMIN_PASSWORD|${mongodb_admin_password}|g" ${MONGODB_CONFIGURE_USERS_PATH}
     sed -i "s|BDB_USERNAME|${bdb_username}|g" ${MONGODB_CONFIGURE_USERS_PATH}

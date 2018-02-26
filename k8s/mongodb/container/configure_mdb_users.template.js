@@ -1,4 +1,4 @@
-use admin;
+db = db.getSiblingDB("admin");
 db.createUser({
     user: "MONGODB_ADMIN_USERNAME",
     pwd: "MONGODB_ADMIN_PASSWORD",
@@ -12,7 +12,7 @@ db.createUser({
         }
     ]
 });
-use admin;
+db = db.getSiblingDB("admin");
 db.auth("MONGODB_ADMIN_USERNAME", "MONGODB_ADMIN_PASSWORD");
 db.getSiblingDB("$external").runCommand({
     createUser: 'BDB_USERNAME',

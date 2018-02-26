@@ -102,7 +102,7 @@ Finally, you can deploy an ACS using something like:
    $ az acs create --name <a made-up cluster name> \
    --resource-group <name of resource group created earlier> \
    --master-count 3 \
-   --agent-count 2 \
+   --agent-count 3 \
    --admin-username ubuntu \
    --agent-vm-size Standard_L4s \
    --dns-prefix <make up a name> \
