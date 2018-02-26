@@ -13,7 +13,6 @@ configure_mongo=true
 MONGODB_CREDENTIALS_DIR=/tmp/mongodb
 mongodb_admin_password=""
 mongodb_admin_username=`printenv MONGODB_ADMIN_USERNAME || true`
-mongodb_admin_password=""
 bdb_username=`printenv BDB_USERNAME || true`
 mdb_mon_username=`printenv MDB_MON_USERNAME || true`
 
