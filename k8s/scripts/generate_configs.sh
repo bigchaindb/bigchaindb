@@ -67,6 +67,7 @@ BASE_MEMBER_CERT_DIR="${BASE_DIR}"/member-cert
 BASE_CLIENT_CERT_DIR="${BASE_DIR}"/client-cert
 BASE_EASY_RSA_PATH='easy-rsa-3.0.1/easyrsa3'
 BASE_K8S_DIR="${BASE_DIR}"/k8s
+BASE_USERS_DIR="{$BASE_DIR}"/users
 
 # sanity checks
 if [[ -z "${INDEX}" ]] ; then
@@ -95,7 +96,7 @@ sign_requests $BASE_CA_DIR/$BASE_EASY_RSA_PATH
 make_pem_files $BASE_CA_DIR/$BASE_EASY_RSA_PATH $BASE_K8S_DIR
 convert_b64 $BASE_K8S_DIR $BASE_CA_DIR/$BASE_EASY_RSA_PATH $BASE_CLIENT_CERT_DIR/$BASE_EASY_RSA_PATH
 
-get_users $BASE_K8S_DIR $BASE_CA_DIR/$BASE_EASY_RSA_PATH
+get_users $BASE_USERS_DIR $BASE_CA_DIR/$BASE_EASY_RSA_PATH
 generate_secretes_no_threescale $BASE_K8S_DIR $secrete_token $https_key $https_cert_chain_pem
 
-generate_config_map $BASE_K8S_DIR $CLUSTER_FQDN $TM_SEEDS $TM_VALIDATORS $TM_VALIDATOR_POWERS $TM_GENESIS_TIME $TM_CHAIN_ID
+generate_config_map $BASE_USERS_DIR $CLUSTER_FQDN $TM_SEEDS $TM_VALIDATORS $TM_VALIDATOR_POWERS $TM_GENESIS_TIME $TM_CHAIN_ID
