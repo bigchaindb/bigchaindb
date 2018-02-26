@@ -13,7 +13,7 @@ from bigchaindb.tendermint.utils import decode_transaction_base64
 
 HOST = getenv('BIGCHAINDB_TENDERMINT_HOST', 'localhost')
 PORT = int(getenv('BIGCHAINDB_TENDERMINT_PORT', 46657))
-URL = 'ws://{HOST}:{PORT}/websocket'
+URL = f'ws://{HOST}:{PORT}/websocket'
 
 logger = logging.getLogger(__name__)
 
