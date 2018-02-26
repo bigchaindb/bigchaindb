@@ -90,6 +90,11 @@ spec:
             configMapKeyRef:
               name: vars
               key: authorization-mode
+        - name: SECRET_ACCESS_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: nginx-secret-header
+              key: secret-token
         ports:
         # return a pretty error message on port 80, since we are expecting
         # HTTPS traffic.
