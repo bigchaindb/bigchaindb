@@ -115,7 +115,7 @@ http {
       }
 
       # POST requests get forwarded to BDB.
-      if ($request_method = POST ) {}
+      if ($request_method = POST ) {
         proxy_pass http://$bdb_backend:BIGCHAINDB_API_PORT;
       }
 
