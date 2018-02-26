@@ -116,4 +116,6 @@ def create_utxos_secondary_index(conn, dbname):
 def create_validators_secondary_index(conn, dbname):
     logger.info('Create `validators` secondary index.')
 
-    conn.conn[dbname]['validators'].create_index('sync', name='sync')
+    conn.conn[dbname]['validators'].create_index('update_id',
+                                                 name='update_id',
+                                                 unique=True,)

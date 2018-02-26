@@ -28,6 +28,7 @@ from bigchaindb.commands.messages import (
 )
 from bigchaindb.commands.utils import (
     configure_bigchaindb, start_logging_process, input_on_stderr)
+from bigchaindb.common.utils import VALIDATOR_UPDATE_ID
 
 
 logging.basicConfig(level=logging.INFO)
@@ -122,11 +123,17 @@ def run_upsert_validator(args):
     """Store validators which should be synced with Tendermint"""
 
     b = bigchaindb.Bigchain()
-    validator = [{'pub_key': {'type': 'ed25519',
-                              'data': args.public_key},
-                  'power': args.power}]
-    validator_update = {'validators': validator, 'sync': True}
-    query.store_validator_update(b.connection, validator_update)
+    validator = {'pub_key': {'type': 'ed25519',
+                             'data': args.public_key},
+                 'power': args.power}
+    validator_update = {'validator': validator,
+                        'update_id': VALIDATOR_UPDATE_ID}
+    try:
+        query.store_validator_update(b.connection, validator_update)
+    except KeyError:
+        logger.error('A validator update is pending to be applied. '
+                     'Please re-try after the current update has '
+                     'been processed.')
 
 
 @configure_bigchaindb
@@ -296,11 +303,12 @@ def create_parser():
                                              help='Add/update/delete a validator')
 
     validator_parser.add_argument('public_key',
-                                  help='Public key of the new validator.')
+                                  help='Public key of the validator.')
 
     validator_parser.add_argument('power',
                                   type=int,
-                                  help='Voting power of the validator.')
+                                  help='Voting power of the validator. '
+                                  'Setting it to 0 will delete the validator.')
 
     # parsers for showing/exporting config values
     subparsers.add_parser('show-config',

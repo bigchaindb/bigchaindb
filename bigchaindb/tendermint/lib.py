@@ -13,7 +13,7 @@ from bigchaindb.common.exceptions import SchemaValidationError, ValidationError
 from bigchaindb.tendermint.utils import encode_transaction
 from bigchaindb.tendermint import fastquery
 from bigchaindb import exceptions as core_exceptions
-
+from bigchaindb.common.utils import VALIDATOR_UPDATE_ID
 
 logger = logging.getLogger(__name__)
 
@@ -235,24 +235,15 @@ class BigchainDB(Bigchain):
     def fastquery(self):
         return fastquery.FastQuery(self.connection, self.me)
 
-    def get_validator_updates(self):
-        updates = list(backend.query.get_pending_validator_updates(self.connection))
+    def get_validator_update(self):
+        update = backend.query.get_validator_update(self.connection,
+                                                    VALIDATOR_UPDATE_ID)
+        print(update)
+        return [update['validator']] if update else []
 
-        consolidated_updates = {}
-        update_doc_ids = []
-
-        for u in updates:
-            validators = u['validators']
-            for v in validators:
-                pub_key = v['pub_key']['data']
-                consolidated_updates[pub_key] = v
-
-            update_doc_ids.append(u['_id'])
-
-        return (update_doc_ids, list(consolidated_updates.values()))
-
-    def mark_validator_updates(self, ids, sync=False):
-        return backend.query.mark_validator_updates(self.connection, ids, sync)
+    def delete_validator_update(self):
+        return backend.query.delete_validator_update(self.connection,
+                                                     VALIDATOR_UPDATE_ID)
 
 
 Block = namedtuple('Block', ('app_hash', 'height', 'transactions'))

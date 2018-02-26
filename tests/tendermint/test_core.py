@@ -141,23 +141,21 @@ def test_end_block_return_validator_updates(b):
     from bigchaindb.tendermint import App
     from bigchaindb.backend import query
     from bigchaindb.tendermint.core import cast_validator
+    from bigchaindb.common.utils import VALIDATOR_UPDATE_ID
 
     app = App(b)
     app.init_chain(['ignore'])
     app.begin_block('ignore')
 
-    validator = [{'pub_key': {'type': 'ed25519',
-                              'data': 'B0E42D2589A455EAD339A035D6CE1C8C3E25863F268120AA0162AD7D003A4014'},
-                  'power': 10}]
-    validator_update = {'validators': validator, 'sync': True}
+    validator = {'pub_key': {'type': 'ed25519',
+                             'data': 'B0E42D2589A455EAD339A035D6CE1C8C3E25863F268120AA0162AD7D003A4014'},
+                 'power': 10}
+    validator_update = {'validator': validator,
+                        'update_id': VALIDATOR_UPDATE_ID}
     query.store_validator_update(b.connection, validator_update)
 
     resp = app.end_block(99)
+    assert resp.diffs[0] == cast_validator(validator)
 
-    assert resp.diffs[0] == cast_validator(validator[0])
-
-    app.commit()
-
-    ids, updates = b.get_validator_updates()
-
+    updates = b.get_validator_update()
     assert updates == []

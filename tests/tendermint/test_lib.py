@@ -1,5 +1,4 @@
 import os
-import time
 from unittest.mock import patch
 
 import pytest
@@ -125,34 +124,21 @@ def test_post_transaction_invalid_mode(b):
         b.write_transaction(tx, 'nope')
 
 
-def test_get_validator_updates(b, validator_pub_key):
+@pytest.mark.bdb
+def test_validator_updates(b, validator_pub_key):
     from bigchaindb.backend import query
+    from bigchaindb.common.utils import VALIDATOR_UPDATE_ID
 
     # create a validator update object
-    validator_update = gen_validator_update(validator_pub_key, 10)
+    validator = {'pub_key': {'type': 'ed25519',
+                             'data': validator_pub_key},
+                 'power': 10}
+    validator_update = {'validator': validator,
+                        'update_id': VALIDATOR_UPDATE_ID}
     query.store_validator_update(b.connection, validator_update)
 
-    ids, updates = b.get_validator_updates()
-    assert updates == validator_update['validators']
+    updates = b.get_validator_update()
+    assert updates == [validator_update['validator']]
 
-
-def test_get_multiple_validator_updates(b, validator_pub_key):
-    from bigchaindb.backend import query
-
-    # create a validator update object
-    v1 = gen_validator_update(validator_pub_key, 10)
-    query.store_validator_update(b.connection, v1)
-
-    time.sleep(1)
-    v2 = gen_validator_update(validator_pub_key, 20)
-    query.store_validator_update(b.connection, v2)
-
-    ids, updates = b.get_validator_updates()
-    assert updates == v2['validators']
-
-
-def gen_validator_update(key, power):
-    validator = [{'pub_key': {'type': 'ed25519',
-                              'data': key},
-                  'power': power}]
-    return {'validators': validator, 'sync': True}
+    b.delete_validator_update()
+    assert b.get_validator_update() == []

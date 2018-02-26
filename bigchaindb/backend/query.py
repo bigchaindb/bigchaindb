@@ -588,14 +588,14 @@ def store_validator_update(conn, validator_update):
 
 
 @singledispatch
-def get_pending_validator_updates(conn):
+def get_validator_update(conn):
     """Get validator updates which are not synced"""
 
     raise NotImplementedError
 
 
 @singledispatch
-def mark_validator_updates(conn, ids, sync):
+def delete_validator_update(conn, id):
     """Set the sync status for validator update documents"""
 
     raise NotImplementedError

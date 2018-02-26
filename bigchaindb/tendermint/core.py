@@ -28,7 +28,6 @@ class App(BaseApplication):
         self.block_transactions = []
         self.validators = None
         self.new_height = None
-        self.validator_update_ids = []
 
     def init_chain(self, validators):
         """Initialize chain with block of height 0"""
@@ -109,21 +108,20 @@ class App(BaseApplication):
         else:
             self.block_txn_hash = block['app_hash']
 
-        update_ids, validator_updates = self.bigchaindb.get_validator_updates()
+        validator_updates = self.bigchaindb.get_validator_update()
         validator_updates = [cast_validator(v) for v in validator_updates]
+
+        # set sync status to true
+        self.bigchaindb.delete_validator_update()
+
         # NOTE: interface for `ResponseEndBlock` has be changed in the latest
         # version of py-abci i.e. the validator updates should be return
         # as follows:
         # ResponseEndBlock(validator_updates=validator_updates)
-        self.validator_update_ids = update_ids
         return ResponseEndBlock(diffs=validator_updates)
 
     def commit(self):
         """Store the new height and along with block hash."""
-
-        # set sync status to true
-        self.bigchaindb.mark_validator_updates(self.validator_update_ids)
-        self.validator_update_ids = []
 
         # register a new block only when new transactions are received
         if self.block_txn_ids:

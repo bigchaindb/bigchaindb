@@ -1,6 +1,6 @@
 """Query implementation for MongoDB"""
 
-from pymongo import DESCENDING, ASCENDING
+from pymongo import DESCENDING
 
 from bigchaindb import backend
 from bigchaindb.backend.exceptions import DuplicateKeyError
@@ -236,21 +236,24 @@ def get_unspent_outputs(conn, *, query=None):
 
 @register_query(LocalMongoDBConnection)
 def store_validator_update(conn, validator_update):
-    return conn.run(
-        conn.collection('validators')
-        .insert_one(validator_update))
+    try:
+        return conn.run(
+            conn.collection('validators')
+            .insert_one(validator_update))
+    except DuplicateKeyError:
+        raise KeyError('Validator update already exists')
 
 
 @register_query(LocalMongoDBConnection)
-def get_pending_validator_updates(conn):
+def get_validator_update(conn, update_id):
     return conn.run(
         conn.collection('validators')
-        .find({'sync': True}, sort=[('_id', ASCENDING)]))
+        .find_one({'update_id': update_id}, projection={'_id': False}))
 
 
 @register_query(LocalMongoDBConnection)
-def mark_validator_updates(conn, ids, sync=False):
+def delete_validator_update(conn, update_id):
     return conn.run(
         conn.collection('validators')
-        .update_many({'_id': {'$in': ids}}, {'$set': {'sync': sync}}, upsert=False)
+        .delete_one({'update_id': update_id})
     )

@@ -5,6 +5,8 @@ import rapidjson
 import bigchaindb
 from bigchaindb.common.exceptions import ValidationError
 
+VALIDATOR_UPDATE_ID = 'validator01'
+
 
 def gen_timestamp():
     """The Unix time, rounded to the nearest second.
