@@ -1,0 +1,399 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+function configure_root_ca(){
+    # $1:- Base directory for Root CA
+    echo "Generate Root CA"
+    echo 'set_var EASYRSA_DN "org"' >> $1/vars
+    echo 'set_var EASYRSA_KEY_SIZE 4096' >> $1/vars
+
+    #TODO: Parametrize the below configurations
+    echo 'set_var EASYRSA_REQ_COUNTRY "DE"' >> $1/vars
+    echo 'set_var EASYRSA_REQ_PROVINCE "Berlin"' >> $1/vars
+    echo 'set_var EASYRSA_REQ_CITY "Berlin"' >> $1/vars
+    echo 'set_var EASYRSA_REQ_ORG "BigchainDB GmbH"' >> $1/vars
+    echo 'set_var EASYRSA_REQ_OU "ROOT-CA"' >> $1/vars
+    echo 'set_var EASYRSA_REQ_EMAIL "dev@bigchaindb.com"' >> $1//vars
+
+    sed -i.bk '/^extendedKeyUsage/ s/$/,clientAuth/' $1/x509-types/server
+    echo "set_var EASYRSA_SSL_CONF \"$1/openssl-1.0.cnf\"" >> $1/vars
+    echo "set_var EASYRSA_PKI \"$1/pki\"" >> $1/vars
+    echo "set_var EASYRSA_EXT_DIR \"$1/x509-types\"" >> $1/vars
+    $1/easyrsa init-pki
+    $1/easyrsa build-ca
+    $1/easyrsa gen-crl
+}
+
+function configure_member_cert_gen(){
+    # $1:- Base directory for MongoDB Member Requests/Keys
+    echo "Generate MongoDB Member Requests/Certificate(s)"
+    echo 'set_var EASYRSA_DN "org"' >> $1/vars
+    echo 'set_var EASYRSA_KEY_SIZE 4096' >> $1/vars
+
+    #TODO: Parametrize the below configurations
+    echo 'set_var EASYRSA_REQ_COUNTRY "DE"' >> $1/vars
+    echo 'set_var EASYRSA_REQ_PROVINCE "Berlin"' >> $1/vars
+    echo 'set_var EASYRSA_REQ_CITY "Berlin"' >> $1/vars
+    echo 'set_var EASYRSA_REQ_ORG "BigchainDB GmbH"' >> $1/vars
+    echo 'set_var EASYRSA_REQ_OU "MONGO-MEMBER"' >> $1/vars
+    echo 'set_var EASYRSA_REQ_EMAIL "dev@bigchaindb.com"' >> $1/vars
+    echo "set_var EASYRSA_SSL_CONF \"$1/openssl-1.0.cnf\"" >> $1/vars
+    echo "set_var EASYRSA_PKI \"$1/pki\"" >> member-cert/easy-rsa-3.0.1/easyrsa3/vars
+    $1/easyrsa init-pki
+    $1/easyrsa --req-cn="$MDB_CN"-"$INDEX" --subject-alt-name=DNS:localhost,DNS:"$MDB_CN"-"$INDEX" gen-req "$MDB_CN"-"$INDEX" nopass
+}
+
+function configure_client_cert_gen(){
+    # $1:- Base directory for MongoDB Client Requests/Keys
+    echo "Generate MongoDB Client  Requests/Certificate(s)"
+    echo 'set_var EASYRSA_DN "org"' >> $1/vars
+    echo 'set_var EASYRSA_KEY_SIZE 4096' >> $1/vars
+
+    #TODO: Parametrize the below configurations
+    echo 'set_var EASYRSA_REQ_COUNTRY "DE"' >> $1/vars
+    echo 'set_var EASYRSA_REQ_PROVINCE "Berlin"' >> $1/vars
+    echo 'set_var EASYRSA_REQ_CITY "Berlin"' >> $1/vars
+    echo 'set_var EASYRSA_REQ_ORG "BigchainDB GmbH"' >> $1/vars
+    echo 'set_var EASYRSA_REQ_OU "MONGO-CLIENT"' >> $1/vars
+    echo 'set_var EASYRSA_REQ_EMAIL "dev@bigchaindb.com"' >> $1/vars
+    echo "set_var EASYRSA_SSL_CONF \"$1/openssl-1.0.cnf\"" >> $1/vars
+    echo "set_var EASYRSA_PKI \"$1/pki\"" >> $1/vars
+    $1/easyrsa init-pki
+    $1/easyrsa gen-req "$BDB_CN"-"$INDEX" nopass
+    $1/easyrsa gen-req "$MDB_MON_CN"-"$INDEX" nopass
+}
+
+function import_requests(){
+    # $1:- Base directory for Root CA
+    $1/easyrsa import-req $BASE_MEMBER_CERT_DIR/$BASE_EASY_RSA_PATH/pki/reqs/"$MDB_CN"-"$INDEX".req "$MDB_CN"-"$INDEX"
+    $1/easyrsa import-req $BASE_CLIENT_CERT_DIR/$BASE_EASY_RSA_PATH/pki/reqs/"$BDB_CN"-"$INDEX".req "$BDB_CN"-"$INDEX"
+    $1/easyrsa import-req $BASE_CLIENT_CERT_DIR/$BASE_EASY_RSA_PATH/pki/reqs/"$MDB_MON_CN"-"$INDEX".req "$MDB_MON_CN"-"$INDEX"
+}
+
+function sign_requests(){
+    # $1:- Base directory for Root CA
+    $1/easyrsa --subject-alt-name=DNS:localhost,DNS:"$MDB_CN"-"$INDEX" sign-req server "$MDB_CN"-"$INDEX"
+    $1/easyrsa sign-req client "$BDB_CN"-"$INDEX"
+    $1/easyrsa sign-req client "$MDB_MON_CN"-"$INDEX"
+}
+
+function make_pem_files(){
+    # $1:- Base directory for Root CA
+    # $2:- Base directory for kubernetes related config for secret.yaml
+    mkdir $2
+    cat $1/pki/issued/"$MDB_CN"-"$INDEX".crt $BASE_MEMBER_CERT_DIR/$BASE_EASY_RSA_PATH/pki/private/"$MDB_CN"-"$INDEX".key > $2/"$MDB_CN"-"$INDEX".pem
+    cat $1/pki/issued/"$BDB_CN"-"$INDEX".crt $BASE_CLIENT_CERT_DIR/$BASE_EASY_RSA_PATH/pki/private/"$BDB_CN"-"$INDEX".key > $2/"$BDB_CN"-"$INDEX".pem
+    cat $1/pki/issued/"$MDB_MON_CN"-"$INDEX".crt $BASE_CLIENT_CERT_DIR/$BASE_EASY_RSA_PATH/pki/private/"$MDB_MON_CN"-"$INDEX".key > $2/"$MDB_MON_CN"-"$INDEX".pem
+}
+
+function convert_b64(){
+    # $1:- Base directory for kubernetes related config for secret.yaml
+    # $2:- Base directory for Root CA
+    # $3:- Base directory for client requests/keys
+    cat $1/"$MDB_CN"-"$INDEX".pem | base64 -w 0 > $1/"$MDB_CN"-"$INDEX".pem.b64
+    cat $1/"$BDB_CN"-"$INDEX".pem | base64 -w 0 > $1/"$BDB_CN"-"$INDEX".pem.b64
+    cat $1/"$MDB_MON_CN"-"$INDEX".pem | base64 -w 0 > $1/"$MDB_MON_CN"-"$INDEX".pem.b64
+
+    cat $3/pki/private/"$BDB_CN"-"$INDEX".key | base64 -w 0 > $1/"$BDB_CN"-"$INDEX".key.b64
+    cat $2/pki/ca.crt | base64 -w 0 > $1/ca.crt.b64
+    cat $2/pki/crl.pem | base64 -w 0 > $1/crl.pem.b64
+}
+
+function configure_common(){
+    sudo apt-get update -y
+    sudo apt-get install openssl -y
+    wget https://github.com/OpenVPN/easy-rsa/archive/3.0.1.tar.gz -P $1
+    tar xzvf $1/3.0.1.tar.gz -C $1/
+    rm $1/3.0.1.tar.gz
+    cp $1/$BASE_EASY_RSA_PATH/vars.example $1/$BASE_EASY_RSA_PATH/vars
+}
+
+function get_users(){
+    mkdir $1
+
+    openssl x509 -in $BASE_CA_DIR/$BASE_EASY_RSA_PATH/pki/issued/"$MDB_CN"-"$INDEX".crt -inform PEM -subject \
+      -nameopt RFC2253 | head -n 1 | sed -r 's/^subject= //' > $1/"$MDB_CN"-"$INDEX".user
+    openssl x509 -in $BASE_CA_DIR/$BASE_EASY_RSA_PATH/pki/issued/"$BDB_CN"-"$INDEX".crt -inform PEM -subject \
+      -nameopt RFC2253 | head -n 1 | sed -r 's/^subject= //' > $1/"$BDB_CN"-"$INDEX".user
+    openssl x509 -in $BASE_CA_DIR/$BASE_EASY_RSA_PATH/pki/issued/"$MDB_MON_CN"-"$INDEX".crt -inform PEM -subject \
+      -nameopt RFC2253 | head -n 1 | sed -r 's/^subject= //' > $1/"$MDB_MON_CN"-"$INDEX".user
+    
+}
+
+function generate_secretes_no_threescale(){
+    # $1:- Base DIR for MongoDB certs
+    # #2:- Secret Token
+    # $3:- HTTPS certificate key file
+    # $4:- HTTPS certificate chain
+
+
+    mdb_instance_pem=`cat $1/"$MDB_CN"-"$INDEX".pem.b64`
+    bdb_instance_pem=`cat $1/"$BDB_CN"-"$INDEX".pem.b64`
+    bdb_instance_key=`cat $1/"$BDB_CN"-"$INDEX".key.b64`
+    root_ca_pem=`cat $1/ca.crt.b64`
+    root_crl_pem=`cat $1/crl.pem.b64`
+    
+    secrete_token=`echo $2 | base64 -w 0`
+    https_cert_key=`cat $3 | base64 -w 0`
+    https_cert_chain_pem=`cat $4 | base64 -w 0`
+
+    mdb_admin_password=`cat $5 | base64 -w 0`
+
+
+    cat > secret.yaml << EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mdb-certs
+  namespace: default
+type: Opaque
+data:
+  # Base64-encoded, concatenated certificate and private key
+  mdb-instance.pem: "${mdb_instance_pem}"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: bdb-certs
+  namespace: default
+type: Opaque
+data:
+  # Base64-encoded BigchainDB instance certificate
+  bdb-instance.pem: "${bdb_instance_pem}"
+  # Base64-encoded private key (<bdb-instance-name>.key)
+  bdb-instance.key: "${bdb_instance_key}"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: nginx-secret-header
+  namespace: default
+type: Opaque
+data:
+  # Base64-encoded secret token to authorize POST requests
+  secret-token: "${secrete_token}"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: https-certs
+  namespace: default
+type: Opaque
+data:
+  # Base64-encoded HTTPS private key
+  cert.key: "${https_cert_key}"
+  # Base64-encoded HTTPS certificate chain
+  # starting with your primary SSL cert (e.g. your_domain.crt)
+  # followed by all intermediate certs.
+  # If cert if from DigiCert, download "Best format for nginx".
+  cert.pem: "${https_cert_chain_pem}"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ca-auth
+  namespace: default
+type: Opaque
+data:
+  # CA used to issue members/client certificates
+  # Base64-encoded CA certificate (ca.crt)
+  ca.pem: "${root_ca_pem}"
+  crl.pem: "${root_crl_pem}"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mdb-config
+  namespace: default
+type: Opaque
+data:
+  # Password for for MongoDB adminuser
+  mdb-admin-password: "${mdb-admin-password}"
+EOF
+}
+
+function generate_config_map(){
+
+    mdb_instance_name="$MDB_CN-$INDEX"
+    bdb_instance_name="$BDB_CN-$INDEX"
+    tm_instance_name="tm-instance-$INDEX"
+    ngx_instance_name="mdb-instance-$INDEX"
+
+    bdb_user=`cat $1/"$BDB_CN"-"${INDEX}".user`
+    mdb_admin_user=$2
+    cluster_fqdn=$3
+    tm_seeds=$4
+    tm_validators=$5
+    tm_validators_power=$6
+    tm_genesis_time=$7
+    tm_chain_id=$8
+
+    cat > config-map.yaml << EOF
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vars
+  namespace: default
+data:
+  # cluster-fqdn is the DNS name registered for your HTTPS certificate.
+  cluster-fqdn: "${cluster_fqdn}"
+
+  # cluster-frontend-port is the port number on which this node's services
+  # are available to external clients.
+  cluster-frontend-port: "443"
+
+  # cluster-health-check-port is the port number on which an external load
+  # balancer can check the status/liveness of the external/public server.
+  # In our deployment, Kubernetes sends 'livenessProbes' to this port and
+  # interprets a successful response as a 'healthy' service.
+  cluster-health-check-port: "8888"
+
+  # cluster-dns-server-ip is the IP of the DNS server. A Kubernetes deployment
+  # always has a DNS server (kube-dns) running at 10.0.0.10
+  cluster-dns-server-ip: "10.0.0.10"
+
+  # mdb-instance-name is the name of the MongoDB instance in this cluster.
+  mdb-instance-name: "${mdb_instance_name}"
+
+  # ngx-instance-name is the name of the NGINX instance in this cluster.
+  ngx-instance-name: "${ngx_instance_name}"
+
+  # bdb-instance-name is the name of the BigchainDB instance in this cluster.
+  bdb-instance-name: "${bdb_instance_name}"
+
+  # ngx-mdb-instance-name is the FQDN of the MongoDB instance in this
+  # Kubernetes cluster.
+  ngx-mdb-instance-name: "${mdb_instance_name}.default.svc.cluster.local"
+
+  # ngx-bdb-instance-name is the FQDN of the BigchainDB instance in this
+  # Kubernetes cluster.
+  ngx-bdb-instance-name: "${bdb_instance_name}.default.svc.cluster.local"
+
+  # mongodb-backend-port is the port on which MongoDB is actually
+  # available/listening for requests.
+  mongodb-backend-port: "27017"
+
+  # openresty-backend-port is the port number on which OpenResty is listening
+  # for requests. This is used by the NGINX instance to forward the requests to
+  # the right port, and by OpenResty instance to bind to the correct port to
+  # receive requests from NGINX instance.
+  openresty-backend-port: "80"
+
+  # BigchainDB configuration parameters
+  # Refer https://docs.bigchaindb.com/projects/server/en/latest/server-reference/configuration.html
+
+  # bigchaindb-api-port is the port number on which BigchainDB is listening
+  # for HTTP requests.
+  bigchaindb-api-port: "9984"
+
+  # bigchaindb-server-bind is the socket where BigchainDB binds for API
+  # requests.
+  bigchaindb-server-bind: "0.0.0.0:9984"
+
+  # bigchaindb-ws-port and bigchaindb-ws-interface form the socket where
+  # BigchainDB binds for Websocket connections.
+  bigchaindb-ws-port: "9985"
+  bigchaindb-ws-interface: "0.0.0.0"
+
+  # bigchaindb-database-name is the database collection used by BigchainDB with
+  # the MongoDB backend.
+  bigchaindb-database-name: "bigchain"
+
+  # bigchaindb-wsserver-advertised-scheme is the protocol used to access the
+  # WebSocket API in BigchainDB; can be 'ws' or 'wss' (default).
+  bigchaindb-wsserver-advertised-scheme: "wss"
+
+  # Optional: Optimize storage engine(wired tiger)
+  # cache size. e.g. (2048MB, 2GB, 1TB), otherwise
+  # it will use the default cache size; i.e. max((50% RAM - 1GB), 256MB)
+  storage-engine-cache-size: ""
+
+  # POST API authorization mode [threescale | secrete-token]
+  authorization-mode: "threescale"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bdb-config
+  namespace: default
+data:
+  # BigchainDB instance authentication user name
+  bdb-user: "${bdb_user}"
+
+  # bigchaindb-backlog-reassign-delay is the number of seconds a transaction
+  # can remain in the backlog before being reassigned.
+  bigchaindb-backlog-reassign-delay: "120"
+
+  # bigchaindb-database-maxtries is the maximum number of times that BigchainDB
+  # will try to establish a connection with the database backend.
+  # If it is set to 0, then it will try forever.
+  bigchaindb-database-maxtries: "3"
+
+  # bigchaindb-database-connection-timeout is the maximum number of
+  # milliseconds that BigchainDB will wait before closing the connection while
+  # connecting to the database backend.
+  bigchaindb-database-connection-timeout: "5000"
+
+  # bigchaindb-log-level is the log level used to log to the console.
+  bigchaindb-log-level: "debug"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tendermint-config
+  namespace: default
+data:
+  # tm-seeds is the list of all the peers in the network.
+  tm-seeds: "${tm_seeds}"
+
+  # tm-validators is the list of all validators in the network.
+  tm-validators: "${tm_validators}"
+
+  # tm-validator-power is the validators voting power, make sure the order and
+  # the number of nodes in tm-validator-power and tm-validators is the same.
+  tm-validator-power: "${tm_validators_power}"
+
+  # tm-genesis-time is the official time of blockchain start.
+  # example: 0001-01-01T00:00:00Z
+  tm-genesis-time: "${tm_genesis_time}"
+
+  # tm-chain-id is the ID of the blockchain. Must be unique for every blockchain.
+  # example: test-chain-KPI1Ud
+  tm-chain-id: "${tm_chain_id}"
+
+  # tendermint-instance-name is the name of the Tendermint instance
+  # in the cluster
+  tm-instance-name: "${tm_instance_name}"
+
+  # ngx-tm-instance-name is the FQDN of the tendermint instance in this cluster
+  ngx-tm-instance-name: "${tm_instance_name}.default.svc.cluster.local"
+
+  # tm-abci-port is used by Tendermint Core for ABCI traffic. BigchainDB nodes
+  # use that internally.
+  tm-abci-port: "46658"
+
+  # tm-p2p-port is used by Tendermint Core to communicate with
+  # other peers in the network. This port is accessible publicly.
+  tm-p2p-port: "46656"
+
+  # tm-rpc-port is used by Tendermint Core to rpc. BigchainDB nodes
+  # use this port internally.
+  tm-rpc-port: "46657"
+
+  # tm-pub-key-access is the port number used to host/publish the
+  # public key of the tendemrint node in this cluster.
+  tm-pub-key-access: "9986"
+
+  ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mdb-config
+  namespace: default
+data:
+  # User name for MongoDB adminuser
+  mdb-admin-username: "${mdb-admin-username}"
+EOF
+}

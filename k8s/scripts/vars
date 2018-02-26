@@ -1,0 +1,23 @@
+CLUSTER_FQDN="test.bigchaindb.com"
+SECRET_TOKEN="test" 
+HTTPS_CERT_KEY_FILE_NAME="https_key"
+HTTPS_CERT_CHAIN_FILE_NAME="https_cert_chain"
+
+# base variables with default values
+MDB_CN="mdb-instance"
+BDB_CN="bdb-instance"
+MDB_MON_CN="mdb-mon-instance"
+INDEX='1'
+CONFIGURE_CA=''
+CONFIGURE_MEMBER=''
+CONFIGURE_CLIENT=''
+MDB_ADMIN_PASSWORD=''
+MDB_ADMIN_USER=''
+
+
+# Tendermint data
+TM_SEEDS='123,4565'
+TM_VALIDATORS='11234,1234'
+TM_VALIDATOR_POWERS='1,1'
+TM_GENESIS_TIME='11324'
+TM_CHAIN_ID='test-id'
