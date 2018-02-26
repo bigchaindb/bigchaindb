@@ -6,62 +6,68 @@ to set up a production BigchainDB cluster.
 We are constantly improving them.
 You can modify them to suit your needs.
 
-.. Note::
-    We use standalone MongoDB (without Replica Set), BFT replication is handled by Tendermint.
-
-
-.. _register-a-domain-and-get-an-ssl-certificate-for-it:
-
-1. Register a Domain and Get an SSL Certificate for It
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The BigchainDB APIs (HTTP API and WebSocket API) should be served using TLS,
-so the organization running the cluster
-should choose an FQDN for their API (e.g. api.organization-x.com),
-register the domain name,
-and buy an SSL/TLS certificate for the FQDN.
-
-
 .. _generate-the-blockchain-id-and-genesis-time:
 
-2. Generate the Blockchain ID and Genesis Time
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Generate All Shared Tendermint Setup Parameters
+-----------------------------------------------
 
-Tendermint nodes require two parameters that need to be common and shared between all the
-participants in the network.
+There are some shared Tendermint setup paramters that every node operator
+in the consortium shares
+because they are properties of the Tendermint cluster.
+They look like this:
 
-* ``chain_id`` : ID of the blockchain. This must be unique for every blockchain.
+.. code::
 
-  * Example: ``test-chain-9gHylg``
+   # Tendermint data
+   TM_SEEDS='tm-instance-1,tm-instance-2,tm-instance-3,tm-instance-4'
+   TM_VALIDATORS='tm-instance-1,tm-instance-2,tm-instance-3,tm-instance-4'
+   TM_VALIDATOR_POWERS='10,10,10,10'
+   TM_GENESIS_TIME='0001-01-01T00:00:00Z'
+   TM_CHAIN_ID='test-chain-rwcPML'
 
-* ``genesis_time`` : Official time of blockchain start.
+Those paramters only have to be generated once, by one member of the consortium.
+That person will then share the results (Tendermint setup parameters)
+with all the node operators.
 
-  * Example: ``0001-01-01T00:00:00Z``
+The above example parameters are for a cluster of 4 initial (seed) nodes.
+Note how ``TM_SEEDS``, ``TM_VALIDATORS`` and ``TM_VALIDATOR_POWERS`` are lists
+with 4 items each.
+**If your consortium has a different number of initial nodes,
+then those lists should have that number or items.**
+Use ``10`` for all the power values.
 
-The preceding parameters can be generated using the ``tendermint init`` command.
-To `initialize <https://tendermint.readthedocs.io/en/master/using-tendermint.html#initialize>`_.
-,you will need to `install Tendermint <https://tendermint.readthedocs.io/en/master/install.html>`_
-and verify that a ``genesis.json`` file is created under the `Root Directory
-<https://tendermint.readthedocs.io/en/master/using-tendermint.html#directory-root>`_. You can use
-the ``genesis_time`` and ``chain_id`` from this example ``genesis.json`` file:
+To generate a ``TM_GENESIS_TIME`` and a ``TM_CHAIN_ID``,
+you can do this:
+
+.. code::
+
+   $ mkdir $(pwd)/tmdata
+   $ docker run --rm -v $(pwd)/tmdata:/tendermint tendermint/tendermint:0.13 init
+   $ cat $(pwd)/tmdata/genesis.json
+
+You should see something that looks like:
 
 .. code:: json
 
-    {
-    "genesis_time": "0001-01-01T00:00:00Z",
-    "chain_id": "test-chain-9gHylg",
+   {"genesis_time": "0001-01-01T00:00:00Z",
+    "chain_id": "test-chain-bGX7PM",
     "validators": [
-        {
-        "pub_key": {
-            "type": "ed25519",
-            "data": "D12279E746D3724329E5DE33A5AC44D5910623AA6FB8CDDC63617C959383A468"
-        },
-        "power": 10,
-        "name": ""
-        }
+        {"pub_key": 
+            {"type": "ed25519",
+             "data": "4669C4B966EB8B99E45E40982B2716A9D3FA53B54C68088DAB2689935D7AF1A9"},
+         "power": 10,
+         "name": ""}
     ],
     "app_hash": ""
-    }
+   }
+
+The value with ``"genesis_time"`` is ``TM_GENESIS_TIME`` and
+the value with ``"chain_id"`` is ``TM_CHAIN_ID``.
+
+Now you have all the Tendermint setup parameters and can share them
+with all of the node operators. (They will put them in their ``vars`` file.
+We'll say more about that file below.)
+
 
 .. _things-each-node-operator-must-do:
 

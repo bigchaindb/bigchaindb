@@ -35,7 +35,7 @@ vars.cluster-fqdn
 ~~~~~~~~~~~~~~~~~
 
 The ``cluster-fqdn`` field specifies the domain you would have
-:ref:`registered before <register-a-domain-and-get-an-ssl-certificate-for-it>`.
+registered before.
 
 
 vars.cluster-frontend-port
