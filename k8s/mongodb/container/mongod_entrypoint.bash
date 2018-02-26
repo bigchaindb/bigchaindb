@@ -102,14 +102,26 @@ fi
 
 # Only configure if all variables are set
 if [[ -n "${mongodb_admin_username}" && \
-        -n "${mongodb_admin_password}" && \
-        -n "${bdb_username}" && \
-    -n "${mdb_mon_username}" ]]; then
+        -n "${mongodb_admin_password}" ]]; then
     sed -i "s|MONGODB_ADMIN_USERNAME|${mongodb_admin_username}|g" ${MONGODB_CONFIGURE_USERS_PATH}
     sed -i "s|MONGODB_ADMIN_PASSWORD|${mongodb_admin_password}|g" ${MONGODB_CONFIGURE_USERS_PATH}
+    sed -i "s|CONFIGURE_ADMIN_USER|true|g" ${MONGODB_CONFIGURE_USERS_PATH}
+else
+    sed -i "s|CONFIGURE_ADMIN_USER|false|g" ${MONGODB_CONFIGURE_USERS_PATH}
+fi
+
+if [[ -n "${bdb_username}" ]]; then
     sed -i "s|BDB_USERNAME|${bdb_username}|g" ${MONGODB_CONFIGURE_USERS_PATH}
+    sed -i "s|CONFIGURE_BDB_USER|true|g" ${MONGODB_CONFIGURE_USERS_PATH}
+else
+    sed -i "s|CONFIGURE_BDB_USER|false|g" ${MONGODB_CONFIGURE_USERS_PATH}
+fi
+
+if [[ -n "${mdb_mon_username}" ]]; then
     sed -i "s|MDB_MON_USERNAME|${mdb_mon_username}|g" ${MONGODB_CONFIGURE_USERS_PATH}
-    echo "True" > /tmp/configure_mongo
+    sed -i "s|CONFIGURE_MDB_MON_USER|true|g" ${MONGODB_CONFIGURE_USERS_PATH}
+else
+    sed -i "s|CONFIGURE_MDB_MON_USER|false|g" ${MONGODB_CONFIGURE_USERS_PATH}
 fi
 
 # add the hostname and ip to hosts file
