@@ -38,7 +38,7 @@ function configure_member_cert_gen(){
     echo 'set_var EASYRSA_REQ_OU "MONGO-MEMBER"' >> $1/vars
     echo 'set_var EASYRSA_REQ_EMAIL "dev@bigchaindb.com"' >> $1/vars
     echo "set_var EASYRSA_SSL_CONF \"$1/openssl-1.0.cnf\"" >> $1/vars
-    echo "set_var EASYRSA_PKI \"$1/pki\"" >> member-cert/easy-rsa-3.0.1/easyrsa3/vars
+    echo "set_var EASYRSA_PKI \"$1/pki\"" >> $1/vars
     $1/easyrsa init-pki
     $1/easyrsa --req-cn="$MDB_CN"-"$INDEX" --subject-alt-name=DNS:localhost,DNS:"$MDB_CN"-"$INDEX" gen-req "$MDB_CN"-"$INDEX" nopass
 }
@@ -216,17 +216,17 @@ function generate_config_map(){
 
     mdb_instance_name="$MDB_CN-$INDEX"
     bdb_instance_name="$BDB_CN-$INDEX"
-    tm_instance_name="tm-instance-$INDEX"
-    ngx_instance_name="mdb-instance-$INDEX"
+    ngx_instance_name="ngx-instance-$INDEX"
 
     bdb_user=`cat $1/"$BDB_CN"-"${INDEX}".user`
     mdb_admin_username=$2
-    cluster_fqdn=$3
+    node_fqdn=$3
     tm_seeds=$4
     tm_validators=$5
     tm_validators_power=$6
     tm_genesis_time=$7
     tm_chain_id=$8
+    tm_instance_name=$9
 
     cat > config-map.yaml << EOF
 apiVersion: v1
@@ -235,8 +235,8 @@ metadata:
   name: vars
   namespace: default
 data:
-  # cluster-fqdn is the DNS name registered for your HTTPS certificate.
-  cluster-fqdn: "${cluster_fqdn}"
+  # node-fqdn is the DNS name registered for your HTTPS certificate.
+  node-fqdn: "${node_fqdn}"
 
   # cluster-frontend-port is the port number on which this node's services
   # are available to external clients.
@@ -316,8 +316,8 @@ data:
   # it will use the default cache size; i.e. max((50% RAM - 1GB), 256MB)
   storage-engine-cache-size: ""
 
-  # POST API authorization mode [threescale | secrete-token]
-  authorization-mode: "threescale"
+  # POST API authorization mode [threescale | secret-token]
+  authorization-mode: "secret-token"
 
 ---
 apiVersion: v1
@@ -403,5 +403,6 @@ metadata:
 data:
   # User name for MongoDB adminuser
   mdb-admin-username: "${mdb_admin_username}"
+  mdb-mon-user: ""
 EOF
 }

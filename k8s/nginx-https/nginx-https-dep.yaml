@@ -25,11 +25,11 @@ spec:
             configMapKeyRef:
               name: vars
               key: cluster-health-check-port
-        - name: CLUSTER_FQDN
+        - name: NODE_FQDN
           valueFrom:
             configMapKeyRef:
               name: vars
-              key: cluster-fqdn
+              key: node-fqdn
         - name: DNS_SERVER
           valueFrom:
             configMapKeyRef:
