@@ -20,5 +20,5 @@ class ValidatorsApi(Resource):
 
             return validators
 
-        except:
+        except Exception:
             return make_error(500)

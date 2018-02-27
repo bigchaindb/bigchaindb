@@ -253,7 +253,7 @@ class BigchainDB(Bigchain):
 
             return validators
 
-        except:
+        except Exception:
             raise Exception('Error while processing data from tendermint.')
 
 
