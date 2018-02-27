@@ -19,7 +19,7 @@ MDB_ADMIN_PASSWORD='superstrongpassword'
 # node. This name should be unique
 TM_INSTANCE_NAME='tm-instance-0'
 
-# Comma sperated list of initial peers in the
+# Comma separated list of initial peers in the
 # network.
 TM_SEEDS='tm-instance-0,tm-instance-1,tm-instance-2'
 

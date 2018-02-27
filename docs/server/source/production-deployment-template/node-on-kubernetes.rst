@@ -70,7 +70,7 @@ to the above command (i.e. the path to the private key).
 
     .. code:: bash
 
-      $ kubectl --context k8s-bdb-test-cluster-0 get pods
+      $ kubectl get pods
 
     will get a list of the pods in the Kubernetes cluster associated
     with the context named ``k8s-bdb-test-cluster-0``.
@@ -94,11 +94,22 @@ or, if you prefer to be explicit about the context (explained above):
 
 .. code:: bash
 
-   $ kubectl --context k8s-bdb-test-cluster-0 proxy -p 8001
+   $ kubectl proxy -p 8001
 
 The output should be something like ``Starting to serve on 127.0.0.1:8001``.
 That means you can visit the dashboard in your web browser at
 `http://127.0.0.1:8001/ui <http://127.0.0.1:8001/ui>`_.
+
+.. note::
+    
+    **Known Issue:** If you are having accessing the UI i.e.
+    accessing `http://127.0.0.1:8001/ui <http://127.0.0.1:8001/ui>`_
+    in your browser returns a blank page and is redirected to
+    `http://127.0.0.1:8001/api/v1/namespaces/kube-system/services/kubernetes-dashboard/proxy
+    <http://127.0.0.1:8001/api/v1/namespaces/kube-system/services/kubernetes-dashboard/proxy>`_
+    , you can access the UI by adding a **/** at the end of the redirected URL i.e.
+    `http://127.0.0.1:8001/api/v1/namespaces/kube-system/services/kubernetes-dashboard/proxy/
+    <http://127.0.0.1:8001/api/v1/namespaces/kube-system/services/kubernetes-dashboard/proxy/>`_
 
 
 Step 3: Configure Your BigchainDB Node
@@ -120,85 +131,11 @@ Step 4: Start the NGINX Service
   * You have the option to use vanilla NGINX without HTTPS support or an
     NGINX with HTTPS support.
 
-
-Step 4.1: Vanilla NGINX
-^^^^^^^^^^^^^^^^^^^^^^^
-
-   * This configuration is located in the file ``nginx-http/nginx-http-svc.yaml``.
-
-   * Set the ``metadata.name`` and ``metadata.labels.name`` to the value
-     set in ``ngx-instance-name`` in the ConfigMap above.
-
-   * Set the ``spec.selector.app`` to the value set in ``ngx-instance-name`` in
-     the ConfigMap followed by ``-dep``. For example, if the value set in the
-     ``ngx-instance-name`` is ``ngx-http-instance-0``, set  the
-     ``spec.selector.app`` to ``ngx-http-instance-0-dep``.
-
-   * Set ``ports[0].port`` and ``ports[0].targetPort`` to the value set in the
-     ``cluster-frontend-port`` in the ConfigMap above. This is the
-     ``public-cluster-port`` in the file which is the ingress in to the cluster.
-
-   * Set ``ports[1].port`` and ``ports[1].targetPort`` to the value set in the
-     ``tm-pub-access-port`` in the ConfigMap above. This is the
-     ``tm-pub-key-access`` in the file which specifies where Public Key for
-     the Tendermint instance is available.
-
-   * Set ``ports[2].port`` and ``ports[2].targetPort`` to the value set in the
-     ``tm-p2p-port`` in the ConfigMap above. This is the
-     ``tm-p2p-port`` in the file which is used for P2P communication for Tendermint
-     nodes.
-
    * Start the Kubernetes Service:
 
      .. code:: bash
 
-        $ kubectl --context k8s-bdb-test-cluster-0 apply -f nginx-http/nginx-http-svc.yaml
-
-
-Step 4.2: NGINX with HTTPS
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-   * You have to enable HTTPS for this one and will need an HTTPS certificate
-     for your domain.
-
-   * You should have already created the necessary Kubernetes Secrets in the previous
-     step (i.e. ``https-certs``).
-
-   * This configuration is located in the file ``nginx-https/nginx-https-svc.yaml``.
-
-   * Set the ``metadata.name`` and ``metadata.labels.name`` to the value
-     set in ``ngx-instance-name`` in the ConfigMap above.
-
-   * Set the ``spec.selector.app`` to the value set in ``ngx-instance-name`` in
-     the ConfigMap followed by ``-dep``. For example, if the value set in the
-     ``ngx-instance-name`` is ``ngx-https-instance-0``, set  the
-     ``spec.selector.app`` to ``ngx-https-instance-0-dep``.
-
-   * Set ``ports[0].port`` and ``ports[0].targetPort`` to the value set in the
-     ``cluster-frontend-port`` in the ConfigMap above. This is the
-     ``public-secure-cluster-port`` in the file which is the ingress in to the cluster.
-
-   * Set ``ports[1].port`` and ``ports[1].targetPort`` to the value set in the
-     ``mongodb-frontend-port`` in the ConfigMap above. This is the
-     ``public-mdb-port`` in the file which specifies where MongoDB is
-     available.
-
-   * Set ``ports[2].port`` and ``ports[2].targetPort`` to the value set in the
-     ``tm-pub-access-port`` in the ConfigMap above. This is the
-     ``tm-pub-key-access`` in the file which specifies where Public Key for
-     the Tendermint instance is available.
-
-   * Set ``ports[3].port`` and ``ports[3].targetPort`` to the value set in the
-     ``tm-p2p-port`` in the ConfigMap above. This is the
-     ``tm-p2p-port`` in the file which is used for P2P communication between Tendermint
-     nodes.
-
-
-   * Start the Kubernetes Service:
-
-     .. code:: bash
-
-        $ kubectl --context k8s-bdb-test-cluster-0 apply -f nginx-https/nginx-https-svc.yaml
+        $ kubectl apply -f nginx-https/nginx-https-svc.yaml
 
 
 .. _assign-dns-name-to-nginx-public-ip:
@@ -216,7 +153,7 @@ Step 5: Assign DNS Name to the NGINX Public IP
 
     .. code:: bash
 
-       $ kubectl --context k8s-bdb-test-cluster-0 get svc -w
+       $ kubectl get svc -w
 
   * Once a public IP is assigned, you can map it to
     a DNS name.
@@ -249,26 +186,11 @@ nodes in the network can reach this instance.
 Step 6: Start the MongoDB Kubernetes Service
 --------------------------------------------
 
-  * This configuration is located in the file ``mongodb/mongo-svc.yaml``.
-
-  * Set the ``metadata.name`` and ``metadata.labels.name`` to the value
-    set in ``mdb-instance-name`` in the ConfigMap above.
-
-  * Set the ``spec.selector.app`` to the value set in ``mdb-instance-name`` in
-    the ConfigMap followed by ``-ss``. For example, if the value set in the
-    ``mdb-instance-name`` is ``mdb-instance-0``, set  the
-    ``spec.selector.app`` to ``mdb-instance-0-ss``.
-
-  * Set ``ports[0].port`` and ``ports[0].targetPort`` to the value set in the
-    ``mongodb-backend-port`` in the ConfigMap above.
-    This is the ``mdb-port`` in the file which specifies where MongoDB listens
-    for API requests.
-
   * Start the Kubernetes Service:
 
     .. code:: bash
 
-       $ kubectl --context k8s-bdb-test-cluster-0 apply -f mongodb/mongo-svc.yaml
+       $ kubectl apply -f mongodb/mongo-svc.yaml
 
 
 .. _start-the-bigchaindb-kubernetes-service:
@@ -276,61 +198,23 @@ Step 6: Start the MongoDB Kubernetes Service
 Step 7: Start the BigchainDB Kubernetes Service
 -----------------------------------------------
 
-  * This configuration is located in the file ``bigchaindb/bigchaindb-svc.yaml``.
-
-  * Set the ``metadata.name`` and ``metadata.labels.name`` to the value
-    set in ``bdb-instance-name`` in the ConfigMap above.
-
-  * Set the ``spec.selector.app`` to the value set in ``bdb-instance-name`` in
-    the ConfigMap followed by ``-dep``. For example, if the value set in the
-    ``bdb-instance-name`` is ``bdb-instance-0``, set  the
-    ``spec.selector.app`` to ``bdb-instance-0-dep``.
-
-   * Set ``ports[0].port`` and ``ports[0].targetPort`` to the value set in the
-     ``bigchaindb-api-port`` in the ConfigMap above.
-     This is the ``bdb-api-port`` in the file which specifies where BigchainDB
-     listens for HTTP API requests.
-
-   * Set ``ports[1].port`` and ``ports[1].targetPort`` to the value set in the
-     ``bigchaindb-ws-port`` in the ConfigMap above.
-     This is the ``bdb-ws-port`` in the file which specifies where BigchainDB
-     listens for Websocket connections.
-
-   * Set ``ports[2].port`` and ``ports[2].targetPort`` to the value set in the
-     ``tm-abci-port`` in the ConfigMap above.
-     This is the ``tm-abci-port`` in the file which specifies the port used
-     for ABCI communication.
-
   * Start the Kubernetes Service:
 
     .. code:: bash
 
-       $ kubectl --context k8s-bdb-test-cluster-0 apply -f bigchaindb/bigchaindb-svc.yaml
+       $ kubectl apply -f bigchaindb/bigchaindb-svc.yaml
 
 
 .. _start-the-openresty-kubernetes-service:
 
-Step 8: Start the OpenResty Kubernetes Service
-----------------------------------------------
-
-  * This configuration is located in the file ``nginx-openresty/nginx-openresty-svc.yaml``.
-
-  * Set the ``metadata.name`` and ``metadata.labels.name`` to the value
-    set in ``openresty-instance-name`` in the ConfigMap above.
-
-  * Set the ``spec.selector.app`` to the value set in ``openresty-instance-name`` in
-    the ConfigMap followed by ``-dep``. For example, if the value set in the
-    ``openresty-instance-name`` is ``openresty-instance-0``, set  the
-    ``spec.selector.app`` to ``openresty-instance-0-dep``.
-
-  * Set ``ports[0].port`` and ``ports[0].targetPort`` to the value set in the
-    ``openresty-backend-port`` in the ConfigMap.
+Step 8(Optional): Start the OpenResty Kubernetes Service
+---------------------------------------------------------
 
   * Start the Kubernetes Service:
 
     .. code:: bash
 
-       $ kubectl --context k8s-bdb-test-cluster-0 apply -f nginx-openresty/nginx-openresty-svc.yaml
+       $ kubectl apply -f nginx-openresty/nginx-openresty-svc.yaml
 
 
 .. _start-the-tendermint-kubernetes-service:
@@ -348,76 +232,22 @@ Step 9: Start the Tendermint Kubernetes Service
     ``tm-instance-name`` is ``tm-instance-0``, set  the
     ``spec.selector.app`` to ``tm-instance-0-ss``.
 
-   * Set ``ports[0].port`` and ``ports[0].targetPort`` to the value set in the
-     ``tm-p2p-port`` in the ConfigMap above.
-     It specifies where Tendermint peers communicate.
-
-   * Set ``ports[1].port`` and ``ports[1].targetPort`` to the value set in the
-     ``tm-rpc-port`` in the ConfigMap above.
-     It specifies the port used by Tendermint core for RPC traffic.
-
-   * Set ``ports[2].port`` and ``ports[2].targetPort`` to the value set in the
-     ``tm-pub-key-access`` in the ConfigMap above.
-     It specifies the port to host/distribute the public key for the Tendermint node.
-
   * Start the Kubernetes Service:
 
     .. code:: bash
 
-       $ kubectl --context k8s-bdb-test-cluster-0 apply -f tendermint/tendermint-svc.yaml
-
+       $ kubectl apply -f tendermint/tendermint-svc.yaml
 
 .. _start-the-nginx-deployment:
 
 Step 10: Start the NGINX Kubernetes Deployment
 ----------------------------------------------
 
-  * NGINX is used as a proxy to OpenResty, BigchainDB, Tendermint and MongoDB instances in
+  * NGINX is used as a proxy to the BigchainDB, Tendermint and MongoDB instances in
     the node. It proxies HTTP/HTTPS requests on the ``cluster-frontend-port``
-    to the corresponding OpenResty or BigchainDB backend, TCP connections
+    to the corresponding OpenResty(if 3scale enabled) or BigchainDB backend, TCP connections
     on ``mongodb-frontend-port``, ``tm-p2p-port`` and ``tm-pub-key-access``
     to MongoDB and Tendermint respectively.
-
-  * As in step 4, you have the option to use vanilla NGINX without HTTPS or
-    NGINX with HTTPS support.
-
-Step 10.1: Vanilla NGINX
-^^^^^^^^^^^^^^^^^^^^^^^^
-
-  * This configuration is located in the file ``nginx-http/nginx-http-dep.yaml``.
-
-  * Set the ``metadata.name`` and ``spec.template.metadata.labels.app``
-    to the value set in ``ngx-instance-name`` in the ConfigMap followed by a
-    ``-dep``. For example, if the value set in the ``ngx-instance-name`` is
-    ``ngx-http-instance-0``, set the fields to ``ngx-http-instance-0-dep``.
-
-   * Set the ports to be exposed from the pod in the
-     ``spec.containers[0].ports`` section. We currently expose 5 ports -
-     ``mongodb-frontend-port``, ``cluster-frontend-port``,
-     ``cluster-health-check-port``, ``tm-pub-key-access`` and ``tm-p2p-port``.
-     Set them to the values specified in the
-     ConfigMap.
-
-  * The configuration uses the following values set in the ConfigMap:
-
-    - ``cluster-frontend-port``
-    - ``cluster-health-check-port``
-    - ``cluster-dns-server-ip``
-    - ``mongodb-frontend-port``
-    - ``ngx-mdb-instance-name``
-    - ``mongodb-backend-port``
-    - ``ngx-bdb-instance-name``
-    - ``bigchaindb-api-port``
-    - ``bigchaindb-ws-port``
-    - ``ngx-tm-instance-name``
-    - ``tm-pub-key-access``
-    - ``tm-p2p-port``
-
-  * Start the Kubernetes Deployment:
-
-    .. code:: bash
-
-       $ kubectl --context k8s-bdb-test-cluster-0 apply -f nginx-http/nginx-http-dep.yaml
 
 
 Step 10.2: NGINX with HTTPS
@@ -426,45 +256,11 @@ Step 10.2: NGINX with HTTPS
    * This configuration is located in the file
      ``nginx-https/nginx-https-dep.yaml``.
 
-   * Set the ``metadata.name`` and ``spec.template.metadata.labels.app``
-     to the value set in ``ngx-instance-name`` in the ConfigMap followed by a
-     ``-dep``. For example, if the value set in the ``ngx-instance-name`` is
-     ``ngx-https-instance-0``, set the fields to ``ngx-https-instance-0-dep``.
-
-   * Set the ports to be exposed from the pod in the
-     ``spec.containers[0].ports`` section. We currently expose 6 ports -
-     ``mongodb-frontend-port``, ``cluster-frontend-port``,
-     ``cluster-health-check-port``, ``tm-pub-key-access`` and ``tm-p2p-port``
-     . Set them to the values specified in the
-     ConfigMap.
-
-  * The configuration uses the following values set in the ConfigMap:
-
-    - ``cluster-frontend-port``
-    - ``cluster-health-check-port``
-    - ``cluster-fqdn``
-    - ``cluster-dns-server-ip``
-    - ``mongodb-frontend-port``
-    - ``ngx-mdb-instance-name``
-    - ``mongodb-backend-port``
-    - ``openresty-backend-port``
-    - ``ngx-openresty-instance-name``
-    - ``ngx-bdb-instance-name``
-    - ``bigchaindb-api-port``
-    - ``bigchaindb-ws-port``
-    - ``ngx-tm-instance-name``
-    - ``tm-pub-key-access``
-    - ``tm-p2p-port```
-
-  * The configuration uses the following values set in the Secret:
-
-    - ``https-certs``
-
    * Start the Kubernetes Deployment:
 
      .. code:: bash
 
-        $ kubectl --context k8s-bdb-test-cluster-0 apply -f nginx-https/nginx-https-dep.yaml
+        $ kubectl apply -f nginx-https/nginx-https-dep.yaml
 
 
 .. _create-kubernetes-storage-class-mdb:
@@ -509,12 +305,14 @@ LRS means locally-redundant storage: three replicas
 in the same data center.
 Premium storage is higher-cost and higher-performance.
 It uses solid state drives (SSD).
-You can create a `storage account <https://docs.microsoft.com/en-us/azure/storage/common/storage-create-storage-account>`_
+
+We recommend using Premium storage for our production template.
+Create a `storage account <https://docs.microsoft.com/en-us/azure/storage/common/storage-create-storage-account>`_
 for Premium storage and associate it with your Azure resource group.
 For future reference, the command to create a storage account is
 `az storage account create <https://docs.microsoft.com/en-us/cli/azure/storage/account#create>`_.
 
-.. Note::
+.. note::
     Please refer to `Azure documentation <https://docs.microsoft.com/en-us/azure/virtual-machines/windows/premium-storage>`_
     for the list of VMs that are supported by Premium Storage.
 
@@ -532,7 +330,7 @@ Create the required storage classes using:
 
 .. code:: bash
 
-   $ kubectl --context k8s-bdb-test-cluster-0 apply -f mongodb/mongo-sc.yaml
+   $ kubectl apply -f mongodb/mongo-sc.yaml
 
 
 You can check if it worked using ``kubectl get storageclasses``.
@@ -563,7 +361,7 @@ Create the required Persistent Volume Claims using:
 
 .. code:: bash
 
-   $ kubectl --context k8s-bdb-test-cluster-0 apply -f mongodb/mongo-pvc.yaml
+   $ kubectl apply -f mongodb/mongo-pvc.yaml
 
 
 You can check its status using: ``kubectl get pvc -w``
@@ -571,7 +369,7 @@ You can check its status using: ``kubectl get pvc -w``
 Initially, the status of persistent volume claims might be "Pending"
 but it should become "Bound" fairly quickly.
 
-.. Note::
+.. note::
     The default Reclaim Policy for dynamically created persistent volumes is ``Delete``
     which means the PV and its associated Azure storage resource will be automatically
     deleted on deletion of PVC or PV. In order to prevent this from happening do
@@ -582,13 +380,13 @@ but it should become "Bound" fairly quickly.
 
     .. Code:: bash
 
-        $ kubectl --context k8s-bdb-test-cluster-0 get pv
+        $ kubectl get pv
 
     * Run the following command to update a PV's reclaim policy to <Retain>
 
     .. Code:: bash
 
-        $ kubectl --context k8s-bdb-test-cluster-0 patch pv <pv-name> -p '{"spec":{"persistentVolumeReclaimPolicy":"Retain"}}'
+        $ kubectl patch pv <pv-name> -p '{"spec":{"persistentVolumeReclaimPolicy":"Retain"}}'
 
     For notes on recreating a private volume form a released Azure disk resource consult
     :doc:`the page about cluster troubleshooting <../production-deployment-template/troubleshoot>`.
@@ -598,73 +396,11 @@ but it should become "Bound" fairly quickly.
 Step 13: Start a Kubernetes StatefulSet for MongoDB
 ---------------------------------------------------
 
-  * This configuration is located in the file ``mongodb/mongo-ss.yaml``.
-
-  * Set the ``spec.serviceName`` to the value set in ``mdb-instance-name`` in
-    the ConfigMap.
-    For example, if the value set in the ``mdb-instance-name``
-    is ``mdb-instance-0``, set the field to ``mdb-instance-0``.
-
-  * Set ``metadata.name``, ``spec.template.metadata.name`` and
-    ``spec.template.metadata.labels.app`` to the value set in
-    ``mdb-instance-name`` in the ConfigMap, followed by
-    ``-ss``.
-    For example, if the value set in the
-    ``mdb-instance-name`` is ``mdb-instance-0``, set the fields to the value
-    ``mdb-insance-0-ss``.
-
-  * Note how the MongoDB container uses the ``mongo-db-claim`` and the
-    ``mongo-configdb-claim`` PersistentVolumeClaims for its ``/data/db`` and
-    ``/data/configdb`` directories (mount paths).
-
-  * Note also that we use the pod's ``securityContext.capabilities.add``
-    specification to add the ``FOWNER`` capability to the container. That is
-    because the MongoDB container has the user ``mongodb``, with uid ``999`` and
-    group ``mongodb``, with gid ``999``.
-    When this container runs on a host with a mounted disk, the writes fail
-    when there is no user with uid ``999``. To avoid this, we use the Docker
-    feature of ``--cap-add=FOWNER``. This bypasses the uid and gid permission
-    checks during writes and allows data to be persisted to disk.
-    Refer to the `Docker docs
-    <https://docs.docker.com/engine/reference/run/#runtime-privilege-and-linux-capabilities>`_
-    for details.
-
-  * As we gain more experience running MongoDB in testing and production, we
-    will tweak the ``resources.limits.cpu`` and ``resources.limits.memory``.
-
-  * Set the ports to be exposed from the pod in the
-    ``spec.containers[0].ports`` section. We currently only expose the MongoDB
-    backend port. Set it to the value specified for ``mongodb-backend-port``
-    in the ConfigMap.
-
-  * The configuration uses the following values set in the ConfigMap:
-
-    - ``mdb-instance-name``
-    - ``mongodb-backend-port``
-
-  * The configuration uses the following values set in the Secret:
-
-    - ``mdb-certs``
-    - ``ca-auth``
-
-  * **Optional**: You can change the value for ``STORAGE_ENGINE_CACHE_SIZE`` in the ConfigMap ``storage-engine-cache-size``, for more information
-    regarding this configuration, please consult the `MongoDB Official
-    Documentation <https://docs.mongodb.com/manual/reference/configuration-options/#storage.wiredTiger.engineConfig.cacheSizeGB>`_.
-
-  * **Optional**: If you are not using the **Standard_D2_v2** virtual machines for Kubernetes agents as per the guide,
-    please update the ``resources`` for ``mongo-ss``. We suggest allocating ``memory`` using the following scheme
-    for a MongoDB StatefulSet:
-
-    .. code:: bash
-
-      memory = (Total_Memory_Agent_VM_GB - 2GB)
-      STORAGE_ENGINE_CACHE_SIZE = memory / 2
-
   * Create the MongoDB StatefulSet using:
 
     .. code:: bash
 
-       $ kubectl --context k8s-bdb-test-cluster-0 apply -f mongodb/mongo-ss.yaml
+       $ kubectl apply -f mongodb/mongo-ss.yaml
 
   * It might take up to 10 minutes for the disks, specified in the Persistent
     Volume Claims above, to be created and attached to the pod.
@@ -675,7 +411,7 @@ Step 13: Start a Kubernetes StatefulSet for MongoDB
 
     .. code:: bash
 
-       $ kubectl --context k8s-bdb-test-cluster-0 get pods -w
+       $ kubectl get pods -w
 
 
 .. _configure-users-and-access-control-mongodb:
@@ -684,98 +420,12 @@ Step 14: Configure Users and Access Control for MongoDB
 -------------------------------------------------------
 
   * In this step, you will create a user on MongoDB with authorization
-    to create more users and assign
-    roles to them.
-    Note: You need to do this only when setting up the first MongoDB node of
-    the cluster.
-
-  * Find out the name of your MongoDB pod by reading the output
-    of the ``kubectl ... get pods`` command at the end of the last step.
-    It should be something like ``mdb-instance-0-ss-0``.
-
-  * Log in to the MongoDB pod using:
+    to create more users and assign roles to it. We will also create
+    MongoDB client users for BigchainDB and MongoDB Monitoring agent(Optional).
 
     .. code:: bash
 
-       $ kubectl --context k8s-bdb-test-cluster-0 exec -it <name of your MongoDB pod> bash
-
-  * Open a mongo shell using the certificates
-    already present at ``/etc/mongod/ssl/``
-
-    .. code:: bash
-
-       $ mongo --host localhost --port 27017 --verbose --ssl \
-         --sslCAFile /etc/mongod/ca/ca.pem \
-         --sslPEMKeyFile /etc/mongod/ssl/mdb-instance.pem
-
-  * Create a user ``adminUser`` on the ``admin`` database with the
-    authorization to create other users. This will only work the first time you
-    log in to the mongo shell. For further details, see `localhost
-    exception <https://docs.mongodb.com/manual/core/security-users/#localhost-exception>`_
-    in MongoDB.
-
-    .. code:: bash
-
-       PRIMARY> use admin
-       PRIMARY> db.createUser( {
-                  user: "adminUser",
-                  pwd: "superstrongpassword",
-                  roles: [ { role: "userAdminAnyDatabase", db: "admin" },
-                           { role: "clusterManager", db: "admin"} ]
-                } )
-
-  * Exit and restart the mongo shell using the above command.
-    Authenticate as the ``adminUser`` we created earlier:
-
-    .. code:: bash
-
-       PRIMARY> use admin
-       PRIMARY> db.auth("adminUser", "superstrongpassword")
-
-    ``db.auth()`` returns 0 when authentication is not successful,
-    and 1 when successful.
-
-  * We need to specify the user name *as seen in the certificate* issued to
-    the BigchainDB instance in order to authenticate correctly. Use
-    the following ``openssl`` command to extract the user name from the
-    certificate:
-
-    .. code:: bash
-
-       $ openssl x509 -in <path to the bigchaindb certificate> \
-         -inform PEM -subject -nameopt RFC2253
-
-    You should see an output line that resembles:
-
-    .. code:: bash
-
-       subject= emailAddress=dev@bigchaindb.com,CN=test-bdb-ssl,OU=BigchainDB-Instance,O=BigchainDB GmbH,L=Berlin,ST=Berlin,C=DE
-
-    The ``subject`` line states the complete user name we need to use for
-    creating the user on the mongo shell as follows:
-
-    .. code:: bash
-
-       PRIMARY> db.getSiblingDB("$external").runCommand( {
-                  createUser: 'emailAddress=dev@bigchaindb.com,CN=test-bdb-ssl,OU=BigchainDB-Instance,O=BigchainDB GmbH,L=Berlin,ST=Berlin,C=DE',
-                  writeConcern: { w: 'majority' , wtimeout: 5000 },
-                  roles: [
-                    { role: 'clusterAdmin', db: 'admin' },
-                    { role: 'readWriteAnyDatabase', db: 'admin' }
-                  ]
-                } )
-
-  * You can similarly create user for MongoDB Monitoring Agent. For example:
-
-    .. code:: bash
-
-       PRIMARY> db.getSiblingDB("$external").runCommand( {
-                  createUser: 'emailAddress=dev@bigchaindb.com,CN=test-mdb-mon-ssl,OU=MongoDB-Mon-Instance,O=BigchainDB GmbH,L=Berlin,ST=Berlin,C=DE',
-                  writeConcern: { w: 'majority' , wtimeout: 5000 },
-                  roles: [
-                    { role: 'clusterMonitor', db: 'admin' }
-                  ]
-                } )
+       $ kubectl apply -f mongodb/configure_mdb.sh
 
 
 .. _create-kubernetes-storage-class:
@@ -796,7 +446,7 @@ Create the required storage classes using:
 
 .. code:: bash
 
-   $ kubectl --context k8s-bdb-test-cluster-0 apply -f tendermint/tendermint-sc.yaml
+   $ kubectl apply -f tendermint/tendermint-sc.yaml
 
 
 You can check if it worked using ``kubectl get storageclasses``.
@@ -819,7 +469,7 @@ Create the required Persistent Volume Claims using:
 
 .. code:: bash
 
-   $ kubectl --context k8s-bdb-test-cluster-0 apply -f tendermint/tendermint-pvc.yaml
+   $ kubectl apply -f tendermint/tendermint-pvc.yaml
 
 You can check its status using:
 
@@ -848,57 +498,37 @@ Step 17: Start a Kubernetes StatefulSet for Tendermint
     ``tm-instance-name`` is ``tm-instance-0``, set the fields to the value
     ``tm-insance-0-ss``.
 
-  * Note how the Tendermint container uses the ``tendermint-db-claim`` and the
-    ``tendermint-config-db-claim`` PersistentVolumeClaims for its ``/tendermint`` and
-    ``/tendermint_node_data`` directories (mount paths).
-
   * As we gain more experience running Tendermint in testing and production, we
     will tweak the ``resources.limits.cpu`` and ``resources.limits.memory``.
-
-We deploy Tendermint as POD(Tendermint + NGINX), Tendermint is used as the consensus
-engine while NGINX is used to serve the public key of the Tendermint instance.
-
-  * For the NGINX container,set the ports to be exposed from the container
-    ``spec.containers[0].ports[0]`` section. Set it to the value specified
-    for ``tm-pub-key-access`` from ConfigMap.
-
-  * For the Tendermint container, Set the ports to be exposed from the container in the
-    ``spec.containers[1].ports`` section. We currently expose two Tendermint ports.
-    Set it to the value specified for ``tm-p2p-port`` and ``tm-rpc-port``
-    in the ConfigMap, repectively
-
-  * The configuration uses the following values set in the ConfigMap:
-
-    - ``tm-pub-key-access``
-    - ``tm-seeds``
-    - ``tm-validator-power``
-    - ``tm-validators``
-    - ``tm-genesis-time``
-    - ``tm-chain-id``
-    - ``tm-abci-port``
-    - ``bdb-instance-name``
 
   * Create the Tendermint StatefulSet using:
 
     .. code:: bash
 
-       $ kubectl --context k8s-bdb-test-cluster-0 apply -f tendermint/tendermint-ss.yaml
-
-  * It might take up to 10 minutes for the disks, specified in the Persistent
-    Volume Claims above, to be created and attached to the pod.
-    The UI might show that the pod has errored with the message
-    "timeout expired waiting for volumes to attach/mount". Use the CLI below
-    to check the status of the pod in this case, instead of the UI.
-    This happens due to a bug in Azure ACS.
+       $ kubectl apply -f tendermint/tendermint-ss.yaml
 
     .. code:: bash
 
-       $ kubectl --context k8s-bdb-test-cluster-0 get pods -w
+       $ kubectl get pods -w
+
+.. _start-kubernetes-deployment-bdb:
+
+Step 18: Start a Kubernetes Deployment for BigchainDB
+-----------------------------------------------------
+
+  * Create the BigchainDB Deployment using:
+
+    .. code:: bash
+
+       $ kubectl apply -f bigchaindb/bigchaindb-dep.yaml
+
+
+  * You can check its status using the command ``kubectl get deployments -w``
 
 .. _start-kubernetes-deployment-for-mdb-mon-agent:
 
-Step 18: Start a Kubernetes Deployment for MongoDB Monitoring Agent
--------------------------------------------------------------------
+Step 19(Optional): Start a Kubernetes Deployment for MongoDB Monitoring Agent
+------------------------------------------------------------------------------
 
   * This configuration is located in the file
     ``mongodb-monitoring-agent/mongo-mon-dep.yaml``.
@@ -921,74 +551,13 @@ Step 18: Start a Kubernetes Deployment for MongoDB Monitoring Agent
 
     .. code:: bash
 
-       $ kubectl --context k8s-bdb-test-cluster-0 apply -f mongodb-monitoring-agent/mongo-mon-dep.yaml
-
-
-.. _start-kubernetes-deployment-bdb:
-
-Step 19: Start a Kubernetes Deployment for BigchainDB
------------------------------------------------------
-
-  * This configuration is located in the file
-    ``bigchaindb/bigchaindb-dep.yaml``.
-
-  * Set ``metadata.name`` and ``spec.template.metadata.labels.app`` to the
-    value set in ``bdb-instance-name`` in the ConfigMap, followed by
-    ``-dep``.
-    For example, if the value set in the
-    ``bdb-instance-name`` is ``bdb-instance-0``, set the fields to the
-    value ``bdb-insance-0-dep``.
-
-  * As we gain more experience running BigchainDB in testing and production,
-    we will tweak the ``resources.limits`` values for CPU and memory, and as
-    richer monitoring and probing becomes available in BigchainDB, we will
-    tweak the ``livenessProbe`` and ``readinessProbe`` parameters.
-
-  * Set the ports to be exposed from the pod in the
-    ``spec.containers[0].ports`` section. We currently expose 3 ports -
-    ``bigchaindb-api-port``, ``bigchaindb-ws-port`` and ``tm-abci-port``. Set them to the
-    values specified in the ConfigMap.
-
-  * The configuration uses the following values set in the ConfigMap:
-
-    - ``mdb-instance-name``
-    - ``mongodb-backend-port``
-    - ``mongodb-replicaset-name``
-    - ``bigchaindb-database-name``
-    - ``bigchaindb-server-bind``
-    - ``bigchaindb-ws-interface``
-    - ``cluster-fqdn``
-    - ``bigchaindb-ws-port``
-    - ``cluster-frontend-port``
-    - ``bigchaindb-wsserver-advertised-scheme``
-    - ``bdb-public-key``
-    - ``bigchaindb-backlog-reassign-delay``
-    - ``bigchaindb-database-maxtries``
-    - ``bigchaindb-database-connection-timeout``
-    - ``bigchaindb-log-level``
-    - ``bdb-user``
-    - ``tm-instance-name``
-    - ``tm-rpc-port``
-
-  * The configuration uses the following values set in the Secret:
-
-    - ``bdb-certs``
-    - ``ca-auth``
-
-  * Create the BigchainDB Deployment using:
-
-    .. code:: bash
-
-       $ kubectl --context k8s-bdb-test-cluster-0 apply -f bigchaindb/bigchaindb-dep.yaml
-
-
-  * You can check its status using the command ``kubectl get deployments -w``
+       $ kubectl apply -f mongodb-monitoring-agent/mongo-mon-dep.yaml
 
 
 .. _start-kubernetes-deployment-openresty:
 
-Step 20: Start a Kubernetes Deployment for OpenResty
-----------------------------------------------------
+Step 20(Optional): Start a Kubernetes Deployment for OpenResty
+--------------------------------------------------------------
 
   * This configuration is located in the file
     ``nginx-openresty/nginx-openresty-dep.yaml``.
@@ -1020,14 +589,14 @@ Step 20: Start a Kubernetes Deployment for OpenResty
 
     .. code:: bash
 
-       $ kubectl --context k8s-bdb-test-cluster-0 apply -f nginx-openresty/nginx-openresty-dep.yaml
+       $ kubectl apply -f nginx-openresty/nginx-openresty-dep.yaml
 
 
   * You can check its status using the command ``kubectl get deployments -w``
 
 
-Step 21: Configure the MongoDB Cloud Manager
---------------------------------------------
+Step 21(Optional): Configure the MongoDB Cloud Manager
+------------------------------------------------------
 
 Refer to the
 :doc:`documentation <../production-deployment-template/cloud-manager>`
@@ -1035,12 +604,56 @@ for details on how to configure the MongoDB Cloud Manager to enable
 monitoring and backup.
 
 
+Step 22(Optional): Only for multi site deployments(Geographically dispersed)
+----------------------------------------------------------------------------
+
+We need to make sure that clusters are able
+to talk to each other i.e. specifically the communication between the
+Tendermint peers. Set up networking between the clusters using
+`Kubernetes Services <https://kubernetes.io/docs/concepts/services-networking/service/>`_.
+
+Assuming we have a Tendermint instance ``tendermint-instance-1`` residing in Azure data center location ``westeurope`` and we
+want to connect to ``tendermint-instance-2``, ``tendermint-instance-3``, and ``tendermint-instance-4`` located in Azure data centers
+``eastus``, ``centralus`` and ``westus``, respectively. Unless you already have explicitly set up networking for
+``tendermint-instance-1`` to communicate with ``tendermint-instance-2/3/4`` and
+vice versa, we will have to add a Kubernetes Service in each cluster to accomplish this goal in order to set up a
+Tendermint P2P network.
+It is similar to ensuring that there is a ``CNAME`` record in the DNS
+infrastructure to resolve ``tendermint-instance-X`` to the host where it is actually available.
+We can do this in Kubernetes using a Kubernetes Service of ``type``
+``ExternalName``.
+
+* This configuration is located in the file ``tendermint/tendermint-ext-conn-svc.yaml``.
+
+* Set the name of the ``metadata.name`` to the host name of the Tendermint instance you are trying to connect to.
+  For instance if you are configuring this service on cluster with ``tendermint-instance-1`` then the ``metadata.name`` will
+  be ``tendermint-instance-2`` and vice versa.
+
+* Set ``spec.ports.port[0]`` to the ``tm-p2p-port`` from the ConfigMap for the other cluster.
+
+* Set ``spec.ports.port[1]`` to the ``tm-rpc-port`` from the ConfigMap for the other cluster.
+
+* Set ``spec.externalName`` to the FQDN mapped to NGINX Public IP of the cluster you are trying to connect to.
+  For more information about the FQDN please refer to: :ref:`Assign DNS name to NGINX Public
+  IP <assign-dns-name-to-nginx-public-ip>`.
+
+.. note::
+   This operation needs to be replicated ``n-1`` times per node for a ``n`` node cluster, with the respective FQDNs
+   we need to communicate with.
+
+   If you are not the system administrator of the cluster, you have to get in
+   touch with the system administrator/s of the other ``n-1`` clusters and
+   share with them your instance name (``tendermint-instance-name`` in the ConfigMap)
+   and the FQDN of the NGINX instance acting as Gateway(set in: :ref:`Assign DNS name to NGINX
+   Public IP <assign-dns-name-to-nginx-public-ip>`).
+
+
 .. _verify-and-test-bdb:
 
-Step 22: Verify the BigchainDB Node Setup
+Step 23: Verify the BigchainDB Node Setup
 -----------------------------------------
 
-Step 22.1: Testing Internally
+Step 23.1: Testing Internally
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To test the setup of your BigchainDB node, you could use a Docker container
@@ -1054,7 +667,7 @@ You can use it as below to get started immediately:
 
 .. code:: bash
 
-   $ kubectl --context k8s-bdb-test-cluster-0 \
+   $ kubectl   \
       run -it toolbox \
       --image bigchaindb/toolbox \
       --image-pull-policy=Always \
@@ -1156,7 +769,7 @@ The above curl command should result in the response
 ``It looks like you are trying to access MongoDB over HTTP on the native driver port.``
 
 
-Step 22.2: Testing Externally
+Step 23.2: Testing Externally
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Check the MongoDB monitoring agent on the MongoDB Cloud Manager
