@@ -243,5 +243,18 @@ class BigchainDB(Bigchain):
     def fastquery(self):
         return fastquery.FastQuery(self.connection, self.me)
 
+    def get_validators(self):
+        try:
+            resp = requests.get(f'{ENDPOINT}validators')
+            validators = resp.json()['result']['validators']
+            for v in validators:
+                v.pop('accum')
+                v.pop('address')
+
+            return validators
+
+        except:
+            raise Exception('Error while processing data from tendermint.')
+
 
 Block = namedtuple('Block', ('app_hash', 'height', 'transactions'))
