@@ -62,7 +62,7 @@ http {
   # Frontend server for the external clients; acts as HTTPS termination point.
   server {
     listen CLUSTER_FRONTEND_PORT ssl;
-    server_name "CLUSTER_FQDN";
+    server_name "NODE_FQDN";
 
     ssl_certificate /etc/nginx/ssl/cert.pem;
     ssl_certificate_key /etc/nginx/ssl/cert.key;
@@ -115,7 +115,7 @@ http {
       }
 
       # POST requests get forwarded to BDB.
-      if ($request_method = POST ) {}
+      if ($request_method = POST ) {
         proxy_pass http://$bdb_backend:BIGCHAINDB_API_PORT;
       }
 
@@ -139,7 +139,7 @@ http {
   # when an HTTP request is sent instead of HTTPS.
   server {
     listen 80;
-    server_name "CLUSTER_FQDN";
+    server_name "NODE_FQDN";
 
     location / {
         add_header Upgrade "TLS/1.2, HTTP/1.1" always;

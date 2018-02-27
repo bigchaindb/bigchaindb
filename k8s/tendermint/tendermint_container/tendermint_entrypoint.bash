@@ -69,7 +69,7 @@ for i in "${!VALS_ARR[@]}"; do
   # wait until validator generates priv/pub key pair
   set +e
   echo Validator: "${VALS_ARR[$i]}"
-  echo Validator Power: "${VALS_POWERS_ARR[$i]}"
+  echo Validator Power: "${VAL_POWERS_ARR[$i]}"
   echo "http://${VALS_ARR[$i]}:$tm_pub_key_access_port/pub_key.json"
   curl -s --fail "http://${VALS_ARR[$i]}:$tm_pub_key_access_port/pub_key.json" > /dev/null
   ERR=$?
