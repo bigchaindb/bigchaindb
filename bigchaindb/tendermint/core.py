@@ -137,8 +137,8 @@ class App(BaseApplication):
 
 def cast_validator(v):
     pub_key = v['pub_key']['data']
-    # NOTE: tendermint expect public to be ecoded in go-wire format
-    # so `01` has to be append-ed with length of the arguments
+    # NOTE: tendermint expects public to be ecoded in go-wire format
+    # so `01` has to be appended
     pubKey = bytes.fromhex('01{}'.format(pub_key))
     return Validator(pubKey=pubKey,
                      power=v['power'])
