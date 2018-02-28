@@ -10,8 +10,7 @@ else
   exit 1
 fi
 
-[ -z $1 ] && echo "Please specify MongoDB instance name!!"
-MONGODB_INSTANCE_NAME=$1
+MONGODB_INSTANCE_NAME="mdb-instance-0"
 
 if [[ -n "$MONGODB_INSTANCE_NAME" ]]; then
     /usr/local/bin/kubectl exec -it "${MONGODB_INSTANCE_NAME}"\-ss\-0 -- bash -c "/usr/bin/mongo --host localhost --port \$(printenv MONGODB_PORT) --ssl --sslCAFile /etc/mongod/ca/ca.pem --sslPEMKeyFile  /etc/mongod/ssl/mdb-instance.pem < /configure_mdb_users.js"
