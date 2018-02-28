@@ -228,13 +228,17 @@ def delete_transactions(conn, txn_ids):
 
 @register_query(LocalMongoDBConnection)
 def store_unspent_outputs(conn, *unspent_outputs):
-    try:
-        return conn.run(
-            conn.collection('utxos')
-            .insert_many(unspent_outputs, ordered=False))
-    except DuplicateKeyError:
-        # TODO log warning at least
-        pass
+    if unspent_outputs:
+        try:
+            return conn.run(
+                conn.collection('utxos').insert_many(
+                    unspent_outputs,
+                    ordered=False,
+                )
+            )
+        except DuplicateKeyError:
+            # TODO log warning at least
+            pass
 
 
 @register_query(LocalMongoDBConnection)
