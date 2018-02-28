@@ -243,17 +243,17 @@ def store_unspent_outputs(conn, *unspent_outputs):
 
 @register_query(LocalMongoDBConnection)
 def delete_unspent_outputs(conn, *unspent_outputs):
-    cursor = conn.run(
-            conn.collection('utxos').remove(
-                {'$or': [
-                    {'$and': [
+    if unspent_outputs:
+        return conn.run(
+            conn.collection('utxos').remove({
+                '$or': [{
+                    '$and': [
                         {'transaction_id': unspent_output['transaction_id']},
-                        {'output_index': unspent_output['output_index']}
-                    ]}
-                    for unspent_output in unspent_outputs
-                ]}
-                ))
-    return cursor
+                        {'output_index': unspent_output['output_index']},
+                    ],
+                } for unspent_output in unspent_outputs]
+            })
+        )
 
 
 @register_query(LocalMongoDBConnection)
