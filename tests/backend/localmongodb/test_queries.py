@@ -224,7 +224,38 @@ def test_delete_latest_block(signed_create_tx, signed_transfer_tx):
     assert query.get_block(conn, 51) is None
 
 
-def test_delete_unspent_outputs(db_context, utxoset):
+def test_delete_zero_unspent_outputs(db_context, utxoset):
+    from bigchaindb.backend import query
+    unspent_outputs, utxo_collection = utxoset
+    delete_res = query.delete_unspent_outputs(db_context.conn)
+    assert delete_res is None
+    assert utxo_collection.count() == 3
+    assert utxo_collection.find(
+        {'$or': [
+            {'transaction_id': 'a', 'output_index': 0},
+            {'transaction_id': 'b', 'output_index': 0},
+            {'transaction_id': 'a', 'output_index': 1},
+        ]}
+    ).count() == 3
+
+
+def test_delete_one_unspent_outputs(db_context, utxoset):
+    from bigchaindb.backend import query
+    unspent_outputs, utxo_collection = utxoset
+    delete_res = query.delete_unspent_outputs(db_context.conn,
+                                              unspent_outputs[0])
+    assert delete_res['n'] == 1
+    assert utxo_collection.find(
+        {'$or': [
+            {'transaction_id': 'a', 'output_index': 1},
+            {'transaction_id': 'b', 'output_index': 0},
+        ]}
+    ).count() == 2
+    assert utxo_collection.find(
+            {'transaction_id': 'a', 'output_index': 0}).count() == 0
+
+
+def test_delete_many_unspent_outputs(db_context, utxoset):
     from bigchaindb.backend import query
     unspent_outputs, utxo_collection = utxoset
     delete_res = query.delete_unspent_outputs(db_context.conn,
