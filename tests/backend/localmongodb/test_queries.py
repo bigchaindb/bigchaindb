@@ -240,6 +240,13 @@ def test_delete_unspent_outputs(db_context, utxoset):
             {'transaction_id': 'a', 'output_index': 1}).count() == 1
 
 
+def test_store_zero_unspent_output(db_context, utxo_collection):
+    from bigchaindb.backend import query
+    res = query.store_unspent_outputs(db_context.conn)
+    assert res is None
+    assert utxo_collection.count() == 0
+
+
 def test_store_one_unspent_output(db_context,
                                   unspent_output_1, utxo_collection):
     from bigchaindb.backend import query
