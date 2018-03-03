@@ -76,32 +76,64 @@ We'll say more about that file below.)
 Things Each Node Operator Must Do
 ---------------------------------
 
-1. :doc:`Deploy a Kubernetes cluster on Azure <../production-deployment-template/template-kubernetes-azure>`.
+1. Make up an `FQDN <https://en.wikipedia.org/wiki/Fully_qualified_domain_name>`_
+for your BigchainDB node (e.g. ``mynode.mycorp.com``).
+This is where external users will access the BigchainDB HTTP API, for example.
+Make sure you've registered the associated domain name (e.g. ``mycorp.com``).
 
-2. Make up an FQDN for your BigchainDB node (e.g. ``mynode.mycorp.com``).
-Make sure you've registered the associated domain name (e.g. ``mycorp.com``),
-and have an SSL certificate for the FQDN.
-(You can get an SSL certificate from any SSL certificate provider.)
+Get an SSL certificate for your BigchainDB node's FQDN.
+Also get the root CA certificate and all intermediate certificates.
+They should all be provided by your SSL certificate provider.
+Put all those certificates together in one certificate chain file in the following order:
 
-3. Download the HTTPS certificate chain and HTTPS certificate key of your registered domain.
-Certificate chain includes your primary SSL cert (e.g. your_domain.crt) followed by all intermediate and root
-CA cert(s). e.g. If cert if from DigiCert, download "Best format for nginx".
+- Domain certificate (i.e. the one you ordered for your FQDN)
+- All intermediate certificates
+- Root CA certificate
 
-4a. If the BigchainDB node uses 3scale for API authentication, monitoring and billing,
-you must ask the BigchainDB node operator/owner for all relevant 3scale credentials and deployment
-workflow.
+DigiCert has `a web page explaining certificate chains <https://www.digicert.com/ssl-support/pem-ssl-creation.htm>`_.
 
-4b. If the BigchainDB does not use 3scale for API authentication, then the organization managing the BigchainDB
-node **must** generate a unique *SECRET_TOKEN* for authentication and authorization of requests to the BigchainDB node. 
+You will put the path to that certificate chain file in the ``vars`` file,
+when you configure your node later.
 
-.. Note::
-    All the operations required to set up a Self-Signed CA can be automatically generated from
-    our :ref:`"How to configure a BigchainDB node" <how-to-configure-a-bigchaindb-node>` guide.
+2a. If your BigchainDB node will use 3scale for API authentication, monitoring and billing,
+you will need all relevant 3scale settings and credentials.
 
-5. Set Up a Self-Signed Certificate Authority
+2b. If your BigchainDB node will not use 3scale, then write authorization will be granted
+to all POST requests with a secret token in the HTTP headers.
+(All GET requests are allowed to pass.)
+You can make up that ``SECRET_TOKEN`` now.
+You will put it in the ``vars`` file later.
+Every BigchainDB node in a cluster can have a different secret token.
 
-We use SSL/TLS and self-signed certificates
-for MongoDB authentication (and message encryption).
-The certificates are signed by the organization managing the :ref:`bigchaindb-node`.
+3. Deploy a Kubernetes cluster for your BigchainDB node. We have some instructions for how to
+:doc:`Deploy a Kubernetes cluster on Azure <../production-deployment-template/template-kubernetes-azure>`.
 
-You can now proceed to set up your :ref:`BigchainDB node <kubernetes-template-deploy-a-single-bigchaindb-node>`.
+.. warning::
+
+   In theory, you can deploy your BigchainDB node to any Kubernetes cluster, but there can be differences
+   between different Kubernetes clusters, especially if they are running different versions of Kubernetes.
+   We tested this Production Deployment Template on Azure ACS in February 2018 and at that time
+   ACS was deploying a **Kubernetes 1.7.7** cluster. If you can force your cluster to have that version of Kubernetes,
+   then you'll increase the likelihood that everything will work in your cluster.
+
+4. Deploy your BigchainDB node inside your new Kubernetes cluster.
+You will fill up the ``vars`` file,
+then you will run a script which reads that file to generate some Kubernetes config files,
+you will send those config files to your Kubernetes cluster,
+and then you will deploy all the stuff that you need to have a BigchainDB node.
+
+⟶ Proceed to :ref:`deploy your BigchainDB node <kubernetes-template-deploy-a-single-bigchaindb-node>`.
+
+.. raw:: html
+
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
