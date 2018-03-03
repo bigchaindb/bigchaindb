@@ -105,6 +105,12 @@ You can make up that ``SECRET_TOKEN`` now.
 For example, ``superSECRET_token4-POST*requests``.
 You will put it in the ``vars`` file later.
 Every BigchainDB node in a cluster can have a different secret token.
+To make an HTTP POST request to your BigchainDB node,
+you must include an HTTP header named ``X-Secret-Access-Token``
+and set it equal to your secret token, e.g.
+
+``X-Secret-Access-Token: superSECRET_token4-POST*requests``
+
 
 3. Deploy a Kubernetes cluster for your BigchainDB node. We have some instructions for how to
 :doc:`Deploy a Kubernetes cluster on Azure <../production-deployment-template/template-kubernetes-azure>`.
