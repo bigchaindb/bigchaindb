@@ -102,6 +102,7 @@ you will need all relevant 3scale settings and credentials.
 to all POST requests with a secret token in the HTTP headers.
 (All GET requests are allowed to pass.)
 You can make up that ``SECRET_TOKEN`` now.
+For example, ``superSECRET_token4-POST*requests``.
 You will put it in the ``vars`` file later.
 Every BigchainDB node in a cluster can have a different secret token.
 
