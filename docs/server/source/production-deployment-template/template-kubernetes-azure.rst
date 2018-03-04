@@ -111,26 +111,15 @@ Finally, you can deploy an ACS using something like:
    --debug --output json
 
 .. Note::
-    Please refer to `Azure documentation <https://docs.microsoft.com/en-us/cli/azure/acs?view=azure-cli-latest#az_acs_create>`_
-    for a comprehensive list of options available for `az acs create`. 
-    Please tune the following parameters as per your requirement:
+    The `Azure documentation <https://docs.microsoft.com/en-us/cli/azure/acs?view=azure-cli-latest#az_acs_create>`_
+    has a list of all ``az acs create`` options.
+    You might prefer a smaller agent VM size, for example.
+    You can also get a list of the options using:
 
-    * Master count.
+    .. code:: bash
 
-    * Agent count.
+       $ az acs create --help
 
-    * Agent VM size.
-
-    * **Optional**: Master storage profile.
-
-    * **Optional**: Agent storage profile.
-
-
-There are more options. For help understanding all the options, use the built-in help:
-
-.. code:: bash
-
-   $ az acs create --help
 
 It takes a few minutes for all the resources to deploy.
 You can watch the progress in the `Azure Portal
@@ -138,6 +127,43 @@ You can watch the progress in the `Azure Portal
 go to **Resource groups** (with the blue cube icon)
 and click on the one you created
 to see all the resources in it.
+
+
+Trouble with the Service Principal? Then Read This!
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If the ``az acs create`` command fails with an error message including the text,
+"The Service Principal in ServicePrincipalProfile could not be validated",
+then we found you can prevent that by creating a Service Principal ahead of time
+and telling ``az acs create`` to use that one. (It's supposed to create one,
+but sometimes that fails, I guess.)
+
+Create a new resource group, even if you created one before. They're free anyway:
+
+.. code:: bash
+
+   $ az login
+   $ az group create --name <new resource group name> \
+                     --location <Azure region like westeurope>
+
+Note the ``id`` in the output. It looks like
+``"/subscriptions/369284be-0104-421a-8488-1aeac0caecbb/resourceGroups/examplerg"``.
+It can be copied into the next command.
+Create a Service Principal using:
+
+.. code:: bash
+
+   $ az ad sp create-for-rbac --role="Contributor" \
+   --scopes=<id value copied from above, including the double quotes on the ends>
+
+Note the ``appId`` and ``password``.
+Put those in a new ``az acs create`` command like above, with two new options added:
+
+.. code:: bash
+
+   $ az acs create ... \
+   --service-principal <appId> \
+   --client-secret <password>
 
 
 .. _ssh-to-your-new-kubernetes-cluster-nodes:
