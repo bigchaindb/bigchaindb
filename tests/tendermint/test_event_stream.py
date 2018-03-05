@@ -66,6 +66,7 @@ def test_process_unknown_event():
     assert event_queue.empty()
 
 
+@pytest.mark.skip()
 @pytest.mark.asyncio
 async def test_subscribe_events(tendermint_ws_url):
     from bigchaindb.tendermint.event_stream import subscribe_events

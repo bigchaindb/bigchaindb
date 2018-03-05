@@ -75,6 +75,7 @@ def test_bigchain_run_start_assume_yes_create_default_config(
 # interfere with capsys.
 # See related issue: https://github.com/pytest-dev/pytest/issues/128
 @pytest.mark.tendermint
+@pytest.mark.skip()
 @pytest.mark.usefixtures('ignore_local_config_file')
 def test_bigchain_show_config(capsys):
     from bigchaindb import config
@@ -221,6 +222,7 @@ def test_run_configure_when_config_does_exist(monkeypatch,
     assert value == {}
 
 
+@pytest.mark.skip()
 @pytest.mark.tendermint
 @pytest.mark.parametrize('backend', (
     'localmongodb',
@@ -270,6 +272,7 @@ def test_run_start_when_db_already_exists(mocker,
     assert mocked_start.called
 
 
+@pytest.mark.skip(reason="BigchainDB doesn't support the automatic creation of a config file anymore")
 @pytest.mark.tendermint
 def test_run_start_when_keypair_not_found(mocker,
                                           monkeypatch,
