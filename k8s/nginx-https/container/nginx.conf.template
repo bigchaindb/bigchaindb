@@ -120,7 +120,7 @@ http {
         set $auth_check "${auth_check}1";
       }
 
-      # Block POST requests with invalid Secrete Access Token
+      # Block POST requests with invalid Secret Access Token
       if ( $auth_check = "01" ) {
         return 403;
       }
