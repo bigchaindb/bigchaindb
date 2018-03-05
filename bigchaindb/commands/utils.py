@@ -6,10 +6,16 @@ import argparse
 import builtins
 import functools
 import multiprocessing as mp
+import subprocess
 import sys
+
+import rethinkdb as r
+from pymongo import uri_parser
 
 import bigchaindb
 import bigchaindb.config_utils
+from bigchaindb import backend
+from bigchaindb.common.exceptions import StartupError
 from bigchaindb.log.setup import setup_logging
 from bigchaindb.version import __version__
 
@@ -119,6 +125,46 @@ def input_on_stderr(prompt='', default=None, convert=None):
     return _convert(value, default, convert)
 
 
+def start_rethinkdb():
+    """Start RethinkDB as a child process and wait for it to be
+    available.
+
+    Raises:
+        :class:`~bigchaindb.common.exceptions.StartupError` if
+            RethinkDB cannot be started.
+    """
+
+    proc = subprocess.Popen(['rethinkdb', '--bind', 'all'],
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT,
+                            universal_newlines=True)
+
+    dbname = bigchaindb.config['database']['name']
+    line = ''
+
+    for line in proc.stdout:
+        if line.startswith('Server ready'):
+
+            # FIXME: seems like tables are not ready when the server is ready,
+            #        that's why we need to query RethinkDB to know the state
+            #        of the database. This code assumes the tables are ready
+            #        when the database is ready. This seems a valid assumption.
+            try:
+                conn = backend.connect()
+                # Before checking if the db is ready, we need to query
+                # the server to check if it contains that db
+                if conn.run(r.db_list().contains(dbname)):
+                    conn.run(r.db(dbname).wait())
+            except (r.ReqlOpFailedError, r.ReqlDriverError) as exc:
+                raise StartupError('Error waiting for the database `{}` '
+                                   'to be ready'.format(dbname)) from exc
+            return proc
+
+    # We are here when we exhaust the stdout of the process.
+    # The last `line` contains info about the error.
+    raise StartupError(line)
+
+
 def start(parser, argv, scope):
     """Utility function to execute a subcommand.
 
@@ -160,6 +206,34 @@ def start(parser, argv, scope):
     return func(args)
 
 
+def mongodb_host(host):
+    """Utility function that works as a type for mongodb ``host`` args.
+
+    This function validates the ``host`` args provided by to the
+    ``add-replicas`` and ``remove-replicas`` commands and checks if each arg
+    is in the form "host:port"
+
+    Args:
+        host (str): A string containing hostname and port (e.g. "host:port")
+
+    Raises:
+        ArgumentTypeError: if it fails to parse the argument
+    """
+    # check if mongodb can parse the host
+    try:
+        hostname, port = uri_parser.parse_host(host, default_port=None)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(exc.args[0])
+
+    # we do require the port to be provided.
+    if port is None or hostname == '':
+        raise argparse.ArgumentTypeError('expected host in the form '
+                                         '`host:port`. Got `{}` instead.'
+                                         .format(host))
+
+    return host
+
+
 base_parser = argparse.ArgumentParser(add_help=False, prog='bigchaindb')
 
 base_parser.add_argument('-c', '--config',
@@ -170,8 +244,7 @@ base_parser.add_argument('-c', '--config',
 # the environment variables provided to configure the logger.
 base_parser.add_argument('-l', '--log-level',
                          type=str.upper,  # convert to uppercase for comparison to choices
-                         choices=['DEBUG', 'INFO',
-                                  'WARNING', 'ERROR', 'CRITICAL'],
+                         choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
                          help='Log level')
 
 base_parser.add_argument('-y', '--yes', '--yes-please',
