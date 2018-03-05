@@ -1,5 +1,5 @@
 import argparse
-from argparse import Namespace
+from argparse import ArgumentTypeError, Namespace
 import logging
 
 import pytest
@@ -119,5 +119,20 @@ def test_start_sets_multiprocess_var_based_on_cli_args(mock_cpu_count):
 
     scope = {'run_mp_arg_test': run_mp_arg_test}
     assert utils.start(parser, ['mp_arg_test'], scope).multiprocess == 1
-    assert utils.start(
-        parser, ['mp_arg_test', '--multiprocess'], scope).multiprocess == 42
+    assert utils.start(parser, ['mp_arg_test', '--multiprocess'], scope).multiprocess == 42
+
+
+def test_mongodb_host_type():
+    from bigchaindb.commands.utils import mongodb_host
+
+    # bad port provided
+    with pytest.raises(ArgumentTypeError):
+        mongodb_host('localhost:11111111111')
+
+    # no port information provided
+    with pytest.raises(ArgumentTypeError):
+        mongodb_host('localhost')
+
+    # bad host provided
+    with pytest.raises(ArgumentTypeError):
+        mongodb_host(':27017')
