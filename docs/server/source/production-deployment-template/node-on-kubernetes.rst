@@ -3,7 +3,7 @@
 Kubernetes Template: Deploy a Single BigchainDB Node
 ====================================================
 
-This page describes how to deploy a stand-alone BigchainDB + Tendermint node
+This page describes how to deploy a BigchainDB + Tendermint node
 using `Kubernetes <https://kubernetes.io/>`_.
 It assumes you already have a running Kubernetes cluster.
 
