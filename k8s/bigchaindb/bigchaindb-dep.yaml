@@ -28,10 +28,7 @@ spec:
               name: vars
               key: mongodb-backend-port
         - name: BIGCHAINDB_DATABASE_BACKEND
-          valueFrom:
-            configMapKeyRef:
-              name: bdb-config
-              key: bdb-db-backend
+          value: "localmongodb"
         - name: BIGCHAINDB_DATABASE_NAME
           valueFrom:
             configMapKeyRef:
@@ -104,7 +101,7 @@ spec:
               key: bdb-user
         - name: BIGCHAINDB_START_TENDERMINT
           value: "0"
-        - name: TENDERMINT_HOST
+        - name: BIGCHAINDB_TENDERMINT_HOST
           valueFrom:
             configMapKeyRef:
               name: tendermint-config

@@ -25,11 +25,11 @@ spec:
             configMapKeyRef:
               name: vars
               key: cluster-health-check-port
-        - name: CLUSTER_FQDN
+        - name: NODE_FQDN
           valueFrom:
             configMapKeyRef:
               name: vars
-              key: cluster-fqdn
+              key: node-fqdn
         - name: DNS_SERVER
           valueFrom:
             configMapKeyRef:
@@ -85,6 +85,16 @@ spec:
             configMapKeyRef:
               name: tendermint-config
               key: tm-p2p-port
+        - name: AUTHORIZATION_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: authorization-mode
+        - name: SECRET_ACCESS_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: nginx-secret-header
+              key: secret-token
         ports:
         # return a pretty error message on port 80, since we are expecting
         # HTTPS traffic.

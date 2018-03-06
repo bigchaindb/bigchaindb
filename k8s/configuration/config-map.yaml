@@ -92,6 +92,9 @@ data:
   # it will use the default cache size; i.e. max((50% RAM - 1GB), 256MB)
   storage-engine-cache-size: ""
 
+  # POST API authorization mode [threescale | secrete-token]
+  authorization-mode: "threescale"
+
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -166,3 +169,16 @@ data:
   # tm-pub-key-access is the port number used to host/publish the
   # public key of the tendemrint node in this cluster.
   tm-pub-key-access: "9986"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mdb-config
+  namespace: default
+data:
+  # User name for MongoDB adminuser
+  mdb-admin-username: "<mongodb admin username>"
+
+  # MongoDB monitoring agent authentication user name
+  mdb-mon-user: "<mongodb monitoring agent username>"

@@ -26,6 +26,8 @@ from bigchaindb.common.utils import serialize
 
 UnspentOutput = namedtuple(
     'UnspentOutput', (
+        # TODO 'utxo_hash': sha3_256(f'{txid}{output_index}'.encode())
+        # 'utxo_hash',   # noqa
         'transaction_id',
         'output_index',
         'amount',

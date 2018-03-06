@@ -43,6 +43,21 @@ spec:
             configMapKeyRef:
              name: vars
              key: storage-engine-cache-size
+        - name: MONGODB_ADMIN_USERNAME
+          valueFrom:
+            configMapKeyRef:
+             name: mdb-config
+             key: mdb-admin-username
+        - name: BDB_USERNAME
+          valueFrom:
+            configMapKeyRef:
+             name: bdb-config
+             key: bdb-user
+        - name: MDB_MON_USERNAME
+          valueFrom:
+            configMapKeyRef:
+             name: mdb-config
+             key: mdb-mon-user
         args:
         - --mongodb-port
         - $(MONGODB_PORT)
@@ -77,6 +92,9 @@ spec:
         - name: ca-auth
           mountPath: /etc/mongod/ca/
           readOnly: true
+        - name: mdb-config
+          mountPath: /tmp/mongodb
+          readOnly: true
         resources:
           limits:
             cpu: 200m
@@ -104,4 +122,8 @@ spec:
       - name: ca-auth
         secret:
           secretName: ca-auth
+          defaultMode: 0400
+      - name: mdb-config
+        secret:
+          secretName: mdb-config
           defaultMode: 0400
