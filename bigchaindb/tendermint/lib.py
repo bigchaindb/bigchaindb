@@ -1,8 +1,18 @@
+"""Module containing main contact points with Tendermint and
+MongoDB.
+
+"""
 import logging
 from collections import namedtuple
 from copy import deepcopy
 from os import getenv
 from uuid import uuid4
+
+try:
+    from hashlib import sha3_256
+except ImportError:
+    # NOTE: neeeded for Python < 3.6
+    from sha3 import sha3_256
 
 import requests
 
@@ -10,7 +20,7 @@ from bigchaindb import backend
 from bigchaindb import Bigchain
 from bigchaindb.models import Transaction
 from bigchaindb.common.exceptions import SchemaValidationError, ValidationError
-from bigchaindb.tendermint.utils import encode_transaction
+from bigchaindb.tendermint.utils import encode_transaction, merkleroot
 from bigchaindb.tendermint import fastquery
 from bigchaindb import exceptions as core_exceptions
 from bigchaindb.common.utils import VALIDATOR_UPDATE_ID
@@ -57,6 +67,7 @@ class BigchainDB(Bigchain):
     def store_transaction(self, transaction):
         """Store a valid transaction to the transactions collection."""
 
+        self.update_utxoset(transaction)
         transaction = deepcopy(transaction.to_dict())
         if transaction['operation'] == 'CREATE':
             asset = transaction.pop('asset')
@@ -77,6 +88,7 @@ class BigchainDB(Bigchain):
         assets = []
         txn_metadatas = []
         for transaction in transactions:
+            self.update_utxoset(transaction)
             transaction = transaction.to_dict()
             if transaction['operation'] == 'CREATE':
                 asset = transaction.pop('asset')
@@ -93,6 +105,90 @@ class BigchainDB(Bigchain):
         if assets:
             backend.query.store_assets(self.connection, assets)
         return backend.query.store_transactions(self.connection, txns)
+
+    def update_utxoset(self, transaction):
+        """Update the UTXO set given ``transaction``. That is, remove
+        the outputs that the given ``transaction`` spends, and add the
+        outputs that the given ``transaction`` creates.
+
+        Args:
+            transaction (:obj:`~bigchaindb.models.Transaction`): A new
+                transaction incoming into the system for which the UTXO
+                set needs to be updated.
+        """
+        spent_outputs = [
+            spent_output for spent_output in transaction.spent_outputs
+        ]
+        if spent_outputs:
+            self.delete_unspent_outputs(*spent_outputs)
+        self.store_unspent_outputs(
+            *[utxo._asdict() for utxo in transaction.unspent_outputs]
+        )
+
+    def store_unspent_outputs(self, *unspent_outputs):
+        """Store the given ``unspent_outputs`` (utxos).
+
+        Args:
+            *unspent_outputs (:obj:`tuple` of :obj:`dict`): Variable
+                length tuple or list of unspent outputs.
+        """
+        if unspent_outputs:
+            return backend.query.store_unspent_outputs(
+                                            self.connection, *unspent_outputs)
+
+    def get_utxoset_merkle_root(self):
+        """Returns the merkle root of the utxoset. This implies that
+        the utxoset is first put into a merkle tree.
+
+        For now, the merkle tree and its root will be computed each
+        time. This obviously is not efficient and a better approach
+        that limits the repetition of the same computation when
+        unnecesary should be sought. For instance, future optimizations
+        could simply re-compute the branches of the tree that were
+        affected by a change.
+
+        The transaction hash (id) and output index should be sufficient
+        to uniquely identify a utxo, and consequently only that
+        information from a utxo record is needed to compute the merkle
+        root. Hence, each node of the merkle tree should contain the
+        tuple (txid, output_index).
+
+        .. important:: The leaves of the tree will need to be sorted in
+            some kind of lexicographical order.
+
+        Returns:
+            str: Merkle root in hexadecimal form.
+        """
+        utxoset = backend.query.get_unspent_outputs(self.connection)
+        # TODO Once ready, use the already pre-computed utxo_hash field.
+        # See common/transactions.py for details.
+        hashes = [
+            sha3_256(
+                f'''{utxo['transaction_id']}{utxo['output_index']}'''.encode()
+            ).digest() for utxo in utxoset
+        ]
+        # TODO Notice the sorted call!
+        return merkleroot(sorted(hashes))
+
+    def get_unspent_outputs(self):
+        """Get the utxoset.
+
+        Returns:
+            generator of unspent_outputs.
+        """
+        cursor = backend.query.get_unspent_outputs(self.connection)
+        return (record for record in cursor)
+
+    def delete_unspent_outputs(self, *unspent_outputs):
+        """Deletes the given ``unspent_outputs`` (utxos).
+
+        Args:
+            *unspent_outputs (:obj:`tuple` of :obj:`dict`): Variable
+                length tuple or list of unspent outputs.
+        """
+        if unspent_outputs:
+            return backend.query.delete_unspent_outputs(
+                                        self.connection, *unspent_outputs)
 
     def get_transaction(self, transaction_id, include_status=False):
         transaction = backend.query.get_transaction(self.connection, transaction_id)

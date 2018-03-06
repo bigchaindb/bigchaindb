@@ -228,35 +228,40 @@ def delete_transactions(conn, txn_ids):
 
 @register_query(LocalMongoDBConnection)
 def store_unspent_outputs(conn, *unspent_outputs):
-    try:
-        return conn.run(
-            conn.collection('utxos')
-            .insert_many(unspent_outputs, ordered=False))
-    except DuplicateKeyError:
-        # TODO log warning at least
-        pass
+    if unspent_outputs:
+        try:
+            return conn.run(
+                conn.collection('utxos').insert_many(
+                    unspent_outputs,
+                    ordered=False,
+                )
+            )
+        except DuplicateKeyError:
+            # TODO log warning at least
+            pass
 
 
 @register_query(LocalMongoDBConnection)
 def delete_unspent_outputs(conn, *unspent_outputs):
-    cursor = conn.run(
-            conn.collection('utxos').remove(
-                {'$or': [
-                    {'$and': [
+    if unspent_outputs:
+        return conn.run(
+            conn.collection('utxos').remove({
+                '$or': [{
+                    '$and': [
                         {'transaction_id': unspent_output['transaction_id']},
-                        {'output_index': unspent_output['output_index']}
-                    ]}
-                    for unspent_output in unspent_outputs
-                ]}
-                ))
-    return cursor
+                        {'output_index': unspent_output['output_index']},
+                    ],
+                } for unspent_output in unspent_outputs]
+            })
+        )
 
 
 @register_query(LocalMongoDBConnection)
 def get_unspent_outputs(conn, *, query=None):
     if query is None:
         query = {}
-    return conn.run(conn.collection('utxos').find(query))
+    return conn.run(conn.collection('utxos').find(query,
+                                                  projection={'_id': False}))
 
 
 @register_query(LocalMongoDBConnection)

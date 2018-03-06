@@ -1,6 +1,4 @@
 import logging
-import subprocess
-from os import getenv
 
 import setproctitle
 
@@ -43,13 +41,6 @@ def start():
 
     # start message
     logger.info(BANNER.format(bigchaindb.config['server']['bind']))
-
-    if int(getenv('BIGCHAINDB_START_TENDERMINT', 1)):
-        subprocess.Popen([
-            'tendermint',
-            'node',
-            '--consensus.create_empty_blocks=false',
-        ])
 
     # start websocket server
     p_websocket_server = Process(name='ws',
