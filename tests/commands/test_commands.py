@@ -1,7 +1,6 @@
 import json
 from unittest.mock import Mock, patch
 from argparse import Namespace
-import copy
 
 import pytest
 
