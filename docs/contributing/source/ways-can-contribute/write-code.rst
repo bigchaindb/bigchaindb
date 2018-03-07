@@ -33,7 +33,7 @@ Set Up Your Local Machine. Here's How.
 
 - If you plan to do JavaScript coding, get the latest JavaScript stuff (npm etc.).
 
-- If you plan to do Python codding, get `the latest Python <https://www.python.org/downloads/>`_, and
+- If you plan to do Python coding, get `the latest Python <https://www.python.org/downloads/>`_, and
   get the latest ``pip``.
 
 .. warning:: 
