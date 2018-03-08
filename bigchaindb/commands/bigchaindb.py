@@ -9,18 +9,13 @@ import copy
 import json
 import sys
 
-from bigchaindb.common import crypto
 from bigchaindb.common.exceptions import (DatabaseAlreadyExists,
-                                          KeypairNotFoundException,
                                           DatabaseDoesNotExist)
 import bigchaindb
 from bigchaindb import backend
 from bigchaindb.backend import schema
 from bigchaindb.backend import query
 from bigchaindb.commands import utils
-from bigchaindb.commands.messages import (
-    CANNOT_START_KEYPAIR_NOT_FOUND,
-)
 from bigchaindb.commands.utils import (
     configure_bigchaindb, start_logging_process, input_on_stderr)
 
@@ -66,10 +61,6 @@ def run_configure(args):
 
     conf = copy.deepcopy(bigchaindb.config)
 
-    print('Generating keypair', file=sys.stderr)
-    conf['keypair']['private'], conf['keypair']['public'] = \
-        crypto.generate_key_pair()
-
     # select the correct config defaults based on the backend
     print('Generating default configuration for backend {}'
           .format(args.backend), file=sys.stderr)
@@ -102,7 +93,6 @@ def run_configure(args):
 
 
 def _run_init():
-    # Try to access the keypair, throws an exception if it does not exist
     b = bigchaindb.Bigchain()
 
     schema.init_database(connection=b.connection)
@@ -169,11 +159,8 @@ def run_start(args):
             _run_init()
     except DatabaseAlreadyExists:
         pass
-    except KeypairNotFoundException:
-        sys.exit(CANNOT_START_KEYPAIR_NOT_FOUND)
 
-    logger.info('Starting BigchainDB main process with public key %s',
-                bigchaindb.config['keypair']['public'])
+    logger.info('Starting BigchainDB main process.')
     from bigchaindb.tendermint.commands import start
     start()
 
@@ -192,8 +179,7 @@ def create_parser():
 
     # parser for writing a config file
     config_parser = subparsers.add_parser('configure',
-                                          help='Prepare the config file '
-                                               'and create the node keypair')
+                                          help='Prepare the config file.')
     config_parser.add_argument('backend',
                                choices=['localmongodb'],
                                default='localmongodb',

@@ -68,8 +68,8 @@ class Bigchain(object):
             self.consensus = BaseConsensusRules
 
         self.connection = connection if connection else backend.connect(**bigchaindb.config['database'])
-        if not self.me or not self.me_private:
-            raise exceptions.KeypairNotFoundException()
+        # if not self.me:
+        #    raise exceptions.KeypairNotFoundException()
 
     federation = property(lambda self: set(self.nodes_except_me + [self.me]))
     """ Set of federation member public keys """

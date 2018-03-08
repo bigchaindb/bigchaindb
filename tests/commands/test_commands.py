@@ -237,31 +237,6 @@ def test_run_start_when_db_already_exists(mocker,
     assert mocked_start.called
 
 
-def test_run_start_when_keypair_not_found(mocker,
-                                          monkeypatch,
-                                          run_start_args,
-                                          mocked_setup_logging):
-    from bigchaindb import config
-    from bigchaindb.commands.bigchaindb import run_start
-    from bigchaindb.commands.messages import CANNOT_START_KEYPAIR_NOT_FOUND
-    from bigchaindb.common.exceptions import KeypairNotFoundException
-    mocked_start = mocker.patch('bigchaindb.processes.start')
-
-    def mock_run_init():
-        raise KeypairNotFoundException()
-
-    monkeypatch.setattr(
-        'bigchaindb.commands.bigchaindb._run_init', mock_run_init)
-
-    with pytest.raises(SystemExit) as exc:
-        run_start(run_start_args)
-
-    mocked_setup_logging.assert_called_once_with(user_log_config=config['log'])
-    assert len(exc.value.args) == 1
-    assert exc.value.args[0] == CANNOT_START_KEYPAIR_NOT_FOUND
-    assert not mocked_start.called
-
-
 @pytest.mark.tendermint
 @patch('argparse.ArgumentParser.parse_args')
 @patch('bigchaindb.commands.utils.base_parser')
@@ -284,8 +259,7 @@ def test_calling_main(start_mock, base_parser_mock, parse_args_mock,
     parser.add_subparsers.assert_called_with(title='Commands',
                                              dest='command')
     subparsers.add_parser.assert_any_call('configure',
-                                          help='Prepare the config file '
-                                          'and create the node keypair')
+                                          help='Prepare the config file.')
     subparsers.add_parser.assert_any_call('show-config',
                                           help='Show the current '
                                           'configuration')
