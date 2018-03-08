@@ -170,8 +170,7 @@ base_parser.add_argument('-c', '--config',
 # the environment variables provided to configure the logger.
 base_parser.add_argument('-l', '--log-level',
                          type=str.upper,  # convert to uppercase for comparison to choices
-                         choices=['DEBUG', 'INFO',
-                                  'WARNING', 'ERROR', 'CRITICAL'],
+                         choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
                          help='Log level')
 
 base_parser.add_argument('-y', '--yes', '--yes-please',

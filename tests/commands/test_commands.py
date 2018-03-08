@@ -13,7 +13,6 @@ def test_make_sure_we_dont_remove_any_command():
     parser = create_parser()
 
     assert parser.parse_args(['configure', 'localmongodb']).command
-    assert parser.parse_args(['configure', 'localmongodb']).command
     assert parser.parse_args(['show-config']).command
     assert parser.parse_args(['init']).command
     assert parser.parse_args(['drop']).command

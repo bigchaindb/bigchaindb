@@ -119,5 +119,4 @@ def test_start_sets_multiprocess_var_based_on_cli_args(mock_cpu_count):
 
     scope = {'run_mp_arg_test': run_mp_arg_test}
     assert utils.start(parser, ['mp_arg_test'], scope).multiprocess == 1
-    assert utils.start(
-        parser, ['mp_arg_test', '--multiprocess'], scope).multiprocess == 42
+    assert utils.start(parser, ['mp_arg_test', '--multiprocess'], scope).multiprocess == 42

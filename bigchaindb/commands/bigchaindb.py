@@ -79,18 +79,15 @@ def run_configure(args):
     if not args.yes:
         for key in ('bind', ):
             val = conf['server'][key]
-            conf['server'][key] = input_on_stderr(
-                'API Server {}? (default `{}`): '.format(key, val), val)
+            conf['server'][key] = input_on_stderr('API Server {}? (default `{}`): '.format(key, val), val)
 
         for key in ('scheme', 'host', 'port'):
             val = conf['wsserver'][key]
-            conf['wsserver'][key] = input_on_stderr(
-                'WebSocket Server {}? (default `{}`): '.format(key, val), val)
+            conf['wsserver'][key] = input_on_stderr('WebSocket Server {}? (default `{}`): '.format(key, val), val)
 
         for key in database_keys:
             val = conf['database'][key]
-            conf['database'][key] = input_on_stderr(
-                'Database {}? (default `{}`): '.format(key, val), val)
+            conf['database'][key] = input_on_stderr('Database {}? (default `{}`): '.format(key, val), val)
 
         val = conf['backlog_reassign_delay']
         conf['backlog_reassign_delay'] = input_on_stderr(
@@ -135,8 +132,7 @@ def run_recover(b):
 
     if block:
         while block['height'] > tendermint_height:
-            logger.info(
-                'BigchainDB is ahead of tendermint, removing block %s', block['height'])
+            logger.info('BigchainDB is ahead of tendermint, removing block %s', block['height'])
             query.delete_latest_block(b.connection)
             block = b.get_latest_block()
 
@@ -147,8 +143,7 @@ def run_drop(args):
     dbname = bigchaindb.config['database']['name']
 
     if not args.yes:
-        response = input_on_stderr(
-            'Do you want to drop `{}` database? [y/n]: '.format(dbname))
+        response = input_on_stderr('Do you want to drop `{}` database? [y/n]: '.format(dbname))
         if response != 'y':
             return
 
@@ -157,8 +152,7 @@ def run_drop(args):
     try:
         schema.drop_database(conn, dbname)
     except DatabaseDoesNotExist:
-        print("Cannot drop '{name}'. The database does not exist.".format(
-            name=dbname), file=sys.stderr)
+        print("Cannot drop '{name}'. The database does not exist.".format(name=dbname), file=sys.stderr)
 
 
 @configure_bigchaindb
