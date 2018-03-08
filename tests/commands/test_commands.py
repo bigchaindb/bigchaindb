@@ -237,7 +237,6 @@ def test_run_start_when_db_already_exists(mocker,
     assert mocked_start.called
 
 
-@pytest.mark.tendermint
 def test_run_start_when_keypair_not_found(mocker,
                                           monkeypatch,
                                           run_start_args,
