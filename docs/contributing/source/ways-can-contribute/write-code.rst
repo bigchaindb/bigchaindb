@@ -22,6 +22,8 @@ C4 is the Collective Code Construction Contract. It's quite short:
 Set Up Your Local Machine. Here's How.
 --------------------------------------
 
+- Make sure you have Git installed.
+
 - Get a text editor. Internally, we like:
 
   - Vim
@@ -41,18 +43,28 @@ Set Up Your Local Machine. Here's How.
    Don't use apt or apt-get to get the latest ``pip``. It won't work properly. Use ``get-pip.py``
    from `the pip website <https://pip.pypa.io/en/stable/installing/>`_.
 
-- Use the latest ``pip`` to get the latest ``virtualenv`` and ``pre-commit``:
+- Use the latest ``pip`` to get the latest ``virtualenv``:
 
   .. code::
 
      $ pip install virtualenv
-     $ pip install pre-commit
+
+- Create a Python Virttual Environment (virtualenv) for doing BigchainDB Server development. There are many ways to do that. Google around and pick one.
+  An old-fashioned but fine way is:
+  
+  .. code::
+
+     $ virtualenv -p $(which python3.6) NEW_ENV_NAME
+     $ . NEW_ENV_NAME/bin/activate
+
+  Be sure to use Python 3.6.x as the Python version for your virtualenv. The virtualenv creation process will actually get the
+  latest ``pip``, ``wheel`` and ``setuptools`` and put them inside the new virtualenv.
 
 
-Start Coding
-------------
+Start Writing Code
+------------------
 
-Use the Git `Fork and Pull Request Workflow <https://github.com/susam/gitpr>`_. Tip: print that page for reference.
+Use the Git `Fork and Pull Request Workflow <https://github.com/susam/gitpr>`_. Tip: You could print that page for reference.
 
 Your Python code should follow `our Python Style Guide <https://github.com/bigchaindb/bigchaindb/blob/master/PYTHON_STYLE_GUIDE.md>`_.
 Similarly for JavaScript.
@@ -61,29 +73,38 @@ Make sure `pre-commit <https://pre-commit.com/>`_ actually checks commits. Do:
 
   .. code::
 
+     $ pip install pre-commit  # might not do anything if it is already installed, which is okay
      $ pre-commit install
 
+That will load the pre-commit settings in the file ``.pre-commit-config.yaml``. Now every time you do ``git commit <stuff>``, pre-commit
+will run all those checks.
 
-The Tricky Bits
----------------
+To install BigchainDB Server from the local code, and to keep it up to date with the latest code in there, use:
 
-Running MongoDB and Tendermint to test stuff...
+  .. code::
 
-But how? 
+     $ pip install -e .[dev]
 
-You can look up how to install them, configure them, and run them. But the details are hazy.
-
-This is where we need some advice and help.
-
-Vanshdeep was going to write what he does. TODO: add that here.
-
-What about a multi-node setup? Even more confusing.
+The ``-e`` tells it to use the latest code. The ``.`` means use the current directory, which should be the one containing ``setup.py``. 
+The ``[dev]`` tells it to install some extra Python packages. Which ones? Open ``setup.py`` and look for ``dev`` in the ``extras_require`` section.
 
 
-Run the Tests Locally
----------------------
+Remember to Write Tests
+-----------------------
 
-This is also unclear. I mean, use pytest, but how, exactly? Again MongoDB and Tendermint are probably needed sometimes.
+We like to test everything, if possible. Unit tests and also integration tests. We use the `pytest <https://docs.pytest.org/en/latest/>`_
+framework to write Python tests. Read all about it.
+
+Most tests are in the ``tests/`` folder. Take a look around.
+
+
+Running a Local Node for Dev and Test
+-------------------------------------
+
+This is tricky and personal. Different people do it different ways. We documented some of those on separate pages.
+
+- `Vanshdeep's notes on dev node setup and running all tests locally <vanshdeep-notes.html>`_
+- More to come? (Potentially: using Docker Compose, Kubernetes and Minikube, or Ansible.)
 
 
 Create the PR on GitHub

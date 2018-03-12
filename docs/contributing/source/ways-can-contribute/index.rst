@@ -7,5 +7,6 @@ Ways to Contribute
    bug-report
    write-a-bep
    write-code
+   vanshdeep-notes
    write-docs
    answer-questions

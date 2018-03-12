@@ -11,9 +11,8 @@ It includes several sub-projects.
 - `py-abci <https://github.com/davebryson/py-abci>`_ (a Python package we use)
 - `BigchainDB Enhancement Proposals (BEPs) <https://github.com/bigchaindb/BEPs>`_
 
-
-Ways You Might Contribute
--------------------------
+Contents
+--------
 
 .. toctree::
    :maxdepth: 2

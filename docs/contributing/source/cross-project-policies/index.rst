@@ -7,6 +7,6 @@ Policies
 
    code-of-conduct
    shared-workspace
-   release-process
    release-process-note
+   release-process
    
