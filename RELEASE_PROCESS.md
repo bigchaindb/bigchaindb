@@ -4,7 +4,7 @@
 
 This process hasn't been updated to the C4 way yet. That will simplify it a lot. Stay tuned! Until then, the basic idea is that there's only one branch: `master`. All releases are just Git tags of specific commits on the `master` branch.
 
-his is the _BigchainDB Server_ release process. The process to release other BigchainDB software will be similar but not identical.
+This is the _BigchainDB Server_ release process. The process to release other BigchainDB software will be similar but not identical.
 
 <hr>
 
