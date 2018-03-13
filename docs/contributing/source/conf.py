@@ -15,7 +15,7 @@
 
 import wget # is for real!
 
-from os import rename
+from os import rename, remove
 from recommonmark.parser import CommonMarkParser
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -44,17 +44,37 @@ extensions = [
 # Get remote files to here.
 # Because this is just Pyton and we can do whatever Python can do:
 
-url1 = 'https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/CODE_OF_CONDUCT.md'
-filename1 = wget.download(url1)
-rename('CODE_OF_CONDUCT.md', 'cross-project-policies/code-of-conduct.md')
+try:
+    remove('cross-project-policies/code-of-conduct.md')
+    remove('cross-project-policies/shared-workspace.md')
+    remove('cross-project-policies/release-process.md')
+    remove('cross-project-policies/python-style-guide.md')
+    remove('cross-project-policies/js-style-guide.md')
+except:
+    print('done')
 
-url2 = 'https://raw.githubusercontent.com/vrde/bigchaindb-org/16b503b7c34e64f96aaccaefc4c826492174a5ae/protocols/shared-workspace.md'
-filename2 = wget.download(url2)
-rename('shared-workspace.md', 'cross-project-policies/shared-workspace.md')
+def get_old_new(url, old, new):
+    filename = wget.download(url)
+    rename(old, new)
 
-url3 = 'https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/RELEASE_PROCESS.md'
-filename3 = wget.download(url3)
-rename('RELEASE_PROCESS.md', 'cross-project-policies/release-process.md')
+get_old_new('https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/CODE_OF_CONDUCT.md',
+            'CODE_OF_CONDUCT.md', 'cross-project-policies/code-of-conduct.md')
+
+get_old_new('https://raw.githubusercontent.com/vrde/bigchaindb-org/16b503b7c34e64f96aaccaefc4c826492174a5ae/protocols/shared-workspace.md',
+            'shared-workspace.md', 'cross-project-policies/shared-workspace.md')
+
+get_old_new('https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/RELEASE_PROCESS.md',
+            'RELEASE_PROCESS.md', 'cross-project-policies/release-process.md')
+
+get_old_new('https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/PYTHON_STYLE_GUIDE.md',
+            'PYTHON_STYLE_GUIDE.md', 'cross-project-policies/python-style-guide.md')
+
+get_old_new('https://raw.githubusercontent.com/ascribe/javascript/master/README.md',
+            'README.md','cross-project-policies/js-style-guide.md')
+
+suppress_warnings = ['misc.highlighting_failure']
+
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

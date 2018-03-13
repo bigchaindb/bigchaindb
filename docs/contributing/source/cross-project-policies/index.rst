@@ -7,6 +7,7 @@ Policies
 
    code-of-conduct
    shared-workspace
-   release-process-note
+   python-style-guide
+   js-style-guide
    release-process
    

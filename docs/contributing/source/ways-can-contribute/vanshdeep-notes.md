@@ -149,7 +149,7 @@ $ docker-compose -f docker-compose.travis.yml run --rm --no-deps bdb pytest -v -
 NOTE: before executing the above command the user must ensure that they reset the Tendermint container by executing `tendermint usafe_reset_all` command in the Tendermint container.
 
 
-### Notes
+### Closing Notes
 
 How to check `bigchaindb upsert-validator`:
 
