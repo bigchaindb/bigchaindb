@@ -1,23 +1,26 @@
-version: '2'
+version: '3'
 
 services:
+  # Build: docker-compose build -d bdb
+  # Run: docker-compose run -d bdb
   mdb:
-    image: mongo:3.4.3
+    image: mongo:3.4.13
     ports:
       - "27017"
     command: mongod
-
   bdb:
+    depends_on:
+      - mdb
+      - tendermint
     build:
       context: .
       dockerfile: Dockerfile-dev
       args:
-        backend: mongodb
+        backend: localmongodb
     volumes:
       - ./bigchaindb:/usr/src/app/bigchaindb
       - ./tests:/usr/src/app/tests
       - ./docs:/usr/src/app/docs
-      - ./k8s:/usr/src/app/k8s
       - ./setup.py:/usr/src/app/setup.py
       - ./setup.cfg:/usr/src/app/setup.cfg
       - ./pytest.ini:/usr/src/app/pytest.ini
@@ -28,6 +31,48 @@ services:
       BIGCHAINDB_DATABASE_PORT: 27017
       BIGCHAINDB_SERVER_BIND: 0.0.0.0:9984
       BIGCHAINDB_WSSERVER_HOST: 0.0.0.0
+      BIGCHAINDB_START_TENDERMINT: 0
+      BIGCHAINDB_TENDERMINT_HOST: tendermint
+      BIGCHAINDB_TENDERMINT_PORT: 46657
     ports:
       - "9984"
-    command: bigchaindb start
+      - "46658"
+    command: bigchaindb -l DEBUG start
+  tendermint:
+    image: tendermint/tendermint:0.13
+    volumes:
+      - ./tmdata/config.toml:/tendermint/config.toml
+    entrypoint: ''
+    ports:
+      - "46656"
+      - "46657"
+    command: bash -c "tendermint init && tendermint node"
+  # curl client to check the health of development env
+  curl-client:
+    image: appropriate/curl
+    command: /bin/sh -c "curl http://tendermint:46657/abci_query && curl http://bdb:9984/"
+  # Python BigchainDB driver to interact with the BigchainDB server
+  bdb-driver:
+    build:
+      context: .
+      dockerfile: ./tools/py-bigchaindb-driver/Dockerfile
+  # Build docs only
+  # docker-compose build bdocs
+  # docker-compose up -d bdocs
+  bdocs:
+    depends_on:
+      - vdocs
+    build:
+      context: .
+      dockerfile: Dockerfile-dev
+      args:
+        backend: localmongodb
+    volumes:
+      - .:/usr/src/app/
+    command: make -C docs/server html
+  vdocs:
+    image: nginx
+    ports:
+      - '33333:80'
+    volumes:
+      - ./docs/server/build/html:/usr/share/nginx/html
