@@ -51,7 +51,7 @@ services:
       interval: 3s
       timeout: 10s
       retries: 3
-    command: bash -c "tendermint init && tendermint node"
+    command: bash -c "tendermint init && tendermint node --proxy_app=dummy"
 
   # curl client to check the health of development env
   curl-client:
