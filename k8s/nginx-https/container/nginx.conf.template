@@ -117,11 +117,11 @@ http {
 
       # No auth for GETs, forward directly to BDB.
       if ($request_method = GET) {
-        proxy_pass http://$bdb_backend:9984;
+        proxy_pass http://$bdb_backend:BIGCHAINDB_API_PORT;
       }
 
       if ($request_method = POST ) {
-          proxy_pass http://$bdb_backend:9984;
+          proxy_pass http://$bdb_backend:BIGCHAINDB_API_PORT;
       }
 
       # Only return this reponse if request_method is neither POST|GET|OPTIONS
