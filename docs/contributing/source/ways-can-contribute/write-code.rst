@@ -4,12 +4,9 @@ Write Code
 What are you Doing???
 ---------------------
 
-If you want to resolve an issue, then find one that is open and unresolved.
-
-If you want to implement a BEP, then pick one you believe you can implement. You can ask for help, but not to do *everything*.
-All BEPs are in the `bigchaindb/BEPs <https://github.com/bigchaindb/BEPs>`_ repository on GitHub.
-
-Tell us what you're doing so we don't do it too. You can tell us on Gitter or by email.
+Tell us what you're doing somewhere so we don't do it too. You can tell us on Gitter or by email.
+If you're not sure how to proceed, see the :ref:`Issue Rules` and :ref:`Write a BEP <Write a BigchaindB Enhancement Proposal (BEP)>`
+for inspiration.
 
 
 Refresh Yourself about the C4 Process
@@ -136,11 +133,7 @@ If we want to make changes, we'll do them in a follow-up PR.
 
 -----------------
 
-You are awesome. We will send swag if you let us. Do you want a job? Apply! Berlin is great. Meet the pandas. Say hi to Angela Merkel. Walk along the Unter den Linden. See where Einstein and Planck taught university. Contemplate the speed of light on the actual Potsdamer Platz platform.
-
-See the former location of the telescope that first revealed the planet Neptune to human eyes. (The telescope is now in Munich.) Fresh spargel in the spring! Fresh kurbis in the fall! Rain all winter. The weather is perfect. You will love it.
-
-`Unsplash photos of Berlin <https://unsplash.com/search/photos/berlin>`_
+You are awesome. Do you want a job? `Apply! <https://github.com/bigchaindb/org/tree/master/jobs>`_ Berlin is great. If you got this far, we'd be happy to consider you joining our team. Look at these `Unsplash photos of Berlin <https://unsplash.com/search/photos/berlin>`_. So nice.
 
 
 

@@ -1,4 +1,23 @@
-# Write a Bug Report
+# Issue Rules
+
+## Bad Issues Are Things Like This
+
+We would be very sad to see you make an issue that is:
+
+- Your latest brain fart.
+- An idea you had to maybe do in two years.
+- "Consider this..."
+- Something nobody really cares about, not even you.
+- Showing off your knowledge and understanding of something.
+- A "feature request." Make a [BEP](write-a-bep.html) for that. Or a small pull request with a well-defined _problem_ and _solution_ as desribed in C4. If you really _want_ something, make it happen! Don't try to trick others into thinking your idea is "interesting." Get the ball rolling.
+- A proposal of any length. Write a BEP.
+
+If you do any of the above, we will just delete your issue. We don't have time for a long cluttered list of issues.
+
+
+## Good Issues Are Bug Reports
+
+There is one good issue type: a proper bug report.
 
 1. Go to the repository with the source code for the bug. Possibilities include:
 
@@ -23,4 +42,3 @@
    - Provide details to convince us that it matters to you. Is it for a school project, a job, a contract with a deadline, a child who needs it for Christmas?
 
 We will do our best but please understand that we don't have time to help everyone, especially people who don't care to help us help them. "It doesn't work." is not going to get any reaction from us. We need _details_.
-
