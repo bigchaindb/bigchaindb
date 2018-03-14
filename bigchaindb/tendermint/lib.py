@@ -67,7 +67,7 @@ class BigchainDB(Bigchain):
     def store_transaction(self, transaction):
         """Store a valid transaction to the transactions collection."""
 
-        self.update_utxoset(transaction)
+        # self.update_utxoset(transaction)
         transaction = deepcopy(transaction.to_dict())
         if transaction['operation'] == 'CREATE':
             asset = transaction.pop('asset')
@@ -88,7 +88,7 @@ class BigchainDB(Bigchain):
         assets = []
         txn_metadatas = []
         for transaction in transactions:
-            self.update_utxoset(transaction)
+            # self.update_utxoset(transaction)
             transaction = transaction.to_dict()
             if transaction['operation'] == 'CREATE':
                 asset = transaction.pop('asset')
