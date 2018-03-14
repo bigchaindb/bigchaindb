@@ -30,6 +30,8 @@ BANNER = """
 def start():
     # Exchange object for event stream api
     exchange = Exchange()
+    p_exchange = Process(name='exchange', target=exchange.run)
+    p_exchange.start()
 
     # start the web api
     app_server = server.create_server(

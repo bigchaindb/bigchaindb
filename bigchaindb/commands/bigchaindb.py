@@ -9,23 +9,13 @@ import copy
 import json
 import sys
 
-from bigchaindb.common import crypto
-from bigchaindb.common.exceptions import (StartupError,
-                                          DatabaseAlreadyExists,
-                                          KeypairNotFoundException,
+from bigchaindb.common.exceptions import (DatabaseAlreadyExists,
                                           DatabaseDoesNotExist)
 import bigchaindb
 from bigchaindb import backend
 from bigchaindb.backend import schema
 from bigchaindb.backend import query
-from bigchaindb.backend.admin import (set_replicas, set_shards, add_replicas,
-                                      remove_replicas)
-from bigchaindb.backend.exceptions import OperationError
 from bigchaindb.commands import utils
-from bigchaindb.commands.messages import (
-    CANNOT_START_KEYPAIR_NOT_FOUND,
-    RETHINKDB_STARTUP_ERROR,
-)
 from bigchaindb.commands.utils import (
     configure_bigchaindb, start_logging_process, input_on_stderr)
 
@@ -53,21 +43,15 @@ def run_show_config(args):
     print(json.dumps(config, indent=4, sort_keys=True))
 
 
-def run_configure(args, skip_if_exists=False):
-    """Run a script to configure the current node.
-
-    Args:
-        skip_if_exists (bool): skip the function if a config file already exists
-    """
+@configure_bigchaindb
+def run_configure(args):
+    """Run a script to configure the current node."""
     config_path = args.config or bigchaindb.config_utils.CONFIG_DEFAULT_PATH
 
     config_file_exists = False
     # if the config path is `-` then it's stdout
     if config_path != '-':
         config_file_exists = os.path.exists(config_path)
-
-    if config_file_exists and skip_if_exists:
-        return
 
     if config_file_exists and not args.yes:
         want = input_on_stderr('Config file `{}` exists, do you want to '
@@ -76,15 +60,6 @@ def run_configure(args, skip_if_exists=False):
             return
 
     conf = copy.deepcopy(bigchaindb.config)
-
-    # Patch the default configuration with the new values
-    conf = bigchaindb.config_utils.update(
-            conf,
-            bigchaindb.config_utils.env_config(bigchaindb.config))
-
-    print('Generating keypair', file=sys.stderr)
-    conf['keypair']['private'], conf['keypair']['public'] = \
-        crypto.generate_key_pair()
 
     # select the correct config defaults based on the backend
     print('Generating default configuration for backend {}'
@@ -117,23 +92,7 @@ def run_configure(args, skip_if_exists=False):
     print('Ready to go!', file=sys.stderr)
 
 
-@configure_bigchaindb
-def run_export_my_pubkey(args):
-    """Export this node's public key to standard output
-    """
-    pubkey = bigchaindb.config['keypair']['public']
-    if pubkey is not None:
-        print(pubkey)
-    else:
-        sys.exit("This node's public key wasn't set anywhere "
-                 "so it can't be exported")
-        # raises SystemExit exception
-        # message is sent to stderr
-        # exits with exit code 1 (signals tha an error happened)
-
-
 def _run_init():
-    # Try to access the keypair, throws an exception if it does not exist
     b = bigchaindb.Bigchain()
 
     schema.init_database(connection=b.connection)
@@ -194,80 +153,16 @@ def run_start(args):
 
     # run_recover(BigchainDB())
 
-    if args.allow_temp_keypair:
-        if not (bigchaindb.config['keypair']['private'] or
-                bigchaindb.config['keypair']['public']):
-
-            private_key, public_key = crypto.generate_key_pair()
-            bigchaindb.config['keypair']['private'] = private_key
-            bigchaindb.config['keypair']['public'] = public_key
-        else:
-            logger.warning('Keypair found, no need to create one on the fly.')
-
-    if args.start_rethinkdb:
-        try:
-            proc = utils.start_rethinkdb()
-        except StartupError as e:
-            sys.exit(RETHINKDB_STARTUP_ERROR.format(e))
-        logger.info('RethinkDB started with PID %s' % proc.pid)
-
     try:
         if not args.skip_initialize_database:
             logger.info('Initializing database')
             _run_init()
     except DatabaseAlreadyExists:
         pass
-    except KeypairNotFoundException:
-        sys.exit(CANNOT_START_KEYPAIR_NOT_FOUND)
 
-    logger.info('Starting BigchainDB main process with public key %s',
-                bigchaindb.config['keypair']['public'])
+    logger.info('Starting BigchainDB main process.')
     from bigchaindb.tendermint.commands import start
     start()
-
-
-@configure_bigchaindb
-def run_set_shards(args):
-    conn = backend.connect()
-    try:
-        set_shards(conn, shards=args.num_shards)
-    except OperationError as e:
-        sys.exit(str(e))
-
-
-@configure_bigchaindb
-def run_set_replicas(args):
-    conn = backend.connect()
-    try:
-        set_replicas(conn, replicas=args.num_replicas)
-    except OperationError as e:
-        sys.exit(str(e))
-
-
-@configure_bigchaindb
-def run_add_replicas(args):
-    # Note: This command is specific to MongoDB
-    conn = backend.connect()
-
-    try:
-        add_replicas(conn, args.replicas)
-    except (OperationError, NotImplementedError) as e:
-        sys.exit(str(e))
-    else:
-        print('Added {} to the replicaset.'.format(args.replicas))
-
-
-@configure_bigchaindb
-def run_remove_replicas(args):
-    # Note: This command is specific to MongoDB
-    conn = backend.connect()
-
-    try:
-        remove_replicas(conn, args.replicas)
-    except (OperationError, NotImplementedError) as e:
-        sys.exit(str(e))
-    else:
-        print('Removed {} from the replicaset.'.format(args.replicas))
 
 
 def create_parser():
@@ -284,22 +179,18 @@ def create_parser():
 
     # parser for writing a config file
     config_parser = subparsers.add_parser('configure',
-                                          help='Prepare the config file '
-                                               'and create the node keypair')
+                                          help='Prepare the config file.')
     config_parser.add_argument('backend',
                                choices=['localmongodb'],
                                default='localmongodb',
                                const='localmongodb',
                                nargs='?',
-                               help='The backend to use. It can be either '
-                                    'rethinkdb or mongodb.')
+                               help='The backend to use. It can only be '
+                               '"localmongodb", currently.')
 
     # parsers for showing/exporting config values
     subparsers.add_parser('show-config',
                           help='Show the current configuration')
-
-    subparsers.add_parser('export-my-pubkey',
-                          help="Export this node's public key")
 
     # parser for database-level commands
     subparsers.add_parser('init',
@@ -312,63 +203,12 @@ def create_parser():
     start_parser = subparsers.add_parser('start',
                                          help='Start BigchainDB')
 
-    start_parser.add_argument('--dev-allow-temp-keypair',
-                              dest='allow_temp_keypair',
-                              action='store_true',
-                              help='Generate a random keypair on start')
-
-    start_parser.add_argument('--dev-start-rethinkdb',
-                              dest='start_rethinkdb',
-                              action='store_true',
-                              help='Run RethinkDB on start')
-
     start_parser.add_argument('--no-init',
                               dest='skip_initialize_database',
                               default=False,
                               action='store_true',
                               help='Skip database initialization')
 
-    # parser for configuring the number of shards
-    sharding_parser = subparsers.add_parser('set-shards',
-                                            help='Configure number of shards')
-
-    sharding_parser.add_argument('num_shards', metavar='num_shards',
-                                 type=int, default=1,
-                                 help='Number of shards')
-
-    # parser for configuring the number of replicas
-    replicas_parser = subparsers.add_parser('set-replicas',
-                                            help='Configure number of replicas')
-
-    replicas_parser.add_argument('num_replicas', metavar='num_replicas',
-                                 type=int, default=1,
-                                 help='Number of replicas (i.e. the replication factor)')
-
-    # parser for adding nodes to the replica set
-    add_replicas_parser = subparsers.add_parser('add-replicas',
-                                                help='Add a set of nodes to the '
-                                                     'replica set. This command '
-                                                     'is specific to the MongoDB'
-                                                     ' backend.')
-
-    add_replicas_parser.add_argument('replicas', nargs='+',
-                                     type=utils.mongodb_host,
-                                     help='A list of space separated hosts to '
-                                          'add to the replicaset. Each host '
-                                          'should be in the form `host:port`.')
-
-    # parser for removing nodes from the replica set
-    rm_replicas_parser = subparsers.add_parser('remove-replicas',
-                                               help='Remove a set of nodes from the '
-                                                    'replica set. This command '
-                                                    'is specific to the MongoDB'
-                                                    ' backend.')
-
-    rm_replicas_parser.add_argument('replicas', nargs='+',
-                                    type=utils.mongodb_host,
-                                    help='A list of space separated hosts to '
-                                         'remove from the replicaset. Each host '
-                                         'should be in the form `host:port`.')
     return parser
 
 
