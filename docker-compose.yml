@@ -46,16 +46,19 @@ services:
     ports:
       - "46656"
       - "46657"
-    command: bash -c "tendermint init && tendermint node"
+    command: bash -c "tendermint init && tendermint node && sleep 5"
+
   # curl client to check the health of development env
   curl-client:
     image: appropriate/curl
     command: /bin/sh -c "curl http://tendermint:46657/abci_query && curl http://bdb:9984/"
+
   # Python BigchainDB driver to interact with the BigchainDB server
   bdb-driver:
     build:
       context: .
       dockerfile: ./tools/py-bigchaindb-driver/Dockerfile
+
   # Build docs only
   # docker-compose build bdocs
   # docker-compose up -d bdocs
