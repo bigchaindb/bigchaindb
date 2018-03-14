@@ -86,6 +86,7 @@ http {
     # Forward other URL paths as per business logic/use case to BDB or
     # OpenResty instance.
     location / {
+      set $auth_check 1; # Flag to authorize POST requests
       proxy_ignore_client_abort on;
       proxy_set_header X-Real-IP  $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -111,11 +112,21 @@ http {
 
       # Check for security header to authorize POST requests
       if ( $http_x_secret_access_token != "SECRET_ACCESS_TOKEN" ) {
+        set $auth_check 0;
+      }
+
+      # CODES: POST=1 and GET=0
+      if ( $request_method = POST ) {
+        set $auth_check "${auth_check}1";
+      }
+
+      # Block POST requests with invalid Secret Access Token
+      if ( $auth_check = "01" ) {
         return 403;
       }
 
       # POST requests get forwarded to BDB.
-      if ($request_method = POST ) {
+      if ( $request_method = POST ) {
         proxy_pass http://$bdb_backend:BIGCHAINDB_API_PORT;
       }
 
