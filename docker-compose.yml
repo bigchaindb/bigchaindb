@@ -37,7 +37,7 @@ services:
     ports:
       - "9984"
       - "46658"
-    command: bigchaindb -l DEBUG start
+    command: bash -c "sleep 5 && bigchaindb -l DEBUG start"
   tendermint:
     image: tendermint/tendermint:0.13
     volumes:
@@ -46,7 +46,7 @@ services:
     ports:
       - "46656"
       - "46657"
-    command: bash -c "tendermint init && tendermint node && sleep 5"
+    command: bash -c "tendermint init && tendermint node"
 
   # curl client to check the health of development env
   curl-client:
