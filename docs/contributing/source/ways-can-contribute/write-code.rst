@@ -110,6 +110,24 @@ Create the PR on GitHub
 Git push your branch to GitHub so as to create a pull request against the branch where the code you want to change *lives*.
 
 Travis and Codecov will run and might complain. Look into the complaints and fix them before merging.
+Travis gets its configuration and setup from the files:
+
+- Some environment variables, if they are used. See https://docs.travis-ci.com/user/environment-variables/ 
+- ``.travis.yml``
+- ``tox.ini`` - What is tox? See `tox.readthedocs.io <https://tox.readthedocs.io/en/latest/>`_
+- ``.ci/``  (as in Travis CI = Continuous Integration)
+
+  - ``travis-after-success.sh``
+  - ``travis-before-install.sh``
+  - ``travis-before-script.sh``
+  - ``travis-install.sh``
+  - ``travis_script.sh``
+
+Read about the `Travis CI build lifecycle <https://docs.travis-ci.com/user/customizing-the-build/>`_ to understand when those scripts run and what they do.
+You can have even more scripts!
+
+Codecov gets its configuration from the file `codeocov.yaml <https://github.com/codecov/support/wiki/Codecov-Yaml>`_ which is also documented at
+`docs.codecov.io <https://docs.codecov.io/v4.3.6/docs/codecov-yaml>`_. Codecov might also use ``setup.cfg``.
 
 
 First-Time Pull Requests from External Users
