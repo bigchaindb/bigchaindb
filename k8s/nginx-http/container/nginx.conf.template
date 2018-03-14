@@ -59,7 +59,7 @@ http {
 
   # Frontend server for the external clients
   server {
-    listen CLUSTER_FRONTEND_PORT;
+    listen NODE_FRONTEND_PORT;
     underscores_in_headers on;
 
     # Forward websockets to backend BDB at 9985.

@@ -48,7 +48,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: vars
-              key: cluster-fqdn
+              key: node-fqdn
         - name: BIGCHAINDB_WSSERVER_PORT
           valueFrom:
             configMapKeyRef:
@@ -58,7 +58,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: vars
-              key: cluster-frontend-port
+              key: node-frontend-port
         - name: BIGCHAINDB_WSSERVER_ADVERTISED_SCHEME
           valueFrom:
             configMapKeyRef:

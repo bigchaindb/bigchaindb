@@ -8,7 +8,7 @@ secret_token_auth_mode="secret-token"
 
 # Cluster vars
 node_fqdn=`printenv NODE_FQDN`
-cluster_frontend_port=`printenv CLUSTER_FRONTEND_PORT`
+node_frontend_port=`printenv NODE_FRONTEND_PORT`
 
 
 # NGINX vars
@@ -36,7 +36,7 @@ tm_p2p_port=`printenv TM_P2P_PORT`
 
 
 # sanity check
-if [[ -z "${cluster_frontend_port:?CLUSTER_FRONTEND_PORT not specified. Exiting!}" || \
+if [[ -z "${node_frontend_port:?NODE_FRONTEND_PORT not specified. Exiting!}" || \
       -z "${mongo_backend_host:?MONGODB_BACKEND_HOST not specified. Exiting!}" || \
       -z "${mongo_backend_port:?MONGODB_BACKEND_PORT not specified. Exiting!}" || \
       -z "${openresty_backend_port:?OPENRESTY_BACKEND_PORT not specified. Exiting!}" || \
@@ -54,7 +54,7 @@ if [[ -z "${cluster_frontend_port:?CLUSTER_FRONTEND_PORT not specified. Exiting!
   exit 1
 else
   echo NODE_FQDN="$node_fqdn"
-  echo CLUSTER_FRONTEND_PORT="$cluster_frontend_port"
+  echo NODE_FRONTEND_PORT="$node_frontend_port"
   echo DNS_SERVER="$dns_server"
   echo HEALTH_CHECK_PORT="$health_check_port"
   echo MONGODB_BACKEND_HOST="$mongo_backend_host"
@@ -84,7 +84,7 @@ fi
 
 # configure the nginx.conf file with env variables
 sed -i "s|NODE_FQDN|${node_fqdn}|g" ${NGINX_CONF_FILE}
-sed -i "s|CLUSTER_FRONTEND_PORT|${cluster_frontend_port}|g" ${NGINX_CONF_FILE}
+sed -i "s|NODE_FRONTEND_PORT|${node_frontend_port}|g" ${NGINX_CONF_FILE}
 sed -i "s|MONGODB_BACKEND_HOST|${mongo_backend_host}|g" ${NGINX_CONF_FILE}
 sed -i "s|MONGODB_BACKEND_PORT|${mongo_backend_port}|g" ${NGINX_CONF_FILE}
 sed -i "s|BIGCHAINDB_BACKEND_HOST|${bdb_backend_host}|g" ${NGINX_CONF_FILE}

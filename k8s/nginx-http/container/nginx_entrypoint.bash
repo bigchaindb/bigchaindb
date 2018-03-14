@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Cluster vars
-cluster_frontend_port=`printenv CLUSTER_FRONTEND_PORT`
+node_frontend_port=`printenv NODE_FRONTEND_PORT`
 
 
 # NGINX vars
@@ -23,7 +23,7 @@ bdb_ws_port=`printenv BIGCHAINDB_WS_PORT`
 
 
 # sanity check
-if [[ -z "${cluster_frontend_port:?CLUSTER_FRONTEND_PORT not specified. Exiting!}" || \
+if [[ -z "${node_frontend_port:?NODE_FRONTEND_PORT not specified. Exiting!}" || \
       -z "${mongo_frontend_port:?MONGODB_FRONTEND_PORT not specified. Exiting!}" || \
       -z "${mongo_backend_host:?MONGODB_BACKEND_HOST not specified. Exiting!}" || \
       -z "${mongo_backend_port:?MONGODB_BACKEND_PORT not specified. Exiting!}" || \
@@ -37,7 +37,7 @@ if [[ -z "${cluster_frontend_port:?CLUSTER_FRONTEND_PORT not specified. Exiting!
       -z "${tm_p2p_port:?TM_P2P_PORT not specified. Exiting!}" ]]; then
   exit 1
 else
-  echo CLUSTER_FRONTEND_PORT="$cluster_frontend_port"
+  echo NODE_FRONTEND_PORT="$node_frontend_port"
   echo DNS_SERVER="$dns_server"
   echo HEALTH_CHECK_PORT="$health_check_port"
   echo MONGODB_FRONTEND_PORT="$mongo_frontend_port"
@@ -54,7 +54,7 @@ fi
 NGINX_CONF_FILE=/etc/nginx/nginx.conf
 
 # configure the nginx.conf file with env variables
-sed -i "s|CLUSTER_FRONTEND_PORT|${cluster_frontend_port}|g" ${NGINX_CONF_FILE}
+sed -i "s|NODE_FRONTEND_PORT|${node_frontend_port}|g" ${NGINX_CONF_FILE}
 sed -i "s|MONGODB_FRONTEND_PORT|${mongo_frontend_port}|g" ${NGINX_CONF_FILE}
 sed -i "s|MONGODB_BACKEND_HOST|${mongo_backend_host}|g" ${NGINX_CONF_FILE}
 sed -i "s|MONGODB_BACKEND_PORT|${mongo_backend_port}|g" ${NGINX_CONF_FILE}

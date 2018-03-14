@@ -15,11 +15,11 @@ spec:
         image: bigchaindb/nginx_http:unstable
         imagePullPolicy: Always
         env:
-        - name: CLUSTER_FRONTEND_PORT
+        - name: NODE_FRONTEND_PORT
           valueFrom:
             configMapKeyRef:
               name: vars
-              key: cluster-frontend-port
+              key: node-frontend-port
         - name: HEALTH_CHECK_PORT
           valueFrom:
             configMapKeyRef:
@@ -74,7 +74,7 @@ spec:
         - containerPort: "<cluster-health-check-port from ConfigMap>"
           protocol: TCP
           name: ngx-health
-        - containerPort: "<cluster-frontend-port from ConfigMap>"
+        - containerPort: "<node-frontend-port from ConfigMap>"
           protocol: TCP
         - containerPort: "<tm-pub-key-access from ConfigMap>"
           protocol: TCP
