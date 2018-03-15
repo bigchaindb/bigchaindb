@@ -61,7 +61,7 @@ http {
 
   # Frontend server for the external clients; acts as HTTPS termination point.
   server {
-    listen CLUSTER_FRONTEND_PORT ssl;
+    listen NODE_FRONTEND_PORT ssl;
     server_name "NODE_FQDN";
 
     ssl_certificate /etc/nginx/ssl/cert.pem;
@@ -86,6 +86,7 @@ http {
     # Forward other URL paths as per business logic/use case to BDB or
     # OpenResty instance.
     location / {
+      set $auth_check 1; #Flag to authorize POST requests
       proxy_ignore_client_abort on;
       proxy_set_header X-Real-IP  $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -93,35 +94,39 @@ http {
       # max client request body size: avg transaction size.
       client_max_body_size 15k;
 
+      if ($request_method = 'OPTIONS') {
+          add_header 'Access-Control-Allow-Origin' '*';
+          add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+          add_header 'Access-Control-Allow-Headers' 'DNT,X-Secret-Access-Token,User-Agent';
+          add_header 'Access-Control-Max-Age' 43200;
+          add_header 'Content-Type' 'text/plain charset=UTF-8';
+          add_header 'Content-Length' 0;
+          return 204;
+      }
+
+      if ( $http_x_secret_access_token != "SECRET_ACCESS_TOKEN" ) {
+          set $auth_check 0;
+      }
+      if ($request_method = POST ) {
+          set $auth_check "${auth_check}1";
+      }
+
+      if ( $auth_check = "01" ) {
+          return 403;
+      }
+
       # No auth for GETs, forward directly to BDB.
       if ($request_method = GET) {
         proxy_pass http://$bdb_backend:BIGCHAINDB_API_PORT;
       }
 
-      # OPTIONS requests handling for CORS.
-      if ($request_method = 'OPTIONS') {
-        add_header 'Access-Control-Allow-Origin' '*';
-        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
-        add_header 'Access-Control-Allow-Headers' 'DNT,X-Secret-Access-Token,User-Agent';
-        add_header 'Access-Control-Max-Age' 43200;
-        add_header 'Content-Type' 'text/plain charset=UTF-8';
-        add_header 'Content-Length' 0;
-        return 204;
-      }
-
-      # Check for security header to authorize POST requests
-      if ( $http_x_secret_access_token != "SECRET_ACCESS_TOKEN" ) {
-        return 403;
-      }
-
-      # POST requests get forwarded to BDB.
       if ($request_method = POST ) {
-        proxy_pass http://$bdb_backend:BIGCHAINDB_API_PORT;
+          proxy_pass http://$bdb_backend:BIGCHAINDB_API_PORT;
       }
 
       # Only return this reponse if request_method is neither POST|GET|OPTIONS
       if ($request_method !~ ^(GET|OPTIONS|POST)$) {
-        return 444;
+          return 444;
       }
     }
   }

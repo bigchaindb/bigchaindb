@@ -15,11 +15,11 @@ spec:
         image: bigchaindb/nginx_https:unstable
         imagePullPolicy: Always
         env:
-        - name: CLUSTER_FRONTEND_PORT
+        - name: NODE_FRONTEND_PORT
           valueFrom:
             configMapKeyRef:
               name: vars
-              key: cluster-frontend-port
+              key: node-frontend-port
         - name: HEALTH_CHECK_PORT
           valueFrom:
             configMapKeyRef:

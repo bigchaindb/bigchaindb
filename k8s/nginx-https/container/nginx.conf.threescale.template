@@ -63,7 +63,7 @@ http {
 
   # Frontend server for the external clients; acts as HTTPS termination point.
   server {
-    listen CLUSTER_FRONTEND_PORT ssl;
+    listen NODE_FRONTEND_PORT ssl;
     server_name "NODE_FQDN";
 
     ssl_certificate /etc/nginx/ssl/cert.pem;
