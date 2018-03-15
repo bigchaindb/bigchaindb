@@ -76,6 +76,7 @@ configuration file as documented under
 
 
 ## bigchaindb upsert-validator
+_[BEP#3](https://github.com/bigchaindb/BEPs/tree/master/3)_
 
 Add/Update/Remove a validator from the validaors set of the local node. Below is the command line syntax,
 
@@ -93,5 +94,4 @@ If the command is returns without any error then a request to update the validat
 
 Note:
 - When `POWER`is set to `0` then the validator will be removed from the validator set.
-- Upsert requests are handled once per block i.e. the validators set is updated once a new block is commited. So, the node operator is not allowed to submit a new upsert request until the current request has been processed. Furthermore, if Tendermint is started with `--consensus.create_empty_blocks=false`, and there are no new incoming transactions then the validators set update is delayed until any new transactions are received and a new block can be commited.
-
+- Upsert requests are handled once per block i.e. the validators set is updated once a new block is committed. So, the node operator is not allowed to submit a new upsert request until the current request has been processed. Furthermore, if Tendermint is started with `--consensus.create_empty_blocks=false`, and there are no new incoming transactions then the validators set update is delayed until any new transactions are received and a new block can be committed.
