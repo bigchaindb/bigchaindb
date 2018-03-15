@@ -606,3 +606,32 @@ def get_unspent_outputs(connection, *, query=None):
     """
 
     raise NotImplementedError
+
+
+@singledispatch
+def put_pre_commit_state(connection, commit_id, state):
+    """Store pre-commit state in a document with `id` as `commit_id`.
+
+    Args:
+        commit_id (string): `id` of document where `state` should be stored.
+        state (dict): commit state.
+
+    Returns:
+        The result of the operation.
+    """
+
+    raise NotImplementedError
+
+
+@singledispatch
+def get_pre_commit_state(connection, commit_id):
+    """Get pre-commit state where `id` is `commit_id`.
+
+    Args:
+        commit_id (string): `id` of document where `state` should be stored.
+
+    Returns:
+        Document with `id` as `commit_id`
+    """
+
+    raise NotImplementedError

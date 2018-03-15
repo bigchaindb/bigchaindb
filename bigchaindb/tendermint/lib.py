@@ -337,3 +337,5 @@ class BigchainDB(Bigchain):
 
 
 Block = namedtuple('Block', ('app_hash', 'height', 'transactions'))
+
+PreCommitState = namedtuple('PreCommitState', ('commit_id', 'height', 'transactions'))
