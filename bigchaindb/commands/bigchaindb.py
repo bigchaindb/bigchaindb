@@ -93,12 +93,9 @@ def run_configure(args):
 
 
 def _run_init():
-    b = bigchaindb.Bigchain()
+    bdb = bigchaindb.Bigchain()
 
-    schema.init_database(connection=b.connection)
-
-    b.create_genesis_block()
-    logger.info('Genesis block created.')
+    schema.init_database(connection=bdb.connection)
 
 
 @configure_bigchaindb
