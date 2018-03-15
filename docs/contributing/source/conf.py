@@ -60,8 +60,8 @@ def get_old_new(url, old, new):
 get_old_new('https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/CODE_OF_CONDUCT.md',
             'CODE_OF_CONDUCT.md', 'cross-project-policies/code-of-conduct.md')
 
-get_old_new('https://raw.githubusercontent.com/vrde/bigchaindb-org/16b503b7c34e64f96aaccaefc4c826492174a5ae/protocols/shared-workspace.md',
-            'shared-workspace.md', 'cross-project-policies/shared-workspace.md')
+get_old_new('https://raw.githubusercontent.com/bigchaindb/BEPs/master/6/README.md',
+            'README.md', 'cross-project-policies/shared-workspace.md')
 
 get_old_new('https://raw.githubusercontent.com/bigchaindb/bigchaindb/master/RELEASE_PROCESS.md',
             'RELEASE_PROCESS.md', 'cross-project-policies/release-process.md')
