@@ -1,4 +1,4 @@
-version: '3'
+version: '2.1'
 
 services:
   # Build: docker-compose build -d bdb
@@ -8,7 +8,7 @@ services:
     ports:
       - "27017"
     command: mongod
-  bdb:
+  bigchaindb:
     depends_on:
       - mdb
       - tendermint
@@ -37,6 +37,11 @@ services:
     ports:
       - "9984"
       - "46658"
+    healthcheck:
+      test: ["CMD", "curl", "http://bigchaindb:9984"]
+      interval: 3s
+      timeout: 5s
+      retries: 3
     command: bigchaindb -l DEBUG start
   tendermint:
     image: tendermint/tendermint:0.13
@@ -46,17 +51,18 @@ services:
     ports:
       - "46656"
       - "46657"
-    healthcheck:
-      test: ["CMD-SHELL", "curl http://tendermint:46657/abci_query"]
-      interval: 3s
-      timeout: 10s
-      retries: 3
-    command: bash -c "tendermint init && tendermint node --proxy_app=\"tcp://bdb:46658\""
+    command: bash -c "tendermint init && tendermint node"
+  bdb:
+    image: busybox
+    depends_on:
+      bigchaindb:
+        condition: service_healthy
+
 
   # curl client to check the health of development env
   curl-client:
     image: appropriate/curl
-    command: /bin/sh -c "curl http://tendermint:46657/abci_query && curl http://bdb:9984/"
+    command: /bin/sh -c "curl http://tendermint:46657/abci_query && curl http://bigchaindb:9984/"
 
   # Python BigchainDB driver to interact with the BigchainDB server
   bdb-driver:

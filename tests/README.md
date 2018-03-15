@@ -70,7 +70,7 @@ $ docker-compose up -d bdb
 then run the tests using:
 
 ```text
-$ docker-compose run --rm --no-deps bdb pytest -v
+$ docker-compose run --rm --no-deps bigchaindb pytest -v
 ```
 
 ## Automated Testing of All Pull Requests
