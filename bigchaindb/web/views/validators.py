@@ -1,8 +1,6 @@
 from flask import current_app
 from flask_restful import Resource
 
-from bigchaindb.web.views.base import make_error
-
 
 class ValidatorsApi(Resource):
     def get(self):
@@ -14,11 +12,7 @@ class ValidatorsApi(Resource):
 
         pool = current_app.config['bigchain_pool']
 
-        try:
-            with pool() as bigchain:
-                validators = bigchain.get_validators()
+        with pool() as bigchain:
+            validators = bigchain.get_validators()
 
-            return validators
-
-        except Exception:
-            return make_error(500)
+        return validators

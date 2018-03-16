@@ -1,5 +1,7 @@
 import pytest
 
+from requests.exceptions import RequestException
+
 pytestmark = pytest.mark.tendermint
 
 VALIDATORS_ENDPOINT = '/api/v1/validators/'
@@ -20,11 +22,11 @@ def test_get_validators_endpoint(b, client, monkeypatch):
 def test_get_validators_500_endpoint(b, client, monkeypatch):
 
     def mock_get(uri):
-        return 'InvalidResponse'
+        raise RequestException
     monkeypatch.setattr('requests.get', mock_get)
 
-    res = client.get(VALIDATORS_ENDPOINT)
-    assert res.status_code == 500
+    with pytest.raises(RequestException):
+        client.get(VALIDATORS_ENDPOINT)
 
 
 # Helper

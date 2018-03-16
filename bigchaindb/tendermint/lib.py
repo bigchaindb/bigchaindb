@@ -253,8 +253,9 @@ class BigchainDB(Bigchain):
 
             return validators
 
-        except Exception:
-            raise Exception('Error while processing data from tendermint.')
+        except requests.exceptions.RequestException as e:
+            logger.error('Error while connecting to Tendermint HTTP API')
+            raise e
 
 
 Block = namedtuple('Block', ('app_hash', 'height', 'transactions'))
