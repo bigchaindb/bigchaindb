@@ -99,7 +99,6 @@ def test__run_init(mocker):
     bigchain_mock.assert_called_once_with()
     init_db_mock.assert_called_once_with(
         connection=bigchain_mock.return_value.connection)
-    bigchain_mock.return_value.create_genesis_block.assert_called_once_with()
 
 
 @pytest.mark.tendermint

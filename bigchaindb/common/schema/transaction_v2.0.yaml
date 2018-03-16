@@ -58,7 +58,6 @@ definitions:
     enum:
     - CREATE
     - TRANSFER
-    - GENESIS
   asset:
     type: object
     additionalProperties: false
