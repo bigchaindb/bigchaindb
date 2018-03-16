@@ -3,14 +3,14 @@ version: '2.1'
 services:
   # Build: docker-compose build -d bdb
   # Run: docker-compose run -d bdb
-  mdb:
+  mongodb:
     image: mongo:3.4.13
     ports:
       - "27017"
     command: mongod
   bigchaindb:
     depends_on:
-      - mdb
+      - mongodb
       - tendermint
     build:
       context: .
@@ -27,7 +27,7 @@ services:
       - ./tox.ini:/usr/src/app/tox.ini
     environment:
       BIGCHAINDB_DATABASE_BACKEND: localmongodb
-      BIGCHAINDB_DATABASE_HOST: mdb
+      BIGCHAINDB_DATABASE_HOST: mongodb
       BIGCHAINDB_DATABASE_PORT: 27017
       BIGCHAINDB_SERVER_BIND: 0.0.0.0:9984
       BIGCHAINDB_WSSERVER_HOST: 0.0.0.0
@@ -36,6 +36,7 @@ services:
       BIGCHAINDB_TENDERMINT_PORT: 46657
     ports:
       - "9984"
+      - "9985"
       - "46658"
     healthcheck:
       test: ["CMD", "curl", "http://bigchaindb:9984"]
