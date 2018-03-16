@@ -7,12 +7,12 @@ metadata:
   name: vars
   namespace: default
 data:
-  # cluster-fqdn is the DNS name registered for your HTTPS certificate.
-  cluster-fqdn: "bdb.example.com"
+  # node-fqdn is the DNS name registered for your HTTPS certificate.
+  node-fqdn: "bdb.example.com"
 
-  # cluster-frontend-port is the port number on which this node's services
+  # node-frontend-port is the port number on which this node's services
   # are available to external clients.
-  cluster-frontend-port: "443"
+  node-frontend-port: "443"
 
   # cluster-health-check-port is the port number on which an external load
   # balancer can check the status/liveness of the external/public server.
