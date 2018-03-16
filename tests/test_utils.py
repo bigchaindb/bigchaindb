@@ -135,12 +135,6 @@ def test_process_group_instantiates_and_start_processes(mock_process):
         process.start.assert_called_with()
 
 
-def test_is_genesis_block_returns_true_if_genesis(b):
-    from bigchaindb.utils import is_genesis_block
-    genesis_block = b.prepare_genesis_block()
-    assert is_genesis_block(genesis_block)
-
-
 def test_lazy_execution():
     from bigchaindb.utils import Lazy
 
