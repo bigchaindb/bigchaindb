@@ -555,6 +555,54 @@ def mocked_setup_sub_logger(mocker):
         'bigchaindb.log.setup.setup_sub_logger', autospec=True, spec_set=True)
 
 
+@pytest.fixture
+def abci_http(tendermint_host, tendermint_port):
+    import requests
+    import time
+
+    for i in range(5):
+        try:
+            requests.get(f'http://{tendermint_host}:{tendermint_port}/abci_info')
+            return True
+
+        except Exception:
+            pass
+        time.sleep(1)
+
+    return False
+
+
+@pytest.yield_fixture(scope='session')
+def event_loop(request):
+    import asyncio
+
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    yield loop
+    loop.close()
+
+
+@pytest.mark.bdb
+@pytest.yield_fixture(scope='session')
+async def abci_server():
+    from abci import ABCIServer
+    from bigchaindb.tendermint.core import App
+    from bigchaindb.utils import Process
+
+    # The test database needs to flushed to clear data from previous run
+    # if not cleared then it causes issues when re-run locally
+    from bigchaindb.backend import connect
+    from .utils import flush_db
+    from bigchaindb import config
+    conn = connect()
+    dbname = config['database']['name']
+    flush_db(conn, dbname)
+
+    app = ABCIServer(app=App())
+    abci_proxy = Process(name='ABCI', target=app.run)
+    yield abci_proxy.start()
+    abci_proxy.terminate()
+
+
 @pytest.fixture(scope='session')
 def certs_dir():
     return os.path.abspath('tests/backend/mongodb-ssl/certs')
