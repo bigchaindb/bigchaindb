@@ -384,6 +384,22 @@ def text_search(conn, search, *, language='english', case_sensitive=False,
     return (_remove_text_score(obj) for obj in cursor)
 
 
+@register_query(MongoDBConnection)
+def text_search_object(conn, search, text_score=False, limit=0):
+    aggregate = [
+            {'$match': search},
+            {'$lookup': {'from': 'bigchain', 'localField': 'id', 'foreignField': 'block.transactions.id', 'as': 'block' }},
+            {'$project': {'_id': False, 'data': 1, 'id': 1, 'voters': {'$size': '$block.block.voters'}}}]
+
+    if limit > 0:
+        aggregate.append({'$limit': limit})
+
+    cursor = conn.run(
+        conn.collection('assets')
+        .aggregate(aggregate))
+
+    return cursor
+
 def _remove_text_score(asset):
     asset.pop('score', None)
     return asset
