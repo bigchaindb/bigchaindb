@@ -1,7 +1,7 @@
 version: '2.1'
 
 services:
-  # Build: docker-compose build -d bdb
+  # Build: docker-compose build -d bigchaindb
   # Run: docker-compose run -d bdb
   mongodb:
     image: mongo:3.4.13
@@ -39,7 +39,7 @@ services:
       - "9985"
       - "46658"
     healthcheck:
-      test: ["CMD", "curl", "http://bigchaindb:9984"]
+      test: ["CMD", "bash", "-c", "curl http://bigchaindb:9984 && curl http://tendermint:46657/abci_query"]
       interval: 3s
       timeout: 5s
       retries: 3

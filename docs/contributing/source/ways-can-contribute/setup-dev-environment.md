@@ -5,7 +5,7 @@
 You can also use [Docker Compose](https://docs.docker.com/compose/) to run all the tests.
 
 ```bash
-$ docker-compose build bdb
+$ docker-compose build bigchaindb
 $ docker-compose up -d bdb
 ```
 
@@ -50,10 +50,21 @@ $ docker-compose -f docker-compose.yml run --rm bdb-driver ipython
 
 ### Running Tests
 
-Run the tests using:
+Run all the tests using:
 
 ```bash
 $ docker-compose run --rm --no-deps bigchaindb pytest -v
+```
+
+Run tests from a file:
+
+```bash
+$ docker-compose run --rm --no-deps bigchaindb pytest /path/to/file -v
+```
+
+Run specific tests:
+```bash
+$ docker-compose run --rm --no-deps bigchaindb pytest /path/to/file -k "<test_name>" -v
 ```
 
 ### Building Docs

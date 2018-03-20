@@ -10,6 +10,8 @@ RUN apt-get update \
 
 ARG backend
 
+# When developing with Python in a docker container, we are using PYTHONBUFFERED
+# to force stdin, stdout and stderr to be totally unbuffered and to capture logs/outputs
 ENV PYTHONUNBUFFERED 0
 
 ENV BIGCHAINDB_DATABASE_PORT 27017
