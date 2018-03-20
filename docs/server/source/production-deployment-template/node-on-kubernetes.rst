@@ -73,7 +73,7 @@ to the above command (i.e. the path to the private key).
       $ kubectl get pods
 
     will get a list of the pods in the Kubernetes cluster associated
-    with the context named ``k8s-bdb-test-cluster-0``.
+    with the context named ``k8s-bdb-test-node-0``.
 
 Step 2: Connect to Your Cluster's Web UI (Optional)
 ---------------------------------------------------
@@ -157,9 +157,9 @@ Step 5: Assign DNS Name to the NGINX Public IP
 
   * Once a public IP is assigned, you can map it to
     a DNS name.
-    We usually assign ``bdb-test-cluster-0``, ``bdb-test-cluster-1`` and
+    We usually assign ``bdb-test-node-0``, ``bdb-test-node-1`` and
     so on in our documentation.
-    Let's assume that we assign the unique name of ``bdb-test-cluster-0`` here.
+    Let's assume that we assign the unique name of ``bdb-test-node-0`` here.
 
 
 **Set up DNS mapping in Azure.**
@@ -171,7 +171,7 @@ changes to be reflected.
 Select the ``Public IP`` resource that is attached to your service (it should
 have the Azure DNS prefix name along with a long random string, without the
 ``master-ip`` string), select ``Configuration``, add the DNS assigned above
-(for example, ``bdb-test-cluster-0``), click ``Save``, and wait for the
+(for example, ``bdb-test-node-0``), click ``Save``, and wait for the
 changes to be applied.
 
 To verify the DNS setting is operational, you can run ``nslookup <DNS
@@ -244,7 +244,7 @@ Step 10: Start the NGINX Kubernetes Deployment
 ----------------------------------------------
 
   * NGINX is used as a proxy to the BigchainDB, Tendermint and MongoDB instances in
-    the node. It proxies HTTP/HTTPS requests on the ``cluster-frontend-port``
+    the node. It proxies HTTP/HTTPS requests on the ``node-frontend-port``
     to the corresponding OpenResty(if 3scale enabled) or BigchainDB backend, TCP connections
     on ``mongodb-frontend-port``, ``tm-p2p-port`` and ``tm-pub-key-access``
     to MongoDB and Tendermint respectively.
@@ -580,7 +580,7 @@ Step 20(Optional): Start a Kubernetes Deployment for OpenResty
 
   * The configuration uses the following values set in the ConfigMap:
 
-    - ``cluster-dns-server-ip``
+    - ``node-dns-server-ip``
     - ``openresty-backend-port``
     - ``ngx-bdb-instance-name``
     - ``bigchaindb-api-port``
@@ -736,7 +736,7 @@ To test the vanilla NGINX instance:
 
    $ nslookup ngx-http-instance-0
 
-   $ dig +noall +answer _public-cluster-port._tcp.ngx-http-instance-0.default.svc.cluster.local SRV
+   $ dig +noall +answer _public-node-port._tcp.ngx-http-instance-0.default.svc.cluster.local SRV
 
    $ dig +noall +answer _public-health-check-port._tcp.ngx-http-instance-0.default.svc.cluster.local SRV
 
@@ -755,15 +755,15 @@ To test the NGINX instance with HTTPS and 3scale integration:
 
    $ nslookup ngx-instance-0
 
-   $ dig +noall +answer _public-secure-cluster-port._tcp.ngx-instance-0.default.svc.cluster.local SRV
+   $ dig +noall +answer _public-secure-node-port._tcp.ngx-instance-0.default.svc.cluster.local SRV
 
    $ dig +noall +answer _public-mdb-port._tcp.ngx-instance-0.default.svc.cluster.local SRV
 
-   $ dig +noall +answer _public-insecure-cluster-port._tcp.ngx-instance-0.default.svc.cluster.local SRV
+   $ dig +noall +answer _public-insecure-node-port._tcp.ngx-instance-0.default.svc.cluster.local SRV
 
-   $ wsc -er wss://<cluster-fqdn>/api/v1/streams/valid_transactions
+   $ wsc -er wss://<node-fqdn>/api/v1/streams/valid_transactions
 
-   $ curl -X GET http://<cluster-fqdn>:27017
+   $ curl -X GET http://<node-fqdn>:27017
 
 The above curl command should result in the response
 ``It looks like you are trying to access MongoDB over HTTP on the native driver port.``
@@ -776,7 +776,7 @@ Check the MongoDB monitoring agent on the MongoDB Cloud Manager
 portal to verify they are working fine.
 
 If you are using the NGINX with HTTP support, accessing the URL
-``http://<DNS/IP of your exposed BigchainDB service endpoint>:cluster-frontend-port``
+``http://<DNS/IP of your exposed BigchainDB service endpoint>:node-frontend-port``
 on your browser should result in a JSON response that shows the BigchainDB
 server version, among other things.
 If you are using the NGINX with HTTPS support, use ``https`` instead of

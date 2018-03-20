@@ -24,12 +24,12 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: vars
-              key: cluster-health-check-port
+              key: node-health-check-port
         - name: DNS_SERVER
           valueFrom:
             configMapKeyRef:
               name: vars
-              key: cluster-dns-server-ip
+              key: node-dns-server-ip
         - name: MONGODB_BACKEND_HOST
           valueFrom:
             configMapKeyRef:
@@ -71,7 +71,7 @@ spec:
               name: tendermint-config
               key: tm-p2p-port
         ports:
-        - containerPort: "<cluster-health-check-port from ConfigMap>"
+        - containerPort: "<node-health-check-port from ConfigMap>"
           protocol: TCP
           name: ngx-health
         - containerPort: "<node-frontend-port from ConfigMap>"

@@ -14,15 +14,15 @@ data:
   # are available to external clients.
   node-frontend-port: "443"
 
-  # cluster-health-check-port is the port number on which an external load
+  # node-health-check-port is the port number on which an external load
   # balancer can check the status/liveness of the external/public server.
   # In our deployment, Kubernetes sends 'livenessProbes' to this port and
   # interprets a successful response as a 'healthy' service.
-  cluster-health-check-port: "8888"
+  node-health-check-port: "8888"
 
-  # cluster-dns-server-ip is the IP of the DNS server. A Kubernetes deployment
+  # node-dns-server-ip is the IP of the DNS server. A Kubernetes deployment
   # always has a DNS server (kube-dns) running at 10.0.0.10
-  cluster-dns-server-ip: "10.0.0.10"
+  node-dns-server-ip: "10.0.0.10"
 
   # mdb-instance-name is the name of the MongoDB instance in this cluster.
   mdb-instance-name: "<name of the mdb instance>"

@@ -24,7 +24,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: vars
-              key: cluster-health-check-port
+              key: node-health-check-port
         - name: NODE_FQDN
           valueFrom:
             configMapKeyRef:
@@ -34,7 +34,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: vars
-              key: cluster-dns-server-ip
+              key: node-dns-server-ip
         - name: MONGODB_BACKEND_HOST
           valueFrom:
             configMapKeyRef:
