@@ -1,4 +1,4 @@
-FROM tendermint/tendermint:0.13
+FROM tendermint/tendermint:0.12
 LABEL maintainer "dev@bigchaindb.com"
 WORKDIR /
 COPY genesis.json.template /etc/tendermint/genesis.json

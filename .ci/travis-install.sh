@@ -7,6 +7,6 @@ pip install --upgrade pip
 if [[ -n ${TOXENV} ]]; then
     pip install --upgrade tox
 else
-    docker-compose -f docker-compose.travis.yml build --no-cache
+    docker-compose build --no-cache bigchaindb
     pip install --upgrade codecov
 fi

@@ -1,33 +1,93 @@
-version: '2'
+version: '2.1'
 
 services:
-  mdb:
-    image: mongo:3.4.3
+  # Build: docker-compose build -d bigchaindb
+  # Run: docker-compose run -d bdb
+  mongodb:
+    image: mongo:3.4.13
     ports:
       - "27017"
     command: mongod
-
-  bdb:
+  bigchaindb:
+    depends_on:
+      - mongodb
+      - tendermint
     build:
       context: .
       dockerfile: Dockerfile-dev
       args:
-        backend: mongodb
+        backend: localmongodb
     volumes:
       - ./bigchaindb:/usr/src/app/bigchaindb
       - ./tests:/usr/src/app/tests
       - ./docs:/usr/src/app/docs
-      - ./k8s:/usr/src/app/k8s
       - ./setup.py:/usr/src/app/setup.py
       - ./setup.cfg:/usr/src/app/setup.cfg
       - ./pytest.ini:/usr/src/app/pytest.ini
       - ./tox.ini:/usr/src/app/tox.ini
     environment:
       BIGCHAINDB_DATABASE_BACKEND: localmongodb
-      BIGCHAINDB_DATABASE_HOST: mdb
+      BIGCHAINDB_DATABASE_HOST: mongodb
       BIGCHAINDB_DATABASE_PORT: 27017
       BIGCHAINDB_SERVER_BIND: 0.0.0.0:9984
       BIGCHAINDB_WSSERVER_HOST: 0.0.0.0
+      BIGCHAINDB_START_TENDERMINT: 0
+      BIGCHAINDB_TENDERMINT_HOST: tendermint
+      BIGCHAINDB_TENDERMINT_PORT: 46657
     ports:
       - "9984"
-    command: bigchaindb start
+      - "9985"
+      - "46658"
+    healthcheck:
+      test: ["CMD", "bash", "-c", "curl http://bigchaindb:9984 && curl http://tendermint:46657/abci_query"]
+      interval: 3s
+      timeout: 5s
+      retries: 3
+    command: bigchaindb -l DEBUG start
+  tendermint:
+    image: tendermint/tendermint:0.12
+    volumes:
+      - ./tmdata/config.toml:/tendermint/config.toml
+    entrypoint: ''
+    ports:
+      - "46656"
+      - "46657"
+    command: bash -c "tendermint init && tendermint node"
+  bdb:
+    image: busybox
+    depends_on:
+      bigchaindb:
+        condition: service_healthy
+
+
+  # curl client to check the health of development env
+  curl-client:
+    image: appropriate/curl
+    command: /bin/sh -c "curl http://tendermint:46657/abci_query && curl http://bigchaindb:9984/"
+
+  # Python BigchainDB driver to interact with the BigchainDB server
+  bdb-driver:
+    build:
+      context: .
+      dockerfile: ./tools/py-bigchaindb-driver/Dockerfile
+
+  # Build docs only
+  # docker-compose build bdocs
+  # docker-compose up -d bdocs
+  bdocs:
+    depends_on:
+      - vdocs
+    build:
+      context: .
+      dockerfile: Dockerfile-dev
+      args:
+        backend: localmongodb
+    volumes:
+      - .:/usr/src/app/
+    command: make -C docs/server html
+  vdocs:
+    image: nginx
+    ports:
+      - '33333:80'
+    volumes:
+      - ./docs/server/build/html:/usr/share/nginx/html

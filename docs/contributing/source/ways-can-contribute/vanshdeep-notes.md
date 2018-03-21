@@ -143,7 +143,7 @@ One could mark a specific test and execute the same by appending `-m my_mark` to
 Although the above should prove sufficient in most cases but in case tests are failing on Travis CI then the following command can be used to possibly replicate the failure locally,
 
 ```bash
-$ docker-compose -f docker-compose.travis.yml run --rm --no-deps bdb pytest -v --cov=bigchaindb
+$ docker-compose run --rm --no-deps bdb pytest -v --cov=bigchaindb
 ```
 
 NOTE: before executing the above command the user must ensure that they reset the Tendermint container by executing `tendermint usafe_reset_all` command in the Tendermint container.
