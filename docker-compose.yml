@@ -45,7 +45,7 @@ services:
       retries: 3
     command: bigchaindb -l DEBUG start
   tendermint:
-    image: tendermint/tendermint:0.13
+    image: tendermint/tendermint:0.12
     volumes:
       - ./tmdata/config.toml:/tendermint/config.toml
     entrypoint: ''
