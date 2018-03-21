@@ -77,6 +77,7 @@ to resolve the hostnames of all the services running in the k8s cluster.
 The value defaults to `10.0.0.1`.
 
 .. code::
+
    # retrieval via commandline.
    $ kubectl get services
 
