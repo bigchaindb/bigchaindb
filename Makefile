@@ -40,6 +40,7 @@ export PRINT_HELP_PYSCRIPT
 ##################
 # Basic commands #
 ##################
+DOCKER := docker
 DC := docker-compose
 BROWSER := python -c "$$BROWSER_PYSCRIPT"
 HELP := python -c "$$PRINT_HELP_PYSCRIPT"
@@ -54,8 +55,20 @@ IS_DOCKER_COMPOSE_INSTALLED := $(shell command -v docker-compose 2> /dev/null)
 help: ## Show this help
 	@$(HELP) < $(MAKEFILE_LIST)
 
-run: check-deps ## Run BigchainDB from source
+run: check-deps ## Run BigchainDB from source (stop it with ctrl+c)
 	@$(DC) up bigchaindb
+
+start: check-deps ## Run BigchainDB from source and daemonize it (stop with `make stop`)
+	@$(DC) up -d bigchaindb
+
+stop: check-deps ## Stop BigchainDB
+	@$(DC) stop
+
+logs: check-deps ## Attach to the logs
+	@$(DC) logs -f bigchaindb
+
+ip: check-deps ## Get the IP address of BigchainDB
+	@$(ECHO) `$(DOCKER) inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' bigchaindb_bigchaindb_1`:9984
 
 test: check-deps ## Run all tests once
 	@$(DC) run --rm bigchaindb pytest -v
@@ -74,7 +87,7 @@ doc: ## Generate HTML documentation and open it in the browser
 
 clean: clean-build clean-pyc clean-test ## Remove all build, test, coverage and Python artifacts
 
-stop-and-remove: ## Stop and remove all docker containers (will remove the data too!)
+remove: ## Stop and remove all docker containers (will remove the data too!)
 	@$(DC) down
 
 
