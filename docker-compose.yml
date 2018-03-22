@@ -21,6 +21,7 @@ services:
       - ./bigchaindb:/usr/src/app/bigchaindb
       - ./tests:/usr/src/app/tests
       - ./docs:/usr/src/app/docs
+      - ./htmlcov:/usr/src/app/htmlcov
       - ./setup.py:/usr/src/app/setup.py
       - ./setup.cfg:/usr/src/app/setup.cfg
       - ./pytest.ini:/usr/src/app/pytest.ini
@@ -43,7 +44,7 @@ services:
       interval: 3s
       timeout: 5s
       retries: 3
-    command: bigchaindb -l DEBUG start
+    command: bigchaindb start
   tendermint:
     image: tendermint/tendermint:0.12
     volumes:
