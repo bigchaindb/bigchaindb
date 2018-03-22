@@ -83,10 +83,7 @@ doc: ## Generate HTML documentation and open it in the browser
 	$(BROWSER) docs/root/build/html/index.html
 
 clean: clean-build clean-pyc clean-test ## Remove all build, test, coverage and Python artifacts
-
-remove: ## Stop and remove all docker containers (will remove the data too!)
-	@$(DC) down
-
+	@$(ECHO) "Cleaning was successful."
 
 ###############
 # Sub targets #
