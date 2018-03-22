@@ -67,9 +67,6 @@ stop: check-deps ## Stop BigchainDB
 logs: check-deps ## Attach to the logs
 	@$(DC) logs -f bigchaindb
 
-ip: check-deps ## Get the IP address of BigchainDB
-	@$(ECHO) `$(DOCKER) inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' bigchaindb_bigchaindb_1`:9984
-
 test: check-deps ## Run all tests once
 	@$(DC) run --rm bigchaindb pytest -v
 

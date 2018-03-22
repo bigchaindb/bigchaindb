@@ -25,7 +25,6 @@ To know the IP of the instance running, execute in a new terminal `make ip`.
 There are also other commands you can execute:
 - `make start`: Run BigchainDB from source and daemonize it (stop it with `make stop`).
 - `make stop`: Stop BigchainDB.
-- `make ip`: Get the IP address of BigchainDB.
 - `make logs`: Attach to the logs.
 - `make test`: Run all tests.
 - `make test-watch`: Run all tests and wait. Every time you change code, tests will be run again.

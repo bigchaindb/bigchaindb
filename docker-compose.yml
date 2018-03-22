@@ -36,8 +36,8 @@ services:
       BIGCHAINDB_TENDERMINT_HOST: tendermint
       BIGCHAINDB_TENDERMINT_PORT: 46657
     ports:
-      - "9984"
-      - "9985"
+      - "9984:9984"
+      - "9985:9985"
       - "46658"
     healthcheck:
       test: ["CMD", "bash", "-c", "curl http://bigchaindb:9984 && curl http://tendermint:46657/abci_query"]
