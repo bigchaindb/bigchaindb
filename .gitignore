@@ -6,6 +6,21 @@ __pycache__/
 # C extensions
 *.so
 
+# Swap -- copypasta from https://github.com/github/gitignore/blob/master/Global/Vim.gitignore
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-v][a-z]
+[._]sw[a-p]
+
+# Session
+Session.vim
+
+# Temporary
+.netrwhist
+*~
+# Auto-generated tag files
+tags
+
 # Distribution / packaging
 .Python
 env/
