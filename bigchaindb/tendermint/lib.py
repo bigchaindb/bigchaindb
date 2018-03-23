@@ -93,8 +93,7 @@ class BigchainDB(Bigchain):
             if transaction['operation'] == 'CREATE':
                 asset = transaction.pop('asset')
                 asset['id'] = transaction['id']
-                if asset['data'] is not None:
-                    assets.append(asset)
+                assets.append(asset)
 
             metadata = transaction.pop('metadata')
             txn_metadatas.append({'id': transaction['id'],
@@ -198,8 +197,6 @@ class BigchainDB(Bigchain):
         if transaction:
             if asset:
                 transaction['asset'] = asset
-            else:
-                transaction['asset'] = {'data': None}
 
             if 'metadata' not in transaction:
                 metadata = metadata[0] if metadata else None
