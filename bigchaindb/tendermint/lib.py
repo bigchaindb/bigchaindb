@@ -330,7 +330,7 @@ class BigchainDB(Bigchain):
 
     @property
     def fastquery(self):
-        return fastquery.FastQuery(self.connection, self.me)
+        return fastquery.FastQuery(self.connection)
 
 
 Block = namedtuple('Block', ('app_hash', 'height', 'transactions'))

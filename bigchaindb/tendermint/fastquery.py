@@ -7,6 +7,8 @@ class FastQuery():
     """
     Database queries that join on block results from a single node.
     """
+    def __init__(self, connection):
+        self.connection = connection
 
     def get_outputs_by_public_key(self, public_key):
         """
