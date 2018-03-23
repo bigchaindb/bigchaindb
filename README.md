@@ -20,7 +20,7 @@ cd bigchaindb
 make run
 ```
 
-To know the IP of the instance running, execute in a new terminal `make ip`.
+BigchainDB should be reachable now on `http://localhost:9984/`.
 
 There are also other commands you can execute:
 - `make start`: Run BigchainDB from source and daemonize it (stop it with `make stop`).
@@ -30,6 +30,8 @@ There are also other commands you can execute:
 - `make test-watch`: Run all tests and wait. Every time you change code, tests will be run again.
 - `make cov`: Check code coverage and open the result in the browser.
 - `make doc`: Generate HTML documentation and open it in the browser.
+- `make clean`: Remove all build, test, coverage and Python artifacts.
+- `make reset`: Stop and REMOVE all containers. WARNING: you will LOSE all data stored in BigchainDB.
 
 To view all commands available, run `make`.
 
