@@ -85,6 +85,9 @@ doc: ## Generate HTML documentation and open it in the browser
 clean: clean-build clean-pyc clean-test ## Remove all build, test, coverage and Python artifacts
 	@$(ECHO) "Cleaning was successful."
 
+reset: check-deps ## Stop and REMOVE all containers. WARNING: you will LOSE all data stored in BigchainDB.
+	@$(DC) down
+
 ###############
 # Sub targets #
 ###############

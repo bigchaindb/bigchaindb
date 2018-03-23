@@ -66,7 +66,7 @@ $ bigchaindb --log-level INFO start
 ```
 
 The allowed levels are `DEBUG`, `INFO`, `WARNING`, `ERROR`, and `CRITICAL`.
-For an explanation regarding these levels please consult the 
+For an explanation regarding these levels please consult the
 [Logging Levels](https://docs.python.org/3.6/library/logging.html#levels)
 section of Python's documentation.
 
@@ -75,10 +75,10 @@ configuration file as documented under
 [Configuration Settings](configuration.html).
 
 
-## bigchaindb upsert-validator
-_[BEP#3](https://github.com/bigchaindb/BEPs/tree/master/3)_
+## bigchaindb upsert-validator (insecure)
+Add, update, or remove a validator from the validators set of the local node. The command implements [3/UPSERT-VALIDATORS](https://github.com/bigchaindb/BEPs/tree/master/3), check it out if you need more details on how this is orchestrated.
 
-Add/Update/Remove a validator from the validaors set of the local node. Below is the command line syntax,
+Below is the command line syntax,
 
 ```bash
 $ bigchaindb upsert-validator PUBLIC_KEY_OF_VALIDATOR POWER

@@ -83,6 +83,7 @@ async def test_abci_http(abci_server, abci_http, tendermint_ws_url, b):
     msg_data_dict = json.loads(msg.data)
     assert msg_data_dict['id'] == stream_id
     assert msg_data_dict['jsonrpc'] == '2.0'
+    assert msg_data_dict['result'] == {}
 
     alice = generate_key_pair()
     tx = Transaction.create([alice.public_key],

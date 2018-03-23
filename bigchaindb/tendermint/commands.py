@@ -16,7 +16,12 @@ logger = logging.getLogger(__name__)
 BANNER = """
 ****************************************************************************
 *                                                                          *
+*   ┏┓ ╻┏━╸┏━╸╻ ╻┏━┓╻┏┓╻╺┳┓┏┓    ┏━┓ ┏━┓ ╺┳┓┏━╸╻ ╻                         *
+*   ┣┻┓┃┃╺┓┃  ┣━┫┣━┫┃┃┗┫ ┃┃┣┻┓   ┏━┛ ┃┃┃  ┃┃┣╸ ┃┏┛                         *
+*   ┗━┛╹┗━┛┗━╸╹ ╹╹ ╹╹╹ ╹╺┻┛┗━┛   ┗━╸╹┗━┛╹╺┻┛┗━╸┗┛                          *
+*   codename "fluffy cat"                                                  *
 *   Initialization complete. BigchainDB Server is ready and waiting.       *
+*                                                                          *
 *   You can send HTTP requests via the HTTP API documented in the          *
 *   BigchainDB Server docs at:                                             *
 *    https://bigchaindb.com/http-api                                       *
