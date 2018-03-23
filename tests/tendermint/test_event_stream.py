@@ -78,4 +78,5 @@ async def test_subscribe_events(tendermint_ws_url):
     msg_data_dict = json.loads(msg.data)
     assert msg_data_dict['id'] == stream_id
     assert msg_data_dict['jsonrpc'] == '2.0'
+    assert msg_data_dict['result'] == {}
     # TODO What else should be there? Right now, getting error.
