@@ -1,7 +1,8 @@
 BigchainDB Documentation
 ========================
 
-`BigchainDB <https://www.bigchaindb.com/>`_ is a scalable blockchain database.
+Meet BigchainDB, a blockchain database.
+
 It has some database characteristics and some blockchain characteristics,
 including `decentralization <decentralized.html>`_, 
 `immutability <immutable.html>`_ 
@@ -53,6 +54,9 @@ At a high level, one can communicate with a BigchainDB cluster (set of nodes) us
 
    <div class="buttondiv">
      <a class="button" href="http://bigchaindb.com/http-api">HTTP API Docs</a>
+   </div>
+   <div class="buttondiv">
+     <a class="button" href="http://docs.bigchaindb.com/projects/contributing/en/latest/index.html">Contributing to BigchainDB</a>
    </div>
    <div class="buttondiv">
      <a class="button" href="http://docs.bigchaindb.com/projects/py-driver/en/latest/index.html">Python Driver Docs</a>
