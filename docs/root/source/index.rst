@@ -1,7 +1,7 @@
 BigchainDB Documentation
 ========================
 
-Meet BigchainDB, a blockchain database.
+Meet BigchainDB. The blockchain database.
 
 It has some database characteristics and some blockchain characteristics,
 including `decentralization <decentralized.html>`_, 
