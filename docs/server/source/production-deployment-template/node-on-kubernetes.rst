@@ -75,8 +75,8 @@ to the above command (i.e. the path to the private key).
     will get a list of the pods in the Kubernetes cluster associated
     with the context named ``k8s-bdb-test-cluster-0``.
 
-Step 2: Connect to Your Cluster's Web UI (Optional)
----------------------------------------------------
+Step 2: Connect to Your Kubernetes Cluster's Web UI (Optional)
+---------------------------------------------------------------
 
 You can connect to your cluster's
 `Kubernetes Dashboard <https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/>`_
