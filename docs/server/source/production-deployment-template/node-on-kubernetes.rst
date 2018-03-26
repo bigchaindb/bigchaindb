@@ -73,7 +73,7 @@ to the above command (i.e. the path to the private key).
       $ kubectl get pods
 
     will get a list of the pods in the Kubernetes cluster associated
-    with the context named ``k8s-bdb-test-node-0``.
+    with the context named ``k8s-bdb-test-cluster-0``.
 
 Step 2: Connect to Your Cluster's Web UI (Optional)
 ---------------------------------------------------

@@ -21,24 +21,24 @@ data:
   node-health-check-port: "8888"
 
   # node-dns-server-ip is the IP of the DNS server. A Kubernetes deployment
-  # always has a DNS server (kube-dns) running at 10.0.0.10
-  node-dns-server-ip: "10.0.0.10"
+  # always has a DNS server (kube-dns).
+  node-dns-server-ip: "<IP address of node's DNS server, e.g. 10.0.0.10>"
 
-  # mdb-instance-name is the name of the MongoDB instance in this cluster.
+  # mdb-instance-name is the name of the MongoDB instance in this Kubernetes cluster.
   mdb-instance-name: "<name of the mdb instance>"
 
-  # ngx-instance-name is the name of the NGINX instance in this cluster.
+  # ngx-instance-name is the name of the NGINX instance in this Kubernetes cluster.
   ngx-instance-name: "<name of the nginx instance>"
 
   # openresty-instance-name is the name of the OpenResty instance in this
-  # cluster.
+  # Kubernetes cluster.
   openresty-instance-name: "<name of the openresty instance>"
 
-  # bdb-instance-name is the name of the BigchainDB instance in this cluster.
+  # bdb-instance-name is the name of the BigchainDB instance in this Kubernetes cluster.
   bdb-instance-name: "<name of the bdb instance>"
 
   # mdb-mon-instance-name is the name of the MongoDB Monitoring Agent instance
-  # in this cluster.
+  # in this Kubernetes cluster.
   mdb-mon-instance-name: "<name of the mdb monitoring agent instance>"
 
   # ngx-mdb-instance-name is the FQDN of the MongoDB instance in this

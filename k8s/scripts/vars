@@ -41,6 +41,6 @@ TM_GENESIS_TIME='0001-01-01T00:00:00Z'
 TM_CHAIN_ID='test-chain-rwcPML'
 
 # IP Address of the resolver(DNS server).
-# i.e. CLUSTER-IP of `kubernetes` service(kube-dns)
+# i.e. IP of `kubernetes` service(kube-dns)
 # Can be retrieved using `$ kubectl get svc`
 NODE_DNS_SERVER='10.0.0.10'
