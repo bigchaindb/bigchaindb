@@ -19,7 +19,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: vars
-              key: cluster-dns-server-ip
+              key: node-dns-server-ip
         - name: OPENRESTY_FRONTEND_PORT
           valueFrom:
             configMapKeyRef:

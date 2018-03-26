@@ -227,6 +227,7 @@ function generate_config_map(){
     tm_genesis_time=$7
     tm_chain_id=$8
     tm_instance_name=$9
+    dns_resolver_k8s=$10
 
     cat > config-map.yaml << EOF
 apiVersion: v1
@@ -242,27 +243,27 @@ data:
   # are available to external clients.
   node-frontend-port: "443"
 
-  # cluster-health-check-port is the port number on which an external load
+  # node-health-check-port is the port number on which an external load
   # balancer can check the status/liveness of the external/public server.
   # In our deployment, Kubernetes sends 'livenessProbes' to this port and
   # interprets a successful response as a 'healthy' service.
-  cluster-health-check-port: "8888"
+  node-health-check-port: "8888"
 
-  # cluster-dns-server-ip is the IP of the DNS server. A Kubernetes deployment
-  # always has a DNS server (kube-dns) running at 10.0.0.10
-  cluster-dns-server-ip: "10.0.0.10"
+  # node-dns-server-ip is the IP of the DNS server. A Kubernetes deployment
+  # always has a DNS server (kube-dns). 
+  node-dns-server-ip: "${dns_resolver_k8s}"
 
-  # mdb-instance-name is the name of the MongoDB instance in this cluster.
+  # mdb-instance-name is the name of the MongoDB instance in this Kubernetes cluster.
   mdb-instance-name: "${mdb_instance_name}"
 
-  # ngx-instance-name is the name of the NGINX instance in this cluster.
+  # ngx-instance-name is the name of the NGINX instance in this Kubernetes cluster.
   ngx-instance-name: "${ngx_instance_name}"
 
-  # bdb-instance-name is the name of the BigchainDB instance in this cluster.
+  # bdb-instance-name is the name of the BigchainDB instance in this Kubernetes cluster.
   bdb-instance-name: "${bdb_instance_name}"
 
   # openresty-instance-name is the name of the OpenResty instance in this
-  # cluster.
+  # Kubernetes cluster.
   openresty-instance-name: "openresty-instance-0"
 
   # ngx-mdb-instance-name is the FQDN of the MongoDB instance in this

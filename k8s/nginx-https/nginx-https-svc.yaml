@@ -15,7 +15,7 @@ spec:
   ports:
   - port: 443
     targetPort: 443
-    name: public-secure-cluster-port
+    name: public-secure-node-port
     protocol: TCP
   - port: 27017
     targetPort: 27017
@@ -31,6 +31,6 @@ spec:
     name: tm-p2p-port
   - port: 80
     targetPort: 80
-    name: public-insecure-cluster-port
+    name: public-insecure-node-port
     protocol: TCP
   type: LoadBalancer

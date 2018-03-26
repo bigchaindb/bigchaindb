@@ -56,7 +56,7 @@ fi
 BASE_DIR="$(pwd)/${CERT_DIR}"
 mkdir -p "${BASE_DIR}"
 
-BASE_CA_DIR="${BASE_DIR}"/bdb-cluster-ca
+BASE_CA_DIR="${BASE_DIR}"/bdb-node-ca
 BASE_MEMBER_CERT_DIR="${BASE_DIR}"/member-cert
 BASE_CLIENT_CERT_DIR="${BASE_DIR}"/client-cert
 BASE_EASY_RSA_PATH='easy-rsa-3.0.1/easyrsa3'
