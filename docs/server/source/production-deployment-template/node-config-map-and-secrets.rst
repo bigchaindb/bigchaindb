@@ -74,12 +74,11 @@ vars.NODE_DNS_SERVER
 IP of Kubernetes service(kube-dns), can be retrieved using
 using CLI(kubectl) or k8s dashboard. This parameter is used by the Nginx gateway instance
 to resolve the hostnames of all the services running in the k8s cluster.
-The value defaults to `10.0.0.1`.
 
 .. code::
 
    # retrieval via commandline.
-   $ kubectl get services
+   $ kubectl get pods --namespace=kube-system -l k8s-app=kube-dns
 
 
 .. _generate-config:
