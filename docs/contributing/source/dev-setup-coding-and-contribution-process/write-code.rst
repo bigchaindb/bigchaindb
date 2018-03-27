@@ -100,10 +100,11 @@ Most tests are in the ``tests/`` folder. Take a look around.
 Running a Local Node for Dev and Test
 -------------------------------------
 
-This is tricky and personal. Different people do it different ways. We documented some of those on separate pages.
+This is tricky and personal. Different people do it different ways. We documented some of those on separate pages:
 
-- `Vanshdeep's notes on dev node setup and running all tests locally <vanshdeep-notes.html>`_
-- More to come? (Potentially: using Docker Compose, Kubernetes and Minikube, or Ansible.)
+- `Dev node setup and running all tests with Docker Compose <setup-dev-environment.html>`_
+- `Dev node setup and running all tests as processes <vanshdeep-notes.html>`_
+- More to come?
 
 
 Create the PR on GitHub

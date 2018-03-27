@@ -1,8 +1,6 @@
-# Setup development environment
+# Notes on Running a Local Dev Node with Docker Compose
 
 ## Setting up a single node development environment with ``docker-compose``
-
-You can also use [Docker Compose](https://docs.docker.com/compose/) to run all the tests.
 
 ```bash
 $ docker-compose build bigchaindb
