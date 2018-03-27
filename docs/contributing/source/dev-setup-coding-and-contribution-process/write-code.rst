@@ -95,7 +95,7 @@ We like to test everything, if possible. Unit tests and also integration tests. 
 framework to write Python tests. Read all about it.
 
 Most tests are in the ``tests/`` folder. Take a look around.
-https://github.com/bigchaindb/bigchaindb/pull/2156
+
 
 Running a Local Node for Dev and Test
 -------------------------------------
