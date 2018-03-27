@@ -218,16 +218,16 @@ function generate_config_map(){
     bdb_instance_name="$BDB_CN-$INDEX"
     ngx_instance_name="ngx-instance-$INDEX"
 
-    bdb_user=`cat $1/"$BDB_CN"-"${INDEX}".user`
-    mdb_admin_username=$2
-    node_fqdn=$3
-    tm_seeds=$4
-    tm_validators=$5
-    tm_validators_power=$6
-    tm_genesis_time=$7
-    tm_chain_id=$8
-    tm_instance_name=$9
-    dns_resolver_k8s=$10
+    bdb_user=`cat "${1}"/"$BDB_CN"-"${INDEX}".user`
+    mdb_admin_username="${2}"
+    node_fqdn="${3}"
+    tm_seeds="${4}"
+    tm_validators="${5}"
+    tm_validators_power="${6}"
+    tm_genesis_time="${7}"
+    tm_chain_id="${8}"
+    tm_instance_name="${9}"
+    dns_resolver_k8s="${10}"
 
     cat > config-map.yaml << EOF
 apiVersion: v1
