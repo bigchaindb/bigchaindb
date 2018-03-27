@@ -95,7 +95,7 @@ We like to test everything, if possible. Unit tests and also integration tests. 
 framework to write Python tests. Read all about it.
 
 Most tests are in the ``tests/`` folder. Take a look around.
-
+https://github.com/bigchaindb/bigchaindb/pull/2156
 
 Running a Local Node for Dev and Test
 -------------------------------------
@@ -103,7 +103,7 @@ Running a Local Node for Dev and Test
 This is tricky and personal. Different people do it different ways. We documented some of those on separate pages:
 
 - `Dev node setup and running all tests with Docker Compose <setup-dev-environment.html>`_
-- `Dev node setup and running all tests as processes <vanshdeep-notes.html>`_
+- `Dev node setup and running all tests as processes <run-node-as-processes.html>`_
 - More to come?
 
 

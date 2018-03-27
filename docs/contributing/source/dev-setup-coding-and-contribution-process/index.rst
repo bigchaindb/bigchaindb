@@ -5,5 +5,5 @@ Developer Setup, Coding & Contribution Process
    :maxdepth: 2
 
    write-code
-   setup-dev-environment
-   vanshdeep-notes
+   run-node-with-docker-compose
+   run-node-as-processes
