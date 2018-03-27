@@ -128,7 +128,7 @@ $ pip install -e .[dev]  #  or  pip install -e '.[dev]'  # for zsh
 ```
 
 
-## Running tests
+## Running All Tests
 
 To execute tests when developing a feature or fixing a bug one could use the following command,
 

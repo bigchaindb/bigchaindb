@@ -17,5 +17,6 @@ Contents
 .. toctree::
    :maxdepth: 2
 
+   ways-to-contribute/index
+   dev-setup-coding-and-contribution-process/index
    cross-project-policies/index
-   ways-can-contribute/index

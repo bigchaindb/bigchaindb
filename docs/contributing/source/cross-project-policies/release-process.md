@@ -1,13 +1,5 @@
 # Our Release Process
 
-## Notes
-
-This process hasn't been updated to the C4 way yet. That will simplify it a lot. Stay tuned! Until then, the basic idea is that there's only one branch: `master`. All releases are just Git tags of specific commits on the `master` branch.
-
-This is the _BigchainDB Server_ release process. The process to release other BigchainDB software will be similar but not identical.
-
-<hr>
-
 The release process for BigchainDB server differs slightly depending on whether it's a minor or a patch release.
 
 BigchainDB follows 

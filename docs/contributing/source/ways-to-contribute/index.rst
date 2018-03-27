@@ -1,15 +1,12 @@
 Ways to Contribute
 ==================
 
-
-
 .. toctree::
    :maxdepth: 1
 
-   issue-rules
+   report-a-bug
+   write-an-issue
+   make-a-feature-request-or-proposal
    write-a-bep
-   setup-dev-environment
-   write-code
-   vanshdeep-notes
    write-docs
    answer-questions
