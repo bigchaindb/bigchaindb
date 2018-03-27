@@ -41,6 +41,6 @@ TM_GENESIS_TIME='0001-01-01T00:00:00Z'
 TM_CHAIN_ID='test-chain-rwcPML'
 
 # IP Address of the resolver(DNS server).
-# i.e. IP of `kubernetes` service(kube-dns)
-# Can be retrieved using `$ kubectl get svc`
+# i.e. IP of `kube-dns`, can be retrieved using:
+# $ kubectl get pods --namespace=kube-system -l k8s-app=kube-dns
 NODE_DNS_SERVER='10.0.0.10'
