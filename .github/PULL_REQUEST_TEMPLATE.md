@@ -1,5 +1,18 @@
-There are very few valid reasons to create a pull request. To learn what they are (e.g. a BEP, or a short & specific solution to a well-defined problem), and how to structure the pull request, see the BigchainDB docs about "Contributing to BigchainDB". A link is coming soon. For now, go to:
+Make sure the title of this pull request has the form:
 
-https://docs.bigchaindb.com/en/latest/
+**Problem: A short statement of the problem.**
 
-and follow the links from there.
+## Solution
+
+A short statement about how this PR solves the **Problem**.
+
+## Issues Resolved
+
+What issues does this PR resolve, if any? Please include lines like the following (i.e. "Resolves #NNNN), so that when this PR gets merged, GitHub will automatically close those issues.
+
+Resolves #NNNN
+Resolves #MMMM
+
+## BEPs Implemented
+
+What [BEPs](https://github.com/bigchaindb/beps) does this pull request implement, if any?

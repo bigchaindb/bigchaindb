@@ -1,12 +1,14 @@
 Write Code
 ==========
 
-What are you Doing???
----------------------
+Know What You Want to Write Code to Do
+--------------------------------------
 
-Tell us what you're doing somewhere so we don't do it too. You can tell us on Gitter or by email.
-If you're not sure how to proceed, see the :ref:`Issue Rules` and :ref:`Write a BEP <Write a BigchaindB Enhancement Proposal (BEP)>`
-for inspiration.
+Do you want to write code to resolve an open issue (bug)? Which one?
+
+Do you want to implement a BigchainDB Enhancement Proposal (BEP)? Which one?
+
+You should know why you want to write code before you go any farther.
 
 
 Refresh Yourself about the C4 Process

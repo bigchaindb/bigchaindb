@@ -92,3 +92,6 @@ terraform.tfstate.backup
 # tendermint data
 tmdata/data
 network/*/data
+
+# Docs that are fetched at build time
+docs/contributing/source/cross-project-policies/*.md
