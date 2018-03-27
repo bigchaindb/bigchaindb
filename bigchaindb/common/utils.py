@@ -5,7 +5,7 @@ import rapidjson
 import bigchaindb
 from bigchaindb.common.exceptions import ValidationError
 
-VALIDATOR_UPDATE_ID = 'validator01'
+VALIDATOR_UPDATE_ID = 'a_unique_id_string'
 
 
 def gen_timestamp():
