@@ -18,6 +18,7 @@ def test_api_root_endpoint(client, wsserver_base_url):
                 'streams': '{}/api/v1/streams/valid_transactions'.format(
                     wsserver_base_url),
                 'metadata': '/api/v1/metadata/',
+                'validators': '/api/v1/validators',
             }
         },
         'docs': 'https://docs.bigchaindb.com/projects/server/en/vtsttst/',
