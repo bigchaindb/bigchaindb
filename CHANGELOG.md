@@ -17,10 +17,10 @@ For reference, the possible headings are:
 * **External Contributors** to list contributors outside of BigchainDB GmbH.
 * **Notes**
 
-## [2.0] - 2018-03-30
-Tag name: v2.0.0
+## [2.0 Alpha] - 2018-03-29
+Tag name: v2.0.0a1
 
-There were _many_ changes between 1.3 and 2.0, too many to list here. We wrote a series of blog posts to summarize most changes, especially those that affect end users and application developers:
+There were _many_ changes between 1.3 and 2.0 Alpha, too many to list here. We wrote a series of blog posts to summarize most changes, especially those that affect end users and application developers:
 
 - [BigchainDB 2.0 is Byzantine Fault Tolerant](https://blog.bigchaindb.com/bigchaindb-2-0-is-byzantine-fault-tolerant-5ffdac96bc44)
 - [Some HTTP API Changes in the Next Release](https://blog.bigchaindb.com/some-http-api-changes-in-the-next-release-49612a537b0c)
