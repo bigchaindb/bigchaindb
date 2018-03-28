@@ -5,7 +5,7 @@ A production BigchainDB node must include:
 * BigchainDB Server
 * MongoDB Server 3.4+ (mongod)
 * Tendermint
-* Scalable storage for MongoDB and Tendermint
+* Storage for MongoDB and Tendermint
 
 It could also include several other components, including:
 
