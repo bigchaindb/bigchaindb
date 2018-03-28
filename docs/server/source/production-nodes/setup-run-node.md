@@ -86,7 +86,7 @@ Note: You can use `pip3` to upgrade the `bigchaindb` package to the latest versi
 
 ### How to Install BigchainDB Server from Source
 
-If you want to install BitchainDB from source because you want to use the very latest bleeding-edge code, clone the public repository:
+If you want to install BigchainDB from source because you want to use the very latest bleeding-edge code, clone the public repository:
 ```text
 git clone git@github.com:bigchaindb/bigchaindb.git
 cd bigchaindb
