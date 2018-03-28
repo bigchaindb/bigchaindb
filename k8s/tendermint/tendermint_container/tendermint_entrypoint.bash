@@ -106,4 +106,4 @@ seeds=$(IFS=','; echo "${seeds[*]}")
 
 # start nginx
 echo "INFO: starting tendermint..."
-exec tendermint node --p2p.seeds="$seeds" --moniker="`hostname`" --proxy_app="tcp://$tm_proxy_app:$tm_abci_port"
+exec tendermint node --p2p.seeds="$seeds" --moniker="`hostname`" --proxy_app="tcp://$tm_proxy_app:$tm_abci_port" --log_level debug

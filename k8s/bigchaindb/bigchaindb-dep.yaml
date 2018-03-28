@@ -84,6 +84,10 @@ spec:
             configMapKeyRef:
               name: bdb-config
               key: bigchaindb-log-level
+        - name: BIGCHAINDB_SERVER_WORKERS
+          value: "1"
+        - name: BIGCHAINDB_SERVER_THREADS
+          value: "1"
         - name: BIGCHAINDB_DATABASE_SSL
           value: "true"
         - name: BIGCHAINDB_DATABASE_CA_CERT
