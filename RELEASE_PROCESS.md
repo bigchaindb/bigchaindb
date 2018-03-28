@@ -14,7 +14,7 @@ to [regular semantic versioning](http://semver.org/), but there's no hyphen, e.g
 
 We use `0.9` and `0.9.0` as example version and short-version values below. You should replace those with the correct values for your new version.
 
-We follow [C4, the Collective Code Construction Contract](https://github.com/bigchaindb/BEPs/tree/master/1), so a release is just a [tagged commit](https://git-scm.com/book/en/v2/Git-Basics-Tagging) on the `master` branch, i.e. a label for a particular Git commit.
+We follow [BEP-1](https://github.com/bigchaindb/BEPs/tree/master/1), which is our variant of C4, the Collective Code Construction Contract, so a release is just a [tagged commit](https://git-scm.com/book/en/v2/Git-Basics-Tagging) on the `master` branch, i.e. a label for a particular Git commit.
 
 The following steps are what we do to release a new version of _BigchainDB Server_. The steps to release the Python Driver are similar but not the same.
 
