@@ -10,7 +10,8 @@ import json
 import sys
 
 from bigchaindb.common.exceptions import (DatabaseAlreadyExists,
-                                          DatabaseDoesNotExist)
+                                          DatabaseDoesNotExist,
+                                          MultipleValidatorOperationError)
 import bigchaindb
 from bigchaindb import backend
 from bigchaindb.backend import schema
@@ -18,7 +19,7 @@ from bigchaindb.backend import query
 from bigchaindb.commands import utils
 from bigchaindb.commands.utils import (
     configure_bigchaindb, start_logging_process, input_on_stderr)
-from bigchaindb.common.utils import VALIDATOR_UPDATE_ID
+from bigchaindb.backend.query import VALIDATOR_UPDATE_ID
 
 
 logging.basicConfig(level=logging.INFO)
@@ -105,7 +106,7 @@ def run_upsert_validator(args):
                         'update_id': VALIDATOR_UPDATE_ID}
     try:
         query.store_validator_update(b.connection, validator_update)
-    except KeyError:
+    except MultipleValidatorOperationError:
         logger.error('A validator update is pending to be applied. '
                      'Please re-try after the current update has '
                      'been processed.')

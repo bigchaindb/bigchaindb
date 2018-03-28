@@ -23,7 +23,6 @@ from bigchaindb.common.exceptions import SchemaValidationError, ValidationError
 from bigchaindb.tendermint.utils import encode_transaction, merkleroot
 from bigchaindb.tendermint import fastquery
 from bigchaindb import exceptions as core_exceptions
-from bigchaindb.common.utils import VALIDATOR_UPDATE_ID
 
 logger = logging.getLogger(__name__)
 
@@ -336,14 +335,11 @@ class BigchainDB(Bigchain):
         return fastquery.FastQuery(self.connection, self.me)
 
     def get_validator_update(self):
-        update = backend.query.get_validator_update(self.connection,
-                                                    VALIDATOR_UPDATE_ID)
-        print(update)
+        update = backend.query.get_validator_update(self.connection)
         return [update['validator']] if update else []
 
     def delete_validator_update(self):
-        return backend.query.delete_validator_update(self.connection,
-                                                     VALIDATOR_UPDATE_ID)
+        return backend.query.delete_validator_update(self.connection)
 
 
 Block = namedtuple('Block', ('app_hash', 'height', 'transactions'))

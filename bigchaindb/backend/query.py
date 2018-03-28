@@ -4,6 +4,8 @@ from functools import singledispatch
 
 from bigchaindb.backend.exceptions import OperationError
 
+VALIDATOR_UPDATE_ID = 'a_unique_id_string'
+
 
 @singledispatch
 def write_transaction(connection, signed_transaction):

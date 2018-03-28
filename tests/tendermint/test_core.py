@@ -146,8 +146,8 @@ def test_deliver_transfer_tx__double_spend_fails(b):
 def test_end_block_return_validator_updates(b):
     from bigchaindb.tendermint import App
     from bigchaindb.backend import query
-    from bigchaindb.tendermint.core import cast_validator
-    from bigchaindb.common.utils import VALIDATOR_UPDATE_ID
+    from bigchaindb.tendermint.core import encode_validator
+    from bigchaindb.backend.query import VALIDATOR_UPDATE_ID
 
     app = App(b)
     app.init_chain(['ignore'])
@@ -161,7 +161,7 @@ def test_end_block_return_validator_updates(b):
     query.store_validator_update(b.connection, validator_update)
 
     resp = app.end_block(99)
-    assert resp.diffs[0] == cast_validator(validator)
+    assert resp.diffs[0] == encode_validator(validator)
 
     updates = b.get_validator_update()
     assert updates == []

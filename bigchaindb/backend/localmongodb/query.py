@@ -4,10 +4,12 @@ from pymongo import DESCENDING
 
 from bigchaindb import backend
 from bigchaindb.backend.exceptions import DuplicateKeyError
+from bigchaindb.common.exceptions import MultipleValidatorOperationError
 from bigchaindb.backend.utils import module_dispatch_registrar
 from bigchaindb.backend.localmongodb.connection import LocalMongoDBConnection
 from bigchaindb.common.transaction import Transaction
 from bigchaindb.backend import mongodb
+from bigchaindb.backend.query import VALIDATOR_UPDATE_ID
 
 register_query = module_dispatch_registrar(backend.query)
 
@@ -271,18 +273,18 @@ def store_validator_update(conn, validator_update):
             conn.collection('validators')
             .insert_one(validator_update))
     except DuplicateKeyError:
-        raise KeyError('Validator update already exists')
+        raise MultipleValidatorOperationError('Validator update already exists')
 
 
 @register_query(LocalMongoDBConnection)
-def get_validator_update(conn, update_id):
+def get_validator_update(conn, update_id=VALIDATOR_UPDATE_ID):
     return conn.run(
         conn.collection('validators')
         .find_one({'update_id': update_id}, projection={'_id': False}))
 
 
 @register_query(LocalMongoDBConnection)
-def delete_validator_update(conn, update_id):
+def delete_validator_update(conn, update_id=VALIDATOR_UPDATE_ID):
     return conn.run(
         conn.collection('validators')
         .delete_one({'update_id': update_id})

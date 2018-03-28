@@ -135,7 +135,7 @@ def test_post_transaction_invalid_mode(b):
 @pytest.mark.bdb
 def test_validator_updates(b, validator_pub_key):
     from bigchaindb.backend import query
-    from bigchaindb.common.utils import VALIDATOR_UPDATE_ID
+    from bigchaindb.backend.query import VALIDATOR_UPDATE_ID
 
     # create a validator update object
     validator = {'pub_key': {'type': 'ed25519',

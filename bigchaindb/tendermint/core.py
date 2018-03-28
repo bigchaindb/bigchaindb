@@ -107,7 +107,7 @@ class App(BaseApplication):
             self.block_txn_hash = block['app_hash']
 
         validator_updates = self.bigchaindb.get_validator_update()
-        validator_updates = [cast_validator(v) for v in validator_updates]
+        validator_updates = [encode_validator(v) for v in validator_updates]
 
         # set sync status to true
         self.bigchaindb.delete_validator_update()
@@ -133,9 +133,9 @@ class App(BaseApplication):
         return Result.ok(data=data)
 
 
-def cast_validator(v):
+def encode_validator(v):
     pub_key = v['pub_key']['data']
-    # NOTE: tendermint expects public to be ecoded in go-wire format
+    # NOTE: tendermint expects public to be encoded in go-wire format
     # so `01` has to be appended
     pubKey = bytes.fromhex('01{}'.format(pub_key))
     return Validator(pubKey=pubKey,

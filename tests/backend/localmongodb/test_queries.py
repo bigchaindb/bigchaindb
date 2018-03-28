@@ -314,7 +314,8 @@ def test_get_unspent_outputs(db_context, utxoset):
 
 def test_store_validator_update():
     from bigchaindb.backend import connect, query
-    from bigchaindb.common.utils import VALIDATOR_UPDATE_ID
+    from bigchaindb.backend.query import VALIDATOR_UPDATE_ID
+    from bigchaindb.common.exceptions import MultipleValidatorOperationError
 
     conn = connect()
 
@@ -322,7 +323,7 @@ def test_store_validator_update():
                         'update_id': VALIDATOR_UPDATE_ID}
     query.store_validator_update(conn, deepcopy(validator_update))
 
-    with pytest.raises(KeyError):
+    with pytest.raises(MultipleValidatorOperationError):
         query.store_validator_update(conn, deepcopy(validator_update))
 
     resp = query.get_validator_update(conn, VALIDATOR_UPDATE_ID)
