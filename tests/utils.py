@@ -57,6 +57,7 @@ def flush_localmongo_db(connection, dbname):
     connection.conn[dbname].assets.delete_many({})
     connection.conn[dbname].metadata.delete_many({})
     connection.conn[dbname].utxos.delete_many({})
+    connection.conn[dbname].validators.delete_many({})
 
 
 @singledispatch

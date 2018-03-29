@@ -10,7 +10,8 @@ import json
 import sys
 
 from bigchaindb.common.exceptions import (DatabaseAlreadyExists,
-                                          DatabaseDoesNotExist)
+                                          DatabaseDoesNotExist,
+                                          MultipleValidatorOperationError)
 import bigchaindb
 from bigchaindb import backend
 from bigchaindb.backend import schema
@@ -18,6 +19,7 @@ from bigchaindb.backend import query
 from bigchaindb.commands import utils
 from bigchaindb.commands.utils import (
     configure_bigchaindb, start_logging_process, input_on_stderr)
+from bigchaindb.backend.query import VALIDATOR_UPDATE_ID
 
 
 logging.basicConfig(level=logging.INFO)
@@ -90,6 +92,24 @@ def run_configure(args):
         print(json.dumps(conf, indent=4, sort_keys=True))
     print('Configuration written to {}'.format(config_path), file=sys.stderr)
     print('Ready to go!', file=sys.stderr)
+
+
+@configure_bigchaindb
+def run_upsert_validator(args):
+    """Store validators which should be synced with Tendermint"""
+
+    b = bigchaindb.Bigchain()
+    validator = {'pub_key': {'type': 'ed25519',
+                             'data': args.public_key},
+                 'power': args.power}
+    validator_update = {'validator': validator,
+                        'update_id': VALIDATOR_UPDATE_ID}
+    try:
+        query.store_validator_update(b.connection, validator_update)
+    except MultipleValidatorOperationError:
+        logger.error('A validator update is pending to be applied. '
+                     'Please re-try after the current update has '
+                     'been processed.')
 
 
 def _run_init():
@@ -177,6 +197,7 @@ def create_parser():
     # parser for writing a config file
     config_parser = subparsers.add_parser('configure',
                                           help='Prepare the config file.')
+
     config_parser.add_argument('backend',
                                choices=['localmongodb'],
                                default='localmongodb',
@@ -184,6 +205,17 @@ def create_parser():
                                nargs='?',
                                help='The backend to use. It can only be '
                                '"localmongodb", currently.')
+
+    validator_parser = subparsers.add_parser('upsert-validator',
+                                             help='Add/update/delete a validator')
+
+    validator_parser.add_argument('public_key',
+                                  help='Public key of the validator.')
+
+    validator_parser.add_argument('power',
+                                  type=int,
+                                  help='Voting power of the validator. '
+                                  'Setting it to 0 will delete the validator.')
 
     # parsers for showing/exporting config values
     subparsers.add_parser('show-config',
