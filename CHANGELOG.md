@@ -18,18 +18,27 @@ For reference, the possible headings are:
 * **Notes**
 
 ## [2.0 Alpha] - 2018-03-29
+
 Tag name: v2.0.0a1
 
 There were _many_ changes between 1.3 and 2.0 Alpha, too many to list here. We wrote a series of blog posts to summarize most changes, especially those that affect end users and application developers:
 
-- [BigchainDB 2.0 is Byzantine Fault Tolerant](https://blog.bigchaindb.com/bigchaindb-2-0-is-byzantine-fault-tolerant-5ffdac96bc44)
-- [Some HTTP API Changes in the Next Release](https://blog.bigchaindb.com/some-http-api-changes-in-the-next-release-49612a537b0c)
-- [Three Transaction Model Changes in the Next Release](https://blog.bigchaindb.com/three-transaction-model-changes-in-the-next-release-dadbac50094a)
-- Changes to the Server Command Line Interface in BigchainDB 2.0
-- _A forthcoming post about changes in settings_
+* [BigchainDB 2.0 is Byzantine Fault Tolerant](https://blog.bigchaindb.com/bigchaindb-2-0-is-byzantine-fault-tolerant-5ffdac96bc44)
+* [Some HTTP API Changes in the Next Release](https://blog.bigchaindb.com/some-http-api-changes-in-the-next-release-49612a537b0c)
+* [Three Transaction Model Changes in the Next Release](https://blog.bigchaindb.com/three-transaction-model-changes-in-the-next-release-dadbac50094a)
+* [Changes to the Server Command Line Interface in BigchainDB 2.0](https://blog.bigchaindb.com/changes-to-the-server-command-line-interface-in-bigchaindb-2-0-e1d6576e7155)
+* _A forthcoming post about changes in BigchainDB Server configuration settings_
 
 ### External Contributors
+
 * @r7vme contributed [pull request #1984](https://github.com/bigchaindb/bigchaindb/pull/1984) which fixed a bug in our Kubernetes-based production deployment template.
+
+### Known Issues
+
+We intend to resolve these issues before releasing the final BigchainDB 2.0:
+
+* There's a known Heisenbug that (sometimes) arises and we found that making the BigchainDB webserver single-threaded prevents that bug from causing problems. We intend to resolve that bug, but in the meantime our temporary workaround is to change the _default_ webserver configuration settings to single-threaded mode, i.e. `BIGCHAINDB_SERVER_WORKERS=1` and `BIGCHAINDB_SERVER_THREADS=1`.
+* Issues sometimes happen when a large transaction is sent to a BigchainDB network.
 
 ## [1.3] - 2017-11-21
 Tag name: v1.3.0
