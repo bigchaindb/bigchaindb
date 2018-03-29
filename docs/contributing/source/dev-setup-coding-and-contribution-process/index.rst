@@ -4,6 +4,6 @@ Developer Setup, Coding & Contribution Process
 .. toctree::
    :maxdepth: 2
 
-   setup-dev-environment
    write-code
-   vanshdeep-notes
+   run-node-with-docker-compose
+   run-node-as-processes

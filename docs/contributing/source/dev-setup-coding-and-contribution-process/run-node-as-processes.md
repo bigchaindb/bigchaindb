@@ -1,4 +1,4 @@
-# Vanshdeep's Notes on Running a Local Dev Node
+# Notes on Running a Local Dev Node as Processes
 
 The following doc describes how to run a local node for developing BigchainDB Tendermint version.
 
