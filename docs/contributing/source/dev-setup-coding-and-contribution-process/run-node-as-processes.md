@@ -151,7 +151,7 @@ NOTE: before executing the above command the user must ensure that they reset th
 
 ### Closing Notes
 
-How to check `bigchaindb upsert-validator`:
+How to check `bigchaindb upsert-validator` (which was first specified in [BEP-3](https://github.com/bigchaindb/BEPs/tree/master/3)):
 
 - Clean bigchaindb (`bigchaindb drop`, `bigchaindb init`) and execute `bigchaindb upsert-validator B0E42D2589A455EAD339A035D6CE1C8C3E25863F268120AA0162AD7D003A4014 10`
 - Start Tendermint
