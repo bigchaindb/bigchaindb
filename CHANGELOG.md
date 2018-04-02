@@ -17,7 +17,7 @@ For reference, the possible headings are:
 * **External Contributors** to list contributors outside of BigchainDB GmbH.
 * **Notes**
 
-## [2.0 Alpha] - 2018-03-29
+## [2.0 Alpha] - 2018-04-03
 
 Tag name: v2.0.0a1
 
