@@ -36,7 +36,7 @@ def test_process_event_new_block():
     process_event(event_queue, event, 'test_stream_id')
     assert not event_queue.empty()
     block = event_queue.get()
-    assert type(block.data['id']) == int
+    assert isinstance(block.data['height'], int)
 
 
 def test_process_event_empty_block():
