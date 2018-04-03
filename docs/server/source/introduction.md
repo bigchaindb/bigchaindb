@@ -16,10 +16,10 @@ Note that there are a few kinds of nodes:
 ## Setup Instructions for Various Cases
 
 * [Quickstart](quickstart.html)
-* [Set up a local BigchainDB node for development, experimenting and testing](dev-and-test/index.html)
+* [Set up a local BigchainDB node for development, experimenting and testing](https://docs.bigchaindb.com/projects/contributing/en/latest/dev-setup-coding-and-contribution-process/index.html)
 * [Set up and run a BigchainDB cluster](clusters.html)
 
 
 ## Can I Help?
 
-Yes! BigchainDB is an open-source project; we welcome contributions of all kinds. If you want to request a feature, file a bug report, make a pull request, or help in some other way, please see [the CONTRIBUTING.md file](https://github.com/bigchaindb/bigchaindb/blob/master/CONTRIBUTING.md).
+Yes! BigchainDB is an open-source project; we welcome contributions of all kinds. If you want to request a feature, file a bug report, make a pull request, or help in some other way, please see the docs about [Contributing to BigchainDB](https://docs.bigchaindb.com/projects/contributing/en/latest/index.html).
