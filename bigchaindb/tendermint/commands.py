@@ -35,8 +35,6 @@ BANNER = """
 def start():
     # Exchange object for event stream api
     exchange = Exchange()
-    p_exchange = Process(name='exchange', target=exchange.run)
-    p_exchange.start()
 
     # start the web api
     app_server = server.create_server(
@@ -60,6 +58,9 @@ def start():
                                  target=event_stream.start,
                                  args=(exchange.get_publisher_queue(),))
     p_websocket_client.start()
+
+    p_exchange = Process(name='exchange', target=exchange.run)
+    p_exchange.start()
 
     # We need to import this after spawning the web server
     # because import ABCIServer will monkeypatch all sockets
