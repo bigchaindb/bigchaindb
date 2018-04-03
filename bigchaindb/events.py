@@ -1,3 +1,4 @@
+from queue import Empty
 from collections import defaultdict
 from multiprocessing import Queue
 
@@ -41,6 +42,7 @@ class Exchange:
 
     def __init__(self):
         self.publisher_queue = Queue()
+        self.started_queue = Queue()
 
         # Map <event_types -> queues>
         self.queues = defaultdict(list)
@@ -60,7 +62,16 @@ class Exchange:
 
         Returns:
             a :class:`multiprocessing.Queue`.
+        Raises:
+            RuntimeError if called after `run`
         """
+
+        try:
+            self.started_queue.get_nowait()
+            raise RuntimeError('Cannot create a new subscriber queue while Exchange is running.')
+        except Empty:
+            pass
+
         if event_types is None:
             event_types = EventTypes.ALL
 
@@ -83,6 +94,7 @@ class Exchange:
 
     def run(self):
         """Start the exchange"""
+        self.started_queue.put('STARTED')
 
         while True:
             event = self.publisher_queue.get()

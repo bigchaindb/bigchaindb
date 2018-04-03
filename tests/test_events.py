@@ -1,3 +1,7 @@
+import pytest
+pytestmark = pytest.mark.tendermint
+
+
 def test_event_handler():
     from bigchaindb.events import EventTypes, Event, Exchange
 
@@ -33,6 +37,18 @@ def test_event_handler():
     assert event_sub2.data == event.data
 
     assert sub3.qsize() == 0
+
+
+def test_event_handler_raises_when_called_after_start():
+    from bigchaindb.events import Exchange, POISON_PILL
+
+    exchange = Exchange()
+    publisher_queue = exchange.get_publisher_queue()
+    publisher_queue.put(POISON_PILL)
+    exchange.run()
+
+    with pytest.raises(RuntimeError):
+        exchange.get_subscriber_queue()
 
 
 def test_exchange_stops_with_poison_pill():
