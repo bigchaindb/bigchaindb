@@ -15,7 +15,7 @@ and of course you also need to install BigchainDB Sever from the local code you 
 MongoDB can be easily installed, just refer their [installation documentation](https://docs.mongodb.com/manual/installation/) for your distro. 
 We know MongoDB 3.4 works with BigchainDB.
 MongoDB 3.6 _might_ work, or it might not. You could try it.
-After the installation of MongoDB is complete, run MongoDB using `sudo mongod --replSet=bigchain-rs`
+After the installation of MongoDB is complete, run MongoDB using `sudo mongod`
 
 
 ## Installing Tendermint
@@ -151,7 +151,7 @@ NOTE: before executing the above command the user must ensure that they reset th
 
 ### Closing Notes
 
-How to check `bigchaindb upsert-validator`:
+How to check `bigchaindb upsert-validator` (which was first specified in [BEP-3](https://github.com/bigchaindb/BEPs/tree/master/3)):
 
 - Clean bigchaindb (`bigchaindb drop`, `bigchaindb init`) and execute `bigchaindb upsert-validator B0E42D2589A455EAD339A035D6CE1C8C3E25863F268120AA0162AD7D003A4014 10`
 - Start Tendermint
