@@ -60,11 +60,11 @@ Regardless of which BigchainDB network you use, you'll probably use one of the [
 
 ## Help Develop BigchainDB Server
 
-To help develop BigchainDB Server (the core software in each BigchainDB node), read the [CONTRIBUTING.md file](https://github.com/bigchaindb/bigchaindb/blob/master/CONTRIBUTING.md). It includes instructions for deploying and testing a single BigchainDB node, and multi-node clusters.
+To help develop BigchainDB Server (the core software in each BigchainDB node), see [the docs about contributing to BigchainDB](https://docs.bigchaindb.com/projects/contributing/en/latest/index.html).
 
 ## Old Quickstart
 
-If you want something like the old Quickstart page, i.e. some command-line instructions to set up and run a BigchainDB node, then go to the [bigchaindb/bigchaindb repository on GitHub](https://github.com/bigchaindb/bigchaindb) and check out the stack.sh file in the pkg/scripts/ directory. Note that it uses functions defined in the functions-common file in that directory.
+If you want something like the old Quickstart page, i.e. some command-line instructions to set up and run a BigchainDB node, then see [the notes on running a local dev node in the docs about contributing to BigchainDB](https://docs.bigchaindb.com/projects/contributing/en/latest/dev-setup-coding-and-contribution-process/index.html).
 
 <hr>
 
