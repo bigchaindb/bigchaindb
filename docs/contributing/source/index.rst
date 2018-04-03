@@ -17,6 +17,7 @@ Contents
 .. toctree::
    :maxdepth: 2
 
+   ← Back to All BigchainDB Docs <https://docs.bigchaindb.com/en/latest/index.html>
    ways-to-contribute/index
    dev-setup-coding-and-contribution-process/index
    cross-project-policies/index
