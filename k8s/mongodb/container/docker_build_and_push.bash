@@ -1,4 +1,4 @@
 #!/bin/bash
 
-docker build -t bigchaindb/localmongodb:unstable .
-docker push bigchaindb/localmongodb:unstable
+docker build -t bigchaindb/localmongodb:2.0.0-alpha .
+docker push bigchaindb/localmongodb:2.0.0-alpha
