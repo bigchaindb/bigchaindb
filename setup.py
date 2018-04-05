@@ -8,7 +8,7 @@ from setuptools import setup, find_packages
 import sys
 
 
-if sys.version_info[0] == 3 and sys.version_info[1] <= 5:
+if sys.version_info < (3, 6):
     sys.exit('Please use python version 3.6 or higher')
 
 # get the version
