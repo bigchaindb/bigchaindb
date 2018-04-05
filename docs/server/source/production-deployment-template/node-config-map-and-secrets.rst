@@ -78,7 +78,7 @@ to resolve the hostnames of all the services running in the k8s cluster.
 .. code::
 
    # retrieval via commandline.
-   $ kubectl get pods --namespace=kube-system -l k8s-app=kube-dns
+   $ kubectl get services --namespace=kube-system -l k8s-app=kube-dns
 
 
 .. _generate-config:
