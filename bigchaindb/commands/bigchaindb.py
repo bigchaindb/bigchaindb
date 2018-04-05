@@ -242,7 +242,4 @@ def create_parser():
 
 
 def main():
-    if sys.version_info[0] == 3 and sys.version_info[1] <= 5:
-        logger.info('Please use python version 3.6 or up')
-    else:
-        utils.start(create_parser(), sys.argv[1:], globals())
+    utils.start(create_parser(), sys.argv[1:], globals())
