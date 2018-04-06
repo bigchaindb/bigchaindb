@@ -11,7 +11,7 @@ The WebSocket Event Stream API
 BigchainDB provides real-time event streams over the WebSocket protocol with
 the Event Stream API.
 Connecting to an event stream from your application enables a BigchainDB node
-to notify you as events occur, such as new `validated transactions <#valid-transactions>`_.
+to notify you as events occur, such as new `valid transactions <#valid-transactions>`_.
 
 
 Demoing the API
@@ -26,7 +26,7 @@ Determining Support for the Event Stream API
 
 It's a good idea to make sure that the node you're connecting with
 has advertised support for the Event Stream API. To do so, send a HTTP GET
-request to the node's :ref:`api-root-endpoint` 
+request to the node's :ref:`api-root-endpoint`
 (e.g. ``http://localhost:9984/api/v1/``) and check that the
 response contains a ``streams`` property:
 
@@ -60,7 +60,7 @@ BigchainDB node will be ignored.
 
 Streams will always be under the WebSocket protocol (so ``ws://`` or
 ``wss://``) and accessible as extensions to the ``/api/v<version>/streams/``
-API root URL (for example, `validated transactions <#valid-transactions>`_
+API root URL (for example, `valid transactions <#valid-transactions>`_
 would be accessible under ``/api/v1/streams/valid_transactions``). If you're
 running your own BigchainDB instance and need help determining its root URL,
 then see the page titled :ref:`determining-the-api-root-url`.
@@ -70,22 +70,22 @@ All messages sent in a stream are in the JSON format.
 .. note::
 
     For simplicity, BigchainDB initially only provides a stream for all
-    validated transactions. In the future, we may provide streams for other
+    committed transactions. In the future, we may provide streams for other
     information. We may
     also provide the ability to filter the stream for specific qualities, such
     as a specific ``output``'s ``public_key``.
 
     If you have specific use cases that you think would fit as part of this
-    API, feel free to reach out via `Gitter <https://gitter.im/bigchaindb/bigchaindb>`_
-    or `email <mailto:product@bigchaindb.com>`_.
+    API, consider creating a new `BEP <https://github.com/bigchaindb/BEPs>`_.
 
 Valid Transactions
 ~~~~~~~~~~~~~~~~~~
 
 ``/valid_transactions``
 
-Streams an event for any newly validated transactions. Message bodies contain
-the transaction's ID, associated asset ID, and containing block's ID.
+Streams an event for any newly valid transactions committed to a block. Message
+bodies contain the transaction's ID, associated asset ID, and containing
+block's ID.
 
 Example message:
 
@@ -94,11 +94,11 @@ Example message:
     {
         "transaction_id": "<sha3-256 hash>",
         "asset_id": "<sha3-256 hash>",
-        "block_id": "<sha3-256 hash>"
+        "block_id": "<int>"
     }
 
 
 .. note::
 
-    Transactions in BigchainDB are validated in batches ("blocks") and will,
+    Transactions in BigchainDB are committed in batches ("blocks") and will,
     therefore, be streamed in batches.

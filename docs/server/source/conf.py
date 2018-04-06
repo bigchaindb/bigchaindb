@@ -305,7 +305,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'bigchaindb-server', 'BigchainDB Server Documentation',
-     author, 'bigchaindb-server', 'A scalable blockchain database.',
+     author, 'bigchaindb-server', 'The blockchain database.',
      'Miscellaneous'),
 ]
 

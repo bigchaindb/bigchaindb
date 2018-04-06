@@ -8,6 +8,7 @@ from bigchaindb.web.views import (
     transactions as tx,
     outputs,
     votes,
+    validators,
 )
 
 
@@ -34,6 +35,7 @@ ROUTES_API_V1 = [
     r('transactions', tx.TransactionListApi),
     r('outputs/', outputs.OutputListApi),
     r('votes/', votes.VotesApi),
+    r('validators/', validators.ValidatorsApi),
 ]
 
 

@@ -16,6 +16,10 @@ tmhome=`printenv TMHOME`
 tm_proxy_app=`printenv TM_PROXY_APP`
 tm_abci_port=`printenv TM_ABCI_PORT`
 
+# Container vars
+RETRIES=0
+CANNOT_INITIATLIZE_INSTANCE='Cannot start instance, if initial validator(s) are unreachable.'
+
 
 # sanity check
 if [[ -z "${tm_seeds:?TM_SEEDS not specified. Exiting!}" || \
@@ -74,9 +78,16 @@ for i in "${!VALS_ARR[@]}"; do
   curl -s --fail "http://${VALS_ARR[$i]}:$tm_pub_key_access_port/pub_key.json" > /dev/null
   ERR=$?
   while [ "$ERR" != 0 ]; do
-    sleep 5
+    RETRIES=$((RETRIES+1))
+    if [ $RETRIES -eq 10 ]; then
+      echo "${CANNOT_INITIATLIZE_INSTANCE}"
+      exit 1
+    fi
+    # 300(30 * 10(retries)) second timeout before container dies if it cannot find initial peers
+    sleep 30
     curl -s --fail "http://${VALS_ARR[$i]}:$tm_pub_key_access_port/pub_key.json" > /dev/null
     ERR=$?
+    echo "Cannot connect to Tendermint instance: ${VALS_ARR[$i]}"
   done
   set -e
   # add validator to genesis file along with its pub_key
@@ -95,4 +106,4 @@ seeds=$(IFS=','; echo "${seeds[*]}")
 
 # start nginx
 echo "INFO: starting tendermint..."
-exec tendermint node --p2p.seeds="$seeds" --moniker="`hostname`" --proxy_app="tcp://$tm_proxy_app:$tm_abci_port"
+exec tendermint node --p2p.seeds="$seeds" --moniker="`hostname`" --proxy_app="tcp://$tm_proxy_app:$tm_abci_port" --log_level debug

@@ -131,7 +131,7 @@ class Transaction(Transaction):
         for tx in tx_dict_list:
             tx.update({'metadata': None})
             tx_map[tx['id']] = tx
-            if tx['operation'] in [Transaction.CREATE, Transaction.GENESIS]:
+            if tx['operation'] == Transaction.CREATE:
                 tx_ids.append(tx['id'])
 
         assets = list(bigchain.get_assets(tx_ids))
@@ -411,8 +411,7 @@ class Block(object):
 
         assets = []
         for transaction in block_dict['block']['transactions']:
-            if transaction['operation'] in [Transaction.CREATE,
-                                            Transaction.GENESIS]:
+            if transaction['operation'] == Transaction.CREATE:
                 asset = transaction.pop('asset')
                 asset.update({'id': transaction['id']})
                 assets.append(asset)
@@ -458,8 +457,7 @@ class Block(object):
         assets = {asset.pop('id'): asset for asset in assets}
         # add the assets to the block transactions
         for transaction in block_dict['block']['transactions']:
-            if transaction['operation'] in [Transaction.CREATE,
-                                            Transaction.GENESIS]:
+            if transaction['operation'] == Transaction.CREATE:
                 transaction.update({'asset': assets.get(transaction['id'])})
         return block_dict
 
@@ -506,8 +504,7 @@ class Block(object):
         """
         asset_ids = []
         for transaction in block_dict['block']['transactions']:
-            if transaction['operation'] in [Transaction.CREATE,
-                                            Transaction.GENESIS]:
+            if transaction['operation'] == Transaction.CREATE:
                 asset_ids.append(transaction['id'])
 
         return asset_ids

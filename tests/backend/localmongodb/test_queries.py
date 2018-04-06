@@ -337,3 +337,24 @@ def test_get_pre_commit_state(db_context):
     db_context.conn.db.pre_commit.insert(state._asdict())
     resp = query.get_pre_commit_state(db_context.conn, 'test2')
     assert resp == state._asdict()
+
+
+def test_store_validator_update():
+    from bigchaindb.backend import connect, query
+    from bigchaindb.backend.query import VALIDATOR_UPDATE_ID
+    from bigchaindb.common.exceptions import MultipleValidatorOperationError
+
+    conn = connect()
+
+    validator_update = {'validator': {'key': 'value'},
+                        'update_id': VALIDATOR_UPDATE_ID}
+    query.store_validator_update(conn, deepcopy(validator_update))
+
+    with pytest.raises(MultipleValidatorOperationError):
+        query.store_validator_update(conn, deepcopy(validator_update))
+
+    resp = query.get_validator_update(conn, VALIDATOR_UPDATE_ID)
+
+    assert resp == validator_update
+    assert query.delete_validator_update(conn, VALIDATOR_UPDATE_ID)
+    assert not query.get_validator_update(conn, VALIDATOR_UPDATE_ID)

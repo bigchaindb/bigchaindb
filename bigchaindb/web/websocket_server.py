@@ -96,9 +96,9 @@ class Dispatcher:
             elif event.type == EventTypes.BLOCK_VALID:
                 block = event.data
 
-                for tx in block['block']['transactions']:
+                for tx in block['transactions']:
                     asset_id = tx['id'] if tx['operation'] == 'CREATE' else tx['asset']['id']
-                    data = {'block_id': block['id'],
+                    data = {'height': block['height'],
                             'asset_id': asset_id,
                             'transaction_id': tx['id']}
                     str_buffer.append(json.dumps(data))

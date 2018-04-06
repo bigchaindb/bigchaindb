@@ -28,7 +28,7 @@ def create_database(conn, dbname):
 @register_schema(LocalMongoDBConnection)
 def create_tables(conn, dbname):
     for table_name in ['transactions', 'utxos', 'assets', 'blocks', 'metadata',
-                       'pre_commit']:
+                       'validators', 'pre_commit']:
         logger.info('Create `%s` table.', table_name)
         # create the table
         # TODO: read and write concerns can be declared here
@@ -43,6 +43,7 @@ def create_indexes(conn, dbname):
     create_metadata_secondary_index(conn, dbname)
     create_utxos_secondary_index(conn, dbname)
     create_pre_commit_secondary_index(conn, dbname)
+    create_validators_secondary_index(conn, dbname)
 
 
 @register_schema(LocalMongoDBConnection)
@@ -120,3 +121,11 @@ def create_pre_commit_secondary_index(conn, dbname):
     conn.conn[dbname]['pre_commit'].create_index('commit_id',
                                                  name='pre_commit_id',
                                                  unique=True)
+
+
+def create_validators_secondary_index(conn, dbname):
+    logger.info('Create `validators` secondary index.')
+
+    conn.conn[dbname]['validators'].create_index('update_id',
+                                                 name='update_id',
+                                                 unique=True,)

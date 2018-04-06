@@ -480,8 +480,8 @@ class Transaction(object):
                 spend.
             outputs (:obj:`list` of :class:`~bigchaindb.common.
                 transaction.Output`, optional): Define the assets to lock.
-            asset (dict): Asset payload for this Transaction. ``CREATE`` and
-                ``GENESIS`` Transactions require a dict with a ``data``
+            asset (dict): Asset payload for this Transaction. ``CREATE``
+                Transactions require a dict with a ``data``
                 property while ``TRANSFER`` Transactions require a dict with a
                 ``id`` property.
             metadata (dict):
@@ -491,8 +491,7 @@ class Transaction(object):
 
     CREATE = 'CREATE'
     TRANSFER = 'TRANSFER'
-    GENESIS = 'GENESIS'
-    ALLOWED_OPERATIONS = (CREATE, TRANSFER, GENESIS)
+    ALLOWED_OPERATIONS = (CREATE, TRANSFER)
     VERSION = '2.0'
 
     def __init__(self, operation, asset, inputs=None, outputs=None,
@@ -521,10 +520,10 @@ class Transaction(object):
             raise ValueError('`operation` must be one of {}'
                              .format(allowed_ops))
 
-        # Asset payloads for 'CREATE' and 'GENESIS' operations must be None or
+        # Asset payloads for 'CREATE' operations must be None or
         # dicts holding a `data` property. Asset payloads for 'TRANSFER'
         # operations must be dicts holding an `id` property.
-        if (operation in [Transaction.CREATE, Transaction.GENESIS] and
+        if (operation == Transaction.CREATE and
                 asset is not None and not (isinstance(asset, dict) and 'data' in asset)):
             raise TypeError(('`asset` must be None or a dict holding a `data` '
                              " property instance for '{}' Transactions".format(operation)))
@@ -928,7 +927,7 @@ class Transaction(object):
         Outputs.
 
             Note:
-                Given a `CREATE` or `GENESIS` Transaction is passed,
+                Given a `CREATE` Transaction is passed,
                 dummy values for Outputs are submitted for validation that
                 evaluate parts of the validation-checks to `True`.
 
@@ -940,7 +939,7 @@ class Transaction(object):
             Returns:
                 bool: If all Inputs are valid.
         """
-        if self.operation in (Transaction.CREATE, Transaction.GENESIS):
+        if self.operation == Transaction.CREATE:
             # NOTE: Since in the case of a `CREATE`-transaction we do not have
             #       to check for outputs, we're just submitting dummy
             #       values to the actual method. This simplifies it's logic
@@ -992,7 +991,7 @@ class Transaction(object):
         """Validates a single Input against a single Output.
 
             Note:
-                In case of a `CREATE` or `GENESIS` Transaction, this method
+                In case of a `CREATE` Transaction, this method
                 does not validate against `output_condition_uri`.
 
             Args:
@@ -1013,8 +1012,8 @@ class Transaction(object):
                 ParsingError, ASN1DecodeError, ASN1EncodeError):
             return False
 
-        if operation in (Transaction.CREATE, Transaction.GENESIS):
-            # NOTE: In the case of a `CREATE` or `GENESIS` transaction, the
+        if operation == Transaction.CREATE:
+            # NOTE: In the case of a `CREATE` transaction, the
             #       output is always valid.
             output_valid = True
         else:

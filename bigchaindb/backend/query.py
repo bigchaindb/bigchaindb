@@ -4,6 +4,8 @@ from functools import singledispatch
 
 from bigchaindb.backend.exceptions import OperationError
 
+VALIDATOR_UPDATE_ID = 'a_unique_id_string'
+
 
 @singledispatch
 def write_transaction(connection, signed_transaction):
@@ -624,6 +626,13 @@ def put_pre_commit_state(connection, commit_id, state):
 
 
 @singledispatch
+def store_validator_update(conn, validator_update):
+    """Store a update for the validator set """
+
+    raise NotImplementedError
+
+
+@singledispatch
 def get_pre_commit_state(connection, commit_id):
     """Get pre-commit state where `id` is `commit_id`.
 
@@ -633,5 +642,19 @@ def get_pre_commit_state(connection, commit_id):
     Returns:
         Document with `id` as `commit_id`
     """
+
+    raise NotImplementedError
+
+
+@singledispatch
+def get_validator_update(conn):
+    """Get validator updates which are not synced"""
+
+    raise NotImplementedError
+
+
+@singledispatch
+def delete_validator_update(conn, id):
+    """Set the sync status for validator update documents"""
 
     raise NotImplementedError

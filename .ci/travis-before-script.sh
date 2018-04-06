@@ -3,5 +3,5 @@
 set -e -x
 
 if [[ -z ${TOXENV} ]]; then
-    docker-compose -f docker-compose.travis.yml up -d bdb
+    docker-compose up -d bdb
 fi

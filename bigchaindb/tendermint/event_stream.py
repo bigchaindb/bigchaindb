@@ -50,7 +50,7 @@ def process_event(event_queue, event, stream_id):
         # Only push non empty blocks
         if block_txs:
             block_txs = [decode_transaction_base64(txn) for txn in block_txs]
-            new_block = {'id': str(block_id), 'transactions': block_txs}
+            new_block = {'height': block_id, 'transactions': block_txs}
             event = Event(EventTypes.BLOCK_VALID, new_block)
             event_queue.put(event)
 

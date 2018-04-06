@@ -12,24 +12,24 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
       - name: nginx
-        image: bigchaindb/nginx_http:unstable
+        image: bigchaindb/nginx_http:2.0.0-alpha
         imagePullPolicy: Always
         env:
-        - name: CLUSTER_FRONTEND_PORT
+        - name: NODE_FRONTEND_PORT
           valueFrom:
             configMapKeyRef:
               name: vars
-              key: cluster-frontend-port
+              key: node-frontend-port
         - name: HEALTH_CHECK_PORT
           valueFrom:
             configMapKeyRef:
               name: vars
-              key: cluster-health-check-port
+              key: node-health-check-port
         - name: DNS_SERVER
           valueFrom:
             configMapKeyRef:
               name: vars
-              key: cluster-dns-server-ip
+              key: node-dns-server-ip
         - name: MONGODB_BACKEND_HOST
           valueFrom:
             configMapKeyRef:
@@ -71,10 +71,10 @@ spec:
               name: tendermint-config
               key: tm-p2p-port
         ports:
-        - containerPort: "<cluster-health-check-port from ConfigMap>"
+        - containerPort: "<node-health-check-port from ConfigMap>"
           protocol: TCP
           name: ngx-health
-        - containerPort: "<cluster-frontend-port from ConfigMap>"
+        - containerPort: "<node-frontend-port from ConfigMap>"
           protocol: TCP
         - containerPort: "<tm-pub-key-access from ConfigMap>"
           protocol: TCP

@@ -515,6 +515,50 @@ Transaction Metadata
                     text search.
 
 
+Validators
+--------------------
+
+.. http:get:: /api/v1/validators
+
+    Return the local validators set of a given node.
+
+   **Example request**:
+
+   .. sourcecode:: http
+
+    GET /api/v1/validators HTTP/1.1
+    Host: example.com
+
+   **Example response**:
+
+   .. sourcecode:: http
+
+    HTTP/1.1 200 OK
+    Content-type: application/json
+
+    [
+        {
+            "pub_key": {
+                   "data":"4E2685D9016126864733225BE00F005515200727FBAB1312FC78C8B76831255A",
+                   "type":"ed25519"
+            },
+            "power": 10
+        },
+        {
+             "pub_key": {
+                   "data":"608D839D7100466D6BA6BE79C320F8B81DE93CFAA58CF9768CF921C6371F2553",
+                   "type":"ed25519"
+             },
+             "power": 5
+        }
+    ]
+
+
+   :resheader Content-Type: ``application/json``
+
+   :statuscode 200: The query was executed successfully and validators set was returned.
+
+
 Advanced Usage
 --------------------------------
 
