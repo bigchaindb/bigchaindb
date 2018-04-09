@@ -7,5 +7,5 @@ if [[ -n ${TOXENV} ]]; then
 elif [[ ${BIGCHAINDB_CI_ABCI} == 'enable' ]]; then
   docker-compose exec bigchaindb pytest -v -m abci
 else
-  docker-compose run --rm --no-deps bigchaindb pytest -v --cov=bigchaindb
+  docker-compose exec bigchaindb pytest -v --cov=bigchaindb
 fi
