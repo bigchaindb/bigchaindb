@@ -32,7 +32,7 @@ if [[ -z "${tm_seeds:?TM_SEEDS not specified. Exiting!}" || \
       -z "${tmhome:?TMHOME not specified. Exiting!}" || \
       -z "${tm_p2p_port:?TM_P2P_PORT not specified. Exiting!}" || \
       -z "${tm_abci_port:?TM_ABCI_PORT not specified. Exiting! }" || \
-      -z "${tm_instance_name:?TM_INSTANCE_NAME not specifiec. Exiting! }" ]]; then
+      -z "${tm_instance_name:?TM_INSTANCE_NAME not specified. Exiting! }" ]]; then
   echo "Missing required enviroment variables."
   exit 1
 else
