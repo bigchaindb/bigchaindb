@@ -13,7 +13,7 @@ from bigchaindb.tendermint.utils import decode_transaction_base64
 
 HOST = getenv('BIGCHAINDB_TENDERMINT_HOST', 'localhost')
 PORT = int(getenv('BIGCHAINDB_TENDERMINT_PORT', 46657))
-URL = f'ws://{HOST}:{PORT}/websocket'
+URL = 'ws://{}:{}/websocket'.format(HOST, PORT)
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +74,7 @@ def try_connect_and_recv(event_queue, max_tries):
     except Exception as e:
         if max_tries:
             logger.warning('WebSocket connection failed with exception %s', e)
-            time.sleep(2)
+            time.sleep(3)
             yield from try_connect_and_recv(event_queue, max_tries-1)
         else:
             logger.exception('WebSocket connection failed with exception %s', e)
@@ -83,6 +83,6 @@ def try_connect_and_recv(event_queue, max_tries):
 def start(event_queue):
     loop = asyncio.get_event_loop()
     try:
-        loop.run_until_complete(try_connect_and_recv(event_queue, 5))
+        loop.run_until_complete(try_connect_and_recv(event_queue, 10))
     except (KeyboardInterrupt, SystemExit):
         logger.info('Shutting down Tendermint event stream connection')

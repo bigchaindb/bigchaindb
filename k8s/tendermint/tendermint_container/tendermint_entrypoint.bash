@@ -15,6 +15,7 @@ tm_p2p_port=`printenv TM_P2P_PORT`
 tmhome=`printenv TMHOME`
 tm_proxy_app=`printenv TM_PROXY_APP`
 tm_abci_port=`printenv TM_ABCI_PORT`
+tm_instance_name=`printenv TM_INSTANCE_NAME`
 
 # Container vars
 RETRIES=0
@@ -30,7 +31,8 @@ if [[ -z "${tm_seeds:?TM_SEEDS not specified. Exiting!}" || \
       -z "${tm_chain_id:?TM_CHAIN_ID not specified. Exiting!}" || \
       -z "${tmhome:?TMHOME not specified. Exiting!}" || \
       -z "${tm_p2p_port:?TM_P2P_PORT not specified. Exiting!}" || \
-      -z "${tm_abci_port:?TM_ABCI_PORT not specified. Exiting! }" ]]; then
+      -z "${tm_abci_port:?TM_ABCI_PORT not specified. Exiting! }" || \
+      -z "${tm_instance_name:?TM_INSTANCE_NAME not specified. Exiting! }" ]]; then
   echo "Missing required enviroment variables."
   exit 1
 else
@@ -43,6 +45,7 @@ else
   echo tmhome="$TMHOME"
   echo tm_p2p_port="$TM_P2P_PORT"
   echo tm_abci_port="$TM_ABCI_PORT"
+  echo tm_instance_name="$TM_INSTANCE_NAME"
 fi
 
 # copy template
@@ -106,4 +109,4 @@ seeds=$(IFS=','; echo "${seeds[*]}")
 
 # start nginx
 echo "INFO: starting tendermint..."
-exec tendermint node --p2p.seeds="$seeds" --moniker="`hostname`" --proxy_app="tcp://$tm_proxy_app:$tm_abci_port" --log_level debug
+exec tendermint node --p2p.seeds="$seeds" --moniker="$tm_instance_name" --proxy_app="tcp://$tm_proxy_app:$tm_abci_port" --log_level debug
