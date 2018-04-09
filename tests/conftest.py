@@ -600,7 +600,7 @@ async def abci_server():
 
     app = ABCIServer(app=App())
     abci_proxy = Process(name='ABCI', target=app.run)
-    yield abci_proxy.start()
+    await abci_proxy.start()
     abci_proxy.terminate()
 
 
