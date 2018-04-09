@@ -162,7 +162,7 @@ class BigchainDB(Bigchain):
         # See common/transactions.py for details.
         hashes = [
             sha3_256(
-                f'''{utxo['transaction_id']}{utxo['output_index']}'''.encode()
+                '{}{}'.format(utxo['transaction_id'], utxo['output_index']).encode()
             ).digest() for utxo in utxoset
         ]
         # TODO Notice the sorted call!
@@ -333,7 +333,7 @@ class BigchainDB(Bigchain):
 
     def get_validators(self):
         try:
-            resp = requests.get(f'{ENDPOINT}validators')
+            resp = requests.get('{}validators'.format(ENDPOINT))
             validators = resp.json()['result']['validators']
             for v in validators:
                 v.pop('accum')

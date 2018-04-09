@@ -529,7 +529,7 @@ def tendermint_port():
 
 @pytest.fixture
 def tendermint_ws_url(tendermint_host, tendermint_port):
-    return f'ws://{tendermint_host}:{tendermint_port}/websocket'
+    return 'ws://{}:{}/websocket'.format(tendermint_host, tendermint_port)
 
 
 @pytest.fixture
