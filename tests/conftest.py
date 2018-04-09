@@ -562,7 +562,8 @@ def abci_http(tendermint_host, tendermint_port):
 
     for i in range(5):
         try:
-            requests.get(f'http://{tendermint_host}:{tendermint_port}/abci_info')
+            uri = 'http://{}:{}/abci_info'.format(tendermint_host, tendermint_port)
+            requests.get(uri)
             return True
 
         except Exception:
