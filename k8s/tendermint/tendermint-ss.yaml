@@ -86,6 +86,11 @@ spec:
             configMapKeyRef:
               name: tendermint-config
               key: tm-p2p-port
+        - name: TM_INSTANCE_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: tendermint-config
+              key: tm-instance-name
         - name: TMHOME
           value: /tendermint
         - name: TM_PROXY_APP
