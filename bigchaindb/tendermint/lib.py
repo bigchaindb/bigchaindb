@@ -24,7 +24,6 @@ from bigchaindb.tendermint.utils import encode_transaction, merkleroot
 from bigchaindb.tendermint import fastquery
 from bigchaindb import exceptions as core_exceptions
 
-
 logger = logging.getLogger(__name__)
 
 BIGCHAINDB_TENDERMINT_HOST = getenv('BIGCHAINDB_TENDERMINT_HOST',
@@ -331,6 +330,27 @@ class BigchainDB(Bigchain):
     @property
     def fastquery(self):
         return fastquery.FastQuery(self.connection)
+
+    def get_validators(self):
+        try:
+            resp = requests.get(f'{ENDPOINT}validators')
+            validators = resp.json()['result']['validators']
+            for v in validators:
+                v.pop('accum')
+                v.pop('address')
+
+            return validators
+
+        except requests.exceptions.RequestException as e:
+            logger.error('Error while connecting to Tendermint HTTP API')
+            raise e
+
+    def get_validator_update(self):
+        update = backend.query.get_validator_update(self.connection)
+        return [update['validator']] if update else []
+
+    def delete_validator_update(self):
+        return backend.query.delete_validator_update(self.connection)
 
 
 Block = namedtuple('Block', ('app_hash', 'height', 'transactions'))

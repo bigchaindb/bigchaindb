@@ -5,4 +5,3 @@ The Events API
     :maxdepth: 1
 
     websocket-event-stream-api
-    event-plugin-api

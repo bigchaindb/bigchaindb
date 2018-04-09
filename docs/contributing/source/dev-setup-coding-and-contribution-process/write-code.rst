@@ -1,12 +1,14 @@
 Write Code
 ==========
 
-What are you Doing???
----------------------
+Know What You Want to Write Code to Do
+--------------------------------------
 
-Tell us what you're doing somewhere so we don't do it too. You can tell us on Gitter or by email.
-If you're not sure how to proceed, see the :ref:`Issue Rules` and :ref:`Write a BEP <Write a BigchaindB Enhancement Proposal (BEP)>`
-for inspiration.
+Do you want to write code to resolve an open issue (bug)? Which one?
+
+Do you want to implement a BigchainDB Enhancement Proposal (BEP)? Which one?
+
+You should know why you want to write code before you go any farther.
 
 
 Refresh Yourself about the C4 Process
@@ -98,10 +100,11 @@ Most tests are in the ``tests/`` folder. Take a look around.
 Running a Local Node for Dev and Test
 -------------------------------------
 
-This is tricky and personal. Different people do it different ways. We documented some of those on separate pages.
+This is tricky and personal. Different people do it different ways. We documented some of those on separate pages:
 
-- `Vanshdeep's notes on dev node setup and running all tests locally <vanshdeep-notes.html>`_
-- More to come? (Potentially: using Docker Compose, Kubernetes and Minikube, or Ansible.)
+- `Dev node setup and running all tests with Docker Compose <setup-dev-environment.html>`_
+- `Dev node setup and running all tests as processes <run-node-as-processes.html>`_
+- More to come?
 
 
 Create the PR on GitHub

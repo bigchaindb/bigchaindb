@@ -69,6 +69,18 @@ These parameters are shared across the cluster. More information about the gener
 of these parameters can be found at :ref:`generate-the-blockchain-id-and-genesis-time`.
 
 
+vars.NODE_DNS_SERVER
+^^^^^^^^^^^^^^^^^^^^
+IP of Kubernetes service(kube-dns), can be retrieved using
+using CLI(kubectl) or k8s dashboard. This parameter is used by the Nginx gateway instance
+to resolve the hostnames of all the services running in the k8s cluster.
+
+.. code::
+
+   # retrieval via commandline.
+   $ kubectl get services --namespace=kube-system -l k8s-app=kube-dns
+
+
 .. _generate-config:
 
 Generate configuration

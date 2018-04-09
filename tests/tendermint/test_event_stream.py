@@ -34,6 +34,8 @@ def test_process_event_new_block():
     event_queue = Queue()
     process_event(event_queue, event, 'test_stream_id')
     assert not event_queue.empty()
+    block = event_queue.get()
+    assert isinstance(block.data['height'], int)
 
 
 @pytest.mark.tendermint

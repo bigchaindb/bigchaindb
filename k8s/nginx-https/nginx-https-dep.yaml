@@ -12,7 +12,7 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
       - name: nginx
-        image: bigchaindb/nginx_https:unstable
+        image: bigchaindb/nginx_https:2.0.0-alpha
         imagePullPolicy: Always
         env:
         - name: NODE_FRONTEND_PORT
@@ -24,7 +24,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: vars
-              key: cluster-health-check-port
+              key: node-health-check-port
         - name: NODE_FQDN
           valueFrom:
             configMapKeyRef:
@@ -34,7 +34,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: vars
-              key: cluster-dns-server-ip
+              key: node-dns-server-ip
         - name: MONGODB_BACKEND_HOST
           valueFrom:
             configMapKeyRef:

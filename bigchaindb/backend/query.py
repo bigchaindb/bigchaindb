@@ -4,6 +4,8 @@ from functools import singledispatch
 
 from bigchaindb.backend.exceptions import OperationError
 
+VALIDATOR_UPDATE_ID = 'a_unique_id_string'
+
 
 @singledispatch
 def write_transaction(connection, signed_transaction):
@@ -604,5 +606,26 @@ def get_unspent_outputs(connection, *, query=None):
         Generator yielding unspent outputs (UTXO set) according to the
         given query.
     """
+
+    raise NotImplementedError
+
+
+@singledispatch
+def store_validator_update(conn, validator_update):
+    """Store a update for the validator set """
+
+    raise NotImplementedError
+
+
+@singledispatch
+def get_validator_update(conn):
+    """Get validator updates which are not synced"""
+
+    raise NotImplementedError
+
+
+@singledispatch
+def delete_validator_update(conn, id):
+    """Set the sync status for validator update documents"""
 
     raise NotImplementedError

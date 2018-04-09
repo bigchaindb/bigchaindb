@@ -54,12 +54,12 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: vars
-              key: cluster-dns-server-ip
+              key: node-dns-server-ip
         - name: HEALTH_CHECK_PORT
           valueFrom:
             configMapKeyRef:
               name: vars
-              key: cluster-health-check-port
+              key: node-health-check-port
         - name: BIGCHAINDB_BACKEND_HOST
           valueFrom:
             configMapKeyRef:
@@ -76,7 +76,7 @@ spec:
         livenessProbe:
           httpGet:
             path: /health
-            port: <cluster-health-check-port from the ConfigMap>
+            port: <node-health-check-port from the ConfigMap>
           initialDelaySeconds: 15
           periodSeconds: 15
           failureThreshold: 3

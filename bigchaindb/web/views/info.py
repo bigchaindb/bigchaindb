@@ -50,4 +50,5 @@ def get_api_v1_info(api_prefix):
         'outputs': '{}outputs/'.format(api_prefix),
         'streams': websocket_root,
         'metadata': '{}metadata/'.format(api_prefix),
+        'validators': '{}validators'.format(api_prefix),
     }

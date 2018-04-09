@@ -70,7 +70,7 @@ to sign the request.
 
 If you are the admin of the managing organization's self-signed CA,
 then you can import the CSR and use Easy-RSA to sign it.
-Go to your ``bdb-cluster-ca/easy-rsa-3.0.1/easyrsa3/``
+Go to your ``bdb-node-ca/easy-rsa-3.0.1/easyrsa3/``
 directory and do something like:
 
 .. code:: bash

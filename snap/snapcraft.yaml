@@ -1,10 +1,11 @@
 name: bigchaindb
 version: git
-summary: a scalable blockchain database
+summary: The blockchain database
 description: |
-  With high throughput, sub-second latency and powerful functionality to
-  automate business processes, BigchainDB looks, acts and feels like a database
-  with added blockchain characteristics.
+  With high throughput, low latency, powerful query functionality,
+  decentralized control, immutable data storage and built-in asset
+  support, BigchainDB is like a database with blockchain
+  characteristics.
 
 # grade must be 'stable' to release into candidate/stable channels
 grade: devel

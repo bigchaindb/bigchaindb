@@ -17,6 +17,7 @@ def test_make_sure_we_dont_remove_any_command():
     assert parser.parse_args(['init']).command
     assert parser.parse_args(['drop']).command
     assert parser.parse_args(['start']).command
+    assert parser.parse_args(['upsert-validator', 'TEMP_PUB_KEYPAIR', '10']).command
 
 
 @pytest.mark.tendermint
@@ -363,3 +364,15 @@ class MockResponse():
 
     def json(self):
         return {'result': {'latest_block_height': self.height}}
+
+
+@patch('bigchaindb.config_utils.autoconfigure')
+@patch('bigchaindb.backend.query.store_validator_update')
+@pytest.mark.tendermint
+def test_upsert_validator(mock_autoconfigure, mock_store_validator_update):
+    from bigchaindb.commands.bigchaindb import run_upsert_validator
+
+    args = Namespace(public_key='BOB_PUBLIC_KEY', power='10', config={})
+    run_upsert_validator(args)
+
+    assert mock_store_validator_update.called

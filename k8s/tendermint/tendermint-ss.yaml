@@ -32,7 +32,7 @@ spec:
       # Nginx container for hosting public key of this ndoe
       - name: nginx
         imagePullPolicy: Always
-        image: bigchaindb/nginx_pub_key_access:unstable
+        image: bigchaindb/nginx_pub_key_access:2.0.0-alpha
         env:
         - name: TM_PUB_KEY_ACCESS_PORT
           valueFrom:
@@ -49,7 +49,7 @@ spec:
       #Tendermint container
       - name: tendermint
         imagePullPolicy: Always
-        image: bigchaindb/tendermint:unstable
+        image: bigchaindb/tendermint:2.0.0-alpha
         env:
         - name: TM_SEEDS
           valueFrom:

@@ -89,7 +89,8 @@ config = {
         'bind': 'localhost:9984',
         'loglevel': logging.getLevelName(
             log_config['handlers']['console']['level']).lower(),
-        'workers': None,  # if none, the value will be cpu_count * 2 + 1
+        'threads': 1,
+        'workers': 1,  # if None, the value will be cpu_count * 2 + 1
     },
     'wsserver': {
         'scheme': 'ws',

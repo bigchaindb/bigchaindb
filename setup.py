@@ -1,11 +1,15 @@
 """
-BigchainDB: A Scalable Blockchain Database
+BigchainDB: The Blockchain Database
 
 For full docs visit https://docs.bigchaindb.com
 
 """
 from setuptools import setup, find_packages
+import sys
 
+
+if sys.version_info < (3, 6):
+    sys.exit('Please use python version 3.6 or higher')
 
 # get the version
 version = {}
@@ -91,23 +95,23 @@ install_requires = [
 setup(
     name='BigchainDB',
     version=version['__version__'],
-    description='BigchainDB: A Scalable Blockchain Database',
+    description='BigchainDB: The Blockchain Database',
     long_description=(
         "BigchainDB allows developers and enterprises to deploy blockchain "
-        "proof-of-concepts, platforms and applications with a scalable blockchain "
+        "proof-of-concepts, platforms and applications with a blockchain "
         "database. BigchainDB supports a wide range of industries and use cases "
         "from identity and intellectual property to supply chains, energy, IoT "
-        "and financial ecosystems. With high throughput, sub-second latency and "
-        "powerful functionality to automate business processes, BigchainDB looks, "
-        "acts and feels like a database but has the core blockchain "
-        "characteristics that enterprises want."
+        "and financial ecosystems. With high throughput, low latency, powerful "
+        "query functionality, decentralized control, immutable data storage and "
+        "built-in asset support, BigchainDB is like a database with blockchain "
+        "characteristics."
         ),
     url='https://github.com/BigchainDB/bigchaindb/',
     author='BigchainDB Contributors',
     author_email='dev@bigchaindb.com',
     license='Apache Software License 2.0',
     zip_safe=False,
-
+    python_requires='>=3.6',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
