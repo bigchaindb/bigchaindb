@@ -43,7 +43,7 @@ services:
       interval: 3s
       timeout: 5s
       retries: 3
-    command: bigchaindb start
+    entrypoint: '.ci/entrypoint.sh'
   tendermint:
     image: tendermint/tendermint:0.12
     volumes:
