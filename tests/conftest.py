@@ -555,6 +555,52 @@ def mocked_setup_sub_logger(mocker):
         'bigchaindb.log.setup.setup_sub_logger', autospec=True, spec_set=True)
 
 
+@pytest.fixture(autouse=True)
+def _abci_http(request):
+    if request.keywords.get('abci', None):
+        request.getfixturevalue('abci_http')
+
+
+@pytest.fixture
+def abci_http(abci_server, tendermint_host, tendermint_port):
+    import requests
+    import time
+
+    for i in range(5):
+        try:
+            uri = 'http://{}:{}/abci_info'.format(tendermint_host, tendermint_port)
+            requests.get(uri)
+            return True
+
+        except requests.exceptions.RequestException as e:
+            pass
+        time.sleep(1)
+
+    return False
+
+
+@pytest.yield_fixture(scope='session')
+def event_loop(request):
+    import asyncio
+
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    yield loop
+    loop.close()
+
+
+@pytest.mark.bdb
+@pytest.fixture(scope='session')
+def abci_server():
+    from abci import ABCIServer
+    from bigchaindb.tendermint.core import App
+    from bigchaindb.utils import Process
+
+    app = ABCIServer(app=App())
+    abci_proxy = Process(name='ABCI', target=app.run)
+    yield abci_proxy.start()
+    abci_proxy.terminate()
+
+
 @pytest.fixture(scope='session')
 def certs_dir():
     return os.path.abspath('tests/backend/mongodb-ssl/certs')

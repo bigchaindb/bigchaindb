@@ -1,13 +1,12 @@
 import json
+import base64
 from queue import Queue
 
 from aiohttp import ClientSession
 import pytest
 
 
-pytestmark = pytest.mark.tendermint
-
-
+@pytest.mark.tendermint
 def test_process_event_new_block():
     from bigchaindb.tendermint.event_stream import process_event
 
@@ -39,6 +38,7 @@ def test_process_event_new_block():
     assert isinstance(block.data['height'], int)
 
 
+@pytest.mark.tendermint
 def test_process_event_empty_block():
     from bigchaindb.tendermint.event_stream import process_event
 
@@ -57,6 +57,7 @@ def test_process_event_empty_block():
     assert event_queue.empty()
 
 
+@pytest.mark.tendermint
 def test_process_unknown_event():
     from bigchaindb.tendermint.event_stream import process_event
 
@@ -68,10 +69,13 @@ def test_process_unknown_event():
     assert event_queue.empty()
 
 
-@pytest.mark.skip('This test will be an integration test.')
+@pytest.mark.abci
 @pytest.mark.asyncio
-async def test_subscribe_events(tendermint_ws_url):
+async def test_subscribe_events(tendermint_ws_url, b):
     from bigchaindb.tendermint.event_stream import subscribe_events
+    from bigchaindb.common.crypto import generate_key_pair
+    from bigchaindb.models import Transaction
+
     session = ClientSession()
     ws = await session.ws_connect(tendermint_ws_url)
     stream_id = 'bigchaindb_stream_01'
@@ -82,4 +86,17 @@ async def test_subscribe_events(tendermint_ws_url):
     assert msg_data_dict['id'] == stream_id
     assert msg_data_dict['jsonrpc'] == '2.0'
     assert msg_data_dict['result'] == {}
-    # TODO What else should be there? Right now, getting error.
+
+    alice = generate_key_pair()
+    tx = Transaction.create([alice.public_key],
+                            [([alice.public_key], 1)],
+                            asset=None)\
+                    .sign([alice.private_key])
+
+    b.post_transaction(tx, 'broadcast_tx_async')
+    msg = await ws.receive()
+    msg_data_dict = json.loads(msg.data)
+    raw_txn = msg_data_dict['result']['data']['data']['block']['data']['txs'][0]
+    transaction = json.loads(base64.b64decode(raw_txn).decode('utf8'))
+
+    assert transaction == tx.to_dict()

@@ -38,6 +38,11 @@ matrix:
     env:
     - BIGCHAINDB_DATABASE_BACKEND=localmongodb
     - BIGCHAINDB_DATABASE_SSL=
+  - python: 3.6
+    env:
+    - BIGCHAINDB_DATABASE_BACKEND=localmongodb
+    - BIGCHAINDB_DATABASE_SSL=
+    - BIGCHAINDB_CI_ABCI=enable
 
 before_install: sudo .ci/travis-before-install.sh
 
