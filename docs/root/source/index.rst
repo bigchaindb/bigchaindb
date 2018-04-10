@@ -85,6 +85,7 @@ More About BigchainDB
    diversity
    immutable
    bft
+   query
    assets
    smart-contracts
    transaction-concepts
