@@ -555,8 +555,14 @@ def mocked_setup_sub_logger(mocker):
         'bigchaindb.log.setup.setup_sub_logger', autospec=True, spec_set=True)
 
 
+@pytest.fixture(autouse=True)
+def _abci_http(request):
+    if request.keywords.get('abci', None):
+        request.getfixturevalue('abci_http')
+
+
 @pytest.fixture
-def abci_http(tendermint_host, tendermint_port):
+def abci_http(abci_server, tendermint_host, tendermint_port):
     import requests
     import time
 
@@ -566,7 +572,7 @@ def abci_http(tendermint_host, tendermint_port):
             requests.get(uri)
             return True
 
-        except Exception:
+        except requests.exceptions.RequestException as e:
             pass
         time.sleep(1)
 
