@@ -71,7 +71,7 @@ def test_process_unknown_event():
 
 @pytest.mark.abci
 @pytest.mark.asyncio
-async def test_abci_http(abci_server, abci_http, tendermint_ws_url, b):
+async def test_subscribe_events(abci_server, abci_http, tendermint_ws_url, b):
     from bigchaindb.tendermint.event_stream import subscribe_events
     from bigchaindb.common.crypto import generate_key_pair
     from bigchaindb.models import Transaction
