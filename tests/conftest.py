@@ -584,7 +584,7 @@ def event_loop(request):
 
 @pytest.mark.bdb
 @pytest.fixture(scope='session')
-async def abci_server():
+def abci_server():
     from abci import ABCIServer
     from bigchaindb.tendermint.core import App
     from bigchaindb.utils import Process
