@@ -583,24 +583,15 @@ def event_loop(request):
 
 
 @pytest.mark.bdb
-@pytest.yield_fixture(scope='session')
+@pytest.fixture(scope='session')
 async def abci_server():
     from abci import ABCIServer
     from bigchaindb.tendermint.core import App
     from bigchaindb.utils import Process
 
-    # The test database needs to flushed to clear data from previous run
-    # if not cleared then it causes issues when re-run locally
-    from bigchaindb.backend import connect
-    from .utils import flush_db
-    from bigchaindb import config
-    conn = connect()
-    dbname = config['database']['name']
-    flush_db(conn, dbname)
-
     app = ABCIServer(app=App())
     abci_proxy = Process(name='ABCI', target=app.run)
-    await abci_proxy.start()
+    yield abci_proxy.start()
     abci_proxy.terminate()
 
 
