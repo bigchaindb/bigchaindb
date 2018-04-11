@@ -267,7 +267,7 @@ def get_unspent_outputs(conn, *, query=None):
 
 
 @register_query(LocalMongoDBConnection)
-def put_pre_commit_state(conn, state):
+def store_pre_commit_state(conn, state):
     commit_id = state['commit_id']
     return conn.run(
         conn.collection('pre_commit')

@@ -611,7 +611,7 @@ def get_unspent_outputs(connection, *, query=None):
 
 
 @singledispatch
-def put_pre_commit_state(connection, commit_id, state):
+def store_pre_commit_state(connection, commit_id, state):
     """Store pre-commit state in a document with `id` as `commit_id`.
 
     Args:

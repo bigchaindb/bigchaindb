@@ -312,7 +312,7 @@ def test_get_unspent_outputs(db_context, utxoset):
     assert retrieved_utxoset == unspent_outputs
 
 
-def test_put_pre_commit_state(db_context):
+def test_store_pre_commit_state(db_context):
     from bigchaindb.backend import query
     from bigchaindb.tendermint.lib import PreCommitState
 
@@ -320,7 +320,7 @@ def test_put_pre_commit_state(db_context):
                            height=3,
                            transactions=[])
 
-    query.put_pre_commit_state(db_context.conn, state._asdict())
+    query.store_pre_commit_state(db_context.conn, state._asdict())
     cursor = db_context.conn.db.pre_commit.find({'commit_id': 'test'},
                                                 projection={'_id': False})
     assert cursor.count() == 1
