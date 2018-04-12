@@ -52,12 +52,12 @@ class BigchainDB(Bigchain):
             'id': str(uuid4())
         }
         # TODO: handle connection errors!
-        requests.post(ENDPOINT, json=payload)
+        return requests.post(ENDPOINT, json=payload)
 
     def write_transaction(self, transaction, mode):
         # This method offers backward compatibility with the Web API.
         """Submit a valid transaction to the mempool."""
-        self.post_transaction(transaction, mode)
+        return self.post_transaction(transaction, mode)
 
     def get_latest_block_height_from_tendermint(self):
         r = requests.get(ENDPOINT + 'status')
