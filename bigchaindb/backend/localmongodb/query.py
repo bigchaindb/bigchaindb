@@ -267,6 +267,22 @@ def get_unspent_outputs(conn, *, query=None):
 
 
 @register_query(LocalMongoDBConnection)
+def store_pre_commit_state(conn, state):
+    commit_id = state['commit_id']
+    return conn.run(
+        conn.collection('pre_commit')
+        .update({'id': commit_id}, state, upsert=True)
+    )
+
+
+@register_query(LocalMongoDBConnection)
+def get_pre_commit_state(conn, commit_id):
+    return conn.run(conn.collection('pre_commit')
+                    .find_one({'commit_id': commit_id},
+                              projection={'_id': False}))
+
+
+@register_query(LocalMongoDBConnection)
 def store_validator_update(conn, validator_update):
     try:
         return conn.run(

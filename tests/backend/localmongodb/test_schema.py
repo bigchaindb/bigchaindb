@@ -19,7 +19,9 @@ def test_init_creates_db_tables_and_indexes():
 
     collection_names = conn.conn[dbname].collection_names()
     assert set(collection_names) == {
-            'transactions', 'assets', 'metadata', 'blocks', 'utxos', 'validators'}
+        'transactions', 'assets', 'metadata', 'blocks', 'utxos', 'pre_commit',
+        'validators'
+    }
 
     indexes = conn.conn[dbname]['assets'].index_information().keys()
     assert set(indexes) == {'_id_', 'asset_id', 'text'}
@@ -33,6 +35,9 @@ def test_init_creates_db_tables_and_indexes():
 
     indexes = conn.conn[dbname]['utxos'].index_information().keys()
     assert set(indexes) == {'_id_', 'utxo'}
+
+    indexes = conn.conn[dbname]['pre_commit'].index_information().keys()
+    assert set(indexes) == {'_id_', 'pre_commit_id'}
 
     indexes = conn.conn[dbname]['validators'].index_information().keys()
     assert set(indexes) == {'_id_', 'update_id'}
@@ -69,7 +74,8 @@ def test_create_tables():
 
     collection_names = conn.conn[dbname].collection_names()
     assert set(collection_names) == {
-            'transactions', 'assets', 'metadata', 'blocks', 'utxos', 'validators'}
+        'transactions', 'assets', 'metadata', 'blocks', 'utxos', 'validators',
+        'pre_commit'}
 
 
 def test_create_secondary_indexes():
@@ -101,6 +107,10 @@ def test_create_secondary_indexes():
     assert index_info['utxo']['unique']
     assert index_info['utxo']['key'] == [('transaction_id', 1),
                                          ('output_index', 1)]
+
+    indexes = conn.conn[dbname]['pre_commit'].index_information()
+    assert set(indexes.keys()) == {'_id_', 'pre_commit_id'}
+    assert indexes['pre_commit_id']['unique']
 
 
 def test_drop(dummy_db):
