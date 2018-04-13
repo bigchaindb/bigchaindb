@@ -11,6 +11,8 @@ elif [[ ${BIGCHAINDB_CI_ABCI} == 'enable' ]]; then
 elif [[ $TRAVIS_PYTHON_VERSION == 3.5 ]]; then
     docker-compose build --build-arg python_version=3.5 --no-cache bigchaindb
     pip install --upgrade codecov
+elif [[ $BIGCHAINDB_INTEGRATION_TEST == 'enable' ]]; then
+    docker-compose build bigchaindb python-driver
 else
     docker-compose build --no-cache bigchaindb
     pip install --upgrade codecov

@@ -43,6 +43,8 @@ matrix:
     - BIGCHAINDB_DATABASE_BACKEND=localmongodb
     - BIGCHAINDB_DATABASE_SSL=
     - BIGCHAINDB_CI_ABCI=enable
+  - env:
+    - BIGCHAINDB_ACCEPTANCE_TEST=enable
 
 before_install: sudo .ci/travis-before-install.sh
 

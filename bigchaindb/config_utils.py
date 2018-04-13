@@ -128,6 +128,7 @@ def env_config(config):
 
     def load_from_env(value, path):
         var_name = CONFIG_SEP.join([CONFIG_PREFIX] + list(map(lambda s: s.upper(), path)))
+
         return os.environ.get(var_name, value)
 
     return map_leafs(load_from_env, config)
