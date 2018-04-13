@@ -129,15 +129,18 @@ class App(BaseApplication):
     def commit(self):
         """Store the new height and along with block hash."""
 
+        data = self.block_txn_hash.encode('utf-8')
+
         # register a new block only when new transactions are received
         if self.block_txn_ids:
             self.bigchaindb.store_bulk_transactions(self.block_transactions)
             block = Block(app_hash=self.block_txn_hash,
                           height=self.new_height,
                           transactions=self.block_txn_ids)
+            # NOTE: storing the block should be the last operation during commit
+            # this effects crash recovery. Refer BEP#8 for details
             self.bigchaindb.store_block(block._asdict())
 
-        data = self.block_txn_hash.encode('utf-8')
         return Result.ok(data=data)
 
 
