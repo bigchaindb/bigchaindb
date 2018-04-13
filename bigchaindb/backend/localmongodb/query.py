@@ -271,7 +271,7 @@ def store_pre_commit_state(conn, state):
     commit_id = state['commit_id']
     return conn.run(
         conn.collection('pre_commit')
-        .update({'id': commit_id}, state, upsert=True)
+        .update({'commit_id': commit_id}, state, upsert=True)
     )
 
 
