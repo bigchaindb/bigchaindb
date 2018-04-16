@@ -90,9 +90,11 @@ class TransactionListApi(Resource):
                     'Invalid transaction ({}): {}'.format(type(e).__name__, e)
                 )
             else:
-                bigchain.write_transaction(tx_obj, mode)
+                status_code, message = bigchain.write_transaction(tx_obj, mode)
 
-        response = jsonify(tx)
-        response.status_code = 202
-
-        return response
+        if status_code == 202:
+            response = jsonify(tx)
+            response.status_code = 202
+            return response
+        else:
+            return make_error(status_code, message)

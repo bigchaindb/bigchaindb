@@ -52,12 +52,36 @@ class BigchainDB(Bigchain):
             'id': str(uuid4())
         }
         # TODO: handle connection errors!
-        requests.post(ENDPOINT, json=payload)
+        return requests.post(ENDPOINT, json=payload)
 
     def write_transaction(self, transaction, mode):
         # This method offers backward compatibility with the Web API.
         """Submit a valid transaction to the mempool."""
-        self.post_transaction(transaction, mode)
+        response = self.post_transaction(transaction, mode)
+        return self._process_post_response(response, mode)
+
+    def _process_post_response(self, response, mode):
+        result = response['result']
+        if mode == MODE_LIST[1]:
+            status_code = result['check_tx']['code']
+            return self._process_status_code(status_code,
+                                             'Error while validating the transaction')
+        elif mode == MODE_LIST[2]:
+            return self._process_commit_mode_response(result)
+
+        return (202, '')
+
+    def _process_commit_mode_response(self, result):
+        check_tx_status_code = result['check_tx']['code']
+        if check_tx_status_code == 0:
+            deliver_tx_status_code = result['deliver_tx']['code']
+            return self._process_status_code(deliver_tx_status_code,
+                                             'Error while commiting the transaction')
+        else:
+            return (500, 'Error while validating the transaction')
+
+    def _process_status_code(self, status_code, failure_msg):
+        return (202, '') if status_code == 0 else (500, failure_msg)
 
     def get_latest_block_height_from_tendermint(self):
         r = requests.get(ENDPOINT + 'status')
