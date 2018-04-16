@@ -352,7 +352,6 @@ def test_get_utxoset_merkle_root(b, utxoset):
     assert merkle_root == expected_merkle_root
 
 
-@pytest.mark.execute
 @pytest.mark.abci
 def test_post_transaction_responses(tendermint_ws_url, b):
     from bigchaindb.common.crypto import generate_key_pair

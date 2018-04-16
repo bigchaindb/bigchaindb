@@ -562,7 +562,8 @@ def _abci_http(request):
 
 
 @pytest.fixture
-def abci_http(abci_server, tendermint_host, tendermint_port):
+def abci_http(_setup_database, _configure_bigchaindb, abci_server,
+              tendermint_host, tendermint_port):
     import requests
     import time
 
