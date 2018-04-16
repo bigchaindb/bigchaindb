@@ -58,7 +58,7 @@ class BigchainDB(Bigchain):
         # This method offers backward compatibility with the Web API.
         """Submit a valid transaction to the mempool."""
         response = self.post_transaction(transaction, mode)
-        return self._process_post_response(response, mode)
+        return self._process_post_response(response.json(), mode)
 
     def _process_post_response(self, response, mode):
         result = response['result']

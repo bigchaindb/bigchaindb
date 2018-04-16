@@ -350,3 +350,39 @@ def test_get_utxoset_merkle_root(b, utxoset):
         '86d311c03115bf4d287f8449ca5828505432d69b82762d47077b1c00fe426eac')
     merkle_root = b.get_utxoset_merkle_root()
     assert merkle_root == expected_merkle_root
+
+
+@pytest.mark.execute
+@pytest.mark.abci
+def test_post_transaction_responses(tendermint_ws_url, b):
+    from bigchaindb.common.crypto import generate_key_pair
+    from bigchaindb.models import Transaction
+
+    alice = generate_key_pair()
+    bob = generate_key_pair()
+
+    tx = Transaction.create([alice.public_key],
+                            [([alice.public_key], 1)],
+                            asset=None)\
+                    .sign([alice.private_key])
+
+    code, message = b.write_transaction(tx, 'broadcast_tx_commit')
+    assert code == 202
+
+    tx_transfer = Transaction.transfer(tx.to_inputs(),
+                                       [([bob.public_key], 1)],
+                                       asset_id=tx.id)\
+                             .sign([alice.private_key])
+
+    code, message = b.write_transaction(tx_transfer, 'broadcast_tx_commit')
+    assert code == 202
+
+    # NOTE: DOESN'T WORK (double spend)
+    # Tendermint crashes with error: Unexpected result type
+    # carly = generate_key_pair()
+    # double_spend = Transaction.transfer(tx.to_inputs(),
+    #                                     [([carly.public_key], 1)],
+    #                                     asset_id=tx.id)\
+    #                           .sign([alice.private_key])
+    # code, message = b.write_transaction(double_spend, 'broadcast_tx_commit')
+    # assert code == 500
