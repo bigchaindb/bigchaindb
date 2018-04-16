@@ -61,6 +61,7 @@ class BigchainDB(Bigchain):
         return self._process_post_response(response.json(), mode)
 
     def _process_post_response(self, response, mode):
+        logger.debug(response)
         result = response['result']
         if mode == MODE_LIST[1]:
             status_code = result['check_tx']['code']
