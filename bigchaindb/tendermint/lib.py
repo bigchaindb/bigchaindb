@@ -62,15 +62,16 @@ class BigchainDB(Bigchain):
 
     def _process_post_response(self, response, mode):
         logger.debug(response)
-        result = response['result']
-        if mode == MODE_LIST[1]:
-            status_code = result['check_tx']['code']
-            return self._process_status_code(status_code,
-                                             'Error while validating the transaction')
-        elif mode == MODE_LIST[2]:
-            return self._process_commit_mode_response(result)
+        if response.get('error') is not None:
+            return (500, 'Internal error')
 
-        return (202, '')
+        result = response['result']
+        if mode == MODE_LIST[2]:
+            return self._process_commit_mode_response(result)
+        else:
+            status_code = result['code']
+            return self._process_status_code(status_code,
+                                             'Error while processing transaction')
 
     def _process_commit_mode_response(self, result):
         check_tx_status_code = result['check_tx']['code']
