@@ -12,7 +12,7 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
       - name: bigchaindb
-        image: bigchaindb/bigchaindb:2.0.0-alpha
+        image: bigchaindb/bigchaindb:2.0.0-alpha2
         imagePullPolicy: Always
         args:
         - start
