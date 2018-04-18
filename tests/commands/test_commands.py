@@ -269,6 +269,8 @@ def test_calling_main(start_mock, base_parser_mock, parse_args_mock,
     subparsers.add_parser.assert_any_call('start', help='Start BigchainDB')
 
     assert start_mock.called is True
+
+
 @patch('bigchaindb.config_utils.autoconfigure')
 @patch('bigchaindb.commands.bigchaindb.run_recover')
 @patch('bigchaindb.tendermint.commands.start')
@@ -283,8 +285,6 @@ def test_recover_db_on_start(mock_autoconfigure,
 
     assert mock_run_recover.called
     assert mock_start.called
-
-
 
 
 @pytest.mark.tendermint

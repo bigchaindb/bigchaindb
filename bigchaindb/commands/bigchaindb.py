@@ -159,7 +159,7 @@ def run_recover(b):
 
         # NOTE: the pre-commit state can only be ahead of the commited state
         # by 1 block
-        if latest_block['height'] < pre_commit['height']:
+        if latest_block and (latest_block['height'] < pre_commit['height']):
             query.delete_transactions(b.connection, pre_commit['transactions'])
 
 
