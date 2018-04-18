@@ -19,7 +19,8 @@ from bigchaindb.backend import query
 from bigchaindb.commands import utils
 from bigchaindb.commands.utils import (
     configure_bigchaindb, start_logging_process, input_on_stderr)
-from bigchaindb.backend.query import VALIDATOR_UPDATE_ID
+from bigchaindb.backend.query import VALIDATOR_UPDATE_ID, PRE_COMMIT_ID
+from bigchaindb.tendermint.lib import BigchainDB
 
 
 logging.basicConfig(level=logging.INFO)
@@ -131,19 +132,6 @@ def run_init(args):
         print('If you wish to re-initialize it, first drop it.', file=sys.stderr)
 
 
-def run_recover(b):
-    query.delete_zombie_transactions(b.connection)
-
-    tendermint_height = b.get_latest_block_height_from_tendermint()
-    block = b.get_latest_block()
-
-    if block:
-        while block['height'] > tendermint_height:
-            logger.info('BigchainDB is ahead of tendermint, removing block %s', block['height'])
-            query.delete_latest_block(b.connection)
-            block = b.get_latest_block()
-
-
 @configure_bigchaindb
 def run_drop(args):
     """Drop the database"""
@@ -162,13 +150,26 @@ def run_drop(args):
         print("Cannot drop '{name}'. The database does not exist.".format(name=dbname), file=sys.stderr)
 
 
+def run_recover(b):
+    pre_commit = query.get_pre_commit_state(b.connection, PRE_COMMIT_ID)
+
+    # Initially the pre-commit collection would be empty
+    if pre_commit:
+        latest_block = query.get_latest_block(b.connection)
+
+        # NOTE: the pre-commit state can only be ahead of the commited state
+        # by 1 block
+        if latest_block and (latest_block['height'] < pre_commit['height']):
+            query.delete_transactions(b.connection, pre_commit['transactions'])
+
+
 @configure_bigchaindb
 @start_logging_process
 def run_start(args):
     """Start the processes to run the node"""
     logger.info('BigchainDB Version %s', bigchaindb.__version__)
 
-    # run_recover(BigchainDB())
+    run_recover(BigchainDB())
 
     try:
         if not args.skip_initialize_database:

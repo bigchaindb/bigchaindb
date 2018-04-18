@@ -7,7 +7,8 @@ from abci.types_pb2 import ResponseEndBlock, ResponseInfo, Validator
 
 from bigchaindb.tendermint import BigchainDB
 from bigchaindb.tendermint.utils import decode_transaction, calculate_hash
-from bigchaindb.tendermint.lib import Block
+from bigchaindb.tendermint.lib import Block, PreCommitState
+from bigchaindb.backend.query import PRE_COMMIT_ID
 
 logger = logging.getLogger(__name__)
 
@@ -112,6 +113,13 @@ class App(BaseApplication):
         # set sync status to true
         self.bigchaindb.delete_validator_update()
 
+        # Store pre-commit state to recover in case there is a crash
+        # during `commit`
+        pre_commit_state = PreCommitState(commit_id=PRE_COMMIT_ID,
+                                          height=self.new_height,
+                                          transactions=self.block_txn_ids)
+        self.bigchaindb.store_pre_commit_state(pre_commit_state._asdict())
+
         # NOTE: interface for `ResponseEndBlock` has be changed in the latest
         # version of py-abci i.e. the validator updates should be return
         # as follows:
@@ -121,15 +129,18 @@ class App(BaseApplication):
     def commit(self):
         """Store the new height and along with block hash."""
 
+        data = self.block_txn_hash.encode('utf-8')
+
         # register a new block only when new transactions are received
         if self.block_txn_ids:
             self.bigchaindb.store_bulk_transactions(self.block_transactions)
             block = Block(app_hash=self.block_txn_hash,
                           height=self.new_height,
                           transactions=self.block_txn_ids)
+            # NOTE: storing the block should be the last operation during commit
+            # this effects crash recovery. Refer BEP#8 for details
             self.bigchaindb.store_block(block._asdict())
 
-        data = self.block_txn_hash.encode('utf-8')
         return Result.ok(data=data)
 
 

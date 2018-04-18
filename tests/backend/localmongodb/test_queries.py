@@ -182,48 +182,6 @@ def test_get_block():
     assert block['height'] == 3
 
 
-def test_delete_zombie_transactions(signed_create_tx, signed_transfer_tx):
-    from bigchaindb.backend import connect, query
-    from bigchaindb.tendermint.lib import Block
-    conn = connect()
-
-    conn.db.transactions.insert_one(signed_create_tx.to_dict())
-    query.store_asset(conn, {'id': signed_create_tx.id})
-    block = Block(app_hash='random_utxo',
-                  height=3,
-                  transactions=[signed_create_tx.id])
-    query.store_block(conn, block._asdict())
-
-    conn.db.transactions.insert_one(signed_transfer_tx.to_dict())
-    query.store_metadatas(conn, [{'id': signed_transfer_tx.id}])
-
-    query.delete_zombie_transactions(conn)
-    assert query.get_transaction(conn, signed_transfer_tx.id) is None
-    assert query.get_asset(conn, signed_transfer_tx.id) is None
-    assert list(query.get_metadata(conn, [signed_transfer_tx.id])) == []
-
-    assert query.get_transaction(conn, signed_create_tx.id) is not None
-    assert query.get_asset(conn, signed_create_tx.id) is not None
-
-
-def test_delete_latest_block(signed_create_tx, signed_transfer_tx):
-    from bigchaindb.backend import connect, query
-    from bigchaindb.tendermint.lib import Block
-    conn = connect()
-
-    conn.db.transactions.insert_one(signed_create_tx.to_dict())
-    query.store_asset(conn, {'id': signed_create_tx.id})
-    block = Block(app_hash='random_utxo',
-                  height=51,
-                  transactions=[signed_create_tx.id])
-    query.store_block(conn, block._asdict())
-    query.delete_latest_block(conn)
-
-    assert query.get_transaction(conn, signed_create_tx.id) is None
-    assert query.get_asset(conn, signed_create_tx.id) is None
-    assert query.get_block(conn, 51) is None
-
-
 def test_delete_zero_unspent_outputs(db_context, utxoset):
     from bigchaindb.backend import query
     unspent_outputs, utxo_collection = utxoset
