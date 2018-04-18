@@ -17,6 +17,23 @@ For reference, the possible headings are:
 * **External Contributors** to list contributors outside of BigchainDB GmbH.
 * **Notes**
 
+## [2.0 Alpha 2] - 2018-04-18
+
+Tag name: v2.0.0a2
+
+### Added
+
+An implementation of [BEP-8 (BigchainDB Enhancement Proposal #8)](https://github.com/bigchaindb/BEPs/tree/master/8), which makes sure a node can recover from a system fault (e.g. a crash) into a consistent state, i.e. a state where the data in the node's local MongoDB database is consistent with the data stored in the blockchain. Pull requests [#2135](https://github.com/bigchaindb/bigchaindb/pull/2135) and [#2207](https://github.com/bigchaindb/bigchaindb/pull/2207)
+
+### Changed
+
+When someone uses the HTTP API to send a new transaction to a BigchainDB network using the [POST /api/v1/transactions?mode={mode}](https://docs.bigchaindb.com/projects/server/en/master/http-client-server-api.html#post--api-v1-transactions?mode=mode) endpoint, they now get back a more informative HTTP response, so they can better-understand what happened. This is only when mode is `commit` or `sync`, because `async` _means_ that the response is immediate, without waiting to see what happened to the transaction. [Pull request #2198](https://github.com/bigchaindb/bigchaindb/pull/2198)
+
+### Known Issues
+
+* If BigchainDB Server crashes and then is restarted, Tendermint Core won't try to reconnect to BigchainDB Server and so all operations requiring that connection won't work. We only understood this recently. We'll write a blog post explaining what we intend to do about it.
+* The known issues in 2.0 Alpha (listed below) are still there.
+
 ## [2.0 Alpha] - 2018-04-03
 
 Tag name: v2.0.0a1
