@@ -12,6 +12,10 @@ to [regular semantic versioning](http://semver.org/), but there's no hyphen, e.g
 - `4.5.2a1` not `4.5.2-a1` for the first Alpha release
 - `3.4.5rc2` not `3.4.5-rc2` for Release Candidate 2
 
+**Note 1:** For Git tags (which are used to identify releases on GitHub), we append a `v` in front. For example, the Git tag for version `2.0.0a1` was `v2.0.0a1`.
+
+**Note 2:** For Docker image tags (e.g. on Docker Hub), we use longer version names for Alpha, Beta and Release Candidate releases. For example, the Docker image tag for version `2.0.0a1` was `2.0.0-alpha`.
+
 We use `0.9` and `0.9.0` as example version and short-version values below. You should replace those with the correct values for your new version.
 
 We follow [BEP-1](https://github.com/bigchaindb/BEPs/tree/master/1), which is our variant of C4, the Collective Code Construction Contract, so a release is just a [tagged commit](https://git-scm.com/book/en/v2/Git-Basics-Tagging) on the `master` branch, i.e. a label for a particular Git commit.
@@ -23,7 +27,15 @@ The following steps are what we do to release a new version of _BigchainDB Serve
 1. Create a pull request where you make the following changes:
 
    - Update `CHANGELOG.md`
-   - In `k8s/bigchaindb/bigchaindb-dep.yaml` _and_ in `k8s/dev-setup/bigchaindb.yaml`, find the line of the form `image: bigchaindb/bigchaindb:0.8.1` and change the version number to the new version number, e.g. `0.9.0`. (This is the Docker image that Kubernetes should pull from Docker Hub.)
+   - Update all Docker image tags in all Kubernetes YAML files (in the `k8s/` directory).
+     For example, in the files:
+
+     - `k8s/bigchaindb/bigchaindb-dep.yaml` and
+     - `k8s/dev-setup/bigchaindb.yaml`
+
+     find the line of the form `image: bigchaindb/bigchaindb:0.8.1` and change the version number to the new version number, e.g. `0.9.0`. (This is the Docker image that Kubernetes should pull from Docker Hub.)
+     Keep in mind that this is a _Docker image tag_ so our naming convention is
+     a bit different; see Note 2 in the **Notes** section above.
    - In `bigchaindb/version.py`:
      - update `__version__` to e.g. `0.9.0` (with no `.dev` on the end)
      - update `__short_version__` to e.g. `0.9` (with no `.dev` on the end)
