@@ -29,6 +29,10 @@ An implementation of [BEP-8 (BigchainDB Enhancement Proposal #8)](https://github
 
 When someone uses the HTTP API to send a new transaction to a BigchainDB network using the [POST /api/v1/transactions?mode={mode}](https://docs.bigchaindb.com/projects/server/en/master/http-client-server-api.html#post--api-v1-transactions?mode=mode) endpoint, they now get back a more informative HTTP response, so they can better-understand what happened. This is only when mode is `commit` or `sync`, because `async` _means_ that the response is immediate, without waiting to see what happened to the transaction. [Pull request #2198](https://github.com/bigchaindb/bigchaindb/pull/2198)
 
+### Known Issues
+
+* If BigchainDB Server crashes and then is restarted, Tendermint Core won't try to reconnect to BigchainDB Server and so all operations requiring that connection won't work. We only understood this recently. We'll write a blog post explaining what we intend to do about it.
+* The known issues in 2.0 Alpha (listed below) are still there.
 
 ## [2.0 Alpha] - 2018-04-03
 
