@@ -5,6 +5,7 @@ from functools import singledispatch
 from bigchaindb.backend.exceptions import OperationError
 
 VALIDATOR_UPDATE_ID = 'a_unique_id_string'
+PRE_COMMIT_ID = 'a_unique_id_string'
 
 
 @singledispatch
@@ -552,22 +553,8 @@ def store_block(conn, block):
 
 
 @singledispatch
-def delete_zombie_transactions(conn):
-    """Delete transactions not included in any block"""
-
-    raise NotImplementedError
-
-
-@singledispatch
 def store_unspent_outputs(connection, unspent_outputs):
     """Store unspent outputs in ``utxo_set`` table."""
-
-    raise NotImplementedError
-
-
-@singledispatch
-def delete_latest_block(conn):
-    """Delete the latest block along with its transactions"""
 
     raise NotImplementedError
 

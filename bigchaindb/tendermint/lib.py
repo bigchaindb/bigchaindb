@@ -378,6 +378,9 @@ class BigchainDB(Bigchain):
     def delete_validator_update(self):
         return backend.query.delete_validator_update(self.connection)
 
+    def store_pre_commit_state(self, state):
+        return backend.query.store_pre_commit_state(self.connection, state)
+
 
 Block = namedtuple('Block', ('app_hash', 'height', 'transactions'))
 

@@ -166,3 +166,35 @@ def test_end_block_return_validator_updates(b):
 
     updates = b.get_validator_update()
     assert updates == []
+
+
+def test_store_pre_commit_state_in_end_block(b, alice):
+    from bigchaindb.tendermint import App
+    from bigchaindb.backend import query
+    from bigchaindb.models import Transaction
+    from bigchaindb.backend.query import PRE_COMMIT_ID
+
+    tx = Transaction.create([alice.public_key],
+                            [([alice.public_key], 1)],
+                            asset={'msg': 'live long and prosper'})\
+                    .sign([alice.private_key])
+
+    app = App(b)
+    app.init_chain(['ignore'])
+
+    app.begin_block('ignore')
+    app.deliver_tx(encode_tx_to_bytes(tx))
+    app.end_block(99)
+
+    resp = query.get_pre_commit_state(b.connection, PRE_COMMIT_ID)
+    assert resp['commit_id'] == PRE_COMMIT_ID
+    assert resp['height'] == 99
+    assert resp['transactions'] == [tx.id]
+
+    app.begin_block('ignore')
+    app.deliver_tx(encode_tx_to_bytes(tx))
+    app.end_block(100)
+    resp = query.get_pre_commit_state(b.connection, PRE_COMMIT_ID)
+    assert resp['commit_id'] == PRE_COMMIT_ID
+    assert resp['height'] == 100
+    assert resp['transactions'] == [tx.id]

@@ -271,75 +271,6 @@ def test_calling_main(start_mock, base_parser_mock, parse_args_mock,
     assert start_mock.called is True
 
 
-@pytest.mark.tendermint
-@pytest.mark.bdb
-def test_recover_db_from_zombie_txn(b, monkeypatch):
-    from bigchaindb.commands.bigchaindb import run_recover
-    from bigchaindb.models import Transaction
-    from bigchaindb.common.crypto import generate_key_pair
-    from bigchaindb.tendermint.lib import Block
-    from bigchaindb import backend
-
-    alice = generate_key_pair()
-    tx = Transaction.create([alice.public_key],
-                            [([alice.public_key], 1)],
-                            asset={'cycle': 'hero'},
-                            metadata={'name': 'hohenheim'}) \
-        .sign([alice.private_key])
-    b.store_bulk_transactions([tx])
-    block = Block(app_hash='random_app_hash', height=10,
-                  transactions=[])._asdict()
-    b.store_block(block)
-
-    def mock_get(uri):
-        return MockResponse(10)
-    monkeypatch.setattr('requests.get', mock_get)
-
-    run_recover(b)
-
-    assert list(backend.query.get_metadata(b.connection, [tx.id])) == []
-    assert not backend.query.get_asset(b.connection, tx.id)
-    assert not b.get_transaction(tx.id)
-
-
-@pytest.mark.tendermint
-@pytest.mark.bdb
-def test_recover_db_from_zombie_block(b, monkeypatch):
-    from bigchaindb.commands.bigchaindb import run_recover
-    from bigchaindb.models import Transaction
-    from bigchaindb.common.crypto import generate_key_pair
-    from bigchaindb.tendermint.lib import Block
-    from bigchaindb import backend
-
-    alice = generate_key_pair()
-    tx = Transaction.create([alice.public_key],
-                            [([alice.public_key], 1)],
-                            asset={'cycle': 'hero'},
-                            metadata={'name': 'hohenheim'}) \
-        .sign([alice.private_key])
-    b.store_bulk_transactions([tx])
-
-    block9 = Block(app_hash='random_app_hash', height=9,
-                   transactions=[])._asdict()
-    b.store_block(block9)
-    block10 = Block(app_hash='random_app_hash', height=10,
-                    transactions=[tx.id])._asdict()
-    b.store_block(block10)
-
-    def mock_get(uri):
-        return MockResponse(9)
-    monkeypatch.setattr('requests.get', mock_get)
-
-    run_recover(b)
-
-    assert list(backend.query.get_metadata(b.connection, [tx.id])) == []
-    assert not backend.query.get_asset(b.connection, tx.id)
-    assert not b.get_transaction(tx.id)
-
-    block = b.get_latest_block()
-    assert block['height'] == 9
-
-
 @patch('bigchaindb.config_utils.autoconfigure')
 @patch('bigchaindb.commands.bigchaindb.run_recover')
 @patch('bigchaindb.tendermint.commands.start')
@@ -354,6 +285,49 @@ def test_recover_db_on_start(mock_autoconfigure,
 
     assert mock_run_recover.called
     assert mock_start.called
+
+
+@pytest.mark.tendermint
+@pytest.mark.bdb
+def test_run_recover(b, alice, bob):
+    from bigchaindb.commands.bigchaindb import run_recover
+    from bigchaindb.models import Transaction
+    from bigchaindb.tendermint.lib import Block, PreCommitState
+    from bigchaindb.backend.query import PRE_COMMIT_ID
+    from bigchaindb.backend import query
+
+    tx1 = Transaction.create([alice.public_key],
+                             [([alice.public_key], 1)],
+                             asset={'cycle': 'hero'},
+                             metadata={'name': 'hohenheim'}) \
+                     .sign([alice.private_key])
+    tx2 = Transaction.create([bob.public_key],
+                             [([bob.public_key], 1)],
+                             asset={'cycle': 'hero'},
+                             metadata={'name': 'hohenheim'}) \
+                     .sign([bob.private_key])
+
+    # store the transactions
+    b.store_bulk_transactions([tx1, tx2])
+
+    # create a random block
+    block8 = Block(app_hash='random_app_hash1', height=8,
+                   transactions=['txid_doesnt_matter'])._asdict()
+    b.store_block(block8)
+
+    # create the next block
+    block9 = Block(app_hash='random_app_hash1', height=9,
+                   transactions=[tx1.id])._asdict()
+    b.store_block(block9)
+
+    # create a pre_commit state which is ahead of the commit state
+    pre_commit_state = PreCommitState(commit_id=PRE_COMMIT_ID, height=10,
+                                      transactions=[tx2.id])._asdict()
+    b.store_pre_commit_state(pre_commit_state)
+
+    run_recover(b)
+
+    assert not query.get_transaction(b.connection, tx2.id)
 
 
 # Helper
