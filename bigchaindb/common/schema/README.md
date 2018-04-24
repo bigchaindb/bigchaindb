@@ -20,7 +20,9 @@ you must add it to the IPDB Transaction Spec first.
 Those were used to validate old transactions
 and are needed to re-check those transactions.)
 
-The file defining the JSON Schema for votes (`vote.yaml`) is BigchainDB-specific.
+The file defining the JSON Schema for votes (`vote.yaml`) is BigchainDB-specific,
+and was only used by BigchainDB version 1.3.0 and earlier.
+To ensure that people with old versions of BigchainDB can find that file easily, please don't delete it.
 
 ## Learn about JSON Schema
 
