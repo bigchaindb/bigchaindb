@@ -68,7 +68,8 @@ logs: check-deps ## Attach to the logs
 	@$(DC) logs -f bigchaindb
 
 test: check-deps ## Run all tests once
-	@$(DC) run --rm bigchaindb pytest -v
+	@$(DC) up -d bdb
+	@$(DC) exec bigchaindb pytest
 
 test-watch: check-deps ## Run all tests and wait. Every time you change code, tests will be run again
 	@$(DC) run --rm bigchaindb pytest -f -v
