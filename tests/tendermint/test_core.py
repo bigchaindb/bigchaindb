@@ -162,7 +162,7 @@ def test_end_block_return_validator_updates(b):
     query.store_validator_update(b.connection, validator_update)
 
     resp = app.end_block(99)
-    assert resp.diffs[0] == encode_validator(validator)
+    assert resp.validator_updates[0] == encode_validator(validator)
 
     updates = b.get_validator_update()
     assert updates == []

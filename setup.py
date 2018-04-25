@@ -84,7 +84,7 @@ install_requires = [
     'pyyaml~=3.12',
     'aiohttp~=2.3',
     'python-rapidjson-schema==0.1.1',
-    'abci~=0.3.0',
+    'abci~=0.4.1',
     'setproctitle~=1.1.0',
 ]
 
