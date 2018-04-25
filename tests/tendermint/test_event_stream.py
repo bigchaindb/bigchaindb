@@ -70,7 +70,7 @@ def test_process_unknown_event():
     from bigchaindb.tendermint.event_stream import process_event
 
     event = '{"jsonrpc": "2.0", "id": "test_stream_id#event",'\
-            ' "result": { "query": "tm.event=\'UnkownEvent\'" }}'
+            ' "result": { "query": "tm.event=\'UnknownEvent\'" }}'
 
     event_queue = Queue()
     process_event(event_queue, event, 'test_stream_id')
