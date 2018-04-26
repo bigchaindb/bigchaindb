@@ -42,8 +42,8 @@ def process_event(event_queue, event, stream_id):
     event_stream_id = stream_id + '#event'
     event = json.loads(event)
 
-    if (event['id'] == event_stream_id and event['result']['name'] == 'NewBlock'):
-        block = event['result']['data']['data']['block']
+    if (event['id'] == event_stream_id and event['result']['query'] == 'tm.event=\'NewBlock\''):
+        block = event['result']['data']['value']['block']
         block_id = block['header']['height']
         block_txs = block['data']['txs']
 
@@ -60,7 +60,7 @@ def subscribe_events(ws, stream_id):
     payload = {
         'method': 'subscribe',
         'jsonrpc': '2.0',
-        'params': ['NewBlock'],
+        'params': ['tm.event=\'NewBlock\''],
         'id': stream_id
     }
     yield from ws.send_str(json.dumps(payload))

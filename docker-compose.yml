@@ -45,14 +45,14 @@ services:
       retries: 3
     entrypoint: '.ci/entrypoint.sh'
   tendermint:
-    image: tendermint/tendermint:0.12
-    volumes:
-      - ./tmdata/config.toml:/tendermint/config.toml
+    image: tendermint/tendermint:0.19.0
+    # volumes:
+    #   - ./tmdata:/tendermint
     entrypoint: ''
     ports:
       - "46656"
       - "46657"
-    command: bash -c "tendermint init && tendermint node"
+    command: sh -c "tendermint init && tendermint node --proxy_app=tcp://bigchaindb:46658"
   bdb:
     image: busybox
     depends_on:

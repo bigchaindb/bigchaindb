@@ -30,10 +30,6 @@ matrix:
   - python: 3.5
     env: TOXENV=docsserver
   include:
-  - python: 3.5
-    env:
-    - BIGCHAINDB_DATABASE_BACKEND=localmongodb
-    - BIGCHAINDB_DATABASE_SSL=
   - python: 3.6
     env:
     - BIGCHAINDB_DATABASE_BACKEND=localmongodb

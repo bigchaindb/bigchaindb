@@ -2,7 +2,7 @@
 with Tendermint."""
 import logging
 
-from abci import BaseApplication, Result
+from abci.application import BaseApplication, Result
 from abci.types_pb2 import ResponseEndBlock, ResponseInfo, Validator
 
 from bigchaindb.tendermint import BigchainDB
@@ -86,7 +86,6 @@ class App(BaseApplication):
             return Result.error(log='Invalid transaction')
         else:
             logger.debug('storing tx')
-            # self.bigchaindb.store_transaction(transaction)
             self.block_txn_ids.append(transaction.id)
             self.block_transactions.append(transaction)
             return Result.ok()
@@ -124,7 +123,7 @@ class App(BaseApplication):
         # version of py-abci i.e. the validator updates should be return
         # as follows:
         # ResponseEndBlock(validator_updates=validator_updates)
-        return ResponseEndBlock(diffs=validator_updates)
+        return ResponseEndBlock(validator_updates=validator_updates)
 
     def commit(self):
         """Store the new height and along with block hash."""
@@ -141,13 +140,13 @@ class App(BaseApplication):
             # this effects crash recovery. Refer BEP#8 for details
             self.bigchaindb.store_block(block._asdict())
 
-        return Result.ok(data=data)
+        return data
 
 
 def encode_validator(v):
     pub_key = v['pub_key']['data']
     # NOTE: tendermint expects public to be encoded in go-wire format
     # so `01` has to be appended
-    pubKey = bytes.fromhex('01{}'.format(pub_key))
-    return Validator(pubKey=pubKey,
+    pub_key = bytes.fromhex('01{}'.format(pub_key))
+    return Validator(pub_key=pub_key,
                      power=v['power'])
