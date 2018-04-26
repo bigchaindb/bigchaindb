@@ -39,7 +39,7 @@ services:
       - "9985:9985"
       - "46658"
     healthcheck:
-      test: ["CMD", "bash", "-c", "curl http://bigchaindb:9984 && curl http://tendermint:46657/abci_query"]
+      test: ["CMD", "bash", "-c", "curl http://bigchaindb:9984"]
       interval: 3s
       timeout: 5s
       retries: 3

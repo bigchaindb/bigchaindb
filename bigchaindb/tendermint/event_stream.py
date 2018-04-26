@@ -67,22 +67,19 @@ def subscribe_events(ws, stream_id):
 
 
 @asyncio.coroutine
-def try_connect_and_recv(event_queue, max_tries):
+def try_connect_and_recv(event_queue):
     try:
         yield from connect_and_recv(event_queue)
 
     except Exception as e:
-        if max_tries:
-            logger.warning('WebSocket connection failed with exception %s', e)
-            time.sleep(3)
-            yield from try_connect_and_recv(event_queue, max_tries-1)
-        else:
-            logger.exception('WebSocket connection failed with exception %s', e)
+        logger.warning('WebSocket connection failed with exception %s', e)
+        time.sleep(3)
+        yield from try_connect_and_recv(event_queue)
 
 
 def start(event_queue):
     loop = asyncio.get_event_loop()
     try:
-        loop.run_until_complete(try_connect_and_recv(event_queue, 10))
+        loop.run_until_complete(try_connect_and_recv(event_queue))
     except (KeyboardInterrupt, SystemExit):
         logger.info('Shutting down Tendermint event stream connection')
