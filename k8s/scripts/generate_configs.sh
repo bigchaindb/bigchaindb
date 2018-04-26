@@ -15,6 +15,7 @@ INDEX='0'
 CONFIGURE_CA='true'
 CONFIGURE_MEMBER='true'
 CONFIGURE_CLIENT='true'
+SECRET_TOKEN=${SECRET_TOKEN:="secret-token"}
 
 function show_help(){
 cat > /dev/stdout << END
@@ -49,6 +50,17 @@ done
 # sanity checks
 if [[ -z "${CERT_DIR}" ]] ; then
     echo "Missing required argument CERT_DIR"
+    exit 1
+fi
+
+if [[ -z "${AUTH_MODE}" ]]; then
+    echo "Missing required argument AUTH_MODE"
+    exit 1
+fi
+
+if [[ "${AUTH_MODE}" != "secret-token" && \
+    "${AUTH_MODE}" != "threescale" ]]; then
+    echo "Invalid AUTH_MODE configuration, only accepted values are: [secret-token, threescale]"
     exit 1
 fi
 
@@ -87,4 +99,5 @@ convert_b64 $BASE_K8S_DIR $BASE_CA_DIR/$BASE_EASY_RSA_PATH $BASE_CLIENT_CERT_DIR
 get_users $BASE_USERS_DIR $BASE_CA_DIR/$BASE_EASY_RSA_PATH
 generate_secretes_no_threescale $BASE_K8S_DIR $SECRET_TOKEN $HTTPS_CERT_KEY_FILE_NAME $HTTPS_CERT_CHAIN_FILE_NAME $MDB_ADMIN_PASSWORD
 
-generate_config_map $BASE_USERS_DIR $MDB_ADMIN_USER $NODE_FQDN $TM_SEEDS $TM_VALIDATORS $TM_VALIDATOR_POWERS $TM_GENESIS_TIME $TM_CHAIN_ID $TM_INSTANCE_NAME $NODE_DNS_SERVER
+generate_config_map $BASE_USERS_DIR $MDB_ADMIN_USER $NODE_FQDN $TM_SEEDS $TM_VALIDATORS $TM_VALIDATOR_POWERS $TM_GENESIS_TIME \
+    $TM_CHAIN_ID $TM_INSTANCE_NAME $NODE_DNS_SERVER $AUTH_MODE

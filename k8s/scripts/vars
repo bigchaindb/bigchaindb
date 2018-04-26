@@ -1,8 +1,12 @@
 # DNS name of the bigchaindb node
 NODE_FQDN="test-node.bigchaindb.com"
 
+# Authorization mode: [secret-token, threescale]
+AUTH_MODE="secret-token"
+
 # Secret token used for authorization of
 # POST requests to the bigchaindb node
+# Only required when AUTH_MODE=secret-token
 SECRET_TOKEN="test-secret"
 
 # Absolute path for the SSL certificate key
