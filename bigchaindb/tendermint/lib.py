@@ -65,23 +65,31 @@ class BigchainDB(Bigchain):
         if response.get('error') is not None:
             return (500, 'Internal error')
 
-        return (202, '')
-        # result = response['result']
-        # if mode == MODE_LIST[2]:
-        #     return self._process_commit_mode_response(result)
-        # else:
-        #     status_code = result['code']
-        #     return self._process_status_code(status_code,
-        #                                      'Error while processing transaction')
+        result = response['result']
+        if mode == MODE_LIST[2]:
+            return self._process_commit_mode_response(result)
+        else:
+            status_code = result['code']
+            return self._process_status_code(status_code,
+                                             'Error while processing transaction')
 
-    # def _process_commit_mode_response(self, result):
-    #     check_tx_status_code = result['check_tx']['code']
-    #     if check_tx_status_code == 0:
-    #         deliver_tx_status_code = result['deliver_tx']['code']
-    #         return self._process_status_code(deliver_tx_status_code,
-    #                                          'Error while commiting the transaction')
-    #     else:
-    #         return (500, 'Error while validating the transaction')
+    def _process_commit_mode_response(self, result):
+        """The implementation below is dumb but clear"""
+        try:
+            check_tx_status_code = result['check_tx']['code']
+            if check_tx_status_code > 0:
+                return (500, 'Error while validating the transaction')
+        except KeyError:
+            pass
+
+        try:
+            deliver_tx_status_code = result['deliver_tx']['code']
+            if deliver_tx_status_code > 0:
+                return (500, 'Error while commiting the transaction')
+        except KeyError:
+            pass
+
+        return (202, '')
 
     def _process_status_code(self, status_code, failure_msg):
         return (202, '') if status_code == 0 else (500, failure_msg)
