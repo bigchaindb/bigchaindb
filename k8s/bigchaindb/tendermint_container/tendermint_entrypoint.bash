@@ -49,20 +49,25 @@ else
 fi
 
 # copy template
-cp /etc/tendermint/genesis.json /tendermint/genesis.json
+mkdir -p /tendermint/config
+cp /etc/tendermint/genesis.json /tendermint/config/genesis.json
 
-TM_GENESIS_FILE=/tendermint/genesis.json
+TM_GENESIS_FILE=/tendermint/config/genesis.json
 TM_PUB_KEY_DIR=/tendermint_node_data
 
 # configure the nginx.conf file with env variables
 sed -i "s|TM_GENESIS_TIME|\"${tm_genesis_time}\"|g" ${TM_GENESIS_FILE}
 sed -i "s|TM_CHAIN_ID|\"${tm_chain_id}\"|g" ${TM_GENESIS_FILE}
 
-if [ ! -f /tendermint/priv_validator.json ]; then
-  tendermint gen_validator > /tendermint/priv_validator.json
+if [ ! -f /tendermint/config/priv_validator.json ]; then
+  tendermint gen_validator > /tendermint/config/priv_validator.json
   # pub_key.json will be served by the nginx container
-  cat /tendermint/priv_validator.json
-  cat /tendermint/priv_validator.json | jq ".pub_key" > "$TM_PUB_KEY_DIR"/pub_key.json
+  cat /tendermint/config/priv_validator.json
+  cat /tendermint/config/priv_validator.json | jq ".pub_key" > "$TM_PUB_KEY_DIR"/pub_key.json
+fi
+
+if [ ! -f /tendermint/config/node_key.json ]; then
+  tendermint gen_node_key > "$TM_PUB_KEY_DIR"/address
 fi
 
 # fill genesis file with validators
@@ -90,20 +95,36 @@ for i in "${!VALS_ARR[@]}"; do
     sleep 30
     curl -s --fail "http://${VALS_ARR[$i]}:$tm_pub_key_access_port/pub_key.json" > /dev/null
     ERR=$?
-    echo "Cannot connect to Tendermint instance: ${VALS_ARR[$i]}"
+    echo "Cannot get public key for Tendermint instance: ${VALS_ARR[$i]}"
   done
   set -e
   # add validator to genesis file along with its pub_key
   curl -s "http://${VALS_ARR[$i]}:$tm_pub_key_access_port/pub_key.json" | jq ". as \$k | {pub_key: \$k, power: ${VAL_POWERS_ARR[$i]}, name: \"${VALS_ARR[$i]}\"}" > pub_validator.json
-  cat /tendermint/genesis.json | jq ".validators |= .+ [$(cat pub_validator.json)]" > tmpgenesis && mv tmpgenesis /tendermint/genesis.json
+  cat /tendermint/config/genesis.json | jq ".validators |= .+ [$(cat pub_validator.json)]" > tmpgenesis && mv tmpgenesis /tendermint/config/genesis.json
   rm pub_validator.json
-  done
+done
 
 # construct seeds
 IFS=',' read -ra SEEDS_ARR <<< "$tm_seeds"
 seeds=()
 for s in "${SEEDS_ARR[@]}"; do
-  seeds+=("$s:$tm_p2p_port")
+  echo "http://$s:$tm_pub_key_access_port/address"
+  curl -s --fail "http://$s:$tm_pub_key_access_port/address" > /dev/null
+  ERR=$?
+  while [ "$ERR" != 0 ]; do
+    RETRIES=$((RETRIES+1))
+    if [ $RETRIES -eq 10 ]; then
+      echo "${CANNOT_INITIATLIZE_INSTANCE}"
+      exit 1
+    fi
+    # 300(30 * 10(retries)) second timeout before container dies if it cannot find initial peers
+    sleep 30
+    curl -s --fail "http://$s:$tm_pub_key_access_port/address" > /dev/null
+    ERR=$?
+    echo "Cannot get address for Tendermint instance: ${s}"
+  done
+  seed_addr=$(curl -s "http://$s:$tm_pub_key_access_port/address")
+  seeds+=("$seed_addr@$s:$tm_p2p_port")
 done
 seeds=$(IFS=','; echo "${seeds[*]}")
 

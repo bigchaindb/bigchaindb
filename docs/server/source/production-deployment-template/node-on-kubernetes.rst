@@ -137,6 +137,10 @@ Step 4: Start the NGINX Service
 
         $ kubectl apply -f nginx-https/nginx-https-svc.yaml
 
+        OR
+
+        $ kubectl apply -f nginx-http/nginx-http-svc.yaml
+
 
 .. _assign-dns-name-to-nginx-public-ip:
 
@@ -217,30 +221,9 @@ Step 8(Optional): Start the OpenResty Kubernetes Service
        $ kubectl apply -f nginx-openresty/nginx-openresty-svc.yaml
 
 
-.. _start-the-tendermint-kubernetes-service:
-
-Step 9: Start the Tendermint Kubernetes Service
------------------------------------------------
-
-  * This configuration is located in the file ``tendermint/tendermint-svc.yaml``.
-
-  * Set the ``metadata.name`` and ``metadata.labels.name`` to the value
-    set in ``tm-instance-name`` in the ConfigMap above.
-
-  * Set the ``spec.selector.app`` to the value set in ``tm-instance-name`` in
-    the ConfigMap followed by ``-ss``. For example, if the value set in the
-    ``tm-instance-name`` is ``tm-instance-0``, set  the
-    ``spec.selector.app`` to ``tm-instance-0-ss``.
-
-  * Start the Kubernetes Service:
-
-    .. code:: bash
-
-       $ kubectl apply -f tendermint/tendermint-svc.yaml
-
 .. _start-the-nginx-deployment:
 
-Step 10: Start the NGINX Kubernetes Deployment
+Step 9: Start the NGINX Kubernetes Deployment
 ----------------------------------------------
 
   * NGINX is used as a proxy to the BigchainDB, Tendermint and MongoDB instances in
@@ -249,12 +232,8 @@ Step 10: Start the NGINX Kubernetes Deployment
     on ``mongodb-frontend-port``, ``tm-p2p-port`` and ``tm-pub-key-access``
     to MongoDB and Tendermint respectively.
 
-
-Step 10.2: NGINX with HTTPS
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
    * This configuration is located in the file
-     ``nginx-https/nginx-https-dep.yaml``.
+     ``nginx-https/nginx-https-dep.yaml`` or ``nginx-http/nginx-http-dep.yaml``.
 
    * Start the Kubernetes Deployment:
 
@@ -262,10 +241,14 @@ Step 10.2: NGINX with HTTPS
 
         $ kubectl apply -f nginx-https/nginx-https-dep.yaml
 
+        OR
+
+        $ kubectl apaply -f nginx-http/nginx-http-dep.yaml
+
 
 .. _create-kubernetes-storage-class-mdb:
 
-Step 11: Create Kubernetes Storage Classes for MongoDB
+Step 10: Create Kubernetes Storage Classes for MongoDB
 ------------------------------------------------------
 
 MongoDB needs somewhere to store its data persistently,
@@ -338,7 +321,7 @@ You can check if it worked using ``kubectl get storageclasses``.
 
 .. _create-kubernetes-persistent-volume-claim-mdb:
 
-Step 12: Create Kubernetes Persistent Volume Claims for MongoDB
+Step 11: Create Kubernetes Persistent Volume Claims for MongoDB
 ---------------------------------------------------------------
 
 Next, you will create two PersistentVolumeClaim objects ``mongo-db-claim`` and
@@ -393,7 +376,7 @@ but it should become "Bound" fairly quickly.
 
 .. _start-kubernetes-stateful-set-mongodb:
 
-Step 13: Start a Kubernetes StatefulSet for MongoDB
+Step 12: Start a Kubernetes StatefulSet for MongoDB
 ---------------------------------------------------
 
   * Create the MongoDB StatefulSet using:
@@ -416,7 +399,7 @@ Step 13: Start a Kubernetes StatefulSet for MongoDB
 
 .. _configure-users-and-access-control-mongodb:
 
-Step 14: Configure Users and Access Control for MongoDB
+Step 13: Configure Users and Access Control for MongoDB
 -------------------------------------------------------
 
   * In this step, you will create a user on MongoDB with authorization
@@ -430,14 +413,14 @@ Step 14: Configure Users and Access Control for MongoDB
 
 .. _create-kubernetes-storage-class:
 
-Step 15: Create Kubernetes Storage Classes for Tendermint
+Step 14: Create Kubernetes Storage Classes for BigchainDB
 ----------------------------------------------------------
 
-Tendermint needs somewhere to store its data persistently, it uses
+BigchainDB needs somewhere to store Tendermint data persistently, Tendermint uses
 LevelDB as the persistent storage layer.
 
 The Kubernetes template for configuration of Storage Class is located in the
-file ``tendermint/tendermint-sc.yaml``.
+file ``bigchaindb/bigchaindb-sc.yaml``.
 
 Details about how to create a Azure Storage account and how Kubernetes Storage Class works
 are already covered in this document: :ref:`create-kubernetes-storage-class-mdb`.
@@ -446,20 +429,20 @@ Create the required storage classes using:
 
 .. code:: bash
 
-   $ kubectl apply -f tendermint/tendermint-sc.yaml
+   $ kubectl apply -f bigchaindb/bigchaindb-sc.yaml
 
 
 You can check if it worked using ``kubectl get storageclasses``.
 
 .. _create-kubernetes-persistent-volume-claim:
 
-Step 16: Create Kubernetes Persistent Volume Claims for Tendermint
+Step 15: Create Kubernetes Persistent Volume Claims for BigchainDB
 ------------------------------------------------------------------
 
 Next, you will create two PersistentVolumeClaim objects ``tendermint-db-claim`` and
 ``tendermint-config-db-claim``.
 
-This configuration is located in the file ``tendermint/tendermint-pvc.yaml``.
+This configuration is located in the file ``bigchaindb/bigchaindb-pvc.yaml``.
 
 Details about Kubernetes Persistent Volumes, Persistent Volume Claims
 and how they work with Azure are already covered in this
@@ -469,7 +452,7 @@ Create the required Persistent Volume Claims using:
 
 .. code:: bash
 
-   $ kubectl apply -f tendermint/tendermint-pvc.yaml
+   $ kubectl apply -f bigchaindb/bigchaindb-pvc.yaml
 
 You can check its status using:
 
@@ -478,56 +461,43 @@ You can check its status using:
     kubectl get pvc -w
 
 
-.. _create-kubernetes-stateful-set:
+.. _start-kubernetes-stateful-set-bdb:
 
-Step 17: Start a Kubernetes StatefulSet for Tendermint
+Step 16: Start a Kubernetes StatefulSet for BigchainDB
 ------------------------------------------------------
 
-  * This configuration is located in the file ``tendermint/tendermint-ss.yaml``.
+  * This configuration is located in the file ``bigchaindb/bigchaindb-ss.yaml``.
 
-  * Set the ``spec.serviceName`` to the value set in ``tm-instance-name`` in
+  * Set the ``spec.serviceName`` to the value set in ``bdb-instance-name`` in
     the ConfigMap.
-    For example, if the value set in the ``tm-instance-name``
-    is ``tm-instance-0``, set the field to ``tm-instance-0``.
+    For example, if the value set in the ``bdb-instance-name``
+    is ``bdb-instance-0``, set the field to ``tm-instance-0``.
 
   * Set ``metadata.name``, ``spec.template.metadata.name`` and
     ``spec.template.metadata.labels.app`` to the value set in
-    ``tm-instance-name`` in the ConfigMap, followed by
+    ``bdb-instance-name`` in the ConfigMap, followed by
     ``-ss``.
     For example, if the value set in the
-    ``tm-instance-name`` is ``tm-instance-0``, set the fields to the value
-    ``tm-insance-0-ss``.
+    ``bdb-instance-name`` is ``bdb-instance-0``, set the fields to the value
+    ``bdb-insance-0-ss``.
 
   * As we gain more experience running Tendermint in testing and production, we
     will tweak the ``resources.limits.cpu`` and ``resources.limits.memory``.
 
-  * Create the Tendermint StatefulSet using:
+  * Create the BigchainDB StatefulSet using:
 
     .. code:: bash
 
-       $ kubectl apply -f tendermint/tendermint-ss.yaml
+       $ kubectl apply -f bigchaindb/bigchaindb-ss.yaml
 
     .. code:: bash
 
        $ kubectl get pods -w
 
-.. _start-kubernetes-deployment-bdb:
-
-Step 18: Start a Kubernetes Deployment for BigchainDB
------------------------------------------------------
-
-  * Create the BigchainDB Deployment using:
-
-    .. code:: bash
-
-       $ kubectl apply -f bigchaindb/bigchaindb-dep.yaml
-
-
-  * You can check its status using the command ``kubectl get deployments -w``
 
 .. _start-kubernetes-deployment-for-mdb-mon-agent:
 
-Step 19(Optional): Start a Kubernetes Deployment for MongoDB Monitoring Agent
+Step 17(Optional): Start a Kubernetes Deployment for MongoDB Monitoring Agent
 ------------------------------------------------------------------------------
 
   * This configuration is located in the file
@@ -556,7 +526,7 @@ Step 19(Optional): Start a Kubernetes Deployment for MongoDB Monitoring Agent
 
 .. _start-kubernetes-deployment-openresty:
 
-Step 20(Optional): Start a Kubernetes Deployment for OpenResty
+Step 18(Optional): Start a Kubernetes Deployment for OpenResty
 --------------------------------------------------------------
 
   * This configuration is located in the file
@@ -595,7 +565,7 @@ Step 20(Optional): Start a Kubernetes Deployment for OpenResty
   * You can check its status using the command ``kubectl get deployments -w``
 
 
-Step 21(Optional): Configure the MongoDB Cloud Manager
+Step 19(Optional): Configure the MongoDB Cloud Manager
 ------------------------------------------------------
 
 Refer to the
@@ -604,7 +574,7 @@ for details on how to configure the MongoDB Cloud Manager to enable
 monitoring and backup.
 
 
-Step 22(Optional): Only for multi site deployments(Geographically dispersed)
+Step 20(Optional): Only for multi site deployments(Geographically dispersed)
 ----------------------------------------------------------------------------
 
 We need to make sure that clusters are able
@@ -612,22 +582,22 @@ to talk to each other i.e. specifically the communication between the
 Tendermint peers. Set up networking between the clusters using
 `Kubernetes Services <https://kubernetes.io/docs/concepts/services-networking/service/>`_.
 
-Assuming we have a Tendermint instance ``tendermint-instance-1`` residing in Azure data center location ``westeurope`` and we
-want to connect to ``tendermint-instance-2``, ``tendermint-instance-3``, and ``tendermint-instance-4`` located in Azure data centers
+Assuming we have a BigchainDB instance ``bdb-instance-1`` residing in Azure data center location ``westeurope`` and we
+want to connect to ``bdb-instance-2``, ``bdb-instance-3``, and ``bdb-instance-4`` located in Azure data centers
 ``eastus``, ``centralus`` and ``westus``, respectively. Unless you already have explicitly set up networking for
-``tendermint-instance-1`` to communicate with ``tendermint-instance-2/3/4`` and
+``bdb-instance-1`` to communicate with ``bdb-instance-2/3/4`` and
 vice versa, we will have to add a Kubernetes Service in each cluster to accomplish this goal in order to set up a
 Tendermint P2P network.
 It is similar to ensuring that there is a ``CNAME`` record in the DNS
-infrastructure to resolve ``tendermint-instance-X`` to the host where it is actually available.
+infrastructure to resolve ``bdb-instance-X`` to the host where it is actually available.
 We can do this in Kubernetes using a Kubernetes Service of ``type``
 ``ExternalName``.
 
-* This configuration is located in the file ``tendermint/tendermint-ext-conn-svc.yaml``.
+* This configuration is located in the file ``bigchaindb/bigchaindb-ext-conn-svc.yaml``.
 
-* Set the name of the ``metadata.name`` to the host name of the Tendermint instance you are trying to connect to.
-  For instance if you are configuring this service on cluster with ``tendermint-instance-1`` then the ``metadata.name`` will
-  be ``tendermint-instance-2`` and vice versa.
+* Set the name of the ``metadata.name`` to the host name of the BigchainDB instance you are trying to connect to.
+  For instance if you are configuring this service on cluster with ``bdb-instance-1`` then the ``metadata.name`` will
+  be ``bdb-instance-2`` and vice versa.
 
 * Set ``spec.ports.port[0]`` to the ``tm-p2p-port`` from the ConfigMap for the other cluster.
 
@@ -650,10 +620,10 @@ We can do this in Kubernetes using a Kubernetes Service of ``type``
 
 .. _verify-and-test-bdb:
 
-Step 23: Verify the BigchainDB Node Setup
+Step 21: Verify the BigchainDB Node Setup
 -----------------------------------------
 
-Step 23.1: Testing Internally
+Step 21.1: Testing Internally
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To test the setup of your BigchainDB node, you could use a Docker container
@@ -702,19 +672,11 @@ To test the BigchainDB instance:
 
    $ curl -X GET http://bdb-instance-0:9984
 
+   $ curl -X GET http://bdb-instance-0:9986/pub_key.json
+
+   $ curl -X GET http://bdb-instance-0:46657/abci_info
+
    $ wsc -er ws://bdb-instance-0:9985/api/v1/streams/valid_transactions
-
-To test the Tendermint instance:
-
-.. code:: bash
-
-   $ nslookup tm-instance-0
-
-   $ dig +noall +answer _bdb-api-port._tcp.tm-instance-0.default.svc.cluster.local SRV
-
-   $ dig +noall +answer _bdb-ws-port._tcp.tm-instance-0.default.svc.cluster.local SRV
-
-   $ curl -X GET http://tm-instance-0:9986/pub_key.json
 
 
 To test the OpenResty instance:
@@ -769,7 +731,7 @@ The above curl command should result in the response
 ``It looks like you are trying to access MongoDB over HTTP on the native driver port.``
 
 
-Step 23.2: Testing Externally
+Step 21.2: Testing Externally
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Check the MongoDB monitoring agent on the MongoDB Cloud Manager

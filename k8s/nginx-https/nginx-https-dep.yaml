@@ -12,7 +12,7 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
       - name: nginx
-        image: bigchaindb/nginx_https:2.0.0-alpha
+        image: bigchaindb/nginx_https:2.0.0-alpha3
         imagePullPolicy: Always
         env:
         - name: NODE_FRONTEND_PORT
@@ -74,17 +74,12 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: tendermint-config
-              key: tm-pub-key-access
-        - name: TM_BACKEND_HOST
-          valueFrom:
-            configMapKeyRef:
-              name: tendermint-config
-              key: ngx-tm-instance-name
+              key: bdb-pub-key-access
         - name: TM_P2P_PORT
           valueFrom:
             configMapKeyRef:
               name: tendermint-config
-              key: tm-p2p-port
+              key: bdb-p2p-port
         - name: AUTHORIZATION_MODE
           valueFrom:
             configMapKeyRef:
@@ -107,10 +102,10 @@ spec:
           name: ngx-port
         - containerPort: 9986
           protocol: TCP
-          name: tm-pub-key
+          name: bdb-pub-key
         - containerPort: 46656
           protocol: TCP
-          name: tm-p2p-port
+          name: bdb-p2p-port
         livenessProbe:
           httpGet:
             path: /health

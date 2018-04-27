@@ -1,44 +1,43 @@
 # DNS name of the bigchaindb node
-NODE_FQDN="test-node.bigchaindb.com"
+NODE_FQDN="test.bigchaindb.com"
 
 # Secret token used for authorization of
 # POST requests to the bigchaindb node
 SECRET_TOKEN="test-secret"
 
 # Absolute path for the SSL certificate key
-HTTPS_CERT_KEY_FILE_NAME="</path/to/https.key>"
+HTTPS_CERT_KEY_FILE_NAME="/path/to/https.key"
 
 # Absolute path for the SSL certificate chain
-HTTPS_CERT_CHAIN_FILE_NAME="</path/to/https.pem>"
+HTTPS_CERT_CHAIN_FILE_NAME="/path/to/https.crt"
 
 # MongoDB Admin user credentials
 MDB_ADMIN_USER='adminUser'
 MDB_ADMIN_PASSWORD='superstrongpassword'
 
-# Tendermint instance name of the bigchaindb
-# node. This name should be unique
-TM_INSTANCE_NAME='tm-instance-0'
+# BigchainDB instance name. This name should be unique
+BDB_INSTANCE_NAME='bdb-instance-0'
 
 # Comma separated list of initial peers in the
 # network.
-TM_SEEDS='tm-instance-0,tm-instance-1,tm-instance-2'
+BDB_SEEDS='bdb-instance-0,bdb-instance-1,bdb-instance-2,bdb-instance-3'
 
 # Comma separated list of validators in the
 # network
-TM_VALIDATORS='tm-instance-0,tm-instance-1,tm-instance-2'
+BDB_VALIDATORS='bdb-instance-0,bdb-instance-1,bdb-instance-2,bdb-instance-3'
 
 # Comma separated list of voting
 # power of all validators. Make sure
 # order and number of powers corresponds
-# to TM_VALIDATORS
-TM_VALIDATOR_POWERS='10,10,10'
+# to BDB_VALIDATORS
+BDB_VALIDATOR_POWERS='10,10,10,10'
 
 # Offical time of blockchain start
-TM_GENESIS_TIME='0001-01-01T00:00:00Z'
+BDB_GENESIS_TIME='0001-01-01T00:00:00Z'
 
 # Blockchain ID must be unique for
 # every blockchain
-TM_CHAIN_ID='test-chain-rwcPML'
+BDB_CHAIN_ID='test-chain-rwcPML'
 
 # IP Address of the resolver(DNS server).
 # i.e. IP of `kube-dns`, can be retrieved using:
