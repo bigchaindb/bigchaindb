@@ -461,7 +461,7 @@ You can check its status using:
     kubectl get pvc -w
 
 
-.. _create-kubernetes-stateful-set:
+.. _start-kubernetes-stateful-set-bdb:
 
 Step 16: Start a Kubernetes StatefulSet for BigchainDB
 ------------------------------------------------------
