@@ -9,7 +9,7 @@ CERT_DIR="certificates"
 
 # base variables with default values
 MDB_CN="mdb-instance"
-BDB_CN="bdb-instance"
+BDB_CN="$BDB_INSTANCE_NAME"
 MDB_MON_CN="mdb-mon-instance"
 INDEX='0'
 CONFIGURE_CA='true'
