@@ -1,15 +1,15 @@
 # DNS name of the bigchaindb node
-NODE_FQDN="muawia-dev.ipdb.io"
+NODE_FQDN="test.bigchaindb.com"
 
 # Secret token used for authorization of
 # POST requests to the bigchaindb node
 SECRET_TOKEN="test-secret"
 
 # Absolute path for the SSL certificate key
-HTTPS_CERT_KEY_FILE_NAME="/scripts/blabla"
+HTTPS_CERT_KEY_FILE_NAME="/path/to/https.key"
 
 # Absolute path for the SSL certificate chain
-HTTPS_CERT_CHAIN_FILE_NAME="/scripts/blabla"
+HTTPS_CERT_CHAIN_FILE_NAME="/path/to/https.crt"
 
 # MongoDB Admin user credentials
 MDB_ADMIN_USER='adminUser'
@@ -20,17 +20,17 @@ BDB_INSTANCE_NAME='bdb-instance-0'
 
 # Comma separated list of initial peers in the
 # network.
-BDB_SEEDS='bdb-instance-0'
+BDB_SEEDS='bdb-instance-0,bdb-instance-1,bdb-instance-2,bdb-instance-3'
 
 # Comma separated list of validators in the
 # network
-BDB_VALIDATORS='bdb-instance-0'
+BDB_VALIDATORS='bdb-instance-0,bdb-instance-1,bdb-instance-2,bdb-instance-3'
 
 # Comma separated list of voting
 # power of all validators. Make sure
 # order and number of powers corresponds
 # to BDB_VALIDATORS
-BDB_VALIDATOR_POWERS='10'
+BDB_VALIDATOR_POWERS='10,10,10,10'
 
 # Offical time of blockchain start
 BDB_GENESIS_TIME='0001-01-01T00:00:00Z'
