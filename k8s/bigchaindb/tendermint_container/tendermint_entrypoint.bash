@@ -48,7 +48,6 @@ else
   echo tm_instance_name="$TM_INSTANCE_NAME"
 fi
 
-echo "wtf"
 # copy template
 mkdir -p /tendermint/config
 cp /etc/tendermint/genesis.json /tendermint/config/genesis.json
