@@ -13,6 +13,8 @@ spec:
     name: p2p
   - port: 46657
     name: pubkey
+  - port: 9986
+    name: nginx
   type: ExternalName
   # FQDN of remote cluster/NGINX instance
   #externalName: "nginx-instance-for-bdb-instance-0.westeurope.cloudapp.azure.com"
