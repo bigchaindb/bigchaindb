@@ -225,7 +225,7 @@ function generate_config_map(){
     mdb_instance_name="$MDB_CN-$INDEX"
     ngx_instance_name="ngx-instance-$INDEX"
 
-    bdb_user=`cat "${1}"/"$BDB_CN"-"${INDEX}".user`
+    bdb_user=`cat "${1}"/"$BDB_CN".user`
     mdb_admin_username="${2}"
     node_fqdn="${3}"
     bdb_seeds="${4}"
