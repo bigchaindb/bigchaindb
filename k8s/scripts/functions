@@ -59,21 +59,21 @@ function configure_client_cert_gen(){
     echo "set_var EASYRSA_SSL_CONF \"$1/openssl-1.0.cnf\"" >> $1/vars
     echo "set_var EASYRSA_PKI \"$1/pki\"" >> $1/vars
     $1/easyrsa init-pki
-    $1/easyrsa gen-req "$BDB_CN"-"$INDEX" nopass
+    $1/easyrsa gen-req "$BDB_CN" nopass
     $1/easyrsa gen-req "$MDB_MON_CN"-"$INDEX" nopass
 }
 
 function import_requests(){
     # $1:- Base directory for Root CA
     $1/easyrsa import-req $BASE_MEMBER_CERT_DIR/$BASE_EASY_RSA_PATH/pki/reqs/"$MDB_CN"-"$INDEX".req "$MDB_CN"-"$INDEX"
-    $1/easyrsa import-req $BASE_CLIENT_CERT_DIR/$BASE_EASY_RSA_PATH/pki/reqs/"$BDB_CN"-"$INDEX".req "$BDB_CN"-"$INDEX"
+    $1/easyrsa import-req $BASE_CLIENT_CERT_DIR/$BASE_EASY_RSA_PATH/pki/reqs/"$BDB_CN".req "$BDB_CN"
     $1/easyrsa import-req $BASE_CLIENT_CERT_DIR/$BASE_EASY_RSA_PATH/pki/reqs/"$MDB_MON_CN"-"$INDEX".req "$MDB_MON_CN"-"$INDEX"
 }
 
 function sign_requests(){
     # $1:- Base directory for Root CA
     $1/easyrsa --subject-alt-name=DNS:localhost,DNS:"$MDB_CN"-"$INDEX" sign-req server "$MDB_CN"-"$INDEX"
-    $1/easyrsa sign-req client "$BDB_CN"-"$INDEX"
+    $1/easyrsa sign-req client "$BDB_CN"
     $1/easyrsa sign-req client "$MDB_MON_CN"-"$INDEX"
 }
 
@@ -82,7 +82,7 @@ function make_pem_files(){
     # $2:- Base directory for kubernetes related config for secret.yaml
     mkdir $2
     cat $1/pki/issued/"$MDB_CN"-"$INDEX".crt $BASE_MEMBER_CERT_DIR/$BASE_EASY_RSA_PATH/pki/private/"$MDB_CN"-"$INDEX".key > $2/"$MDB_CN"-"$INDEX".pem
-    cat $1/pki/issued/"$BDB_CN"-"$INDEX".crt $BASE_CLIENT_CERT_DIR/$BASE_EASY_RSA_PATH/pki/private/"$BDB_CN"-"$INDEX".key > $2/"$BDB_CN"-"$INDEX".pem
+    cat $1/pki/issued/"$BDB_CN".crt $BASE_CLIENT_CERT_DIR/$BASE_EASY_RSA_PATH/pki/private/"$BDB_CN".key > $2/"$BDB_CN".pem
     cat $1/pki/issued/"$MDB_MON_CN"-"$INDEX".crt $BASE_CLIENT_CERT_DIR/$BASE_EASY_RSA_PATH/pki/private/"$MDB_MON_CN"-"$INDEX".key > $2/"$MDB_MON_CN"-"$INDEX".pem
 }
 
@@ -91,10 +91,10 @@ function convert_b64(){
     # $2:- Base directory for Root CA
     # $3:- Base directory for client requests/keys
     cat $1/"$MDB_CN"-"$INDEX".pem | base64 -w 0 > $1/"$MDB_CN"-"$INDEX".pem.b64
-    cat $1/"$BDB_CN"-"$INDEX".pem | base64 -w 0 > $1/"$BDB_CN"-"$INDEX".pem.b64
+    cat $1/"$BDB_CN".pem | base64 -w 0 > $1/"$BDB_CN".pem.b64
     cat $1/"$MDB_MON_CN"-"$INDEX".pem | base64 -w 0 > $1/"$MDB_MON_CN"-"$INDEX".pem.b64
 
-    cat $3/pki/private/"$BDB_CN"-"$INDEX".key | base64 -w 0 > $1/"$BDB_CN"-"$INDEX".key.b64
+    cat $3/pki/private/"$BDB_CN".key | base64 -w 0 > $1/"$BDB_CN".key.b64
     cat $2/pki/ca.crt | base64 -w 0 > $1/ca.crt.b64
     cat $2/pki/crl.pem | base64 -w 0 > $1/crl.pem.b64
 }
@@ -113,8 +113,8 @@ function get_users(){
 
     openssl x509 -in $BASE_CA_DIR/$BASE_EASY_RSA_PATH/pki/issued/"$MDB_CN"-"$INDEX".crt -inform PEM -subject \
       -nameopt RFC2253 | head -n 1 | sed -r 's/^subject= //' > $1/"$MDB_CN"-"$INDEX".user
-    openssl x509 -in $BASE_CA_DIR/$BASE_EASY_RSA_PATH/pki/issued/"$BDB_CN"-"$INDEX".crt -inform PEM -subject \
-      -nameopt RFC2253 | head -n 1 | sed -r 's/^subject= //' > $1/"$BDB_CN"-"$INDEX".user
+    openssl x509 -in $BASE_CA_DIR/$BASE_EASY_RSA_PATH/pki/issued/"$BDB_CN".crt -inform PEM -subject \
+      -nameopt RFC2253 | head -n 1 | sed -r 's/^subject= //' > $1/"$BDB_CN".user
     openssl x509 -in $BASE_CA_DIR/$BASE_EASY_RSA_PATH/pki/issued/"$MDB_MON_CN"-"$INDEX".crt -inform PEM -subject \
       -nameopt RFC2253 | head -n 1 | sed -r 's/^subject= //' > $1/"$MDB_MON_CN"-"$INDEX".user
     
@@ -128,8 +128,8 @@ function generate_secretes_no_threescale(){
 
 
     mdb_instance_pem=`cat $1/"$MDB_CN"-"$INDEX".pem.b64`
-    bdb_instance_pem=`cat $1/"$BDB_CN"-"$INDEX".pem.b64`
-    bdb_instance_key=`cat $1/"$BDB_CN"-"$INDEX".key.b64`
+    bdb_instance_pem=`cat $1/"$BDB_CN".pem.b64`
+    bdb_instance_key=`cat $1/"$BDB_CN".key.b64`
     root_ca_pem=`cat $1/ca.crt.b64`
     root_crl_pem=`cat $1/crl.pem.b64`
     
