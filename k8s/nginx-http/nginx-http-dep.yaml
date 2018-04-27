@@ -59,29 +59,24 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: tendermint-config
-              key: tm-pub-key-access
-        - name: TM_BACKEND_HOST
-          valueFrom:
-            configMapKeyRef:
-              name: tendermint-config
-              key: ngx-tm-instance-name
+              key: bdb-pub-key-access
         - name: TM_P2P_PORT
           valueFrom:
             configMapKeyRef:
               name: tendermint-config
-              key: tm-p2p-port
+              key: bdb-p2p-port
         ports:
-        - containerPort: "<node-health-check-port from ConfigMap>"
+        - containerPort: 8888
           protocol: TCP
           name: ngx-health
-        - containerPort: "<node-frontend-port from ConfigMap>"
+        - containerPort: 80
           protocol: TCP
-        - containerPort: "<tm-pub-key-access from ConfigMap>"
+        - containerPort: 9986
           protocol: TCP
-          name: tm-pub-key
-        - containerPort: "<tm-p2p-port from ConfigMap>"
+          name: bdb-pub-key
+        - containerPort: 46656
           protocol: TCP
-          name: tm-p2p-port
+          name: bdb-p2p-port
         livenessProbe:
           httpGet:
             path: /health

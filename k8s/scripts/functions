@@ -100,8 +100,8 @@ function convert_b64(){
 }
 
 function configure_common(){
-    sudo apt-get update -y
-    sudo apt-get install openssl -y
+    apt-get update -y
+    apt-get install openssl -y
     wget https://github.com/OpenVPN/easy-rsa/archive/3.0.1.tar.gz -P $1
     tar xzvf $1/3.0.1.tar.gz -C $1/
     rm $1/3.0.1.tar.gz
@@ -134,8 +134,16 @@ function generate_secretes_no_threescale(){
     root_crl_pem=`cat $1/crl.pem.b64`
     
     secrete_token=`echo $2 | base64 -w 0`
-    https_cert_key=`cat $3 | base64 -w 0`
-    https_cert_chain_pem=`cat $4 | base64 -w 0`
+    if [ -f $3 ]; then
+      https_cert_key=`cat $3 | base64 -w 0`
+    else
+      https_cert_key=""
+    fi
+    if [ -f $4 ]; then
+      https_cert_chain_pem=`cat $4 | base64 -w 0`
+    else
+      https_cert_chain_pem=""
+    fi
 
     mdb_admin_password=`echo $5 | base64 -w 0`
 
@@ -215,18 +223,17 @@ EOF
 function generate_config_map(){
 
     mdb_instance_name="$MDB_CN-$INDEX"
-    bdb_instance_name="$BDB_CN-$INDEX"
     ngx_instance_name="ngx-instance-$INDEX"
 
     bdb_user=`cat "${1}"/"$BDB_CN"-"${INDEX}".user`
     mdb_admin_username="${2}"
     node_fqdn="${3}"
-    tm_seeds="${4}"
-    tm_validators="${5}"
-    tm_validators_power="${6}"
-    tm_genesis_time="${7}"
-    tm_chain_id="${8}"
-    tm_instance_name="${9}"
+    bdb_seeds="${4}"
+    bdb_validators="${5}"
+    bdb_validators_power="${6}"
+    bdb_genesis_time="${7}"
+    bdb_chain_id="${8}"
+    bdb_instance_name="${9}"
     dns_resolver_k8s="${10}"
 
     cat > config-map.yaml << EOF
@@ -354,46 +361,39 @@ metadata:
   name: tendermint-config
   namespace: default
 data:
-  # tm-seeds is the list of all the peers in the network.
-  tm-seeds: "${tm_seeds}"
+  # bdb-seeds is the list of all the peers in the network.
+  bdb-seeds: "${bdb_seeds}"
 
-  # tm-validators is the list of all validators in the network.
-  tm-validators: "${tm_validators}"
+  # bdb-validators is the list of all validators in the network.
+  bdb-validators: "${bdb_validators}"
 
-  # tm-validator-power is the validators voting power, make sure the order and
-  # the number of nodes in tm-validator-power and tm-validators is the same.
-  tm-validator-power: "${tm_validators_power}"
+  # bdb-validator-power is the validators voting power, make sure the order and
+  # the number of nodes in bdb-validator-power and bdb-validators is the same.
+  bdb-validator-power: "${bdb_validators_power}"
 
-  # tm-genesis-time is the official time of blockchain start.
+  # bdb-genesis-time is the official time of blockchain start.
   # example: 0001-01-01T00:00:00Z
-  tm-genesis-time: "${tm_genesis_time}"
+  bdb-genesis-time: "${bdb_genesis_time}"
 
-  # tm-chain-id is the ID of the blockchain. Must be unique for every blockchain.
+  # bdb-chain-id is the ID of the blockchain. Must be unique for every blockchain.
   # example: test-chain-KPI1Ud
-  tm-chain-id: "${tm_chain_id}"
+  bdb-chain-id: "${bdb_chain_id}"
 
-  # tendermint-instance-name is the name of the Tendermint instance
-  # in the cluster
-  tm-instance-name: "${tm_instance_name}"
-
-  # ngx-tm-instance-name is the FQDN of the tendermint instance in this cluster
-  ngx-tm-instance-name: "${tm_instance_name}.default.svc.cluster.local"
-
-  # tm-abci-port is used by Tendermint Core for ABCI traffic. BigchainDB nodes
+  # bdb-abci-port is used by Tendermint Core for ABCI traffic. BigchainDB nodes
   # use that internally.
-  tm-abci-port: "46658"
+  bdb-abci-port: "46658"
 
-  # tm-p2p-port is used by Tendermint Core to communicate with
+  # bdb-p2p-port is used by Tendermint Core to communicate with
   # other peers in the network. This port is accessible publicly.
-  tm-p2p-port: "46656"
+  bdb-p2p-port: "46656"
 
-  # tm-rpc-port is used by Tendermint Core to rpc. BigchainDB nodes
+  # bdb-rpc-port is used by Tendermint Core to rpc. BigchainDB nodes
   # use this port internally.
-  tm-rpc-port: "46657"
+  bdb-rpc-port: "46657"
 
-  # tm-pub-key-access is the port number used to host/publish the
+  # bdb-pub-key-access is the port number used to host/publish the
   # public key of the tendemrint node in this cluster.
-  tm-pub-key-access: "9986"
+  bdb-pub-key-access: "9986"
 
 ---
 apiVersion: v1

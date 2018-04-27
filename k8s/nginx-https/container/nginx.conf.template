@@ -177,17 +177,17 @@ stream {
   # DNS resolver to use for all the backend names specified in this configuration.
   resolver DNS_SERVER valid=30s ipv6=off;
 
-  # The following map block enables lazy-binding to the backend at runtime,
+  # The following map blocks enable lazy-binding to the backend at runtime,
   # rather than binding as soon as NGINX starts.
-  map $remote_addr $tm_backend {
-    default TM_BACKEND_HOST;
+  map $remote_addr $bdb_backend {
+    default BIGCHAINDB_BACKEND_HOST;
   }
 
   # Server to forward connection to nginx instance hosting
   # tendermint node public key.
   server {
     listen TM_PUB_KEY_ACCESS_PORT;
-    proxy_pass $tm_backend:TM_PUB_KEY_ACCESS_PORT;
+    proxy_pass $bdb_backend:TM_PUB_KEY_ACCESS_PORT;
   }
 
   # Server to forward p2p connections to Tendermint instance.
@@ -195,7 +195,7 @@ stream {
     listen TM_P2P_PORT so_keepalive=3m:1m:5;
     preread_timeout 60s;
     tcp_nodelay on;
-    proxy_pass $tm_backend:TM_P2P_PORT;
+    proxy_pass $bdb_backend:TM_P2P_PORT;
   }
 }
 

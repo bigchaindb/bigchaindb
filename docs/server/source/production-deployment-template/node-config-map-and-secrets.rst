@@ -56,15 +56,8 @@ MongoDB admin user credentials, username and password.
 This user is created on the *admin* database with the authorization to create other users.
 
 
-vars.TM_INSTANCE_NAME
-~~~~~~~~~~~~~~~~~~~~~~
-Name of tendermint instance that is part of your BigchainDB node.
-This name should be unique across the cluster, for more information please refer to
-:ref:`generate-the-blockchain-id-and-genesis-time`.
-
-
-vars.TM_SEEDS, TM_VALIDATORS, TM_VALIDATORS_POWERS, TM_GENESIS_TIME and TM_CHAIN_ID
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+vars.BDB_SEEDS, BDB_VALIDATORS, BDB_VALIDATORS_POWERS, BDB_GENESIS_TIME and BDB_CHAIN_ID
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 These parameters are shared across the cluster. More information about the generation
 of these parameters can be found at :ref:`generate-the-blockchain-id-and-genesis-time`.
 
