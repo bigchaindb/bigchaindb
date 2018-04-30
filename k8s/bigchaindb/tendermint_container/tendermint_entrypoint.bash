@@ -124,7 +124,7 @@ for s in "${PEERS_ARR[@]}"; do
     echo "Cannot get address for Tendermint instance: ${s}"
   done
   peer_addr=$(curl -s "http://$s:$tm_pub_key_access_port/address")
-  peers+=("$seed_addr@$s:$tm_p2p_port")
+  peers+=("$peer_addr@$s:$tm_p2p_port")
 done
 peers=$(IFS=','; echo "${peers[*]}")
 
