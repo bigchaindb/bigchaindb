@@ -21,7 +21,7 @@ They look like this:
 .. code::
 
    # Tendermint data
-   BDB_SEEDS='bdb-instance-1,bdb-instance-2,bdb-instance-3,bdb-instance-4'
+   BDB_PERSISTENT_PEERS='bdb-instance-1,bdb-instance-2,bdb-instance-3,bdb-instance-4'
    BDB_VALIDATORS='bdb-instance-1,bdb-instance-2,bdb-instance-3,bdb-instance-4'
    BDB_VALIDATOR_POWERS='10,10,10,10'
    BDB_GENESIS_TIME='0001-01-01T00:00:00Z'
@@ -32,7 +32,7 @@ That person will then share the results (Tendermint setup parameters)
 with all the node operators.
 
 The above example parameters are for a cluster of 4 initial (seed) nodes.
-Note how ``BDB_SEEDS``, ``BDB_VALIDATORS`` and ``BDB_VALIDATOR_POWERS`` are lists
+Note how ``BDB_PERSISTENT_PEERS``, ``BDB_VALIDATORS`` and ``BDB_VALIDATOR_POWERS`` are lists
 with 4 items each.
 **If your consortium has a different number of initial nodes,
 then those lists should have that number or items.**

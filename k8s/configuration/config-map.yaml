@@ -129,8 +129,8 @@ metadata:
   name: tendermint-config
   namespace: default
 data:
-  # bdb-seeds is the list of all the peers in the network.
-  bdb-seeds: "<',' separated list of all tendermint nodes in the network>"
+  # bdb-persistent-peers is the list of all the peers in the network.
+  bdb-persistent-peers: "<',' separated list of all tendermint peers in the network>"
 
   # bdb-validators is the list of all validators in the network.
   bdb-validators: "<',' separated list of all validators in the network>"

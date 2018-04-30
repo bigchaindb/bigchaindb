@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Cluster vars
-tm_seeds=`printenv TM_SEEDS`
+tm_persistent_peers=`printenv TM_PERSISTENT_PEERS`
 tm_validators=`printenv TM_VALIDATORS`
 tm_validator_power=`printenv TM_VALIDATOR_POWER`
 tm_pub_key_access_port=`printenv TM_PUB_KEY_ACCESS_PORT`
@@ -23,7 +23,7 @@ CANNOT_INITIATLIZE_INSTANCE='Cannot start instance, if initial validator(s) are 
 
 
 # sanity check
-if [[ -z "${tm_seeds:?TM_SEEDS not specified. Exiting!}" || \
+if [[ -z "${tm_persistent_peers:?TM_PERSISTENT_PEERS not specified. Exiting!}" || \
       -z "${tm_validators:?TM_VALIDATORS not specified. Exiting!}" || \
       -z "${tm_validator_power:?TM_VALIDATOR_POWER not specified. Exiting!}" || \
       -z "${tm_pub_key_access_port:?TM_PUB_KEY_ACCESS_PORT not specified. Exiting!}" || \
@@ -36,7 +36,7 @@ if [[ -z "${tm_seeds:?TM_SEEDS not specified. Exiting!}" || \
   echo "Missing required enviroment variables."
   exit 1
 else
-  echo tm_seeds="$TM_SEEDS"
+  echo tm_persistent_peers="$TM_PERSISTENT_PEERS"
   echo tm_validators="$TM_VALIDATORS"
   echo tm_validator_power="$TM_VALIDATOR_POWER"
   echo tm_pub_key_access_port="$TM_PUB_KEY_ACCESS_PORT"
@@ -104,10 +104,10 @@ for i in "${!VALS_ARR[@]}"; do
   rm pub_validator.json
 done
 
-# construct seeds
-IFS=',' read -ra SEEDS_ARR <<< "$tm_seeds"
-seeds=()
-for s in "${SEEDS_ARR[@]}"; do
+# construct persistent peers
+IFS=',' read -ra PEERS_ARR <<< "$tm_persistent_peers"
+peers=()
+for s in "${PEERS_ARR[@]}"; do
   echo "http://$s:$tm_pub_key_access_port/address"
   curl -s --fail "http://$s:$tm_pub_key_access_port/address" > /dev/null
   ERR=$?
@@ -123,11 +123,11 @@ for s in "${SEEDS_ARR[@]}"; do
     ERR=$?
     echo "Cannot get address for Tendermint instance: ${s}"
   done
-  seed_addr=$(curl -s "http://$s:$tm_pub_key_access_port/address")
-  seeds+=("$seed_addr@$s:$tm_p2p_port")
+  peer_addr=$(curl -s "http://$s:$tm_pub_key_access_port/address")
+  peers+=("$peer_addr@$s:$tm_p2p_port")
 done
-seeds=$(IFS=','; echo "${seeds[*]}")
+peers=$(IFS=','; echo "${peers[*]}")
 
 # start nginx
 echo "INFO: starting tendermint..."
-exec tendermint node --p2p.seeds="$seeds" --moniker="$tm_instance_name" --proxy_app="tcp://$tm_proxy_app:$tm_abci_port" --consensus.create_empty_blocks=false
+exec tendermint node --p2p.persistent_peers="$peers" --moniker="$tm_instance_name" --proxy_app="tcp://$tm_proxy_app:$tm_abci_port" --consensus.create_empty_blocks=false --p2p.pex=false
