@@ -117,6 +117,7 @@ class App(BaseApplication):
         pre_commit_state = PreCommitState(commit_id=PRE_COMMIT_ID,
                                           height=self.new_height,
                                           transactions=self.block_txn_ids)
+        logger.debug('Updating PreCommitState: %s', self.new_height)
         self.bigchaindb.store_pre_commit_state(pre_commit_state._asdict())
 
         # NOTE: interface for `ResponseEndBlock` has be changed in the latest
@@ -140,6 +141,9 @@ class App(BaseApplication):
             # this effects crash recovery. Refer BEP#8 for details
             self.bigchaindb.store_block(block._asdict())
 
+        logger.debug('Commit-ing new block with hash: apphash=%s ,'
+                     'height=%s, txn ids=%s', data, self.new_height,
+                     self.block_txn_ids)
         return data
 
 
