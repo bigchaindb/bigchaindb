@@ -32,6 +32,7 @@ services:
       BIGCHAINDB_DATABASE_PORT: 27017
       BIGCHAINDB_SERVER_BIND: 0.0.0.0:9984
       BIGCHAINDB_WSSERVER_HOST: 0.0.0.0
+      BIGCHAINDB_WSSERVER_ADVERTISED_HOST: bigchaindb
       BIGCHAINDB_TENDERMINT_HOST: tendermint
       BIGCHAINDB_TENDERMINT_PORT: 46657
     ports:
@@ -43,7 +44,7 @@ services:
       interval: 3s
       timeout: 5s
       retries: 3
-    entrypoint: '.ci/entrypoint.sh'
+    command: '.ci/entrypoint.sh'
   tendermint:
     image: tendermint/tendermint:0.12
     volumes:
@@ -63,13 +64,18 @@ services:
   # curl client to check the health of development env
   curl-client:
     image: appropriate/curl
-    command: /bin/sh -c "curl http://tendermint:46657/abci_query && curl http://bigchaindb:9984/"
+    command: /bin/sh -c "curl -s http://bigchaindb:9984/ > /dev/null && curl -s http://tendermint:46657/ > /dev/null"
 
-  # Python BigchainDB driver to interact with the BigchainDB server
-  bdb-driver:
+  # BigchainDB setup to do acceptance testing with Python
+  python-acceptance:
     build:
       context: .
-      dockerfile: ./tools/py-bigchaindb-driver/Dockerfile
+      dockerfile: ./acceptance/python/Dockerfile
+    volumes:
+      - ./acceptance/python/docs:/docs
+      - ./acceptance/python/src:/src
+    environment:
+      - BIGCHAINDB_ENDPOINT=bigchaindb
 
   # Build docs only
   # docker-compose build bdocs

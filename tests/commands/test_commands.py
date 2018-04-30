@@ -1,4 +1,5 @@
 import json
+
 from unittest.mock import Mock, patch
 from argparse import Namespace
 
@@ -188,6 +189,7 @@ def test_run_configure_when_config_does_exist(monkeypatch,
     assert value == {}
 
 
+@pytest.mark.skip
 @pytest.mark.tendermint
 @pytest.mark.parametrize('backend', (
     'localmongodb',

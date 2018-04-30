@@ -72,7 +72,14 @@ test: check-deps ## Run all tests once
 	@$(DC) exec bigchaindb pytest
 
 test-watch: check-deps ## Run all tests and wait. Every time you change code, tests will be run again
-	@$(DC) run --rm bigchaindb pytest -f -v
+	@$(DC) run --rm --no-deps bigchaindb pytest -f
+
+acceptance-test: check-deps ## Run all acceptance tests
+	@./run-acceptance-test.sh
+
+acceptance-test-doc: check-deps ## Create documentation for acceptance tests
+	@$(DC) run --rm python-acceptance pycco -i -s /src -d /docs
+	$(BROWSER) acceptance/python/docs/index.html
 
 cov: check-deps ## Check code coverage and open the result in the browser
 	@$(DC) run --rm bigchaindb pytest -v --cov=bigchaindb --cov-report html
