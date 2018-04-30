@@ -59,11 +59,11 @@ spec:
         imagePullPolicy: Always
         image: bigchaindb/tendermint:2.0.0-alpha3
         env:
-        - name: TM_SEEDS
+        - name: TM_PERSISTENT_PEERS
           valueFrom:
             configMapKeyRef:
               name: tendermint-config
-              key: bdb-seeds
+              key: bdb-persistent-peers
         - name: TM_VALIDATOR_POWER
           valueFrom:
             configMapKeyRef:

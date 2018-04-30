@@ -56,8 +56,8 @@ MongoDB admin user credentials, username and password.
 This user is created on the *admin* database with the authorization to create other users.
 
 
-vars.BDB_SEEDS, BDB_VALIDATORS, BDB_VALIDATORS_POWERS, BDB_GENESIS_TIME and BDB_CHAIN_ID
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+vars.BDB_PERSISTENT_PEERS, BDB_VALIDATORS, BDB_VALIDATORS_POWERS, BDB_GENESIS_TIME and BDB_CHAIN_ID
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 These parameters are shared across the cluster. More information about the generation
 of these parameters can be found at :ref:`generate-the-blockchain-id-and-genesis-time`.
 

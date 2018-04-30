@@ -228,7 +228,7 @@ function generate_config_map(){
     bdb_user=`cat "${1}"/"$BDB_CN".user`
     mdb_admin_username="${2}"
     node_fqdn="${3}"
-    bdb_seeds="${4}"
+    bdb_persistent_peers="${4}"
     bdb_validators="${5}"
     bdb_validators_power="${6}"
     bdb_genesis_time="${7}"
@@ -361,8 +361,8 @@ metadata:
   name: tendermint-config
   namespace: default
 data:
-  # bdb-seeds is the list of all the peers in the network.
-  bdb-seeds: "${bdb_seeds}"
+  # bdb-persistent-peers is the list of all the peers in the network.
+  bdb-persistent-peers: "${bdb_persistent_peers}"
 
   # bdb-validators is the list of all validators in the network.
   bdb-validators: "${bdb_validators}"

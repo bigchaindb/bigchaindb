@@ -20,7 +20,7 @@ BDB_INSTANCE_NAME='bdb-instance-0'
 
 # Comma separated list of initial peers in the
 # network.
-BDB_SEEDS='bdb-instance-0,bdb-instance-1,bdb-instance-2,bdb-instance-3'
+BDB_PERSISTENT_PEERS='bdb-instance-0,bdb-instance-1,bdb-instance-2,bdb-instance-3'
 
 # Comma separated list of validators in the
 # network
