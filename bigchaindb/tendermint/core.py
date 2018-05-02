@@ -6,7 +6,9 @@ from abci.application import BaseApplication, Result
 from abci.types_pb2 import ResponseEndBlock, ResponseInfo, Validator
 
 from bigchaindb.tendermint import BigchainDB
-from bigchaindb.tendermint.utils import decode_transaction, calculate_hash
+from bigchaindb.tendermint.utils import (decode_transaction,
+                                         calculate_hash,
+                                         amino_encoded_public_key)
 from bigchaindb.tendermint.lib import Block, PreCommitState
 from bigchaindb.backend.query import PRE_COMMIT_ID
 
@@ -148,9 +150,8 @@ class App(BaseApplication):
 
 
 def encode_validator(v):
-    pub_key = v['pub_key']['data']
-    # NOTE: tendermint expects public to be encoded in go-wire format
-    # so `01` has to be appended
-    pub_key = bytes.fromhex('01{}'.format(pub_key))
+    ed25519_public_key = v['pub_key']['data']
+    # NOTE: tendermint expects public to be encoded in go-amino format
+    pub_key = amino_encoded_public_key(ed25519_public_key)
     return Validator(pub_key=pub_key,
                      power=v['power'])

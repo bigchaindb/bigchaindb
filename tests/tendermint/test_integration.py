@@ -99,17 +99,19 @@ def test_app(tb):
     assert block0['app_hash'] == new_block_hash
 
 
-@pytest.mark.skip(reason='Not working with Tendermint 0.19.0')
 @pytest.mark.abci
 def test_upsert_validator(b, alice):
     from bigchaindb.backend.query import VALIDATOR_UPDATE_ID
     from bigchaindb.backend import query, connect
     from bigchaindb.models import Transaction
+    from bigchaindb.tendermint.utils import public_key_to_base64
+    import time
 
     conn = connect()
     public_key = '1718D2DBFF00158A0852A17A01C78F4DCF3BA8E4FB7B8586807FAC182A535034'
     power = 1
-    validator = {'pub_key': {'type': 'ed25519',
+
+    validator = {'pub_key': {'type': 'AC26791624DE60',
                              'data': public_key},
                  'power': power}
     validator_update = {'validator': validator,
@@ -124,11 +126,13 @@ def test_upsert_validator(b, alice):
 
     code, message = b.write_transaction(tx, 'broadcast_tx_commit')
     assert code == 202
+    time.sleep(5)
 
     validators = b.get_validators()
-    validators = [(v['pub_key']['data'], v['voting_power']) for v in validators]
+    validators = [(v['pub_key']['value'], v['voting_power']) for v in validators]
 
-    assert ((public_key, power) in validators)
+    public_key64 = public_key_to_base64(public_key)
+    assert ((public_key64, power) in validators)
 
 
 @pytest.mark.abci

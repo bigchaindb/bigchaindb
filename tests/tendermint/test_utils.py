@@ -42,3 +42,29 @@ def test_merkleroot():
     hashes = [sha3_256(i.encode()).digest() for i in 'abc']
     assert merkleroot(hashes) == (
         '78c7c394d3158c218916b7ae0ebdea502e0f4e85c08e3b371e3dfd824d389fa3')
+
+
+SAMPLE_PUBLIC_KEY = {
+    "address": "53DC09497A6ED73B342C78AB1E916076A03A8B95",
+    "pub_key": {
+        "type": "AC26791624DE60",
+        "value": "7S+T/do70jvneAq0M1so2X3M1iWTSuwtuSAr3nVpfEw="
+    }
+}
+
+
+def test_convert_base64_public_key_to_address():
+    from bigchaindb.tendermint.utils import public_key64_to_address
+
+    address = public_key64_to_address(SAMPLE_PUBLIC_KEY['pub_key']['value'])
+    assert address == SAMPLE_PUBLIC_KEY['address']
+
+
+def test_public_key_encoding_decoding():
+    from bigchaindb.tendermint.utils import (public_key_from_base64,
+                                             public_key_to_base64)
+
+    public_key = public_key_from_base64(SAMPLE_PUBLIC_KEY['pub_key']['value'])
+    base64_public_key = public_key_to_base64(public_key)
+
+    assert base64_public_key == SAMPLE_PUBLIC_KEY['pub_key']['value']
