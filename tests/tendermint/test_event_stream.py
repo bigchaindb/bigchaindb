@@ -10,26 +10,32 @@ import pytest
 def test_process_event_new_block():
     from bigchaindb.tendermint.event_stream import process_event
 
-    event = '{"id": "test_stream_id#event", "jsonrpc": "2.0", "result":'\
-            ' {"data": {"data": {"block": {"data": {"txs": ["eyJpbnB1dHMiOiBb'\
-            'eyJvd25lcnNfYmVmb3JlIjogWyJCWnZLQmNSUmgyd0tOOGZuTENlZUczSGhFaWF4'\
-            'TWdyWmlib0gyeUZvYzVwTCJdLCAiZnVsZmlsbHMiOiBudWxsLCAiZnVsZmlsbG1l'\
-            'bnQiOiAicEdTQUlKMER2S2JBeXkyQ2hqT212ZWVCc0FxWktTS0k3VDNWZGhtUkI2'\
-            'V2dhdzdoZ1VDUHluUnFuQW9RWDh2UlNXeXNwYk5uYWVBaVpOU19lQ3V6ejhDZWtJ'\
-            'OHBIejJnekExeDJkOF93NTUzWFVOUGJFbnpBUzhncURqeDFkaE1JeDM1ZnpVTCJ9'\
-            'XSwgIm91dHB1dHMiOiBbeyJwdWJsaWNfa2V5cyI6IFsiQlp2S0JjUlJoMndLTjhm'\
-            'bkxDZWVHM0hoRWlheE1nclppYm9IMnlGb2M1cEwiXSwgImNvbmRpdGlvbiI6IHsi'\
-            'ZGV0YWlscyI6IHsidHlwZSI6ICJlZDI1NTE5LXNoYS0yNTYiLCAicHVibGljX2tl'\
-            'eSI6ICJCWnZLQmNSUmgyd0tOOGZuTENlZUczSGhFaWF4TWdyWmlib0gyeUZvYzVw'\
-            'TCJ9LCAidXJpIjogIm5pOi8vL3NoYS0yNTY7eHVFX1ZPNjd6aHc0LTRjN0k1YUtm'\
-            'WGtzX1Q1MjUwMnBuOC1mcVJQQkloRT9mcHQ9ZWQyNTUxOS1zaGEtMjU2JmNvc3Q9'\
-            'MTMxMDcyIn0sICJhbW91bnQiOiAiMSJ9XSwgIm9wZXJhdGlvbiI6ICJDUkVBVEUi'\
-            'LCAibWV0YWRhdGEiOiB7InNob3J0IjogImxpdHRsZSJ9LCAiYXNzZXQiOiB7ImRh'\
-            'dGEiOiB7ImJpY3ljbGUiOiB7InNlcmlhbF9udW1iZXIiOiAiYWJjZDEyMzQiLCAi'\
-            'bWFudWZhY3R1cmVyIjogImJrZmFiIn19fSwgInZlcnNpb24iOiAiMS4wIiwgImlk'\
-            'IjogIjE4NzM3Yzc0OWQxZGE2Yzc5YjFmYWZiZjkwOTkwNzEwMDA1ZWM4MTYxNGQ5'\
-            'YWFiNDkyZTgwYTkzNWRkYThjMzAifQ=="]}, "header": {"height": 1}}},'\
-            ' "type": "new_block"}, "name": "NewBlock"}}'
+    event = '{"jsonrpc": "2.0", "id": "test_stream_id#event",  "result": {'\
+            '"query": "tm.event=\'NewBlock\'", "data": { "type": "CF18EA939D3240",'\
+            '"value": { "block": { "header": { "chain_id": "test-chain-ipQIAa",'\
+            '"height": 1, "time": "2018-04-23T14:49:30.509920098Z", "num_txs": 1,'\
+            '"last_block_id": { "hash": "", "parts": { "total": 0, "hash": "" }},'\
+            '"total_txs": 1, "last_commit_hash": "", "data_hash": "38792142CE6D7F6F46F71777CB53F94CD9497B23",'\
+            '"validators_hash": "BF0D0EC2E13C76E69FA572516B6D93E64F3C58EF",'\
+            '"consensus_hash": "F66EF1DF8BA6DAC7A1ECCE40CC84E54A1CEBC6A5", "app_hash": "",'\
+            '"last_results_hash": "", "evidence_hash": "" }, "data": {"txs": ['\
+            '"eyJpbnB1dHMiOiBbeyJvd25lcnNfYmVmb3JlIjogWyJFb2Z0Z0FNd2hKQXM0cW81b'\
+            '0dhOU1GWXF5dFp5WEdaNmVmZFVYc1dXTDdmZSJdLCAiZnVsZmlsbHMiOiBudWxsLCA'\
+            'iZnVsZmlsbG1lbnQiOiAicEdTQUlNMGNueFFGeTZrSE1PcGxBbzh1ZncwNDlsZ2VxN'\
+            'HBOeDFNdksya0pjRjBCZ1VETjN2RTlsWmhaT21jMWZHbFpLUFZmZDdCTi1RVTdBa0N'\
+            'TZ1NKWVRPYzB3YVlmQ1RXc1FQS1VmOE5fODFKd21YOUJxcnlLejYyTmVubHg0dGszN'\
+            'GtVRCJ9XSwgIm91dHB1dHMiOiBbeyJwdWJsaWNfa2V5cyI6IFsiRW9mdGdBTXdoSkF'\
+            'zNHFvNW9HYTlNRllxeXRaeVhHWjZlZmRVWHNXV0w3ZmUiXSwgImNvbmRpdGlvbiI6I'\
+            'HsiZGV0YWlscyI6IHsidHlwZSI6ICJlZDI1NTE5LXNoYS0yNTYiLCAicHVibGljX2t'\
+            'leSI6ICJFb2Z0Z0FNd2hKQXM0cW81b0dhOU1GWXF5dFp5WEdaNmVmZFVYc1dXTDdmZ'\
+            'SJ9LCAidXJpIjogIm5pOi8vL3NoYS0yNTY7cFJZWTJQQUE0S3dHd0dUNVQtUXRCQUY'\
+            '0VWY1WG5JcVkxWmExVER0N0hMQT9mcHQ9ZWQyNTUxOS1zaGEtMjU2JmNvc3Q9MTMxM'\
+            'DcyIn0sICJhbW91bnQiOiAiMSJ9XSwgIm9wZXJhdGlvbiI6ICJDUkVBVEUiLCAibWV'\
+            '0YWRhdGEiOiBudWxsLCAiYXNzZXQiOiB7ImRhdGEiOiBudWxsfSwgInZlcnNpb24iO'\
+            'iAiMi4wIiwgImlkIjogImUwMmM0ZWM3MmExYzUzMmJkNjUyNWZkNGMxODU3ZDhmN2E'\
+            'wYWVkYTgyNGVjY2NhZGY4NTlmNzc0Zjc3ZTgwZGUifQ=="]}, "evidence": {'\
+            '"evidence": null}, "last_commit": { "blockID": { "hash": "", "parts":'\
+            '{"total": 0, "hash": ""} }, "precommits": null } } } } } }'
 
     event_queue = Queue()
     process_event(event_queue, event, 'test_stream_id')
@@ -42,15 +48,17 @@ def test_process_event_new_block():
 def test_process_event_empty_block():
     from bigchaindb.tendermint.event_stream import process_event
 
-    event = '{"jsonrpc": "2.0", "id": "test_stream_id#event",'\
-            '"result": {"name": "NewBlock", "data": {"type": "new_block",'\
-            ' "data": {"block": {"header": {"chain_id": "test-chain-cbVRwC",'\
-            ' "height": 1, "time": "2017-12-04T22:42:54.33+05:30", "num_txs": 0,'\
-            ' "last_block_id": {"hash": "", "parts": {"total": 0, "hash": ""}},'\
-            ' "last_commit_hash": "", "data_hash": "",'\
-            ' "validators_hash": "ACF23A690EB72D051931E878E8F3D6E01A17A81C",'\
-            ' "app_hash": ""}, "data": {"txs": []}, "last_commit": {"blockID": '\
-            ' {"hash": "", "parts": {"total": 0, "hash": ""}}, "precommits": []}}}}}}'
+    event = '{"jsonrpc": "2.0", "id": "bigchaindb_stream_1524555674#event",'\
+            '"result": {"query": "tm.event=\'NewBlock\'", "data": {"type": '\
+            '"CF18EA939D3240", "value": {"block": {"header": {"chain_id": '\
+            '"test-chain-ipQIAa", "height": 1, "time": "2018-04-24T07:41:16.838038877Z",'\
+            '"num_txs": 0, "last_block_id": {"hash": "", "parts": {"total": 0, "hash": ""}},'\
+            '"total_txs": 0, "last_commit_hash": "", "data_hash": "", "validators_hash":'\
+            '"BF0D0EC2E13C76E69FA572516B6D93E64F3C58EF", "consensus_hash": '\
+            '"F66EF1DF8BA6DAC7A1ECCE40CC84E54A1CEBC6A5", "app_hash": "", '\
+            '"last_results_hash": "", "evidence_hash": ""}, "data": {"txs": null},'\
+            '"evidence": {"evidence": null}, "last_commit": {"blockID": {"hash": "", '\
+            '"parts": {"total": 0, "hash": ""}}, "precommits": null}}}}}}'
 
     event_queue = Queue()
     process_event(event_queue, event, 'test_stream_id')
@@ -62,7 +70,7 @@ def test_process_unknown_event():
     from bigchaindb.tendermint.event_stream import process_event
 
     event = '{"jsonrpc": "2.0", "id": "test_stream_id#event",'\
-            ' "result": {"name": "UnknownEvent"}}'
+            ' "result": { "query": "tm.event=\'UnknownEvent\'" }}'
 
     event_queue = Queue()
     process_event(event_queue, event, 'test_stream_id')
@@ -96,7 +104,7 @@ async def test_subscribe_events(tendermint_ws_url, b):
     b.post_transaction(tx, 'broadcast_tx_async')
     msg = await ws.receive()
     msg_data_dict = json.loads(msg.data)
-    raw_txn = msg_data_dict['result']['data']['data']['block']['data']['txs'][0]
+    raw_txn = msg_data_dict['result']['data']['value']['block']['data']['txs'][0]
     transaction = json.loads(base64.b64decode(raw_txn).decode('utf8'))
 
     assert transaction == tx.to_dict()

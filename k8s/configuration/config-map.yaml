@@ -130,46 +130,39 @@ metadata:
   name: tendermint-config
   namespace: default
 data:
-  # tm-seeds is the list of all the peers in the network.
-  tm-seeds: "<',' separated list of all tendermint nodes in the network>"
+  # bdb-persistent-peers is the list of all the peers in the network.
+  bdb-persistent-peers: "<',' separated list of all tendermint peers in the network>"
 
-  # tm-validators is the list of all validators in the network.
-  tm-validators: "<',' separated list of all validators in the network>"
+  # bdb-validators is the list of all validators in the network.
+  bdb-validators: "<',' separated list of all validators in the network>"
 
-  # tm-validator-power is the validators voting power, make sure the order and
+  # bdb-validator-power is the validators voting power, make sure the order and
   # the number of nodes in tm-validator-power and tm-validators is the same.
-  tm-validator-power: "<',' separated list of validator power of each node in the network>"
+  bdb-validator-power: "<',' separated list of validator power of each node in the network>"
 
-  # tm-genesis-time is the official time of blockchain start.
+  # bdb-genesis-time is the official time of blockchain start.
   # example: 0001-01-01T00:00:00Z
-  tm-genesis-time: "<timestamp of blockchain start>"
+  bdb-genesis-time: "<timestamp of blockchain start>"
 
-  # tm-chain-id is the ID of the blockchain. Must be unique for every blockchain.
+  # bdb-chain-id is the ID of the blockchain. Must be unique for every blockchain.
   # example: test-chain-KPI1Ud
-  tm-chain-id: "<ID of the blockchain>"
+  bdb-chain-id: "<ID of the blockchain>"
 
-  # tendermint-instance-name is the name of the Tendermint instance
-  # in the cluster
-  tm-instance-name: "<name of tendermint instance>"
-
-  # ngx-tm-instance-name is the FQDN of the tendermint instance in this cluster
-  ngx-tm-instance-name: "<name of tendermint instance>.default.svc.cluster.local"
-
-  # tm-abci-port is used by Tendermint Core for ABCI traffic. BigchainDB nodes
+  # bdb-abci-port is used by Tendermint Core for ABCI traffic. BigchainDB nodes
   # use that internally.
-  tm-abci-port: "46658"
+  bdb-abci-port: "46658"
 
-  # tm-p2p-port is used by Tendermint Core to communicate with
+  # bdb-p2p-port is used by Tendermint Core to communicate with
   # other peers in the network. This port is accessible publicly.
-  tm-p2p-port: "46656"
+  bdb-p2p-port: "46656"
 
-  # tm-rpc-port is used by Tendermint Core to rpc. BigchainDB nodes
+  # bdb-rpc-port is used by Tendermint Core to rpc. BigchainDB nodes
   # use this port internally.
-  tm-rpc-port: "46657"
+  bbd-rpc-port: "46657"
 
-  # tm-pub-key-access is the port number used to host/publish the
+  # bdb-pub-key-access is the port number used to host/publish the
   # public key of the tendemrint node in this cluster.
-  tm-pub-key-access: "9986"
+  bdb-pub-key-access: "9986"
 
 ---
 apiVersion: v1

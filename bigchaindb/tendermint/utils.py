@@ -1,4 +1,5 @@
 import base64
+import hashlib
 import json
 from binascii import hexlify
 
@@ -65,3 +66,23 @@ def merkleroot(hashes):
         for i in range(0, len(hashes)-1, 2)
     ]
     return merkleroot(parent_hashes)
+
+
+def public_key64_to_address(base64_public_key):
+    """Note this only compatibile with Tendermint 0.19.0 """
+    ed25519_public_key = public_key_from_base64(base64_public_key)
+    encoded_public_key = amino_encoded_public_key(ed25519_public_key)
+    return hashlib.new('ripemd160', encoded_public_key).hexdigest().upper()
+
+
+def public_key_from_base64(base64_public_key):
+    return base64.b64decode(base64_public_key).hex().upper()
+
+
+def public_key_to_base64(ed25519_public_key):
+    ed25519_public_key = bytes.fromhex(ed25519_public_key)
+    return base64.b64encode(ed25519_public_key).decode('utf-8')
+
+
+def amino_encoded_public_key(ed25519_public_key):
+    return bytes.fromhex('1624DE6220{}'.format(ed25519_public_key))

@@ -27,7 +27,7 @@ to form a network.
 
 
 Below, we refer to multiple files by their directory and filename,
-such as ``tendermint/tendermint-ext-conn-svc.yaml``. Those files are located in the
+such as ``bigchaindb/bigchaindb-ext-conn-svc.yaml``. Those files are located in the
 `bigchaindb/bigchaindb repository on GitHub
 <https://github.com/bigchaindb/bigchaindb/>`_ in the ``k8s/`` directory.
 Make sure you're getting those files from the appropriate Git branch on
@@ -93,12 +93,6 @@ Lets assume we are deploying a 4 node cluster, your naming conventions could loo
       "mdb-mon-instance-2",
       "mdb-mon-instance-3",
       "mdb-mon-instance-4"
-    ],
-    "Tendermint": [
-      "tendermint-instance-1",
-      "tendermint-instance-2",
-      "tendermint-instance-3",
-      "tendermint-instance-4"
     ]
   }
 
@@ -355,17 +349,13 @@ The above example is meant to be repeated for all the Kubernetes components of a
 
 * ``mongodb/mongodb-node-X-ss.yaml``
 
-* ``tendermint/tendermint-node-X-svc.yaml``
-
-* ``tendermint/tendermint-node-X-sc.yaml``
-
-* ``tendermint/tendermint-node-X-pvc.yaml``
-
-* ``tendermint/tendermint-node-X-ss.yaml``
-
 * ``bigchaindb/bigchaindb-node-X-svc.yaml``
 
-* ``bigchaindb/bigchaindb-node-X-dep.yaml``
+* ``bigchaindb/bigchaindb-node-X-sc.yaml``
+
+* ``bigchaindb/bigchaindb-node-X-pvc.yaml``
+
+* ``bigchaindb/bigchaindb-node-X-ss.yaml``
 
 * ``nginx-openresty/nginx-openresty-node-X-svc.yaml``
 
@@ -405,33 +395,31 @@ described :ref:`above <pre-reqs-bdb-network>`:
 
 * :ref:`Start the OpenResty Kubernetes Service <start-the-openresty-kubernetes-service>`.
 
-* :ref:`Start the Tendermint Kubernetes Service <start-the-tendermint-kubernetes-service>`.
-
 
 Only for multi site deployments
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 We need to make sure that clusters are able
 to talk to each other i.e. specifically the communication between the
-Tendermint peers. Set up networking between the clusters using
+BigchainDB peers. Set up networking between the clusters using
 `Kubernetes Services <https://kubernetes.io/docs/concepts/services-networking/service/>`_.
 
-Assuming we have a Tendermint instance ``tendermint-instance-1`` residing in Azure data center location ``westeurope`` and we
-want to connect to ``tendermint-instance-2``, ``tendermint-instance-3``, and ``tendermint-instance-4`` located in Azure data centers
+Assuming we have a BigchainDB instance ``bigchaindb-instance-1`` residing in Azure data center location ``westeurope`` and we
+want to connect to ``bigchaindb-instance-2``, ``bigchaindb-instance-3``, and ``bigchaindb-instance-4`` located in Azure data centers
 ``eastus``, ``centralus`` and ``westus``, respectively. Unless you already have explicitly set up networking for
-``tendermint-instance-1`` to communicate with ``tendermint-instance-2/3/4`` and
+``bigchaindb-instance-1`` to communicate with ``bigchaindb-instance-2/3/4`` and
 vice versa, we will have to add a Kubernetes Service in each cluster to accomplish this goal in order to set up a
-Tendermint P2P network.
+BigchainDB P2P network.
 It is similar to ensuring that there is a ``CNAME`` record in the DNS
-infrastructure to resolve ``tendermint-instance-X`` to the host where it is actually available.
+infrastructure to resolve ``bigchaindb-instance-X`` to the host where it is actually available.
 We can do this in Kubernetes using a Kubernetes Service of ``type``
 ``ExternalName``.
 
-* This configuration is located in the file ``tendermint/tendermint-ext-conn-svc.yaml``.
+* This configuration is located in the file ``bigchaindb/bigchaindb-ext-conn-svc.yaml``.
 
-* Set the name of the ``metadata.name`` to the host name of the Tendermint instance you are trying to connect to.
-  For instance if you are configuring this service on cluster with ``tendermint-instance-1`` then the ``metadata.name`` will
-  be ``tendermint-instance-2`` and vice versa.
+* Set the name of the ``metadata.name`` to the host name of the BigchainDB instance you are trying to connect to.
+  For instance if you are configuring this service on cluster with ``bigchaindb-instance-1`` then the ``metadata.name`` will
+  be ``bigchaindb-instance-2`` and vice versa.
 
 * Set ``spec.ports.port[0]`` to the ``tm-p2p-port`` from the ConfigMap for the other cluster.
 
@@ -447,7 +435,7 @@ We can do this in Kubernetes using a Kubernetes Service of ``type``
 
    If you are not the system administrator of the cluster, you have to get in
    touch with the system administrator/s of the other ``n-1`` clusters and
-   share with them your instance name (``tendermint-instance-name`` in the ConfigMap)
+   share with them your instance name (``bigchaindb-instance-name`` in the ConfigMap)
    and the FQDN of the NGINX instance acting as Gateway(set in: :ref:`Assign DNS name to NGINX
    Public IP <assign-dns-name-to-nginx-public-ip>`).
 
@@ -461,18 +449,18 @@ naming convention described :ref:`above <pre-reqs-bdb-network>` and referring to
 * :ref:`Start the NGINX Kubernetes Deployment <start-the-nginx-deployment>`.
 
 
-Deploy Kubernetes StorageClasses for MongoDB and Tendermint
------------------------------------------------------------
+Deploy Kubernetes StorageClasses for MongoDB and BigchainDB
+------------------------------------------------------------
 
 Deploy the following StorageClasses for each node by following the naming convention
 described :ref:`above <pre-reqs-bdb-network>`:
 
 * :ref:`Create Kubernetes Storage Classes for MongoDB <create-kubernetes-storage-class-mdb>`.
 
-* :ref:`Create Kubernetes Storage Classes for Tendermint <create-kubernetes-storage-class>`.
+* :ref:`Create Kubernetes Storage Classes for BigchainDB <create-kubernetes-storage-class>`.
 
 
-Deploy Kubernetes PersistentVolumeClaims for MongoDB and Tendermint
+Deploy Kubernetes PersistentVolumeClaims for MongoDB and BigchainDB
 --------------------------------------------------------------------
 
 Deploy the following services for each node by following the naming convention
@@ -480,7 +468,7 @@ described :ref:`above <pre-reqs-bdb-network>`:
 
 * :ref:`Create Kubernetes Persistent Volume Claims for MongoDB <create-kubernetes-persistent-volume-claim-mdb>`.
 
-* :ref:`Create Kubernetes Persistent Volume Claims for Tendermint <create-kubernetes-persistent-volume-claim>`
+* :ref:`Create Kubernetes Persistent Volume Claims for BigchainDB <create-kubernetes-persistent-volume-claim>`
 
 
 Deploy MongoDB Kubernetes StatefulSet
@@ -501,13 +489,13 @@ in the network by referring to the following section:
 * :ref:`Configure Users and Access Control for MongoDB <configure-users-and-access-control-mongodb>`.
 
 
-Deploy Tendermint Kubernetes StatefulSet
-----------------------------------------
+Start Kubernetes StatefulSet for BigchainDB
+-------------------------------------------
 
-Deploy the Tendermint Stateful for each node by following the
+Start the BigchainDB Kubernetes StatefulSet for each node by following the
 naming convention described :ref:`above <pre-reqs-bdb-network>` and referring to the following instructions:
 
-* :ref:`create-kubernetes-stateful-set`.
+* :ref:`Start a Kubernetes Deployment for BigchainDB <start-kubernetes-stateful-set-bdb>`.
 
 
 Start Kubernetes Deployment for MongoDB Monitoring Agent
@@ -516,16 +504,7 @@ Start Kubernetes Deployment for MongoDB Monitoring Agent
 Start the MongoDB monitoring agent Kubernetes deployment for each node by following the
 naming convention described :ref:`above <pre-reqs-bdb-network>` and referring to the following instructions:
 
-* :ref:`Start a Kubernetes StatefulSet for Tendermint <start-kubernetes-deployment-for-mdb-mon-agent>`.
-
-
-Start Kubernetes Deployment for BigchainDB
-------------------------------------------
-
-Start the BigchainDB Kubernetes deployment for each node by following the
-naming convention described :ref:`above <pre-reqs-bdb-network>` and referring to the following instructions:
-
-* :ref:`Start a Kubernetes Deployment for BigchainDB <start-kubernetes-deployment-bdb>`.
+* :ref:`Start a Kubernetes Deployment for MongoDB Monitoring Agent <start-kubernetes-deployment-for-mdb-mon-agent>`.
 
 
 Start Kubernetes Deployment for OpenResty

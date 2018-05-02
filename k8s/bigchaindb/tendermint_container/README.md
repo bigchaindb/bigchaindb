@@ -13,7 +13,7 @@ reflect any changes made to the container.
 docker run \
   --name=tendermint \
   --env TM_PUB_KEY_ACCESS_PORT=<port to access public keys hosted by nginx> \
-  --env TM_SEEDS=<commad separated list of all nodes IP addresses/Hostnames> \
+  --env TM_PERSISTENT_PEERS=<commad separated list of all peers IP addresses/Hostnames> \
   --env TM_VALIDATOR_POWER=<voting power of node> \
   --env TM_VALIDATORS=<list of all validators> \
   --env TM_GENESIS_TIME=<genesis time> \

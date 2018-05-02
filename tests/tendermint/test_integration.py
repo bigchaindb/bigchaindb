@@ -5,7 +5,7 @@ import pytest
 from abci.server import ProtocolHandler
 from io import BytesIO
 import abci.types_pb2 as types
-from abci.wire import read_message
+from abci.encoding import read_message
 from abci.messages import to_request_deliver_tx, to_request_check_tx
 
 
@@ -70,8 +70,6 @@ def test_app(tb):
 
     data = p.process('commit', None)
     res, err = read_message(BytesIO(data), types.Response)
-    assert res
-    assert res.commit.code == 0
     assert res.commit.data == new_block_hash.encode('utf-8')
     assert b.get_transaction(tx.id).id == tx.id
 
@@ -90,6 +88,7 @@ def test_app(tb):
     p.process('end_block', r)
 
     data = p.process('commit', None)
+    res, err = read_message(BytesIO(data), types.Response)
     assert res.commit.data == new_block_hash.encode('utf-8')
 
     block0 = b.get_latest_block()
@@ -105,11 +104,14 @@ def test_upsert_validator(b, alice):
     from bigchaindb.backend.query import VALIDATOR_UPDATE_ID
     from bigchaindb.backend import query, connect
     from bigchaindb.models import Transaction
+    from bigchaindb.tendermint.utils import public_key_to_base64
+    import time
 
     conn = connect()
     public_key = '1718D2DBFF00158A0852A17A01C78F4DCF3BA8E4FB7B8586807FAC182A535034'
     power = 1
-    validator = {'pub_key': {'type': 'ed25519',
+
+    validator = {'pub_key': {'type': 'AC26791624DE60',
                              'data': public_key},
                  'power': power}
     validator_update = {'validator': validator,
@@ -124,8 +126,44 @@ def test_upsert_validator(b, alice):
 
     code, message = b.write_transaction(tx, 'broadcast_tx_commit')
     assert code == 202
+    time.sleep(5)
 
     validators = b.get_validators()
-    validators = [(v['pub_key']['data'], v['voting_power']) for v in validators]
+    validators = [(v['pub_key']['value'], v['voting_power']) for v in validators]
 
-    assert ((public_key, power) in validators)
+    public_key64 = public_key_to_base64(public_key)
+    assert ((public_key64, power) in validators)
+
+
+@pytest.mark.abci
+def test_post_transaction_responses(tendermint_ws_url, b):
+    from bigchaindb.common.crypto import generate_key_pair
+    from bigchaindb.models import Transaction
+
+    alice = generate_key_pair()
+    bob = generate_key_pair()
+    tx = Transaction.create([alice.public_key],
+                            [([alice.public_key], 1)],
+                            asset=None)\
+                    .sign([alice.private_key])
+
+    code, message = b.write_transaction(tx, 'broadcast_tx_commit')
+    assert code == 202
+
+    tx_transfer = Transaction.transfer(tx.to_inputs(),
+                                       [([bob.public_key], 1)],
+                                       asset_id=tx.id)\
+                             .sign([alice.private_key])
+
+    code, message = b.write_transaction(tx_transfer, 'broadcast_tx_commit')
+    assert code == 202
+
+    # NOTE: DOESN'T WORK (double spend)
+    # Tendermint crashes with error: Unexpected result type
+    # carly = generate_key_pair()
+    # double_spend = Transaction.transfer(tx.to_inputs(),
+    #                                     [([carly.public_key], 1)],
+    #                                     asset_id=tx.id)\
+    #                           .sign([alice.private_key])
+    # code, message = b.write_transaction(double_spend, 'broadcast_tx_commit')
+    # assert code == 500

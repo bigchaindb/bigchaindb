@@ -21,6 +21,10 @@ bdb_backend_host=`printenv BIGCHAINDB_BACKEND_HOST`
 bdb_api_port=`printenv BIGCHAINDB_API_PORT`
 bdb_ws_port=`printenv BIGCHAINDB_WS_PORT`
 
+# Tendermint vars
+tm_pub_key_access_port=`printenv TM_PUB_KEY_ACCESS_PORT`
+tm_p2p_port=`printenv TM_P2P_PORT`
+
 
 # sanity check
 if [[ -z "${node_frontend_port:?NODE_FRONTEND_PORT not specified. Exiting!}" || \
@@ -33,7 +37,6 @@ if [[ -z "${node_frontend_port:?NODE_FRONTEND_PORT not specified. Exiting!}" || 
       -z "${dns_server:?DNS_SERVER not specified. Exiting!}" || \
       -z "${health_check_port:?HEALTH_CHECK_PORT not specified.}" || \
       -z "${tm_pub_key_access_port:?TM_PUB_KEY_ACCESS_PORT not specified. Exiting!}" || \
-      -z "${tm_backend_host:?TM_BACKEND_HOST not specified. Exiting!}" || \
       -z "${tm_p2p_port:?TM_P2P_PORT not specified. Exiting!}" ]]; then
   exit 1
 else
@@ -47,7 +50,6 @@ else
   echo BIGCHAINDB_API_PORT="$bdb_api_port"
   echo BIGCHAINDB_WS_PORT="$bdb_ws_port"
   echo TM_PUB_KEY_ACCESS_PORT="$tm_pub_key_access_port"
-  echo TM_BACKEND_HOST="$tm_backend_host"
   echo TM_P2P_PORT="$tm_p2p_port"
 fi
 
@@ -64,7 +66,6 @@ sed -i "s|BIGCHAINDB_WS_PORT|${bdb_ws_port}|g" ${NGINX_CONF_FILE}
 sed -i "s|DNS_SERVER|${dns_server}|g" ${NGINX_CONF_FILE}
 sed -i "s|HEALTH_CHECK_PORT|${health_check_port}|g" ${NGINX_CONF_FILE}
 sed -i "s|TM_PUB_KEY_ACCESS_PORT|${tm_pub_key_access_port}|g" ${NGINX_CONF_FILE}
-sed -i "s|TM_BACKEND_HOST|${tm_backend_host}|g" ${NGINX_CONF_FILE}
 sed -i "s|TM_P2P_PORT|${tm_p2p_port}|g" ${NGINX_CONF_FILE}
 
 # start nginx

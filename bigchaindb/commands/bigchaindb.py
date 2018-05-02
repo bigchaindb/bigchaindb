@@ -21,7 +21,7 @@ from bigchaindb.commands.utils import (
     configure_bigchaindb, start_logging_process, input_on_stderr)
 from bigchaindb.backend.query import VALIDATOR_UPDATE_ID, PRE_COMMIT_ID
 from bigchaindb.tendermint.lib import BigchainDB
-
+from bigchaindb.tendermint.utils import public_key_from_base64
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -100,8 +100,9 @@ def run_upsert_validator(args):
     """Store validators which should be synced with Tendermint"""
 
     b = bigchaindb.Bigchain()
+    public_key = public_key_from_base64(args.public_key)
     validator = {'pub_key': {'type': 'ed25519',
-                             'data': args.public_key},
+                             'data': public_key},
                  'power': args.power}
     validator_update = {'validator': validator,
                         'update_id': VALIDATOR_UPDATE_ID}

@@ -42,8 +42,8 @@ def process_event(event_queue, event, stream_id):
     event_stream_id = stream_id + '#event'
     event = json.loads(event)
 
-    if (event['id'] == event_stream_id and event['result']['name'] == 'NewBlock'):
-        block = event['result']['data']['data']['block']
+    if (event['id'] == event_stream_id and event['result']['query'] == 'tm.event=\'NewBlock\''):
+        block = event['result']['data']['value']['block']
         block_id = block['header']['height']
         block_txs = block['data']['txs']
 
@@ -60,29 +60,26 @@ def subscribe_events(ws, stream_id):
     payload = {
         'method': 'subscribe',
         'jsonrpc': '2.0',
-        'params': ['NewBlock'],
+        'params': ['tm.event=\'NewBlock\''],
         'id': stream_id
     }
     yield from ws.send_str(json.dumps(payload))
 
 
 @asyncio.coroutine
-def try_connect_and_recv(event_queue, max_tries):
+def try_connect_and_recv(event_queue):
     try:
         yield from connect_and_recv(event_queue)
 
     except Exception as e:
-        if max_tries:
-            logger.warning('WebSocket connection failed with exception %s', e)
-            time.sleep(3)
-            yield from try_connect_and_recv(event_queue, max_tries-1)
-        else:
-            logger.exception('WebSocket connection failed with exception %s', e)
+        logger.warning('WebSocket connection failed with exception %s', e)
+        time.sleep(3)
+        yield from try_connect_and_recv(event_queue)
 
 
 def start(event_queue):
     loop = asyncio.get_event_loop()
     try:
-        loop.run_until_complete(try_connect_and_recv(event_queue, 10))
+        loop.run_until_complete(try_connect_and_recv(event_queue))
     except (KeyboardInterrupt, SystemExit):
         logger.info('Shutting down Tendermint event stream connection')

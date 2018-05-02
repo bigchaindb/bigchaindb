@@ -2,11 +2,13 @@
 with Tendermint."""
 import logging
 
-from abci import BaseApplication, Result
+from abci.application import BaseApplication, Result
 from abci.types_pb2 import ResponseEndBlock, ResponseInfo, Validator
 
 from bigchaindb.tendermint import BigchainDB
-from bigchaindb.tendermint.utils import decode_transaction, calculate_hash
+from bigchaindb.tendermint.utils import (decode_transaction,
+                                         calculate_hash,
+                                         amino_encoded_public_key)
 from bigchaindb.tendermint.lib import Block, PreCommitState
 from bigchaindb.backend.query import PRE_COMMIT_ID
 
@@ -86,7 +88,6 @@ class App(BaseApplication):
             return Result.error(log='Invalid transaction')
         else:
             logger.debug('storing tx')
-            # self.bigchaindb.store_transaction(transaction)
             self.block_txn_ids.append(transaction.id)
             self.block_transactions.append(transaction)
             return Result.ok()
@@ -118,13 +119,14 @@ class App(BaseApplication):
         pre_commit_state = PreCommitState(commit_id=PRE_COMMIT_ID,
                                           height=self.new_height,
                                           transactions=self.block_txn_ids)
+        logger.debug('Updating PreCommitState: %s', self.new_height)
         self.bigchaindb.store_pre_commit_state(pre_commit_state._asdict())
 
         # NOTE: interface for `ResponseEndBlock` has be changed in the latest
         # version of py-abci i.e. the validator updates should be return
         # as follows:
         # ResponseEndBlock(validator_updates=validator_updates)
-        return ResponseEndBlock(diffs=validator_updates)
+        return ResponseEndBlock(validator_updates=validator_updates)
 
     def commit(self):
         """Store the new height and along with block hash."""
@@ -141,13 +143,15 @@ class App(BaseApplication):
             # this effects crash recovery. Refer BEP#8 for details
             self.bigchaindb.store_block(block._asdict())
 
-        return Result.ok(data=data)
+        logger.debug('Commit-ing new block with hash: apphash=%s ,'
+                     'height=%s, txn ids=%s', data, self.new_height,
+                     self.block_txn_ids)
+        return data
 
 
 def encode_validator(v):
-    pub_key = v['pub_key']['data']
-    # NOTE: tendermint expects public to be encoded in go-wire format
-    # so `01` has to be appended
-    pubKey = bytes.fromhex('01{}'.format(pub_key))
-    return Validator(pubKey=pubKey,
+    ed25519_public_key = v['pub_key']['data']
+    # NOTE: tendermint expects public to be encoded in go-amino format
+    pub_key = amino_encoded_public_key(ed25519_public_key)
+    return Validator(pub_key=pub_key,
                      power=v['power'])

@@ -7,7 +7,7 @@ metadata:
     name: bdb-instance-0
 spec:
   selector:
-    app: bdb-instance-0-dep
+    app: bdb-instance-0-ss
   ports:
   - port: 9984
     targetPort: 9984
@@ -20,6 +20,18 @@ spec:
   - port: 46658
     targetPort: 46658
     name: tm-abci-port
+    protocol: TCP
+  - port: 46656
+    targetPort: 46656
+    name: tm-p2p-port
+    protocol: TCP
+  - port: 46657
+    targetPort: 46657
+    name: tm-rpc-port
+    protocol: TCP
+  - port: 9986
+    targetPort: 9986
+    name: pub-key-access
     protocol: TCP
   type: ClusterIP
   clusterIP: None

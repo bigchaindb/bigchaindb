@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  # Name of tendermint instance you are trying to connect to
-  # name: "tm-instance-0"
-  name: "<remote-tendermint-host>"
+  # Name of BigchainDB instance you are trying to connect to
+  # name: "bdb-instance-0"
+  name: "<remote-bdb-host>"
   namespace: default
 spec:
   ports:
@@ -13,8 +13,10 @@ spec:
     name: p2p
   - port: 46657
     name: pubkey
+  - port: 9986
+    name: nginx
   type: ExternalName
   # FQDN of remote cluster/NGINX instance
-  #externalName: "nginx-instance-for-tm-instance-0.westeurope.cloudapp.azure.com"
+  #externalName: "nginx-instance-for-bdb-instance-0.westeurope.cloudapp.azure.com"
   externalName: "<dns-name-remote-nginx>"
 

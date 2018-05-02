@@ -10,10 +10,10 @@ You can modify them to suit your needs.
 
 .. _generate-the-blockchain-id-and-genesis-time:
 
-Generate All Shared Tendermint Setup Parameters
+Generate All Shared BigchainDB Setup Parameters
 -----------------------------------------------
 
-There are some shared Tendermint setup paramters that every node operator
+There are some shared BigchainDB setup paramters that every node operator
 in the consortium shares
 because they are properties of the Tendermint cluster.
 They look like this:
@@ -21,30 +21,30 @@ They look like this:
 .. code::
 
    # Tendermint data
-   TM_SEEDS='tm-instance-1,tm-instance-2,tm-instance-3,tm-instance-4'
-   TM_VALIDATORS='tm-instance-1,tm-instance-2,tm-instance-3,tm-instance-4'
-   TM_VALIDATOR_POWERS='10,10,10,10'
-   TM_GENESIS_TIME='0001-01-01T00:00:00Z'
-   TM_CHAIN_ID='test-chain-rwcPML'
+   BDB_PERSISTENT_PEERS='bdb-instance-1,bdb-instance-2,bdb-instance-3,bdb-instance-4'
+   BDB_VALIDATORS='bdb-instance-1,bdb-instance-2,bdb-instance-3,bdb-instance-4'
+   BDB_VALIDATOR_POWERS='10,10,10,10'
+   BDB_GENESIS_TIME='0001-01-01T00:00:00Z'
+   BDB_CHAIN_ID='test-chain-rwcPML'
 
 Those paramters only have to be generated once, by one member of the consortium.
 That person will then share the results (Tendermint setup parameters)
 with all the node operators.
 
 The above example parameters are for a cluster of 4 initial (seed) nodes.
-Note how ``TM_SEEDS``, ``TM_VALIDATORS`` and ``TM_VALIDATOR_POWERS`` are lists
+Note how ``BDB_PERSISTENT_PEERS``, ``BDB_VALIDATORS`` and ``BDB_VALIDATOR_POWERS`` are lists
 with 4 items each.
 **If your consortium has a different number of initial nodes,
 then those lists should have that number or items.**
 Use ``10`` for all the power values.
 
-To generate a ``TM_GENESIS_TIME`` and a ``TM_CHAIN_ID``,
+To generate a ``BDB_GENESIS_TIME`` and a ``BDB_CHAIN_ID``,
 you can do this:
 
 .. code::
 
    $ mkdir $(pwd)/tmdata
-   $ docker run --rm -v $(pwd)/tmdata:/tendermint tendermint/tendermint:0.13 init
+   $ docker run --rm -v $(pwd)/tmdata:/tendermint/config tendermint/tendermint:0.19.2 init
    $ cat $(pwd)/tmdata/genesis.json
 
 You should see something that looks like:
@@ -63,10 +63,10 @@ You should see something that looks like:
     "app_hash": ""
    }
 
-The value with ``"genesis_time"`` is ``TM_GENESIS_TIME`` and
-the value with ``"chain_id"`` is ``TM_CHAIN_ID``.
+The value with ``"genesis_time"`` is ``BDB_GENESIS_TIME`` and
+the value with ``"chain_id"`` is ``BDB_CHAIN_ID``.
 
-Now you have all the Tendermint setup parameters and can share them
+Now you have all the BigchainDB setup parameters and can share them
 with all of the node operators. (They will put them in their ``vars`` file.
 We'll say more about that file below.)
 

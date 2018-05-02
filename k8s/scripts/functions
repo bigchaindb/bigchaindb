@@ -59,21 +59,21 @@ function configure_client_cert_gen(){
     echo "set_var EASYRSA_SSL_CONF \"$1/openssl-1.0.cnf\"" >> $1/vars
     echo "set_var EASYRSA_PKI \"$1/pki\"" >> $1/vars
     $1/easyrsa init-pki
-    $1/easyrsa gen-req "$BDB_CN"-"$INDEX" nopass
+    $1/easyrsa gen-req "$BDB_CN" nopass
     $1/easyrsa gen-req "$MDB_MON_CN"-"$INDEX" nopass
 }
 
 function import_requests(){
     # $1:- Base directory for Root CA
     $1/easyrsa import-req $BASE_MEMBER_CERT_DIR/$BASE_EASY_RSA_PATH/pki/reqs/"$MDB_CN"-"$INDEX".req "$MDB_CN"-"$INDEX"
-    $1/easyrsa import-req $BASE_CLIENT_CERT_DIR/$BASE_EASY_RSA_PATH/pki/reqs/"$BDB_CN"-"$INDEX".req "$BDB_CN"-"$INDEX"
+    $1/easyrsa import-req $BASE_CLIENT_CERT_DIR/$BASE_EASY_RSA_PATH/pki/reqs/"$BDB_CN".req "$BDB_CN"
     $1/easyrsa import-req $BASE_CLIENT_CERT_DIR/$BASE_EASY_RSA_PATH/pki/reqs/"$MDB_MON_CN"-"$INDEX".req "$MDB_MON_CN"-"$INDEX"
 }
 
 function sign_requests(){
     # $1:- Base directory for Root CA
     $1/easyrsa --subject-alt-name=DNS:localhost,DNS:"$MDB_CN"-"$INDEX" sign-req server "$MDB_CN"-"$INDEX"
-    $1/easyrsa sign-req client "$BDB_CN"-"$INDEX"
+    $1/easyrsa sign-req client "$BDB_CN"
     $1/easyrsa sign-req client "$MDB_MON_CN"-"$INDEX"
 }
 
@@ -82,7 +82,7 @@ function make_pem_files(){
     # $2:- Base directory for kubernetes related config for secret.yaml
     mkdir $2
     cat $1/pki/issued/"$MDB_CN"-"$INDEX".crt $BASE_MEMBER_CERT_DIR/$BASE_EASY_RSA_PATH/pki/private/"$MDB_CN"-"$INDEX".key > $2/"$MDB_CN"-"$INDEX".pem
-    cat $1/pki/issued/"$BDB_CN"-"$INDEX".crt $BASE_CLIENT_CERT_DIR/$BASE_EASY_RSA_PATH/pki/private/"$BDB_CN"-"$INDEX".key > $2/"$BDB_CN"-"$INDEX".pem
+    cat $1/pki/issued/"$BDB_CN".crt $BASE_CLIENT_CERT_DIR/$BASE_EASY_RSA_PATH/pki/private/"$BDB_CN".key > $2/"$BDB_CN".pem
     cat $1/pki/issued/"$MDB_MON_CN"-"$INDEX".crt $BASE_CLIENT_CERT_DIR/$BASE_EASY_RSA_PATH/pki/private/"$MDB_MON_CN"-"$INDEX".key > $2/"$MDB_MON_CN"-"$INDEX".pem
 }
 
@@ -91,17 +91,17 @@ function convert_b64(){
     # $2:- Base directory for Root CA
     # $3:- Base directory for client requests/keys
     cat $1/"$MDB_CN"-"$INDEX".pem | base64 -w 0 > $1/"$MDB_CN"-"$INDEX".pem.b64
-    cat $1/"$BDB_CN"-"$INDEX".pem | base64 -w 0 > $1/"$BDB_CN"-"$INDEX".pem.b64
+    cat $1/"$BDB_CN".pem | base64 -w 0 > $1/"$BDB_CN".pem.b64
     cat $1/"$MDB_MON_CN"-"$INDEX".pem | base64 -w 0 > $1/"$MDB_MON_CN"-"$INDEX".pem.b64
 
-    cat $3/pki/private/"$BDB_CN"-"$INDEX".key | base64 -w 0 > $1/"$BDB_CN"-"$INDEX".key.b64
+    cat $3/pki/private/"$BDB_CN".key | base64 -w 0 > $1/"$BDB_CN".key.b64
     cat $2/pki/ca.crt | base64 -w 0 > $1/ca.crt.b64
     cat $2/pki/crl.pem | base64 -w 0 > $1/crl.pem.b64
 }
 
 function configure_common(){
-    sudo apt-get update -y
-    sudo apt-get install openssl -y
+    apt-get update -y
+    apt-get install openssl -y
     wget https://github.com/OpenVPN/easy-rsa/archive/3.0.1.tar.gz -P $1
     tar xzvf $1/3.0.1.tar.gz -C $1/
     rm $1/3.0.1.tar.gz
@@ -113,8 +113,8 @@ function get_users(){
 
     openssl x509 -in $BASE_CA_DIR/$BASE_EASY_RSA_PATH/pki/issued/"$MDB_CN"-"$INDEX".crt -inform PEM -subject \
       -nameopt RFC2253 | head -n 1 | sed -r 's/^subject= //' > $1/"$MDB_CN"-"$INDEX".user
-    openssl x509 -in $BASE_CA_DIR/$BASE_EASY_RSA_PATH/pki/issued/"$BDB_CN"-"$INDEX".crt -inform PEM -subject \
-      -nameopt RFC2253 | head -n 1 | sed -r 's/^subject= //' > $1/"$BDB_CN"-"$INDEX".user
+    openssl x509 -in $BASE_CA_DIR/$BASE_EASY_RSA_PATH/pki/issued/"$BDB_CN".crt -inform PEM -subject \
+      -nameopt RFC2253 | head -n 1 | sed -r 's/^subject= //' > $1/"$BDB_CN".user
     openssl x509 -in $BASE_CA_DIR/$BASE_EASY_RSA_PATH/pki/issued/"$MDB_MON_CN"-"$INDEX".crt -inform PEM -subject \
       -nameopt RFC2253 | head -n 1 | sed -r 's/^subject= //' > $1/"$MDB_MON_CN"-"$INDEX".user
     
@@ -128,14 +128,22 @@ function generate_secretes_no_threescale(){
 
 
     mdb_instance_pem=`cat $1/"$MDB_CN"-"$INDEX".pem.b64`
-    bdb_instance_pem=`cat $1/"$BDB_CN"-"$INDEX".pem.b64`
-    bdb_instance_key=`cat $1/"$BDB_CN"-"$INDEX".key.b64`
+    bdb_instance_pem=`cat $1/"$BDB_CN".pem.b64`
+    bdb_instance_key=`cat $1/"$BDB_CN".key.b64`
     root_ca_pem=`cat $1/ca.crt.b64`
     root_crl_pem=`cat $1/crl.pem.b64`
     
     secrete_token=`echo $2 | base64 -w 0`
-    https_cert_key=`cat $3 | base64 -w 0`
-    https_cert_chain_pem=`cat $4 | base64 -w 0`
+    if [ -f $3 ]; then
+      https_cert_key=`cat $3 | base64 -w 0`
+    else
+      https_cert_key=""
+    fi
+    if [ -f $4 ]; then
+      https_cert_chain_pem=`cat $4 | base64 -w 0`
+    else
+      https_cert_chain_pem=""
+    fi
 
     mdb_admin_password=`echo $5 | base64 -w 0`
 
@@ -215,18 +223,17 @@ EOF
 function generate_config_map(){
 
     mdb_instance_name="$MDB_CN-$INDEX"
-    bdb_instance_name="$BDB_CN-$INDEX"
     ngx_instance_name="ngx-instance-$INDEX"
 
-    bdb_user=`cat "${1}"/"$BDB_CN"-"${INDEX}".user`
+    bdb_user=`cat "${1}"/"$BDB_CN".user`
     mdb_admin_username="${2}"
     node_fqdn="${3}"
-    tm_seeds="${4}"
-    tm_validators="${5}"
-    tm_validators_power="${6}"
-    tm_genesis_time="${7}"
-    tm_chain_id="${8}"
-    tm_instance_name="${9}"
+    bdb_persistent_peers="${4}"
+    bdb_validators="${5}"
+    bdb_validators_power="${6}"
+    bdb_genesis_time="${7}"
+    bdb_chain_id="${8}"
+    bdb_instance_name="${9}"
     dns_resolver_k8s="${10}"
     auth_mode="${11}"
 
@@ -356,46 +363,39 @@ metadata:
   name: tendermint-config
   namespace: default
 data:
-  # tm-seeds is the list of all the peers in the network.
-  tm-seeds: "${tm_seeds}"
+  # bdb-persistent-peers is the list of all the peers in the network.
+  bdb-persistent-peers: "${bdb_persistent_peers}"
 
-  # tm-validators is the list of all validators in the network.
-  tm-validators: "${tm_validators}"
+  # bdb-validators is the list of all validators in the network.
+  bdb-validators: "${bdb_validators}"
 
-  # tm-validator-power is the validators voting power, make sure the order and
-  # the number of nodes in tm-validator-power and tm-validators is the same.
-  tm-validator-power: "${tm_validators_power}"
+  # bdb-validator-power is the validators voting power, make sure the order and
+  # the number of nodes in bdb-validator-power and bdb-validators is the same.
+  bdb-validator-power: "${bdb_validators_power}"
 
-  # tm-genesis-time is the official time of blockchain start.
+  # bdb-genesis-time is the official time of blockchain start.
   # example: 0001-01-01T00:00:00Z
-  tm-genesis-time: "${tm_genesis_time}"
+  bdb-genesis-time: "${bdb_genesis_time}"
 
-  # tm-chain-id is the ID of the blockchain. Must be unique for every blockchain.
+  # bdb-chain-id is the ID of the blockchain. Must be unique for every blockchain.
   # example: test-chain-KPI1Ud
-  tm-chain-id: "${tm_chain_id}"
+  bdb-chain-id: "${bdb_chain_id}"
 
-  # tendermint-instance-name is the name of the Tendermint instance
-  # in the cluster
-  tm-instance-name: "${tm_instance_name}"
-
-  # ngx-tm-instance-name is the FQDN of the tendermint instance in this cluster
-  ngx-tm-instance-name: "${tm_instance_name}.default.svc.cluster.local"
-
-  # tm-abci-port is used by Tendermint Core for ABCI traffic. BigchainDB nodes
+  # bdb-abci-port is used by Tendermint Core for ABCI traffic. BigchainDB nodes
   # use that internally.
-  tm-abci-port: "46658"
+  bdb-abci-port: "46658"
 
-  # tm-p2p-port is used by Tendermint Core to communicate with
+  # bdb-p2p-port is used by Tendermint Core to communicate with
   # other peers in the network. This port is accessible publicly.
-  tm-p2p-port: "46656"
+  bdb-p2p-port: "46656"
 
-  # tm-rpc-port is used by Tendermint Core to rpc. BigchainDB nodes
+  # bdb-rpc-port is used by Tendermint Core to rpc. BigchainDB nodes
   # use this port internally.
-  tm-rpc-port: "46657"
+  bdb-rpc-port: "46657"
 
-  # tm-pub-key-access is the port number used to host/publish the
+  # bdb-pub-key-access is the port number used to host/publish the
   # public key of the tendemrint node in this cluster.
-  tm-pub-key-access: "9986"
+  bdb-pub-key-access: "9986"
 
 ---
 apiVersion: v1

@@ -348,7 +348,8 @@ class MockResponse():
 def test_upsert_validator(mock_autoconfigure, mock_store_validator_update):
     from bigchaindb.commands.bigchaindb import run_upsert_validator
 
-    args = Namespace(public_key='BOB_PUBLIC_KEY', power='10', config={})
+    args = Namespace(public_key='CJxdItf4lz2PwEf4SmYNAu/c/VpmX39JEgC5YpH7fxg=',
+                     power='10', config={})
     run_upsert_validator(args)
 
     assert mock_store_validator_update.called

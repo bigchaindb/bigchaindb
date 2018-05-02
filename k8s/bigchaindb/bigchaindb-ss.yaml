@@ -1,0 +1,294 @@
+#################################################################################
+# This YAML file desribes a StatefulSet with a service for running and exposing #
+# a Tendermint instance. It depends on the tendermint-config-db-claim           #
+# and tendermint-db-claim k8s pvc.                                              #
+#################################################################################
+
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: bdb-instance-0-ss
+  namespace: default
+spec:
+  serviceName: bdb-instance-0
+  replicas: 1
+  template:
+    metadata:
+      name: bdb-instance-0-ss
+      labels:
+        app: bdb-instance-0-ss
+    spec:
+      restartPolicy: Always
+      volumes:
+      - name: bdb-data
+        persistentVolumeClaim:
+          claimName: tendermint-db-claim
+      - name: bdb-config-data
+        persistentVolumeClaim:
+          claimName: tendermint-config-db-claim
+      - name: bdb-certs
+        secret:
+          secretName: bdb-certs
+          defaultMode: 0400
+      - name: ca-auth
+        secret:
+          secretName: ca-auth
+          defaultMode: 0400
+      containers:
+      # Treating bigchaindb+ nginx + tendermint as a POD because they should not
+      # exist without each other
+      # Nginx container for hosting public key of this ndoe
+      - name: nginx
+        imagePullPolicy: Always
+        image: bigchaindb/nginx_pub_key_access:2.0.0-alpha3
+        env:
+        - name: TM_PUB_KEY_ACCESS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: tendermint-config
+              key: bdb-pub-key-access
+        ports:
+        - containerPort: 9986
+          name: bdb-pk-access
+        volumeMounts:
+        - name: bdb-config-data
+          mountPath: /usr/share/nginx
+          readOnly: true
+      #Tendermint container
+      - name: tendermint
+        imagePullPolicy: Always
+        image: bigchaindb/tendermint:2.0.0-alpha3
+        env:
+        - name: TM_PERSISTENT_PEERS
+          valueFrom:
+            configMapKeyRef:
+              name: tendermint-config
+              key: bdb-persistent-peers
+        - name: TM_VALIDATOR_POWER
+          valueFrom:
+            configMapKeyRef:
+              name: tendermint-config
+              key: bdb-validator-power
+        - name: TM_VALIDATORS
+          valueFrom:
+            configMapKeyRef:
+              name: tendermint-config
+              key: bdb-validators
+        - name: TM_PUB_KEY_ACCESS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: tendermint-config
+              key: bdb-pub-key-access
+        - name: TM_GENESIS_TIME
+          valueFrom:
+            configMapKeyRef:
+              name: tendermint-config
+              key: bdb-genesis-time
+        - name: TM_CHAIN_ID
+          valueFrom:
+            configMapKeyRef:
+              name: tendermint-config
+              key: bdb-chain-id
+        - name: TM_P2P_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: tendermint-config
+              key: bdb-p2p-port
+        - name: TM_INSTANCE_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: bdb-instance-name
+        - name: TMHOME
+          value: /tendermint
+        - name: TM_PROXY_APP
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: bdb-instance-name
+        - name: TM_ABCI_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: tendermint-config
+              key: bdb-abci-port  
+        - name: TM_RPC_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: tendermint-config
+              key: bdb-rpc-port       
+        resources:
+          limits:
+            cpu: 1
+            memory: 5G
+        volumeMounts:
+        - name: bdb-data
+          mountPath: /tendermint
+        - name: bdb-config-data
+          mountPath: /tendermint_node_data
+        ports:
+        - containerPort: 46656
+          name: p2p
+        - containerPort: 46657
+          name: rpc
+        livenessProbe:
+          exec:
+            command:
+            - /bin/bash
+            - "-c"
+            - |
+              curl -s --fail --max-time 10 "http://${TM_INSTANCE_NAME}:${TM_RPC_PORT}/abci_info" > /dev/null
+              ERR=$?
+              if [ "$ERR" == 28 ]; then
+                exit 1
+              elif [[ $(curl --max-time 10 "http://${TM_INSTANCE_NAME}:${TM_RPC_PORT}/abci_info" | jq -r ".error.code") == -32603 ]]; then 
+                exit 1
+              elif [ "$ERR" != 0 ]; then
+                exit 1
+              else
+                exit 0
+              fi
+          initialDelaySeconds: 60
+          periodSeconds: 15
+          failureThreshold: 3
+          timeoutSeconds: 15
+      # BigchainDB container
+      - name: bigchaindb
+        image: bigchaindb/bigchaindb:2.0.0-alpha3
+        imagePullPolicy: Always
+        args:
+        - start
+        env:
+        - name: BIGCHAINDB_DATABASE_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: mdb-instance-name
+        - name: BIGCHAINDB_DATABASE_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: mongodb-backend-port
+        - name: BIGCHAINDB_DATABASE_BACKEND
+          value: "localmongodb"
+        - name: BIGCHAINDB_DATABASE_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: bigchaindb-database-name
+        - name: BIGCHAINDB_SERVER_BIND
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: bigchaindb-server-bind
+        - name: BIGCHAINDB_WSSERVER_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: bigchaindb-ws-interface
+        - name: BIGCHAINDB_WSSERVER_ADVERTISED_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: node-fqdn
+        - name: BIGCHAINDB_WSSERVER_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: bigchaindb-ws-port
+        - name: BIGCHAINDB_WSSERVER_ADVERTISED_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: node-frontend-port
+        - name: BIGCHAINDB_WSSERVER_ADVERTISED_SCHEME
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: bigchaindb-wsserver-advertised-scheme
+        - name: BIGCHAINDB_BACKLOG_REASSIGN_DELAY
+          valueFrom:
+            configMapKeyRef:
+              name: bdb-config
+              key: bigchaindb-backlog-reassign-delay
+        - name: BIGCHAINDB_DATABASE_MAXTRIES
+          valueFrom:
+            configMapKeyRef:
+              name: bdb-config
+              key: bigchaindb-database-maxtries
+        - name: BIGCHAINDB_DATABASE_CONNECTION_TIMEOUT
+          valueFrom:
+            configMapKeyRef:
+              name: bdb-config
+              key: bigchaindb-database-connection-timeout
+        - name: BIGCHAINDB_LOG_LEVEL_CONSOLE
+          valueFrom:
+            configMapKeyRef:
+              name: bdb-config
+              key: bigchaindb-log-level
+        - name: BIGCHAINDB_DATABASE_SSL
+          value: "true"
+        - name: BIGCHAINDB_DATABASE_CA_CERT
+          value: /etc/bigchaindb/ca/ca.pem
+        - name: BIGCHAINDB_DATABASE_CRLFILE
+          value: /etc/bigchaindb/ca/crl.pem
+        - name: BIGCHAINDB_DATABASE_CERTFILE
+          value: /etc/bigchaindb/ssl/bdb-instance.pem
+        - name: BIGCHAINDB_DATABASE_KEYFILE
+          value: /etc/bigchaindb/ssl/bdb-instance.key
+        - name: BIGCHAINDB_DATABASE_LOGIN
+          valueFrom:
+            configMapKeyRef:
+              name: bdb-config
+              key: bdb-user
+        - name: BIGCHAINDB_TENDERMINT_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: bdb-instance-name
+        - name: BIGCHAINDB_TENDERMINT_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: tendermint-config
+              key: bdb-rpc-port
+        command:
+        - bash
+        - "-c"
+        - |
+          curl -s --fail "http://${BIGCHAINDB_TENDERMINT_HOST}:9986/pub_key.json" > /dev/null
+          ERR=$?
+          while [ "$ERR" != 0 ]; do
+            sleep 30
+            curl -s --fail "http://${BIGCHAINDB_TENDERMINT_HOST}:9986/pub_key.json" > /dev/null
+            ERR=$?
+            echo "Waiting for Tendermint instance."
+          done
+          bigchaindb -l DEBUG start
+        ports:
+        - containerPort: 9984
+          protocol: TCP
+          name: bdb-port
+        - containerPort: 9985
+          protocol: TCP
+          name: bdb-ws-port
+        - containerPort: 46658
+          protocol: TCP
+          name: bdb-abci-port
+        volumeMounts:
+        - name: bdb-certs
+          mountPath: /etc/bigchaindb/ssl/
+          readOnly: true
+        - name: ca-auth
+          mountPath: /etc/bigchaindb/ca/
+          readOnly: true
+        resources:
+          limits:
+            cpu: 200m
+            memory: 2G
+        livenessProbe:
+          httpGet:
+            path: /
+            port: bdb-port
+          initialDelaySeconds: 60
+          periodSeconds: 15
+          failureThreshold: 3
+          timeoutSeconds: 15
