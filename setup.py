@@ -84,7 +84,7 @@ install_requires = [
     'pyyaml~=3.12',
     'aiohttp~=2.3',
     'python-rapidjson-schema==0.1.1',
-    'abci==0.4.3',
+    'abci==0.4.4',
     'setproctitle~=1.1.0',
 ]
 
@@ -131,7 +131,7 @@ setup(
         ],
     },
     install_requires=install_requires,
-    dependency_links=['git+https://github.com/kansi/py-abci.git@master#egg=abci-0.4.3'],
+    dependency_links=['git+https://github.com/kansi/py-abci.git@master#egg=abci-0.4.4'],
     setup_requires=['pytest-runner'],
     tests_require=tests_require,
     extras_require={
