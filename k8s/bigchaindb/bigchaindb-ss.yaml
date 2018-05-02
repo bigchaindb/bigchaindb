@@ -118,7 +118,7 @@ spec:
               key: bdb-rpc-port       
         resources:
           limits:
-            cpu: 200m
+            cpu: 1
             memory: 5G
         volumeMounts:
         - name: bdb-data
@@ -285,23 +285,10 @@ spec:
             cpu: 200m
             memory: 2G
         livenessProbe:
-          exec:
-            command:
-            - /bin/bash
-            - "-c"
-            - |
-              curl -s --fail --max-time 10 "http://${BIGCHAINDB_TENDERMINT_HOST}:${BIGCHAINDB_TENDERMINT_PORT}/abci_info" > /dev/null
-              ERR=$?
-              if [ "$ERR" == 28 ]; then
-                exit 1
-              elif [[ $(curl --max-time 10 "http://${BIGCHAINDB_TENDERMINT_HOST}:${BIGCHAINDB_TENDERMINT_PORT}/abci_info" | jq -r ".error.code") == -32603 ]]; then 
-                exit 1
-              elif [ "$ERR" != 0 ]; then
-                exit 1
-              else
-                exit 0
-              fi
+          httpGet:
+            path: /
+            port: bdb-port
           initialDelaySeconds: 60
-          periodSeconds: 10
+          periodSeconds: 15
           failureThreshold: 3
           timeoutSeconds: 15
