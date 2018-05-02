@@ -70,12 +70,7 @@ def merkleroot(hashes):
 
 def public_key64_to_address(base64_public_key):
     """Note this only compatibile with Tendermint 0.19.0 """
-    public_key = public_key_from_base64(base64_public_key)
-    return public_key_to_address(public_key)
-
-
-def public_key_to_address(ed25519_public_key):
-    """Note this only compatibile with Tendermint 0.19.0 """
+    ed25519_public_key = public_key_from_base64(base64_public_key)
     encoded_public_key = amino_encoded_public_key(ed25519_public_key)
     return hashlib.new('ripemd160', encoded_public_key).hexdigest().upper()
 
