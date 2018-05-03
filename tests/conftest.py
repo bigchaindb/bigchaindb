@@ -567,7 +567,7 @@ def abci_http(_setup_database, _configure_bigchaindb, abci_server,
     import requests
     import time
 
-    for i in range(5):
+    for i in range(300):
         try:
             uri = 'http://{}:{}/abci_info'.format(tendermint_host, tendermint_port)
             requests.get(uri)
