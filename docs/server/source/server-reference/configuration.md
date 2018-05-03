@@ -126,7 +126,7 @@ export BIGCHAINDB_SERVER_WORKERS=5
 "server": {
     "bind": "localhost:9984",
     "loglevel": "info",
-    "workers": 1,
+    "workers": null,
 }
 ```
 
