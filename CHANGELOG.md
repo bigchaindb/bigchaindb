@@ -17,6 +17,28 @@ For reference, the possible headings are:
 * **External Contributors** to list contributors outside of BigchainDB GmbH.
 * **Notes**
 
+## [2.0 Alpha 3] - 2018-05-03
+
+Tag name: v2.0.0a3
+
+### Changed
+
+* Upgraded BigchainDB Server code to use the latest version of Tendermint: version 0.19.2. Pull requests [#2249](https://github.com/bigchaindb/bigchaindb/pull/2249), [#2252](https://github.com/bigchaindb/bigchaindb/pull/2252) and [#2253](https://github.com/bigchaindb/bigchaindb/pull/2253)
+* Made some fixes to `py-abci` (an external Python package) and used our fixed version with BigchainDB. Those fixes resolved several known issues, including [issue #2182](https://github.com/bigchaindb/bigchaindb/issues/2182) and issues with large transactions in general. Note: At the time of writing, our fixes to `py-abci` hadn't been merged into the main `py-abci` repository or its latest release on PyPI; we were using our own special `bigchaindb-abci` package (which included our fixes). Pull requests [#2250](https://github.com/bigchaindb/bigchaindb/pull/2250) and [#2261](https://github.com/bigchaindb/bigchaindb/pull/2261)
+* If BigchainDB Server crashes and then comes back, Tendermint Core doesn't try to reconnect to it. That's just how Tendermint Core works. We revised our Kubernetes-based production deployment template to resolve that issue: BigchainDB Server and Tendermint Core are now in the same Kubernetes StatefulSet; if the connection between them ever goes down, then Kubernetes restarts the whole StatefulSet. [Pull request #2242](https://github.com/bigchaindb/bigchaindb/pull/2242)
+
+### Fixed
+
+Re-enabled multi-threading. [Pull request #2258](https://github.com/bigchaindb/bigchaindb/pull/2258)
+
+### Known Issues
+
+Tendermint changed how it responds to a request to store data (via the [Tendermint Broadcast API](http://tendermint.readthedocs.io/projects/tools/en/master/using-tendermint.html#broadcast-api)) between version 0.12 and 0.19.2. We started modifying the code of BigchainDB Server to account for those changes in responses (in [pull request #2239](https://github.com/bigchaindb/bigchaindb/pull/2239)), but we found that there's a difference between what the Tendermint documentation _says_ about those responses and how Tendermint actually responds. We need to determine Tendermint's intent before we can finalize that pull request.
+
+### Notes
+
+We were focused on getting the public BigchainDB Testnet stable during the development of BigchainDB 2.0 Alpha 3, and we think we largely succeeded. Because of that focus, we delayed the deployment of an internal test network until later. It would have had the same instabilities as the public BigchainDB Testnet anyway. In the future, we'll always test a new version of BigchainDB on our internal test network before deploying it on the public BigchainDB Testnet. (That wasn't possible this time around, because there was no old/stable version of BigchainDB 2.n to run on the public BigchainDB Testnet while we tested BigchainDB 2.[n+1] internally.)
+
 ## [2.0 Alpha 2] - 2018-04-18
 
 Tag name: v2.0.0a2
