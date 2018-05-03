@@ -54,35 +54,9 @@ The commands are:
 export PATH=${PATH}:${GOPATH}/bin
 ```
 
-- Now we can install Glide which is vendor package manger for Golang,
+Follow [the Tendermint docs](https://tendermint.readthedocs.io/en/master/install.html#from-source) to install Tendermint from source.
 
-```bash
-$ go get github.com/Masterminds/glide
-
-...
-...
-
-$ glide -h
-NAME:
-   glide - Vendor Package Management for your Go projects.
-
-   Each project should have a 'glide.yaml' file in the project directory. Files
-   look something like this:
-
-...
-```
-
-- Now we install Tendermint from source,
-
-```bash
-$ mkdir -p $GOPATH/src/github.com/tendermint && cd $_
-$ git clone https://github.com/tendermint/tendermint
-...
-$ cd tendermint && glide install
-$ go install ./cmd/tendermint
-```
-
-- If the above commands were executed successfully then Tendermint is installed at `$GOPATH/bin`. To ensure Tendermint's installed fine execute the following command,
+If the installation is successful then Tendermint is installed at `$GOPATH/bin`. To ensure Tendermint's installed fine execute the following command,
 
 ```bash
 $ tendermint -h
