@@ -29,7 +29,7 @@ Tag name: v2.0.0a3
 
 ### Fixed
 
-* Re-enabled multi-threading. TODO - which PR?
+Re-enabled multi-threading. [Pull request #2258](https://github.com/bigchaindb/bigchaindb/pull/2258)
 
 ### Known Issues
 
@@ -37,7 +37,7 @@ Tendermint changed how it responds to a request to store data (via the [Tendermi
 
 ### Notes
 
-We were focused on getting the public BigchainDB Testnet stable during the development of BigchainDB 2.0 Alpha 3, and we think we largely succeeded. Because of that focus, we delayed the deployment of an internal test network until later. It would have had the same instabilities as the public BigchainDB Testnet anyway. In the future, we'll always test a new version of BigchainDB on our internal test network before deploying it on the public BigchainDB Testnet. (That wasn't possible this time around, because there was no old/stable version of BigchainDB 2.n to run on the public BigchainDB Testnet while we tested BigchainDB 2.(n+1) internally.)
+We were focused on getting the public BigchainDB Testnet stable during the development of BigchainDB 2.0 Alpha 3, and we think we largely succeeded. Because of that focus, we delayed the deployment of an internal test network until later. It would have had the same instabilities as the public BigchainDB Testnet anyway. In the future, we'll always test a new version of BigchainDB on our internal test network before deploying it on the public BigchainDB Testnet. (That wasn't possible this time around, because there was no old/stable version of BigchainDB 2.n to run on the public BigchainDB Testnet while we tested BigchainDB 2.[n+1] internally.)
 
 ## [2.0 Alpha 2] - 2018-04-18
 
