@@ -77,8 +77,8 @@ def test_process_unknown_event():
     assert event_queue.empty()
 
 
-@pytest.mark.abci
 @pytest.mark.asyncio
+@pytest.mark.abci
 async def test_subscribe_events(tendermint_ws_url, b):
     from bigchaindb.tendermint.event_stream import subscribe_events
     from bigchaindb.common.crypto import generate_key_pair
