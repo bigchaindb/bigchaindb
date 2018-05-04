@@ -53,7 +53,7 @@ services:
     ports:
       - "46656"
       - "46657"
-    command: sh -c "tendermint init && tendermint node --proxy_app=tcp://bigchaindb:46658"
+    command: sh -c "tendermint init && tendermint node --consensus.create_empty_blocks=false --proxy_app=tcp://bigchaindb:46658"
   bdb:
     image: busybox
     depends_on:
