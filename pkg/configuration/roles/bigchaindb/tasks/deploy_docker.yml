@@ -16,7 +16,7 @@
     env:
       BIGCHAINDB_SERVER_BIND: "{{ bigchaindb_server_bind }}"
       BIGCHAINDB_DATABASE_HOST: "{{ hostvars[ansible_hostname]['mongodb' + item|string] }}"
-    entrypoint: "bigchaindb -y configure mongodb"
+    entrypoint: "bigchaindb -y configure localmongodb"
   when: stat_result.results[item|int].stat.exists == False
   with_sequence: start=0 end="{{ docker_cluster_size|int - 1 }}" stride=1
   tags: [bigchaindb]
