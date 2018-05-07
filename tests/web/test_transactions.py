@@ -343,6 +343,29 @@ def test_post_invalid_transfer_transaction_returns_400(b, client, user_pk):
 
 
 @pytest.mark.tendermint
+def test_post_wrong_asset_division_transfer_returns_400(b, client, user_pk):
+    from bigchaindb.models import Transaction
+
+    priv_key, pub_key = crypto.generate_key_pair()
+
+    create_tx = Transaction.create(
+        [pub_key],
+        [([pub_key], 10)],
+    ).sign([priv_key])
+    res = client.post(TX_ENDPOINT + '?mode=commit', data=json.dumps(create_tx.to_dict()))
+    assert res.status_code == 202
+
+    transfer_tx = Transaction.transfer(
+        create_tx.to_inputs(),
+        [([pub_key], 20)],  # 20 > 10
+        asset_id=create_tx.id,
+    ).sign([priv_key])
+    res = client.post(TX_ENDPOINT + '?mode=commit', data=json.dumps(transfer_tx.to_dict()))
+    # TODO identify the particular error in the response
+    assert res.status_code == 400
+
+
+@pytest.mark.tendermint
 def test_transactions_get_list_good(client):
     from functools import partial
 
