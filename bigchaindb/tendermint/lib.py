@@ -338,6 +338,9 @@ class BigchainDB(Bigchain):
 
         transaction = tx
 
+        # CLEANUP: The conditional below checks for transaction in dict format.
+        # It would be better to only have a single format for the transaction
+        # throught the code base.
         if not isinstance(transaction, Transaction):
             try:
                 transaction = Transaction.from_dict(tx)
@@ -347,12 +350,14 @@ class BigchainDB(Bigchain):
             except ValidationError as e:
                 logger.warning('Invalid transaction (%s): %s', type(e).__name__, e)
                 return False
+        return transaction.validate(self, current_transactions)
+
+    def is_valid_transaction(self, tx, current_transactions=[]):
         try:
-            return transaction.validate(self, current_transactions)
+            return self.validate_transaction(tx, current_transactions)
         except ValidationError as e:
             logger.warning('Invalid transaction (%s): %s', type(e).__name__, e)
             return False
-        return transaction
 
     @property
     def fastquery(self):
