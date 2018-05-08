@@ -19,7 +19,9 @@ import requests
 from bigchaindb import backend
 from bigchaindb import Bigchain
 from bigchaindb.models import Transaction
-from bigchaindb.common.exceptions import SchemaValidationError, ValidationError
+from bigchaindb.common.exceptions import (SchemaValidationError,
+                                          ValidationError,
+                                          DoubleSpend)
 from bigchaindb.tendermint.utils import encode_transaction, merkleroot
 from bigchaindb.tendermint import fastquery
 from bigchaindb import exceptions as core_exceptions
@@ -242,6 +244,10 @@ class BigchainDB(Bigchain):
         transactions = backend.query.get_spent(self.connection, txid,
                                                output)
         transactions = list(transactions) if transactions else []
+        if len(transactions) > 1:
+            raise core_exceptions.CriticalDoubleSpend(
+                '`{}` was spent more than once. There is a problem'
+                ' with the chain'.format(txid))
 
         for ctxn in current_transactions:
             for ctxn_input in ctxn.inputs:
@@ -251,9 +257,7 @@ class BigchainDB(Bigchain):
 
         transaction = None
         if len(transactions) > 1:
-            raise core_exceptions.CriticalDoubleSpend(
-                '`{}` was spent more than once. There is a problem'
-                ' with the chain'.format(txid))
+            raise DoubleSpend('tx "{}" spends inputs twice'.format(txid))
         elif transactions:
             transaction = transactions[0]
 
