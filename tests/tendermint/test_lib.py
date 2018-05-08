@@ -370,12 +370,18 @@ def test_get_spent_transaction_critical_double_spend(b, alice, bob, carol):
                                        asset_id=tx.id)\
                              .sign([alice.private_key])
 
-    b.store_bulk_transactions([tx_transfer])
-
     double_spend = Transaction.transfer(tx.to_inputs(),
                                         [([carol.public_key], 1)],
                                         asset_id=tx.id)\
                               .sign([alice.private_key])
+
+    b.store_bulk_transactions([tx])
+
+    with pytest.raises(DoubleSpend):
+        b.get_spent(tx.id, tx_transfer.inputs[0].fulfills.output,
+                    [tx_transfer, double_spend])
+
+    b.store_bulk_transactions([tx_transfer])
 
     with pytest.raises(DoubleSpend):
         b.get_spent(tx.id, tx_transfer.inputs[0].fulfills.output, [double_spend])

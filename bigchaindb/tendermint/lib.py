@@ -259,21 +259,9 @@ class BigchainDB(Bigchain):
         if len(transactions) > 1:
             raise DoubleSpend('tx "{}" spends inputs twice'.format(txid))
         elif transactions:
-            transaction = transactions[0]
+            transaction = Transaction.from_db(self, transactions[0])
 
-        if transaction and transaction['operation'] == 'CREATE':
-            asset = backend.query.get_asset(self.connection, transaction['id'])
-
-            if asset:
-                transaction['asset'] = asset
-            else:
-                transaction['asset'] = {'data': None}
-
-            return Transaction.from_dict(transaction)
-        elif transaction and transaction['operation'] == 'TRANSFER':
-            return Transaction.from_dict(transaction)
-        else:
-            return None
+        return transaction
 
     def store_block(self, block):
         """Create a new block."""
