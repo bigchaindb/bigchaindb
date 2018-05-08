@@ -28,6 +28,31 @@ def test_get_transaction_returns_404_if_not_found(client):
     assert res.status_code == 404
 
 
+@pytest.mark.tendermint
+def test_post_transaction_size(b, live_server, config):
+    import requests
+    from bigchaindb.models import Transaction
+    user_priv, user_pub = crypto.generate_key_pair()
+
+    def by_size(size):
+        tx = Transaction.create(
+                [user_pub],
+                [([user_pub], 1)],
+                asset={'_': 'x' * size}).sign([user_priv])
+        return json.dumps(tx.to_dict())
+
+    from pprint import pprint
+
+    res = requests.post(TX_ENDPOINT, data=by_size(10))
+    assert res.status_code == 202
+
+    res = requests.post(TX_ENDPOINT, data=by_size(2048))
+    assert res.status_code == 202
+
+    pprint(config)
+    1/0
+
+
 @pytest.mark.abci
 def test_post_create_transaction_endpoint(b, client):
     from bigchaindb.models import Transaction

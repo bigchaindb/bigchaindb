@@ -10,7 +10,7 @@ from flask import Flask
 from flask_cors import CORS
 import gunicorn.app.base
 
-from bigchaindb import utils
+from bigchaindb import config, utils
 from bigchaindb.tendermint import BigchainDB
 from bigchaindb.web.routes import add_routes
 from bigchaindb.web.strip_content_type_middleware import StripContentTypeMiddleware
@@ -55,7 +55,7 @@ class StandaloneApplication(gunicorn.app.base.BaseApplication):
         return self.application
 
 
-def create_app(*, debug=False, threads=1, bigchaindb_factory=None):
+def create_app(*, debug=False, threads=1, max_content_length=None, bigchaindb_factory=None):
     """Return an instance of the Flask application.
 
     Args:
@@ -76,6 +76,7 @@ def create_app(*, debug=False, threads=1, bigchaindb_factory=None):
 
     app.debug = debug
 
+    app.config['MAX_CONTENT_LENGTH'] = max_content_length
     app.config['bigchain_pool'] = utils.pool(bigchaindb_factory, size=threads)
 
     add_routes(app)
@@ -108,6 +109,7 @@ def create_server(settings, log_config=None, bigchaindb_factory=None):
     settings['custom_log_config'] = log_config
     app = create_app(debug=settings.get('debug', False),
                      threads=settings['threads'],
+                     max_content_length=config['max_transaction_size'],
                      bigchaindb_factory=bigchaindb_factory)
     standalone = StandaloneApplication(app, options=settings)
     return standalone

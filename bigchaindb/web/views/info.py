@@ -4,7 +4,7 @@ import flask
 from flask_restful import Resource
 
 from bigchaindb.web.views.base import base_ws_uri
-from bigchaindb import version
+from bigchaindb import config, version
 from bigchaindb.web.websocket_server import EVENTS_ENDPOINT
 
 
@@ -19,6 +19,7 @@ class RootIndex(Resource):
                 'v1': get_api_v1_info('/api/v1/')
             },
             'docs': ''.join(docs_url),
+            'max_transaction_size': config['max_transaction_size'],
             'software': 'BigchainDB',
             'version': version.__version__,
         })
