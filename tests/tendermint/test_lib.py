@@ -350,3 +350,43 @@ def test_get_utxoset_merkle_root(b, utxoset):
         '86d311c03115bf4d287f8449ca5828505432d69b82762d47077b1c00fe426eac')
     merkle_root = b.get_utxoset_merkle_root()
     assert merkle_root == expected_merkle_root
+
+
+@pytest.mark.bdb
+def test_get_spent_transaction_critical_double_spend(b, alice, bob, carol):
+    from bigchaindb.models import Transaction
+    from bigchaindb.exceptions import CriticalDoubleSpend
+    from bigchaindb.common.exceptions import DoubleSpend
+
+    asset = {'test': 'asset'}
+
+    tx = Transaction.create([alice.public_key],
+                            [([alice.public_key], 1)],
+                            asset=asset)\
+                    .sign([alice.private_key])
+
+    tx_transfer = Transaction.transfer(tx.to_inputs(),
+                                       [([bob.public_key], 1)],
+                                       asset_id=tx.id)\
+                             .sign([alice.private_key])
+
+    double_spend = Transaction.transfer(tx.to_inputs(),
+                                        [([carol.public_key], 1)],
+                                        asset_id=tx.id)\
+                              .sign([alice.private_key])
+
+    b.store_bulk_transactions([tx])
+
+    with pytest.raises(DoubleSpend):
+        b.get_spent(tx.id, tx_transfer.inputs[0].fulfills.output,
+                    [tx_transfer, double_spend])
+
+    b.store_bulk_transactions([tx_transfer])
+
+    with pytest.raises(DoubleSpend):
+        b.get_spent(tx.id, tx_transfer.inputs[0].fulfills.output, [double_spend])
+
+    b.store_bulk_transactions([double_spend])
+
+    with pytest.raises(CriticalDoubleSpend):
+        b.get_spent(tx.id, tx_transfer.inputs[0].fulfills.output)

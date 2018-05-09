@@ -19,7 +19,9 @@ import requests
 from bigchaindb import backend
 from bigchaindb import Bigchain
 from bigchaindb.models import Transaction
-from bigchaindb.common.exceptions import SchemaValidationError, ValidationError
+from bigchaindb.common.exceptions import (SchemaValidationError,
+                                          ValidationError,
+                                          DoubleSpend)
 from bigchaindb.tendermint.utils import encode_transaction, merkleroot
 from bigchaindb.tendermint import fastquery
 from bigchaindb import exceptions as core_exceptions
@@ -242,6 +244,10 @@ class BigchainDB(Bigchain):
         transactions = backend.query.get_spent(self.connection, txid,
                                                output)
         transactions = list(transactions) if transactions else []
+        if len(transactions) > 1:
+            raise core_exceptions.CriticalDoubleSpend(
+                '`{}` was spent more than once. There is a problem'
+                ' with the chain'.format(txid))
 
         for ctxn in current_transactions:
             for ctxn_input in ctxn.inputs:
@@ -251,25 +257,11 @@ class BigchainDB(Bigchain):
 
         transaction = None
         if len(transactions) > 1:
-            raise core_exceptions.CriticalDoubleSpend(
-                '`{}` was spent more than once. There is a problem'
-                ' with the chain'.format(txid))
+            raise DoubleSpend('tx "{}" spends inputs twice'.format(txid))
         elif transactions:
-            transaction = transactions[0]
+            transaction = Transaction.from_db(self, transactions[0])
 
-        if transaction and transaction['operation'] == 'CREATE':
-            asset = backend.query.get_asset(self.connection, transaction['id'])
-
-            if asset:
-                transaction['asset'] = asset
-            else:
-                transaction['asset'] = {'data': None}
-
-            return Transaction.from_dict(transaction)
-        elif transaction and transaction['operation'] == 'TRANSFER':
-            return Transaction.from_dict(transaction)
-        else:
-            return None
+        return transaction
 
     def store_block(self, block):
         """Create a new block."""
@@ -338,6 +330,9 @@ class BigchainDB(Bigchain):
 
         transaction = tx
 
+        # CLEANUP: The conditional below checks for transaction in dict format.
+        # It would be better to only have a single format for the transaction
+        # throught the code base.
         if not isinstance(transaction, Transaction):
             try:
                 transaction = Transaction.from_dict(tx)
@@ -347,12 +342,16 @@ class BigchainDB(Bigchain):
             except ValidationError as e:
                 logger.warning('Invalid transaction (%s): %s', type(e).__name__, e)
                 return False
+        return transaction.validate(self, current_transactions)
+
+    def is_valid_transaction(self, tx, current_transactions=[]):
+        # NOTE: the function returns the Transaction object in case
+        # the transaction is valid
         try:
-            return transaction.validate(self, current_transactions)
+            return self.validate_transaction(tx, current_transactions)
         except ValidationError as e:
             logger.warning('Invalid transaction (%s): %s', type(e).__name__, e)
             return False
-        return transaction
 
     @property
     def fastquery(self):
