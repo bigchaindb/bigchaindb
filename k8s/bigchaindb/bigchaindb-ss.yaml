@@ -136,7 +136,8 @@ spec:
             - /bin/bash
             - "-c"
             - |
-              curl -s --fail --max-time 10 "http://${TM_INSTANCE_NAME}:${TM_RPC_PORT}/abci_info" > /dev/null
+              curl -s --fail --max-time 10 "http://${TM_INSTANCE_NAME}:${TM_RPC_PORT}/abci_info" > /dev/null && \
+                  curl -s --fail --max-time 10 "http://${TM_INSTANCE_NAME}:${TM_RPC_PORT}/status" > /dev/null
               ERR=$?
               if [ "$ERR" == 28 ]; then
                 exit 1
