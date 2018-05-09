@@ -21,6 +21,10 @@ For reference, the possible headings are:
 
 Tag name: v2.0.0a4
 
+### Changed
+
+The Kubernetes liveness probe for the BigchainDB StatefulSet was improved to check the Tendermint /status endpoint in addition to the Tendermint /abci_info endpoint. [Pull request #2275](https://github.com/bigchaindb/bigchaindb/pull/2275)
+
 ### Fixed
 
 [Pull request #2270](https://github.com/bigchaindb/bigchaindb/pull/2270) resolved [issue #2269](https://github.com/bigchaindb/bigchaindb/issues/2269).
