@@ -345,6 +345,8 @@ class BigchainDB(Bigchain):
         return transaction.validate(self, current_transactions)
 
     def is_valid_transaction(self, tx, current_transactions=[]):
+        # NOTE: the function returns the Transaction object in case
+        # the transaction is valid
         try:
             return self.validate_transaction(tx, current_transactions)
         except ValidationError as e:
