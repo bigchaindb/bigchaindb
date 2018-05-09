@@ -32,12 +32,9 @@ def store_transactions(conn, signed_transactions):
 
 @register_query(LocalMongoDBConnection)
 def get_transaction(conn, transaction_id):
-    try:
-        return conn.run(
-            conn.collection('transactions')
-            .find_one({'id': transaction_id}, {'_id': 0}))
-    except IndexError:
-        pass
+    return conn.run(
+        conn.collection('transactions')
+        .find_one({'id': transaction_id}, {'_id': 0}))
 
 
 @register_query(LocalMongoDBConnection)
