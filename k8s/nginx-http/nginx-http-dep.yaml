@@ -30,6 +30,11 @@ spec:
             configMapKeyRef:
               name: vars
               key: node-dns-server-ip
+        - name: MONGODB_FRONTEND_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: vars
+              key: mongodb-backend-port
         - name: MONGODB_BACKEND_HOST
           valueFrom:
             configMapKeyRef:

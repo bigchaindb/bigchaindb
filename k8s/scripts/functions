@@ -236,6 +236,7 @@ function generate_config_map(){
     bdb_instance_name="${9}"
     dns_resolver_k8s="${10}"
     auth_mode="${11}"
+    node_frontend_port="${12}"
 
     cat > config-map.yaml << EOF
 apiVersion: v1
@@ -249,7 +250,7 @@ data:
 
   # node-frontend-port is the port number on which this node's services
   # are available to external clients.
-  node-frontend-port: "443"
+  node-frontend-port: "{node_frontend_port}"
 
   # node-health-check-port is the port number on which an external load
   # balancer can check the status/liveness of the external/public server.
