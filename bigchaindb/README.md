@@ -26,10 +26,6 @@ Methods for managing the configuration, including loading configuration files, a
 
 ## Folders
 
-### [`pipelines`](./pipelines)
-
-Structure and implementation of various subprocesses started in [`processes.py`](./processes.py).
-
 ### [`commands`](./commands)
 
 Contains code for the [CLI](https://docs.bigchaindb.com/projects/server/en/latest/server-reference/bigchaindb-cli.html) for BigchainDB.
