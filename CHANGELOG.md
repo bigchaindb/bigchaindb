@@ -23,7 +23,7 @@ Tag name: v2.0.0a5
 
 ### Changed
 
-To resolve [issue #2279](https://github.com/bigchaindb/bigchaindb/issues/2279), we made some changes to the `bigchaindb-abci` package (which is our fork of `py-abci`) and told BigchainDB to use the new version (`bigchaindb-abci==0.4.5`). [Pull request #2281](https://github.com/bigchaindb/bigchaindb/pull/2281)
+To resolve [issue #2279](https://github.com/bigchaindb/bigchaindb/issues/2279), we made some changes to the `bigchaindb-abci` package (which is our fork of `py-abci`) and told BigchainDB to use the new version (`bigchaindb-abci==0.4.5`). [Pull request #2281](https://github.com/bigchaindb/bigchaindb/pull/2281). [Pull request #2284](https://github.com/bigchaindb/bigchaindb/pull/2284), we tweaked the liveness check for the BigchainDB pod.
 
 ## [2.0 Alpha 4] - 2018-05-09
 
