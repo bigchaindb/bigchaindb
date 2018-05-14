@@ -9,8 +9,6 @@ from bigchaindb.backend.exceptions import ConnectionError
 
 BACKENDS = {
     'localmongodb': 'bigchaindb.backend.localmongodb.connection.LocalMongoDBConnection',
-    'mongodb': 'bigchaindb.backend.mongodb.connection.MongoDBConnection',
-    'rethinkdb': 'bigchaindb.backend.rethinkdb.connection.RethinkDBConnection'
 }
 
 logger = logging.getLogger(__name__)
@@ -54,6 +52,10 @@ def connect(backend=None, host=None, port=None, name=None, max_tries=None,
     # I added **kwargs for both RethinkDBConnection and MongoDBConnection
     # to handle these these additional args. In case of RethinkDBConnection
     # it just does not do anything with it.
+    #
+    # UPD: RethinkDBConnection is not here anymore cause we no longer support RethinkDB.
+    # The problem described above might be reconsidered next time we introduce a backend,
+    # if it ever happens.
     replicaset = replicaset or bigchaindb.config['database'].get('replicaset')
     ssl = ssl if ssl is not None else bigchaindb.config['database'].get('ssl', False)
     login = login or bigchaindb.config['database'].get('login')

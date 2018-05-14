@@ -6,22 +6,22 @@ from pymongo import MongoClient
 from pymongo.database import Database
 
 
-pytestmark = pytest.mark.bdb
+pytestmark = [pytest.mark.bdb, pytest.mark.tendermint]
 
 
 @pytest.fixture
 def mock_cmd_line_opts():
-    return {'argv': ['mongod', '--dbpath=/data', '--replSet=bigchain-rs'],
+    return {'argv': ['mongod', '--dbpath=/data'],
             'ok': 1.0,
-            'parsed': {'replication': {'replSet': 'bigchain-rs'},
+            'parsed': {'replication': {'replSet': None},
                        'storage': {'dbPath': '/data'}}}
 
 
 @pytest.fixture
 def mock_config_opts():
-    return {'argv': ['mongod', '--dbpath=/data', '--replSet=bigchain-rs'],
+    return {'argv': ['mongod', '--dbpath=/data'],
             'ok': 1.0,
-            'parsed': {'replication': {'replSetName': 'bigchain-rs'},
+            'parsed': {'replication': {'replSetName': None},
                        'storage': {'dbPath': '/data'}}}
 
 
@@ -35,23 +35,23 @@ def mongodb_connection():
 def test_get_connection_returns_the_correct_instance(db_host, db_port):
     from bigchaindb.backend import connect
     from bigchaindb.backend.connection import Connection
-    from bigchaindb.backend.mongodb.connection import MongoDBConnection
+    from bigchaindb.backend.localmongodb.connection import LocalMongoDBConnection
 
     config = {
-        'backend': 'mongodb',
+        'backend': 'localmongodb',
         'host': db_host,
         'port': db_port,
         'name': 'test',
-        'replicaset': 'bigchain-rs'
+        'replicaset': None,
     }
 
     conn = connect(**config)
     assert isinstance(conn, Connection)
-    assert isinstance(conn, MongoDBConnection)
+    assert isinstance(conn, LocalMongoDBConnection)
     assert conn.conn._topology_settings.replica_set_name == config['replicaset']
 
 
-@mock.patch('bigchaindb.backend.mongodb.connection.initialize_replica_set')
+@mock.patch('bigchaindb.backend.localmongodb.connection.initialize_replica_set')
 @mock.patch('pymongo.MongoClient.__init__')
 @mock.patch('time.sleep')
 def test_connection_error(mock_sleep, mock_client, mock_init_repl_set):
@@ -70,7 +70,7 @@ def test_connection_error(mock_sleep, mock_client, mock_init_repl_set):
     assert mock_client.call_count == 3
 
 
-@mock.patch('bigchaindb.backend.mongodb.connection.initialize_replica_set')
+@mock.patch('bigchaindb.backend.localmongodb.connection.initialize_replica_set')
 @mock.patch('pymongo.MongoClient')
 def test_connection_run_errors(mock_client, mock_init_repl_set):
     from bigchaindb.backend import connect
@@ -102,17 +102,17 @@ def test_connection_run_errors(mock_client, mock_init_repl_set):
 @mock.patch('pymongo.database.Database.authenticate')
 def test_connection_with_credentials(mock_authenticate):
     import bigchaindb
-    from bigchaindb.backend.mongodb.connection import MongoDBConnection
-    conn = MongoDBConnection(host=bigchaindb.config['database']['host'],
-                             port=bigchaindb.config['database']['port'],
-                             login='theplague',
-                             password='secret')
+    from bigchaindb.backend.localmongodb.connection import LocalMongoDBConnection
+    conn = LocalMongoDBConnection(host=bigchaindb.config['database']['host'],
+                                  port=bigchaindb.config['database']['port'],
+                                  login='theplague',
+                                  password='secret')
     conn.connect()
-    assert mock_authenticate.call_count == 2
+    assert mock_authenticate.call_count == 1
 
 
 def test_check_replica_set_not_enabled(mongodb_connection):
-    from bigchaindb.backend.mongodb.connection import _check_replica_set
+    from bigchaindb.backend.localmongodb.connection import _check_replica_set
     from bigchaindb.common.exceptions import ConfigurationError
 
     # no replSet option set
@@ -126,7 +126,7 @@ def test_check_replica_set_not_enabled(mongodb_connection):
 
 def test_check_replica_set_command_line(mongodb_connection,
                                         mock_cmd_line_opts):
-    from bigchaindb.backend.mongodb.connection import _check_replica_set
+    from bigchaindb.backend.localmongodb.connection import _check_replica_set
 
     # replSet option set through the command line
     with mock.patch.object(Database, 'command',
@@ -135,7 +135,7 @@ def test_check_replica_set_command_line(mongodb_connection,
 
 
 def test_check_replica_set_config_file(mongodb_connection, mock_config_opts):
-    from bigchaindb.backend.mongodb.connection import _check_replica_set
+    from bigchaindb.backend.localmongodb.connection import _check_replica_set
 
     # replSet option set through the config file
     with mock.patch.object(Database, 'command', return_value=mock_config_opts):
@@ -144,7 +144,7 @@ def test_check_replica_set_config_file(mongodb_connection, mock_config_opts):
 
 def test_check_replica_set_name_mismatch(mongodb_connection,
                                          mock_cmd_line_opts):
-    from bigchaindb.backend.mongodb.connection import _check_replica_set
+    from bigchaindb.backend.localmongodb.connection import _check_replica_set
     from bigchaindb.common.exceptions import ConfigurationError
 
     # change the replica set name so it does not match the bigchaindb config
@@ -157,7 +157,7 @@ def test_check_replica_set_name_mismatch(mongodb_connection,
 
 
 def test_wait_for_replica_set_initialization(mongodb_connection):
-    from bigchaindb.backend.mongodb.connection import _wait_for_replica_set_initialization  # noqa
+    from bigchaindb.backend.localmongodb.connection import _wait_for_replica_set_initialization  # noqa
 
     with mock.patch.object(Database, 'command') as mock_command:
         mock_command.side_effect = [
@@ -170,7 +170,7 @@ def test_wait_for_replica_set_initialization(mongodb_connection):
 
 
 def test_initialize_replica_set(mock_cmd_line_opts):
-    from bigchaindb.backend.mongodb.connection import initialize_replica_set
+    from bigchaindb.backend.localmongodb.connection import initialize_replica_set
 
     with mock.patch.object(Database, 'command') as mock_command:
         mock_command.side_effect = [

@@ -71,10 +71,89 @@ def test_get_assets():
         assert query.get_asset(conn, asset['id'])
 
 
-def test_text_search():
-    from ..mongodb.test_queries import test_text_search
+@pytest.mark.parametrize('table', ['assets', 'metadata'])
+def test_text_search(table):
+    from bigchaindb.backend import connect, query
+    conn = connect()
 
-    test_text_search('assets')
+    # Example data and tests cases taken from the mongodb documentation
+    # https://docs.mongodb.com/manual/reference/operator/query/text/
+    objects = [
+        {'id': 1, 'subject': 'coffee', 'author': 'xyz', 'views': 50},
+        {'id': 2, 'subject': 'Coffee Shopping', 'author': 'efg', 'views': 5},
+        {'id': 3, 'subject': 'Baking a cake', 'author': 'abc', 'views': 90},
+        {'id': 4, 'subject': 'baking', 'author': 'xyz', 'views': 100},
+        {'id': 5, 'subject': 'Café Con Leche', 'author': 'abc', 'views': 200},
+        {'id': 6, 'subject': 'Сырники', 'author': 'jkl', 'views': 80},
+        {'id': 7, 'subject': 'coffee and cream', 'author': 'efg', 'views': 10},
+        {'id': 8, 'subject': 'Cafe con Leche', 'author': 'xyz', 'views': 10}
+    ]
+
+    # insert the assets
+    conn.db[table].insert_many(deepcopy(objects), ordered=False)
+
+    # test search single word
+    assert list(query.text_search(conn, 'coffee', table=table)) == [
+        {'id': 1, 'subject': 'coffee', 'author': 'xyz', 'views': 50},
+        {'id': 2, 'subject': 'Coffee Shopping', 'author': 'efg', 'views': 5},
+        {'id': 7, 'subject': 'coffee and cream', 'author': 'efg', 'views': 10},
+    ]
+
+    # match any of the search terms
+    assert list(query.text_search(conn, 'bake coffee cake', table=table)) == [
+        {'author': 'abc', 'id': 3, 'subject': 'Baking a cake', 'views': 90},
+        {'author': 'xyz', 'id': 1, 'subject': 'coffee', 'views': 50},
+        {'author': 'xyz', 'id': 4, 'subject': 'baking', 'views': 100},
+        {'author': 'efg', 'id': 2, 'subject': 'Coffee Shopping', 'views': 5},
+        {'author': 'efg', 'id': 7, 'subject': 'coffee and cream', 'views': 10}
+    ]
+
+    # search for a phrase
+    assert list(query.text_search(conn, '\"coffee shop\"', table=table)) == [
+        {'id': 2, 'subject': 'Coffee Shopping', 'author': 'efg', 'views': 5},
+    ]
+
+    # exclude documents that contain a term
+    assert list(query.text_search(conn, 'coffee -shop', table=table)) == [
+        {'id': 1, 'subject': 'coffee', 'author': 'xyz', 'views': 50},
+        {'id': 7, 'subject': 'coffee and cream', 'author': 'efg', 'views': 10},
+    ]
+
+    # search different language
+    assert list(query.text_search(conn, 'leche', language='es', table=table)) == [
+        {'id': 5, 'subject': 'Café Con Leche', 'author': 'abc', 'views': 200},
+        {'id': 8, 'subject': 'Cafe con Leche', 'author': 'xyz', 'views': 10}
+    ]
+
+    # case and diacritic insensitive search
+    assert list(query.text_search(conn, 'сы́рники CAFÉS', table=table)) == [
+        {'id': 6, 'subject': 'Сырники', 'author': 'jkl', 'views': 80},
+        {'id': 5, 'subject': 'Café Con Leche', 'author': 'abc', 'views': 200},
+        {'id': 8, 'subject': 'Cafe con Leche', 'author': 'xyz', 'views': 10}
+    ]
+
+    # case sensitive search
+    assert list(query.text_search(conn, 'Coffee', case_sensitive=True, table=table)) == [
+        {'id': 2, 'subject': 'Coffee Shopping', 'author': 'efg', 'views': 5},
+    ]
+
+    # diacritic sensitive search
+    assert list(query.text_search(conn, 'CAFÉ', diacritic_sensitive=True, table=table)) == [
+        {'id': 5, 'subject': 'Café Con Leche', 'author': 'abc', 'views': 200},
+    ]
+
+    # return text score
+    assert list(query.text_search(conn, 'coffee', text_score=True, table=table)) == [
+        {'id': 1, 'subject': 'coffee', 'author': 'xyz', 'views': 50, 'score': 1.0},
+        {'id': 2, 'subject': 'Coffee Shopping', 'author': 'efg', 'views': 5, 'score': 0.75},
+        {'id': 7, 'subject': 'coffee and cream', 'author': 'efg', 'views': 10, 'score': 0.75},
+    ]
+
+    # limit search result
+    assert list(query.text_search(conn, 'coffee', limit=2, table=table)) == [
+        {'id': 1, 'subject': 'coffee', 'author': 'xyz', 'views': 50},
+        {'id': 2, 'subject': 'Coffee Shopping', 'author': 'efg', 'views': 5},
+    ]
 
 
 def test_write_metadata():
@@ -112,12 +191,6 @@ def test_get_metadata():
 
     for meta in metadata:
         assert query.get_metadata(conn, [meta['id']])
-
-
-def test_text_metadata():
-    from ..mongodb.test_queries import test_text_search
-
-    test_text_search('metadata')
 
 
 def test_get_owned_ids(signed_create_tx, user_pk):
