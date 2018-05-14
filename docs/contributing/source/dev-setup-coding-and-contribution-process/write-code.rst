@@ -102,7 +102,7 @@ Running a Local Node for Dev and Test
 
 This is tricky and personal. Different people do it different ways. We documented some of those on separate pages:
 
-- `Dev node setup and running all tests with Docker Compose <setup-dev-environment.html>`_
+- `Dev node setup and running all tests with Docker Compose <run-node-with-docker-compose.html>`_
 - `Dev node setup and running all tests as processes <run-node-as-processes.html>`_
 - More to come?
 
