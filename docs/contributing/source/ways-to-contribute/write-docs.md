@@ -16,7 +16,7 @@ You can certainly do that!
 - There are docs for the JavaScript driver under ``bigchaindb/js-bigchaindb-driver`` in the ``bigchaindb/js-bigchaindb-driver`` repo.
 - The source code for the BigchainDB website is in a private repo, but we can give you access if you ask.
 
-The IPDB Transaction Spec currently lives in the ``ipdb/ipdb-tx-spec`` repo, but we'll probably move it.
+The [BigchainDB Transactions Specs](https://github.com/bigchaindb/BEPs/tree/master/tx-specs/) (one for each spec version) are in the ``bigchaindb/BEPs`` repo.
 
 You can write the docs using Markdown (MD) or RestructuredText (RST). Sphinx can understand both. RST is more powerful.
 

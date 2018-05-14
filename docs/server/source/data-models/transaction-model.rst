@@ -3,4 +3,4 @@
 The Transaction Model
 =====================
 
-See the `IPDB Transaction Spec <https://github.com/ipdb/ipdb-tx-spec>`_.
+See the `BigchainDB Transactions Specs <https://github.com/bigchaindb/BEPs/tree/master/tx-specs/>`_.

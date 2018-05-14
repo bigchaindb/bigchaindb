@@ -15,4 +15,4 @@ Crypto-conditions can be quite complex. They can't include loops or recursion an
 
 .. note::
 
-   We used the word "owners" somewhat loosely above. A more accurate word might be fulfillers, signers, controllers, or transfer-enablers. See the note about "owners" in the `IPDB Transaction Spec <https://github.com/ipdb/ipdb-tx-spec>`_.
+   We used the word "owners" somewhat loosely above. A more accurate word might be fulfillers, signers, controllers, or transfer-enablers. See the section titled **A Note about Owners** in the relevant `BigchainDB Transactions Spec <https://github.com/bigchaindb/BEPs/tree/master/tx-specs/>`_.

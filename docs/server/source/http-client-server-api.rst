@@ -134,7 +134,8 @@ Transactions
    .. note::
    
        The posted transaction should be valid.
-       The `IPDB Transaction Spec <https://github.com/ipdb/ipdb-tx-spec>`_
+       The relevant
+       `BigchainDB Transactions Spec <https://github.com/bigchaindb/BEPs/tree/master/tx-specs/>`_
        explains how to build a valid transaction
        and how to check if a transaction is valid.
        One would normally use a driver such as the `BigchainDB Python Driver
