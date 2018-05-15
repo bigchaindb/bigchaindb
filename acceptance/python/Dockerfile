@@ -5,4 +5,4 @@ RUN pip install --upgrade \
 	pycco \
 	websocket-client~=0.47.0 \
 	pytest~=3.0 \
-	bigchaindb-driver==0.5.0a2
+	bigchaindb-driver==0.5.0a4
