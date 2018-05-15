@@ -16,6 +16,7 @@ import pytest
 from pymongo import MongoClient
 
 from bigchaindb.common import crypto
+from bigchaindb.tendermint.lib import Block
 
 TEST_DB_NAME = 'bigchain_test'
 
@@ -325,6 +326,11 @@ def structurally_valid_vote():
     }
 
 
+def _get_height(b):
+    maybe_block = b.get_latest_block()
+    return 0 if maybe_block is None else maybe_block['height']
+
+
 @pytest.fixture
 def inputs(user_pk, b):
     from bigchaindb.models import Transaction
@@ -336,11 +342,11 @@ def inputs(user_pk, b):
                 [b.me],
                 [([user_pk], 1)],
                 metadata={'msg': random.random()},
-            ).sign([b.me_private])
+            ).sign([b.me_private]).to_dict()
             for _ in range(10)
         ]
-        block = b.create_block(transactions)
-        b.store_block(block.to_dict())
+        block = Block(app_hash='', height=_get_height(b), transactions=transactions)
+        b.store_block(block._asdict())
 
 
 @pytest.fixture
@@ -354,11 +360,11 @@ def inputs_shared(user_pk, user2_pk):
                 [b.me],
                 [user_pk, user2_pk],
                 metadata={'msg': random.random()},
-            ).sign([b.me_private])
+            ).sign([b.me_private]).to_dict()
             for _ in range(10)
         ]
-        block = b.create_block(transactions)
-        b.store_block(block.to_dict())
+        block = Block(app_hash='', height=_get_height(b), transaction=transactions)
+        b.store_block(block._asdict())
 
 
 @pytest.fixture
