@@ -57,7 +57,7 @@ class App(BaseApplication):
             raw_tx: a raw string (in bytes) transaction."""
         logger.debug('check_tx: %s', raw_transaction)
         transaction = decode_transaction(raw_transaction)
-        if self.bigchaindb.validate_transaction(transaction):
+        if self.bigchaindb.is_valid_transaction(transaction):
             logger.debug('check_tx: VALID')
             return Result.ok()
         else:
@@ -80,7 +80,7 @@ class App(BaseApplication):
         Args:
             raw_tx: a raw string (in bytes) transaction."""
         logger.debug('deliver_tx: %s', raw_transaction)
-        transaction = self.bigchaindb.validate_transaction(
+        transaction = self.bigchaindb.is_valid_transaction(
             decode_transaction(raw_transaction), self.block_transactions)
 
         if not transaction:

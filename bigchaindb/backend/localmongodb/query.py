@@ -95,14 +95,11 @@ def get_asset(conn, asset_id):
 
 @register_query(LocalMongoDBConnection)
 def get_spent(conn, transaction_id, output):
-    try:
-        return conn.run(
-            conn.collection('transactions')
-            .find_one({'inputs.fulfills.transaction_id': transaction_id,
-                       'inputs.fulfills.output_index': output},
-                      {'_id': 0}))
-    except IndexError:
-        pass
+    return conn.run(
+        conn.collection('transactions')
+        .find({'inputs.fulfills.transaction_id': transaction_id,
+               'inputs.fulfills.output_index': output},
+              {'_id': 0}))
 
 
 @register_query(LocalMongoDBConnection)
