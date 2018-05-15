@@ -1,12 +1,14 @@
 """MongoDB backend implementation.
 
 Contains a MongoDB-specific implementation of the
-:mod:`~bigchaindb.backend.schema` interface.
+:mod:`~bigchaindb.backend.schema` and :mod:`~bigchaindb.backend.query` interfaces.
 
 You can specify BigchainDB to use MongoDB as its database backend by either
 setting ``database.backend`` to ``'localmongodb'`` in your configuration file, or
 setting the ``BIGCHAINDB_DATABASE_BACKEND`` environment variable to
 ``'localmongodb'``.
+
+MongoDB is the default database backend for BigchainDB.
 
 If configured to use MongoDB, BigchainDB will automatically return instances
 of :class:`~bigchaindb.backend.localmongodb.LocalMongoDBConnection` for
