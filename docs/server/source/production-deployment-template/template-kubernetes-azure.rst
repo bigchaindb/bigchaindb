@@ -250,5 +250,5 @@ CAUTION: You might end up deleting resources other than the ACS cluster.
    --name <name of resource group containing the cluster>
 
 
-Next, you can :doc: `run a BigchainDB node/cluster(BFT) <node-on-kubernetes>`
+Next, you can :doc:`run a BigchainDB node/cluster(BFT) <node-on-kubernetes>`
 on your new Kubernetes cluster.

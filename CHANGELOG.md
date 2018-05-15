@@ -17,6 +17,30 @@ For reference, the possible headings are:
 * **External Contributors** to list contributors outside of BigchainDB GmbH.
 * **Notes**
 
+## [2.0 Alpha 5] - 2018-05-11
+
+Tag name: v2.0.0a5
+
+### Changed
+
+To resolve [issue #2279](https://github.com/bigchaindb/bigchaindb/issues/2279), we made some changes to the `bigchaindb-abci` package (which is our fork of `py-abci`) and told BigchainDB to use the new version (`bigchaindb-abci==0.4.5`). [Pull request #2281](https://github.com/bigchaindb/bigchaindb/pull/2281).
+
+## [2.0 Alpha 4] - 2018-05-09
+
+Tag name: v2.0.0a4
+
+### Changed
+
+The Kubernetes liveness probe for the BigchainDB StatefulSet was improved to check the Tendermint /status endpoint in addition to the Tendermint /abci_info endpoint. [Pull request #2275](https://github.com/bigchaindb/bigchaindb/pull/2275)
+
+### Fixed
+
+[Pull request #2270](https://github.com/bigchaindb/bigchaindb/pull/2270) resolved [issue #2269](https://github.com/bigchaindb/bigchaindb/issues/2269).
+
+### Notes
+
+There's a new [page in the docs about storing files in BigchainDB](https://docs.bigchaindb.com/en/latest/store-files.html). [Pull request #2259](https://github.com/bigchaindb/bigchaindb/pull/2259)
+
 ## [2.0 Alpha 3] - 2018-05-03
 
 Tag name: v2.0.0a3

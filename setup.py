@@ -5,7 +5,11 @@ For full docs visit https://docs.bigchaindb.com
 
 """
 from setuptools import setup, find_packages
+import sys
 
+
+if sys.version_info < (3, 6):
+    sys.exit('Please use Python version 3.6 or higher.')
 
 # get the version
 version = {}
@@ -84,7 +88,7 @@ install_requires = [
     'pyyaml~=3.12',
     'aiohttp~=2.3',
     'python-rapidjson-schema==0.1.1',
-    'bigchaindb-abci==0.4.4',
+    'bigchaindb-abci==0.4.5',
     'setproctitle~=1.1.0',
 ]
 
@@ -107,7 +111,7 @@ setup(
     author_email='dev@bigchaindb.com',
     license='Apache Software License 2.0',
     zip_safe=False,
-
+    python_requires='>=3.6',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',

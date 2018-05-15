@@ -40,7 +40,7 @@ spec:
       # Nginx container for hosting public key of this ndoe
       - name: nginx
         imagePullPolicy: Always
-        image: bigchaindb/nginx_pub_key_access:2.0.0-alpha3
+        image: bigchaindb/nginx_pub_key_access:2.0.0-alpha5
         env:
         - name: TM_PUB_KEY_ACCESS_PORT
           valueFrom:
@@ -57,7 +57,7 @@ spec:
       #Tendermint container
       - name: tendermint
         imagePullPolicy: Always
-        image: bigchaindb/tendermint:2.0.0-alpha3
+        image: bigchaindb/tendermint:2.0.0-alpha5
         env:
         - name: TM_PERSISTENT_PEERS
           valueFrom:
@@ -136,7 +136,8 @@ spec:
             - /bin/bash
             - "-c"
             - |
-              curl -s --fail --max-time 10 "http://${TM_INSTANCE_NAME}:${TM_RPC_PORT}/abci_info" > /dev/null
+              curl -s --fail --max-time 10 "http://${TM_INSTANCE_NAME}:${TM_RPC_PORT}/abci_info" > /dev/null && \
+                  curl -s --fail --max-time 10 "http://${TM_INSTANCE_NAME}:${TM_RPC_PORT}/status" > /dev/null
               ERR=$?
               if [ "$ERR" == 28 ]; then
                 exit 1
@@ -148,12 +149,12 @@ spec:
                 exit 0
               fi
           initialDelaySeconds: 60
-          periodSeconds: 15
+          periodSeconds: 60
           failureThreshold: 3
           timeoutSeconds: 15
       # BigchainDB container
       - name: bigchaindb
-        image: bigchaindb/bigchaindb:2.0.0-alpha3
+        image: bigchaindb/bigchaindb:2.0.0-alpha5
         imagePullPolicy: Always
         args:
         - start
@@ -289,6 +290,6 @@ spec:
             path: /
             port: bdb-port
           initialDelaySeconds: 60
-          periodSeconds: 15
+          periodSeconds: 30
           failureThreshold: 3
           timeoutSeconds: 15

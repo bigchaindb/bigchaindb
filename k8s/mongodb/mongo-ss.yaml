@@ -21,7 +21,7 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
       - name: mongodb
-        image: bigchaindb/localmongodb:2.0.0-alpha
+        image: bigchaindb/localmongodb:2.0.0-alpha5
         imagePullPolicy: Always
         env:
         - name: MONGODB_FQDN

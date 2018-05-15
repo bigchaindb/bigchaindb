@@ -14,7 +14,7 @@ to [regular semantic versioning](http://semver.org/), but there's no hyphen, e.g
 
 **Note 1:** For Git tags (which are used to identify releases on GitHub), we append a `v` in front. For example, the Git tag for version `2.0.0a1` was `v2.0.0a1`.
 
-**Note 2:** For Docker image tags (e.g. on Docker Hub), we use longer version names for Alpha, Beta and Release Candidate releases. For example, the Docker image tag for version `2.0.0a1` was `2.0.0-alpha`.
+**Note 2:** For Docker image tags (e.g. on Docker Hub), we use longer version names for Alpha, Beta and Release Candidate releases. For example, the Docker image tag for version `2.0.0a2` was `2.0.0-alpha2`.
 
 We use `0.9` and `0.9.0` as example version and short-version values below. You should replace those with the correct values for your new version.
 
@@ -30,7 +30,7 @@ The following steps are what we do to release a new version of _BigchainDB Serve
    - Update all Docker image tags in all Kubernetes YAML files (in the `k8s/` directory).
      For example, in the files:
 
-     - `k8s/bigchaindb/bigchaindb-dep.yaml` and
+     - `k8s/bigchaindb/bigchaindb-ss.yaml` and
      - `k8s/dev-setup/bigchaindb.yaml`
 
      find the line of the form `image: bigchaindb/bigchaindb:0.8.1` and change the version number to the new version number, e.g. `0.9.0`. (This is the Docker image that Kubernetes should pull from Docker Hub.)
@@ -64,7 +64,15 @@ The following steps are what we do to release a new version of _BigchainDB Serve
      1. Make sure that the new version's tag is "Active" and "Public"
      1. Make sure the **stable** branch is _not_ active.
      1. Scroll to the bottom of the page and click the "Submit" button.
-1. Go to [Docker Hub](https://hub.docker.com/), sign in, go to bigchaindb/bigchaindb, and go to Settings --> Build Settings. Find the row where "Docker Tag Name" equals `latest` and change the value of "Name" to the name (Git tag) of the new release, e.g. `v0.9.0`.
+1. Go to [Docker Hub](https://hub.docker.com/), sign in, go to bigchaindb/bigchaindb, and go to Settings --> Build Settings.
+   - Find the row where "Docker Tag Name" equals `latest`
+     and change the value of "Name" to the name (Git tag)
+     of the new release, e.g. `v0.9.0`.
+   - If the release is an Alpha, Beta or Release Candidate release,
+     then a new row must be added.
+     You can do that by clicking the green "+" (plus) icon.
+     The contents of the new row should be similar to the existing rows
+     of previous releases like that.
 
 Congratulations, you have released a new version of BigchainDB Server!
 

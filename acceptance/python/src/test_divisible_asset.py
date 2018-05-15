@@ -21,7 +21,7 @@
 # And of course, we also need the `AmountError`.
 import os
 import pytest
-from bigchaindb.common.exceptions import AmountError
+from bigchaindb_driver.exceptions import BadRequest
 
 # For this test case we import and use the Python Driver.
 from bigchaindb_driver import BigchainDB
@@ -160,10 +160,17 @@ def test_divisible_assets():
 
     # Oh Bob, what have you done?! You tried to spend more tokens than you had.
     # Remember Bob, last time you spent 3 tokens already,
-    # so you only had 7 left.
-    with pytest.raises(AmountError):
+    # so you only have 7 left.
+    with pytest.raises(BadRequest) as error:
         bdb.transactions.send(fulfilled_transfer_tx, mode='commit')
 
-    # We have to stop this test now, sorry,
-    # Bob is pretty upset about his mistake.
-    # See you next time :)
+    # Now Bob gets an error saying that the amount he wanted to spent is
+    # higher than the amount of tokens he has left.
+    assert error.value.args[0] == 400
+    message = 'Invalid transaction (AmountError): The amount used in the ' \
+              'inputs `7` needs to be same as the amount used in the ' \
+              'outputs `8`'
+    assert error.value.args[2]['message'] == message
+
+    # We have to stop this test now, I am sorry, but Bob is pretty upset
+    # about his mistake. See you next time :)
