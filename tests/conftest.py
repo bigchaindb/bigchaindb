@@ -342,7 +342,8 @@ def tb():
 @pytest.fixture
 def create_tx(b, user_pk):
     from bigchaindb.models import Transaction
-    return Transaction.create([b.me], [([user_pk], 1)], asset={'name': 'xyz'})
+    name = f'I am created by the create_tx fixture. My random identifier is {random.random()}.'
+    return Transaction.create([b.me], [([user_pk], 1)], asset={'name': name})
 
 
 @pytest.fixture
