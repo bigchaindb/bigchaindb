@@ -351,6 +351,14 @@ def signed_create_tx(b, create_tx):
     return create_tx.sign([b.me_private])
 
 
+@pytest.mark.abci
+@pytest.fixture
+def posted_create_tx(b, signed_create_tx):
+    res = b.post_transaction(signed_create_tx, 'broadcast_tx_commit')
+    assert res.status_code == 200
+    return signed_create_tx
+
+
 @pytest.fixture
 def signed_transfer_tx(signed_create_tx, user_pk, user_sk):
     from bigchaindb.models import Transaction
