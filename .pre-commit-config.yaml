@@ -17,4 +17,4 @@ repos:
         args: ['--select=D204,D201,D209,D210,D212,D300,D403']
 
 # negate the exclude to only apply the hooks to 'bigchaindb' and 'tests' folder
-exclude: '^(?!bigchaindb/)(?!tests/)'
+exclude: '^(?!bigchaindb/)(?!tests/)(?!acceptance/)'

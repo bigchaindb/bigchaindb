@@ -69,7 +69,7 @@ def validate_txn_obj(obj_name, obj, key, validation_fun):
     """
     backend = bigchaindb.config['database']['backend']
 
-    if backend == 'mongodb':
+    if backend == 'localmongodb':
         data = obj.get(key, {})
         if isinstance(data, dict):
             validate_all_keys(obj_name, data, validation_fun)

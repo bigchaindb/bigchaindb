@@ -26,7 +26,7 @@ def test_double_create():
 
     def send_and_queue(tx):
         try:
-            bdb.transactions.send(tx, mode='commit')
+            bdb.transactions.send(tx)
             results.put('OK')
         except bigchaindb_driver.exceptions.TransportError as e:
             results.put('FAIL')

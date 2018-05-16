@@ -342,12 +342,21 @@ def tb():
 @pytest.fixture
 def create_tx(b, user_pk):
     from bigchaindb.models import Transaction
-    return Transaction.create([b.me], [([user_pk], 1)], asset={'name': 'xyz'})
+    name = f'I am created by the create_tx fixture. My random identifier is {random.random()}.'
+    return Transaction.create([b.me], [([user_pk], 1)], asset={'name': name})
 
 
 @pytest.fixture
 def signed_create_tx(b, create_tx):
     return create_tx.sign([b.me_private])
+
+
+@pytest.mark.abci
+@pytest.fixture
+def posted_create_tx(b, signed_create_tx):
+    res = b.post_transaction(signed_create_tx, 'broadcast_tx_commit')
+    assert res.status_code == 200
+    return signed_create_tx
 
 
 @pytest.fixture

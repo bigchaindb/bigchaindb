@@ -35,8 +35,8 @@ def test_multiple_owners():
 
     # ## Alice and Bob create a transaction
     # Alice and Bob just moved into a shared flat, no one can afford these
-    # high rents anymore. Bob suggests of getting a dish washer for the
-    # kitchen. Alice agrees and here they go, creating the asset for their 
+    # high rents anymore. Bob suggests to get a dish washer for the
+    # kitchen. Alice agrees and here they go, creating the asset for their
     # dish washer.
     dw_asset = {
         'data': {
@@ -74,14 +74,14 @@ def test_multiple_owners():
         bdb.transactions.retrieve(dw_id)['outputs'][0]['public_keys']) == 2
 
     # ## Alice and Bob transfer a transaction to Carol.
-    # Alice and Bob save a lot of money living together. They often go out 
-    # for dinner and don't cook at home. But now they don't have any dishes to 
+    # Alice and Bob save a lot of money living together. They often go out
+    # for dinner and don't cook at home. But now they don't have any dishes to
     # wash, so they decide to sell the dish washer to their friend Carol.
-    
+
     # Hey Carol, nice to meet you!
     carol = generate_keypair()
-    
-    # Alice and Bob prepare the transaction to transfer the dish washer to 
+
+    # Alice and Bob prepare the transaction to transfer the dish washer to
     # Carol.
     transfer_asset = {'id': dw_id}
 
@@ -107,7 +107,7 @@ def test_multiple_owners():
 
     sent_transfer_tx = bdb.transactions.send(fulfilled_transfer_tx,
                                              mode='commit')
-    
+
     # They check if the transaction was successful.
     assert bdb.transactions.retrieve(
         fulfilled_transfer_tx['id']) == sent_transfer_tx
@@ -120,4 +120,3 @@ def test_multiple_owners():
     # While the new owner is Carol.
     assert bdb.transactions.retrieve(fulfilled_transfer_tx['id'])[
            'outputs'][0]['public_keys'][0] == carol.public_key
-
