@@ -17,8 +17,8 @@
 # ## Imports
 # We need some utils from the `os` package, we will interact with
 # env variables.
-# We need the `pytest` package to catch the `AmountError` exception properly.
-# And of course, we also need the `AmountError`.
+# We need the `pytest` package to catch the `BadRequest` exception properly.
+# And of course, we also need the `BadRequest`.
 import os
 import pytest
 from bigchaindb_driver.exceptions import BadRequest
@@ -37,13 +37,14 @@ def test_divisible_assets():
     # Oh look, it is Alice again and she brought her friend Bob along.
     alice, bob = generate_keypair(), generate_keypair()
 
-
     # ## Alice creates a time sharing token
     # Alice wants to go on vacation, while Bobs bike just broke down.
     # Alice decides to rent her bike to Bob while she is gone.
-    # So she creates a time sharing token for her bike.
-    # As you can see in the description one token can be used to ride
+    # So she prepares a `CREATE` transaction to issues 10 tokens.
+    # First, she prepares an asset for a time sharing token. As you can see in
+    # the description, Bob and Alice agree that each token can be used to ride
     # the bike for one hour.
+
     bike_token = {
         'data': {
             'token_for': {
