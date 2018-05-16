@@ -59,7 +59,7 @@ def test_basic():
 
 
     # Now she is ready to send it to the BigchainDB Network.
-    sent_transfer_tx = bdb.transactions.send(fulfilled_creation_tx, mode='commit')
+    sent_transfer_tx = bdb.transactions.send(fulfilled_creation_tx)
 
     # And just to be 100% sure, she also checks if she can retrieve
     # it from the BigchainDB node.
@@ -106,7 +106,7 @@ def test_basic():
             private_keys=alice.private_key)
 
     # She finally sends the transaction to a BigchainDB node.
-    sent_transfer_tx = bdb.transactions.send(fulfilled_transfer_tx, mode='commit')
+    sent_transfer_tx = bdb.transactions.send(fulfilled_transfer_tx)
 
     # And just to be 100% sure, she also checks if she can retrieve
     # it from the BigchainDB node.
