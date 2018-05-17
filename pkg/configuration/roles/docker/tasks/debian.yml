@@ -1,4 +1,4 @@
---- 
+---
 - name: Uninstall older versions of Docker | Debian
   apt:
     name: "{{ item }}"
@@ -19,7 +19,7 @@
     - ca-certificates
     - curl
     - software-properties-common
-    - python-pip
+    - python3-pip
   tags: [docker]
 
 - name: Add APT Key | Debian
@@ -35,7 +35,7 @@
   shell: "curl -sSl {{ apt_key_url }} | sudo apt-key add -"
   args:
     warn: no
-  when: add_repository_key|failed
+  when: add_repository_key is failed
   tags: [docker]
 
 - name: Add Docker repo and update cache | Debian

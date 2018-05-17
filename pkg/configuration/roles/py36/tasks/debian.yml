@@ -1,0 +1,25 @@
+---
+- name: Check if python3 already installed
+  shell: which python3
+  register: chk_py36
+  ignore_errors: yes
+  tags: [py36]
+
+- name: Check version of python3
+  shell: "python3 -c 'import platform; print(platform.python_version())' | cut -d. -f-2"
+  when: chk_py36.rc == 0
+  register: py36_ver
+  tags: [py36]
+
+- name: Creating files for python 3.6 installation
+  template: src=install_py36.j2 dest=/home/vagrant/install_py36.bash
+  mode: 0755
+  when: chk_py36.rc == 0 and (py36_ver.stdout | float < 3.6)
+  tags: [py36]
+
+- name: Install py36
+  shell: "bash /home/vagrant/install_py36.bash > install_py36.txt"
+  register: install_py36
+  failed_when: "'FAILED' in install_py36.stderr or install_py36.rc != 0"
+  when: chk_py36.rc == 0 and (py36_ver.stdout | float < 3.6)
+  tags: [py36]

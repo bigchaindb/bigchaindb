@@ -1,0 +1,41 @@
+---
+- name: Stopping MongoDB Docker
+  docker_container:
+    name: "{{ mongodb_docker_name }}{{ item }}"
+    image: "mongo:{{ mongo_version }}"
+    state: absent
+    keep_volumes: no
+    force_kill: yes
+  with_sequence: start=1 end="{{ stack_size|int }}" stride=1
+  when: stack_type|lower == "docker" or stack_type|lower == "cloud"
+  tags: [mongodb]
+
+- name: Removing MongoDB Directories
+  file:
+    path: "{{ mongodb_host_mount_dir }}{{ item }}"
+    state: absent
+    force: yes
+  with_sequence: start=0 end="{{ stack_size|int }}" stride=1
+  when: stack_type|lower == "docker" or stack_type|lower == "cloud"
+  tags: [mongodb]
+
+- name: Get Running MongoDB Process
+  shell: "ps aux | grep \"[m]ongo\" | awk 'NR == 1 {print $2}'"
+  register: mongo_ps
+  when: stack_type|lower == "local"
+  tags: [mongodb]
+
+- name: Kill MongoDB Process
+  shell: "kill {{ item }}"
+  with_items: "{{ mongo_ps.stdout_lines }}"
+  when: stack_type|lower == "local" and mongo_ps.stdout_lines|length > 0
+  tags: [mongodb]
+
+- name: Removing MongoDB Directories
+  file:
+    path: "{{ item }}"
+    state: absent
+    force: yes
+  with_items: "{{ directories }}"
+  when: stack_type|lower == "local"
+  tags: [mongodb]

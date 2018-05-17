@@ -1,0 +1,11 @@
+- hosts: all
+  vars_files:
+    - vars/stack-config.yml
+  vars:
+    action: "{{ operation }}"
+    home_dir: "{{ home_path }}"
+  roles:
+    - mongodb
+    - tendermint
+    - bigchaindb
+    - { role: docker, when: stack_type|lower == "docker" or stack_type|lower == "cloud" }

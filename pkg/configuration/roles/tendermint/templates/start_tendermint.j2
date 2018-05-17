@@ -1,0 +1,98 @@
+#!/bin/bash
+set -euo pipefail
+
+{%- set peers = [] -%}
+{%- set validator_power = [] -%}
+{% for host in hostvars %}
+{{- peers.append(host) -}}
+{{- validator_power.append(10) -}}
+{% endfor %}
+
+tm_persistent_peers="{{ peers| reverse | join(',') }}"
+tm_validators="{{ peers | reverse | join(',') }}"
+tm_validator_power="{{ validator_power | join(',') }}"
+tm_pub_key_access_port="9986"
+tm_p2p_port="{{ tendermint_p2p_port|string }}"
+tm_proxy_app="{{ ansible_hostname|string }}"
+tm_abci_port="{{ tendermint_abci_port|string }}"
+tm_instance_name="{{ ansible_hostname }}"
+
+{% raw %}
+# Container vars
+RETRIES=0
+CANNOT_INITIATLIZE_INSTANCE='Cannot start instance, if initial validator(s) are unreachable.'
+
+TM_GENESIS_FILE=/tendermint/config/genesis.json
+TM_PUB_KEY_DIR=/usr/share/nginx
+
+if [ ! -f /tendermint/config/priv_validator.json ]; then
+  /usr/local/bin/tendermint gen_validator > /tendermint/config/priv_validator.json
+  # pub_key.json will be served by the nginx container
+  cat /tendermint/config/priv_validator.json
+  cat /tendermint/config/priv_validator.json | jq ".pub_key" > "$TM_PUB_KEY_DIR"/pub_key.json
+fi
+
+if [ ! -f /tendermint/config/node_key.json ]; then
+  /usr/local/bin/tendermint --home "/tendermint" gen_node_key > "$TM_PUB_KEY_DIR"/address
+fi
+
+# fill genesis file with validators
+IFS=',' read -ra VALS_ARR <<< "$tm_validators"
+IFS=',' read -ra VAL_POWERS_ARR <<< "$tm_validator_power"
+if [ ${#VALS_ARR[@]} -ne ${#VAL_POWERS_ARR[@]} ]; then
+  echo "Invalid configuration of Validator(s) and Validator Power(s)"
+  exit 1
+fi
+for i in "${!VALS_ARR[@]}"; do
+  # wait until validator generates priv/pub key pair
+  set +e
+  echo Validator: "${VALS_ARR[$i]}"
+  echo Validator Power: "${VAL_POWERS_ARR[$i]}"
+  echo "http://${VALS_ARR[$i]}:$tm_pub_key_access_port/pub_key.json"
+  curl -s --fail "http://${VALS_ARR[$i]}:$tm_pub_key_access_port/pub_key.json" > /dev/null
+  ERR=$?
+  while [ "$ERR" != 0 ]; do
+    RETRIES=$((RETRIES+1))
+    if [ $RETRIES -eq 10 ]; then
+      echo "${CANNOT_INITIATLIZE_INSTANCE}"
+      exit 1
+    fi
+    # 300(30 * 10(retries)) second timeout before container dies if it cannot find initial peers
+    sleep 30
+    curl -s --fail "http://${VALS_ARR[$i]}:$tm_pub_key_access_port/pub_key.json" > /dev/null
+    ERR=$?
+    echo "Cannot connect to Tendermint instance: ${VALS_ARR[$i]}"
+  done
+  set -e
+  # add validator to genesis file along with its pub_key
+  curl -s "http://${VALS_ARR[$i]}:$tm_pub_key_access_port/pub_key.json" | jq ". as \$k | {pub_key: \$k, power: ${VAL_POWERS_ARR[$i]}, name: \"${VALS_ARR[$i]}\"}" > pub_validator.json
+  cat /tendermint/config/genesis.json | jq ".validators |= .+ [$(cat pub_validator.json)]" > tmpgenesis && mv tmpgenesis /tendermint/config/genesis.json
+  rm pub_validator.json
+  done
+# construct persistent peers
+IFS=',' read -ra PEERS_ARR <<< "$tm_persistent_peers"
+peers=()
+for s in "${PEERS_ARR[@]}"; do
+  echo "http://$s:$tm_pub_key_access_port/address"
+  curl -s --fail "http://$s:$tm_pub_key_access_port/address" > /dev/null
+  ERR=$?
+  while [ "$ERR" != 0 ]; do
+    RETRIES=$((RETRIES+1))
+    if [ $RETRIES -eq 10 ]; then
+      echo "${CANNOT_INITIATLIZE_INSTANCE}"
+      exit 1
+    fi
+    # 300(30 * 10(retries)) second timeout before container dies if it cannot find initial peers
+    sleep 30
+    curl -s --fail "http://$s:$tm_pub_key_access_port/address" > /dev/null
+    ERR=$?
+    echo "Cannot get address for Tendermint instance: ${s}"
+  done
+  peer_addr=$(curl -s "http://$s:$tm_pub_key_access_port/address")
+  peers+=("$peer_addr@$s:$tm_p2p_port")
+done
+peers=$(IFS=','; echo "${peers[*]}")
+
+echo "INFO: starting tendermint..."
+/usr/local/bin/tendermint node --home "/tendermint" --p2p.persistent_peers="$peers" --proxy_app="tcp://0.0.0.0:46658" --consensus.create_empty_blocks=false --p2p.pex=false
+{% endraw %}

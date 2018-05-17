@@ -1,0 +1,27 @@
+dependencies_key_exchange:
+  - nginx
+  - jq
+
+tendermint_binary_url: "https://github.com/tendermint/tendermint/releases/download/v{{ tm_version }}/tendermint_{{ tm_version }}_linux_amd64.zip"
+
+# Docker configuration
+tendermint_image_name: "bigchaindb/tendermint"
+tendermint_image_tag: "develop"
+tendermint_docker_name: "tendermint"
+bigchaindb_docker_name: "bigchaindb"
+bigchaindb_docker_net: "bigchaindb_docker_net"
+tendermint_host_mount_dir: "{{ home_dir }}/tendermint_docker"
+tendermint_host_mount_config_dir: "{{ home_dir }}/tendermint_config"
+tendermint_home: /tendermint/config
+tendermint_p2p_port: 46656
+tendermint_rpc_port: 46657
+tendermint_abci_port: 46658
+
+directories:
+  - "{{ tendermint_home }}"
+
+tendermint_conf_files: [
+  { src: "genesis.json", dest: "{{ tendermint_home }}/genesis.json"},
+  { src: "config.toml", dest: "{{ tendermint_home}}/config.toml"},
+  { src: "access_pub_key.conf", dest: "/etc/nginx/conf.d/access_pub_key.conf"}
+]

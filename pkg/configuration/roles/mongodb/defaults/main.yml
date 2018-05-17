@@ -1,17 +1,16 @@
 ---
-mongodb_version: "3.4"
 mongodb_package: "mongodb-org"
-apt_key_fingerprint: "0C49F3730359A14518585931BC711F9BA15703C6"
-apt_keyserver: "keyserver.ubuntu.com"
-distribution_name: "{{ansible_distribution|lower }}"
+apt_key_fingerprint: "2930ADAE8CAF5059EE73BB4B58712A2291FA4AD5"
+apt_keyserver: "hkp://keyserver.ubuntu.com:80"
+distribution_name: "{{ ansible_distribution|lower }}"
 distribution_codename: "{{ ansible_distribution_release|lower }}"
 distribution_major: "{{ ansible_distribution_major_version }}"
 server_arch: "amd64,arm64"
 
 # MongoDB Repos
-mongodb_apt_repo: "deb [arch={{ server_arch }}] http://repo.mongodb.org/apt/{{ distribution_name }} {{ distribution_codename }}/{{ mongodb_package }}/{{ mongodb_version }} {{'main' if ansible_distribution == 'debian' else 'multiverse'}}"
-mongodb_yum_base_url: "https://repo.mongodb.org/yum/{{ ansible_os_family|lower }}/$releasever/{{ mongodb_package }}/{{ mongodb_version }}/{{ ansible_architecture }}"
-mongodb_dnf_base_url: "https://repo.mongodb.org/yum/{{ ansible_os_family|lower }}/7/{{ mongodb_package }}/{{ mongodb_version }}/{{ ansible_architecture }}"
+mongodb_apt_repo: "deb [arch={{ server_arch }}] http://repo.mongodb.org/apt/{{ distribution_name }} {{ distribution_codename }}/{{ mongodb_package }}/{{ mongo_version }} {{'main' if ansible_distribution == 'debian' else 'multiverse'}}"
+mongodb_yum_base_url: "https://repo.mongodb.org/yum/{{ ansible_os_family|lower }}/$releasever/{{ mongodb_package }}/{{ mongo_version }}/{{ ansible_architecture }}"
+mongodb_dnf_base_url: "https://repo.mongodb.org/yum/{{ ansible_os_family|lower }}/7/{{ mongodb_package }}/{{ mongo_version }}/{{ ansible_architecture }}"
 
 # MongoDB running config
 mongodb_storage_path: /data/db/main
@@ -22,18 +21,9 @@ directories:
   - "{{ mongodb_log_path }}"
   - "{{ mongodb_config_path }}"
 
-mongodb_conf_file: /etc/mongod.conf
-mongodb_conf_files: [
-  { src: "mongod.conf", dest: "{{ mongodb_conf_file }}"}
-]
 mongodb_port: 27017
-mongodb_admin_user: "adminUser"
-mongodb_admin_password: "superstrongpassword"
-
-replica_set_name: bigchain-rs
 
 # Docker configuration
-mongodb_docker_image: "mongo:3.4.9"
+bigchaindb_docker_net: "bigchaindb_docker_net"
 mongodb_docker_name: "mongodb"
-mongodb_host_mount_dir: "{{ ansible_env.HOME }}/mongodb_docker"
-mongodb_host_config: "{{ ansible_env.HOME }}/config"
+mongodb_host_mount_dir: "{{ home_dir }}/mongodb_docker"

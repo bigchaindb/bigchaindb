@@ -1,35 +1,24 @@
 ---
-- name: Upgrade pip
-  shell: "pip3 install --upgrade pip"
-  when: python_pip_upgrade
-  tags: [bigchaindb]
-
-- name: Upgade setuptools
-  shell: "pip3 install --upgrade setuptools"
-  when: python_setuptools_upgrade
+- name: Install pymongo
+  pip:
+    name: pymongo
+    state: present
   tags: [bigchaindb]
 
 - name: Install BigchainDB
-  shell: "pip3 install bigchaindb"
-  tags: [bigchaindb]
-
-- name: Check if BigchainDB node is already configured
-  stat:
-    path: "{{ bigchaindb_config_path }}"
-  register: stat_result
-
-- name: Configure BigchainDB
-  shell: "bigchaindb -y configure {{ backend_db }}"
-  environment:
-    BIGCHAINDB_SERVER_BIND:  "{{ bigchaindb_server_bind }}"
-    BIGCHAINDB_CONFIG_PATH: "{{ bigchaindb_config_path }}"
-    BIGCHAINDB_DATABASE_HOST: "{{ ansible_hostname }}"
-  when: stat_result.stat.exists == False 
+  shell: "python3.6 -m pip install --no-cache-dir --process-dependency-links -e /opt/stack/bigchaindb/.[dev] --ignore-installed pyyaml"
+  register: install_bdb
+  failed_when: "'FAILED' in install_bdb.stderr or install_bdb.rc != 0"
   tags: [bigchaindb]
 
 - name: MongoDB Process Check
   shell: pgrep mongod | wc -l
   register: mdb_pchk
+  tags: [bigchaindb]
+
+- name: Tendermint Process Check
+  shell: pgrep tendermint | wc -l
+  register: tm_pchk
   tags: [bigchaindb]
 
 - name: BigchainDB Process Check
@@ -38,22 +27,15 @@
   tags: [bigchaindb]
 
 - name: Start BigchainDB
-  shell: "bigchaindb start > {{ bigchaindb_log_file }} 2>&1 &"
+  shell: nohup bigchaindb -l DEBUG start > /tmp/bigchaindb_log_$(date +%Y%m%d_%H%M%S) 2>&1 &
   environment:
-    BIGCHAINDB_CONFIG_PATH: "{{ bigchaindb_config_path }}"
-  when: mdb_pchk.stdout| int >= 1 and bdb_pchk.stdout| int == 0
-  async: 10
-  poll: 0
-  tags: [bigchaindb]
-
-- name: Get BigchainDB node public key
-  shell: "cat {{ bigchaindb_config_path }}"
-  register: bdb_node_config
-  tags: [bigchaindb]
-
-- name: Set Facts BigchainDB
-  set_fact: 
-    pub_key="{{ ( bdb_node_config.stdout|from_json).keypair.public }}"
-    hostname="{{ ansible_hostname }}"
-    bdb_config="{{ bigchaindb_config_path }}"
+    BIGCHAINDB_DATABASE_BACKEND: localmongodb
+    BIGCHAINDB_DATABASE_HOST: 127.0.0.1
+    BIGCHAINDB_DATABASE_PORT: 27017
+    BIGCHAINDB_SERVER_BIND: 0.0.0.0:9984
+    BIGCHAINDB_WSSERVER_HOST: 0.0.0.0
+    BIGCHAINDB_WSSERVER_PORT: 9985
+    BIGCHAINDB_TENDERMINT_HOST: 127.0.0.1
+    BIGCHAINDB_TENDERMINT_PORT: 46657
+  when: mdb_pchk.stdout| int != 0 and bdb_pchk.stdout| int == 0 and tm_pchk.stdout| int != 0
   tags: [bigchaindb]

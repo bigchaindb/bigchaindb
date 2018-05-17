@@ -4,18 +4,16 @@
   register: info_result
   ignore_errors: True
   when: stack_type|lower == "docker" or stack_type|lower == "cloud"
-  tags: [bigchaindb]
+  tags: [tendermint]
 
 - name: Error! Docker not running
   fail:
     msg: "Docker not running."
   when: (stack_type|lower == "docker" or stack_type|lower == "cloud") and info_result is failed
-  tags: [bigchaindb]
+  tags: [tendermint]
 
 - import_tasks: start.yml
   when: action|lower == 'start'
-  tags: [bigchaindb]
 
 - import_tasks: stop.yml
   when: action|lower == 'stop'
-  tags: [bigchaindb]
