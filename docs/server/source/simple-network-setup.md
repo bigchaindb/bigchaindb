@@ -39,10 +39,10 @@ BigchainDB Server requires **Python 3.6+**, make sure your system has it. Instal
 sudo apt install -y python3-pip libssl-dev
 ```
 
-Now install the latest version of BigchainDB. Check the [project page on PyPI][bdb:pypi] for the last version (`2.0.0a5` at the time of writing) and install it:
+Now install the latest version of BigchainDB. Check the [project page on PyPI][bdb:pypi] for the last version (`2.0.0a6` at the time of writing) and install it:
 
 ```
-sudo pip3 install bigchaindb==2.0.0a5
+sudo pip3 install bigchaindb==2.0.0a6
 ```
 
 Check you installed the correct version of BigchainDB Server with `bigchaindb --version`.
@@ -60,7 +60,7 @@ The package manager should take care of installing the startup script for MongoD
 Install a [recent version of Tendermint][tendermint:releases]. BigchainDB Server requires `0.19` or newer.
 
 ```
-sudo apt install unzip
+sudo apt install -y unzip
 wget https://github.com/tendermint/tendermint/releases/download/v0.19.3/tendermint_0.19.3_linux_amd64.zip
 unzip tendermint_0.19.3_linux_amd64.zip
 rm tendermint_0.19.3_linux_amd64.zip
