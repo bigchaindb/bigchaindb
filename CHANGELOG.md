@@ -17,6 +17,22 @@ For reference, the possible headings are:
 * **External Contributors** to list contributors outside of BigchainDB GmbH.
 * **Notes**
 
+## [2.0 Alpha 6] - 2018-05-17
+
+Tag name: v2.0.0a6
+
+### Changed
+
+Upgraded PyMongo to version 3.6 (which is compatible with MongoDB 3.6, 3.4 [and more](https://docs.mongodb.com/ecosystem/drivers/driver-compatibility-reference/#python-driver-compatibility)). [Pull request #2298](https://github.com/bigchaindb/bigchaindb/pull/2298)
+
+### Fixed
+
+When deploying a node using our Docker Compose file, it didn't expose port 46656, which is used by Tendermint for inter-node communications, so the node couldn't communicate with other nodes. We fixed that in [pull request #2299](https://github.com/bigchaindb/bigchaindb/pull/2299)
+
+### Notes
+
+We ran all our tests using MongoDB 3.6 and they all passed, so it seems safe to use BigchainDB with MongoDB 3.6 from now on.
+
 ## [2.0 Alpha 5] - 2018-05-11
 
 Tag name: v2.0.0a5
