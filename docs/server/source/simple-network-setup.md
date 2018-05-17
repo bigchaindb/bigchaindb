@@ -25,17 +25,23 @@ Every Member in the Network **must** set up its own Node. The process consists o
 **Important note on security: it's up to the Member to harden their system.**
 
 ### Install the required software
+Make sure your system is up to date.
+
+```
+sudo apt update
+sudo apt full-upgrade
+```
 
 #### Install BigchainDB Server
 BigchainDB Server requires **Python 3.6+**, make sure your system has it. Install the required packages:
 
-```bash
+```
 sudo apt install -y python3-pip libssl-dev
 ```
 
 Now install the latest version of BigchainDB. Check the [project page on PyPI][bdb:pypi] for the last version (`2.0.0a5` at the time of writing) and install it:
 
-```bash
+```
 sudo pip3 install bigchaindb==2.0.0a5
 ```
 
@@ -44,7 +50,7 @@ Check you installed the correct version of BigchainDB Server with `bigchaindb --
 #### Install MongoDB
 Install a recent version of MongoDB. BigchainDB Server requires `3.4` or newer.
 
-```bash
+```
 sudo apt install mongodb
 ```
 
@@ -53,7 +59,7 @@ The package manager should take care of installing the startup script for MongoD
 #### Install Tendermint
 Install a [recent version of Tendermint][tendermint:releases]. BigchainDB Server requires `0.19` or newer.
 
-```bash
+```
 sudo apt install unzip
 wget https://github.com/tendermint/tendermint/releases/download/v0.19.3/tendermint_0.19.3_linux_amd64.zip
 unzip tendermint_0.19.3_linux_amd64.zip
@@ -64,7 +70,7 @@ sudo mv tendermint /usr/local/bin
 ### Firewall settings
 Make sure to accept inbound connections to (`22`, you don't want to lock you out), `9984`, `9985`, and `46656`.
 
-```bash
+```
 sudo ufw allow 22/tcp
 sudo ufw allow 9984/tcp
 sudo ufw allow 9985/tcp
@@ -77,24 +83,24 @@ Some cloud providers, like Microsoft Azure, require you to go through their port
 ## Member: Configure BigchainDB Server
 To configure BigchainDB Server, run:
 
-```bash
+```
 bigchaindb configure
 ```
 
 The first question is ``API Server bind? (default `localhost:9984`)``, to expose the API to the public, bind the API Server to `0.0.0.0:9984`. Unless you have specific needs, you can keep the default value for all other questions.
 
-## Member: Generate the private key and address
-A Node is identified by the triplet `<hostname, address, public_key>`.
+## Member: Generate the private key and node id
+A Node is identified by the triplet `<hostname, node_id, public_key>`.
 
-As a Member, it's your duty to create and store securely your private key, and share your `hostname`, `address`, and `public_key` with the other members of the network.
+As a Member, it's your duty to create and store securely your private key, and share your `hostname`, `node_id`, and `public_key` with the other members of the network.
 
 To generate all of that, run:
 
-```bash
+```
 tendermint init
 ```
 
-The `public_key` and `address` are stored in the file `.tendermint/config/priv_validator.json`, and it should look like:
+The `public_key` is stored in the file `.tendermint/config/priv_validator.json`, and it should look like:
 
 ```json
 {
@@ -113,7 +119,13 @@ The `public_key` and `address` are stored in the file `.tendermint/config/priv_v
 }
 ```
 
-Share with all other Members your `address`, `pub_key.value`, and the host name or IP of your Node.
+To extract your `node_id`, run the command:
+
+```
+tendermint show_node_id
+```
+
+Share with all other Members your `node_id`, `pub_key.value`, and the host name or IP of your Node.
 
 **Important note on security: each Member should verify the data they receive from the other Members.**
 
@@ -166,7 +178,7 @@ At this point the Member should have received the `genesis.json` file.
 
 **Important note on security: each Member should verify that the `genesis.json` file contains the correct public keys.**
 
-The Member must copy the `genesis.json` file in the local `.tendermint/config` directory.
+The Member must copy the `genesis.json` file in the local `.tendermint/config` directory. Every Member now shares the same `chain_id`, `genesis_time`, used to identify the Network, and the same list of `validators`.
 
 The Member must edit the `.tendermint/config/config.toml` file and make the following changes:
 
@@ -176,14 +188,14 @@ The Member must edit the `.tendermint/config/config.toml` file and make the foll
 create_empty_blocks = false
 ...
 
-persistent_peers = "<Member 1 address>@<Member 1 hostname>:46656,\
-<Member 2 address>@<Member 2 hostname>:46656,\
-<Member N address>@<Member N hostname>:46656,"
+persistent_peers = "<Member 1 node id>@<Member 1 hostname>:46656,\
+<Member 2 node id>@<Member 2 hostname>:46656,\
+<Member N node id>@<Member N hostname>:46656,"
 ```
 
 Now the Member must run two commands:
 - `bigchaindb start`
-- `tendermint`
+- `tendermint node`
 
 The commands will run on the foreground, you might want to use `nohup`, `tmux`, or `screen` to keep them running after you logout. The recommended approach is to create startup scripts for both BigchainDB and Tendermint, so they will start right after the boot of the operating system.
 
