@@ -130,7 +130,7 @@ Share with all other Members your `node_id`, `pub_key.value`, and the host name 
 **Important note on security: each Member should verify the data they receive from the other Members.**
 
 ## Coordinator: Initialize the Network
-At this point the Coordinator should has received the data from all the Members, and should combine them in the `.tendermint/config/genesis.json` file:
+At this point the Coordinator should have received the data from all the Members, and should combine them in the `.tendermint/config/genesis.json` file:
 
 ```json
 {
@@ -140,7 +140,7 @@ At this point the Coordinator should has received the data from all the Members,
     {
       "pub_key": {
         "type": "AC26791624DE60",
-        "value": "<Member 1 public key"
+        "value": "<Member 1 public key>"
       },
       "power": 10,
       "name": "<Member 1 name>"
