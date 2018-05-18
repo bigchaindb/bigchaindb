@@ -146,30 +146,30 @@ At this point the Coordinator should have received the data from all the Members
       "name": "<Member 1 name>"
     },
     {
-     "pub_key": {
-       "type": "AC26791624DE60",
-       "value": "<Member 2 public key>"
-     },
-     "power": 10,
+      "pub_key": {
+        "type": "AC26791624DE60",
+        "value": "<Member 2 public key>"
+      },
+      "power": 10,
       "name": "<Member 2 name>"
-    },
-    {
-     "...": { },
-    },
-    {
-     "pub_key": {
-       "type": "AC26791624DE60",
-       "value": "<Member N public key>"
      },
-     "power": 10,
-      "name": "<Member N name>"
-    }
+     {
+       "...": { },
+     },
+     {
+       "pub_key": {
+         "type": "AC26791624DE60",
+         "value": "<Member N public key>"
+       },
+       "power": 10,
+       "name": "<Member N name>"
+     }
   ],
   "app_hash": ""
 }
 ```
 
-The new `genesis.json` file contains the data that describes the Network.
+The new `genesis.json` file contains the data that describes the Network. The key `name` is the Member's moniker, it can be any valid string, put something human readable like: "Alice's Node Shop".
 
 At this point, the Coordinator must share the new `genesis.json` file with all Members.
 
