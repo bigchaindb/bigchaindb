@@ -75,7 +75,3 @@ The following steps are what we do to release a new version of _BigchainDB Serve
      of previous releases like that.
 
 Congratulations, you have released a new version of BigchainDB Server!
-
-## Post-Release Steps
-
-In the `master` branch, open `bigchaindb/version.py` and increment the minor version to the next planned release, e.g. `0.10.0.dev`. Note: If you just released `X.Y.Zrc1` then increment the minor version to `X.Y.Zrc2`. This step is so people reading the latest docs will know that they're for the latest (`master` branch) version of BigchainDB Server, not the docs at the time of the most recent release (which are also available).
