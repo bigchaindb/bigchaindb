@@ -72,7 +72,6 @@ benchmarks_require = [
 
 install_requires = [
     # TODO Consider not installing the db drivers, or putting them in extras.
-    'rethinkdb~=2.3',  # i.e. a version between 2.3 and 3.0
     'pymongo~=3.6',
     'pysha3~=1.0.2',
     'cryptoconditions~=0.6.0.dev',
