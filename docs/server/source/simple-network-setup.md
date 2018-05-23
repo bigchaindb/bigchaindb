@@ -7,7 +7,7 @@ A Network will stop working if more than one third of the Nodes are down. The bi
 
 
 ## Before we start
-This tutorial assumes you have basic knowledge on how to manage a GNU/Linux machine. The commands are tailored for an up-to-date *Debian-like* distribution (we use an **Ubuntu 17.10** Virtual Machine on Microsoft Azure): if you are on a different distribution you might need to adapt the name of the packages installed.
+This tutorial assumes you have basic knowledge on how to manage a GNU/Linux machine. The commands are tailored for an up-to-date *Debian-like* distribution (we use an **Ubuntu 18.04 LTS** Virtual Machine on Microsoft Azure): if you are on a different distribution you might need to adapt the names of the packages installed.
 
 We don't make any assumptions on **where** you run the Node.
 You can run the BigchainDB Server on a Virtual Machine on the cloud, on a machine in your data center, on a Raspberry Pi. Just make sure that your Node is reachable by the other Nodes, a **non-exhaustive list of examples**:
