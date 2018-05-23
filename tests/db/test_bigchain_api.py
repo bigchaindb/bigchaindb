@@ -218,7 +218,7 @@ class TestBigchainApi(object):
     def test_text_search(self, b):
         from bigchaindb.models import Transaction
         from bigchaindb.backend.exceptions import OperationError
-        from bigchaindb.backend.mongodb.connection import MongoDBConnection
+        from bigchaindb.backend.localmongodb.connection import LocalMongoDBConnection
 
         # define the assets
         asset1 = {'msg': 'BigchainDB 1'}
@@ -246,7 +246,7 @@ class TestBigchainApi(object):
         try:
             assets = list(b.text_search('bigchaindb'))
         except OperationError as exc:
-            assert not isinstance(b.connection, MongoDBConnection)
+            assert not isinstance(b.connection, LocalMongoDBConnection)
         else:
             assert len(assets) == 3
 
@@ -254,7 +254,7 @@ class TestBigchainApi(object):
     def test_text_search_returns_valid_only(self, monkeypatch, b):
         from bigchaindb.models import Transaction
         from bigchaindb.backend.exceptions import OperationError
-        from bigchaindb.backend.mongodb.connection import MongoDBConnection
+        from bigchaindb.backend.localmongodb.connection import LocalMongoDBConnection
 
         asset_valid = {'msg': 'Hello BigchainDB!'}
         asset_invalid = {'msg': 'Goodbye BigchainDB!'}
@@ -285,7 +285,7 @@ class TestBigchainApi(object):
         try:
             assets = list(b.text_search('bigchaindb'))
         except OperationError:
-            assert not isinstance(b.connection, MongoDBConnection)
+            assert not isinstance(b.connection, LocalMongoDBConnection)
             return
 
         # should only return one asset

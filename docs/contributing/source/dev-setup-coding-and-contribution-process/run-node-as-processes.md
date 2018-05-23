@@ -107,7 +107,7 @@ $ pip install -e .[dev]  #  or  pip install -e '.[dev]'  # for zsh
 To execute tests when developing a feature or fixing a bug one could use the following command,
 
 ```bash
-$ pytest -v --database-backend=localmongodb
+$ pytest -v
 ```
 
 NOTE: MongoDB and Tendermint should be running as discussed above.

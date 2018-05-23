@@ -20,9 +20,9 @@ def test_get_assets_with_missing_text_search(client):
 @pytest.mark.genesis
 def test_get_assets(client, b):
     from bigchaindb.models import Transaction
-    from bigchaindb.backend.mongodb.connection import MongoDBConnection
+    from bigchaindb.backend.localmongodb.connection import LocalMongoDBConnection
 
-    if isinstance(b.connection, MongoDBConnection):
+    if isinstance(b.connection, LocalMongoDBConnection):
         # test returns empty list when no assets are found
         res = client.get(ASSETS_ENDPOINT + '?search=abc')
         assert res.json == []
@@ -57,9 +57,9 @@ def test_get_assets(client, b):
 @pytest.mark.genesis
 def test_get_assets_limit(client, b):
     from bigchaindb.models import Transaction
-    from bigchaindb.backend.mongodb.connection import MongoDBConnection
+    from bigchaindb.backend.localmongodb.connection import LocalMongoDBConnection
 
-    if isinstance(b.connection, MongoDBConnection):
+    if isinstance(b.connection, LocalMongoDBConnection):
         # create two assets
         asset1 = {'msg': 'abc 1'}
         asset2 = {'msg': 'abc 2'}

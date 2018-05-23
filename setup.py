@@ -72,7 +72,6 @@ benchmarks_require = [
 
 install_requires = [
     # TODO Consider not installing the db drivers, or putting them in extras.
-    'rethinkdb~=2.3',  # i.e. a version between 2.3 and 3.0
     'pymongo~=3.6',
     'pysha3~=1.0.2',
     'cryptoconditions~=0.6.0.dev',
@@ -83,7 +82,6 @@ install_requires = [
     'flask-restful~=0.3.0',
     'requests~=2.9',
     'gunicorn~=19.0',
-    'multipipes~=0.1.0',
     'jsonschema~=2.5.1',
     'pyyaml~=3.12',
     'aiohttp~=2.3',

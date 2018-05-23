@@ -2,13 +2,12 @@
 
 ## Structure
 
-- [`changefeed.py`](./changefeed.py): Changefeed-related interfaces
 - [`connection.py`](./connection.py): Database connection-related interfaces
 - [`query.py`](./query.py): Database query-related interfaces, dispatched through single-dispatch
 - [`schema.py`](./schema.py): Database setup and schema-related interfaces, dispatched through
   single-dispatch
 
-Built-in implementations (e.g. [RethinkDB's](./rethinkdb)) are provided in sub-directories and
+Built-in implementations (e.g. [MongoDB's](./localmongodb)) are provided in sub-directories and
 have their connection type's location exposed as `BACKENDS` in [`connection.py`](./connection.py).
 
 ## Single-Dispatched Interfaces

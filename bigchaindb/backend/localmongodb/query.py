@@ -8,7 +8,6 @@ from bigchaindb.common.exceptions import MultipleValidatorOperationError
 from bigchaindb.backend.utils import module_dispatch_registrar
 from bigchaindb.backend.localmongodb.connection import LocalMongoDBConnection
 from bigchaindb.common.transaction import Transaction
-from bigchaindb.backend import mongodb
 from bigchaindb.backend.query import VALIDATOR_UPDATE_ID
 
 register_query = module_dispatch_registrar(backend.query)
@@ -91,6 +90,14 @@ def get_asset(conn, asset_id):
 
 
 @register_query(LocalMongoDBConnection)
+def get_assets(conn, asset_ids):
+    return conn.run(
+        conn.collection('assets')
+        .find({'id': {'$in': asset_ids}},
+              projection={'_id': False}))
+
+
+@register_query(LocalMongoDBConnection)
 def get_spent(conn, transaction_id, output):
     return conn.run(
         conn.collection('transactions')
@@ -144,8 +151,28 @@ def get_txids_filtered(conn, asset_id, operation=None):
 
 
 @register_query(LocalMongoDBConnection)
-def text_search(*args, **kwargs):
-    return mongodb.query.text_search(*args, **kwargs)
+def text_search(conn, search, *, language='english', case_sensitive=False,
+                diacritic_sensitive=False, text_score=False, limit=0, table='assets'):
+    cursor = conn.run(
+        conn.collection(table)
+        .find({'$text': {
+                '$search': search,
+                '$language': language,
+                '$caseSensitive': case_sensitive,
+                '$diacriticSensitive': diacritic_sensitive}},
+              {'score': {'$meta': 'textScore'}, '_id': False})
+        .sort([('score', {'$meta': 'textScore'})])
+        .limit(limit))
+
+    if text_score:
+        return cursor
+
+    return (_remove_text_score(obj) for obj in cursor)
+
+
+def _remove_text_score(asset):
+    asset.pop('score', None)
+    return asset
 
 
 @register_query(LocalMongoDBConnection)
