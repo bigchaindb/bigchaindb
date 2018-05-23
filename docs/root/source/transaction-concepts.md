@@ -30,14 +30,17 @@ Each output also has an associated condition: the condition that must be met
 BigchainDB supports a variety of conditions,
 a subset of the [Interledger Protocol (ILP)](https://interledger.org/)
 crypto-conditions. For details, see
-the section about conditions in the [IPDB Transaction Spec](https://github.com/ipdb/ipdb-tx-spec).
+the section titled **Transaction Components: Conditions**
+in the relevant
+[BigchainDB Transactions Spec](https://github.com/bigchaindb/BEPs/tree/master/tx-specs/).
 
 Each output also has a list of all the public keys associated
 with the conditions on that output.
 Loosely speaking, that list might be interpreted as the list of "owners."
 A more accurate word might be fulfillers, signers, controllers,
 or transfer-enablers.
-See the note about "owners" in the [IPDB Transaction Spec](https://github.com/ipdb/ipdb-tx-spec).
+See the section titled **A Note about Owners**
+in the relevant [BigchainDB Transactions Spec](https://github.com/bigchaindb/BEPs/tree/master/tx-specs/).
 
 A CREATE transaction must be signed by all the owners.
 (If you're looking for that signature,
@@ -87,7 +90,7 @@ things. We documented those things in a post on *The BigchainDB Blog*:
 ["What is a Valid Transaction in BigchainDB?"](https://blog.bigchaindb.com/what-is-a-valid-transaction-in-bigchaindb-9a1a075a9598)
 (Note: That post was about BigchainDB Server v1.0.0.)
 
-The [IPDB Transaction Spec](https://github.com/ipdb/ipdb-tx-spec) documents the conditions for a transaction to be valid.
+Each [BigchainDB Transactions Spec](https://github.com/bigchaindb/BEPs/tree/master/tx-specs/) documents the conditions for a transaction (of that version) to be valid.
 
 ## Example Transactions
 
