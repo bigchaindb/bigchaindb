@@ -127,7 +127,8 @@ tendermint show_node_id
 
 Share with all other Members your `node_id`, `pub_key.value`, and the host name or IP of your Node.
 
-**Important note on security: each Member should verify the data they receive from the other Members.**
+**Important note on security: each Member should take extra steps to verify the public keys they receive from the other Members have not been tampered, e.g. a key signing party would help address that.**
+
 
 ## Coordinator: Initialize the Network
 At this point the Coordinator should have received the data from all the Members, and should combine them in the `.tendermint/config/genesis.json` file:
