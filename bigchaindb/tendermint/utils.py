@@ -9,6 +9,8 @@ except ImportError:
     from sha3 import sha3_256
 
 
+GO_AMINO_ED25519 = "AC26791624DE60"
+
 def encode_transaction(value):
     """Encode a transaction (dict) to Base64."""
 
