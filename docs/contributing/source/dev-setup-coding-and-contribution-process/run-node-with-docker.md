@@ -32,10 +32,10 @@ docker run \
   --env BIGCHAINDB_DATABASE_HOST=172.17.0.1 \
   bigchaindb/bigchaindb \
   -y configure \
-  [mongodb|rethinkdb]
+  localmongodb
 
-Generating keypair
-Configuration written to /data/.bigchaindb
+Generating default configuration for backend localmongodb
+Configuration written to /root/.bigchaindb
 Ready to go!
 ```
 
@@ -56,45 +56,15 @@ containers.
 * `bigchaindb/bigchaindb` the image to use. All the options after the container name are passed on to the entrypoint inside the container.
 * `-y configure` execute the `configure` sub-command (of the `bigchaindb`
  command) inside the container, with the `-y` option to automatically use all the default config values
-* `mongodb` or `rethinkdb` specifies the database backend to use with bigchaindb
+* `localmongodb` specifies the database backend to use with bigchaindb
 
 
 ### Run the backend database
-From v0.9 onwards, you can run either RethinkDB or MongoDB.
+
+BigchainDB v2.0 only supports MongoDB as a backend database.
 
 You can also use docker host networking or bind to your primary (eth)
  interface, if needed.
-
-#### For RethinkDB
-
-```text
-docker run \
-  --detach \
-  --name=rethinkdb \
-  --publish=28015:28015 \
-  --publish=58080:8080 \
-  --restart=always \
-  --volume $HOME/bigchaindb_docker:/data \
-  rethinkdb:2.3
-```
-
-<!-- Don't hyperlink http://172.17.0.1:58080/ because Sphinx will fail when you do "make linkcheck" -->
-
-You can also access the RethinkDB dashboard at http://172.17.0.1:58080/
-
-
-#### For MongoDB
-
-Note: MongoDB runs as user `mongodb` which had the UID `999` and GID `999`
-inside the container. For the volume to be mounted properly, as user `mongodb`
-in your host, you should have a `mongodb` user with UID and GID `999`.
-If you have another user on the host with UID `999`, the mapped files will
-be owned by this user in the host.
-If there is no owner with UID 999, you can create the corresponding user and
-group.
-
-`useradd -r --uid 999 mongodb` OR `groupadd -r --gid 999 mongodb && useradd -r --uid 999 -g mongodb mongodb` should work.
-
 
 ```text
 docker run \
@@ -104,7 +74,7 @@ docker run \
   --restart=always \
   --volume=$HOME/mongodb_docker/db:/data/db \
   --volume=$HOME/mongodb_docker/configdb:/data/configdb \
-  mongo:3.4.9 --replSet=bigchain-rs
+  mongo:3.4.13
 ```
 
 ### Run BigchainDB
@@ -113,8 +83,11 @@ docker run \
 docker run \
   --detach \
   --name=bigchaindb \
-  --publish=59984:9984 \
+  --publish=9984:9984 \
+  --publish=9985:9985 \
+  --publish=46658:46658 \
   --restart=always \
+  --env BIGCHAINDB_TENDERMINT_HOST=172.17.0.1 \
   --volume=$HOME/bigchaindb_docker:/data \
   bigchaindb/bigchaindb \
   start
@@ -125,8 +98,12 @@ The command is slightly different from the previous one, the differences are:
 * `--detach` run the container in the background
 * `--name bigchaindb` give a nice name to the container so it's easier to
  refer to it later
-* `--publish "59984:9984"` map the host port `59984` to the container port `9984`
+* `--publish "9984:9984"` map the host port `9984` to the container port `9984`
  (the BigchainDB API server)
+* `--publish "9985:9985"` map the host port `9985` to the container port `9985`
+ (the BigchainDB Websocket server)
+* `--publish "46658:46658"` map the host port `46658` to the container port `46658`
+ (Tendermint ABCI)
 * `start` start the BigchainDB service
 
 Another way to publish the ports exposed by the container is to use the `-P` (or
@@ -138,20 +115,24 @@ machine running the Docker engine. If you are running docker-machine (e.g. on
 Mac OS X) this will be the IP of the Docker machine (`docker-machine ip
 machine_name`).
 
+### Run Tendermint
 
-## Building Your Own Image
+Tendermint is the consensus backend used by BigchainDB to become Byzantine
+Fault Tolerant.
 
-Assuming you have Docker installed, you would proceed as follows.
-
-In a terminal shell:
 ```text
-git clone git@github.com:bigchaindb/bigchaindb.git
+docker run \
+  --detach \
+  --name=tendermint \
+  --publish=46656:46656 \
+  --publish=46657:46657 \
+  --restart=always \
+  --volume=$HOME/tendermint_docker/tendermint:/tendermint \
+  --env TMHOME=/tendermint \
+  --entrypoint "/bin/sh" \
+  tendermint/tendermint:0.19.2 \
+  -c "tendermint init && tendermint unsafe_reset_all && \
+  tendermint node --consensus.create_empty_blocks=false \
+  --proxy_app=tcp://172.17.0.1:46658"
 ```
-
-Build the Docker image:
-```text
-docker build --tag local-bigchaindb .
-```
-
-Now you can use your own image to run BigchainDB containers.
 

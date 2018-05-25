@@ -5,7 +5,6 @@ Appendices
    :maxdepth: 1
 
    install-os-level-deps
-   run-with-docker
    json-serialization
    cryptography
    the-Bigchain-class
@@ -17,5 +16,3 @@ Appendices
    firewall-notes
    ntp-notes
    licenses
-   run-with-vagrant
-   run-with-ansible
