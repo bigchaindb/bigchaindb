@@ -1,0 +1,8 @@
+if [ -z $1 ] || [ -z $2 ]; then
+    echo
+    echo "    Usage ./run_cluster_node <node-number> <relative peer number, e.g. -1>";
+    echo
+    exit 1;
+fi
+
+echo Running cluster node $1; nohup tendermint node --home=mytestnet/node$1 --p2p.laddr=tcp://0.0.0.0:4667$1 --rpc.laddr=tcp://0.0.0.0:4668$1 --proxy_app=persistent_kvstore --p2p.persistent_peers=`tendermint show_node_id --home=mytestnet/node$(($1 + $2))`@0.0.0.0:4667$(($1 + $2)) 2>&1 >cluster_node_$1.log &

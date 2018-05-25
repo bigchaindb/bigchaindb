@@ -1,0 +1,8 @@
+tendermint testnet --n 2
+
+./run_cluster_node 0 1
+./run_cluster_node 1 -1
+./run_cluster_node 2 -1
+./run_cluster_node 3 -1
+./run_cluster_node 4 -1
+./run_cluster_node 5 1

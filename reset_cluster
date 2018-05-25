@@ -1,0 +1,6 @@
+tendermint unsafe_reset_all --home=mytestnet/node0
+tendermint unsafe_reset_all --home=mytestnet/node1
+tendermint unsafe_reset_all --home=mytestnet/node2
+tendermint unsafe_reset_all --home=mytestnet/node3
+tendermint unsafe_reset_all --home=mytestnet/node4
+tendermint unsafe_reset_all --home=mytestnet/node5
