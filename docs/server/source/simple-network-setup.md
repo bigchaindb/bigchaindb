@@ -235,6 +235,10 @@ Note: We'll share some example startup scripts in the future. This document is a
 
 If you followed the recommended approach and created startup scripts for BigchainDB and Tendermint, then you can reboot the machine now. MongoDB, BigchainDB and Tendermint should all start.
 
+## How Others Can Access Your Node
+
+If you followed the above instructions, then your node should be publicly-accessible with BigchainDB Root URL `http://hostname:9984` (where hostname is something like `bdb7.canada.vmsareus.net` or `17.122.200.76`). That is, anyone can interact with your node using the [BigchainDB HTTP API](http-client-server-api.html) exposed at that address. The most common way to do that is to use one of the [BigchainDB Drivers](./drivers-clients/index.html).
+
 ## Member: Dynamically Add a New Member to the Network
 
 TBD.
