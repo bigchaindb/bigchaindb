@@ -79,7 +79,7 @@ $ bash stack.sh -h
         variable. (default: master)
 
     ENV[TM_VERSION]
-        (Optional) Tendermint version to use for the setup. (default: 0.19.2)
+        (Optional) Tendermint version to use for the setup. (default: 0.19.3)
 
     ENV[MONGO_VERSION]
         (Optional) MongoDB version to use with the setup. (default: 3.6)
@@ -155,8 +155,8 @@ $ export STACK_TYPE=docker
 #Optional, codebase to use for the network deployment
 $ export STACK_BRANCH=master
 
-#Optional, since 0.19.2 is the default tendermint version.
-$ export TM_VERSION=0.19.2
+#Optional, since 0.19.3 is the default tendermint version.
+$ export TM_VERSION=0.19.3
 
 #Optional, since 3.6 is the default MongoDB version.
 $ export MONGO_VERSION=3.6
@@ -201,8 +201,8 @@ $ export STACK_BOX_NAME=ubuntu/xenial64
 #Optional, codebase to use for the network deployment
 $ export STACK_BRANCH=master
 
-#Optional, since 0.19.2 is the default tendermint version
-$ export TM_VERSION=0.19.2
+#Optional, since 0.19.3 is the default tendermint version
+$ export TM_VERSION=0.19.3
 
 #Optional, since 3.6 is the default MongoDB version.
 $ export MONGO_VERSION=3.6
