@@ -5,6 +5,7 @@ Tasks:
 2. delete test database after running the tests
 """
 
+import json
 import os
 import copy
 import random
@@ -626,3 +627,35 @@ def utxoset(dummy_unspent_outputs, utxo_collection):
     assert res.acknowledged
     assert len(res.inserted_ids) == 3
     return dummy_unspent_outputs, utxo_collection
+
+
+@pytest.fixture(scope='session')
+def priv_validator_path():
+    priv_validator = {
+        'address': '84F787D95E196DC5DE5F972666CFECCA36801426',
+        'pub_key': {
+            'type': 'AC26791624DE60',
+            'value': 'JbfwrLvCVIwOPm8tj8936ki7IYbmGHjPiKb6nAZegRA='
+        },
+        'last_height': 0,
+        'last_round': 0,
+        'last_step': 0,
+        'priv_key': {
+            'type': '954568A3288910',
+            'value': '83VINXdj2ynOHuhvSZz5tGuOE5oYzIi0mEximkX1KYMlt/Csu8JUjA4+by2Pz3fqSLshhuYYeM+IpvqcBl6BEA=='
+        }
+    }
+
+    with open('/tmp/priv_validator.json', 'w') as outfile:
+        json.dump(priv_validator, outfile)
+
+    return '/tmp/priv_validator.json'
+
+
+@pytest.fixture
+def network_validators():
+    return {
+        '/qBKIW7GURV8ID0XN4XMXq8mJWNIoLzWkvno6fPnohs=': 10,
+        'FkCp5pbZiHamdIWcg7TOILv8bdY7Ah/2dqCEw//t1P8=': 7,
+        'JbfwrLvCVIwOPm8tj8936ki7IYbmGHjPiKb6nAZegRA=': 8
+    }

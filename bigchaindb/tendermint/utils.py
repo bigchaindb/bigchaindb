@@ -11,6 +11,7 @@ except ImportError:
 
 GO_AMINO_ED25519 = "AC26791624DE60"
 
+
 def encode_transaction(value):
     """Encode a transaction (dict) to Base64."""
 
@@ -78,12 +79,20 @@ def public_key64_to_address(base64_public_key):
 
 
 def public_key_from_base64(base64_public_key):
-    return base64.b64decode(base64_public_key).hex().upper()
+    return key_from_base64(base64_public_key)
+
+
+def key_from_base64(base64_key):
+    return base64.b64decode(base64_key).hex().upper()
 
 
 def public_key_to_base64(ed25519_public_key):
-    ed25519_public_key = bytes.fromhex(ed25519_public_key)
-    return base64.b64encode(ed25519_public_key).decode('utf-8')
+    return key_to_base64(ed25519_public_key)
+
+
+def key_to_base64(ed25519_key):
+    ed25519_key = bytes.fromhex(ed25519_key)
+    return base64.b64encode(ed25519_key).decode('utf-8')
 
 
 def amino_encoded_public_key(ed25519_public_key):

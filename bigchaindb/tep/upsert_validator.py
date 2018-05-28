@@ -3,7 +3,10 @@ import json
 from bigchaindb.tep.transactional_election import TransactionalElection
 from bigchaindb.tendermint.lib import BigchainDB
 from bigchaindb.models import Transaction
-from bigchaindb.tendermint.utils import GO_AMINO_ED25519, public_key_from_base64
+from bigchaindb.tendermint.utils import (GO_AMINO_ED25519,
+                                         key_from_base64,)
+from bigchaindb.common.crypto import (key_pair_from_ed35519_key,
+                                      public_key_from_ed35519_key)
 
 
 class UpsertValidator(TransactionalElection):
@@ -30,8 +33,8 @@ class UpsertValidator(TransactionalElection):
         """Convert validator dictionary to a recipient list for `Transaction`"""
 
         recipients = []
-        for public_key, voting_power in self._validators():
-            recipients.push(([public_key], voting_power))
+        for public_key, voting_power in self._validators().items():
+            recipients.append(([public_key], voting_power))
 
         return recipients
 
@@ -43,7 +46,7 @@ class UpsertValidator(TransactionalElection):
         validators = {}
         for validator in self.bigchain.get_validators():
             if validator['pub_key']['type'] == GO_AMINO_ED25519:
-                public_key = public_key_from_base64(validator['pub_key']['value'])
+                public_key = public_key_from_ed35519_key(key_from_base64(validator['pub_key']['value']))
                 validators[public_key] = validator['voting_power']
             else:
                 # TODO: use appropriate exception
@@ -80,12 +83,11 @@ class UpsertValidator(TransactionalElection):
         return (True if code == 202 else False)
 
     def propose(self, validator_data, node_key_path):
-        validator_public_key = validator_data['public_key']
+        validator_public_key = validator_data['pub_key']
         validator_power = validator_data['power']
         validator_node_id = validator_data['node_id']
 
-        (node_public_key,
-         node_private_key) = load_private_key(node_key_path)
+        node_key = load_node_key(node_key_path)
 
         args = {
             'public_key': validator_public_key,
@@ -93,15 +95,11 @@ class UpsertValidator(TransactionalElection):
             'node_id': validator_node_id
         }
 
-        asset = {
-            'data': self._new_election_object(args)
-        }
-
-        tx = Transaction.create([node_public_key],
+        tx = Transaction.create([node_key.public_key],
                                 self._recipients(),
-                                asset=asset)\
-                        .sign([node_private_key])
-        self._execute_action(tx)
+                                asset=self._new_election_object(args))\
+                        .sign([node_key.private_key])
+        return self._execute_action(tx)
 
     def is_valid_proposal(self, tx_election):
         """Check if `tx_election` is a valid election"""
@@ -119,16 +117,15 @@ class UpsertValidator(TransactionalElection):
         """Vote on the given `election_id`"""
 
         tx_election = self.bigchain.get_transaction(election_id)
-        (node_public_key,
-         node_private_key) = load_private_key(node_key_path)
+        node_key = load_node_key(node_key_path)
         (tx_vote_input,
-         voting_power) = self._get_vote(tx_election, node_public_key)
+         voting_power) = self._get_vote(tx_election, node_key.public_key)
 
         tx_vote = Transaction.transfer(tx_vote_input,
                                        [([election_id], voting_power)],
                                        metadata={'type': 'vote'},
                                        asset_id=tx_election.id)\
-                             .sign([node_private_key])
+                             .sign([node_key.private_key])
         return self._execute_action(tx_vote)
 
     def is_valid_vote(self, tx_vote):
@@ -176,11 +173,9 @@ class UpsertValidator(TransactionalElection):
 
 
 # Load Tendermint's public and private key from the file path
-def load_private_key(path):
+def load_node_key(path):
     with open(path) as json_data:
         priv_validator = json.load(json_data)
         priv_key = priv_validator['priv_key']['value']
-        pub_key = priv_validator['pub_key']['value']
-
-    return (public_key_from_base64(pub_key),
-            public_key_from_base64(priv_key))
+        hex_private_key = key_from_base64(priv_key)
+        return key_pair_from_ed35519_key(hex_private_key)
