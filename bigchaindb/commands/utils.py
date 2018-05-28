@@ -68,7 +68,6 @@ def start_logging_process(command):
     """
     @functools.wraps(command)
     def start_logging(args):
-        from bigchaindb import config
         set_logging_config(DEFAULT_LOGGING_CONFIG)
         command(args)
     return start_logging
