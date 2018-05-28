@@ -104,8 +104,8 @@ This is tricky and personal. Different people do it different ways. We documente
 
 - `Dev node setup and running all tests with Docker Compose <run-node-with-docker-compose.html>`_
 - `Dev node setup and running all tests as processes <run-node-as-processes.html>`_
-- `Dev network setup with stack <run-dev-network-stack>`_
-- `Dev network setup with ansible <run-dev-network-ansible>`_
+- `Dev network setup with stack.sh <run-dev-network-stack.html>`_
+- `Dev network setup with Ansible <run-dev-network-ansible.html>`_
 - More to come?
 
 
