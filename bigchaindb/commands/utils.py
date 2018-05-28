@@ -10,8 +10,9 @@ import sys
 
 import bigchaindb
 import bigchaindb.config_utils
-from bigchaindb.log.setup import setup_logging
+from bigchaindb.log import DEFAULT_LOGGING_CONFIG
 from bigchaindb.version import __version__
+from logging.config import dictConfig as set_logging_config
 
 
 def configure_bigchaindb(command):
@@ -68,7 +69,7 @@ def start_logging_process(command):
     @functools.wraps(command)
     def start_logging(args):
         from bigchaindb import config
-        setup_logging(user_log_config=config.get('log'))
+        set_logging_config(DEFAULT_LOGGING_CONFIG)
         command(args)
     return start_logging
 
