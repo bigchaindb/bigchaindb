@@ -130,7 +130,7 @@ docker run \
   --volume=$HOME/tendermint_docker/tendermint:/tendermint \
   --env TMHOME=/tendermint \
   --entrypoint "/bin/sh" \
-  tendermint/tendermint:0.19.2 \
+  tendermint/tendermint:0.19.3 \
   -c "tendermint init && tendermint unsafe_reset_all && \
   tendermint node --consensus.create_empty_blocks=false \
   --proxy_app=tcp://172.17.0.1:46658"
