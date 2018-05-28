@@ -38,7 +38,7 @@ from recommonmark.parser import CommonMarkParser
 import sphinx_rtd_theme
 
 extensions = [
-    'sphinx.ext.autosectionlabel',
+#    'sphinx.ext.autosectionlabel',
 ]
 
 # Get remote files to here.
