@@ -7,6 +7,7 @@ umask 022
 
 # defaults
 stack_branch=${STACK_BRANCH:="master"}
+stack_repo=${STACK_REPO:="bigchaindb/bigchaindb"}
 stack_size=${STACK_SIZE:=4}
 stack_type=${STACK_TYPE:="docker"}
 stack_type_provider=${STACK_TYPE_PROVIDER:=""}
@@ -71,6 +72,10 @@ function usage() {
     ENV[STACK_BOX_NAME]
         (Optional) Set only when STACK_TYPE="local". This sets the box Vagrant box name
         of the instance(s) spawned. (default: ${stack_box_name})
+
+    ENV[STACK_REPO]
+        (Optional) To configure bigchaindb repo to use, set STACK_REPO environment
+        variable. (default: ${stack_repo})
 
     ENV[STACK_BRANCH]
         (Optional) To configure bigchaindb repo branch to use set STACK_BRANCH environment
@@ -168,10 +173,12 @@ function finish() {
 }
 trap finish EXIT
 
+export STACK_REPO=$stack_repo
 export STACK_BRANCH=$stack_branch
+echo "Using bigchaindb repo: '$STACK_REPO'"
 echo "Using bigchaindb branch '$STACK_BRANCH'"
 
-git clone https://github.com/bigchaindb/bigchaindb.git -b $stack_branch || true
+git clone https://github.com/${stack_repo}.git -b ${stack_branch} || true
 
 # Source utility functions
 source ${SCRIPTS_DIR}/functions-common
@@ -200,7 +207,7 @@ azure_vm_size: "${azure_vm_size}"
 ssh_private_key_path: "${ssh_private_key_path}"
 EOF
 
-curl -fOL# https://raw.githubusercontent.com/bigchaindb/bigchaindb/${stack_branch}/pkg/scripts/Vagrantfile
+curl -fOL# https://raw.githubusercontent.com/${stack_repo}/${stack_branch}/pkg/scripts/Vagrantfile
 
 #Convert to lowercase
 stack_type="$(echo $stack_type | tr '[A-Z]' '[a-z]')"
