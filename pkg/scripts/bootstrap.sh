@@ -16,14 +16,6 @@ OPERATION=${OPERATION:=""}
 while [[ $# -gt 1 ]]; do
     arg="$1"
     case $arg in
-        --os)
-            OS="$2"
-            shift
-        ;;
-        --os-version)
-            VER="$2"
-            shift
-        ;;
         --operation)
           OPERATION="$2"
           shift
@@ -62,14 +54,14 @@ validate_os_configuration(){
         exit 1
     fi
     for os in "${SUPPORTED_OS[@]}"; do
-        if [[ $os = $2 ]]; then
+        if [[ $os = $OS ]]; then
             valid_os=true
             break
         fi
     done
 }
 
-validate_os_configuration $OS_CONF $OS $VER
+validate_os_configuration $OS_CONF
 echo "Operation Sytem: $OS"
 echo "Version: $VER"
 # Installing dependencies
