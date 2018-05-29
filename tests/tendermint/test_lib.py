@@ -377,6 +377,8 @@ def test_get_spent_transaction_critical_double_spend(b, alice, bob, carol):
 
     b.store_bulk_transactions([tx])
 
+    assert b.get_spent(tx.id, tx_transfer.inputs[0].fulfills.output, [tx_transfer])
+
     with pytest.raises(DoubleSpend):
         b.get_spent(tx.id, tx_transfer.inputs[0].fulfills.output,
                     [tx_transfer, double_spend])
