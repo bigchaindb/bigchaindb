@@ -10,8 +10,9 @@ from pytest import raises
 
 from bigchaindb.common.exceptions import SchemaValidationError
 from bigchaindb.common.schema import (
-    TX_SCHEMA_COMMON, VOTE_SCHEMA,
-    validate_transaction_schema, validate_vote_schema)
+    TX_SCHEMA_COMMON,
+    validate_transaction_schema,
+)
 
 SUPPORTED_CRYPTOCONDITION_TYPES = ('threshold-sha-256', 'ed25519-sha-256')
 UNSUPPORTED_CRYPTOCONDITION_TYPES = (
@@ -38,10 +39,6 @@ def _test_additionalproperties(node, path=''):
 
 def test_transaction_schema_additionalproperties():
     _test_additionalproperties(TX_SCHEMA_COMMON)
-
-
-def test_vote_schema_additionalproperties():
-    _test_additionalproperties(VOTE_SCHEMA)
 
 
 ################################################################################
@@ -126,16 +123,3 @@ def test_condition_uri_with_unknown_subtype(dummy_transaction, condition_uri):
     dummy_transaction['outputs'][0]['condition']['uri'] = condition_uri
     with raises(SchemaValidationError):
         validate_transaction_schema(dummy_transaction)
-
-
-################################################################################
-# Test call vote schema
-
-
-def test_validate_vote(structurally_valid_vote):
-    validate_vote_schema(structurally_valid_vote)
-
-
-def test_validate_vote_fails():
-    with raises(SchemaValidationError):
-        validate_vote_schema({})
