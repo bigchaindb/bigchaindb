@@ -249,17 +249,20 @@ class BigchainDB(Bigchain):
                 '`{}` was spent more than once. There is a problem'
                 ' with the chain'.format(txid))
 
+        current_spent_transactions = []
         for ctxn in current_transactions:
             for ctxn_input in ctxn.inputs:
                 if ctxn_input.fulfills.txid == txid and\
                    ctxn_input.fulfills.output == output:
-                    transactions.append(ctxn.to_dict())
+                    current_spent_transactions.append(ctxn)
 
         transaction = None
-        if len(transactions) > 1:
+        if len(transactions) + len(current_spent_transactions) > 1:
             raise DoubleSpend('tx "{}" spends inputs twice'.format(txid))
         elif transactions:
             transaction = Transaction.from_db(self, transactions[0])
+        elif current_spent_transactions:
+            transaction = current_spent_transactions[0]
 
         return transaction
 
