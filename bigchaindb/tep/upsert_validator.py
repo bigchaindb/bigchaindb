@@ -1,12 +1,13 @@
 import json
+import base58
 
 from bigchaindb.tep.transactional_election import TransactionalElection
 from bigchaindb.tendermint.lib import BigchainDB
 from bigchaindb.models import Transaction
 from bigchaindb.tendermint.utils import (GO_AMINO_ED25519,
                                          key_from_base64,)
-from bigchaindb.common.crypto import (key_pair_from_ed35519_key,
-                                      public_key_from_ed35519_key)
+from bigchaindb.common.crypto import (key_pair_from_ed25519_key,
+                                      public_key_from_ed25519_key)
 
 
 class UpsertValidator(TransactionalElection):
@@ -46,7 +47,7 @@ class UpsertValidator(TransactionalElection):
         validators = {}
         for validator in self.bigchain.get_validators():
             if validator['pub_key']['type'] == GO_AMINO_ED25519:
-                public_key = public_key_from_ed35519_key(key_from_base64(validator['pub_key']['value']))
+                public_key = public_key_from_ed25519_key(key_from_base64(validator['pub_key']['value']))
                 validators[public_key] = validator['voting_power']
             else:
                 # TODO: use appropriate exception
@@ -58,15 +59,14 @@ class UpsertValidator(TransactionalElection):
         """For a given `public_key` return the `input` and `amount` as
            voting power
         """
-
         for i, tx_input in enumerate(tx_election.to_inputs()):
             if tx_input.owners_before == [public_key] and \
-               tx_election.output[i].public_keys == [public_key]:
-                return ([tx_input], tx_election.output[i].amount)
+               tx_election.outputs[i].public_keys == [public_key]:
+                return ([tx_input], tx_election.outputs[i].amount)
 
         return ([], 0)
 
-    def _is_same_topology(current_topology, election_topology):
+    def _is_same_topology(self, current_topology, election_topology):
 
         voters = {}
         for voter in election_topology:
@@ -77,6 +77,10 @@ class UpsertValidator(TransactionalElection):
         # Check whether the voters and their votes is same to that of the
         # validators and their voting power in the network
         return (current_topology.items() == voters.items())
+
+    @classmethod
+    def election_id(cls, tx_election_id):
+        return base58.b58encode(bytes.fromhex(tx_election_id))
 
     def _execute_action(self, tx):
         (code, msg) = self.bigchain.write_transaction(tx, 'broadcast_tx_commit')
@@ -102,25 +106,40 @@ class UpsertValidator(TransactionalElection):
         return self._execute_action(tx)
 
     def is_valid_proposal(self, tx_election):
-        """Check if `tx_election` is a valid election"""
+        """Check if `tx_election` is a valid election
+
+        NOTE:
+        * A valid election is the one which was initiated by an existing validator.
+
+        * A valid election is one in which voters are validators and votes are
+          alloacted cannonical to the voting power of each validator node.
+        """
+
         current_validators = self._validators()
 
-        # Check if the `owners_before` public key is a part of the validator set
+        # NOTE: Proposer should be a single node
+        if len(tx_election.inputs) != 1:
+            return False
+
+        # NOTE: Check if the proposer is a validator
         [election_initiator_node_pub_key] = tx_election.inputs[0].owners_before
         if election_initiator_node_pub_key not in current_validators.keys():
             return False
 
-        # Check if all outputs are part of the validator set
+        # NOTE: Check if all validators have been assigned votes equal to their voting power
         return self._is_same_topology(current_validators, tx_election.outputs)
 
-    def vote(self, election_id, node_key_path):
+    def vote(self, tx_election_id, node_key_path):
         """Vote on the given `election_id`"""
 
-        tx_election = self.bigchain.get_transaction(election_id)
+        tx_election = self.bigchain.get_transaction(tx_election_id)
         node_key = load_node_key(node_key_path)
         (tx_vote_input,
          voting_power) = self._get_vote(tx_election, node_key.public_key)
 
+        election_id = self.election_id(tx_election_id)
+
+        # NOTE: Node will spend all its allocated votes
         tx_vote = Transaction.transfer(tx_vote_input,
                                        [([election_id], voting_power)],
                                        metadata={'type': 'vote'},
@@ -131,45 +150,59 @@ class UpsertValidator(TransactionalElection):
     def is_valid_vote(self, tx_vote):
         """Validate casted vote.
 
-           NOTE: We don't need to check the amount of votes since the same has been validated when
-           the election was initiated
+        NOTE:
+        * We don't need to check the amount of votes since the same has been
+          validated when the election was initiated and a voter can't spend
+          more votes than allocated to them in the election proposal.
+
+        * A voter can choose to spend their votes whichever way they like i.e.
+          they can tranfer their votes to `election_id` or someone else. The only
+          thing that counts is whether the number of votes casted to the `election_id`
+          reach a majority of >2/3. It is the responsibility of the voter to
+          spend their votes wisely.
+
+        * The byzantine behavour cannot be amplified by sending votes to non-validators
+          i.e. if 1/3 of the network is byzantine then their no way to amplify this behavour
+          by merely transfering votes to other byzantine nodes.
         """
-
-        if not (isinstance(tx_vote.metadata, dict) and
-                tx_vote.metadata.get('type', None) == 'vote'):
-            return False
-
-        validators = self._validators().keys()
-        [input_vote_owner] = tx_vote.inputs[0].owners_before
-
-        # If the voter is no longer a part of the validator set then return
-        if input_vote_owner not in validators:
-            return False
 
         return True
 
-    def is_concluded(self, election_id, current_votes=[]):
-        """Check if the Election with `election_id` has gained majority vote"""
+    def is_concluded(self, tx_election_id, current_votes=[]):
+        """Check if the Election with `election_id` has gained majority vote
 
-        tx_election = self.bigchain.get_transaction(election_id)
+        NOTE:
+        * An election is concluded only if the >2/3 of network has casted their vote.
+
+        * If the network topology has changed from the time the election was
+          proposed to the time when the majority was achieved then the validator
+          updates are not applied. The election can only be concluded if the
+          network topology reverts back to the time when the election was proposed.
+
+        * If an election cannot be concluded because of topology changes then a new
+          election can be initiated.
+        """
+
+        tx_election = self.bigchain.get_transaction(tx_election_id)
         current_validators = self._validators()
-        # Check if network topology is exactly same to when the election was initiated
+
+        # NOTE: Check if network topology is exactly same to when the election was initiated
         if not self._is_same_topology(current_validators, tx_election.outputs):
-            return (False, None)
+            return (False, 'inconsistant_topology')
 
         total_votes = sum(current_validators.values())
         votes = 0
         #  Aggregate vote count for `election_id`
         for output in tx_election.outputs:
-            vote = self.bigchain.get_spent(election_id, output.to_dict(), current_votes)
+            vote = self.bigchain.get_spent(self.election_id(tx_election_id), output.to_dict(), current_votes)
             if vote:
                 votes = votes + vote.outputs[0].amount
 
-        # Check if >2/3 of total votes have been casted
+        # NOTE: Check if >2/3 of total votes have been casted
         if votes > (2/3)*total_votes:
             return (True, tx_election.asset['data'])
 
-        return (False, None)
+        return (False, 'insufficient_votes')
 
 
 # Load Tendermint's public and private key from the file path
@@ -178,4 +211,4 @@ def load_node_key(path):
         priv_validator = json.load(json_data)
         priv_key = priv_validator['priv_key']['value']
         hex_private_key = key_from_base64(priv_key)
-        return key_pair_from_ed35519_key(hex_private_key)
+        return key_pair_from_ed25519_key(hex_private_key)

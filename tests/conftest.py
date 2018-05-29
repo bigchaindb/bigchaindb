@@ -659,3 +659,16 @@ def network_validators():
         'FkCp5pbZiHamdIWcg7TOILv8bdY7Ah/2dqCEw//t1P8=': 7,
         'JbfwrLvCVIwOPm8tj8936ki7IYbmGHjPiKb6nAZegRA=': 8
     }
+
+
+@pytest.fixture
+def network_validators58(network_validators):
+    from bigchaindb.common.crypto import public_key_from_ed25519_key
+    from bigchaindb.tendermint.utils import key_from_base64
+
+    network_validators_base58 = {}
+    for p, v in network_validators.items():
+        p = public_key_from_ed25519_key(key_from_base64(p))
+        network_validators_base58[p] = v
+
+    return network_validators_base58
