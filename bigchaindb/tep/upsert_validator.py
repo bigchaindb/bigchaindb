@@ -87,7 +87,7 @@ class UpsertValidator(TransactionalElection):
         return (True if code == 202 else False)
 
     def propose(self, validator_data, node_key_path):
-        validator_public_key = validator_data['pub_key']
+        validator_public_key = validator_data['public_key']
         validator_power = validator_data['power']
         validator_node_id = validator_data['node_id']
 
@@ -193,8 +193,10 @@ class UpsertValidator(TransactionalElection):
         total_votes = sum(current_validators.values())
         votes = 0
         #  Aggregate vote count for `election_id`
-        for output in tx_election.outputs:
-            vote = self.bigchain.get_spent(self.election_id(tx_election_id), output.to_dict(), current_votes)
+
+        for output_id, output in enumerate(tx_election.outputs):
+            vote = self.bigchain.get_spent(tx_election_id, output_id, current_votes)
+
             if vote:
                 votes = votes + vote.outputs[0].amount
 
