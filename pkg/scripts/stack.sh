@@ -35,10 +35,8 @@ if [[ -n "$NOUNSET" ]]; then
 fi
 
 TOP_DIR=$(cd $(dirname "$0") && pwd)
+SCRIPTS_DIR=$TOP_DIR/bigchaindb/pkg/scripts
 CONF_DIR=$TOP_DIR/bigchaindb/pkg/configuration
-
-# Source utility functions
-source ${TOP_DIR}/functions-common
 
 
 function usage() {
@@ -166,6 +164,9 @@ echo "Using bigchaindb branch '$STACK_BRANCH'"
 
 git clone https://github.com/bigchaindb/bigchaindb.git -b $stack_branch || true
 
+# Source utility functions
+source ${SCRIPTS_DIR}/functions-common
+
 if [[ $stack_type == "local" ]]; then
 	mongo_version=$(echo "$mongo_version" | cut -d. -f-2)
 fi
@@ -218,7 +219,7 @@ elif [[ $stack_type == "cloud" && $stack_type_provider == "azure" ]]; then
 		--extra-vars "operation=start home_path=/bigchaindb"
 elif [[ $stack_type == "docker" ]]; then
 	echo "Configuring Dockers locally!"
-	source $TOP_DIR/bigchaindb/pkg/scripts/bootstrap.sh --operation install
+	source $SCRIPTS_DIR/bootstrap.sh --operation install
 	cat >$CONF_DIR/hosts/all <<EOF
   $(hostname)  ansible_connection=local
 EOF

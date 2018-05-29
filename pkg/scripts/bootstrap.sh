@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
-#set -e
-#set -o xtrace
 
-BASEDIR=$(dirname "$0")
-. $BASEDIR/bootstrap_constants.sh
-. $BASEDIR/bootstrap_helper.sh
+BASEDIR="${BASH_SOURCE%/*}"
+if [[ ! -d "$BASEDIR" ]]; then BASEDIR="$PWD"; fi
+. "$BASEDIR/bootstrap_constants.sh"
+. "$BASEDIR/bootstrap_helper.sh"
 
 # OS ID(centos, debian, fedora, ubuntu)
 OS=""

@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
-#set -e
-#set -o xtrace
 
-BASEDIR=$(dirname "$0")
-. $BASEDIR/bootstrap_constants.sh
-
+BASEDIR="${BASH_SOURCE%/*}"
+if [[ ! -d "$BASEDIR" ]]; then BASEDIR="$PWD"; fi
+. "$BASEDIR/bootstrap_constants.sh"
 
 validate_os_version_and_deps(){
     if $1; then
