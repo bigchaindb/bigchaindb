@@ -17,7 +17,13 @@ Minimum resource requirements for a single node BigchainDB dev setup. **The more
 - VCPUs >= 1
 
 ## Download the scripts
+> **Note**: If you're working on BigchainDB Server code, on a branch based on
+> recent code, then you already have local recent versions of *stack.sh* and 
+> *unstack.sh* in your bigchaindb/pkg/scripts/ directory. Otherwise you can 
+> get them using: 
+
 ```text
+$ export GIT_BRANCH=master
 $ curl -fOL https://raw.githubusercontent.com/bigchaindb/bigchaindb/${GIT_BRANCH}/pkg/scripts/stack.sh
 
 # Optional
@@ -26,7 +32,7 @@ $ curl -fOL https://raw.githubusercontent.com/bigchaindb/bigchaindb/${GIT_BRANCH
 
 ## Quick Start
 If you run `stack.sh` out of the box i.e. without any configuration changes, you will be able to deploy a 4 node
-BigchainDB network with Docker containers. 
+BigchainDB network with Docker containers, created from `master` branch of `bigchaindb/bigchaindb` repo and Tendermint version `0.19.2`.
 
 **Note**: Run `stack.sh` with either root or non-root user with sudo enabled.
 
