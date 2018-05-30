@@ -2,8 +2,9 @@ import pytest
 
 from bigchaindb.models import Transaction
 
+pytestmark = [pytest.mark.tendermint, pytest.mark.bdb]
 
-@pytest.mark.tendermint
+
 def test_upsert_validator_valid_election(validator_election, priv_validator_path,
                                          network_validators58, new_validator):
 
@@ -27,7 +28,6 @@ def test_upsert_validator_valid_election(validator_election, priv_validator_path
     assert validator_election.is_valid_proposal(tx_election)
 
 
-@pytest.mark.tendermint
 def test_upsert_validator_invalid_election(b, validator_election, priv_validator_path,
                                            network_validators58, new_validator, node_keys58):
     from bigchaindb.tep.upsert_validator import load_node_key
@@ -66,7 +66,6 @@ def test_upsert_validator_invalid_election(b, validator_election, priv_validator
         assert msg == 'inconsistant_topology'
 
 
-@pytest.mark.tendermint
 def test_upsert_validator_valid_vote(b, validator_election, priv_validator_path,
                                      network_validators58, new_validator):
 
@@ -90,7 +89,6 @@ def test_upsert_validator_valid_vote(b, validator_election, priv_validator_path,
     assert validator_election.is_valid_vote(tx_vote)
 
 
-@pytest.mark.tendermint
 def test_upsert_validator_conclude_election(b, validator_election, priv_validator_path,
                                             network_validators58, new_validator, node_keys58):
 
