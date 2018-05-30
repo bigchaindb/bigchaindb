@@ -44,6 +44,7 @@ The `stack.sh` script has multiple deployment methods and parameters and they ca
 
 ```text
 $ bash stack.sh -h
+
     Usage: $ bash stack.sh [-h]
 
     Deploys the BigchainDB network.
@@ -73,6 +74,10 @@ $ bash stack.sh -h
     ENV[STACK_BOX_NAME]
         (Optional) Set only when STACK_TYPE="local". This sets the box Vagrant box name
         of the instance(s) spawned. (default: ubuntu/xenial64)
+
+    ENV[STACK_REPO]
+        (Optional) To configure bigchaindb repo to use, set STACK_REPO environment
+        variable. (default: bigchaindb/bigchaindb)
 
     ENV[STACK_BRANCH]
         (Optional) To configure bigchaindb repo branch to use set STACK_BRANCH environment
@@ -113,11 +118,11 @@ $ bash stack.sh -h
     ENV[AZURE_RESOURCE_GROUP]
         (Optional) Only applicable, when STACK_TYPE="cloud" and STACK_TYPE_PROVIDER="azure".
         Name of Azure resource group for the instance.
-        (default: bdb-vagrant-rg-2018-05-23)
+        (default: bdb-vagrant-rg-2018-05-30)
 
     ENV[AZURE_DNS_PREFIX]
         (Optional) Only applicable, when STACK_TYPE="cloud" and STACK_TYPE_PROVIDER="azure".
-        DNS Prefix of the instance. (default: bdb-instance-2018-05-23)
+        DNS Prefix of the instance. (default: bdb-instance-2018-05-30)
 
     ENV[AZURE_ADMIN_USERNAME]
         (Optional) Only applicable, when STACK_TYPE="cloud" and STACK_TYPE_PROVIDER="azure".
@@ -152,7 +157,12 @@ $ export STACK_SIZE=4
 #Optional, since docker is the default type.
 $ export STACK_TYPE=docker
 
+#Optional, repo to use for the network deployment
+# Default: bigchaindb/bigchaindb
+$ export STACK_REPO=bigchaindb/bigchaindb
+
 #Optional, codebase to use for the network deployment
+# Default: master
 $ export STACK_BRANCH=master
 
 #Optional, since 0.19.2 is the default tendermint version.
@@ -198,7 +208,12 @@ $ export STACK_VM_CPUS=1
 #Optional, default is ubuntu/xenial64. Supported/tested images: bento/centos-7, fedora/25-cloud-base
 $ export STACK_BOX_NAME=ubuntu/xenial64
 
+#Optional, repo to use for the network deployment
+# Default: bigchaindb/bigchaindb
+$ export STACK_REPO=bigchaindb/bigchaindb
+
 #Optional, codebase to use for the network deployment
+# Default: master
 $ export STACK_BRANCH=master
 
 #Optional, since 0.19.2 is the default tendermint version
