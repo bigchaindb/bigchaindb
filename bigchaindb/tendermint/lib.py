@@ -88,10 +88,6 @@ class BigchainDB(Bigchain):
     def _process_status_code(self, status_code, failure_msg):
         return (202, '') if status_code == 0 else (500, failure_msg)
 
-    def get_latest_block_height_from_tendermint(self):
-        r = requests.get(ENDPOINT + 'status')
-        return r.json()['result']['latest_block_height']
-
     def store_transaction(self, transaction):
         """Store a valid transaction to the transactions collection."""
 
@@ -276,41 +272,31 @@ class BigchainDB(Bigchain):
 
         return backend.query.get_latest_block(self.connection)
 
-    def get_block(self, block_id, include_status=False):
-        """Get the block with the specified `block_id` (and optionally its status)
+    def get_block(self, block_id):
+        """Get the block with the specified `block_id`.
 
         Returns the block corresponding to `block_id` or None if no match is
         found.
 
         Args:
-            block_id (str): block id of the block to get
-            include_status (bool): also return the status of the block
-                       the return value is then a tuple: (block, status)
+            block_id (int): block id of the block to get.
         """
-        # get block from database
-        if isinstance(block_id, str):
-            block_id = int(block_id)
 
         block = backend.query.get_block(self.connection, block_id)
+        latest_block = self.get_latest_block()
+        latest_block_height = latest_block['height'] if latest_block else 0
+
+        if not block and block_id > latest_block_height:
+            return
+
+        result = {'height': block_id,
+                  'transactions': []}
+
         if block:
             transactions = backend.query.get_transactions(self.connection, block['transactions'])
-            transactions = Transaction.from_db(self, transactions)
+            result['transactions'] = [t.to_dict() for t in Transaction.from_db(self, transactions)]
 
-            block = {'height': block['height'],
-                     'transactions': []}
-            block_txns = block['transactions']
-            for txn in transactions:
-                block_txns.append(txn.to_dict())
-
-        status = None
-        if include_status:
-            # NOTE: (In Tendermint) a block is an abstract entity which
-            # exists only after it has been validated
-            if block:
-                status = self.BLOCK_VALID
-            return block, status
-        else:
-            return block
+        return result
 
     def get_block_containing_tx(self, txid):
         """Retrieve the list of blocks (block ids) containing a

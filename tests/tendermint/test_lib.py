@@ -61,6 +61,13 @@ def test_get_latest_block(tb):
     assert block['height'] == 9
 
 
+@pytest.mark.bdb
+@patch('bigchaindb.backend.query.get_block', return_value=None)
+@patch('bigchaindb.tendermint.lib.BigchainDB.get_latest_block', return_value={'height': 10})
+def test_get_empty_block(_0, _1, tb):
+    assert tb.get_block(5) == {'height': 5, 'transactions': []}
+
+
 def test_validation_error(b):
     from bigchaindb.models import Transaction
     from bigchaindb.common.crypto import generate_key_pair
