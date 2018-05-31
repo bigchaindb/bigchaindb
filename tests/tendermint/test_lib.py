@@ -63,7 +63,7 @@ def test_get_latest_block(tb):
 
 @pytest.mark.bdb
 @patch('bigchaindb.backend.query.get_block', return_value=None)
-@patch('bigchaindb.tendermint.lib.BigchainDB.get_latest_block_height_from_tendermint', return_value=10)
+@patch('bigchaindb.tendermint.lib.BigchainDB.get_latest_block', return_value={'height': 10})
 def test_get_empty_block(_0, _1, tb):
     assert tb.get_block(5) == {'height': 5, 'transactions': []}
 

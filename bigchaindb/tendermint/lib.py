@@ -88,10 +88,6 @@ class BigchainDB(Bigchain):
     def _process_status_code(self, status_code, failure_msg):
         return (202, '') if status_code == 0 else (500, failure_msg)
 
-    def get_latest_block_height_from_tendermint(self):
-        r = requests.get(ENDPOINT + 'status')
-        return r.json()['result']['sync_info']['latest_block_height']
-
     def store_transaction(self, transaction):
         """Store a valid transaction to the transactions collection."""
 
@@ -284,8 +280,10 @@ class BigchainDB(Bigchain):
         """
 
         block = backend.query.get_block(self.connection, block_id)
+        latest_block = self.get_latest_block()
+        latest_block_height = latest_block['height'] if latest_block else 0
 
-        if not block and block_id > self.get_latest_block_height_from_tendermint():
+        if not block and block_id > latest_block_height:
             return
 
         result = {'height': block_id,
