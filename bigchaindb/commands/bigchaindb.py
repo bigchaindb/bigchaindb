@@ -68,6 +68,7 @@ def run_configure(args):
     print('Generating default configuration for backend {}'
           .format(args.backend), file=sys.stderr)
     database_keys = bigchaindb._database_keys_map[args.backend]
+    conf['database'] = bigchaindb._database_map[args.backend]
 
     if not args.yes:
         for key in ('bind', ):
