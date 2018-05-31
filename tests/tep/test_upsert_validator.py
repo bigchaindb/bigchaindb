@@ -61,9 +61,9 @@ def test_upsert_validator_invalid_election(b, validator_election, priv_validator
         for index in vote_config:
             curr_votes.append(votes[index])
 
-        (concluded, msg) = validator_election.is_concluded(tx_election.id, curr_votes)
+        (concluded, msg) = validator_election.get_election_status(tx_election.id, curr_votes)
         assert not concluded
-        assert msg == 'inconsistant_topology'
+        assert msg == 'inconsistent_topology'
 
 
 def test_upsert_validator_valid_vote(b, validator_election, priv_validator_path,
@@ -108,7 +108,7 @@ def test_upsert_validator_conclude_election(b, validator_election, priv_validato
         for index in vote_config:
             curr_votes.append(votes[index])
 
-        (concluded, msg) = validator_election.is_concluded(tx_election.id, curr_votes)
+        (concluded, msg) = validator_election.get_election_status(tx_election.id, curr_votes)
         assert not concluded
         assert msg == 'insufficient_votes'
 
@@ -120,7 +120,7 @@ def test_upsert_validator_conclude_election(b, validator_election, priv_validato
         for index in vote_config:
             curr_votes.append(votes[index])
 
-        (concluded, msg) = validator_election.is_concluded(tx_election.id, curr_votes)
+        (concluded, msg) = validator_election.get_election_status(tx_election.id, curr_votes)
         assert concluded
 
 

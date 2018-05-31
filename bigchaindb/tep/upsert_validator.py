@@ -8,6 +8,7 @@ from bigchaindb.tendermint.utils import (GO_AMINO_ED25519,
                                          key_from_base64,)
 from bigchaindb.common.crypto import (key_pair_from_ed25519_key,
                                       public_key_from_ed25519_key)
+from bigchaindb.common.exceptions import UnsupportedPublicKeyTypeError
 
 
 class UpsertValidator(TransactionalElection):
@@ -50,8 +51,7 @@ class UpsertValidator(TransactionalElection):
                 public_key = public_key_from_ed25519_key(key_from_base64(validator['pub_key']['value']))
                 validators[public_key] = validator['voting_power']
             else:
-                # TODO: use appropriate exception
-                raise NotImplementedError
+                raise UnsupportedPublicKeyTypeError
 
         return validators
 
@@ -70,6 +70,9 @@ class UpsertValidator(TransactionalElection):
 
         voters = {}
         for voter in election_topology:
+            if len(voter.public_keys) > 1:
+                return False
+
             [public_key] = voter.public_keys
             voting_power = voter.amount
             voters[public_key] = voting_power
@@ -168,7 +171,7 @@ class UpsertValidator(TransactionalElection):
 
         return True
 
-    def is_concluded(self, tx_election_id, current_votes=[]):
+    def get_election_status(self, tx_election_id, current_votes=[]):
         """Check if the Election with `election_id` has gained majority vote
 
         NOTE:
@@ -188,7 +191,7 @@ class UpsertValidator(TransactionalElection):
 
         # NOTE: Check if network topology is exactly same to when the election was initiated
         if not self._is_same_topology(current_validators, tx_election.outputs):
-            return (False, 'inconsistant_topology')
+            return (False, 'inconsistent_topology')
 
         total_votes = sum(current_validators.values())
         votes = 0

@@ -7,13 +7,13 @@ class TransactionalElection(object):
     def __init__(self):
         pass
 
-    def propose(self, election_object):
+    def propose(self, election_object, node_key_path):
         """Initiate a new election"""
 
         raise NotImplementedError
 
-    def list(self, election_id):
-        """List the election with id `election_id`"""
+    def show(self, election_id):
+        """Show the election with id `election_id`"""
 
         raise NotImplementedError
 
@@ -32,7 +32,7 @@ class TransactionalElection(object):
 
         raise NotImplementedError
 
-    def is_concluded(self, election_id, current_votes=[]):
+    def get_election_status(self, election_id, current_votes=[]):
         """Check if the Election with `election_id` has reached consensus"""
 
         raise NotImplementedError

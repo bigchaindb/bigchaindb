@@ -12,6 +12,7 @@ import random
 from collections import namedtuple
 from logging import getLogger
 from logging.config import dictConfig
+import tempfile
 
 import pytest
 from pymongo import MongoClient
@@ -651,20 +652,20 @@ def priv_validator_path(node_keys):
         }
     }
 
-    with open('/tmp/priv_validator.json', 'w') as outfile:
-        json.dump(priv_validator, outfile)
+    fd, path = tempfile.mkstemp()
+    socket = os.fdopen(fd, 'w')
+    json.dump(priv_validator, socket)
+    socket.close()
 
-    return '/tmp/priv_validator.json'
+    return path
 
 
 @pytest.fixture
 def network_validators(node_keys):
     validator_pub_power = {}
-    i = 0
     voting_power = [8, 10, 7, 9]
     for pub, priv in node_keys.items():
-        validator_pub_power[pub] = voting_power[i]
-        i += 1
+        validator_pub_power[pub] = voting_power.pop()
 
     return validator_pub_power
 
