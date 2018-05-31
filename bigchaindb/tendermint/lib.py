@@ -280,7 +280,7 @@ class BigchainDB(Bigchain):
         found.
 
         Args:
-            block_id (str): block id of the block to get
+            block_id (int): block id of the block to get.
         """
 
         block = backend.query.get_block(self.connection, block_id)
