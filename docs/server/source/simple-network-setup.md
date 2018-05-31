@@ -239,6 +239,13 @@ If you followed the recommended approach and created startup scripts for Bigchai
 
 If you followed the above instructions, then your node should be publicly-accessible with BigchainDB Root URL `http://hostname:9984` (where hostname is something like `bdb7.canada.vmsareus.net` or `17.122.200.76`). That is, anyone can interact with your node using the [BigchainDB HTTP API](http-client-server-api.html) exposed at that address. The most common way to do that is to use one of the [BigchainDB Drivers](./drivers-clients/index.html).
 
+## Refreshing Your Node
+
+If you want to refresh your node back to a fresh empty state, then your best bet is to terminate it and deploy a new virtual machine, but if that's not an option, then you can:
+
+- drop the `bigchain` database in MongoDB using `bigchaindb drop` (but that only works if MongoDB is running)
+- reset Tendermint using `tendermint unsafe_reset_all`
+
 ## Member: Dynamically Add a New Member to the Network
 
 TBD.
