@@ -1,6 +1,0 @@
----
-- import_tasks: initiate_repl_set_host.yml
-  when: (ansible_hostname == bdb_hosts[bdb_hosts|length-1]['name']) and not deploy_docker|bool
-
-- import_tasks: initiate_repl_set_docker.yml
-  when: deploy_docker|bool and docker_cluster_size|int > 1

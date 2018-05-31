@@ -1,8 +1,0 @@
----
-- include_tasks: pub_key_exchange_host.yml
-  when: not deploy_docker|bool
-  tags: [bigchaindb]
-
-- include_tasks: pub_key_exchange_docker.yml
-  when: deploy_docker|bool
-  tags: [bigchaindb]

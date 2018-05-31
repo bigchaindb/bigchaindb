@@ -1,25 +1,26 @@
 ---
-- name: Add MongoDB Repo | CentOS
+- name: Add MongoDB Repo | yum
   yum_repository:
-    name: "{{ mongodb_package }}"
+    name: "{{ mongodb_package }}-{{ mongo_version }}"
     gpgcheck: yes
-    gpgkey: https://www.mongodb.org/static/pgp/server-{{ mongodb_version }}.asc
+    gpgkey: https://www.mongodb.org/static/pgp/server-{{ mongo_version }}.asc
     baseurl: "{{ mongodb_yum_base_url }}"
     file: "{{ mongodb_package }}"
     description: "MongoDB Repo"
     enabled: yes
   tags: [mongodb]
 
-- name: Install MongoDB | CentOS
+- name: Install MongoDB | yum
   yum:
     name: "{{ mongodb_package }}"
     state: present
     update_cache: yes
   tags: [mongodb]
 
-- name: Install pip | CentOS
+- name: Install pip | yum
   yum:
     name: python-pip
     state: present
     update_cache: yes
   tags: [mongodb]
+  

@@ -1,0 +1,57 @@
+---
+- name: Building BigchainDB Docker
+  docker_image:
+    name: "{{ bigchaindb_image_name }}"
+    state: build
+    tag: "{{bigchaindb_image_tag }}"
+    dockerfile: Dockerfile-alpine
+    path: "{{ home_dir }}/bigchaindb"
+    nocache: yes
+    buildargs:
+      backend: localmongodb
+  when: stack_type|lower == "docker" or stack_type|lower == "cloud"
+  tags: [bigchaindb]
+
+- name: Start BigchainDB Docker
+  docker_container:
+    name: "{{ bigchaindb_docker_name }}{{ item }}"
+    image: "{{ bigchaindb_image_name }}:{{ bigchaindb_image_tag }}"
+    hostname: "{{ bigchaindb_docker_name }}{{ item }}"
+    detach: true
+    network_mode: bridge
+    networks:
+      - name: "{{ bigchaindb_docker_net }}"
+    env:
+      BIGCHAINDB_DATABASE_BACKEND: localmongodb
+      BIGCHAINDB_DATABASE_HOST: "{{ mongodb_docker_name }}{{ item }}"
+      BIGCHAINDB_DATABASE_PORT: 27017
+      BIGCHAINDB_SERVER_BIND: 0.0.0.0:9984
+      BIGCHAINDB_WSSERVER_HOST: 0.0.0.0
+      BIGCHAINDB_TENDERMINT_HOST: "{{ tendermint_docker_name }}{{ item }}"
+      BIGCHAINDB_TENDERMINT_PORT: "{{ bigchaindb_tendermint_port }}"
+    published_ports:
+      - "{{ bigchaindb_default_server_port }}"
+      - "{{ bigchaindb_default_ws_port }}"
+      - "{{ tendermint_abci_port }}"
+    restart_policy: always
+    state: started
+    command: bigchaindb -l DEBUG start
+  with_sequence: start=1 end="{{ stack_size|int }}" stride=1
+  when: stack_type|lower == "docker" or stack_type|lower == "cloud"
+  tags: [bigchaindb]
+
+- import_tasks: debian.yml
+  when: stack_type == "local" and (distribution_name == "debian" or distribution_name == "ubuntu")
+  tags: [bigchaindb]
+
+- import_tasks: centos.yml
+  when: stack_type|lower == "local" and (distribution_name == "centos" or distribution_name == "red hat enterprise linux")
+  tags: [bigchaindb]
+
+- import_tasks: fedora.yml
+  when: stack_type|lower == "local" and (distribution_name == "fedora")
+  tags: [bigchaindb]
+
+- import_tasks: common.yml
+  when: stack_type|lower == "local"
+  tags: [bigchaindb]

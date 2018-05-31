@@ -27,6 +27,7 @@ azure_dns_prefix=${AZURE_DNS_PREFIX:="bdb-instance-$(date '+%Y-%m-%d')"}
 azure_admin_username=${AZURE_ADMIN_USERNAME:="vagrant"}
 azure_vm_size=${AZURE_VM_SIZE:="Standard_D2_v2"}
 ssh_private_key_path=${SSH_PRIVATE_KEY_PATH:=""}
+unstack_type=${UNSTACK_TYPE:="hard"}
 
 
 # Check for uninitialized variables
@@ -38,7 +39,6 @@ fi
 TOP_DIR=$(cd $(dirname "$0") && pwd)
 SCRIPTS_DIR=$TOP_DIR/bigchaindb/pkg/scripts
 CONF_DIR=$TOP_DIR/bigchaindb/pkg/configuration
-
 
 function usage() {
 	cat <<EOM
@@ -134,18 +134,27 @@ function usage() {
         Only required when STACK_TYPE="cloud" and STACK_TYPE_PROVIDER="azure". Absolute path of
         SSH keypair required to log into the Azure instance.
 
+    ENV[UNSTACK_TYPE]
+        Hard or Soft unstack. (default ${unstack_type})
+
+    -s
+        Soft unstack, only stop the processes.
+
     -h
         Show this help and exit.
 
 EOM
 }
 
-while getopts "h" opt; do
+while getopts ":h:s" opt; do
 	case "$opt" in
 	h)
 		usage
 		exit
 		;;
+    s)
+      unstack_type="soft"
+      ;;
 	*)
 		usage
 		exit 1
@@ -169,7 +178,7 @@ export STACK_BRANCH=$stack_branch
 echo "Using bigchaindb repo: '$STACK_REPO'"
 echo "Using bigchaindb branch '$STACK_BRANCH'"
 
-git clone https://github.com/${stack_repo}.git -b $stack_branch || true
+git clone https://github.com/${stack_repo}.git -b ${stack_branch} || true
 
 # Source utility functions
 source ${SCRIPTS_DIR}/functions-common
@@ -205,37 +214,32 @@ stack_type="$(echo $stack_type | tr '[A-Z]' '[a-z]')"
 stack_type_provider="$(echo $stack_type_provider | tr '[A-Z]' '[a-z]')"
 
 if [[ $stack_type == "local" ]]; then
-	echo "Configuring setup locally!"
-	vagrant up --provider virtualbox --provision
-	ansible-playbook $CONF_DIR/bigchaindb-start.yml \
-		-i $CONF_DIR/hosts/all \
-		--extra-vars "operation=start home_path=${TOP_DIR}"
+  if [[ $unstack_type == "hard" ]]; then
+    vagrant destroy -f
+  elif [[ $unstack_type == "soft" ]]; then
+    ansible-playbook $CONF_DIR/bigchaindb-stop.yml -i $CONF_DIR/hosts/all \
+      --extra-vars "operation=stop home_path=${TOP_DIR}"
+  fi
 elif [[ $stack_type == "cloud" && $stack_type_provider == "azure" ]]; then
-    echo ${azure_tenant_id:?AZURE_TENANT_ID not set! Exiting. $(exit 1)}
-    echo ${azure_client_secret:?AZURE_CLIENT_SECRET not set! Exiting. $(exit 1)}
-    echo ${azure_client_id:?AZURE_CLIENT_ID not set! Exiting. $(exit 1)}
-    echo ${azure_subscription_id:?AZURE_SUBSCRIPTION_ID not set! Exiting. $(exit 1)}
-    echo ${ssh_private_key_path:?SSH_PRIVATE_KEY_PATH not set! $(exit 1)}
-    echo "Configuring Setup on Azure!"
-    # Dummy box does not really do anything because we are relying on Azure VM images
-    vagrant box add azure-dummy https://github.com/azure/vagrant-azure/raw/v2.0/dummy.box \
-    --provider azure --force
-	vagrant up --provider azure --provision
-	ansible-playbook $CONF_DIR/bigchaindb-start.yml \
-		-i $CONF_DIR/hosts/all \
-		--extra-vars "operation=start home_path=/bigchaindb"
+  echo "Configuring Setup on Azure!"
+  if [[ $unstack_type == "hard" ]]; then
+    vagrant destroy -f
+  elif [[ $unstack_type == "soft" ]]; then
+    ansible-playbook $CONF_DIR/bigchaindb-stop.yml -i $CONF_DIR/hosts/all \
+      --extra-vars "operation=stop home_path=${TOP_DIR}"
+  fi
 elif [[ $stack_type == "docker" ]]; then
-	echo "Configuring Dockers locally!"
-	source $SCRIPTS_DIR/bootstrap.sh --operation install
-	cat >$CONF_DIR/hosts/all <<EOF
+  echo "Configuring Dockers locally!"
+  source $SCRIPTS_DIR/bootstrap.sh --operation install
+  cat > $CONF_DIR/hosts/all << EOF
   $(hostname)  ansible_connection=local
 EOF
-	ansible-playbook $CONF_DIR/bigchaindb-start.yml \
-    -i $CONF_DIR/hosts/all \
-	--extra-vars "operation=start home_path=${TOP_DIR}"
+
+  ansible-playbook $CONF_DIR/bigchaindb-stop.yml -i $CONF_DIR/hosts/all \
+    --extra-vars "operation=stop home_path=${TOP_DIR}"
 else
-	echo "Invalid Stack Type OR Provider"
-	exit 1
+  echo "Invalid Stack Type OR Provider"
+  exit 1
 fi
 
 # Kill background processes on exit
@@ -252,5 +256,5 @@ function err_trap {
     exit $?
 }
 
-echo -e "Finished stacking!"
+echo -e "Finished unstacking!!"
 set -o errexit

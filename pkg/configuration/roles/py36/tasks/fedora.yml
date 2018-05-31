@@ -1,0 +1,37 @@
+---
+- name: Check version of python3
+  shell: "python3 -c 'import platform; print(platform.python_version())' | cut -d. -f-2"
+  register: py36_ver
+  tags: [py36]
+
+- name: Install py36 | dnf
+  dnf:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "python36"
+    - libselinux-python
+    - policycoreutils-python
+    - wget
+  when: py36_ver.stdout | float < 3.6
+  tags: [py36]
+
+- name: Update fedora
+  shell: dnf -y update
+  register: update_fed
+  failed_when: "'FAILED' in update_fed.stderr or update_fed.rc != 0"
+  warn: no
+  tags: [py36]
+
+- name: Creating files for python 3.6 installation
+  template: src=install_pip36.j2 dest=/home/vagrant/install_pip36.bash
+  mode: 0755
+  when: py36_ver.stdout | float < 3.6
+  tags: [py36]
+
+- name: Install pip36
+  shell: "bash /home/vagrant/install_pip36.bash > install_pip36.txt"
+  register: install_pip36
+  failed_when: "'FAILED' in install_pip36.stderr or install_pip36.rc != 0"
+  when: py36_ver.stdout | float < 3.6
+  tags: [py36]
