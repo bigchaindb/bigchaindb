@@ -15,7 +15,28 @@ For reference, the possible headings are:
 * **Fixed** for any bug fixes.
 * **Security** to invite users to upgrade in case of vulnerabilities.
 * **External Contributors** to list contributors outside of BigchainDB GmbH.
+* **Known Issues**
 * **Notes**
+
+## [2.0 Beta 1] - 2018-06-01
+
+Tag name: v2.0.0b1
+
+### Fixed
+
+* Fixed a bug that arose with some code that treated transactions-waiting-for-block-inclusion as if they were already stored in MongoDB (i.e. already in a block). [Pull request #2318](https://github.com/bigchaindb/bigchaindb/pull/2318)
+* If a user asked for a block and it happened to be an empty block, BigchainDB returned 404 Not Found, as if the block did not exist. Now it returns a 200 OK with a block containing no transactions, i.e. an empty block. [Pull request #2321](https://github.com/bigchaindb/bigchaindb/pull/2321)
+
+### Known Issues
+
+* An issue was found with the `bigchaindb upsert-validator` command. A solution was proposed in [BEP-19](https://github.com/bigchaindb/BEPs/pull/45) and is being implemented in [pull request #2314](https://github.com/bigchaindb/bigchaindb/pull/2314)
+* Some users are reporting that they sometimes lose the ability to post new transactions, but they can still retrieve existing transactions; see [issue #2322](https://github.com/bigchaindb/bigchaindb/pull/2322). It seems the issue may be with Tendermint; see [tendermint/tendermint#1642](https://github.com/tendermint/tendermint/issues/1642)
+
+### Notes
+
+* There's a [new docs page](https://docs.bigchaindb.com/projects/server/en/v2.0.0b1/simple-network-setup.html) about how to set up a network where each node uses a single virtual machine.
+* We checked, and BigchainDB 2.0 Beta 1 works with MongoDB 3.6 (and 3.4).
+* Support for RethinkDB is completely gone.
 
 ## [2.0 Alpha 6] - 2018-05-17
 
