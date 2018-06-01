@@ -61,9 +61,9 @@ Install a [recent version of Tendermint][tendermint:releases]. BigchainDB Server
 
 ```
 sudo apt install -y unzip
-wget https://github.com/tendermint/tendermint/releases/download/v0.19.3/tendermint_0.19.3_linux_amd64.zip
-unzip tendermint_0.19.3_linux_amd64.zip
-rm tendermint_0.19.3_linux_amd64.zip
+wget https://github.com/tendermint/tendermint/releases/download/v0.19.7/tendermint_0.19.7_linux_amd64.zip
+unzip tendermint_0.19.7_linux_amd64.zip
+rm tendermint_0.19.7_linux_amd64.zip
 sudo mv tendermint /usr/local/bin
 ```
 
