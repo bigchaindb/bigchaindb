@@ -18,7 +18,7 @@ For reference, the possible headings are:
 * **Known Issues**
 * **Notes**
 
-## [2.0 Beta 1] - 2018-05-31
+## [2.0 Beta 1] - 2018-06-01
 
 Tag name: v2.0.0b1
 
@@ -35,7 +35,7 @@ Tag name: v2.0.0b1
 ### Notes
 
 * There's a [new docs page](https://docs.bigchaindb.com/projects/server/en/v2.0.0b1/simple-network-setup.html) about how to set up a network where each node uses a single virtual machine.
-* BigchainDB 2.0 Beta 1 works with MongoDB 3.6 (and 3.4).
+* We checked, and BigchainDB 2.0 Beta 1 works with MongoDB 3.6 (and 3.4).
 * Support for RethinkDB is completely gone.
 
 ## [2.0 Alpha 6] - 2018-05-17
