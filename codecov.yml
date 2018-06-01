@@ -1,13 +1,6 @@
 codecov:
   branch: master     # the branch to show by default
 
-  # The help text for bot says:
-  # "the username that will consume any oauth requests
-  # must have previously logged into Codecov"
-  # In GitHub - BigchainDB organization settings - Third-party access,
-  # it says, for Codecov: "approval requested by r-marques"
-  bot: r-marques
-
 coverage:
   precision: 2
   round: down
