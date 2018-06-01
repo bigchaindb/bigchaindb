@@ -12,8 +12,8 @@ reflect any changes made to the container.
 ```
 docker run \
   --name=tendermint_instance_pub_key \
-  --env TENDERMINT_PUB_KEY_ACCESS_PORT=''
+  --env TM_PUB_KEY_ACCESS_PORT=''
   --publish=<nginx port for external connections>:<corresponding host port> \
-  --volume=<host dir with public key>:/tendermint_node_data \
+  --volume=<host dir with public key>:/usr/share/nginx \
   bigchaindb/nginx_pub_key_access:<version_number>
 ```
