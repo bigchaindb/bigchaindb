@@ -24,7 +24,6 @@ For convenience, here's a list of all the relevant environment variables (docume
 `BIGCHAINDB_WSSERVER_ADVERTISED_HOST`<br>
 `BIGCHAINDB_WSSERVER_ADVERTISED_PORT`<br>
 `BIGCHAINDB_CONFIG_PATH`<br>
-`BIGCHAINDB_BACKLOG_REASSIGN_DELAY`<br>
 `BIGCHAINDB_LOG`<br>
 `BIGCHAINDB_LOG_FILE`<br>
 `BIGCHAINDB_LOG_ERROR_FILE`<br>
@@ -200,21 +199,6 @@ export BIGCHAINDB_WSSERVER_ADVERTISED_PORT=443
     "advertised_port": 9985
 }
 ```
-
-## backlog_reassign_delay
-
-Specifies how long, in seconds, transactions can remain in the backlog before being reassigned.  Long-waiting transactions must be reassigned because the assigned node may no longer be responsive.  The default duration is 120 seconds.
-
-**Example using environment variables**
-```text
-export BIGCHAINDB_BACKLOG_REASSIGN_DELAY=30
-```
-
-**Default value (from a config file)**
-```js
-"backlog_reassign_delay": 120
-```
-
 
 ## log
 

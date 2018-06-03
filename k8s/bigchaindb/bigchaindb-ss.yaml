@@ -206,11 +206,6 @@ spec:
             configMapKeyRef:
               name: vars
               key: bigchaindb-wsserver-advertised-scheme
-        - name: BIGCHAINDB_BACKLOG_REASSIGN_DELAY
-          valueFrom:
-            configMapKeyRef:
-              name: bdb-config
-              key: bigchaindb-backlog-reassign-delay
         - name: BIGCHAINDB_DATABASE_MAXTRIES
           valueFrom:
             configMapKeyRef:

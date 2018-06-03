@@ -106,10 +106,6 @@ data:
   # BigchainDB instance authentication user name
   bdb-user: "<user name>"
 
-  # bigchaindb-backlog-reassign-delay is the number of seconds a transaction
-  # can remain in the backlog before being reassigned.
-  bigchaindb-backlog-reassign-delay: "120"
-
   # bigchaindb-database-maxtries is the maximum number of times that BigchainDB
   # will try to establish a connection with the database backend.
   # If it is set to 0, then it will try forever.
