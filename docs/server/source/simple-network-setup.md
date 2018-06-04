@@ -229,7 +229,7 @@ The _recommended_ approach is to create a startup script for BigchainDB, so it w
 
 To start Tendermint, one uses the command `tendermint node` but that will run it in the foreground. If you want to run it in the background (so it will continue running after you logout), you can use `nohup`, `tmux`, or `screen`. For example, `nohup tendermint node 2>&1 > tendermint.log &`
 
-The _recommended_ approach is to create a startup script for BigchainDB, so it will start right after the boot of the operating system. (As mentioned earlier, MongoDB should already have a startup script.)
+The _recommended_ approach is to create a startup script for Tendermint, so it will start right after the boot of the operating system.
 
 Note: We'll share some example startup scripts in the future. This document is a work in progress.
 
