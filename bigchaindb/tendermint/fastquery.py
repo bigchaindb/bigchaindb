@@ -21,6 +21,17 @@ class FastQuery():
                 if condition_details_has_owner(output['condition']['details'],
                                                public_key)]
 
+    def get_asset_outputs_by_public_key(self, asset_id, public_key):
+        """
+        Get asset_id outputs for a public key
+        """
+        txs = list(query.get_asset_owned_ids(self.connection, asset_id, public_key))
+        return [(TransactionLink(tx['id'], index), tx)
+                for tx in txs
+                for index, output in enumerate(tx['outputs'])
+                if condition_details_has_owner(output['condition']['details'],
+                                               public_key)]
+
     def filter_spent_outputs(self, outputs):
         """
         Remove outputs that have been spent

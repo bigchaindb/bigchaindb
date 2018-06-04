@@ -25,6 +25,7 @@ from bigchaindb.common.exceptions import (SchemaValidationError,
 from bigchaindb.tendermint.utils import encode_transaction, merkleroot
 from bigchaindb.tendermint import fastquery
 from bigchaindb import exceptions as core_exceptions
+from bigchaindb.common.transaction import Output
 
 logger = logging.getLogger(__name__)
 
@@ -383,6 +384,40 @@ class BigchainDB(Bigchain):
 
     def store_pre_commit_state(self, state):
         return backend.query.store_pre_commit_state(self.connection, state)
+
+    def get_asset_outputs_filtered(self, asset_id, owner, spent=None):
+        """Get a list of outputs filtered on `assert_id` and `owner`
+
+        Args:
+            asset_id (str): Id of the asset.
+            owner (str): base58 encoded public_key.
+            spent (bool): If ``True`` return only the spent outputs. If
+                          ``False`` return only unspent outputs. If spent is
+                          not specified (``None``) return all outputs.
+
+        Returns:
+            :obj:`list` of TransactionLink: list of ``txid`` s and ``output`` s
+            pointing to another transaction's condition
+        """
+        outputs_with_txs = self.fastquery.get_asset_outputs_by_public_key(asset_id, owner)
+
+        outputs = []
+        txs_outputs_map = {}
+        for (output, tx) in outputs_with_txs:
+            outputs.append(output)
+            txs_outputs_map[output.to_dict()['transaction_id']] = tx
+
+        if spent is True:
+            outputs = self.fastquery.filter_unspent_outputs(outputs)
+        elif spent is False:
+            outputs = self.fastquery.filter_spent_outputs(outputs)
+
+        transaction_outputs = []
+        for output in outputs:
+            tx = txs_outputs_map[output.to_dict()['transaction_id']]
+            transaction_outputs.extend([Output.from_dict(o) for o in tx['outputs']])
+
+        return transaction_outputs
 
 
 Block = namedtuple('Block', ('app_hash', 'height', 'transactions'))

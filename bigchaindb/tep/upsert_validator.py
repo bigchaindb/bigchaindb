@@ -82,7 +82,7 @@ class UpsertValidator(TransactionalElection):
         return (current_topology.items() == voters.items())
 
     @classmethod
-    def election_id(cls, tx_election_id):
+    def public_key(cls, tx_election_id):
         return base58.b58encode(bytes.fromhex(tx_election_id))
 
     def _execute_action(self, tx):
@@ -140,7 +140,7 @@ class UpsertValidator(TransactionalElection):
         (tx_vote_input,
          voting_power) = self._get_vote(tx_election, node_key.public_key)
 
-        election_id = self.election_id(tx_election_id)
+        election_id = self.public_key(tx_election_id)
 
         # NOTE: Node will spend all its allocated votes
         tx_vote = Transaction.transfer(tx_vote_input,
@@ -193,18 +193,32 @@ class UpsertValidator(TransactionalElection):
         if not self._is_same_topology(current_validators, tx_election.outputs):
             return (False, 'inconsistent_topology')
 
+        election_public_key = self.public_key(tx_election.id)
         total_votes = sum(current_validators.values())
-        votes = 0
-        #  Aggregate vote count for `election_id`
+        casted_votes = self.bigchain.get_asset_outputs_filtered(tx_election.id,
+                                                                election_public_key,
+                                                                spent=False)
+        #  Aggregate vote count for `election_public_key`
+        vote_count = 0
+        for vote in casted_votes:
+            if vote.public_keys == [election_public_key]:
+                vote_count = vote_count + vote.amount
 
-        for output_id, output in enumerate(tx_election.outputs):
-            vote = self.bigchain.get_spent(tx_election_id, output_id, current_votes)
+        #
+        # THE FOLLOWING IS A REALLY CRITICAL ASSUMPTION
+        # NOTE: It is assumed that the votes cannot be double spends because
+        # `is_valid_transaction` method of BigchainDB class ensures that
+        #
 
-            if vote:
-                votes = votes + vote.outputs[0].amount
+        # sum the vote count from the current votes
+        for vote in current_votes:
+            if vote.asset['id'] == tx_election.id:
+                for voted_for in vote.outputs:
+                    if voted_for.public_keys == [election_public_key]:
+                        vote_count = vote_count + voted_for.amount
 
         # NOTE: Check if >2/3 of total votes have been casted
-        if votes > (2/3)*total_votes:
+        if vote_count > (2/3)*total_votes:
             return (True, tx_election.asset['data'])
 
         return (False, 'insufficient_votes')

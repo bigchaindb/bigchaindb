@@ -392,3 +392,67 @@ def test_get_spent_transaction_critical_double_spend(b, alice, bob, carol):
 
     with pytest.raises(CriticalDoubleSpend):
         b.get_spent(tx.id, tx_transfer.inputs[0].fulfills.output)
+
+
+@pytest.mark.bdb
+def test_get_unspent_asset_outputs(b, alice, bob, carol):
+    from bigchaindb.models import Transaction
+
+    # asset 1
+    tx = Transaction.create([alice.public_key],
+                            [([alice.public_key], 1)],
+                            asset={'test': 'asset'})\
+                    .sign([alice.private_key])
+
+    # asset 2
+    tx_other = Transaction.create([alice.public_key],
+                                  [([alice.public_key], 1)],
+                                  asset={'other': 'asset'})\
+                          .sign([alice.private_key])
+
+    b.store_bulk_transactions([tx, tx_other])
+
+    # Bob doesn't own asset 1
+    assert list(b.get_asset_outputs_filtered(tx.id, bob.public_key)) == []
+
+    tx_transfer = Transaction.transfer(tx.to_inputs(),
+                                       [([bob.public_key], 1)],
+                                       asset_id=tx.id)\
+                             .sign([alice.private_key])
+
+    tx_transfer_other = Transaction.transfer(tx_other.to_inputs(),
+                                             [([bob.public_key], 1)],
+                                             asset_id=tx_other.id)\
+                                   .sign([alice.private_key])
+
+    b.store_bulk_transactions([tx_transfer, tx_transfer_other])
+
+    # Bob own asset 1 and its unpsent
+    tx_transfer_bob = list(b.get_asset_outputs_filtered(tx.id, bob.public_key, spent=False))
+
+    assert len(tx_transfer_bob) == 1
+    assert tx_transfer_bob[0].to_dict()['transaction_id'] == tx_transfer.id
+
+    tx_transfer2 = Transaction.transfer(tx_transfer.to_inputs(),
+                                        [([carol.public_key], 1)],
+                                        asset_id=tx.id)\
+                              .sign([bob.private_key])
+    tx_transfer_other2 = Transaction.transfer(tx_transfer_other.to_inputs(),
+                                              [([carol.public_key], 1)],
+                                              asset_id=tx_other.id)\
+                                    .sign([bob.private_key])
+
+    b.store_bulk_transactions([tx_transfer2, tx_transfer_other2])
+    tx_transfer_bob_unspent = list(b.get_asset_outputs_filtered(tx.id, bob.public_key, spent=False))
+    tx_transfer_bob_spent = list(b.get_asset_outputs_filtered(tx.id, bob.public_key, spent=True))
+
+    assert len(tx_transfer_bob_unspent) == 0
+    assert len(tx_transfer_bob_spent) == 1
+    assert tx_transfer_bob_spent[0].to_dict()['transaction_id'] == tx_transfer.id
+
+    tx_transfer_carol_unspent = list(b.get_asset_outputs_filtered(tx.id, carol.public_key, spent=False))
+    tx_transfer_carol_spent = list(b.get_asset_outputs_filtered(tx.id, carol.public_key, spent=True))
+
+    assert len(tx_transfer_carol_spent) == 0
+    assert len(tx_transfer_carol_unspent) == 1
+    assert tx_transfer_carol_unspent[0].to_dict()['transaction_id'] == tx_transfer2.id
