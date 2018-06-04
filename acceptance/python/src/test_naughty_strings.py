@@ -53,18 +53,24 @@ def send_naughty_tx(asset, metadata):
     except BadRequest as e:
         sent_transaction = e
 
-    # Then she checks that either her transaction was written to the block chain,
-    # or she got back a nice error message
-    if type(sent_transaction) == dict:
-        if 'id' in sent_transaction.keys():
-            tx_id = sent_transaction['id']
-            assert bdb.transactions.retrieve(tx_id), sent_transaction
-    elif type(sent_transaction) == BadRequest:
+    # If her key contained a '.', began with a '$', or contained a NUL character
+    regex = '.*\..*|\$.*|.*\x00.*'
+    key = next(iter(metadata))
+    if re.match(regex, key):
+        # Then she expects a nicely formatted error code
+        assert sent_transaction.status_code, sent_transaction
         status_code = sent_transaction.status_code
+        assert sent_transaction.error, sent_transaction
         error = sent_transaction.error
-        regex = '\{"message":"Invalid transaction \\(ValidationError\\): Invalid key name .* in asset object. The key name cannot contain characters .* or null characters","status":400\}\n'
+        regex = '\{"message":"Invalid transaction \\(ValidationError\\): Invalid key name .* in asset object. ' \
+                'The key name cannot contain characters .* or null characters","status":400\}\n'
         assert status_code == 400, status_code
         assert re.fullmatch(regex, error), error
+    # Otherwise, she expects to see her transaction in the database
+    elif 'id' in sent_transaction.keys():
+        tx_id = sent_transaction['id']
+        assert bdb.transactions.retrieve(tx_id), sent_transaction
+    # If neither condition was true, then something weird happened...
     else:
         raise TypeError(sent_transaction)
 
@@ -72,8 +78,8 @@ def send_naughty_tx(asset, metadata):
 @pytest.mark.parametrize("naughty_string", naughty_strings, ids=naughty_strings)
 def test_naughty_keys(naughty_string):
 
-    asset = {'data': {naughty_string: 'naughty_value'}}
-    metadata = {naughty_string: 'naughty_value'}
+    asset = {'data': {naughty_string: 'nice_value'}}
+    metadata = {naughty_string: 'nice_value'}
 
     send_naughty_tx(asset, metadata)
 
@@ -81,7 +87,7 @@ def test_naughty_keys(naughty_string):
 @pytest.mark.parametrize("naughty_string", naughty_strings, ids=naughty_strings)
 def test_naughty_values(naughty_string):
 
-    asset = {'data': {'naughty_key': naughty_string}}
-    metadata = {'naughty_key': naughty_string}
+    asset = {'data': {'nice_key': naughty_string}}
+    metadata = {'nice_key': naughty_string}
 
     send_naughty_tx(asset, metadata)
