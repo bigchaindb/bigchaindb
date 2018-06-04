@@ -170,7 +170,6 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request, ssl_con
         'database': {
             'host': DATABASE_HOST
         },
-        'backlog_reassign_delay': 5,
         'log': {
             'level_console': 'debug',
         },
@@ -290,7 +289,6 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request, ssl_con
             'private': None,
         },
         'keyring': KEYRING.split(':'),
-        'backlog_reassign_delay': 5,
         'log': {
             'file': LOG_FILE,
             'error_file': log_config['handlers']['errors']['filename'],

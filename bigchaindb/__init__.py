@@ -106,7 +106,6 @@ config = {
         'private': None,
     },
     'keyring': [],
-    'backlog_reassign_delay': 120,
     'log': {
         'file': log_config['handlers']['file']['filename'],
         'error_file': log_config['handlers']['errors']['filename'],

@@ -59,8 +59,6 @@ spec:
           value: "EEWUAhsk94ZUHhVw7qx9oZiXYDAWc9cRz93eMrsTG4kZ"
         - name: BIGCHAINDB_KEYPAIR_PRIVATE
           value: "3CjmRhu718gT1Wkba3LfdqX5pfYuBdaMPLd7ENUga5dm"
-        - name: BIGCHAINDB_BACKLOG_REASSIGN_DELAY
-          value: "120"
         - name: BIGCHAINDB_DATABASE_MAXTRIES
           value: "3"
         - name: BIGCHAINDB_DATABASE_CONNECTION_TIMEOUT

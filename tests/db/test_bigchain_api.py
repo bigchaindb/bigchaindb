@@ -543,7 +543,7 @@ class TestBigchainApi(object):
         b.write_transaction(tx)
 
         # retrieve the transaction
-        response = list(query.get_stale_transactions(b.connection, 0))[0]
+        response = list(query.get_stale_transactions(b.connection))[0]
 
         # check if the assignee is the current node
         assert response['assignee'] == b.me
@@ -570,7 +570,7 @@ class TestBigchainApi(object):
             b.write_transaction(tx)
 
         # retrieve the transaction
-        response = query.get_stale_transactions(b.connection, 0)
+        response = query.get_stale_transactions(b.connection)
 
         # check if the assignee is one of the _other_ federation nodes
         for tx in response:
