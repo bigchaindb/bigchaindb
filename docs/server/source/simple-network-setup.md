@@ -60,7 +60,7 @@ sudo pip3 install bigchaindb==2.0.0a6
 
 Check that you installed the correct version of BigchainDB Server using `bigchaindb --version`.
 
-#### Install MongoDB
+#### Install (and Start) MongoDB
 
 Install a recent version of MongoDB. BigchainDB Server requires version 3.4 or newer.
 
@@ -68,7 +68,9 @@ Install a recent version of MongoDB. BigchainDB Server requires version 3.4 or n
 sudo apt install mongodb
 ```
 
-The package manager should take care of installing the startup script for MongoDB as well. (That means MongoDB will automatically start if the machine is restarted.)
+If you install MongoDB using the above command (which installs the `mongodb` package), it also configures MongoDB, starts MongoDB (in the background), and installs a MongoDB startup script (so that MongoDB will be started automatically when the machine is restarted).
+
+Note: The `mongodb` package is _not_ the official MongoDB package from MongoDB the company. If you want to install the official MongoDB package, please see [the MongoDB documentation](https://docs.mongodb.com/manual/installation/). Note that installing the official package _doesn't_ also start MongoDB.
 
 #### Install Tendermint
 
@@ -219,9 +221,11 @@ persistent_peers = "<Member 1 node id>@<Member 1 hostname>:46656,\
 
 ## Member: Start MongoDB, BigchainDB and Tendermint
 
-To start MongoDB, one uses the command `mongod` but that will run it in the foreground. If you want to run it in the background (so it will continue running after you logout), you can use `mongod --fork --logpath /var/log/mongodb.log`. (You might have to create the `/var/log` directory if it doesn't already exist.)
+If you installed MongoDB using `sudo apt install mongodb`, then MongoDB should already be running in the background. You can check using `systemctl status mongodb`.
 
-The _recommended_ approach is to reboot the machine and let the MongoDB startup script start MongoDB. Don't do that yet though…
+If MongoDB isn't running, then you can start it using the command `mongod`, but that will run it in the foreground. If you want to run it in the background (so it will continue running after you logout), you can use `mongod --fork --logpath /var/log/mongodb.log`. (You might have to create the `/var/log` directory if it doesn't already exist.)
+
+If you installed MongoDB using `sudo apt install mongodb`, then a MongoDB startup script should already be installed (so MongoDB will start automatically when the machine is restarted). Otherwise, you should install a startup script for MongoDB.
 
 To start BigchainDB, one uses the command `bigchaindb start` but that will run it in the foreground. If you want to run it in the background (so it will continue running after you logout), you can use `nohup`, `tmux`, or `screen`. For example, `nohup bigchaindb start 2>&1 > bigchaindb.log &`
 
@@ -245,6 +249,7 @@ If you want to refresh your node back to a fresh empty state, then your best bet
 
 - drop the `bigchain` database in MongoDB using `bigchaindb drop` (but that only works if MongoDB is running)
 - reset Tendermint using `tendermint unsafe_reset_all`
+- delete the directory `$HOME/.tendermint`
 
 ## Member: Dynamically Add a New Member to the Network
 
