@@ -399,23 +399,24 @@ class BigchainDB(Bigchain):
             :obj:`list` of TransactionLink: list of ``txid`` s and ``output`` s
             pointing to another transaction's condition
         """
-        outputs_with_txs = self.fastquery.get_asset_outputs_by_public_key(asset_id, owner)
-
-        outputs = []
-        txs_outputs_map = {}
-        for (output, tx) in outputs_with_txs:
-            outputs.append(output)
-            txs_outputs_map[output.to_dict()['transaction_id']] = tx
+        output_links = self.fastquery.get_asset_outputs_by_public_key(asset_id, owner)
 
         if spent is True:
-            outputs = self.fastquery.filter_unspent_outputs(outputs)
+            output_links = self.fastquery.filter_unspent_outputs(output_links)
         elif spent is False:
-            outputs = self.fastquery.filter_spent_outputs(outputs)
+            output_links = self.fastquery.filter_spent_outputs(output_links)
+
+        output_map = {}
+        for output_link in output_links:
+            output_map[output_link.txid] = output_link.output
+
+        # Load unspent transactions from database
+        filtered_transactions = backend.query.get_transactions(self.connection, list(output_map.keys()))
 
         transaction_outputs = []
-        for output in outputs:
-            tx = txs_outputs_map[output.to_dict()['transaction_id']]
-            transaction_outputs.extend([Output.from_dict(o) for o in tx['outputs']])
+        for txn in filtered_transactions:
+            output_index = output_map[txn['id']]
+            transaction_outputs.append(Output.from_dict(txn['outputs'][output_index]))
 
         return transaction_outputs
 

@@ -195,6 +195,8 @@ class UpsertValidator(TransactionalElection):
 
         election_public_key = self.public_key(tx_election.id)
         total_votes = sum(current_validators.values())
+
+        # Get all unspent outputs for `election_public_key` with asset id as `tx_election.id`
         casted_votes = self.bigchain.get_asset_outputs_filtered(tx_election.id,
                                                                 election_public_key,
                                                                 spent=False)

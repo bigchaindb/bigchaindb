@@ -415,44 +415,87 @@ def test_get_unspent_asset_outputs(b, alice, bob, carol):
     # Bob doesn't own asset 1
     assert list(b.get_asset_outputs_filtered(tx.id, bob.public_key)) == []
 
+    # transfer asset 1 from alice to bob
     tx_transfer = Transaction.transfer(tx.to_inputs(),
                                        [([bob.public_key], 1)],
                                        asset_id=tx.id)\
                              .sign([alice.private_key])
 
+    # transfer asset 2 from alice to bob
     tx_transfer_other = Transaction.transfer(tx_other.to_inputs(),
                                              [([bob.public_key], 1)],
                                              asset_id=tx_other.id)\
                                    .sign([alice.private_key])
 
+    # commit the transfers
     b.store_bulk_transactions([tx_transfer, tx_transfer_other])
 
-    # Bob own asset 1 and its unpsent
+    # Bob owns asset 1 and its unpsent
     tx_transfer_bob = list(b.get_asset_outputs_filtered(tx.id, bob.public_key, spent=False))
 
+    # Bob has only 1 unspent asset of type `tx.id`
     assert len(tx_transfer_bob) == 1
-    assert tx_transfer_bob[0].to_dict()['transaction_id'] == tx_transfer.id
+    assert tx_transfer_bob[0] == tx_transfer.outputs[0]
 
+    # Bob transfer the asset 1 to carol
     tx_transfer2 = Transaction.transfer(tx_transfer.to_inputs(),
                                         [([carol.public_key], 1)],
                                         asset_id=tx.id)\
                               .sign([bob.private_key])
+
+    # Bob transfers the asset 2 to carol
     tx_transfer_other2 = Transaction.transfer(tx_transfer_other.to_inputs(),
                                               [([carol.public_key], 1)],
                                               asset_id=tx_other.id)\
                                     .sign([bob.private_key])
 
     b.store_bulk_transactions([tx_transfer2, tx_transfer_other2])
+
+    # Bob should have only 1 spent ouput
     tx_transfer_bob_unspent = list(b.get_asset_outputs_filtered(tx.id, bob.public_key, spent=False))
     tx_transfer_bob_spent = list(b.get_asset_outputs_filtered(tx.id, bob.public_key, spent=True))
 
     assert len(tx_transfer_bob_unspent) == 0
     assert len(tx_transfer_bob_spent) == 1
-    assert tx_transfer_bob_spent[0].to_dict()['transaction_id'] == tx_transfer.id
+    assert tx_transfer_bob_spent[0] == tx_transfer.outputs[0]
 
+    # Carol should have 1 unspent output
     tx_transfer_carol_unspent = list(b.get_asset_outputs_filtered(tx.id, carol.public_key, spent=False))
     tx_transfer_carol_spent = list(b.get_asset_outputs_filtered(tx.id, carol.public_key, spent=True))
 
     assert len(tx_transfer_carol_spent) == 0
     assert len(tx_transfer_carol_unspent) == 1
-    assert tx_transfer_carol_unspent[0].to_dict()['transaction_id'] == tx_transfer2.id
+    assert tx_transfer_carol_unspent[0] == tx_transfer2.outputs[0]
+
+
+@pytest.mark.bdb
+def test_get_unspent_divisible_asset_outputs(b, alice, bob, carol):
+    from bigchaindb.models import Transaction
+
+    tx = Transaction.create([alice.public_key],
+                            [([alice.public_key], 100)],
+                            asset={'test': 'asset'})\
+                    .sign([alice.private_key])
+
+    tx_transfer = Transaction.transfer(tx.to_inputs(),
+                                       [([bob.public_key], 40),
+                                        ([alice.public_key], 60)],
+                                       asset_id=tx.id)\
+                             .sign([alice.private_key])
+
+    b.store_bulk_transactions([tx, tx_transfer])
+
+    tx_transfer_output_bob = list(b.get_asset_outputs_filtered(tx.id, bob.public_key, spent=False))
+
+    assert len(tx_transfer_output_bob) == 1
+    assert tx_transfer_output_bob[0].amount == 40
+
+    tx_transfer_spent_alice = list(b.get_asset_outputs_filtered(tx.id, alice.public_key, spent=False))
+
+    assert len(tx_transfer_spent_alice) == 1
+    assert tx_transfer_spent_alice[0].amount == 60
+
+    tx_transfer_spent_alice = list(b.get_asset_outputs_filtered(tx.id, alice.public_key, spent=True))
+
+    assert len(tx_transfer_spent_alice) == 1
+    assert tx_transfer_spent_alice[0].amount == 100

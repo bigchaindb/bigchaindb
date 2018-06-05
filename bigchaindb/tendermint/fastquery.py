@@ -26,7 +26,7 @@ class FastQuery():
         Get asset_id outputs for a public key
         """
         txs = list(query.get_asset_owned_ids(self.connection, asset_id, public_key))
-        return [(TransactionLink(tx['id'], index), tx)
+        return [TransactionLink(tx['id'], index)
                 for tx in txs
                 for index, output in enumerate(tx['outputs'])
                 if condition_details_has_owner(output['condition']['details'],
