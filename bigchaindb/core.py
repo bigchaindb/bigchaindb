@@ -1,9 +1,4 @@
-import random
-from time import time
-
 from bigchaindb import exceptions as core_exceptions
-from bigchaindb.common import crypto, exceptions
-from bigchaindb.common.utils import gen_timestamp, serialize
 
 import bigchaindb
 

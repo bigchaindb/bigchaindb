@@ -1,9 +1,6 @@
 import pytest
-from unittest.mock import patch
-from collections import Counter
 
 from bigchaindb.core import Bigchain
-from bigchaindb.exceptions import CriticalDuplicateVote
 from bigchaindb.voting import Voting, INVALID, VALID, UNDECIDED
 
 

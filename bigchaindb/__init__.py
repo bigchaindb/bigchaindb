@@ -9,7 +9,7 @@ from bigchaindb.log.configs import SUBSCRIBER_LOGGING_CONFIG as log_config
 
 # The following variable is used by `bigchaindb configure` to
 # prompt the user for database values. We cannot rely on
-# _base_database_mongodb.keys() because dicts are unordered. 
+# _base_database_mongodb.keys() because dicts are unordered.
 # I tried to configure
 
 _database_keys_map = {

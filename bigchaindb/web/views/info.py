@@ -3,7 +3,6 @@
 import flask
 from flask_restful import Resource
 
-import bigchaindb
 from bigchaindb.web.views.base import base_ws_uri
 from bigchaindb import version
 from bigchaindb.web.websocket_server import EVENTS_ENDPOINT

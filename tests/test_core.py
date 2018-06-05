@@ -49,7 +49,7 @@ def test_bigchain_class_initialization_with_parameters(config):
         'name': 'this_is_the_db_name',
     }
     connection = connect(**init_db_kwargs)
-    bigchain = Bigchain(connection=connection, **init_kwargs)
+    bigchain = Bigchain(connection=connection, **init_db_kwargs)
     assert bigchain.connection == connection
     assert bigchain.connection.host == init_db_kwargs['host']
     assert bigchain.connection.port == init_db_kwargs['port']

@@ -1,13 +1,12 @@
 import asyncio
-import json
 import queue
-import random
 import threading
 from unittest.mock import patch
 
 import pytest
 
 pytestmark = pytest.mark.tendermint
+
 
 @pytest.fixture
 def merlin():

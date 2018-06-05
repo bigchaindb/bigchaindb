@@ -299,7 +299,8 @@ def test_multiple_in_multiple_own_single_out_single_own_transfer(merlin, b, user
     from bigchaindb.common.transaction import _fulfillment_to_details
 
     # CREATE divisible asset
-    tx_create = Transaction.create([merlin.public_key], [([user_pk, merlin.public_key], 50), ([user_pk, merlin.public_key], 50)],
+    tx_create = Transaction.create([merlin.public_key], [([user_pk, merlin.public_key], 50),
+                                   ([user_pk, merlin.public_key], 50)],
                                    asset={'name': random.random()})
     tx_create_signed = tx_create.sign([merlin.private_key])
 

@@ -22,6 +22,7 @@ class StartupError(BigchainDBError):
 class CyclicBlockchainError(BigchainDBError):
     """Raised when there is a cycle in the blockchain"""
 
+
 class KeypairMismatchException(BigchainDBError):
     """Raised if the private key(s) provided for signing don't match any of the
     current owner(s)
