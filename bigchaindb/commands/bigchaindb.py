@@ -41,8 +41,6 @@ def run_show_config(args):
     # configure the system.
     config = copy.deepcopy(bigchaindb.config)
     del config['CONFIGURED']
-    private_key = config['keypair']['private']
-    config['keypair']['private'] = 'x' * 45 if private_key else None
     print(json.dumps(config, indent=4, sort_keys=True))
 
 
@@ -81,6 +79,10 @@ def run_configure(args):
         for key in database_keys:
             val = conf['database'][key]
             conf['database'][key] = input_on_stderr('Database {}? (default `{}`): '.format(key, val), val)
+
+        for key in ('host', 'port'):
+            val = conf['tendermint'][key]
+            conf['tendermint'][key] = input_on_stderr('Tendermint {}? (default `{}`)'.format(key, val), val)
 
         val = conf['backlog_reassign_delay']
         conf['backlog_reassign_delay'] = input_on_stderr(

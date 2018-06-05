@@ -17,11 +17,6 @@ def config(request, monkeypatch):
             'connection_timeout': 5000,
             'max_tries': 3
         },
-        'keypair': {
-            'public': 'pubkey',
-            'private': 'privkey',
-        },
-        'keyring': [],
         'CONFIGURED': True,
         'backlog_reassign_delay': 30,
     }
@@ -40,9 +35,6 @@ def test_bigchain_class_default_initialization(config):
     assert bigchain.connection.host == config['database']['host']
     assert bigchain.connection.port == config['database']['port']
     assert bigchain.connection.dbname == config['database']['name']
-    assert bigchain.me == config['keypair']['public']
-    assert bigchain.me_private == config['keypair']['private']
-    assert bigchain.nodes_except_me == config['keyring']
     assert bigchain.consensus == BaseConsensusRules
 
 
@@ -50,13 +42,8 @@ def test_bigchain_class_initialization_with_parameters(config):
     from bigchaindb.core import Bigchain
     from bigchaindb.backend import connect
     from bigchaindb.consensus import BaseConsensusRules
-    init_kwargs = {
-        'public_key': 'white',
-        'private_key': 'black',
-        'keyring': ['key_one', 'key_two'],
-    }
     init_db_kwargs = {
-        'backend': 'rethinkdb',
+        'backend': 'localmongodb',
         'host': 'this_is_the_db_host',
         'port': 12345,
         'name': 'this_is_the_db_name',
@@ -67,9 +54,6 @@ def test_bigchain_class_initialization_with_parameters(config):
     assert bigchain.connection.host == init_db_kwargs['host']
     assert bigchain.connection.port == init_db_kwargs['port']
     assert bigchain.connection.dbname == init_db_kwargs['name']
-    assert bigchain.me == init_kwargs['public_key']
-    assert bigchain.me_private == init_kwargs['private_key']
-    assert bigchain.nodes_except_me == init_kwargs['keyring']
     assert bigchain.consensus == BaseConsensusRules
 
 

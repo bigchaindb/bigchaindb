@@ -10,10 +10,10 @@ pytestmark = pytest.mark.tendermint
 
 @pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
-def test_get_block_endpoint(tb, client):
+def test_get_block_endpoint(tb, client, merlin):
     b = tb
-    tx = Transaction.create([b.me], [([b.me], 1)], asset={'cycle': 'hero'})
-    tx = tx.sign([b.me_private])
+    tx = Transaction.create([merlin.public_key], [([merlin.public_key], 1)], asset={'cycle': 'hero'})
+    tx = tx.sign([merlin.private_key])
     b.store_transaction(tx)
 
     block = Block(app_hash='random_utxo',
@@ -38,10 +38,10 @@ def test_get_block_returns_404_if_not_found(client):
 
 
 @pytest.mark.bdb
-def test_get_block_containing_transaction(tb, client):
+def test_get_block_containing_transaction(tb, client, merlin):
     b = tb
-    tx = Transaction.create([b.me], [([b.me], 1)], asset={'cycle': 'hero'})
-    tx = tx.sign([b.me_private])
+    tx = Transaction.create([merlin.public_key], [([merlin.public_key], 1)], asset={'cycle': 'hero'})
+    tx = tx.sign([merlin.private_key])
     b.store_transaction(tx)
 
     block = Block(app_hash='random_utxo',

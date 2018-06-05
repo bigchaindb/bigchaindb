@@ -1,10 +1,25 @@
 import pytest
 
-
 @pytest.fixture
 def b():
     from bigchaindb.tendermint import BigchainDB
     return BigchainDB()
+
+
+@pytest.fixture
+def merlin():
+    from bigchaindb.common.crypto import generate_key_pair
+    return generate_key_pair()
+
+
+@pytest.fixture
+def merlin_privkey(merlin):
+    return merlin.private_key
+
+
+@pytest.fixture
+def merlin_pubkey(merlin):
+    return merlin.public_key
 
 
 @pytest.fixture

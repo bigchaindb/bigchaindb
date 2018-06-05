@@ -120,11 +120,6 @@ def main():
     # HTTP Index
     res = client.get('/', environ_overrides={'HTTP_HOST': host})
     res_data = json.loads(res.data.decode())
-    res_data['keyring'] = [
-        "6qHyZew94NMmUTYyHnkZsB8cxJYuRNEiEpXHe1ih9QX3",
-        "AdDuyrTyjrDt935YnFu4VBCVDhHtY2Y6rcy7x2TFeiRi"
-    ]
-    res_data['public_key'] = 'NC8c8rYcAhyKVpx1PCV65CBmyq4YUbLysy3Rqrg8L8mz'
     ctx['index'] = pretty_json(res_data)
 
     # API index

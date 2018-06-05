@@ -22,8 +22,6 @@ class RootIndex(Resource):
             'docs': ''.join(docs_url),
             'software': 'BigchainDB',
             'version': version.__version__,
-            'public_key': bigchaindb.config['keypair']['public'],
-            'keyring': bigchaindb.config['keyring']
         })
 
 

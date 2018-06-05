@@ -165,8 +165,6 @@ class Block(object):
         node_pubkey (str): The public key of the node creating the
             Block.
         timestamp (str): The Unix time a Block was created.
-        voters (:obj:`list` of :obj:`str`): A list of a federation
-            nodes' public keys supposed to vote on the Block.
         signature (str): A cryptographic signature ensuring the
             integrity and validity of the creator of a Block.
     """
@@ -182,8 +180,6 @@ class Block(object):
             node_pubkey (str): The public key of the node creating the
                 Block.
             timestamp (str): The Unix time a Block was created.
-            voters (:obj:`list` of :obj:`str`): A list of a federation
-                nodes' public keys supposed to vote on the Block.
             signature (str): A cryptographic signature ensuring the
                 integrity and validity of the creator of a Block.
         """
@@ -250,10 +246,6 @@ class Block(object):
         Raises:
             ValidationError: If there is a problem with the block
         """
-        # Check if the block was created by a federation node
-        if self.node_pubkey not in bigchain.federation:
-            raise SybilError('Only federation nodes can create blocks')
-
         # Check that the signature is valid
         if not self.is_signature_valid():
             raise InvalidSignature('Invalid block signature')

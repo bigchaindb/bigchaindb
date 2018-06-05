@@ -215,15 +215,6 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request, ssl_con
     from bigchaindb.log.configs import SUBSCRIBER_LOGGING_CONFIG as log_config
     config_utils.autoconfigure()
 
-    database_rethinkdb = {
-        'backend': 'rethinkdb',
-        'host': DATABASE_HOST,
-        'port': DATABASE_PORT,
-        'name': DATABASE_NAME,
-        'connection_timeout': 5000,
-        'max_tries': 3
-    }
-
     database_mongodb = {
         'backend': 'mongodb',
         'host': DATABASE_HOST,
@@ -263,8 +254,6 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request, ssl_con
     database = {}
     if DATABASE_BACKEND == 'mongodb':
         database = database_mongodb
-    elif DATABASE_BACKEND == 'rethinkdb':
-        database = database_rethinkdb
     elif DATABASE_BACKEND == 'mongodb-ssl':
         database = database_mongodb_ssl
 
@@ -289,7 +278,10 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request, ssl_con
             'public': None,
             'private': None,
         },
-        'keyring': KEYRING.split(':'),
+        'tendermint': {
+            'host': None,
+            'port': None,
+        },
         'backlog_reassign_delay': 5,
         'log': {
             'file': LOG_FILE,

@@ -18,15 +18,14 @@ class FastQuery:
     a byzantine node.
     """
 
-    def __init__(self, connection, me):
+    def __init__(self, connection):
         self.connection = connection
-        self.me = me
 
     def filter_valid_block_ids(self, block_ids, include_undecided=False):
         """Given block ids, return only the ones that are valid."""
         block_ids = list(set(block_ids))
         votes = query.get_votes_for_blocks_by_voter(
-                    self.connection, block_ids, self.me)
+                    self.connection, block_ids)
         votes = {vote['vote']['voting_for_block']: vote['vote']['is_block_valid']
                  for vote in votes}
         return [block_id for block_id in block_ids
