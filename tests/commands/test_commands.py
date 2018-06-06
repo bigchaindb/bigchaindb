@@ -280,7 +280,7 @@ def test_recover_db_on_start(mock_autoconfigure,
                              mock_start,
                              mocked_setup_logging):
     from bigchaindb.commands.bigchaindb import run_start
-    args = Namespace(allow_temp_keypair=False, config=None, yes=True,
+    args = Namespace(config=None, yes=True,
                      skip_initialize_database=False)
     run_start(args)
 

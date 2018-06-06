@@ -18,7 +18,7 @@ def test_get_assets_with_missing_text_search(client):
 
 
 @pytest.mark.genesis
-def test_get_assets(client, b, merlin):
+def test_get_assets(client, b, alice):
     from bigchaindb.models import Transaction
     from bigchaindb.backend.localmongodb.connection import LocalMongoDBConnection
 
@@ -30,8 +30,8 @@ def test_get_assets(client, b, merlin):
 
         # create asset
         asset = {'msg': 'abc'}
-        tx = Transaction.create([merlin.public_key], [([merlin.public_key], 1)],
-                                asset=asset).sign([merlin.private_key])
+        tx = Transaction.create([alice.public_key], [([alice.public_key], 1)],
+                                asset=asset).sign([alice.private_key])
         # create block
         block = b.create_block([tx])
         b.write_block(block)
@@ -88,7 +88,7 @@ def test_get_assets_limit(client, b):
 @pytest.mark.bdb
 @pytest.mark.tendermint
 @pytest.mark.localmongodb
-def test_get_assets_tendermint(client, tb, merlin):
+def test_get_assets_tendermint(client, tb, alice):
     from bigchaindb.models import Transaction
 
     # test returns empty list when no assets are found
@@ -98,8 +98,8 @@ def test_get_assets_tendermint(client, tb, merlin):
 
     # create asset
     asset = {'msg': 'abc'}
-    tx = Transaction.create([merlin.public_key], [([merlin.public_key], 1)],
-                            asset=asset).sign([merlin.private_key])
+    tx = Transaction.create([alice.public_key], [([alice.public_key], 1)],
+                            asset=asset).sign([alice.private_key])
 
     tb.store_transaction(tx)
 
@@ -116,17 +116,17 @@ def test_get_assets_tendermint(client, tb, merlin):
 @pytest.mark.bdb
 @pytest.mark.tendermint
 @pytest.mark.localmongodb
-def test_get_assets_limit_tendermint(client, tb, merlin):
+def test_get_assets_limit_tendermint(client, tb, alice):
     from bigchaindb.models import Transaction
 
     b = tb
     # create two assets
     asset1 = {'msg': 'abc 1'}
     asset2 = {'msg': 'abc 2'}
-    tx1 = Transaction.create([merlin.public_key], [([merlin.public_key], 1)],
-                             asset=asset1).sign([merlin.private_key])
-    tx2 = Transaction.create([merlin.public_key], [([merlin.public_key], 1)],
-                             asset=asset2).sign([merlin.private_key])
+    tx1 = Transaction.create([alice.public_key], [([alice.public_key], 1)],
+                             asset=asset1).sign([alice.private_key])
+    tx2 = Transaction.create([alice.public_key], [([alice.public_key], 1)],
+                             asset=asset2).sign([alice.private_key])
 
     b.store_transaction(tx1)
     b.store_transaction(tx2)

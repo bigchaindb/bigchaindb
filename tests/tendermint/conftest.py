@@ -8,19 +8,19 @@ def b():
 
 
 @pytest.fixture
-def merlin():
+def alice():
     from bigchaindb.common.crypto import generate_key_pair
     return generate_key_pair()
 
 
 @pytest.fixture
-def merlin_privkey(merlin):
-    return merlin.private_key
+def alice_privkey(alice):
+    return alice.private_key
 
 
 @pytest.fixture
-def merlin_pubkey(merlin):
-    return merlin.public_key
+def alice_pubkey(alice):
+    return alice.public_key
 
 
 @pytest.fixture

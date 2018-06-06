@@ -18,7 +18,7 @@ def test_get_metadata_with_missing_text_search(client):
 
 
 @pytest.mark.genesis
-def test_get_metadata(client, b, merlin):
+def test_get_metadata(client, b, alice):
     from bigchaindb.models import Transaction
     from bigchaindb.backend.mongodb.connection import MongoDBConnection
 
@@ -31,8 +31,8 @@ def test_get_metadata(client, b, merlin):
         # create asset
         asset = {'msg': 'abc'}
         metadata = {'key': 'my_meta'}
-        tx = Transaction.create([merlin.public_key], [([merlin.public_key], 1)], metadata=metadata,
-                                asset=asset).sign([merlin.private_key])
+        tx = Transaction.create([alice.public_key], [([alice.public_key], 1)], metadata=metadata,
+                                asset=asset).sign([alice.public_key])
         # create block
         block = b.create_block([tx])
         b.write_block(block)
@@ -56,7 +56,7 @@ def test_get_metadata(client, b, merlin):
 
 
 @pytest.mark.genesis
-def test_get_metadata_limit(client, b, merlin):
+def test_get_metadata_limit(client, b, alice):
     from bigchaindb.models import Transaction
     from bigchaindb.backend.mongodb.connection import MongoDBConnection
 
@@ -64,13 +64,13 @@ def test_get_metadata_limit(client, b, merlin):
         # create two assets
         asset1 = {'msg': 'abc 1'}
         meta1 = {'key': 'meta 1'}
-        tx1 = Transaction.create([merlin.public_key], [([merlin.public_key], 1)], metadata=meta1,
-                                 asset=asset1).sign([merlin.private_key])
+        tx1 = Transaction.create([alice.public_key], [([alice.public_key], 1)], metadata=meta1,
+                                 asset=asset1).sign([alice.public_key])
 
         asset2 = {'msg': 'abc 2'}
         meta2 = {'key': 'meta 2'}
-        tx2 = Transaction.create([merlin.public_key], [([merlin.public_key], 1)], metadata=meta2,
-                                 asset=asset2).sign([merlin.private_key])
+        tx2 = Transaction.create([alice.public_key], [([alice.public_key], 1)], metadata=meta2,
+                                 asset=asset2).sign([alice.public_key])
         # create block
         block = b.create_block([tx1, tx2])
         b.write_block(block)
@@ -91,7 +91,7 @@ def test_get_metadata_limit(client, b, merlin):
 
 @pytest.mark.bdb
 @pytest.mark.tendermint
-def test_get_metadata_tendermint(client, tb, merlin):
+def test_get_metadata_tendermint(client, tb, alice):
     from bigchaindb.models import Transaction
 
     b = tb
@@ -104,8 +104,8 @@ def test_get_metadata_tendermint(client, tb, merlin):
     # create asset
     asset = {'msg': 'abc'}
     metadata = {'key': 'my_meta'}
-    tx = Transaction.create([merlin.public_key], [([merlin.public_key], 1)], metadata=metadata,
-                            asset=asset).sign([merlin.private_key])
+    tx = Transaction.create([alice.public_key], [([alice.public_key], 1)], metadata=metadata,
+                            asset=asset).sign([alice.private_key])
 
     b.store_transaction(tx)
 
@@ -121,7 +121,7 @@ def test_get_metadata_tendermint(client, tb, merlin):
 
 @pytest.mark.bdb
 @pytest.mark.tendermint
-def test_get_metadata_limit_tendermint(client, tb, merlin):
+def test_get_metadata_limit_tendermint(client, tb, alice):
     from bigchaindb.models import Transaction
 
     b = tb
@@ -129,14 +129,14 @@ def test_get_metadata_limit_tendermint(client, tb, merlin):
     # create two assets
     asset1 = {'msg': 'abc 1'}
     meta1 = {'key': 'meta 1'}
-    tx1 = Transaction.create([merlin.public_key], [([merlin.public_key], 1)], metadata=meta1,
-                             asset=asset1).sign([merlin.private_key])
+    tx1 = Transaction.create([alice.public_key], [([alice.public_key], 1)], metadata=meta1,
+                             asset=asset1).sign([alice.private_key])
     b.store_transaction(tx1)
 
     asset2 = {'msg': 'abc 2'}
     meta2 = {'key': 'meta 2'}
-    tx2 = Transaction.create([merlin.public_key], [([merlin.public_key], 1)], metadata=meta2,
-                             asset=asset2).sign([merlin.private_key])
+    tx2 = Transaction.create([alice.public_key], [([alice.public_key], 1)], metadata=meta2,
+                             asset=asset2).sign([alice.private_key])
     b.store_transaction(tx2)
 
     # test that both assets are returned without limit

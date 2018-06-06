@@ -271,15 +271,15 @@ def tb():
 
 
 @pytest.fixture
-def create_tx(merlin, user_pk):
+def create_tx(alice, user_pk):
     from bigchaindb.models import Transaction
     name = f'I am created by the create_tx fixture. My random identifier is {random.random()}.'
-    return Transaction.create([merlin_pubkey(merlin)], [([user_pk], 1)], asset={'name': name})
+    return Transaction.create([alice_pubkey(alice)], [([user_pk], 1)], asset={'name': name})
 
 
 @pytest.fixture
-def signed_create_tx(merlin, create_tx):
-    return create_tx.sign([merlin_privkey(merlin)])
+def signed_create_tx(alice, create_tx):
+    return create_tx.sign([alice_privkey(alice)])
 
 
 @pytest.mark.abci
@@ -328,16 +328,16 @@ def _get_height(b):
 
 
 @pytest.fixture
-def inputs(user_pk, merlin, b):
+def inputs(user_pk, b, alice):
     from bigchaindb.models import Transaction
     # create blocks with transactions for `USER` to spend
     for block in range(4):
         transactions = [
             Transaction.create(
-                [merlin_pubkey(merlin)],
+                [alice_pubkey(alice)],
                 [([user_pk], 1)],
                 metadata={'msg': random.random()},
-            ).sign([merlin_privkey(merlin)]).to_dict()
+            ).sign([alice_privkey(alice)]).to_dict()
             for _ in range(10)
         ]
         block = Block(app_hash='', height=_get_height(b), transactions=transactions)
