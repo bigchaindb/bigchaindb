@@ -12,6 +12,11 @@ mongodb_apt_repo: "deb [arch={{ server_arch }}] http://repo.mongodb.org/apt/{{ d
 mongodb_yum_base_url: "https://repo.mongodb.org/yum/{{ ansible_os_family|lower }}/$releasever/{{ mongodb_package }}/{{ mongo_version }}/{{ ansible_architecture }}"
 mongodb_dnf_base_url: "https://repo.mongodb.org/yum/{{ ansible_os_family|lower }}/7/{{ mongodb_package }}/{{ mongo_version }}/{{ ansible_architecture }}"
 
+# Epel repo
+epel_repo_url: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
+epel_repo_gpg_key_url: "/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
+epel_repofile_path: "/etc/yum.repos.d/epel.repo"
+
 # MongoDB running config
 mongodb_storage_path: /data/db/main
 mongodb_log_path: /var/log/mongodb
