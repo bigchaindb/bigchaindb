@@ -25,7 +25,7 @@ class Bigchain(object):
     TX_IN_BACKLOG = 'backlog'
     """return if transaction is in backlog"""
 
-    def __init__(self, connection=None, backlog_reassign_delay=None):
+    def __init__(self, connection=None):
         """Initialize the Bigchain instance
 
         A Bigchain instance has several configuration parameters (e.g. host).
@@ -38,8 +38,6 @@ class Bigchain(object):
         its default value (defined in bigchaindb.__init__).
 
         Args:
-            public_key (str): the base58 encoded public key for the ED25519 curve.
-            private_key (str): the base58 encoded private key for the ED25519 curve.
             connection (:class:`~bigchaindb.backend.connection.Connection`):
                 A connection to the database.
         """
