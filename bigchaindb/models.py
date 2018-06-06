@@ -170,7 +170,7 @@ class Block(object):
     """
 
     def __init__(self, transactions=None, node_pubkey=None, timestamp=None,
-                 voters=None, signature=None):
+                 signature=None):
         """The Block model is mainly used for (de)serialization and integrity
         checking.
 
@@ -187,11 +187,6 @@ class Block(object):
             raise TypeError('`transactions` must be a list instance or None')
         else:
             self.transactions = transactions or []
-
-        if voters is not None and not isinstance(voters, list):
-            raise TypeError('`voters` must be a list instance or None')
-        else:
-            self.voters = voters or []
 
         if timestamp is not None:
             self.timestamp = timestamp
@@ -330,7 +325,7 @@ class Block(object):
         signature = block_body.get('signature')
 
         return cls(transactions, block['node_pubkey'],
-                   block['timestamp'], block['voters'], signature)
+                   block['timestamp'], [], signature)
 
     @property
     def id(self):
@@ -352,7 +347,6 @@ class Block(object):
             'timestamp': self.timestamp,
             'transactions': [tx.to_dict() for tx in self.transactions],
             'node_pubkey': self.node_pubkey,
-            'voters': self.voters,
         }
         block_serialized = serialize(block)
         block_id = hash_data(block_serialized)

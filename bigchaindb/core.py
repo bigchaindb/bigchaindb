@@ -101,40 +101,6 @@ class Bigchain(object):
                 return False
         return True
 
-    def get_block(self, block_id, include_status=False):
-        """Get the block with the specified `block_id` (and optionally its status)
-
-        Returns the block corresponding to `block_id` or None if no match is
-        found.
-
-        Args:
-            block_id (str): transaction id of the transaction to get
-            include_status (bool): also return the status of the block
-                       the return value is then a tuple: (block, status)
-        """
-        # get block from database
-        block_dict = backend.query.get_block(self.connection, block_id)
-        # get the asset ids from the block
-        if block_dict:
-            asset_ids = Block.get_asset_ids(block_dict)
-            txn_ids = Block.get_txn_ids(block_dict)
-            # get the assets from the database
-            assets = self.get_assets(asset_ids)
-            # get the metadata from the database
-            metadata = self.get_metadata(txn_ids)
-            # add the assets to the block transactions
-            block_dict = Block.couple_assets(block_dict, assets)
-            # add the metadata to the block transactions
-            block_dict = Block.couple_metadata(block_dict, metadata)
-
-        status = None
-        if include_status:
-            if block_dict:
-                status = self.block_election_status(block_dict)
-            return block_dict, status
-        else:
-            return block_dict
-
     def get_transaction(self, txid, include_status=False):
         """Get the transaction with the specified `txid` (and optionally its status)
 
@@ -411,19 +377,6 @@ class Bigchain(object):
     def write_vote(self, vote):
         """Write the vote to the database."""
         return backend.query.write_vote(self.connection, vote)
-
-    def block_election(self, block):
-        if type(block) != dict:
-            block = block.to_dict()
-        votes = list(backend.query.get_votes_by_block_id(self.connection,
-                                                         block['id']))
-        return self.consensus.voting.block_election(block, votes)
-
-    def block_election_status(self, block):
-        """Tally the votes on a block, and return the status:
-           valid, invalid, or undecided.
-        """
-        return self.block_election(block)['status']
 
     def get_assets(self, asset_ids):
         """Return a list of assets that match the asset_ids
