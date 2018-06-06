@@ -2,7 +2,7 @@ from bigchaindb import exceptions as core_exceptions
 
 import bigchaindb
 
-from bigchaindb import backend, config_utils, fastquery
+from bigchaindb import backend, config_utils
 from bigchaindb.consensus import BaseConsensusRules
 from bigchaindb.models import Block, Transaction
 
@@ -344,10 +344,6 @@ class Bigchain(object):
             pointing to another transaction's condition
         """
         return self.get_outputs_filtered(owner, spent=False)
-
-    @property
-    def fastquery(self):
-        return fastquery.FastQuery(self.connection)
 
     def get_outputs_filtered(self, owner, spent=None):
         """Get a list of output links filtered on some criteria
