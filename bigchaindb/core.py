@@ -45,10 +45,6 @@ class Bigchain(object):
         """
         config_utils.autoconfigure()
 
-        if backlog_reassign_delay is None:
-            backlog_reassign_delay = bigchaindb.config['backlog_reassign_delay']
-        self.backlog_reassign_delay = backlog_reassign_delay
-
         consensusPlugin = bigchaindb.config.get('consensus_plugin')
 
         if consensusPlugin:
@@ -77,7 +73,7 @@ class Bigchain(object):
         backlog after some amount of time specified in the configuration
         """
 
-        return backend.query.get_stale_transactions(self.connection, self.backlog_reassign_delay)
+        return backend.query.get_stale_transactions(self.connection)
 
     def validate_transaction(self, transaction):
         """Validate a transaction.

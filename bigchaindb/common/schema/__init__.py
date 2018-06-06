@@ -30,7 +30,6 @@ _, TX_SCHEMA_CREATE = _load_schema('transaction_create_' +
                                    TX_SCHEMA_VERSION)
 _, TX_SCHEMA_TRANSFER = _load_schema('transaction_transfer_' +
                                      TX_SCHEMA_VERSION)
-VOTE_SCHEMA_PATH, VOTE_SCHEMA = _load_schema('vote')
 
 
 def _validate_schema(schema, body):
@@ -69,8 +68,3 @@ def validate_transaction_schema(tx):
         _validate_schema(TX_SCHEMA_TRANSFER, tx)
     else:
         _validate_schema(TX_SCHEMA_CREATE, tx)
-
-
-def validate_vote_schema(vote):
-    """Validate a vote dict"""
-    _validate_schema(VOTE_SCHEMA, vote)

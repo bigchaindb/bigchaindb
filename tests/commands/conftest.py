@@ -36,7 +36,6 @@ def mock_generate_key_pair(monkeypatch):
 def mock_bigchaindb_backup_config(monkeypatch):
     config = {
         'database': {'host': 'host', 'port': 12345, 'name': 'adbname'},
-        'backlog_reassign_delay': 5
     }
     monkeypatch.setattr('bigchaindb._config', config)
 

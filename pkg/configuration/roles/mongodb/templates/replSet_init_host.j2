@@ -1,7 +1,0 @@
-rs.initiate( { _id : "{{ replica_set_name }}", members: [ { _id : 0, host :"{{ bdb_hosts[bdb_hosts|length-1]['name'] }}:{{ mongodb_port }}" } ] } )
-sleep(5000);
-{% for host in bdb_hosts %}
-{%- if ansible_hostname != host["name"] -%}
-rs.add("{{ host["name"] }}:{{ mongodb_port }}");
-{% endif %}
-{%- endfor -%}

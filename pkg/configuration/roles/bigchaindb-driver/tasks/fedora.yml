@@ -1,7 +1,0 @@
----
-- name: Install dependencies
-  dnf:
-    name: "{{ item }}"
-    state: present
-  with_items: "{{ dependencies_dnf }}"
-  tags: [bigchaindb-driver]

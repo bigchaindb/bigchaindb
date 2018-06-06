@@ -1,31 +1,22 @@
 ---
 dependencies_deb:
   - g++
-  - python3-dev
   - libffi-dev
   - build-essential
   - libssl-dev
-  - python3-pip
 
 dependencies_yum:
   - gcc-c++
   - "@Development Tools"
-  - python35u-devel
   - libffi-devel
   - openssl-devel
-  - python35u-setuptools
 
 dependencies_dnf:
   - gcc-c++
   - redhat-rpm-config
   - "@Development Tools"
-  - python3-devel
   - libffi-devel
   - openssl-devel
-  - python3-pip
-
-python_pip_upgrade: true
-python_setuptools_upgrade: true
 
 # Host configuration
 distribution_name: "{{ ansible_distribution|lower }}"
@@ -35,17 +26,18 @@ distribution_major: "{{ ansible_distribution_major_version }}"
 directories:
   - /data
 
-backend_db: mongodb #[mongodb]
-bigchaindb_config_path: /data/.bigchaindb
+backend_db: localmongodb #[localmongodb]
 
 bigchaindb_server_bind: "0.0.0.0:9984"
-bigchaindb_log_file: "{{ ansible_env.HOME }}/bigchaindb.log"
 
 # Docker configuration
 bigchaindb_image_name: "bigchaindb/bigchaindb"
+bigchaindb_image_tag: "develop"
 bigchaindb_docker_name: "bigchaindb"
-bigchaindb_default_port: 9984
-bigchandb_host_port: 59984
-bigchaindb_host_mount_dir: "{{ ansible_env.HOME }}/bigchaindb_docker"
-# Default IP of docker0 bridge
-bigchaindb_default_host: "172.17.0.1"
+mongodb_docker_name: "mongodb"
+tendermint_docker_name: "tendermint"
+bigchaindb_default_server_port: 9984
+bigchaindb_default_ws_port: 9985
+bigchaindb_tendermint_port: 46657
+tendermint_abci_port: 45558
+bigchaindb_docker_net: "bigchaindb_docker_net"

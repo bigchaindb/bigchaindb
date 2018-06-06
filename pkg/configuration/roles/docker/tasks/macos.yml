@@ -1,0 +1,24 @@
+---
+- name: Check if Docker is Present
+  command: docker
+  register: result
+  ignore_errors: True
+  tags: [docker]
+
+- name: Error! Docker not found
+  fail:
+    msg: "Docker not installed on MacOSX, please visit: https://docs.docker.com/docker-for-mac/install/"
+  when: result is failed
+  tags: [docker]
+
+- name: Check if Docker is running
+  command: docker info
+  register: info_result
+  ignore_errors: True
+  tags: [docker]
+
+- name: Error! Docker not running
+  fail:
+    msg: "Docker not running."
+  when: info_result is failed
+  tags: [docker]

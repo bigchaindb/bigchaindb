@@ -6,9 +6,24 @@ If the pull request is from an employee of BigchainDB GmbH, then you can ignore 
 
 If the pull request is from someone who is _not_ an employee of BigchainDB, then:
 
-* Have they agreed to the Individual Contributor Agreement in the past? (Troy, Greg, and others have a list.) If yes, then you can merge the PR and ignore the rest of this document.
-* Do they belong to a company or organization which agreed to the Entity Contributor Agreement in the past, and will they be contributing on behalf of that company or organization? (Troy, Greg, and others have a list.) If yes, then you can merge the PR and ignore the rest of this document.
-* Otherwise, go to the pull request in question and post a comment using this template:
+A. Have they agreed to the Individual Contributor Agreement in the past? There's a list of them in [a Google Spreadsheet that's accessible to all bigchaindb.com accounts](https://docs.google.com/spreadsheets/d/1VhekO6lgk1ZPx8dSjriucy4UinaU9pIdPQ5JXKcbD_Y/edit?usp=sharing). If yes, then you can merge the PR and ignore the rest of this document.
+
+B. Do they belong to a company or organization which agreed to the Entity Contributor Agreement in the past, and will they be contributing on behalf of that company or organization? (See the Google Spreadsheet link in A.) If yes, then you can merge the PR and ignore the rest of this document.
+
+C. Did they make a pull request to one of the bigchaindb repositories on GitHub (e.g. bigchaindb/bigchaindb)? If you're not sure, or you can't find one, then respond with an email of the form:
+
+Dear [NAME OF PERSON WHO AGREED TO THE CLA]
+
+According to the email copied below, you agreed to the BigchainDB Contributor License Agreement (CLA).
+
+Did you intend to do that? If no, then feel free to ignore this email and we'll pretend it never happened.
+
+If you did intend to do that, then do you intend to make a pull request in a BigchainDB repository? Maybe you already did? If so, can you please point me to the pull request in question?
+
+Sincerely,
+[INSERT YOUR NAME HERE]
+
+D. Otherwise, go to the pull request in question and post a comment using this template:
 
 Hi @nameofuser
 

@@ -1,6 +1,5 @@
 import collections
 
-from bigchaindb.common.schema import SchemaValidationError, validate_vote_schema
 from bigchaindb.exceptions import CriticalDuplicateVote
 from bigchaindb.common.utils import serialize
 from bigchaindb.common.crypto import PublicKey
@@ -79,10 +78,6 @@ class Voting:
         malformed = []
 
         for vote in by_voter.values():
-            if not cls.verify_vote_schema(vote):
-                malformed.append(vote)
-                continue
-
             if vote['vote']['is_block_valid'] is True:
                 prev_blocks[vote['vote']['previous_block']] += 1
 
@@ -131,13 +126,3 @@ class Voting:
         public_key = PublicKey(pk_base58)
         body = serialize(vote['vote']).encode()
         return public_key.verify(body, signature)
-
-    @classmethod
-    def verify_vote_schema(cls, vote):
-        # I'm not sure this is the correct approach. Maybe we should allow
-        # duck typing w/r/t votes.
-        try:
-            validate_vote_schema(vote)
-            return True
-        except SchemaValidationError as e:
-            return False

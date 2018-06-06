@@ -18,7 +18,6 @@ def config(request, monkeypatch):
             'max_tries': 3
         },
         'CONFIGURED': True,
-        'backlog_reassign_delay': 30,
     }
 
     monkeypatch.setattr('bigchaindb.config', config)

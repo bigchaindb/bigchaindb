@@ -1,42 +1,51 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-. ./bootstrap_constants.sh
+BASEDIR="${BASH_SOURCE%/*}"
+if [[ ! -d "$BASEDIR" ]]; then BASEDIR="$PWD"; fi
+. "$BASEDIR/bootstrap_constants.sh"
 
 validate_os_version_and_deps(){
     if $1; then
         case $2 in
-            ubuntu)
-                apt-get install bc -y > /dev/null 2>&1
-                if [[ ($(echo $3 | bc) > $MINIMUM_UBUNTU_VERSION)
-                    || ($(echo $3 | bc) == $MINIMUM_UBUNTU_VERSION)]]; then
+            centos)
+                if [[ ($(version_compare_gt $3 $MINIMUM_CENTOS_VERSION) == 0)
+                    || ($(version_compare_eq $3 $MINIMUM_CENTOS_VERSION) == 0) ]]; then
+                    rpm -q "${OS_DEPENDENCIES[@]}" > /dev/null 2>&1
+                    echo $?
+                else
+                    echo 2
+                fi
+            ;;
+            debian)
+                if [[ ($(version_compare_gt $3 $MINIMUM_DEBIAN_VERSION) == 0)
+                    || ($(version_compare_eq $3 $MINIMUM_DEBIAN_VERSION) == 0) ]]; then
                     dpkg -s "${OS_DEPENDENCIES[@]}" > /dev/null 2>&1
                     echo $?
                 else
-                    echo "Supported $2 Versions: >= $MINIMUM_UBUNTU_VERSION"
-                    exit 1
-                fi
-            ;;
-            centos)
-                yum install bc -y > /dev/null 2>&1
-                if [[ ($(echo $3 | bc) > $MINIMUM_CENTOS_VERSION)
-                    || ($(echo $3 | bc) == $MINIMUM_CENTOS_VERSION) ]]; then
-                    rpm -q "${OS_DEPENDENCIES[@]}" > /dev/null 2>&1
-                    echo $?
-                else
-                    echo "Supported $2 Versions: >= $MINIMUM_CENTOS_VERSION"
-                    exit 1
+                    echo 2
                 fi
             ;;
             fedora)
-                dnf install bc python2-dnf libselinux-python -y > /dev/null 2>&1
-                if [[ ($(echo $3 | bc) > $MINIMUM_FEDORA_VERSION)
-                    || ($(echo $3 | bc) == $MINIMUM_FEDORA_VERSION) ]]; then
+                if [[ ($(version_compare_gt $3 $MINIMUM_FEDORA_VERSION) == 0)
+                    || ($(version_compare_eq $3 $MINIMUM_FEDORA_VERSION) == 0) ]]; then
                     rpm -q "${OS_DEPENDENCIES[@]}" > /dev/null 2>&1
                     echo $?
                 else
-                    echo "Supported $2 Versions: >= $MINIMUM_FEDORA_VERSION"
-                    exit 1
+                    echo 2
                 fi
+            ;;
+            ubuntu)
+                if [[ ($(version_compare_gt $3 $MINIMUM_UBUNTU_VERSION) == 0)
+                    || ($(version_compare_eq $3 $MINIMUM_UBUNTU_VERSION) == 0) ]]; then
+                    dpkg -s "${OS_DEPENDENCIES[@]}" > /dev/null 2>&1
+                    echo $?
+                else
+                    echo 2
+                fi
+            ;;
+            macOS)
+                pip show "${OS_DEPENDENCIES[@]}" > /dev/null 2>&1
+                echo $?
             ;;
             *)
                 echo "Supported OS(s) are: [ ${SUPPORTED_OS[*]} ]."
@@ -45,48 +54,78 @@ validate_os_version_and_deps(){
         esac
     else
         echo "Supported OS(s) are: [ ${SUPPORTED_OS[*]} ]."
-        exit 1
     fi
 }
 
-install_dependencies() {
+version_compare_gt(){
+  test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1"
+  echo $?
+}
+
+version_compare_eq(){
+  test "$(printf '%s\n' "$@" | sort -V | head -n 1)" == "$2"
+  echo $?
+}
+
+
+install_ansible() {
+    echo "Installing Ansible..."
     case $1 in
-        ubuntu)
-            install_deps_deb
-        ;;
-        centos)
-            install_deps_centos
-        ;;
-        fedora)
-            install_deps_fedora
-        ;;
-        *)
-            echo "Supported OS(s) are: [ ${SUPPORTED_OS[*]} ]."
-            exit 1
-        ;;
+      centos)
+        yum install epel-release -y
+        yum install -y https://centos7.iuscommunity.org/ius-release.rpm
+        yum install ansible -y
+      ;;
+      debian)
+          apt-get update -y && apt-get install --fix-missing
+          apt-get install lsb-release software-properties-common gnupg -y
+          echo "deb http://ppa.launchpad.net/ansible/ansible/ubuntu trusty main" | tee -a /etc/apt/sources.list.d/ansible-debian.list
+          apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 93C4A3FD7BB9C367
+          apt-get update
+          apt-get install -y ansible
+          echo 'localhost' > /etc/ansible/hosts
+      ;;
+      fedora)
+        export LC_ALL=C
+        dnf makecache
+        dnf -y install ansible
+      ;;
+      macOS)
+        easy_install pip
+        pip install ansible
+      ;;
+      ubuntu)
+        apt-get update -y
+        apt-get install -y software-properties-common
+        apt-add-repository ppa:ansible/ansible -y
+        apt-get update -y
+        apt-get install -y ansible
+      ;;
+      *)
+        echo "Supported OS(s) are: [ ${SUPPORTED_OS[*]} ]."
     esac
 }
 
-#TODO: muawiakh(Currently only ansible is required. Make it generic for
-# multiple dependencies)
-install_deps_deb() {
-    echo "Installing Dependencies..."
-    apt-get update -y
-    apt-get install -y software-properties-common
-    apt-add-repository ppa:ansible/ansible
-    apt-get update -y
-    apt-get install -y "${OS_DEPENDENCIES[@]}"
-}
-install_deps_centos() {
-    echo "Installing Dependencies..."
-    yum install epel-release -y
-    yum install -y https://centos7.iuscommunity.org/ius-release.rpm
-    yum install "${OS_DEPENDENCIES[@]}" -y
-}
-install_deps_fedora() {
-    echo "Installing Dependencies..."
-    export LC_ALL=C
-    dnf makecache
-    echo "${OS_DEPENDENCIES[@]}"
-    dnf -y install "${OS_DEPENDENCIES[@]}"
+uninstall_ansible() {
+    echo "Uninstalling Ansible..."
+    case $1 in
+      centos)
+        yum remove ansible -y
+      ;;
+      debian)
+        apt-get purge ansible -y
+      ;;
+      fedora)
+        export LC_ALL=C
+        dnf remove ansible -y
+      ;;
+      macOS)
+        pip uninstall ansible -y
+      ;;
+      ubuntu)
+        apt-get purge ansible -y
+      ;;
+      *)
+        echo "Supported OS(s) are: [ ${SUPPORTED_OS[*]} ]."
+    esac
 }

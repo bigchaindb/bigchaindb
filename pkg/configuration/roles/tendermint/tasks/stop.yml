@@ -1,0 +1,57 @@
+---
+- name: Stopping Tendermint Containers I
+  docker_container:
+    name: "{{ tendermint_docker_name }}{{ item }}"
+    image: "tendermint/tendermint:{{ tm_version }}"
+    state: absent
+    keep_volumes: no
+    force_kill: yes
+  with_sequence: start=1 end="{{ stack_size|int }}" stride=1
+  when: stack_type|lower == "docker" or stack_type|lower == "cloud"
+  tags: [tendermint]
+
+- name: Configuring Tendermint Containers II
+  docker_container:
+    name: "tm_config_gen"
+    image: "tendermint/tendermint:{{ tm_version }}"
+    detach: true
+    force_kill: yes
+  when: stack_type|lower == "docker" or stack_type|lower == "cloud"
+  tags: [tendermint]
+
+- name: Removing Tendermint Directories I
+  file:
+    path: "{{ tendermint_host_mount_dir }}{{ item }}"
+    state: absent
+    force: yes
+  with_sequence: start=0 end="{{ stack_size|int }}" stride=1
+  when: stack_type|lower == "docker" or stack_type|lower == "cloud"
+  tags: [mongodb]
+
+- name: Removing Tendermint Directories II
+  file:
+    path: "{{ tendermint_host_mount_config_dir }}"
+    state: absent
+    force: yes
+  when: stack_type|lower == "docker" or stack_type|lower == "cloud"
+  tags: [mongodb]
+
+- name: Get Running Tendermint Process
+  shell: "ps aux | grep \"[t]endermint\" | awk '{print $2}'"
+  register: tendermint_ps
+  when: stack_type|lower == "local"
+  tags: [tendermint]
+
+- name: Kill Tendermint Process
+  shell: "kill {{ item }}"
+  with_items: "{{ tendermint_ps.stdout_lines }}"
+  when: stack_type|lower == "local" and tendermint_ps.stdout_lines|length > 0
+  tags: [tendermint]
+
+- name: Removing Tendermint Directories
+  file:
+    path: "{{ tendermint_home }}"
+    state: absent
+    force: yes
+  when: stack_type|lower == "local"
+  tags: [tendermint]

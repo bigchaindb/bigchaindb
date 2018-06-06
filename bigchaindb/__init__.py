@@ -65,7 +65,6 @@ config = {
     },
     # FIXME: hardcoding to localmongodb for now
     'database': _database_map['localmongodb'],
-    'backlog_reassign_delay': 120,
     'log': {
         'file': log_config['handlers']['file']['filename'],
         'error_file': log_config['handlers']['errors']['filename'],

@@ -34,7 +34,7 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
       - name: bigchaindb
-        image: bigchaindb/bigchaindb:2.0.0-alpha6
+        image: bigchaindb/bigchaindb:2.0.0-beta1
         imagePullPolicy: Always
         args:
         - start
@@ -59,8 +59,6 @@ spec:
           value: "EEWUAhsk94ZUHhVw7qx9oZiXYDAWc9cRz93eMrsTG4kZ"
         - name: BIGCHAINDB_KEYPAIR_PRIVATE
           value: "3CjmRhu718gT1Wkba3LfdqX5pfYuBdaMPLd7ENUga5dm"
-        - name: BIGCHAINDB_BACKLOG_REASSIGN_DELAY
-          value: "120"
         - name: BIGCHAINDB_DATABASE_MAXTRIES
           value: "3"
         - name: BIGCHAINDB_DATABASE_CONNECTION_TIMEOUT

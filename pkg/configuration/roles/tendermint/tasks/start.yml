@@ -1,0 +1,90 @@
+---
+- name: Building Tendermint Docker
+  docker_image:
+    name: "{{ tendermint_image_name }}"
+    state: build
+    tag: "{{tendermint_image_tag }}"
+    dockerfile: Dockerfile
+    path: "{{ home_dir }}/bigchaindb/pkg/configuration/roles/tendermint/files"
+    buildargs:
+      tm_version: "{{ tm_version }}"
+    nocache: yes
+  when: stack_type|lower == "docker" or stack_type|lower == "cloud"
+  tags: [tendermint]
+
+- name: Configuring Tendermint Containers
+  docker_container:
+    name: "tm_config_gen"
+    image: "{{ tendermint_image_name }}:{{ tendermint_image_tag }}"
+    detach: true
+    volumes:
+      - "{{ tendermint_host_mount_config_dir }}{{ tendermint_home }}:{{ tendermint_home }}"
+    entrypoint: ''
+    command: |
+      bash -c 'tendermint init &&
+        jq ".validators=[]" /tendermint/config/genesis.json > /tendermint/config/genesis.tmp &&
+        mv /tendermint/config/genesis.tmp /tendermint/config/genesis.json && rm /tendermint/config/node_key.json &&
+        for i in $( seq {{ stack_size }} );do
+        tendermint gen_validator > /tendermint/config/priv_validator$i.json;
+        tendermint gen_node_key > /tendermint/config/node_id$i; mv /tendermint/config/node_key.json /tendermint/config/node_key$i.json;
+        cat tendermint/config/priv_validator$i.json | jq ".pub_key" | jq ". as \$k | {pub_key: \$k, power: 10,
+          name: \"{{ tendermint_docker_name }}$i\"}" > pub_validator$i.json;
+        cat /tendermint/config/genesis.json | jq ".validators |= .+ [$(cat pub_validator$i.json)]" > tmpgenesis;
+        mv tmpgenesis /tendermint/config/genesis.json;
+        done'
+  when: stack_type|lower == "docker" or stack_type|lower == "cloud"
+  tags: [tendermint]
+
+- name: Starting Tendermint Containers
+  docker_container:
+    name: "{{ tendermint_docker_name }}{{ item }}"
+    hostname: "{{ tendermint_docker_name }}{{ item }}"
+    image: "{{ tendermint_image_name }}:{{ tendermint_image_tag }}"
+    detach: true
+    network_mode: bridge
+    networks:
+      - name: "{{ bigchaindb_docker_net }}"
+    published_ports:
+      - "{{ tendermint_p2p_port }}"
+      - "{{ tendermint_rpc_port }}"
+    volumes:
+      - "{{ tendermint_host_mount_dir }}{{ item|string }}{{ tendermint_home }}:{{ tendermint_home }}"
+      - "{{ tendermint_host_mount_config_dir }}{{ tendermint_home }}:/tendermint_config"
+    entrypoint: ''
+    command: bash -c 'cp /tendermint_config/genesis.json /tendermint/config/genesis.json &&
+      mv /tendermint_config/priv_validator"{{ item|string }}".json /tendermint/config/priv_validator.json &&
+      mv /tendermint_config/node_key"{{ item|string }}".json /tendermint/config/node_key.json &&
+      peers=() && for i in $( seq {{ stack_size }} );do peers+=($(cat /tendermint_config/node_id$i)@"{{ tendermint_docker_name }}$i:{{ tendermint_p2p_port }}");done &&
+      peers=$(IFS=","; echo "${peers[*]}") && echo $peers &&
+      tendermint node --p2p.persistent_peers="$peers" --p2p.laddr "tcp://"{{ tendermint_docker_name }}{{ item|string }}":46656"
+      --proxy_app="tcp://"{{ bigchaindb_docker_name }}{{ item|string }}":46658" --consensus.create_empty_blocks=false --p2p.pex=false'
+    state: started
+    keep_volumes: true
+  with_sequence: start=1 end="{{ stack_size|int }}" stride=1
+  when: stack_type|lower == "docker" or stack_type|lower == "cloud"
+  tags: [tendermint]
+
+- name: Creating directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0700
+  with_items: "{{ directories }}"
+  when: stack_type|lower == "local"
+  tags: [tendermint]
+
+- import_tasks: debian.yml
+  when: stack_type|lower == "local" and (distribution_name == "debian" or distribution_name == "ubuntu")
+  tags: [tendermint]
+
+- import_tasks: centos.yml
+  when: stack_type|lower == "local" and (distribution_name == "centos" or distribution_name == "red hat enterprise linux")
+  tags: [tendermint]
+
+- import_tasks: fedora.yml
+  when: stack_type|lower == "local" and (distribution_name == "fedora")
+  tags: [tendermint]
+
+- import_tasks: common.yml
+  when: stack_type|lower == "local"
+  tags: [tendermint]

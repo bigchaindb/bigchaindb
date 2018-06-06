@@ -170,7 +170,6 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request, ssl_con
         'database': {
             'host': DATABASE_HOST
         },
-        'backlog_reassign_delay': 5,
         'log': {
             'level_console': 'debug',
         },
@@ -274,15 +273,10 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request, ssl_con
             'advertised_port': WSSERVER_ADVERTISED_PORT,
         },
         'database': database,
-        'keypair': {
-            'public': None,
-            'private': None,
-        },
         'tendermint': {
             'host': None,
             'port': None,
         },
-        'backlog_reassign_delay': 5,
         'log': {
             'file': LOG_FILE,
             'error_file': log_config['handlers']['errors']['filename'],

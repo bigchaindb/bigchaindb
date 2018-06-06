@@ -1,0 +1,51 @@
+- name: Download Tendermint Binary
+  get_url:
+    url: "{{ tendermint_binary_url }}"
+    dest: "{{ ansible_env.HOME }}/tendermint_binary.zip"
+    mode: 0755
+  tags: [tendermint]
+
+- name: Extract Tendermint Binary
+  unarchive:
+    src: "{{ ansible_env.HOME }}/tendermint_binary.zip"
+    dest: /usr/local/bin
+    remote_src: yes
+  tags: [tendermint]
+
+- name: Creating Tendermint config directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0700
+    recurse: yes
+  with_items: "{{ directories }}"
+  when: stack_type|lower == "local"
+  tags: [tendermint]
+
+- name: Copying Tendermint config files
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items: "{{ tendermint_conf_files }}"
+  tags: [tendermint]
+
+- name: Creating files for key exchange
+  template: src=start_tendermint.j2 dest=/home/vagrant/test.sh
+  mode: 0755
+  tags: [tendermint]
+
+- name: Start nginx to host public_key
+  systemd: name=nginx state=restarted
+  tags: [tendermint]
+
+- name: Tendermint Process Check
+  shell: pgrep tendermint | wc -l
+  register: tm_pchk
+  tags: [bigchaindb]
+
+- name: Run tendermint
+  shell: nohup /bin/bash /home/vagrant/test.sh > /tmp/tendermint_log_$(date +%Y%m%d_%H%M%S) 2>&1 &
+  register: run_tendermint
+  when: tm_pchk.stdout| int == 0
+  failed_when: "'FAILED' in run_tendermint.stderr or run_tendermint.rc != 0"
+  tags: [tendermint]

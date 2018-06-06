@@ -1,5 +1,5 @@
 ---
-- name: Install dependencies
+- name: Install dependencies | dnf
   dnf:
     name: "{{ item }}"
     state: present

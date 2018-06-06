@@ -1,20 +1,21 @@
 ---
-- import_tasks: deploy_docker.yml
-  when: deploy_docker|bool
+- name: Check if Docker is running
+  command: docker info
+  register: info_result
+  ignore_errors: True
+  when: stack_type|lower == "docker" or stack_type|lower == "cloud"
   tags: [bigchaindb]
 
-- import_tasks: debian.yml
-  when: not deploy_docker|bool and (distribution_name == "debian" or distribution_name == "ubuntu")
+- name: Error! Docker not running
+  fail:
+    msg: "Docker not running."
+  when: (stack_type|lower == "docker" or stack_type|lower == "cloud") and info_result is failed
   tags: [bigchaindb]
 
-- import_tasks: centos.yml
-  when: not deploy_docker|bool and (distribution_name == "centos" or distribution_name == "red hat enterprise linux")
+- import_tasks: start.yml
+  when: action|lower == 'start'
   tags: [bigchaindb]
 
-- import_tasks: fedora.yml
-  when: not deploy_docker|bool and (distribution_name == "fedora")
-  tags: [bigchaindb]
-
-- import_tasks: common.yml
-  when: not deploy_docker|bool
+- import_tasks: stop.yml
+  when: action|lower == 'stop'
   tags: [bigchaindb]
