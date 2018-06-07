@@ -7,9 +7,9 @@ BLOCKS_ENDPOINT = '/api/v1/blocks/'
 
 @pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
-def test_get_block_endpoint(b, client):
-    tx = Transaction.create([b.me], [([b.me], 1)])
-    tx = tx.sign([b.me_private])
+def test_get_block_endpoint(b, client, alice):
+    tx = Transaction.create([alice.public_key], [([alice.public_key], 1)])
+    tx = tx.sign([alice.private_key])
 
     block = b.create_block([tx])
     b.write_block(block)
@@ -31,12 +31,12 @@ def test_get_block_returns_404_if_not_found(client):
 
 @pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
-def test_get_blocks_by_txid_endpoint(b, client):
-    tx = Transaction.create([b.me], [([b.me], 1)])
-    tx = tx.sign([b.me_private])
+def test_get_blocks_by_txid_endpoint(b, client, alice):
+    tx = Transaction.create([alice.public_key], [([alice.public_key], 1)])
+    tx = tx.sign([alice.private_key])
 
-    tx2 = Transaction.create([b.me], [([b.me], 10)])
-    tx2 = tx2.sign([b.me_private])
+    tx2 = Transaction.create([alice.public_key], [([alice.public_key], 10)])
+    tx2 = tx2.sign([alice.private_key])
 
     block_invalid = b.create_block([tx])
     b.write_block(block_invalid)
@@ -80,14 +80,14 @@ def test_get_blocks_by_txid_endpoint(b, client):
 
 @pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
-def test_get_blocks_by_txid_and_status_endpoint(b, client):
+def test_get_blocks_by_txid_and_status_endpoint(b, client, alice):
     from bigchaindb import Bigchain
 
-    tx = Transaction.create([b.me], [([b.me], 1)])
-    tx = tx.sign([b.me_private])
+    tx = Transaction.create([alice.public_key], [([alice.public_key], 1)])
+    tx = tx.sign([alice.private_key])
 
-    tx2 = Transaction.create([b.me], [([b.me], 10)])
-    tx2 = tx2.sign([b.me_private])
+    tx2 = Transaction.create([alice.public_key], [([alice.public_key], 10)])
+    tx2 = tx2.sign([alice.private_key])
 
     block_invalid = b.create_block([tx])
     b.write_block(block_invalid)

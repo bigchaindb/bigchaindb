@@ -55,7 +55,7 @@ def test_get_assets(client, b, alice):
 
 
 @pytest.mark.genesis
-def test_get_assets_limit(client, b):
+def test_get_assets_limit(client, b, alice):
     from bigchaindb.models import Transaction
     from bigchaindb.backend.localmongodb.connection import LocalMongoDBConnection
 
@@ -63,10 +63,10 @@ def test_get_assets_limit(client, b):
         # create two assets
         asset1 = {'msg': 'abc 1'}
         asset2 = {'msg': 'abc 2'}
-        tx1 = Transaction.create([b.me], [([b.me], 1)],
-                                 asset=asset1).sign([b.me_private])
+        tx1 = Transaction.create([alice.public_key], [([alice.public_key], 1)],
+                                 asset=asset1).sign([alice.private_key])
         tx2 = Transaction.create([b.me], [([b.me], 1)],
-                                 asset=asset2).sign([b.me_private])
+                                 asset=asset2).sign([alice.private_key])
         # create block
         block = b.create_block([tx1, tx2])
         b.write_block(block)

@@ -30,9 +30,9 @@ def test_get_votes_endpoint(client):
 
 @pytest.mark.bdb
 @pytest.mark.usefixtures('inputs')
-def test_get_votes_endpoint(b, client):
-    tx = Transaction.create([b.me], [([b.me], 1)])
-    tx = tx.sign([b.me_private])
+def test_get_votes_endpoint(b, client, alice):
+    tx = Transaction.create([alice.public_key], [([alice.public_key], 1)])
+    tx = tx.sign([alice.private_key])
 
     block = b.create_block([tx])
     b.write_block(block)
@@ -52,8 +52,8 @@ def test_get_votes_endpoint(b, client):
 def test_get_votes_endpoint_multiple_votes(b, client):
     from bigchaindb.common.crypto import generate_key_pair
 
-    tx = Transaction.create([b.me], [([b.me], 1)])
-    tx = tx.sign([b.me_private])
+    tx = Transaction.create([alice.public_key], [([alice.public_key], 1)])
+    tx = tx.sign([alice.private_key])
 
     block = b.create_block([tx])
     b.write_block(block)

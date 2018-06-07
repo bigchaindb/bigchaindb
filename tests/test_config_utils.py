@@ -26,14 +26,9 @@ def test_bigchain_instance_is_initialized_when_conf_provided(request):
     from bigchaindb import config_utils
     assert 'CONFIGURED' not in bigchaindb.config
 
-    config_utils.set_config({'keypair': {'public': 'a', 'private': 'b'}})
+    config_utils.set_config({'database': {'backend': 'a'}})
 
     assert bigchaindb.config['CONFIGURED'] is True
-
-    b = bigchaindb.Bigchain()
-
-    assert b.me
-    assert b.me_private
 
 
 def test_bigchain_instance_raises_when_not_configured(request, monkeypatch):
@@ -46,7 +41,7 @@ def test_bigchain_instance_raises_when_not_configured(request, monkeypatch):
     # from existing configurations
     monkeypatch.setattr(config_utils, 'autoconfigure', lambda: 0)
 
-    with pytest.raises(exceptions.KeypairNotFoundException):
+    with pytest.raises(exceptions.ConfigurationError):
         bigchaindb.Bigchain()
 
 

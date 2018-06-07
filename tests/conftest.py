@@ -274,12 +274,12 @@ def tb():
 def create_tx(alice, user_pk):
     from bigchaindb.models import Transaction
     name = f'I am created by the create_tx fixture. My random identifier is {random.random()}.'
-    return Transaction.create([alice_pubkey(alice)], [([user_pk], 1)], asset={'name': name})
+    return Transaction.create([alice.public_key], [([user_pk], 1)], asset={'name': name})
 
 
 @pytest.fixture
 def signed_create_tx(alice, create_tx):
-    return create_tx.sign([alice_privkey(alice)])
+    return create_tx.sign([alice.private_key])
 
 
 @pytest.mark.abci
@@ -345,17 +345,17 @@ def inputs(user_pk, b, alice):
 
 
 @pytest.fixture
-def inputs_shared(user_pk, user2_pk):
+def inputs_shared(user_pk, user2_pk, alice):
     from bigchaindb.models import Transaction
 
     # create blocks with transactions for `USER` to spend
     for block in range(4):
         transactions = [
             Transaction.create(
-                [b.me],
+                [alice.public_key],
                 [user_pk, user2_pk],
                 metadata={'msg': random.random()},
-            ).sign([b.me_private]).to_dict()
+            ).sign([alice.private_key]).to_dict()
             for _ in range(10)
         ]
         block = Block(app_hash='', height=_get_height(b), transaction=transactions)
