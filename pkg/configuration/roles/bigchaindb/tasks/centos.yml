@@ -1,5 +1,5 @@
 ---
-- name: Creating directories | CentOS
+- name: Creating directories | yum
   file:
     path: "{{ item }}"
     state: directory
@@ -7,7 +7,7 @@
   with_items: "{{ directories }}"
   tags: [bigchaindb]
 
-- name: Install dependencies | CentOS
+- name: Install dependencies | yum
   yum:
     name: "{{ item }}"
     state: present
@@ -17,4 +17,3 @@
 
 - name: Install pip
   shell: "easy_install-3.5 pip"
-  tags: [bigchaindb-driver]

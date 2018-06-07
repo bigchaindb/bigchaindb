@@ -1,16 +1,16 @@
 ---
-- name: Add MongoDB Repo | Fedora
+- name: Add MongoDB Repo | dnf
   yum_repository:
     name: "{{ mongodb_package }}"
     gpgcheck: yes
-    gpgkey: https://www.mongodb.org/static/pgp/server-{{ mongodb_version }}.asc
+    gpgkey: https://www.mongodb.org/static/pgp/server-{{ mongo_version }}.asc
     baseurl: "{{ mongodb_dnf_base_url }}"
     file: "{{ mongodb_package }}"
     description: "MongoDB Repo"
     enabled: yes
   tags: [mongodb]
 
-- name: Install MongoDB | Fedora
+- name: Install MongoDB | dnf
   dnf:
     name: "{{ item }}"
     state: present

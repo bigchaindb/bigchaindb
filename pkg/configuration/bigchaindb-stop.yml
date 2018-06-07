@@ -1,0 +1,15 @@
+- hosts: all
+  vars_files:
+    - vars/stack-config.yml
+  vars:
+    action: "{{ operation }}"
+    home_dir: "{{ home_path }}"
+  pre_tasks:
+    - raw: "apt-get -qqy update && apt-get install -qqy python-minimal python-pip || dnf -y install python27 || which python"
+    - name: Gathering Facts
+      setup: #aka gather_facts
+  roles:
+    - tendermint
+    - bigchaindb
+    - mongodb
+    - { role: docker, when: stack_type|lower == "docker" or stack_type|lower == "cloud" }

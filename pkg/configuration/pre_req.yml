@@ -1,8 +1,0 @@
-- hosts: all
-  vars_files:
-    - vars/bdb-config.yml
-  serial: 1
-  roles:
-    - { role: docker, when: deploy_docker|bool }
-    - { role: docker-compose, when: deploy_docker|bool }
-    - mongodb

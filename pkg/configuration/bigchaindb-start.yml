@@ -1,0 +1,26 @@
+- hosts: all
+  gather_facts: false
+  vars_files:
+    - vars/stack-config.yml
+  vars:
+    action: "{{ operation }}"
+    home_dir: "{{ home_path }}"
+  serial: 1
+  pre_tasks:
+    - raw: "apt-get -qqy update && apt-get install -qqy python-minimal python-pip || dnf -y install python27 || which python"
+    - name: Gathering Facts
+      setup: #aka gather_facts
+  roles:
+    - { role: py36, when: stack_type|lower == "local" }
+    - { role: docker, when: stack_type|lower == "docker" or stack_type|lower == "cloud" }
+    - mongodb
+
+- hosts: all
+  vars_files:
+    - vars/stack-config.yml
+  vars:
+    action: "{{ operation }}"
+    home_dir: "{{ home_path }}"
+  roles:
+    - tendermint
+    - bigchaindb

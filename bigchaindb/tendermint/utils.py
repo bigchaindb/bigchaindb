@@ -39,8 +39,7 @@ def calculate_hash(key_list):
 
 
 def merkleroot(hashes):
-    """
-    Computes the merkle root for a given list.
+    """Computes the merkle root for a given list.
 
     Args:
         hashes (:obj:`list` of :obj:`bytes`): The leaves of the tree.
@@ -69,7 +68,7 @@ def merkleroot(hashes):
 
 
 def public_key64_to_address(base64_public_key):
-    """Note this only compatibile with Tendermint 0.19.0 """
+    """Note this only compatible with Tendermint 0.19.x"""
     ed25519_public_key = public_key_from_base64(base64_public_key)
     encoded_public_key = amino_encoded_public_key(ed25519_public_key)
     return hashlib.new('ripemd160', encoded_public_key).hexdigest().upper()

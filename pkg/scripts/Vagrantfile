@@ -1,61 +1,102 @@
-Vagrant.require_version ">= 1.8.7"
-unless Vagrant.has_plugin?("vagrant-vbguest")
-  raise "Please install the vagrant-vbguest plugin by running `vagrant plugin install vagrant-vbguest`"
-end
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
 
-unless Vagrant.has_plugin?("vagrant-cachier")
-  raise "Please install the vagrant-cachier plugin by running `vagrant plugin install vagrant-cachier`"
-end
-
+# Required modules
+require 'yaml'
 VAGRANTFILE_API_VERSION = "2"
 
-MEMORY = 4096
-CPU_COUNT = 2
+Vagrant.require_version ">= 1.8.7"
+# Validate if all the required plugins are present
+# vagrant-hostmanager replaced
+required_plugins = ["vagrant-cachier", "vagrant-vbguest", "vagrant-hosts", "vagrant-azure"]
+required_plugins.each do |plugin|
+  if not Vagrant.has_plugin?(plugin)
+    raise "Required vagrant plugin #{plugin} not found. Please run `vagrant plugin install #{plugin}`"
+  end
+end
 
-MOUNT_DIRS = {
-  :bigchaindb => {:repo => "bigchaindb", :local => "/opt/stack/bigchaindb", :owner => "edxapp"},
-}
+# Configuration files
+CONFIGURATION_FILE = 'bigchaindb/pkg/configuration/vars/stack-config.yml'
+HOSTS_FILE = 'bigchaindb/pkg/configuration/hosts/all'
+HOST_VARS_PATH = 'bigchaindb/pkg/configuration/host_vars'
 
-boxname = ENV['BOXNAME'] || "ubuntu/xenial64"
-tm_version = ENV['TM_VERSION']
+# Read configuration file(s)
+instances_config = YAML.load_file(File.join(File.dirname(__FILE__), CONFIGURATION_FILE))
+hosts_config = File.open(HOSTS_FILE, 'w+')
 
-$script = <<SCRIPT
-if [ ! -d /opt/stack/bigchaindb/pkg/scripts ]; then
-    echo "Error: Base box is missing provisioning scripts." 1>&2
-    exit 1
-fi
+# Vars needed for VM configuration
+if (instances_config["stack_type"] == "cloud" && instances_config["stack_type_provider"] == "azure")
+  box_name = "azure-dummy"
+else
+  box_name = instances_config['stack_box_name']
+end
 
-bash /opt/stack/bigchaindb/pkg/scripts/stack.sh
+# configure instance names and private ip addresses
 
-SCRIPT
+instances_arr = Array.new
+private_ipam_arr = Array.new
+if instances_config['stack_type'] == "local"
+  for i in 1..Integer(instances_config['stack_size'])
+    instance_name = "bdb-node-#{i}"
+    instance_ip_address = "10.20.30.#{i+10}"
+    instances_arr.push instance_name
+    private_ipam_arr.push instance_ip_address
+    hosts_config.puts("#{instance_ip_address} ansible_user=vagrant")
+    File.open("#{HOST_VARS_PATH}/#{instance_ip_address}", "w+") {|f| \
+    f.write("ansible_ssh_private_key_file: .vagrant/machines/#{instance_name}/virtualbox/private_key") }
+  end
+elsif
+  instance_name = instances_config["azure_dns_prefix"] + "." + instances_config["azure_region"] + ".cloudapp.azure.com"
+  instances_arr.push(instances_config["azure_dns_prefix"])
+  hosts_config.puts("#{instance_name} ansible_user=#{instances_config["azure_admin_username"]}")
+  File.open("#{HOST_VARS_PATH}/#{instance_name}", "w+") {|f| \
+  f.write("ansible_ssh_private_key_file: #{instances_config["ssh_private_key_path"]}") }
+end
+hosts_config.close
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-  config.vm.box = "ubuntu/xenial64"
-  config.vm.box_check_update = false
-
-  config.vm.network :private_network, ip: "192.168.33.10"
-
-
-  config.vm.network :forwarded_port, guest: 9984, host: 9984  # BDB
-
-  config.ssh.insert_key = true
-
-  config.vm.synced_folder  "bigchaindb", "/opt/stack/bigchaindb"
-
-
-  config.vm.provider :virtualbox do |vb|
-    vb.customize ["modifyvm", :id, "--memory", MEMORY.to_s]
-    vb.customize ["modifyvm", :id, "--cpus", CPU_COUNT.to_s]
+  instances_arr.each_with_index do |instance, index|
+    config.vm.define "#{instance}" do |node|
+      node.vm.box = box_name
+      if instances_config["stack_type"] == "cloud"
+        node.ssh.private_key_path= instances_config["ssh_private_key_path"]
+      end
+      node.vm.box_check_update = false
+      # Workaround until vagrant cachier plugin supports dnf
+      if !(box_name.include? "fedora")
+        if Vagrant.has_plugin?("vagrant-cachier")
+          node.cache.scope = :box
+        end
+      elsif box_name == "ubuntu/xenial64"
+        if Vagrant.has_plugin?("vagrant-vbguest")
+          node.vbguest.auto_update = true
+          node.vbguest.auto_reboot = true
+          config.vbguest.no_install = true
+          config.vbguest.no_remote = true
+        end
+      end
+      node.vm.synced_folder  "bigchaindb", "/opt/stack/bigchaindb" 
+      node.vm.hostname = instance
+      node.vm.provision :hosts, :sync_hosts => true
+      node.ssh.insert_key = true
+      node.vm.network :private_network, ip: private_ipam_arr[index]
+      node.vm.provider :virtualbox do |vb, override|
+        vb.customize ["modifyvm", :id, "--memory", instances_config['stack_vm_memory'].to_s]
+        vb.customize ["modifyvm", :id, "--cpus", instances_config['stack_vm_cpus'].to_s]
+      end
+      node.vm.provider :azure do |azure, override|
+        azure.tenant_id = ENV['AZURE_TENANT_ID']
+        azure.client_id = ENV['AZURE_CLIENT_ID']
+        azure.client_secret = ENV['AZURE_CLIENT_SECRET']
+        azure.subscription_id = ENV['AZURE_SUBSCRIPTION_ID']
+        azure.admin_username = instances_config["azure_admin_username"]
+        azure.dns_name = instances_config["azure_dns_prefix"]
+        azure.vm_name = instances_config["azure_dns_prefix"]
+        azure.vm_size = instances_config["azure_vm_size"]
+        azure.vm_image_urn = instances_config["azure_image_urn"]
+        azure.resource_group_name = instances_config["azure_resource_group"]
+        azure.location = instances_config["azure_region"]
+      end
+    end
   end
-
-  # Use vagrant-vbguest plugin to make sure Guest Additions are in sync
-  config.vbguest.auto_reboot = true
-  config.vbguest.auto_update = true
-
-  config.vm.provision "shell", inline: $script,
-    privileged: false,
-    env: {
-      :TM_VERSION => ENV['TM_VERSION'], 
-      :MONGO_VERSION => ENV['MONGO_VERSION']
-    }
 end

@@ -22,7 +22,7 @@ set +o xtrace
 # ``os_PACKAGE`` - package type: ``deb`` or ``rpm``
 # ``os_CODENAME`` - vendor's codename for release: ``xenial``
 
-declare -g os_VENDOR os_RELEASE os_PACKAGE os_CODENAME
+#declare -g os_VENDOR os_RELEASE os_PACKAGE os_CODENAME
 
 # Make a *best effort* attempt to install lsb_release packages for the
 # user if not available.  Note can't use generic install_package*
@@ -74,7 +74,7 @@ function GetOSVersion {
 
 # Translate the OS version values into common nomenclature
 # Sets global ``DISTRO`` from the ``os_*`` values
-declare -g DISTRO
+#declare -g DISTRO
 
 function GetDistro {
     GetOSVersion
@@ -104,25 +104,6 @@ function GetDistro {
     elif [[ "$os_VENDOR" =~ (kvmibm) ]]; then
         DISTRO="${os_VENDOR}${os_RELEASE::1}"
     else
-        # We can't make a good choice here.  Setting a sensible DISTRO
-        # is part of the problem, but not the major issue -- we really
-        # only use DISTRO in the code as a fine-filter.
-        #
-        # The bigger problem is categorising the system into one of
-        # our two big categories as Ubuntu/Debian-ish or
-        # Fedora/CentOS-ish.
-        #
-        # The setting of os_PACKAGE above is only set to "deb" based
-        # on a hard-coded list of vendor names ... thus we will
-        # default to thinking unknown distros are RPM based
-        # (ie. is_ubuntu does not match).  But the platform will then
-        # also not match in is_fedora, because that also has a list of
-        # names.
-        #
-        # So, if you are reading this, getting your distro supported
-        # is really about making sure it matches correctly in these
-        # functions.  Then you can choose a sensible way to construct
-        # DISTRO based on your distros release approach.
         die $LINENO "Unable to determine DISTRO, can not continue."
     fi
     typeset -xr DISTRO
@@ -132,16 +113,6 @@ function GetDistro {
 # is_arch arch-type
 function is_arch {
     [[ "$(uname -m)" == "$1" ]]
-}
-
-# Determine if current distribution is an Oracle distribution
-# is_oraclelinux
-function is_oraclelinux {
-    if [[ -z "$os_VENDOR" ]]; then
-        GetOSVersion
-    fi
-
-    [ "$os_VENDOR" = "OracleServer" ]
 }
 
 
@@ -155,8 +126,7 @@ function is_fedora {
 
     [ "$os_VENDOR" = "Fedora" ] || [ "$os_VENDOR" = "Red Hat" ] || \
         [ "$os_VENDOR" = "RedHatEnterpriseServer" ] || \
-        [ "$os_VENDOR" = "CentOS" ] || [ "$os_VENDOR" = "OracleServer" ] || \
-        [ "$os_VENDOR" = "Virtuozzo" ] || [ "$os_VENDOR" = "kvmibm" ]
+        [ "$os_VENDOR" = "CentOS" ]
 }
 
 

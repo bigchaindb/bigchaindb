@@ -154,7 +154,7 @@ spec:
           timeoutSeconds: 15
       # BigchainDB container
       - name: bigchaindb
-        image: bigchaindb/bigchaindb:2.0.0-alpha6
+        image: bigchaindb/bigchaindb:2.0.0-beta1
         imagePullPolicy: Always
         args:
         - start
@@ -206,11 +206,6 @@ spec:
             configMapKeyRef:
               name: vars
               key: bigchaindb-wsserver-advertised-scheme
-        - name: BIGCHAINDB_BACKLOG_REASSIGN_DELAY
-          valueFrom:
-            configMapKeyRef:
-              name: bdb-config
-              key: bigchaindb-backlog-reassign-delay
         - name: BIGCHAINDB_DATABASE_MAXTRIES
           valueFrom:
             configMapKeyRef:

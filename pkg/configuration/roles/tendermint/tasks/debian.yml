@@ -1,0 +1,12 @@
+---
+- name: Install dependencies for Tendermint | apt
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  with_items:
+    - wget
+    - unzip
+    - nginx
+    - jq
+  tags: [tendermint]

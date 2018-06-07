@@ -23,7 +23,6 @@ def config(request, monkeypatch):
         },
         'keyring': [],
         'CONFIGURED': True,
-        'backlog_reassign_delay': 30,
     }
 
     monkeypatch.setattr('bigchaindb.config', config)

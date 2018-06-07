@@ -1,0 +1,11 @@
+---
+- name: Install dependencies | yum
+  yum:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  with_items:
+    - unzip
+    - nginx
+    - jq
+  tags: [tendermint]

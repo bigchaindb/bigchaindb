@@ -29,7 +29,7 @@ ROUTES_API_V1 = [
     r('/', info.ApiV1Index),
     r('assets/', assets.AssetListApi),
     r('metadata/', metadata.MetadataApi),
-    r('blocks/<string:block_id>', blocks.BlockApi),
+    r('blocks/<int:block_id>', blocks.BlockApi),
     r('blocks/', blocks.BlockListApi),
     r('transactions/<string:tx_id>', tx.TransactionApi),
     r('transactions', tx.TransactionListApi),
