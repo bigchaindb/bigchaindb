@@ -21,7 +21,6 @@ class FastQuery:
     def __init__(self, connection):
         self.connection = connection
 
-
     def get_outputs_by_public_key(self, public_key):
         """Get outputs for a public key"""
         res = list(query.get_owned_ids(self.connection, public_key))

@@ -4,7 +4,7 @@ import bigchaindb
 
 from bigchaindb import backend, config_utils
 from bigchaindb.consensus import BaseConsensusRules
-from bigchaindb.models import Block, Transaction
+from bigchaindb.models import Transaction
 
 
 class Bigchain(object):
