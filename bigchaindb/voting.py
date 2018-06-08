@@ -24,9 +24,9 @@ class Voting:
     """
 
     @classmethod
-    def block_election(cls, block, votes, keyring):
+    def block_election(cls, block, votes):
         """Calculate the election status of a block."""
-        eligible_voters = set(block['block']['voters']) & set(keyring)
+        eligible_voters = set(block['block']['voters'])
         n_voters = len(eligible_voters)
         eligible_votes, ineligible_votes = \
             cls.partition_eligible_votes(votes, eligible_voters)

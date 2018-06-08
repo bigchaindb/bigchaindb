@@ -63,7 +63,6 @@ def test_bigchain_show_config(capsys):
     # and run_show_config updates the bigchaindb.config
     from bigchaindb import config
     del config['CONFIGURED']
-    config['keypair']['private'] = 'x' * 45
     assert output_config == config
 
 
@@ -281,7 +280,7 @@ def test_recover_db_on_start(mock_autoconfigure,
                              mock_start,
                              mocked_setup_logging):
     from bigchaindb.commands.bigchaindb import run_start
-    args = Namespace(start_rethinkdb=False, allow_temp_keypair=False, config=None, yes=True,
+    args = Namespace(config=None, yes=True,
                      skip_initialize_database=False)
     run_start(args)
 

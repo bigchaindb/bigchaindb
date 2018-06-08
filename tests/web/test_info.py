@@ -3,7 +3,6 @@ from unittest import mock
 
 @mock.patch('bigchaindb.version.__short_version__', 'tst')
 @mock.patch('bigchaindb.version.__version__', 'tsttst')
-@mock.patch('bigchaindb.config', {'keyring': ['abc'], 'keypair': {'public': 'def'}})
 def test_api_root_endpoint(client, wsserver_base_url):
     res = client.get('/')
     docs_url = ['https://docs.bigchaindb.com/projects/server/en/vtsttst',
@@ -23,8 +22,6 @@ def test_api_root_endpoint(client, wsserver_base_url):
         },
         'docs': 'https://docs.bigchaindb.com/projects/server/en/vtsttst/',
         'version': 'tsttst',
-        'keyring': ['abc'],
-        'public_key': 'def',
         'software': 'BigchainDB',
     }
 

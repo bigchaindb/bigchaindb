@@ -23,10 +23,6 @@ class CyclicBlockchainError(BigchainDBError):
     """Raised when there is a cycle in the blockchain"""
 
 
-class KeypairNotFoundException(BigchainDBError):
-    """Raised if operation cannot proceed because the keypair was not given"""
-
-
 class KeypairMismatchException(BigchainDBError):
     """Raised if the private key(s) provided for signing don't match any of the
     current owner(s)

@@ -21,18 +21,6 @@ def blockdata(b, user_pk, user2_pk):
     return blocks, [b['id'] for b in blocks]
 
 
-def test_filter_valid_block_ids_with_undecided(b, blockdata):
-    blocks, block_ids = blockdata
-    valid_ids = b.fastquery.filter_valid_block_ids(block_ids, include_undecided=True)
-    assert set(valid_ids) == {blocks[0]['id'], blocks[1]['id']}
-
-
-def test_filter_valid_block_ids_only_valid(b, blockdata):
-    blocks, block_ids = blockdata
-    valid_ids = b.fastquery.filter_valid_block_ids(block_ids)
-    assert set(valid_ids) == {blocks[1]['id']}
-
-
 def test_filter_valid_items(b, blockdata):
     blocks, _ = blockdata
     assert (b.fastquery.filter_valid_items(blocks, block_id_key=lambda b: b['id'])

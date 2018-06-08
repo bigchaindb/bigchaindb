@@ -1,15 +1,10 @@
-import random
-from time import time
-
 from bigchaindb import exceptions as core_exceptions
-from bigchaindb.common import crypto, exceptions
-from bigchaindb.common.utils import gen_timestamp, serialize
 
 import bigchaindb
 
-from bigchaindb import backend, config_utils, fastquery
+from bigchaindb import backend, config_utils
 from bigchaindb.consensus import BaseConsensusRules
-from bigchaindb.models import Block, Transaction
+from bigchaindb.models import Transaction
 
 
 class Bigchain(object):
@@ -30,7 +25,7 @@ class Bigchain(object):
     TX_IN_BACKLOG = 'backlog'
     """return if transaction is in backlog"""
 
-    def __init__(self, public_key=None, private_key=None, keyring=[], connection=None):
+    def __init__(self, connection=None):
         """Initialize the Bigchain instance
 
         A Bigchain instance has several configuration parameters (e.g. host).
@@ -43,18 +38,10 @@ class Bigchain(object):
         its default value (defined in bigchaindb.__init__).
 
         Args:
-            public_key (str): the base58 encoded public key for the ED25519 curve.
-            private_key (str): the base58 encoded private key for the ED25519 curve.
-            keyring (list[str]): list of base58 encoded public keys of the federation nodes.
             connection (:class:`~bigchaindb.backend.connection.Connection`):
                 A connection to the database.
         """
-
         config_utils.autoconfigure()
-
-        self.me = public_key or bigchaindb.config['keypair']['public']
-        self.me_private = private_key or bigchaindb.config['keypair']['private']
-        self.nodes_except_me = keyring or bigchaindb.config['keyring']
 
         consensusPlugin = bigchaindb.config.get('consensus_plugin')
 
@@ -64,58 +51,6 @@ class Bigchain(object):
             self.consensus = BaseConsensusRules
 
         self.connection = connection if connection else backend.connect(**bigchaindb.config['database'])
-        # if not self.me:
-        #    raise exceptions.KeypairNotFoundException()
-
-    federation = property(lambda self: set(self.nodes_except_me + [self.me]))
-    """ Set of federation member public keys """
-
-    def write_transaction(self, signed_transaction):
-        """Write the transaction to bigchain.
-
-        When first writing a transaction to the bigchain the transaction will be kept in a backlog until
-        it has been validated by the nodes of the federation.
-
-        Args:
-            signed_transaction (Transaction): transaction with the `signature` included.
-
-        Returns:
-            dict: database response
-        """
-        signed_transaction = signed_transaction.to_dict()
-
-        # we will assign this transaction to `one` node. This way we make sure that there are no duplicate
-        # transactions on the bigchain
-        if self.nodes_except_me:
-            assignee = random.choice(self.nodes_except_me)
-        else:
-            # I am the only node
-            assignee = self.me
-
-        signed_transaction.update({'assignee': assignee})
-        signed_transaction.update({'assignment_timestamp': time()})
-
-        # write to the backlog
-        return backend.query.write_transaction(self.connection, signed_transaction)
-
-    def reassign_transaction(self, transaction):
-        """Assign a transaction to a new node
-
-        Args:
-            transaction (dict): assigned transaction
-
-        Returns:
-            dict: database response or None if no reassignment is possible
-        """
-
-        other_nodes = tuple(
-            self.federation.difference([transaction['assignee']])
-        )
-        new_assignee = random.choice(other_nodes) if other_nodes else self.me
-
-        return backend.query.update_transaction(
-                self.connection, transaction['id'],
-                {'assignee': new_assignee, 'assignment_timestamp': time()})
 
     def delete_transaction(self, *transaction_id):
         """Delete a transaction from the backlog.
@@ -165,40 +100,6 @@ class Bigchain(object):
             if status != self.BLOCK_INVALID:
                 return False
         return True
-
-    def get_block(self, block_id, include_status=False):
-        """Get the block with the specified `block_id` (and optionally its status)
-
-        Returns the block corresponding to `block_id` or None if no match is
-        found.
-
-        Args:
-            block_id (str): transaction id of the transaction to get
-            include_status (bool): also return the status of the block
-                       the return value is then a tuple: (block, status)
-        """
-        # get block from database
-        block_dict = backend.query.get_block(self.connection, block_id)
-        # get the asset ids from the block
-        if block_dict:
-            asset_ids = Block.get_asset_ids(block_dict)
-            txn_ids = Block.get_txn_ids(block_dict)
-            # get the assets from the database
-            assets = self.get_assets(asset_ids)
-            # get the metadata from the database
-            metadata = self.get_metadata(txn_ids)
-            # add the assets to the block transactions
-            block_dict = Block.couple_assets(block_dict, assets)
-            # add the metadata to the block transactions
-            block_dict = Block.couple_metadata(block_dict, metadata)
-
-        status = None
-        if include_status:
-            if block_dict:
-                status = self.block_election_status(block_dict)
-            return block_dict, status
-        else:
-            return block_dict
 
     def get_transaction(self, txid, include_status=False):
         """Get the transaction with the specified `txid` (and optionally its status)
@@ -408,10 +309,6 @@ class Bigchain(object):
         """
         return self.get_outputs_filtered(owner, spent=False)
 
-    @property
-    def fastquery(self):
-        return fastquery.FastQuery(self.connection, self.me)
-
     def get_outputs_filtered(self, owner, spent=None):
         """Get a list of output links filtered on some criteria
 
@@ -443,30 +340,6 @@ class Bigchain(object):
             if status == self.TX_VALID:
                 yield tx
 
-    def create_block(self, validated_transactions):
-        """Creates a block given a list of `validated_transactions`.
-
-        Note that this method does not validate the transactions. Transactions
-        should be validated before calling create_block.
-
-        Args:
-            validated_transactions (list(Transaction)): list of validated
-                                                        transactions.
-
-        Returns:
-            Block: created block.
-        """
-        # Prevent the creation of empty blocks
-        if not validated_transactions:
-            raise exceptions.OperationError('Empty block creation is not '
-                                            'allowed')
-
-        voters = list(self.federation)
-        block = Block(validated_transactions, self.me, gen_timestamp(), voters)
-        block = block.sign(self.me_private)
-
-        return block
-
     # TODO: check that the votings structure is correctly constructed
     def validate_block(self, block):
         """Validate a block.
@@ -479,21 +352,6 @@ class Bigchain(object):
             describing the reason why the block is invalid.
         """
         return self.consensus.validate_block(self, block)
-
-    def has_previous_vote(self, block_id):
-        """Check for previous votes from this node
-
-        Args:
-            block_id (str): the id of the block to check
-
-        Returns:
-            bool: :const:`True` if this block already has a
-            valid vote from this node, :const:`False` otherwise.
-
-        """
-        votes = list(backend.query.get_votes_by_block_id_and_voter(self.connection, block_id, self.me))
-        el, _ = self.consensus.voting.partition_eligible_votes(votes, [self.me])
-        return bool(el)
 
     def write_block(self, block):
         """Write a block to bigchain.
@@ -516,100 +374,9 @@ class Bigchain(object):
         # write the block
         return backend.query.write_block(self.connection, block_dict)
 
-    def prepare_genesis_block(self):
-        """Prepare a genesis block."""
-
-        metadata = {'message': 'Hello World from the BigchainDB'}
-        transaction = Transaction.create([self.me], [([self.me], 1)],
-                                         metadata=metadata)
-
-        # NOTE: The transaction model doesn't expose an API to generate a
-        #       GENESIS transaction, as this is literally the only usage.
-        transaction.operation = 'GENESIS'
-        transaction = transaction.sign([self.me_private])
-
-        # create the block
-        return self.create_block([transaction])
-
-    def create_genesis_block(self):
-        """Create the genesis block
-
-        Block created when bigchain is first initialized. This method is not atomic, there might be concurrency
-        problems if multiple instances try to write the genesis block when the BigchainDB Federation is started,
-        but it's a highly unlikely scenario.
-        """
-
-        # 1. create one transaction
-        # 2. create the block with one transaction
-        # 3. write the block to the bigchain
-
-        blocks_count = backend.query.count_blocks(self.connection)
-
-        if blocks_count:
-            raise exceptions.GenesisBlockAlreadyExistsError('Cannot create the Genesis block')
-
-        block = self.prepare_genesis_block()
-        self.write_block(block)
-
-        return block
-
-    def vote(self, block_id, previous_block_id, decision, invalid_reason=None):
-        """Create a signed vote for a block given the
-        :attr:`previous_block_id` and the :attr:`decision` (valid/invalid).
-
-        Args:
-            block_id (str): The id of the block to vote on.
-            previous_block_id (str): The id of the previous block.
-            decision (bool): Whether the block is valid or invalid.
-            invalid_reason (Optional[str]): Reason the block is invalid
-        """
-
-        if block_id == previous_block_id:
-            raise exceptions.CyclicBlockchainError()
-
-        vote = {
-            'voting_for_block': block_id,
-            'previous_block': previous_block_id,
-            'is_block_valid': decision,
-            'invalid_reason': invalid_reason,
-            'timestamp': gen_timestamp()
-        }
-
-        vote_data = serialize(vote)
-        signature = crypto.PrivateKey(self.me_private).sign(vote_data.encode())
-
-        vote_signed = {
-            'node_pubkey': self.me,
-            'signature': signature.decode(),
-            'vote': vote
-        }
-
-        return vote_signed
-
     def write_vote(self, vote):
         """Write the vote to the database."""
         return backend.query.write_vote(self.connection, vote)
-
-    def get_last_voted_block(self):
-        """Returns the last block that this node voted on."""
-
-        last_block_id = backend.query.get_last_voted_block_id(self.connection,
-                                                              self.me)
-        return Block.from_dict(self.get_block(last_block_id))
-
-    def block_election(self, block):
-        if type(block) != dict:
-            block = block.to_dict()
-        votes = list(backend.query.get_votes_by_block_id(self.connection,
-                                                         block['id']))
-        return self.consensus.voting.block_election(block, votes,
-                                                    self.federation)
-
-    def block_election_status(self, block):
-        """Tally the votes on a block, and return the status:
-           valid, invalid, or undecided.
-        """
-        return self.block_election(block)['status']
 
     def get_assets(self, asset_ids):
         """Return a list of assets that match the asset_ids

@@ -5,7 +5,7 @@ from bigchaindb.common.exceptions import (InvalidHash, InvalidSignature,
                                           DoubleSpend, InputDoesNotExist,
                                           TransactionNotInValidBlock,
                                           AssetIdMismatch, AmountError,
-                                          SybilError, DuplicateTransaction)
+                                          DuplicateTransaction)
 from bigchaindb.common.transaction import Transaction
 from bigchaindb.common.utils import (gen_timestamp, serialize,
                                      validate_txn_obj, validate_key)
@@ -156,6 +156,7 @@ class Transaction(Transaction):
             return cls.from_dict(tx)
 
 
+# TODO: Remove node_pubkey as part of cleanup II
 class Block(object):
     """Bundle a list of Transactions in a Block. Nodes vote on its validity.
 
@@ -165,14 +166,12 @@ class Block(object):
         node_pubkey (str): The public key of the node creating the
             Block.
         timestamp (str): The Unix time a Block was created.
-        voters (:obj:`list` of :obj:`str`): A list of a federation
-            nodes' public keys supposed to vote on the Block.
         signature (str): A cryptographic signature ensuring the
             integrity and validity of the creator of a Block.
     """
 
     def __init__(self, transactions=None, node_pubkey=None, timestamp=None,
-                 voters=None, signature=None):
+                 signature=None):
         """The Block model is mainly used for (de)serialization and integrity
         checking.
 
@@ -182,8 +181,6 @@ class Block(object):
             node_pubkey (str): The public key of the node creating the
                 Block.
             timestamp (str): The Unix time a Block was created.
-            voters (:obj:`list` of :obj:`str`): A list of a federation
-                nodes' public keys supposed to vote on the Block.
             signature (str): A cryptographic signature ensuring the
                 integrity and validity of the creator of a Block.
         """
@@ -191,11 +188,6 @@ class Block(object):
             raise TypeError('`transactions` must be a list instance or None')
         else:
             self.transactions = transactions or []
-
-        if voters is not None and not isinstance(voters, list):
-            raise TypeError('`voters` must be a list instance or None')
-        else:
-            self.voters = voters or []
 
         if timestamp is not None:
             self.timestamp = timestamp
@@ -250,10 +242,6 @@ class Block(object):
         Raises:
             ValidationError: If there is a problem with the block
         """
-        # Check if the block was created by a federation node
-        if self.node_pubkey not in bigchain.federation:
-            raise SybilError('Only federation nodes can create blocks')
-
         # Check that the signature is valid
         if not self.is_signature_valid():
             raise InvalidSignature('Invalid block signature')
@@ -338,7 +326,7 @@ class Block(object):
         signature = block_body.get('signature')
 
         return cls(transactions, block['node_pubkey'],
-                   block['timestamp'], block['voters'], signature)
+                   block['timestamp'], [], signature)
 
     @property
     def id(self):
@@ -360,7 +348,6 @@ class Block(object):
             'timestamp': self.timestamp,
             'transactions': [tx.to_dict() for tx in self.transactions],
             'node_pubkey': self.node_pubkey,
-            'voters': self.voters,
         }
         block_serialized = serialize(block)
         block_id = hash_data(block_serialized)

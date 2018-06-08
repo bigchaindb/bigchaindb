@@ -7,22 +7,13 @@ from bigchaindb.log.configs import SUBSCRIBER_LOGGING_CONFIG as log_config
 # PORT_NUMBER = reduce(lambda x, y: x * y, map(ord, 'BigchainDB')) % 2**16
 # basically, the port number is 9984
 
-
-_base_database_rethinkdb = {
-    'host': 'localhost',
-    'port': 28015,
-    'name': 'bigchain',
-}
-
 # The following variable is used by `bigchaindb configure` to
 # prompt the user for database values. We cannot rely on
-# _base_database_rethinkdb.keys() or _base_database_mongodb.keys()
-# because dicts are unordered. I tried to configure
+# _base_database_localmongodb.keys() because dicts are unordered.
+# I tried to configure
 
 _database_keys_map = {
     'localmongodb': ('host', 'port', 'name'),
-    'mongodb': ('host', 'port', 'name', 'replicaset'),
-    'rethinkdb': ('host', 'port', 'name')
 }
 
 _base_database_localmongodb = {
@@ -33,35 +24,6 @@ _base_database_localmongodb = {
     'login': None,
     'password': None,
 }
-
-_base_database_mongodb = {
-    'host': 'localhost',
-    'port': 27017,
-    'name': 'bigchain',
-    'replicaset': 'bigchain-rs',
-    'login': None,
-    'password': None,
-}
-
-_database_rethinkdb = {
-    'backend': 'rethinkdb',
-    'connection_timeout': 5000,
-    'max_tries': 3,
-}
-_database_rethinkdb.update(_base_database_rethinkdb)
-
-_database_mongodb = {
-    'backend': 'mongodb',
-    'connection_timeout': 5000,
-    'max_tries': 3,
-    'ssl': False,
-    'ca_cert': None,
-    'certfile': None,
-    'keyfile': None,
-    'keyfile_passphrase': None,
-    'crlfile': None,
-}
-_database_mongodb.update(_base_database_mongodb)
 
 _database_localmongodb = {
     'backend': 'localmongodb',
@@ -78,8 +40,6 @@ _database_localmongodb.update(_base_database_localmongodb)
 
 _database_map = {
     'localmongodb': _database_localmongodb,
-    'mongodb': _database_mongodb,
-    'rethinkdb': _database_rethinkdb
 }
 
 config = {
@@ -101,11 +61,6 @@ config = {
     },
     # FIXME: hardcoding to localmongodb for now
     'database': _database_map['localmongodb'],
-    'keypair': {
-        'public': None,
-        'private': None,
-    },
-    'keyring': [],
     'log': {
         'file': log_config['handlers']['file']['filename'],
         'error_file': log_config['handlers']['errors']['filename'],

@@ -21,18 +21,18 @@ class TestBlockModel(object):
             Block(None, 'valid node_pubkey', 'valid timestamp',
                   'not a list or None')
 
-    def test_block_serialization(self, b):
+    def test_block_serialization(self, b, alice):
         from bigchaindb.common.crypto import hash_data
         from bigchaindb.common.utils import gen_timestamp, serialize
         from bigchaindb.models import Block, Transaction
 
-        transactions = [Transaction.create([b.me], [([b.me], 1)])]
+        transactions = [Transaction.create([alice.public_key], [([alice.public_key], 1)])]
         timestamp = gen_timestamp()
         voters = ['Qaaa', 'Qbbb']
         expected_block = {
             'timestamp': timestamp,
             'transactions': [tx.to_dict() for tx in transactions],
-            'node_pubkey': b.me,
+            'node_pubkey': alice.public_key,
             'voters': voters,
         }
         expected = {
@@ -41,7 +41,7 @@ class TestBlockModel(object):
             'signature': None,
         }
 
-        block = Block(transactions, b.me, timestamp, voters)
+        block = Block(transactions, alice.public_key, timestamp, voters)
 
         assert block.to_dict() == expected
 
@@ -52,21 +52,21 @@ class TestBlockModel(object):
         with raises(ValueError):
             block.to_dict()
 
-    def test_block_deserialization(self, b):
+    def test_block_deserialization(self, b, alice):
         from bigchaindb.common.crypto import hash_data
         from bigchaindb.common.utils import gen_timestamp, serialize
         from bigchaindb.models import Block, Transaction
 
-        transaction = Transaction.create([b.me], [([b.me], 1)])
-        transaction.sign([b.me_private])
+        transaction = Transaction.create([alice.public_key], [([alice.public_key], 1)])
+        transaction.sign([alice.private_key])
         timestamp = gen_timestamp()
         voters = ['Qaaa', 'Qbbb']
-        expected = Block([transaction], b.me, timestamp, voters)
+        expected = Block([transaction], alice.public_key, timestamp, voters)
 
         block = {
             'timestamp': timestamp,
             'transactions': [transaction.to_dict()],
-            'node_pubkey': b.me,
+            'node_pubkey': alice.public_key,
             'voters': voters,
         }
 
@@ -78,34 +78,34 @@ class TestBlockModel(object):
 
         assert expected == Block.from_dict(block_body)
 
-    def test_block_invalid_id_deserialization(self, b):
+    def test_block_invalid_id_deserialization(self, b, alice):
         from bigchaindb.common.exceptions import InvalidHash
         from bigchaindb.models import Block
 
         block = {
             'id': 'an invalid id',
             'block': {
-                'node_pubkey': b.me,
+                'node_pubkey': alice.public_key,
             }
         }
 
         with raises(InvalidHash):
             Block.from_dict(block)
 
-    def test_block_invalid_signature(self, b):
+    def test_block_invalid_signature(self, b, alice):
         from bigchaindb.common.crypto import hash_data
         from bigchaindb.common.exceptions import InvalidSignature
         from bigchaindb.common.utils import gen_timestamp, serialize
         from bigchaindb.models import Block, Transaction
 
-        transaction = Transaction.create([b.me], [([b.me], 1)])
-        transaction.sign([b.me_private])
+        transaction = Transaction.create([alice.public_key], [([alice.public_key], 1)])
+        transaction.sign([alice.private_key])
         timestamp = gen_timestamp()
 
         block = {
             'timestamp': timestamp,
             'transactions': [transaction.to_dict()],
-            'node_pubkey': b.me,
+            'node_pubkey': alice.public_key,
             'voters': list(b.federation),
         }
 
@@ -118,46 +118,46 @@ class TestBlockModel(object):
         with raises(InvalidSignature):
             Block.from_dict(block_body).validate(b)
 
-    def test_compare_blocks(self, b):
+    def test_compare_blocks(self, b, alice):
         from bigchaindb.models import Block, Transaction
 
-        transactions = [Transaction.create([b.me], [([b.me], 1)])]
+        transactions = [Transaction.create([alice.public_key], [([alice.public_key], 1)])]
 
         assert Block() != 'invalid comparison'
         assert Block(transactions) == Block(transactions)
 
-    def test_sign_block(self, b):
+    def test_sign_block(self, b, alice):
         from bigchaindb.common.crypto import PrivateKey, PublicKey
         from bigchaindb.common.utils import gen_timestamp, serialize
         from bigchaindb.models import Block, Transaction
 
-        transactions = [Transaction.create([b.me], [([b.me], 1)])]
+        transactions = [Transaction.create([alice.public_key], [([alice.public_key], 1)])]
         timestamp = gen_timestamp()
         voters = ['Qaaa', 'Qbbb']
         expected_block = {
             'timestamp': timestamp,
             'transactions': [tx.to_dict() for tx in transactions],
-            'node_pubkey': b.me,
+            'node_pubkey': alice.public_key,
             'voters': voters,
         }
         expected_block_serialized = serialize(expected_block).encode()
-        expected = PrivateKey(b.me_private).sign(expected_block_serialized)
-        block = Block(transactions, b.me, timestamp, voters)
-        block = block.sign(b.me_private)
+        expected = PrivateKey(alice.private_key).sign(expected_block_serialized)
+        block = Block(transactions, alice.public_key, timestamp, voters)
+        block = block.sign(alice.private_key)
         assert block.signature == expected.decode()
 
-        public_key = PublicKey(b.me)
+        public_key = PublicKey(alice.public_key)
         assert public_key.verify(expected_block_serialized, block.signature)
 
-    def test_block_dupe_tx(self, b):
+    def test_block_dupe_tx(self, b, alice):
         from bigchaindb.models import Transaction
         from bigchaindb.common.exceptions import DuplicateTransaction
-        tx = Transaction.create([b.me], [([b.me], 1)])
+        tx = Transaction.create([alice.public_key], [([alice.public_key], 1)])
         block = b.create_block([tx, tx])
         with raises(DuplicateTransaction):
             block._validate_block(b)
 
-    def test_decouple_assets(self, b):
+    def test_decouple_assets(self, b, alice):
         from bigchaindb.models import Block, Transaction
 
         assets = [
@@ -169,15 +169,15 @@ class TestBlockModel(object):
         txs = []
         # create 3 assets
         for asset in assets:
-            tx = Transaction.create([b.me], [([b.me], 1)], asset=asset)
-            tx.sign([b.me_private])
+            tx = Transaction.create([alice.public_key], [([alice.public_key], 1)], asset=asset)
+            tx.sign([alice.private_key])
             txs.append(tx)
 
         # create a `TRANSFER` transaction.
         # the asset in `TRANSFER` transactions is not extracted
-        tx = Transaction.transfer(txs[0].to_inputs(), [([b.me], 1)],
+        tx = Transaction.transfer(txs[0].to_inputs(), [([alice.public_key], 1)],
                                   asset_id=txs[0].id)
-        tx.sign([b.me_private])
+        tx.sign([alice.private_key])
         txs.append(tx)
 
         # create the block
@@ -194,7 +194,7 @@ class TestBlockModel(object):
         assert block.transactions[3].to_dict() == \
             block_dict['block']['transactions'][3]
 
-    def test_couple_assets(self, b):
+    def test_couple_assets(self, b, alice):
         from bigchaindb.models import Block, Transaction
 
         assets = [
@@ -206,15 +206,15 @@ class TestBlockModel(object):
         txs = []
         # create 3 assets
         for asset in assets:
-            tx = Transaction.create([b.me], [([b.me], 1)], asset=asset)
-            tx.sign([b.me_private])
+            tx = Transaction.create([alice.public_key], [([alice.public_key], 1)], asset=asset)
+            tx.sign([alice.private_key])
             txs.append(tx)
 
         # create a `TRANSFER` transaction.
         # the asset in `TRANSFER` transactions is not extracted
-        tx = Transaction.transfer(txs[0].to_inputs(), [([b.me], 1)],
+        tx = Transaction.transfer(txs[0].to_inputs(), [([alice.public_key], 1)],
                                   asset_id=txs[0].id)
-        tx.sign([b.me_private])
+        tx.sign([alice.private_key])
         txs.append(tx)
 
         # create the block
@@ -229,7 +229,7 @@ class TestBlockModel(object):
         # check that the reconstructed block is the same as the original block
         assert block == Block.from_dict(block_dict_reconstructed)
 
-    def test_get_asset_ids(self, b):
+    def test_get_asset_ids(self, b, alice):
         from bigchaindb.models import Block, Transaction
 
         assets = [
@@ -241,15 +241,15 @@ class TestBlockModel(object):
         txs = []
         # create 3 assets
         for asset in assets:
-            tx = Transaction.create([b.me], [([b.me], 1)], asset=asset)
-            tx.sign([b.me_private])
+            tx = Transaction.create([alice.public_key], [([alice.public_key], 1)], asset=asset)
+            tx.sign([alice.private_key])
             txs.append(tx)
 
         # create a `TRANSFER` transaction.
         # the asset in `TRANSFER` transactions is not extracted
-        tx = Transaction.transfer(txs[0].to_inputs(), [([b.me], 1)],
+        tx = Transaction.transfer(txs[0].to_inputs(), [([alice.public_key], 1)],
                                   asset_id=txs[0].id)
-        tx.sign([b.me_private])
+        tx.sign([alice.private_key])
         txs.append(tx)
 
         # create the block
@@ -263,7 +263,7 @@ class TestBlockModel(object):
         assert asset_ids == [tx.id for tx in txs[:-1]]
 
     @pytest.mark.bdb
-    def test_from_db(self, b):
+    def test_from_db(self, b, alice):
         from bigchaindb.models import Block, Transaction
 
         assets = [
@@ -275,15 +275,15 @@ class TestBlockModel(object):
         txs = []
         # create 3 assets
         for asset in assets:
-            tx = Transaction.create([b.me], [([b.me], 1)], asset=asset)
-            tx.sign([b.me_private])
+            tx = Transaction.create([alice.public_key], [([alice.public_key], 1)], asset=asset)
+            tx.sign([alice.private_key])
             txs.append(tx)
 
         # create a `TRANSFER` transaction.
         # the asset in `TRANSFER` transactions is not extracted
-        tx = Transaction.transfer(txs[0].to_inputs(), [([b.me], 1)],
+        tx = Transaction.transfer(txs[0].to_inputs(), [([alice.public_key], 1)],
                                   asset_id=txs[0].id)
-        tx.sign([b.me_private])
+        tx.sign([alice.private_key])
         txs.append(tx)
 
         # create the block
