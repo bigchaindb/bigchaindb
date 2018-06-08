@@ -156,6 +156,7 @@ class Transaction(Transaction):
             return cls.from_dict(tx)
 
 
+# TODO: Remove node_pubkey as part of cleanup II
 class Block(object):
     """Bundle a list of Transactions in a Block. Nodes vote on its validity.
 

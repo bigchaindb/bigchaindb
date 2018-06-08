@@ -13,6 +13,7 @@ from bigchaindb.common.exceptions import (AmountError,
                                           ThresholdTooDeep)
 from bigchaindb.models import Transaction
 
+pytestmark = pytest.mark.tendermint
 
 ################################################################################
 # Helper functions
