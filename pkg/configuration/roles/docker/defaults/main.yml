@@ -17,5 +17,10 @@ apt_key_url: "https://download.docker.com/linux/{{ distribution_name }}/gpg"
 docker_yum_repo: "https://download.docker.com/linux/{{ distribution_name }}/{{ distribution_major }}/$basearch/{{ docker_update_channel }}"
 docker_dnf_repo: "https://download.docker.com/linux/{{ distribution_name }}/{{ docker_pkg }}.repo"
 
+# Epel repo
+epel_repo_url: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
+epel_repo_gpg_key_url: "/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
+epel_repofile_path: "/etc/yum.repos.d/epel.repo"
+
 # Docker configuration
 bigchaindb_docker_net: "bigchaindb_docker_net"
