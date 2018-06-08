@@ -99,6 +99,10 @@ config = {
         'advertised_host': 'localhost',
         'advertised_port': 9985,
     },
+    'tendermint': {
+        'host': 'localhost',
+        'port': 46657,
+    },
     # FIXME: hardcoding to localmongodb for now
     'database': _database_map['localmongodb'],
     'keypair': {

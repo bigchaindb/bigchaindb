@@ -83,6 +83,10 @@ def run_configure(args):
             val = conf['database'][key]
             conf['database'][key] = input_on_stderr('Database {}? (default `{}`): '.format(key, val), val)
 
+        for key in ('host', 'port'):
+            val = conf['tendermint'][key]
+            conf['tendermint'][key] = input_on_stderr('Tendermint {}? (default `{}`)'.format(key, val), val)
+
     if config_path != '-':
         bigchaindb.config_utils.write_config(conf, config_path)
     else:
