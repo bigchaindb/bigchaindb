@@ -13,7 +13,7 @@ so show the latest GitHub release instead.
 
 # BigchainDB Server
 
-BigchainDB is the blockchain database. This repository if for _BigchainDB Server_.
+BigchainDB is the blockchain database. This repository is for _BigchainDB Server_.
 
 ## The Basics
 
