@@ -25,7 +25,7 @@ class Bigchain(object):
     TX_IN_BACKLOG = 'backlog'
     """return if transaction is in backlog"""
 
-    def __init__(self, connection=None):
+    def __init__(self, tendermint_host=None, tendermint_port=None, connection=None):
         """Initialize the Bigchain instance
 
         A Bigchain instance has several configuration parameters (e.g. host).
@@ -43,6 +43,12 @@ class Bigchain(object):
         """
         config_utils.autoconfigure()
 
+        self.tendermint_host = tendermint_host or bigchaindb.config['tendermint']['host']
+        self.tendermint_port = tendermint_port or bigchaindb.config['tendermint']['port']
+        self.endpoint = 'http://{}:{}/'.format(self.tendermint_host, self.tendermint_port)
+        self.mode_list = ('broadcast_tx_async',
+                          'broadcast_tx_sync',
+                          'broadcast_tx_commit')
         consensusPlugin = bigchaindb.config.get('consensus_plugin')
 
         if consensusPlugin:

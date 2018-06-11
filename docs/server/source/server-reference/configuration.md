@@ -35,6 +35,8 @@ For convenience, here's a list of all the relevant environment variables (docume
 `BIGCHAINDB_LOG_FMT_LOGFILE`<br>
 `BIGCHAINDB_LOG_GRANULAR_LEVELS`<br>
 `BIGCHAINDB_LOG_PORT`<br>
+`BIGCHAINDB_TENDERMINT_HOST`<br>
+`BIGCHAINDB_TENDERMINT_PORT`<br>
 
 
 The local config file is `$HOME/.bigchaindb` by default (a file which might not even exist), but you can tell BigchainDB to use a different file by using the `-c` command-line option, e.g. `bigchaindb -c path/to/config_file.json start`
@@ -451,3 +453,27 @@ The port number at which the logging server should listen.
 ```
 
 **Defaults to**: `9020`
+
+## tendermint.host & tendermint.port
+
+The settings with names of the form `tendermint.*` are for
+consensus(Tendermint) backend that we are using:
+
+* `tendermint.host` is the hostname (FQDN)/IP address of the tendermint backend.
+* `tendermint.port` is self-explanatory.
+
+**Example using environment variables**
+```text
+export BIGCHAINDB_TENDERMINT_HOST=tendermint
+export BIGCHAINDB_TENDERMINT_PORT=46657
+```
+
+**Default values**
+
+If (no environment variables were set and there's no local config file), or you used `bigchaindb -y configure localmongodb` to create a default local config file for a `localmongodb` backend, then the defaults will be:
+```js
+"tendermint": {
+    "host": "localhost",
+    "port": 46657,
+}
+```
