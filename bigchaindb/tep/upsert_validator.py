@@ -86,8 +86,7 @@ class UpsertValidator(TransactionalElection):
         return base58.b58encode(bytes.fromhex(tx_election_id))
 
     def _execute_action(self, tx):
-        (code, msg) = self.bigchain.write_transaction(tx, 'broadcast_tx_commit')
-        return (True if code == 202 else False)
+        return self.bigchain.write_transaction(tx, 'broadcast_tx_commit')
 
     def propose(self, validator_data, node_key_path):
         validator_public_key = validator_data['public_key']

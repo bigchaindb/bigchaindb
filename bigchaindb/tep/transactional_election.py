@@ -1,4 +1,6 @@
 
+
+# Base class for creating Transaction Election Process
 class TransactionalElection(object):
 
     version = '0.0'
