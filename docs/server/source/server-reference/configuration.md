@@ -33,13 +33,8 @@ For convenience, here's a list of all the relevant environment variables (docume
 `BIGCHAINDB_LOG_DATEFMT_LOGFILE`<br>
 `BIGCHAINDB_LOG_FMT_CONSOLE`<br>
 `BIGCHAINDB_LOG_FMT_LOGFILE`<br>
-<<<<<<< HEAD
-`BIGCHAINDB_LOG_GRANULAR_LEVELS`<br>
-`BIGCHAINDB_LOG_PORT`<br>
 `BIGCHAINDB_TENDERMINT_HOST`<br>
 `BIGCHAINDB_TENDERMINT_PORT`<br>
-=======
->>>>>>> master
 
 
 The local config file is `$HOME/.bigchaindb` by default (a file which might not even exist), but you can tell BigchainDB to use a different file by using the `-c` command-line option, e.g. `bigchaindb -c path/to/config_file.json start`
