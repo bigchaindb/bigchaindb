@@ -13,6 +13,7 @@ from bigchaindb.common.exceptions import (AmountError,
                                           ThresholdTooDeep)
 from bigchaindb.models import Transaction
 
+pytestmark = pytest.mark.tendermint
 
 ################################################################################
 # Helper functions
@@ -66,30 +67,30 @@ def test_tx_serialization_with_no_hash(signed_create_tx):
 ################################################################################
 # Operation
 
-def test_validate_invalid_operation(b, create_tx):
+def test_validate_invalid_operation(b, create_tx, alice):
     create_tx.operation = 'something invalid'
-    signed_tx = create_tx.sign([b.me_private])
+    signed_tx = create_tx.sign([alice.private_key])
     validate_raises(signed_tx)
 
 
 ################################################################################
 # Metadata
 
-def test_validate_fails_metadata_empty_dict(b, create_tx):
+def test_validate_fails_metadata_empty_dict(b, create_tx, alice):
     create_tx.metadata = {'a': 1}
-    signed_tx = create_tx.sign([b.me_private])
+    signed_tx = create_tx.sign([alice.private_key])
     validate(signed_tx)
 
     create_tx._id = None
     create_tx.fulfillment = None
     create_tx.metadata = None
-    signed_tx = create_tx.sign([b.me_private])
+    signed_tx = create_tx.sign([alice.private_key])
     validate(signed_tx)
 
     create_tx._id = None
     create_tx.fulfillment = None
     create_tx.metadata = {}
-    signed_tx = create_tx.sign([b.me_private])
+    signed_tx = create_tx.sign([alice.private_key])
     validate_raises(signed_tx)
 
 
@@ -111,19 +112,19 @@ def test_transfer_asset_schema(user_sk, signed_transfer_tx):
     validate_raises(tx)
 
 
-def test_create_tx_no_asset_id(b, create_tx):
+def test_create_tx_no_asset_id(b, create_tx, alice):
     create_tx.asset['id'] = 'b' * 64
-    signed_tx = create_tx.sign([b.me_private])
+    signed_tx = create_tx.sign([alice.private_key])
     validate_raises(signed_tx)
 
 
-def test_create_tx_asset_type(b, create_tx):
+def test_create_tx_asset_type(b, create_tx, alice):
     create_tx.asset['data'] = 'a'
-    signed_tx = create_tx.sign([b.me_private])
+    signed_tx = create_tx.sign([alice.private_key])
     validate_raises(signed_tx)
 
 
-def test_create_tx_no_asset_data(b, create_tx):
+def test_create_tx_no_asset_data(b, create_tx, alice):
     tx_body = create_tx.to_dict()
     del tx_body['asset']['data']
     tx_serialized = json.dumps(
@@ -135,34 +136,34 @@ def test_create_tx_no_asset_data(b, create_tx):
 ################################################################################
 # Inputs
 
-def test_no_inputs(b, create_tx):
+def test_no_inputs(b, create_tx, alice):
     create_tx.inputs = []
-    signed_tx = create_tx.sign([b.me_private])
+    signed_tx = create_tx.sign([alice.private_key])
     validate_raises(signed_tx)
 
 
-def test_create_single_input(b, create_tx):
+def test_create_single_input(b, create_tx, alice):
     from bigchaindb.common.transaction import Transaction
     tx = create_tx.to_dict()
     tx['inputs'] += tx['inputs']
-    tx = Transaction.from_dict(tx).sign([b.me_private]).to_dict()
+    tx = Transaction.from_dict(tx).sign([alice.private_key]).to_dict()
     validate_raises(tx)
     tx['id'] = None
     tx['inputs'] = []
-    tx = Transaction.from_dict(tx).sign([b.me_private]).to_dict()
+    tx = Transaction.from_dict(tx).sign([alice.private_key]).to_dict()
     validate_raises(tx)
 
 
-def test_create_tx_no_fulfills(b, create_tx):
+def test_create_tx_no_fulfills(b, create_tx, alice):
     from bigchaindb.common.transaction import Transaction
     tx = create_tx.to_dict()
     tx['inputs'][0]['fulfills'] = {'transaction_id': 'a' * 64,
                                    'output_index': 0}
-    tx = Transaction.from_dict(tx).sign([b.me_private]).to_dict()
+    tx = Transaction.from_dict(tx).sign([alice.private_key]).to_dict()
     validate_raises(tx)
 
 
-def test_transfer_has_inputs(user_sk, signed_transfer_tx):
+def test_transfer_has_inputs(user_sk, signed_transfer_tx, alice):
     signed_transfer_tx.inputs = []
     signed_transfer_tx._id = None
     signed_transfer_tx.sign([user_sk])
@@ -172,8 +173,8 @@ def test_transfer_has_inputs(user_sk, signed_transfer_tx):
 ################################################################################
 # Outputs
 
-def test_low_amounts(b, user_sk, create_tx, signed_transfer_tx):
-    for sk, tx in [(b.me_private, create_tx), (user_sk, signed_transfer_tx)]:
+def test_low_amounts(b, user_sk, create_tx, signed_transfer_tx, alice):
+    for sk, tx in [(alice.private_key, create_tx), (user_sk, signed_transfer_tx)]:
         tx.outputs[0].amount = 0
         tx._id = None
         tx.sign([sk])
@@ -184,21 +185,21 @@ def test_low_amounts(b, user_sk, create_tx, signed_transfer_tx):
         validate_raises(tx)
 
 
-def test_high_amounts(b, create_tx):
+def test_high_amounts(b, create_tx, alice):
     # Should raise a SchemaValidationError - don't want to allow ridiculously
     # large numbers to get converted to int
     create_tx.outputs[0].amount = 10 ** 21
-    create_tx.sign([b.me_private])
+    create_tx.sign([alice.private_key])
     validate_raises(create_tx)
     # Should raise AmountError
     create_tx.outputs[0].amount = 9 * 10 ** 18 + 1
     create_tx._id = None
-    create_tx.sign([b.me_private])
+    create_tx.sign([alice.private_key])
     validate_raises(create_tx, AmountError)
     # Should pass
     create_tx.outputs[0].amount -= 1
     create_tx._id = None
-    create_tx.sign([b.me_private])
+    create_tx.sign([alice.private_key])
     validate(create_tx)
 
 
@@ -236,17 +237,17 @@ def test_unsupported_condition_type():
 ################################################################################
 # Version
 
-def test_validate_version(b, create_tx):
+def test_validate_version(b, create_tx, alice):
     create_tx.version = '2.0'
-    create_tx.sign([b.me_private])
+    create_tx.sign([alice.private_key])
     validate(create_tx)
 
     create_tx.version = '0.10'
     create_tx._id = None
-    create_tx.sign([b.me_private])
+    create_tx.sign([alice.private_key])
     validate_raises(create_tx)
 
     create_tx.version = '110'
     create_tx._id = None
-    create_tx.sign([b.me_private])
+    create_tx.sign([alice.private_key])
     validate_raises(create_tx)

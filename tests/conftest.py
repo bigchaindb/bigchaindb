@@ -106,10 +106,6 @@ def _configure_bigchaindb(request):
 
     config = {
         'database': bigchaindb._database_map[backend],
-        'keypair': {
-            'private': '31Lb1ZGKTyHnmVK3LUMrAUrPNfd4sE2YyBt3UA4A25aA',
-            'public': '4XYfCbabAWVUCbjTmRTFEu2sc3dFEdkse4r6X498B1s8',
-        }
     }
     config['database']['name'] = test_db_name
     config = config_utils.env_config(config)
@@ -275,15 +271,15 @@ def tb():
 
 
 @pytest.fixture
-def create_tx(b, user_pk):
+def create_tx(alice, user_pk):
     from bigchaindb.models import Transaction
     name = f'I am created by the create_tx fixture. My random identifier is {random.random()}.'
-    return Transaction.create([b.me], [([user_pk], 1)], asset={'name': name})
+    return Transaction.create([alice.public_key], [([user_pk], 1)], asset={'name': name})
 
 
 @pytest.fixture
-def signed_create_tx(b, create_tx):
-    return create_tx.sign([b.me_private])
+def signed_create_tx(alice, create_tx):
+    return create_tx.sign([alice.private_key])
 
 
 @pytest.mark.abci
@@ -332,17 +328,16 @@ def _get_height(b):
 
 
 @pytest.fixture
-def inputs(user_pk, b):
+def inputs(user_pk, b, alice):
     from bigchaindb.models import Transaction
-
     # create blocks with transactions for `USER` to spend
     for block in range(4):
         transactions = [
             Transaction.create(
-                [b.me],
+                [alice_pubkey(alice)],
                 [([user_pk], 1)],
                 metadata={'msg': random.random()},
-            ).sign([b.me_private]).to_dict()
+            ).sign([alice_privkey(alice)]).to_dict()
             for _ in range(10)
         ]
         block = Block(app_hash='', height=_get_height(b), transactions=transactions)
@@ -350,17 +345,17 @@ def inputs(user_pk, b):
 
 
 @pytest.fixture
-def inputs_shared(user_pk, user2_pk):
+def inputs_shared(user_pk, user2_pk, alice):
     from bigchaindb.models import Transaction
 
     # create blocks with transactions for `USER` to spend
     for block in range(4):
         transactions = [
             Transaction.create(
-                [b.me],
+                [alice.public_key],
                 [user_pk, user2_pk],
                 metadata={'msg': random.random()},
-            ).sign([b.me_private]).to_dict()
+            ).sign([alice.private_key]).to_dict()
             for _ in range(10)
         ]
         block = Block(app_hash='', height=_get_height(b), transaction=transactions)

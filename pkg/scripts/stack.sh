@@ -223,7 +223,7 @@ elif [[ $stack_type == "cloud" && $stack_type_provider == "azure" ]]; then
 	vagrant up --provider azure --provision
 	ansible-playbook $CONF_DIR/bigchaindb-start.yml \
 		-i $CONF_DIR/hosts/all \
-		--extra-vars "operation=start home_path=/bigchaindb"
+		--extra-vars "operation=start home_path=/opt/stack"
 elif [[ $stack_type == "docker" ]]; then
 	echo "Configuring Dockers locally!"
 	source $SCRIPTS_DIR/bootstrap.sh --operation install

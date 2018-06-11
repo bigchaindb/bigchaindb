@@ -18,27 +18,8 @@ class FastQuery:
     a byzantine node.
     """
 
-    def __init__(self, connection, me):
+    def __init__(self, connection):
         self.connection = connection
-        self.me = me
-
-    def filter_valid_block_ids(self, block_ids, include_undecided=False):
-        """Given block ids, return only the ones that are valid."""
-        block_ids = list(set(block_ids))
-        votes = query.get_votes_for_blocks_by_voter(
-                    self.connection, block_ids, self.me)
-        votes = {vote['vote']['voting_for_block']: vote['vote']['is_block_valid']
-                 for vote in votes}
-        return [block_id for block_id in block_ids
-                if votes.get(block_id, include_undecided)]
-
-    def filter_valid_items(self, items, block_id_key=lambda b: b[0]):
-        """Given items with block ids, return only the ones that are valid or undecided.
-        """
-        items = list(items)
-        block_ids = map(block_id_key, items)
-        valid_block_ids = set(self.filter_valid_block_ids(block_ids, True))
-        return [b for b in items if block_id_key(b) in valid_block_ids]
 
     def get_outputs_by_public_key(self, public_key):
         """Get outputs for a public key"""

@@ -1,9 +1,6 @@
 import pytest
-from unittest.mock import patch
-from collections import Counter
 
 from bigchaindb.core import Bigchain
-from bigchaindb.exceptions import CriticalDuplicateVote
 from bigchaindb.voting import Voting, INVALID, VALID, UNDECIDED
 
 
@@ -117,68 +114,6 @@ def test_decide_votes_invalid(kwargs):
 
 
 ################################################################################
-# Actions - test state transitions
-
-
-@pytest.mark.parametrize('n_voters', range(8))
-def test_vote_actions(n_voters):
-    """* Legal transitions are UNDECIDED -> [VALID|INVALID] only
-    * Block is never left UNDECIDED after voting
-    * Accomodates rogues on previous block / invalid schema
-    """
-    class TestVoting(Voting):
-        @classmethod
-        def verify_vote_schema(cls, vote):
-            return type(vote['vote']['is_block_valid']) == bool
-
-        @classmethod
-        def verify_vote_signature(cls, vote):
-            return True
-
-    keyring = 'abcdefghijklmnopqrstuvwxyz'[:n_voters]
-    block = {'id': 'block', 'block': {'voters': keyring}}
-    state = UNDECIDED
-    todo = [(state, [], [])]
-
-    def branch(p, r):
-        todo.append((state, votes, votes + [{
-            'node_pubkey': keyring[len(votes)],
-            'vote': {'previous_block': p, 'is_block_valid': r}
-        }]))
-
-    while todo:
-        prev_state, prev_votes, votes = todo.pop(0)
-        results = Counter(v['vote']['is_block_valid'] for v in votes)
-        prev_blocks = Counter(v['vote']['previous_block'] for v in votes)
-        majority = n_voters // 2 + 1
-        honest = (len(votes) == majority and len(prev_blocks) == 1 and
-                  not results['lol'] and len(results) == 1)
-        closed = len(votes) == n_voters
-
-        # Test legal transition
-        if votes:
-            state = TestVoting.block_election(block, votes, keyring)['status']
-            assert prev_state in [state, UNDECIDED]
-
-        # Test that decision has been reached
-        if honest or closed:
-            assert state != UNDECIDED or n_voters == 0
-
-        if closed:
-            continue
-
-        # Can accomodate more votes, add them to the todo list.
-        # This vote is the good case
-        branch('A', True)
-        # This vote disagrees on previous block
-        branch('B', True)
-        # This vote says the block is invalid
-        branch('A', False)
-        # This vote is invalid
-        branch('A', 'lol')
-
-
-################################################################################
 # Tests for vote signature
 
 
@@ -200,48 +135,3 @@ def test_verify_vote_schema(b):
     assert not Voting.verify_vote_schema(vote)
     vote = b.vote('b', 'a' * 64, True)
     assert not Voting.verify_vote_schema(vote)
-
-
-################################################################################
-# block_election tests
-
-
-def test_block_election(b):
-
-    class TestVoting(Voting):
-        @classmethod
-        def verify_vote_signature(cls, vote):
-            return True
-
-        @classmethod
-        def verify_vote_schema(cls, vote):
-            return True
-
-    keyring = 'abc'
-    block = {'id': 'xyz', 'block': {'voters': 'ab'}}
-    votes = [{
-        'node_pubkey': c,
-        'vote': {'is_block_valid': True, 'previous_block': 'a'}
-    } for c in 'abc']
-
-    assert TestVoting.block_election(block, votes, keyring) == {
-        'status': VALID,
-        'block_id': 'xyz',
-        'counts': {'n_valid': 2, 'n_invalid': 0},
-        'ineligible': [votes[-1]],
-        'malformed': [],
-        'previous_block': 'a',
-        'other_previous_block': {},
-    }
-
-
-@patch('bigchaindb.voting.Voting.verify_vote_signature', return_value=True)
-def test_duplicate_vote_throws_critical_error(b):
-    keyring = 'abc'
-    block = {'id': 'xyz', 'block': {'voters': 'ab'}}
-    votes = [{
-        'node_pubkey': c,
-        'vote': {'is_block_valid': True, 'previous_block': 'a'}
-    } for c in 'aabc']
-    with pytest.raises(CriticalDuplicateVote):
-        Voting.block_election(block, votes, keyring)

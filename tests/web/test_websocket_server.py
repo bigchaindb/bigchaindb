@@ -1,28 +1,12 @@
 import asyncio
 import json
 import queue
-import random
 import threading
 from unittest.mock import patch
 
 import pytest
 
 pytestmark = pytest.mark.tendermint
-
-
-@pytest.fixture
-def _block(b, request):
-    from bigchaindb.models import Transaction
-    total = getattr(request, 'param', 1)
-    transactions = [
-        Transaction.create(
-            [b.me],
-            [([b.me], 1)],
-            metadata={'msg': random.random()},
-        ).sign([b.me_private])
-        for _ in range(total)
-    ]
-    return b.create_block(transactions)
 
 
 class MockWebSocket:
@@ -117,8 +101,7 @@ def test_websocket_string_event(test_client, loop):
 
 
 @asyncio.coroutine
-@pytest.mark.parametrize('_block', (10,), indirect=('_block',), ids=('block',))
-def test_websocket_block_event(b, _block, test_client, loop):
+def test_websocket_block_event(b, test_client, loop):
     from bigchaindb import events
     from bigchaindb.web.websocket_server import init_app, POISON_PILL, EVENTS_ENDPOINT
     from bigchaindb.models import Transaction
