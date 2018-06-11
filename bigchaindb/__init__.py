@@ -1,7 +1,7 @@
 import copy
 import logging
 
-from bigchaindb.log.configs import SUBSCRIBER_LOGGING_CONFIG as log_config
+from bigchaindb.log import DEFAULT_LOGGING_CONFIG as log_config
 
 # from functools import reduce
 # PORT_NUMBER = reduce(lambda x, y: x * y, map(ord, 'BigchainDB')) % 2**16
@@ -73,7 +73,6 @@ config = {
         'fmt_console': log_config['formatters']['console']['format'],
         'fmt_logfile': log_config['formatters']['file']['format'],
         'granular_levels': {},
-        'port': log_config['root']['port']
     },
 }
 
