@@ -30,7 +30,8 @@ Tag name: v2.0.0b1
 ### Known Issues
 
 * An issue was found with the `bigchaindb upsert-validator` command. A solution was proposed in [BEP-19](https://github.com/bigchaindb/BEPs/pull/45) and is being implemented in [pull request #2314](https://github.com/bigchaindb/bigchaindb/pull/2314)
-* Some users are reporting that they sometimes lose the ability to post new transactions, but they can still retrieve existing transactions; see [issue #2322](https://github.com/bigchaindb/bigchaindb/pull/2322). It seems the issue may be with Tendermint; see [tendermint/tendermint#1642](https://github.com/tendermint/tendermint/issues/1642)
+* If you run BigchainDB locally using `make start` (i.e. using Docker Compose) and then you put the node under heavy write load, Tendermint can become unresponsive and running `make stop` can hang.
+* There seems to be one or more issues with Tendermint when it is put under heavy load (i.e. even when BigchainDB isn't involved). See Tendermint issues [#1394](https://github.com/tendermint/tendermint/issues/1394), [#1642](https://github.com/tendermint/tendermint/issues/1642) and [#1661](https://github.com/tendermint/tendermint/issues/1661)
 
 ### Notes
 

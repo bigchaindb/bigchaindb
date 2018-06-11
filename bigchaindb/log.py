@@ -1,23 +1,11 @@
 import logging
-from logging.handlers import DEFAULT_TCP_LOGGING_PORT
 from os.path import expanduser, join
 
 
-DEFAULT_SOCKET_LOGGING_HOST = 'localhost'
-DEFAULT_SOCKET_LOGGING_PORT = DEFAULT_TCP_LOGGING_PORT
-DEFAULT_SOCKET_LOGGING_ADDR = (DEFAULT_SOCKET_LOGGING_HOST,
-                               DEFAULT_SOCKET_LOGGING_PORT)
 DEFAULT_LOG_DIR = expanduser('~')
 
-PUBLISHER_LOGGING_CONFIG = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'root': {
-        'level': logging.DEBUG,
-    },
-}
 
-SUBSCRIBER_LOGGING_CONFIG = {
+DEFAULT_LOGGING_CONFIG = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
@@ -63,6 +51,5 @@ SUBSCRIBER_LOGGING_CONFIG = {
     'root': {
         'level': logging.DEBUG,
         'handlers': ['console', 'file', 'errors'],
-        'port': DEFAULT_SOCKET_LOGGING_PORT
     },
 }
