@@ -108,7 +108,7 @@ def _configure_bigchaindb(request):
         'database': bigchaindb._database_map[backend],
         'tendermint': {
             'host': 'localhost',
-            'port': '46657'
+            'port': 46657,
         }
     }
     config['database']['name'] = test_db_name
