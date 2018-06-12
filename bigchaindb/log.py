@@ -21,6 +21,11 @@ DEFAULT_LOGGING_CONFIG = {
                        '%(message)s (%(processName)-10s - pid: %(process)d)'),
             'datefmt': '%Y-%m-%d %H:%M:%S',
         },
+        'benchmark': {
+            'class': 'logging.Formatter',
+            'format': ('%(asctime)s,%(message)s, '),
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        }
     },
     'handlers': {
         'console': {
@@ -45,7 +50,7 @@ DEFAULT_LOGGING_CONFIG = {
             'backupCount': 5,
             'formatter': 'file',
             'level': logging.ERROR,
-        },
+        }
     },
     'loggers': {},
     'root': {

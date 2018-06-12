@@ -6,6 +6,7 @@ import argparse
 import builtins
 import functools
 import multiprocessing as mp
+import logging
 import sys
 
 import bigchaindb
@@ -13,6 +14,9 @@ import bigchaindb.config_utils
 from bigchaindb.log import DEFAULT_LOGGING_CONFIG
 from bigchaindb.version import __version__
 from logging.config import dictConfig as set_logging_config
+
+
+BENCHMARK_LOG_LEVEL = 60
 
 
 def configure_bigchaindb(command):
@@ -47,7 +51,6 @@ def configure_bigchaindb(command):
 
     return configure
 
-
 def start_logging_process(command):
     """Decorator to start the logging subscriber process.
 
@@ -68,6 +71,10 @@ def start_logging_process(command):
     """
     @functools.wraps(command)
     def start_logging(args):
+        # Add a new logging level for logging benchmark
+        logging.addLevelName(BENCHMARK_LOG_LEVEL, "BENCHMARK")
+        logging.Logger.benchmark = benchmark
+
         logging_configs = DEFAULT_LOGGING_CONFIG
         new_logging_configs = bigchaindb.config['log']
 
@@ -87,6 +94,17 @@ def start_logging_process(command):
         # Update log string format
         logging_configs['formatters']['console']['format'] = new_logging_configs['fmt_console']
         logging_configs['formatters']['file']['format'] = new_logging_configs['fmt_console']
+
+        if new_logging_configs['benchmark']:
+            logging_configs['handlers']['benchmark'] = {
+                'class': 'logging.handlers.RotatingFileHandler',
+                'filename': 'bigchaindb-benchmark.log',
+                'mode': 'w',
+                'maxBytes':  209715200,
+                'backupCount': 5,
+                'formatter': 'benchmark',
+                'level': BENCHMARK_LOG_LEVEL,
+            }
 
         set_logging_config(logging_configs)
         command(args)
