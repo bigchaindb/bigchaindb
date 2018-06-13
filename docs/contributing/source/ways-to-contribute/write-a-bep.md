@@ -2,9 +2,9 @@
 
 If you have an idea for a new feature or enhancement, and you want some feedback before you write a full BigchainDB Enhancement Proposal (BEP), then feel free to:
   - ask in the [bigchaindb/bigchaindb Gitter chat room](https://gitter.im/bigchaindb/bigchaindb) or
-  - [open a new issue in the bigchaindb/BEPs repo](https://github.com/bigchaindb/BEPs/issues/new) and give it the label **bep idea**.
+  - [open a new issue in the bigchaindb/BEPs repo](https://github.com/bigchaindb/BEPs/issues/new) and give it the label **BEP idea**.
 
-If you want to discuss an existing BEP, then [open a new issue in the bigchaindb/BEPs repo](https://github.com/bigchaindb/BEPs/issues/new) and give it the label **discuss existing bep**.
+If you want to discuss an existing BEP, then [open a new issue in the bigchaindb/BEPs repo](https://github.com/bigchaindb/BEPs/issues/new) and give it the label **discuss existing BEP**.
 
 ## Steps to Write a New BEP
 
