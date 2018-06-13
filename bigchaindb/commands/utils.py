@@ -13,10 +13,8 @@ import bigchaindb
 import bigchaindb.config_utils
 from bigchaindb.log import DEFAULT_LOGGING_CONFIG
 from bigchaindb.version import __version__
+from bigchaindb.log import benchmark
 from logging.config import dictConfig as set_logging_config
-
-
-BENCHMARK_LOG_LEVEL = 60
 
 
 def configure_bigchaindb(command):
@@ -50,65 +48,6 @@ def configure_bigchaindb(command):
         command(args)
 
     return configure
-
-def start_logging_process(command):
-    """Decorator to start the logging subscriber process.
-
-    Args:
-        command: The command to decorate.
-
-    Returns:
-        The command wrapper function.
-
-    .. important::
-
-        Configuration, if needed, should be applied before invoking this
-        decorator, as starting the subscriber process for logging will
-        configure the root logger for the child process based on the
-        state of :obj:`bigchaindb.config` at the moment this decorator
-        is invoked.
-
-    """
-    @functools.wraps(command)
-    def start_logging(args):
-        # Add a new logging level for logging benchmark
-        logging.addLevelName(BENCHMARK_LOG_LEVEL, "BENCHMARK")
-        logging.Logger.benchmark = benchmark
-
-        logging_configs = DEFAULT_LOGGING_CONFIG
-        new_logging_configs = bigchaindb.config['log']
-
-        # Update log file location
-        logging_configs['handlers']['file']['filename'] = new_logging_configs['file']
-        logging_configs['handlers']['errors']['filename'] = new_logging_configs['error_file']
-
-        # Update log levels
-        logging_configs['handlers']['console']['level'] = \
-            new_logging_configs['level_console'].upper()
-        logging_configs['handlers']['file']['level'] = new_logging_configs['level_logfile'].upper()
-
-        # Update log date format
-        logging_configs['formatters']['console']['datefmt'] = new_logging_configs['datefmt_console']
-        logging_configs['formatters']['file']['datefmt'] = new_logging_configs['datefmt_logfile']
-
-        # Update log string format
-        logging_configs['formatters']['console']['format'] = new_logging_configs['fmt_console']
-        logging_configs['formatters']['file']['format'] = new_logging_configs['fmt_console']
-
-        if new_logging_configs['benchmark']:
-            logging_configs['handlers']['benchmark'] = {
-                'class': 'logging.handlers.RotatingFileHandler',
-                'filename': 'bigchaindb-benchmark.log',
-                'mode': 'w',
-                'maxBytes':  209715200,
-                'backupCount': 5,
-                'formatter': 'benchmark',
-                'level': BENCHMARK_LOG_LEVEL,
-            }
-
-        set_logging_config(logging_configs)
-        command(args)
-    return start_logging
 
 
 def _convert(value, default=None, convert=None):
