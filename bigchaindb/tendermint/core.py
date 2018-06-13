@@ -1,7 +1,6 @@
 """This module contains all the goodness to integrate BigchainDB
 with Tendermint."""
 import logging
-import uuid
 
 from abci.application import BaseApplication, Result
 from abci.types_pb2 import ResponseEndBlock, ResponseInfo, Validator

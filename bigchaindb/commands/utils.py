@@ -6,15 +6,11 @@ import argparse
 import builtins
 import functools
 import multiprocessing as mp
-import logging
 import sys
 
 import bigchaindb
 import bigchaindb.config_utils
-from bigchaindb.log import DEFAULT_LOGGING_CONFIG
 from bigchaindb.version import __version__
-from bigchaindb.log import benchmark
-from logging.config import dictConfig as set_logging_config
 
 
 def configure_bigchaindb(command):
