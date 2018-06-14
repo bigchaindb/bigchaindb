@@ -74,8 +74,8 @@ class App(BaseApplication):
             and block hash.
         """
         logger.benchmark('BEGIN BLOCK, height:%s, num_txs:%s',
-            req_begin_block.header.height,
-            req_begin_block.header.num_txs)
+                         req_begin_block.header.height,
+                         req_begin_block.header.num_txs)
 
         self.block_txn_ids = []
         self.block_transactions = []

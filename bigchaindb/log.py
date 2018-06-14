@@ -1,5 +1,4 @@
 import bigchaindb
-import functools
 import logging
 
 from bigchaindb.common.exceptions import ConfigurationError
@@ -80,6 +79,7 @@ def benchmark(self, message, *args, **kws):
     if self.isEnabledFor(BENCHMARK_LOG_LEVEL):
         self._log(BENCHMARK_LOG_LEVEL, message, args, **kws)
 
+
 def _normalize_log_level(level):
     try:
         return level.upper()
@@ -101,13 +101,12 @@ def setup_logging():
     """
 
     # Add a new logging level for logging benchmark
-    logging.addLevelName(BENCHMARK_LOG_LEVEL, "BENCHMARK")
+    logging.addLevelName(BENCHMARK_LOG_LEVEL, 'BENCHMARK')
     logging.BENCHMARK = BENCHMARK_LOG_LEVEL
     logging.Logger.benchmark = benchmark
 
     logging_configs = DEFAULT_LOGGING_CONFIG
     new_logging_configs = bigchaindb.config['log']
-
 
     if 'file' in new_logging_configs:
         filename = new_logging_configs['file']

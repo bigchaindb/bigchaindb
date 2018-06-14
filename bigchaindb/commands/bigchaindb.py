@@ -19,7 +19,7 @@ from bigchaindb.backend import query
 from bigchaindb.backend.query import VALIDATOR_UPDATE_ID, PRE_COMMIT_ID
 from bigchaindb.commands import utils
 from bigchaindb.commands.utils import (configure_bigchaindb,
-    input_on_stderr)
+                                       input_on_stderr)
 from bigchaindb.log import setup_logging
 from bigchaindb.tendermint.lib import BigchainDB
 from bigchaindb.tendermint.utils import public_key_from_base64
