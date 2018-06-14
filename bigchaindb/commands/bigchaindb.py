@@ -16,10 +16,11 @@ import bigchaindb
 from bigchaindb import backend
 from bigchaindb.backend import schema
 from bigchaindb.backend import query
-from bigchaindb.commands import utils
-from bigchaindb.commands.utils import (
-    configure_bigchaindb, start_logging_process, input_on_stderr)
 from bigchaindb.backend.query import VALIDATOR_UPDATE_ID, PRE_COMMIT_ID
+from bigchaindb.commands import utils
+from bigchaindb.commands.utils import (configure_bigchaindb,
+                                       input_on_stderr)
+from bigchaindb.log import setup_logging
 from bigchaindb.tendermint.lib import BigchainDB
 from bigchaindb.tendermint.utils import public_key_from_base64
 
@@ -159,11 +160,13 @@ def run_recover(b):
 
 
 @configure_bigchaindb
-@start_logging_process
 def run_start(args):
     """Start the processes to run the node"""
-    logger.info('BigchainDB Version %s', bigchaindb.__version__)
 
+    # Configure Logging
+    setup_logging()
+
+    logger.info('BigchainDB Version %s', bigchaindb.__version__)
     run_recover(BigchainDB())
 
     try:

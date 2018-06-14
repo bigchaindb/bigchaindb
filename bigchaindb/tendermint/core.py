@@ -38,7 +38,6 @@ class App(BaseApplication):
 
     def info(self):
         """Return height of the latest committed block."""
-
         r = ResponseInfo()
         block = self.bigchaindb.get_latest_block()
         if block:
@@ -55,13 +54,17 @@ class App(BaseApplication):
 
         Args:
             raw_tx: a raw string (in bytes) transaction."""
+
+        logger.benchmark('CHECK_TX_INIT')
         logger.debug('check_tx: %s', raw_transaction)
         transaction = decode_transaction(raw_transaction)
         if self.bigchaindb.is_valid_transaction(transaction):
             logger.debug('check_tx: VALID')
+            logger.benchmark('CHECK_TX_END, tx_id:%s', transaction['id'])
             return Result.ok()
         else:
             logger.debug('check_tx: INVALID')
+            logger.benchmark('CHECK_TX_END, tx_id:%s', transaction['id'])
             return Result.error()
 
     def begin_block(self, req_begin_block):
@@ -70,6 +73,9 @@ class App(BaseApplication):
             req_begin_block: block object which contains block header
             and block hash.
         """
+        logger.benchmark('BEGIN BLOCK, height:%s, num_txs:%s',
+                         req_begin_block.header.height,
+                         req_begin_block.header.num_txs)
 
         self.block_txn_ids = []
         self.block_transactions = []
@@ -98,7 +104,6 @@ class App(BaseApplication):
 
         Args:
             height (int): new height of the chain."""
-
         self.new_height = height
         block_txn_hash = calculate_hash(self.block_txn_ids)
         block = self.bigchaindb.get_latest_block()
@@ -130,7 +135,6 @@ class App(BaseApplication):
 
     def commit(self):
         """Store the new height and along with block hash."""
-
         data = self.block_txn_hash.encode('utf-8')
 
         # register a new block only when new transactions are received
@@ -146,6 +150,7 @@ class App(BaseApplication):
         logger.debug('Commit-ing new block with hash: apphash=%s ,'
                      'height=%s, txn ids=%s', data, self.new_height,
                      self.block_txn_ids)
+        logger.benchmark('COMMIT_BLOCK, height:%s', self.new_height)
         return data
 
 

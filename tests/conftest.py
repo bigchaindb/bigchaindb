@@ -16,6 +16,7 @@ import pytest
 from pymongo import MongoClient
 
 from bigchaindb.common import crypto
+from bigchaindb.log import setup_logging
 from bigchaindb.tendermint.lib import Block
 
 TEST_DB_NAME = 'bigchain_test'
@@ -110,6 +111,10 @@ def _configure_bigchaindb(request):
     config['database']['name'] = test_db_name
     config = config_utils.env_config(config)
     config_utils.set_config(config)
+
+    # NOTE: since we use a custom log level
+    # for benchmark logging we need to setup logging
+    setup_logging()
 
 
 @pytest.fixture(scope='session')

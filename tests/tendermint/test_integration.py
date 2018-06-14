@@ -1,12 +1,13 @@
-import json
-from copy import deepcopy
-
-import pytest
-from abci.server import ProtocolHandler
-from io import BytesIO
 import abci.types_pb2 as types
+import json
+import pytest
+
+
+from abci.server import ProtocolHandler
 from abci.encoding import read_message
 from abci.messages import to_request_deliver_tx, to_request_check_tx
+from copy import deepcopy
+from io import BytesIO
 
 
 @pytest.mark.tendermint
