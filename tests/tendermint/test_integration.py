@@ -6,7 +6,6 @@ import pytest
 from abci.server import ProtocolHandler
 from abci.encoding import read_message
 from abci.messages import to_request_deliver_tx, to_request_check_tx
-from bigchaindb.log import setup_logging
 from copy import deepcopy
 from io import BytesIO
 
