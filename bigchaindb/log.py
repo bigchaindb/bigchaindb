@@ -8,7 +8,7 @@ from os.path import expanduser, join
 
 
 DEFAULT_LOG_DIR = expanduser('~')
-BENCHMARK_LOG_LEVEL = 60
+BENCHMARK_LOG_LEVEL = 15
 
 
 DEFAULT_LOGGING_CONFIG = {
@@ -29,7 +29,7 @@ DEFAULT_LOGGING_CONFIG = {
         },
         'benchmark': {
             'class': 'logging.Formatter',
-            'format': ('%(asctime)s, %(message)s'),
+            'format': ('%(asctime)s, %(levelname)s, %(message)s'),
             'datefmt': '%Y-%m-%d %H:%M:%S',
         }
     },
@@ -56,12 +56,21 @@ DEFAULT_LOGGING_CONFIG = {
             'backupCount': 5,
             'formatter': 'file',
             'level': logging.ERROR,
+        },
+        'benchmark': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': 'bigchaindb-benchmark.log',
+            'mode': 'w',
+            'maxBytes':  209715200,
+            'backupCount': 5,
+            'formatter': 'benchmark',
+            'level': BENCHMARK_LOG_LEVEL,
         }
     },
     'loggers': {},
     'root': {
         'level': logging.DEBUG,
-        'handlers': ['console', 'file', 'errors'],
+        'handlers': ['console', 'file', 'errors', 'benchmark'],
     },
 }
 
@@ -78,14 +87,8 @@ def _normalize_log_level(level):
         raise ConfigurationError('Log level must be a string!') from exc
 
 
-def setup_logging(command):
-    """Decorator to start the logging subscriber process.
-
-    Args:
-        command: The command to decorate.
-
-    Returns:
-        The command wrapper function.
+def setup_logging():
+    """Function to configure log hadlers.
 
     .. important::
 
@@ -96,72 +99,56 @@ def setup_logging(command):
         is invoked.
 
     """
-    @functools.wraps(command)
-    def start_logging(args):
-        # Add a new logging level for logging benchmark
-        logging.addLevelName(BENCHMARK_LOG_LEVEL, "BENCHMARK")
-        logging.BENCHMARK = BENCHMARK_LOG_LEVEL
-        logging.Logger.benchmark = benchmark
 
-        logging_configs = DEFAULT_LOGGING_CONFIG
-        new_logging_configs = bigchaindb.config['log']
+    # Add a new logging level for logging benchmark
+    logging.addLevelName(BENCHMARK_LOG_LEVEL, "BENCHMARK")
+    logging.BENCHMARK = BENCHMARK_LOG_LEVEL
+    logging.Logger.benchmark = benchmark
 
-
-        if 'file' in new_logging_configs:
-            filename = new_logging_configs['file']
-            logging_configs['handlers']['file']['filename'] = filename
-
-        if 'error_file' in new_logging_configs:
-            error_filename = new_logging_configs['error_file']
-            logging_configs['handlers']['errors']['filename'] = error_filename
-
-        if 'level_console' in new_logging_configs:
-            level = _normalize_log_level(new_logging_configs['level_console'])
-            logging_configs['handlers']['console']['level'] = level
-
-        if 'level_logfile' in new_logging_configs:
-            level = _normalize_log_level(new_logging_configs['level_logfile'])
-            logging_configs['handlers']['file']['level'] = level
-
-        if 'fmt_console' in new_logging_configs:
-            fmt = new_logging_configs['fmt_console']
-            logging_configs['formatters']['console']['format'] = fmt
-
-        if 'fmt_logfile' in new_logging_configs:
-            fmt = new_logging_configs['fmt_logfile']
-            logging_configs['formatters']['file']['format'] = fmt
-
-        if 'datefmt_console' in new_logging_configs:
-            fmt = new_logging_configs['datefmt_console']
-            logging_configs['formatters']['console']['datefmt'] = fmt
-
-        if 'datefmt_logfile' in new_logging_configs:
-            fmt = new_logging_configs['datefmt_logfile']
-            logging_configs['formatters']['file']['datefmt'] = fmt
-
-        log_levels = new_logging_configs.get('granular_levels', {})
-
-        for logger_name, level in log_levels.items():
-            level = _normalize_log_level(level)
-            try:
-                logging_configs['loggers'][logger_name]['level'] = level
-            except KeyError:
-                logging_configs['loggers'][logger_name] = {'level': level}
+    logging_configs = DEFAULT_LOGGING_CONFIG
+    new_logging_configs = bigchaindb.config['log']
 
 
-        if new_logging_configs['benchmark']:
-            logging_configs['handlers']['benchmark'] = {
-                'class': 'logging.handlers.RotatingFileHandler',
-                'filename': 'bigchaindb-benchmark.log',
-                'mode': 'w',
-                'maxBytes':  209715200,
-                'backupCount': 5,
-                'formatter': 'benchmark',
-                'level': logging.BENCHMARK,
-            }
+    if 'file' in new_logging_configs:
+        filename = new_logging_configs['file']
+        logging_configs['handlers']['file']['filename'] = filename
 
-            logging_configs['root']['handlers'].append('benchmark')
+    if 'error_file' in new_logging_configs:
+        error_filename = new_logging_configs['error_file']
+        logging_configs['handlers']['errors']['filename'] = error_filename
 
-        set_logging_config(logging_configs)
-        command(args)
-    return start_logging
+    if 'level_console' in new_logging_configs:
+        level = _normalize_log_level(new_logging_configs['level_console'])
+        logging_configs['handlers']['console']['level'] = level
+
+    if 'level_logfile' in new_logging_configs:
+        level = _normalize_log_level(new_logging_configs['level_logfile'])
+        logging_configs['handlers']['file']['level'] = level
+        logging_configs['handlers']['benchmark']['level'] = level
+
+    if 'fmt_console' in new_logging_configs:
+        fmt = new_logging_configs['fmt_console']
+        logging_configs['formatters']['console']['format'] = fmt
+
+    if 'fmt_logfile' in new_logging_configs:
+        fmt = new_logging_configs['fmt_logfile']
+        logging_configs['formatters']['file']['format'] = fmt
+
+    if 'datefmt_console' in new_logging_configs:
+        fmt = new_logging_configs['datefmt_console']
+        logging_configs['formatters']['console']['datefmt'] = fmt
+
+    if 'datefmt_logfile' in new_logging_configs:
+        fmt = new_logging_configs['datefmt_logfile']
+        logging_configs['formatters']['file']['datefmt'] = fmt
+
+    log_levels = new_logging_configs.get('granular_levels', {})
+
+    for logger_name, level in log_levels.items():
+        level = _normalize_log_level(level)
+        try:
+            logging_configs['loggers'][logger_name]['level'] = level
+        except KeyError:
+            logging_configs['loggers'][logger_name] = {'level': level}
+
+    set_logging_config(logging_configs)

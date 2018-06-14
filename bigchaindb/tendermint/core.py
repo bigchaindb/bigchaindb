@@ -60,11 +60,11 @@ class App(BaseApplication):
         transaction = decode_transaction(raw_transaction)
         if self.bigchaindb.is_valid_transaction(transaction):
             logger.debug('check_tx: VALID')
-            logger.benchmark('CHECK_TX_END')
+            logger.benchmark('CHECK_TX_END, tx_id:%s', transaction['id'])
             return Result.ok()
         else:
             logger.debug('check_tx: INVALID')
-            logger.benchmark('CHECK_TX_END, tx_id:%s', transaction.id)
+            logger.benchmark('CHECK_TX_END, tx_id:%s', transaction['id'])
             return Result.error()
 
     def begin_block(self, req_begin_block):

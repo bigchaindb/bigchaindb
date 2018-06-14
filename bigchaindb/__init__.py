@@ -72,8 +72,7 @@ config = {
         'datefmt_logfile': log_config['formatters']['file']['datefmt'],
         'fmt_console': log_config['formatters']['console']['format'],
         'fmt_logfile': log_config['formatters']['file']['format'],
-        'granular_levels': {},
-        'benchmark': False
+        'granular_levels': {}
     },
 }
 

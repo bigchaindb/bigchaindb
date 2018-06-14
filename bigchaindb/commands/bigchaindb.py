@@ -160,11 +160,13 @@ def run_recover(b):
 
 
 @configure_bigchaindb
-@setup_logging
 def run_start(args):
     """Start the processes to run the node"""
-    logger.info('BigchainDB Version %s', bigchaindb.__version__)
 
+    # Configure Logging
+    setup_logging()
+
+    logger.info('BigchainDB Version %s', bigchaindb.__version__)
     run_recover(BigchainDB())
 
     try:
