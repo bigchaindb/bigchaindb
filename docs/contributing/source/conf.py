@@ -13,7 +13,8 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import wget # is for real!
+import wget  # is for real!
+import datetime
 
 from os import rename, remove
 from recommonmark.parser import CommonMarkParser
@@ -98,7 +99,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Contributing to BigchainDB'
-copyright = '2017, BigchainDB Contributors'
+now = datetime.datetime.now()
+copyright = str(now.year) + ', BigchainDB Contributors'
 author = 'BigchainDB Contributors'
 
 # The version info for the project you're documenting, acts as replacement for
