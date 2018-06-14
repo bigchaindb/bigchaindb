@@ -4,31 +4,161 @@ Querying BigchainDB
 A node operator can use the full power of MongoDB's query engine to search and query all stored data, including all transactions, assets and metadata.
 The node operator can decide for themselves how much of that query power they expose to external users.
 
+Blog Post with Example Queries
+------------------------------
+
+We wrote a blog post in The BigchainDB Blog to show
+how to use some MongoDB tools to query a BigchainDB node's MongoDB database.
+It includes some specific example queries for data
+about custom cars and their ownership histories.
+`Check it out <https://blog.bigchaindb.com/using-mongodb-to-query-bigchaindb-data-3fc651e0861b>`_.
+
+How to Connect to MongoDB
+-------------------------
+
+Before you can query a MongoDB database, you must connect to it, and to do that, you need to know its hostname and port.
+
+If you're running a BigchainDB node on your local machine (e.g. for dev and test), then the hostname should be ``localhost`` and the port should be ``27017``, unless you did something to change those values. If you're running a BigchainDB node on a remote machine and you can SSH to that machine, then the same is true.
+
+If you're running a BigchainDB node on a remote machine and you configured its MongoDB to use auth and to be publicly-accessible (to people with authorization), then you can probably figure out its hostname and port.
+
 How to Query
 ------------
 
 A BigchainDB node operator has full access to their local MongoDB instance, so they can use any of MongoDB's APIs for running queries, including:
 
-- `the mongo Shell <https://docs.mongodb.com/manual/mongo/>`_,
+- `the Mongo Shell <https://docs.mongodb.com/manual/mongo/>`_,
+- `MongoDB Compass <https://www.mongodb.com/products/compass>`_,
 - one of `the MongoDB drivers <https://docs.mongodb.com/ecosystem/drivers/>`_, such as `PyMongo <https://api.mongodb.com/python/current/>`_, or
-- a third-party tool or driver for doing MongoDB queries, such as RazorSQL.
+- a third-party tool for doing MongoDB queries, such as RazorSQL, Studio 3T, Mongo Management Studio, NoSQLBooster for MongoDB, or Dr. Mongo.
 
-What Can be Queried?
---------------------
+.. note::
 
-BigchainDB Server creates several `MongoDB collections <https://docs.mongodb.com/manual/core/databases-and-collections/>`_ in the node's local MongoDB database.
-You can see the list of collections by looking at the ``create_tables`` method in the BigchainDB Server file ``bigchaindb/backend/localmongodb/schema.py``. The most interesting collections are:
+   It's possible to do query a MongoDB database using SQL. For example:
+   
+   * Studio 3T: "`How to Query MongoDB with SQL <https://studio3t.com/whats-new/how-to-query-mongodb-with-sql/>`_"
+   * NoSQLBooster for MongoDB: "`How to Query MongoDB with SQL SELECT <https://mongobooster.com/blog/query-mongodb-with-sql/>`_"
+
+For example, if you're on a machine that's running a default BigchainDB node, then you can connect to it using the Mongo Shell (``mongo``) and look around like so:
+
+.. code::
+
+    $ mongo
+    MongoDB shell version v3.6.5
+    connecting to: mongodb://127.0.0.1:27017
+    MongoDB server version: 3.6.4
+    ...
+    > show dbs
+    admin     0.000GB
+    bigchain  0.000GB
+    config    0.000GB
+    local     0.000GB
+    > use bigchain
+    switched to db bigchain
+    > show collections
+    assets
+    blocks
+    metadata
+    pre_commit
+    transactions
+    utxos
+    validators
+
+The above example illustrates several things:
+
+* When you don't specify the hostname or port, the Mongo Shell assumes they are ``localhost`` and ``27017``, respectively. (``localhost`` had IP address 127.0.0.1 on the machine in question, an Ubuntu machine.)
+* BigchainDB stores its data in a database named ``bigchain``.
+* The ``bigchain`` database contains several `collections <https://docs.mongodb.com/manual/core/databases-and-collections/>`_.
+* Votes aren't stored in any collection, currently. They are all handled and stored by Tendermint in its own (LevelDB) database.
+
+Example Documents from Some Collections
+---------------------------------------
+
+The most interesting collections in the ``bigchain`` database are:
 
 - transactions
 - assets
 - metadata
 - blocks
 
-We don't detail what's in each collection here, but the collection names are fairly self-explanatory. You can explore their contents using MongoDB queries. A couple of things worth noting are:
+You can explore those collections using MongoDB queries such as ``db.assets.findOne()``. We now show some example documents from each of those collections.
 
-1. The transactions collection doesn't include any ``asset.data`` or ``metadata`` values (JSON documents). Those are all removed and stored separately in the assets and metadata collections, respectively.
-2. The JSON documents stored in the blocks collection are *not* `Tendermint blocks <https://github.com/tendermint/tendermint/blob/master/types/block.go>`_, they are `BigchainDB blocks <https://docs.bigchaindb.com/projects/server/en/latest/data-models/block-model.html>`_.
-3. Votes aren't stored in any MongoDB collection, currently. They are all handled and stored by Tendermint in its own (LevelDB) database.
+Example Documents from transactions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A CREATE transaction from the transactions collection includes an extra ``"_id"`` field (added by MongoDB) and is missing its ``"asset"`` and ``"metadata"`` fields: that data was removed and stored in the assets and metadata collections.
+
+.. code::
+
+    {  
+        "_id":ObjectId("5b17b9fa6ce88300067b6804"),
+        "inputs":[…],
+        "outputs":[…],
+        "operation":"CREATE",
+        "version":"2.0",
+        "id":"816c4dd7…851af1629"
+    }
+
+A TRANSFER transaction from the transactions collection is similar, but it keeps its ``"asset"`` field.
+
+.. code::
+
+    {  
+        "_id":ObjectId("5b17b9fa6ce88300067b6807"),
+        "inputs":[…],
+        "outputs":[…],
+        "operation":"TRANSFER",
+        "asset":{  
+            "id":"816c4dd7ae…51af1629"
+        },
+        "version":"2.0",
+        "id":"985ee697d…a3296b9"
+    }
+
+Example Document from assets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A document from the assets collection has three top-level fields: an ``"_id"`` field added by MongoDB, the ``asset.data`` from a CREATE transaction, and the ``"id"`` of the CREATE transaction it came from.
+
+.. code::
+
+    {  
+        "_id":ObjectId("5b17b9fe6ce88300067b6823"),
+        "data":{  
+            "type":"cow",
+            "name":"Mildred"
+        },
+        "id":"96002ef8740…45869959d8"
+    }
+
+Example Document from metadata
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A document from the metadata collection has three top-level fields: an ``"_id"`` field added by MongoDB, the ``metadata`` from a transaction, and the ``"id"`` of the transaction it came from.
+
+.. code::
+
+    {  
+        "_id":ObjectId("5b17ba006ce88300067b683d"),
+        "metadata":{
+            "transfer_time":1058568256
+        },
+        "id":"53cba620e…ae9fdee0"
+    }
+
+Example Document from blocks
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code::
+
+    {
+        "_id":ObjectId("5b212c1ceaaa420006f41c57"),
+        "app_hash":"2b0b75c2c2…7fb2652ce26c6",
+        "height":17,
+        "transactions":[
+            "5f1f2d6b…ed98c1e"
+        ]
+    }
 
 What a Node Operator Can Expose to External Users
 -------------------------------------------------
@@ -76,3 +206,16 @@ Some queries can take too long or use too many resources. A node operator should
 To make MongoDB queries more efficient, one can create `indexes <https://docs.mongodb.com/manual/indexes/>`_. Those indexes might be created by the node operator or by some external users (if the node operator allows that). It's worth noting that indexes aren't free: whenever new data is appended to a collection, the corresponding indexes must be updated. The node operator might want to pass those costs on to whoever created the index. Moreover, in MongoDB, `a single collection can have no more than 64 indexes <https://docs.mongodb.com/manual/reference/limits/#Number-of-Indexes-per-Collection>`_.
 
 One can create a follower node: a node with Tendermint voting power 0. It would still have a copy of all the data, so it could be used as read-only node. A follower node could offer specialized queries as a service without affecting the workload on the voting validators (which can also write). There could even be followers of followers.
+
+JavaScript Query Code Examples
+------------------------------
+
+One can connect to a node's MongoDB database using any
+of the MongoDB drivers, such as `the MongoDB Node.js driver 
+<https://mongodb.github.io/node-mongodb-native/?jmp=docs>`_.
+Here are some links to example JavaScript code that queries a
+BigchainDB node's MongoDB database:
+
+- `The BigchainDB JavaScript/Node.js driver source code <https://github.com/bigchaindb/js-bigchaindb-driver>`_
+- `Example code by @manolodewiner <https://github.com/manolodewiner/query-mongodb-bigchaindb/blob/master/queryMongo.js>`_
+- `More example code by @manolodewiner <https://github.com/bigchaindb/bigchaindb/issues/2315#issuecomment-392724279>`_
