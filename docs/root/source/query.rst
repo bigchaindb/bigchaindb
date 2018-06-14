@@ -4,12 +4,21 @@ Querying BigchainDB
 A node operator can use the full power of MongoDB's query engine to search and query all stored data, including all transactions, assets and metadata.
 The node operator can decide for themselves how much of that query power they expose to external users.
 
+Blog Post with Example Queries
+------------------------------
+
+We wrote a blog post in The BigchainDB Blog to show
+how to use some MongoDB tools to query a BigchainDB node's MongoDB database.
+It includes some specific example queries for data
+about custom cars and their ownership histories.
+`Check it out <https://blog.bigchaindb.com/using-mongodb-to-query-bigchaindb-data-3fc651e0861b>`_.
+
 How to Connect to MongoDB
 -------------------------
 
 Before you can query a MongoDB database, you must connect to it, and to do that, you need to know its hostname and port.
 
-If you're running a BigchainDB node on your local machine (e.g. for dev and test), then the hostname should be ``localhost`` and the port should be 27017, unless you did something to change those values. If you're running a BigchainDB node on a remote machine and you can SSH to that machine, then the same is true.
+If you're running a BigchainDB node on your local machine (e.g. for dev and test), then the hostname should be ``localhost`` and the port should be ``27017``, unless you did something to change those values. If you're running a BigchainDB node on a remote machine and you can SSH to that machine, then the same is true.
 
 If you're running a BigchainDB node on a remote machine and you configured its MongoDB to use auth and to be publicly-accessible (to people with authorization), then you can probably figure out its hostname and port.
 
@@ -57,7 +66,7 @@ For example, if you're on a machine that's running a default BigchainDB node, th
 
 The above example illustrates several things:
 
-* When you don't specify the hostname or port, the Mongo Shell assumes they are ``localhost`` and 27017, respectively. (``localhost`` had IP address 127.0.0.1 on the machine in question, an Ubuntu machine.)
+* When you don't specify the hostname or port, the Mongo Shell assumes they are ``localhost`` and ``27017``, respectively. (``localhost`` had IP address 127.0.0.1 on the machine in question, an Ubuntu machine.)
 * BigchainDB stores its data in a database named ``bigchain``.
 * The ``bigchain`` database contains several `collections <https://docs.mongodb.com/manual/core/databases-and-collections/>`_.
 * Votes aren't stored in any collection, currently. They are all handled and stored by Tendermint in its own (LevelDB) database.
@@ -65,14 +74,14 @@ The above example illustrates several things:
 Example Documents from Some Collections
 ---------------------------------------
 
-The most interesting collections are:
+The most interesting collections in the ``bigchain`` database are:
 
 - transactions
 - assets
 - metadata
 - blocks
 
-You can explore those collections using MongoDB queries such as ``db.assets.findOne()``. We now look at some example documents from each of those collections.
+You can explore those collections using MongoDB queries such as ``db.assets.findOne()``. We now show some example documents from each of those collections.
 
 Example Documents from transactions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -197,3 +206,16 @@ Some queries can take too long or use too many resources. A node operator should
 To make MongoDB queries more efficient, one can create `indexes <https://docs.mongodb.com/manual/indexes/>`_. Those indexes might be created by the node operator or by some external users (if the node operator allows that). It's worth noting that indexes aren't free: whenever new data is appended to a collection, the corresponding indexes must be updated. The node operator might want to pass those costs on to whoever created the index. Moreover, in MongoDB, `a single collection can have no more than 64 indexes <https://docs.mongodb.com/manual/reference/limits/#Number-of-Indexes-per-Collection>`_.
 
 One can create a follower node: a node with Tendermint voting power 0. It would still have a copy of all the data, so it could be used as read-only node. A follower node could offer specialized queries as a service without affecting the workload on the voting validators (which can also write). There could even be followers of followers.
+
+JavaScript Query Code Examples
+------------------------------
+
+One can connect to a node's MongoDB database using any
+of the MongoDB drivers, such as `the MongoDB Node.js driver 
+<https://mongodb.github.io/node-mongodb-native/?jmp=docs>`_.
+Here are some links to example JavaScript code that queries a
+BigchainDB node's MongoDB database:
+
+- `The BigchainDB JavaScript/Node.js driver source code <https://github.com/bigchaindb/js-bigchaindb-driver>`_
+- `Example code by @manolodewiner <https://github.com/manolodewiner/query-mongodb-bigchaindb/blob/master/queryMongo.js>`_
+- `More example code by @manolodewiner <https://github.com/bigchaindb/bigchaindb/issues/2315#issuecomment-392724279>`_
