@@ -3,5 +3,5 @@
 set -e -x
 
 if [[ -z ${TOXENV} ]]; then
-    codecov -v
+    codecov -v -f htmlcov/coverage.xml
 fi
