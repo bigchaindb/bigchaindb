@@ -1,4 +1,3 @@
-from bigchaindb.voting import Voting
 
 
 class BaseConsensusRules():
@@ -9,8 +8,6 @@ class BaseConsensusRules():
     All methods listed below must be implemented.
 
     """
-
-    voting = Voting
 
     @staticmethod
     def validate_transaction(bigchain, transaction):
