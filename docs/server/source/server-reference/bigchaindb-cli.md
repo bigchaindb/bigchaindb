@@ -76,6 +76,12 @@ configuration file as documented under
 
 
 ## bigchaindb upsert-validator
+
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This is an <strong>experimental</strong> feature. Users are advised <strong> not </strong> to use it in production.</p>
+</div>
+
 Add, update, or remove a validator from the validators set of the local node. The command implements [3/UPSERT-VALIDATORS](https://github.com/bigchaindb/BEPs/tree/master/3), check it out if you need more details on how this is orchestrated.
 
 Below is the command line syntax,
