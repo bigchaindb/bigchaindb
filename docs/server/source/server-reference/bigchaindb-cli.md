@@ -76,6 +76,10 @@ configuration file as documented under
 
 
 ## bigchaindb upsert-validator
+
+**This is an experimental feature. Users are advised not to use it in production.**
+
+
 Add, update, or remove a validator from the validators set of the local node. The command implements [3/UPSERT-VALIDATORS](https://github.com/bigchaindb/BEPs/tree/master/3), check it out if you need more details on how this is orchestrated.
 
 Below is the command line syntax,
