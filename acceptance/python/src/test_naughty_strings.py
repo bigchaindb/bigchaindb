@@ -62,12 +62,12 @@ def send_naughty_tx(asset, metadata):
         error = sent_transaction.error
         regex = '\{"message":"Invalid transaction \\(ValidationError\\): Invalid key name .* in asset object. ' \
                 'The key name cannot contain characters .* or null characters","status":400\}\n'
-        assert status_code == 400, sent_transaction
+        assert status_code == 400
         assert re.fullmatch(regex, error), sent_transaction
     # Otherwise, she expects to see her transaction in the database
     elif 'id' in sent_transaction.keys():
         tx_id = sent_transaction['id']
-        assert bdb.transactions.retrieve(tx_id), sent_transaction
+        assert bdb.transactions.retrieve(tx_id)
     # If neither condition was true, then something weird happened...
     else:
         raise TypeError(sent_transaction)
