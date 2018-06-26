@@ -66,14 +66,6 @@ class InvalidSignature(ValidationError):
     """
 
 
-class ImproperVoteError(ValidationError):
-    """Raised if a vote is not constructed correctly, or signed incorrectly"""
-
-
-class MultipleVotesError(ValidationError):
-    """Raised if a voter has voted more than once"""
-
-
 class TransactionNotInValidBlock(ValidationError):
     """Raised when a transfer transaction is attempting to fulfill the
     outputs of a transaction that is in an invalid or undecided block
@@ -94,10 +86,6 @@ class InputDoesNotExist(ValidationError):
 
 class TransactionOwnerError(ValidationError):
     """Raised if a user tries to transfer a transaction they don't own"""
-
-
-class SybilError(ValidationError):
-    """If a block or vote comes from an unidentifiable node"""
 
 
 class DuplicateTransaction(ValidationError):
