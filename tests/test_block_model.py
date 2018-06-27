@@ -2,9 +2,6 @@ import pytest
 from pytest import raises
 
 
-pytestmark = pytest.mark.tendermint
-
-
 class TestBlockModel(object):
     def test_block_initialization(self, monkeypatch):
         from bigchaindb.models import Block
