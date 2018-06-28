@@ -312,21 +312,6 @@ def double_spend_tx(signed_create_tx, carol_pubkey, user_sk):
     return tx.sign([user_sk])
 
 
-@pytest.fixture
-def structurally_valid_vote():
-    return {
-        'node_pubkey': 'c' * 44,
-        'signature': 'd' * 86,
-        'vote': {
-            'voting_for_block': 'a' * 64,
-            'previous_block': 'b' * 64,
-            'is_block_valid': False,
-            'invalid_reason': None,
-            'timestamp': '1111111111'
-        }
-    }
-
-
 def _get_height(b):
     maybe_block = b.get_latest_block()
     return 0 if maybe_block is None else maybe_block['height']

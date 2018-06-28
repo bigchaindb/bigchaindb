@@ -158,7 +158,7 @@ class Transaction(Transaction):
 
 # TODO: Remove node_pubkey as part of cleanup II
 class Block(object):
-    """Bundle a list of Transactions in a Block. Nodes vote on its validity.
+    """Bundle a list of Transactions in a Block.
 
     Attributes:
         transaction (:obj:`list` of :class:`~.Transaction`):
@@ -326,7 +326,7 @@ class Block(object):
         signature = block_body.get('signature')
 
         return cls(transactions, block['node_pubkey'],
-                   block['timestamp'], [], signature)
+                   block['timestamp'], signature)
 
     @property
     def id(self):
