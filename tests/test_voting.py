@@ -1,6 +1,6 @@
 import pytest
 
-from bigchaindb.core import Bigchain
+from bigchaindb.tendermint import BigchainDB
 from bigchaindb.voting import Voting, INVALID, VALID, UNDECIDED
 
 
@@ -39,7 +39,7 @@ def test_count_votes():
     voters = (['says invalid', 'malformed'] +
               ['kosher' + str(i) for i in range(10)])
 
-    votes = [Bigchain(v).vote('block', 'a', True) for v in voters]
+    votes = [BigchainDB(v).vote('block', 'a', True) for v in voters]
     votes[0]['vote']['is_block_valid'] = False
     # Incorrect previous block subtracts from n_valid and adds to n_invalid
     votes[-1]['vote']['previous_block'] = 'z'
@@ -64,7 +64,7 @@ def test_must_agree_prev_block():
             return True
 
     voters = 'abcd'
-    votes = [Bigchain(v).vote('block', 'a', True) for v in voters]
+    votes = [BigchainDB(v).vote('block', 'a', True) for v in voters]
     votes[0]['vote']['previous_block'] = 'b'
     votes[1]['vote']['previous_block'] = 'c'
     by_voter = dict(enumerate(votes))

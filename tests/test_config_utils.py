@@ -35,6 +35,7 @@ def test_bigchain_instance_raises_when_not_configured(request, monkeypatch):
     import bigchaindb
     from bigchaindb import config_utils
     from bigchaindb.common import exceptions
+    from bigchaindb.tendermint import BigchainDB
     assert 'CONFIGURED' not in bigchaindb.config
 
     # We need to disable ``bigchaindb.config_utils.autoconfigure`` to avoid reading
@@ -42,7 +43,7 @@ def test_bigchain_instance_raises_when_not_configured(request, monkeypatch):
     monkeypatch.setattr(config_utils, 'autoconfigure', lambda: 0)
 
     with pytest.raises(exceptions.ConfigurationError):
-        bigchaindb.Bigchain()
+        BigchainDB()
 
 
 def test_load_consensus_plugin_loads_default_rules_without_name():
