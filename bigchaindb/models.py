@@ -208,8 +208,8 @@ class Block(object):
         """Validate the Block.
 
         Args:
-            bigchain (:class:`~bigchaindb.Bigchain`): An instantiated Bigchain
-                object.
+            bigchain (:class:`~bigchaindb.tendermint.BigchainDB`): An
+                instantiated BigchainDB object.
 
         Note:
             The hash of the block (`id`) is validated on the `self.from_dict`
@@ -236,8 +236,8 @@ class Block(object):
         """Validate the Block without validating the transactions.
 
         Args:
-            bigchain (:class:`~bigchaindb.Bigchain`): An instantiated Bigchain
-                object.
+            bigchain (:class:`~bigchaindb.tendermint.BigchainDB`): An
+                instantiated BigchainDB object.
 
         Raises:
             ValidationError: If there is a problem with the block
@@ -365,8 +365,8 @@ class Block(object):
         assets from the assets table and reconstructs the block.
 
         Args:
-            bigchain (:class:`~bigchaindb.Bigchain`): An instance of Bigchain
-                used to perform database queries.
+            bigchain (:class:`~bigchaindb.tendermint.BigchainDB`): An instance of
+                BigchainDB used to perform database queries.
             block_dict(:obj:`dict`): The block dict as returned from the
                 database.
             from_dict_kwargs (:obj:`dict`): additional kwargs to pass to from_dict

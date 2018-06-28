@@ -11,7 +11,7 @@ from flask_cors import CORS
 import gunicorn.app.base
 
 from bigchaindb import utils
-from bigchaindb import Bigchain
+from bigchaindb.tendermint import BigchainDB
 from bigchaindb.web.routes import add_routes
 from bigchaindb.web.strip_content_type_middleware import StripContentTypeMiddleware
 
@@ -67,7 +67,7 @@ def create_app(*, debug=False, threads=1, bigchaindb_factory=None):
     """
 
     if not bigchaindb_factory:
-        bigchaindb_factory = Bigchain
+        bigchaindb_factory = BigchainDB
 
     app = Flask(__name__)
     app.wsgi_app = StripContentTypeMiddleware(app.wsgi_app)
