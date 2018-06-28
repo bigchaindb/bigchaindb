@@ -85,12 +85,10 @@ class BigchainDB(object):
 
         self.connection = connection if connection else backend.connect(**bigchaindb.config['database'])
 
-
-
     def post_transaction(self, transaction, mode):
         """Submit a valid transaction to the mempool."""
         if not mode or mode not in MODE_LIST:
-            raise ValidationError(('Mode must be one of the following {}.')
+            raise ValidationError('Mode must be one of the following {}.'
                                   .format(', '.join(MODE_LIST)))
 
         payload = {
@@ -108,7 +106,7 @@ class BigchainDB(object):
         response = self.post_transaction(transaction, mode)
         return self._process_post_response(response.json(), mode)
 
-    def _process_post_response(self, response, mode):
+    def process_post_response(self, response, mode):
         logger.debug(response)
         if response.get('error') is not None:
             return (500, 'Internal error')
@@ -131,7 +129,7 @@ class BigchainDB(object):
     #     else:
     #         return (500, 'Error while validating the transaction')
 
-    def _process_status_code(self, status_code, failure_msg):
+    def process_status_code(self, status_code, failure_msg):
         return (202, '') if status_code == 0 else (500, failure_msg)
 
     def store_transaction(self, transaction):
