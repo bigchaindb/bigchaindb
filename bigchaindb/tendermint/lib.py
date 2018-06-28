@@ -14,8 +14,8 @@ except ImportError:
     from sha3 import sha3_256
 
 import requests
-
-from bigchaindb import backend
+import bigchaindb
+from bigchaindb import backend, config_utils
 from bigchaindb import Bigchain
 from bigchaindb.models import Transaction
 from bigchaindb.common.exceptions import (SchemaValidationError,
@@ -29,6 +29,18 @@ logger = logging.getLogger(__name__)
 
 
 class BigchainDB(Bigchain):
+
+    def __init__(self, connection=None, **kwargs):
+        super().__init__(**kwargs)
+
+        config_utils.autoconfigure()
+        self.mode_list = ('broadcast_tx_async',
+                          'broadcast_tx_sync',
+                          'broadcast_tx_commit')
+        self.tendermint_host = bigchaindb.config['tendermint']['host']
+        self.tendermint_port = bigchaindb.config['tendermint']['port']
+        self.endpoint = 'http://{}:{}/'.format(self.tendermint_host, self.tendermint_port)
+        self.connection = connection if connection else backend.connect(**bigchaindb.config['database'])
 
     def post_transaction(self, transaction, mode):
         """Submit a valid transaction to the mempool."""

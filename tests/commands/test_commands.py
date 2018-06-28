@@ -90,7 +90,7 @@ def test_bigchain_run_init_when_db_exists(mocker, capsys):
 def test__run_init(mocker):
     from bigchaindb.commands.bigchaindb import _run_init
     bigchain_mock = mocker.patch(
-        'bigchaindb.commands.bigchaindb.bigchaindb.Bigchain')
+        'bigchaindb.commands.bigchaindb.bigchaindb.tendermint.lib.BigchainDB')
     init_db_mock = mocker.patch(
         'bigchaindb.commands.bigchaindb.schema.init_database',
         autospec=True,

@@ -445,7 +445,6 @@ export BIGCHAINDB_TENDERMINT_PORT=46657
 
 **Default values**
 
-If (no environment variables were set and there's no local config file), or you used `bigchaindb -y configure localmongodb` to create a default local config file for a `localmongodb` backend, then the defaults will be:
 ```js
 "tendermint": {
     "host": "localhost",
