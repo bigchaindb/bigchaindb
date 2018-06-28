@@ -1,6 +1,7 @@
 import json
-
 import pytest
+
+from abci.types_pb2 import RequestBeginBlock
 
 
 pytestmark = [pytest.mark.tendermint, pytest.mark.bdb]
@@ -57,8 +58,10 @@ def test_deliver_tx__valid_create_updates_db(b):
                     .sign([alice.private_key])
 
     app = App(b)
+
+    begin_block = RequestBeginBlock()
     app.init_chain(['ignore'])
-    app.begin_block('ignore')
+    app.begin_block(begin_block)
 
     result = app.deliver_tx(encode_tx_to_bytes(tx))
     assert result.is_ok()
@@ -89,7 +92,9 @@ def test_deliver_tx__double_spend_fails(b):
 
     app = App(b)
     app.init_chain(['ignore'])
-    app.begin_block('ignore')
+
+    begin_block = RequestBeginBlock()
+    app.begin_block(begin_block)
 
     result = app.deliver_tx(encode_tx_to_bytes(tx))
     assert result.is_ok()
@@ -109,7 +114,9 @@ def test_deliver_transfer_tx__double_spend_fails(b):
 
     app = App(b)
     app.init_chain(['ignore'])
-    app.begin_block('ignore')
+
+    begin_block = RequestBeginBlock()
+    app.begin_block(begin_block)
 
     alice = generate_key_pair()
     bob = generate_key_pair()
@@ -152,7 +159,9 @@ def test_end_block_return_validator_updates(b):
 
     app = App(b)
     app.init_chain(['ignore'])
-    app.begin_block('ignore')
+
+    begin_block = RequestBeginBlock()
+    app.begin_block(begin_block)
 
     validator = {'pub_key': {'type': 'ed25519',
                              'data': 'B0E42D2589A455EAD339A035D6CE1C8C3E25863F268120AA0162AD7D003A4014'},
@@ -182,7 +191,8 @@ def test_store_pre_commit_state_in_end_block(b, alice):
     app = App(b)
     app.init_chain(['ignore'])
 
-    app.begin_block('ignore')
+    begin_block = RequestBeginBlock()
+    app.begin_block(begin_block)
     app.deliver_tx(encode_tx_to_bytes(tx))
     app.end_block(99)
 
@@ -191,7 +201,7 @@ def test_store_pre_commit_state_in_end_block(b, alice):
     assert resp['height'] == 99
     assert resp['transactions'] == [tx.id]
 
-    app.begin_block('ignore')
+    app.begin_block(begin_block)
     app.deliver_tx(encode_tx_to_bytes(tx))
     app.end_block(100)
     resp = query.get_pre_commit_state(b.connection, PRE_COMMIT_ID)

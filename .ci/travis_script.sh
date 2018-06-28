@@ -9,5 +9,5 @@ elif [[ ${BIGCHAINDB_CI_ABCI} == 'enable' ]]; then
 elif [[ ${BIGCHAINDB_ACCEPTANCE_TEST} == 'enable' ]]; then
     ./run-acceptance-test.sh
 else
-  docker-compose exec bigchaindb pytest -v --cov=bigchaindb
+  docker-compose exec bigchaindb pytest -v --cov=bigchaindb --cov-report xml:htmlcov/coverage.xml
 fi

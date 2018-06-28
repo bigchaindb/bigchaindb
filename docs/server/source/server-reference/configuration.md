@@ -291,7 +291,7 @@ defined by [Python](https://docs.python.org/3.6/library/logging.html#levels),
 but case insensitive for convenience's sake:
 
 ```
-"critical", "error", "warning", "info", "debug", "notset"
+"critical", "error", "warning", "info", "benchmark", "debug", "notset"
 ```
 
 **Example**:
@@ -313,7 +313,7 @@ defined by [Python](https://docs.python.org/3.6/library/logging.html#levels),
 but case insensitive for convenience's sake:
 
 ```
-"critical", "error", "warning", "info", "debug", "notset"
+"critical", "error", "warning", "info", "benchmark", "debug", "notset"
 ```
 
 **Example**:
