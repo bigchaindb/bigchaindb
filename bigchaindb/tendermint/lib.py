@@ -16,8 +16,8 @@ except ImportError:
 
 import requests
 
-from bigchaindb import backend
-from bigchaindb import Bigchain
+import bigchaindb
+from bigchaindb import backend, config_utils
 from bigchaindb.models import Transaction
 from bigchaindb.common.exceptions import (SchemaValidationError,
                                           ValidationError,
@@ -25,6 +25,7 @@ from bigchaindb.common.exceptions import (SchemaValidationError,
 from bigchaindb.tendermint.utils import encode_transaction, merkleroot
 from bigchaindb.tendermint import fastquery
 from bigchaindb import exceptions as core_exceptions
+from bigchaindb.consensus import BaseConsensusRules
 
 logger = logging.getLogger(__name__)
 
@@ -39,12 +40,55 @@ MODE_LIST = ('broadcast_tx_async',
              'broadcast_tx_commit')
 
 
-class BigchainDB(Bigchain):
+class BigchainDB(object):
+    """Bigchain API
+
+    Create, read, sign, write transactions to the database
+    """
+
+    BLOCK_INVALID = 'invalid'
+    """return if a block has been voted invalid"""
+
+    BLOCK_VALID = TX_VALID = 'valid'
+    """return if a block is valid, or tx is in valid block"""
+
+    BLOCK_UNDECIDED = TX_UNDECIDED = 'undecided'
+    """return if block is undecided, or tx is in undecided block"""
+
+    TX_IN_BACKLOG = 'backlog'
+    """return if transaction is in backlog"""
+
+    def __init__(self, connection=None):
+        """Initialize the Bigchain instance
+
+        A Bigchain instance has several configuration parameters (e.g. host).
+        If a parameter value is passed as an argument to the Bigchain
+        __init__ method, then that is the value it will have.
+        Otherwise, the parameter value will come from an environment variable.
+        If that environment variable isn't set, then the value
+        will come from the local configuration file. And if that variable
+        isn't in the local configuration file, then the parameter will have
+        its default value (defined in bigchaindb.__init__).
+
+        Args:
+            connection (:class:`~bigchaindb.backend.connection.Connection`):
+                A connection to the database.
+        """
+        config_utils.autoconfigure()
+
+        consensusPlugin = bigchaindb.config.get('consensus_plugin')
+
+        if consensusPlugin:
+            self.consensus = config_utils.load_consensus_plugin(consensusPlugin)
+        else:
+            self.consensus = BaseConsensusRules
+
+        self.connection = connection if connection else backend.connect(**bigchaindb.config['database'])
 
     def post_transaction(self, transaction, mode):
         """Submit a valid transaction to the mempool."""
         if not mode or mode not in MODE_LIST:
-            raise ValidationError(('Mode must be one of the following {}.')
+            raise ValidationError('Mode must be one of the following {}.'
                                   .format(', '.join(MODE_LIST)))
 
         payload = {
@@ -62,7 +106,7 @@ class BigchainDB(Bigchain):
         response = self.post_transaction(transaction, mode)
         return self._process_post_response(response.json(), mode)
 
-    def _process_post_response(self, response, mode):
+    def process_post_response(self, response, mode):
         logger.debug(response)
         if response.get('error') is not None:
             return (500, 'Internal error')
@@ -85,7 +129,7 @@ class BigchainDB(Bigchain):
     #     else:
     #         return (500, 'Error while validating the transaction')
 
-    def _process_status_code(self, status_code, failure_msg):
+    def process_status_code(self, status_code, failure_msg):
         return (202, '') if status_code == 0 else (500, failure_msg)
 
     def store_transaction(self, transaction):
@@ -236,6 +280,37 @@ class BigchainDB(Bigchain):
         else:
             return transaction
 
+    def get_transactions_filtered(self, asset_id, operation=None):
+        """Get a list of transactions filtered on some criteria
+        """
+        txids = backend.query.get_txids_filtered(self.connection, asset_id,
+                                                 operation)
+        for txid in txids:
+            tx, status = self.get_transaction(txid, True)
+            if status == self.TX_VALID:
+                yield tx
+
+    def get_outputs_filtered(self, owner, spent=None):
+        """Get a list of output links filtered on some criteria
+
+        Args:
+            owner (str): base58 encoded public_key.
+            spent (bool): If ``True`` return only the spent outputs. If
+                          ``False`` return only unspent outputs. If spent is
+                          not specified (``None``) return all outputs.
+
+        Returns:
+            :obj:`list` of TransactionLink: list of ``txid`` s and ``output`` s
+            pointing to another transaction's condition
+        """
+        outputs = self.fastquery.get_outputs_by_public_key(owner)
+        if spent is None:
+            return outputs
+        elif spent is True:
+            return self.fastquery.filter_unspent_outputs(outputs)
+        elif spent is False:
+            return self.fastquery.filter_spent_outputs(outputs)
+
     def get_spent(self, txid, output, current_transactions=[]):
         transactions = backend.query.get_spent(self.connection, txid,
                                                output)
@@ -341,6 +416,51 @@ class BigchainDB(Bigchain):
         except ValidationError as e:
             logger.warning('Invalid transaction (%s): %s', type(e).__name__, e)
             return False
+
+    def text_search(self, search, *, limit=0, table='assets'):
+        """Return an iterator of assets that match the text search
+
+        Args:
+            search (str): Text search string to query the text index
+            limit (int, optional): Limit the number of returned documents.
+
+        Returns:
+            iter: An iterator of assets that match the text search.
+        """
+        objects = backend.query.text_search(self.connection, search, limit=limit,
+                                            table=table)
+
+        # TODO: This is not efficient. There may be a more efficient way to
+        #       query by storing block ids with the assets and using fastquery.
+        #       See https://github.com/bigchaindb/bigchaindb/issues/1496
+        for obj in objects:
+            tx, status = self.get_transaction(obj['id'], True)
+            if status == self.TX_VALID:
+                yield obj
+
+    def get_assets(self, asset_ids):
+        """Return a list of assets that match the asset_ids
+
+        Args:
+            asset_ids (:obj:`list` of :obj:`str`): A list of asset_ids to
+                retrieve from the database.
+
+        Returns:
+            list: The list of assets returned from the database.
+        """
+        return backend.query.get_assets(self.connection, asset_ids)
+
+    def get_metadata(self, txn_ids):
+        """Return a list of metadata that match the transaction ids (txn_ids)
+
+        Args:
+            txn_ids (:obj:`list` of :obj:`str`): A list of txn_ids to
+                retrieve from the database.
+
+        Returns:
+            list: The list of metadata returned from the database.
+        """
+        return backend.query.get_metadata(self.connection, txn_ids)
 
     @property
     def fastquery(self):

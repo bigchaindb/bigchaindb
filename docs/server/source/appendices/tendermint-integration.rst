@@ -8,6 +8,7 @@ Tendermint Integration
 
 .. automodule:: bigchaindb.tendermint.lib
     :special-members: __init__
+    :noindex:
 
 .. automodule:: bigchaindb.tendermint.core
     :special-members: __init__
