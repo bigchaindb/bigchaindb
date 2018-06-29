@@ -10,16 +10,12 @@ class TestBlockModel(object):
 
         block = Block()
         assert block.transactions == []
-        assert block.voters == []
         assert block.timestamp == '1'
         assert block.node_pubkey is None
         assert block.signature is None
 
         with raises(TypeError):
             Block('not a list or None')
-        with raises(TypeError):
-            Block(None, 'valid node_pubkey', 'valid timestamp',
-                  'not a list or None')
 
     def test_block_serialization(self, b, alice):
         from bigchaindb.common.crypto import hash_data
@@ -28,12 +24,10 @@ class TestBlockModel(object):
 
         transactions = [Transaction.create([alice.public_key], [([alice.public_key], 1)])]
         timestamp = gen_timestamp()
-        voters = ['Qaaa', 'Qbbb']
         expected_block = {
             'timestamp': timestamp,
             'transactions': [tx.to_dict() for tx in transactions],
             'node_pubkey': alice.public_key,
-            'voters': voters,
         }
         expected = {
             'id': hash_data(serialize(expected_block)),
@@ -41,7 +35,7 @@ class TestBlockModel(object):
             'signature': None,
         }
 
-        block = Block(transactions, alice.public_key, timestamp, voters)
+        block = Block(transactions, alice.public_key, timestamp)
 
         assert block.to_dict() == expected
 
@@ -60,14 +54,12 @@ class TestBlockModel(object):
         transaction = Transaction.create([alice.public_key], [([alice.public_key], 1)])
         transaction.sign([alice.private_key])
         timestamp = gen_timestamp()
-        voters = ['Qaaa', 'Qbbb']
-        expected = Block([transaction], alice.public_key, timestamp, voters)
+        expected = Block([transaction], alice.public_key, timestamp)
 
         block = {
             'timestamp': timestamp,
             'transactions': [transaction.to_dict()],
             'node_pubkey': alice.public_key,
-            'voters': voters,
         }
 
         block_body = {
@@ -106,7 +98,6 @@ class TestBlockModel(object):
             'timestamp': timestamp,
             'transactions': [transaction.to_dict()],
             'node_pubkey': alice.public_key,
-            'voters': list(b.federation),
         }
 
         block_body = {
@@ -133,16 +124,14 @@ class TestBlockModel(object):
 
         transactions = [Transaction.create([alice.public_key], [([alice.public_key], 1)])]
         timestamp = gen_timestamp()
-        voters = ['Qaaa', 'Qbbb']
         expected_block = {
             'timestamp': timestamp,
             'transactions': [tx.to_dict() for tx in transactions],
             'node_pubkey': alice.public_key,
-            'voters': voters,
         }
         expected_block_serialized = serialize(expected_block).encode()
         expected = PrivateKey(alice.private_key).sign(expected_block_serialized)
-        block = Block(transactions, alice.public_key, timestamp, voters)
+        block = Block(transactions, alice.public_key, timestamp)
         block = block.sign(alice.private_key)
         assert block.signature == expected.decode()
 
@@ -150,12 +139,15 @@ class TestBlockModel(object):
         assert public_key.verify(expected_block_serialized, block.signature)
 
     def test_block_dupe_tx(self, b, alice):
-        from bigchaindb.models import Transaction
+        from bigchaindb.models import Block, Transaction
         from bigchaindb.common.exceptions import DuplicateTransaction
+
         tx = Transaction.create([alice.public_key], [([alice.public_key], 1)])
-        block = b.create_block([tx, tx])
+        block = Block([tx, tx], alice.public_key)
+        block.sign(alice.private_key)
+        b.store_block(block.to_dict())
         with raises(DuplicateTransaction):
-            block._validate_block(b)
+            block.validate(b)
 
     def test_decouple_assets(self, b, alice):
         from bigchaindb.models import Block, Transaction
