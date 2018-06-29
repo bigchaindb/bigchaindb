@@ -46,6 +46,7 @@ docs_require = [
     'sphinxcontrib-httpdomain>=1.5.0',
     'sphinxcontrib-napoleon>=0.4.4',
     'aafigure>=0.6',
+    'wget'
 ]
 
 tests_require = [
