@@ -982,7 +982,7 @@ class TestMultipleInputs(object):
 
 def test_get_owned_ids_calls_get_outputs_filtered():
     from bigchaindb.tendermint import BigchainDB
-    with patch('bigchaindb.core.Bigchain.get_outputs_filtered') as gof:
+    with patch('bigchaindb.tendermint.BigchainDB.get_outputs_filtered') as gof:
         b = BigchainDB()
         res = b.get_owned_ids('abc')
     gof.assert_called_once_with('abc', spent=False)
