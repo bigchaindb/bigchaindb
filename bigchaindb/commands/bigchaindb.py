@@ -21,7 +21,6 @@ from bigchaindb.commands import utils
 from bigchaindb.commands.utils import (configure_bigchaindb,
                                        input_on_stderr)
 from bigchaindb.log import setup_logging
-from bigchaindb.tendermint.lib import BigchainDB
 from bigchaindb.tendermint.utils import public_key_from_base64
 
 logging.basicConfig(level=logging.INFO)
@@ -81,6 +80,10 @@ def run_configure(args):
         for key in database_keys:
             val = conf['database'][key]
             conf['database'][key] = input_on_stderr('Database {}? (default `{}`): '.format(key, val), val)
+
+        for key in ('host', 'port'):
+            val = conf['tendermint'][key]
+            conf['tendermint'][key] = input_on_stderr('Tendermint {}? (default `{}`)'.format(key, val), val)
 
     if config_path != '-':
         bigchaindb.config_utils.write_config(conf, config_path)
@@ -167,7 +170,7 @@ def run_start(args):
     setup_logging()
 
     logger.info('BigchainDB Version %s', bigchaindb.__version__)
-    run_recover(BigchainDB())
+    run_recover(bigchaindb.tendermint.lib.BigchainDB())
 
     try:
         if not args.skip_initialize_database:

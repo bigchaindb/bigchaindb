@@ -248,10 +248,8 @@ def autoconfigure(filename=None, config=None, force=False):
 
     # override configuration with env variables
     newconfig = env_config(newconfig)
-
     if config:
         newconfig = update(newconfig, config)
-
     set_config(newconfig)  # sets bigchaindb.config
 
 
