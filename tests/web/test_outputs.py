@@ -86,10 +86,6 @@ def test_get_divisble_transactions_returns_500(b, client):
         block = b.create_block(tx_list)
         b.write_block(block)
 
-        # vote the block valid
-        vote = b.vote(block.id, b.get_last_voted_block().id, True)
-        b.write_vote(vote)
-
     alice_priv, alice_pub = crypto.generate_key_pair()
     bob_priv, bob_pub = crypto.generate_key_pair()
     carly_priv, carly_pub = crypto.generate_key_pair()

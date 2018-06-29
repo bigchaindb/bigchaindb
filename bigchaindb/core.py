@@ -14,7 +14,7 @@ class Bigchain(object):
     """
 
     BLOCK_INVALID = 'invalid'
-    """return if a block has been voted invalid"""
+    """return if a block is invalid"""
 
     BLOCK_VALID = TX_VALID = 'valid'
     """return if a block is valid, or tx is in valid block"""
@@ -372,11 +372,7 @@ class Bigchain(object):
             self.write_metadata(metadatas)
 
         # write the block
-        return backend.query.write_block(self.connection, block_dict)
-
-    def write_vote(self, vote):
-        """Write the vote to the database."""
-        return backend.query.write_vote(self.connection, vote)
+        return backend.query.store_block(self.connection, block_dict)
 
     def get_assets(self, asset_ids):
         """Return a list of assets that match the asset_ids
@@ -409,7 +405,7 @@ class Bigchain(object):
             assets (:obj:`list` of :obj:`dict`): A list of assets to write to
                 the database.
         """
-        return backend.query.write_assets(self.connection, assets)
+        return backend.query.store_assets(self.connection, assets)
 
     def write_metadata(self, metadata):
         """Writes a list of metadata into the database.
