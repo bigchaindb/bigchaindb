@@ -433,17 +433,6 @@ class TestBigchainApi(object):
 
         assert excinfo.value.args[0] == 'Empty block creation is not allowed'
 
-    @pytest.mark.genesis
-    def test_get_last_voted_block_returns_genesis_if_no_votes_has_been_casted(self, b):
-        from bigchaindb.models import Block
-        from bigchaindb.backend import query
-
-        genesis = query.get_genesis_block(b.connection)
-        genesis = Block.from_db(b, genesis)
-        gb = b.get_last_voted_block()
-        assert gb == genesis
-        assert b.validate_block(gb) == gb
-
     @pytest.mark.usefixtures('inputs')
     def test_non_create_input_not_found(self, b, user_pk):
         from cryptoconditions import Ed25519Sha256
@@ -982,7 +971,7 @@ class TestMultipleInputs(object):
 
 def test_get_owned_ids_calls_get_outputs_filtered():
     from bigchaindb.tendermint import BigchainDB
-    with patch('bigchaindb.core.Bigchain.get_outputs_filtered') as gof:
+    with patch('bigchaindb.tendermint.BigchainDB.get_outputs_filtered') as gof:
         b = BigchainDB()
         res = b.get_owned_ids('abc')
     gof.assert_called_once_with('abc', spent=False)

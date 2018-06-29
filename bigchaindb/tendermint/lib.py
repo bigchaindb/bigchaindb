@@ -106,7 +106,7 @@ class BigchainDB(object):
         response = self.post_transaction(transaction, mode)
         return self._process_post_response(response.json(), mode)
 
-    def process_post_response(self, response, mode):
+    def _process_post_response(self, response, mode):
         logger.debug(response)
         if response.get('error') is not None:
             return (500, 'Internal error')

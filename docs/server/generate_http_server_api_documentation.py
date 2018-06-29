@@ -6,7 +6,6 @@ import os.path
 
 from bigchaindb.common.transaction import Transaction, Input, TransactionLink
 from bigchaindb.tendermint import BigchainDB
-from bigchaindb.models import Block
 from bigchaindb.tendermint import lib
 from bigchaindb.web import server
 
