@@ -24,6 +24,7 @@ from bigchaindb.common.exceptions import (SchemaValidationError,
 from bigchaindb.tendermint.utils import encode_transaction, merkleroot
 from bigchaindb.tendermint import fastquery
 from bigchaindb import exceptions as core_exceptions
+from bigchaindb.common.transaction import Output
 
 logger = logging.getLogger(__name__)
 
@@ -370,6 +371,41 @@ class BigchainDB(Bigchain):
 
     def store_pre_commit_state(self, state):
         return backend.query.store_pre_commit_state(self.connection, state)
+
+    def get_asset_outputs_filtered(self, asset_id, owner, spent=None):
+        """Get a list of outputs filtered on `assert_id` and `owner`
+
+        Args:
+            asset_id (str): Id of the asset.
+            owner (str): base58 encoded public_key.
+            spent (bool): If ``True`` return only the spent outputs. If
+                          ``False`` return only unspent outputs. If spent is
+                          not specified (``None``) return all outputs.
+
+        Returns:
+            :obj:`list` of TransactionLink: list of ``txid`` s and ``output`` s
+            pointing to another transaction's condition
+        """
+        output_links = self.fastquery.get_asset_outputs_by_public_key(asset_id, owner)
+
+        if spent is True:
+            output_links = self.fastquery.filter_unspent_outputs(output_links)
+        elif spent is False:
+            output_links = self.fastquery.filter_spent_outputs(output_links)
+
+        output_map = {}
+        for output_link in output_links:
+            output_map[output_link.txid] = output_link.output
+
+        # Load unspent transactions from database
+        filtered_transactions = backend.query.get_transactions(self.connection, list(output_map.keys()))
+
+        transaction_outputs = []
+        for txn in filtered_transactions:
+            output_index = output_map[txn['id']]
+            transaction_outputs.append(Output.from_dict(txn['outputs'][output_index]))
+
+        return transaction_outputs
 
 
 Block = namedtuple('Block', ('app_hash', 'height', 'transactions'))

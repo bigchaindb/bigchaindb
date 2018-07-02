@@ -186,6 +186,27 @@ def get_owned_ids(conn, owner):
 
 
 @register_query(LocalMongoDBConnection)
+def get_asset_owned_ids(conn, asset_id, owner):
+
+    match_transfer = {'outputs.public_keys': owner,
+                      'operation': 'TRANSFER',
+                      'asset.id': asset_id}
+    match_create = {'outputs.public_keys': owner,
+                    'operation': 'CREATE',
+                    'id': asset_id}
+
+    match = {'$or': [match_create, match_transfer]}
+    pipeline = [
+        {'$match': match},
+        {'$project': {'_id': False}}
+    ]
+
+    cursor = conn.run(
+        conn.collection('transactions').aggregate(pipeline))
+    return cursor
+
+
+@register_query(LocalMongoDBConnection)
 def get_spending_transactions(conn, inputs):
     cursor = conn.run(
         conn.collection('transactions').aggregate([

@@ -161,6 +161,21 @@ def get_owned_ids(connection, owner):
 
 
 @singledispatch
+def get_asset_owned_ids(connection, asset_id, owner):
+    """Retrieve a list of TRANSFER `txids` with asset.id as `asset_id`
+       that can we used has inputs.
+
+    Args:
+        asset_id (str): Id of the asset.
+        owner (str): base58 encoded public key.
+
+    Returns:
+        Iterator of transaction that list given owner in conditions.
+    """
+    raise NotImplementedError
+
+
+@singledispatch
 def get_block(connection, block_id):
     """Get a block from the bigchain table.
 

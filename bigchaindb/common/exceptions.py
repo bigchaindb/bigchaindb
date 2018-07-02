@@ -56,6 +56,10 @@ class InvalidHash(ValidationError):
     """
 
 
+class UnsupportedPublicKeyTypeError(ValidationError):
+    """Raised if there was any error validating an object's schema"""
+
+
 class SchemaValidationError(ValidationError):
     """Raised if there was any error validating an object's schema"""
 
