@@ -41,16 +41,12 @@ class Bigchain(object):
             connection (:class:`~bigchaindb.backend.connection.Connection`):
                 A connection to the database.
         """
-        config_utils.autoconfigure()
-
         consensusPlugin = bigchaindb.config.get('consensus_plugin')
 
         if consensusPlugin:
             self.consensus = config_utils.load_consensus_plugin(consensusPlugin)
         else:
             self.consensus = BaseConsensusRules
-
-        self.connection = connection if connection else backend.connect(**bigchaindb.config['database'])
 
     def delete_transaction(self, *transaction_id):
         """Delete a transaction from the backlog.

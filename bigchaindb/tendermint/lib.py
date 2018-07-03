@@ -5,7 +5,6 @@ MongoDB.
 import logging
 from collections import namedtuple
 from copy import deepcopy
-from os import getenv
 from uuid import uuid4
 
 try:
@@ -15,8 +14,8 @@ except ImportError:
     from sha3 import sha3_256
 
 import requests
-
-from bigchaindb import backend
+import bigchaindb
+from bigchaindb import backend, config_utils
 from bigchaindb import Bigchain
 from bigchaindb.models import Transaction
 from bigchaindb.common.exceptions import (SchemaValidationError,
@@ -28,24 +27,26 @@ from bigchaindb import exceptions as core_exceptions
 
 logger = logging.getLogger(__name__)
 
-BIGCHAINDB_TENDERMINT_HOST = getenv('BIGCHAINDB_TENDERMINT_HOST',
-                                    'localhost')
-BIGCHAINDB_TENDERMINT_PORT = getenv('BIGCHAINDB_TENDERMINT_PORT',
-                                    '46657')
-ENDPOINT = 'http://{}:{}/'.format(BIGCHAINDB_TENDERMINT_HOST,
-                                  BIGCHAINDB_TENDERMINT_PORT)
-MODE_LIST = ('broadcast_tx_async',
-             'broadcast_tx_sync',
-             'broadcast_tx_commit')
-
 
 class BigchainDB(Bigchain):
 
+    def __init__(self, connection=None, **kwargs):
+        super().__init__(**kwargs)
+
+        config_utils.autoconfigure()
+        self.mode_list = ('broadcast_tx_async',
+                          'broadcast_tx_sync',
+                          'broadcast_tx_commit')
+        self.tendermint_host = bigchaindb.config['tendermint']['host']
+        self.tendermint_port = bigchaindb.config['tendermint']['port']
+        self.endpoint = 'http://{}:{}/'.format(self.tendermint_host, self.tendermint_port)
+        self.connection = connection if connection else backend.connect(**bigchaindb.config['database'])
+
     def post_transaction(self, transaction, mode):
         """Submit a valid transaction to the mempool."""
-        if not mode or mode not in MODE_LIST:
+        if not mode or mode not in self.mode_list:
             raise ValidationError(('Mode must be one of the following {}.')
-                                  .format(', '.join(MODE_LIST)))
+                                  .format(', '.join(self.mode_list)))
 
         payload = {
             'method': mode,
@@ -54,7 +55,7 @@ class BigchainDB(Bigchain):
             'id': str(uuid4())
         }
         # TODO: handle connection errors!
-        return requests.post(ENDPOINT, json=payload)
+        return requests.post(self.endpoint, json=payload)
 
     def write_transaction(self, transaction, mode):
         # This method offers backward compatibility with the Web API.
@@ -69,7 +70,7 @@ class BigchainDB(Bigchain):
 
         return (202, '')
         # result = response['result']
-        # if mode == MODE_LIST[2]:
+        # if mode == self.mode_list[2]:
         #     return self._process_commit_mode_response(result)
         # else:
         #     status_code = result['code']
@@ -348,7 +349,7 @@ class BigchainDB(Bigchain):
 
     def get_validators(self):
         try:
-            resp = requests.get('{}validators'.format(ENDPOINT))
+            resp = requests.get('{}validators'.format(self.endpoint))
             validators = resp.json()['result']['validators']
             for v in validators:
                 v.pop('accum')

@@ -433,17 +433,6 @@ class TestBigchainApi(object):
 
         assert excinfo.value.args[0] == 'Empty block creation is not allowed'
 
-    @pytest.mark.genesis
-    def test_get_last_voted_block_returns_genesis_if_no_votes_has_been_casted(self, b):
-        from bigchaindb.models import Block
-        from bigchaindb.backend import query
-
-        genesis = query.get_genesis_block(b.connection)
-        genesis = Block.from_db(b, genesis)
-        gb = b.get_last_voted_block()
-        assert gb == genesis
-        assert b.validate_block(gb) == gb
-
     @pytest.mark.usefixtures('inputs')
     def test_non_create_input_not_found(self, b, user_pk):
         from cryptoconditions import Ed25519Sha256
@@ -989,41 +978,51 @@ def test_get_owned_ids_calls_get_outputs_filtered():
     assert res == gof()
 
 
+@pytest.mark.tendermint
 def test_get_outputs_filtered_only_unspent():
     from bigchaindb.common.transaction import TransactionLink
-    from bigchaindb.core import Bigchain
-    with patch('bigchaindb.fastquery.FastQuery.get_outputs_by_public_key') as get_outputs:
+    from bigchaindb.tendermint.lib import BigchainDB
+
+    go = 'bigchaindb.tendermint.fastquery.FastQuery.get_outputs_by_public_key'
+    with patch(go) as get_outputs:
         get_outputs.return_value = [TransactionLink('a', 1),
                                     TransactionLink('b', 2)]
-        with patch('bigchaindb.fastquery.FastQuery.filter_spent_outputs') as filter_spent:
+        fs = 'bigchaindb.tendermint.fastquery.FastQuery.filter_spent_outputs'
+        with patch(fs) as filter_spent:
             filter_spent.return_value = [TransactionLink('b', 2)]
-            out = Bigchain().get_outputs_filtered('abc', spent=False)
+            out = BigchainDB().get_outputs_filtered('abc', spent=False)
     get_outputs.assert_called_once_with('abc')
     assert out == [TransactionLink('b', 2)]
 
 
+@pytest.mark.tendermint
 def test_get_outputs_filtered_only_spent():
     from bigchaindb.common.transaction import TransactionLink
-    from bigchaindb.core import Bigchain
-    with patch('bigchaindb.fastquery.FastQuery.get_outputs_by_public_key') as get_outputs:
+    from bigchaindb.tendermint.lib import BigchainDB
+    go = 'bigchaindb.tendermint.fastquery.FastQuery.get_outputs_by_public_key'
+    with patch(go) as get_outputs:
         get_outputs.return_value = [TransactionLink('a', 1),
                                     TransactionLink('b', 2)]
-        with patch('bigchaindb.fastquery.FastQuery.filter_unspent_outputs') as filter_spent:
+        fs = 'bigchaindb.tendermint.fastquery.FastQuery.filter_unspent_outputs'
+        with patch(fs) as filter_spent:
             filter_spent.return_value = [TransactionLink('b', 2)]
-            out = Bigchain().get_outputs_filtered('abc', spent=True)
+            out = BigchainDB().get_outputs_filtered('abc', spent=True)
     get_outputs.assert_called_once_with('abc')
     assert out == [TransactionLink('b', 2)]
 
 
-@patch('bigchaindb.fastquery.FastQuery.filter_unspent_outputs')
-@patch('bigchaindb.fastquery.FastQuery.filter_spent_outputs')
+@pytest.mark.tendermint
+@patch('bigchaindb.tendermint.fastquery.FastQuery.filter_unspent_outputs')
+@patch('bigchaindb.tendermint.fastquery.FastQuery.filter_spent_outputs')
 def test_get_outputs_filtered(filter_spent, filter_unspent):
     from bigchaindb.common.transaction import TransactionLink
-    from bigchaindb.core import Bigchain
-    with patch('bigchaindb.fastquery.FastQuery.get_outputs_by_public_key') as get_outputs:
+    from bigchaindb.tendermint.lib import BigchainDB
+
+    go = 'bigchaindb.tendermint.fastquery.FastQuery.get_outputs_by_public_key'
+    with patch(go) as get_outputs:
         get_outputs.return_value = [TransactionLink('a', 1),
                                     TransactionLink('b', 2)]
-        out = Bigchain().get_outputs_filtered('abc')
+        out = BigchainDB().get_outputs_filtered('abc')
     get_outputs.assert_called_once_with('abc')
     filter_spent.assert_not_called()
     filter_unspent.assert_not_called()
