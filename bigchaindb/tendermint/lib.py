@@ -5,7 +5,6 @@ MongoDB.
 import logging
 from collections import namedtuple
 from copy import deepcopy
-from os import getenv
 from uuid import uuid4
 
 try:
@@ -29,16 +28,6 @@ from bigchaindb.consensus import BaseConsensusRules
 
 logger = logging.getLogger(__name__)
 
-BIGCHAINDB_TENDERMINT_HOST = getenv('BIGCHAINDB_TENDERMINT_HOST',
-                                    'localhost')
-BIGCHAINDB_TENDERMINT_PORT = getenv('BIGCHAINDB_TENDERMINT_PORT',
-                                    '46657')
-ENDPOINT = 'http://{}:{}/'.format(BIGCHAINDB_TENDERMINT_HOST,
-                                  BIGCHAINDB_TENDERMINT_PORT)
-MODE_LIST = ('broadcast_tx_async',
-             'broadcast_tx_sync',
-             'broadcast_tx_commit')
-
 
 class BigchainDB(object):
     """Bigchain API
@@ -47,7 +36,7 @@ class BigchainDB(object):
     """
 
     BLOCK_INVALID = 'invalid'
-    """return if a block has been voted invalid"""
+    """return if a block is invalid"""
 
     BLOCK_VALID = TX_VALID = 'valid'
     """return if a block is valid, or tx is in valid block"""
@@ -75,6 +64,12 @@ class BigchainDB(object):
                 A connection to the database.
         """
         config_utils.autoconfigure()
+        self.mode_list = ('broadcast_tx_async',
+                          'broadcast_tx_sync',
+                          'broadcast_tx_commit')
+        self.tendermint_host = bigchaindb.config['tendermint']['host']
+        self.tendermint_port = bigchaindb.config['tendermint']['port']
+        self.endpoint = 'http://{}:{}/'.format(self.tendermint_host, self.tendermint_port)
 
         consensusPlugin = bigchaindb.config.get('consensus_plugin')
 
@@ -87,9 +82,9 @@ class BigchainDB(object):
 
     def post_transaction(self, transaction, mode):
         """Submit a valid transaction to the mempool."""
-        if not mode or mode not in MODE_LIST:
+        if not mode or mode not in self.mode_list:
             raise ValidationError('Mode must be one of the following {}.'
-                                  .format(', '.join(MODE_LIST)))
+                                  .format(', '.join(self.mode_list)))
 
         payload = {
             'method': mode,
@@ -98,7 +93,7 @@ class BigchainDB(object):
             'id': str(uuid4())
         }
         # TODO: handle connection errors!
-        return requests.post(ENDPOINT, json=payload)
+        return requests.post(self.endpoint, json=payload)
 
     def write_transaction(self, transaction, mode):
         # This method offers backward compatibility with the Web API.
@@ -113,7 +108,7 @@ class BigchainDB(object):
 
         return (202, '')
         # result = response['result']
-        # if mode == MODE_LIST[2]:
+        # if mode == self.mode_list[2]:
         #     return self._process_commit_mode_response(result)
         # else:
         #     status_code = result['code']
@@ -468,7 +463,7 @@ class BigchainDB(object):
 
     def get_validators(self):
         try:
-            resp = requests.get('{}validators'.format(ENDPOINT))
+            resp = requests.get('{}validators'.format(self.endpoint))
             validators = resp.json()['result']['validators']
             for v in validators:
                 v.pop('accum')
