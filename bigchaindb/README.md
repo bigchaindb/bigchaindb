@@ -4,9 +4,9 @@ A high-level description of the files and subdirectories of BigchainDB.
 
 ## Files
 
-### [`core.py`](./core.py)
+### [`tendermint/lib.py`](./tendermint/lib.py)
 
-The `Bigchain` class is defined here.  Most node-level operations and database interactions are found in this file.  This is the place to start if you are interested in implementing a server API, since many of these class methods concern BigchainDB interacting with the outside world.
+The `BigchainDB` class is defined here.  Most node-level operations and database interactions are found in this file.  This is the place to start if you are interested in implementing a server API, since many of these class methods concern BigchainDB interacting with the outside world.
 
 ### [`models.py`](./models.py)
 

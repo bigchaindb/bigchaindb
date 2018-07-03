@@ -14,7 +14,7 @@ class Transaction(Transaction):
         """Validate transaction spend
 
         Args:
-            bigchain (Bigchain): an instantiated bigchaindb.Bigchain object.
+            bigchain (BigchainDB): an instantiated bigchaindb.tendermint.BigchainDB object.
 
         Returns:
             The transaction (Transaction) if the transaction is valid else it
@@ -108,8 +108,8 @@ class Transaction(Transaction):
         asset from the asset table and reconstructs the transaction.
 
         Args:
-            bigchain (:class:`~bigchaindb.Bigchain`): An instance of Bigchain
-                used to perform database queries.
+            bigchain (:class:`~bigchaindb.tendermint.BigchainDB`): An instance
+                of BigchainDB used to perform database queries.
             tx_dict_list (:list:`dict` or :obj:`dict`): The transaction dict or
                 list of transaction dict as returned from the database.
 
