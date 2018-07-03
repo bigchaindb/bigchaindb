@@ -35,17 +35,11 @@ class BigchainDB(object):
     Create, read, sign, write transactions to the database
     """
 
-    BLOCK_INVALID = 'invalid'
-    """return if a block is invalid"""
+    TX_VALID = 'valid'
+    """return if a tx is in valid block"""
 
-    BLOCK_VALID = TX_VALID = 'valid'
-    """return if a block is valid, or tx is in valid block"""
-
-    BLOCK_UNDECIDED = TX_UNDECIDED = 'undecided'
-    """return if block is undecided, or tx is in undecided block"""
-
-    TX_IN_BACKLOG = 'backlog'
-    """return if transaction is in backlog"""
+    TX_UNDECIDED = 'undecided'
+    """return if tx is in undecided block"""
 
     def __init__(self, connection=None):
         """Initialize the Bigchain instance

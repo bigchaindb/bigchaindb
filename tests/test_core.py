@@ -63,7 +63,6 @@ def test_get_blocks_status_containing_tx(monkeypatch):
         {'id': 1}, {'id': 2}
     ]
     monkeypatch.setattr(backend_query, 'get_blocks_status_from_transaction', lambda x: blocks)
-    monkeypatch.setattr(BigchainDB, 'block_election_status', lambda x, y, z: BigchainDB.BLOCK_VALID)
     bigchain = BigchainDB(public_key='pubkey', private_key='privkey')
     with pytest.raises(Exception):
         bigchain.get_blocks_status_containing_tx('txid')

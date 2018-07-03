@@ -411,17 +411,12 @@ def test_return_only_valid_transaction(client):
             return {}, status
         return inner
 
-    # NOTE: `get_transaction` only returns a transaction if it's included in an
-    #       UNDECIDED or VALID block, as well as transactions from the backlog.
+    # NOTE: `get_transaction` only returns a transaction if it's included in a
+    #       VALID block.
     #       As the endpoint uses `get_transaction`, we don't have to test
     #       against invalid transactions here.
     with patch('bigchaindb.tendermint.BigchainDB.get_transaction',
                get_transaction_patched(BigchainDB.TX_UNDECIDED)):
-        url = '{}{}'.format(TX_ENDPOINT, '123')
-        assert client.get(url).status_code == 404
-
-    with patch('bigchaindb.tendermint.BigchainDB.get_transaction',
-               get_transaction_patched(BigchainDB.TX_IN_BACKLOG)):
         url = '{}{}'.format(TX_ENDPOINT, '123')
         assert client.get(url).status_code == 404
 
