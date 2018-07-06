@@ -1,7 +1,12 @@
 import json
 import pytest
 
-from abci.types_pb2 import RequestBeginBlock
+from abci.types_pb2 import (
+    RequestBeginBlock,
+    RequestEndBlock
+)
+
+from bigchaindb.tendermint.core import CodeTypeOk, CodeTypeError
 
 
 pytestmark = [pytest.mark.tendermint, pytest.mark.bdb]
@@ -25,7 +30,7 @@ def test_check_tx__signed_create_is_ok(b):
 
     app = App(b)
     result = app.check_tx(encode_tx_to_bytes(tx))
-    assert result.is_ok()
+    assert result.code == CodeTypeOk
 
 
 def test_check_tx__unsigned_create_is_error(b):
@@ -41,7 +46,7 @@ def test_check_tx__unsigned_create_is_error(b):
 
     app = App(b)
     result = app.check_tx(encode_tx_to_bytes(tx))
-    assert result.is_error()
+    assert result.code == CodeTypeError
 
 
 @pytest.mark.bdb
@@ -64,9 +69,9 @@ def test_deliver_tx__valid_create_updates_db(b):
     app.begin_block(begin_block)
 
     result = app.deliver_tx(encode_tx_to_bytes(tx))
-    assert result.is_ok()
+    assert result.code == CodeTypeOk
 
-    app.end_block(99)
+    app.end_block(RequestEndBlock(height=99))
     app.commit()
     assert b.get_transaction(tx.id).id == tx.id
 
@@ -97,14 +102,14 @@ def test_deliver_tx__double_spend_fails(b):
     app.begin_block(begin_block)
 
     result = app.deliver_tx(encode_tx_to_bytes(tx))
-    assert result.is_ok()
+    assert result.code == CodeTypeOk
 
-    app.end_block(99)
+    app.end_block(RequestEndBlock(height=99))
     app.commit()
 
     assert b.get_transaction(tx.id).id == tx.id
     result = app.deliver_tx(encode_tx_to_bytes(tx))
-    assert result.is_error()
+    assert result.code == CodeTypeError
 
 
 def test_deliver_transfer_tx__double_spend_fails(b):
@@ -132,7 +137,7 @@ def test_deliver_transfer_tx__double_spend_fails(b):
                     .sign([alice.private_key])
 
     result = app.deliver_tx(encode_tx_to_bytes(tx))
-    assert result.is_ok()
+    assert result.code == CodeTypeOk
 
     tx_transfer = Transaction.transfer(tx.to_inputs(),
                                        [([bob.public_key], 1)],
@@ -140,7 +145,7 @@ def test_deliver_transfer_tx__double_spend_fails(b):
                              .sign([alice.private_key])
 
     result = app.deliver_tx(encode_tx_to_bytes(tx_transfer))
-    assert result.is_ok()
+    assert result.code == CodeTypeOk
 
     double_spend = Transaction.transfer(tx.to_inputs(),
                                         [([carly.public_key], 1)],
@@ -148,7 +153,7 @@ def test_deliver_transfer_tx__double_spend_fails(b):
                               .sign([alice.private_key])
 
     result = app.deliver_tx(encode_tx_to_bytes(double_spend))
-    assert result.is_error()
+    assert result.code == CodeTypeError
 
 
 def test_end_block_return_validator_updates(b):
@@ -170,7 +175,7 @@ def test_end_block_return_validator_updates(b):
                         'update_id': VALIDATOR_UPDATE_ID}
     query.store_validator_update(b.connection, validator_update)
 
-    resp = app.end_block(99)
+    resp = app.end_block(RequestEndBlock(height=99))
     assert resp.validator_updates[0] == encode_validator(validator)
 
     updates = b.get_validator_update()
@@ -194,7 +199,7 @@ def test_store_pre_commit_state_in_end_block(b, alice):
     begin_block = RequestBeginBlock()
     app.begin_block(begin_block)
     app.deliver_tx(encode_tx_to_bytes(tx))
-    app.end_block(99)
+    app.end_block(RequestEndBlock(height=99))
 
     resp = query.get_pre_commit_state(b.connection, PRE_COMMIT_ID)
     assert resp['commit_id'] == PRE_COMMIT_ID
@@ -203,7 +208,7 @@ def test_store_pre_commit_state_in_end_block(b, alice):
 
     app.begin_block(begin_block)
     app.deliver_tx(encode_tx_to_bytes(tx))
-    app.end_block(100)
+    app.end_block(RequestEndBlock(height=100))
     resp = query.get_pre_commit_state(b.connection, PRE_COMMIT_ID)
     assert resp['commit_id'] == PRE_COMMIT_ID
     assert resp['height'] == 100

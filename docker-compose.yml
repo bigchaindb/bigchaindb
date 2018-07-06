@@ -34,26 +34,26 @@ services:
       BIGCHAINDB_WSSERVER_HOST: 0.0.0.0
       BIGCHAINDB_WSSERVER_ADVERTISED_HOST: bigchaindb
       BIGCHAINDB_TENDERMINT_HOST: tendermint
-      BIGCHAINDB_TENDERMINT_PORT: 46657
+      BIGCHAINDB_TENDERMINT_PORT: 26657
     ports:
       - "9984:9984"
       - "9985:9985"
-      - "46658"
+      - "26658"
     healthcheck:
-      test: ["CMD", "bash", "-c", "curl http://bigchaindb:9984 && curl http://tendermint:46657/abci_query"]
+      test: ["CMD", "bash", "-c", "curl http://bigchaindb:9984 && curl http://tendermint:26657/abci_query"]
       interval: 3s
       timeout: 5s
       retries: 3
     command: '.ci/entrypoint.sh'
   tendermint:
-    image: tendermint/tendermint:0.19.9
+    image: tendermint/tendermint:0.22.0
     # volumes:
     #   - ./tmdata:/tendermint
     entrypoint: ''
     ports:
-      - "46656:46656"
-      - "46657:46657"
-    command: sh -c "tendermint init && tendermint node --consensus.create_empty_blocks=false --proxy_app=tcp://bigchaindb:46658"
+      - "26656:26656"
+      - "26657:26657"
+    command: sh -c "tendermint init && tendermint node --consensus.create_empty_blocks=false --proxy_app=tcp://bigchaindb:26658"
   bdb:
     image: busybox
     depends_on:
@@ -64,7 +64,7 @@ services:
   # curl client to check the health of development env
   curl-client:
     image: appropriate/curl
-    command: /bin/sh -c "curl -s http://bigchaindb:9984/ > /dev/null && curl -s http://tendermint:46657/ > /dev/null"
+    command: /bin/sh -c "curl -s http://bigchaindb:9984/ > /dev/null && curl -s http://tendermint:26657/ > /dev/null"
 
   # BigchainDB setup to do acceptance testing with Python
   python-acceptance:
