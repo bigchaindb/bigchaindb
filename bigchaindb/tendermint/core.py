@@ -17,8 +17,7 @@ from abci.types_pb2 import (
 
 from bigchaindb.tendermint import BigchainDB
 from bigchaindb.tendermint.utils import (decode_transaction,
-                                         calculate_hash,
-                                         amino_encoded_public_key)
+                                         calculate_hash)
 from bigchaindb.tendermint.lib import Block, PreCommitState
 from bigchaindb.backend.query import PRE_COMMIT_ID
 
