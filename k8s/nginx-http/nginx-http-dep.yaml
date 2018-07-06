@@ -79,7 +79,7 @@ spec:
         - containerPort: 9986
           protocol: TCP
           name: bdb-pub-key
-        - containerPort: 46656
+        - containerPort: 26656
           protocol: TCP
           name: bdb-p2p-port
         livenessProbe:

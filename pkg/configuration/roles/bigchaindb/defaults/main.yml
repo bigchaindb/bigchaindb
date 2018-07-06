@@ -38,6 +38,6 @@ mongodb_docker_name: "mongodb"
 tendermint_docker_name: "tendermint"
 bigchaindb_default_server_port: 9984
 bigchaindb_default_ws_port: 9985
-bigchaindb_tendermint_port: 46657
+bigchaindb_tendermint_port: 26657
 tendermint_abci_port: 45558
 bigchaindb_docker_net: "bigchaindb_docker_net"
