@@ -15,8 +15,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-dev
-      args:
-        backend: localmongodb
     volumes:
       - ./bigchaindb:/usr/src/app/bigchaindb
       - ./tests:/usr/src/app/tests
