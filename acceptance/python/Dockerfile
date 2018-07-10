@@ -6,3 +6,4 @@ RUN pip install --upgrade \
 	websocket-client~=0.47.0 \
 	pytest~=3.0 \
 	bigchaindb-driver==0.5.0
+	blns
