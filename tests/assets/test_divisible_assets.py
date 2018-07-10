@@ -10,11 +10,11 @@ pytestmark = pytest.mark.tendermint
 # Single owners_before
 # Single output
 # Single owners_after
-def test_single_in_single_own_single_out_single_own_create(b, user_pk):
+def test_single_in_single_own_single_out_single_own_create(alice, user_pk, b):
     from bigchaindb.models import Transaction
 
-    tx = Transaction.create([b.me], [([user_pk], 100)], asset={'name': random.random()})
-    tx_signed = tx.sign([b.me_private])
+    tx = Transaction.create([alice.public_key], [([user_pk], 100)], asset={'name': random.random()})
+    tx_signed = tx.sign([alice.private_key])
 
     assert tx_signed.validate(b) == tx_signed
     assert len(tx_signed.outputs) == 1
@@ -27,12 +27,12 @@ def test_single_in_single_own_single_out_single_own_create(b, user_pk):
 # Single owners_before
 # Multiple outputs
 # Single owners_after per output
-def test_single_in_single_own_multiple_out_single_own_create(b, user_pk):
+def test_single_in_single_own_multiple_out_single_own_create(alice, user_pk, b):
     from bigchaindb.models import Transaction
 
-    tx = Transaction.create([b.me], [([user_pk], 50), ([user_pk], 50)],
+    tx = Transaction.create([alice.public_key], [([user_pk], 50), ([user_pk], 50)],
                             asset={'name': random.random()})
-    tx_signed = tx.sign([b.me_private])
+    tx_signed = tx.sign([alice.private_key])
 
     assert tx_signed.validate(b) == tx_signed
     assert len(tx_signed.outputs) == 2
@@ -46,11 +46,11 @@ def test_single_in_single_own_multiple_out_single_own_create(b, user_pk):
 # Single owners_before
 # Single output
 # Multiple owners_after
-def test_single_in_single_own_single_out_multiple_own_create(b, user_pk):
+def test_single_in_single_own_single_out_multiple_own_create(alice, user_pk, b):
     from bigchaindb.models import Transaction
 
-    tx = Transaction.create([b.me], [([user_pk, user_pk], 100)], asset={'name': random.random()})
-    tx_signed = tx.sign([b.me_private])
+    tx = Transaction.create([alice.public_key], [([user_pk, user_pk], 100)], asset={'name': random.random()})
+    tx_signed = tx.sign([alice.private_key])
 
     assert tx_signed.validate(b) == tx_signed
     assert len(tx_signed.outputs) == 1
@@ -69,12 +69,12 @@ def test_single_in_single_own_single_out_multiple_own_create(b, user_pk):
 # Multiple outputs
 # Mix: one output with a single owners_after, one output with multiple
 #      owners_after
-def test_single_in_single_own_multiple_out_mix_own_create(b, user_pk):
+def test_single_in_single_own_multiple_out_mix_own_create(alice, user_pk, b):
     from bigchaindb.models import Transaction
 
-    tx = Transaction.create([b.me], [([user_pk], 50), ([user_pk, user_pk], 50)],
+    tx = Transaction.create([alice.public_key], [([user_pk], 50), ([user_pk, user_pk], 50)],
                             asset={'name': random.random()})
-    tx_signed = tx.sign([b.me_private])
+    tx_signed = tx.sign([alice.private_key])
 
     assert tx_signed.validate(b) == tx_signed
     assert len(tx_signed.outputs) == 2
@@ -92,13 +92,13 @@ def test_single_in_single_own_multiple_out_mix_own_create(b, user_pk):
 # Single input
 # Multiple owners_before
 # Output combinations already tested above
-def test_single_in_multiple_own_single_out_single_own_create(b, user_pk,
+def test_single_in_multiple_own_single_out_single_own_create(alice, b, user_pk,
                                                              user_sk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.transaction import _fulfillment_to_details
 
-    tx = Transaction.create([b.me, user_pk], [([user_pk], 100)], asset={'name': random.random()})
-    tx_signed = tx.sign([b.me_private, user_sk])
+    tx = Transaction.create([alice.public_key, user_pk], [([user_pk], 100)], asset={'name': random.random()})
+    tx_signed = tx.sign([alice.private_key, user_sk])
     assert tx_signed.validate(b) == tx_signed
     assert len(tx_signed.outputs) == 1
     assert tx_signed.outputs[0].amount == 100
@@ -114,16 +114,16 @@ def test_single_in_multiple_own_single_out_single_own_create(b, user_pk,
 # Single owners_before
 # Single output
 # Single owners_after
-def test_single_in_single_own_single_out_single_own_transfer(b, user_pk,
+def test_single_in_single_own_single_out_single_own_transfer(alice, b, user_pk,
                                                              user_sk):
     from bigchaindb.models import Transaction
 
     # CREATE divisible asset
-    tx_create = Transaction.create([b.me], [([user_pk], 100)], asset={'name': random.random()})
-    tx_create_signed = tx_create.sign([b.me_private])
+    tx_create = Transaction.create([alice.public_key], [([user_pk], 100)], asset={'name': random.random()})
+    tx_create_signed = tx_create.sign([alice.private_key])
 
     # TRANSFER
-    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([b.me], 100)],
+    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([alice.public_key], 100)],
                                        asset_id=tx_create.id)
     tx_transfer_signed = tx_transfer.sign([user_sk])
 
@@ -140,17 +140,17 @@ def test_single_in_single_own_single_out_single_own_transfer(b, user_pk,
 # Single owners_before
 # Multiple output
 # Single owners_after
-def test_single_in_single_own_multiple_out_single_own_transfer(b, user_pk,
+def test_single_in_single_own_multiple_out_single_own_transfer(alice, b, user_pk,
                                                                user_sk):
     from bigchaindb.models import Transaction
 
     # CREATE divisible asset
-    tx_create = Transaction.create([b.me], [([user_pk], 100)], asset={'name': random.random()})
-    tx_create_signed = tx_create.sign([b.me_private])
+    tx_create = Transaction.create([alice.public_key], [([user_pk], 100)], asset={'name': random.random()})
+    tx_create_signed = tx_create.sign([alice.private_key])
 
     # TRANSFER
     tx_transfer = Transaction.transfer(tx_create.to_inputs(),
-                                       [([b.me], 50), ([b.me], 50)],
+                                       [([alice.public_key], 50), ([alice.public_key], 50)],
                                        asset_id=tx_create.id)
     tx_transfer_signed = tx_transfer.sign([user_sk])
 
@@ -168,17 +168,17 @@ def test_single_in_single_own_multiple_out_single_own_transfer(b, user_pk,
 # Single owners_before
 # Single output
 # Multiple owners_after
-def test_single_in_single_own_single_out_multiple_own_transfer(b, user_pk,
+def test_single_in_single_own_single_out_multiple_own_transfer(alice, b, user_pk,
                                                                user_sk):
     from bigchaindb.models import Transaction
 
     # CREATE divisible asset
-    tx_create = Transaction.create([b.me], [([user_pk], 100)], asset={'name': random.random()})
-    tx_create_signed = tx_create.sign([b.me_private])
+    tx_create = Transaction.create([alice.public_key], [([user_pk], 100)], asset={'name': random.random()})
+    tx_create_signed = tx_create.sign([alice.private_key])
 
     # TRANSFER
     tx_transfer = Transaction.transfer(tx_create.to_inputs(),
-                                       [([b.me, b.me], 100)],
+                                       [([alice.public_key, alice.public_key], 100)],
                                        asset_id=tx_create.id)
     tx_transfer_signed = tx_transfer.sign([user_sk])
 
@@ -201,17 +201,17 @@ def test_single_in_single_own_single_out_multiple_own_transfer(b, user_pk,
 # Multiple outputs
 # Mix: one output with a single owners_after, one output with multiple
 #      owners_after
-def test_single_in_single_own_multiple_out_mix_own_transfer(b, user_pk,
+def test_single_in_single_own_multiple_out_mix_own_transfer(alice, b, user_pk,
                                                             user_sk):
     from bigchaindb.models import Transaction
 
     # CREATE divisible asset
-    tx_create = Transaction.create([b.me], [([user_pk], 100)], asset={'name': random.random()})
-    tx_create_signed = tx_create.sign([b.me_private])
+    tx_create = Transaction.create([alice.public_key], [([user_pk], 100)], asset={'name': random.random()})
+    tx_create_signed = tx_create.sign([alice.private_key])
 
     # TRANSFER
     tx_transfer = Transaction.transfer(tx_create.to_inputs(),
-                                       [([b.me], 50), ([b.me, b.me], 50)],
+                                       [([alice.public_key], 50), ([alice.public_key, alice.public_key], 50)],
                                        asset_id=tx_create.id)
     tx_transfer_signed = tx_transfer.sign([user_sk])
 
@@ -234,20 +234,20 @@ def test_single_in_single_own_multiple_out_mix_own_transfer(b, user_pk,
 # Multiple owners_before
 # Single output
 # Single owners_after
-def test_single_in_multiple_own_single_out_single_own_transfer(b, user_pk,
+def test_single_in_multiple_own_single_out_single_own_transfer(alice, b, user_pk,
                                                                user_sk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.transaction import _fulfillment_to_details
 
     # CREATE divisible asset
-    tx_create = Transaction.create([b.me], [([b.me, user_pk], 100)],
+    tx_create = Transaction.create([alice.public_key], [([alice.public_key, user_pk], 100)],
                                    asset={'name': random.random()})
-    tx_create_signed = tx_create.sign([b.me_private])
+    tx_create_signed = tx_create.sign([alice.private_key])
 
     # TRANSFER
-    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([b.me], 100)],
+    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([alice.public_key], 100)],
                                        asset_id=tx_create.id)
-    tx_transfer_signed = tx_transfer.sign([b.me_private, user_sk])
+    tx_transfer_signed = tx_transfer.sign([alice.private_key, user_sk])
 
     b.store_bulk_transactions([tx_create_signed, tx_transfer_signed])
 
@@ -266,17 +266,17 @@ def test_single_in_multiple_own_single_out_single_own_transfer(b, user_pk,
 # Single owners_before per input
 # Single output
 # Single owners_after
-def test_multiple_in_single_own_single_out_single_own_transfer(b, user_pk,
+def test_multiple_in_single_own_single_out_single_own_transfer(alice, b, user_pk,
                                                                user_sk):
     from bigchaindb.models import Transaction
 
     # CREATE divisible asset
-    tx_create = Transaction.create([b.me], [([user_pk], 50), ([user_pk], 50)],
+    tx_create = Transaction.create([alice.public_key], [([user_pk], 50), ([user_pk], 50)],
                                    asset={'name': random.random()})
-    tx_create_signed = tx_create.sign([b.me_private])
+    tx_create_signed = tx_create.sign([alice.private_key])
 
     # TRANSFER
-    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([b.me], 100)],
+    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([alice.public_key], 100)],
                                        asset_id=tx_create.id)
     tx_transfer_signed = tx_transfer.sign([user_sk])
 
@@ -293,20 +293,21 @@ def test_multiple_in_single_own_single_out_single_own_transfer(b, user_pk,
 # Multiple owners_before per input
 # Single output
 # Single owners_after
-def test_multiple_in_multiple_own_single_out_single_own_transfer(b, user_pk,
+def test_multiple_in_multiple_own_single_out_single_own_transfer(alice, b, user_pk,
                                                                  user_sk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.transaction import _fulfillment_to_details
 
     # CREATE divisible asset
-    tx_create = Transaction.create([b.me], [([user_pk, b.me], 50), ([user_pk, b.me], 50)],
+    tx_create = Transaction.create([alice.public_key], [([user_pk, alice.public_key], 50),
+                                   ([user_pk, alice.public_key], 50)],
                                    asset={'name': random.random()})
-    tx_create_signed = tx_create.sign([b.me_private])
+    tx_create_signed = tx_create.sign([alice.private_key])
 
     # TRANSFER
-    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([b.me], 100)],
+    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([alice.public_key], 100)],
                                        asset_id=tx_create.id)
-    tx_transfer_signed = tx_transfer.sign([b.me_private, user_sk])
+    tx_transfer_signed = tx_transfer.sign([alice.private_key, user_sk])
 
     b.store_bulk_transactions([tx_create_signed, tx_transfer_signed])
 
@@ -329,20 +330,20 @@ def test_multiple_in_multiple_own_single_out_single_own_transfer(b, user_pk,
 #      owners_before
 # Single output
 # Single owners_after
-def test_muiltiple_in_mix_own_multiple_out_single_own_transfer(b, user_pk,
+def test_muiltiple_in_mix_own_multiple_out_single_own_transfer(alice, b, user_pk,
                                                                user_sk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.transaction import _fulfillment_to_details
 
     # CREATE divisible asset
-    tx_create = Transaction.create([b.me], [([user_pk], 50), ([user_pk, b.me], 50)],
+    tx_create = Transaction.create([alice.public_key], [([user_pk], 50), ([user_pk, alice.public_key], 50)],
                                    asset={'name': random.random()})
-    tx_create_signed = tx_create.sign([b.me_private])
+    tx_create_signed = tx_create.sign([alice.private_key])
 
     # TRANSFER
-    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([b.me], 100)],
+    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([alice.public_key], 100)],
                                        asset_id=tx_create.id)
-    tx_transfer_signed = tx_transfer.sign([b.me_private, user_sk])
+    tx_transfer_signed = tx_transfer.sign([alice.private_key, user_sk])
 
     b.store_bulk_transactions([tx_create_signed, tx_transfer_signed])
 
@@ -365,21 +366,21 @@ def test_muiltiple_in_mix_own_multiple_out_single_own_transfer(b, user_pk,
 # Multiple outputs
 # Mix: one output with a single owners_after, one output with multiple
 #      owners_after
-def test_muiltiple_in_mix_own_multiple_out_mix_own_transfer(b, user_pk,
+def test_muiltiple_in_mix_own_multiple_out_mix_own_transfer(alice, b, user_pk,
                                                             user_sk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.transaction import _fulfillment_to_details
 
     # CREATE divisible asset
-    tx_create = Transaction.create([b.me], [([user_pk], 50), ([user_pk, b.me], 50)],
+    tx_create = Transaction.create([alice.public_key], [([user_pk], 50), ([user_pk, alice.public_key], 50)],
                                    asset={'name': random.random()})
-    tx_create_signed = tx_create.sign([b.me_private])
+    tx_create_signed = tx_create.sign([alice.private_key])
 
     # TRANSFER
     tx_transfer = Transaction.transfer(tx_create.to_inputs(),
-                                       [([b.me], 50), ([b.me, user_pk], 50)],
+                                       [([alice.public_key], 50), ([alice.public_key, user_pk], 50)],
                                        asset_id=tx_create.id)
-    tx_transfer_signed = tx_transfer.sign([b.me_private, user_sk])
+    tx_transfer_signed = tx_transfer.sign([alice.private_key, user_sk])
 
     b.store_bulk_transactions([tx_create_signed, tx_transfer_signed])
 
@@ -407,15 +408,15 @@ def test_muiltiple_in_mix_own_multiple_out_mix_own_transfer(b, user_pk,
 # Single owners_before
 # Single output
 # Single owners_after
-def test_multiple_in_different_transactions(b, user_pk, user_sk):
+def test_multiple_in_different_transactions(alice, b, user_pk, user_sk):
     from bigchaindb.models import Transaction
 
     # CREATE divisible asset
     # `b` creates a divisible asset and assigns 50 shares to `b` and
     # 50 shares to `user_pk`
-    tx_create = Transaction.create([b.me], [([user_pk], 50), ([b.me], 50)],
+    tx_create = Transaction.create([alice.public_key], [([user_pk], 50), ([alice.public_key], 50)],
                                    asset={'name': random.random()})
-    tx_create_signed = tx_create.sign([b.me_private])
+    tx_create_signed = tx_create.sign([alice.private_key])
 
     # TRANSFER divisible asset
     # `b` transfers its 50 shares to `user_pk`
@@ -424,14 +425,14 @@ def test_multiple_in_different_transactions(b, user_pk, user_sk):
     tx_transfer1 = Transaction.transfer(tx_create.to_inputs([1]),
                                         [([user_pk], 50)],
                                         asset_id=tx_create.id)
-    tx_transfer1_signed = tx_transfer1.sign([b.me_private])
+    tx_transfer1_signed = tx_transfer1.sign([alice.private_key])
 
     # TRANSFER
     # `user_pk` combines two different transaction with 50 shares each and
     # transfers a total of 100 shares back to `b`
     tx_transfer2 = Transaction.transfer(tx_create.to_inputs([0]) +
                                         tx_transfer1.to_inputs([0]),
-                                        [([b.me], 100)],
+                                        [([alice.private_key], 100)],
                                         asset_id=tx_create.id)
     tx_transfer2_signed = tx_transfer2.sign([user_sk])
 
@@ -451,19 +452,19 @@ def test_multiple_in_different_transactions(b, user_pk, user_sk):
 # In a TRANSFER transaction of a divisible asset the amount being spent in the
 # inputs needs to match the amount being sent in the outputs.
 # In other words `amount_in_inputs - amount_in_outputs == 0`
-def test_amount_error_transfer(b, user_pk, user_sk):
+def test_amount_error_transfer(alice, b, user_pk, user_sk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.exceptions import AmountError
 
     # CREATE divisible asset
-    tx_create = Transaction.create([b.me], [([user_pk], 100)], asset={'name': random.random()})
-    tx_create_signed = tx_create.sign([b.me_private])
+    tx_create = Transaction.create([alice.public_key], [([user_pk], 100)], asset={'name': random.random()})
+    tx_create_signed = tx_create.sign([alice.private_key])
 
     b.store_bulk_transactions([tx_create_signed])
 
     # TRANSFER
     # output amount less than input amount
-    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([b.me], 50)],
+    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([alice.public_key], 50)],
                                        asset_id=tx_create.id)
     tx_transfer_signed = tx_transfer.sign([user_sk])
 
@@ -472,7 +473,7 @@ def test_amount_error_transfer(b, user_pk, user_sk):
 
     # TRANSFER
     # output amount greater than input amount
-    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([b.me], 101)],
+    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([alice.public_key], 101)],
                                        asset_id=tx_create.id)
     tx_transfer_signed = tx_transfer.sign([user_sk])
 
@@ -480,7 +481,7 @@ def test_amount_error_transfer(b, user_pk, user_sk):
         tx_transfer_signed.validate(b)
 
 
-def test_threshold_same_public_key(b, user_pk, user_sk):
+def test_threshold_same_public_key(alice, b, user_pk, user_sk):
     # If we try to fulfill a threshold condition where each subcondition has
     # the same key get_subcondition_from_vk will always return the first
     # subcondition. This means that only the 1st subfulfillment will be
@@ -491,12 +492,12 @@ def test_threshold_same_public_key(b, user_pk, user_sk):
     from bigchaindb.models import Transaction
 
     # CREATE divisible asset
-    tx_create = Transaction.create([b.me], [([user_pk, user_pk], 100)],
+    tx_create = Transaction.create([alice.public_key], [([user_pk, user_pk], 100)],
                                    asset={'name': random.random()})
-    tx_create_signed = tx_create.sign([b.me_private])
+    tx_create_signed = tx_create.sign([alice.private_key])
 
     # TRANSFER
-    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([b.me], 100)],
+    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([alice.public_key], 100)],
                                        asset_id=tx_create.id)
     tx_transfer_signed = tx_transfer.sign([user_sk, user_sk])
 
@@ -505,17 +506,17 @@ def test_threshold_same_public_key(b, user_pk, user_sk):
     assert tx_transfer_signed.validate(b) == tx_transfer_signed
 
 
-def test_sum_amount(b, user_pk, user_sk):
+def test_sum_amount(alice, b, user_pk, user_sk):
     from bigchaindb.models import Transaction
 
     # CREATE divisible asset with 3 outputs with amount 1
-    tx_create = Transaction.create([b.me], [([user_pk], 1), ([user_pk], 1), ([user_pk], 1)],
+    tx_create = Transaction.create([alice.public_key], [([user_pk], 1), ([user_pk], 1), ([user_pk], 1)],
                                    asset={'name': random.random()})
-    tx_create_signed = tx_create.sign([b.me_private])
+    tx_create_signed = tx_create.sign([alice.private_key])
 
     # create a transfer transaction with one output and check if the amount
     # is 3
-    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([b.me], 3)],
+    tx_transfer = Transaction.transfer(tx_create.to_inputs(), [([alice.public_key], 3)],
                                        asset_id=tx_create.id)
     tx_transfer_signed = tx_transfer.sign([user_sk])
 
@@ -526,17 +527,17 @@ def test_sum_amount(b, user_pk, user_sk):
     assert tx_transfer_signed.outputs[0].amount == 3
 
 
-def test_divide(b, user_pk, user_sk):
+def test_divide(alice, b, user_pk, user_sk):
     from bigchaindb.models import Transaction
 
     # CREATE divisible asset with 1 output with amount 3
-    tx_create = Transaction.create([b.me], [([user_pk], 3)], asset={'name': random.random()})
-    tx_create_signed = tx_create.sign([b.me_private])
+    tx_create = Transaction.create([alice.public_key], [([user_pk], 3)], asset={'name': random.random()})
+    tx_create_signed = tx_create.sign([alice.private_key])
 
     # create a transfer transaction with 3 outputs and check if the amount
     # of each output is 1
     tx_transfer = Transaction.transfer(tx_create.to_inputs(),
-                                       [([b.me], 1), ([b.me], 1), ([b.me], 1)],
+                                       [([alice.public_key], 1), ([alice.public_key], 1), ([alice.public_key], 1)],
                                        asset_id=tx_create.id)
     tx_transfer_signed = tx_transfer.sign([user_sk])
 

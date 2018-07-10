@@ -6,8 +6,6 @@ Attributes:
         * ``backlog`` for incoming transactions awaiting to be put into
           a block.
         * ``bigchain`` for blocks.
-        * ``votes`` to store votes for each block by each federation
-          node.
 
 """
 
@@ -21,7 +19,7 @@ from bigchaindb.common.utils import validate_all_values_for_key
 
 logger = logging.getLogger(__name__)
 
-TABLES = ('bigchain', 'backlog', 'votes', 'assets', 'metadata')
+TABLES = ('bigchain', 'backlog', 'assets', 'metadata')
 VALID_LANGUAGES = ('danish', 'dutch', 'english', 'finnish', 'french', 'german',
                    'hungarian', 'italian', 'norwegian', 'portuguese', 'romanian',
                    'russian', 'spanish', 'swedish', 'turkish', 'none',

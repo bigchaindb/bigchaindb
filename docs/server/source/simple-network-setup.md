@@ -86,13 +86,13 @@ sudo mv tendermint /usr/local/bin
 
 ### Set Up the Firewall
 
-Make sure to accept inbound connections on ports `9984`, `9985`, and `46656`. You might also want to add port `22` so that you can continue to access the machine via SSH.
+Make sure to accept inbound connections on ports `9984`, `9985`, and `26656`. You might also want to add port `22` so that you can continue to access the machine via SSH.
 
 ```
 sudo ufw allow 22/tcp
 sudo ufw allow 9984/tcp
 sudo ufw allow 9985/tcp
-sudo ufw allow 46656/tcp
+sudo ufw allow 26656/tcp
 sudo ufw enable
 ```
 
@@ -214,9 +214,9 @@ The Member must edit the `.tendermint/config/config.toml` file and make the foll
 create_empty_blocks = false
 ...
 
-persistent_peers = "<Member 1 node id>@<Member 1 hostname>:46656,\
-<Member 2 node id>@<Member 2 hostname>:46656,\
-<Member N node id>@<Member N hostname>:46656,"
+persistent_peers = "<Member 1 node id>@<Member 1 hostname>:26656,\
+<Member 2 node id>@<Member 2 hostname>:26656,\
+<Member N node id>@<Member N hostname>:26656,"
 ```
 
 ## Member: Start MongoDB, BigchainDB and Tendermint

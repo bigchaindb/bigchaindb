@@ -94,5 +94,5 @@ done
 peers=$(IFS=','; echo "${peers[*]}")
 
 echo "INFO: starting tendermint..."
-/usr/local/bin/tendermint node --home "/tendermint" --p2p.persistent_peers="$peers" --proxy_app="tcp://0.0.0.0:46658" --consensus.create_empty_blocks=false --p2p.pex=false
+/usr/local/bin/tendermint node --home "/tendermint" --p2p.persistent_peers="$peers" --proxy_app="tcp://0.0.0.0:26658" --consensus.create_empty_blocks=false --p2p.pex=false
 {% endraw %}

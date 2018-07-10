@@ -2,17 +2,17 @@ import asyncio
 import json
 import logging
 import time
-from os import getenv
 
 import aiohttp
 
+from bigchaindb import config
 from bigchaindb.common.utils import gen_timestamp
 from bigchaindb.events import EventTypes, Event
 from bigchaindb.tendermint.utils import decode_transaction_base64
 
 
-HOST = getenv('BIGCHAINDB_TENDERMINT_HOST', 'localhost')
-PORT = int(getenv('BIGCHAINDB_TENDERMINT_PORT', 46657))
+HOST = config['tendermint']['host']
+PORT = config['tendermint']['port']
 URL = 'ws://{}:{}/websocket'.format(HOST, PORT)
 
 logger = logging.getLogger(__name__)

@@ -56,8 +56,8 @@
       mv /tendermint_config/node_key"{{ item|string }}".json /tendermint/config/node_key.json &&
       peers=() && for i in $( seq {{ stack_size }} );do peers+=($(cat /tendermint_config/node_id$i)@"{{ tendermint_docker_name }}$i:{{ tendermint_p2p_port }}");done &&
       peers=$(IFS=","; echo "${peers[*]}") && echo $peers &&
-      tendermint node --p2p.persistent_peers="$peers" --p2p.laddr "tcp://"{{ tendermint_docker_name }}{{ item|string }}":46656"
-      --proxy_app="tcp://"{{ bigchaindb_docker_name }}{{ item|string }}":46658" --consensus.create_empty_blocks=false --p2p.pex=false'
+      tendermint node --p2p.persistent_peers="$peers" --p2p.laddr "tcp://"{{ tendermint_docker_name }}{{ item|string }}":26656"
+      --proxy_app="tcp://"{{ bigchaindb_docker_name }}{{ item|string }}":26658" --consensus.create_empty_blocks=false --p2p.pex=false'
     state: started
     keep_volumes: true
   with_sequence: start=1 end="{{ stack_size|int }}" stride=1

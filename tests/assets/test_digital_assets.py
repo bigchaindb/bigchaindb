@@ -33,10 +33,9 @@ def test_validate_transfer_asset_id_mismatch(b, signed_create_tx, user_pk, user_
         tx_transfer_signed.validate(b)
 
 
-def test_get_asset_id_create_transaction(b, user_pk):
+def test_get_asset_id_create_transaction(alice, user_pk):
     from bigchaindb.models import Transaction
-
-    tx_create = Transaction.create([b.me], [([user_pk], 1)])
+    tx_create = Transaction.create([alice.public_key], [([user_pk], 1)])
     assert Transaction.get_asset_id(tx_create) == tx_create.id
 
 
@@ -49,16 +48,16 @@ def test_get_asset_id_transfer_transaction(b, signed_create_tx, user_pk):
     assert asset_id == tx_transfer.asset['id']
 
 
-def test_asset_id_mismatch(b, user_pk):
+def test_asset_id_mismatch(alice, user_pk):
     from bigchaindb.models import Transaction
     from bigchaindb.common.exceptions import AssetIdMismatch
 
-    tx1 = Transaction.create([b.me], [([user_pk], 1)],
+    tx1 = Transaction.create([alice.public_key], [([user_pk], 1)],
                              metadata={'msg': random.random()})
-    tx1.sign([b.me_private])
-    tx2 = Transaction.create([b.me], [([user_pk], 1)],
+    tx1.sign([alice.private_key])
+    tx2 = Transaction.create([alice.public_key], [([user_pk], 1)],
                              metadata={'msg': random.random()})
-    tx2.sign([b.me_private])
+    tx2.sign([alice.private_key])
 
     with pytest.raises(AssetIdMismatch):
         Transaction.get_asset_id([tx1, tx2])

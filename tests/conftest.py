@@ -16,6 +16,7 @@ import pytest
 from pymongo import MongoClient
 
 from bigchaindb.common import crypto
+from bigchaindb.log import setup_logging
 from bigchaindb.tendermint.lib import Block
 
 TEST_DB_NAME = 'bigchain_test'
@@ -106,14 +107,18 @@ def _configure_bigchaindb(request):
 
     config = {
         'database': bigchaindb._database_map[backend],
-        'keypair': {
-            'private': '31Lb1ZGKTyHnmVK3LUMrAUrPNfd4sE2YyBt3UA4A25aA',
-            'public': '4XYfCbabAWVUCbjTmRTFEu2sc3dFEdkse4r6X498B1s8',
+        'tendermint': {
+            'host': 'localhost',
+            'port': 26657,
         }
     }
     config['database']['name'] = test_db_name
     config = config_utils.env_config(config)
     config_utils.set_config(config)
+
+    # NOTE: since we use a custom log level
+    # for benchmark logging we need to setup logging
+    setup_logging()
 
 
 @pytest.fixture(scope='session')
@@ -275,15 +280,15 @@ def tb():
 
 
 @pytest.fixture
-def create_tx(b, user_pk):
+def create_tx(alice, user_pk):
     from bigchaindb.models import Transaction
     name = f'I am created by the create_tx fixture. My random identifier is {random.random()}.'
-    return Transaction.create([b.me], [([user_pk], 1)], asset={'name': name})
+    return Transaction.create([alice.public_key], [([user_pk], 1)], asset={'name': name})
 
 
 @pytest.fixture
-def signed_create_tx(b, create_tx):
-    return create_tx.sign([b.me_private])
+def signed_create_tx(alice, create_tx):
+    return create_tx.sign([alice.private_key])
 
 
 @pytest.mark.abci
@@ -311,38 +316,22 @@ def double_spend_tx(signed_create_tx, carol_pubkey, user_sk):
     return tx.sign([user_sk])
 
 
-@pytest.fixture
-def structurally_valid_vote():
-    return {
-        'node_pubkey': 'c' * 44,
-        'signature': 'd' * 86,
-        'vote': {
-            'voting_for_block': 'a' * 64,
-            'previous_block': 'b' * 64,
-            'is_block_valid': False,
-            'invalid_reason': None,
-            'timestamp': '1111111111'
-        }
-    }
-
-
 def _get_height(b):
     maybe_block = b.get_latest_block()
     return 0 if maybe_block is None else maybe_block['height']
 
 
 @pytest.fixture
-def inputs(user_pk, b):
+def inputs(user_pk, b, alice):
     from bigchaindb.models import Transaction
-
     # create blocks with transactions for `USER` to spend
     for block in range(4):
         transactions = [
             Transaction.create(
-                [b.me],
+                [alice_pubkey(alice)],
                 [([user_pk], 1)],
                 metadata={'msg': random.random()},
-            ).sign([b.me_private]).to_dict()
+            ).sign([alice_privkey(alice)]).to_dict()
             for _ in range(10)
         ]
         block = Block(app_hash='', height=_get_height(b), transactions=transactions)
@@ -350,17 +339,17 @@ def inputs(user_pk, b):
 
 
 @pytest.fixture
-def inputs_shared(user_pk, user2_pk):
+def inputs_shared(user_pk, user2_pk, alice):
     from bigchaindb.models import Transaction
 
     # create blocks with transactions for `USER` to spend
     for block in range(4):
         transactions = [
             Transaction.create(
-                [b.me],
+                [alice.public_key],
                 [user_pk, user2_pk],
                 metadata={'msg': random.random()},
-            ).sign([b.me_private]).to_dict()
+            ).sign([alice.private_key]).to_dict()
             for _ in range(10)
         ]
         block = Block(app_hash='', height=_get_height(b), transaction=transactions)
@@ -456,7 +445,7 @@ def tendermint_host():
 
 @pytest.fixture
 def tendermint_port():
-    return int(os.getenv('BIGCHAINDB_TENDERMINT_PORT', 46657))
+    return int(os.getenv('BIGCHAINDB_TENDERMINT_PORT', 26657))
 
 
 @pytest.fixture

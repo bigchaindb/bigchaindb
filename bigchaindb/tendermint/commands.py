@@ -41,25 +41,25 @@ def start():
         settings=bigchaindb.config['server'],
         log_config=bigchaindb.config['log'],
         bigchaindb_factory=BigchainDB)
-    p_webapi = Process(name='webapi', target=app_server.run)
+    p_webapi = Process(name='bigchaindb_webapi', target=app_server.run)
     p_webapi.start()
 
     # start message
     logger.info(BANNER.format(bigchaindb.config['server']['bind']))
 
     # start websocket server
-    p_websocket_server = Process(name='ws',
+    p_websocket_server = Process(name='bigchaindb_ws',
                                  target=websocket_server.start,
                                  args=(exchange.get_subscriber_queue(EventTypes.BLOCK_VALID),))
     p_websocket_server.start()
 
     # connect to tendermint event stream
-    p_websocket_client = Process(name='ws_to_tendermint',
+    p_websocket_client = Process(name='bigchaindb_ws_to_tendermint',
                                  target=event_stream.start,
                                  args=(exchange.get_publisher_queue(),))
     p_websocket_client.start()
 
-    p_exchange = Process(name='exchange', target=exchange.run)
+    p_exchange = Process(name='bigchaindb_exchange', target=exchange.run)
     p_exchange.start()
 
     # We need to import this after spawning the web server

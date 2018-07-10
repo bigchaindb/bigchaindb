@@ -63,7 +63,6 @@ def test_bigchain_show_config(capsys):
     # and run_show_config updates the bigchaindb.config
     from bigchaindb import config
     del config['CONFIGURED']
-    config['keypair']['private'] = 'x' * 45
     assert output_config == config
 
 
@@ -91,7 +90,7 @@ def test_bigchain_run_init_when_db_exists(mocker, capsys):
 def test__run_init(mocker):
     from bigchaindb.commands.bigchaindb import _run_init
     bigchain_mock = mocker.patch(
-        'bigchaindb.commands.bigchaindb.bigchaindb.Bigchain')
+        'bigchaindb.commands.bigchaindb.bigchaindb.tendermint.lib.BigchainDB')
     init_db_mock = mocker.patch(
         'bigchaindb.commands.bigchaindb.schema.init_database',
         autospec=True,
@@ -281,7 +280,7 @@ def test_recover_db_on_start(mock_autoconfigure,
                              mock_start,
                              mocked_setup_logging):
     from bigchaindb.commands.bigchaindb import run_start
-    args = Namespace(start_rethinkdb=False, allow_temp_keypair=False, config=None, yes=True,
+    args = Namespace(config=None, yes=True,
                      skip_initialize_database=False)
     run_start(args)
 

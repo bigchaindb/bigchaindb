@@ -33,8 +33,8 @@ For convenience, here's a list of all the relevant environment variables (docume
 `BIGCHAINDB_LOG_DATEFMT_LOGFILE`<br>
 `BIGCHAINDB_LOG_FMT_CONSOLE`<br>
 `BIGCHAINDB_LOG_FMT_LOGFILE`<br>
-`BIGCHAINDB_LOG_GRANULAR_LEVELS`<br>
-`BIGCHAINDB_LOG_PORT`<br>
+`BIGCHAINDB_TENDERMINT_HOST`<br>
+`BIGCHAINDB_TENDERMINT_PORT`<br>
 
 
 The local config file is `$HOME/.bigchaindb` by default (a file which might not even exist), but you can tell BigchainDB to use a different file by using the `-c` command-line option, e.g. `bigchaindb -c path/to/config_file.json start`
@@ -217,12 +217,7 @@ holding the logging configuration.
         "datefmt_console": "%Y-%m-%d %H:%M:%S",
         "datefmt_logfile": "%Y-%m-%d %H:%M:%S",
         "fmt_console": "%(asctime)s [%(levelname)s] (%(name)s) %(message)s",
-        "fmt_logfile": "%(asctime)s [%(levelname)s] (%(name)s) %(message)s",
-        "granular_levels": {
-            "bichaindb.backend": "info",
-            "bichaindb.core": "info"
-        },
-        "port": 7070
+        "fmt_logfile": "%(asctime)s [%(levelname)s] (%(name)s) %(message)s"
 }
 ```
 
@@ -238,9 +233,7 @@ holding the logging configuration.
         "datefmt_console": "%Y-%m-%d %H:%M:%S",
         "datefmt_logfile": "%Y-%m-%d %H:%M:%S",
         "fmt_logfile": "[%(asctime)s] [%(levelname)s] (%(name)s) %(message)s (%(processName)-10s - pid: %(process)d)",
-        "fmt_console": "[%(asctime)s] [%(levelname)s] (%(name)s) %(message)s (%(processName)-10s - pid: %(process)d)",
-        "granular_levels": {},
-        "port": 9020
+        "fmt_console": "[%(asctime)s] [%(levelname)s] (%(name)s) %(message)s (%(processName)-10s - pid: %(process)d)"
 }
 ```
 
@@ -298,7 +291,7 @@ defined by [Python](https://docs.python.org/3.6/library/logging.html#levels),
 but case insensitive for convenience's sake:
 
 ```
-"critical", "error", "warning", "info", "debug", "notset"
+"critical", "error", "warning", "info", "benchmark", "debug", "notset"
 ```
 
 **Example**:
@@ -320,7 +313,7 @@ defined by [Python](https://docs.python.org/3.6/library/logging.html#levels),
 but case insensitive for convenience's sake:
 
 ```
-"critical", "error", "warning", "info", "debug", "notset"
+"critical", "error", "warning", "info", "benchmark", "debug", "notset"
 ```
 
 **Example**:
@@ -436,18 +429,25 @@ logging of the `core.py` module to be more verbose, you would set the
 
 **Defaults to**: `{}`
 
+## tendermint.host & tendermint.port
 
-### log.port
-The port number at which the logging server should listen.
+The settings with names of the form `tendermint.*` are for
+consensus(Tendermint) backend that we are using:
 
-**Example**:
+* `tendermint.host` is the hostname (FQDN)/IP address of the tendermint backend.
+* `tendermint.port` is self-explanatory.
 
+**Example using environment variables**
+```text
+export BIGCHAINDB_TENDERMINT_HOST=tendermint
+export BIGCHAINDB_TENDERMINT_PORT=26657
 ```
-{
-    "log": {
-        "port": 7070
-        }
+
+**Default values**
+
+```js
+"tendermint": {
+    "host": "localhost",
+    "port": 26657,
 }
 ```
-
-**Defaults to**: `9020`

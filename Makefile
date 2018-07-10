@@ -56,7 +56,10 @@ help: ## Show this help
 	@$(HELP) < $(MAKEFILE_LIST)
 
 run: check-deps ## Run BigchainDB from source (stop it with ctrl+c)
-	@$(DC) up bigchaindb
+	# although bigchaindb has tendermint and mongodb in depends_on,
+	# launch them first otherwise tendermint will get stuck upon sending yet another log
+	# due to some docker-compose issue; does not happen when containers are run as daemons
+	@$(DC) up --no-deps mongodb tendermint bigchaindb
 
 start: check-deps ## Run BigchainDB from source and daemonize it (stop with `make stop`)
 	@$(DC) up -d bigchaindb

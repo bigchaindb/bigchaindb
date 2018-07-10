@@ -126,9 +126,9 @@ spec:
         - name: bdb-config-data
           mountPath: /tendermint_node_data
         ports:
-        - containerPort: 46656
+        - containerPort: 26656
           name: p2p
-        - containerPort: 46657
+        - containerPort: 26657
           name: rpc
         livenessProbe:
           exec:
@@ -266,7 +266,7 @@ spec:
         - containerPort: 9985
           protocol: TCP
           name: bdb-ws-port
-        - containerPort: 46658
+        - containerPort: 26658
           protocol: TCP
           name: bdb-abci-port
         volumeMounts:
