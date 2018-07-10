@@ -674,7 +674,7 @@ To test the BigchainDB instance:
 
    $ curl -X GET http://bdb-instance-0:9986/pub_key.json
 
-   $ curl -X GET http://bdb-instance-0:46657/abci_info
+   $ curl -X GET http://bdb-instance-0:26657/abci_info
 
    $ wsc -er ws://bdb-instance-0:9985/api/v1/streams/valid_transactions
 
