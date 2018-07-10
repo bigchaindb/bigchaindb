@@ -13,9 +13,9 @@ bigchaindb_docker_net: "bigchaindb_docker_net"
 tendermint_host_mount_dir: "{{ home_dir }}/tendermint_docker"
 tendermint_host_mount_config_dir: "{{ home_dir }}/tendermint_config"
 tendermint_home: /tendermint/config
-tendermint_p2p_port: 46656
-tendermint_rpc_port: 46657
-tendermint_abci_port: 46658
+tendermint_p2p_port: 26656
+tendermint_rpc_port: 26657
+tendermint_abci_port: 26658
 
 directories:
   - "{{ tendermint_home }}"

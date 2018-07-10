@@ -109,7 +109,7 @@ def _configure_bigchaindb(request):
         'database': bigchaindb._database_map[backend],
         'tendermint': {
             'host': 'localhost',
-            'port': 46657,
+            'port': 26657,
         }
     }
     config['database']['name'] = test_db_name
@@ -445,7 +445,7 @@ def tendermint_host():
 
 @pytest.fixture
 def tendermint_port():
-    return int(os.getenv('BIGCHAINDB_TENDERMINT_PORT', 46657))
+    return int(os.getenv('BIGCHAINDB_TENDERMINT_PORT', 26657))
 
 
 @pytest.fixture
