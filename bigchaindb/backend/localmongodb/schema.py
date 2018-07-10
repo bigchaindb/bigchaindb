@@ -55,7 +55,7 @@ def create_transactions_secondary_index(conn, dbname):
     logger.info('Create `transactions` secondary index.')
 
     # to query the transactions for a transaction id, this field is unique
-    conn.conn[dbname]['transactions'].create_index('transactions.id',
+    conn.conn[dbname]['transactions'].create_index('id',
                                                    name='transaction_id')
 
     # secondary index for asset uuid, this field is unique
