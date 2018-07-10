@@ -280,7 +280,7 @@ class TestBigchainApi(object):
 
     @pytest.mark.usefixtures('inputs')
     def test_write_transaction(self, b, user_pk, user_sk):
-        from bigchaindb import Bigchain
+        from bigchaindb.tendermint import BigchainDB
         from bigchaindb.models import Transaction
 
         input_tx = b.get_owned_ids(user_pk).pop()
@@ -294,7 +294,7 @@ class TestBigchainApi(object):
         tx_from_db, status = b.get_transaction(tx.id, include_status=True)
 
         assert tx_from_db.to_dict() == tx.to_dict()
-        assert status == Bigchain.TX_IN_BACKLOG
+        assert status == BigchainDB.TX_IN_BACKLOG
 
     @pytest.mark.usefixtures('inputs')
     def test_read_transaction(self, b, user_pk, user_sk):
@@ -439,7 +439,7 @@ class TestBigchainApi(object):
         from bigchaindb.common.exceptions import InputDoesNotExist
         from bigchaindb.common.transaction import Input, TransactionLink
         from bigchaindb.models import Transaction
-        from bigchaindb import Bigchain
+        from bigchaindb.tendermint import BigchainDB
 
         # Create an input for a non existing transaction
         input = Input(Ed25519Sha256(public_key=b58decode(user_pk)),
@@ -449,7 +449,7 @@ class TestBigchainApi(object):
                                   asset_id='mock_asset_link')
 
         with pytest.raises(InputDoesNotExist):
-            tx.validate(Bigchain())
+            tx.validate(BigchainDB())
 
     def test_count_backlog(self, b, user_pk, alice):
         from bigchaindb.backend import query
@@ -970,9 +970,9 @@ class TestMultipleInputs(object):
 
 
 def test_get_owned_ids_calls_get_outputs_filtered():
-    from bigchaindb.core import Bigchain
-    with patch('bigchaindb.core.Bigchain.get_outputs_filtered') as gof:
-        b = Bigchain()
+    from bigchaindb.tendermint import BigchainDB
+    with patch('bigchaindb.tendermint.BigchainDB.get_outputs_filtered') as gof:
+        b = BigchainDB()
         res = b.get_owned_ids('abc')
     gof.assert_called_once_with('abc', spent=False)
     assert res == gof()

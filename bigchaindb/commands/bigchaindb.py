@@ -97,7 +97,7 @@ def run_configure(args):
 def run_upsert_validator(args):
     """Store validators which should be synced with Tendermint"""
 
-    b = bigchaindb.tendermint.lib.BigchainDB()
+    b = bigchaindb.tendermint.BigchainDB()
     public_key = public_key_from_base64(args.public_key)
     validator = {'pub_key': {'type': 'ed25519',
                              'data': public_key},
@@ -113,7 +113,7 @@ def run_upsert_validator(args):
 
 
 def _run_init():
-    bdb = bigchaindb.tendermint.lib.BigchainDB()
+    bdb = bigchaindb.tendermint.BigchainDB()
 
     schema.init_database(connection=bdb.connection)
 
