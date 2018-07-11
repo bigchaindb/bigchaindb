@@ -44,7 +44,7 @@ services:
       retries: 3
     command: '.ci/entrypoint.sh'
   tendermint:
-    image: tendermint/tendermint:0.22.0
+    image: tendermint/tendermint:0.22.3
     # volumes:
     #   - ./tmdata:/tendermint
     entrypoint: ''

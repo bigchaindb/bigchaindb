@@ -99,7 +99,7 @@ for i in "${!VALS_ARR[@]}"; do
   done
   set -e
   # add validator to genesis file along with its pub_key
-  curl -s "http://${VALS_ARR[$i]}:$tm_pub_key_access_port/pub_key.json" | jq ". as \$k | {pub_key: \$k, power: ${VAL_POWERS_ARR[$i]}, name: \"${VALS_ARR[$i]}\"}" > pub_validator.json
+  curl -s "http://${VALS_ARR[$i]}:$tm_pub_key_access_port/pub_key.json" | jq ". as \$k | {pub_key: \$k, power: \"${VAL_POWERS_ARR[$i]}\", name: \"${VALS_ARR[$i]}\"}" > pub_validator.json
   cat /tendermint/config/genesis.json | jq ".validators |= .+ [$(cat pub_validator.json)]" > tmpgenesis && mv tmpgenesis /tendermint/config/genesis.json
   rm pub_validator.json
 done

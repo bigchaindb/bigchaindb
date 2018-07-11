@@ -27,7 +27,7 @@
         for i in $( seq {{ stack_size }} );do
         tendermint gen_validator > /tendermint/config/priv_validator$i.json;
         tendermint gen_node_key > /tendermint/config/node_id$i; mv /tendermint/config/node_key.json /tendermint/config/node_key$i.json;
-        cat tendermint/config/priv_validator$i.json | jq ".pub_key" | jq ". as \$k | {pub_key: \$k, power: 10,
+        cat tendermint/config/priv_validator$i.json | jq ".pub_key" | jq ". as \$k | {pub_key: \$k, power: \"10\",
           name: \"{{ tendermint_docker_name }}$i\"}" > pub_validator$i.json;
         cat /tendermint/config/genesis.json | jq ".validators |= .+ [$(cat pub_validator$i.json)]" > tmpgenesis;
         mv tmpgenesis /tendermint/config/genesis.json;

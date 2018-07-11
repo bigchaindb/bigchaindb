@@ -74,13 +74,13 @@ Note: The `mongodb` package is _not_ the official MongoDB package from MongoDB t
 
 #### Install Tendermint
 
-Install a [recent version of Tendermint][tendermint:releases]. BigchainDB Server requires version 0.19.9 or newer.
+Install a [recent version of Tendermint][tendermint:releases]. BigchainDB Server requires version 0.22.3 or newer.
 
 ```
 sudo apt install -y unzip
-wget https://github.com/tendermint/tendermint/releases/download/v0.19.9/tendermint_0.19.9_linux_amd64.zip
-unzip tendermint_0.19.9_linux_amd64.zip
-rm tendermint_0.19.9_linux_amd64.zip
+wget https://github.com/tendermint/tendermint/releases/download/v0.22.3/tendermint_0.22.3_linux_amd64.zip
+unzip tendermint_0.22.3_linux_amd64.zip
+rm tendermint_0.22.3_linux_amd64.zip
 sudo mv tendermint /usr/local/bin
 ```
 
