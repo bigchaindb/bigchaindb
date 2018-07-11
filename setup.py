@@ -87,7 +87,7 @@ install_requires = [
     'pyyaml~=3.12',
     'aiohttp~=2.3',
     'python-rapidjson-schema==0.1.1',
-    'bigchaindb-abci==0.4.5',
+    'bigchaindb-abci==0.5.1',
     'setproctitle~=1.1.0',
 ]
 

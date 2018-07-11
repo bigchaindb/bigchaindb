@@ -9,9 +9,9 @@ spec:
   ports:
 spec:
   ports:
-  - port: 46656
+  - port: 26656
     name: p2p
-  - port: 46657
+  - port: 26657
     name: pubkey
   - port: 9986
     name: nginx

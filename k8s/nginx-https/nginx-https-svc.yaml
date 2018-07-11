@@ -25,8 +25,8 @@ spec:
     targetPort: 9986
     name: tm-pub-key-access
     protocol: TCP
-  - port: 46656
-    targetPort: 46656
+  - port: 26656
+    targetPort: 26656
     protocol: TCP
     name: tm-p2p-port
   - port: 80

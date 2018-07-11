@@ -440,7 +440,7 @@ consensus(Tendermint) backend that we are using:
 **Example using environment variables**
 ```text
 export BIGCHAINDB_TENDERMINT_HOST=tendermint
-export BIGCHAINDB_TENDERMINT_PORT=46657
+export BIGCHAINDB_TENDERMINT_PORT=26657
 ```
 
 **Default values**
@@ -448,6 +448,6 @@ export BIGCHAINDB_TENDERMINT_PORT=46657
 ```js
 "tendermint": {
     "host": "localhost",
-    "port": 46657,
+    "port": 26657,
 }
 ```
