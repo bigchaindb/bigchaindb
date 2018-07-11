@@ -56,7 +56,7 @@ BigchainDB Node
   |                                                                  |                                                                   |
   |                                                                  v                                                                   |
   |                                                                                                                                      |
-  |                                      "443"                   +----------+         "46656/9986"                                       |
+  |                                      "443"                   +----------+         "26656/9986"                                       |
   |                                                              | "Rate"   |                                                            |
   |                                  +---------------------------+"Limiting"+-----------------------+                                    |
   |                                  |                           | "Logic"  |                       |                                    |
@@ -70,7 +70,7 @@ BigchainDB Node
   |                                  v                                |                             v                                    |
   |                            +-------------+                        |                         +------------+                           |
   |                            |"HTTPS"      |                        |    +------------------> |"Tendermint"|                           |
-  |                            |"Termination"|                        |    |            "9986"  |"Service"   |  "46656"                  |
+  |                            |"Termination"|                        |    |            "9986"  |"Service"   |  "26656"                  |
   |                            |             |                        |    |            +-------+            | <----+                    |
   |                            +-----+-------+                        |    |            |       +------------+      |                    |
   |                                  |                                |    |            |                           |                    |
@@ -205,6 +205,6 @@ In a multi-node deployment, Tendermint nodes/peers communicate with each other v
 the public ports exposed by the NGINX gateway.
 
 We use port **9986** (configurable) to allow tendermint nodes to access the public keys
-of the peers and port **46656** (configurable) for the rest of the communications between
+of the peers and port **26656** (configurable) for the rest of the communications between
 the peers.
 

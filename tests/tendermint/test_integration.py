@@ -4,8 +4,7 @@ import pytest
 
 
 from abci.server import ProtocolHandler
-from abci.encoding import read_message
-from abci.messages import to_request_deliver_tx, to_request_check_tx
+from abci.encoding import read_messages
 from copy import deepcopy
 from io import BytesIO
 
@@ -22,14 +21,14 @@ def test_app(tb):
     app = App(b)
     p = ProtocolHandler(app)
 
-    data = p.process('info', None)
-    res, err = read_message(BytesIO(data), types.Response)
+    data = p.process('info', types.Request(info=types.RequestInfo(version='2')))
+    res = next(read_messages(BytesIO(data), types.Response))
     assert res
     assert res.info.last_block_app_hash == b''
     assert res.info.last_block_height == 0
     assert not b.get_latest_block()
 
-    p.process('init_chain', None)
+    p.process('init_chain', types.Request(init_chain=types.RequestInitChain()))
     block0 = b.get_latest_block()
     assert block0
     assert block0['height'] == 0
@@ -42,9 +41,9 @@ def test_app(tb):
                     .sign([alice.private_key])
     etxn = json.dumps(tx.to_dict()).encode('utf8')
 
-    r = to_request_check_tx(etxn)
+    r = types.Request(check_tx=types.RequestCheckTx(tx=etxn))
     data = p.process('check_tx', r)
-    res, err = read_message(BytesIO(data), types.Response)
+    res = next(read_messages(BytesIO(data), types.Response))
     assert res
     assert res.check_tx.code == 0
 
@@ -52,25 +51,24 @@ def test_app(tb):
     r.begin_block.hash = b''
     p.process('begin_block', r)
 
-    r = to_request_deliver_tx(etxn)
+    r = types.Request(deliver_tx=types.RequestDeliverTx(tx=etxn))
     data = p.process('deliver_tx', r)
-    res, err = read_message(BytesIO(data), types.Response)
+    res = next(read_messages(BytesIO(data), types.Response))
     assert res
     assert res.deliver_tx.code == 0
 
     new_block_txn_hash = calculate_hash([tx.id])
 
-    r = types.Request()
-    r.end_block.height = 1
+    r = types.Request(end_block=types.RequestEndBlock(height=1))
     data = p.process('end_block', r)
-    res, err = read_message(BytesIO(data), types.Response)
+    res = next(read_messages(BytesIO(data), types.Response))
     assert res
     assert 'end_block' == res.WhichOneof('value')
 
     new_block_hash = calculate_hash([block0['app_hash'], new_block_txn_hash])
 
     data = p.process('commit', None)
-    res, err = read_message(BytesIO(data), types.Response)
+    res = next(read_messages(BytesIO(data), types.Response))
     assert res.commit.data == new_block_hash.encode('utf-8')
     assert b.get_transaction(tx.id).id == tx.id
 
@@ -89,7 +87,7 @@ def test_app(tb):
     p.process('end_block', r)
 
     data = p.process('commit', None)
-    res, err = read_message(BytesIO(data), types.Response)
+    res = next(read_messages(BytesIO(data), types.Response))
     assert res.commit.data == new_block_hash.encode('utf-8')
 
     block0 = b.get_latest_block()
@@ -109,8 +107,8 @@ def test_upsert_validator(b, alice):
     import time
 
     conn = connect()
-    public_key = '1718D2DBFF00158A0852A17A01C78F4DCF3BA8E4FB7B8586807FAC182A535034'
     power = 1
+    public_key = '9B3119650DF82B9A5D8A12E38953EA47475C09F0C48A4E6A0ECE182944B24403'
 
     validator = {'pub_key': {'type': 'AC26791624DE60',
                              'data': public_key},
@@ -133,7 +131,7 @@ def test_upsert_validator(b, alice):
     validators = [(v['pub_key']['value'], v['voting_power']) for v in validators]
 
     public_key64 = public_key_to_base64(public_key)
-    assert ((public_key64, power) in validators)
+    assert ((public_key64, str(power)) in validators)
 
 
 @pytest.mark.abci
