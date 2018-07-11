@@ -35,12 +35,6 @@ class BigchainDB(object):
     Create, read, sign, write transactions to the database
     """
 
-    TX_VALID = 'valid'
-    """return if a tx is in valid block"""
-
-    TX_UNDECIDED = 'undecided'
-    """return if tx is in undecided block"""
-
     def __init__(self, connection=None):
         """Initialize the Bigchain instance
 
@@ -265,19 +259,15 @@ class BigchainDB(object):
             transaction = Transaction.from_dict(transaction)
 
         if include_status:
-            return transaction, self.TX_VALID if transaction else None
+            return transaction, 'valid' if transaction else None
         else:
             return transaction
 
     def get_transactions_filtered(self, asset_id, operation=None):
         """Get a list of transactions filtered on some criteria
         """
-        txids = backend.query.get_txids_filtered(self.connection, asset_id,
-                                                 operation)
-        for txid in txids:
-            tx, status = self.get_transaction(txid, True)
-            if status == self.TX_VALID:
-                yield tx
+        return backend.query.get_txids_filtered(self.connection, asset_id,
+                                                operation)
 
     def get_outputs_filtered(self, owner, spent=None):
         """Get a list of output links filtered on some criteria
@@ -416,16 +406,8 @@ class BigchainDB(object):
         Returns:
             iter: An iterator of assets that match the text search.
         """
-        objects = backend.query.text_search(self.connection, search, limit=limit,
-                                            table=table)
-
-        # TODO: This is not efficient. There may be a more efficient way to
-        #       query by storing block ids with the assets and using fastquery.
-        #       See https://github.com/bigchaindb/bigchaindb/issues/1496
-        for obj in objects:
-            tx, status = self.get_transaction(obj['id'], True)
-            if status == self.TX_VALID:
-                yield obj
+        return backend.query.text_search(self.connection, search, limit=limit,
+                                         table=table)
 
     def get_assets(self, asset_ids):
         """Return a list of assets that match the asset_ids

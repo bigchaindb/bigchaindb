@@ -30,7 +30,7 @@ class TransactionApi(Resource):
         with pool() as bigchain:
             tx, status = bigchain.get_transaction(tx_id, include_status=True)
 
-        if not tx or status is not bigchain.TX_VALID:
+        if not tx:
             return make_error(404)
 
         return tx.to_dict()

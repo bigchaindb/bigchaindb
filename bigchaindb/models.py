@@ -45,13 +45,13 @@ class Transaction(Transaction):
                         # transactions in current round
                         if ctxn.id == input_txid:
                             input_tx = ctxn
-                            status = bigchain.TX_VALID
+                            status = 'valid'
 
                 if input_tx is None:
                     raise InputDoesNotExist("input `{}` doesn't exist"
                                             .format(input_txid))
 
-                if status != bigchain.TX_VALID:
+                if status != 'valid':
                     raise TransactionNotInValidBlock(
                         'input `{}` does not exist in a valid block'.format(
                             input_txid))

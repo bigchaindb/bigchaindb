@@ -313,7 +313,6 @@ class TestBigchainApi(object):
         response, status = b.get_transaction(tx.id, include_status=True)
         # add validity information, which will be returned
         assert tx.to_dict() == response.to_dict()
-        assert status == b.TX_UNDECIDED
 
     @pytest.mark.usefixtures('inputs')
     def test_read_transaction_invalid_block(self, b, user_pk, user_sk):
