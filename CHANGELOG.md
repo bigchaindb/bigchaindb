@@ -18,6 +18,51 @@ For reference, the possible headings are:
 * **Known Issues**
 * **Notes**
 
+## [2.0 Beta 2] - 2018-07-16
+
+Tag name: v2.0.0b2
+
+### Added
+
+* Added new configuration settings `tendermint.host` and `tendermint.port`. [Pull request #2342](https://github.com/bigchaindb/bigchaindb/pull/2342)
+* Added tests to ensure that BigchainDB gracefully handles "nasty" strings in keys and values. [Pull request #2334](https://github.com/bigchaindb/bigchaindb/pull/2334)
+* Added a new logging handler to capture benchmark stats to a separate file. [Pull request #2349](https://github.com/bigchaindb/bigchaindb/pull/2349)
+
+### Changed
+
+* Changed the names of BigchainDB processes (Python processes) to include 'bigchaindb', so they are easier to spot and find. [Pull request #2354](https://github.com/bigchaindb/bigchaindb/pull/2354)
+* Updated all code to support the latest version of Tendermint. Note that the BigchainDB ABCI server now listens to port 26657 instead of 46657. Pull requests [#2375](https://github.com/bigchaindb/bigchaindb/pull/2375) and [#2380](https://github.com/bigchaindb/bigchaindb/pull/2380)
+
+### Removed
+
+Removed all support and code for the old backlog_reassign_delay setting. [Pull request #2332](https://github.com/bigchaindb/bigchaindb/pull/2332)
+
+### Fixed
+
+* Fixed a bug that sometimes arose when using Docker Compose. (Tendermint would freeze.) [Pull request #2341](https://github.com/bigchaindb/bigchaindb/pull/2341)
+* Fixed a bug in the code that creates a MongoDB index for the "id" in the transactions collection. It works now, and performance is improved. [Pull request #2378](https://github.com/bigchaindb/bigchaindb/pull/2378)
+* The logging server would keep runnning in some tear-down scenarios. It doesn't do that any more. [Pull request #2304](https://github.com/bigchaindb/bigchaindb/pull/2304)
+
+### External Contributors
+
+@hrntknr - [Pull request #2331](https://github.com/bigchaindb/bigchaindb/pull/2331)
+
+### Known Issues
+
+The `bigchaindb upsert-validator` subcommand is not working yet, but a solution ([BEP-21](https://github.com/bigchaindb/BEPs/tree/master/21)) has been finalized and will be implemented before we release the final BigchainDB 2.0.
+
+### Notes
+
+* A lot of old/dead code was deleted. Pull requests
+[#2319](https://github.com/bigchaindb/bigchaindb/pull/2319),
+[#2338](https://github.com/bigchaindb/bigchaindb/pull/2338),
+[#2357](https://github.com/bigchaindb/bigchaindb/pull/2357),
+[#2365](https://github.com/bigchaindb/bigchaindb/pull/2365),
+[#2366](https://github.com/bigchaindb/bigchaindb/pull/2366),
+[#2368](https://github.com/bigchaindb/bigchaindb/pull/2368) and
+[#2374](https://github.com/bigchaindb/bigchaindb/pull/2374)
+* Improved the documentation page "How to setup a BigchainDB Network". [Pull Request #2312](https://github.com/bigchaindb/bigchaindb/pull/2312)
+
 ## [2.0 Beta 1] - 2018-06-01
 
 Tag name: v2.0.0b1
