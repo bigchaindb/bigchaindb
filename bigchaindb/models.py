@@ -1,8 +1,6 @@
 from bigchaindb.common.exceptions import (InvalidSignature, DoubleSpend,
-                                          InputDoesNotExist,
-                                          TransactionNotInValidBlock,
-                                          AssetIdMismatch, AmountError,
-                                          DuplicateTransaction)
+                                          InputDoesNotExist, AssetIdMismatch,
+                                          AmountError, DuplicateTransaction)
 from bigchaindb.common.transaction import Transaction
 from bigchaindb.common.utils import (validate_txn_obj, validate_key)
 from bigchaindb.common.schema import validate_transaction_schema
@@ -36,25 +34,17 @@ class Transaction(Transaction):
             input_txs = []
             for input_ in self.inputs:
                 input_txid = input_.fulfills.txid
-                input_tx, status = bigchain.\
-                    get_transaction(input_txid, include_status=True)
+                input_tx = bigchain.\
+                    get_transaction(input_txid)
 
                 if input_tx is None:
                     for ctxn in current_transactions:
-                        # assume that the status as valid for previously validated
-                        # transactions in current round
                         if ctxn.id == input_txid:
                             input_tx = ctxn
-                            status = 'valid'
 
                 if input_tx is None:
                     raise InputDoesNotExist("input `{}` doesn't exist"
                                             .format(input_txid))
-
-                if status != 'valid':
-                    raise TransactionNotInValidBlock(
-                        'input `{}` does not exist in a valid block'.format(
-                            input_txid))
 
                 spent = bigchain.get_spent(input_txid, input_.fulfills.output,
                                            current_transactions)
