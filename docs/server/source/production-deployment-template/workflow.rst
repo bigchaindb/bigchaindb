@@ -44,7 +44,7 @@ you can do this:
 .. code::
 
    $ mkdir $(pwd)/tmdata
-   $ docker run --rm -v $(pwd)/tmdata:/tendermint/config tendermint/tendermint:0.19.9 init
+   $ docker run --rm -v $(pwd)/tmdata:/tendermint/config tendermint/tendermint:0.22.3 init
    $ cat $(pwd)/tmdata/genesis.json
 
 You should see something that looks like:
