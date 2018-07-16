@@ -31,7 +31,7 @@ Tag name: v2.0.0b2
 ### Changed
 
 * Changed the names of BigchainDB processes (Python processes) to include 'bigchaindb', so they are easier to spot and find. [Pull request #2354](https://github.com/bigchaindb/bigchaindb/pull/2354)
-* Updated all code to support the latest version of Tendermint. Pull requests [#2375](https://github.com/bigchaindb/bigchaindb/pull/2375) and [#2380](https://github.com/bigchaindb/bigchaindb/pull/2380)
+* Updated all code to support the latest version of Tendermint. Note that the BigchainDB ABCI server now listens to port 26657 instead of 46657. Pull requests [#2375](https://github.com/bigchaindb/bigchaindb/pull/2375) and [#2380](https://github.com/bigchaindb/bigchaindb/pull/2380)
 
 ### Removed
 
