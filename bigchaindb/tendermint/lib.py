@@ -240,7 +240,7 @@ class BigchainDB(object):
             return backend.query.delete_unspent_outputs(
                                         self.connection, *unspent_outputs)
 
-    def get_transaction(self, transaction_id, include_status=False):
+    def get_transaction(self, transaction_id):
         transaction = backend.query.get_transaction(self.connection, transaction_id)
         asset = backend.query.get_asset(self.connection, transaction_id)
         metadata = backend.query.get_metadata(self.connection, [transaction_id])
@@ -258,10 +258,7 @@ class BigchainDB(object):
 
             transaction = Transaction.from_dict(transaction)
 
-        if include_status:
-            return transaction, 'valid' if transaction else None
-        else:
-            return transaction
+        return transaction
 
     def get_transactions_filtered(self, asset_id, operation=None):
         """Get a list of transactions filtered on some criteria
