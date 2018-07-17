@@ -1,5 +1,7 @@
 import pytest
 
+pytestmark = [pytest.mark.tendermint, pytest.mark.bdb]
+
 
 @pytest.fixture
 def config(request, monkeypatch):
@@ -16,6 +18,10 @@ def config(request, monkeypatch):
             'replicaset': 'bigchain-rs',
             'connection_timeout': 5000,
             'max_tries': 3
+        },
+        'tendermint': {
+            'host': 'localhost',
+            'port': 26657,
         },
         'CONFIGURED': True,
     }
@@ -37,7 +43,7 @@ def test_bigchain_class_default_initialization(config):
     assert bigchain.consensus == BaseConsensusRules
 
 
-def test_bigchain_class_initialization_with_parameters(config):
+def test_bigchain_class_initialization_with_parameters():
     from bigchaindb.tendermint import BigchainDB
     from bigchaindb.backend import connect
     from bigchaindb.consensus import BaseConsensusRules
@@ -48,7 +54,7 @@ def test_bigchain_class_initialization_with_parameters(config):
         'name': 'this_is_the_db_name',
     }
     connection = connect(**init_db_kwargs)
-    bigchain = BigchainDB(connection=connection, **init_db_kwargs)
+    bigchain = BigchainDB(connection=connection)
     assert bigchain.connection == connection
     assert bigchain.connection.host == init_db_kwargs['host']
     assert bigchain.connection.port == init_db_kwargs['port']
@@ -56,19 +62,7 @@ def test_bigchain_class_initialization_with_parameters(config):
     assert bigchain.consensus == BaseConsensusRules
 
 
-def test_get_blocks_status_containing_tx(monkeypatch):
-    from bigchaindb.backend import query as backend_query
-    from bigchaindb.tendermint import BigchainDB
-    blocks = [
-        {'id': 1}, {'id': 2}
-    ]
-    monkeypatch.setattr(backend_query, 'get_blocks_status_from_transaction', lambda x: blocks)
-    monkeypatch.setattr(BigchainDB, 'block_election_status', lambda x, y, z: BigchainDB.BLOCK_VALID)
-    bigchain = BigchainDB(public_key='pubkey', private_key='privkey')
-    with pytest.raises(Exception):
-        bigchain.get_blocks_status_containing_tx('txid')
-
-
+@pytest.mark.skip
 @pytest.mark.genesis
 def test_get_spent_issue_1271(b, alice, bob, carol):
     from bigchaindb.models import Transaction
