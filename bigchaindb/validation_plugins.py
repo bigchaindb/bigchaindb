@@ -12,4 +12,7 @@ OPERATION_TO_CLASS = {
 def operation_class(tx):
     """For the given `tx` based on the `operation` key return its implementation class"""
 
-    return OPERATION_TO_CLASS.get(tx['operation'], Transaction)
+    if isinstance(tx, dict):
+        return OPERATION_TO_CLASS.get(tx.get('operation', Transaction.CREATE), Transaction)
+    else:
+        return Transaction
