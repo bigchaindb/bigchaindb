@@ -515,7 +515,7 @@ class Transaction(object):
                 version (string): Defines the version number of a Transaction.
                 hash_id (string): Hash id of the transaction.
         """
-        if operation not in Transaction.ALLOWED_OPERATIONS:
+        if operation not in self.ALLOWED_OPERATIONS:
             allowed_ops = ', '.join(self.__class__.ALLOWED_OPERATIONS)
             raise ValueError('`operation` must be one of {}'
                              .format(allowed_ops))
@@ -939,7 +939,7 @@ class Transaction(object):
             Returns:
                 bool: If all Inputs are valid.
         """
-        if self.operation == Transaction.CREATE:
+        if self.operation == self.CREATE:
             # NOTE: Since in the case of a `CREATE`-transaction we do not have
             #       to check for outputs, we're just submitting dummy
             #       values to the actual method. This simplifies it's logic
@@ -986,8 +986,7 @@ class Transaction(object):
         return all(validate(i, cond)
                    for i, cond in enumerate(output_condition_uris))
 
-    @staticmethod
-    def _input_valid(input_, operation, message, output_condition_uri=None):
+    def _input_valid(self, input_, operation, message, output_condition_uri=None):
         """Validates a single Input against a single Output.
 
             Note:
@@ -1012,7 +1011,7 @@ class Transaction(object):
                 ParsingError, ASN1DecodeError, ASN1EncodeError):
             return False
 
-        if operation == Transaction.CREATE:
+        if operation == self.CREATE:
             # NOTE: In the case of a `CREATE` transaction, the
             #       output is always valid.
             output_valid = True
@@ -1164,3 +1163,53 @@ class Transaction(object):
         outputs = [Output.from_dict(output) for output in tx['outputs']]
         return cls(tx['operation'], tx['asset'], inputs, outputs,
                    tx['metadata'], tx['version'], hash_id=tx['id'])
+
+    @classmethod
+    def from_db(cls, bigchain, tx_dict_list):
+        """Helper method that reconstructs a transaction dict that was returned
+        from the database. It checks what asset_id to retrieve, retrieves the
+        asset from the asset table and reconstructs the transaction.
+
+        Args:
+            bigchain (:class:`~bigchaindb.tendermint.BigchainDB`): An instance
+                of BigchainDB used to perform database queries.
+            tx_dict_list (:list:`dict` or :obj:`dict`): The transaction dict or
+                list of transaction dict as returned from the database.
+
+        Returns:
+            :class:`~Transaction`
+
+        """
+        return_list = True
+        if isinstance(tx_dict_list, dict):
+            tx_dict_list = [tx_dict_list]
+            return_list = False
+
+        tx_map = {}
+        tx_ids = []
+        for tx in tx_dict_list:
+            tx.update({'metadata': None})
+            tx_map[tx['id']] = tx
+            tx_ids.append(tx['id'])
+
+        assets = list(bigchain.get_assets(tx_ids))
+        for asset in assets:
+            if asset is not None:
+                tx = tx_map[asset['id']]
+                del asset['id']
+                tx['asset'] = asset
+
+        tx_ids = list(tx_map.keys())
+        metadata_list = list(bigchain.get_metadata(tx_ids))
+        for metadata in metadata_list:
+            tx = tx_map[metadata['id']]
+            tx.update({'metadata': metadata.get('metadata')})
+
+        if return_list:
+            tx_list = []
+            for tx_id, tx in tx_map.items():
+                tx_list.append(cls.from_dict(tx))
+            return tx_list
+        else:
+            tx = list(tx_map.values())[0]
+            return cls.from_dict(tx)

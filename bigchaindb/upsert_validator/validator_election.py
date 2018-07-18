@@ -1,0 +1,140 @@
+from bigchaindb.common.exceptions import (InvalidSignature,
+                                          DuplicateTransaction)
+from bigchaindb.tendermint.utils import key_from_base64
+from bigchaindb.common.crypto import (public_key_from_ed25519_key)
+from bigchaindb.common.transaction import Transaction, Input, Output
+from bigchaindb.common.schema import (_load_schema,
+                                      _validate_schema,
+                                      TX_SCHEMA_VERSION,
+                                      TX_SCHEMA_COMMON,
+                                      TX_SCHEMA_CREATE)
+
+
+_, TX_SCHEMA_VALIDATOR_ELECTION = _load_schema('transaction_validator_election_' +
+                                               TX_SCHEMA_VERSION, __file__)
+
+
+class ValidatorElection(Transaction):
+
+    VALIDATOR_ELECTION = 'VALIDATOR_ELECTION'
+    # NOTE: this transaction class extends create so the operation inheritence is achieved
+    # by renaming CREATE to VALIDATOR_ELECTION
+    CREATE = VALIDATOR_ELECTION
+    ALLOWED_OPERATIONS = (VALIDATOR_ELECTION,)
+
+    def __init__(self, operation, asset, inputs=None, outputs=None,
+                 metadata=None, version=None, hash_id=None):
+        # operation `CREATE` is being passed as argument as `VALIDATOR_ELECTION` is an extension
+        # of `CREATE` and any validation on `CREATE` in the parent class should apply to it
+        super().__init__(operation, asset, inputs, outputs, metadata, version, hash_id)
+
+        self.operation = self.VALIDATOR_ELECTION
+
+    @classmethod
+    def current_validators(cls, bigchain):
+        """Return a dictionary of validators with key as `public_key` and
+           value as the `voting_power`
+        """
+
+        validators = {}
+        for validator in bigchain.get_validators():
+            # NOTE: we assume that Tendermint encodes public key in base64
+            public_key = public_key_from_ed25519_key(key_from_base64(validator['pub_key']['value']))
+            validators[public_key] = validator['voting_power']
+
+        return validators
+
+    @classmethod
+    def recipients(cls, bigchain):
+        """Convert validator dictionary to a recipient list for `Transaction`"""
+
+        recipients = []
+        for public_key, voting_power in cls.current_validators(bigchain).items():
+            recipients.append(([public_key], voting_power))
+
+        return recipients
+
+    @classmethod
+    def is_same_topology(cls, current_topology, election_topology):
+        voters = {}
+        for voter in election_topology:
+            if len(voter.public_keys) > 1:
+                return False
+
+            [public_key] = voter.public_keys
+            voting_power = voter.amount
+            voters[public_key] = voting_power
+
+        # Check whether the voters and their votes is same to that of the
+        # validators and their voting power in the network
+        return (current_topology.items() == voters.items())
+
+    def validate(self, bigchain, current_transactions=[]):
+        """Validate election transaction
+        NOTE:
+        * A valid election is initiated by an existing validator.
+
+        * A valid election is one where voters are validators and votes are
+          alloacted according to the voting power of each validator node.
+
+        Args:
+            bigchain (BigchainDB): an instantiated bigchaindb.tendermint.BigchainDB object.
+
+        Returns:
+            The transaction (Transaction) if the transaction is valid else it
+            raises an exception describing the reason why the transaction is
+            invalid.
+
+        Raises:
+            ValidationError: If the transaction is invalid
+        """
+        input_conditions = []
+
+        duplicates = any(txn for txn in current_transactions if txn.id == self.id)
+        if bigchain.get_transaction(self.to_dict()['id'], cls=ValidatorElection) or duplicates:
+            raise DuplicateTransaction('transaction `{}` already exists'
+                                       .format(self.id))
+
+        if not self.inputs_valid(input_conditions):
+            raise InvalidSignature('Transaction signature is invalid.')
+
+        current_validators = self.current_validators(bigchain)
+
+        # NOTE: Proposer should be a single node
+        if len(self.inputs) != 1:
+            return False
+
+        # NOTE: Check if the proposer is a validator.
+        [election_initiator_node_pub_key] = self.inputs[0].owners_before
+        if election_initiator_node_pub_key not in current_validators.keys():
+            return False
+
+        # NOTE: Check if all validators have been assigned votes equal to their voting power
+        return self.is_same_topology(current_validators, self.outputs)
+
+    @classmethod
+    def generate(cls, initiator, voters, election_data, metadata=None):
+        election = cls.create(initiator, voters, metadata, asset=election_data)
+        cls.validate_schema(election.to_dict())
+        return election
+
+    @classmethod
+    def from_dict(cls, tx):
+        cls.validate_id(tx)
+
+        # The schema validation will ensure that the asset has been properly defined
+        cls.validate_schema(tx)
+
+        inputs = [Input.from_dict(input_) for input_ in tx['inputs']]
+        outputs = [Output.from_dict(output) for output in tx['outputs']]
+        return cls(cls.VALIDATOR_ELECTION, tx['asset'], inputs, outputs, tx['metadata'],
+                   tx['version'], hash_id=tx['id'])
+
+    @classmethod
+    def validate_schema(cls, tx):
+        """Validate the validator election transaction. Since `VALIDATOR_ELECTION` extends `CREATE`
+           transaction, all the validations for `CREATE` transaction should be inherited
+        """
+        _validate_schema(TX_SCHEMA_COMMON, tx)
+        _validate_schema(TX_SCHEMA_CREATE, tx)
+        _validate_schema(TX_SCHEMA_VALIDATOR_ELECTION, tx)
