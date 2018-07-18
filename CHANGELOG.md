@@ -18,6 +18,14 @@ For reference, the possible headings are:
 * **Known Issues**
 * **Notes**
 
+## [2.0 Beta 3] - 2018-07-18
+
+Tag name: v2.0.0b3
+
+### Fixed
+
+Fixed a bug in transaction validation. For some more-complex situations, it would say that a valid transaction was invalid. This bug was actually fixed before; it was [issue #1271](https://github.com/bigchaindb/bigchaindb/issues/1271). The unit test for it was turned off while we integrated Tendermint. Then the query implementation code got changed, reintroducing the bug, but the unit test was off so the bug wasn't caught. When we turned the test back on, shortly after releasing Beta 2, it failed, unveiling the bug. [Pull request #2389](https://github.com/bigchaindb/bigchaindb/pull/2389)
+
 ## [2.0 Beta 2] - 2018-07-16
 
 Tag name: v2.0.0b2
