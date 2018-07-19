@@ -7,7 +7,7 @@ Appendices
    install-os-level-deps
    json-serialization
    cryptography
-   the-Bigchain-class
+   the-bigchaindb-class
    backend
    commands
    tendermint-integration

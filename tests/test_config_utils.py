@@ -26,28 +26,24 @@ def test_bigchain_instance_is_initialized_when_conf_provided(request):
     from bigchaindb import config_utils
     assert 'CONFIGURED' not in bigchaindb.config
 
-    config_utils.set_config({'keypair': {'public': 'a', 'private': 'b'}})
+    config_utils.set_config({'database': {'backend': 'a'}})
 
     assert bigchaindb.config['CONFIGURED'] is True
-
-    b = bigchaindb.Bigchain()
-
-    assert b.me
-    assert b.me_private
 
 
 def test_bigchain_instance_raises_when_not_configured(request, monkeypatch):
     import bigchaindb
     from bigchaindb import config_utils
     from bigchaindb.common import exceptions
+    from bigchaindb.tendermint import BigchainDB
     assert 'CONFIGURED' not in bigchaindb.config
 
     # We need to disable ``bigchaindb.config_utils.autoconfigure`` to avoid reading
     # from existing configurations
     monkeypatch.setattr(config_utils, 'autoconfigure', lambda: 0)
 
-    with pytest.raises(exceptions.KeypairNotFoundException):
-        bigchaindb.Bigchain()
+    with pytest.raises(exceptions.ConfigurationError):
+        BigchainDB()
 
 
 def test_load_consensus_plugin_loads_default_rules_without_name():
@@ -170,7 +166,6 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request, ssl_con
         'database': {
             'host': DATABASE_HOST
         },
-        'backlog_reassign_delay': 5,
         'log': {
             'level_console': 'debug',
         },
@@ -215,15 +210,6 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request, ssl_con
     from bigchaindb.log.configs import SUBSCRIBER_LOGGING_CONFIG as log_config
     config_utils.autoconfigure()
 
-    database_rethinkdb = {
-        'backend': 'rethinkdb',
-        'host': DATABASE_HOST,
-        'port': DATABASE_PORT,
-        'name': DATABASE_NAME,
-        'connection_timeout': 5000,
-        'max_tries': 3
-    }
-
     database_mongodb = {
         'backend': 'mongodb',
         'host': DATABASE_HOST,
@@ -263,8 +249,6 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request, ssl_con
     database = {}
     if DATABASE_BACKEND == 'mongodb':
         database = database_mongodb
-    elif DATABASE_BACKEND == 'rethinkdb':
-        database = database_rethinkdb
     elif DATABASE_BACKEND == 'mongodb-ssl':
         database = database_mongodb_ssl
 
@@ -285,12 +269,10 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request, ssl_con
             'advertised_port': WSSERVER_ADVERTISED_PORT,
         },
         'database': database,
-        'keypair': {
-            'public': None,
-            'private': None,
+        'tendermint': {
+            'host': None,
+            'port': None,
         },
-        'keyring': KEYRING.split(':'),
-        'backlog_reassign_delay': 5,
         'log': {
             'file': LOG_FILE,
             'error_file': log_config['handlers']['errors']['filename'],

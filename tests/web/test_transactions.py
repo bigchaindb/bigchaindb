@@ -372,7 +372,7 @@ def test_transactions_get_list_good(client):
 
     asset_id = '1' * 64
 
-    with patch('bigchaindb.core.Bigchain.get_transactions_filtered', get_txs_patched):
+    with patch('bigchaindb.tendermint.BigchainDB.get_transactions_filtered', get_txs_patched):
         url = TX_ENDPOINT + '?asset_id=' + asset_id
         assert client.get(url).json == [
             ['asset_id', asset_id],
@@ -389,7 +389,7 @@ def test_transactions_get_list_good(client):
 def test_transactions_get_list_bad(client):
     def should_not_be_called():
         assert False
-    with patch('bigchaindb.core.Bigchain.get_transactions_filtered',
+    with patch('bigchaindb.tendermint.BigchainDB.get_transactions_filtered',
                lambda *_, **__: should_not_be_called()):
         # Test asset id validated
         url = TX_ENDPOINT + '?asset_id=' + '1' * 63
@@ -404,7 +404,7 @@ def test_transactions_get_list_bad(client):
 
 @pytest.mark.tendermint
 def test_return_only_valid_transaction(client):
-    from bigchaindb import Bigchain
+    from bigchaindb.tendermint import BigchainDB
 
     def get_transaction_patched(status):
         def inner(self, tx_id, include_status):
@@ -415,13 +415,13 @@ def test_return_only_valid_transaction(client):
     #       UNDECIDED or VALID block, as well as transactions from the backlog.
     #       As the endpoint uses `get_transaction`, we don't have to test
     #       against invalid transactions here.
-    with patch('bigchaindb.core.Bigchain.get_transaction',
-               get_transaction_patched(Bigchain.TX_UNDECIDED)):
+    with patch('bigchaindb.tendermint.BigchainDB.get_transaction',
+               get_transaction_patched(BigchainDB.TX_UNDECIDED)):
         url = '{}{}'.format(TX_ENDPOINT, '123')
         assert client.get(url).status_code == 404
 
-    with patch('bigchaindb.core.Bigchain.get_transaction',
-               get_transaction_patched(Bigchain.TX_IN_BACKLOG)):
+    with patch('bigchaindb.tendermint.BigchainDB.get_transaction',
+               get_transaction_patched(BigchainDB.TX_IN_BACKLOG)):
         url = '{}{}'.format(TX_ENDPOINT, '123')
         assert client.get(url).status_code == 404
 

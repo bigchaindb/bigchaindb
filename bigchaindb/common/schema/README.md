@@ -13,14 +13,18 @@ The aim is to provide:
 ## Sources
 
 The files defining the JSON Schema for transactions (`transaction_*.yaml`)
-are based on the [IPDB Transaction Spec](https://github.com/ipdb/ipdb-tx-spec).
+are based on the [BigchainDB Transactions Specs](https://github.com/bigchaindb/BEPs/tree/master/tx-specs).
 If you want to add a new transaction version,
-you must add it to the IPDB Transaction Spec first.
+you must write a spec for it first.
 (You can't change the JSON Schema files for old versions.
 Those were used to validate old transactions
 and are needed to re-check those transactions.)
 
-The file defining the JSON Schema for votes (`vote.yaml`) is BigchainDB-specific.
+There used to be a file defining the JSON Schema for votes, named `vote.yaml`.
+It was used by BigchainDB version 1.3.0 and earlier.
+If you want a copy of the latest `vote.yaml` file,
+then you can get it from the version 1.3.0 release on GitHub, at
+[https://github.com/bigchaindb/bigchaindb/blob/v1.3.0/bigchaindb/common/schema/vote.yaml](https://github.com/bigchaindb/bigchaindb/blob/v1.3.0/bigchaindb/common/schema/vote.yaml).
 
 ## Learn about JSON Schema
 

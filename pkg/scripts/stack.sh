@@ -11,7 +11,7 @@ stack_repo=${STACK_REPO:="bigchaindb/bigchaindb"}
 stack_size=${STACK_SIZE:=4}
 stack_type=${STACK_TYPE:="docker"}
 stack_type_provider=${STACK_TYPE_PROVIDER:=""}
-tm_version=${TM_VERSION:="0.19.2"}
+tm_version=${TM_VERSION:="0.22.3"}
 mongo_version=${MONGO_VERSION:="3.6"}
 stack_vm_memory=${STACK_VM_MEMORY:=2048}
 stack_vm_cpus=${STACK_VM_CPUS:=2}
@@ -223,7 +223,7 @@ elif [[ $stack_type == "cloud" && $stack_type_provider == "azure" ]]; then
 	vagrant up --provider azure --provision
 	ansible-playbook $CONF_DIR/bigchaindb-start.yml \
 		-i $CONF_DIR/hosts/all \
-		--extra-vars "operation=start home_path=/bigchaindb"
+		--extra-vars "operation=start home_path=/opt/stack"
 elif [[ $stack_type == "docker" ]]; then
 	echo "Configuring Dockers locally!"
 	source $SCRIPTS_DIR/bootstrap.sh --operation install

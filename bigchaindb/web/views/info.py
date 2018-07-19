@@ -3,7 +3,6 @@
 import flask
 from flask_restful import Resource
 
-import bigchaindb
 from bigchaindb.web.views.base import base_ws_uri
 from bigchaindb import version
 from bigchaindb.web.websocket_server import EVENTS_ENDPOINT
@@ -22,8 +21,6 @@ class RootIndex(Resource):
             'docs': ''.join(docs_url),
             'software': 'BigchainDB',
             'version': version.__version__,
-            'public_key': bigchaindb.config['keypair']['public'],
-            'keyring': bigchaindb.config['keyring']
         })
 
 

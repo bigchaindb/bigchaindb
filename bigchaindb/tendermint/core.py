@@ -2,16 +2,28 @@
 with Tendermint."""
 import logging
 
-from abci.application import BaseApplication, Result
-from abci.types_pb2 import ResponseEndBlock, ResponseInfo, Validator
+from abci.application import BaseApplication
+from abci.types_pb2 import (
+    ResponseInitChain,
+    ResponseInfo,
+    ResponseCheckTx,
+    ResponseBeginBlock,
+    ResponseDeliverTx,
+    ResponseEndBlock,
+    ResponseCommit,
+    Validator,
+    PubKey
+)
 
 from bigchaindb.tendermint import BigchainDB
 from bigchaindb.tendermint.utils import (decode_transaction,
-                                         calculate_hash,
-                                         amino_encoded_public_key)
+                                         calculate_hash)
 from bigchaindb.tendermint.lib import Block, PreCommitState
 from bigchaindb.backend.query import PRE_COMMIT_ID
 
+
+CodeTypeOk = 0
+CodeTypeError = 1
 logger = logging.getLogger(__name__)
 
 
@@ -35,10 +47,10 @@ class App(BaseApplication):
 
         block = Block(app_hash='', height=0, transactions=[])
         self.bigchaindb.store_block(block._asdict())
+        return ResponseInitChain()
 
-    def info(self):
+    def info(self, request):
         """Return height of the latest committed block."""
-
         r = ResponseInfo()
         block = self.bigchaindb.get_latest_block()
         if block:
@@ -55,14 +67,18 @@ class App(BaseApplication):
 
         Args:
             raw_tx: a raw string (in bytes) transaction."""
+
+        logger.benchmark('CHECK_TX_INIT')
         logger.debug('check_tx: %s', raw_transaction)
         transaction = decode_transaction(raw_transaction)
         if self.bigchaindb.is_valid_transaction(transaction):
             logger.debug('check_tx: VALID')
-            return Result.ok()
+            logger.benchmark('CHECK_TX_END, tx_id:%s', transaction['id'])
+            return ResponseCheckTx(code=CodeTypeOk)
         else:
             logger.debug('check_tx: INVALID')
-            return Result.error()
+            logger.benchmark('CHECK_TX_END, tx_id:%s', transaction['id'])
+            return ResponseCheckTx(code=CodeTypeError)
 
     def begin_block(self, req_begin_block):
         """Initialize list of transaction.
@@ -70,9 +86,13 @@ class App(BaseApplication):
             req_begin_block: block object which contains block header
             and block hash.
         """
+        logger.benchmark('BEGIN BLOCK, height:%s, num_txs:%s',
+                         req_begin_block.header.height,
+                         req_begin_block.header.num_txs)
 
         self.block_txn_ids = []
         self.block_transactions = []
+        return ResponseBeginBlock()
 
     def deliver_tx(self, raw_transaction):
         """Validate the transaction before mutating the state.
@@ -85,20 +105,21 @@ class App(BaseApplication):
 
         if not transaction:
             logger.debug('deliver_tx: INVALID')
-            return Result.error(log='Invalid transaction')
+            return ResponseDeliverTx(code=CodeTypeError)
         else:
             logger.debug('storing tx')
             self.block_txn_ids.append(transaction.id)
             self.block_transactions.append(transaction)
-            return Result.ok()
+            return ResponseDeliverTx(code=CodeTypeOk)
 
-    def end_block(self, height):
+    def end_block(self, request_end_block):
         """Calculate block hash using transaction ids and previous block
         hash to be stored in the next block.
 
         Args:
             height (int): new height of the chain."""
 
+        height = request_end_block.height
         self.new_height = height
         block_txn_hash = calculate_hash(self.block_txn_ids)
         block = self.bigchaindb.get_latest_block()
@@ -121,11 +142,6 @@ class App(BaseApplication):
                                           transactions=self.block_txn_ids)
         logger.debug('Updating PreCommitState: %s', self.new_height)
         self.bigchaindb.store_pre_commit_state(pre_commit_state._asdict())
-
-        # NOTE: interface for `ResponseEndBlock` has be changed in the latest
-        # version of py-abci i.e. the validator updates should be return
-        # as follows:
-        # ResponseEndBlock(validator_updates=validator_updates)
         return ResponseEndBlock(validator_updates=validator_updates)
 
     def commit(self):
@@ -146,12 +162,17 @@ class App(BaseApplication):
         logger.debug('Commit-ing new block with hash: apphash=%s ,'
                      'height=%s, txn ids=%s', data, self.new_height,
                      self.block_txn_ids)
-        return data
+        logger.benchmark('COMMIT_BLOCK, height:%s', self.new_height)
+        return ResponseCommit(data=data)
 
 
 def encode_validator(v):
     ed25519_public_key = v['pub_key']['data']
     # NOTE: tendermint expects public to be encoded in go-amino format
-    pub_key = amino_encoded_public_key(ed25519_public_key)
+
+    pub_key = PubKey(type='ed25519',
+                     data=bytes.fromhex(ed25519_public_key))
+
     return Validator(pub_key=pub_key,
+                     address=b'',
                      power=v['power'])

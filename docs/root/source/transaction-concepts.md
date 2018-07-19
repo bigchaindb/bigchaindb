@@ -34,6 +34,12 @@ the section titled **Transaction Components: Conditions**
 in the relevant
 [BigchainDB Transactions Spec](https://github.com/bigchaindb/BEPs/tree/master/tx-specs/).
 
+![Example BigchainDB CREATE transaction](./_static/CREATE_example.png)
+
+Above we see a diagram of an example BigchainDB CREATE transaction.
+It has one output: Pam owns/controls three shares of the asset
+and there are no other shares (because there are no other outputs).
+
 Each output also has a list of all the public keys associated
 with the conditions on that output.
 Loosely speaking, that list might be interpreted as the list of "owners."
@@ -62,6 +68,21 @@ A TRANSFER transaction can have one or more outputs,
 just like a CREATE transaction (described above).
 The total number of shares coming in on the inputs must equal
 the total number of shares going out on the outputs.
+
+![Example BigchainDB transactions](./_static/CREATE_and_TRANSFER_example.png)
+
+Above we see a diagram of two example BigchainDB transactions,
+a CREATE transaction and a TRANSFER transaction.
+The CREATE transaction is the same as in the earlier diagram.
+The TRANSFER transaction spends Pam's output,
+so the input on that TRANSFER transaction must contain a valid signature
+from Pam (i.e. a valid fulfillment).
+The TRANSFER transaction has two outputs:
+Jim gets one share, and Pam gets the remaining two shares.
+
+Terminology: The "Pam, 3" output is called a "spent transaction output"
+and the "Jim, 1" and "Pam, 2" outputs are called "unspent transaction outputs"
+(UTXOs).
 
 **Example 1:** Suppose a red car is owned and controlled by Joe.
 Suppose the current transfer condition on the car says

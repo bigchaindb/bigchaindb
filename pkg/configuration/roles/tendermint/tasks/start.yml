@@ -27,7 +27,7 @@
         for i in $( seq {{ stack_size }} );do
         tendermint gen_validator > /tendermint/config/priv_validator$i.json;
         tendermint gen_node_key > /tendermint/config/node_id$i; mv /tendermint/config/node_key.json /tendermint/config/node_key$i.json;
-        cat tendermint/config/priv_validator$i.json | jq ".pub_key" | jq ". as \$k | {pub_key: \$k, power: 10,
+        cat tendermint/config/priv_validator$i.json | jq ".pub_key" | jq ". as \$k | {pub_key: \$k, power: \"10\",
           name: \"{{ tendermint_docker_name }}$i\"}" > pub_validator$i.json;
         cat /tendermint/config/genesis.json | jq ".validators |= .+ [$(cat pub_validator$i.json)]" > tmpgenesis;
         mv tmpgenesis /tendermint/config/genesis.json;
@@ -56,8 +56,8 @@
       mv /tendermint_config/node_key"{{ item|string }}".json /tendermint/config/node_key.json &&
       peers=() && for i in $( seq {{ stack_size }} );do peers+=($(cat /tendermint_config/node_id$i)@"{{ tendermint_docker_name }}$i:{{ tendermint_p2p_port }}");done &&
       peers=$(IFS=","; echo "${peers[*]}") && echo $peers &&
-      tendermint node --p2p.persistent_peers="$peers" --p2p.laddr "tcp://"{{ tendermint_docker_name }}{{ item|string }}":46656"
-      --proxy_app="tcp://"{{ bigchaindb_docker_name }}{{ item|string }}":46658" --consensus.create_empty_blocks=false --p2p.pex=false'
+      tendermint node --p2p.persistent_peers="$peers" --p2p.laddr "tcp://"{{ tendermint_docker_name }}{{ item|string }}":26656"
+      --proxy_app="tcp://"{{ bigchaindb_docker_name }}{{ item|string }}":26658" --consensus.create_empty_blocks=false --p2p.pex=false'
     state: started
     keep_volumes: true
   with_sequence: start=1 end="{{ stack_size|int }}" stride=1

@@ -16,11 +16,11 @@ import bigchaindb
 from bigchaindb import backend
 from bigchaindb.backend import schema
 from bigchaindb.backend import query
-from bigchaindb.commands import utils
-from bigchaindb.commands.utils import (
-    configure_bigchaindb, start_logging_process, input_on_stderr)
 from bigchaindb.backend.query import VALIDATOR_UPDATE_ID, PRE_COMMIT_ID
-from bigchaindb.tendermint.lib import BigchainDB
+from bigchaindb.commands import utils
+from bigchaindb.commands.utils import (configure_bigchaindb,
+                                       input_on_stderr)
+from bigchaindb.log import setup_logging
 from bigchaindb.tendermint.utils import public_key_from_base64
 
 logging.basicConfig(level=logging.INFO)
@@ -41,8 +41,6 @@ def run_show_config(args):
     # configure the system.
     config = copy.deepcopy(bigchaindb.config)
     del config['CONFIGURED']
-    private_key = config['keypair']['private']
-    config['keypair']['private'] = 'x' * 45 if private_key else None
     print(json.dumps(config, indent=4, sort_keys=True))
 
 
@@ -83,9 +81,9 @@ def run_configure(args):
             val = conf['database'][key]
             conf['database'][key] = input_on_stderr('Database {}? (default `{}`): '.format(key, val), val)
 
-        val = conf['backlog_reassign_delay']
-        conf['backlog_reassign_delay'] = input_on_stderr(
-            'Stale transaction reassignment delay (in seconds)? (default `{}`): '.format(val), val)
+        for key in ('host', 'port'):
+            val = conf['tendermint'][key]
+            conf['tendermint'][key] = input_on_stderr('Tendermint {}? (default `{}`)'.format(key, val), val)
 
     if config_path != '-':
         bigchaindb.config_utils.write_config(conf, config_path)
@@ -99,7 +97,7 @@ def run_configure(args):
 def run_upsert_validator(args):
     """Store validators which should be synced with Tendermint"""
 
-    b = bigchaindb.Bigchain()
+    b = bigchaindb.tendermint.BigchainDB()
     public_key = public_key_from_base64(args.public_key)
     validator = {'pub_key': {'type': 'ed25519',
                              'data': public_key},
@@ -115,7 +113,7 @@ def run_upsert_validator(args):
 
 
 def _run_init():
-    bdb = bigchaindb.Bigchain()
+    bdb = bigchaindb.tendermint.BigchainDB()
 
     schema.init_database(connection=bdb.connection)
 
@@ -165,12 +163,14 @@ def run_recover(b):
 
 
 @configure_bigchaindb
-@start_logging_process
 def run_start(args):
     """Start the processes to run the node"""
-    logger.info('BigchainDB Version %s', bigchaindb.__version__)
 
-    run_recover(BigchainDB())
+    # Configure Logging
+    setup_logging()
+
+    logger.info('BigchainDB Version %s', bigchaindb.__version__)
+    run_recover(bigchaindb.tendermint.lib.BigchainDB())
 
     try:
         if not args.skip_initialize_database:

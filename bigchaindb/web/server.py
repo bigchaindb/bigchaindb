@@ -11,7 +11,7 @@ from flask_cors import CORS
 import gunicorn.app.base
 
 from bigchaindb import utils
-from bigchaindb import Bigchain
+from bigchaindb.tendermint import BigchainDB
 from bigchaindb.web.routes import add_routes
 from bigchaindb.web.strip_content_type_middleware import StripContentTypeMiddleware
 
@@ -45,6 +45,7 @@ class StandaloneApplication(gunicorn.app.base.BaseApplication):
         config = dict((key, value) for key, value in self.options.items()
                       if key in self.cfg.settings and value is not None)
 
+        config['default_proc_name'] = 'bigchaindb_gunicorn'
         for key, value in config.items():
             # not sure if we need the `key.lower` here, will just keep
             # keep it for now.
@@ -66,7 +67,7 @@ def create_app(*, debug=False, threads=1, bigchaindb_factory=None):
     """
 
     if not bigchaindb_factory:
-        bigchaindb_factory = Bigchain
+        bigchaindb_factory = BigchainDB
 
     app = Flask(__name__)
     app.wsgi_app = StripContentTypeMiddleware(app.wsgi_app)
@@ -104,7 +105,6 @@ def create_server(settings, log_config=None, bigchaindb_factory=None):
         # slower.
         settings['threads'] = 1
 
-    settings['logger_class'] = 'bigchaindb.log.loggers.HttpServerLogger'
     settings['custom_log_config'] = log_config
     app = create_app(debug=settings.get('debug', False),
                      threads=settings['threads'],
