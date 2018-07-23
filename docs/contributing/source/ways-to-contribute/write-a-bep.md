@@ -1,7 +1,14 @@
-# Write a BigchaindB Enhancement Proposal (BEP)
+# Write a BigchainDB Enhancement Proposal (BEP)
 
-- Review [1/C4](https://github.com/bigchaindb/BEPs/tree/master/1), the process we use to accept any new code or PR of any kind, including one that adds a BEP to `bigchaindb/BEPs`.
-- Review [2/COSS](https://github.com/bigchaindb/BEPs/tree/master/2). Maybe print it for reference. It outlines what can go in a BEP.
-- Don't spend weeks on your BEP. Version 1 should take up to a few hours to write. You can add to it in the future. The process is iterative. If you need more than a few hours, then consider writing multiple BEPs.
-- Do _not_ start writing code before you think about it. You should always write a BEP first. Once you do that, you can start implementing it. To do that, make a pull request and say it implements your BEP.
-- Do _not_ write your BEP as an issue (i.e. a GitHub issue).
+If you have an idea for a new feature or enhancement, and you want some feedback before you write a full BigchainDB Enhancement Proposal (BEP), then feel free to:
+  - ask in the [bigchaindb/bigchaindb Gitter chat room](https://gitter.im/bigchaindb/bigchaindb) or
+  - [open a new issue in the bigchaindb/BEPs repo](https://github.com/bigchaindb/BEPs/issues/new) and give it the label **BEP idea**.
+
+If you want to discuss an existing BEP, then [open a new issue in the bigchaindb/BEPs repo](https://github.com/bigchaindb/BEPs/issues/new) and give it the label **discuss existing BEP**.
+
+## Steps to Write a New BEP
+
+1. Look at the structure of existing BEPs in the [bigchaindb/BEPs repo](https://github.com/bigchaindb/BEPs). Note the section headings. [BEP-2](https://github.com/bigchaindb/BEPs/tree/master/2) (our variant of the consensus-oriented specification system [COSS]) says more about the expected structure and process.
+1. Write a first draft of your BEP. It doesn't have to be long or perfect.
+1. Push your BEP draft to the [bigchaindb/BEPs repo](https://github.com/bigchaindb/BEPs) and make a pull request. [BEP-1](https://github.com/bigchaindb/BEPs/tree/master/1) (our variant of C4) outlines the process we use to handle all pull requests. In particular, we try to merge all pull requests quickly.
+1. Your BEP can be revised by pushing more pull requests.
