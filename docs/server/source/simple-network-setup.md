@@ -303,7 +303,7 @@ $ # OR
 $ kill -3 <bigchaindb_parent_pid>
 
 # If you want to kill all the processes by name yourself
-$ pgrep bigchaindb | xargs kill -9 bigchaindb
+$ pgrep bigchaindb | xargs kill -9
 
 $ # OR
 
