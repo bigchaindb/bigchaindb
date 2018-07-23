@@ -63,6 +63,7 @@ config = {
         'host': 'localhost',
         'port': 26657,
     },
+    'max_transaction_size': 1048576,
     # FIXME: hardcoding to localmongodb for now
     'database': _database_map['localmongodb'],
     'log': {
