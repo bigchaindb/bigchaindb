@@ -3,7 +3,7 @@ BigchainDB and Smart Contracts
 
 One can store the source code of any smart contract (i.e. a computer program) in BigchainDB, but BigchainDB won't run arbitrary smart contracts.
 
-BigchainDB will run the subset of smart contracts expressible using `Crypto-Conditions <https://tools.ietf.org/html/draft-thomas-crypto-conditions-03>`_. Crypto-conditions are part of the `Interledger Protocol <https://interledger.org/>`_.
+BigchainDB will run the subset of smart contracts expressible using `Crypto-Conditions <https://tools.ietf.org/html/draft-thomas-crypto-conditions-03>`_.
 
 The owners of an asset can impose conditions on it that must be met for the asset to be transferred to new owners. Examples of possible conditions (crypto-conditions) include:
 
