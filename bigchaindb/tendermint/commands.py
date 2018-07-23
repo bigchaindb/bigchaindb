@@ -70,8 +70,7 @@ def start():
 
     setproctitle.setproctitle('bigchaindb')
 
-    # Start the ABCIServer and watch for signals to stop
-    # the server and the relevant child bigchaindb.BIGCHAINDB_PROCESSES.
+    # Start the ABCIServer
     app = ABCIServer(app=App())
     app.run()
 
