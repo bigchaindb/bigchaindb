@@ -36,6 +36,6 @@
     BIGCHAINDB_WSSERVER_HOST: 0.0.0.0
     BIGCHAINDB_WSSERVER_PORT: 9985
     BIGCHAINDB_TENDERMINT_HOST: 127.0.0.1
-    BIGCHAINDB_TENDERMINT_PORT: 46657
+    BIGCHAINDB_TENDERMINT_PORT: 26657
   when: mdb_pchk.stdout| int != 0 and bdb_pchk.stdout| int == 0 and tm_pchk.stdout| int != 0
   tags: [bigchaindb]

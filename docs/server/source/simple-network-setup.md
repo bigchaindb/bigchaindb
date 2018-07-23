@@ -52,10 +52,11 @@ BigchainDB Server requires **Python 3.6+**, so make sure your system has it. Ins
 sudo apt install -y python3-pip libssl-dev
 ```
 
-Now install the latest version of BigchainDB. Check the [project page on PyPI][bdb:pypi] for the last version (which was `2.0.0a6` at the time of writing) and install it:
+Now install the latest version of BigchainDB. You can find the latest version by going to the [BigchainDB project release history page on PyPI][bdb:pypi]. For example, to install version 2.0.0b3, you would do:
 
 ```
-sudo pip3 install bigchaindb==2.0.0a6
+# Change 2.0.0b3 to the latest version as explained above:
+sudo pip3 install bigchaindb==2.0.0b3
 ```
 
 Check that you installed the correct version of BigchainDB Server using `bigchaindb --version`.
@@ -74,25 +75,25 @@ Note: The `mongodb` package is _not_ the official MongoDB package from MongoDB t
 
 #### Install Tendermint
 
-Install a [recent version of Tendermint][tendermint:releases]. BigchainDB Server requires version 0.19.9 or newer.
+Install a [recent version of Tendermint][tendermint:releases]. BigchainDB Server requires version 0.22.3 or newer.
 
 ```
 sudo apt install -y unzip
-wget https://github.com/tendermint/tendermint/releases/download/v0.19.9/tendermint_0.19.9_linux_amd64.zip
-unzip tendermint_0.19.9_linux_amd64.zip
-rm tendermint_0.19.9_linux_amd64.zip
+wget https://github.com/tendermint/tendermint/releases/download/v0.22.3/tendermint_0.22.3_linux_amd64.zip
+unzip tendermint_0.22.3_linux_amd64.zip
+rm tendermint_0.22.3_linux_amd64.zip
 sudo mv tendermint /usr/local/bin
 ```
 
 ### Set Up the Firewall
 
-Make sure to accept inbound connections on ports `9984`, `9985`, and `46656`. You might also want to add port `22` so that you can continue to access the machine via SSH.
+Make sure to accept inbound connections on ports `9984`, `9985`, and `26656`. You might also want to add port `22` so that you can continue to access the machine via SSH.
 
 ```
 sudo ufw allow 22/tcp
 sudo ufw allow 9984/tcp
 sudo ufw allow 9985/tcp
-sudo ufw allow 46656/tcp
+sudo ufw allow 26656/tcp
 sudo ufw enable
 ```
 
@@ -214,9 +215,9 @@ The Member must edit the `.tendermint/config/config.toml` file and make the foll
 create_empty_blocks = false
 ...
 
-persistent_peers = "<Member 1 node id>@<Member 1 hostname>:46656,\
-<Member 2 node id>@<Member 2 hostname>:46656,\
-<Member N node id>@<Member N hostname>:46656,"
+persistent_peers = "<Member 1 node id>@<Member 1 hostname>:26656,\
+<Member 2 node id>@<Member 2 hostname>:26656,\
+<Member N node id>@<Member N hostname>:26656,"
 ```
 
 ## Member: Start MongoDB, BigchainDB and Tendermint

@@ -61,7 +61,7 @@ config = {
     },
     'tendermint': {
         'host': 'localhost',
-        'port': 46657,
+        'port': 26657,
     },
     # FIXME: hardcoding to localmongodb for now
     'database': _database_map['localmongodb'],

@@ -25,7 +25,7 @@ ENV BIGCHAINDB_WSSERVER_SCHEME ws
 ENV BIGCHAINDB_WSSERVER_ADVERTISED_HOST 0.0.0.0
 ENV BIGCHAINDB_WSSERVER_ADVERTISED_SCHEME ws
 
-ENV BIGCHAINDB_TENDERMINT_PORT 46657
+ENV BIGCHAINDB_TENDERMINT_PORT 26657
 
 ENV BIGCHAINDB_CI_ABCI ${abci_status}
 
@@ -33,5 +33,5 @@ RUN mkdir -p /usr/src/app
 COPY . /usr/src/app/
 WORKDIR /usr/src/app
 RUN pip install --no-cache-dir --process-dependency-links -e .[dev]
-RUN bigchaindb -y configure "$backend"
+RUN bigchaindb -y configure
 
