@@ -80,9 +80,6 @@ config = {
     },
 }
 
-# List of processes spawned by BigchainDB
-BIGCHAINDB_PROCESSES = []
-
 # We need to maintain a backup copy of the original config dict in case
 # the user wants to reconfigure the node. Check ``bigchaindb.config_utils``
 # for more info.
