@@ -52,10 +52,11 @@ BigchainDB Server requires **Python 3.6+**, so make sure your system has it. Ins
 sudo apt install -y python3-pip libssl-dev
 ```
 
-Now install the latest version of BigchainDB. Check the [project page on PyPI][bdb:pypi] for the last version (which was `2.0.0a6` at the time of writing) and install it:
+Now install the latest version of BigchainDB. You can find the latest version by going to the [BigchainDB project release history page on PyPI][bdb:pypi]. For example, to install version 2.0.0b3, you would do:
 
 ```
-sudo pip3 install bigchaindb==2.0.0a6
+# Change 2.0.0b3 to the latest version as explained above:
+sudo pip3 install bigchaindb==2.0.0b3
 ```
 
 Check that you installed the correct version of BigchainDB Server using `bigchaindb --version`.
