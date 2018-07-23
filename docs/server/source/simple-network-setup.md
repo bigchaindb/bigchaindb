@@ -310,7 +310,7 @@ $ # OR
 $ pkill bigchaindb 
 ```
 
-If you started BigchainDB in the foreground, send a `Ctrl + C` or `Ctrl + Z` would shut down BigchainDB.
+If you started BigchainDB in the foreground, a `Ctrl + C` or `Ctrl + Z` would shut down BigchainDB.
 
 ## Member: Dynamically Add a New Member to the Network
 
