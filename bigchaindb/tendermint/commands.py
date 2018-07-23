@@ -1,7 +1,7 @@
-import bigchaindb
 import logging
 import setproctitle
 
+import bigchaindb
 from bigchaindb.tendermint.lib import BigchainDB
 from bigchaindb.tendermint.core import App
 from bigchaindb.web import server, websocket_server
