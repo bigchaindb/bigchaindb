@@ -31,7 +31,7 @@ def config(request, monkeypatch):
 
 @pytest.mark.skipif(reason='will be fixed in another PR')
 def test_bigchain_class_default_initialization(config):
-    from bigchaindb.tendermint import BigchainDB
+    from bigchaindb import BigchainDB
     from bigchaindb.consensus import BaseConsensusRules
     from bigchaindb.backend.connection import Connection
     bigchain = BigchainDB()
@@ -44,7 +44,7 @@ def test_bigchain_class_default_initialization(config):
 
 @pytest.mark.skipif(reason='will be fixed in another PR')
 def test_bigchain_class_initialization_with_parameters(config):
-    from bigchaindb.tendermint import BigchainDB
+    from bigchaindb import BigchainDB
     from bigchaindb.backend import connect
     from bigchaindb.consensus import BaseConsensusRules
     init_db_kwargs = {
@@ -65,7 +65,7 @@ def test_bigchain_class_initialization_with_parameters(config):
 @pytest.mark.skipif(reason='will be fixed in another PR')
 def test_get_blocks_status_containing_tx(monkeypatch):
     from bigchaindb.backend import query as backend_query
-    from bigchaindb.tendermint import BigchainDB
+    from bigchaindb import BigchainDB
     blocks = [
         {'id': 1}, {'id': 2}
     ]

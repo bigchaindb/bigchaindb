@@ -229,7 +229,7 @@ def test_get_spending_transactions(user_pk, user_sk):
 
 def test_store_block():
     from bigchaindb.backend import connect, query
-    from bigchaindb.tendermint.lib import Block
+    from bigchaindb.lib import Block
     conn = connect()
 
     block = Block(app_hash='random_utxo',
@@ -242,7 +242,7 @@ def test_store_block():
 
 def test_get_block():
     from bigchaindb.backend import connect, query
-    from bigchaindb.tendermint.lib import Block
+    from bigchaindb.lib import Block
     conn = connect()
 
     block = Block(app_hash='random_utxo',
@@ -345,7 +345,7 @@ def test_get_unspent_outputs(db_context, utxoset):
 
 def test_store_pre_commit_state(db_context):
     from bigchaindb.backend import query
-    from bigchaindb.tendermint.lib import PreCommitState
+    from bigchaindb.lib import PreCommitState
 
     state = PreCommitState(commit_id='test',
                            height=3,
@@ -359,7 +359,7 @@ def test_store_pre_commit_state(db_context):
 
 def test_get_pre_commit_state(db_context):
     from bigchaindb.backend import query
-    from bigchaindb.tendermint.lib import PreCommitState
+    from bigchaindb.lib import PreCommitState
 
     state = PreCommitState(commit_id='test2',
                            height=3,

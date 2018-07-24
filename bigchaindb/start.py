@@ -3,10 +3,10 @@ import logging
 import setproctitle
 
 import bigchaindb
-from bigchaindb.tendermint.lib import BigchainDB
-from bigchaindb.tendermint.core import App
+from bigchaindb.lib import BigchainDB
+from bigchaindb.core import App
 from bigchaindb.web import server, websocket_server
-from bigchaindb.tendermint import event_stream
+from bigchaindb import event_stream
 from bigchaindb.events import Exchange, EventTypes
 from bigchaindb.utils import Process
 

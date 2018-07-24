@@ -12,8 +12,8 @@ from io import BytesIO
 @pytest.mark.tendermint
 @pytest.mark.bdb
 def test_app(tb):
-    from bigchaindb.tendermint import App
-    from bigchaindb.tendermint.utils import calculate_hash
+    from bigchaindb import App
+    from bigchaindb.tendermint_utils import calculate_hash
     from bigchaindb.common.crypto import generate_key_pair
     from bigchaindb.models import Transaction
 
@@ -103,7 +103,7 @@ def test_upsert_validator(b, alice):
     from bigchaindb.backend.query import VALIDATOR_UPDATE_ID
     from bigchaindb.backend import query, connect
     from bigchaindb.models import Transaction
-    from bigchaindb.tendermint.utils import public_key_to_base64
+    from bigchaindb.tendermint_utils import public_key_to_base64
     import time
 
     conn = connect()

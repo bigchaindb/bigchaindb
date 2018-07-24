@@ -6,7 +6,7 @@ from abci.types_pb2 import (
     RequestEndBlock
 )
 
-from bigchaindb.tendermint.core import CodeTypeOk, CodeTypeError
+from bigchaindb.core import CodeTypeOk, CodeTypeError
 
 
 pytestmark = [pytest.mark.tendermint, pytest.mark.bdb]
@@ -17,7 +17,7 @@ def encode_tx_to_bytes(transaction):
 
 
 def test_check_tx__signed_create_is_ok(b):
-    from bigchaindb.tendermint import App
+    from bigchaindb import App
     from bigchaindb.models import Transaction
     from bigchaindb.common.crypto import generate_key_pair
 
@@ -34,7 +34,7 @@ def test_check_tx__signed_create_is_ok(b):
 
 
 def test_check_tx__unsigned_create_is_error(b):
-    from bigchaindb.tendermint import App
+    from bigchaindb import App
     from bigchaindb.models import Transaction
     from bigchaindb.common.crypto import generate_key_pair
 
@@ -51,7 +51,7 @@ def test_check_tx__unsigned_create_is_error(b):
 
 @pytest.mark.bdb
 def test_deliver_tx__valid_create_updates_db(b):
-    from bigchaindb.tendermint import App
+    from bigchaindb import App
     from bigchaindb.models import Transaction
     from bigchaindb.common.crypto import generate_key_pair
 
@@ -84,7 +84,7 @@ def test_deliver_tx__valid_create_updates_db(b):
 
 
 def test_deliver_tx__double_spend_fails(b):
-    from bigchaindb.tendermint import App
+    from bigchaindb import App
     from bigchaindb.models import Transaction
     from bigchaindb.common.crypto import generate_key_pair
 
@@ -113,7 +113,7 @@ def test_deliver_tx__double_spend_fails(b):
 
 
 def test_deliver_transfer_tx__double_spend_fails(b):
-    from bigchaindb.tendermint import App
+    from bigchaindb import App
     from bigchaindb.models import Transaction
     from bigchaindb.common.crypto import generate_key_pair
 
@@ -157,9 +157,9 @@ def test_deliver_transfer_tx__double_spend_fails(b):
 
 
 def test_end_block_return_validator_updates(b):
-    from bigchaindb.tendermint import App
+    from bigchaindb import App
     from bigchaindb.backend import query
-    from bigchaindb.tendermint.core import encode_validator
+    from bigchaindb.core import encode_validator
     from bigchaindb.backend.query import VALIDATOR_UPDATE_ID
 
     app = App(b)
@@ -183,7 +183,7 @@ def test_end_block_return_validator_updates(b):
 
 
 def test_store_pre_commit_state_in_end_block(b, alice):
-    from bigchaindb.tendermint import App
+    from bigchaindb import App
     from bigchaindb.backend import query
     from bigchaindb.models import Transaction
     from bigchaindb.backend.query import PRE_COMMIT_ID
