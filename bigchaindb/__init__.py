@@ -4,7 +4,7 @@ import logging
 from bigchaindb.log import DEFAULT_LOGGING_CONFIG as log_config
 from bigchaindb.lib import BigchainDB  # noqa
 from bigchaindb.version import __version__  # noqa
-from bigchaindb.core import App
+from bigchaindb.core import App  # noqa
 
 # from functools import reduce
 # PORT_NUMBER = reduce(lambda x, y: x * y, map(ord, 'BigchainDB')) % 2**16
