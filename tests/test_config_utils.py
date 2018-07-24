@@ -1,5 +1,4 @@
 import copy
-import logging
 from unittest.mock import mock_open, patch
 
 import pytest
@@ -10,13 +9,13 @@ import bigchaindb
 ORIGINAL_CONFIG = copy.deepcopy(bigchaindb._config)
 
 
+pytestmark = pytest.mark.tendermint
+
+
 @pytest.fixture(scope='function', autouse=True)
 def clean_config(monkeypatch, request):
-    import bigchaindb
     original_config = copy.deepcopy(ORIGINAL_CONFIG)
     backend = request.config.getoption('--database-backend')
-    if backend == 'mongodb-ssl':
-        backend = 'mongodb'
     original_config['database'] = bigchaindb._database_map[backend]
     monkeypatch.setattr('bigchaindb.config', original_config)
 
@@ -29,21 +28,6 @@ def test_bigchain_instance_is_initialized_when_conf_provided(request):
     config_utils.set_config({'database': {'backend': 'a'}})
 
     assert bigchaindb.config['CONFIGURED'] is True
-
-
-def test_bigchain_instance_raises_when_not_configured(request, monkeypatch):
-    import bigchaindb
-    from bigchaindb import config_utils
-    from bigchaindb.common import exceptions
-    from bigchaindb import BigchainDB
-    assert 'CONFIGURED' not in bigchaindb.config
-
-    # We need to disable ``bigchaindb.config_utils.autoconfigure`` to avoid reading
-    # from existing configurations
-    monkeypatch.setattr(config_utils, 'autoconfigure', lambda: 0)
-
-    with pytest.raises(exceptions.ConfigurationError):
-        BigchainDB()
 
 
 def test_load_consensus_plugin_loads_default_rules_without_name():
@@ -146,7 +130,7 @@ def test_env_config(monkeypatch):
     assert result == expected
 
 
-def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request, ssl_context):
+def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request):
     # constants
     DATABASE_HOST = 'test-host'
     DATABASE_NAME = 'test-dbname'
@@ -159,7 +143,6 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request, ssl_con
     WSSERVER_ADVERTISED_SCHEME = 'wss'
     WSSERVER_ADVERTISED_HOST = 'a.b.c.d'
     WSSERVER_ADVERTISED_PORT = 89
-    KEYRING = 'pubkey_0:pubkey_1:pubkey_2'
     LOG_FILE = '/somewhere/something.log'
 
     file_config = {
@@ -171,93 +154,57 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request, ssl_con
         },
     }
 
-    monkeypatch.setattr('bigchaindb.config_utils.file_config', lambda *args, **kwargs: file_config)
+    monkeypatch.setattr('bigchaindb.config_utils.file_config',
+                        lambda *args, **kwargs: file_config)
 
-    if DATABASE_BACKEND == 'mongodb-ssl':
-        monkeypatch.setattr('os.environ', {'BIGCHAINDB_DATABASE_NAME': DATABASE_NAME,
-                                           'BIGCHAINDB_DATABASE_PORT': str(DATABASE_PORT),
-                                           'BIGCHAINDB_DATABASE_BACKEND': 'mongodb',
-                                           'BIGCHAINDB_SERVER_BIND': SERVER_BIND,
-                                           'BIGCHAINDB_WSSERVER_SCHEME': WSSERVER_SCHEME,
-                                           'BIGCHAINDB_WSSERVER_HOST': WSSERVER_HOST,
-                                           'BIGCHAINDB_WSSERVER_PORT': WSSERVER_PORT,
-                                           'BIGCHAINDB_WSSERVER_ADVERTISED_SCHEME': WSSERVER_ADVERTISED_SCHEME,
-                                           'BIGCHAINDB_WSSERVER_ADVERTISED_HOST': WSSERVER_ADVERTISED_HOST,
-                                           'BIGCHAINDB_WSSERVER_ADVERTISED_PORT': WSSERVER_ADVERTISED_PORT,
-                                           'BIGCHAINDB_KEYRING': KEYRING,
-                                           'BIGCHAINDB_LOG_FILE': LOG_FILE,
-                                           'BIGCHAINDB_DATABASE_CA_CERT': ssl_context.ca,
-                                           'BIGCHAINDB_DATABASE_CRLFILE': ssl_context.crl,
-                                           'BIGCHAINDB_DATABASE_CERTFILE': ssl_context.cert,
-                                           'BIGCHAINDB_DATABASE_KEYFILE': ssl_context.key,
-                                           'BIGCHAINDB_DATABASE_KEYFILE_PASSPHRASE': None})
-    else:
-        monkeypatch.setattr('os.environ', {'BIGCHAINDB_DATABASE_NAME': DATABASE_NAME,
-                                           'BIGCHAINDB_DATABASE_PORT': str(DATABASE_PORT),
-                                           'BIGCHAINDB_DATABASE_BACKEND': DATABASE_BACKEND,
-                                           'BIGCHAINDB_SERVER_BIND': SERVER_BIND,
-                                           'BIGCHAINDB_WSSERVER_SCHEME': WSSERVER_SCHEME,
-                                           'BIGCHAINDB_WSSERVER_HOST': WSSERVER_HOST,
-                                           'BIGCHAINDB_WSSERVER_PORT': WSSERVER_PORT,
-                                           'BIGCHAINDB_WSSERVER_ADVERTISED_SCHEME': WSSERVER_ADVERTISED_SCHEME,
-                                           'BIGCHAINDB_WSSERVER_ADVERTISED_HOST': WSSERVER_ADVERTISED_HOST,
-                                           'BIGCHAINDB_WSSERVER_ADVERTISED_PORT': WSSERVER_ADVERTISED_PORT,
-                                           'BIGCHAINDB_KEYRING': KEYRING,
-                                           'BIGCHAINDB_LOG_FILE': LOG_FILE})
+    monkeypatch.setattr('os.environ', {
+        'BIGCHAINDB_DATABASE_NAME': DATABASE_NAME,
+        'BIGCHAINDB_DATABASE_PORT': str(DATABASE_PORT),
+        'BIGCHAINDB_DATABASE_BACKEND': DATABASE_BACKEND,
+        'BIGCHAINDB_SERVER_BIND': SERVER_BIND,
+        'BIGCHAINDB_WSSERVER_SCHEME': WSSERVER_SCHEME,
+        'BIGCHAINDB_WSSERVER_HOST': WSSERVER_HOST,
+        'BIGCHAINDB_WSSERVER_PORT': WSSERVER_PORT,
+        'BIGCHAINDB_WSSERVER_ADVERTISED_SCHEME': WSSERVER_ADVERTISED_SCHEME,
+        'BIGCHAINDB_WSSERVER_ADVERTISED_HOST': WSSERVER_ADVERTISED_HOST,
+        'BIGCHAINDB_WSSERVER_ADVERTISED_PORT': WSSERVER_ADVERTISED_PORT,
+        'BIGCHAINDB_LOG_FILE': LOG_FILE,
+        'BIGCHAINDB_LOG_FILE': LOG_FILE,
+        'BIGCHAINDB_DATABASE_CA_CERT': 'ca_cert',
+        'BIGCHAINDB_DATABASE_CRLFILE': 'crlfile',
+        'BIGCHAINDB_DATABASE_CERTFILE': 'certfile',
+        'BIGCHAINDB_DATABASE_KEYFILE': 'keyfile',
+        'BIGCHAINDB_DATABASE_KEYFILE_PASSPHRASE': 'passphrase',
+    })
 
     import bigchaindb
     from bigchaindb import config_utils
-    from bigchaindb.log.configs import SUBSCRIBER_LOGGING_CONFIG as log_config
+    from bigchaindb.log import DEFAULT_LOGGING_CONFIG as log_config
     config_utils.autoconfigure()
 
     database_mongodb = {
-        'backend': 'mongodb',
+        'backend': 'localmongodb',
         'host': DATABASE_HOST,
         'port': DATABASE_PORT,
         'name': DATABASE_NAME,
         'connection_timeout': 5000,
         'max_tries': 3,
-        'replicaset': 'bigchain-rs',
+        'replicaset': None,
         'ssl': False,
         'login': None,
         'password': None,
-        'ca_cert': None,
-        'certfile': None,
-        'keyfile': None,
-        'keyfile_passphrase': None,
-        'crlfile': None
+        'ca_cert': 'ca_cert',
+        'certfile': 'certfile',
+        'keyfile': 'keyfile',
+        'keyfile_passphrase': 'passphrase',
+        'crlfile': 'crlfile',
     }
-
-    database_mongodb_ssl = {
-        'backend': 'mongodb',
-        'host': DATABASE_HOST,
-        'port': DATABASE_PORT,
-        'name': DATABASE_NAME,
-        'connection_timeout': 5000,
-        'max_tries': 3,
-        'replicaset': 'bigchain-rs',
-        'ssl': True,
-        'login': None,
-        'password': None,
-        'ca_cert': ssl_context.ca,
-        'crlfile': ssl_context.crl,
-        'certfile': ssl_context.cert,
-        'keyfile': ssl_context.key,
-        'keyfile_passphrase': None
-    }
-
-    database = {}
-    if DATABASE_BACKEND == 'mongodb':
-        database = database_mongodb
-    elif DATABASE_BACKEND == 'mongodb-ssl':
-        database = database_mongodb_ssl
 
     assert bigchaindb.config == {
         'CONFIGURED': True,
         'server': {
             'bind': SERVER_BIND,
-            'loglevel': logging.getLevelName(
-                log_config['handlers']['console']['level']).lower(),
+            'loglevel': 'info',
             'workers': None,
         },
         'wsserver': {
@@ -268,23 +215,22 @@ def test_autoconfigure_read_both_from_file_and_env(monkeypatch, request, ssl_con
             'advertised_host': WSSERVER_ADVERTISED_HOST,
             'advertised_port': WSSERVER_ADVERTISED_PORT,
         },
-        'database': database,
+        'database': database_mongodb,
         'tendermint': {
-            'host': None,
-            'port': None,
+            'host': 'localhost',
+            'port': 26657,
         },
         'log': {
             'file': LOG_FILE,
+            'level_console': 'debug',
             'error_file': log_config['handlers']['errors']['filename'],
             'level_console': 'debug',
-            'level_logfile': logging.getLevelName(
-                log_config['handlers']['file']['level']).lower(),
+            'level_logfile': 'info',
             'datefmt_console': log_config['formatters']['console']['datefmt'],
             'datefmt_logfile': log_config['formatters']['file']['datefmt'],
             'fmt_console': log_config['formatters']['console']['format'],
             'fmt_logfile': log_config['formatters']['file']['format'],
             'granular_levels': {},
-            'port': 9020
         },
     }
 
@@ -379,20 +325,5 @@ def test_database_envs(env_name, env_value, config_key, monkeypatch):
 
     expected_config = copy.deepcopy(bigchaindb.config)
     expected_config['database'][config_key] = env_value
-
-    assert bigchaindb.config == expected_config
-
-
-def test_database_envs_replicaset(monkeypatch):
-    # the replica set env is only used if the backend is mongodb
-    import bigchaindb
-
-    monkeypatch.setattr('os.environ', {'BIGCHAINDB_DATABASE_REPLICASET':
-                                       'test-replicaset'})
-    bigchaindb.config['database'] = bigchaindb._database_mongodb
-    bigchaindb.config_utils.autoconfigure()
-
-    expected_config = copy.deepcopy(bigchaindb.config)
-    expected_config['database']['replicaset'] = 'test-replicaset'
 
     assert bigchaindb.config == expected_config
