@@ -1,7 +1,7 @@
 import pytest
 
 from bigchaindb.models import Transaction
-from bigchaindb.tendermint.lib import Block
+from bigchaindb.lib import Block
 
 BLOCKS_ENDPOINT = '/api/v1/blocks/'
 
