@@ -1,4 +1,4 @@
-from bigchaindb.common.exceptions import (InvalidSignature,
+from bigchaindb.common.exceptions import (InvalidSignature, MultipleInputsError,
                                           DuplicateTransaction)
 from bigchaindb.tendermint.utils import key_from_base64
 from bigchaindb.common.crypto import (public_key_from_ed25519_key)
@@ -67,7 +67,7 @@ class ValidatorElection(Transaction):
 
         # Check whether the voters and their votes is same to that of the
         # validators and their voting power in the network
-        return (current_topology.items() == voters.items())
+        return (current_topology == voters)
 
     def validate(self, bigchain, current_transactions=[]):
         """Validate election transaction
@@ -91,7 +91,7 @@ class ValidatorElection(Transaction):
         input_conditions = []
 
         duplicates = any(txn for txn in current_transactions if txn.id == self.id)
-        if bigchain.get_transaction(self.to_dict()['id'], cls=ValidatorElection) or duplicates:
+        if bigchain.get_transaction(self.id, cls=ValidatorElection) or duplicates:
             raise DuplicateTransaction('transaction `{}` already exists'
                                        .format(self.id))
 
@@ -102,7 +102,11 @@ class ValidatorElection(Transaction):
 
         # NOTE: Proposer should be a single node
         if len(self.inputs) != 1:
-            return False
+            raise MultipleInputsError('`tx_signers` must be a list instance of length one')
+
+        # NOTE: change more than 1/3 of the current power is not allowed
+        if self.asset['data']['power'] >= (1/3)*sum(current_validators.values()):
+            raise ValueError('`power` must be less than 1/3 of total power')
 
         # NOTE: Check if the proposer is a validator.
         [election_initiator_node_pub_key] = self.inputs[0].owners_before
@@ -121,14 +125,9 @@ class ValidatorElection(Transaction):
     @classmethod
     def from_dict(cls, tx):
         cls.validate_id(tx)
-
-        # The schema validation will ensure that the asset has been properly defined
+        # NOTE: The schema validation will ensure that the asset has been properly defined
         cls.validate_schema(tx)
-
-        inputs = [Input.from_dict(input_) for input_ in tx['inputs']]
-        outputs = [Output.from_dict(output) for output in tx['outputs']]
-        return cls(cls.VALIDATOR_ELECTION, tx['asset'], inputs, outputs, tx['metadata'],
-                   tx['version'], hash_id=tx['id'])
+        return super().from_dict(tx)
 
     @classmethod
     def validate_schema(cls, tx):

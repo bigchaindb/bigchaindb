@@ -3,7 +3,6 @@ import pytest
 
 @pytest.fixture
 def b_mock(b, network_validators):
-    b.write_transaction = mock_write_transaction
     b.get_validators = mock_get_validators(network_validators)
 
     return b
@@ -18,10 +17,6 @@ def new_validator():
     return {'public_key': public_key,
             'power': power,
             'node_id': node_id}
-
-
-def mock_write_transaction(tx):
-    return (202, '')
 
 
 def mock_get_validators(network_validators):

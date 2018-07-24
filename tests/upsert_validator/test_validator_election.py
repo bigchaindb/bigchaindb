@@ -14,19 +14,33 @@ def test_upsert_validator_valid_election(b_mock, new_validator, node_key):
     assert election.validate(b_mock)
 
 
+def test_upsert_validator_invalid_power_election(b_mock, new_validator, node_key):
+    voters = ValidatorElection.recipients(b_mock)
+    new_validator['power'] = 30
+
+    election = ValidatorElection.generate([node_key.public_key],
+                                          voters,
+                                          new_validator, None).sign([node_key.private_key])
+    with pytest.raises(ValueError):
+        election.validate(b_mock)
+
+
 def test_upsert_validator_invalid_election(b_mock, new_validator, node_key):
     voters = ValidatorElection.recipients(b_mock)
     valid_election = ValidatorElection.generate([node_key.public_key],
                                                 voters,
                                                 new_validator, None).sign([node_key.private_key])
+    duplicate_election = ValidatorElection.generate([node_key.public_key],
+                                                    voters,
+                                                    new_validator, None).sign([node_key.private_key])
 
     with pytest.raises(DuplicateTransaction):
-        valid_election.validate(b_mock, [valid_election])
+        valid_election.validate(b_mock, [duplicate_election])
 
     b_mock.store_bulk_transactions([valid_election])
 
     with pytest.raises(DuplicateTransaction):
-        valid_election.validate(b_mock, [valid_election])
+        duplicate_election.validate(b_mock)
 
     # Try creating an election with incomplete voter set
     invalid_election = ValidatorElection.generate([node_key.public_key],

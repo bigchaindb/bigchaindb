@@ -102,3 +102,7 @@ class GenesisBlockAlreadyExistsError(ValidationError):
 
 class MultipleValidatorOperationError(ValidationError):
     """Raised when a validator update pending but new request is submited"""
+
+
+class MultipleInputsError(BigchainDBError):
+    """Raised if there were multiple inputs when only one was expected"""
