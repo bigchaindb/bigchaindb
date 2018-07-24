@@ -273,20 +273,6 @@ $ ps -ef | grep bigchaindb
 <user>     <pid> <ppid>   <C> <STIME> <tty>        <time> gunicorn: worker [bigchaindb_gunicorn]
 <user>     <pid> <ppid>   <C> <STIME> <tty>        <time> gunicorn: worker [bigchaindb_gunicorn]
 ...
-$ # OR
-$ pstree -p -h 
-...
-           ├─bigchaindb(pid)*─┬─bigchaindb_exch(pid)───{bigchaindb_exch}(pid)
-           │                   ├─bigchaindb_ws(pid)───{bigchaindb_ws}(pid)
-           │                   ├─bigchaindb_ws_t(pid)
-           │                   ├─gunicorn: maste(pid)─┬─gunicorn: worke(pid)
-           │                   │                        ├─gunicorn: worke(pid)
-           │                   │                        ├─gunicorn: worke(pid)
-           │                   │                        ├─gunicorn: worke(pid)
-           │                   │                        └─gunicorn: worke(pid)
-           │                   ├─{bigchaindb}(pid)
-           │                   └─{bigchaindb}(pid)
-...
 
 $ # Send any of the above mentioned signals to the parent/root process(marked with `*` for clarity)
 # Sending SIGINT
@@ -304,10 +290,6 @@ $ kill -3 <bigchaindb_parent_pid>
 
 # If you want to kill all the processes by name yourself
 $ pgrep bigchaindb | xargs kill -9
-
-$ # OR
-
-$ pkill bigchaindb 
 ```
 
 If you started BigchainDB in the foreground, a `Ctrl + C` or `Ctrl + Z` would shut down BigchainDB.
