@@ -16,13 +16,12 @@ except ImportError:
 import requests
 
 import bigchaindb
-from bigchaindb import backend, config_utils
+from bigchaindb import backend, config_utils, fastquery
 from bigchaindb.models import Transaction
 from bigchaindb.common.exceptions import (SchemaValidationError,
                                           ValidationError,
                                           DoubleSpend)
-from bigchaindb.tendermint.utils import encode_transaction, merkleroot
-from bigchaindb.tendermint import fastquery
+from bigchaindb.tendermint_utils import encode_transaction, merkleroot
 from bigchaindb import exceptions as core_exceptions
 from bigchaindb.consensus import BaseConsensusRules
 
@@ -254,10 +253,10 @@ class BigchainDB(object):
 
     def get_transaction(self, transaction_id, include_status=False, cls=Transaction):
         transaction = backend.query.get_transaction(self.connection, transaction_id)
-        asset = backend.query.get_asset(self.connection, transaction_id)
-        metadata = backend.query.get_metadata(self.connection, [transaction_id])
 
         if transaction:
+            asset = backend.query.get_asset(self.connection, transaction_id)
+            metadata = backend.query.get_metadata(self.connection, [transaction_id])
             if asset:
                 transaction['asset'] = asset
 

@@ -15,7 +15,7 @@ class Transaction(Transaction):
         """Validate transaction spend
 
         Args:
-            bigchain (BigchainDB): an instantiated bigchaindb.tendermint.BigchainDB object.
+            bigchain (BigchainDB): an instantiated bigchaindb.BigchainDB object.
 
         Returns:
             The transaction (Transaction) if the transaction is valid else it

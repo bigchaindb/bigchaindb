@@ -1,6 +1,6 @@
 from bigchaindb.common.exceptions import (InvalidSignature, MultipleInputsError,
                                           DuplicateTransaction)
-from bigchaindb.tendermint.utils import key_from_base64
+from bigchaindb.tendermint_utils import key_from_base64
 from bigchaindb.common.crypto import (public_key_from_ed25519_key)
 from bigchaindb.common.transaction import Transaction
 from bigchaindb.common.schema import (_load_schema,

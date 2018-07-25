@@ -52,10 +52,11 @@ BigchainDB Server requires **Python 3.6+**, so make sure your system has it. Ins
 sudo apt install -y python3-pip libssl-dev
 ```
 
-Now install the latest version of BigchainDB. Check the [project page on PyPI][bdb:pypi] for the last version (which was `2.0.0a6` at the time of writing) and install it:
+Now install the latest version of BigchainDB. You can find the latest version by going to the [BigchainDB project release history page on PyPI][bdb:pypi]. For example, to install version 2.0.0b3, you would do:
 
 ```
-sudo pip3 install bigchaindb==2.0.0a6
+# Change 2.0.0b3 to the latest version as explained above:
+sudo pip3 install bigchaindb==2.0.0b3
 ```
 
 Check that you installed the correct version of BigchainDB Server using `bigchaindb --version`.
@@ -242,6 +243,19 @@ If you followed the recommended approach and created startup scripts for Bigchai
 ## How Others Can Access Your Node
 
 If you followed the above instructions, then your node should be publicly-accessible with BigchainDB Root URL `http://hostname:9984` (where hostname is something like `bdb7.canada.vmsareus.net` or `17.122.200.76`). That is, anyone can interact with your node using the [BigchainDB HTTP API](http-client-server-api.html) exposed at that address. The most common way to do that is to use one of the [BigchainDB Drivers](./drivers-clients/index.html).
+
+## Troubleshooting
+
+To check which nodes your node is connected to (via Tendermint protocols), do:
+
+```text
+# if you don't jq installed, then install it
+sudo apt install jq
+# then do
+curl -s localhost:26657/net_info | jq ".result.peers[].node_info | {id, listen_addr, moniker}"
+```
+
+Tendermint has other endpoints besides `/net_info`: see [the Tendermint RPC docs](https://tendermint.github.io/slate/?shell#introduction).
 
 ## Refreshing Your Node
 
