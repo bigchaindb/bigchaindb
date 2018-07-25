@@ -131,3 +131,11 @@ class ValidatorElection(Transaction):
         _validate_schema(TX_SCHEMA_COMMON, tx)
         _validate_schema(TX_SCHEMA_CREATE, tx)
         _validate_schema(TX_SCHEMA_VALIDATOR_ELECTION, tx)
+
+    @classmethod
+    def create(cls, tx_signers, recipients, metadata=None, asset=None):
+        raise NotImplementedError
+
+    @classmethod
+    def transfer(cls, tx_signers, recipients, metadata=None, asset=None):
+        raise NotImplementedError

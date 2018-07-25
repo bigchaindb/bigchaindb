@@ -1236,7 +1236,9 @@ class Transaction(object):
     def resolve_class(operation):
         """For the given `tx` based on the `operation` key return its implementation class"""
 
-        if operation in list(Transaction.type_registry.keys()):
-            return Transaction.type_registry.get(operation)
-        else:
-            return Transaction.type_registry.get(Transaction.CREATE)
+        create_txn_class = Transaction.type_registry.get(Transaction.CREATE)
+        return Transaction.type_registry.get(operation, create_txn_class)
+
+    @classmethod
+    def validate_schema(cls, tx):
+        pass
