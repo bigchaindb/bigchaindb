@@ -274,7 +274,7 @@ def test_calling_main(start_mock, base_parser_mock, parse_args_mock,
 
 @patch('bigchaindb.config_utils.autoconfigure')
 @patch('bigchaindb.commands.bigchaindb.run_recover')
-@patch('bigchaindb.tendermint.commands.start')
+@patch('bigchaindb.start.start')
 def test_recover_db_on_start(mock_autoconfigure,
                              mock_run_recover,
                              mock_start,
