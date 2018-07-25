@@ -10,7 +10,6 @@ Appendices
    the-bigchaindb-class
    backend
    commands
-   tendermint-integration
    aws-setup
    generate-key-pair-for-ssh
    firewall-notes

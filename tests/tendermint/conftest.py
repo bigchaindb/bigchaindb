@@ -3,7 +3,7 @@ import pytest
 
 @pytest.fixture
 def b():
-    from bigchaindb.tendermint import BigchainDB
+    from bigchaindb import BigchainDB
     return BigchainDB()
 
 

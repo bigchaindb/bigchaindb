@@ -17,7 +17,7 @@ from pymongo import MongoClient
 
 from bigchaindb.common import crypto
 from bigchaindb.log import setup_logging
-from bigchaindb.tendermint.lib import Block
+from bigchaindb.lib import Block
 
 TEST_DB_NAME = 'bigchain_test'
 
@@ -269,13 +269,13 @@ def merlin_pubkey(merlin):
 
 @pytest.fixture
 def b():
-    from bigchaindb.tendermint import BigchainDB
+    from bigchaindb import BigchainDB
     return BigchainDB()
 
 
 @pytest.fixture
 def tb():
-    from bigchaindb.tendermint import BigchainDB
+    from bigchaindb import BigchainDB
     return BigchainDB()
 
 
@@ -514,7 +514,7 @@ def event_loop(request):
 @pytest.fixture(scope='session')
 def abci_server():
     from abci import ABCIServer
-    from bigchaindb.tendermint.core import App
+    from bigchaindb.core import App
     from bigchaindb.utils import Process
 
     app = ABCIServer(app=App())
