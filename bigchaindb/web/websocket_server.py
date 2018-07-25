@@ -16,6 +16,7 @@ import asyncio
 import logging
 import threading
 from uuid import uuid4
+from concurrent.futures import CancelledError
 
 import aiohttp
 from aiohttp import web
@@ -124,6 +125,9 @@ def websocket_handler(request):
             msg = yield from websocket.receive()
         except RuntimeError as e:
             logger.debug('Websocket exception: %s', str(e))
+            break
+        except CancelledError as e:
+            logger.debug('Websocket closed')
             break
         if msg.type == aiohttp.WSMsgType.CLOSED:
             logger.debug('Websocket closed')
