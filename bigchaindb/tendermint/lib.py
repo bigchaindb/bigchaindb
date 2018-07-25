@@ -254,10 +254,10 @@ class BigchainDB(object):
 
     def get_transaction(self, transaction_id, include_status=False):
         transaction = backend.query.get_transaction(self.connection, transaction_id)
-        asset = backend.query.get_asset(self.connection, transaction_id)
-        metadata = backend.query.get_metadata(self.connection, [transaction_id])
 
         if transaction:
+            asset = backend.query.get_asset(self.connection, transaction_id)
+            metadata = backend.query.get_metadata(self.connection, [transaction_id])
             if asset:
                 transaction['asset'] = asset
 

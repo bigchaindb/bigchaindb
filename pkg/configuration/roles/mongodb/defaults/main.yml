@@ -8,7 +8,8 @@ distribution_major: "{{ ansible_distribution_major_version }}"
 server_arch: "amd64,arm64"
 
 # MongoDB Repos
-mongodb_apt_repo: "deb [arch={{ server_arch }}] http://repo.mongodb.org/apt/{{ distribution_name }} {{ distribution_codename }}/{{ mongodb_package }}/{{ mongo_version }} {{'main' if ansible_distribution == 'debian' else 'multiverse'}}"
+mongodb_apt_repo: "deb [arch={{ server_arch }}] http://repo.mongodb.org/apt/{{ distribution_name }} {{ distribution_codename }}/{{ mongodb_package }}/{{ mongo_version }} multiverse"
+mongodb_deb_repo: "deb http://repo.mongodb.org/apt/{{ distribution_name }} {{ distribution_codename }}/{{ mongodb_package }}/{{ mongo_version }} main"
 mongodb_yum_base_url: "https://repo.mongodb.org/yum/{{ ansible_os_family|lower }}/$releasever/{{ mongodb_package }}/{{ mongo_version }}/{{ ansible_architecture }}"
 mongodb_dnf_base_url: "https://repo.mongodb.org/yum/{{ ansible_os_family|lower }}/7/{{ mongodb_package }}/{{ mongo_version }}/{{ ansible_architecture }}"
 
