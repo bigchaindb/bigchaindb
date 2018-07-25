@@ -47,7 +47,7 @@ def test_asset_is_separated_from_transaciton(b):
 
 @pytest.mark.bdb
 def test_get_latest_block(tb):
-    from bigchaindb.tendermint.lib import Block
+    from bigchaindb.lib import Block
 
     b = tb
     for i in range(10):
@@ -63,7 +63,7 @@ def test_get_latest_block(tb):
 
 @pytest.mark.bdb
 @patch('bigchaindb.backend.query.get_block', return_value=None)
-@patch('bigchaindb.tendermint.lib.BigchainDB.get_latest_block', return_value={'height': 10})
+@patch('bigchaindb.BigchainDB.get_latest_block', return_value={'height': 10})
 def test_get_empty_block(_0, _1, tb):
     assert tb.get_block(5) == {'height': 5, 'transactions': []}
 
@@ -86,7 +86,7 @@ def test_validation_error(b):
 def test_write_and_post_transaction(mock_post, b):
     from bigchaindb.models import Transaction
     from bigchaindb.common.crypto import generate_key_pair
-    from bigchaindb.tendermint.utils import encode_transaction
+    from bigchaindb.tendermint_utils import encode_transaction
 
     alice = generate_key_pair()
     tx = Transaction.create([alice.public_key],

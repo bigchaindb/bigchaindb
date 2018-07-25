@@ -35,7 +35,7 @@ def test_bigchain_instance_raises_when_not_configured(request, monkeypatch):
     import bigchaindb
     from bigchaindb import config_utils
     from bigchaindb.common import exceptions
-    from bigchaindb.tendermint import BigchainDB
+    from bigchaindb import BigchainDB
     assert 'CONFIGURED' not in bigchaindb.config
 
     # We need to disable ``bigchaindb.config_utils.autoconfigure`` to avoid reading
