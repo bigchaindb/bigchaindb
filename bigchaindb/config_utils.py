@@ -99,6 +99,7 @@ def file_config(filename=None):
     if filename is None:
         filename = CONFIG_DEFAULT_PATH
 
+    logger.error(filename)
     logger.debug('file_config() will try to open `{}`'.format(filename))
     with open(filename) as f:
         try:
@@ -108,7 +109,7 @@ def file_config(filename=None):
                 'Failed to parse the JSON configuration from `{}`, {}'.format(filename, err)
             )
 
-    logger.info('Configuration loaded from `{}`'.format(filename))
+        logger.info('Configuration loaded from `{}`'.format(filename))
 
     return config
 
