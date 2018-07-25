@@ -251,7 +251,7 @@ class BigchainDB(object):
             return backend.query.delete_unspent_outputs(
                                         self.connection, *unspent_outputs)
 
-    def get_transaction(self, transaction_id, include_status=False, cls=Transaction):
+    def get_transaction(self, transaction_id, include_status=False):
         transaction = backend.query.get_transaction(self.connection, transaction_id)
 
         if transaction:
@@ -267,7 +267,7 @@ class BigchainDB(object):
 
                 transaction.update({'metadata': metadata})
 
-            transaction = cls.from_dict(transaction)
+            transaction = Transaction.from_dict(transaction)
 
         if include_status:
             return transaction, self.TX_VALID if transaction else None
