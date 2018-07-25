@@ -104,5 +104,5 @@ class MultipleValidatorOperationError(ValidationError):
     """Raised when a validator update pending but new request is submited"""
 
 
-class MultipleInputsError(BigchainDBError):
+class MultipleInputsError(ValidationError):
     """Raised if there were multiple inputs when only one was expected"""

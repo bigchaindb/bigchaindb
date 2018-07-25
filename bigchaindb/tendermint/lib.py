@@ -18,7 +18,6 @@ import requests
 import bigchaindb
 from bigchaindb import backend, config_utils
 from bigchaindb.models import Transaction
-from bigchaindb.validation_plugins import operation_class
 from bigchaindb.common.exceptions import (SchemaValidationError,
                                           ValidationError,
                                           DoubleSpend)
@@ -327,7 +326,7 @@ class BigchainDB(object):
         if len(transactions) + len(current_spent_transactions) > 1:
             raise DoubleSpend('tx "{}" spends inputs twice'.format(txid))
         elif transactions:
-            transaction = operation_class(transactions[0]).from_db(self, transactions[0])
+            transaction = Transaction.from_db(self, transactions[0])
         elif current_spent_transactions:
             transaction = current_spent_transactions[0]
 
@@ -365,8 +364,7 @@ class BigchainDB(object):
 
         if block:
             transactions = backend.query.get_transactions(self.connection, block['transactions'])
-            cls = operation_class(transactions[0])
-            result['transactions'] = [t.to_dict() for t in cls.from_db(self, transactions)]
+            result['transactions'] = [t.to_dict() for t in Transaction.from_db(self, transactions)]
 
         return result
 
@@ -396,7 +394,7 @@ class BigchainDB(object):
         # throught the code base.
         if isinstance(transaction, dict):
             try:
-                transaction = operation_class(tx).from_dict(tx)
+                transaction = Transaction.from_dict(tx)
             except SchemaValidationError as e:
                 logger.warning('Invalid transaction schema: %s', e.__cause__.message)
                 return False

@@ -10,6 +10,7 @@ from bigchaindb.backend.schema import validate_language_key
 
 
 class Transaction(Transaction):
+
     def validate(self, bigchain, current_transactions=[]):
         """Validate transaction spend
 
@@ -94,12 +95,15 @@ class Transaction(Transaction):
 
     @classmethod
     def from_dict(cls, tx_body):
-        super().validate_id(tx_body)
+        return super().from_dict(tx_body, False)
+
+    @classmethod
+    def validate_schema(cls, tx_body):
+        cls.validate_id(tx_body)
         validate_transaction_schema(tx_body)
         validate_txn_obj('asset', tx_body['asset'], 'data', validate_key)
         validate_txn_obj('metadata', tx_body, 'metadata', validate_key)
         validate_language_key(tx_body['asset'], 'data')
-        return super().from_dict(tx_body)
 
 
 class FastTransaction:

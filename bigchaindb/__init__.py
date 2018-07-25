@@ -86,3 +86,11 @@ config = {
 _config = copy.deepcopy(config)
 from bigchaindb.tendermint import BigchainDB  # noqa
 from bigchaindb.version import __version__  # noqa
+from bigchaindb.common.transaction import Transaction  # noqa
+from bigchaindb import models                          # noqa
+from bigchaindb.upsert_validator import ValidatorElection  # noqa
+
+
+Transaction.register_type(Transaction.CREATE, models.Transaction)
+Transaction.register_type(Transaction.TRANSFER, models.Transaction)
+Transaction.register_type(ValidatorElection.VALIDATOR_ELECTION, ValidatorElection)

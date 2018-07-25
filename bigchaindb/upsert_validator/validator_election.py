@@ -2,7 +2,7 @@ from bigchaindb.common.exceptions import (InvalidSignature, MultipleInputsError,
                                           DuplicateTransaction)
 from bigchaindb.tendermint.utils import key_from_base64
 from bigchaindb.common.crypto import (public_key_from_ed25519_key)
-from bigchaindb.common.transaction import Transaction, Input, Output
+from bigchaindb.common.transaction import Transaction
 from bigchaindb.common.schema import (_load_schema,
                                       _validate_schema,
                                       TX_SCHEMA_VERSION,
@@ -22,13 +22,11 @@ class ValidatorElection(Transaction):
     CREATE = VALIDATOR_ELECTION
     ALLOWED_OPERATIONS = (VALIDATOR_ELECTION,)
 
-    def __init__(self, operation, asset, inputs=None, outputs=None,
+    def __init__(self, operation, asset, inputs, outputs,
                  metadata=None, version=None, hash_id=None):
         # operation `CREATE` is being passed as argument as `VALIDATOR_ELECTION` is an extension
         # of `CREATE` and any validation on `CREATE` in the parent class should apply to it
         super().__init__(operation, asset, inputs, outputs, metadata, version, hash_id)
-
-        self.operation = self.VALIDATOR_ELECTION
 
     @classmethod
     def current_validators(cls, bigchain):
@@ -118,22 +116,18 @@ class ValidatorElection(Transaction):
 
     @classmethod
     def generate(cls, initiator, voters, election_data, metadata=None):
-        election = cls.create(initiator, voters, metadata, asset=election_data)
-        cls.validate_schema(election.to_dict())
+        (inputs, outputs) = cls.validate_create(initiator, voters, election_data, metadata)
+        election = cls(cls.VALIDATOR_ELECTION, {'data': election_data}, inputs, outputs, metadata)
+        cls.validate_schema(election.to_dict(), skip_id=True)
         return election
 
     @classmethod
-    def from_dict(cls, tx):
-        cls.validate_id(tx)
-        # NOTE: The schema validation will ensure that the asset has been properly defined
-        cls.validate_schema(tx)
-        return super().from_dict(tx)
-
-    @classmethod
-    def validate_schema(cls, tx):
+    def validate_schema(cls, tx, skip_id=False):
         """Validate the validator election transaction. Since `VALIDATOR_ELECTION` extends `CREATE`
            transaction, all the validations for `CREATE` transaction should be inherited
         """
+        if not skip_id:
+            cls.validate_id(tx)
         _validate_schema(TX_SCHEMA_COMMON, tx)
         _validate_schema(TX_SCHEMA_CREATE, tx)
         _validate_schema(TX_SCHEMA_VALIDATOR_ELECTION, tx)

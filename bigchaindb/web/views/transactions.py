@@ -10,7 +10,8 @@ from flask_restful import Resource, reqparse
 from bigchaindb.common.exceptions import SchemaValidationError, ValidationError
 from bigchaindb.web.views.base import make_error
 from bigchaindb.web.views import parameters
-from bigchaindb.validation_plugins import operation_class
+from bigchaindb.common.transaction import Transaction
+
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +69,7 @@ class TransactionListApi(Resource):
         tx = request.get_json(force=True)
 
         try:
-            tx_obj = operation_class(tx).from_dict(tx)
+            tx_obj = Transaction.from_dict(tx)
         except SchemaValidationError as e:
             return make_error(
                 400,

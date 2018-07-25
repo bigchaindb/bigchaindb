@@ -586,6 +586,38 @@ class Transaction(object):
         self._id = hash_data(self.serialized)
 
     @classmethod
+    def validate_create(cls, tx_signers, recipients, asset, metadata):
+        if not isinstance(tx_signers, list):
+            raise TypeError('`tx_signers` must be a list instance')
+        if not isinstance(recipients, list):
+            raise TypeError('`recipients` must be a list instance')
+        if len(tx_signers) == 0:
+            raise ValueError('`tx_signers` list cannot be empty')
+        if len(recipients) == 0:
+            raise ValueError('`recipients` list cannot be empty')
+        if not (asset is None or isinstance(asset, dict)):
+            raise TypeError('`asset` must be a dict or None')
+        if not (metadata is None or isinstance(metadata, dict)):
+            raise TypeError('`metadata` must be a dict or None')
+
+        inputs = []
+        outputs = []
+
+        # generate_outputs
+        for recipient in recipients:
+            if not isinstance(recipient, tuple) or len(recipient) != 2:
+                raise ValueError(('Each `recipient` in the list must be a'
+                                  ' tuple of `([<list of public keys>],'
+                                  ' <amount>)`'))
+            pub_keys, amount = recipient
+            outputs.append(Output.generate(pub_keys, amount))
+
+        # generate inputs
+        inputs.append(Input.generate(tx_signers))
+
+        return (inputs, outputs)
+
+    @classmethod
     def create(cls, tx_signers, recipients, metadata=None, asset=None):
         """A simple way to generate a `CREATE` transaction.
 
@@ -613,32 +645,8 @@ class Transaction(object):
             Returns:
                 :class:`~bigchaindb.common.transaction.Transaction`
         """
-        if not isinstance(tx_signers, list):
-            raise TypeError('`tx_signers` must be a list instance')
-        if not isinstance(recipients, list):
-            raise TypeError('`recipients` must be a list instance')
-        if len(tx_signers) == 0:
-            raise ValueError('`tx_signers` list cannot be empty')
-        if len(recipients) == 0:
-            raise ValueError('`recipients` list cannot be empty')
-        if not (asset is None or isinstance(asset, dict)):
-            raise TypeError('`asset` must be a dict or None')
 
-        inputs = []
-        outputs = []
-
-        # generate_outputs
-        for recipient in recipients:
-            if not isinstance(recipient, tuple) or len(recipient) != 2:
-                raise ValueError(('Each `recipient` in the list must be a'
-                                  ' tuple of `([<list of public keys>],'
-                                  ' <amount>)`'))
-            pub_keys, amount = recipient
-            outputs.append(Output.generate(pub_keys, amount))
-
-        # generate inputs
-        inputs.append(Input.generate(tx_signers))
-
+        (inputs, outputs) = cls.validate_create(tx_signers, recipients, asset, metadata)
         return cls(cls.CREATE, {'data': asset}, inputs, outputs, metadata)
 
     @classmethod
@@ -1150,7 +1158,7 @@ class Transaction(object):
             raise InvalidHash(err_msg.format(proposed_tx_id))
 
     @classmethod
-    def from_dict(cls, tx):
+    def from_dict(cls, tx, skip_schema_validation=True):
         """Transforms a Python dictionary to a Transaction object.
 
             Args:
@@ -1159,6 +1167,11 @@ class Transaction(object):
             Returns:
                 :class:`~bigchaindb.common.transaction.Transaction`
         """
+        operation = tx.get('operation', Transaction.CREATE) if isinstance(tx, dict) else Transaction.CREATE
+        cls = Transaction.resolve_class(operation)
+        if not skip_schema_validation:
+            cls.validate_schema(tx)
+
         inputs = [Input.from_dict(input_) for input_ in tx['inputs']]
         outputs = [Output.from_dict(output) for output in tx['outputs']]
         return cls(tx['operation'], tx['asset'], inputs, outputs,
@@ -1213,3 +1226,17 @@ class Transaction(object):
         else:
             tx = list(tx_map.values())[0]
             return cls.from_dict(tx)
+
+    type_registry = {}
+
+    @staticmethod
+    def register_type(tx_type, tx_class):
+        Transaction.type_registry[tx_type] = tx_class
+
+    def resolve_class(operation):
+        """For the given `tx` based on the `operation` key return its implementation class"""
+
+        if operation in list(Transaction.type_registry.keys()):
+            return Transaction.type_registry.get(operation)
+        else:
+            return Transaction.type_registry.get(Transaction.CREATE)
