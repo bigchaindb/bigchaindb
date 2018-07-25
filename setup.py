@@ -128,6 +128,8 @@ setup(
 
     packages=find_packages(exclude=['tests*']),
 
+    scripts = ['pkg/scripts/bigchaindb-monit-config'],
+
     entry_points={
         'console_scripts': [
             'bigchaindb=bigchaindb.commands.bigchaindb:main'
