@@ -106,3 +106,15 @@ class MultipleValidatorOperationError(ValidationError):
 
 class MultipleInputsError(ValidationError):
     """Raised if there were multiple inputs when only one was expected"""
+
+
+class InvalidProposer(ValidationError):
+    """Raised if the public key is not a part of the validator set"""
+
+
+class UnequalValidatorSet(ValidationError):
+    """Raised if the validator sets differ"""
+
+
+class InvalidPowerChange(ValidationError):
+    """Raised if proposed power change in validator set is >=1/3 total power"""

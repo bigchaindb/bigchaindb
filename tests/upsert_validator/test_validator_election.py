@@ -1,7 +1,9 @@
 import pytest
 
 from bigchaindb.upsert_validator import ValidatorElection
-from bigchaindb.common.exceptions import DuplicateTransaction
+from bigchaindb.common.exceptions import (DuplicateTransaction,
+                                          UnequalValidatorSet,
+                                          InvalidPowerChange)
 
 pytestmark = [pytest.mark.tendermint, pytest.mark.bdb]
 
@@ -21,7 +23,7 @@ def test_upsert_validator_invalid_power_election(b_mock, new_validator, node_key
     election = ValidatorElection.generate([node_key.public_key],
                                           voters,
                                           new_validator, None).sign([node_key.private_key])
-    with pytest.raises(ValueError):
+    with pytest.raises(InvalidPowerChange):
         election.validate(b_mock)
 
 
@@ -46,7 +48,9 @@ def test_upsert_validator_invalid_election(b_mock, new_validator, node_key):
     invalid_election = ValidatorElection.generate([node_key.public_key],
                                                   voters[1:],
                                                   new_validator, None).sign([node_key.private_key])
-    assert not invalid_election.validate(b_mock)
+
+    with pytest.raises(UnequalValidatorSet):
+        invalid_election.validate(b_mock)
 
     recipients = ValidatorElection.recipients(b_mock)
     altered_recipients = []
@@ -59,4 +63,5 @@ def test_upsert_validator_invalid_election(b_mock, new_validator, node_key):
                                              altered_recipients,
                                              new_validator, None).sign([node_key.private_key])
 
-    assert not tx_election.validate(b_mock)
+    with pytest.raises(UnequalValidatorSet):
+        tx_election.validate(b_mock)

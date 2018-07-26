@@ -1,4 +1,8 @@
-from bigchaindb.common.exceptions import (InvalidSignature, MultipleInputsError,
+from bigchaindb.common.exceptions import (InvalidSignature,
+                                          MultipleInputsError,
+                                          InvalidProposer,
+                                          UnequalValidatorSet,
+                                          InvalidPowerChange,
                                           DuplicateTransaction)
 from bigchaindb.tendermint_utils import key_from_base64
 from bigchaindb.common.crypto import (public_key_from_ed25519_key)
@@ -104,15 +108,18 @@ class ValidatorElection(Transaction):
 
         # NOTE: change more than 1/3 of the current power is not allowed
         if self.asset['data']['power'] >= (1/3)*sum(current_validators.values()):
-            raise ValueError('`power` must be less than 1/3 of total power')
+            raise InvalidPowerChange('`power` change must be less than 1/3 of total power')
 
         # NOTE: Check if the proposer is a validator.
         [election_initiator_node_pub_key] = self.inputs[0].owners_before
         if election_initiator_node_pub_key not in current_validators.keys():
-            return False
+            raise InvalidProposer('Public key is not a part of the validator set')
 
         # NOTE: Check if all validators have been assigned votes equal to their voting power
-        return self.is_same_topology(current_validators, self.outputs)
+        if not self.is_same_topology(current_validators, self.outputs):
+            raise UnequalValidatorSet('Validator set much be exactly same to the outputs of election')
+
+        return True
 
     @classmethod
     def generate(cls, initiator, voters, election_data, metadata=None):
