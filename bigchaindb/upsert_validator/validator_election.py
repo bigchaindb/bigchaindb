@@ -73,6 +73,8 @@ class ValidatorElection(Transaction):
 
     def validate(self, bigchain, current_transactions=[]):
         """Validate election transaction
+        For more details refer BEP-21: https://github.com/bigchaindb/BEPs/tree/master/21
+
         NOTE:
         * A valid election is initiated by an existing validator.
 
@@ -80,15 +82,13 @@ class ValidatorElection(Transaction):
           alloacted according to the voting power of each validator node.
 
         Args:
-            bigchain (BigchainDB): an instantiated bigchaindb.tendermint.BigchainDB object.
+            bigchain (BigchainDB): an instantiated bigchaindb.lib.BigchainDB object.
 
         Returns:
-            The transaction (Transaction) if the transaction is valid else it
-            raises an exception describing the reason why the transaction is
-            invalid.
+            `True` if the election is valid
 
         Raises:
-            ValidationError: If the transaction is invalid
+            ValidationError: If the election is invalid
         """
         input_conditions = []
 
@@ -103,7 +103,7 @@ class ValidatorElection(Transaction):
         current_validators = self.current_validators(bigchain)
 
         # NOTE: Proposer should be a single node
-        if len(self.inputs) != 1:
+        if len(self.inputs) != 1 or len(self.inputs[0].owners_before) != 1:
             raise MultipleInputsError('`tx_signers` must be a list instance of length one')
 
         # NOTE: change more than 1/3 of the current power is not allowed

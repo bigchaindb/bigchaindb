@@ -3,6 +3,8 @@ import pytest
 from bigchaindb.upsert_validator import ValidatorElection
 from bigchaindb.common.exceptions import (DuplicateTransaction,
                                           UnequalValidatorSet,
+                                          InvalidProposer,
+                                          MultipleInputsError,
                                           InvalidPowerChange)
 
 pytestmark = [pytest.mark.tendermint, pytest.mark.bdb]
@@ -24,6 +26,30 @@ def test_upsert_validator_invalid_power_election(b_mock, new_validator, node_key
                                           voters,
                                           new_validator, None).sign([node_key.private_key])
     with pytest.raises(InvalidPowerChange):
+        election.validate(b_mock)
+
+
+def test_upsert_validator_invalid_proposed_election(b_mock, new_validator, node_key):
+    from bigchaindb.common.crypto import generate_key_pair
+
+    alice = generate_key_pair()
+    voters = ValidatorElection.recipients(b_mock)
+    election = ValidatorElection.generate([alice.public_key],
+                                          voters,
+                                          new_validator, None).sign([alice.private_key])
+    with pytest.raises(InvalidProposer):
+        election.validate(b_mock)
+
+
+def test_upsert_validator_invalid_inputs_election(b_mock, new_validator, node_key):
+    from bigchaindb.common.crypto import generate_key_pair
+
+    alice = generate_key_pair()
+    voters = ValidatorElection.recipients(b_mock)
+    election = ValidatorElection.generate([node_key.public_key, alice.public_key],
+                                          voters,
+                                          new_validator, None).sign([node_key.private_key, alice.private_key])
+    with pytest.raises(MultipleInputsError):
         election.validate(b_mock)
 
 
