@@ -2,12 +2,6 @@
 
 set -o nounset
 
-# Check for uninitialized variables
-NOUNSET=${NOUNSET:-}
-if [[ -n "$NOUNSET" ]]; then
-        set -o nounset
-fi
-
 # Check if directory for monit logs exists
 if [ ! -d "$HOME/.bigchaindb-monit" ]; then
   mkdir -p "$HOME/.bigchaindb-monit"
@@ -174,12 +168,6 @@ EOF
 
 # Setting permissions for control file
 chmod 0700 ${monit_exec_path}
-
-# Kill background processes on exit
-function exit_trap {
-    exit $?
-}
-trap exit_trap EXIT
 
 echo -e "BigchainDB process manager configured!"
 set -o errexit
