@@ -34,7 +34,7 @@ function usage() {
     Absolute path to the directory where all the logs for processes
     monitored by Monit are stored. (default: ${monit_log_path})
 
-    ENV[MONIT_EXEC_PATH] || --monit-exec-path PATH
+    ENV[MONITRC_PATH] || --monitrc-path PATH
 
     Absolute path to the monit control file(monitrc). (default: ${monitrc_path})
 
@@ -59,7 +59,7 @@ while [[ $# -gt 0 ]]; do
             monit_log_path="$2"
             shift
         ;;
-        --monit-exec-path)
+        --monitrc-path)
             monitrc_path="$2"
             shift
         ;;
