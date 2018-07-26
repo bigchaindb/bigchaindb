@@ -106,7 +106,7 @@ class Dispatcher:
 
             for _, websocket in self.subscribers.items():
                 for str_item in str_buffer:
-                    websocket.send_str(str_item)
+                    yield from websocket.send_str(str_item)
 
 
 @asyncio.coroutine
