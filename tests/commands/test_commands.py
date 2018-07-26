@@ -90,7 +90,7 @@ def test_bigchain_run_init_when_db_exists(mocker, capsys):
 def test__run_init(mocker):
     from bigchaindb.commands.bigchaindb import _run_init
     bigchain_mock = mocker.patch(
-        'bigchaindb.commands.bigchaindb.bigchaindb.tendermint.BigchainDB')
+        'bigchaindb.commands.bigchaindb.bigchaindb.BigchainDB')
     init_db_mock = mocker.patch(
         'bigchaindb.commands.bigchaindb.schema.init_database',
         autospec=True,
@@ -274,7 +274,7 @@ def test_calling_main(start_mock, base_parser_mock, parse_args_mock,
 
 @patch('bigchaindb.config_utils.autoconfigure')
 @patch('bigchaindb.commands.bigchaindb.run_recover')
-@patch('bigchaindb.tendermint.commands.start')
+@patch('bigchaindb.start.start')
 def test_recover_db_on_start(mock_autoconfigure,
                              mock_run_recover,
                              mock_start,
@@ -293,7 +293,7 @@ def test_recover_db_on_start(mock_autoconfigure,
 def test_run_recover(b, alice, bob):
     from bigchaindb.commands.bigchaindb import run_recover
     from bigchaindb.models import Transaction
-    from bigchaindb.tendermint.lib import Block, PreCommitState
+    from bigchaindb.lib import Block, PreCommitState
     from bigchaindb.backend.query import PRE_COMMIT_ID
     from bigchaindb.backend import query
 

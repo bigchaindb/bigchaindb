@@ -11,7 +11,7 @@ from flask_cors import CORS
 import gunicorn.app.base
 
 from bigchaindb import utils
-from bigchaindb.tendermint import BigchainDB
+from bigchaindb import BigchainDB
 from bigchaindb.web.routes import add_routes
 from bigchaindb.web.strip_content_type_middleware import StripContentTypeMiddleware
 

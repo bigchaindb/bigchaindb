@@ -280,7 +280,7 @@ class TestBigchainApi(object):
 
     @pytest.mark.usefixtures('inputs')
     def test_write_transaction(self, b, user_pk, user_sk):
-        from bigchaindb.tendermint import BigchainDB
+        from bigchaindb import BigchainDB
         from bigchaindb.models import Transaction
 
         input_tx = b.get_owned_ids(user_pk).pop()
@@ -439,7 +439,7 @@ class TestBigchainApi(object):
         from bigchaindb.common.exceptions import InputDoesNotExist
         from bigchaindb.common.transaction import Input, TransactionLink
         from bigchaindb.models import Transaction
-        from bigchaindb.tendermint import BigchainDB
+        from bigchaindb import BigchainDB
 
         # Create an input for a non existing transaction
         input = Input(Ed25519Sha256(public_key=b58decode(user_pk)),
@@ -970,8 +970,8 @@ class TestMultipleInputs(object):
 
 
 def test_get_owned_ids_calls_get_outputs_filtered():
-    from bigchaindb.tendermint import BigchainDB
-    with patch('bigchaindb.tendermint.BigchainDB.get_outputs_filtered') as gof:
+    from bigchaindb import BigchainDB
+    with patch('bigchaindb.BigchainDB.get_outputs_filtered') as gof:
         b = BigchainDB()
         res = b.get_owned_ids('abc')
     gof.assert_called_once_with('abc', spent=False)
@@ -981,13 +981,13 @@ def test_get_owned_ids_calls_get_outputs_filtered():
 @pytest.mark.tendermint
 def test_get_outputs_filtered_only_unspent():
     from bigchaindb.common.transaction import TransactionLink
-    from bigchaindb.tendermint.lib import BigchainDB
+    from bigchaindb.lib import BigchainDB
 
-    go = 'bigchaindb.tendermint.fastquery.FastQuery.get_outputs_by_public_key'
+    go = 'bigchaindb.fastquery.FastQuery.get_outputs_by_public_key'
     with patch(go) as get_outputs:
         get_outputs.return_value = [TransactionLink('a', 1),
                                     TransactionLink('b', 2)]
-        fs = 'bigchaindb.tendermint.fastquery.FastQuery.filter_spent_outputs'
+        fs = 'bigchaindb.fastquery.FastQuery.filter_spent_outputs'
         with patch(fs) as filter_spent:
             filter_spent.return_value = [TransactionLink('b', 2)]
             out = BigchainDB().get_outputs_filtered('abc', spent=False)
@@ -998,12 +998,12 @@ def test_get_outputs_filtered_only_unspent():
 @pytest.mark.tendermint
 def test_get_outputs_filtered_only_spent():
     from bigchaindb.common.transaction import TransactionLink
-    from bigchaindb.tendermint.lib import BigchainDB
-    go = 'bigchaindb.tendermint.fastquery.FastQuery.get_outputs_by_public_key'
+    from bigchaindb.lib import BigchainDB
+    go = 'bigchaindb.fastquery.FastQuery.get_outputs_by_public_key'
     with patch(go) as get_outputs:
         get_outputs.return_value = [TransactionLink('a', 1),
                                     TransactionLink('b', 2)]
-        fs = 'bigchaindb.tendermint.fastquery.FastQuery.filter_unspent_outputs'
+        fs = 'bigchaindb.fastquery.FastQuery.filter_unspent_outputs'
         with patch(fs) as filter_spent:
             filter_spent.return_value = [TransactionLink('b', 2)]
             out = BigchainDB().get_outputs_filtered('abc', spent=True)
@@ -1012,13 +1012,13 @@ def test_get_outputs_filtered_only_spent():
 
 
 @pytest.mark.tendermint
-@patch('bigchaindb.tendermint.fastquery.FastQuery.filter_unspent_outputs')
-@patch('bigchaindb.tendermint.fastquery.FastQuery.filter_spent_outputs')
+@patch('bigchaindb.fastquery.FastQuery.filter_unspent_outputs')
+@patch('bigchaindb.fastquery.FastQuery.filter_spent_outputs')
 def test_get_outputs_filtered(filter_spent, filter_unspent):
     from bigchaindb.common.transaction import TransactionLink
-    from bigchaindb.tendermint.lib import BigchainDB
+    from bigchaindb.lib import BigchainDB
 
-    go = 'bigchaindb.tendermint.fastquery.FastQuery.get_outputs_by_public_key'
+    go = 'bigchaindb.fastquery.FastQuery.get_outputs_by_public_key'
     with patch(go) as get_outputs:
         get_outputs.return_value = [TransactionLink('a', 1),
                                     TransactionLink('b', 2)]

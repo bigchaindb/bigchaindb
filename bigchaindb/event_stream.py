@@ -8,7 +8,7 @@ import aiohttp
 from bigchaindb import config
 from bigchaindb.common.utils import gen_timestamp
 from bigchaindb.events import EventTypes, Event
-from bigchaindb.tendermint.utils import decode_transaction_base64
+from bigchaindb.tendermint_utils import decode_transaction_base64
 
 
 HOST = config['tendermint']['host']

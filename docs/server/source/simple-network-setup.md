@@ -244,6 +244,19 @@ If you followed the recommended approach and created startup scripts for Bigchai
 
 If you followed the above instructions, then your node should be publicly-accessible with BigchainDB Root URL `http://hostname:9984` (where hostname is something like `bdb7.canada.vmsareus.net` or `17.122.200.76`). That is, anyone can interact with your node using the [BigchainDB HTTP API](http-client-server-api.html) exposed at that address. The most common way to do that is to use one of the [BigchainDB Drivers](./drivers-clients/index.html).
 
+## Troubleshooting
+
+To check which nodes your node is connected to (via Tendermint protocols), do:
+
+```text
+# if you don't jq installed, then install it
+sudo apt install jq
+# then do
+curl -s localhost:26657/net_info | jq ".result.peers[].node_info | {id, listen_addr, moniker}"
+```
+
+Tendermint has other endpoints besides `/net_info`: see [the Tendermint RPC docs](https://tendermint.github.io/slate/?shell#introduction).
+
 ## Refreshing Your Node
 
 If you want to refresh your node back to a fresh empty state, then your best bet is to terminate it and deploy a new virtual machine, but if that's not an option, then you can:
