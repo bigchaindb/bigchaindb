@@ -265,6 +265,48 @@ If you want to refresh your node back to a fresh empty state, then your best bet
 - reset Tendermint using `tendermint unsafe_reset_all`
 - delete the directory `$HOME/.tendermint`
 
+## Shutting down BigchainDB
+
+If you want to stop/kill BigchainDB, you can do so by sending `SIGINT`, `SIGQUIT` or `SIGTERM` to the running BigchainDB
+process(es). Depending on how you started BigchainDB i.e. foreground or background. e.g. you started BigchainDB in the background as mentioned above in the guide:
+
+```bash
+$ nohup bigchaindb start 2>&1 > bigchaindb.log &
+
+$ # Check the PID of the main BigchainDB process
+$ ps -ef | grep bigchaindb
+<user>    *<pid> <ppid>   <C> <STIME> <tty>        <time> bigchaindb
+<user>     <pid> <ppid>*  <C> <STIME> <tty>        <time> gunicorn: master [bigchaindb_gunicorn]
+<user>     <pid> <ppid>*  <C> <STIME> <tty>        <time> bigchaindb_ws
+<user>     <pid> <ppid>*  <C> <STIME> <tty>        <time> bigchaindb_ws_to_tendermint
+<user>     <pid> <ppid>*  <C> <STIME> <tty>        <time> bigchaindb_exchange
+<user>     <pid> <ppid>   <C> <STIME> <tty>        <time> gunicorn: worker [bigchaindb_gunicorn]
+<user>     <pid> <ppid>   <C> <STIME> <tty>        <time> gunicorn: worker [bigchaindb_gunicorn]
+<user>     <pid> <ppid>   <C> <STIME> <tty>        <time> gunicorn: worker [bigchaindb_gunicorn]
+<user>     <pid> <ppid>   <C> <STIME> <tty>        <time> gunicorn: worker [bigchaindb_gunicorn]
+<user>     <pid> <ppid>   <C> <STIME> <tty>        <time> gunicorn: worker [bigchaindb_gunicorn]
+...
+
+$ # Send any of the above mentioned signals to the parent/root process(marked with `*` for clarity)
+# Sending SIGINT
+$ kill -2 <bigchaindb_parent_pid>
+
+$ # OR
+
+# Sending SIGTERM
+$ kill -15 <bigchaindb_parent_pid>
+
+$ # OR
+
+# Sending SIGQUIT
+$ kill -3 <bigchaindb_parent_pid>
+
+# If you want to kill all the processes by name yourself
+$ pgrep bigchaindb | xargs kill -9
+```
+
+If you started BigchainDB in the foreground, a `Ctrl + C` or `Ctrl + Z` would shut down BigchainDB.
+
 ## Member: Dynamically Add a New Member to the Network
 
 TBD.
