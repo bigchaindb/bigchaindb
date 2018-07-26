@@ -2,9 +2,6 @@
 
 set -o nounset
 
-# Make sure umask is sane
-umask 022
-
 # Check for uninitialized variables
 NOUNSET=${NOUNSET:-}
 if [[ -n "$NOUNSET" ]]; then
@@ -179,11 +176,10 @@ EOF
 chmod 0700 ${monit_exec_path}
 
 # Kill background processes on exit
-trap exit_trap EXIT
 function exit_trap {
     exit $?
 }
-# Exit on any errors so that errors don't compound and kill if any services already started
+trap exit_trap EXIT
 
 echo -e "BigchainDB process manager configured!"
 set -o errexit
