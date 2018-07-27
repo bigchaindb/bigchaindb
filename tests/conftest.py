@@ -326,7 +326,7 @@ def inputs(user_pk, b, alice):
     from bigchaindb.models import Transaction
     # create blocks with transactions for `USER` to spend
     print('Fuck you')
-    for height in range(1,4):
+    for height in range(1, 4):
         transactions = [
             Transaction.create(
                 [alice_pubkey(alice)],

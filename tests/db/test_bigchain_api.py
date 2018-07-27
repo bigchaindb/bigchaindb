@@ -57,7 +57,6 @@ class TestBigchainApi(object):
         with pytest.raises(DoubleSpend):
             b.validate_transaction(transfer_tx2)
 
-
     @pytest.mark.genesis
     @pytest.mark.tendermint
     def test_get_block_status_for_tx_with_double_inclusion(self, b, alice):
