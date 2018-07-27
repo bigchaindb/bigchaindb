@@ -149,10 +149,10 @@ class BigchainDB(object):
         txns = []
         assets = []
         txn_metadatas = []
-        for transaction in transactions:
+        for transaction_obj in transactions:
             # self.update_utxoset(transaction)
-            transaction = transaction.to_dict()
-            if transaction['operation'] == 'CREATE':
+            transaction = transaction_obj.to_dict()
+            if transaction['operation'] == transaction_obj.CREATE:
                 asset = transaction.pop('asset')
                 asset['id'] = transaction['id']
                 assets.append(asset)
@@ -391,7 +391,7 @@ class BigchainDB(object):
         # CLEANUP: The conditional below checks for transaction in dict format.
         # It would be better to only have a single format for the transaction
         # throught the code base.
-        if not isinstance(transaction, Transaction):
+        if isinstance(transaction, dict):
             try:
                 transaction = Transaction.from_dict(tx)
             except SchemaValidationError as e:

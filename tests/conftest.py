@@ -17,7 +17,11 @@ from pymongo import MongoClient
 
 from bigchaindb.common import crypto
 from bigchaindb.log import setup_logging
+from bigchaindb.tendermint_utils import key_from_base64
+from bigchaindb.common.crypto import (key_pair_from_ed25519_key,
+                                      public_key_from_ed25519_key)
 from bigchaindb.lib import Block
+
 
 TEST_DB_NAME = 'bigchain_test'
 
@@ -615,3 +619,41 @@ def utxoset(dummy_unspent_outputs, utxo_collection):
     assert res.acknowledged
     assert len(res.inserted_ids) == 3
     return dummy_unspent_outputs, utxo_collection
+
+
+@pytest.fixture
+def network_validators(node_keys):
+    validator_pub_power = {}
+    voting_power = [8, 10, 7, 9]
+    for pub, priv in node_keys.items():
+        validator_pub_power[pub] = voting_power.pop()
+
+    return validator_pub_power
+
+
+@pytest.fixture
+def network_validators58(network_validators):
+    network_validators_base58 = {}
+    for p, v in network_validators.items():
+        p = public_key_from_ed25519_key(key_from_base64(p))
+        network_validators_base58[p] = v
+
+    return network_validators_base58
+
+
+@pytest.fixture
+def node_key(node_keys):
+    (pub, priv) = list(node_keys.items())[0]
+    return key_pair_from_ed25519_key(key_from_base64(priv))
+
+
+@pytest.fixture(scope='session')
+def node_keys():
+    return {'zL/DasvKulXZzhSNFwx4cLRXKkSM9GPK7Y0nZ4FEylM=':
+            'cM5oW4J0zmUSZ/+QRoRlincvgCwR0pEjFoY//ZnnjD3Mv8Nqy8q6VdnOFI0XDHhwtFcqRIz0Y8rtjSdngUTKUw==',
+            'GIijU7GBcVyiVUcB0GwWZbxCxdk2xV6pxdvL24s/AqM=':
+            'mdz7IjP6mGXs6+ebgGJkn7kTXByUeeGhV+9aVthLuEAYiKNTsYFxXKJVRwHQbBZlvELF2TbFXqnF28vbiz8Cow==',
+            'JbfwrLvCVIwOPm8tj8936ki7IYbmGHjPiKb6nAZegRA=':
+            '83VINXdj2ynOHuhvSZz5tGuOE5oYzIi0mEximkX1KYMlt/Csu8JUjA4+by2Pz3fqSLshhuYYeM+IpvqcBl6BEA==',
+            'PecJ58SaNRsWJZodDmqjpCWqG6btdwXFHLyE40RYlYM=':
+            'uz8bYgoL4rHErWT1gjjrnA+W7bgD/uDQWSRKDmC8otc95wnnxJo1GxYlmh0OaqOkJaobpu13BcUcvITjRFiVgw=='}

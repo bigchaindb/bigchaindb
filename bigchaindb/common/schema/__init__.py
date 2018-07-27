@@ -13,9 +13,9 @@ from bigchaindb.common.exceptions import SchemaValidationError
 logger = logging.getLogger(__name__)
 
 
-def _load_schema(name):
+def _load_schema(name, path=__file__):
     """Load a schema from disk"""
-    path = os.path.join(os.path.dirname(__file__), name + '.yaml')
+    path = os.path.join(os.path.dirname(path), name + '.yaml')
     with open(path) as handle:
         schema = yaml.safe_load(handle)
     fast_schema = rapidjson_schema.loads(rapidjson.dumps(schema))
