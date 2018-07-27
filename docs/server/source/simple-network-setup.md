@@ -54,8 +54,8 @@ sudo apt install -y python3-pip libssl-dev
 
 Now install the latest version of BigchainDB. You can find the latest version by going to the [BigchainDB project release history page on PyPI][bdb:pypi]. For example, to install version 2.0.0b3, you would do:
 
-# Change 2.0.0b3 to the latest version as explained above:
 ```
+# Change 2.0.0b3 to the latest version as explained above:
 sudo pip3 install bigchaindb==2.0.0b3
 ```
 
@@ -249,7 +249,7 @@ If you followed the recommended approach and created startup scripts for Bigchai
 
 This section describes how to manage the BigchainDB and Tendermint processes using [Monit][monit] - a small open-source utility for managing and monitoring Unix processes.
 
-This section assumes that you followed the guide down to the [start MongoDB section](member-start-mongodb) inclusive.
+This section assumes that you followed the guide down to the [start MongoDB section](#member-start-mongodb) inclusive.
 
 Install Monit:
 
