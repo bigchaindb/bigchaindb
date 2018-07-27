@@ -125,17 +125,17 @@ The `public_key` is stored in the file `.tendermint/config/priv_validator.json`,
 
 ```json
 {
-  "address": "5943A9EF6285791A504918E1D117BC7F6A615C98",
+  "address": "E22D4340E5A92E4A9AD7C62DA62888929B3921E9",
   "pub_key": {
-    "type": "AC26791624DE60",
-    "value": "W3tqeMCU3d4SHDKqrwQWTahTW/wpieIAKZQxUxLv6rI="
+    "type": "tendermint/PubKeyEd25519",
+    "value": "P+aweH73Hii8RyCmNWbwPsa9o4inq3I+0fSfprVkZa0="
   },
-  "last_height": 0,
-  "last_round": 0,
+  "last_height": "0",
+  "last_round": "0",
   "last_step": 0,
   "priv_key": {
-    "type": "954568A3288910",
-    "value": "3sv9aExgME6MMjx0JoKVy7KtED8PBiPcyAgsYmVizslbe2p4wJTd3hIcMqqvBBZNqFNb/CmJ4gAplDFTEu/qsg=="
+    "type": "tendermint/PrivKeyEd25519",
+    "value": "AHBiZXdZhkVZoPUAiMzClxhl0VvUp7Xl3YT6GvCc93A/5rB4fvceKLxHIKY1ZvA+xr2jiKercj7R9J+mtWRlrQ=="
   }
 }
 ```
