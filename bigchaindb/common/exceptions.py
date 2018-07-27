@@ -96,9 +96,5 @@ class ThresholdTooDeep(ValidationError):
     """Raised if threshold condition is too deep"""
 
 
-class GenesisBlockAlreadyExistsError(ValidationError):
-    """Raised when trying to create the already existing genesis block"""
-
-
 class MultipleValidatorOperationError(ValidationError):
     """Raised when a validator update pending but new request is submited"""
