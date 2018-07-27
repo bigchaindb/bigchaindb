@@ -9,7 +9,6 @@ pytestmark = pytest.mark.bdb
 
 class TestBigchainApi(object):
 
-    @pytest.mark.genesis
     @pytest.mark.tendermint
     def test_get_spent_with_double_inclusion_detected(self, b, alice):
         from bigchaindb.models import Transaction
@@ -31,7 +30,6 @@ class TestBigchainApi(object):
         with pytest.raises(OperationError):
             b.store_bulk_transactions([transfer_tx2])
 
-    @pytest.mark.genesis
     @pytest.mark.tendermint
     def test_get_spent_with_double_spend_detected(self, b, alice):
         from bigchaindb.models import Transaction
@@ -57,7 +55,6 @@ class TestBigchainApi(object):
         with pytest.raises(DoubleSpend):
             b.validate_transaction(transfer_tx2)
 
-    @pytest.mark.genesis
     @pytest.mark.tendermint
     def test_get_block_status_for_tx_with_double_inclusion(self, b, alice):
         from bigchaindb.models import Transaction
@@ -71,7 +68,6 @@ class TestBigchainApi(object):
         with pytest.raises(OperationError):
             b.store_bulk_transactions([tx])
 
-    @pytest.mark.genesis
     @pytest.mark.tendermint
     def test_text_search(self, b, alice):
         from bigchaindb.models import Transaction
