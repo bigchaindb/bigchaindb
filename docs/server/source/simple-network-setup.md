@@ -249,9 +249,11 @@ If you followed the above instructions, then your node should be publicly-access
 If you want to refresh your node back to a fresh empty state, then your best bet is to terminate it and deploy a new virtual machine, but if that's not an option, then you can:
 
 - drop the `bigchain` database in MongoDB using `bigchaindb drop` (but that only works if MongoDB is running)
-- [reset Tendermint](https://tendermint.readthedocs.io/projects/tools/en/master/using-tendermint.html#reset) by:
-  - removing the directory `$HOME/.tendermint/data` and
-  - doing `tendermint unsafe_reset_priv_validator`
+- reset Tendermint by removing its data and config directories:
+  - `rm -rf $HOME/.tendermint/data`
+  - `rm -rf $HOME/.tendermint/config`
+
+Note: There are commands such as `tendermint unsafe_reset_priv_validator` but they're not as thorough.
 
 ## Member: Dynamically Add a New Member to the Network
 
