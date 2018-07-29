@@ -305,8 +305,11 @@ Tendermint has other endpoints besides `/net_info`: see [the Tendermint RPC docs
 If you want to refresh your node back to a fresh empty state, then your best bet is to terminate it and deploy a new virtual machine, but if that's not an option, then you can:
 
 - drop the `bigchain` database in MongoDB using `bigchaindb drop` (but that only works if MongoDB is running)
-- reset Tendermint using `tendermint unsafe_reset_all`
-- delete the directory `$HOME/.tendermint`
+- reset Tendermint by removing its data and config directories:
+  - `rm -rf $HOME/.tendermint/data`
+  - `rm -rf $HOME/.tendermint/config`
+
+Note: There are commands such as `tendermint unsafe_reset_priv_validator` but they're not as thorough.
 
 ## Shutting down BigchainDB
 
