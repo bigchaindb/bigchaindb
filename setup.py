@@ -85,7 +85,7 @@ install_requires = [
     'gunicorn~=19.0',
     'jsonschema~=2.5.1',
     'pyyaml~=3.12',
-    'aiohttp~=2.3',
+    'aiohttp~=3.0',
     'python-rapidjson-schema==0.1.1',
     'bigchaindb-abci==0.5.1',
     'setproctitle~=1.1.0',
@@ -127,6 +127,8 @@ setup(
     ],
 
     packages=find_packages(exclude=['tests*']),
+
+    scripts = ['pkg/scripts/bigchaindb-monit-config'],
 
     entry_points={
         'console_scripts': [

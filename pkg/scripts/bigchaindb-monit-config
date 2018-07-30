@@ -1,0 +1,173 @@
+#!/bin/bash
+
+set -o nounset
+
+# Check if directory for monit logs exists
+if [ ! -d "$HOME/.bigchaindb-monit" ]; then
+  mkdir -p "$HOME/.bigchaindb-monit"
+fi
+
+monit_pid_path=${MONIT_PID_PATH:=$HOME/.bigchaindb-monit/monit_processes}
+monit_script_path=${MONIT_SCRIPT_PATH:=$HOME/.bigchaindb-monit/monit_script}
+monit_log_path=${MONIT_LOG_PATH:=$HOME/.bigchaindb-monit/logs}
+monitrc_path=${MONITRC_PATH:=$HOME/.monitrc}
+
+function usage() {
+        cat <<EOM
+
+    Usage: ${0##*/} [-h]
+
+    Configure Monit for BigchainDB and Tendermint process management.
+
+    ENV[MONIT_PID_PATH] || --monit-pid-path PATH
+
+    Absolute path to directory where the the program's pid-file will reside. 
+    The pid-file contains the ID(s) of the process(es). (default: ${monit_pid_path})
+
+    ENV[MONIT_SCRIPT_PATH] || --monit-script-path PATH
+
+    Absolute path to the directory where the executable program or
+    script is present. (default: ${monit_script_path})
+
+    ENV[MONIT_LOG_PATH] || --monit-log-path PATH
+
+    Absolute path to the directory where all the logs for processes
+    monitored by Monit are stored. (default: ${monit_log_path})
+
+    ENV[MONITRC_PATH] || --monitrc-path PATH
+
+    Absolute path to the monit control file(monitrc). (default: ${monitrc_path})
+
+    -h|--help
+        Show this help and exit.
+
+EOM
+}
+
+while [[ $# -gt 0 ]]; do
+    arg="$1"
+    case $arg in
+        --monit-pid-path)
+            monit_pid_path="$2"
+            shift
+        ;;
+        --monit-script-path)
+            monit_script_path="$2"
+            shift
+        ;;
+        --monit-log-path)
+            monit_log_path="$2"
+            shift
+        ;;
+        --monitrc-path)
+            monitrc_path="$2"
+            shift
+        ;;
+        -h|--help)
+            usage
+            exit
+        ;;
+        *)
+            echo "Unknown option: $1"
+            usage
+            exit 1
+        ;;
+    esac
+    shift
+done
+
+# Check if directory for monit logs exists
+if [ ! -d "$monit_log_path" ]; then
+  mkdir -p "$monit_log_path"
+fi
+
+# Check if directory for monit pid files exists
+if [ ! -d "$monit_pid_path" ]; then
+  mkdir -p "$monit_pid_path"
+fi
+
+cat >${monit_script_path} <<EOF
+#!/bin/bash
+case \$1 in
+
+  start_bigchaindb)
+
+    pushd \$4
+      nohup bigchaindb start >> \$3/bigchaindb.out.log 2>> \$3/bigchaindb.err.log &
+
+      echo \$! > \$2
+    popd
+
+    ;;
+
+  stop_bigchaindb)
+
+    kill -2 \`cat \$2\`
+    rm -f \$2
+
+    ;;
+
+  start_tendermint)
+
+    pushd \$4
+      nohup tendermint node --consensus.create_empty_blocks=false >> \$3/tendermint.out.log 2>> \$3/tendermint.err.log &
+
+      echo \$! > \$2
+    popd
+
+    ;;
+
+  stop_tendermint)
+
+    kill -2 \`cat \$2\`
+    rm -f \$2
+
+    ;;
+
+esac
+exit 0
+EOF
+chmod +x ${monit_script_path}
+
+# Handling overwriting of control file interactively
+if [ -f "$monitrc_path" ]; then
+    echo "$monitrc_path already exists."
+    read -p "Overwrite[Y]? " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        echo "Overriding $monitrc_path/.monitrc"
+    else
+        read -p "Enter absolute path to store Monit control file: " monitrc_path
+        eval monitrc_path="$monitrc_path"
+        if [ ! -d "$(dirname $monitrc_path)" ]; then
+            echo "Failed to save monit control file '$monitrc_path': No such file or directory."
+            exit 1
+        fi
+    fi
+fi
+
+# configure monitrc
+cat >${monitrc_path} <<EOF
+set httpd
+  port 2812
+  allow localhost
+
+check process bigchaindb
+    with pidfile ${monit_pid_path}/bigchaindb.pid
+    start program "${monit_script_path} start_bigchaindb $monit_pid_path/bigchaindb.pid ${monit_log_path} ${monit_log_path}"
+    restart program "${monit_script_path} start_bigchaindb $monit_pid_path/bigchaindb.pid ${monit_log_path} ${monit_log_path}"
+    stop program "${monit_script_path} stop_bigchaindb $monit_pid_path/bigchaindb.pid ${monit_log_path} ${monit_log_path}"
+
+check process tendermint
+    with pidfile ${monit_pid_path}/tendermint.pid
+    start program "${monit_script_path} start_tendermint ${monit_pid_path}/tendermint.pid ${monit_log_path} ${monit_log_path}"
+    restart program "${monit_script_path} start_bigchaindb ${monit_pid_path}/bigchaindb.pid ${monit_log_path} ${monit_log_path}"
+    stop program "${monit_script_path} stop_tendermint ${monit_pid_path}/tendermint.pid ${monit_log_path} ${monit_log_path}"
+    depends on bigchaindb
+EOF
+
+# Setting permissions for control file
+chmod 0700 ${monitrc_path}
+
+echo -e "BigchainDB process manager configured!"
+set -o errexit
