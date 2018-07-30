@@ -18,6 +18,29 @@ For reference, the possible headings are:
 * **Known Issues**
 * **Notes**
 
+## [2.0 Beta 4] - 2018-07-30
+
+Tag name: v2.0.0b4
+
+### Added
+
+- Added scripts for creating a configuration to manage processes with Monit. [Pull request #2410](https://github.com/bigchaindb/bigchaindb/pull/2410).
+
+### Fixed
+
+- Redundant asset and metadata queries were removed. [Pull request #2409](https://github.com/bigchaindb/bigchaindb/pull/2409).
+- Signal handling was fixed for BigchainDB processes. [Pull request #2395](https://github.com/bigchaindb/bigchaindb/pull/2395).
+- Some of the abruptly closed sockets that used to stay in memory are being cleaned up now. [Pull request 2408](https://github.com/bigchaindb/bigchaindb/pull/2408).
+- Fixed the bug when WebSockets powering Events API became unresponsive. [Pull request #2413](https://github.com/bigchaindb/bigchaindb/pull/2413).
+
+### Notes:
+
+* The instructions on how to write a BEP were simplified. [Pull request #2347](https://github.com/bigchaindb/bigchaindb/pull/2347).
+* A section about troubleshooting was added to the network setup guide. [Pull request #2398](https://github.com/bigchaindb/bigchaindb/pull/2398).
+* Some of the core code was given a better package structure. [Pull request #2401](https://github.com/bigchaindb/bigchaindb/pull/2401).
+* Some of the previously disabled unit tests were re-enabled and updated. Pull requests [#2404](https://github.com/bigchaindb/bigchaindb/pull/2404) and [#2402](https://github.com/bigchaindb/bigchaindb/pull/2402).
+* Some building blocks for dynamically adding new validators were introduced. [Pull request #2392](https://github.com/bigchaindb/bigchaindb/pull/2392).
+
 ## [2.0 Beta 3] - 2018-07-18
 
 Tag name: v2.0.0b3
