@@ -7,15 +7,10 @@ from bigchaindb.common.exceptions import (InvalidSignature,
 from bigchaindb.tendermint_utils import key_from_base64
 from bigchaindb.common.crypto import (public_key_from_ed25519_key)
 from bigchaindb.common.transaction import Transaction
-from bigchaindb.common.schema import (_load_schema,
-                                      _validate_schema,
-                                      TX_SCHEMA_VERSION,
+from bigchaindb.common.schema import (_validate_schema,
+                                      TX_SCHEMA_VALIDATOR_ELECTION,
                                       TX_SCHEMA_COMMON,
                                       TX_SCHEMA_CREATE)
-
-
-_, TX_SCHEMA_VALIDATOR_ELECTION = _load_schema('transaction_validator_election_' +
-                                               TX_SCHEMA_VERSION, __file__)
 
 
 class ValidatorElection(Transaction):

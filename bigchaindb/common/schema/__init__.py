@@ -31,6 +31,9 @@ _, TX_SCHEMA_CREATE = _load_schema('transaction_create_' +
 _, TX_SCHEMA_TRANSFER = _load_schema('transaction_transfer_' +
                                      TX_SCHEMA_VERSION)
 
+_, TX_SCHEMA_VALIDATOR_ELECTION = _load_schema('transaction_validator_election_' +
+                                               TX_SCHEMA_VERSION)
+
 
 def _validate_schema(schema, body):
     """Validate data against a schema"""
