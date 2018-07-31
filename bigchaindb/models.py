@@ -59,7 +59,7 @@ class Transaction(Transaction):
 
                 spent = bigchain.get_spent(input_txid, input_.fulfills.output,
                                            current_transactions)
-                if spent and spent.id != self.id:
+                if spent:
                     raise DoubleSpend('input `{}` was already spent'
                                       .format(input_txid))
 
@@ -70,7 +70,7 @@ class Transaction(Transaction):
             # Validate that all inputs are distinct
             links = [i.fulfills.to_uri() for i in self.inputs]
             if len(links) != len(set(links)):
-                raise DoubleSpend('tx "{}" spends inputs twice'.format(self.id))
+                raise DoubleSpend('tx "{}" spends the same output more than once'.format(self.id))
 
             # validate asset id
             asset_id = Transaction.get_asset_id(input_txs)

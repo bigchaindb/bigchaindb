@@ -12,7 +12,7 @@ def test_asset_transfer(b, signed_create_tx, user_pk, user_sk):
                                        signed_create_tx.id)
     tx_transfer_signed = tx_transfer.sign([user_sk])
 
-    b.store_bulk_transactions([signed_create_tx, tx_transfer])
+    b.store_bulk_transactions([signed_create_tx])
 
     assert tx_transfer_signed.validate(b) == tx_transfer_signed
     assert tx_transfer_signed.asset['id'] == signed_create_tx.id
@@ -27,7 +27,7 @@ def test_validate_transfer_asset_id_mismatch(b, signed_create_tx, user_pk, user_
     tx_transfer.asset['id'] = 'a' * 64
     tx_transfer_signed = tx_transfer.sign([user_sk])
 
-    b.store_bulk_transactions([signed_create_tx, tx_transfer_signed])
+    b.store_bulk_transactions([signed_create_tx])
 
     with pytest.raises(AssetIdMismatch):
         tx_transfer_signed.validate(b)
