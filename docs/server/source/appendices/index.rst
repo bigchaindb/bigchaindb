@@ -15,3 +15,4 @@ Appendices
    firewall-notes
    ntp-notes
    licenses
+   all-in-one-bigchaindb

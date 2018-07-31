@@ -1,4 +1,4 @@
-FROM alpine:latest
+ FROM alpine:latest
 LABEL maintainer "dev@bigchaindb.com"
 
 ARG TM_VERSION=0.22.8
@@ -54,6 +54,5 @@ VOLUME /data/db /data/configdb /tendermint
 
 EXPOSE 27017 28017 9984 9985 26656 26657 26658
 
-COPY pkg/scripts/all-in-one.bash /usr/src/app/
 WORKDIR $HOME
-ENTRYPOINT ["/usr/src/app/all-in-one.bash"]
+ENTRYPOINT ["/usr/src/app/pkg/scripts/all-in-one.bash"]
