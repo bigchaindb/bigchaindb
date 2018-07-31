@@ -19,13 +19,13 @@ After the installation of MongoDB is complete, run MongoDB using `sudo mongod`
 
 ### Installing a Tendermint Executable
 
-Find [the version number of the latest Tendermint release](https://github.com/tendermint/tendermint/releases) and install it using the following, where 0.22.3 should be replaced by the latest released version number:
+Find [the version number of the latest Tendermint release](https://github.com/tendermint/tendermint/releases) and install it using the following, where 0.22.8 should be replaced by the latest released version number:
 
 ```bash
 $ sudo apt install -y unzip
-$ wget https://github.com/tendermint/tendermint/releases/download/v0.22.3/tendermint_0.22.3_linux_amd64.zip
-$ unzip tendermint_0.22.3_linux_amd64.zip
-$ rm tendermint_0.22.3_linux_amd64.zip
+$ wget https://github.com/tendermint/tendermint/releases/download/v0.22.8-autodraft/tendermint_0.22.8_linux_amd64.zip
+$ unzip tendermint_0.22.8_linux_amd64.zip
+$ rm tendermint_0.22.8_linux_amd64.zip
 $ sudo mv tendermint /usr/local/bin
 ```
 
