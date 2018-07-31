@@ -59,7 +59,7 @@ class Transaction(Transaction):
 
                 spent = bigchain.get_spent(input_txid, input_.fulfills.output,
                                            current_transactions)
-                if spent and spent.id != self.id:
+                if spent:
                     raise DoubleSpend('input `{}` was already spent'
                                       .format(input_txid))
 
