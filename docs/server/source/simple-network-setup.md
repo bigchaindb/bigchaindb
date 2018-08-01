@@ -159,41 +159,63 @@ Share the `node_id`, `pub_key.value` and hostname of your Node with all other Me
 At this point the Coordinator should have received the data from all the Members, and should combine them in the `.tendermint/config/genesis.json` file:
 
 ```json
-{
-  "genesis_time": "0001-01-01T00:00:00Z",
-  "chain_id": "test-chain-la6HSr",
-  "validators": [
-    {
-      "pub_key": {
-        "type": "AC26791624DE60",
-        "value": "<Member 1 public key>"
+{  
+   "genesis_time":"0001-01-01T00:00:00Z",
+   "chain_id":"test-chain-la6HSr",
+   "consensus_params":{  
+      "block_size_params":{  
+         "max_bytes":"22020096",
+         "max_txs":"10000",
+         "max_gas":"-1"
       },
-      "power": 10,
-      "name": "<Member 1 name>"
-    },
-    {
-      "pub_key": {
-        "type": "AC26791624DE60",
-        "value": "<Member 2 public key>"
+      "tx_size_params":{  
+         "max_bytes":"10240",
+         "max_gas":"-1"
       },
-      "power": 10,
-      "name": "<Member 2 name>"
-     },
-     {
-       "...": { },
-     },
-     {
-       "pub_key": {
-         "type": "AC26791624DE60",
-         "value": "<Member N public key>"
-       },
-       "power": 10,
-       "name": "<Member N name>"
-     }
-  ],
-  "app_hash": ""
+      "block_gossip_params":{  
+         "block_part_size_bytes":"65536"
+      },
+      "evidence_params":{  
+         "max_age":"100000"
+      }
+   },
+   "validators":[  
+      {  
+         "pub_key":{  
+            "type":"AC26791624DE60",
+            "value":"<Member 1 public key>"
+         },
+         "power":10,
+         "name":"<Member 1 name>"
+      },
+      {  
+         "pub_key":{  
+            "type":"AC26791624DE60",
+            "value":"<Member 2 public key>"
+         },
+         "power":10,
+         "name":"<Member 2 name>"
+      },
+      {  
+         "...":{  
+
+         },
+
+      },
+      {  
+         "pub_key":{  
+            "type":"AC26791624DE60",
+            "value":"<Member N public key>"
+         },
+         "power":10,
+         "name":"<Member N name>"
+      }
+   ],
+   "app_hash":""
 }
 ```
+
+**Note:** `consensus_params` in the `genesis.json` are default values for Tendermint consensus.
 
 The new `genesis.json` file contains the data that describes the Network. The key `name` is the Member's moniker; it can be any valid string, but put something human-readable like `"Alice's Node Shop"`.
 
