@@ -15,7 +15,7 @@ For the licenses on all other BigchainDB-related code (i.e. in other repositorie
 
 ## Documentation Licenses
 
-The official BigchainDB documentation, _except for the short code snippets embedded within it_, is licensed under a Creative Commons Attribution-ShareAlike 4.0 International license, the full text of which can be found at [http://creativecommons.org/licenses/by-sa/4.0/legalcode](http://creativecommons.org/licenses/by-sa/4.0/legalcode).
+The official BigchainDB documentation, _except for the short code snippets embedded within it_, is licensed under a Creative Commons Attribution 4.0 International license, the full text of which can be found at [http://creativecommons.org/licenses/by/4.0/legalcode](http://creativecommons.org/licenses/by/4.0/legalcode).
 
 ## Exceptions
 
