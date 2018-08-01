@@ -13,7 +13,7 @@ RUN apk --update add sudo bash \
         libffi-dev openssl-dev build-base jq \
     && apk add --no-cache libstdc++ dpkg gnupg \
     && pip3 install --upgrade pip cffi \
-    && pip install --no-cache-dir --process-dependency-links . \
+    && pip install --no-cache-dir --process-dependency-links -e . \
     && apk del build-dependencies \
     && rm -f /var/cache/apk/*
 
@@ -27,9 +27,6 @@ RUN wget https://github.com/tendermint/tendermint/releases/download/v${TM_VERSIO
     && rm tendermint_${TM_VERSION}_linux_amd64.zip
 
 ENV TMHOME=/tendermint
-
-RUN addgroup tmuser \
-    && adduser -S -G tmuser tmuser -h "$TMHOME"
 
 # Set permissions required for mongodb
 RUN mkdir -p /data/db /data/configdb \
