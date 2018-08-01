@@ -18,11 +18,23 @@ For reference, the possible headings are:
 * **Known Issues**
 * **Notes**
 
+## [2.0 Beta 5] - 2018-08-01
+
+Tag name: v2.0.0b5
+
+### Changed
+
+* Supported version of Tendermint `0.22.3` -> `0.22.8`. [Pull request #2429](https://github.com/bigchaindb/bigchaindb/pull/2429).
+
+### Fixed
+
+* Raise DoubleSpend exception if transaction is already part of the database. [Pull request #2422](https://github.com/bigchaindb/bigchaindb/pull/2422).
+
 ## [2.0 Beta 4] - 2018-07-30
 
 Tag name: v2.0.0b4
 
-### Added
+### Changed
 
 - Added scripts for creating a configuration to manage processes with Monit. [Pull request #2410](https://github.com/bigchaindb/bigchaindb/pull/2410).
 
