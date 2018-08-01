@@ -10,26 +10,17 @@ from bigchaindb.common.schema import (_validate_schema,
 class ValidatorElectionVote(Transaction):
 
     VALIDATOR_ELECTION_VOTE = 'VALIDATOR_ELECTION_VOTE'
-    # NOTE: this transaction class extends create so the operation inheritence is achieved
-    # by renaming CREATE to VALIDATOR_ELECTION
+    # NOTE: This class inherits TRANSFER txn type. The `TRANSFER` property is
+    # overriden to re-use methods from parent class
     TRANSFER = VALIDATOR_ELECTION_VOTE
     ALLOWED_OPERATIONS = (VALIDATOR_ELECTION_VOTE,)
 
-    def __init__(self, operation, asset, inputs, outputs,
-                 metadata=None, version=None, hash_id=None):
-        # operation `CREATE` is being passed as argument as `VALIDATOR_ELECTION` is an extension
-        # of `CREATE` and any validation on `CREATE` in the parent class should apply to it
-        super().__init__(operation, asset, inputs, outputs, metadata, version, hash_id)
-
     def validate(self, bigchain, current_transactions=[]):
-        """Validate election transaction
+        """Validate election vote transaction
+        NOTE: There are no additional validity conditions on casting votes i.e.
+        a vote is just a valid TRANFER transaction
+
         For more details refer BEP-21: https://github.com/bigchaindb/BEPs/tree/master/21
-
-        NOTE:
-        * A valid election is initiated by an existing validator.
-
-        * A valid election is one where voters are validators and votes are
-          alloacted according to the voting power of each validator node.
 
         Args:
             bigchain (BigchainDB): an instantiated bigchaindb.lib.BigchainDB object.
@@ -56,7 +47,7 @@ class ValidatorElectionVote(Transaction):
 
     @classmethod
     def validate_schema(cls, tx, skip_id=False):
-        """Validate the validator election transaction. Since `VALIDATOR_ELECTION` extends `CREATE`
+        """Validate the validator election vote transaction. Since `VALIDATOR_ELECTION_VOTE` extends `TRANFER`
            transaction, all the validations for `CREATE` transaction should be inherited
         """
         if not skip_id:
