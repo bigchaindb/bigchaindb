@@ -1,4 +1,4 @@
- FROM alpine:latest
+FROM alpine:latest
 LABEL maintainer "dev@bigchaindb.com"
 
 ARG TM_VERSION=0.22.8
@@ -13,7 +13,7 @@ RUN apk --update add sudo bash \
         libffi-dev openssl-dev build-base jq \
     && apk add --no-cache libstdc++ dpkg gnupg \
     && pip3 install --upgrade pip cffi \
-    && pip install --no-cache-dir --process-dependency-links -e .[dev] \
+    && pip install --no-cache-dir --process-dependency-links . \
     && apk del build-dependencies \
     && rm -f /var/cache/apk/*
 
@@ -34,10 +34,6 @@ RUN addgroup tmuser \
 # Set permissions required for mongodb
 RUN mkdir -p /data/db /data/configdb \
         && chown -R mongodb:mongodb /data/db /data/configdb
-
-# When developing with Python in a docker container, we are using PYTHONBUFFERED
-# to force stdin, stdout and stderr to be totally unbuffered and to capture logs/outputs
-ENV PYTHONUNBUFFERED 0
 
 # BigchainDB enviroment variables
 ENV BIGCHAINDB_DATABASE_PORT 27017
