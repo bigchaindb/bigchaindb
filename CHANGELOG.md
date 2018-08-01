@@ -34,7 +34,7 @@ Tag name: v2.0.0b5
 
 Tag name: v2.0.0b4
 
-### Changed
+### Added
 
 - Added scripts for creating a configuration to manage processes with Monit. [Pull request #2410](https://github.com/bigchaindb/bigchaindb/pull/2410).
 
