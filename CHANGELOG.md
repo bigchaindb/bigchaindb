@@ -28,7 +28,7 @@ Tag name: v2.0.0b5
 
 ### Fixed
 
-* Stateful validation raises a DoubleSpend exception if the same transaction already exists in the blockchain. [Pull request #2422](https://github.com/bigchaindb/bigchaindb/pull/2422).
+* Stateful validation raises a DoubleSpend exception if there is any other transaction that spends the same output(s) even if it has the same transaction ID. [Pull request #2422](https://github.com/bigchaindb/bigchaindb/pull/2422).
 
 ## [2.0 Beta 4] - 2018-07-30
 
