@@ -40,7 +40,25 @@ def test_upsert_validator_delegate_election_vote(b_mock, valid_election, ed25519
                                                    [([alice.public_key], 3), ([key0.public_key], votes-3)],
                                                    election_id=valid_election.id)\
                                          .sign([key0.private_key])
+
     assert delegate_vote.validate(b_mock)
+
+    b_mock.store_bulk_transactions([delegate_vote])
+    election_pub_key = ValidatorElectionVote.to_public_key(valid_election.id)
+
+    alice_votes = delegate_vote.to_inputs()[0]
+    alice_casted_vote = ValidatorElectionVote.generate([alice_votes],
+                                                       [([election_pub_key], 3)],
+                                                       election_id=valid_election.id)\
+                                             .sign([alice.private_key])
+    assert alice_casted_vote.validate(b_mock)
+
+    key0_votes = delegate_vote.to_inputs()[1]
+    key0_casted_vote = ValidatorElectionVote.generate([key0_votes],
+                                                      [([election_pub_key], votes-3)],
+                                                      election_id=valid_election.id)\
+                                            .sign([key0.private_key])
+    assert key0_casted_vote.validate(b_mock)
 
 
 def test_upsert_validator_invalid_election_vote(b_mock, valid_election, ed25519_node_keys):
