@@ -1,0 +1,27 @@
+---
+"$schema": "http://json-schema.org/draft-04/schema#"
+type: object
+title: Validator Election Vote Schema - Vote on a validator set change
+required:
+- operation
+- outputs
+properties:
+  operation: "VALIDATOR_ELECTION_VOTE"
+  outputs:
+    type: array
+    items:
+      "$ref": "#/definitions/output"
+definitions:
+  output:
+    type: object
+    properties:
+      condition:
+        type: object
+        required:
+          - uri
+        properties:
+          uri:
+            type: string
+            pattern: "^ni:///sha-256;([a-zA-Z0-9_-]{0,86})[?]\
+              (fpt=ed25519-sha-256(&)?|cost=[0-9]+(&)?|\
+              subtypes=ed25519-sha-256(&)?){2,3}$"
