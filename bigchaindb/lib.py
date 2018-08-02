@@ -462,7 +462,10 @@ class BigchainDB(object):
 
     def get_validators(self):
         try:
-            resp = requests.get('{}validators'.format(self.endpoint))
+            block = self.get_latest_block()
+            query_args = ('?height=' + str(block['height'])) if block else ''
+
+            resp = requests.get('{}validators{}'.format(self.endpoint, query_args))
             validators = resp.json()['result']['validators']
             for v in validators:
                 v.pop('accum')
