@@ -1,7 +1,5 @@
 # Run BigchainDB with all-in-one Docker
 
-**NOT for Production Use**
-
 For those who like using Docker and wish to experiment with BigchainDB in
 non-production environments, we currently maintain a BigchainDB all-in-one 
 Docker image and a
@@ -13,8 +11,8 @@ This image contains all the services required for a BigchainDB node i.e.
 - MongoDB
 - Tendermint
 
-**Note:** *This image is to help quick deployment for early adopters, for a more standard*
-*approach please refer to one of our deployment guides:*
+**Note:** **NOT for Production Use:** *This is an single node opinionated image not well suited for a network deployment.*
+*This image is to help quick deployment for early adopters, for a more standard approach please refer to one of our deployment guides:*
 
 - [BigchainDB developer setup guides](https://docs.bigchaindb.com/projects/contributing/en/latest/dev-setup-coding-and-contribution-process/index.html).
 - [BigchainDB with Kubernetes](http://docs.bigchaindb.com/projects/server/en/latest/production-deployment-template/index.html).
