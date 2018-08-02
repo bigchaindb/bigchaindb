@@ -16,7 +16,9 @@ A Network will stop working if more than one third of the Nodes are down or faul
 
 ## Before We Start
 
-This tutorial assumes you have basic knowledge on how to manage a GNU/Linux machine. The commands are tailored for an up-to-date *Debian-like* distribution. (We use an **Ubuntu 18.04 LTS** Virtual Machine on Microsoft Azure.) If you are on a different Linux distribution then you might need to adapt the names of the packages installed.
+This tutorial assumes you have basic knowledge on how to manage a GNU/Linux machine.
+
+**Please note: The commands on this page work on Ubuntu 18.04. Similar commands will work on other versions of Ubuntu, and other recent Debian-like Linux distros, but you may have to change the names of the packages, or install more packages.**
 
 We don't make any assumptions about **where** you run the Node.
 You can run BigchainDB Server on a Virtual Machine on the cloud, on a machine in your data center, or even on a Raspberry Pi. Just make sure that your Node is reachable by the other Nodes. Here's a **non-exhaustive list of examples**:
@@ -49,7 +51,9 @@ sudo apt full-upgrade
 BigchainDB Server requires **Python 3.6+**, so make sure your system has it. Install the required packages:
 
 ```
+# For Ubuntu 18.04:
 sudo apt install -y python3-pip libssl-dev
+# Ubuntu 16.04, and other Linux distros, may require other packages or more packages
 ```
 
 Now install the latest version of BigchainDB. You can find the latest version by going to the [BigchainDB project release history page on PyPI][bdb:pypi]. For example, to install version 2.0.0b3, you would do:
