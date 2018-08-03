@@ -182,9 +182,7 @@ def encode_validator(v):
 
 
 def decode_validator(v):
-    validator = {'address': '', 'pub_key': {'type': '', 'data': ''}, 'voting_power': 0}
-    validator['address'] = codecs.encode(v.address, 'hex').decode().upper().rstrip('\n')
-    validator['pub_key']['type'] = v.pub_key.type
-    validator['pub_key']['data'] = codecs.encode(v.pub_key.data, 'base64').decode().rstrip('\n')
-    validator['voting_power'] = v.power
-    return validator
+    return {'address': codecs.encode(v.address, 'hex').decode().upper().rstrip('\n'),
+            'pub_key': {'type': v.pub_key.type,
+                        'data': codecs.encode(v.pub_key.data, 'base64').decode().rstrip('\n')},
+            'voting_power': v.power}

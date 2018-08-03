@@ -382,11 +382,11 @@ def test_validator_update():
         value = gen_validator_update(i)
         query.store_validator_set(conn, value)
 
-    [v1] = list(query.get_validator_set(conn, 8))
+    v1 = query.get_validator_set(conn, 8)
     assert v1['height'] == 1
 
-    [v41] = list(query.get_validator_set(conn, 50))
+    v41 = query.get_validator_set(conn, 50)
     assert v41['height'] == 41
 
-    [v91] = list(query.get_validator_set(conn))
+    v91 = query.get_validator_set(conn)
     assert v91['height'] == 91

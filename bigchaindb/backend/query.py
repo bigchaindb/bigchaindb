@@ -363,6 +363,7 @@ def store_validator_set(conn, validator_update):
 
 @singledispatch
 def get_validator_set(conn, height):
-    """Get validator set at which are not synced"""
+    """Get validator set for a given `height`, if `height` is not specified
+    then return the latest validator set"""
 
     raise NotImplementedError

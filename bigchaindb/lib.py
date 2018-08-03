@@ -461,7 +461,7 @@ class BigchainDB(object):
         return fastquery.FastQuery(self.connection)
 
     def get_validators(self, height=None):
-        result = list(backend.query.get_validator_set(self.connection, height))[0]
+        result = backend.query.get_validator_set(self.connection, height)
         validators = result['validators']
         for v in validators:
             v.pop('address')

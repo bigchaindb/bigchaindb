@@ -294,9 +294,11 @@ def get_validator_set(conn, height=None):
     if height is not None:
         query = {'height': {'$lte': height}}
 
-    return conn.run(
+    cursor = conn.run(
         conn.collection('validators')
         .find(query, projection={'_id': False})
         .sort([('height', DESCENDING)])
         .limit(1)
     )
+
+    return list(cursor)[0]
