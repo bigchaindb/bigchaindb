@@ -4,7 +4,8 @@ Production Nodes
 .. toctree::
    :maxdepth: 1
 
+   node-requirements
    node-assumptions
    node-components
-   node-requirements
+   node-security-and-privacy
    reverse-proxy-notes
