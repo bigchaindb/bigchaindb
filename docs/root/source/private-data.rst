@@ -34,7 +34,7 @@ DocPile can figure out if a given user has read permissions on a given document 
 
 There are other ways to accomplish the same thing. The above is just one example.
 
-You might have noticed that the above example didn’t treat the “read permission” as an asset owned (controlled) by a user. The reason is that read permissions must be controlled by DocPile or a document owner, not by the user.
+You might have noticed that the above example didn’t treat the “read permission” as an asset owned (controlled) by a user because if the permission asset is given to (transferred to or created by) the user then it cannot be controlled any further (by DocPile) until the user transfers it back to DocPile. Moreover, the user could transfer the asset to someone else, which might be problematic.
 
 Storing Private Data On-Chain, Encrypted
 ========================================
@@ -47,7 +47,7 @@ Please note:
 
 - Ed25519 keypairs are designed for signing and verifying cryptographic signatures, `not for encrypting and decrypting messages <https://crypto.stackexchange.com/questions/27866/why-curve25519-for-encryption-but-ed25519-for-signatures>`_. For encryption, you should use keypairs designed for encryption, such as X25519.
 - If someone (or some group) publishes how to decrypt some encrypted data on-chain, then anyone with access to that encrypted data will be able to get the plaintext. The data can’t be deleted.
-- Encrypted data can’t be indexed or searched by MongoDB. (It can index and search the ciphertext, but that’s not very useful.) One might use homomorphic encryption to index and search encrypted data, but MongoDB doesn’t have any plans to support that any time soon.
+- Encrypted data can’t be indexed or searched by MongoDB. (It can index and search the ciphertext, but that’s not very useful.) One might use homomorphic encryption to index and search encrypted data, but MongoDB doesn’t have any plans to support that any time soon. If there is indexing or keyword search needed, then some fields of the ``asset.data`` or ``metadata`` objects can be left as plain text and the sensitive information can be stored in an encrypted child-object.
 
 System Example 1
 ~~~~~~~~~~~~~~~~
