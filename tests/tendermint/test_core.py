@@ -50,7 +50,7 @@ def test_check_tx__unsigned_create_is_error(b):
 
 
 @pytest.mark.bdb
-def test_deliver_tx__valid_create_updates_db(b):
+def test_deliver_tx__valid_create_updates_db(b, init_chain_request):
     from bigchaindb import App
     from bigchaindb.models import Transaction
     from bigchaindb.common.crypto import generate_key_pair
@@ -64,8 +64,9 @@ def test_deliver_tx__valid_create_updates_db(b):
 
     app = App(b)
 
+    app.init_chain(init_chain_request)
+
     begin_block = RequestBeginBlock()
-    app.init_chain(['ignore'])
     app.begin_block(begin_block)
 
     result = app.deliver_tx(encode_tx_to_bytes(tx))
@@ -83,7 +84,7 @@ def test_deliver_tx__valid_create_updates_db(b):
     #     next(unspent_outputs)
 
 
-def test_deliver_tx__double_spend_fails(b):
+def test_deliver_tx__double_spend_fails(b, init_chain_request):
     from bigchaindb import App
     from bigchaindb.models import Transaction
     from bigchaindb.common.crypto import generate_key_pair
@@ -96,7 +97,7 @@ def test_deliver_tx__double_spend_fails(b):
                     .sign([alice.private_key])
 
     app = App(b)
-    app.init_chain(['ignore'])
+    app.init_chain(init_chain_request)
 
     begin_block = RequestBeginBlock()
     app.begin_block(begin_block)
@@ -112,13 +113,13 @@ def test_deliver_tx__double_spend_fails(b):
     assert result.code == CodeTypeError
 
 
-def test_deliver_transfer_tx__double_spend_fails(b):
+def test_deliver_transfer_tx__double_spend_fails(b, init_chain_request):
     from bigchaindb import App
     from bigchaindb.models import Transaction
     from bigchaindb.common.crypto import generate_key_pair
 
     app = App(b)
-    app.init_chain(['ignore'])
+    app.init_chain(init_chain_request)
 
     begin_block = RequestBeginBlock()
     app.begin_block(begin_block)
@@ -156,14 +157,16 @@ def test_deliver_transfer_tx__double_spend_fails(b):
     assert result.code == CodeTypeError
 
 
-def test_end_block_return_validator_updates(b):
+# The test below has to re-written one election conclusion logic has been implemented
+@pytest.mark.skip
+def test_end_block_return_validator_updates(b, init_chain_request):
     from bigchaindb import App
     from bigchaindb.backend import query
     from bigchaindb.core import encode_validator
     from bigchaindb.backend.query import VALIDATOR_UPDATE_ID
 
     app = App(b)
-    app.init_chain(['ignore'])
+    app.init_chain(init_chain_request)
 
     begin_block = RequestBeginBlock()
     app.begin_block(begin_block)
@@ -182,7 +185,7 @@ def test_end_block_return_validator_updates(b):
     assert updates == []
 
 
-def test_store_pre_commit_state_in_end_block(b, alice):
+def test_store_pre_commit_state_in_end_block(b, alice, init_chain_request):
     from bigchaindb import App
     from bigchaindb.backend import query
     from bigchaindb.models import Transaction
@@ -194,7 +197,7 @@ def test_store_pre_commit_state_in_end_block(b, alice):
                     .sign([alice.private_key])
 
     app = App(b)
-    app.init_chain(['ignore'])
+    app.init_chain(init_chain_request)
 
     begin_block = RequestBeginBlock()
     app.begin_block(begin_block)
