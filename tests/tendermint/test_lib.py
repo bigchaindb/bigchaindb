@@ -139,6 +139,7 @@ def test_post_transaction_invalid_mode(b):
         b.write_transaction(tx, 'nope')
 
 
+@pytest.mark.skip
 @pytest.mark.bdb
 def test_validator_updates(b, validator_pub_key):
     from bigchaindb.backend import query

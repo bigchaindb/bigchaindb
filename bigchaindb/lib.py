@@ -460,19 +460,13 @@ class BigchainDB(object):
     def fastquery(self):
         return fastquery.FastQuery(self.connection)
 
-    def get_validators(self):
-        try:
-            resp = requests.get('{}validators'.format(self.endpoint))
-            validators = resp.json()['result']['validators']
-            for v in validators:
-                v.pop('accum')
-                v.pop('address')
+    def get_validators(self, height=None):
+        result = backend.query.get_validator_set(self.connection, height)
+        validators = result['validators']
+        for v in validators:
+            v.pop('address')
 
-            return validators
-
-        except requests.exceptions.RequestException as e:
-            logger.error('Error while connecting to Tendermint HTTP API')
-            raise e
+        return validators
 
     def get_validator_update(self):
         update = backend.query.get_validator_update(self.connection)
@@ -483,6 +477,14 @@ class BigchainDB(object):
 
     def store_pre_commit_state(self, state):
         return backend.query.store_pre_commit_state(self.connection, state)
+
+    def store_validator_set(self, height, validators):
+        """Store validator set at a given `height`.
+           NOTE: If the validator set already exists at that `height` then an
+           exception will be raised.
+        """
+        return backend.query.store_validator_set(self.connection, {'height': height,
+                                                                   'validators': validators})
 
 
 Block = namedtuple('Block', ('app_hash', 'height', 'transactions'))

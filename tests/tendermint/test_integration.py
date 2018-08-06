@@ -1,3 +1,5 @@
+import codecs
+
 import abci.types_pb2 as types
 import json
 import pytest
@@ -11,7 +13,7 @@ from io import BytesIO
 
 @pytest.mark.tendermint
 @pytest.mark.bdb
-def test_app(tb):
+def test_app(tb, init_chain_request):
     from bigchaindb import App
     from bigchaindb.tendermint_utils import calculate_hash
     from bigchaindb.common.crypto import generate_key_pair
@@ -28,11 +30,16 @@ def test_app(tb):
     assert res.info.last_block_height == 0
     assert not b.get_latest_block()
 
-    p.process('init_chain', types.Request(init_chain=types.RequestInitChain()))
+    p.process('init_chain', types.Request(init_chain=init_chain_request))
     block0 = b.get_latest_block()
     assert block0
     assert block0['height'] == 0
     assert block0['app_hash'] == ''
+
+    pk = codecs.encode(init_chain_request.validators[0].pub_key.data, 'base64').decode().strip('\n')
+    [validator] = b.get_validators(height=1)
+    assert validator['pub_key']['data'] == pk
+    assert validator['voting_power'] == 10
 
     alice = generate_key_pair()
     bob = generate_key_pair()
@@ -98,6 +105,7 @@ def test_app(tb):
     assert block0['app_hash'] == new_block_hash
 
 
+@pytest.mark.skip
 @pytest.mark.abci
 def test_upsert_validator(b, alice):
     from bigchaindb.backend.query import VALIDATOR_UPDATE_ID
