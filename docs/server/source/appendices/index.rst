@@ -4,7 +4,6 @@ Appendices
 .. toctree::
    :maxdepth: 1
 
-   install-os-level-deps
    json-serialization
    cryptography
    the-bigchaindb-class
