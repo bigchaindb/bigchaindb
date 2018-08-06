@@ -3,9 +3,19 @@
 Overview
 ========
 
-This page summarizes the steps *we* go through
+.. note::
+
+   A highly-available Kubernetes cluster requires at least five virtual machines
+   (three for the master and two for your app's containers).
+   Therefore we don't recommend using Kubernetes to run a BigchainDB node
+   if that's the only thing the Kubernetes cluster will be running.
+   Instead, see **How to Set Up a BigchainDB Network**.
+   If your organization already *has* a big Kubernetes cluster running many containers,
+   and your organization has people who know Kubernetes,
+   then this Kubernetes deployment template might be helpful.
+
+This page summarizes some steps to go through
 to set up a production BigchainDB cluster.
-We are constantly improving them.
 You can modify them to suit your needs.
 
 .. _generate-the-blockchain-id-and-genesis-time:
