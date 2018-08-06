@@ -1,13 +1,25 @@
-Architecture of a BigchainDB Node
-==================================
+Architecture of a BigchainDB Node Running in a Kubernetes Cluster
+=================================================================
 
-A BigchainDB Production deployment is hosted on a Kubernetes cluster and includes:
+.. note::
+
+   A highly-available Kubernetes cluster requires at least five virtual machines
+   (three for the master and two for your app's containers).
+   Therefore we don't recommend using Kubernetes to run a BigchainDB node
+   if that's the only thing the Kubernetes cluster will be running.
+   Instead, see **How to Set Up a BigchainDB Network**.
+   If your organization already *has* a big Kubernetes cluster running many containers,
+   and your organization has people who know Kubernetes,
+   then this Kubernetes deployment template might be helpful.
+
+If you deploy a BigchainDB node into a Kubernetes cluster
+as described in these docs, it will include:
 
 * NGINX, OpenResty, BigchainDB, MongoDB and Tendermint
   `Kubernetes Services <https://kubernetes.io/docs/concepts/services-networking/service/>`_.
-* NGINX, OpenResty, BigchainDB and MongoDB Monitoring Agent.
+* NGINX, OpenResty, BigchainDB and MongoDB Monitoring Agent
   `Kubernetes Deployments <https://kubernetes.io/docs/concepts/workloads/controllers/deployment/>`_.
-* MongoDB and Tendermint `Kubernetes StatefulSet <https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/>`_.
+* MongoDB and Tendermint `Kubernetes StatefulSets <https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/>`_.
 * Third party services like `3scale <https://3scale.net>`_,
   `MongoDB Cloud Manager <https://cloud.mongodb.com>`_ and the
   `Azure Operations Management Suite

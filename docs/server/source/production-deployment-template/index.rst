@@ -1,10 +1,19 @@
 Production Deployment Template
 ==============================
 
-This section outlines how *we* deploy production BigchainDB,
-integrated with Tendermint(backend for BFT consensus),
-clusters on Microsoft Azure using
-Kubernetes. We improve it constantly.
+.. note::
+
+   A highly-available Kubernetes cluster requires at least five virtual machines
+   (three for the master and two for your app's containers).
+   Therefore we don't recommend using Kubernetes to run a BigchainDB node
+   if that's the only thing the Kubernetes cluster will be running.
+   Instead, see **How to Set Up a BigchainDB Network**.
+   If your organization already *has* a big Kubernetes cluster running many containers,
+   and your organization has people who know Kubernetes,
+   then this Kubernetes deployment template might be helpful.
+
+This section outlines a way to deploy a production BigchainDB node (or BigchainDB cluster)
+on Microsoft Azure using Kubernetes.
 You may choose to use it as a template or reference for your own deployment,
 but *we make no claim that it is suitable for your purposes*.
 Feel free change things to suit your needs or preferences.
