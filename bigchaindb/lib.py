@@ -479,6 +479,10 @@ class BigchainDB(object):
         return backend.query.store_pre_commit_state(self.connection, state)
 
     def store_validator_set(self, height, validators):
+        """Store validator set at a given `height`.
+           NOTE: If the validator set already exists at that `height` then an
+           exception will be raised.
+        """
         return backend.query.store_validator_set(self.connection, {'height': height,
                                                                    'validators': validators})
 

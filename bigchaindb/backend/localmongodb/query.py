@@ -9,7 +9,6 @@ from bigchaindb.backend.utils import module_dispatch_registrar
 from bigchaindb.backend.localmongodb.connection import LocalMongoDBConnection
 from bigchaindb.common.transaction import Transaction
 
-
 register_query = module_dispatch_registrar(backend.query)
 
 
