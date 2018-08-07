@@ -1,5 +1,3 @@
-import base58
-
 from bigchaindb.common.transaction import Transaction
 from bigchaindb.common.schema import (_validate_schema,
                                       TX_SCHEMA_COMMON,
@@ -33,10 +31,6 @@ class ValidatorElectionVote(Transaction):
         """
         self.validate_transfer_inputs(bigchain, current_transactions)
         return self
-
-    @classmethod
-    def to_public_key(cls, election_id):
-        return base58.b58encode(bytes.fromhex(election_id))
 
     @classmethod
     def generate(cls, inputs, recipients, election_id, metadata=None):

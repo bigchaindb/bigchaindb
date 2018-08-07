@@ -24,6 +24,8 @@ from bigchaindb.common.exceptions import (SchemaValidationError,
 from bigchaindb.tendermint_utils import encode_transaction, merkleroot
 from bigchaindb import exceptions as core_exceptions
 from bigchaindb.consensus import BaseConsensusRules
+from bigchaindb.upsert_validator import ValidatorElection, ValidatorElectionVote
+
 
 logger = logging.getLogger(__name__)
 
@@ -468,9 +470,20 @@ class BigchainDB(object):
 
         return validators
 
-    def get_validator_update(self):
-        update = backend.query.get_validator_update(self.connection)
-        return [update['validator']] if update else []
+    def get_validator_update(self, txns):
+        votes = {}
+        for txn in txns:
+            if isinstance(txn, ValidatorElectionVote):
+                election_id = txn.asset['id']
+                election_votes = votes.get(election_id, [])
+                votes[election_id] = election_votes.append(txn)
+
+                election = ValidatorElection.conclude(self, election_id, election_votes)
+                # Once an election concludes any other conclusion for the same
+                # or any other election is invalidated
+                if election:
+                    return [election.asset['data']]
+        return []
 
     def delete_validator_update(self):
         return backend.query.delete_validator_update(self.connection)

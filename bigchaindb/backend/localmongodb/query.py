@@ -301,3 +301,15 @@ def get_validator_set(conn, height=None):
     )
 
     return list(cursor)[0]
+
+
+@register_query(LocalMongoDBConnection)
+def get_received_votes_for_election(conn, election_id, election_public_key):
+    cursor = conn.run(
+        conn.collection('transactions').aggregate([
+            {'$match': {'outputs.public_keys': election_public_key,
+                        'operation': 'VALIDATOR_ELECTION_VOTE',
+                        'asset.id': election_id}},
+            {'$project': {'_id': False}}
+        ]))
+    return cursor

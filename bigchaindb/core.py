@@ -134,9 +134,8 @@ class App(BaseApplication):
 
         # TODO: calculate if an election has concluded
         # NOTE: ensure the local validator set is updated
-        # validator_updates = self.bigchaindb.get_validator_update()
-        # validator_updates = [encode_validator(v) for v in validator_updates]
-        validator_updates = []
+        validator_updates = self.bigchaindb.get_validator_update(self.block_transactions)
+        validator_updates = [encode_validator(v) for v in validator_updates]
 
         # Store pre-commit state to recover in case there is a crash
         # during `commit`
@@ -170,9 +169,8 @@ class App(BaseApplication):
 
 
 def encode_validator(v):
-    ed25519_public_key = v['pub_key']['data']
+    ed25519_public_key = v['public_key']
     # NOTE: tendermint expects public to be encoded in go-amino format
-
     pub_key = PubKey(type='ed25519',
                      data=bytes.fromhex(ed25519_public_key))
 

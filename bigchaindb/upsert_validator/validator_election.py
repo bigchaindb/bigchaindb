@@ -1,3 +1,6 @@
+import base58
+
+from bigchaindb import backend
 from bigchaindb.common.exceptions import (InvalidSignature,
                                           MultipleInputsError,
                                           InvalidProposer,
@@ -36,7 +39,7 @@ class ValidatorElection(Transaction):
         validators = {}
         for validator in bigchain.get_validators():
             # NOTE: we assume that Tendermint encodes public key in base64
-            public_key = public_key_from_ed25519_key(key_from_base64(validator['pub_key']['value']))
+            public_key = public_key_from_ed25519_key(key_from_base64(validator['pub_key']['data']))
             validators[public_key] = validator['voting_power']
 
         return validators
@@ -114,7 +117,7 @@ class ValidatorElection(Transaction):
         if not self.is_same_topology(current_validators, self.outputs):
             raise UnequalValidatorSet('Validator set much be exactly same to the outputs of election')
 
-        return True
+        return self
 
     @classmethod
     def generate(cls, initiator, voters, election_data, metadata=None):
@@ -141,3 +144,59 @@ class ValidatorElection(Transaction):
     @classmethod
     def transfer(cls, tx_signers, recipients, metadata=None, asset=None):
         raise NotImplementedError
+
+    @classmethod
+    def to_public_key(cls, election_id):
+        return base58.b58encode(bytes.fromhex(election_id))
+
+    @classmethod
+    def count_votes(cls, election_pk, txns):
+        votes = 0
+        for txn in txns:
+            if isinstance(txn, dict):
+                if txn['operation'] == 'VALIDATOR_ELECTION_VOTE':
+                    for output in txn['outputs']:
+                        # NOTE: We enforce that a valid vote to election id will have only
+                        # election_pk in the output public keys, including any other public key
+                        # along with election_pk will lead to vote being not considered valid.
+                        if len(output['public_keys']) == 1 and [election_pk] == output['public_keys']:
+                            votes = votes + int(output['amount'])
+            else:
+                if txn.operation == 'VALIDATOR_ELECTION_VOTE':
+                    for output in txn.outputs:
+                        # NOTE: We enforce that a valid vote to election id will have only
+                        # election_pk in the output public keys, including any other public key
+                        # along with election_pk will lead to vote being not considered valid.
+                        if len(output.public_keys) == 1 and [election_pk] == output.public_keys:
+                            votes = votes + int(output.amount)
+        return votes
+
+    def get_commited_votes(self, bigchain, election_pk=None):
+        if election_pk is None:
+            election_pk = self.to_public_key(self.id)
+        txns = list(backend.query.get_received_votes_for_election(bigchain.connection, self.id, election_pk))
+        return self.count_votes(election_pk, txns)
+
+    @classmethod
+    def conclude(cls, bigchain, txn_id, current_votes=[]):
+        """Check if the given election has concluded or not
+        NOTE:
+        * Election is concluded iff the current validator set is exactly equal
+          to the validator set encoded in election outputs
+        * Election can concluded only if the current votes achieves a supermajority
+        """
+        election = bigchain.get_transaction(txn_id)
+
+        if election:
+            election_pk = election.to_public_key(election.id)
+            votes_commited = election.get_commited_votes(bigchain, election_pk)
+            votes_current = election.count_votes(election_pk, current_votes)
+            current_validators = election.current_validators(bigchain)
+
+            if election.is_same_topology(current_validators, election.outputs):
+                total_votes = sum(current_validators.values())
+                if (votes_commited < (2/3)*total_votes) and \
+                   (votes_commited + votes_current > (2/3)*total_votes):
+                    return election
+
+        return False

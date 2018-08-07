@@ -367,3 +367,15 @@ def get_validator_set(conn, height):
     then return the latest validator set"""
 
     raise NotImplementedError
+
+
+@singledispatch
+def get_received_votes_for_election(connection, election_id, election_public_key):
+    """Retrieve a list of `VALIDATOR_ELECTION_VOTE`s `txids` that are owned by `owner`.
+    Args:
+        election_id (str): Id of the election.
+        election_public_key (str): base58 encoded public key of the election
+    Returns:
+        Iterator of transaction that list given owner in conditions.
+    """
+    raise NotImplementedError
