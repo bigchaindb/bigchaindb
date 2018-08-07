@@ -15,7 +15,7 @@ Overview
    then this Kubernetes deployment template might be helpful.
 
 This page summarizes some steps to go through
-to set up a production BigchainDB cluster.
+to set up a BigchainDB cluster.
 You can modify them to suit your needs.
 
 .. _generate-the-blockchain-id-and-genesis-time:
@@ -123,13 +123,13 @@ and set it equal to your secret token, e.g.
 
 
 3. Deploy a Kubernetes cluster for your BigchainDB node. We have some instructions for how to
-:doc:`Deploy a Kubernetes cluster on Azure <../production-deployment-template/template-kubernetes-azure>`.
+:doc:`Deploy a Kubernetes cluster on Azure <../k8s-deployment-template/template-kubernetes-azure>`.
 
 .. warning::
 
    In theory, you can deploy your BigchainDB node to any Kubernetes cluster, but there can be differences
    between different Kubernetes clusters, especially if they are running different versions of Kubernetes.
-   We tested this Production Deployment Template on Azure ACS in February 2018 and at that time
+   We tested this Kubernetes Deployment Template on Azure ACS in February 2018 and at that time
    ACS was deploying a **Kubernetes 1.7.7** cluster. If you can force your cluster to have that version of Kubernetes,
    then you'll increase the likelihood that everything will work in your cluster.
 
