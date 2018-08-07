@@ -15,7 +15,7 @@ This image contains all the services required for a BigchainDB node i.e.
 *This image is to help quick deployment for early adopters, for a more standard approach please refer to one of our deployment guides:*
 
 - [BigchainDB developer setup guides](https://docs.bigchaindb.com/projects/contributing/en/latest/dev-setup-coding-and-contribution-process/index.html).
-- [BigchainDB with Kubernetes](http://docs.bigchaindb.com/projects/server/en/latest/production-deployment-template/index.html).
+- [BigchainDB with Kubernetes](http://docs.bigchaindb.com/projects/server/en/latest/k8s-deployment-template/index.html).
 
 ## Prerequisite(s)
 - [Docker](https://docs.docker.com/engine/installation/)

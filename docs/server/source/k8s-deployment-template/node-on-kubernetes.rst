@@ -40,7 +40,7 @@ If you don't have that file, then you need to get it.
 
 **Azure.** If you deployed your Kubernetes cluster on Azure
 using the Azure CLI 2.0 (as per :doc:`our template
-<../production-deployment-template/template-kubernetes-azure>`),
+<../k8s-deployment-template/template-kubernetes-azure>`),
 then you can get the ``~/.kube/config`` file using:
 
 .. code:: bash
@@ -288,7 +288,7 @@ The first thing to do is create the Kubernetes storage classes.
 First, you need an Azure storage account.
 If you deployed your Kubernetes cluster on Azure
 using the Azure CLI 2.0
-(as per :doc:`our template <../production-deployment-template/template-kubernetes-azure>`),
+(as per :doc:`our template <../k8s-deployment-template/template-kubernetes-azure>`),
 then the `az acs create` command already created a
 storage account in the same location and resource group
 as your Kubernetes cluster.
@@ -300,7 +300,7 @@ in the same data center.
 Premium storage is higher-cost and higher-performance.
 It uses solid state drives (SSD).
 
-We recommend using Premium storage for our production template.
+We recommend using Premium storage with our Kubernetes deployment template.
 Create a `storage account <https://docs.microsoft.com/en-us/azure/storage/common/storage-create-storage-account>`_
 for Premium storage and associate it with your Azure resource group.
 For future reference, the command to create a storage account is
@@ -383,7 +383,7 @@ but it should become "Bound" fairly quickly.
         $ kubectl patch pv <pv-name> -p '{"spec":{"persistentVolumeReclaimPolicy":"Retain"}}'
 
     For notes on recreating a private volume form a released Azure disk resource consult
-    :doc:`the page about cluster troubleshooting <../production-deployment-template/troubleshoot>`.
+    :doc:`the page about cluster troubleshooting <../k8s-deployment-template/troubleshoot>`.
 
 .. _start-kubernetes-stateful-set-mongodb:
 
@@ -580,7 +580,7 @@ Step 19(Optional): Configure the MongoDB Cloud Manager
 ------------------------------------------------------
 
 Refer to the
-:doc:`documentation <../production-deployment-template/cloud-manager>`
+:doc:`documentation <../k8s-deployment-template/cloud-manager>`
 for details on how to configure the MongoDB Cloud Manager to enable
 monitoring and backup.
 
@@ -760,4 +760,4 @@ verify that your node or cluster works as expected.
 
 Next, you can set up log analytics and monitoring, by following our templates:
 
-* :doc:`../production-deployment-template/log-analytics`.
+* :doc:`../k8s-deployment-template/log-analytics`.
