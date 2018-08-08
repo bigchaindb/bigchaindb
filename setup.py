@@ -56,7 +56,7 @@ tests_require = [
     'flake8-quotes==0.8.1',
     'hypothesis~=3.18.5',
     'hypothesis-regex',
-    'pylint',
+    # Removed pylint because its GPL license isn't Apache2-compatible
     'pytest>=3.0.0',
     'pytest-cov>=2.2.1',
     'pytest-mock',
@@ -85,7 +85,7 @@ install_requires = [
     'gunicorn~=19.0',
     'jsonschema~=2.5.1',
     'pyyaml~=3.12',
-    'aiohttp~=2.3',
+    'aiohttp~=3.0',
     'python-rapidjson-schema==0.1.1',
     'bigchaindb-abci==0.5.1',
     'setproctitle~=1.1.0',
@@ -127,6 +127,8 @@ setup(
     ],
 
     packages=find_packages(exclude=['tests*']),
+
+    scripts = ['pkg/scripts/bigchaindb-monit-config'],
 
     entry_points={
         'console_scripts': [

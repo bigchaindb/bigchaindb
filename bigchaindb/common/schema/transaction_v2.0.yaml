@@ -58,6 +58,8 @@ definitions:
     enum:
     - CREATE
     - TRANSFER
+    - VALIDATOR_ELECTION
+    - VALIDATOR_ELECTION_VOTE
   asset:
     type: object
     additionalProperties: false

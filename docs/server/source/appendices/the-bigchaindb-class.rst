@@ -2,4 +2,4 @@
 The BigchainDB Class
 ####################
 
-.. autoclass:: bigchaindb.tendermint.BigchainDB
+.. autoclass:: bigchaindb.BigchainDB

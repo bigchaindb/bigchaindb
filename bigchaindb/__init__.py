@@ -2,6 +2,9 @@ import copy
 import logging
 
 from bigchaindb.log import DEFAULT_LOGGING_CONFIG as log_config
+from bigchaindb.lib import BigchainDB  # noqa
+from bigchaindb.version import __version__  # noqa
+from bigchaindb.core import App  # noqa
 
 # from functools import reduce
 # PORT_NUMBER = reduce(lambda x, y: x * y, map(ord, 'BigchainDB')) % 2**16
@@ -84,5 +87,12 @@ config = {
 # the user wants to reconfigure the node. Check ``bigchaindb.config_utils``
 # for more info.
 _config = copy.deepcopy(config)
-from bigchaindb.tendermint import BigchainDB  # noqa
-from bigchaindb.version import __version__  # noqa
+from bigchaindb.common.transaction import Transaction  # noqa
+from bigchaindb import models                          # noqa
+from bigchaindb.upsert_validator import ValidatorElection  # noqa
+from bigchaindb.upsert_validator import ValidatorElectionVote  # noqa
+
+Transaction.register_type(Transaction.CREATE, models.Transaction)
+Transaction.register_type(Transaction.TRANSFER, models.Transaction)
+Transaction.register_type(ValidatorElection.VALIDATOR_ELECTION, ValidatorElection)
+Transaction.register_type(ValidatorElectionVote.VALIDATOR_ELECTION_VOTE, ValidatorElectionVote)

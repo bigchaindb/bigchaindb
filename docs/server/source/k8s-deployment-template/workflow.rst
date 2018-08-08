@@ -3,9 +3,19 @@
 Overview
 ========
 
-This page summarizes the steps *we* go through
-to set up a production BigchainDB cluster.
-We are constantly improving them.
+.. note::
+
+   A highly-available Kubernetes cluster requires at least five virtual machines
+   (three for the master and two for your app's containers).
+   Therefore we don't recommend using Kubernetes to run a BigchainDB node
+   if that's the only thing the Kubernetes cluster will be running.
+   Instead, see **How to Set Up a BigchainDB Network**.
+   If your organization already *has* a big Kubernetes cluster running many containers,
+   and your organization has people who know Kubernetes,
+   then this Kubernetes deployment template might be helpful.
+
+This page summarizes some steps to go through
+to set up a BigchainDB cluster.
 You can modify them to suit your needs.
 
 .. _generate-the-blockchain-id-and-genesis-time:
@@ -44,7 +54,7 @@ you can do this:
 .. code::
 
    $ mkdir $(pwd)/tmdata
-   $ docker run --rm -v $(pwd)/tmdata:/tendermint/config tendermint/tendermint:0.22.3 init
+   $ docker run --rm -v $(pwd)/tmdata:/tendermint/config tendermint/tendermint:0.22.8 init
    $ cat $(pwd)/tmdata/genesis.json
 
 You should see something that looks like:
@@ -113,13 +123,13 @@ and set it equal to your secret token, e.g.
 
 
 3. Deploy a Kubernetes cluster for your BigchainDB node. We have some instructions for how to
-:doc:`Deploy a Kubernetes cluster on Azure <../production-deployment-template/template-kubernetes-azure>`.
+:doc:`Deploy a Kubernetes cluster on Azure <../k8s-deployment-template/template-kubernetes-azure>`.
 
 .. warning::
 
    In theory, you can deploy your BigchainDB node to any Kubernetes cluster, but there can be differences
    between different Kubernetes clusters, especially if they are running different versions of Kubernetes.
-   We tested this Production Deployment Template on Azure ACS in February 2018 and at that time
+   We tested this Kubernetes Deployment Template on Azure ACS in February 2018 and at that time
    ACS was deploying a **Kubernetes 1.7.7** cluster. If you can force your cluster to have that version of Kubernetes,
    then you'll increase the likelihood that everything will work in your cluster.
 

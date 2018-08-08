@@ -108,7 +108,7 @@ def file_config(filename=None):
                 'Failed to parse the JSON configuration from `{}`, {}'.format(filename, err)
             )
 
-    logger.info('Configuration loaded from `{}`'.format(filename))
+        logger.info('Configuration loaded from `{}`'.format(filename))
 
     return config
 

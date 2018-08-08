@@ -13,6 +13,7 @@
 - name: Get Running BigchainDB Process(es)
   shell: "ps aux | grep \"[b]igchaindb\" | awk '{print $2}'"
   register: bdb_ps
+  ignore_errors: yes
   when: stack_type|lower == "local"
   tags: [bigchaindb]
 

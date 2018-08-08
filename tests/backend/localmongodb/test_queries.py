@@ -229,7 +229,7 @@ def test_get_spending_transactions(user_pk, user_sk):
 
 def test_store_block():
     from bigchaindb.backend import connect, query
-    from bigchaindb.tendermint.lib import Block
+    from bigchaindb.lib import Block
     conn = connect()
 
     block = Block(app_hash='random_utxo',
@@ -242,7 +242,7 @@ def test_store_block():
 
 def test_get_block():
     from bigchaindb.backend import connect, query
-    from bigchaindb.tendermint.lib import Block
+    from bigchaindb.lib import Block
     conn = connect()
 
     block = Block(app_hash='random_utxo',
@@ -345,7 +345,7 @@ def test_get_unspent_outputs(db_context, utxoset):
 
 def test_store_pre_commit_state(db_context):
     from bigchaindb.backend import query
-    from bigchaindb.tendermint.lib import PreCommitState
+    from bigchaindb.lib import PreCommitState
 
     state = PreCommitState(commit_id='test',
                            height=3,
@@ -359,7 +359,7 @@ def test_store_pre_commit_state(db_context):
 
 def test_get_pre_commit_state(db_context):
     from bigchaindb.backend import query
-    from bigchaindb.tendermint.lib import PreCommitState
+    from bigchaindb.lib import PreCommitState
 
     state = PreCommitState(commit_id='test2',
                            height=3,
@@ -370,22 +370,23 @@ def test_get_pre_commit_state(db_context):
     assert resp == state._asdict()
 
 
-def test_store_validator_update():
+def test_validator_update():
     from bigchaindb.backend import connect, query
-    from bigchaindb.backend.query import VALIDATOR_UPDATE_ID
-    from bigchaindb.common.exceptions import MultipleValidatorOperationError
 
     conn = connect()
 
-    validator_update = {'validator': {'key': 'value'},
-                        'update_id': VALIDATOR_UPDATE_ID}
-    query.store_validator_update(conn, deepcopy(validator_update))
+    def gen_validator_update(height):
+        return {'data': 'somedata', 'height': height}
 
-    with pytest.raises(MultipleValidatorOperationError):
-        query.store_validator_update(conn, deepcopy(validator_update))
+    for i in range(1, 100, 10):
+        value = gen_validator_update(i)
+        query.store_validator_set(conn, value)
 
-    resp = query.get_validator_update(conn, VALIDATOR_UPDATE_ID)
+    v1 = query.get_validator_set(conn, 8)
+    assert v1['height'] == 1
 
-    assert resp == validator_update
-    assert query.delete_validator_update(conn, VALIDATOR_UPDATE_ID)
-    assert not query.get_validator_update(conn, VALIDATOR_UPDATE_ID)
+    v41 = query.get_validator_set(conn, 50)
+    assert v41['height'] == 41
+
+    v91 = query.get_validator_set(conn)
+    assert v91['height'] == 91

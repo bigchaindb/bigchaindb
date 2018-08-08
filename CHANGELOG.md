@@ -18,6 +18,49 @@ For reference, the possible headings are:
 * **Known Issues**
 * **Notes**
 
+## [2.0 Beta 5] - 2018-08-01
+
+Tag name: v2.0.0b5
+
+### Changed
+
+* Supported version of Tendermint `0.22.3` -> `0.22.8`. [Pull request #2429](https://github.com/bigchaindb/bigchaindb/pull/2429).
+
+### Fixed
+
+* Stateful validation raises a DoubleSpend exception if there is any other transaction that spends the same output(s) even if it has the same transaction ID. [Pull request #2422](https://github.com/bigchaindb/bigchaindb/pull/2422).
+
+## [2.0 Beta 4] - 2018-07-30
+
+Tag name: v2.0.0b4
+
+### Added
+
+- Added scripts for creating a configuration to manage processes with Monit. [Pull request #2410](https://github.com/bigchaindb/bigchaindb/pull/2410).
+
+### Fixed
+
+- Redundant asset and metadata queries were removed. [Pull request #2409](https://github.com/bigchaindb/bigchaindb/pull/2409).
+- Signal handling was fixed for BigchainDB processes. [Pull request #2395](https://github.com/bigchaindb/bigchaindb/pull/2395).
+- Some of the abruptly closed sockets that used to stay in memory are being cleaned up now. [Pull request 2408](https://github.com/bigchaindb/bigchaindb/pull/2408).
+- Fixed the bug when WebSockets powering Events API became unresponsive. [Pull request #2413](https://github.com/bigchaindb/bigchaindb/pull/2413).
+
+### Notes:
+
+* The instructions on how to write a BEP were simplified. [Pull request #2347](https://github.com/bigchaindb/bigchaindb/pull/2347).
+* A section about troubleshooting was added to the network setup guide. [Pull request #2398](https://github.com/bigchaindb/bigchaindb/pull/2398).
+* Some of the core code was given a better package structure. [Pull request #2401](https://github.com/bigchaindb/bigchaindb/pull/2401).
+* Some of the previously disabled unit tests were re-enabled and updated. Pull requests [#2404](https://github.com/bigchaindb/bigchaindb/pull/2404) and [#2402](https://github.com/bigchaindb/bigchaindb/pull/2402).
+* Some building blocks for dynamically adding new validators were introduced. [Pull request #2392](https://github.com/bigchaindb/bigchaindb/pull/2392).
+
+## [2.0 Beta 3] - 2018-07-18
+
+Tag name: v2.0.0b3
+
+### Fixed
+
+Fixed a bug in transaction validation. For some more-complex situations, it would say that a valid transaction was invalid. This bug was actually fixed before; it was [issue #1271](https://github.com/bigchaindb/bigchaindb/issues/1271). The unit test for it was turned off while we integrated Tendermint. Then the query implementation code got changed, reintroducing the bug, but the unit test was off so the bug wasn't caught. When we turned the test back on, shortly after releasing Beta 2, it failed, unveiling the bug. [Pull request #2389](https://github.com/bigchaindb/bigchaindb/pull/2389)
+
 ## [2.0 Beta 2] - 2018-07-16
 
 Tag name: v2.0.0b2
