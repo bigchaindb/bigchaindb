@@ -467,6 +467,7 @@ class BigchainDB(object):
             for v in validators:
                 v.pop('accum')
                 v.pop('address')
+                v['voting_power'] = int(v['voting_power'])
 
             return validators
 
