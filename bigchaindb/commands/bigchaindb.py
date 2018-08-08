@@ -247,11 +247,6 @@ def create_parser():
                                      dest='sk',
                                      help='Path to the private key of the election initiator.')
 
-    show_election_subparser = validator_subparser.add_parser('show',
-                                                             help='Show election information.')
-
-    show_election_subparser.add_argument('election_id')
-
     # parsers for showing/exporting config values
     subparsers.add_parser('show-config',
                           help='Show the current configuration')
