@@ -104,6 +104,18 @@ def run_upsert_validator(args):
 
 
 def run_upsert_validator_new(args, bigchain):
+    """Initiates an election to add/update/remove a validator to an existing BigchainDB network
+
+    :param args: dict
+        args = {
+            'public_key': the public key of the proposed peer, (str)
+            'power': the proposed validator power for the new peer, (str)
+            'node_id': the node_id of the new peer (str)
+            'sk': the path to the private key of the node calling the election (str)
+        }
+    :param bigchain: an instance of BigchainDB
+    :return: election_id (tx_id)
+    """
 
     new_validator = {
         'public_key': args.public_key,
