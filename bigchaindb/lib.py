@@ -262,8 +262,10 @@ class BigchainDB(object):
     def get_transactions_filtered(self, asset_id, operation=None):
         """Get a list of transactions filtered on some criteria
         """
-        return backend.query.get_txids_filtered(self.connection, asset_id,
-                                                operation)
+        txids = backend.query.get_txids_filtered(self.connection, asset_id,
+                                                 operation)
+        for txid in txids:
+            yield self.get_transaction(txid)
 
     def get_outputs_filtered(self, owner, spent=None):
         """Get a list of output links filtered on some criteria
