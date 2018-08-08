@@ -278,13 +278,15 @@ def get_pre_commit_state(conn, commit_id):
 
 
 @register_query(LocalMongoDBConnection)
-def store_validator_set(conn, validator_update):
-    try:
-        return conn.run(
-            conn.collection('validators')
-            .insert_one(validator_update))
-    except DuplicateKeyError:
-        raise MultipleValidatorOperationError('Validator update already exists')
+def store_validator_set(conn, validators_update):
+    height = validators_update['height']
+    return conn.run(
+        conn.collection('validators').update_one(
+            {"height": height},
+            {"$set": validators_update},
+            upsert=True
+        )
+    )
 
 
 @register_query(LocalMongoDBConnection)

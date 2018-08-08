@@ -226,8 +226,7 @@ def test_upsert_validator(b, node_key, node_keys, new_validator, ed25519_node_ke
     conn = connect()
     (node_pub, _) = list(node_keys.items())[0]
 
-    validators = [{'address': 'some_address',
-                   'pub_key': {'type': 'ed25519',
+    validators = [{'pub_key': {'type': 'ed25519',
                                'data': node_pub},
                    'voting_power': 10}]
 
@@ -241,6 +240,7 @@ def test_upsert_validator(b, node_key, node_keys, new_validator, ed25519_node_ke
 
     power = 1
     public_key = '9B3119650DF82B9A5D8A12E38953EA47475C09F0C48A4E6A0ECE182944B24403'
+    public_key64 = public_key_to_base64(public_key)
     new_validator = {'public_key': public_key,
                      'node_id': 'some_node_id',
                      'power': power}
@@ -266,7 +266,13 @@ def test_upsert_validator(b, node_key, node_keys, new_validator, ed25519_node_ke
     for v in resp.json()['result']['validators']:
         validator_pub_keys.append(v['pub_key']['value'])
 
-    assert (public_key_to_base64(public_key) in validator_pub_keys)
+    assert (public_key64 in validator_pub_keys)
+    new_validator_set = b.get_validators()
+    validator_pub_keys = []
+    for v in new_validator_set:
+        validator_pub_keys.append(v['pub_key']['data'])
+
+    assert (public_key64 in validator_pub_keys)
 
 
 # ============================================================================

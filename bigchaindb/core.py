@@ -18,6 +18,7 @@ from abci.types_pb2 import (
 
 from bigchaindb import BigchainDB
 from bigchaindb.tendermint_utils import (decode_transaction,
+                                         public_key_to_base64,
                                          calculate_hash)
 from bigchaindb.lib import Block, PreCommitState
 from bigchaindb.backend.query import PRE_COMMIT_ID
@@ -135,6 +136,8 @@ class App(BaseApplication):
         # TODO: calculate if an election has concluded
         # NOTE: ensure the local validator set is updated
         validator_updates = self.bigchaindb.get_validator_update(self.block_transactions)
+        validator_set = new_validator_set(self.bigchaindb, self.new_height, validator_updates)
+        self.bigchaindb.store_validator_set(self.new_height+1, validator_set)
         validator_updates = [encode_validator(v) for v in validator_updates]
 
         # Store pre-commit state to recover in case there is a crash
@@ -180,7 +183,21 @@ def encode_validator(v):
 
 
 def decode_validator(v):
-    return {'address': codecs.encode(v.address, 'hex').decode().upper().rstrip('\n'),
-            'pub_key': {'type': v.pub_key.type,
+    return {'pub_key': {'type': v.pub_key.type,
                         'data': codecs.encode(v.pub_key.data, 'base64').decode().rstrip('\n')},
             'voting_power': v.power}
+
+
+def new_validator_set(bigchain, height, updates):
+    validators = bigchain.get_validators(height)
+    validators_dict = {}
+    for v in validators:
+        validators_dict[v['pub_key']['data']] = v
+
+    updates_dict = {}
+    for u in updates:
+        updates_dict[u['public_key']] = {'pub_key': {'type': 'ed25519',
+                                                     'data': public_key_to_base64(u['public_key']) },
+                                         'voting_power': u['power']}
+    new_validators_dict = {**validators_dict, **updates_dict}
+    return list(new_validators_dict.values())
