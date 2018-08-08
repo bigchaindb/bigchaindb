@@ -670,6 +670,7 @@ def node_keys():
             'PecJ58SaNRsWJZodDmqjpCWqG6btdwXFHLyE40RYlYM=':
             'uz8bYgoL4rHErWT1gjjrnA+W7bgD/uDQWSRKDmC8otc95wnnxJo1GxYlmh0OaqOkJaobpu13BcUcvITjRFiVgw=='}
 
+
 @pytest.fixture(scope='session')
 def priv_validator_path(node_keys):
     (public_key, private_key) = list(node_keys.items())[0]
