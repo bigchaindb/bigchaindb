@@ -3,10 +3,10 @@ import logging
 
 from bigchaindb.common.exceptions import ConfigurationError
 from logging.config import dictConfig as set_logging_config
-from os.path import expanduser, join
+import os
 
 
-DEFAULT_LOG_DIR = expanduser('~')
+DEFAULT_LOG_DIR = os.getcwd()
 BENCHMARK_LOG_LEVEL = 15
 
 
@@ -40,7 +40,7 @@ DEFAULT_LOGGING_CONFIG = {
         },
         'file': {
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': join(DEFAULT_LOG_DIR, 'bigchaindb.log'),
+            'filename': os.path.join(DEFAULT_LOG_DIR, 'bigchaindb.log'),
             'mode': 'w',
             'maxBytes':  209715200,
             'backupCount': 5,
@@ -49,7 +49,7 @@ DEFAULT_LOGGING_CONFIG = {
         },
         'errors': {
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': join(DEFAULT_LOG_DIR, 'bigchaindb-errors.log'),
+            'filename': os.path.join(DEFAULT_LOG_DIR, 'bigchaindb-errors.log'),
             'mode': 'w',
             'maxBytes':  209715200,
             'backupCount': 5,
@@ -58,7 +58,7 @@ DEFAULT_LOGGING_CONFIG = {
         },
         'benchmark': {
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': 'bigchaindb-benchmark.log',
+            'filename': os.path.join(DEFAULT_LOG_DIR, 'bigchaindb-benchmark.log'),
             'mode': 'w',
             'maxBytes':  209715200,
             'backupCount': 5,

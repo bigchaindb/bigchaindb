@@ -53,20 +53,7 @@ You could do more elaborate things too. As one example, each time someone writes
 Read Permissions
 ================
 
-All the data stored in a BigchainDB network can be read by anyone with access to that network. One *can* store encrypted data, but if the decryption key ever leaks out, then the encrypted data can be read, decrypted, and leak out too. (Deleting the encrypted data is :doc:`not an option <immutable>`.)
-
-The permission to read some specific information (e.g. a music file) can be thought of as an *asset*. (In many countries, that permission or "right" is a kind of intellectual property.)
-BigchainDB can be used to register that asset and transfer it from owner to owner.
-Today, BigchainDB does not have a way to restrict read access of data stored in a BigchainDB network, but many third-party services do offer that (e.g. Google Docs, Dropbox). 
-In principle, a third party service could ask a BigchainDB network to determine if a particular user has permission to read some particular data. Indeed they could use BigchainDB to keep track of *all* the rights a user has for some data (not just the right to read it).
-That third party could also use BigchainDB to store audit logs, i.e. records of every read, write or other operation on stored data.
-
-BigchainDB can be used in other ways to help parties exchange private data:
-
-- It can be used to publicly disclose the *availability* of some private data (stored elsewhere). For example, there might be a description of the data and a price.
-- It can be used to record the TLS handshakes which two parties sent to each other to establish an encrypted and authenticated TLS connection, which they could use to exchange private data with each other. (The stored handshake information wouldn't be enough, by itself, to decrypt the data.) It would be a "proof of TLS handshake."
-- See the BigchainDB `Privacy Protocols repository <https://github.com/bigchaindb/privacy-protocols>`_ for more techniques.
-
+See the page titled, :doc:`BigchainDB, Privacy and Private Data <private-data>`.
 
 Role-Based Access Control (RBAC)
 ================================

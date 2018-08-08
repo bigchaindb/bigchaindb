@@ -4,6 +4,8 @@ properties related to validation.
 
 from unittest.mock import patch
 
+import pytest
+
 from hypothesis import given
 from hypothesis_regex import regex
 from pytest import raises
@@ -19,8 +21,12 @@ UNSUPPORTED_CRYPTOCONDITION_TYPES = (
     'preimage-sha-256', 'prefix-sha-256', 'rsa-sha-256')
 
 
+pytestmark = pytest.mark.tendermint
+
+
 ################################################################################
 # Test of schema utils
+
 
 def _test_additionalproperties(node, path=''):
     """Validate that each object node has additionalProperties set, so that

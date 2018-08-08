@@ -8,9 +8,10 @@ from flask import current_app, request, jsonify
 from flask_restful import Resource, reqparse
 
 from bigchaindb.common.exceptions import SchemaValidationError, ValidationError
-from bigchaindb.models import Transaction
 from bigchaindb.web.views.base import make_error
 from bigchaindb.web.views import parameters
+from bigchaindb.models import Transaction
+
 
 logger = logging.getLogger(__name__)
 

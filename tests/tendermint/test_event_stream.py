@@ -8,7 +8,7 @@ import pytest
 
 @pytest.mark.tendermint
 def test_process_event_new_block():
-    from bigchaindb.tendermint.event_stream import process_event
+    from bigchaindb.event_stream import process_event
 
     event = '{"jsonrpc": "2.0", "id": "test_stream_id#event",  "result": {'\
             '"query": "tm.event=\'NewBlock\'", "data": { "type": "CF18EA939D3240",'\
@@ -46,7 +46,7 @@ def test_process_event_new_block():
 
 @pytest.mark.tendermint
 def test_process_event_empty_block():
-    from bigchaindb.tendermint.event_stream import process_event
+    from bigchaindb.event_stream import process_event
 
     event = '{"jsonrpc": "2.0", "id": "bigchaindb_stream_1524555674#event",'\
             '"result": {"query": "tm.event=\'NewBlock\'", "data": {"type": '\
@@ -67,7 +67,7 @@ def test_process_event_empty_block():
 
 @pytest.mark.tendermint
 def test_process_unknown_event():
-    from bigchaindb.tendermint.event_stream import process_event
+    from bigchaindb.event_stream import process_event
 
     event = '{"jsonrpc": "2.0", "id": "test_stream_id#event",'\
             ' "result": { "query": "tm.event=\'UnknownEvent\'" }}'
@@ -80,7 +80,7 @@ def test_process_unknown_event():
 @pytest.mark.asyncio
 @pytest.mark.abci
 async def test_subscribe_events(tendermint_ws_url, b):
-    from bigchaindb.tendermint.event_stream import subscribe_events
+    from bigchaindb.event_stream import subscribe_events
     from bigchaindb.common.crypto import generate_key_pair
     from bigchaindb.models import Transaction
 

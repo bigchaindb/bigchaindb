@@ -372,7 +372,7 @@ def test_transactions_get_list_good(client):
 
     asset_id = '1' * 64
 
-    with patch('bigchaindb.tendermint.BigchainDB.get_transactions_filtered', get_txs_patched):
+    with patch('bigchaindb.BigchainDB.get_transactions_filtered', get_txs_patched):
         url = TX_ENDPOINT + '?asset_id=' + asset_id
         assert client.get(url).json == [
             ['asset_id', asset_id],
@@ -389,7 +389,7 @@ def test_transactions_get_list_good(client):
 def test_transactions_get_list_bad(client):
     def should_not_be_called():
         assert False
-    with patch('bigchaindb.tendermint.BigchainDB.get_transactions_filtered',
+    with patch('bigchaindb.BigchainDB.get_transactions_filtered',
                lambda *_, **__: should_not_be_called()):
         # Test asset id validated
         url = TX_ENDPOINT + '?asset_id=' + '1' * 63

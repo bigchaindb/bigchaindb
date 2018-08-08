@@ -8,7 +8,6 @@ from bigchaindb.common.exceptions import MultipleValidatorOperationError
 from bigchaindb.backend.utils import module_dispatch_registrar
 from bigchaindb.backend.localmongodb.connection import LocalMongoDBConnection
 from bigchaindb.common.transaction import Transaction
-from bigchaindb.backend.query import VALIDATOR_UPDATE_ID
 
 register_query = module_dispatch_registrar(backend.query)
 
@@ -99,11 +98,13 @@ def get_assets(conn, asset_ids):
 
 @register_query(LocalMongoDBConnection)
 def get_spent(conn, transaction_id, output):
+    query = {'inputs.fulfills': {
+        'transaction_id': transaction_id,
+        'output_index': output}}
+
     return conn.run(
         conn.collection('transactions')
-        .find({'inputs.fulfills.transaction_id': transaction_id,
-               'inputs.fulfills.output_index': output},
-              {'_id': 0}))
+            .find(query, {'_id': 0}))
 
 
 @register_query(LocalMongoDBConnection)
@@ -277,7 +278,7 @@ def get_pre_commit_state(conn, commit_id):
 
 
 @register_query(LocalMongoDBConnection)
-def store_validator_update(conn, validator_update):
+def store_validator_set(conn, validator_update):
     try:
         return conn.run(
             conn.collection('validators')
@@ -287,15 +288,16 @@ def store_validator_update(conn, validator_update):
 
 
 @register_query(LocalMongoDBConnection)
-def get_validator_update(conn, update_id=VALIDATOR_UPDATE_ID):
-    return conn.run(
-        conn.collection('validators')
-        .find_one({'update_id': update_id}, projection={'_id': False}))
+def get_validator_set(conn, height=None):
+    query = {}
+    if height is not None:
+        query = {'height': {'$lte': height}}
 
-
-@register_query(LocalMongoDBConnection)
-def delete_validator_update(conn, update_id=VALIDATOR_UPDATE_ID):
-    return conn.run(
+    cursor = conn.run(
         conn.collection('validators')
-        .delete_one({'update_id': update_id})
+        .find(query, projection={'_id': False})
+        .sort([('height', DESCENDING)])
+        .limit(1)
     )
+
+    return list(cursor)[0]

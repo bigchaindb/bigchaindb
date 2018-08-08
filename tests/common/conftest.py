@@ -11,7 +11,6 @@ USER2_PUBLIC_KEY = 'GDxwMFbwdATkQELZbMfW8bd9hbNYMZLyVXA3nur2aNbE'
 USER3_PRIVATE_KEY = '4rNQFzWQbVwuTiDVxwuFMvLG5zd8AhrQKCtVovBvcYsB'
 USER3_PUBLIC_KEY = 'Gbrg7JtxdjedQRmr81ZZbh1BozS7fBW88ZyxNDy7WLNC'
 
-
 CC_FULFILLMENT_URI = (
     'pGSAINdamAGCsQq31Uv-08lkBzoO4XLz2qYjJa8CGmj3B1EagUDlVkMAw2CscpCG4syAboKKh'
     'Id_Hrjl2XTYc-BlIkkBVV-4ghWQozusxh45cBz5tGvSW_XwWVu-JGVRQUOOehAL'
@@ -24,10 +23,6 @@ ASSET_DEFINITION = {
     'data': {
         'definition': 'Asset definition'
     }
-}
-
-ASSET_LINK = {
-    'id': 'a' * 64
 }
 
 DATA = {
@@ -105,12 +100,6 @@ def user_input(user_Ed25519, user_pub):
 
 
 @pytest.fixture
-def user2_input(user2_Ed25519, user2_pub):
-    from bigchaindb.common.transaction import Input
-    return Input(user2_Ed25519, [user2_pub])
-
-
-@pytest.fixture
 def user_user2_threshold_output(user_user2_threshold, user_pub, user2_pub):
     from bigchaindb.common.transaction import Output
     return Output(user_user2_threshold, [user_pub, user2_pub])
@@ -137,11 +126,6 @@ def user2_output(user2_Ed25519, user2_pub):
 @pytest.fixture
 def asset_definition():
     return ASSET_DEFINITION
-
-
-@pytest.fixture
-def asset_link():
-    return ASSET_LINK
 
 
 @pytest.fixture
@@ -200,7 +184,7 @@ def dummy_transaction():
             },
             'public_keys': [58 * 'b']
         }],
-        'version': '1.0'
+        'version': '2.0'
     }
 
 
@@ -248,38 +232,6 @@ def fulfilled_transaction():
             }
         },
         'id': None,
-        'inputs': [{
-            'fulfillment': ('pGSAIP_2P1Juh-94sD3uno1lxMPd9EkIalRo7QB014pT6dD9g'
-                            'UANRNxasDy1Dfg9C2Fk4UgHdYFsJzItVYi5JJ_vWc6rKltn0k'
-                            'jagynI0xfyR6X9NhzccTt5oiNH9mThEb4QmagN'),
-            'fulfills': None,
-            'owners_before': ['JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE']
-        }],
-        'metadata': None,
-        'operation': 'CREATE',
-        'outputs': [{
-            'amount': '1',
-            'condition': {
-                'details': {
-                    'public_key': 'JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE',
-                    'type': 'ed25519-sha-256'
-                },
-                'uri': 'ni:///sha-256;49C5UWNODwtcINxLgLc90bMCFqCymFYONGEmV4a0sG4?fpt=ed25519-sha-256&cost=131072'},
-            'public_keys': ['JEAkEJqLbbgDRAtMm8YAjGp759Aq2qTn9eaEHUj2XePE']
-        }],
-        'version': '1.0'
-    }
-
-
-@pytest.fixture
-def fulfilled_and_hashed_transaction():
-    return {
-        'asset': {
-            'data': {
-                'msg': 'Hello BigchainDB!',
-            }
-        },
-        'id': '7a7c827cf4ef7985f08f4e9d16f5ffc58ca4e82271921dfbed32e70cb462485f',
         'inputs': [{
             'fulfillment': ('pGSAIP_2P1Juh-94sD3uno1lxMPd9EkIalRo7QB014pT6dD9g'
                             'UANRNxasDy1Dfg9C2Fk4UgHdYFsJzItVYi5JJ_vWc6rKltn0k'

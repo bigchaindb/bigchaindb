@@ -10,13 +10,13 @@ BigchainDB Server Documentation
    simple-network-setup
    production-nodes/index
    clusters
-   production-deployment-template/index
    dev-and-test/index
    server-reference/index
    http-client-server-api
    events/index
    drivers-clients/index
    data-models/index
+   k8s-deployment-template/index
    release-notes
    glossary
    appendices/index
