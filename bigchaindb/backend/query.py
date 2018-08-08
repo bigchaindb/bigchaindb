@@ -341,13 +341,6 @@ def store_pre_commit_state(connection, commit_id, state):
 
 
 @singledispatch
-def store_validator_update(conn, validator_update):
-    """Store a update for the validator set"""
-
-    raise NotImplementedError
-
-
-@singledispatch
 def get_pre_commit_state(connection, commit_id):
     """Get pre-commit state where `id` is `commit_id`.
 
@@ -362,14 +355,15 @@ def get_pre_commit_state(connection, commit_id):
 
 
 @singledispatch
-def get_validator_update(conn):
-    """Get validator updates which are not synced"""
+def store_validator_set(conn, validator_update):
+    """Store updated validator set"""
 
     raise NotImplementedError
 
 
 @singledispatch
-def delete_validator_update(conn, id):
-    """Set the sync status for validator update documents"""
+def get_validator_set(conn, height):
+    """Get validator set for a given `height`, if `height` is not specified
+    then return the latest validator set"""
 
     raise NotImplementedError

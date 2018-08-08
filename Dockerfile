@@ -7,7 +7,6 @@ RUN apt-get -qq update \
     && apt-get -y upgrade \
     && apt-get install -y jq \
     && pip install --no-cache-dir --process-dependency-links . \
-    && pip install --no-cache-dir . \
     && apt-get autoremove \
     && apt-get clean
 

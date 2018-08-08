@@ -139,6 +139,7 @@ def test_post_transaction_invalid_mode(b):
         b.write_transaction(tx, 'nope')
 
 
+@pytest.mark.skip
 @pytest.mark.bdb
 def test_validator_updates(b, validator_pub_key):
     from bigchaindb.backend import query
@@ -382,7 +383,15 @@ def test_get_spent_transaction_critical_double_spend(b, alice, bob, carol):
                                         asset_id=tx.id)\
                               .sign([alice.private_key])
 
+    same_input_double_spend = Transaction.transfer(tx.to_inputs() + tx.to_inputs(),
+                                                   [([bob.public_key], 1)],
+                                                   asset_id=tx.id)\
+                                         .sign([alice.private_key])
+
     b.store_bulk_transactions([tx])
+
+    with pytest.raises(DoubleSpend):
+        same_input_double_spend.validate(b)
 
     assert b.get_spent(tx.id, tx_transfer.inputs[0].fulfills.output, [tx_transfer])
 

@@ -2,7 +2,6 @@
 
 A **BigchainDB Cluster** is a set of connected **BigchainDB Nodes**, managed by a **BigchainDB Consortium** (i.e. an organization). Those terms are defined in the [BigchainDB Terminology page](https://docs.bigchaindb.com/en/latest/terminology.html).
 
-
 ## Consortium Structure & Governance
 
 The consortium might be a company, a foundation, a cooperative, or [some other form of organization](https://en.wikipedia.org/wiki/Organizational_structure).
@@ -12,13 +11,6 @@ This documentation doesn't explain how to create a consortium, nor does it outli
 
 It's worth noting that the decentralization of a BigchainDB cluster depends,
 to some extent, on the decentralization of the associated consortium. See the pages about [decentralization](https://docs.bigchaindb.com/en/latest/decentralized.html) and [node diversity](https://docs.bigchaindb.com/en/latest/diversity.html).
-
-
-## Relevant Technical Documentation
-
-Anyone building or managing a BigchainDB cluster may be interested
-in [our production deployment template](production-deployment-template/index.html).
-
 
 ## Cluster DNS Records and SSL Certificates
 
@@ -30,13 +22,11 @@ There were several goals:
 * There should be no sharing of SSL certificates among BigchainDB node operators.
 * Optional: Allow clients to connect to a "random" BigchainDB node in the cluster at one particular domain (or subdomain).
 
-
 ### Node Operator Responsibilities
 
 1. Register a domain (or use one that you already have) for your BigchainDB node. You can use a subdomain if you like. For example, you might opt to use `abc-org73.net`, `api.dynabob8.io` or `figmentdb3.ninja`.
 2. Get an SSL certificate for your domain or subdomain, and properly install it in your node (e.g. in your NGINX instance).
 3. Create a DNS A Record mapping your domain or subdomain to the public IP address of your node (i.e. the one that serves the BigchainDB HTTP API).
-
 
 ### Consortium Responsibilities
 

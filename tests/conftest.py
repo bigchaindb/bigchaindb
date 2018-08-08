@@ -647,6 +647,17 @@ def node_key(node_keys):
     return key_pair_from_ed25519_key(key_from_base64(priv))
 
 
+@pytest.fixture
+def ed25519_node_keys(node_keys):
+    (pub, priv) = list(node_keys.items())[0]
+    node_keys_dict = {}
+    for pub, priv in node_keys.items():
+        key = key_pair_from_ed25519_key(key_from_base64(priv))
+        node_keys_dict[key.public_key] = key
+
+    return node_keys_dict
+
+
 @pytest.fixture(scope='session')
 def node_keys():
     return {'zL/DasvKulXZzhSNFwx4cLRXKkSM9GPK7Y0nZ4FEylM=':

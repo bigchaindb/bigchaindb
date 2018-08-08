@@ -341,6 +341,7 @@ class MockResponse():
         return {'result': {'latest_block_height': self.height}}
 
 
+@pytest.mark.skip
 @patch('bigchaindb.config_utils.autoconfigure')
 @patch('bigchaindb.backend.query.store_validator_update')
 @pytest.mark.tendermint

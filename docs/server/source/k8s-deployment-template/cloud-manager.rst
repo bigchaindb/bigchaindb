@@ -41,7 +41,7 @@ Configure MongoDB Cloud Manager for Monitoring
     
   * If you have authentication enabled, select the option to enable
     authentication and specify the authentication mechanism as per your
-    deployment. The default BigchainDB production deployment currently
+    deployment. The default BigchainDB Kubernetes deployment template currently
     supports ``X.509 Client Certificate`` as the authentication mechanism.
     
   * If you have TLS enabled, select the option to enable TLS/SSL for MongoDB
