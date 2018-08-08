@@ -35,11 +35,11 @@ def txlist(b, user_pk, user2_pk, user_sk, user2_sk):
 @pytest.mark.bdb
 def test_get_txlist_by_asset(b, txlist):
     res = b.get_transactions_filtered(txlist.create1.id)
-    assert sorted(set(tx.id for tx in res)) == sorted(
+    assert sorted(set(tx for tx in res)) == sorted(
         set([txlist.transfer1.id, txlist.create1.id]))
 
 
 @pytest.mark.bdb
 def test_get_txlist_by_operation(b, txlist):
     res = b.get_transactions_filtered(txlist.create1.id, operation='CREATE')
-    assert set(tx.id for tx in res) == {txlist.create1.id}
+    assert set(tx for tx in res) == {txlist.create1.id}
