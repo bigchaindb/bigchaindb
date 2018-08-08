@@ -218,25 +218,19 @@ def test_get_validator_update(b_mock, valid_election, ed25519_node_keys):
 
 @pytest.mark.abci
 def test_upsert_validator(b, node_key, node_keys, new_validator, ed25519_node_keys):
-    from bigchaindb.backend import connect
     from bigchaindb.tendermint_utils import public_key_to_base64
     import time
     import requests
 
-    conn = connect()
     (node_pub, _) = list(node_keys.items())[0]
 
     validators = [{'pub_key': {'type': 'ed25519',
                                'data': node_pub},
                    'voting_power': 10}]
 
+    latest_block = b.get_latest_block()
     # reset the validator set
-    conn.run(
-        conn.collection('validators').find_one_and_update(
-            {"height": 1},
-            {"$set": {"validators": validators}}
-        )
-    )
+    b.store_validator_set(latest_block['height'], validators)
 
     power = 1
     public_key = '9B3119650DF82B9A5D8A12E38953EA47475C09F0C48A4E6A0ECE182944B24403'

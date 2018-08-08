@@ -7,7 +7,6 @@ import pytest
 
 from abci.server import ProtocolHandler
 from abci.encoding import read_messages
-from copy import deepcopy
 from io import BytesIO
 
 

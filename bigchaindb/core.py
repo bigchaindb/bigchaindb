@@ -136,8 +136,11 @@ class App(BaseApplication):
         # TODO: calculate if an election has concluded
         # NOTE: ensure the local validator set is updated
         validator_updates = self.bigchaindb.get_validator_update(self.block_transactions)
-        validator_set = new_validator_set(self.bigchaindb, self.new_height, validator_updates)
-        self.bigchaindb.store_validator_set(self.new_height+1, validator_set)
+
+        if validator_updates:
+            validator_set = new_validator_set(self.bigchaindb, self.new_height, validator_updates)
+            self.bigchaindb.store_validator_set(self.new_height+1, validator_set)
+
         validator_updates = [encode_validator(v) for v in validator_updates]
 
         # Store pre-commit state to recover in case there is a crash
@@ -197,7 +200,7 @@ def new_validator_set(bigchain, height, updates):
     updates_dict = {}
     for u in updates:
         updates_dict[u['public_key']] = {'pub_key': {'type': 'ed25519',
-                                                     'data': public_key_to_base64(u['public_key']) },
+                                                     'data': public_key_to_base64(u['public_key'])},
                                          'voting_power': u['power']}
     new_validators_dict = {**validators_dict, **updates_dict}
     return list(new_validators_dict.values())
