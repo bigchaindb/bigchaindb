@@ -115,6 +115,7 @@ def run_upsert_validator_new(args, bigchain):
         }
     :param bigchain: an instance of BigchainDB
     :return: election_id (tx_id)
+    :raises: OperationError if the write transaction fails for any reason
     """
 
     new_validator = {
