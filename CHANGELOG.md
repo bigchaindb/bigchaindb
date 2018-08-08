@@ -18,6 +18,18 @@ For reference, the possible headings are:
 * **Known Issues**
 * **Notes**
 
+## [2.0 Beta 5] - 2018-08-01
+
+Tag name: v2.0.0b5
+
+### Changed
+
+* Supported version of Tendermint `0.22.3` -> `0.22.8`. [Pull request #2429](https://github.com/bigchaindb/bigchaindb/pull/2429).
+
+### Fixed
+
+* Stateful validation raises a DoubleSpend exception if there is any other transaction that spends the same output(s) even if it has the same transaction ID. [Pull request #2422](https://github.com/bigchaindb/bigchaindb/pull/2422).
+
 ## [2.0 Beta 4] - 2018-07-30
 
 Tag name: v2.0.0b4

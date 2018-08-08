@@ -91,4 +91,5 @@ More About BigchainDB
    transaction-concepts
    store-files
    permissions
+   private-data
    Data Models <https://docs.bigchaindb.com/projects/server/en/latest/data-models/index.html>

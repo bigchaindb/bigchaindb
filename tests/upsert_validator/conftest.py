@@ -1,5 +1,7 @@
 import pytest
 
+from bigchaindb.upsert_validator import ValidatorElection
+
 
 @pytest.fixture
 def b_mock(b, network_validators):
@@ -30,3 +32,11 @@ def mock_get_validators(network_validators):
         return validators
 
     return validator_set
+
+
+@pytest.fixture
+def valid_election(b_mock, node_key, new_validator):
+    voters = ValidatorElection.recipients(b_mock)
+    return ValidatorElection.generate([node_key.public_key],
+                                      voters,
+                                      new_validator, None).sign([node_key.private_key])
