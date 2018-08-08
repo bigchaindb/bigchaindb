@@ -346,7 +346,7 @@ class MockResponse():
 # @pytest.mark.execute
 # @patch('bigchaindb.lib.BigchainDB.get_validators')
 # @pytest.mark.abci
-@pytest.skip
+@pytest.mark.skip
 def test_upsert_validator_new_with_tendermint(b, priv_validator_path, user_sk, monkeypatch):
     """WIP: Will be fixed and activated in the next PR
     """
