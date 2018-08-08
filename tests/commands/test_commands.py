@@ -343,9 +343,9 @@ class MockResponse():
         return {'result': {'latest_block_height': self.height}}
 
 
-#@pytest.mark.execute
-#@patch('bigchaindb.lib.BigchainDB.get_validators')
-#@pytest.mark.abci
+# @pytest.mark.execute
+# @patch('bigchaindb.lib.BigchainDB.get_validators')
+# @pytest.mark.abci
 def test_upsert_validator_new_with_tendermint(b, priv_validator_path, user_sk, monkeypatch):
     """
     WIP: Will be fixed and activated in the next PR
@@ -362,9 +362,9 @@ def test_upsert_validator_new_with_tendermint(b, priv_validator_path, user_sk, m
              'voting_power': 10}
         ]
 
-    #b.get_validators = mock_get
-    #mock_get_validators = mock_get
-    #monkeypatch.setattr('requests.get', mock_get)
+    # b.get_validators = mock_get
+    # mock_get_validators = mock_get
+    # monkeypatch.setattr('requests.get', mock_get)
 
     proposer_key = b.get_validators()[0]['pub_key']['value']
 
