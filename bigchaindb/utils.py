@@ -1,3 +1,7 @@
+# Copyright BigchainDB GmbH and BigchainDB contributors
+# SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
+# Code is Apache-2.0 and docs are CC-BY-4.0
+
 import contextlib
 import threading
 import queue
@@ -31,7 +35,8 @@ class ProcessGroup(object):
 class Process(mp.Process):
     """Wrapper around multiprocessing.Process that uses
     setproctitle to set the name of the process when running
-    the target task."""
+    the target task.
+    """
 
     def run(self):
         setproctitle.setproctitle(self.name)
