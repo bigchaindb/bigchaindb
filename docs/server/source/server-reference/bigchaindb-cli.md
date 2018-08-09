@@ -80,7 +80,7 @@ configuration file as documented under
 **This is an experimental feature. Users are advised not to use it in production.**
 
 
-Manage elections to add, update, or remove a validator from the validators set of the local node. The commands implement [21/UPSERT-VALIDATORS](https://github.com/bigchaindb/BEPs/tree/master/21), check it out if you need more details on how this is orchestrated.
+Manage elections to add, update, or remove a validator from the validators set of the local node. The upsert-validator subcommands implement [BEP-21](https://github.com/bigchaindb/BEPs/tree/master/21). Check it out if you need more details on how this is orchestrated.
 
 Election management is broken into several subcommands. Below is the command line syntax for each,
 
