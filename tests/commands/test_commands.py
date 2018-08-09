@@ -373,11 +373,7 @@ def test_upsert_validator_new_with_tendermint(b, priv_validator_path, user_sk, m
                      node_id='12345',
                      sk=priv_validator_path,
                      config={})
-    print("*****ARGS*****")
-    print(args)
     resp = run_upsert_validator_new(args, b)
-    print("*****TX ID*****")
-    print(resp)
     time.sleep(3)
 
     assert b.get_transaction(resp)
