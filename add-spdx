@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+
+# Add SPDX (license information) lines
+# to all source code files and documentation source files
+# in this directory and subdirectories (recursively).
+#
+# To read about SPDX, see https://spdx.org/
+#
+# Note that this script might also edit files in your virtualenv,
+# but that shouldn't be a problem,
+# because Git should be ignoring changes in those files.
+
+# http://redsymbol.net/articles/unofficial-bash-strict-mode/
+set -euo pipefail
+IFS=$'\n\t'
+
+# All files named *.py or *.sh or *.bash or *.yaml or *.yml
+find . -type f \( -name "*.py" -o -name "*.sh" -o -name "*.bash" -o -name "*.yaml" -o -name "*.yml" \) | while read fname; do
+    if [ "`head -c 2 $fname`" = "#!" ]; then
+        # The file '$fname' begins with a hashbang so add the SPDX lines on lines 2+
+        sed -i '2s/^/# Copyright BigchainDB GmbH and BigchainDB contributors\n# SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)\n# Code is Apache-2.0 and docs are CC-BY-4.0\n\n/' $fname
+    else
+        # add the SPDX lines on lines 1+
+        sed -i '1s/^/# Copyright BigchainDB GmbH and BigchainDB contributors\n# SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)\n# Code is Apache-2.0 and docs are CC-BY-4.0\n\n/' $fname
+    fi
+done
+
+# All files named *.js or *.go (JavaScript, Node.js or Golang)
+find . -type f \( -name "*.js" -o -name "*.go" \) | while read fname; do
+    if [ "`head -c 2 $fname`" = "#!" ]; then
+        # The file '$fname' begins with a hashbang so add the SPDX lines on lines 2+
+        sed -i '2s;^;// Copyright BigchainDB GmbH and BigchainDB contributors\n// SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)\n// Code is Apache-2.0 and docs are CC-BY-4.0\n\n;' $fname
+    else
+        # add the SPDX lines on lines 1+
+        sed -i '1s;^;// Copyright BigchainDB GmbH and BigchainDB contributors\n// SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)\n// Code is Apache-2.0 and docs are CC-BY-4.0\n\n;' $fname
+    fi
+done
+
+# All files named *.java
+find . -type f -name "*.java" | while read fname; do
+    if [ "`head -c 2 $fname`" = "#!" ]; then
+        # The file '$fname' begins with a hashbang so add the SPDX lines on lines 2+
+        sed -i '2s;^;/*\n * Copyright BigchainDB GmbH and BigchainDB contributors\n * SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)\n * Code is Apache-2.0 and docs are CC-BY-4.0\n */\n;' $fname
+    else
+        # add the SPDX lines on lines 1+
+        sed -i '1s;^;/*\n * Copyright BigchainDB GmbH and BigchainDB contributors\n * SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)\n * Code is Apache-2.0 and docs are CC-BY-4.0\n */\n;' $fname
+    fi
+done
+
+# All files named *.md (Markdown).
+find . -type f -name "*.md" | while read fname; do
+    sed -i '1s;^;<!---\nCopyright BigchainDB GmbH and BigchainDB contributors\nSPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)\nCode is Apache-2.0 and docs are CC-BY-4.0\n--->\n\n;' $fname
+done
+
+# All files named *.rst (reStructuredText).
+# See http://docutils.sourceforge.net/docs/user/rst/quickref.html#comments
+find . -type f -name "*.rst" | while read fname; do
+    sed -i '1s;^;\n.. Copyright BigchainDB GmbH and BigchainDB contributors\n   SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)\n   Code is Apache-2.0 and docs are CC-BY-4.0\n\n;' $fname
+done
