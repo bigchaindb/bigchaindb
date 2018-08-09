@@ -14,14 +14,36 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-# All files named *.py or *.sh or *.bash
-find . -type f \( -name "*.py" -o -name "*.sh" -o -name "*.bash" \) | while read fname; do
+# All files named *.py or *.sh or *.bash or *.yaml or *.yml
+find . -type f \( -name "*.py" -o -name "*.sh" -o -name "*.bash" -o -name "*.yaml" -o -name "*.yml" \) | while read fname; do
     if [ "`head -c 2 $fname`" = "#!" ]; then
         # The file '$fname' begins with a hashbang so add the SPDX lines on lines 2+
         sed -i '2s/^/# Copyright BigchainDB GmbH and BigchainDB contributors\n# SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)\n# Code is Apache-2.0 and docs are CC-BY-4.0\n\n/' $fname
     else
         # add the SPDX lines on lines 1+
         sed -i '1s/^/# Copyright BigchainDB GmbH and BigchainDB contributors\n# SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)\n# Code is Apache-2.0 and docs are CC-BY-4.0\n\n/' $fname
+    fi
+done
+
+# All files named *.js or *.go (JavaScript, Node.js or Golang)
+find . -type f \( -name "*.js" -o -name "*.go" \) | while read fname; do
+    if [ "`head -c 2 $fname`" = "#!" ]; then
+        # The file '$fname' begins with a hashbang so add the SPDX lines on lines 2+
+        sed -i '2s;^;// Copyright BigchainDB GmbH and BigchainDB contributors\n// SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)\n// Code is Apache-2.0 and docs are CC-BY-4.0\n\n;' $fname
+    else
+        # add the SPDX lines on lines 1+
+        sed -i '1s;^;// Copyright BigchainDB GmbH and BigchainDB contributors\n// SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)\n// Code is Apache-2.0 and docs are CC-BY-4.0\n\n;' $fname
+    fi
+done
+
+# All files named *.java
+find . -type f -name "*.java" | while read fname; do
+    if [ "`head -c 2 $fname`" = "#!" ]; then
+        # The file '$fname' begins with a hashbang so add the SPDX lines on lines 2+
+        sed -i '2s;^;/*\n * Copyright BigchainDB GmbH and BigchainDB contributors\n * SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)\n * Code is Apache-2.0 and docs are CC-BY-4.0\n */\n;' $fname
+    else
+        # add the SPDX lines on lines 1+
+        sed -i '1s;^;/*\n * Copyright BigchainDB GmbH and BigchainDB contributors\n * SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)\n * Code is Apache-2.0 and docs are CC-BY-4.0\n */\n;' $fname
     fi
 done
 
