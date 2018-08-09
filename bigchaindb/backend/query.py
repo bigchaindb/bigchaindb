@@ -9,20 +9,6 @@ PRE_COMMIT_ID = 'a_unique_id_string'
 
 
 @singledispatch
-def store_transaction(connection, signed_transaction):
-    """Write a transaction to the backlog table.
-
-    Args:
-        signed_transaction (dict): a signed transaction.
-
-    Returns:
-        The result of the operation.
-    """
-
-    raise NotImplementedError
-
-
-@singledispatch
 def store_asset(connection, asset):
     """Write an asset to the asset table.
 
@@ -364,6 +350,7 @@ def store_validator_set(conn, validator_update):
 @singledispatch
 def get_validator_set(conn, height):
     """Get validator set for a given `height`, if `height` is not specified
-    then return the latest validator set"""
+    then return the latest validator set
+    """
 
     raise NotImplementedError

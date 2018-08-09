@@ -40,6 +40,10 @@ def test_asset_is_separated_from_transaciton(b):
                             asset=asset)\
                     .sign([alice.private_key])
 
+    # with store_bulk_transactions we use `insert_many` where PyMongo
+    # automatically adds an `_id` field to the tx, therefore we need the
+    # deepcopy, for more info see:
+    # https://api.mongodb.com/python/current/faq.html#writes-and-ids
     tx_dict = copy.deepcopy(tx.to_dict())
 
     b.store_bulk_transactions([tx])
