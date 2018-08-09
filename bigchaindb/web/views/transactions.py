@@ -29,9 +29,9 @@ class TransactionApi(Resource):
         pool = current_app.config['bigchain_pool']
 
         with pool() as bigchain:
-            tx, status = bigchain.get_transaction(tx_id, include_status=True)
+            tx = bigchain.get_transaction(tx_id)
 
-        if not tx or status is not bigchain.TX_VALID:
+        if not tx:
             return make_error(404)
 
         return tx.to_dict()
