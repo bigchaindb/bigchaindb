@@ -94,7 +94,7 @@ Example usage,
 $ bigchaindb upsert-validator B0E42D2589A455EAD339A035D6CE1C8C3E25863F268120AA0162AD7D003A4014 10
 ```
 
-If the command is returns without any error then a request to update the validator set has been successfully submitted. So, even if the command has been successfully executed it doesn't imply that the validator set has been updated. In order to check whether the change has been applied, the node operator can execute `curl http://node_ip:9985/api/v1/validators` which will list the current validators set. Refer to the [validators](/http-client-server-api.html#validators) section of the HTTP API docs for more detail.
+If the command is returns without any error then a request to update the validator set has been successfully submitted. So, even if the command has been successfully executed it doesn't imply that the validator set has been updated. In order to check whether the change has been applied, the node operator can execute `curl http://node_ip:9984/api/v1/validators` which will list the current validators set. Refer to the [validators](/http-client-server-api.html#validators) section of the HTTP API docs for more detail.
 
 Note:
 - When `POWER`is set to `0` then the validator will be removed from the validator set.

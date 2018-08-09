@@ -1,6 +1,7 @@
 """This module contains all the goodness to integrate BigchainDB
 with Tendermint."""
 import logging
+import codecs
 
 from abci.application import BaseApplication
 from abci.types_pb2 import (
@@ -42,11 +43,13 @@ class App(BaseApplication):
         self.validators = None
         self.new_height = None
 
-    def init_chain(self, validators):
+    def init_chain(self, genesis):
         """Initialize chain with block of height 0"""
 
+        validator_set = [decode_validator(v) for v in genesis.validators]
         block = Block(app_hash='', height=0, transactions=[])
         self.bigchaindb.store_block(block._asdict())
+        self.bigchaindb.store_validator_set(1, validator_set)
         return ResponseInitChain()
 
     def info(self, request):
@@ -129,11 +132,11 @@ class App(BaseApplication):
         else:
             self.block_txn_hash = block['app_hash']
 
-        validator_updates = self.bigchaindb.get_validator_update()
-        validator_updates = [encode_validator(v) for v in validator_updates]
-
-        # set sync status to true
-        self.bigchaindb.delete_validator_update()
+        # TODO: calculate if an election has concluded
+        # NOTE: ensure the local validator set is updated
+        # validator_updates = self.bigchaindb.get_validator_update()
+        # validator_updates = [encode_validator(v) for v in validator_updates]
+        validator_updates = []
 
         # Store pre-commit state to recover in case there is a crash
         # during `commit`
@@ -176,3 +179,10 @@ def encode_validator(v):
     return Validator(pub_key=pub_key,
                      address=b'',
                      power=v['power'])
+
+
+def decode_validator(v):
+    return {'address': codecs.encode(v.address, 'hex').decode().upper().rstrip('\n'),
+            'pub_key': {'type': v.pub_key.type,
+                        'data': codecs.encode(v.pub_key.data, 'base64').decode().rstrip('\n')},
+            'voting_power': v.power}

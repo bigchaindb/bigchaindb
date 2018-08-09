@@ -15,13 +15,11 @@ The derived files (`nginx.conf.template` and `nginx.lua.template`), along with
 the other files in this directory, are _also_ licensed under an MIT License,
 the text of which can be found below.
 
+## Documentation Licenses
 
-# Documentation Licenses
-
-The documentation in this directory is licensed under a Creative Commons Attribution-ShareAlike
+The documentation in this directory is licensed under a Creative Commons Attribution
 4.0 International license, the full text of which can be found at 
-[http://creativecommons.org/licenses/by-sa/4.0/legalcode](http://creativecommons.org/licenses/by-sa/4.0/legalcode).
-
+[http://creativecommons.org/licenses/by/4.0/legalcode](http://creativecommons.org/licenses/by/4.0/legalcode).
 
 <hr>
 
@@ -47,7 +45,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
-
 <hr>
 
 The MIT License
@@ -71,4 +68,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-

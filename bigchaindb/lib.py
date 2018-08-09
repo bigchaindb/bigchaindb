@@ -34,18 +34,6 @@ class BigchainDB(object):
     Create, read, sign, write transactions to the database
     """
 
-    BLOCK_INVALID = 'invalid'
-    """return if a block is invalid"""
-
-    BLOCK_VALID = TX_VALID = 'valid'
-    """return if a block is valid, or tx is in valid block"""
-
-    BLOCK_UNDECIDED = TX_UNDECIDED = 'undecided'
-    """return if block is undecided, or tx is in undecided block"""
-
-    TX_IN_BACKLOG = 'backlog'
-    """return if transaction is in backlog"""
-
     def __init__(self, connection=None):
         """Initialize the Bigchain instance
 
@@ -149,10 +137,10 @@ class BigchainDB(object):
         txns = []
         assets = []
         txn_metadatas = []
-        for transaction in transactions:
+        for transaction_obj in transactions:
             # self.update_utxoset(transaction)
-            transaction = transaction.to_dict()
-            if transaction['operation'] == 'CREATE':
+            transaction = transaction_obj.to_dict()
+            if transaction['operation'] == transaction_obj.CREATE:
                 asset = transaction.pop('asset')
                 asset['id'] = transaction['id']
                 assets.append(asset)
@@ -251,7 +239,7 @@ class BigchainDB(object):
             return backend.query.delete_unspent_outputs(
                                         self.connection, *unspent_outputs)
 
-    def get_transaction(self, transaction_id, include_status=False):
+    def get_transaction(self, transaction_id):
         transaction = backend.query.get_transaction(self.connection, transaction_id)
 
         if transaction:
@@ -269,10 +257,7 @@ class BigchainDB(object):
 
             transaction = Transaction.from_dict(transaction)
 
-        if include_status:
-            return transaction, self.TX_VALID if transaction else None
-        else:
-            return transaction
+        return transaction
 
     def get_transactions_filtered(self, asset_id, operation=None):
         """Get a list of transactions filtered on some criteria
@@ -280,9 +265,7 @@ class BigchainDB(object):
         txids = backend.query.get_txids_filtered(self.connection, asset_id,
                                                  operation)
         for txid in txids:
-            tx, status = self.get_transaction(txid, True)
-            if status == self.TX_VALID:
-                yield tx
+            yield self.get_transaction(txid)
 
     def get_outputs_filtered(self, owner, spent=None):
         """Get a list of output links filtered on some criteria
@@ -391,7 +374,7 @@ class BigchainDB(object):
         # CLEANUP: The conditional below checks for transaction in dict format.
         # It would be better to only have a single format for the transaction
         # throught the code base.
-        if not isinstance(transaction, Transaction):
+        if isinstance(transaction, dict):
             try:
                 transaction = Transaction.from_dict(tx)
             except SchemaValidationError as e:
@@ -421,16 +404,8 @@ class BigchainDB(object):
         Returns:
             iter: An iterator of assets that match the text search.
         """
-        objects = backend.query.text_search(self.connection, search, limit=limit,
-                                            table=table)
-
-        # TODO: This is not efficient. There may be a more efficient way to
-        #       query by storing block ids with the assets and using fastquery.
-        #       See https://github.com/bigchaindb/bigchaindb/issues/1496
-        for obj in objects:
-            tx, status = self.get_transaction(obj['id'], True)
-            if status == self.TX_VALID:
-                yield obj
+        return backend.query.text_search(self.connection, search, limit=limit,
+                                         table=table)
 
     def get_assets(self, asset_ids):
         """Return a list of assets that match the asset_ids
@@ -460,19 +435,13 @@ class BigchainDB(object):
     def fastquery(self):
         return fastquery.FastQuery(self.connection)
 
-    def get_validators(self):
-        try:
-            resp = requests.get('{}validators'.format(self.endpoint))
-            validators = resp.json()['result']['validators']
-            for v in validators:
-                v.pop('accum')
-                v.pop('address')
+    def get_validators(self, height=None):
+        result = backend.query.get_validator_set(self.connection, height)
+        validators = result['validators']
+        for v in validators:
+            v.pop('address')
 
-            return validators
-
-        except requests.exceptions.RequestException as e:
-            logger.error('Error while connecting to Tendermint HTTP API')
-            raise e
+        return validators
 
     def get_validator_update(self):
         update = backend.query.get_validator_update(self.connection)
@@ -483,6 +452,14 @@ class BigchainDB(object):
 
     def store_pre_commit_state(self, state):
         return backend.query.store_pre_commit_state(self.connection, state)
+
+    def store_validator_set(self, height, validators):
+        """Store validator set at a given `height`.
+           NOTE: If the validator set already exists at that `height` then an
+           exception will be raised.
+        """
+        return backend.query.store_validator_set(self.connection, {'height': height,
+                                                                   'validators': validators})
 
 
 Block = namedtuple('Block', ('app_hash', 'height', 'transactions'))

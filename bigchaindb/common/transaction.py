@@ -18,6 +18,7 @@ from sha3 import sha3_256
 
 from bigchaindb.common.crypto import PrivateKey, hash_data
 from bigchaindb.common.exceptions import (KeypairMismatchException,
+                                          InputDoesNotExist, DoubleSpend,
                                           InvalidHash, InvalidSignature,
                                           AmountError, AssetIdMismatch,
                                           ThresholdTooDeep)
@@ -515,7 +516,7 @@ class Transaction(object):
                 version (string): Defines the version number of a Transaction.
                 hash_id (string): Hash id of the transaction.
         """
-        if operation not in Transaction.ALLOWED_OPERATIONS:
+        if operation not in self.ALLOWED_OPERATIONS:
             allowed_ops = ', '.join(self.__class__.ALLOWED_OPERATIONS)
             raise ValueError('`operation` must be one of {}'
                              .format(allowed_ops))
@@ -523,11 +524,11 @@ class Transaction(object):
         # Asset payloads for 'CREATE' operations must be None or
         # dicts holding a `data` property. Asset payloads for 'TRANSFER'
         # operations must be dicts holding an `id` property.
-        if (operation == Transaction.CREATE and
+        if (operation == self.CREATE and
                 asset is not None and not (isinstance(asset, dict) and 'data' in asset)):
             raise TypeError(('`asset` must be None or a dict holding a `data` '
                              " property instance for '{}' Transactions".format(operation)))
-        elif (operation == Transaction.TRANSFER and
+        elif (operation == self.TRANSFER and
                 not (isinstance(asset, dict) and 'id' in asset)):
             raise TypeError(('`asset` must be a dict holding an `id` property '
                              "for 'TRANSFER' Transactions".format(operation)))
@@ -555,9 +556,9 @@ class Transaction(object):
         structure containing relevant information for storing them in
         a UTXO set, and performing validation.
         """
-        if self.operation == Transaction.CREATE:
+        if self.operation == self.CREATE:
             self._asset_id = self._id
-        elif self.operation == Transaction.TRANSFER:
+        elif self.operation == self.TRANSFER:
             self._asset_id = self.asset['id']
         return (UnspentOutput(
             transaction_id=self._id,
@@ -584,6 +585,38 @@ class Transaction(object):
 
     def _hash(self):
         self._id = hash_data(self.serialized)
+
+    @classmethod
+    def validate_create(cls, tx_signers, recipients, asset, metadata):
+        if not isinstance(tx_signers, list):
+            raise TypeError('`tx_signers` must be a list instance')
+        if not isinstance(recipients, list):
+            raise TypeError('`recipients` must be a list instance')
+        if len(tx_signers) == 0:
+            raise ValueError('`tx_signers` list cannot be empty')
+        if len(recipients) == 0:
+            raise ValueError('`recipients` list cannot be empty')
+        if not (asset is None or isinstance(asset, dict)):
+            raise TypeError('`asset` must be a dict or None')
+        if not (metadata is None or isinstance(metadata, dict)):
+            raise TypeError('`metadata` must be a dict or None')
+
+        inputs = []
+        outputs = []
+
+        # generate_outputs
+        for recipient in recipients:
+            if not isinstance(recipient, tuple) or len(recipient) != 2:
+                raise ValueError(('Each `recipient` in the list must be a'
+                                  ' tuple of `([<list of public keys>],'
+                                  ' <amount>)`'))
+            pub_keys, amount = recipient
+            outputs.append(Output.generate(pub_keys, amount))
+
+        # generate inputs
+        inputs.append(Input.generate(tx_signers))
+
+        return (inputs, outputs)
 
     @classmethod
     def create(cls, tx_signers, recipients, metadata=None, asset=None):
@@ -613,21 +646,22 @@ class Transaction(object):
             Returns:
                 :class:`~bigchaindb.common.transaction.Transaction`
         """
-        if not isinstance(tx_signers, list):
-            raise TypeError('`tx_signers` must be a list instance')
+
+        (inputs, outputs) = cls.validate_create(tx_signers, recipients, asset, metadata)
+        return cls(cls.CREATE, {'data': asset}, inputs, outputs, metadata)
+
+    @classmethod
+    def validate_transfer(cls, inputs, recipients, asset_id, metadata):
+        if not isinstance(inputs, list):
+            raise TypeError('`inputs` must be a list instance')
+        if len(inputs) == 0:
+            raise ValueError('`inputs` must contain at least one item')
         if not isinstance(recipients, list):
             raise TypeError('`recipients` must be a list instance')
-        if len(tx_signers) == 0:
-            raise ValueError('`tx_signers` list cannot be empty')
         if len(recipients) == 0:
             raise ValueError('`recipients` list cannot be empty')
-        if not (asset is None or isinstance(asset, dict)):
-            raise TypeError('`asset` must be a dict or None')
 
-        inputs = []
         outputs = []
-
-        # generate_outputs
         for recipient in recipients:
             if not isinstance(recipient, tuple) or len(recipient) != 2:
                 raise ValueError(('Each `recipient` in the list must be a'
@@ -636,10 +670,10 @@ class Transaction(object):
             pub_keys, amount = recipient
             outputs.append(Output.generate(pub_keys, amount))
 
-        # generate inputs
-        inputs.append(Input.generate(tx_signers))
+        if not isinstance(asset_id, str):
+            raise TypeError('`asset_id` must be a string')
 
-        return cls(cls.CREATE, {'data': asset}, inputs, outputs, metadata)
+        return (deepcopy(inputs), outputs)
 
     @classmethod
     def transfer(cls, inputs, recipients, asset_id, metadata=None):
@@ -680,28 +714,7 @@ class Transaction(object):
             Returns:
                 :class:`~bigchaindb.common.transaction.Transaction`
         """
-        if not isinstance(inputs, list):
-            raise TypeError('`inputs` must be a list instance')
-        if len(inputs) == 0:
-            raise ValueError('`inputs` must contain at least one item')
-        if not isinstance(recipients, list):
-            raise TypeError('`recipients` must be a list instance')
-        if len(recipients) == 0:
-            raise ValueError('`recipients` list cannot be empty')
-
-        outputs = []
-        for recipient in recipients:
-            if not isinstance(recipient, tuple) or len(recipient) != 2:
-                raise ValueError(('Each `recipient` in the list must be a'
-                                  ' tuple of `([<list of public keys>],'
-                                  ' <amount>)`'))
-            pub_keys, amount = recipient
-            outputs.append(Output.generate(pub_keys, amount))
-
-        if not isinstance(asset_id, str):
-            raise TypeError('`asset_id` must be a string')
-
-        inputs = deepcopy(inputs)
+        (inputs, outputs) = cls.validate_transfer(inputs, recipients, asset_id, metadata)
         return cls(cls.TRANSFER, {'id': asset_id}, inputs, outputs, metadata)
 
     def __eq__(self, other):
@@ -939,14 +952,14 @@ class Transaction(object):
             Returns:
                 bool: If all Inputs are valid.
         """
-        if self.operation == Transaction.CREATE:
+        if self.operation == self.CREATE:
             # NOTE: Since in the case of a `CREATE`-transaction we do not have
             #       to check for outputs, we're just submitting dummy
             #       values to the actual method. This simplifies it's logic
             #       greatly, as we do not have to check against `None` values.
             return self._inputs_valid(['dummyvalue'
                                        for _ in self.inputs])
-        elif self.operation == Transaction.TRANSFER:
+        elif self.operation == self.TRANSFER:
             return self._inputs_valid([output.fulfillment.condition_uri
                                        for output in outputs])
         else:
@@ -986,8 +999,7 @@ class Transaction(object):
         return all(validate(i, cond)
                    for i, cond in enumerate(output_condition_uris))
 
-    @staticmethod
-    def _input_valid(input_, operation, message, output_condition_uri=None):
+    def _input_valid(self, input_, operation, message, output_condition_uri=None):
         """Validates a single Input against a single Output.
 
             Note:
@@ -1012,7 +1024,7 @@ class Transaction(object):
                 ParsingError, ASN1DecodeError, ASN1EncodeError):
             return False
 
-        if operation == Transaction.CREATE:
+        if operation == self.CREATE:
             # NOTE: In the case of a `CREATE` transaction, the
             #       output is always valid.
             output_valid = True
@@ -1091,8 +1103,8 @@ class Transaction(object):
         tx = Transaction._remove_signatures(self.to_dict())
         return Transaction._to_str(tx)
 
-    @staticmethod
-    def get_asset_id(transactions):
+    @classmethod
+    def get_asset_id(cls, transactions):
         """Get the asset id from a list of :class:`~.Transactions`.
 
         This is useful when we want to check if the multiple inputs of a
@@ -1116,7 +1128,7 @@ class Transaction(object):
             transactions = [transactions]
 
         # create a set of the transactions' asset ids
-        asset_ids = {tx.id if tx.operation == Transaction.CREATE
+        asset_ids = {tx.id if tx.operation == tx.CREATE
                      else tx.asset['id']
                      for tx in transactions}
 
@@ -1151,7 +1163,7 @@ class Transaction(object):
             raise InvalidHash(err_msg.format(proposed_tx_id))
 
     @classmethod
-    def from_dict(cls, tx):
+    def from_dict(cls, tx, skip_schema_validation=True):
         """Transforms a Python dictionary to a Transaction object.
 
             Args:
@@ -1160,7 +1172,131 @@ class Transaction(object):
             Returns:
                 :class:`~bigchaindb.common.transaction.Transaction`
         """
+        operation = tx.get('operation', Transaction.CREATE) if isinstance(tx, dict) else Transaction.CREATE
+        cls = Transaction.resolve_class(operation)
+        if not skip_schema_validation:
+            cls.validate_schema(tx)
+
         inputs = [Input.from_dict(input_) for input_ in tx['inputs']]
         outputs = [Output.from_dict(output) for output in tx['outputs']]
         return cls(tx['operation'], tx['asset'], inputs, outputs,
                    tx['metadata'], tx['version'], hash_id=tx['id'])
+
+    @classmethod
+    def from_db(cls, bigchain, tx_dict_list):
+        """Helper method that reconstructs a transaction dict that was returned
+        from the database. It checks what asset_id to retrieve, retrieves the
+        asset from the asset table and reconstructs the transaction.
+
+        Args:
+            bigchain (:class:`~bigchaindb.tendermint.BigchainDB`): An instance
+                of BigchainDB used to perform database queries.
+            tx_dict_list (:list:`dict` or :obj:`dict`): The transaction dict or
+                list of transaction dict as returned from the database.
+
+        Returns:
+            :class:`~Transaction`
+
+        """
+        return_list = True
+        if isinstance(tx_dict_list, dict):
+            tx_dict_list = [tx_dict_list]
+            return_list = False
+
+        tx_map = {}
+        tx_ids = []
+        for tx in tx_dict_list:
+            tx.update({'metadata': None})
+            tx_map[tx['id']] = tx
+            tx_ids.append(tx['id'])
+
+        assets = list(bigchain.get_assets(tx_ids))
+        for asset in assets:
+            if asset is not None:
+                tx = tx_map[asset['id']]
+                del asset['id']
+                tx['asset'] = asset
+
+        tx_ids = list(tx_map.keys())
+        metadata_list = list(bigchain.get_metadata(tx_ids))
+        for metadata in metadata_list:
+            tx = tx_map[metadata['id']]
+            tx.update({'metadata': metadata.get('metadata')})
+
+        if return_list:
+            tx_list = []
+            for tx_id, tx in tx_map.items():
+                tx_list.append(cls.from_dict(tx))
+            return tx_list
+        else:
+            tx = list(tx_map.values())[0]
+            return cls.from_dict(tx)
+
+    type_registry = {}
+
+    @staticmethod
+    def register_type(tx_type, tx_class):
+        Transaction.type_registry[tx_type] = tx_class
+
+    def resolve_class(operation):
+        """For the given `tx` based on the `operation` key return its implementation class"""
+
+        create_txn_class = Transaction.type_registry.get(Transaction.CREATE)
+        return Transaction.type_registry.get(operation, create_txn_class)
+
+    @classmethod
+    def validate_schema(cls, tx):
+        pass
+
+    def validate_transfer_inputs(self, bigchain, current_transactions=[]):
+        # store the inputs so that we can check if the asset ids match
+        input_txs = []
+        input_conditions = []
+        for input_ in self.inputs:
+            input_txid = input_.fulfills.txid
+            input_tx = bigchain.get_transaction(input_txid)
+
+            if input_tx is None:
+                for ctxn in current_transactions:
+                    if ctxn.id == input_txid:
+                        input_tx = ctxn
+
+            if input_tx is None:
+                raise InputDoesNotExist("input `{}` doesn't exist"
+                                        .format(input_txid))
+
+            spent = bigchain.get_spent(input_txid, input_.fulfills.output,
+                                       current_transactions)
+            if spent:
+                raise DoubleSpend('input `{}` was already spent'
+                                  .format(input_txid))
+
+            output = input_tx.outputs[input_.fulfills.output]
+            input_conditions.append(output)
+            input_txs.append(input_tx)
+
+        # Validate that all inputs are distinct
+        links = [i.fulfills.to_uri() for i in self.inputs]
+        if len(links) != len(set(links)):
+            raise DoubleSpend('tx "{}" spends inputs twice'.format(self.id))
+
+        # validate asset id
+        asset_id = self.get_asset_id(input_txs)
+        if asset_id != self.asset['id']:
+            raise AssetIdMismatch(('The asset id of the input does not'
+                                   ' match the asset id of the'
+                                   ' transaction'))
+
+        input_amount = sum([input_condition.amount for input_condition in input_conditions])
+        output_amount = sum([output_condition.amount for output_condition in self.outputs])
+
+        if output_amount != input_amount:
+            raise AmountError(('The amount used in the inputs `{}`'
+                               ' needs to be same as the amount used'
+                               ' in the outputs `{}`')
+                              .format(input_amount, output_amount))
+
+        if not self.inputs_valid(input_conditions):
+            raise InvalidSignature('Transaction signature is invalid.')
+
+        return True

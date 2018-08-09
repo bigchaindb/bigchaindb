@@ -1,0 +1,48 @@
+---
+"$schema": "http://json-schema.org/draft-04/schema#"
+type: object
+title: Validator Election Schema - Propose a change to validator set
+required:
+- operation
+- asset
+- outputs
+properties:
+  operation:
+    type: string
+    value: "VALIDATOR_ELECTION"
+  asset:
+    additionalProperties: false
+    properties:
+      data:
+        additionalProperties: false
+        properties:
+          node_id:
+            type: string
+          public_key:
+            type: string
+          power:
+            "$ref": "#/definitions/positiveInteger"
+        required:
+          - node_id
+          - public_key
+          - power
+    required:
+    - data
+  outputs:
+    type: array
+    items:
+      "$ref": "#/definitions/output"
+definitions:
+  output:
+    type: object
+    properties:
+      condition:
+        type: object
+        required:
+          - uri
+        properties:
+          uri:
+            type: string
+            pattern: "^ni:///sha-256;([a-zA-Z0-9_-]{0,86})[?]\
+              (fpt=ed25519-sha-256(&)?|cost=[0-9]+(&)?|\
+              subtypes=ed25519-sha-256(&)?){2,3}$"

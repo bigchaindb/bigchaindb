@@ -16,7 +16,9 @@ A Network will stop working if more than one third of the Nodes are down or faul
 
 ## Before We Start
 
-This tutorial assumes you have basic knowledge on how to manage a GNU/Linux machine. The commands are tailored for an up-to-date *Debian-like* distribution. (We use an **Ubuntu 18.04 LTS** Virtual Machine on Microsoft Azure.) If you are on a different Linux distribution then you might need to adapt the names of the packages installed.
+This tutorial assumes you have basic knowledge on how to manage a GNU/Linux machine.
+
+**Please note: The commands on this page work on Ubuntu 18.04. Similar commands will work on other versions of Ubuntu, and other recent Debian-like Linux distros, but you may have to change the names of the packages, or install more packages.**
 
 We don't make any assumptions about **where** you run the Node.
 You can run BigchainDB Server on a Virtual Machine on the cloud, on a machine in your data center, or even on a Raspberry Pi. Just make sure that your Node is reachable by the other Nodes. Here's a **non-exhaustive list of examples**:
@@ -49,7 +51,9 @@ sudo apt full-upgrade
 BigchainDB Server requires **Python 3.6+**, so make sure your system has it. Install the required packages:
 
 ```
+# For Ubuntu 18.04:
 sudo apt install -y python3-pip libssl-dev
+# Ubuntu 16.04, and other Linux distros, may require other packages or more packages
 ```
 
 Now install the latest version of BigchainDB. You can find the latest version by going to the [BigchainDB project release history page on PyPI][bdb:pypi]. For example, to install version 2.0.0b3, you would do:
@@ -75,13 +79,13 @@ Note: The `mongodb` package is _not_ the official MongoDB package from MongoDB t
 
 #### Install Tendermint
 
-Install a [recent version of Tendermint][tendermint:releases]. BigchainDB Server requires version 0.22.3 or newer.
+Install a [recent version of Tendermint][tendermint:releases]. BigchainDB Server requires version 0.22.8 or newer.
 
 ```
 sudo apt install -y unzip
-wget https://github.com/tendermint/tendermint/releases/download/v0.22.3/tendermint_0.22.3_linux_amd64.zip
-unzip tendermint_0.22.3_linux_amd64.zip
-rm tendermint_0.22.3_linux_amd64.zip
+wget https://github.com/tendermint/tendermint/releases/download/v0.22.8/tendermint_0.22.8_linux_amd64.zip
+unzip tendermint_0.22.8_linux_amd64.zip
+rm tendermint_0.22.8_linux_amd64.zip
 sudo mv tendermint /usr/local/bin
 ```
 
@@ -125,17 +129,17 @@ The `public_key` is stored in the file `.tendermint/config/priv_validator.json`,
 
 ```json
 {
-  "address": "5943A9EF6285791A504918E1D117BC7F6A615C98",
+  "address": "E22D4340E5A92E4A9AD7C62DA62888929B3921E9",
   "pub_key": {
-    "type": "AC26791624DE60",
-    "value": "W3tqeMCU3d4SHDKqrwQWTahTW/wpieIAKZQxUxLv6rI="
+    "type": "tendermint/PubKeyEd25519",
+    "value": "P+aweH73Hii8RyCmNWbwPsa9o4inq3I+0fSfprVkZa0="
   },
-  "last_height": 0,
-  "last_round": 0,
+  "last_height": "0",
+  "last_round": "0",
   "last_step": 0,
   "priv_key": {
-    "type": "954568A3288910",
-    "value": "3sv9aExgME6MMjx0JoKVy7KtED8PBiPcyAgsYmVizslbe2p4wJTd3hIcMqqvBBZNqFNb/CmJ4gAplDFTEu/qsg=="
+    "type": "tendermint/PrivKeyEd25519",
+    "value": "AHBiZXdZhkVZoPUAiMzClxhl0VvUp7Xl3YT6GvCc93A/5rB4fvceKLxHIKY1ZvA+xr2jiKercj7R9J+mtWRlrQ=="
   }
 }
 ```
@@ -159,41 +163,63 @@ Share the `node_id`, `pub_key.value` and hostname of your Node with all other Me
 At this point the Coordinator should have received the data from all the Members, and should combine them in the `.tendermint/config/genesis.json` file:
 
 ```json
-{
-  "genesis_time": "0001-01-01T00:00:00Z",
-  "chain_id": "test-chain-la6HSr",
-  "validators": [
-    {
-      "pub_key": {
-        "type": "AC26791624DE60",
-        "value": "<Member 1 public key>"
+{  
+   "genesis_time":"0001-01-01T00:00:00Z",
+   "chain_id":"test-chain-la6HSr",
+   "consensus_params":{  
+      "block_size_params":{  
+         "max_bytes":"22020096",
+         "max_txs":"10000",
+         "max_gas":"-1"
       },
-      "power": 10,
-      "name": "<Member 1 name>"
-    },
-    {
-      "pub_key": {
-        "type": "AC26791624DE60",
-        "value": "<Member 2 public key>"
+      "tx_size_params":{  
+         "max_bytes":"10240",
+         "max_gas":"-1"
       },
-      "power": 10,
-      "name": "<Member 2 name>"
-     },
-     {
-       "...": { },
-     },
-     {
-       "pub_key": {
-         "type": "AC26791624DE60",
-         "value": "<Member N public key>"
-       },
-       "power": 10,
-       "name": "<Member N name>"
-     }
-  ],
-  "app_hash": ""
+      "block_gossip_params":{  
+         "block_part_size_bytes":"65536"
+      },
+      "evidence_params":{  
+         "max_age":"100000"
+      }
+   },
+   "validators":[  
+      {  
+         "pub_key":{  
+            "type":"AC26791624DE60",
+            "value":"<Member 1 public key>"
+         },
+         "power":10,
+         "name":"<Member 1 name>"
+      },
+      {  
+         "pub_key":{  
+            "type":"AC26791624DE60",
+            "value":"<Member 2 public key>"
+         },
+         "power":10,
+         "name":"<Member 2 name>"
+      },
+      {  
+         "...":{  
+
+         },
+
+      },
+      {  
+         "pub_key":{  
+            "type":"AC26791624DE60",
+            "value":"<Member N public key>"
+         },
+         "power":10,
+         "name":"<Member N name>"
+      }
+   ],
+   "app_hash":""
 }
 ```
+
+**Note:** `consensus_params` in the `genesis.json` are default values for Tendermint consensus.
 
 The new `genesis.json` file contains the data that describes the Network. The key `name` is the Member's moniker; it can be any valid string, but put something human-readable like `"Alice's Node Shop"`.
 
@@ -220,13 +246,17 @@ persistent_peers = "<Member 1 node id>@<Member 1 hostname>:26656,\
 <Member N node id>@<Member N hostname>:26656,"
 ```
 
-## Member: Start MongoDB, BigchainDB and Tendermint
+## Member: Start MongoDB
 
 If you installed MongoDB using `sudo apt install mongodb`, then MongoDB should already be running in the background. You can check using `systemctl status mongodb`.
 
 If MongoDB isn't running, then you can start it using the command `mongod`, but that will run it in the foreground. If you want to run it in the background (so it will continue running after you logout), you can use `mongod --fork --logpath /var/log/mongodb.log`. (You might have to create the `/var/log` directory if it doesn't already exist.)
 
 If you installed MongoDB using `sudo apt install mongodb`, then a MongoDB startup script should already be installed (so MongoDB will start automatically when the machine is restarted). Otherwise, you should install a startup script for MongoDB.
+
+## Member: Start BigchainDB and Tendermint
+
+If you want to use a process manager, jump to the [next section](member-start-bigchaindb-and-tendermint-using-monit).
 
 To start BigchainDB, one uses the command `bigchaindb start` but that will run it in the foreground. If you want to run it in the background (so it will continue running after you logout), you can use `nohup`, `tmux`, or `screen`. For example, `nohup bigchaindb start 2>&1 > bigchaindb.log &`
 
@@ -239,6 +269,45 @@ The _recommended_ approach is to create a startup script for Tendermint, so it w
 Note: We'll share some example startup scripts in the future. This document is a work in progress.
 
 If you followed the recommended approach and created startup scripts for BigchainDB and Tendermint, then you can reboot the machine now. MongoDB, BigchainDB and Tendermint should all start.
+
+
+### Member: Start BigchainDB and Tendermint using Monit
+
+This section describes how to manage the BigchainDB and Tendermint processes using [Monit][monit] - a small open-source utility for managing and monitoring Unix processes.
+
+This section assumes that you followed the guide down to the [start MongoDB section](#member-start-mongodb) inclusive.
+
+Install Monit:
+
+```
+sudo apt install monit
+```
+
+If you installed the `bigchaindb` Python package, you should have the `bigchaindb-monit-config` script in your `PATH` now.
+
+Run the script:
+
+```
+bigchaindb-monit-config
+```
+
+The script builds a configuration file for Monit.
+
+Run Monit as a daemon, instructing it to wake up every second to check on processes:
+
+```
+monit -d 1
+```
+
+It will run the processes and restart them when they crash. If the root `bigchaindb_` process crashes, Monit will also restart the Tendermint process.
+
+Check the status by running `monit status` or `monit summary`.
+
+By default, it will collect program logs into the `~/.bigchaindb-monit/logs` folder.
+
+Consult `monit -h` or [the Monit documentation][monit-manual] to know more about the operational power you've just got the taste of.
+
+Check `bigchaindb-monit-config -h` if you want to arrange a different folder for logs or some of the Monit internal artifacts.
 
 ## How Others Can Access Your Node
 
@@ -265,6 +334,48 @@ If you want to refresh your node back to a fresh empty state, then your best bet
 - reset Tendermint using `tendermint unsafe_reset_all`
 - delete the directory `$HOME/.tendermint`
 
+## Shutting down BigchainDB
+
+If you want to stop/kill BigchainDB, you can do so by sending `SIGINT`, `SIGQUIT` or `SIGTERM` to the running BigchainDB
+process(es). Depending on how you started BigchainDB i.e. foreground or background. e.g. you started BigchainDB in the background as mentioned above in the guide:
+
+```bash
+$ nohup bigchaindb start 2>&1 > bigchaindb.log &
+
+$ # Check the PID of the main BigchainDB process
+$ ps -ef | grep bigchaindb
+<user>    *<pid> <ppid>   <C> <STIME> <tty>        <time> bigchaindb
+<user>     <pid> <ppid>*  <C> <STIME> <tty>        <time> gunicorn: master [bigchaindb_gunicorn]
+<user>     <pid> <ppid>*  <C> <STIME> <tty>        <time> bigchaindb_ws
+<user>     <pid> <ppid>*  <C> <STIME> <tty>        <time> bigchaindb_ws_to_tendermint
+<user>     <pid> <ppid>*  <C> <STIME> <tty>        <time> bigchaindb_exchange
+<user>     <pid> <ppid>   <C> <STIME> <tty>        <time> gunicorn: worker [bigchaindb_gunicorn]
+<user>     <pid> <ppid>   <C> <STIME> <tty>        <time> gunicorn: worker [bigchaindb_gunicorn]
+<user>     <pid> <ppid>   <C> <STIME> <tty>        <time> gunicorn: worker [bigchaindb_gunicorn]
+<user>     <pid> <ppid>   <C> <STIME> <tty>        <time> gunicorn: worker [bigchaindb_gunicorn]
+<user>     <pid> <ppid>   <C> <STIME> <tty>        <time> gunicorn: worker [bigchaindb_gunicorn]
+...
+
+$ # Send any of the above mentioned signals to the parent/root process(marked with `*` for clarity)
+# Sending SIGINT
+$ kill -2 <bigchaindb_parent_pid>
+
+$ # OR
+
+# Sending SIGTERM
+$ kill -15 <bigchaindb_parent_pid>
+
+$ # OR
+
+# Sending SIGQUIT
+$ kill -3 <bigchaindb_parent_pid>
+
+# If you want to kill all the processes by name yourself
+$ pgrep bigchaindb | xargs kill -9
+```
+
+If you started BigchainDB in the foreground, a `Ctrl + C` or `Ctrl + Z` would shut down BigchainDB.
+
 ## Member: Dynamically Add a New Member to the Network
 
 TBD.
@@ -273,3 +384,5 @@ TBD.
 [bdb:software]: https://github.com/bigchaindb/bigchaindb/
 [bdb:pypi]: https://pypi.org/project/BigchainDB/#history
 [tendermint:releases]: https://github.com/tendermint/tendermint/releases
+[monit]: https://www.mmonit.com/monit
+[monit-manual]: https://mmonit.com/monit/documentation/monit.html
