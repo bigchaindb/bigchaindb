@@ -34,18 +34,6 @@ class BigchainDB(object):
     Create, read, sign, write transactions to the database
     """
 
-    BLOCK_INVALID = 'invalid'
-    """return if a block is invalid"""
-
-    BLOCK_VALID = TX_VALID = 'valid'
-    """return if a block is valid, or tx is in valid block"""
-
-    BLOCK_UNDECIDED = TX_UNDECIDED = 'undecided'
-    """return if block is undecided, or tx is in undecided block"""
-
-    TX_IN_BACKLOG = 'backlog'
-    """return if transaction is in backlog"""
-
     def __init__(self, connection=None):
         """Initialize the Bigchain instance
 
@@ -251,7 +239,7 @@ class BigchainDB(object):
             return backend.query.delete_unspent_outputs(
                                         self.connection, *unspent_outputs)
 
-    def get_transaction(self, transaction_id, include_status=False):
+    def get_transaction(self, transaction_id):
         transaction = backend.query.get_transaction(self.connection, transaction_id)
 
         if transaction:
@@ -269,10 +257,7 @@ class BigchainDB(object):
 
             transaction = Transaction.from_dict(transaction)
 
-        if include_status:
-            return transaction, self.TX_VALID if transaction else None
-        else:
-            return transaction
+        return transaction
 
     def get_transactions_filtered(self, asset_id, operation=None):
         """Get a list of transactions filtered on some criteria
@@ -280,9 +265,7 @@ class BigchainDB(object):
         txids = backend.query.get_txids_filtered(self.connection, asset_id,
                                                  operation)
         for txid in txids:
-            tx, status = self.get_transaction(txid, True)
-            if status == self.TX_VALID:
-                yield tx
+            yield self.get_transaction(txid)
 
     def get_outputs_filtered(self, owner, spent=None):
         """Get a list of output links filtered on some criteria
@@ -421,16 +404,8 @@ class BigchainDB(object):
         Returns:
             iter: An iterator of assets that match the text search.
         """
-        objects = backend.query.text_search(self.connection, search, limit=limit,
-                                            table=table)
-
-        # TODO: This is not efficient. There may be a more efficient way to
-        #       query by storing block ids with the assets and using fastquery.
-        #       See https://github.com/bigchaindb/bigchaindb/issues/1496
-        for obj in objects:
-            tx, status = self.get_transaction(obj['id'], True)
-            if status == self.TX_VALID:
-                yield obj
+        return backend.query.text_search(self.connection, search, limit=limit,
+                                         table=table)
 
     def get_assets(self, asset_ids):
         """Return a list of assets that match the asset_ids

@@ -67,7 +67,7 @@ class Exchange:
         """
 
         try:
-            self.started_queue.get_nowait()
+            self.started_queue.get(timeout=1)
             raise RuntimeError('Cannot create a new subscriber queue while Exchange is running.')
         except Empty:
             pass

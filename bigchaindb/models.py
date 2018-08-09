@@ -10,15 +10,12 @@ class Transaction(Transaction):
 
     def validate(self, bigchain, current_transactions=[]):
         """Validate transaction spend
-
         Args:
             bigchain (BigchainDB): an instantiated bigchaindb.BigchainDB object.
-
         Returns:
             The transaction (Transaction) if the transaction is valid else it
             raises an exception describing the reason why the transaction is
             invalid.
-
         Raises:
             ValidationError: If the transaction is invalid
         """
