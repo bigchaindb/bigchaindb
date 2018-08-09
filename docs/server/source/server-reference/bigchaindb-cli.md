@@ -80,22 +80,27 @@ configuration file as documented under
 **This is an experimental feature. Users are advised not to use it in production.**
 
 
-Add, update, or remove a validator from the validators set of the local node. The command implements [3/UPSERT-VALIDATORS](https://github.com/bigchaindb/BEPs/tree/master/3), check it out if you need more details on how this is orchestrated.
+Manage elections to add, update, or remove a validator from the validators set of the local node. The upsert-validator subcommands implement [BEP-21](https://github.com/bigchaindb/BEPs/tree/master/21). Check it out if you need more details on how this is orchestrated.
 
-Below is the command line syntax,
+Election management is broken into several subcommands. Below is the command line syntax for each,
+
+#### upsert-validator new
+
+Calls a new election, proposing a change to the validator set.
+
+Below is the command line syntax and the return value,
 
 ```bash
-$ bigchaindb upsert-validator PUBLIC_KEY_OF_VALIDATOR POWER
+$ bigchaindb upsert-validator new E_PUBKEY E_POWER E_NODE_ID --private-key PATH_TO_YOUR_PRIVATE_KEY
+<election_id>
 ```
+
+Here, `E_PUBKEY`, `E_POWER`, and `E_NODE_ID` are the public key, proposed power, and node id of the validator being voted on. `--private-key` should be the path to wherever the private key for your validator node is stored, (*not* the private key itself.). For example, to add a new validator, provide the public key and node id for some node not already in the validator set, along with whatever voting power you'd like them to have. To remove an existing validator, provide their public key and node id, and set `E_POWER` to `0`.
 
 Example usage,
 
 ```bash
-$ bigchaindb upsert-validator B0E42D2589A455EAD339A035D6CE1C8C3E25863F268120AA0162AD7D003A4014 10
+$ bigchaindb upsert-validator new B0E42D2589A455EAD339A035D6CE1C8C3E25863F268120AA0162AD7D003A4014 1 12345 --private-key /home/user/.tendermint/config/priv_validator.json
 ```
 
-If the command is returns without any error then a request to update the validator set has been successfully submitted. So, even if the command has been successfully executed it doesn't imply that the validator set has been updated. In order to check whether the change has been applied, the node operator can execute `curl http://node_ip:9984/api/v1/validators` which will list the current validators set. Refer to the [validators](/http-client-server-api.html#validators) section of the HTTP API docs for more detail.
-
-Note:
-- When `POWER`is set to `0` then the validator will be removed from the validator set.
-- Upsert requests are handled once per block i.e. the validators set is updated once a new block is committed. So, the node operator is not allowed to submit a new upsert request until the current request has been processed. Furthermore, if Tendermint is started with `--consensus.create_empty_blocks=false`, and there are no new incoming transactions then the validators set update is delayed until any new transactions are received and a new block can be committed.
+If the command succeeds, it will create an election and return an `election_id`. Elections consist of one vote token per voting power, issued to the members of the validator set. Validators can cast their votes to approve the change to the validator set by spending their vote tokens. The status of the election can be monitored by providing the `election_id` to the `show` subcommand.

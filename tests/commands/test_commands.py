@@ -18,7 +18,8 @@ def test_make_sure_we_dont_remove_any_command():
     assert parser.parse_args(['init']).command
     assert parser.parse_args(['drop']).command
     assert parser.parse_args(['start']).command
-    assert parser.parse_args(['upsert-validator', 'TEMP_PUB_KEYPAIR', '10']).command
+    assert parser.parse_args(['upsert-validator', 'new', 'TEMP_PUB_KEYPAIR', '10', 'TEMP_NODE_ID',
+                              '--private-key', 'TEMP_PATH_TO_PRIVATE_KEY']).command
 
 
 @pytest.mark.tendermint
@@ -341,15 +342,70 @@ class MockResponse():
         return {'result': {'latest_block_height': self.height}}
 
 
+# @pytest.mark.execute
+# @patch('bigchaindb.lib.BigchainDB.get_validators')
+# @pytest.mark.abci
 @pytest.mark.skip
-@patch('bigchaindb.config_utils.autoconfigure')
-@patch('bigchaindb.backend.query.store_validator_update')
+def test_upsert_validator_new_with_tendermint(b, priv_validator_path, user_sk, monkeypatch):
+    """WIP: Will be fixed and activated in the next PR
+    """
+    from bigchaindb.commands.bigchaindb import run_upsert_validator_new
+    import time
+
+    time.sleep(3)
+
+    def mock_get():
+        return [
+            {'pub_key': {'value': 'zL/DasvKulXZzhSNFwx4cLRXKkSM9GPK7Y0nZ4FEylM=',
+                         'type': 'tendermint/PubKeyEd25519'},
+             'voting_power': 10}
+        ]
+
+    # b.get_validators = mock_get
+    # mock_get_validators = mock_get
+    # monkeypatch.setattr('requests.get', mock_get)
+
+    proposer_key = b.get_validators()[0]['pub_key']['value']
+
+    args = Namespace(action='new',
+                     public_key=proposer_key,
+                     power=1,
+                     node_id='12345',
+                     sk=priv_validator_path,
+                     config={})
+    resp = run_upsert_validator_new(args, b)
+    time.sleep(3)
+
+    assert b.get_transaction(resp)
+
+
 @pytest.mark.tendermint
-def test_upsert_validator(mock_autoconfigure, mock_store_validator_update):
-    from bigchaindb.commands.bigchaindb import run_upsert_validator
+@pytest.mark.bdb
+def test_upsert_validator_new_without_tendermint(b, priv_validator_path, user_sk, monkeypatch):
+    from bigchaindb.commands.bigchaindb import run_upsert_validator_new
 
-    args = Namespace(public_key='CJxdItf4lz2PwEf4SmYNAu/c/VpmX39JEgC5YpH7fxg=',
-                     power='10', config={})
-    run_upsert_validator(args)
+    def mock_get():
+        return [
+            {'pub_key': {'value': 'zL/DasvKulXZzhSNFwx4cLRXKkSM9GPK7Y0nZ4FEylM=',
+                         'type': 'tendermint/PubKeyEd25519'},
+             'voting_power': 10}
+        ]
 
-    assert mock_store_validator_update.called
+    def mock_write(tx, mode):
+        b.store_transaction(tx)
+        return (202, '')
+
+    b.get_validators = mock_get
+    b.write_transaction = mock_write
+
+    monkeypatch.setattr('requests.get', mock_get)
+
+    args = Namespace(action='new',
+                     public_key='CJxdItf4lz2PwEf4SmYNAu/c/VpmX39JEgC5YpH7fxg=',
+                     power=1,
+                     node_id='12345',
+                     sk=priv_validator_path,
+                     config={})
+    resp = run_upsert_validator_new(args, b)
+
+    assert b.get_transaction(resp)
