@@ -34,6 +34,7 @@ class TestBigchainApi(object):
     def test_get_spent_with_double_spend_detected(self, b, alice):
         from bigchaindb.models import Transaction
         from bigchaindb.common.exceptions import DoubleSpend
+        from bigchaindb.exceptions import CriticalDoubleSpend
 
         tx = Transaction.create([alice.public_key], [([alice.public_key], 1)])
         tx = tx.sign([alice.private_key])
@@ -54,6 +55,11 @@ class TestBigchainApi(object):
 
         with pytest.raises(DoubleSpend):
             b.validate_transaction(transfer_tx2)
+
+        b.store_bulk_transactions([transfer_tx2])
+
+        with pytest.raises(CriticalDoubleSpend):
+            b.get_spent(tx.id, 0)
 
     @pytest.mark.tendermint
     def test_get_block_status_for_tx_with_double_inclusion(self, b, alice):
@@ -87,7 +93,7 @@ class TestBigchainApi(object):
         tx3 = Transaction.create([alice.public_key], [([alice.public_key], 1)],
                                  asset=asset3).sign([alice.private_key])
 
-        # create the block
+        # write the transactions to the DB
         b.store_bulk_transactions([tx1, tx2, tx3])
 
         # get the assets through text search
@@ -115,6 +121,26 @@ class TestBigchainApi(object):
                                   asset_id='mock_asset_link')
         with pytest.raises(InputDoesNotExist):
             tx.validate(b)
+
+    @pytest.mark.tendermint
+    def test_write_transaction(self, b, user_sk, user_pk, alice, create_tx):
+        from bigchaindb.models import Transaction
+
+        asset1 = {'msg': 'BigchainDB 1'}
+
+        tx = Transaction.create([alice.public_key], [([alice.public_key], 1)],
+                                asset=asset1).sign([alice.private_key])
+        b.store_bulk_transactions([tx])
+
+        tx_from_db = b.get_transaction(tx.id)
+
+        before = tx.to_dict()
+        after = tx_from_db.to_dict()
+
+        assert before['asset']['data'] == after['asset']['data']
+        before.pop('asset', None)
+        after.pop('asset', None)
+        assert before == after
 
 
 class TestTransactionValidation(object):
