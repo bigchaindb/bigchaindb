@@ -11,10 +11,11 @@ Libraries and Tools Maintained by the BigchainDB Team
 Community-Driven Libraries and Tools
 ------------------------------------
 
-.. note::
+.. warning::
 
    Some of these projects are a work in progress,
    but may still be useful.
+   Others might not work with the latest version of BigchainDB.
 
 * `Haskell transaction builder <https://github.com/bigchaindb/bigchaindb-hs>`_
 * `Go driver <https://github.com/zbo14/envoke/blob/master/bigchain/bigchain.go>`_
