@@ -3,8 +3,6 @@
 # SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
 # Code is Apache-2.0 and docs are CC-BY-4.0
 
-# -*- coding: utf-8 -*-
-#
 # BigchainDB documentation build configuration file, created by
 # sphinx-quickstart on Thu Sep 29 11:13:27 2016.
 #
