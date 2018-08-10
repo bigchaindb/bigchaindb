@@ -1,6 +1,17 @@
 Template: Deploy a Kubernetes Cluster on Azure
 ==============================================
 
+.. note::
+
+   A highly-available Kubernetes cluster requires at least five virtual machines
+   (three for the master and two for your app's containers).
+   Therefore we don't recommend using Kubernetes to run a BigchainDB node
+   if that's the only thing the Kubernetes cluster will be running.
+   Instead, see **How to Set Up a BigchainDB Network**.
+   If your organization already *has* a big Kubernetes cluster running many containers,
+   and your organization has people who know Kubernetes,
+   then this Kubernetes deployment template might be helpful.
+
 A BigchainDB node can be run inside a `Kubernetes <https://kubernetes.io/>`_
 cluster.
 This page describes one way to deploy a Kubernetes cluster on Azure.
