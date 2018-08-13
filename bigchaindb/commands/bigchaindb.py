@@ -138,7 +138,7 @@ def run_upsert_validator_new(args, bigchain):
     else:
         raise OperationError('Failed to commit election')
 
-
+        
 def run_upsert_validator_show(args, bigchain):
 
     election = bigchain.get_transaction(args.election_id)

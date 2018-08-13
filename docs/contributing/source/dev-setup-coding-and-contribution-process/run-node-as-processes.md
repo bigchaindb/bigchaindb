@@ -23,7 +23,7 @@ Find [the version number of the latest Tendermint release](https://github.com/te
 
 ```bash
 $ sudo apt install -y unzip
-$ wget https://github.com/tendermint/tendermint/releases/download/v0.22.8-autodraft/tendermint_0.22.8_linux_amd64.zip
+$ wget https://github.com/tendermint/tendermint/releases/download/v0.22.8/tendermint_0.22.8_linux_amd64.zip
 $ unzip tendermint_0.22.8_linux_amd64.zip
 $ rm tendermint_0.22.8_linux_amd64.zip
 $ sudo mv tendermint /usr/local/bin
