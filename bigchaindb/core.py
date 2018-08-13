@@ -199,8 +199,10 @@ def new_validator_set(bigchain, height, updates):
 
     updates_dict = {}
     for u in updates:
-        updates_dict[u['public_key']] = {'pub_key': {'type': 'ed25519',
-                                                     'data': public_key_to_base64(u['public_key'])},
-                                         'voting_power': u['power']}
+        public_key64 = public_key_to_base64(u['public_key'])
+        updates_dict[public_key64] = {'pub_key': {'type': 'ed25519',
+                                                  'data': public_key64},
+                                      'voting_power': u['power']}
+
     new_validators_dict = {**validators_dict, **updates_dict}
     return list(new_validators_dict.values())
