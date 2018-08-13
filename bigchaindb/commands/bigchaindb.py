@@ -139,6 +139,19 @@ def run_upsert_validator_new(args, bigchain):
         raise OperationError('Failed to commit election')
 
 
+def run_upsert_validator_show(args, bigchain):
+
+    election = bigchain.get_transaction(args.election_id)
+
+    new_validator = election.asset['data']
+
+    public_key = new_validator['public_key']
+    power = new_validator['power']
+    node_id = new_validator['node_id']
+
+    return public_key, power, node_id
+
+
 def _run_init():
     bdb = bigchaindb.BigchainDB()
 
@@ -259,6 +272,12 @@ def create_parser():
     new_election_parser.add_argument('--private-key',
                                      dest='sk',
                                      help='Path to the private key of the election initiator.')
+
+    show_election_parser = validator_subparser.add_parser('show',
+                                                          help='Provides information about an election.')
+
+    show_election_parser.add_argument('election_id',
+                                      help='The transaction id of the election you wish to query.')
 
     # parsers for showing/exporting config values
     subparsers.add_parser('show-config',

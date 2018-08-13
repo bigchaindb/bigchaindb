@@ -409,3 +409,44 @@ def test_upsert_validator_new_without_tendermint(b, priv_validator_path, user_sk
     resp = run_upsert_validator_new(args, b)
 
     assert b.get_transaction(resp)
+
+
+@pytest.mark.tendermint
+@pytest.mark.bdb
+def test_upsert_validator_show(b, priv_validator_path, user_sk, monkeypatch):
+    from bigchaindb.commands.bigchaindb import run_upsert_validator_show, run_upsert_validator_new
+
+    def mock_get():
+        return [
+            {'pub_key': {'value': 'zL/DasvKulXZzhSNFwx4cLRXKkSM9GPK7Y0nZ4FEylM=',
+                         'type': 'tendermint/PubKeyEd25519'},
+             'voting_power': 10}
+        ]
+
+    def mock_write(tx, mode):
+        b.store_transaction(tx)
+        return 202, ''
+
+    b.get_validators = mock_get
+    b.write_transaction = mock_write
+
+    monkeypatch.setattr('requests.get', mock_get)
+
+    public_key = 'CJxdItf4lz2PwEf4SmYNAu/c/VpmX39JEgC5YpH7fxg='
+    power = 1
+    node_id = '12345'
+
+    new_args = Namespace(action='new',
+                         public_key=public_key,
+                         power=1,
+                         node_id='12345',
+                         sk=priv_validator_path,
+                         config={})
+    election_id = run_upsert_validator_new(new_args, b)
+
+    show_args = Namespace(action='show',
+                          election_id=election_id)
+
+    resp = run_upsert_validator_show(show_args, b)
+
+    assert resp == (public_key, power, node_id)
